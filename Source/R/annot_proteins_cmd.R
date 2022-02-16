@@ -338,7 +338,8 @@ de_proteins_longer_annot <- de_proteins_longer %>%
 
 vroom::vroom_write(de_proteins_longer_annot, file.path(args$output_dir,args$output_long_file ) )
 
-list_of_long_columns <- intersect(colnames(de_proteins_longer_annot), c("protein_names",
+list_of_long_columns <- intersect(colnames(de_proteins_longer_annot), c( "protein_ids",
+  "protein_names",
                                                                         "ENSEMBL",
                                                                         "PROTEIN-NAMES",
                                                                         "KEYWORDS",
@@ -347,7 +348,8 @@ list_of_long_columns <- intersect(colnames(de_proteins_longer_annot), c("protein
                                                                         "go_cellular_compartment",
                                                                         "go_molecular_function",
                                                                         "reactome_term",
-                                                                        "majority_protein_ids") )
+                                                                        "majority_protein_ids",
+                                                                        "fasta_headers") )
 
 writexl::write_xlsx(de_proteins_longer_annot %>%
                       mutate_at( list_of_long_columns, ~substr(., 1, 32760) ),
