@@ -37,10 +37,35 @@ removeEmptyRows <- function(input_table, col_pattern, row_id) {
 #'@param input_table  Data matrix with each row as a protein and each column a sample.
 #'@return A ggplot2 bar plot showing the number of missing values per column.
 #'@export
-plotNumMissingVales <- function(input_table) {
+plotNumMissingValues <- function(input_table) {
 
   plot_num_missing_values <- apply(data.matrix(log2(input_table)), 2,
                                    function(x) { length(which(is.infinite(x))) }) %>%
+    t %>%
+    t %>%
+    set_colnames("No. of Missing Values") %>%
+    as.data.frame %>%
+    rownames_to_column("Samples ID") %>%
+    ggplot(aes(x = `Samples ID`, y = `No. of Missing Values`)) +
+    geom_bar(stat = "identity") +
+    theme(axis.text.x = element_text(angle = 90))
+
+  plot_num_missing_values
+}
+
+
+
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#' Plot the number of values in each sample
+#'@param input_table  Data matrix with each row as a protein and each column a sample.
+#'@return A ggplot2 bar plot showing the number of missing values per column.
+#'@export
+plotNumOfValues <- function(input_table) {
+
+  plot_num_missing_values <- apply(data.matrix(log2(input_table)), 2,
+                                   function(x) { length(which(!is.infinite(x))) }) %>%
     t %>%
     t %>%
     set_colnames("No. of Missing Values") %>%
@@ -764,7 +789,9 @@ runTestsContrasts <- function(data,
                               p_value_column = p.mod,
                               q_value_column = q.mod,
                               weights = NA,
-                              treat_lfc_cutoff = NA) {
+                              treat_lfc_cutoff = NA,
+                              eBayes_trend = FALSE,
+                              eBayes_robust = FALSE) {
 
   ff <- as.formula(formula_string)
   mod_frame <- model.frame(ff, design_matrix)
@@ -788,7 +815,7 @@ runTestsContrasts <- function(data,
 
   cfit <- contrasts.fit(fit, contrasts = contr.matrix)
 
-  eb.fit <- eBayes(cfit)
+  eb.fit <- eBayes( cfit, trend = eBayes_trend, robust = eBayes_robust )
 
   ## Run treat over here
   t.fit <- NA
@@ -1248,8 +1275,11 @@ cmriCamera <- function(contrast_name, index_name, abundance_mat, replicates_mat,
   #
   # print(head( abundance_mat[[contrast_name]][ , rownames(design_trimmed)]))
 
-
-  abundance_mat_trimmed <- abundance_mat[[1]][, rownames(design_trimmed)]
+  abundance_mat_trimmed <- abundance_mat %>%
+    dplyr::filter( comparison == contrast_name) %>%
+    dplyr::pull( data) %>%
+    .[[1]] %>%
+    .[,rownames(design_trimmed)]
 
   contrast_mat_trimmed <- lists_of_contrasts[[contrast_name]][colnames(replicates_mat) %in% colnames(design_trimmed)]
 
@@ -1385,12 +1415,27 @@ mergeWithEntrezId <- function(input_table, lookup_table) {
     inner_join(duplicated_row_id, by = c("ENTREZ_GENE", "comparison"))
 
   ## Duplicates with best q-value
-  selected_one <- to_be_selected %>%
+  selected_one_helper <- to_be_selected %>%
     inner_join(to_be_selected %>%
-                 group_by(comparison) %>%
+                 group_by(comparison, ENTREZ_GENE) %>%
                  summarise(q.mod = min(q.mod)) %>%
-                 ungroup, by = c("comparison" = "comparison",
-                                 "q.mod" = "q.mod"))
+                 ungroup %>%
+                 dplyr::select( comparison, ENTREZ_GENE, q.mod),
+               by = c("comparison" = "comparison",
+                      "ENTREZ_GENE" = "ENTREZ_GENE",
+                      "q.mod" = "q.mod"))
+
+  selected_one  <- selected_one_helper  %>%
+    inner_join(selected_one_helper %>%
+                 group_by(comparison, ENTREZ_GENE) %>%
+                 mutate( gene_rank  = row_number()) %>%
+                 ungroup %>%
+                 dplyr::filter( gene_rank == 1) %>%
+                 dplyr::select(-gene_rank) %>%
+                 dplyr::select( comparison, ENTREZ_GENE, uniprot_acc, protein_id),
+               by = c("comparison" = "comparison",
+                      "uniprot_acc" = "uniprot_acc",
+                      "ENTREZ_GENE" = "ENTREZ_GENE")  )
 
   ## List of rows that were discarded as they are duplicates
   excluded_duplicates <- to_be_selected %>%

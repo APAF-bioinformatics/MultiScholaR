@@ -99,10 +99,6 @@ parser <- add_option(parser, "--abundance_threshold", type = "integer",
                      help = "Abundance threshold above which the protein in the sample is accepted for analysis",
                      metavar = "integer")
 
-parser <- add_option(parser, "--control_genes_q_val_thresh", type = "double",
-                     help = "q-value threshold below which a protein has statistically significant differetial expression, used for control genes",
-                     metavar = "double")
-
 parser <- add_option(parser, "--group_pattern", type = "character",
                      help = "Regular expression pattern to identify columns with abundance values belonging to the experiment.",
                      metavar = "string")
@@ -190,11 +186,6 @@ addHandler(writeToFile, file = file.path(args$output_dir, args$log_file), format
 
 level <- ifelse(args$debug, loglevels["DEBUG"], loglevels["INFO"])
 setLevel(level = ifelse(args$silent, loglevels["ERROR"], level))
-
-#parse and merge the configuration file options.
-if (args$config != "") {
-  args <- config.list.merge(eval.config(file = args$config, config = "de_analysis"), args)
-}
 
 cmriWelcome("ProteomeRiver", c("Ignatius Pang", "Pablo Galaviz"))
 loginfo("Reading configuration file %s", args$config)
@@ -409,7 +400,7 @@ table_value <- table(is.infinite(data.matrix(log2(cln_dat_wide_unsorted[, c(coln
 loginfo("Count the number of missing values for each sample before removing proteins with some missing values: %d",
         table_value["TRUE"])
 
-plot_num_missing_values_before <- plotNumMissingVales(cln_dat_wide_unsorted[, cols_for_analysis])
+plot_num_missing_values_before <- plotNumMissingValues(cln_dat_wide_unsorted[, cols_for_analysis])
 
 for( format_ext in args$plots_format) {
   file_name<-file.path(args$output_dir,paste0("num_missing_values_before_filtering.",format_ext))
@@ -494,7 +485,7 @@ logdebug(ruvIII_replicates_matrix)
 ## Count the total number of missing values in total
 loginfo("Count the number of missing values for each sample: %d",table(is.infinite(data.matrix(log2(counts_filt)))))
 
-plot_num_missing_values <- plotNumMissingVales(counts_filt[, cols_for_analysis])
+plot_num_missing_values <- plotNumMissingValues(counts_filt[, cols_for_analysis])
 
 for( format_ext in args$plots_format) {
   file_name<-file.path(args$output_dir,paste0("num_missing_values.",format_ext))
@@ -769,7 +760,7 @@ vroom::vroom_write(num_sig_de_molecules$table,
                    file.path(args$output_dir,
                              "num_significant_differentially_abundant_all.tab"))
 
-writexl::write_xlsx(num_sig_da_molecules$table,
+writexl::write_xlsx(num_sig_de_molecules$table,
                     file.path(args$output_dir,
                               "num_significant_differentially_abundant_all.xlsx"))
 

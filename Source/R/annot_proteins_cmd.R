@@ -338,18 +338,23 @@ de_proteins_longer_annot <- de_proteins_longer %>%
 
 vroom::vroom_write(de_proteins_longer_annot, file.path(args$output_dir,args$output_long_file ) )
 
-list_of_long_columns <- intersect(colnames(de_proteins_longer_annot), c( "protein_ids",
-  "protein_names",
-                                                                        "ENSEMBL",
-                                                                        "PROTEIN-NAMES",
-                                                                        "KEYWORDS",
-                                                                        "GO-ID",
-                                                                        "go_biological_process",
-                                                                        "go_cellular_compartment",
-                                                                        "go_molecular_function",
-                                                                        "reactome_term",
-                                                                        "majority_protein_ids",
-                                                                        "fasta_headers") )
+list_of_long_columns <- intersect(colnames(de_proteins_longer_annot), c( "uniprot_acc",
+                                                                         "protein_ids",
+                                                                         "protein_names",
+                                                                         "ENSEMBL",
+                                                                         "PROTEIN-NAMES",
+                                                                         "KEYWORDS",
+                                                                         "GO-ID",
+                                                                         "go_biological_process",
+                                                                         "go_cellular_compartment",
+                                                                         "go_molecular_function",
+                                                                         "reactome_term",
+                                                                         "majority_protein_ids",
+                                                                         "fasta_headers",
+                                                                         "evidence_ids",
+                                                                         "ms_ms_ids") )
+
+# list_of_long_columns <- colnames(de_proteins_longer_annot)
 
 writexl::write_xlsx(de_proteins_longer_annot %>%
                       mutate_at( list_of_long_columns, ~substr(., 1, 32760) ),
