@@ -304,7 +304,7 @@ names( de_prot_for_camera_list) <- de_prot_for_camera_tab$comparison
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+loginfo("Prepare Normalized Abundance Matrix.")
 
 norm_abundance_helper <- norm_abundance_mat %>%
   rownames_to_column("uniprot_acc") %>%
@@ -333,9 +333,8 @@ norm_abundance_mat_list <- norm_abundance_helper %>%
 
 ## norm_abundance_mat_list$data[[1]]
 
-
-
-## Prepare gene ID to gene set dictionary
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+loginfo("Prepare gene ID to gene set dictionary.")
 
 list_of_collections <- purrr::map(msigdb.EZID, ~bcCategory(collectionType(.)) )
 
@@ -350,7 +349,12 @@ collections_tab <- data.frame( collection =unlist(list_of_collections),
 gene_set_idx_list_file <- file.path(output_dir,  "gene_set_idx_list_file.RDS")
 
 if(file.exists(gene_set_idx_list_file)) {
-  gene_set_idx_list <- readRDS(gene_set_idx_list_file)
+
+  loginfo("Read file with gene set dictionary %s", gene_set_idx_list_file)
+  captured_output<-capture.output(
+    gene_set_idx_list <- readRDS(gene_set_idx_list_file),
+    type = "message")
+  logdebug(captured_output)
 
 } else {
 
@@ -365,51 +369,43 @@ if(file.exists(gene_set_idx_list_file)) {
       subsetCollection(msigdb.EZID,
                        collection=collection,
                        subcollection=sub_collection)
-
     }
-
-
   } )
-
 
   names( gene_set_idx_list) <- collections_tab %>%
     mutate( all_collection = paste( collection, sub_collection, sep=", ")) %>%
     pull(all_collection)
 
-  saveRDS(gene_set_idx_list, gene_set_idx_list_file)
+  loginfo("Save file with gene set dictionary %s", gene_set_idx_list_file)
+  captured_output<-capture.output(
+    saveRDS(gene_set_idx_list, gene_set_idx_list_file),
+    type = "message")
+  logdebug(captured_output)
 
 }
 
 
 
-
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Example usage
 
-abundance_mat_trimmed <- norm_abundance_mat_list[1,"data"][[1]][[1]]
+# abundance_mat_trimmed <- norm_abundance_mat_list[1,"data"][[1]][[1]]
+#
+# msigdb_ids <- geneIds(gene_set_idx_list[["h, NA"]])
+#
+# #convert gene sets into a list of gene indices
+# camera_indices <- ids2indices(msigdb_ids,
+#                               rownames(abundance_mat_trimmed))
+#
+#
+# camera( y=abundance_mat_trimmed,
+#         index=camera_indices,
+#         design =ruvIII_replicates_matrix,
+#         contrast=c(1, -1, 0, 0 ))
 
-msigdb_ids <- geneIds(gene_set_idx_list[["h, NA"]])
-
-#convert gene sets into a list of gene indices
-camera_indices <- ids2indices(msigdb_ids,
-                              rownames(abundance_mat_trimmed))
-
-
-camera( y=abundance_mat_trimmed,
-        index=camera_indices,
-        design =ruvIII_replicates_matrix,
-        contrast=c(1, -1, 0, 0 ))
-
-
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## List of contrasts
-
-
-# colnames(ruvIII_replicates_matrix)
-#
-# "RPE_B" "RPE_A" "RPE_X" "RPE_Y"
-#
-# contrasts_tbl %>%
-#   separate( contrasts, sep="=", into=c("contrast", "calculation")) %>%
-#   pull(contrast)
+loginfo("Prepare gene ID to gene set dictionary.")
 
 contrasts_tbl <- vroom::vroom(contrasts_file, delim = "\t")
 contrast_strings <- contrasts_tbl[, 1][[1]]
@@ -427,86 +423,24 @@ names(lists_of_contrasts) <-  colnames(contr.matrix) %>% str_split( "=") %>% pur
 #                             RPE_A.vs.RPE_X=c(0, 1, -1, 0 ) ,
 #                             RPE_B.vs.RPE_Y=c(1, 0, 0, -1 )   )
 
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+loginfo("Run the camera test.")
 
+createDirectoryIfNotExists(output_dir)
 
-
-
-
-
-contrast_name <- "SS.vs.WT"
-index_name <- "c5, GO:BP"
-abundance_mat = norm_abundance_mat_list
-replicates_mat = ruvIII_replicates_matrix
-lists_of_contrasts = lists_of_contrasts
-list_of_gene_sets = gene_set_idx_list
-min_set_size=4
-
-  print(paste("contrast_name =", contrast_name))
-  print(paste("index_name =", index_name))
-
-
-  groupA <- str_replace(contrast_name, "(.*)\\.vs\\.(.*)", "\\1")
-  groupB <- str_replace(contrast_name, "(.*)\\.vs\\.(.*)", "\\2")
-
-  design_choose_column <- replicates_mat[, c(groupA, groupB)]
-
-  design_trimmed <- design_choose_column[rowSums(design_choose_column) > 0,]
-
-  # print(design_trimmed)
-  #
-  # print(head( abundance_mat[[contrast_name]][ , rownames(design_trimmed)]))
-
-  abundance_mat_trimmed <- abundance_mat %>%
-    dplyr::filter( comparison == contrast_name) %>%
-    dplyr::pull( data) %>%
-    .[[1]] %>%
-    .[,rownames(design_trimmed)]
-
-  contrast_mat_trimmed <- lists_of_contrasts[[contrast_name]][colnames(replicates_mat) %in% colnames(design_trimmed)]
-
-  index <- list_of_gene_sets[[index_name]]
-
-  msigdb_ids <- geneIds(index)
-
-  #convert gene sets into a list of gene indices
-  camera_indices <- ids2indices(msigdb_ids,
-                                rownames(abundance_mat_trimmed))
-
-  ## At least two genes in the gene set
-  camera_indices_filt <- camera_indices[purrr::map(camera_indices, length) >= min_set_size]
-
-
-  camera_result <- NA
-  if (length(camera_indices_filt) > 0) {
-    camera_result <- camera(y = abundance_mat_trimmed, design = design_trimmed, index = camera_indices_filt, contrast = contrast_mat_trimmed)
-  }
-
-  info_list <- list(camera = camera_result,
-                    y = abundance_mat_trimmed,
-                    design = design_trimmed,
-
-                    index_name = index_name,
-                    index = camera_indices_filt,
-
-                    contrast_name = contrast_name,
-                    contrast = contrast_mat_trimmed)
-
-
-
-## Run the camera test
-
-
-    createDirectoryIfNotExists(output_dir)
-
-    camera_results_file <- file.path(output_dir,  "camera_results.RDS")
+camera_results_file <- file.path(output_dir,  "camera_results.RDS")
 
 if( file.exists(camera_results_file) ) {
-    camera_results <- readRDS( camera_results_file )
+  loginfo("Read file with camera test results %s", camera_results_file)
+  captured_output<-capture.output(
+    camera_results <- readRDS( camera_results_file ),
+    type = "message"
+  )
+  logdebug(captured_output)
 } else {
 
     index_tab <- data.frame( index_name = names(gene_set_idx_list) ) %>%
         mutate( temp = 1 )
-
 
     contrast_tab <-    data.frame( contrast_name = names(lists_of_contrasts)) %>%
         mutate( temp = 1 )
@@ -526,22 +460,18 @@ if( file.exists(camera_results_file) ) {
     camera_results <- purrr::pmap (combination_tab ,
                                    my_partial_camera)
 
-
     names(norm_abundance_mat_list)
 
-
-
-    saveRDS( camera_results, camera_results_file)
+    loginfo("Save file with camera test results %s", camera_results_file)
+    captured_output<-capture.output(
+      saveRDS( camera_results, camera_results_file),
+      type = "message" )
 }
 
-
-
-
-## Covert the camera results that are stored in list structures into a table
-
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+loginfo("Covert the camera results that are stored in list structures into a table.")
 
 camera_results_filt <- camera_results [purrr::map_lgl( camera_results, ~{!is.na(.[["camera"]][[1]][1])})]
-
 
 camera_results_cln <-  purrr::map( camera_results_filt,
   ~ { rownames_to_column(.[["camera"]], "pathway")   }  )
@@ -560,13 +490,18 @@ camera_results_filt <- camera_results_tbl %>%
 camera_results_tbl %>%
     arrange(FDR)
 
+loginfo("Savecamera results table in tab-separated table %s", camera_results_file)
+captured_output<-capture.output(
+  vroom::vroom_write( camera_results_filt,
+                      file.path( output_dir,  "filtered_camera_results.tab")),
+  type = "message" )
 
-vroom::vroom_write( camera_results_filt,
-                    file.path( output_dir,  "filtered_camera_results.tab"))
-
-
+loginfo("Save camera results table in Excel format %s", camera_results_file)
+captured_output<-capture.output(
 writexl::write_xlsx( camera_results_filt,
                      file.path(output_dir,  "filtered_camera_results.xlsx"))
+,
+type = "message" )
 
-
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
