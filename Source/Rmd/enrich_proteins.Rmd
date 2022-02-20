@@ -31,17 +31,17 @@ base_dir <- here::here()
 
 ```{r}
 
-# results_dir <- "/home/ignatius/PostDoc/2022/PYROXD1_BMP_13/Results/N155S/enrich_proteins"
-# group_pattern <- "\\d+" 
-# de_proteins_file <- "/home/ignatius/PostDoc/2022/PYROXD1_BMP_13/Results/N155S/de_proteins/de_proteins_long.tsv"
-# contrasts_file <- "/home/ignatius/PostDoc/2022/PYROXD1_BMP_13/Source/N155S/contrast_strings.tab"
-# design_matrix_file <- "/home/ignatius/PostDoc/2022/PYROXD1_BMP_13/Source/N155S/design_matrix.tab"
-# counts_table_file <- "/home/ignatius/PostDoc/2022/PYROXD1_BMP_13/Results/N155S/de_proteins/normalized_counts_after_ruv.tsv"
-# formula_string <- "~ 0 + group "
-# my_sample_id <- "Sample_ID"
-# my_group_id <- "group"
-# my_row_id <- "uniprot_acc"
-# taxonomy_id <- 10090
+results_dir <- "/home/ignatius/PostDoc/2022/PYROXD1_BMP_13/Results/N155S/enrich_proteins"
+group_pattern <- "\\d+"
+de_proteins_file <- "/home/ignatius/PostDoc/2022/PYROXD1_BMP_13/Results/N155S/de_proteins/de_proteins_long.tsv"
+contrasts_file <- "/home/ignatius/PostDoc/2022/PYROXD1_BMP_13/Source/N155S/contrast_strings.tab"
+design_matrix_file <- "/home/ignatius/PostDoc/2022/PYROXD1_BMP_13/Source/N155S/design_matrix.tab"
+counts_table_file <- "/home/ignatius/PostDoc/2022/PYROXD1_BMP_13/Results/N155S/de_proteins/normalized_counts_after_ruv.tsv"
+formula_string <- "~ 0 + group "
+my_sample_id <- "Sample_ID"
+my_group_id <- "group"
+my_row_id <- "uniprot_acc"
+taxonomy_id <- 10090
 
 
 command_line_options <- commandArgs(trailingOnly = TRUE)
@@ -135,11 +135,8 @@ p_load(writexl)
 p_load(magrittr)
 p_load(knitr)
 p_load(rlang)
-
-
 p_load(limma)
 p_load(qvalue)
-
 p_load(UniProt.ws)
 p_load(msigdb)
 p_load(ExperimentHub)
@@ -297,7 +294,6 @@ if( file.exists(file.path( results_dir, "uniprot_acc_to_entrez_id.RDS") )) {
 [71] "REACTOME"                   "REBASE"                     "REFSEQ_NUCLEOTIDE"          "REFSEQ_PROTEIN"             "RGD"                        "SGD"                        "TAIR"                       "TCDB"                       "TIGR"                       "TUBERCULIST"               
 [81] "UCSC"                       "UNIPARC"                    "UNIPATHWAY"                 "UNIPROTKB"                  "UNIPROTKB_ID"               "UNIREF100"                  "UNIREF50"                   "UNIREF90"                   "VECTORBASE"                 "WORLD-2DPAGE"              
 [91] "WORMBASE"                   "WORMBASE_PROTEIN"           "WORMBASE_TRANSCRIPT"        "XENBASE"                    "ZFIN"                      
-
 
 
 

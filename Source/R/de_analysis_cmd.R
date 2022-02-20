@@ -30,7 +30,7 @@ p_load(ggpubr)
 p_load(magrittr)
 p_load(knitr)
 p_load(rlang)
-
+p_load(ggrepel)
 
 p_load(limma)
 p_load(qvalue)
@@ -221,42 +221,11 @@ testRequiredFiles(c(
   , args$design_matrix_file
 ))
 
-
-#if(isArgumentDefined(args,"treat_lfc_cutoff"))
-# {
-#   args<-parseType(args,
-#                   c("treat_lfc_cutoff")
-#                   ,as.double)
-# }else {
-#   logwarn("treat_lfc_cutoff is undefined, default value set to NA")
-#   args$treat_lfc_cutoff<-NA
-# }
-
 args <- setArgsDefault(args, "treat_lfc_cutoff", as_func=as.double, default_val=NA )
 args <- setArgsDefault(args, "eBayes_trend", as_func=as.logical, default_val=FALSE )
 args <- setArgsDefault(args, "eBayes_robust", as_func=as.logical, default_val=FALSE )
-
-if(isArgumentDefined(args,"q_val_thresh"))
-{
-  args<-parseType(args,
-                  c("q_val_thresh")
-                  ,as.double)
-}else {
-  logwarn("q_val_thresh is undefined, default value set to NaN.")
-  args$q_val_thresh<-NaN
-}
-
-
-if(isArgumentDefined(args,"control_genes_q_val_thresh"))
-{
-  args<-parseType(args,
-                  c("control_genes_q_val_thresh")
-                  ,as.double)
-}else {
-  logwarn("control_genes_q_val_thresh is undefined, default value set to NaN.")
-  args$control_genes_q_val_thresh<-NaN
-}
-
+args <- setArgsDefault(args, "q_val_thresh", as_func=as.double, default_val=NaN )
+args <- setArgsDefault(args, "control_genes_q_val_thresh", as_func=as.double, default_val=NaN )
 
 args<-parseType(args,
   c("ruv_k"
@@ -264,7 +233,6 @@ args<-parseType(args,
     ,"max_num_samples_miss_per_group"
     ,"abundance_threshold"
   )  ,as.integer)
-
 
 args<-parseString(args,
   c("group_pattern"
@@ -656,14 +624,32 @@ rle_pca_plots_arranged <- rlePcaPlotList(list_of_data_matrix = list(counts_rnorm
                                          sample_id_column = !!rlang::sym(args$sample_id),
                                          group_column = !!rlang::sym(args$group_id),
                                          list_of_descriptions = list("Before RUVIII", "After RUVIII"))
+
+
 for( format_ext in args$plots_format) {
   file_name<-file.path(args$output_dir,paste0("rle_pca_plots.",format_ext))
   captured_output<-capture.output(
-    ggsave(plot = rle_pca_plots_arranged, filename =  file_name, limitsize = FALSE)
+    ggsave(plot = rle_pca_plots_arranged, filename =  file_name, limitsize = FALSE, width = 14, height = 14)
     , type = "message"
   )
   logdebug(captured_output)
 }
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+### Compare more principal components
+# pca.res <- pca(t(as.matrix(counts_rnorm.log.ruvIII_v1)), ncomp=5)
+#
+# output <- pca.res$variates$X %>%
+#   as.data.frame %>%
+#   rownames_to_column("Sample_ID") %>%
+#   left_join(design_mat_cln, by ="Sample_ID")
+#
+# output
+# p_load(GGally)
+# ggpairs(output,          # Data frame
+#         columns = 2:6,        # Columns
+#         aes(color = group )  # Color by group (cat. variable)
+#            )
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Compare the different experimental groups and obtain lists of differentially expressed proteins.")

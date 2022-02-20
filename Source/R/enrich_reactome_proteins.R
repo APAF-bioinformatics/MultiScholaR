@@ -29,15 +29,9 @@ p_load(writexl)
 p_load(magrittr)
 p_load(knitr)
 p_load(rlang)
-
-
 p_load(limma)
 p_load(qvalue)
-
-p_load(UniProt.ws)
-p_load(msigdb)
-p_load(ExperimentHub)
-p_load(GSEABase)
+p_load(ReactomeGSA)
 p_load(ProteomeRiver)
 p_load(configr)
 p_load(logging)
@@ -45,7 +39,6 @@ p_load(optparse)
 p_load(tictoc)
 
 ## Parameters
-
 
 ## Directories management
 base_dir <- here::here()
@@ -60,14 +53,12 @@ base_dir <- here::here()
 # sample_id <- "Sample_ID"
 # group_id <- "group"
 # row_id <- "uniprot_acc"
-# taxonomy_id <- 10090
-
 
 command_line_options <- commandArgs(trailingOnly = TRUE)
 
   parser <- OptionParser(add_help_option =TRUE)
 
-  parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config.ini",
+  parser <- add_option(parser, c("-c", "--config"), type = "character", default = "/home/ignatius/PostDoc/2022/PYROXD1_BMP_13/Source/Cells_CreThaps/config_prot.ini", # default = "config.ini",
                        help = "Configuration file.  [default %default]",
                        metavar = "string")
 
@@ -82,9 +73,25 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
                        help = "Directory path for temporary files.",
                        metavar = "string")
 
-  parser <- add_option(parser, c( "--tax-id"), type="integer",  dest = "taxonomy_id",
-                       help="The NCBI taxonomy ID of the organism being investigated (e.g. M. musculus=10090, H. sapien=9606).",
-                       metavar="integer")
+  parser <- add_option(parser, c( "--enrichment_method"), type="character",  dest = "enrichment_method",
+                       help="Enrichment methods used: 'PADOG', 'Camera', or 'ssGSEA'",
+                       metavar="string")
+
+  parser <- add_option(parser, c( "--max_missing_values"), type="double",  dest = "max_missing_values",
+                       help="Enrichment methods used: 'PADOG', 'Camera', or 'ssGSEA'",
+                       metavar="string")
+
+  parser <- add_option(parser, c( "--use_interactors"), type="logical",  dest = "use_interactors",
+                       help="Indicates whether interactors from IntAct should be used to extent REACTOME's pathways in the analysis.",
+                       metavar="string")
+
+  parser <- add_option(parser, c( "--include_disease_pathways"), type="logical",  dest = "include_disease_pathways",
+                       help="include_disease_pathways.",
+                       metavar="string")
+
+  parser <- add_option(parser, c( "--email"), type="character",  dest = "email",
+                       help="If set to a valid e-mail address, links to the analysis result (and report) will be sent once the analysis is complete.",
+                       metavar="string")
 
   parser <- add_option(parser, c( "--group-pattern"), type="character", dest = "group_pattern",
                        help="Regular expression pattern to identify columns with abundance values belonging to the experiment. [default %default]",
@@ -132,10 +139,10 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
 
   #parse and merge the configuration file options.
   if (args$config != "") {
-    args <- config.list.merge(eval.config(file = args$config, config="enrich_camera_proteins"), args)
+    args <- config.list.merge(eval.config(file = args$config, config="enrich_reactome_proteins"), args)
   }
 
-  args <- setArgsDefault(args, "output_dir", as_func=as.character, default_val="enrich_camera_proteins" )
+  args <- setArgsDefault(args, "output_dir", as_func=as.character, default_val="enrich_reactome_proteins" )
 
   createOutputDir(args$output_dir, args$no_backup)
   createDirectoryIfNotExists(args$tmp_dir)
@@ -166,8 +173,7 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
     "output_dir",
     "sample_id",
     "group_id",
-    "row_id",
-    "taxonomy_id"
+    "row_id"
   ))
 
   testRequiredFiles(c(
@@ -179,6 +185,11 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
     args$tmp_dir
   ))
 
+  args <- setArgsDefault(args, "enrichment_method", as_func=as.character, default_val="Camera" )
+  args <- setArgsDefault(args, "max_missing_values", as_func=as.double, default_val=0.5 )
+  args <- setArgsDefault(args, "use_interactors", as_func=as.logical, default_val=FALSE )
+  args <- setArgsDefault(args, "include_disease_pathways", as_func=as.logical, default_val=TRUE )
+  args <- setArgsDefault(args, "email", as_func=as.character, default_val="" )
 
   args<-parseString(args,
                     c(  "formula_string",
@@ -187,12 +198,19 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
                         "sample_id",
                         "group_id",
                         "row_id",
-                        "tmp_dir"
+                        "tmp_dir",
+                        "email",
+                        "enrichment_method"
                     ))
 
   args<-parseType(args,
-                  c("taxonomy_id"),
-                  as.integer)
+                  c("max_missing_values"),
+                  as.double())
+
+  args<-parseType(args,
+                  c("use_interactors",
+                    "include_disease_pathways"),
+                  as.logical())
 
   group_pattern <- args$group_pattern
   design_matrix_file <- args$design_matrix_file
@@ -203,15 +221,13 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
   sample_id <- args$sample_id
   group_id <-  args$group_id
   row_id <- args$row_id
-  taxonomy_id <- args$taxonomy_id
   formula_string <- args$formula_string
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Create directories
 createDirectoryIfNotExists( output_dir)
 
-
-  ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   loginfo("Read design matrix file.")
 
   captured_output <- capture.output(
@@ -267,7 +283,6 @@ ruvIII_replicates_matrix <- getRuvIIIReplicateMatrix( design_mat_cln,
 
 ruvIII_replicates_matrix
 
-
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Set up list of contrasts
 
@@ -279,24 +294,6 @@ design_m <- model.matrix( ff, mod_frame)
 
 contr.matrix <- makeContrasts( contrasts = contrasts_tbl %>% pull(contrasts),
                                  levels = colnames(design_m))
-
-
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-loginfo("Obtain the Mol. Sig DB data.")
-
-eh <- ExperimentHub()
-# query(eh , 'msigdb')
-
-org_abbrev <- case_when(taxonomy_id == 10090  ~ "mm",
-          taxonomy_id == 9606 ~ "hs",
-          TRUE ~ NA_character_)
-
-if( is.na( org_abbrev ) ) {
-  stop("Organism not yet supported by this code. Only human and mouse are supported.")
-}
-
-msigdb.EZID <- getMsigdb(org_abbrev, 'EZID')
-msigdb.EZID <- appendKEGG(msigdb.EZID)
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## List of all proteins
@@ -310,155 +307,6 @@ proteins_cln <- vroom::vroom(de_proteins_file) %>%
 ,type = "message"
 )
 logdebug(captured_output)
-
-
-
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-## Convert Uniprot accession to Entrez gene ID
-
-loginfo("Convert Uniprot accession to Entrez gene ID.")
-
-if( file.exists(file.path( args$tmp_dir, "uniprot_acc_to_entrez_id.RDS") )) {
-
-    uniprot_acc_to_entrez_id <- readRDS( file.path( args$tmp_dir, "uniprot_acc_to_entrez_id.RDS")) %>%
-      mutate( ENTREZ_GENE= purrr::map_chr( ENTREZ_GENE,   ~str_replace_all(., "(^\\s+|\\s+$)", "")))
-
-} else {
-    up <- UniProt.ws(taxId=taxonomy_id )
-
-    #keytypes(up)
-
-    uniprot_acc_to_entrez_id <- batchQueryEvidence( proteins_cln %>% distinct(uniprot_acc), uniprot_acc, up,
-                                                      uniprot_columns = c("ENTREZ_GENE"))  %>%
-      mutate( ENTREZ_GENE= purrr::map_chr( ENTREZ_GENE,   ~str_replace_all(., "(^\\s+|\\s+$)", "")))
-
-    saveRDS( uniprot_acc_to_entrez_id, file.path( args$tmp_dir, "uniprot_acc_to_entrez_id.RDS") )
-}
-
-
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-loginfo("Convert Uniprot accession to Entrez ID.")
-
-de_prot_for_camera_output <- mergeWithEntrezId( proteins_cln,
-                                                   uniprot_acc_to_entrez_id  )
-
-de_prot_for_camera_tab <-  de_prot_for_camera_output$de_proteins %>%
-  group_by( comparison) %>%
-  nest() %>%
-  ungroup()
-
-de_prot_for_camera_output$de_proteins %>%
-  group_by(comparison, ENTREZ_GENE) %>%
-  summarise(counts=n()) %>%
-  ungroup() %>%
-  dplyr::filter( counts > 1)
-
-de_prot_for_camera_mapped <- de_prot_for_camera_tab %>%
-     mutate(  data_edited = purrr::map( data, ~{ as.matrix(column_to_rownames(.,  "ENTREZ_GENE" ))   }) )
-
-de_prot_for_camera_list <- de_prot_for_camera_tab$data
-names( de_prot_for_camera_list) <- de_prot_for_camera_tab$comparison
-
-
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-loginfo("Prepare Normalized Abundance Matrix.")
-
-norm_abundance_helper <- norm_abundance_mat %>%
-  rownames_to_column("uniprot_acc") %>%
-  as.data.frame %>%
-  mutate ( temp =1) %>%
-  inner_join( data.frame( comparison=unique(names(de_prot_for_camera_list)), temp=1 ), by="temp"        )  %>%
-  dplyr::select( -temp) %>%
-  anti_join(de_prot_for_camera_output$without_entrez_id, by=c("uniprot_acc" = "uniprot_acc",
-                                                              "comparison" = "comparison") ) %>%
-  anti_join(de_prot_for_camera_output$excluded_duplicates, by=c("uniprot_acc" = "uniprot_acc",
-                                                                "comparison" = "comparison") )  %>%
-  left_join( uniprot_acc_to_entrez_id %>%
-               dplyr::filter(!is.na(ENTREZ_GENE)),
-             by=c("uniprot_acc" = "UNIPROTKB") ) %>%
-  dplyr::filter( !is.na(ENTREZ_GENE))  %>%
-  dplyr::relocate(ENTREZ_GENE, "uniprot_acc" ) %>%
-  dplyr::select(-uniprot_acc) %>%
-  mutate( ENTREZ_GENE  =trimws( ENTREZ_GENE))
-
-
-norm_abundance_mat_list <- norm_abundance_helper %>%
-   group_by(comparison) %>%
-   nest() %>%
-  ungroup %>%
-  mutate( data =  purrr::map(data,  function(x) {  as.matrix(column_to_rownames(x, "ENTREZ_GENE")) }))
-
-## norm_abundance_mat_list$data[[1]]
-
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-loginfo("Prepare gene ID to gene set dictionary.")
-
-list_of_collections <- purrr::map(msigdb.EZID, ~bcCategory(collectionType(.)) )
-
-list_of_sub_collections <- purrr::map(msigdb.EZID, ~bcSubCategory(collectionType(.)) )
-
-
-collections_tab <- data.frame( collection =unlist(list_of_collections),
-                               sub_collection = unlist( list_of_sub_collections ) ) %>%
-  distinct() %>%
-  dplyr::filter( collection !="archived")
-
-gene_set_idx_list_file <- file.path(output_dir,  "gene_set_idx_list_file.RDS")
-
-if(file.exists(gene_set_idx_list_file)) {
-
-  loginfo("Read file with gene set dictionary %s", gene_set_idx_list_file)
-  captured_output<-capture.output(
-    gene_set_idx_list <- readRDS(gene_set_idx_list_file),
-    type = "message")
-  logdebug(captured_output)
-
-} else {
-
-
-  gene_set_idx_list <- purrr::pmap(collections_tab, function( collection, sub_collection) {
-
-    if( is.na(sub_collection )) {
-      subsetCollection(msigdb.EZID,
-                       collection=collection )
-
-    } else {
-      subsetCollection(msigdb.EZID,
-                       collection=collection,
-                       subcollection=sub_collection)
-    }
-  } )
-
-  names( gene_set_idx_list) <- collections_tab %>%
-    mutate( all_collection = paste( collection, sub_collection, sep=", ")) %>%
-    pull(all_collection)
-
-  loginfo("Save file with gene set dictionary %s", gene_set_idx_list_file)
-  captured_output<-capture.output(
-    saveRDS(gene_set_idx_list, gene_set_idx_list_file),
-    type = "message")
-  logdebug(captured_output)
-
-}
-
-
-
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-## Example usage
-
-# abundance_mat_trimmed <- norm_abundance_mat_list[1,"data"][[1]][[1]]
-#
-# msigdb_ids <- geneIds(gene_set_idx_list[["h, NA"]])
-#
-# #convert gene sets into a list of gene indices
-# camera_indices <- ids2indices(msigdb_ids,
-#                               rownames(abundance_mat_trimmed))
-#
-#
-# camera( y=abundance_mat_trimmed,
-#         index=camera_indices,
-#         design =ruvIII_replicates_matrix,
-#         contrast=c(1, -1, 0, 0 ))
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## List of contrasts
@@ -481,84 +329,163 @@ names(lists_of_contrasts) <-  colnames(contr.matrix) %>% str_split( "=") %>% pur
 #                             RPE_B.vs.RPE_Y=c(1, 0, 0, -1 )   )
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-loginfo("Run the camera test.")
+loginfo("Getting available enrichment methods.")
 
-createDirectoryIfNotExists(output_dir)
+available_methods <- get_reactome_methods(print_methods = FALSE, return_result = TRUE)
 
-camera_results_file <- file.path(output_dir,  "camera_results.RDS")
+# only show the names of the available methods
+available_methods$name
+#> [1] "PADOG"  "Camera" "ssGSEA"
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+loginfo("To get more information about a specific method, set `print_details` to `TRUE` and specify the `method`.")
 
-if( file.exists(camera_results_file) ) {
-  loginfo("Read file with camera test results %s", camera_results_file)
-  captured_output<-capture.output(
-    camera_results <- readRDS( camera_results_file ),
-    type = "message"
-  )
-  logdebug(captured_output)
-} else {
+method_params <- available_methods$parameters[available_methods$name == "Camera"][[1]]
 
-    index_tab <- tibble( index_name = names(gene_set_idx_list) ) %>%
-        mutate( temp = 1 )
+paste0(method_params$name, " (", method_params$type, ", ", method_params$default, ")")
 
-    contrast_tab <-    tibble( contrast_name = names(lists_of_contrasts) ) %>%
-        mutate( temp = 1 )
 
-    combination_tab <- contrast_tab %>%
-        full_join( index_tab, by="temp") %>%
-        dplyr::select(-temp)
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    # Pre-fill the data, other data to be filled with the pmap function
-    my_partial_camera <- partial( cmriCamera,
-                                  abundance_mat = norm_abundance_mat_list ,
-                                  replicates_mat = ruvIII_replicates_matrix,
-                                  lists_of_contrasts = lists_of_contrasts,
-                                  list_of_gene_sets = gene_set_idx_list,
-                                  min_set_size=4 )
+loginfo("Create a new request object using 'Camera' for the gene set analysis")
+start_request <-ReactomeAnalysisRequest(method = args$enrichment_method)
 
-    camera_results <- purrr::pmap (combination_tab ,
-                                   my_partial_camera)
+start_request
 
-    names(norm_abundance_mat_list)
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+loginfo("Setting parameters")
+#To get a list of supported parameters for each method, use the ``get_reactome_methods`` function (see above).
 
-    loginfo("Save file with camera test results %s", camera_results_file)
-    captured_output<-capture.output(
-      saveRDS( camera_results, camera_results_file),
-      type = "message" )
+#Parameters are simply set using the ``set_parameters`` function:
+
+# set the maximum number of allowed missing values to 50%
+request_param_defined <- set_parameters( request = start_request,
+                              max_missing_values = args$max_missing_values, # 0.5 is the recommended default
+                              create_reactome_visualization = TRUE,
+                              create_reports = TRUE,
+                              use_interactors = args$use_interactors,
+                              include_disease_pathways = args$include_disease_pathways,
+                              email=args$email)
+
+request_param_defined
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Create object for storing proteomics data
+input_proteomics <- new("EList")
+
+input_proteomics$E <- norm_abundance_mat
+
+proteomics_samples <- design_mat_cln %>% dplyr::select(-one_of(c(sample_id)) )
+
+input_proteomics$samples <- proteomics_samples
+
+input_proteomics$genes <- rownames( norm_abundance_mat )
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+cmriReactomeAddDataset <- function(contrast, contrast_name, input_request, elist_object, formula_string ) {
+
+  groupA <- str_replace( names( contrast[contrast == 1] )[1], paste0("^", quo_name(enquo(group_id))), "" )
+  groupB <- str_replace( names( contrast[contrast == -1] )[1], paste0("^", quo_name(enquo(group_id))), "" )
+
+  additional_factors_for_adjustment <- formula_string %>%
+    str_split( " ") %>%
+    .[[1]] %>%
+    discard( ~str_detect(., "\\~|\\+|\\-|^$|^\\d{1}$")  ) %>%
+    discard( ~str_detect(., quo_name(enquo(group_id))))
+
+  if(length(additional_factors_for_adjustment) == 0) {
+    additional_factors_for_adjustment <- NULL
+  }
+
+  my_request <- add_dataset(request = input_request,
+                            expression_values = elist_object,
+                            name = contrast_name,
+                            type = "microarray_norm",
+                            comparison_factor = quo_name(enquo(group_id)) ,
+                            comparison_group_1 = groupB,
+                            comparison_group_2 = groupA,
+                            additional_factors = additional_factors_for_adjustment )
+
+  return(my_request)
+
 }
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-loginfo("Covert the camera results that are stored in list structures into a table.")
 
-camera_results_filt <- camera_results [purrr::map_lgl( camera_results, ~{!is.na(.[["camera"]][[1]][1])})]
+loginfo("The dataset can now simply be added to the request using the `add_dataset` function:")
 
-camera_results_cln <-  purrr::map( camera_results_filt,
-  ~ { rownames_to_column(.[["camera"]], "pathway")   }  )
+partial_cmriReactomeAddDataset <- partial( cmriReactomeAddDataset,
+                                           elist_object = input_proteomics,
+                                           formula_string )
 
-camera_results_tbl <- tibble( temp = camera_results_cln)  %>%
-    bind_cols(  data.frame( comparison =  purrr::map_chr( camera_results_filt,
-   ~ {  .[["contrast_name"]]  } ) )  ) %>%
-    bind_cols(  data.frame( gene_set =  purrr::map_chr( camera_results_filt,
-   ~ {  .[["index_name"]]  } ) )  ) %>%
-    unnest(temp)
+recursiveAddDataset <- function( input_contrast, input_contrast_name, input_request_status ) {
 
-camera_results_filt <- camera_results_tbl %>%
-    dplyr::filter( FDR <0.05)
+  if( length(input_contrast) !=  length( input_contrast_name) ) {
+    logwarn("Function recursiveAddDataset, input_contrast should have same length as input_contrast_name")
+    stop()
+  }
 
+  updated_request_status <- partial_cmriReactomeAddDataset(contrast=input_contrast[[1]],  contrast_name=input_contrast_name[1],  input_request=input_request_status )
 
-camera_results_tbl %>%
-    arrange(FDR)
+  if( length( input_contrast) == 1) {
+    return( updated_request_status)
+  } else  {
 
-loginfo("Savecamera results table in tab-separated table %s", camera_results_file)
-captured_output<-capture.output(
-  vroom::vroom_write( camera_results_filt,
-                      file.path( output_dir,  "filtered_camera_results.tab")),
-  type = "message" )
+    return( recursiveAddDataset(input_contrast = input_contrast[-1],
+                                input_contrast_name =input_contrast_name[-1],
+                                input_request_status = updated_request_status) )
 
-loginfo("Save camera results table in Excel format %s", camera_results_file)
-captured_output<-capture.output(
-writexl::write_xlsx( camera_results_filt,
-                     file.path(output_dir,  "filtered_camera_results.xlsx"))
-,
-type = "message" )
+  }
+}
+
+requests_list <- recursiveAddDataset( input_contrast=lists_of_contrasts,
+                                     input_contrast_name=names( lists_of_contrasts),
+                                     input_request_status=request_param_defined)
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+loginfo("Submitting the request to Reactome server")
+
+result <- perform_reactome_analysis( request = requests_list,
+                                     verbose=TRUE,
+                                     compress = TRUE)
+
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+loginfo("Investigating the result")
+names(result)
+result_types(result)
+
+purrr::walk( names(result), function(contrast_name) {
+
+  proteomics_fc <- get_result(result, type = "fold_changes", name = contrast_name)
+
+  vroom::vroom_write( proteomics_fc, file.path(output_dir, paste0( "reactome_fold_hanges.", contrast_name ,".tab")) )
+
+  writexl::write_xlsx( proteomics_fc, file.path( output_dir, paste0( "reactome_fold_changes.", contrast_name , ".xlsx")) )
+
+} )
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+loginfo("Directly merge the pathway level data for all result sets using the pathways function.")
+
+combined_pathways <- pathways(result)
+vroom::vroom_write( combined_pathways, file.path(output_dir, paste0( "combined_pathways",".tab")) )
+
+writexl::write_xlsx( combined_pathways, file.path( output_dir, paste0( "combined_pathways",".xlsx")) )
+
+sink( file.path( output_dir, "reactome_links.txt") )
+ reactome_links(result)
+sink()
+
+pdf( file.path( output_dir, "plot_correlations.pdf"))
+plot_correlations(result)
+dev.off()
+
+saveRDS(result, file = file.path( output_dir, "my_ReactomeGSA_result.rds") )
+
+
 

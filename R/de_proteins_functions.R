@@ -224,7 +224,8 @@ plotPca <- function(data,
     rownames_to_column(quo_name(enquo(sample_id_column))) %>%
     left_join(design_matrix, by = quo_name(enquo(sample_id_column))) %>%
     ggplot(aes(PC1, PC2, col = {{group_column}}, label = {{sample_id_column}})) +
-    geom_text() +
+    geom_point() +
+    geom_text_repel() +
     labs(title = title) +
     theme(legend.title = element_blank())
 
@@ -301,7 +302,7 @@ rlePcaPlotList <- function(list_of_data_matrix, design_matrix,
   list_of_plots <- c(rle_list, pca_list)
 
   rle_pca_plots_arranged <- ggarrange(plotlist = list_of_plots, nrow = 2, ncol = length(list_of_descriptions),
-                                      common.legend = FALSE, legend = "bottom", widths = 14, heights = 14)
+                                      common.legend = FALSE, legend = "bottom", widths = 10, heights = 10)
 
   rle_pca_plots_arranged
 }
@@ -510,7 +511,8 @@ plotVolcano <- function(selected_data,
     xlab("Log fold changes") +
     ylab("-log10 q-value") +
     theme(legend.position = "none") +
-    facet_grid(analysis_type ~ comparison)
+    facet_grid( as.formula(formula_string),
+               labeller = labeller(facet_category = label_wrap_gen(width = 10)))
 
   volplot_gg.all
 }
@@ -1263,9 +1265,12 @@ cmriCamera <- function(contrast_name, index_name, abundance_mat, replicates_mat,
   print(paste("contrast_name =", contrast_name))
   print(paste("index_name =", index_name))
 
+  this_contrast <- lists_of_contrasts[[contrast_name]]
 
-  groupA <- str_replace(contrast_name, "(.*)\\.vs\\.(.*)", "\\1")
-  groupB <- str_replace(contrast_name, "(.*)\\.vs\\.(.*)", "\\2")
+  groupA <- str_replace( names( this_contrast[this_contrast == 1] )[1], paste0("^", quo_name(enquo(group_id))), "" )
+  groupB <- str_replace( names( this_contrast[this_contrast == -1] )[1], paste0("^", quo_name(enquo(group_id))), "" )
+
+  # print(paste(groupA, groupB))
 
   design_choose_column <- replicates_mat[, c(groupA, groupB)]
 
@@ -1281,7 +1286,7 @@ cmriCamera <- function(contrast_name, index_name, abundance_mat, replicates_mat,
     .[[1]] %>%
     .[,rownames(design_trimmed)]
 
-  contrast_mat_trimmed <- lists_of_contrasts[[contrast_name]][colnames(replicates_mat) %in% colnames(design_trimmed)]
+  contrast_mat_trimmed <-this_contrast[colnames(replicates_mat) %in% colnames(design_trimmed)]
 
   index <- list_of_gene_sets[[index_name]]
 
@@ -1435,7 +1440,8 @@ mergeWithEntrezId <- function(input_table, lookup_table) {
                  dplyr::select( comparison, ENTREZ_GENE, uniprot_acc, protein_id),
                by = c("comparison" = "comparison",
                       "uniprot_acc" = "uniprot_acc",
-                      "ENTREZ_GENE" = "ENTREZ_GENE")  )
+                      "ENTREZ_GENE" = "ENTREZ_GENE",
+                      "protein_id" = "protein_id")  )
 
   ## List of rows that were discarded as they are duplicates
   excluded_duplicates <- to_be_selected %>%
