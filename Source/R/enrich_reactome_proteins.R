@@ -200,17 +200,16 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
                         "row_id",
                         "tmp_dir",
                         "email",
-                        "enrichment_method"
-                    ))
+                        "enrichment_method" ))
 
   args<-parseType(args,
                   c("max_missing_values"),
-                  as.double())
+                  as.double)
 
   args<-parseType(args,
                   c("use_interactors",
                     "include_disease_pathways"),
-                  as.logical())
+                  as.logical)
 
   group_pattern <- args$group_pattern
   design_matrix_file <- args$design_matrix_file
@@ -460,11 +459,15 @@ result_types(result)
 purrr::walk( names(result), function(contrast_name) {
 
   proteomics_fc <- get_result(result, type = "fold_changes", name = contrast_name)
+  captured_output <- capture.output(
+    vroom::vroom_write( proteomics_fc, file.path(output_dir, paste0( "reactome_fold_hanges.", contrast_name ,".tab")) )
+    ,type = "message" )
+  logdebug(captured_output)
 
-  vroom::vroom_write( proteomics_fc, file.path(output_dir, paste0( "reactome_fold_hanges.", contrast_name ,".tab")) )
-
-  writexl::write_xlsx( proteomics_fc, file.path( output_dir, paste0( "reactome_fold_changes.", contrast_name , ".xlsx")) )
-
+  captured_output <- capture.output(
+    writexl::write_xlsx( proteomics_fc, file.path( output_dir, paste0( "reactome_fold_changes.", contrast_name , ".xlsx")) )
+    ,type = "message" )
+  logdebug(captured_output)
 } )
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -473,19 +476,47 @@ purrr::walk( names(result), function(contrast_name) {
 loginfo("Directly merge the pathway level data for all result sets using the pathways function.")
 
 combined_pathways <- pathways(result)
-vroom::vroom_write( combined_pathways, file.path(output_dir, paste0( "combined_pathways",".tab")) )
+captured_output<-capture.output(
+  vroom::vroom_write( combined_pathways, file.path(output_dir, paste0( "combined_pathways",".tab")) )
+  ,type = "message"
+)
+logdebug(captured_output)
 
-writexl::write_xlsx( combined_pathways, file.path( output_dir, paste0( "combined_pathways",".xlsx")) )
+captured_output<-capture.output(
+  writexl::write_xlsx( combined_pathways, file.path( output_dir, paste0( "combined_pathways",".xlsx")) )
+  ,type = "message"
+)
+logdebug(captured_output)
 
-sink( file.path( output_dir, "reactome_links.txt") )
- reactome_links(result)
-sink()
 
-pdf( file.path( output_dir, "plot_correlations.pdf"))
-plot_correlations(result)
-dev.off()
+captured_output<-capture.output(
+  { sink( file.path( output_dir, "reactome_links.txt") )
+    reactome_links(result)
+    sink() }
+  ,type = "message"
+)
+logdebug(captured_output)
 
-saveRDS(result, file = file.path( output_dir, "my_ReactomeGSA_result.rds") )
+
+if(length( names(result)) > 1) {
+
+  captured_output <- capture.output(
+    {pdf( file.path( output_dir, "plot_correlations.pdf") )
+    plot_correlations(result )
+    dev.off()}
+    , type = "message"
+  )
+  logdebug(captured_output)
+}
+
+  captured_output <- capture.output(
+    saveRDS(result, file = file.path( output_dir, "my_ReactomeGSA_result.rds") )
+    ,type = "message"
+  )
+  logdebug(captured_output)
+
+
+
 
 
 

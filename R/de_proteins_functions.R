@@ -215,7 +215,8 @@ plotPca <- function(data,
                     design_matrix,
                     sample_id_column = Sample_ID,
                     group_column = group,
-                    title, ...) {
+                    title,  geom.text.size=11,
+                   ...) {
 
   pca.res <- pca(t(as.matrix(data)))
 
@@ -225,7 +226,7 @@ plotPca <- function(data,
     left_join(design_matrix, by = quo_name(enquo(sample_id_column))) %>%
     ggplot(aes(PC1, PC2, col = {{group_column}}, label = {{sample_id_column}})) +
     geom_point() +
-    geom_text_repel() +
+    geom_text_repel(size  = geom.text.size, show.legend=FALSE) +
     labs(title = title) +
     theme(legend.title = element_blank())
 
