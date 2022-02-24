@@ -59,7 +59,7 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
 
   parser <- OptionParser(add_help_option =TRUE)
 
-  parser <- add_option(parser, c("-c", "--config"), type = "character", default = "/home/ignatius/PostDoc/2022/PYROXD1_BMP_13/Source/Cells_CreThaps/config_prot.ini", # default = "config.ini",
+  parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config_prot.ini",
                        help = "Configuration file.  [default %default]",
                        metavar = "string")
 
@@ -448,7 +448,7 @@ loginfo("Submitting the request to Reactome server")
 
 result <- perform_reactome_analysis( request = requests_list,
                                      verbose=TRUE,
-                                     compress = TRUE)
+                                     compress = FALSE)
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
