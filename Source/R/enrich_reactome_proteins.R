@@ -59,7 +59,7 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
 
   parser <- OptionParser(add_help_option =TRUE)
 
-  parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config_prot.ini",
+  parser <- add_option(parser, c("-c", "--config"), type = "character",  default = "config.ini",
                        help = "Configuration file.  [default %default]",
                        metavar = "string")
 
