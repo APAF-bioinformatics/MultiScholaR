@@ -99,6 +99,10 @@ parser <- add_option(parser, "--group_id", type = "character",
                      help = "A string describing the replicate group ID. This must be a column that exists in the design matrix.",
                      metavar = "string")
 
+parser <- add_option(parser, "--row_id", type = "character",
+                     help = "A string describing the row id.",
+                     metavar = "string")
+
 parser <- add_option(parser, "--q_val_thresh", type = "double",
                      help = "q-value threshold below which a protein has statistically significant differetial expression",
                      metavar = "double")
@@ -158,6 +162,7 @@ testRequiredArguments(args, c(
   "q_val_thresh"
   , "sample_id"
   , "group_id"
+  , "row_id"
   , "input_dir"
   , "output_dir"
   , "q_val_thresh"
@@ -177,6 +182,7 @@ args<-parseType(args,
 args<-parseString(args,
                   c("sample_id"
                     ,"group_id"
+                    ,"row_id"
                     ,"file_prefix"
                     ,"plots_format"
                     , "input_dir"
@@ -219,10 +225,10 @@ rownames(design_mat_cln) <- design_mat_cln %>% pull(as.name(args$sample_id))
 ##-------------------------------------
 
 counts_rnorm.log.quant_mat <- counts_rnorm.log.quant %>%
-  column_to_rownames("uniprot_acc")
+  column_to_rownames(args$row_id)
 
 counts_rnorm.log.ruvIII_mat <- counts_rnorm.log.ruvIII %>%
-  column_to_rownames("uniprot_acc")
+  column_to_rownames(args$row_id)
 
 before_ruvIII_pca <- plotPca( counts_rnorm.log.quant_mat,
          design_matrix = design_mat_cln,
@@ -336,7 +342,7 @@ gg_save_logging ( after_RUVIII_rle, file_name_part, args$plots_format)
 #   mutate(row_id = row_number()) %>%
 #   ungroup()  %>%
 #   dplyr::filter( row_id <= args$top_x_gene_name & q.mod < args$q_val_thresh) %>%
-#   dplyr::select( comparison, uniprot_acc, gene_name)
+#   dplyr::select( comparison, !!rlang::sym(args$row_id), gene_name)
 
 selected_data <- vroom::vroom( file.path(args$input_dir, "lfc_qval_long.tsv") )  %>%
     mutate( lqm = -log10(q.mod))  %>%
