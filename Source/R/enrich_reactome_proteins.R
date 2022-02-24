@@ -39,6 +39,7 @@ p_load(optparse)
 p_load(tictoc)
 
 ## Parameters
+tic()
 
 ## Directories management
 base_dir <- here::here()
@@ -515,6 +516,11 @@ if(length( names(result)) > 1) {
   )
   logdebug(captured_output)
 
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+te<-toc(quiet = TRUE)
+loginfo("%f sec elapsed",te$toc-te$tic)
+writeLines(capture.output(sessionInfo()), file.path(args$output_dir,"sessionInfo.txt"))
 
 
 

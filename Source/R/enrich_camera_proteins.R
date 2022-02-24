@@ -45,6 +45,7 @@ p_load(optparse)
 p_load(tictoc)
 
 ## Parameters
+tic()
 
 
 ## Directories management
@@ -561,4 +562,8 @@ writexl::write_xlsx( camera_results_filt,
 type = "message" )
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+te<-toc(quiet = TRUE)
+loginfo("%f sec elapsed",te$toc-te$tic)
+writeLines(capture.output(sessionInfo()), file.path(args$output_dir,"sessionInfo.txt"))
+
 

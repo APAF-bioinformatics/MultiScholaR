@@ -42,13 +42,35 @@ p_load(svglite)
 
 ```
 
-## Output Dir
+## Input Parameters
 ```{r}
 
-output_dir <- "/home/ignatius/PostDoc/2022/PYROXD1_BMP_13/Results/N155S/de_proteins/"
+input_dir <- "/home/ignatius/PostDoc/2022/PYROXD1_BMP_13/Results/N155S/de_proteins/"
+output_dir <- "/home/ignatius/PostDoc/2022/PYROXD1_BMP_13/Results/N155S/publication_graphs"
 
 args_design_matrix_file <- "/home/ignatius/PostDoc/2022/PYROXD1_BMP_13/Source/N155S/design_matrix.tab"
 args_sample_id <- "Sample_ID"
+
+parser <- add_option(parser, "--sample_id", type = "character",
+                     help = "A string describing the sample ID. This must be a column that exists in the design matrix.",
+                     metavar = "string")
+
+parser <- add_option(parser, "--replicate_group_id", type = "character",
+                     help = "A string describing the replicate group ID. This must be a column that exists in the design matrix.",
+                     metavar = "string")
+
+
+q_val_thresh <- 0.05
+top_x_gene_name <- 5
+
+de_proteins_long_file <- "/home/ignatius/PostDoc/2022/PYROXD1_BMP_13/Results/N155S/annot_proteins/de_proteins_long_annot.tsv"
+
+
+
+counts_rnorm.log.quant <- vroom::vroom( file.path(input_dir, "counts_after_median_scaling_and_imputation.tsv") )
+counts_rnorm.log.ruvIII <- vroom::vroom( file.path(input_dir, "normalized_counts_after_ruv.tsv")  )
+
+createDirIfNotExists(output_dir)
 ```
 
 ## Read Design Matrix
@@ -64,9 +86,6 @@ rownames(design_mat_cln) <- design_mat_cln %>% pull(as.name(args_sample_id))
 
 ## PCA plots
 ```{r}
-
-counts_rnorm.log.quant <- vroom::vroom( file.path(output_dir, "counts_after_median_scaling_and_imputation.tsv") )
-counts_rnorm.log.ruvIII <- vroom::vroom( file.path(output_dir, "normalized_counts_after_ruv.tsv")  )
 
 counts_rnorm.log.quant_mat <- counts_rnorm.log.quant %>%
   column_to_rownames("uniprot_acc") 
@@ -149,11 +168,7 @@ after_RUVIII_rle
 ## Volcano plots
 ```{r}
 
-q_val_thresh <- 0.05
-top_x_gene_name <- 5
-
-
-gene_names_data <- vroom::vroom("/home/ignatius/PostDoc/2022/PYROXD1_BMP_13/Results/N155S/annot_proteins/de_proteins_long_annot.tsv") %>%
+gene_names_data <- vroom::vroom(de_proteins_long_file) %>%
   mutate(gene_name = str_split(gene_names, ":") %>% purrr::map_chr(1)) %>%
   relocate( gene_name, .before="gene_names")
 
@@ -165,7 +180,7 @@ show_gene_name <- gene_names_data %>%
   dplyr::filter( row_id <= top_x_gene_name & q.mod < q_val_thresh) %>%
   dplyr::select( comparison, uniprot_acc, gene_name)
 
-selected_data <- vroom::vroom( file.path(output_dir, "lfc_qval_long.tsv") )  %>%
+selected_data <- vroom::vroom( file.path(input_dir, "lfc_qval_long.tsv") )  %>%
     mutate( lqm = -log10(q.mod))  %>%
     dplyr::mutate(colour = case_when(abs(lqm) >= 1 & q.mod >= q_val_thresh ~ "orange",
                                      abs(lqm) >= 1 & q.mod < q_val_thresh ~ "purple",
