@@ -131,6 +131,7 @@ if (args$config != "") {
 
 args <- setArgsDefault(args, "output_dir", as_func=as.character, default_val="publication_graphs" )
 
+createOutputDir(args$output_dir, args$no_backup)
 
 
 ## Logger configuration
