@@ -325,18 +325,18 @@ gg_save_logging ( after_RUVIII_rle, file_name_part, args$plots_format)
 
 ## Volcano plots
 ##-------------------------------------
-
-gene_names_data <- vroom::vroom(args$de_proteins_long_file) %>%
-  mutate(gene_name = str_split(gene_names, ":") %>% purrr::map_chr(1)) %>%
-  relocate( gene_name, .before="gene_names")
-
-show_gene_name <- gene_names_data %>%
-  group_by(comparison) %>%
-  arrange(comparison, q.mod) %>%
-  mutate(row_id = row_number()) %>%
-  ungroup()  %>%
-  dplyr::filter( row_id <= args$top_x_gene_name & q.mod < args$q_val_thresh) %>%
-  dplyr::select( comparison, uniprot_acc, gene_name)
+#
+# gene_names_data <- vroom::vroom(args$de_proteins_long_file) %>%
+#   mutate(gene_name = str_split(gene_names, ":") %>% purrr::map_chr(1)) %>%
+#   relocate( gene_name, .before="gene_names")
+#
+# show_gene_name <- gene_names_data %>%
+#   group_by(comparison) %>%
+#   arrange(comparison, q.mod) %>%
+#   mutate(row_id = row_number()) %>%
+#   ungroup()  %>%
+#   dplyr::filter( row_id <= args$top_x_gene_name & q.mod < args$q_val_thresh) %>%
+#   dplyr::select( comparison, uniprot_acc, gene_name)
 
 selected_data <- vroom::vroom( file.path(args$input_dir, "lfc_qval_long.tsv") )  %>%
     mutate( lqm = -log10(q.mod))  %>%
@@ -344,13 +344,11 @@ selected_data <- vroom::vroom( file.path(args$input_dir, "lfc_qval_long.tsv") ) 
                                      abs(lqm) >= 1 & q.mod < args$q_val_thresh ~ "purple",
                                      abs(lqm) < 1 & q.mod < args$q_val_thresh ~ "blue",
                                      TRUE ~ "black")) %>%
-    dplyr::mutate(colour = factor(colour, levels = c("black", "orange", "blue", "purple"))) %>%
-  left_join( show_gene_name, by = c("comparison" = "comparison",
-                                    "uniprot_acc" = "uniprot_acc")) %>%
-  dplyr::mutate( gene_name = case_when( q.mod < args$q_val_thresh ~ gene_name,
-                                             TRUE ~ NA_character_) )
-
-
+    dplyr::mutate(colour = factor(colour, levels = c("black", "orange", "blue", "purple"))) # %>%
+  # left_join( show_gene_name, by = c("comparison" = "comparison",
+  #                                   "uniprot_acc" = "uniprot_acc")) %>%
+  # dplyr::mutate( gene_name = case_when( q.mod < args$q_val_thresh ~ gene_name,
+  #                                            TRUE ~ NA_character_) )
 
 plotOneVolcano <- function( input_data, input_title) {
   volcano_plot <-  input_data %>%
@@ -385,39 +383,39 @@ plotOneVolcano <- function( input_data, input_title) {
     volcano_plot
 }
 
-
-plotOneVolcanoWithGeneName <- function( input_data, input_title) {
-  volcano_plot <-  input_data %>%
-    ggplot(aes(y = lqm, x = log2FC, label=gene_name)) +
-    geom_point(aes(col = colour)) +
-    scale_colour_manual(values = c(levels(selected_data$colour)),
-                        labels = c(paste0("Not sig., logFC > ",
-                                          1),
-                                   paste0("Sig,, logFC >= ",
-                                          1),
-                                   paste0("Sig., logFC <",
-                                          1),
-                                   "Not Sign,")) +
-    geom_vline(xintercept = 1, colour = "black", size = 0.2) +
-    geom_vline(xintercept = -1, colour = "black", size = 0.2) +
-    geom_hline(yintercept = -log10(args$q_val_thresh)) +
-    geom_text_repel( size  = 7, show.legend=FALSE) +
-    theme_bw() +
-    xlab("Log fold-change") +
-    ylab(expression(-log[10] ~ q ~ value)) +
-    labs(title = input_title)+  # Remove legend title
-    theme(legend.title = element_blank()) +
-    # theme(legend.position = "none")  +
-    theme(axis.text.x = element_text(size = 13))   +
-    theme(axis.text.y = element_text(size = 13))  +
-    theme(axis.title.x = element_text(size = 12))  +
-    theme(axis.title.y = element_text(size = 12))  +
-    theme(plot.title = element_text(size = 12)) +
-    theme(legend.text = element_text(size = 12)) # +
-    # theme(legend.title = element_text(size = 12))
-
-    volcano_plot
-}
+#
+# plotOneVolcanoWithGeneName <- function( input_data, input_title) {
+#   volcano_plot <-  input_data %>%
+#     ggplot(aes(y = lqm, x = log2FC, label=gene_name)) +
+#     geom_point(aes(col = colour)) +
+#     scale_colour_manual(values = c(levels(selected_data$colour)),
+#                         labels = c(paste0("Not sig., logFC > ",
+#                                           1),
+#                                    paste0("Sig,, logFC >= ",
+#                                           1),
+#                                    paste0("Sig., logFC <",
+#                                           1),
+#                                    "Not Sign,")) +
+#     geom_vline(xintercept = 1, colour = "black", size = 0.2) +
+#     geom_vline(xintercept = -1, colour = "black", size = 0.2) +
+#     geom_hline(yintercept = -log10(args$q_val_thresh)) +
+#     geom_text_repel( size  = 7, show.legend=FALSE) +
+#     theme_bw() +
+#     xlab("Log fold-change") +
+#     ylab(expression(-log[10] ~ q ~ value)) +
+#     labs(title = input_title)+  # Remove legend title
+#     theme(legend.title = element_blank()) +
+#     # theme(legend.position = "none")  +
+#     theme(axis.text.x = element_text(size = 13))   +
+#     theme(axis.text.y = element_text(size = 13))  +
+#     theme(axis.title.x = element_text(size = 12))  +
+#     theme(axis.title.y = element_text(size = 12))  +
+#     theme(plot.title = element_text(size = 12)) +
+#     theme(legend.text = element_text(size = 12)) # +
+#     # theme(legend.title = element_text(size = 12))
+#
+#     volcano_plot
+# }
 
 createDirectoryIfNotExists(file.path( args$output_dir, "Volcano_Plots"))
 
@@ -443,27 +441,27 @@ ggsave(
 )
 
 
-
-list_of_volcano_plots_gene_labels <- selected_data %>%
-  group_by( analysis_type, comparison) %>%
-  nest() %>%
-  ungroup() %>%
-  mutate( title = paste( analysis_type, comparison)) %>%
-  mutate( plot = purrr:::map2( data, title, ~plotOneVolcanoWithGeneName(.x, .y)) )
-
-list_of_volcano_plots_gene_labels %>%
-  pull(plot)
-
-purrr::walk2( list_of_volcano_plots_gene_labels %>% pull(title),
-              list_of_volcano_plots_gene_labels %>% pull(plot),
-              ~{file_name_part <- file.path( args$output_dir, "Volcano_Plots", paste0(.x, "."))
-              gg_save_logging ( .y, file_name_part, args$plots_format)} )
-
-ggsave(
-  filename = file.path(args$output_dir, "Volcano_Plots", "list_of_volcano_plots_gene_labels.pdf" ),
-  plot = marrangeGrob( (list_of_volcano_plots_gene_labels  %>% pull(plot)), nrow=1, ncol=1),
-  width = 7, height = 7
-)
+#
+# list_of_volcano_plots_gene_labels <- selected_data %>%
+#   group_by( analysis_type, comparison) %>%
+#   nest() %>%
+#   ungroup() %>%
+#   mutate( title = paste( analysis_type, comparison)) %>%
+#   mutate( plot = purrr:::map2( data, title, ~plotOneVolcanoWithGeneName(.x, .y)) )
+#
+# list_of_volcano_plots_gene_labels %>%
+#   pull(plot)
+#
+# purrr::walk2( list_of_volcano_plots_gene_labels %>% pull(title),
+#               list_of_volcano_plots_gene_labels %>% pull(plot),
+#               ~{file_name_part <- file.path( args$output_dir, "Volcano_Plots", paste0(.x, "."))
+#               gg_save_logging ( .y, file_name_part, args$plots_format)} )
+#
+# ggsave(
+#   filename = file.path(args$output_dir, "Volcano_Plots", "list_of_volcano_plots_gene_labels.pdf" ),
+#   plot = marrangeGrob( (list_of_volcano_plots_gene_labels  %>% pull(plot)), nrow=1, ncol=1),
+#   width = 7, height = 7
+# )
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
