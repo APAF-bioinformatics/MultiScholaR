@@ -466,7 +466,7 @@ ggsave(filename = file_name, plot = plot_num_missing_values,limitsize = FALSE)
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-loginfo("Count the number of values available for each sample: %d",table(!is.infinite(data.matrix(log2(counts_filt))))["FALSE"])
+loginfo("Count the number of values available for each sample: %d",table(!is.infinite(data.matrix(log2(counts_filt))))["TRUE"])
 
 plot_num_of_values <- plotNumOfValues(counts_filt[, cols_for_analysis])
 
