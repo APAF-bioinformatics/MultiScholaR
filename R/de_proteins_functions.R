@@ -433,6 +433,7 @@ getSignificantData <- function(list_of_de_tables,
                                row_id = uniprot_acc,
                                p_value_column = p.mod,
                                q_value_column = q.mod,
+                               fdr_value_column = fdr.mod,
                                log_q_value_column = lqm,
                                log_fc_column = logFC,
                                comparison_column = comparison,
@@ -447,6 +448,7 @@ getSignificantData <- function(list_of_de_tables,
                            dplyr::select({ { row_id } },
                                          { { p_value_column } },
                                          { { q_value_column } },
+                                         { { fdr_value_column } },
                                          { { log_fc_column } }) }) %>%
       purrr::map2(names(de_table_list), ~{ .x %>%
         mutate({ { comparison_column } } := .y) }) %>%
