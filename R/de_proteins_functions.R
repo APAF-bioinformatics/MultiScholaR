@@ -783,6 +783,7 @@ runTests <- function(ID, data, test_pairs, sample_columns, sample_rows_list = NA
 #'@param formula_string A formula string representing the experimental design. e.g. ("~ 0 + group")
 #' @param p_value_column The name of the raw p-value column (tidyverse style).
 #' @param q_value_column The name of the q-value column (tidyverse style).
+#' @param fdr_value_column The name of the fdr-value column (tidyverse style).
 #'@return A list containing two elements. $results returns a list of tables containing logFC and q-values. $fit.eb returns the Empiracle Bayes output object.
 #'@export
 runTestsContrasts <- function(data,
@@ -791,6 +792,7 @@ runTestsContrasts <- function(data,
                               formula_string,
                               p_value_column = p.mod,
                               q_value_column = q.mod,
+                              fdr_value_column = fdr.mod,
                               weights = NA,
                               treat_lfc_cutoff = NA,
                               eBayes_trend = FALSE,
@@ -832,6 +834,8 @@ runTestsContrasts <- function(data,
                               function(contrast) {
                                 de_tbl <- topTreat(t.fit, coef = contrast, n = Inf) %>%
                                   mutate({ { q_value_column } } := qvalue(P.Value)$q) %>%
+                                  mutate({ { fdr_value_column } } := p.adjust(P.Value, method="BH")) %>%
+
                                   dplyr::rename({ { p_value_column } } := P.Value)
                               }
   )

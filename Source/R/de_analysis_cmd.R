@@ -685,6 +685,7 @@ selected_data <- getSignificantData(list_of_de_tables = list(myRes_rnorm.log.qua
                                     row_id = !!sym(args$row_id),
                                     p_value_column = p.mod,
                                     q_value_column = q.mod,
+                                    fdr_value_column = fdr.mod,
                                     log_q_value_column = lqm,
                                     log_fc_column = logFC,
                                     comparison_column = comparison,
