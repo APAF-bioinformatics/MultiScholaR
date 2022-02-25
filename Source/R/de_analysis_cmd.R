@@ -451,7 +451,7 @@ logdebug(ruvIII_replicates_matrix)
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Count the total number of missing values in total
-loginfo("Count the number of missing values for each sample: %d",table(is.infinite(data.matrix(log2(counts_filt)))))
+loginfo("Count the number of missing values for each sample: %d",table(is.infinite(data.matrix(log2(counts_filt))))["TRUE"])
 
 plot_num_missing_values <- plotNumMissingValues(counts_filt[, cols_for_analysis])
 
