@@ -123,7 +123,7 @@ if (args$config != "") {
   args <- config.list.merge(eval.config(file = args$config, config = "clean_proteins"), args)
 }
 
-args <- setArgsDefault(args, "output_dir", as_func=as.character, default_val="de_analysis" )
+args <- setArgsDefault(args, "output_dir", as_func=as.character, default_val="clean_proteins" )
 
 cmriWelcome("ProteomeRiver", c("Ignatius Pang", "Pablo Galaviz"))
 loginfo("Reading configuration file %s", args$config)
