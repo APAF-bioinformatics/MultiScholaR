@@ -116,6 +116,14 @@ parser <- add_option(parser, "--fasta_meta_file", type = "character", dest = "fa
 #parse comand line arguments first.
 args <- parse_args(parser)
 
+#parse and merge the configuration file options.
+if (args$config != "") {
+  args <- config.list.merge(eval.config(file = args$config, config = "clean_proteins"), args)
+}
+
+args <- setArgsDefault(args, "output_dir", as_func=as.character, default_val="clean_proteins" )
+
+
 createOutputDir(args$output_dir, args$no_backup)
 createDirectoryIfNotExists(args$tmp_dir)
 
@@ -127,10 +135,8 @@ addHandler(writeToFile, file = file.path(args$output_dir, args$log_file), format
 level <- ifelse(args$debug, loglevels["DEBUG"], loglevels["INFO"])
 setLevel(level = ifelse(args$silent, loglevels["ERROR"], level))
 
-#parse and merge the configuration file options.
-if (args$config != "") {
-  args <- config.list.merge(eval.config(file = args$config, config = "clean_proteins"), args)
-}
+
+
 
 cmriWelcome("ProteomeRiver", c("Ignatius Pang", "Pablo Galaviz"))
 loginfo("Reading configuration file %s", args$config)
@@ -160,7 +166,6 @@ testRequiredFiles(c(
 
 args <- setArgsDefault(args, "pattern_suffix", as_func=as.character, default_val="_\\d+" )
 args <- setArgsDefault(args, "extract_patt_suffix", as_func=as.character, default_val="_(\\d+)" )
-args <- setArgsDefault(args, "output_dir", as_func=as.character, default_val="clean_proteins" )
 
 
 args<-parseType(args,
