@@ -62,7 +62,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.  [default %default]")
 
-parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config.ini",
+parser <- add_option(parser, c("-c", "--config"), type = "character", default = "/home/ubuntu/Workings/2022/Embryology_BMP_14/Source/LFQ/config_prot.ini",
                      help = "Configuration file.  [default %default]",
                      metavar = "string")
 
@@ -155,6 +155,10 @@ parser <- add_option(parser, "--group_id", type = "character",
                      help = "A string describing the experimental group ID. This must be a column that exists in the design matrix.",
                      metavar = "string")
 
+parser <- add_option(parser, "--average_replicates_id", type = "character",
+                     help = "A string describing the technical replicates that needs to be averaged together. This must be a column that exists in the design matrix.",
+                     metavar = "string")
+
 parser <- add_option(parser, "--row_id", type = "character",
                      help = "A string describing the row id.",
                      metavar = "string")
@@ -240,6 +244,7 @@ args<-parseString(args,
     ,"formula_string"
     ,"sample_id"
     , "replicate_group_id"
+    , "average_replicates_id"
     ,"group_id"
     ,"row_id"
     ,"file_prefix"
@@ -264,6 +269,11 @@ if (args$group_pattern == "") {
 if (  ! isArgumentDefined(args,"replicate_group_id") ) {
   logwarn("Replicate_group_id is NA")
   args$replicate_group_id <- NA
+}
+
+if (  ! isArgumentDefined(args,"average_replicates_id") ) {
+  logwarn("average_replicates_id is NA")
+  args$average_replicates_id <- NA
 }
 
 if ( is.na(args$replicate_group_id ) &
@@ -606,6 +616,28 @@ for( format_ext in args$plots_format) {
 loginfo("Run RUVIII on the input counts table.")
 counts_rnorm.log.ruvIII_v1 <- cmriRUVfit(counts_rnorm.log.quant, X = ruv_groups$group, control_genes_index, Z = 1, k = args$ruv_k,
                                          method = args$ruv_method, M = ruvIII_replicates_matrix) %>% t()
+
+args$average_replicates_id <- "replicates"
+
+if (!is.na( args$average_replicates_id)) {
+
+  counts_rnorm.log.ruvIII_v1 <- counts_rnorm.log.ruvIII_v1 %>%
+    as.data.frame %>%
+    rownames_to_column(  args$row_id   ) %>%
+    pivot_longer( cols=contains("LFQ_INTENSITY_"),
+                  names_to = "Sample_ID",
+                  values_to = "value") %>%
+    left_join( design_mat_cln, by = c("Sample_ID" = "Sample_ID" ) ) %>%
+    group_by( !!rlang::sym(args$average_replicates_id) , uniprot_acc ) %>%
+    summarise( value = mean(value, na.rm = TRUE)) %>%
+    ungroup %>%
+    pivot_wider( names_from = !!rlang::sym(args$average_replicates_id),
+                 values_from = "value") %>%
+    column_to_rownames("uniprot_acc") %>%
+    as.matrix
+
+
+}
 
 vroom::vroom_write(counts_rnorm.log.ruvIII_v1 %>%
                      as.data.frame %>%
