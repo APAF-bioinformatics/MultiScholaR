@@ -285,20 +285,20 @@ plotRle <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75,
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #'@export
-rlePcaPlotList <- function(list_of_data_matrix, design_matrix,
+rlePcaPlotList <- function(list_of_data_matrix, list_of_design_matrix,
                            sample_id_column = Sample_ID, group_column = group, list_of_descriptions) {
 
-  rle_list <- purrr::map2(list_of_data_matrix, list_of_descriptions,
-                          ~plotRle(t(as.matrix(.x)),
-                                   rowinfo = design_matrix[colnames(.x), quo_name(enquo(group_column))]) +
-                            labs(title = .y))
+  rle_list <- purrr::pmap( list( data_matrix=list_of_data_matrix, description=list_of_descriptions, design_matrix=list_of_design_matrix),
+                          function( data_matrix, description, design_matrix) { plotRle(t(as.matrix(data_matrix)),
+                                   rowinfo = design_matrix[colnames(data_matrix), quo_name(enquo(group_column))]  )  +
+                            labs(title = description)} )
 
-  pca_list <- purrr::map2(list_of_data_matrix, list_of_descriptions,
-                          ~plotPca(.x,
+  pca_list <- purrr::pmap(list( data_matrix=list_of_data_matrix, description=list_of_descriptions, design_matrix=list_of_design_matrix),
+                          function( data_matrix, description, design_matrix) { plotPca(data_matrix,
                                    design_matrix = design_matrix,
                                    sample_id_column = { { sample_id_column } },
                                    group_column = { { group_column } },
-                                   title = .y, cex = 7))
+                                   title = description, cex = 7) })
 
   list_of_plots <- c(rle_list, pca_list)
 

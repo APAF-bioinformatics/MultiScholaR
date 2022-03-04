@@ -617,17 +617,17 @@ loginfo("Run RUVIII on the input counts table.")
 counts_rnorm.log.ruvIII_v1 <- cmriRUVfit(counts_rnorm.log.quant, X = ruv_groups$group, control_genes_index, Z = 1, k = args$ruv_k,
                                          method = args$ruv_method, M = ruvIII_replicates_matrix) %>% t()
 
-args$average_replicates_id <- "replicates"
-
+## Average values from technical replicates, replace Sample_ID and gropu_id
+design_mat_updated <- design_mat_cln
 if (!is.na( args$average_replicates_id)) {
 
   counts_rnorm.log.ruvIII_v1 <- counts_rnorm.log.ruvIII_v1 %>%
     as.data.frame %>%
     rownames_to_column(  args$row_id   ) %>%
-    pivot_longer( cols=contains("LFQ_INTENSITY_"),
-                  names_to = "Sample_ID",
+    pivot_longer( cols=colnames(counts_rnorm.log.ruvIII_v1),
+                  names_to = args$sample_id,
                   values_to = "value") %>%
-    left_join( design_mat_cln, by = c("Sample_ID" = "Sample_ID" ) ) %>%
+    left_join( design_mat_cln, by = args$sample_id ) %>%
     group_by( !!rlang::sym(args$average_replicates_id) , uniprot_acc ) %>%
     summarise( value = mean(value, na.rm = TRUE)) %>%
     ungroup %>%
@@ -636,7 +636,14 @@ if (!is.na( args$average_replicates_id)) {
     column_to_rownames("uniprot_acc") %>%
     as.matrix
 
+  args$sample_id <- "Sample_ID"
 
+  design_mat_updated <- design_mat_cln %>%
+    mutate( !!rlang::sym(args$sample_id) :=  !!rlang::sym(args$average_replicates_id) ) %>%
+    dplyr::select( one_of( args$sample_id, args$group_id)) %>%
+    distinct()
+
+  rownames( design_mat_updated) <- design_mat_updated[,args$sample_id]
 }
 
 vroom::vroom_write(counts_rnorm.log.ruvIII_v1 %>%
@@ -652,7 +659,7 @@ writexl::write_xlsx(counts_rnorm.log.ruvIII_v1 %>%
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Draw the RLE and PCA plots.")
 rle_pca_plots_arranged <- rlePcaPlotList(list_of_data_matrix = list(counts_rnorm.log.quant, counts_rnorm.log.ruvIII_v1),
-                                         design_matrix = design_mat_cln,
+                                         list_of_design_matrix = list( design_mat_cln, design_mat_updated) ,
                                          sample_id_column = !!rlang::sym(args$sample_id),
                                          group_column = !!rlang::sym(args$group_id),
                                          list_of_descriptions = list("Before RUVIII", "After RUVIII"))
@@ -691,7 +698,7 @@ myRes_rnorm.log.quant.ruv.r1 <- NA
 
 list_rnorm.log.quant.ruv.r1 <- runTestsContrasts(counts_rnorm.log.ruvIII_v1,
                                                  contrast_strings = contrasts_tbl[, 1][[1]],
-                                                 design_matrix = design_mat_cln,
+                                                 design_matrix = design_mat_updated,
                                                  formula_string = args$formula_string,
                                                  weights = NA)
 
@@ -849,7 +856,7 @@ norm_counts <- counts_rnorm.log.ruvIII_v1 %>%
   pivot_longer(cols = matches(args$group_pattern),
                names_to = args$sample_id,
                values_to = "log2norm")  %>%
-  left_join(design_mat_cln, by = args$sample_id) %>%
+  left_join(design_mat_updated, by = args$sample_id) %>%
   mutate(temp_id = !!sym(args$sample_id)) %>%
   separate(temp_id, sep = "_", into = c("sample_number", "group_pattern")) %>%
   group_by(!!sym(args$row_id), !!sym(args$group_id)) %>%
