@@ -51,11 +51,11 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.")
 
-parser <- add_option(parser, c("-c","--config"), type = "character", default = "config.ini", dest = "config",
+parser <- add_option(parser, c("-c","--config"), type = "character", default = "", dest = "config",
                      help = "Configuration file.",
                      metavar = "string")
 
-parser <- add_option(parser, c("-o","--output_dir"), type = "character", dest = "output_dir",
+parser <- add_option(parser, c("-o","--output_dir"), type = "character", default = "clean_proteins", dest = "output_dir",
                      help = "Directory path for all results files.",
                      metavar = "string")
 
@@ -84,13 +84,22 @@ parser <- add_option(parser, "--output_counts_file", type = "character", dest = 
                      help = "String representing the name of the output counts data file which will be saved in the directory specified with the --output-dir flag.",
                      metavar = "string")
 
-parser <- add_option(parser, "--column_pattern_input", type = "character", dest = "column_pattern_input",
+parser <- add_option(parser, "--column_pattern", type = "character", dest = "column_pattern",
                      help = "String pattern, together with the experimental group pattern, that matches the abundance data columns.",
                      metavar = "string")
 
 parser <- add_option(parser, "--group_pattern", type = "character", dest = "group_pattern",
                      help = "Regular expression pattern to identify columns with abundance values belonging to the experiment. [default %default]",
                      metavar = "string")
+
+parser <- add_option(parser, "--pattern_suffix", type = "character", dest = "pattern_suffix",
+                     help = "Regular expression pattern to identify columns with abundance values belonging to the experiment. [default %default]",
+                     metavar = "string")
+
+parser <- add_option(parser, "--extract_patt_suffix", type = "character", dest = "extract_patt_suffix",
+                     help = "Regular expression pattern to identify columns with abundance values belonging to the experiment. [default %default]",
+                     metavar = "string")
+
 
 parser <- add_option(parser, "--razor_unique_peptides_group_thresh", type = "integer", dest = "razor_unique_peptides_group_thresh",
                      help = "Number of razor and unique peptides for the specified experiemtal group needs to be higher than this threshold for the protein to be included for the analysis.",
@@ -107,17 +116,8 @@ parser <- add_option(parser, "--fasta_meta_file", type = "character", dest = "fa
 #parse comand line arguments first.
 args <- parse_args(parser)
 
-
-#parse and merge the configuration file options.
-if (args$config != "") {
-  args <- config.list.merge(eval.config(file = args$config, config = "clean_proteins"), args)
-}
-
-args <- setArgsDefault(args, "output_dir", as_func=as.character, default_val="clean_proteins" )
-
 createOutputDir(args$output_dir, args$no_backup)
 createDirectoryIfNotExists(args$tmp_dir)
-
 
 ## Logger configuration
 logReset()
@@ -126,6 +126,11 @@ addHandler(writeToFile, file = file.path(args$output_dir, args$log_file), format
 
 level <- ifelse(args$debug, loglevels["DEBUG"], loglevels["INFO"])
 setLevel(level = ifelse(args$silent, loglevels["ERROR"], level))
+
+#parse and merge the configuration file options.
+if (args$config != "") {
+  args <- config.list.merge(eval.config(file = args$config, config = "clean_proteins"), args)
+}
 
 cmriWelcome("ProteomeRiver", c("Ignatius Pang", "Pablo Galaviz"))
 loginfo("Reading configuration file %s", args$config)
@@ -153,6 +158,10 @@ testRequiredFiles(c(
   args$fasta_file
   ,args$raw_counts_file))
 
+args <- setArgsDefault(args, "pattern_suffix", as_func=as.character, default_val="_\\d+" )
+args <- setArgsDefault(args, "extract_patt_suffix", as_func=as.character, default_val="_(\\d+)" )
+
+
 args<-parseType(args,
   c("razor_unique_peptides_group_thresh"
     ,"unique_peptides_group_thresh"
@@ -161,7 +170,8 @@ args<-parseType(args,
 args<-parseString(args,
   c("group_pattern"
     ,"column_pattern"
-  ))
+    ,"pattern_suffix"
+    ,"extract_patt_suffix" ))
 
 
 
@@ -184,16 +194,15 @@ colnames(dat_cln) <- str_replace(colnames(dat_cln), "_i_ds", "_ids")
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Prepare regular expressions to select counts data columns.")
 
-pattern_suffix <- "_\\d+"
+pattern_suffix <- args$pattern_suffix
 if (args$group_pattern != "") {
-  pattern_suffix <- paste("_\\d+", tolower(args$group_pattern), sep = "_")
+  pattern_suffix <- paste(args$pattern_suffix, tolower(args$group_pattern), sep = "_")
 }
 
-extract_patt_suffix <- "_(\\d+)"
+extract_patt_suffix <- args$extract_patt_suffix
 if (args$group_pattern != "") {
-  extract_patt_suffix <- paste0("_(\\d+)_(", tolower(args$group_pattern), ")")
+  extract_patt_suffix <- paste0(args$extract_patt_suffix, "_(", tolower(args$group_pattern), ")")
 }
-
 
 column_pattern <- paste0(make_clean_names(args$column_pattern), pattern_suffix)
 
