@@ -55,7 +55,7 @@ parser <- add_option(parser, c("-c","--config"), type = "character", default = "
                      help = "Configuration file.",
                      metavar = "string")
 
-parser <- add_option(parser, c("-o","--output_dir"), type = "character", default = "clean_proteins", dest = "output_dir",
+parser <- add_option(parser, c("-o","--output_dir"), type = "character",  dest = "output_dir",
                      help = "Directory path for all results files.",
                      metavar = "string")
 
@@ -160,6 +160,7 @@ testRequiredFiles(c(
 
 args <- setArgsDefault(args, "pattern_suffix", as_func=as.character, default_val="_\\d+" )
 args <- setArgsDefault(args, "extract_patt_suffix", as_func=as.character, default_val="_(\\d+)" )
+args <- setArgsDefault(args, "output_dir", as_func=as.character, default_val="clean_proteins" )
 
 
 args<-parseType(args,
