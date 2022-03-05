@@ -51,7 +51,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.")
 
-parser <- add_option(parser, c("-c","--config"), type = "character", default = "", dest = "config",
+parser <- add_option(parser, c("-c","--config"), type = "character", default = "config.ini", dest = "config",
                      help = "Configuration file.",
                      metavar = "string")
 
@@ -210,9 +210,9 @@ if (args$group_pattern != "") {
   extract_patt_suffix <- paste0(args$extract_patt_suffix, "_(", tolower(args$group_pattern), ")")
 }
 
-column_pattern <- paste0(make_clean_names(args$column_pattern), pattern_suffix)
+column_pattern <- tolower(paste0(make_clean_names(args$column_pattern), pattern_suffix))
 
-extract_replicate_group <- paste0(make_clean_names(args$column_pattern), extract_patt_suffix)
+extract_replicate_group <- tolower(paste0(make_clean_names(args$column_pattern), extract_patt_suffix))
 
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -297,33 +297,31 @@ accession_gene_name_tbl_record <- accession_gene_name_tbl %>%
 
 evidence_tbl_filt <- NA
 
+evidence_tbl_filt <- evidence_tbl_cleaned %>%
+  inner_join(accession_gene_name_tbl %>%
+               dplyr::select(maxquant_row_id, uniprot_acc), by = "maxquant_row_id") %>%
+  dplyr::select(uniprot_acc, matches(column_pattern), -contains(c("razor", "unique"))) %>%
+  distinct
+
 #TODO: This part need improvement. There is potential for bugs.
+extraction_pattern <- "\\1"
 if (args$group_pattern != "") {
-
-
-  evidence_tbl_filt <- evidence_tbl_cleaned %>%
-    inner_join(accession_gene_name_tbl %>%
-                 dplyr::select(maxquant_row_id, uniprot_acc), by = "maxquant_row_id") %>%
-    dplyr::select(uniprot_acc, matches(args$group_pattern), -contains(c("razor", "unique"))) %>%
-    distinct
-
-  colnames(evidence_tbl_filt) <- str_replace_all(colnames(evidence_tbl_filt), extract_replicate_group, "\\1_\\2") %>%
-    toupper( ) %>%
-    str_replace_all( "UNIPROT_ACC", "uniprot_acc")
-
-} else {
-
-  evidence_tbl_filt <- evidence_tbl_cleaned %>%
-    inner_join(accession_gene_name_tbl %>%
-                 dplyr::select(maxquant_row_id, uniprot_acc), by = "maxquant_row_id") %>%
-    dplyr::select(uniprot_acc, matches(column_pattern), -contains(c("razor", "unique"))) %>%
-    distinct
-
-  colnames(evidence_tbl_filt) <- str_replace_all(colnames(evidence_tbl_filt), extract_replicate_group, "\\1") %>%
-    toupper( ) %>%
-    str_replace_all( "UNIPROT_ACC", "uniprot_acc")
-
+  extraction_pattern <- "\\1_\\2"
 }
+
+captured_output <- capture.output(
+  print("Original table headers:")
+  print(colnames(evidence_tbl_filt))
+  print("Cleaned table headers:")
+  print(toupper(str_replace_all(colnames(evidence_tbl_filt), tolower(extract_replicate_group), extraction_pattern))%>%
+          str_replace_all( "UNIPROT_ACC", "uniprot_acc"))
+  ,type = "message"
+)
+logdebug(captured_output)
+
+colnames(evidence_tbl_filt) <- str_replace_all(colnames(evidence_tbl_filt), tolower(extract_replicate_group), extraction_pattern) %>%
+  toupper( ) %>%
+  str_replace_all( "UNIPROT_ACC", "uniprot_acc")
 
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
