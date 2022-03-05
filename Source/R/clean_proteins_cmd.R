@@ -309,12 +309,10 @@ if (args$group_pattern != "") {
   extraction_pattern <- "\\1_\\2"
 }
 
-captured_output <- capture.output(
-  print("Original table headers:")
-  print(colnames(evidence_tbl_filt))
+captured_output <- capture.output({
   print("Cleaned table headers:")
   print(toupper(str_replace_all(colnames(evidence_tbl_filt), tolower(extract_replicate_group), extraction_pattern))%>%
-          str_replace_all( "UNIPROT_ACC", "uniprot_acc"))
+          str_replace_all( "UNIPROT_ACC", "uniprot_acc")) }
   ,type = "message"
 )
 logdebug(captured_output)
