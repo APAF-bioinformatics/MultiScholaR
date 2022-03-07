@@ -771,7 +771,7 @@ num_sig_de_molecules <- printCountDeGenesTable(list_of_de_tables = list(myRes_rn
                                            formula_string = "analysis_type ~ comparison")
 
 for( format_ext in args$plots_format) {
-  file_name<-file.path(args$output_dir,paste0("num_de_genes_barplot.",format_ext))
+  file_name<-file.path(args$output_dir,paste0("num_sda_entities_barplot.",format_ext))
   captured_output<-capture.output(
 ggsave(filename = file_name,
        plot = num_sig_de_molecules$plot,

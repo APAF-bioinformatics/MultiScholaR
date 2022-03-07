@@ -346,9 +346,13 @@ gg_save_logging ( after_RUVIII_rle, file_name_part, args$plots_format)
 
 selected_data <- vroom::vroom( file.path(args$input_dir, "lfc_qval_long.tsv") )  %>%
     mutate( lqm = -log10(q.mod))  %>%
-    dplyr::mutate(colour = case_when(abs(lqm) >= 1 & q.mod >= args$q_val_thresh ~ "orange",
-                                     abs(lqm) >= 1 & q.mod < args$q_val_thresh ~ "purple",
-                                     abs(lqm) < 1 & q.mod < args$q_val_thresh ~ "blue",
+    dplyr::mutate(label = case_when(abs(log2FC) >= 1 & q.mod >= args$q_val_thresh ~ "Sig,, logFC >= 1",
+                                   abs(log2FC) >= 1 & q.mod < args$q_val_thresh ~ "Sig,, logFC >= 1",
+                                   abs(log2FC) < 1 & q.mod < args$q_val_thresh ~ "Sig., logFC < 1",
+                                   TRUE ~ "Not sig.")) %>%
+    dplyr::mutate(colour = case_when(abs(log2FC) >= 1 & q.mod >= args$q_val_thresh ~ "orange",
+                                     abs(log2FC) >= 1 & q.mod < args$q_val_thresh ~ "purple",
+                                     abs(log2FC) < 1 & q.mod < args$q_val_thresh ~ "blue",
                                      TRUE ~ "black")) %>%
     dplyr::mutate(colour = factor(colour, levels = c("black", "orange", "blue", "purple"))) # %>%
   # left_join( show_gene_name, by = c("comparison" = "comparison",
@@ -357,18 +361,31 @@ selected_data <- vroom::vroom( file.path(args$input_dir, "lfc_qval_long.tsv") ) 
   #                                            TRUE ~ NA_character_) )
 
 plotOneVolcano <- function( input_data, input_title) {
+
+  colour_map <- list( "Sig,, logFC >= 1" = "orange",
+                      "Sig,, logFC >= 1" = "purple",
+                      "Sig., logFC < 1" = "blue",
+                      "Not sig." = "black" )
+
+ # avail_labels <-  input_data %>% distinct(label)  %>% pull( label)
+ # avail_colours <- colour_map[avail_labels]
+ #
+ # print(avail_labels)
+ # print(unlist(avail_colours) )
+
   volcano_plot <-  input_data %>%
     ggplot(aes(y = lqm, x = log2FC )) +
     geom_point(aes(col = colour)) +
-    scale_colour_manual(values = c(levels(selected_data$colour)),
-                        labels = c("Not sig.",
-                                   paste0("Not sig., logFC >= ",
+    # scale_colour_manual(values = unlist(avail_colours),
+    #                     labels = avail_labels) +
+    scale_colour_manual(values = c(levels(input_data$colour)),
+                        labels = c(paste0("Not significant, logFC > ",
                                           1),
-                                   paste0("Sig,, logFC >= ",
+                                   paste0("Significant, logFC >= ",
                                           1),
-                                   paste0("Sig., logFC <",
-                                          1)
-                                   )) +
+                                   paste0("Significant, logFC <",
+                                          1),
+                                   "Not Significant")) +
     geom_vline(xintercept = 1, colour = "black", size = 0.2) +
     geom_vline(xintercept = -1, colour = "black", size = 0.2) +
     geom_hline(yintercept = -log10(args$q_val_thresh)) +
