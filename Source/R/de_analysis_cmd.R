@@ -460,9 +460,9 @@ logdebug(ruvIII_replicates_matrix)
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-loginfo( paste( "Number of proteins before removing proteins with missing values:", nrow(cln_dat_wide_cleaned)) )
-loginfo( paste("Number of protein after proteins with missing values were removed:", nrow( cln_dat_wide_unsorted ) ))
-loginfo( paste( "Number of proteins removed:", ( nrow(cln_dat_wide_cleaned) - nrow( cln_dat_wide_unsorted ) )))
+loginfo( paste( "Number of proteins before removing proteins with missing values:", nrow( cln_dat_wide_unsorted )) )
+loginfo( paste("Number of protein after proteins with missing values were removed:", nrow(cln_dat_wide_cleaned)  ))
+loginfo( paste( "Number of proteins removed:", ( nrow( cln_dat_wide_unsorted ) - nrow(cln_dat_wide_cleaned)  )))
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
