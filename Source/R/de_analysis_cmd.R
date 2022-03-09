@@ -458,6 +458,12 @@ logdebug(ruvIII_replicates_matrix)
 #
 # saveRDS(sample_rows_lists, file.path(args$output_dir, "keep_sample_rows_lists.RDS" ))
 
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+loginfo( paste( "Number of proteins before removing proteins with missing values:", nrow(cln_dat_wide_cleaned)) )
+loginfo( paste("Number of protein after proteins with missing values were removed:", nrow( cln_dat_wide_unsorted ) ))
+loginfo( paste( "Number of proteins removed:", ( nrow(cln_dat_wide_cleaned) - nrow( cln_dat_wide_unsorted ) )))
+
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Count the total number of missing values in total
