@@ -339,7 +339,13 @@ countStatDeGenes <- function(data,
     summarise(counts = n()) %>%
     ungroup()
 
-  return(counts)
+  all_possible_status <- data.frame( status = c( "Not significant", "Significant and Up", "Significant and Down"))
+
+  results <- all_possible_status %>%
+    left_join( counts, by=c("status" = "status")) %>%
+    mutate( counts = ifelse(is.na(counts), 0, counts))
+
+  return(results)
 }
 
 
@@ -376,11 +382,16 @@ printCountDeGenesTable <- function(list_of_de_tables,
                         quo_name(enquo(expression_column))))
   }
 
+
   num_significant_de_genes_all <- purrr::map2(list_of_de_tables,
                                               list_of_descriptions,
                                               function(a, b) { count_stat_de_genes_helper(de_table = a,
                                                                                           description = b) }) %>%
     bind_rows()
+
+  print(head(num_significant_de_genes_all))
+
+
 
   num_sig_de_genes_barplot <- num_significant_de_genes_all %>%
     dplyr::filter(status != "Not significant") %>%
@@ -388,6 +399,8 @@ printCountDeGenesTable <- function(list_of_de_tables,
     geom_bar(stat = "identity") +
     geom_text(stat = 'identity', aes(label = counts), vjust = -0.5) +
     theme(axis.text.x = element_text(angle = 90))
+
+  # print(head(num_sig_de_genes_barplot))
 
   if (!is.na(formula_string)) {
 
