@@ -389,10 +389,6 @@ printCountDeGenesTable <- function(list_of_de_tables,
                                                                                           description = b) }) %>%
     bind_rows()
 
-  print(head(num_significant_de_genes_all))
-
-
-
   num_sig_de_genes_barplot <- num_significant_de_genes_all %>%
     dplyr::filter(status != "Not significant") %>%
     ggplot(aes(x = status, y = counts)) +
