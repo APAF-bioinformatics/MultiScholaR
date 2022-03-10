@@ -365,7 +365,7 @@ evidence_tbl_col <- evidence_tbl_filt[, c(args$row_id, cols_for_analysis) ]
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Remove empty proteins without abundance data.")
-cln_dat_wide_unsorted <- ProteomeRiver::removeEmptyRows(evidence_tbl_filt,
+cln_dat_wide_unsorted <- ProteomeRiver::removeEmptyRows(evidence_tbl_col,
                                                         col_pattern = args$group_pattern,
                                                         row_id = !!rlang::sym(args$row_id))
 
@@ -375,7 +375,7 @@ cln_dat_wide_unsorted <- ProteomeRiver::removeEmptyRows(evidence_tbl_filt,
 table_value <- table(is.infinite(data.matrix(log2(cln_dat_wide_unsorted[, c(colnames(cln_dat_wide_unsorted)[1], cols_for_analysis)]%>%
                                                     column_to_rownames(args$row_id)))))
 
-loginfo("Count the number of missing values for each sample before removing proteins with some missing values: %d",
+loginfo("Count the number of missing values before removing proteins with some missing values: %d",
         table_value["TRUE"])
 
 plot_num_missing_values_before <- plotNumMissingValues(cln_dat_wide_unsorted[, cols_for_analysis])
@@ -461,8 +461,8 @@ logdebug(ruvIII_replicates_matrix)
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 loginfo( paste( "Number of proteins before removing proteins with missing values:", nrow( cln_dat_wide_unsorted )) )
-loginfo( paste("Number of protein after proteins with missing values were removed:", nrow(cln_dat_wide_cleaned)  ))
-loginfo( paste( "Number of proteins removed:", ( nrow( cln_dat_wide_unsorted ) - nrow(cln_dat_wide_cleaned)  )))
+loginfo( paste("Number of protein after proteins with missing values were removed:", nrow(cln_dat_wide)  ))
+loginfo( paste( "Number of proteins removed:", ( nrow( cln_dat_wide_unsorted ) - nrow(cln_dat_wide)  )))
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
