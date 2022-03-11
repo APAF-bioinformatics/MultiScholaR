@@ -220,10 +220,14 @@ plotPca <- function(data,
 
   pca.res <- pca(t(as.matrix(data)))
 
-  output <- pca.res$variates$X %>%
+  temp_tbl <- pca.res$variates$X %>%
     as.data.frame %>%
     rownames_to_column(quo_name(enquo(sample_id_column))) %>%
-    left_join(design_matrix, by = quo_name(enquo(sample_id_column))) %>%
+    left_join(design_matrix, by = quo_name(enquo(sample_id_column)))
+
+  unique_groups <- temp_tbl %>% distinct( {{group_column}}) %>% pull( {{group_column}})
+
+  output <- temp_tbl %>%
     ggplot(aes(PC1, PC2, col = {{group_column}}, label = {{sample_id_column}})) +
     geom_point() +
     geom_text_repel(size  = geom.text.size, show.legend=FALSE) +
@@ -1006,6 +1010,31 @@ getNegCtrlProtAnova <- function(data_matrix, design_matrix, group_column = "grou
   return(control_genes_index)
 
 }
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#'@param design_matrix Contains the sample_id column and the average_replicates_id column
+#'@export
+averageValuesFromReplicates <- function(input_table, design_matrix, row_id, sample_id, average_replicates_id) {
+
+  output_table <- input_table %>%
+    as.data.frame %>%
+    rownames_to_column(  row_id   ) %>%
+    pivot_longer( cols=colnames(input_table),
+                  names_to = sample_id,
+                  values_to = "value") %>%
+    left_join( design_matrix, by = sample_id ) %>%
+    group_by( !!rlang::sym(average_replicates_id) ,  !!rlang::sym(row_id) ) %>%
+    summarise( value = mean(value, na.rm = TRUE)) %>%
+    ungroup %>%
+    pivot_wider( names_from = !!rlang::sym(average_replicates_id),
+                 values_from = "value") %>%
+    column_to_rownames(row_id) %>%
+    as.matrix
+
+  return( output_table )
+}
+
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

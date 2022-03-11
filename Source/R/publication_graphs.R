@@ -68,7 +68,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.  [default %default]")
 
-parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config.ini",
+parser <- add_option(parser, c("-c", "--config"), type = "character", default = "/home/ubuntu/Workings/2022/Herpes_Neuropathogenesis_BMP_15/Source/config_prot.ini",
                      help = "Configuration file.  [default %default]",
                      metavar = "string")
 
@@ -89,6 +89,10 @@ parser <- add_option(parser, c("-o", "--output_dir"), type = "character",
 # args$design_matrix_file <- "/home/ignatius/PostDoc/2022/PYROXD1_BMP_13/Source/N155S/design_matrix.tab"
 parser <- add_option(parser, "--design_matrix_file", type = "character",
                      help = "Input file with the design matrix",
+                     metavar = "string")
+
+parser <- add_option(parser, "--avg_design_matrix_file", type = "character",
+                     help = "Input file with the design matrix, where technical replicates has already been averaged and merged into one sample.",
                      metavar = "string")
 
 parser <- add_option(parser, "--sample_id", type = "character",
@@ -205,6 +209,10 @@ createOutputDir(args$output_dir, args$no_backup)
 
 counts_rnorm.log.quant <- vroom::vroom( file.path(args$input_dir, "counts_after_median_scaling_and_imputation.tsv") )
 counts_rnorm.log.ruvIII <- vroom::vroom( file.path(args$input_dir, "normalized_counts_after_ruv.tsv")  )
+counts_rnorm.log.ruvIII.avg <- NA
+if(!is.na(args$avg_design_matrix_file)) {
+  counts_rnorm.log.ruvIII.avg <- vroom::vroom( file.path(args$input_dir, "normalized_counts_after_ruv_replicates_averaged.tsv")  )
+}
 
 createDirIfNotExists(args$output_dir)
 
@@ -219,6 +227,19 @@ design_mat_cln <- vroom::vroom(args$design_matrix_file) %>%
 
 
 rownames(design_mat_cln) <- design_mat_cln %>% pull(as.name(args$sample_id))
+
+## design matrix when technical replicates has been averaged and merged into one
+
+avg_design_mat_cln <- NA
+
+if(!is.na(args$avg_design_matrix_file )) {
+  avg_design_mat_cln <- vroom::vroom(args$avg_design_matrix_file) %>%
+    as.data.frame() %>%
+    dplyr::mutate(!!rlang::sym(args$sample_id) := as.character(!!rlang::sym(args$sample_id)))
+
+  rownames(avg_design_mat_cln) <- avg_design_mat_cln %>% pull(as.name(args$sample_id))
+}
+
 ##-------------------------------------
 
 ## PCA plots
@@ -230,16 +251,23 @@ counts_rnorm.log.quant_mat <- counts_rnorm.log.quant %>%
 counts_rnorm.log.ruvIII_mat <- counts_rnorm.log.ruvIII %>%
   column_to_rownames(args$row_id)
 
+counts_rnorm.log.ruvIII.avg_mat <- NA
+if(!is.na(args$avg_design_matrix_file)) {
+  counts_rnorm.log.ruvIII.avg_mat <- counts_rnorm.log.ruvIII.avg  %>%
+    column_to_rownames(args$row_id)
+}
+
+
 before_ruvIII_pca <- plotPca( counts_rnorm.log.quant_mat,
-         design_matrix = design_mat_cln,
-                                   sample_id_column = !!rlang::sym(args$sample_id),
-                                   group_column = !!rlang::sym(args$group_id),
-                                   title = "Before RUVIII",
-         geom.text.size = 7) +
-  theme(axis.text.x = element_text(size = 12))   +
-  theme(axis.text.y = element_text(size = 12))  +
-  theme(axis.title.x = element_text(size = 12))  +
-  theme(axis.title.y = element_text(size = 12))  +
+                              design_matrix = design_mat_cln,
+                              sample_id_column = !!rlang::sym(args$sample_id),
+                              group_column = !!rlang::sym(args$group_id),
+                              title = "Before RUVIII",
+                              geom.text.size = 7) +
+  theme(axis.text.x = element_text(size = 12)) +
+  theme(axis.text.y = element_text(size = 12)) +
+  theme(axis.title.x = element_text(size = 12)) +
+  theme(axis.title.y = element_text(size = 12)) +
   theme(plot.title = element_text(size = 12)) +
   theme(legend.text = element_text(size = 12)) +
   theme(legend.title = element_text(size = 12))
@@ -263,7 +291,6 @@ gg_save_logging <- function( input_plot, file_name_part, plots_format) {
 
 gg_save_logging ( before_ruvIII_pca, file_name_part, args$plots_format)
 
-
 after_ruvIII_pca <- plotPca( counts_rnorm.log.ruvIII_mat,
          design_matrix = design_mat_cln,
          sample_id_column = !!rlang::sym(args$sample_id),
@@ -281,6 +308,33 @@ after_ruvIII_pca
 
 file_name_part <- file.path( args$output_dir, "PCA", "after_ruvIII_pca.")
 gg_save_logging ( after_ruvIII_pca, file_name_part, args$plots_format)
+
+
+
+if(!is.na(args$avg_design_matrix_file )) {
+
+
+  after_ruvIII_avg_pca <- plotPca( counts_rnorm.log.ruvIII.avg_mat,
+                               design_matrix = avg_design_mat_cln,
+                               sample_id_column = !!rlang::sym(args$sample_id),
+                               group_column = !!rlang::sym(args$group_id),
+                               title = "After RUVIII", geom.text.size = 7) +
+    theme(axis.text.x = element_text(size = 12))   +
+    theme(axis.text.y = element_text(size = 12))  +
+    theme(axis.title.x = element_text(size = 12))  +
+    theme(axis.title.y = element_text(size = 12))  +
+    theme(plot.title = element_text(size = 12)) +
+    theme(legend.text = element_text(size = 12)) +
+    theme(legend.title = element_text(size = 12))
+
+  after_ruvIII_avg_pca
+
+  file_name_part <- file.path( args$output_dir, "PCA", "after_ruvIII_avg_pca.")
+  gg_save_logging ( after_ruvIII_avg_pca, file_name_part, args$plots_format)
+
+}
+
+
 
 
 ##-------------------------------------
@@ -309,6 +363,8 @@ createDirectoryIfNotExists(file.path( args$output_dir, "RLE"))
 file_name_part <- file.path( args$output_dir, "RLE", "before_RUVIII_rle.")
 gg_save_logging ( before_RUVIII_rle, file_name_part, args$plots_format)
 
+
+##
 after_RUVIII_rle <- plotRle(t(as.matrix(counts_rnorm.log.ruvIII_mat)),
         rowinfo = design_mat_cln[colnames(counts_rnorm.log.ruvIII_mat),
                                  args$group_id]) +
@@ -325,6 +381,30 @@ after_RUVIII_rle
 
 file_name_part <- file.path( args$output_dir, "RLE", "after_RUVIII_rle.")
 gg_save_logging ( after_RUVIII_rle, file_name_part, args$plots_format)
+
+
+if(!is.na(args$avg_design_matrix_file )) {
+
+
+  after_RUVIII_avg_rle <- plotRle(t(as.matrix(counts_rnorm.log.ruvIII.avg_mat)),
+                              rowinfo = avg_design_mat_cln[colnames(counts_rnorm.log.ruvIII.avg_mat),
+                                                       args$group_id]) +
+    theme(axis.text.x = element_text(size = 13))   +
+    theme(axis.text.y = element_text(size = 13))  +
+    theme(axis.title.x = element_text(size = 12))  +
+    theme(axis.title.y = element_text(size = 12))  +
+    theme(plot.title = element_text(size = 12)) +
+    theme(legend.text = element_text(size = 12)) +
+    theme(legend.title = element_text(size = 12)) +
+    xlab("Samples")
+
+  after_RUVIII_avg_rle
+
+  file_name_part <- file.path( args$output_dir, "RLE", "after_RUVIII_avg_rle.")
+  gg_save_logging ( after_RUVIII_avg_rle, file_name_part, args$plots_format)
+
+}
+
 
 ##-------------------------------------
 

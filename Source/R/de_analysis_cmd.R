@@ -62,7 +62,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.  [default %default]")
 
-parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config.ini",
+parser <- add_option(parser, c("-c", "--config"), type = "character", default = "/home/ubuntu/Workings/2022/EStim_Brain_Organoids_BMP_17/Source/config_prot.ini",
                      help = "Configuration file.  [default %default]",
                      metavar = "string")
 
@@ -363,11 +363,27 @@ loginfo("Get table with columns for analysis.")
 evidence_tbl_col <- evidence_tbl_filt[, c(args$row_id, cols_for_analysis) ]
 
 
+vroom::vroom_write( evidence_tbl_col,
+                    file.path( args$output_dir,
+                               "raw_counts.tsv"))
+
+writexl::write_xlsx( evidence_tbl_col,
+                     file.path( args$output_dir,
+                                "raw_counts.xlsx"))
+
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Remove empty proteins without abundance data.")
 cln_dat_wide_unsorted <- ProteomeRiver::removeEmptyRows(evidence_tbl_col,
                                                         col_pattern = args$group_pattern,
                                                         row_id = !!rlang::sym(args$row_id))
+
+vroom::vroom_write( cln_dat_wide_unsorted,
+                    file.path( args$output_dir,
+                               "raw_counts_after_removing_empty_rows.tsv"))
+
+writexl::write_xlsx( cln_dat_wide_unsorted,
+                     file.path( args$output_dir,
+                                "raw_counts_after_removing_empty_rows.xlsx"))
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Count the total number of missing values in total
@@ -429,11 +445,11 @@ counts_filt <- cln_dat_wide %>%
 
 vroom::vroom_write( cln_dat_wide,
                     file.path( args$output_dir,
-                               "raw_counts_after_removing_empty_rows.tsv"))
+                               "raw_counts_after_removing_proteins_with_missing_values.tsv"))
 
 writexl::write_xlsx( cln_dat_wide,
                      file.path( args$output_dir,
-                                "raw_counts_after_removing_empty_rows.xlsx"))
+                                "raw_counts_after_removing_proteins_with_missing_values.xlsx"))
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -482,7 +498,7 @@ ggsave(filename = file_name, plot = plot_num_missing_values,limitsize = FALSE)
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-loginfo("Count the number of values available for each sample: %d",table(!is.infinite(data.matrix(log2(counts_filt))))["TRUE"])
+loginfo("Count the number of values in table: %d",table(!is.infinite(data.matrix(log2(counts_filt))))["TRUE"])
 
 plot_num_of_values <- plotNumOfValues(counts_filt[, cols_for_analysis])
 
@@ -551,9 +567,28 @@ type_of_grouping <- getTypeOfGrouping(design_matrix = design_mat_cln, group_id =
 list_rnorm.log.quant.ruv.r0 <- NA
 myRes_rnorm.log.quant <- NA
 
-list_rnorm.log.quant.ruv.r0 <- runTestsContrasts(counts_rnorm.log.quant,
+# Calculate average value from technical replicates if this is applicable
+counts_rnorm.log.for.contrast <- counts_rnorm.log.quant
+design_mat_updated <- design_mat_cln
+if (!is.na( args$average_replicates_id)) {
+
+  counts_rnorm.log.for.contrast <-  averageValuesFromReplicates(counts_rnorm.log.quant,
+                                                                design_mat_cln,
+                                                                args$row_id,
+                                                                args$sample_id,
+                                                                args$average_replicates_id)
+
+  design_mat_updated <- design_mat_cln %>%
+    mutate( !!rlang::sym(args$sample_id) :=  !!rlang::sym(args$average_replicates_id) ) %>%
+    dplyr::select( one_of( args$sample_id, args$group_id)) %>%
+    distinct()
+
+  rownames( design_mat_updated) <- design_mat_updated[,args$sample_id]
+}
+
+list_rnorm.log.quant.ruv.r0 <- runTestsContrasts(counts_rnorm.log.for.contrast,
                                                  contrast_strings = contrasts_tbl[, 1][[1]],
-                                                 design_matrix = design_mat_cln,
+                                                 design_matrix = design_mat_updated,
                                                  formula_string = args$formula_string,
                                                  weights = NA,
                                                  treat_lfc_cutoff = as.double(args$treat_lfc_cutoff),
@@ -623,26 +658,16 @@ loginfo("Run RUVIII on the input counts table.")
 counts_rnorm.log.ruvIII_v1 <- cmriRUVfit(counts_rnorm.log.quant, X = ruv_groups$group, control_genes_index, Z = 1, k = args$ruv_k,
                                          method = args$ruv_method, M = ruvIII_replicates_matrix) %>% t()
 
-## Average values from technical replicates, replace Sample_ID and gropu_id
+
+## Average values from technical replicates, replace Sample_ID and group_id
 design_mat_updated <- design_mat_cln
 if (!is.na( args$average_replicates_id)) {
 
-  counts_rnorm.log.ruvIII_v1 <- counts_rnorm.log.ruvIII_v1 %>%
-    as.data.frame %>%
-    rownames_to_column(  args$row_id   ) %>%
-    pivot_longer( cols=colnames(counts_rnorm.log.ruvIII_v1),
-                  names_to = args$sample_id,
-                  values_to = "value") %>%
-    left_join( design_mat_cln, by = args$sample_id ) %>%
-    group_by( !!rlang::sym(args$average_replicates_id) , uniprot_acc ) %>%
-    summarise( value = mean(value, na.rm = TRUE)) %>%
-    ungroup %>%
-    pivot_wider( names_from = !!rlang::sym(args$average_replicates_id),
-                 values_from = "value") %>%
-    column_to_rownames("uniprot_acc") %>%
-    as.matrix
-
-  args$sample_id <- "Sample_ID"
+  counts_rnorm.log.ruvIII_avg <-  averageValuesFromReplicates(counts_rnorm.log.ruvIII_v1,
+                                                             design_mat_cln,
+                                                             args$row_id,
+                                                             args$sample_id,
+                                                             args$average_replicates_id)
 
   design_mat_updated <- design_mat_cln %>%
     mutate( !!rlang::sym(args$sample_id) :=  !!rlang::sym(args$average_replicates_id) ) %>%
@@ -650,6 +675,23 @@ if (!is.na( args$average_replicates_id)) {
     distinct()
 
   rownames( design_mat_updated) <- design_mat_updated[,args$sample_id]
+
+
+  vroom::vroom_write(design_mat_updated,
+                     file.path(args$output_dir, "design_mat_avg_replicates.tab"))
+
+
+  vroom::vroom_write(counts_rnorm.log.ruvIII_avg %>%
+                       as.data.frame %>%
+                       rownames_to_column(args$row_id),
+                     file.path(args$output_dir, "normalized_counts_after_ruv_replicates_averaged.tsv"))
+
+  writexl::write_xlsx(counts_rnorm.log.ruvIII_avg %>%
+                        as.data.frame %>%
+                        rownames_to_column(args$row_id),
+                      file.path(args$output_dir, "normalized_counts_after_ruv_replicates_averaged.xlsx"))
+
+
 }
 
 vroom::vroom_write(counts_rnorm.log.ruvIII_v1 %>%
@@ -664,17 +706,35 @@ writexl::write_xlsx(counts_rnorm.log.ruvIII_v1 %>%
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Draw the RLE and PCA plots.")
+
+plot_width = 15
+plot_height = 14
+if (!is.na( args$average_replicates_id)) {
+  rle_pca_plots_arranged <- rlePcaPlotList(list_of_data_matrix = list(counts_rnorm.log.quant, counts_rnorm.log.ruvIII_v1, counts_rnorm.log.ruvIII_avg),
+                                           list_of_design_matrix = list( design_mat_cln, design_mat_cln, design_mat_updated) ,
+                                           sample_id_column = !!rlang::sym(args$sample_id),
+                                           group_column = !!rlang::sym(args$group_id),
+                                           list_of_descriptions = list("Before RUVIII", "After RUVIII", "After RUVII, averaged"))
+
+  plot_width <- 22.5
+  plot_height <- 14
+
+} else {
+
+
 rle_pca_plots_arranged <- rlePcaPlotList(list_of_data_matrix = list(counts_rnorm.log.quant, counts_rnorm.log.ruvIII_v1),
-                                         list_of_design_matrix = list( design_mat_cln, design_mat_updated) ,
+                                         list_of_design_matrix = list( design_mat_cln, design_mat_cln) ,
                                          sample_id_column = !!rlang::sym(args$sample_id),
                                          group_column = !!rlang::sym(args$group_id),
                                          list_of_descriptions = list("Before RUVIII", "After RUVIII"))
+
+}
 
 
 for( format_ext in args$plots_format) {
   file_name<-file.path(args$output_dir,paste0("rle_pca_plots.",format_ext))
   captured_output<-capture.output(
-    ggsave(plot = rle_pca_plots_arranged, filename =  file_name, limitsize = FALSE, width = 14, height = 14)
+    ggsave(plot = rle_pca_plots_arranged, filename =  file_name, limitsize = FALSE, width = plot_width, height = plot_height)
     , type = "message"
   )
   logdebug(captured_output)
@@ -702,11 +762,23 @@ loginfo("Compare the different experimental groups and obtain lists of different
 list_rnorm.log.quant.ruv.r1 <- NA
 myRes_rnorm.log.quant.ruv.r1 <- NA
 
-list_rnorm.log.quant.ruv.r1 <- runTestsContrasts(counts_rnorm.log.ruvIII_v1,
-                                                 contrast_strings = contrasts_tbl[, 1][[1]],
-                                                 design_matrix = design_mat_updated,
-                                                 formula_string = args$formula_string,
-                                                 weights = NA)
+if (!is.na( args$average_replicates_id)) {
+
+  list_rnorm.log.quant.ruv.r1 <- runTestsContrasts(counts_rnorm.log.ruvIII_avg,
+                                                   contrast_strings = contrasts_tbl[, 1][[1]],
+                                                   design_matrix = design_mat_updated,
+                                                   formula_string = args$formula_string,
+                                                   weights = NA)
+
+} else {
+
+  list_rnorm.log.quant.ruv.r1 <- runTestsContrasts(counts_rnorm.log.ruvIII_v1,
+                                                   contrast_strings = contrasts_tbl[, 1][[1]],
+                                                   design_matrix = design_mat_updated,
+                                                   formula_string = args$formula_string,
+                                                   weights = NA)
+}
+
 
 myRes_rnorm.log.quant.ruv.r1 <- list_rnorm.log.quant.ruv.r1$results
 
@@ -820,11 +892,18 @@ ggsave(filename = file_name,
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 loginfo("Create wide format output file")
+norm_counts <- NA
 
-norm_counts <- counts_rnorm.log.ruvIII_v1 %>%
-  as.data.frame %>%
-  set_colnames(paste0(colnames(counts_rnorm.log.ruvIII_v1), ".log2norm")) %>%
-  rownames_to_column(args$row_id)
+counts_table_to_use <- counts_rnorm.log.ruvIII_v1
+if (!is.na( args$average_replicates_id)) {
+
+  counts_table_to_use <- counts_rnorm.log.ruvIII_avg
+}
+
+  norm_counts <- counts_table_to_use %>%
+    as.data.frame %>%
+    set_colnames(paste0(colnames(counts_table_to_use), ".log2norm")) %>%
+    rownames_to_column(args$row_id)
 
 
 raw_counts <- counts_filt %>%
@@ -856,7 +935,16 @@ writexl::write_xlsx( de_proteins_wide,
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Create long format output file")
 
-norm_counts <- counts_rnorm.log.ruvIII_v1 %>%
+
+counts_table_to_use <- counts_rnorm.log.ruvIII_v1
+if (!is.na( args$average_replicates_id)) {
+
+  counts_table_to_use <- counts_rnorm.log.ruvIII_avg
+
+}
+
+
+norm_counts <- counts_table_to_use %>%
   as.data.frame %>%
   rownames_to_column(args$row_id) %>%
   pivot_longer(cols = matches(args$group_pattern),

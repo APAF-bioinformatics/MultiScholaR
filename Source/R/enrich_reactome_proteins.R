@@ -59,7 +59,7 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
 
   parser <- OptionParser(add_help_option =TRUE)
 
-  parser <- add_option(parser, c("-c", "--config"), type = "character",  default = "config.ini",
+  parser <- add_option(parser, c("-c", "--config"), type = "character",  default = "/home/ubuntu/Workings/2022/Herpes_Neuropathogenesis_BMP_15/Source/config_prot.ini",
                        help = "Configuration file.  [default %default]",
                        metavar = "string")
 
@@ -318,7 +318,7 @@ contrast_strings <- contrasts_tbl[, 1][[1]]
   contr.matrix <- makeContrasts(contrasts = contrast_strings,
                                 levels = colnames(design_m))
 
-lists_of_contrasts <-   map(colnames(contr.matrix), ~contr.matrix[,.] )
+lists_of_contrasts <-   purrr::map(colnames(contr.matrix), ~contr.matrix[,.] )
 names(lists_of_contrasts) <-  colnames(contr.matrix) %>% str_split( "=") %>% purrr::map_chr(1)
 
 # lists_of_contrasts <- list( RPE_Y.vs.RPE_X=c(0, 0, -1, 1 ) ,
