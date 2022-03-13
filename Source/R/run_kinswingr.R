@@ -881,6 +881,7 @@ plotAvgLogfcKnownSites <- function( list_position,
 
 ## Do this only if the species is Human or Mouse
 if( args$taxonomy_id %in% c(9060, 10090) ) {
+  loginfo("Plot average log fold-change of known phoshosites.")
 
 
   partial_plotAvgLogfcKnownSites <-  partial( plotAvgLogfcKnownSites,
