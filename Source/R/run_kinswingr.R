@@ -880,7 +880,7 @@ plotAvgLogfcKnownSites <- function( list_position,
 # swing_out_list <- readRDS( "/home/ignatius/PostDoc/2021/Tautomycetin_2021/Results/phos_kinswingr_ST_exp1/kinswingr_swing_out_list_ST.RDS" )
 
 ## Do this only if the species is Human or Mouse
-if( args$taxonomy_id %in% c(9060, 10090) ) {
+if( args$taxonomy_id %in% c(9606, 10090) ) {
   loginfo("Plot average log fold-change of known phoshosites.")
 
 
