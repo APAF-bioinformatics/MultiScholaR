@@ -102,9 +102,9 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
                        help="Input file with the protein abundance values",
                        metavar="string")
 
-  parser <- add_option(parser, c( "--de-proteins"), type="character", dest = "de_proteins_file",
-                       help="Input file with the list of diffierentiall expressed protein log fold-change and q-values for every contrasts.",
-                       metavar="string")
+  # parser <- add_option(parser, c( "--de-proteins"), type="character", dest = "de_proteins_file",
+  #                      help="Input file with the list of diffierentiall expressed protein log fold-change and q-values for every contrasts.",
+  #                      metavar="string")
 
   parser <- add_option(parser, c("--contrasts"), type="character", dest = "contrasts_file",
                        help="Input file with a table listing all comparisons to be made in string, one comparison per line (e.g. groupB.vs.group_A = groupB - groupA).",
@@ -180,7 +180,7 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
   testRequiredFiles(c(
     args$design_matrix_file,
     args$counts_table_file,
-    args$de_proteins_file,
+    # args$de_proteins_file,
     args$contrasts_file,
     args$config,
     args$tmp_dir
@@ -215,7 +215,7 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
   group_pattern <- args$group_pattern
   design_matrix_file <- args$design_matrix_file
   counts_table_file <- args$counts_table_file
-  de_proteins_file <- args$de_proteins_file
+  # de_proteins_file <- args$de_proteins_file
   contrasts_file <- args$contrasts_file
   output_dir <- args$output_dir
   sample_id <- args$sample_id
@@ -295,18 +295,18 @@ design_m <- model.matrix( ff, mod_frame)
 contr.matrix <- makeContrasts( contrasts = contrasts_tbl %>% pull(contrasts),
                                  levels = colnames(design_m))
 
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-## List of all proteins
-
-loginfo("Get the list of all DE proteins.")
-captured_output <- capture.output(
-proteins_cln <- vroom::vroom(de_proteins_file) %>%
-  mutate( best_uniprot_acc = purrr::map_chr( uniprot_acc, ~str_split(. , ":"   )[[1]][1] )) %>%
-  dplyr::select( -uniprot_acc ) %>%
-  dplyr::rename( uniprot_acc = "best_uniprot_acc")
-,type = "message"
-)
-logdebug(captured_output)
+# ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# ## List of all proteins
+# 
+# loginfo("Get the list of all DE proteins.")
+# captured_output <- capture.output(
+# proteins_cln <- vroom::vroom(de_proteins_file) %>%
+#   mutate( best_uniprot_acc = purrr::map_chr( uniprot_acc, ~str_split(. , ":"   )[[1]][1] )) %>%
+#   dplyr::select( -uniprot_acc ) %>%
+#   dplyr::rename( uniprot_acc = "best_uniprot_acc")
+# ,type = "message"
+# )
+# logdebug(captured_output)
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## List of contrasts
