@@ -215,6 +215,7 @@ plotPca <- function(data,
                     design_matrix,
                     sample_id_column = Sample_ID,
                     group_column = group,
+                    label_column = {{sample_id_column}},
                     title,  geom.text.size=11,
                    ...) {
 
@@ -228,7 +229,7 @@ plotPca <- function(data,
   unique_groups <- temp_tbl %>% distinct( {{group_column}}) %>% pull( {{group_column}})
 
   output <- temp_tbl %>%
-    ggplot(aes(PC1, PC2, col = {{group_column}}, label = {{sample_id_column}})) +
+    ggplot(aes(PC1, PC2, col = {{group_column}}, label = {{label_column}})) +
     geom_point() +
     geom_text_repel(size  = geom.text.size, show.legend=FALSE) +
     labs(title = title) +

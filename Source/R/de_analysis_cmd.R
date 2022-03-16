@@ -62,7 +62,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.  [default %default]")
 
-parser <- add_option(parser, c("-c", "--config"), type = "character", default = "/home/ubuntu/Workings/2022/EStim_Brain_Organoids_BMP_17/Source/config_prot.ini",
+parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config.ini",
                      help = "Configuration file.  [default %default]",
                      metavar = "string")
 
