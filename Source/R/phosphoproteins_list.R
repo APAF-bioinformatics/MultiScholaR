@@ -121,8 +121,7 @@ testRequiredArguments(args, c(
 ))
 
 testRequiredFiles(c(
-  args$proteins_file
-  ,args$phospho_file))
+  args$norm_phos_logfc_file))
 
 args<-parseString(args,c("plots_format"))
 
