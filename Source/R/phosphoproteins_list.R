@@ -164,8 +164,9 @@ if(  ! args$log_fc_column_name %in% colnames(de_phos )  |
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 positive_phosphoproteins <- de_phos %>%
-  dplyr::filter( !!rlang::sym(args$combined_q_mod) < 0.05 &   !!rlang::sym(args$log_fc_column_name) > 0 ) %>%
+  dplyr::filter( !!rlang::sym(args$fdr_column_name) < 0.05 &   !!rlang::sym(args$log_fc_column_name) > 0 ) %>%
   mutate( uniprto_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
+  mutate( uniprto_acc_first = str_replace_all( uniprto_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
   mutate( gene_name_first = purrr::map_chr( gene_name, ~str_split(., ":") %>% map_chr(1)))  %>%
   mutate( protein_name_first = purrr::map_chr( `PROTEIN-NAMES`, ~str_split(., ":") %>% map_chr(1)))  %>%
   group_by(comparison, uniprto_acc_first, gene_name_first, protein_name_first) %>%
@@ -173,14 +174,34 @@ positive_phosphoproteins <- de_phos %>%
   ungroup() %>%
   arrange( comparison, desc(max_norm_phos_logFC  ) ) 
 
-vroom::vroom_write( positive_phosphoproteins, file.path( args$output_dir, "all_phosphoproteins_with_positive_logFC_sites.tab" ))
+vroom::vroom_write( positive_phosphoproteins, 
+                    file.path( args$output_dir, 
+                               "all_phosphoproteins_with_positive_logFC_sites.tab" ),
+                    col_names=FALSE)
+
+ list_of_comparisons <- positive_phosphoproteins %>% distinct( comparison) %>% pull( comparison)
+ 
+ purrr::walk( list_of_comparisons, ~createDirIfNotExists( file.path(args$output_dir,. )) )
+
+ purrr::walk( list_of_comparisons, function( input_comparison){
+   
+   positive_phosphoproteins %>%
+     dplyr::filter( comparison == input_comparison) %>%
+     dplyr::select( uniprto_acc_first) %>%
+     vroom::vroom_write( file.path( args$output_dir, 
+                                    input_comparison, 
+                                    "all_phosphoproteins_with_positive_logFC_sites.tab" ),
+                         col_names=FALSE)
+   
+ } )
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # norm_phos_logFC
 
 negative_phosphoproteins <- de_phos %>%
-  dplyr::filter( !!rlang::sym(args$combined_q_mod) < 0.05 & !!rlang::sym(args$log_fc_column_name)  < 0 ) %>%
+  dplyr::filter( !!rlang::sym(args$fdr_column_name) < 0.05 & !!rlang::sym(args$log_fc_column_name)  < 0 ) %>%
   mutate( uniprto_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
+  mutate( uniprto_acc_first = str_replace_all( uniprto_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
   mutate( gene_name_first = purrr::map_chr( gene_name, ~str_split(., ":") %>% map_chr(1)))  %>%
   mutate( protein_name_first = purrr::map_chr( `PROTEIN-NAMES`, ~str_split(., ":") %>% map_chr(1)))  %>%  
   group_by(comparison, uniprto_acc_first, gene_name_first, protein_name_first) %>%
@@ -188,21 +209,81 @@ negative_phosphoproteins <- de_phos %>%
   ungroup() %>%
   arrange( comparison, min_norm_phos_logFC  )
 
-vroom::vroom_write( negative_phosphoproteins, file.path(args$output_dir, "all_phosphoproteins_with_negative_logFC_sites.tab" ) )
+vroom::vroom_write( negative_phosphoproteins, 
+                    file.path( args$output_dir, 
+                               "all_phosphoproteins_with_negative_logFC_sites.tab" ),
+                    col_names=FALSE )
+
+list_of_comparisons <- negative_phosphoproteins %>% distinct( comparison) %>% pull( comparison)
+
+purrr::walk( list_of_comparisons, ~createDirIfNotExists( file.path(args$output_dir,. )) )
+
+purrr::walk( list_of_comparisons, function( input_comparison){
+  
+  negative_phosphoproteins %>%
+    dplyr::filter( comparison == input_comparison) %>%
+    dplyr::select( uniprto_acc_first) %>%
+    vroom::vroom_write( file.path( args$output_dir, 
+                                   input_comparison, 
+                                   "all_phosphoproteins_with_negative_logFC_sites.tab" ),
+                        col_names=FALSE)
+  
+} )
+
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 positive_only_phosphoproteins <- positive_phosphoproteins %>%
   anti_join( negative_phosphoproteins, by=c("uniprto_acc_first" = "uniprto_acc_first"))
 
-vroom::vroom_write( positive_only_phosphoproteins, file.path(args$output_dir, "phosphoproteins_with_only_positive_logFC_sites.tab" ) )
+vroom::vroom_write( positive_only_phosphoproteins, 
+                    file.path(args$output_dir, 
+                              "phosphoproteins_with_only_positive_logFC_sites.tab" ),
+                    col_names=FALSE )
+
+
+list_of_comparisons <- positive_only_phosphoproteins %>% distinct( comparison) %>% pull( comparison)
+
+purrr::walk( list_of_comparisons, ~createDirIfNotExists( file.path(args$output_dir,. )) )
+
+purrr::walk( list_of_comparisons, function( input_comparison){
+  
+  positive_only_phosphoproteins %>%
+    dplyr::filter( comparison == input_comparison) %>%
+    dplyr::select( uniprto_acc_first) %>%
+    vroom::vroom_write( file.path( args$output_dir, 
+                                   input_comparison, 
+                                   "phosphoproteins_with_only_positive_logFC_sites.tab" ),
+                        col_names=FALSE)
+  
+} )
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 negative_only_phosphoproteins <- negative_phosphoproteins  %>%
   anti_join( positive_phosphoproteins, by=c("uniprto_acc_first" = "uniprto_acc_first"))
 
-vroom::vroom_write( negative_only_phosphoproteins, file.path(args$output_dir, "phosphoproteins_with_only_negative_logFC_sites.tab" ) )
+vroom::vroom_write( negative_only_phosphoproteins, 
+                    file.path(args$output_dir, 
+                              "phosphoproteins_with_only_negative_logFC_sites.tab" ),
+                    col_names=FALSE )
+
+list_of_comparisons <- negative_only_phosphoproteins %>% distinct( comparison) %>% pull( comparison)
+
+purrr::walk( list_of_comparisons, ~createDirIfNotExists( file.path(args$output_dir,. )) )
+
+purrr::walk( list_of_comparisons, function( input_comparison){
+  
+  negative_only_phosphoproteins %>%
+    dplyr::filter( comparison == input_comparison) %>%
+    dplyr::select( uniprto_acc_first) %>%
+    vroom::vroom_write( file.path( args$output_dir, 
+                                   input_comparison, 
+                                   "phosphoproteins_with_only_negative_logFC_sites.tab" ),
+                        col_names=FALSE)
+  
+} )
+
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -211,18 +292,39 @@ all_phosphoproteins_with_significant_da_sites <- positive_phosphoproteins %>%
   distinct()
 
 vroom::vroom_write( all_phosphoproteins_with_significant_da_sites, 
-                    file.path(args$output_dir, "all_phosphoproteins_with_significant_da_sites.tab" ) )
+                    file.path(args$output_dir, 
+                              "all_phosphoproteins_with_significant_da_sites.tab" ),
+                    col_names=FALSE )
+
+list_of_comparisons <- all_phosphoproteins_with_significant_da_sites %>% distinct( comparison) %>% pull( comparison)
+
+purrr::walk( list_of_comparisons, ~createDirIfNotExists( file.path(args$output_dir,. )) )
+
+purrr::walk( list_of_comparisons, function( input_comparison){
+  
+  all_phosphoproteins_with_significant_da_sites %>%
+    dplyr::filter( comparison == input_comparison) %>%
+    dplyr::select( uniprto_acc_first) %>%
+    vroom::vroom_write( file.path( args$output_dir, 
+                                   input_comparison, 
+                                   "all_phosphoproteins_with_significant_da_sites.tab" ),
+                        col_names=FALSE)
+  
+} )
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 background_phosphoproteins  <- de_phos %>%
   mutate( uniprto_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
+  mutate( uniprto_acc_first = str_replace_all( uniprto_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
   mutate( gene_name_first = purrr::map_chr( gene_name, ~str_split(., ":") %>% map_chr(1)))  %>%
   mutate( protein_name_first = purrr::map_chr( `PROTEIN-NAMES`, ~str_split(., ":") %>% map_chr(1)))  %>%  
-  distinct(comparison, uniprto_acc_first, gene_name_first, protein_name_first) %>%
-  arrange( comparison, gene_name_first  )
+  distinct( uniprto_acc_first) %>%
+  arrange( uniprto_acc_first )
 
-vroom::vroom_write( background_phosphoproteins, file.path(args$output_dir, "background_phosphoproteins.tab" ) )
+vroom::vroom_write( background_phosphoproteins, 
+                    file.path(args$output_dir, "background_phosphoproteins.tab" ),
+                    col_names=FALSE )
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 te<-toc(quiet = TRUE)
