@@ -29,6 +29,8 @@ p_load(tictoc)
 
 p_load(qvalue)
 p_load(knitr)
+p_load(GO.db)
+p_load(clusterProfiler)
 
 p_load(magrittr)
 p_load(optparse)
@@ -86,6 +88,43 @@ parser <- add_option(parser, c("--proteins_file"), type="character", dest = "pro
                      help="File with table of differentially expressed proteins.",
                      metavar="string")
 
+parser <- add_option(parser, c("--annotation_file"), type="character", dest = "annotation_file",
+                     help="File with protein accession and functional annotation data.",
+                     metavar="string")
+
+parser <- add_option(parser, c("--protein_id"), type="character", dest = "protein_id",
+                     help="File with protein accession and functional annotation data.",
+                     metavar="string")
+
+parser <- add_option(parser, c("--annotation_id"), type="character", dest = "annotation_id",
+                     help="File with protein accession and functional annotation data.",
+                     metavar="string")
+
+parser <- add_option(parser, c("--annotation_type"), type="character", dest = "annotation_type",
+                     help="Name of the functional annotation data, added to the output file name.",
+                     metavar="string")
+
+parser <- add_option(parser, c("--aspect_column"), type="character", dest = "aspect_column",
+                     help="The aspect of the GO term.",
+                     metavar="string")
+
+parser <- add_option(parser, c("--dictionary_file"), type="character", dest = "dictionary_file",
+                     help="File that converts annotation ID to annotation name.",
+                     metavar="string")
+
+parser <- add_option(parser, c("--max_gene_set_size"), type="character", dest = "max_gene_set_size",
+                     help="The maximum number of genes associaed with each gene set.",
+                     metavar="string")
+
+parser <- add_option(parser, c("--min_gene_set_size"), type="character", dest = "min_gene_set_size",
+                     help="The minimum number of genes associaed with each gene set.",
+                     metavar="string")
+
+parser <- add_option(parser, "--p_val_thresh", type = "double",
+                     help = "p-value threshold below which a GO term is significantly enriched",
+                     metavar = "double")
+
+
 
 #parse comand line arguments first.
 args <- parse_args(parser)
@@ -120,10 +159,53 @@ for (v in names(args))
 loginfo("----------------------------------------------------")
 
 
+
+args <- setArgsDefault(args, "log_fc_column_name", as_func=as.character, default_val="norm_phos_logFC" )
+args <- setArgsDefault(args, "fdr_column_name", as_func=as.character, default_val="combined_q_mod" )
+args <- setArgsDefault(args, "p_val_thresh", as_func=as.double, default_val=0.05 )
+args <- setArgsDefault(args, "max_gene_set_size", as_func=as.character, default_val="200" )
+args <- setArgsDefault(args, "min_gene_set_size", as_func=as.character, default_val="4" )
+
+
+args <- setArgsDefault(args, "protein_id", as_func=as.character, default_val="uniprot_acc" )
+args <- setArgsDefault(args, "annotation_id", as_func=as.character, default_val="go_id" )
+args <- setArgsDefault(args, "aspect_column", as_func=as.character, default_val=NULL )
+args <- setArgsDefault(args, "annotation_column", as_func=as.character, default_val="term" )
+
+args <- setArgsDefault(args, "annotation_type", as_func=as.character, default_val="annotation" )
+
+
+
 testRequiredArguments(args, c(
   "proteins_file",
   "norm_phos_logfc_file"
 ))
+
+if (  !is.null( args$annotation_file )) {
+
+  testRequiredArguments(args, c(
+    "annotation_file",
+    "annotation_type"
+  ))
+
+  testRequiredFiles(c(
+    args$annotation_file))
+
+
+
+  if ( is.null(args$aspect_column)) {
+
+    testRequiredArguments(args, c(
+      "dictionary_file",
+      "annotation_column"
+    ))
+
+    testRequiredFiles(c(
+      args$dictionary_file))
+
+  }
+
+}
 
 testRequiredFiles(c(
   args$proteins_file,
@@ -138,9 +220,6 @@ if(isArgumentDefined(args,"plots_format"))
   logwarn("plots_format is undefined, default output set to pdf.")
   args$plots_format <- list("pdf")
 }
-
-args <- setArgsDefault(args, "log_fc_column_name", as_func=as.character, default_val="norm_phos_logFC" )
-args <- setArgsDefault(args, "fdr_column_name", as_func=as.character, default_val="combined_q_mod" )
 
 ## ---------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -171,11 +250,11 @@ if(  ! args$log_fc_column_name %in% colnames(de_phos )  |
 
 positive_phosphoproteins <- de_phos %>%
   dplyr::filter( !!rlang::sym(args$fdr_column_name) < 0.05 &   !!rlang::sym(args$log_fc_column_name) > 0 ) %>%
-  mutate( uniprto_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
-  mutate( uniprto_acc_first = str_replace_all( uniprto_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
+  mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
+  mutate( uniprot_acc_first = str_replace_all( uniprot_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
   mutate( gene_name_first = purrr::map_chr( gene_name, ~str_split(., ":") %>% map_chr(1)))  %>%
   mutate( protein_name_first = purrr::map_chr( `PROTEIN-NAMES`, ~str_split(., ":") %>% map_chr(1)))  %>%
-  group_by(comparison, uniprto_acc_first, gene_name_first, protein_name_first) %>%
+  group_by(comparison, uniprot_acc_first, gene_name_first, protein_name_first) %>%
   summarise( max_norm_phos_logFC = max(!!rlang::sym(args$log_fc_column_name))) %>%
   ungroup() %>%
   arrange( comparison, desc(max_norm_phos_logFC  ) )
@@ -193,7 +272,7 @@ vroom::vroom_write( positive_phosphoproteins,
 
    positive_phosphoproteins %>%
      dplyr::filter( comparison == input_comparison) %>%
-     dplyr::select( uniprto_acc_first) %>%
+     dplyr::select( uniprot_acc_first) %>%
      vroom::vroom_write( file.path( args$output_dir,
                                     input_comparison,
                                     "all_phosphoproteins_with_positive_logFC_sites.tab" ),
@@ -206,11 +285,11 @@ vroom::vroom_write( positive_phosphoproteins,
 
 negative_phosphoproteins <- de_phos %>%
   dplyr::filter( !!rlang::sym(args$fdr_column_name) < 0.05 & !!rlang::sym(args$log_fc_column_name)  < 0 ) %>%
-  mutate( uniprto_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
-  mutate( uniprto_acc_first = str_replace_all( uniprto_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
+  mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
+  mutate( uniprot_acc_first = str_replace_all( uniprot_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
   mutate( gene_name_first = purrr::map_chr( gene_name, ~str_split(., ":") %>% map_chr(1)))  %>%
   mutate( protein_name_first = purrr::map_chr( `PROTEIN-NAMES`, ~str_split(., ":") %>% map_chr(1)))  %>%
-  group_by(comparison, uniprto_acc_first, gene_name_first, protein_name_first) %>%
+  group_by(comparison, uniprot_acc_first, gene_name_first, protein_name_first) %>%
   summarise( min_norm_phos_logFC = min(!!rlang::sym(args$log_fc_column_name))) %>%
   ungroup() %>%
   arrange( comparison, min_norm_phos_logFC  )
@@ -228,7 +307,7 @@ purrr::walk( list_of_comparisons, function( input_comparison){
 
   negative_phosphoproteins %>%
     dplyr::filter( comparison == input_comparison) %>%
-    dplyr::select( uniprto_acc_first) %>%
+    dplyr::select( uniprot_acc_first) %>%
     vroom::vroom_write( file.path( args$output_dir,
                                    input_comparison,
                                    "all_phosphoproteins_with_negative_logFC_sites.tab" ),
@@ -240,7 +319,7 @@ purrr::walk( list_of_comparisons, function( input_comparison){
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 positive_only_phosphoproteins <- positive_phosphoproteins %>%
-  anti_join( negative_phosphoproteins, by=c("uniprto_acc_first" = "uniprto_acc_first"))
+  anti_join( negative_phosphoproteins, by=c("uniprot_acc_first" = "uniprot_acc_first"))
 
 vroom::vroom_write( positive_only_phosphoproteins,
                     file.path(args$output_dir,
@@ -256,7 +335,7 @@ purrr::walk( list_of_comparisons, function( input_comparison){
 
   positive_only_phosphoproteins %>%
     dplyr::filter( comparison == input_comparison) %>%
-    dplyr::select( uniprto_acc_first) %>%
+    dplyr::select( uniprot_acc_first) %>%
     vroom::vroom_write( file.path( args$output_dir,
                                    input_comparison,
                                    "phosphoproteins_with_only_positive_logFC_sites.tab" ),
@@ -267,7 +346,7 @@ purrr::walk( list_of_comparisons, function( input_comparison){
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 negative_only_phosphoproteins <- negative_phosphoproteins  %>%
-  anti_join( positive_phosphoproteins, by=c("uniprto_acc_first" = "uniprto_acc_first"))
+  anti_join( positive_phosphoproteins, by=c("uniprot_acc_first" = "uniprot_acc_first"))
 
 vroom::vroom_write( negative_only_phosphoproteins,
                     file.path(args$output_dir,
@@ -282,13 +361,47 @@ purrr::walk( list_of_comparisons, function( input_comparison){
 
   negative_only_phosphoproteins %>%
     dplyr::filter( comparison == input_comparison) %>%
-    dplyr::select( uniprto_acc_first) %>%
+    dplyr::select( uniprot_acc_first) %>%
     vroom::vroom_write( file.path( args$output_dir,
                                    input_comparison,
                                    "phosphoproteins_with_only_negative_logFC_sites.tab" ),
                         col_names=FALSE)
 
 } )
+
+
+
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+overlapping_phosphoproteins <- positive_phosphoproteins %>%
+  inner_join( negative_phosphoproteins, by=c("uniprot_acc_first" = "uniprot_acc_first",
+                                             "comparison" = "comparison",
+                                             "gene_name_first" = "gene_name_first",
+                                             "protein_name_first" = "protein_name_first"))
+
+vroom::vroom_write( overlapping_phosphoproteins,
+                    file.path(args$output_dir,
+                              "phosphoproteins_with_positive_and_negative_logFC_sites.tab" ),
+                    col_names=FALSE )
+
+
+list_of_comparisons <- overlapping_phosphoproteins %>% distinct( comparison) %>% pull( comparison)
+
+purrr::walk( list_of_comparisons, ~createDirIfNotExists( file.path(args$output_dir,. )) )
+
+purrr::walk( list_of_comparisons, function( input_comparison){
+
+  overlapping_phosphoproteins %>%
+    dplyr::filter( comparison == input_comparison) %>%
+    dplyr::select( uniprot_acc_first) %>%
+    vroom::vroom_write( file.path( args$output_dir,
+                                   input_comparison,
+                                   "phosphoproteins_with_positive_and_negative_logFC_sites.tab" ),
+                        col_names=FALSE)
+
+} )
+
+
 
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -310,7 +423,7 @@ purrr::walk( list_of_comparisons, function( input_comparison){
 
   all_phosphoproteins_with_significant_da_sites %>%
     dplyr::filter( comparison == input_comparison) %>%
-    dplyr::select( uniprto_acc_first) %>%
+    dplyr::select( uniprot_acc_first) %>%
     vroom::vroom_write( file.path( args$output_dir,
                                    input_comparison,
                                    "all_phosphoproteins_with_significant_da_sites.tab" ),
@@ -330,12 +443,12 @@ logdebug(captured_output)
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 background_phosphoproteins  <- de_phos %>%
-  mutate( uniprto_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
-  mutate( uniprto_acc_first = str_replace_all( uniprto_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
+  mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
+  mutate( uniprot_acc_first = str_replace_all( uniprot_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
   mutate( gene_name_first = purrr::map_chr( gene_name, ~str_split(., ":") %>% map_chr(1)))  %>%
   mutate( protein_name_first = purrr::map_chr( `PROTEIN-NAMES`, ~str_split(., ":") %>% map_chr(1)))  %>%
-  distinct( uniprto_acc_first) %>%
-  arrange( uniprto_acc_first )
+  distinct( uniprot_acc_first) %>%
+  arrange( uniprot_acc_first )
 
 vroom::vroom_write( background_phosphoproteins,
                     file.path(args$output_dir, "background_phosphoproteins.tab" ),
@@ -351,6 +464,8 @@ vroom::vroom_write( background_proteins,
                     file.path(args$output_dir, "background_proteins.tab" ),
                     col_names=FALSE )
 
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 background_proteins_phosphoproteins <- background_proteins %>%
   bind_rows( background_phosphoproteins) %>%
   distinct( uniprot_acc_first)
@@ -358,6 +473,195 @@ background_proteins_phosphoproteins <- background_proteins %>%
 vroom::vroom_write( background_proteins_phosphoproteins,
                     file.path(args$output_dir, "background_proteins_phosphoproteins.tab" ),
                     col_names=FALSE )
+
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+if (  !is.null( args$annotation_file )) {
+
+  one_go_enrichment <- function(go_annot, background_list, go_aspect, query_list, id_to_annotation_dictionary,
+                                annotation_id, protein_id, aspect_column, p_val_thresh, min_gene_set_size,  max_gene_set_size  ) {
+
+    join_condition <- rlang::set_names( c( colnames(background_list)[1]),
+                                        c( quo_name(enquo( protein_id)) ) )
+
+    #print("reached here 1")
+    if ( !is.null( go_aspect)) {
+      go_annot_filt <- go_annot %>%
+        dplyr::filter( {{aspect_column}} == go_aspect)
+    } else {
+      go_annot_filt <- go_annot
+    }
+
+    filtered_go_terms <- go_annot_filt %>%
+      inner_join( background_list, by =join_condition )  %>%
+      group_by( {{annotation_id}} ) %>%
+      summarise(counts =n()) %>%
+      ungroup() %>%
+      arrange(desc(counts)) %>%
+      dplyr::filter( counts <= max_gene_set_size & counts >= min_gene_set_size ) %>%
+      dplyr::filter( counts >= 2) %>%
+      dplyr::select(-counts)
+
+    term_to_gene_tbl_filt <- go_annot_filt %>%
+      inner_join( background_list, by =join_condition )  %>%
+      dplyr::inner_join( filtered_go_terms, by = quo_name(enquo( annotation_id))  )  %>%
+      dplyr::rename( gene = quo_name(enquo(protein_id )) ,
+                     term = quo_name(enquo( annotation_id)) ) %>%
+      dplyr::select(term, gene) %>%
+      dplyr::distinct( term, gene )
+
+    # print(nrow(term_to_gene_tbl_filt))
+
+    terms_to_avoid <- term_to_gene_tbl_filt %>%
+      distinct() %>%
+      dplyr::inner_join(data.frame(uniprot_acc = query_list), by=c("gene" = "uniprot_acc") )  %>%
+      distinct() %>%
+      group_by( term) %>%
+      summarise(counts =n()) %>%
+      ungroup() %>%
+      dplyr::filter( counts < 2)
+
+    term_to_gene_tbl_filt_no_singleton <- term_to_gene_tbl_filt %>%
+      dplyr::anti_join( terms_to_avoid, by="term")
+
+    enrichment_result <- enricher(
+      intersect( query_list ,
+                 term_to_gene_tbl_filt_no_singleton %>% distinct(gene) %>% pull(gene)),
+      pvalueCutoff = p_val_thresh,
+      pAdjustMethod = "BH",
+      minGSSize = min_gene_set_size,
+      maxGSSize = max_gene_set_size,
+      qvalueCutoff = p_val_thresh,
+      TERM2GENE =term_to_gene_tbl_filt_no_singleton
+    )
+
+    convertIdToAnnotation <- function( id, id_to_annotation_dictionary, go_aspect ) {
+
+      if( !is.null( go_aspect)) {
+        return( ifelse( !is.null(id_to_annotation_dictionary[[id]] ),
+                        Term( id_to_annotation_dictionary[[id]] ),
+                        NA_character_))
+      } else {
+        return( ifelse( !is.null(id_to_annotation_dictionary[[id]] ),
+                        id_to_annotation_dictionary[[id]] ,
+                        NA_character_))
+      }
+
+    }
+
+    output_table <-  as.data.frame( enrichment_result ) %>%
+      dplyr::mutate( term = purrr::map_chr( ID,
+                                            function(id) {
+                                              convertIdToAnnotation(id,
+                                                                    id_to_annotation_dictionary,
+                                                                    go_aspect) } )) %>%
+      dplyr::relocate( term, .before="Description") %>%
+      dplyr::mutate( min_gene_set_size = min_gene_set_size,
+                     max_gene_set_size = max_gene_set_size )
+
+
+    output_table_with_go_aspect <- NA
+    if ( !is.null( go_aspect)) {
+      output_table_with_go_aspect <- output_table %>%
+          dplyr::mutate( {{aspect_column}} := go_aspect)
+    } else {
+      output_table_with_go_aspect <- output_table
+    }
+
+    return(output_table_with_go_aspect)
+
+  }
+
+  ## Tidy up the annotation ID to annotation term name dictionary
+  id_to_annotation_dictionary <- NA
+
+  if ( !is.null( args$aspect_column )) {
+    id_to_annotation_dictionary <- as.list(GOTERM)
+  }else {
+    dictionary <- vroom::vroom( dictionary_file )
+    id_to_annotation_dictionary <- dictionary %>% pull( !!rlang::sym(args$annotation_column))
+    names(id_to_annotation_dictionary ) <-  dictionary %>% pull( !!rlang::sym(args$annotation_id   ))
+  }
+
+  ## preparing the enrichment test
+  go_annot <- vroom::vroom(  args$annotation_file   )
+
+  background_list <- background_proteins_phosphoproteins
+
+  one_go_enrichment_partial <- purrr::partial( one_go_enrichment,
+                                               go_annot = go_annot,
+                                               background_list = background_list,
+                                               id_to_annotation_dictionary=id_to_annotation_dictionary,
+                                               annotation_id=!!rlang::sym(args$annotation_id),
+                                               protein_id=!!rlang::sym(args$protein_id),
+                                               aspect_column=!!rlang::sym(args$aspect_column),
+                                               p_val_thresh=args$p_val_thresh)
+
+  parseNumList <-  function ( input_text ) {
+    if( str_detect( input_text, "[.,;:]")) {
+      str_split( input_text, "[.,;:]")[[1]] %>% purrr::map_int( as.integer)
+    } else {
+      return( as.integer( input_text ))
+    }
+  }
+
+  print( args$min_gene_set_size)
+  min_gene_set_size_list <- parseNumList(args$min_gene_set_size)
+  max_gene_set_size_list <- parseNumList(args$max_gene_set_size)
+
+
+  runOneGoEnrichmentInOutFunction <- function(go_aspect, input_comparison, min_gene_set_size, max_gene_set_size) {
+    query_list <- all_phosphoproteins_with_significant_da_sites %>%
+      dplyr::filter( comparison == input_comparison) %>%
+      pull(uniprot_acc_first)
+
+    enrichment_result <- one_go_enrichment_partial(
+      go_aspect = go_aspect,
+      query_list=query_list,
+      min_gene_set_size=min_gene_set_size,
+      max_gene_set_size=max_gene_set_size ) %>%
+      dplyr::mutate(  comparison = input_comparison )
+
+    return(enrichment_result )
+
+  }
+
+ list_of_comparisons <- all_phosphoproteins_with_significant_da_sites %>%
+   distinct(comparison) %>%
+   pull(comparison)
+
+ # Tidy up GO aspect list, marked as null if not using GO terms
+ go_aspect_list <- NA
+ if(!is.null(args$aspect_column)) {
+   go_aspect_list <- c("C", "F", "P")
+ } else {
+   go_aspect_list <- NULL
+ }
+
+ input_params <- cross( list( go_aspect=go_aspect_list,
+                              input_comparison = list_of_comparisons,
+                              min_size = min_gene_set_size_list,
+                              max_size = max_gene_set_size_list) )
+
+ enrichment_result <- purrr::map(input_params, ~runOneGoEnrichmentInOutFunction(go_aspect=.$go_aspect,
+                                                                                input_comparison=.$input_comparison,
+                                                                                min_gene_set_size=.$min_size,
+                                                                                max_gene_set_size=.$max_size)) %>%
+   bind_rows()
+
+
+ ## generate the output files
+ purrr::walk(list_of_comparisons, function(input_comparison) {
+   output_file <- paste0( args$annotation_type, "_table_", input_comparison, ".tab" )
+
+   vroom::vroom_write(enrichment_result %>%
+                        dplyr::filter( comparison == input_comparison),
+                      file=file.path( args$output_dir,
+                                      input_comparison,
+                                      output_file ) ) })
+
+}
 
 
 
