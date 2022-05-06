@@ -607,14 +607,26 @@ if (  !is.null( args$annotation_file )) {
 
   background_list <- background_proteins_phosphoproteins
 
-  one_go_enrichment_partial <- purrr::partial( one_go_enrichment,
-                                               go_annot = go_annot,
-                                               background_list = background_list,
-                                               id_to_annotation_dictionary=id_to_annotation_dictionary,
-                                               annotation_id=!!rlang::sym(args$annotation_id),
-                                               protein_id=!!rlang::sym(args$protein_id),
-                                               aspect_column=!!rlang::sym(args$aspect_column),
-                                               p_val_thresh=args$p_val_thresh)
+  one_go_enrichment_partial <- NA
+  if(!is.null(args$aspect_column )) {
+    one_go_enrichment_partial <- purrr::partial( one_go_enrichment,
+                                                 go_annot = go_annot,
+                                                 background_list = background_list,
+                                                 id_to_annotation_dictionary=id_to_annotation_dictionary,
+                                                 annotation_id=!!rlang::sym(args$annotation_id),
+                                                 protein_id=!!rlang::sym(args$protein_id),
+                                                 aspect_column=!!rlang::sym(args$aspect_column),
+                                                 p_val_thresh=args$p_val_thresh)
+  } else {
+    one_go_enrichment_partial <- purrr::partial( one_go_enrichment,
+                                                 go_annot = go_annot,
+                                                 background_list = background_list,
+                                                 id_to_annotation_dictionary=id_to_annotation_dictionary,
+                                                 annotation_id=!!rlang::sym(args$annotation_id),
+                                                 protein_id=!!rlang::sym(args$protein_id),
+                                                 aspect_column=args$aspect_column,
+                                                 p_val_thresh=args$p_val_thresh)
+  }
 
   parseNumList <-  function ( input_text ) {
     if( str_detect( input_text, "[.,;:]")) {
