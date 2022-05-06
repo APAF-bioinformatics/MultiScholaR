@@ -580,8 +580,16 @@ if (  !is.null( args$annotation_file )) {
     id_to_annotation_dictionary <- as.list(GOTERM)
   }else {
     dictionary <- vroom::vroom( dictionary_file )
-    id_to_annotation_dictionary <- dictionary %>% pull( !!rlang::sym(args$annotation_column))
-    names(id_to_annotation_dictionary ) <-  dictionary %>% pull( !!rlang::sym(args$annotation_id   ))
+
+    dictionary_pair <- dictionary %>%
+      distinct(!!rlang::sym(args$annotation_column),
+               !!rlang::sym(args$annotation_id))
+
+    id_to_annotation_dictionary <- dictionary_pair %>%
+      pull( !!rlang::sym(args$annotation_column))
+
+    names(id_to_annotation_dictionary ) <-  dictionary_pair %>%
+      pull( !!rlang::sym(args$annotation_id   ))
   }
 
   ## preparing the enrichment test
