@@ -170,6 +170,11 @@ args <- setArgsDefault(args, "min_gene_set_size", as_func=as.character, default_
 args <- setArgsDefault(args, "protein_id", as_func=as.character, default_val="uniprot_acc" )
 args <- setArgsDefault(args, "annotation_id", as_func=as.character, default_val="go_id" )
 args <- setArgsDefault(args, "aspect_column", as_func=as.character, default_val=NULL )
+if( !is.null(args$aspect_column )) {
+  if( args$aspect_column == "NULL" ) {
+    args$aspect_column <- NULL
+  }
+}
 args <- setArgsDefault(args, "annotation_column", as_func=as.character, default_val="term" )
 
 args <- setArgsDefault(args, "annotation_type", as_func=as.character, default_val="annotation" )
@@ -579,7 +584,7 @@ if (  !is.null( args$annotation_file )) {
   if ( !is.null( args$aspect_column )) {
     id_to_annotation_dictionary <- as.list(GOTERM)
   }else {
-    dictionary <- vroom::vroom( dictionary_file )
+    dictionary <- vroom::vroom( args$dictionary_file )
 
     dictionary_pair <- dictionary %>%
       distinct(!!rlang::sym(args$annotation_column),
