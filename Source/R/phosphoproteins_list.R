@@ -100,6 +100,11 @@ parser <- add_option(parser, c("--annotation_id"), type="character", dest = "ann
                      help="File with protein accession and functional annotation data.",
                      metavar="string")
 
+parser <- add_option(parser, c("--annotation_column"), type="character", dest = "annotation_column",
+                     help="Column with the long name and biological details of the functional annotation.",
+                     metavar="string")
+
+
 parser <- add_option(parser, c("--annotation_type"), type="character", dest = "annotation_type",
                      help="Name of the functional annotation data, added to the output file name.",
                      metavar="string")
