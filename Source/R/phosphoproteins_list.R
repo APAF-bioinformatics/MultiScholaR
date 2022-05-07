@@ -93,11 +93,11 @@ parser <- add_option(parser, c("--annotation_file"), type="character", dest = "a
                      metavar="string")
 
 parser <- add_option(parser, c("--protein_id"), type="character", dest = "protein_id",
-                     help="File with protein accession and functional annotation data.",
+                     help="The protein id in the annotation file.",
                      metavar="string")
 
 parser <- add_option(parser, c("--annotation_id"), type="character", dest = "annotation_id",
-                     help="File with protein accession and functional annotation data.",
+                     help="The annotatio id in the annotation file.",
                      metavar="string")
 
 parser <- add_option(parser, c("--annotation_column"), type="character", dest = "annotation_column",
@@ -129,7 +129,17 @@ parser <- add_option(parser, "--p_val_thresh", type = "double",
                      help = "p-value threshold below which a GO term is significantly enriched",
                      metavar = "double")
 
+parser <- add_option(parser, "--uniprot_to_gene_symbol_file", type = "character",
+                     help = "A file that contains the dictionary to convert uniprot accession to gene symbol. Uses the column specified in 'protein_id_lookup_column' flag for protein ID. Uses the column specified in 'gene_symbol_column' for the gene symbol column.",
+                     metavar = "string")
 
+parser <- add_option(parser, "--protein_id_lookup_column", type = "character",
+                     help = "The  name of the column that contained the protein ID to convert into gene symobl.",
+                     metavar = "string")
+
+parser <- add_option(parser, "--gene_symbol_column", type = "character",
+                     help = "The  name of the column that contained the gene symobl.",
+                     metavar = "string")
 
 #parse comand line arguments first.
 args <- parse_args(parser)
@@ -175,7 +185,8 @@ args <- setArgsDefault(args, "min_gene_set_size", as_func=as.character, default_
 args <- setArgsDefault(args, "protein_id", as_func=as.character, default_val="uniprot_acc" )
 args <- setArgsDefault(args, "annotation_id", as_func=as.character, default_val="go_id" )
 args <- setArgsDefault(args, "aspect_column", as_func=as.character, default_val=NULL )
-if( !is.null(args$aspect_column )) {
+
+if( isArgumentDefined(args, "aspect_column" )) {
   if( args$aspect_column == "NULL" ) {
     args$aspect_column <- NULL
   }
@@ -184,14 +195,12 @@ args <- setArgsDefault(args, "annotation_column", as_func=as.character, default_
 
 args <- setArgsDefault(args, "annotation_type", as_func=as.character, default_val="annotation" )
 
-
-
 testRequiredArguments(args, c(
   "proteins_file",
   "norm_phos_logfc_file"
 ))
 
-if (  !is.null( args$annotation_file )) {
+if( isArgumentDefined( args, "annotation_file" )) {
 
   testRequiredArguments(args, c(
     "annotation_file",
@@ -201,9 +210,7 @@ if (  !is.null( args$annotation_file )) {
   testRequiredFiles(c(
     args$annotation_file))
 
-
-
-  if ( is.null(args$aspect_column)) {
+  if (! isArgumentDefined(args, "aspect_column")) {
 
     testRequiredArguments(args, c(
       "dictionary_file",
@@ -223,12 +230,20 @@ testRequiredFiles(c(
 
 args<-parseString(args,c("plots_format"))
 
-if(isArgumentDefined(args,"plots_format"))
-{
+if(isArgumentDefined(args,"plots_format")) {
   args <- parseList(args,c("plots_format"))
-}else {
+} else {
   logwarn("plots_format is undefined, default output set to pdf.")
   args$plots_format <- list("pdf")
+}
+
+if(isArgumentDefined(args, "uniprot_to_gene_symbol_file")) {
+  testRequiredFiles(c(
+    args$uniprot_to_gene_symbol_file))
+
+  testRequiredArguments(args, c(
+    "gene_symbol_column",
+    "protein_id_lookup_column" ))
 }
 
 ## ---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -496,7 +511,7 @@ if (  !is.null( args$annotation_file )) {
                                         c( quo_name(enquo( protein_id)) ) )
 
     #print("reached here 1")
-    if ( !is.null( go_aspect)) {
+    if ( !is.na( go_aspect)) {
       go_annot_filt <- go_annot %>%
         dplyr::filter( {{aspect_column}} == go_aspect)
     } else {
@@ -548,7 +563,7 @@ if (  !is.null( args$annotation_file )) {
 
     convertIdToAnnotation <- function( id, id_to_annotation_dictionary, go_aspect ) {
 
-      if( !is.null( go_aspect)) {
+      if( !is.na( go_aspect)) {
         return( ifelse( !is.null(id_to_annotation_dictionary[[id]] ),
                         Term( id_to_annotation_dictionary[[id]] ),
                         NA_character_))
@@ -572,7 +587,7 @@ if (  !is.null( args$annotation_file )) {
 
 
     output_table_with_go_aspect <- NA
-    if ( !is.null( go_aspect)) {
+    if ( !is.na( go_aspect)) {
       output_table_with_go_aspect <- output_table %>%
           dplyr::mutate( {{aspect_column}} := go_aspect)
     } else {
@@ -636,12 +651,14 @@ if (  !is.null( args$annotation_file )) {
     }
   }
 
-  print( args$min_gene_set_size)
+  #print( args$min_gene_set_size)
   min_gene_set_size_list <- parseNumList(args$min_gene_set_size)
   max_gene_set_size_list <- parseNumList(args$max_gene_set_size)
 
 
   runOneGoEnrichmentInOutFunction <- function(go_aspect, input_comparison, min_gene_set_size, max_gene_set_size) {
+
+    # print("start enrichment")
     query_list <- all_phosphoproteins_with_significant_da_sites %>%
       dplyr::filter( comparison == input_comparison) %>%
       pull(uniprot_acc_first)
@@ -652,6 +669,9 @@ if (  !is.null( args$annotation_file )) {
       min_gene_set_size=min_gene_set_size,
       max_gene_set_size=max_gene_set_size ) %>%
       dplyr::mutate(  comparison = input_comparison )
+
+    # print(paste( "input_comparison =", input_comparison ) )
+    # print(colnames( enrichment_result))
 
     return(enrichment_result )
 
@@ -666,8 +686,10 @@ if (  !is.null( args$annotation_file )) {
  if(!is.null(args$aspect_column)) {
    go_aspect_list <- c("C", "F", "P")
  } else {
-   go_aspect_list <- NULL
+   go_aspect_list <- NA
  }
+
+ # print( paste("is.na(go_aspect_list) =", is.na(go_aspect_list)) )
 
  input_params <- cross( list( go_aspect=go_aspect_list,
                               input_comparison = list_of_comparisons,
@@ -680,12 +702,55 @@ if (  !is.null( args$annotation_file )) {
                                                                                 max_gene_set_size=.$max_size)) %>%
    bind_rows()
 
+ enrichment_result_add_gene_symbol <- NA
+ ## Convert Uniprot accession to gene names
+ if(isArgumentDefined(args, "uniprot_to_gene_symbol_file")) {
+   # args$uniprot_to_gene_symbol_file <- "/home/ubuntu/Workings/2021/ALPK1_BMP_06/Data/UniProt/data.tab"
+
+   # args$protein_id_lookup_column <- "Entry"
+   # args$gene_symbol_column <- "Gene names"
+
+   # Clean up protein ID to gene sybmol table
+   uniprot_to_gene_symbol <- vroom::vroom( file.path( args$uniprot_to_gene_symbol_file))  %>%
+     dplyr::select( !!rlang::sym(args$protein_id_lookup_column),
+                    !!rlang::sym(args$gene_symbol_column)) %>%
+     dplyr::rename( !!rlang::sym(args$protein_id) := args$protein_id_lookup_column) %>%
+     dplyr::rename( gene_symbol = args$gene_symbol_column) %>%
+     dplyr::mutate( gene_symbol = str_split(  gene_symbol , " " ) %>%
+                      purrr::map_chr( 1)) %>%
+     dplyr::distinct( !!rlang::sym(args$protein_id), gene_symbol)
+
+   ## Convert to lookup dictionary
+   uniprot_to_gene_symbol_dict <- uniprot_to_gene_symbol %>% pull( gene_symbol)
+   names( uniprot_to_gene_symbol_dict )  <- uniprot_to_gene_symbol %>% pull( !!rlang::sym(args$protein_id))
+
+
+   convertProteinAccToGeneSymbol <- function( gene_id_list ) {
+
+     purrr::map_chr( gene_id_list,
+                     ~{ ifelse( . %in% names(uniprot_to_gene_symbol_dict ),
+                                uniprot_to_gene_symbol_dict[[.]],
+                                NA_character_)   } )  %>%
+       paste( collapse="/")
+   }
+
+   enrichment_result_add_gene_symbol <- enrichment_result %>%
+     mutate( gene_id_list = str_split( geneID, "/") ) %>%
+     mutate( gene_symbol = purrr::map_chr( gene_id_list,
+                                           convertProteinAccToGeneSymbol)) %>%
+     dplyr::select(-gene_id_list)
+
+ } else {
+   enrichment_result_add_gene_symbol <- enrichment_result
+ }
+
+
 
  ## generate the output files
  purrr::walk(list_of_comparisons, function(input_comparison) {
    output_file <- paste0( args$annotation_type, "_table_", input_comparison, ".tab" )
 
-   vroom::vroom_write(enrichment_result %>%
+   vroom::vroom_write(enrichment_result_add_gene_symbol %>%
                         dplyr::filter( comparison == input_comparison),
                       file=file.path( args$output_dir,
                                       input_comparison,
