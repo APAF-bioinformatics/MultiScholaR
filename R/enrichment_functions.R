@@ -25,7 +25,7 @@ convertIdToAnnotation <- function( id, id_to_annotation_dictionary, go_aspect ) 
 }
 
 #' @export
-one_go_enrichment <- function(go_annot, background_list, go_aspect, query_list, id_to_annotation_dictionary,
+oneGoEnrichment <- function(go_annot, background_list, go_aspect, query_list, id_to_annotation_dictionary,
                               annotation_id, protein_id, aspect_column, p_val_thresh, min_gene_set_size,  max_gene_set_size  ) {
 
   join_condition <- rlang::set_names( c( colnames(background_list)[1]),

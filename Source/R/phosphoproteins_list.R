@@ -530,9 +530,9 @@ if (  !is.null( args$annotation_file )) {
 
   background_list <- background_proteins_phosphoproteins
 
-  one_go_enrichment_partial <- NA
+  oneGoEnrichmentPartial <- NA
   if(!is.null(args$aspect_column )) {
-    one_go_enrichment_partial <- purrr::partial( one_go_enrichment,
+    oneGoEnrichmentPartial <- purrr::partial( oneGoEnrichment,
                                                  go_annot = go_annot,
                                                  background_list = background_list,
                                                  id_to_annotation_dictionary=id_to_annotation_dictionary,
@@ -541,7 +541,7 @@ if (  !is.null( args$annotation_file )) {
                                                  aspect_column=!!rlang::sym(args$aspect_column),
                                                  p_val_thresh=args$p_val_thresh)
   } else {
-    one_go_enrichment_partial <- purrr::partial( one_go_enrichment,
+    oneGoEnrichmentPartial <- purrr::partial( oneGoEnrichment,
                                                  go_annot = go_annot,
                                                  background_list = background_list,
                                                  id_to_annotation_dictionary=id_to_annotation_dictionary,
@@ -550,8 +550,6 @@ if (  !is.null( args$annotation_file )) {
                                                  aspect_column=args$aspect_column,
                                                  p_val_thresh=args$p_val_thresh)
   }
-
-
 
   #print( args$min_gene_set_size)
   min_gene_set_size_list <- parseNumList(args$min_gene_set_size)
