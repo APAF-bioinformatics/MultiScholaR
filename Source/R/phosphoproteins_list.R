@@ -504,106 +504,14 @@ vroom::vroom_write( background_proteins_phosphoproteins,
 
 if (  !is.null( args$annotation_file )) {
 
-  one_go_enrichment <- function(go_annot, background_list, go_aspect, query_list, id_to_annotation_dictionary,
-                                annotation_id, protein_id, aspect_column, p_val_thresh, min_gene_set_size,  max_gene_set_size  ) {
-
-    join_condition <- rlang::set_names( c( colnames(background_list)[1]),
-                                        c( quo_name(enquo( protein_id)) ) )
-
-    #print("reached here 1")
-    if ( !is.na( go_aspect)) {
-      go_annot_filt <- go_annot %>%
-        dplyr::filter( {{aspect_column}} == go_aspect)
-    } else {
-      go_annot_filt <- go_annot
-    }
-
-    filtered_go_terms <- go_annot_filt %>%
-      inner_join( background_list, by =join_condition )  %>%
-      group_by( {{annotation_id}} ) %>%
-      summarise(counts =n()) %>%
-      ungroup() %>%
-      arrange(desc(counts)) %>%
-      dplyr::filter( counts <= max_gene_set_size & counts >= min_gene_set_size ) %>%
-      dplyr::filter( counts >= 2) %>%
-      dplyr::select(-counts)
-
-    term_to_gene_tbl_filt <- go_annot_filt %>%
-      inner_join( background_list, by =join_condition )  %>%
-      dplyr::inner_join( filtered_go_terms, by = quo_name(enquo( annotation_id))  )  %>%
-      dplyr::rename( gene = quo_name(enquo(protein_id )) ,
-                     term = quo_name(enquo( annotation_id)) ) %>%
-      dplyr::select(term, gene) %>%
-      dplyr::distinct( term, gene )
-
-    # print(nrow(term_to_gene_tbl_filt))
-
-    terms_to_avoid <- term_to_gene_tbl_filt %>%
-      distinct() %>%
-      dplyr::inner_join(data.frame(uniprot_acc = query_list), by=c("gene" = "uniprot_acc") )  %>%
-      distinct() %>%
-      group_by( term) %>%
-      summarise(counts =n()) %>%
-      ungroup() %>%
-      dplyr::filter( counts < 2)
-
-    term_to_gene_tbl_filt_no_singleton <- term_to_gene_tbl_filt %>%
-      dplyr::anti_join( terms_to_avoid, by="term")
-
-    enrichment_result <- enricher(
-      intersect( query_list ,
-                 term_to_gene_tbl_filt_no_singleton %>% distinct(gene) %>% pull(gene)),
-      pvalueCutoff = p_val_thresh,
-      pAdjustMethod = "BH",
-      minGSSize = min_gene_set_size,
-      maxGSSize = max_gene_set_size,
-      qvalueCutoff = p_val_thresh,
-      TERM2GENE =term_to_gene_tbl_filt_no_singleton
-    )
-
-    convertIdToAnnotation <- function( id, id_to_annotation_dictionary, go_aspect ) {
-
-      if( !is.na( go_aspect)) {
-        return( ifelse( !is.null(id_to_annotation_dictionary[[id]] ),
-                        Term( id_to_annotation_dictionary[[id]] ),
-                        NA_character_))
-      } else {
-        return( ifelse( !is.null(id_to_annotation_dictionary[[id]] ),
-                        id_to_annotation_dictionary[[id]] ,
-                        NA_character_))
-      }
-
-    }
-
-    output_table <-  as.data.frame( enrichment_result ) %>%
-      dplyr::mutate( term = purrr::map_chr( ID,
-                                            function(id) {
-                                              convertIdToAnnotation(id,
-                                                                    id_to_annotation_dictionary,
-                                                                    go_aspect) } )) %>%
-      dplyr::relocate( term, .before="Description") %>%
-      dplyr::mutate( min_gene_set_size = min_gene_set_size,
-                     max_gene_set_size = max_gene_set_size )
-
-
-    output_table_with_go_aspect <- NA
-    if ( !is.na( go_aspect)) {
-      output_table_with_go_aspect <- output_table %>%
-          dplyr::mutate( {{aspect_column}} := go_aspect)
-    } else {
-      output_table_with_go_aspect <- output_table
-    }
-
-    return(output_table_with_go_aspect)
-
-  }
 
   ## Tidy up the annotation ID to annotation term name dictionary
   id_to_annotation_dictionary <- NA
 
-  if ( !is.null( args$aspect_column )) {
-    id_to_annotation_dictionary <- as.list(GOTERM)
-  }else {
+  # if ( !is.null( args$aspect_column )) {
+  #   ## If I remove this criteria, the code will be more able to analyze different annotations domains in the same run
+  #   id_to_annotation_dictionary <- as.list(GOTERM)
+  # }else {
     dictionary <- vroom::vroom( args$dictionary_file )
 
     dictionary_pair <- dictionary %>%
@@ -615,7 +523,7 @@ if (  !is.null( args$annotation_file )) {
 
     names(id_to_annotation_dictionary ) <-  dictionary_pair %>%
       pull( !!rlang::sym(args$annotation_id   ))
-  }
+  # }
 
   ## preparing the enrichment test
   go_annot <- vroom::vroom(  args$annotation_file   )
@@ -643,39 +551,12 @@ if (  !is.null( args$annotation_file )) {
                                                  p_val_thresh=args$p_val_thresh)
   }
 
-  parseNumList <-  function ( input_text ) {
-    if( str_detect( input_text, "[.,;:]")) {
-      str_split( input_text, "[.,;:]")[[1]] %>% purrr::map_int( as.integer)
-    } else {
-      return( as.integer( input_text ))
-    }
-  }
+
 
   #print( args$min_gene_set_size)
   min_gene_set_size_list <- parseNumList(args$min_gene_set_size)
   max_gene_set_size_list <- parseNumList(args$max_gene_set_size)
 
-
-  runOneGoEnrichmentInOutFunction <- function(go_aspect, input_comparison, min_gene_set_size, max_gene_set_size) {
-
-    # print("start enrichment")
-    query_list <- all_phosphoproteins_with_significant_da_sites %>%
-      dplyr::filter( comparison == input_comparison) %>%
-      pull(uniprot_acc_first)
-
-    enrichment_result <- one_go_enrichment_partial(
-      go_aspect = go_aspect,
-      query_list=query_list,
-      min_gene_set_size=min_gene_set_size,
-      max_gene_set_size=max_gene_set_size ) %>%
-      dplyr::mutate(  comparison = input_comparison )
-
-    # print(paste( "input_comparison =", input_comparison ) )
-    # print(colnames( enrichment_result))
-
-    return(enrichment_result )
-
-  }
 
  list_of_comparisons <- all_phosphoproteins_with_significant_da_sites %>%
    distinct(comparison) %>%
@@ -684,7 +565,9 @@ if (  !is.null( args$annotation_file )) {
  # Tidy up GO aspect list, marked as null if not using GO terms
  go_aspect_list <- NA
  if(!is.null(args$aspect_column)) {
-   go_aspect_list <- c("C", "F", "P")
+   go_aspect_list <- go_annot %>%
+     distinct( !!rlang::sym( args$aspect_column) ) %>%
+     pull( !!rlang::sym( args$aspect_column) ) # c("C", "F", "P")
  } else {
    go_aspect_list <- NA
  }
@@ -696,10 +579,17 @@ if (  !is.null( args$annotation_file )) {
                               min_size = min_gene_set_size_list,
                               max_size = max_gene_set_size_list) )
 
- enrichment_result <- purrr::map(input_params, ~runOneGoEnrichmentInOutFunction(go_aspect=.$go_aspect,
-                                                                                input_comparison=.$input_comparison,
-                                                                                min_gene_set_size=.$min_size,
-                                                                                max_gene_set_size=.$max_size)) %>%
+ runOneGoEnrichmentInOutFunctionPartial <- purrr::partial ( runOneGoEnrichmentInOutFunction,
+                  input_table = all_phosphoproteins_with_significant_da_sites,
+                  comparison_column = comparison,
+                  protein_id_column = uniprot_acc_first )
+
+ enrichment_result <- purrr::map( input_params,
+                                  ~runOneGoEnrichmentInOutFunctionPartial(
+                                    go_aspect=.$go_aspect,
+                                    input_comparison=.$input_comparison,
+                                    min_gene_set_size=.$min_size,
+                                    max_gene_set_size=.$max_size)) %>%
    bind_rows()
 
  enrichment_result_add_gene_symbol <- NA
@@ -721,23 +611,18 @@ if (  !is.null( args$annotation_file )) {
      dplyr::distinct( !!rlang::sym(args$protein_id), gene_symbol)
 
    ## Convert to lookup dictionary
-   uniprot_to_gene_symbol_dict <- uniprot_to_gene_symbol %>% pull( gene_symbol)
-   names( uniprot_to_gene_symbol_dict )  <- uniprot_to_gene_symbol %>% pull( !!rlang::sym(args$protein_id))
+   uniprot_to_gene_symbol_dict <- uniprot_to_gene_symbol %>%
+     pull( gene_symbol)
+   names( uniprot_to_gene_symbol_dict )  <- uniprot_to_gene_symbol %>%
+     pull( !!rlang::sym(args$protein_id))
 
-
-   convertProteinAccToGeneSymbol <- function( gene_id_list ) {
-
-     purrr::map_chr( gene_id_list,
-                     ~{ ifelse( . %in% names(uniprot_to_gene_symbol_dict ),
-                                uniprot_to_gene_symbol_dict[[.]],
-                                NA_character_)   } )  %>%
-       paste( collapse="/")
-   }
+   convertProteinAccToGeneSymbolPartial <- purrr::partial( convertProteinAccToGeneSymbol,
+                                                           dictionary = uniprot_to_gene_symbol_dict)
 
    enrichment_result_add_gene_symbol <- enrichment_result %>%
      mutate( gene_id_list = str_split( geneID, "/") ) %>%
      mutate( gene_symbol = purrr::map_chr( gene_id_list,
-                                           convertProteinAccToGeneSymbol)) %>%
+                                           convertProteinAccToGeneSymbolPartial)) %>%
      dplyr::select(-gene_id_list)
 
  } else {
