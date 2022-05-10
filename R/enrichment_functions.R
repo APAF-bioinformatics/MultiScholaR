@@ -115,8 +115,7 @@ oneGoEnrichment <- function(go_annot, background_list, go_aspect, query_list, id
 
 
 #'@export
-runOneGoEnrichmentInOutFunction <- function(input_table,
-                                            comparison_column,
+runOneGoEnrichmentInOutFunction <- function(comparison_column,
                                             protein_id_column,
                                             go_annot = go_annot,
                                             background_list,
@@ -126,6 +125,8 @@ runOneGoEnrichmentInOutFunction <- function(input_table,
                                             aspect_column,
                                             p_val_thresh,
                                             ## These are the parameters that are usually presented as different combinations via the cross functions
+                                            names_of_genes_list,
+                                            input_table,
                                             go_aspect,
                                             input_comparison,
                                             min_gene_set_size,
@@ -164,7 +165,8 @@ runOneGoEnrichmentInOutFunction <- function(input_table,
 
   if( !is.null( enrichment_temp)) {
     enrichment_result <- enrichment_temp %>%
-      dplyr::mutate(  {{comparison_column}} := input_comparison )
+      dplyr::mutate(  {{comparison_column}} := input_comparison ) %>%
+      dplyr::mutate( names_of_genes_list = names_of_genes_list)
 
     return(enrichment_result )
 

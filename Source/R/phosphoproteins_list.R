@@ -525,12 +525,9 @@ if (  !is.null( args$annotation_file )) {
 
   background_list <- background_proteins_phosphoproteins
 
-
-
   #print( args$min_gene_set_size)
   min_gene_set_size_list <- parseNumList(args$min_gene_set_size)
   max_gene_set_size_list <- parseNumList(args$max_gene_set_size)
-
 
  list_of_comparisons <- all_phosphoproteins_with_significant_da_sites %>%
    distinct(comparison) %>%
@@ -548,13 +545,17 @@ if (  !is.null( args$annotation_file )) {
 
  # print( paste("is.na(go_aspect_list) =", is.na(go_aspect_list)) )
 
- input_params <- cross( list( go_aspect=go_aspect_list,
-                              input_comparison = list_of_comparisons,
-                              min_size = min_gene_set_size_list,
-                              max_size = max_gene_set_size_list) )
+ list_of_genes_list <- list( all_significant=all_phosphoproteins_with_significant_da_sites )
+
+ input_params <- cross( list(
+   names_of_genes_list = names( list_of_genes_list),
+   input_table = list_of_genes_list,
+   go_aspect=go_aspect_list,
+   input_comparison = list_of_comparisons,
+   min_size = min_gene_set_size_list,
+   max_size = max_gene_set_size_list) )
 
  runOneGoEnrichmentInOutFunctionPartial <- purrr::partial ( runOneGoEnrichmentInOutFunction,
-                  input_table = all_phosphoproteins_with_significant_da_sites,
                   comparison_column = comparison,
                   protein_id_column = uniprot_acc_first,
                   go_annot = go_annot,
@@ -567,6 +568,8 @@ if (  !is.null( args$annotation_file )) {
 
  enrichment_result <- purrr::map( input_params,
                                   ~runOneGoEnrichmentInOutFunctionPartial(
+                                    names_of_genes_list = .$names_of_genes_list,
+                                    input_table=.$input_table,
                                     go_aspect=.$go_aspect,
                                     input_comparison=.$input_comparison,
                                     min_gene_set_size=.$min_size,
