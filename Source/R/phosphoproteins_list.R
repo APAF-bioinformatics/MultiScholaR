@@ -553,8 +553,6 @@ if (  !is.null( args$annotation_file )) {
                               min_size = min_gene_set_size_list,
                               max_size = max_gene_set_size_list) )
 
- print("Reached here")
-
  runOneGoEnrichmentInOutFunctionPartial <- purrr::partial ( runOneGoEnrichmentInOutFunction,
                   input_table = all_phosphoproteins_with_significant_da_sites,
                   comparison_column = comparison,
@@ -577,56 +575,59 @@ if (  !is.null( args$annotation_file )) {
 
  if(is.null(enrichment_result)) {
    warnings("No enriched terms were identified.")
- }
-
- enrichment_result_add_gene_symbol <- NA
- ## Convert Uniprot accession to gene names
- if(isArgumentDefined(args, "uniprot_to_gene_symbol_file")) {
-   # args$uniprot_to_gene_symbol_file <- "/home/ubuntu/Workings/2021/ALPK1_BMP_06/Data/UniProt/data.tab"
-
-   # args$protein_id_lookup_column <- "Entry"
-   # args$gene_symbol_column <- "Gene names"
-
-   # Clean up protein ID to gene sybmol table
-   uniprot_to_gene_symbol <- vroom::vroom( file.path( args$uniprot_to_gene_symbol_file))  %>%
-     dplyr::select( !!rlang::sym(args$protein_id_lookup_column),
-                    !!rlang::sym(args$gene_symbol_column)) %>%
-     dplyr::rename( !!rlang::sym(args$protein_id) := args$protein_id_lookup_column) %>%
-     dplyr::rename( gene_symbol = args$gene_symbol_column) %>%
-     dplyr::mutate( gene_symbol = str_split(  gene_symbol , " " ) %>%
-                      purrr::map_chr( 1)) %>%
-     dplyr::distinct( !!rlang::sym(args$protein_id), gene_symbol)
-
-   ## Convert to lookup dictionary
-   uniprot_to_gene_symbol_dict <- uniprot_to_gene_symbol %>%
-     pull( gene_symbol)
-   names( uniprot_to_gene_symbol_dict )  <- uniprot_to_gene_symbol %>%
-     pull( !!rlang::sym(args$protein_id))
-
-   convertProteinAccToGeneSymbolPartial <- purrr::partial( convertProteinAccToGeneSymbol,
-                                                           dictionary = uniprot_to_gene_symbol_dict)
-
-   enrichment_result_add_gene_symbol <- enrichment_result %>%
-     mutate( gene_id_list = str_split( geneID, "/") ) %>%
-     mutate( gene_symbol = purrr::map_chr( gene_id_list,
-                                           convertProteinAccToGeneSymbolPartial)) %>%
-     dplyr::select(-gene_id_list)
-
  } else {
-   enrichment_result_add_gene_symbol <- enrichment_result
+
+
+   enrichment_result_add_gene_symbol <- NA
+   ## Convert Uniprot accession to gene names
+   if(isArgumentDefined(args, "uniprot_to_gene_symbol_file")) {
+     # args$uniprot_to_gene_symbol_file <- "/home/ubuntu/Workings/2021/ALPK1_BMP_06/Data/UniProt/data.tab"
+
+     # args$protein_id_lookup_column <- "Entry"
+     # args$gene_symbol_column <- "Gene names"
+
+     # Clean up protein ID to gene sybmol table
+     uniprot_to_gene_symbol <- vroom::vroom( file.path( args$uniprot_to_gene_symbol_file))  %>%
+       dplyr::select( !!rlang::sym(args$protein_id_lookup_column),
+                      !!rlang::sym(args$gene_symbol_column)) %>%
+       dplyr::rename( !!rlang::sym(args$protein_id) := args$protein_id_lookup_column) %>%
+       dplyr::rename( gene_symbol = args$gene_symbol_column) %>%
+       dplyr::mutate( gene_symbol = str_split(  gene_symbol , " " ) %>%
+                        purrr::map_chr( 1)) %>%
+       dplyr::distinct( !!rlang::sym(args$protein_id), gene_symbol)
+
+     ## Convert to lookup dictionary
+     uniprot_to_gene_symbol_dict <- uniprot_to_gene_symbol %>%
+       pull( gene_symbol)
+     names( uniprot_to_gene_symbol_dict )  <- uniprot_to_gene_symbol %>%
+       pull( !!rlang::sym(args$protein_id))
+
+     convertProteinAccToGeneSymbolPartial <- purrr::partial( convertProteinAccToGeneSymbol,
+                                                             dictionary = uniprot_to_gene_symbol_dict)
+
+     enrichment_result_add_gene_symbol <- enrichment_result %>%
+       mutate( gene_id_list = str_split( geneID, "/") ) %>%
+       mutate( gene_symbol = purrr::map_chr( gene_id_list,
+                                             convertProteinAccToGeneSymbolPartial)) %>%
+       dplyr::select(-gene_id_list)
+
+   } else {
+     enrichment_result_add_gene_symbol <- enrichment_result
+   }
+
+
+
+   ## generate the output files
+   purrr::walk(list_of_comparisons, function(input_comparison) {
+     output_file <- paste0( args$annotation_type, "_table_", input_comparison, ".tab" )
+
+     vroom::vroom_write(enrichment_result_add_gene_symbol %>%
+                          dplyr::filter( comparison == input_comparison),
+                        file=file.path( args$output_dir,
+                                        input_comparison,
+                                        output_file ) ) })
+
  }
-
-
-
- ## generate the output files
- purrr::walk(list_of_comparisons, function(input_comparison) {
-   output_file <- paste0( args$annotation_type, "_table_", input_comparison, ".tab" )
-
-   vroom::vroom_write(enrichment_result_add_gene_symbol %>%
-                        dplyr::filter( comparison == input_comparison),
-                      file=file.path( args$output_dir,
-                                      input_comparison,
-                                      output_file ) ) })
 
 }
 

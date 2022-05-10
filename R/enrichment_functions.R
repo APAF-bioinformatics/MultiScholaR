@@ -9,7 +9,7 @@ parseNumList <-  function ( input_text ) {
   }
 }
 
-
+#'@export
 convertIdToAnnotation <- function( id, id_to_annotation_dictionary) {
 
     return( ifelse( !is.null(id_to_annotation_dictionary[[id]] ),
@@ -27,7 +27,6 @@ oneGoEnrichment <- function(go_annot, background_list, go_aspect, query_list, id
   join_condition <- rlang::set_names( c( colnames(background_list)[1]),
                                       c( quo_name(enquo( protein_id)) ) )
 
-  print("reached oneGoEnrichment")
   if ( !is.na( go_aspect)) {
     go_annot_filt <- go_annot %>%
       dplyr::filter( {{aspect_column}} == go_aspect)
@@ -69,9 +68,10 @@ oneGoEnrichment <- function(go_annot, background_list, go_aspect, query_list, id
 
   no_singleton_terms_query_gene_list <- intersect( query_list ,
                                                    term_to_gene_tbl_filt_no_singleton %>%
-                                                     distinct(gene) %>%
-                                                     pull(gene))
+                                                     dplyr::distinct(gene) %>%
+                                                     dplyr::pull(gene))
 
+  print("Problem here")
   enrichment_result <- enricher(
     no_singleton_terms_query_gene_list,
     pvalueCutoff = p_val_thresh,
@@ -81,6 +81,7 @@ oneGoEnrichment <- function(go_annot, background_list, go_aspect, query_list, id
     qvalueCutoff = p_val_thresh,
     TERM2GENE =term_to_gene_tbl_filt_no_singleton
   )
+  print("Problem there")
 
   if(!is.null(enrichment_result) ) {
 
@@ -93,7 +94,7 @@ oneGoEnrichment <- function(go_annot, background_list, go_aspect, query_list, id
       dplyr::mutate( min_gene_set_size = min_gene_set_size,
                      max_gene_set_size = max_gene_set_size )
 
-
+    print("Problem everywhere")
     output_table_with_go_aspect <- NA
     if ( !is.na( go_aspect)) {
       output_table_with_go_aspect <- output_table %>%
@@ -113,7 +114,7 @@ oneGoEnrichment <- function(go_annot, background_list, go_aspect, query_list, id
 
 
 
-#' @export
+#'@export
 runOneGoEnrichmentInOutFunction <- function(input_table,
                                             comparison_column,
                                             protein_id_column,
@@ -130,9 +131,8 @@ runOneGoEnrichmentInOutFunction <- function(input_table,
                                             min_gene_set_size,
                                             max_gene_set_size) {
 
-
   oneGoEnrichmentPartial <- NA
-  if(!is.null(args$aspect_column )) {
+  if(!is.null(aspect_column )) {
     oneGoEnrichmentPartial <- purrr::partial( oneGoEnrichment,
                                               go_annot = go_annot,
                                               background_list = background_list,
@@ -152,8 +152,6 @@ runOneGoEnrichmentInOutFunction <- function(input_table,
                                               p_val_thresh=p_val_thresh)
   }
 
-
-  # print("start enrichment")
   query_list <- input_table %>%
     dplyr::filter( {{comparison_column}} == input_comparison) %>%
     pull( {{protein_id_column}})
@@ -176,7 +174,7 @@ runOneGoEnrichmentInOutFunction <- function(input_table,
 
 }
 
-#' @export
+#'@export
 convertProteinAccToGeneSymbol <- function( gene_id_list, dictionary ) {
 
   purrr::map_chr( gene_id_list,
