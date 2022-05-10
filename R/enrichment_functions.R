@@ -126,7 +126,7 @@ runOneGoEnrichmentInOutFunction <- function(input_table,
     query_list=query_list,
     min_gene_set_size=min_gene_set_size,
     max_gene_set_size=max_gene_set_size ) %>%
-    dplyr::mutate(  {{comparison_column}} = input_comparison )
+    dplyr::mutate(  {{comparison_column}} := input_comparison )
 
   return(enrichment_result )
 
