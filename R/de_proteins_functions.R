@@ -9,7 +9,7 @@
 #'@param col_pattern String representing regular expression pattern that matches the name of columns containing the protein abundance values.
 #'@param row_id The column name with the row_id, tidyverse style name.
 #'@return A data frame with the rows without abundance values removed.
-#' @export
+#'@export
 removeEmptyRows <- function(input_table, col_pattern, row_id) {
 
   temp_col_name <- paste0("temp_", quo_name(enquo(row_id)))

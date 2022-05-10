@@ -508,48 +508,24 @@ if (  !is.null( args$annotation_file )) {
   ## Tidy up the annotation ID to annotation term name dictionary
   id_to_annotation_dictionary <- NA
 
-  # if ( !is.null( args$aspect_column )) {
-  #   ## If I remove this criteria, the code will be more able to analyze different annotations domains in the same run
-  #   id_to_annotation_dictionary <- as.list(GOTERM)
-  # }else {
-    dictionary <- vroom::vroom( args$dictionary_file )
+  dictionary <- vroom::vroom( args$dictionary_file )
 
-    dictionary_pair <- dictionary %>%
-      distinct(!!rlang::sym(args$annotation_column),
-               !!rlang::sym(args$annotation_id))
+  dictionary_pair <- dictionary %>%
+    distinct(!!rlang::sym(args$annotation_column),
+             !!rlang::sym(args$annotation_id))
 
-    id_to_annotation_dictionary <- dictionary_pair %>%
-      pull( !!rlang::sym(args$annotation_column))
+  id_to_annotation_dictionary <- dictionary_pair %>%
+    pull( !!rlang::sym(args$annotation_column))
 
-    names(id_to_annotation_dictionary ) <-  dictionary_pair %>%
-      pull( !!rlang::sym(args$annotation_id   ))
-  # }
+  names(id_to_annotation_dictionary ) <-  dictionary_pair %>%
+    pull( !!rlang::sym(args$annotation_id   ))
 
   ## preparing the enrichment test
   go_annot <- vroom::vroom(  args$annotation_file   )
 
   background_list <- background_proteins_phosphoproteins
 
-  oneGoEnrichmentPartial <- NA
-  if(!is.null(args$aspect_column )) {
-    oneGoEnrichmentPartial <- purrr::partial( oneGoEnrichment,
-                                                 go_annot = go_annot,
-                                                 background_list = background_list,
-                                                 id_to_annotation_dictionary=id_to_annotation_dictionary,
-                                                 annotation_id=!!rlang::sym(args$annotation_id),
-                                                 protein_id=!!rlang::sym(args$protein_id),
-                                                 aspect_column=!!rlang::sym(args$aspect_column),
-                                                 p_val_thresh=args$p_val_thresh)
-  } else {
-    oneGoEnrichmentPartial <- purrr::partial( oneGoEnrichment,
-                                                 go_annot = go_annot,
-                                                 background_list = background_list,
-                                                 id_to_annotation_dictionary=id_to_annotation_dictionary,
-                                                 annotation_id=!!rlang::sym(args$annotation_id),
-                                                 protein_id=!!rlang::sym(args$protein_id),
-                                                 aspect_column=args$aspect_column,
-                                                 p_val_thresh=args$p_val_thresh)
-  }
+
 
   #print( args$min_gene_set_size)
   min_gene_set_size_list <- parseNumList(args$min_gene_set_size)
@@ -577,10 +553,19 @@ if (  !is.null( args$annotation_file )) {
                               min_size = min_gene_set_size_list,
                               max_size = max_gene_set_size_list) )
 
+ print("Reached here")
+
  runOneGoEnrichmentInOutFunctionPartial <- purrr::partial ( runOneGoEnrichmentInOutFunction,
                   input_table = all_phosphoproteins_with_significant_da_sites,
                   comparison_column = comparison,
-                  protein_id_column = uniprot_acc_first )
+                  protein_id_column = uniprot_acc_first,
+                  go_annot = go_annot,
+                  background_list = background_list,
+                  id_to_annotation_dictionary=id_to_annotation_dictionary,
+                  annotation_id=!!rlang::sym(args$annotation_id),
+                  protein_id=!!rlang::sym(args$protein_id),
+                  aspect_column=args$aspect_column,
+                  p_val_thresh=args$p_val_thresh)
 
  enrichment_result <- purrr::map( input_params,
                                   ~runOneGoEnrichmentInOutFunctionPartial(
@@ -589,6 +574,10 @@ if (  !is.null( args$annotation_file )) {
                                     min_gene_set_size=.$min_size,
                                     max_gene_set_size=.$max_size)) %>%
    bind_rows()
+
+ if(is.null(enrichment_result)) {
+   warnings("No enriched terms were identified.")
+ }
 
  enrichment_result_add_gene_symbol <- NA
  ## Convert Uniprot accession to gene names

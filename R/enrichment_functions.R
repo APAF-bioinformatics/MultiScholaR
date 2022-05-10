@@ -1,6 +1,6 @@
 
 # Function used for parsing a list of minimum or maximum gene set size from command line
-#' @export
+#'@export
 parseNumList <-  function ( input_text ) {
   if( str_detect( input_text, "[.,;:]")) {
     str_split( input_text, "[.,;:]")[[1]] %>% purrr::map_int( as.integer)
@@ -10,28 +10,24 @@ parseNumList <-  function ( input_text ) {
 }
 
 
-convertIdToAnnotation <- function( id, id_to_annotation_dictionary, go_aspect ) {
+convertIdToAnnotation <- function( id, id_to_annotation_dictionary) {
 
-  # if( !is.na( go_aspect)) {
-  #   return( ifelse( !is.null(id_to_annotation_dictionary[[id]] ),
-  #                   Term( id_to_annotation_dictionary[[id]] ),
-  #                   NA_character_))
-  # } else {
     return( ifelse( !is.null(id_to_annotation_dictionary[[id]] ),
                     id_to_annotation_dictionary[[id]] ,
                     NA_character_))
-  # }
 
 }
 
-#' @export
+
+#'@param go_annot: Go annotation table.
+#'@export
 oneGoEnrichment <- function(go_annot, background_list, go_aspect, query_list, id_to_annotation_dictionary,
                               annotation_id, protein_id, aspect_column, p_val_thresh, min_gene_set_size,  max_gene_set_size  ) {
 
   join_condition <- rlang::set_names( c( colnames(background_list)[1]),
                                       c( quo_name(enquo( protein_id)) ) )
 
-  #print("reached here 1")
+  print("reached oneGoEnrichment")
   if ( !is.na( go_aspect)) {
     go_annot_filt <- go_annot %>%
       dplyr::filter( {{aspect_column}} == go_aspect)
@@ -71,9 +67,13 @@ oneGoEnrichment <- function(go_annot, background_list, go_aspect, query_list, id
   term_to_gene_tbl_filt_no_singleton <- term_to_gene_tbl_filt %>%
     dplyr::anti_join( terms_to_avoid, by="term")
 
+  no_singleton_terms_query_gene_list <- intersect( query_list ,
+                                                   term_to_gene_tbl_filt_no_singleton %>%
+                                                     distinct(gene) %>%
+                                                     pull(gene))
+
   enrichment_result <- enricher(
-    intersect( query_list ,
-               term_to_gene_tbl_filt_no_singleton %>% distinct(gene) %>% pull(gene)),
+    no_singleton_terms_query_gene_list,
     pvalueCutoff = p_val_thresh,
     pAdjustMethod = "BH",
     minGSSize = min_gene_set_size,
@@ -82,27 +82,32 @@ oneGoEnrichment <- function(go_annot, background_list, go_aspect, query_list, id
     TERM2GENE =term_to_gene_tbl_filt_no_singleton
   )
 
+  if(!is.null(enrichment_result) ) {
 
-  output_table <-  as.data.frame( enrichment_result ) %>%
-    dplyr::mutate( term = purrr::map_chr( ID,
-                                          function(id) {
-                                            convertIdToAnnotation(id,
-                                                                  id_to_annotation_dictionary,
-                                                                  go_aspect) } )) %>%
-    dplyr::relocate( term, .before="Description") %>%
-    dplyr::mutate( min_gene_set_size = min_gene_set_size,
-                   max_gene_set_size = max_gene_set_size )
+    output_table <-  as.data.frame( enrichment_result ) %>%
+      dplyr::mutate( term = purrr::map_chr( ID,
+                                            function(id) {
+                                              convertIdToAnnotation(id,
+                                                                    id_to_annotation_dictionary) } )) %>%
+      dplyr::relocate( term, .before="Description") %>%
+      dplyr::mutate( min_gene_set_size = min_gene_set_size,
+                     max_gene_set_size = max_gene_set_size )
 
 
-  output_table_with_go_aspect <- NA
-  if ( !is.na( go_aspect)) {
-    output_table_with_go_aspect <- output_table %>%
-      dplyr::mutate( {{aspect_column}} := go_aspect)
+    output_table_with_go_aspect <- NA
+    if ( !is.na( go_aspect)) {
+      output_table_with_go_aspect <- output_table %>%
+        dplyr::mutate( {{aspect_column}} := go_aspect)
+    } else {
+      output_table_with_go_aspect <- output_table
+    }
+
+    return(output_table_with_go_aspect)
+
   } else {
-    output_table_with_go_aspect <- output_table
-  }
 
-  return(output_table_with_go_aspect)
+    return( NULL)
+  }
 
 }
 
@@ -112,25 +117,62 @@ oneGoEnrichment <- function(go_annot, background_list, go_aspect, query_list, id
 runOneGoEnrichmentInOutFunction <- function(input_table,
                                             comparison_column,
                                             protein_id_column,
+                                            go_annot = go_annot,
+                                            background_list,
+                                            id_to_annotation_dictionary,
+                                            annotation_id,
+                                            protein_id,
+                                            aspect_column,
+                                            p_val_thresh,
                                             ## These are the parameters that are usually presented as different combinations via the cross functions
                                             go_aspect,
                                             input_comparison,
                                             min_gene_set_size,
                                             max_gene_set_size) {
 
+
+  oneGoEnrichmentPartial <- NA
+  if(!is.null(args$aspect_column )) {
+    oneGoEnrichmentPartial <- purrr::partial( oneGoEnrichment,
+                                              go_annot = go_annot,
+                                              background_list = background_list,
+                                              id_to_annotation_dictionary=id_to_annotation_dictionary,
+                                              annotation_id= {{annotation_id}},
+                                              protein_id={{protein_id}},
+                                              aspect_column={{aspect_column}},
+                                              p_val_thresh=p_val_thresh)
+  } else {
+    oneGoEnrichmentPartial <- purrr::partial( oneGoEnrichment,
+                                              go_annot = go_annot,
+                                              background_list = background_list,
+                                              id_to_annotation_dictionary=id_to_annotation_dictionary,
+                                              annotation_id= {{annotation_id}},
+                                              protein_id={{protein_id}},
+                                              aspect_column=aspect_column,
+                                              p_val_thresh=p_val_thresh)
+  }
+
+
   # print("start enrichment")
   query_list <- input_table %>%
     dplyr::filter( {{comparison_column}} == input_comparison) %>%
     pull( {{protein_id_column}})
 
-  enrichment_result <- one_go_enrichment_partial(
+  enrichment_temp <- oneGoEnrichmentPartial(
     go_aspect = go_aspect,
     query_list=query_list,
     min_gene_set_size=min_gene_set_size,
-    max_gene_set_size=max_gene_set_size ) %>%
-    dplyr::mutate(  {{comparison_column}} := input_comparison )
+    max_gene_set_size=max_gene_set_size )
 
-  return(enrichment_result )
+  if( !is.null( enrichment_temp)) {
+    enrichment_result <- enrichment_temp %>%
+      dplyr::mutate(  {{comparison_column}} := input_comparison )
+
+    return(enrichment_result )
+
+  } else {
+    return (NULL)
+  }
 
 }
 
