@@ -537,6 +537,7 @@ if (  !is.null( args$annotation_file )) {
  go_aspect_list <- NA
  if(!is.null(args$aspect_column)) {
    go_aspect_list <- go_annot %>%
+     dplyr::filter( !is.na(!!rlang::sym( args$aspect_column) )) %>%
      distinct( !!rlang::sym( args$aspect_column) ) %>%
      pull( !!rlang::sym( args$aspect_column) ) # c("C", "F", "P")
  } else {
@@ -554,11 +555,15 @@ if (  !is.null( args$annotation_file )) {
 
  input_params <- cross( list(
    names_of_genes_list = names( list_of_genes_list),
-   input_table = list_of_genes_list,
    go_aspect=go_aspect_list,
    input_comparison = list_of_comparisons,
    min_size = min_gene_set_size_list,
    max_size = max_gene_set_size_list) )
+
+ input_params_updated <- purrr::map( input_params,
+                                     function(x) {
+                                       x$input_table <- list_of_genes_list[[x$names_of_genes_list]]
+                                     return(x)})
 
  runOneGoEnrichmentInOutFunctionPartial <- purrr::partial ( runOneGoEnrichmentInOutFunction,
                   comparison_column = comparison,
@@ -571,7 +576,7 @@ if (  !is.null( args$annotation_file )) {
                   aspect_column=args$aspect_column,
                   p_val_thresh=args$p_val_thresh)
 
- enrichment_result <- purrr::map( input_params,
+ enrichment_result <- purrr::map( input_params_updated,
                                   ~runOneGoEnrichmentInOutFunctionPartial(
                                     names_of_genes_list = .$names_of_genes_list,
                                     input_table=.$input_table,

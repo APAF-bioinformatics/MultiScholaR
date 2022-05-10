@@ -71,7 +71,6 @@ oneGoEnrichment <- function(go_annot, background_list, go_aspect, query_list, id
                                                      dplyr::distinct(gene) %>%
                                                      dplyr::pull(gene))
 
-  print("Problem here")
   enrichment_result <- enricher(
     no_singleton_terms_query_gene_list,
     pvalueCutoff = p_val_thresh,
@@ -81,7 +80,6 @@ oneGoEnrichment <- function(go_annot, background_list, go_aspect, query_list, id
     qvalueCutoff = p_val_thresh,
     TERM2GENE =term_to_gene_tbl_filt_no_singleton
   )
-  print("Problem there")
 
   if(!is.null(enrichment_result) ) {
 
@@ -94,7 +92,6 @@ oneGoEnrichment <- function(go_annot, background_list, go_aspect, query_list, id
       dplyr::mutate( min_gene_set_size = min_gene_set_size,
                      max_gene_set_size = max_gene_set_size )
 
-    print("Problem everywhere")
     output_table_with_go_aspect <- NA
     if ( !is.na( go_aspect)) {
       output_table_with_go_aspect <- output_table %>%
