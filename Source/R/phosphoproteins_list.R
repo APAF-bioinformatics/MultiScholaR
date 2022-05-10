@@ -545,7 +545,12 @@ if (  !is.null( args$annotation_file )) {
 
  # print( paste("is.na(go_aspect_list) =", is.na(go_aspect_list)) )
 
- list_of_genes_list <- list( all_significant=all_phosphoproteins_with_significant_da_sites )
+ list_of_genes_list <- list( all_significant=all_phosphoproteins_with_significant_da_sites,
+                             overlap_only=overlapping_phosphoproteins,
+                             negative_only=negative_only_phosphoproteins,
+                             positive_only=positive_only_phosphoproteins,
+                             negative_plus_overlap=negative_phosphoproteins,
+                             positive_plus_overlap=positive_phosphoproteins)
 
  input_params <- cross( list(
    names_of_genes_list = names( list_of_genes_list),
