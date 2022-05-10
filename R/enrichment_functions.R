@@ -1,5 +1,6 @@
 
 # Function used for parsing a list of minimum or maximum gene set size from command line
+#' @export
 parseNumList <-  function ( input_text ) {
   if( str_detect( input_text, "[.,;:]")) {
     str_split( input_text, "[.,;:]")[[1]] %>% purrr::map_int( as.integer)
@@ -7,6 +8,7 @@ parseNumList <-  function ( input_text ) {
     return( as.integer( input_text ))
   }
 }
+
 
 convertIdToAnnotation <- function( id, id_to_annotation_dictionary, go_aspect ) {
 
@@ -22,7 +24,7 @@ convertIdToAnnotation <- function( id, id_to_annotation_dictionary, go_aspect ) 
 
 }
 
-
+#' @export
 one_go_enrichment <- function(go_annot, background_list, go_aspect, query_list, id_to_annotation_dictionary,
                               annotation_id, protein_id, aspect_column, p_val_thresh, min_gene_set_size,  max_gene_set_size  ) {
 
@@ -106,7 +108,7 @@ one_go_enrichment <- function(go_annot, background_list, go_aspect, query_list, 
 
 
 
-
+#' @export
 runOneGoEnrichmentInOutFunction <- function(input_table,
                                             comparison_column,
                                             protein_id_column,
@@ -132,7 +134,7 @@ runOneGoEnrichmentInOutFunction <- function(input_table,
 
 }
 
-
+#' @export
 convertProteinAccToGeneSymbol <- function( gene_id_list, dictionary ) {
 
   purrr::map_chr( gene_id_list,
