@@ -71,6 +71,18 @@ oneGoEnrichment <- function(go_annot, background_list, go_aspect, query_list, id
                                                      dplyr::distinct(gene) %>%
                                                      dplyr::pull(gene))
 
+  # print(quo_name(enquo(aspect_column)))
+  # print(go_aspect)
+  # print(nrow( go_annot))
+  # print(nrow( go_annot_filt))
+  # print(nrow( filtered_go_terms))
+  # print(nrow(term_to_gene_tbl_filt))
+  # print( length( no_singleton_terms_query_gene_list) )
+  # print( nrow( term_to_gene_tbl_filt_no_singleton))
+  # print(p_val_thresh )
+  # print( min_gene_set_size)
+  # print( max_gene_set_size)
+
   enrichment_result <- enricher(
     no_singleton_terms_query_gene_list,
     pvalueCutoff = p_val_thresh,
@@ -137,7 +149,7 @@ runOneGoEnrichmentInOutFunction <- function(comparison_column,
                                               id_to_annotation_dictionary=id_to_annotation_dictionary,
                                               annotation_id= {{annotation_id}},
                                               protein_id={{protein_id}},
-                                              aspect_column={{aspect_column}},
+                                              aspect_column=!!rlang::sym(aspect_column),
                                               p_val_thresh=p_val_thresh)
   } else {
     oneGoEnrichmentPartial <- purrr::partial( oneGoEnrichment,
@@ -153,6 +165,8 @@ runOneGoEnrichmentInOutFunction <- function(comparison_column,
   query_list <- input_table %>%
     dplyr::filter( {{comparison_column}} == input_comparison) %>%
     pull( {{protein_id_column}})
+
+  # print( paste( "size of query list = ", length( query_list)) )
 
   enrichment_temp <- oneGoEnrichmentPartial(
     go_aspect = go_aspect,

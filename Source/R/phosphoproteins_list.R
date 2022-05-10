@@ -586,7 +586,8 @@ if (  !is.null( args$annotation_file )) {
                                     max_gene_set_size=.$max_size)) %>%
    bind_rows()
 
- if(is.null(enrichment_result)) {
+ if(is.null(enrichment_result) |
+    nrow(enrichment_result) == 0 ) {
    warnings("No enriched terms were identified.")
  } else {
 
@@ -617,6 +618,8 @@ if (  !is.null( args$annotation_file )) {
 
      convertProteinAccToGeneSymbolPartial <- purrr::partial( convertProteinAccToGeneSymbol,
                                                              dictionary = uniprot_to_gene_symbol_dict)
+
+     print( head(enrichment_result))
 
      enrichment_result_add_gene_symbol <- enrichment_result %>%
        mutate( gene_id_list = str_split( geneID, "/") ) %>%
