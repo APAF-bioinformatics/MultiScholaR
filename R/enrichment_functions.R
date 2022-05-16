@@ -251,3 +251,128 @@ listifyTableByColumn  <- function(input_table, column_name) {
 
   list_of_tables
 }
+
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#'@export
+cmriCamera <- function( abundance_mat, design_mat, contrast_name, index_name, index,
+                        contrast, min_set_size = 4, max_set_size=300) {
+
+  print(paste("contrast_name =", contrast_name))
+  print(paste("index_name =", index_name))
+
+  print(contrast)
+
+  this_contrast <- contrast
+  msigdb_ids <- index
+
+  #convert gene sets into a list of gene indices
+  camera_indices <- ids2indices(msigdb_ids,
+                                rownames(abundance_mat))
+
+  ## At least two genes in the gene set
+  set_sizes <- purrr::map(camera_indices, length)
+  camera_indices_filt <- camera_indices[ set_sizes >= min_set_size &
+                                           set_sizes <= max_set_size]
+
+
+
+  camera_result <- NA
+  if (length(camera_indices_filt) > 0) {
+    camera_result <- camera(y = abundance_mat,
+                            design = design_mat,
+                            index = camera_indices_filt,
+                            contrast = this_contrast)
+  }
+
+  info_list <- list(camera = camera_result,
+                    y = abundance_mat,
+                    design = design_mat,
+
+                    index_name = index_name,
+                    index = camera_indices_filt,
+
+                    contrast_name = contrast_name,
+                    contrast = this_contrast,
+                    min_set_size = min_set_size,
+                    max_set_size= max_set_size)
+
+  return(info_list)
+
+}
+
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#'@export
+runGsea <- function(index_name, contrast_name, list_of_de_proteins, list_of_gene_sets, min_set_size = 4, max_set_size = 300) {
+
+  gene_list <- list_of_de_proteins[[contrast_name]]
+
+  msigdb_gene_set <- geneIds(list_of_gene_sets[[index_name]])
+
+  query_gene_list <- data.frame(gene = names(gene_list))
+
+  term_to_gene_tab <- tibble(term = names(msigdb_gene_set), gene = msigdb_gene_set) %>%
+    unnest(gene) %>%
+    dplyr::inner_join(query_gene_list, by = c("gene"))
+
+  terms_to_keep <- term_to_gene_tab %>%
+    group_by(term) %>%
+    summarise(counts = n()) %>%
+    ungroup() %>%
+    dplyr::filter( counts >= min_set_size &
+                     counts <= max_set_size) %>%
+    dplyr::select(-counts)
+
+  term_to_gene_tab_filt <- term_to_gene_tab %>%
+    inner_join(terms_to_keep, by = "term") %>%
+    mutate(gene = as.character(gene))
+
+  ## Check that there is overlap
+  # intersect( names( gene_list_final) ,  unique( term_to_gene_tab_filt$gene )) %>% length
+
+
+  gsea_results <- GSEA(geneList = gene_list, TERM2GENE = as.data.frame(term_to_gene_tab_filt))
+
+  return(gsea_results)
+
+}
+
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#'@export
+runEnricher <- function(index_name, contrast_name, list_of_de_proteins, list_of_gene_sets, min_set_size = 4, max_set_size = 300) {
+
+  gene_list <- list_of_de_proteins[[contrast_name]]
+
+  msigdb_gene_set <- geneIds(list_of_gene_sets[[index_name]])
+
+  query_gene_list <- data.frame(gene = gene_list)
+
+  term_to_gene_tab <- tibble(term = names(msigdb_gene_set), gene = msigdb_gene_set) %>%
+    unnest(gene) %>%
+    dplyr::inner_join(query_gene_list, by = c("gene"))
+
+  terms_to_keep <- term_to_gene_tab %>%
+    group_by(term) %>%
+    summarise(counts = n()) %>%
+    ungroup() %>%
+    dplyr::filter( counts >= min_set_size &
+                     counts <= max_set_size  ) %>%
+    dplyr::select(-counts)
+
+  term_to_gene_tab_filt <- term_to_gene_tab %>%
+    inner_join(terms_to_keep, by = "term") %>%
+    mutate(gene = as.character(gene))
+
+  ## Check that there is overlap
+  # intersect( names( gene_list_final) ,  unique( term_to_gene_tab_filt$gene )) %>% length
+
+  print(intersect(gene_list, unique(term_to_gene_tab_filt$gene)) %>% length)
+
+  gsea_results <- enricher(gene = gene_list, TERM2GENE = as.data.frame(term_to_gene_tab_filt))
+
+  return(gsea_results)
+
+}
+

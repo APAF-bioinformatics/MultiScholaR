@@ -368,7 +368,8 @@ if( args$aspect_column  %in% colnames( dictionary) ) {
 
 } else {
 
-  annotation_types_list <- dictionary
+  annotation_types_list <- list( dictionary )
+  names( annotation_types_list) <- args$annotation_type
 }
 
 annotation_gene_set_list <- purrr::map( annotation_types_list,
@@ -439,7 +440,9 @@ if( file.exists(camera_results_file) ) {
     # camera( norm_abundance_mat, index = annotation_gene_set_list[[1]],
     #         design = design_m, contrast = lists_of_contrasts[[1]])
 
-    camera_results <- purrr::pmap (combination_tab %>% head() ,
+    plan(multisession, workers = 6)
+
+    camera_results <- furrr::future_pmap (combination_tab,
                                    function(index_name,
                                             contrast_name,
                                             index,
@@ -465,18 +468,23 @@ loginfo("Covert the camera results that are stored in list structures into a tab
 camera_results_filt <- camera_results [purrr::map_lgl( camera_results, ~{!is.na(.[["camera"]][[1]][1])})]
 
 camera_results_cln <-  purrr::map( camera_results_filt,
-  ~ { rownames_to_column(.[["camera"]], "pathway")   }  )
+  ~ { rownames_to_column(.[["camera"]], args$annotation_id)   }  )
 
 camera_results_tbl <- tibble( temp = camera_results_cln)  %>%
-    bind_cols(  data.frame( comparison =  purrr::map_chr( camera_results_filt,
-   ~ {  .[["contrast_name"]]  } ) )  ) %>%
-    bind_cols(  data.frame( gene_set =  purrr::map_chr( camera_results_filt,
-   ~ {  .[["index_name"]]  } ) )  ) %>%
-    unnest(temp)
+  bind_cols(  data.frame( comparison = purrr::map_chr( camera_results_filt,
+                                                       ~ {  .[["contrast_name"]]  } ) )  ) %>%
+  bind_cols(  data.frame( gene_set = purrr::map_chr( camera_results_filt,
+                                                     ~ {  .[["index_name"]]  } ) )  ) %>%
+  bind_cols(  data.frame( min_set_size = purrr::map_chr( camera_results_filt,
+                                                         ~ {  .[["min_set_size"]]  } ) )  ) %>%
+  bind_cols(  data.frame( max_set_size = purrr::map_chr( camera_results_filt,
+                                                         ~ {  .[["max_set_size"]]  } ) )  ) %>%
+  unnest(temp) %>%
+  mutate( term = purrr::map_chr( !!rlang::sym(args$annotation_id),  ~id_to_annotation_dictionary[[.]])) %>%
+  dplyr::rename( !!rlang::sym(args$aspect_column) := "gene_set")
 
 camera_results_filt <- camera_results_tbl %>%
-    dplyr::filter( FDR <0.05)
-
+    dplyr::filter( FDR < 0.05)
 
 camera_results_tbl %>%
     arrange(FDR)
