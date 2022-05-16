@@ -1306,60 +1306,45 @@ chooseBestProteinAccession <- function(input_tbl, acc_detail_tab, accessions_col
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
-cmriCamera <- function(contrast_name, index_name, abundance_mat, replicates_mat, lists_of_contrasts, list_of_gene_sets, min_set_size = 4) {
+cmriCamera <- function( abundance_mat, design_mat, contrast_name, index_name, index,
+                        contrast, min_set_size = 4, max_set_size=300) {
 
   print(paste("contrast_name =", contrast_name))
   print(paste("index_name =", index_name))
 
-  this_contrast <- lists_of_contrasts[[contrast_name]]
+  print(contrast)
 
-  groupA <- str_replace( names( this_contrast[this_contrast == 1] )[1], paste0("^", quo_name(enquo(group_id))), "" )
-  groupB <- str_replace( names( this_contrast[this_contrast == -1] )[1], paste0("^", quo_name(enquo(group_id))), "" )
-
-  # print(paste(groupA, groupB))
-
-  design_choose_column <- replicates_mat[, c(groupA, groupB)]
-
-  design_trimmed <- design_choose_column[rowSums(design_choose_column) > 0,]
-
-  # print(design_trimmed)
-  #
-  # print(head( abundance_mat[[contrast_name]][ , rownames(design_trimmed)]))
-
-  abundance_mat_trimmed <- abundance_mat %>%
-    dplyr::filter( comparison == contrast_name) %>%
-    dplyr::pull( data) %>%
-    .[[1]] %>%
-    .[,rownames(design_trimmed)]
-
-  contrast_mat_trimmed <-this_contrast[colnames(replicates_mat) %in% colnames(design_trimmed)]
-
-  index <- list_of_gene_sets[[index_name]]
-
-  msigdb_ids <- geneIds(index)
+  this_contrast <- contrast
+  msigdb_ids <- index
 
   #convert gene sets into a list of gene indices
   camera_indices <- ids2indices(msigdb_ids,
-                                rownames(abundance_mat_trimmed))
+                                rownames(abundance_mat))
 
   ## At least two genes in the gene set
-  camera_indices_filt <- camera_indices[purrr::map(camera_indices, length) >= min_set_size]
+  set_sizes <- purrr::map(camera_indices, length)
+  camera_indices_filt <- camera_indices[ set_sizes >= min_set_size &
+                                         set_sizes <= max_set_size]
+
 
 
   camera_result <- NA
   if (length(camera_indices_filt) > 0) {
-    camera_result <- camera(y = abundance_mat_trimmed, design = design_trimmed, index = camera_indices_filt, contrast = contrast_mat_trimmed)
+    camera_result <- camera(y = abundance_mat,
+                            design = design_mat,
+                            index = camera_indices_filt,
+                            contrast = this_contrast)
   }
 
   info_list <- list(camera = camera_result,
-                    y = abundance_mat_trimmed,
-                    design = design_trimmed,
+                    y = abundance_mat,
+                    design = design_mat,
 
                     index_name = index_name,
                     index = camera_indices_filt,
 
                     contrast_name = contrast_name,
-                    contrast = contrast_mat_trimmed)
+                    contrast = this_contrast)
 
   return(info_list)
 

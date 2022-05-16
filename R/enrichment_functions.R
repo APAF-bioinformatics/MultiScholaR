@@ -196,3 +196,58 @@ convertProteinAccToGeneSymbol <- function( gene_id_list, dictionary ) {
                              NA_character_)   } )  %>%
     paste( collapse="/")
 }
+
+
+#'@export
+buildAnnotationIdToAnnotationNameDictionary <- function(input_table, annotation_column, annotation_id_column) {
+
+  id_to_annotation_dictionary <- NA
+
+  dictionary_pair <- input_table %>%
+    distinct({{annotation_column}},
+             {{annotation_id_column}})
+
+  id_to_annotation_dictionary <- dictionary_pair %>%
+    pull({{annotation_column}} )
+
+  names(id_to_annotation_dictionary ) <-  dictionary_pair %>%
+    pull( {{annotation_id_column}})
+
+  id_to_annotation_dictionary
+
+}
+
+
+#'@export
+buildOneProteinToAnnotationList <- function( input_table, annotation_id, protein_id ) {
+  temp_table <- input_table %>%
+    group_by( {{annotation_id}}) %>%
+    nest( ) %>%
+    ungroup()  %>%
+    mutate( gene_set = purrr::map( data, ~{ (.) %>% pull( {{protein_id}} )} ))
+
+  gene_set_list <- temp_table %>% pull(gene_set)
+
+  names(gene_set_list ) <-temp_table %>% pull({{annotation_id}})
+
+  gene_set_list
+}
+
+#'@export
+listifyTableByColumn  <- function(input_table, column_name) {
+
+  nested_table <- input_table %>%
+    dplyr::filter(!is.na( {{column_name}})) %>%
+    group_by({{column_name}}) %>%
+    nest( ) %>%
+    ungroup()
+
+  list_of_tables <- nested_table %>%
+    pull(data)
+
+  names( list_of_tables) <- nested_table %>%
+    distinct({{column_name}})  %>%
+    pull( {{column_name}})
+
+  list_of_tables
+}

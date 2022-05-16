@@ -173,15 +173,13 @@ for (v in names(args))
 }
 loginfo("----------------------------------------------------")
 
-
-
 args <- setArgsDefault(args, "log_fc_column_name", as_func=as.character, default_val="norm_phos_logFC" )
 args <- setArgsDefault(args, "fdr_column_name", as_func=as.character, default_val="combined_q_mod" )
 args <- setArgsDefault(args, "p_val_thresh", as_func=as.double, default_val=0.05 )
+
+
 args <- setArgsDefault(args, "max_gene_set_size", as_func=as.character, default_val="200" )
 args <- setArgsDefault(args, "min_gene_set_size", as_func=as.character, default_val="4" )
-
-
 args <- setArgsDefault(args, "protein_id", as_func=as.character, default_val="uniprot_acc" )
 args <- setArgsDefault(args, "annotation_id", as_func=as.character, default_val="go_id" )
 args <- setArgsDefault(args, "aspect_column", as_func=as.character, default_val=NULL )
@@ -228,7 +226,20 @@ testRequiredFiles(c(
   args$proteins_file,
   args$norm_phos_logfc_file))
 
-args<-parseString(args,c("plots_format"))
+args<-parseString(args,c("plots_format",
+                         "log_fc_column_name",
+                         "fdr_column_name",
+                         "max_gene_set_size",
+                         "min_gene_set_size",
+                         "protein_id",
+                         "annotation_id",
+                         "aspect_column",
+                         "annotation_column",
+                         "annotation_type"))
+
+args<-parseType(args,
+                c("p_val_thresh"),
+                as.double)
 
 if(isArgumentDefined(args,"plots_format")) {
   args <- parseList(args,c("plots_format"))
@@ -506,19 +517,17 @@ if (  !is.null( args$annotation_file )) {
 
 
   ## Tidy up the annotation ID to annotation term name dictionary
-  id_to_annotation_dictionary <- NA
 
   dictionary <- vroom::vroom( args$dictionary_file )
 
-  dictionary_pair <- dictionary %>%
-    distinct(!!rlang::sym(args$annotation_column),
-             !!rlang::sym(args$annotation_id))
+  id_to_annotation_dictionary <- buildAnnotationIdToAnnotationNameDictionary( input_table=dictionary,
+                                                                annotation_column = !!rlang::sym(args$annotation_column),
+                                                                annotation_id_column = !!rlang::sym(args$annotation_id))
 
-  id_to_annotation_dictionary <- dictionary_pair %>%
-    pull( !!rlang::sym(args$annotation_column))
+  ## Create gene sets list
 
-  names(id_to_annotation_dictionary ) <-  dictionary_pair %>%
-    pull( !!rlang::sym(args$annotation_id   ))
+
+
 
   ## preparing the enrichment test
   go_annot <- vroom::vroom(  args$annotation_file   )
