@@ -252,9 +252,9 @@ if(isArgumentDefined(args, "uniprot_to_gene_symbol_file")) {
   testRequiredFiles(c(
     args$uniprot_to_gene_symbol_file))
 
-  testRequiredArguments(args, c(
-    "gene_symbol_column",
-    "protein_id_lookup_column" ))
+  args <- setArgsDefault(args, "protein_id_lookup_column", as_func=as.character, default_val="Entry" )
+  args <- setArgsDefault(args, "gene_symbol_column", as_func=as.character, default_val="Gene names" )
+
 }
 
 ## ---------------------------------------------------------------------------------------------------------------------------------------------------

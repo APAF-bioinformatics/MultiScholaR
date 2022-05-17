@@ -43,6 +43,7 @@ p_load(configr)
 p_load(logging)
 p_load(optparse)
 p_load(tictoc)
+p_load(furrr)
 
 ## Parameters
 tic()
@@ -66,7 +67,7 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
 
   parser <- OptionParser(add_help_option =TRUE)
 
-  parser <- add_option(parser, c("-c", "--config"), type = "character", default =  "/home/ignatius/PostDoc/2021/ALPK1_BMP_06/Source/P90/config_prot_NR.ini", # "config.ini",
+  parser <- add_option(parser, c("-c", "--config"), type = "character", default =  "config.ini", # "/home/ignatius/PostDoc/2021/ALPK1_BMP_06/Source/P90/config_prot_NR.ini",
                        help = "Configuration file.  [default %default]",
                        metavar = "string")
 
@@ -153,6 +154,39 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
                        help="The minimum number of genes associaed with each gene set.",
                        metavar="string")
 
+  parser <- add_option(parser, "--p_val_thresh", type = "double",
+                       help = "Adjusted p-value threshold below which a GO term is significantly enriched",
+                       metavar = "double")
+
+  parser <- add_option(parser, "--protein_q_val_thresh", type = "double",
+                       help = "q-value threshold below which a GO term is significantly enriched",
+                       metavar = "double")
+
+  parser <- add_option(parser, "--log_fc_column_name", type="character",
+                       help="Column name in the input file that contains the log fold-change values of the proteins.",
+                       metavar="string")
+
+  parser <- add_option(parser, "--fdr_column_name", type="character",
+                       help="Column name in the input file that contains the false discovery rate values of the proteins.",
+                       metavar="string")
+
+  parser <- add_option(parser, "--uniprot_to_gene_symbol_file", type = "character",
+                       help = "A file that contains the dictionary to convert uniprot accession to gene symbol. Uses the column specified in 'protein_id_lookup_column' flag for protein ID. Uses the column specified in 'gene_symbol_column' for the gene symbol column.",
+                       metavar = "string")
+
+  parser <- add_option(parser, "--protein_id_lookup_column", type = "character",
+                       help = "The  name of the column that contained the protein ID to convert into gene symobl.",
+                       metavar = "string")
+
+  parser <- add_option(parser, "--gene_symbol_column", type = "character",
+                       help = "The  name of the column that contained the gene symobl.",
+                       metavar = "string")
+
+  parser <- add_option(parser, c("--num_cores"), type="integer", dest = "num_cores",
+                       help="The number of CPU cores to used for computation.",
+                       metavar="string")
+
+
   print(commandArgs(trailingOnly = TRUE))
 
   args <- parse_args(parser)
@@ -176,8 +210,10 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
   }
   args <- setArgsDefault(args, "annotation_column", as_func=as.character, default_val="term" )
   args <- setArgsDefault(args, "annotation_type", as_func=as.character, default_val="annotation" )
-
-
+  args <- setArgsDefault(args, "p_val_thresh", as_func=as.double , default_val=0.05 )
+  args <- setArgsDefault(args, "protein_q_val_thresh", as_func=as.double, default_val=0.05 )
+  args <- setArgsDefault(args, "log_fc_column_name", as_func=as.character, default_val="log2FC" )
+  args <- setArgsDefault(args, "fdr_column_name", as_func=as.character, default_val="q.mod" )
 
   if( isArgumentDefined( args, "annotation_file" )) {
 
@@ -191,7 +227,20 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
     testRequiredFiles(c(
       args$annotation_file,
       args$dictionary_file))
+  }
 
+  if(isArgumentDefined(args, "uniprot_to_gene_symbol_file")) {
+    testRequiredFiles(c(
+      args$uniprot_to_gene_symbol_file))
+
+    args <- setArgsDefault( args,
+                            "protein_id_lookup_column",
+                            as_func=as.character,
+                            default_val="Entry" )
+    args <- setArgsDefault( args,
+                            "gene_symbol_column",
+                            as_func=as.character,
+                            default_val="Gene names" )
   }
 
   testRequiredArguments(args, c(
@@ -211,7 +260,6 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
     args$tmp_dir
   ))
 
-
   args<-parseString(args,
                     c(  "formula_string",
                         "group_pattern",
@@ -227,8 +275,17 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
                         "annotation_type",
                         "aspect_column",
                         "max_gene_set_size",
-                        "min_gene_set_size"
-                    ))
+                        "min_gene_set_size",
+                        "log_fc_column_name",
+                        "fdr_column_name" ))
+
+  args <- parseType( args, c("num_cores"),
+                     as.integer)
+
+  args <- parseType( args, c("p_val_thresh",
+                             "protein_q_val_thresh"),
+                     as.double)
+
 
 
   #############################################
@@ -440,7 +497,7 @@ if( file.exists(camera_results_file) ) {
     # camera( norm_abundance_mat, index = annotation_gene_set_list[[1]],
     #         design = design_m, contrast = lists_of_contrasts[[1]])
 
-    plan(multisession, workers = 6)
+    plan(multisession, workers = args$num_cores)
 
     camera_results <- furrr::future_pmap (combination_tab,
                                    function(index_name,
@@ -465,29 +522,123 @@ if( file.exists(camera_results_file) ) {
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Covert the camera results that are stored in list structures into a table.")
 
-camera_results_filt <- camera_results [purrr::map_lgl( camera_results, ~{!is.na(.[["camera"]][[1]][1])})]
+camera_results_temp <- camera_results [purrr::map_lgl( camera_results, ~{!is.na(.[["camera"]][[1]][1])})]
 
-camera_results_cln <-  purrr::map( camera_results_filt,
+camera_results_cln <-  purrr::map( camera_results_temp,
   ~ { rownames_to_column(.[["camera"]], args$annotation_id)   }  )
 
 camera_results_tbl <- tibble( temp = camera_results_cln)  %>%
-  bind_cols(  data.frame( comparison = purrr::map_chr( camera_results_filt,
+  bind_cols(  data.frame( comparison = purrr::map_chr( camera_results_temp,
                                                        ~ {  .[["contrast_name"]]  } ) )  ) %>%
-  bind_cols(  data.frame( gene_set = purrr::map_chr( camera_results_filt,
+  bind_cols(  data.frame( gene_set = purrr::map_chr( camera_results_temp,
                                                      ~ {  .[["index_name"]]  } ) )  ) %>%
-  bind_cols(  data.frame( min_set_size = purrr::map_chr( camera_results_filt,
+  bind_cols(  data.frame( min_set_size = purrr::map_chr( camera_results_temp,
                                                          ~ {  .[["min_set_size"]]  } ) )  ) %>%
-  bind_cols(  data.frame( max_set_size = purrr::map_chr( camera_results_filt,
+  bind_cols(  data.frame( max_set_size = purrr::map_chr( camera_results_temp,
                                                          ~ {  .[["max_set_size"]]  } ) )  ) %>%
   unnest(temp) %>%
   mutate( term = purrr::map_chr( !!rlang::sym(args$annotation_id),  ~id_to_annotation_dictionary[[.]])) %>%
   dplyr::rename( !!rlang::sym(args$aspect_column) := "gene_set")
 
-camera_results_filt <- camera_results_tbl %>%
-    dplyr::filter( FDR < 0.05)
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+loginfo("Add UniProt accession of proteins that had significant log fold-change and also associated with annotation.")
 
-camera_results_tbl %>%
-    arrange(FDR)
+join_condition <- NA
+columns_included  <- NA
+if( !is.null( args$aspect_column) ) {
+
+  join_condition <- rlang::set_names( c(args$annotation_id, args$aspect_column),
+                                      c(args$annotation_id, args$aspect_column ) )
+
+  columns_included <- c(args$annotation_id, args$aspect_column, args$protein_id)
+
+} else {
+  join_condition <- rlang::set_names( c(args$annotation_id),
+                                      c(args$annotation_id ) )
+
+  columns_included <- c(args$annotation_id, args$protein_id)
+
+}
+
+join_condition_two <- rlang::set_names( c("comparison", args$protein_id),
+                                        c("comparison", args$protein_id) )
+
+
+camera_results_with_uniprot_acc <- camera_results_tbl %>%
+  left_join( dictionary %>%
+               dplyr::select( one_of(columns_included)),
+             by=join_condition ) %>%
+  inner_join( proteins_cln %>%
+                dplyr::select( !!rlang::sym( args$fdr_column_name),
+                               !!rlang::sym( args$log_fc_column_name),
+                               !!rlang::sym(args$protein_id),
+                               comparison),
+              by = join_condition_two ) %>%
+  dplyr::filter( !!rlang::sym( args$fdr_column_name) < args$protein_q_val_thresh) %>%
+  dplyr::filter ( ( Direction == "Down" & !!rlang::sym( args$log_fc_column_name) < 0) |
+                  ( Direction == "Up" & !!rlang::sym( args$log_fc_column_name) > 0) ) %>%
+  dplyr::select( -one_of(c( args$fdr_column_name,
+                           args$log_fc_column_name)))
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+loginfo("Add gene symbole for the proteins that had significant log fold-change and also associated with annotation.")
+
+camera_results_with_gene_symbol <- NA
+## Convert Uniprot accession to gene names
+if(isArgumentDefined(args, "uniprot_to_gene_symbol_file")) {
+  # args$uniprot_to_gene_symbol_file <- "/home/ubuntu/Workings/2021/ALPK1_BMP_06/Data/UniProt/data.tab"
+
+  # args$protein_id_lookup_column <- "Entry"
+  # args$gene_symbol_column <- "Gene names"
+
+  # Clean up protein ID to gene sybmol table
+  uniprot_to_gene_symbol <- vroom::vroom( file.path( args$uniprot_to_gene_symbol_file))  %>%
+    dplyr::select( !!rlang::sym(args$protein_id_lookup_column),
+                   !!rlang::sym(args$gene_symbol_column)) %>%
+    dplyr::rename( !!rlang::sym(args$protein_id) := args$protein_id_lookup_column) %>%
+    dplyr::rename( gene_symbol = args$gene_symbol_column) %>%
+    dplyr::mutate( gene_symbol = str_split(  gene_symbol , " " ) %>%
+                     purrr::map_chr( 1)) %>%
+    dplyr::distinct( !!rlang::sym(args$protein_id), gene_symbol)
+
+  ## Convert to lookup dictionary
+  uniprot_to_gene_symbol_dict <- uniprot_to_gene_symbol %>%
+    pull( gene_symbol)
+  names( uniprot_to_gene_symbol_dict )  <- uniprot_to_gene_symbol %>%
+    pull( !!rlang::sym(args$protein_id))
+
+  camera_results_with_gene_symbol <- camera_results_with_uniprot_acc %>%
+    mutate( gene_symbol = purrr::map_chr(  !!rlang::sym(args$protein_id),
+                                          ~{uniprot_to_gene_symbol_dict[[.]]}))
+
+} else {
+  camera_results_with_gene_symbol <- camera_results_with_uniprot_acc
+}
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+loginfo("Convert gene symbols and UniProt accession into comma separated spring.")
+
+camera_results_unfilt <- camera_results_with_gene_symbol %>%
+  group_by_at( vars( !contains("uniprot_acc") & !contains("gene_symbol")) ) %>%
+  nest() %>%
+  ungroup() %>%
+  mutate( accession_list = purrr::map_chr( data, function(x) { x %>%
+      arrange (!!rlang::sym(args$protein_id)) %>%
+      pull( !!rlang::sym(args$protein_id) ) %>%
+      sort %>%
+      paste( collapse=", ")    } )) %>%
+  mutate( gene_symbol = purrr::map_chr( data, function(x) { x %>%
+      arrange(gene_symbol) %>%
+      pull( gene_symbol) %>%
+      sort %>%
+      paste( collapse=", ")    } ) ) %>%
+  dplyr::select(-data)
+
+camera_results_filt <- camera_results_unfilt %>%
+  dplyr::filter( FDR < args$p_val_thresh)
+
+# camera_results_tbl %>%
+#     arrange(FDR)
 
 loginfo("Save camera results table in tab-separated table %s", camera_results_file)
 captured_output<-capture.output(
@@ -498,9 +649,24 @@ captured_output<-capture.output(
 loginfo("Save camera results table in Excel format %s", camera_results_file)
 captured_output<-capture.output(
 writexl::write_xlsx( camera_results_filt,
-                     file.path( args$output_dir,  "filtered_camera_results.xlsx"))
-,
+                     file.path( args$output_dir,  "filtered_camera_results.xlsx")),
 type = "message" )
+
+
+
+
+
+loginfo("Save camera results table in tab-separated table %s", camera_results_file)
+captured_output<-capture.output(
+  vroom::vroom_write( camera_results_unfilt,
+                      file.path( args$output_dir,  "unfiltered_camera_results.tab")),
+  type = "message" )
+
+loginfo("Save camera results table in Excel format %s", camera_results_file)
+captured_output<-capture.output(
+  writexl::write_xlsx( camera_results_unfilt,
+                       file.path( args$output_dir,  "unfiltered_camera_results.xlsx")),
+  type = "message" )
 
 
 
