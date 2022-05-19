@@ -376,3 +376,33 @@ runEnricher <- function(index_name, contrast_name, list_of_de_proteins, list_of_
 
 }
 
+#'@export
+getUniprotAccToGeneSymbolDictionary <- function( input_table,
+              protein_id_lookup_column,
+          gene_symbol_column,
+          protein_id) {
+
+  # Clean up protein ID to gene sybmol table
+  uniprot_to_gene_symbol <- input_table  %>%
+    dplyr::select( {{protein_id_lookup_column}},
+                   {{gene_symbol_column}}) %>%
+    dplyr::rename( {{protein_id}} := quo_name(enquo(protein_id_lookup_column)) ) %>%
+    dplyr::rename( gene_symbol = quo_name(enquo( gene_symbol_column)) ) %>%
+    dplyr::mutate( gene_symbol = str_split(  gene_symbol , " " ) %>%
+                     purrr::map_chr( 1)) %>%
+    dplyr::distinct( {{protein_id}}, gene_symbol)
+
+  ## Convert to lookup dictionary
+  uniprot_to_gene_symbol_dict <- uniprot_to_gene_symbol %>%
+    pull( gene_symbol)
+
+  names( uniprot_to_gene_symbol_dict )  <- uniprot_to_gene_symbol %>%
+    pull( {{protein_id}} )
+
+  uniprot_to_gene_symbol_dict
+
+}
+
+
+
+

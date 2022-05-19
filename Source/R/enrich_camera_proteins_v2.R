@@ -418,13 +418,19 @@ id_to_annotation_dictionary <- buildAnnotationIdToAnnotationNameDictionary( inpu
 
 
 annotation_types_list <- NA
-if( args$aspect_column  %in% colnames( dictionary) ) {
+if( !is.null( args$aspect_column )){
 
-  annotation_types_list <- listifyTableByColumn( dictionary,
-                                                 !!rlang::sym(args$aspect_column))
+  if( args$aspect_column  %in% colnames( dictionary) ) {
+
+    annotation_types_list <- listifyTableByColumn( dictionary,
+                                                   !!rlang::sym(args$aspect_column))
+
+  } else {
+    annotation_types_list <- list( dictionary )
+    names( annotation_types_list) <- args$annotation_type
+  }
 
 } else {
-
   annotation_types_list <- list( dictionary )
   names( annotation_types_list) <- args$annotation_type
 }
@@ -537,8 +543,14 @@ camera_results_tbl <- tibble( temp = camera_results_cln)  %>%
   bind_cols(  data.frame( max_set_size = purrr::map_chr( camera_results_temp,
                                                          ~ {  .[["max_set_size"]]  } ) )  ) %>%
   unnest(temp) %>%
-  mutate( term = purrr::map_chr( !!rlang::sym(args$annotation_id),  ~id_to_annotation_dictionary[[.]])) %>%
-  dplyr::rename( !!rlang::sym(args$aspect_column) := "gene_set")
+  mutate( term = purrr::map_chr( !!rlang::sym(args$annotation_id),  ~id_to_annotation_dictionary[[.]]))
+
+if( !is.null( args$aspect_column)) {
+  camera_results_tbl <- camera_results_tbl %>%
+    dplyr::rename( !!rlang::sym(args$aspect_column) := "gene_set")
+}
+
+
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Add UniProt accession of proteins that had significant log fold-change and also associated with annotation.")
@@ -581,7 +593,7 @@ camera_results_with_uniprot_acc <- camera_results_tbl %>%
                            args$log_fc_column_name)))
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-loginfo("Add gene symbole for the proteins that had significant log fold-change and also associated with annotation.")
+loginfo("Add gene symbol for the proteins that had significant log fold-change and also associated with annotation.")
 
 camera_results_with_gene_symbol <- NA
 ## Convert Uniprot accession to gene names
@@ -592,20 +604,13 @@ if(isArgumentDefined(args, "uniprot_to_gene_symbol_file")) {
   # args$gene_symbol_column <- "Gene names"
 
   # Clean up protein ID to gene sybmol table
-  uniprot_to_gene_symbol <- vroom::vroom( file.path( args$uniprot_to_gene_symbol_file))  %>%
-    dplyr::select( !!rlang::sym(args$protein_id_lookup_column),
-                   !!rlang::sym(args$gene_symbol_column)) %>%
-    dplyr::rename( !!rlang::sym(args$protein_id) := args$protein_id_lookup_column) %>%
-    dplyr::rename( gene_symbol = args$gene_symbol_column) %>%
-    dplyr::mutate( gene_symbol = str_split(  gene_symbol , " " ) %>%
-                     purrr::map_chr( 1)) %>%
-    dplyr::distinct( !!rlang::sym(args$protein_id), gene_symbol)
 
-  ## Convert to lookup dictionary
-  uniprot_to_gene_symbol_dict <- uniprot_to_gene_symbol %>%
-    pull( gene_symbol)
-  names( uniprot_to_gene_symbol_dict )  <- uniprot_to_gene_symbol %>%
-    pull( !!rlang::sym(args$protein_id))
+  uniprot_tab_delimited_tbl <- vroom::vroom( file.path( args$uniprot_to_gene_symbol_file))
+
+  uniprot_to_gene_symbol_dict <- getUniprotAccToGeneSymbolDictionary( uniprot_tab_delimited_tbl,
+                                       !!rlang::sym(args$protein_id_lookup_column),
+                                       !!rlang::sym(args$gene_symbol_column),
+                                       !!rlang::sym(args$protein_id) )
 
   camera_results_with_gene_symbol <- camera_results_with_uniprot_acc %>%
     mutate( gene_symbol = purrr::map_chr(  !!rlang::sym(args$protein_id),

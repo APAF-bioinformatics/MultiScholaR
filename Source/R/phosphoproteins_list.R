@@ -56,7 +56,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.")
 
-parser <- add_option(parser, c("-c","--config"), type = "character", default = "/home/ubuntu/Workings/2021/ALPK1_BMP_06/Source/P90/config_phos_NR.ini", dest = "config",
+parser <- add_option(parser, c("-c","--config"), type = "character", default = "config_phos.ini", dest = "config",
                      help = "Configuration file.",
                      metavar = "string")
 
@@ -609,21 +609,14 @@ if (  !is.null( args$annotation_file )) {
      # args$protein_id_lookup_column <- "Entry"
      # args$gene_symbol_column <- "Gene names"
 
-     # Clean up protein ID to gene sybmol table
-     uniprot_to_gene_symbol <- vroom::vroom( file.path( args$uniprot_to_gene_symbol_file))  %>%
-       dplyr::select( !!rlang::sym(args$protein_id_lookup_column),
-                      !!rlang::sym(args$gene_symbol_column)) %>%
-       dplyr::rename( !!rlang::sym(args$protein_id) := args$protein_id_lookup_column) %>%
-       dplyr::rename( gene_symbol = args$gene_symbol_column) %>%
-       dplyr::mutate( gene_symbol = str_split(  gene_symbol , " " ) %>%
-                        purrr::map_chr( 1)) %>%
-       dplyr::distinct( !!rlang::sym(args$protein_id), gene_symbol)
+     # Clean up protein ID to gene symbol table
+     uniprot_tab_delimited_tbl <- vroom::vroom( file.path( args$uniprot_to_gene_symbol_file))
 
-     ## Convert to lookup dictionary
-     uniprot_to_gene_symbol_dict <- uniprot_to_gene_symbol %>%
-       pull( gene_symbol)
-     names( uniprot_to_gene_symbol_dict )  <- uniprot_to_gene_symbol %>%
-       pull( !!rlang::sym(args$protein_id))
+     uniprot_to_gene_symbol_dict <- getUniprotAccToGeneSymbolDictionary( uniprot_tab_delimited_tbl,
+                                                                         !!rlang::sym(args$protein_id_lookup_column),
+                                                                         !!rlang::sym(args$gene_symbol_column),
+                                                                         !!rlang::sym(args$protein_id),
+                                                                         !!rlang::sym(args$protein_id) )
 
      convertProteinAccToGeneSymbolPartial <- purrr::partial( convertProteinAccToGeneSymbol,
                                                              dictionary = uniprot_to_gene_symbol_dict)
