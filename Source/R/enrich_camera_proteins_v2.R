@@ -627,12 +627,12 @@ camera_results_unfilt <- camera_results_with_gene_symbol %>%
   group_by_at( vars( !contains("uniprot_acc") & !contains("gene_symbol")) ) %>%
   nest() %>%
   ungroup() %>%
-  mutate( accession_list = purrr::map_chr( data, function(x) { x %>%
+  mutate( accession_list = furrr::future_map_chr( data, function(x) { x %>%
       arrange (!!rlang::sym(args$protein_id)) %>%
       pull( !!rlang::sym(args$protein_id) ) %>%
       sort %>%
       paste( collapse=", ")    } )) %>%
-  mutate( gene_symbol = purrr::map_chr( data, function(x) { x %>%
+  mutate( gene_symbol = furrr::future_map_chr( data, function(x) { x %>%
       arrange(gene_symbol) %>%
       pull( gene_symbol) %>%
       sort %>%
@@ -644,6 +644,7 @@ camera_results_filt <- camera_results_unfilt %>%
 
 # camera_results_tbl %>%
 #     arrange(FDR)
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 loginfo("Save camera results table in tab-separated table %s", camera_results_file)
 captured_output<-capture.output(
