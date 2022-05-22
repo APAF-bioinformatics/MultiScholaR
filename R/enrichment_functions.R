@@ -404,5 +404,54 @@ getUniprotAccToGeneSymbolDictionary <- function( input_table,
 }
 
 
+### Query revigo
+#'@export
+queryRevigo <- function( input_list,
+                         cutoff=0.5,
+                         speciesTaxon = 10090,
+                         temp_file=NA) {
 
+  userData <-  paste(input_list,  collapse= "\n")
+
+  httr::POST(
+    url = "http://revigo.irb.hr/Revigo.aspx",
+    body = list(
+      cutoff = as.character(cutoff),
+      valueType = "pvalue",
+      speciesTaxon = as.character(speciesTaxon),
+      measure = "SIMREL",
+      goList = userData
+    ),
+    # application/x-www-form-urlencoded
+    encode = "form"
+  )  -> res
+
+  dat <- httr::content(res, encoding = "UTF-8")
+
+
+  dat <- stri_replace_all_fixed(dat, "\r", "")
+
+  if(is.na( temp_file) |
+     is.null(temp_file)) {
+    temp_file <- tempfile(pattern = "temp_revigo",
+                          tmpdir = tempdir(),
+                          fileext = "html")
+  }
+
+  cat(dat, file=temp_file , fill = FALSE)
+
+  html_doc <- rvest::read_html(dat, as.data.frame=T, stringsAsFactors = FALSE)
+
+  revigo_tbl <- html_doc  %>%
+    html_nodes("table") %>%
+    purrr::map( ~html_table(.)) %>%
+    discard( ~{ nrow(.) ==0 }) %>%
+    bind_rows()
+
+  if( file.exists( temp_file) ) {
+    file.remove(temp_file)
+  }
+
+  revigo_tbl
+}
 

@@ -56,7 +56,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.")
 
-parser <- add_option(parser, c("-c","--config"), type = "character", default = "config_phos.ini", dest = "config",
+parser <- add_option(parser, c("-c","--config"), type = "character", default = "config.ini", dest = "config",
                      help = "Configuration file.",
                      metavar = "string")
 
@@ -72,21 +72,21 @@ parser <- add_option(parser, c("-l","--log_file"), type = "character", default =
                      help = "Name of the logging file.",
                      metavar = "string")
 
-parser <- add_option(parser, "--norm_phos_logfc_file", type="character",
-                     help="Results table in which the phosphorylation log fold-change is normalized by protein log fold-change.",
-                     metavar="string")
-
-parser <- add_option(parser, "--log_fc_column_name", type="character",
-                     help="Column name in the input file that contains the log fold-change values of the phosphosites.",
-                     metavar="string")
-
-parser <- add_option(parser, "--fdr_column_name", type="character",
-                     help="Column name in the input file that contains the false discovery rate values of the phosphosites.",
-                     metavar="string")
-
 parser <- add_option(parser, c("--proteins_file"), type="character", dest = "proteins_file",
                      help="File with table of differentially expressed proteins.",
                      metavar="string")
+
+parser <- add_option(parser, "--log_fc_column_name", type="character",
+                     help="Column name in the input file that contains the log fold-change values of the proteins",
+                     metavar="string")
+
+parser <- add_option(parser, "--fdr_column_name", type="character",
+                     help="Column name in the input file that contains the false discovery rate values of the proteins",
+                     metavar="string")
+
+parser <- add_option(parser, "--protein_p_val_thresh", type = "double",
+                     help = "p-value threshold below which a protein is significantly enriched",
+                     metavar = "double")
 
 parser <- add_option(parser, c("--annotation_file"), type="character", dest = "annotation_file",
                      help="File with protein accession and functional annotation data.",
@@ -103,7 +103,6 @@ parser <- add_option(parser, c("--annotation_id"), type="character", dest = "ann
 parser <- add_option(parser, c("--annotation_column"), type="character", dest = "annotation_column",
                      help="Column with the long name and biological details of the functional annotation.",
                      metavar="string")
-
 
 parser <- add_option(parser, c("--annotation_type"), type="character", dest = "annotation_type",
                      help="Name of the functional annotation data, added to the output file name.",
@@ -146,10 +145,10 @@ args <- parse_args(parser)
 
 #parse and merge the configuration file options.
 if (args$config != "") {
-  args <- config.list.merge(eval.config(file = args$config, config = "phosphoproteins_list"), args)
+  args <- config.list.merge(eval.config(file = args$config, config = "de_proteins_list"), args)
 }
 
-args <- setArgsDefault(args, "output_dir", as_func=as.character, default_val="phosphoproteins_list" )
+args <- setArgsDefault(args, "output_dir", as_func=as.character, default_val="de_proteins_list" )
 
 createOutputDir(args$output_dir, args$no_backup)
 createDirectoryIfNotExists(args$tmp_dir)
@@ -173,9 +172,10 @@ for (v in names(args))
 }
 loginfo("----------------------------------------------------")
 
-args <- setArgsDefault(args, "log_fc_column_name", as_func=as.character, default_val="norm_phos_logFC" )
-args <- setArgsDefault(args, "fdr_column_name", as_func=as.character, default_val="combined_q_mod" )
+args <- setArgsDefault(args, "log_fc_column_name", as_func=as.character, default_val="log2FC" )
+args <- setArgsDefault(args, "fdr_column_name", as_func=as.character, default_val="q.mod" )
 args <- setArgsDefault(args, "p_val_thresh", as_func=as.double, default_val=0.05 )
+args <- setArgsDefault(args, "protein_p_val_thresh", as_func=as.double, default_val=0.05 )
 
 
 args <- setArgsDefault(args, "max_gene_set_size", as_func=as.character, default_val="200" )
@@ -194,8 +194,7 @@ args <- setArgsDefault(args, "annotation_column", as_func=as.character, default_
 args <- setArgsDefault(args, "annotation_type", as_func=as.character, default_val="annotation" )
 
 testRequiredArguments(args, c(
-  "proteins_file",
-  "norm_phos_logfc_file"
+  "proteins_file"
 ))
 
 if( isArgumentDefined( args, "annotation_file" )) {
@@ -223,8 +222,7 @@ if( isArgumentDefined( args, "annotation_file" )) {
 }
 
 testRequiredFiles(c(
-  args$proteins_file,
-  args$norm_phos_logfc_file))
+  args$proteins_file))
 
 args<-parseString(args,c("plots_format",
                          "log_fc_column_name",
@@ -238,7 +236,8 @@ args<-parseString(args,c("plots_format",
                          "annotation_type"))
 
 args<-parseType(args,
-                c("p_val_thresh"),
+                c("p_val_thresh",
+                  "protein_p_val_thresh"),
                 as.double)
 
 if(isArgumentDefined(args,"plots_format")) {
@@ -257,215 +256,7 @@ if(isArgumentDefined(args, "uniprot_to_gene_symbol_file")) {
 
 }
 
-## ---------------------------------------------------------------------------------------------------------------------------------------------------
 
-loginfo("Read phosphosite log fold-change normalized by protein log fold-change file")
-captured_output<-capture.output(
-  de_phos <- vroom::vroom( args$norm_phos_logfc_file )
-  ,type = "message"
-)
-logdebug(captured_output)
-
-## ---------------------------------------------------------------------------------------------------------------------------------------------------
-loginfo("Check log fold-change and FDR column names exists in input file.")
-
-
-if ( ! args$log_fc_column_name %in% colnames(de_phos ) ) {
-  logerror("Column '%s' is not found in the input table.",args$log_fc_column_name )
-}
-
-if ( ! args$fdr_column_name %in% colnames(de_phos ) ) {
-  logerror("Column '%s' is not found in the input table.",args$fdr_column_name)
-}
-
-if(  ! args$log_fc_column_name %in% colnames(de_phos )  |
-     ! args$fdr_column_name %in% colnames(de_phos )  ) {
-  stop()
-}
-## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-positive_phosphoproteins <- de_phos %>%
-  dplyr::filter( !!rlang::sym(args$fdr_column_name) < 0.05 &   !!rlang::sym(args$log_fc_column_name) > 0 ) %>%
-  mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
-  mutate( uniprot_acc_first = str_replace_all( uniprot_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
-  mutate( gene_name_first = purrr::map_chr( gene_name, ~str_split(., ":") %>% map_chr(1)))  %>%
-  mutate( protein_name_first = purrr::map_chr( `PROTEIN-NAMES`, ~str_split(., ":") %>% map_chr(1)))  %>%
-  group_by(comparison, uniprot_acc_first, gene_name_first, protein_name_first) %>%
-  summarise( max_norm_phos_logFC = max(!!rlang::sym(args$log_fc_column_name))) %>%
-  ungroup() %>%
-  arrange( comparison, desc(max_norm_phos_logFC  ) )
-
-vroom::vroom_write( positive_phosphoproteins,
-                    file.path( args$output_dir,
-                               "all_phosphoproteins_with_positive_logFC_sites.tab" ),
-                    col_names=FALSE)
-
- list_of_comparisons <- positive_phosphoproteins %>% distinct( comparison) %>% pull( comparison)
-
- purrr::walk( list_of_comparisons, ~createDirIfNotExists( file.path(args$output_dir,. )) )
-
- purrr::walk( list_of_comparisons, function( input_comparison){
-
-   positive_phosphoproteins %>%
-     dplyr::filter( comparison == input_comparison) %>%
-     dplyr::select( uniprot_acc_first) %>%
-     vroom::vroom_write( file.path( args$output_dir,
-                                    input_comparison,
-                                    "all_phosphoproteins_with_positive_logFC_sites.tab" ),
-                         col_names=FALSE)
-
- } )
-
-## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-# norm_phos_logFC
-
-negative_phosphoproteins <- de_phos %>%
-  dplyr::filter( !!rlang::sym(args$fdr_column_name) < 0.05 & !!rlang::sym(args$log_fc_column_name)  < 0 ) %>%
-  mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
-  mutate( uniprot_acc_first = str_replace_all( uniprot_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
-  mutate( gene_name_first = purrr::map_chr( gene_name, ~str_split(., ":") %>% map_chr(1)))  %>%
-  mutate( protein_name_first = purrr::map_chr( `PROTEIN-NAMES`, ~str_split(., ":") %>% map_chr(1)))  %>%
-  group_by(comparison, uniprot_acc_first, gene_name_first, protein_name_first) %>%
-  summarise( min_norm_phos_logFC = min(!!rlang::sym(args$log_fc_column_name))) %>%
-  ungroup() %>%
-  arrange( comparison, min_norm_phos_logFC  )
-
-vroom::vroom_write( negative_phosphoproteins,
-                    file.path( args$output_dir,
-                               "all_phosphoproteins_with_negative_logFC_sites.tab" ),
-                    col_names=FALSE )
-
-list_of_comparisons <- negative_phosphoproteins %>% distinct( comparison) %>% pull( comparison)
-
-purrr::walk( list_of_comparisons, ~createDirIfNotExists( file.path(args$output_dir,. )) )
-
-purrr::walk( list_of_comparisons, function( input_comparison){
-
-  negative_phosphoproteins %>%
-    dplyr::filter( comparison == input_comparison) %>%
-    dplyr::select( uniprot_acc_first) %>%
-    vroom::vroom_write( file.path( args$output_dir,
-                                   input_comparison,
-                                   "all_phosphoproteins_with_negative_logFC_sites.tab" ),
-                        col_names=FALSE)
-
-} )
-
-
-## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-positive_only_phosphoproteins <- positive_phosphoproteins %>%
-  anti_join( negative_phosphoproteins, by=c("uniprot_acc_first" = "uniprot_acc_first"))
-
-vroom::vroom_write( positive_only_phosphoproteins,
-                    file.path(args$output_dir,
-                              "phosphoproteins_with_only_positive_logFC_sites.tab" ),
-                    col_names=FALSE )
-
-
-list_of_comparisons <- positive_only_phosphoproteins %>% distinct( comparison) %>% pull( comparison)
-
-purrr::walk( list_of_comparisons, ~createDirIfNotExists( file.path(args$output_dir,. )) )
-
-purrr::walk( list_of_comparisons, function( input_comparison){
-
-  positive_only_phosphoproteins %>%
-    dplyr::filter( comparison == input_comparison) %>%
-    dplyr::select( uniprot_acc_first) %>%
-    vroom::vroom_write( file.path( args$output_dir,
-                                   input_comparison,
-                                   "phosphoproteins_with_only_positive_logFC_sites.tab" ),
-                        col_names=FALSE)
-
-} )
-
-## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-negative_only_phosphoproteins <- negative_phosphoproteins  %>%
-  anti_join( positive_phosphoproteins, by=c("uniprot_acc_first" = "uniprot_acc_first"))
-
-vroom::vroom_write( negative_only_phosphoproteins,
-                    file.path(args$output_dir,
-                              "phosphoproteins_with_only_negative_logFC_sites.tab" ),
-                    col_names=FALSE )
-
-list_of_comparisons <- negative_only_phosphoproteins %>% distinct( comparison) %>% pull( comparison)
-
-purrr::walk( list_of_comparisons, ~createDirIfNotExists( file.path(args$output_dir,. )) )
-
-purrr::walk( list_of_comparisons, function( input_comparison){
-
-  negative_only_phosphoproteins %>%
-    dplyr::filter( comparison == input_comparison) %>%
-    dplyr::select( uniprot_acc_first) %>%
-    vroom::vroom_write( file.path( args$output_dir,
-                                   input_comparison,
-                                   "phosphoproteins_with_only_negative_logFC_sites.tab" ),
-                        col_names=FALSE)
-
-} )
-
-
-
-## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-overlapping_phosphoproteins <- positive_phosphoproteins %>%
-  inner_join( negative_phosphoproteins, by=c("uniprot_acc_first" = "uniprot_acc_first",
-                                             "comparison" = "comparison",
-                                             "gene_name_first" = "gene_name_first",
-                                             "protein_name_first" = "protein_name_first"))
-
-vroom::vroom_write( overlapping_phosphoproteins,
-                    file.path(args$output_dir,
-                              "phosphoproteins_with_positive_and_negative_logFC_sites.tab" ),
-                    col_names=FALSE )
-
-
-list_of_comparisons <- overlapping_phosphoproteins %>% distinct( comparison) %>% pull( comparison)
-
-purrr::walk( list_of_comparisons, ~createDirIfNotExists( file.path(args$output_dir,. )) )
-
-purrr::walk( list_of_comparisons, function( input_comparison){
-
-  overlapping_phosphoproteins %>%
-    dplyr::filter( comparison == input_comparison) %>%
-    dplyr::select( uniprot_acc_first) %>%
-    vroom::vroom_write( file.path( args$output_dir,
-                                   input_comparison,
-                                   "phosphoproteins_with_positive_and_negative_logFC_sites.tab" ),
-                        col_names=FALSE)
-
-} )
-
-
-
-
-## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-all_phosphoproteins_with_significant_da_sites <- positive_phosphoproteins %>%
-  bind_rows( negative_phosphoproteins) %>%
-  distinct()
-
-vroom::vroom_write( all_phosphoproteins_with_significant_da_sites,
-                    file.path(args$output_dir,
-                              "all_phosphoproteins_with_significant_da_sites.tab" ),
-                    col_names=FALSE )
-
-list_of_comparisons <- all_phosphoproteins_with_significant_da_sites %>% distinct( comparison) %>% pull( comparison)
-
-purrr::walk( list_of_comparisons, ~createDirIfNotExists( file.path(args$output_dir,. )) )
-
-purrr::walk( list_of_comparisons, function( input_comparison){
-
-  all_phosphoproteins_with_significant_da_sites %>%
-    dplyr::filter( comparison == input_comparison) %>%
-    dplyr::select( uniprot_acc_first) %>%
-    vroom::vroom_write( file.path( args$output_dir,
-                                   input_comparison,
-                                   "all_phosphoproteins_with_significant_da_sites.tab" ),
-                        col_names=FALSE)
-
-} )
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo ("Read proteomics abundance data.")
@@ -476,39 +267,88 @@ captured_output<-capture.output(
 logdebug(captured_output)
 
 
+
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-background_phosphoproteins  <- de_phos %>%
+positive_proteins <- proteins_tbl_orig %>%
+  dplyr::filter( !!rlang::sym(args$fdr_column_name) < args$protein_p_val_thresh &   !!rlang::sym(args$log_fc_column_name) > 0 ) %>%
   mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
   mutate( uniprot_acc_first = str_replace_all( uniprot_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
-  mutate( gene_name_first = purrr::map_chr( gene_name, ~str_split(., ":") %>% map_chr(1)))  %>%
+  mutate( gene_name_first = purrr::map_chr( UNIPROT_GENENAME, ~str_split(., ":") %>% map_chr(1)))  %>%
   mutate( protein_name_first = purrr::map_chr( `PROTEIN-NAMES`, ~str_split(., ":") %>% map_chr(1)))  %>%
-  distinct( uniprot_acc_first) %>%
-  arrange( uniprot_acc_first )
+  group_by(comparison, uniprot_acc_first, gene_name_first, protein_name_first) %>%
+  summarise( max_norm_logFC = max(!!rlang::sym(args$log_fc_column_name))) %>%
+  ungroup() %>%
+  arrange( comparison, desc(max_norm_logFC  ) )
 
-vroom::vroom_write( background_phosphoproteins,
-                    file.path(args$output_dir, "background_phosphoproteins.tab" ),
+vroom::vroom_write( positive_proteins,
+                    file.path( args$output_dir,
+                               "all_proteins_with_positive_logFC.tab" ),
+                    col_names=FALSE)
+
+ list_of_comparisons <- positive_proteins %>% distinct( comparison) %>% pull( comparison)
+
+ purrr::walk( list_of_comparisons, ~createDirIfNotExists( file.path(args$output_dir,. )) )
+
+ purrr::walk( list_of_comparisons, function( input_comparison){
+
+   positive_proteins %>%
+     dplyr::filter( comparison == input_comparison) %>%
+     dplyr::select( uniprot_acc_first) %>%
+     vroom::vroom_write( file.path( args$output_dir,
+                                    input_comparison,
+                                    "all_proteins_with_positive_logFC.tab" ),
+                         col_names=FALSE)
+
+ } )
+
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# norm_phos_logFC
+
+negative_proteins <- proteins_tbl_orig %>%
+  dplyr::filter( !!rlang::sym(args$fdr_column_name) < args$protein_p_val_thresh & !!rlang::sym(args$log_fc_column_name)  < 0 ) %>%
+  mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
+  mutate( uniprot_acc_first = str_replace_all( uniprot_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
+  mutate( gene_name_first = purrr::map_chr( UNIPROT_GENENAME, ~str_split(., ":") %>% map_chr(1)))  %>%
+  mutate( protein_name_first = purrr::map_chr( `PROTEIN-NAMES`, ~str_split(., ":") %>% map_chr(1)))  %>%
+  group_by(comparison, uniprot_acc_first, gene_name_first, protein_name_first) %>%
+  summarise( min_norm_logFC = min(!!rlang::sym(args$log_fc_column_name))) %>%
+  ungroup() %>%
+  arrange( comparison, min_norm_logFC  )
+
+vroom::vroom_write( negative_proteins,
+                    file.path( args$output_dir,
+                               "all_proteins_with_negative_logFC.tab" ),
                     col_names=FALSE )
+
+list_of_comparisons <- negative_proteins %>% distinct( comparison) %>% pull( comparison)
+
+purrr::walk( list_of_comparisons, ~createDirIfNotExists( file.path(args$output_dir,. )) )
+
+purrr::walk( list_of_comparisons, function( input_comparison){
+
+  negative_proteins %>%
+    dplyr::filter( comparison == input_comparison) %>%
+    dplyr::select( uniprot_acc_first) %>%
+    vroom::vroom_write( file.path( args$output_dir,
+                                   input_comparison,
+                                   "all_proteins_with_negative_logFC.tab" ),
+                        col_names=FALSE)
+
+} )
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 background_proteins <- proteins_tbl_orig %>%
   distinct(uniprot_acc) %>%
-  dplyr::rename( uniprot_acc_first = "uniprot_acc")
+  mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1))) %>%
+  dplyr::distinct(uniprot_acc_first)
+
 
 vroom::vroom_write( background_proteins,
                     file.path(args$output_dir, "background_proteins.tab" ),
                     col_names=FALSE )
 
-## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-background_proteins_phosphoproteins <- background_proteins %>%
-  bind_rows( background_phosphoproteins) %>%
-  distinct( uniprot_acc_first)
-
-vroom::vroom_write( background_proteins_phosphoproteins,
-                    file.path(args$output_dir, "background_proteins_phosphoproteins.tab" ),
-                    col_names=FALSE )
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -524,21 +364,17 @@ if (  !is.null( args$annotation_file )) {
                                                                 annotation_column = !!rlang::sym(args$annotation_column),
                                                                 annotation_id_column = !!rlang::sym(args$annotation_id))
 
-  ## Create gene sets list
-
-
-
-
   ## preparing the enrichment test
   go_annot <- vroom::vroom(  args$annotation_file   )
 
-  background_list <- background_proteins_phosphoproteins
+  background_list <- background_proteins
 
   #print( args$min_gene_set_size)
   min_gene_set_size_list <- parseNumList(args$min_gene_set_size)
   max_gene_set_size_list <- parseNumList(args$max_gene_set_size)
 
- list_of_comparisons <- all_phosphoproteins_with_significant_da_sites %>%
+ list_of_comparisons <- negative_proteins %>%
+   bind_rows(positive_proteins) %>%
    distinct(comparison) %>%
    pull(comparison)
 
@@ -555,12 +391,8 @@ if (  !is.null( args$annotation_file )) {
 
  # print( paste("is.na(go_aspect_list) =", is.na(go_aspect_list)) )
 
- list_of_genes_list <- list( all_significant=all_phosphoproteins_with_significant_da_sites,
-                             overlap_only=overlapping_phosphoproteins,
-                             negative_only=negative_only_phosphoproteins,
-                             positive_only=positive_only_phosphoproteins,
-                             negative_plus_overlap=negative_phosphoproteins,
-                             positive_plus_overlap=positive_phosphoproteins)
+ list_of_genes_list <- list( negative_list=negative_proteins,
+                             positive_list=positive_proteins)
 
  input_params <- cross( list(
    names_of_genes_list = names( list_of_genes_list),
@@ -631,8 +463,6 @@ if (  !is.null( args$annotation_file )) {
    } else {
      enrichment_result_add_gene_symbol <- enrichment_result
    }
-
-
 
    ## generate the output files
    purrr::walk(list_of_comparisons, function(input_comparison) {
