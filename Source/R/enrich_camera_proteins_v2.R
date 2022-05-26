@@ -615,10 +615,11 @@ if(isArgumentDefined(args, "uniprot_to_gene_symbol_file")) {
     dplyr::mutate( gene_symbol = str_split(!!rlang::sym(args$gene_symbol_column), " |;|/")) %>%
     unnest(gene_symbol) %>%
     distinct( !!rlang::sym(args$protein_id_lookup_column), gene_symbol) %>%
-    dplyr::filter( gene_symbol != "" & !is.na(gene_symbol))
+    dplyr::filter( gene_symbol != "" & !is.na(gene_symbol)) %>%
+    dplyr::rename( uniprot_acc = args$protein_id_lookup_column)
 
   uniprot_acc_to_gene_symbol_join_condition <- rlang::set_names(c("uniprot_acc"),
-                                                                c(args$protein_id_lookup_column))
+                                                                c("uniprot_acc"))
 
   camera_results_with_gene_symbol <- camera_results_with_uniprot_acc %>%
     left_join( uniprot_to_gene_names, by=uniprot_acc_to_gene_symbol_join_condition)
