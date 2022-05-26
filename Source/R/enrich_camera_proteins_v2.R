@@ -616,7 +616,7 @@ if(isArgumentDefined(args, "uniprot_to_gene_symbol_file")) {
                                        !!rlang::sym(args$protein_id) )
 
   camera_results_with_gene_symbol <- camera_results_with_uniprot_acc %>%
-    mutate( gene_symbol = purrr::map_chr(  !!rlang::sym(args$protein_id),
+    mutate( gene_symbol = furrr::future_map_chr(  !!rlang::sym(args$protein_id),
                                         function(x){ ifelse(!is.na(x) & (x %in% names( uniprot_to_gene_symbol_dict)),
                                                             uniprot_to_gene_symbol_dict[[x]],
                                                             NA_character_) }))
