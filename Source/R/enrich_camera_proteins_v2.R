@@ -598,7 +598,7 @@ filtered_results <- all_results %>%
                     ( Direction == "Down" & !!rlang::sym( args$log_fc_column_name) < 0) |
                     ( Direction == "Up" & !!rlang::sym( args$log_fc_column_name) > 0) ) %>%
   dplyr::select( -one_of(c( args$fdr_column_name,
-                            args$log_fc_column_name))) %>%
+                            args$log_fc_column_name)))
 
 
   camera_results_with_uniprot_acc <- all_results %>%
