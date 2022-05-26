@@ -694,7 +694,7 @@ captured_output<-capture.output(
 loginfo("Save camera results table in Excel format %s", file.path( args$output_dir,  "filtered_camera_results.xlsx"))
 captured_output<-capture.output(
 writexl::write_xlsx( camera_results_filt %>%
-                       mutate_at( c("accession_list", "gene_symbol"), ~substr(., 1, 32760) ,
+                       mutate_at( c("accession_list", "gene_symbol"), ~substr(., 1, 32760)) ,
                      file.path( args$output_dir,  "filtered_camera_results.xlsx")),
 type = "message" )
 
@@ -702,7 +702,7 @@ type = "message" )
 loginfo("Save camera results table in Excel format %s", file.path( args$output_dir,  "unfiltered_camera_results.xlsx"))
 captured_output<-capture.output(
   writexl::write_xlsx( camera_results_unfilt %>%
-                         mutate_at( c("accession_list", "gene_symbol"), ~substr(., 1, 32760),
+                         mutate_at( c("accession_list", "gene_symbol"), ~substr(., 1, 32760) ),
                        file.path( args$output_dir,  "unfiltered_camera_results.xlsx")),
   type = "message" )
 
