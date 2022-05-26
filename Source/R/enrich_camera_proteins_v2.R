@@ -577,7 +577,9 @@ join_condition_two <- rlang::set_names( c("comparison", args$protein_id),
 
 
 camera_results_with_uniprot_acc <- camera_results_tbl %>%
+  mutate(  !!rlang::sym( args$annotation_id) := as.character(  !!rlang::sym( args$annotation_id))) %>%
   left_join( dictionary %>%
+               mutate(  !!rlang::sym( args$annotation_id) := as.character(  !!rlang::sym( args$annotation_id))) %>%
                dplyr::select( one_of(columns_included)),
              by=join_condition ) %>%
   inner_join( proteins_cln %>%
