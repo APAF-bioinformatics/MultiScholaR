@@ -282,7 +282,8 @@ cmriCamera <- function( abundance_mat, design_mat, contrast_name, index_name, in
     camera_result <- camera(y = abundance_mat,
                             design = design_mat,
                             index = camera_indices_filt,
-                            contrast = this_contrast)
+                            contrast = this_contrast) %>%
+      mutate( rank = row_number())
   }
 
 

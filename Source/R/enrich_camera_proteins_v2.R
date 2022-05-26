@@ -577,26 +577,32 @@ join_condition_two <- rlang::set_names( c("comparison", "uniprot_acc"),
                                         c("comparison", "uniprot_acc") )
 
 
-camera_results_with_uniprot_acc <- camera_results_tbl %>%
+all_results <- camera_results_tbl %>%
   mutate(  !!rlang::sym( args$annotation_id) := as.character(  !!rlang::sym( args$annotation_id))) %>%
   left_join( dictionary %>%
                dplyr::rename( uniprot_acc =  args$protein_id) %>%
                mutate(  !!rlang::sym( args$annotation_id) := as.character(  !!rlang::sym( args$annotation_id))) %>%
                dplyr::select( one_of(columns_included)),
-             by=join_condition ) %>%
-  left_join( proteins_cln  %>%
-             dplyr::filter( !!rlang::sym( args$fdr_column_name) < args$protein_q_val_thresh) %>%
-             dplyr::select( !!rlang::sym( args$fdr_column_name),
-                               !!rlang::sym( args$log_fc_column_name),
-                               uniprot_acc,
-                               comparison),
-              by = join_condition_two ) %>%
-  dplyr::filter ( is.na(!!rlang::sym( args$log_fc_column_name)) |
-                  ( Direction == "Down" & !!rlang::sym( args$log_fc_column_name) < 0) |
-                  ( Direction == "Up" & !!rlang::sym( args$log_fc_column_name) > 0) ) %>%
-  dplyr::select( -one_of(c( args$fdr_column_name,
-                           args$log_fc_column_name)))
+             by=join_condition )
 
+
+filtered_results <- all_results %>%
+  left_join( proteins_cln  %>%
+               dplyr::filter( !!rlang::sym( args$fdr_column_name) < args$protein_q_val_thresh) %>%
+               dplyr::select( !!rlang::sym( args$fdr_column_name),
+                              !!rlang::sym( args$log_fc_column_name),
+                              uniprot_acc,
+                              comparison),
+             by = join_condition_two ) %>%
+  dplyr::filter ( is.na(!!rlang::sym( args$log_fc_column_name)) |
+                    ( Direction == "Down" & !!rlang::sym( args$log_fc_column_name) < 0) |
+                    ( Direction == "Up" & !!rlang::sym( args$log_fc_column_name) > 0) ) %>%
+  dplyr::select( -one_of(c( args$fdr_column_name,
+                            args$log_fc_column_name))) %>%
+
+
+  camera_results_with_uniprot_acc <- all_results %>%
+    left_join( filtered_results)
 
 rm( camera_results_tbl)
 gc()
@@ -627,7 +633,8 @@ if(isArgumentDefined(args, "uniprot_to_gene_symbol_file")) {
                                                                 c("uniprot_acc"))
 
   camera_results_with_gene_symbol <- camera_results_with_uniprot_acc %>%
-    left_join( uniprot_to_gene_names, by=uniprot_acc_to_gene_symbol_join_condition)
+    left_join( uniprot_to_gene_names, by=uniprot_acc_to_gene_symbol_join_condition) %>%
+    distinct()
 
   # uniprot_to_gene_symbol_dict <- getUniprotAccToGeneSymbolDictionary( uniprot_tab_delimited_tbl,
   #                                      !!rlang::sym(args$protein_id_lookup_column),
@@ -660,11 +667,13 @@ camera_results_unfilt <- camera_results_with_gene_symbol %>%
       arrange (uniprot_acc) %>%
       pull( uniprot_acc ) %>%
       sort %>%
+      unique %>%
       paste( collapse=", ")    } )) %>%
   mutate( gene_symbol = furrr::future_map_chr( data, function(x) { x %>%
       arrange(gene_symbol) %>%
       pull( gene_symbol) %>%
       sort %>%
+      unique %>%
       paste( collapse=", ")    } ) ) %>%
   dplyr::select(-data)
 
