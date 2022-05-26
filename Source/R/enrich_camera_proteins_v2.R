@@ -550,7 +550,8 @@ if( !is.null( args$aspect_column)) {
     dplyr::rename( !!rlang::sym(args$aspect_column) := "gene_set")
 }
 
-
+rm( camera_results)
+gc()
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Add UniProt accession of proteins that had significant log fold-change and also associated with annotation.")
@@ -596,6 +597,10 @@ camera_results_with_uniprot_acc <- camera_results_tbl %>%
   dplyr::select( -one_of(c( args$fdr_column_name,
                            args$log_fc_column_name)))
 
+
+rm( camera_results_tbl)
+gc()
+
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Add gene symbol for the proteins that had significant log fold-change and also associated with annotation.")
 
@@ -639,6 +644,11 @@ if(isArgumentDefined(args, "uniprot_to_gene_symbol_file")) {
   camera_results_with_gene_symbol <- camera_results_with_uniprot_acc
 }
 
+
+
+rm( camera_results_with_uniprot_acc)
+gc()
+
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Convert gene symbols and UniProt accession into comma separated spring.")
 
@@ -664,6 +674,7 @@ camera_results_filt <- camera_results_unfilt %>%
 # camera_results_tbl %>%
 #     arrange(FDR)
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 loginfo("Save camera results table in tab-separated table %s", file.path( args$output_dir,  "filtered_camera_results.tab"))
 captured_output<-capture.output(
