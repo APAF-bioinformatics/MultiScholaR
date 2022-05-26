@@ -665,13 +665,13 @@ camera_results_filt <- camera_results_unfilt %>%
 #     arrange(FDR)
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-loginfo("Save camera results table in tab-separated table %s", camera_results_file)
+loginfo("Save camera results table in tab-separated table %s", file.path( args$output_dir,  "filtered_camera_results.tab"))
 captured_output<-capture.output(
   vroom::vroom_write( camera_results_filt,
                       file.path( args$output_dir,  "filtered_camera_results.tab")),
   type = "message" )
 
-loginfo("Save camera results table in Excel format %s", camera_results_file)
+loginfo("Save camera results table in Excel format %s", file.path( args$output_dir,  "filtered_camera_results.xlsx"))
 captured_output<-capture.output(
 writexl::write_xlsx( camera_results_filt,
                      file.path( args$output_dir,  "filtered_camera_results.xlsx")),
@@ -681,13 +681,13 @@ type = "message" )
 
 
 
-loginfo("Save camera results table in tab-separated table %s", camera_results_file)
+loginfo("Save camera results table in tab-separated table %s", file.path( args$output_dir,  "unfiltered_camera_results.tab"))
 captured_output<-capture.output(
   vroom::vroom_write( camera_results_unfilt,
                       file.path( args$output_dir,  "unfiltered_camera_results.tab")),
   type = "message" )
 
-loginfo("Save camera results table in Excel format %s", camera_results_file)
+loginfo("Save camera results table in Excel format %s", file.path( args$output_dir,  "unfiltered_camera_results.xlsx"))
 captured_output<-capture.output(
   writexl::write_xlsx( camera_results_unfilt,
                        file.path( args$output_dir,  "unfiltered_camera_results.xlsx")),
