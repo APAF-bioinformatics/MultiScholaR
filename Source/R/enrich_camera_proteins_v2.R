@@ -562,23 +562,24 @@ if( !is.null( args$aspect_column) ) {
   join_condition <- rlang::set_names( c(args$annotation_id, args$aspect_column),
                                       c(args$annotation_id, args$aspect_column ) )
 
-  columns_included <- c(args$annotation_id, args$aspect_column, args$protein_id)
+  columns_included <- c(args$annotation_id, args$aspect_column, "uniprot_acc")
 
 } else {
   join_condition <- rlang::set_names( c(args$annotation_id),
                                       c(args$annotation_id ) )
 
-  columns_included <- c(args$annotation_id, args$protein_id)
+  columns_included <- c(args$annotation_id, "uniprot_acc")
 
 }
 
-join_condition_two <- rlang::set_names( c("comparison", args$protein_id),
-                                        c("comparison", args$protein_id) )
+join_condition_two <- rlang::set_names( c("comparison", "uniprot_acc"),
+                                        c("comparison", "uniprot_acc") )
 
 
 camera_results_with_uniprot_acc <- camera_results_tbl %>%
   mutate(  !!rlang::sym( args$annotation_id) := as.character(  !!rlang::sym( args$annotation_id))) %>%
   left_join( dictionary %>%
+               dplyr::rename( uniprot_acc =  args$protein_id) %>%
                mutate(  !!rlang::sym( args$annotation_id) := as.character(  !!rlang::sym( args$annotation_id))) %>%
                dplyr::select( one_of(columns_included)),
              by=join_condition ) %>%
@@ -586,7 +587,7 @@ camera_results_with_uniprot_acc <- camera_results_tbl %>%
              dplyr::filter( !!rlang::sym( args$fdr_column_name) < args$protein_q_val_thresh) %>%
              dplyr::select( !!rlang::sym( args$fdr_column_name),
                                !!rlang::sym( args$log_fc_column_name),
-                               !!rlang::sym(args$protein_id),
+                               uniprot_acc,
                                comparison),
               by = join_condition_two ) %>%
   dplyr::filter ( is.na(!!rlang::sym( args$log_fc_column_name)) |
@@ -616,8 +617,8 @@ if(isArgumentDefined(args, "uniprot_to_gene_symbol_file")) {
     distinct( !!rlang::sym(args$protein_id_lookup_column), gene_symbol) %>%
     dplyr::filter( gene_symbol != "" & !is.na(gene_symbol))
 
-  uniprot_acc_to_gene_symbol_join_condition <- rlang::set_names(c(args$protein_id_lookup_column),
-                                                                c(args$protein_id))
+  uniprot_acc_to_gene_symbol_join_condition <- rlang::set_names(c("uniprot_acc"),
+                                                                c(args$protein_id_lookup_column))
 
   camera_results_with_gene_symbol <- camera_results_with_uniprot_acc %>%
     left_join( uniprot_to_gene_names, by=uniprot_acc_to_gene_symbol_join_condition)
@@ -645,8 +646,8 @@ camera_results_unfilt <- camera_results_with_gene_symbol %>%
   nest() %>%
   ungroup() %>%
   mutate( accession_list = furrr::future_map_chr( data, function(x) { x %>%
-      arrange (!!rlang::sym(args$protein_id)) %>%
-      pull( !!rlang::sym(args$protein_id) ) %>%
+      arrange (uniprot_acc) %>%
+      pull( uniprot_acc ) %>%
       sort %>%
       paste( collapse=", ")    } )) %>%
   mutate( gene_symbol = furrr::future_map_chr( data, function(x) { x %>%
