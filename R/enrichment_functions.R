@@ -285,6 +285,13 @@ cmriCamera <- function( abundance_mat, design_mat, contrast_name, index_name, in
                             contrast = this_contrast)
   }
 
+
+  if(nrow(camera_result) > 1) {
+
+    camera_result$cmriFDR <- p.adjust(camera_result$PValue,method="BH")
+
+  }
+
   info_list <- list(camera = camera_result,
                     y = abundance_mat,
                     design = design_mat,

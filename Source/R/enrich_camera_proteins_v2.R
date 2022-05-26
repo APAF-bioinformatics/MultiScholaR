@@ -67,7 +67,7 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
 
   parser <- OptionParser(add_help_option =TRUE)
 
-  parser <- add_option(parser, c("-c", "--config"), type = "character", default =  "config.ini", # "/home/ignatius/PostDoc/2021/ALPK1_BMP_06/Source/P90/config_prot_NR.ini",
+  parser <- add_option(parser, c("-c", "--config"), type = "character", default =  "/home/ubuntu/Workings/2022/EStim_Brain_Organoids_BMP_17/Source/config_prot.ini", # "/home/ignatius/PostDoc/2021/ALPK1_BMP_06/Source/P90/config_prot_NR.ini",
                        help = "Configuration file.  [default %default]",
                        metavar = "string")
 
@@ -582,14 +582,15 @@ camera_results_with_uniprot_acc <- camera_results_tbl %>%
                mutate(  !!rlang::sym( args$annotation_id) := as.character(  !!rlang::sym( args$annotation_id))) %>%
                dplyr::select( one_of(columns_included)),
              by=join_condition ) %>%
-  inner_join( proteins_cln %>%
-                dplyr::select( !!rlang::sym( args$fdr_column_name),
+  left_join( proteins_cln  %>%
+             dplyr::filter( !!rlang::sym( args$fdr_column_name) < args$protein_q_val_thresh) %>%
+             dplyr::select( !!rlang::sym( args$fdr_column_name),
                                !!rlang::sym( args$log_fc_column_name),
                                !!rlang::sym(args$protein_id),
                                comparison),
               by = join_condition_two ) %>%
-  dplyr::filter( !!rlang::sym( args$fdr_column_name) < args$protein_q_val_thresh) %>%
-  dplyr::filter ( ( Direction == "Down" & !!rlang::sym( args$log_fc_column_name) < 0) |
+  dplyr::filter ( is.na(!!rlang::sym( args$log_fc_column_name)) |
+                  ( Direction == "Down" & !!rlang::sym( args$log_fc_column_name) < 0) |
                   ( Direction == "Up" & !!rlang::sym( args$log_fc_column_name) > 0) ) %>%
   dplyr::select( -one_of(c( args$fdr_column_name,
                            args$log_fc_column_name)))
@@ -616,7 +617,9 @@ if(isArgumentDefined(args, "uniprot_to_gene_symbol_file")) {
 
   camera_results_with_gene_symbol <- camera_results_with_uniprot_acc %>%
     mutate( gene_symbol = purrr::map_chr(  !!rlang::sym(args$protein_id),
-                                          ~{uniprot_to_gene_symbol_dict[[.]]}))
+                                        function(x){ ifelse(!is.na(x) & (x %in% names( uniprot_to_gene_symbol_dict)),
+                                                            uniprot_to_gene_symbol_dict[[x]],
+                                                            NA_character_) }))
 
 } else {
   camera_results_with_gene_symbol <- camera_results_with_uniprot_acc
