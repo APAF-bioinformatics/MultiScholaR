@@ -663,6 +663,10 @@ camera_results_unfilt <- camera_results_with_gene_symbol %>%
   group_by_at( vars( !contains("uniprot_acc") & !contains("gene_symbol")) ) %>%
   nest() %>%
   ungroup() %>%
+  mutate( num_sig_proteins = purrr::map_int(data,
+                                            function(x) { x %>%
+                                                distinct(gene_symbol) %>%
+                                                nrow }   )) %>%
   mutate( accession_list = furrr::future_map_chr( data, function(x) { x %>%
       arrange (uniprot_acc) %>%
       pull( uniprot_acc ) %>%
