@@ -67,7 +67,7 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
 
   parser <- OptionParser(add_help_option =TRUE)
 
-  parser <- add_option(parser, c("-c", "--config"), type = "character", default =  "/home/ubuntu/Workings/2022/EStim_Brain_Organoids_BMP_17/Source/config_prot.ini", # "/home/ignatius/PostDoc/2021/ALPK1_BMP_06/Source/P90/config_prot_NR.ini",
+  parser <- add_option(parser, c("-c", "--config"), type = "character", default =  "config.ini", # "/home/ignatius/PostDoc/2021/ALPK1_BMP_06/Source/P90/config_prot_NR.ini",
                        help = "Configuration file.  [default %default]",
                        metavar = "string")
 
