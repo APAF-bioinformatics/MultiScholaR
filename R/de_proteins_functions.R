@@ -221,6 +221,8 @@ plotPca <- function(data,
 
   pca.res <- pca(t(as.matrix(data)))
 
+  proportion_explained <- pca.res$prop_expl_var
+
   temp_tbl <- pca.res$variates$X %>%
     as.data.frame %>%
     rownames_to_column(quo_name(enquo(sample_id_column))) %>%
@@ -232,6 +234,8 @@ plotPca <- function(data,
     ggplot(aes(PC1, PC2, col = {{group_column}}, label = {{label_column}})) +
     geom_point() +
     geom_text_repel(size  = geom.text.size, show.legend=FALSE) +
+    xlab( paste( "PC1 (", round(proportion_explained$X[["PC1"]]*100, 0),"%)", sep="")) +
+    ylab( paste( "PC2 (", round(proportion_explained$X[["PC2"]]*100, 0),"%)", sep="")) +
     labs(title = title) +
     theme(legend.title = element_blank())
 

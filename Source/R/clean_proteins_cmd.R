@@ -236,10 +236,10 @@ fasta_meta_file<-file.path(args$tmp_dir,args$fasta_meta_file)
 loginfo("Reading the FASTA file %s and saving the meta-data file.",fasta_meta_file)
 if (file.exists(fasta_meta_file))
 {
-  loginfo("Mata-data exists, reading RDS.")
+  loginfo("Meta-data exists, reading RDS.")
   aa_seq_tbl <- readRDS(fasta_meta_file)
 }else{
-  loginfo("Mata-data does not exists, parsing fasta and saving RDS.")
+  loginfo("Meta-data does not exists, parsing fasta and saving RDS.")
   aa_seq_tbl <- parseFastaFile(args$fasta_file)
   saveRDS(aa_seq_tbl, fasta_meta_file)
 }
@@ -333,6 +333,12 @@ accession_record_file<-file.path(args$output_dir, args$accession_record_file)
 loginfo("Save the  data into accession_records to %s",accession_record_file)
 vroom::vroom_write(accession_gene_name_tbl_record, accession_record_file)
 
+
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+sample_names_file<-file.path(args$output_dir, "sample_names.tab")
+loginfo("Save the  data into accession_records to %s", "sample_names.tab")
+sample_names <- colnames( evidence_tbl_filt)[-1]
+vroom::vroom_write(data.frame( sample_names=t(t(sample_names) ) ), sample_names_file)
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 te<-toc(quiet = TRUE)
