@@ -336,7 +336,7 @@ vroom::vroom_write(accession_gene_name_tbl_record, accession_record_file)
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 sample_names_file<-file.path(args$output_dir, "sample_names.tab")
-loginfo("Save the  data into accession_records to %s", "sample_names.tab")
+loginfo("Save the sample names to %s", "sample_names.tab")
 sample_names <- colnames( evidence_tbl_filt)[-1]
 vroom::vroom_write(data.frame( sample_names=t(t(sample_names) ) ), sample_names_file)
 

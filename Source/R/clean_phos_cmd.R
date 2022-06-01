@@ -293,6 +293,13 @@ saveRDS( results_list$summarised_long_list,
 saveRDS( results_list$summarised_wide_list,
          file.path(args$output_dir, "summarised_wide_tbl_list.RDS" ))
 
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+sample_names_file<-file.path(args$output_dir, "sample_names.tab")
+loginfo("Save the sample names to %s", "sample_names.tab")
+sample_names <- colnames(results_list$summarised_wide_list)[c(-1,-2)]
+vroom::vroom_write(data.frame( sample_names=t(t(sample_names) ) ), sample_names_file)
+
+
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 te<-toc(quiet = TRUE)
 loginfo("%f sec elapsed",te$toc-te$tic)
