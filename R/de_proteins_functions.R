@@ -250,8 +250,7 @@ plotRle <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75,
 {
   #  checks = check.ggplot()
   # if (checks) {
-  rle = t(apply(t(Y) - apply(Y, 2, median), 2, quantile,
-                probs = probs))
+  rle = t(apply(t(Y) - apply(Y, 2, function(x){median(x, na.rm=TRUE)}), 2, function(x){quantile(x, probs = probs, na.rm=TRUE)}))
   colnames(rle) = c("min", "lower", "middle", "upper",
                     "max")
   df = cbind(data.frame(rle.x.factor = rownames(rle)), data.frame(rle))
@@ -332,10 +331,12 @@ rlePcaPlotList <- function(list_of_data_matrix, list_of_design_matrix,
 countStatDeGenes <- function(data,
                              lfc_thresh = 0,
                              q_val_thresh = 0.05,
-                             log_fc_column = logFC,
+                             log_fc_column = log2FC,
                              q_value_column = q.mod) {
 
-  comparison <- unique(data$comparison)
+  comparison <- as.data.frame(data) %>%
+    distinct(comparison) %>%
+    pull(comparison)
 
   selected_data <- data %>%
     dplyr::mutate(status = case_when({ { q_value_column } } >= q_val_thresh ~ "Not significant",
@@ -378,7 +379,7 @@ printCountDeGenesTable <- function(list_of_de_tables,
     purrr::map(de_table, ~countStatDeGenes(.,
                                            lfc_thresh = 0,
                                            q_val_thresh = 0.05,
-                                           log_fc_column = logFC,
+                                           log_fc_column = log2FC,
                                            q_value_column = q.mod)) %>%
       purrr::map2(names(de_table),
                   ~{ .x %>%

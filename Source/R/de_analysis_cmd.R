@@ -62,7 +62,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.  [default %default]")
 
-parser <- add_option(parser, c("-c", "--config"), type = "character", default = "/home/ignatius/PostDoc/2022/MultiPhos2022/Source/Desch_2021/config_phos.ini",
+parser <- add_option(parser, c("-c", "--config"), type = "character", default = "/home/ignatius/PostDoc/2022/multiphos_igypang_bmp_10_20220531/Source/Desch_2021/config_phos.ini",
                      help = "Configuration file.  [default %default]",
                      metavar = "string")
 
@@ -531,6 +531,8 @@ counts_na[na_values_marker] <- NA
 
 counts_na.log <- log2(counts_na)
 
+# plotRle( t(counts_na.log))
+
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Median centering.")
 counts_na.log.quant <- normalizeBetweenArrays(counts_na.log, method = args$normalization)
@@ -757,6 +759,8 @@ rle_pca_plots_arranged <- rlePcaPlotList(list_of_data_matrix = list(counts_rnorm
 
 }
 
+# plotRle(t(counts_rnorm.log.quant))
+
 
 for( format_ext in args$plots_format) {
   file_name<-file.path(args$output_dir,paste0("rle_pca_plots.",format_ext))
@@ -969,85 +973,6 @@ if (!is.na( args$average_replicates_id)) {
   counts_table_to_use <- counts_rnorm.log.ruvIII_avg
 
 }
-
-
-####################
-
-# lfc_qval_tbl <- selected_data %>%
-#   dplyr::filter(analysis_type == "RUV applied")
-# norm_counts_input_tbl <- counts_table_to_use
-# raw_counts_input_tbl <- counts_filt
-# row_id <- args$row_id
-# sample_id <- args$sample_id
-# group_id <- args$group_id
-# design_matrix_norm <- design_mat_updated
-# design_matrix_raw <-  design_mat_cln
-
-createDeResultsLongFormat <- function( lfc_qval_tbl,
-          norm_counts_input_tbl,
-          raw_counts_input_tbl,
-          row_id,
-          sample_id,
-          group_id,
-          group_pattern,
-          design_matrix_norm,
-          design_matrix_raw
-) {
-
-  norm_counts <- norm_counts_input_tbl %>%
-    as.data.frame %>%
-    rownames_to_column(row_id) %>%
-    pivot_longer(cols = matches(group_pattern),
-                 names_to = sample_id,
-                 values_to = "log2norm")  %>%
-    left_join(design_matrix_norm, by = sample_id) %>%
-    group_by(!!sym(row_id), !!sym(group_id)) %>%
-    arrange(!!sym(row_id), !!sym(group_id), !!sym(sample_id)) %>%
-    mutate(replicate_number = paste0("log2norm.", row_number())) %>%
-    ungroup %>%
-    pivot_wider(id_cols = c(!!sym(row_id), !!sym(group_id)),
-                names_from = replicate_number,
-                values_from = log2norm)
-
-
-  raw_counts <- raw_counts_input_tbl %>%
-    as.data.frame %>%
-    rownames_to_column(row_id) %>%
-    pivot_longer(cols = matches(group_pattern),
-                 names_to = sample_id,
-                 values_to = "raw") %>%
-    left_join(design_matrix_raw, by = sample_id) %>%
-    group_by(!!sym(row_id), !!sym(group_id)) %>%
-    arrange(!!sym(row_id), !!sym(group_id), !!sym(sample_id)) %>%
-    mutate(replicate_number = paste0("raw.", row_number())) %>%
-    ungroup %>%
-    pivot_wider(id_cols = c(!!sym(row_id), !!sym(group_id)),
-                names_from = replicate_number,
-                values_from = raw)
-
-  left_join_columns <- rlang::set_names(c(row_id, group_id ),
-                                        c(row_id, "left_group"))
-
-  right_join_columns <- rlang::set_names(c(row_id, group_id ),
-                                         c(row_id, "right_group"))
-
-  de_proteins_long <- lfc_qval_tbl %>%
-    dplyr::select(-lqm, -colour, -analysis_type) %>%
-    dplyr::mutate(expression = str_replace_all(expression, group_id, "")) %>%
-    separate(expression, sep = "-", into = c("left_group", "right_group")) %>%
-    left_join(norm_counts, by = left_join_columns) %>%
-    left_join(norm_counts, by = right_join_columns,
-              suffix = c(".left", ".right")) %>%
-    left_join(raw_counts, by = left_join_columns) %>%
-    left_join(raw_counts, by = right_join_columns,
-              suffix = c(".left", ".right")) %>%
-    arrange( comparison, q.mod, log2FC) %>%
-    distinct()
-
-  de_proteins_long
-}
-
-####################
 
 de_proteins_long <- createDeResultsLongFormat( lfc_qval_tbl = selected_data %>%
                                                  dplyr::filter(analysis_type == "RUV applied"),
