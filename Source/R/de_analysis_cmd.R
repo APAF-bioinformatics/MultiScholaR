@@ -62,7 +62,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.  [default %default]")
 
-parser <- add_option(parser, c("-c", "--config"), type = "character", default = "/home/ignatius/PostDoc/2022/multiphos_igypang_bmp_10_20220531/Source/Desch_2021/config_phos.ini",
+parser <- add_option(parser, c("-c", "--config"), type = "character", default = "/home/ignatius/PostDoc/2022/multiphos_igypang_bmp_10_20220531/Source/Desch_2021/config_prot.ini",
                      help = "Configuration file.  [default %default]",
                      metavar = "string")
 
@@ -882,10 +882,10 @@ num_sig_de_molecules <- printCountDeGenesTable(list_of_de_tables = list(myRes_rn
 for( format_ext in args$plots_format) {
   file_name<-file.path(args$output_dir,paste0("num_sda_entities_barplot.",format_ext))
   captured_output<-capture.output(
-ggsave(filename = file_name,
-       plot = num_sig_de_molecules$plot,
-       height = 10,
-       width = 7)
+    ggsave(filename = file_name,
+           plot = num_sig_de_molecules$plot,
+           height = 10,
+           width = 7)
     , type = "message"
   )
   logdebug(captured_output)

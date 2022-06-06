@@ -334,9 +334,9 @@ countStatDeGenes <- function(data,
                              log_fc_column = log2FC,
                              q_value_column = q.mod) {
 
-  comparison <- as.data.frame(data) %>%
-    distinct(comparison) %>%
-    pull(comparison)
+  # comparison <- as.data.frame(data) %>%
+  #   distinct(comparison) %>%
+  #   pull(comparison)
 
   selected_data <- data %>%
     dplyr::mutate(status = case_when({ { q_value_column } } >= q_val_thresh ~ "Not significant",
@@ -379,7 +379,7 @@ printCountDeGenesTable <- function(list_of_de_tables,
     purrr::map(de_table, ~countStatDeGenes(.,
                                            lfc_thresh = 0,
                                            q_val_thresh = 0.05,
-                                           log_fc_column = log2FC,
+                                           log_fc_column = logFC,
                                            q_value_column = q.mod)) %>%
       purrr::map2(names(de_table),
                   ~{ .x %>%
@@ -1429,6 +1429,8 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
     pivot_wider(id_cols = c(!!sym(row_id), !!sym(group_id)),
                 names_from = replicate_number,
                 values_from = raw)
+
+  print(head(raw_counts))
 
   left_join_columns <- rlang::set_names(c(row_id, group_id ),
                                         c(row_id, "left_group"))
