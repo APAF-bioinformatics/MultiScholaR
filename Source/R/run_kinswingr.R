@@ -33,6 +33,7 @@ p_load(svglite)
 p_load(tictoc)
 p_load(ProteomeRiver)
 p_load(UniProt.ws)
+p_load(furrr)
 
 tic()
 
