@@ -297,27 +297,27 @@ annotated_phos_tbl <- basic_data %>%
   arrange(comparison, combined_q_mod, norm_phos_logFC ) %>%
   distinct()
 
+vroom::vroom_write( annotated_phos_tbl,
+                    file.path( args$output_dir,
+                               "norm_phosphosite_lfc_minus_protein_lfc_annotated.tsv"))
 
-vroom::vroom_write( annotated_phos_tbl, file.path( args$output_dir,  "norm_phosphosite_lfc_minus_protein_lfc_annotated.tsv"))
-
-
-list_of_long_columns <- intersect(colnames(annotated_phos_tbl), c("protein_names",
-                                                                        "ENSEMBL",
-                                                                        "PROTEIN-NAMES",
-                                                                        "KEYWORDS",
-                                                                        "GO-ID",
-                                                                        "go_biological_process",
-                                                                        "go_cellular_compartment",
-                                                                        "go_molecular_function",
-                                                                        "reactome_term",
-                                                                        "majority_protein_ids") )
+list_of_long_columns <- intersect( colnames(annotated_phos_tbl),
+                                   c("protein_names",
+                                     "ENSEMBL",
+                                     "PROTEIN-NAMES",
+                                     "KEYWORDS",
+                                     "GO-ID",
+                                     "go_biological_process",
+                                     "go_cellular_compartment",
+                                     "go_molecular_function",
+                                     "reactome_term",
+                                     "majority_protein_ids") )
 
 
 writexl::write_xlsx(annotated_phos_tbl %>%
                       mutate_at( list_of_long_columns, ~substr(., 1, 32760) ),
-                    file.path(args$output_dir, "norm_phosphosite_lfc_minus_protein_lfc_annotated.xlsx")  )
-
-
+                    file.path (args$output_dir,
+                               "norm_phosphosite_lfc_minus_protein_lfc_annotated.xlsx")  )
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Compare before and after normalization with protein abundance")
@@ -423,8 +423,6 @@ captured_output<capture.output(
     , type = "message"
   )
 logdebug(captured_output)
-
-
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 te<-toc(quiet = TRUE)

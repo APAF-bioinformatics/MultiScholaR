@@ -221,6 +221,8 @@ plotPca <- function(data,
 
   pca.res <- pca(t(as.matrix(data)))
 
+  proportion_explained <- pca.res$prop_expl_var
+
   temp_tbl <- pca.res$variates$X %>%
     as.data.frame %>%
     rownames_to_column(quo_name(enquo(sample_id_column))) %>%
@@ -232,6 +234,8 @@ plotPca <- function(data,
     ggplot(aes(PC1, PC2, col = {{group_column}}, label = {{label_column}})) +
     geom_point() +
     geom_text_repel(size  = geom.text.size, show.legend=FALSE) +
+    xlab( paste( "PC1 (", round(proportion_explained$X[["PC1"]]*100, 0),"%)", sep="")) +
+    ylab( paste( "PC2 (", round(proportion_explained$X[["PC2"]]*100, 0),"%)", sep="")) +
     labs(title = title) +
     theme(legend.title = element_blank())
 
@@ -246,8 +250,7 @@ plotRle <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75,
 {
   #  checks = check.ggplot()
   # if (checks) {
-  rle = t(apply(t(Y) - apply(Y, 2, median), 2, quantile,
-                probs = probs))
+  rle = t(apply(t(Y) - apply(Y, 2, function(x){median(x, na.rm=TRUE)}), 2, function(x){quantile(x, probs = probs, na.rm=TRUE)}))
   colnames(rle) = c("min", "lower", "middle", "upper",
                     "max")
   df = cbind(data.frame(rle.x.factor = rownames(rle)), data.frame(rle))
@@ -328,10 +331,12 @@ rlePcaPlotList <- function(list_of_data_matrix, list_of_design_matrix,
 countStatDeGenes <- function(data,
                              lfc_thresh = 0,
                              q_val_thresh = 0.05,
-                             log_fc_column = logFC,
+                             log_fc_column = log2FC,
                              q_value_column = q.mod) {
 
-  comparison <- unique(data$comparison)
+  # comparison <- as.data.frame(data) %>%
+  #   distinct(comparison) %>%
+  #   pull(comparison)
 
   selected_data <- data %>%
     dplyr::mutate(status = case_when({ { q_value_column } } >= q_val_thresh ~ "Not significant",
@@ -993,8 +998,12 @@ getNegCtrlProtAnova <- function(data_matrix, design_matrix, group_column = "grou
   grps <- design_matrix[colnames(data_matrix), group_column]
 
   ps <- apply(data_matrix, 1, function(x) {
-    summary(stats::aov(as.numeric(x) ~ grps))[[1]][["Pr(>F)"]][1]
-  })
+       if( length( unique( grps[!is.na(x)] )  ) > 1 ) {
+         summary(stats::aov(as.numeric(x) ~ grps))[[1]][["Pr(>F)"]][1]
+       } else {
+          return(NA_real_)
+       }
+    })
 
   aov <- qvalue(ps)$qvalues
 
@@ -1376,3 +1385,71 @@ mergeWithEntrezId <- function(input_table, lookup_table) {
               excluded_duplicates = excluded_duplicates))
 }
 
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Create the de_protein_long and de_phos_long tables
+#'@export
+createDeResultsLongFormat <- function( lfc_qval_tbl,
+                                       norm_counts_input_tbl,
+                                       raw_counts_input_tbl,
+                                       row_id,
+                                       sample_id,
+                                       group_id,
+                                       group_pattern,
+                                       design_matrix_norm,
+                                       design_matrix_raw
+) {
+
+  norm_counts <- norm_counts_input_tbl %>%
+    as.data.frame %>%
+    rownames_to_column(row_id) %>%
+    pivot_longer(cols = matches(group_pattern),
+                 names_to = sample_id,
+                 values_to = "log2norm")  %>%
+    left_join(design_matrix_norm, by = sample_id) %>%
+    group_by(!!sym(row_id), !!sym(group_id)) %>%
+    arrange(!!sym(row_id), !!sym(group_id), !!sym(sample_id)) %>%
+    mutate(replicate_number = paste0("log2norm.", row_number())) %>%
+    ungroup %>%
+    pivot_wider(id_cols = c(!!sym(row_id), !!sym(group_id)),
+                names_from = replicate_number,
+                values_from = log2norm)
+
+
+  raw_counts <- raw_counts_input_tbl %>%
+    as.data.frame %>%
+    rownames_to_column(row_id) %>%
+    pivot_longer(cols = matches(group_pattern),
+                 names_to = sample_id,
+                 values_to = "raw") %>%
+    left_join(design_matrix_raw, by = sample_id) %>%
+    group_by(!!sym(row_id), !!sym(group_id)) %>%
+    arrange(!!sym(row_id), !!sym(group_id), !!sym(sample_id)) %>%
+    mutate(replicate_number = paste0("raw.", row_number())) %>%
+    ungroup %>%
+    pivot_wider(id_cols = c(!!sym(row_id), !!sym(group_id)),
+                names_from = replicate_number,
+                values_from = raw)
+
+  print(head(raw_counts))
+
+  left_join_columns <- rlang::set_names(c(row_id, group_id ),
+                                        c(row_id, "left_group"))
+
+  right_join_columns <- rlang::set_names(c(row_id, group_id ),
+                                         c(row_id, "right_group"))
+
+  de_proteins_long <- lfc_qval_tbl %>%
+    dplyr::select(-lqm, -colour, -analysis_type) %>%
+    dplyr::mutate(expression = str_replace_all(expression, group_id, "")) %>%
+    separate(expression, sep = "-", into = c("left_group", "right_group")) %>%
+    left_join(norm_counts, by = left_join_columns) %>%
+    left_join(norm_counts, by = right_join_columns,
+              suffix = c(".left", ".right")) %>%
+    left_join(raw_counts, by = left_join_columns) %>%
+    left_join(raw_counts, by = right_join_columns,
+              suffix = c(".left", ".right")) %>%
+    arrange( comparison, q.mod, log2FC) %>%
+    distinct()
+
+  de_proteins_long
+}

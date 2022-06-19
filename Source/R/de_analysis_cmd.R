@@ -45,7 +45,7 @@ p_load(svglite)
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 tic()
-
+set.seed(123456)
 
 command_line_options <- commandArgs(trailingOnly = TRUE)
 #Note: options with default values are ignored in the configuration file parsing.
@@ -62,7 +62,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.  [default %default]")
 
-parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config.ini",
+parser <- add_option(parser, c("-c", "--config"), type = "character", default = "/home/ignatius/PostDoc/2022/multiphos_igypang_bmp_10_20220531/Source/Desch_2021/config_prot.ini",
                      help = "Configuration file.  [default %default]",
                      metavar = "string")
 
@@ -82,11 +82,15 @@ parser <- add_option(parser, c( "--normalization"), type = "character",
                      help = "character string specifying the normalization method to be used. Choices are none, scale, quantile or cyclicloess",
                      metavar = "string")
 
-parser <- add_option(parser, c( "--eBayes_trend"), type = "double",
+parser <- add_option(parser, c( "--imputation"), type = "logical",
+                     help = "logical, whether imputation should be used to assign missing vlues.",
+                     metavar = "double")
+
+parser <- add_option(parser, c( "--eBayes_trend"), type = "logical",
                      help = "logical, should an intensity-trend be allowed for the prior variance? Default is that the prior variance is constant.",
                      metavar = "double")
 
-parser <- add_option(parser, c( "--eBayes_robust"), type = "double",
+parser <- add_option(parser, c( "--eBayes_robust"), type = "logical",
                      help = "logical, should the estimation of df.prior and var.prior be robustified against outlier sample variances?.",
                      metavar = "double")
 
@@ -230,6 +234,8 @@ args <- setArgsDefault(args, "eBayes_trend", as_func=as.logical, default_val=FAL
 args <- setArgsDefault(args, "eBayes_robust", as_func=as.logical, default_val=FALSE )
 args <- setArgsDefault(args, "q_val_thresh", as_func=as.double, default_val=NaN )
 args <- setArgsDefault(args, "control_genes_q_val_thresh", as_func=as.double, default_val=NaN )
+args <- setArgsDefault(args, "max_num_samples_miss_per_group", as_func=as.integer, default_val=NA )
+args <- setArgsDefault(args, "imputation", as_func=as.logical, default_val=FALSE )
 
 args<-parseType(args,
   c("ruv_k"
@@ -237,6 +243,10 @@ args<-parseType(args,
     ,"max_num_samples_miss_per_group"
     ,"abundance_threshold"
   )  ,as.integer)
+
+args<-parseType(args,
+                c("imputation"
+                ) , as.logical)
 
 args<-parseString(args,
   c("group_pattern"
@@ -407,7 +417,8 @@ for( format_ext in args$plots_format) {
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 cln_dat_wide_cleaned <- NA
-if ("max_num_samples_miss_per_group" %in% names(args)) {
+if (  "max_num_samples_miss_per_group" %in% names(args) &
+      !is.na(args$max_num_samples_miss_per_group) ) {
   loginfo("Remove row with any missing values")
 
   cln_dat_wide_cleaned <- removeRowsWithMissingValues(cln_dat_wide_unsorted,
@@ -520,6 +531,8 @@ counts_na[na_values_marker] <- NA
 
 counts_na.log <- log2(counts_na)
 
+# plotRle( t(counts_na.log))
+
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Median centering.")
 counts_na.log.quant <- normalizeBetweenArrays(counts_na.log, method = args$normalization)
@@ -534,28 +547,44 @@ writexl::write_xlsx( as.data.frame(counts_na.log.quant) %>%
                      file.path( args$output_dir,
                                 "counts_after_median_scaling_before_imputation.xlsx"))
 
+# plotRle(t(counts_na.log))
+# plotRle(t(counts_na.log.quant))
+
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 loginfo("Missing value imputation")
 
-counts_rnorm.log.quant <- counts_na.log.quant %>%
+
+imputed_values <- counts_na.log.quant %>%
   as.data.frame %>%
   mutate_all(~{ imputePerCol(., width = 0.3, downshift = 1.8) }) %>%
   as.matrix
 
-counts_rnorm.is_nan <- counts_rnorm.log.quant %>%
-  as.data.frame %>%
-  mutate_all(~{ !is.finite(.) }) %>%
-  as.matrix
+# counts_rnorm.is_nan <- counts_rnorm.log.quant %>%
+#   as.data.frame %>%
+#   mutate_all(~{ !is.finite(.) }) %>%
+#   as.matrix
 
-vroom::vroom_write( as.data.frame(counts_rnorm.log.quant) %>%
+vroom::vroom_write( as.data.frame(imputed_values) %>%
                       rownames_to_column(args$row_id),
                     file.path(args$output_dir, "counts_after_median_scaling_and_imputation.tsv"))
 
-writexl::write_xlsx( as.data.frame(counts_rnorm.log.quant) %>%
+writexl::write_xlsx( as.data.frame(imputed_values) %>%
                        rownames_to_column(args$row_id),
                      file.path( args$output_dir,
                                 "counts_after_median_scaling_and_imputation.xlsx"))
+
+
+counts_rnorm.log.quant <- NA
+
+if (args$imputation == TRUE) {
+  counts_rnorm.log.quant <- imputed_values
+} else  {
+  counts_rnorm.log.quant <- counts_na.log.quant %>%
+    as.data.frame %>%
+    as.matrix
+}
+
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Run statistical tests without RUV.")
@@ -632,13 +661,13 @@ loginfo("Num. Control Genes %d", length(which(control_genes_index)))
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Draw canonical correlation plot.")
-ruv_groups <- data.frame(temp_column = colnames(counts_rnorm.log.quant)) %>%
+ruv_groups <- data.frame(temp_column = colnames(imputed_values)) %>%
   dplyr::rename(!!rlang::sym(args$sample_id) := "temp_column") %>%
   left_join(design_mat_cln %>%
               dplyr::mutate(!!rlang::sym(args$sample_id) := as.character(!!rlang::sym(args$sample_id))),
             by = args$sample_id)
 
-cancorplot_r1 <- ruv_cancorplot(t(counts_rnorm.log.quant),
+cancorplot_r1 <- ruv_cancorplot(t(imputed_values),
                                 X = ruv_groups %>% pull(!!rlang::sym(args$group_id)),
                                 ctl = control_genes_index)
 
@@ -729,6 +758,8 @@ rle_pca_plots_arranged <- rlePcaPlotList(list_of_data_matrix = list(counts_rnorm
                                          list_of_descriptions = list("Before RUVIII", "After RUVIII"))
 
 }
+
+# plotRle(t(counts_rnorm.log.quant))
 
 
 for( format_ext in args$plots_format) {
@@ -851,10 +882,10 @@ num_sig_de_molecules <- printCountDeGenesTable(list_of_de_tables = list(myRes_rn
 for( format_ext in args$plots_format) {
   file_name<-file.path(args$output_dir,paste0("num_sda_entities_barplot.",format_ext))
   captured_output<-capture.output(
-ggsave(filename = file_name,
-       plot = num_sig_de_molecules$plot,
-       height = 10,
-       width = 7)
+    ggsave(filename = file_name,
+           plot = num_sig_de_molecules$plot,
+           height = 10,
+           width = 7)
     , type = "message"
   )
   logdebug(captured_output)
@@ -943,61 +974,16 @@ if (!is.na( args$average_replicates_id)) {
 
 }
 
-
-norm_counts <- counts_table_to_use %>%
-  as.data.frame %>%
-  rownames_to_column(args$row_id) %>%
-  pivot_longer(cols = matches(args$group_pattern),
-               names_to = args$sample_id,
-               values_to = "log2norm")  %>%
-  left_join(design_mat_updated, by = args$sample_id) %>%
-  mutate(temp_id = !!sym(args$sample_id)) %>%
-  separate(temp_id, sep = "_", into = c("sample_number", "group_pattern")) %>%
-  group_by(!!sym(args$row_id), !!sym(args$group_id)) %>%
-  arrange(!!sym(args$row_id), !!sym(args$group_id), sample_number) %>%
-  mutate(replicate_number = paste0("log2norm.", row_number())) %>%
-  ungroup %>%
-  pivot_wider(id_cols = c(!!sym(args$row_id), !!sym(args$group_id)),
-              names_from = replicate_number,
-              values_from = log2norm)
-
-
-raw_counts <- counts_filt %>%
-  as.data.frame %>%
-  rownames_to_column(args$row_id) %>%
-  pivot_longer(cols = matches(args$group_pattern),
-               names_to = args$sample_id,
-               values_to = "raw") %>%
-  left_join(design_mat_cln, by = args$sample_id) %>%
-  mutate(temp_id = !!sym(args$sample_id)) %>%
-  separate(temp_id, sep = "_", into = c("sample_number", "group_pattern")) %>%
-  group_by(!!sym(args$row_id), !!sym(args$group_id)) %>%
-  arrange(!!sym(args$row_id), !!sym(args$group_id), sample_number) %>%
-  mutate(replicate_number = paste0("raw.", row_number())) %>%
-  ungroup %>%
-  pivot_wider(id_cols = c(!!sym(args$row_id), !!sym(args$group_id)),
-              names_from = replicate_number,
-              values_from = raw)
-
-left_join_columns <- rlang::set_names(c(args$row_id, args$group_id ),
-                                      c(args$row_id, "left_group"))
-
-right_join_columns <- rlang::set_names(c(args$row_id, args$group_id ),
-                                       c(args$row_id, "right_group"))
-
-de_proteins_long <- selected_data %>%
-  dplyr::filter(analysis_type == "RUV applied") %>%
-  dplyr::select(-lqm, -colour, -analysis_type) %>%
-  dplyr::mutate(expression = str_replace_all(expression, args$group_id, "")) %>%
-  separate(expression, sep = "-", into = c("left_group", "right_group")) %>%
-  left_join(norm_counts, by = left_join_columns) %>%
-  left_join(norm_counts, by = right_join_columns,
-            suffix = c(".left", ".right")) %>%
-  left_join(raw_counts, by = left_join_columns) %>%
-  left_join(raw_counts, by = right_join_columns,
-            suffix = c(".left", ".right")) %>%
-  arrange( comparison, q.mod, log2FC) %>%
-  distinct()
+de_proteins_long <- createDeResultsLongFormat( lfc_qval_tbl = selected_data %>%
+                                                 dplyr::filter(analysis_type == "RUV applied"),
+                                               norm_counts_input_tbl = counts_table_to_use,
+                                               raw_counts_input_tbl = counts_filt,
+                                               row_id = args$row_id,
+                                               sample_id = args$sample_id,
+                                               group_id = args$group_id,
+                                               group_pattern = args$group_pattern,
+                                               design_matrix_norm = design_mat_updated,
+                                               design_matrix_raw =  design_mat_cln )
 
 #head(de_proteins_long)
 
