@@ -88,6 +88,10 @@ parser <- add_option(parser, c("--proteins_file"), type="character", dest = "pro
                      help="File with table of differentially expressed proteins.",
                      metavar="string")
 
+parser <- add_option(parser, c("--background"), type="character", dest = "background",
+                     help="phosphoproteins or proteins_and_phosphoproteins.",
+                     metavar="string")
+
 parser <- add_option(parser, c("--annotation_file"), type="character", dest = "annotation_file",
                      help="File with protein accession and functional annotation data.",
                      metavar="string")
@@ -183,6 +187,9 @@ args <- setArgsDefault(args, "min_gene_set_size", as_func=as.character, default_
 args <- setArgsDefault(args, "protein_id", as_func=as.character, default_val="uniprot_acc" )
 args <- setArgsDefault(args, "annotation_id", as_func=as.character, default_val="go_id" )
 args <- setArgsDefault(args, "aspect_column", as_func=as.character, default_val=NULL )
+args <- setArgsDefault(args, "background", as_func=as.character, default_val="background_proteins_phosphoproteins" )
+
+
 
 if( isArgumentDefined(args, "aspect_column" )) {
   if( args$aspect_column == "NULL" ) {
@@ -532,7 +539,12 @@ if (  !is.null( args$annotation_file )) {
   ## preparing the enrichment test
   go_annot <- vroom::vroom(  args$annotation_file   )
 
-  background_list <- background_proteins_phosphoproteins
+  background_list <- background_phosphoproteins
+  if( args$background == "phosphoproteins") {
+    background_list <- background_phosphoproteins
+  } else if ( args$background == "proteins_and_phosphoproteins") {
+    background_list <- background_proteins_phosphoproteins
+  }
 
   #print( args$min_gene_set_size)
   min_gene_set_size_list <- parseNumList(args$min_gene_set_size)
