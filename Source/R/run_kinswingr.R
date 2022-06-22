@@ -628,244 +628,6 @@ purrr::walk2( swing_out_list$swing_result,
 
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------
-## ---------------------------------------------------------------------------------------------------------------------------------------------------
-loginfo("Compile KingSwinger results together.")
-
-
-compileKinswingerResults <- function( list_position ) {
-
-  my_comparison <- swing_out_list$comparison[[list_position]]
-
-  fc_pval_tab <- scores_list$data[[list_position]]
-
-  up_or_down_kinases <- swing_out_list$swing_result[[list_position]]$scores %>%
-    dplyr::filter( p_greater < 0.2 | p_less < 0.2 )
-
-  motif_score_table <- scores_list$pwms_scores[[list_position]]$peptide_scores %>%
-    pivot_longer( cols= !(contains("annotation") | contains("peptide")),
-                  names_to="kinase",
-                  values_to = "motif.score")
-
-  is_phosphoylated_tbl <- annotated_data %>%
-    dplyr::filter( pval < args$p_value_cutoff ) %>%
-    dplyr::mutate( uniprot_acc = str_split(annotation, "\\|") %>% purrr::map_chr(1) ) %>%
-    distinct( uniprot_acc) %>%
-    mutate(is_kinase_phosphorylated = 1)
-
-  selected_columns <- intersect( colnames(de_phos),
-                                 c( "sites_id", "PROTEIN-NAMES", "reactome_term",
-                                    "KINASE",
-                                    "ON_FUNCTION",
-                                    "ON_PROCESS",
-                                    "ON_PROT_INTERACT",
-                                    "ON_OTHER_INTERACT",
-                                    "REG_SITES_NOTES"))
-
-  step_1 <- scores_list$pwms_scores[[list_position]]$peptide_p %>%
-    pivot_longer( cols= !(contains("annotation") | contains("peptide")),
-                  names_to="kinase",
-                  values_to = "motif.p.value") %>%
-    left_join( motif_score_table, by=c("annotation" = "annotation",
-                                       "peptide" = "peptide",
-                                       "kinase" = "kinase")) %>%
-    inner_join( up_or_down_kinases, by=c( "kinase" = "kinase")) %>%
-    dplyr::filter( motif.p.value < 0.2 )
-
-
-  step_2 <- step_1 %>%
-    inner_join( fc_pval_tab%>%
-                  dplyr::filter( pval < args$p_value_cutoff ),
-                by=c("annotation" = "annotation",
-                     "peptide" = "peptide")) %>%
-    left_join ( annotated_data %>%
-                  dplyr::filter( comparison==  swing_out_list$comparison[[list_position]] ) %>%
-                  dplyr::select( annotation, sites_id, peptide),
-                by=c("annotation" = "annotation",
-                     "peptide" = "peptide"))
-
-  rm(step_1)
-  gc()
-
-  step_3 <- step_2 %>%
-    left_join( phosphositeplus %>%
-                 distinct( GENE, kinase), by=c("kinase" = "kinase") )
-
-  rm(step_2)
-  gc()
-
-  plan(multisession, workers = args$num_cores)
-
-
-  step_4 <- step_3 %>%
-    dplyr::mutate( substrate_gene_name  = furrr::future_map(annotation, ~{ str_split(., "\\|") %>% purrr::map_chr(2)}) )
-
-  rm(step_3)
-  gc()
-
-
-  step_5 <-  step_4 %>%
-    left_join( de_phos %>%
-                 dplyr::filter( de_phos == swing_out_list$comparison[[list_position]]  ) %>%
-                 dplyr::select( one_of( selected_columns ) ),
-               by=c("sites_id" = "sites_id"))
-
-
-  rm(step_4)
-  gc()
-
-
-  selected_scores_list_help <- step_5 %>%
-    left_join( uniprot_kinases %>%
-                 dplyr::select(-KEYWORDS),
-               by= c("GENE" = "gene_name")) %>%
-    dplyr::rename( kinase_gene_name = "GENE") %>%
-    distinct()
-
-  rm(step_5)
-  gc()
-
-  if( "KINASE" %in% selected_columns) {
-    selected_scores_list_help <- selected_scores_list_help %>%
-      dplyr::mutate( kinase_copy = KINASE ) %>%
-      dplyr::rename( known_upstream_kinase = "kinase_copy") %>%
-      dplyr::rename( one_known_kinase = "KINASE") %>%
-      separate_rows( one_known_kinase , sep= "//")  %>%
-      dplyr::mutate( one_known_kinase = toupper(one_known_kinase) )  %>%
-      dplyr::mutate( prediction_match_known_kinase = case_when( kinase == one_known_kinase ~ TRUE,
-                                                                TRUE ~ FALSE) )  %>%
-      dplyr::select(-one_known_kinase)
-  }
-
-  ## Use mouse or human uniprot accession if it makes sense to do so.
-  selected_scores_list <- selected_scores_list_help
-  if( length( intersect(   is_phosphoylated_tbl$uniprot_acc, uniprot_kinases$uniprot_acc_human  ) ) >0 )  {
-    selected_scores_list <- selected_scores_list_help  %>%
-      left_join( is_phosphoylated_tbl, by=c("uniprot_acc_human" = "uniprot_acc"))  %>%
-      distinct()
-  } else if ( length( intersect(   is_phosphoylated_tbl$uniprot_acc, uniprot_kinases$uniprot_acc_mouse  ) > 0 ))  {
-    selected_scores_list <- selected_scores_list_help  %>%
-      left_join( is_phosphoylated_tbl, by=c("uniprot_acc_mouse" = "uniprot_acc"))  %>%
-      distinct()
-  }
-
-  return( selected_scores_list)
-}
-
-
-  gc()
-
-  selected_scores_list <- purrr::map( seq_along(swing_out_list$comparison),
-               ~compileKinswingerResults(.))
-
-  names( selected_scores_list) <- swing_out_list$comparison
-
-
-
-  purrr::walk2( selected_scores_list,
-                swing_out_list$comparison,
-                ~vroom::vroom_write( .x,
-                                     file.path( args$output_dir,
-                                                paste0( "selected_kinase_substrate_",
-                                                        args$kinase_specificity, "_",
-                                                        .y ,
-                                                        ".tsv" )) ) )
-
-
-
-## ----------------------------------------------------------------------------------------------------------------------------------------
-#
-#   list_position <- 1
-#
-#   my_comparison <- swing_out_list$comparison[[list_position]]
-#
-#   fc_pval_tab <- scores_list$data[[list_position]]
-#
-#   up_or_down_kinases <- swing_out_list$swing_result[[list_position]]$scores %>%
-#     dplyr::filter( p_greater < 0.2 | p_less < 0.2 )
-#
-#   motif_score_table <- scores_list$pwms_scores[[list_position]]$peptide_scores %>%
-#     pivot_longer( cols= !(contains("annotation") | contains("peptide")),
-#                   names_to="kinase",
-#                   values_to = "motif.score")
-#
-#   is_phosphoylated_tbl <- annotated_data %>%
-#     dplyr::filter( pval < args$p_value_cutoff ) %>%
-#     dplyr::mutate( uniprot_acc = str_split(annotation, "\\|") %>% purrr::map_chr(1) ) %>%
-#     distinct( uniprot_acc) %>%
-#     mutate(is_kinase_phosphorylated = 1)
-#
-#   selected_columns <- intersect( colnames(de_phos),
-#                                  c( "sites_id", "PROTEIN-NAMES", "reactome_term",
-#                                     "KINASE",
-#                                     "ON_FUNCTION",
-#                                     "ON_PROCESS",
-#                                     "ON_PROT_INTERACT",
-#                                     "ON_OTHER_INTERACT",
-#                                     "REG_SITES_NOTES"))
-#
-#    step_1 <- scores_list$pwms_scores[[list_position]]$peptide_p %>%
-#     pivot_longer( cols= !(contains("annotation") | contains("peptide")),
-#                   names_to="kinase",
-#                   values_to = "motif.p.value") %>%
-#     left_join( motif_score_table, by=c("annotation" = "annotation",
-#                                        "peptide" = "peptide",
-#                                        "kinase" = "kinase")) %>%
-#     inner_join( up_or_down_kinases, by=c( "kinase" = "kinase")) %>%
-#     dplyr::filter( motif.p.value < 0.2 )
-#
-#
-#    step_2 <- step_1 %>%
-#     inner_join( fc_pval_tab%>%
-#                   dplyr::filter( pval < args$p_value_cutoff ),
-#                  by=c("annotation" = "annotation",
-#                                   "peptide" = "peptide")) %>%
-#     left_join ( annotated_data %>%
-#                   dplyr::filter( comparison==  swing_out_list$comparison[[list_position]] ) %>%
-#                   dplyr::select( annotation, sites_id, peptide),
-#                 by=c("annotation" = "annotation",
-#                      "peptide" = "peptide"))
-#
-#    rm(step_1)
-#    gc()
-#
-#    step_3 <- step_2 %>%
-#     left_join( phosphositeplus %>%
-#                  distinct( GENE, kinase), by=c("kinase" = "kinase") )
-#
-#    rm(step_2)
-#    gc()
-#
-#    plan(multisession, workers = args$num_cores)
-#
-#
-#    step_4 <- step_3 %>%
-#      dplyr::mutate( substrate_gene_name  = furrr::future_map(annotation, ~{ str_split(., "\\|") %>% purrr::map_chr(2)}) )
-#
-#    rm(step_3)
-#    gc()
-#
-#
-#    step_5 <-  step_4 %>%
-#      left_join( de_phos %>%
-#                   dplyr::filter( de_phos == swing_out_list$comparison[[list_position]]  ) %>%
-#                   dplyr::select( one_of( selected_columns ) ),
-#                 by=c("sites_id" = "sites_id"))
-#
-#
-#    rm(step_4)
-#    gc()
-#
-#
-#    selected_scores_list_help <- step_5 %>%
-#     left_join( uniprot_kinases %>%
-#                  dplyr::select(-KEYWORDS),
-#                by= c("GENE" = "gene_name")) %>%
-#     dplyr::rename( kinase_gene_name = "GENE") %>%
-#     distinct()
-#
-#    rm(step_5)
-#    gc()
-
 ## ----------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Plot kinase-level volcano plot.")
 
@@ -1042,6 +804,151 @@ if( args$taxonomy_id %in% c(9606, 10090) ) {
   }
 }
 
+## ---------------------------------------------------------------------------------------------------------------------------------------------------
+loginfo("Compile KingSwinger results together.")
+
+
+compileKinswingerResults <- function( list_position ) {
+
+  my_comparison <- swing_out_list$comparison[[list_position]]
+
+  fc_pval_tab <- scores_list$data[[list_position]]
+
+  up_or_down_kinases <- swing_out_list$swing_result[[list_position]]$scores %>%
+    dplyr::filter( p_greater < 0.2 | p_less < 0.2 )
+
+  motif_score_table <- scores_list$pwms_scores[[list_position]]$peptide_scores %>%
+    pivot_longer( cols= !(contains("annotation") | contains("peptide")),
+                  names_to="kinase",
+                  values_to = "motif.score")
+
+  is_phosphoylated_tbl <- annotated_data %>%
+    dplyr::filter( pval < args$p_value_cutoff ) %>%
+    dplyr::mutate( uniprot_acc = str_split(annotation, "\\|") %>% purrr::map_chr(1) ) %>%
+    distinct( uniprot_acc) %>%
+    mutate(is_kinase_phosphorylated = 1)
+
+  selected_columns <- intersect( colnames(de_phos),
+                                 c( "sites_id", "PROTEIN-NAMES", "reactome_term",
+                                    "KINASE",
+                                    "ON_FUNCTION",
+                                    "ON_PROCESS",
+                                    "ON_PROT_INTERACT",
+                                    "ON_OTHER_INTERACT",
+                                    "REG_SITES_NOTES"))
+
+  step_1 <- scores_list$pwms_scores[[list_position]]$peptide_p %>%
+    pivot_longer( cols= !(contains("annotation") | contains("peptide")),
+                  names_to="kinase",
+                  values_to = "motif.p.value") %>%
+    left_join( motif_score_table, by=c("annotation" = "annotation",
+                                       "peptide" = "peptide",
+                                       "kinase" = "kinase")) %>%
+    inner_join( up_or_down_kinases, by=c( "kinase" = "kinase")) %>%
+    dplyr::filter( motif.p.value < 0.2 )
+
+
+  step_2 <- step_1 %>%
+    inner_join( fc_pval_tab%>%
+                  dplyr::filter( pval < args$p_value_cutoff ),
+                by=c("annotation" = "annotation",
+                     "peptide" = "peptide")) %>%
+    left_join ( annotated_data %>%
+                  dplyr::filter( comparison==  swing_out_list$comparison[[list_position]] ) %>%
+                  dplyr::select( annotation, sites_id, peptide),
+                by=c("annotation" = "annotation",
+                     "peptide" = "peptide"))
+
+  rm(step_1)
+  gc()
+
+  step_3 <- step_2 %>%
+    left_join( phosphositeplus %>%
+                 distinct( GENE, kinase), by=c("kinase" = "kinase") )
+
+  rm(step_2)
+  gc()
+
+  plan(multisession, workers = args$num_cores)
+
+
+  step_4 <- step_3 %>%
+    dplyr::mutate( substrate_gene_name  = furrr::future_map(annotation, ~{ str_split(., "\\|") %>% purrr::map_chr(2)}) )
+
+  rm(step_3)
+  gc()
+
+
+  step_5 <-  step_4 %>%
+    left_join( de_phos %>%
+                 dplyr::filter( de_phos == swing_out_list$comparison[[list_position]]  ) %>%
+                 dplyr::select( one_of( selected_columns ) ),
+               by=c("sites_id" = "sites_id"))
+
+
+  rm(step_4)
+  gc()
+
+
+  selected_scores_list_help <- step_5 %>%
+    left_join( uniprot_kinases %>%
+                 dplyr::select(-KEYWORDS),
+               by= c("GENE" = "gene_name")) %>%
+    dplyr::rename( kinase_gene_name = "GENE") %>%
+    distinct()
+
+  rm(step_5)
+  gc()
+
+  if( "KINASE" %in% selected_columns) {
+    selected_scores_list_help <- selected_scores_list_help %>%
+      dplyr::mutate( kinase_copy = KINASE ) %>%
+      dplyr::rename( known_upstream_kinase = "kinase_copy") %>%
+      dplyr::rename( one_known_kinase = "KINASE") %>%
+      separate_rows( one_known_kinase , sep= "//")  %>%
+      dplyr::mutate( one_known_kinase = toupper(one_known_kinase) )  %>%
+      dplyr::mutate( prediction_match_known_kinase = case_when( kinase == one_known_kinase ~ TRUE,
+                                                                TRUE ~ FALSE) )  %>%
+      dplyr::select(-one_known_kinase)
+  }
+
+  ## Use mouse or human uniprot accession if it makes sense to do so.
+  selected_scores_list <- selected_scores_list_help
+  if( length( intersect(   is_phosphoylated_tbl$uniprot_acc, uniprot_kinases$uniprot_acc_human  ) ) >0 )  {
+    selected_scores_list <- selected_scores_list_help  %>%
+      left_join( is_phosphoylated_tbl, by=c("uniprot_acc_human" = "uniprot_acc"))  %>%
+      distinct()
+  } else if ( length( intersect(   is_phosphoylated_tbl$uniprot_acc, uniprot_kinases$uniprot_acc_mouse  ) > 0 ))  {
+    selected_scores_list <- selected_scores_list_help  %>%
+      left_join( is_phosphoylated_tbl, by=c("uniprot_acc_mouse" = "uniprot_acc"))  %>%
+      distinct()
+  }
+
+  return( selected_scores_list)
+}
+
+
+gc()
+
+selected_scores_list <- purrr::map( seq_along(swing_out_list$comparison),
+                                    ~compileKinswingerResults(.))
+
+names( selected_scores_list) <- swing_out_list$comparison
+
+
+
+purrr::walk2( selected_scores_list,
+              swing_out_list$comparison,
+              ~vroom::vroom_write( .x,
+                                   file.path( args$output_dir,
+                                              paste0( "selected_kinase_substrate_",
+                                                      args$kinase_specificity, "_",
+                                                      .y ,
+                                                      ".tsv" )) ) )
+
+
+
+## ----------------------------------------------------------------------------------------------------------------------------------------
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------
 ## ---------------------------------------------------------------------------------------------------------------------------------------------------
