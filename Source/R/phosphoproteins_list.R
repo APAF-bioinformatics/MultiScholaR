@@ -187,7 +187,7 @@ args <- setArgsDefault(args, "min_gene_set_size", as_func=as.character, default_
 args <- setArgsDefault(args, "protein_id", as_func=as.character, default_val="uniprot_acc" )
 args <- setArgsDefault(args, "annotation_id", as_func=as.character, default_val="go_id" )
 args <- setArgsDefault(args, "aspect_column", as_func=as.character, default_val=NULL )
-args <- setArgsDefault(args, "background", as_func=as.character, default_val="background_proteins_phosphoproteins" )
+args <- setArgsDefault(args, "background", as_func=as.character, default_val="proteins_and_phosphoproteins" )
 
 
 
