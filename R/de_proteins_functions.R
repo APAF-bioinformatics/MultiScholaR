@@ -1453,3 +1453,18 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
 
   de_proteins_long
 }
+
+
+
+#' @export
+gg_save_logging <- function( input_plot, file_name_part, plots_format) {
+  for( format_ext in plots_format) {
+    file_name <- paste0(file_name_part, format_ext)
+    captured_output<-capture.output(
+      ggsave(plot=input_plot, filename = file_name )
+      ,type = "message"
+    )
+    logdebug(captured_output)
+  }
+}
+

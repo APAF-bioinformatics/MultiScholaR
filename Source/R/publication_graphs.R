@@ -245,6 +245,12 @@ if(!is.na(args$avg_design_matrix_file )) {
 ## RLE plots
 ##-------------------------------------
 
+counts_rnorm.log.quant_mat <- counts_rnorm.log.quant %>%
+  column_to_rownames(args$row_id)
+
+counts_rnorm.log.ruvIII_mat <- counts_rnorm.log.ruvIII %>%
+  column_to_rownames(args$row_id)
+
 
 before_RUVIII_rle <- plotRle(t(as.matrix(counts_rnorm.log.quant_mat)),
         rowinfo = design_mat_cln[colnames(counts_rnorm.log.quant_mat),
@@ -507,12 +513,6 @@ ggsave(filename = file.path(args$output_dir, "NumSigDeMolecules", "num_sig_de_mo
 ## PCA plots
 ##-------------------------------------
 
-counts_rnorm.log.quant_mat <- counts_rnorm.log.quant %>%
-  column_to_rownames(args$row_id)
-
-counts_rnorm.log.ruvIII_mat <- counts_rnorm.log.ruvIII %>%
-  column_to_rownames(args$row_id)
-
 counts_rnorm.log.ruvIII.avg_mat <- NA
 if(!is.na(args$avg_design_matrix_file)) {
   counts_rnorm.log.ruvIII.avg_mat <- counts_rnorm.log.ruvIII.avg  %>%
@@ -540,17 +540,6 @@ before_ruvIII_pca
 createDirectoryIfNotExists(file.path(args$output_dir, "PCA"))
 
 file_name_part <- file.path( args$output_dir, "PCA", "before_ruvIII_pca." )
-
-gg_save_logging <- function( input_plot, file_name_part, plots_format) {
-  for( format_ext in plots_format) {
-    file_name <- paste0(file_name_part, format_ext)
-    captured_output<-capture.output(
-      ggsave(plot=input_plot, filename = file_name )
-      ,type = "message"
-    )
-    logdebug(captured_output)
-  }
-}
 
 gg_save_logging ( before_ruvIII_pca, file_name_part, args$plots_format)
 

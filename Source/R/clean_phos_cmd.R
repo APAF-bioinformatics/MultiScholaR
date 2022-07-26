@@ -51,7 +51,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.")
 
-parser <- add_option(parser, c("-c","--config"), type = "character", default = "/home/ignatius/PostDoc/2022/MultiPhos2022/Source/Desch_2021/config_phos.ini", dest = "config",
+parser <- add_option(parser, c("-c","--config"), type = "character", default = "/home/ignatius/PostDoc/2021/Podocyte_2021/Source/config_phos.ini", dest = "config",
                      help = "Configuration file.",
                      metavar = "string")
 
@@ -59,7 +59,7 @@ parser <- add_option(parser, c("-o","--output_dir"), type = "character", default
                      help = "Directory path for all results files.",
                      metavar = "string")
 
-parser <- add_option(parser, c("-t","--tmp_dir"), type = "character", default = "cache", dest = "tmp_dir",
+parser <- add_option(parser, c("-t","--tmp_dir"), type = "character", default = "../Results/cache", dest = "tmp_dir",
                      help = "Directory path for temporary files.",
                      metavar = "string")
 
