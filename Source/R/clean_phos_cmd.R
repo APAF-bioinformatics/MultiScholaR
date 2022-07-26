@@ -51,7 +51,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.")
 
-parser <- add_option(parser, c("-c","--config"), type = "character", default = "/home/ignatius/PostDoc/2022/MultiPhos2022/Source/Desch_2021/config_phos.ini", dest = "config",
+parser <- add_option(parser, c("-c","--config"), type = "character", default = "/home/ubuntu/Workings/2022/Neuropsych_RussellDale_BMP_17_20220530/Source/config_phos.ini", dest = "config",
                      help = "Configuration file.",
                      metavar = "string")
 
@@ -59,7 +59,7 @@ parser <- add_option(parser, c("-o","--output_dir"), type = "character", default
                      help = "Directory path for all results files.",
                      metavar = "string")
 
-parser <- add_option(parser, c("-t","--tmp_dir"), type = "character", default = "cache", dest = "tmp_dir",
+parser <- add_option(parser, c("-t","--tmp_dir"), type = "character", default = "../Results/cache", dest = "tmp_dir",
                      help = "Directory path for temporary files.",
                      metavar = "string")
 
@@ -135,7 +135,7 @@ for (v in names(args))
 loginfo("----------------------------------------------------")
 
 args <- setArgsDefault(args, "pattern_suffix", as_func=as.character, default_val="_\\d+" )
-args <- setArgsDefault(args, "extract_patt_suffix", as_func=as.character, default_val="_\\d+" )
+args <- setArgsDefault(args, "extract_patt_suffix", as_func=as.character, default_val="_(\\d+)" )
 
 
 testRequiredArguments(args, c(
@@ -168,7 +168,7 @@ args<-parseString(args,
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 additional_cols <- str_split(  args$add_cols_string, ",")[[1]]
-col_pattern <-  tolower(args$col_pattern_string)  # janitor::make_clean_names( args$col_pattern_string)
+col_pattern <-   janitor::make_clean_names( args$col_pattern_string) # tolower(args$col_pattern_string)  #
 
 captured_output<-capture.output(
   evidence_tbl <- vroom::vroom( args$raw_counts_file)
@@ -296,7 +296,7 @@ saveRDS( results_list$summarised_wide_list,
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 sample_names_file<-file.path(args$output_dir, "sample_names.tab")
 loginfo("Save the sample names to %s", "sample_names.tab")
-sample_names <- colnames(results_list$summarised_wide_list)[c(-1,-2)]
+sample_names <- colnames(results_list$summarised_wide_list[[1]])[c(-1,-2)]
 vroom::vroom_write(data.frame( sample_names=t(t(sample_names) ) ), sample_names_file)
 
 

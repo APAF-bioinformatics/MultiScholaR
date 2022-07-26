@@ -437,6 +437,9 @@ allPhosphositesPivotLonger <- function(get_15_mer_tbl,
                   names_to = "replicate",
                   values_to = "value")
 
+  # print(head(all_sites_long))
+  # print( col_pattern)
+
   if ( extract_patt_suffix != "") {
     all_sites_long <- all_sites_long %>%
       dplyr::mutate( replicate = str_replace(replicate,
