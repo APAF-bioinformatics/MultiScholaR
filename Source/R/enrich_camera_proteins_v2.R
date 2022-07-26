@@ -30,7 +30,6 @@ p_load(magrittr)
 p_load(knitr)
 p_load(rlang)
 
-
 p_load(limma)
 p_load(qvalue)
 
@@ -48,7 +47,6 @@ p_load(furrr)
 ## Parameters
 tic()
 
-
 ## Directories management
 base_dir <- here::here()
 
@@ -61,7 +59,6 @@ base_dir <- here::here()
 # formula_string <- "~ 0 + group "
 # sample_id <- "Sample_ID"
 # group_id <- "group"
-
 
 command_line_options <- commandArgs(trailingOnly = TRUE)
 
