@@ -532,13 +532,90 @@ plotVolcano <- function(selected_data,
     theme_bw() +
     xlab("Log fold changes") +
     ylab("-log10 q-value") +
-    theme(legend.position = "none") +
-    facet_grid( as.formula(formula_string),
-               labeller = labeller(facet_category = label_wrap_gen(width = 10)))
+    theme(legend.position = "none")
 
-  volplot_gg.all
+  volplot_gg.plot <- volplot_gg.all
+  if( !is.na(formula_string) | formula_string != "" ) {
+    volplot_gg.plot <- volplot_gg.all +
+      facet_grid( as.formula(formula_string),
+                  labeller = labeller(facet_category = label_wrap_gen(width = 10)))
+  }
+
+  volplot_gg.plot
 }
 
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' Draw the volcano plot, used in publication graphs
+#' @param input_data
+#' @param log_q_value_column The name of the column representing the log q-value.
+#' @param log_fc_column The name of the column representing the log fold-change.
+#' @param points_type_label A column in input table with the type of points based on log fold-change and q-value (e.g. "Not sig., logFC >= 1" = "orange" , "Sig., logFC >= 1" = "purple" , "Sig., logFC < 1" = "blue" , "Not sig." )
+#' @param points_color A column in input table with the colour of the points corresponding to each type of points (e.g. orange, purple, blue black, )
+#' @param q_val_thresh A numerical value specifying the q-value threshold for statistically significant proteins.
+#' @param formula_string The formula string used in the facet_grid command for the ggplot scatter plot.
+#'@export
+plotOneVolcano <- function( input_data, input_title,
+                            log_q_value_column = lqm,
+                            log_fc_column = logFC,
+                            points_type_label = label,
+                            points_color = colour,
+                            q_val_thresh=0.05) {
+
+  colour_tbl <- input_data %>%
+    distinct( {{points_type_label}}, {{points_color}} )
+
+  print(colour_tbl)
+
+  colour_map <- colour_tbl %>% pull({{points_color}} )
+  names( colour_map ) <- colour_tbl %>% pull({{points_type_label}} )
+
+  # colour_map <- c( "Not sig., logFC >= 1" = "orange" ,
+  #                  "Sig., logFC >= 1" = "purple" ,
+  #                  "Sig., logFC < 1" = "blue"  ,
+  #                  "Not sig."  =  "black" )
+
+  avail_labels <- input_data %>%
+    distinct({{points_type_label}})  %>%
+    pull({{points_type_label}})
+
+  avail_colours <- colour_map[avail_labels]
+
+  print(avail_labels)
+  print(avail_colours)
+
+  volcano_plot <-  input_data %>%
+    ggplot(aes(y = {{log_q_value_column}},
+               x = {{log_fc_column}} )) +
+    geom_point(aes(col = label)) +
+    scale_colour_manual(values = avail_colours) +
+    # scale_colour_manual(values = c(levels(input_data$colour)),
+    #                     labels = c(paste0("Not significant, logFC > ",
+    #                                       1),
+    #                                paste0("Significant, logFC >= ",
+    #                                       1),
+    #                                paste0("Significant, logFC <",
+    #                                       1),
+    #                                "Not Significant")) +
+    geom_vline(xintercept = 1, colour = "black", size = 0.2) +
+    geom_vline(xintercept = -1, colour = "black", size = 0.2) +
+    geom_hline(yintercept = -log10(q_val_thresh)) +
+    theme_bw() +
+    xlab("Log fold-change") +
+    ylab(expression(-log[10] ~ q ~ value)) +
+    labs(title = input_title)+  # Remove legend title
+    theme(legend.title = element_blank()) +
+    # theme(legend.position = "none")  +
+    theme(axis.text.x = element_text(size = 13))   +
+    theme(axis.text.y = element_text(size = 13))  +
+    theme(axis.title.x = element_text(size = 12))  +
+    theme(axis.title.y = element_text(size = 12))  +
+    theme(plot.title = element_text(size = 12)) +
+    theme(legend.text = element_text(size = 12)) # +
+  # theme(legend.title = element_text(size = 12))
+
+  volcano_plot
+}
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 

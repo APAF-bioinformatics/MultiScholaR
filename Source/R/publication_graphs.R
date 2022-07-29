@@ -348,51 +348,6 @@ selected_data <- vroom::vroom( file.path(args$input_dir, "lfc_qval_long.tsv") ) 
   # dplyr::mutate( gene_name = case_when( q.mod < args$q_val_thresh ~ gene_name,
   #                                            TRUE ~ NA_character_) )
 
-plotOneVolcano <- function( input_data, input_title) {
-
-  colour_map <- c( "Not sig., logFC >= 1" = "orange" ,
-                      "Sig., logFC >= 1" = "purple" ,
-                       "Sig., logFC < 1" = "blue"  ,
-                     "Not sig."  =  "black" )
-
-  avail_labels <- input_data %>% distinct(label)  %>% pull(label)
-  avail_colours <- colour_map[avail_labels]
-
- print(avail_labels)
- print(avail_colours)
-
-  volcano_plot <-  input_data %>%
-    ggplot(aes(y = lqm, x = log2FC )) +
-    geom_point(aes(col = label)) +
-    scale_colour_manual(values = avail_colours) +
-    # scale_colour_manual(values = c(levels(input_data$colour)),
-    #                     labels = c(paste0("Not significant, logFC > ",
-    #                                       1),
-    #                                paste0("Significant, logFC >= ",
-    #                                       1),
-    #                                paste0("Significant, logFC <",
-    #                                       1),
-    #                                "Not Significant")) +
-    geom_vline(xintercept = 1, colour = "black", size = 0.2) +
-    geom_vline(xintercept = -1, colour = "black", size = 0.2) +
-    geom_hline(yintercept = -log10(args$q_val_thresh)) +
-    theme_bw() +
-    xlab("Log fold-change") +
-    ylab(expression(-log[10] ~ q ~ value)) +
-    labs(title = input_title)+  # Remove legend title
-    theme(legend.title = element_blank()) +
-    # theme(legend.position = "none")  +
-    theme(axis.text.x = element_text(size = 13))   +
-    theme(axis.text.y = element_text(size = 13))  +
-    theme(axis.title.x = element_text(size = 12))  +
-    theme(axis.title.y = element_text(size = 12))  +
-    theme(plot.title = element_text(size = 12)) +
-    theme(legend.text = element_text(size = 12)) # +
-    # theme(legend.title = element_text(size = 12))
-
-    volcano_plot
-}
-
 #
 # plotOneVolcanoWithGeneName <- function( input_data, input_title) {
 #   volcano_plot <-  input_data %>%
