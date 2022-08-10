@@ -567,13 +567,12 @@ plotOneVolcano <- function( input_data, input_title,
 
   print(colour_tbl)
 
-  colour_map <- colour_tbl %>% pull({{points_color}} )
-  names( colour_map ) <- colour_tbl %>% pull({{points_type_label}} )
+  colour_map <- colour_tbl %>%
+    pull({{points_color}} ) %>%
+    as.vector()
 
-  # colour_map <- c( "Not sig., logFC >= 1" = "orange" ,
-  #                  "Sig., logFC >= 1" = "purple" ,
-  #                  "Sig., logFC < 1" = "blue"  ,
-  #                  "Not sig."  =  "black" )
+  names( colour_map ) <- colour_tbl %>%
+    pull({{points_type_label}} )
 
   avail_labels <- input_data %>%
     distinct({{points_type_label}})  %>%
@@ -589,14 +588,6 @@ plotOneVolcano <- function( input_data, input_title,
                x = {{log_fc_column}} )) +
     geom_point(aes(col = label)) +
     scale_colour_manual(values = avail_colours) +
-    # scale_colour_manual(values = c(levels(input_data$colour)),
-    #                     labels = c(paste0("Not significant, logFC > ",
-    #                                       1),
-    #                                paste0("Significant, logFC >= ",
-    #                                       1),
-    #                                paste0("Significant, logFC <",
-    #                                       1),
-    #                                "Not Significant")) +
     geom_vline(xintercept = 1, colour = "black", size = 0.2) +
     geom_vline(xintercept = -1, colour = "black", size = 0.2) +
     geom_hline(yintercept = -log10(q_val_thresh)) +

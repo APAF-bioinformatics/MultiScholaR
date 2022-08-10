@@ -68,7 +68,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.  [default %default]")
 
-parser <- add_option(parser, c("-c", "--config"), type = "character", default = "/home/ignatius/PostDoc/2022/multiphos_igypang_bmp_10_20220531/Source/Desch_2021/config_phos.ini",
+parser <- add_option(parser, c("-c", "--config"), type = "character", default = "/home/ignatius/PostDoc/2022/Embryology_BMP_14/Source/TMT/config_prot.ini",
                      help = "Configuration file.  [default %default]",
                      metavar = "string")
 
@@ -390,7 +390,7 @@ list_of_volcano_plots <- selected_data %>%
   nest() %>%
   ungroup() %>%
   mutate( title = paste( analysis_type, comparison)) %>%
-  mutate( plot = purrr:::map2( data, title, ~plotOneVolcano(.x, .y)) )
+  mutate( plot = purrr:::map2( data, title, ~plotOneVolcano(.x, .y,   log_fc_column = log2FC)) )
 
 list_of_volcano_plots %>% pull(plot)
 
