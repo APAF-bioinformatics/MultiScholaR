@@ -679,11 +679,7 @@ drawListOfFunctionalEnrichmentHeatmaps <- function(enriched_results_tbl,
                                                    added_columns,
                                                    set_size_min,
                                                    set_size_max,
-                                                   num_clusters = 5,
-                                                   results_dir,
-                                                   file_name,
-                                                   plot_width = 10,
-                                                   plot_height = 10 ) {
+                                                   num_clusters = 5) {
 
   input_table <- enriched_results_tbl %>%
     dplyr::filter( min_set_size == set_size_min,
@@ -718,6 +714,34 @@ drawListOfFunctionalEnrichmentHeatmaps <- function(enriched_results_tbl,
 }
 
 
+
+#'@export
+saveListOfFunctionalEnrichmentHeatmaps <- function(list_of_heatmaps,
+                                                   results_dir,
+                                                   file_name,
+                                                   plot_width = 10,
+                                                   plot_height = 10 ) {
+
+  purrr::walk2(names( list_of_heatmaps),
+               list_of_heatmaps,
+               function(output_name, plot){
+                 ggsave( filename=file.path( results_dir,
+                                             paste0(file_name, "_", output_name   ,".pdf")),
+                         plot=plot,
+                         width = plot_width,
+                         height=plot_height)   }  )
+
+  purrr::walk2(names( list_of_heatmaps),
+               list_of_heatmaps,
+               function(output_name, plot){
+                 ggsave( filename=file.path( results_dir,
+                                             paste0(file_name, "_", output_name, ".png")),
+                         plot=plot,
+                         width = plot_width,
+                         height=plot_height)   }  )
+
+
+}
 
 
 
