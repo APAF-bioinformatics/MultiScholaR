@@ -405,7 +405,7 @@ getUniprotAccToGeneSymbolDictionary <- function( input_table,
 
 }
 
-
+#######################################################
 ### Query revigo
 #'@export
 queryRevigo <- function( input_list,
@@ -565,7 +565,7 @@ readEnrichmentResultFiles <- function( table_of_files, file_names_column=file_na
 
   print(added_columns)
 
-  enriched_results_cln <- vroom::vroom( list_of_files, id= quo_name(enquo(file_names_column)) ) %>%
+  enriched_results_tbl <- vroom::vroom( list_of_files, id= quo_name(enquo(file_names_column)) ) %>%
     rename(annotation_id = "ID", gene_set = "names_of_genes_list",
            min_set_size = "min_gene_set_size",
            max_set_size = "max_gene_set_size") %>%
@@ -574,17 +574,150 @@ readEnrichmentResultFiles <- function( table_of_files, file_names_column=file_na
               .before=quo_name(enquo(file_names_column))) %>%
     dplyr::select(-{{file_names_column}})
 
-  if ( ! "go_type" %in% colnames(enriched_results_cln) ) {
+  if ( ! "go_type" %in% colnames(enriched_results_tbl) ) {
 
-    enriched_results_cln <- enriched_results_cln %>%
+    enriched_results_tbl <- enriched_results_tbl %>%
       dplyr::mutate( go_type = go_type)
   }
 
-  return( enriched_results_cln )
+  return( enriched_results_tbl )
 
 }
 
-# enriched_results_cln <- readEnrichmentResultFiles( table_of_files, go_type="KEGG")
+# enriched_results_tbl <- readEnrichmentResultFiles( table_of_files, go_type="KEGG")
+
+#'@export
+filterResultsWithRevigo <- function(enriched_results_tbl,  added_columns, is_run_revigo=TRUE) {
+
+  enrich_revigo <- NA
+
+  if ( is_run_revigo == TRUE) {
+
+    annotation_list <-  enriched_results_tbl %>%
+      group_by( across( c(any_of(added_columns), comparison, gene_set, go_type) )) %>%
+      nest() %>%
+      ungroup() %>%
+      mutate( annot_id_list = purrr::map( data, ~{ pull(., annotation_id)} ))
+
+    annotation_list_revigo <-  annotation_list %>%
+      mutate( revigo_results = purrr::map( annot_id_list,
+                                           function(x){queryRevigo(x,
+                                                                   cutoff=revigo_cutoff,
+                                                                   speciesTaxon = species_taxon,
+                                                                   temp_file=NA )}))
+
+    revigo_tbl <- annotation_list_revigo %>%
+      unnest(revigo_results)  %>%
+      dplyr::select(-data, - annot_id_list)
+
+    enrich_revigo <- enriched_results_tbl %>%
+      left_join( revigo_tbl %>%
+                   dplyr::select(-Name),
+                 by = c( "annotation_id" = "Term ID",
+                         "comparison" = "comparison",
+                         "go_type" = "go_type",
+                         "gene_set" = "gene_set")) %>%
+      dplyr::filter( Eliminated == "False" |
+                       is.na(Eliminated))
+
+  } else {
+
+    enrich_revigo <- enriched_results_tbl
+  }
+
+  return( enrich_revigo)
+}
+
+#'@export
+saveFilteredFunctionalEnrichmentTable <- function( enriched_results_tbl,
+                                                   set_size_min,
+                                                   set_size_max,
+                                                   results_dir,
+                                                   file_name  ) {
+
+  max_excel_cell_length <- 32760
+
+  vroom::vroom_write( enriched_results_tbl %>%
+                        dplyr::filter( min_set_size == set_size_min,
+                                       max_set_size == set_size_max),
+                      file.path(results_dir,
+                                paste0( file_name, ".tab" )))
+
+  writexl::write_xlsx( enriched_results_tbl %>%
+                         dplyr::filter( min_set_size == set_size_min,
+                                        max_set_size == set_size_max) %>%
+                         mutate_at( c( "gene_symbol"), ~substr(., 1, max_excel_cell_length)) ,
+                       path=file.path(results_dir,
+                                      paste0( file_name, ".xlsx" ) ))
+
+}
+
+
+#'@export
+evaluateBestMinMaxGeneSetSize <- function(enrichment_results_tble, added_columns) {
+
+  plotting_data <- enrichment_results_tble %>%
+    group_by(  across( c(any_of(added_columns), comparison, min_set_size, max_set_size, gene_set, go_type) ) ) %>%
+    summarise( counts =n()) %>%
+    ungroup() %>%
+    mutate( set_size = paste(min_set_size, max_set_size, sep="-" ) ) %>%
+    dplyr::mutate( gene_set_mod = ifelse(!is.na(go_type),
+                                         paste(  gene_set, go_type, sep="-"),
+                                         gene_set) )
+
+  plotting_data %>%
+    ggplot( aes( set_size, counts, group=comparison)) +
+    geom_line(aes(col=comparison)) +
+    theme (axis.text.x = element_text (angle = 90, vjust = 1))  +
+    facet_grid( . ~ gene_set_mod    , scales="free_y")
+
+}
+
+
+#'@export
+drawListOfFunctionalEnrichmentHeatmaps <- function(enriched_results_tbl,
+                                                   added_columns,
+                                                   set_size_min,
+                                                   set_size_max,
+                                                   num_clusters = 5,
+                                                   results_dir,
+                                                   file_name,
+                                                   plot_width = 10,
+                                                   plot_height = 10 ) {
+
+  input_table <- enriched_results_tbl %>%
+    dplyr::filter( min_set_size == set_size_min,
+                   max_set_size == set_size_max) %>%
+    group_by(  across( c(any_of(added_columns), comparison, gene_set, go_type) )) %>%
+    arrange( comparison, pvalue) %>%
+    mutate(  ranking = row_number() ) %>%
+    ungroup()
+
+  annot_heat_map_ordered <- clusterPathways( input_table,
+                                             added_columns,
+                                             k = num_clusters ) %>%
+    unite("Analysis_Type", comparison, any_of( c(added_columns)) )
+
+  combinations <- annot_heat_map_ordered %>%
+    distinct(  go_type)
+
+  list_of_heatmaps <- purrr::pmap( combinations, function( go_type){
+    print( paste(  go_type) )
+    getEnrichmentHeatmap( input_table=annot_heat_map_ordered,
+                          x_axis=Analysis_Type,
+                          input_go_type=go_type,
+                          input_plot_title=go_type) } )
+
+  names( list_of_heatmaps) <- annot_heat_map_ordered %>%
+    distinct(  go_type) %>%
+    mutate( output_name = go_type ) %>%
+    pull(output_name)
+
+  return(list_of_heatmaps)
+
+}
+
+
 
 
 
