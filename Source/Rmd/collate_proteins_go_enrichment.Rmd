@@ -1,0 +1,204 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+
+
+#Test if BioManager is installed 
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+    install.packages("BiocManager")
+}
+
+# load pacman package manager
+if(!require(pacman)){
+    install.packages("pacman")
+    library(pacman)
+}
+
+p_load(tidyverse)
+p_load(plotly)
+p_load(vroom)
+p_load(ggplot2)
+p_load(gridExtra)
+p_load(magrittr)
+p_load(rlang)
+p_load(readxl)
+p_load(UniProt.ws)
+p_load(ggrepel)
+p_load(RColorBrewer)
+p_load(GGally)
+p_load(ProteomeRiver)
+
+
+p_load(httr)
+p_load(stringi)
+p_load(rvest)
+```
+
+
+
+```{r}
+base_dir <-  here::here() 
+data_dir <- file.path( base_dir, "Data")
+results_dir <- file.path(base_dir, "Results")
+source_dir <- file.path(base_dir, "Source")
+
+
+
+```
+
+```{r}
+selected_min_set_size <- 6
+selected_max_set_size <- 250
+is_run_revigo <- TRUE
+max_excel_cell_length <- 32760
+species_taxon <- 9606
+analysis_type_file_name <- "go_enrichment"
+cmp_expts_dir <- file.path(results_dir, "Protein_Comparisons_Exact")
+createDirIfNotExists(cmp_expts_dir)
+
+results_path_glob <- file.path(results_dir, "*/de_proteins_go_list/*/go_enrichment_table_*.tab")
+```
+
+```{r}
+list_of_files <- Sys.glob( results_path_glob ) 
+table_of_files <- data.frame(file_name=list_of_files)
+added_columns <- setdiff(colnames(table_of_files), "file_name")
+
+```
+
+
+```{r}
+enriched_results_cln <- readEnrichmentResultFiles( table_of_files, go_type=NA)
+```
+
+
+
+
+```{r}
+annotation_list <-  enriched_results_cln %>%
+  group_by( across( c(any_of(added_columns), comparison, gene_set, go_type) )) %>%
+  nest() %>%
+  ungroup() %>%
+  mutate( annot_id_list = purrr::map( data, ~{ pull(., annotation_id)} )) 
+
+annotation_list
+
+
+annotation_list %>%
+  distinct(comparison)
+```
+
+
+## Run Revigo
+```{r}
+
+enrich_revigo <- NA
+
+if ( is_run_revigo == TRUE) {
+  
+  annotation_list_revigo <-  annotation_list %>%
+    mutate( revigo_results = purrr::map( annot_id_list, 
+                                         function(x){queryRevigo(x,
+                                                                 cutoff=0.5,
+                                                                 speciesTaxon = species_taxon,
+                                                                 temp_file=NA )})) 
+
+  revigo_tbl <- annotation_list_revigo %>% 
+    unnest(revigo_results)  %>%
+    dplyr::select(-data, - annot_id_list)
+
+  enrich_revigo <- enriched_results_cln %>%
+    left_join( revigo_tbl %>%
+                 dplyr::select(-Name), 
+               by = c( "annotation_id" = "Term ID",
+                       "comparison" = "comparison",
+                       "go_type" = "go_type",
+                       "gene_set" = "gene_set")) %>%
+    dplyr::filter( Eliminated == "False" |
+                     is.na(Eliminated))  %>%
+    dplyr::mutate( comparison = str_replace_all(comparison, "minus", "vs" ))
+  
+} else {
+  
+  enrich_revigo <- enriched_results_cln %>%
+    dplyr::mutate( comparison = str_replace_all(comparison, "minus", "vs" ))
+}
+
+```
+
+
+```{r}
+plotting_data <- enrich_revigo %>%
+  group_by(  across( c(any_of(added_columns), comparison, min_set_size, max_set_size, gene_set, go_type) ) ) %>%
+  summarise( counts =n()) %>%
+  ungroup() %>%
+  mutate( set_size = paste(min_set_size, max_set_size, sep="-" ) ) %>%
+  dplyr::mutate( gene_set_mod = ifelse(!is.na(go_type), 
+                                          paste(  gene_set, go_type, sep="-"),
+                                          gene_set) ) 
+
+plotting_data %>%
+  ggplot( aes( set_size, counts, group=comparison)) +
+  geom_line(aes(col=comparison)) + 
+  theme (axis.text.x = element_text (angle = 90, vjust = 1))  +
+  facet_grid( . ~ gene_set_mod    , scales="free_y")
+
+```
+
+
+```{r}
+
+vroom::vroom_write( enrich_revigo %>%
+  dplyr::filter( min_set_size == selected_min_set_size, 
+                 max_set_size == selected_max_set_size), 
+                    file.path(cmp_expts_dir, 
+                              paste0( analysis_type_file_name, ".tab" )))
+
+writexl::write_xlsx( enrich_revigo %>%
+  dplyr::filter( min_set_size == selected_min_set_size, 
+                 max_set_size == selected_max_set_size) %>%
+                       mutate_at( c( "gene_symbol"), ~substr(., 1, max_excel_cell_length)) , 
+                     path=file.path(cmp_expts_dir, 
+                                    paste0( analysis_type_file_name, ".xlsx" ) ))
+```
+
+
+## Comparisons of samples with replicates
+```{r}
+input_table <- enrich_revigo %>%
+  dplyr::filter( min_set_size == selected_min_set_size, 
+                 max_set_size == selected_max_set_size) %>%
+  group_by(  across( c(any_of(added_columns), comparison, gene_set, go_type) )) %>%
+  arrange( comparison, pvalue) %>%
+  mutate(  ranking = row_number() ) %>%
+ ungroup() 
+
+annot_heat_map_ordered <- clusterPathways( input_table, added_columns, k = 30 ) %>%
+  unite("Analysis_Type", comparison, any_of( c(added_columns)) )
+
+combinations <- annot_heat_map_ordered %>%
+  distinct(  go_type)
+
+list_of_heatmaps <- purrr::pmap( combinations, function( go_type){   
+  print( paste(  go_type) )
+  getEnrichmentHeatmap( input_table=annot_heat_map_ordered, x_axis=Analysis_Type, input_go_type=go_type, input_plot_title=go_type) } )
+
+list_of_names <- annot_heat_map_ordered %>%
+  distinct(  go_type) %>%
+  mutate( output_name = go_type ) %>%
+  pull(output_name)
+
+
+purrr::walk2(list_of_names, list_of_heatmaps, 
+             function(output_name, plot){   ggsave( filename=file.path(cmp_expts_dir,
+                                                                       paste0(analysis_type_file_name, "_", output_name   ,".pdf")) , plot=plot, width = 10, height=10)   }  )
+
+purrr::walk2(list_of_names, list_of_heatmaps, 
+             function(output_name, plot){   ggsave( filename=file.path(cmp_expts_dir,
+                                                                       paste0(analysis_type_file_name, "_", output_name, ".png")) , plot=plot, width = 10, height=10)   }  )
+```
+

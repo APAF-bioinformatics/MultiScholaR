@@ -457,3 +457,135 @@ queryRevigo <- function( input_list,
   revigo_tbl
 }
 
+
+
+
+
+
+
+#'@export
+clusterPathways <- function ( input_table, added_columns, k = 8 ) {
+
+
+  duplicated_entries <- input_table %>%
+    dplyr::group_by( comparison, annotation_id ) %>%
+    summarise(counts = n()) %>%
+    ungroup() %>%
+    dplyr::filter( counts > 1)
+
+  scores_for_clustering <- input_table  %>%
+    anti_join( duplicated_entries, by =c("comparison" = "comparison",
+                                         "annotation_id" = "annotation_id")) %>%
+    mutate( gene_set_type= ifelse(is.na(go_type), gene_set, paste( gene_set, go_type, sep=" "))) %>%
+    mutate( neg_log_p_value = -log10( p.adjust) ) %>%
+    mutate(score = case_when( str_detect( gene_set, "positive") ~neg_log_p_value,
+                              str_detect( gene_set, "negative") ~ -1* neg_log_p_value))  %>%
+    pivot_wider( id_cols = c(annotation_id),
+                 names_from = c(any_of(added_columns), comparison) ,
+                 values_from = score,
+                 values_fill = 0 )    %>%
+    column_to_rownames("annotation_id") %>%
+    as.matrix()
+
+  pathways_clustered <- hclust(dist(scores_for_clustering))
+
+  pathways_sorting <- cutree(pathways_clustered, k=1:k) %>%
+    as.data.frame %>%
+    rownames_to_column("Term") %>%
+    arrange( across( matches("\\d+"))) %>%
+    mutate( ordering = row_number())
+
+  annot_heat_map_ordered <-  input_table %>%
+    anti_join( duplicated_entries, by =c("comparison" = "comparison",
+                                         "annotation_id" = "annotation_id")) %>%
+    mutate( neg_log_p_value = -log10( p.adjust) )  %>%
+    dplyr::select(  c(any_of(added_columns), comparison, annotation_id, term,  neg_log_p_value,  gene_set, go_type )) %>%
+    left_join(pathways_sorting, by=c("annotation_id" = "Term")) %>%
+    arrange(ordering)
+
+  annot_heat_map_ordered
+}
+
+########################
+
+#'@export
+getEnrichmentHeatmap <- function( input_table, x_axis=Analysis_type, input_go_type, input_plot_title) {
+
+  get_shape <- list(negative_list = 25, positive_list=24)
+  get_colour <- list(negative_list = "blue", positive_list = "red")
+
+  table_filtering <- NA
+  if(!is.na( input_go_type)) {
+    table_filtering <- input_table %>%
+      dplyr::filter(  go_type == input_go_type)
+  } else {
+    table_filtering <- input_table
+  }
+
+  output_heat_map <- table_filtering %>%
+    mutate( use_shape = purrr::map_dbl( gene_set, ~{get_shape[[.]]})) %>%
+    mutate( use_colour = purrr::map_chr( gene_set, ~{get_colour[[.]]})) %>%
+    mutate(Term = factor( term,  levels = unique(input_table$term))) %>%
+    ggplot( aes(  {{x_axis}}, Term,
+                  fill = use_colour,
+                  col = use_colour,
+                  shape=use_shape,
+                  size = neg_log_p_value)) +
+    geom_point() +
+    scale_size_continuous( name = "-log10(p-value)"  ) + #
+    scale_shape_identity() +
+    scale_color_identity() +
+    scale_fill_identity() +
+    guides(size = guide_legend(override.aes = list(shape=17)),
+           shape = guide_legend(override.aes = list(size = 5))) +
+    theme_bw() +
+    theme(plot.title = element_text(hjust = 0.5),
+          axis.title.y = element_blank(),
+          axis.title.x = element_blank(),
+          axis.text.x  = element_text(angle = 45, hjust = 1, face = "bold"),
+          axis.text.y  = element_text(face = "bold")) +
+    theme(strip.text.y = element_text(angle = 0))  +
+    scale_x_discrete(labels = function(input) str_wrap(input, width = 15)) +
+    labs(title=input_plot_title)
+
+
+  output_heat_map
+
+}
+
+
+#' @export
+readEnrichmentResultFiles <- function( table_of_files, file_names_column=file_name, go_type="KEGG") {
+
+  list_of_files <- table_of_files %>%
+    pull( {{file_names_column}})
+
+  added_columns <- setdiff(colnames(table_of_files),
+          quo_name(enquo(file_names_column)))
+
+  print(added_columns)
+
+  enriched_results_cln <- vroom::vroom( list_of_files, id= quo_name(enquo(file_names_column)) ) %>%
+    rename(annotation_id = "ID", gene_set = "names_of_genes_list",
+           min_set_size = "min_gene_set_size",
+           max_set_size = "max_gene_set_size") %>%
+    left_join( table_of_files, by = quo_name(enquo(file_names_column)) ) %>%
+    relocate( any_of(added_columns ) ,
+              .before=quo_name(enquo(file_names_column))) %>%
+    dplyr::select(-{{file_names_column}})
+
+  if ( ! "go_type" %in% colnames(enriched_results_cln) ) {
+
+    enriched_results_cln <- enriched_results_cln %>%
+      dplyr::mutate( go_type = go_type)
+  }
+
+  return( enriched_results_cln )
+
+}
+
+# enriched_results_cln <- readEnrichmentResultFiles( table_of_files, go_type="KEGG")
+
+
+
+########################
