@@ -12,7 +12,7 @@
 #'@export
 removeEmptyRows <- function(input_table, col_pattern, row_id) {
 
-  temp_col_name <- paste0("temp_", quo_name(enquo(row_id)))
+  temp_col_name <- paste0("temp_", as_name(enquo(row_id)))
 
   temp_input_table <- input_table %>%
     dplyr::mutate(!!rlang::sym(temp_col_name) := row_number())
@@ -95,9 +95,9 @@ removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample
 
   abundance_long <- input_table %>%
     pivot_longer(cols = { { cols } },
-                 names_to = quo_name(enquo(sample_id)),
+                 names_to = as_name(enquo(sample_id)),
                  values_to = "Abundance") %>%
-    left_join(design_matrix, by = quo_name(enquo(sample_id)))
+    left_join(design_matrix, by = as_name(enquo(sample_id)))
 
 
   count_values_per_group <- abundance_long %>%
@@ -113,7 +113,7 @@ removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample
     distinct({ { row_id } })
 
   filtered_tbl <- input_table %>%
-    dplyr::anti_join(remove_rows_temp, by = quo_name(enquo(row_id)))
+    dplyr::anti_join(remove_rows_temp, by = as_name(enquo(row_id)))
 
   return(filtered_tbl)
 
@@ -135,9 +135,9 @@ getRowsToKeepList <- function(input_table, cols, design_matrix, sample_id, row_i
 
   abundance_long <- input_table %>%
     pivot_longer(cols = { { cols } },
-                 names_to = quo_name(enquo(sample_id)),
+                 names_to = as_name(enquo(sample_id)),
                  values_to = "Abundance") %>%
-    left_join(design_matrix, by = quo_name(enquo(sample_id)))
+    left_join(design_matrix, by = as_name(enquo(sample_id)))
 
 
   count_values_per_group <- abundance_long %>%
@@ -153,11 +153,11 @@ getRowsToKeepList <- function(input_table, cols, design_matrix, sample_id, row_i
     group_by({ { group_column } }) %>%
     nest(data = c({ { row_id } })) %>%
     ungroup() %>%
-    mutate(data = purrr::map(data, ~{ .[, quo_name(enquo(row_id))][[1]] }))
+    mutate(data = purrr::map(data, ~{ .[, as_name(enquo(row_id))][[1]] }))
 
 
   sample_rows_lists <- kept_rows_temp$data
-  names(sample_rows_lists) <- kept_rows_temp[, quo_name(enquo(group_column))][[1]]
+  names(sample_rows_lists) <- kept_rows_temp[, as_name(enquo(group_column))][[1]]
 
   return(sample_rows_lists)
 
@@ -202,7 +202,7 @@ getRuvIIIReplicateMatrix <- function(design_matrix, sample_id_column, group_colu
                 names_from = { { group_column } },
                 values_from = { { temp_column } },
                 values_fill = 0) %>%
-    column_to_rownames(quo_name(enquo(sample_id_column))) %>%
+    column_to_rownames(as_name(enquo(sample_id_column))) %>%
     as.matrix
 
   ruvIII_replicates_matrix
@@ -225,8 +225,8 @@ plotPca <- function(data,
 
   temp_tbl <- pca.res$variates$X %>%
     as.data.frame %>%
-    rownames_to_column(quo_name(enquo(sample_id_column))) %>%
-    left_join(design_matrix, by = quo_name(enquo(sample_id_column)))
+    rownames_to_column(as_name(enquo(sample_id_column))) %>%
+    left_join(design_matrix, by = as_name(enquo(sample_id_column)))
 
   unique_groups <- temp_tbl %>% distinct( {{group_column}}) %>% pull( {{group_column}})
 
@@ -298,7 +298,7 @@ rlePcaPlotList <- function(list_of_data_matrix, list_of_design_matrix,
 
   rle_list <- purrr::pmap( list( data_matrix=list_of_data_matrix, description=list_of_descriptions, design_matrix=list_of_design_matrix),
                           function( data_matrix, description, design_matrix) { plotRle(t(as.matrix(data_matrix)),
-                                   rowinfo = design_matrix[colnames(data_matrix), quo_name(enquo(group_column))]  )  +
+                                   rowinfo = design_matrix[colnames(data_matrix), as_name(enquo(group_column))]  )  +
                             labs(title = description)} )
 
   pca_list <- purrr::pmap(list( data_matrix=list_of_data_matrix, description=list_of_descriptions, design_matrix=list_of_design_matrix),
@@ -388,8 +388,8 @@ printCountDeGenesTable <- function(list_of_de_tables,
       mutate({ { facet_column } } := description) %>%
       separate({ { comparison_column } },
                sep = "=",
-               into = c(quo_name(enquo(comparison_column)),
-                        quo_name(enquo(expression_column))))
+               into = c(as_name(enquo(comparison_column)),
+                        as_name(enquo(expression_column))))
   }
 
 
@@ -463,7 +463,7 @@ getSignificantData <- function(list_of_de_tables,
   get_row_binded_table <- function(de_table_list, description) {
     output <- purrr::map(de_table_list,
                          function(tbl) { tbl %>%
-                           rownames_to_column(quo_name(enquo(row_id))) %>%
+                           rownames_to_column(as_name(enquo(row_id))) %>%
                            dplyr::select({ { row_id } },
                                          { { p_value_column } },
                                          { { q_value_column } },
@@ -475,8 +475,8 @@ getSignificantData <- function(list_of_de_tables,
       mutate({ { facet_column } } := description) %>%
       separate({ { comparison_column } },
                sep = "=",
-               into = c(quo_name(enquo(comparison_column)),
-                        quo_name(enquo(expression_column))))
+               into = c(as_name(enquo(comparison_column)),
+                        as_name(enquo(expression_column))))
 
   }
 
@@ -1019,8 +1019,8 @@ analyseRanking <- function(data, uniprot_acc_column = uniprot_acc) {
 
   results_tbl <- data %>%
     as.data.frame %>%
-    rownames_to_column(quo_name(enquo(uniprot_acc_column))) %>%
-    dplyr::select(one_of(c(quo_name(enquo(uniprot_acc_column)), "q.mod", "logFC"))) %>%
+    rownames_to_column(as_name(enquo(uniprot_acc_column))) %>%
+    dplyr::select(one_of(c(as_name(enquo(uniprot_acc_column)), "q.mod", "logFC"))) %>%
     arrange(desc(q.mod)) %>%
     mutate(ctrl_gene_rank = row_number())
 
@@ -1329,8 +1329,8 @@ uniprotGoIdToTerm <- function(uniprot_dat, sep = "; ", goterms, gotypes) {
 chooseBestProteinAccession <- function(input_tbl, acc_detail_tab, accessions_column, row_id_column = uniprot_acc, group_id) {
 
 
-  join_condition <- rlang::set_names(c(quo_name(enquo(row_id_column)), "cleaned_acc"),
-                                     c(quo_name(enquo(row_id_column)), "cleaned_acc"))
+  join_condition <- rlang::set_names(c(as_name(enquo(row_id_column)), "cleaned_acc"),
+                                     c(as_name(enquo(row_id_column)), "cleaned_acc"))
 
   resolve_acc_helper <- input_tbl %>%
     dplyr::select({ { group_id } }, { { accessions_column } }) %>%
@@ -1339,7 +1339,7 @@ chooseBestProteinAccession <- function(input_tbl, acc_detail_tab, accessions_col
     mutate(cleaned_acc = cleanIsoformNumber({ { accessions_column } })) %>%
     left_join(acc_detail_tab,
               by = join_condition) %>%
-    dplyr::select({ { group_id } }, one_of(c(quo_name(enquo(row_id_column)), "gene_name", "cleaned_acc",
+    dplyr::select({ { group_id } }, one_of(c(as_name(enquo(row_id_column)), "gene_name", "cleaned_acc",
                                              "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"))) %>%
     distinct %>%
     arrange({ { group_id } }, protein_evidence, status, is_isoform, desc(seq_length), isoform_num)
@@ -1357,8 +1357,8 @@ chooseBestProteinAccession <- function(input_tbl, acc_detail_tab, accessions_col
 
   my_group_id <- enquo(group_id)
 
-  join_names <- rlang::set_names(c(quo_name(my_group_id), "ranking", "gene_name"),
-                                 c(quo_name(my_group_id), "ranking", "gene_name"))
+  join_names <- rlang::set_names(c(as_name(my_group_id), "ranking", "gene_name"),
+                                 c(as_name(my_group_id), "ranking", "gene_name"))
 
   group_gene_names_and_uniprot_accs <- score_isoforms %>%
     distinct({ { group_id } }, gene_name, ranking) %>%

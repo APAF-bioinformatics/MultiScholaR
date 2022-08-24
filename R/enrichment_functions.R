@@ -25,7 +25,7 @@ oneGoEnrichment <- function(go_annot, background_list, go_aspect, query_list, id
                               annotation_id, protein_id, aspect_column, p_val_thresh, min_gene_set_size,  max_gene_set_size  ) {
 
   join_condition <- rlang::set_names( c( colnames(background_list)[1]),
-                                      c( quo_name(enquo( protein_id)) ) )
+                                      c( as_name(enquo( protein_id)) ) )
 
   if ( !is.na( go_aspect)) {
     go_annot_filt <- go_annot %>%
@@ -45,9 +45,9 @@ oneGoEnrichment <- function(go_annot, background_list, go_aspect, query_list, id
 
   term_to_gene_tbl_filt <- go_annot_filt %>%
     inner_join( background_list, by =join_condition )  %>%
-    dplyr::inner_join( filtered_go_terms, by = quo_name(enquo( annotation_id))  )  %>%
-    dplyr::rename( gene = quo_name(enquo(protein_id )) ,
-                   term = quo_name(enquo( annotation_id)) ) %>%
+    dplyr::inner_join( filtered_go_terms, by = as_name(enquo( annotation_id))  )  %>%
+    dplyr::rename( gene = as_name(enquo(protein_id )) ,
+                   term = as_name(enquo( annotation_id)) ) %>%
     dplyr::select(term, gene) %>%
     dplyr::distinct( term, gene )
 
@@ -71,7 +71,7 @@ oneGoEnrichment <- function(go_annot, background_list, go_aspect, query_list, id
                                                      dplyr::distinct(gene) %>%
                                                      dplyr::pull(gene))
 
-  # print(quo_name(enquo(aspect_column)))
+  # print(as_name(enquo(aspect_column)))
   # print(go_aspect)
   # print(nrow( go_annot))
   # print(nrow( go_annot_filt))
@@ -388,8 +388,8 @@ getUniprotAccToGeneSymbolDictionary <- function( input_table,
   uniprot_to_gene_symbol <- input_table  %>%
     dplyr::select( {{protein_id_lookup_column}},
                    {{gene_symbol_column}}) %>%
-    dplyr::rename( {{protein_id}} := quo_name(enquo(protein_id_lookup_column)) ) %>%
-    dplyr::rename( gene_symbol = quo_name(enquo( gene_symbol_column)) ) %>%
+    dplyr::rename( {{protein_id}} := as_name(enquo(protein_id_lookup_column)) ) %>%
+    dplyr::rename( gene_symbol = as_name(enquo( gene_symbol_column)) ) %>%
     dplyr::mutate( gene_symbol = str_split(  gene_symbol , " " ) %>%
                      purrr::map_chr( 1)) %>%
     dplyr::distinct( {{protein_id}}, gene_symbol)
@@ -459,49 +459,56 @@ queryRevigo <- function( input_list,
 
 
 
-
-
-
-
 #'@export
-clusterPathways <- function ( input_table, added_columns, k = 8 ) {
+clusterPathways <- function ( input_table, added_columns, remove_duplicted_entries = TRUE ) {
 
 
-  duplicated_entries <- input_table %>%
-    dplyr::group_by( comparison, annotation_id ) %>%
-    summarise(counts = n()) %>%
-    ungroup() %>%
-    dplyr::filter( counts > 1)
+  if( remove_duplicted_entries == TRUE ) {
+    duplicated_entries <- input_table %>%
+      mutate(set_type = case_when( str_detect( gene_set, "positive") ~"positive",
+                                   str_detect( gene_set, "negative") ~ "negative",
+                                   TRUE ~ "neutral")) %>%
+      distinct( comparison, set_type, annotation_id ) %>%
+      dplyr::group_by( comparison, annotation_id ) %>%
+      summarise(counts = n()) %>%
+      ungroup() %>%
+      dplyr::filter( counts > 1)
 
-  scores_for_clustering <- input_table  %>%
-    anti_join( duplicated_entries, by =c("comparison" = "comparison",
-                                         "annotation_id" = "annotation_id")) %>%
-    mutate( gene_set_type= ifelse(is.na(go_type), gene_set, paste( gene_set, go_type, sep=" "))) %>%
-    mutate( neg_log_p_value = -log10( p.adjust) ) %>%
-    mutate(score = case_when( str_detect( gene_set, "positive") ~neg_log_p_value,
-                              str_detect( gene_set, "negative") ~ -1* neg_log_p_value))  %>%
-    pivot_wider( id_cols = c(annotation_id),
-                 names_from = c(any_of(added_columns), comparison) ,
-                 values_from = score,
-                 values_fill = 0 )    %>%
-    column_to_rownames("annotation_id") %>%
-    as.matrix()
+    input_table <- input_table  %>%
+      anti_join( duplicated_entries, by =c("comparison" = "comparison",
+                                           "annotation_id" = "annotation_id"))
+  }
+
+
+    scores_for_clustering <- input_table %>%
+      mutate( neg_log_p_value = -log10( p.adjust) ) %>%
+      mutate(score = case_when( str_detect( gene_set, "positive") ~neg_log_p_value,
+                                str_detect( gene_set, "negative") ~ -1* neg_log_p_value,
+                                TRUE ~ neg_log_p_value))  %>%
+      pivot_wider( id_cols = c(annotation_id),
+                   names_from = c(any_of(added_columns), comparison, gene_set) ,
+                   values_from = score,
+                   values_fill = 0 )    %>%
+      column_to_rownames("annotation_id") %>%
+      as.matrix()
+
+  # print(head(scores_for_clustering) )
 
   pathways_clustered <- hclust(dist(scores_for_clustering))
 
-  pathways_sorting <- cutree(pathways_clustered, k=1:k) %>%
+  pathways_sorting <- cutree(pathways_clustered, k=1:ncol(scores_for_clustering)) %>%
     as.data.frame %>%
     rownames_to_column("Term") %>%
     arrange( across( matches("\\d+"))) %>%
     mutate( ordering = row_number())
 
-  annot_heat_map_ordered <-  input_table %>%
-    anti_join( duplicated_entries, by =c("comparison" = "comparison",
-                                         "annotation_id" = "annotation_id")) %>%
-    mutate( neg_log_p_value = -log10( p.adjust) )  %>%
-    dplyr::select(  c(any_of(added_columns), comparison, annotation_id, term,  neg_log_p_value,  gene_set, go_type )) %>%
-    left_join(pathways_sorting, by=c("annotation_id" = "Term")) %>%
-    arrange(ordering)
+  print( head(pathways_sorting))
+
+   annot_heat_map_ordered <-  input_table %>%
+     mutate( neg_log_p_value = -log10( p.adjust) )  %>%
+     dplyr::select(  c(any_of(added_columns), comparison, annotation_id, term,  neg_log_p_value,  gene_set, go_type )) %>%
+     left_join(pathways_sorting, by=c("annotation_id" = "Term")) %>%
+     arrange(ordering)
 
   annot_heat_map_ordered
 }
@@ -509,10 +516,24 @@ clusterPathways <- function ( input_table, added_columns, k = 8 ) {
 ########################
 
 #'@export
-getEnrichmentHeatmap <- function( input_table, x_axis=Analysis_type, input_go_type, input_plot_title) {
+getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot_title, facet_by_column = NA) {
 
-  get_shape <- list(negative_list = 25, positive_list=24)
-  get_colour <- list(negative_list = "blue", positive_list = "red")
+  get_shape <- list( negative_list = 25,
+                     positive_list=24,
+                     positive_only = 24,
+                     negative_only = 25,
+                     positive_plus_overlap = 24,
+                     negative_plus_overlap = 25,
+                     all_significant = 1,
+                     overlap_only = 1)
+
+  get_colour <- list( negative_list = "blue", positive_list = "red",
+                      positive_only = "red",
+                      negative_only = "blue",
+                      positive_plus_overlap = "red",
+                      negative_plus_overlap = "blue",
+                      all_significant = "black",
+                      overlap_only = "black")
 
   table_filtering <- NA
   if(!is.na( input_go_type)) {
@@ -549,6 +570,13 @@ getEnrichmentHeatmap <- function( input_table, x_axis=Analysis_type, input_go_ty
     labs(title=input_plot_title)
 
 
+
+  if( as_name(enquo(facet_by_column)) %in% colnames(table_filtering )) {
+
+    output_heat_map <- output_heat_map  +
+      facet_wrap( vars({{facet_by_column}} ) )
+  }
+
   output_heat_map
 
 }
@@ -561,17 +589,17 @@ readEnrichmentResultFiles <- function( table_of_files, file_names_column=file_na
     pull( {{file_names_column}})
 
   added_columns <- setdiff(colnames(table_of_files),
-          quo_name(enquo(file_names_column)))
+          as_name(enquo(file_names_column)))
 
   print(added_columns)
 
-  enriched_results_tbl <- vroom::vroom( list_of_files, id= quo_name(enquo(file_names_column)) ) %>%
+  enriched_results_tbl <- vroom::vroom( list_of_files, id= as_name(enquo(file_names_column)) ) %>%
     rename(annotation_id = "ID", gene_set = "names_of_genes_list",
            min_set_size = "min_gene_set_size",
            max_set_size = "max_gene_set_size") %>%
-    left_join( table_of_files, by = quo_name(enquo(file_names_column)) ) %>%
+    left_join( table_of_files, by = as_name(enquo(file_names_column)) ) %>%
     relocate( any_of(added_columns ) ,
-              .before=quo_name(enquo(file_names_column))) %>%
+              .before=as_name(enquo(file_names_column))) %>%
     dplyr::select(-{{file_names_column}})
 
   if ( ! "go_type" %in% colnames(enriched_results_tbl) ) {
@@ -587,7 +615,7 @@ readEnrichmentResultFiles <- function( table_of_files, file_names_column=file_na
 # enriched_results_tbl <- readEnrichmentResultFiles( table_of_files, go_type="KEGG")
 
 #'@export
-filterResultsWithRevigo <- function(enriched_results_tbl,  added_columns, is_run_revigo=TRUE) {
+filterResultsWithRevigo <- function(enriched_results_tbl,  added_columns, is_run_revigo=TRUE, revigo_cutoff=0.7) {
 
   enrich_revigo <- NA
 
@@ -650,6 +678,15 @@ saveFilteredFunctionalEnrichmentTable <- function( enriched_results_tbl,
                        path=file.path(results_dir,
                                       paste0( file_name, ".xlsx" ) ))
 
+  vroom::vroom_write( enriched_results_tbl ,
+                      file.path(results_dir,
+                                paste0( file_name, "_unfiltered.tab" )))
+
+  writexl::write_xlsx( enriched_results_tbl %>%
+                         mutate_at( c( "gene_symbol"), ~substr(., 1, max_excel_cell_length)) ,
+                       path=file.path(results_dir,
+                                      paste0( file_name, "_unfiltered.xlsx" ) ))
+
 }
 
 
@@ -669,7 +706,7 @@ evaluateBestMinMaxGeneSetSize <- function(enrichment_results_tble, added_columns
     ggplot( aes( set_size, counts, group=comparison)) +
     geom_line(aes(col=comparison)) +
     theme (axis.text.x = element_text (angle = 90, vjust = 1))  +
-    facet_grid( . ~ gene_set_mod    , scales="free_y")
+    facet_wrap( . ~ gene_set_mod    , scales="free_y")
 
 }
 
@@ -679,7 +716,10 @@ drawListOfFunctionalEnrichmentHeatmaps <- function(enriched_results_tbl,
                                                    added_columns,
                                                    set_size_min,
                                                    set_size_max,
-                                                   num_clusters = 5) {
+                                                   x_axis = Analysis_Type,
+                                                   analysis_column = Analysis_Type,
+                                                   facet_by_column = NA,
+                                                   remove_duplicted_entries = TRUE) {
 
   input_table <- enriched_results_tbl %>%
     dplyr::filter( min_set_size == set_size_min,
@@ -691,8 +731,10 @@ drawListOfFunctionalEnrichmentHeatmaps <- function(enriched_results_tbl,
 
   annot_heat_map_ordered <- clusterPathways( input_table,
                                              added_columns,
-                                             k = num_clusters ) %>%
-    unite("Analysis_Type", comparison, any_of( c(added_columns)) )
+                                             remove_duplicted_entries = remove_duplicted_entries) %>%
+    unite(  {{analysis_column}} , comparison, any_of( c(added_columns)) )
+
+  print(head( annot_heat_map_ordered))
 
   combinations <- annot_heat_map_ordered %>%
     distinct(  go_type)
@@ -700,9 +742,10 @@ drawListOfFunctionalEnrichmentHeatmaps <- function(enriched_results_tbl,
   list_of_heatmaps <- purrr::pmap( combinations, function( go_type){
     print( paste(  go_type) )
     getEnrichmentHeatmap( input_table=annot_heat_map_ordered,
-                          x_axis=Analysis_Type,
+                          x_axis={{x_axis}},
                           input_go_type=go_type,
-                          input_plot_title=go_type) } )
+                          input_plot_title=go_type,
+                          facet_by_column = {{facet_by_column}}) } )
 
   names( list_of_heatmaps) <- annot_heat_map_ordered %>%
     distinct(  go_type) %>%

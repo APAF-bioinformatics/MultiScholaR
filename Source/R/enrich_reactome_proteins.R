@@ -297,7 +297,7 @@ contr.matrix <- makeContrasts( contrasts = contrasts_tbl %>% pull(contrasts),
 
 # ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # ## List of all proteins
-# 
+#
 # loginfo("Get the list of all DE proteins.")
 # captured_output <- capture.output(
 # proteins_cln <- vroom::vroom(de_proteins_file) %>%
@@ -385,14 +385,14 @@ input_proteomics$genes <- rownames( norm_abundance_mat )
 
 cmriReactomeAddDataset <- function(contrast, contrast_name, input_request, elist_object, formula_string ) {
 
-  groupA <- str_replace( names( contrast[contrast == 1] )[1], paste0("^", quo_name(enquo(group_id))), "" )
-  groupB <- str_replace( names( contrast[contrast == -1] )[1], paste0("^", quo_name(enquo(group_id))), "" )
+  groupA <- str_replace( names( contrast[contrast == 1] )[1], paste0("^", as_name(enquo(group_id))), "" )
+  groupB <- str_replace( names( contrast[contrast == -1] )[1], paste0("^", as_name(enquo(group_id))), "" )
 
   additional_factors_for_adjustment <- formula_string %>%
     str_split( " ") %>%
     .[[1]] %>%
     discard( ~str_detect(., "\\~|\\+|\\-|^$|^\\d{1}$")  ) %>%
-    discard( ~str_detect(., quo_name(enquo(group_id))))
+    discard( ~str_detect(., as_name(enquo(group_id))))
 
   if(length(additional_factors_for_adjustment) == 0) {
     additional_factors_for_adjustment <- NULL
@@ -402,7 +402,7 @@ cmriReactomeAddDataset <- function(contrast, contrast_name, input_request, elist
                             expression_values = elist_object,
                             name = contrast_name,
                             type = "microarray_norm",
-                            comparison_factor = quo_name(enquo(group_id)) ,
+                            comparison_factor = as_name(enquo(group_id)) ,
                             comparison_group_1 = groupB,
                             comparison_group_2 = groupA,
                             additional_factors = additional_factors_for_adjustment )
