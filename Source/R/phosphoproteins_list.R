@@ -304,8 +304,7 @@ positive_phosphoproteins <- de_phos %>%
 
 vroom::vroom_write( positive_phosphoproteins,
                     file.path( args$output_dir,
-                               "all_phosphoproteins_with_positive_logFC_sites.tab" ),
-                    col_names=FALSE)
+                               "all_phosphoproteins_with_positive_logFC_sites.tab" ))
 
  list_of_comparisons <- positive_phosphoproteins %>% distinct( comparison) %>% pull( comparison)
 
@@ -339,8 +338,7 @@ negative_phosphoproteins <- de_phos %>%
 
 vroom::vroom_write( negative_phosphoproteins,
                     file.path( args$output_dir,
-                               "all_phosphoproteins_with_negative_logFC_sites.tab" ),
-                    col_names=FALSE )
+                               "all_phosphoproteins_with_negative_logFC_sites.tab" ))
 
 list_of_comparisons <- negative_phosphoproteins %>% distinct( comparison) %>% pull( comparison)
 
@@ -366,8 +364,7 @@ positive_only_phosphoproteins <- positive_phosphoproteins %>%
 
 vroom::vroom_write( positive_only_phosphoproteins,
                     file.path(args$output_dir,
-                              "phosphoproteins_with_only_positive_logFC_sites.tab" ),
-                    col_names=FALSE )
+                              "phosphoproteins_with_only_positive_logFC_sites.tab" ))
 
 
 list_of_comparisons <- positive_only_phosphoproteins %>% distinct( comparison) %>% pull( comparison)
@@ -393,8 +390,7 @@ negative_only_phosphoproteins <- negative_phosphoproteins  %>%
 
 vroom::vroom_write( negative_only_phosphoproteins,
                     file.path(args$output_dir,
-                              "phosphoproteins_with_only_negative_logFC_sites.tab" ),
-                    col_names=FALSE )
+                              "phosphoproteins_with_only_negative_logFC_sites.tab" ) )
 
 list_of_comparisons <- negative_only_phosphoproteins %>% distinct( comparison) %>% pull( comparison)
 
@@ -424,8 +420,7 @@ overlapping_phosphoproteins <- positive_phosphoproteins %>%
 
 vroom::vroom_write( overlapping_phosphoproteins,
                     file.path(args$output_dir,
-                              "phosphoproteins_with_positive_and_negative_logFC_sites.tab" ),
-                    col_names=FALSE )
+                              "phosphoproteins_with_positive_and_negative_logFC_sites.tab" ) )
 
 
 list_of_comparisons <- overlapping_phosphoproteins %>% distinct( comparison) %>% pull( comparison)
@@ -455,8 +450,7 @@ all_phosphoproteins_with_significant_da_sites <- positive_phosphoproteins %>%
 
 vroom::vroom_write( all_phosphoproteins_with_significant_da_sites,
                     file.path(args$output_dir,
-                              "all_phosphoproteins_with_significant_da_sites.tab" ),
-                    col_names=FALSE )
+                              "all_phosphoproteins_with_significant_da_sites.tab" ))
 
 list_of_comparisons <- all_phosphoproteins_with_significant_da_sites %>% distinct( comparison) %>% pull( comparison)
 

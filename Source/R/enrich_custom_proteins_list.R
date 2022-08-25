@@ -56,7 +56,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.")
 
-parser <- add_option(parser, c("-c","--config"), type = "character", default = "config_phos.ini", dest = "config",
+parser <- add_option(parser, c("-c","--config"), type = "character", default = "/home/ignatius/PostDoc/2022/Embryology_BMP_14/Source/TMT/config_prot.ini", dest = "config",
                      help = "Configuration file.",
                      metavar = "string")
 
@@ -146,10 +146,10 @@ args <- parse_args(parser)
 
 #parse and merge the configuration file options.
 if (args$config != "") {
-  args <- config.list.merge(eval.config(file = args$config, config = "phosphoproteins_list"), args)
+  args <- config.list.merge(eval.config(file = args$config, config = "custom_proteins_list"), args)
 }
 
-args <- setArgsDefault(args, "output_dir", as_func=as.character, default_val="phosphoproteins_list" )
+args <- setArgsDefault(args, "output_dir", as_func=as.character, default_val="custom_proteins_list" )
 
 createOutputDir(args$output_dir, args$no_backup)
 createDirectoryIfNotExists(args$tmp_dir)
@@ -262,14 +262,15 @@ if(isArgumentDefined(args,"plots_format")) {
 
 loginfo("Read background proteins file")
 captured_output<-capture.output(
-  background_list <- vroom::vroom( args$background_file, col_names=FALSE )
+  background_list <- vroom::vroom( args$background_file, col_names=FALSE, delim="\t" )
   ,type = "message"
 )
 logdebug(captured_output)
 
 ## ---------------------------------------------------------------------------------------------------------------------------------------------------
 captured_output<-capture.output(
-  query_proteins <- vroom::vroom( args$query_proteins_file )
+  query_proteins <- vroom::vroom( args$query_proteins_file )  %>%
+    mutate( comparison = "Analysis_Results")
   ,type = "message"
 )
 logdebug(captured_output)
@@ -291,23 +292,20 @@ if(  ! args$qp_protein_id_column %in% colnames(query_proteins )  |
 
 }
 
- # list_of_protein_sets <- query_proteins %>%
- #                          distinct( !!rlang::sym(args$qp_protein_sets_column) )
- #
- #  sets_list <- c(rep( "Set1",3), rep("Set2", 3), rep("Set3",3) )
- #  genes_list <- LETTERS[1:9]
- #
- #  query_proteins <- data.frame( uniprot_acc = genes_list, cluster = sets_list)
- #
- #  args$qp_protein_sets_column <- "cluster"
- #  args$qp_protein_id_column <- "uniprot_acc"
+
+  # sets_list <- c(rep( "Set1",3), rep("Set2", 3), rep("Set3",3) )
+  # genes_list <- LETTERS[1:9]
+  #
+  # query_proteins <- data.frame( uniprot_acc = genes_list, cluster = sets_list)
+  #
+  # args$qp_protein_sets_column <- "cluster"
+  # args$qp_protein_id_column <- "uniprot_acc"
 
   temp_proteins_list <- query_proteins %>%
-    group_by( !!rlang::sym(args$qp_protein_sets_column) ) %>%
-    summarise( !!rlang::sym(args$qp_protein_id_column) := list(!!rlang::sym(args$qp_protein_id_column) ) ) %>%
+    group_nest( !!rlang::sym( args$qp_protein_sets_column), .key="data" ) %>%
     ungroup
 
-  list_of_genes_list <-temp_proteins_list %>%pull(!!rlang::sym(args$qp_protein_id_column ) )
+  list_of_genes_list <-temp_proteins_list %>%pull(data )
 
   names(list_of_genes_list) <- temp_proteins_list %>%pull(!!rlang::sym(args$qp_protein_sets_column) )
 
@@ -327,20 +325,18 @@ if (  !is.null( args$annotation_file )) {
 
   ## Create gene sets list
 
-
-
-
   ## preparing the enrichment test
   go_annot <- vroom::vroom(  args$annotation_file   )
-
 
   #print( args$min_gene_set_size)
   min_gene_set_size_list <- parseNumList(args$min_gene_set_size)
   max_gene_set_size_list <- parseNumList(args$max_gene_set_size)
 
- list_of_comparisons <- all_phosphoproteins_with_significant_da_sites %>%
+ list_of_comparisons <- query_proteins %>%
    distinct(comparison) %>%
    pull(comparison)
+ purrr::walk( list_of_comparisons, ~createDirIfNotExists( file.path(args$output_dir,. )) )
+
 
  # Tidy up GO aspect list, marked as null if not using GO terms
  go_aspect_list <- NA
@@ -369,7 +365,7 @@ if (  !is.null( args$annotation_file )) {
 
  runOneGoEnrichmentInOutFunctionPartial <- purrr::partial ( runOneGoEnrichmentInOutFunction,
                   comparison_column = comparison,
-                  protein_id_column = uniprot_acc_first,
+                  protein_id_column = !!rlang::sym(args$qp_protein_id_column),
                   go_annot = go_annot,
                   background_list = background_list,
                   id_to_annotation_dictionary=id_to_annotation_dictionary,
