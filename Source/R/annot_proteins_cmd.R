@@ -255,6 +255,16 @@ if( ! file.exists( uniprot_file )) {
                           , "ENSEMBL"
                           , "GO-ID"
                           , "KEYWORDS"
+
+                          ,"protein_existence"
+                          ,"annotation_score"#?
+                          ,"reviewed"
+                          ,"gene_names"
+                          ,"protein_name"
+                          ,"length"
+                          ,"xref_ensembl"
+                          , "go_id"
+                          , "keyword"
   )
   up_cls<-unlist(columns(up))
   list_intersect<-intersect(list_of_sp_columns,up_cls)
@@ -262,8 +272,32 @@ if( ! file.exists( uniprot_file )) {
   {
     logerror("UniProt fields not found: %s",paste(list_of_sp_columns[,list_intersect],sep=", "))
   }
+
+  my_keytype <- "UniProtKB"
+  if( "UNIPROTKB" %in% keytypes(up) ) {
+    my_keytype <- "UNIPROTKB"
+  }
+
   uniprot_dat <- batchQueryEvidence(uniprot_acc_tbl, join_uniprot_acc, uniprot_handle=up,
-                                uniprot_columns = list_of_sp_columns)
+                                uniprot_columns = list_intersect, uniprot_keytype=my_keytype)
+
+  if( my_keytype == "UniProtKB") {
+    uniprot_dat <- uniprot_dat %>%
+      dplyr::select(-From) %>%
+      dplyr::rename( UNIPROTKB = "Entry",
+                     EXISTENCE = "Protein.existence",
+                     SCORE = "Annotation",
+                     REVIEWED = "Reviewed",
+                     GENENAME = "Gene.Names",
+                     `PROTEIN-NAMES` = "Protein.names",
+                     LENGTH = "Length",
+                     ENSEMBL = "Ensembl",
+                     `GO-ID` = "Gene.Ontology.IDs",
+                     KEYWORDS   = "Keywords")
+
+
+  }
+
   saveRDS( uniprot_dat, uniprot_file)
 
 }

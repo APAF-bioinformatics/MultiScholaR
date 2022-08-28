@@ -138,7 +138,6 @@ chooseBestAccession <- function(input_tbl, acc_detail_tab, accessions_column, gr
     ## Just a sanity check that the peptide is actually in the sequence
     dplyr::filter( str_detect( seq, cleaned_peptide  )) %>%
     dplyr::select({{group_id}}, one_of(c( "uniprot_acc", "gene_name", "cleaned_acc",
-                                          "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"  ))) %>%
     distinct %>%
     arrange( {{group_id}}, protein_evidence, status, is_isoform, desc(seq_length), isoform_num )
 
