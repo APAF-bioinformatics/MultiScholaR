@@ -25,6 +25,7 @@ p_load(vroom)
 p_load(ggplot2)
 p_load(ggpubr)
 p_load(tictoc)
+p_load(rlang)
 
 
 p_load(qvalue)
