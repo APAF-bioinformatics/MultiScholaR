@@ -270,7 +270,7 @@ if( ! file.exists( uniprot_file )) {
   list_intersect<-intersect(list_of_sp_columns,up_cls)
   if(length(setdiff( list_of_sp_columns,list_intersect)) > 0)
   {
-    logerror("UniProt fields not found: %s",paste(list_of_sp_columns[,list_intersect],sep=", "))
+    logwarn("UniProt fields not found: %s",paste(setdiff( list_of_sp_columns,list_intersect),sep=", "))
   }
 
   my_keytype <- "UniProtKB"
