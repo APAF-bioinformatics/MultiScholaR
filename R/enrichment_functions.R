@@ -564,9 +564,11 @@ getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot
     mutate( use_colour = purrr::map_chr( gene_set, my_get_colour )) %>%
     mutate(Term = factor( term,  levels = unique(input_table$term)))
 
+  print( table_shape_colour)
 
 
   if( length(xaxis_levels) > 1  ) {
+    print("hello")
 
     # If we are manually ordering the x axis labels from left to right,
     # We need to make sure the factor levels in the input covers all the things we need to label.
@@ -574,11 +576,14 @@ getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot
       distinct( {{x_axis}} ) %>%
       pull({{x_axis}})
 
+    print( all_x_axis_labels)
+
+
     if( length(setdiff( all_x_axis_labels, xaxis_levels)) ==0) {
       table_shape_colour <- table_shape_colour %>%
         mutate( {{x_axis}} := factor( {{x_axis}}, levels=xaxis_levels))
     } else {
-      logerror( "Cannot locate x_axis ordering.")
+      print( "Cannot locate x_axis ordering.")
       stop()
     }
 
@@ -594,7 +599,7 @@ getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot
                   shape=use_shape,
                   size = neg_log_p_value)) +
     geom_point() +
-    scale_size_continuous( name = "-log10(p-value)"  ) + #
+    scale_size_continuous( name = "-log10(p-value)"  ) +
     scale_shape_identity() +
     scale_color_identity() +
     scale_fill_identity()  +
@@ -615,10 +620,10 @@ getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot
   }
 
   if( !is.na(facet_by_column )) {
-    if( as_name(enquo(facet_by_column)) %in% colnames(table_filtering )) {
+    if( facet_by_column %in% colnames(table_filtering )) {
 
       output_heat_map <- output_heat_map  +
-        facet_wrap( vars({{facet_by_column}} ) )
+        facet_wrap( vars( !!rlang::sym(facet_by_column) ) )
     }
   }
 
