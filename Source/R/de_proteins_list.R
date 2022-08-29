@@ -57,7 +57,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.")
 
-parser <- add_option(parser, c("-c","--config"), type = "character", default = "config.ini", dest = "config",
+parser <- add_option(parser, c("-c","--config"), type = "character", default = "config_prot.ini", dest = "config",
                      help = "Configuration file.",
                      metavar = "string")
 
@@ -270,27 +270,48 @@ logdebug(captured_output)
 
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+loginfo ("Compile positive proteins list.")
 
-positive_proteins <- proteins_tbl_orig %>%
-  dplyr::filter( !!rlang::sym(args$fdr_column_name) < args$protein_p_val_thresh &   !!rlang::sym(args$log_fc_column_name) > 0 ) %>%
-  mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
-  mutate( uniprot_acc_first = str_replace_all( uniprot_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
-  mutate( gene_name_first = purrr::map_chr( UNIPROT_GENENAME, ~str_split(., ":") %>% map_chr(1)))  %>%
-  mutate( protein_name_first = purrr::map_chr( `PROTEIN-NAMES`, ~str_split(., ":") %>% map_chr(1)))  %>%
-  group_by(comparison, uniprot_acc_first, gene_name_first, protein_name_first) %>%
-  summarise( max_norm_logFC = max(!!rlang::sym(args$log_fc_column_name))) %>%
-  ungroup() %>%
-  arrange( comparison, desc(max_norm_logFC  ) )
 
+captured_output<-capture.output(
+  positive_proteins <- proteins_tbl_orig %>%
+    dplyr::filter( !!rlang::sym(args$fdr_column_name) < args$protein_p_val_thresh &   !!rlang::sym(args$log_fc_column_name) > 0 ) %>%
+    mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
+    mutate( uniprot_acc_first = str_replace_all( uniprot_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
+    mutate( gene_name_first = purrr::map_chr( UNIPROT_GENENAME, ~str_split(., ":") %>% map_chr(1)))  %>%
+    mutate( protein_name_first = purrr::map_chr( `PROTEIN-NAMES`, ~str_split(., ":") %>% map_chr(1)))  %>%
+    group_by(comparison, uniprot_acc_first, gene_name_first, protein_name_first) %>%
+    summarise( max_norm_logFC = max(!!rlang::sym(args$log_fc_column_name))) %>%
+    ungroup() %>%
+    arrange( comparison, desc(max_norm_logFC  ) )
+
+  ,type = "message"
+)
+logdebug(captured_output)
+
+captured_output<-capture.output(
 vroom::vroom_write( positive_proteins,
                     file.path( args$output_dir,
                                "all_proteins_with_positive_logFC.tab" ),
                     col_names=FALSE)
+,type = "message"
+)
+logdebug(captured_output)
 
+
+captured_output<-capture.output(
  list_of_comparisons <- positive_proteins %>% distinct( comparison) %>% pull( comparison)
+ ,type = "message"
+)
+logdebug(captured_output)
 
+captured_output<-capture.output(
  purrr::walk( list_of_comparisons, ~createDirIfNotExists( file.path(args$output_dir,. )) )
+ ,type = "message"
+)
+logdebug(captured_output)
 
+captured_output<-capture.output(
  purrr::walk( list_of_comparisons, function( input_comparison){
 
    positive_proteins %>%
@@ -302,9 +323,14 @@ vroom::vroom_write( positive_proteins,
                          col_names=FALSE)
 
  } )
+ ,type = "message"
+)
+logdebug(captured_output)
+
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # norm_phos_logFC
+loginfo ("Compile negative proteins list.")
 
 negative_proteins <- proteins_tbl_orig %>%
   dplyr::filter( !!rlang::sym(args$fdr_column_name) < args$protein_p_val_thresh & !!rlang::sym(args$log_fc_column_name)  < 0 ) %>%
@@ -339,6 +365,8 @@ purrr::walk( list_of_comparisons, function( input_comparison){
 } )
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+loginfo ("Compile background proteins list.")
+
 
 background_proteins <- proteins_tbl_orig %>%
   distinct(uniprot_acc) %>%
@@ -352,6 +380,7 @@ vroom::vroom_write( background_proteins,
 
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+loginfo ("Compile annotation ID to annotation term name dictionary.")
 
 
 if (  !is.null( args$annotation_file )) {
@@ -364,6 +393,9 @@ if (  !is.null( args$annotation_file )) {
   id_to_annotation_dictionary <- buildAnnotationIdToAnnotationNameDictionary( input_table=dictionary,
                                                                 annotation_column = !!rlang::sym(args$annotation_column),
                                                                 annotation_id_column = !!rlang::sym(args$annotation_id))
+
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  loginfo ("Preparing the enrichment test.")
 
   ## preparing the enrichment test
   go_annot <- vroom::vroom(  args$annotation_file   )
@@ -406,6 +438,9 @@ if (  !is.null( args$annotation_file )) {
                                      function(x) {
                                        x$input_table <- list_of_genes_list[[x$names_of_genes_list]]
                                      return(x)})
+
+ ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ loginfo ("Run Enrichment.")
 
  runOneGoEnrichmentInOutFunctionPartial <- purrr::partial ( runOneGoEnrichmentInOutFunction,
                   comparison_column = comparison,
