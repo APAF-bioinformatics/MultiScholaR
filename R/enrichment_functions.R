@@ -527,6 +527,14 @@ getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot
                      all_significant = 1,
                      overlap_only = 1)
 
+  my_get_shape <-function(x) {
+    if(x %in% names(get_shape)) {
+      return( get_shape[[x]])
+    } else  {
+      return( 16)
+    }
+  }
+
   get_colour <- list( negative_list = "blue", positive_list = "red",
                       positive_only = "red",
                       negative_only = "blue",
@@ -534,6 +542,14 @@ getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot
                       negative_plus_overlap = "blue",
                       all_significant = "black",
                       overlap_only = "black")
+
+  my_get_colour <-function(x) {
+    if(x %in% names(get_colour)) {
+      return( get_colour[[x]])
+    } else  {
+      return( "black")
+    }
+  }
 
   table_filtering <- NA
   if(!is.na( input_go_type)) {
@@ -543,10 +559,13 @@ getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot
     table_filtering <- input_table
   }
 
-  output_heat_map <- table_filtering %>%
-    mutate( use_shape = purrr::map_dbl( gene_set, ~{get_shape[[.]]})) %>%
-    mutate( use_colour = purrr::map_chr( gene_set, ~{get_colour[[.]]})) %>%
+  table_shape_colour <- table_filtering %>%
+    mutate( use_shape = purrr::map_dbl( gene_set, my_get_shape)) %>%
+    mutate( use_colour = purrr::map_chr( gene_set, my_get_colour )) %>%
     mutate(Term = factor( term,  levels = unique(input_table$term))) %>%
+    mutate( {{x_axis}} := purrr::map_chr( {{x_axis}}, as.character))
+
+  output_heat_map <- table_shape_colour %>%
     ggplot( aes(  {{x_axis}}, Term,
                   fill = use_colour,
                   col = use_colour,
@@ -556,9 +575,7 @@ getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot
     scale_size_continuous( name = "-log10(p-value)"  ) + #
     scale_shape_identity() +
     scale_color_identity() +
-    scale_fill_identity() +
-    guides(size = guide_legend(override.aes = list(shape=17)),
-           shape = guide_legend(override.aes = list(size = 5))) +
+    scale_fill_identity()  +
     theme_bw() +
     theme(plot.title = element_text(hjust = 0.5),
           axis.title.y = element_blank(),
@@ -566,15 +583,21 @@ getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot
           axis.text.x  = element_text(angle = 45, hjust = 1, face = "bold"),
           axis.text.y  = element_text(face = "bold")) +
     theme(strip.text.y = element_text(angle = 0))  +
-    scale_x_discrete(labels = function(input) str_wrap(input, width = 15)) +
+    scale_x_discrete(labels = function(input){ str_wrap(input, width = 15) }) +
     labs(title=input_plot_title)
 
+  if( length(which( c(24, 25)  %in% c(table_shape_colour %>% pull( use_shape)) ) > 0 ) ) {
+    output_heat_map <- output_heat_map +
+      guides(size = guide_legend(override.aes = list(shape=17)),
+             shape = guide_legend(override.aes = list( size = 5   )))
+  }
 
+  if( !is.na(facet_by_column )) {
+    if( as_name(enquo(facet_by_column)) %in% colnames(table_filtering )) {
 
-  if( as_name(enquo(facet_by_column)) %in% colnames(table_filtering )) {
-
-    output_heat_map <- output_heat_map  +
-      facet_wrap( vars({{facet_by_column}} ) )
+      output_heat_map <- output_heat_map  +
+        facet_wrap( vars({{facet_by_column}} ) )
+    }
   }
 
   output_heat_map
