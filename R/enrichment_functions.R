@@ -516,7 +516,7 @@ clusterPathways <- function ( input_table, added_columns, remove_duplicted_entri
 ########################
 
 #'@export
-getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot_title, facet_by_column = NA) {
+getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot_title, facet_by_column = NA, xaxis_levels=NA) {
 
   get_shape <- list( negative_list = 25,
                      positive_list=24,
@@ -562,8 +562,30 @@ getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot
   table_shape_colour <- table_filtering %>%
     mutate( use_shape = purrr::map_dbl( gene_set, my_get_shape)) %>%
     mutate( use_colour = purrr::map_chr( gene_set, my_get_colour )) %>%
-    mutate(Term = factor( term,  levels = unique(input_table$term))) %>%
-    mutate( {{x_axis}} := purrr::map_chr( {{x_axis}}, as.character))
+    mutate(Term = factor( term,  levels = unique(input_table$term)))
+
+
+
+  if( length(xaxis_levels) > 1  ) {
+
+    # If we are manually ordering the x axis labels from left to right,
+    # We need to make sure the factor levels in the input covers all the things we need to label.
+    all_x_axis_labels <- table_shape_colour %>%
+      distinct( {{x_axis}} ) %>%
+      pull({{x_axis}})
+
+    if( length(setdiff( all_x_axis_labels, xaxis_levels)) ==0) {
+      table_shape_colour <- table_shape_colour %>%
+        mutate( {{x_axis}} := factor( {{x_axis}}, levels=xaxis_levels))
+    } else {
+      logerror( "Cannot locate x_axis ordering.")
+      stop()
+    }
+
+  } else {
+    table_shape_colour <- table_shape_colour %>%
+      mutate( {{x_axis}} := purrr::map_chr( {{x_axis}}, as.character))
+  }
 
   output_heat_map <- table_shape_colour %>%
     ggplot( aes(  {{x_axis}}, Term,
@@ -742,7 +764,8 @@ drawListOfFunctionalEnrichmentHeatmaps <- function(enriched_results_tbl,
                                                    x_axis = Analysis_Type,
                                                    analysis_column = Analysis_Type,
                                                    facet_by_column = NA,
-                                                   remove_duplicted_entries = TRUE) {
+                                                   remove_duplicted_entries = TRUE,
+                                                   xaxis_levels=NA) {
 
   input_table <- enriched_results_tbl %>%
     dplyr::filter( min_set_size == set_size_min,
@@ -768,7 +791,8 @@ drawListOfFunctionalEnrichmentHeatmaps <- function(enriched_results_tbl,
                           x_axis={{x_axis}},
                           input_go_type=go_type,
                           input_plot_title=go_type,
-                          facet_by_column = {{facet_by_column}}) } )
+                          facet_by_column = {{facet_by_column}},
+                          xaxis_levels = xaxis_levels) } )
 
   names( list_of_heatmaps) <- annot_heat_map_ordered %>%
     distinct(  go_type) %>%
