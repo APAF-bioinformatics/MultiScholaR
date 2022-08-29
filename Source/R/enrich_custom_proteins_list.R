@@ -25,7 +25,7 @@ p_load(vroom)
 p_load(ggplot2)
 p_load(ggpubr)
 p_load(tictoc)
-
+p_load(rlang)
 
 p_load(qvalue)
 p_load(knitr)
@@ -56,7 +56,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.")
 
-parser <- add_option(parser, c("-c","--config"), type = "character", default = "/home/ignatius/PostDoc/2022/Embryology_BMP_14/Source/TMT/config_prot.ini", dest = "config",
+parser <- add_option(parser, c("-c","--config"), type = "character", default = "config_prot.ini", dest = "config",
                      help = "Configuration file.",
                      metavar = "string")
 

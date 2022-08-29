@@ -516,7 +516,7 @@ clusterPathways <- function ( input_table, added_columns, remove_duplicted_entri
 ########################
 
 #'@export
-getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot_title, facet_by_column = NA) {
+getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot_title, facet_by_column = NA, xaxis_levels=NA) {
 
   get_shape <- list( negative_list = 25,
                      positive_list=24,
@@ -527,6 +527,14 @@ getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot
                      all_significant = 1,
                      overlap_only = 1)
 
+  my_get_shape <-function(x) {
+    if(x %in% names(get_shape)) {
+      return( get_shape[[x]])
+    } else  {
+      return( 16)
+    }
+  }
+
   get_colour <- list( negative_list = "blue", positive_list = "red",
                       positive_only = "red",
                       negative_only = "blue",
@@ -534,6 +542,14 @@ getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot
                       negative_plus_overlap = "blue",
                       all_significant = "black",
                       overlap_only = "black")
+
+  my_get_colour <-function(x) {
+    if(x %in% names(get_colour)) {
+      return( get_colour[[x]])
+    } else  {
+      return( "black")
+    }
+  }
 
   table_filtering <- NA
   if(!is.na( input_go_type)) {
@@ -543,22 +559,50 @@ getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot
     table_filtering <- input_table
   }
 
-  output_heat_map <- table_filtering %>%
-    mutate( use_shape = purrr::map_dbl( gene_set, ~{get_shape[[.]]})) %>%
-    mutate( use_colour = purrr::map_chr( gene_set, ~{get_colour[[.]]})) %>%
-    mutate(Term = factor( term,  levels = unique(input_table$term))) %>%
+  table_shape_colour <- table_filtering %>%
+    mutate( use_shape = purrr::map_dbl( gene_set, my_get_shape)) %>%
+    mutate( use_colour = purrr::map_chr( gene_set, my_get_colour )) %>%
+    mutate(Term = factor( term,  levels = unique(input_table$term)))
+
+  print( table_shape_colour)
+
+
+  if( length(xaxis_levels) > 1  ) {
+    print("hello")
+
+    # If we are manually ordering the x axis labels from left to right,
+    # We need to make sure the factor levels in the input covers all the things we need to label.
+    all_x_axis_labels <- table_shape_colour %>%
+      distinct( {{x_axis}} ) %>%
+      pull({{x_axis}})
+
+    print( all_x_axis_labels)
+
+
+    if( length(setdiff( all_x_axis_labels, xaxis_levels)) ==0) {
+      table_shape_colour <- table_shape_colour %>%
+        mutate( {{x_axis}} := factor( {{x_axis}}, levels=xaxis_levels))
+    } else {
+      print( "Cannot locate x_axis ordering.")
+      stop()
+    }
+
+  } else {
+    table_shape_colour <- table_shape_colour %>%
+      mutate( {{x_axis}} := purrr::map_chr( {{x_axis}}, as.character))
+  }
+
+  output_heat_map <- table_shape_colour %>%
     ggplot( aes(  {{x_axis}}, Term,
                   fill = use_colour,
                   col = use_colour,
                   shape=use_shape,
                   size = neg_log_p_value)) +
     geom_point() +
-    scale_size_continuous( name = "-log10(p-value)"  ) + #
+    scale_size_continuous( name = "-log10(p-value)"  ) +
     scale_shape_identity() +
     scale_color_identity() +
-    scale_fill_identity() +
-    guides(size = guide_legend(override.aes = list(shape=17)),
-           shape = guide_legend(override.aes = list(size = 5))) +
+    scale_fill_identity()  +
     theme_bw() +
     theme(plot.title = element_text(hjust = 0.5),
           axis.title.y = element_blank(),
@@ -566,15 +610,21 @@ getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot
           axis.text.x  = element_text(angle = 45, hjust = 1, face = "bold"),
           axis.text.y  = element_text(face = "bold")) +
     theme(strip.text.y = element_text(angle = 0))  +
-    scale_x_discrete(labels = function(input) str_wrap(input, width = 15)) +
+    scale_x_discrete(labels = function(input){ str_wrap(input, width = 15) }) +
     labs(title=input_plot_title)
 
+  if( length(which( c(24, 25)  %in% c(table_shape_colour %>% pull( use_shape)) ) > 0 ) ) {
+    output_heat_map <- output_heat_map +
+      guides(size = guide_legend(override.aes = list(shape=17)),
+             shape = guide_legend(override.aes = list( size = 5   )))
+  }
 
+  if( !is.na(facet_by_column )) {
+    if( facet_by_column %in% colnames(table_filtering )) {
 
-  if( as_name(enquo(facet_by_column)) %in% colnames(table_filtering )) {
-
-    output_heat_map <- output_heat_map  +
-      facet_wrap( vars({{facet_by_column}} ) )
+      output_heat_map <- output_heat_map  +
+        facet_wrap( vars( !!rlang::sym(facet_by_column) ) )
+    }
   }
 
   output_heat_map
@@ -719,7 +769,8 @@ drawListOfFunctionalEnrichmentHeatmaps <- function(enriched_results_tbl,
                                                    x_axis = Analysis_Type,
                                                    analysis_column = Analysis_Type,
                                                    facet_by_column = NA,
-                                                   remove_duplicted_entries = TRUE) {
+                                                   remove_duplicted_entries = TRUE,
+                                                   xaxis_levels=NA) {
 
   input_table <- enriched_results_tbl %>%
     dplyr::filter( min_set_size == set_size_min,
@@ -745,7 +796,8 @@ drawListOfFunctionalEnrichmentHeatmaps <- function(enriched_results_tbl,
                           x_axis={{x_axis}},
                           input_go_type=go_type,
                           input_plot_title=go_type,
-                          facet_by_column = {{facet_by_column}}) } )
+                          facet_by_column = {{facet_by_column}},
+                          xaxis_levels = xaxis_levels) } )
 
   names( list_of_heatmaps) <- annot_heat_map_ordered %>%
     distinct(  go_type) %>%
