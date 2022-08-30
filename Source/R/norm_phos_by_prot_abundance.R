@@ -336,9 +336,13 @@ after_prot_norm <- basic_data %>%
 compare_before_and_after <- before_prot_norm %>%
   full_join( after_prot_norm, by=c("comparison", "sites_id"), suffix=c(".before", ".after")) %>%
   mutate( Normalization = case_when (  is.na(Normalization.before) & !is.na(Normalization.after) ~ "After Only",
-          !is.na(Normalization.before) & !is.na(Normalization.after) ~ "Before and After",
+          !is.na(Normalization.before) & !is.na(Normalization.after) ~ "Before & After",
           !is.na(Normalization.before) & is.na(Normalization.after) ~ "Before Only",
           TRUE ~ NA_character_ ) ) %>%
+  mutate(Normalization = factor( Normalization,
+                                 levels=c("Before Only",
+                                          "Before & After",
+                                          "After Only")) ) %>%
   group_by( comparison,  Normalization) %>%
   summarise( Counts = n()) %>%
   ungroup()
@@ -351,13 +355,15 @@ compare_before_and_after <- before_prot_norm %>%
    ggplot( aes( Normalization, Counts)) +
    geom_col() +
    facet_grid( . ~ comparison ) +
-     geom_text(stat='identity', aes(label= Counts), vjust=-0.5)
+   geom_text(stat='identity', aes(label= Counts), vjust=-0.5) +
+   theme(axis.text.x = element_text(angle = 90))
+
 
 
 for( format_ext in args$plots_format) {
   file_name<-file.path(args$output_dir,paste0("compare_before_and_after_norm_by_prot_abundance.",format_ext))
   captured_output<capture.output(
-   ggsave( plot=cmp_before_after_plot, file_name, width = 14, height=7)
+   ggsave( plot=cmp_before_after_plot, file_name, width = 14, height=10)
     , type = "message"
   )
   logdebug(captured_output)
