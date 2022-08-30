@@ -332,6 +332,9 @@ after_prot_norm <- basic_data %>%
   dplyr::distinct(comparison, sites_id) %>%
   dplyr::mutate(  Normalization =  "After")
 
+comparisons_order <- before_prot_norm %>%
+  distinct( comparison) %>%
+  pull(comparison)
 
 compare_before_and_after <- before_prot_norm %>%
   full_join( after_prot_norm, by=c("comparison", "sites_id"), suffix=c(".before", ".after")) %>%
@@ -343,6 +346,7 @@ compare_before_and_after <- before_prot_norm %>%
                                  levels=c("Before Only",
                                           "Before & After",
                                           "After Only")) ) %>%
+  mutate( comparison = factor(comparison, levels = comparisons_order)) %>%
   group_by( comparison,  Normalization) %>%
   summarise( Counts = n()) %>%
   ungroup()
