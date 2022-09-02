@@ -130,6 +130,10 @@ parser <- add_option(parser, c("--min_gene_set_size"), type="character", dest = 
                      help="The minimum number of genes associaed with each gene set.",
                      metavar="string")
 
+parser <- add_option(parser, "--site_p_val_thresh", type = "double",
+                     help = "p-value threshold below which a phosphosite is significantly enriched",
+                     metavar = "double")
+
 parser <- add_option(parser, "--p_val_thresh", type = "double",
                      help = "p-value threshold below which a GO term is significantly enriched",
                      metavar = "double")
@@ -181,7 +185,7 @@ loginfo("----------------------------------------------------")
 args <- setArgsDefault(args, "log_fc_column_name", as_func=as.character, default_val="norm_phos_logFC" )
 args <- setArgsDefault(args, "fdr_column_name", as_func=as.character, default_val="combined_q_mod" )
 args <- setArgsDefault(args, "p_val_thresh", as_func=as.double, default_val=0.05 )
-
+args <- setArgsDefault(args, "site_p_val_thresh", as_func=as.double, default_val=0.05 )
 
 args <- setArgsDefault(args, "max_gene_set_size", as_func=as.character, default_val="200" )
 args <- setArgsDefault(args, "min_gene_set_size", as_func=as.character, default_val="4" )
@@ -246,7 +250,8 @@ args<-parseString(args,c("plots_format",
                          "annotation_type"))
 
 args<-parseType(args,
-                c("p_val_thresh"),
+                c("p_val_thresh",
+                  "site_p_val_thresh"),
                 as.double)
 
 if(isArgumentDefined(args,"plots_format")) {
@@ -293,7 +298,7 @@ if(  ! args$log_fc_column_name %in% colnames(de_phos )  |
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 positive_phosphoproteins <- de_phos %>%
-  dplyr::filter( !!rlang::sym(args$fdr_column_name) < 0.05 &   !!rlang::sym(args$log_fc_column_name) > 0 ) %>%
+  dplyr::filter( !!rlang::sym(args$fdr_column_name) < args$site_p_val_thresh & !!rlang::sym(args$log_fc_column_name) > 0 ) %>%
   mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
   mutate( uniprot_acc_first = str_replace_all( uniprot_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
   mutate( gene_name_first = purrr::map_chr( gene_name, ~str_split(., ":") %>% map_chr(1)))  %>%
@@ -327,7 +332,7 @@ vroom::vroom_write( positive_phosphoproteins,
 # norm_phos_logFC
 
 negative_phosphoproteins <- de_phos %>%
-  dplyr::filter( !!rlang::sym(args$fdr_column_name) < 0.05 & !!rlang::sym(args$log_fc_column_name)  < 0 ) %>%
+  dplyr::filter( !!rlang::sym(args$fdr_column_name) < args$site_p_val_thresh & !!rlang::sym(args$log_fc_column_name)  < 0 ) %>%
   mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
   mutate( uniprot_acc_first = str_replace_all( uniprot_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
   mutate( gene_name_first = purrr::map_chr( gene_name, ~str_split(., ":") %>% map_chr(1)))  %>%
@@ -356,7 +361,6 @@ purrr::walk( list_of_comparisons, function( input_comparison){
                         col_names=FALSE)
 
 } )
-
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
