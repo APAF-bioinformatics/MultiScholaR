@@ -54,7 +54,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.")
 
-parser <- add_option(parser, c("-c","--config"), type = "character", default = "", dest = "config",
+parser <- add_option(parser, c("-c","--config"), type = "character", default = "config_phos.ini", dest = "config",
                      help = "Configuration file.",
                      metavar = "string")
 
@@ -221,19 +221,25 @@ basic_data_shared <- proteins_cln %>%
   mutate( combined_q_mod = 1-pchisq(-2*( log(q.mod.phos) + log(adj_qmod.prot)   ), 2*2 )  ) %>%
   dplyr::mutate( status  = "Phos_and_Prot")
 
+list_of_data_shared_columns <- c( "comparison",  "norm_phos_logFC", "combined_q_mod", "combined_fdr_mod", "sites_id",
+                                  "uniprot_acc", "position", "residue", "sequence",
+                                  "log2FC.phos", "q.mod.phos",
+                                  "log2FC.prot", "q.mod.prot",
+                                  "status", "phos_maxquant_row_ids", "prot_maxquant_row_ids" )
+
 if( "fdr.mod" %in% colnames( proteins_cln ) &
     "fdr.mod" %in% colnames( phospho_cln ) ) {
   basic_data_shared <- basic_data_shared %>%
     mutate( adj_fdrmod.prot  = ifelse(sign(fdr.mod.phos)  ==  sign(fdr.mod.prot), 1-fdr.mod.prot,  fdr.mod.prot  )) %>%
     mutate( combined_fdr_mod = 1-pchisq(-2*( log(fdr.mod.phos) + log(adj_fdrmod.prot)   ), 2*2 )  )  %>%
     dplyr::select(-adj_fdrmod.prot)
-}
 
-list_of_data_shared_columns <- c( "comparison",  "norm_phos_logFC", "combined_q_mod", "combined_fdr_mod", "sites_id",
-                                  "uniprot_acc", "position", "residue", "sequence",
-                                  "log2FC.phos", "q.mod.phos", "fdr.mod.phos",
-                                  "log2FC.prot", "q.mod.prot", "fdr.mod.prot",
-                                  "status", "phos_maxquant_row_ids", "prot_maxquant_row_ids" )
+  list_of_data_shared_columns <- c( "comparison",  "norm_phos_logFC", "combined_q_mod", "combined_fdr_mod", "sites_id",
+                                    "uniprot_acc", "position", "residue", "sequence",
+                                    "log2FC.phos", "q.mod.phos", "fdr.mod.phos",
+                                    "log2FC.prot", "q.mod.prot", "fdr.mod.prot",
+                                    "status", "phos_maxquant_row_ids", "prot_maxquant_row_ids" )
+}
 
 if( ! "combined_fdr_mod" %in% colnames( basic_data_shared )) {
 
