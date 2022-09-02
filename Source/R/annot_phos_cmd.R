@@ -214,16 +214,16 @@ captured_output<-capture.output(
 )
 logdebug(captured_output)
 
-loginfo("Read differentially abundant phosphopeptides table in wide format")
-captured_output<-capture.output(
-  de_phos_wide <- vroom::vroom( args$input_wide_file) %>%
-  mutate( sites_id_copy = sites_id, .after="sites_id") %>%
-  separate( sites_id_copy, sep="!", into=c("uniprot_acc", "gene_name", "position", "sequence")) %>%
-  mutate( residue= purrr::map_chr( sequence, ~{ str_replace_all( ., "[A-Z_]{7}(.)[A-Z_]{7}([\\:;\\|]*)", "\\1\\2"    )  }  )) %>%
-  dplyr::relocate(residue, .before="position")
-  ,type = "message"
-)
-logdebug(captured_output)
+# loginfo("Read differentially abundant phosphopeptides table in wide format")
+# captured_output<-capture.output(
+#   de_phos_wide <- vroom::vroom( args$input_wide_file) %>%
+#   mutate( sites_id_copy = sites_id, .after="sites_id") %>%
+#   separate( sites_id_copy, sep="!", into=c("uniprot_acc", "gene_name", "position", "sequence")) %>%
+#   mutate( residue= purrr::map_chr( sequence, ~{ str_replace_all( ., "[A-Z_]{7}(.)[A-Z_]{7}([\\:;\\|]*)", "\\1\\2"    )  }  )) %>%
+#   dplyr::relocate(residue, .before="position")
+#   ,type = "message"
+# )
+# logdebug(captured_output)
 
 
 
