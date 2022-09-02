@@ -145,7 +145,6 @@ testRequiredArguments(args, c(
   ,"output_wide_file"
   ,"output_long_file"
   ,"ids_file"
-  ,"input_wide_file"
   ,"input_long_file"
   ,"raw_counts_file"
   ,"reactome_file"
@@ -154,8 +153,7 @@ testRequiredArguments(args, c(
 
 
 testRequiredFiles(c(
-  args$input_wide_file
-  , args$input_long_file
+   args$input_long_file
   , args$raw_counts_file
   ,args$ids_file
 ))
@@ -171,12 +169,12 @@ args<-parseType(args,
 
 
 
-loginfo("Read file with results table with values in wider format %s", args$input_wide_file)
-captured_output<-capture.output(
-  de_proteins_wider <- vroom::vroom( args$input_wide_file )
-    , type = "message"
-)
-logdebug(captured_output)
+# loginfo("Read file with results table with values in wider format %s", args$input_wide_file)
+# captured_output<-capture.output(
+#   de_proteins_wider <- vroom::vroom( args$input_wide_file )
+#     , type = "message"
+# )
+# logdebug(captured_output)
 
 loginfo("Read file with results table with values in longer format %s", args$input_long_file)
 captured_output<-capture.output(
@@ -228,7 +226,7 @@ logdebug(captured_output)
 
 loginfo("Get the best UniProt accession per row.")
 
-uniprot_acc_tbl <- de_proteins_wider %>%
+uniprot_acc_tbl <- de_proteins_longer %>%
   mutate( uniprot_acc_copy = uniprot_acc ) %>%
   separate_rows(uniprot_acc_copy, sep=":" ) %>%
   mutate( join_uniprot_acc = cleanIsoformNumber(uniprot_acc_copy)) %>%
