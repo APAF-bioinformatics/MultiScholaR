@@ -147,7 +147,7 @@ for (v in names(args))
 loginfo("----------------------------------------------------")
 
 testRequiredArguments(args, c(
-  ,"input_long_file"
+  "input_long_file"
   ,"raw_counts_file"
   ,"output_wide_file"
   ,"output_long_file"
@@ -163,7 +163,7 @@ reg_sites_file <- file.path( args$phosphosite_db_dir, "Regulatory_sites" )
 disease_file <- file.path( args$phosphosite_db_dir, "Disease-associated_sites")
 
 testRequiredFiles(c(
-  , args$input_long_file
+  args$input_long_file
   , args$raw_counts_file
   ,args$ids_file
   ,ks_file
