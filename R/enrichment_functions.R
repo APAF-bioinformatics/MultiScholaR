@@ -569,6 +569,8 @@ getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot
 
   if( length(xaxis_levels) > 1  ) {
     print("hello")
+    print( as_name(enquo(x_axis)))
+    print(head(table_shape_colour))
 
     # If we are manually ordering the x axis labels from left to right,
     # We need to make sure the factor levels in the input covers all the things we need to label.
@@ -786,7 +788,7 @@ drawListOfFunctionalEnrichmentHeatmaps <- function(enriched_results_tbl,
   annot_heat_map_ordered <- clusterPathways( input_table,
                                              added_columns,
                                              remove_duplicted_entries = remove_duplicted_entries) %>%
-    unite(  {{analysis_column}} , comparison, any_of( c(added_columns)) )
+    unite(  {{analysis_column}} , comparison, any_of( c(setdiff(added_columns, as_name(enquo(x_axis)))) ) )
 
   print(head( annot_heat_map_ordered))
 
