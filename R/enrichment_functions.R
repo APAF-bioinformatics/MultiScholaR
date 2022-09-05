@@ -688,13 +688,15 @@ filterResultsWithRevigo <- function(enriched_results_tbl,  added_columns, is_run
       unnest(revigo_results)  %>%
       dplyr::select(-data, - annot_id_list)
 
+    join_condition <- rlang::set_names(c("annotation_id", "comparison", "go_type", "gene_set", added_columns),
+                                       c("Term ID", "comparison", "go_type", "gene_set", added_columns))
+
+
+
     enrich_revigo <- enriched_results_tbl %>%
       left_join( revigo_tbl %>%
                    dplyr::select(-Name),
-                 by = c( "annotation_id" = "Term ID",
-                         "comparison" = "comparison",
-                         "go_type" = "go_type",
-                         "gene_set" = "gene_set")) %>%
+                 by = join_condition) %>%
       dplyr::filter( Eliminated == "False" |
                        is.na(Eliminated))
 
