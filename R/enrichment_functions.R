@@ -462,23 +462,39 @@ queryRevigo <- function( input_list,
 #'@export
 clusterPathways <- function ( input_table, added_columns, remove_duplicted_entries = TRUE ) {
 
-
-  if( remove_duplicted_entries == TRUE ) {
     duplicated_entries <- input_table %>%
       mutate(set_type = case_when( str_detect( gene_set, "positive") ~"positive",
                                    str_detect( gene_set, "negative") ~ "negative",
                                    TRUE ~ "neutral")) %>%
-      distinct( comparison, set_type, annotation_id ) %>%
+      group_by( comparison, set_type, annotation_id ) %>%
+      dplyr::summarise( temp_qvalue = min(qvalue )) %>%
+      ungroup() %>%
       dplyr::group_by( comparison, annotation_id ) %>%
-      summarise(counts = n()) %>%
+      dplyr::summarise(counts = n(),
+                best_p_adj_value = min(temp_qvalue)) %>%
       ungroup() %>%
       dplyr::filter( counts > 1)
 
+
+  if( remove_duplicted_entries == TRUE |
+      remove_duplicted_entries == "delete" ) {
     input_table <- input_table  %>%
       anti_join( duplicated_entries, by =c("comparison" = "comparison",
                                            "annotation_id" = "annotation_id"))
-  }
+  } else if( remove_duplicted_entries == "merge" ) {
 
+    duplicates_tbl <- input_table %>%
+      inner_join( duplicated_entries, by =c("comparison" = "comparison",
+                                            "annotation_id" = "annotation_id")) %>%
+      dplyr::filter( p.adjust = best_p_adj_value ) %>%
+      mutate( gene_set = "shared" )
+
+    input_table <- input_table  %>%
+      anti_join( duplicated_entries, by =c("comparison" = "comparison",
+                                           "annotation_id" = "annotation_id")) %>%
+      bind_rows( duplicates_tbl )
+
+  }
 
     scores_for_clustering <- input_table %>%
       mutate( neg_log_p_value = -log10( p.adjust) ) %>%
@@ -522,6 +538,7 @@ getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot
                      positive_list=24,
                      positive_only = 24,
                      negative_only = 25,
+                     shared = 1,
                      positive_plus_overlap = 24,
                      negative_plus_overlap = 25,
                      all_significant = 1,
@@ -538,6 +555,7 @@ getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot
   get_colour <- list( negative_list = "blue", positive_list = "red",
                       positive_only = "red",
                       negative_only = "blue",
+                      shared = "black",
                       positive_plus_overlap = "red",
                       negative_plus_overlap = "blue",
                       all_significant = "black",
