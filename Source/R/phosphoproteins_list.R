@@ -478,7 +478,7 @@ purrr::walk( list_of_comparisons, function( input_comparison){
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Classify phosphoproteins as up and down by total log2 FC of significant phosphosites
 
-group_phosphoproteins_by_phosphosites_lfc_total <- norm_phosphosites  %>%
+group_phosphoproteins_by_phosphosites_lfc_total <- de_phos  %>%
   mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
   mutate( uniprot_acc_first = str_replace_all( uniprot_acc_first, "-\\d+$", ""))  %>%
   dplyr::filter(  !!rlang::sym(args$fdr_column_name) < args$site_p_val_thresh ) %>%
