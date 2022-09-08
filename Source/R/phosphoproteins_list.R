@@ -57,7 +57,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.")
 
-parser <- add_option(parser, c("-c","--config"), type = "character", default = "config_phos.ini", dest = "config",
+parser <- add_option(parser, c("-c","--config"), type = "character", default = "desch_config_phos.ini", dest = "config",
                      help = "Configuration file.",
                      metavar = "string")
 
