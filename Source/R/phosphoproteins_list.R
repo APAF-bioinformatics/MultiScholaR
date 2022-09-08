@@ -500,7 +500,7 @@ gene_names_list <- de_phos %>%
 
 group_phosphoproteins_by_phosphosites_lfc_total_up <- group_phosphoproteins_by_phosphosites_lfc_total %>%
   dplyr::filter( direction == "up") %>%
-  left_join ( gene_names_list, by =c( "uniprot_acc_first" = "uniprot_acc",
+  left_join ( gene_names_list, by =c( "uniprot_acc_first" = "uniprot_acc_first",
                                       "comparison" = "comparison"))
 
 
