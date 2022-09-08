@@ -527,7 +527,7 @@ purrr::walk( list_of_comparisons, function( input_comparison){
 
 group_phosphoproteins_by_phosphosites_lfc_total_down <- group_phosphoproteins_by_phosphosites_lfc_total %>%
   dplyr::filter( direction == "down") %>%
-  left_join ( gene_names_list, by =c( "uniprot_acc_first" = "uniprot_acc",
+  left_join ( gene_names_list, by =c( "uniprot_acc_first" = "uniprot_acc_first",
                                       "comparison" = "comparison"))
 
 
