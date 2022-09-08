@@ -486,7 +486,7 @@ clusterPathways <- function ( input_table, added_columns, remove_duplicted_entri
     duplicates_tbl <- input_table %>%
       inner_join( duplicated_entries, by =c("comparison" = "comparison",
                                             "annotation_id" = "annotation_id")) %>%
-      dplyr::filter( p.adjust = best_p_adj_value ) %>%
+      dplyr::filter( p.adjust == best_p_adj_value ) %>%
       mutate( gene_set = "shared" )
 
     input_table <- input_table  %>%
