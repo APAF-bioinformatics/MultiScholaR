@@ -473,6 +473,89 @@ purrr::walk( list_of_comparisons, function( input_comparison){
 
 } )
 
+
+
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## Classify phosphoproteins as up and down by total log2 FC of significant phosphosites
+
+group_phosphoproteins_by_phosphosites_lfc_total <- norm_phosphosites  %>%
+  mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
+  mutate( uniprot_acc_first = str_replace_all( uniprot_acc_first, "-\\d+$", ""))  %>%
+  dplyr::filter(  !!rlang::sym(args$fdr_column_name) < args$site_p_val_thresh ) %>%
+  group_by( comparison, uniprot_acc_first ) %>%
+  summarise( total_log2FC = sum( !!rlang::sym(args$log_fc_column_name)) )  %>%
+  ungroup() %>%
+  mutate( direction = case_when( total_log2FC > 0 ~ "up",
+                                 total_log2FC < 0 ~ "down",
+                                 TRUE ~ "no_change")) %>%
+  dplyr::filter( direction != "no_change")
+
+gene_names_list <- de_phos %>%
+  mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
+  mutate( uniprot_acc_first = str_replace_all( uniprot_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
+  mutate( gene_name_first = purrr::map_chr( gene_name, ~str_split(., ":") %>% map_chr(1)))  %>%
+  mutate( protein_name_first = purrr::map_chr( `PROTEIN-NAMES`, ~str_split(., ":") %>% map_chr(1)))  %>%
+  distinct(comparison, uniprot_acc_first, gene_name_first, protein_name_first)
+
+
+group_phosphoproteins_by_phosphosites_lfc_total_up <- group_phosphoproteins_by_phosphosites_lfc_total %>%
+  dplyr::filter( direction == "up") %>%
+  left_join ( gene_names_list, by =c( "uniprot_acc_first" = "uniprot_acc",
+                                      "comparison" = "comparison"))
+
+
+vroom::vroom_write( group_phosphoproteins_by_phosphosites_lfc_total_up,
+                    file.path(args$output_dir,
+                              "group_phosphoproteins_by_phosphosites_lfc_total_up.tab" ))
+
+list_of_comparisons <- group_phosphoproteins_by_phosphosites_lfc_total_up %>% distinct( comparison) %>% pull( comparison)
+
+purrr::walk( list_of_comparisons, ~createDirIfNotExists( file.path(args$output_dir,. )) )
+
+purrr::walk( list_of_comparisons, function( input_comparison){
+
+  group_phosphoproteins_by_phosphosites_lfc_total_up %>%
+    dplyr::filter( comparison == input_comparison) %>%
+    dplyr::select( uniprot_acc_first) %>%
+    vroom::vroom_write( file.path( args$output_dir,
+                                   input_comparison,
+                                   "group_phosphoproteins_by_phosphosites_lfc_total_up.tab" ),
+                        col_names=FALSE)
+
+} )
+
+
+group_phosphoproteins_by_phosphosites_lfc_total_down <- group_phosphoproteins_by_phosphosites_lfc_total %>%
+  dplyr::filter( direction == "down") %>%
+  left_join ( gene_names_list, by =c( "uniprot_acc_first" = "uniprot_acc",
+                                      "comparison" = "comparison"))
+
+
+
+vroom::vroom_write( group_phosphoproteins_by_phosphosites_lfc_total_down,
+                    file.path(args$output_dir,
+                              "group_phosphoproteins_by_phosphosites_lfc_total_down.tab" ))
+
+
+list_of_comparisons <- group_phosphoproteins_by_phosphosites_lfc_total_down %>% distinct( comparison) %>% pull( comparison)
+
+purrr::walk( list_of_comparisons, ~createDirIfNotExists( file.path(args$output_dir,. )) )
+
+purrr::walk( list_of_comparisons, function( input_comparison){
+
+  group_phosphoproteins_by_phosphosites_lfc_total_down %>%
+    dplyr::filter( comparison == input_comparison) %>%
+    dplyr::select( uniprot_acc_first) %>%
+    vroom::vroom_write( file.path( args$output_dir,
+                                   input_comparison,
+                                   "group_phosphoproteins_by_phosphosites_lfc_total_down.tab" ),
+                        col_names=FALSE)
+
+} )
+
+
+
+
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo ("Read proteomics abundance data.")
 captured_output<-capture.output(
@@ -571,7 +654,9 @@ if (  !is.null( args$annotation_file )) {
                              negative_only=negative_only_phosphoproteins,
                              positive_only=positive_only_phosphoproteins,
                              negative_plus_overlap=negative_phosphoproteins,
-                             positive_plus_overlap=positive_phosphoproteins)
+                             positive_plus_overlap=positive_phosphoproteins,
+                             negative_sum_sig_phosphosites=group_phosphoproteins_by_phosphosites_lfc_total_down,
+                             positive_sum_sig_phosphosites=group_phosphoproteins_by_phosphosites_lfc_total_up)
 
  input_params <- cross( list(
    names_of_genes_list = names( list_of_genes_list),
