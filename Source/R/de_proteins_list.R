@@ -371,6 +371,7 @@ loginfo ("Compile background proteins list.")
 background_proteins <- proteins_tbl_orig %>%
   distinct(uniprot_acc) %>%
   mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1))) %>%
+  mutate( uniprot_acc_first = str_replace_all( uniprot_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
   dplyr::distinct(uniprot_acc_first)
 
 
