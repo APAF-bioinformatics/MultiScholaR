@@ -315,6 +315,16 @@ if(!is.na(args$avg_design_matrix_file )) {
 
 
 ##-------------------------------------
+## Hierarchical clustering
+
+
+before_hclust <- hclust(  dist( t(as.matrix(counts_rnorm.log.quant_mat) )  ) )
+plot(before_hclust)
+
+
+
+after_hclust <- hclust(  dist( t(as.matrix(counts_rnorm.log.ruvIII_mat) )  ), method="ward.D2" )
+plot(after_hclust)
 
 
 ## Volcano plots

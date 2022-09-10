@@ -1,9 +1,14 @@
 from lxml import etree, objectify
 import pandas as pd
+import sys
+
+xmlFile = sys.argv[1]  # ".xml"
+output_file = sys.argv[2] # '.tab'
 
 
-xmlFile = ".xml"
-output_file = '.tab'
+print(f"Path of input XML file      : {sys.argv[1]}")
+print(f"Path of output file     : {sys.argv[2]}")
+
 
 with open(xmlFile) as fobj:
 	xml = fobj.read()
