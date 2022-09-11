@@ -720,7 +720,7 @@ filterResultsWithRevigo <- function(enriched_results_tbl,  added_columns, is_run
 
 
     enrich_revigo <- enriched_results_tbl %>%
-      dplyr::mutate( annotation_id = as.charcer( annotation_id)) %>%
+      dplyr::mutate( annotation_id = as.character( annotation_id)) %>%
       left_join( revigo_tbl %>%
                    dplyr::select(-Name),
                  by = join_condition) %>%
