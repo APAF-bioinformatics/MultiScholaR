@@ -255,7 +255,8 @@ basic_data_shared <- basic_data_shared %>%
 basic_data_phospho_only <- phospho_cln %>%
   anti_join( proteins_cln, by=c( "uniprot_acc" = "uniprot_acc" ,
                                 "comparison" = "comparison") )  %>%
-  anti_join( basic_data_shared, by=c("sites_id" = "sites_id")) %>%
+  anti_join( basic_data_shared, by=c("sites_id" = "sites_id",
+                                     "comparison" = "comparison")) %>%
   dplyr::mutate(norm_phos_logFC =  log2FC, combined_q_mod = q.mod) %>%
   dplyr::rename( log2FC.phos= log2FC, q.mod.phos = q.mod ) %>%
   dplyr::mutate( status  = "Phos_Only")
