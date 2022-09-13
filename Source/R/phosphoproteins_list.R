@@ -307,7 +307,7 @@ positive_phosphoproteins <- de_phos %>%
   dplyr::filter( !!rlang::sym(args$fdr_column_name) < args$site_p_val_thresh & !!rlang::sym(args$log_fc_column_name) > 0 ) %>%
   mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
   mutate( uniprot_acc_first = str_replace_all( uniprot_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
-  mutate( gene_name_first = purrr::map_chr( gene_name, ~str_split(., ":") %>% map_chr(1)))  %>%
+  mutate( gene_name_first = purrr::map_chr( !!rlang::sym(args$results_gene_name_column_name), ~str_split(., ":") %>% map_chr(1)))  %>%
   mutate( protein_name_first = purrr::map_chr( `PROTEIN-NAMES`, ~str_split(., ":") %>% map_chr(1)))  %>%
   group_by(comparison, uniprot_acc_first, gene_name_first, protein_name_first) %>%
   summarise( max_norm_phos_logFC = max(!!rlang::sym(args$log_fc_column_name))) %>%
@@ -341,7 +341,7 @@ negative_phosphoproteins <- de_phos %>%
   dplyr::filter( !!rlang::sym(args$fdr_column_name) < args$site_p_val_thresh & !!rlang::sym(args$log_fc_column_name)  < 0 ) %>%
   mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
   mutate( uniprot_acc_first = str_replace_all( uniprot_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
-  mutate( gene_name_first = purrr::map_chr( gene_name, ~str_split(., ":") %>% map_chr(1)))  %>%
+  mutate( gene_name_first = purrr::map_chr( !!rlang::sym(args$results_gene_name_column_name), ~str_split(., ":") %>% map_chr(1)))  %>%
   mutate( protein_name_first = purrr::map_chr( `PROTEIN-NAMES`, ~str_split(., ":") %>% map_chr(1)))  %>%
   group_by(comparison, uniprot_acc_first, gene_name_first, protein_name_first) %>%
   summarise( min_norm_phos_logFC = min(!!rlang::sym(args$log_fc_column_name))) %>%
@@ -499,7 +499,7 @@ group_phosphoproteins_by_phosphosites_lfc_total <- de_phos  %>%
 gene_names_list <- de_phos %>%
   mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
   mutate( uniprot_acc_first = str_replace_all( uniprot_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
-  mutate( gene_name_first = purrr::map_chr( gene_name, ~str_split(., ":") %>% map_chr(1)))  %>%
+  mutate( gene_name_first = purrr::map_chr( !!rlang::sym(args$results_gene_name_column_name), ~str_split(., ":") %>% map_chr(1)))  %>%
   mutate( protein_name_first = purrr::map_chr( `PROTEIN-NAMES`, ~str_split(., ":") %>% map_chr(1)))  %>%
   distinct(comparison, uniprot_acc_first, gene_name_first, protein_name_first)
 
@@ -576,7 +576,7 @@ logdebug(captured_output)
 background_phosphoproteins  <- de_phos %>%
   mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
   mutate( uniprot_acc_first = str_replace_all( uniprot_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
-  mutate( gene_name_first = purrr::map_chr( gene_name, ~str_split(., ":") %>% map_chr(1)))  %>%
+  mutate( gene_name_first = purrr::map_chr( !!rlang::sym(args$results_gene_name_column_name), ~str_split(., ":") %>% map_chr(1)))  %>%
   mutate( protein_name_first = purrr::map_chr( `PROTEIN-NAMES`, ~str_split(., ":") %>% map_chr(1)))  %>%
   distinct( uniprot_acc_first) %>%
   arrange( uniprot_acc_first )
