@@ -642,15 +642,14 @@ getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot
              shape = guide_legend(override.aes = list( size = 5   )))
   }
 
-  print( as_name(enquo(facet_by_column)) )
-  print( colnames(table_filtering ))
-
+  if( !is.na( quo_get_expr(enquo(facet_by_column) ) ) ) {
     if( as_name(enquo(facet_by_column)) %in% colnames(table_filtering )) {
       print("Using faceting")
 
       output_heat_map <- output_heat_map  +
         facet_wrap( vars( {{facet_by_column}} ) )
     }
+  }
 
 
   output_heat_map
@@ -814,10 +813,15 @@ drawListOfFunctionalEnrichmentHeatmaps <- function(enriched_results_tbl,
     stop("drawListOfFunctionalEnrichmentHeatmaps: No more rows for clustering analysis after gene set size filtering.")
   }
 
+  list_of_columns_to_exclude <- c(as_name(enquo(x_axis)))
+  if(! is.na( quo_get_expr(enquo(facet_by_column) ) ) ) {
+    list_of_columns_to_exclude <- c(as_name(enquo(x_axis)), as_name(enquo(facet_by_column)))
+  }
+
   annot_heat_map_ordered <- clusterPathways( input_table,
                                              added_columns,
                                              remove_duplicted_entries = remove_duplicted_entries) %>%
-    unite(  {{analysis_column}} , comparison, any_of( c(setdiff(added_columns, c(as_name(enquo(x_axis)), as_name(enquo(facet_by_column))))) ) )
+    unite(  {{analysis_column}} , comparison, any_of( c(setdiff(added_columns, list_of_columns_to_exclude))) )
 
   print("after clusterPathways")
   print(colnames( annot_heat_map_ordered))
