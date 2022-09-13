@@ -466,7 +466,7 @@ clusterPathways <- function ( input_table, added_columns, remove_duplicted_entri
       mutate(set_type = case_when( str_detect( gene_set, "positive") ~"positive",
                                    str_detect( gene_set, "negative") ~ "negative",
                                    TRUE ~ "neutral")) %>%
-      group_by( comparison, set_type, annotation_id ) %>%
+      group_by( across(c( any_of(added_columns), comparison, set_type, annotation_id) ) ) %>%
       dplyr::summarise( temp_qvalue = min(qvalue )) %>%
       ungroup() %>%
       dplyr::group_by( comparison, annotation_id ) %>%
@@ -508,17 +508,14 @@ clusterPathways <- function ( input_table, added_columns, remove_duplicted_entri
       column_to_rownames("annotation_id") %>%
       as.matrix()
 
-  # print(head(scores_for_clustering) )
-
   pathways_clustered <- hclust(dist(scores_for_clustering))
 
   pathways_sorting <- cutree(pathways_clustered, k=1:ncol(scores_for_clustering)) %>%
     as.data.frame %>%
     rownames_to_column("Term") %>%
     arrange( across( matches("\\d+"))) %>%
-    mutate( ordering = row_number())
-
-  print( head(pathways_sorting))
+    mutate( ordering = row_number()) %>%
+  arrange(ordering)
 
    annot_heat_map_ordered <-  input_table %>%
      mutate( neg_log_p_value = -log10( p.adjust) )  %>%
@@ -526,6 +523,7 @@ clusterPathways <- function ( input_table, added_columns, remove_duplicted_entri
      mutate( annotation_id = as.character(annotation_id)) %>%
      left_join(pathways_sorting, by=c("annotation_id" = "Term")) %>%
      arrange(ordering)
+
 
   annot_heat_map_ordered
 }
@@ -644,13 +642,16 @@ getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot
              shape = guide_legend(override.aes = list( size = 5   )))
   }
 
-  if( !is.na(facet_by_column )) {
-    if( facet_by_column %in% colnames(table_filtering )) {
+  print( as_name(enquo(facet_by_column)) )
+  print( colnames(table_filtering ))
+
+    if( as_name(enquo(facet_by_column)) %in% colnames(table_filtering )) {
+      print("Using faceting")
 
       output_heat_map <- output_heat_map  +
-        facet_wrap( vars( !!rlang::sym(facet_by_column) ) )
+        facet_wrap( vars( {{facet_by_column}} ) )
     }
-  }
+
 
   output_heat_map
 
@@ -809,12 +810,17 @@ drawListOfFunctionalEnrichmentHeatmaps <- function(enriched_results_tbl,
     mutate(  ranking = row_number() ) %>%
     ungroup()
 
+  if ( nrow(input_table) == 0 ) {
+    stop("drawListOfFunctionalEnrichmentHeatmaps: No more rows for clustering analysis after gene set size filtering.")
+  }
+
   annot_heat_map_ordered <- clusterPathways( input_table,
                                              added_columns,
                                              remove_duplicted_entries = remove_duplicted_entries) %>%
-    unite(  {{analysis_column}} , comparison, any_of( c(setdiff(added_columns, as_name(enquo(x_axis)))) ) )
+    unite(  {{analysis_column}} , comparison, any_of( c(setdiff(added_columns, c(as_name(enquo(x_axis)), as_name(enquo(facet_by_column))))) ) )
 
-  print(head( annot_heat_map_ordered))
+  print("after clusterPathways")
+  print(colnames( annot_heat_map_ordered))
 
   combinations <- annot_heat_map_ordered %>%
     distinct(  go_type)

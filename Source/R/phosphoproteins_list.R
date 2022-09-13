@@ -85,6 +85,10 @@ parser <- add_option(parser, "--fdr_column_name", type="character",
                      help="Column name in the input file that contains the false discovery rate values of the phosphosites.",
                      metavar="string")
 
+parser <- add_option(parser, "--results_gene_name_column_name", type="character",
+                     help="Column name in the input file that contains the gene names.",
+                     metavar="string")
+
 parser <- add_option(parser, c("--proteins_file"), type="character", dest = "proteins_file",
                      help="File with table of differentially expressed proteins.",
                      metavar="string")
@@ -184,6 +188,8 @@ loginfo("----------------------------------------------------")
 
 args <- setArgsDefault(args, "log_fc_column_name", as_func=as.character, default_val="norm_phos_logFC" )
 args <- setArgsDefault(args, "fdr_column_name", as_func=as.character, default_val="combined_q_mod" )
+args <- setArgsDefault(args, "results_gene_name_column_name", as_func=as.character, default_val="gene_name" )
+
 args <- setArgsDefault(args, "p_val_thresh", as_func=as.double, default_val=0.05 )
 args <- setArgsDefault(args, "site_p_val_thresh", as_func=as.double, default_val=0.05 )
 
