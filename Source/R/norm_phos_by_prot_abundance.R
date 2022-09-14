@@ -217,7 +217,7 @@ basic_data_shared <- proteins_cln %>%
   inner_join( phospho_cln, by=c("uniprot_acc" = "uniprot_acc",
                                 "comparison" = "comparison"), suffix=c(".phos", ".prot") ) %>%
   mutate( norm_phos_logFC = log2FC.phos - log2FC.prot) %>%
-  mutate( adj_qmod.prot  = ifelse(sign(q.mod.phos)  ==  sign(q.mod.prot), 1-q.mod.prot,  q.mod.prot  )) %>%
+  mutate( adj_qmod.prot  = ifelse(sign(log2FC.phos)  ==  sign(log2FC.prot), 1-q.mod.prot,  q.mod.prot  )) %>%
   mutate( combined_q_mod = 1-pchisq(-2*( log(q.mod.phos) + log(adj_qmod.prot)   ), 2*2 )  ) %>%
   dplyr::mutate( status  = "Phos_and_Prot")
 
@@ -230,7 +230,7 @@ list_of_data_shared_columns <- c( "comparison",  "norm_phos_logFC", "combined_q_
 if( "fdr.mod" %in% colnames( proteins_cln ) &
     "fdr.mod" %in% colnames( phospho_cln ) ) {
   basic_data_shared <- basic_data_shared %>%
-    mutate( adj_fdrmod.prot  = ifelse(sign(fdr.mod.phos)  ==  sign(fdr.mod.prot), 1-fdr.mod.prot,  fdr.mod.prot  )) %>%
+    mutate( adj_fdrmod.prot  = ifelse(sign(log2FC.phos)  ==  sign(log2FC.prot), 1-fdr.mod.prot,  fdr.mod.prot  )) %>%
     mutate( combined_fdr_mod = 1-pchisq(-2*( log(fdr.mod.phos) + log(adj_fdrmod.prot)   ), 2*2 )  )  %>%
     dplyr::select(-adj_fdrmod.prot)
 
