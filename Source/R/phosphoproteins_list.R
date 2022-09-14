@@ -591,7 +591,7 @@ background_proteins <- proteins_tbl_orig %>%
   distinct(uniprot_acc) %>%
   mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
   mutate( uniprot_acc_first = str_replace_all( uniprot_acc_first, "-\\d+$", ""))  %>%
-  distinct(uniprot_acc)
+  distinct(uniprot_acc_first)
 
 vroom::vroom_write( background_proteins,
                     file.path(args$output_dir, "background_proteins.tab" ),
