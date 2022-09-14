@@ -668,8 +668,20 @@ readEnrichmentResultFiles <- function( table_of_files, file_names_column=file_na
 
   print(added_columns)
 
-  enriched_results_tbl <- vroom::vroom( list_of_files, id= as_name(enquo(file_names_column)) ) %>%
-    rename(annotation_id = "ID", gene_set = "names_of_genes_list",
+  ## Gets error if input table have zero rows, so need filtering to remove table with zero rows
+  list_of_tables <- purrr::map( list_of_files, vroom::vroom)
+
+  num_lines <- purrr::map_int( list_of_tables, nrow)
+
+  list_of_tables_with_rows <- purrr::keep( list_of_tables, ~{nrow(.) > 0})
+
+  names(list_of_tables_with_rows) <- list_of_files[num_lines > 0]
+
+  cleaned_tbl <-  list_of_tables_with_rows %>%
+    bind_rows( .id=as_name(enquo(file_names_column)))
+
+  enriched_results_tbl <- cleaned_tbl %>%
+    dplyr::rename(annotation_id = "ID", gene_set = "names_of_genes_list",
            min_set_size = "min_gene_set_size",
            max_set_size = "max_gene_set_size") %>%
     left_join( table_of_files, by = as_name(enquo(file_names_column)) ) %>%
