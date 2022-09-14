@@ -243,7 +243,7 @@ if( "fdr.mod" %in% colnames( proteins_cln ) &
 
 if( ! "combined_fdr_mod" %in% colnames( basic_data_shared )) {
 
-  list_of_data_shared_columns <- list_of_data_shared_columns[ !list_of_data_shared_columns %in% c( "combined_fdr_mod", "fdr.mod.phos", "q.mod.prot")]
+  list_of_data_shared_columns <- list_of_data_shared_columns[ !list_of_data_shared_columns %in% c( "combined_fdr_mod", "fdr.mod.phos", "fdr.mod.prot")]
 }
 
 basic_data_shared <- basic_data_shared %>%
