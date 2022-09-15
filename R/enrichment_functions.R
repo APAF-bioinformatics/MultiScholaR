@@ -488,11 +488,6 @@ clusterPathways <- function ( input_table, added_columns, remove_duplicted_entri
       dplyr::filter( qvalue == best_p_adj_value ) %>%
       mutate( gene_set = "shared" )
 
-    print("merging entries")
-    print( head( duplicated_entries))
-    print( head( duplicates_tbl))
-
-
     input_table <- input_table  %>%
       anti_join( duplicated_entries, by =c("comparison" = "comparison",
                                            "annotation_id" = "annotation_id")) %>%
