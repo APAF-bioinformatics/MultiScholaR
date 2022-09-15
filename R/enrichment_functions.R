@@ -475,7 +475,6 @@ clusterPathways <- function ( input_table, added_columns, remove_duplicted_entri
       ungroup() %>%
       dplyr::filter( counts > 1)
 
-
   if( remove_duplicted_entries == TRUE |
       remove_duplicted_entries == "delete" ) {
     input_table <- input_table  %>%
@@ -486,8 +485,13 @@ clusterPathways <- function ( input_table, added_columns, remove_duplicted_entri
     duplicates_tbl <- input_table %>%
       inner_join( duplicated_entries, by =c("comparison" = "comparison",
                                             "annotation_id" = "annotation_id")) %>%
-      dplyr::filter( p.adjust == best_p_adj_value ) %>%
+      dplyr::filter( qvalue == best_p_adj_value ) %>%
       mutate( gene_set = "shared" )
+
+    print("merging entries")
+    print( head( duplicated_entries))
+    print( head( duplicates_tbl))
+
 
     input_table <- input_table  %>%
       anti_join( duplicated_entries, by =c("comparison" = "comparison",
@@ -585,21 +589,13 @@ getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot
     mutate( use_colour = purrr::map_chr( gene_set, my_get_colour )) %>%
     mutate(Term = factor( term,  levels = unique(input_table$term)))
 
-  print( table_shape_colour)
-
-
   if( length(xaxis_levels) > 1  ) {
-    print("hello")
-    print( as_name(enquo(x_axis)))
-    print(head(table_shape_colour))
 
     # If we are manually ordering the x axis labels from left to right,
     # We need to make sure the factor levels in the input covers all the things we need to label.
     all_x_axis_labels <- table_shape_colour %>%
       distinct( {{x_axis}} ) %>%
       pull({{x_axis}})
-
-    print( all_x_axis_labels)
 
 
     if( length(setdiff( all_x_axis_labels, xaxis_levels)) ==0) {
@@ -665,8 +661,6 @@ readEnrichmentResultFiles <- function( table_of_files, file_names_column=file_na
 
   added_columns <- setdiff(colnames(table_of_files),
           as_name(enquo(file_names_column)))
-
-  print(added_columns)
 
   ## Gets error if input table have zero rows, so need filtering to remove table with zero rows
   list_of_tables <- purrr::map( list_of_files, vroom::vroom)
@@ -835,8 +829,6 @@ drawListOfFunctionalEnrichmentHeatmaps <- function(enriched_results_tbl,
                                              remove_duplicted_entries = remove_duplicted_entries) %>%
     unite(  {{analysis_column}} , comparison, any_of( c(setdiff(added_columns, list_of_columns_to_exclude))) )
 
-  print("after clusterPathways")
-  print(colnames( annot_heat_map_ordered))
 
   combinations <- annot_heat_map_ordered %>%
     distinct(  go_type)
