@@ -275,7 +275,7 @@ loginfo ("Compile positive proteins list.")
 
 captured_output<-capture.output(
 
-  if( UNIPROT_GENENAME %in% colnames( proteins_tbl_orig))  {
+  if( "UNIPROT_GENENAME" %in% colnames( proteins_tbl_orig))  {
 
     positive_proteins <- proteins_tbl_orig %>%
       dplyr::filter( !!rlang::sym(args$fdr_column_name) < args$protein_p_val_thresh &   !!rlang::sym(args$log_fc_column_name) > 0 ) %>%
@@ -348,7 +348,7 @@ logdebug(captured_output)
 # norm_phos_logFC
 loginfo ("Compile negative proteins list.")
 
-if( UNIPROT_GENENAME %in% colnames( proteins_tbl_orig))  {
+if( "UNIPROT_GENENAME" %in% colnames( proteins_tbl_orig))  {
 
   negative_proteins <- proteins_tbl_orig %>%
     dplyr::filter( !!rlang::sym(args$fdr_column_name) < args$protein_p_val_thresh & !!rlang::sym(args$log_fc_column_name)  < 0 ) %>%
