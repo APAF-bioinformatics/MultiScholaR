@@ -274,16 +274,32 @@ loginfo ("Compile positive proteins list.")
 
 
 captured_output<-capture.output(
-  positive_proteins <- proteins_tbl_orig %>%
-    dplyr::filter( !!rlang::sym(args$fdr_column_name) < args$protein_p_val_thresh &   !!rlang::sym(args$log_fc_column_name) > 0 ) %>%
-    mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
-    mutate( uniprot_acc_first = str_replace_all( uniprot_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
-    mutate( gene_name_first = purrr::map_chr( UNIPROT_GENENAME, ~str_split(., ":") %>% map_chr(1)))  %>%
-    mutate( protein_name_first = purrr::map_chr( `PROTEIN-NAMES`, ~str_split(., ":") %>% map_chr(1)))  %>%
-    group_by(comparison, uniprot_acc_first, gene_name_first, protein_name_first) %>%
-    summarise( max_norm_logFC = max(!!rlang::sym(args$log_fc_column_name))) %>%
-    ungroup() %>%
-    arrange( comparison, desc(max_norm_logFC  ) )
+
+  if( UNIPROT_GENENAME %in% colnames( proteins_tbl_orig))  {
+
+    positive_proteins <- proteins_tbl_orig %>%
+      dplyr::filter( !!rlang::sym(args$fdr_column_name) < args$protein_p_val_thresh &   !!rlang::sym(args$log_fc_column_name) > 0 ) %>%
+      mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
+      mutate( uniprot_acc_first = str_replace_all( uniprot_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
+      mutate( gene_name_first = purrr::map_chr( UNIPROT_GENENAME, ~str_split(., ":") %>% map_chr(1)))  %>%
+      mutate( protein_name_first = purrr::map_chr( `PROTEIN-NAMES`, ~str_split(., ":") %>% map_chr(1)))  %>%
+      group_by(comparison, uniprot_acc_first, gene_name_first, protein_name_first) %>%
+      summarise( max_norm_logFC = max(!!rlang::sym(args$log_fc_column_name))) %>%
+      ungroup() %>%
+      arrange( comparison, desc(max_norm_logFC  ) )
+
+
+  } else {
+
+    positive_proteins <- proteins_tbl_orig %>%
+      dplyr::filter( !!rlang::sym(args$fdr_column_name) < args$protein_p_val_thresh &   !!rlang::sym(args$log_fc_column_name) > 0 ) %>%
+      mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
+      mutate( uniprot_acc_first = str_replace_all( uniprot_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
+      group_by(comparison, uniprot_acc_first ) %>%
+      summarise( max_norm_logFC = max(!!rlang::sym(args$log_fc_column_name))) %>%
+      ungroup() %>%
+      arrange( comparison, desc(max_norm_logFC  ) )
+  }
 
   ,type = "message"
 )
@@ -332,16 +348,30 @@ logdebug(captured_output)
 # norm_phos_logFC
 loginfo ("Compile negative proteins list.")
 
-negative_proteins <- proteins_tbl_orig %>%
-  dplyr::filter( !!rlang::sym(args$fdr_column_name) < args$protein_p_val_thresh & !!rlang::sym(args$log_fc_column_name)  < 0 ) %>%
-  mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
-  mutate( uniprot_acc_first = str_replace_all( uniprot_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
-  mutate( gene_name_first = purrr::map_chr( UNIPROT_GENENAME, ~str_split(., ":") %>% map_chr(1)))  %>%
-  mutate( protein_name_first = purrr::map_chr( `PROTEIN-NAMES`, ~str_split(., ":") %>% map_chr(1)))  %>%
-  group_by(comparison, uniprot_acc_first, gene_name_first, protein_name_first) %>%
-  summarise( min_norm_logFC = min(!!rlang::sym(args$log_fc_column_name))) %>%
-  ungroup() %>%
-  arrange( comparison, min_norm_logFC  )
+if( UNIPROT_GENENAME %in% colnames( proteins_tbl_orig))  {
+
+  negative_proteins <- proteins_tbl_orig %>%
+    dplyr::filter( !!rlang::sym(args$fdr_column_name) < args$protein_p_val_thresh & !!rlang::sym(args$log_fc_column_name)  < 0 ) %>%
+    mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
+    mutate( uniprot_acc_first = str_replace_all( uniprot_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
+    mutate( gene_name_first = purrr::map_chr( UNIPROT_GENENAME, ~str_split(., ":") %>% map_chr(1)))  %>%
+    mutate( protein_name_first = purrr::map_chr( `PROTEIN-NAMES`, ~str_split(., ":") %>% map_chr(1)))  %>%
+    group_by(comparison, uniprot_acc_first, gene_name_first, protein_name_first) %>%
+    summarise( min_norm_logFC = min(!!rlang::sym(args$log_fc_column_name))) %>%
+    ungroup() %>%
+    arrange( comparison, min_norm_logFC  )
+
+} else {
+
+  negative_proteins <- proteins_tbl_orig %>%
+    dplyr::filter( !!rlang::sym(args$fdr_column_name) < args$protein_p_val_thresh & !!rlang::sym(args$log_fc_column_name)  < 0 ) %>%
+    mutate( uniprot_acc_first = purrr::map_chr( uniprot_acc, ~str_split(., ":") %>% map_chr(1)))  %>%
+    mutate( uniprot_acc_first = str_replace_all( uniprot_acc_first, "-\\d+$", ""))  %>% # Strip away isoform information
+    group_by(comparison, uniprot_acc_first ) %>%
+    summarise( min_norm_logFC = min(!!rlang::sym(args$log_fc_column_name))) %>%
+    ungroup() %>%
+    arrange( comparison, min_norm_logFC  )
+}
 
 vroom::vroom_write( negative_proteins,
                     file.path( args$output_dir,
