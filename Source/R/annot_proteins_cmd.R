@@ -243,7 +243,7 @@ loginfo("Download information from UniProt.")
 uniprot_file<-file.path(args$tmp_dir,args$uniprot_file)
 if( ! file.exists( uniprot_file )) {
 
-  up <- UniProt.ws(taxId=args$taxonomy_id, format="tsv" )
+  up <- UniProt.ws(taxId=args$taxonomy_id )
   list_of_sp_columns <- c("EXISTENCE"
                           , "SCORE"
                           , "REVIEWED"
