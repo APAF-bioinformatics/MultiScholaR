@@ -469,7 +469,7 @@ clusterPathways <- function ( input_table, added_columns, remove_duplicted_entri
       group_by( across(c( any_of(added_columns), comparison, set_type, annotation_id) ) ) %>%
       dplyr::summarise( temp_qvalue = min(qvalue )) %>%
       ungroup() %>%
-      dplyr::group_by( comparison, annotation_id ) %>%
+      dplyr::group_by( across(c( any_of(added_columns), comparison, annotation_id) ) ) %>%
       dplyr::summarise(counts = n(),
                 best_p_adj_value = min(temp_qvalue)) %>%
       ungroup() %>%
@@ -597,6 +597,7 @@ getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot
       table_shape_colour <- table_shape_colour %>%
         mutate( {{x_axis}} := factor( {{x_axis}}, levels=xaxis_levels))
     } else {
+      print(setdiff( all_x_axis_labels, xaxis_levels))
       print( "Cannot locate x_axis ordering.")
       stop()
     }
