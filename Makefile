@@ -29,6 +29,7 @@ intro:
 
 setdirs:
 	@mkdir -p $(PREFIX)/$(PROJECT)/Source/R
+	@mkdir -p $(PREFIX)/$(PROJECT)/Source/Python
 	@mkdir -p $(PREFIX)/$(PROJECT)/Source/shell
 	@mkdir -p $(PREFIX)/$(PROJECT)/test
 	@mkdir -p $(PREFIX)/$(PROJECT)/man
