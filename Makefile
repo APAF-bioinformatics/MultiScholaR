@@ -78,7 +78,7 @@ install:intro setdirs
 	@cp -r $(TEST)/* $(PREFIX)/$(PROJECT)/test/
 	@echo '	'
 	@echo 'append $(PREFIX)/$(PROJECT)/Source/R to your PATH environment variable'
-	@echo "export PATH=$(PREFIX)/$(PROJECT)/Source/R:\$$PATH"
+	@echo "export PATH=$(PREFIX)/$(PROJECT)/Source/R:$(PREFIX)/$(PROJECT)/Source/Python:\$$PATH"
 	@echo "export R_LIBS_USER=$(RLIB)"
 	@echo 'or run: make setup'
 	@echo '	'
