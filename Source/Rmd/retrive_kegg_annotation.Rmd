@@ -57,7 +57,7 @@ p_load("EnrichmentBrowser")
 
 ```{r}
 species <- "hsa"
-gene_id_to_uniprot_acc_file <- file.path("/home/ignatius/PostDoc/2022/EStim_Brain_Organoids_BMP_17/Results", "UniProt", "gene_ids_table_python_all.tab")
+gene_id_to_uniprot_acc_file <- file.path(results_dir, "UniProt", "gene_ids_table_python_all.tab")
 ```
 
 
@@ -71,8 +71,8 @@ saveRDS( identifiers, file.path( data_dir, "KEGG", paste0("identifiers_kegg_", s
 
 #step 3: download the pathways of that organism:
 # /home/ignatius/.cache/R/EnrichmentBrowser
-pathways <- downloadPathways("mmu", out.dir= file.path( data_dir, "KEGG"))
-
+# pathways_download <- downloadPathways("mmu", out.dir= file.path( data_dir, "KEGG")) ## only use this line if you want to download all the XML files locally
+pathways <- downloadPathways("mmu")
 # pathways$mmu05416
 
 #step 4: retrieve gene sets for an organism from databases such as GO and KEGG:

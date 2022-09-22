@@ -1,8 +1,9 @@
 from lxml import etree, objectify
 import pandas as pd
+import sys
 
-xmlFile = ".xml"
-output_file = '.tab'
+xmlFile =   sys.argv[1]  # ".xml"
+output_file = sys.argv[2] #  '.tab'
 
 
 with open(xmlFile) as fobj:
