@@ -83,7 +83,7 @@ parser <- add_option(parser, "--plots_format", type = "character",
                      help = "A comma separated strings to indicate the fortmat output for the plots [pdf,png,svg].",
                      metavar = "string")
 
-#parse comand line arguments first.
+#parse command line arguments first.
 args <- parse_args(parser)
 
 #parse and merge the configuration file options.
