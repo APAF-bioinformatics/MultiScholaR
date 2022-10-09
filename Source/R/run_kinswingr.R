@@ -51,7 +51,7 @@ parser <- add_option(parser, c("-d", "--debug"), action = "store_true", default 
 parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default = FALSE,
                      help = "Only print critical information to the console.")
 
-parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config_phos.ini",
+parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config_phos_desch.ini",
                      help = "Configuration file.",
                      metavar = "string")
 
@@ -439,6 +439,7 @@ annotated_data_pre_residue_filter <- de_phos %>%
   dplyr::select(sites_id, comparison, uniprot_acc, gene_name, peptide, peptide_copy, position, residue,
                 one_of( c( as.character(args$log_fc_column_name), as.character(args$fdr_column_name))), is_multisite) %>%
   dplyr::filter(  str_detect(  args$kinase_specificity, residue )  )  %>%
+  dplyr::filter(!is.na(peptide)) %>%
   dplyr::filter( str_sub( peptide, 8, 8) == residue) %>%
   dplyr::rename( fc = args$log_fc_column_name,
                  pval = args$fdr_column_name)
@@ -842,7 +843,7 @@ if( args$taxonomy_id %in% c(9606, 10090) ) {
 }
 
 ## ---------------------------------------------------------------------------------------------------------------------------------------------------
-loginfo("Compile KingSwinger results together.")
+loginfo("Compile KinSwingR results together.")
 
 
 compileKinswingerResults <- function( list_position ) {

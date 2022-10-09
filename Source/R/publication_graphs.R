@@ -400,6 +400,7 @@ list_of_volcano_plots <- selected_data %>%
   nest() %>%
   ungroup() %>%
   mutate( title = paste( analysis_type, comparison)) %>%
+  #mutate( data = purrr::map (data, ~{ (.) %>% mutate( log2FC_edited = 2^log2FC)})) %>%
   mutate( plot = purrr:::map2( data, title, ~plotOneVolcano(.x, .y,   log_fc_column = log2FC)) )
 
 list_of_volcano_plots %>% pull(plot)
