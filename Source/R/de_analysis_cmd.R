@@ -802,7 +802,10 @@ if (!is.na( args$average_replicates_id)) {
                                                    contrast_strings = contrasts_tbl[, 1][[1]],
                                                    design_matrix = design_mat_updated,
                                                    formula_string = args$formula_string,
-                                                   weights = NA)
+                                                   weights = NA,
+                                                   treat_lfc_cutoff = as.double(args$treat_lfc_cutoff),
+                                                   eBayes_trend = as.logical(args$eBayes_trend),
+                                                   eBayes_robust = as.logical(args$eBayes_robust))
 
 } else {
   # requires statmod library
@@ -810,7 +813,10 @@ if (!is.na( args$average_replicates_id)) {
                                                    contrast_strings = contrasts_tbl[, 1][[1]],
                                                    design_matrix = design_mat_updated,
                                                    formula_string = args$formula_string,
-                                                   weights = NA)
+                                                   weights = NA,
+                                                   treat_lfc_cutoff = as.double(args$treat_lfc_cutoff),
+                                                   eBayes_trend = as.logical(args$eBayes_trend),
+                                                   eBayes_robust = as.logical(args$eBayes_robust))
 }
 
 myRes_rnorm.log.quant.ruv.r1 <- list_rnorm.log.quant.ruv.r1$results
