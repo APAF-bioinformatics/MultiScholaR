@@ -230,8 +230,8 @@ testRequiredFiles(c(
 ))
 
 args <- setArgsDefault(args, "treat_lfc_cutoff", as_func=as.double, default_val=NA )
-args <- setArgsDefault(args, "eBayes_trend", as_func=as.logical, default_val=FALSE )
-args <- setArgsDefault(args, "eBayes_robust", as_func=as.logical, default_val=FALSE )
+args <- setArgsDefault(args, "eBayes_trend", as_func=as.logical, default_val=TRUE )
+args <- setArgsDefault(args, "eBayes_robust", as_func=as.logical, default_val=TRUE )
 args <- setArgsDefault(args, "q_val_thresh", as_func=as.double, default_val=NaN )
 args <- setArgsDefault(args, "control_genes_q_val_thresh", as_func=as.double, default_val=NaN )
 args <- setArgsDefault(args, "max_num_samples_miss_per_group", as_func=as.integer, default_val=NA )
@@ -802,7 +802,7 @@ if (!is.na( args$average_replicates_id)) {
                                                    weights = NA)
 
 } else {
-
+  # requires statmod library
   list_rnorm.log.quant.ruv.r1 <- runTestsContrasts(counts_rnorm.log.ruvIII_v1,
                                                    contrast_strings = contrasts_tbl[, 1][[1]],
                                                    design_matrix = design_mat_updated,
@@ -810,8 +810,12 @@ if (!is.na( args$average_replicates_id)) {
                                                    weights = NA)
 }
 
-
 myRes_rnorm.log.quant.ruv.r1 <- list_rnorm.log.quant.ruv.r1$results
+
+## This plot is used to check the mean-variance relationship of the expression data, after fitting a linear model.
+pdf(file.path(args$output_dir, "plotSA.pdf" ))
+plotSA(list_rnorm.log.quant.ruv.r1$fit.eb)
+dev.off()
 
 saveRDS( list_rnorm.log.quant.ruv.r1$fit.eb,
          file.path(args$output_dir, "fit.eb.RDS" ) )

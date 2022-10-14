@@ -913,21 +913,34 @@ runTestsContrasts <- function(data,
 
   ## Run treat over here
   t.fit <- NA
+  result_tables <- NA
   if( !is.na( treat_lfc_cutoff)) {
     t.fit <- treat(eb.fit, lfc=as.double(treat_lfc_cutoff)) ## assign log fold change threshold below which is scientifically not relevant
+
+    result_tables <- purrr::map(contrast_strings,
+                                function(contrast) {
+                                  de_tbl <- topTreat(t.fit, coef = contrast, n = Inf) %>%
+                                    mutate({ { q_value_column } } := qvalue(P.Value)$q) %>%
+                                    mutate({ { fdr_value_column } } := p.adjust(P.Value, method="BH")) %>%
+
+                                    dplyr::rename({ { p_value_column } } := P.Value)
+                                }
+    )
   } else {
     t.fit <- eb.fit
+
+    result_tables <- purrr::map(contrast_strings,
+                                function(contrast) {
+                                  de_tbl <- topTable(t.fit, coef = contrast, n = Inf) %>%
+                                    mutate({ { q_value_column } } := qvalue(P.Value)$q) %>%
+                                    mutate({ { fdr_value_column } } := p.adjust(P.Value, method="BH")) %>%
+
+                                    dplyr::rename({ { p_value_column } } := P.Value)
+                                }
+    )
   }
 
-  result_tables <- purrr::map(contrast_strings,
-                              function(contrast) {
-                                de_tbl <- topTreat(t.fit, coef = contrast, n = Inf) %>%
-                                  mutate({ { q_value_column } } := qvalue(P.Value)$q) %>%
-                                  mutate({ { fdr_value_column } } := p.adjust(P.Value, method="BH")) %>%
 
-                                  dplyr::rename({ { p_value_column } } := P.Value)
-                              }
-  )
 
   names(result_tables) <- contrast_strings
 
