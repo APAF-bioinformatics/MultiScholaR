@@ -32,6 +32,7 @@ p_load(knitr)
 p_load(rlang)
 p_load(ggrepel)
 
+p_load(statmod)
 p_load(limma)
 p_load(qvalue)
 p_load(ruv)
