@@ -246,7 +246,9 @@ args<-parseType(args,
   )  ,as.integer)
 
 args<-parseType(args,
-                c("imputation"
+                c("imputation",
+                  "eBayes_trend",
+                  "eBayes_robust",
                 ) , as.logical)
 
 args<-parseString(args,
