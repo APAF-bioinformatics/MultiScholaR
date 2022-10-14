@@ -248,8 +248,8 @@ args<-parseType(args,
 args<-parseType(args,
                 c("imputation",
                   "eBayes_trend",
-                  "eBayes_robust",
-                ) , as.logical)
+                  "eBayes_robust"
+                 ) , as.logical)
 
 args<-parseString(args,
   c("group_pattern"
