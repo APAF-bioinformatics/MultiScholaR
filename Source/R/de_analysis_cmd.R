@@ -231,8 +231,8 @@ testRequiredFiles(c(
 ))
 
 args <- setArgsDefault(args, "treat_lfc_cutoff", as_func=as.double, default_val=NA )
-args <- setArgsDefault(args, "eBayes_trend", as_func=as.logical, default_val=TRUE )
-args <- setArgsDefault(args, "eBayes_robust", as_func=as.logical, default_val=TRUE )
+args <- setArgsDefault(args, "eBayes_trend", as_func=as.logical, default_val=FALSE )
+args <- setArgsDefault(args, "eBayes_robust", as_func=as.logical, default_val=FALSE )
 args <- setArgsDefault(args, "q_val_thresh", as_func=as.double, default_val=NaN )
 args <- setArgsDefault(args, "control_genes_q_val_thresh", as_func=as.double, default_val=NaN )
 args <- setArgsDefault(args, "max_num_samples_miss_per_group", as_func=as.integer, default_val=NA )
