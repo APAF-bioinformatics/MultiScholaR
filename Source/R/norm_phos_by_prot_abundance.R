@@ -216,21 +216,42 @@ logdebug(prot_phos_uniprot_list %>% length())
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo( "Normalisation of the phosphopeptide abundance with the protein abundance.")
 
+# A phosphopeptide can be matched to multiple proteins and each of those protein may have their own abundance level
+# Here I find distinct protein row ID and phosphosites row ID pairs
 join_protein_phosopho_keys <- proteins_cln %>%
   inner_join( phospho_cln, by=c("uniprot_acc" = "uniprot_acc",
-                                "comparison" = "comparison"), suffix=c(".phos", ".prot") ) %>%
-  distinct ( prot_maxquant_row_ids, phos_maxquant_row_ids )
+                                "comparison" = "comparison"), suffix=c(".prot", ".phos") ) %>%
+  distinct ( comparison, prot_maxquant_row_ids, phos_maxquant_row_ids )
 
 
-basic_data_shared
+join_protein_phosopho_keys %>%
+  inner_join(
+    join_protein_phosopho_keys %>%
+      group_by(comparison, phos_maxquant_row_ids ) %>%
+      count() %>%
+      ungroup() %>%
+      dplyr::filter( n > 1),
+    by=c("phos_maxquant_row_ids") )  %>%
+  arrange( phos_maxquant_row_ids, prot_maxquant_row_ids) %>%
+  left_join( proteins_cln %>%
+               inner_join( phospho_cln, by=c("uniprot_acc" = "uniprot_acc",
+                                             "comparison" = "comparison"), suffix=c(".prot", ".phos") ),
+             by=c("prot_maxquant_row_ids", "phos_maxquant_row_ids"))
 
+
+# Function to find intersection between the uniprot accession of the phosphopeptide and the uniprot accession of the protein used to do fold-change normalization
 intersect_two_uniprot_list <-function(x, y){  paste( intersect( str_split(x, ":")[[1]], str_split(y, ":")[[1]] ), collapse=":")    }
+
+# Once I have identified which protein was used for fold-change normalization, I have pick out the position, residue, and peptide sequence from a list that belongs to that protein
+# This is the function to do that array subsetting
 subset_phosphosite_details <- function(x,y) {    paste( str_split(x, ":")[[1]][ y], collapse=":") }
 
 # intersect_two_uniprot_list( "A:B:C", "C:D:E")
 
+# I then have to find the unique protein row ID and phosphosites row ID pairs among the orignal
+# protein groups table and phosphopeptide table, where there could be multiple possible host-proteins per phosphopeptide
 basic_data_shared <- join_protein_phosopho_keys %>%
-  left_join( phospho_tbl, by = "phos_maxquant_row_ids") %>%
+  left_join( phospho_tbl, by = c("phos_maxquant_row_ids", "comparison")) %>%
   left_join( proteins_tbl, by = c("prot_maxquant_row_ids", "comparison" ),  suffix=c(".phos", ".prot") ) %>%
   mutate( uniprot_acc = purrr::map2_chr( uniprot_acc.phos, uniprot_acc.prot, intersect_two_uniprot_list  )) %>%
   mutate( array_pos   = purrr::map2( uniprot_acc.phos, uniprot_acc, function(x, y){   which( str_split(x, ":")[[1]]  %in% str_split(y, ":")[[1]]) }  ) ) %>%
@@ -240,6 +261,7 @@ basic_data_shared <- join_protein_phosopho_keys %>%
   mutate( residue     = purrr::map2_chr(residue, sequence, subset_phosphosite_details)) %>%
   dplyr::select(-uniprot_acc.phos, -uniprot_acc.prot) %>%
   distinct() %>%
+  ## Calculate the new log fold-change and use the Fisher's method to calculate the updated p-value
   mutate( norm_phos_logFC = log2FC.phos - log2FC.prot) %>%
   mutate( adj_qmod.prot  = ifelse(sign(log2FC.phos)  ==  sign(log2FC.prot), 1-q.mod.prot,  q.mod.prot  )) %>%
   mutate( combined_q_mod = 1-pchisq(-2*( log(q.mod.phos) + log(adj_qmod.prot)   ), 2*2 )  ) %>%
@@ -276,6 +298,9 @@ basic_data_shared <- basic_data_shared %>%
   distinct() %>%
   as.data.frame
 
+
+# Find all the phosphopeptides which did not have a matching protein for normalization
+# Then carry over the log fold-change and p-value without changing it
 basic_data_phospho_only_helper <- phospho_cln %>%
   anti_join( proteins_cln, by=c( "uniprot_acc" = "uniprot_acc" ,
                                   "comparison" = "comparison") )  %>%
@@ -284,7 +309,7 @@ basic_data_phospho_only_helper <- phospho_cln %>%
                   "comparison" = "comparison"))
 
 basic_data_phospho_only <- phospho_tbl %>%
-  inner_join( basic_data_phospho_only_helper%>%
+  inner_join( basic_data_phospho_only_helper %>%
                 dplyr::select( phos_maxquant_row_ids),
               by =c( "phos_maxquant_row_ids" ) ) %>%
   dplyr::mutate(norm_phos_logFC =  log2FC, combined_q_mod = q.mod) %>%
