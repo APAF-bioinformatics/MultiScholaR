@@ -215,16 +215,30 @@ logdebug(prot_phos_uniprot_list %>% length())
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo( "Normalisation of the phosphopeptide abundance with the protein abundance.")
+
 join_protein_phosopho_keys <- proteins_cln %>%
   inner_join( phospho_cln, by=c("uniprot_acc" = "uniprot_acc",
                                 "comparison" = "comparison"), suffix=c(".phos", ".prot") ) %>%
   distinct ( prot_maxquant_row_ids, phos_maxquant_row_ids )
 
+
+basic_data_shared
+
+intersect_two_uniprot_list <-function(x, y){  paste( intersect( str_split(x, ":")[[1]], str_split(y, ":")[[1]] ), collapse=":")    }
+subset_phosphosite_details <- function(x,y) {    paste( str_split(x, ":")[[1]][ y], collapse=":") }
+
+# intersect_two_uniprot_list( "A:B:C", "C:D:E")
+
 basic_data_shared <- join_protein_phosopho_keys %>%
   left_join( phospho_tbl, by = "phos_maxquant_row_ids") %>%
   left_join( proteins_tbl, by = c("prot_maxquant_row_ids", "comparison" ),  suffix=c(".phos", ".prot") ) %>%
-  dplyr::select( -uniprot_acc.prot) %>%
-  dplyr::rename( uniprot_acc = "uniprot_acc.phos") %>%
+  mutate( uniprot_acc = purrr::map2_chr( uniprot_acc.phos, uniprot_acc.prot, intersect_two_uniprot_list  )) %>%
+  mutate( array_pos   = purrr::map2( uniprot_acc.phos, uniprot_acc, function(x, y){   which( str_split(x, ":")[[1]]  %in% str_split(y, ":")[[1]]) }  ) ) %>%
+  mutate( gene_name   = purrr::map2_chr(gene_name, array_pos, subset_phosphosite_details)) %>%
+  mutate( position    = purrr::map2_chr(position, array_pos, subset_phosphosite_details)) %>%
+  mutate( residue     = purrr::map2_chr(residue, array_pos, subset_phosphosite_details)) %>%
+  mutate( residue     = purrr::map2_chr(residue, sequence, subset_phosphosite_details)) %>%
+  dplyr::select(-uniprot_acc.phos, -uniprot_acc.prot) %>%
   distinct() %>%
   mutate( norm_phos_logFC = log2FC.phos - log2FC.prot) %>%
   mutate( adj_qmod.prot  = ifelse(sign(log2FC.phos)  ==  sign(log2FC.prot), 1-q.mod.prot,  q.mod.prot  )) %>%
@@ -262,11 +276,17 @@ basic_data_shared <- basic_data_shared %>%
   distinct() %>%
   as.data.frame
 
-basic_data_phospho_only <- phospho_cln %>%
+basic_data_phospho_only_helper <- phospho_cln %>%
   anti_join( proteins_cln, by=c( "uniprot_acc" = "uniprot_acc" ,
                                   "comparison" = "comparison") )  %>%
-  anti_join( basic_data_shared, by=c("sites_id" = "sites_id",
-                                     "comparison" = "comparison")) %>%
+  anti_join( basic_data_shared,
+             by=c("sites_id" = "sites_id",
+                  "comparison" = "comparison"))
+
+basic_data_phospho_only <- phospho_tbl %>%
+  inner_join( basic_data_phospho_only_helper%>%
+                dplyr::select( phos_maxquant_row_ids),
+              by =c( "phos_maxquant_row_ids" ) ) %>%
   dplyr::mutate(norm_phos_logFC =  log2FC, combined_q_mod = q.mod) %>%
   dplyr::rename( log2FC.phos= log2FC, q.mod.phos = q.mod ) %>%
   dplyr::mutate( status  = "Phos_Only")
