@@ -428,6 +428,8 @@ queryRevigo <- function( input_list,
     encode = "form"
   )  -> res
 
+  # print(res)
+
   dat <- httr::content(res, encoding = "UTF-8")
 
 
@@ -710,6 +712,13 @@ filterResultsWithRevigo <- function(enriched_results_tbl,  added_columns, is_run
                                                                    cutoff=revigo_cutoff,
                                                                    speciesTaxon = species_taxon,
                                                                    temp_file=NA )}))
+
+    # annotation_list_revigo %>%
+    #   unnest(revigo_results) %>%
+    #   colnames %>% print
+    #
+    # annotation_list_revigo %>%
+    #   unnest(revigo_results) %>% head %>% print
 
     revigo_tbl <- annotation_list_revigo %>%
       unnest(revigo_results)  %>%

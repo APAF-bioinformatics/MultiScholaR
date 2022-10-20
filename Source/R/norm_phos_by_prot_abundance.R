@@ -168,7 +168,8 @@ phospho_tbl <- phospho_tbl_orig %>%
   dplyr::rename( phos_maxquant_row_ids = "maxquant_row_ids" )
 
 phospho_cln <- phospho_tbl %>%
-  separate_rows(uniprot_acc, position, residue, sequence, sep=":")
+  separate_rows(uniprot_acc, position, residue, sequence, sep=":") %>%
+  mutate( phospho_row_rank = row_number())
 
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -198,7 +199,8 @@ proteins_tbl <- proteins_tbl_orig %>%
   dplyr::rename( prot_maxquant_row_ids = "maxquant_row_id")
 
 proteins_cln <- proteins_tbl  %>%
-  separate_rows(uniprot_acc,   sep=":")
+  separate_rows(uniprot_acc,   sep=":")  %>%
+  mutate( protein_row_rank = row_number())
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -213,9 +215,17 @@ logdebug(prot_phos_uniprot_list %>% length())
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo( "Normalisation of the phosphopeptide abundance with the protein abundance.")
-basic_data_shared <- proteins_cln %>%
+join_protein_phosopho_keys <- proteins_cln %>%
   inner_join( phospho_cln, by=c("uniprot_acc" = "uniprot_acc",
                                 "comparison" = "comparison"), suffix=c(".phos", ".prot") ) %>%
+  distinct ( prot_maxquant_row_ids, phos_maxquant_row_ids )
+
+basic_data_shared <- join_protein_phosopho_keys %>%
+  left_join( phospho_tbl, by = "phos_maxquant_row_ids") %>%
+  left_join( proteins_tbl, by = c("prot_maxquant_row_ids", "comparison" ),  suffix=c(".phos", ".prot") ) %>%
+  dplyr::select( -uniprot_acc.prot) %>%
+  dplyr::rename( uniprot_acc = "uniprot_acc.phos") %>%
+  distinct() %>%
   mutate( norm_phos_logFC = log2FC.phos - log2FC.prot) %>%
   mutate( adj_qmod.prot  = ifelse(sign(log2FC.phos)  ==  sign(log2FC.prot), 1-q.mod.prot,  q.mod.prot  )) %>%
   mutate( combined_q_mod = 1-pchisq(-2*( log(q.mod.phos) + log(adj_qmod.prot)   ), 2*2 )  ) %>%
@@ -254,7 +264,7 @@ basic_data_shared <- basic_data_shared %>%
 
 basic_data_phospho_only <- phospho_cln %>%
   anti_join( proteins_cln, by=c( "uniprot_acc" = "uniprot_acc" ,
-                                "comparison" = "comparison") )  %>%
+                                  "comparison" = "comparison") )  %>%
   anti_join( basic_data_shared, by=c("sites_id" = "sites_id",
                                      "comparison" = "comparison")) %>%
   dplyr::mutate(norm_phos_logFC =  log2FC, combined_q_mod = q.mod) %>%
