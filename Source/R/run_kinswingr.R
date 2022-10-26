@@ -564,10 +564,21 @@ if(file.exists(file.path(rds_dir,  paste0("kinswingr_scores_list_", args$kinase_
                  paste( names(grouped_annotated_data$data), collapse=", "),
                  paste( purrr::map_int(grouped_annotated_data$data, ~nrow(as.data.frame(.) )), collapse=", ") ) )
 
+  ## Use the number of data to determine the number of iterations
+  num_of_iterations <- purrr::map_int(grouped_annotated_data$data,
+                                      ~{ num_of_rows <- nrow(as.data.frame(.) )
+                                            if (num_of_rows <  args$motif_score_iteration) {
+                                              motif_score_iteration_to_use <- num_of_rows - ( num_of_rows %% 10 )
+                                            } else {
+                                              args$motif_score_iteration
+                                            }
+
+                                      } )
+
   scores_list <-  grouped_annotated_data %>%
-    dplyr::mutate( pwms_scores = purrr::map( data, ~scoreSequences(input_data = as.data.frame(.),
+    dplyr::mutate( pwms_scores = purrr::map2( data, num_of_iterations, ~scoreSequences(input_data = as.data.frame(.x),
                                                                    pwm_in = pwms,
-                                                                   n = args$motif_score_iteration) ))
+                                                                   n = .y ) ))
 
 
     saveRDS( scores_list, file.path(args$output_dir,  paste0("kinswingr_scores_list_", args$kinase_specificity, ".RDS")))

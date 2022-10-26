@@ -219,46 +219,35 @@ loginfo( "Normalisation of the phosphopeptide abundance with the protein abundan
 # A phosphopeptide can be matched to multiple proteins and each of those protein may have their own abundance level
 # Here I find distinct protein row ID and phosphosites row ID pairs
 join_protein_phosopho_keys <- proteins_cln %>%
-  inner_join( phospho_cln, by=c("uniprot_acc" = "uniprot_acc",
-                                "comparison" = "comparison"), suffix=c(".prot", ".phos") ) %>%
+  inner_join( phospho_cln,
+              by=c("uniprot_acc" = "uniprot_acc",
+                   "comparison" = "comparison"),
+              suffix=c(".prot", ".phos") ) %>%
   distinct ( comparison, prot_maxquant_row_ids, phos_maxquant_row_ids )
 
-
-join_protein_phosopho_keys %>%
-  inner_join(
-    join_protein_phosopho_keys %>%
-      group_by(comparison, phos_maxquant_row_ids ) %>%
-      count() %>%
-      ungroup() %>%
-      dplyr::filter( n > 1),
-    by=c("phos_maxquant_row_ids") )  %>%
-  arrange( phos_maxquant_row_ids, prot_maxquant_row_ids) %>%
-  left_join( proteins_cln %>%
-               inner_join( phospho_cln, by=c("uniprot_acc" = "uniprot_acc",
-                                             "comparison" = "comparison"), suffix=c(".prot", ".phos") ),
-             by=c("prot_maxquant_row_ids", "phos_maxquant_row_ids"))
-
-
 # Function to find intersection between the uniprot accession of the phosphopeptide and the uniprot accession of the protein used to do fold-change normalization
-intersect_two_uniprot_list <-function(x, y){  paste( intersect( str_split(x, ":")[[1]], str_split(y, ":")[[1]] ), collapse=":")    }
+intersectTwoUniprotList <-function(x, y){  paste( intersect( str_split(x, ":")[[1]], str_split(y, ":")[[1]] ), collapse=":")    }
+
+## Which array position in the list of proteins were the selected proteins
+getArrayPositionSelected <- function(x, y){   which( str_split(x, ":")[[1]]  %in% str_split(y, ":")[[1]]) }
 
 # Once I have identified which protein was used for fold-change normalization, I have pick out the position, residue, and peptide sequence from a list that belongs to that protein
 # This is the function to do that array subsetting
-subset_phosphosite_details <- function(x,y) {    paste( str_split(x, ":")[[1]][ y], collapse=":") }
+subsetPhosphositeDetails <- function(x,y) {    paste( str_split(x, ":")[[1]][ y], collapse=":") }
 
-# intersect_two_uniprot_list( "A:B:C", "C:D:E")
+# intersectTwoUniprotList( "A:B:C", "C:D:E")
 
 # I then have to find the unique protein row ID and phosphosites row ID pairs among the orignal
 # protein groups table and phosphopeptide table, where there could be multiple possible host-proteins per phosphopeptide
 basic_data_shared <- join_protein_phosopho_keys %>%
   left_join( phospho_tbl, by = c("phos_maxquant_row_ids", "comparison")) %>%
   left_join( proteins_tbl, by = c("prot_maxquant_row_ids", "comparison" ),  suffix=c(".phos", ".prot") ) %>%
-  mutate( uniprot_acc = purrr::map2_chr( uniprot_acc.phos, uniprot_acc.prot, intersect_two_uniprot_list  )) %>%
-  mutate( array_pos   = purrr::map2( uniprot_acc.phos, uniprot_acc, function(x, y){   which( str_split(x, ":")[[1]]  %in% str_split(y, ":")[[1]]) }  ) ) %>%
-  mutate( gene_name   = purrr::map2_chr(gene_name, array_pos, subset_phosphosite_details)) %>%
-  mutate( position    = purrr::map2_chr(position, array_pos, subset_phosphosite_details)) %>%
-  mutate( residue     = purrr::map2_chr(residue, array_pos, subset_phosphosite_details)) %>%
-  mutate( residue     = purrr::map2_chr(residue, sequence, subset_phosphosite_details)) %>%
+  mutate( uniprot_acc = purrr::map2_chr( uniprot_acc.phos, uniprot_acc.prot, intersectTwoUniprotList  )) %>%
+  mutate( array_pos   = purrr::map2( uniprot_acc.phos, uniprot_acc,  getArrayPositionSelected ) ) %>%
+  mutate( gene_name   = purrr::map2_chr(gene_name, array_pos, subsetPhosphositeDetails)) %>%
+  mutate( position    = purrr::map2_chr(position, array_pos, subsetPhosphositeDetails)) %>%
+  mutate( residue     = purrr::map2_chr(residue, array_pos, subsetPhosphositeDetails)) %>%
+  mutate( residue     = purrr::map2_chr(residue, sequence, subsetPhosphositeDetails)) %>%
   dplyr::select(-uniprot_acc.phos, -uniprot_acc.prot) %>%
   distinct() %>%
   ## Calculate the new log fold-change and use the Fisher's method to calculate the updated p-value
@@ -337,7 +326,8 @@ basic_data_phospho_only <- basic_data_phospho_only %>%
   as.data.frame
 
 basic_data <- basic_data_shared  %>%
-  bind_rows(basic_data_phospho_only )
+  bind_rows(basic_data_phospho_only %>%
+              dplyr::mutate( position = purrr::map_chr( position, as.character)) )
 
  if (nrow(basic_data %>% distinct(sites_id)) != nrow(phospho_cln %>% distinct(sites_id))){
    logwarn("nrow(basic_data) != nrow(phospho_cln)")

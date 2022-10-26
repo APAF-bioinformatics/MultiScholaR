@@ -1538,11 +1538,18 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
 
 
 #' @export
-gg_save_logging <- function( input_plot, file_name_part, plots_format) {
+gg_save_logging <- function( input_plot
+                             , file_name_part
+                             , plots_format
+                             , width=7
+                             , height=7) {
   for( format_ext in plots_format) {
     file_name <- paste0(file_name_part, format_ext)
     captured_output<-capture.output(
-      ggsave(plot=input_plot, filename = file_name )
+      ggsave(plot=input_plot
+             , filename = file_name
+             , width=width
+             , height=height )
       ,type = "message"
     )
     logdebug(captured_output)
