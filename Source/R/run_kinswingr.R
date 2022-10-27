@@ -165,7 +165,6 @@ args <- setArgsDefault(args, "output_dir", as_func=as.character, default_val="ph
 
 
 createOutputDir(args$output_dir, args$no_backup)
-createDirectoryIfNotExists(args$tmp_dir)
 
 ## Logger configuration
 logReset()
@@ -228,6 +227,9 @@ args <- setArgsDefault(args, "fdr_column_name", as_func=as.character, default_va
 args <- setArgsDefault(args, "p_value_cutoff", as_func=as.double, default_val=0.05 )
 args <- setArgsDefault(args, "is_multisite", as_func=as.logical, default_val=NA )
 args <- setArgsDefault(args, "tmp_dir", as_func=as.character, default_val="cache" )
+
+createDirectoryIfNotExists(args$tmp_dir)
+
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------
 ## ---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -565,7 +567,7 @@ if(file.exists(file.path(rds_dir,  paste0("kinswingr_scores_list_", args$kinase_
                  paste( purrr::map_int(grouped_annotated_data$data, ~nrow(as.data.frame(.) )), collapse=", ") ) )
 
   ## Use the number of data to determine the number of iterations
-  num_of_iterations <- purrr::map_int(grouped_annotated_data$data,
+  num_of_iterations <- purrr::map_dbl(grouped_annotated_data$data,
                                       ~{ num_of_rows <- nrow(as.data.frame(.) )
                                             if (num_of_rows <  args$motif_score_iteration) {
                                               motif_score_iteration_to_use <- num_of_rows - ( num_of_rows %% 10 )
@@ -735,9 +737,9 @@ kinase_volcano_plot <- function(
                                        n > n_cutoff ~ kinase,
                                      TRUE ~ ""))
 
-  if (nrow(volcano_plot_dat) > 0 ) {
+ if (nrow(volcano_plot_dat) > 0 ) {
 
-    volcano_plot_dat %>%
+    volcano_plot <- volcano_plot_dat %>%
       ggplot( aes( x=swing, y = -log10(p_value + .Machine$double.eps ), size=n , col=colour, label=kinase_label, alpha=0.5))  +
       theme_bw () +
       geom_point( ) +
@@ -749,9 +751,12 @@ kinase_volcano_plot <- function(
       geom_text_repel( show.legend = FALSE, size = 5 ) +
       theme(text = element_text(size = 20))
 
-  }
+    return(volcano_plot)
 
-  return(NA)
+  } else {
+
+    return(NA)
+  }
 
 }
 
@@ -767,7 +772,9 @@ kinase_volcano_plot <- purrr::map( seq_along(swing_out_list$comparison),
 
 for( format_ext in args$plots_format) {
   purrr::walk2( kinase_volcano_plot, swing_out_list$comparison,
-                ~{ if(!is.na(.x)) { ggsave( filename=file.path(args$output_dir, paste0(  "kinase_volcano_plot_", args$kinase_specificity, "_",  .y, ".", format_ext )),
+                ~{ if(length(.x) > 1 ) { ggsave( filename=file.path(args$output_dir,
+                                                                    paste0(  "kinase_volcano_plot_",
+                                                                             args$kinase_specificity, "_",  .y, ".", format_ext )),
                          plot=.x)}} )
 
 }
@@ -883,7 +890,7 @@ if( args$taxonomy_id %in% c(9606, 10090) ) {
   for( format_ext in args$plots_format) {
     purrr::walk2( kinase_avg_logfc,
                   swing_out_list$comparison,
-                  ~{ if ( !is.na(.x)) {
+                  ~{ if ( length(.x) > 1) {
                     ggsave( filename=file.path(args$output_dir,
                                                paste0( "kinase_avg_logfc_of_known_sites_",
                                                        args$kinase_specificity, "_", .y,
@@ -894,6 +901,7 @@ if( args$taxonomy_id %in% c(9606, 10090) ) {
 
 ## ---------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Compile KinSwingR results together.")
+
 
 
 compileKinswingerResults <- function( list_position ) {
@@ -937,7 +945,19 @@ compileKinswingerResults <- function( list_position ) {
 
 
   step_2 <- step_1 %>%
-    inner_join( fc_pval_tab%>%
+    left_join( ks_tbl %>%
+                 mutate( KINASE = toupper(KINASE)) %>%
+                 dplyr::distinct( KINASE, KIN_ACC_ID),
+               by = c("kinase" = "KINASE")) %>%
+    left_join( ks_tbl %>%
+                 mutate( GENE = toupper(GENE)) %>%
+                 dplyr::distinct( GENE, KIN_ACC_ID),
+               by = c("kinase" = "GENE")) %>%
+    mutate( kinase_uniprot_acc = ifelse( is.na( KIN_ACC_ID.x),
+                                         KIN_ACC_ID.y,
+                                         KIN_ACC_ID.x)) %>%
+    dplyr::select(-KIN_ACC_ID.x, -KIN_ACC_ID.y) %>%
+    inner_join( fc_pval_tab %>%
                   dplyr::filter( pval < args$p_value_cutoff ),
                 by=c("annotation" = "annotation",
                      "peptide" = "peptide")) %>%
@@ -1012,7 +1032,72 @@ compileKinswingerResults <- function( list_position ) {
       distinct()
   }
 
-  return( selected_scores_list)
+  selected_scores_list_cln <- selected_scores_list %>%
+    separate( annotation, into=c( "substrate_uniprot_acc", "subsrate_gene_symbol", "phosphosite_position", "sequence_context") ) %>%
+    dplyr::mutate( p_value_kinswingr = case_when( swing > 0     ~ p_greater,
+                                        swing < 0     ~ p_less,
+                                        TRUE ~ 1)) %>%
+    dplyr::rename(kinase_gene_symbol = "kinase",
+                  substrate_name = "PROTEIN-NAMES",
+                  phosphosite_log2FC = "fc",
+                  phosphosite_fdr_value = "pval",
+                  kinase_family = "Family",
+                  kinase_uniprot_id_human = "uniprot_id_human",
+                  kinase_uniprot_acc_human = "uniprot_acc_human",
+                  kinase_uniprot_id_mouse = "uniprot_id_mouse",
+                  kinase_uniprot_acc_mouse = "uniprot_acc_mouse",
+                  swing_kinswingr = "swing",
+                  pos_kinswingr = "pos",
+                  neg_kinswingr = "neg",
+                  all_kinswingr = "all",
+                  pk_kinswingr = "pk",
+                  nk_kinswingr = "nk",
+                  swing_raw_kinswingr = "swing_raw",
+                  n_kinswingr = "n",
+                  p_greater_kinswingr = "p_greater",
+                  p_less_kinswingr = "p_less") %>%
+    dplyr::select( "substrate_uniprot_acc" ,
+                   "subsrate_gene_symbol" ,
+                   "phosphosite_position" ,
+                   "sequence_context",
+                   "kinase_uniprot_acc",
+                   "kinase_gene_symbol",
+                   "kinase_family",
+                   "phosphosite_log2FC",
+                   "phosphosite_fdr_value",
+                   "motif.score",
+                   "motif.p.value",
+                   "swing_kinswingr",
+                   "p_value_kinswingr",
+                   "pos_kinswingr",
+                   "neg_kinswingr",
+                   "all_kinswingr",
+                   "pk_kinswingr",
+                   "nk_kinswingr",
+                   "swing_raw_kinswingr",
+                   "n_kinswingr",
+                   "p_greater_kinswingr",
+                   "p_less_kinswingr",
+                   "is_kinase_phosphorylated",
+                   "known_upstream_kinase",
+                   "prediction_match_known_kinase",
+                   "reactome_term",
+                   "ON_FUNCTION",
+                   "ON_PROCESS",
+                   "ON_PROT_INTERACT",
+                   "ON_OTHER_INTERACT",
+                   "REG_SITES_NOTES",
+                   "kinase_uniprot_id_human",
+                   "kinase_uniprot_acc_human",
+                   "kinase_uniprot_id_mouse",
+                   "kinase_uniprot_acc_mouse",
+                   "sites_id",
+                   "substrate_name") %>%
+    dplyr::filter ( (args$taxonomy_id == 9606 &  kinase_uniprot_acc_human == kinase_uniprot_acc) | ## human only
+                      (args$taxonomy_id == 10090 &  kinase_uniprot_acc_mouse == kinase_uniprot_acc) |  ## mouse only
+                      !(args$taxonomy_id %in% c(9606, 10090)))
+
+  return( selected_scores_list_cln)
 }
 
 
@@ -1026,7 +1111,8 @@ names( selected_scores_list) <- swing_out_list$comparison
 purrr::walk2( selected_scores_list,
               swing_out_list$comparison,
               ~vroom::vroom_write( .x  %>%
-                                     mutate( comparison = .y),
+                                     mutate( comparison = .y) %>%
+                                     relocate( comparison, .before="substrate_uniprot_acc"),
                                    file.path( args$output_dir,
                                               paste0( "selected_kinase_substrate_",
                                                       args$kinase_specificity, "_",
