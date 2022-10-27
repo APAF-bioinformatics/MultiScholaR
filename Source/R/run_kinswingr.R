@@ -902,7 +902,43 @@ if( args$taxonomy_id %in% c(9606, 10090) ) {
 ## ---------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Compile KinSwingR results together.")
 
-
+list_of_kinswnger_columns <- c(  "substrate_uniprot_acc" ,
+                                 "subsrate_gene_symbol" ,
+                                 "phosphosite_position" ,
+                                 "sequence_context",
+                                 "kinase_uniprot_acc",
+                                 "kinase_gene_symbol",
+                                 "kinase_family",
+                                 "phosphosite_log2FC",
+                                 "phosphosite_fdr_value",
+                                 "motif.score",
+                                 "motif.p.value",
+                                 "swing_kinswingr",
+                                 "p_value_kinswingr",
+                                 "pos_kinswingr",
+                                 "neg_kinswingr",
+                                 "all_kinswingr",
+                                 "pk_kinswingr",
+                                 "nk_kinswingr",
+                                 "swing_raw_kinswingr",
+                                 "n_kinswingr",
+                                 "p_greater_kinswingr",
+                                 "p_less_kinswingr",
+                                 "is_kinase_phosphorylated",
+                                 "known_upstream_kinase",
+                                 "prediction_match_known_kinase",
+                                 "reactome_term",
+                                 "ON_FUNCTION",
+                                 "ON_PROCESS",
+                                 "ON_PROT_INTERACT",
+                                 "ON_OTHER_INTERACT",
+                                 "REG_SITES_NOTES",
+                                 "kinase_uniprot_id_human",
+                                 "kinase_uniprot_acc_human",
+                                 "kinase_uniprot_id_mouse",
+                                 "kinase_uniprot_acc_mouse",
+                                 "sites_id",
+                                 "substrate_name")
 
 compileKinswingerResults <- function( list_position ) {
 
@@ -1030,9 +1066,17 @@ compileKinswingerResults <- function( list_position ) {
     selected_scores_list <- selected_scores_list_help  %>%
       left_join( is_phosphoylated_tbl, by=c("uniprot_acc_mouse" = "uniprot_acc"))  %>%
       distinct()
+  } else {
+
+    list_of_kinswnger_columns <- setdiff(list_of_kinswnger_columns, c( "is_kinase_phosphorylated",
+                                                                       "kinase_family",
+                                                                       "kinase_uniprot_id_human",
+                                                                       "kinase_uniprot_acc_human",
+                                                                       "kinase_uniprot_id_mouse",
+                                                                       "kinase_uniprot_acc_mouse") )
   }
 
-  selected_scores_list_cln <- selected_scores_list %>%
+  selected_scores_list_cln_step_1 <- selected_scores_list %>%
     separate( annotation, into=c( "substrate_uniprot_acc", "subsrate_gene_symbol", "phosphosite_position", "sequence_context") ) %>%
     dplyr::mutate( p_value_kinswingr = case_when( swing > 0     ~ p_greater,
                                         swing < 0     ~ p_less,
@@ -1041,11 +1085,6 @@ compileKinswingerResults <- function( list_position ) {
                   substrate_name = "PROTEIN-NAMES",
                   phosphosite_log2FC = "fc",
                   phosphosite_fdr_value = "pval",
-                  kinase_family = "Family",
-                  kinase_uniprot_id_human = "uniprot_id_human",
-                  kinase_uniprot_acc_human = "uniprot_acc_human",
-                  kinase_uniprot_id_mouse = "uniprot_id_mouse",
-                  kinase_uniprot_acc_mouse = "uniprot_acc_mouse",
                   swing_kinswingr = "swing",
                   pos_kinswingr = "pos",
                   neg_kinswingr = "neg",
@@ -1055,49 +1094,27 @@ compileKinswingerResults <- function( list_position ) {
                   swing_raw_kinswingr = "swing_raw",
                   n_kinswingr = "n",
                   p_greater_kinswingr = "p_greater",
-                  p_less_kinswingr = "p_less") %>%
-    dplyr::select( "substrate_uniprot_acc" ,
-                   "subsrate_gene_symbol" ,
-                   "phosphosite_position" ,
-                   "sequence_context",
-                   "kinase_uniprot_acc",
-                   "kinase_gene_symbol",
-                   "kinase_family",
-                   "phosphosite_log2FC",
-                   "phosphosite_fdr_value",
-                   "motif.score",
-                   "motif.p.value",
-                   "swing_kinswingr",
-                   "p_value_kinswingr",
-                   "pos_kinswingr",
-                   "neg_kinswingr",
-                   "all_kinswingr",
-                   "pk_kinswingr",
-                   "nk_kinswingr",
-                   "swing_raw_kinswingr",
-                   "n_kinswingr",
-                   "p_greater_kinswingr",
-                   "p_less_kinswingr",
-                   "is_kinase_phosphorylated",
-                   "known_upstream_kinase",
-                   "prediction_match_known_kinase",
-                   "reactome_term",
-                   "ON_FUNCTION",
-                   "ON_PROCESS",
-                   "ON_PROT_INTERACT",
-                   "ON_OTHER_INTERACT",
-                   "REG_SITES_NOTES",
-                   "kinase_uniprot_id_human",
-                   "kinase_uniprot_acc_human",
-                   "kinase_uniprot_id_mouse",
-                   "kinase_uniprot_acc_mouse",
-                   "sites_id",
-                   "substrate_name") %>%
-    dplyr::filter ( (args$taxonomy_id == 9606 &  kinase_uniprot_acc_human == kinase_uniprot_acc) | ## human only
-                      (args$taxonomy_id == 10090 &  kinase_uniprot_acc_mouse == kinase_uniprot_acc) |  ## mouse only
-                      !(args$taxonomy_id %in% c(9606, 10090)))
+                  p_less_kinswingr = "p_less")
 
-  return( selected_scores_list_cln)
+  selected_scores_list_cln_step_2 <- selected_scores_list_cln_step_1
+  if( "Family" %in% colnames( selected_scores_list_cln_step_1)) {
+
+    selected_scores_list_cln_step_2 <- selected_scores_list_cln_step_1 %>%
+      dplyr::rename( kinase_family = "Family",
+                     kinase_uniprot_id_human = "uniprot_id_human",
+                     kinase_uniprot_acc_human = "uniprot_acc_human",
+                     kinase_uniprot_id_mouse = "uniprot_id_mouse",
+                     kinase_uniprot_acc_mouse = "uniprot_acc_mouse") %>%
+      dplyr::filter ( (args$taxonomy_id == 9606 &  kinase_uniprot_acc_human == kinase_uniprot_acc) | ## human only
+                        (args$taxonomy_id == 10090 &  kinase_uniprot_acc_mouse == kinase_uniprot_acc) |  ## mouse only
+                        !(args$taxonomy_id %in% c(9606, 10090)))
+
+  }
+
+  selected_scores_list_cln_final <- selected_scores_list_cln_step_2 %>%
+    dplyr::select(all_of( list_of_kinswnger_columns) )
+
+  return( selected_scores_list_cln_final)
 }
 
 
