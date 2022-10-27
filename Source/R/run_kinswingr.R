@@ -51,7 +51,7 @@ parser <- add_option(parser, c("-d", "--debug"), action = "store_true", default 
 parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default = FALSE,
                      help = "Only print critical information to the console.")
 
-parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config_phos.ini",
+parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config_phos_desch.ini",
                      help = "Configuration file.",
                      metavar = "string")
 
@@ -902,7 +902,7 @@ if( args$taxonomy_id %in% c(9606, 10090) ) {
 ## ---------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Compile KinSwingR results together.")
 
-list_of_kinswnger_columns <- c(  "substrate_uniprot_acc" ,
+list_of_kinswinger_columns <- c(  "substrate_uniprot_acc" ,
                                  "subsrate_gene_symbol" ,
                                  "phosphosite_position" ,
                                  "sequence_context",
@@ -998,7 +998,7 @@ compileKinswingerResults <- function( list_position ) {
                 by=c("annotation" = "annotation",
                      "peptide" = "peptide")) %>%
     left_join ( annotated_data %>%
-                  dplyr::filter( comparison==  swing_out_list$comparison[[list_position]] ) %>%
+                  dplyr::filter( comparison == swing_out_list$comparison[[list_position]] ) %>%
                   dplyr::select( annotation, sites_id, peptide),
                 by=c("annotation" = "annotation",
                      "peptide" = "peptide"))
@@ -1017,7 +1017,8 @@ compileKinswingerResults <- function( list_position ) {
 
 
   step_4 <- step_3 %>%
-    dplyr::mutate( substrate_gene_name  = furrr::future_map(annotation, ~{ str_split(., "\\|") %>% purrr::map_chr(2)}) )
+    dplyr::mutate( substrate_gene_name  = furrr::future_map(annotation,
+                                                            ~{ str_split(., "\\|") %>% purrr::map_chr(2)}) )
 
   rm(step_3)
   gc()
@@ -1068,12 +1069,21 @@ compileKinswingerResults <- function( list_position ) {
       distinct()
   } else {
 
-    list_of_kinswnger_columns <- setdiff(list_of_kinswnger_columns, c( "is_kinase_phosphorylated",
-                                                                       "kinase_family",
-                                                                       "kinase_uniprot_id_human",
-                                                                       "kinase_uniprot_acc_human",
-                                                                       "kinase_uniprot_id_mouse",
-                                                                       "kinase_uniprot_acc_mouse") )
+    list_of_kinswinger_columns <- setdiff(list_of_kinswinger_columns,
+                                          c( "is_kinase_phosphorylated"
+                                             ,"kinase_family"
+                                             ,"kinase_uniprot_id_human"
+                                             ,"kinase_uniprot_acc_human"
+                                             ,"kinase_uniprot_id_mouse"
+                                             ,"kinase_uniprot_acc_mouse"
+                                             ,"known_upstream_kinase"
+                                             ,"prediction_match_known_kinase"
+                                             ,"reactome_term"
+                                             ,"ON_FUNCTION"
+                                             ,"ON_PROCESS"
+                                             ,"ON_PROT_INTERACT"
+                                             ,"ON_OTHER_INTERACT",
+                                             "REG_SITES_NOTES"  ) )
   }
 
   selected_scores_list_cln_step_1 <- selected_scores_list %>%
@@ -1106,13 +1116,15 @@ compileKinswingerResults <- function( list_position ) {
                      kinase_uniprot_id_mouse = "uniprot_id_mouse",
                      kinase_uniprot_acc_mouse = "uniprot_acc_mouse") %>%
       dplyr::filter ( (args$taxonomy_id == 9606 &  kinase_uniprot_acc_human == kinase_uniprot_acc) | ## human only
-                        (args$taxonomy_id == 10090 &  kinase_uniprot_acc_mouse == kinase_uniprot_acc) |  ## mouse only
-                        !(args$taxonomy_id %in% c(9606, 10090)))
+                      (args$taxonomy_id == 10090 &  kinase_uniprot_acc_mouse == kinase_uniprot_acc) |  ## mouse only
+                      !(args$taxonomy_id %in% c(9606, 10090)))
 
   }
 
+  print( setdiff(list_of_kinswinger_columns, colnames( selected_scores_list_cln_step_2)) )
+
   selected_scores_list_cln_final <- selected_scores_list_cln_step_2 %>%
-    dplyr::select(all_of( list_of_kinswnger_columns) )
+    dplyr::select(all_of( list_of_kinswinger_columns) )
 
   return( selected_scores_list_cln_final)
 }

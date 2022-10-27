@@ -125,7 +125,7 @@ parseFastaFile <- function(fasta_file) {
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' @export
-chooseBestAccession <- function(input_tbl, acc_detail_tab, accessions_column, group_id) {
+chooseBestPhosphositeAccession <- function(input_tbl, acc_detail_tab, accessions_column, group_id) {
 
   resolve_acc_helper <- input_tbl %>%
     dplyr::select( {{group_id}}, {{accessions_column}}, cleaned_peptide) %>%
@@ -183,5 +183,68 @@ chooseBestAccession <- function(input_tbl, acc_detail_tab, accessions_column, gr
 
 
   return( group_gene_names_and_uniprot_accs )
+
+}
+
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#'Choose the best accession
+#'@param input_tbl Contain the following columns, 'group_id' which is the Id for each protein group, 'accessions_column' which is the column with the accession of the protein
+#'@param acc_detail_tabl The out table from running the function 'parse_fasta_file'
+#'@param accessions_column The name of the column with the list of protein accessions, separated by ';' semi-colon. No need to quote the name as we are using tidyverse programming quosure.
+#'@param group_id The name of the column with the group ID for each protein group. No need to quote the name as we are using tidyverse programming quosure.
+#'@export
+chooseBestProteinAccession <- function(input_tbl, acc_detail_tab, accessions_column, row_id_column = uniprot_acc, group_id) {
+
+
+  join_condition <- rlang::set_names(c(as_name(enquo(row_id_column)), "cleaned_acc"),
+                                     c(as_name(enquo(row_id_column)), "cleaned_acc"))
+
+  resolve_acc_helper <- input_tbl %>%
+    dplyr::select({ { group_id } }, { { accessions_column } }) %>%
+    mutate({ { row_id_column } } := str_split({ { accessions_column } }, ";")) %>%
+    unnest({ { row_id_column } }) %>%
+    mutate(cleaned_acc = cleanIsoformNumber({ { accessions_column } })) %>%
+    left_join(acc_detail_tab,
+              by = join_condition) %>%
+    dplyr::select({ { group_id } }, one_of(c(as_name(enquo(row_id_column)), "gene_name", "cleaned_acc",
+                                             "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"))) %>%
+    distinct %>%
+    arrange({ { group_id } }, protein_evidence, status, is_isoform, desc(seq_length), isoform_num)
+
+  score_isoforms <- resolve_acc_helper %>%
+    mutate(gene_name = ifelse(is.na(gene_name) | gene_name == "", "NA", gene_name)) %>%
+    group_by({ { group_id } }, gene_name) %>%
+    arrange({ { group_id } }, protein_evidence,
+            status, is_isoform, desc(seq_length), isoform_num, cleaned_acc) %>%
+    mutate(ranking = row_number()) %>%
+    ungroup
+
+
+  ## For each gene name find the uniprot_acc with the lowest ranking
+
+  my_group_id <- enquo(group_id)
+
+  join_names <- rlang::set_names(c(as_name(my_group_id), "ranking", "gene_name"),
+                                 c(as_name(my_group_id), "ranking", "gene_name"))
+
+  group_gene_names_and_uniprot_accs <- score_isoforms %>%
+    distinct({ { group_id } }, gene_name, ranking) %>%
+    dplyr::filter(ranking == 1) %>%
+    left_join(score_isoforms %>%
+                dplyr::select({ { group_id } }, ranking, gene_name, uniprot_acc),
+              by = join_names) %>%
+    dplyr::select(-ranking) %>%
+    group_by({ { group_id } }) %>%
+    summarise(num_gene_names = n(),
+              gene_names = paste(gene_name, collapse = ":"),
+              uniprot_acc = paste(uniprot_acc, collapse = ":")) %>%
+    ungroup() %>%
+    mutate(is_unique = case_when(num_gene_names == 1 ~ "Unique",
+                                 TRUE ~ "Multimapped"))
+
+
+  return(group_gene_names_and_uniprot_accs)
 
 }

@@ -203,7 +203,7 @@ evidence_tbl_cleaned <- addColumnsToEvidenceTbl(evidence_janitor )
 loginfo("Use decision tree to get best accession per phosphosite evidence entry")
 #TODO:leading_proteins and evidence_id are hard coded, remove or make args
 captured_output<-capture.output(
-  accession_gene_name_tbl <- chooseBestAccession(evidence_tbl_cleaned,
+  accession_gene_name_tbl <- chooseBestPhosphositeAccession(evidence_tbl_cleaned,
                                                aa_seq_tbl,
                                                leading_proteins ,
                                                evidence_id)
