@@ -205,7 +205,7 @@ chooseBestProteinAccession <- function(input_tbl, acc_detail_tab, accessions_col
     dplyr::select({ { group_id } }, { { accessions_column } }) %>%
     mutate({ { row_id_column } } := str_split({ { accessions_column } }, ";")) %>%
     unnest({ { row_id_column } }) %>%
-    mutate(cleaned_acc = cleanIsoformNumber({ { accessions_column } })) %>%
+    mutate(cleaned_acc = cleanIsoformNumber({ { row_id_column } })) %>%
     left_join(acc_detail_tab,
               by = join_condition) %>%
     dplyr::select({ { group_id } }, one_of(c(as_name(enquo(row_id_column)), "gene_name", "cleaned_acc",
