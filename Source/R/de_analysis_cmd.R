@@ -627,6 +627,11 @@ list_rnorm.log.quant.ruv.r0 <- runTestsContrasts(counts_rnorm.log.for.contrast,
                                                  eBayes_trend = as.logical(args$eBayes_trend),
                                                  eBayes_robust = as.logical(args$eBayes_robust))
 
+## This plot is used to check the mean-variance relationship of the expression data, after fitting a linear model.
+pdf(file.path(args$output_dir, "plotSA_before_ruvIII.pdf" ))
+plotSA(list_rnorm.log.quant.ruv.r1$fit.eb)
+dev.off()
+
 myRes_rnorm.log.quant <- list_rnorm.log.quant.ruv.r0$results
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -822,7 +827,7 @@ if (!is.na( args$average_replicates_id)) {
 myRes_rnorm.log.quant.ruv.r1 <- list_rnorm.log.quant.ruv.r1$results
 
 ## This plot is used to check the mean-variance relationship of the expression data, after fitting a linear model.
-pdf(file.path(args$output_dir, "plotSA.pdf" ))
+pdf(file.path(args$output_dir, "plotSA_after_ruvIII.pdf" ))
 plotSA(list_rnorm.log.quant.ruv.r1$fit.eb)
 dev.off()
 
