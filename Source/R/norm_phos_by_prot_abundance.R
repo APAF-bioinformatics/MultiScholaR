@@ -54,7 +54,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.")
 
-parser <- add_option(parser, c("-c","--config"), type = "character", default = "config_phos.ini", dest = "config",
+parser <- add_option(parser, c("-c","--config"), type = "character", default = "config_phos_desch.ini", dest = "config",
                      help = "Configuration file.",
                      metavar = "string")
 
@@ -338,12 +338,13 @@ vroom::vroom_write( basic_data, file.path( args$output_dir,  "norm_phosphosite_l
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Join normalized phosphopeptide abundance table with phosphosite annotations")
 annotation_from_phospho_tbl <- phospho_tbl_orig %>%
+  dplyr::mutate( phos_row_ids = sites_id ) %>%
   dplyr::select(-q.mod, -p.mod, -log2FC, -uniprot_acc,  -position, -residue, -sequence)
 
 annotated_phos_tbl <- basic_data %>%
   left_join( annotation_from_phospho_tbl, by=c("sites_id" = "sites_id",
                                                "comparison" = "comparison",
-                                               "phos_row_ids" = "maxquant_row_ids")) %>%
+                                               "phos_row_ids" = "phos_row_ids")) %>%
   dplyr::select( !matches( "log2norm\\.\\d+\\.(left|right)") &
                  !matches("raw\\.\\d+\\.(left|right)")) %>%
   arrange(comparison, combined_q_mod, norm_phos_logFC ) %>%
