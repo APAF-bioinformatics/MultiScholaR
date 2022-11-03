@@ -165,7 +165,7 @@ if( ! "fdr.mod" %in% colnames( phospho_tbl_orig )) {
 
 phospho_tbl <- phospho_tbl_orig %>%
   dplyr::select( one_of(list_of_phospho_columns)) %>%
-  dplyr::rename( phos_maxquant_row_ids = "maxquant_row_ids" )
+  dplyr::mutate( phos_row_ids = sites_id )
 
 phospho_cln <- phospho_tbl %>%
   separate_rows(uniprot_acc, position, residue, sequence, sep=":") %>%
@@ -223,7 +223,7 @@ join_protein_phosopho_keys <- proteins_cln %>%
               by=c("uniprot_acc" = "uniprot_acc",
                    "comparison" = "comparison"),
               suffix=c(".prot", ".phos") ) %>%
-  distinct ( comparison, prot_maxquant_row_ids, phos_maxquant_row_ids )
+  distinct ( comparison, prot_maxquant_row_ids, phos_row_ids )
 
 # Function to find intersection between the uniprot accession of the phosphopeptide and the uniprot accession of the protein used to do fold-change normalization
 intersectTwoUniprotList <-function(x, y){  paste( intersect( str_split(x, ":")[[1]], str_split(y, ":")[[1]] ), collapse=":")    }
@@ -240,7 +240,7 @@ subsetPhosphositeDetails <- function(x,y) {    paste( str_split(x, ":")[[1]][ y]
 # I then have to find the unique protein row ID and phosphosites row ID pairs among the orignal
 # protein groups table and phosphopeptide table, where there could be multiple possible host-proteins per phosphopeptide
 basic_data_shared <- join_protein_phosopho_keys %>%
-  left_join( phospho_tbl, by = c("phos_maxquant_row_ids", "comparison")) %>%
+  left_join( phospho_tbl, by = c("phos_row_ids", "comparison")) %>%
   left_join( proteins_tbl, by = c("prot_maxquant_row_ids", "comparison" ),  suffix=c(".phos", ".prot") ) %>%
   mutate( uniprot_acc = purrr::map2_chr( uniprot_acc.phos, uniprot_acc.prot, intersectTwoUniprotList  )) %>%
   mutate( array_pos   = purrr::map2( uniprot_acc.phos, uniprot_acc,  getArrayPositionSelected ) ) %>%
@@ -260,7 +260,7 @@ list_of_data_shared_columns <- c( "comparison",  "norm_phos_logFC", "combined_q_
                                   "uniprot_acc", "position", "residue", "sequence",
                                   "log2FC.phos", "q.mod.phos",
                                   "log2FC.prot", "q.mod.prot",
-                                  "status", "phos_maxquant_row_ids", "prot_maxquant_row_ids" )
+                                  "status", "phos_row_ids", "prot_maxquant_row_ids" )
 
 if( "fdr.mod" %in% colnames( proteins_cln ) &
     "fdr.mod" %in% colnames( phospho_cln ) ) {
@@ -273,7 +273,7 @@ if( "fdr.mod" %in% colnames( proteins_cln ) &
                                     "uniprot_acc", "position", "residue", "sequence",
                                     "log2FC.phos", "q.mod.phos", "fdr.mod.phos",
                                     "log2FC.prot", "q.mod.prot", "fdr.mod.prot",
-                                    "status", "phos_maxquant_row_ids", "prot_maxquant_row_ids" )
+                                    "status", "phos_row_ids", "prot_maxquant_row_ids" )
 }
 
 if( ! "combined_fdr_mod" %in% colnames( basic_data_shared )) {
@@ -299,8 +299,8 @@ basic_data_phospho_only_helper <- phospho_cln %>%
 
 basic_data_phospho_only <- phospho_tbl %>%
   inner_join( basic_data_phospho_only_helper %>%
-                dplyr::select( phos_maxquant_row_ids),
-              by =c( "phos_maxquant_row_ids" ) ) %>%
+                dplyr::select( phos_row_ids, comparison),
+              by =c( "phos_row_ids", "comparison" ) ) %>%
   dplyr::mutate(norm_phos_logFC =  log2FC, combined_q_mod = q.mod) %>%
   dplyr::rename( log2FC.phos= log2FC, q.mod.phos = q.mod ) %>%
   dplyr::mutate( status  = "Phos_Only")
@@ -312,7 +312,7 @@ if( "fdr.mod" %in% colnames( proteins_cln ) &
 }
 
 list_of_phospho_only_columns <- c( "comparison", "norm_phos_logFC", "combined_q_mod", "sites_id", "uniprot_acc", "position", "residue", "sequence",
-"log2FC.phos", "q.mod.phos", "fdr.mod.phos", "status", "phos_maxquant_row_ids" )
+"log2FC.phos", "q.mod.phos", "fdr.mod.phos", "status", "phos_row_ids" )
 
 if( ! "combined_fdr_mod" %in% colnames( basic_data_shared )) {
 
@@ -343,7 +343,7 @@ annotation_from_phospho_tbl <- phospho_tbl_orig %>%
 annotated_phos_tbl <- basic_data %>%
   left_join( annotation_from_phospho_tbl, by=c("sites_id" = "sites_id",
                                                "comparison" = "comparison",
-                                               "phos_maxquant_row_ids" = "maxquant_row_ids")) %>%
+                                               "phos_row_ids" = "maxquant_row_ids")) %>%
   dplyr::select( !matches( "log2norm\\.\\d+\\.(left|right)") &
                  !matches("raw\\.\\d+\\.(left|right)")) %>%
   arrange(comparison, combined_q_mod, norm_phos_logFC ) %>%
