@@ -873,7 +873,8 @@ selected_data %>%
 
 loginfo("Print the volcano plots")
 
-volplot_gg.all <- plotVolcano(selected_data,
+volplot_gg.all <- plotVolcano(selected_data %>%
+                                dplyr::filter( analysis_type == "RUV applied"),
                               log_q_value_column = lqm,
                               log_fc_column = log2FC,
                               q_val_thresh = args$q_val_thresh,
