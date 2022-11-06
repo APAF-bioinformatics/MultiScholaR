@@ -1020,6 +1020,26 @@ enrichedGoTermBarPlot <- function( input_table, output_dir,
 
 }
 
+#'@description Create a word frequency distribution table for Word Cloud generation.
+#'Based on article by Céline Van den Rul, How to Generate Word Clouds in R, Simple Steps on How and When to Use Them,
+#' https://towardsdatascience.com/create-a-word-cloud-with-r-bde3e7422e8a (accessed 7th November 2022)
+#'@export
+#'@param text_list, a vector of text (e.g. a list of GO terms name)
+createWordCloudDataFrame <- function( text_list) {
 
+  docs <- Corpus(VectorSource(text_list))
+
+  docs <- docs %>%
+    tm_map(removeNumbers) %>%
+    tm_map(removePunctuation) %>%
+    tm_map(stripWhitespace)
+  docs <- tm_map(docs, content_transformer(tolower))
+  docs <- tm_map(docs, removeWords, stopwords("english"))
+
+  dtm <- TermDocumentMatrix(docs)
+  matrix <- as.matrix(dtm)
+  words <- sort(rowSums(matrix),decreasing=TRUE)
+  df <- data.frame(word = names(words),freq=words)
+}
 
 ########################
