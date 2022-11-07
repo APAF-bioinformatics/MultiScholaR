@@ -886,6 +886,160 @@ saveListOfFunctionalEnrichmentHeatmaps <- function(list_of_heatmaps,
 
 }
 
+###------------------------------------------------------------------------------------------------------------------------
 
+#' @export
+enrichedPathwayBarPlot <- function( input_table, input_go_type = NA, remove_duplicted_entries = "merge") {
+
+  duplicated_entries <- input_table %>%
+    mutate(set_type = case_when( str_detect( gene_set, "positive") ~"positive",
+                                 str_detect( gene_set, "negative") ~ "negative",
+                                 TRUE ~ "neutral")) %>%
+    group_by( across(c( any_of(added_columns), comparison, set_type, annotation_id) ) ) %>%
+    dplyr::summarise( temp_qvalue = min(qvalue )) %>%
+    ungroup() %>%
+    dplyr::group_by( across(c( any_of(added_columns), comparison, annotation_id) ) ) %>%
+    dplyr::summarise(counts = n(),
+                     best_p_adj_value = min(temp_qvalue)) %>%
+    ungroup() %>%
+    dplyr::filter( counts > 1)
+
+  if( remove_duplicted_entries == TRUE |
+      remove_duplicted_entries == "delete" ) {
+    input_table <- input_table  %>%
+      anti_join( duplicated_entries, by =c("comparison" = "comparison",
+                                           "annotation_id" = "annotation_id"))
+  } else if( remove_duplicted_entries == "merge" ) {
+
+    duplicates_tbl <- input_table %>%
+      inner_join( duplicated_entries, by =c("comparison" = "comparison",
+                                            "annotation_id" = "annotation_id")) %>%
+      dplyr::filter( qvalue == best_p_adj_value ) %>%
+      mutate( gene_set = "shared" )
+
+    input_table <- input_table  %>%
+      anti_join( duplicated_entries, by =c("comparison" = "comparison",
+                                           "annotation_id" = "annotation_id")) %>%
+      bind_rows( duplicates_tbl )
+
+  }
+
+
+  if (!is.na(input_go_type )) {
+    if(! (input_go_type %in% (input_table %>% distinct(go_type) %>% pull(go_type)) ) ) {
+      stop( paste0( "input_go_type = ", input_go_type, ", is not in the input_table" ) )
+    }
+
+    filt_input_table <-   input_table %>%
+      dplyr::filter( go_type == input_go_type )
+  } else {
+    filt_input_table <- input_table
+  }
+
+
+  bar_plot_data <- filt_input_table  %>%
+    mutate( neg_log10_qvalue =  -log10(qvalue))  %>%
+    arrange( neg_log10_qvalue) %>%
+    mutate( gene_set = case_when( gene_set == "positive_list" ~ "Up-regulated"
+                                  , gene_set == "negative_list" ~ "Down-regulated"
+                                  , gene_set == "shared" ~ "Both")) %>%
+    group_by(gene_set, term ) %>%
+    summarise( neg_log10_qvalue = max(neg_log10_qvalue)) %>%
+    ungroup()
+
+  term_ordering <- bar_plot_data %>%
+    dplyr::select( gene_set, neg_log10_qvalue, term) %>%
+    distinct(gene_set, neg_log10_qvalue, term) %>%
+    arrange( (gene_set), (neg_log10_qvalue), term ) %>%
+    pull(term )
+
+  x_label <- "Pathway"
+  if( !is.na(input_go_type) ) {
+    x_label <- "GO Term"
+  }
+
+  bar_plot_data %>%
+    mutate ( term = factor(term, levels= term_ordering)) %>%
+    mutate ( gene_set = factor( gene_set, levels =c( "Up-regulated"
+                                                     , "Down-regulated"
+                                                     , "Both"))) %>%
+    arrange( (gene_set), (neg_log10_qvalue) ) %>%
+    ggplot( aes( term, neg_log10_qvalue, fill=gene_set  )) +
+    geom_col() +
+    scale_fill_manual(values = c( "Up-regulated" = "#F8766D", "Down-regulated" = "#00BFC4", "Both" = "grey")) +
+    theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust=1))  +
+    #facet_grid(  gene_set ~ ., scales = "free_y", space = "free_y") +
+    coord_flip() +
+    #theme(strip.text.y.right = element_text(angle = 0)) +
+    labs(fill='Query Proteins') +
+    ylab( expression("Significance, -log"[10]*"(q-value)") ) +
+    xlab( x_label)
+
+}
+
+
+
+#'@description given input table, draw a bar plot representing the GO enrichment results.
+#'The height of each bar represents the negative log (base 10) q-values of the query proteins.
+#'@export
+enrichedGoTermBarPlot <- function( input_table, output_dir,
+                                   analysis_type = "GO", file_suffix, width=10, height = 7) {
+
+  partial_go_term_bar_plot <- partial( enrichedPathwayBarPlot,
+                                       input_table = filtered_enrich_revigo)
+
+  list_of_go_type <- filtered_enrich_revigo %>%
+    distinct( go_type) %>%
+    arrange(go_type) %>%
+    pull(go_type)
+
+  list_of_barplots <- purrr::map( list_of_go_type,
+                                  ~partial_go_term_bar_plot(input_go_type = .))
+
+  names( list_of_barplots) <- list_of_go_type
+
+  suffix_list <- file_suffix
+
+  plotGOBarPlotWithSuffix <- function(suffix, input_plot, plot_name, width, height) {
+    ggsave(plot = input_plot,
+           filename=file.path( output_dir,
+                               paste0(analysis_type, "_",
+                                      plot_name,
+                                      "_bar_plot.",
+                                      suffix )),
+           width= width,
+           height = height) }
+
+  plotBarPlot <- function(plot_name, input_plot, width, height ) {
+    purrr::walk( suffix_list,
+                 ~plotGOBarPlotWithSuffix(., input_plot, plot_name, width, height) ) }
+
+  purrr::walk2(names( list_of_barplots), list_of_barplots,
+               ~plotBarPlot(.x, .y, width=width, height=height) )
+
+
+}
+
+#'@description Create a word frequency distribution table for Word Cloud generation.
+#'Based on article by Céline Van den Rul, How to Generate Word Clouds in R, Simple Steps on How and When to Use Them,
+#' https://towardsdatascience.com/create-a-word-cloud-with-r-bde3e7422e8a (accessed 7th November 2022)
+#'@export
+#'@param text_list, a vector of text (e.g. a list of GO terms name)
+createWordCloudDataFrame <- function( text_list) {
+
+  docs <- Corpus(VectorSource(text_list))
+
+  docs <- docs %>%
+    tm_map(removeNumbers) %>%
+    tm_map(removePunctuation) %>%
+    tm_map(stripWhitespace)
+  docs <- tm_map(docs, content_transformer(tolower))
+  docs <- tm_map(docs, removeWords, stopwords("english"))
+
+  dtm <- TermDocumentMatrix(docs)
+  matrix <- as.matrix(dtm)
+  words <- sort(rowSums(matrix),decreasing=TRUE)
+  df <- data.frame(word = names(words),freq=words)
+}
 
 ########################

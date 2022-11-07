@@ -847,7 +847,7 @@ loginfo("Prepare data for drawing the volcano plots")
 selected_data <- getSignificantData(list_of_de_tables = list(myRes_rnorm.log.quant,
                                                              myRes_rnorm.log.quant.ruv.r1),
                                     list_of_descriptions = list("No RUV",
-                                                                  "RUV applied"),
+                                                                "RUV applied"),
                                     row_id = !!sym(args$row_id),
                                     p_value_column = p.mod,
                                     q_value_column = q.mod,
@@ -892,10 +892,10 @@ for( format_ext in args$plots_format) {
 loginfo("Count the number of up or down significnat differentially expressed proteins.")
 
 num_sig_de_molecules <- printCountDeGenesTable(list_of_de_tables = list(myRes_rnorm.log.quant,
-                                                                    myRes_rnorm.log.quant.ruv.r1),
-                                           list_of_descriptions = list("No RUV",
+                                                                        myRes_rnorm.log.quant.ruv.r1),
+                                               list_of_descriptions = list("No RUV",
                                                                            "RUV applied"),
-                                           formula_string = "analysis_type ~ comparison")
+                                               formula_string = "analysis_type ~ comparison")
 
 for( format_ext in args$plots_format) {
   file_name<-file.path(args$output_dir,paste0("num_sda_entities_barplot.",format_ext))
