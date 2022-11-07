@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 
 #Test if BioManager is installed
 if (!requireNamespace("BiocManager", quietly = TRUE)) {
