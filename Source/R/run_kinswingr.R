@@ -230,7 +230,7 @@ args <- setArgsDefault(args, "fdr_column_name", as_func=as.character, default_va
 args <- setArgsDefault(args, "p_value_cutoff", as_func=as.double, default_val=0.05 )
 args <- setArgsDefault(args, "is_multisite", as_func=as.logical, default_val=NA )
 args <- setArgsDefault(args, "tmp_dir", as_func=as.character, default_val="cache" )
-args <- setArgsDefault(args, "reuse_old", as_func=as.character, default_val=FALSE )
+args <- setArgsDefault(args, "reuse_old", as_func=as.logical, default_val=FALSE )
 
 
 createDirectoryIfNotExists(args$tmp_dir)
