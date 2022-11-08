@@ -56,7 +56,7 @@ parser <- add_option(parser, c("-c","--config"), type = "character", default = "
                      help = "Configuration file.",
                      metavar = "string")
 
-parser <- add_option(parser, c("-o","--output_dir"), type = "character", default = "clean_phos", dest = "output_dir",
+parser <- add_option(parser, c("-o","--output_dir"), type = "character", dest = "output_dir",
                      help = "Directory path for all results files.",
                      metavar = "string")
 
@@ -137,6 +137,7 @@ loginfo("----------------------------------------------------")
 
 args <- setArgsDefault(args, "pattern_suffix", as_func=as.character, default_val="_\\d+" )
 args <- setArgsDefault(args, "extract_patt_suffix", as_func=as.character, default_val="_(\\d+)" )
+args <- setArgsDefault(args, "output_dir", as_func=as.character, default_val="clean_phos" )
 
 
 testRequiredArguments(args, c(
@@ -147,6 +148,7 @@ testRequiredArguments(args, c(
   ,"recover_site_prob_thresh"
   ,"col_pattern_string"
   ,"add_cols_string"
+
 ))
 
 testRequiredFiles(c(
@@ -278,12 +280,20 @@ results_list  <- list( summarised_wide_list = summarised_wide_tbl_list,
                 all_phos_sites_long  = all_phos_sites_long_tbl )
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# output_files <- map_chr( list(  "mean", "median", "sum"),
+#                          ~file.path(args$output_dir, paste0(., "_phosphosites.tsv" )  ) )
+#
+# walk2(  results_list$summarised_wide_list,
+#        output_files,
+#        ~vroom::vroom_write( .x, .y))
+
+
 output_files <- map_chr( list(  "mean", "median", "sum"),
                          ~file.path(args$output_dir, paste0(., "_phoshpsites.tsv" )  ) )
 
 walk2(  results_list$summarised_wide_list,
-       output_files,
-       ~vroom::vroom_write( .x, .y))
+        output_files,
+        ~vroom::vroom_write( .x, .y))
 
 vroom::vroom_write( results_list$all_phos_sites_wide,
          file.path(args$output_dir, "all_phos_sites_wide_tbl.tsv" ))
