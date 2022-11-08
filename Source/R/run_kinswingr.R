@@ -551,7 +551,7 @@ if (!args$no_backup) {
   rds_dir <- paste(args$output_dir, "_prev", sep = "")
 }
 
-if( arg$reuse_old==TRUE & file.exists(file.path(rds_dir,  paste0("kinswingr_scores_list_", args$kinase_specificity, ".RDS")))) {
+if( args$reuse_old==TRUE & file.exists(file.path(rds_dir,  paste0("kinswingr_scores_list_", args$kinase_specificity, ".RDS")))) {
 
   scores_list <- readRDS( file.path(rds_dir, paste0("kinswingr_scores_list_", args$kinase_specificity, ".RDS")))
 
@@ -648,7 +648,7 @@ loginfo("Perform randomization analysis with Swing.")
 set.seed(args$random_seed)
 
 
-if( arg$reuse_old==TRUE &  file.exists(file.path(rds_dir,  paste0("kinswingr_swing_out_list_", args$kinase_specificity, ".RDS")))) {
+if( args$reuse_old==TRUE &  file.exists(file.path(rds_dir,  paste0("kinswingr_swing_out_list_", args$kinase_specificity, ".RDS")))) {
 
   swing_out_list <- readRDS( file.path(rds_dir,
                                        paste0("kinswingr_swing_out_list_", args$kinase_specificity, ".RDS")))
