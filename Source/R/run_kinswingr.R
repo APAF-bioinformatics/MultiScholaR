@@ -138,6 +138,9 @@ parser <- add_option(parser, "--is_multisite", type = "logical",
                      help = "If NA, include both single-site and multi-site phosphorylation. If TRUE, include only multi-site phosphorylation. If FALSE, include only single-site phosphorylation.",
                      metavar = "string")
 
+parser <- add_option(parser, "--reuse_old", type = "logical",
+                     help = "If TRUE, reuse result from files saved from previous run.")
+
 #parse command line arguments first.
 args <- parse_args(parser)
 
@@ -227,6 +230,8 @@ args <- setArgsDefault(args, "fdr_column_name", as_func=as.character, default_va
 args <- setArgsDefault(args, "p_value_cutoff", as_func=as.double, default_val=0.05 )
 args <- setArgsDefault(args, "is_multisite", as_func=as.logical, default_val=NA )
 args <- setArgsDefault(args, "tmp_dir", as_func=as.character, default_val="cache" )
+args <- setArgsDefault(args, "reuse_old", as_func=as.character, default_val=FALSE )
+
 
 createDirectoryIfNotExists(args$tmp_dir)
 
@@ -546,7 +551,7 @@ if (!args$no_backup) {
   rds_dir <- paste(args$output_dir, "_prev", sep = "")
 }
 
-if(file.exists(file.path(rds_dir,  paste0("kinswingr_scores_list_", args$kinase_specificity, ".RDS")))) {
+if( arg$reuse_old==TRUE & file.exists(file.path(rds_dir,  paste0("kinswingr_scores_list_", args$kinase_specificity, ".RDS")))) {
 
   scores_list <- readRDS( file.path(rds_dir, paste0("kinswingr_scores_list_", args$kinase_specificity, ".RDS")))
 
@@ -643,7 +648,7 @@ loginfo("Perform randomization analysis with Swing.")
 set.seed(args$random_seed)
 
 
-if( file.exists(file.path(rds_dir,  paste0("kinswingr_swing_out_list_", args$kinase_specificity, ".RDS")))) {
+if( arg$reuse_old==TRUE &  file.exists(file.path(rds_dir,  paste0("kinswingr_swing_out_list_", args$kinase_specificity, ".RDS")))) {
 
   swing_out_list <- readRDS( file.path(rds_dir,
                                        paste0("kinswingr_swing_out_list_", args$kinase_specificity, ".RDS")))
