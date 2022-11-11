@@ -532,7 +532,9 @@ clusterPathways <- function ( input_table, added_columns, remove_duplicted_entri
 ########################
 
 #'@export
-getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot_title, facet_by_column = NA, xaxis_levels=NA) {
+getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot_title,
+                                  facet_by_column = NA, xaxis_levels=NA,
+                                  scales="fixed") {
 
   get_shape <- list( negative_list = 25,
                      positive_list=24,
@@ -639,9 +641,10 @@ getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot
   if( !is.na( quo_get_expr(enquo(facet_by_column) ) ) ) {
     if( as_name(enquo(facet_by_column)) %in% colnames(table_filtering )) {
       print("Using faceting")
+      print( as_name( enquo( facet_by_column)) )
 
       output_heat_map <- output_heat_map  +
-        facet_wrap( vars( {{facet_by_column}} ) )
+        facet_wrap( vars({{facet_by_column}}), scales=scales  )
     }
   }
 
@@ -810,7 +813,8 @@ drawListOfFunctionalEnrichmentHeatmaps <- function(enriched_results_tbl,
                                                    analysis_column = Analysis_Type,
                                                    facet_by_column = NA,
                                                    remove_duplicted_entries = TRUE,
-                                                   xaxis_levels=NA) {
+                                                   xaxis_levels=NA,
+                                                   scales="fixed") {
 
   input_table <- enriched_results_tbl %>%
     dplyr::filter( min_set_size == set_size_min,
@@ -834,7 +838,6 @@ drawListOfFunctionalEnrichmentHeatmaps <- function(enriched_results_tbl,
                                              remove_duplicted_entries = remove_duplicted_entries) %>%
     unite(  {{analysis_column}} , comparison, any_of( c(setdiff(added_columns, list_of_columns_to_exclude))) )
 
-
   combinations <- annot_heat_map_ordered %>%
     distinct(  go_type)
 
@@ -845,7 +848,8 @@ drawListOfFunctionalEnrichmentHeatmaps <- function(enriched_results_tbl,
                           input_go_type=go_type,
                           input_plot_title=go_type,
                           facet_by_column = {{facet_by_column}},
-                          xaxis_levels = xaxis_levels) } )
+                          xaxis_levels = xaxis_levels,
+                          scales=scales) } )
 
   names( list_of_heatmaps) <- annot_heat_map_ordered %>%
     distinct(  go_type) %>%
