@@ -503,7 +503,7 @@ clusterPathways <- function ( input_table, added_columns, remove_duplicted_entri
                                 str_detect( gene_set, "negative") ~ -1* neg_log_p_value,
                                 TRUE ~ neg_log_p_value))  %>%
       pivot_wider( id_cols = c(annotation_id),
-                   names_from = c(any_of(added_columns), comparison, gene_set) ,
+                   names_from = c(any_of(added_columns), comparison, gene_set, go_type) ,
                    values_from = score,
                    values_fill = 0 )    %>%
       column_to_rownames("annotation_id") %>%
@@ -518,13 +518,16 @@ clusterPathways <- function ( input_table, added_columns, remove_duplicted_entri
     mutate( ordering = row_number()) %>%
   arrange(ordering)
 
-   annot_heat_map_ordered <-  input_table %>%
+   annot_heat_map_ordering <-  input_table %>%
      mutate( neg_log_p_value = -log10( p.adjust) )  %>%
      dplyr::select(  c(any_of(added_columns), comparison, annotation_id, term,  neg_log_p_value,  gene_set, go_type )) %>%
      mutate( annotation_id = as.character(annotation_id)) %>%
      left_join(pathways_sorting, by=c("annotation_id" = "Term")) %>%
      arrange(ordering)
 
+
+   annot_heat_map_ordered <- annot_heat_map_ordering %>%
+     mutate(term = factor( term,  levels = unique(annot_heat_map_ordering$term)))
 
   annot_heat_map_ordered
 }
@@ -584,7 +587,7 @@ getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot
   table_shape_colour <- table_filtering %>%
     mutate( use_shape = purrr::map_dbl( gene_set, my_get_shape)) %>%
     mutate( use_colour = purrr::map_chr( gene_set, my_get_colour )) %>%
-    mutate(Term = factor( term,  levels = unique(input_table$term)))
+    mutate(term = factor( term,  levels = unique(input_table$term)))
 
   if( length(xaxis_levels) > 1  ) {
 
@@ -610,7 +613,7 @@ getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot
   }
 
   output_heat_map <- table_shape_colour %>%
-    ggplot( aes(  {{x_axis}}, Term,
+    ggplot( aes(  {{x_axis}}, term,
                   fill = use_colour,
                   col = use_colour,
                   shape=use_shape,
@@ -793,8 +796,9 @@ evaluateBestMinMaxGeneSetSize <- function(enrichment_results_tble, added_columns
                                          gene_set) )
 
   plotting_data %>%
-    ggplot( aes( set_size, counts, group=comparison)) +
-    geom_line(aes(col=comparison)) +
+    unite(  custom_comparison , comparison, any_of( added_columns ) ) %>%
+  ggplot( aes( set_size, counts, group=custom_comparison)) +
+    geom_line(aes(col=custom_comparison)) +
     theme (axis.text.x = element_text (angle = 90, vjust = 1))  +
     facet_wrap( . ~ gene_set_mod    , scales="free_y")
 
