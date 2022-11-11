@@ -481,18 +481,21 @@ clusterPathways <- function ( input_table, added_columns, remove_duplicted_entri
       remove_duplicted_entries == "delete" ) {
     input_table <- input_table  %>%
       anti_join( duplicated_entries, by =c("comparison" = "comparison",
-                                           "annotation_id" = "annotation_id"))
+                                           "annotation_id" = "annotation_id",
+                                           my_added_columns))
   } else if( remove_duplicted_entries == "merge" ) {
 
     duplicates_tbl <- input_table %>%
       inner_join( duplicated_entries, by =c("comparison" = "comparison",
-                                            "annotation_id" = "annotation_id")) %>%
+                                            "annotation_id" = "annotation_id",
+                                            my_added_columns)) %>%
       dplyr::filter( qvalue == best_p_adj_value ) %>%
       mutate( gene_set = "shared" )
 
     input_table <- input_table  %>%
       anti_join( duplicated_entries, by =c("comparison" = "comparison",
-                                           "annotation_id" = "annotation_id")) %>%
+                                           "annotation_id" = "annotation_id",
+                                            my_added_columns)) %>%
       bind_rows( duplicates_tbl )
 
   }
