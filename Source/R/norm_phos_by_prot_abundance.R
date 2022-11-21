@@ -54,7 +54,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.")
 
-parser <- add_option(parser, c("-c","--config"), type = "character", default = "config_phos_desch.ini", dest = "config",
+parser <- add_option(parser, c("-c","--config"), type = "character", default = "config_phos.ini", dest = "config",
                      help = "Configuration file.",
                      metavar = "string")
 
@@ -82,6 +82,12 @@ parser <- add_option(parser, c("--phospho_file"), type="character", dest = "phos
 parser <- add_option(parser, "--plots_format", type = "character",
                      help = "A comma separated strings to indicate the fortmat output for the plots [pdf,png,svg].",
                      metavar = "string")
+
+parser <- add_option(parser, "--protein_group_filter", type = "character",
+                     help = "A string choosing which method to identify best host-protein from each protein group [protein_rank, best_p_value, best_log_fc].",
+                     metavar = "string")
+
+
 
 #parse command line arguments first.
 args <- parse_args(parser)
@@ -123,9 +129,28 @@ testRequiredArguments(args, c(
 
 testRequiredFiles(c(
   args$proteins_file
-  ,args$phospho_file))
+  ,args$phospho_file
+  ))
 
-args<-parseString(args,c("plots_format"))
+args <- setArgsDefault( args
+                        , "protein_group_filter"
+                        , as_func=as.character
+                        , default_val="protein_rank"
+                        )
+
+args<-parseString(args, c("plots_format"
+                          , "protein_group_filter"
+                         ))
+
+if (  ! args$protein_group_filter %in% c("protein_rank"
+                                  , "best_p_value"
+                                  , "best_log_fc"
+                                  ) ) {
+  logerror( paste0( "Invalid protein group repeats filter: '"
+                    , args$protein_group_filter
+                    , "'."
+                    ))
+}
 
 if(isArgumentDefined(args,"plots_format"))
 {
@@ -144,19 +169,19 @@ phospho_tbl_orig <- vroom::vroom(args$phospho_file)
 )
 logdebug(captured_output)
 
-
-list_of_phospho_columns <- c("sites_id",
-                             "uniprot_acc",
-                             "gene_name",
-                             "position",
-                             "residue",
-                             "sequence",
-                             "q.mod",
-                             "fdr.mod",
-                             "p.mod",
-                             "log2FC",
-                             "comparison",
-                             "maxquant_row_ids")
+list_of_phospho_columns <- c("sites_id"
+                             ,"uniprot_acc"
+                             ,"gene_name"
+                             ,"position"
+                             ,"residue"
+                             ,"sequence"
+                             ,"q.mod"
+                             ,"fdr.mod"
+                             ,"p.mod"
+                             ,"log2FC"
+                             ,"comparison"
+                             ,"maxquant_row_ids"
+)
 
 if( ! "fdr.mod" %in% colnames( phospho_tbl_orig )) {
   list_of_phospho_columns <- list_of_phospho_columns[list_of_phospho_columns != "fdr.mod"]
@@ -247,7 +272,7 @@ basic_data_shared <- join_protein_phosopho_keys %>%
   mutate( gene_name   = purrr::map2_chr(gene_name, array_pos, subsetPhosphositeDetails)) %>%
   mutate( position    = purrr::map2_chr(position, array_pos, subsetPhosphositeDetails)) %>%
   mutate( residue     = purrr::map2_chr(residue, array_pos, subsetPhosphositeDetails)) %>%
-  mutate( residue     = purrr::map2_chr(residue, sequence, subsetPhosphositeDetails)) %>%
+  #mutate( residue     = purrr::map2_chr(residue, sequence, subsetPhosphositeDetails)) %>%
   dplyr::select(-uniprot_acc.phos, -uniprot_acc.prot) %>%
   distinct() %>%
   ## Calculate the new log fold-change and use the Fisher's method to calculate the updated p-value
@@ -333,7 +358,56 @@ basic_data <- basic_data_shared  %>%
    logwarn("nrow(basic_data) != nrow(phospho_cln)")
  }
 
-vroom::vroom_write( basic_data, file.path( args$output_dir,  "norm_phosphosite_lfc_minus_protein_lfc_basic.tsv"))
+vroom::vroom_write( basic_data, file.path( args$output_dir,  "norm_phosphosite_lfc_minus_protein_lfc_with_protein_repeats.tsv"))
+
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+if( args$protein_group_filter == "protein_rank") {
+
+  basic_data_no_repeats <- getUniprotAccRankFromSitesId ( basic_data, uniprot_acc, sites_id)  %>%
+    arrange(sites_id, gene_list_position) %>%
+    dplyr::filter( gene_list_position == 1) %>%
+    dplyr::select( - uniprot_list, -gene_list_position, -uniprot_acc_split  )
+
+} else if ( args$protein_group_filter == "best_p_value") {
+
+  basic_data_no_repeats <- getUniprotAccRankFromSitesId ( basic_data, uniprot_acc, sites_id) %>%
+    inner_join(
+      basic_data %>%
+        group_by(comparison, sites_id) %>%
+        summarise( combined_q_mod = min( combined_q_mod)) %>%
+        ungroup(),
+      by = c("comparison",
+             "combined_q_mod",
+             "sites_id") ) %>%
+    group_by( comparison, sites_id ) %>%
+    mutate(row_rank = dense_rank(gene_list_position)   ) %>%
+    ungroup()  %>%
+    dplyr::filter( row_rank == 1)  %>%
+    dplyr::select( - uniprot_list, -gene_list_position, -uniprot_acc_split, -row_rank  )
+} else if ( args$protein_group_filter == "best_log_fc") {
+  basic_data_no_repeats <- getUniprotAccRankFromSitesId ( basic_data, uniprot_acc, sites_id)  %>%
+    mutate( abs_norm_phos_logFC  = abs(norm_phos_logFC)) %>%
+    inner_join(  basic_data %>%
+                   mutate( abs_norm_phos_logFC  = abs(norm_phos_logFC)) %>%
+                   group_by(comparison, sites_id) %>%
+                   summarise( abs_norm_phos_logFC = min( abs_norm_phos_logFC)) %>%
+                   ungroup(),
+                 by = c("comparison",
+                        "sites_id",
+                        "abs_norm_phos_logFC") ) %>%
+    group_by( comparison, sites_id ) %>%
+    mutate(row_rank = dense_rank(gene_list_position)   ) %>%
+    ungroup()  %>%
+    dplyr::filter( row_rank == 1)  %>%
+    dplyr::select( - uniprot_list, -gene_list_position, -uniprot_acc_split, -row_rank, -abs_norm_phos_logFC   )
+
+}  else {
+  logerror( paste0( "Invalid protein group repeats filter: '", args$protein_group_filter, "'."))
+}
+
+vroom::vroom_write( basic_data_no_repeats, file.path( args$output_dir,  "norm_phosphosite_lfc_minus_protein_lfc_basic_no_repeast.tsv"))
+
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Join normalized phosphopeptide abundance table with phosphosite annotations")
@@ -341,7 +415,7 @@ annotation_from_phospho_tbl <- phospho_tbl_orig %>%
   dplyr::mutate( phos_row_ids = sites_id ) %>%
   dplyr::select(-q.mod, -p.mod, -log2FC, -uniprot_acc,  -position, -residue, -sequence)
 
-annotated_phos_tbl <- basic_data %>%
+annotated_phos_tbl <- basic_data_no_repeats %>%
   left_join( annotation_from_phospho_tbl, by=c("sites_id" = "sites_id",
                                                "comparison" = "comparison",
                                                "phos_row_ids" = "phos_row_ids")) %>%
@@ -380,7 +454,7 @@ before_prot_norm <- phospho_cln %>%
   dplyr::mutate(  Normalization =  "Before")
 
 
-after_prot_norm <- basic_data %>%
+after_prot_norm <- basic_data_no_repeats %>%
   dplyr::filter( combined_q_mod < 0.05) %>%
   dplyr::distinct(comparison, sites_id) %>%
   dplyr::mutate(  Normalization =  "After")
@@ -449,7 +523,7 @@ loginfo("Create Volcano Plot")
 qm.threshold <- 0.05
 logFC.threshold <- 1
 
-basic_data_volcano_plot_data <- basic_data %>%
+basic_data_volcano_plot_data <- basic_data_no_repeats %>%
   left_join( annotated_phos_tbl %>%
                dplyr::distinct( uniprot_acc, gene_name),
              by=c("uniprot_acc" = "uniprot_acc")) %>%

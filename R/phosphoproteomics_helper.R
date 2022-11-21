@@ -650,6 +650,7 @@ uniquePhosphositesSummariseWideList <- function(summarised_long_tbl_list,
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' @export
 processMultisiteEvidence <- function(fasta_file,
                                      evidence_tbl,
                                      accession_col = leading_proteins,
@@ -741,4 +742,21 @@ processMultisiteEvidence <- function(fasta_file,
 
 }
 
+###--------------------------------------------------------------------------------------------------------------------------------
 
+#' @export
+#' @description Given an input table with sites_id and uniprot_acc columns, work out the ranking of the uniprot_acc within the sites_id
+#' @param input_table, an input table with sites_id and uniprot_acc columns
+#' @param uniprot_acc, name of Uniprot accession column tidyverse style column name input
+#' @param sites_id, name of sites_id column, in tidyverse style column name
+getUniprotAccRankFromSitesId <- function( input_table, uniprot_acc, sites_id) {
+  input_table %>%
+    dplyr::mutate( uniprot_acc_split = str_split({{uniprot_acc}}, ":" ) %>% purrr::map_chr(1) ) %>%
+    dplyr::mutate( uniprot_list = str_split( {{sites_id}}, "!") %>% purrr::map_chr(1) %>% str_split( ":")) %>%
+    dplyr::mutate( gene_list_position = purrr::map2_int( uniprot_acc_split, uniprot_list, ~{ which(.x == .y)[1]}))  %>%
+    relocate(uniprot_acc_split, .after=lazyeval::as_name(enquo(sites_id)) ) %>%
+    relocate(uniprot_list, .after="uniprot_acc_split" ) %>%
+    relocate(gene_list_position, .after="uniprot_list" )
+}
+
+###--------------------------------------------------------------------------------------------------------------------------------
