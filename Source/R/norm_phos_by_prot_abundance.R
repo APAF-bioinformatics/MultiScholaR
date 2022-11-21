@@ -406,7 +406,9 @@ if( args$protein_group_filter == "protein_rank") {
   logerror( paste0( "Invalid protein group repeats filter: '", args$protein_group_filter, "'."))
 }
 
-vroom::vroom_write( basic_data_no_repeats, file.path( args$output_dir,  "norm_phosphosite_lfc_minus_protein_lfc_basic_no_repeast.tsv"))
+vroom::vroom_write( basic_data_no_repeats
+                    , file.path( args$output_dir
+                                 ,  "norm_phosphosite_lfc_minus_protein_lfc_basic_no_repeast.tsv"))
 
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
