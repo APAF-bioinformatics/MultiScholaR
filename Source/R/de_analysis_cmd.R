@@ -86,7 +86,7 @@ parser <- add_option(parser, c( "--normalization"), type = "character",
 
 parser <- add_option(parser, c( "--imputation"), type = "logical",
                      help = "logical, whether imputation should be used to assign missing vlues.",
-                     metavar = "double")
+                     metavar = "logical")
 
 parser <- add_option(parser, c( "--impute_min_percent"), type = "double",
                      help = "A double from 0 to 1 indicating the percentage of quantified values in any treatment group to be included.",
@@ -99,6 +99,10 @@ parser <- add_option(parser, c( "--impute_min_num_of_groups"), type = "integer",
 parser <- add_option(parser, c( "--impute_specific_percent"), type = "integer",
                      help = "A double from 0 to 1 indicating the minimum percentage of quantified values in any treatment group to be included in site and condition specific impuatation.",
                      metavar = "integer")
+
+parser <- add_option(parser, c( "--remove_imputed"), type = "logical",
+                     help = "logical, whether comparisons involving imputed values should be removed.",
+                     metavar = "logical")
 
 parser <- add_option(parser, c( "--eBayes_trend"), type = "logical",
                      help = "logical, should an intensity-trend be allowed for the prior variance? Default is that the prior variance is constant.",
@@ -249,6 +253,7 @@ args <- setArgsDefault(args, "imputation", as_func=as.logical, default_val=FALSE
 args <- setArgsDefault(args, "impute_min_percent", as_func=as.double, default_val=NA )
 args <- setArgsDefault(args, "impute_min_num_of_groups", as_func=as.integer, default_val=NA )
 args <- setArgsDefault(args, "impute_specific_percent", as_func=as.double, default_val=NA )
+args <- setArgsDefault(args, "remove_imputed", as_func=as.logical, default_val=FALSE )
 
 args<-parseType(args
                 , c( "impute_min_percent"
@@ -267,6 +272,7 @@ args<-parseType(args,
 
 args<-parseType(args,
                 c("imputation"
+                  , "remove_imputed"
                   , "eBayes_trend"
                   , "eBayes_robust"
                  ) , as.logical
@@ -348,11 +354,11 @@ if (!args$row_id %in% colnames(evidence_tbl_filt)) {
   logerror("The row ID specified in --row-id was not found in the input counts file.")
   q()
 }
+
 if (length(which(str_detect(setdiff(colnames(evidence_tbl_filt), args$row_id), args$group_pattern))) == 0) {
   logerror("The input counts file did not contain any columns that matches the string provided in --group-pattern=%s", args$group_pattern)
   q()
 }
-
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Read design matrix file.")
@@ -588,14 +594,9 @@ if (!is.na( args$average_replicates_id)) {
 
 loginfo("Missing value imputation")
 
-# imputed_values <- counts_rnorm.log.for.imputation %>%
-#   as.data.frame %>%
-#   mutate_all(~{ imputePerCol(., width = 0.3, downshift = 1.8) }) %>%
-#   as.matrix
-
-
 counts_rnorm.log.for.contrast <- NA
-
+impute.selectGrps.filtered <- NA
+count_num_replicates_per_protein <- NA
 if (args$imputation == TRUE) {
 
   imputation_groups <- colnames( counts_rnorm.log.for.imputation) %>% str_split("_") %>% purrr::map_chr(1)
@@ -608,6 +609,28 @@ if (args$imputation == TRUE) {
                                      , imputation_groups)[,colnames(impute.selectGrps.filtered)]
   imputed_values <- tImpute(impute.scImpute.output, assay = "imputed")
 
+
+
+  num_samples_per_group <- design_mat_updated %>%
+    group_by( !!sym(args$group_id)) %>%
+    summarise( num_samples_per_group = n()) %>%
+    ungroup()
+
+
+  count_num_replicates_per_protein <- impute.selectGrps.filtered %>%
+    as.data.frame( ) %>%
+    rownames_to_column ("uniprot_acc")  %>%
+    pivot_longer( cols = matches( args$group_pattern),
+                  values_to = "LogIntensity",
+                  names_to = args$sample_id)  %>%
+    left_join( design_mat_updated, by = args$sample_id) %>%
+    dplyr::filter( !is.na( LogIntensity)) %>%
+    group_by( !!sym(args$row_id),   !!sym(args$group_id)) %>%
+    summarise( counts = n()) %>%
+    ungroup %>%
+    left_join( num_samples_per_group, by =args$group_id ) %>%
+    dplyr::filter(counts == num_samples_per_group) %>% ### need to edit
+    dplyr::select(-counts,-num_samples_per_group)
 
   vroom::vroom_write( as.data.frame(imputed_values) %>%
                         rownames_to_column(args$row_id),
@@ -624,10 +647,42 @@ if (args$imputation == TRUE) {
       }
 
   counts_rnorm.log.for.contrast <- imputed_values
+
+
 } else  {
   counts_rnorm.log.for.contrast <- counts_rnorm.log.for.imputation %>%
     as.data.frame %>%
     as.matrix
+}
+
+
+if(args$imputation == TRUE &
+   args$remove_imputed == TRUE ) {
+
+  imputed_values_remove_imputed <- counts_rnorm.log.for.contrast %>%
+    as.data.frame( ) %>%
+    rownames_to_column ("uniprot_acc")  %>%
+    pivot_longer( cols = matches( args$group_pattern)
+                  , values_to = "LogIntensity"
+                  , names_to = args$sample_id)  %>%
+    left_join( design_mat_updated
+               , by = args$sample_id) %>%
+    dplyr::filter( !is.na( LogIntensity)) %>%
+    dplyr::inner_join( count_num_replicates_per_protein
+                      , by =c(args$row_id, args$group_id) ) %>%
+    dplyr::select( -one_of(c(args$group_id))) %>%
+    arrange(args$row_id, args$sample_id)  %>%
+    pivot_wider( id_cols = args$row_id,
+                 names_from = args$sample_id,
+                 values_from = "LogIntensity")
+
+vroom::vroom_write( as.data.frame(imputed_values_remove_imputed) ,
+                    file.path(args$output_dir, "counts_after_normalization_and_remove_imputed.tsv"))
+
+writexl::write_xlsx( as.data.frame(imputed_values_remove_imputed) ,
+                     file.path( args$output_dir,
+                                "counts_after_normalization_and_remove_imputed.xlsx"))
+
 }
 
 
@@ -717,7 +772,6 @@ for( format_ext in args$plots_format) {
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Run RUVIII on the input counts table.")
 
-
 ruvIII_replicates_matrix <- getRuvIIIReplicateMatrix(design_mat_updated,
                                                      !!rlang::sym(args$sample_id),
                                                      !!rlang::sym(args$replicate_group_id))
@@ -773,6 +827,39 @@ writexl::write_xlsx(counts_rnorm.log.ruvIII_v1 %>%
                       as.data.frame %>%
                       rownames_to_column(args$row_id),
                     file.path(args$output_dir, "normalized_counts_after_ruv.xlsx"))
+
+
+
+
+
+if(args$imputation == TRUE &
+   args$remove_imputed == TRUE ) {
+
+  imputed_ruv_remove_imputed <- counts_rnorm.log.ruvIII_v1 %>%
+    as.data.frame( ) %>%
+    rownames_to_column ("uniprot_acc")  %>%
+    pivot_longer( cols = matches( args$group_pattern)
+                  , values_to = "LogIntensity"
+                  , names_to = args$sample_id)  %>%
+    left_join( design_mat_updated
+               , by = args$sample_id) %>%
+    dplyr::filter( !is.na( LogIntensity)) %>%
+    dplyr::inner_join( count_num_replicates_per_protein
+                       , by =c(args$row_id, args$group_id) ) %>%
+    dplyr::select( -one_of(c(args$group_id))) %>%
+    arrange(args$row_id, args$sample_id)  %>%
+    pivot_wider( id_cols = args$row_id,
+                 names_from = args$sample_id,
+                 values_from = "LogIntensity")
+
+  vroom::vroom_write( as.data.frame(imputed_ruv_remove_imputed) ,
+                      file.path(args$output_dir, "normalized_counts_after_ruv_remove_imputed.tsv"))
+
+  writexl::write_xlsx( as.data.frame(imputed_ruv_remove_imputed) ,
+                       file.path( args$output_dir,
+                                  "normalized_counts_after_ruv_remove_imputed.xlsx"))
+
+}
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Draw the RLE and PCA plots.")
@@ -869,38 +956,20 @@ selected_data <- getSignificantData(list_of_de_tables = list(myRes_rnorm.log.qua
   dplyr::rename(log2FC = "logFC")
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-## Remove rows with imputated values
+## Remove rows with imputed values
 
-if (args$imputation) {
-  count_num_replicates_per_protein <- proteins.cells.Ins.filtered %>%
-    as.data.frame %>%
-    rownames_to_column("row_id") %>%
-    mutate( row_id = as.integer(row_id) ) %>%
-    left_join(prot_avg_sort %>%
-                dplyr::select( row_id, uniprot_acc), by="row_id") %>%
-    pivot_longer( cols = matches( "\\d+"),
-                  values_to = "LogIntensity",
-                  names_to = "Samples_ID") %>%
-    mutate( group = purrr::map_chr( Samples_ID, ~{str_split( ., "_") %>% purrr::map_chr(1)} ) ) %>%
-    dplyr::filter( !is.na( LogIntensity)) %>%
-    group_by( row_id, uniprot_acc,  group) %>%
-    summarise( counts = n()) %>%
-    ungroup %>%
-    dplyr::filter(counts >= 4)  %>%
-    dplyr::mutate( time_point = str_replace( group, ".(\\d+)", "\\1") ) %>%
-    dplyr::select(-counts)
+if (args$imputation &
+    args$remove_imputed ) {
 
   included_comparisons <-  count_num_replicates_per_protein %>%
     dplyr::inner_join( count_num_replicates_per_protein,
-                       by = c("row_id", "uniprot_acc", "time_point")) %>%
+                       by = c(args$row_id)) %>%
     dplyr::filter( group.x != group.y) %>%
-    dplyr::filter( str_detect(group.y, "^C" )) %>%
-    dplyr::select(-time_point) %>%
     dplyr::mutate( expression = paste0("group", group.x, "-group", group.y)) %>%
-    dplyr::select(-group.x, -group.y, -row_id)
+    dplyr::select(-group.x, -group.y)
 
 
-  lfc_qval_new <- lfc_qval %>%
+  selected_data <- selected_data %>%
     mutate( q.mod.old = q.mod ) %>%
     dplyr::inner_join(included_comparisons,
                       by=c( "uniprot_acc" = "uniprot_acc",
