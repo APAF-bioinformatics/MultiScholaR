@@ -606,6 +606,8 @@ if (!is.na( args$average_replicates_id)) {
 
   rownames( design_mat_updated) <- design_mat_updated[,args$sample_id]
 
+  design_mat_updated <- design_mat_updated[colnames( counts_rnorm.log.for.imputation), ]
+
   vroom::vroom_write(design_mat_updated,  file.path( args$output_dir, "design_matrix_prot_avg.tab") )
 
 }
