@@ -729,7 +729,7 @@ counts_rnorm.log.ruvIII_v1 <- cmriRUVfit(counts_rnorm.log.for.contrast, X = ruv_
 
 
 ## Average values from technical replicates, replace Sample_ID and group_id
-design_mat_updated <- design_mat_cln
+# design_mat_updated <- design_mat_cln
 # if (!is.na( args$average_replicates_id)) {
 #
 #   counts_rnorm.log.ruvIII_avg <-  averageValuesFromReplicates(counts_rnorm.log.ruvIII_v1,
