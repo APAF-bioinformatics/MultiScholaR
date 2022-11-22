@@ -480,9 +480,12 @@ clusterPathways <- function ( input_table, added_columns, remove_duplicted_entri
   if( remove_duplicted_entries == TRUE |
       remove_duplicted_entries == "delete" ) {
     input_table <- input_table  %>%
-      anti_join( duplicated_entries, by =c("comparison" = "comparison",
-                                           "annotation_id" = "annotation_id",
-                                           added_columns))
+      anti_join( duplicated_entries
+                 , by =c("comparison" = "comparison",
+                         "annotation_id" = "annotation_id",
+                         added_columns))
+
+
   } else if( remove_duplicted_entries == "merge" ) {
 
     duplicates_tbl <- input_table %>%

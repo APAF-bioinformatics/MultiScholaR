@@ -364,9 +364,15 @@ vroom::vroom_write( basic_data, file.path( args$output_dir,  "norm_phosphosite_l
 
 if( args$protein_group_filter == "protein_rank") {
 
-  basic_data_no_repeats <- getUniprotAccRankFromSitesId ( basic_data, uniprot_acc, sites_id)  %>%
-    arrange(sites_id, gene_list_position) %>%
-    dplyr::filter( gene_list_position == 1) %>%
+  temp_ranking <-  getUniprotAccRankFromSitesId ( basic_data, uniprot_acc, sites_id)
+
+  min_ranking <- temp_ranking %>%
+    group_by( sites_id) %>%
+    summarise( gene_list_position = min(gene_list_position)) %>%
+    ungroup()
+
+  basic_data_no_repeats <- temp_ranking %>%
+    dplyr::inner_join( min_ranking, by = c("sites_id", "gene_list_position")) %>%
     dplyr::select( - uniprot_list, -gene_list_position, -uniprot_acc_split  )
 
 } else if ( args$protein_group_filter == "best_p_value") {
