@@ -575,10 +575,29 @@ if (!is.na( args$average_replicates_id)) {
 
   counts_rnorm.log.for.imputation <-  averageValuesFromReplicates(counts_na.log.quant,
                                                                 design_mat_cln,
-                                                                group_pattern,
+                                                                args$group_pattern,
                                                                 args$row_id,
                                                                 args$sample_id,
                                                                 args$average_replicates_id)
+
+#   counts_rnorm.log.for.imputation.v2 <- counts_na.log.quant %>%
+#     as.data.frame %>%
+#     rownames_to_column("sites_id") %>%
+#     pivot_longer( cols = matches("\\d+"),
+#                   values_to = "NormLogIntensity",
+#                   names_to="Sample_ID") %>%
+#     left_join( design_mat_cln, by = c("Sample_ID" = "Sample_ID")) %>%
+#     dplyr::filter( !is.na( NormLogIntensity) ) %>%
+#     group_by( sites_id,  biological_replicates ) %>%
+#     summarise( AvgNormLogIntensity = mean( NormLogIntensity) ) %>%
+#     ungroup() %>%
+#     arrange( biological_replicates, sites_id) %>%
+#     pivot_wider( id_cols = c( "sites_id"),
+#                  values_from = "AvgNormLogIntensity",
+#                  names_from="biological_replicates")
+#
+#
+#   counts_rnorm.log.for.imputation
 
   design_mat_updated <- design_mat_cln %>%
     mutate( !!rlang::sym(args$sample_id) :=  !!rlang::sym(args$average_replicates_id) ) %>%
