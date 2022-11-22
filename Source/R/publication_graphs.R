@@ -208,7 +208,17 @@ createOutputDir(args$output_dir, args$no_backup)
 
 ##-------------------------------------
 
-counts_rnorm.log.quant <- vroom::vroom( file.path(args$input_dir, "counts_after_median_scaling_and_imputation.tsv") )
+
+counts_file <- file.path(args$input_dir, "counts_after_median_scaling_and_imputation.tsv")
+if( !file.exists(counts_file)) {
+  counts_file <- file.path(args$input_dir, "counts_after_normalization_and_imputation.tsv")
+}
+
+if(!file.exists(counts_file)) {
+  logerror( paste0("Counts after normalization file not found: ", counts_file))
+}
+
+counts_rnorm.log.quant <- vroom::vroom(  counts_file)
 counts_rnorm.log.ruvIII <- vroom::vroom( file.path(args$input_dir, "normalized_counts_after_ruv.tsv")  )
 counts_rnorm.log.ruvIII.avg <- NA
 if(!is.na(args$avg_design_matrix_file)) {

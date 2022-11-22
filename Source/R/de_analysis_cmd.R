@@ -64,7 +64,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.  [default %default]")
 
-parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config_prot.ini",
+parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config_phos.ini",
                      help = "Configuration file.  [default %default]",
                      metavar = "string")
 
@@ -619,7 +619,7 @@ if (args$imputation == TRUE) {
 
   count_num_replicates_per_protein <- impute.selectGrps.filtered %>%
     as.data.frame( ) %>%
-    rownames_to_column ("uniprot_acc")  %>%
+    rownames_to_column (args$row_id)  %>%
     pivot_longer( cols = matches( args$group_pattern),
                   values_to = "LogIntensity",
                   names_to = args$sample_id)  %>%
@@ -661,7 +661,7 @@ if(args$imputation == TRUE &
 
   imputed_values_remove_imputed <- counts_rnorm.log.for.contrast %>%
     as.data.frame( ) %>%
-    rownames_to_column ("uniprot_acc")  %>%
+    rownames_to_column (args$row_id)  %>%
     pivot_longer( cols = matches( args$group_pattern)
                   , values_to = "LogIntensity"
                   , names_to = args$sample_id)  %>%
@@ -837,7 +837,7 @@ if(args$imputation == TRUE &
 
   imputed_ruv_remove_imputed <- counts_rnorm.log.ruvIII_v1 %>%
     as.data.frame( ) %>%
-    rownames_to_column ("uniprot_acc")  %>%
+    rownames_to_column (args$row_id)  %>%
     pivot_longer( cols = matches( args$group_pattern)
                   , values_to = "LogIntensity"
                   , names_to = args$sample_id)  %>%
@@ -968,16 +968,17 @@ if (args$imputation &
     dplyr::mutate( expression = paste0("group", group.x, "-group", group.y)) %>%
     dplyr::select(-group.x, -group.y)
 
+  join_condition <- rlang::set_names(c(args$row_id, "expression" )
+                                     , c(args$row_id, "expression"))
 
   selected_data <- selected_data %>%
     mutate( q.mod.old = q.mod ) %>%
     dplyr::inner_join(included_comparisons,
-                      by=c( "uniprot_acc" = "uniprot_acc",
-                            "expression" = "expression")) %>%
+                      by=join_condition) %>%
     group_by( analysis_type, comparison, expression) %>%
     nest( ) %>%
     ungroup %>%
-    mutate( data = purrr::map(data, function(x){ x %>% mutate( q.mod = qvalue( p.mod)$qvalues  )    })) %>%
+    mutate( data = purrr::map(data, function(x){ x %>% mutate( q.mod = qvalue( p.mod)$qvalues  ) })) %>%
     unnest( cols=c(data))
 
 
