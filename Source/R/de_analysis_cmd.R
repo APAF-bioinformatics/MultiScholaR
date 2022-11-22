@@ -593,30 +593,30 @@ loginfo("Missing value imputation")
 #   mutate_all(~{ imputePerCol(., width = 0.3, downshift = 1.8) }) %>%
 #   as.matrix
 
-imputation_groups <- colnames( counts_rnorm.log.for.imputation) %>% str_split("_") %>% purrr::map_chr(1)
-impute.selectGrps.filtered <- selectGrps(counts_rnorm.log.for.imputation
-                                         , imputation_groups
-                                         , args$impute_min_percent
-                                         , n=args$impute_min_num_of_groups)
-impute.scImpute.output <- scImpute(impute.selectGrps.filtered
-                                   , args$impute_specific_percent
-                                   , imputation_groups)[,colnames(impute.selectGrps.filtered)]
-imputed_values <- tImpute(impute.scImpute.output, assay = "imputed")
-
-
-vroom::vroom_write( as.data.frame(imputed_values) %>%
-                      rownames_to_column(args$row_id),
-                    file.path(args$output_dir, "counts_after_normalization_and_imputation.tsv"))
-
-writexl::write_xlsx( as.data.frame(imputed_values) %>%
-                       rownames_to_column(args$row_id),
-                     file.path( args$output_dir,
-                                "counts_after_normalization_and_imputation.xlsx"))
-
 
 counts_rnorm.log.for.contrast <- NA
 
 if (args$imputation == TRUE) {
+
+  imputation_groups <- colnames( counts_rnorm.log.for.imputation) %>% str_split("_") %>% purrr::map_chr(1)
+  impute.selectGrps.filtered <- selectGrps(counts_rnorm.log.for.imputation
+                                           , imputation_groups
+                                           , args$impute_min_percent
+                                           , n=args$impute_min_num_of_groups)
+  impute.scImpute.output <- scImpute(impute.selectGrps.filtered
+                                     , args$impute_specific_percent
+                                     , imputation_groups)[,colnames(impute.selectGrps.filtered)]
+  imputed_values <- tImpute(impute.scImpute.output, assay = "imputed")
+
+
+  vroom::vroom_write( as.data.frame(imputed_values) %>%
+                        rownames_to_column(args$row_id),
+                      file.path(args$output_dir, "counts_after_normalization_and_imputation.tsv"))
+
+  writexl::write_xlsx( as.data.frame(imputed_values) %>%
+                         rownames_to_column(args$row_id),
+                       file.path( args$output_dir,
+                                  "counts_after_normalization_and_imputation.xlsx"))
 
   if( length( which(is.na(imputed_values)) ) >0 ||
       length( which(is.nan(imputed_values))) >0 )  {
@@ -625,7 +625,7 @@ if (args$imputation == TRUE) {
 
   counts_rnorm.log.for.contrast <- imputed_values
 } else  {
-  counts_rnorm.log.for.contrast <- counts_na.log.quant %>%
+  counts_rnorm.log.for.contrast <- counts_rnorm.log.for.imputation %>%
     as.data.frame %>%
     as.matrix
 }
