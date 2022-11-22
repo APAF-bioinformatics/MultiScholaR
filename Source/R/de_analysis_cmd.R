@@ -575,6 +575,7 @@ if (!is.na( args$average_replicates_id)) {
 
   counts_rnorm.log.for.imputation <-  averageValuesFromReplicates(counts_na.log.quant,
                                                                 design_mat_cln,
+                                                                group_pattern,
                                                                 args$row_id,
                                                                 args$sample_id,
                                                                 args$average_replicates_id)

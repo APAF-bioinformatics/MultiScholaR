@@ -1106,12 +1106,12 @@ getNegCtrlProtAnova <- function(data_matrix, design_matrix, group_column = "grou
 
 #'@param design_matrix Contains the sample_id column and the average_replicates_id column
 #'@export
-averageValuesFromReplicates <- function(input_table, design_matrix, row_id, sample_id, average_replicates_id) {
+averageValuesFromReplicates <- function(input_table, design_matrix, group_pattern, row_id, sample_id, average_replicates_id) {
 
   output_table <- input_table %>%
     as.data.frame %>%
     rownames_to_column(  row_id   ) %>%
-    pivot_longer( cols=colnames(input_table),
+    pivot_longer( cols=matches(group_pattern),
                   names_to = sample_id,
                   values_to = "value") %>%
     left_join( design_matrix, by = sample_id ) %>%
