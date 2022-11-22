@@ -624,11 +624,11 @@ printPValuesDistribution <- function(selected_data, p_value_column = p.mod, form
   pvalhist <- ggplot(selected_data, aes({ { p_value_column } })) +
     theme(axis.title.y = element_blank()) +
     xlab("P-value") +
-    geom_histogram(aes_string(y = after_stat(density)),
+    geom_histogram(aes(y = after_stat(density)),
                    breaks = breaks,
                    position = "identity",
                    color = "black") +
-    geom_histogram(aes_string(y = after_stat(density)),
+    geom_histogram(aes(y = after_stat(density)),
                    breaks = breaks,
                    position = "identity")
 
