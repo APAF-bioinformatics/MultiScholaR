@@ -693,13 +693,13 @@ loginfo("Num. Control Genes %d", length(which(control_genes_index)))
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Draw canonical correlation plot.")
-ruv_groups <- data.frame(temp_column = colnames(imputed_values)) %>%
+ruv_groups <- data.frame(temp_column = colnames(counts_rnorm.log.for.contrast)) %>%
   dplyr::rename(!!rlang::sym(args$sample_id) := "temp_column") %>%
   left_join(design_mat_updated %>%
               dplyr::mutate(!!rlang::sym(args$sample_id) := as.character(!!rlang::sym(args$sample_id))),
             by = args$sample_id)
 
-cancorplot_r1 <- ruv_cancorplot(t(imputed_values),
+cancorplot_r1 <- ruv_cancorplot(t(counts_rnorm.log.for.contrast),
                                 X = ruv_groups %>% pull(!!rlang::sym(args$group_id)),
                                 ctl = control_genes_index)
 
