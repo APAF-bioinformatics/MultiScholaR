@@ -87,6 +87,18 @@ parser <- add_option(parser, c( "--imputation"), type = "logical",
                      help = "logical, whether imputation should be used to assign missing vlues.",
                      metavar = "double")
 
+parser <- add_option(parser, c( "--impute_min_percent"), type = "double",
+                     help = "A double from 0 to 1 indicating the percentage of quantified values in any treatment group to be included.",
+                     metavar = "double")
+
+parser <- add_option(parser, c( "--impute_min_num_of_groups"), type = "integer",
+                     help = "An integer indicating the number of replicatses, in which the percent filter must be satisfied for the protein / phosphosite to be included.",
+                     metavar = "integer")
+
+parser <- add_option(parser, c( "--impute_specific_percent"), type = "integer",
+                     help = "A double from 0 to 1 indicating the minimum percentage of quantified values in any treatment group to be included in site and condition specific impuatation.",
+                     metavar = "integer")
+
 parser <- add_option(parser, c( "--eBayes_trend"), type = "logical",
                      help = "logical, should an intensity-trend be allowed for the prior variance? Default is that the prior variance is constant.",
                      metavar = "double")
@@ -130,10 +142,6 @@ parser <- add_option(parser, "--ruv_method", type = "character",
 
 parser <- add_option(parser, "--counts_table_file", type = "character",
                      help = "Input file with the protein abundance values",
-                     metavar = "string")
-
-parser <- add_option(parser, "--test_pairs_file", type = "character",
-                     help = "Input file with a table listing all the pairs of experimental groups to compare. First column represents group A and second column represents group B. Linear model comparisons (e.g. Contrasts) would be group B minus group A.",
                      metavar = "string")
 
 parser <- add_option(parser, "--contrasts_file", type = "character",
@@ -237,23 +245,34 @@ args <- setArgsDefault(args, "q_val_thresh", as_func=as.double, default_val=NaN 
 args <- setArgsDefault(args, "control_genes_q_val_thresh", as_func=as.double, default_val=NaN )
 args <- setArgsDefault(args, "max_num_samples_miss_per_group", as_func=as.integer, default_val=NA )
 args <- setArgsDefault(args, "imputation", as_func=as.logical, default_val=FALSE )
+args <- setArgsDefault(args, "impute_min_percent", as_func=as.double, default_val=NA )
+args <- setArgsDefault(args, "impute_min_num_of_groups", as_func=as.integer, default_val=NA )
+args <- setArgsDefault(args, "impute_specific_percent", as_func=as.double, default_val=NA )
+
+args<-parseType(args
+                , c( "impute_min_percent"
+                    , "impute_specific_percent"
+                  ), as.double
+                )
 
 args<-parseType(args,
-  c("ruv_k"
-    ,"num_neg_ctrl"
-    ,"max_num_samples_miss_per_group"
-    ,"abundance_threshold"
-  )  ,as.integer)
+                c("ruv_k"
+                  ,"num_neg_ctrl"
+                  ,"max_num_samples_miss_per_group"
+                  ,"abundance_threshold"
+                  ,"impute_min_num_of_groups"
+                )  ,as.integer
+              )
 
 args<-parseType(args,
-                c("imputation",
-                  "eBayes_trend",
-                  "eBayes_robust"
-                 ) , as.logical)
+                c("imputation"
+                  , "eBayes_trend"
+                  , "eBayes_robust"
+                 ) , as.logical
+                )
 
 args<-parseString(args,
   c("group_pattern"
-    ,"test_pairs_file"
     ,"formula_string"
     ,"sample_id"
     , "replicate_group_id"
@@ -306,13 +325,6 @@ if (  ! args$normalization %in% c("none", "scale", "quantile", "cyclicloess") ) 
 }
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-# test_pairs <- NA
-# if( limma_method == "pairs" & args$test_pairs_file != "") {
-#   print("Read file with pairs of experimental groups to test.")
-#   test_pairs <- vroom::vroom( args$test_pairs_file)
-# }
-
 
 loginfo("Read file with lists of experimental contrasts to test %s", args$contrasts_file)
 captured_output<-capture.output(
@@ -371,7 +383,7 @@ if ( !is.na(args$replicate_group_id) &
 cols_for_analysis <- design_mat_cln %>% pull(as.name(args$sample_id))
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-loginfo("Get table with columns for analysis.")
+loginfo("Print out raw counts.")
 
 evidence_tbl_col <- evidence_tbl_filt[, c(args$row_id, cols_for_analysis) ]
 
@@ -465,13 +477,6 @@ writexl::write_xlsx( cln_dat_wide,
                      file.path( args$output_dir,
                                 "raw_counts_after_removing_proteins_with_missing_values.xlsx"))
 
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-ruvIII_replicates_matrix <- getRuvIIIReplicateMatrix(design_mat_cln,
-                                                     !!rlang::sym(args$sample_id),
-                                                     !!rlang::sym(args$replicate_group_id))
-
-logdebug(ruvIII_replicates_matrix)
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -537,74 +542,31 @@ counts_na.log <- log2(counts_na)
 # plotRle( t(counts_na.log))
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-loginfo("Median centering.")
+loginfo("Between array normalization.")
 counts_na.log.quant <- normalizeBetweenArrays(counts_na.log, method = args$normalization)
 
 
 vroom::vroom_write(as.data.frame(counts_na.log.quant) %>%
                      rownames_to_column(args$row_id),
-                   file.path(args$output_dir, "counts_after_median_scaling_before_imputation.tsv"))
+                   file.path(args$output_dir, "counts_after_normalization_before_imputation.tsv"))
 
 writexl::write_xlsx( as.data.frame(counts_na.log.quant) %>%
                        rownames_to_column(args$row_id),
                      file.path( args$output_dir,
-                                "counts_after_median_scaling_before_imputation.xlsx"))
+                                "counts_after_normalization_before_imputation.xlsx"))
 
 # plotRle(t(counts_na.log))
 # plotRle(t(counts_na.log.quant))
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-loginfo("Missing value imputation")
+loginfo("Calculate average value from technical replicates if this is applicable")
 
-
-imputed_values <- counts_na.log.quant %>%
-  as.data.frame %>%
-  mutate_all(~{ imputePerCol(., width = 0.3, downshift = 1.8) }) %>%
-  as.matrix
-
-# counts_rnorm.is_nan <- counts_rnorm.log.quant %>%
-#   as.data.frame %>%
-#   mutate_all(~{ !is.finite(.) }) %>%
-#   as.matrix
-
-vroom::vroom_write( as.data.frame(imputed_values) %>%
-                      rownames_to_column(args$row_id),
-                    file.path(args$output_dir, "counts_after_median_scaling_and_imputation.tsv"))
-
-writexl::write_xlsx( as.data.frame(imputed_values) %>%
-                       rownames_to_column(args$row_id),
-                     file.path( args$output_dir,
-                                "counts_after_median_scaling_and_imputation.xlsx"))
-
-
-counts_rnorm.log.quant <- NA
-
-if (args$imputation == TRUE) {
-  counts_rnorm.log.quant <- imputed_values
-} else  {
-  counts_rnorm.log.quant <- counts_na.log.quant %>%
-    as.data.frame %>%
-    as.matrix
-}
-
-
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-loginfo("Run statistical tests without RUV.")
-
-ID <- rownames(counts_rnorm.log.quant)
-
-type_of_grouping <- getTypeOfGrouping(design_matrix = design_mat_cln, group_id = args$group_id, sample_id = args$sample_id)
-
-list_rnorm.log.quant.ruv.r0 <- NA
-myRes_rnorm.log.quant <- NA
-
-# Calculate average value from technical replicates if this is applicable
-counts_rnorm.log.for.contrast <- counts_rnorm.log.quant
+counts_rnorm.log.for.imputation <- counts_na.log.quant
 design_mat_updated <- design_mat_cln
 if (!is.na( args$average_replicates_id)) {
 
-  counts_rnorm.log.for.contrast <-  averageValuesFromReplicates(counts_rnorm.log.quant,
+  counts_rnorm.log.for.imputation <-  averageValuesFromReplicates(counts_na.log.quant,
                                                                 design_mat_cln,
                                                                 args$row_id,
                                                                 args$sample_id,
@@ -616,7 +578,68 @@ if (!is.na( args$average_replicates_id)) {
     distinct()
 
   rownames( design_mat_updated) <- design_mat_updated[,args$sample_id]
+
+  vroom::vroom_write(design_mat_updated,  file.path( args$output_dir, "design_matrix_prot_avg.tab") )
+
 }
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+loginfo("Missing value imputation")
+
+# imputed_values <- counts_rnorm.log.for.imputation %>%
+#   as.data.frame %>%
+#   mutate_all(~{ imputePerCol(., width = 0.3, downshift = 1.8) }) %>%
+#   as.matrix
+
+imputation_groups <- colnames( counts_rnorm.log.for.imputation) %>% str_split("_") %>% purrr::map_chr(1)
+impute.selectGrps.filtered <- selectGrps(counts_rnorm.log.for.imputation
+                                         , imputation_groups
+                                         , args$impute_min_percent
+                                         , n=args$impute_min_num_of_groups)
+impute.scImpute.output <- scImpute(impute.selectGrps.filtered
+                                   , args$impute_specific_percent
+                                   , imputation_groups)[,colnames(impute.selectGrps.filtered)]
+imputed_values <- tImpute(impute.scImpute.output, assay = "imputed")
+
+
+vroom::vroom_write( as.data.frame(imputed_values) %>%
+                      rownames_to_column(args$row_id),
+                    file.path(args$output_dir, "counts_after_normalization_and_imputation.tsv"))
+
+writexl::write_xlsx( as.data.frame(imputed_values) %>%
+                       rownames_to_column(args$row_id),
+                     file.path( args$output_dir,
+                                "counts_after_normalization_and_imputation.xlsx"))
+
+
+counts_rnorm.log.for.contrast <- NA
+
+if (args$imputation == TRUE) {
+
+  if( length( which(is.na(imputed_values)) ) >0 ||
+      length( which(is.nan(imputed_values))) >0 )  {
+        logerror("Imputation didn't work properly.")
+      }
+
+  counts_rnorm.log.for.contrast <- imputed_values
+} else  {
+  counts_rnorm.log.for.contrast <- counts_na.log.quant %>%
+    as.data.frame %>%
+    as.matrix
+}
+
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+loginfo("Run statistical tests without RUV.")
+
+ID <- rownames(counts_rnorm.log.for.contrast)
+
+type_of_grouping <- getTypeOfGrouping(design_matrix = design_mat_cln, group_id = args$group_id, sample_id = args$sample_id)
+
+list_rnorm.log.quant.ruv.r0 <- NA
+myRes_rnorm.log.quant <- NA
+
 
 list_rnorm.log.quant.ruv.r0 <- runTestsContrasts(counts_rnorm.log.for.contrast,
                                                  contrast_strings = contrasts_tbl[, 1][[1]],
@@ -645,8 +668,8 @@ myRes_rnorm.log.quant <- list_rnorm.log.quant.ruv.r0$results
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Find the list of negative control genes using ANOVA.")
-control_genes_index <- getNegCtrlProtAnova(counts_rnorm.log.quant,
-                                           design_matrix = design_mat_cln,
+control_genes_index <- getNegCtrlProtAnova(counts_rnorm.log.for.contrast,
+                                           design_matrix = design_mat_updated,
                                            group_column = args$group_id,
                                            num_neg_ctrl = args$num_neg_ctrl,
                                            q_val_thresh = args$control_genes_q_val_thresh)
@@ -671,7 +694,7 @@ loginfo("Num. Control Genes %d", length(which(control_genes_index)))
 loginfo("Draw canonical correlation plot.")
 ruv_groups <- data.frame(temp_column = colnames(imputed_values)) %>%
   dplyr::rename(!!rlang::sym(args$sample_id) := "temp_column") %>%
-  left_join(design_mat_cln %>%
+  left_join(design_mat_updated %>%
               dplyr::mutate(!!rlang::sym(args$sample_id) := as.character(!!rlang::sym(args$sample_id))),
             by = args$sample_id)
 
@@ -692,44 +715,53 @@ for( format_ext in args$plots_format) {
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Run RUVIII on the input counts table.")
-counts_rnorm.log.ruvIII_v1 <- cmriRUVfit(counts_rnorm.log.quant, X = ruv_groups$group, control_genes_index, Z = 1, k = args$ruv_k,
+
+
+ruvIII_replicates_matrix <- getRuvIIIReplicateMatrix(design_mat_updated,
+                                                     !!rlang::sym(args$sample_id),
+                                                     !!rlang::sym(args$replicate_group_id))
+
+logdebug(ruvIII_replicates_matrix)
+
+
+counts_rnorm.log.ruvIII_v1 <- cmriRUVfit(counts_rnorm.log.for.contrast, X = ruv_groups$group, control_genes_index, Z = 1, k = args$ruv_k,
                                          method = args$ruv_method, M = ruvIII_replicates_matrix) %>% t()
 
 
 ## Average values from technical replicates, replace Sample_ID and group_id
 design_mat_updated <- design_mat_cln
-if (!is.na( args$average_replicates_id)) {
-
-  counts_rnorm.log.ruvIII_avg <-  averageValuesFromReplicates(counts_rnorm.log.ruvIII_v1,
-                                                             design_mat_cln,
-                                                             args$row_id,
-                                                             args$sample_id,
-                                                             args$average_replicates_id)
-
-  design_mat_updated <- design_mat_cln %>%
-    mutate( !!rlang::sym(args$sample_id) :=  !!rlang::sym(args$average_replicates_id) ) %>%
-    dplyr::select( one_of( args$sample_id, args$group_id)) %>%
-    distinct()
-
-  rownames( design_mat_updated) <- design_mat_updated[,args$sample_id]
-
-
-  vroom::vroom_write(design_mat_updated,
-                     file.path(args$output_dir, "design_mat_avg_replicates.tab"))
-
-
-  vroom::vroom_write(counts_rnorm.log.ruvIII_avg %>%
-                       as.data.frame %>%
-                       rownames_to_column(args$row_id),
-                     file.path(args$output_dir, "normalized_counts_after_ruv_replicates_averaged.tsv"))
-
-  writexl::write_xlsx(counts_rnorm.log.ruvIII_avg %>%
-                        as.data.frame %>%
-                        rownames_to_column(args$row_id),
-                      file.path(args$output_dir, "normalized_counts_after_ruv_replicates_averaged.xlsx"))
-
-
-}
+# if (!is.na( args$average_replicates_id)) {
+#
+#   counts_rnorm.log.ruvIII_avg <-  averageValuesFromReplicates(counts_rnorm.log.ruvIII_v1,
+#                                                              design_mat_cln,
+#                                                              args$row_id,
+#                                                              args$sample_id,
+#                                                              args$average_replicates_id)
+#
+#   design_mat_updated <- design_mat_cln %>%
+#     mutate( !!rlang::sym(args$sample_id) :=  !!rlang::sym(args$average_replicates_id) ) %>%
+#     dplyr::select( one_of( args$sample_id, args$group_id)) %>%
+#     distinct()
+#
+#   rownames( design_mat_updated) <- design_mat_updated[,args$sample_id]
+#
+#
+#   vroom::vroom_write(design_mat_updated,
+#                      file.path(args$output_dir, "design_mat_avg_replicates.tab"))
+#
+#
+#   vroom::vroom_write(counts_rnorm.log.ruvIII_avg %>%
+#                        as.data.frame %>%
+#                        rownames_to_column(args$row_id),
+#                      file.path(args$output_dir, "normalized_counts_after_ruv_replicates_averaged.tsv"))
+#
+#   writexl::write_xlsx(counts_rnorm.log.ruvIII_avg %>%
+#                         as.data.frame %>%
+#                         rownames_to_column(args$row_id),
+#                       file.path(args$output_dir, "normalized_counts_after_ruv_replicates_averaged.xlsx"))
+#
+#
+# }
 
 vroom::vroom_write(counts_rnorm.log.ruvIII_v1 %>%
                      as.data.frame %>%
@@ -747,7 +779,7 @@ loginfo("Draw the RLE and PCA plots.")
 plot_width = 15
 plot_height = 14
 if (!is.na( args$average_replicates_id)) {
-  rle_pca_plots_arranged <- rlePcaPlotList(list_of_data_matrix = list(counts_rnorm.log.quant, counts_rnorm.log.ruvIII_v1, counts_rnorm.log.ruvIII_avg),
+  rle_pca_plots_arranged <- rlePcaPlotList(list_of_data_matrix = list(counts_rnorm.log.for.contrast, counts_rnorm.log.ruvIII_v1, counts_rnorm.log.ruvIII_avg),
                                            list_of_design_matrix = list( design_mat_cln, design_mat_cln, design_mat_updated) ,
                                            sample_id_column = !!rlang::sym(args$sample_id),
                                            group_column = !!rlang::sym(args$group_id),
@@ -759,7 +791,7 @@ if (!is.na( args$average_replicates_id)) {
 } else {
 
 
-rle_pca_plots_arranged <- rlePcaPlotList(list_of_data_matrix = list(counts_rnorm.log.quant, counts_rnorm.log.ruvIII_v1),
+rle_pca_plots_arranged <- rlePcaPlotList(list_of_data_matrix = list(counts_rnorm.log.for.contrast, counts_rnorm.log.ruvIII_v1),
                                          list_of_design_matrix = list( design_mat_cln, design_mat_cln) ,
                                          sample_id_column = !!rlang::sym(args$sample_id),
                                          group_column = !!rlang::sym(args$group_id),
@@ -767,7 +799,7 @@ rle_pca_plots_arranged <- rlePcaPlotList(list_of_data_matrix = list(counts_rnorm
 
 }
 
-# plotRle(t(counts_rnorm.log.quant))
+# plotRle(t(counts_rnorm.log.for.contrast))
 
 
 for( format_ext in args$plots_format) {
@@ -859,6 +891,53 @@ selected_data <- getSignificantData(list_of_de_tables = list(myRes_rnorm.log.qua
                                     facet_column = analysis_type,
                                     q_val_thresh = args$q_val_thresh) %>%
   dplyr::rename(log2FC = "logFC")
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## Remove rows with imputated values
+
+if (args$imputation) {
+  count_num_replicates_per_protein <- proteins.cells.Ins.filtered %>%
+    as.data.frame %>%
+    rownames_to_column("row_id") %>%
+    mutate( row_id = as.integer(row_id) ) %>%
+    left_join(prot_avg_sort %>%
+                dplyr::select( row_id, uniprot_acc), by="row_id") %>%
+    pivot_longer( cols = matches( "\\d+"),
+                  values_to = "LogIntensity",
+                  names_to = "Samples_ID") %>%
+    mutate( group = purrr::map_chr( Samples_ID, ~{str_split( ., "_") %>% purrr::map_chr(1)} ) ) %>%
+    dplyr::filter( !is.na( LogIntensity)) %>%
+    group_by( row_id, uniprot_acc,  group) %>%
+    summarise( counts = n()) %>%
+    ungroup %>%
+    dplyr::filter(counts >= 4)  %>%
+    dplyr::mutate( time_point = str_replace( group, ".(\\d+)", "\\1") ) %>%
+    dplyr::select(-counts)
+
+  included_comparisons <-  count_num_replicates_per_protein %>%
+    dplyr::inner_join( count_num_replicates_per_protein,
+                       by = c("row_id", "uniprot_acc", "time_point")) %>%
+    dplyr::filter( group.x != group.y) %>%
+    dplyr::filter( str_detect(group.y, "^C" )) %>%
+    dplyr::select(-time_point) %>%
+    dplyr::mutate( expression = paste0("group", group.x, "-group", group.y)) %>%
+    dplyr::select(-group.x, -group.y, -row_id)
+
+
+  lfc_qval_new <- lfc_qval %>%
+    mutate( q.mod.old = q.mod ) %>%
+    dplyr::inner_join(included_comparisons,
+                      by=c( "uniprot_acc" = "uniprot_acc",
+                            "expression" = "expression")) %>%
+    group_by( analysis_type, comparison, expression) %>%
+    nest( ) %>%
+    ungroup %>%
+    mutate( data = purrr::map(data, function(x){ x %>% mutate( q.mod = qvalue( p.mod)$qvalues  )    })) %>%
+    unnest( cols=c(data))
+
+
+}
+
 
 ## Write all the results in one single table
 selected_data %>%

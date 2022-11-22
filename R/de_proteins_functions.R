@@ -195,7 +195,7 @@ imputePerCol <- function(temp, width = 0.3, downshift = 1.8) {
 #'@export
 getRuvIIIReplicateMatrix <- function(design_matrix, sample_id_column, group_column, temp_column = is_replicate_temp) {
 
-  ruvIII_replicates_matrix <- design_mat_cln %>%
+  ruvIII_replicates_matrix <- design_matrix %>%
     dplyr::select({ { sample_id_column } }, { { group_column } }) %>%
     mutate({ { temp_column } } := 1) %>%
     pivot_wider(id_cols = { { sample_id_column } },
