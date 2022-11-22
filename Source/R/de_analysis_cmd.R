@@ -31,6 +31,7 @@ p_load(magrittr)
 p_load(knitr)
 p_load(rlang)
 p_load(ggrepel)
+p_load(PhosR)
 
 p_load(statmod)
 p_load(limma)
@@ -778,28 +779,16 @@ loginfo("Draw the RLE and PCA plots.")
 
 plot_width = 15
 plot_height = 14
-if (!is.na( args$average_replicates_id)) {
-  rle_pca_plots_arranged <- rlePcaPlotList(list_of_data_matrix = list(counts_rnorm.log.for.contrast, counts_rnorm.log.ruvIII_v1, counts_rnorm.log.ruvIII_avg),
-                                           list_of_design_matrix = list( design_mat_cln, design_mat_cln, design_mat_updated) ,
-                                           sample_id_column = !!rlang::sym(args$sample_id),
-                                           group_column = !!rlang::sym(args$group_id),
-                                           list_of_descriptions = list("Before RUVIII", "After RUVIII", "After RUVII, averaged"))
 
-  plot_width <- 22.5
-  plot_height <- 14
-
-} else {
 
 
 rle_pca_plots_arranged <- rlePcaPlotList(list_of_data_matrix = list(counts_rnorm.log.for.contrast, counts_rnorm.log.ruvIII_v1),
-                                         list_of_design_matrix = list( design_mat_cln, design_mat_cln) ,
+                                         list_of_design_matrix = list( design_mat_updated, design_mat_updated) ,
                                          sample_id_column = !!rlang::sym(args$sample_id),
                                          group_column = !!rlang::sym(args$group_id),
                                          list_of_descriptions = list("Before RUVIII", "After RUVIII"))
 
-}
 
-# plotRle(t(counts_rnorm.log.for.contrast))
 
 
 for( format_ext in args$plots_format) {
@@ -833,18 +822,6 @@ loginfo("Compare the different experimental groups and obtain lists of different
 list_rnorm.log.quant.ruv.r1 <- NA
 myRes_rnorm.log.quant.ruv.r1 <- NA
 
-if (!is.na( args$average_replicates_id)) {
-
-  list_rnorm.log.quant.ruv.r1 <- runTestsContrasts(counts_rnorm.log.ruvIII_avg,
-                                                   contrast_strings = contrasts_tbl[, 1][[1]],
-                                                   design_matrix = design_mat_updated,
-                                                   formula_string = args$formula_string,
-                                                   weights = NA,
-                                                   treat_lfc_cutoff = as.double(args$treat_lfc_cutoff),
-                                                   eBayes_trend = as.logical(args$eBayes_trend),
-                                                   eBayes_robust = as.logical(args$eBayes_robust))
-
-} else {
   # requires statmod library
   list_rnorm.log.quant.ruv.r1 <- runTestsContrasts(counts_rnorm.log.ruvIII_v1,
                                                    contrast_strings = contrasts_tbl[, 1][[1]],
@@ -854,7 +831,6 @@ if (!is.na( args$average_replicates_id)) {
                                                    treat_lfc_cutoff = as.double(args$treat_lfc_cutoff),
                                                    eBayes_trend = as.logical(args$eBayes_trend),
                                                    eBayes_robust = as.logical(args$eBayes_robust))
-}
 
 myRes_rnorm.log.quant.ruv.r1 <- list_rnorm.log.quant.ruv.r1$results
 
@@ -1023,10 +999,7 @@ loginfo("Create wide format output file")
 norm_counts <- NA
 
 counts_table_to_use <- counts_rnorm.log.ruvIII_v1
-if (!is.na( args$average_replicates_id)) {
 
-  counts_table_to_use <- counts_rnorm.log.ruvIII_avg
-}
 
   norm_counts <- counts_table_to_use %>%
     as.data.frame %>%
@@ -1065,11 +1038,7 @@ loginfo("Create long format output file")
 
 
 counts_table_to_use <- counts_rnorm.log.ruvIII_v1
-if (!is.na( args$average_replicates_id)) {
 
-  counts_table_to_use <- counts_rnorm.log.ruvIII_avg
-
-}
 
 de_proteins_long <- createDeResultsLongFormat( lfc_qval_tbl = selected_data %>%
                                                  dplyr::filter(analysis_type == "RUV applied"),
@@ -1080,7 +1049,7 @@ de_proteins_long <- createDeResultsLongFormat( lfc_qval_tbl = selected_data %>%
                                                group_id = args$group_id,
                                                group_pattern = args$group_pattern,
                                                design_matrix_norm = design_mat_updated,
-                                               design_matrix_raw =  design_mat_cln )
+                                               design_matrix_raw =  design_mat_updated )
 
 #head(de_proteins_long)
 
