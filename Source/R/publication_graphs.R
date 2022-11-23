@@ -209,9 +209,9 @@ createOutputDir(args$output_dir, args$no_backup)
 ##-------------------------------------
 
 
-counts_file <- file.path(args$input_dir, "counts_after_median_scaling_and_imputation.tsv")
+counts_file <- file.path(args$input_dir, "counts_after_median_scaling_before_imputation.tsv")
 if( !file.exists(counts_file)) {
-  counts_file <- file.path(args$input_dir, "counts_after_normalization_and_imputation.tsv")
+  counts_file <- file.path(args$input_dir, "counts_after_normalization_before_imputation.tsv")
 }
 
 if(!file.exists(counts_file)) {
