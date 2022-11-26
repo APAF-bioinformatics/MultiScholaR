@@ -826,10 +826,12 @@ drawListOfFunctionalEnrichmentHeatmaps <- function(enriched_results_tbl,
                                                    xaxis_levels=NA,
                                                    scales="fixed") {
 
+  added_columns <- unique( added_columns)
+
   input_table <- enriched_results_tbl %>%
     dplyr::filter( min_set_size == set_size_min,
                    max_set_size == set_size_max) %>%
-    group_by(  across( c(any_of(added_columns), comparison, gene_set, go_type) )) %>%
+    group_by(  across(  c(any_of(added_columns), comparison, gene_set, go_type)  )) %>%
     arrange( comparison, pvalue) %>%
     mutate(  ranking = row_number() ) %>%
     ungroup()
