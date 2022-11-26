@@ -27,18 +27,25 @@ make help
 ```
 
 ## Usage
-ProteomeRiver consists of several command line scripts. 
-### Clean phosphorylation data  
+ProteomeRiver consists of several command line scripts. You can create a config.ini script with all the parameters and run the script sequentially:
+
 ```
-clean_phos_cmd.R \
- --output-dir=$PHOS_DIR \
- --fasta=$DATA_DIR/ALPK1-set1MusMusculus20201226CanIso.fasta \
- --fasta-save=$PHOS_DIR/aa_seq_tbl.RDS  \
- --raw-counts=$DATA_DIR/ALPK1-set1evidence.txt \
- --site-prob=0.75 \
- --recover-prob=0.5 \
- --column-pattern="Reporter intensity corrected" \
- --add-columns="experiment"
+clean_proteins_cmd.R -c config.ini
+de_analysis_cmd.R -c config.ini
+annot_proteins_cmd.R -c config.ini
+```
+
+Typical directory structure of your project should look like:
+
+``` 
+PID/
+├── phosphoproteomics
+└── proteomics_analysis
+    ├── annot_proteins
+    ├── cache
+    ├── clean_proteins
+    ├── de_analysis
+    └── input
 ```
 
 ## Annotations Download Procedures (keep here for now)
