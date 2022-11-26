@@ -91,8 +91,8 @@ parser <- add_option(parser, "--design_matrix_file", type = "character",
                      help = "Input file with the design matrix",
                      metavar = "string")
 
-parser <- add_option(parser, "--avg_design_matrix_file", type = "character",
-                     help = "Input file with the design matrix, where technical replicates has already been averaged and merged into one sample.",
+parser <- add_option(parser, "--before_avg_design_matrix_file", type = "character",
+                     help = "Input file with the design matrix, before technical replicates were averaged and merged into one sample.",
                      metavar = "string")
 
 parser <- add_option(parser, "--sample_id", type = "character",
@@ -138,7 +138,7 @@ if (args$config != "") {
 }
 
 args <- setArgsDefault(args, "output_dir", as_func=as.character, default_val="publication_graphs" )
-args <- setArgsDefault(args, "avg_design_matrix_file", as_func=as.character, default_val=NA )
+args <- setArgsDefault(args, "before_avg_design_matrix_file", as_func=as.character, default_val=NA )
 
 createOutputDir(args$output_dir, args$no_backup)
 
@@ -209,9 +209,27 @@ createOutputDir(args$output_dir, args$no_backup)
 ##-------------------------------------
 
 
-counts_file <- file.path(args$input_dir, "counts_after_median_scaling_before_imputation.tsv")
-if( !file.exists(counts_file)) {
-  counts_file <- file.path(args$input_dir, "counts_after_normalization_before_imputation.tsv")
+## Before normalization
+
+counts_before_averaging <- NA
+if(!is.na(args$before_avg_design_matrix_file)) {
+
+  counts_before_averaging_file <- file.path( args$input_dir, "counts_after_normalization_before_imputation.tsv")
+  counts_before_averaging <- vroom::vroom( counts_before_averaging_file  )
+}
+
+## After averaging (before RUVIII)
+counts_rnorm.log.quant <- NA
+
+file_a <- file.path(args$input_dir, "counts_after_normalization_and_imputation.tsv")
+file_b <- file.path(args$input_dir, "counts_after_normalization_before_imputation_averaged.tsv")
+file_c <- file.path(args$input_dir, "counts_after_normalization_before_imputation.tsv")
+
+counts_file <- file_c
+if( file.exists(file_a)) {
+  counts_file <- file_a
+} else if (file.exists( file_b)) {
+  counts_file <- file_b
 }
 
 if(!file.exists(counts_file)) {
@@ -219,10 +237,22 @@ if(!file.exists(counts_file)) {
 }
 
 counts_rnorm.log.quant <- vroom::vroom(  counts_file)
-counts_rnorm.log.ruvIII <- vroom::vroom( file.path(args$input_dir, "normalized_counts_after_ruv.tsv")  )
-counts_rnorm.log.ruvIII.avg <- NA
-if(!is.na(args$avg_design_matrix_file)) {
-  counts_rnorm.log.ruvIII.avg <- vroom::vroom( file.path(args$input_dir, "normalized_counts_after_ruv_replicates_averaged.tsv")  )
+
+
+
+## After averaging and RUVIII
+
+
+counts_rnorm.log.ruvIII <- NA
+if( file.exists(file.path(args$input_dir, "normalized_counts_after_ruv_remove_imputed.tsv") )) {
+  counts_rnorm.log.ruvIII <- vroom::vroom( file.path(args$input_dir, "normalized_counts_after_ruv_remove_imputed.tsv")  )
+
+} else if( file.exists(file.path(args$input_dir, "normalized_counts_after_ruv.tsv") )) {
+
+  counts_rnorm.log.ruvIII <- vroom::vroom( file.path(args$input_dir, "normalized_counts_after_ruv.tsv")  )
+
+} else {
+   logerror( "Normalized counts after RUV file not found.")
 }
 
 createDirIfNotExists(args$output_dir)
@@ -241,14 +271,14 @@ rownames(design_mat_cln) <- design_mat_cln %>% pull(as.name(args$sample_id))
 
 ## design matrix when technical replicates has been averaged and merged into one
 
-avg_design_mat_cln <- NA
+before_avg_design_mat_cln <- NA
 
-if(!is.na(args$avg_design_matrix_file )) {
-  avg_design_mat_cln <- vroom::vroom(args$avg_design_matrix_file) %>%
+if(!is.na(args$before_avg_design_matrix_file )) {
+  before_avg_design_mat_cln <- vroom::vroom(args$before_avg_design_matrix_file) %>%
     as.data.frame() %>%
     dplyr::mutate(!!rlang::sym(args$sample_id) := as.character(!!rlang::sym(args$sample_id)))
 
-  rownames(avg_design_mat_cln) <- avg_design_mat_cln %>% pull(as.name(args$sample_id))
+  rownames(before_avg_design_mat_cln) <- before_avg_design_mat_cln %>% pull(as.name(args$sample_id))
 }
 
 ##-------------------------------------
@@ -301,11 +331,12 @@ file_name_part <- file.path( args$output_dir, "RLE", "after_RUVIII_rle.")
 gg_save_logging ( after_RUVIII_rle, file_name_part, args$plots_format)
 
 
-if(!is.na(args$avg_design_matrix_file )) {
+if(!is.na(args$before_avg_design_matrix_file )) {
+  counts_before_averaging_mat <- counts_before_averaging %>%
+    column_to_rownames("uniprot_acc")
 
-
-  after_RUVIII_avg_rle <- plotRle(t(as.matrix(counts_rnorm.log.ruvIII.avg_mat)),
-                              rowinfo = avg_design_mat_cln[colnames(counts_rnorm.log.ruvIII.avg_mat),
+  counts_before_averaging_rle <- plotRle(t(as.matrix(counts_before_averaging_mat)),
+                              rowinfo = before_avg_design_mat_cln[colnames(counts_before_averaging_mat),
                                                        args$group_id]) +
     theme(axis.text.x = element_text(size = 13))   +
     theme(axis.text.y = element_text(size = 13))  +
@@ -316,10 +347,10 @@ if(!is.na(args$avg_design_matrix_file )) {
     theme(legend.title = element_text(size = 12)) +
     xlab("Samples")
 
-  after_RUVIII_avg_rle
+  counts_before_averaging_rle
 
-  file_name_part <- file.path( args$output_dir, "RLE", "after_RUVIII_avg_rle.")
-  gg_save_logging ( after_RUVIII_avg_rle, file_name_part, args$plots_format)
+  file_name_part <- file.path( args$output_dir, "RLE", "counts_before_averaging_rle.")
+  gg_save_logging ( counts_before_averaging_rle, file_name_part, args$plots_format)
 
 }
 
@@ -489,12 +520,11 @@ ggsave(filename = file.path(args$output_dir, "NumSigDeMolecules", "num_sig_de_mo
 ## PCA plots
 ##-------------------------------------
 
-counts_rnorm.log.ruvIII.avg_mat <- NA
-if(!is.na(args$avg_design_matrix_file)) {
-  counts_rnorm.log.ruvIII.avg_mat <- counts_rnorm.log.ruvIII.avg  %>%
+counts_before_averaging_mat <- NA
+if(!is.na(args$before_avg_design_matrix_file)) {
+  counts_before_averaging_mat <- counts_before_averaging  %>%
     column_to_rownames(args$row_id)
 }
-
 
 before_ruvIII_pca <- plotPca( counts_rnorm.log.quant_mat,
                               design_matrix = design_mat_cln,
@@ -564,10 +594,6 @@ file_name_part <- file.path( args$output_dir, "PCA", "before_ruvIII_pca_group_la
 
 gg_save_logging ( before_ruvIII_pca, file_name_part, args$plots_format)
 
-
-
-
-
 after_ruvIII_pca <- plotPca( counts_rnorm.log.ruvIII_mat,
                              design_matrix = design_mat_cln,
                              sample_id_column = !!rlang::sym(args$sample_id),
@@ -614,11 +640,11 @@ gg_save_logging ( after_ruvIII_pca_no_labels, file_name_part, args$plots_format)
 
 
 
-if(!is.na(args$avg_design_matrix_file )) {
+if(!is.na(args$before_avg_design_matrix_file )) {
 
 
-  after_ruvIII_avg_pca <- plotPca( counts_rnorm.log.ruvIII.avg_mat,
-                                   design_matrix = avg_design_mat_cln,
+  counts_before_averaging_pca <- plotPca( counts_before_averaging_mat,
+                                   design_matrix = before_avg_design_mat_cln,
                                    sample_id_column = !!rlang::sym(args$sample_id),
                                    group_column = !!rlang::sym(args$group_id),
                                    title = "After RUVIII", geom.text.size = 7) +
@@ -631,10 +657,10 @@ if(!is.na(args$avg_design_matrix_file )) {
     theme(legend.text = element_text(size = 12)) +
     theme(legend.title = element_text(size = 12))
 
-  after_ruvIII_avg_pca
+  counts_before_averaging_pca
 
-  file_name_part <- file.path( args$output_dir, "PCA", "after_ruvIII_avg_pca.")
-  gg_save_logging ( after_ruvIII_avg_pca, file_name_part, args$plots_format)
+  file_name_part <- file.path( args$output_dir, "PCA", "counts_before_averaging_pca.")
+  gg_save_logging ( counts_before_averaging_pca, file_name_part, args$plots_format)
 
 }
 

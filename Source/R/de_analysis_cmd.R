@@ -64,7 +64,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.  [default %default]")
 
-parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config_phos.ini",
+parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config_prot.ini",
                      help = "Configuration file.  [default %default]",
                      metavar = "string")
 
@@ -84,6 +84,10 @@ parser <- add_option(parser, c( "--normalization"), type = "character",
                      help = "character string specifying the normalization method to be used. Choices are none, scale, quantile or cyclicloess",
                      metavar = "string")
 
+parser <- add_option(parser, c( "--handling_zeros"), type = "character",
+                     help = "character string specifying how zero values are treated. Choices are to mark zero values as NA (mark_as_na), or add a very small pseudo count (add_pseudo_count) to facilitate log transformation",
+                     metavar = "string")
+
 parser <- add_option(parser, c( "--imputation"), type = "logical",
                      help = "logical, whether imputation should be used to assign missing vlues.",
                      metavar = "logical")
@@ -96,13 +100,17 @@ parser <- add_option(parser, c( "--impute_min_num_of_groups"), type = "integer",
                      help = "An integer indicating the number of replicatses, in which the percent filter must be satisfied for the protein / phosphosite to be included.",
                      metavar = "integer")
 
-parser <- add_option(parser, c( "--impute_specific_percent"), type = "integer",
+parser <- add_option(parser, c( "--impute_specific_percent"), type = "double",
                      help = "A double from 0 to 1 indicating the minimum percentage of quantified values in any treatment group to be included in site and condition specific impuatation.",
-                     metavar = "integer")
+                     metavar = "double")
 
 parser <- add_option(parser, c( "--remove_imputed"), type = "logical",
                      help = "logical, whether comparisons involving imputed values should be removed.",
                      metavar = "logical")
+
+parser <- add_option(parser, c( "--remove_imputed_perc"), type = "double",
+                     help = "A double from 0 to 1 indicating the minimum percentage of quantified values in any treatment group to be included in statistical pairwise comparison of groups.",
+                     metavar = "double")
 
 parser <- add_option(parser, c( "--eBayes_trend"), type = "logical",
                      help = "logical, should an intensity-trend be allowed for the prior variance? Default is that the prior variance is constant.",
@@ -249,15 +257,18 @@ args <- setArgsDefault(args, "eBayes_robust", as_func=as.logical, default_val=FA
 args <- setArgsDefault(args, "q_val_thresh", as_func=as.double, default_val=NaN )
 args <- setArgsDefault(args, "control_genes_q_val_thresh", as_func=as.double, default_val=NaN )
 args <- setArgsDefault(args, "max_num_samples_miss_per_group", as_func=as.integer, default_val=NA )
+args <- setArgsDefault(args, "handling_zeros", as_func=as.character, default_val="mark_as_na" )
 args <- setArgsDefault(args, "imputation", as_func=as.logical, default_val=FALSE )
 args <- setArgsDefault(args, "impute_min_percent", as_func=as.double, default_val=NA )
 args <- setArgsDefault(args, "impute_min_num_of_groups", as_func=as.integer, default_val=NA )
 args <- setArgsDefault(args, "impute_specific_percent", as_func=as.double, default_val=NA )
 args <- setArgsDefault(args, "remove_imputed", as_func=as.logical, default_val=FALSE )
+args <- setArgsDefault(args, "remove_imputed_perc", as_func=as.double, default_val=1 )
 
 args<-parseType(args
                 , c( "impute_min_percent"
                     , "impute_specific_percent"
+                    , "remove_imputed_perc"
                   ), as.double
                 )
 
@@ -288,6 +299,7 @@ args<-parseString(args,
     ,"row_id"
     ,"file_prefix"
     ,"plots_format"
+    ,"handling_zeros"
   ))
 
 if(isArgumentDefined(args,"plots_format"))
@@ -537,15 +549,23 @@ for( format_ext in args$plots_format) {
 }
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-loginfo("Mark entries with zero values as NA, take log of values.")
+loginfo("Dealing with zero versus NA values ")
+
 na_values_marker <- (counts_filt == 0)
 
 counts_na <- counts_filt
 
-counts_na[na_values_marker] <- NA
+if( args$handling_zeros == "mark_as_na" ) {
+  # Mark entries with zero values as NA, take log of values.
+  counts_na[na_values_marker] <- NA
+
+} else if (args$handling_zeros == "add_pseudocount") {
+  #
+  counts_na[na_values_marker] <- counts_na[na_values_marker] + .Machine$double.xmin
+
+}
 
 counts_na.log <- log2(counts_na)
-
 # plotRle( t(counts_na.log))
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -599,6 +619,17 @@ if (!is.na( args$average_replicates_id)) {
 #
 #   counts_rnorm.log.for.imputation
 
+
+  vroom::vroom_write(as.data.frame(counts_rnorm.log.for.imputation) %>%
+                       rownames_to_column(args$row_id),
+                     file.path(args$output_dir, "counts_after_normalization_before_imputation_averaged.tsv"))
+
+  writexl::write_xlsx( as.data.frame(counts_rnorm.log.for.imputation) %>%
+                         rownames_to_column(args$row_id),
+                       file.path( args$output_dir,
+                                  "counts_after_normalization_before_imputation_averaged.xlsx"))
+
+
   design_mat_updated <- design_mat_cln %>%
     mutate( !!rlang::sym(args$sample_id) :=  !!rlang::sym(args$average_replicates_id) ) %>%
     dplyr::select( one_of( args$sample_id, args$group_id)) %>%
@@ -651,7 +682,7 @@ if (args$imputation == TRUE) {
     summarise( counts = n()) %>%
     ungroup %>%
     left_join( num_samples_per_group, by =args$group_id ) %>%
-    dplyr::filter(counts == num_samples_per_group) %>% ### need to edit
+    dplyr::filter(counts/num_samples_per_group >= args$remove_imputed_perc  ) %>%
     dplyr::select(-counts,-num_samples_per_group)
 
   vroom::vroom_write( as.data.frame(imputed_values) %>%

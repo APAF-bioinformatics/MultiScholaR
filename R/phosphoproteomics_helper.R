@@ -601,8 +601,7 @@ uniquePhosphositesSummariseWideList <- function(summarised_long_tbl_list,
 
     summarised_wide_tbl_list_edited <- purrr::map( summarised_long_tbl_list, function(input_table){  output_table <- input_table %>%
       ## When there is additional cols use the first additional cols and add it to the maxquant_row_ids
-      pivot_wider( ,
-                   id_cols = c("uniprot_acc", "gene_names", "protein_site_positions", "phos_15mer_seq", "maxquant_row_ids"),
+      pivot_wider( id_cols = c("uniprot_acc", "gene_names", "protein_site_positions", "phos_15mer_seq", "maxquant_row_ids"),
                    names_from = all_of(cols_to_use),
                    values_from=c("value") )%>%
       unite( "sites_id", uniprot_acc, gene_names, protein_site_positions, phos_15mer_seq, sep="!" )
