@@ -38,14 +38,28 @@ annot_proteins_cmd.R -c config.ini
 Typical directory structure of your project should look like:
 
 ``` 
-PID/
-├── phosphoproteomics
-└── proteomics_analysis
-    ├── annot_proteins
-    ├── cache
-    ├── clean_proteins
-    ├── de_analysis
-    └── input
+
+# General results folder 
+cache
+Reactome
+UniProt
+
+# Proteomics results folder 
+clean_proteins
+de_proteins
+annot_proteins
+prot_publication_graphs
+proteins_pathways_enricher
+
+# Phosphoproteomics results folder 
+clean_phos
+de_phos
+annot_phos
+phos_publication_graphs
+norm_phos_by_prot_abundance
+phos_pathways_enricher
+phos_kinswingr_ST
+
 ```
 
 ## Annotations Download Procedures (keep here for now)
@@ -73,6 +87,7 @@ mv data data.tab
 
 
 ## Installing Anaconda
+Installation instructions based on: 
 https://phoenixnap.com/kb/how-to-install-anaconda-ubuntu-18-04-or-20-04
 
 wget https://repo.anaconda.com/archive/Anaconda3-2022.10-Linux-x86_64.sh

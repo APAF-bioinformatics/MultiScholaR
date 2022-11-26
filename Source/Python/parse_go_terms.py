@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from lxml import etree, objectify
 import pandas as pd
 import sys
