@@ -159,10 +159,10 @@ args <- parse_args(parser)
 
 #parse and merge the configuration file options.
 if (args$config != "") {
-  args <- config.list.merge(eval.config(file = args$config, config = "phosphoproteins_list"), args)
+  args <- config.list.merge(eval.config(file = args$config, config = "phos_pathways_enricher"), args)
 }
 
-args <- setArgsDefault(args, "output_dir", as_func=as.character, default_val="phosphoproteins_list" )
+args <- setArgsDefault(args, "output_dir", as_func=as.character, default_val="phos_pathways_enricher" )
 
 createOutputDir(args$output_dir, args$no_backup)
 createDirectoryIfNotExists(args$tmp_dir)
