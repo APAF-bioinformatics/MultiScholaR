@@ -643,6 +643,24 @@ if (!is.na( args$average_replicates_id)) {
 
 }
 
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+heatmap( counts_rnorm.log.for.imputation, Rowv=NA, Colv=NA  )
+
+loginfo("Count the number of values before missing values imputation ")
+
+plot_num_of_values_before_imputation <- plotNumOfValuesNoLog(counts_rnorm.log.for.imputation)
+
+for( format_ext in args$plots_format) {
+  file_name <- file.path(args$output_dir,paste0("num_of_values_before_imputation.",format_ext))
+  captured_output <- capture.output(
+    ggsave(filename = file_name, plot = plot_num_of_values_before_imputation, limitsize = FALSE)
+    ,type = "message" )
+  logdebug(captured_output)
+}
+
+
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 loginfo("Missing value imputation")

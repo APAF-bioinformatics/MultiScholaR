@@ -35,7 +35,7 @@ de_analysis_cmd.R -c config.ini
 annot_proteins_cmd.R -c config.ini
 ```
 
-Typical directory structure of your project should look like:
+## Typical directory structure of your project should look like:
 
 ``` 
 
@@ -93,5 +93,5 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
+You should have received a copy of the GNU Lesser General Public License
 along with ProteomeRiver.  If not, see <http://www.gnu.org/licenses/>.

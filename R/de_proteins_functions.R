@@ -65,13 +65,34 @@ plotNumMissingValues <- function(input_table) {
 plotNumOfValues <- function(input_table) {
 
   plot_num_missing_values <- apply(data.matrix(log2(input_table)), 2,
-                                   function(x) { length(which(!is.infinite(x))) }) %>%
+                                   function(x) { length(which(!is.na(x))) }) %>%
     t %>%
     t %>%
-    set_colnames("No. of Missing Values") %>%
+    set_colnames("No. of Values") %>%
     as.data.frame %>%
     rownames_to_column("Samples ID") %>%
-    ggplot(aes(x = `Samples ID`, y = `No. of Missing Values`)) +
+    ggplot(aes(x = `Samples ID`, y = `No. of Values`)) +
+    geom_bar(stat = "identity") +
+    theme(axis.text.x = element_text(angle = 90))
+
+  plot_num_missing_values
+}
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' Plot the number of values in each sample
+#'@param input_table  Data matrix with each row as a protein and each column a sample.
+#'@return A ggplot2 bar plot showing the number of missing values per column.
+#'@export
+plotNumOfValuesNoLog <- function(input_table) {
+
+  plot_num_missing_values <- apply(data.matrix(input_table), 2,
+                                   function(x) { length(which(!is.na(x))) }) %>%
+    t %>%
+    t %>%
+    set_colnames("No. of Values") %>%
+    as.data.frame %>%
+    rownames_to_column("Samples ID") %>%
+    ggplot(aes(x = `Samples ID`, y = `No. of Values`)) +
     geom_bar(stat = "identity") +
     theme(axis.text.x = element_text(angle = 90))
 
