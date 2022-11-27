@@ -946,7 +946,9 @@ rle_pca_plots_arranged <- NA
 if(args$imputation == TRUE &
    args$remove_imputed == TRUE ) {
 
-  rle_pca_plots_arranged <- rlePcaPlotList(list_of_data_matrix = list(counts_rnorm.log.for.contrast, imputed_ruv_remove_imputed),
+  rle_pca_plots_arranged <- rlePcaPlotList(list_of_data_matrix = list(counts_rnorm.log.for.contrast, imputed_ruv_remove_imputed %>%
+                                                                        column_to_rownames("uniprot_acc") %>%
+                                                                        as.matrix()),
                                            list_of_design_matrix = list( design_mat_updated, design_mat_updated) ,
                                            sample_id_column = !!rlang::sym(args$sample_id),
                                            group_column = !!rlang::sym(args$group_id),
