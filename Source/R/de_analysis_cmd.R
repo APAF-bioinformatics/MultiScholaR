@@ -942,14 +942,23 @@ loginfo("Draw the RLE and PCA plots.")
 plot_width = 15
 plot_height = 14
 
+rle_pca_plots_arranged <- NA
+if(args$imputation == TRUE &
+   args$remove_imputed == TRUE ) {
 
+  rle_pca_plots_arranged <- rlePcaPlotList(list_of_data_matrix = list(counts_rnorm.log.for.contrast, imputed_ruv_remove_imputed),
+                                           list_of_design_matrix = list( design_mat_updated, design_mat_updated) ,
+                                           sample_id_column = !!rlang::sym(args$sample_id),
+                                           group_column = !!rlang::sym(args$group_id),
+                                           list_of_descriptions = list("Before RUVIII", "After RUVIII"))
 
-rle_pca_plots_arranged <- rlePcaPlotList(list_of_data_matrix = list(counts_rnorm.log.for.contrast, counts_rnorm.log.ruvIII_v1),
-                                         list_of_design_matrix = list( design_mat_updated, design_mat_updated) ,
-                                         sample_id_column = !!rlang::sym(args$sample_id),
-                                         group_column = !!rlang::sym(args$group_id),
-                                         list_of_descriptions = list("Before RUVIII", "After RUVIII"))
-
+} else {
+  rle_pca_plots_arranged <- rlePcaPlotList(list_of_data_matrix = list(counts_rnorm.log.for.contrast, counts_rnorm.log.ruvIII_v1),
+                                           list_of_design_matrix = list( design_mat_updated, design_mat_updated) ,
+                                           sample_id_column = !!rlang::sym(args$sample_id),
+                                           group_column = !!rlang::sym(args$group_id),
+                                           list_of_descriptions = list("Before RUVIII", "After RUVIII"))
+}
 
 
 
