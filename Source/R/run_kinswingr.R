@@ -518,7 +518,7 @@ best_site <- annotated_data_pre_residue_filter %>%
   inner_join(best_logfc_pval_site, by = c("uniprot_acc" = "uniprot_acc",
                                           "position" = "position",
                                           "pval" = "pval",
-                                          "fc" = "best_abs_log_fc",
+                                          "abs_log_fc" = "best_abs_log_fc",
                                           "comparison" = "comparison") ) %>%
   dplyr::select(-abs_log_fc)
 
