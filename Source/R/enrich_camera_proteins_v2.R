@@ -64,7 +64,7 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
 
   parser <- OptionParser(add_help_option =TRUE)
 
-  parser <- add_option(parser, c("-c", "--config"), type = "character", default =  "config.ini", # "/home/ignatius/PostDoc/2021/ALPK1_BMP_06/Source/P90/config_prot_NR.ini",
+  parser <- add_option(parser, c("-c", "--config"), type = "character", default =  "config_prot.ini", # "/home/ignatius/PostDoc/2021/ALPK1_BMP_06/Source/P90/config_prot_NR.ini",
                        help = "Configuration file.  [default %default]",
                        metavar = "string")
 
@@ -87,7 +87,7 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
                        help="Input file with the protein abundance values",
                        metavar="string")
 
-  parser <- add_option(parser, c( "--de-proteins"), type="character", dest = "de_proteins_file",
+  parser <- add_option(parser, c( "--de_proteins"), type="character", dest = "de_proteins_file",
                        help="Input file with the list of diffierentiall expressed protein log fold-change and q-values for every contrasts.",
                        metavar="string")
 
@@ -99,19 +99,19 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
                        help="A string representing the formula for input into the model.frame function. (e.g. ~ 0 + group).",
                        metavar="string")
 
-  parser <- add_option(parser, c( "--design-matrix"), type="character", dest = "design_matrix_file",
+  parser <- add_option(parser, c( "--design_matrix"), type="character", dest = "design_matrix_file",
                        help="Input file with the design matrix",
                        metavar="string")
 
-  parser <- add_option(parser, c("-o", "--output-dir"), type="character", dest = "output_dir",
+  parser <- add_option(parser, c("-o", "--output_dir"), type="character", dest = "output_dir",
                        help="Directory path for all results files.",
                        metavar="string")
 
-  parser <- add_option(parser, c("--sample-id"), type="character",dest = "sample_id",
+  parser <- add_option(parser, c("--sample_id"), type="character",dest = "sample_id",
                        help="A string describing the sample ID. This must be a column that exists in the design matrix.",
                        metavar="string")
 
-  parser <- add_option(parser, c( "--group-id"), type="character", dest = "group_id",
+  parser <- add_option(parser, c( "--group_id"), type="character", dest = "group_id",
                        help="A string describing the experimental group ID. This must be a column that exists in the design matrix.",
                        metavar="string")
 
@@ -260,7 +260,6 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
   args<-parseString(args,
                     c(  "formula_string",
                         "group_pattern",
-                        "output_dir",
                         "sample_id",
                         "group_id",
                         "tmp_dir",
@@ -286,6 +285,7 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
 
 
   #############################################
+
   createOutputDir(args$output_dir, args$no_backup)
   createDirectoryIfNotExists(args$tmp_dir)
 
@@ -306,8 +306,6 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
     loginfo("%s : %s", v, args[v])
   }
   loginfo("----------------------------------------------------")
-
-  print(args)
 
 ####################
 
@@ -409,7 +407,22 @@ loginfo("Prepare gene ID to gene set dictionary.")
 
 dictionary <- vroom::vroom( args$dictionary_file )
 
-id_to_annotation_dictionary <- buildAnnotationIdToAnnotationNameDictionary( input_table=dictionary,
+annotation <- vroom::vroom ( args$annotation_file)
+
+
+if(  args$dictionary_file != args$annotation_file ) {
+
+  dictionary_and_annotation <- dictionary %>%
+    full_join( annotation, by = c(args$annotation_id) ) %>%
+    distinct()
+
+} else {
+  dictionary_and_annotation <- dictionary
+}
+
+
+
+id_to_annotation_dictionary <- buildAnnotationIdToAnnotationNameDictionary( input_table=dictionary_and_annotation,
                                                                             annotation_column = !!rlang::sym(args$annotation_column),
                                                                             annotation_id_column = !!rlang::sym(args$annotation_id))
 
@@ -417,18 +430,18 @@ id_to_annotation_dictionary <- buildAnnotationIdToAnnotationNameDictionary( inpu
 annotation_types_list <- NA
 if( !is.null( args$aspect_column )){
 
-  if( args$aspect_column  %in% colnames( dictionary) ) {
+  if( args$aspect_column  %in% colnames( dictionary_and_annotation) ) {
 
-    annotation_types_list <- listifyTableByColumn( dictionary,
+    annotation_types_list <- listifyTableByColumn( dictionary_and_annotation,
                                                    !!rlang::sym(args$aspect_column))
 
   } else {
-    annotation_types_list <- list( dictionary )
+    annotation_types_list <- list( dictionary_and_annotation )
     names( annotation_types_list) <- args$annotation_type
   }
 
 } else {
-  annotation_types_list <- list( dictionary )
+  annotation_types_list <- list( dictionary_and_annotation )
   names( annotation_types_list) <- args$annotation_type
 }
 
@@ -570,7 +583,7 @@ if( !is.null( args$aspect_column) ) {
 
 }
 
- proteins_to_include <- dictionary %>%
+ proteins_to_include <- dictionary_and_annotation %>%
    mutate(  !!rlang::sym( args$annotation_id) := as.character(  !!rlang::sym( args$annotation_id)))%>%
   dplyr::rename( uniprot_acc =  args$protein_id) %>%
   mutate(  !!rlang::sym( args$annotation_id) := as.character(  !!rlang::sym( args$annotation_id))) %>%

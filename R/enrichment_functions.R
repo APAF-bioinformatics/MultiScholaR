@@ -220,6 +220,7 @@ buildAnnotationIdToAnnotationNameDictionary <- function(input_table, annotation_
 
 #'@export
 buildOneProteinToAnnotationList <- function( input_table, annotation_id, protein_id ) {
+
   temp_table <- input_table %>%
     group_by( {{annotation_id}}) %>%
     nest( ) %>%
