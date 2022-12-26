@@ -518,7 +518,7 @@ clusterPathways <- function ( input_table, added_columns, remove_duplicted_entri
 
   pathways_clustered <- hclust(dist(scores_for_clustering))
 
-  pathways_sorting <- cutree(pathways_clustered, k=1:ncol(scores_for_clustering)) %>%
+  pathways_sorting <- cutree(pathways_clustered, k=1:nrow(scores_for_clustering)) %>%
     as.data.frame %>%
     rownames_to_column("Term") %>%
     arrange( across( matches("\\d+"))) %>%
