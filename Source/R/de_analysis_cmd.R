@@ -725,7 +725,7 @@ if (args$imputation == TRUE) {
 } else  {
   counts_rnorm.log.for.contrast <- counts_rnorm.log.for.imputation |>
     as.data.frame() |>
-    as.matrix
+    as.matrix()
 }
 
 
@@ -764,7 +764,9 @@ loginfo("Run statistical tests without RUV.")
 
 ID <- rownames(counts_rnorm.log.for.contrast)
 
-type_of_grouping <- getTypeOfGrouping(design_matrix = design_mat_cln, group_id = args$group_id, sample_id = args$sample_id)
+type_of_grouping <- getTypeOfGrouping(design_matrix = design_mat_cln
+                                      , group_id = args$group_id
+                                      , sample_id = args$sample_id)
 
 list_rnorm.log.quant.ruv.r0 <- NA
 myRes_rnorm.log.quant <- NA
