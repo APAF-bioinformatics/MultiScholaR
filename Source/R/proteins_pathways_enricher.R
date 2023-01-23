@@ -465,11 +465,6 @@ if (  !is.null( args$annotation_file )) {
    min_size = min_gene_set_size_list,
    max_size = max_gene_set_size_list)
 
- # input_params_updated <- purrr::map( input_params,
- #                                     function(x) {
- #                                       x$input_table <- list_of_genes_list[[x$names_of_genes_list]]
- #                                     return(x)})
-
  input_params_updated <- input_params %>%
    mutate( input_table = purrr::map(names_of_genes_list,  \(x) list_of_genes_list[[x]] ))
 
@@ -501,10 +496,9 @@ if (  !is.null( args$annotation_file )) {
                                     go_aspect=x$go_aspect,
                                     input_comparison=x$input_comparison,
                                     min_gene_set_size=x$min_size,
-                                    max_gene_set_size=x$max_size)} ) %>%
+                                    max_gene_set_size=x$max_size)} ) ) %>%
              dplyr::select( enrichment_results ) %>%
-             unest()
-  #  bind_rows()
+             unnest()
 
  if(is.null(enrichment_result) |
     nrow(enrichment_result) == 0 ) {
