@@ -404,7 +404,7 @@ phosphositeplus <- ks_tbl |>
   arrange( GENE, kinase, substrate)  |>
   mutate( GENE = toupper(GENE),
           kinase = toupper(kinase),
-          residue = purrr::map_chr( SUB_MOD_RSD , \(x){str_sub(., 1,1 )}   ) ) |>
+          residue = purrr::map_chr( SUB_MOD_RSD , \(x){str_sub(x, 1,1 )}   ) ) |>
   dplyr::select( - SUB_MOD_RSD )
 
 kinases_to_include <-  phosphositeplus |>
