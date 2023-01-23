@@ -286,9 +286,11 @@ if(!is.na(args$before_avg_design_matrix_file )) {
 ##-------------------------------------
 
 counts_rnorm.log.quant_mat <- counts_rnorm.log.quant %>%
+  as.data.frame() %>%
   column_to_rownames(args$row_id)
 
 counts_rnorm.log.ruvIII_mat <- counts_rnorm.log.ruvIII %>%
+  as.data.frame() %>%
   column_to_rownames(args$row_id)
 
 
@@ -333,6 +335,7 @@ gg_save_logging ( after_RUVIII_rle, file_name_part, args$plots_format)
 
 if(!is.na(args$before_avg_design_matrix_file )) {
   counts_before_averaging_mat <- counts_before_averaging %>%
+    as.data.frame() %>%
     column_to_rownames("uniprot_acc")
 
   counts_before_averaging_rle <- plotRle(t(as.matrix(counts_before_averaging_mat)),
@@ -523,6 +526,7 @@ ggsave(filename = file.path(args$output_dir, "NumSigDeMolecules", "num_sig_de_mo
 counts_before_averaging_mat <- NA
 if(!is.na(args$before_avg_design_matrix_file)) {
   counts_before_averaging_mat <- counts_before_averaging  %>%
+    as.data.frame() %>%
     column_to_rownames(args$row_id)
 }
 
