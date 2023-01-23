@@ -224,7 +224,7 @@ getRuvIIIReplicateMatrix <- function(design_matrix, sample_id_column, group_colu
                 values_from = { { temp_column } },
                 values_fill = 0) |>
     column_to_rownames(as_name(enquo(sample_id_column))) |>
-    as.matrix
+    as.matrix()
 
   ruvIII_replicates_matrix
 }
@@ -786,7 +786,7 @@ getTypeOfGrouping <- function(design_matrix, group_id, sample_id) {
     dplyr::select(!!rlang::sym(group_id), !!rlang::sym(sample_id)) |>
     group_by(!!rlang::sym(group_id)) |>
     summarise(!!rlang::sym(sample_id) := list(!!rlang::sym(sample_id))) |>
-    ungroup
+    ungroup()
 
   type_of_grouping <- temp_type_of_grouping |> pull(!!rlang::sym(sample_id))
   names(type_of_grouping) <- temp_type_of_grouping |> pull(!!rlang::sym(group_id))
@@ -1142,7 +1142,7 @@ averageValuesFromReplicates <- function(input_table, design_matrix, group_patter
     pivot_wider( names_from = !!rlang::sym(average_replicates_id),
                  values_from = "value") |>
     column_to_rownames(row_id) |>
-    as.matrix
+    as.matrix()
 
   return( output_table )
 }
@@ -1227,7 +1227,7 @@ batchQueryEvidence <- function(uniprot_acc_tbl, uniprot_acc_column, uniprot_hand
     pull(round)
 
   all_uniprot_evidence <- purrr::map(rounds_list, \(x){ partial_subset_query(subset = x) }) |>
-    bind_rows
+    bind_rows()
 
   return(all_uniprot_evidence)
 }
@@ -1266,7 +1266,7 @@ batchQueryEvidenceGeneId <- function(input_tbl, gene_id_column, uniprot_handle,
     pull(round)
 
   all_uniprot_evidence <- purrr::map(rounds_list, \(x){ partial_subset_query(subset = x) }) |>
-    bind_rows
+    bind_rows()
 
   return(all_uniprot_evidence)
 }
