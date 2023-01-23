@@ -404,7 +404,7 @@ phosphositeplus <- ks_tbl %>%
   arrange( GENE, kinase, substrate)  %>%
   mutate( GENE = toupper(GENE),
           kinase = toupper(kinase),
-          residue = purrr::map_chr( SUB_MOD_RSD , ~str_sub(., 1,1 )   ) ) %>%
+          residue = purrr::map_chr( SUB_MOD_RSD , \(x){str_sub(., 1,1 )}   ) ) %>%
   dplyr::select( - SUB_MOD_RSD )
 
 kinases_to_include <-  phosphositeplus %>%
@@ -569,11 +569,11 @@ if( args$reuse_old==TRUE & file.exists(file.path(rds_dir,  paste0("kinswingr_sco
 
   loginfo(paste( "Number of sites per contrast: ",
                  paste( names(grouped_annotated_data$data), collapse=", "),
-                 paste( purrr::map_int(grouped_annotated_data$data, ~nrow(as.data.frame(.) )), collapse=", ") ) )
+                 paste( purrr::map_int(grouped_annotated_data$data, \(x){ nrow(as.data.frame(x) )}), collapse=", ") ) )
 
   ## Use the number of data to determine the number of iterations
   num_of_iterations <- purrr::map_dbl(grouped_annotated_data$data,
-                                      ~{ num_of_rows <- nrow(as.data.frame(.) )
+                                      \(x){ num_of_rows <- nrow(as.data.frame(x) )
                                             if (num_of_rows <  args$motif_score_iteration) {
                                               motif_score_iteration_to_use <- num_of_rows - ( num_of_rows %% 10 )
                                             } else {
@@ -583,9 +583,9 @@ if( args$reuse_old==TRUE & file.exists(file.path(rds_dir,  paste0("kinswingr_sco
                                       } )
 
   scores_list <-  grouped_annotated_data %>%
-    dplyr::mutate( pwms_scores = purrr::map2( data, num_of_iterations, ~scoreSequences(input_data = as.data.frame(.x),
+    dplyr::mutate( pwms_scores = purrr::map2( data, num_of_iterations, \(.x, .y){scoreSequences(input_data = as.data.frame(.x),
                                                                    pwm_in = pwms,
-                                                                   n = .y ) ))
+                                                                   n = .y )} ))
 
 
     saveRDS( scores_list, file.path(args$output_dir,  paste0("kinswingr_scores_list_", args$kinase_specificity, ".RDS")))
@@ -598,10 +598,10 @@ if( args$reuse_old==TRUE & file.exists(file.path(rds_dir,  paste0("kinswingr_sco
 ## ----------------------------------------------------------------------------------------------------------------------------------------
 purrr::walk2( scores_list$data,
               scores_list$comparison,
-              ~vroom::vroom_write( .x  %>%
+              \(.x, .y){ vroom::vroom_write( .x  %>%
                                      mutate( comparison = .y),
                                    file.path( args$output_dir,
-                                              paste0( "input_data_", args$kinase_specificity, "_",  .y , ".tsv" )) ) )
+                                              paste0( "input_data_", args$kinase_specificity, "_",  .y , ".tsv" )) ) } )
 
 ## ---------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -840,7 +840,7 @@ plotAvgLogfcKnownSites <- function( list_position,
                median_fc = median(fc),
                total_fc = sum(fc),
                counts = n()) %>%
-    ungroup %>%
+    ungroup() %>%
     dplyr::filter( counts >= 5 )
 
   avg_logfc_vs_swing_tbl <- avg_logfc_vs_swing_score %>%
@@ -1144,14 +1144,14 @@ names( selected_scores_list) <- swing_out_list$comparison
 
 purrr::walk2( selected_scores_list,
               swing_out_list$comparison,
-              ~vroom::vroom_write( .x  %>%
+              \(.x, .y) { vroom::vroom_write( .x  %>%
                                      mutate( comparison = .y) %>%
                                      relocate( comparison, .before="substrate_uniprot_acc"),
                                    file.path( args$output_dir,
                                               paste0( "selected_kinase_substrate_",
                                                       args$kinase_specificity, "_",
                                                       .y ,
-                                                      ".tsv" )) ) )
+                                                      ".tsv" )) )} )
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------
 

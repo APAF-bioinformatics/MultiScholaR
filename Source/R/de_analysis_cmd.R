@@ -356,7 +356,7 @@ logdebug(captured_output)
 
 loginfo("Read file with counts table %s", args$counts_table_file)
 captured_output<-capture.output(
-evidence_tbl_filt <- vroom::vroom(args$counts_table_file, delim = "\t") %>%
+evidence_tbl_filt <- vroom::vroom(args$counts_table_file, delim = "\t") |>
   dplyr::select(one_of(c(args$row_id)), matches(args$group_pattern))
     ,type = "message"
 )
@@ -376,14 +376,15 @@ if (length(which(str_detect(setdiff(colnames(evidence_tbl_filt), args$row_id), a
 loginfo("Read design matrix file.")
 
 captured_output <- capture.output(
-  design_mat_cln <- vroom::vroom(args$design_matrix_file) %>%
-    as.data.frame() %>%
+  design_mat_cln <- vroom::vroom(args$design_matrix_file) |>
+    as.data.frame() |>
     dplyr::mutate(!!rlang::sym(args$sample_id) := as.character(!!rlang::sym(args$sample_id)))
   ,type = "message"
 )
 logdebug(captured_output)
 
-rownames(design_mat_cln) <- design_mat_cln %>% pull(as.name(args$sample_id))
+rownames(design_mat_cln) <- design_mat_cln |>
+  pull(as.name(args$sample_id))
 
 ## Check that the sample ID and group ID name is found in the design matrix
 if (length(which(c(args$sample_id, args$group_id) %in% colnames(design_mat_cln))) != 2) {
@@ -399,7 +400,8 @@ if ( !is.na(args$replicate_group_id) &
   }
 }
 
-cols_for_analysis <- design_mat_cln %>% pull(as.name(args$sample_id))
+cols_for_analysis <- design_mat_cln |>
+  pull(as.name(args$sample_id))
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Print out raw counts.")
@@ -432,7 +434,7 @@ writexl::write_xlsx( cln_dat_wide_unsorted,
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Count the total number of missing values in total
 
-table_value <- table(is.infinite(data.matrix(log2(cln_dat_wide_unsorted[, c(colnames(cln_dat_wide_unsorted)[1], cols_for_analysis)]%>%
+table_value <- table(is.infinite(data.matrix(log2(cln_dat_wide_unsorted[, c(colnames(cln_dat_wide_unsorted)[1], cols_for_analysis)]|>
                                                     column_to_rownames(args$row_id)))))
 
 loginfo("Count the number of missing values before removing proteins with some missing values: %d",
@@ -457,7 +459,7 @@ if (  "max_num_samples_miss_per_group" %in% names(args) &
 
   cln_dat_wide_cleaned <- removeRowsWithMissingValues(cln_dat_wide_unsorted,
                                                       matches(args$group_pattern),
-                                                      design_mat_cln %>%
+                                                      design_mat_cln |>
                                                             dplyr::mutate(Sample_ID = as.character(args$sample_id)),
                                                       !!rlang::sym(args$sample_id),
                                                       !!rlang::sym(args$row_id),
@@ -485,7 +487,7 @@ if (length(which(colnames(cln_dat_wide_cleaned)[-1] %in% cols_for_analysis)) != 
 cln_dat_wide <- cln_dat_wide_cleaned[, c(colnames(cln_dat_wide_cleaned)[1], cols_for_analysis)]
 
 loginfo("Assign the indexing row names to the data frame.")
-counts_filt <- cln_dat_wide %>%
+counts_filt <- cln_dat_wide |>
   column_to_rownames(args$row_id)
 
 vroom::vroom_write( cln_dat_wide,
@@ -502,7 +504,7 @@ writexl::write_xlsx( cln_dat_wide,
 
 # sample_rows_lists <- get_rows_to_keep_list( cln_dat_wide,
 #                                             matches(args$group_pattern),
-#                                             design_mat_cln %>%
+#                                             design_mat_cln |>
 #                                               dplyr::mutate( Sample_ID = as.character(Sample_ID)),
 #                                             !!rlang::sym(args$sample_id),
 #                                             !!rlang::sym(args$row_id),
@@ -573,11 +575,11 @@ loginfo("Between array normalization.")
 counts_na.log.quant <- normalizeBetweenArrays(counts_na.log, method = args$normalization)
 
 
-vroom::vroom_write(as.data.frame(counts_na.log.quant) %>%
+vroom::vroom_write(as.data.frame(counts_na.log.quant) |>
                      rownames_to_column(args$row_id),
                    file.path(args$output_dir, "counts_after_normalization_before_imputation.tsv"))
 
-writexl::write_xlsx( as.data.frame(counts_na.log.quant) %>%
+writexl::write_xlsx( as.data.frame(counts_na.log.quant) |>
                        rownames_to_column(args$row_id),
                      file.path( args$output_dir,
                                 "counts_after_normalization_before_imputation.xlsx"))
@@ -600,18 +602,18 @@ if (!is.na( args$average_replicates_id)) {
                                                                 args$sample_id,
                                                                 args$average_replicates_id)
 
-#   counts_rnorm.log.for.imputation.v2 <- counts_na.log.quant %>%
-#     as.data.frame %>%
-#     rownames_to_column("sites_id") %>%
+#   counts_rnorm.log.for.imputation.v2 <- counts_na.log.quant |>
+#     as.data.frame() |>
+#     rownames_to_column("sites_id") |>
 #     pivot_longer( cols = matches("\\d+"),
 #                   values_to = "NormLogIntensity",
-#                   names_to="Sample_ID") %>%
-#     left_join( design_mat_cln, by = c("Sample_ID" = "Sample_ID")) %>%
-#     dplyr::filter( !is.na( NormLogIntensity) ) %>%
-#     group_by( sites_id,  biological_replicates ) %>%
-#     summarise( AvgNormLogIntensity = mean( NormLogIntensity) ) %>%
-#     ungroup() %>%
-#     arrange( biological_replicates, sites_id) %>%
+#                   names_to="Sample_ID") |>
+#     left_join( design_mat_cln, by = c("Sample_ID" = "Sample_ID")) |>
+#     dplyr::filter( !is.na( NormLogIntensity) ) |>
+#     group_by( sites_id,  biological_replicates ) |>
+#     summarise( AvgNormLogIntensity = mean( NormLogIntensity) ) |>
+#     ungroup() |>
+#     arrange( biological_replicates, sites_id) |>
 #     pivot_wider( id_cols = c( "sites_id"),
 #                  values_from = "AvgNormLogIntensity",
 #                  names_from="biological_replicates")
@@ -620,19 +622,19 @@ if (!is.na( args$average_replicates_id)) {
 #   counts_rnorm.log.for.imputation
 
 
-  vroom::vroom_write(as.data.frame(counts_rnorm.log.for.imputation) %>%
+  vroom::vroom_write(as.data.frame(counts_rnorm.log.for.imputation) |>
                        rownames_to_column(args$row_id),
                      file.path(args$output_dir, "counts_after_normalization_before_imputation_averaged.tsv"))
 
-  writexl::write_xlsx( as.data.frame(counts_rnorm.log.for.imputation) %>%
+  writexl::write_xlsx( as.data.frame(counts_rnorm.log.for.imputation) |>
                          rownames_to_column(args$row_id),
                        file.path( args$output_dir,
                                   "counts_after_normalization_before_imputation_averaged.xlsx"))
 
 
-  design_mat_updated <- design_mat_cln %>%
-    mutate( !!rlang::sym(args$sample_id) :=  !!rlang::sym(args$average_replicates_id) ) %>%
-    dplyr::select( one_of( args$sample_id, args$group_id)) %>%
+  design_mat_updated <- design_mat_cln |>
+    mutate( !!rlang::sym(args$sample_id) :=  !!rlang::sym(args$average_replicates_id) ) |>
+    dplyr::select( one_of( args$sample_id, args$group_id)) |>
     distinct()
 
   rownames( design_mat_updated) <- design_mat_updated[,args$sample_id]
@@ -670,7 +672,7 @@ impute.selectGrps.filtered <- NA
 count_num_replicates_per_protein <- NA
 if (args$imputation == TRUE) {
 
-  imputation_groups <- colnames( counts_rnorm.log.for.imputation) %>% str_split("_") %>% purrr::map_chr(1)
+  imputation_groups <- colnames( counts_rnorm.log.for.imputation) |> str_split("_") |> purrr::map_chr(1)
   impute.selectGrps.filtered <- selectGrps(counts_rnorm.log.for.imputation
                                            , imputation_groups
                                            , args$impute_min_percent
@@ -682,32 +684,32 @@ if (args$imputation == TRUE) {
 
 
 
-  num_samples_per_group <- design_mat_updated %>%
-    group_by( !!sym(args$group_id)) %>%
-    summarise( num_samples_per_group = n()) %>%
+  num_samples_per_group <- design_mat_updated |>
+    group_by( !!sym(args$group_id)) |>
+    summarise( num_samples_per_group = n()) |>
     ungroup()
 
 
-  count_num_replicates_per_protein <- impute.selectGrps.filtered %>%
-    as.data.frame( ) %>%
-    rownames_to_column (args$row_id)  %>%
+  count_num_replicates_per_protein <- impute.selectGrps.filtered |>
+    as.data.frame( ) |>
+    rownames_to_column (args$row_id)  |>
     pivot_longer( cols = matches( args$group_pattern),
                   values_to = "LogIntensity",
-                  names_to = args$sample_id)  %>%
-    left_join( design_mat_updated, by = args$sample_id) %>%
-    dplyr::filter( !is.na( LogIntensity)) %>%
-    group_by( !!sym(args$row_id),   !!sym(args$group_id)) %>%
-    summarise( counts = n()) %>%
-    ungroup %>%
-    left_join( num_samples_per_group, by =args$group_id ) %>%
-    dplyr::filter(counts/num_samples_per_group >= args$remove_imputed_perc  ) %>%
+                  names_to = args$sample_id)  |>
+    left_join( design_mat_updated, by = args$sample_id) |>
+    dplyr::filter( !is.na( LogIntensity)) |>
+    group_by( !!sym(args$row_id),   !!sym(args$group_id)) |>
+    summarise( counts = n()) |>
+    ungroup() |>
+    left_join( num_samples_per_group, by =args$group_id ) |>
+    dplyr::filter(counts/num_samples_per_group >= args$remove_imputed_perc  ) |>
     dplyr::select(-counts,-num_samples_per_group)
 
-  vroom::vroom_write( as.data.frame(imputed_values) %>%
+  vroom::vroom_write( as.data.frame(imputed_values) |>
                         rownames_to_column(args$row_id),
                       file.path(args$output_dir, "counts_after_normalization_and_imputation.tsv"))
 
-  writexl::write_xlsx( as.data.frame(imputed_values) %>%
+  writexl::write_xlsx( as.data.frame(imputed_values) |>
                          rownames_to_column(args$row_id),
                        file.path( args$output_dir,
                                   "counts_after_normalization_and_imputation.xlsx"))
@@ -721,8 +723,8 @@ if (args$imputation == TRUE) {
 
 
 } else  {
-  counts_rnorm.log.for.contrast <- counts_rnorm.log.for.imputation %>%
-    as.data.frame %>%
+  counts_rnorm.log.for.contrast <- counts_rnorm.log.for.imputation |>
+    as.data.frame() |>
     as.matrix
 }
 
@@ -730,19 +732,19 @@ if (args$imputation == TRUE) {
 if(args$imputation == TRUE &
    args$remove_imputed == TRUE ) {
 
-  imputed_values_remove_imputed <- counts_rnorm.log.for.contrast %>%
-    as.data.frame( ) %>%
-    rownames_to_column (args$row_id)  %>%
+  imputed_values_remove_imputed <- counts_rnorm.log.for.contrast |>
+    as.data.frame( ) |>
+    rownames_to_column (args$row_id)  |>
     pivot_longer( cols = matches( args$group_pattern)
                   , values_to = "LogIntensity"
-                  , names_to = args$sample_id)  %>%
+                  , names_to = args$sample_id)  |>
     left_join( design_mat_updated
-               , by = args$sample_id) %>%
-    dplyr::filter( !is.na( LogIntensity)) %>%
+               , by = args$sample_id) |>
+    dplyr::filter( !is.na( LogIntensity)) |>
     dplyr::inner_join( count_num_replicates_per_protein
-                      , by =c(args$row_id, args$group_id) ) %>%
-    dplyr::select( -one_of(c(args$group_id))) %>%
-    arrange(args$row_id, args$sample_id)  %>%
+                      , by =c(args$row_id, args$group_id) ) |>
+    dplyr::select( -one_of(c(args$group_id))) |>
+    arrange(args$row_id, args$sample_id)  |>
     pivot_wider( id_cols = args$row_id,
                  names_from = args$sample_id,
                  values_from = "LogIntensity")
@@ -806,13 +808,13 @@ control_genes_index <- getNegCtrlProtAnova(counts_rnorm.log.for.contrast,
                                            q_val_thresh = args$control_genes_q_val_thresh)
 
 vroom::vroom_write(data.frame(temp_col = names(control_genes_index),
-                              is_control_genes = control_genes_index) %>%
+                              is_control_genes = control_genes_index) |>
                      set_colnames(c(args$row_id, "is_control_genes")),
                    file.path(args$output_dir, "ctrl_genes_list_ruv3.tsv"),
                    delim = "\t")
 
 writexl::write_xlsx( data.frame( temp_col = names(control_genes_index),
-                                 is_control_genes = control_genes_index) %>%
+                                 is_control_genes = control_genes_index) |>
                        set_colnames(c(args$row_id, "is_control_genes")),
                      file.path(args$output_dir, "ctrl_genes_list_ruv3.xlsx"))
 
@@ -823,14 +825,15 @@ loginfo("Num. Control Genes %d", length(which(control_genes_index)))
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Draw canonical correlation plot.")
-ruv_groups <- data.frame(temp_column = colnames(counts_rnorm.log.for.contrast)) %>%
-  dplyr::rename(!!rlang::sym(args$sample_id) := "temp_column") %>%
-  left_join(design_mat_updated %>%
+ruv_groups <- data.frame(temp_column = colnames(counts_rnorm.log.for.contrast)) |>
+  dplyr::rename(!!rlang::sym(args$sample_id) := "temp_column") |>
+  left_join(design_mat_updated |>
               dplyr::mutate(!!rlang::sym(args$sample_id) := as.character(!!rlang::sym(args$sample_id))),
             by = args$sample_id)
 
 cancorplot_r1 <- ruv_cancorplot(t(counts_rnorm.log.for.contrast),
-                                X = ruv_groups %>% pull(!!rlang::sym(args$group_id)),
+                                X = ruv_groups |>
+                                  pull(!!rlang::sym(args$group_id)),
                                 ctl = control_genes_index)
 
 
@@ -855,7 +858,7 @@ logdebug(ruvIII_replicates_matrix)
 
 
 counts_rnorm.log.ruvIII_v1 <- cmriRUVfit(counts_rnorm.log.for.contrast, X = ruv_groups$group, control_genes_index, Z = 1, k = args$ruv_k,
-                                         method = args$ruv_method, M = ruvIII_replicates_matrix) %>% t()
+                                         method = args$ruv_method, M = ruvIII_replicates_matrix) |> t()
 
 
 ## Average values from technical replicates, replace Sample_ID and group_id
@@ -868,9 +871,9 @@ counts_rnorm.log.ruvIII_v1 <- cmriRUVfit(counts_rnorm.log.for.contrast, X = ruv_
 #                                                              args$sample_id,
 #                                                              args$average_replicates_id)
 #
-#   design_mat_updated <- design_mat_cln %>%
-#     mutate( !!rlang::sym(args$sample_id) :=  !!rlang::sym(args$average_replicates_id) ) %>%
-#     dplyr::select( one_of( args$sample_id, args$group_id)) %>%
+#   design_mat_updated <- design_mat_cln |>
+#     mutate( !!rlang::sym(args$sample_id) :=  !!rlang::sym(args$average_replicates_id) ) |>
+#     dplyr::select( one_of( args$sample_id, args$group_id)) |>
 #     distinct()
 #
 #   rownames( design_mat_updated) <- design_mat_updated[,args$sample_id]
@@ -880,26 +883,26 @@ counts_rnorm.log.ruvIII_v1 <- cmriRUVfit(counts_rnorm.log.for.contrast, X = ruv_
 #                      file.path(args$output_dir, "design_mat_avg_replicates.tab"))
 #
 #
-#   vroom::vroom_write(counts_rnorm.log.ruvIII_avg %>%
-#                        as.data.frame %>%
+#   vroom::vroom_write(counts_rnorm.log.ruvIII_avg |>
+#                        as.data.frame() |>
 #                        rownames_to_column(args$row_id),
 #                      file.path(args$output_dir, "normalized_counts_after_ruv_replicates_averaged.tsv"))
 #
-#   writexl::write_xlsx(counts_rnorm.log.ruvIII_avg %>%
-#                         as.data.frame %>%
+#   writexl::write_xlsx(counts_rnorm.log.ruvIII_avg |>
+#                         as.data.frame() |>
 #                         rownames_to_column(args$row_id),
 #                       file.path(args$output_dir, "normalized_counts_after_ruv_replicates_averaged.xlsx"))
 #
 #
 # }
 
-vroom::vroom_write(counts_rnorm.log.ruvIII_v1 %>%
-                     as.data.frame %>%
+vroom::vroom_write(counts_rnorm.log.ruvIII_v1 |>
+                     as.data.frame() |>
                      rownames_to_column(args$row_id),
                    file.path(args$output_dir, "normalized_counts_after_ruv.tsv"))
 
-writexl::write_xlsx(counts_rnorm.log.ruvIII_v1 %>%
-                      as.data.frame %>%
+writexl::write_xlsx(counts_rnorm.log.ruvIII_v1 |>
+                      as.data.frame() |>
                       rownames_to_column(args$row_id),
                     file.path(args$output_dir, "normalized_counts_after_ruv.xlsx"))
 
@@ -910,19 +913,19 @@ writexl::write_xlsx(counts_rnorm.log.ruvIII_v1 %>%
 if(args$imputation == TRUE &
    args$remove_imputed == TRUE ) {
 
-  imputed_ruv_remove_imputed <- counts_rnorm.log.ruvIII_v1 %>%
-    as.data.frame( ) %>%
-    rownames_to_column (args$row_id)  %>%
+  imputed_ruv_remove_imputed <- counts_rnorm.log.ruvIII_v1 |>
+    as.data.frame( ) |>
+    rownames_to_column (args$row_id)  |>
     pivot_longer( cols = matches( args$group_pattern)
                   , values_to = "LogIntensity"
-                  , names_to = args$sample_id)  %>%
+                  , names_to = args$sample_id)  |>
     left_join( design_mat_updated
-               , by = args$sample_id) %>%
-    dplyr::filter( !is.na( LogIntensity)) %>%
+               , by = args$sample_id) |>
+    dplyr::filter( !is.na( LogIntensity)) |>
     dplyr::inner_join( count_num_replicates_per_protein
-                       , by =c(args$row_id, args$group_id) ) %>%
-    dplyr::select( -one_of(c(args$group_id))) %>%
-    arrange(args$row_id, args$sample_id)  %>%
+                       , by =c(args$row_id, args$group_id) ) |>
+    dplyr::select( -one_of(c(args$group_id))) |>
+    arrange(args$row_id, args$sample_id)  |>
     pivot_wider( id_cols = args$row_id,
                  names_from = args$sample_id,
                  values_from = "LogIntensity")
@@ -946,8 +949,8 @@ rle_pca_plots_arranged <- NA
 if(args$imputation == TRUE &
    args$remove_imputed == TRUE ) {
 
-  rle_pca_plots_arranged <- rlePcaPlotList(list_of_data_matrix = list(counts_rnorm.log.for.contrast, imputed_ruv_remove_imputed %>%
-                                                                        column_to_rownames(args$row_id) %>%
+  rle_pca_plots_arranged <- rlePcaPlotList(list_of_data_matrix = list(counts_rnorm.log.for.contrast, imputed_ruv_remove_imputed |>
+                                                                        column_to_rownames(args$row_id) |>
                                                                         as.matrix()),
                                            list_of_design_matrix = list( design_mat_updated, design_mat_updated) ,
                                            sample_id_column = !!rlang::sym(args$sample_id),
@@ -977,9 +980,9 @@ for( format_ext in args$plots_format) {
 ### Compare more principal components
 # pca.res <- pca(t(as.matrix(counts_rnorm.log.ruvIII_v1)), ncomp=5)
 #
-# output <- pca.res$variates$X %>%
-#   as.data.frame %>%
-#   rownames_to_column("Sample_ID") %>%
+# output <- pca.res$variates$X |>
+#   as.data.frame() |>
+#   rownames_to_column("Sample_ID") |>
 #   left_join(design_mat_cln, by ="Sample_ID")
 #
 # output
@@ -1042,7 +1045,7 @@ selected_data <- getSignificantData(list_of_de_tables = list(myRes_rnorm.log.qua
                                     comparison_column = comparison,
                                     expression_column = expression,
                                     facet_column = analysis_type,
-                                    q_val_thresh = args$q_val_thresh) %>%
+                                    q_val_thresh = args$q_val_thresh) |>
   dplyr::rename(log2FC = "logFC")
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1051,24 +1054,25 @@ selected_data <- getSignificantData(list_of_de_tables = list(myRes_rnorm.log.qua
 if (args$imputation &
     args$remove_imputed ) {
 
-  included_comparisons <-  count_num_replicates_per_protein %>%
+  included_comparisons <-  count_num_replicates_per_protein |>
     dplyr::inner_join( count_num_replicates_per_protein,
-                       by = c(args$row_id)) %>%
-    dplyr::filter( group.x != group.y) %>%
-    dplyr::mutate( expression = paste0("group", group.x, "-group", group.y)) %>%
+                       by = c(args$row_id)) |>
+    dplyr::filter( group.x != group.y) |>
+    dplyr::mutate( expression = paste0("group", group.x, "-group", group.y)) |>
     dplyr::select(-group.x, -group.y)
 
   join_condition <- rlang::set_names(c(args$row_id, "expression" )
                                      , c(args$row_id, "expression"))
 
-  selected_data <- selected_data %>%
-    mutate( q.mod.old = q.mod ) %>%
+  selected_data <- selected_data |>
+    mutate( q.mod.old = q.mod ) |>
     dplyr::inner_join(included_comparisons,
-                      by=join_condition) %>%
-    group_by( analysis_type, comparison, expression) %>%
-    nest( ) %>%
-    ungroup %>%
-    mutate( data = purrr::map(data, function(x){ x %>% mutate( q.mod = qvalue( p.mod)$qvalues  ) })) %>%
+                      by=join_condition) |>
+    group_by( analysis_type, comparison, expression) |>
+    nest( ) |>
+    ungroup() |>
+    mutate( data = purrr::map(data, function(x){ x |>
+        mutate( q.mod = qvalue( p.mod)$qvalues  ) })) |>
     unnest( cols=c(data))
 
 
@@ -1076,12 +1080,12 @@ if (args$imputation &
 
 
 ## Write all the results in one single table
-selected_data %>%
-  dplyr:::select(-colour, -lqm) %>%
+selected_data |>
+  dplyr:::select(-colour, -lqm) |>
   vroom::vroom_write(file.path(args$output_dir, "lfc_qval_long.tsv"))
 
-selected_data %>%
-  dplyr:::select(-colour, -lqm) %>%
+selected_data |>
+  dplyr:::select(-colour, -lqm) |>
   writexl::write_xlsx(file.path(args$output_dir, "lfc_qval_long.xlsx"))
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1161,27 +1165,27 @@ norm_counts <- NA
 counts_table_to_use <- counts_rnorm.log.ruvIII_v1
 
 
-  norm_counts <- counts_table_to_use %>%
-    as.data.frame %>%
-    set_colnames(paste0(colnames(counts_table_to_use), ".log2norm")) %>%
+  norm_counts <- counts_table_to_use |>
+    as.data.frame() |>
+    set_colnames(paste0(colnames(counts_table_to_use), ".log2norm")) |>
     rownames_to_column(args$row_id)
 
 
-raw_counts <- counts_filt %>%
-  as.data.frame %>%
-  set_colnames(paste0(colnames(counts_filt), ".raw")) %>%
+raw_counts <- counts_filt |>
+  as.data.frame() |>
+  set_colnames(paste0(colnames(counts_filt), ".raw")) |>
   rownames_to_column(args$row_id)
 
-de_proteins_wide <- selected_data %>%
-  dplyr::filter(analysis_type == "RUV applied") %>%
-  dplyr::select(-lqm, -colour, -analysis_type) %>%
+de_proteins_wide <- selected_data |>
+  dplyr::filter(analysis_type == "RUV applied") |>
+  dplyr::select(-lqm, -colour, -analysis_type) |>
   pivot_wider(id_cols = c(!!sym(args$row_id)),
               names_from = c(comparison),
               names_sep = ":",
-              values_from = c(log2FC, q.mod, p.mod)) %>%
-  left_join(norm_counts, by = args$row_id) %>%
-  left_join(raw_counts, by = args$row_id) %>%
-  dplyr::arrange(across(matches("q.mod"))) %>%
+              values_from = c(log2FC, q.mod, p.mod)) |>
+  left_join(norm_counts, by = args$row_id) |>
+  left_join(raw_counts, by = args$row_id) |>
+  dplyr::arrange(across(matches("q.mod"))) |>
   distinct()
 
 #logdebug(head(de_proteins_wide))
@@ -1200,7 +1204,7 @@ loginfo("Create long format output file")
 counts_table_to_use <- counts_rnorm.log.ruvIII_v1
 
 
-de_proteins_long <- createDeResultsLongFormat( lfc_qval_tbl = selected_data %>%
+de_proteins_long <- createDeResultsLongFormat( lfc_qval_tbl = selected_data |>
                                                  dplyr::filter(analysis_type == "RUV applied"),
                                                norm_counts_input_tbl = counts_table_to_use,
                                                raw_counts_input_tbl = counts_filt,

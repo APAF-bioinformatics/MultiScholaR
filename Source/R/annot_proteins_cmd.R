@@ -321,22 +321,22 @@ uniprot_dat_cln <- uniprotGoIdToTerm(uniprot_dat, sep="; ", goterms, gotypes  )
 
 
 uniprot_dat_multiple_acc <- uniprot_acc_tbl %>%
-  left_join( uniprot_dat_cln, by=c("join_uniprot_acc" = "UNIPROTKB") )   %>%
+  left_join( uniprot_dat_cln, by=c("join_uniprot_acc" = "UNIPROTKB") ) %>%
   arrange( uniprot_acc, acc_order_id) %>%
   group_by(uniprot_acc ) %>%
   summarise( across( .cols=setdiff( colnames( uniprot_dat_cln), "UNIPROTKB")   , ~paste(., collapse=":"))   ) %>%
-  ungroup()   %>%
+  ungroup() %>%
   dplyr::rename( UNIPROT_GENENAME = "GENENAME")
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Add reactome pathways annotation.")
 reactome_term_tbl <- uniprot_acc_tbl %>%
-  left_join( reactome_map, by=c("join_uniprot_acc" = "uniprot_acc") )   %>%
+  left_join( reactome_map, by=c("join_uniprot_acc" = "uniprot_acc") ) %>%
   dplyr::filter(reactome_term != "NA" ) %>%
   group_by(uniprot_acc, join_uniprot_acc) %>%
   summarise( reactome_term = paste(reactome_term, collapse="; ") ) %>%
-  ungroup()     %>%
+  ungroup() %>%
   mutate(reactome_term = str_replace_all( reactome_term , ":", "-")) %>%
   group_by(uniprot_acc ) %>%
   summarise( reactome_term = paste(reactome_term, collapse=":") ) %>%
@@ -347,7 +347,7 @@ reactome_term_tbl <- uniprot_acc_tbl %>%
 # de_proteins_wider_annot <- de_proteins_wider %>%
 #   left_join( ids_tbl, by=c("uniprot_acc" = "uniprot_acc") ) %>%
 #   left_join( uniprot_dat_multiple_acc, by = c("uniprot_acc" = "uniprot_acc") ) %>%
-#   left_join( reactome_term_tbl, by = c("uniprot_acc" = "uniprot_acc"))  %>%
+#   left_join( reactome_term_tbl, by = c("uniprot_acc" = "uniprot_acc")) %>%
 #   left_join( dat_cln, by=c("maxquant_row_id" = "id",
 #                            "protein_ids" = "protein_ids")) %>%
 #   arrange( comparison, q.mod, log2FC) %>%
@@ -360,9 +360,12 @@ reactome_term_tbl <- uniprot_acc_tbl %>%
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Output longer format results table with protein annotation.")
 de_proteins_longer_annot <- de_proteins_longer %>%
+  dplyr::mutate( uniprot_acc_first = str_split( uniprot_acc, ":") |>
+                   purrr::map_chr(1) ) |>
+  dplyr::relocate( uniprot_acc_first, .before="uniprot_acc") |>
   left_join( ids_tbl, by=c("uniprot_acc" = "uniprot_acc") ) %>%
   left_join( uniprot_dat_multiple_acc, by = c("uniprot_acc" = "uniprot_acc") ) %>%
-  left_join( reactome_term_tbl, by = c("uniprot_acc" = "uniprot_acc"))  %>%
+  left_join( reactome_term_tbl, by = c("uniprot_acc" = "uniprot_acc")) %>%
   mutate( maxquant_row_id = as.character(maxquant_row_id)) %>%
   left_join( dat_cln %>%
              mutate( id = as.character(id)) , by=c("maxquant_row_id" = "id",

@@ -14,17 +14,17 @@ removeEmptyRows <- function(input_table, col_pattern, row_id) {
 
   temp_col_name <- paste0("temp_", as_name(enquo(row_id)))
 
-  temp_input_table <- input_table %>%
+  temp_input_table <- input_table |>
     dplyr::mutate(!!rlang::sym(temp_col_name) := row_number())
 
-  sites_to_accept <- temp_input_table %>%
-    mutate(across(matches(col_pattern, perl = TRUE), ~{ (is.na(.) | . == 0) })) %>%
-    dplyr::filter(!if_all(matches(col_pattern, perl = TRUE), ~. == TRUE)) %>%
+  sites_to_accept <- temp_input_table |>
+    mutate(across(matches(col_pattern, perl = TRUE), \(x){ (is.na(x) | x == 0) })) |>
+    dplyr::filter(!if_all(matches(col_pattern, perl = TRUE), \(x){ x == TRUE })) |>
     dplyr::select({ { temp_col_name } })
 
   ## Removing entries where all the "Reporter intensity corrected" rows are zero
-  filtered_table <- temp_input_table %>%
-    inner_join(sites_to_accept, by = temp_col_name) %>%
+  filtered_table <- temp_input_table |>
+    inner_join(sites_to_accept, by = temp_col_name) |>
     dplyr::select(-temp_col_name)
 
   return(filtered_table)
@@ -40,12 +40,12 @@ removeEmptyRows <- function(input_table, col_pattern, row_id) {
 plotNumMissingValues <- function(input_table) {
 
   plot_num_missing_values <- apply(data.matrix(log2(input_table)), 2,
-                                   function(x) { length(which(is.infinite(x))) }) %>%
-    t %>%
-    t %>%
-    set_colnames("No. of Missing Values") %>%
-    as.data.frame %>%
-    rownames_to_column("Samples ID") %>%
+                                   function(x) { length(which(is.infinite(x))) }) |>
+    t() |>
+    t() |>
+    set_colnames("No. of Missing Values") |>
+    as.data.frame() |>
+    rownames_to_column("Samples ID") |>
     ggplot(aes(x = `Samples ID`, y = `No. of Missing Values`)) +
     geom_bar(stat = "identity") +
     theme(axis.text.x = element_text(angle = 90))
@@ -65,12 +65,12 @@ plotNumMissingValues <- function(input_table) {
 plotNumOfValues <- function(input_table) {
 
   plot_num_missing_values <- apply(data.matrix(log2(input_table)), 2,
-                                   function(x) { length(which(!is.na(x))) }) %>%
-    t %>%
-    t %>%
-    set_colnames("No. of Values") %>%
-    as.data.frame %>%
-    rownames_to_column("Samples ID") %>%
+                                   function(x) { length(which(!is.na(x))) }) |>
+    t() |>
+    t() |>
+    set_colnames("No. of Values") |>
+    as.data.frame() |>
+    rownames_to_column("Samples ID") |>
     ggplot(aes(x = `Samples ID`, y = `No. of Values`)) +
     geom_bar(stat = "identity") +
     theme(axis.text.x = element_text(angle = 90))
@@ -86,12 +86,12 @@ plotNumOfValues <- function(input_table) {
 plotNumOfValuesNoLog <- function(input_table) {
 
   plot_num_missing_values <- apply(data.matrix(input_table), 2,
-                                   function(x) { length(which(!is.na(x))) }) %>%
-    t %>%
-    t %>%
-    set_colnames("No. of Values") %>%
-    as.data.frame %>%
-    rownames_to_column("Samples ID") %>%
+                                   function(x) { length(which(!is.na(x))) }) |>
+    t() |>
+    t() |>
+    set_colnames("No. of Values") |>
+    as.data.frame() |>
+    rownames_to_column("Samples ID") |>
     ggplot(aes(x = `Samples ID`, y = `No. of Values`)) +
     geom_bar(stat = "identity") +
     theme(axis.text.x = element_text(angle = 90))
@@ -114,26 +114,26 @@ plotNumOfValuesNoLog <- function(input_table) {
 #'@export
 removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample_id, row_id, group_column, max_num_samples_miss_per_group, abundance_threshold) {
 
-  abundance_long <- input_table %>%
+  abundance_long <- input_table |>
     pivot_longer(cols = { { cols } },
                  names_to = as_name(enquo(sample_id)),
-                 values_to = "Abundance") %>%
+                 values_to = "Abundance") |>
     left_join(design_matrix, by = as_name(enquo(sample_id)))
 
 
-  count_values_per_group <- abundance_long %>%
-    mutate(has_value = ifelse(!is.na(Abundance) & Abundance > abundance_threshold, 0, 1)) %>%
-    group_by({ { row_id } }, { { group_column } }) %>%
-    summarise(num_values = sum(has_value)) %>%
+  count_values_per_group <- abundance_long |>
+    mutate(has_value = ifelse(!is.na(Abundance) & Abundance > abundance_threshold, 0, 1)) |>
+    group_by({ { row_id } }, { { group_column } }) |>
+    summarise(num_values = sum(has_value)) |>
     ungroup()
 
 
-  remove_rows_temp <- count_values_per_group %>%
-    dplyr::filter(max_num_samples_miss_per_group < num_values) %>%
-    dplyr::select(-num_values, -{ { group_column } }) %>%
+  remove_rows_temp <- count_values_per_group |>
+    dplyr::filter(max_num_samples_miss_per_group < num_values) |>
+    dplyr::select(-num_values, -{ { group_column } }) |>
     distinct({ { row_id } })
 
-  filtered_tbl <- input_table %>%
+  filtered_tbl <- input_table |>
     dplyr::anti_join(remove_rows_temp, by = as_name(enquo(row_id)))
 
   return(filtered_tbl)
@@ -154,27 +154,27 @@ removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample
 #'@export
 getRowsToKeepList <- function(input_table, cols, design_matrix, sample_id, row_id, group_column, min_num_samples_per_group, abundance_threshold) {
 
-  abundance_long <- input_table %>%
+  abundance_long <- input_table |>
     pivot_longer(cols = { { cols } },
                  names_to = as_name(enquo(sample_id)),
-                 values_to = "Abundance") %>%
+                 values_to = "Abundance") |>
     left_join(design_matrix, by = as_name(enquo(sample_id)))
 
 
-  count_values_per_group <- abundance_long %>%
-    mutate(has_value = ifelse(!is.na(Abundance) & Abundance > abundance_threshold, 1, 0)) %>%
-    group_by({ { row_id } }, { { group_column } }) %>%
-    summarise(num_values = sum(has_value)) %>%
+  count_values_per_group <- abundance_long |>
+    mutate(has_value = ifelse(!is.na(Abundance) & Abundance > abundance_threshold, 1, 0)) |>
+    group_by({ { row_id } }, { { group_column } }) |>
+    summarise(num_values = sum(has_value)) |>
     ungroup()
 
 
-  kept_rows_temp <- count_values_per_group %>%
-    dplyr::filter(num_values >= min_num_samples_per_group) %>%
-    dplyr::select(-num_values) %>%
-    group_by({ { group_column } }) %>%
-    nest(data = c({ { row_id } })) %>%
-    ungroup() %>%
-    mutate(data = purrr::map(data, ~{ .[, as_name(enquo(row_id))][[1]] }))
+  kept_rows_temp <- count_values_per_group |>
+    dplyr::filter(num_values >= min_num_samples_per_group) |>
+    dplyr::select(-num_values) |>
+    group_by({ { group_column } }) |>
+    nest(data = c({ { row_id } })) |>
+    ungroup() |>
+    mutate(data = purrr::map(data, \(x){ x[, as_name(enquo(row_id))][[1]] }))
 
 
   sample_rows_lists <- kept_rows_temp$data
@@ -216,14 +216,14 @@ imputePerCol <- function(temp, width = 0.3, downshift = 1.8) {
 #'@export
 getRuvIIIReplicateMatrix <- function(design_matrix, sample_id_column, group_column, temp_column = is_replicate_temp) {
 
-  ruvIII_replicates_matrix <- design_matrix %>%
-    dplyr::select({ { sample_id_column } }, { { group_column } }) %>%
-    mutate({ { temp_column } } := 1) %>%
+  ruvIII_replicates_matrix <- design_matrix |>
+    dplyr::select({ { sample_id_column } }, { { group_column } }) |>
+    mutate({ { temp_column } } := 1) |>
     pivot_wider(id_cols = { { sample_id_column } },
                 names_from = { { group_column } },
                 values_from = { { temp_column } },
-                values_fill = 0) %>%
-    column_to_rownames(as_name(enquo(sample_id_column))) %>%
+                values_fill = 0) |>
+    column_to_rownames(as_name(enquo(sample_id_column))) |>
     as.matrix
 
   ruvIII_replicates_matrix
@@ -244,14 +244,14 @@ plotPca <- function(data,
 
   proportion_explained <- pca.res$prop_expl_var
 
-  temp_tbl <- pca.res$variates$X %>%
-    as.data.frame %>%
-    rownames_to_column(as_name(enquo(sample_id_column))) %>%
+  temp_tbl <- pca.res$variates$X |>
+    as.data.frame() |>
+    rownames_to_column(as_name(enquo(sample_id_column))) |>
     left_join(design_matrix, by = as_name(enquo(sample_id_column)))
 
-  unique_groups <- temp_tbl %>% distinct( {{group_column}}) %>% pull( {{group_column}})
+  unique_groups <- temp_tbl |> distinct( {{group_column}}) |> pull( {{group_column}})
 
-  output <- temp_tbl %>%
+  output <- temp_tbl |>
     ggplot(aes(PC1, PC2, col = {{group_column}}, label = {{label_column}})) +
     geom_point() +
     geom_text_repel(size  = geom.text.size, show.legend=FALSE) +
@@ -280,14 +280,14 @@ plotRle <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75,
     rowinfo = data.frame(rowinfo = rowinfo)
     df_temp = cbind(df, rowinfo)
 
-    my.x.factor.levels <- df_temp %>%
-      arrange(rowinfo) %>%
-      distinct(rle.x.factor) %>%
+    my.x.factor.levels <- df_temp |>
+      arrange(rowinfo) |>
+      distinct(rle.x.factor) |>
       pull(rle.x.factor)
 
-    df <- df_temp %>%
+    df <- df_temp |>
       mutate(rle.x.factor = factor(rle.x.factor,
-                                   levels = my.x.factor.levels)) %>%
+                                   levels = my.x.factor.levels)) |>
       arrange(rowinfo)
   }
 
@@ -355,25 +355,25 @@ countStatDeGenes <- function(data,
                              log_fc_column = log2FC,
                              q_value_column = q.mod) {
 
-  # comparison <- as.data.frame(data) %>%
-  #   distinct(comparison) %>%
+  # comparison <- as.data.frame(data) |>
+  #   distinct(comparison) |>
   #   pull(comparison)
 
-  selected_data <- data %>%
+  selected_data <- data |>
     dplyr::mutate(status = case_when({ { q_value_column } } >= q_val_thresh ~ "Not significant",
                                      { { log_fc_column } } >= lfc_thresh & { { q_value_column } } < q_val_thresh ~ "Significant and Up",
                                      { { log_fc_column } } < lfc_thresh & { { q_value_column } } < q_val_thresh ~ "Significant and Down",
                                      TRUE ~ "Not significant"))
 
-  counts <- selected_data %>%
-    group_by(status) %>%
-    summarise(counts = n()) %>%
+  counts <- selected_data |>
+    group_by(status) |>
+    summarise(counts = n()) |>
     ungroup()
 
   all_possible_status <- data.frame( status = c( "Not significant", "Significant and Up", "Significant and Down"))
 
-  results <- all_possible_status %>%
-    left_join( counts, by=c("status" = "status")) %>%
+  results <- all_possible_status |>
+    left_join( counts, by=c("status" = "status")) |>
     mutate( counts = ifelse(is.na(counts), 0, counts))
 
   return(results)
@@ -397,16 +397,16 @@ printCountDeGenesTable <- function(list_of_de_tables,
                                    expression_column = expression) {
 
   count_stat_de_genes_helper <- function(de_table, description) {
-    purrr::map(de_table, ~countStatDeGenes(.,
+    purrr::map(de_table, \(x){ countStatDeGenes(x,
                                            lfc_thresh = 0,
                                            q_val_thresh = 0.05,
                                            log_fc_column = logFC,
-                                           q_value_column = q.mod)) %>%
+                                           q_value_column = q.mod)}) |>
       purrr::map2(names(de_table),
-                  ~{ .x %>%
-                    mutate({ { comparison_column } } := .y) }) %>%
-      bind_rows %>%
-      mutate({ { facet_column } } := description) %>%
+                  \(.x, .y){ .x |>
+                    mutate({ { comparison_column } } := .y) }) |>
+      bind_rows() |>
+      mutate({ { facet_column } } := description) |>
       separate({ { comparison_column } },
                sep = "=",
                into = c(as_name(enquo(comparison_column)),
@@ -417,11 +417,11 @@ printCountDeGenesTable <- function(list_of_de_tables,
   num_significant_de_genes_all <- purrr::map2(list_of_de_tables,
                                               list_of_descriptions,
                                               function(a, b) { count_stat_de_genes_helper(de_table = a,
-                                                                                          description = b) }) %>%
+                                                                                          description = b) }) |>
     bind_rows()
 
-  num_sig_de_genes_barplot <- num_significant_de_genes_all %>%
-    dplyr::filter(status != "Not significant") %>%
+  num_sig_de_genes_barplot <- num_significant_de_genes_all |>
+    dplyr::filter(status != "Not significant") |>
     ggplot(aes(x = status, y = counts)) +
     geom_bar(stat = "identity") +
     geom_text(stat = 'identity', aes(label = counts), vjust = -0.5) +
@@ -483,17 +483,17 @@ getSignificantData <- function(list_of_de_tables,
 
   get_row_binded_table <- function(de_table_list, description) {
     output <- purrr::map(de_table_list,
-                         function(tbl) { tbl %>%
-                           rownames_to_column(as_name(enquo(row_id))) %>%
+                         function(tbl) { tbl |>
+                           rownames_to_column(as_name(enquo(row_id))) |>
                            dplyr::select({ { row_id } },
                                          { { p_value_column } },
                                          { { q_value_column } },
                                          { { fdr_value_column } },
-                                         { { log_fc_column } }) }) %>%
-      purrr::map2(names(de_table_list), ~{ .x %>%
-        mutate({ { comparison_column } } := .y) }) %>%
-      bind_rows() %>%
-      mutate({ { facet_column } } := description) %>%
+                                         { { log_fc_column } }) }) |>
+      purrr::map2(names(de_table_list), \(.x, .y){ .x |>
+        mutate({ { comparison_column } } := .y) }) |>
+      bind_rows() |>
+      mutate({ { facet_column } } := description) |>
       separate({ { comparison_column } },
                sep = "=",
                into = c(as_name(enquo(comparison_column)),
@@ -502,18 +502,18 @@ getSignificantData <- function(list_of_de_tables,
   }
 
   logfc_tbl_all <- purrr::map2(list_of_de_tables, list_of_descriptions,
-                               function(a, b) { get_row_binded_table(de_table_list = a, description = b) }) %>%
+                               function(a, b) { get_row_binded_table(de_table_list = a, description = b) }) |>
     bind_rows()
 
-  selected_data <- logfc_tbl_all %>%
-    mutate({ { log_q_value_column } } := -log10(q.mod)) %>%
+  selected_data <- logfc_tbl_all |>
+    mutate({ { log_q_value_column } } := -log10(q.mod)) |>
     dplyr::select({ { row_id } }, { { log_q_value_column } }, { { q_value_column } }, { { p_value_column } }, { { log_fc_column } },
                   { { comparison_column } }, { { expression_column } },
-                  { { facet_column } }) %>%
+                  { { facet_column } }) |>
     dplyr::mutate(colour = case_when(abs({ { log_fc_column } }) >= 1 & { { q_value_column } } >= q_val_thresh ~ "orange",
                                      abs({ { log_fc_column } }) >= 1 & { { q_value_column } } < q_val_thresh ~ "purple",
                                      abs({ { log_fc_column } }) < 1 & { { q_value_column } } < q_val_thresh ~ "blue",
-                                     TRUE ~ "black")) %>%
+                                     TRUE ~ "black")) |>
     dplyr::mutate(colour = factor(colour, levels = c("black", "orange", "blue", "purple")))
 
   selected_data
@@ -536,7 +536,7 @@ plotVolcano <- function(selected_data,
                         q_val_thresh = 0.05,
                         formula_string = "analysis_type ~ comparison") {
 
-  volplot_gg.all <- selected_data %>%
+  volplot_gg.all <- selected_data |>
     ggplot(aes(y = { { log_q_value_column } }, x = { { log_fc_column } })) +
     geom_point(aes(col = colour)) +
     scale_colour_manual(values = c(levels(selected_data$colour)),
@@ -583,20 +583,20 @@ plotOneVolcano <- function( input_data, input_title,
                             points_color = colour,
                             q_val_thresh=0.05) {
 
-  colour_tbl <- input_data %>%
+  colour_tbl <- input_data |>
     distinct( {{points_type_label}}, {{points_color}} )
 
   print(colour_tbl)
 
-  colour_map <- colour_tbl %>%
-    pull({{points_color}} ) %>%
+  colour_map <- colour_tbl |>
+    pull({{points_color}} ) |>
     as.vector()
 
-  names( colour_map ) <- colour_tbl %>%
+  names( colour_map ) <- colour_tbl |>
     pull({{points_type_label}} )
 
-  avail_labels <- input_data %>%
-    distinct({{points_type_label}})  %>%
+  avail_labels <- input_data |>
+    distinct({{points_type_label}}) |>
     pull({{points_type_label}})
 
   avail_colours <- colour_map[avail_labels]
@@ -604,7 +604,7 @@ plotOneVolcano <- function( input_data, input_title,
   print(avail_labels)
   print(avail_colours)
 
-  volcano_plot <-  input_data %>%
+  volcano_plot <-  input_data |>
     ggplot(aes(y = {{log_q_value_column}},
                x = {{log_fc_column}} )) +
     geom_point(aes(col = label)) +
@@ -782,14 +782,14 @@ runTest <- function(ID, A, B, group_A, group_B, design_matrix, formula_string,
 #'@return A list where each element name is the name of a treatment group and each element is a vector containing the sample IDs within the treatment group.
 #'@export
 getTypeOfGrouping <- function(design_matrix, group_id, sample_id) {
-  temp_type_of_grouping <- design_matrix %>%
-    dplyr::select(!!rlang::sym(group_id), !!rlang::sym(sample_id)) %>%
-    group_by(!!rlang::sym(group_id)) %>%
-    summarise(!!rlang::sym(sample_id) := list(!!rlang::sym(sample_id))) %>%
+  temp_type_of_grouping <- design_matrix |>
+    dplyr::select(!!rlang::sym(group_id), !!rlang::sym(sample_id)) |>
+    group_by(!!rlang::sym(group_id)) |>
+    summarise(!!rlang::sym(sample_id) := list(!!rlang::sym(sample_id))) |>
     ungroup
 
-  type_of_grouping <- temp_type_of_grouping %>% pull(!!rlang::sym(sample_id))
-  names(type_of_grouping) <- temp_type_of_grouping %>% pull(!!rlang::sym(group_id))
+  type_of_grouping <- temp_type_of_grouping |> pull(!!rlang::sym(sample_id))
+  names(type_of_grouping) <- temp_type_of_grouping |> pull(!!rlang::sym(group_id))
 
   return(type_of_grouping)
 
@@ -940,9 +940,9 @@ runTestsContrasts <- function(data,
 
     result_tables <- purrr::map(contrast_strings,
                                 function(contrast) {
-                                  de_tbl <- topTreat(t.fit, coef = contrast, n = Inf) %>%
-                                    mutate({ { q_value_column } } := qvalue(P.Value)$q) %>%
-                                    mutate({ { fdr_value_column } } := p.adjust(P.Value, method="BH")) %>%
+                                  de_tbl <- topTreat(t.fit, coef = contrast, n = Inf) |>
+                                    mutate({ { q_value_column } } := qvalue(P.Value)$q) |>
+                                    mutate({ { fdr_value_column } } := p.adjust(P.Value, method="BH")) |>
 
                                     dplyr::rename({ { p_value_column } } := P.Value)
                                 }
@@ -952,9 +952,9 @@ runTestsContrasts <- function(data,
 
     result_tables <- purrr::map(contrast_strings,
                                 function(contrast) {
-                                  de_tbl <- topTable(t.fit, coef = contrast, n = Inf) %>%
-                                    mutate({ { q_value_column } } := qvalue(P.Value)$q) %>%
-                                    mutate({ { fdr_value_column } } := p.adjust(P.Value, method="BH")) %>%
+                                  de_tbl <- topTable(t.fit, coef = contrast, n = Inf) |>
+                                    mutate({ { q_value_column } } := qvalue(P.Value)$q) |>
+                                    mutate({ { fdr_value_column } } := p.adjust(P.Value, method="BH")) |>
 
                                     dplyr::rename({ { p_value_column } } := P.Value)
                                 }
@@ -1007,7 +1007,7 @@ cmriRUVfit <- function(Y, X, ctl, Z = 1, k = NULL, method = c("inv", "rinv",
 #'@export
 extractRuvResults <- function(results_list) {
 
-  extracted <- purrr::map(results_list, ~{ .$results })
+  extracted <- purrr::map(results_list, \(x){ x$results })
 
   names(extracted) <- names(results_list)
 
@@ -1018,7 +1018,7 @@ extractRuvResults <- function(results_list) {
 #'@export
 extractResults <- function(results_list) {
 
-  extracted <- purrr::map(results_list, ~{ .$results })
+  extracted <- purrr::map(results_list, \(x){ x$results })
 
   names(extracted) <- names(results_list)
 
@@ -1039,10 +1039,10 @@ saveDeProteinList <- function(list_of_de_tables, row_id, sort_by_column = q.mod,
 
   purrr::walk2(list_of_de_tables, names(list_of_de_tables),
 
-               ~vroom::vroom_write(.x %>%
-                                     rownames_to_column(row_id) %>%
+               \(.x) {vroom::vroom_write(.x |>
+                                     rownames_to_column(row_id) |>
                                      arrange({ { sort_by_column } }),
-                                   path = file.path(results_dir, paste0(.y, file_suffix))))
+                                   path = file.path(results_dir, paste0(.y, file_suffix)))} )
 
 }
 
@@ -1051,11 +1051,11 @@ saveDeProteinList <- function(list_of_de_tables, row_id, sort_by_column = q.mod,
 #'@export
 analyseRanking <- function(data, uniprot_acc_column = uniprot_acc) {
 
-  results_tbl <- data %>%
-    as.data.frame %>%
-    rownames_to_column(as_name(enquo(uniprot_acc_column))) %>%
-    dplyr::select(one_of(c(as_name(enquo(uniprot_acc_column)), "q.mod", "logFC"))) %>%
-    arrange(desc(q.mod)) %>%
+  results_tbl <- data |>
+    as.data.frame() |>
+    rownames_to_column(as_name(enquo(uniprot_acc_column))) |>
+    dplyr::select(one_of(c(as_name(enquo(uniprot_acc_column)), "q.mod", "logFC"))) |>
+    arrange(desc(q.mod)) |>
     mutate(ctrl_gene_rank = row_number())
 
   return(results_tbl)
@@ -1067,16 +1067,16 @@ getControlGenes <- function(data,
                             logFC_threshold = 1,
                             uniprot_acc_column = uniprot_acc) {
 
-  temp <- purrr::map(data, ~analyseRanking(., uniprot_acc_column = { { uniprot_acc_column } }))
+  temp <- purrr::map(data, \(x) { analyseRanking(x, uniprot_acc_column = { { uniprot_acc_column } })})
 
-  ctrl_genes_list <- temp %>%
-    bind_rows(.id = "Test") %>%
+  ctrl_genes_list <- temp |>
+    bind_rows(.id = "Test") |>
     dplyr::filter(q.mod >= q.value &
-                    abs(logFC) <= logFC_threshold) %>%
-    group_by({ { uniprot_acc_column } }) %>%
-    summarise(total_num_set = n()) %>%
-    ungroup() %>%
-    dplyr::filter(total_num_set == length(data)) %>%
+                    abs(logFC) <= logFC_threshold) |>
+    group_by({ { uniprot_acc_column } }) |>
+    summarise(total_num_set = n()) |>
+    ungroup() |>
+    dplyr::filter(total_num_set == length(data)) |>
     dplyr::select({ { uniprot_acc_column } })
 
   return(ctrl_genes_list)
@@ -1129,19 +1129,19 @@ getNegCtrlProtAnova <- function(data_matrix, design_matrix, group_column = "grou
 #'@export
 averageValuesFromReplicates <- function(input_table, design_matrix, group_pattern, row_id, sample_id, average_replicates_id) {
 
-  output_table <- input_table %>%
-    as.data.frame %>%
-    rownames_to_column(  row_id   ) %>%
+  output_table <- input_table |>
+    as.data.frame() |>
+    rownames_to_column(  row_id   ) |>
     pivot_longer( cols=matches(group_pattern),
                   names_to = sample_id,
-                  values_to = "value") %>%
-    left_join( design_matrix, by = sample_id ) %>%
-    group_by( !!rlang::sym(average_replicates_id) ,  !!rlang::sym(row_id) ) %>%
-    summarise( value = mean(value, na.rm = TRUE)) %>%
-    ungroup %>%
+                  values_to = "value") |>
+    left_join( design_matrix, by = sample_id ) |>
+    group_by( !!rlang::sym(average_replicates_id) ,  !!rlang::sym(row_id) ) |>
+    summarise( value = mean(value, na.rm = TRUE)) |>
+    ungroup() |>
     pivot_wider( names_from = !!rlang::sym(average_replicates_id),
-                 values_from = "value") %>%
-    column_to_rownames(row_id) %>%
+                 values_from = "value") |>
+    column_to_rownames(row_id) |>
     as.matrix
 
   return( output_table )
@@ -1170,8 +1170,8 @@ subsetQuery <- function(data, subset, accessions_col_name, uniprot_handle, unipr
 
 
   # print(subset)
-  my_keys <- data %>%
-    dplyr::filter(round == subset) %>%
+  my_keys <- data |>
+    dplyr::filter(round == subset) |>
     pull({ { accessions_col_name } })
 
    # print(my_keys)
@@ -1188,13 +1188,13 @@ subsetQuery <- function(data, subset, accessions_col_name, uniprot_handle, unipr
 # The UniProt.ws::select function limits the number of keys queried to 100. This gives a batch number for it to be queried in batches.
 batchQueryEvidenceHelper <- function(uniprot_acc_tbl, uniprot_acc_column) {
 
-  all_uniprot_acc <- uniprot_acc_tbl %>%
-    dplyr::select({ { uniprot_acc_column } }) %>%
-    mutate(Proteins = str_split({ { uniprot_acc_column } }, ";")) %>%
-    unnest(Proteins) %>%
-    distinct %>%
-    arrange(Proteins) %>%
-    mutate(Proteins = cleanIsoformNumber(Proteins)) %>%
+  all_uniprot_acc <- uniprot_acc_tbl |>
+    dplyr::select({ { uniprot_acc_column } }) |>
+    mutate(Proteins = str_split({ { uniprot_acc_column } }, ";")) |>
+    unnest(Proteins) |>
+    distinct() |>
+    arrange(Proteins) |>
+    mutate(Proteins = cleanIsoformNumber(Proteins)) |>
     dplyr::mutate(round = ceiling(row_number() / 100))  ## 100 is the maximum number of queries at one time
 }
 
@@ -1221,12 +1221,12 @@ batchQueryEvidence <- function(uniprot_acc_tbl, uniprot_acc_column, uniprot_hand
                                   uniprot_columns = uniprot_columns,
                                   uniprot_keytype = uniprot_keytype)
 
-  rounds_list <- all_uniprot_acc %>%
-    distinct(round) %>%
-    arrange(round) %>%
+  rounds_list <- all_uniprot_acc |>
+    distinct(round) |>
+    arrange(round) |>
     pull(round)
 
-  all_uniprot_evidence <- purrr::map(rounds_list, ~{ partial_subset_query(subset = .) }) %>%
+  all_uniprot_evidence <- purrr::map(rounds_list, \(x){ partial_subset_query(subset = x) }) |>
     bind_rows
 
   return(all_uniprot_evidence)
@@ -1239,9 +1239,9 @@ batchQueryEvidence <- function(uniprot_acc_tbl, uniprot_acc_column, uniprot_hand
 # The UniProt.ws::select function limits the number of keys queried to 100. This gives a batch number for it to be queried in batches.
 batchQueryEvidenceHelperGeneId <- function(input_tbl, gene_id_column) {
 
-  all_uniprot_acc <- input_tbl %>%
-    dplyr::select({ { gene_id_column } }) %>%
-    arrange({ { gene_id_column } }) %>%
+  all_uniprot_acc <- input_tbl |>
+    dplyr::select({ { gene_id_column } }) |>
+    arrange({ { gene_id_column } }) |>
     dplyr::mutate(round = ceiling(row_number() / 100))  ## 100 is the maximum number of queries at one time
 }
 
@@ -1260,12 +1260,12 @@ batchQueryEvidenceGeneId <- function(input_tbl, gene_id_column, uniprot_handle,
                                   uniprot_columns = uniprot_columns,
                                   uniprot_keytype = "GENENAME")
 
-  rounds_list <- all_gene_id %>%
-    distinct(round) %>%
-    arrange(round) %>%
+  rounds_list <- all_gene_id |>
+    distinct(round) |>
+    arrange(round) |>
     pull(round)
 
-  all_uniprot_evidence <- purrr::map(rounds_list, ~{ partial_subset_query(subset = .) }) %>%
+  all_uniprot_evidence <- purrr::map(rounds_list, \(x){ partial_subset_query(subset = x) }) |>
     bind_rows
 
   return(all_uniprot_evidence)
@@ -1286,16 +1286,16 @@ batchQueryEvidenceGeneId <- function(input_tbl, gene_id_column, uniprot_handle,
 goIdToTerm <- function(go_string, sep = "; ", goterms, gotypes) {
 
   if (!is.na(go_string)) {
-    go_string_tbl <- data.frame(go_id = go_string) %>%
-      separate_rows(go_id, sep = sep) %>%
-      mutate(go_term = purrr::map_chr(go_id, function(x) { if (x %in% names(goterms)) { return(goterms[[x]]) }; return(NA) })) %>%
-      mutate(go_type = purrr::map_chr(go_id, function(x) { if (x %in% names(gotypes)) { return(gotypes[[x]]) }; return(NA) })) %>%
-      group_by(go_type) %>%
-      summarise(go_term = paste(go_term, collapse = "; ")) %>%
-      ungroup() %>%
+    go_string_tbl <- data.frame(go_id = go_string) |>
+      separate_rows(go_id, sep = sep) |>
+      mutate(go_term = purrr::map_chr(go_id, function(x) { if (x %in% names(goterms)) { return(goterms[[x]]) }; return(NA) })) |>
+      mutate(go_type = purrr::map_chr(go_id, function(x) { if (x %in% names(gotypes)) { return(gotypes[[x]]) }; return(NA) })) |>
+      group_by(go_type) |>
+      summarise(go_term = paste(go_term, collapse = "; ")) |>
+      ungroup() |>
       mutate(go_type = case_when(go_type == "BP" ~ "go_biological_process",
                                  go_type == "CC" ~ "go_cellular_compartment",
-                                 go_type == "MF" ~ "go_molecular_function")) %>%
+                                 go_type == "MF" ~ "go_molecular_function")) |>
       pivot_wider(names_from = go_type,
                   values_from = go_term)
 
@@ -1318,33 +1318,33 @@ goIdToTerm <- function(go_string, sep = "; ", goterms, gotypes) {
 uniprotGoIdToTerm <- function(uniprot_dat, sep = "; ", goterms, gotypes) {
 
 
-  uniprot_acc_to_go_id <- uniprot_dat %>%
-    dplyr::distinct(UNIPROTKB, `GO-ID`) %>%
-    separate_rows(`GO-ID`, sep = sep) %>%
-    dplyr::distinct(UNIPROTKB, `GO-ID`) %>%
+  uniprot_acc_to_go_id <- uniprot_dat |>
+    dplyr::distinct(UNIPROTKB, `GO-ID`) |>
+    separate_rows(`GO-ID`, sep = sep) |>
+    dplyr::distinct(UNIPROTKB, `GO-ID`) |>
     dplyr::filter(!is.na(`GO-ID`))
 
-  go_term_temp <- uniprot_acc_to_go_id %>%
-    dplyr::distinct(`GO-ID`) %>%
-    mutate(go_term = purrr::map_chr(`GO-ID`, function(x) { if (x %in% names(goterms)) { return(goterms[[x]]) }; return(NA) })) %>%
-    mutate(go_type = purrr::map_chr(`GO-ID`, function(x) { if (x %in% names(gotypes)) { return(gotypes[[x]]) }; return(NA) })) %>%
+  go_term_temp <- uniprot_acc_to_go_id |>
+    dplyr::distinct(`GO-ID`) |>
+    mutate(go_term = purrr::map_chr(`GO-ID`, function(x) { if (x %in% names(goterms)) { return(goterms[[x]]) }; return(NA) })) |>
+    mutate(go_type = purrr::map_chr(`GO-ID`, function(x) { if (x %in% names(gotypes)) { return(gotypes[[x]]) }; return(NA) })) |>
     mutate(go_type = case_when(go_type == "BP" ~ "go_biological_process",
                                go_type == "CC" ~ "go_cellular_compartment",
                                go_type == "MF" ~ "go_molecular_function"))
 
-  uniprot_acc_to_go_term <- uniprot_acc_to_go_id %>%
-    left_join(go_term_temp, by = c("GO-ID" = "GO-ID")) %>%
-    dplyr::filter(!is.na(go_term)) %>%
-    group_by(UNIPROTKB, go_type) %>%
-    summarise(go_term = paste(go_term, collapse = "; ")) %>%
-    ungroup() %>%
+  uniprot_acc_to_go_term <- uniprot_acc_to_go_id |>
+    left_join(go_term_temp, by = c("GO-ID" = "GO-ID")) |>
+    dplyr::filter(!is.na(go_term)) |>
+    group_by(UNIPROTKB, go_type) |>
+    summarise(go_term = paste(go_term, collapse = "; ")) |>
+    ungroup() |>
     pivot_wider(id_cols = "UNIPROTKB",
                 names_from = go_type,
                 values_from = go_term)
 
 
-  output_uniprot_dat <- uniprot_dat %>%
-    left_join(uniprot_acc_to_go_term, by = c("UNIPROTKB" = "UNIPROTKB")) %>%
+  output_uniprot_dat <- uniprot_dat |>
+    left_join(uniprot_acc_to_go_term, by = c("UNIPROTKB" = "UNIPROTKB")) |>
     relocate(KEYWORDS, .before = "GO-ID")
 
   return(output_uniprot_dat)
@@ -1359,43 +1359,43 @@ uniprotGoIdToTerm <- function(uniprot_dat, sep = "; ", goterms, gotypes) {
 #'@export
 mergeWithEntrezId <- function(input_table, lookup_table) {
 
-  de_prot_for_camera_helper <- input_table %>%
-    mutate(protein_id = row_number()) %>%
-    inner_join(lookup_table %>% dplyr::filter(!is.na(ENTREZ_GENE)), by = c("uniprot_acc" = "UNIPROTKB"))
+  de_prot_for_camera_helper <- input_table |>
+    mutate(protein_id = row_number()) |>
+    inner_join(lookup_table |> dplyr::filter(!is.na(ENTREZ_GENE)), by = c("uniprot_acc" = "UNIPROTKB"))
 
-  without_entrez_id <- input_table %>%
-    left_join(lookup_table %>% dplyr::filter(!is.na(ENTREZ_GENE)), by = c("uniprot_acc" = "UNIPROTKB")) %>%
+  without_entrez_id <- input_table |>
+    left_join(lookup_table |> dplyr::filter(!is.na(ENTREZ_GENE)), by = c("uniprot_acc" = "UNIPROTKB")) |>
     dplyr::filter(is.na(ENTREZ_GENE))
 
   ## Find rows with duplicated ids
-  duplicated_row_id <- de_prot_for_camera_helper %>%
-    dplyr::group_by(ENTREZ_GENE, comparison) %>%
-    summarise(counts = n()) %>%
-    ungroup() %>%
-    dplyr::filter(counts > 1) %>%
+  duplicated_row_id <- de_prot_for_camera_helper |>
+    dplyr::group_by(ENTREZ_GENE, comparison) |>
+    summarise(counts = n()) |>
+    ungroup() |>
+    dplyr::filter(counts > 1) |>
     dplyr::select(-counts)
 
-  to_be_selected <- de_prot_for_camera_helper %>%
+  to_be_selected <- de_prot_for_camera_helper |>
     inner_join(duplicated_row_id, by = c("ENTREZ_GENE", "comparison"))
 
   ## Duplicates with best q-value
-  selected_one_helper <- to_be_selected %>%
-    inner_join(to_be_selected %>%
-                 group_by(comparison, ENTREZ_GENE) %>%
-                 summarise(q.mod = min(q.mod)) %>%
-                 ungroup %>%
+  selected_one_helper <- to_be_selected |>
+    inner_join(to_be_selected |>
+                 group_by(comparison, ENTREZ_GENE) |>
+                 summarise(q.mod = min(q.mod)) |>
+                 ungroup() |>
                  dplyr::select( comparison, ENTREZ_GENE, q.mod),
                by = c("comparison" = "comparison",
                       "ENTREZ_GENE" = "ENTREZ_GENE",
                       "q.mod" = "q.mod"))
 
-  selected_one  <- selected_one_helper  %>%
-    inner_join(selected_one_helper %>%
-                 group_by(comparison, ENTREZ_GENE) %>%
-                 mutate( gene_rank  = row_number()) %>%
-                 ungroup %>%
-                 dplyr::filter( gene_rank == 1) %>%
-                 dplyr::select(-gene_rank) %>%
+  selected_one  <- selected_one_helper  |>
+    inner_join(selected_one_helper |>
+                 group_by(comparison, ENTREZ_GENE) |>
+                 mutate( gene_rank  = row_number()) |>
+                 ungroup() |>
+                 dplyr::filter( gene_rank == 1) |>
+                 dplyr::select(-gene_rank) |>
                  dplyr::select( comparison, ENTREZ_GENE, uniprot_acc, protein_id),
                by = c("comparison" = "comparison",
                       "uniprot_acc" = "uniprot_acc",
@@ -1403,20 +1403,20 @@ mergeWithEntrezId <- function(input_table, lookup_table) {
                       "protein_id" = "protein_id")  )
 
   ## List of rows that were discarded as they are duplicates
-  excluded_duplicates <- to_be_selected %>%
+  excluded_duplicates <- to_be_selected |>
     anti_join(selected_one, by = c("protein_id" = "protein_id",
                                    "comparison" = "comparison"))
 
   ## Combine those that are not duplicates
-  de_prot_for_camera_no_dup <- de_prot_for_camera_helper %>%
+  de_prot_for_camera_no_dup <- de_prot_for_camera_helper |>
     anti_join(duplicated_row_id, by = c("ENTREZ_GENE", "comparison"))
 
-  de_prot_for_camera_cleaned <- selected_one %>%
-    bind_rows(de_prot_for_camera_no_dup) %>%
+  de_prot_for_camera_cleaned <- selected_one |>
+    bind_rows(de_prot_for_camera_no_dup) |>
     dplyr::arrange(comparison, q.mod)
 
-  de_prot_for_camera_tab <- de_prot_for_camera_cleaned %>%
-    dplyr::select(-protein_id) %>%
+  de_prot_for_camera_tab <- de_prot_for_camera_cleaned |>
+    dplyr::select(-protein_id) |>
     relocate(ENTREZ_GENE, .before = comparison)
 
   return(list(de_proteins = de_prot_for_camera_tab,
@@ -1438,33 +1438,33 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
                                        design_matrix_raw
 ) {
 
-  norm_counts <- norm_counts_input_tbl %>%
-    as.data.frame %>%
-    rownames_to_column(row_id) %>%
+  norm_counts <- norm_counts_input_tbl |>
+    as.data.frame() |>
+    rownames_to_column(row_id) |>
     pivot_longer(cols = matches(group_pattern),
                  names_to = sample_id,
-                 values_to = "log2norm")  %>%
-    left_join(design_matrix_norm, by = sample_id) %>%
-    group_by(!!sym(row_id), !!sym(group_id)) %>%
-    arrange(!!sym(row_id), !!sym(group_id), !!sym(sample_id)) %>%
-    mutate(replicate_number = paste0("log2norm.", row_number())) %>%
-    ungroup %>%
+                 values_to = "log2norm") |>
+    left_join(design_matrix_norm, by = sample_id) |>
+    group_by(!!sym(row_id), !!sym(group_id)) |>
+    arrange(!!sym(row_id), !!sym(group_id), !!sym(sample_id)) |>
+    mutate(replicate_number = paste0("log2norm.", row_number())) |>
+    ungroup() |>
     pivot_wider(id_cols = c(!!sym(row_id), !!sym(group_id)),
                 names_from = replicate_number,
                 values_from = log2norm)
 
 
-  raw_counts <- raw_counts_input_tbl %>%
-    as.data.frame %>%
-    rownames_to_column(row_id) %>%
+  raw_counts <- raw_counts_input_tbl |>
+    as.data.frame() |>
+    rownames_to_column(row_id) |>
     pivot_longer(cols = matches(group_pattern),
                  names_to = sample_id,
-                 values_to = "raw") %>%
-    left_join(design_matrix_raw, by = sample_id) %>%
-    group_by(!!sym(row_id), !!sym(group_id)) %>%
-    arrange(!!sym(row_id), !!sym(group_id), !!sym(sample_id)) %>%
-    mutate(replicate_number = paste0("raw.", row_number())) %>%
-    ungroup %>%
+                 values_to = "raw") |>
+    left_join(design_matrix_raw, by = sample_id) |>
+    group_by(!!sym(row_id), !!sym(group_id)) |>
+    arrange(!!sym(row_id), !!sym(group_id), !!sym(sample_id)) |>
+    mutate(replicate_number = paste0("raw.", row_number())) |>
+    ungroup() |>
     pivot_wider(id_cols = c(!!sym(row_id), !!sym(group_id)),
                 names_from = replicate_number,
                 values_from = raw)
@@ -1477,17 +1477,17 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
   right_join_columns <- rlang::set_names(c(row_id, group_id ),
                                          c(row_id, "right_group"))
 
-  de_proteins_long <- lfc_qval_tbl %>%
-    dplyr::select(-lqm, -colour, -analysis_type) %>%
-    dplyr::mutate(expression = str_replace_all(expression, group_id, "")) %>%
-    separate(expression, sep = "-", into = c("left_group", "right_group")) %>%
-    left_join(norm_counts, by = left_join_columns) %>%
+  de_proteins_long <- lfc_qval_tbl |>
+    dplyr::select(-lqm, -colour, -analysis_type) |>
+    dplyr::mutate(expression = str_replace_all(expression, group_id, "")) |>
+    separate(expression, sep = "-", into = c("left_group", "right_group")) |>
+    left_join(norm_counts, by = left_join_columns) |>
     left_join(norm_counts, by = right_join_columns,
-              suffix = c(".left", ".right")) %>%
-    left_join(raw_counts, by = left_join_columns) %>%
+              suffix = c(".left", ".right")) |>
+    left_join(raw_counts, by = left_join_columns) |>
     left_join(raw_counts, by = right_join_columns,
-              suffix = c(".left", ".right")) %>%
-    arrange( comparison, q.mod, log2FC) %>%
+              suffix = c(".left", ".right")) |>
+    arrange( comparison, q.mod, log2FC) |>
     distinct()
 
   de_proteins_long
