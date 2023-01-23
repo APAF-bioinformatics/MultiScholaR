@@ -302,10 +302,10 @@ if( ! file.exists( uniprot_other_kinase_file )) {
   }
 
 
-  uniprot_acc_tbl <- uniprot_kinase_tbl %>%
+  uniprot_acc_tbl <- uniprot_kinase_tbl |>
     dplyr::filter( Family == "Other" |
-                     str_detect(Family, "Atypical")) %>%
-    dplyr::distinct(uniprot_acc_human) %>%
+                     str_detect(Family, "Atypical")) |>
+    dplyr::distinct(uniprot_acc_human) |>
     dplyr::rename(uniprot_acc = uniprot_acc_human)
 
   atypical_and_other <- batchQueryEvidence(uniprot_acc_tbl, uniprot_acc_column="uniprot_acc", uniprot_handle=up,
@@ -322,8 +322,8 @@ atypical_and_other <- readRDS( uniprot_other_kinase_file )
 ## ---------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Read PhosphoSitePlus (PSP) kinase-substrate table.")
 captured_output<-capture.output(
-  ks_tbl <- vroom::vroom( ks_file, skip=3 ) %>%
-  mutate( SUB_MOD_RSD_CLN = str_replace_all(SUB_MOD_RSD, "([A-Z])(\\d+)", "\\1 \\2")) %>%
+  ks_tbl <- vroom::vroom( ks_file, skip=3 ) |>
+  mutate( SUB_MOD_RSD_CLN = str_replace_all(SUB_MOD_RSD, "([A-Z])(\\d+)", "\\1 \\2")) |>
   separate( SUB_MOD_RSD_CLN, into=c("residue", "position"))
   ,type = "message"
 )
@@ -360,32 +360,32 @@ loginfo("Filter the correct subset of kinases for the analysis.")
 uniprot_kinases <- NA
 
 if( args$kinase_specificity == "ST") {
-   uniprot_kinases <- uniprot_kinase_tbl %>%
-     dplyr::filter( str_detect( Family, "Ser/Thr" )  | str_detect( Family, "Atypical") | str_detect( Family, "Other" ) ) %>%
-     left_join( atypical_and_other %>%
+   uniprot_kinases <- uniprot_kinase_tbl |>
+     dplyr::filter( str_detect( Family, "Ser/Thr" )  | str_detect( Family, "Atypical") | str_detect( Family, "Other" ) ) |>
+     left_join( atypical_and_other |>
                   dplyr::select(UNIPROTKB, KEYWORDS),
-                by=c("uniprot_acc_human" = "UNIPROTKB")) %>%
+                by=c("uniprot_acc_human" = "UNIPROTKB")) |>
       dplyr::filter( str_detect( Family, "Ser/Thr" ) |
                        (   str_detect(KEYWORDS, "Serine/threonine-protein kinase") &
                           (!str_detect(KEYWORDS, "Tyrosine-protein kinase") ) ) )
 
 } else if ( args$kinase_specificity == "Y") {
-  uniprot_kinases <- uniprot_kinase_tbl %>%
-    dplyr::filter( str_detect( Family, "Tyr" )  | str_detect( Family, "Atypical") | str_detect( Family, "Other" ) ) %>%
-    left_join( atypical_and_other %>%
+  uniprot_kinases <- uniprot_kinase_tbl |>
+    dplyr::filter( str_detect( Family, "Tyr" )  | str_detect( Family, "Atypical") | str_detect( Family, "Other" ) ) |>
+    left_join( atypical_and_other |>
                   dplyr::select(UNIPROTKB, KEYWORDS),
-               by=c("uniprot_acc_human" = "UNIPROTKB")) %>%
+               by=c("uniprot_acc_human" = "UNIPROTKB")) |>
     dplyr::filter( str_detect( Family, "Tyr" ) |
                      ( (!str_detect(KEYWORDS, "Serine/threonine-protein kinase")) &
                          str_detect(KEYWORDS, "Tyrosine-protein kinase") ) )
 
 
 } else if ( args$kinase_specificity == "STY") {
-  uniprot_kinases <- uniprot_kinase_tbl %>%
-    dplyr::filter(  str_detect( Family, "Atypical") | str_detect( Family, "Other" ) ) %>%
-    left_join( atypical_and_other %>%
+  uniprot_kinases <- uniprot_kinase_tbl |>
+    dplyr::filter(  str_detect( Family, "Atypical") | str_detect( Family, "Other" ) ) |>
+    left_join( atypical_and_other |>
                   dplyr::select(UNIPROTKB, KEYWORDS),
-               by=c("uniprot_acc_human" = "UNIPROTKB")) %>%
+               by=c("uniprot_acc_human" = "UNIPROTKB")) |>
     dplyr::filter( str_detect(KEYWORDS, "Serine/threonine-protein kinase") &
                          str_detect(KEYWORDS, "Tyrosine-protein kinase")  )
 }
@@ -394,43 +394,43 @@ if( args$kinase_specificity == "ST") {
 ## ---------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-phosphositeplus <- ks_tbl %>%
-  dplyr::select( GENE, KINASE, `SITE_+/-7_AA`, SUB_MOD_RSD) %>%
-  distinct() %>%
+phosphositeplus <- ks_tbl |>
+  dplyr::select( GENE, KINASE, `SITE_+/-7_AA`, SUB_MOD_RSD) |>
+  distinct() |>
   dplyr::rename( kinase = "KINASE",
-                 substrate = "SITE_+/-7_AA") %>%
-  dplyr::mutate( substrate = toupper(substrate)) %>%
-  dplyr::mutate( kinase = str_replace( kinase, " ", "_")) %>%
-  arrange( GENE, kinase, substrate)  %>%
+                 substrate = "SITE_+/-7_AA") |>
+  dplyr::mutate( substrate = toupper(substrate)) |>
+  dplyr::mutate( kinase = str_replace( kinase, " ", "_")) |>
+  arrange( GENE, kinase, substrate)  |>
   mutate( GENE = toupper(GENE),
           kinase = toupper(kinase),
-          residue = purrr::map_chr( SUB_MOD_RSD , \(x){str_sub(., 1,1 )}   ) ) %>%
+          residue = purrr::map_chr( SUB_MOD_RSD , \(x){str_sub(., 1,1 )}   ) ) |>
   dplyr::select( - SUB_MOD_RSD )
 
-kinases_to_include <-  phosphositeplus %>%
-  left_join( uniprot_kinases %>%
-               dplyr::select(gene_name) %>%
+kinases_to_include <-  phosphositeplus |>
+  left_join( uniprot_kinases |>
+               dplyr::select(gene_name) |>
                dplyr::mutate( is_uniprot_a= 1),
-             by=c( "GENE" = "gene_name") ) %>%
-  left_join( uniprot_kinases %>%
-               dplyr::select(gene_name) %>%
+             by=c( "GENE" = "gene_name") ) |>
+  left_join( uniprot_kinases |>
+               dplyr::select(gene_name) |>
                dplyr::mutate( is_uniprot_b= 1),
-             by=c( "kinase" = "gene_name") ) %>%
-  dplyr::filter( is_uniprot_a == 1 | is_uniprot_b == 1) %>%
-  dplyr::select( -is_uniprot_a, - is_uniprot_b ) %>%
-  dplyr::filter(  str_detect(  args$kinase_specificity, residue )  ) %>%
-  group_by(kinase )  %>%
-  summarise( counts =n()) %>%
-  ungroup() %>%
+             by=c( "kinase" = "gene_name") ) |>
+  dplyr::filter( is_uniprot_a == 1 | is_uniprot_b == 1) |>
+  dplyr::select( -is_uniprot_a, - is_uniprot_b ) |>
+  dplyr::filter(  str_detect(  args$kinase_specificity, residue )  ) |>
+  group_by(kinase )  |>
+  summarise( counts =n()) |>
+  ungroup() |>
   dplyr::filter( counts >= args$min_num_sites_per_kinase)
 
 loginfo("Filter the correct subset of substrates for the analysis.")
-phosphositeplus_filt <- phosphositeplus %>%
-  mutate( kinase = toupper(kinase) ) %>%
-  inner_join( kinases_to_include, by="kinase") %>%
-  dplyr::filter(  str_detect(  args$kinase_specificity, residue )  ) %>%
-  dplyr::select(-counts, - GENE, - residue) %>%
-  distinct() %>%
+phosphositeplus_filt <- phosphositeplus |>
+  mutate( kinase = toupper(kinase) ) |>
+  inner_join( kinases_to_include, by="kinase") |>
+  dplyr::filter(  str_detect(  args$kinase_specificity, residue )  ) |>
+  dplyr::select(-counts, - GENE, - residue) |>
+  distinct() |>
   as.matrix()
 
 
@@ -447,35 +447,35 @@ pwms <- buildPWM(as.matrix(phosphositeplus_filt))
 ## ---------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Clean up phoshopsite log fold-change table.")
 
-annotated_data_pre_residue_filter <- de_phos %>%
-  mutate( peptide = sequence) %>%
-  mutate( positions_peptide = position   ) %>%
-  mutate(uniprot_acc = str_split( uniprot_acc, ":") %>% purrr::map_chr(1) ) %>%
-  mutate(gene_name = str_split( gene_name, ":") %>% purrr::map_chr(1) )  %>%
-  mutate(position = str_split( position, ":") %>% purrr::map_chr(1) ) %>%
-  mutate( peptide =  str_split(peptide, ":"  )%>% purrr::map_chr(1) ) %>%
-  mutate( residue =  str_split(residue, ":"  )%>% purrr::map_chr(1) ) %>%
-  mutate( position = str_split( position, "\\|") %>% purrr::map_chr(1) %>% str_replace_all( "\\(|\\)", "") ) %>%
+annotated_data_pre_residue_filter <- de_phos |>
+  mutate( peptide = sequence) |>
+  mutate( positions_peptide = position   ) |>
+  mutate(uniprot_acc = str_split( uniprot_acc, ":") |> purrr::map_chr(1) ) |>
+  mutate(gene_name = str_split( gene_name, ":") |> purrr::map_chr(1) )  |>
+  mutate(position = str_split( position, ":") |> purrr::map_chr(1) ) |>
+  mutate( peptide =  str_split(peptide, ":"  )|> purrr::map_chr(1) ) |>
+  mutate( residue =  str_split(residue, ":"  )|> purrr::map_chr(1) ) |>
+  mutate( position = str_split( position, "\\|") |> purrr::map_chr(1) |> str_replace_all( "\\(|\\)", "") ) |>
   mutate ( is_multisite = case_when ( str_detect( position, ";") ~ TRUE,
-                                   TRUE ~ FALSE)) %>%
-  separate_rows(peptide, position, residue, sep=";") %>%
-  dplyr::mutate( peptide_copy = peptide) %>%
-  dplyr::filter(  !str_detect( peptide, "X"))   %>%
+                                   TRUE ~ FALSE)) |>
+  separate_rows(peptide, position, residue, sep=";") |>
+  dplyr::mutate( peptide_copy = peptide) |>
+  dplyr::filter(  !str_detect( peptide, "X"))   |>
   dplyr::select(sites_id, comparison, uniprot_acc, gene_name, peptide, peptide_copy, position, residue,
-                one_of( c( as.character(args$log_fc_column_name), as.character(args$fdr_column_name))), is_multisite) %>%
-  dplyr::filter(  str_detect(  args$kinase_specificity, residue )  )  %>%
-  dplyr::filter(!is.na(peptide)) %>%
-  dplyr::filter( str_sub( peptide, 8, 8) == residue) %>%
+                one_of( c( as.character(args$log_fc_column_name), as.character(args$fdr_column_name))), is_multisite) |>
+  dplyr::filter(  str_detect(  args$kinase_specificity, residue )  )  |>
+  dplyr::filter(!is.na(peptide)) |>
+  dplyr::filter( str_sub( peptide, 8, 8) == residue) |>
   dplyr::rename( fc = args$log_fc_column_name,
                  pval = args$fdr_column_name)
 
-# annotated_data_pre_residue_filter %>% colnames()
+# annotated_data_pre_residue_filter |> colnames()
 
 ----------------------------------------------------------------------------------------
 loginfo("Filtering single-site or multisite phosphorylation")
 
 if( !is.na(args$is_multisite)   ) {
-  annotated_data_multisite_filtered <- annotated_data_pre_residue_filter %>%
+  annotated_data_multisite_filtered <- annotated_data_pre_residue_filter |>
     dplyr::filter( is_multisite == args$is_multisite)
 
   if( args$is_multisite) {
@@ -493,9 +493,9 @@ if( !is.na(args$is_multisite)   ) {
 
 loginfo("For sites with multisites information, get best p-value (and log fc if there are ties) for each comparison, UniProt accession, and position combination")
 
-best_p_value <- annotated_data_multisite_filtered %>%
-  group_by( uniprot_acc, position, comparison) %>%
-  dplyr::summarise( best_p_val = min(  pval )) %>%
+best_p_value <- annotated_data_multisite_filtered |>
+  group_by( uniprot_acc, position, comparison) |>
+  dplyr::summarise( best_p_val = min(  pval )) |>
   ungroup()
 
 best_log_fc_pval_site_join <- c( "uniprot_acc",
@@ -507,34 +507,34 @@ names( best_log_fc_pval_site_join) <- c( "uniprot_acc",
                                          "pval",
                                          "comparison")
 
-best_logfc_pval_site <- annotated_data_pre_residue_filter %>%
-  inner_join(best_p_value, by = best_log_fc_pval_site_join) %>%
-  group_by( uniprot_acc, position, comparison, pval) %>%
-  dplyr::summarise( best_abs_log_fc =  max(abs( fc  ))) %>%
+best_logfc_pval_site <- annotated_data_pre_residue_filter |>
+  inner_join(best_p_value, by = best_log_fc_pval_site_join) |>
+  group_by( uniprot_acc, position, comparison, pval) |>
+  dplyr::summarise( best_abs_log_fc =  max(abs( fc  ))) |>
   ungroup()
 
-best_site <- annotated_data_pre_residue_filter %>%
-  mutate( abs_log_fc = abs( fc)) %>%
+best_site <- annotated_data_pre_residue_filter |>
+  mutate( abs_log_fc = abs( fc)) |>
   inner_join(best_logfc_pval_site, by = c("uniprot_acc" = "uniprot_acc",
                                           "position" = "position",
                                           "pval" = "pval",
                                           "abs_log_fc" = "best_abs_log_fc",
-                                          "comparison" = "comparison") ) %>%
+                                          "comparison" = "comparison") ) |>
   dplyr::select(-abs_log_fc)
 
 
-annotated_data <- best_site   %>%
-    unite( annotation,  uniprot_acc, gene_name, position, peptide_copy , sep="|"  )  %>%
+annotated_data <- best_site   |>
+    unite( annotation,  uniprot_acc, gene_name, position, peptide_copy , sep="|"  )  |>
     distinct()
 
 ## ---------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Perform analysis of data from each contrast")
 
-grouped_annotated_data <- annotated_data  %>%
-  dplyr::select( -is_multisite, -sites_id, -residue ) %>%
-  distinct() %>%
-  group_by( comparison) %>%
-  nest() %>%
+grouped_annotated_data <- annotated_data  |>
+  dplyr::select( -is_multisite, -sites_id, -residue ) |>
+  distinct() |>
+  group_by( comparison) |>
+  nest() |>
   ungroup
 
 ## ---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -582,7 +582,7 @@ if( args$reuse_old==TRUE & file.exists(file.path(rds_dir,  paste0("kinswingr_sco
 
                                       } )
 
-  scores_list <-  grouped_annotated_data %>%
+  scores_list <-  grouped_annotated_data |>
     dplyr::mutate( pwms_scores = purrr::map2( data, num_of_iterations, \(.x, .y){scoreSequences(input_data = as.data.frame(.x),
                                                                    pwm_in = pwms,
                                                                    n = .y )} ))
@@ -598,46 +598,37 @@ if( args$reuse_old==TRUE & file.exists(file.path(rds_dir,  paste0("kinswingr_sco
 ## ----------------------------------------------------------------------------------------------------------------------------------------
 purrr::walk2( scores_list$data,
               scores_list$comparison,
-              \(.x, .y){ vroom::vroom_write( .x  %>%
+              \(.x, .y){ vroom::vroom_write( .x  |>
                                      mutate( comparison = .y),
                                    file.path( args$output_dir,
                                               paste0( "input_data_", args$kinase_specificity, "_",  .y , ".tsv" )) ) } )
 
 ## ---------------------------------------------------------------------------------------------------------------------------------------------------
 
-
 purrr::walk2( scores_list$pwms_scores,
               scores_list$comparison,
-              ~vroom::vroom_write( .x$peptide_scores  %>%
+              \(.x, .y){vroom::vroom_write( .x$peptide_scores  |>
                                      mutate( comparison = .y),
                                    file.path( args$output_dir,
-                                              paste0( "peptide_scores_", args$kinase_specificity, "_",  .y , ".tsv" )) ) )
-
-
-
+                                              paste0( "peptide_scores_", args$kinase_specificity, "_",  .y , ".tsv" )) ) } )
 
 ## ---------------------------------------------------------------------------------------------------------------------------------------------------
 
-
 purrr::walk2( scores_list$pwms_scores,
               scores_list$comparison,
-              ~vroom::vroom_write( .x$peptide_p  %>%
+              \(.x, .y){vroom::vroom_write( .x$peptide_p  |>
                                      mutate( comparison = .y),
                                    file.path( args$output_dir,
-                                              paste0( "peptide_p_", args$kinase_specificity, "_",  .y , ".tsv" )) ) )
-
-
-
+                                              paste0( "peptide_p_", args$kinase_specificity, "_",  .y , ".tsv" )) ) } )
 
 ## ---------------------------------------------------------------------------------------------------------------------------------------------------
 
-
 purrr::walk2( scores_list$pwms_scores,
               scores_list$comparison,
-              ~vroom::vroom_write( .x$background  %>%
+              \(.x, .y){ vroom::vroom_write( .x$background  |>
                                      mutate( comparison = .y),
                                    file.path( args$output_dir,
-                                              paste0( "peptide_background_", args$kinase_specificity, "_",  .y , ".tsv" )) ) )
+                                              paste0( "peptide_background_", args$kinase_specificity, "_",  .y , ".tsv" )) ) } )
 
 
 
@@ -663,8 +654,8 @@ if( args$reuse_old==TRUE &  file.exists(file.path(rds_dir,  paste0("kinswingr_sw
 } else {
 
 
-  swing_out_list  <-  scores_list  %>%
-    dplyr::mutate( swing_result = purrr::map2( data, pwms_scores, ~swing(input_data = as.data.frame( .x),
+  swing_out_list  <-  scores_list  |>
+    dplyr::mutate( swing_result = purrr::map2( data, pwms_scores, \(.x, .y) swing(input_data = as.data.frame( .x),
                                                                         pwm_in = pwms,
                                                                         pwm_scores = .y,
                                                                         permutations = args$swing_iteration,
@@ -688,19 +679,19 @@ if( args$reuse_old==TRUE &  file.exists(file.path(rds_dir,  paste0("kinswingr_sw
 
 purrr::walk2( swing_out_list$swing_result,
               swing_out_list$comparison,
-              ~vroom::vroom_write( .x$scores %>%
+              \(.x, .y){vroom::vroom_write( .x$scores |>
                                      mutate( comparison = .y),
                                    file.path( args$output_dir,
-                                              paste0( "KinSwingR_", args$kinase_specificity, "_",  .y , ".tsv" )) ) )
+                                              paste0( "KinSwingR_", args$kinase_specificity, "_",  .y , ".tsv" )) ) })
 
 ## ---------------------------------------------------------------------------------------------------------------------------------------------------
 
 purrr::walk2( swing_out_list$swing_result,
               swing_out_list$comparison,
-              ~vroom::vroom_write( .x$network  %>%
+              \(.x, .y){vroom::vroom_write( .x$network  |>
                                      mutate( comparison = .y),
                                    file.path( args$output_dir,
-                                              paste0( "network_", args$kinase_specificity, "_",  .y , ".tsv" )) ) )
+                                              paste0( "network_", args$kinase_specificity, "_",  .y , ".tsv" )) ) } )
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------
 ## ----------------------------------------------------------------------------------------------------------------------------------------
@@ -723,28 +714,28 @@ kinase_volcano_plot <- function(
 
   my_colours <- setdiff( brewer.pal(length(swing_out_list$comparison)+1, brewer_pal_set), "#FFFF33")
 
-  significance_tbl <- swing_scores_tbl %>%
+  significance_tbl <- swing_scores_tbl |>
     mutate( p_value = case_when( p_greater < p_less ~ p_greater,
-                                 p_less <= p_greater  ~ p_less )) %>%
+                                 p_less <= p_greater  ~ p_less )) |>
     mutate( colour = case_when( p_value < p_value_cutoff ~ "Significant",
-                                TRUE ~ "Not significant")) %>%
-    mutate( colour = factor( colour, levels=c(  "Not significant", "Significant") )) %>%
+                                TRUE ~ "Not significant")) |>
+    mutate( colour = factor( colour, levels=c(  "Not significant", "Significant") )) |>
     mutate( colour_vector = case_when( colour == "Not significant" ~ "grey",
                                        colour == "Significant" ~ my_colours[list_position] ) )
 
-  scale_colour_vector <- significance_tbl %>%
-    arrange( colour) %>%
-    distinct( colour_vector) %>%
+  scale_colour_vector <- significance_tbl |>
+    arrange( colour) |>
+    distinct( colour_vector) |>
     pull( colour_vector)
 
-  volcano_plot_dat <- significance_tbl%>%
+  volcano_plot_dat <- significance_tbl|>
     mutate(kinase_label = case_when( p_value < ggrepel_p_value_cutoff  &
                                        n > n_cutoff ~ kinase,
                                      TRUE ~ ""))
 
  if (nrow(volcano_plot_dat) > 0 ) {
 
-    volcano_plot <- volcano_plot_dat %>%
+    volcano_plot <- volcano_plot_dat |>
       ggplot( aes( x=swing, y = -log10(p_value + .Machine$double.eps ), size=n , col=colour, label=kinase_label, alpha=0.5))  +
       theme_bw () +
       geom_point( ) +
@@ -773,11 +764,11 @@ partial_kinase_volcano_plot <-  partial( kinase_volcano_plot,
            ggrepel_p_value_cutoff = args$ggrepel_p_value_cutoff)
 
 kinase_volcano_plot <- purrr::map( seq_along(swing_out_list$comparison),
-             ~partial_kinase_volcano_plot(list_position =.))
+                                   \(x){partial_kinase_volcano_plot(list_position = x)})
 
 for( format_ext in args$plots_format) {
   purrr::walk2( kinase_volcano_plot, swing_out_list$comparison,
-                ~{ if(length(.x) > 1 ) { ggsave( filename=file.path(args$output_dir,
+                \(.x, .y) { if(length(.x) > 1 ) { ggsave( filename=file.path(args$output_dir,
                                                                     paste0(  "kinase_volcano_plot_",
                                                                              args$kinase_specificity, "_",  .y, ".", format_ext )),
                          plot=.x)}} )
@@ -804,52 +795,52 @@ plotAvgLogfcKnownSites <- function( list_position,
 
   fc_pval_tab <- scores_list$data[[list_position]]
 
-  up_or_down_kinases <- swing_out_list$swing_result[[list_position]]$scores %>%
+  up_or_down_kinases <- swing_out_list$swing_result[[list_position]]$scores |>
     dplyr::filter(  p_greater < p_value_cutoff | p_less < p_value_cutoff )
 
-  motif_score_table <- scores_list$pwms_scores[[list_position]]$peptide_scores %>%
+  motif_score_table <- scores_list$pwms_scores[[list_position]]$peptide_scores |>
     pivot_longer( cols= !(contains("annotation") | contains("peptide")),
                   names_to="kinase",
                   values_to = "motif.score")
 
-   peptide_p_long_tbl <- scores_list$pwms_scores[[list_position]]$peptide_p %>%
+   peptide_p_long_tbl <- scores_list$pwms_scores[[list_position]]$peptide_p |>
     pivot_longer( cols= !(contains("annotation") | contains("peptide")),
                   names_to="kinase",
                   values_to = "motif.p.value")
 
-  selected_scores_list <- peptide_p_long_tbl %>%
+  selected_scores_list <- peptide_p_long_tbl |>
      left_join( motif_score_table, by=c("annotation" = "annotation",
                                        "peptide" = "peptide",
-                                       "kinase" = "kinase")) %>%
-    inner_join( up_or_down_kinases, by=c( "kinase" = "kinase")) %>%
+                                       "kinase" = "kinase")) |>
+    inner_join( up_or_down_kinases, by=c( "kinase" = "kinase")) |>
     inner_join( fc_pval_tab, by=c("annotation" = "annotation",
-                                  "peptide" = "peptide")) %>%
-    left_join ( annotated_data %>%
+                                  "peptide" = "peptide")) |>
+    left_join ( annotated_data |>
                   dplyr::select( annotation, sites_id),
-                by=c("annotation" = "annotation")) %>%
-    left_join( de_phos %>%
-                 dplyr::select(sites_id, KINASE), by = c("sites_id" = "sites_id")) %>%
-    distinct() %>%
-    separate_rows( KINASE , sep= "//")  %>%
-    dplyr::mutate( KINASE = toupper(KINASE) ) %>%
+                by=c("annotation" = "annotation")) |>
+    left_join( de_phos |>
+                 dplyr::select(sites_id, KINASE), by = c("sites_id" = "sites_id")) |>
+    distinct() |>
+    separate_rows( KINASE , sep= "//")  |>
+    dplyr::mutate( KINASE = toupper(KINASE) ) |>
     dplyr::filter( kinase == KINASE)
 
-  avg_logfc_vs_swing_score <- selected_scores_list %>%
-    group_by( kinase, swing, p_greater, p_less ) %>%
+  avg_logfc_vs_swing_score <- selected_scores_list |>
+    group_by( kinase, swing, p_greater, p_less ) |>
     summarise( avg_fc = mean(fc),
                median_fc = median(fc),
                total_fc = sum(fc),
-               counts = n()) %>%
-    ungroup() %>%
+               counts = n()) |>
+    ungroup() |>
     dplyr::filter( counts >= 5 )
 
-  avg_logfc_vs_swing_tbl <- avg_logfc_vs_swing_score %>%
+  avg_logfc_vs_swing_tbl <- avg_logfc_vs_swing_score |>
     dplyr::mutate( p_value = case_when( swing > 0     ~ p_greater,
                                         swing < 0     ~ p_less,
-                                        TRUE ~ 1))  %>%
+                                        TRUE ~ 1))  |>
     mutate( colour = case_when( ( p_value < p_value_cutoff |
                                     p_value < p_value_cutoff ) ~ "Significant",
-                                TRUE ~ "Not significant" )) %>%
+                                TRUE ~ "Not significant" )) |>
     dplyr::mutate( my_kinase = case_when( counts >= 10 |
                                             ( p_greater < ggrepel_p_value_cutoff |
                                                 p_less < ggrepel_p_value_cutoff ) ~ kinase,
@@ -857,7 +848,7 @@ plotAvgLogfcKnownSites <- function( list_position,
 
    if (nrow(avg_logfc_vs_swing_tbl) > 0 ) {
 
-     avg_logfc_vs_swing_score_plot <- avg_logfc_vs_swing_tbl %>%
+     avg_logfc_vs_swing_score_plot <- avg_logfc_vs_swing_tbl |>
        ggplot(aes( y = avg_fc, x = swing, label = my_kinase, size = counts,  color=colour, alpha=0.5 )) +
        geom_point() +
        geom_text_repel(show.legend = FALSE, size = 5) +
@@ -890,12 +881,12 @@ if( args$taxonomy_id %in% c(9606, 10090) ) {
 
 
   kinase_avg_logfc <- purrr::map( seq_along(swing_out_list$comparison),
-                                  ~partial_plotAvgLogfcKnownSites(.) )
+                                  \(x) partial_plotAvgLogfcKnownSites(x) )
 
   for( format_ext in args$plots_format) {
     purrr::walk2( kinase_avg_logfc,
                   swing_out_list$comparison,
-                  ~{ if ( length(.x) > 1) {
+                  \(.x, .y){ if ( length(.x) > 1) {
                     ggsave( filename=file.path(args$output_dir,
                                                paste0( "kinase_avg_logfc_of_known_sites_",
                                                        args$kinase_specificity, "_", .y,
@@ -951,18 +942,18 @@ compileKinswingerResults <- function( list_position ) {
 
   fc_pval_tab <- scores_list$data[[list_position]]
 
-  up_or_down_kinases <- swing_out_list$swing_result[[list_position]]$scores %>%
+  up_or_down_kinases <- swing_out_list$swing_result[[list_position]]$scores |>
     dplyr::filter( p_greater < 0.2 | p_less < 0.2 )
 
-  motif_score_table <- scores_list$pwms_scores[[list_position]]$peptide_scores %>%
+  motif_score_table <- scores_list$pwms_scores[[list_position]]$peptide_scores |>
     pivot_longer( cols= !(contains("annotation") | contains("peptide")),
                   names_to="kinase",
                   values_to = "motif.score")
 
-  is_phosphoylated_tbl <- annotated_data %>%
-    dplyr::filter( pval < args$p_value_cutoff ) %>%
-    dplyr::mutate( uniprot_acc = str_split(annotation, "\\|") %>% purrr::map_chr(1) ) %>%
-    distinct( uniprot_acc) %>%
+  is_phosphoylated_tbl <- annotated_data |>
+    dplyr::filter( pval < args$p_value_cutoff ) |>
+    dplyr::mutate( uniprot_acc = str_split(annotation, "\\|") |> purrr::map_chr(1) ) |>
+    distinct( uniprot_acc) |>
     mutate(is_kinase_phosphorylated = 1)
 
   selected_columns <- intersect( colnames(de_phos),
@@ -974,36 +965,36 @@ compileKinswingerResults <- function( list_position ) {
                                     "ON_OTHER_INTERACT",
                                     "REG_SITES_NOTES"))
 
-  step_1 <- scores_list$pwms_scores[[list_position]]$peptide_p %>%
+  step_1 <- scores_list$pwms_scores[[list_position]]$peptide_p |>
     pivot_longer( cols= !(contains("annotation") | contains("peptide")),
                   names_to="kinase",
-                  values_to = "motif.p.value") %>%
+                  values_to = "motif.p.value") |>
     left_join( motif_score_table, by=c("annotation" = "annotation",
                                        "peptide" = "peptide",
-                                       "kinase" = "kinase")) %>%
-    inner_join( up_or_down_kinases, by=c( "kinase" = "kinase")) %>%
+                                       "kinase" = "kinase")) |>
+    inner_join( up_or_down_kinases, by=c( "kinase" = "kinase")) |>
     dplyr::filter( motif.p.value < 0.2 )
 
 
-  step_2 <- step_1 %>%
-    left_join( ks_tbl %>%
-                 mutate( KINASE = toupper(KINASE)) %>%
+  step_2 <- step_1 |>
+    left_join( ks_tbl |>
+                 mutate( KINASE = toupper(KINASE)) |>
                  dplyr::distinct( KINASE, KIN_ACC_ID),
-               by = c("kinase" = "KINASE")) %>%
-    left_join( ks_tbl %>%
-                 mutate( GENE = toupper(GENE)) %>%
+               by = c("kinase" = "KINASE")) |>
+    left_join( ks_tbl |>
+                 mutate( GENE = toupper(GENE)) |>
                  dplyr::distinct( GENE, KIN_ACC_ID),
-               by = c("kinase" = "GENE")) %>%
+               by = c("kinase" = "GENE")) |>
     mutate( kinase_uniprot_acc = ifelse( is.na( KIN_ACC_ID.x),
                                          KIN_ACC_ID.y,
-                                         KIN_ACC_ID.x)) %>%
-    dplyr::select(-KIN_ACC_ID.x, -KIN_ACC_ID.y) %>%
-    inner_join( fc_pval_tab %>%
+                                         KIN_ACC_ID.x)) |>
+    dplyr::select(-KIN_ACC_ID.x, -KIN_ACC_ID.y) |>
+    inner_join( fc_pval_tab |>
                   dplyr::filter( pval < args$p_value_cutoff ),
                 by=c("annotation" = "annotation",
-                     "peptide" = "peptide")) %>%
-    left_join ( annotated_data %>%
-                  dplyr::filter( comparison == swing_out_list$comparison[[list_position]] ) %>%
+                     "peptide" = "peptide")) |>
+    left_join ( annotated_data |>
+                  dplyr::filter( comparison == swing_out_list$comparison[[list_position]] ) |>
                   dplyr::select( annotation, sites_id, peptide),
                 by=c("annotation" = "annotation",
                      "peptide" = "peptide"))
@@ -1011,8 +1002,8 @@ compileKinswingerResults <- function( list_position ) {
   rm(step_1)
   gc()
 
-  step_3 <- step_2 %>%
-    left_join( phosphositeplus %>%
+  step_3 <- step_2 |>
+    left_join( phosphositeplus |>
                  distinct( GENE, kinase), by=c("kinase" = "kinase") )
 
   rm(step_2)
@@ -1021,17 +1012,17 @@ compileKinswingerResults <- function( list_position ) {
   plan(multisession, workers = args$num_cores)
 
 
-  step_4 <- step_3 %>%
+  step_4 <- step_3 |>
     dplyr::mutate( substrate_gene_name  = furrr::future_map(annotation,
-                                                            ~{ str_split(., "\\|") %>% purrr::map_chr(2)}) )
+                                                            \(x){ str_split(x, "\\|") |> purrr::map_chr(2)}) )
 
   rm(step_3)
   gc()
 
 
-  step_5 <-  step_4 %>%
-    left_join( de_phos %>%
-                 dplyr::filter( comparison == swing_out_list$comparison[[list_position]]  ) %>%
+  step_5 <-  step_4 |>
+    left_join( de_phos |>
+                 dplyr::filter( comparison == swing_out_list$comparison[[list_position]]  ) |>
                  dplyr::select( one_of( selected_columns ) ),
                by=c("sites_id" = "sites_id"))
 
@@ -1040,37 +1031,37 @@ compileKinswingerResults <- function( list_position ) {
   gc()
 
 
-  selected_scores_list_help <- step_5 %>%
-    left_join( uniprot_kinases %>%
+  selected_scores_list_help <- step_5 |>
+    left_join( uniprot_kinases |>
                  dplyr::select(-KEYWORDS),
-               by= c("GENE" = "gene_name")) %>%
-    dplyr::rename( kinase_gene_name = "GENE") %>%
+               by= c("GENE" = "gene_name")) |>
+    dplyr::rename( kinase_gene_name = "GENE") |>
     distinct()
 
   rm(step_5)
   gc()
 
   if( "KINASE" %in% selected_columns) {
-    selected_scores_list_help <- selected_scores_list_help %>%
-      dplyr::mutate( kinase_copy = KINASE ) %>%
-      dplyr::rename( known_upstream_kinase = "kinase_copy") %>%
-      dplyr::rename( one_known_kinase = "KINASE") %>%
-      separate_rows( one_known_kinase , sep= "//")  %>%
-      dplyr::mutate( one_known_kinase = toupper(one_known_kinase) )  %>%
+    selected_scores_list_help <- selected_scores_list_help |>
+      dplyr::mutate( kinase_copy = KINASE ) |>
+      dplyr::rename( known_upstream_kinase = "kinase_copy") |>
+      dplyr::rename( one_known_kinase = "KINASE") |>
+      separate_rows( one_known_kinase , sep= "//")  |>
+      dplyr::mutate( one_known_kinase = toupper(one_known_kinase) )  |>
       dplyr::mutate( prediction_match_known_kinase = case_when( kinase == one_known_kinase ~ TRUE,
-                                                                TRUE ~ FALSE) )  %>%
+                                                                TRUE ~ FALSE) )  |>
       dplyr::select(-one_known_kinase)
   }
 
   ## Use mouse or human uniprot accession if it makes sense to do so.
   selected_scores_list <- selected_scores_list_help
   if( length( intersect(   is_phosphoylated_tbl$uniprot_acc, uniprot_kinases$uniprot_acc_human  ) ) >0 )  {
-    selected_scores_list <- selected_scores_list_help  %>%
-      left_join( is_phosphoylated_tbl, by=c("uniprot_acc_human" = "uniprot_acc"))  %>%
+    selected_scores_list <- selected_scores_list_help  |>
+      left_join( is_phosphoylated_tbl, by=c("uniprot_acc_human" = "uniprot_acc"))  |>
       distinct()
   } else if ( length( intersect(   is_phosphoylated_tbl$uniprot_acc, uniprot_kinases$uniprot_acc_mouse  ) > 0 ))  {
-    selected_scores_list <- selected_scores_list_help  %>%
-      left_join( is_phosphoylated_tbl, by=c("uniprot_acc_mouse" = "uniprot_acc"))  %>%
+    selected_scores_list <- selected_scores_list_help  |>
+      left_join( is_phosphoylated_tbl, by=c("uniprot_acc_mouse" = "uniprot_acc"))  |>
       distinct()
   } else {
 
@@ -1091,11 +1082,11 @@ compileKinswingerResults <- function( list_position ) {
                                              "REG_SITES_NOTES"  ) )
   }
 
-  selected_scores_list_cln_step_1 <- selected_scores_list %>%
-    separate( annotation, into=c( "substrate_uniprot_acc", "subsrate_gene_symbol", "phosphosite_position", "sequence_context") ) %>%
+  selected_scores_list_cln_step_1 <- selected_scores_list |>
+    separate( annotation, into=c( "substrate_uniprot_acc", "subsrate_gene_symbol", "phosphosite_position", "sequence_context") ) |>
     dplyr::mutate( p_value_kinswingr = case_when( swing > 0     ~ p_greater,
                                         swing < 0     ~ p_less,
-                                        TRUE ~ 1)) %>%
+                                        TRUE ~ 1)) |>
     dplyr::rename(kinase_gene_symbol = "kinase",
                   substrate_name = "PROTEIN-NAMES",
                   phosphosite_log2FC = "fc",
@@ -1114,12 +1105,12 @@ compileKinswingerResults <- function( list_position ) {
   selected_scores_list_cln_step_2 <- selected_scores_list_cln_step_1
   if( "Family" %in% colnames( selected_scores_list_cln_step_1)) {
 
-    selected_scores_list_cln_step_2 <- selected_scores_list_cln_step_1 %>%
+    selected_scores_list_cln_step_2 <- selected_scores_list_cln_step_1 |>
       dplyr::rename( kinase_family = "Family",
                      kinase_uniprot_id_human = "uniprot_id_human",
                      kinase_uniprot_acc_human = "uniprot_acc_human",
                      kinase_uniprot_id_mouse = "uniprot_id_mouse",
-                     kinase_uniprot_acc_mouse = "uniprot_acc_mouse") %>%
+                     kinase_uniprot_acc_mouse = "uniprot_acc_mouse") |>
       dplyr::filter ( (args$taxonomy_id == 9606 &  kinase_uniprot_acc_human == kinase_uniprot_acc) | ## human only
                       (args$taxonomy_id == 10090 &  kinase_uniprot_acc_mouse == kinase_uniprot_acc) |  ## mouse only
                       !(args$taxonomy_id %in% c(9606, 10090)))
@@ -1128,7 +1119,7 @@ compileKinswingerResults <- function( list_position ) {
 
   print( setdiff(list_of_kinswinger_columns, colnames( selected_scores_list_cln_step_2)) )
 
-  selected_scores_list_cln_final <- selected_scores_list_cln_step_2 %>%
+  selected_scores_list_cln_final <- selected_scores_list_cln_step_2 |>
     dplyr::select(all_of( list_of_kinswinger_columns) )
 
   return( selected_scores_list_cln_final)
@@ -1138,14 +1129,14 @@ compileKinswingerResults <- function( list_position ) {
 gc()
 
 selected_scores_list <- purrr::map( seq_along(swing_out_list$comparison),
-                                    ~compileKinswingerResults(.))
+                                    \(x) compileKinswingerResults(x))
 
 names( selected_scores_list) <- swing_out_list$comparison
 
 purrr::walk2( selected_scores_list,
               swing_out_list$comparison,
-              \(.x, .y) { vroom::vroom_write( .x  %>%
-                                     mutate( comparison = .y) %>%
+              \(.x, .y) { vroom::vroom_write( .x  |>
+                                     mutate( comparison = .y) |>
                                      relocate( comparison, .before="substrate_uniprot_acc"),
                                    file.path( args$output_dir,
                                               paste0( "selected_kinase_substrate_",
@@ -1166,7 +1157,7 @@ writeLines(capture.output(sessionInfo()), file.path(args$output_dir,"sessionInfo
 
 # y_label_name <- c("hello")
 # list_position <- 1
-# iris %>%
+# iris |>
 # ggplot( aes(x=Petal.Width, y=Sepal.Length)) +
 #   geom_point() +
 #   labs (title = substitute( paste(a , ", Mean substrate log"[2],"(intensity) difference"), list(a=y_label_name[list_position]) ) )
