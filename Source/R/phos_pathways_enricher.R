@@ -610,9 +610,12 @@ vroom::vroom_write( background_proteins_phosphoproteins,
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-if (  !is.null( args$annotation_file )) {
-
-
+if (  is.null( args$annotation_file )) {
+  te<-toc(quiet = TRUE)
+  loginfo("%f sec elapsed",te$toc-te$tic)
+  writeLines(capture.output(sessionInfo()), file.path(args$output_dir,"sessionInfo.txt"))
+  stop("No annotation file provided.")
+}
   ## Tidy up the annotation ID to annotation term name dictionary
 
   dictionary <- vroom::vroom( args$dictionary_file )
@@ -694,15 +697,21 @@ if (  !is.null( args$annotation_file )) {
                                                    , input_comparison
                                                    , min_size
                                                    , max_size) ,
-                                             \(x) {runOneGoEnrichmentInOutFunctionPartial(
-                                               names_of_genes_list = x$names_of_genes_list,
-                                               input_table=x$input_table,
-                                               go_aspect=x$go_aspect,
-                                               input_comparison=x$input_comparison,
-                                               min_gene_set_size=x$min_size,
-                                               max_gene_set_size=x$max_size)} )) %>%
-             dplyr::select( enrichment_results ) %>%
-             unnest()
+                                             \(names_of_genes_list
+                                               ,input_table
+                                               , go_aspect
+                                               , input_comparison
+                                               , min_size
+                                               , max_size) {runOneGoEnrichmentInOutFunctionPartial(
+                                                 names_of_genes_list = names_of_genes_list,
+                                                 input_table=input_table,
+                                                 go_aspect=go_aspect,
+                                                 input_comparison=input_comparison,
+                                                 min_gene_set_size=min_size,
+                                                 max_gene_set_size=max_size)} ) ) %>%
+   dplyr::select( enrichment_results ) %>%
+   unnest()
+
 
  if(is.null(enrichment_result) |
     nrow(enrichment_result) == 0 ) {
@@ -754,10 +763,6 @@ if (  !is.null( args$annotation_file )) {
                                         output_file ) ) })
 
  }
-
-}
-
-
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 te<-toc(quiet = TRUE)
