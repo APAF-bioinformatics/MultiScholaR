@@ -535,7 +535,7 @@ grouped_annotated_data <- annotated_data  |>
   distinct() |>
   group_by( comparison) |>
   nest() |>
-  ungroup
+  ungroup()
 
 ## ---------------------------------------------------------------------------------------------------------------------------------------------------
 # grouped_annotated_data$data[[1]]
