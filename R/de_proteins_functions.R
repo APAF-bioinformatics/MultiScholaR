@@ -586,7 +586,7 @@ plotOneVolcano <- function( input_data, input_title,
   colour_tbl <- input_data |>
     distinct( {{points_type_label}}, {{points_color}} )
 
-  print(colour_tbl)
+  # print(colour_tbl)
 
   colour_map <- colour_tbl |>
     pull({{points_color}} ) |>
@@ -601,8 +601,8 @@ plotOneVolcano <- function( input_data, input_title,
 
   avail_colours <- colour_map[avail_labels]
 
-  print(avail_labels)
-  print(avail_colours)
+  # print(avail_labels)
+  # print(avail_colours)
 
   volcano_plot <-  input_data |>
     ggplot(aes(y = {{log_q_value_column}},
