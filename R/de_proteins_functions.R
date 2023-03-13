@@ -637,6 +637,8 @@ plotOneVolcano <- function( input_data, input_title,
 #'@param uniprot_column The name of the column in the 'volcano_plot_tab' table that contains the list of uniprot accessions (in tidyverse format).
 #'@param gene_name_column The name of the column in the 'volcano_plot_tab' table that contains the list of gene names (in tidyverse format).
 #'@param output_dir The output directory in which the HTML files containing the interactive plotly volcano plot will be saved.
+#'@export
+
 getGlimmaVolcano <- function( r_obj
                               , coef
                               , volcano_plot_tab
