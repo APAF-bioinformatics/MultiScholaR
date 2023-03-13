@@ -630,7 +630,7 @@ plotOneVolcano <- function( input_data, input_title,
 }
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#'@description Create an interactive plotly volcano plot
+#' Create an interactive plotly volcano plot
 #'@param r_obj Output from ebFit of limma package
 #'@param coef An integer specifying the position in the list of coefficients (e.g. name of contrast) for which to print the volcano plot for
 #'@param volcano_plot_tab A table containing the list of uniprot_acc and the matching gene_name.
