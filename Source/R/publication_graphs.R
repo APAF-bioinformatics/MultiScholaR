@@ -668,7 +668,52 @@ if(!is.na(args$before_avg_design_matrix_file )) {
 
 }
 
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## Interactive Volcano Plot
 
+
+if(file.exists(file.path( results_dir, "de_proteins", "fit.eb.RDS"))
+   & file.path( results_dir, "annot_proteins", "de_proteins_long_annot.tsv")) {
+
+
+
+  volcano_plot_tab <- vroom::vroom( file.path( results_dir, "annot_proteins", "de_proteins_long_annot.tsv") )  %>%
+    mutate( lqm = -log10(q.mod))  |>
+    dplyr::mutate(label = case_when(abs(log2FC) >= 1 & q.mod >= q_val_thresh ~ "Not sig., logFC >= 1",
+                                    abs(log2FC) >= 1 & q.mod < q_val_thresh ~ "Sig., logFC >= 1",
+                                    abs(log2FC) < 1 & q.mod < q_val_thresh ~ "Sig., logFC < 1",
+                                    TRUE ~ "Not sig.")) |>
+    dplyr::mutate(colour = case_when(abs(log2FC) >= 1 & q.mod >= q_val_thresh ~ "orange",
+                                     abs(log2FC) >= 1 & q.mod < q_val_thresh ~ "purple",
+                                     abs(log2FC) < 1 & q.mod < q_val_thresh ~ "blue",
+                                     TRUE ~ "black")) |>
+    dplyr::mutate(gene_name = str_split(UNIPROT_GENENAME, " |:" ) |> purrr::map_chr(1)  ) |>
+    dplyr::mutate(best_uniprot_acc = str_split(uniprot_acc, ":" ) |> purrr::map_chr(1)  ) |>
+    dplyr::mutate(analysis_type = comparison) |>
+    dplyr::select( best_uniprot_acc, lqm, q.mod, p.mod, log2FC, comparison, label, colour,  gene_name, `PROTEIN-NAMES`)   |>
+    dplyr::mutate( my_alpha = case_when ( gene_name !=  "" ~ 1
+                                          , TRUE ~ 0.5))
+
+
+  r_obj <- readRDS( file.path( results_dir, "de_proteins", "fit.eb.RDS") )
+
+  # ncol(r_obj$coefficients)
+  # colnames(r_obj$coefficients)
+
+  output_dir <- file.path( args$output_dir
+                           ,  "Interactime_Volcano_Plots")
+
+
+  purrr::walk( seq_len( ncol(r_obj$coefficients))
+               , \(coef) { # print(coef)
+                 ProteomeRiver::getGlimmaVolcano( r_obj
+                                                  , coef = coef
+                                                  , volcano_plot_tab  = volcano_plot_tab
+                                                  , uniprot_column = best_uniprot_acc
+                                                  , gene_name_column = gene_name
+                                                  , output_dir = output_dir ) } )
+
+}
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 te<-toc(quiet = TRUE)
