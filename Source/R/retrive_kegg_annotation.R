@@ -139,5 +139,5 @@ vroom::vroom_write( gene_sets_tbl, file.path( args$results_dir,  "gene_sets.tab"
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 te<-toc(quiet = TRUE)
 loginfo("%f sec elapsed",te$toc-te$tic)
-writeLines(capture.output(sessionInfo()), file.path(args$output_dir,"sessionInfo.txt"))
+writeLines(capture.output(sessionInfo()), file.path(args$results_dir,"sessionInfo.txt"))
 

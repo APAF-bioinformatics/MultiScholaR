@@ -672,12 +672,12 @@ if(!is.na(args$before_avg_design_matrix_file )) {
 ## Interactive Volcano Plot
 
 
-if(file.exists(file.path( results_dir, "de_proteins", "fit.eb.RDS"))
-   & file.path( results_dir, "annot_proteins", "de_proteins_long_annot.tsv")) {
+if(file.exists(file.path( args$output_dir, "de_proteins", "fit.eb.RDS"))
+   & file.path( args$output_dir, "annot_proteins", "de_proteins_long_annot.tsv")) {
 
 
 
-  volcano_plot_tab <- vroom::vroom( file.path( results_dir, "annot_proteins", "de_proteins_long_annot.tsv") )  %>%
+  volcano_plot_tab <- vroom::vroom( file.path( args$output_dir, "annot_proteins", "de_proteins_long_annot.tsv") )  %>%
     mutate( lqm = -log10(q.mod))  |>
     dplyr::mutate(label = case_when(abs(log2FC) >= 1 & q.mod >= q_val_thresh ~ "Not sig., logFC >= 1",
                                     abs(log2FC) >= 1 & q.mod < q_val_thresh ~ "Sig., logFC >= 1",
@@ -695,7 +695,7 @@ if(file.exists(file.path( results_dir, "de_proteins", "fit.eb.RDS"))
                                           , TRUE ~ 0.5))
 
 
-  r_obj <- readRDS( file.path( results_dir, "de_proteins", "fit.eb.RDS") )
+  r_obj <- readRDS( file.path( args$output_dir, "de_proteins", "fit.eb.RDS") )
 
   # ncol(r_obj$coefficients)
   # colnames(r_obj$coefficients)
