@@ -68,7 +68,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.  [default %default]")
 
-parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config_prot.ini",
+parser <- add_option(parser, c("-c", "--config"), type = "character", default = "/home/ubuntu/Workings/2023/copine6_apex_victor_anggono_bmp_27c_20230214/Source/config_prot.ini",
                      help = "Configuration file.  [default %default]",
                      metavar = "string")
 
@@ -672,20 +672,20 @@ if(!is.na(args$before_avg_design_matrix_file )) {
 ## Interactive Volcano Plot
 
 
-if(file.exists(file.path( args$output_dir, "de_proteins", "fit.eb.RDS"))
-   & file.path( args$output_dir, "annot_proteins", "de_proteins_long_annot.tsv")) {
+if(file.exists(file.path( args$input_dir, "fit.eb.RDS"))
+   && file.exists( args$de_proteins_long_file ) ) {
 
+  print("hello")
 
-
-  volcano_plot_tab <- vroom::vroom( file.path( args$output_dir, "annot_proteins", "de_proteins_long_annot.tsv") )  %>%
+  volcano_plot_tab <- vroom::vroom( args$de_proteins_long_file  )  %>%
     mutate( lqm = -log10(q.mod))  |>
-    dplyr::mutate(label = case_when(abs(log2FC) >= 1 & q.mod >= q_val_thresh ~ "Not sig., logFC >= 1",
-                                    abs(log2FC) >= 1 & q.mod < q_val_thresh ~ "Sig., logFC >= 1",
-                                    abs(log2FC) < 1 & q.mod < q_val_thresh ~ "Sig., logFC < 1",
+    dplyr::mutate(label = case_when(abs(log2FC) >= 1 & q.mod >= args$q_val_thresh ~ "Not sig., logFC >= 1",
+                                    abs(log2FC) >= 1 & q.mod < args$q_val_thresh ~ "Sig., logFC >= 1",
+                                    abs(log2FC) < 1 & q.mod < args$q_val_thresh ~ "Sig., logFC < 1",
                                     TRUE ~ "Not sig.")) |>
-    dplyr::mutate(colour = case_when(abs(log2FC) >= 1 & q.mod >= q_val_thresh ~ "orange",
-                                     abs(log2FC) >= 1 & q.mod < q_val_thresh ~ "purple",
-                                     abs(log2FC) < 1 & q.mod < q_val_thresh ~ "blue",
+    dplyr::mutate(colour = case_when(abs(log2FC) >= 1 & q.mod >= args$q_val_thresh ~ "orange",
+                                     abs(log2FC) >= 1 & q.mod < args$q_val_thresh ~ "purple",
+                                     abs(log2FC) < 1 & q.mod < args$q_val_thresh ~ "blue",
                                      TRUE ~ "black")) |>
     dplyr::mutate(gene_name = str_split(UNIPROT_GENENAME, " |:" ) |> purrr::map_chr(1)  ) |>
     dplyr::mutate(best_uniprot_acc = str_split(uniprot_acc, ":" ) |> purrr::map_chr(1)  ) |>
@@ -695,7 +695,7 @@ if(file.exists(file.path( args$output_dir, "de_proteins", "fit.eb.RDS"))
                                           , TRUE ~ 0.5))
 
 
-  r_obj <- readRDS( file.path( args$output_dir, "de_proteins", "fit.eb.RDS") )
+  r_obj <- readRDS( file.path( args$input_dir, "fit.eb.RDS") )
 
   # ncol(r_obj$coefficients)
   # colnames(r_obj$coefficients)

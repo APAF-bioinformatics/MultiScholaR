@@ -568,7 +568,7 @@ plotVolcano <- function(selected_data,
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' Draw the volcano plot, used in publication graphs
-#' @param input_data
+#' @param input_data Input data with the `log_q_value_column`, the `log_fc_column`, the `points_type_label` and the `points_color` columns.
 #' @param log_q_value_column The name of the column representing the log q-value.
 #' @param log_fc_column The name of the column representing the log fold-change.
 #' @param points_type_label A column in input table with the type of points based on log fold-change and q-value (e.g. "Not sig., logFC >= 1" = "orange" , "Sig., logFC >= 1" = "purple" , "Sig., logFC < 1" = "blue" , "Not sig." )
