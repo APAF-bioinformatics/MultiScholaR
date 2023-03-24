@@ -43,6 +43,7 @@ p_load(ProteomeRiver)
 p_load(configr)
 p_load(logging)
 p_load(svglite)
+p_load(Glimma)
 
 ##-------------------------------------
 
@@ -702,6 +703,8 @@ if(file.exists(file.path( args$input_dir, "fit.eb.RDS"))
 
   output_dir <- file.path( args$output_dir
                            ,  "Interactime_Volcano_Plots")
+
+  createDirIfNotExists(output_dir)
 
 
   purrr::walk( seq_len( ncol(r_obj$coefficients))

@@ -529,7 +529,7 @@ getSignificantData <- function(list_of_de_tables,
 #' @param log_fc_column The name of the column representing the log fold-change.
 #' @param q_val_thresh A numerical value specifying the q-value threshold for statistically significant proteins.
 #' @param formula_string The formula string used in the facet_grid command for the ggplot scatter plot.
-#'@export
+#' @export
 plotVolcano <- function(selected_data,
                         log_q_value_column = lqm,
                         log_fc_column = logFC,
@@ -575,7 +575,7 @@ plotVolcano <- function(selected_data,
 #' @param points_color A column in input table with the colour of the points corresponding to each type of points (e.g. orange, purple, blue black, )
 #' @param q_val_thresh A numerical value specifying the q-value threshold for statistically significant proteins.
 #' @param formula_string The formula string used in the facet_grid command for the ggplot scatter plot.
-#'@export
+#' @export
 plotOneVolcano <- function( input_data, input_title,
                             log_q_value_column = lqm,
                             log_fc_column = logFC,
@@ -631,13 +631,13 @@ plotOneVolcano <- function( input_data, input_title,
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' Create an interactive plotly volcano plot
-#'@param r_obj Output from ebFit of limma package
-#'@param coef An integer specifying the position in the list of coefficients (e.g. name of contrast) for which to print the volcano plot for
-#'@param volcano_plot_tab A table containing the list of uniprot_acc and the matching gene_name.
-#'@param uniprot_column The name of the column in the 'volcano_plot_tab' table that contains the list of uniprot accessions (in tidyverse format).
-#'@param gene_name_column The name of the column in the 'volcano_plot_tab' table that contains the list of gene names (in tidyverse format).
-#'@param output_dir The output directory in which the HTML files containing the interactive plotly volcano plot will be saved.
-#'@export
+#' @param r_obj Output from ebFit object of limma package
+#' @param coef An integer specifying the position in the list of coefficients (e.g. name of contrast) for which to print the volcano plot for
+#' @param volcano_plot_tab A table containing the list of uniprot_acc and the matching gene_name.
+#' @param uniprot_column The name of the column in the 'volcano_plot_tab' table that contains the list of uniprot accessions (in tidyverse format).
+#' @param gene_name_column The name of the column in the 'volcano_plot_tab' table that contains the list of gene names (in tidyverse format).
+#' @param output_dir The output directory in which the HTML files containing the interactive plotly volcano plot will be saved.
+#' @export
 
 getGlimmaVolcano <- function( r_obj
                               , coef
