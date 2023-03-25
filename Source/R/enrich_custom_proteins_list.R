@@ -394,7 +394,7 @@ if (  !is.null( args$annotation_file )) {
                                                  min_gene_set_size=min_size,
                                                  max_gene_set_size=max_size)} ) ) %>%
    dplyr::select( enrichment_results ) %>%
-   unnest()
+   unnest(cols=enrichment_results)
 
  if(is.null(enrichment_result) |
     nrow(enrichment_result) == 0 ) {
