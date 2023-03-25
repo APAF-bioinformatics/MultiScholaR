@@ -740,13 +740,9 @@ filterResultsWithRevigo <- function( enriched_results_tbl
       unnest(revigo_results)  %>%
       dplyr::select(-data, - annot_id_list)
 
-    if("Term ID" %in% colnames(revigo_tbl) )  {
+    if(nrow(revigo_tbl) > 0 )  {
       revigo_tbl <- revigo_tbl %>%
         dplyr::rename(annotation_id = "Term ID")
-    } else {
-      print (paste("revigo headers = ", colnames( revigo_tbl)) )
-      print(head(revigo_tbl))
-    }
 
     join_condition <- rlang::set_names(c("annotation_id", "comparison", "go_type", "gene_set", added_columns),
                                        c("annotation_id", "comparison", "go_type", "gene_set", added_columns))
@@ -758,6 +754,12 @@ filterResultsWithRevigo <- function( enriched_results_tbl
                  by = join_condition) %>%
       dplyr::filter( Eliminated == "False" |
                        is.na(Eliminated))
+
+    } else {
+      warning("filterResultsWithRevigo: Revigo summarizatio did not return any useful GO terms, return original input table.")
+      enrich_revigo <- enriched_results_tbl
+    }
+
 
   } else {
 
