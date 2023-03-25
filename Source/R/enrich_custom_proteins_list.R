@@ -351,17 +351,17 @@ if (  !is.null( args$annotation_file )) {
 
  # print( paste("is.na(go_aspect_list) =", is.na(go_aspect_list)) )
 
- input_params <- cross( list(
+ input_params <- expand_grid(
    names_of_genes_list = names( list_of_genes_list),
    go_aspect=go_aspect_list,
    input_comparison = list_of_comparisons,
    min_size = min_gene_set_size_list,
-   max_size = max_gene_set_size_list) )
+   max_size = max_gene_set_size_list)
 
- input_params_updated <- purrr::map( input_params,
-                                     function(x) {
-                                       x$input_table <- list_of_genes_list[[x$names_of_genes_list]]
-                                     return(x)})
+
+ input_params_updated <- input_params %>%
+   mutate( input_table = purrr::map(names_of_genes_list,  \(x) list_of_genes_list[[x]] ))
+
 
  runOneGoEnrichmentInOutFunctionPartial <- purrr::partial ( runOneGoEnrichmentInOutFunction,
                   comparison_column = comparison,
@@ -374,15 +374,27 @@ if (  !is.null( args$annotation_file )) {
                   aspect_column=args$aspect_column,
                   p_val_thresh=args$p_val_thresh)
 
- enrichment_result <- purrr::map( input_params_updated,
-                                  ~runOneGoEnrichmentInOutFunctionPartial(
-                                    names_of_genes_list = .$names_of_genes_list,
-                                    input_table=.$input_table,
-                                    go_aspect=.$go_aspect,
-                                    input_comparison=.$input_comparison,
-                                    min_gene_set_size=.$min_size,
-                                    max_gene_set_size=.$max_size)) %>%
-   bind_rows()
+ enrichment_result <- input_params_updated %>%
+   mutate( enrichment_results = purrr::pmap( list( names_of_genes_list
+                                                   , input_table
+                                                   , go_aspect
+                                                   , input_comparison
+                                                   , min_size
+                                                   , max_size) ,
+                                             \(names_of_genes_list
+                                               ,input_table
+                                               , go_aspect
+                                               , input_comparison
+                                               , min_size
+                                               , max_size) {runOneGoEnrichmentInOutFunctionPartial(
+                                                 names_of_genes_list = names_of_genes_list,
+                                                 input_table=input_table,
+                                                 go_aspect=go_aspect,
+                                                 input_comparison=input_comparison,
+                                                 min_gene_set_size=min_size,
+                                                 max_gene_set_size=max_size)} ) ) %>%
+   dplyr::select( enrichment_results ) %>%
+   unnest()
 
  if(is.null(enrichment_result) |
     nrow(enrichment_result) == 0 ) {
