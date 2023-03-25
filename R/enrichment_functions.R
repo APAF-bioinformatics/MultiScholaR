@@ -745,6 +745,7 @@ filterResultsWithRevigo <- function( enriched_results_tbl
         dplyr::rename(annotation_id = "Term ID")
     } else {
       print (paste("revigo headers = ", colnames( revigo_tbl)) )
+      print(head(revigo_tbl))
     }
 
     join_condition <- rlang::set_names(c("annotation_id", "comparison", "go_type", "gene_set", added_columns),
