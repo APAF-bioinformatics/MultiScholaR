@@ -622,6 +622,32 @@ gg_save_logging ( after_ruvIII_pca, file_name_part, args$plots_format)
 
 
 ## No sample labels
+before_ruvIII_pca_no_labels <- plotPca( counts_rnorm.log.quant_mat,
+                              design_matrix = design_mat_cln %>%
+                                mutate( sample_labels = ""),
+                              sample_id_column = !!rlang::sym(args$sample_id),
+                              group_column = !!rlang::sym(args$group_id),
+                              label_column = sample_labels,
+                              title = "Before RUVIII",
+                              geom.text.size = 7) +
+  theme_bw() +
+  theme(axis.text.x = element_text(size = 12)) +
+  theme(axis.text.y = element_text(size = 12)) +
+  theme(axis.title.x = element_text(size = 12)) +
+  theme(axis.title.y = element_text(size = 12)) +
+  theme(plot.title = element_text(size = 12)) +
+  theme(legend.text = element_text(size = 12)) +
+  theme(legend.title = element_text(size = 12))
+
+before_ruvIII_pca_no_labels
+
+
+file_name_part <- file.path( args$output_dir, "PCA", "before_ruvIII_no_sample_labels." )
+gg_save_logging ( before_ruvIII_pca_no_labels, file_name_part, args$plots_format)
+
+
+
+
 after_ruvIII_pca_no_labels <- plotPca( counts_rnorm.log.ruvIII_mat,
                                        design_matrix = design_mat_cln %>%
                                          mutate( sample_labels = ""),
