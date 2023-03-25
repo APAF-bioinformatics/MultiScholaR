@@ -707,7 +707,10 @@ readEnrichmentResultFiles <- function( table_of_files, file_names_column=file_na
 # enriched_results_tbl <- readEnrichmentResultFiles( table_of_files, go_type="KEGG")
 
 #'@export
-filterResultsWithRevigo <- function(enriched_results_tbl,  added_columns, is_run_revigo=TRUE, revigo_cutoff=0.7) {
+filterResultsWithRevigo <- function( enriched_results_tbl
+                                     , added_columns
+                                     , is_run_revigo=TRUE
+                                     , revigo_cutoff=0.7 ) {
 
   enrich_revigo <- NA
 
@@ -735,13 +738,17 @@ filterResultsWithRevigo <- function(enriched_results_tbl,  added_columns, is_run
 
     revigo_tbl <- annotation_list_revigo %>%
       unnest(revigo_results)  %>%
-      dplyr::select(-data, - annot_id_list) %>%
-      dplyr::rename(annotation_id = "Term ID")
+      dplyr::select(-data, - annot_id_list)
+
+    if("Term ID" %in% colnames(revigo_tbl) )  {
+      revigo_tbl <- revigo_tbl %>%
+        dplyr::rename(annotation_id = "Term ID")
+    } else {
+      print (paste("revigo headers = ", colnames( revigo_tbl)) )
+    }
 
     join_condition <- rlang::set_names(c("annotation_id", "comparison", "go_type", "gene_set", added_columns),
                                        c("annotation_id", "comparison", "go_type", "gene_set", added_columns))
-
-
 
     enrich_revigo <- enriched_results_tbl %>%
       dplyr::mutate( annotation_id = as.character( annotation_id)) %>%

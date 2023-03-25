@@ -99,6 +99,24 @@ saveRDS( identifiers, file.path( args$results_dir,  paste0("identifiers_kegg_", 
 pathways <- downloadPathways(args$species)
 # pathways$mmu05416
 
+# purrr::map( pathways, \(x) {x@pathwayInfo@name})
+# purrr::map( pathways, \(x) {x@pathwayInfo@title})
+
+
+parsePathway <- function(pathway) {
+
+  pathway@pathwayInfo@name
+
+  pathway@pathwayInfo@org
+
+  pathway@pathwayInfo@number
+
+  purrr::map( pathway@nodes, parseNode) }
+
+parseNode <- function(node) {node@name}
+
+purrr::map( pathways, parsePathway)
+
 #step 4: retrieve gene sets for an organism from databases such as GO and KEGG:
 gene_sets <- getGenesets(org = args$species, db = "kegg", cache = TRUE, return.type="list")
 saveRDS( gene_sets, file.path( args$results_dir,  paste0("gene_sets_kegg_", args$species,".RDS") ) )
