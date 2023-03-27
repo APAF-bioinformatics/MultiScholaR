@@ -516,9 +516,9 @@ writexl::write_xlsx( cln_dat_wide,
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-loginfo( paste( "Number of proteins before removing proteins with missing values:", nrow( cln_dat_wide_unsorted )) )
+loginfo( paste( "Number of proteins before removing proteins with missing values:", nrow( evidence_tbl_col )) )
 loginfo( paste("Number of protein after proteins with missing values were removed:", nrow(cln_dat_wide)  ))
-loginfo( paste( "Number of proteins removed:", ( nrow( cln_dat_wide_unsorted ) - nrow(cln_dat_wide)  )))
+loginfo( paste( "Number of proteins removed:", ( nrow( evidence_tbl_col ) - nrow(cln_dat_wide)  )))
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
