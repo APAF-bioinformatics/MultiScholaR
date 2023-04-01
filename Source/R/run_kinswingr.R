@@ -309,7 +309,7 @@ if( ! file.exists( uniprot_other_kinase_file )) {
     dplyr::rename(uniprot_acc = uniprot_acc_human)
 
   atypical_and_other <- batchQueryEvidence(uniprot_acc_tbl, uniprot_acc_column="uniprot_acc", uniprot_handle=up,
-                                           uniprot_columns = list_of_sp_columns, uniprot_keytype=my_keytype)
+                                           uniprot_columns = list_intersect, uniprot_keytype=my_keytype)
 
   saveRDS( atypical_and_other, file.path( uniprot_other_kinase_file))
 
@@ -359,35 +359,45 @@ loginfo("Filter the correct subset of kinases for the analysis.")
 
 uniprot_kinases <- NA
 
+
+if("UNIPROTKB" %in%  colnames( atypical_and_other)) {
+
+  atypical_and_other <- atypical_and_other |>
+    rename( Keywords = "KEYWORDS"
+            , Entry = "UNIPROTKB")
+}
+
+
 if( args$kinase_specificity == "ST") {
+
    uniprot_kinases <- uniprot_kinase_tbl |>
      dplyr::filter( str_detect( Family, "Ser/Thr" )  | str_detect( Family, "Atypical") | str_detect( Family, "Other" ) ) |>
      left_join( atypical_and_other |>
-                  dplyr::select(UNIPROTKB, KEYWORDS),
-                by=c("uniprot_acc_human" = "UNIPROTKB")) |>
+                  dplyr::select( one_of( "Entry", "Keywords")),
+                by=c("uniprot_acc_human" = "Entry")) |>
       dplyr::filter( str_detect( Family, "Ser/Thr" ) |
-                       (   str_detect(KEYWORDS, "Serine/threonine-protein kinase") &
-                          (!str_detect(KEYWORDS, "Tyrosine-protein kinase") ) ) )
+                       (   str_detect( Keywords, "Serine/threonine-protein kinase") &
+                          (!str_detect( Keywords, "Tyrosine-protein kinase") ) ) )
 
 } else if ( args$kinase_specificity == "Y") {
   uniprot_kinases <- uniprot_kinase_tbl |>
     dplyr::filter( str_detect( Family, "Tyr" )  | str_detect( Family, "Atypical") | str_detect( Family, "Other" ) ) |>
     left_join( atypical_and_other |>
-                  dplyr::select(UNIPROTKB, KEYWORDS),
-               by=c("uniprot_acc_human" = "UNIPROTKB")) |>
+                  dplyr::select(one_of( "Entry", "Keywords")),
+               by=c("uniprot_acc_human" = "Entry")) |>
     dplyr::filter( str_detect( Family, "Tyr" ) |
-                     ( (!str_detect(KEYWORDS, "Serine/threonine-protein kinase")) &
-                         str_detect(KEYWORDS, "Tyrosine-protein kinase") ) )
+                     ( (!str_detect(Keywords, "Serine/threonine-protein kinase")) &
+                         str_detect(Keywords, "Tyrosine-protein kinase") ) )
 
 
 } else if ( args$kinase_specificity == "STY") {
   uniprot_kinases <- uniprot_kinase_tbl |>
     dplyr::filter(  str_detect( Family, "Atypical") | str_detect( Family, "Other" ) ) |>
     left_join( atypical_and_other |>
-                  dplyr::select(UNIPROTKB, KEYWORDS),
-               by=c("uniprot_acc_human" = "UNIPROTKB")) |>
-    dplyr::filter( str_detect(KEYWORDS, "Serine/threonine-protein kinase") &
-                         str_detect(KEYWORDS, "Tyrosine-protein kinase")  )
+                  dplyr::select(one_of( "Entry", "Keywords")),
+               by=c("uniprot_acc_human" = "Entry")) |>
+    dplyr::filter( str_detect(Keywords, "Serine/threonine-protein kinase") &
+                         str_detect(Keywords, "Tyrosine-protein kinase")  )
 }
 
 
@@ -397,13 +407,14 @@ if( args$kinase_specificity == "ST") {
 phosphositeplus <- ks_tbl |>
   dplyr::select( GENE, KINASE, `SITE_+/-7_AA`, SUB_MOD_RSD) |>
   distinct() |>
-  dplyr::rename( kinase = "KINASE",
-                 substrate = "SITE_+/-7_AA") |>
+  dplyr::rename( kinase_class = "KINASE",
+                 substrate = "SITE_+/-7_AA",
+                 kinase_gene = "GENE") |>
   dplyr::mutate( substrate = toupper(substrate)) |>
-  dplyr::mutate( kinase = str_replace( kinase, " ", "_")) |>
-  arrange( GENE, kinase, substrate)  |>
-  mutate( GENE = toupper(GENE),
-          kinase = toupper(kinase),
+  dplyr::mutate( kinase_class = str_replace( kinase_class, " ", "_")) |>
+  arrange( kinase_gene, kinase_class, substrate)  |>
+  mutate( kinase_gene = toupper(kinase_gene),
+          kinase_class = toupper(kinase_class),
           residue = purrr::map_chr( SUB_MOD_RSD , \(x){str_sub(x, 1,1 )}   ) ) |>
   dplyr::select( - SUB_MOD_RSD )
 
@@ -411,25 +422,24 @@ kinases_to_include <-  phosphositeplus |>
   left_join( uniprot_kinases |>
                dplyr::select(gene_name) |>
                dplyr::mutate( is_uniprot_a= 1),
-             by=c( "GENE" = "gene_name") ) |>
+             by=c( "kinase_gene" = "gene_name") ) |>
   left_join( uniprot_kinases |>
                dplyr::select(gene_name) |>
                dplyr::mutate( is_uniprot_b= 1),
-             by=c( "kinase" = "gene_name") ) |>
+             by=c( "kinase_class" = "gene_name") ) |>
   dplyr::filter( is_uniprot_a == 1 | is_uniprot_b == 1) |>
   dplyr::select( -is_uniprot_a, - is_uniprot_b ) |>
   dplyr::filter(  str_detect(  args$kinase_specificity, residue )  ) |>
-  group_by(kinase )  |>
+  group_by(kinase_gene )  |>
   summarise( counts =n()) |>
   ungroup() |>
   dplyr::filter( counts >= args$min_num_sites_per_kinase)
 
 loginfo("Filter the correct subset of substrates for the analysis.")
 phosphositeplus_filt <- phosphositeplus |>
-  mutate( kinase = toupper(kinase) ) |>
-  inner_join( kinases_to_include, by="kinase") |>
+  inner_join( kinases_to_include, by="kinase_gene") |>
   dplyr::filter(  str_detect(  args$kinase_specificity, residue )  ) |>
-  dplyr::select(-counts, - GENE, - residue) |>
+  dplyr::select(-counts, - kinase_class, - residue) |>
   distinct() |>
   as.matrix()
 
@@ -943,11 +953,12 @@ compileKinswingerResults <- function( list_position ) {
   fc_pval_tab <- scores_list$data[[list_position]]
 
   up_or_down_kinases <- swing_out_list$swing_result[[list_position]]$scores |>
-    dplyr::filter( p_greater < 0.2 | p_less < 0.2 )
+    dplyr::filter( p_greater < 0.2 | p_less < 0.2 ) |>
+    dplyr::rename(kinase_gene ="kinase")
 
   motif_score_table <- scores_list$pwms_scores[[list_position]]$peptide_scores |>
     pivot_longer( cols= !(contains("annotation") | contains("peptide")),
-                  names_to="kinase",
+                  names_to="kinase_gene",
                   values_to = "motif.score")
 
   is_phosphoylated_tbl <- annotated_data |>
@@ -967,24 +978,23 @@ compileKinswingerResults <- function( list_position ) {
 
   step_1 <- scores_list$pwms_scores[[list_position]]$peptide_p |>
     pivot_longer( cols= !(contains("annotation") | contains("peptide")),
-                  names_to="kinase",
+                  names_to="kinase_gene",
                   values_to = "motif.p.value") |>
     left_join( motif_score_table, by=c("annotation" = "annotation",
                                        "peptide" = "peptide",
-                                       "kinase" = "kinase")) |>
-    inner_join( up_or_down_kinases, by=c( "kinase" = "kinase")) |>
+                                       "kinase_gene" = "kinase_gene")) |>
+    inner_join( up_or_down_kinases, by=c( "kinase_gene" = "kinase_gene")) |>
     dplyr::filter( motif.p.value < 0.2 )
-
 
   step_2 <- step_1 |>
     left_join( ks_tbl |>
                  mutate( KINASE = toupper(KINASE)) |>
                  dplyr::distinct( KINASE, KIN_ACC_ID),
-               by = c("kinase" = "KINASE")) |>
+               by = c("kinase_gene" = "KINASE")) |>
     left_join( ks_tbl |>
                  mutate( GENE = toupper(GENE)) |>
                  dplyr::distinct( GENE, KIN_ACC_ID),
-               by = c("kinase" = "GENE")) |>
+               by = c("kinase_gene" = "GENE")) |>
     mutate( kinase_uniprot_acc = ifelse( is.na( KIN_ACC_ID.x),
                                          KIN_ACC_ID.y,
                                          KIN_ACC_ID.x)) |>
@@ -1004,13 +1014,12 @@ compileKinswingerResults <- function( list_position ) {
 
   step_3 <- step_2 |>
     left_join( phosphositeplus |>
-                 distinct( GENE, kinase), by=c("kinase" = "kinase") )
+                 distinct( kinase_gene, kinase_class), by=c("kinase_gene" = "kinase_gene") )
 
   rm(step_2)
   gc()
 
   plan(multisession, workers = args$num_cores)
-
 
   step_4 <- step_3 |>
     dplyr::mutate( substrate_gene_name  = furrr::future_map(annotation,
@@ -1019,39 +1028,41 @@ compileKinswingerResults <- function( list_position ) {
   rm(step_3)
   gc()
 
-
   step_5 <-  step_4 |>
     left_join( de_phos |>
                  dplyr::filter( comparison == swing_out_list$comparison[[list_position]]  ) |>
                  dplyr::select( one_of( selected_columns ) ),
                by=c("sites_id" = "sites_id"))
 
-
   rm(step_4)
   gc()
 
-
   selected_scores_list_help <- step_5 |>
     left_join( uniprot_kinases |>
-                 dplyr::select(-KEYWORDS),
-               by= c("GENE" = "gene_name")) |>
-    dplyr::rename( kinase_gene_name = "GENE") |>
+                 dplyr::select(-one_of(c("KEYWORDS", "Keywords"))),
+               by= c("kinase_gene" = "gene_name")) |>
+    dplyr::rename( kinase_gene_name = "kinase_gene") |>
     distinct()
 
   rm(step_5)
   gc()
 
-  if( "KINASE" %in% selected_columns) {
+  if( "KINASE" %in% colnames(selected_scores_list_help) ) {
     selected_scores_list_help <- selected_scores_list_help |>
-      dplyr::mutate( kinase_copy = KINASE ) |>
-      dplyr::rename( known_upstream_kinase = "kinase_copy") |>
-      dplyr::rename( one_known_kinase = "KINASE") |>
-      separate_rows( one_known_kinase , sep= "//")  |>
-      dplyr::mutate( one_known_kinase = toupper(one_known_kinase) )  |>
-      dplyr::mutate( prediction_match_known_kinase = case_when( kinase == one_known_kinase ~ TRUE,
-                                                                TRUE ~ FALSE) )  |>
-      dplyr::select(-one_known_kinase)
+      dplyr::rename( one_known_kinase = "KINASE")
+    print("Update KINASE ")
   }
+
+  if( ! "one_known_kinase" %in% colnames(selected_scores_list_help) ) {
+    stop("Error, problem, column one_known_kinase is missing.")
+  }
+
+    selected_scores_list_help <- selected_scores_list_help |>
+      dplyr::mutate( known_upstream_kinase = one_known_kinase ) |>
+      separate_rows( one_known_kinase , sep= "//")  |>
+      dplyr::mutate( known_upstream_kinase = toupper(known_upstream_kinase) )  |>
+      dplyr::mutate( prediction_match_known_kinase = case_when( kinase_class == known_upstream_kinase ~ TRUE,
+                                                                TRUE ~ FALSE) )
 
   ## Use mouse or human uniprot accession if it makes sense to do so.
   selected_scores_list <- selected_scores_list_help
@@ -1087,7 +1098,7 @@ compileKinswingerResults <- function( list_position ) {
     dplyr::mutate( p_value_kinswingr = case_when( swing > 0     ~ p_greater,
                                         swing < 0     ~ p_less,
                                         TRUE ~ 1)) |>
-    dplyr::rename(kinase_gene_symbol = "kinase",
+    dplyr::rename(kinase_gene_symbol = "one_known_kinase",
                   substrate_name = "PROTEIN-NAMES",
                   phosphosite_log2FC = "fc",
                   phosphosite_fdr_value = "pval",
@@ -1103,6 +1114,7 @@ compileKinswingerResults <- function( list_position ) {
                   p_less_kinswingr = "p_less")
 
   selected_scores_list_cln_step_2 <- selected_scores_list_cln_step_1
+
   if( "Family" %in% colnames( selected_scores_list_cln_step_1)) {
 
     selected_scores_list_cln_step_2 <- selected_scores_list_cln_step_1 |>
@@ -1116,8 +1128,6 @@ compileKinswingerResults <- function( list_position ) {
                       !(args$taxonomy_id %in% c(9606, 10090)))
 
   }
-
-  print( setdiff(list_of_kinswinger_columns, colnames( selected_scores_list_cln_step_2)) )
 
   selected_scores_list_cln_final <- selected_scores_list_cln_step_2 |>
     dplyr::select(all_of( list_of_kinswinger_columns) )

@@ -75,9 +75,13 @@ parser <- add_option(parser, c( "--results_dir"), type = "character",
 #parse comand line arguments first.
 args <- parse_args(parser)
 
-args <- setArgsDefault(args, "species", as_func=as.character, default_val=NA )
-args <- setArgsDefault(args, "results_dir", as_func=as.character, default_val="./Results" )
-args <- setArgsDefault(args, "gene_id_file", as_func=as.character, default_val="gene_ids_table_python_all.tab" )
+# args <- setArgsDefault(args, "species", as_func=as.character, default_val=NA )
+# args <- setArgsDefault(args, "results_dir", as_func=as.character, default_val="./Results" )
+# args <- setArgsDefault(args, "gene_id_file", as_func=as.character, default_val="gene_ids_table_python_all.tab" )
+
+args <- setArgsDefault(args, "species", as_func=as.character, default_val="hsa" )
+args <- setArgsDefault(args, "results_dir", as_func=as.character, default_val="/home/ubuntu/Workings/2023/rett_pbmcs_wendy_gold_bmp_12_20230201/Data/KEGG/" )
+args <- setArgsDefault(args, "gene_id_file", as_func=as.character, default_val="/home/ubuntu/Workings/2023/rett_pbmcs_wendy_gold_bmp_12_20230201/Results/UniProt/gene_ids_table_python_all.tab" )
 
 testRequiredFiles(c(
   args$gene_id_file
@@ -90,7 +94,7 @@ gene_id_to_uniprot_acc_file <- file.path( args$gene_id_file)
 ## --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #step2: check and obtain a list of entry identifiers (in this case: sar) and associated definition for a given database or a given set of database entries.
-identifiers <- keggList(args$species)
+identifiers <- keggList("pathway", args$species)
 saveRDS( identifiers, file.path( args$results_dir,  paste0("identifiers_kegg_", args$species,".RDS") ) )
 
 #step 3: download the pathways of that organism:
@@ -102,20 +106,20 @@ pathways <- downloadPathways(args$species)
 # purrr::map( pathways, \(x) {x@pathwayInfo@name})
 # purrr::map( pathways, \(x) {x@pathwayInfo@title})
 
-
-parsePathway <- function(pathway) {
-
-  pathway@pathwayInfo@name
-
-  pathway@pathwayInfo@org
-
-  pathway@pathwayInfo@number
-
-  purrr::map( pathway@nodes, parseNode) }
-
-parseNode <- function(node) {node@name}
-
-purrr::map( pathways, parsePathway)
+#
+# parsePathway <- function(pathway) {
+#
+#   pathway@pathwayInfo@name
+#
+#   pathway@pathwayInfo@org
+#
+#   pathway@pathwayInfo@number
+#
+#   purrr::map( pathway@nodes, parseNode) }
+#
+# parseNode <- function(node) {node@name}
+#
+# purrr::map( pathways, parsePathway)
 
 #step 4: retrieve gene sets for an organism from databases such as GO and KEGG:
 gene_sets <- getGenesets(org = args$species, db = "kegg", cache = TRUE, return.type="list")
