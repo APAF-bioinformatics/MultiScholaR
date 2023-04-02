@@ -64,7 +64,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.  [default %default]")
 
-parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config_prot.ini",
+parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config_metab.ini",
                      help = "Configuration file.  [default %default]",
                      metavar = "string")
 
@@ -672,11 +672,14 @@ impute.selectGrps.filtered <- NA
 count_num_replicates_per_protein <- NA
 if (args$imputation == TRUE) {
 
-  imputation_groups <- colnames( counts_rnorm.log.for.imputation) |> str_split("_") |> purrr::map_chr(1)
+  imputation_groups <- data.frame( temp_id= colnames( counts_rnorm.log.for.imputation) |> str_split("_") |> purrr::map_chr(1)) |>
+    left_join( design_mat_updated
+               , by=c( "temp_id" = args$sample_id)) |>
+    pull( !!sym(args$group_id) )
   impute.selectGrps.filtered <- selectGrps(counts_rnorm.log.for.imputation
                                            , imputation_groups
-                                           , args$impute_min_percent
-                                           , n=args$impute_min_num_of_groups)
+                                           , percent=  args$impute_min_percent
+                                           , n= args$impute_min_num_of_groups)
   impute.scImpute.output <- scImpute(impute.selectGrps.filtered
                                      , args$impute_specific_percent
                                      , imputation_groups)[,colnames(impute.selectGrps.filtered)]
