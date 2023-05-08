@@ -105,7 +105,7 @@ uninstall:intro
 # ---------------------------------------------------------------
 
 setup:intro
-	@echo "export PATH=$(PREFIX)/$(PROJECT)/Source/R:\$$PATH" >> $(BASH_PROFILE)
+	@echo "export PATH=$(PREFIX)/$(PROJECT)/Source/R:$(PREFIX)/$(PROJECT)/Source/Python:\$$PATH" >> $(BASH_PROFILE)
 	@echo "export R_LIBS_USER=$(RLIB)" >> $(BASH_PROFILE)
 	@echo '	'
 	@echo '-----------------------------------'
