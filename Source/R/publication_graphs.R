@@ -69,7 +69,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.  [default %default]")
 
-parser <- add_option(parser, c("-c", "--config"), type = "character", default = "/home/ubuntu/Workings/2023/copine6_apex_victor_anggono_bmp_27c_20230214/Source/config_prot.ini",
+parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config_prot.ini",
                      help = "Configuration file.  [default %default]",
                      metavar = "string")
 
@@ -513,11 +513,14 @@ createDirIfNotExists(file.path(args$output_dir, "NumSigDeMolecules"))
 vroom::vroom_write( num_sig_de_molecules,
                     file.path(args$output_dir, "NumSigDeMolecules", "num_sig_de_molecules.tab" ) )
 
+num_of_comparison <- num_sig_de_molecules |> 
+  distinct(comparison) |>
+  nrow()
 
 ggsave(filename = file.path(args$output_dir, "NumSigDeMolecules", "num_sig_de_molecules.png" ),
        plot = num_sig_de_genes_barplot,
        height = 10,
-       width = 7)
+       width = num_of_comparison*7/6 ) 
 
 
 ##-------------------------------------
