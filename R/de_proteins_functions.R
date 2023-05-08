@@ -614,7 +614,7 @@ plotOneVolcano <- function( input_data, input_title,
     geom_hline(yintercept = -log10(q_val_thresh)) +
     theme_bw() +
     xlab("Log fold-change") +
-    ylab(expression(-log[10] (~q~ -value))) +
+    ylab(expression(-log[10](`q-value`))) +
     labs(title = input_title)+  # Remove legend title
     theme(legend.title = element_blank()) +
     # theme(legend.position = "none")  +
