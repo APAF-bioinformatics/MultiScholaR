@@ -9,7 +9,6 @@
 #Test if BioManager is installed
 if (!requireNamespace("BiocManager", quietly = TRUE)) {
     install.packages("BiocManager")
-   BiocManager::install(version = "3.12")
 }
 
 # load pacman package manager
@@ -1076,6 +1075,7 @@ compileKinswingerResults <- function( list_position ) {
   rm(step_4)
   gc()
 
+  print("Step 6")
   selected_scores_list_help <- step_5 |>
     left_join( uniprot_kinases |>
                  dplyr::select(-one_of(c("KEYWORDS", "Keywords"))),
@@ -1096,6 +1096,7 @@ compileKinswingerResults <- function( list_position ) {
     stop("Error, problem, column one_known_kinase is missing.")
   }
 
+  print("Step 7")
     selected_scores_list_help <- selected_scores_list_help |>
       dplyr::mutate( known_upstream_kinase = one_known_kinase ) |>
       separate_rows( one_known_kinase , sep= "//")  |>
@@ -1103,6 +1104,7 @@ compileKinswingerResults <- function( list_position ) {
       dplyr::mutate( prediction_match_known_kinase = case_when( kinase_class == known_upstream_kinase ~ TRUE,
                                                                 TRUE ~ FALSE) )
 
+  print("Step 8")
   ## Use mouse or human uniprot accession if it makes sense to do so.
   selected_scores_list <- selected_scores_list_help
   if( length( intersect(   is_phosphoylated_tbl$uniprot_acc, uniprot_kinases$uniprot_acc_human  ) ) >0 )  {
@@ -1132,6 +1134,7 @@ compileKinswingerResults <- function( list_position ) {
                                              "REG_SITES_NOTES"  ) )
   }
 
+  print("Step 9")
   selected_scores_list_cln_step_1 <- selected_scores_list |>
     separate( annotation, into=c( "substrate_uniprot_acc", "subsrate_gene_symbol", "phosphosite_position", "sequence_context") ) |>
     dplyr::mutate( p_value_kinswingr = case_when( swing > 0     ~ p_greater,
@@ -1154,6 +1157,7 @@ compileKinswingerResults <- function( list_position ) {
 
   selected_scores_list_cln_step_2 <- selected_scores_list_cln_step_1
 
+  print("Step 10")
   if( "Family" %in% colnames( selected_scores_list_cln_step_1)) {
 
     selected_scores_list_cln_step_2 <- selected_scores_list_cln_step_1 |>
@@ -1168,7 +1172,9 @@ compileKinswingerResults <- function( list_position ) {
 
   }
 
+  print("Step 11")
   if(isArgumentDefined(args, "uniprot_to_gene_symbol_file")) {
+    print("Add uniprot gene symbol")
     selected_scores_list_cln_step_3 <- selected_scores_list_cln_step_2 |>
       left_join( uniprot_tab_delimited_tbl |>
                    dplyr::select(!!rlang::sym(args$protein_id_lookup_column),
@@ -1179,8 +1185,16 @@ compileKinswingerResults <- function( list_position ) {
     selected_scores_list_cln_step_3 <- selected_scores_list_cln_step_2
   }
 
-  selected_scores_list_cln_final <- selected_scores_list_cln_step_3
-    dplyr::select( one_of( list_of_kinswinger_columns) )
+  print("Step 12")
+  print ( colnames( selected_scores_list_cln_step_3) )
+  print( list_of_kinswinger_columns )
+  selected_scores_list_cln_final <- selected_scores_list_cln_step_3 |>
+    dplyr::select( any_of( list_of_kinswinger_columns) )
+
+  if(isArgumentDefined(args, "uniprot_to_gene_symbol_file")) {
+    selected_scores_list_cln_final <- selected_scores_list_cln_final |>
+    relocate( kinsae_gene_name_uniprot, .before = "kinase_gene_symbol")
+  }
 
   return( selected_scores_list_cln_final)
 }
