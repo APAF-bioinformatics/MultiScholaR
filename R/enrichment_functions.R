@@ -45,6 +45,9 @@ oneGoEnrichment <- function(go_annot, background_list, go_aspect, query_list, id
     dplyr::filter( counts <= max_gene_set_size & counts >= min_gene_set_size ) %>%
     dplyr::select(-counts)
 
+
+  print(head( filtered_go_terms))
+
   term_to_gene_tbl_filt <- go_annot_filt %>%
     inner_join( background_list, by =join_condition )  %>%
     dplyr::inner_join( filtered_go_terms, by = as_name(enquo( annotation_id))  )  %>%
