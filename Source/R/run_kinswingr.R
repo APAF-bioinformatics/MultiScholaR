@@ -79,6 +79,19 @@ parser <- add_option(parser, c( "--min_num_sites_per_kinase"), type = "integer",
                      help = "The minimum number of known substrates for each kinase",
                      metavar = "integer")
 
+
+parser <- add_option(parser, "--uniprot_to_gene_symbol_file", type = "character",
+                     help = "A file that contains the dictionary to convert uniprot accession to gene symbol. Uses the column specified in 'protein_id_lookup_column' flag for protein ID. Uses the column specified in 'gene_symbol_column' for the gene symbol column.",
+                     metavar = "string")
+
+parser <- add_option(parser, "--protein_id_lookup_column", type = "character",
+                     help = "The  name of the column that contained the protein ID to convert into gene symobl.",
+                     metavar = "string")
+
+parser <- add_option(parser, "--gene_symbol_column", type = "character",
+                     help = "The  name of the column that contained the gene symobl.",
+                     metavar = "string")
+
 parser <- add_option(parser, c( "--p_value_cutoff"), type = "double",
                      help = "The p-value cutoff for identifying a kinase as significant by KinSwingR",
                      metavar = "integer")
@@ -220,6 +233,15 @@ if(isArgumentDefined(args,"plots_format"))
   args$plots_format <- list("pdf")
 }
 
+if(isArgumentDefined(args, "uniprot_to_gene_symbol_file")) {
+  testRequiredFiles(c(
+    args$uniprot_to_gene_symbol_file))
+
+  args <- setArgsDefault(args, "protein_id_lookup_column", as_func=as.character, default_val="Entry" )
+  args <- setArgsDefault(args, "gene_symbol_column", as_func=as.character, default_val="Gene names" )
+
+}
+
 args <- setArgsDefault(args, "random_seed", as_func=as.integer, default_val=123456 )
 args <- setArgsDefault(args, "motif_score_iteration", as_func=as.integer, default_val=1000 )
 args <- setArgsDefault(args, "swing_iteration", as_func=as.integer, default_val=1000 )
@@ -231,6 +253,8 @@ args <- setArgsDefault(args, "p_value_cutoff", as_func=as.double, default_val=0.
 args <- setArgsDefault(args, "is_multisite", as_func=as.logical, default_val=NA )
 args <- setArgsDefault(args, "tmp_dir", as_func=as.character, default_val="cache" )
 args <- setArgsDefault(args, "reuse_old", as_func=as.logical, default_val=FALSE )
+
+
 
 
 createDirectoryIfNotExists(args$tmp_dir)
@@ -264,6 +288,20 @@ logdebug(captured_output)
 
 ## ---------------------------------------------------------------------------------------------------------------------------------------------------
 
+loginfo("Reading UniProt data file.")
+
+if(isArgumentDefined(args, "uniprot_to_gene_symbol_file")) {
+  # args$uniprot_to_gene_symbol_file <- "/home/ubuntu/Workings/2021/ALPK1_BMP_06/Data/UniProt/data.tab"
+
+  # args$protein_id_lookup_column <- "Entry"
+  # args$gene_symbol_column <- "Gene names"
+
+  # Clean up protein ID to gene symbol table
+  uniprot_tab_delimited_tbl <- vroom::vroom( file.path( args$uniprot_to_gene_symbol_file))
+}
+
+
+  ## ---------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Download information from UniProt.")
 uniprot_other_kinase_file<-file.path(args$tmp_dir,args$uniprot_other_kinase_file)
 if( ! file.exists( uniprot_other_kinase_file )) {
@@ -914,6 +952,7 @@ list_of_kinswinger_columns <- c(  "substrate_uniprot_acc" ,
                                  "sequence_context",
                                  "kinase_uniprot_acc",
                                  "kinase_gene_symbol",
+                                 "kinsae_gene_name_uniprot",
                                  "kinase_family",
                                  "phosphosite_log2FC",
                                  "phosphosite_fdr_value",
@@ -1129,8 +1168,19 @@ compileKinswingerResults <- function( list_position ) {
 
   }
 
-  selected_scores_list_cln_final <- selected_scores_list_cln_step_2 |>
-    dplyr::select(all_of( list_of_kinswinger_columns) )
+  if(isArgumentDefined(args, "uniprot_to_gene_symbol_file")) {
+    selected_scores_list_cln_step_3 <- selected_scores_list_cln_step_2 |>
+      left_join( uniprot_tab_delimited_tbl |>
+                   dplyr::select(!!rlang::sym(args$protein_id_lookup_column),
+                                 !!rlang::sym(args$gene_symbol_column) ) |>
+                   dplyr::rename (kinsae_gene_name_uniprot = args$gene_symbol_column),
+                 by=join_by( kinase_uniprot_acc == !!rlang::sym(args$protein_id_lookup_column)) )
+  } else {
+    selected_scores_list_cln_step_3 <- selected_scores_list_cln_step_2
+  }
+
+  selected_scores_list_cln_final <- selected_scores_list_cln_step_3
+    dplyr::select( one_of( list_of_kinswinger_columns) )
 
   return( selected_scores_list_cln_final)
 }
