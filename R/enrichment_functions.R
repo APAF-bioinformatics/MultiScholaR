@@ -29,9 +29,11 @@ oneGoEnrichment <- function(go_annot, background_list, go_aspect, query_list, id
 
   if ( !is.na( go_aspect)) {
     go_annot_filt <- go_annot %>%
-      dplyr::filter( {{aspect_column}} == go_aspect)
+      dplyr::filter( {{aspect_column}} == go_aspect) |>
+      mutate( {{protein_id}} := purrr::map_chr( {{protein_id}}, as.character))
   } else {
-    go_annot_filt <- go_annot
+    go_annot_filt <- go_annot |>
+      mutate( {{protein_id}} := purrr::map_chr( {{protein_id}}, as.character))
   }
 
   filtered_go_terms <- go_annot_filt %>%
