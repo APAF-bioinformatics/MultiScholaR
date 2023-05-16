@@ -46,7 +46,7 @@ oneGoEnrichment <- function(go_annot, background_list, go_aspect, query_list, id
     dplyr::select(-counts)
 
 
-  print(head( filtered_go_terms))
+  # print(head( filtered_go_terms))
 
   term_to_gene_tbl_filt <- go_annot_filt %>%
     inner_join( background_list, by =join_condition )  %>%
