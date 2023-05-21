@@ -69,7 +69,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.  [default %default]")
 
-parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config_prot.ini",
+parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config_phos.ini",
                      help = "Configuration file.  [default %default]",
                      metavar = "string")
 
@@ -738,7 +738,7 @@ if(file.exists(file.path( args$input_dir, "fit.eb.RDS"))
 
   purrr::walk( seq_len( ncol(r_obj$coefficients))
                , \(coef) { # print(coef)
-                 ProteomeRiver::getGlimmaVolcano( r_obj
+                 ProteomeRiver::getGlimmaVolcanoProteomics( r_obj
                                                   , coef = coef
                                                   , volcano_plot_tab  = volcano_plot_tab
                                                   , uniprot_column = best_uniprot_acc

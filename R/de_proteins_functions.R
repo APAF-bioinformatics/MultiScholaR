@@ -639,7 +639,7 @@ plotOneVolcano <- function( input_data, input_title,
 #' @param output_dir The output directory in which the HTML files containing the interactive plotly volcano plot will be saved.
 #' @export
 
-getGlimmaVolcano <- function( r_obj
+getGlimmaVolcanoProteomics <- function( r_obj
                               , coef
                               , volcano_plot_tab
                               , uniprot_column = best_uniprot_acc
