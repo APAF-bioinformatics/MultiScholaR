@@ -630,7 +630,8 @@ plotOneVolcano <- function( input_data, input_title,
 }
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' Create an interactive plotly volcano plot
+#' getGlimmaVolcanoProteomics
+#' @description Create an interactive plotly volcano plot for Proteomics data
 #' @param r_obj Output from ebFit object of limma package
 #' @param coef An integer specifying the position in the list of coefficients (e.g. name of contrast) for which to print the volcano plot for
 #' @param volcano_plot_tab A table containing the list of uniprot_acc and the matching gene_name.
@@ -679,6 +680,53 @@ getGlimmaVolcanoProteomics <- function( r_obj
 
 }
 
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' getGlimmaVolcanoPhosphoproteomics
+#' @description Create an interactive plotly volcano plot for Phosphoproteomics data
+#' @param r_obj Output from ebFit object of limma package
+#' @param coef An integer specifying the position in the list of coefficients (e.g. name of contrast) for which to print the volcano plot for
+#' @param volcano_plot_tab A table containing the list of uniprot_acc and the matching gene_name.
+#' @param sites_id_column The name of the column in the 'volcano_plot_tab' table that contains the list of uniprot accessions (in tidyverse format).
+#' @param sites_id_display_column The name of the column in the 'volcano_plot_tab' table that contains the list of gene names (in tidyverse format).
+#' @param display_columns The name of the columns from input `volcano_plot_tab` that will be included in the mouseover tooltips and table
+#' @param output_dir The output directory in which the HTML files containing the interactive plotly volcano plot will be saved.
+#' @export
+
+getGlimmaVolcanoPhosphoproteomics <- function( r_obj
+                                        , coef
+                                        , volcano_plot_tab
+                                        , sites_id_column = sites_id
+                                        , sites_id_display_column = sites_id_short
+                                        , display_columns = c(  "sequence", "PROTEIN_NAMES"   )
+                                        , output_dir) {
+  
+  if( coef <= ncol(r_obj$coefficients )) {
+    
+    volcano_plot_tab_cln <- volcano_plot_tab |>
+      dplyr::distinct( {{sites_id_column}}
+                       , {{sites_id_display_column}}
+                       , pick(one_of( display_columns)) )
+    
+    anno_tbl <-  data.frame(  sites_id = rownames(r_obj@.Data[[1]])) |>
+      left_join( volcano_plot_tab_cln
+                 , by = join_by(sites_id == {{sites_id_column}} ) )
+                 
+    sites_id_short_list <- anno_tbl |>
+                   pull(sites_id_short)
+
+    rownames( r_obj@.Data[[1]] ) <- sites_id_short_list
+
+    #coef <- seq_len( ncol(r_obj$coefficients))[1]
+    
+    htmlwidgets::saveWidget( widget = glimmaVolcano(r_obj, coef=coef, anno=anno_tbl, display.columns=display_columns) #the plotly object
+                             , file = file.path( output_dir
+                                                 , paste0(colnames(r_obj$coefficients)[coef], ".html"))  #the path & file name
+                             , selfcontained = TRUE #creates a single html file
+    )
+  }
+  
+}
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
