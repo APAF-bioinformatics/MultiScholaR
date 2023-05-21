@@ -726,8 +726,9 @@ if(   args$data_type  == "proteomics"
                                      TRUE ~ "black")) |>
     dplyr::mutate(gene_name = str_split(UNIPROT_GENENAME, " |:" ) |> purrr::map_chr(1)  ) |>
     dplyr::mutate(best_uniprot_acc = str_split(uniprot_acc, ":" ) |> purrr::map_chr(1)  ) |>
-    dplyr::mutate(analysis_type = comparison) |>
-    dplyr::select( best_uniprot_acc, lqm, q.mod, p.mod, log2FC, comparison, label, colour,  gene_name, `PROTEIN-NAMES`)   |>
+    dplyr::mutate(analysis_type = comparison)  |>    
+    dplyr::rename( PROTEIN_NAMES = "PROTEIN-NAMES") |>
+    dplyr::select( best_uniprot_acc, lqm, q.mod, p.mod, log2FC, comparison, label, colour,  gene_name, `PROTEIN_NAMES`)   |>
     dplyr::mutate( my_alpha = case_when ( gene_name !=  "" ~ 1
                                           , TRUE ~ 0.5))
 
@@ -750,6 +751,7 @@ if(   args$data_type  == "proteomics"
                                                   , volcano_plot_tab  = volcano_plot_tab
                                                   , uniprot_column = best_uniprot_acc
                                                   , gene_name_column = gene_name
+                                                  , display_columns = c(  "PROTEIN_NAMES"   )
                                                   , output_dir = output_dir ) } )
 
 }

@@ -645,6 +645,7 @@ getGlimmaVolcanoProteomics <- function( r_obj
                               , volcano_plot_tab
                               , uniprot_column = best_uniprot_acc
                               , gene_name_column = gene_name
+                              , display_columns = c(  "PROTEIN_NAMES"   )
                               , output_dir) {
 
   if( coef <= ncol(r_obj$coefficients )) {
@@ -657,21 +658,23 @@ getGlimmaVolcanoProteomics <- function( r_obj
 
     volcano_plot_tab_cln <- volcano_plot_tab |>
       dplyr::distinct( {{uniprot_column}}
-                       , {{gene_name_column}}) |>
+                       , {{gene_name_column}}, pick(one_of( display_columns))) |>
       dplyr::rename( best_uniprot_acc =  {{uniprot_column}}
                      , gene_name = {{gene_name_column}}   )
 
-    gene_names <- data.frame( uniprot_acc = rownames(r_obj@.Data[[1]])
+    anno_tbl <- data.frame( uniprot_acc = rownames(r_obj@.Data[[1]])
                               , best_uniprot_acc = best_uniprot_acc ) |>
       left_join( volcano_plot_tab_cln
                  , by = c("best_uniprot_acc") )  |>
       mutate( gene_name = case_when( is.na( gene_name) ~ best_uniprot_acc,
-                                     TRUE ~ gene_name) ) |>
+                                     TRUE ~ gene_name) ) 
+    
+    gene_names <- anno_tbl |>
       pull(gene_name)
 
     rownames( r_obj@.Data[[1]] ) <- gene_names
 
-    htmlwidgets::saveWidget( widget = glimmaVolcano(r_obj, coef=coef) #the plotly object
+    htmlwidgets::saveWidget( widget = glimmaVolcano(r_obj, coef=coef, anno=anno_tbl, display.columns = display_columns) #the plotly object
                              , file = file.path( output_dir
                                                  , paste0(colnames(r_obj$coefficients)[coef], ".html"))  #the path & file name
                              , selfcontained = TRUE #creates a single html file
