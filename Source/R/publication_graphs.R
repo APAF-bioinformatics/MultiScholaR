@@ -751,7 +751,7 @@ if(   args$data_type  == "proteomics"
                                                   , volcano_plot_tab  = volcano_plot_tab
                                                   , uniprot_column = best_uniprot_acc
                                                   , gene_name_column = gene_name
-                                                  , display_columns = c(  "PROTEIN_NAMES"   )
+                                                  , display_columns = c( "best_uniprot_acc",  "PROTEIN_NAMES"   )
                                                   , output_dir = output_dir ) } )
 
 }
