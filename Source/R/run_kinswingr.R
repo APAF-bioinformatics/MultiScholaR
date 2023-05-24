@@ -455,7 +455,7 @@ phosphositeplus <- ks_tbl |>
           residue = purrr::map_chr( SUB_MOD_RSD , \(x){str_sub(x, 1,1 )}   ) ) |>
   dplyr::select( - SUB_MOD_RSD )
 
-kinases_to_include <-  phosphositeplus |>
+kinases_gene_to_substrate_counts <-  phosphositeplus |>
   left_join( uniprot_kinases |>
                dplyr::select(gene_name) |>
                dplyr::mutate( is_uniprot_a= 1),
@@ -469,8 +469,29 @@ kinases_to_include <-  phosphositeplus |>
   dplyr::filter(  str_detect(  args$kinase_specificity, residue )  ) |>
   group_by(kinase_gene )  |>
   summarise( counts =n()) |>
-  ungroup() |>
+  ungroup() 
+
+# kinases_class_to_substrate_counts <-  phosphositeplus |>
+#   left_join( uniprot_kinases |>
+#                dplyr::select(gene_name) |>
+#                dplyr::mutate( is_uniprot_a= 1),
+#              by=c( "kinase_gene" = "gene_name") ) |>
+#   left_join( uniprot_kinases |>
+#                dplyr::select(gene_name) |>
+#                dplyr::mutate( is_uniprot_b= 1),
+#              by=c( "kinase_class" = "gene_name") ) |>
+#   dplyr::filter( is_uniprot_a == 1 | is_uniprot_b == 1) |>
+#   dplyr::select( -is_uniprot_a, - is_uniprot_b ) |>
+#   dplyr::filter(  str_detect(  args$kinase_specificity, residue )  ) |>
+#   group_by(kinase_class )  |>
+#   summarise( counts =n()) |>
+#   ungroup()
+
+kinases_to_include <- kinases_gene_to_substrate_counts |>
   dplyr::filter( counts >= args$min_num_sites_per_kinase)
+# 
+# kinases_class_to_include <- kinases_class_to_substrate_counts |>
+#   dplyr::filter( counts >= args$min_num_sites_per_kinase)
 
 loginfo("Filter the correct subset of substrates for the analysis.")
 phosphositeplus_filt <- phosphositeplus |>
@@ -479,6 +500,23 @@ phosphositeplus_filt <- phosphositeplus |>
   dplyr::select(-counts, - kinase_class, - residue) |>
   distinct() |>
   as.matrix()
+
+phosphositeplus |>
+  distinct(kinase_gene, kinase_class) |>
+  group_by( kinase_class ) |>
+  summarise (counts = n()) |>
+  ungroup() |>
+  dplyr::filter( counts > 1)
+
+
+ks_tbl |>
+   distinct(GENE, KINASE, KIN_ORGANISM) |>
+  dplyr::filter( KINASE %in% c( "GRK2", "PAK5") )
+
+phosphositeplus_filt |>
+  as.data.frame() |>
+  dplyr::filter( kinase_class %in% c( "GRK2", "PAK5") )
+
 
 
 
