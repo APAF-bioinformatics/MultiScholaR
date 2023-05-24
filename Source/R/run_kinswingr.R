@@ -501,25 +501,6 @@ phosphositeplus_filt <- phosphositeplus |>
   distinct() |>
   as.matrix()
 
-phosphositeplus |>
-  distinct(kinase_gene, kinase_class) |>
-  group_by( kinase_class ) |>
-  summarise (counts = n()) |>
-  ungroup() |>
-  dplyr::filter( counts > 1)
-
-
-ks_tbl |>
-   distinct(GENE, KINASE, KIN_ORGANISM) |>
-  dplyr::filter( KINASE %in% c( "GRK2", "PAK5") )
-
-phosphositeplus_filt |>
-  as.data.frame() |>
-  dplyr::filter( kinase_class %in% c( "GRK2", "PAK5") )
-
-
-
-
 
 ## ---------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -1174,7 +1155,7 @@ compileKinswingerResults <- function( list_position ) {
 
   print("Step 9")
   selected_scores_list_cln_step_1 <- selected_scores_list |>
-    separate( annotation, into=c( "substrate_uniprot_acc", "subsrate_gene_symbol", "phosphosite_position", "sequence_context") ) |>
+    separate( annotation, into=c( "substrate_uniprot_acc", "subsrate_gene_symbol", "phosphosite_position", "sequence_context"), sep="\\|" ) |>
     dplyr::mutate( p_value_kinswingr = case_when( swing > 0     ~ p_greater,
                                         swing < 0     ~ p_less,
                                         TRUE ~ 1)) |>
