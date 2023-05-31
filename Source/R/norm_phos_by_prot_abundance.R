@@ -358,7 +358,40 @@ basic_data <- basic_data_shared  %>%
    logwarn("nrow(basic_data) != nrow(phospho_cln)")
  }
 
-vroom::vroom_write( basic_data, file.path( args$output_dir,  "norm_phosphosite_lfc_minus_protein_lfc_with_protein_repeats.tsv"))
+annotation_from_phospho_tbl <- phospho_tbl_orig %>%
+  dplyr::mutate( phos_row_ids = sites_id ) %>%
+  dplyr::select(-q.mod, -p.mod, -log2FC, -uniprot_acc,  -position, -residue, -sequence)
+
+annotated_phos_tbl_with_repeats <- basic_data %>%
+  left_join( annotation_from_phospho_tbl, by=c("sites_id" = "sites_id",
+                                               "comparison" = "comparison",
+                                               "phos_row_ids" = "phos_row_ids")) %>%
+  dplyr::select( !matches( "log2norm\\.\\d+\\.(left|right)") &
+                   !matches("raw\\.\\d+\\.(left|right)")) %>%
+  arrange(comparison, combined_q_mod, norm_phos_logFC ) %>%
+  distinct()
+
+
+vroom::vroom_write( annotated_phos_tbl_with_repeats, file.path( args$output_dir,  "norm_phosphosite_lfc_minus_protein_lfc_with_protein_repeats.tsv"))
+
+
+list_of_long_columns <- intersect( colnames(basic_data),
+                                   c("protein_names",
+                                     "ENSEMBL",
+                                     "PROTEIN-NAMES",
+                                     "KEYWORDS",
+                                     "GO-ID",
+                                     "go_biological_process",
+                                     "go_cellular_compartment",
+                                     "go_molecular_function",
+                                     "reactome_term",
+                                     "majority_protein_ids") )
+
+
+writexl::write_xlsx( annotated_phos_tbl_with_repeats %>%
+                      mutate_at( list_of_long_columns, ~substr(., 1, 32760) ),
+                    file.path (args$output_dir,
+                               "norm_phosphosite_lfc_minus_protein_lfc_with_protein_repeats.xlsx")  )
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
