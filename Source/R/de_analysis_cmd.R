@@ -65,7 +65,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.  [default %default]")
 
-parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config_metab.ini",
+parser <- add_option(parser, c("-c", "--config"), type = "character", default = "/mnt/work/ipang/PostDoc/2023/e0032-p03-nbcf-manitoba-p7-breast/Source/config_prot.ini",
                      help = "Configuration file.  [default %default]",
                      metavar = "string")
 
@@ -649,7 +649,7 @@ if (!is.na( args$average_replicates_id)) {
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-heatmap( counts_rnorm.log.for.imputation, Rowv=NA, Colv=NA  )
+# heatmap( counts_rnorm.log.for.imputation, Rowv=NA, Colv=NA  )
 
 loginfo("Count the number of values before missing values imputation ")
 

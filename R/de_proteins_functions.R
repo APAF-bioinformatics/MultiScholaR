@@ -40,7 +40,7 @@ removeEmptyRows <- function(input_table, col_pattern, row_id) {
 plotNumMissingValues <- function(input_table) {
 
   plot_num_missing_values <- apply(data.matrix(log2(input_table)), 2,
-                                   function(x) { length(which(is.infinite(x))) }) |>
+                                   function(x) { length(which(!is.finite(x))) }) |>
     t() |>
     t() |>
     set_colnames("No. of Missing Values") |>
