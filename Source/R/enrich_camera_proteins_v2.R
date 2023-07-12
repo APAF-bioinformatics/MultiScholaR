@@ -64,7 +64,7 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
 
   parser <- OptionParser(add_help_option =TRUE)
 
-  parser <- add_option(parser, c("-c", "--config"), type = "character", default =  "config_prot.ini", # "/home/ignatius/PostDoc/2021/ALPK1_BMP_06/Source/P90/config_prot_NR.ini",
+  parser <- add_option(parser, c("-c", "--config"), type = "character", default =  "config_metab.ini", # "/home/ignatius/PostDoc/2021/ALPK1_BMP_06/Source/P90/config_prot_NR.ini",
                        help = "Configuration file.  [default %default]",
                        metavar = "string")
 
@@ -75,7 +75,7 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
   parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                        help = "Deactivate backup of previous run.  [default %default]")
 
-  parser <- add_option(parser, c("-t","--tmp_dir"), type = "character", default = "cache", dest = "tmp_dir",
+  parser <- add_option(parser, c("-t", "--tmp_dir"), type = "character", default = "cache", dest = "tmp_dir",
                        help = "Directory path for temporary files.",
                        metavar = "string")
 
@@ -555,9 +555,9 @@ camera_results_tbl <- tibble( temp = camera_results_cln)  %>%
   bind_cols(  data.frame( gene_set = purrr::map_chr( camera_results_temp,
                                                      ~ {  .[["index_name"]]  } ) )  ) %>%
   bind_cols(  data.frame( min_set_size = purrr::map_chr( camera_results_temp,
-                                                         ~ {  .[["min_set_size"]]  } ) )  ) %>%
+                                                         ~ {  as.character(.[["min_set_size"]])  } ) )  ) %>%
   bind_cols(  data.frame( max_set_size = purrr::map_chr( camera_results_temp,
-                                                         ~ {  .[["max_set_size"]]  } ) )  ) %>%
+                                                         ~ {  as.character(.[["max_set_size"]])  } ) )  ) %>%
   unnest(temp) %>%
   mutate( term = purrr::map_chr( !!rlang::sym(args$annotation_id),  ~id_to_annotation_dictionary[[.]]))
 
@@ -589,22 +589,23 @@ if( !is.null( args$aspect_column) ) {
 
 }
 
- proteins_to_include <- dictionary_and_annotation %>%
-   mutate(  !!rlang::sym( args$annotation_id) := as.character(  !!rlang::sym( args$annotation_id)))%>%
-  dplyr::rename( uniprot_acc =  args$protein_id) %>%
-  mutate(  !!rlang::sym( args$annotation_id) := as.character(  !!rlang::sym( args$annotation_id))) %>%
-  dplyr::select( one_of(columns_included)) %>%
-  inner_join(  proteins_cln  %>%
-                 dplyr::filter( !!rlang::sym( args$fdr_column_name) < args$protein_q_val_thresh) %>%
-                 dplyr::select( !!rlang::sym( args$fdr_column_name),
-                                !!rlang::sym( args$log_fc_column_name),
-                                uniprot_acc,
-                                comparison),
-               by="uniprot_acc")
+proteins_to_include <- dictionary_and_annotation |>
+  mutate(  !!rlang::sym( args$annotation_id) := as.character(  !!rlang::sym( args$annotation_id))) |>
+  dplyr::rename( uniprot_acc =  args$protein_id ) |>
+  mutate(  !!rlang::sym( args$annotation_id ) := as.character(  !!rlang::sym( args$annotation_id))) |>
+  dplyr::select( one_of(columns_included)) |>
+  mutate( uniprot_acc = purrr::map_chr( uniprot_acc, as.character )) |>
+  inner_join(  proteins_cln |>
+                 dplyr::filter( !!rlang::sym( args$fdr_column_name) < args$protein_q_val_thresh ) |>
+                 dplyr::select( !!rlang::sym( args$fdr_column_name)
+                                , !!rlang::sym( args$log_fc_column_name)
+                                , uniprot_acc
+                                , comparison )
+               , by="uniprot_acc" )
 
  filtered_results <- camera_results_tbl  %>%
-   left_join( proteins_to_include,
-              by = join_condition ) %>%
+   left_join( proteins_to_include
+              , by = join_condition ) %>%
    dplyr::filter ( ( Direction == "Down" & !!rlang::sym( args$log_fc_column_name) < 0) |
                    ( Direction == "Up" & !!rlang::sym( args$log_fc_column_name) > 0) ) %>%
    dplyr::select( -one_of(c( args$fdr_column_name,
@@ -636,8 +637,11 @@ if(isArgumentDefined(args, "uniprot_to_gene_symbol_file")) {
   uniprot_acc_to_gene_symbol_join_condition <- rlang::set_names(c("uniprot_acc"),
                                                                 c("uniprot_acc"))
 
-  camera_results_with_gene_symbol <- filtered_results %>%
-    left_join( uniprot_to_gene_names, by=uniprot_acc_to_gene_symbol_join_condition) %>%
+  camera_results_with_gene_symbol <- filtered_results |>
+    mutate( uniprot_acc = purrr::map_chr( uniprot_acc, as.character )) |>
+    left_join( uniprot_to_gene_names |>
+                 mutate( uniprot_acc = purrr::map_chr( uniprot_acc, as.character ))
+               , by=uniprot_acc_to_gene_symbol_join_condition) |>
     distinct()
 
   # uniprot_to_gene_symbol_dict <- getUniprotAccToGeneSymbolDictionary( uniprot_tab_delimited_tbl,
@@ -673,13 +677,13 @@ annotation_id_to_gene_comma_separated_string <- camera_results_with_gene_symbol 
       pull( uniprot_acc ) %>%
       sort %>%
       unique %>%
-      paste( collapse=", ")    } )) %>%
+      paste( collapse="/ ")    } )) %>%
   mutate( gene_symbol = furrr::future_map_chr( data, function(x) { x %>%
       arrange(gene_symbol) %>%
       pull( gene_symbol) %>%
       sort %>%
       unique %>%
-      paste( collapse=", ")    } ) ) %>%
+      paste( collapse="/ ")    } ) ) %>%
   dplyr::select(-data)
 
 camera_results_unfilt <- camera_results_tbl %>%
