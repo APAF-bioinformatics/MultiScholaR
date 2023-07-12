@@ -87,6 +87,10 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
                        help="Input file with the protein abundance values",
                        metavar="string")
 
+  parser <- add_option(parser, c( "--counts_protein_id"), type="character", dest = "counts_protein_id",
+                       help="A string of the name of the protein ID column in the read counts file.",
+                       metavar="string")
+
   parser <- add_option(parser, c( "--de_proteins"), type="character", dest = "de_proteins_file",
                        help="Input file with the list of diffierentiall expressed protein log fold-change and q-values for every contrasts.",
                        metavar="string")
@@ -198,6 +202,7 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
   args <- setArgsDefault(args, "max_gene_set_size", as_func=as.character, default_val="200" )
   args <- setArgsDefault(args, "min_gene_set_size", as_func=as.character, default_val="4" )
   args <- setArgsDefault(args, "protein_id", as_func=as.character, default_val="uniprot_acc" )
+  args <- setArgsDefault(args, "counts_protein_id", as_func=as.character, default_val="uniprot_acc" )
   args <- setArgsDefault(args, "annotation_id", as_func=as.character, default_val="go_id" )
   args <- setArgsDefault(args, "aspect_column", as_func=as.character, default_val=NULL )
   if( isArgumentDefined(args, "aspect_column" )) {
@@ -262,6 +267,7 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
                         "group_pattern",
                         "sample_id",
                         "group_id",
+                        "counts_protein_id",
                         "tmp_dir",
                         "dictionary_file",
                         "annotation_file",
@@ -350,7 +356,7 @@ if( args$contrasts_file != "") {
 loginfo("Read abundance tables after normalization with RUVIII.")
 captured_output <- capture.output(
 norm_abundance <- vroom::vroom( args$counts_table_file )  %>%
-  mutate( best_uniprot_acc = purrr::map_chr( uniprot_acc, ~str_split(. , ":"   )[[1]][1] )),
+  mutate( best_uniprot_acc = purrr::map_chr( !!rlang::sym(args$counts_protein_id), ~str_split(. , ":"   )[[1]][1] )),
 type = "message"
 )
 logdebug(captured_output)
