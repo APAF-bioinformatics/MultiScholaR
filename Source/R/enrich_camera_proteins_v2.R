@@ -501,10 +501,11 @@ if( file.exists(camera_results_file) ) {
   logdebug(captured_output)
 } else {
 
-    combination_tab <- cross_df( list( index_name = names( annotation_gene_set_list ),
+
+    combination_tab <- tidyr::expand_grid( index_name = names( annotation_gene_set_list ),
                                     contrast_name = names( lists_of_contrasts),
                                     min_set_size = min_gene_set_size_list,
-                                    max_set_size = max_gene_set_size_list )) %>%
+                                    max_set_size = max_gene_set_size_list ) %>%
       mutate( contrast= purrr::map( contrast_name, ~lists_of_contrasts[[.]])  ) %>%
       mutate( index= purrr::map(index_name,  ~annotation_gene_set_list[[.]]  ) )
 
