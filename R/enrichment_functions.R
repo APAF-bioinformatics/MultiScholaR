@@ -209,6 +209,7 @@ buildAnnotationIdToAnnotationNameDictionary <- function(input_table, annotation_
   id_to_annotation_dictionary <- NA
 
   dictionary_pair <- input_table %>%
+    dplyr::filter( !is.na({{annotation_column}}) & !is.na({{annotation_id_column}})) %>%
     distinct({{annotation_column}},
              {{annotation_id_column}})
 
@@ -227,6 +228,7 @@ buildAnnotationIdToAnnotationNameDictionary <- function(input_table, annotation_
 buildOneProteinToAnnotationList <- function( input_table, annotation_id, protein_id ) {
 
   temp_table <- input_table %>%
+    dplyr::filter( !is.na( {{annotation_id}} ) & !is.na( {{protein_id}} )) %>%
     group_by( {{annotation_id}}) %>%
     nest( ) %>%
     ungroup()  %>%
