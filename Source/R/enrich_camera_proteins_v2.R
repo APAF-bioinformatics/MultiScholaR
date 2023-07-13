@@ -501,7 +501,6 @@ if( file.exists(camera_results_file) ) {
   logdebug(captured_output)
 } else {
 
-
     combination_tab <- tidyr::expand_grid( index_name = names( annotation_gene_set_list ),
                                     contrast_name = names( lists_of_contrasts),
                                     min_set_size = min_gene_set_size_list,
@@ -567,8 +566,8 @@ if( !is.null( args$aspect_column)) {
     dplyr::rename( !!rlang::sym(args$aspect_column) := "gene_set")
 }
 
-rm( camera_results)
-gc()
+# rm( camera_results)
+# gc()
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Add UniProt accession of proteins that had significant log fold-change and also associated with annotation.")
