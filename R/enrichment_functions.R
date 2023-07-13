@@ -472,18 +472,18 @@ queryRevigo <- function( input_list,
 #'@export
 clusterPathways <- function ( input_table, added_columns, remove_duplicted_entries = TRUE ) {
 
-    duplicated_entries <- input_table %>%
-      mutate(set_type = case_when( str_detect( gene_set, "positive") ~"positive",
-                                   str_detect( gene_set, "negative") ~ "negative",
-                                   TRUE ~ "neutral")) %>%
-      group_by( across(c( any_of(added_columns), comparison, set_type, annotation_id) ) ) %>%
-      dplyr::summarise( temp_qvalue = min(qvalue )) %>%
-      ungroup() %>%
-      dplyr::group_by( across(c( any_of(added_columns), comparison, annotation_id) ) ) %>%
-      dplyr::summarise(counts = n(),
-                best_p_adj_value = min(temp_qvalue)) %>%
-      ungroup() %>%
-      dplyr::filter( counts > 1)
+  duplicated_entries <- input_table %>%
+    mutate(set_type = case_when( str_detect( gene_set, "positive") ~"positive",
+                                 str_detect( gene_set, "negative") ~ "negative",
+                                 TRUE ~ "neutral")) %>%
+    group_by( across(c( any_of(added_columns), comparison, set_type, annotation_id) ) ) %>%
+    dplyr::summarise( temp_qvalue = min(qvalue )) %>%
+    ungroup() %>%
+    dplyr::group_by( across(c( any_of(added_columns), comparison, annotation_id) ) ) %>%
+    dplyr::summarise(counts = n(),
+                     best_p_adj_value = min(temp_qvalue)) %>%
+    ungroup() %>%
+    dplyr::filter( counts > 1)
 
   if( remove_duplicted_entries == TRUE |
       remove_duplicted_entries == "delete" ) {
@@ -506,44 +506,54 @@ clusterPathways <- function ( input_table, added_columns, remove_duplicted_entri
     input_table <- input_table  %>%
       anti_join( duplicated_entries, by =c("comparison" = "comparison",
                                            "annotation_id" = "annotation_id",
-                                            added_columns)) %>%
+                                           added_columns)) %>%
       bind_rows( duplicates_tbl )
 
   }
 
-    scores_for_clustering <- input_table %>%
-      mutate( neg_log_p_value = -log10( p.adjust) ) %>%
-      mutate(score = case_when( str_detect( gene_set, "positive") ~neg_log_p_value,
-                                str_detect( gene_set, "negative") ~ -1* neg_log_p_value,
-                                TRUE ~ neg_log_p_value))  %>%
-      pivot_wider( id_cols = c(annotation_id),
-                   names_from = c(any_of(added_columns), comparison, gene_set, go_type) ,
-                   values_from = score,
-                   values_fill = 0 )    %>%
-      column_to_rownames("annotation_id") %>%
-      as.matrix()
-
-  pathways_clustered <- hclust(dist(scores_for_clustering))
-
-  pathways_sorting <- cutree(pathways_clustered, k=1:nrow(scores_for_clustering)) %>%
-    as.data.frame %>%
-    rownames_to_column("Term") %>%
-    arrange( across( matches("\\d+"))) %>%
-    mutate( ordering = row_number()) %>%
-  arrange(ordering)
-
-   annot_heat_map_ordering <-  input_table %>%
-     mutate( neg_log_p_value = -log10( p.adjust) )  %>%
-     dplyr::select(  c(any_of(added_columns), comparison, annotation_id, term,  neg_log_p_value,  gene_set, go_type )) %>%
-     mutate( annotation_id = as.character(annotation_id)) %>%
-     left_join(pathways_sorting, by=c("annotation_id" = "Term")) %>%
-     arrange(ordering)
+  scores_for_clustering <- input_table %>%
+    mutate( neg_log_p_value = -log10( p.adjust) ) %>%
+    mutate(score = case_when( str_detect( gene_set, "positive") ~neg_log_p_value,
+                              str_detect( gene_set, "negative") ~ -1* neg_log_p_value,
+                              TRUE ~ neg_log_p_value))  %>%
+    pivot_wider( id_cols = c(annotation_id),
+                 names_from = c(any_of(added_columns), comparison, gene_set, go_type) ,
+                 values_from = score,
+                 values_fill = 0 )    %>%
+    column_to_rownames("annotation_id") %>%
+    as.matrix()
 
 
-   annot_heat_map_ordered <- annot_heat_map_ordering %>%
-     mutate(term = factor( term,  levels = unique(annot_heat_map_ordering$term)))
+  if ( nrow( scores_for_clustering ) >= 2 ) {
+    pathways_clustered <- hclust(dist(scores_for_clustering))
 
-  annot_heat_map_ordered
+    pathways_sorting <- cutree(pathways_clustered, k=1:nrow(scores_for_clustering)) %>%
+      as.data.frame %>%
+      rownames_to_column("Term") %>%
+      arrange( across( matches("\\d+"))) %>%
+      mutate( ordering = row_number()) %>%
+      arrange(ordering)
+
+    annot_heat_map_ordering <-  input_table %>%
+      mutate( neg_log_p_value = -log10( p.adjust) )  %>%
+      dplyr::select(  c(any_of(added_columns), comparison, annotation_id, term,  neg_log_p_value,  gene_set, go_type )) %>%
+      mutate( annotation_id = as.character(annotation_id)) %>%
+      left_join(pathways_sorting, by=c("annotation_id" = "Term")) %>%
+      arrange(ordering)
+
+    annot_heat_map_ordered <- annot_heat_map_ordering %>%
+      mutate(term = factor( term,  levels = unique(annot_heat_map_ordering$term)))
+
+    annot_heat_map_ordered
+  } else {
+
+    input_table %>%
+      mutate( neg_log_p_value = -log10( p.adjust) )  %>%
+      dplyr::select(  c(any_of(added_columns), comparison, annotation_id, term,  neg_log_p_value,  gene_set, go_type )) %>%
+      mutate( annotation_id = as.character(annotation_id))
+  }
+
+
 }
 
 ########################
