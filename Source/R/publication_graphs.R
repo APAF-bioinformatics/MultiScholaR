@@ -69,7 +69,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.  [default %default]")
 
-parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config_prot.ini",
+parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config_phos.ini",
                      help = "Configuration file.  [default %default]",
                      metavar = "string")
 
@@ -127,6 +127,9 @@ parser <- add_option(parser, "--top_x_gene_name", type = "integer",
                      help = "Print the top X gene names f",
                      metavar = "string")
 
+parser <- add_option(parser, "--data_type", type = "character",
+                     help = "Whether the analysis is proteomics or phosphoproteomics",
+                     metavar = "string")
 
 parser <- add_option(parser, "--log2fc_column", type = "character",
                      help = "The column which contains the log2FC value",
@@ -182,7 +185,6 @@ testRequiredArguments(args, c(
   , "row_id"
   , "input_dir"
   , "output_dir"
-  , "q_val_thresh"
 ))
 
 testRequiredFiles(c(
@@ -191,19 +193,20 @@ testRequiredFiles(c(
 ))
 
 args <- setArgsDefault(args, "q_val_thresh", as_func=as.double, default_val=0.05 )
+args <- setArgsDefault(args, "data_type", as_func=as.character, default_val="proteomics" )
 args <- setArgsDefault(args, "log2fc_column", as_func=as.character, default_val="log2FC" )
 args <- setArgsDefault(args, "fdr_column", as_func=as.character, default_val="q.mod" )
 
-args<-parseType(args,
-                c("q_val_thresh"
-                )  ,as.double)
+args<-parseType(args
+                , c("q_val_thresh")
+                , as.double)
 
 args<-parseString(args,
                   c("sample_id"
-                    ,"group_id"
-                    ,"row_id"
-                    ,"file_prefix"
-                    ,"plots_format"
+                    , "group_id"
+                    , "row_id"
+                    , "file_prefix"
+                    , "plots_format"
                     , "input_dir"
                     , "output_dir"
                   ))
@@ -715,10 +718,11 @@ if(!is.na(args$before_avg_design_matrix_file )) {
 ## Interactive Volcano Plot
 
 
-if(file.exists(file.path( args$input_dir, "fit.eb.RDS"))
-   && file.exists( args$de_proteins_long_file ) ) {
+if(   args$data_type  == "proteomics"
+      && file.exists(file.path( args$input_dir, "fit.eb.RDS"))
+      && file.exists( args$de_proteins_long_file ) ) {
 
-  print("hello")
+  loginfo("Create proteomics interactive volcano plot")
 
   volcano_plot_tab <- vroom::vroom( args$de_proteins_long_file  )  %>%
     mutate( lqm = -log10(!!sym(args$fdr_column)))  |>
@@ -732,8 +736,9 @@ if(file.exists(file.path( args$input_dir, "fit.eb.RDS"))
                                      TRUE ~ "black")) |>
     dplyr::mutate(gene_name = str_split(UNIPROT_GENENAME, " |:" ) |> purrr::map_chr(1)  ) |>
     dplyr::mutate(best_uniprot_acc = str_split(uniprot_acc, ":" ) |> purrr::map_chr(1)  ) |>
-    dplyr::mutate(analysis_type = comparison) |>
-    dplyr::select( best_uniprot_acc, lqm, !!sym(args$fdr_column), p.mod, !!sym(args$log2fc_column), comparison, label, colour,  gene_name, `PROTEIN-NAMES`)   |>
+    dplyr::mutate(analysis_type = comparison)  |>
+    dplyr::rename( PROTEIN_NAMES = "PROTEIN-NAMES") |>
+    dplyr::select( best_uniprot_acc, lqm, !!sym(args$fdr_column), p.mod, !!sym(args$log2fc_column), comparison, label, colour,  gene_name, `PROTEIN_NAMES`)   |>
     dplyr::mutate( my_alpha = case_when ( gene_name !=  "" ~ 1
                                           , TRUE ~ 0.5))
 
@@ -751,14 +756,112 @@ if(file.exists(file.path( args$input_dir, "fit.eb.RDS"))
 
   purrr::walk( seq_len( ncol(r_obj$coefficients))
                , \(coef) { # print(coef)
-                 ProteomeRiver::getGlimmaVolcano( r_obj
-                                                  , coef = coef
-                                                  , volcano_plot_tab  = volcano_plot_tab
-                                                  , uniprot_column = best_uniprot_acc
-                                                  , gene_name_column = gene_name
-                                                  , output_dir = output_dir ) } )
+                 ProteomeRiver::getGlimmaVolcanoProteomics( r_obj
+                                                            , coef = coef
+                                                            , volcano_plot_tab  = volcano_plot_tab
+                                                            , uniprot_column = best_uniprot_acc
+                                                            , gene_name_column = gene_name
+                                                            , display_columns = c( "best_uniprot_acc",  "PROTEIN_NAMES"   )
+                                                            , output_dir = output_dir ) } )
 
 }
+
+
+
+if(   args$data_type  == "phosphoproteomics"
+      && file.exists(file.path( args$input_dir, "fit.eb.RDS"))
+      && file.exists( args$de_proteins_long_file ) ) {
+
+  merge_residue_position_lists <- function(residue, position)  {
+
+    residues_list <- str_split(residue, ";")[[1]]
+    positions_list <- str_split(position, ";")[[1]]
+
+    #print( paste(  residue, position ) )
+
+    if( length(residues_list) != length(positions_list)) {
+      stop( paste( "Length not equal", residue, position ) )
+    }
+
+    purrr::map2_chr( residues_list
+                     , positions_list
+                     , function(r, p){ paste0(r, p) }) |>
+      paste(collapse=";")
+  }
+  # merge_residue_position_lists ("S;T",  "11;12")
+
+  clean_first_positiion <- function( position) {
+    first_position <- str_split(position, "\\|" ) |>
+      purrr::map_chr(1) |>
+      str_replace( "\\(", "") |>
+      str_replace( "\\)", "")
+
+    first_position
+  }
+  # clean_first_positiion("(520;526)|(562;568)|(706;712)|(724;730)|(736;742)")
+
+
+  loginfo("Create phosphoproteomics interactive volcano plot")
+
+
+  de_proteins_long_tbl <- vroom::vroom( args$de_proteins_long_file  )
+
+  volcano_plot_colour_points <- de_proteins_long_tbl  %>%
+    mutate( lqm = -log10(!!sym(args$fdr_column)))  |>
+    dplyr::mutate(label = case_when(abs(!!sym(args$log2fc_column)) >= 1 & !!sym(args$fdr_column) >= args$q_val_thresh ~ "Not sig., logFC >= 1",
+                                    abs(!!sym(args$log2fc_column)) >= 1 & !!sym(args$fdr_column) < args$q_val_thresh ~ "Sig., logFC >= 1",
+                                    abs(!!sym(args$log2fc_column)) < 1 & !!sym(args$fdr_column) < args$q_val_thresh ~ "Sig., logFC < 1",
+                                    TRUE ~ "Not sig.")) |>
+    dplyr::mutate(colour = case_when(abs(!!sym(args$log2fc_column)) >= 1 & !!sym(args$fdr_column) >= args$q_val_thresh ~ "orange",
+                                     abs(!!sym(args$log2fc_column)) >= 1 & !!sym(args$fdr_column) < args$q_val_thresh ~ "purple",
+                                     abs(!!sym(args$log2fc_column)) < 1 & !!sym(args$fdr_column) < args$q_val_thresh ~ "blue",
+                                     TRUE ~ "black")) |>
+    dplyr::mutate(analysis_type = comparison)   |>
+    dplyr::mutate(gene_name = str_split(UNIPROT_GENENAME, " |:" ) |> purrr::map_chr(1)  ) |>
+    dplyr::mutate(best_uniprot_acc = str_split(uniprot_acc, ":" ) |> purrr::map_chr(1)  ) |>
+    mutate( first_position = purrr::map_chr(position, clean_first_positiion)) |>
+    mutate( merged_sites_residues = purrr::map2_chr( residue
+                                                     ,  first_position
+                                                     , \(residue, position){merge_residue_position_lists(residue, position)}) ) |>
+    mutate( sites_id_short = paste0( gene_name, ":", merged_sites_residues, ":", best_uniprot_acc) ) |>
+    relocate( sites_id_short, .after="sites_id")
+
+  volcano_plot_tab <- volcano_plot_colour_points |>
+    dplyr::rename( PROTEIN_NAMES = "PROTEIN-NAMES") |>
+    dplyr::select( sites_id, sites_id_short, best_uniprot_acc, lqm, !!sym(args$fdr_column), p.mod, !!sym(args$log2fc_column), comparison, label, colour,  gene_name, sequence, `PROTEIN_NAMES`)   |>
+    dplyr::mutate( my_alpha = case_when ( gene_name !=  "" ~ 1
+                                          , TRUE ~ 0.5))
+
+  r_obj <- readRDS( file.path( args$input_dir, "fit.eb.RDS") )
+
+  # ncol(r_obj$coefficients)
+  # colnames(r_obj$coefficients)
+
+  output_dir <- file.path( args$output_dir
+                           ,  "Interactive_Volcano_Plots")
+
+  createDirIfNotExists(output_dir)
+
+  # print(paste("nrow = ", nrow(r_obj@.Data[[1]])))
+  # print(head(best_uniprot_acc))
+
+
+
+  purrr::walk( seq_len( ncol(r_obj$coefficients))
+               , \(coef) { # print(coef)
+                 ProteomeRiver::getGlimmaVolcanoPhosphoproteomics( r_obj
+                                                                   , coef = coef
+                                                                   , volcano_plot_tab  = volcano_plot_tab
+                                                                   , sites_id_column = sites_id
+                                                                   , sites_id_display_column = sites_id_short
+                                                                   , display_columns = c(  "sequence", "PROTEIN_NAMES" )
+                                                                   , output_dir = output_dir ) } )
+
+}
+
+
+
+
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 te<-toc(quiet = TRUE)
