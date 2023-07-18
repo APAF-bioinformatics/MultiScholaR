@@ -387,9 +387,8 @@ list_of_long_columns <- intersect( colnames(basic_data),
                                      "reactome_term",
                                      "majority_protein_ids") )
 
-
 writexl::write_xlsx( annotated_phos_tbl_with_repeats %>%
-                      mutate_at( list_of_long_columns, ~substr(., 1, 32760) ),
+                      mutate( across( any_of(colnames(annotated_phos_tbl_with_repeats)), \(x){substr(x, 1, 32760)} ) ) ,
                     file.path (args$output_dir,
                                "norm_phosphosite_lfc_minus_protein_lfc_with_protein_repeats.xlsx")  )
 
@@ -483,7 +482,7 @@ list_of_long_columns <- intersect( colnames(annotated_phos_tbl),
 
 
 writexl::write_xlsx(annotated_phos_tbl %>%
-                      mutate_at( list_of_long_columns, ~substr(., 1, 32760) ),
+                      mutate( across( any_of(colnames(annotated_phos_tbl)), \(x){substr(x, 1, 32760)} ) ),
                     file.path (args$output_dir,
                                "norm_phosphosite_lfc_minus_protein_lfc_annotated.xlsx")  )
 
