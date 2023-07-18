@@ -127,6 +127,17 @@ parser <- add_option(parser, "--top_x_gene_name", type = "integer",
                      help = "Print the top X gene names f",
                      metavar = "string")
 
+
+parser <- add_option(parser, "--log2fc_column", type = "character",
+                     help = "The column which contains the log2FC value",
+                     metavar = "string")
+
+
+parser <- add_option(parser, "--fdr_column", type = "character",
+                     help = "The column which contains the FDR value",
+                     metavar = "string")
+
+
 ##-------------------------------------
 
 
@@ -180,6 +191,8 @@ testRequiredFiles(c(
 ))
 
 args <- setArgsDefault(args, "q_val_thresh", as_func=as.double, default_val=0.05 )
+args <- setArgsDefault(args, "log2fc_column", as_func=as.character, default_val="log2FC" )
+args <- setArgsDefault(args, "fdr_column", as_func=as.character, default_val="q.mod" )
 
 args<-parseType(args,
                 c("q_val_thresh"
@@ -381,32 +394,32 @@ plot(after_hclust)
 #
 # show_gene_name <- gene_names_data %>%
 #   group_by(comparison) %>%
-#   arrange(comparison, q.mod) %>%
+#   arrange(comparison, !!sym(args$fdr_column)) %>%
 #   mutate(row_id = row_number()) %>%
 #   ungroup()  %>%
-#   dplyr::filter( row_id <= args$top_x_gene_name & q.mod < args$q_val_thresh) %>%
+#   dplyr::filter( row_id <= args$top_x_gene_name & !!sym(args$fdr_column) < args$q_val_thresh) %>%
 #   dplyr::select( comparison, !!rlang::sym(args$row_id), gene_name)
 
 selected_data <- vroom::vroom( file.path(args$input_dir, "lfc_qval_long.tsv") )  %>%
-    mutate( lqm = -log10(q.mod))  %>%
-    dplyr::mutate(label = case_when(abs(log2FC) >= 1 & q.mod >= args$q_val_thresh ~ "Not sig., logFC >= 1",
-                                   abs(log2FC) >= 1 & q.mod < args$q_val_thresh ~ "Sig., logFC >= 1",
-                                   abs(log2FC) < 1 & q.mod < args$q_val_thresh ~ "Sig., logFC < 1",
+    mutate( lqm = -log10(!!sym(args$fdr_column)))  %>%
+    dplyr::mutate(label = case_when(abs(!!sym(args$log2fc_column)) >= 1 & !!sym(args$fdr_column) >= args$q_val_thresh ~ "Not sig., logFC >= 1",
+                                   abs(!!sym(args$log2fc_column)) >= 1 & !!sym(args$fdr_column) < args$q_val_thresh ~ "Sig., logFC >= 1",
+                                   abs(!!sym(args$log2fc_column)) < 1 & !!sym(args$fdr_column) < args$q_val_thresh ~ "Sig., logFC < 1",
                                    TRUE ~ "Not sig.")) %>%
-    dplyr::mutate(colour = case_when(abs(log2FC) >= 1 & q.mod >= args$q_val_thresh ~ "orange",
-                                     abs(log2FC) >= 1 & q.mod < args$q_val_thresh ~ "purple",
-                                     abs(log2FC) < 1 & q.mod < args$q_val_thresh ~ "blue",
+    dplyr::mutate(colour = case_when(abs(!!sym(args$log2fc_column)) >= 1 & !!sym(args$fdr_column) >= args$q_val_thresh ~ "orange",
+                                     abs(!!sym(args$log2fc_column)) >= 1 & !!sym(args$fdr_column) < args$q_val_thresh ~ "purple",
+                                     abs(!!sym(args$log2fc_column)) < 1 & !!sym(args$fdr_column) < args$q_val_thresh ~ "blue",
                                      TRUE ~ "black")) %>%
     dplyr::mutate(colour = factor(colour, levels = c("black", "orange", "blue", "purple"))) # %>%
   # left_join( show_gene_name, by = c("comparison" = "comparison",
   #                                   "uniprot_acc" = "uniprot_acc")) %>%
-  # dplyr::mutate( gene_name = case_when( q.mod < args$q_val_thresh ~ gene_name,
+  # dplyr::mutate( gene_name = case_when( !!sym(args$fdr_column) < args$q_val_thresh ~ gene_name,
   #                                            TRUE ~ NA_character_) )
 
 #
 # plotOneVolcanoWithGeneName <- function( input_data, input_title) {
 #   volcano_plot <-  input_data %>%
-#     ggplot(aes(y = lqm, x = log2FC, label=gene_name)) +
+#     ggplot(aes(y = lqm, x = !!sym(args$log2fc_column), label=gene_name)) +
 #     geom_point(aes(col = colour)) +
 #     scale_colour_manual(values = c(levels(selected_data$colour)),
 #                         labels = c(paste0("Not sig., logFC > ",
@@ -445,8 +458,8 @@ list_of_volcano_plots <- selected_data %>%
   nest() %>%
   ungroup() %>%
   mutate( title = paste( analysis_type, comparison)) %>%
-  #mutate( data = purrr::map (data, ~{ (.) %>% mutate( log2FC_edited = 2^log2FC)})) %>%
-  mutate( plot = purrr:::map2( data, title, ~plotOneVolcano(.x, .y,   log_fc_column = log2FC)) )
+  #mutate( data = purrr::map (data, ~{ (.) %>% mutate( !!sym(args$log2fc_column)_edited = 2^!!sym(args$log2fc_column))})) %>%
+  mutate( plot = purrr:::map2( data, title, \(x,y) { plotOneVolcano(x, y,   log_fc_column = !!sym(args$log2fc_column))}) )
 
 list_of_volcano_plots %>% pull(plot)
 
@@ -489,9 +502,9 @@ ggsave(
 
 
 num_sig_de_molecules <- selected_data %>%
-  dplyr::mutate(status = case_when( q.mod >= 0.05 ~ "Not significant",
-                                    log2FC >= 0 & q.mod < 0.05 ~ "Significant and Up",
-                                    log2FC < 0 & q.mod < 0.05 ~ "Significant and Down",
+  dplyr::mutate(status = case_when( !!sym(args$fdr_column) >= 0.05 ~ "Not significant",
+                                    !!sym(args$log2fc_column) >= 0 & !!sym(args$fdr_column) < 0.05 ~ "Significant and Up",
+                                    !!sym(args$log2fc_column) < 0 & !!sym(args$fdr_column) < 0.05 ~ "Significant and Down",
                                    TRUE ~ "Not significant")) %>%
 group_by( comparison, expression, analysis_type, status) %>%
   summarise(counts = n()) %>%
@@ -708,19 +721,19 @@ if(file.exists(file.path( args$input_dir, "fit.eb.RDS"))
   print("hello")
 
   volcano_plot_tab <- vroom::vroom( args$de_proteins_long_file  )  %>%
-    mutate( lqm = -log10(q.mod))  |>
-    dplyr::mutate(label = case_when(abs(log2FC) >= 1 & q.mod >= args$q_val_thresh ~ "Not sig., logFC >= 1",
-                                    abs(log2FC) >= 1 & q.mod < args$q_val_thresh ~ "Sig., logFC >= 1",
-                                    abs(log2FC) < 1 & q.mod < args$q_val_thresh ~ "Sig., logFC < 1",
+    mutate( lqm = -log10(!!sym(args$fdr_column)))  |>
+    dplyr::mutate(label = case_when(abs(!!sym(args$log2fc_column)) >= 1 & !!sym(args$fdr_column) >= args$q_val_thresh ~ "Not sig., logFC >= 1",
+                                    abs(!!sym(args$log2fc_column)) >= 1 & !!sym(args$fdr_column) < args$q_val_thresh ~ "Sig., logFC >= 1",
+                                    abs(!!sym(args$log2fc_column)) < 1 & !!sym(args$fdr_column) < args$q_val_thresh ~ "Sig., logFC < 1",
                                     TRUE ~ "Not sig.")) |>
-    dplyr::mutate(colour = case_when(abs(log2FC) >= 1 & q.mod >= args$q_val_thresh ~ "orange",
-                                     abs(log2FC) >= 1 & q.mod < args$q_val_thresh ~ "purple",
-                                     abs(log2FC) < 1 & q.mod < args$q_val_thresh ~ "blue",
+    dplyr::mutate(colour = case_when(abs(!!sym(args$log2fc_column)) >= 1 & !!sym(args$fdr_column) >= args$q_val_thresh ~ "orange",
+                                     abs(!!sym(args$log2fc_column)) >= 1 & !!sym(args$fdr_column) < args$q_val_thresh ~ "purple",
+                                     abs(!!sym(args$log2fc_column)) < 1 & !!sym(args$fdr_column) < args$q_val_thresh ~ "blue",
                                      TRUE ~ "black")) |>
     dplyr::mutate(gene_name = str_split(UNIPROT_GENENAME, " |:" ) |> purrr::map_chr(1)  ) |>
     dplyr::mutate(best_uniprot_acc = str_split(uniprot_acc, ":" ) |> purrr::map_chr(1)  ) |>
     dplyr::mutate(analysis_type = comparison) |>
-    dplyr::select( best_uniprot_acc, lqm, q.mod, p.mod, log2FC, comparison, label, colour,  gene_name, `PROTEIN-NAMES`)   |>
+    dplyr::select( best_uniprot_acc, lqm, !!sym(args$fdr_column), p.mod, !!sym(args$log2fc_column), comparison, label, colour,  gene_name, `PROTEIN-NAMES`)   |>
     dplyr::mutate( my_alpha = case_when ( gene_name !=  "" ~ 1
                                           , TRUE ~ 0.5))
 
