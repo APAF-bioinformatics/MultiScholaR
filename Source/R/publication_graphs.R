@@ -403,7 +403,7 @@ plot(after_hclust)
 #   dplyr::filter( row_id <= args$top_x_gene_name & !!sym(args$fdr_column) < args$q_val_thresh) %>%
 #   dplyr::select( comparison, !!rlang::sym(args$row_id), gene_name)
 
-selected_data <- vroom::vroom( file.path(args$input_dir, "lfc_qval_long.tsv") )  %>%
+selected_data <- vroom::vroom( file.path(args$de_proteins_long_file ) )  %>% # args$input_dir, "lfc_qval_long.tsv"
     mutate( lqm = -log10(!!sym(args$fdr_column)))  %>%
     dplyr::mutate(label = case_when(abs(!!sym(args$log2fc_column)) >= 1 & !!sym(args$fdr_column) >= args$q_val_thresh ~ "Not sig., logFC >= 1",
                                    abs(!!sym(args$log2fc_column)) >= 1 & !!sym(args$fdr_column) < args$q_val_thresh ~ "Sig., logFC >= 1",
@@ -457,10 +457,10 @@ createDirectoryIfNotExists(file.path( args$output_dir, "Volcano_Plots"))
 
 
 list_of_volcano_plots <- selected_data %>%
-  group_by( analysis_type, comparison) %>%
+  group_by( comparison) %>%
   nest() %>%
   ungroup() %>%
-  mutate( title = paste( analysis_type, comparison)) %>%
+  mutate( title = paste( comparison)) %>%
   #mutate( data = purrr::map (data, ~{ (.) %>% mutate( !!sym(args$log2fc_column)_edited = 2^!!sym(args$log2fc_column))})) %>%
   mutate( plot = purrr:::map2( data, title, \(x,y) { plotOneVolcano(x, y,   log_fc_column = !!sym(args$log2fc_column))}) )
 
@@ -509,11 +509,11 @@ num_sig_de_molecules <- selected_data %>%
                                     !!sym(args$log2fc_column) >= 0 & !!sym(args$fdr_column) < 0.05 ~ "Significant and Up",
                                     !!sym(args$log2fc_column) < 0 & !!sym(args$fdr_column) < 0.05 ~ "Significant and Down",
                                    TRUE ~ "Not significant")) %>%
-group_by( comparison, expression, analysis_type, status) %>%
+group_by( comparison,  status) %>% # expression, analysis_type,
   summarise(counts = n()) %>%
   ungroup()
 
-formula_string <- "analysis_type ~ comparison"
+formula_string <- ". ~ comparison"
 num_sig_de_genes_barplot <- num_sig_de_molecules %>%
   dplyr::filter(status != "Not significant") %>%
   ggplot(aes(x = status, y = counts)) +
@@ -828,7 +828,7 @@ if(   args$data_type  == "phosphoproteomics"
 
   volcano_plot_tab <- volcano_plot_colour_points |>
     dplyr::rename( PROTEIN_NAMES = "PROTEIN-NAMES") |>
-    dplyr::select( sites_id, sites_id_short, best_uniprot_acc, lqm, !!sym(args$fdr_column), p.mod, !!sym(args$log2fc_column), comparison, label, colour,  gene_name, sequence, `PROTEIN_NAMES`)   |>
+    dplyr::select( sites_id, sites_id_short, best_uniprot_acc, lqm, !!sym(args$fdr_column), !!sym(args$log2fc_column), comparison, label, colour,  gene_name, sequence, `PROTEIN_NAMES`)   |>
     dplyr::mutate( my_alpha = case_when ( gene_name !=  "" ~ 1
                                           , TRUE ~ 0.5))
 
