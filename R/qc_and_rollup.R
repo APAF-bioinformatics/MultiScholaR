@@ -1,4 +1,4 @@
-
+#' @export
 # Remove peptide based on proportion of samples below intensity threshold
 peptideIntensityFiltering <- function(input_table
                                       , min_peptide_intensity_threshold = 15
