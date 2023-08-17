@@ -816,7 +816,7 @@ if(   args$data_type  == "phosphoproteomics"
                                      abs(!!sym(args$log2fc_column)) >= 1 & !!sym(args$fdr_column) < args$q_val_thresh ~ "purple",
                                      abs(!!sym(args$log2fc_column)) < 1 & !!sym(args$fdr_column) < args$q_val_thresh ~ "blue",
                                      TRUE ~ "black")) |>
-    dplyr::mutate(analysis_type = comparison)   |>
+    dplyr::mutate(analysis_type = comparison)  |>
     dplyr::mutate(gene_name = str_split(UNIPROT_GENENAME, " |:" ) |> purrr::map_chr(1)  ) |>
     dplyr::mutate(best_uniprot_acc = str_split(!!sym(args$row_id), ":" ) |> purrr::map_chr(1)  ) |>
     mutate( first_position = purrr::map_chr(position, clean_first_positiion)) |>
