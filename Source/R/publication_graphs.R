@@ -735,7 +735,7 @@ if(   args$data_type  == "proteomics"
                                      abs(!!sym(args$log2fc_column)) < 1 & !!sym(args$fdr_column) < args$q_val_thresh ~ "blue",
                                      TRUE ~ "black")) |>
     dplyr::mutate(gene_name = str_split(UNIPROT_GENENAME, " |:" ) |> purrr::map_chr(1)  ) |>
-    dplyr::mutate(best_uniprot_acc = str_split({{row_id}}, ":" ) |> purrr::map_chr(1)  ) |>
+    dplyr::mutate(best_uniprot_acc = str_split(!!sym(args$row_id), ":" ) |> purrr::map_chr(1)  ) |>
     dplyr::mutate(analysis_type = comparison)  |>
     dplyr::rename( PROTEIN_NAMES = "PROTEIN-NAMES") |>
     dplyr::select( best_uniprot_acc, lqm, !!sym(args$fdr_column), p.mod, !!sym(args$log2fc_column), comparison, label, colour,  gene_name, `PROTEIN_NAMES`)   |>
@@ -818,7 +818,7 @@ if(   args$data_type  == "phosphoproteomics"
                                      TRUE ~ "black")) |>
     dplyr::mutate(analysis_type = comparison)   |>
     dplyr::mutate(gene_name = str_split(UNIPROT_GENENAME, " |:" ) |> purrr::map_chr(1)  ) |>
-    dplyr::mutate(best_uniprot_acc = str_split({{row_id}}, ":" ) |> purrr::map_chr(1)  ) |>
+    dplyr::mutate(best_uniprot_acc = str_split(!!sym(args$row_id), ":" ) |> purrr::map_chr(1)  ) |>
     mutate( first_position = purrr::map_chr(position, clean_first_positiion)) |>
     mutate( merged_sites_residues = purrr::map2_chr( residue
                                                      ,  first_position
