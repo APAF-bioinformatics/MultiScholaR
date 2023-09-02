@@ -909,23 +909,41 @@ saveListOfFunctionalEnrichmentHeatmaps <- function(list_of_heatmaps,
                                                    plot_width = 10,
                                                    plot_height = 10 ) {
 
-  purrr::walk2(names( list_of_heatmaps),
-               list_of_heatmaps,
-               function(output_name, plot){
+  if ( length(list_of_heatmaps) == length( plot_width)
+       & length(list_of_heatmaps) == length( plot_height) ) {
+
+  } else if( length( plot_width) == 1
+             & length( plot_height) == 1) {
+    plot_width <- rep(plot_width,  length(list_of_heatmaps))
+    plot_height <- rep(plot_height,  length(list_of_heatmaps))
+
+  } else {
+    stop("Length of plot_width and plot_height should be one or same as the lenght of list of heatmaps.")
+  }
+
+  purrr::pwalk( list( output_name = names( list_of_heatmaps),
+                      plot = list_of_heatmaps ,
+                      plot_width = plot_width,
+                      plot_height = plot_height),
+               function(output_name, plot, plot_width, plot_height){
                  ggsave( filename=file.path( results_dir,
                                              paste0(file_name, "_", output_name   ,".pdf")),
                          plot=plot,
                          width = plot_width,
-                         height=plot_height)   }  )
+                         height=plot_height,
+                         limitsize = FALSE)   }  )
 
-  purrr::walk2(names( list_of_heatmaps),
-               list_of_heatmaps,
-               function(output_name, plot){
-                 ggsave( filename=file.path( results_dir,
-                                             paste0(file_name, "_", output_name, ".png")),
-                         plot=plot,
-                         width = plot_width,
-                         height=plot_height)   }  )
+  purrr::pwalk( list( output_name = names( list_of_heatmaps),
+                      plot = list_of_heatmaps ,
+                      plot_width = plot_width,
+                      plot_height = plot_height),
+                function(output_name, plot, plot_width, plot_height){
+                  ggsave( filename=file.path( results_dir,
+                                              paste0(file_name, "_", output_name   ,".png")),
+                          plot=plot,
+                          width = plot_width,
+                          height=plot_height,
+                          limitsize = FALSE)   }  )
 
 
 }

@@ -110,27 +110,30 @@ plotNumOfValuesNoLog <- function(input_table) {
 #'@param group_column The name of the column in design_matrix table that has the experimental group.
 #'@param max_num_samples_miss_per_group An integer representing the maximum number of samples with missing values per group.
 #'@param abundance_threshold Abundance threshold in which the protein in the sample must be above for it to be considered for inclusion into data analysis.
+#'@param temporary_abundance_column The name of a temporary column to keep the abundance value you want to filter upon
 #'@return A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values.
 #'@export
-removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample_id, row_id, group_column, max_num_samples_miss_per_group, abundance_threshold) {
+removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample_id, row_id, group_column, max_num_samples_miss_per_group, abundance_threshold
+                                        , temporary_abundance_column = "Abundance") {
 
   abundance_long <- input_table |>
     pivot_longer(cols = { { cols } },
-                 names_to = as_name(enquo(sample_id)),
-                 values_to = "Abundance") |>
-    left_join(design_matrix, by = as_name(enquo(sample_id)))
+                 names_to =  as_name(enquo(sample_id)) ,
+                 values_to = temporary_abundance_column  ) |>
+    mutate( {{sample_id}} := purrr::map_chr(   {{sample_id}}  , as.character)   ) |>
+    left_join(design_matrix |>
+                mutate(  {{sample_id}} := purrr::map_chr(    {{sample_id}} , as.character)   )
+              , by = as_name(enquo(sample_id)))
 
-
-  count_values_per_group <- abundance_long |>
-    mutate(has_value = ifelse(!is.na(Abundance) & Abundance > abundance_threshold, 0, 1)) |>
-    group_by({ { row_id } }, { { group_column } }) |>
-    summarise(num_values = sum(has_value)) |>
+  count_missing_values_per_group <- abundance_long |>
+    mutate(is_missing = ifelse(!is.na( !!sym(temporary_abundance_column)) & !!sym(temporary_abundance_column) > abundance_threshold, 0, 1)) |>
+    group_by( {{ row_id }}, {{ group_column }} ) |>
+    summarise(num_missing_values = sum(is_missing)) |>
     ungroup()
 
-
-  remove_rows_temp <- count_values_per_group |>
-    dplyr::filter(max_num_samples_miss_per_group < num_values) |>
-    dplyr::select(-num_values, -{ { group_column } }) |>
+  remove_rows_temp <- count_missing_values_per_group |>
+    dplyr::filter(max_num_samples_miss_per_group < num_missing_values) |>
+    dplyr::select(-num_missing_values, -{ { group_column } }) |>
     distinct({ { row_id } })
 
   filtered_tbl <- input_table |>
@@ -139,6 +142,62 @@ removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample
   return(filtered_tbl)
 
 }
+
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' For each experimental group, identify proteins that have more than accepted percentage of missing values per group.
+#'@param input_table An input table with a column containing the row ID and the rest of the columns representing abundance values for each sample.
+#'@param cols A tidyselect command to select the columns. This includes the functions starts_with(), ends_with(), contains(), matches(), and num_range()
+#'@param design_matrix A data frame with a column containing the sample ID (as per the sample_id param) and the experimental group (as per the group param). Each row as the sample ID as row name in the data frame.
+#'@param sample_id The name of the column in design_matrix table that has the sample ID.
+#'@param row_id A unique ID for each row of the 'input_table' variable.
+#'@param group_column The name of the column in design_matrix table that has the experimental group.
+#'@param max_percent_miss_per_group An integer representing the maximum percentage of samples with missing values per group.
+#'@param abundance_threshold Abundance threshold in which the protein in the sample must be above for it to be considered for inclusion into data analysis.
+#'@param temporary_abundance_column The name of a temporary column to keep the abundance value you want to filter upon
+#'@return A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values.
+#'@export
+removeRowsWithMissingValuesPercent <- function(input_table, cols, design_matrix, sample_id, row_id, group_column, max_percent_miss_per_group, abundance_threshold
+                                        , temporary_abundance_column = "Abundance") {
+
+  abundance_long <- input_table |>
+    pivot_longer(cols = { { cols } },
+                 names_to =  as_name(enquo(sample_id)) ,
+                 values_to = temporary_abundance_column  ) |>
+    mutate( {{sample_id}} := purrr::map_chr(   {{sample_id}}  , as.character)   ) |>
+    left_join(design_matrix |>
+                mutate(  {{sample_id}} := purrr::map_chr(    {{sample_id}} , as.character)   )
+              , by = as_name(enquo(sample_id)))
+
+  count_values_per_group <- abundance_long |>
+    group_by( {{ row_id }}, {{ group_column }} ) |>
+    summarise(  num_per_group = n()) |>
+    ungroup()
+
+  count_values_missing_per_group <- abundance_long |>
+    mutate(is_missing = ifelse(!is.na( !!sym(temporary_abundance_column)) & !!sym(temporary_abundance_column) > abundance_threshold, 0, 1)) |>
+    group_by( {{ row_id }}, {{ group_column }} ) |>
+    summarise( num_missing_per_group = sum(is_missing)) |>
+    ungroup()
+
+  count_percent_missing_per_group <- count_values_missing_per_group |>
+    full_join( count_values_per_group,
+               by = join_by( {{ row_id }}, {{ group_column }} )) |>
+    mutate(  per_missing_per_group = num_missing_per_group / num_per_group * 100 )
+
+
+  remove_rows_temp <- count_percent_missing_per_group |>
+    dplyr::filter(max_percent_miss_per_group <=  per_missing_per_group) |>
+    dplyr::select(-per_missing_per_group , -num_missing_per_group, -num_per_group, -{ { group_column } }) |>
+    distinct({ { row_id } })
+
+  filtered_tbl <- input_table |>
+    dplyr::anti_join(remove_rows_temp, by = as_name(enquo(row_id)))
+
+  return(filtered_tbl)
+
+}
+
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' For each experimental group, identify proteins that does have enough number of samples with abundance values.
@@ -265,7 +324,10 @@ plotPca <- function(data,
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 #'@export
+#'@param Y  Rows = Samples, Columns = Proteins or Peptides
 plotRle <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75,
                                                  0.95), ylim = c(-0.5, 0.5))
 {
@@ -667,8 +729,8 @@ getGlimmaVolcanoProteomics <- function( r_obj
       left_join( volcano_plot_tab_cln
                  , by = c("best_uniprot_acc") )  |>
       mutate( gene_name = case_when( is.na( gene_name) ~ best_uniprot_acc,
-                                     TRUE ~ gene_name) ) 
-    
+                                     TRUE ~ gene_name) )
+
     gene_names <- anno_tbl |>
       pull(gene_name)
 
@@ -703,32 +765,32 @@ getGlimmaVolcanoPhosphoproteomics <- function( r_obj
                                         , sites_id_display_column = sites_id_short
                                         , display_columns = c(  "sequence", "PROTEIN_NAMES"   )
                                         , output_dir) {
-  
+
   if( coef <= ncol(r_obj$coefficients )) {
-    
+
     volcano_plot_tab_cln <- volcano_plot_tab |>
       dplyr::distinct( {{sites_id_column}}
                        , {{sites_id_display_column}}
                        , pick(one_of( display_columns)) )
-    
+
     anno_tbl <-  data.frame(  sites_id = rownames(r_obj@.Data[[1]])) |>
       left_join( volcano_plot_tab_cln
                  , by = join_by(sites_id == {{sites_id_column}} ) )
-                 
+
     sites_id_short_list <- anno_tbl |>
                    pull(sites_id_short)
 
     rownames( r_obj@.Data[[1]] ) <- sites_id_short_list
 
     #coef <- seq_len( ncol(r_obj$coefficients))[1]
-    
+
     htmlwidgets::saveWidget( widget = glimmaVolcano(r_obj, coef=coef, anno=anno_tbl, display.columns=display_columns) #the plotly object
                              , file = file.path( output_dir
                                                  , paste0(colnames(r_obj$coefficients)[coef], ".html"))  #the path & file name
                              , selfcontained = TRUE #creates a single html file
     )
   }
-  
+
 }
 
 
