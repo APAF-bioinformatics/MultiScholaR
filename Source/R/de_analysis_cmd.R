@@ -65,7 +65,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.  [default %default]")
 
-parser <- add_option(parser, c("-c", "--config"), type = "character", default = "/mnt/work/ipang/PostDoc/2023/e0032-p03-nbcf-manitoba-p7-breast/Source/config_prot.ini",
+parser <- add_option(parser, c("-c", "--config"), type = "character", default = "/mnt/work/ipang/PostDoc/2023/e0032-p04-manitoba-breast-p02-p03/Source/P02/p02_config_prot.ini",
                      help = "Configuration file.  [default %default]",
                      metavar = "string")
 
@@ -593,7 +593,9 @@ writexl::write_xlsx( as.data.frame(counts_na.log.quant) |>
 loginfo("Calculate average value from technical replicates if this is applicable")
 
 counts_rnorm.log.for.imputation <- counts_na.log.quant
-design_mat_updated <- design_mat_cln
+design_mat_updated <- design_mat_cln |>
+  dplyr::filter( !is.na( !!rlang::sym( args$group_id )) )
+
 if (!is.na( args$average_replicates_id)) {
 
   counts_rnorm.log.for.imputation <-  averageValuesFromReplicates(counts_na.log.quant,
@@ -636,6 +638,7 @@ if (!is.na( args$average_replicates_id)) {
   design_mat_updated <- design_mat_cln |>
     mutate( !!rlang::sym(args$sample_id) :=  !!rlang::sym(args$average_replicates_id) ) |>
     dplyr::select( one_of( args$sample_id, args$group_id)) |>
+    dplyr::filter( !is.na( !!rlang::sym( args$group_id )) ) |>
     distinct()
 
   rownames( design_mat_updated) <- design_mat_updated[,args$sample_id]
@@ -733,10 +736,23 @@ if (args$imputation == TRUE) {
 }
 
 
+
+## Remove samples in which the design matrix has NA values
+list_of_sample_ids_to_use <- design_mat_updated |>
+  dplyr::filter( !is.na( !!rlang::sym(args$group_id) ) ) |>
+  pull( !!rlang::sym(args$sample_id) ) 
+
+counts_rnorm.log.for.contrast.na.rm <- counts_rnorm.log.for.contrast[,list_of_sample_ids_to_use]
+
+if( length( which ( list_of_sample_ids_to_use  != colnames( counts_rnorm.log.for.contrast.na.rm )) ) > 0  ) {
+  stop( "Number of samples in design matrix does not match number of samples in data matrix")
+}
+
+
 if(args$imputation == TRUE &
    args$remove_imputed == TRUE ) {
 
-  imputed_values_remove_imputed <- counts_rnorm.log.for.contrast |>
+  imputed_values_remove_imputed <- counts_rnorm.log.for.contrast.na.rm |>
     as.data.frame( ) |>
     rownames_to_column (args$row_id)  |>
     pivot_longer( cols = matches( args$group_pattern)
@@ -766,7 +782,7 @@ writexl::write_xlsx( as.data.frame(imputed_values_remove_imputed) ,
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Run statistical tests without RUV.")
 
-ID <- rownames(counts_rnorm.log.for.contrast)
+ID <- rownames(counts_rnorm.log.for.contrast.na.rm)
 
 type_of_grouping <- getTypeOfGrouping(design_matrix = design_mat_cln
                                       , group_id = args$group_id
@@ -775,8 +791,7 @@ type_of_grouping <- getTypeOfGrouping(design_matrix = design_mat_cln
 list_rnorm.log.quant.ruv.r0 <- NA
 myRes_rnorm.log.quant <- NA
 
-
-list_rnorm.log.quant.ruv.r0 <- runTestsContrasts(counts_rnorm.log.for.contrast,
+list_rnorm.log.quant.ruv.r0 <- runTestsContrasts(counts_rnorm.log.for.contrast.na.rm,
                                                  contrast_strings = contrasts_tbl[, 1][[1]],
                                                  design_matrix = design_mat_updated,
                                                  formula_string = args$formula_string,
@@ -807,7 +822,7 @@ myRes_rnorm.log.quant <- list_rnorm.log.quant.ruv.r0$results
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Find the list of negative control genes using ANOVA.")
-control_genes_index <- getNegCtrlProtAnova(counts_rnorm.log.for.contrast,
+control_genes_index <- getNegCtrlProtAnova(counts_rnorm.log.for.contrast.na.rm,
                                            design_matrix = design_mat_updated,
                                            group_column = args$group_id,
                                            num_neg_ctrl = args$num_neg_ctrl,
@@ -831,14 +846,15 @@ loginfo("Num. Control Genes %d", length(which(control_genes_index)))
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Draw canonical correlation plot.")
-ruv_groups <- data.frame(temp_column = colnames(counts_rnorm.log.for.contrast)) |>
+ruv_groups <- data.frame(temp_column = colnames(counts_rnorm.log.for.contrast.na.rm)) |>
   dplyr::rename(!!rlang::sym(args$sample_id) := "temp_column") |>
   left_join(design_mat_updated |>
               dplyr::mutate(!!rlang::sym(args$sample_id) := as.character(!!rlang::sym(args$sample_id))),
             by = args$sample_id)
 
-cancorplot_r1 <- ruv_cancorplot(t(counts_rnorm.log.for.contrast),
+cancorplot_r1 <- ruv_cancorplot(t(counts_rnorm.log.for.contrast.na.rm),
                                 X = ruv_groups |>
+                                  dplyr::filter( !is.na( !!rlang::sym(args$group_id) ) ) |> 
                                   pull(!!rlang::sym(args$group_id)),
                                 ctl = control_genes_index)
 
@@ -863,7 +879,7 @@ ruvIII_replicates_matrix <- getRuvIIIReplicateMatrix(design_mat_updated,
 logdebug(ruvIII_replicates_matrix)
 
 
-counts_rnorm.log.ruvIII_v1 <- cmriRUVfit(counts_rnorm.log.for.contrast, X = ruv_groups$group, control_genes_index, Z = 1, k = args$ruv_k,
+counts_rnorm.log.ruvIII_v1 <- cmriRUVfit(counts_rnorm.log.for.contrast.na.rm, X = ruv_groups$group, control_genes_index, Z = 1, k = args$ruv_k,
                                          method = args$ruv_method, M = ruvIII_replicates_matrix) |> t()
 
 
@@ -955,7 +971,7 @@ rle_pca_plots_arranged <- NA
 if(args$imputation == TRUE &
    args$remove_imputed == TRUE ) {
 
-  rle_pca_plots_arranged <- rlePcaPlotList(list_of_data_matrix = list(counts_rnorm.log.for.contrast, imputed_ruv_remove_imputed |>
+  rle_pca_plots_arranged <- rlePcaPlotList(list_of_data_matrix = list(counts_rnorm.log.for.contrast.na.rm, imputed_ruv_remove_imputed |>
                                                                         column_to_rownames(args$row_id) |>
                                                                         as.matrix()),
                                            list_of_design_matrix = list( design_mat_updated, design_mat_updated) ,
@@ -964,7 +980,7 @@ if(args$imputation == TRUE &
                                            list_of_descriptions = list("Before RUVIII", "After RUVIII"))
 
 } else {
-  rle_pca_plots_arranged <- rlePcaPlotList(list_of_data_matrix = list(counts_rnorm.log.for.contrast, counts_rnorm.log.ruvIII_v1),
+  rle_pca_plots_arranged <- rlePcaPlotList(list_of_data_matrix = list(counts_rnorm.log.for.contrast.na.rm, counts_rnorm.log.ruvIII_v1),
                                            list_of_design_matrix = list( design_mat_updated, design_mat_updated) ,
                                            sample_id_column = !!rlang::sym(args$sample_id),
                                            group_column = !!rlang::sym(args$group_id),

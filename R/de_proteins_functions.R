@@ -1076,6 +1076,10 @@ runTestsContrasts <- function(data,
   ff <- as.formula(formula_string)
   mod_frame <- model.frame(ff, design_matrix)
   design_m <- model.matrix(ff, mod_frame)
+  
+  print(design_m)
+  
+  data_subset <- data[, rownames( design_m)]
 
   ## Make contrasts
   contr.matrix <- makeContrasts(contrasts = contrast_strings,
@@ -1091,7 +1095,7 @@ runTestsContrasts <- function(data,
 
   }
 
-  fit <- lmFit(data, design = design_m)
+  fit <- lmFit(data_subset, design = design_m)
 
   cfit <- contrasts.fit(fit, contrasts = contr.matrix)
 
