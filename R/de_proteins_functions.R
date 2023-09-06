@@ -1077,8 +1077,6 @@ runTestsContrasts <- function(data,
   mod_frame <- model.frame(ff, design_matrix)
   design_m <- model.matrix(ff, mod_frame)
   
-  print(design_m)
-  
   data_subset <- data[, rownames( design_m)]
 
   ## Make contrasts
