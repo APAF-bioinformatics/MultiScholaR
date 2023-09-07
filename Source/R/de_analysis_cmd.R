@@ -65,7 +65,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.  [default %default]")
 
-parser <- add_option(parser, c("-c", "--config"), type = "character", default = "/mnt/work/ipang/PostDoc/2023/e0032-p04-manitoba-breast-p02-p03/Source/P02/p02_config_prot.ini",
+parser <- add_option(parser, c("-c", "--config"), type = "character", default = "/mnt/work/ipang/PostDoc/2023/e0032-p04-manitoba-breast-p02-p03/Source/P02/p02_config_prot_her2_snp6.ini",
                      help = "Configuration file.  [default %default]",
                      metavar = "string")
 

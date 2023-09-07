@@ -1618,7 +1618,8 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
     ungroup() |>
     pivot_wider(id_cols = c(!!sym(row_id), !!sym(group_id)),
                 names_from = replicate_number,
-                values_from = log2norm)
+                values_from = log2norm) |>
+    mutate( {{group_id}} := purrr::map_chr( {{group_id}}, as.character))
 
 
   raw_counts <- raw_counts_input_tbl |>
@@ -1634,7 +1635,8 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
     ungroup() |>
     pivot_wider(id_cols = c(!!sym(row_id), !!sym(group_id)),
                 names_from = replicate_number,
-                values_from = raw)
+                values_from = raw)  |> 
+    mutate( {{group_id}} := purrr::map_chr( {{group_id}}, as.character))
 
   print(head(raw_counts))
 
