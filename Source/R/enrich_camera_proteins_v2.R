@@ -64,7 +64,7 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
 
   parser <- OptionParser(add_help_option =TRUE)
 
-  parser <- add_option(parser, c("-c", "--config"), type = "character", default =  "config_metab.ini", # "/home/ignatius/PostDoc/2021/ALPK1_BMP_06/Source/P90/config_prot_NR.ini",
+  parser <- add_option(parser, c("-c", "--config"), type = "character", default =  "p02_config_prot.ini", 
                        help = "Configuration file.  [default %default]",
                        metavar = "string")
 
@@ -74,10 +74,6 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
 
   parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                        help = "Deactivate backup of previous run.  [default %default]")
-
-  parser <- add_option(parser, c("-t", "--tmp_dir"), type = "character", default = "cache", dest = "tmp_dir",
-                       help = "Directory path for temporary files.",
-                       metavar = "string")
 
   parser <- add_option(parser, c( "--group-pattern"), type="character", dest = "group_pattern",
                        help="Regular expression pattern to identify columns with abundance values belonging to the experiment. [default %default]",
@@ -258,8 +254,7 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
     args$counts_table_file,
     args$de_proteins_file,
     args$contrasts_file,
-    args$config,
-    args$tmp_dir
+    args$config
   ))
 
   args<-parseString(args,
@@ -268,7 +263,6 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
                         "sample_id",
                         "group_id",
                         "counts_protein_id",
-                        "tmp_dir",
                         "dictionary_file",
                         "annotation_file",
                         "protein_id",
@@ -293,7 +287,6 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
   #############################################
 
   createOutputDir(args$output_dir, args$no_backup)
-  createDirectoryIfNotExists(args$tmp_dir)
 
   ## Logger configuration
   logReset()
