@@ -91,7 +91,7 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
                        help="Input file with the list of diffierentiall expressed protein log fold-change and q-values for every contrasts.",
                        metavar="string")
 
-  parser <- add_option(parser, c("--contrasts"), type="character", dest = "contrasts_file",
+  parser <- add_option(parser, c("--contrasts_file"), type="character", dest = "contrasts_file",
                        help="Input file with a table listing all comparisons to be made in string, one comparison per line (e.g. groupB.vs.group_A = groupB - groupA).",
                        metavar="string")
 
