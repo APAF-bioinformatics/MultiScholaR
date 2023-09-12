@@ -87,7 +87,7 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
                        help="A string of the name of the protein ID column in the read counts file.",
                        metavar="string")
 
-  parser <- add_option(parser, c( "--de_proteins"), type="character", dest = "de_proteins_file",
+  parser <- add_option(parser, c( "--de_proteins_file"), type="character", dest = "de_proteins_file",
                        help="Input file with the list of diffierentiall expressed protein log fold-change and q-values for every contrasts.",
                        metavar="string")
 
