@@ -95,7 +95,7 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
                        help="Input file with a table listing all comparisons to be made in string, one comparison per line (e.g. groupB.vs.group_A = groupB - groupA).",
                        metavar="string")
 
-  parser <- add_option(parser, c("--formula"), type="character", dest = "formula_string",
+  parser <- add_option(parser, c("--formula_string"), type="character", dest = "formula_string",
                        help="A string representing the formula for input into the model.frame function. (e.g. ~ 0 + group).",
                        metavar="string")
 
@@ -349,7 +349,7 @@ if( args$contrasts_file != "") {
 loginfo("Read abundance tables after normalization with RUVIII.")
 captured_output <- capture.output(
 norm_abundance <- vroom::vroom( args$counts_table_file )  %>%
-  mutate( best_uniprot_acc = purrr::map_chr( !!rlang::sym(args$counts_protein_id), ~str_split(. , ":"   )[[1]][1] )),
+  mutate( best_uniprot_acc = purrr::map_chr( !!rlang::sym(args$counts_protein_id), \(x){ str_split(x , ":"   )[[1]][1] } )),
 type = "message"
 )
 logdebug(captured_output)
@@ -383,8 +383,12 @@ ff <- as.formula(  args$formula_string)
 mod_frame <- model.frame( ff, design_mat_cln)
 design_m <- model.matrix( ff, mod_frame)
 
-contr.matrix <- makeContrasts( contrasts = contrasts_tbl %>% pull(contrasts),
+contr.matrix <- makeContrasts( contrasts = contrasts_tbl %>% pull(`contrasts`),
                                  levels = colnames(design_m))
+
+## Filter the abundance matrix samples by the list of samples in the design matrix
+common_samples <- intersect( colnames( norm_abundance_mat ),  rownames( design_m))
+norm_abundance_mat_filt <- norm_abundance_mat [, common_samples]
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## List of all proteins
@@ -392,7 +396,7 @@ contr.matrix <- makeContrasts( contrasts = contrasts_tbl %>% pull(contrasts),
 loginfo("Get the list of all DE proteins.")
 captured_output <- capture.output(
 proteins_cln <- vroom::vroom(args$de_proteins_file) %>%
-  mutate( best_uniprot_acc = purrr::map_chr( uniprot_acc, ~str_split(. , ":"   )[[1]][1] )) %>%
+  mutate( best_uniprot_acc = purrr::map_chr( uniprot_acc,  \(x) { str_split(x , ":"   )[[1]][1]} )) %>%
   dplyr::select( -uniprot_acc ) %>%
   dplyr::rename( uniprot_acc = "best_uniprot_acc")
 ,type = "message"
@@ -445,7 +449,7 @@ if( !is.null( args$aspect_column )){
 }
 
 annotation_gene_set_list <- purrr::map( annotation_types_list,
-                                        ~{ buildOneProteinToAnnotationList(.,
+                                        \(x){ buildOneProteinToAnnotationList(x,
                                                                            !!rlang::sym(args$annotation_id),
                                                                            !!rlang::sym(args$protein_id))})
 
@@ -465,8 +469,8 @@ contrast_strings <- contrasts_tbl[, 1][[1]]
   contr.matrix <- makeContrasts(contrasts = contrast_strings,
                                 levels = colnames(design_m))
 
-lists_of_contrasts <-   map(colnames(contr.matrix), ~contr.matrix[,.] )
-names(lists_of_contrasts) <-  colnames(contr.matrix) %>% str_split( "=") %>% purrr::map_chr(1)
+lists_of_contrasts <-   purrr::map(colnames(contr.matrix), \(x) { contr.matrix[,x] } )
+names(lists_of_contrasts) <-  colnames(contr.matrix) |> str_split( "=") |> purrr::map_chr(1)
 
 # lists_of_contrasts <- list( RPE_Y.vs.RPE_X=c(0, 0, -1, 1 ) ,
 #                             RPE_B.vs.RPE_A=c(1, -1, 0, 0 ) ,
@@ -497,19 +501,19 @@ if( file.exists(camera_results_file) ) {
     combination_tab <- tidyr::expand_grid( index_name = names( annotation_gene_set_list ),
                                     contrast_name = names( lists_of_contrasts),
                                     min_set_size = min_gene_set_size_list,
-                                    max_set_size = max_gene_set_size_list ) %>%
-      mutate( contrast= purrr::map( contrast_name, ~lists_of_contrasts[[.]])  ) %>%
-      mutate( index= purrr::map(index_name,  ~annotation_gene_set_list[[.]]  ) )
+                                    max_set_size = max_gene_set_size_list ) |>
+      mutate( contrast= purrr::map( contrast_name, \(x){lists_of_contrasts[[x]] })  ) |>
+      mutate( index= purrr::map(index_name, \(x){annotation_gene_set_list[[x]]}  ) )
 
     # combination_tab[6,"contrast"][[1]][[1]]
     # combination_tab[6,"index"][[1]][[1]]
 
     # Pre-fill the data, other data to be filled with the pmap function
     my_partial_camera <- partial( cmriCamera,
-                                  abundance_mat = norm_abundance_mat ,
+                                  abundance_mat = norm_abundance_mat_filt ,
                                   design_mat = design_m)
 
-    # camera( norm_abundance_mat, index = annotation_gene_set_list[[1]],
+    # camera( norm_abundance_mat_filt, index = annotation_gene_set_list[[1]],
     #         design = design_m, contrast = lists_of_contrasts[[1]])
 
     plan(multisession, workers = args$num_cores)
@@ -537,22 +541,22 @@ if( file.exists(camera_results_file) ) {
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loginfo("Covert the camera results that are stored in list structures into a table.")
 
-camera_results_temp <- camera_results [purrr::map_lgl( camera_results, ~{!is.na(.[["camera"]][[1]][1])})]
+camera_results_temp <- camera_results [purrr::map_lgl( camera_results, \(x){!is.na(x[["camera"]][[1]][1])})]
 
 camera_results_cln <-  purrr::map( camera_results_temp,
-  ~ { rownames_to_column(.[["camera"]], args$annotation_id)   }  )
+   \(x){ rownames_to_column(x[["camera"]], args$annotation_id)   }  )
 
-camera_results_tbl <- tibble( temp = camera_results_cln)  %>%
+camera_results_tbl <- tibble( temp = camera_results_cln) |>
   bind_cols(  data.frame( comparison = purrr::map_chr( camera_results_temp,
-                                                       ~ {  .[["contrast_name"]]  } ) )  ) %>%
+                                                       \(x){  x[["contrast_name"]]  } ) )  )  |>
   bind_cols(  data.frame( gene_set = purrr::map_chr( camera_results_temp,
-                                                     ~ {  .[["index_name"]]  } ) )  ) %>%
+                                                     \(x){  x[["index_name"]]  } ) )  )  |>
   bind_cols(  data.frame( min_set_size = purrr::map_chr( camera_results_temp,
-                                                         ~ {  as.character(.[["min_set_size"]])  } ) )  ) %>%
+                                                         \(x){  as.character(x[["min_set_size"]])  } ) )  )  |>
   bind_cols(  data.frame( max_set_size = purrr::map_chr( camera_results_temp,
-                                                         ~ {  as.character(.[["max_set_size"]])  } ) )  ) %>%
+                                                         \(x){  as.character(x[["max_set_size"]])  } ) )  )  |>
   unnest(temp) %>%
-  mutate( term = purrr::map_chr( !!rlang::sym(args$annotation_id),  ~id_to_annotation_dictionary[[.]]))
+  mutate( term = purrr::map_chr( !!rlang::sym(args$annotation_id),  \(x){id_to_annotation_dictionary[[x]]}))
 
 if( !is.null( args$aspect_column)) {
   camera_results_tbl <- camera_results_tbl %>%
@@ -708,7 +712,7 @@ captured_output<-capture.output(
 loginfo("Save camera results table in Excel format %s", file.path( args$output_dir,  "filtered_camera_results.xlsx"))
 captured_output<-capture.output(
 writexl::write_xlsx( camera_results_filt %>%
-                       mutate_at( c("accession_list", "gene_symbol"), ~substr(., 1, 32760)) ,
+                       mutate_at( c("accession_list", "gene_symbol"), \(x){substr(x, 1, 32760)}) ,
                      file.path( args$output_dir,  "filtered_camera_results.xlsx")),
 type = "message" )
 
@@ -716,7 +720,7 @@ type = "message" )
 loginfo("Save camera results table in Excel format %s", file.path( args$output_dir,  "unfiltered_camera_results.xlsx"))
 captured_output<-capture.output(
   writexl::write_xlsx( camera_results_unfilt %>%
-                         mutate_at( c("accession_list", "gene_symbol"), ~substr(., 1, 32760) ),
+                         mutate_at( c("accession_list", "gene_symbol"), \(x){substr(x, 1, 32760)} ),
                        file.path( args$output_dir,  "unfiltered_camera_results.xlsx")),
   type = "message" )
 
