@@ -191,7 +191,7 @@ chooseBestPhosphositeAccession <- function(input_tbl, acc_detail_tab, accessions
 
 #'Choose the best accession
 #'@param input_tbl Contain the following columns, 'group_id' which is the Id for each protein group, 'accessions_column' which is the column with the accession of the protein
-#'@param acc_detail_tabl The out table from running the function 'parse_fasta_file'
+#'@param acc_detail_tabl The out table from running the function 'parseFastaFile'
 #'@param accessions_column The name of the column with the list of protein accessions, separated by ';' semi-colon. No need to quote the name as we are using tidyverse programming quosure.
 #'@param group_id The name of the column with the group ID for each protein group. No need to quote the name as we are using tidyverse programming quosure.
 #'@export
