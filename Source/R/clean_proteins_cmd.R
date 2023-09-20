@@ -319,7 +319,7 @@ evidence_tbl_filt <- evidence_tbl_cleaned |>
 
 num_proteins_remaining[3] <- nrow( evidence_tbl_filt)
 
-num_proteins_remaining_tbl <- data.frame( step=name( num_proteins_remaining), num_proteins_remaining=num_proteins_remaining)
+num_proteins_remaining_tbl <- data.frame( step=names( num_proteins_remaining), num_proteins_remaining=num_proteins_remaining)
 vroom::vroom_write( num_proteins_remaining, file.path(args$output_dir, "number_of_proteins_remaining_after_each_filtering_step.tab"))
 
 #TODO: This part need improvement. There is potential for bugs.
