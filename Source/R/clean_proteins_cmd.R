@@ -272,7 +272,7 @@ names( num_proteins_remaining) <- c( "Number of proteins in raw unfiltered file"
                 potential_contaminant,
                 matches(column_pattern))
 
- num_proteins_remaining[1] <- nrows(select_columns)
+ num_proteins_remaining[1] <- nrow(select_columns)
 
 remove_reverse_and_contaminant <- select_columns %>%
   dplyr::filter(is.na(reverse) &
@@ -280,7 +280,7 @@ remove_reverse_and_contaminant <- select_columns %>%
   dplyr::filter(!str_detect(protein_ids, "CON__") &
                   !str_detect(protein_ids, "REV__"))
 
-num_proteins_remaining[2] <- nrows(remove_reverse_and_contaminant)
+num_proteins_remaining[2] <- nrow(remove_reverse_and_contaminant)
 
 helper_unnest_unique_and_razor_peptides <- remove_reverse_and_contaminant %>%
   dplyr::mutate(protein_ids = str_split(protein_ids, ";")) %>%
@@ -317,7 +317,7 @@ evidence_tbl_filt <- evidence_tbl_cleaned |>
   dplyr::select(uniprot_acc, matches(column_pattern), -contains(c("razor", "unique"))) |>
   distinct()
 
-num_proteins_remaining[3] <- nrows( evidence_tbl_filt)
+num_proteins_remaining[3] <- nrow( evidence_tbl_filt)
 
 num_proteins_remaining_tbl <- data.frame( step=name( num_proteins_remaining), num_proteins_remaining=num_proteins_remaining)
 vroom::vroom_write( num_proteins_remaining, file.path(args$output_dir, "number_of_proteins_remaining_after_each_filtering_step.tab"))
