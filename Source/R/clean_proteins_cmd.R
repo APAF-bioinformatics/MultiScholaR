@@ -254,7 +254,7 @@ evidence_tbl <- dat_cln %>%
 loginfo("Filtering counts table by number of peptides available, remove decoy proteins and protein contaminants.")
 
 # Array to store number of proteins in each step
-num_proteins_remaining <- rep(NA, 4)
+num_proteins_remaining <- rep(NA, 3)
 names( num_proteins_remaining) <- c( "Number of proteins in raw unfiltered file"
                                      , "Number of proteins after removing reverse decoy and contaminant proteins"
                                      , paste0("Number of proteins after removing proteins with no. of razor + unique peptides < "
@@ -272,6 +272,7 @@ names( num_proteins_remaining) <- c( "Number of proteins in raw unfiltered file"
                 potential_contaminant,
                 matches(column_pattern))
 
+ # Record the number of proteins in raw unfiltered file. This number will be stored in the output file 'number_of_proteins_remaining_after_each_filtering_step.tab'
  num_proteins_remaining[1] <- nrow(select_columns)
 
 remove_reverse_and_contaminant <- select_columns %>%
@@ -280,6 +281,8 @@ remove_reverse_and_contaminant <- select_columns %>%
   dplyr::filter(!str_detect(protein_ids, "CON__") &
                   !str_detect(protein_ids, "REV__"))
 
+# Record the number of proteins after removing reverse decoy and contaminant proteins
+# The numbers will be saved into the file 'number_of_proteins_remaining_after_each_filtering_step.tab'
 num_proteins_remaining[2] <- nrow(remove_reverse_and_contaminant)
 
 helper_unnest_unique_and_razor_peptides <- remove_reverse_and_contaminant %>%
@@ -317,10 +320,12 @@ evidence_tbl_filt <- evidence_tbl_cleaned |>
   dplyr::select(uniprot_acc, matches(column_pattern), -contains(c("razor", "unique"))) |>
   distinct()
 
+# Record the number of proteins after removing proteins with low no. of razor + unique peptides and low no. of unique peptides
 num_proteins_remaining[3] <- nrow( evidence_tbl_filt)
 
+# Record the number of proteins remaining after each filtering step into the file 'number_of_proteins_remaining_after_each_filtering_step.tab'
 num_proteins_remaining_tbl <- data.frame( step=names( num_proteins_remaining), num_proteins_remaining=num_proteins_remaining)
-vroom::vroom_write( num_proteins_remaining, file.path(args$output_dir, "number_of_proteins_remaining_after_each_filtering_step.tab"))
+vroom::vroom_write( num_proteins_remaining_tbl, file.path(args$output_dir, "number_of_proteins_remaining_after_each_filtering_step.tab"))
 
 #TODO: This part need improvement. There is potential for bugs.
 extraction_pattern <- "\\1"
