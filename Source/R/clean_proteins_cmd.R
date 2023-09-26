@@ -51,7 +51,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.")
 
-parser <- add_option(parser, c("-c","--config"), type = "character", default = "config.ini", dest = "config",
+parser <- add_option(parser, c("-c","--config"), type = "character", default = "proteomics_config.ini", dest = "config",
                      help = "Configuration file.",
                      metavar = "string")
 
@@ -109,6 +109,11 @@ parser <- add_option(parser, "--unique_peptides_group_thresh", type = "integer",
                      help = "Number of unique peptides for the specified experiemtal group needs to be higher than this threshold for the protein to be included for the analysis.\nThe file will be saved in the results directory",
                      metavar = "integer")
 
+parser <- add_option(parser, "--remove_more_peptides", type = "logical", dest = "remove_more_peptides",
+                     help = "If TRUE, remove reverse decoy and contaminant peptides even if it is not the first ranked hit in the Protein IDs list.",
+                     metavar = "logical")
+
+
 parser <- add_option(parser, "--fasta_meta_file", type = "character", dest = "fasta_meta_file",
                      help = "R object storage file that records all the sequence and header information in the FASTA file.",
                      metavar = "string")
@@ -134,9 +139,6 @@ addHandler(writeToFile, file = file.path(args$output_dir, args$log_file), format
 
 level <- ifelse(args$debug, loglevels["DEBUG"], loglevels["INFO"])
 setLevel(level = ifelse(args$silent, loglevels["ERROR"], level))
-
-
-
 
 cmriWelcome("ProteomeRiver", c("Ignatius Pang", "Pablo Galaviz"))
 loginfo("Reading configuration file %s", args$config)
@@ -164,8 +166,12 @@ testRequiredFiles(c(
   args$fasta_file
   ,args$raw_counts_file))
 
+
+
+
 args <- setArgsDefault(args, "pattern_suffix", as_func=as.character, default_val="_\\d+" )
 args <- setArgsDefault(args, "extract_patt_suffix", as_func=as.character, default_val="_(\\d+)" )
+args <- setArgsDefault(args, "remove_more_peptides", as_func=as.logical, default_val=FALSE )
 
 
 args<-parseType(args,
@@ -173,12 +179,15 @@ args<-parseType(args,
     ,"unique_peptides_group_thresh"
   ),as.integer)
 
-args<-parseString(args,
-  c("group_pattern"
-    ,"column_pattern"
-    ,"pattern_suffix"
-    ,"extract_patt_suffix" ))
+args<-parseString( args
+                  , c("group_pattern"
+                  , "column_pattern"
+                  , "pattern_suffix"
+                  , "extract_patt_suffix" ))
 
+args<-parseType( args
+                 , c("remove_more_peptides" )
+                 , as.logical )
 
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -275,17 +284,28 @@ names( num_proteins_remaining) <- c( "Number of proteins in raw unfiltered file"
  # Record the number of proteins in raw unfiltered file. This number will be stored in the output file 'number_of_proteins_remaining_after_each_filtering_step.tab'
  num_proteins_remaining[1] <- nrow(select_columns)
 
-remove_reverse_and_contaminant <- select_columns %>%
-  dplyr::filter(is.na(reverse) &
-                  is.na(potential_contaminant)) %>%
-  dplyr::filter(!str_detect(protein_ids, "CON__") &
-                  !str_detect(protein_ids, "REV__"))
+remove_reverse_and_contaminant <- select_columns  %>%
+  dplyr::filter( is.na(reverse) &
+                 is.na(potential_contaminant)) %>%
+  dplyr::filter( !str_detect(protein_ids, "^CON__") &
+                 !str_detect(protein_ids, "^REV__") )
+
+remove_reverse_and_contaminant_more_hits <- remove_reverse_and_contaminant
+
+# Remove reverse decoy peptides and contaminant peptides even if it is not the first ranked Protein IDs (e.g. it is lower down in the list of protein IDs)
+if( args$remove_more_peptides == TRUE) {
+  remove_reverse_and_contaminant_more_hits <- remove_reverse_and_contaminant  %>%
+    dplyr::filter( is.na(reverse) &
+                     is.na(potential_contaminant)) %>%
+    dplyr::filter( !str_detect(protein_ids, "CON__") &
+                     !str_detect(protein_ids, "REV__") )
+}
 
 # Record the number of proteins after removing reverse decoy and contaminant proteins
 # The numbers will be saved into the file 'number_of_proteins_remaining_after_each_filtering_step.tab'
-num_proteins_remaining[2] <- nrow(remove_reverse_and_contaminant)
+num_proteins_remaining[2] <- nrow(remove_reverse_and_contaminant_more_hits)
 
-helper_unnest_unique_and_razor_peptides <- remove_reverse_and_contaminant %>%
+helper_unnest_unique_and_razor_peptides <- remove_reverse_and_contaminant_more_hits %>%
   dplyr::mutate(protein_ids = str_split(protein_ids, ";")) %>%
   dplyr::mutate(!!rlang::sym(razor_unique_peptides_group_col) := str_split(!!rlang::sym(razor_unique_peptides_group_col), ";")) %>%
   dplyr::mutate(!!rlang::sym(unique_peptides_group_col) := str_split(!!rlang::sym(unique_peptides_group_col), ";")) %>%
