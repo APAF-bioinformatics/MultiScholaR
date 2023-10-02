@@ -246,7 +246,7 @@ filterPeptideAndExtractProbabilities <- function(evidence_tbl_cleaned, accession
     ## Must be a phosphopeptide (at least one site)
     dplyr::filter( {{num_phospho_site_col}} >=1) %>%
     ## Remove REV_ and CON_
-    dplyr::filter( !str_detect( {{accession_col}}, "REV__|CON__" )  ) %>%
+    dplyr::filter( !str_detect( {{accession_col}}, "^REV__|^CON__" )  ) %>%
     dplyr::mutate( best_phos_prob = getMaxProbFutureMap({{phospho_site_prob_col}},
                                                         {{num_phospho_site_col}})) %>%
     dplyr::filter( map_lgl(best_phos_prob, ~{length(.) > 0} )) %>%
