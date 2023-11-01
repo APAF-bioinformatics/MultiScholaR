@@ -214,6 +214,32 @@ getXMersList <-  function(seq, uniprot_acc,
 
 
 
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' @title formatPhosphositePosition
+#' @param gene_symbol The gene symbol as a string
+#' @param position The positions of the phosphorylation sites as a string, multiple sites are separated by the delimiter (e.g. delim parameter). Multiple positions are in the same corresponding order as the residue parameter.
+#' @param residue The amino acid residue where the phosphorylation is at, multiple residues are separate by the delimiter (e.g. delim paramter). Multiple residues are in the same corresponding order as the position parameter.
+#' @return A string with the gene symbol, followed by a semi-colon, and the amino acid residue and the position, multiple residue and positions separated by commas (e.g. YFG1;S199,T203 )
+#' @export
+
+formatPhosphositePosition <- function( gene_symbol, position, residue, delim=";") {
+  position_cln <- str_split( position, "\\|" )[[1]][1] |>
+    str_replace_all( "\\(|\\)", "") |>
+    str_split(delim) |>
+    unlist()
+
+  residue_cln <- residue |>
+    str_split( ";") |>
+    unlist()
+
+  list_of_positions <- purrr::map2_chr(residue_cln,  position_cln, \(x,y){paste0(x, y)})
+
+  formatted_positions <- paste( gene_symbol, paste0(list_of_positions, collapse=","), sep=";" )
+
+  return(formatted_positions)
+
+}
+
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' @export
