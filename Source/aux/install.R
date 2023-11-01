@@ -21,7 +21,18 @@ if (!require(pacman)) {
   library(pacman)
 }
 
+
+
+## Not sure if needed anymore
 p_load(biomaRt)
+p_load(xml2)
+
+
+p_load(PhosR)
+p_load(mixOmics)
+
+## needed
+p_load(tidyverse)
 p_load(clusterProfiler)
 p_load(configr)
 p_load(devtools)
@@ -43,9 +54,7 @@ p_load(knitr)
 p_load(limma)
 p_load(logging)
 p_load(magrittr)
-p_load(mixOmics)
 p_load(optparse)
-p_load(PhosR)
 p_load(plotly)
 p_load(purrr)
 p_load(qvalue)
@@ -65,7 +74,6 @@ p_load(tidyverse)
 p_load(UniProt.ws)
 p_load(vroom)
 p_load(writexl)
-p_load(xml2)
 p_load(ggpubr)
 p_load(janitor)
 p_load(knitr)
@@ -79,7 +87,6 @@ p_load(rlang)
 p_load(ruv)
 p_load(seqinr)
 p_load(tictoc)
-p_load(tidyverse)
 p_load(UniProt.ws)
 p_load(vroom)
 
