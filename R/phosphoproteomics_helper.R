@@ -240,6 +240,8 @@ formatPhosphositePosition <- function( gene_symbol, position, residue, delim=";"
 
 }
 
+# # formatPhosphositePosition( "MFG1", "(1986)|(1998)|(2010)	", "S")
+# # formatPhosphositePosition( "MFG1", "1082;1087", "S;Y")
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' @export
