@@ -424,7 +424,7 @@ queryRevigo <- function( input_list,
   userData <-  paste(input_list,  collapse= "\n")
 
   httr::POST(
-    url = "http://revigo.irb.hr/Revigo.aspx",
+    url = "http://revigo.irb.hr/Revigo", # .aspx
     body = list(
       cutoff = as.character(cutoff),
       valueType = "pvalue",
@@ -727,7 +727,9 @@ readEnrichmentResultFiles <- function( table_of_files, file_names_column=file_na
 filterResultsWithRevigo <- function( enriched_results_tbl
                                      , added_columns
                                      , is_run_revigo=TRUE
-                                     , revigo_cutoff=0.7 ) {
+                                     , revigo_cutoff=0.7
+                                     , species_taxon = 9606 # Human
+                                     ) {
 
   enrich_revigo <- NA
 
@@ -1106,6 +1108,7 @@ createWordCloudDataFrame <- function( text_list) {
 
 ########################
 
+#'@export
 cleanDuplicatesEnrichment <- function( input_table
                                        , pathway_column = term
                                        , fdr_column = qvalue
@@ -1154,6 +1157,7 @@ cleanDuplicatesEnrichment <- function( input_table
    proteomics_go_helper
 }
 
+#'@export
 plotEnrichmentBarplot <- function( input_table
                                    , pathway_column = term
                                    , fdr_column = qvalue
@@ -1179,7 +1183,10 @@ plotEnrichmentBarplot <- function( input_table
     geom_bar( stat="identity" ) +
     scale_fill_manual(legend_title, values = legend_colours) +
     xlab ( xlab_string) +
-    ylab ( ylab_string) #+
+    ylab ( ylab_string) +
+    theme_bw() +
+    scale_x_continuous(limits = c(0,-log10( min ( proteomics_go_helper$qvalue ) )), expand = c(0, 0))
+  #+
     #facet_grid( rows = vars({{gene_set_column}})  , scales="free_y", space = "free_y")
 
   output_barplot
