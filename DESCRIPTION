@@ -1,6 +1,6 @@
 Package: ProteomeRiver
 Title: Tools for Proteomics and Phosphoproteomics analysis.
-Version: 0.0.0.9000
+Version: 0.73
 Authors@R: 
     person(given = "Ignatius",
            family = "Pang",

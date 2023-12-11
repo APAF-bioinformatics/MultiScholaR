@@ -1687,7 +1687,7 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
     pivot_wider(id_cols = c(!!sym(row_id), !!sym(group_id)),
                 names_from = replicate_number,
                 values_from = log2norm) |>
-    mutate( {{group_id}} := purrr::map_chr( {{group_id}}, as.character))
+    mutate( {{group_id}} := purrr::map_chr( !!sym(group_id), as.character))
 
 
   raw_counts <- raw_counts_input_tbl |>
@@ -1704,15 +1704,16 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
     pivot_wider(id_cols = c(!!sym(row_id), !!sym(group_id)),
                 names_from = replicate_number,
                 values_from = raw)  |>
-    mutate( {{group_id}} := purrr::map_chr( {{group_id}}, as.character))
+    mutate( {{group_id}} := purrr::map_chr( !!sym(group_id), as.character))
 
-  print(head(raw_counts))
 
   left_join_columns <- rlang::set_names(c(row_id, group_id ),
                                         c(row_id, "left_group"))
 
   right_join_columns <- rlang::set_names(c(row_id, group_id ),
                                          c(row_id, "right_group"))
+
+
 
   de_proteins_long <- lfc_qval_tbl |>
     dplyr::select(-lqm, -colour, -analysis_type) |>

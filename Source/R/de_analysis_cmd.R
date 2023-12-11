@@ -65,7 +65,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.  [default %default]")
 
-parser <- add_option(parser, c("-c", "--config"), type = "character", default = "/mnt/work/ipang/PostDoc/2023/e0032-p04-manitoba-breast-p02-p03/Source/P02/p02_config_prot_her2_snp6.ini",
+parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config_protein.ini",
                      help = "Configuration file.  [default %default]",
                      metavar = "string")
 
@@ -740,7 +740,7 @@ if (args$imputation == TRUE) {
 ## Remove samples in which the design matrix has NA values
 list_of_sample_ids_to_use <- design_mat_updated |>
   dplyr::filter( !is.na( !!rlang::sym(args$group_id) ) ) |>
-  pull( !!rlang::sym(args$sample_id) ) 
+  pull( !!rlang::sym(args$sample_id) )
 
 counts_rnorm.log.for.contrast.na.rm <- counts_rnorm.log.for.contrast[,list_of_sample_ids_to_use]
 
@@ -854,7 +854,7 @@ ruv_groups <- data.frame(temp_column = colnames(counts_rnorm.log.for.contrast.na
 
 cancorplot_r1 <- ruv_cancorplot(t(counts_rnorm.log.for.contrast.na.rm),
                                 X = ruv_groups |>
-                                  dplyr::filter( !is.na( !!rlang::sym(args$group_id) ) ) |> 
+                                  dplyr::filter( !is.na( !!rlang::sym(args$group_id) ) ) |>
                                   pull(!!rlang::sym(args$group_id)),
                                 ctl = control_genes_index)
 
@@ -1227,7 +1227,8 @@ counts_table_to_use <- counts_rnorm.log.ruvIII_v1
 
 
 de_proteins_long <- createDeResultsLongFormat( lfc_qval_tbl = selected_data |>
-                                                 dplyr::filter(analysis_type == "RUV applied"),
+                                                 dplyr::filter(analysis_type == "RUV applied") |>
+                                                 mutate( CHEMICAL_ID = purrr::map_chr( CHEMICAL_ID, as.character)),
                                                norm_counts_input_tbl = counts_table_to_use,
                                                raw_counts_input_tbl = counts_filt,
                                                row_id = args$row_id,
