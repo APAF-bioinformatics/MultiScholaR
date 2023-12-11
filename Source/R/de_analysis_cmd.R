@@ -1227,8 +1227,7 @@ counts_table_to_use <- counts_rnorm.log.ruvIII_v1
 
 
 de_proteins_long <- createDeResultsLongFormat( lfc_qval_tbl = selected_data |>
-                                                 dplyr::filter(analysis_type == "RUV applied") |>
-                                                 mutate( CHEMICAL_ID = purrr::map_chr( CHEMICAL_ID, as.character)),
+                                                 dplyr::filter(analysis_type == "RUV applied") ,
                                                norm_counts_input_tbl = counts_table_to_use,
                                                raw_counts_input_tbl = counts_filt,
                                                row_id = args$row_id,
