@@ -536,7 +536,7 @@ num_of_comparison <- num_sig_de_molecules |>
 ggsave(filename = file.path(args$output_dir, "NumSigDeMolecules", "num_sig_de_molecules.png" ),
        plot = num_sig_de_genes_barplot,
        height = 10,
-       width = num_of_comparison*7/6 )
+       width = (num_of_comparison + 2) *7/6 )
 
 
 ##-------------------------------------
