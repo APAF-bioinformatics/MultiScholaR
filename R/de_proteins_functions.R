@@ -1341,6 +1341,8 @@ getNegCtrlProtAnova <- function(data_matrix, design_matrix, group_column = "grou
           return(NA_real_)
        }
     })
+  
+  ps[is.na(ps)] <- 1
 
   aov <- qvalue(ps)$qvalues
 
