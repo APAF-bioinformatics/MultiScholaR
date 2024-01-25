@@ -333,14 +333,14 @@ plotRle <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75,
 {
   #  checks = check.ggplot()
   # if (checks) {
-  rle = t(apply(t(Y) - apply(Y, 2, function(x){median(x, na.rm=TRUE)}), 2, function(x){quantile(x, probs = probs, na.rm=TRUE)}))
-  colnames(rle) = c("min", "lower", "middle", "upper",
-                    "max")
-  df = cbind(data.frame(rle.x.factor = rownames(rle)), data.frame(rle))
+  rle <- t(apply(t(Y) - apply(Y, 2, function(x){median(x, na.rm=TRUE)}), 2, function(x){quantile(x, probs = probs, na.rm=TRUE)}))
+  colnames(rle) <- c("min", "lower", "middle", "upper",
+                     "max")
+  df <- cbind(data.frame(rle.x.factor = rownames(rle)), data.frame(rle))
 
   if (!is.null(rowinfo)) {
-    rowinfo = data.frame(rowinfo = rowinfo)
-    df_temp = cbind(df, rowinfo)
+    rowinfo <- data.frame(rowinfo = rowinfo)
+    df_temp <- cbind(df, rowinfo)
 
     my.x.factor.levels <- df_temp |>
       arrange(rowinfo) |>
@@ -353,7 +353,7 @@ plotRle <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75,
       arrange(rowinfo)
   }
 
-  rleplot = ggplot(df, aes_string(x = "rle.x.factor")) +
+  rleplot <- ggplot(df, aes_string(x = "rle.x.factor")) +
     geom_boxplot(aes_string(lower = "lower", middle = "middle",
                             upper = "upper", max = "max", min = "min"),
                  stat = "identity") +
@@ -366,7 +366,7 @@ plotRle <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75,
     coord_cartesian(ylim = ylim)
   if (!is.null(rowinfo))
     if (ncol(rowinfo) == 1)
-      rleplot = rleplot + aes(fill = rowinfo) + labs(fill = "")
+      rleplot <- rleplot + aes(fill = rowinfo) + labs(fill = "")
   return(rleplot)
   # }
   # else return(FALSE)

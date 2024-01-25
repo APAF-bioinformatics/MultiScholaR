@@ -1,11 +1,11 @@
 PREFIX := $(HOME)/opt
-#REXEC := /usr/local/bin/R
-#RSCRIPTEXEC := /usr/local/bin/Rscript
-#RLIB := $(HOME)/R/x86_64-pc-linux-gnu-library/4.2
-
-REXEC := /usr/bin/R
-RSCRIPTEXEC := /usr/bin/Rscript
+REXEC := /usr/local/bin/R
+RSCRIPTEXEC := /usr/local/bin/Rscript
 RLIB := $(HOME)/R/x86_64-pc-linux-gnu-library/4.3
+
+#REXEC := /usr/bin/R
+#RSCRIPTEXEC := /usr/bin/Rscript
+#RLIB := $(HOME)/R/x86_64-pc-linux-gnu-library/4.3
 
 
 
