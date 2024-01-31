@@ -278,7 +278,7 @@ getRuvIIIReplicateMatrix <- function(design_matrix, sample_id_column, group_colu
   ruvIII_replicates_matrix <- design_matrix |>
     dplyr::select({ { sample_id_column } }, { { group_column } }) |>
     mutate({ { temp_column } } := 1) |>
-    pivot_wider(id_cols = { { sample_id_column } },
+    pivot_wider(id_cols = as_string( as_name(enquo(sample_id_column ))),
                 names_from = { { group_column } },
                 values_from = { { temp_column } },
                 values_fill = 0) |>
@@ -302,7 +302,7 @@ plotPca <- function(data,
   pca.res <- mixOmics::pca(t(as.matrix(data)))
   
   proportion_explained <- pca.res$prop_expl_var
-  
+
   temp_tbl <- pca.res$variates$X |>
     as.data.frame()    |>
     rownames_to_column(as_string(as_name(enquo(sample_id_column))))  |>
