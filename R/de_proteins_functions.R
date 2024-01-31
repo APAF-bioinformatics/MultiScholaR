@@ -12,7 +12,7 @@
 #'@export
 removeEmptyRows <- function(input_table, col_pattern, row_id) {
 
-  temp_col_name <- paste0("temp_", as_name(enquo(row_id)))
+  temp_col_name <- paste0("temp_", deparse1(substitue(row_id)))
 
   temp_input_table <- input_table |>
     dplyr::mutate(!!rlang::sym(temp_col_name) := row_number())
@@ -110,7 +110,7 @@ plotNumOfValuesNoLog <- function(input_table) {
 #'@param group_column The name of the column in design_matrix table that has the experimental group.
 #'@param max_num_samples_miss_per_group An integer representing the maximum number of samples with missing values per group.
 #'@param abundance_threshold Abundance threshold in which the protein in the sample must be above for it to be considered for inclusion into data analysis.
-#'@param temporary_abundance_column The name of a temporary column to keep the abundance value you want to filter upon
+#'@param temporary_abundance_column The name of a temporary column, as a string, to keep the abundance value you want to filter upon
 #'@return A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values.
 #'@export
 removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample_id, row_id, group_column, max_num_samples_miss_per_group, abundance_threshold
@@ -118,12 +118,12 @@ removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample
 
   abundance_long <- input_table |>
     pivot_longer(cols = { { cols } },
-                 names_to =  as_name(enquo(sample_id)) ,
+                 names_to =  deparse1(substitute(sample_id)) ,
                  values_to = temporary_abundance_column  ) |>
     mutate( {{sample_id}} := purrr::map_chr(   {{sample_id}}  , as.character)   ) |>
     left_join(design_matrix |>
                 mutate(  {{sample_id}} := purrr::map_chr(    {{sample_id}} , as.character)   )
-              , by = as_name(enquo(sample_id)))
+              , by = deparse1(substitute(sample_id)))
 
   count_missing_values_per_group <- abundance_long |>
     mutate(is_missing = ifelse(!is.na( !!sym(temporary_abundance_column)) & !!sym(temporary_abundance_column) > abundance_threshold, 0, 1)) |>
@@ -137,7 +137,7 @@ removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample
     distinct({ { row_id } })
 
   filtered_tbl <- input_table |>
-    dplyr::anti_join(remove_rows_temp, by = as_name(enquo(row_id)))
+    dplyr::anti_join(remove_rows_temp, by = deparse1(substitute(row_id)))
 
   return(filtered_tbl)
 
@@ -162,12 +162,12 @@ removeRowsWithMissingValuesPercent <- function(input_table, cols, design_matrix,
 
   abundance_long <- input_table |>
     pivot_longer(cols = { { cols } },
-                 names_to =  as_name(enquo(sample_id)) ,
+                 names_to =   deparse1( substitute( sample_id )) ,
                  values_to = temporary_abundance_column  ) |>
     mutate( {{sample_id}} := purrr::map_chr(   {{sample_id}}  , as.character)   ) |>
     left_join(design_matrix |>
                 mutate(  {{sample_id}} := purrr::map_chr(    {{sample_id}} , as.character)   )
-              , by = as_name(enquo(sample_id)))
+              , by = join_by({{sample_id}} ) )
 
   count_values_per_group <- abundance_long |>
     group_by( {{ row_id }}, {{ group_column }} ) |>
@@ -192,7 +192,7 @@ removeRowsWithMissingValuesPercent <- function(input_table, cols, design_matrix,
     distinct({ { row_id } })
 
   filtered_tbl <- input_table |>
-    dplyr::anti_join(remove_rows_temp, by = as_name(enquo(row_id)))
+    dplyr::anti_join(remove_rows_temp, by = join_by({{row_id}}))
 
   return(filtered_tbl)
 
@@ -215,9 +215,9 @@ getRowsToKeepList <- function(input_table, cols, design_matrix, sample_id, row_i
 
   abundance_long <- input_table |>
     pivot_longer(cols = { { cols } },
-                 names_to = as_name(enquo(sample_id)),
+                 names_to = deparse1(substitute(sample_id)),
                  values_to = "Abundance") |>
-    left_join(design_matrix, by = as_name(enquo(sample_id)))
+    left_join(design_matrix, by = deparse1(substitute(sample_id)))
 
 
   count_values_per_group <- abundance_long |>
@@ -282,7 +282,7 @@ getRuvIIIReplicateMatrix <- function(design_matrix, sample_id_column, group_colu
                 names_from = { { group_column } },
                 values_from = { { temp_column } },
                 values_fill = 0) |>
-    column_to_rownames(as_name(enquo(sample_id_column))) |>
+    column_to_rownames(deparse1(substitute(sample_id_column))) |>
     as.matrix()
 
   ruvIII_replicates_matrix
@@ -299,14 +299,14 @@ plotPca <- function(data,
                     title,  geom.text.size=11,
                    ...) {
 
-  pca.res <- pca(t(as.matrix(data)))
-
+  pca.res <- mixOmics::pca(t(as.matrix(data)))
+  
   proportion_explained <- pca.res$prop_expl_var
-
+  
   temp_tbl <- pca.res$variates$X |>
-    as.data.frame() |>
-    rownames_to_column(as_name(enquo(sample_id_column))) |>
-    left_join(design_matrix, by = as_name(enquo(sample_id_column)))
+    as.data.frame()    |>
+    rownames_to_column(deparse1(substitute(sample_id_column)))  |>
+    left_join(design_matrix, by =  deparse1(substitute(sample_id_column))  )
 
   unique_groups <- temp_tbl |> distinct( {{group_column}}) |> pull( {{group_column}})
 
@@ -546,7 +546,7 @@ getSignificantData <- function(list_of_de_tables,
   get_row_binded_table <- function(de_table_list, description) {
     output <- purrr::map(de_table_list,
                          function(tbl) { tbl |>
-                           rownames_to_column(as_name(enquo(row_id))) |>
+                           rownames_to_column(deparse1(substitute(row_id))) |>
                            dplyr::select({ { row_id } },
                                          { { p_value_column } },
                                          { { q_value_column } },
@@ -1288,8 +1288,8 @@ analyseRanking <- function(data, uniprot_acc_column = uniprot_acc) {
 
   results_tbl <- data |>
     as.data.frame() |>
-    rownames_to_column(as_name(enquo(uniprot_acc_column))) |>
-    dplyr::select(one_of(c(as_name(enquo(uniprot_acc_column)), "q.mod", "logFC"))) |>
+    rownames_to_column(deparse1(substitute(uniprot_acc_column))) |>
+    dplyr::select(one_of(c(deparse1(substitute(uniprot_acc_column)), "q.mod", "logFC"))) |>
     arrange(desc(q.mod)) |>
     mutate(ctrl_gene_rank = row_number())
 
