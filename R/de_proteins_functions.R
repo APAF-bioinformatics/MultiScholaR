@@ -303,8 +303,6 @@ plotPca <- function(data,
   
   proportion_explained <- pca.res$prop_expl_var
   
-  print( as_string(as_name(enquo(sample_id_column))))
-  
   temp_tbl <- pca.res$variates$X |>
     as.data.frame()    |>
     rownames_to_column(as_string(as_name(enquo(sample_id_column))))  |>
