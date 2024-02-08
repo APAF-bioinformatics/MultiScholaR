@@ -814,6 +814,46 @@ getGlimmaVolcanoProteomics <- function( r_obj
 }
 
 
+#' @export
+getGlimmaVolcanoProteomicsWidget <- function( r_obj
+                                        , coef
+                                        , volcano_plot_tab
+                                        , uniprot_column = best_uniprot_acc
+                                        , gene_name_column = gene_name
+                                        , display_columns = c(  "PROTEIN_NAMES"   )  ) {
+  
+  if( coef <= ncol(r_obj$coefficients )) {
+    
+    best_uniprot_acc <- str_split(rownames(r_obj@.Data[[1]]), " |:" ) |>
+      purrr::map_chr(1)
+    
+    # print(paste("nrow = ", nrow(r_obj@.Data[[1]])))
+    # print(head(best_uniprot_acc))
+    
+    volcano_plot_tab_cln <- volcano_plot_tab |>
+      dplyr::distinct( {{uniprot_column}}
+                       , {{gene_name_column}}, pick(one_of( display_columns))) |>
+      dplyr::rename( best_uniprot_acc =  {{uniprot_column}}
+                     , gene_name = {{gene_name_column}}   )
+    
+    anno_tbl <- data.frame( uniprot_acc = rownames(r_obj@.Data[[1]])
+                            , best_uniprot_acc = best_uniprot_acc ) |>
+      left_join( volcano_plot_tab_cln
+                 , by = c("best_uniprot_acc") )  |>
+      mutate( gene_name = case_when( is.na( gene_name) ~ best_uniprot_acc,
+                                     TRUE ~ gene_name) )
+    
+    gene_names <- anno_tbl |>
+      pull(gene_name)
+    
+    rownames( r_obj@.Data[[1]] ) <- gene_names
+    
+     glimmaVolcano(r_obj, coef=coef, anno=anno_tbl, display.columns = display_columns) #the plotly object
+                           
+  }
+  
+}
+
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' getGlimmaVolcanoPhosphoproteomics
 #' @description Create an interactive plotly volcano plot for Phosphoproteomics data
