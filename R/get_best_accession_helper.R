@@ -197,7 +197,6 @@ chooseBestPhosphositeAccession <- function(input_tbl, acc_detail_tab, accessions
 #'@export
 chooseBestProteinAccession <- function(input_tbl, acc_detail_tab, accessions_column, row_id_column = uniprot_acc, group_id) {
 
-
   join_condition <- rlang::set_names(c(as_name(enquo(row_id_column)), "cleaned_acc"),
                                      c(as_name(enquo(row_id_column)), "cleaned_acc"))
 
@@ -233,7 +232,7 @@ chooseBestProteinAccession <- function(input_tbl, acc_detail_tab, accessions_col
     distinct( { { group_id } }, gene_name, ranking) |>
     dplyr::filter(ranking == 1) |>
     left_join(score_isoforms |>
-                dplyr::select({ { group_id } }, ranking, gene_name, uniprot_acc),
+                dplyr::select({ { group_id } }, ranking, gene_name, {{row_id_column}}),
               by = join_names) |>
     dplyr::select(-ranking) |>
     group_by({ { group_id } }) |>

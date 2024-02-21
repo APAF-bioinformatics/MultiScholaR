@@ -540,6 +540,7 @@ removePeptidesWithOnlyOneReplicate <- function(input_table
 #'@param peptide_sequence_column Peptide sequence column, tidyverse fromat (default =  Stripped.Sequence).
 #'@param quantity_to_impute_column Name of column containing the peptide abundance that needs to be normalized in tidyverse format (default: Peptide.RawQuantity)
 #'@param hek_string The string denoting samples that are controls using HEK cells (default: "HEK")
+#'@param prop_missing The proportion of sample replicates in a group that is missing below which the peptide intensity will be imputed (default: 0.50)
 #'@export
 peptideMissingValueImputation <- function( input_table
                                            , metadata_table
@@ -551,9 +552,10 @@ peptideMissingValueImputation <- function( input_table
                                            , quantity_to_impute_column = Peptide.Normalized
                                            , imputed_value_column = Peptide.Imputed
                                            , hek_string = "HEK"
+                                           , prop_missing = 0.50
                                            , cluster ) {
 
-  # Max number of technical replicates
+  # Max number of technical replicates per group
   num_tech_rep_per_sample <-  metadata_table  |>
     dplyr::filter( !str_detect( {{replicate_group_column}}, hek_string))  |>
     distinct( {{sample_id_tbl_sample_id_column}}, {{replicate_group_column}}) |>
@@ -569,6 +571,7 @@ peptideMissingValueImputation <- function( input_table
       left_join( metadata_table
                  , by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>
       dplyr::filter( !str_detect( {{replicate_group_column}}, hek_string))  |>
+      dplyr::filter( !is.na({{quantity_to_impute_column}}) ) |>
       distinct( {{replicate_group_column}}, {{protein_id_column}}, {{peptide_sequence_column}}, {{quantity_to_impute_column}}) |>
       group_by( {{replicate_group_column}}, {{protein_id_column}}, {{peptide_sequence_column}}) |>
       #partition(cluster) |>
@@ -581,6 +584,7 @@ peptideMissingValueImputation <- function( input_table
       left_join( metadata_table
                  , by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>
       dplyr::filter( !str_detect( {{replicate_group_column}}, hek_string))  |>
+      dplyr::filter( !is.na({{quantity_to_impute_column}}) ) |>
       distinct( {{replicate_group_column}}, {{protein_id_column}}, {{peptide_sequence_column}}, {{quantity_to_impute_column}}) |>
       group_by( {{replicate_group_column}}, {{protein_id_column}}, {{peptide_sequence_column}}) |>
       partition(cluster) |>
@@ -591,11 +595,11 @@ peptideMissingValueImputation <- function( input_table
 
   }
 
+  ## Calculate proportion of replicates in a group that is missing
   rows_needing_imputation <-  num_tech_reps_per_sample_and_peptide |>
     left_join( num_tech_rep_per_sample
                , by = join_by( {{replicate_group_column}} ) ) |>
-    dplyr::filter( total_num_tech_rep > num_tech_rep &
-                     num_tech_rep != 1)
+    dplyr::filter(    (1 - num_tech_rep / total_num_tech_rep ) < prop_missing )
 
   get_combinations_part_1 <- metadata_table |>
     distinct( {{sample_id_tbl_sample_id_column}}, {{replicate_group_column}}) |>

@@ -38,9 +38,9 @@ p_load("EnrichmentBrowser")
 
 ## --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 base_dir <-  here::here()
-data_dir <- file.path( base_dir, "Data")
-results_dir <- file.path(base_dir, "Results")
-source_dir <- file.path(base_dir, "Source")
+data_dir <- file.path( base_dir, "data")
+results_dir <- file.path(base_dir, "results")
+source_dir <- file.path(base_dir, "scripts")
 
 
 
@@ -80,8 +80,8 @@ args <- parse_args(parser)
 # args <- setArgsDefault(args, "gene_id_file", as_func=as.character, default_val="gene_ids_table_python_all.tab" )
 
 args <- setArgsDefault(args, "species", as_func=as.character, default_val="hsa" )
-args <- setArgsDefault(args, "results_dir", as_func=as.character, default_val="/home/ubuntu/Workings/2023/rett_pbmcs_wendy_gold_bmp_12_20230201/Data/KEGG/" )
-args <- setArgsDefault(args, "gene_id_file", as_func=as.character, default_val="/home/ubuntu/Workings/2023/rett_pbmcs_wendy_gold_bmp_12_20230201/Results/UniProt/gene_ids_table_python_all.tab" )
+args <- setArgsDefault(args, "results_dir", as_func=as.character, default_val="results" )
+args <- setArgsDefault(args, "gene_id_file", as_func=as.character, default_val="results/UniProt/gene_ids_table_python_all.tab" )
 
 testRequiredFiles(c(
   args$gene_id_file
