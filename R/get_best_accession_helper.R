@@ -143,7 +143,7 @@ chooseBestPhosphositeAccession <- function(input_tbl, acc_detail_tab, accessions
     distinct %>%
     arrange( {{group_id}}, protein_evidence, status, is_isoform, desc(seq_length), isoform_num )
 
-  print( colnames(head(resolve_acc_helper)) )
+  # print( colnames(head(resolve_acc_helper)) )
 
 
   score_isoforms <- resolve_acc_helper %>%
@@ -155,21 +155,17 @@ chooseBestPhosphositeAccession <- function(input_tbl, acc_detail_tab, accessions
     ungroup
 
 
-  print( colnames(head(score_isoforms)) )
+  # print( colnames(head(score_isoforms)) )
 
   ## For each gene name find the uniprot_acc with the lowest ranking
-
-  my_group_id <- enquo(group_id)
-
-  join_names <- set_names( c(as_name(my_group_id), "ranking", "gene_name" ) ,
-                           c(as_name(my_group_id), "ranking", "gene_name" ) )
-
   group_gene_names_and_uniprot_accs <- score_isoforms %>%
     distinct( {{group_id}}, gene_name, ranking ) %>%
     dplyr::filter( ranking == 1) %>%
     left_join( score_isoforms %>%
                  dplyr::select( {{group_id}}, ranking, gene_name, uniprot_acc),
-               by = join_names )   %>%
+               by = join_by( {{group_id}} == {{group_id}}
+                             , ranking == ranking
+                             , gene_name == gene_name ) )   %>%
     dplyr::select(-ranking)
 
   # %>%
@@ -197,17 +193,14 @@ chooseBestPhosphositeAccession <- function(input_tbl, acc_detail_tab, accessions
 #'@export
 chooseBestProteinAccession <- function(input_tbl, acc_detail_tab, accessions_column, row_id_column = uniprot_acc, group_id) {
 
-  join_condition <- rlang::set_names(c(as_name(enquo(row_id_column)), "cleaned_acc"),
-                                     c(as_name(enquo(row_id_column)), "cleaned_acc"))
-
   resolve_acc_helper <- input_tbl |>
     dplyr::select( { { group_id } }, { { accessions_column } }) |>
     mutate( { { row_id_column } } := str_split({ { accessions_column } }, ";")) |>
     unnest( { { row_id_column } }) |>
     mutate( cleaned_acc = cleanIsoformNumber({ { row_id_column } })) |>
     left_join( acc_detail_tab,
-               by = join_condition) |>
-    dplyr::select( { { group_id } }, one_of(c(as_name(enquo(row_id_column)), "gene_name", "cleaned_acc",
+               by = join_by( cleaned_acc == {{ row_id_column }} )) |>
+    dplyr::select( { { group_id } }, one_of(c(as_string(as_name(enquo(row_id_column)) ), "gene_name", "cleaned_acc",
                                              "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"))) |>
     distinct() |>
     arrange( { { group_id } }, protein_evidence, status, is_isoform, desc(seq_length), isoform_num)
@@ -221,19 +214,17 @@ chooseBestProteinAccession <- function(input_tbl, acc_detail_tab, accessions_col
     ungroup()
 
 
-  ## For each gene name find the uniprot_acc with the lowest ranking
-
-  my_group_id <- enquo(group_id)
-
-  join_names <- rlang::set_names(c(as_name(my_group_id), "ranking", "gene_name"),
-                                 c(as_name(my_group_id), "ranking", "gene_name"))
+  ## For each gene name find the uniprot_acc with the lowest rankinG
 
   group_gene_names_and_uniprot_accs <- score_isoforms |>
     distinct( { { group_id } }, gene_name, ranking) |>
     dplyr::filter(ranking == 1) |>
     left_join(score_isoforms |>
                 dplyr::select({ { group_id } }, ranking, gene_name, {{row_id_column}}),
-              by = join_names) |>
+              by = join_by( {{ group_id }} == {{ group_id }}
+                            , ranking == ranking
+                            , gene_name == gene_name)) |>
+
     dplyr::select(-ranking) |>
     group_by({ { group_id } }) |>
     summarise(num_gene_names = n(),
