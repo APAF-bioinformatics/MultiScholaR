@@ -12,7 +12,11 @@ License: LGPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
+<<<<<<< HEAD
 RoxygenNote: 7.3.1
+=======
+RoxygenNote: 7.3.0
+>>>>>>> 9e7a28ce9ec1bad206f79ccd930e860fbe44c52f
 Suggests: 
     EDASeq,
     RUVSeq,

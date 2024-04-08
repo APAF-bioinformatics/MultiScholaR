@@ -104,6 +104,11 @@ parser <- add_option(parser, "--group_id", type = "character",
                      help = "A string describing the replicate group ID. This must be a column that exists in the design matrix.",
                      metavar = "string")
 
+
+parser <- add_option(parser, "--label_id", type = "character",
+                     help = "A string describing the label for each sampel in the PCA plot. This must be a column that exists in the design matrix.",
+                     metavar = "string")
+
 parser <- add_option(parser, "--row_id", type = "character",
                      help = "A string describing the row id.",
                      metavar = "string")
@@ -192,15 +197,6 @@ testRequiredFiles(c(
   , args$design_matrix_file
 ))
 
-args <- setArgsDefault(args, "q_val_thresh", as_func=as.double, default_val=0.05 )
-args <- setArgsDefault(args, "data_type", as_func=as.character, default_val="proteomics" )
-args <- setArgsDefault(args, "log2fc_column", as_func=as.character, default_val="log2FC" )
-args <- setArgsDefault(args, "fdr_column", as_func=as.character, default_val="q.mod" )
-
-args<-parseType(args
-                , c("q_val_thresh")
-                , as.double)
-
 args<-parseString(args,
                   c("sample_id"
                     , "group_id"
@@ -210,6 +206,13 @@ args<-parseString(args,
                     , "input_dir"
                     , "output_dir"
                   ))
+
+args <- setArgsDefault(args, "q_val_thresh", as_func=as.double, default_val=0.05 )
+args <- setArgsDefault(args, "data_type", as_func=as.character, default_val="proteomics" )
+args <- setArgsDefault(args, "log2fc_column", as_func=as.character, default_val="log2FC" )
+args <- setArgsDefault(args, "fdr_column", as_func=as.character, default_val="q.mod" )
+args <- setArgsDefault(args, "label_id", as_func=as.character, default_val=args$sample_id )
+
 
 if(isArgumentDefined(args,"plots_format"))
 {
@@ -535,7 +538,7 @@ num_of_comparison <- num_sig_de_molecules |>
 
 ggsave(filename = file.path(args$output_dir, "NumSigDeMolecules", "num_sig_de_molecules.png" ),
        plot = num_sig_de_genes_barplot,
-       height = 10,
+       height = 6,
        width = (num_of_comparison + 2) *7/6 )
 
 
@@ -554,6 +557,7 @@ before_ruvIII_pca <- plotPca( counts_rnorm.log.quant_mat,
                               design_matrix = design_mat_cln,
                               sample_id_column = !!rlang::sym(args$sample_id),
                               group_column = !!rlang::sym(args$group_id),
+                              label_id_column = !!rlang::sym(args$label_id),
                               title = "Before RUVIII",
                               geom.text.size = 7) +
   theme_bw() +
@@ -577,6 +581,7 @@ after_ruvIII_pca <- plotPca( counts_rnorm.log.ruvIII_mat,
                              design_matrix = design_mat_cln,
                              sample_id_column = !!rlang::sym(args$sample_id),
                              group_column = !!rlang::sym(args$group_id),
+                             label_id_column = !!rlang::sym(args$label_id),
                              title = "After RUVIII", geom.text.size = 7) +
   theme_bw() +
   theme(axis.text.x = element_text(size = 12))   +
@@ -598,7 +603,7 @@ before_ruvIII_pca <- plotPca( counts_rnorm.log.quant_mat,
                               design_matrix = design_mat_cln,
                               sample_id_column = !!rlang::sym(args$sample_id),
                               group_column = !!rlang::sym(args$group_id),
-                              label_column = !!rlang::sym(args$group_id),
+                              label_column = !!rlang::sym(args$label_id),
                               title = "Before RUVIII",
                               geom.text.size = 7) +
   theme_bw() +
@@ -622,7 +627,7 @@ after_ruvIII_pca <- plotPca( counts_rnorm.log.ruvIII_mat,
                              design_matrix = design_mat_cln,
                              sample_id_column = !!rlang::sym(args$sample_id),
                              group_column = !!rlang::sym(args$group_id),
-                             label_column = !!rlang::sym(args$group_id),
+                             label_column = !!rlang::sym(args$label_id),
                              title = "After RUVIII", geom.text.size = 7) +
   theme_bw() +
   theme(axis.text.x = element_text(size = 12))   +

@@ -12,7 +12,7 @@
 #'@export
 removeEmptyRows <- function(input_table, col_pattern, row_id) {
 
-  temp_col_name <- paste0("temp_", as_name(enquo(row_id)))
+  temp_col_name <- paste0("temp_", as_string(as_name(enquo(row_id))))
 
   temp_input_table <- input_table |>
     dplyr::mutate(!!rlang::sym(temp_col_name) := row_number())
@@ -110,7 +110,7 @@ plotNumOfValuesNoLog <- function(input_table) {
 #'@param group_column The name of the column in design_matrix table that has the experimental group.
 #'@param max_num_samples_miss_per_group An integer representing the maximum number of samples with missing values per group.
 #'@param abundance_threshold Abundance threshold in which the protein in the sample must be above for it to be considered for inclusion into data analysis.
-#'@param temporary_abundance_column The name of a temporary column to keep the abundance value you want to filter upon
+#'@param temporary_abundance_column The name of a temporary column, as a string, to keep the abundance value you want to filter upon
 #'@return A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values.
 #'@export
 removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample_id, row_id, group_column, max_num_samples_miss_per_group, abundance_threshold
@@ -118,12 +118,12 @@ removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample
 
   abundance_long <- input_table |>
     pivot_longer(cols = { { cols } },
-                 names_to =  as_name(enquo(sample_id)) ,
+                 names_to =  as_string(as_name(enquo(sample_id))) ,
                  values_to = temporary_abundance_column  ) |>
     mutate( {{sample_id}} := purrr::map_chr(   {{sample_id}}  , as.character)   ) |>
     left_join(design_matrix |>
                 mutate(  {{sample_id}} := purrr::map_chr(    {{sample_id}} , as.character)   )
-              , by = as_name(enquo(sample_id)))
+              , by = as_string(as_name(enquo(sample_id))))
 
   count_missing_values_per_group <- abundance_long |>
     mutate(is_missing = ifelse(!is.na( !!sym(temporary_abundance_column)) & !!sym(temporary_abundance_column) > abundance_threshold, 0, 1)) |>
@@ -137,7 +137,7 @@ removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample
     distinct({ { row_id } })
 
   filtered_tbl <- input_table |>
-    dplyr::anti_join(remove_rows_temp, by = as_name(enquo(row_id)))
+    dplyr::anti_join(remove_rows_temp, by = as_string(as_name(enquo(row_id))))
 
   return(filtered_tbl)
 
@@ -162,12 +162,12 @@ removeRowsWithMissingValuesPercent <- function(input_table, cols, design_matrix,
 
   abundance_long <- input_table |>
     pivot_longer(cols = { { cols } },
-                 names_to =  as_name(enquo(sample_id)) ,
+                 names_to =   as_string(as_name( enquo( sample_id ))) ,
                  values_to = temporary_abundance_column  ) |>
     mutate( {{sample_id}} := purrr::map_chr(   {{sample_id}}  , as.character)   ) |>
     left_join(design_matrix |>
                 mutate(  {{sample_id}} := purrr::map_chr(    {{sample_id}} , as.character)   )
-              , by = as_name(enquo(sample_id)))
+              , by = join_by({{sample_id}} ) )
 
   count_values_per_group <- abundance_long |>
     group_by( {{ row_id }}, {{ group_column }} ) |>
@@ -192,7 +192,7 @@ removeRowsWithMissingValuesPercent <- function(input_table, cols, design_matrix,
     distinct({ { row_id } })
 
   filtered_tbl <- input_table |>
-    dplyr::anti_join(remove_rows_temp, by = as_name(enquo(row_id)))
+    dplyr::anti_join(remove_rows_temp, by = join_by({{row_id}}))
 
   return(filtered_tbl)
 
@@ -215,9 +215,9 @@ getRowsToKeepList <- function(input_table, cols, design_matrix, sample_id, row_i
 
   abundance_long <- input_table |>
     pivot_longer(cols = { { cols } },
-                 names_to = as_name(enquo(sample_id)),
+                 names_to = as_string(as_name(enquo(sample_id))),
                  values_to = "Abundance") |>
-    left_join(design_matrix, by = as_name(enquo(sample_id)))
+    left_join(design_matrix, by = as_string(as_name(enquo(sample_id))))
 
 
   count_values_per_group <- abundance_long |>
@@ -278,11 +278,11 @@ getRuvIIIReplicateMatrix <- function(design_matrix, sample_id_column, group_colu
   ruvIII_replicates_matrix <- design_matrix |>
     dplyr::select({ { sample_id_column } }, { { group_column } }) |>
     mutate({ { temp_column } } := 1) |>
-    pivot_wider(id_cols = { { sample_id_column } },
+    pivot_wider(id_cols = as_string( as_name(enquo(sample_id_column ))),
                 names_from = { { group_column } },
                 values_from = { { temp_column } },
                 values_fill = 0) |>
-    column_to_rownames(as_name(enquo(sample_id_column))) |>
+    column_to_rownames(as_string(as_name(enquo(sample_id_column)))) |>
     as.matrix()
 
   ruvIII_replicates_matrix
@@ -299,14 +299,14 @@ plotPca <- function(data,
                     title,  geom.text.size=11,
                    ...) {
 
-  pca.res <- pca(t(as.matrix(data)))
+  pca.res <- mixOmics::pca(t(as.matrix(data)))
 
   proportion_explained <- pca.res$prop_expl_var
 
   temp_tbl <- pca.res$variates$X |>
-    as.data.frame() |>
-    rownames_to_column(as_name(enquo(sample_id_column))) |>
-    left_join(design_matrix, by = as_name(enquo(sample_id_column)))
+    as.data.frame()    |>
+    rownames_to_column(as_string(as_name(enquo(sample_id_column))))  |>
+    left_join(design_matrix, by =  as_string(as_name(enquo(sample_id_column)))  )
 
   unique_groups <- temp_tbl |> distinct( {{group_column}}) |> pull( {{group_column}})
 
@@ -333,14 +333,14 @@ plotRle <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75,
 {
   #  checks = check.ggplot()
   # if (checks) {
-  rle = t(apply(t(Y) - apply(Y, 2, function(x){median(x, na.rm=TRUE)}), 2, function(x){quantile(x, probs = probs, na.rm=TRUE)}))
-  colnames(rle) = c("min", "lower", "middle", "upper",
-                    "max")
-  df = cbind(data.frame(rle.x.factor = rownames(rle)), data.frame(rle))
+  rle <- t(apply(t(Y) - apply(Y, 2, function(x){median(x, na.rm=TRUE)}), 2, function(x){quantile(x, probs = probs, na.rm=TRUE)}))
+  colnames(rle) <- c("min", "lower", "middle", "upper",
+                     "max")
+  df <- cbind(data.frame(rle.x.factor = rownames(rle)), data.frame(rle))
 
   if (!is.null(rowinfo)) {
-    rowinfo = data.frame(rowinfo = rowinfo)
-    df_temp = cbind(df, rowinfo)
+    rowinfo <- data.frame(rowinfo = rowinfo)
+    df_temp <- cbind(df, rowinfo)
 
     my.x.factor.levels <- df_temp |>
       arrange(rowinfo) |>
@@ -353,7 +353,7 @@ plotRle <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75,
       arrange(rowinfo)
   }
 
-  rleplot = ggplot(df, aes_string(x = "rle.x.factor")) +
+  rleplot <- ggplot(df, aes_string(x = "rle.x.factor")) +
     geom_boxplot(aes_string(lower = "lower", middle = "middle",
                             upper = "upper", max = "max", min = "min"),
                  stat = "identity") +
@@ -366,7 +366,7 @@ plotRle <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75,
     coord_cartesian(ylim = ylim)
   if (!is.null(rowinfo))
     if (ncol(rowinfo) == 1)
-      rleplot = rleplot + aes(fill = rowinfo) + labs(fill = "")
+      rleplot <- rleplot + aes(fill = rowinfo) + labs(fill = "")
   return(rleplot)
   # }
   # else return(FALSE)
@@ -546,7 +546,7 @@ getSignificantData <- function(list_of_de_tables,
   get_row_binded_table <- function(de_table_list, description) {
     output <- purrr::map(de_table_list,
                          function(tbl) { tbl |>
-                           rownames_to_column(as_name(enquo(row_id))) |>
+                           rownames_to_column(as_string(as_name(enquo(row_id)))) |>
                            dplyr::select({ { row_id } },
                                          { { p_value_column } },
                                          { { q_value_column } },
@@ -813,6 +813,46 @@ getGlimmaVolcanoProteomics <- function( r_obj
 
 }
 
+
+#' @export
+getGlimmaVolcanoProteomicsWidget <- function( r_obj
+                                        , coef
+                                        , volcano_plot_tab
+                                        , uniprot_column = best_uniprot_acc
+                                        , gene_name_column = gene_name
+                                        , display_columns = c(  "PROTEIN_NAMES"   )  ) {
+
+  if( coef <= ncol(r_obj$coefficients )) {
+
+    best_uniprot_acc <- str_split(rownames(r_obj@.Data[[1]]), " |:" ) |>
+      purrr::map_chr(1)
+
+    # print(paste("nrow = ", nrow(r_obj@.Data[[1]])))
+    # print(head(best_uniprot_acc))
+
+    volcano_plot_tab_cln <- volcano_plot_tab |>
+      dplyr::distinct( {{uniprot_column}}
+                       , {{gene_name_column}}, pick(one_of( display_columns))) |>
+      dplyr::rename( best_uniprot_acc =  {{uniprot_column}}
+                     , gene_name = {{gene_name_column}}   )
+
+    anno_tbl <- data.frame( uniprot_acc = rownames(r_obj@.Data[[1]])
+                            , best_uniprot_acc = best_uniprot_acc ) |>
+      left_join( volcano_plot_tab_cln
+                 , by = c("best_uniprot_acc") )  |>
+      mutate( gene_name = case_when( is.na( gene_name) ~ best_uniprot_acc,
+                                     TRUE ~ gene_name) )
+
+    gene_names <- anno_tbl |>
+      pull(gene_name)
+
+    rownames( r_obj@.Data[[1]] ) <- gene_names
+
+     glimmaVolcano(r_obj, coef=coef, anno=anno_tbl, display.columns = display_columns) #the plotly object
+
+  }
+
+}
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' getGlimmaVolcanoPhosphoproteomics
@@ -1288,8 +1328,8 @@ analyseRanking <- function(data, uniprot_acc_column = uniprot_acc) {
 
   results_tbl <- data |>
     as.data.frame() |>
-    rownames_to_column(as_name(enquo(uniprot_acc_column))) |>
-    dplyr::select(one_of(c(as_name(enquo(uniprot_acc_column)), "q.mod", "logFC"))) |>
+    rownames_to_column(as_string(as_name(enquo(uniprot_acc_column)))) |>
+    dplyr::select(one_of(c( as_string(as_name(enquo(uniprot_acc_column))), "q.mod", "logFC"))) |>
     arrange(desc(q.mod)) |>
     mutate(ctrl_gene_rank = row_number())
 
@@ -1341,10 +1381,10 @@ getNegCtrlProtAnova <- function(data_matrix, design_matrix, group_column = "grou
           return(NA_real_)
        }
     })
-  
+
   ps[is.na(ps)] <- 1
 
-  aov <- qvalue(ps)$qvalues
+  aov <- qvalue(unlist(ps))$qvalues
 
   filtered_list <- aov[aov > q_val_thresh]
 

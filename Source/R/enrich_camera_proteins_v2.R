@@ -64,7 +64,7 @@ command_line_options <- commandArgs(trailingOnly = TRUE)
 
   parser <- OptionParser(add_help_option =TRUE)
 
-  parser <- add_option(parser, c("-c", "--config"), type = "character", default =  "p02_config_prot.ini", 
+  parser <- add_option(parser, c("-c", "--config"), type = "character", default =  "config_prot.ini", 
                        help = "Configuration file.  [default %default]",
                        metavar = "string")
 
@@ -368,7 +368,7 @@ norm_abundance_mat <- norm_abundance %>%
 loginfo("Create the replicate matrix.")
 
 ruvIII_replicates_matrix <- getRuvIIIReplicateMatrix( design_mat_cln,
-                                                         !!rlang::sym(args$sample_id),
+                                                          !!rlang::sym(args$sample_id), 
                                                          !!rlang::sym(args$group_id))
 
 ruvIII_replicates_matrix
