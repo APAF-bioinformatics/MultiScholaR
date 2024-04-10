@@ -1389,18 +1389,15 @@ getNegCtrlProtAnova <- function(data_matrix
 
   ps[is.na(ps)] <- 1
 
-  aov <- ps
+  aov <- c()
 
   if ( fdr_method == "qvalue") {
     aov <- qvalue(unlist(ps))$qvalues
   } else if ( fdr_method == "BH") {
-    aov <- p.adjust(unlist(ps), method = "BH")
+    aov <- qvalue(unlist(ps), pi0=1)$qvalues
   } else {
     error( paste( "Input FDR method", fdr_method, "not valid") )
   }
-
-
-  aov <- qvalue(unlist(ps))$qvalues
 
   filtered_list <- aov[aov > q_val_thresh]
 
