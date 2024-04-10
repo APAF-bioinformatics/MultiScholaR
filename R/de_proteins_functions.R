@@ -1363,12 +1363,17 @@ getControlGenes <- function(data,
 
 #' Identify negative control proteins for use in removal of unwanted variation, using an ANOVA test.
 #' @param data_matrix A matrix containing the log (base 2) protein abundance values where each column represents a sample and each row represents a protein group, and proteins as rows. The row ID are the protein accessions. The data is preferably median-scaled with missing values imputed.
+#' @param design_matrix A data frame with the design matrix. Matches sample IDs to group IDs.
 #' @param group_column The name of the column with the experimental group, as a string.
-#' @param num_neg_ctrl The number of negative control genes to select. Typically the number of genes with the highest q-value (e.g. least statistically significant).
-#' @param q_val_thresh The q-value threshold. No proteins with q-values lower than this value are included in the list of negative control proteins. This means the number of negative control proteins could be less than the number specified in \code{num_neg_ctrl} when some were excluded by this threshold.
+#' @param num_neg_ctrl The number of negative control genes to select. Typically the number of genes with the highest q-value (e.g. least statistically significant). Default is 100
+#' @param q_val_thresh The FDR threshold. No proteins with q-values lower than this value are included in the list of negative control proteins. This means the number of negative control proteins could be less than the number specified in \code{num_neg_ctrl} when some were excluded by this threshold.
+#' @param fdr_method The FDR calculation method, default is "qvalue". The other option is "BH"
 #' @return A boolean vector which indicates which row in the input data matrix is a control gene. The row is included if the value is TRUE. The names of each element is the row ID / protein accessions of the input data matrix.
 #'@export
-getNegCtrlProtAnova <- function(data_matrix, design_matrix, group_column = "group", num_neg_ctrl = 500, q_val_thresh = 0.05) {
+getNegCtrlProtAnova <- function(data_matrix
+                                , design_matrix, group_column = "group"
+                                , num_neg_ctrl = 100, q_val_thresh = 0.05
+                                , fdr_method = "qvalue") {
 
   ## Inspired by matANOVA function from PhosR package: http://www.bioconductor.org/packages/release/bioc/html/PhosR.html
 
@@ -1383,6 +1388,17 @@ getNegCtrlProtAnova <- function(data_matrix, design_matrix, group_column = "grou
     })
 
   ps[is.na(ps)] <- 1
+
+  aov <- ps
+
+  if ( fdr_method == "qvalue") {
+    aov <- qvalue(unlist(ps))$qvalues
+  } else if ( fdr_method == "BH") {
+    aov <- p.adjust(unlist(ps), method = "BH")
+  } else {
+    error( paste( "Input FDR method", fdr_method, "not valid") )
+  }
+
 
   aov <- qvalue(unlist(ps))$qvalues
 
