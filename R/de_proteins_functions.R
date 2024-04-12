@@ -1416,6 +1416,7 @@ getNegCtrlProtAnova <- function(data_matrix
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#'@export
 findBestK <- function( cancorplot_r1) {
   controls_idx <- which(cancorplot_r1$data$featureset == "Control")
   all_idx <- which( cancorplot_r1$data$featureset == "All")
