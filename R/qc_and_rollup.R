@@ -387,14 +387,14 @@ calulatePearsonCorrelationForSamplePairs <- function( samples_id_tbl
 
 
   pairs_for_comparison <- getPairsOfSamplesTable(samples_id_tbl
-                                                 , run_id_column = "ms_filename"
+                                                 , run_id_column = run_id_column
                                                  , replicate_group_column = replicate_group_column)
 
   plan(multisession, workers = num_of_cores)
 
   pearson_correlation_per_pair <- pairs_for_comparison |>
-    mutate( pearson_correlation = furrr::future_map2_dbl( ms_filename.x
-                                                          , ms_filename.y
+    mutate( pearson_correlation = furrr::future_map2_dbl( !!rlang::sym( paste0( run_id_column, ".x"))
+                                                          , !!rlang::sym(paste0( run_id_column, ".y"))
                                                           , \(x,y){
                                                             input_table_filt <- input_table |>
                                                               dplyr::filter( {{sample_id_column}} == x | {{sample_id_column}} == y)

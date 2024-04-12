@@ -1413,6 +1413,19 @@ getNegCtrlProtAnova <- function(data_matrix
 
 }
 
+
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+findBestK <- function( cancorplot_r1) {
+  controls_idx <- which(cancorplot_r1$data$featureset == "Control")
+  all_idx <- which( cancorplot_r1$data$featureset == "All")
+  difference_between_all_ctrl <- cancorplot_r1$data$cc[all_idx] - cancorplot_r1$data$cc[controls_idx]
+  max_difference <- max(difference_between_all_ctrl, na.rm=TRUE)
+  best_idx <- which( difference_between_all_ctrl == max_difference)
+  best_k <- (cancorplot_r1$data$K[controls_idx] )[best_idx]
+  return( best_k)
+}
+
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #'@param design_matrix Contains the sample_id column and the average_replicates_id column
