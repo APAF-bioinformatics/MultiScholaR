@@ -322,6 +322,43 @@ plotPca <- function(data,
   output
 }
 
+#'@export
+plotPcaGgpairs <- function( data_matrix
+                            , design_matrix
+                            , group_column
+                            , sample_id_column
+                            , ncomp=2 ) {
+
+  pca.res <- mixOmics::pca(t(as.matrix(data_matrix)), ncomp=ncomp)
+
+
+  pca_prop_explained_helper <- function( pca_obj, comp_idx ) {
+    proportion_explained <- pca.res$prop_expl_var
+
+    pc_label <- paste0("PC", comp_idx)
+
+    perc_label <- paste( paste0(pc_label, " ("), round(proportion_explained$X[[pc_label]]*100, 0),"%)", sep="")
+
+    perc_label
+  }
+
+  pc_list <- purrr::map_chr( seq_len(ncomp)
+                         , \(comp_idx){ pca_prop_explained_helper(pca.res, comp_idx)})
+
+  pca_variates_x <- pca.res$variates$X
+
+  colnames(pca_variates_x) <- pc_list
+
+  pca_plot_ggpairs <- pca_variates_x |>
+    as.data.frame() |>
+    rownames_to_column( as_string(as_name(enquo(sample_id_column))) ) |>
+    left_join( design_matrix
+               , by = join_by( {{sample_id_column}} ==  {{sample_id_column}}) ) |>
+    ggpairs( columns=pc_list, aes( colour = {{group_column}}, fill= {{group_column}}, alpha=0.4)
+             , legend = 1)
+
+  pca_plot_ggpairs
+}
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -636,6 +673,7 @@ plotVolcano <- function(selected_data,
 #' @param points_type_label A column in input table with the type of points based on log fold-change and q-value (e.g. "Not sig., logFC >= 1" = "orange" , "Sig., logFC >= 1" = "purple" , "Sig., logFC < 1" = "blue" , "Not sig." )
 #' @param points_color A column in input table with the colour of the points corresponding to each type of points (e.g. orange, purple, blue black, )
 #' @param q_val_thresh A numerical value specifying the q-value threshold for statistically significant proteins.
+#' @param log2FC_thresh A numerical value specifying the log fold-change threshold to draw a vertical line
 #' @param formula_string The formula string used in the facet_grid command for the ggplot scatter plot.
 #' @export
 plotOneVolcano <- function( input_data, input_title,
@@ -643,7 +681,8 @@ plotOneVolcano <- function( input_data, input_title,
                             log_fc_column = logFC,
                             points_type_label = label,
                             points_color = colour,
-                            q_val_thresh=0.05) {
+                            q_val_thresh=0.05 ,
+                            log2FC_thresh = 1) {
 
   colour_tbl <- input_data |>
     distinct( {{points_type_label}}, {{points_color}} )
@@ -670,9 +709,7 @@ plotOneVolcano <- function( input_data, input_title,
     ggplot(aes(y = {{log_q_value_column}},
                x = {{log_fc_column}} )) +
     geom_point(aes(col = label)) +
-    scale_colour_manual(values = avail_colours) +
-    geom_vline(xintercept = 1, colour = "black", size = 0.2) +
-    geom_vline(xintercept = -1, colour = "black", size = 0.2) +
+    scale_colour_manual(values = avail_colours)  +
     geom_hline(yintercept = -log10(q_val_thresh)) +
     theme_bw() +
     xlab(expression(Log[2](`fold-change`))) +
@@ -687,6 +724,13 @@ plotOneVolcano <- function( input_data, input_title,
     theme(plot.title = element_text(size = 12)) +
     theme(legend.text = element_text(size = 12)) # +
   # theme(legend.title = element_text(size = 12))
+
+  if( !is.na(log2FC_thresh) ) {
+  volcano_plot <- volcano_plot+
+    geom_vline(xintercept = log2FC_threshold, colour = "black", size = 0.2) +
+    geom_vline(xintercept = -log2FC_threshold, colour = "black", size = 0.2)
+
+  }
 
   volcano_plot
 }
