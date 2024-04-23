@@ -727,8 +727,8 @@ plotOneVolcano <- function( input_data, input_title,
 
   if( !is.na(log2FC_thresh) ) {
   volcano_plot <- volcano_plot+
-    geom_vline(xintercept = log2FC_threshold, colour = "black", size = 0.2) +
-    geom_vline(xintercept = -log2FC_threshold, colour = "black", size = 0.2)
+    geom_vline(xintercept = log2FC_thresh, colour = "black", size = 0.2) +
+    geom_vline(xintercept = -log2FC_thresh, colour = "black", size = 0.2)
 
   }
 
