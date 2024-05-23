@@ -145,7 +145,6 @@ removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' For each experimental group, identify proteins that have more than accepted percentage of missing values per group.
 #'@param input_table An input table with a column containing the row ID and the rest of the columns representing abundance values for each sample.
 #'@param cols A tidyselect command to select the columns. This includes the functions starts_with(), ends_with(), contains(), matches(), and num_range()
 #'@param design_matrix A data frame with a column containing the sample ID (as per the sample_id param) and the experimental group (as per the group param). Each row as the sample ID as row name in the data frame.
@@ -153,11 +152,16 @@ removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample
 #'@param row_id A unique ID for each row of the 'input_table' variable.
 #'@param group_column The name of the column in design_matrix table that has the experimental group.
 #'@param max_percent_miss_per_group An integer representing the maximum percentage of samples with missing values per group.
+#'@param number_of_groups_missing Rows with this number of groups or more violating the max percent miss per group will be removed.
 #'@param abundance_threshold Abundance threshold in which the protein in the sample must be above for it to be considered for inclusion into data analysis.
 #'@param temporary_abundance_column The name of a temporary column to keep the abundance value you want to filter upon
 #'@return A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values.
 #'@export
-removeRowsWithMissingValuesPercent <- function(input_table, cols, design_matrix, sample_id, row_id, group_column, max_percent_miss_per_group, abundance_threshold
+removeRowsWithMissingValuesPercent <- function(input_table, cols, design_matrix, sample_id, row_id
+                                               , group_column
+                                               , max_percent_miss_per_group
+                                               , number_of_groups_missing = 1
+                                               , abundance_threshold
                                         , temporary_abundance_column = "Abundance") {
 
   abundance_long <- input_table |>
@@ -165,6 +169,8 @@ removeRowsWithMissingValuesPercent <- function(input_table, cols, design_matrix,
                  names_to =   as_string(as_name( enquo( sample_id ))) ,
                  values_to = temporary_abundance_column  ) |>
     mutate( {{sample_id}} := purrr::map_chr(   {{sample_id}}  , as.character)   ) |>
+    mutate( !!sym(temporary_abundance_column) := case_when (is.nan(!!sym(temporary_abundance_column)) ~ NA_real_
+                                                            , TRUE ~ !!sym(temporary_abundance_column) ) ) |>
     left_join(design_matrix |>
                 mutate(  {{sample_id}} := purrr::map_chr(    {{sample_id}} , as.character)   )
               , by = join_by({{sample_id}} ) )
@@ -183,13 +189,14 @@ removeRowsWithMissingValuesPercent <- function(input_table, cols, design_matrix,
   count_percent_missing_per_group <- count_values_missing_per_group |>
     full_join( count_values_per_group,
                by = join_by( {{ row_id }}, {{ group_column }} )) |>
-    mutate(  per_missing_per_group = num_missing_per_group / num_per_group * 100 )
-
+    mutate(  perc_missing_per_group = num_missing_per_group / num_per_group * 100 )
 
   remove_rows_temp <- count_percent_missing_per_group |>
-    dplyr::filter(max_percent_miss_per_group <=  per_missing_per_group) |>
-    dplyr::select(-per_missing_per_group , -num_missing_per_group, -num_per_group, -{ { group_column } }) |>
-    distinct({ { row_id } })
+    dplyr::filter(max_percent_miss_per_group <=  perc_missing_per_group) |>
+    group_by( { { row_id } }) |>
+    summarise( count  = n()) |>
+    ungroup() |>
+    dplyr::filter(count >= number_of_groups_missing)
 
   filtered_tbl <- input_table |>
     dplyr::anti_join(remove_rows_temp, by = join_by({{row_id}}))
@@ -296,10 +303,10 @@ plotPca <- function(data,
                     sample_id_column = Sample_ID,
                     group_column = group,
                     label_column = {{sample_id_column}},
-                    title,  geom.text.size=11,
+                    title,  geom.text.size=11, ncomp=2,
                    ...) {
 
-  pca.res <- mixOmics::pca(t(as.matrix(data)))
+  pca.res <- mixOmics::pca(t(as.matrix(data)), ncomp=ncomp)
 
   proportion_explained <- pca.res$prop_expl_var
 

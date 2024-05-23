@@ -436,21 +436,9 @@ filterSamplesByCorrelationThreshold <- function(pearson_correlation_per_pair
                   , values_to = filename_id_column ) |>
     dplyr::distinct( !!rlang::sym(filename_id_column ) )
 
-  # Poor quality samples consist of correlation pair where neither of the pair of samples pass correlation score threshold in any other pairings
-  pairs_to_remove <- pearson_correlation_per_pair |>
-    anti_join( samples_to_keep
-               , by= join_by( {{filename_column_x}} == {{filename_id_column}}) )    |>
-    anti_join( samples_to_keep
-               , by= join_by( {{filename_column_y}} == {{filename_id_column}}) )
-
-  table_of_samples_to_remove <- data.frame( to_remove = unique( c( pairs_to_remove$ms_filename.x
-                                                                   , pairs_to_remove$ms_filename.y)) )
-
-  # print( length( unique( table_of_samples_to_remove$to_remove)) )
-
   samples_above_correlation_theshold <- peptide_keep_samples_with_min_num_peptides |>
-    anti_join( table_of_samples_to_remove
-               , by=join_by(  {{filename_id_column}} == to_remove)) |>
+    inner_join( samples_to_keep
+               , by=join_by(  !!rlang::sym(filename_id_column ) == !!rlang::sym(filename_id_column ) )) |>
     distinct()
 
   samples_above_correlation_theshold
@@ -472,13 +460,14 @@ findSamplesPairBelowCorrelationThreshold <- function(pearson_correlation_per_pai
                   , values_to = filename_id_column ) |>
     dplyr::distinct( !!rlang::sym(filename_id_column ) )
 
-  pairs_below_correlation_theshold <- pearson_correlation_per_pair |>
-    anti_join( samples_to_keep
-               , by= join_by( {{filename_column_x}} == {{filename_id_column}}) )    |>
-    anti_join( samples_to_keep
-               , by= join_by( {{filename_column_y}} == {{filename_id_column}}) )
+  samples_below_correlation_theshold <- pearson_correlation_per_pair |>
+    pivot_longer( cols =c({{filename_column_x}}, {{filename_column_y}})
+                  , values_to = filename_id_column ) |>
+    dplyr::distinct( !!rlang::sym(filename_id_column ) ) |>
+    innner_join( samples_to_keep
+               , by= join_by( !!rlang::sym(filename_id_column ) == !!rlang::sym(filename_id_column ) ) )
 
-  pairs_below_correlation_theshold
+  samples_below_correlation_theshold
 
 }
 

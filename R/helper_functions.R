@@ -164,6 +164,15 @@ testRequiredFiles <- function(files) {
 }
 
 #' @export
+testRequiredFilesWarning <- function(files) {
+  missing_files <- !file.exists(files)
+  for (file in files[missing_files]) {
+    logwarn("Missing required file: %s", file)
+    #q()
+  }
+}
+
+#' @export
 testRequiredArguments <- function(arg_list, parameters) {
   for (par in parameters) {
     if (!par %in% names(arg_list)) {
