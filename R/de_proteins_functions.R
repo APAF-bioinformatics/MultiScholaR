@@ -759,13 +759,12 @@ plotOneVolcanoNoVerticalLines <- function( input_data, input_title,
                             log_fc_column = logFC,
                             points_type_label = label,
                             points_color = colour,
-                            gene_name = gene_name,
                             q_val_thresh=0.05) {
 
   colour_tbl <- input_data |>
     distinct( {{points_type_label}}, {{points_color}} )
 
-  # print(colour_tbl)
+  print(colour_tbl)
 
   colour_map <- colour_tbl |>
     pull({{points_color}} ) |>
@@ -780,14 +779,19 @@ plotOneVolcanoNoVerticalLines <- function( input_data, input_title,
 
   avail_colours <- colour_map[avail_labels]
 
-  # print(avail_labels)
-  # print(avail_colours)
+  print(avail_labels)
+  print(avail_colours)
 
   volcano_plot <-  input_data |>
     ggplot(aes(y = {{log_q_value_column}},
                x = {{log_fc_column}},
-               label = {{gene_name}})) +
-    geom_point(aes(col = label)) +
+               col={{points_type_label}})) +
+    geom_point()
+
+  print(volcano_plot)
+  print("Hello")
+
+  volcano_plot <-   volcano_plot +
     scale_colour_manual(values = avail_colours) +
     # geom_vline(xintercept = 1, colour = "black", size = 0.2) +
     # geom_vline(xintercept = -1, colour = "black", size = 0.2) +

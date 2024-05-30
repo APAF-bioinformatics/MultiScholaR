@@ -69,7 +69,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.  [default %default]")
 
-parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config_prot.ini",
+parser <- add_option(parser, c("-c", "--config"), type = "character", default = "~/Workings/2024/e_33586_UOW_NevilleNg_20231113/scripts/proteomics/config_prot.ini",
                      help = "Configuration file.  [default %default]",
                      metavar = "string")
 
@@ -406,17 +406,15 @@ plot(after_hclust)
 #   dplyr::filter( row_id <= args$top_x_gene_name & !!sym(args$fdr_column) < args$q_val_thresh) %>%
 #   dplyr::select( comparison, !!rlang::sym(args$row_id), gene_name)
 
+print("Plot static volcano plots.")
+
 selected_data <- vroom::vroom( file.path(args$de_proteins_long_file ) )  %>% # args$input_dir, "lfc_qval_long.tsv"
     mutate( lqm = -log10(!!sym(args$fdr_column)))  %>%
-    dplyr::mutate(label = case_when(abs(!!sym(args$log2fc_column)) >= 1 & !!sym(args$fdr_column) >= args$q_val_thresh ~ "Not sig., logFC >= 1",
-                                   abs(!!sym(args$log2fc_column)) >= 1 & !!sym(args$fdr_column) < args$q_val_thresh ~ "Sig., logFC >= 1",
-                                   abs(!!sym(args$log2fc_column)) < 1 & !!sym(args$fdr_column) < args$q_val_thresh ~ "Sig., logFC < 1",
+    dplyr::mutate(label = case_when( !!sym(args$fdr_column) < args$q_val_thresh ~ "Significant",
                                    TRUE ~ "Not sig.")) %>%
-    dplyr::mutate(colour = case_when(abs(!!sym(args$log2fc_column)) >= 1 & !!sym(args$fdr_column) >= args$q_val_thresh ~ "orange",
-                                     abs(!!sym(args$log2fc_column)) >= 1 & !!sym(args$fdr_column) < args$q_val_thresh ~ "purple",
-                                     abs(!!sym(args$log2fc_column)) < 1 & !!sym(args$fdr_column) < args$q_val_thresh ~ "blue",
+    dplyr::mutate(colour = case_when( !!sym(args$fdr_column) < args$q_val_thresh ~ "purple",
                                      TRUE ~ "black")) %>%
-    dplyr::mutate(colour = factor(colour, levels = c("black", "orange", "blue", "purple"))) # %>%
+    dplyr::mutate(colour = factor(colour, levels = c("black", "purple")))  # %>%
   # left_join( show_gene_name, by = c("comparison" = "comparison",
   #                                   "uniprot_acc" = "uniprot_acc")) %>%
   # dplyr::mutate( gene_name = case_when( !!sym(args$fdr_column) < args$q_val_thresh ~ gene_name,
@@ -465,9 +463,13 @@ list_of_volcano_plots <- selected_data %>%
   ungroup() %>%
   mutate( title = paste( comparison)) %>%
   #mutate( data = purrr::map (data, ~{ (.) %>% mutate( !!sym(args$log2fc_column)_edited = 2^!!sym(args$log2fc_column))})) %>%
-  mutate( plot = purrr:::map2( data, title, \(x,y) { plotOneVolcanoNoVerticalLines(x, y,   log_fc_column = !!sym(args$log2fc_column))}) )
+  mutate( plot = purrr:::map2( data, title, \(x,y) { plotOneVolcanoNoVerticalLines(x, y
+                                                                                   , log_q_value_column = lqm
+                                                                                   , log_fc_column = !!sym(args$log2fc_column))}) )
 
 list_of_volcano_plots %>% pull(plot)
+
+plotOneVolcanoNoVerticalLines(list_of_volcano_plots$data[[1]], list_of_volcano_plots$title[[1]],   log_fc_column = !!sym(args$log2fc_column))
 
 purrr::walk2( list_of_volcano_plots %>% pull(title),
               list_of_volcano_plots %>% pull(plot),
