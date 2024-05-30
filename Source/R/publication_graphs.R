@@ -465,7 +465,7 @@ list_of_volcano_plots <- selected_data %>%
   ungroup() %>%
   mutate( title = paste( comparison)) %>%
   #mutate( data = purrr::map (data, ~{ (.) %>% mutate( !!sym(args$log2fc_column)_edited = 2^!!sym(args$log2fc_column))})) %>%
-  mutate( plot = purrr:::map2( data, title, \(x,y) { plotOneVolcano(x, y,   log_fc_column = !!sym(args$log2fc_column))}) )
+  mutate( plot = purrr:::map2( data, title, \(x,y) { plotOneVolcanoNoVerticalLines(x, y,   log_fc_column = !!sym(args$log2fc_column))}) )
 
 list_of_volcano_plots %>% pull(plot)
 
