@@ -156,7 +156,7 @@ srlQvalueProteotypicPeptideClean <- function(input_table
                                                                        , "Precursor.Quantity"
                                                                        , "Precursor.Normalised")
                                              , protein_id_column = Protein.Ids
-                                             , q_value_column = Global.Q.Value
+                                             , q_value_column = Q.Value
                                              , proteotypic_peptide_sequence_column = Proteotypic) {
 
 

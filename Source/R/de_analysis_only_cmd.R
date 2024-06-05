@@ -65,7 +65,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.  [default %default]")
 
-parser <- add_option(parser, c("-c", "--config"), type = "character", default = "/Users/ignatiuspang/Workings/2024/e_33586_UOW_NevilleNg_20231113/scripts/proteomics/config_prot.ini",
+parser <- add_option(parser, c("-c", "--config"), type = "character", default = "/Users/ignatiuspang/Workings/2024/e_33602_CSIRO_ThomasNguyen_20231114/scripts/proteomics/config_prot.ini",
                      help = "Configuration file.  [default %default]",
                      metavar = "string")
 

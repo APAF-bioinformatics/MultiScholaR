@@ -69,7 +69,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.  [default %default]")
 
-parser <- add_option(parser, c("-c", "--config"), type = "character", default = "~/Workings/2024/e_33586_UOW_NevilleNg_20231113/scripts/proteomics/config_prot.ini",
+parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config_prot.ini",
                      help = "Configuration file.  [default %default]",
                      metavar = "string")
 
@@ -519,30 +519,36 @@ group_by( comparison,  status) %>% # expression, analysis_type,
   ungroup()
 
 formula_string <- ". ~ comparison"
-num_sig_de_genes_barplot <- num_sig_de_molecules %>%
-  dplyr::filter(status != "Not significant") %>%
-  ggplot(aes(x = status, y = counts)) +
-  geom_bar(stat = "identity") +
-  geom_text(stat = 'identity', aes(label = counts), vjust = -0.5) +
-  theme(axis.text.x = element_text(angle = 90))  +
-  facet_grid(as.formula(formula_string))
 
-num_sig_de_genes_barplot
+if (num_sig_de_molecules %>%
+    dplyr::filter(status != "Not significant") |>
+    nrow() > 0 ) {
 
-createDirIfNotExists(file.path(args$output_dir, "NumSigDeMolecules"))
+  num_sig_de_genes_barplot <- num_sig_de_molecules %>%
+    dplyr::filter(status != "Not significant") %>%
+    ggplot(aes(x = status, y = counts)) +
+    geom_bar(stat = "identity") +
+    geom_text(stat = 'identity', aes(label = counts), vjust = -0.5) +
+    theme(axis.text.x = element_text(angle = 90))  +
+    facet_grid(as.formula(formula_string))
 
-vroom::vroom_write( num_sig_de_molecules,
-                    file.path(args$output_dir, "NumSigDeMolecules", "num_sig_de_molecules.tab" ) )
+  num_sig_de_genes_barplot
 
-num_of_comparison <- num_sig_de_molecules |>
-  distinct(comparison) |>
-  nrow()
+  createDirIfNotExists(file.path(args$output_dir, "NumSigDeMolecules"))
 
-ggsave(filename = file.path(args$output_dir, "NumSigDeMolecules", "num_sig_de_molecules.png" ),
-       plot = num_sig_de_genes_barplot,
-       height = 6,
-       width = (num_of_comparison + 2) *7/6 )
+  vroom::vroom_write( num_sig_de_molecules,
+                      file.path(args$output_dir, "NumSigDeMolecules", "num_sig_de_molecules.tab" ) )
 
+
+  num_of_comparison <- num_sig_de_molecules |>
+    distinct(comparison) |>
+    nrow()
+
+  ggsave(filename = file.path(args$output_dir, "NumSigDeMolecules", "num_sig_de_molecules.png" ),
+         plot = num_sig_de_genes_barplot,
+         height = 6,
+         width = (num_of_comparison + 2) *7/6 )
+}
 
 ##-------------------------------------
 ## PCA plots
