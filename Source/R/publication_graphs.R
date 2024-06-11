@@ -766,7 +766,6 @@ if(   args$data_type  == "proteomics"
 
   createDirIfNotExists(output_dir)
 
-
   purrr::walk( seq_len( ncol(r_obj$coefficients))
                , \(coef) { # print(coef)
                  ProteomeRiver::getGlimmaVolcanoProteomics( r_obj

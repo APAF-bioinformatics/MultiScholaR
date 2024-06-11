@@ -859,7 +859,12 @@ getGlimmaVolcanoProteomics <- function( r_obj
 
     rownames( r_obj@.Data[[1]] ) <- gene_names
 
-    htmlwidgets::saveWidget( widget = glimmaVolcano(r_obj, coef=coef, anno=anno_tbl, display.columns = display_columns) #the plotly object
+    r_obj$p.value[,coef] <- qvalue( r_obj$p.value[,coef])$qvalues
+
+    htmlwidgets::saveWidget( widget = glimmaVolcano(r_obj
+                                                    , coef=coef, anno=anno_tbl
+                                                    , display.columns = display_columns
+                                                    , p.adj.method = "none" ) #the plotly object
                              , file = file.path( output_dir
                                                  , paste0(colnames(r_obj$coefficients)[coef], ".html"))  #the path & file name
                              , selfcontained = TRUE #creates a single html file
@@ -903,7 +908,12 @@ getGlimmaVolcanoProteomicsWidget <- function( r_obj
 
     rownames( r_obj@.Data[[1]] ) <- gene_names
 
-     glimmaVolcano(r_obj, coef=coef, anno=anno_tbl, display.columns = display_columns) #the plotly object
+    r_obj$p.value[,coef] <- qvalue( r_obj$p.value[,coef])$qvalues
+
+     glimmaVolcano(r_obj, coef=coef
+                   , anno=anno_tbl
+                   , display.columns = display_columns
+                   , p.adj.method="none") #the plotly object
 
   }
 
@@ -947,7 +957,13 @@ getGlimmaVolcanoPhosphoproteomics <- function( r_obj
 
     #coef <- seq_len( ncol(r_obj$coefficients))[1]
 
-    htmlwidgets::saveWidget( widget = glimmaVolcano(r_obj, coef=coef, anno=anno_tbl, display.columns=display_columns) #the plotly object
+    r_obj$p.value[,coef] <- qvalue( r_obj$p.value[,coef])$qvalues
+
+
+    htmlwidgets::saveWidget( widget = glimmaVolcano(r_obj, coef=coef
+                                                    , anno=anno_tbl
+                                                    , display.columns=display_columns
+                                                    , p.adj.method = "none") #the plotly object
                              , file = file.path( output_dir
                                                  , paste0(colnames(r_obj$coefficients)[coef], ".html"))  #the path & file name
                              , selfcontained = TRUE #creates a single html file
