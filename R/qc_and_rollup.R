@@ -145,7 +145,7 @@ plotPeptidesProteinsCountsPerSample <- function( input_table
 # Keep spectrum-peptide matches that is within q-value threshold and are proteotypic
 #' @export
 srlQvalueProteotypicPeptideClean <- function(input_table
-                                             , q_value_threh = 0.01
+                                             , q_value_thresh = 0.01
                                              , global_q_value_thresh = 0.01
                                              , num_proteotypic_peptide_thresh = 1
                                              ,   srl_quant_columns = c("Run"
