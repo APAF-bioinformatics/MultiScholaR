@@ -145,6 +145,7 @@ plotPeptidesProteinsCountsPerSample <- function( input_table
 # Keep spectrum-peptide matches that is within q-value threshold and are proteotypic
 #' @export
 srlQvalueProteotypicPeptideClean <- function(input_table
+                                             , q_value_threh = 0.01
                                              , global_q_value_thresh = 0.01
                                              , num_proteotypic_peptide_thresh = 1
                                              ,   srl_quant_columns = c("Run"
@@ -157,12 +158,14 @@ srlQvalueProteotypicPeptideClean <- function(input_table
                                                                        , "Precursor.Normalised")
                                              , protein_id_column = Protein.Ids
                                              , q_value_column = Q.Value
+                                             , global_q_value_column = Global.Q.Value
                                              , proteotypic_peptide_sequence_column = Proteotypic) {
 
 
 
   search_srl_quant_cln <- input_table |>
-    dplyr::filter( {{q_value_column}} < global_q_value_thresh &
+    dplyr::filter( {{q_value_column}} < q_value_thresh &
+                     {{global_q_value_column}} < global_q_value_thresh &
                      {{proteotypic_peptide_sequence_column}} == num_proteotypic_peptide_thresh ) |>
     dplyr::filter( ! str_detect( {{protein_id_column}}, ";")) |>
     dplyr::select(one_of( srl_quant_columns))
