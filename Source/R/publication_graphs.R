@@ -530,7 +530,7 @@ if (num_sig_de_molecules %>%
     geom_bar(stat = "identity") +
     geom_text(stat = 'identity', aes(label = counts), vjust = -0.5) +
     theme(axis.text.x = element_text(angle = 90))  +
-    facet_grid(as.formula(formula_string))
+    facet_wrap(as.formula(formula_string))
 
   num_sig_de_genes_barplot
 
@@ -545,6 +545,47 @@ if (num_sig_de_molecules %>%
     nrow()
 
   ggsave(filename = file.path(args$output_dir, "NumSigDeMolecules", "num_sig_de_molecules.png" ),
+         plot = num_sig_de_genes_barplot,
+         height = 6,
+         width = (num_of_comparison + 2) *7/6 )
+
+  ggsave(filename = file.path(args$output_dir, "NumSigDeMolecules", "num_sig_de_molecules.pdf" ),
+         plot = num_sig_de_genes_barplot,
+         height = 6,
+         width = (num_of_comparison + 2) *7/6 )
+}
+
+
+
+if (num_sig_de_molecules %>%
+    dplyr::filter(status != "Not significant") |>
+    nrow() > 0 ) {
+
+  num_sig_de_genes_barplot <- num_sig_de_molecules %>%
+    ggplot(aes(x = status, y = counts)) +
+    geom_bar(stat = "identity") +
+    geom_text(stat = 'identity', aes(label = counts), vjust = -0.5) +
+    theme(axis.text.x = element_text(angle = 90))  +
+    facet_wrap(as.formula(formula_string))
+
+  num_sig_de_genes_barplot
+
+  createDirIfNotExists(file.path(args$output_dir, "NumSigDeMolecules"))
+
+  vroom::vroom_write( num_sig_de_molecules,
+                      file.path(args$output_dir, "NumSigDeMolecules", "num_sig_de_molecules_with_not_significant.tab" ) )
+
+
+  num_of_comparison <- num_sig_de_molecules |>
+    distinct(comparison) |>
+    nrow()
+
+  ggsave(filename = file.path(args$output_dir, "NumSigDeMolecules", "num_sig_de_molecules_with_not_significant.png" ),
+         plot = num_sig_de_genes_barplot,
+         height = 6,
+         width = (num_of_comparison + 2) *7/6 )
+
+  ggsave(filename = file.path(args$output_dir, "NumSigDeMolecules", "num_sig_de_molecules_with_not_significant.pdf" ),
          plot = num_sig_de_genes_barplot,
          height = 6,
          width = (num_of_comparison + 2) *7/6 )
