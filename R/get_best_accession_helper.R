@@ -185,13 +185,23 @@ chooseBestPhosphositeAccession <- function(input_tbl, acc_detail_tab, accessions
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#'Choose the best accession
+#'@description From a list of UniProt accessions, choose the best accession to use based on the UniProt score for quality of annotation for the protein entries
 #'@param input_tbl Contain the following columns, 'group_id' which is the Id for each protein group, 'accessions_column' which is the column with the accession of the protein
 #'@param acc_detail_tabl The out table from running the function 'parseFastaFile'
 #'@param accessions_column The name of the column with the list of protein accessions, separated by ';' semi-colon. No need to quote the name as we are using tidyverse programming quosure.
 #'@param group_id The name of the column with the group ID for each protein group. No need to quote the name as we are using tidyverse programming quosure.
+#' @returns A table with the following columns:
+#'  maxquant_row_id: Row ID
+#'  num_gene_names: Number of gene names associated with this row ID
+#'  gene_names: The gene names
+#'  uniprot_acc: List of uniprot accessions, but with the list ordered by the best one to less useful one to use
+#'  is_unique: Is the protein group assined to a unique UniProt accession or multiple UniProt accessions
 #'@export
-chooseBestProteinAccession <- function(input_tbl, acc_detail_tab, accessions_column, row_id_column = uniprot_acc, group_id) {
+chooseBestProteinAccession <- function(input_tbl
+                                       , acc_detail_tab
+                                       , accessions_column
+                                       , row_id_column = uniprot_acc
+                                       , group_id) {
 
   resolve_acc_helper <- input_tbl |>
     dplyr::select( { { group_id } }, { { accessions_column } }) |>

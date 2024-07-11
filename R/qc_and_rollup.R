@@ -142,7 +142,7 @@ plotPeptidesProteinsCountsPerSample <- function( input_table
 }
 
 
-# Keep spectrum-peptide matches that is within q-value threshold and are proteotypic
+#' @description Keep spectrum-peptide matches that is within q-value threshold and are proteotypic
 #' @export
 srlQvalueProteotypicPeptideClean <- function(input_table
                                              , q_value_thresh = 0.01
@@ -174,7 +174,7 @@ srlQvalueProteotypicPeptideClean <- function(input_table
 
 }
 
-# Peptides of different charnges are rolled up (summed) together
+#' @description  Peptides of with charges and modifications are rolled up (summed) together
 #' @export
 rollUpPrecursorToPeptide <- function( input_table
                                       , sample_id_column = Run
@@ -210,8 +210,7 @@ rollUpPrecursorToPeptide <- function( input_table
 }
 
 #' @export
-#' @description
-#'  Remove peptide based on proportion of samples below intensity threshold
+#' @description Remove peptide based on the intensity threshold and the proportion of samples below the threshold
 peptideIntensityFiltering <- function(input_table
                                       , min_peptide_intensity_threshold = 15
                                       , proportion_samples_below_intensity_threshold = 1
@@ -259,6 +258,7 @@ peptideIntensityFiltering <- function(input_table
 
 #' @export
 #' @description Remove sample if it has less than a certain number of peptides identified
+#' @param List of samples to keep regardless of how many peptides it has because it is am important sample
 filterMinNumPeptidesPerSample <- function ( input_table
                                             , min_num_peptides_in_sample = 5000
                                             , sample_id_column = Run
@@ -476,6 +476,9 @@ findSamplesPairBelowCorrelationThreshold <- function(pearson_correlation_per_pai
 
 
 #---------------------------------------------------------------------------------------
+#' @description Remove peptides that only have data for one technical replicate for all sample.
+#' This can be repurposed for removing peptides that only have one biological replicates for all experimental groups.
+#' This function can be repurposed for filtering on proteins as well (we just have to create a dummy variable for peptide_sequence_column)
 #' @export
 removePeptidesWithOnlyOneReplicate <- function(input_table
                                                , samples_id_tbl
@@ -517,6 +520,50 @@ removePeptidesWithOnlyOneReplicate <- function(input_table
     distinct()
 
   removed_peptides_with_only_one_replicate
+}
+
+#---------------------------------------------------------------------------------------
+#' @description Remove proteins that only have data for one technical replicate for all sample.
+#' This can be repurposed for removing proteins that only have one biological replicates for all experimental groups.
+#' @export
+removeProteinWithOnlyOneReplicate <- function(input_table
+                                               , samples_id_tbl
+                                               , input_table_sample_id_column = Run
+                                               , sample_id_tbl_sample_id_column  =  ms_filename
+                                               , replicate_group_column = general_sample_info
+                                               , protein_id_column = Protein.Ids
+                                               , cluster ) {
+
+  # Count the number of technical replicates per sample and protein combination
+  num_tech_reps_per_sample_and_protein <- NA
+  if( length(which(is.na(cluster))) == 0 ) {
+    num_tech_reps_per_sample_and_protein <- input_table |>
+      left_join( samples_id_tbl, by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>
+      group_by( {{replicate_group_column}}, {{protein_id_column}}) |>
+      #partition(cluster) |>
+      summarise(counts = n() ) |>
+      #collect() |>
+      ungroup()
+  } else {
+    num_tech_reps_per_sample_and_protein <- input_table |>
+      left_join( samples_id_tbl, by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>
+      group_by( {{replicate_group_column}}, {{protein_id_column}}) |>
+      partition(cluster) |>
+      summarise(counts = n() ) |>
+      collect() |>
+      ungroup()
+  }
+
+  # Any proteins found in more than one replicates in any patient will be kept for analysis
+  removed_proteins_with_only_one_replicate <- input_table |>
+    inner_join( num_tech_reps_per_sample_and_protein |>
+                  dplyr::filter( counts >  1) |>
+                  dplyr::select(-counts, -{{replicate_group_column}}) |>
+                  distinct()
+                , by=join_by( {{protein_id_column}}) )  |>
+    distinct()
+
+  removed_proteins_with_only_one_replicate
 }
 
 ##-----------------------------------------------------------------------------------------
