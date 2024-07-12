@@ -295,9 +295,6 @@ setMethod(f="plotPcaObj"
 
             }
 
-
-
-
             return( pca_plot_before_cyclic_loess_group)
 
           })
@@ -481,13 +478,15 @@ setMethod(f="pearsonCorForSamplePairsObj"
 
 
 setGeneric(name="getNegCtrlProtAnovaObj"
-           , def=function( theObject, num_neg_ctrl, q_val_thresh, fdr_method ) {
+           , def=function( theObject, ruv_group_id_column, num_neg_ctrl, q_val_thresh, fdr_method ) {
              standardGeneric("getNegCtrlProtAnovaObj")
            }
-           , signature=c("theObject", "num_neg_ctrl", "q_val_thresh", "fdr_method"))
+           , signature=c("theObject", "ruv_group_id_column", "num_neg_ctrl", "q_val_thresh", "fdr_method"))
 
 setMethod(f="getNegCtrlProtAnovaObj"
-          , definition=function( theObject, num_neg_ctrl = 100
+          , definition=function( theObject
+                                 , ruv_group_id_column = "replicates"
+                                 , num_neg_ctrl = 100
                                  , q_val_thresh = 0.05
                                  , fdr_method = "BH" ) {
             protein_data <- theObject@protein_data
@@ -505,7 +504,7 @@ setMethod(f="getNegCtrlProtAnovaObj"
                                                         , design_matrix = design_matrix |>
                                                           column_to_rownames(sample_id) |>
                                                           dplyr::select( -!!sym(group_id))
-                                                        , group_column = replicate_group_column
+                                                        , group_column = ruv_group_id_column
                                                         , num_neg_ctrl = num_neg_ctrl
                                                         , q_val_thresh = q_val_thresh
                                                         , fdr_method = fdr_method )
@@ -566,14 +565,14 @@ setMethod( f = "ruvCancorObj"
 
 
 
-setGeneric(name="Obj"
-           , def=function( theObject, ctl, ncomp, ruv_group_id_column ) {
-             standardGeneric("Obj")
+setGeneric(name="getRuvIIIReplicateMatrixObj"
+           , def=function( theObject,  ruv_group_id_column ) {
+             standardGeneric("getRuvIIIReplicateMatrixObj")
            }
-           , signature=c("theObject", "ctl", "ncomp", "ruv_group_id_column"))
+           , signature=c("theObject", "ruv_group_id_column"))
 
-setMethod( f = "Obj"
-           , definition=function( theObject, ctl, ncomp=2, ruv_group_id_column) {
+setMethod( f = "getRuvIIIReplicateMatrixObj"
+           , definition=function( theObject, ruv_group_id_column) {
              protein_data <- theObject@protein_data
              protein_id_column <- theObject@protein_id_column
              design_matrix <- theObject@design_matrix
@@ -581,8 +580,116 @@ setMethod( f = "Obj"
              sample_id <- theObject@sample_id
              replicate_group_column <- theObject@technical_replicate_id
 
+             ruvIII_replicates_matrix <- getRuvIIIReplicateMatrix( design_matrix
+                                                                   , !!sym(sample_id)
+                                                                   , !!sym(ruv_group_id_column))
+             return( ruvIII_replicates_matrix)
+           })
+
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+setGeneric(name="ruvIII_C_VaryingObj"
+           , def=function( theObject, ruv_group_id_column, k, ctl) {
+             standardGeneric("ruvIII_C_VaryingObj")
+           }
+           , signature=c("theObject", "ruv_group_id_column", "k", "ctl"))
+
+
+setMethod( f = "ruvIII_C_VaryingObj"
+           , definition=function( theObject, ruv_group_id_column, k, ctl) {
+             protein_data <- theObject@protein_data
+             protein_id_column <- theObject@protein_id_column
+             design_matrix <- theObject@design_matrix
+             group_id <- theObject@group_id
+             sample_id <- theObject@sample_id
+             replicate_group_column <- theObject@technical_replicate_id
+
+             normalized_frozen_protein_matrix_filt <- protein_data |>
+               column_to_rownames(protein_id_column) |>
+               as.matrix()
+
+             Y <-  t( normalized_frozen_protein_matrix_filt[,design_matrix |> pull(!!sym(sample_id))])
+
+             M <- getRuvIIIReplicateMatrix( design_matrix
+                                            , !!sym(sample_id)
+                                            , !!sym(ruv_group_id_column))
+
+             cln_mat <- RUVIII_C_Varying( k = best_k
+                                          , Y = Y
+                                          , M = M
+                                          , toCorrect = colnames(Y)
+                                          , potentialControls = names( ctl[which(ctl)] ) )
+
+             # Remove samples with no values
+             cln_mat_2 <- cln_mat[rowSums(is.na(cln_mat) | is.nan(cln_mat)) != ncol(cln_mat),]
+
+             # Remove proteins with no values
+             cln_mat_3 <- t(cln_mat_2)
+             cln_mat_4 <- cln_mat_3[rowSums(is.na(cln_mat_3) | is.nan(cln_mat_3)) != ncol(cln_mat_3),]
+
+             ruv_normalized_results_cln <- cln_mat_4 |>
+               as.data.frame() |>
+               rownames_to_column(protein_id_column)
+
+             theObject@protein_data <- ruv_normalized_results_cln
+
+             theObject <- cleanDesignMatrixObj(theObject)
+
+             return( theObject )
+          })
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+setGeneric(name="removeRowsWithMissingValuesPercentObj"
+           , def=function( theObject
+                           , ruv_group_id_column
+                           , max_percent_miss_per_group = 60
+                           , number_of_groups_missing = 2
+                           , abundance_threshold = 1) {
+             standardGeneric("removeRowsWithMissingValuesPercentObj")
+           }
+           , signature=c("theObject"
+                         , "ruv_group_id_column"
+                         , "max_percent_miss_per_group"
+                         , "number_of_groups_missing"
+                         , "abundance_threshold" ))
+
+
+setMethod( f = "removeRowsWithMissingValuesPercentObj"
+           , definition=function( theObject
+                                  , ruv_group_id_column
+                                  , max_percent_miss_per_group = 50
+                                  , number_of_groups_missing = 2
+                                  , abundance_threshold = 1) {
+             protein_data <- theObject@protein_data
+             protein_id_column <- theObject@protein_id_column
+             design_matrix <- theObject@design_matrix
+             group_id <- theObject@group_id
+             sample_id <- theObject@sample_id
+             replicate_group_column <- theObject@technical_replicate_id
+
+             theObject@protein_data <- removeRowsWithMissingValuesPercent( protein_data
+                                                                           , !matches(protein_id_column)
+                                                                           , design_matrix
+                                                                           , !!sym(sample_id)
+                                                                           , !!sym(protein_id_column)
+                                                                           , !!sym(ruv_group_id_column)
+                                                                           , max_percent_miss_per_group = max_percent_miss_per_group
+                                                                           , number_of_groups_missing = number_of_groups_missing
+                                                                           , abundance_threshold = abundance_threshold
+                                                                           , temporary_abundance_column = "Log_Abundance")
+
+             theObject <- cleanDesignMatrixObj(theObject)
+
+             return(theObject)
 
            })
+
+
+
 
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
