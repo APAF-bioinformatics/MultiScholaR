@@ -317,14 +317,28 @@ plotPca <- function(data,
 
   unique_groups <- temp_tbl |> distinct( {{group_column}}) |> pull( {{group_column}})
 
-  output <- temp_tbl |>
-    ggplot(aes(PC1, PC2, col = {{group_column}}, label = {{label_column}})) +
-    geom_point() +
-    geom_text_repel(size  = geom.text.size, show.legend=FALSE) +
-    xlab( paste( "PC1 (", round(proportion_explained$X[["PC1"]]*100, 0),"%)", sep="")) +
-    ylab( paste( "PC2 (", round(proportion_explained$X[["PC2"]]*100, 0),"%)", sep="")) +
-    labs(title = title) +
-    theme(legend.title = element_blank())
+  if( is.na(label_column) || label_column == "") {
+    output <- temp_tbl |>
+      ggplot(aes(PC1, PC2, col = {{group_column}})) +
+      geom_point() +
+      xlab( paste( "PC1 (", round(proportion_explained$X[["PC1"]]*100, 0),"%)", sep="")) +
+      ylab( paste( "PC2 (", round(proportion_explained$X[["PC2"]]*100, 0),"%)", sep="")) +
+      labs(title = title) +
+      theme(legend.title = element_blank())
+  }else {
+    output <- temp_tbl |>
+      ggplot(aes(PC1, PC2, col = {{group_column}}, label = {{label_column}})) +
+      geom_point() +
+      geom_text_repel(size  = geom.text.size, show.legend=FALSE) +
+      xlab( paste( "PC1 (", round(proportion_explained$X[["PC1"]]*100, 0),"%)", sep="")) +
+      ylab( paste( "PC2 (", round(proportion_explained$X[["PC2"]]*100, 0),"%)", sep="")) +
+      labs(title = title) +
+      theme(legend.title = element_blank())
+
+  }
+
+
+
 
   output
 }
@@ -1892,3 +1906,38 @@ gg_save_logging <- function( input_plot
   }
 }
 
+
+
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' @export
+#'
+#' @param design_matrix_tech_rep: design matrix with the technical replicates
+#' @param data_matrix: input data matrix
+#' @param tech_rep_column: column name of the technical replicates. Technical replicates of the same sample will have the same value.
+#' @param tech_rep_num_column: column name of the technical replicate number. This is a unique number for each technical replicate for each sample.
+proteinTechRepCorrelation <- function( design_matrix_tech_rep, data_matrix, tech_rep_column = "replicates", tech_rep_num_column = "tech_rep_num", tech_rep_remove_regex = "pool" ) {
+
+  tech_reps_list <- design_matrix_tech_rep |> pull( !!sym(tech_rep_num_column )) |> unique()
+
+  frozen_protein_matrix_tech_rep <- data_matrix  |>
+    as.data.frame() |>
+    rownames_to_column("uniprot_acc") |>
+    pivot_longer( cols=!matches( "uniprot_acc")
+                  , values_to = "log2_intensity"
+                  , names_to = "Sample_ID") |>
+    left_join( design_matrix_tech_rep
+               , by = join_by( Sample_ID == Sample_ID)) |>
+    dplyr::filter( !str_detect(  !!sym(tech_rep_column) , tech_rep_remove_regex ) ) |>
+    dplyr::select(uniprot_acc, !!sym(tech_rep_column), log2_intensity, !!sym(tech_rep_num_column)) |>
+    dplyr::filter( !!sym(tech_rep_num_column ) %in% tech_reps_list ) |>
+    pivot_wider( id_cols = c(uniprot_acc, !!sym(tech_rep_column))
+                 , names_from = !!sym(tech_rep_num_column)
+                 , values_from = log2_intensity) |>
+    nest( data=!matches("uniprot_acc")) |>
+    mutate( data = purrr::map( data, \(x){ x |> column_to_rownames(tech_rep_column)} ) ) |>
+    mutate( pearson = purrr::map_dbl( data, \(x){ cor(x, use="pairwise.complete.obs")[1,2]})) |>
+    mutate( spearman = purrr::map_dbl( data, \(x){ cor(x, use="pairwise.complete.obs", method="spearman")[1,2]}))
+
+  frozen_protein_matrix_tech_rep
+}
