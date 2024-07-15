@@ -367,6 +367,7 @@ setMethod( f = "proteinTechRepCorrelationObj"
             frozen_protein_matrix_pca[!is.finite(frozen_protein_matrix_pca)] <- NA
 
             protein_matrix_tech_rep <-proteinTechRepCorrelation( design_matrix, frozen_protein_matrix_pca
+                                                                 , sample_id_column=sample_id
                                                                  , tech_rep_column = tech_rep_column
                                                                  , tech_rep_num_column = tech_rep_num_column
                                                                  , tech_rep_remove_regex = tech_rep_remove_regex )
@@ -689,6 +690,53 @@ setMethod( f = "removeRowsWithMissingValuesPercentObj"
            })
 
 
+
+
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+setGeneric(name="averageTechRepsObj"
+           , def=function( theObject, design_matrix_columns ) {
+             standardGeneric("averageTechRepsObj")
+           }
+           , signature=c("theObject", "design_matrix_columns" ))
+
+
+setMethod( f = "averageTechRepsObj"
+           , definition=function( theObject, design_matrix_columns=c()  ) {
+
+             protein_data <- theObject@protein_data
+             protein_id_column <- theObject@protein_id_column
+             design_matrix <- theObject@design_matrix
+             group_id <- theObject@group_id
+             sample_id <- theObject@sample_id
+             replicate_group_column <- theObject@technical_replicate_id
+
+             theObject@protein_data <- protein_data |>
+               pivot_longer( cols = !matches( protein_id_column)
+                             , names_to = sample_id
+                             , values_to = "Log2.Protein.Imputed") |>
+               left_join( design_matrix
+                          , by = join_by( !!sym(sample_id) == !!sym(sample_id))) |>
+               group_by( !!sym(protein_id_column), !!sym(replicate_group_column) )  |>
+               summarise( Log2.Protein.Imputed = mean( Log2.Protein.Imputed, na.rm = TRUE)) |>
+               ungroup() |>
+               pivot_wider( names_from = !!sym(replicate_group_column)
+                            , values_from = Log2.Protein.Imputed)
+
+              theObject@sample_id <- theObject@technical_replicate_id
+
+              theObject@design_matrix <- design_matrix |>
+                dplyr::select(-!!sym( sample_id)) |>
+                dplyr::select(one_of( unique( c( replicate_group_column,  group_id,  design_matrix_columns) ))) |>
+                distinct()
+
+              theObject <- cleanDesignMatrixObj(theObject)
+
+              theObject
+
+           })
 
 
 

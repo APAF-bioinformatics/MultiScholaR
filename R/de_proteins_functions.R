@@ -1914,9 +1914,10 @@ gg_save_logging <- function( input_plot
 #'
 #' @param design_matrix_tech_rep: design matrix with the technical replicates
 #' @param data_matrix: input data matrix
+#' @param sample_id_column: column name of the sample ID. This is the unique identifier for each sample.
 #' @param tech_rep_column: column name of the technical replicates. Technical replicates of the same sample will have the same value.
 #' @param tech_rep_num_column: column name of the technical replicate number. This is a unique number for each technical replicate for each sample.
-proteinTechRepCorrelation <- function( design_matrix_tech_rep, data_matrix, tech_rep_column = "replicates", tech_rep_num_column = "tech_rep_num", tech_rep_remove_regex = "pool" ) {
+proteinTechRepCorrelation <- function( design_matrix_tech_rep, data_matrix, sample_id_column="Sample_ID", tech_rep_column = "replicates", tech_rep_num_column = "tech_rep_num", tech_rep_remove_regex = "pool" ) {
 
   tech_reps_list <- design_matrix_tech_rep |> pull( !!sym(tech_rep_num_column )) |> unique()
 
@@ -1925,9 +1926,9 @@ proteinTechRepCorrelation <- function( design_matrix_tech_rep, data_matrix, tech
     rownames_to_column("uniprot_acc") |>
     pivot_longer( cols=!matches( "uniprot_acc")
                   , values_to = "log2_intensity"
-                  , names_to = "Sample_ID") |>
+                  , names_to = sample_id_column) |>
     left_join( design_matrix_tech_rep
-               , by = join_by( Sample_ID == Sample_ID)) |>
+               , by = join_by( !!sym(sample_id_column) == !!sym(sample_id_column))) |>
     dplyr::filter( !str_detect(  !!sym(tech_rep_column) , tech_rep_remove_regex ) ) |>
     dplyr::select(uniprot_acc, !!sym(tech_rep_column), log2_intensity, !!sym(tech_rep_num_column)) |>
     dplyr::filter( !!sym(tech_rep_num_column ) %in% tech_reps_list ) |>
