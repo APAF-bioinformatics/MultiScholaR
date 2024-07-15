@@ -1,6 +1,7 @@
 
 
 ## Create S4 class for protomics protein level abundance data
+#'@export
 ProteinsQuantitativeData <- setClass("ProteinsQuantitativeData"
 
          , slots = c(
@@ -72,12 +73,13 @@ ProteinsQuantitativeData <- setClass("ProteinsQuantitativeData"
 
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+#'@export
 setGeneric( name ="setProteinData"
             , def=function( theObject, protein_data, protein_id_column) {
                 standardGeneric("setProteinData")
             })
 
+#'@export
 setMethod( f ="setProteinData"
            , signature = "ProteinsQuantitativeData"
             , definition=function( theObject, protein_data, protein_id_column ) {
@@ -90,11 +92,13 @@ setMethod( f ="setProteinData"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Format the design matrix so that only metadata for samples in the protein data are retained, and also
 # sort the sample IDs in the same order as the data matrix
+#'@export
 setGeneric(name ="cleanDesignMatrixObj"
            , def=function( theObject) {
              standardGeneric("cleanDesignMatrixObj")
            })
 
+#'@export
 setMethod( f ="cleanDesignMatrixObj"
            , signature = "ProteinsQuantitativeData"
            , definition=function( theObject ) {
@@ -111,12 +115,13 @@ setMethod( f ="cleanDesignMatrixObj"
              return(theObject)
            })
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+#'@export
 setGeneric(name="proteinIntensityFilteringObj"
            , def=function( theObject, min_protein_intensity_percentile, proportion_samples_below_intensity_threshold, cluster) {
              standardGeneric("proteinIntensityFilteringObj")
            })
 
+#'@export
 setMethod( f="proteinIntensityFilteringObj"
            , signature="ProteinsQuantitativeData"
            , definition = function( theObject, min_protein_intensity_percentile, proportion_samples_below_intensity_threshold, cluster) {
@@ -154,14 +159,14 @@ setMethod( f="proteinIntensityFilteringObj"
 
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+#'@export
 setGeneric(name="removeProteinsWithOnlyOneReplicateObj"
            , def=function( theObject, cluster ) {
              standardGeneric("removeProteinsWithOnlyOneReplicateObj")
            }
            , signature=c("theObject", "cluster"))
 
-
+#'@export
 setMethod(f="removeProteinsWithOnlyOneReplicateObj"
           , definition=function( theObject, cluster) {
             protein_data <- theObject@protein_data
@@ -203,7 +208,7 @@ setMethod(f="removeProteinsWithOnlyOneReplicateObj"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
+#'@export
 setGeneric(name="plotRleObj"
            , def=function( theObject, group, ylim ) {
              standardGeneric("plotRleObj")
@@ -211,7 +216,7 @@ setGeneric(name="plotRleObj"
            , signature=c("theObject", "group", "ylim"))
 
 
-
+#'@export
 setMethod(f="plotRleObj"
           , definition=function( theObject, group, ylim) {
             protein_data <- theObject@protein_data
@@ -250,7 +255,7 @@ setMethod(f="plotRleObj"
 
 
 
-
+#'@export
 setGeneric(name="plotPcaObj"
            , def=function( theObject, group_column, label_column, title, geom_text_size ) {
              standardGeneric("plotPcaObj")
@@ -258,7 +263,7 @@ setGeneric(name="plotPcaObj"
            , signature=c("theObject", "group_column", "label_column", "title", "geom_text_size"))
 
 
-
+#'@export
 setMethod(f="plotPcaObj"
           , definition=function( theObject, group_column, label_column, title, geom_text_size=8) {
             protein_data <- theObject@protein_data
@@ -304,7 +309,7 @@ setMethod(f="plotPcaObj"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
+#'@export
 setGeneric(name="getPcaMatrixObj"
            , def=function( theObject) {
              standardGeneric("getPcaMatrixObj")
@@ -312,7 +317,7 @@ setGeneric(name="getPcaMatrixObj"
            , signature=c("theObject"))
 
 
-
+#'@export
 setMethod(f="getPcaMatrixObj"
           , definition=function( theObject) {
             protein_data <- theObject@protein_data
@@ -344,13 +349,14 @@ setMethod(f="getPcaMatrixObj"
 
 
 # Calculate Pearson correlation between Tech rep 1 and 2
-
+#'@export
 setGeneric(name="proteinTechRepCorrelationObj"
            , def=function( theObject,  tech_rep_num_column, tech_rep_remove_regex) {
              standardGeneric("proteinTechRepCorrelationObj")
            }
            , signature=c("theObject", "tech_rep_num_column", "tech_rep_remove_regex"))
 
+#'@export
 setMethod( f = "proteinTechRepCorrelationObj"
           , definition=function( theObject,  tech_rep_num_column,  tech_rep_remove_regex ) {
             protein_data <- theObject@protein_data
@@ -379,7 +385,7 @@ setMethod( f = "proteinTechRepCorrelationObj"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Normalize between Arrays
 
-
+#'@export
 setGeneric(name="normalizeBetweenArraysObj"
            , def=function( theObject, method) {
              standardGeneric("normalizeBetweenArraysObj")
@@ -387,7 +393,7 @@ setGeneric(name="normalizeBetweenArraysObj"
            , signature=c("theObject", "method"))
 
 
-
+#'@export
 setMethod(f="normalizeBetweenArraysObj"
           , definition=function( theObject,  method= "cyclicloess") {
             protein_data <- theObject@protein_data
@@ -432,13 +438,14 @@ setMethod(f="normalizeBetweenArraysObj"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-
+#'@export
 setGeneric(name="pearsonCorForSamplePairsObj"
            , def=function( theObject,   tech_rep_remove_regex ) {
              standardGeneric("pearsonCorForSamplePairsObj")
            }
            , signature=c("theObject", "tech_rep_remove_regex"))
 
+#'@export
 setMethod(f="pearsonCorForSamplePairsObj"
           , definition=function( theObject, tech_rep_remove_regex ="pool" ) {
             protein_data <- theObject@protein_data
@@ -477,13 +484,14 @@ setMethod(f="pearsonCorForSamplePairsObj"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
+#'@export
 setGeneric(name="getNegCtrlProtAnovaObj"
            , def=function( theObject, ruv_group_id_column, num_neg_ctrl, q_val_thresh, fdr_method ) {
              standardGeneric("getNegCtrlProtAnovaObj")
            }
            , signature=c("theObject", "ruv_group_id_column", "num_neg_ctrl", "q_val_thresh", "fdr_method"))
 
+#'@export
 setMethod(f="getNegCtrlProtAnovaObj"
           , definition=function( theObject
                                  , ruv_group_id_column = "replicates"
@@ -515,13 +523,14 @@ setMethod(f="getNegCtrlProtAnovaObj"
 
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+#'@export
 setGeneric(name="ruvCancorObj"
            , def=function( theObject, ctl, ncomp, ruv_group_id_column ) {
              standardGeneric("ruvCancorObj")
            }
            , signature=c("theObject", "ctl", "ncomp", "ruv_group_id_column"))
 
+#'@export
 setMethod( f = "ruvCancorObj"
            , definition=function( theObject, ctl, ncomp=2, ruv_group_id_column) {
              protein_data <- theObject@protein_data
@@ -565,13 +574,14 @@ setMethod( f = "ruvCancorObj"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-
+#'@export
 setGeneric(name="getRuvIIIReplicateMatrixObj"
            , def=function( theObject,  ruv_group_id_column ) {
              standardGeneric("getRuvIIIReplicateMatrixObj")
            }
            , signature=c("theObject", "ruv_group_id_column"))
 
+#'@export
 setMethod( f = "getRuvIIIReplicateMatrixObj"
            , definition=function( theObject, ruv_group_id_column) {
              protein_data <- theObject@protein_data
@@ -591,14 +601,14 @@ setMethod( f = "getRuvIIIReplicateMatrixObj"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-
+#'@export
 setGeneric(name="ruvIII_C_VaryingObj"
            , def=function( theObject, ruv_group_id_column, k, ctl) {
              standardGeneric("ruvIII_C_VaryingObj")
            }
            , signature=c("theObject", "ruv_group_id_column", "k", "ctl"))
 
-
+#'@export
 setMethod( f = "ruvIII_C_VaryingObj"
            , definition=function( theObject, ruv_group_id_column, k, ctl) {
              protein_data <- theObject@protein_data
@@ -643,7 +653,7 @@ setMethod( f = "ruvIII_C_VaryingObj"
           })
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+#'@export
 setGeneric(name="removeRowsWithMissingValuesPercentObj"
            , def=function( theObject
                            , ruv_group_id_column
@@ -658,7 +668,7 @@ setGeneric(name="removeRowsWithMissingValuesPercentObj"
                          , "number_of_groups_missing"
                          , "abundance_threshold" ))
 
-
+#'@export
 setMethod( f = "removeRowsWithMissingValuesPercentObj"
            , definition=function( theObject
                                   , ruv_group_id_column
@@ -695,14 +705,14 @@ setMethod( f = "removeRowsWithMissingValuesPercentObj"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
+#'@export
 setGeneric(name="averageTechRepsObj"
            , def=function( theObject, design_matrix_columns ) {
              standardGeneric("averageTechRepsObj")
            }
            , signature=c("theObject", "design_matrix_columns" ))
 
-
+#'@export
 setMethod( f = "averageTechRepsObj"
            , definition=function( theObject, design_matrix_columns=c()  ) {
 
