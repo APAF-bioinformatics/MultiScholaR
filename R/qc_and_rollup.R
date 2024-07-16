@@ -256,6 +256,47 @@ peptideIntensityFiltering <- function(input_table
 
 }
 
+#'@export
+#'@description
+#' Keep the proteins only if they have two or more peptides.
+#' @param input_table Peptide quantities table in long format
+#'@param num_peptides_per_protein_thresh Minimum number of peptides per protein
+#'@param protein_id_column Protein ID column name as string
+#'@param cluster Cluster to use for parallel processing
+
+filterMinNumPeptidesPerProtein <- function( input_table
+          , num_peptides_per_protein_thresh = 2
+          , protein_id_column = Protein.Ids
+          , cluster) {
+
+  num_peptides_per_protein <- NA
+  if( length(which(is.na(cluster))) == 0 ) {
+    num_peptides_per_protein <- input_table |>
+      group_by( {{protein_id_column}} ) |>
+      #partition(cluster) |>
+      summarise( counts = n()) |>
+      #collect() |>
+      ungroup() |>
+      dplyr::filter( counts >= num_peptides_per_protein_thresh)
+  } else {
+    num_peptides_per_protein <- input_table |>
+      group_by( {{protein_id_column}} ) |>
+      partition(cluster) |>
+      summarise( counts = n()) |>
+      collect() |>
+      ungroup() |>
+      dplyr::filter( counts >= num_peptides_per_protein_thresh)
+  }
+
+  protein_peptide_cln <- input_table |>
+    inner_join( num_peptides_per_protein |>
+                  dplyr::select( -counts)
+                , by = join_by({{protein_id_column}}))
+
+  protein_peptide_cln
+}
+
+
 #' @export
 #' @description Remove sample if it has less than a certain number of peptides identified
 #' @param List of samples to keep regardless of how many peptides it has because it is am important sample

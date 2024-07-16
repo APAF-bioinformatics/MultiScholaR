@@ -2,7 +2,7 @@
 
 ## Create S4 class for protomics protein level abundance data
 #'@export
-ProteinsQuantitativeData <- setClass("ProteinsQuantitativeData"
+ProteinQuantitativeData <- setClass("ProteinQuantitativeData"
 
          , slots = c(
                       # Protein vs Sample quantitative data
@@ -19,7 +19,7 @@ ProteinsQuantitativeData <- setClass("ProteinsQuantitativeData"
 
          , prototype = list(
            # Protein vs Sample quantitative data
-           protein_id_column = "character"
+           protein_id_column = "Protein.Ids"
 
            # Design Matrix Information
            , sample_id="Sample_id"
@@ -81,7 +81,7 @@ setGeneric( name ="setProteinData"
 
 #'@export
 setMethod( f ="setProteinData"
-           , signature = "ProteinsQuantitativeData"
+           , signature = "ProteinQuantitativeData"
             , definition=function( theObject, protein_data, protein_id_column ) {
               theObject@protein_data <- protein_data
               theObject@protein_id_column <- protein_id_column
@@ -100,7 +100,7 @@ setGeneric(name ="cleanDesignMatrixObj"
 
 #'@export
 setMethod( f ="cleanDesignMatrixObj"
-           , signature = "ProteinsQuantitativeData"
+           , signature = "ProteinQuantitativeData"
            , definition=function( theObject ) {
 
             samples_id_vector <- setdiff(colnames(theObject@protein_data), theObject@sample_id )
@@ -123,13 +123,13 @@ setGeneric(name="proteinIntensityFilteringObj"
 
 #'@export
 setMethod( f="proteinIntensityFilteringObj"
-           , signature="ProteinsQuantitativeData"
+           , signature="ProteinQuantitativeData"
            , definition = function( theObject, min_protein_intensity_percentile, proportion_samples_below_intensity_threshold, cluster) {
              protein_data <- theObject@protein_data
 
              data_long_cln <- protein_data  |>
                pivot_longer( cols=!matches(theObject@protein_id_column)
-                             , names_to = "Sample_ID"
+                             , names_to = theObject@sample_id
                              , values_to = "log_values")  |>
                mutate( temp = "")
 
@@ -218,6 +218,7 @@ setGeneric(name="plotRleObj"
 
 #'@export
 setMethod(f="plotRleObj"
+          , signature="ProteinQuantitativeData"
           , definition=function( theObject, group, ylim) {
             protein_data <- theObject@protein_data
             protein_id_column <- theObject@protein_id_column
@@ -265,6 +266,7 @@ setGeneric(name="plotPcaObj"
 
 #'@export
 setMethod(f="plotPcaObj"
+          , signature="ProteinQuantitativeData"
           , definition=function( theObject, group_column, label_column, title, geom_text_size=8) {
             protein_data <- theObject@protein_data
             protein_id_column <- theObject@protein_id_column
@@ -319,6 +321,7 @@ setGeneric(name="getPcaMatrixObj"
 
 #'@export
 setMethod(f="getPcaMatrixObj"
+          , signature="ProteinQuantitativeData"
           , definition=function( theObject) {
             protein_data <- theObject@protein_data
             protein_id_column <- theObject@protein_id_column
@@ -358,6 +361,7 @@ setGeneric(name="proteinTechRepCorrelationObj"
 
 #'@export
 setMethod( f = "proteinTechRepCorrelationObj"
+           , signature="ProteinQuantitativeData"
           , definition=function( theObject,  tech_rep_num_column,  tech_rep_remove_regex ) {
             protein_data <- theObject@protein_data
             protein_id_column <- theObject@protein_id_column
@@ -395,6 +399,7 @@ setGeneric(name="normalizeBetweenArraysObj"
 
 #'@export
 setMethod(f="normalizeBetweenArraysObj"
+          , signature="ProteinQuantitativeData"
           , definition=function( theObject,  method= "cyclicloess") {
             protein_data <- theObject@protein_data
             protein_id_column <- theObject@protein_id_column
@@ -447,6 +452,7 @@ setGeneric(name="pearsonCorForSamplePairsObj"
 
 #'@export
 setMethod(f="pearsonCorForSamplePairsObj"
+          , signature="ProteinQuantitativeData"
           , definition=function( theObject, tech_rep_remove_regex ="pool" ) {
             protein_data <- theObject@protein_data
             protein_id_column <- theObject@protein_id_column
@@ -493,6 +499,7 @@ setGeneric(name="getNegCtrlProtAnovaObj"
 
 #'@export
 setMethod(f="getNegCtrlProtAnovaObj"
+          , signature="ProteinQuantitativeData"
           , definition=function( theObject
                                  , ruv_group_id_column = "replicates"
                                  , num_neg_ctrl = 100
@@ -532,6 +539,7 @@ setGeneric(name="ruvCancorObj"
 
 #'@export
 setMethod( f = "ruvCancorObj"
+           , signature="ProteinQuantitativeData"
            , definition=function( theObject, ctl, ncomp=2, ruv_group_id_column) {
              protein_data <- theObject@protein_data
              protein_id_column <- theObject@protein_id_column
@@ -583,6 +591,7 @@ setGeneric(name="getRuvIIIReplicateMatrixObj"
 
 #'@export
 setMethod( f = "getRuvIIIReplicateMatrixObj"
+           , signature="ProteinQuantitativeData"
            , definition=function( theObject, ruv_group_id_column) {
              protein_data <- theObject@protein_data
              protein_id_column <- theObject@protein_id_column
@@ -610,6 +619,7 @@ setGeneric(name="ruvIII_C_VaryingObj"
 
 #'@export
 setMethod( f = "ruvIII_C_VaryingObj"
+           , signature="ProteinQuantitativeData"
            , definition=function( theObject, ruv_group_id_column, k, ctl) {
              protein_data <- theObject@protein_data
              protein_id_column <- theObject@protein_id_column
@@ -670,6 +680,7 @@ setGeneric(name="removeRowsWithMissingValuesPercentObj"
 
 #'@export
 setMethod( f = "removeRowsWithMissingValuesPercentObj"
+           , signature="ProteinQuantitativeData"
            , definition=function( theObject
                                   , ruv_group_id_column
                                   , max_percent_miss_per_group = 50
@@ -714,6 +725,7 @@ setGeneric(name="averageTechRepsObj"
 
 #'@export
 setMethod( f = "averageTechRepsObj"
+           , signature="ProteinQuantitativeData"
            , definition=function( theObject, design_matrix_columns=c()  ) {
 
              protein_data <- theObject@protein_data
