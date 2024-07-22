@@ -256,14 +256,13 @@ peptideIntensityFiltering <- function(input_table
 
 }
 
-#'@export
 #'@description
 #' Keep the proteins only if they have two or more peptides.
 #' @param input_table Peptide quantities table in long format
-#'@param num_peptides_per_protein_thresh Minimum number of peptides per protein
-#'@param protein_id_column Protein ID column name as string
-#'@param cluster Cluster to use for parallel processing
-
+#' @param num_peptides_per_protein_thresh Minimum number of peptides per protein
+#' @param protein_id_column Protein ID column name as string
+#' @param cluster Cluster to use for parallel processing
+#' @export
 filterMinNumPeptidesPerProtein <- function( input_table
           , num_peptides_per_protein_thresh = 2
           , protein_id_column = Protein.Ids
@@ -339,7 +338,7 @@ filterMinNumPeptidesPerSample <- function ( input_table
 #--------------------------------------------------------------------------------------------------------------------------
 
 #' @export
-#' @description
+#' @description Log 2 transformation with pseudo count
 log2Transformation <- function(input_matrix) {
 
   pseudo_count <- min( input_matrix[input_matrix> 0] , na.rm=TRUE)/100
@@ -1359,9 +1358,9 @@ changeToCategorical <- function(metadata_tbl, column_name, num_colours=9) {
 
 #' getSamplesCorrelationHeatMap
 #' @description get the
-#' @correlation_matrix Output from the `getSamplesCorrelationMatrix` function
-#' @param metadata_tbl
-#' @param is_HEK_column
+#' @param correlation_matrix Output from the `getSamplesCorrelationMatrix` function
+#' @param metadata_tbl This is the table containing sample ID and other columns containing clinical variables / metadata
+#' @param is_HEK_column A logical column in the metadata table that indicates if the sample is a HEK sample
 #' @param metadata_column_selected A list of column names in string selected from the metadata tbl
 #' @param metadata_column_labels A list of column names in string to rename each of the columns selected in the param `metadata_column_selected`
 #' @param categorical_columns A vector of string with all the names of the categorical data column  present in the `metadata_tbl` table

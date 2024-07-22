@@ -201,11 +201,12 @@ chooseBestProteinAccession <- function(input_tbl
                                        , acc_detail_tab
                                        , accessions_column
                                        , row_id_column = uniprot_acc
-                                       , group_id) {
+                                       , group_id
+                                       , delim= ";") {
 
   resolve_acc_helper <- input_tbl |>
     dplyr::select( { { group_id } }, { { accessions_column } }) |>
-    mutate( { { row_id_column } } := str_split({ { accessions_column } }, ";")) |>
+    mutate( { { row_id_column } } := str_split({ { accessions_column } }, delim)) |>
     unnest( { { row_id_column } }) |>
     mutate( cleaned_acc = cleanIsoformNumber({ { row_id_column } })) |>
     left_join( acc_detail_tab,
@@ -239,7 +240,7 @@ chooseBestProteinAccession <- function(input_tbl
     group_by({ { group_id } }) |>
     summarise(num_gene_names = n(),
               gene_names = paste(gene_name, collapse = ":"),
-              uniprot_acc = paste(uniprot_acc, collapse = ":")) |>
+              { { row_id_column } } := paste({ { row_id_column } }, collapse = ":")) |>
     ungroup() |>
     mutate(is_unique = case_when(num_gene_names == 1 ~ "Unique",
                                  TRUE ~ "Multimapped"))

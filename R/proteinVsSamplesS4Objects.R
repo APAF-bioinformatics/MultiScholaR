@@ -1,7 +1,7 @@
 
 
 ## Create S4 class for protomics protein level abundance data
-#'@export
+#'@exportClass ProteinQuantitativeData
 ProteinQuantitativeData <- setClass("ProteinQuantitativeData"
 
          , slots = c(
@@ -70,6 +70,7 @@ ProteinQuantitativeData <- setClass("ProteinQuantitativeData"
          }
 
 )
+#'@export ProteinQuantitativeData
 
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -754,6 +755,10 @@ setMethod( f = "averageTechRepsObj"
                 dplyr::select(one_of( unique( c( replicate_group_column,  group_id,  design_matrix_columns) ))) |>
                 distinct()
 
+              rownames(theObject@design_matrix ) <- theObject@design_matrix |> pull(one_of(replicate_group_column))
+              theObject@sample_id <- replicate_group_column
+              theObject@technical_replicate_id <- NA_character_
+
               theObject <- cleanDesignMatrixObj(theObject)
 
               theObject
@@ -763,3 +768,44 @@ setMethod( f = "averageTechRepsObj"
 
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#'@export
+setGeneric(name="chooseBestProteinAccessionObj"
+           , def=function( theObject, delim, seqinr_obj, seqinr_accession_column ) {
+             standardGeneric("chooseBestProteinAccessionObj")
+           }
+           , signature=c("theObject", "delim", "seqinr_obj", "seqinr_accession_column" ))
+
+#'@export
+setMethod( f = "chooseBestProteinAccessionObj"
+           , signature="ProteinQuantitativeData"
+           , definition=function( theObject, delim=";", seqinr_obj, seqinr_accession_column  ) {
+             protein_data <- theObject@protein_data
+             protein_id_column <- theObject@protein_id_column
+
+
+             evidence_tbl_cleaned <- protein_data |>
+               distinct() |>
+               mutate( row_id = row_number() -1 )
+
+             accession_gene_name_tbl <- chooseBestProteinAccession(input_tbl = evidence_tbl_cleaned,
+                                                                   acc_detail_tab = seqinr_obj,
+                                                                   accessions_column = !!sym( protein_id_column),
+                                                                   row_id_column = !!sym( seqinr_accession_column),
+                                                                   group_id = row_id,
+                                                                   delim = ";")
+
+
+             protein_log2_quant_cln <- evidence_tbl_cleaned |>
+               left_join( accession_gene_name_tbl |>
+                            dplyr::distinct( row_id, !!sym( seqinr_accession_column) )
+                          , by = join_by(row_id) ) |>
+               mutate( !!sym( theObject@protein_id_column ) :=!!sym( seqinr_accession_column) )  |>
+               dplyr::select(-row_id, -!!sym( seqinr_accession_column))
+
+             theObject@protein_data <- protein_log2_quant_cln
+
+             return(theObject)
+
+           })
+

@@ -1,8 +1,8 @@
 
 
 
-## Create S4 class for protomics protein level abundance data
-#'@export
+## Create S4 class for proteomics protein level abundance data
+#'@exportClass PeptideQuantitativeData
 PeptideQuantitativeData <- setClass("PeptideQuantitativeData"
 
                                      , slots = c(
@@ -121,19 +121,20 @@ PeptideQuantitativeData <- setClass("PeptideQuantitativeData"
                                      }
 
 )
+#' @export PeptideQuantitativeData
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Format the design matrix so that only metadata for samples in the protein data are retained, and also
 # sort the sample IDs in the same order as the data matrix
-#'@export
-setGeneric(name ="cleanDesignMatrixObj"
+#'@exportGeneric cleanDesignMatrixPeptideObj
+setGeneric(name ="cleanDesignMatrixPeptideObj"
            , def=function( theObject) {
-             standardGeneric("cleanDesignMatrixObj")
+             standardGeneric("cleanDesignMatrixPeptideObj")
            })
 
-#'@export
-setMethod( f ="cleanDesignMatrixObj"
+#'@exportMethod cleanDesignMatrixPeptideObj
+setMethod( f ="cleanDesignMatrixPeptideObj"
            , signature = "PeptideQuantitativeData"
            , definition=function( theObject ) {
 
@@ -151,6 +152,7 @@ setMethod( f ="cleanDesignMatrixObj"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+#'@export
 setGeneric(name="srlQvalueProteotypicPeptideCleanObj"
            , def=function( theObject, q_value_thresh, global_q_value_thresh, num_proteotypic_peptide_thresh, srl_quant_columns ) {
              standardGeneric("srlQvalueProteotypicPeptideCleanObj")
@@ -158,7 +160,7 @@ setGeneric(name="srlQvalueProteotypicPeptideCleanObj"
            , signature = c("theObject", "q_value_thresh", "global_q_value_thresh", "num_proteotypic_peptide_thresh", "srl_quant_columns") )
 
 
-
+#'@export
 setMethod( f ="srlQvalueProteotypicPeptideCleanObj"
            , signature="PeptideQuantitativeData"
            , definition=function ( theObject
@@ -189,7 +191,7 @@ setMethod( f ="srlQvalueProteotypicPeptideCleanObj"
 
              theObject@peptide_data <- search_srl_quant_cln
 
-             theObject <- cleanDesignMatrixObj(theObject)
+             theObject <- cleanDesignMatrixPeptideObj(theObject)
 
              return(theObject)
            })
@@ -235,7 +237,7 @@ setMethod(f="rollUpPrecursorToPeptideObj"
              theObject@raw_quantity_column   <- "Peptide.RawQuantity"
              theObject@norm_quantity_column <- "Peptide.Normalized"
 
-             theObject <- cleanDesignMatrixObj(theObject)
+             theObject <- cleanDesignMatrixPeptideObj(theObject)
 
             return(theObject)
           })
@@ -268,7 +270,7 @@ setMethod( f="peptideIntensityFilteringObj"
 
              theObject@peptide_data <- peptide_normalized_pif_cln
 
-             theObject <- cleanDesignMatrixObj(theObject)
+             theObject <- cleanDesignMatrixPeptideObj(theObject)
 
              return(theObject)
            })
@@ -282,7 +284,7 @@ setGeneric(name="filterMinNumPeptidesPerProteinObj"
            , signature=c("theObject", "num_peptides_per_protein_thresh", "cluster"))
 
 #'@export
-#'#'@description
+#'@description
 #' Keep the proteins only if they have two or more peptides.
 #'@param theObject Object of class PeptideQuantitativeData
 #'@param num_peptides_per_protein_thresh Minimum number of peptides per protein
@@ -298,7 +300,7 @@ setMethod( f="filterMinNumPeptidesPerProteinObj"
                                                          , protein_id_column = !!sym(protein_id_column)
                                                          , cluster = cluster)
 
-             theObject <- cleanDesignMatrixObj(theObject)
+             theObject <- cleanDesignMatrixPeptideObj(theObject)
 
              theObject
            })
@@ -326,7 +328,7 @@ setMethod( f="filterMinNumPeptidesPerSampleObj"
                                             , cluster
                                             , inclusion_list = c())
 
-             theObject <- cleanDesignMatrixObj(theObject)
+             theObject <- cleanDesignMatrixPeptideObj(theObject)
 
              theObject
            })
@@ -356,7 +358,7 @@ setMethod( f="removePeptidesWithOnlyOneReplicateObj"
                                                                                              , sample_id_tbl_sample_id_column  = !!sym(sample_id_column)
                                                                                              , replicate_group_column = !!sym(replicate_group_column)
                                                                                              , cluster = cluster)
-             theObject <- cleanDesignMatrixObj(theObject)
+             theObject <- cleanDesignMatrixPeptideObj(theObject)
 
              theObject
            })
@@ -393,7 +395,7 @@ setMethod( f="peptideMissingValueImputationObj"
 
              theObject@peptide_data <- peptide_values_imputed
 
-             theObject <- cleanDesignMatrixObj(theObject)
+             theObject <- cleanDesignMatrixPeptideObj(theObject)
 
              theObject
            })
