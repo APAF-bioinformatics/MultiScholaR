@@ -147,7 +147,7 @@ plotPeptidesProteinsCountsPerSample <- function( input_table
 srlQvalueProteotypicPeptideClean <- function(input_table
                                              , q_value_thresh = 0.01
                                              , global_q_value_thresh = 0.01
-                                             , num_proteotypic_peptide_thresh = 1
+                                             , choose_only_proteotypic_peptide = 1
                                              ,   srl_quant_columns = c("Run"
                                                                        , "Precursor.Id"
                                                                        , "Protein.Ids"
@@ -166,8 +166,7 @@ srlQvalueProteotypicPeptideClean <- function(input_table
   search_srl_quant_cln <- input_table |>
     dplyr::filter( {{q_value_column}} < q_value_thresh &
                      {{global_q_value_column}} < global_q_value_thresh &
-                     {{proteotypic_peptide_sequence_column}} == num_proteotypic_peptide_thresh ) |>
-    dplyr::filter( ! str_detect( {{protein_id_column}}, ";")) |>
+                     {{proteotypic_peptide_sequence_column}} == choose_only_proteotypic_peptide ) |>
     dplyr::select(one_of( srl_quant_columns))
 
   search_srl_quant_cln
@@ -256,13 +255,12 @@ peptideIntensityFiltering <- function(input_table
 
 }
 
-#'@description
-#' Keep the proteins only if they have two or more peptides.
+#' @export
+#' @description Keep the proteins only if they have two or more peptides.
 #' @param input_table Peptide quantities table in long format
 #' @param num_peptides_per_protein_thresh Minimum number of peptides per protein
 #' @param protein_id_column Protein ID column name as string
 #' @param cluster Cluster to use for parallel processing
-#' @export
 filterMinNumPeptidesPerProtein <- function( input_table
           , num_peptides_per_protein_thresh = 2
           , protein_id_column = Protein.Ids

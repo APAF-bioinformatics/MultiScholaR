@@ -149,7 +149,7 @@ setMethod( f="proteinIntensityFilteringObj"
 
              theObject@protein_data <- peptide_normalized_pif_cln |>
                dplyr::select( -temp) |>
-               pivot_wider( id_cols = theObject@protein_id_column , names_from = Sample_ID, values_from = log_values)
+               pivot_wider( id_cols = theObject@protein_id_column , names_from = !!sym(theObject@sample_id), values_from = log_values)
 
              theObject <- cleanDesignMatrixObj(theObject)
 
@@ -687,12 +687,24 @@ setMethod( f = "removeRowsWithMissingValuesPercentObj"
                                   , max_percent_miss_per_group = 50
                                   , number_of_groups_missing = 2
                                   , abundance_threshold = 1) {
+
              protein_data <- theObject@protein_data
              protein_id_column <- theObject@protein_id_column
              design_matrix <- theObject@design_matrix
              group_id <- theObject@group_id
              sample_id <- theObject@sample_id
              replicate_group_column <- theObject@technical_replicate_id
+
+             protein_data_long <- protein_data |>
+               pivot_longer( cols=!matches(protein_id_column)
+                             , names_to = sample_id
+                             , values_to = "Log_Abundance")
+
+             # min_protein_intensity_threshold <- ceiling( quantile( protein_data_long |>
+             #                                                         dplyr::filter( !is.nan(Log_Abundance) & !is.infinite(Log_Abundance)) |>
+             #                                                         pull(Log_Abundance), na.rm=TRUE, probs = c(min_protein_intensity_percentile) ))[1]
+
+             # print(min_protein_intensity_threshold )
 
              theObject@protein_data <- removeRowsWithMissingValuesPercent( protein_data
                                                                            , !matches(protein_id_column)
@@ -809,3 +821,33 @@ setMethod( f = "chooseBestProteinAccessionObj"
 
            })
 
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+#'@export
+setGeneric(name="chooseBestProteinAccessionSumDuplicatesObj"
+           , def=function( theObject, delim, quant_columns_pattern, islogged ) {
+             standardGeneric("chooseBestProteinAccessionSumDuplicatesObj")
+           }
+           , signature=c("theObject", "delim", "quant_columns_pattern", "islogged" ))
+
+#'@export
+setMethod( f = "chooseBestProteinAccessionSumDuplicatesObj"
+           , signature="ProteinQuantitativeData"
+           , definition=function( theObject, delim=";", quant_columns_pattern = "\\d+", islogged = TRUE ) {
+
+             protein_data <- theObject@protein_data
+             protein_id_column <- theObject@protein_id_column
+
+
+             protein_log2_quant_cln <- protein_data |>
+               mutate( !!sym(protein_id_column) := str_split_i(!!sym( protein_id_column), delim, 1 ) ) |>
+               group_by( !!sym(protein_id_column) ) |>
+               summarise ( across( matches(quant_columns_pattern), \(x){ if(islogged==TRUE) {log2(sum(2^x, na.rm = TRUE)) } else { sum(x, na.rm = TRUE)}    })) |>
+               ungroup()
+
+             theObject@protein_data <- protein_log2_quant_cln
+
+             theObject
+
+           })

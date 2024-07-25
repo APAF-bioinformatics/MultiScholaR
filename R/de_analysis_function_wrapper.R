@@ -19,7 +19,7 @@ deAnalysisWrapperFunction <- function( theObject
 
   ## Compare the different experimental groups and obtain lists of differentially expressed proteins.")
 
-  rownames( theObject@design_matrix ) <- theObject@design_matrix |> pull( one_of("replicates"))
+  rownames( theObject@design_matrix ) <- theObject@design_matrix |> pull( one_of(theObject@sample_id ))
 
   # requires statmod library
   contrasts_results <- runTestsContrasts(theObject@protein_data |> column_to_rownames(theObject@protein_id_column  ) |> as.matrix(),
@@ -145,7 +145,7 @@ deAnalysisWrapperFunction <- function( theObject
 
 
   ## Return the number of significant molecules
-  num_sig_de_molecules <- selected_data %>%
+  num_sig_de_molecules <- significant_rows %>%
     dplyr::mutate(status = case_when(q.mod  >= de_q_val_thresh ~ "Not significant",
                                        log2FC >= 0 & q.mod < de_q_val_thresh ~ "Significant and Up",
                                      log2FC < 0 &  q.mod < de_q_val_thresh ~ "Significant and Down",
@@ -315,8 +315,8 @@ outputDeAnalysisResults <- function(de_analysis_results_list, uniprot_tbl, de_ou
   num_sig_de_molecules <- de_analysis_results_list$num_sig_de_molecules
 
 
-  for( format_ext in args$plots_format) {
-    file_name<-file.path(args$output_dir,paste0("num_sda_entities_barplot.",format_ext))
+  for( format_ext in plots_format) {
+    file_name<-file.path(de_output_dir,paste0("num_sda_entities_barplot.",format_ext))
     ggsave(filename = file_name,
            plot = num_sig_de_molecules$plot,
            height = 10,
@@ -440,8 +440,16 @@ outputDeAnalysisResults <- function(de_analysis_results_list, uniprot_tbl, de_ou
 
   purrr::walk2( list_of_volcano_plots %>% pull(title),
                 list_of_volcano_plots %>% pull(plot),
-                ~{file_name_part <- file.path( args$output_dir, "Volcano_Plots", paste0(.x, "."))
-                gg_save_logging ( .y, file_name_part, args$plots_format)} )
+                ~{file_name_part <- file.path( de_output_dir, "Volcano_Plots", paste0(.x, "."))
+                # gg_save_logging ( .y, file_name_part, plots_format)
+                for( format_ext in plots_format) {
+                  file_name <- paste0(file_name_part, format_ext)
+                    ggsave(plot=.y
+                           , filename = file_name
+                           , width=7
+                           , height=7 )
+                }
+                } )
 
   ggsave(
     filename = file.path(de_output_dir, "Volcano_Plots", "list_of_volcano_plots.pdf" ),

@@ -154,10 +154,10 @@ setMethod( f ="cleanDesignMatrixPeptideObj"
 
 #'@export
 setGeneric(name="srlQvalueProteotypicPeptideCleanObj"
-           , def=function( theObject, q_value_thresh, global_q_value_thresh, num_proteotypic_peptide_thresh, srl_quant_columns ) {
+           , def=function( theObject, q_value_thresh, global_q_value_thresh, choose_only_proteotypic_peptide, srl_quant_columns ) {
              standardGeneric("srlQvalueProteotypicPeptideCleanObj")
            }
-           , signature = c("theObject", "q_value_thresh", "global_q_value_thresh", "num_proteotypic_peptide_thresh", "srl_quant_columns") )
+           , signature = c("theObject", "q_value_thresh", "global_q_value_thresh", "choose_only_proteotypic_peptide", "srl_quant_columns") )
 
 
 #'@export
@@ -166,7 +166,7 @@ setMethod( f ="srlQvalueProteotypicPeptideCleanObj"
            , definition=function ( theObject
                                   , q_value_thresh = 0.01
                                   , global_q_value_thresh = 0.01
-                                  , num_proteotypic_peptide_thresh = 1
+                                  , choose_only_proteotypic_peptide = 1
                                   , srl_quant_columns =  c("Run"
                                                           , "Precursor.Id", "Protein.Ids", "Stripped.Sequence",  "Modified.Sequence"
                                                           , "Precursor.Charge"
@@ -187,7 +187,7 @@ setMethod( f ="srlQvalueProteotypicPeptideCleanObj"
                                                                        , global_q_value_column = !!sym(global_q_value_column)
                                                                        , global_q_value_thresh = global_q_value_thresh
                                                                        , q_value_thresh = q_value_thresh
-                                                                       , num_proteotypic_peptide_thresh = num_proteotypic_peptide_thresh)
+                                                                       , choose_only_proteotypic_peptide = choose_only_proteotypic_peptide)
 
              theObject@peptide_data <- search_srl_quant_cln
 
@@ -337,15 +337,15 @@ setMethod( f="filterMinNumPeptidesPerSampleObj"
 
 #'@export
 setGeneric( name="removePeptidesWithOnlyOneReplicateObj"
-            , def=function( theObject, min_num_peptides_in_sample, cluster, inclusion_list) {
+            , def=function( theObject, column_to_filter_on, cluster, inclusion_list) {
               standardGeneric("removePeptidesWithOnlyOneReplicateObj")
             }
-            , signature=c("theObject", "min_num_peptides_in_sample", "cluster", "inclusion_list" ))
+            , signature=c("theObject", "column_to_filter_on", "cluster", "inclusion_list" ))
 
 #'@export
 setMethod( f="removePeptidesWithOnlyOneReplicateObj"
            , signature="PeptideQuantitativeData"
-           , definition = function( theObject, min_num_peptides_in_sample = 5000, cluster, inclusion_list = c()) {
+           , definition = function( theObject, column_to_filter_on, cluster, inclusion_list = c()) {
 
              peptide_data <- theObject@peptide_data
              sample_id_column <- theObject@sample_id
@@ -356,7 +356,7 @@ setMethod( f="removePeptidesWithOnlyOneReplicateObj"
                                                                                              , samples_id_tbl = design_matrix
                                                                                              , input_table_sample_id_column = !!sym(sample_id_column)
                                                                                              , sample_id_tbl_sample_id_column  = !!sym(sample_id_column)
-                                                                                             , replicate_group_column = !!sym(replicate_group_column)
+                                                                                             , replicate_group_column = !!sym(column_to_filter_on)
                                                                                              , cluster = cluster)
              theObject <- cleanDesignMatrixPeptideObj(theObject)
 
