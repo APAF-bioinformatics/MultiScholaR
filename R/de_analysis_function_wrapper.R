@@ -5,6 +5,7 @@
 deAnalysisWrapperFunction <- function( theObject
                                        , contrasts_tbl
                                        , formula_string = " ~ 0 + group"
+                                       , group_id = "group"
                                        , de_q_val_thresh = 0.05
                                        , treat_lfc_cutoff = 0
                                        , eBayes_trend = TRUE
@@ -13,6 +14,37 @@ deAnalysisWrapperFunction <- function( theObject
                                        , args_row_id = "uniprot_acc" ) {
 
   return_list <- list()
+
+  ## plot RLE plot
+  rle_plot <-   plotRleObj(theObject = theObject, theObject@group_id  ) +
+    theme(axis.text.x = element_text(size = 13))   +
+    theme(axis.text.y = element_text(size = 13))  +
+    theme(axis.title.x = element_text(size = 12))  +
+    theme(axis.title.y = element_text(size = 12))  +
+    theme(plot.title = element_text(size = 12)) +
+    theme(legend.text = element_text(size = 12)) +
+    theme(legend.title = element_text(size = 12)) +
+    xlab("Samples")
+
+  return_list$rle_plot <- rle_plot
+
+  ## plot PCA plot
+
+  pca_plot <-  plotPcaObj( theObject
+                           , group_column = theObject@group_id
+                           , label_column = ""
+                           , title = ""
+                           , geom_text_size = 8) +
+    theme_bw() +
+    theme(axis.text.x = element_text(size = 12)) +
+    theme(axis.text.y = element_text(size = 12)) +
+    theme(axis.title.x = element_text(size = 12)) +
+    theme(axis.title.y = element_text(size = 12)) +
+    theme(plot.title = element_text(size = 12)) +
+    theme(legend.text = element_text(size = 12)) +
+    theme(legend.title = element_text(size = 12))
+
+  return_list$pca_plot <- pca_plot
 
   ## Count the number of values
   return_list$plot_num_of_values <- plotNumOfValuesNoLog(theObject@protein_data)
@@ -110,11 +142,11 @@ deAnalysisWrapperFunction <- function( theObject
 
   de_proteins_long <- createDeResultsLongFormat( lfc_qval_tbl = significant_rows |>
                                                    dplyr::filter(analysis_type == "RUV applied") ,
-                                                 norm_counts_input_tbl = counts_table_to_use,
-                                                 raw_counts_input_tbl = counts_table_to_use,
+                                                 norm_counts_input_tbl = counts_table_to_use |> column_to_rownames( theObject@protein_id_column) |> as.matrix(),
+                                                 raw_counts_input_tbl = counts_table_to_use |> column_to_rownames(theObject@protein_id_column) |> as.matrix(),
                                                  row_id = args_row_id,
                                                  sample_id = theObject@sample_id,
-                                                 group_id = theObject@group_id,
+                                                 group_id = group_id,
                                                  group_pattern = args_group_pattern,
                                                  design_matrix_norm = theObject@design_matrix,
                                                  design_matrix_raw =  theObject@design_matrix )
@@ -139,7 +171,6 @@ deAnalysisWrapperFunction <- function( theObject
     mutate( plot = purrr:::map2( data, title, \(x,y) { plotOneVolcanoNoVerticalLines(x, y
                                                                                      , log_q_value_column = lqm
                                                                                      , log_fc_column = log2FC) } ) )
-
 
   return_list$list_of_volcano_plots <- list_of_volcano_plots
 
@@ -178,8 +209,6 @@ deAnalysisWrapperFunction <- function( theObject
     return_list$num_of_comparison_only_significant <- num_of_comparison_only_significant
   }
 
-
-
   if (num_sig_de_molecules %>%
       dplyr::filter(status != "Not significant") |>
       nrow() > 0 ) {
@@ -200,7 +229,6 @@ deAnalysisWrapperFunction <- function( theObject
 
   }
 
-
   return_list
 
 }
@@ -212,7 +240,7 @@ deAnalysisWrapperFunction <- function( theObject
 #' @export
 # de_analysis_results_list$contrasts_results$fit.eb
 
-writeInteractiveVolcanoPlotProteomics <- function( de_proteins_long, uniprot_tbl, fit.eb, args_row_id = "uniprot_acc", de_output_dir, de_q_val_thresh = 0.05) {
+writeInteractiveVolcanoPlotProteomics <- function( de_proteins_long, uniprot_tbl, fit.eb, args_row_id = "uniprot_acc", publication_graphs_dir, de_q_val_thresh = 0.05) {
 
 
     volcano_plot_tab <- de_proteins_long  |>
@@ -241,10 +269,10 @@ writeInteractiveVolcanoPlotProteomics <- function( de_proteins_long, uniprot_tbl
     ncol(fit.eb$coefficients)
     colnames(fit.eb$coefficients)
 
-    output_dir <- file.path( de_output_dir
+    output_dir <- file.path( publication_graphs_dir
                              ,  "Interactive_Volcano_Plots")
 
-    createDirIfNotExists(output_dir)
+    dir.create(output_dir, recursive = TRUE)
 
     purrr::walk( seq_len( ncol(fit.eb$coefficients))
                  , \(coef) { # print(coef)
@@ -256,15 +284,33 @@ writeInteractiveVolcanoPlotProteomics <- function( de_proteins_long, uniprot_tbl
                                                               , display_columns = c( "best_uniprot_acc",  "PROTEIN_NAMES"   )
                                                               , output_dir = output_dir ) } )
 
-
 }
 
 
-
-
 #' @export
+outputDeAnalysisResults <- function(de_analysis_results_list, uniprot_tbl
+                                    , de_output_dir
+                                    , publication_graphs_dir
+                                    , file_prefix
+                                    , plots_format
+                                    , args_row_id = "uniprot_acc"
+                                    , de_q_val_thresh = 0.05) {
 
-outputDeAnalysisResults <- function(de_analysis_results_list, uniprot_tbl, de_output_dir, file_prefix, plots_format, args_row_id = "uniprot_acc", de_q_val_thresh=0.05) {
+  ## PCA plot
+  plot_pca_plot <- de_analysis_results_list$pca_plot
+
+  for( format_ext in plots_format) {
+    file_name <- file.path( publication_graphs_dir, "PCA", paste0("PCA_plot.",format_ext))
+    ggsave(filename = file_name, plot = plot_pca_plot, limitsize = FALSE)
+  }
+
+  ## RLE plot
+  plot_rle_plot <- de_analysis_results_list$rle_plot
+
+  for( format_ext in plots_format) {
+    file_name <- file.path( publication_graphs_dir, "RLE", paste0("RLE_plot.",format_ext))
+    ggsave(filename = file_name, plot = plot_rle_plot, limitsize = FALSE)
+  }
 
   ## Save the number of values graph
   plot_num_of_values <- de_analysis_results_list$plot_num_of_values
@@ -300,23 +346,19 @@ outputDeAnalysisResults <- function(de_analysis_results_list, uniprot_tbl, de_ou
     dplyr::select(-colour, -lqm) |>
     writexl::write_xlsx(file.path(de_output_dir, "lfc_qval_long.xlsx"))
 
-
   ## Print Volcano plot
-
-
   volplot_plot <- de_analysis_results_list$volplot_plot
 
   for( format_ext in plots_format) {
-    file_name <- file.path(de_output_dir,paste0("volplot_gg_all.",format_ext))
+    file_name <- file.path(de_output_dir, paste0("volplot_gg_all.",format_ext))
     ggsave(filename = file_name, plot = volplot_plot, width = 7.29, height = 6)
   }
 
   ## Count the number of up or down significnat differentially expressed proteins.
   num_sig_de_molecules <- de_analysis_results_list$num_sig_de_molecules
 
-
   for( format_ext in plots_format) {
-    file_name<-file.path(de_output_dir,paste0("num_sda_entities_barplot.",format_ext))
+    file_name<-file.path(de_output_dir, paste0("num_sda_entities_barplot.",format_ext))
     ggsave(filename = file_name,
            plot = num_sig_de_molecules$plot,
            height = 10,
@@ -434,13 +476,13 @@ outputDeAnalysisResults <- function(de_analysis_results_list, uniprot_tbl, de_ou
 
 
   ## Static volcano plots
-  createDirectoryIfNotExists(file.path( de_output_dir, "Volcano_Plots"))
+  dir.create(file.path( publication_graphs_dir, "Volcano_Plots"), recursive = TRUE)
 
   list_of_volcano_plots <- de_analysis_results_list$list_of_volcano_plots
 
   purrr::walk2( list_of_volcano_plots %>% pull(title),
                 list_of_volcano_plots %>% pull(plot),
-                ~{file_name_part <- file.path( de_output_dir, "Volcano_Plots", paste0(.x, "."))
+                ~{file_name_part <- file.path( publication_graphs_dir, "Volcano_Plots", paste0(.x, "."))
                 # gg_save_logging ( .y, file_name_part, plots_format)
                 for( format_ext in plots_format) {
                   file_name <- paste0(file_name_part, format_ext)
@@ -452,15 +494,15 @@ outputDeAnalysisResults <- function(de_analysis_results_list, uniprot_tbl, de_ou
                 } )
 
   ggsave(
-    filename = file.path(de_output_dir, "Volcano_Plots", "list_of_volcano_plots.pdf" ),
+    filename = file.path(publication_graphs_dir, "Volcano_Plots", "list_of_volcano_plots.pdf" ),
     plot = gridExtra::marrangeGrob( (list_of_volcano_plots  %>% pull(plot)), nrow=1, ncol=1),
     width = 7, height = 7
   )
 
   ## Number of significant molecules
-  createDirIfNotExists(file.path(de_output_dir, "NumSigDeMolecules"))
+  createDirIfNotExists(file.path(publication_graphs_dir, "NumSigDeMolecules"))
   vroom::vroom_write( de_analysis_results_list$num_sig_de_molecules,
-                      file.path(de_output_dir, "NumSigDeMolecules", "num_sig_de_molecules.tab" ) )
+                      file.path(publication_graphs_dir, "NumSigDeMolecules", "num_sig_de_molecules.tab" ) )
 
 
   if( !is.null(de_analysis_results_list$num_sig_de_genes_barplot_only_significant)) {
@@ -468,12 +510,12 @@ outputDeAnalysisResults <- function(de_analysis_results_list, uniprot_tbl, de_ou
     num_of_comparison_only_significant <- de_analysis_results_list$num_of_comparison_only_significant
 
 
-    ggsave(filename = file.path(de_output_dir, "NumSigDeMolecules", "num_sig_de_genes_barplot.png" ),
+    ggsave(filename = file.path(publication_graphs_dir, "NumSigDeMolecules", "num_sig_de_genes_barplot.png" ),
            plot = num_sig_de_genes_barplot_only_significant,
            height = 6,
            width = (num_of_comparison_only_significant + 2) *7/6 )
 
-    ggsave(filename = file.path(de_output_dir, "NumSigDeMolecules", "num_sig_de_genes_barplot.pdf" ),
+    ggsave(filename = file.path(publication_graphs_dir, "NumSigDeMolecules", "num_sig_de_genes_barplot.pdf" ),
            plot = num_sig_de_genes_barplot_only_significant,
            height = 6,
            width = (num_of_comparison_only_significant + 2) *7/6 )
@@ -485,12 +527,12 @@ outputDeAnalysisResults <- function(de_analysis_results_list, uniprot_tbl, de_ou
     num_sig_de_genes_barplot_with_not_significant <- de_analysis_results_list$num_sig_de_genes_barplot_with_not_significant
     num_of_comparison_with_not_significant <- de_analysis_results_list$num_of_comparison_with_not_significant
 
-    ggsave(filename = file.path(de_output_dir, "NumSigDeMolecules", "num_sig_de_molecules_with_not_significant.png" ),
+    ggsave(filename = file.path(publication_graphs_dir, "NumSigDeMolecules", "num_sig_de_molecules_with_not_significant.png" ),
            plot = num_sig_de_genes_barplot_with_not_significant,
            height = 6,
            width = (num_of_comparison_with_not_significant + 2) *7/6 )
 
-    ggsave(filename = file.path(de_output_dir, "NumSigDeMolecules", "num_sig_de_molecules_with_not_significant.pdf" ),
+    ggsave(filename = file.path(publication_graphs_dir, "NumSigDeMolecules", "num_sig_de_molecules_with_not_significant.pdf" ),
            plot = num_sig_de_genes_barplot_with_not_significant,
            height = 6,
            width = (num_of_comparison_with_not_significant + 2) *7/6 )
@@ -499,7 +541,12 @@ outputDeAnalysisResults <- function(de_analysis_results_list, uniprot_tbl, de_ou
   }
 
   ## Write interactive volcano plot
-  writeInteractiveVolcanoPlotProteomics( de_proteins_long, uniprot_tbl, contrasts_results$fit.eb, args_row_id = args_row_id, de_output_dir, de_q_val_thresh = de_q_val_thresh)
+  writeInteractiveVolcanoPlotProteomics( de_proteins_long
+                                         , uniprot_tbl
+                                         , contrasts_results$fit.eb
+                                         , args_row_id = args_row_id
+                                         , publication_graphs_dir
+                                         , de_q_val_thresh = de_q_val_thresh)
 
 
 }

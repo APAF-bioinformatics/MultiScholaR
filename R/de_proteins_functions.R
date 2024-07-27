@@ -1844,6 +1844,8 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
     mutate( {{group_id}} := purrr::map_chr( !!sym(group_id), as.character))
 
 
+  # print(head(norm_counts))
+
   raw_counts <- raw_counts_input_tbl |>
     as.data.frame() |>
     rownames_to_column(row_id) |>
@@ -1860,6 +1862,7 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
                 values_from = raw)  |>
     mutate( {{group_id}} := purrr::map_chr( !!sym(group_id), as.character))
 
+  # print(head(raw_counts))
 
   left_join_columns <- rlang::set_names(c(row_id, group_id ),
                                         c(row_id, "left_group"))
@@ -1867,7 +1870,7 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
   right_join_columns <- rlang::set_names(c(row_id, group_id ),
                                          c(row_id, "right_group"))
 
-
+   # print(head(lfc_qval_tbl))
 
   de_proteins_long <- lfc_qval_tbl |>
     dplyr::select(-lqm, -colour, -analysis_type) |>
@@ -1942,3 +1945,5 @@ proteinTechRepCorrelation <- function( design_matrix_tech_rep, data_matrix, samp
 
   frozen_protein_matrix_tech_rep
 }
+
+

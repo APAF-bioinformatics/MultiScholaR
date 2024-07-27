@@ -211,7 +211,7 @@ setMethod(f="removeProteinsWithOnlyOneReplicateObj"
 
 #'@export
 setGeneric(name="plotRleObj"
-           , def=function( theObject, group, ylim ) {
+           , def=function( theObject, group, ylim = c()) {
              standardGeneric("plotRleObj")
            }
            , signature=c("theObject", "group", "ylim"))
@@ -220,7 +220,7 @@ setGeneric(name="plotRleObj"
 #'@export
 setMethod(f="plotRleObj"
           , signature="ProteinQuantitativeData"
-          , definition=function( theObject, group, ylim) {
+          , definition=function( theObject, group, ylim = c()) {
             protein_data <- theObject@protein_data
             protein_id_column <- theObject@protein_id_column
             design_matrix <- theObject@design_matrix
@@ -241,11 +241,15 @@ setMethod(f="plotRleObj"
             }
 
             # print( rowinfo_vector)
+            if( length( ylim ) ==2 ) {
 
-            rle_plot_before_cyclic_loess <- plotRle( t(frozen_protein_matrix)
-                                                     , rowinfo = rowinfo_vector
-                                                     , ylim=ylim)
-
+              rle_plot_before_cyclic_loess <- plotRle( t(frozen_protein_matrix)
+                                                       , rowinfo = rowinfo_vector
+                                                       , ylim = ylim)
+            } else {
+              rle_plot_before_cyclic_loess <- plotRle( t(frozen_protein_matrix)
+                                                       , rowinfo = rowinfo_vector)
+            }
 
             return( rle_plot_before_cyclic_loess)
 

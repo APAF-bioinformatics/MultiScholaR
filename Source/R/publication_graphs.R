@@ -333,17 +333,16 @@ createDirectoryIfNotExists(file.path( args$output_dir, "RLE"))
 file_name_part <- file.path( args$output_dir, "RLE", "before_RUVIII_rle.")
 gg_save_logging ( before_RUVIII_rle, file_name_part, args$plots_format)
 
-
 ##
 after_RUVIII_rle <- plotRle(t(as.matrix(counts_rnorm.log.ruvIII_mat)),
         rowinfo = design_mat_cln[colnames(counts_rnorm.log.ruvIII_mat),
                                  args$group_id]) +
-  theme(axis.text.x = element_text(size = 13))   +
+  theme(axis.text.x = element_text(size = 13))  +
   theme(axis.text.y = element_text(size = 13))  +
-  theme(axis.title.x = element_text(size = 12))  +
-  theme(axis.title.y = element_text(size = 12))  +
-  theme(plot.title = element_text(size = 12)) +
-  theme(legend.text = element_text(size = 12)) +
+  theme(axis.title.x = element_text(size = 12)) +
+  theme(axis.title.y = element_text(size = 12)) +
+  theme(plot.title = element_text(size = 12))   +
+  theme(legend.text = element_text(size = 12))  +
   theme(legend.title = element_text(size = 12)) +
   xlab("Samples")
 
