@@ -130,7 +130,7 @@ deAnalysisWrapperFunction <- function( theObject
                 names_from = c(comparison),
                 names_sep = ":",
                 values_from = c(log2FC, q.mod, p.mod)) |>
-    left_join(norm_counts, by = args_row_id) |>
+    left_join(counts_table_to_use, by = join_by( !!sym(args_row_id)  == !!sym(theObject@protein_id_column)  )   ) |>
     dplyr::arrange(across(matches("q.mod"))) |>
     distinct()
 
