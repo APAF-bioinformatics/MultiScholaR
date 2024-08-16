@@ -298,51 +298,46 @@ getRuvIIIReplicateMatrix <- function(design_matrix, sample_id_column, group_colu
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
+
 plotPca <- function(data,
                     design_matrix,
-                    sample_id_column = Sample_ID,
-                    group_column = group,
-                    label_column = {{sample_id_column}},
-                    title,  geom.text.size=11, ncomp=2,
-                   ...) {
+                    sample_id_column = "Sample_ID",
+                    group_column = "group",
+                    label_column = NULL,
+                    title, geom.text.size = 11, ncomp = 2,
+                    ...) {
 
-  pca.res <- mixOmics::pca(t(as.matrix(data)), ncomp=ncomp)
-
+  pca.res <- mixOmics::pca(t(as.matrix(data)), ncomp = ncomp)
   proportion_explained <- pca.res$prop_expl_var
 
   temp_tbl <- pca.res$variates$X |>
-    as.data.frame()    |>
-    rownames_to_column(as_string(as_name(enquo(sample_id_column))))  |>
-    left_join(design_matrix, by =  as_string(as_name(enquo(sample_id_column)))  )
+    as.data.frame() |>
+    rownames_to_column(var = sample_id_column) |>
+    left_join(design_matrix, by = sample_id_column)
 
-  unique_groups <- temp_tbl |> distinct( {{group_column}}) |> pull( {{group_column}})
+  unique_groups <- temp_tbl |> distinct(!!sym(group_column)) |> pull(!!sym(group_column))
 
-  if( is.na(label_column) || label_column == "") {
+  if (is.null(label_column) || label_column == "") {
     output <- temp_tbl |>
-      ggplot(aes(PC1, PC2, col = {{group_column}})) +
+      ggplot(aes(PC1, PC2, col = !!sym(group_column))) +
       geom_point() +
-      xlab( paste( "PC1 (", round(proportion_explained$X[["PC1"]]*100, 0),"%)", sep="")) +
-      ylab( paste( "PC2 (", round(proportion_explained$X[["PC2"]]*100, 0),"%)", sep="")) +
+      xlab(paste("PC1 (", round(proportion_explained$X[["PC1"]] * 100, 0), "%)", sep = "")) +
+      ylab(paste("PC2 (", round(proportion_explained$X[["PC2"]] * 100, 0), "%)", sep = "")) +
       labs(title = title) +
       theme(legend.title = element_blank())
-  }else {
+  } else {
     output <- temp_tbl |>
-      ggplot(aes(PC1, PC2, col = {{group_column}}, label = {{label_column}})) +
+      ggplot(aes(PC1, PC2, col = !!sym(group_column), label = !!sym(label_column))) +
       geom_point() +
-      geom_text_repel(size  = geom.text.size, show.legend=FALSE) +
-      xlab( paste( "PC1 (", round(proportion_explained$X[["PC1"]]*100, 0),"%)", sep="")) +
-      ylab( paste( "PC2 (", round(proportion_explained$X[["PC2"]]*100, 0),"%)", sep="")) +
+      geom_text_repel(size = geom.text.size, show.legend = FALSE) +
+      xlab(paste("PC1 (", round(proportion_explained$X[["PC1"]] * 100, 0), "%)", sep = "")) +
+      ylab(paste("PC2 (", round(proportion_explained$X[["PC2"]] * 100, 0), "%)", sep = "")) +
       labs(title = title) +
       theme(legend.title = element_blank())
-
   }
-
-
-
 
   output
 }
-
 #'@export
 plotPcaGgpairs <- function( data_matrix
                             , design_matrix
@@ -372,10 +367,10 @@ plotPcaGgpairs <- function( data_matrix
 
   pca_plot_ggpairs <- pca_variates_x |>
     as.data.frame() |>
-    rownames_to_column( as_string(as_name(enquo(sample_id_column))) ) |>
+    rownames_to_column( sample_id_column ) |>
     left_join( design_matrix
-               , by = join_by( {{sample_id_column}} ==  {{sample_id_column}}) ) |>
-    ggpairs( columns=pc_list, aes( colour = {{group_column}}, fill= {{group_column}}, alpha=0.4)
+               , by = join_by( !!sym(sample_id_column) ==  !!sym(sample_id_column)) ) |>
+    ggpairs( columns=pc_list, aes( colour = !!sym(group_column), fill= !!sym(group_column), alpha=0.4)
              , legend = 1)
 
   pca_plot_ggpairs
@@ -411,9 +406,9 @@ plotRle <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75,
       arrange(rowinfo)
   }
 
-  rleplot <- ggplot(df, aes_string(x = "rle.x.factor")) +
-    geom_boxplot(aes_string(lower = "lower", middle = "middle",
-                            upper = "upper", max = "max", min = "min"),
+  rleplot <- ggplot(df, aes(x = .data[["rle.x.factor"]])) +
+    geom_boxplot(aes(lower = .data[["lower"]], middle = .data[["middle"]],
+                            upper = .data[["upper"]], max = .data[["max"]], min = .data[["min"]]),
                  stat = "identity") +
     theme_bw() +
     theme(axis.title.x = element_blank(),
@@ -445,8 +440,8 @@ rlePcaPlotList <- function(list_of_data_matrix, list_of_design_matrix,
   pca_list <- purrr::pmap(list( data_matrix=list_of_data_matrix, description=list_of_descriptions, design_matrix=list_of_design_matrix),
                           function( data_matrix, description, design_matrix) { plotPca(data_matrix,
                                    design_matrix = design_matrix,
-                                   sample_id_column = { { sample_id_column } },
-                                   group_column = { { group_column } },
+                                   sample_id_column = sample_id_column ,
+                                   group_column =  group_column ,
                                    title = description, cex = 7) })
 
   list_of_plots <- c(rle_list, pca_list)

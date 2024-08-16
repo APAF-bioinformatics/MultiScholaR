@@ -290,8 +290,8 @@ setMethod(f="plotPcaObj"
 
               pca_plot_before_cyclic_loess_group <- plotPca( frozen_protein_matrix_pca
                                                              , design_matrix
-                                                             , sample_id_column = !!sym( sample_id)
-                                                             , group_column = !!sym( group_column)
+                                                             , sample_id_column = sample_id
+                                                             , group_column =  group_column
                                                              , label_column = ""
                                                              , title = title
                                                              , geom.text.size = geom_text_size )            }
@@ -299,9 +299,9 @@ setMethod(f="plotPcaObj"
 
               pca_plot_before_cyclic_loess_group <- plotPca( frozen_protein_matrix_pca
                                                              , design_matrix
-                                                             , sample_id_column = !!sym( sample_id)
-                                                             , group_column = !!sym( group_column)
-                                                             , label_column = !!sym( label_column)
+                                                             , sample_id_column =  sample_id
+                                                             , group_column = group_column
+                                                             , label_column =  label_column
                                                              , title = title
                                                              , geom.text.size = geom_text_size )
 

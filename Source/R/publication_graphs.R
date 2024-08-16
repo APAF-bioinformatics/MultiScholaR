@@ -69,7 +69,7 @@ parser <- add_option(parser, c("-s", "--silent"), action = "store_true", default
 parser <- add_option(parser, c("-n", "--no_backup"), action = "store_true", default = FALSE,
                      help = "Deactivate backup of previous run.  [default %default]")
 
-parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config_prot.ini",
+parser <- add_option(parser, c("-c", "--config"), type = "character", default = "config_phos.ini",
                      help = "Configuration file.  [default %default]",
                      metavar = "string")
 
@@ -603,9 +603,9 @@ if(!is.na(args$before_avg_design_matrix_file)) {
 
 before_ruvIII_pca <- plotPca( counts_rnorm.log.quant_mat,
                               design_matrix = design_mat_cln,
-                              sample_id_column = !!rlang::sym(args$sample_id),
-                              group_column = !!rlang::sym(args$group_id),
-                              label_id_column = !!rlang::sym(args$label_id),
+                              sample_id_column = args$sample_id,
+                              group_column = args$group_id,
+                              label_id_column = args$label_id,
                               title = "Before RUVIII",
                               geom.text.size = 7) +
   theme_bw() +
@@ -627,9 +627,9 @@ gg_save_logging ( before_ruvIII_pca, file_name_part, args$plots_format)
 
 after_ruvIII_pca <- plotPca( counts_rnorm.log.ruvIII_mat,
                              design_matrix = design_mat_cln,
-                             sample_id_column = !!rlang::sym(args$sample_id),
-                             group_column = !!rlang::sym(args$group_id),
-                             label_id_column = !!rlang::sym(args$label_id),
+                             sample_id_column = args$sample_id,
+                             group_column = args$group_id,
+                             label_id_column = args$label_id,
                              title = "After RUVIII", geom.text.size = 7) +
   theme_bw() +
   theme(axis.text.x = element_text(size = 12))   +
@@ -645,13 +645,21 @@ after_ruvIII_pca
 file_name_part <- file.path( args$output_dir, "PCA", "after_ruvIII_pca.")
 gg_save_logging ( after_ruvIII_pca, file_name_part, args$plots_format)
 
-
+before_ruvIII_pca <- plotPca(
+  counts_rnorm.log.quant_mat,
+  design_matrix = design_mat_cln,
+  sample_id_column = args$sample_id,
+  group_column = args$group_id,
+  label_column = as.character(args$label_id),
+  title = "Before RUVIII",
+  geom.text.size = 7
+)
 ## Labeling using the groups
 before_ruvIII_pca <- plotPca( counts_rnorm.log.quant_mat,
                               design_matrix = design_mat_cln,
-                              sample_id_column = !!rlang::sym(args$sample_id),
-                              group_column = !!rlang::sym(args$group_id),
-                              label_column = !!rlang::sym(args$label_id),
+                              sample_id_column = args$sample_id,
+                              group_column = args$group_id,
+                              label_column = args$label_id,
                               title = "Before RUVIII",
                               geom.text.size = 7) +
   theme_bw() +
@@ -673,9 +681,9 @@ gg_save_logging ( before_ruvIII_pca, file_name_part, args$plots_format)
 
 after_ruvIII_pca <- plotPca( counts_rnorm.log.ruvIII_mat,
                              design_matrix = design_mat_cln,
-                             sample_id_column = !!rlang::sym(args$sample_id),
-                             group_column = !!rlang::sym(args$group_id),
-                             label_column = !!rlang::sym(args$label_id),
+                             sample_id_column = args$sample_id,
+                             group_column = args$group_id,
+                             label_column = args$label_id,
                              title = "After RUVIII", geom.text.size = 7) +
   theme_bw() +
   theme(axis.text.x = element_text(size = 12))   +
@@ -695,11 +703,10 @@ gg_save_logging ( after_ruvIII_pca, file_name_part, args$plots_format)
 
 ## No sample labels
 before_ruvIII_pca_no_labels <- plotPca( counts_rnorm.log.quant_mat,
-                              design_matrix = design_mat_cln %>%
-                                mutate( sample_labels = ""),
-                              sample_id_column = !!rlang::sym(args$sample_id),
-                              group_column = !!rlang::sym(args$group_id),
-                              label_column = sample_labels,
+                              design_matrix = design_mat_cln ,
+                              sample_id_column = args$sample_id,
+                              group_column = args$group_id,
+                              label_column = NULL,
                               title = "Before RUVIII",
                               geom.text.size = 7) +
   theme_bw() +
@@ -721,11 +728,10 @@ gg_save_logging ( before_ruvIII_pca_no_labels, file_name_part, args$plots_format
 
 
 after_ruvIII_pca_no_labels <- plotPca( counts_rnorm.log.ruvIII_mat,
-                                       design_matrix = design_mat_cln %>%
-                                         mutate( sample_labels = ""),
-                                       sample_id_column = !!rlang::sym(args$sample_id),
-                                       group_column = !!rlang::sym(args$group_id),
-                                       label_column = sample_labels,
+                                       design_matrix = design_mat_cln,
+                                       sample_id_column = args$sample_id,
+                                       group_column = args$group_id,
+                                       label_column = NULL,
                                        title = "After RUVIII", geom.text.size = 7) +
   theme_bw() +
   theme(axis.text.x = element_text(size = 12))   +
@@ -748,8 +754,8 @@ if(!is.na(args$before_avg_design_matrix_file )) {
 
   counts_before_averaging_pca <- plotPca( counts_before_averaging_mat,
                                    design_matrix = before_avg_design_mat_cln,
-                                   sample_id_column = !!rlang::sym(args$sample_id),
-                                   group_column = !!rlang::sym(args$group_id),
+                                   sample_id_column = args$sample_id,
+                                   group_column = args$group_id,
                                    title = "After RUVIII", geom.text.size = 7) +
     theme_bw() +
     theme(axis.text.x = element_text(size = 12))   +
