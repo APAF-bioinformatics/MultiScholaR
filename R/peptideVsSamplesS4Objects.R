@@ -278,25 +278,36 @@ setMethod( f="peptideIntensityFilteringObj"
 
 #'@export
 setGeneric(name="filterMinNumPeptidesPerProteinObj"
-           , def=function( theObject, num_peptides_per_protein_thresh, cluster) {
+           , def=function( theObject
+                           , num_peptides_per_protein_thresh
+                           , num_peptidoforms_per_protein_thresh
+                           , cluster) {
              standardGeneric("filterMinNumPeptidesPerProteinObj")
            }
-           , signature=c("theObject", "num_peptides_per_protein_thresh", "cluster"))
+           , signature=c("theObject"
+                         , "num_peptides_per_protein_thresh"
+                         , "num_peptidoforms_per_protein_thresh"
+                         , "cluster"))
 
 #'@export
 #'@description
 #' Keep the proteins only if they have two or more peptides.
 #'@param theObject Object of class PeptideQuantitativeData
 #'@param num_peptides_per_protein_thresh Minimum number of peptides per protein
+#'@param num_peptidoforms_per_protein_thresh Minimum number of peptidoforms per protein
 #'@param cluster Cluster to use for parallel processing
 setMethod( f="filterMinNumPeptidesPerProteinObj"
            , signature="PeptideQuantitativeData"
-           , definition = function( theObject, num_peptides_per_protein_thresh = 2, cluster) {
+           , definition = function( theObject
+                                    , num_peptides_per_protein_thresh = 1
+                                    , num_peptidoforms_per_protein_thresh = 2
+                                    , cluster) {
              peptide_data <- theObject@peptide_data
              protein_id_column <- theObject@protein_id_column
 
              theObject@peptide_data <- filterMinNumPeptidesPerProtein ( input_table = peptide_data
                                                          , num_peptides_per_protein_thresh = num_peptides_per_protein_thresh
+                                                         , num_peptidoforms_per_protein_thresh = num_peptidoforms_per_protein_thresh
                                                          , protein_id_column = !!sym(protein_id_column)
                                                          , cluster = cluster)
 

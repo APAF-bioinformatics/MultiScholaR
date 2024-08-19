@@ -179,6 +179,7 @@ rollUpPrecursorToPeptide <- function( input_table
                                       , sample_id_column = Run
                                       , protein_id_column = Protein.Ids
                                       , peptide_sequence_column = Stripped.Sequence
+                                      , modified_peptide_sequence_column = Modified.Sequence
                                       , precursor_quantity_column = Precursor.Quantity
                                       , precursor_normalized_column = Precursor.Normalised
                                       , cluster) {
@@ -187,19 +188,31 @@ rollUpPrecursorToPeptide <- function( input_table
   if( length(which(is.na(cluster))) == 0 ) {
 
     peptide_normalized_tbl <- input_table  |>
-      group_by( {{sample_id_column}}, {{protein_id_column}}, {{peptide_sequence_column}} ) |>
-      #partition(cluster) |>
+      group_by( {{sample_id_column}}, {{protein_id_column}}, {{peptide_sequence_column}}, {{modified_peptide_sequence_column}} ) |>
       summarise( Peptide.RawQuantity = sum( {{precursor_quantity_column}} )
                  ,  Peptide.Normalized = sum( {{precursor_normalized_column}} ) ) |>
-      #collect() |>
+      ungroup() |>
+      group_by( {{sample_id_column}}, {{protein_id_column}}, {{peptide_sequence_column}} ) |>
+      summarise( Peptide.RawQuantity = sum( Peptide.RawQuantity )
+                 ,  Peptide.Normalized = sum( Peptide.Normalized )
+                 ,  peptidoform_count = n()) |>
       ungroup()
 
   } else {
     peptide_normalized_tbl <- input_table  |>
-      group_by( {{sample_id_column}}, {{protein_id_column}}, {{peptide_sequence_column}} ) |>
+
+      group_by( {{sample_id_column}}, {{protein_id_column}}, {{peptide_sequence_column}}, {{modified_peptide_sequence_column}} ) |>
       partition(cluster) |>
       summarise( Peptide.RawQuantity = sum( {{precursor_quantity_column}} )
                  ,  Peptide.Normalized = sum( {{precursor_normalized_column}} ) ) |>
+      collect() |>
+      ungroup() |>
+
+      group_by( {{sample_id_column}}, {{protein_id_column}}, {{peptide_sequence_column}} ) |>
+      partition(cluster) |>
+      summarise( Peptide.RawQuantity = sum( Peptide.RawQuantity )
+                 ,  Peptide.Normalized = sum( Peptide.Normalized )
+                 , peptidoform_count = n() ) |>
       collect() |>
       ungroup()
 
@@ -259,10 +272,12 @@ peptideIntensityFiltering <- function(input_table
 #' @description Keep the proteins only if they have two or more peptides.
 #' @param input_table Peptide quantities table in long format
 #' @param num_peptides_per_protein_thresh Minimum number of peptides per protein
+#' @param num_peptidoforms_per_protein_thresh Minimum number of peptidoforms per protein
 #' @param protein_id_column Protein ID column name as string
 #' @param cluster Cluster to use for parallel processing
 filterMinNumPeptidesPerProtein <- function( input_table
-          , num_peptides_per_protein_thresh = 2
+          , num_peptides_per_protein_thresh = 1
+          , num_peptidoforms_per_protein_thresh = 2
           , protein_id_column = Protein.Ids
           , cluster) {
 
@@ -270,25 +285,36 @@ filterMinNumPeptidesPerProtein <- function( input_table
   if( length(which(is.na(cluster))) == 0 ) {
     num_peptides_per_protein <- input_table |>
       group_by( {{protein_id_column}} ) |>
-      #partition(cluster) |>
-      summarise( counts = n()) |>
-      #collect() |>
-      ungroup() |>
-      dplyr::filter( counts >= num_peptides_per_protein_thresh)
+      dplyr::summarise( peptide_count = n()
+                 , peptidoform_count = sum( peptidoform_count, na.rm=TRUE)) |>
+      ungroup()
   } else {
     num_peptides_per_protein <- input_table |>
       group_by( {{protein_id_column}} ) |>
       partition(cluster) |>
-      summarise( counts = n()) |>
+      dplyr::summarise( peptide_count = n()
+                 , peptidoform_count = sum( peptidoform_count, na.rm=TRUE)) |>
       collect() |>
-      ungroup() |>
-      dplyr::filter( counts >= num_peptides_per_protein_thresh)
+      ungroup()
   }
 
-  protein_peptide_cln <- input_table |>
-    inner_join( num_peptides_per_protein |>
-                  dplyr::select( -counts)
-                , by = join_by({{protein_id_column}}))
+  protein_peptide_cln <- NA
+  if ( !is.na(num_peptides_per_protein_thresh) &
+       !is.na(num_peptidoforms_per_protein_thresh )  ) {
+
+    print(num_peptides_per_protein)
+
+    protein_peptide_cln <- input_table |>
+      dplyr::select(-peptidoform_count )|>
+      inner_join( num_peptides_per_protein
+                  , by = join_by({{protein_id_column}})) |>
+      dplyr::filter(   peptidoform_count >= num_peptidoforms_per_protein_thresh
+                      ,
+                      peptide_count >= num_peptides_per_protein_thresh
+                     )
+  } else {
+    stop("filterMinNumPeptidesPerProtein: num_peptides_per_protein_thresh and num_peptidoforms_per_protein_thresh must be provided.")
+  }
 
   protein_peptide_cln
 }
