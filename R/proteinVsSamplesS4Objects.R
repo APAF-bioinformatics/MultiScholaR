@@ -417,6 +417,8 @@ setMethod(f="normalizeBetweenArraysObj"
               column_to_rownames(protein_id_column) |>
               as.matrix()
 
+            frozen_protein_matrix[!is.finite(frozen_protein_matrix)] <- NA
+
 
             normalized_frozen_protein_matrix <- normalizeBetweenArrays( frozen_protein_matrix
                                                                         , method = method  )

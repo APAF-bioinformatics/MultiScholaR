@@ -21,8 +21,18 @@ convertIdToAnnotation <- function( id, id_to_annotation_dictionary) {
 
 #'@param go_annot: Go annotation table.
 #'@export
-oneGoEnrichment <- function(go_annot, background_list, go_aspect, query_list, id_to_annotation_dictionary,
-                              annotation_id, protein_id, aspect_column, p_val_thresh, min_gene_set_size,  max_gene_set_size  ) {
+oneGoEnrichment <- function( go_annot
+                             , background_list
+                             , go_aspect
+                             , query_list
+                             , id_to_annotation_dictionary
+                             ,  annotation_id
+                             , protein_id
+                             , aspect_column
+                             , p_val_thresh
+                             , min_gene_set_size
+                             , max_gene_set_size
+                             , get_cluster_profiler_object = FALSE) {
 
   join_condition <- rlang::set_names( c( colnames(background_list)[1]),
                                       c( as_name(enquo( protein_id)) ) )
@@ -50,7 +60,8 @@ oneGoEnrichment <- function(go_annot, background_list, go_aspect, query_list, id
 
   term_to_gene_tbl_filt <- go_annot_filt %>%
     inner_join( background_list, by =join_condition )  %>%
-    dplyr::inner_join( filtered_go_terms, by = as_name(enquo( annotation_id))  )  %>%
+    dplyr::inner_join( filtered_go_terms
+                       , by = as_name(enquo( annotation_id)) )  %>%
     dplyr::rename( gene = as_name(enquo(protein_id )) ,
                    term = as_name(enquo( annotation_id)) ) %>%
     dplyr::select(term, gene) %>%
@@ -61,7 +72,8 @@ oneGoEnrichment <- function(go_annot, background_list, go_aspect, query_list, id
   ## Avoid singleton GO terms
   terms_to_avoid <- term_to_gene_tbl_filt %>%
     distinct() %>%
-    dplyr::inner_join(data.frame(uniprot_acc = query_list), by=c("gene" = "uniprot_acc") )  %>%
+    dplyr::inner_join( data.frame(uniprot_acc = query_list)
+                       , by=c("gene" = "uniprot_acc") )  %>%
     distinct() %>%
     group_by( term) %>%
     summarise(counts =n()) %>%
@@ -103,8 +115,8 @@ oneGoEnrichment <- function(go_annot, background_list, go_aspect, query_list, id
     output_table <-  as.data.frame( enrichment_result ) %>%
       dplyr::mutate( term = purrr::map_chr( ID,
                                             function(id) {
-                                              convertIdToAnnotation(id,
-                                                                    id_to_annotation_dictionary) } )) %>%
+                                              convertIdToAnnotation( id
+                                                                     , id_to_annotation_dictionary) } )) %>%
       dplyr::relocate( term, .before="Description") %>%
       dplyr::mutate( min_gene_set_size = min_gene_set_size,
                      max_gene_set_size = max_gene_set_size )
@@ -117,11 +129,16 @@ oneGoEnrichment <- function(go_annot, background_list, go_aspect, query_list, id
       output_table_with_go_aspect <- output_table
     }
 
-    return(output_table_with_go_aspect)
+    if( get_cluster_profiler_object == TRUE) {
+      return( list( output_table = output_table_with_go_aspect
+                    , cluster_profiler_object = enrichment_result))
+    } else {
+      return(output_table_with_go_aspect)
+    }
 
   } else {
 
-    return( NULL)
+    return( NA)
   }
 
 }
@@ -144,7 +161,8 @@ runOneGoEnrichmentInOutFunction <- function(comparison_column,
                                             go_aspect,
                                             input_comparison,
                                             min_gene_set_size,
-                                            max_gene_set_size) {
+                                            max_gene_set_size
+                                            , get_cluster_profiler_object = FALSE) {
 
   oneGoEnrichmentPartial <- NA
   if(!is.null(aspect_column )) {
@@ -155,7 +173,8 @@ runOneGoEnrichmentInOutFunction <- function(comparison_column,
                                               annotation_id= {{annotation_id}},
                                               protein_id={{protein_id}},
                                               aspect_column=!!rlang::sym(aspect_column),
-                                              p_val_thresh=p_val_thresh)
+                                              p_val_thresh=p_val_thresh
+                                              , get_cluster_profiler_object = get_cluster_profiler_object )
   } else {
     oneGoEnrichmentPartial <- purrr::partial( oneGoEnrichment,
                                               go_annot = go_annot,
@@ -164,11 +183,13 @@ runOneGoEnrichmentInOutFunction <- function(comparison_column,
                                               annotation_id= {{annotation_id}},
                                               protein_id={{protein_id}},
                                               aspect_column=aspect_column,
-                                              p_val_thresh=p_val_thresh)
+                                              p_val_thresh=p_val_thresh
+                                              , get_cluster_profiler_object = get_cluster_profiler_object )
   }
 
   query_list <- input_table %>%
     dplyr::filter( {{comparison_column}} == input_comparison) %>%
+    distinct(  {{protein_id_column}})
     pull( {{protein_id_column}})
 
   # print( paste( "size of query list = ", length( query_list)) )
@@ -179,16 +200,34 @@ runOneGoEnrichmentInOutFunction <- function(comparison_column,
     min_gene_set_size=min_gene_set_size,
     max_gene_set_size=max_gene_set_size )
 
-  if( !is.null( enrichment_temp)) {
-    enrichment_result <- enrichment_temp %>%
-      dplyr::mutate(  {{comparison_column}} := input_comparison ) %>%
-      dplyr::mutate( names_of_genes_list = names_of_genes_list)
 
-    return(enrichment_result )
+  if( get_cluster_profiler_object == TRUE) {
+    if(typeof(enrichment_temp) == "list"  ) {
+      enrichment_result <- enrichment_temp[["output_table"]] %>%
+        dplyr::mutate(  {{comparison_column}} := input_comparison ) %>%
+        dplyr::mutate( names_of_genes_list = names_of_genes_list)
 
+      enrichment_object <- enrichment_temp[["cluster_profiler_object"]]
+
+      return( list( enrichment_result = enrichment_result,
+                    enrichment_object = enrichment_object) )
+    } else {
+      return (NA)
+    }
   } else {
-    return (NULL)
+    if(typeof(enrichment_temp) == "list" ) {
+
+      enrichment_result <- enrichment_temp %>%
+        dplyr::mutate(  {{comparison_column}} := input_comparison ) %>%
+        dplyr::mutate( names_of_genes_list = names_of_genes_list)
+
+      return(enrichment_result )
+      } else {
+        return (NA)
+      }
+
   }
+
 
 }
 
