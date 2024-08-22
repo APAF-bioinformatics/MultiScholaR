@@ -460,10 +460,6 @@ if (  is.null( args$annotation_file )) {
 
   go_annot <- go_annot_orig
   if(isArgumentDefined(args, "uniprot_to_gene_symbol_file")) {
-    # args$uniprot_to_gene_symbol_file <- "/home/ubuntu/Workings/2021/ALPK1_BMP_06/Data/UniProt/data.tab"
-
-    # args$protein_id_lookup_column <- "Entry"
-    # args$gene_symbol_column <- "Gene names"
 
     # Clean up protein ID to gene symbol table
 

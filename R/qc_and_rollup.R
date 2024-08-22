@@ -268,6 +268,79 @@ peptideIntensityFiltering <- function(input_table
 
 }
 
+
+
+#'@param input_table An input table with a column containing the row ID and the rest of the columns representing abundance values for each sample.
+#'@param cols A tidyselect command to select the columns. This includes the functions starts_with(), ends_with(), contains(), matches(), and num_range()
+#'@param design_matrix A data frame with a column containing the sample ID (as per the sample_id param) and the experimental group (as per the group param). Each row as the sample ID as row name in the data frame.
+#'@param sample_id The name of the column in design_matrix table that has the sample ID.
+#'@param row_id A unique ID for each row of the 'input_table' variable.
+#'@param group_column The name of the column in design_matrix table that has the experimental group.
+#'@param max_perc_below_thresh_per_group An integer representing the maximum percentage of samples with missing values per group.
+#'@param max_perc_of_groups_missing Rows with this percentage of groups or more violating the max percent miss per group will be removed.
+#'@param abundance_threshold Abundance threshold in which the protein in the sample must be above for it to be considered for inclusion into data analysis.
+#'@param temporary_abundance_column The name of a temporary column to keep the abundance value you want to filter upon
+#'@return A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values.
+#'@export
+removePeptidesWithMissingValuesPercent <- function(input_table
+                                               , cols
+                                               , design_matrix
+                                               , sample_id
+                                               , protein_id_column
+                                               , peptide_sequence_column
+                                               , group_column
+                                               , max_perc_below_thresh_per_group = 1
+                                               , max_perc_of_groups_below_thresh = 50
+                                               , abundance_threshold
+                                               , abundance_column = "Abundance") {
+
+  abundance_long <- input_table |>
+    mutate( row_id = purrr::map2_chr( {{protein_id_column}}
+                                     , {{peptide_sequence_column}}
+                                     , \(x,y)paste(x , y, sep="_")) ) |>
+    mutate( {{sample_id}} := purrr::map_chr(   {{sample_id}}  , as.character)   ) |>
+    left_join(  design_matrix |>
+                mutate(  {{sample_id}} := purrr::map_chr( {{sample_id}} , as.character ))
+                , by = join_by({{sample_id}} ) )
+
+  count_values_per_group <- abundance_long |>
+    group_by(  row_id , {{ group_column }} ) |>
+    summarise(  num_per_group = n()) |>
+    ungroup()
+
+  count_values_missing_per_group <- abundance_long |>
+    mutate(is_missing = ifelse( !is.na( !!sym( abundance_column ))
+                                & !!sym( abundance_column ) > abundance_threshold
+                                , 0, 1)) |>
+    group_by( row_id, {{ group_column }} ) |>
+    summarise( num_missing_per_group = sum(is_missing)) |>
+    ungroup()
+
+  count_percent_missing_per_group <- count_values_missing_per_group |>
+    full_join( count_values_per_group,
+               by = join_by( row_id, {{ group_column }} )) |>
+    mutate(  perc_missing_per_group = num_missing_per_group / num_per_group * 100 )
+
+  total_num_of_groups <- count_values_per_group |> nrow()
+
+  remove_rows_temp <- count_percent_missing_per_group |>
+    dplyr::filter(max_perc_below_thresh_per_group <  perc_missing_per_group) |>
+    group_by( row_id ) |>
+    summarise( percent  = n()/total_num_of_groups*100 ) |>
+    ungroup() |>
+    dplyr::filter(percent > max_perc_of_groups_below_thresh)
+
+  filtered_tbl <- input_table |>
+    mutate( row_id = purrr::map2_chr( {{protein_id_column}}
+                                     , {{peptide_sequence_column}}
+                                     , \(x,y)paste(x , y, sep="_")) ) |>
+    dplyr::anti_join(remove_rows_temp, by = join_by(row_id)) |>
+    dplyr::select(-row_id)
+
+  return(filtered_tbl)
+
+}
+
 #' @export
 #' @description Keep the proteins only if they have two or more peptides.
 #' @param input_table Peptide quantities table in long format

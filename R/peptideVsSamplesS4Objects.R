@@ -140,12 +140,11 @@ setMethod( f ="cleanDesignMatrixPeptideObj"
 
              samples_id_vector <- theObject@peptide_data |> distinct(!!sym(theObject@sample_id)) |> pull(!!sym(theObject@sample_id))
 
-             theObject@design_matrix <- data.frame( temp_sample_id = samples_id_vector )  |>
+             theObject@design_matrix <- data.frame( temp_sample_id = samples_id_vector ) |>
                inner_join( theObject@design_matrix
                            , by = join_by ( temp_sample_id == !!sym(theObject@sample_id)) ) |>
                dplyr::rename( !!sym(theObject@sample_id) := "temp_sample_id" ) |>
                dplyr::filter( !!sym( theObject@sample_id) %in% samples_id_vector )
-
 
              return(theObject)
            })
@@ -245,27 +244,38 @@ setMethod(f="rollUpPrecursorToPeptideObj"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
 setGeneric(name="peptideIntensityFilteringObj"
-           , def=function( theObject, min_peptide_intensity_percentile, proportion_samples_below_intensity_threshold, cluster) {
+           , def=function( theObject
+                           , min_peptide_intensity_percentile
+                           , max_percent_of_samples_below_intensity_threshold
+                           , cluster) {
              standardGeneric("peptideIntensityFilteringObj")
            }
-           , signature=c("theObject", "min_peptide_intensity_percentile", "proportion_samples_below_intensity_threshold", "cluster"))
+           , signature=c( "theObject"
+                          , "min_peptide_intensity_percentile"
+                          , "max_percent_of_samples_below_intensity_threshold"
+                          , "cluster"))
 
 #'@export
 setMethod( f="peptideIntensityFilteringObj"
            , signature="PeptideQuantitativeData"
-           , definition = function( theObject, min_peptide_intensity_percentile, proportion_samples_below_intensity_threshold, cluster) {
+           , definition = function( theObject
+                                    , min_peptide_intensity_percentile = 1
+                                    , max_percent_of_samples_below_intensity_threshold = 50
+                                    , cluster) {
              peptide_data <- theObject@peptide_data
              raw_quantity_column <- theObject@raw_quantity_column
              norm_quantity_column <- theObject@norm_quantity_column
 
-             min_peptide_intensity_threshold <- ceiling( quantile( peptide_data |> pull(!!sym(raw_quantity_column)), na.rm=TRUE, probs = c(min_peptide_intensity_percentile) ))[1]
+             min_peptide_intensity_threshold <- ceiling( quantile( peptide_data |> pull(!!sym(norm_quantity_column))
+                                                                   , na.rm=TRUE
+                                                                   , probs = c(min_peptide_intensity_percentile/100) ))[1]
 
              peptide_normalized_pif_cln <- peptideIntensityFiltering( peptide_data
                                                                       , min_peptide_intensity_threshold = min_peptide_intensity_threshold
                                                                       , proportion_samples_below_intensity_threshold = proportion_samples_below_intensity_threshold
                                                                       , protein_id_column = !!sym( theObject@protein_id_column)
                                                                       , peptide_sequence_column = !!sym(theObject@peptide_sequence_column)
-                                                                      , peptide_quantity_column = !!sym(raw_quantity_column)
+                                                                      , peptide_quantity_column = !!sym(norm_quantity_column)
                                                                       , cluster = cluster)
 
              theObject@peptide_data <- peptide_normalized_pif_cln
@@ -274,6 +284,75 @@ setMethod( f="peptideIntensityFilteringObj"
 
              return(theObject)
            })
+
+
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#'@export
+setGeneric(name="removePeptidesWithMissingValuesPercentObj"
+           , def=function( theObject
+                           , group_id_column
+                           , max_perc_below_thresh_per_group = 50
+                           , max_perc_of_groups_below_thresh = 50
+                           , min_peptide_intensity_percentile = 1) {
+             standardGeneric("removePeptidesWithMissingValuesPercentObj")
+           }
+           , signature=c("theObject"
+                         , "group_id_column"
+                         , "max_perc_below_thresh_per_group"
+                         , "max_perc_of_groups_below_thresh"
+                         , "min_peptide_intensity_percentile" ))
+
+#'@export
+setMethod( f = "removePeptidesWithMissingValuesPercentObj"
+           , signature="PeptideQuantitativeData"
+           , definition=function( theObject
+                                  , group_id_column
+                                  , max_perc_below_thresh_per_group = 50
+                                  , max_perc_of_groups_below_thresh = 50
+                                  , min_peptide_intensity_percentile = 1) {
+
+             peptide_data <- theObject@peptide_data
+             protein_id_column <- theObject@protein_id_column
+             peptide_sequence_column <- theObject@peptide_sequence_column
+             raw_quantity_column <- theObject@raw_quantity_column
+             norm_quantity_column <- theObject@norm_quantity_column
+             sample_id <- theObject@sample_id
+
+             design_matrix <- theObject@design_matrix
+
+
+             min_protein_intensity_threshold <- ceiling( quantile( peptide_data |>
+                                                                     dplyr::filter( !is.nan(!!sym(norm_quantity_column)) & !is.infinite(!!sym(norm_quantity_column))) |>
+                                                                     pull(!!sym(norm_quantity_column))
+                                                                   , na.rm=TRUE
+                                                                   , probs = c(min_peptide_intensity_percentile/100) ))[1]
+
+             # print(min_protein_intensity_threshold )
+
+             theObject@peptide_data <- removePeptidesWithMissingValuesPercent( peptide_data
+                                                                           , cols= !matches("row_id")
+                                                                           , design_matrix = design_matrix
+                                                                           , sample_id = !!sym(sample_id)
+                                                                           , protein_id_column = !!sym(protein_id_column)
+                                                                           , peptide_sequence_column = !!sym(peptide_sequence_column)
+                                                                           , group_column = !!sym(group_id_column)
+                                                                           , max_perc_below_thresh_per_group = max_perc_below_thresh_per_group
+                                                                           , max_perc_of_groups_below_thresh = max_perc_of_groups_below_thresh
+                                                                           , abundance_threshold = min_protein_intensity_threshold
+                                                                           , abundance_column =  norm_quantity_column )
+
+
+             print(colnames(theObject@peptide_data))
+
+             theObject <- cleanDesignMatrixPeptideObj(theObject)
+
+             return(theObject)
+
+           })
+
+
+
+
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #'@export

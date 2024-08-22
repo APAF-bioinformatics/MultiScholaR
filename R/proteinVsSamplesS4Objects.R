@@ -537,6 +537,53 @@ setMethod(f="getNegCtrlProtAnovaObj"
 
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#'@description Sort proteins by their coefficient of variation and take the top N with lowest coefficient of variation
+#'@export
+setGeneric(name="getLowCoefficientOfVariationProteins"
+           , def=function( theObject, num_neg_ctrl ) {
+             standardGeneric("getLowCoefficientOfVariationProteins")
+           }
+           , signature=c("theObject", "num_neg_ctrl"))
+
+
+
+#'@export
+setMethod( f = "getLowCoefficientOfVariationProteins"
+           , signature="ProteinQuantitativeData"
+           , definition=function( theObject
+                                                  , num_neg_ctrl = 100) {
+
+  list_of_control_genes <- theObject@protein_data |>
+    column_to_rownames(theObject@protein_id_column) |>
+    t() |>
+    as.data.frame() |>
+    summarise( across(everything(), ~sd(.)/mean(.))) |>
+    t() |>
+    as.data.frame() |>
+    dplyr::rename( coefficient_of_variation = "V1") |>
+    tibble::rownames_to_column(theObject@protein_id_column) |>
+    arrange( coefficient_of_variation) |>
+    head(num_neg_ctrl)
+
+  control_gene_index_helper <- theObject@protein_data |>
+    dplyr::select(theObject@protein_id_column) |>
+    mutate( index = row_number()) |>
+    left_join( list_of_control_genes, by = theObject@protein_id_column)  |>
+    mutate( is_selected = case_when( is.na(coefficient_of_variation) ~ FALSE
+                                     , TRUE ~  TRUE ) ) |>
+    arrange( index) |>
+    dplyr::select( Protein.Ids, is_selected) |>
+    column_to_rownames(theObject@protein_id_column) |>
+    t()
+
+  control_gene_index <- control_gene_index_helper[1,]
+
+  control_gene_index
+
+})
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
 setGeneric(name="ruvCancorObj"
            , def=function( theObject, ctl, ncomp, ruv_group_id_column ) {
@@ -674,25 +721,25 @@ setMethod( f = "ruvIII_C_VaryingObj"
 setGeneric(name="removeRowsWithMissingValuesPercentObj"
            , def=function( theObject
                            , ruv_group_id_column
-                           , max_percent_miss_per_group = 60
-                           , number_of_groups_missing = 2
-                           , abundance_threshold = 1) {
+                           , max_perc_below_thresh_per_group = 50
+                           , max_perc_of_groups_below_thresh = 50
+                           , min_protein_intensity_percentile = 1) {
              standardGeneric("removeRowsWithMissingValuesPercentObj")
            }
            , signature=c("theObject"
                          , "ruv_group_id_column"
-                         , "max_percent_miss_per_group"
-                         , "number_of_groups_missing"
-                         , "abundance_threshold" ))
+                         , "max_perc_below_thresh_per_group"
+                         , "max_perc_of_groups_below_thresh"
+                         , "min_protein_intensity_percentile" ))
 
 #'@export
 setMethod( f = "removeRowsWithMissingValuesPercentObj"
            , signature="ProteinQuantitativeData"
            , definition=function( theObject
                                   , ruv_group_id_column
-                                  , max_percent_miss_per_group = 50
-                                  , number_of_groups_missing = 2
-                                  , abundance_threshold = 1) {
+                                  , max_perc_below_thresh_per_group = 50
+                                  , max_perc_of_groups_below_thresh = 50
+                                  , min_protein_intensity_percentile = 1) {
 
              protein_data <- theObject@protein_data
              protein_id_column <- theObject@protein_id_column
@@ -706,21 +753,23 @@ setMethod( f = "removeRowsWithMissingValuesPercentObj"
                              , names_to = sample_id
                              , values_to = "Log_Abundance")
 
-             # min_protein_intensity_threshold <- ceiling( quantile( protein_data_long |>
-             #                                                         dplyr::filter( !is.nan(Log_Abundance) & !is.infinite(Log_Abundance)) |>
-             #                                                         pull(Log_Abundance), na.rm=TRUE, probs = c(min_protein_intensity_percentile) ))[1]
+             min_protein_intensity_threshold <- ceiling( quantile( protein_data_long |>
+                                                                     dplyr::filter( !is.nan(Log_Abundance) & !is.infinite(Log_Abundance)) |>
+                                                                     pull(Log_Abundance)
+                                                                   , na.rm=TRUE
+                                                                   , probs = c(min_protein_intensity_percentile/100) ))[1]
 
              # print(min_protein_intensity_threshold )
 
              theObject@protein_data <- removeRowsWithMissingValuesPercent( protein_data
-                                                                           , !matches(protein_id_column)
-                                                                           , design_matrix
-                                                                           , !!sym(sample_id)
-                                                                           , !!sym(protein_id_column)
-                                                                           , !!sym(ruv_group_id_column)
-                                                                           , max_percent_miss_per_group = max_percent_miss_per_group
-                                                                           , number_of_groups_missing = number_of_groups_missing
-                                                                           , abundance_threshold = abundance_threshold
+                                                                           , cols= !matches(protein_id_column)
+                                                                           , design_matrix = design_matrix
+                                                                           , sample_id = !!sym(sample_id)
+                                                                           , row_id = !!sym(protein_id_column)
+                                                                           , group_column = !!sym(ruv_group_id_column)
+                                                                           , max_perc_below_thresh_per_group = max_perc_below_thresh_per_group
+                                                                           , max_perc_of_groups_below_thresh = max_perc_of_groups_below_thresh
+                                                                           , abundance_threshold = min_protein_intensity_threshold
                                                                            , temporary_abundance_column = "Log_Abundance")
 
              theObject <- cleanDesignMatrixObj(theObject)
