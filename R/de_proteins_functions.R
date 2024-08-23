@@ -151,8 +151,8 @@ removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample
 #'@param sample_id The name of the column in design_matrix table that has the sample ID.
 #'@param row_id A unique ID for each row of the 'input_table' variable.
 #'@param group_column The name of the column in design_matrix table that has the experimental group.
-#'@param max_perc_below_thresh_per_group An integer representing the maximum percentage of samples with missing values per group.
-#'@param max_perc_of_groups_missing Rows with this percentage of groups or more violating the max percent miss per group will be removed.
+#'@param max_perc_below_thresh_per_group The maximum percentage of values below threshold allow in each group for a protein .
+#'@param max_perc_of_groups_below_thresh The maximum percentage of groups allowed with too many samples with protein abundance values below threshold.
 #'@param abundance_threshold Abundance threshold in which the protein in the sample must be above for it to be considered for inclusion into data analysis.
 #'@param temporary_abundance_column The name of a temporary column to keep the abundance value you want to filter upon
 #'@return A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values.
@@ -165,8 +165,11 @@ removeRowsWithMissingValuesPercent <- function(input_table
                                                , group_column
                                                , max_perc_below_thresh_per_group = 1
                                                , max_perc_of_groups_below_thresh = 50
-                                               , abundance_threshold
+                                               , min_protein_intensity_percentile = 1
                                         , temporary_abundance_column = "Abundance") {
+
+
+
 
   abundance_long <- input_table |>
     pivot_longer(cols = { { cols } },
@@ -179,14 +182,21 @@ removeRowsWithMissingValuesPercent <- function(input_table
                 mutate(  {{sample_id}} := purrr::map_chr(    {{sample_id}} , as.character)   )
               , by = join_by({{sample_id}} ) )
 
+  min_protein_intensity_threshold <- ceiling( quantile( abundance_long |>
+                                                          dplyr::filter( !is.nan(!!sym(temporary_abundance_column)) & !is.infinite(!!sym(temporary_abundance_column))) |>
+                                                          pull(!!sym(temporary_abundance_column))
+                                                        , na.rm=TRUE
+                                                        , probs = c(min_protein_intensity_percentile/100) ))[1]
+
   count_values_per_group <- abundance_long |>
-    group_by( {{ row_id }}, {{ group_column }} ) |>
+    distinct( {{ sample_id }}, {{ group_column }} ) |>
+    group_by(  {{ group_column }} ) |>
     summarise(  num_per_group = n()) |>
     ungroup()
 
   count_values_missing_per_group <- abundance_long |>
     mutate(is_missing = ifelse( !is.na( !!sym(temporary_abundance_column))
-                                & !!sym(temporary_abundance_column) > abundance_threshold
+                                & !!sym(temporary_abundance_column) > min_protein_intensity_threshold
                                 , 0, 1)) |>
     group_by( {{ row_id }}, {{ group_column }} ) |>
     summarise( num_missing_per_group = sum(is_missing)) |>
@@ -194,7 +204,7 @@ removeRowsWithMissingValuesPercent <- function(input_table
 
   count_percent_missing_per_group <- count_values_missing_per_group |>
     full_join( count_values_per_group,
-               by = join_by( {{ row_id }}, {{ group_column }} )) |>
+               by = join_by( {{ group_column }} )) |>
     mutate(  perc_missing_per_group = num_missing_per_group / num_per_group * 100 )
 
   total_num_of_groups <- count_values_per_group |> nrow()
@@ -1570,7 +1580,7 @@ subsetQuery <- function(data, subset, accessions_col_name, uniprot_handle, unipr
 
   # print(uniprot_keytype)
 
-  UniProt.ws::select(up,
+  UniProt.ws::select(uniprot_handle,
                      keys = my_keys,
                      columns = uniprot_columns,
                      keytype = uniprot_keytype)

@@ -748,16 +748,6 @@ setMethod( f = "removeRowsWithMissingValuesPercentObj"
              sample_id <- theObject@sample_id
              replicate_group_column <- theObject@technical_replicate_id
 
-             protein_data_long <- protein_data |>
-               pivot_longer( cols=!matches(protein_id_column)
-                             , names_to = sample_id
-                             , values_to = "Log_Abundance")
-
-             min_protein_intensity_threshold <- ceiling( quantile( protein_data_long |>
-                                                                     dplyr::filter( !is.nan(Log_Abundance) & !is.infinite(Log_Abundance)) |>
-                                                                     pull(Log_Abundance)
-                                                                   , na.rm=TRUE
-                                                                   , probs = c(min_protein_intensity_percentile/100) ))[1]
 
              # print(min_protein_intensity_threshold )
 
@@ -769,7 +759,7 @@ setMethod( f = "removeRowsWithMissingValuesPercentObj"
                                                                            , group_column = !!sym(ruv_group_id_column)
                                                                            , max_perc_below_thresh_per_group = max_perc_below_thresh_per_group
                                                                            , max_perc_of_groups_below_thresh = max_perc_of_groups_below_thresh
-                                                                           , abundance_threshold = min_protein_intensity_threshold
+                                                                           , min_protein_intensity_percentile = min_protein_intensity_percentile
                                                                            , temporary_abundance_column = "Log_Abundance")
 
              theObject <- cleanDesignMatrixObj(theObject)

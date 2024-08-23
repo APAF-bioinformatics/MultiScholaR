@@ -342,8 +342,6 @@ setMethod( f = "removePeptidesWithMissingValuesPercentObj"
                                                                            , abundance_column =  norm_quantity_column )
 
 
-             print(colnames(theObject@peptide_data))
-
              theObject <- cleanDesignMatrixPeptideObj(theObject)
 
              return(theObject)
