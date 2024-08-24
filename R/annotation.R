@@ -72,9 +72,7 @@ getUniProtAnnotation <- function(   input_table, taxonomy_id  =9606, protein_id_
 
 
     }
-  } else {
-    uniprot_dat <- readRDS(uniprot_file)
-  }
+
 
     ## Merge with Gene Ontology terms.
     goterms <- Term(GOTERM)
@@ -94,10 +92,14 @@ getUniProtAnnotation <- function(   input_table, taxonomy_id  =9606, protein_id_
 
     saveRDS( uniprot_dat_multiple_acc, uniprot_file)
 
-
     return( uniprot_dat_multiple_acc)
 
+  } else {
+    uniprot_dat <- readRDS(uniprot_file)
 
+    return( uniprot_dat)
+
+  }
 
 }
 

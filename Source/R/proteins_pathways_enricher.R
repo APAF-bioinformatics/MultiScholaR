@@ -527,14 +527,14 @@ if (  is.null( args$annotation_file )) {
                   p_val_thresh=args$p_val_thresh
                   , get_cluster_profiler_object = TRUE )
 
- # i <- 1
- # runOneGoEnrichmentInOutFunctionPartial(
- #   names_of_genes_list = input_params_updated$names_of_genes_list[[i]],
- #   input_table=input_params_updated$input_table[[i]],
- #   go_aspect=input_params_updated$go_aspect[[i]],
- #   input_comparison=input_params_updated$input_comparison[[i]],
- #   min_gene_set_size=input_params_updated$min_size[[i]],
- #   max_gene_set_size=input_params_updated$max_size[[i]])
+ i <- 1
+ runOneGoEnrichmentInOutFunctionPartial(
+   names_of_genes_list = input_params_updated$names_of_genes_list[[i]],
+   input_table=input_params_updated$input_table[[i]],
+   go_aspect=input_params_updated$go_aspect[[i]],
+   input_comparison=input_params_updated$input_comparison[[i]],
+   min_gene_set_size=input_params_updated$min_size[[i]],
+   max_gene_set_size=input_params_updated$max_size[[i]])
 
   enrichment_combined <- input_params_updated  |>
    mutate( enrichment_temp = purrr::pmap( list( names_of_genes_list

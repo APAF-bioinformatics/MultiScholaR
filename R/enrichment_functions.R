@@ -187,9 +187,9 @@ runOneGoEnrichmentInOutFunction <- function(comparison_column,
                                               , get_cluster_profiler_object = get_cluster_profiler_object )
   }
 
-  query_list <- input_table %>%
-    dplyr::filter( {{comparison_column}} == input_comparison) %>%
-    distinct(  {{protein_id_column}})
+  query_list <- input_table |>
+    dplyr::filter( {{comparison_column}} == input_comparison) |>
+    distinct(  {{protein_id_column}}) |>
     pull( {{protein_id_column}})
 
   # print( paste( "size of query list = ", length( query_list)) )
