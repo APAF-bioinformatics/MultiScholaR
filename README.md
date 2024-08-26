@@ -4,7 +4,7 @@ editor_options:
     wrap: 72
 ---
 
-# ProteomeRiver
+# ProteomeScholar
 
 Tools for Proteomics and Phosphoproteomics analysis.
 
