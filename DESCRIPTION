@@ -1,13 +1,13 @@
-Package: ProteomeRiver
-Title: Tools for Proteomics and Phosphoproteomics analysis.
+Package: ProteomeScholaR
+Title: Library for quantitative Proteomics and Phosphoproteomics analysis.
 Version: 0.73
 Authors@R: 
     person(given = "Ignatius",
            family = "Pang",
            role = c("aut", "cre"),
-           email = "cmri-bioinformatics@cmri.org.au",
+           email = "ignatius.pang@mq.edu.au",
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: Tools for Proteomics and Phosphoproteomics analysis.
+Description: Library for quantitative Proteomics and Phosphoproteomics analysis.
 License: LGPL (>= 3)
 Encoding: UTF-8
 LazyData: true

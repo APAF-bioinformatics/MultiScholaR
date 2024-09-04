@@ -79,7 +79,7 @@ deAnalysisWrapperFunction <- function( theObject
                                          log_q_value_column = lqm,
                                          log_fc_column = logFC,
                                          comparison_column = comparison,
-                                         expression_column = expression,
+                                         expression_column = log_intensity,
                                          facet_column = analysis_type,
                                          q_val_thresh = de_q_val_thresh) |>
     dplyr::rename(log2FC = "logFC")

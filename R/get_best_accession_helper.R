@@ -197,7 +197,7 @@ chooseBestPhosphositeAccession <- function(input_tbl, acc_detail_tab, accessions
 #'  uniprot_acc: List of uniprot accessions, but with the list ordered by the best one to less useful one to use
 #'  is_unique: Is the protein group assined to a unique UniProt accession or multiple UniProt accessions
 #'@export
-chooseBestProteinAccession <- function(input_tbl
+chooseBestProteinAccessionHelper <- function(input_tbl
                                        , acc_detail_tab
                                        , accessions_column
                                        , row_id_column = uniprot_acc

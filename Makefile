@@ -3,8 +3,7 @@
 # Children’s Medical Research Institute, finding cures for childhood genetic diseases
 
 
-PROJECT := ProteomeRiver
-
+PROJECT := ProteomeScholaR
 include config.mk
 
 # ---------------------------------------------------------------

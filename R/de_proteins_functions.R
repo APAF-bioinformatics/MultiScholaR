@@ -157,7 +157,7 @@ removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample
 #'@param temporary_abundance_column The name of a temporary column to keep the abundance value you want to filter upon
 #'@return A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values.
 #'@export
-removeRowsWithMissingValuesPercent <- function(input_table
+removeRowsWithMissingValuesPercentHelper <- function(input_table
                                                , cols
                                                , design_matrix
                                                , sample_id
@@ -298,7 +298,7 @@ imputePerCol <- function(temp, width = 0.3, downshift = 1.8) {
 #'@param temp_column The name of the temporary column that indicates which samples are biological replicates of the same experimental group.
 #'@return A numeric matrix with rows as samples, columns as experimental group, and a value of 1 for samples within the same experimental group represented by the same column, and a value of zero otherwise.
 #'@export
-getRuvIIIReplicateMatrix <- function(design_matrix, sample_id_column, group_column, temp_column = is_replicate_temp) {
+getRuvIIIReplicateMatrixHelper <- function(design_matrix, sample_id_column, group_column, temp_column = is_replicate_temp) {
 
   ruvIII_replicates_matrix <- design_matrix |>
     dplyr::select({ { sample_id_column } }, { { group_column } }) |>
@@ -317,7 +317,7 @@ getRuvIIIReplicateMatrix <- function(design_matrix, sample_id_column, group_colu
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
 
-plotPca <- function(data,
+plotPcaHelper <- function(data,
                     design_matrix,
                     sample_id_column = "Sample_ID",
                     group_column = "group",
@@ -399,7 +399,7 @@ plotPcaGgpairs <- function( data_matrix
 
 #'@export
 #'@param Y  Rows = Samples, Columns = Proteins or Peptides
-plotRle <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75,
+plotRleHelper <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75,
                                                  0.95), ylim = c(-0.5, 0.5))
 {
   #  checks = check.ggplot()
@@ -451,12 +451,12 @@ rlePcaPlotList <- function(list_of_data_matrix, list_of_design_matrix,
                            sample_id_column = Sample_ID, group_column = group, list_of_descriptions) {
 
   rle_list <- purrr::pmap( list( data_matrix=list_of_data_matrix, description=list_of_descriptions, design_matrix=list_of_design_matrix),
-                          function( data_matrix, description, design_matrix) { plotRle(t(as.matrix(data_matrix)),
+                          function( data_matrix, description, design_matrix) { plotRleHelper(t(as.matrix(data_matrix)),
                                    rowinfo = design_matrix[colnames(data_matrix), as_name(enquo(group_column))]  )  +
                             labs(title = description)} )
 
   pca_list <- purrr::pmap(list( data_matrix=list_of_data_matrix, description=list_of_descriptions, design_matrix=list_of_design_matrix),
-                          function( data_matrix, description, design_matrix) { plotPca(data_matrix,
+                          function( data_matrix, description, design_matrix) { plotPcaHelper(data_matrix,
                                    design_matrix = design_matrix,
                                    sample_id_column = sample_id_column ,
                                    group_column =  group_column ,
@@ -610,7 +610,7 @@ getSignificantData <- function(list_of_de_tables,
                                log_q_value_column = lqm,
                                log_fc_column = logFC,
                                comparison_column = comparison,
-                               expression_column = expression,
+                               expression_column = log_intensity,
                                facet_column = analysis_type,
                                q_val_thresh = 0.05) {
 
@@ -629,8 +629,8 @@ getSignificantData <- function(list_of_de_tables,
       mutate({ { facet_column } } := description) |>
       separate({ { comparison_column } },
                sep = "=",
-               into = c(as_name(enquo(comparison_column)),
-                        as_name(enquo(expression_column))))
+               into = c( as_string(as_name(enquo(comparison_column))),
+               as_string(as_name(enquo(expression_column) ))) )
 
   }
 
@@ -1468,7 +1468,7 @@ getControlGenes <- function(data,
 #' @param fdr_method The FDR calculation method, default is "qvalue". The other option is "BH"
 #' @return A boolean vector which indicates which row in the input data matrix is a control gene. The row is included if the value is TRUE. The names of each element is the row ID / protein accessions of the input data matrix.
 #'@export
-getNegCtrlProtAnova <- function(data_matrix
+getNegCtrlProtAnovaHelper <- function(data_matrix
                                 , design_matrix, group_column = "group"
                                 , num_neg_ctrl = 100, q_val_thresh = 0.05
                                 , fdr_method = "qvalue") {
@@ -1837,7 +1837,8 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
                                        group_id,
                                        group_pattern,
                                        design_matrix_norm,
-                                       design_matrix_raw
+                                       design_matrix_raw,
+                                       expression_column = log_intensity
 ) {
 
   norm_counts <- norm_counts_input_tbl |>
@@ -1887,8 +1888,8 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
 
   de_proteins_long <- lfc_qval_tbl |>
     dplyr::select(-lqm, -colour, -analysis_type) |>
-    dplyr::mutate(expression = str_replace_all(expression, group_id, "")) |>
-    separate(expression, sep = "-", into = c("left_group", "right_group")) |>
+    dplyr::mutate( {{expression_column}} := str_replace_all({{expression_column}}, group_id, "")) |>
+    separate( {{expression_column}}, sep = "-", into = c("left_group", "right_group")) |>
     left_join(norm_counts, by = left_join_columns) |>
     left_join(norm_counts, by = right_join_columns,
               suffix = c(".left", ".right")) |>
@@ -1933,7 +1934,7 @@ gg_save_logging <- function( input_plot
 #' @param sample_id_column: column name of the sample ID. This is the unique identifier for each sample.
 #' @param tech_rep_column: column name of the technical replicates. Technical replicates of the same sample will have the same value.
 #' @param tech_rep_num_column: column name of the technical replicate number. This is a unique number for each technical replicate for each sample.
-proteinTechRepCorrelation <- function( design_matrix_tech_rep, data_matrix, sample_id_column="Sample_ID", tech_rep_column = "replicates", tech_rep_num_column = "tech_rep_num", tech_rep_remove_regex = "pool" ) {
+proteinTechRepCorrelationHelper <- function( design_matrix_tech_rep, data_matrix, sample_id_column="Sample_ID", tech_rep_column = "replicates", tech_rep_num_column = "tech_rep_num", tech_rep_remove_regex = "pool" ) {
 
   tech_reps_list <- design_matrix_tech_rep |> pull( !!sym(tech_rep_num_column )) |> unique()
 

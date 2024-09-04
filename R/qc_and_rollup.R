@@ -144,7 +144,7 @@ plotPeptidesProteinsCountsPerSample <- function( input_table
 
 #' @description Keep spectrum-peptide matches that is within q-value threshold and are proteotypic
 #' @export
-srlQvalueProteotypicPeptideClean <- function(input_table
+srlQvalueProteotypicPeptideCleanHelper <- function(input_table
                                              , q_value_thresh = 0.01
                                              , global_q_value_thresh = 0.01
                                              , choose_only_proteotypic_peptide = 1
@@ -175,7 +175,7 @@ srlQvalueProteotypicPeptideClean <- function(input_table
 
 #' @description  Peptides of with charges and modifications are rolled up (summed) together
 #' @export
-rollUpPrecursorToPeptide <- function( input_table
+rollUpPrecursorToPeptideHelper <- function( input_table
                                       , sample_id_column = Run
                                       , protein_id_column = Protein.Ids
                                       , peptide_sequence_column = Stripped.Sequence
@@ -223,7 +223,7 @@ rollUpPrecursorToPeptide <- function( input_table
 
 #' @export
 #' @description Remove peptide based on the intensity threshold and the proportion of samples below the threshold
-peptideIntensityFiltering <- function(input_table
+peptideIntensityFilteringHelper <- function(input_table
                                       , min_peptide_intensity_threshold = 15
                                       , proportion_samples_below_intensity_threshold = 1
                                       , protein_id_column = Protein.Ids
@@ -351,7 +351,7 @@ removePeptidesWithMissingValuesPercent <- function(input_table
 #' @param num_peptidoforms_per_protein_thresh Minimum number of peptidoforms per protein
 #' @param protein_id_column Protein ID column name as string
 #' @param cluster Cluster to use for parallel processing
-filterMinNumPeptidesPerProtein <- function( input_table
+filterMinNumPeptidesPerProteinHelper <- function( input_table
           , num_peptides_per_protein_thresh = 1
           , num_peptidoforms_per_protein_thresh = 2
           , protein_id_column = Protein.Ids
@@ -399,7 +399,7 @@ filterMinNumPeptidesPerProtein <- function( input_table
 #' @export
 #' @description Remove sample if it has less than a certain number of peptides identified
 #' @param List of samples to keep regardless of how many peptides it has because it is am important sample
-filterMinNumPeptidesPerSample <- function ( input_table
+filterMinNumPeptidesPerSampleHelper <- function ( input_table
                                             , min_num_peptides_in_sample = 5000
                                             , sample_id_column = Run
                                             , cluster
@@ -518,7 +518,7 @@ calulatePearsonCorrelation <- function( ms_filename_x, ms_filename_y, input_tabl
 
 
 #' @export
-calulatePearsonCorrelationForSamplePairs <- function( samples_id_tbl
+calulatePearsonCorrelationForSamplePairsHelper <- function( samples_id_tbl
                                                       , run_id_column = "ms_filename"
                                                       , replicate_group_column = "general_sample_info"
                                                       , input_table
@@ -620,7 +620,7 @@ findSamplesPairBelowCorrelationThreshold <- function(pearson_correlation_per_pai
 #' This can be repurposed for removing peptides that only have one biological replicates for all experimental groups.
 #' This function can be repurposed for filtering on proteins as well (we just have to create a dummy variable for peptide_sequence_column)
 #' @export
-removePeptidesWithOnlyOneReplicate <- function(input_table
+removePeptidesWithOnlyOneReplicateHelper <- function(input_table
                                                , samples_id_tbl
                                                , input_table_sample_id_column = Run
                                                , sample_id_tbl_sample_id_column  =  ms_filename
@@ -708,7 +708,7 @@ removeProteinWithOnlyOneReplicate <- function(input_table
 
 ##-----------------------------------------------------------------------------------------
 
-#' peptideMissingValueImputation
+#' peptideMissingValueImputationHelper
 #' @description Perform peptide level missing value imputation
 #'@param input_table A data frame with the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalized peptide abundances
 #'@param metadata_table A data table with the following columns: 1. the sample file name or run name (as per parameter sample_id_tbl_sample_id_column), 2. The replicate group ID (as per parameter replicate_group_column)
@@ -721,7 +721,7 @@ removeProteinWithOnlyOneReplicate <- function(input_table
 #'@param hek_string The string denoting samples that are controls using HEK cells (default: "HEK")
 #'@param prop_missing The proportion of sample replicates in a group that is missing below which the peptide intensity will be imputed (default: 0.50)
 #'@export
-peptideMissingValueImputation <- function( input_table
+peptideMissingValueImputationHelper <- function( input_table
                                            , metadata_table
                                            , input_table_sample_id_column = Run
                                            , sample_id_tbl_sample_id_column  =  ms_filename
@@ -1617,7 +1617,7 @@ proteinIntensityMatrixPivotLonger <- function( input_matrix
 #' Remove proteins that have been identified in only one replicate across all patients
 #' (e.g. identified no more than one relpicate in any patient)
 #' @export
-removeProteinsWithOnlyOneReplicate <- function(input_table
+removeProteinsWithOnlyOneReplicateHelper <- function(input_table
                                                , samples_id_tbl
                                                , input_table_sample_id_column = Run
                                                , sample_id_tbl_sample_id_column  =  ms_filename

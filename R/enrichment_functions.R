@@ -832,7 +832,8 @@ saveFilteredFunctionalEnrichmentTable <- function( enriched_results_tbl,
                                                    set_size_min,
                                                    set_size_max,
                                                    results_dir,
-                                                   file_name  ) {
+                                                   file_name,
+                                                   list_of_columns_to_trim = c("gene_symbol")) {
 
   max_excel_cell_length <- 32760
 
@@ -845,7 +846,7 @@ saveFilteredFunctionalEnrichmentTable <- function( enriched_results_tbl,
   writexl::write_xlsx( enriched_results_tbl %>%
                          dplyr::filter( min_set_size == set_size_min,
                                         max_set_size == set_size_max) %>%
-                         mutate_at( c( "gene_symbol"), ~substr(., 1, max_excel_cell_length)) ,
+                         mutate( across( one_of(list_of_columns_to_trim ), \(x)substr(x, 1, max_excel_cell_length)) ),
                        path=file.path(results_dir,
                                       paste0( file_name, ".xlsx" ) ))
 
@@ -854,7 +855,7 @@ saveFilteredFunctionalEnrichmentTable <- function( enriched_results_tbl,
                                 paste0( file_name, "_unfiltered.tab" )))
 
   writexl::write_xlsx( enriched_results_tbl %>%
-                         mutate_at( c( "gene_symbol"), ~substr(., 1, max_excel_cell_length)) ,
+                         mutate( across( one_of(list_of_columns_to_trim ), \(x)substr(x, 1, max_excel_cell_length)) ),
                        path=file.path(results_dir,
                                       paste0( file_name, "_unfiltered.xlsx" ) ))
 
@@ -897,7 +898,8 @@ drawListOfFunctionalEnrichmentHeatmaps <- function(enriched_results_tbl,
 
   added_columns <- unique( added_columns)
 
-  input_table <- enriched_results_tbl %>%
+  input_table <- enriched_results_tbl |>
+    distinct() %>%
     dplyr::filter( min_set_size == set_size_min,
                    max_set_size == set_size_max) %>%
     group_by(  across(  c(any_of(added_columns), comparison, gene_set, go_type)  )) %>%
