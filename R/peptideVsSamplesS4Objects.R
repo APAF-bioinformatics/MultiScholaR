@@ -274,31 +274,110 @@ setMethod( f="peptideIntensityFiltering"
 
              return(theObject)
            })
+
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#'@export
+setGeneric(name="removePeptidesWithMissingValuesPercent"
+           , def=function( theObject
+                           , group_id_column
+                           , max_perc_below_thresh_per_group = 50
+                           , max_perc_of_groups_below_thresh = 50
+                           , min_peptide_intensity_percentile = 1) {
+             standardGeneric("removePeptidesWithMissingValuesPercent")
+           }
+           , signature=c("theObject"
+                         , "group_id_column"
+                         , "max_perc_below_thresh_per_group"
+                         , "max_perc_of_groups_below_thresh"
+                         , "min_peptide_intensity_percentile" ))
+
+#'@export
+setMethod( f = "removePeptidesWithMissingValuesPercent"
+           , signature="PeptideQuantitativeData"
+           , definition=function( theObject
+                                  , group_id_column
+                                  , max_perc_below_thresh_per_group = 50
+                                  , max_perc_of_groups_below_thresh = 50
+                                  , min_peptide_intensity_percentile = 1) {
+
+             peptide_data <- theObject@peptide_data
+             protein_id_column <- theObject@protein_id_column
+             peptide_sequence_column <- theObject@peptide_sequence_column
+             raw_quantity_column <- theObject@raw_quantity_column
+             norm_quantity_column <- theObject@norm_quantity_column
+             sample_id <- theObject@sample_id
+
+             design_matrix <- theObject@design_matrix
+
+
+             min_protein_intensity_threshold <- ceiling( quantile( peptide_data |>
+                                                                     dplyr::filter( !is.nan(!!sym(norm_quantity_column)) & !is.infinite(!!sym(norm_quantity_column))) |>
+                                                                     pull(!!sym(norm_quantity_column))
+                                                                   , na.rm=TRUE
+                                                                   , probs = c(min_peptide_intensity_percentile/100) ))[1]
+
+             # print(min_protein_intensity_threshold )
+
+             theObject@peptide_data <- removePeptidesWithMissingValuesPercentHelper( peptide_data
+                                                                               , cols= !matches("row_id")
+                                                                               , design_matrix = design_matrix
+                                                                               , sample_id = !!sym(sample_id)
+                                                                               , protein_id_column = !!sym(protein_id_column)
+                                                                               , peptide_sequence_column = !!sym(peptide_sequence_column)
+                                                                               , group_column = !!sym(group_id_column)
+                                                                               , max_perc_below_thresh_per_group = max_perc_below_thresh_per_group
+                                                                               , max_perc_of_groups_below_thresh = max_perc_of_groups_below_thresh
+                                                                               , abundance_threshold = min_protein_intensity_threshold
+                                                                               , abundance_column =  norm_quantity_column )
+
+
+             theObject <- cleanDesignMatrixPeptide(theObject)
+
+             return(theObject)
+
+           })
+
+
+
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #'@export
 setGeneric(name="filterMinNumPeptidesPerProtein"
-           , def=function( theObject, num_peptides_per_protein_thresh, cluster) {
+           , def=function( theObject
+                           , num_peptides_per_protein_thresh
+                           , num_peptidoforms_per_protein_thresh
+                           , cluster) {
              standardGeneric("filterMinNumPeptidesPerProtein")
            }
-           , signature=c("theObject", "num_peptides_per_protein_thresh", "cluster"))
+           , signature=c("theObject"
+                         , "num_peptides_per_protein_thresh"
+                         , "num_peptidoforms_per_protein_thresh"
+                         , "cluster"))
 
 #'@export
 #'@description
 #' Keep the proteins only if they have two or more peptides.
-#'@param theObject ect of class PeptideQuantitativeData
+#'@param theObject Object of class PeptideQuantitativeData
 #'@param num_peptides_per_protein_thresh Minimum number of peptides per protein
+#'@param num_peptidoforms_per_protein_thresh Minimum number of peptidoforms per protein
 #'@param cluster Cluster to use for parallel processing
 setMethod( f="filterMinNumPeptidesPerProtein"
            , signature="PeptideQuantitativeData"
-           , definition = function( theObject, num_peptides_per_protein_thresh = 2, cluster) {
+           , definition = function( theObject
+                                    , num_peptides_per_protein_thresh = 1
+                                    , num_peptidoforms_per_protein_thresh = 2
+                                    , cluster) {
              peptide_data <- theObject@peptide_data
              protein_id_column <- theObject@protein_id_column
 
              theObject@peptide_data <- filterMinNumPeptidesPerProteinHelper ( input_table = peptide_data
-                                                         , num_peptides_per_protein_thresh = num_peptides_per_protein_thresh
-                                                         , protein_id_column = !!sym(protein_id_column)
-                                                         , cluster = cluster)
+                                                                        , num_peptides_per_protein_thresh = num_peptides_per_protein_thresh
+                                                                        , num_peptidoforms_per_protein_thresh = num_peptidoforms_per_protein_thresh
+                                                                        , protein_id_column = !!sym(protein_id_column)
+                                                                        , cluster = cluster)
 
              theObject <- cleanDesignMatrixPeptide(theObject)
 

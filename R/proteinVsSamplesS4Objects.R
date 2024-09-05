@@ -79,18 +79,18 @@ ProteinQuantitativeData <- setClass("ProteinQuantitativeData"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
 setGeneric( name ="setProteinData"
-            , def=function( theect, protein_data, protein_id_column) {
+            , def=function( theObject, protein_data, protein_id_column) {
                 standardGeneric("setProteinData")
             })
 
 #'@export
 setMethod( f ="setProteinData"
            , signature = "ProteinQuantitativeData"
-            , definition=function( theect, protein_data, protein_id_column ) {
-              theect@protein_data <- protein_data
-              theect@protein_id_column <- protein_id_column
+            , definition=function( theObject, protein_data, protein_id_column ) {
+              theObject@protein_data <- protein_data
+              theObject@protein_id_column <- protein_id_column
 
-              return(theect)
+              return(theObject)
             })
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -98,42 +98,42 @@ setMethod( f ="setProteinData"
 # sort the sample IDs in the same order as the data matrix
 #'@export
 setGeneric(name ="cleanDesignMatrix"
-           , def=function( theect) {
+           , def=function( theObject) {
              standardGeneric("cleanDesignMatrix")
            })
 
 #'@export
 setMethod( f ="cleanDesignMatrix"
            , signature = "ProteinQuantitativeData"
-           , definition=function( theect ) {
+           , definition=function( theObject ) {
 
-            samples_id_vector <- setdiff(colnames(theect@protein_data), theect@sample_id )
+            samples_id_vector <- setdiff(colnames(theObject@protein_data), theObject@sample_id )
 
-             theect@design_matrix <- data.frame( temp_sample_id = samples_id_vector )  |>
-               inner_join( theect@design_matrix
-                          , by = join_by ( temp_sample_id == !!sym(theect@sample_id)) ) |>
-               dplyr::rename( !!sym(theect@sample_id) := "temp_sample_id" ) |>
-               dplyr::filter( !!sym( theect@sample_id) %in% samples_id_vector )
+             theObject@design_matrix <- data.frame( temp_sample_id = samples_id_vector )  |>
+               inner_join( theObject@design_matrix
+                          , by = join_by ( temp_sample_id == !!sym(theObject@sample_id)) ) |>
+               dplyr::rename( !!sym(theObject@sample_id) := "temp_sample_id" ) |>
+               dplyr::filter( !!sym( theObject@sample_id) %in% samples_id_vector )
 
 
-             return(theect)
+             return(theObject)
            })
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
 setGeneric(name="proteinIntensityFiltering"
-           , def=function( theect, min_protein_intensity_percentile, proportion_samples_below_intensity_threshold, cluster) {
+           , def=function( theObject, min_protein_intensity_percentile, proportion_samples_below_intensity_threshold, cluster) {
              standardGeneric("proteinIntensityFiltering")
            })
 
 #'@export
 setMethod( f="proteinIntensityFiltering"
            , signature="ProteinQuantitativeData"
-           , definition = function( theect, min_protein_intensity_percentile, proportion_samples_below_intensity_threshold, cluster) {
-             protein_data <- theect@protein_data
+           , definition = function( theObject, min_protein_intensity_percentile, proportion_samples_below_intensity_threshold, cluster) {
+             protein_data <- theObject@protein_data
 
              data_long_cln <- protein_data  |>
-               pivot_longer( cols=!matches(theect@protein_id_column)
-                             , names_to = theect@sample_id
+               pivot_longer( cols=!matches(theObject@protein_id_column)
+                             , names_to = theObject@sample_id
                              , values_to = "log_values")  |>
                mutate( temp = "")
 
@@ -144,19 +144,19 @@ setMethod( f="proteinIntensityFiltering"
              peptide_normalized_pif_cln <- peptideIntensityFilteringHelper( data_long_cln
                                                                       , min_peptide_intensity_threshold = min_peptide_intensity_threshold
                                                                       , proportion_samples_below_intensity_threshold = proportion_samples_below_intensity_threshold
-                                                                      , protein_id_column = !!sym( theect@protein_id_column)
+                                                                      , protein_id_column = !!sym( theObject@protein_id_column)
                                                                       , peptide_sequence_column = temp
                                                                       , peptide_quantity_column = log_values
                                                                       , cluster = cluster)
 
 
-             theect@protein_data <- peptide_normalized_pif_cln |>
+             theObject@protein_data <- peptide_normalized_pif_cln |>
                dplyr::select( -temp) |>
-               pivot_wider( id_cols = theect@protein_id_column , names_from = !!sym(theect@sample_id), values_from = log_values)
+               pivot_wider( id_cols = theObject@protein_id_column , names_from = !!sym(theObject@sample_id), values_from = log_values)
 
-             theect <- cleanDesignMatrix(theect)
+             theObject <- cleanDesignMatrix(theObject)
 
-             updated_object <- theect
+             updated_object <- theObject
 
           return(updated_object)
           })
@@ -165,19 +165,19 @@ setMethod( f="proteinIntensityFiltering"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
 setGeneric(name="removeProteinsWithOnlyOneReplicate"
-           , def=function( theect, cluster ) {
+           , def=function( theObject, cluster ) {
              standardGeneric("removeProteinsWithOnlyOneReplicate")
            }
-           , signature=c("theect", "cluster"))
+           , signature=c("theObject", "cluster"))
 
 #'@export
 setMethod(f="removeProteinsWithOnlyOneReplicate"
-          , definition=function( theect, cluster) {
-            protein_data <- theect@protein_data
-            samples_id_tbl <- theect@design_matrix
-            sample_id_tbl_sample_id_column <- theect@sample_id
-            replicate_group_column <- theect@technical_replicate_id
-            protein_id_column <- theect@protein_id_column
+          , definition=function( theObject, cluster) {
+            protein_data <- theObject@protein_data
+            samples_id_tbl <- theObject@design_matrix
+            sample_id_tbl_sample_id_column <- theObject@sample_id
+            replicate_group_column <- theObject@technical_replicate_id
+            protein_id_column <- theObject@protein_id_column
 
             input_table_sample_id_column <- 'Sample_ID'
             quantity_column <- "log_values"
@@ -197,14 +197,14 @@ setMethod(f="removeProteinsWithOnlyOneReplicate"
                                                                 , quantity_column = !!sym( quantity_column))
 
 
-            theect@protein_data <- protein_data |>
+            theObject@protein_data <- protein_data |>
               pivot_wider( id_cols = !!sym( protein_id_column)
                            , names_from = !!sym( input_table_sample_id_column)
                            , values_from = !!sym( quantity_column) )
 
-            theect <- cleanDesignMatrix(theect)
+            theObject <- cleanDesignMatrix(theObject)
 
-            updated_object <- theect
+            updated_object <- theObject
 
             return(updated_object)
           })
@@ -214,20 +214,20 @@ setMethod(f="removeProteinsWithOnlyOneReplicate"
 
 #'@export
 setGeneric(name="plotRle"
-           , def=function( theect, group, ylim = c()) {
+           , def=function( theObject, group, ylim = c()) {
              standardGeneric("plotRle")
            }
-           , signature=c("theect", "group", "ylim"))
+           , signature=c("theObject", "group", "ylim"))
 
 
 #'@export
 setMethod(f="plotRle"
           , signature="ProteinQuantitativeData"
-          , definition=function( theect, group, ylim = c()) {
-            protein_data <- theect@protein_data
-            protein_id_column <- theect@protein_id_column
-            design_matrix <- theect@design_matrix
-            sample_id <- theect@sample_id
+          , definition=function( theObject, group, ylim = c()) {
+            protein_data <- theObject@protein_data
+            protein_id_column <- theObject@protein_id_column
+            design_matrix <- theObject@design_matrix
+            sample_id <- theObject@sample_id
 
             frozen_protein_matrix <- protein_data |>
               column_to_rownames(protein_id_column) |>
@@ -266,20 +266,20 @@ setMethod(f="plotRle"
 
 #'@export
 setGeneric(name="plotPca"
-           , def=function( theect, group_column, label_column, title, geom_text_size ) {
+           , def=function( theObject, group_column, label_column, title, geom_text_size ) {
              standardGeneric("plotPca")
            }
-           , signature=c("theect", "group_column", "label_column", "title", "geom_text_size"))
+           , signature=c("theObject", "group_column", "label_column", "title", "geom_text_size"))
 
 
 #'@export
 setMethod(f="plotPca"
           , signature="ProteinQuantitativeData"
-          , definition=function( theect, group_column, label_column, title, geom_text_size=8) {
-            protein_data <- theect@protein_data
-            protein_id_column <- theect@protein_id_column
-            design_matrix <- theect@design_matrix
-            sample_id <- theect@sample_id
+          , definition=function( theObject, group_column, label_column, title, geom_text_size=8) {
+            protein_data <- theObject@protein_data
+            protein_id_column <- theObject@protein_id_column
+            design_matrix <- theObject@design_matrix
+            sample_id <- theObject@sample_id
 
 
             frozen_protein_matrix <- protein_data |>
@@ -321,20 +321,20 @@ setMethod(f="plotPca"
 
 #'@export
 setGeneric(name="getPcaMatrix"
-           , def=function( theect) {
+           , def=function( theObject) {
              standardGeneric("getPcaMatrix")
            }
-           , signature=c("theect"))
+           , signature=c("theObject"))
 
 
 #'@export
 setMethod(f="getPcaMatrix"
           , signature="ProteinQuantitativeData"
-          , definition=function( theect) {
-            protein_data <- theect@protein_data
-            protein_id_column <- theect@protein_id_column
-            design_matrix <- theect@design_matrix
-            sample_id <- theect@sample_id
+          , definition=function( theObject) {
+            protein_data <- theObject@protein_data
+            protein_id_column <- theObject@protein_id_column
+            design_matrix <- theObject@design_matrix
+            sample_id <- theObject@sample_id
 
 
             frozen_protein_matrix <- protein_data |>
@@ -362,20 +362,20 @@ setMethod(f="getPcaMatrix"
 # Calculate Pearson correlation between Tech rep 1 and 2
 #'@export
 setGeneric(name="proteinTechRepCorrelation"
-           , def=function( theect,  tech_rep_num_column, tech_rep_remove_regex) {
+           , def=function( theObject,  tech_rep_num_column, tech_rep_remove_regex) {
              standardGeneric("proteinTechRepCorrelation")
            }
-           , signature=c("theect", "tech_rep_num_column", "tech_rep_remove_regex"))
+           , signature=c("theObject", "tech_rep_num_column", "tech_rep_remove_regex"))
 
 #'@export
 setMethod( f = "proteinTechRepCorrelation"
            , signature="ProteinQuantitativeData"
-          , definition=function( theect,  tech_rep_num_column,  tech_rep_remove_regex ) {
-            protein_data <- theect@protein_data
-            protein_id_column <- theect@protein_id_column
-            design_matrix <- theect@design_matrix
-            sample_id <- theect@sample_id
-            tech_rep_column <- theect@technical_replicate_id
+          , definition=function( theObject,  tech_rep_num_column,  tech_rep_remove_regex ) {
+            protein_data <- theObject@protein_data
+            protein_id_column <- theObject@protein_id_column
+            design_matrix <- theObject@design_matrix
+            sample_id <- theObject@sample_id
+            tech_rep_column <- theObject@technical_replicate_id
 
             frozen_protein_matrix <- protein_data |>
               column_to_rownames(protein_id_column) |>
@@ -399,20 +399,20 @@ setMethod( f = "proteinTechRepCorrelation"
 
 #'@export
 setGeneric(name="normalizeBetweenSamples"
-           , def=function( theect, method) {
-             standardGeneric("normalizeBetweenArrays")
+           , def=function( theObject, method) {
+             standardGeneric("normalizeBetweenSamples")
            }
-           , signature=c("theect", "method"))
+           , signature=c("theObject", "method"))
 
 
 #'@export
 setMethod(f="normalizeBetweenSamples"
           , signature="ProteinQuantitativeData"
-          , definition=function( theect,  method= "cyclicloess") {
-            protein_data <- theect@protein_data
-            protein_id_column <- theect@protein_id_column
-            design_matrix <- theect@design_matrix
-            sample_id <- theect@sample_id
+          , definition=function( theObject,  method= "cyclicloess") {
+            protein_data <- theObject@protein_data
+            protein_id_column <- theObject@protein_id_column
+            design_matrix <- theObject@design_matrix
+            sample_id <- theObject@sample_id
 
 
 
@@ -437,13 +437,13 @@ setMethod(f="normalizeBetweenSamples"
               as.matrix()
 
 
-            theect@protein_data <- normalized_frozen_protein_matrix_filt |>
+            theObject@protein_data <- normalized_frozen_protein_matrix_filt |>
                       as.data.frame() |>
                       rownames_to_column(protein_id_column)
 
-            theect <- cleanDesignMatrix(theect)
+            theObject <- cleanDesignMatrix(theObject)
 
-            updated_object <- theect
+            updated_object <- theObject
 
             return(updated_object)
 
@@ -455,20 +455,20 @@ setMethod(f="normalizeBetweenSamples"
 
 #'@export
 setGeneric(name="pearsonCorForSamplePairs"
-           , def=function( theect,   tech_rep_remove_regex ) {
+           , def=function( theObject,   tech_rep_remove_regex ) {
              standardGeneric("pearsonCorForSamplePairs")
            }
-           , signature=c("theect", "tech_rep_remove_regex"))
+           , signature=c("theObject", "tech_rep_remove_regex"))
 
 #'@export
 setMethod(f="pearsonCorForSamplePairs"
           , signature="ProteinQuantitativeData"
-          , definition=function( theect, tech_rep_remove_regex ="pool" ) {
-            protein_data <- theect@protein_data
-            protein_id_column <- theect@protein_id_column
-            design_matrix <- theect@design_matrix
-            sample_id <- theect@sample_id
-            replicate_group_column <- theect@technical_replicate_id
+          , definition=function( theObject, tech_rep_remove_regex ="pool" ) {
+            protein_data <- theObject@protein_data
+            protein_id_column <- theObject@protein_id_column
+            design_matrix <- theObject@design_matrix
+            sample_id <- theObject@sample_id
+            replicate_group_column <- theObject@technical_replicate_id
 
 
             frozen_mat_pca_long <- protein_data |>
@@ -502,25 +502,25 @@ setMethod(f="pearsonCorForSamplePairs"
 
 #'@export
 setGeneric(name="getNegCtrlProtAnova"
-           , def=function( theect, ruv_group_id_column, num_neg_ctrl, q_val_thresh, fdr_method ) {
+           , def=function( theObject, ruv_group_id_column, num_neg_ctrl, q_val_thresh, fdr_method ) {
              standardGeneric("getNegCtrlProtAnova")
            }
-           , signature=c("theect", "ruv_group_id_column", "num_neg_ctrl", "q_val_thresh", "fdr_method"))
+           , signature=c("theObject", "ruv_group_id_column", "num_neg_ctrl", "q_val_thresh", "fdr_method"))
 
 #'@export
 setMethod(f="getNegCtrlProtAnova"
           , signature="ProteinQuantitativeData"
-          , definition=function( theect
+          , definition=function( theObject
                                  , ruv_group_id_column = "replicates"
                                  , num_neg_ctrl = 100
                                  , q_val_thresh = 0.05
                                  , fdr_method = "BH" ) {
-            protein_data <- theect@protein_data
-            protein_id_column <- theect@protein_id_column
-            design_matrix <- theect@design_matrix
-            group_id <- theect@group_id
-            sample_id <- theect@sample_id
-            replicate_group_column <- theect@technical_replicate_id
+            protein_data <- theObject@protein_data
+            protein_id_column <- theObject@protein_id_column
+            design_matrix <- theObject@design_matrix
+            group_id <- theObject@group_id
+            sample_id <- theObject@sample_id
+            replicate_group_column <- theObject@technical_replicate_id
 
             normalized_frozen_protein_matrix_filt <- protein_data |>
               column_to_rownames(protein_id_column) |>
@@ -544,40 +544,40 @@ setMethod(f="getNegCtrlProtAnova"
 #'@description Sort proteins by their coefficient of variation and take the top N with lowest coefficient of variation
 #'@export
 setGeneric(name="getLowCoefficientOfVariationProteins"
-           , def=function( theect, num_neg_ctrl ) {
+           , def=function( theObject, num_neg_ctrl ) {
              standardGeneric("getLowCoefficientOfVariationProteins")
            }
-           , signature=c("theect", "num_neg_ctrl"))
+           , signature=c("theObject", "num_neg_ctrl"))
 
 
 
 #'@export
 setMethod( f = "getLowCoefficientOfVariationProteins"
            , signature="ProteinQuantitativeData"
-           , definition=function( theect
+           , definition=function( theObject
                                                   , num_neg_ctrl = 100) {
 
-  list_of_control_genes <- theect@protein_data |>
-    column_to_rownames(theect@protein_id_column) |>
+  list_of_control_genes <- theObject@protein_data |>
+    column_to_rownames(theObject@protein_id_column) |>
     t() |>
     as.data.frame() |>
     summarise( across(everything(), ~sd(.)/mean(.))) |>
     t() |>
     as.data.frame() |>
     dplyr::rename( coefficient_of_variation = "V1") |>
-    tibble::rownames_to_column(theect@protein_id_column) |>
+    tibble::rownames_to_column(theObject@protein_id_column) |>
     arrange( coefficient_of_variation) |>
     head(num_neg_ctrl)
 
-  control_gene_index_helper <- theect@protein_data |>
-    dplyr::select(theect@protein_id_column) |>
+  control_gene_index_helper <- theObject@protein_data |>
+    dplyr::select(theObject@protein_id_column) |>
     mutate( index = row_number()) |>
-    left_join( list_of_control_genes, by = theect@protein_id_column)  |>
+    left_join( list_of_control_genes, by = theObject@protein_id_column)  |>
     mutate( is_selected = case_when( is.na(coefficient_of_variation) ~ FALSE
                                      , TRUE ~  TRUE ) ) |>
     arrange( index) |>
     dplyr::select( Protein.Ids, is_selected) |>
-    column_to_rownames(theect@protein_id_column) |>
+    column_to_rownames(theObject@protein_id_column) |>
     t()
 
   control_gene_index <- control_gene_index_helper[1,]
@@ -589,21 +589,21 @@ setMethod( f = "getLowCoefficientOfVariationProteins"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
 setGeneric(name="ruvCancor"
-           , def=function( theect, ctl, ncomp, ruv_group_id_column ) {
+           , def=function( theObject, ctl, ncomp, ruv_group_id_column ) {
              standardGeneric("ruvCancor")
            }
-           , signature=c("theect", "ctl", "ncomp", "ruv_group_id_column"))
+           , signature=c("theObject", "ctl", "ncomp", "ruv_group_id_column"))
 
 #'@export
 setMethod( f = "ruvCancor"
            , signature="ProteinQuantitativeData"
-           , definition=function( theect, ctl, ncomp=2, ruv_group_id_column) {
-             protein_data <- theect@protein_data
-             protein_id_column <- theect@protein_id_column
-             design_matrix <- theect@design_matrix
-             group_id <- theect@group_id
-             sample_id <- theect@sample_id
-             replicate_group_column <- theect@technical_replicate_id
+           , definition=function( theObject, ctl, ncomp=2, ruv_group_id_column) {
+             protein_data <- theObject@protein_data
+             protein_id_column <- theObject@protein_id_column
+             design_matrix <- theObject@design_matrix
+             group_id <- theObject@group_id
+             sample_id <- theObject@sample_id
+             replicate_group_column <- theObject@technical_replicate_id
 
              if(! ruv_group_id_column %in% colnames(design_matrix)) {
                stop( paste0("The 'ruv_group_id_column = "
@@ -644,21 +644,21 @@ setMethod( f = "ruvCancor"
 
 #'@export
 setGeneric(name="getRuvIIIReplicateMatrix"
-           , def=function( theect,  ruv_group_id_column ) {
+           , def=function( theObject,  ruv_group_id_column ) {
              standardGeneric("getRuvIIIReplicateMatrix")
            }
-           , signature=c("theect", "ruv_group_id_column"))
+           , signature=c("theObject", "ruv_group_id_column"))
 
 #'@export
 setMethod( f = "getRuvIIIReplicateMatrix"
            , signature="ProteinQuantitativeData"
-           , definition=function( theect, ruv_group_id_column) {
-             protein_data <- theect@protein_data
-             protein_id_column <- theect@protein_id_column
-             design_matrix <- theect@design_matrix
-             group_id <- theect@group_id
-             sample_id <- theect@sample_id
-             replicate_group_column <- theect@technical_replicate_id
+           , definition=function( theObject, ruv_group_id_column) {
+             protein_data <- theObject@protein_data
+             protein_id_column <- theObject@protein_id_column
+             design_matrix <- theObject@design_matrix
+             group_id <- theObject@group_id
+             sample_id <- theObject@sample_id
+             replicate_group_column <- theObject@technical_replicate_id
 
              ruvIII_replicates_matrix <- getRuvIIIReplicateMatrixHelper( design_matrix
                                                                    , !!sym(sample_id)
@@ -672,21 +672,21 @@ setMethod( f = "getRuvIIIReplicateMatrix"
 
 #'@export
 setGeneric(name="ruvIII_C_Varying"
-           , def=function( theect, ruv_group_id_column, k, ctl) {
+           , def=function( theObject, ruv_group_id_column, k, ctl) {
              standardGeneric("ruvIII_C_Varying")
            }
-           , signature=c("theect", "ruv_group_id_column", "k", "ctl"))
+           , signature=c("theObject", "ruv_group_id_column", "k", "ctl"))
 
 #'@export
 setMethod( f = "ruvIII_C_Varying"
            , signature="ProteinQuantitativeData"
-           , definition=function( theect, ruv_group_id_column, k, ctl) {
-             protein_data <- theect@protein_data
-             protein_id_column <- theect@protein_id_column
-             design_matrix <- theect@design_matrix
-             group_id <- theect@group_id
-             sample_id <- theect@sample_id
-             replicate_group_column <- theect@technical_replicate_id
+           , definition=function( theObject, ruv_group_id_column, k, ctl) {
+             protein_data <- theObject@protein_data
+             protein_id_column <- theObject@protein_id_column
+             design_matrix <- theObject@design_matrix
+             group_id <- theObject@group_id
+             sample_id <- theObject@sample_id
+             replicate_group_column <- theObject@technical_replicate_id
 
              normalized_frozen_protein_matrix_filt <- protein_data |>
                column_to_rownames(protein_id_column) |>
@@ -715,24 +715,24 @@ setMethod( f = "ruvIII_C_Varying"
                as.data.frame() |>
                rownames_to_column(protein_id_column)
 
-             theect@protein_data <- ruv_normalized_results_cln
+             theObject@protein_data <- ruv_normalized_results_cln
 
-             theect <- cleanDesignMatrix(theect)
+             theObject <- cleanDesignMatrix(theObject)
 
-             return( theect )
+             return( theObject )
           })
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
 setGeneric(name="removeRowsWithMissingValuesPercent"
-           , def=function( theect
+           , def=function( theObject
                            , ruv_group_id_column
                            , max_perc_below_thresh_per_group = 50
                            , max_perc_of_groups_below_thresh = 50
                            , min_protein_intensity_percentile = 1) {
              standardGeneric("removeRowsWithMissingValuesPercent")
            }
-           , signature=c("theect"
+           , signature=c("theObject"
                          , "ruv_group_id_column"
                          , "max_perc_below_thresh_per_group"
                          , "max_perc_of_groups_below_thresh"
@@ -741,23 +741,23 @@ setGeneric(name="removeRowsWithMissingValuesPercent"
 #'@export
 setMethod( f = "removeRowsWithMissingValuesPercent"
            , signature="ProteinQuantitativeData"
-           , definition=function( theect
+           , definition=function( theObject
                                   , ruv_group_id_column
                                   , max_perc_below_thresh_per_group = 50
                                   , max_perc_of_groups_below_thresh = 50
                                   , min_protein_intensity_percentile = 1) {
 
-             protein_data <- theect@protein_data
-             protein_id_column <- theect@protein_id_column
-             design_matrix <- theect@design_matrix
-             group_id <- theect@group_id
-             sample_id <- theect@sample_id
-             replicate_group_column <- theect@technical_replicate_id
+             protein_data <- theObject@protein_data
+             protein_id_column <- theObject@protein_id_column
+             design_matrix <- theObject@design_matrix
+             group_id <- theObject@group_id
+             sample_id <- theObject@sample_id
+             replicate_group_column <- theObject@technical_replicate_id
 
 
              # print(min_protein_intensity_threshold )
 
-             theect@protein_data <- removeRowsWithMissingValuesPercentHelper( protein_data
+             theObject@protein_data <- removeRowsWithMissingValuesPercentHelper( protein_data
                                                                            , cols= !matches(protein_id_column)
                                                                            , design_matrix = design_matrix
                                                                            , sample_id = !!sym(sample_id)
@@ -768,9 +768,9 @@ setMethod( f = "removeRowsWithMissingValuesPercent"
                                                                            , min_protein_intensity_percentile = min_protein_intensity_percentile
                                                                            , temporary_abundance_column = "Log_Abundance")
 
-             theect <- cleanDesignMatrix(theect)
+             theObject <- cleanDesignMatrix(theObject)
 
-             return(theect)
+             return(theObject)
 
            })
 
@@ -782,24 +782,24 @@ setMethod( f = "removeRowsWithMissingValuesPercent"
 
 #'@export
 setGeneric(name="averageTechReps"
-           , def=function( theect, design_matrix_columns ) {
+           , def=function( theObject, design_matrix_columns ) {
              standardGeneric("averageTechReps")
            }
-           , signature=c("theect", "design_matrix_columns" ))
+           , signature=c("theObject", "design_matrix_columns" ))
 
 #'@export
 setMethod( f = "averageTechReps"
            , signature="ProteinQuantitativeData"
-           , definition=function( theect, design_matrix_columns=c()  ) {
+           , definition=function( theObject, design_matrix_columns=c()  ) {
 
-             protein_data <- theect@protein_data
-             protein_id_column <- theect@protein_id_column
-             design_matrix <- theect@design_matrix
-             group_id <- theect@group_id
-             sample_id <- theect@sample_id
-             replicate_group_column <- theect@technical_replicate_id
+             protein_data <- theObject@protein_data
+             protein_id_column <- theObject@protein_id_column
+             design_matrix <- theObject@design_matrix
+             group_id <- theObject@group_id
+             sample_id <- theObject@sample_id
+             replicate_group_column <- theObject@technical_replicate_id
 
-             theect@protein_data <- protein_data |>
+             theObject@protein_data <- protein_data |>
                pivot_longer( cols = !matches( protein_id_column)
                              , names_to = sample_id
                              , values_to = "Log2.Protein.Imputed") |>
@@ -811,20 +811,20 @@ setMethod( f = "averageTechReps"
                pivot_wider( names_from = !!sym(replicate_group_column)
                             , values_from = Log2.Protein.Imputed)
 
-              theect@sample_id <- theect@technical_replicate_id
+              theObject@sample_id <- theObject@technical_replicate_id
 
-              theect@design_matrix <- design_matrix |>
+              theObject@design_matrix <- design_matrix |>
                 dplyr::select(-!!sym( sample_id)) |>
                 dplyr::select(one_of( unique( c( replicate_group_column,  group_id,  design_matrix_columns) ))) |>
                 distinct()
 
-              rownames(theect@design_matrix ) <- theect@design_matrix |> pull(one_of(replicate_group_column))
-              theect@sample_id <- replicate_group_column
-              theect@technical_replicate_id <- NA_character_
+              rownames(theObject@design_matrix ) <- theObject@design_matrix |> pull(one_of(replicate_group_column))
+              theObject@sample_id <- replicate_group_column
+              theObject@technical_replicate_id <- NA_character_
 
-              theect <- cleanDesignMatrix(theect)
+              theObject <- cleanDesignMatrix(theObject)
 
-              theect
+              theObject
 
            })
 
@@ -834,17 +834,17 @@ setMethod( f = "averageTechReps"
 
 #'@export
 setGeneric(name="chooseBestProteinAccession"
-           , def=function( theect, delim, seqinr_obj, seqinr_accession_column ) {
+           , def=function( theObject, delim, seqinr_obj, seqinr_accession_column ) {
              standardGeneric("chooseBestProteinAccession")
            }
-           , signature=c("theect", "delim", "seqinr_obj", "seqinr_accession_column" ))
+           , signature=c("theObject", "delim", "seqinr_obj", "seqinr_accession_column" ))
 
 #'@export
 setMethod( f = "chooseBestProteinAccession"
            , signature="ProteinQuantitativeData"
-           , definition=function( theect, delim=";", seqinr_obj, seqinr_accession_column  ) {
-             protein_data <- theect@protein_data
-             protein_id_column <- theect@protein_id_column
+           , definition=function( theObject, delim=";", seqinr_obj, seqinr_accession_column  ) {
+             protein_data <- theObject@protein_data
+             protein_id_column <- theObject@protein_id_column
 
 
              evidence_tbl_cleaned <- protein_data |>
@@ -863,12 +863,12 @@ setMethod( f = "chooseBestProteinAccession"
                left_join( accession_gene_name_tbl |>
                             dplyr::distinct( row_id, !!sym( seqinr_accession_column) )
                           , by = join_by(row_id) ) |>
-               mutate( !!sym( theect@protein_id_column ) :=!!sym( seqinr_accession_column) )  |>
+               mutate( !!sym( theObject@protein_id_column ) :=!!sym( seqinr_accession_column) )  |>
                dplyr::select(-row_id, -!!sym( seqinr_accession_column))
 
-             theect@protein_data <- protein_log2_quant_cln
+             theObject@protein_data <- protein_log2_quant_cln
 
-             return(theect)
+             return(theObject)
 
            })
 
@@ -877,18 +877,18 @@ setMethod( f = "chooseBestProteinAccession"
 
 #'@export
 setGeneric(name="chooseBestProteinAccessionSumDuplicates"
-           , def=function( theect, delim, quant_columns_pattern, islogged ) {
+           , def=function( theObject, delim, quant_columns_pattern, islogged ) {
              standardGeneric("chooseBestProteinAccessionSumDuplicates")
            }
-           , signature=c("theect", "delim", "quant_columns_pattern", "islogged" ))
+           , signature=c("theObject", "delim", "quant_columns_pattern", "islogged" ))
 
 #'@export
 setMethod( f = "chooseBestProteinAccessionSumDuplicates"
            , signature="ProteinQuantitativeData"
-           , definition=function( theect, delim=";", quant_columns_pattern = "\\d+", islogged = TRUE ) {
+           , definition=function( theObject, delim=";", quant_columns_pattern = "\\d+", islogged = TRUE ) {
 
-             protein_data <- theect@protein_data
-             protein_id_column <- theect@protein_id_column
+             protein_data <- theObject@protein_data
+             protein_id_column <- theObject@protein_id_column
 
 
              protein_log2_quant_cln <- protein_data |>
@@ -897,8 +897,8 @@ setMethod( f = "chooseBestProteinAccessionSumDuplicates"
                summarise ( across( matches(quant_columns_pattern), \(x){ if(islogged==TRUE) {log2(sum(2^x, na.rm = TRUE)) } else { sum(x, na.rm = TRUE)}    })) |>
                ungroup()
 
-             theect@protein_data <- protein_log2_quant_cln
+             theObject@protein_data <- protein_log2_quant_cln
 
-             theect
+             theObject
 
            })

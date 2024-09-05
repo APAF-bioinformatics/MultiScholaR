@@ -282,7 +282,7 @@ peptideIntensityFilteringHelper <- function(input_table
 #'@param temporary_abundance_column The name of a temporary column to keep the abundance value you want to filter upon
 #'@return A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values.
 #'@export
-removePeptidesWithMissingValuesPercent <- function(input_table
+removePeptidesWithMissingValuesPercentHelper <- function(input_table
                                                , cols
                                                , design_matrix
                                                , sample_id

@@ -16,7 +16,7 @@ deAnalysisWrapperFunction <- function( theObject
   return_list <- list()
 
   ## plot RLE plot
-  rle_plot <-   plotRleObj(theObject = theObject, theObject@group_id  ) +
+  rle_plot <-   plotRle(theObject = theObject, theObject@group_id  ) +
     theme(axis.text.x = element_text(size = 13))   +
     theme(axis.text.y = element_text(size = 13))  +
     theme(axis.title.x = element_text(size = 12))  +
@@ -30,7 +30,7 @@ deAnalysisWrapperFunction <- function( theObject
 
   ## plot PCA plot
 
-  pca_plot <-  plotPcaObj( theObject
+  pca_plot <-  plotPca( theObject
                            , group_column = theObject@group_id
                            , label_column = ""
                            , title = ""
