@@ -124,6 +124,43 @@ PeptideQuantitativeData <- setClass("PeptideQuantitativeData"
 #' @export PeptideQuantitativeData
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#' @export
+PeptideQuantitativeDataDiann <- function( peptide_data
+                                          , design_matrix
+                                          , sample_id = "Run"
+                                          , group_id = "group"
+                                          , technical_replicate_id = "replicates" ) {
+
+
+
+  peptide_data <- new( "PeptideQuantitativeData"
+
+    # Protein vs Sample quantitative data
+    , peptide_data = peptide_data
+    , protein_id_column = "Protein.Ids"
+    , peptide_sequence_column = "Stripped.Sequence"
+    , q_value_column = "Q.Value"
+    , global_q_value_column = "Global.Q.Value"
+    , proteotypic_peptide_sequence_column = "Proteotypic"
+    , raw_quantity_column = "Precursor.Quantity"
+    , norm_quantity_column = "Precursor.Normalised"
+    , is_logged_data = FALSE
+
+    # Design Matrix Information
+    , design_matrix = design_matrix
+    , sample_id= sample_id
+    , group_id= group_id
+    , technical_replicate_id= technical_replicate_id
+  )
+
+  peptide_data
+
+}
+
+
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Format the design matrix so that only metadata for samples in the protein data are retained, and also
 # sort the sample IDs in the same order as the data matrix
