@@ -891,6 +891,7 @@ getGlimmaVolcanoProteomics <- function( r_obj
     htmlwidgets::saveWidget( widget = glimmaVolcano(r_obj
                                                     , coef=coef, anno=anno_tbl
                                                     , display.columns = display_columns
+                                                    , status=decideTests(r_obj, adjust.method="none")
                                                     , p.adj.method = "none" ) #the plotly object
                              , file = file.path( output_dir
                                                  , paste0(colnames(r_obj$coefficients)[coef], ".html"))  #the path & file name
@@ -940,6 +941,7 @@ getGlimmaVolcanoProteomicsWidget <- function( r_obj
      glimmaVolcano(r_obj, coef=coef
                    , anno=anno_tbl
                    , display.columns = display_columns
+                   , status=decideTests(r_obj, adjust.method="none")
                    , p.adj.method="none") #the plotly object
 
   }
