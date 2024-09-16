@@ -243,18 +243,61 @@ setMethod(f="plotRle"
               rowinfo_vector <-  design_matrix[colnames(frozen_protein_matrix), group]
             }
 
-            # print( rowinfo_vector)
-            if( length( ylim ) ==2 ) {
-
               rle_plot_before_cyclic_loess <- plotRleHelper( t(frozen_protein_matrix)
                                                        , rowinfo = rowinfo_vector
                                                        , ylim = ylim)
-            } else {
-              rle_plot_before_cyclic_loess <- plotRleHelper( t(frozen_protein_matrix)
-                                                       , rowinfo = rowinfo_vector)
-            }
 
             return( rle_plot_before_cyclic_loess)
+
+          })
+
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#'@export
+setGeneric(name="plotRleList"
+           , def=function( theObject, list_of_columns, ylim = c()) {
+             standardGeneric("plotRleList")
+           }
+           , signature=c("theObject", "list_of_columns", "ylim"))
+
+#'@export
+setMethod(f="plotRleList"
+          , signature="ProteinQuantitativeData"
+          , definition=function( theObject, list_of_columns, ylim = c()) {
+            protein_data <- theObject@protein_data
+            protein_id_column <- theObject@protein_id_column
+            design_matrix <- theObject@design_matrix
+            sample_id <- theObject@sample_id
+
+            frozen_protein_matrix <- protein_data |>
+              column_to_rownames(protein_id_column) |>
+              as.matrix()
+
+            design_matrix <- as.data.frame(design_matrix)
+            rownames( design_matrix) <- design_matrix[,sample_id]
+
+            # print( design_matrix)
+
+            runOneRle <- function( column_name) {
+              rowinfo_vector <- NA
+
+              if ( column_name %in% colnames(design_matrix) ) {
+                rowinfo_vector <- design_matrix[colnames(frozen_protein_matrix), column_name]
+              }
+
+              rle_plot_before_cyclic_loess <- plotRleHelper( t(frozen_protein_matrix)
+                                                             , rowinfo = rowinfo_vector
+                                                             , ylim = ylim)
+
+              return( rle_plot_before_cyclic_loess)
+            }
+
+            list_of_rle_plots <- purrr::map( list_of_columns, runOneRle)
+
+            names(list_of_rle_plots) <- list_of_columns
+
+            return( list_of_rle_plots)
 
           })
 
@@ -576,7 +619,7 @@ setMethod( f = "getLowCoefficientOfVariationProteins"
     mutate( is_selected = case_when( is.na(coefficient_of_variation) ~ FALSE
                                      , TRUE ~  TRUE ) ) |>
     arrange( index) |>
-    dplyr::select( Protein.Ids, is_selected) |>
+    dplyr::select( !!sym(theObject@protein_id_column), is_selected) |>
     column_to_rownames(theObject@protein_id_column) |>
     t()
 
@@ -858,13 +901,21 @@ setMethod( f = "chooseBestProteinAccession"
                                                                    group_id = row_id,
                                                                    delim = ";")
 
-
              protein_log2_quant_cln <- evidence_tbl_cleaned |>
                left_join( accession_gene_name_tbl |>
                             dplyr::distinct( row_id, !!sym( seqinr_accession_column) )
-                          , by = join_by(row_id) ) |>
-               mutate( !!sym( theObject@protein_id_column ) :=!!sym( seqinr_accession_column) )  |>
-               dplyr::select(-row_id, -!!sym( seqinr_accession_column))
+                          , by = join_by( row_id,
+                                          !!sym( theObject@protein_id_column ) ==!!sym( seqinr_accession_column)) )
+
+            if( theObject@protein_id_column != seqinr_accession_column) {
+
+               protein_log2_quant_cln <- protein_log2_quant_cln |>
+                 mutate( !!sym( theObject@protein_id_column ) :=!!sym( seqinr_accession_column) )  |>
+                 dplyr::select(-row_id, -!!sym( seqinr_accession_column))
+             } else {
+               protein_log2_quant_cln <- protein_log2_quant_cln |>
+                 dplyr::select(-row_id)
+             }
 
              theObject@protein_data <- protein_log2_quant_cln
 

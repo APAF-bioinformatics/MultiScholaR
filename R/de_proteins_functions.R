@@ -425,24 +425,66 @@ plotRleHelper <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75,
   }
 
   rleplot <- ggplot(df, aes(x = .data[["rle.x.factor"]])) +
-    geom_boxplot(aes(lower = .data[["lower"]], middle = .data[["middle"]],
-                            upper = .data[["upper"]], max = .data[["max"]], min = .data[["min"]]),
+    geom_boxplot(aes(lower = .data[["lower"]]
+                     , middle = .data[["middle"]]
+                     , upper = .data[["upper"]]
+                     , max = .data[["max"]]
+                     , min = .data[["min"]]),
                  stat = "identity") +
     theme_bw() +
     theme(axis.title.x = element_blank(),
           axis.text.x = element_text(angle = 90) #, axis.ticks.x = element_blank()
     ) +
     theme(axis.title.y = element_blank(), axis.text.y = element_text(size = rel(1.5))) +
-    geom_hline(yintercept = 0) +
-    coord_cartesian(ylim = ylim)
-  if (!is.null(rowinfo))
-    if (ncol(rowinfo) == 1)
+    geom_hline(yintercept = 0)
+
+
+  if( length( ylim ) ==2 ) {
+
+    rleplot <- rleplot +
+      coord_cartesian(ylim = ylim)
+
+  }
+
+
+  if (!is.null(rowinfo)) {
+    if (ncol(rowinfo) == 1) {
       rleplot <- rleplot + aes(fill = rowinfo) + labs(fill = "")
+    }
+  }
+
   return(rleplot)
   # }
   # else return(FALSE)
 }
 
+
+#' @export
+#' @description Input a ggplot2 boxplot, return the maximum and minimum data point adjusted by the adjust_factor.
+#' @param input_boxplot A ggplot2 boxplot object.
+#' @param adjust_factor A numeric value to adjust the maximum and minimum data point.
+getMaxMinBoxplot <- function( input_boxplot, adjust_factor = 0.05) {
+
+  df_min <- min( input_boxplot$data$min, na.rm=TRUE)
+
+  df_max <- max( input_boxplot$data$max, na.rm=TRUE )
+
+  if( df_min > 0 ) {
+    df_min <- df_min*(1-adjust_factor)
+  } else {
+    df_min <- df_min*(1+adjust_factor)
+
+  }
+
+  if( df_max > 0 ) {
+    df_max <- df_max*(1+adjust_factor)
+  } else {
+    df_max <- df_max*(1-adjust_factor)
+
+  }
+
+  return( c(df_min, df_max))
+}
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -1956,8 +1998,8 @@ proteinTechRepCorrelationHelper <- function( design_matrix_tech_rep, data_matrix
                  , values_from = log2_intensity) |>
     nest( data=!matches("uniprot_acc")) |>
     mutate( data = purrr::map( data, \(x){ x |> column_to_rownames(tech_rep_column)} ) ) |>
-    mutate( pearson = purrr::map_dbl( data, \(x){ cor(x, use="pairwise.complete.obs")[1,2]})) |>
-    mutate( spearman = purrr::map_dbl( data, \(x){ cor(x, use="pairwise.complete.obs", method="spearman")[1,2]}))
+    mutate( pearson = purrr::map_dbl( data, \(x){  if(is.numeric(x) == TRUE & length(which(!is.na(x[,1]))) > 0 & length(which(!is.na(x[,2]))) > 0) { cor(x, use="pairwise.complete.obs")[1,2] } else { NA_real_ }   })) |>
+    mutate( spearman = purrr::map_dbl( data, \(x){  if(is.numeric(x) == TRUE & length(which(!is.na(x[,1]))) > 0 & length(which(!is.na(x[,2]))) > 0) { cor(x, use="pairwise.complete.obs", method="spearman")[1,2] } else { NA_real_ }  }))
 
   frozen_protein_matrix_tech_rep
 }
