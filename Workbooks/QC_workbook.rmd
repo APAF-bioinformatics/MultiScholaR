@@ -24,67 +24,29 @@ output: html_document
 ## Packages Management
 ```{r}
 
-#Test if BioManager is installed
-if (!requireNamespace("BiocManager", quietly = TRUE)) {
-  install.packages("BiocManager")
+# Install and load required packages if not already installed
+packages_to_install <- c("BiocManager", "pacman", "RUVIIIC", "ProteomeScholaR")
+for (pkg in packages_to_install) {
+  if (!requireNamespace(pkg, quietly = TRUE)) {
+    if (pkg == "RUVIIIC") {
+      devtools::install_github("cran/RUVIIIC")
+    } else if (pkg == "ProteomeScholaR") {
+      devtools::install_github("APAF-BIOINFORMATICS/ProteomeScholaR")
+    } else {
+      install.packages(pkg)
+    }
+  }
 }
 
-# load pacman package manager
-if(!require(pacman)){
-  install.packages("pacman")
-  library(pacman)
-}
+# Load pacman
+library(pacman)
 
-p_load(tidyverse)
-p_load(seqinr)
-p_load(lazyeval)
-p_load(rlang)
-p_load(glue)
-p_load(GGally)
-p_load(here)
-p_load(tibble)
-p_load(mixOmics)
-p_load(limma)
-p_load(magrittr)
+# Load all required packages using pacman
+p_load(BiocManager, tidyverse, seqinr, lazyeval, rlang, glue, GGally, here, tibble, mixOmics, limma, magrittr,
+       future.apply, tictoc, beepr, furrr, readxl, writexl, RColorBrewer, multidplyr,
+       RSpectra, progress, Rcpp, RcppEigen, qvalue, Glimma, ruv,
+       ProteomeScholaR, iq, ggrepel, patchwork, RUVIIIC)
 
-p_load(future.apply)
-p_load(tictoc)
-p_load(beepr)
-
-p_load(furrr)
-p_load(readxl)
-p_load(writexl)
-p_load(RColorBrewer)
-p_load(multidplyr)
-
-# require(devtools)
-# install_github('CMRI-ProCan/RUV-III-C')
-p_load(RSpectra)
-p_load(progress)
-p_load(Rcpp)
-p_load(RcppEigen)
-
-p_load(qvalue)
-p_load(Glimma)
-
-
-if(!require(RUVIIIC)) {
-  devtools::install_github("cran/RUVIIIC")
-  library(RUVIIIC)
-}
-
-p_load(RcppEigen)
-
-# https://github.com/cran/RUVIIIC
-p_load(RUVIIIC)
-p_load(ruv)
-
-# Sys.setenv( R_LIBS_USER="/Users/ignatiuspang/R/x86_64-pc-linux-gnu-library/4.4")
-# .libPaths( c( Sys.getenv("R_LIBS_USER"), Sys.getenv("R_LIBS") ) )
-p_load(ProteomeScholaR)
-p_load(iq)
-p_load(ggrepel)
-p_load(patchwork)
 ```
 
 ## Directories Management
