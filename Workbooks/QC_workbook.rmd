@@ -1,0 +1,148 @@
+---
+title: "QC Analysis for xyz"
+format:
+    html:
+        embed-resources: true
+        self-contained: true
+        code-fold: true
+        code-summary: "Show the code"
+        #toc: true
+        #toc-depth: 3
+        #number-sections: true
+        html-math-method: katex
+        css: styles.css
+editor: source
+execute:
+    echo: false
+    warning: false
+    message: false
+author: Your fancy self
+output: html_document
+---
+
+
+## Packages Management
+```{r}
+
+#Test if BioManager is installed
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+  install.packages("BiocManager")
+}
+
+# load pacman package manager
+if(!require(pacman)){
+  install.packages("pacman")
+  library(pacman)
+}
+
+p_load(tidyverse)
+p_load(seqinr)
+p_load(lazyeval)
+p_load(rlang)
+p_load(glue)
+p_load(GGally)
+p_load(here)
+p_load(tibble)
+p_load(mixOmics)
+p_load(limma)
+p_load(magrittr)
+
+p_load(future.apply)
+p_load(tictoc)
+p_load(beepr)
+
+p_load(furrr)
+p_load(readxl)
+p_load(writexl)
+p_load(RColorBrewer)
+p_load(multidplyr)
+
+# require(devtools)
+# install_github('CMRI-ProCan/RUV-III-C')
+p_load(RSpectra)
+p_load(progress)
+p_load(Rcpp)
+p_load(RcppEigen)
+
+p_load(qvalue)
+p_load(Glimma)
+
+
+if(!require(RUVIIIC)) {
+  devtools::install_github("cran/RUVIIIC")
+  library(RUVIIIC)
+}
+
+p_load(RcppEigen)
+
+# https://github.com/cran/RUVIIIC
+p_load(RUVIIIC)
+p_load(ruv)
+
+# Sys.setenv( R_LIBS_USER="/Users/ignatiuspang/R/x86_64-pc-linux-gnu-library/4.4")
+# .libPaths( c( Sys.getenv("R_LIBS_USER"), Sys.getenv("R_LIBS") ) )
+p_load(ProteomeScholaR)
+p_load(iq)
+p_load(ggrepel)
+p_load(patchwork)
+```
+
+## Directories Management
+```{r}
+base_dir <- here::here()
+results_dir <- file.path(base_dir, "results", "proteomics")
+data_dir <- file.path(base_dir, "data")
+data_proteomics_dir <-
+source_dir <- file.path(base_dir, "scripts", "proteomics")
+
+dir.create(file.path( results_dir), recursive=TRUE)
+dir.create(file.path( results_dir, "clean_proteins"), recursive=TRUE)
+dir.create(file.path(results_dir, "protein_qc"), recursive=TRUE)
+dir.create(file.path(results_dir, "peptide_qc"), recursive=TRUE)
+
+de_output_dir <- file.path( results_dir, "de_proteins")
+dir.create(de_output_dir, recursive=TRUE)
+
+publication_graphs_dir <- file.path(results_dir,"publication_graphs" )
+dir.create(publication_graphs_dir, recursive=TRUE)
+```
+
+
+## Input Parameters
+```{r}
+choose_only_proteotypic_peptide <- 1
+global_q_value_thresh <- 0.01
+q_value_thresh <- 0.01
+
+cluster <- new_cluster(4)
+cluster_library(cluster, c("tidyverse", "glue", "rlang", "lazyeval"))
+
+
+min_peptide_intensity_percentile <- 0.01
+proportion_samples_below_intensity_threshold <- 0.5
+num_peptides_per_protein_thresh <- 1
+num_peptidoforms_per_protein_thresh <- 2
+
+min_num_peptides_in_sample <- 300
+num_of_cores <- 8
+min_pearson_correlation_threshold <- 0.70
+
+proportion_missing_for_imputation <- 0.50
+
+## DE analysis parameters
+experimental_contrast_file <- file.path( source_dir, "contrast_strings.tab")
+plots_format <- c("pdf", "png")
+
+
+formula_string <- "~ 0 + group"
+treat_lfc_cutoff <- log2(1)
+eBayes_trend <- TRUE
+eBayes_robust <- TRUE
+de_q_val_thresh <- 0.05
+args_row_id <- "uniprot_acc"
+args_group_pattern="(\\d+)"
+plots_format <- c("pdf", "png")
+
+
+```
+```
