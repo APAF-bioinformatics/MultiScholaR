@@ -49,62 +49,110 @@ p_load(BiocManager, tidyverse, seqinr, lazyeval, rlang, glue, GGally, here, tibb
 
 ```
 
-## Directories Management
+## Directories & Hardware Management
+#### Set and create directories for outputs and project management, set number of cores for threaded tasks
+##### IT IS HIGHLY RECOMMENDED YOU DO NOT EDIT THIS SECTION UNLESS YOU PLAN TO CHANGE THE PROJECT STRUCTURE THROUGHOUT #####
 ```{r}
+# Directory management
 base_dir <- here::here()
-results_dir <- file.path(base_dir, "results", "proteomics")
-data_dir <- file.path(base_dir, "data")
-data_proteomics_dir <-
-source_dir <- file.path(base_dir, "scripts", "proteomics")
+c(
+  results_dir <- file.path(base_dir, "results", "proteomics"),
+  data_dir <- file.path(base_dir, "data"),
+  source_dir <- file.path(base_dir, "scripts", "proteomics"),
+  de_output_dir <- file.path(results_dir, "de_proteins"),
+  publication_graphs_dir <- file.path(results_dir, "publication_graphs"),
+  file.path(results_dir, "clean_proteins"),
+  file.path(results_dir, "protein_qc"),
+  file.path(results_dir, "peptide_qc")
+) |>
+  sapply(dir.create, recursive = TRUE)
 
-dir.create(file.path( results_dir), recursive=TRUE)
-dir.create(file.path( results_dir, "clean_proteins"), recursive=TRUE)
-dir.create(file.path(results_dir, "protein_qc"), recursive=TRUE)
-dir.create(file.path(results_dir, "peptide_qc"), recursive=TRUE)
-
-de_output_dir <- file.path( results_dir, "de_proteins")
-dir.create(de_output_dir, recursive=TRUE)
-
-publication_graphs_dir <- file.path(results_dir,"publication_graphs" )
-dir.create(publication_graphs_dir, recursive=TRUE)
+# Hardware management
+## Change this if you have large experiments and need more compute, or are running a toaster and don't have many cores to work with :)
+cluster <- new_cluster(4)
+cluster_library(cluster, c("tidyverse", "glue", "rlang", "lazyeval"))
+num_of_cores <- 8
 ```
 
 
-## Input Parameters
+## Input Parameters for Quality Control
+### Parameters in this section are experiment-specific. Their default parameters are intended as a guide only - every source of variance is different just as every set of proteins going through a mass spectrometer is different! One size does not fit all and you *will* most likely need to fine tune these to get the most out of your data.
 ```{r}
+# Please select one of these from the list
+experiment_type <- DIANN | LFQ-PD | DIA-PD | LFQ-Fragpipe | DIA-Fragpipe
+#
 choose_only_proteotypic_peptide <- 1
-global_q_value_thresh <- 0.01
-q_value_thresh <- 0.01
-
-cluster <- new_cluster(4)
-cluster_library(cluster, c("tidyverse", "glue", "rlang", "lazyeval"))
-
-
-min_peptide_intensity_percentile <- 0.01
-proportion_samples_below_intensity_threshold <- 0.5
 num_peptides_per_protein_thresh <- 1
 num_peptidoforms_per_protein_thresh <- 2
-
+min_peptide_intensity_percentile <- 0.01
 min_num_peptides_in_sample <- 300
-num_of_cores <- 8
+proportion_samples_below_intensity_threshold <- 0.5
+# The q-value to set for PSM, peptide and protein level rollup. 0.01 is recommended to avoid false positives.
+global_q_value_thresh <- 0.01
+q_value_thresh <- 0.01
 min_pearson_correlation_threshold <- 0.70
-
 proportion_missing_for_imputation <- 0.50
-
-## DE analysis parameters
 experimental_contrast_file <- file.path( source_dir, "contrast_strings.tab")
 plots_format <- c("pdf", "png")
 
 
-formula_string <- "~ 0 + group"
-treat_lfc_cutoff <- log2(1)
-eBayes_trend <- TRUE
-eBayes_robust <- TRUE
-de_q_val_thresh <- 0.05
-args_row_id <- "uniprot_acc"
-args_group_pattern="(\\d+)"
-plots_format <- c("pdf", "png")
+```
 
+## Read experiment data from search program
+### Your search results output table should be contained in your project directory
+```{r, message=FALSE, warning=FALSE}
+##NB we can change this to read off the experiment type and select the right file to copy to dir
+##eg if experiment == DIANN, report file... else if experiment == LFQ, PD/fragpipe file...etc
+  
+
+if (length(report_file) == 1) {
+  # Create the directory for DIA-NN output
+  dir.create(file.path(data_dir, "proteomics", "DIA_NN_Output"), recursive = TRUE, showWarnings = FALSE)
+  
+  file.copy(
+    from = report_file,
+    to = file.path(data_dir, "proteomics", "DIA_NN_Output", "report.tsv"),
+    overwrite = TRUE
+  )
+  
+  data_tbl <- vroom::vroom(file.path(data_dir, "proteomics", "DIA_NN_Output", "report.tsv"))
+} else if (length(report_file) > 1) {
+  warning("Multiple report.tsv files found. Copying the first one.")
+  
+  # Create the directory for DIA-NN output
+  dir.create(file.path(data_dir, "proteomics", "DIA_NN_Output"), recursive = TRUE, showWarnings = FALSE)
+  
+  file.copy(
+    from = report_file[1],
+    to = file.path(data_dir, "proteomics", "DIA_NN_Output", "report.tsv"),
+    overwrite = TRUE
+  )
+  
+  data_tbl <- vroom::vroom(file.path(data_dir, "proteomics", "DIA_NN_Output", "report.tsv"))
+} else {
+  stop("No report.tsv file found in the base directory or its subdirectories.")
+}
+```
+
+# Read in search data and user edited design matrix
+```{r}
+# Read in the formatted data table
+data_cln <- data_tbl |>
+        #Remove and prefix dates
+        mutate(Run = str_remove(Run, "^\\d{6}_")) |>
+        #Remove any suffix filenames
+        mutate(Run = str_remove(Run, "\\..*$")) |>
+        mutate(Precursor.Normalised = as.numeric(Precursor.Normalised)) |>
+        mutate(Precursor.Quantity = as.numeric(Precursor.Quantity)) 
+
+# Display loaded sample information
+data_cln |>
+  distinct( Run) 
+
+# Read in the user-edited design matrix
+design_matrix <- vroom::vroom(file.path(source_dir, "design_matrix.tab")) |> 
+  as.data.frame() |> 
+  `rownames<-`(.[, "Run"])
 
 ```
-```
+  
