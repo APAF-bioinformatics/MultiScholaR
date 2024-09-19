@@ -3,7 +3,6 @@
 ## Create S4 class for protomics protein level abundance data
 #'@exportClass ProteinQuantitativeData
 ProteinQuantitativeData <- setClass("ProteinQuantitativeData"
-
          , slots = c(
                       # Protein vs Sample quantitative data
                       protein_data = "data.frame"
@@ -13,9 +12,7 @@ ProteinQuantitativeData <- setClass("ProteinQuantitativeData"
                       , design_matrix = "data.frame"
                       , sample_id="character"
                       , group_id="character"
-                      , technical_replicate_id="character"
-
-                    )
+                      , technical_replicate_id="character" )
 
          , prototype = list(
            # Protein vs Sample quantitative data
@@ -25,9 +22,6 @@ ProteinQuantitativeData <- setClass("ProteinQuantitativeData"
            , sample_id="Sample_id"
            , group_id="group"
            , technical_replicate_id="replicates"
-
-
-
            )
 
          , validity = function(object) {
@@ -301,11 +295,31 @@ setMethod(f="plotRleList"
 
           })
 
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#' @export
+savePlotRleList <- function( input_list, prefix = "RLE", suffix = c("png", "pdf"), output_dir ) {
+
+  list_of_filenames <- expand_grid( column=names(input_list), suffix=suffix)  |>
+    mutate( filename= paste0( "RLE", "_", column , ".", suffix))  |>
+    left_join( tibble( column =names( input_list)
+                       ,  plots= input_list )
+               , by=join_by(column ))
+
+
+  purrr::walk2( list_of_filenames$plots
+                , list_of_filenames$filename
+                , \(.x, .y){
+                  ggsave( plot=.x, filename= file.path(output_dir, .y))
+                } )
+
+  list_of_filenames
+
+}
+
 
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
 
 #'@export
 setGeneric(name="plotPca"
@@ -313,7 +327,6 @@ setGeneric(name="plotPca"
              standardGeneric("plotPca")
            }
            , signature=c("theObject", "group_column", "label_column", "title", "geom_text_size"))
-
 
 #'@export
 setMethod(f="plotPca"
@@ -324,6 +337,45 @@ setMethod(f="plotPca"
             design_matrix <- theObject@design_matrix
             sample_id <- theObject@sample_id
 
+            frozen_protein_matrix <- protein_data |>
+              column_to_rownames(protein_id_column) |>
+              as.matrix()
+
+            frozen_protein_matrix_pca <- frozen_protein_matrix
+            frozen_protein_matrix_pca[!is.finite(frozen_protein_matrix_pca)] <- NA
+
+            if( is.na(label_column) || label_column == "") {
+              label_column <- ""
+            }
+
+            pca_plot <- plotPcaHelper( frozen_protein_matrix_pca
+                                       , design_matrix
+                                       , sample_id_column =  sample_id
+                                       , group_column = group_column
+                                       , label_column =  label_column
+                                       , title = title
+                                       , geom.text.size = geom_text_size )
+
+            return( pca_plot)
+          })
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#'@export
+setGeneric(name="plotPcaList"
+           , def=function( theObject, group_columns_list, label_column, title, geom_text_size ) {
+             standardGeneric("plotPcaList")
+           }
+           , signature=c("theObject", "group_columns_list", "label_column", "title", "geom_text_size"))
+
+#'@export
+setMethod(f="plotPcaList"
+          , signature="ProteinQuantitativeData"
+          , definition=function( theObject, group_columns_list, label_column, title, geom_text_size=8) {
+            protein_data <- theObject@protein_data
+            protein_id_column <- theObject@protein_id_column
+            design_matrix <- theObject@design_matrix
+            sample_id <- theObject@sample_id
 
             frozen_protein_matrix <- protein_data |>
               column_to_rownames(protein_id_column) |>
@@ -333,32 +385,40 @@ setMethod(f="plotPca"
             frozen_protein_matrix_pca[!is.finite(frozen_protein_matrix_pca)] <- NA
 
             if( is.na(label_column) || label_column == "") {
-
-              pca_plot_before_cyclic_loess_group <- plotPcaHelper( frozen_protein_matrix_pca
-                                                             , design_matrix
-                                                             , sample_id_column = sample_id
-                                                             , group_column =  group_column
-                                                             , label_column = ""
-                                                             , title = title
-                                                             , geom.text.size = geom_text_size )            }
-            else {
-
-              pca_plot_before_cyclic_loess_group <- plotPcaHelper( frozen_protein_matrix_pca
-                                                             , design_matrix
-                                                             , sample_id_column =  sample_id
-                                                             , group_column = group_column
-                                                             , label_column =  label_column
-                                                             , title = title
-                                                             , geom.text.size = geom_text_size )
-
+              label_column <- ""
             }
 
-            return( pca_plot_before_cyclic_loess_group)
+            pca_plots_list <- plotPcaListHelper( frozen_protein_matrix_pca
+                                                 , design_matrix
+                                                 , sample_id_column =  sample_id
+                                                 , group_columns_list = group_columns_list
+                                                 , label_column =  label_column
+                                                 , title = title
+                                                 , geom.text.size = geom_text_size )
 
+            return( pca_plots_list)
           })
 
 
+#' @export
+savePlotPcaList <- function( input_list, prefix = "PCA", suffix = c("png", "pdf"), output_dir ) {
 
+  list_of_filenames <- expand_grid( column=names(input_list), suffix=suffix)  |>
+    mutate( filename= paste0( "RLE", "_", column , ".", suffix))  |>
+    left_join( tibble( column =names( input_list)
+                       ,  plots= input_list )
+               , by=join_by(column ))
+
+
+  purrr::walk2( list_of_filenames$plots
+                , list_of_filenames$filename
+                , \(.x, .y){
+                  ggsave( plot=.x, filename= file.path(output_dir, .y))
+                } )
+
+  list_of_filenames
+
+}
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -524,15 +584,15 @@ setMethod(f="pearsonCorForSamplePairs"
 
 
             correlation_results_before_cyclic_loess <- calulatePearsonCorrelationForSamplePairsHelper( design_matrix |>
-                                                                                                   dplyr::select( !!sym(sample_id), !!sym(replicate_group_column) )
-                                                                                                 , run_id_column = sample_id
-                                                                                                 , replicate_group_column = replicate_group_column
-                                                                                                 , frozen_mat_pca_long
-                                                                                                 , num_of_cores = 1
-                                                                                                 , sample_id_column = !!sym(sample_id)
-                                                                                                 , protein_id_column = !!sym(protein_id_column)
-                                                                                                 , peptide_sequence_column = temp
-                                                                                                 , peptide_normalized_column = "Protein.Normalized")
+                                                                                                         dplyr::select( !!sym(sample_id), !!sym(replicate_group_column) )
+                                                                                                       , run_id_column = sample_id
+                                                                                                       , replicate_group_column = replicate_group_column
+                                                                                                       , frozen_mat_pca_long
+                                                                                                       , num_of_cores = 1
+                                                                                                       , sample_id_column = !!sym(sample_id)
+                                                                                                       , protein_id_column = !!sym(protein_id_column)
+                                                                                                       , peptide_sequence_column = temp
+                                                                                                       , peptide_normalized_column = "Protein.Normalized")
 
             correlation_vec_before_cyclic_loess <- correlation_results_before_cyclic_loess |>
               dplyr::filter( !str_detect(!!sym(replicate_group_column), tech_rep_remove_regex )  )
@@ -907,15 +967,8 @@ setMethod( f = "chooseBestProteinAccession"
                           , by = join_by( row_id,
                                           !!sym( theObject@protein_id_column ) ==!!sym( seqinr_accession_column)) )
 
-            if( theObject@protein_id_column != seqinr_accession_column) {
-
-               protein_log2_quant_cln <- protein_log2_quant_cln |>
-                 mutate( !!sym( theObject@protein_id_column ) :=!!sym( seqinr_accession_column) )  |>
-                 dplyr::select(-row_id, -!!sym( seqinr_accession_column))
-             } else {
-               protein_log2_quant_cln <- protein_log2_quant_cln |>
-                 dplyr::select(-row_id)
-             }
+             protein_log2_quant_cln <- protein_log2_quant_cln |>
+               dplyr::select(-row_id)
 
              theObject@protein_data <- protein_log2_quant_cln
 
@@ -953,3 +1006,38 @@ setMethod( f = "chooseBestProteinAccessionSumDuplicates"
              theObject
 
            })
+
+
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#'@export
+setGeneric(name="filterSamplesByProteinCorrelationThreshold"
+           , def=function( theObject, pearson_correlation_per_pair, min_pearson_correlation_threshold ) {
+             standardGeneric("filterSamplesByProteinCorrelationThreshold")
+           }
+           , signature=c("theObject", "pearson_correlation_per_pair", "min_pearson_correlation_threshold" ))
+
+#'@export
+setMethod( f = "filterSamplesByProteinCorrelationThreshold"
+           , signature="ProteinQuantitativeData"
+           , definition=function( theObject, pearson_correlation_per_pair, min_pearson_correlation_threshold = 0.75 ) {
+
+
+             filtered_table <- filterSamplesByProteinCorrelationThresholdHelper (
+               pearson_correlation_per_pair
+               , protein_intensity_table = theObject@protein_data
+               , min_pearson_correlation_threshold = min_pearson_correlation_threshold
+               , filename_column_x = !!sym( paste0( theObject@sample_id, ".x") )
+               , filename_column_y = !!sym( paste0( theObject@sample_id, ".y") )
+               , correlation_column = pearson_correlation )
+
+             theObject@protein_data <- filtered_table
+
+             theObject <- cleanDesignMatrix(theObject)
+
+             theObject
+             })
+
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -374,11 +374,6 @@ setMethod( f = "removePeptidesWithMissingValuesPercent"
 
            })
 
-
-
-
-##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #'@export
@@ -480,6 +475,33 @@ setMethod( f="removePeptidesWithOnlyOneReplicate"
            })
 
 
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#'@export
+
+setGeneric( name="plotPeptidesProteinsCountsPerSample"
+            , def=function( theObject ) {
+              standardGeneric("plotPeptidesProteinsCountsPerSample")
+            }
+            , signature=c("theObject" ))
+
+
+
+#'@export
+setMethod( f="plotPeptidesProteinsCountsPerSample"
+           , signature="PeptideQuantitativeData"
+           , definition = function( theObject ) {
+
+             plotPeptidesProteinsCountsPerSampleHelper( theObject@peptide_data
+                                                  , intensity_column =  !!sym( theObject@norm_quantity_column)
+                                                  , protein_id_column = !!sym(theObject@protein_id_column)
+                                                  , peptide_id_column = !!sym(theObject@peptide_sequence_column)
+                                                  , sample_id_column = !!sym( theObject@sample_id )
+                                                  , peptide_sequence_column = !!sym( theObject@peptide_sequence_column) )
+
+
+           })
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #'@export

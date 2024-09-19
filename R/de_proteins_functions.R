@@ -316,7 +316,6 @@ getRuvIIIReplicateMatrixHelper <- function(design_matrix, sample_id_column, grou
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
-
 plotPcaHelper <- function(data,
                     design_matrix,
                     sample_id_column = "Sample_ID",
@@ -356,6 +355,61 @@ plotPcaHelper <- function(data,
 
   output
 }
+
+
+
+#'@export
+plotPcaListHelper <- function(data,
+                          design_matrix,
+                          sample_id_column = "Sample_ID",
+                          group_columns_list = c("group"),
+                          label_column = NULL,
+                          title, geom.text.size = 11, ncomp = 2,
+                          ...) {
+
+  pca.res <- mixOmics::pca(t(as.matrix(data)), ncomp = ncomp)
+  proportion_explained <- pca.res$prop_expl_var
+
+  temp_tbl <- pca.res$variates$X |>
+    as.data.frame() |>
+    rownames_to_column(var = sample_id_column) |>
+    left_join(design_matrix, by = sample_id_column)
+
+
+  plotOneGgplotPca <- function( group_column ) {
+    unique_groups <- temp_tbl |> distinct(!!sym(group_column)) |> pull(!!sym(group_column))
+
+    if (is.null(label_column) || label_column == "") {
+      output <- temp_tbl |>
+        ggplot(aes(PC1, PC2, col = !!sym(group_column))) +
+        geom_point() +
+        xlab(paste("PC1 (", round(proportion_explained$X[["PC1"]] * 100, 0), "%)", sep = "")) +
+        ylab(paste("PC2 (", round(proportion_explained$X[["PC2"]] * 100, 0), "%)", sep = "")) +
+        labs(title = title) +
+        theme(legend.title = element_blank())
+    } else {
+      output <- temp_tbl |>
+        ggplot(aes(PC1, PC2, col = !!sym(group_column), label = !!sym(label_column))) +
+        geom_point() +
+        geom_text_repel(size = geom.text.size, show.legend = FALSE) +
+        xlab(paste("PC1 (", round(proportion_explained$X[["PC1"]] * 100, 0), "%)", sep = "")) +
+        ylab(paste("PC2 (", round(proportion_explained$X[["PC2"]] * 100, 0), "%)", sep = "")) +
+        labs(title = title) +
+        theme(legend.title = element_blank())
+    }
+
+    return(output)
+  }
+
+  output_list <- purrr::map( group_columns_list, plotOneGgplotPca)
+
+  output_list
+}
+
+
+
+
+
 #'@export
 plotPcaGgpairs <- function( data_matrix
                             , design_matrix
@@ -535,10 +589,10 @@ countStatDeGenes <- function(data,
   #   pull(comparison)
 
   selected_data <- data |>
-    dplyr::mutate(status = case_when({ { q_value_column } } >= q_val_thresh ~ "Not significant",
-                                     { { log_fc_column } } >= lfc_thresh & { { q_value_column } } < q_val_thresh ~ "Significant and Up",
-                                     { { log_fc_column } } < lfc_thresh & { { q_value_column } } < q_val_thresh ~ "Significant and Down",
-                                     TRUE ~ "Not significant"))
+    dplyr::mutate(status = case_when( { { q_value_column } } >= q_val_thresh ~ "Not significant"
+                                      , { { log_fc_column } } >= lfc_thresh & { { q_value_column } } < q_val_thresh ~ "Significant and Up"
+                                      , { { log_fc_column } } < lfc_thresh & { { q_value_column } } < q_val_thresh ~ "Significant and Down"
+                                      , TRUE ~ "Not significant"))
 
   counts <- selected_data |>
     group_by(status) |>
@@ -564,12 +618,12 @@ countStatDeGenes <- function(data,
 #' @param comparison_column The name of the column describing the contrasts or comparison between groups (tidyverse style).
 #' @param expression_column The name of the column that will contain the formula expressions of the contrasts.
 #'@export
-printCountDeGenesTable <- function(list_of_de_tables,
-                                   list_of_descriptions,
-                                   formula_string = "analysis_type ~ comparison",
-                                   facet_column = analysis_type,
-                                   comparison_column = comparison,
-                                   expression_column = expression) {
+printCountDeGenesTable <- function(  list_of_de_tables
+                                   , list_of_descriptions
+                                   , formula_string = "analysis_type ~ comparison"
+                                   , facet_column = analysis_type
+                                   , comparison_column = comparison
+                                   , expression_column = expression) {
 
   count_stat_de_genes_helper <- function(de_table, description) {
     purrr::map(de_table, \(x){ countStatDeGenes(x,
@@ -643,18 +697,18 @@ printCountDeGenesTable <- function(list_of_de_tables,
 #'   blue = Absolute Log fold-change < 1 and q-value < threshold
 #'   black = all other values
 #' @export
-getSignificantData <- function(list_of_de_tables,
-                               list_of_descriptions,
-                               row_id = uniprot_acc,
-                               p_value_column = p.mod,
-                               q_value_column = q.mod,
-                               fdr_value_column = fdr.mod,
-                               log_q_value_column = lqm,
-                               log_fc_column = logFC,
-                               comparison_column = comparison,
-                               expression_column = log_intensity,
-                               facet_column = analysis_type,
-                               q_val_thresh = 0.05) {
+getSignificantData <- function( list_of_de_tables
+                               , list_of_descriptions
+                               , row_id = uniprot_acc
+                               , p_value_column = p.mod
+                               , q_value_column = q.mod
+                               , fdr_value_column = fdr.mod
+                               , log_q_value_column = lqm
+                               , log_fc_column = logFC
+                               , comparison_column = comparison
+                               , expression_column = log_intensity
+                               , facet_column = analysis_type
+                               , q_val_thresh = 0.05) {
 
   get_row_binded_table <- function(de_table_list, description) {
     output <- purrr::map(de_table_list,
@@ -705,11 +759,11 @@ getSignificantData <- function(list_of_de_tables,
 #' @param q_val_thresh A numerical value specifying the q-value threshold for statistically significant proteins.
 #' @param formula_string The formula string used in the facet_grid command for the ggplot scatter plot.
 #' @export
-plotVolcano <- function(selected_data,
-                        log_q_value_column = lqm,
-                        log_fc_column = logFC,
-                        q_val_thresh = 0.05,
-                        formula_string = "analysis_type ~ comparison") {
+plotVolcano <- function( selected_data
+                         , log_q_value_column = lqm
+                         , log_fc_column = logFC
+                         , q_val_thresh = 0.05
+                         , formula_string = "analysis_type ~ comparison" ) {
 
   volplot_gg.all <- selected_data |>
     ggplot(aes(y = { { log_q_value_column } }, x = { { log_fc_column } })) +

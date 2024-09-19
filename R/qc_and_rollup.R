@@ -91,27 +91,27 @@ plotNumSamplesPerMachine <- function( metadata_table
 }
 
 
-#' plotPeptidesProteinsCountsPerSample
+#' plotPeptidesProteinsCountsPerSampleHelper
 #' @description Plot the number of proteins and peptides identified per sample
 #' @export
-plotPeptidesProteinsCountsPerSample <- function( input_table
+plotPeptidesProteinsCountsPerSampleHelper <- function( input_table
                                                  , intensity_column = Peptide.RawQuantity
                                                  , protein_id_column = Protein.Ids
                                                  , peptide_id_column = Stripped.Sequence
-                                                 , replicate_id_column = Run
+                                                 , sample_id_column = Run
                                                  , peptide_sequence_column = Stripped.Sequence ) {
 
   num_proteins_per_sample <- input_table |>
     dplyr::filter( !is.na(  {{intensity_column}} )) |>
-    distinct( {{replicate_id_column}}, {{protein_id_column}} ) |>
-    group_by( {{replicate_id_column}} ) |>
+    distinct( {{sample_id_column}}, {{protein_id_column}} ) |>
+    group_by( {{sample_id_column}} ) |>
     summarise( count = n()  ) |>
     ungroup()
 
   num_peptides_per_sample <- input_table |>
     dplyr::filter( !is.na(  {{intensity_column}} )) |>
-    distinct( {{replicate_id_column}}, {{protein_id_column}}, {{peptide_id_column}} ) |>
-    group_by( {{replicate_id_column}}) |>
+    distinct( {{sample_id_column}}, {{protein_id_column}}, {{peptide_id_column}} ) |>
+    group_by( {{sample_id_column}}) |>
     summarise( count = n()  ) |>
     ungroup()
 
@@ -119,12 +119,12 @@ plotPeptidesProteinsCountsPerSample <- function( input_table
     mutate( type = "Protein" ) |>
     bind_rows( num_peptides_per_sample |>
                  mutate( type = "Peptide")) |>
-    pivot_wider( id_cols = {{replicate_id_column}}
+    pivot_wider( id_cols = {{sample_id_column}}
                  , names_from = type
                  , values_from = count)
 
   output_plot <- combined_counts |>
-    ggplot( aes( reorder({{replicate_id_column}}, Peptide) )) +
+    ggplot( aes( reorder({{sample_id_column}}, Peptide) )) +
     geom_point(aes(y = Peptide/10, shape="Peptide" ),  show.legend = TRUE) +
     geom_point(aes(y = Protein, shape="Protein"  ),  show.legend = TRUE) +
     scale_y_continuous(name = "Protein",
@@ -565,7 +565,7 @@ calulatePearsonCorrelationForSamplePairsHelper <- function( samples_id_tbl
 #'@param filename_id_column A string indicating the name of column that contains the sample ID or Run ID in the data frame `peptide_keep_samples_with_min_num_peptides`.
 #'@return A table without samples that are poorly correlated with the rest of the samples in the technical replicate group. Contains the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalized peptide abundances
 #' @export
-filterSamplesByCorrelationThreshold <- function(pearson_correlation_per_pair
+filterSamplesByPeptideCorrelationThreshold <- function(pearson_correlation_per_pair
                                                 , peptide_keep_samples_with_min_num_peptides
                                                 , min_pearson_correlation_threshold = 0.75
                                                 , filename_column_x = ms_filename.x
@@ -589,7 +589,7 @@ filterSamplesByCorrelationThreshold <- function(pearson_correlation_per_pair
 }
 
 #' @export
-findSamplesPairBelowCorrelationThreshold <- function(pearson_correlation_per_pair
+findSamplesPairBelowPeptideCorrelationThreshold <- function(pearson_correlation_per_pair
                                                      , peptide_keep_samples_with_min_num_peptides
                                                      , min_pearson_correlation_threshold = 0.75
                                                      , filename_column_x = ms_filename.x
@@ -614,6 +614,41 @@ findSamplesPairBelowCorrelationThreshold <- function(pearson_correlation_per_pai
 
 }
 
+
+#---------------------------------------------------------------------------------------
+
+
+#'@description Remove samples which is correlated with any technical replicate samples
+#'@param protein_intensity_table A data frame with the following columns: 1. ID of technical replicate group, 2. sample file name X, 3. sample file name Y, 4. Pearson correlation of the abundances of peptides between sample X and Y.
+#'@param peptide_keep_samples_with_min_num_peptides A data frame with the proteins as rows and samples ID as columns.
+#'@param min_pearson_correlation_threshold Minimum pearson correlation for a pair of files to be considered to be consistent and kept for further analysis
+#'@param filename_column_x Name of column containing the sample file name X (for a pair of sample in the same technical replicate group). Tidyverse column header format, not a string.
+#'@param filename_column_y Name of column containing the sample file name Y (for a pair of sample in the same technical replicate group). Tidyverse column header format, not a string.
+#'@param correlation_column Name of column containing the Pearson's correlation score between Sample X and Y. Tidyverse column header format, not a string.
+#'@param filename_id_column A string indicating the name of column that contains the sample ID or Run ID in the data frame `peptide_keep_samples_with_min_num_peptides`.
+#'@return A table without samples that are poorly correlated with the rest of the samples in the technical replicate group. Contains the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalized peptide abundances
+#' @export
+filterSamplesByProteinCorrelationThresholdHelper <- function(pearson_correlation_per_pair
+                                                       , protein_intensity_table
+                                                       , min_pearson_correlation_threshold = 0.75
+                                                       , filename_column_x = ms_filename.x
+                                                       , filename_column_y = ms_filename.y
+                                                       , correlation_column = pearson_correlation ) {
+  # Samples to keep include all those pairs of samples with correlation score passing threshold
+  samples_to_keep <-  pearson_correlation_per_pair |>
+    dplyr::filter( {{correlation_column}} >= min_pearson_correlation_threshold) |>
+    pivot_longer( cols =c({{filename_column_x}}, {{filename_column_y}})
+                  , values_to = "temp_column" ) |>
+    dplyr::distinct( temp_column )
+
+  # Samples in the table to keep
+  samples_to_keep_subset <- colnames(protein_intensity_table) %in% (samples_to_keep |> pull( temp_column ))
+
+  samples_above_correlation_theshold <-   protein_intensity_table[, samples_to_keep_subset]
+
+  samples_above_correlation_theshold
+
+}
 
 #---------------------------------------------------------------------------------------
 #' @description Remove peptides that only have data for one technical replicate for all sample.
