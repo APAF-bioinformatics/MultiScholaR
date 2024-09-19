@@ -49,7 +49,7 @@ p_load(BiocManager, tidyverse, seqinr, lazyeval, rlang, glue, GGally, here, tibb
 
 ```
 
-## Directories & Hardware Management
+## Directories, Hardware Management & Orgnamism Annotation
 #### Set and create directories for outputs and project management, set number of cores for threaded tasks
 ##### IT IS HIGHLY RECOMMENDED YOU DO NOT EDIT THIS SECTION UNLESS YOU PLAN TO CHANGE THE PROJECT STRUCTURE THROUGHOUT #####
 ```{r}
@@ -72,6 +72,9 @@ c(
 cluster <- new_cluster(4)
 cluster_library(cluster, c("tidyverse", "glue", "rlang", "lazyeval"))
 num_of_cores <- 8
+
+
+```
 ```
 
 
@@ -80,7 +83,8 @@ num_of_cores <- 8
 ```{r}
 # Please select one of these from the list
 experiment_type <- DIANN | LFQ-PD | DIA-PD | LFQ-Fragpipe | DIA-Fragpipe
-#
+# Please set the name of your fasta file here in the root directory if you already have it
+fasta_file <- your_organism.fasta
 choose_only_proteotypic_peptide <- 1
 num_peptides_per_protein_thresh <- 1
 num_peptidoforms_per_protein_thresh <- 2
@@ -156,3 +160,819 @@ design_matrix <- vroom::vroom(file.path(source_dir, "design_matrix.tab")) |>
 
 ```
   
+
+```{r}
+peptide_data <- new( "PeptideQuantitativeData"
+  
+  # Protein vs Sample quantitative data
+  ,peptide_data = data_cln
+  , protein_id_column = "Protein.Ids"
+  , peptide_sequence_column = "Stripped.Sequence"
+  , q_value_column = "Q.Value"
+  , global_q_value_column = "Global.Q.Value"
+  , proteotypic_peptide_sequence_column = "Proteotypic"
+  , raw_quantity_column = "Precursor.Quantity"
+  , norm_quantity_column = "Precursor.Normalised"
+  , is_logged_data = FALSE
+  
+  # Design Matrix Information
+  , design_matrix = design_matrix
+  , sample_id="Run"
+  , group_id="group"
+  , technical_replicate_id="replicates"
+)
+
+```
+
+
+## Filter by peptide q-value and number of proteotypic peptides
+```{r}
+
+ search_srl_quant_cln <-  srlQvalueProteotypicPeptideCleanObj( theObject = peptide_data
+  , q_value_thresh = q_value_thresh
+  , global_q_value_thresh = global_q_value_thresh
+  , choose_only_proteotypic_peptide = choose_only_proteotypic_peptide
+  , srl_quant_columns =  c("Run"
+                           , "Precursor.Id", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence"
+                           , "Precursor.Charge"
+                           , "Precursor.Quantity", "Precursor.Normalised") )
+
+search_srl_quant_cln
+
+```
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+## Roll-up of precursor to peptide level intensity value quantitation
+```{r}
+peptide_normalized_tbl <- rollUpPrecursorToPeptideObj( search_srl_quant_cln, cluster=cluster )
+
+
+peptide_normalized_tbl
+```
+
+## Remove peptide based on the intensity threshold and the proportion of samples below the threshold
+```{r}
+
+peptide_normalized_pif_cln <- removePeptidesWithMissingValuesPercentObj( peptide_normalized_tbl
+                                  , group_id_column = "group"
+                                  , max_perc_below_thresh_per_group = 50
+                                  , max_perc_of_groups_below_thresh = 50
+                                  , min_peptide_intensity_percentile = 1)
+
+
+peptide_normalized_tbl@peptide_data |> distinct(Protein.Ids) |> nrow()
+
+peptide_normalized_pif_cln@peptide_data |> distinct(Protein.Ids) |> nrow()
+
+peptide_normalized_pif_cln@peptide_data |> distinct(Protein.Ids, Stripped.Sequence) |> nrow()
+```
+
+
+
+## Keep the proteins only if they have two or more peptides.  
+```{r}
+
+removed_peptides_with_less_than_two_peptides <- filterMinNumPeptidesPerProteinObj( peptide_normalized_pif_cln
+                                                                                   , num_peptides_per_protein_thresh = num_peptides_per_protein_thresh
+                                                                                   , num_peptidoforms_per_protein_thresh = num_peptidoforms_per_protein_thresh                                                                                   
+                                                                                   , cluster) 
+
+
+removed_peptides_with_less_than_two_peptides@peptide_data |> distinct(Protein.Ids) |> nrow()
+removed_peptides_with_less_than_two_peptides@peptide_data |> distinct(Protein.Ids, Stripped.Sequence) |> nrow()
+
+```
+
+
+## Remove samples below the minimum number of peptides after passing intensity threshold
+```{r}
+peptide_keep_samples_with_min_num_peptides <- filterMinNumPeptidesPerSampleObj(theObject = removed_peptides_with_less_than_two_peptides
+        , min_num_peptides_in_sample = min_num_peptides_in_sample
+        , cluster = cluster
+        , inclusion_list = c(  ))
+
+
+peptide_keep_samples_with_min_num_peptides@peptide_data |> distinct(Run)
+
+peptide_keep_samples_with_min_num_peptides@peptide_data |> distinct(Protein.Ids) |> nrow()
+
+peptide_keep_samples_with_min_num_peptides@peptide_data |> distinct(Protein.Ids, Stripped.Sequence) |> nrow()
+
+```
+
+## Show the distinct number of Samples to manually check how many samples are removed from the previous step
+```{r}
+peptide_keep_samples_with_min_num_peptides@peptide_data |>
+  distinct(Run) |>
+  nrow()
+```
+
+
+## Remove peptides with only one replicate in the data set
+```{r}
+
+removed_peptides_with_only_one_replicate <- removePeptidesWithOnlyOneReplicateObj(peptide_keep_samples_with_min_num_peptides
+        , column_to_filter_on = "group"
+        , cluster = cluster)
+
+
+removed_peptides_with_only_one_replicate@peptide_data |> distinct(Protein.Ids) |> nrow()
+removed_peptides_with_only_one_replicate@peptide_data |> distinct(Protein.Ids, Stripped.Sequence) |> nrow()
+
+```
+
+
+## Missing values imputation using technical replicates
+* Among technical replicate samples, impute the missing value using the average of the technical replicate samples, if there are high proportion of technical replicate samples with values (and not NA). 
+```{r}
+# peptide_values_imputed <- peptideMissingValueImputationObj( theObject = removed_peptides_with_only_one_replicate
+#         , imputed_value_column = "Peptide.Imputed"
+#         , cluster = cluster
+#         , prop_missing = proportion_missing_for_imputation )
+
+
+peptide_values_imputed <- removed_peptides_with_only_one_replicate
+
+peptide_values_imputed@peptide_data |> distinct(Protein.Ids) |> nrow()
+
+#head(peptide_values_imputed)
+```
+
+
+
+
+
+## Save a copy of the data matrix with the imputated values from techical replicates 
+```{r}
+peptide_values_imputed_file <- file.path( results_dir
+        , "peptide_qc"
+        , "peptide_values_imputed.tsv")
+
+vroom::vroom_write( peptide_values_imputed@peptide_data |>
+        mutate( Q.Value = 0.0009
+        , PG.Q.Value = 0.009 ) |>
+        mutate( Peptide.Imputed = ifelse( is.na(Peptide.RawQuantity
+), 0, Peptide.RawQuantity
+))
+        , peptide_values_imputed_file )
+```
+
+
+## Read in the fasta organism specific fasta file to extract details on the protein sequences
+```{r}
+tmp_dir <- file.path(results_dir, "cache")
+dir.create(tmp_dir, recursive=TRUE)
+
+fasta_meta_file<-file.path(tmp_dir,"aa_seq_tbl.RDS")
+
+fasta_file <- file.path( data_dir, "proteomics", "UniProt", "UP000002032_469008.fasta")
+
+if (file.exists(fasta_meta_file))
+{
+  aa_seq_tbl <- readRDS(fasta_meta_file)
+}else{
+  aa_seq_tbl <- parseFastaFile(fasta_file)
+  saveRDS(aa_seq_tbl, fasta_meta_file)
+}
+
+```
+
+## Perform peptide-to-protein roll-up 
+* Intensity values from peptides are aggregated into a protein level using a specific algorithm, implemented by the IQ tool (which is the same algorithm as DIA-NN's maxlfq code). IQ just runs faster as it was written in C++.
+* Use IQ instead of DIA-NN's maxlfq (https://github.com/tvpham/iq)
+
+```{r}
+
+
+process_long_format(input_filename = peptide_values_imputed_file
+        , output_filename = file.path(results_dir, "protein_qc", "iq_output_file.txt")
+        , sample_id = "Run"
+        , primary_id = "Protein.Ids"
+        , secondary_id = "Stripped.Sequence"
+        , intensity_col = "Peptide.Imputed"
+        , filter_double_less = c("Q.Value" = "0.01", "PG.Q.Value" = "0.01")
+        , normalization = "none")
+
+
+```
+
+
+## Read in the IQ output file 
+That is because the results are saved in an Excel file (and no objects are returned by the IQ function)
+```{r}
+dir.create( file.path(results_dir, "proteomics", "protein_qc"), recursive=TRUE  )
+
+protein_log2_quant <- vroom::vroom( file.path(results_dir, "protein_qc", "iq_output_file.txt"))
+
+
+nrow( protein_log2_quant ) 
+
+```
+
+## Create Protein Quantitative Data Object
+```{r}
+protein_obj <- ProteinQuantitativeData( 
+  # Protein Data Matrix Information
+  protein_data=protein_log2_quant
+  , protein_id_column= "Protein.Ids"
+  # Design Matrix Information
+  , design_matrix = design_matrix
+  , sample_id="Run"
+  , group_id="group"
+  , technical_replicate_id="replicates"
+)
+```
+
+## Arrange the protein ID's list to opt for the best accession in the list to be placed first
+It requires the information from the fasta file to choose the best accession for the protein ID.
+```{r}
+
+
+protein_log2_quant_cln <- chooseBestProteinAccessionObj( theObject = protein_obj
+                                                      , delim = ";"
+                                                      , seqinr_obj = aa_seq_tbl
+                                                      , seqinr_accession_column = "uniprot_acc")
+```
+
+
+## Remove protein based on the intensity threshold and the proportion of samples below the threshold
+The threshold is determined by the 1% quantile of the protein intensity values.
+```{r}
+protein_normalized_pif_cln <-  removeRowsWithMissingValuesPercentObj(protein_log2_quant_cln
+                                      , ruv_group_id_column =  'group'
+        , max_perc_below_thresh_per_group = 50
+        , max_perc_of_groups_below_thresh = 50
+        , min_protein_intensity_percentile = 1        
+        )
+
+
+
+protein_normalized_pif_cln@protein_data |> distinct(Protein.Ids) |> nrow()
+
+```
+
+## summarize data from duplicate proteins
+
+```{r}
+protein_normalized_pif_cln@protein_data <- protein_normalized_pif_cln@protein_data |>
+  group_by(Protein.Ids) |>
+  summarise(across(matches("\\d+"), ~ mean(.x, na.rm = TRUE))) |>
+  ungroup()
+             
+```
+
+## Remove proteins with only one replicate in the data set
+```{r}
+remove_proteins_with_only_one_rep <- removeProteinsWithOnlyOneReplicateObj (  protein_normalized_pif_cln, cluster  )
+
+vroom::vroom_write(remove_proteins_with_only_one_rep@protein_data, file.path( results_dir, "protein_qc", "remove_proteins_with_only_one_rep.tsv"))
+
+remove_proteins_with_only_one_rep@protein_data |> distinct(Protein.Ids) |> nrow()
+```
+
+
+## RLE plot before Cyclic loess normalization
+```{r}
+
+rle_plot_before_cyclic_loess <- plotRleObj(remove_proteins_with_only_one_rep, "group", ylim=c(-0.75, 0.75))
+save_plot(rle_plot_before_cyclic_loess, results_dir, "rle_plot_before_cyclic_loess")
+rle_plot_before_cyclic_loess
+
+```
+
+
+
+## Plot PCA plot before Cyclic loess normalization
+```{r}
+pca_plot_before_cyclic_loess_group <-  plotPcaObj( remove_proteins_with_only_one_rep
+            , group_column = "group"
+            , label_column = ""
+            , title = ""
+            , geom_text_size = 8 )
+
+save_plot(pca_plot_before_cyclic_loess_group, results_dir, "pca_plot_before_cyclic_loess")
+pca_mixomics_before_cyclic_loess <- getPcaMatrixObj(remove_proteins_with_only_one_rep)
+pca_plot_before_cyclic_loess_group
+```
+
+
+# Calculate Pearson correlation between Tech replicates
+
+## Calculate Pearson correlation between each pair of technical replicate samples, before cyclic loess and before RUVIII-C
+```{r}
+correlation_vec <- pearsonCorForSamplePairsObj( remove_proteins_with_only_one_rep
+                                                , tech_rep_remove_regex = "pool")
+
+pearson_correlation_pair_before_cyclic_loess <- correlation_vec |>
+ ggplot( aes( pearson_correlation)) +
+  geom_histogram( breaks = seq(min(round(correlation_vec$pearson_correlation-0.5,2), na.rm=TRUE), 1, 0.001)) +
+   scale_y_continuous(breaks = seq(0, 4, 1), limits = c(0, 4)) +
+  xlab("Pearson Correlation") +
+  ylab("Counts") +
+  theme( panel.grid.major = element_blank()
+         , panel.grid.minor = element_blank()
+         , panel.background = element_blank())
+
+save_plot(pearson_correlation_pair_before_cyclic_loess, results_dir, "pearson_correlation_pair_before_cyclic_loess")
+pearson_correlation_pair_before_cyclic_loess
+```
+
+
+
+## Perform cyclic loess normalization
+```{r}
+
+
+normalized_frozen_protein_matrix_obj <- normalizeBetweenArraysObj( remove_proteins_with_only_one_rep
+         , method = "cyclicloess" )
+
+```
+
+
+## Calculate Pearson correlation between each pair of technical replicate samples, after cyclic loess and before RUVIII-C
+```{r}
+
+correlation_vec <- pearsonCorForSamplePairsObj( normalized_frozen_protein_matrix_obj
+                                                , tech_rep_remove_regex = "pool")
+
+pearson_correlation_pair_before_ruvIIIc <- correlation_vec |>
+ ggplot( aes( pearson_correlation)) +
+  geom_histogram( breaks = seq(min(round(correlation_vec$pearson_correlation-0.5,2), na.rm=TRUE), 1, 0.001)) +
+   scale_y_continuous(breaks = seq(0, 4, 1), limits = c(0, 4)) +
+  xlab("Pearson Correlation") +
+  ylab("Counts") +
+  theme( panel.grid.major = element_blank()
+         , panel.grid.minor = element_blank()
+         , panel.background = element_blank())
+
+save_plot(pearson_correlation_pair_before_ruvIIIc, results_dir, "pearson_correlation_pair_before_ruvIIIc")
+pearson_correlation_pair_before_ruvIIIc
+```
+
+
+
+## Plot RLE Plot before RUVIII-c
+```{r}
+rle_plot_before_ruvIIIc_group <-   plotRleObj(normalized_frozen_protein_matrix_obj, "group", ylim=c(-3, 3))
+
+save_plot(rle_plot_before_ruvIIIc_group, results_dir, "rle_plot_before_ruvIIIc_by_group")
+rle_plot_before_ruvIIIc_group
+```
+
+## Plot PCA plot before RUVIII-C
+```{r}
+
+pca_plot_before_ruvIIIc_group <- plotPcaObj( normalized_frozen_protein_matrix_obj
+            , group_column = "group"
+            , label_column = ""
+            , title = ""
+            , geom_text_size = 8 )
+
+pca_mixomics_before_ruvIIIc <- getPcaMatrixObj( normalized_frozen_protein_matrix_obj)
+
+save_plot(pca_plot_before_ruvIIIc_group, results_dir, "pca_plot_before_ruvIIIc_by_group")
+pca_plot_before_ruvIIIc_group
+
+```
+
+## Compare each patient using ANOVA to identify negative controls
+```{r}
+control_genes_index <-  getNegCtrlProtAnovaObj(normalized_frozen_protein_matrix_obj
+                                               , ruv_group_id_column = "group"
+                                            , num_neg_ctrl = 100
+                                            , q_val_thresh = 0.05
+                                            , fdr_method = "BH" )
+
+which(control_genes_index)
+
+
+```
+
+## Draw canonical correlation plot
+The k value with the highest separation between All and 'Control' group is selected as the best k. It is a heuristic and the best_k value can be adjusted manually, if required.
+
+```{r}
+
+cancorplot_r1 <- ruvCancorObj(normalized_frozen_protein_matrix_obj
+                              ,ctl = control_genes_index
+                              ,ncomp= 5
+                              ,ruv_group_id_column = "replicates")
+
+cancorplot_r1 +
+        xlim(1, ncol(normalized_frozen_protein_matrix_obj@protein_data)-1)
+
+# Save the plot
+save_plot(final_plot, results_dir, "canonical_correlation_plot")
+
+# Display the plot
+final_plot
+
+# Find the best k
+best_k <- findBestK(cancorplot_r1)
+
+# Display the best k
+best_k
+
+```
+
+## Run RUVIII-C
+```{r}
+ruv_normalized_results_temp_obj <- ruvIII_C_VaryingObj( normalized_frozen_protein_matrix_obj
+                     , ruv_group_id_column = "group"
+                     , k = best_k
+                     , ctl = control_genes_index) 
+```
+
+```{r}
+## Sometimes RUV will blank out some of the values, so we need to remove proteins if too many values are blanked out 
+
+ruv_normalized_results_cln_obj <-  removeRowsWithMissingValuesPercentObj(theObject = ruv_normalized_results_temp_obj
+                                      , ruv_group_id_column =  'group'
+                           , max_perc_below_thresh_per_group = 50
+                           , max_perc_of_groups_below_thresh = 50
+                           , min_protein_intensity_percentile = 1 )
+
+```
+
+
+
+## Plot PCA plot after RUVIII-C
+```{r}
+pca_plot_after_ruvIIIc_group <- plotPcaObj( ruv_normalized_results_cln_obj
+        , group_column = "group"
+        , label_column = ""
+        , title = ""
+        , geom_text_size = 8 )
+
+save_plot(pca_plot_after_ruvIIIc_group, results_dir, "pca_plot_after_ruvIIIc")
+
+pca_plot_after_ruvIIIc_group
+
+pca_mixomics_after_ruvIIIc <- getPcaMatrixObj(ruv_normalized_results_cln_obj)
+
+```
+
+
+## Plot RLE Plot after RUVIII-C
+```{r}
+
+rle_plot_after_ruvIIIc_group <- plotRleObj( ruv_normalized_results_cln_obj
+                                            , group="group"
+                                            , ylim=c(-3, 3) )
+
+save_plot(rle_plot_after_ruvIIIc_group, results_dir, "rle_plot_after_ruvIIIc_by_group")
+
+rle_plot_after_ruvIIIc_group
+```
+
+## Calculate Pearson correlation between each pair of technical replicate samples after RUVIII-C
+
+```{r}
+ruv_correlation_vec <-  pearsonCorForSamplePairsObj(ruv_normalized_results_cln_obj
+                            , tech_rep_remove_regex = "pool" ) 
+
+ruv_pearson_correlation_pair <- ruv_correlation_vec |>
+ ggplot( aes( pearson_correlation)) +
+  geom_histogram( breaks = seq(min(round(ruv_correlation_vec$pearson_correlation-0.5,2), na.rm=TRUE), 1, 0.001)) +
+   scale_y_continuous(breaks = seq(0, 15, 1), limits = c(0, 15)) +
+  xlab("Pearson Correlation") +
+  ylab("Counts") +
+  theme( panel.grid.major = element_blank()
+         , panel.grid.minor = element_blank()
+         , panel.background = element_blank())
+
+save_plot(ruv_pearson_correlation_pair, results_dir, "ruv_pearson_correlation_pair")
+
+ruv_pearson_correlation_pair
+
+```
+
+
+## RUV normalized data for de analysis
+
+After RUVIII-C is performed, some proteins will have their values blanked out as NA by RUV (most likely assoicated with their batch effects).
+Therefore, we need to remove proteins with high proportion of missing values in each group before procceding to DE analysis.
+```{r}
+
+ruv_normalized_for_de_analysis <- ruv_normalized_results_cln_obj@protein_data |>
+  pivot_longer(cols = !matches("Protein.Ids"), names_to = "replicates", values_to = "Log2.Protein.Imputed") |>
+  dplyr::select(Protein.Ids, replicates, Log2.Protein.Imputed) |>
+  mutate(Protein.Imputed = 2^Log2.Protein.Imputed) |>
+  mutate(Protein.Imputed = ifelse(is.na(Protein.Imputed), NA, Protein.Imputed)) |>
+  pivot_wider(id_cols = Protein.Ids, names_from = replicates, values_from = Protein.Imputed) |>
+  dplyr::rename(uniprot_acc = "Protein.Ids")
+
+# Write results
+write_results(ruv_normalized_results_cln_obj@protein_data, "ruv_normalized_results_cln_with_replicates.tsv")
+write_results(ruv_normalized_for_de_analysis, "ruv_normalized_results.tsv")
+write_results(ruv_normalized_for_de_analysis |> dplyr::mutate(across(!matches("uniprot_acc"), log2)), "ruv_normalized_results_log.tsv")
+write_results(design_matrix |> distinct(replicates, group) |> dplyr::rename(Sample_ID = replicates), "design_matrix_avrg.tsv")
+
+ruv_normalized_for_de_analysis_mat <- ruv_normalized_for_de_analysis |>
+  column_to_rownames("uniprot_acc") |>
+  as.matrix()
+
+
+```
+
+###YOU ARE HERE###
+## Create input files for ProteomeRiver
+```{r}
+
+vroom::vroom_write(ruv_normalized_for_de_analysis
+        , file.path(results_dir, "protein_qc", "ruv_normalized_results.tsv"))
+
+
+ruv_normalized_for_de_analysis <- vroom::vroom(file.path(results_dir
+        , "protein_qc"
+        , "ruv_normalized_results.tsv"))
+
+uniprot_tbl <- vroom::vroom(file.path( data_dir, "proteomics", "UniProt", "uniprotkb_proteome_UP000002032_2024_08_07.tsv.gz" ))
+
+
+mock_protein_groups <- ruv_normalized_for_de_analysis |>
+        left_join(  uniprot_tbl
+                , by = join_by( uniprot_acc == Entry)) |>
+        dplyr::rename(gene_names = `Gene Names`) |>
+        dplyr::mutate( gene_names = purrr::map_chr( gene_names, \(x){ str_split(x, " ")[[1]][1]} ) ) |> # Only take the first gene name
+        dplyr::mutate( id = row_number() -1 ) |>
+        dplyr::mutate( protein_ids = uniprot_acc) |>
+        dplyr::select( id, protein_ids, gene_names, matches("(\\d+|Ref)"))
+
+vroom::vroom_write( mock_protein_groups
+        , file.path(results_dir, "protein_qc", "mock_proteinGroups.tsv"))
+```
+# maxquant_row_id	num_gene_names	gene_names	uniprot_acc	is_unique	protein_ids
+
+* I need to import the UniProt tab file
+* Then I need to recreate the cleaned_accession_to_protein_group.tab file
+```{r}
+#  ruv_normalized_results <- saveRDS( file.path( results_dir, "protein_qc", "ruv_normalized_results.RDS"))
+
+
+cleaned_accession_table <- data.frame( protein_ids = setdiff(colnames(ruv_normalized_results_cln_obj@protein_data), "Protein")) |>
+        left_join( uniprot_tbl
+        , by = join_by( protein_ids == Entry)) |>
+        mutate( maxquant_row_id = row_number() -1 ) |>
+        mutate( num_gene_names =   1) |>
+        mutate( gene_names = purrr::map_chr( `Gene Names`, \(x){ str_split(x, " ")[[1]][1]} ) ) |>
+        mutate( is_unique = "Unique") |>
+        mutate ( uniprot_acc = protein_ids) |>
+        dplyr::select(maxquant_row_id,	num_gene_names,	gene_names,	uniprot_acc,	is_unique,	protein_ids )
+
+cleaned_accession_table
+
+
+vroom::vroom_write(cleaned_accession_table
+        , file.path(results_dir, "clean_proteins", "cleaned_accession_to_protein_group.tab"))
+
+
+```
+
+
+## Quick and simple heatmap to visualize the data
+```{r}
+heatmap(log2(ruv_normalized_for_de_analysis_mat[,setdiff(colnames(ruv_normalized_for_de_analysis_mat),"pool")]))
+```
+
+
+## Join PCA scatter plots and PCA density plots
+```{r}
+pca_variates_list <- list( pca_mixomics_before_cyclic_loess
+                           ,pca_mixomics_before_ruvIIIc
+                           ,pca_mixomics_after_ruvIIIc )
+
+
+plotPcaDensity <- function( input_table, variable) {
+  input_table |>
+  ggplot( aes( {{variable}}, fill = replicates , colour = replicates, alpha=0.4 )) +
+  geom_density( )  +    
+  scale_alpha_continuous( guide = "none" ) +
+  scale_fill_discrete(name = "Batch") +
+  scale_colour_discrete(name = "Batch") +
+  theme( panel.grid.major = element_blank()
+         , panel.grid.minor = element_blank()
+         , panel.background = element_blank()) 
+  
+}
+
+pca_dencity_pc1_list <- purrr::map( pca_variates_list, \(x) { plotPcaDensity(x, PC1) }) 
+pca_dencity_pc2_list <- purrr::map( pca_variates_list, \(x) { plotPcaDensity(x, PC2) }) 
+
+```
+
+
+
+
+# RUV, RLE, Pearson correlation
+```{r}
+pca_ruv_rle_correlation_merged <- pca_plot_before_cyclic_loess_group + xlim(-40, 45) + ylim(-30, 25) + ggtitle("a)") +
+  theme(text=element_text(size=15)) +
+  theme( panel.grid.major = element_blank()
+         , panel.grid.minor = element_blank()
+         , panel.background = element_blank()) + 
+  pca_plot_before_ruvIIIc_group + xlim(-40, 45) + ylim(-30, 25) + ggtitle("b)") +
+  theme(text=element_text(size=15)) +
+  theme( panel.grid.major = element_blank()
+         , panel.grid.minor = element_blank()
+         , panel.background = element_blank()) +
+  pca_plot_after_ruvIIIc_group + xlim(-40, 45) + ylim(-30, 25) + ggtitle("c)") +
+  theme(text=element_text(size=15)) +
+  theme( panel.grid.major = element_blank()
+         , panel.grid.minor = element_blank()
+         , panel.background = element_blank()) +
+  plot_layout(  guides = 'collect') +
+  
+  
+  # pca_dencity_pc1_list[[1]] + ggtitle("d)") + ylab("Density") +   
+  # theme(text=element_text(size=15)) +
+  # 
+  # pca_dencity_pc1_list[[2]] + ggtitle("e)") + ylab("Density") +  
+  # theme(text=element_text(size=15)) +
+  # 
+  # pca_dencity_pc1_list[[3]] + ggtitle("f)") + ylab("Density") +  
+  # theme(text=element_text(size=15)) +
+  # 
+  # pca_dencity_pc2_list[[1]] + ggtitle("g)") + ylab("Density") +  
+  # theme(text=element_text(size=15)) +
+  # 
+  # pca_dencity_pc2_list[[2]] + ggtitle("h)") + ylab("Density") +  
+  # theme(text=element_text(size=15)) +
+  # 
+  # pca_dencity_pc2_list[[3]] + ggtitle("i)") + ylab("Density") +  
+  # theme(text=element_text(size=15)) +
+  # 
+  # plot_layout(ncol = 3
+  #             , guides = 'collect') +
+  # 
+# RLE
+rle_plot_before_cyclic_loess + ggtitle("d)") +
+  theme(text=element_text(size=15)) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())+
+  rle_plot_before_ruvIIIc_group  + ggtitle("e)") +
+  theme(text=element_text(size=15)) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())+
+  rle_plot_after_ruvIIIc_group  + ggtitle("f)") +
+  theme(text=element_text(size=15)) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())+
+  plot_layout(guides = 'collect')  +
+  
+  # Pearson correlation
+pearson_correlation_pair_before_cyclic_loess + ggtitle("g)") +
+    theme(text=element_text(size=15)) +
+pearson_correlation_pair_before_ruvIIIc + ggtitle("h)") +
+    theme(text=element_text(size=15)) +
+ruv_pearson_correlation_pair + ggtitle("i)") +
+    theme(text=element_text(size=15)) +
+  plot_layout(   ncol = 3
+                , guides = 'collect')
+
+pca_ruv_rle_correlation_merged
+
+ggsave(plot=pca_ruv_rle_correlation_merged, filename =  file.path( results_dir, "protein_qc", "pca_rle_pearson_corr_plots_merged.png"), width = 14, height=14 )
+ggsave(plot=pca_ruv_rle_correlation_merged, filename =  file.path( results_dir, "protein_qc", "pca_rle_pearson_corr_plots_merged.pdf"), width = 14, height=14 )
+ggsave(plot=pca_ruv_rle_correlation_merged, filename =  file.path( results_dir, "protein_qc", "pca_rle_pearson_corr_plots_merged.svg"), width = 14, height=14 )
+```
+
+
+
+```{r}
+
+## Add PCA plots
+pca_ruv_rle_correlation_merged <- pca_plot_before_cyclic_loess_group + xlim(-40, 45) + ylim(-30, 25) + ggtitle("a)") +
+  theme(text=element_text(size=15)) +
+  theme( panel.grid.major = element_blank()
+         , panel.grid.minor = element_blank()
+         , panel.background = element_blank()) + 
+  pca_plot_before_ruvIIIc_group + xlim(-40, 45) + ylim(-30, 25) + ggtitle("b)") +
+  theme(text=element_text(size=15)) +
+  theme( panel.grid.major = element_blank()
+         , panel.grid.minor = element_blank()
+         , panel.background = element_blank()) +
+  pca_plot_after_ruvIIIc_group + xlim(-40, 45) + ylim(-30, 25) + ggtitle("c)") +
+  theme(text=element_text(size=15)) +
+  theme( panel.grid.major = element_blank()
+         , panel.grid.minor = element_blank()
+         , panel.background = element_blank()) +
+  plot_layout(  guides = 'collect') +
+  
+  ## Add PC1 Density Plot
+  # pca_density_pc1_list[[1]] + ggtitle("d)") + ylab("Density") +   
+  # theme(text=element_text(size=15)) +
+  # 
+  # pca_density_pc1_list[[2]] + ggtitle("e)") + ylab("Density") +  
+  # theme(text=element_text(size=15)) +
+  # 
+  # pca_density_pc1_list[[3]] + ggtitle("f)") + ylab("Density") +  
+  # theme(text=element_text(size=15)) +
+  
+  ## Add PC2 density plots
+  # pca_density_pc2_list[[1]] + ggtitle("g)") + ylab("Density") +  
+  # theme(text=element_text(size=15)) +
+  # 
+  # pca_density_pc2_list[[2]] + ggtitle("h)") + ylab("Density") +  
+  # theme(text=element_text(size=15)) +
+  # 
+  # pca_density_pc2_list[[3]] + ggtitle("i)") + ylab("Density") +  
+  # theme(text=element_text(size=15)) +
+  # 
+  # plot_layout(ncol = 3
+  #             , guides = 'collect') +
+  
+# Add RLE plots
+rle_plot_before_cyclic_loess + ggtitle("d)") +
+  theme(text=element_text(size=15)) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())+
+  rle_plot_before_ruvIIIc_group  + ggtitle("e)") +
+  theme(text=element_text(size=15)) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())+
+  rle_plot_after_ruvIIIc_group  + ggtitle("f)") +
+  theme(text=element_text(size=15)) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())+
+  plot_layout(guides = 'collect')  +
+  
+# Add Pearson correlation plots
+pearson_correlation_pair_before_cyclic_loess + ggtitle("g)") +
+    theme(text=element_text(size=15)) +
+pearson_correlation_pair_before_ruvIIIc + ggtitle("h)") +
+    theme(text=element_text(size=15)) +
+ruv_pearson_correlation_pair + ggtitle("i)") +
+    theme(text=element_text(size=15)) +
+  plot_layout(   ncol = 3
+                , guides = 'collect')
+
+pca_ruv_rle_correlation_merged 
+
+ggsave(plot=pca_ruv_rle_correlation_merged, filename =  file.path( results_dir, "protein_qc", "pca_rle_pearson_corr_plots_merged.png"), width = 14, height=14 )
+ggsave(plot=pca_ruv_rle_correlation_merged, filename =  file.path( results_dir, "protein_qc", "pca_rle_pearson_corr_plots_merged.pdf"), width = 14, height=14 )
+ggsave(plot=pca_ruv_rle_correlation_merged, filename =  file.path( results_dir, "protein_qc", "pca_rle_pearson_corr_plots_merged.svg"), width = 14, height=14 )
+```
+
+
+
+## Read experimental contrasts file 
+```{r}
+
+contrasts_tbl <- vroom::vroom(experimental_contrast_file, delim = "\t")
+```
+
+## Run Differential Abundance Analysis
+```{r}
+
+de_analysis_results_list <- deAnalysisWrapperFunction ( ruv_normalized_for_de_analysis_obj
+                                       , contrasts_tbl
+                                       , formula_string = formula_string
+                                       , de_q_val_thresh = de_q_val_thresh
+                                       , treat_lfc_cutoff = treat_lfc_cutoff
+                                       , eBayes_trend = eBayes_trend
+                                       , eBayes_robust = eBayes_robust
+                                       , args_group_pattern = args_group_pattern
+                                       , args_row_id = args_row_id ) 
+```
+
+
+## Output the results of the DE analysis
+```{r}
+
+outputDeAnalysisResults (de_analysis_results_list, uniprot_tbl
+                         ,  publication_graphs_dir=publication_graphs_dir
+                         , de_output_dir=de_output_dir
+                         , file_prefix="de_proteins"
+                         , plots_format=plots_format
+                         , args_row_id = "uniprot_acc"
+                         , de_q_val_thresh=0.05 
+                         )
+
+```
+
+
+```{r}
+
+# uniprot_dat <- readRDS( uniprot_file)
+
+
+output_table <- de_analysis_results_list$de_proteins_wide |>
+  rename_with ( .fn=\(x){ str_replace_all(x, "q.mod", "FDR")   }
+                , .cols=contains("q.mod"))|>
+  rename_with ( .fn=\(x){ str_replace_all(x, "p.mod", "unadjusted_p_value")   }
+                , .cols=contains("p.mod"))   |>
+   left_join(uniprot_tbl, by = c("uniprot_acc" = "Entry")) 
+
+output_table
+
+
+createDirIfNotExists( file.path( results_dir, "de_proteins") )
+vroom::vroom_write(output_table, file.path( results_dir, "de_proteins", "log_fold_change.tsv"))
+write_xlsx(output_table, file.path( results_dir, "de_proteins", "log_fold_change.xlsx"))
+
+
+```
