@@ -237,4 +237,46 @@ setArgsDefault <- function(args, value_name, as_func, default_val=NA ) {
 #=====================================================================================================
 
 
+##################################################################################################################
 
+#' Save a plot in multiple formats
+#'
+#' This function saves a given plot in multiple specified formats.
+#'
+#' @param plot The plot object to be saved
+#' @param base_path The base directory path where the plot will be saved
+#' @param plot_name The name to be used for the saved plot files
+#' @param formats A vector of file formats to save the plot in (default: c("pdf", "png"))
+#'
+#' @return This function is called for its side effects (saving files)
+#' @export
+#'
+#' 
+save_plot <- function(plot, base_path, plot_name, formats = c("pdf", "png")) {
+  for (format in formats) {
+    file_path <- file.path(base_path, "protein_qc", paste0(plot_name, ".", format))
+    ggsave(filename = file_path, plot = plot, device = format)
+  }
+}
+
+##################################################################################################################
+
+
+##################################################################################################################
+
+#' Write results to a file
+#'
+#' This function writes data to a file in the protein_qc subdirectory of the results directory.
+#'
+#' @param data The data to be written
+#' @param filename The name of the file to write the data to
+#'
+#' @return This function is called for its side effects (writing a file)
+#' @export
+#'
+
+write_results <- function(data, filename) {
+  vroom::vroom_write(data, file.path(results_dir, "protein_qc", filename))
+}
+
+##################################################################################################################
