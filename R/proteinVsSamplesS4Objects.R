@@ -1030,6 +1030,7 @@ setMethod( f = "filterSamplesByProteinCorrelationThreshold"
                , min_pearson_correlation_threshold = min_pearson_correlation_threshold
                , filename_column_x = !!sym( paste0( theObject@sample_id, ".x") )
                , filename_column_y = !!sym( paste0( theObject@sample_id, ".y") )
+               , protein_id_column = theObject@protein_id_column
                , correlation_column = pearson_correlation )
 
              theObject@protein_data <- filtered_table

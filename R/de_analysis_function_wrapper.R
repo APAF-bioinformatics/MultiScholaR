@@ -14,6 +14,7 @@ deAnalysisWrapperFunction <- function( theObject
                                        , args_row_id = "uniprot_acc" ) {
 
   return_list <- list()
+  return_list$theObject <- theObject
 
   ## plot RLE plot
   rle_plot <-   plotRle(theObject = theObject, theObject@group_id  ) +
@@ -83,7 +84,6 @@ deAnalysisWrapperFunction <- function( theObject
                                          facet_column = analysis_type,
                                          q_val_thresh = de_q_val_thresh) |>
     dplyr::rename(log2FC = "logFC")
-
 
   return_list$significant_rows <- significant_rows
 
@@ -240,7 +240,13 @@ deAnalysisWrapperFunction <- function( theObject
 #' @export
 # de_analysis_results_list$contrasts_results$fit.eb
 
-writeInteractiveVolcanoPlotProteomics <- function( de_proteins_long, uniprot_tbl, fit.eb, args_row_id = "uniprot_acc", publication_graphs_dir, de_q_val_thresh = 0.05) {
+writeInteractiveVolcanoPlotProteomics <- function( de_proteins_long
+                                                   , uniprot_tbl
+                                                   , fit.eb
+                                                   , args_row_id = "uniprot_acc"
+                                                   , publication_graphs_dir
+                                                   , de_q_val_thresh = 0.05
+                                                   , counts_tbl = NULL) {
 
 
     volcano_plot_tab <- de_proteins_long  |>
@@ -282,13 +288,15 @@ writeInteractiveVolcanoPlotProteomics <- function( de_proteins_long, uniprot_tbl
                                                               , uniprot_column = best_uniprot_acc
                                                               , gene_name_column = gene_name
                                                               , display_columns = c( "best_uniprot_acc",  "PROTEIN_NAMES"   )
+                                                              , counts_tbl = counts_tbl
                                                               , output_dir = output_dir ) } )
 
 }
 
 
 #' @export
-outputDeAnalysisResults <- function(de_analysis_results_list, uniprot_tbl
+outputDeAnalysisResults <- function(de_analysis_results_list
+                                    , uniprot_tbl
                                     , de_output_dir
                                     , publication_graphs_dir
                                     , file_prefix
@@ -541,12 +549,16 @@ outputDeAnalysisResults <- function(de_analysis_results_list, uniprot_tbl
   }
 
   ## Write interactive volcano plot
+  counts_tbl <- de_analysis_results_list$theObject@protein_data |>
+    column_to_rownames(theObject@protein_id_column  ) |>
+    as.matrix()
   writeInteractiveVolcanoPlotProteomics( de_proteins_long
                                          , uniprot_tbl
                                          , contrasts_results$fit.eb
                                          , args_row_id = args_row_id
                                          , publication_graphs_dir
-                                         , de_q_val_thresh = de_q_val_thresh)
+                                         , de_q_val_thresh = de_q_val_thresh
+                                         , counts = counts_tbl)
 
 
 }

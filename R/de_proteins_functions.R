@@ -954,6 +954,9 @@ getGlimmaVolcanoProteomics <- function( r_obj
                               , uniprot_column = best_uniprot_acc
                               , gene_name_column = gene_name
                               , display_columns = c(  "PROTEIN_NAMES"   )
+                              , additional_annotations = NULL
+                              , additional_annotations_join_column = NULL
+                              , counts_tbl = NULL
                               , output_dir) {
 
   if( coef <= ncol(r_obj$coefficients )) {
@@ -969,6 +972,15 @@ getGlimmaVolcanoProteomics <- function( r_obj
                        , {{gene_name_column}}, pick(one_of( display_columns))) |>
       dplyr::rename( best_uniprot_acc =  {{uniprot_column}}
                      , gene_name = {{gene_name_column}}   )
+
+    if( !is.null( additional_annotations )
+        & !is.null( additional_annotations_join_column ) ) {
+
+      volcano_plot_tab_cln <- volcano_plot_tab_cln |>
+        left_join( additional_annotations
+                   , by = join_by( {{unipro_column}} == {{additional_annotations_join_column}} ) ) |>
+        dplyr::select( pick(one_of( display_columns)) )
+    }
 
     anno_tbl <- data.frame( uniprot_acc = rownames(r_obj@.Data[[1]])
                               , best_uniprot_acc = best_uniprot_acc ) |>
@@ -986,6 +998,7 @@ getGlimmaVolcanoProteomics <- function( r_obj
 
     htmlwidgets::saveWidget( widget = glimmaVolcano(r_obj
                                                     , coef=coef, anno=anno_tbl
+                                                    , counts = counts_tbl
                                                     , display.columns = display_columns
                                                     , status=decideTests(r_obj, adjust.method="none")
                                                     , p.adj.method = "none" ) #the plotly object
@@ -1004,7 +1017,10 @@ getGlimmaVolcanoProteomicsWidget <- function( r_obj
                                         , volcano_plot_tab
                                         , uniprot_column = best_uniprot_acc
                                         , gene_name_column = gene_name
-                                        , display_columns = c(  "PROTEIN_NAMES"   )  ) {
+                                        , display_columns = c(  "PROTEIN_NAMES"   )
+                                        , additional_annotations = NULL
+                                        , additional_annotations_join_column = NULL
+                                        , counts_tbl = NULL ) {
 
   if( coef <= ncol(r_obj$coefficients )) {
 
@@ -1020,6 +1036,15 @@ getGlimmaVolcanoProteomicsWidget <- function( r_obj
       dplyr::rename( best_uniprot_acc =  {{uniprot_column}}
                      , gene_name = {{gene_name_column}}   )
 
+    if( !is.null( additional_annotations )
+        & !is.null( additional_annotations_join_column ) ) {
+
+      volcano_plot_tab_cln <- volcano_plot_tab_cln |>
+        left_join( additional_annotations
+                   , by = join_by( {{unipro_column}} == {{additional_annotations_join_column}} ) ) |>
+        dplyr::select( pick(one_of( display_columns)) )
+    }
+
     anno_tbl <- data.frame( uniprot_acc = rownames(r_obj@.Data[[1]])
                             , best_uniprot_acc = best_uniprot_acc ) |>
       left_join( volcano_plot_tab_cln
@@ -1034,7 +1059,9 @@ getGlimmaVolcanoProteomicsWidget <- function( r_obj
 
     r_obj$p.value[,coef] <- qvalue( r_obj$p.value[,coef])$qvalues
 
-     glimmaVolcano(r_obj, coef=coef
+     glimmaVolcano(r_obj
+                   , coef=coef
+                   , counts = counts_tbl
                    , anno=anno_tbl
                    , display.columns = display_columns
                    , status=decideTests(r_obj, adjust.method="none")
@@ -1062,6 +1089,9 @@ getGlimmaVolcanoPhosphoproteomics <- function( r_obj
                                         , sites_id_column = sites_id
                                         , sites_id_display_column = sites_id_short
                                         , display_columns = c(  "sequence", "PROTEIN_NAMES"   )
+                                        , additional_annotations = NULL
+                                        , additional_annotations_join_column = NULL
+                                        , counts_tbl = NULL
                                         , output_dir) {
 
   if( coef <= ncol(r_obj$coefficients )) {
@@ -1070,6 +1100,15 @@ getGlimmaVolcanoPhosphoproteomics <- function( r_obj
       dplyr::distinct( {{sites_id_column}}
                        , {{sites_id_display_column}}
                        , pick(one_of( display_columns)) )
+
+    if( !is.null( additional_annotations )
+        & !is.null( additional_annotations_join_column ) ) {
+
+      volcano_plot_tab_cln <- volcano_plot_tab_cln |>
+        left_join( additional_annotations
+                   , by = join_by( {{sites_id_column}} == {{additional_annotations_join_column}} ) ) |>
+        dplyr::select( pick(one_of( display_columns)) )
+    }
 
     anno_tbl <-  data.frame(  sites_id = rownames(r_obj@.Data[[1]])) |>
       left_join( volcano_plot_tab_cln
@@ -1086,6 +1125,7 @@ getGlimmaVolcanoPhosphoproteomics <- function( r_obj
 
 
     htmlwidgets::saveWidget( widget = glimmaVolcano(r_obj, coef=coef
+                                                    , counts = counts_tbl
                                                     , anno=anno_tbl
                                                     , display.columns=display_columns
                                                     , p.adj.method = "none") #the plotly object
@@ -1735,7 +1775,6 @@ batchQueryEvidence <- function(uniprot_acc_tbl, uniprot_acc_column, uniprot_hand
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
 # The UniProt.ws::select function limits the number of keys queried to 100. This gives a batch number for it to be queried in batches.
 batchQueryEvidenceHelperGeneId <- function(input_tbl, gene_id_column) {
 
@@ -1745,6 +1784,8 @@ batchQueryEvidenceHelperGeneId <- function(input_tbl, gene_id_column) {
     dplyr::mutate(round = ceiling(row_number() / 100))  ## 100 is the maximum number of queries at one time
 }
 
+
+#' @export
 batchQueryEvidenceGeneId <- function(input_tbl, gene_id_column, uniprot_handle,
                                uniprot_columns = c("EXISTENCE", "SCORE", "REVIEWED", "GENENAME", "PROTEIN-NAMES", "LENGTH")) {
 

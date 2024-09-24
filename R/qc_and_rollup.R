@@ -624,6 +624,7 @@ findSamplesPairBelowPeptideCorrelationThreshold <- function(pearson_correlation_
 #'@param min_pearson_correlation_threshold Minimum pearson correlation for a pair of files to be considered to be consistent and kept for further analysis
 #'@param filename_column_x Name of column containing the sample file name X (for a pair of sample in the same technical replicate group). Tidyverse column header format, not a string.
 #'@param filename_column_y Name of column containing the sample file name Y (for a pair of sample in the same technical replicate group). Tidyverse column header format, not a string.
+#'@param protein_id_column Name of column containing the protein ID. Tidyverse column header format, not a string.
 #'@param correlation_column Name of column containing the Pearson's correlation score between Sample X and Y. Tidyverse column header format, not a string.
 #'@param filename_id_column A string indicating the name of column that contains the sample ID or Run ID in the data frame `peptide_keep_samples_with_min_num_peptides`.
 #'@return A table without samples that are poorly correlated with the rest of the samples in the technical replicate group. Contains the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalized peptide abundances
@@ -633,6 +634,7 @@ filterSamplesByProteinCorrelationThresholdHelper <- function(pearson_correlation
                                                        , min_pearson_correlation_threshold = 0.75
                                                        , filename_column_x = ms_filename.x
                                                        , filename_column_y = ms_filename.y
+                                                       , protein_id_column = Protein.Ids
                                                        , correlation_column = pearson_correlation ) {
   # Samples to keep include all those pairs of samples with correlation score passing threshold
   samples_to_keep <-  pearson_correlation_per_pair |>
@@ -642,9 +644,10 @@ filterSamplesByProteinCorrelationThresholdHelper <- function(pearson_correlation
     dplyr::distinct( temp_column )
 
   # Samples in the table to keep
-  samples_to_keep_subset <- colnames(protein_intensity_table) %in% (samples_to_keep |> pull( temp_column ))
+  samples_to_keep_subset <- colnames(protein_intensity_table)[colnames(protein_intensity_table) %in% (samples_to_keep |> pull( temp_column ))]
 
-  samples_above_correlation_theshold <-   protein_intensity_table[, samples_to_keep_subset]
+  samples_above_correlation_theshold <- protein_intensity_table |>
+    dplyr::select( protein_id_column, one_of( samples_to_keep_subset))
 
   samples_above_correlation_theshold
 
