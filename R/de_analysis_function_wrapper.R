@@ -239,20 +239,23 @@ deAnalysisWrapperFunction <- function( theObject
 
 #' @export
 # de_analysis_results_list$contrasts_results$fit.eb
-
+# No full stops in the nme of columns of interactive table in glimma plot. It won't display column with full stop in the column name.
 writeInteractiveVolcanoPlotProteomics <- function( de_proteins_long
                                                    , uniprot_tbl
                                                    , fit.eb
                                                    , args_row_id = "uniprot_acc"
                                                    , publication_graphs_dir
                                                    , de_q_val_thresh = 0.05
-                                                   , counts_tbl = NULL) {
+                                                   , counts_tbl = NULL
+                                                   , groups = NULL
+                                                   , uniprot_id_column = "Entry"
+                                                   , gene_names_column = "Gene Names"
+                                                   , display_columns = c( "best_uniprot_acc" )) {
 
 
     volcano_plot_tab <- de_proteins_long  |>
-      left_join(uniprot_tbl, by = join_by( !!sym(args_row_id) == Entry ) ) |>
-      dplyr::rename( UNIPROT_GENENAME = "Gene Names" ) |>
-      dplyr::rename(PROTEIN_NAMES = "Protein names") |>
+      left_join(uniprot_tbl, by = join_by( !!sym(args_row_id) == !!sym( uniprot_id_column) ) ) |>
+      dplyr::rename( UNIPROT_GENENAME = gene_names_column ) |>
       mutate( UNIPROT_GENENAME = purrr::map_chr( UNIPROT_GENENAME, \(x){str_split(x, " ")[[1]][1]})) |>
       mutate( lqm = -log10(q.mod))  |>
       dplyr::mutate(label = case_when(abs(log2FC) >= 1 & q.mod >= de_q_val_thresh ~ "Not sig., logFC >= 1",
@@ -266,14 +269,10 @@ writeInteractiveVolcanoPlotProteomics <- function( de_proteins_long
       dplyr::mutate(gene_name = str_split(UNIPROT_GENENAME, " |:" ) |> purrr::map_chr(1)  ) |>
       dplyr::mutate(best_uniprot_acc = str_split(!!sym(args_row_id), ":" ) |> purrr::map_chr(1)  ) |>
       dplyr::mutate(analysis_type = comparison)  |>
-      dplyr::select( best_uniprot_acc, lqm, q.mod, p.mod, log2FC, comparison, label, colour,  gene_name, `PROTEIN_NAMES`)   |>
+      dplyr::select( best_uniprot_acc, lqm, q.mod, p.mod, log2FC, comparison, label, colour,  gene_name
+                     , any_of( display_columns ))   |>
       dplyr::mutate( my_alpha = case_when ( gene_name !=  "" ~ 1
                                             , TRUE ~ 0.5))
-
-    print(head(volcano_plot_tab))
-
-    ncol(fit.eb$coefficients)
-    colnames(fit.eb$coefficients)
 
     output_dir <- file.path( publication_graphs_dir
                              ,  "Interactive_Volcano_Plots")
@@ -282,14 +281,15 @@ writeInteractiveVolcanoPlotProteomics <- function( de_proteins_long
 
     purrr::walk( seq_len( ncol(fit.eb$coefficients))
                  , \(coef) { # print(coef)
-                   ProteomeRiver::getGlimmaVolcanoProteomics( fit.eb
-                                                              , coef = coef
-                                                              , volcano_plot_tab  = volcano_plot_tab
-                                                              , uniprot_column = best_uniprot_acc
-                                                              , gene_name_column = gene_name
-                                                              , display_columns = c( "best_uniprot_acc",  "PROTEIN_NAMES"   )
-                                                              , counts_tbl = counts_tbl
-                                                              , output_dir = output_dir ) } )
+                   getGlimmaVolcanoProteomics( fit.eb
+                                               , coef = coef
+                                               , volcano_plot_tab  = volcano_plot_tab
+                                               , uniprot_column = best_uniprot_acc
+                                               , gene_name_column = gene_name
+                                               , display_columns = display_columns
+                                               , counts_tbl = counts_tbl
+                                               , groups = groups
+                                               , output_dir = output_dir ) } )
 
 }
 
@@ -302,7 +302,9 @@ outputDeAnalysisResults <- function(de_analysis_results_list
                                     , file_prefix
                                     , plots_format
                                     , args_row_id = "uniprot_acc"
-                                    , de_q_val_thresh = 0.05) {
+                                    , de_q_val_thresh = 0.05
+                                    , gene_names_column = "Gene Names"
+                                    , protein_names_column = "Protein names" ) {
 
   ## PCA plot
   plot_pca_plot <- de_analysis_results_list$pca_plot
@@ -549,16 +551,26 @@ outputDeAnalysisResults <- function(de_analysis_results_list
   }
 
   ## Write interactive volcano plot
-  counts_tbl <- de_analysis_results_list$theObject@protein_data |>
-    column_to_rownames(theObject@protein_id_column  ) |>
+  counts_mat <- (de_analysis_results_list$theObject)@protein_data |>
+    column_to_rownames((de_analysis_results_list$theObject)@protein_id_column  ) |>
     as.matrix()
+
+  this_design_matrix <- de_analysis_results_list$theObject@design_matrix
+
+  rownames( this_design_matrix ) <- this_design_matrix$replicates
+
+  this_groups <- this_design_matrix[colnames( counts_mat), "group"]
+
   writeInteractiveVolcanoPlotProteomics( de_proteins_long
+                                         , groups = this_groups
                                          , uniprot_tbl
                                          , contrasts_results$fit.eb
                                          , args_row_id = args_row_id
                                          , publication_graphs_dir
                                          , de_q_val_thresh = de_q_val_thresh
-                                         , counts = counts_tbl)
+                                         , counts_tbl = counts_mat
+                                         , gene_names_column = gene_names_column
+                                         , protein_names_column = protein_names_column )
 
 
 }

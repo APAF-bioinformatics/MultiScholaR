@@ -918,10 +918,9 @@ setMethod( f = "averageTechReps"
 
               theObject@design_matrix <- design_matrix |>
                 dplyr::select(-!!sym( sample_id)) |>
-                dplyr::select(one_of( unique( c( replicate_group_column,  group_id,  design_matrix_columns) ))) |>
+                dplyr::select(all_of( unique( c( replicate_group_column,  group_id,  design_matrix_columns) ))) |>
                 distinct()
 
-              rownames(theObject@design_matrix ) <- theObject@design_matrix |> pull(one_of(replicate_group_column))
               theObject@sample_id <- replicate_group_column
               theObject@technical_replicate_id <- NA_character_
 

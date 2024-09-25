@@ -167,7 +167,7 @@ srlQvalueProteotypicPeptideCleanHelper <- function(input_table
     dplyr::filter( {{q_value_column}} < q_value_thresh &
                      {{global_q_value_column}} < global_q_value_thresh &
                      {{proteotypic_peptide_sequence_column}} == choose_only_proteotypic_peptide ) |>
-    dplyr::select(one_of( srl_quant_columns))
+    dplyr::select(all_of( srl_quant_columns))
 
   search_srl_quant_cln
 
@@ -636,6 +636,13 @@ filterSamplesByProteinCorrelationThresholdHelper <- function(pearson_correlation
                                                        , filename_column_y = ms_filename.y
                                                        , protein_id_column = Protein.Ids
                                                        , correlation_column = pearson_correlation ) {
+
+  # All Samples
+  all_samples <-  pearson_correlation_per_pair |>
+    pivot_longer( cols =c({{filename_column_x}}, {{filename_column_y}})
+                  , values_to = "temp_column" ) |>
+    dplyr::distinct( temp_column )
+
   # Samples to keep include all those pairs of samples with correlation score passing threshold
   samples_to_keep <-  pearson_correlation_per_pair |>
     dplyr::filter( {{correlation_column}} >= min_pearson_correlation_threshold) |>
@@ -643,11 +650,17 @@ filterSamplesByProteinCorrelationThresholdHelper <- function(pearson_correlation
                   , values_to = "temp_column" ) |>
     dplyr::distinct( temp_column )
 
+  # Samples to keep anyway
+  samples_to_keep_anyway <-setdiff( setdiff(colnames(protein_intensity_table), (all_samples |> pull( temp_column )))
+                                    ,  as_string({{protein_id_column}})  )
+
+  print( samples_to_keep_anyway)
+
   # Samples in the table to keep
   samples_to_keep_subset <- colnames(protein_intensity_table)[colnames(protein_intensity_table) %in% (samples_to_keep |> pull( temp_column ))]
 
   samples_above_correlation_theshold <- protein_intensity_table |>
-    dplyr::select( protein_id_column, one_of( samples_to_keep_subset))
+    dplyr::select( {{protein_id_column}}, all_of( c(samples_to_keep_anyway, samples_to_keep_subset)))
 
   samples_above_correlation_theshold
 
@@ -964,8 +977,7 @@ plotDensityOfPercentMissingPerIndvidual <- function( percent_missing_table
 plotHistogramOfPercentMissingPerIndvidual <- function( percent_missing_table
                                                        , percent_missing_column = percent_missing) {
   percent_missing_table |>
-    ggplot( aes( {{percent_missing_column}}
-    )) +
+    ggplot( aes( {{percent_missing_column}})) +
     geom_histogram() +
     apafTheme() +
     xlab("Percent Missing") +
@@ -1437,7 +1449,7 @@ getCategoricalAndContinuousColourRules <- function( metadata_tbl
 
   cln_meatadata_tbl <- metadata_tbl |>
     column_to_rownames(as_name( enquo(sample_id_column ))) |>
-    dplyr::select( one_of( c(metadata_column_selected) ) )
+    dplyr::select( all_of( c(metadata_column_selected) ) )
 
   colour_rules <- getCategoricalColourRules( metadata_tbl =  cln_meatadata_tbl
                                              , metadata_column_labels = metadata_column_labels
@@ -1534,7 +1546,7 @@ getSamplesCorrelationHeatMap <- function(correlation_matrix
     dplyr::filter( {{sample_id_column}} %in% correlation_samples_to_use) |>
     arrange( {{sample_id_column}}) |>
     column_to_rownames( as_name( enquo( sample_id_column)  ))|>
-    dplyr::select( one_of( setdiff( metadata_column_selected, columns_to_exclude) ) )
+    dplyr::select( all_of( setdiff( metadata_column_selected, columns_to_exclude) ) )
 
   columns_to_use <- setdiff(names(colour_rules), metadata_column_labels[columns_to_exclude])
   colour_rules_filt <- colour_rules[columns_to_use]
@@ -1544,13 +1556,13 @@ getSamplesCorrelationHeatMap <- function(correlation_matrix
   colnames(cln_meatadata_tbl) <-  metadata_column_labels[colnames(cln_meatadata_orig_col_name)]
 
   top_annotation <- HeatmapAnnotation(df = cln_meatadata_tbl |>
-                                        dplyr::select( - one_of(metadata_column_labels[columns_to_exclude] ))
+                                        dplyr::select( - any_of(metadata_column_labels[columns_to_exclude] ))
                                       , col = colour_rules_filt
                                       , show_legend = FALSE )
 
   print("Add row annotation")
   row_ha <- rowAnnotation( df = cln_meatadata_tbl |>
-                             dplyr::select( - one_of(metadata_column_labels[columns_to_exclude] ))
+                             dplyr::select( - any_of(metadata_column_labels[columns_to_exclude] ))
                            , col = colour_rules_filt
                            , show_legend = FALSE)
 
@@ -2017,7 +2029,7 @@ getProteinsHeatMap <- function( protein_matrix
     dplyr::filter( {{is_HEK_column}} == FALSE)  |>
     dplyr::filter( {{sample_id_column}} %in% samples_to_use) |>
     arrange( {{sample_id_column}}) |>
-    dplyr::select( {{sample_id_column}}, one_of( setdiff(metadata_column_selected, columns_to_exclude) ) ) |>
+    dplyr::select( {{sample_id_column}}, all_of( setdiff(metadata_column_selected, columns_to_exclude) ) ) |>
     distinct()  |>
     column_to_rownames( as_label( enquo(sample_id_column) ) )
 
@@ -2103,7 +2115,7 @@ calculatePercentMissingPerProtein <- function( intensity_wide_table
                                                   is.na(Avg.Log2.Protein.Imputed)  ~ TRUE
                                                 , TRUE ~ FALSE)) |>
     relocate({{is_missing_column}}, .after=!!sym(values_to)  ) |>
-    pivot_longer( cols = any_of(list_of_columns_to_pivot)
+    pivot_longer( cols = all_of(list_of_columns_to_pivot)
                   , names_to = "parameter_name"
                   , values_to = "values" )
 

@@ -945,68 +945,77 @@ plotOneVolcanoNoVerticalLines <- function( input_data, input_title,
 #' @param volcano_plot_tab A table containing the list of uniprot_acc and the matching gene_name.
 #' @param uniprot_column The name of the column in the 'volcano_plot_tab' table that contains the list of uniprot accessions (in tidyverse format).
 #' @param gene_name_column The name of the column in the 'volcano_plot_tab' table that contains the list of gene names (in tidyverse format).
+#' @param counts_tbl A table containing the intensity data for the proteins.
 #' @param output_dir The output directory in which the HTML files containing the interactive plotly volcano plot will be saved.
 #' @export
 
 getGlimmaVolcanoProteomics <- function( r_obj
-                              , coef
-                              , volcano_plot_tab
-                              , uniprot_column = best_uniprot_acc
-                              , gene_name_column = gene_name
-                              , display_columns = c(  "PROTEIN_NAMES"   )
-                              , additional_annotations = NULL
-                              , additional_annotations_join_column = NULL
-                              , counts_tbl = NULL
-                              , output_dir) {
+                                        , coef
+                                        , volcano_plot_tab
+                                        , uniprot_column = best_uniprot_acc
+                                        , gene_name_column = gene_name
+                                        , display_columns = c(  "PROTEIN_NAMES"   )
+                                        , additional_annotations = NULL
+                                        , additional_annotations_join_column = NULL
+                                        , counts_tbl = NULL
+                                        , groups = NULL
+                                        , output_dir) {
 
   if( coef <= ncol(r_obj$coefficients )) {
 
     best_uniprot_acc <- str_split(rownames(r_obj@.Data[[1]]), " |:" ) |>
       purrr::map_chr(1)
 
-    # print(paste("nrow = ", nrow(r_obj@.Data[[1]])))
-    # print(head(best_uniprot_acc))
-
     volcano_plot_tab_cln <- volcano_plot_tab |>
-      dplyr::distinct( {{uniprot_column}}
-                       , {{gene_name_column}}, pick(one_of( display_columns))) |>
       dplyr::rename( best_uniprot_acc =  {{uniprot_column}}
-                     , gene_name = {{gene_name_column}}   )
+                     , gene_name = {{gene_name_column}}   ) |>
+      dplyr::select( {{uniprot_column}}
+                     , {{gene_name_column}}, any_of( display_columns) ) |>
+      distinct()
+
+    print(head(volcano_plot_tab_cln))
 
     if( !is.null( additional_annotations )
         & !is.null( additional_annotations_join_column ) ) {
 
       volcano_plot_tab_cln <- volcano_plot_tab_cln |>
         left_join( additional_annotations
-                   , by = join_by( {{unipro_column}} == {{additional_annotations_join_column}} ) ) |>
-        dplyr::select( pick(one_of( display_columns)) )
+                   , by = join_by( {{uniprot_column}} == {{additional_annotations_join_column}} ) ) |>
+        dplyr::select( {{uniprot_column}}
+                       , {{gene_name_column}}
+                       ,any_of( display_columns))
+
     }
 
-    anno_tbl <- data.frame( uniprot_acc = rownames(r_obj@.Data[[1]])
-                              , best_uniprot_acc = best_uniprot_acc ) |>
-      left_join( volcano_plot_tab_cln
-                 , by = c("best_uniprot_acc") )  |>
-      mutate( gene_name = case_when( is.na( gene_name) ~ best_uniprot_acc,
-                                     TRUE ~ gene_name) )
+      anno_tbl <- data.frame( uniprot_acc = rownames(r_obj@.Data[[1]])
+                              , best_uniprot_acc = best_uniprot_acc )
 
-    gene_names <- anno_tbl |>
-      pull(gene_name)
+      anno_tbl <- anno_tbl |>
+        left_join( volcano_plot_tab_cln
+                   , by = join_by(best_uniprot_acc == {{uniprot_column}}) )  |>
+        mutate( gene_name = case_when( is.na( gene_name) ~ best_uniprot_acc,
+                                       TRUE ~ gene_name) )
 
-    rownames( r_obj@.Data[[1]] ) <- gene_names
+      gene_names <- anno_tbl |>
+        pull(gene_name)
 
-    r_obj$p.value[,coef] <- qvalue( r_obj$p.value[,coef])$qvalues
+      rownames( r_obj@.Data[[1]] ) <- gene_names
 
-    htmlwidgets::saveWidget( widget = glimmaVolcano(r_obj
-                                                    , coef=coef, anno=anno_tbl
-                                                    , counts = counts_tbl
-                                                    , display.columns = display_columns
-                                                    , status=decideTests(r_obj, adjust.method="none")
-                                                    , p.adj.method = "none" ) #the plotly object
-                             , file = file.path( output_dir
-                                                 , paste0(colnames(r_obj$coefficients)[coef], ".html"))  #the path & file name
-                             , selfcontained = TRUE #creates a single html file
-    )
-  }
+      r_obj$p.value[,coef] <- qvalue( r_obj$p.value[,coef])$qvalues
+
+      htmlwidgets::saveWidget( widget = glimmaVolcano(r_obj
+                                                      , coef=coef, anno=anno_tbl
+                                                      , counts = counts_tbl
+                                                      , groups = groups
+                                                      , display.columns = colnames(anno_tbl )
+                                                      , status=decideTests(r_obj, adjust.method="none")
+                                                      , p.adj.method = "none"
+                                                      , transform.counts='none') #the plotly object
+                               , file = file.path( output_dir
+                                                   , paste0(colnames(r_obj$coefficients)[coef], ".html"))  #the path & file name
+                               , selfcontained = TRUE #creates a single html file
+      )
+    }
 
 }
 
@@ -1030,11 +1039,14 @@ getGlimmaVolcanoProteomicsWidget <- function( r_obj
     # print(paste("nrow = ", nrow(r_obj@.Data[[1]])))
     # print(head(best_uniprot_acc))
 
-    volcano_plot_tab_cln <- volcano_plot_tab |>
-      dplyr::distinct( {{uniprot_column}}
-                       , {{gene_name_column}}, pick(one_of( display_columns))) |>
+    volcano_plot_tab_cln <- volcano_plot_tab  |>
       dplyr::rename( best_uniprot_acc =  {{uniprot_column}}
-                     , gene_name = {{gene_name_column}}   )
+                     , gene_name = {{gene_name_column}}   ) |>
+      dplyr::select ( {{uniprot_column}}
+                       , {{gene_name_column}}, any_of( display_columns)) |>
+      distinct()
+
+    # print (head( volcano_plot_tab_cln))
 
     if( !is.null( additional_annotations )
         & !is.null( additional_annotations_join_column ) ) {
@@ -1042,7 +1054,9 @@ getGlimmaVolcanoProteomicsWidget <- function( r_obj
       volcano_plot_tab_cln <- volcano_plot_tab_cln |>
         left_join( additional_annotations
                    , by = join_by( {{unipro_column}} == {{additional_annotations_join_column}} ) ) |>
-        dplyr::select( pick(one_of( display_columns)) )
+        dplyr::select( {{uniprot_column}}
+                       , {{gene_name_column}}
+                       , any_of( display_columns))
     }
 
     anno_tbl <- data.frame( uniprot_acc = rownames(r_obj@.Data[[1]])
@@ -1065,7 +1079,8 @@ getGlimmaVolcanoProteomicsWidget <- function( r_obj
                    , anno=anno_tbl
                    , display.columns = display_columns
                    , status=decideTests(r_obj, adjust.method="none")
-                   , p.adj.method="none") #the plotly object
+                   , p.adj.method="none"
+                   , transform.counts='none') #the plotly object
 
   }
 
@@ -1099,7 +1114,7 @@ getGlimmaVolcanoPhosphoproteomics <- function( r_obj
     volcano_plot_tab_cln <- volcano_plot_tab |>
       dplyr::distinct( {{sites_id_column}}
                        , {{sites_id_display_column}}
-                       , pick(one_of( display_columns)) )
+                       , any_of( display_columns) )
 
     if( !is.null( additional_annotations )
         & !is.null( additional_annotations_join_column ) ) {
@@ -1107,7 +1122,7 @@ getGlimmaVolcanoPhosphoproteomics <- function( r_obj
       volcano_plot_tab_cln <- volcano_plot_tab_cln |>
         left_join( additional_annotations
                    , by = join_by( {{sites_id_column}} == {{additional_annotations_join_column}} ) ) |>
-        dplyr::select( pick(one_of( display_columns)) )
+        dplyr::select( any_of( display_columns))
     }
 
     anno_tbl <-  data.frame(  sites_id = rownames(r_obj@.Data[[1]])) |>
@@ -1128,7 +1143,8 @@ getGlimmaVolcanoPhosphoproteomics <- function( r_obj
                                                     , counts = counts_tbl
                                                     , anno=anno_tbl
                                                     , display.columns=display_columns
-                                                    , p.adj.method = "none") #the plotly object
+                                                    , p.adj.method = "none"
+                                                    , transform.counts='none' ) #the plotly object
                              , file = file.path( output_dir
                                                  , paste0(colnames(r_obj$coefficients)[coef], ".html"))  #the path & file name
                              , selfcontained = TRUE #creates a single html file
@@ -1565,7 +1581,7 @@ analyseRanking <- function(data, uniprot_acc_column = uniprot_acc) {
   results_tbl <- data |>
     as.data.frame() |>
     rownames_to_column(as_string(as_name(enquo(uniprot_acc_column)))) |>
-    dplyr::select(one_of(c( as_string(as_name(enquo(uniprot_acc_column))), "q.mod", "logFC"))) |>
+    dplyr::select(all_of(c( as_string(as_name(enquo(uniprot_acc_column))), "q.mod", "logFC"))) |>
     arrange(desc(q.mod)) |>
     mutate(ctrl_gene_rank = row_number())
 
@@ -1706,7 +1722,7 @@ cleanIsoformNumber <- function(string) {
 
 # Filter for a batch and run analysis on that batch of uniprot accession keys only.
 subsetQuery <- function(data, subset, accessions_col_name, uniprot_handle, uniprot_columns = c("EXISTENCE", "SCORE", "REVIEWED", "GENENAME", "PROTEIN-NAMES", "LENGTH"),
-                        uniprot_keytype = "UNIPROTKB") {
+                        uniprot_keytype = "UniProtKB") {
 
 
   # print(subset)
@@ -1742,7 +1758,7 @@ batchQueryEvidenceHelper <- function(uniprot_acc_tbl, uniprot_acc_column) {
 #'@export
 batchQueryEvidence <- function(uniprot_acc_tbl, uniprot_acc_column, uniprot_handle,
                                uniprot_columns = c("EXISTENCE", "SCORE", "REVIEWED", "GENENAME", "PROTEIN-NAMES", "LENGTH"),
-                               uniprot_keytype = "UNIPROTKB") {
+                               uniprot_keytype = "UniProtKB") {
 
   # uniprot_evidence_levels <- c("Evidence at protein level",
   #                              "Evidence at transcript level",
@@ -1784,29 +1800,25 @@ batchQueryEvidenceHelperGeneId <- function(input_tbl, gene_id_column) {
     dplyr::mutate(round = ceiling(row_number() / 100))  ## 100 is the maximum number of queries at one time
 }
 
-
 #' @export
-batchQueryEvidenceGeneId <- function(input_tbl, gene_id_column, uniprot_handle,
-                               uniprot_columns = c("EXISTENCE", "SCORE", "REVIEWED", "GENENAME", "PROTEIN-NAMES", "LENGTH")) {
+batchQueryEvidenceGeneId <- function(input_tbl, gene_id_column, uniprot_handle, uniprot_keytype = "UniProtKB",
+                                     uniprot_columns = c("EXISTENCE", "SCORE", "REVIEWED", "GENENAME", "PROTEIN-NAMES", "LENGTH")) {
 
-
-  all_gene_id <- batchQueryEvidenceHelperGeneId(input_tbl,
-                                              { { gene_id_column } })
-
+  all_gene_id <- batchQueryEvidenceHelperGeneId(input_tbl, {{ gene_id_column }})
 
   partial_subset_query <- partial(subsetQuery,
                                   data = all_gene_id,
-                                  accessions_col_name = { { gene_id_column } },
+                                  accessions_col_name = {{ gene_id_column }},
                                   uniprot_handle = uniprot_handle,
                                   uniprot_columns = uniprot_columns,
-                                  uniprot_keytype = "GENENAME")
+                                  uniprot_keytype = uniprot_keytype)
 
   rounds_list <- all_gene_id |>
     distinct(round) |>
     arrange(round) |>
     pull(round)
 
-  all_uniprot_evidence <- purrr::map(rounds_list, \(x){ partial_subset_query(subset = x) }) |>
+  all_uniprot_evidence <- purrr::map(rounds_list, \(x) { partial_subset_query(subset = x) }) |>
     bind_rows()
 
   return(all_uniprot_evidence)
@@ -1852,41 +1864,46 @@ goIdToTerm <- function(go_string, sep = "; ", goterms, gotypes) {
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #' @param uniprot_dat  a table with uniprot accessions and a column with GO-ID
+#' @param uniprot_id_column The name of the column with the uniprot accession, as a tidyverse header format, not a string
+#' @param go_id_column The name of the column with the GO-ID, as a tidyverse header format, not a string
 #' @param goterms Output from running \code{goterms <- Term(GOTERM)} from the GO.db library.
 #' @param gotypes Output from running \code{gotypes <- Ontology(GOTERM)} from the GO.db library.
 #' @return A table with three columns. go_biological_process, go_celluar_compartment, and go_molecular_function. Each column is a list of gene ontology terms, separated by '; '.
 #' @export
-uniprotGoIdToTerm <- function(uniprot_dat, sep = "; ", goterms, gotypes) {
-
+uniprotGoIdToTerm <- function(uniprot_dat, uniprot_id_column = UNIPROTKB
+                              , go_id_column = `GO-IDs`,  sep = "; "
+                              , goterms = AnnotationDbi::Term(GO.db::GOTERM)
+                              , gotypes = AnnotationDbi::Ontology(GO.db::GOTERM)) {
 
   uniprot_acc_to_go_id <- uniprot_dat |>
-    dplyr::distinct(UNIPROTKB, `GO-ID`) |>
-    separate_rows(`GO-ID`, sep = sep) |>
-    dplyr::distinct(UNIPROTKB, `GO-ID`) |>
-    dplyr::filter(!is.na(`GO-ID`))
+    dplyr::distinct({{uniprot_id_column}}, {{go_id_column}}) |>
+    separate_rows({{go_id_column}}, sep = sep) |>
+    dplyr::distinct({{uniprot_id_column}}, {{go_id_column}}) |>
+    dplyr::filter(!is.na({{go_id_column}}))
 
   go_term_temp <- uniprot_acc_to_go_id |>
-    dplyr::distinct(`GO-ID`) |>
-    mutate(go_term = purrr::map_chr(`GO-ID`, function(x) { if (x %in% names(goterms)) { return(goterms[[x]]) }; return(NA) })) |>
-    mutate(go_type = purrr::map_chr(`GO-ID`, function(x) { if (x %in% names(gotypes)) { return(gotypes[[x]]) }; return(NA) })) |>
+    dplyr::distinct({{go_id_column}}) |>
+    mutate(go_term = purrr::map_chr({{go_id_column}}, function(x) { if (x %in% names(goterms)) { return(goterms[[x]]) }; return(NA) })) |>
+    mutate(go_type = purrr::map_chr({{go_id_column}}, function(x) { if (x %in% names(gotypes)) { return(gotypes[[x]]) }; return(NA) })) |>
     mutate(go_type = case_when(go_type == "BP" ~ "go_biological_process",
                                go_type == "CC" ~ "go_cellular_compartment",
                                go_type == "MF" ~ "go_molecular_function"))
 
   uniprot_acc_to_go_term <- uniprot_acc_to_go_id |>
-    left_join(go_term_temp, by = c("GO-ID" = "GO-ID")) |>
+    left_join(go_term_temp, by = join_by({{go_id_column}} == {{go_id_column}})) |>
     dplyr::filter(!is.na(go_term)) |>
-    group_by(UNIPROTKB, go_type) |>
-    summarise(go_term = paste(go_term, collapse = "; ")) |>
-    ungroup() |>
-    pivot_wider(id_cols = "UNIPROTKB",
+    group_by({{uniprot_id_column}}, go_type) |>
+    summarise(go_id = paste({{go_id_column}}, collapse = "; ")
+              , go_term = paste(go_term, collapse = "; ")
+              , .groups = 'drop' ) |>
+    pivot_wider(id_cols = {{uniprot_id_column}},
                 names_from = go_type,
-                values_from = go_term)
+                values_from = c(go_term, go_id))
 
 
   output_uniprot_dat <- uniprot_dat |>
-    left_join(uniprot_acc_to_go_term, by = c("UNIPROTKB" = "UNIPROTKB")) |>
-    relocate(KEYWORDS, .before = "GO-ID")
+    left_join(uniprot_acc_to_go_term, by = join_by({{uniprot_id_column}} == {{uniprot_id_column}})) |>
+    dplyr::select( -{{go_id_column}})
 
   return(output_uniprot_dat)
 
@@ -2098,5 +2115,4 @@ proteinTechRepCorrelationHelper <- function( design_matrix_tech_rep, data_matrix
 
   frozen_protein_matrix_tech_rep
 }
-
 
