@@ -964,11 +964,10 @@ setMethod( f = "chooseBestProteinAccession"
              protein_log2_quant_cln <- evidence_tbl_cleaned |>
                left_join( accession_gene_name_tbl |>
                             dplyr::distinct( row_id, !!sym( seqinr_accession_column) )
-                          , by = join_by( row_id,
-                                          !!sym( theObject@protein_id_column ) ==!!sym( seqinr_accession_column)) )
+                          , by = join_by( row_id ) ) |>
+               mutate( !!sym( theObject@protein_id_column ) :=!!sym( seqinr_accession_column) )  |>
+               dplyr::select(-row_id, -!!sym( seqinr_accession_column))
 
-             protein_log2_quant_cln <- protein_log2_quant_cln |>
-               dplyr::select(-row_id)
 
              theObject@protein_data <- protein_log2_quant_cln
 
