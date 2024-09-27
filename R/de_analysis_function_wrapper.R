@@ -303,8 +303,7 @@ outputDeAnalysisResults <- function(de_analysis_results_list
                                     , plots_format
                                     , args_row_id = "uniprot_acc"
                                     , de_q_val_thresh = 0.05
-                                    , gene_names_column = "Gene Names"
-                                    , protein_names_column = "Protein names" ) {
+                                    , gene_names_column = "Gene Names" ) {
 
   ## PCA plot
   plot_pca_plot <- de_analysis_results_list$pca_plot
@@ -569,8 +568,7 @@ outputDeAnalysisResults <- function(de_analysis_results_list
                                          , publication_graphs_dir
                                          , de_q_val_thresh = de_q_val_thresh
                                          , counts_tbl = counts_mat
-                                         , gene_names_column = gene_names_column
-                                         , protein_names_column = protein_names_column )
+                                         , gene_names_column = gene_names_column)
 
 
 }

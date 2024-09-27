@@ -1226,7 +1226,7 @@ plotEnrichmentBarplot <- function( input_table
     xlab ( xlab_string) +
     ylab ( ylab_string) +
     theme_bw() +
-    scale_x_continuous(limits = c(0,-log10( min ( proteomics_go_helper$qvalue ) )*1.01), expand = c(0, 0))
+    scale_x_continuous(limits = c(0,-log10( min ( proteomics_go_helper$qvalue ) )*1.05), expand = c(0, 0))
   #+
     #facet_grid( rows = vars({{gene_set_column}})  , scales="free_y", space = "free_y")
 

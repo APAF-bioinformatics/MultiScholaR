@@ -2090,28 +2090,30 @@ gg_save_logging <- function( input_plot
 #' @param sample_id_column: column name of the sample ID. This is the unique identifier for each sample.
 #' @param tech_rep_column: column name of the technical replicates. Technical replicates of the same sample will have the same value.
 #' @param tech_rep_num_column: column name of the technical replicate number. This is a unique number for each technical replicate for each sample.
-proteinTechRepCorrelationHelper <- function( design_matrix_tech_rep, data_matrix, sample_id_column="Sample_ID", tech_rep_column = "replicates", tech_rep_num_column = "tech_rep_num", tech_rep_remove_regex = "pool" ) {
+proteinTechRepCorrelationHelper <- function( design_matrix_tech_rep, data_matrix
+                                             , protein_id_column = "Protein.Ids"
+                                             , sample_id_column="Sample_ID", tech_rep_column = "replicates", tech_rep_num_column = "tech_rep_num", tech_rep_remove_regex = "pool" ) {
 
   tech_reps_list <- design_matrix_tech_rep |> pull( !!sym(tech_rep_num_column )) |> unique()
 
   frozen_protein_matrix_tech_rep <- data_matrix  |>
     as.data.frame() |>
-    rownames_to_column("uniprot_acc") |>
-    pivot_longer( cols=!matches( "uniprot_acc")
+    rownames_to_column(protein_id_column) |>
+    pivot_longer( cols=!matches( protein_id_column)
                   , values_to = "log2_intensity"
                   , names_to = sample_id_column) |>
     left_join( design_matrix_tech_rep
                , by = join_by( !!sym(sample_id_column) == !!sym(sample_id_column))) |>
     dplyr::filter( !str_detect(  !!sym(tech_rep_column) , tech_rep_remove_regex ) ) |>
-    dplyr::select(uniprot_acc, !!sym(tech_rep_column), log2_intensity, !!sym(tech_rep_num_column)) |>
+    dplyr::select(!!sym( protein_id_column), !!sym(tech_rep_column), log2_intensity, !!sym(tech_rep_num_column)) |>
     dplyr::filter( !!sym(tech_rep_num_column ) %in% tech_reps_list ) |>
-    pivot_wider( id_cols = c(uniprot_acc, !!sym(tech_rep_column))
+    pivot_wider( id_cols = c(!!sym( protein_id_column), !!sym(tech_rep_column))
                  , names_from = !!sym(tech_rep_num_column)
                  , values_from = log2_intensity) |>
-    nest( data=!matches("uniprot_acc")) |>
+    nest( data=!matches(protein_id_column)) |>
     mutate( data = purrr::map( data, \(x){ x |> column_to_rownames(tech_rep_column)} ) ) |>
-    mutate( pearson = purrr::map_dbl( data, \(x){  if(is.numeric(x) == TRUE & length(which(!is.na(x[,1]))) > 0 & length(which(!is.na(x[,2]))) > 0) { cor(x, use="pairwise.complete.obs")[1,2] } else { NA_real_ }   })) |>
-    mutate( spearman = purrr::map_dbl( data, \(x){  if(is.numeric(x) == TRUE & length(which(!is.na(x[,1]))) > 0 & length(which(!is.na(x[,2]))) > 0) { cor(x, use="pairwise.complete.obs", method="spearman")[1,2] } else { NA_real_ }  }))
+    mutate( pearson = purrr::map_dbl( data, \(x){  if( length(which(!is.na(x[,1]))) > 0 & length(which(!is.na(x[,2]))) > 0) { cor(x, use="pairwise.complete.obs")[1,2] } else { NA_real_ }   })) |>
+    mutate( spearman = purrr::map_dbl( data, \(x){  if( length(which(!is.na(x[,1]))) > 0 & length(which(!is.na(x[,2]))) > 0) { cor(x, use="pairwise.complete.obs", method="spearman")[1,2] } else { NA_real_ }  }))
 
   frozen_protein_matrix_tech_rep
 }

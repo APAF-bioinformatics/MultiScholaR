@@ -488,6 +488,7 @@ setMethod( f = "proteinTechRepCorrelation"
             frozen_protein_matrix_pca[!is.finite(frozen_protein_matrix_pca)] <- NA
 
             protein_matrix_tech_rep <-proteinTechRepCorrelationHelper( design_matrix, frozen_protein_matrix_pca
+                                                                       , protein_id_column = protein_id_column
                                                                  , sample_id_column=sample_id
                                                                  , tech_rep_column = tech_rep_column
                                                                  , tech_rep_num_column = tech_rep_num_column
