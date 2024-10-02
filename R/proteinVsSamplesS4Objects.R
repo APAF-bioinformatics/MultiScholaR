@@ -699,15 +699,15 @@ setMethod( f = "getLowCoefficientOfVariationProteins"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
 setGeneric(name="ruvCancor"
-           , def=function( theObject, ctl, ncomp, ruv_group_id_column ) {
+           , def=function( theObject, ctl, ncomp, ruv_grouping_variable ) {
              standardGeneric("ruvCancor")
            }
-           , signature=c("theObject", "ctl", "ncomp", "ruv_group_id_column"))
+           , signature=c("theObject", "ctl", "ncomp", "ruv_grouping_variable"))
 
 #'@export
 setMethod( f = "ruvCancor"
            , signature="ProteinQuantitativeData"
-           , definition=function( theObject, ctl, ncomp=2, ruv_group_id_column) {
+           , definition=function( theObject, ctl, ncomp=2, ruv_grouping_variable) {
              protein_data <- theObject@protein_data
              protein_id_column <- theObject@protein_id_column
              design_matrix <- theObject@design_matrix
@@ -715,9 +715,9 @@ setMethod( f = "ruvCancor"
              sample_id <- theObject@sample_id
              replicate_group_column <- theObject@technical_replicate_id
 
-             if(! ruv_group_id_column %in% colnames(design_matrix)) {
-               stop( paste0("The 'ruv_group_id_column = "
-                            , ruv_group_id_column
+             if(! ruv_grouping_variable %in% colnames(design_matrix)) {
+               stop( paste0("The 'ruv_grouping_variable = "
+                            , ruv_grouping_variable
                             , "' is not a column in the design matrix.") )
              }
 
@@ -741,7 +741,7 @@ setMethod( f = "ruvCancor"
 
              cancorplot_r2 <- ruv_cancorplot( Y ,
                                               X = design_matrix |>
-                                                pull(!!sym(ruv_group_id_column)),
+                                                pull(!!sym(ruv_grouping_variable)),
                                               ctl = ctl)
              cancorplot_r2
 
@@ -754,15 +754,15 @@ setMethod( f = "ruvCancor"
 
 #'@export
 setGeneric(name="getRuvIIIReplicateMatrix"
-           , def=function( theObject,  ruv_group_id_column ) {
+           , def=function( theObject,  ruv_grouping_variable ) {
              standardGeneric("getRuvIIIReplicateMatrix")
            }
-           , signature=c("theObject", "ruv_group_id_column"))
+           , signature=c("theObject", "ruv_grouping_variable"))
 
 #'@export
 setMethod( f = "getRuvIIIReplicateMatrix"
            , signature="ProteinQuantitativeData"
-           , definition=function( theObject, ruv_group_id_column) {
+           , definition=function( theObject, ruv_grouping_variable) {
              protein_data <- theObject@protein_data
              protein_id_column <- theObject@protein_id_column
              design_matrix <- theObject@design_matrix
@@ -772,7 +772,7 @@ setMethod( f = "getRuvIIIReplicateMatrix"
 
              ruvIII_replicates_matrix <- getRuvIIIReplicateMatrixHelper( design_matrix
                                                                    , !!sym(sample_id)
-                                                                   , !!sym(ruv_group_id_column))
+                                                                   , !!sym(ruv_grouping_variable))
              return( ruvIII_replicates_matrix)
            })
 
@@ -782,15 +782,15 @@ setMethod( f = "getRuvIIIReplicateMatrix"
 
 #'@export
 setGeneric(name="ruvIII_C_Varying"
-           , def=function( theObject, ruv_group_id_column, k, ctl) {
+           , def=function( theObject, ruv_grouping_variable, k, ctl) {
              standardGeneric("ruvIII_C_Varying")
            }
-           , signature=c("theObject", "ruv_group_id_column", "k", "ctl"))
+           , signature=c("theObject", "ruv_grouping_variable", "k", "ctl"))
 
 #'@export
 setMethod( f = "ruvIII_C_Varying"
            , signature="ProteinQuantitativeData"
-           , definition=function( theObject, ruv_group_id_column, k, ctl) {
+           , definition=function( theObject, ruv_grouping_variable, k, ctl) {
              protein_data <- theObject@protein_data
              protein_id_column <- theObject@protein_id_column
              design_matrix <- theObject@design_matrix
@@ -806,7 +806,7 @@ setMethod( f = "ruvIII_C_Varying"
 
              M <- getRuvIIIReplicateMatrixHelper( design_matrix
                                             , !!sym(sample_id)
-                                            , !!sym(ruv_group_id_column))
+                                            , !!sym(ruv_grouping_variable))
 
              cln_mat <- RUVIII_C_Varying( k = best_k
                                           , Y = Y
