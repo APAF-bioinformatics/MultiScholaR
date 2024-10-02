@@ -151,8 +151,8 @@ removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample
 #'@param sample_id The name of the column in design_matrix table that has the sample ID.
 #'@param row_id A unique ID for each row of the 'input_table' variable.
 #'@param group_column The name of the column in design_matrix table that has the experimental group.
-#'@param max_perc_below_thresh_per_group The maximum percentage of values below threshold allow in each group for a protein .
-#'@param max_perc_of_groups_below_thresh The maximum percentage of groups allowed with too many samples with protein abundance values below threshold.
+#'@param groupwise_percentage_cutoff The maximum percentage of values below threshold allow in each group for a protein .
+#'@param max_groups_percentage_cutoff The maximum percentage of groups allowed with too many samples with protein abundance values below threshold.
 #'@param abundance_threshold Abundance threshold in which the protein in the sample must be above for it to be considered for inclusion into data analysis.
 #'@param temporary_abundance_column The name of a temporary column to keep the abundance value you want to filter upon
 #'@return A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values.
@@ -163,8 +163,8 @@ removeRowsWithMissingValuesPercentHelper <- function(input_table
                                                , sample_id
                                                , row_id
                                                , group_column
-                                               , max_perc_below_thresh_per_group = 1
-                                               , max_perc_of_groups_below_thresh = 50
+                                               , groupwise_percentage_cutoff = 1
+                                               , max_groups_percentage_cutoff = 50
                                                , min_protein_intensity_percentile = 1
                                         , temporary_abundance_column = "Abundance") {
 
@@ -210,11 +210,11 @@ removeRowsWithMissingValuesPercentHelper <- function(input_table
   total_num_of_groups <- count_values_per_group |> nrow()
 
   remove_rows_temp <- count_percent_missing_per_group |>
-    dplyr::filter(max_perc_below_thresh_per_group <  perc_missing_per_group) |>
+    dplyr::filter(groupwise_percentage_cutoff <  perc_missing_per_group) |>
     group_by( { { row_id } }) |>
     summarise( percent  = n()/total_num_of_groups*100 ) |>
     ungroup() |>
-    dplyr::filter(percent > max_perc_of_groups_below_thresh)
+    dplyr::filter(percent > max_groups_percentage_cutoff)
 
   filtered_tbl <- input_table |>
     dplyr::anti_join(remove_rows_temp, by = join_by({{row_id}}))

@@ -145,10 +145,10 @@ plotPeptidesProteinsCountsPerSampleHelper <- function( input_table
 #' @description Keep spectrum-peptide matches that is within q-value threshold and are proteotypic
 #' @export
 srlQvalueProteotypicPeptideCleanHelper <- function(input_table
-                                             , q_value_thresh = 0.01
-                                             , global_q_value_thresh = 0.01
+                                             , qvalue_threshold = 0.01
+                                             , global_qvalue_threshold = 0.01
                                              , choose_only_proteotypic_peptide = 1
-                                             ,   srl_quant_columns = c("Run"
+                                             ,   input_matrix_column_ids = c("Run"
                                                                        , "Precursor.Id"
                                                                        , "Protein.Ids"
                                                                        , "Stripped.Sequence"
@@ -164,10 +164,10 @@ srlQvalueProteotypicPeptideCleanHelper <- function(input_table
 
 
   search_srl_quant_cln <- input_table |>
-    dplyr::filter( {{q_value_column}} < q_value_thresh &
-                     {{global_q_value_column}} < global_q_value_thresh &
+    dplyr::filter( {{q_value_column}} < qvalue_threshold &
+                     {{global_q_value_column}} < global_qvalue_threshold &
                      {{proteotypic_peptide_sequence_column}} == choose_only_proteotypic_peptide ) |>
-    dplyr::select(all_of( srl_quant_columns))
+    dplyr::select(all_of( input_matrix_column_ids))
 
   search_srl_quant_cln
 
@@ -182,10 +182,10 @@ rollUpPrecursorToPeptideHelper <- function( input_table
                                       , modified_peptide_sequence_column = Modified.Sequence
                                       , precursor_quantity_column = Precursor.Quantity
                                       , precursor_normalized_column = Precursor.Normalised
-                                      , cluster) {
+                                      , core_utilisation) {
 
   peptide_normalized_tbl <- NA
-  if( length(which(is.na(cluster))) == 0 ) {
+  if( length(which(is.na(core_utilisation))) == 0 ) {
 
     peptide_normalized_tbl <- input_table  |>
       group_by( {{sample_id_column}}, {{protein_id_column}}, {{peptide_sequence_column}}, {{modified_peptide_sequence_column}} ) |>
@@ -202,14 +202,14 @@ rollUpPrecursorToPeptideHelper <- function( input_table
     peptide_normalized_tbl <- input_table  |>
 
       group_by( {{sample_id_column}}, {{protein_id_column}}, {{peptide_sequence_column}}, {{modified_peptide_sequence_column}} ) |>
-      partition(cluster) |>
+      partition(core_utilisation) |>
       summarise( Peptide.RawQuantity = sum( {{precursor_quantity_column}} )
                  ,  Peptide.Normalized = sum( {{precursor_normalized_column}} ) ) |>
       collect() |>
       ungroup() |>
 
       group_by( {{sample_id_column}}, {{protein_id_column}}, {{peptide_sequence_column}} ) |>
-      partition(cluster) |>
+      partition(core_utilisation) |>
       summarise( Peptide.RawQuantity = sum( Peptide.RawQuantity )
                  ,  Peptide.Normalized = sum( Peptide.Normalized )
                  , peptidoform_count = n() ) |>
@@ -225,35 +225,35 @@ rollUpPrecursorToPeptideHelper <- function( input_table
 #' @description Remove peptide based on the intensity threshold and the proportion of samples below the threshold
 peptideIntensityFilteringHelper <- function(input_table
                                       , min_peptide_intensity_threshold = 15
-                                      , proportion_samples_below_intensity_threshold = 1
+                                      , peptides_proportion_of_samples_below_cutoff = 1
                                       , protein_id_column = Protein.Ids
                                       , peptide_sequence_column = Stripped.Sequence
                                       , peptide_quantity_column = Peptide.Normalized
-                                      , cluster) {
+                                      , core_utilisation) {
   num_values_per_peptide <- NA
 
-  if( length(which(is.na(cluster))) == 0 ) {
+  if( length(which(is.na(core_utilisation))) == 0 ) {
     num_values_per_peptide <- input_table |>
       mutate(  below_intensity_threshold = case_when( {{peptide_quantity_column}} < min_peptide_intensity_threshold ~ 1,
                                                       TRUE ~ 0) ) |>
       group_by( {{protein_id_column}}, {{peptide_sequence_column}}) |>
-      #partition(cluster) |>
+      #partition(core_utilisation) |>
       summarise (samples_counts = n(),
                  num_below_intesnity_treshold = sum(below_intensity_threshold)) |>
       #collect() |>
       ungroup() |>
-      dplyr::filter( num_below_intesnity_treshold/samples_counts < proportion_samples_below_intensity_threshold )
+      dplyr::filter( num_below_intesnity_treshold/samples_counts < peptides_proportion_of_samples_below_cutoff )
   } else {
     num_values_per_peptide <- input_table |>
       mutate(  below_intensity_threshold = case_when( {{peptide_quantity_column}} < min_peptide_intensity_threshold ~ 1,
                                                       TRUE ~ 0) ) |>
       group_by( {{protein_id_column}}, {{peptide_sequence_column}}) |>
-      partition(cluster) |>
+      partition(core_utilisation) |>
       summarise (samples_counts = n(),
                  num_below_intesnity_treshold = sum(below_intensity_threshold)) |>
       collect() |>
       ungroup() |>
-      dplyr::filter( num_below_intesnity_treshold/samples_counts < proportion_samples_below_intensity_threshold )
+      dplyr::filter( num_below_intesnity_treshold/samples_counts < peptides_proportion_of_samples_below_cutoff )
 
   }
 
@@ -276,8 +276,8 @@ peptideIntensityFilteringHelper <- function(input_table
 #'@param sample_id The name of the column in design_matrix table that has the sample ID.
 #'@param row_id A unique ID for each row of the 'input_table' variable.
 #'@param group_column The name of the column in design_matrix table that has the experimental group.
-#'@param max_perc_below_thresh_per_group The maximum percentage of values below threshold allow in each group for a peptide .
-#'@param max_perc_of_groups_below_thresh The maximum percentage of groups allowed with too many samples with peptide abundance values below threshold.
+#'@param groupwise_percentage_cutoff The maximum percentage of values below threshold allow in each group for a peptide .
+#'@param max_groups_percentage_cutoff The maximum percentage of groups allowed with too many samples with peptide abundance values below threshold.
 #'@param abundance_threshold Abundance threshold in which the protein in the sample must be above for it to be considered for inclusion into data analysis.
 #'@param temporary_abundance_column The name of a temporary column to keep the abundance value you want to filter upon
 #'@return A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values.
@@ -289,8 +289,8 @@ removePeptidesWithMissingValuesPercentHelper <- function(input_table
                                                , protein_id_column
                                                , peptide_sequence_column
                                                , group_column
-                                               , max_perc_below_thresh_per_group = 1
-                                               , max_perc_of_groups_below_thresh = 50
+                                               , groupwise_percentage_cutoff = 1
+                                               , max_groups_percentage_cutoff = 50
                                                , abundance_threshold
                                                , abundance_column = "Abundance") {
 
@@ -325,11 +325,11 @@ removePeptidesWithMissingValuesPercentHelper <- function(input_table
   total_num_of_groups <- count_values_per_group |> nrow()
 
   remove_rows_temp <- count_percent_missing_per_group |>
-    dplyr::filter(max_perc_below_thresh_per_group <  perc_below_thresh_per_group) |>
+    dplyr::filter(groupwise_percentage_cutoff <  perc_below_thresh_per_group) |>
     group_by( row_id ) |>
     summarise( percent  = n()/total_num_of_groups*100 ) |>
     ungroup() |>
-    dplyr::filter(percent > max_perc_of_groups_below_thresh)
+    dplyr::filter(percent > max_groups_percentage_cutoff)
 
   print(nrow(remove_rows_temp))
 
@@ -350,15 +350,15 @@ removePeptidesWithMissingValuesPercentHelper <- function(input_table
 #' @param num_peptides_per_protein_thresh Minimum number of peptides per protein
 #' @param num_peptidoforms_per_protein_thresh Minimum number of peptidoforms per protein
 #' @param protein_id_column Protein ID column name as string
-#' @param cluster Cluster to use for parallel processing
+#' @param core_utilisation core_utilisation to use for parallel processing
 filterMinNumPeptidesPerProteinHelper <- function( input_table
           , num_peptides_per_protein_thresh = 1
           , num_peptidoforms_per_protein_thresh = 2
           , protein_id_column = Protein.Ids
-          , cluster) {
+          , core_utilisation) {
 
   num_peptides_per_protein <- NA
-  if( length(which(is.na(cluster))) == 0 ) {
+  if( length(which(is.na(core_utilisation))) == 0 ) {
     num_peptides_per_protein <- input_table |>
       group_by( {{protein_id_column}} ) |>
       dplyr::summarise( peptide_count = n()
@@ -367,7 +367,7 @@ filterMinNumPeptidesPerProteinHelper <- function( input_table
   } else {
     num_peptides_per_protein <- input_table |>
       group_by( {{protein_id_column}} ) |>
-      partition(cluster) |>
+      partition(core_utilisation) |>
       dplyr::summarise( peptide_count = n()
                  , peptidoform_count = sum( peptidoform_count, na.rm=TRUE)) |>
       collect() |>
@@ -400,31 +400,31 @@ filterMinNumPeptidesPerProteinHelper <- function( input_table
 #' @description Remove sample if it has less than a certain number of peptides identified
 #' @param List of samples to keep regardless of how many peptides it has because it is am important sample
 filterMinNumPeptidesPerSampleHelper <- function ( input_table
-                                            , min_num_peptides_in_sample = 5000
+                                            , peptides_per_sample_cutoff = 5000
                                             , sample_id_column = Run
-                                            , cluster
+                                            , core_utilisation
                                             , inclusion_list = c()) {
 
   samples_passing_filter <- NA
-  if( length(which(is.na(cluster))) == 0 ) {
+  if( length(which(is.na(core_utilisation))) == 0 ) {
     samples_passing_filter <- input_table |>
       group_by( {{sample_id_column}} ) |>
-      #partition(cluster) |>
+      #partition(core_utilisation) |>
       summarise( counts = n()) |>
       #collect() |>
       ungroup() |>
-      dplyr::filter( counts >= min_num_peptides_in_sample |
+      dplyr::filter( counts >= peptides_per_sample_cutoff |
                        ( {{sample_id_column}} %in% inclusion_list)  ) |>
       dplyr::select(-counts)
 
   } else {
     samples_passing_filter <- input_table |>
       group_by( {{sample_id_column}} ) |>
-      partition(cluster) |>
+      partition(core_utilisation) |>
       summarise( counts = n()) |>
       collect() |>
       ungroup() |>
-      dplyr::filter( counts >= min_num_peptides_in_sample |
+      dplyr::filter( counts >= peptides_per_sample_cutoff |
                        ( {{sample_id_column}} %in% inclusion_list)  ) |>
       dplyr::select(-counts)
   }
@@ -678,15 +678,15 @@ removePeptidesWithOnlyOneReplicateHelper <- function(input_table
                                                , replicate_group_column = general_sample_info
                                                , protein_id_column = Protein.Ids
                                                , peptide_sequence_column = Stripped.Sequence
-                                               , cluster ) {
+                                               , core_utilisation ) {
 
   # Count the number of technical replicates per sample and peptide combination
   num_tech_reps_per_sample_and_peptide <- NA
-  if( length(which(is.na(cluster))) == 0 ) {
+  if( length(which(is.na(core_utilisation))) == 0 ) {
     num_tech_reps_per_sample_and_peptide <- input_table |>
       left_join( samples_id_tbl, by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>
       group_by( {{replicate_group_column}}, {{protein_id_column}}, {{peptide_sequence_column}}) |>
-      #partition(cluster) |>
+      #partition(core_utilisation) |>
       summarise(counts = n() ) |>
       #collect() |>
       ungroup()
@@ -694,7 +694,7 @@ removePeptidesWithOnlyOneReplicateHelper <- function(input_table
     num_tech_reps_per_sample_and_peptide <- input_table |>
       left_join( samples_id_tbl, by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>
       group_by( {{replicate_group_column}}, {{protein_id_column}}, {{peptide_sequence_column}}) |>
-      partition(cluster) |>
+      partition(core_utilisation) |>
       summarise(counts = n() ) |>
       collect() |>
       ungroup()
@@ -723,15 +723,15 @@ removeProteinWithOnlyOneReplicate <- function(input_table
                                                , sample_id_tbl_sample_id_column  =  ms_filename
                                                , replicate_group_column = general_sample_info
                                                , protein_id_column = Protein.Ids
-                                               , cluster ) {
+                                               , core_utilisation ) {
 
   # Count the number of technical replicates per sample and protein combination
   num_tech_reps_per_sample_and_protein <- NA
-  if( length(which(is.na(cluster))) == 0 ) {
+  if( length(which(is.na(core_utilisation))) == 0 ) {
     num_tech_reps_per_sample_and_protein <- input_table |>
       left_join( samples_id_tbl, by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>
       group_by( {{replicate_group_column}}, {{protein_id_column}}) |>
-      #partition(cluster) |>
+      #partition(core_utilisation) |>
       summarise(counts = n() ) |>
       #collect() |>
       ungroup()
@@ -739,7 +739,7 @@ removeProteinWithOnlyOneReplicate <- function(input_table
     num_tech_reps_per_sample_and_protein <- input_table |>
       left_join( samples_id_tbl, by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>
       group_by( {{replicate_group_column}}, {{protein_id_column}}) |>
-      partition(cluster) |>
+      partition(core_utilisation) |>
       summarise(counts = n() ) |>
       collect() |>
       ungroup()
@@ -770,7 +770,7 @@ removeProteinWithOnlyOneReplicate <- function(input_table
 #'@param peptide_sequence_column Peptide sequence column, tidyverse fromat (default =  Stripped.Sequence).
 #'@param quantity_to_impute_column Name of column containing the peptide abundance that needs to be normalized in tidyverse format (default: Peptide.RawQuantity)
 #'@param hek_string The string denoting samples that are controls using HEK cells (default: "HEK")
-#'@param prop_missing The proportion of sample replicates in a group that is missing below which the peptide intensity will be imputed (default: 0.50)
+#'@param proportion_missing_values The proportion of sample replicates in a group that is missing below which the peptide intensity will be imputed (default: 0.50)
 #'@export
 peptideMissingValueImputationHelper <- function( input_table
                                            , metadata_table
@@ -782,8 +782,8 @@ peptideMissingValueImputationHelper <- function( input_table
                                            , quantity_to_impute_column = Peptide.Normalized
                                            , imputed_value_column = Peptide.Imputed
                                            , hek_string = "HEK"
-                                           , prop_missing = 0.50
-                                           , cluster ) {
+                                           , proportion_missing_values = 0.50
+                                           , core_utilisation ) {
 
   # Max number of technical replicates per group
   num_tech_rep_per_sample <-  metadata_table  |>
@@ -796,7 +796,7 @@ peptideMissingValueImputationHelper <- function( input_table
   # Count the number of technical replicates per sample and peptide combination
   num_tech_reps_per_sample_and_peptide <- NA
 
-  if( length(which(is.na(cluster))) == 0 ) {
+  if( length(which(is.na(core_utilisation))) == 0 ) {
     num_tech_reps_per_sample_and_peptide <- input_table |>
       left_join( metadata_table
                  , by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>
@@ -804,7 +804,7 @@ peptideMissingValueImputationHelper <- function( input_table
       dplyr::filter( !is.na({{quantity_to_impute_column}}) ) |>
       distinct( {{replicate_group_column}}, {{protein_id_column}}, {{peptide_sequence_column}}, {{quantity_to_impute_column}}) |>
       group_by( {{replicate_group_column}}, {{protein_id_column}}, {{peptide_sequence_column}}) |>
-      #partition(cluster) |>
+      #partition(core_utilisation) |>
       summarise( num_tech_rep = n()
                  , average_value = mean({{quantity_to_impute_column}}, na.rm=TRUE )) |>
       #collect() |>
@@ -817,7 +817,7 @@ peptideMissingValueImputationHelper <- function( input_table
       dplyr::filter( !is.na({{quantity_to_impute_column}}) ) |>
       distinct( {{replicate_group_column}}, {{protein_id_column}}, {{peptide_sequence_column}}, {{quantity_to_impute_column}}) |>
       group_by( {{replicate_group_column}}, {{protein_id_column}}, {{peptide_sequence_column}}) |>
-      partition(cluster) |>
+      partition(core_utilisation) |>
       summarise( num_tech_rep = n()
                  , average_value = mean({{quantity_to_impute_column}}, na.rm=TRUE)) |>
       collect() |>
@@ -826,10 +826,15 @@ peptideMissingValueImputationHelper <- function( input_table
   }
 
   ## Calculate proportion of replicates in a group that is missing
-  rows_needing_imputation <-  num_tech_reps_per_sample_and_peptide |>
+  rows_needing_imputation_temp <-  num_tech_reps_per_sample_and_peptide |>
     left_join( num_tech_rep_per_sample
-               , by = join_by( {{replicate_group_column}} ) ) |>
-    dplyr::filter(    (1 - num_tech_rep / total_num_tech_rep ) < prop_missing )
+               , by = join_by( {{replicate_group_column}} ) )
+
+
+  print(rows_needing_imputation_temp)
+
+  rows_needing_imputation <-   rows_needing_imputation_temp |>
+    dplyr::filter(    (1 - num_tech_rep / total_num_tech_rep ) < proportion_missing_values )
 
   get_combinations_part_1 <- metadata_table |>
     distinct( {{sample_id_tbl_sample_id_column}}, {{replicate_group_column}}) |>
@@ -1036,11 +1041,11 @@ removePeptidesOnlyInHek293 <- function( input_table
                                         , peptide_sequence_column = Stripped.Sequence
                                         , hek_string = "HEK"
                                         , general_sample_info = general_sample_info
-                                        , cluster= cluster) {
+                                        , core_utilisation= core_utilisation) {
 
 
   peptides_found_in_hek_samples_only <- NA
-  if( length(which(is.na(cluster))) == 0 ) {
+  if( length(which(is.na(core_utilisation))) == 0 ) {
 
     peptides_found_in_hek_samples_only <- input_table |>
       left_join( metadata_table |>
@@ -1049,7 +1054,7 @@ removePeptidesOnlyInHek293 <- function( input_table
       mutate( sample_type = case_when ( str_detect( {{general_sample_info}}, hek_string) ~ hek_string,
                                         TRUE ~ "Cohort_Sample")) |>
       group_by( {{protein_id_column}}, {{peptide_sequence_column}}, sample_type ) |>
-      partition(cluster) |>
+      partition(core_utilisation) |>
       summarise( counts = n()) |>
       collect() |>
       ungroup() |>
@@ -1066,7 +1071,7 @@ removePeptidesOnlyInHek293 <- function( input_table
       mutate( sample_type = case_when ( str_detect( {{general_sample_info}}, hek_string) ~ hek_string,
                                         TRUE ~ "Cohort_Sample")) |>
       group_by( {{protein_id_column}}, {{peptide_sequence_column}}, sample_type ) |>
-      #partition(cluster) |>
+      #partition(core_utilisation) |>
       summarise( counts = n()) |>
       #collect() |>
       ungroup() |>
@@ -1674,16 +1679,16 @@ removeProteinsWithOnlyOneReplicateHelper <- function(input_table
                                                , replicate_group_column = general_sample_info
                                                , protein_id_column = Protein.Ids
                                                , quantity_column = Protein.Normalized
-                                               , cluster ) {
+                                               , core_utilisation ) {
 
   # Count the number of technical replicates per sample and peptide combination
   num_tech_reps_per_sample_and_protein <- NA
-  if( length(which(is.na(cluster))) == 0 ) {
+  if( length(which(is.na(core_utilisation))) == 0 ) {
     num_tech_reps_per_sample_and_protein <- input_table |>
       left_join( samples_id_tbl, by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>
       dplyr::filter( !is.na( {{quantity_column}}))  |>
       group_by( {{replicate_group_column}}, {{protein_id_column}} ) |>
-      #partition(cluster) |>
+      #partition(core_utilisation) |>
       summarise(counts = n() ) |>
       #collect() |>
       ungroup()
@@ -1692,7 +1697,7 @@ removeProteinsWithOnlyOneReplicateHelper <- function(input_table
       left_join( samples_id_tbl, by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>
       dplyr::filter( !is.na( {{quantity_column}}))  |>
       group_by( {{replicate_group_column}}, {{protein_id_column}}) |>
-      partition(cluster) |>
+      partition(core_utilisation) |>
       summarise(counts = n() ) |>
       collect() |>
       ungroup()
@@ -1740,7 +1745,7 @@ proteinMissingValueImputation <- function( input_table
                                            , quantity_to_impute_column = Protein.Normalized
                                            , imputed_value_column = Protein.Imputed
                                            , hek_string = "HEK"
-                                           , cluster ) {
+                                           , core_utilisation ) {
 
   # Max number of technical replicates
   num_tech_rep_per_sample <-  metadata_table  |>
@@ -1753,7 +1758,7 @@ proteinMissingValueImputation <- function( input_table
   # Count the number of technical replicates per sample and protein combination
   num_tech_reps_per_sample_and_protein <- NA
 
-  if( length(which(is.na(cluster))) == 0 ) {
+  if( length(which(is.na(core_utilisation))) == 0 ) {
     num_tech_reps_per_sample_and_protein <- input_table |>
       left_join( metadata_table
                  , by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>
@@ -1761,7 +1766,7 @@ proteinMissingValueImputation <- function( input_table
       dplyr::filter( !is.na( {{quantity_to_impute_column}}))  |>
       distinct( {{replicate_group_column}}, {{protein_id_column}}, {{quantity_to_impute_column}}) |>
       group_by( {{replicate_group_column}}, {{protein_id_column}} ) |>
-      #partition(cluster) |>
+      #partition(core_utilisation) |>
       summarise( num_tech_rep = n()
                  , average_value = mean({{quantity_to_impute_column}}, na.rm=TRUE )) |>
       #collect() |>
@@ -1774,7 +1779,7 @@ proteinMissingValueImputation <- function( input_table
       dplyr::filter( !is.na( {{quantity_to_impute_column}}))  |>
       distinct( {{replicate_group_column}}, {{protein_id_column}}, {{quantity_to_impute_column}}) |>
       group_by( {{replicate_group_column}}, {{protein_id_column}}) |>
-      partition(cluster) |>
+      partition(core_utilisation) |>
       summarise( num_tech_rep = n()
                  , average_value = mean({{quantity_to_impute_column}}, na.rm=TRUE)) |>
       collect() |>
@@ -2003,7 +2008,7 @@ getProteinsHeatMap <- function( protein_matrix
                                 # , ms_machine_column
                                 , colour_rules
                                 , columns_to_exclude
-                                , cluster_samples = TRUE
+                                , core_utilisation_samples = TRUE
                                 , sort_by_sample_id = TRUE
                                 , sample_id_column = Run
                                 , use_raster = TRUE
@@ -2066,7 +2071,7 @@ getProteinsHeatMap <- function( protein_matrix
                       , row_names_gp = gpar(fontsize = 12, fontfamily = "sans")
                       , column_names_gp = gpar(fontsize = 12)
                       , heatmap_legend_param = heatmap_legend_param
-                      , cluster_columns = cluster_samples )
+                      , core_utilisation_columns = core_utilisation_samples )
 
   output_legends <- purrr::map2 (colour_rules_filt
                                  , names(colour_rules_filt)

@@ -251,7 +251,7 @@ setArgsDefault <- function(args, value_name, as_func, default_val=NA ) {
 #' @return This function is called for its side effects (saving files)
 #' @export
 #'
-#' 
+#'
 save_plot <- function(plot, base_path, plot_name, formats = c("pdf", "png")) {
   for (format in formats) {
     file_path <- file.path(base_path, "protein_qc", paste0(plot_name, ".", format))
@@ -278,5 +278,81 @@ save_plot <- function(plot, base_path, plot_name, formats = c("pdf", "png")) {
 write_results <- function(data, filename) {
   vroom::vroom_write(data, file.path(results_dir, "protein_qc", filename))
 }
+
+##################################################################################################################
+
+#' @export
+getFunctionName <- function() {
+  calls <- sys.calls()
+  current_call <- calls[[length(calls) - 1]]
+  as.character(current_call[1])
+}
+
+
+#' @export
+getFunctionNameSecondLevel <- function() {
+  calls <- sys.calls()
+  current_call <- calls[[length(calls) - 2]]
+  as.character(current_call[1])
+}
+
+
+
+#' Check the parameters in the arguments list and the function parameters to see what param applies
+#' @export
+checkParamsObjectFunctionSimplify <- function(theObject, param_name_string, param_value, default_value = NULL) {
+
+  function_name <- getFunctionNameSecondLevel()
+
+  # print(function_name)
+
+  object_value <- (theObject@args)[[function_name]][[param_name_string]]
+
+  # print(paste0("param_value = ", param_value))
+
+  error <- paste0(function_name,  paste0(": '", param_name_string, "' is not defined.\n") )
+
+  if( !is.null(param_value) ) {
+    return( param_value)
+  } else if( !is.null(object_value) ) {
+    return( object_value)
+  } else if( !is.null(default_value) ) {
+    return( default_value)
+  } else {
+    stop( error )
+  }
+
+}
+
+
+
+#' Check the parameters in the arguments list and the function parameters to see what param applies
+#' @export
+checkParamsObjectFunctionSimplifyAcceptNull <- function(theObject, param_name_string, param_value, default_value = NULL) {
+
+  function_name <- getFunctionNameSecondLevel()
+
+  # print(function_name)
+
+  object_value <- (theObject@args)[[function_name]][[param_name_string]]
+
+  # print(paste0("param_value = ", param_value))
+
+  error <- paste0(function_name, ": '", param_name_string, "' is not defined.\n")
+
+  if( !is.null(param_value) ) {
+    return( param_value)
+  } else if( !is.null(object_value) ) {
+    return( object_value)
+  } else if ( !is.null(default_value) ) {
+    return( default_value)
+  } else {
+    warning(error)
+    return( NULL )
+  }
+
+}
+
+
 
 ##################################################################################################################
