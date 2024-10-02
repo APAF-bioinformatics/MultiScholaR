@@ -159,14 +159,14 @@ setMethod( f="proteinIntensityFiltering"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
 setGeneric(name="removeProteinsWithOnlyOneReplicate"
-           , def=function( theObject, cluster ) {
+           , def=function( theObject, core_utilisation = NULL ) {
              standardGeneric("removeProteinsWithOnlyOneReplicate")
            }
-           , signature=c("theObject", "cluster"))
+           , signature=c("theObject", "core_utilisation"))
 
 #'@export
 setMethod(f="removeProteinsWithOnlyOneReplicate"
-          , definition=function( theObject, cluster) {
+          , definition=function( theObject, core_utilisation = NULL) {
             protein_data <- theObject@protein_data
             samples_id_tbl <- theObject@design_matrix
             sample_id_tbl_sample_id_column <- theObject@sample_id
@@ -175,6 +175,10 @@ setMethod(f="removeProteinsWithOnlyOneReplicate"
 
             input_table_sample_id_column <- 'Sample_ID'
             quantity_column <- "log_values"
+            core_utilisation <- checkParamsObjectFunctionSimplify( theObject
+                                                                   , "core_utilisation"
+                                                                   , core_utilisation
+                                                                   , NA )
 
             data_long_cln <- protein_data  |>
               pivot_longer( cols=!matches(protein_id_column)
@@ -188,7 +192,8 @@ setMethod(f="removeProteinsWithOnlyOneReplicate"
                                                                 , sample_id_tbl_sample_id_column = !!sym( sample_id_tbl_sample_id_column)
                                                                 , replicate_group_column = !!sym( replicate_group_column)
                                                                 , protein_id_column = !!sym( protein_id_column)
-                                                                , quantity_column = !!sym( quantity_column))
+                                                                , quantity_column = !!sym( quantity_column)
+                                                                , core_utilisation = core_utilisation)
 
 
             theObject@protein_data <- protein_data |>
@@ -606,7 +611,7 @@ setMethod(f="pearsonCorForSamplePairs"
 
 #'@export
 setGeneric(name="getNegCtrlProtAnova"
-           , def=function( theObject, ruv_group_id_column, num_neg_ctrl, q_val_thresh, fdr_method ) {
+           , def=function( theObject, ruv_group_id_column, percentage_as_neg_ctrl, num_neg_ctrl, q_val_thresh, fdr_method ) {
              standardGeneric("getNegCtrlProtAnova")
            }
            , signature=c("theObject", "ruv_group_id_column", "num_neg_ctrl", "q_val_thresh", "fdr_method"))
@@ -616,7 +621,8 @@ setMethod(f="getNegCtrlProtAnova"
           , signature="ProteinQuantitativeData"
           , definition=function( theObject
                                  , ruv_group_id_column = "replicates"
-                                 , num_neg_ctrl = 100
+                                 , percentage_as_neg_ctrl = 10
+                                 , num_neg_ctrl = round(nrow( theObject@protein_data) * percentage_as_neg_ctrl / 100, 0)
                                  , q_val_thresh = 0.05
                                  , fdr_method = "BH" ) {
             protein_data <- theObject@protein_data
@@ -635,6 +641,7 @@ setMethod(f="getNegCtrlProtAnova"
                                                           column_to_rownames(sample_id) |>
                                                           dplyr::select( -!!sym(group_id))
                                                         , group_column = ruv_group_id_column
+                                                        , percentage_as_neg_ctrl = percentage_as_neg_ctrl
                                                         , num_neg_ctrl = num_neg_ctrl
                                                         , q_val_thresh = q_val_thresh
                                                         , fdr_method = fdr_method )
@@ -830,25 +837,25 @@ setMethod( f = "ruvIII_C_Varying"
 #'@export
 setGeneric(name="removeRowsWithMissingValuesPercent"
            , def=function( theObject
-                           , ruv_group_id_column
-                           , max_perc_below_thresh_per_group = 50
-                           , max_perc_of_groups_below_thresh = 50
+                           , ruv_grouping_variable
+                           , groupwise_percentage_cutoff = 50
+                           , max_groups_percentage_cutoff = 50
                            , min_protein_intensity_percentile = 1) {
              standardGeneric("removeRowsWithMissingValuesPercent")
            }
            , signature=c("theObject"
-                         , "ruv_group_id_column"
-                         , "max_perc_below_thresh_per_group"
-                         , "max_perc_of_groups_below_thresh"
+                         , "ruv_grouping_variable"
+                         , "groupwise_percentage_cutoff"
+                         , "max_groups_percentage_cutoff"
                          , "min_protein_intensity_percentile" ))
 
 #'@export
 setMethod( f = "removeRowsWithMissingValuesPercent"
            , signature="ProteinQuantitativeData"
            , definition=function( theObject
-                                  , ruv_group_id_column
-                                  , max_perc_below_thresh_per_group = 50
-                                  , max_perc_of_groups_below_thresh = 50
+                                  , ruv_grouping_variable
+                                  , groupwise_percentage_cutoff = 50
+                                  , max_groups_percentage_cutoff = 50
                                   , min_protein_intensity_percentile = 1) {
 
              protein_data <- theObject@protein_data
@@ -866,9 +873,9 @@ setMethod( f = "removeRowsWithMissingValuesPercent"
                                                                            , design_matrix = design_matrix
                                                                            , sample_id = !!sym(sample_id)
                                                                            , row_id = !!sym(protein_id_column)
-                                                                           , group_column = !!sym(ruv_group_id_column)
-                                                                           , max_perc_below_thresh_per_group = max_perc_below_thresh_per_group
-                                                                           , max_perc_of_groups_below_thresh = max_perc_of_groups_below_thresh
+                                                                           , group_column = !!sym(ruv_grouping_variable)
+                                                                           , groupwise_percentage_cutoff = groupwise_percentage_cutoff
+                                                                           , max_groups_percentage_cutoff = max_groups_percentage_cutoff
                                                                            , min_protein_intensity_percentile = min_protein_intensity_percentile
                                                                            , temporary_abundance_column = "Log_Abundance")
 

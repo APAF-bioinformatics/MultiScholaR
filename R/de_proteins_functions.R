@@ -168,9 +168,6 @@ removeRowsWithMissingValuesPercentHelper <- function(input_table
                                                , min_protein_intensity_percentile = 1
                                         , temporary_abundance_column = "Abundance") {
 
-
-
-
   abundance_long <- input_table |>
     pivot_longer(cols = { { cols } },
                  names_to =   as_string(as_name( enquo( sample_id ))) ,
@@ -1498,37 +1495,6 @@ runTestsContrasts <- function(data,
 }
 
 
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-## edited from missMethyl source code https://rdrr.io/bioc/missMethyl/src/R/RUVfunctions.R
-#'@export
-cmriRUVfit <- function(Y, X, ctl, Z = 1, k = NULL, method = c("inv", "rinv",
-                                                              "ruv4", "ruv3", "ruv2"), M = NULL, ...)
-{
-  method <- match.arg(method)
-  if ((method %in% c("ruv4", "ruv3", "ruv2")) & is.null(k))
-    stop("'k' cannot be NULL if method is 'ruv4', 'ruv3' or 'ruv2'.")
-  if (mode(ctl) != "logical")
-    stop("'ctl' must be a logical vector.")
-  if (is.data.frame(Y))
-    Y <- data.matrix(Y)
-  if (mode(Y) != "numeric")
-    stop("'Y' must be a numeric matrix.")
-  if (method == "ruv3" & is.null(M))
-    stop("'M' cannot be NULL if method is 'ruv3'")
-  Y <- t(Y)
-  fit <- switch(method, inv = ruv::RUVinv(Y = Y, X = X,
-                                          ctl = ctl, Z = Z, ...),
-                rinv = ruv::RUVrinv(Y = Y, X = X, ctl = ctl,
-                                    Z = Z, k = k, ...),
-                ruv4 = ruv::RUV4(Y = Y, X = X, ctl = ctl,
-                                 k = k, Z = Z, ...),
-                ruv2 = ruv::RUV2(Y = Y, X = X, ctl = ctl,
-                                 k = k, Z = Z, ...),
-                ruv3 = ruv::RUVIII(Y = Y, M = M, ctl = ctl, k = k,
-                                   ...))
-  return(fit)
-}
-
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
@@ -1623,9 +1589,29 @@ getControlGenes <- function(data,
 #' @return A boolean vector which indicates which row in the input data matrix is a control gene. The row is included if the value is TRUE. The names of each element is the row ID / protein accessions of the input data matrix.
 #'@export
 getNegCtrlProtAnovaHelper <- function(data_matrix
-                                , design_matrix, group_column = "group"
-                                , num_neg_ctrl = 100, q_val_thresh = 0.05
+                                , design_matrix
+                                , group_column = "group"
+                                , percentage_as_neg_ctrl = 10
+                                , num_neg_ctrl = round( nrow(data_matrix)*percentage_as_neg_ctrl/100, 0)
+                                , q_val_thresh = 0.05
                                 , fdr_method = "qvalue") {
+
+  ## Both percentage_as_neg_ctrl and num_neg_ctrl is missing, and number of proteins >= 50 use only 10 percent of the proteins as negative control by default
+  if((is.null(percentage_as_neg_ctrl) ||
+     is.na(percentage_as_neg_ctrl) ) &&
+     (is.null(num_neg_ctrl) ||
+      is.na(num_neg_ctrl) ) &&
+     nrow(data_matrix) >= 50 ) {
+    num_neg_ctrl <- round( nrow(data_matrix)*10/100, 0)
+    warnings( paste0( getFunctionName(), ": Using 10% of proteins from the input matrix as negative controls by default.\n"))
+  } else {
+    error(paste0( getFunctionName(), ": Please provide either percentage_as_neg_ctrl or num_neg_ctrl.\n"))
+  }
+
+  if(!is.null(num_neg_ctrl) &
+     !is.na(num_neg_ctrl)) {
+    num_neg_ctrl <- as.integer(num_neg_ctrl)
+  }
 
   ## Inspired by matANOVA function from PhosR package: http://www.bioconductor.org/packages/release/bioc/html/PhosR.html
 

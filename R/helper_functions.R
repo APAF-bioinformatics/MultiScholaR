@@ -353,6 +353,17 @@ checkParamsObjectFunctionSimplifyAcceptNull <- function(theObject, param_name_st
 
 }
 
+#' Update the parameter in the object
+#'@export
+updateParamInObject <- function(theObject, param_name_string, param_value) {
+
+  function_name <- getFunctionNameSecondLevel()
+
+  (theObject@args)[[function_name]][[param_name_string]] <- param_value
+
+  theObject
+
+}
 
 
 ##################################################################################################################
