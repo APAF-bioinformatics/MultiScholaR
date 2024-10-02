@@ -1605,7 +1605,7 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
     num_neg_ctrl <- round( nrow(data_matrix)*10/100, 0)
     warnings( paste0( getFunctionName(), ": Using 10% of proteins from the input matrix as negative controls by default.\n"))
   } else {
-    error(paste0( getFunctionName(), ": Please provide either percentage_as_neg_ctrl or num_neg_ctrl.\n"))
+    stop(paste0( getFunctionName(), ": Please provide either percentage_as_neg_ctrl or num_neg_ctrl.\n"))
   }
 
   if(!is.null(num_neg_ctrl) &
