@@ -1604,13 +1604,14 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
      nrow(data_matrix) >= 50 ) {
     num_neg_ctrl <- round( nrow(data_matrix)*10/100, 0)
     warnings( paste0( getFunctionName(), ": Using 10% of proteins from the input matrix as negative controls by default.\n"))
+  } else if (!is.null(percentage_as_neg_ctrl) &
+             !is.na(percentage_as_neg_ctrl)) {
+    num_neg_ctrl <- round( nrow(data_matrix)*percentage_as_neg_ctrl/100, 0)
+  } else if(!is.null(num_neg_ctrl) &
+       !is.na(num_neg_ctrl)) {
+    num_neg_ctrl <- as.integer(num_neg_ctrl)
   } else {
     stop(paste0( getFunctionName(), ": Please provide either percentage_as_neg_ctrl or num_neg_ctrl.\n"))
-  }
-
-  if(!is.null(num_neg_ctrl) &
-     !is.na(num_neg_ctrl)) {
-    num_neg_ctrl <- as.integer(num_neg_ctrl)
   }
 
   ## Inspired by matANOVA function from PhosR package: http://www.bioconductor.org/packages/release/bioc/html/PhosR.html
