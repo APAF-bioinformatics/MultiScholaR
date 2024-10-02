@@ -306,7 +306,7 @@ checkParamsObjectFunctionSimplify <- function(theObject, param_name_string, para
 
   # print(function_name)
 
-  object_value <- (theObject@args)[[function_name]][[param_name_string]]
+  object_value <- theObject@args[[function_name]][[param_name_string]]
 
   # print(paste0("param_value = ", param_value))
 
@@ -334,7 +334,7 @@ checkParamsObjectFunctionSimplifyAcceptNull <- function(theObject, param_name_st
 
   # print(function_name)
 
-  object_value <- (theObject@args)[[function_name]][[param_name_string]]
+  object_value <- theObject@args[[function_name]][[param_name_string]]
 
   # print(paste0("param_value = ", param_value))
 
@@ -358,8 +358,13 @@ checkParamsObjectFunctionSimplifyAcceptNull <- function(theObject, param_name_st
 updateParamInObject <- function(theObject, param_name_string, param_value) {
 
   function_name <- getFunctionNameSecondLevel()
+#
+#   print(theObject@args)
+#   print(function_name)
+#   print(param_name_string)
+#   print(param_value)
 
-  (theObject@args)[[function_name]][[param_name_string]] <- param_value
+  theObject@args[[function_name]][[param_name_string]] <- param_value
 
   theObject
 

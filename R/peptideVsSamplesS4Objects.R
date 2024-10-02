@@ -194,7 +194,6 @@ setMethod( f ="cleanDesignMatrixPeptide"
            })
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
 #'@export
 setGeneric(name="srlQvalueProteotypicPeptideClean"
            , def=function( theObject, qvalue_threshold = NULL, global_qvalue_threshold = NULL, choose_only_proteotypic_peptide = NULL, input_matrix_column_ids = NULL) {
@@ -229,8 +228,9 @@ setMethod( f ="srlQvalueProteotypicPeptideClean"
                                                                                    , "choose_only_proteotypic_peptide"
                                                                                    , choose_only_proteotypic_peptide
                                                                                    , 1)
-
              theObject <- updateParamInObject(theObject, "qvalue_threshold", qvalue_threshold)
+
+
              theObject <- updateParamInObject(theObject, "global_qvalue_threshold", global_qvalue_threshold)
              theObject <- updateParamInObject(theObject, "choose_only_proteotypic_peptide", choose_only_proteotypic_peptide)
 
