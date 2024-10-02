@@ -1590,7 +1590,7 @@ getControlGenes <- function(data,
 #'@export
 getNegCtrlProtAnovaHelper <- function(data_matrix
                                 , design_matrix
-                                , group_column = "group"
+                                , grouping_variable = "group"
                                 , percentage_as_neg_ctrl = 10
                                 , num_neg_ctrl = round( nrow(data_matrix)*percentage_as_neg_ctrl/100, 0)
                                 , q_val_thresh = 0.05
@@ -1615,7 +1615,7 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
 
   ## Inspired by matANOVA function from PhosR package: http://www.bioconductor.org/packages/release/bioc/html/PhosR.html
 
-  grps <- design_matrix[colnames(data_matrix), group_column]
+  grps <- design_matrix[colnames(data_matrix), grouping_variable]
 
   ps <- apply(data_matrix, 1, function(x) {
        if( length( unique( grps[!is.na(x)] )  ) > 1 ) {

@@ -175,10 +175,10 @@ setMethod(f="removeProteinsWithOnlyOneReplicate"
 
             input_table_sample_id_column <- 'Sample_ID'
             quantity_column <- "log_values"
-            core_utilisation <- checkParamsObjectFunctionSimplify( theObject
-                                                                   , "core_utilisation"
-                                                                   , core_utilisation
-                                                                   , NA )
+            # core_utilisation <- checkParamsObjectFunctionSimplify( theObject
+            #                                                        , "core_utilisation"
+            #                                                        , core_utilisation
+            #                                                        , NA )
 
             data_long_cln <- protein_data  |>
               pivot_longer( cols=!matches(protein_id_column)
@@ -187,7 +187,6 @@ setMethod(f="removeProteinsWithOnlyOneReplicate"
 
             protein_data <- removeProteinsWithOnlyOneReplicateHelper( input_table = data_long_cln
                                                                 , samples_id_tbl = samples_id_tbl
-                                                                , cluster = cluster
                                                                 , input_table_sample_id_column = !!sym( input_table_sample_id_column )
                                                                 , sample_id_tbl_sample_id_column = !!sym( sample_id_tbl_sample_id_column)
                                                                 , replicate_group_column = !!sym( replicate_group_column)
@@ -611,16 +610,16 @@ setMethod(f="pearsonCorForSamplePairs"
 
 #'@export
 setGeneric(name="getNegCtrlProtAnova"
-           , def=function( theObject, ruv_group_id_column, percentage_as_neg_ctrl, num_neg_ctrl, q_val_thresh, fdr_method ) {
+           , def=function( theObject, ruv_grouping_variable, percentage_as_neg_ctrl, num_neg_ctrl, q_val_thresh, fdr_method ) {
              standardGeneric("getNegCtrlProtAnova")
            }
-           , signature=c("theObject", "ruv_group_id_column", "num_neg_ctrl", "q_val_thresh", "fdr_method"))
+           , signature=c("theObject", "ruv_grouping_variable", "num_neg_ctrl", "q_val_thresh", "fdr_method"))
 
 #'@export
 setMethod(f="getNegCtrlProtAnova"
           , signature="ProteinQuantitativeData"
           , definition=function( theObject
-                                 , ruv_group_id_column = "replicates"
+                                 , ruv_grouping_variable = "replicates"
                                  , percentage_as_neg_ctrl = 10
                                  , num_neg_ctrl = round(nrow( theObject@protein_data) * percentage_as_neg_ctrl / 100, 0)
                                  , q_val_thresh = 0.05
@@ -640,7 +639,7 @@ setMethod(f="getNegCtrlProtAnova"
                                                         , design_matrix = design_matrix |>
                                                           column_to_rownames(sample_id) |>
                                                           dplyr::select( -!!sym(group_id))
-                                                        , group_column = ruv_group_id_column
+                                                        , grouping_variable = ruv_grouping_variable
                                                         , percentage_as_neg_ctrl = percentage_as_neg_ctrl
                                                         , num_neg_ctrl = num_neg_ctrl
                                                         , q_val_thresh = q_val_thresh
