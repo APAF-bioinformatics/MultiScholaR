@@ -12,7 +12,8 @@ ProteinQuantitativeData <- setClass("ProteinQuantitativeData"
                       , design_matrix = "data.frame"
                       , sample_id="character"
                       , group_id="character"
-                      , technical_replicate_id="character" )
+                      , technical_replicate_id="character"
+                      , args = "list")
 
          , prototype = list(
            # Protein vs Sample quantitative data
@@ -22,6 +23,7 @@ ProteinQuantitativeData <- setClass("ProteinQuantitativeData"
            , sample_id="Sample_id"
            , group_id="group"
            , technical_replicate_id="replicates"
+           , args = NULL
            )
 
          , validity = function(object) {
@@ -159,26 +161,35 @@ setMethod( f="proteinIntensityFiltering"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
 setGeneric(name="removeProteinsWithOnlyOneReplicate"
-           , def=function( theObject, core_utilisation = NULL ) {
+           , def=function( theObject, core_utilisation = NULL, grouping_variable = NULL) {
              standardGeneric("removeProteinsWithOnlyOneReplicate")
            }
-           , signature=c("theObject", "core_utilisation"))
+           , signature=c("theObject", "core_utilisation", "grouping_variable"))
 
 #'@export
 setMethod(f="removeProteinsWithOnlyOneReplicate"
-          , definition=function( theObject, core_utilisation = NULL) {
+          , definition=function( theObject, core_utilisation = NULL, grouping_variable = NULL) {
             protein_data <- theObject@protein_data
             samples_id_tbl <- theObject@design_matrix
             sample_id_tbl_sample_id_column <- theObject@sample_id
-            replicate_group_column <- theObject@technical_replicate_id
+            # replicate_group_column <- theObject@technical_replicate_id
             protein_id_column <- theObject@protein_id_column
 
-            input_table_sample_id_column <- 'Sample_ID'
+            input_table_sample_id_column <- theObject@sample_id
             quantity_column <- "log_values"
-            # core_utilisation <- checkParamsObjectFunctionSimplify( theObject
-            #                                                        , "core_utilisation"
-            #                                                        , core_utilisation
-            #                                                        , NA )
+
+            grouping_variable <- checkParamsObjectFunctionSimplifyAcceptNull( theObject
+                                                                              , "grouping_variable"
+                                                                              , grouping_variable
+                                                                              , NULL)
+
+            core_utilisation <- checkParamsObjectFunctionSimplify( theObject
+                                                                   , "core_utilisation"
+                                                                   , core_utilisation
+                                                                   , NA)
+
+            theObject <- updateParamInObject(theObject, "grouping_variable", grouping_variable)
+            theObject <- updateParamInObject(theObject, "core_utilisation", core_utilisation)
 
             data_long_cln <- protein_data  |>
               pivot_longer( cols=!matches(protein_id_column)
@@ -189,7 +200,7 @@ setMethod(f="removeProteinsWithOnlyOneReplicate"
                                                                 , samples_id_tbl = samples_id_tbl
                                                                 , input_table_sample_id_column = !!sym( input_table_sample_id_column )
                                                                 , sample_id_tbl_sample_id_column = !!sym( sample_id_tbl_sample_id_column)
-                                                                , replicate_group_column = !!sym( replicate_group_column)
+                                                                , replicate_group_column = !!sym(grouping_variable)
                                                                 , protein_id_column = !!sym( protein_id_column)
                                                                 , quantity_column = !!sym( quantity_column)
                                                                 , core_utilisation = core_utilisation)

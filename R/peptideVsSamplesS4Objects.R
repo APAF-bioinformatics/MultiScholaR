@@ -227,10 +227,9 @@ setMethod( f ="srlQvalueProteotypicPeptideClean"
              choose_only_proteotypic_peptide <- checkParamsObjectFunctionSimplify( theObject
                                                                                    , "choose_only_proteotypic_peptide"
                                                                                    , choose_only_proteotypic_peptide
-                                                                                   , 1)
+                                                                                   , 1 )
+
              theObject <- updateParamInObject(theObject, "qvalue_threshold", qvalue_threshold)
-
-
              theObject <- updateParamInObject(theObject, "global_qvalue_threshold", global_qvalue_threshold)
              theObject <- updateParamInObject(theObject, "choose_only_proteotypic_peptide", choose_only_proteotypic_peptide)
 
@@ -558,15 +557,15 @@ setMethod( f="filterMinNumPeptidesPerSample"
 
 #'@export
 setGeneric( name="removePeptidesWithOnlyOneReplicate"
-            , def=function( theObject, grouping_variable = NULL, core_utilisation = NULL, inclusion_list = NULL) {
+            , def=function( theObject, grouping_variable = NULL, core_utilisation = NULL) {
               standardGeneric("removePeptidesWithOnlyOneReplicate")
             }
-            , signature=c("theObject", "grouping_variable", "core_utilisation", "inclusion_list" ))
+            , signature=c("theObject", "grouping_variable", "core_utilisation" ))
 
 #'@export
 setMethod( f="removePeptidesWithOnlyOneReplicate"
            , signature="PeptideQuantitativeData"
-           , definition = function( theObject, grouping_variable = NULL, core_utilisation = NULL, inclusion_list = c()) {
+           , definition = function( theObject, grouping_variable = NULL, core_utilisation = NULL) {
 
              peptide_data <- theObject@peptide_data
              sample_id_column <- theObject@sample_id
@@ -584,13 +583,9 @@ setMethod( f="removePeptidesWithOnlyOneReplicate"
                                                            , core_utilisation
                                                            , NA)
 
-             inclusion_list <- checkParamsObjectFunctionSimplifyAcceptNull( theObject
-                                                                       , "inclusion_list"
-                                                                       , inclusion_list
-                                                                       , NULL)
+
 
              theObject <- updateParamInObject(theObject, "grouping_variable", grouping_variable)
-             theObject <- updateParamInObject(theObject, "inclusion_list", inclusion_list)
              theObject <- updateParamInObject(theObject, "core_utilisation", core_utilisation)
 
              theObject@peptide_data <- removePeptidesWithOnlyOneReplicateHelper( input_table = peptide_data
