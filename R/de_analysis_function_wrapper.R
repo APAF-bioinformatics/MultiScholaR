@@ -131,6 +131,7 @@ deAnalysisWrapperFunction <- function( theObject
                 names_sep = ":",
                 values_from = c(log2FC, q.mod, p.mod)) |>
     left_join(counts_table_to_use, by = join_by( !!sym(args_row_id)  == !!sym(theObject@protein_id_column)  )   ) |>
+    left_join(theObject@protein_id_table, by = join_by( !!sym(args_row_id) == !!sym(theObject@protein_id_column) )  ) |>
     dplyr::arrange(across(matches("q.mod"))) |>
     distinct()
 
@@ -149,7 +150,8 @@ deAnalysisWrapperFunction <- function( theObject
                                                  group_id = group_id,
                                                  group_pattern = args_group_pattern,
                                                  design_matrix_norm = theObject@design_matrix,
-                                                 design_matrix_raw =  theObject@design_matrix )
+                                                 design_matrix_raw =  theObject@design_matrix,
+                                                 protein_id_table = theObject@protein_id_table)
 
   return_list$de_proteins_long <- de_proteins_long
 

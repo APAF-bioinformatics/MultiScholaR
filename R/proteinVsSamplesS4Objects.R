@@ -10,6 +10,7 @@ ProteinQuantitativeData <- setClass("ProteinQuantitativeData"
 
                       # Design Matrix Information
                       , design_matrix = "data.frame"
+                      , protein_id_table = "data.frame"
                       , sample_id="character"
                       , group_id="character"
                       , technical_replicate_id="character"
@@ -18,7 +19,7 @@ ProteinQuantitativeData <- setClass("ProteinQuantitativeData"
          , prototype = list(
            # Protein vs Sample quantitative data
            protein_id_column = "Protein.Ids"
-
+          , protein_id_table = NULL
            # Design Matrix Information
            , sample_id="Sample_id"
            , group_id="group"
@@ -986,7 +987,20 @@ setMethod( f = "chooseBestProteinAccession"
                dplyr::select(-row_id, -!!sym( seqinr_accession_column))
 
 
-             theObject@protein_data <- protein_log2_quant_cln
+             summed_data <- protein_log2_quant_cln |>
+               mutate( !!sym(protein_id_column) := purrr::map_chr( !!sym(protein_id_column), \(x){ str_split(x, ":")[[1]][1] } ) )  |>
+               group_by(!!sym(protein_id_column)) |>
+               summarise( across( !matches(protein_id_column), \(x) { sum(x, na.rm=TRUE) } )) |>
+               ungroup()
+
+
+             protein_id_table <- protein_log2_quant_cln |>
+               mutate( !!sym(paste0(protein_id_column, "_list")) := !!sym(protein_id_column)  ) |>
+               mutate( !!sym(protein_id_column) := purrr::map_chr( !!sym(protein_id_column), \(x){ str_split(x, ":")[[1]][1] } ) )  |>
+               distinct(  !!sym(protein_id_column) , !!sym(paste0(protein_id_column, "_list")))
+
+             theObject@protein_id_table <- protein_id_table
+             theObject@protein_data <- summed_data
 
              return(theObject)
 

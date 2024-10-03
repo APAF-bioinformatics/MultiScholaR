@@ -1981,7 +1981,8 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
                                        group_pattern,
                                        design_matrix_norm,
                                        design_matrix_raw,
-                                       expression_column = log_intensity
+                                       expression_column = log_intensity,
+                                       protein_id_table
 ) {
 
   norm_counts <- norm_counts_input_tbl |>
@@ -2029,16 +2030,21 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
 
    # print(head(lfc_qval_tbl))
 
+  print( row_id)
+  print(colnames( protein_id_table)[1])
+
   de_proteins_long <- lfc_qval_tbl |>
     dplyr::select(-lqm, -colour, -analysis_type) |>
     dplyr::mutate( {{expression_column}} := str_replace_all({{expression_column}}, group_id, "")) |>
-    separate( {{expression_column}}, sep = "-", into = c("left_group", "right_group")) |>
-    left_join(norm_counts, by = left_join_columns) |>
+    separate( {{expression_column}}, sep = "-", into = c("left_group", "right_group"))  |>
+   left_join(norm_counts, by = left_join_columns) |>
     left_join(norm_counts, by = right_join_columns,
               suffix = c(".left", ".right")) |>
     left_join(raw_counts, by = left_join_columns) |>
     left_join(raw_counts, by = right_join_columns,
               suffix = c(".left", ".right")) |>
+  left_join( protein_id_table
+               , by = join_by( !!sym(row_id) == !!sym( colnames( protein_id_table)[1]))) |>
     arrange( comparison, q.mod, log2FC) |>
     distinct()
 
