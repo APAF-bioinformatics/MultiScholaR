@@ -471,7 +471,19 @@ outputDeAnalysisResults <- function(de_analysis_results_list
                        file.path( de_output_dir,
                                   paste0(file_prefix, "_wide.xlsx")))
 
+  de_proteins_wide_annot <- de_proteins_wide |>
+    mutate( uniprot_acc_cleaned = str_split( uniprot_acc, "-" )  |>
+              purrr::map_chr(1) ) |>
+    left_join( uniprot_tbl, by = join_by( uniprot_acc_cleaned == Entry ) ) |>
+    dplyr::select( -uniprot_acc_cleaned)
 
+  vroom::vroom_write( de_proteins_wide_annot,
+                      file.path( de_output_dir,
+                                 paste0(file_prefix, "_wide_annot.tsv")))
+
+  writexl::write_xlsx( de_proteins_wide_annot,
+                       file.path( de_output_dir,
+                                  paste0(file_prefix, "_wide_annot.xlsx")))
 
   ## Create long format output file
   de_proteins_long <- de_analysis_results_list$de_proteins_long
@@ -483,6 +495,20 @@ outputDeAnalysisResults <- function(de_analysis_results_list
                        file.path( de_output_dir,
                                   paste0(file_prefix, "_long.xlsx")))
 
+
+  de_proteins_long_annot <- de_proteins_long |>
+    mutate( uniprot_acc_cleaned = str_split( uniprot_acc, "-" )  |>
+              purrr::map_chr(1) )|>
+    left_join( uniprot_tbl, by = join_by( uniprot_acc_cleaned == Entry ) ) |>
+    dplyr::select( -uniprot_acc_cleaned)
+
+  vroom::vroom_write( de_proteins_long_annot,
+                      file.path( de_output_dir,
+                                 paste0(file_prefix, "_long_annot.tsv")))
+
+  writexl::write_xlsx( de_proteins_long_annot,
+                       file.path( de_output_dir,
+                                  paste0(file_prefix, "_long_annot.xlsx")))
 
   ## Static volcano plots
   dir.create(file.path( publication_graphs_dir, "Volcano_Plots"), recursive = TRUE)
@@ -556,7 +582,7 @@ outputDeAnalysisResults <- function(de_analysis_results_list
 
   this_design_matrix <- de_analysis_results_list$theObject@design_matrix
 
-  rownames( this_design_matrix ) <- this_design_matrix$replicates
+  rownames( this_design_matrix ) <- this_design_matrix[,de_analysis_results_list$theObject@sample_id]
 
   this_groups <- this_design_matrix[colnames( counts_mat), "group"]
 
