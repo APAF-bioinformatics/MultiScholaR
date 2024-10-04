@@ -930,7 +930,6 @@ plotOneVolcanoNoVerticalLines <- function( input_data, input_title,
     geom_point()
 
   print(volcano_plot)
-  print("Hello")
 
   volcano_plot <-   volcano_plot +
     scale_colour_manual(values = avail_colours) +

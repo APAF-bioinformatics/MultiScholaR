@@ -47,6 +47,23 @@ deAnalysisWrapperFunction <- function( theObject
 
   return_list$pca_plot <- pca_plot
 
+
+  pca_plot_with_labels <-  plotPca( theObject
+                        , group_column = theObject@group_id
+                        , label_column = theObject@sample_id
+                        , title = ""
+                        , geom_text_size = 8) +
+    theme_bw() +
+    theme(axis.text.x = element_text(size = 12)) +
+    theme(axis.text.y = element_text(size = 12)) +
+    theme(axis.title.x = element_text(size = 12)) +
+    theme(axis.title.y = element_text(size = 12)) +
+    theme(plot.title = element_text(size = 12)) +
+    theme(legend.text = element_text(size = 12)) +
+    theme(legend.title = element_text(size = 12))
+
+  return_list$pca_plot_with_labels <- pca_plot_with_labels
+
   ## Count the number of values
   return_list$plot_num_of_values <- plotNumOfValuesNoLog(theObject@protein_data)
 
@@ -371,6 +388,12 @@ outputDeAnalysisResults <- function(de_analysis_results_list
   for( format_ext in plots_format) {
     file_name <- file.path( publication_graphs_dir, "PCA", paste0("PCA_plot.",format_ext))
     ggsave(filename = file_name, plot = plot_pca_plot, limitsize = FALSE)
+  }
+
+  plot_pca_plot_with_labels <- de_analysis_results_list$pca_plot_with_labels
+  for( format_ext in plots_format) {
+    file_name <- file.path( publication_graphs_dir, "PCA", paste0("PCA_plot_with_sample_ids.",format_ext))
+    ggsave(filename = file_name, plot = plot_pca_plot_with_labels, limitsize = FALSE)
   }
 
   ## RLE plot
