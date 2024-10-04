@@ -361,15 +361,15 @@ filterMinNumPeptidesPerProteinHelper <- function( input_table
   if( length(which(is.na(core_utilisation))) == 0 ) {
     num_peptides_per_protein <- input_table |>
       group_by( {{protein_id_column}} ) |>
-      dplyr::summarise( peptide_count = n()
-                 , peptidoform_count = sum( peptidoform_count, na.rm=TRUE)) |>
+      dplyr::summarise( peptides_for_protein_count = n()
+                 , peptidoforms_for_protein_count = sum( peptidoform_count, na.rm=TRUE)) |>
       ungroup()
   } else {
     num_peptides_per_protein <- input_table |>
       group_by( {{protein_id_column}} ) |>
       partition(core_utilisation) |>
-      dplyr::summarise( peptide_count = n()
-                 , peptidoform_count = sum( peptidoform_count, na.rm=TRUE)) |>
+      dplyr::summarise( peptides_for_protein_count = n()
+                 , peptidoforms_for_protein_count = sum( peptidoform_count, na.rm=TRUE)) |>
       collect() |>
       ungroup()
   }
@@ -381,12 +381,11 @@ filterMinNumPeptidesPerProteinHelper <- function( input_table
     print(num_peptides_per_protein)
 
     protein_peptide_cln <- input_table |>
-      dplyr::select(-peptidoform_count )|>
       inner_join( num_peptides_per_protein
                   , by = join_by({{protein_id_column}})) |>
-      dplyr::filter(   peptidoform_count >= num_peptidoforms_per_protein_thresh
+      dplyr::filter(   peptidoforms_for_protein_count >= num_peptidoforms_per_protein_thresh
                       ,
-                      peptide_count >= num_peptides_per_protein_thresh
+                      peptides_for_protein_count >= num_peptides_per_protein_thresh
                      )
   } else {
     stop("filterMinNumPeptidesPerProtein: num_peptides_per_protein_thresh and num_peptidoforms_per_protein_thresh must be provided.")
