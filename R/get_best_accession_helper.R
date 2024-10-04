@@ -198,40 +198,42 @@ chooseBestPhosphositeAccession <- function(input_tbl, acc_detail_tab, accessions
 #'  is_unique: Is the protein group assined to a unique UniProt accession or multiple UniProt accessions
 #'@export
 chooseBestProteinAccessionHelper <- function(input_tbl
-                                       , acc_detail_tab
-                                       , accessions_column
-                                       , row_id_column = uniprot_acc
-                                       , group_id
-                                       , delim= ";") {
+                                             , acc_detail_tab
+                                             , accessions_column
+                                             , row_id_column = "uniprot_acc"
+                                             , group_id
+                                             , delim= ";") {
 
   resolve_acc_helper <- input_tbl |>
     dplyr::select( { { group_id } }, { { accessions_column } }) |>
-    mutate( { { row_id_column } } := str_split({ { accessions_column } }, delim)) |>
-    unnest( { { row_id_column } }) |>
-    mutate( cleaned_acc = cleanIsoformNumber({ { row_id_column } })) |>
-    left_join( acc_detail_tab,
-               by = join_by( cleaned_acc == {{ row_id_column }} )) |>
-    dplyr::select( { { group_id } }, one_of(c(as_string(as_name(enquo(row_id_column)) ), "gene_name", "cleaned_acc",
-                                             "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"))) |>
+    mutate( !!sym(row_id_column) := str_split({ { accessions_column } }, delim)) |>
+    unnest( !!sym(row_id_column)) |>
+    mutate( cleaned_acc = cleanIsoformNumber(row_id_column))   |>
+    left_join( acc_detail_tab ,
+               by = join_by( cleaned_acc == !!sym(row_id_column) ),
+               copy = TRUE,
+               keep = NULL)  |>
+    dplyr::select( { { group_id } }, one_of(c(row_id_column, "gene_name", "cleaned_acc",
+                                              "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"))) |>
     distinct() |>
     arrange( { { group_id } }, protein_evidence, status, is_isoform, desc(seq_length), isoform_num)
+
 
   score_isoforms <- resolve_acc_helper |>
     mutate(gene_name = ifelse(is.na(gene_name) | gene_name == "", "NA", gene_name)) |>
     group_by({ { group_id } }, gene_name) |>
     arrange( { { group_id } }, protein_evidence,
-            status, is_isoform, desc(seq_length), isoform_num, cleaned_acc) |>
+             status, is_isoform, desc(seq_length), isoform_num, cleaned_acc) |>
     mutate( ranking = row_number()) |>
     ungroup()
 
 
   ## For each gene name find the uniprot_acc with the lowest rankinG
-
   group_gene_names_and_uniprot_accs <- score_isoforms |>
     distinct( { { group_id } }, gene_name, ranking) |>
     dplyr::filter(ranking == 1) |>
     left_join(score_isoforms |>
-                dplyr::select({ { group_id } }, ranking, gene_name, {{row_id_column}}),
+                dplyr::select({ { group_id } }, ranking, gene_name, !!sym(row_id_column)),
               by = join_by( {{ group_id }} == {{ group_id }}
                             , ranking == ranking
                             , gene_name == gene_name)) |>
@@ -240,7 +242,7 @@ chooseBestProteinAccessionHelper <- function(input_tbl
     group_by({ { group_id } }) |>
     summarise(num_gene_names = n(),
               gene_names = paste(gene_name, collapse = ":"),
-              { { row_id_column } } := paste({ { row_id_column } }, collapse = ":")) |>
+              !!sym(row_id_column) := paste(!!sym(row_id_column), collapse = ":")) |>
     ungroup() |>
     mutate(is_unique = case_when(num_gene_names == 1 ~ "Unique",
                                  TRUE ~ "Multimapped"))

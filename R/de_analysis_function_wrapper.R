@@ -3,15 +3,36 @@
 
 #' @export
 deAnalysisWrapperFunction <- function( theObject
-                                       , contrasts_tbl
-                                       , formula_string = " ~ 0 + group"
-                                       , group_id = "group"
-                                       , de_q_val_thresh = 0.05
-                                       , treat_lfc_cutoff = 0
-                                       , eBayes_trend = TRUE
-                                       , eBayes_robust = TRUE
-                                       , args_group_pattern = "(\\d+)"
-                                       , args_row_id = "uniprot_acc" ) {
+                                       , contrasts_tbl = NULL
+                                       , formula_string = NULL
+                                       , group_id = NULL
+                                       , de_q_val_thresh = NULL
+                                       , treat_lfc_cutoff = NULL
+                                       , eBayes_trend = NULL
+                                       , eBayes_robust = NULL
+                                       , args_group_pattern = NULL
+                                       , args_row_id = NULL ) {
+
+  contrasts_tbl <- checkParamsObjectFunctionSimplify( theObject, "contrasts_tbl", NULL)
+  formula_string <- checkParamsObjectFunctionSimplify( theObject, "formula_string", " ~ 0 + group")
+  group_id <- checkParamsObjectFunctionSimplify( theObject, "group_id", "group")
+  de_q_val_thresh <- checkParamsObjectFunctionSimplify( theObject, "de_q_val_thresh", 0.05)
+  treat_lfc_cutoff <- checkParamsObjectFunctionSimplify( theObject, "treat_lfc_cutoff", 0)
+  eBayes_trend <- checkParamsObjectFunctionSimplify( theObject, "eBayes_trend", TRUE)
+  eBayes_robust <- checkParamsObjectFunctionSimplify( theObject, "eBayes_robust", TRUE)
+  args_group_pattern <- checkParamsObjectFunctionSimplify( theObject, "args_group_pattern", "(\\d+)")
+  args_row_id <- checkParamsObjectFunctionSimplify( theObject, "args_row_id", "uniprot_acc")
+
+
+  theObject <- updateParamInObject(theObject, "contrasts_tbl")
+  theObject <- updateParamInObject(theObject, "formula_string")
+  theObject <- updateParamInObject(theObject, "group_id")
+  theObject <- updateParamInObject(theObject, "de_q_val_thresh")
+  theObject <- updateParamInObject(theObject, "treat_lfc_cutoff")
+  theObject <- updateParamInObject(theObject, "eBayes_trend")
+  theObject <- updateParamInObject(theObject, "eBayes_robust")
+  theObject <- updateParamInObject(theObject, "args_group_pattern")
+  theObject <- updateParamInObject(theObject, "args_row_id")
 
   return_list <- list()
   return_list$theObject <- theObject
@@ -32,10 +53,10 @@ deAnalysisWrapperFunction <- function( theObject
   ## plot PCA plot
 
   pca_plot <-  plotPca( theObject
-                           , group_column = theObject@group_id
+                           , grouping_variable = theObject@group_id
                            , label_column = ""
                            , title = ""
-                           , geom_text_size = 8) +
+                           , font_size = 8) +
     theme_bw() +
     theme(axis.text.x = element_text(size = 12)) +
     theme(axis.text.y = element_text(size = 12)) +
@@ -49,10 +70,10 @@ deAnalysisWrapperFunction <- function( theObject
 
 
   pca_plot_with_labels <-  plotPca( theObject
-                        , group_column = theObject@group_id
+                        , grouping_variable = theObject@group_id
                         , label_column = theObject@sample_id
                         , title = ""
-                        , geom_text_size = 8) +
+                        , font_size = 8) +
     theme_bw() +
     theme(axis.text.x = element_text(size = 12)) +
     theme(axis.text.y = element_text(size = 12)) +
@@ -65,14 +86,14 @@ deAnalysisWrapperFunction <- function( theObject
   return_list$pca_plot_with_labels <- pca_plot_with_labels
 
   ## Count the number of values
-  return_list$plot_num_of_values <- plotNumOfValuesNoLog(theObject@protein_data)
+  return_list$plot_num_of_values <- plotNumOfValuesNoLog(theObject@protein_quant_table)
 
   ## Compare the different experimental groups and obtain lists of differentially expressed proteins.")
 
   rownames( theObject@design_matrix ) <- theObject@design_matrix |> pull( one_of(theObject@sample_id ))
 
   # requires statmod library
-  contrasts_results <- runTestsContrasts(theObject@protein_data |> column_to_rownames(theObject@protein_id_column  ) |> as.matrix(),
+  contrasts_results <- runTestsContrasts(theObject@protein_quant_table |> column_to_rownames(theObject@protein_id_column  ) |> as.matrix(),
                                          contrast_strings = contrasts_tbl[, 1][[1]],
                                          design_matrix = theObject@design_matrix,
                                          formula_string = formula_string,
@@ -131,7 +152,7 @@ deAnalysisWrapperFunction <- function( theObject
   ## Create wide format output file
   norm_counts <- NA
 
-  counts_table_to_use <- theObject@protein_data
+  counts_table_to_use <- theObject@protein_quant_table
 
   norm_counts <- counts_table_to_use |>
     as.data.frame() |>
@@ -373,14 +394,50 @@ writeInteractiveVolcanoPlotProteomicsWidget <- function( de_proteins_long
 
 #' @export
 outputDeAnalysisResults <- function(de_analysis_results_list
+                                    , theObject
                                     , uniprot_tbl
-                                    , de_output_dir
-                                    , publication_graphs_dir
-                                    , file_prefix
-                                    , plots_format
-                                    , args_row_id = "uniprot_acc"
-                                    , de_q_val_thresh = 0.05
-                                    , gene_names_column = "Gene Names" ) {
+                                    , de_output_dir = NULL
+                                    , publication_graphs_dir = NULL
+                                    , file_prefix = NULL
+                                    , plots_format = NULL
+                                    , args_row_id = NULL
+                                    , de_q_val_thresh = NULL
+                                    , gene_names_column = NULL
+                                    , fdr_column = NULL
+                                    , raw_p_value_column = NULL
+                                    , log2fc_column = NULL
+                                    , uniprot_id_column = NULL
+                                    , display_columns = NULL
+                                    ) {
+
+
+  uniprot_tbl <- checkParamsObjectFunctionSimplify(theObject, "uniprot_tbl", NULL)
+  de_output_dir <- checkParamsObjectFunctionSimplify(theObject, "de_output_dir", NULL)
+  publication_graphs_dir <- checkParamsObjectFunctionSimplify(theObject, "publication_graphs_dir", NULL)
+  file_prefix <- checkParamsObjectFunctionSimplify(theObject, "file_prefix", "de_proteins")
+  plots_format <- checkParamsObjectFunctionSimplify(theObject, "plots_format", c("pdf", "png"))
+  args_row_id <- checkParamsObjectFunctionSimplify(theObject, "args_row_id", "uniprot_acc")
+  de_q_val_thresh <- checkParamsObjectFunctionSimplify(theObject, "de_q_val_thresh", 0.05)
+  gene_names_column <- checkParamsObjectFunctionSimplify(theObject, "gene_names_column", "Gene Names")
+  fdr_column <- checkParamsObjectFunctionSimplify(theObject, "fdr_column", "q.mod")
+  raw_p_value_column <- checkParamsObjectFunctionSimplify(theObject, "raw_p_value_column", "p.mod")
+  log2fc_column <- checkParamsObjectFunctionSimplify(theObject, "log2fc_column", "log2FC")
+  uniprot_id_column <- checkParamsObjectFunctionSimplify(theObject, "uniprot_id_column", "Entry")
+  display_columns <- checkParamsObjectFunctionSimplify(theObject, "display_columns", c( "best_uniprot_acc" ))
+
+  theObject <- updateParamInObject(theObject, "uniprot_tbl")
+  theObject <- updateParamInObject(theObject, "de_output_dir")
+  theObject <- updateParamInObject(theObject, "publication_graphs_dir")
+  theObject <- updateParamInObject(theObject, "file_prefix")
+  theObject <- updateParamInObject(theObject, "plots_format")
+  theObject <- updateParamInObject(theObject, "args_row_id")
+  theObject <- updateParamInObject(theObject, "de_q_val_thresh")
+  theObject <- updateParamInObject(theObject, "gene_names_column")
+  theObject <- updateParamInObject(theObject, "fdr_column")
+  theObject <- updateParamInObject(theObject, "raw_p_value_column")
+  theObject <- updateParamInObject(theObject, "log2fc_column")
+  theObject <- updateParamInObject(theObject, "uniprot_id_column")
+  theObject <- updateParamInObject(theObject, "display_columns")
 
   ## PCA plot
   plot_pca_plot <- de_analysis_results_list$pca_plot
@@ -661,7 +718,7 @@ outputDeAnalysisResults <- function(de_analysis_results_list
   }
 
   ## Write interactive volcano plot
-  counts_mat <- (de_analysis_results_list$theObject)@protein_data |>
+  counts_mat <- (de_analysis_results_list$theObject)@protein_quant_table |>
     column_to_rownames((de_analysis_results_list$theObject)@protein_id_column  ) |>
     as.matrix()
 
@@ -673,14 +730,18 @@ outputDeAnalysisResults <- function(de_analysis_results_list
 
   writeInteractiveVolcanoPlotProteomics( de_proteins_long
                                          , groups = this_groups
-                                         , uniprot_tbl
-                                         , contrasts_results$fit.eb
+                                         , uniprot_tbl = uniprot_tbl
+                                         , fit.eb = contrasts_results$fit.eb
                                          , args_row_id = args_row_id
                                          , publication_graphs_dir= publication_graphs_dir
                                          , de_q_val_thresh = de_q_val_thresh
                                          , counts_tbl = counts_mat
-                                         , gene_names_column = gene_names_column)
-
+                                         , fdr_column = fdr_column
+                                         , raw_p_value_column = raw_p_value_column
+                                         , log2fc_column = log2fc_column
+                                         , uniprot_id_column = uniprot_id_column
+                                         , gene_names_column = gene_names_column
+                                         , display_columns = display_columns )
 
 }
 

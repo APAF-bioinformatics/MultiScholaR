@@ -5,7 +5,7 @@
 ProteinQuantitativeData <- setClass("ProteinQuantitativeData"
          , slots = c(
                       # Protein vs Sample quantitative data
-                      protein_data = "data.frame"
+                      protein_quant_table = "data.frame"
                       , protein_id_column = "character"
 
                       # Design Matrix Information
@@ -19,7 +19,7 @@ ProteinQuantitativeData <- setClass("ProteinQuantitativeData"
          , prototype = list(
            # Protein vs Sample quantitative data
            protein_id_column = "Protein.Ids"
-          , protein_id_table = NULL
+          , protein_id_table = data.frame()
            # Design Matrix Information
            , sample_id="Sample_id"
            , group_id="group"
@@ -28,8 +28,8 @@ ProteinQuantitativeData <- setClass("ProteinQuantitativeData"
            )
 
          , validity = function(object) {
-           if( !is.data.frame(object@protein_data) ) {
-             stop("protein_data must be a data.frame")
+           if( !is.data.frame(object@protein_quant_table) ) {
+             stop("protein_quant_table must be a data.frame")
            }
            if( !is.character(object@protein_id_column) ) {
              stop("protein_id_column must be a character")
@@ -47,7 +47,7 @@ ProteinQuantitativeData <- setClass("ProteinQuantitativeData"
              stop("technical_replicate_id must be a character")
            }
 
-            if( ! object@protein_id_column %in% colnames(object@protein_data) ) {
+            if( ! object@protein_id_column %in% colnames(object@protein_quant_table) ) {
                 stop("Protein ID column must be in the protein data table")
             }
 
@@ -57,10 +57,10 @@ ProteinQuantitativeData <- setClass("ProteinQuantitativeData"
 
 
            #Need to check the rows names in design matrix and the column names of the data table
-           samples_in_protein_data <- setdiff(colnames( object@protein_data), object@protein_id_column)
+           samples_in_protein_quant_table <- setdiff(colnames( object@protein_quant_table), object@protein_id_column)
            samples_in_design_matrix <- object@design_matrix |> pull( !! sym( object@sample_id ) )
 
-           if( length( which( sort(samples_in_protein_data) != sort(samples_in_design_matrix) )) > 0 ) {
+           if( length( which( sort(samples_in_protein_quant_table) != sort(samples_in_design_matrix) )) > 0 ) {
              stop("Samples in protein data and design matrix must be the same" )
            }
 
@@ -71,20 +71,35 @@ ProteinQuantitativeData <- setClass("ProteinQuantitativeData"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+#' @export
+getProteinQuantitativeData <- function( peptide_object, protein_quant_table) {
+  protein_obj <- ProteinQuantitativeData(
+    # Protein Data Matrix Information
+    protein_quant_table=protein_quant_table
+    , protein_id_column= peptide_object@protein_id_column
 
+    # Design Matrix Information
+    , design_matrix = peptide_object@design_matrix
+    , protein_id_table = data.frame()
+    , sample_id=peptide_object@sample_id
+    , group_id=peptide_object@group_id
+    , technical_replicate_id=peptide_object@technical_replicate_id
+    , args = peptide_object@args
+  )
+}
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
 setGeneric( name ="setProteinData"
-            , def=function( theObject, protein_data, protein_id_column) {
+            , def=function( theObject, protein_quant_table, protein_id_column) {
                 standardGeneric("setProteinData")
             })
 
 #'@export
 setMethod( f ="setProteinData"
            , signature = "ProteinQuantitativeData"
-            , definition=function( theObject, protein_data, protein_id_column ) {
-              theObject@protein_data <- protein_data
+            , definition=function( theObject, protein_quant_table, protein_id_column ) {
+              theObject@protein_quant_table <- protein_quant_table
               theObject@protein_id_column <- protein_id_column
 
               return(theObject)
@@ -104,7 +119,7 @@ setMethod( f ="cleanDesignMatrix"
            , signature = "ProteinQuantitativeData"
            , definition=function( theObject ) {
 
-            samples_id_vector <- setdiff(colnames(theObject@protein_data), theObject@sample_id )
+            samples_id_vector <- setdiff(colnames(theObject@protein_quant_table), theObject@sample_id )
 
              theObject@design_matrix <- data.frame( temp_sample_id = samples_id_vector )  |>
                inner_join( theObject@design_matrix
@@ -118,36 +133,55 @@ setMethod( f ="cleanDesignMatrix"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
 setGeneric(name="proteinIntensityFiltering"
-           , def=function( theObject, min_protein_intensity_percentile, proportion_samples_below_intensity_threshold, cluster) {
+           , def=function( theObject
+                           , proteins_intensity_cutoff_percentile = NULL
+                           , proteins_proportion_of_samples_below_cutoff = NULL
+                           , core_utilisation = NULL) {
              standardGeneric("proteinIntensityFiltering")
            })
 
 #'@export
 setMethod( f="proteinIntensityFiltering"
            , signature="ProteinQuantitativeData"
-           , definition = function( theObject, min_protein_intensity_percentile, proportion_samples_below_intensity_threshold, cluster) {
-             protein_data <- theObject@protein_data
+           , definition = function( theObject
+                                    , proteins_intensity_cutoff_percentile = NULL
+                                    , proteins_proportion_of_samples_below_cutoff = NULL
+                                    , core_utilisation = NULL) {
+             protein_quant_table <- theObject@protein_quant_table
 
-             data_long_cln <- protein_data  |>
+             proteins_intensity_cutoff_percentile <- checkParamsObjectFunctionSimplify( theObject
+                                                                               , "proteins_intensity_cutoff_percentile"
+                                                                               , NULL)
+             proteins_proportion_of_samples_below_cutoff <- checkParamsObjectFunctionSimplify( theObject
+                                                                               , "proteins_proportion_of_samples_below_cutoff"
+                                                                               , NULL)
+             core_utilisation <- checkParamsObjectFunctionSimplify( theObject
+                                                                    , "core_utilisation"
+                                                                    , NA)
+
+             theObject <- updateParamInObject(theObject, "proteins_intensity_cutoff_percentile")
+             theObject <- updateParamInObject(theObject, "proteins_proportion_of_samples_below_cutoff")
+             theObject <- updateParamInObject(theObject, "core_utilisation")
+
+
+             data_long_cln <- protein_quant_table  |>
                pivot_longer( cols=!matches(theObject@protein_id_column)
                              , names_to = theObject@sample_id
                              , values_to = "log_values")  |>
                mutate( temp = "")
 
-             print(head( data_long_cln ))
-
-             min_peptide_intensity_threshold <- ceiling( quantile( data_long_cln$log_values, na.rm=TRUE, probs = c(min_protein_intensity_percentile) ))[1]
+             min_peptide_intensity_threshold <- ceiling( quantile( data_long_cln$log_values, na.rm=TRUE, probs = c(proteins_intensity_cutoff_percentile) ))[1]
 
              peptide_normalized_pif_cln <- peptideIntensityFilteringHelper( data_long_cln
                                                                       , min_peptide_intensity_threshold = min_peptide_intensity_threshold
-                                                                      , proportion_samples_below_intensity_threshold = proportion_samples_below_intensity_threshold
+                                                                      , proteins_proportion_of_samples_below_cutoff = proteins_proportion_of_samples_below_cutoff
                                                                       , protein_id_column = !!sym( theObject@protein_id_column)
                                                                       , peptide_sequence_column = temp
                                                                       , peptide_quantity_column = log_values
-                                                                      , cluster = cluster)
+                                                                      , core_utilisation = core_utilisation)
 
 
-             theObject@protein_data <- peptide_normalized_pif_cln |>
+             theObject@protein_quant_table <- peptide_normalized_pif_cln |>
                dplyr::select( -temp) |>
                pivot_wider( id_cols = theObject@protein_id_column , names_from = !!sym(theObject@sample_id), values_from = log_values)
 
@@ -170,7 +204,7 @@ setGeneric(name="removeProteinsWithOnlyOneReplicate"
 #'@export
 setMethod(f="removeProteinsWithOnlyOneReplicate"
           , definition=function( theObject, core_utilisation = NULL, grouping_variable = NULL) {
-            protein_data <- theObject@protein_data
+            protein_quant_table <- theObject@protein_quant_table
             samples_id_tbl <- theObject@design_matrix
             sample_id_tbl_sample_id_column <- theObject@sample_id
             # replicate_group_column <- theObject@technical_replicate_id
@@ -181,23 +215,21 @@ setMethod(f="removeProteinsWithOnlyOneReplicate"
 
             grouping_variable <- checkParamsObjectFunctionSimplifyAcceptNull( theObject
                                                                               , "grouping_variable"
-                                                                              , grouping_variable
                                                                               , NULL)
 
             core_utilisation <- checkParamsObjectFunctionSimplify( theObject
                                                                    , "core_utilisation"
-                                                                   , core_utilisation
                                                                    , NA)
 
-            theObject <- updateParamInObject(theObject, "grouping_variable", grouping_variable)
-            theObject <- updateParamInObject(theObject, "core_utilisation", core_utilisation)
+            theObject <- updateParamInObject(theObject, "grouping_variable")
+            theObject <- updateParamInObject(theObject, "core_utilisation")
 
-            data_long_cln <- protein_data  |>
+            data_long_cln <- protein_quant_table  |>
               pivot_longer( cols=!matches(protein_id_column)
                             , names_to = input_table_sample_id_column
                             , values_to = quantity_column)
 
-            protein_data <- removeProteinsWithOnlyOneReplicateHelper( input_table = data_long_cln
+            protein_quant_table <- removeProteinsWithOnlyOneReplicateHelper( input_table = data_long_cln
                                                                 , samples_id_tbl = samples_id_tbl
                                                                 , input_table_sample_id_column = !!sym( input_table_sample_id_column )
                                                                 , sample_id_tbl_sample_id_column = !!sym( sample_id_tbl_sample_id_column)
@@ -207,7 +239,7 @@ setMethod(f="removeProteinsWithOnlyOneReplicate"
                                                                 , core_utilisation = core_utilisation)
 
 
-            theObject@protein_data <- protein_data |>
+            theObject@protein_quant_table <- protein_quant_table |>
               pivot_wider( id_cols = !!sym( protein_id_column)
                            , names_from = !!sym( input_table_sample_id_column)
                            , values_from = !!sym( quantity_column) )
@@ -224,22 +256,22 @@ setMethod(f="removeProteinsWithOnlyOneReplicate"
 
 #'@export
 setGeneric(name="plotRle"
-           , def=function( theObject, group, ylim = c()) {
+           , def=function( theObject, grouping_variable, yaxis_limit = c()) {
              standardGeneric("plotRle")
            }
-           , signature=c("theObject", "group", "ylim"))
+           , signature=c("theObject", "grouping_variable", "yaxis_limit"))
 
 
 #'@export
 setMethod(f="plotRle"
           , signature="ProteinQuantitativeData"
-          , definition=function( theObject, group, ylim = c()) {
-            protein_data <- theObject@protein_data
+          , definition=function( theObject, grouping_variable, yaxis_limit = c()) {
+            protein_quant_table <- theObject@protein_quant_table
             protein_id_column <- theObject@protein_id_column
             design_matrix <- theObject@design_matrix
             sample_id <- theObject@sample_id
 
-            frozen_protein_matrix <- protein_data |>
+            frozen_protein_matrix <- protein_quant_table |>
               column_to_rownames(protein_id_column) |>
               as.matrix()
 
@@ -249,13 +281,13 @@ setMethod(f="plotRle"
             # print( design_matrix)
 
             rowinfo_vector <- NA
-            if( !is.na(group)){
-              rowinfo_vector <-  design_matrix[colnames(frozen_protein_matrix), group]
+            if( !is.na(grouping_variable)){
+              rowinfo_vector <-  design_matrix[colnames(frozen_protein_matrix), grouping_variable]
             }
 
               rle_plot_before_cyclic_loess <- plotRleHelper( t(frozen_protein_matrix)
                                                        , rowinfo = rowinfo_vector
-                                                       , ylim = ylim)
+                                                       , yaxis_limit = yaxis_limit)
 
             return( rle_plot_before_cyclic_loess)
 
@@ -266,21 +298,21 @@ setMethod(f="plotRle"
 
 #'@export
 setGeneric(name="plotRleList"
-           , def=function( theObject, list_of_columns, ylim = c()) {
+           , def=function( theObject, list_of_columns, yaxis_limit = c()) {
              standardGeneric("plotRleList")
            }
-           , signature=c("theObject", "list_of_columns", "ylim"))
+           , signature=c("theObject", "list_of_columns", "yaxis_limit"))
 
 #'@export
 setMethod(f="plotRleList"
           , signature="ProteinQuantitativeData"
-          , definition=function( theObject, list_of_columns, ylim = c()) {
-            protein_data <- theObject@protein_data
+          , definition=function( theObject, list_of_columns, yaxis_limit = c()) {
+            protein_quant_table <- theObject@protein_quant_table
             protein_id_column <- theObject@protein_id_column
             design_matrix <- theObject@design_matrix
             sample_id <- theObject@sample_id
 
-            frozen_protein_matrix <- protein_data |>
+            frozen_protein_matrix <- protein_quant_table |>
               column_to_rownames(protein_id_column) |>
               as.matrix()
 
@@ -298,7 +330,7 @@ setMethod(f="plotRleList"
 
               rle_plot_before_cyclic_loess <- plotRleHelper( t(frozen_protein_matrix)
                                                              , rowinfo = rowinfo_vector
-                                                             , ylim = ylim)
+                                                             , yaxis_limit = yaxis_limit)
 
               return( rle_plot_before_cyclic_loess)
             }
@@ -339,21 +371,21 @@ savePlotRleList <- function( input_list, prefix = "RLE", suffix = c("png", "pdf"
 
 #'@export
 setGeneric(name="plotPca"
-           , def=function( theObject, group_column, label_column, title, geom_text_size ) {
+           , def=function( theObject, grouping_variable, label_column, title, font_size ) {
              standardGeneric("plotPca")
            }
-           , signature=c("theObject", "group_column", "label_column", "title", "geom_text_size"))
+           , signature=c("theObject", "grouping_variable", "label_column", "title", "font_size"))
 
 #'@export
 setMethod(f="plotPca"
           , signature="ProteinQuantitativeData"
-          , definition=function( theObject, group_column, label_column, title, geom_text_size=8) {
-            protein_data <- theObject@protein_data
+          , definition=function( theObject, grouping_variable, label_column, title, font_size=8) {
+            protein_quant_table <- theObject@protein_quant_table
             protein_id_column <- theObject@protein_id_column
             design_matrix <- theObject@design_matrix
             sample_id <- theObject@sample_id
 
-            frozen_protein_matrix <- protein_data |>
+            frozen_protein_matrix <- protein_quant_table |>
               column_to_rownames(protein_id_column) |>
               as.matrix()
 
@@ -367,10 +399,10 @@ setMethod(f="plotPca"
             pca_plot <- plotPcaHelper( frozen_protein_matrix_pca
                                        , design_matrix
                                        , sample_id_column =  sample_id
-                                       , group_column = group_column
+                                       , grouping_variable = grouping_variable
                                        , label_column =  label_column
                                        , title = title
-                                       , geom.text.size = geom_text_size )
+                                       , geom.text.size = font_size )
 
             return( pca_plot)
           })
@@ -379,21 +411,21 @@ setMethod(f="plotPca"
 
 #'@export
 setGeneric(name="plotPcaList"
-           , def=function( theObject, group_columns_list, label_column, title, geom_text_size ) {
+           , def=function( theObject, grouping_variables_list, label_column, title, font_size ) {
              standardGeneric("plotPcaList")
            }
-           , signature=c("theObject", "group_columns_list", "label_column", "title", "geom_text_size"))
+           , signature=c("theObject", "grouping_variables_list", "label_column", "title", "font_size"))
 
 #'@export
 setMethod(f="plotPcaList"
           , signature="ProteinQuantitativeData"
-          , definition=function( theObject, group_columns_list, label_column, title, geom_text_size=8) {
-            protein_data <- theObject@protein_data
+          , definition=function( theObject, grouping_variables_list, label_column, title, font_size=8) {
+            protein_quant_table <- theObject@protein_quant_table
             protein_id_column <- theObject@protein_id_column
             design_matrix <- theObject@design_matrix
             sample_id <- theObject@sample_id
 
-            frozen_protein_matrix <- protein_data |>
+            frozen_protein_matrix <- protein_quant_table |>
               column_to_rownames(protein_id_column) |>
               as.matrix()
 
@@ -407,10 +439,10 @@ setMethod(f="plotPcaList"
             pca_plots_list <- plotPcaListHelper( frozen_protein_matrix_pca
                                                  , design_matrix
                                                  , sample_id_column =  sample_id
-                                                 , group_columns_list = group_columns_list
+                                                 , grouping_variables_list = grouping_variables_list
                                                  , label_column =  label_column
                                                  , title = title
-                                                 , geom.text.size = geom_text_size )
+                                                 , geom.text.size = font_size )
 
             return( pca_plots_list)
           })
@@ -450,13 +482,13 @@ setGeneric(name="getPcaMatrix"
 setMethod(f="getPcaMatrix"
           , signature="ProteinQuantitativeData"
           , definition=function( theObject) {
-            protein_data <- theObject@protein_data
+            protein_quant_table <- theObject@protein_quant_table
             protein_id_column <- theObject@protein_id_column
             design_matrix <- theObject@design_matrix
             sample_id <- theObject@sample_id
 
 
-            frozen_protein_matrix <- protein_data |>
+            frozen_protein_matrix <- protein_quant_table |>
               column_to_rownames(protein_id_column) |>
               as.matrix()
 
@@ -481,7 +513,7 @@ setMethod(f="getPcaMatrix"
 # Calculate Pearson correlation between Tech rep 1 and 2
 #'@export
 setGeneric(name="proteinTechRepCorrelation"
-           , def=function( theObject,  tech_rep_num_column, tech_rep_remove_regex) {
+           , def=function( theObject,  tech_rep_num_column = NULL, tech_rep_remove_regex = NULL) {
              standardGeneric("proteinTechRepCorrelation")
            }
            , signature=c("theObject", "tech_rep_num_column", "tech_rep_remove_regex"))
@@ -489,14 +521,20 @@ setGeneric(name="proteinTechRepCorrelation"
 #'@export
 setMethod( f = "proteinTechRepCorrelation"
            , signature="ProteinQuantitativeData"
-          , definition=function( theObject,  tech_rep_num_column,  tech_rep_remove_regex ) {
-            protein_data <- theObject@protein_data
+           , definition=function( theObject,  tech_rep_num_column = NULL, tech_rep_remove_regex = NULL ) {
+            protein_quant_table <- theObject@protein_quant_table
             protein_id_column <- theObject@protein_id_column
             design_matrix <- theObject@design_matrix
             sample_id <- theObject@sample_id
             tech_rep_column <- theObject@technical_replicate_id
 
-            frozen_protein_matrix <- protein_data |>
+            tech_rep_num_column <- checkParamsObjectFunctionSimplifyAcceptNull(theObject, "tech_rep_num_column", NULL)
+            tech_rep_remove_regex <- checkParamsObjectFunctionSimplifyAcceptNull(theObject, "tech_rep_remove_regex", NULL)
+
+            theObject <- updateParamInObject(theObject, "tech_rep_num_column")
+            theObject <- updateParamInObject(theObject, "tech_rep_remove_regex")
+
+            frozen_protein_matrix <- protein_quant_table |>
               column_to_rownames(protein_id_column) |>
               as.matrix()
 
@@ -519,24 +557,30 @@ setMethod( f = "proteinTechRepCorrelation"
 
 #'@export
 setGeneric(name="normalizeBetweenSamples"
-           , def=function( theObject, method) {
+           , def=function( theObject, normalisation_method = NULL) {
              standardGeneric("normalizeBetweenSamples")
            }
-           , signature=c("theObject", "method"))
+           , signature=c("theObject", "normalisation_method"))
 
 
 #'@export
 setMethod(f="normalizeBetweenSamples"
           , signature="ProteinQuantitativeData"
-          , definition=function( theObject,  method= "cyclicloess") {
-            protein_data <- theObject@protein_data
+          , definition=function( theObject,  normalisation_method= NULL) {
+            protein_quant_table <- theObject@protein_quant_table
             protein_id_column <- theObject@protein_id_column
             design_matrix <- theObject@design_matrix
             sample_id <- theObject@sample_id
 
 
+            method <- checkParamsObjectFunctionSimplify( theObject
+                                                         , "normalisation_method"
+                                                         , "cyclicloess")
 
-            frozen_protein_matrix <- protein_data |>
+            theObject <- updateParamInObject(theObject, "normalisation_method")
+
+
+            frozen_protein_matrix <- protein_quant_table |>
               column_to_rownames(protein_id_column) |>
               as.matrix()
 
@@ -544,7 +588,7 @@ setMethod(f="normalizeBetweenSamples"
 
 
             normalized_frozen_protein_matrix <- normalizeBetweenArrays( frozen_protein_matrix
-                                                                        , method = method  )
+                                                                        , method = normalisation_method  )
 
 
 
@@ -557,7 +601,7 @@ setMethod(f="normalizeBetweenSamples"
               as.matrix()
 
 
-            theObject@protein_data <- normalized_frozen_protein_matrix_filt |>
+            theObject@protein_quant_table <- normalized_frozen_protein_matrix_filt |>
                       as.data.frame() |>
                       rownames_to_column(protein_id_column)
 
@@ -575,7 +619,7 @@ setMethod(f="normalizeBetweenSamples"
 
 #'@export
 setGeneric(name="pearsonCorForSamplePairs"
-           , def=function( theObject,   tech_rep_remove_regex ) {
+           , def=function( theObject,   tech_rep_remove_regex = NULL ) {
              standardGeneric("pearsonCorForSamplePairs")
            }
            , signature=c("theObject", "tech_rep_remove_regex"))
@@ -583,15 +627,17 @@ setGeneric(name="pearsonCorForSamplePairs"
 #'@export
 setMethod(f="pearsonCorForSamplePairs"
           , signature="ProteinQuantitativeData"
-          , definition=function( theObject, tech_rep_remove_regex ="pool" ) {
-            protein_data <- theObject@protein_data
+          , definition=function( theObject, tech_rep_remove_regex = NULL ) {
+            protein_quant_table <- theObject@protein_quant_table
             protein_id_column <- theObject@protein_id_column
             design_matrix <- theObject@design_matrix
             sample_id <- theObject@sample_id
             replicate_group_column <- theObject@technical_replicate_id
 
+            tech_rep_remove_regex <- checkParamsObjectFunctionSimplifyAcceptNull(theObject, "tech_rep_remove_regex", "pool")
+            theObject <- updateParamInObject(theObject, "tech_rep_remove_regex")
 
-            frozen_mat_pca_long <- protein_data |>
+            frozen_mat_pca_long <- protein_quant_table |>
               pivot_longer( cols=!matches(protein_id_column)
                             , values_to = "Protein.Normalized"
                             , names_to = sample_id) |>
@@ -622,30 +668,50 @@ setMethod(f="pearsonCorForSamplePairs"
 
 #'@export
 setGeneric(name="getNegCtrlProtAnova"
-           , def=function( theObject, ruv_grouping_variable, percentage_as_neg_ctrl, num_neg_ctrl, q_val_thresh, fdr_method ) {
+           , def=function( theObject
+                           , ruv_grouping_variable  = NULL
+                           , percentage_as_neg_ctrl  = NULL
+                           , num_neg_ctrl  = NULL
+                           , ruv_qval_cutoff = NULL
+                           , ruv_fdr_method = NULL ) {
              standardGeneric("getNegCtrlProtAnova")
            }
-           , signature=c("theObject", "ruv_grouping_variable", "num_neg_ctrl", "q_val_thresh", "fdr_method"))
+           , signature=c("theObject", "ruv_grouping_variable", "num_neg_ctrl", "ruv_qval_cutoff", "ruv_fdr_method"))
 
 #'@export
 setMethod(f="getNegCtrlProtAnova"
           , signature="ProteinQuantitativeData"
           , definition=function( theObject
-                                 , ruv_grouping_variable = "replicates"
-                                 , percentage_as_neg_ctrl = 10
-                                 , num_neg_ctrl = round(nrow( theObject@protein_data) * percentage_as_neg_ctrl / 100, 0)
-                                 , q_val_thresh = 0.05
-                                 , fdr_method = "BH" ) {
-            protein_data <- theObject@protein_data
+                                 , ruv_grouping_variable = NULL
+                                 , percentage_as_neg_ctrl = NULL
+                                 , num_neg_ctrl = NULL
+                                 , ruv_qval_cutoff = NULL
+                                 , ruv_fdr_method = NULL ) {
+
+            protein_quant_table <- theObject@protein_quant_table
             protein_id_column <- theObject@protein_id_column
             design_matrix <- theObject@design_matrix
             group_id <- theObject@group_id
             sample_id <- theObject@sample_id
             replicate_group_column <- theObject@technical_replicate_id
 
-            normalized_frozen_protein_matrix_filt <- protein_data |>
+            normalized_frozen_protein_matrix_filt <- protein_quant_table |>
               column_to_rownames(protein_id_column) |>
               as.matrix()
+
+            ruv_grouping_variable <- checkParamsObjectFunctionSimplify( theObject, "ruv_grouping_variable", "replicates")
+            percentage_as_neg_ctrl <- checkParamsObjectFunctionSimplify( theObject, "percentage_as_neg_ctrl", 10)
+            num_neg_ctrl <- checkParamsObjectFunctionSimplify( theObject
+                                                               , "num_neg_ctrl"
+                                                               , round(nrow( theObject@protein_quant_table) * percentage_as_neg_ctrl / 100, 0))
+            ruv_qval_cutoff <- checkParamsObjectFunctionSimplify( theObject, "ruv_qval_cutoff", 0.05)
+            ruv_fdr_method <- checkParamsObjectFunctionSimplify( theObject, "ruv_fdr_method", "BH")
+
+            theObject <- updateParamInObject(theObject, "ruv_grouping_variable")
+            theObject <- updateParamInObject(theObject, "percentage_as_neg_ctrl")
+            theObject <- updateParamInObject(theObject, "num_neg_ctrl")
+            theObject <- updateParamInObject(theObject, "ruv_qval_cutoff")
+            theObject <- updateParamInObject(theObject, "ruv_fdr_method")
 
             control_genes_index <- getNegCtrlProtAnovaHelper( normalized_frozen_protein_matrix_filt[,design_matrix |> pull(!!sym(sample_id)) ]
                                                         , design_matrix = design_matrix |>
@@ -654,8 +720,8 @@ setMethod(f="getNegCtrlProtAnova"
                                                         , grouping_variable = ruv_grouping_variable
                                                         , percentage_as_neg_ctrl = percentage_as_neg_ctrl
                                                         , num_neg_ctrl = num_neg_ctrl
-                                                        , q_val_thresh = q_val_thresh
-                                                        , fdr_method = fdr_method )
+                                                        , ruv_qval_cutoff = ruv_qval_cutoff
+                                                        , ruv_fdr_method = ruv_fdr_method )
 
             return(control_genes_index)
           })
@@ -666,10 +732,12 @@ setMethod(f="getNegCtrlProtAnova"
 #'@description Sort proteins by their coefficient of variation and take the top N with lowest coefficient of variation
 #'@export
 setGeneric(name="getLowCoefficientOfVariationProteins"
-           , def=function( theObject, num_neg_ctrl ) {
+           , def=function( theObject
+                           , percentage_as_neg_ctrl = NULL
+                           , num_neg_ctrl = NULL ) {
              standardGeneric("getLowCoefficientOfVariationProteins")
            }
-           , signature=c("theObject", "num_neg_ctrl"))
+           , signature=c("theObject", "percentage_as_neg_ctrl", "num_neg_ctrl"))
 
 
 
@@ -677,9 +745,18 @@ setGeneric(name="getLowCoefficientOfVariationProteins"
 setMethod( f = "getLowCoefficientOfVariationProteins"
            , signature="ProteinQuantitativeData"
            , definition=function( theObject
-                                                  , num_neg_ctrl = 100) {
+                                  , percentage_as_neg_ctrl = NULL
+                                  , num_neg_ctrl = NULL) {
 
-  list_of_control_genes <- theObject@protein_data |>
+             percentage_as_neg_ctrl <- checkParamsObjectFunctionSimplify( theObject, "percentage_as_neg_ctrl", 10)
+             num_neg_ctrl <- checkParamsObjectFunctionSimplify( theObject
+                                                                , "num_neg_ctrl"
+                                                                , round(nrow( theObject@protein_quant_table) * percentage_as_neg_ctrl / 100, 0))
+
+             theObject <- updateParamInObject(theObject, "percentage_as_neg_ctrl")
+             theObject <- updateParamInObject(theObject, "num_neg_ctrl")
+
+  list_of_control_genes <- theObject@protein_quant_table |>
     column_to_rownames(theObject@protein_id_column) |>
     t() |>
     as.data.frame() |>
@@ -691,7 +768,7 @@ setMethod( f = "getLowCoefficientOfVariationProteins"
     arrange( coefficient_of_variation) |>
     head(num_neg_ctrl)
 
-  control_gene_index_helper <- theObject@protein_data |>
+  control_gene_index_helper <- theObject@protein_quant_table |>
     dplyr::select(theObject@protein_id_column) |>
     mutate( index = row_number()) |>
     left_join( list_of_control_genes, by = theObject@protein_id_column)  |>
@@ -711,21 +788,29 @@ setMethod( f = "getLowCoefficientOfVariationProteins"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
 setGeneric(name="ruvCancor"
-           , def=function( theObject, ctl, ncomp, ruv_grouping_variable ) {
+           , def=function( theObject, ctrl= NULL, num_components_to_impute=NULL, ruv_grouping_variable = NULL ) {
              standardGeneric("ruvCancor")
            }
-           , signature=c("theObject", "ctl", "ncomp", "ruv_grouping_variable"))
+           , signature=c("theObject", "ctrl", "num_components_to_impute", "ruv_grouping_variable"))
 
 #'@export
 setMethod( f = "ruvCancor"
            , signature="ProteinQuantitativeData"
-           , definition=function( theObject, ctl, ncomp=2, ruv_grouping_variable) {
-             protein_data <- theObject@protein_data
+           , definition=function( theObject, ctrl= NULL, num_components_to_impute=NULL, ruv_grouping_variable = NULL) {
+             protein_quant_table <- theObject@protein_quant_table
              protein_id_column <- theObject@protein_id_column
              design_matrix <- theObject@design_matrix
              group_id <- theObject@group_id
              sample_id <- theObject@sample_id
              replicate_group_column <- theObject@technical_replicate_id
+
+             ctrl <- checkParamsObjectFunctionSimplify( theObject, "ctrl", NULL)
+             num_components_to_impute <- checkParamsObjectFunctionSimplify( theObject, "num_components_to_impute", 2)
+             ruv_grouping_variable <- checkParamsObjectFunctionSimplify( theObject, "ruv_grouping_variable", NULL)
+
+             theObject <- updateParamInObject(theObject, "ctrl")
+             theObject <- updateParamInObject(theObject, "num_components_to_impute")
+             theObject <- updateParamInObject(theObject, "ruv_grouping_variable")
 
              if(! ruv_grouping_variable %in% colnames(design_matrix)) {
                stop( paste0("The 'ruv_grouping_variable = "
@@ -733,28 +818,28 @@ setMethod( f = "ruvCancor"
                             , "' is not a column in the design matrix.") )
              }
 
-             if( is.na(ncomp) || ncomp < 1) {
-               stop(paste0("The ncomp = ", ncomp, " value is invalid."))
+             if( is.na(num_components_to_impute) || num_components_to_impute < 1) {
+               stop(paste0("The num_components_to_impute = ", num_components_to_impute, " value is invalid."))
              }
 
-             if( length( ctl) < 5 ) {
+             if( length( ctrl) < 5 ) {
                stop(paste0( "The number of negative control molecules entered is less than 5. Please check the 'ctl' parameter."))
              }
 
-             normalized_frozen_protein_matrix_filt <- protein_data |>
+             normalized_frozen_protein_matrix_filt <- protein_quant_table |>
                column_to_rownames(protein_id_column) |>
                as.matrix()
 
              Y <-  t( normalized_frozen_protein_matrix_filt[,design_matrix |> pull(!!sym(sample_id))])
              if( length(which( is.na(normalized_frozen_protein_matrix_filt) )) > 0 ) {
                Y <- impute.nipals( t( normalized_frozen_protein_matrix_filt[,design_matrix |> pull(!!sym(sample_id))])
-                                   , ncomp=ncomp)
+                                   , ncomp=num_components_to_impute)
              }
 
              cancorplot_r2 <- ruv_cancorplot( Y ,
                                               X = design_matrix |>
                                                 pull(!!sym(ruv_grouping_variable)),
-                                              ctl = ctl)
+                                              ctl = ctrl)
              cancorplot_r2
 
 
@@ -766,7 +851,7 @@ setMethod( f = "ruvCancor"
 
 #'@export
 setGeneric(name="getRuvIIIReplicateMatrix"
-           , def=function( theObject,  ruv_grouping_variable ) {
+           , def=function( theObject,  ruv_grouping_variable = NULL) {
              standardGeneric("getRuvIIIReplicateMatrix")
            }
            , signature=c("theObject", "ruv_grouping_variable"))
@@ -774,13 +859,17 @@ setGeneric(name="getRuvIIIReplicateMatrix"
 #'@export
 setMethod( f = "getRuvIIIReplicateMatrix"
            , signature="ProteinQuantitativeData"
-           , definition=function( theObject, ruv_grouping_variable) {
-             protein_data <- theObject@protein_data
+           , definition=function( theObject, ruv_grouping_variable = NULL) {
+             protein_quant_table <- theObject@protein_quant_table
              protein_id_column <- theObject@protein_id_column
              design_matrix <- theObject@design_matrix
              group_id <- theObject@group_id
              sample_id <- theObject@sample_id
              replicate_group_column <- theObject@technical_replicate_id
+
+             ruv_grouping_variable <- checkParamsObjectFunctionSimplify( theObject, "ruv_grouping_variable", NULL)
+
+             theObject <- updateParamInObject(theObject, "ruv_grouping_variable")
 
              ruvIII_replicates_matrix <- getRuvIIIReplicateMatrixHelper( design_matrix
                                                                    , !!sym(sample_id)
@@ -794,23 +883,32 @@ setMethod( f = "getRuvIIIReplicateMatrix"
 
 #'@export
 setGeneric(name="ruvIII_C_Varying"
-           , def=function( theObject, ruv_grouping_variable, k, ctl) {
+           , def=function( theObject, ruv_grouping_variable = NULL, ruv_number_k = NULL, ctrl = NULL)  {
              standardGeneric("ruvIII_C_Varying")
            }
-           , signature=c("theObject", "ruv_grouping_variable", "k", "ctl"))
+           , signature=c("theObject", "ruv_grouping_variable", "ruv_number_k", "ctrl"))
 
 #'@export
 setMethod( f = "ruvIII_C_Varying"
            , signature="ProteinQuantitativeData"
-           , definition=function( theObject, ruv_grouping_variable, k, ctl) {
-             protein_data <- theObject@protein_data
+           , definition=function( theObject, ruv_grouping_variable = NULL, ruv_number_k = NULL, ctrl = NULL) {
+             protein_quant_table <- theObject@protein_quant_table
              protein_id_column <- theObject@protein_id_column
              design_matrix <- theObject@design_matrix
              group_id <- theObject@group_id
              sample_id <- theObject@sample_id
              replicate_group_column <- theObject@technical_replicate_id
 
-             normalized_frozen_protein_matrix_filt <- protein_data |>
+
+             ruv_grouping_variable <- checkParamsObjectFunctionSimplify( theObject, "ruv_grouping_variable", NULL)
+             k <- checkParamsObjectFunctionSimplify( theObject, "ruv_number_k", NULL)
+             ctrl <- checkParamsObjectFunctionSimplify( theObject, "ctrl", NULL)
+
+             theObject <- updateParamInObject(theObject, "ruv_grouping_variable")
+             theObject <- updateParamInObject(theObject, "ruv_number_k")
+             theObject <- updateParamInObject(theObject, "ctrl")
+
+             normalized_frozen_protein_matrix_filt <- protein_quant_table |>
                column_to_rownames(protein_id_column) |>
                as.matrix()
 
@@ -820,11 +918,11 @@ setMethod( f = "ruvIII_C_Varying"
                                             , !!sym(sample_id)
                                             , !!sym(ruv_grouping_variable))
 
-             cln_mat <- RUVIII_C_Varying( k = best_k
+             cln_mat <- RUVIII_C_Varying( k = ruv_number_k
                                           , Y = Y
                                           , M = M
                                           , toCorrect = colnames(Y)
-                                          , potentialControls = names( ctl[which(ctl)] ) )
+                                          , potentialControls = names( ctrl[which(ctrl)] ) )
 
              # Remove samples with no values
              cln_mat_2 <- cln_mat[rowSums(is.na(cln_mat) | is.nan(cln_mat)) != ncol(cln_mat),]
@@ -837,7 +935,7 @@ setMethod( f = "ruvIII_C_Varying"
                as.data.frame() |>
                rownames_to_column(protein_id_column)
 
-             theObject@protein_data <- ruv_normalized_results_cln
+             theObject@protein_quant_table <- ruv_normalized_results_cln
 
              theObject <- cleanDesignMatrix(theObject)
 
@@ -848,46 +946,65 @@ setMethod( f = "ruvIII_C_Varying"
 #'@export
 setGeneric(name="removeRowsWithMissingValuesPercent"
            , def=function( theObject
-                           , ruv_grouping_variable
-                           , groupwise_percentage_cutoff = 50
-                           , max_groups_percentage_cutoff = 50
-                           , min_protein_intensity_percentile = 1) {
+                           , ruv_grouping_variable = NULL
+                           , groupwise_percentage_cutoff = NULL
+                           , max_groups_percentage_cutoff = NULL
+                           , proteins_intensity_cutoff_percentile = NULL ) {
              standardGeneric("removeRowsWithMissingValuesPercent")
            }
            , signature=c("theObject"
                          , "ruv_grouping_variable"
                          , "groupwise_percentage_cutoff"
                          , "max_groups_percentage_cutoff"
-                         , "min_protein_intensity_percentile" ))
+                         , "proteins_intensity_cutoff_percentile" ))
 
 #'@export
 setMethod( f = "removeRowsWithMissingValuesPercent"
            , signature="ProteinQuantitativeData"
            , definition=function( theObject
-                                  , ruv_grouping_variable
-                                  , groupwise_percentage_cutoff = 50
-                                  , max_groups_percentage_cutoff = 50
-                                  , min_protein_intensity_percentile = 1) {
+                                  , ruv_grouping_variable = NULL
+                                  , groupwise_percentage_cutoff = NULL
+                                  , max_groups_percentage_cutoff = NULL
+                                  , proteins_intensity_cutoff_percentile = NULL) {
 
-             protein_data <- theObject@protein_data
+             protein_quant_table <- theObject@protein_quant_table
              protein_id_column <- theObject@protein_id_column
              design_matrix <- theObject@design_matrix
              group_id <- theObject@group_id
              sample_id <- theObject@sample_id
              replicate_group_column <- theObject@technical_replicate_id
 
-
+             # print(groupwise_percentage_cutoff)
              # print(min_protein_intensity_threshold )
 
-             theObject@protein_data <- removeRowsWithMissingValuesPercentHelper( protein_data
+             ruv_grouping_variable <- checkParamsObjectFunctionSimplify(theObject
+                                                                        , "ruv_grouping_variable"
+                                                                        , NULL)
+             groupwise_percentage_cutoff <- checkParamsObjectFunctionSimplify(theObject
+                                                                              , "groupwise_percentage_cutoff"
+                                                                              , 50)
+             max_groups_percentage_cutoff <- checkParamsObjectFunctionSimplify(theObject
+                                                                               , "max_groups_percentage_cutoff"
+                                                                               , 50)
+             proteins_intensity_cutoff_percentile <- checkParamsObjectFunctionSimplify(theObject
+                                                                                   , "proteins_intensity_cutoff_percentile"
+                                                                                   , 1)
+
+             theObject <- updateParamInObject(theObject, "ruv_grouping_variable")
+             theObject <- updateParamInObject(theObject, "groupwise_percentage_cutoff")
+             theObject <- updateParamInObject(theObject, "max_groups_percentage_cutoff")
+             theObject <- updateParamInObject(theObject, "proteins_intensity_cutoff_percentile")
+
+
+             theObject@protein_quant_table <- removeRowsWithMissingValuesPercentHelper( protein_quant_table
                                                                            , cols= !matches(protein_id_column)
                                                                            , design_matrix = design_matrix
                                                                            , sample_id = !!sym(sample_id)
                                                                            , row_id = !!sym(protein_id_column)
-                                                                           , group_column = !!sym(ruv_grouping_variable)
+                                                                           , grouping_variable = !!sym(ruv_grouping_variable)
                                                                            , groupwise_percentage_cutoff = groupwise_percentage_cutoff
                                                                            , max_groups_percentage_cutoff = max_groups_percentage_cutoff
-                                                                           , min_protein_intensity_percentile = min_protein_intensity_percentile
+                                                                           , proteins_intensity_cutoff_percentile = proteins_intensity_cutoff_percentile
                                                                            , temporary_abundance_column = "Log_Abundance")
 
              theObject <- cleanDesignMatrix(theObject)
@@ -914,14 +1031,14 @@ setMethod( f = "averageTechReps"
            , signature="ProteinQuantitativeData"
            , definition=function( theObject, design_matrix_columns=c()  ) {
 
-             protein_data <- theObject@protein_data
+             protein_quant_table <- theObject@protein_quant_table
              protein_id_column <- theObject@protein_id_column
              design_matrix <- theObject@design_matrix
              group_id <- theObject@group_id
              sample_id <- theObject@sample_id
              replicate_group_column <- theObject@technical_replicate_id
 
-             theObject@protein_data <- protein_data |>
+             theObject@protein_quant_table <- protein_quant_table |>
                pivot_longer( cols = !matches( protein_id_column)
                              , names_to = sample_id
                              , values_to = "Log2.Protein.Imputed") |>
@@ -953,9 +1070,10 @@ setMethod( f = "averageTechReps"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+
 #'@export
 setGeneric(name="chooseBestProteinAccession"
-           , def=function( theObject, delim, seqinr_obj, seqinr_accession_column ) {
+           , def=function( theObject, delim=NULL, seqinr_obj=NULL, seqinr_accession_column=NULL ) {
              standardGeneric("chooseBestProteinAccession")
            }
            , signature=c("theObject", "delim", "seqinr_obj", "seqinr_accession_column" ))
@@ -963,28 +1081,41 @@ setGeneric(name="chooseBestProteinAccession"
 #'@export
 setMethod( f = "chooseBestProteinAccession"
            , signature="ProteinQuantitativeData"
-           , definition=function( theObject, delim=";", seqinr_obj, seqinr_accession_column  ) {
-             protein_data <- theObject@protein_data
+           , definition=function( theObject, delim=NULL, seqinr_obj=NULL, seqinr_accession_column=NULL  ) {
+
+             protein_quant_table <- theObject@protein_quant_table
              protein_id_column <- theObject@protein_id_column
 
+             delim <- checkParamsObjectFunctionSimplify(theObject, "delim",  default_value = ";")
+             seqinr_obj <- checkParamsObjectFunctionSimplify(theObject, "seqinr_obj",  default_value = NULL)
+             seqinr_accession_column <- checkParamsObjectFunctionSimplify( theObject
+                                                                           , "seqinr_accession_column"
+                                                                           , default_value = NULL)
 
-             evidence_tbl_cleaned <- protein_data |>
+             theObject <- updateParamInObject(theObject, "delim")
+             theObject <- updateParamInObject(theObject, "seqinr_obj")
+             theObject <- updateParamInObject(theObject, "seqinr_accession_column")
+
+             evidence_tbl_cleaned <- protein_quant_table |>
                distinct() |>
                mutate( row_id = row_number() -1 )
 
-             accession_gene_name_tbl <- chooseBestProteinAccessionHelper(input_tbl = evidence_tbl_cleaned,
-                                                                   acc_detail_tab = seqinr_obj,
-                                                                   accessions_column = !!sym( protein_id_column),
-                                                                   row_id_column = !!sym( seqinr_accession_column),
-                                                                   group_id = row_id,
-                                                                   delim = ";")
+
+             accession_gene_name_tbl <- chooseBestProteinAccessionHelper( input_tbl = evidence_tbl_cleaned,
+                                                                          acc_detail_tab = seqinr_obj,
+                                                                          accessions_column = !!sym( protein_id_column),
+                                                                          row_id_column = "uniprot_acc", #!!sym( seqinr_accession_column),
+                                                                          group_id = row_id,
+                                                                          delim = ";")
+
+             # print(seqinr_accession_column)
 
              protein_log2_quant_cln <- evidence_tbl_cleaned |>
                left_join( accession_gene_name_tbl |>
-                            dplyr::distinct( row_id, !!sym( seqinr_accession_column) )
+                            dplyr::distinct( row_id, !!sym( as.character(seqinr_accession_column) ))
                           , by = join_by( row_id ) ) |>
-               mutate( !!sym( theObject@protein_id_column ) :=!!sym( seqinr_accession_column) )  |>
-               dplyr::select(-row_id, -!!sym( seqinr_accession_column))
+               mutate( !!sym( theObject@protein_id_column ) :=!!sym( as.character(seqinr_accession_column)) )  |>
+               dplyr::select(-row_id, -!!sym( as.character(seqinr_accession_column)))
 
 
              summed_data <- protein_log2_quant_cln |>
@@ -1000,7 +1131,7 @@ setMethod( f = "chooseBestProteinAccession"
                distinct(  !!sym(protein_id_column) , !!sym(paste0(protein_id_column, "_list")))
 
              theObject@protein_id_table <- protein_id_table
-             theObject@protein_data <- summed_data
+             theObject@protein_quant_table <- summed_data
 
              return(theObject)
 
@@ -1021,17 +1152,16 @@ setMethod( f = "chooseBestProteinAccessionSumDuplicates"
            , signature="ProteinQuantitativeData"
            , definition=function( theObject, delim=";", quant_columns_pattern = "\\d+", islogged = TRUE ) {
 
-             protein_data <- theObject@protein_data
+             protein_quant_table <- theObject@protein_quant_table
              protein_id_column <- theObject@protein_id_column
 
-
-             protein_log2_quant_cln <- protein_data |>
+             protein_log2_quant_cln <- protein_quant_table |>
                mutate( !!sym(protein_id_column) := str_split_i(!!sym( protein_id_column), delim, 1 ) ) |>
                group_by( !!sym(protein_id_column) ) |>
                summarise ( across( matches(quant_columns_pattern), \(x){ if(islogged==TRUE) {log2(sum(2^x, na.rm = TRUE)) } else { sum(x, na.rm = TRUE)}    })) |>
                ungroup()
 
-             theObject@protein_data <- protein_log2_quant_cln
+             theObject@protein_quant_table <- protein_log2_quant_cln
 
              theObject
 
@@ -1043,7 +1173,7 @@ setMethod( f = "chooseBestProteinAccessionSumDuplicates"
 
 #'@export
 setGeneric(name="filterSamplesByProteinCorrelationThreshold"
-           , def=function( theObject, pearson_correlation_per_pair, min_pearson_correlation_threshold ) {
+           , def=function( theObject, pearson_correlation_per_pair = NULL, min_pearson_correlation_threshold = NULL ) {
              standardGeneric("filterSamplesByProteinCorrelationThreshold")
            }
            , signature=c("theObject", "pearson_correlation_per_pair", "min_pearson_correlation_threshold" ))
@@ -1051,19 +1181,28 @@ setGeneric(name="filterSamplesByProteinCorrelationThreshold"
 #'@export
 setMethod( f = "filterSamplesByProteinCorrelationThreshold"
            , signature="ProteinQuantitativeData"
-           , definition=function( theObject, pearson_correlation_per_pair, min_pearson_correlation_threshold = 0.75 ) {
+           , definition=function( theObject, pearson_correlation_per_pair = NULL, min_pearson_correlation_threshold = NULL  ) {
 
+             pearson_correlation_per_pair <- checkParamsObjectFunctionSimplify( theObject
+                                                                           , "pearson_correlation_per_pair"
+                                                                           , default_value = NULL)
+             min_pearson_correlation_threshold <- checkParamsObjectFunctionSimplify( theObject
+                                                                                , "min_pearson_correlation_threshold"
+                                                                                , default_value = 0.75)
+
+             theObject <- updateParamInObject(theObject, "pearson_correlation_per_pair")
+             theObject <- updateParamInObject(theObject, "min_pearson_correlation_threshold")
 
              filtered_table <- filterSamplesByProteinCorrelationThresholdHelper (
                pearson_correlation_per_pair
-               , protein_intensity_table = theObject@protein_data
+               , protein_intensity_table = theObject@protein_quant_table
                , min_pearson_correlation_threshold = min_pearson_correlation_threshold
                , filename_column_x = !!sym( paste0( theObject@sample_id, ".x") )
                , filename_column_y = !!sym( paste0( theObject@sample_id, ".y") )
                , protein_id_column = theObject@protein_id_column
                , correlation_column = pearson_correlation )
 
-             theObject@protein_data <- filtered_table
+             theObject@protein_quant_table <- filtered_table
 
              theObject <- cleanDesignMatrix(theObject)
 

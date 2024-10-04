@@ -220,18 +220,20 @@ setMethod( f ="srlQvalueProteotypicPeptideClean"
              raw_quantity_column <- theObject@raw_quantity_column
              norm_quantity_column <- theObject@norm_quantity_column
 
-             qvalue_threshold <- checkParamsObjectFunctionSimplify( theObject, "qvalue_threshold", qvalue_threshold, 0.01)
+             qvalue_threshold <- checkParamsObjectFunctionSimplify( theObject, "qvalue_threshold", 0.01)
 
-             global_qvalue_threshold <- checkParamsObjectFunctionSimplify( theObject, "global_qvalue_threshold", global_qvalue_threshold, 0.01)
+             global_qvalue_threshold <- checkParamsObjectFunctionSimplify( theObject, "global_qvalue_threshold", 0.01)
 
              choose_only_proteotypic_peptide <- checkParamsObjectFunctionSimplify( theObject
                                                                                    , "choose_only_proteotypic_peptide"
-                                                                                   , choose_only_proteotypic_peptide
                                                                                    , 1 )
 
-             theObject <- updateParamInObject(theObject, "qvalue_threshold", qvalue_threshold)
-             theObject <- updateParamInObject(theObject, "global_qvalue_threshold", global_qvalue_threshold)
-             theObject <- updateParamInObject(theObject, "choose_only_proteotypic_peptide", choose_only_proteotypic_peptide)
+             input_matrix_column_ids <- checkParamsObjectFunctionSimplify( theObject
+                                                                           , "input_matrix_column_ids" )
+
+             theObject <- updateParamInObject(theObject, "qvalue_threshold")
+             theObject <- updateParamInObject(theObject, "global_qvalue_threshold")
+             theObject <- updateParamInObject(theObject, "choose_only_proteotypic_peptide")
 
              dia_nn_default_columns <- c("Protein.Ids"
                                         , "Stripped.Sequence"
@@ -240,10 +242,7 @@ setMethod( f ="srlQvalueProteotypicPeptideClean"
                                         , "Precursor.Quantity"
                                         , "Precursor.Normalised")
 
-             input_matrix_column_ids <- checkParamsObjectFunctionSimplify( theObject
-                                                                     , "input_matrix_column_ids"
-                                                                     , input_matrix_column_ids
-                                                                     , diann_default_columns )
+             theObject <- updateParamInObject(theObject, "input_matrix_column_ids")
 
              # print( paste("qvalue_threshold: ", qvalue_threshold))
              search_srl_quant_cln <- srlQvalueProteotypicPeptideCleanHelper( input_table = peptide_data
@@ -295,8 +294,8 @@ setMethod(f="rollUpPrecursorToPeptide"
             group_id <- theObject@group_id
             technical_replicate_id <- theObject@technical_replicate_id
 
-            core_utilisation <- checkParamsObjectFunctionSimplify( theObject, "core_utilisation", core_utilisation, NA)
-            theObject <- updateParamInObject(theObject, "core_utilisation", core_utilisation)
+            core_utilisation <- checkParamsObjectFunctionSimplify( theObject, "core_utilisation", NA)
+            theObject <- updateParamInObject(theObject, "core_utilisation")
 
             theObject@peptide_data <- rollUpPrecursorToPeptideHelper(input_table = peptide_data
                                                                , sample_id_column = !!sym(sample_id)
@@ -331,20 +330,18 @@ setMethod( f="peptideIntensityFiltering"
              norm_quantity_column <- theObject@norm_quantity_column
 
              peptides_intensity_cutoff_percentile <- checkParamsObjectFunctionSimplify( theObject
-                                                                                    , "peptides_intensity_cutoff_percentile"
-                                                                                    , peptides_intensity_cutoff_percentile)
+                                                                                    , "peptides_intensity_cutoff_percentile")
 
              peptides_proportion_of_samples_below_cutoff <- checkParamsObjectFunctionSimplify( theObject
-                                                                                                , "peptides_proportion_of_samples_below_cutoff"
-                                                                                                , peptides_proportion_of_samples_below_cutoff)
+                                                                                                , "peptides_proportion_of_samples_below_cutoff")
 
-             core_utilisation <- checkParamsObjectFunctionSimplify( theObject, "core_utilisation", core_utilisation, NA)
+             core_utilisation <- checkParamsObjectFunctionSimplify( theObject, "core_utilisation", NA)
+
+             theObject <- updateParamInObject(theObject, "peptides_intensity_cutoff_percentile")
+             theObject <- updateParamInObject(theObject, "peptides_proportion_of_samples_below_cutoff")
+             theObject <- updateParamInObject(theObject, "core_utilisation")
 
              min_peptide_intensity_threshold <- ceiling( quantile( peptide_data |> pull(!!sym(raw_quantity_column)), na.rm=TRUE, probs = c(peptides_intensity_cutoff_percentile) ))[1]
-
-             theObject <- updateParamInObject(theObject, "peptides_intensity_cutoff_percentile", peptides_intensity_cutoff_percentile)
-             theObject <- updateParamInObject(theObject, "peptides_proportion_of_samples_below_cutoff", peptides_proportion_of_samples_below_cutoff)
-             theObject <- updateParamInObject(theObject, "core_utilisation", core_utilisation)
 
              peptide_normalized_pif_cln <- peptideIntensityFilteringHelper( peptide_data
                                                                       , min_peptide_intensity_threshold = min_peptide_intensity_threshold
@@ -397,25 +394,21 @@ setMethod( f = "removePeptidesWithMissingValuesPercent"
 
              grouping_variable <- checkParamsObjectFunctionSimplify( theObject
                                                                    , "grouping_variable"
-                                                                   , grouping_variable
                                                                    , NULL)
              groupwise_percentage_cutoff <- checkParamsObjectFunctionSimplify( theObject
                                                                                    , "groupwise_percentage_cutoff"
-                                                                                   , groupwise_percentage_cutoff
                                                                                    , 50)
              max_groups_percentage_cutoff <- checkParamsObjectFunctionSimplify( theObject
                                                                                    , "max_groups_percentage_cutoff"
-                                                                                   , max_groups_percentage_cutoff
                                                                                    , 50)
              peptides_intensity_cutoff_percentile <- checkParamsObjectFunctionSimplify( theObject
                                                                                     , "peptides_intensity_cutoff_percentile"
-                                                                                    , peptides_intensity_cutoff_percentile
                                                                                     , 50)
 
-             theObject <- updateParamInObject(theObject, "grouping_variable", grouping_variable)
-             theObject <- updateParamInObject(theObject, "groupwise_percentage_cutoff", groupwise_percentage_cutoff)
-             theObject <- updateParamInObject(theObject, "max_groups_percentage_cutoff", max_groups_percentage_cutoff)
-             theObject <- updateParamInObject(theObject, "peptides_intensity_cutoff_percentile", peptides_intensity_cutoff_percentile)
+             theObject <- updateParamInObject(theObject, "grouping_variable")
+             theObject <- updateParamInObject(theObject, "groupwise_percentage_cutoff")
+             theObject <- updateParamInObject(theObject, "max_groups_percentage_cutoff")
+             theObject <- updateParamInObject(theObject, "peptides_intensity_cutoff_percentile")
 
              min_protein_intensity_threshold <- ceiling( quantile( peptide_data |>
                                                                      dplyr::filter( !is.nan(!!sym(norm_quantity_column)) & !is.infinite(!!sym(norm_quantity_column))) |>
@@ -431,7 +424,7 @@ setMethod( f = "removePeptidesWithMissingValuesPercent"
                                                                                , sample_id = !!sym(sample_id)
                                                                                , protein_id_column = !!sym(protein_id_column)
                                                                                , peptide_sequence_column = !!sym(peptide_sequence_column)
-                                                                               , group_column = !!sym(grouping_variable)
+                                                                               , grouping_variable = !!sym(grouping_variable)
                                                                                , groupwise_percentage_cutoff = groupwise_percentage_cutoff
                                                                                , max_groups_percentage_cutoff = max_groups_percentage_cutoff
                                                                                , abundance_threshold = min_protein_intensity_threshold
@@ -479,21 +472,18 @@ setMethod( f="filterMinNumPeptidesPerProtein"
 
              num_peptides_per_protein_thresh <- checkParamsObjectFunctionSimplify( theObject
                                                                                    , "num_peptides_per_protein_thresh"
-                                                                                   , num_peptides_per_protein_thresh
                                                                                    , 1)
 
              num_peptidoforms_per_protein_thresh <- checkParamsObjectFunctionSimplify( theObject
                                                                                        , "num_peptidoforms_per_protein_thresh"
-                                                                                       , num_peptidoforms_per_protein_thresh
                                                                                        , 2)
 
-             core_utilisation <- checkParamsObjectFunctionSimplify( theObject, "core_utilisation", core_utilisation, NA)
+             core_utilisation <- checkParamsObjectFunctionSimplify( theObject, "core_utilisation", NA)
 
 
-             theObject <- updateParamInObject(theObject, "num_peptides_per_protein_thresh", num_peptides_per_protein_thresh)
-             theObject <- updateParamInObject(theObject, "num_peptidoforms_per_protein_thresh", num_peptidoforms_per_protein_thresh)
-             theObject <- updateParamInObject(theObject, "core_utilisation", core_utilisation)
-
+             theObject <- updateParamInObject(theObject, "num_peptides_per_protein_thresh")
+             theObject <- updateParamInObject(theObject, "num_peptidoforms_per_protein_thresh")
+             theObject <- updateParamInObject(theObject, "core_utilisation")
 
              theObject@peptide_data <- filterMinNumPeptidesPerProteinHelper ( input_table = peptide_data
                                                                         , num_peptides_per_protein_thresh = num_peptides_per_protein_thresh
@@ -528,19 +518,17 @@ setMethod( f="filterMinNumPeptidesPerSample"
 
              peptides_per_sample_cutoff <- checkParamsObjectFunctionSimplify( theObject
                                                                               , "peptides_per_sample_cutoff"
-                                                                              , peptides_per_sample_cutoff
                                                                               , 5000)
 
              inclusion_list <- checkParamsObjectFunctionSimplifyAcceptNull( theObject
                                                                             , "inclusion_list"
-                                                                            , inclusion_list
                                                                             , NULL)
 
-             core_utilisation <- checkParamsObjectFunctionSimplify( theObject, "core_utilisation", core_utilisation, NA)
+             core_utilisation <- checkParamsObjectFunctionSimplify( theObject, "core_utilisation", NA)
 
-             theObject <- updateParamInObject(theObject, "peptides_per_sample_cutoff", peptides_per_sample_cutoff)
-             theObject <- updateParamInObject(theObject, "inclusion_list", inclusion_list)
-             theObject <- updateParamInObject(theObject, "core_utilisation", core_utilisation)
+             theObject <- updateParamInObject(theObject, "peptides_per_sample_cutoff")
+             theObject <- updateParamInObject(theObject, "inclusion_list")
+             theObject <- updateParamInObject(theObject, "core_utilisation")
 
              theObject@peptide_data <- filterMinNumPeptidesPerSampleHelper( peptide_data
                                             , peptides_per_sample_cutoff = peptides_per_sample_cutoff
@@ -557,15 +545,15 @@ setMethod( f="filterMinNumPeptidesPerSample"
 
 #'@export
 setGeneric( name="removePeptidesWithOnlyOneReplicate"
-            , def=function( theObject, grouping_variable = NULL, core_utilisation = NULL) {
+            , def=function( theObject, replicate_group_column = NULL, core_utilisation = NULL) {
               standardGeneric("removePeptidesWithOnlyOneReplicate")
             }
-            , signature=c("theObject", "grouping_variable", "core_utilisation" ))
+            , signature=c("theObject", "replicate_group_column", "core_utilisation" ))
 
 #'@export
 setMethod( f="removePeptidesWithOnlyOneReplicate"
            , signature="PeptideQuantitativeData"
-           , definition = function( theObject, grouping_variable = NULL, core_utilisation = NULL) {
+           , definition = function( theObject, replicate_group_column = NULL, core_utilisation = NULL) {
 
              peptide_data <- theObject@peptide_data
              sample_id_column <- theObject@sample_id
@@ -574,25 +562,21 @@ setMethod( f="removePeptidesWithOnlyOneReplicate"
 
 
              grouping_variable <- checkParamsObjectFunctionSimplifyAcceptNull( theObject
-                                                                       , "grouping_variable"
-                                                                       , grouping_variable
+                                                                       , "replicate_group_column"
                                                                        , NULL)
 
              core_utilisation <- checkParamsObjectFunctionSimplify( theObject
                                                            , "core_utilisation"
-                                                           , core_utilisation
                                                            , NA)
 
-
-
-             theObject <- updateParamInObject(theObject, "grouping_variable", grouping_variable)
-             theObject <- updateParamInObject(theObject, "core_utilisation", core_utilisation)
+             theObject <- updateParamInObject(theObject, "replicate_group_column")
+             theObject <- updateParamInObject(theObject, "core_utilisation")
 
              theObject@peptide_data <- removePeptidesWithOnlyOneReplicateHelper( input_table = peptide_data
                                                                                              , samples_id_tbl = design_matrix
                                                                                              , input_table_sample_id_column = !!sym(sample_id_column)
                                                                                              , sample_id_tbl_sample_id_column  = !!sym(sample_id_column)
-                                                                                             , replicate_group_column = !!sym(grouping_variable)
+                                                                                             , replicate_group_column = !!sym(replicate_group_column)
                                                                                              , core_utilisation = core_utilisation)
              theObject <- cleanDesignMatrixPeptide(theObject)
 
@@ -649,22 +633,19 @@ setMethod( f="peptideMissingValueImputation"
 
              imputed_value_column <- checkParamsObjectFunctionSimplifyAcceptNull( theObject
                                                            , "imputed_value_column"
-                                                           , imputed_value_column
                                                            , NULL)
 
              proportion_missing_values <- checkParamsObjectFunctionSimplifyAcceptNull( theObject
                                                            , "proportion_missing_values"
-                                                           , proportion_missing_values
                                                            , NULL)
 
              core_utilisation <- checkParamsObjectFunctionSimplify( theObject
                                                            , "core_utilisation"
-                                                           , core_utilisation
                                                            , NA)
 
-             theObject <- updateParamInObject(theObject, "imputed_value_column", imputed_value_column)
-             theObject <- updateParamInObject(theObject, "proportion_missing_values", proportion_missing_values)
-             theObject <- updateParamInObject(theObject, "core_utilisation", core_utilisation)
+             theObject <- updateParamInObject(theObject, "imputed_value_column")
+             theObject <- updateParamInObject(theObject, "proportion_missing_values")
+             theObject <- updateParamInObject(theObject, "core_utilisation")
 
              peptide_values_imputed <- peptideMissingValueImputationHelper( input_table = peptide_data
                                                                       , metadata_table = design_matrix

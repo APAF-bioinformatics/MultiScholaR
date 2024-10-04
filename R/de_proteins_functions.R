@@ -107,13 +107,13 @@ plotNumOfValuesNoLog <- function(input_table) {
 #'@param design_matrix A data frame with a column containing the sample ID (as per the sample_id param) and the experimental group (as per the group param). Each row as the sample ID as row name in the data frame.
 #'@param sample_id The name of the column in design_matrix table that has the sample ID.
 #'@param row_id A unique ID for each row of the 'input_table' variable.
-#'@param group_column The name of the column in design_matrix table that has the experimental group.
+#'@param grouping_variable The name of the column in design_matrix table that has the experimental group.
 #'@param max_num_samples_miss_per_group An integer representing the maximum number of samples with missing values per group.
 #'@param abundance_threshold Abundance threshold in which the protein in the sample must be above for it to be considered for inclusion into data analysis.
 #'@param temporary_abundance_column The name of a temporary column, as a string, to keep the abundance value you want to filter upon
 #'@return A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values.
 #'@export
-removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample_id, row_id, group_column, max_num_samples_miss_per_group, abundance_threshold
+removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample_id, row_id, grouping_variable, max_num_samples_miss_per_group, abundance_threshold
                                         , temporary_abundance_column = "Abundance") {
 
   abundance_long <- input_table |>
@@ -127,13 +127,13 @@ removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample
 
   count_missing_values_per_group <- abundance_long |>
     mutate(is_missing = ifelse(!is.na( !!sym(temporary_abundance_column)) & !!sym(temporary_abundance_column) > abundance_threshold, 0, 1)) |>
-    group_by( {{ row_id }}, {{ group_column }} ) |>
+    group_by( {{ row_id }}, {{ grouping_variable }} ) |>
     summarise(num_missing_values = sum(is_missing)) |>
     ungroup()
 
   remove_rows_temp <- count_missing_values_per_group |>
     dplyr::filter(max_num_samples_miss_per_group < num_missing_values) |>
-    dplyr::select(-num_missing_values, -{ { group_column } }) |>
+    dplyr::select(-num_missing_values, -{ { grouping_variable } }) |>
     distinct({ { row_id } })
 
   filtered_tbl <- input_table |>
@@ -150,11 +150,11 @@ removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample
 #'@param design_matrix A data frame with a column containing the sample ID (as per the sample_id param) and the experimental group (as per the group param). Each row as the sample ID as row name in the data frame.
 #'@param sample_id The name of the column in design_matrix table that has the sample ID.
 #'@param row_id A unique ID for each row of the 'input_table' variable.
-#'@param group_column The name of the column in design_matrix table that has the experimental group.
+#'@param grouping_variable The name of the column in design_matrix table that has the experimental group.
 #'@param groupwise_percentage_cutoff The maximum percentage of values below threshold allow in each group for a protein .
 #'@param max_groups_percentage_cutoff The maximum percentage of groups allowed with too many samples with protein abundance values below threshold.
-#'@param abundance_threshold Abundance threshold in which the protein in the sample must be above for it to be considered for inclusion into data analysis.
 #'@param temporary_abundance_column The name of a temporary column to keep the abundance value you want to filter upon
+#'@param proteins_intensity_cutoff_percentile The percentile of the protein intensity values to be used as the minimum threshold for protein intensity.
 #'@return A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values.
 #'@export
 removeRowsWithMissingValuesPercentHelper <- function(input_table
@@ -162,10 +162,10 @@ removeRowsWithMissingValuesPercentHelper <- function(input_table
                                                , design_matrix
                                                , sample_id
                                                , row_id
-                                               , group_column
+                                               , grouping_variable
                                                , groupwise_percentage_cutoff = 1
                                                , max_groups_percentage_cutoff = 50
-                                               , min_protein_intensity_percentile = 1
+                                               , proteins_intensity_cutoff_percentile = 1
                                         , temporary_abundance_column = "Abundance") {
 
   abundance_long <- input_table |>
@@ -183,11 +183,11 @@ removeRowsWithMissingValuesPercentHelper <- function(input_table
                                                           dplyr::filter( !is.nan(!!sym(temporary_abundance_column)) & !is.infinite(!!sym(temporary_abundance_column))) |>
                                                           pull(!!sym(temporary_abundance_column))
                                                         , na.rm=TRUE
-                                                        , probs = c(min_protein_intensity_percentile/100) ))[1]
+                                                        , probs = c(proteins_intensity_cutoff_percentile/100) ))[1]
 
   count_values_per_group <- abundance_long |>
-    distinct( {{ sample_id }}, {{ group_column }} ) |>
-    group_by(  {{ group_column }} ) |>
+    distinct( {{ sample_id }}, {{ grouping_variable }} ) |>
+    group_by(  {{ grouping_variable }} ) |>
     summarise(  num_per_group = n()) |>
     ungroup()
 
@@ -195,13 +195,13 @@ removeRowsWithMissingValuesPercentHelper <- function(input_table
     mutate(is_missing = ifelse( !is.na( !!sym(temporary_abundance_column))
                                 & !!sym(temporary_abundance_column) > min_protein_intensity_threshold
                                 , 0, 1)) |>
-    group_by( {{ row_id }}, {{ group_column }} ) |>
+    group_by( {{ row_id }}, {{ grouping_variable }} ) |>
     summarise( num_missing_per_group = sum(is_missing)) |>
     ungroup()
 
   count_percent_missing_per_group <- count_values_missing_per_group |>
     full_join( count_values_per_group,
-               by = join_by( {{ group_column }} )) |>
+               by = join_by( {{ grouping_variable }} )) |>
     mutate(  perc_missing_per_group = num_missing_per_group / num_per_group * 100 )
 
   total_num_of_groups <- count_values_per_group |> nrow()
@@ -228,12 +228,12 @@ removeRowsWithMissingValuesPercentHelper <- function(input_table
 #'@param design_matrix A data frame with a column containing the sample ID (as per the sample_id param) and the experimental group (as per the group param). Each row as the sample ID as row name in the data frame.
 #'@param sample_id The name of the column in design_matrix table that has the sample ID.
 #'@param row_id A unique ID for each row of the 'input_table' variable.
-#'@param group_column The name of the column in design_matrix table that has the experimental group.
+#'@param grouping_variable The name of the column in design_matrix table that has the experimental group.
 #'@param min_num_samples_per_group An integer representing the minimum number of samples per group.
 #'@param abundance_threshold Abundance threshold in which the protein in the sample must be above for it to be considered for inclusion into data analysis.
 #'@return A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values.
 #'@export
-getRowsToKeepList <- function(input_table, cols, design_matrix, sample_id, row_id, group_column, min_num_samples_per_group, abundance_threshold) {
+getRowsToKeepList <- function(input_table, cols, design_matrix, sample_id, row_id, grouping_variable, min_num_samples_per_group, abundance_threshold) {
 
   abundance_long <- input_table |>
     pivot_longer(cols = { { cols } },
@@ -244,7 +244,7 @@ getRowsToKeepList <- function(input_table, cols, design_matrix, sample_id, row_i
 
   count_values_per_group <- abundance_long |>
     mutate(has_value = ifelse(!is.na(Abundance) & Abundance > abundance_threshold, 1, 0)) |>
-    group_by({ { row_id } }, { { group_column } }) |>
+    group_by({ { row_id } }, { { grouping_variable } }) |>
     summarise(num_values = sum(has_value)) |>
     ungroup()
 
@@ -252,14 +252,14 @@ getRowsToKeepList <- function(input_table, cols, design_matrix, sample_id, row_i
   kept_rows_temp <- count_values_per_group |>
     dplyr::filter(num_values >= min_num_samples_per_group) |>
     dplyr::select(-num_values) |>
-    group_by({ { group_column } }) |>
+    group_by({ { grouping_variable } }) |>
     nest(data = c({ { row_id } })) |>
     ungroup() |>
     mutate(data = purrr::map(data, \(x){ x[, as_name(enquo(row_id))][[1]] }))
 
 
   sample_rows_lists <- kept_rows_temp$data
-  names(sample_rows_lists) <- kept_rows_temp[, as_name(enquo(group_column))][[1]]
+  names(sample_rows_lists) <- kept_rows_temp[, as_name(enquo(grouping_variable))][[1]]
 
   return(sample_rows_lists)
 
@@ -291,17 +291,17 @@ imputePerCol <- function(temp, width = 0.3, downshift = 1.8) {
 #'Converts a design matrix to a biological replicate matrix for use with ruvIII.
 #'@param design_matrix The design matrix with the sample ID in one column and the experimental group in another column
 #'@param sample_id_column The name of the column with the sample ID, tidyverse style input.
-#'@param group_column The name of the column with the experimental group, tidyverse style input.
+#'@param grouping_variable The name of the column with the experimental group, tidyverse style input.
 #'@param temp_column The name of the temporary column that indicates which samples are biological replicates of the same experimental group.
 #'@return A numeric matrix with rows as samples, columns as experimental group, and a value of 1 for samples within the same experimental group represented by the same column, and a value of zero otherwise.
 #'@export
-getRuvIIIReplicateMatrixHelper <- function(design_matrix, sample_id_column, group_column, temp_column = is_replicate_temp) {
+getRuvIIIReplicateMatrixHelper <- function(design_matrix, sample_id_column, grouping_variable, temp_column = is_replicate_temp) {
 
   ruvIII_replicates_matrix <- design_matrix |>
-    dplyr::select({ { sample_id_column } }, { { group_column } }) |>
+    dplyr::select({ { sample_id_column } }, { { grouping_variable } }) |>
     mutate({ { temp_column } } := 1) |>
     pivot_wider(id_cols = as_string( as_name(enquo(sample_id_column ))),
-                names_from = { { group_column } },
+                names_from = { { grouping_variable } },
                 values_from = { { temp_column } },
                 values_fill = 0) |>
     column_to_rownames(as_string(as_name(enquo(sample_id_column)))) |>
@@ -316,7 +316,7 @@ getRuvIIIReplicateMatrixHelper <- function(design_matrix, sample_id_column, grou
 plotPcaHelper <- function(data,
                     design_matrix,
                     sample_id_column = "Sample_ID",
-                    group_column = "group",
+                    grouping_variable = "group",
                     label_column = NULL,
                     title, geom.text.size = 11, ncomp = 2,
                     ...) {
@@ -329,11 +329,11 @@ plotPcaHelper <- function(data,
     rownames_to_column(var = sample_id_column) |>
     left_join(design_matrix, by = sample_id_column)
 
-  unique_groups <- temp_tbl |> distinct(!!sym(group_column)) |> pull(!!sym(group_column))
+  unique_groups <- temp_tbl |> distinct(!!sym(grouping_variable)) |> pull(!!sym(grouping_variable))
 
   if (is.null(label_column) || label_column == "") {
     output <- temp_tbl |>
-      ggplot(aes(PC1, PC2, col = !!sym(group_column))) +
+      ggplot(aes(PC1, PC2, col = !!sym(grouping_variable))) +
       geom_point() +
       xlab(paste("PC1 (", round(proportion_explained$X[["PC1"]] * 100, 0), "%)", sep = "")) +
       ylab(paste("PC2 (", round(proportion_explained$X[["PC2"]] * 100, 0), "%)", sep = "")) +
@@ -341,7 +341,7 @@ plotPcaHelper <- function(data,
       theme(legend.title = element_blank())
   } else {
     output <- temp_tbl |>
-      ggplot(aes(PC1, PC2, col = !!sym(group_column), label = !!sym(label_column))) +
+      ggplot(aes(PC1, PC2, col = !!sym(grouping_variable), label = !!sym(label_column))) +
       geom_point() +
       geom_text_repel(size = geom.text.size, show.legend = FALSE) +
       xlab(paste("PC1 (", round(proportion_explained$X[["PC1"]] * 100, 0), "%)", sep = "")) +
@@ -359,7 +359,7 @@ plotPcaHelper <- function(data,
 plotPcaListHelper <- function(data,
                           design_matrix,
                           sample_id_column = "Sample_ID",
-                          group_columns_list = c("group"),
+                          grouping_variables_list = c("group"),
                           label_column = NULL,
                           title, geom.text.size = 11, ncomp = 2,
                           ...) {
@@ -373,12 +373,12 @@ plotPcaListHelper <- function(data,
     left_join(design_matrix, by = sample_id_column)
 
 
-  plotOneGgplotPca <- function( group_column ) {
-    unique_groups <- temp_tbl |> distinct(!!sym(group_column)) |> pull(!!sym(group_column))
+  plotOneGgplotPca <- function( grouping_variable ) {
+    unique_groups <- temp_tbl |> distinct(!!sym(grouping_variable)) |> pull(!!sym(grouping_variable))
 
     if (is.null(label_column) || label_column == "") {
       output <- temp_tbl |>
-        ggplot(aes(PC1, PC2, col = !!sym(group_column))) +
+        ggplot(aes(PC1, PC2, col = !!sym(grouping_variable))) +
         geom_point() +
         xlab(paste("PC1 (", round(proportion_explained$X[["PC1"]] * 100, 0), "%)", sep = "")) +
         ylab(paste("PC2 (", round(proportion_explained$X[["PC2"]] * 100, 0), "%)", sep = "")) +
@@ -386,7 +386,7 @@ plotPcaListHelper <- function(data,
         theme(legend.title = element_blank())
     } else {
       output <- temp_tbl |>
-        ggplot(aes(PC1, PC2, col = !!sym(group_column), label = !!sym(label_column))) +
+        ggplot(aes(PC1, PC2, col = !!sym(grouping_variable), label = !!sym(label_column))) +
         geom_point() +
         geom_text_repel(size = geom.text.size, show.legend = FALSE) +
         xlab(paste("PC1 (", round(proportion_explained$X[["PC1"]] * 100, 0), "%)", sep = "")) +
@@ -398,7 +398,7 @@ plotPcaListHelper <- function(data,
     return(output)
   }
 
-  output_list <- purrr::map( group_columns_list, plotOneGgplotPca)
+  output_list <- purrr::map( grouping_variables_list, plotOneGgplotPca)
 
   output_list
 }
@@ -410,7 +410,7 @@ plotPcaListHelper <- function(data,
 #'@export
 plotPcaGgpairs <- function( data_matrix
                             , design_matrix
-                            , group_column
+                            , grouping_variable
                             , sample_id_column
                             , ncomp=2 ) {
 
@@ -439,7 +439,7 @@ plotPcaGgpairs <- function( data_matrix
     rownames_to_column( sample_id_column ) |>
     left_join( design_matrix
                , by = join_by( !!sym(sample_id_column) ==  !!sym(sample_id_column)) ) |>
-    ggpairs( columns=pc_list, aes( colour = !!sym(group_column), fill= !!sym(group_column), alpha=0.4)
+    ggpairs( columns=pc_list, aes( colour = !!sym(grouping_variable), fill= !!sym(grouping_variable), alpha=0.4)
              , legend = 1)
 
   pca_plot_ggpairs
@@ -451,7 +451,7 @@ plotPcaGgpairs <- function( data_matrix
 #'@export
 #'@param Y  Rows = Samples, Columns = Proteins or Peptides
 plotRleHelper <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75,
-                                                 0.95), ylim = c(-0.5, 0.5))
+                                                 0.95), yaxis_limit = c(-0.5, 0.5))
 {
   #  checks = check.ggplot()
   # if (checks) {
@@ -490,10 +490,10 @@ plotRleHelper <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75,
     geom_hline(yintercept = 0)
 
 
-  if( length( ylim ) ==2 ) {
+  if( length( yaxis_limit ) ==2 ) {
 
     rleplot <- rleplot +
-      coord_cartesian(ylim = ylim)
+      coord_cartesian(ylim = yaxis_limit)
 
   }
 
@@ -541,18 +541,18 @@ getMaxMinBoxplot <- function( input_boxplot, adjust_factor = 0.05) {
 
 #'@export
 rlePcaPlotList <- function(list_of_data_matrix, list_of_design_matrix,
-                           sample_id_column = Sample_ID, group_column = group, list_of_descriptions) {
+                           sample_id_column = Sample_ID, grouping_variable = group, list_of_descriptions) {
 
   rle_list <- purrr::pmap( list( data_matrix=list_of_data_matrix, description=list_of_descriptions, design_matrix=list_of_design_matrix),
                           function( data_matrix, description, design_matrix) { plotRleHelper(t(as.matrix(data_matrix)),
-                                   rowinfo = design_matrix[colnames(data_matrix), as_name(enquo(group_column))]  )  +
+                                   rowinfo = design_matrix[colnames(data_matrix), as_name(enquo(grouping_variable))]  )  +
                             labs(title = description)} )
 
   pca_list <- purrr::pmap(list( data_matrix=list_of_data_matrix, description=list_of_descriptions, design_matrix=list_of_design_matrix),
                           function( data_matrix, description, design_matrix) { plotPcaHelper(data_matrix,
                                    design_matrix = design_matrix,
                                    sample_id_column = sample_id_column ,
-                                   group_column =  group_column ,
+                                   grouping_variable =  grouping_variable ,
                                    title = description, cex = 7) })
 
   list_of_plots <- c(rle_list, pca_list)
@@ -1604,10 +1604,10 @@ getControlGenes <- function(data,
 #' Identify negative control proteins for use in removal of unwanted variation, using an ANOVA test.
 #' @param data_matrix A matrix containing the log (base 2) protein abundance values where each column represents a sample and each row represents a protein group, and proteins as rows. The row ID are the protein accessions. The data is preferably median-scaled with missing values imputed.
 #' @param design_matrix A data frame with the design matrix. Matches sample IDs to group IDs.
-#' @param group_column The name of the column with the experimental group, as a string.
+#' @param grouping_variable The name of the column with the experimental group, as a string.
 #' @param num_neg_ctrl The number of negative control genes to select. Typically the number of genes with the highest q-value (e.g. least statistically significant). Default is 100
-#' @param q_val_thresh The FDR threshold. No proteins with q-values lower than this value are included in the list of negative control proteins. This means the number of negative control proteins could be less than the number specified in \code{num_neg_ctrl} when some were excluded by this threshold.
-#' @param fdr_method The FDR calculation method, default is "qvalue". The other option is "BH"
+#' @param ruv_qval_cutoff The FDR threshold. No proteins with q-values lower than this value are included in the list of negative control proteins. This means the number of negative control proteins could be less than the number specified in \code{num_neg_ctrl} when some were excluded by this threshold.
+#' @param ruv_fdr_method The FDR calculation method, default is "qvalue". The other option is "BH"
 #' @return A boolean vector which indicates which row in the input data matrix is a control gene. The row is included if the value is TRUE. The names of each element is the row ID / protein accessions of the input data matrix.
 #'@export
 getNegCtrlProtAnovaHelper <- function(data_matrix
@@ -1615,8 +1615,8 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
                                 , grouping_variable = "group"
                                 , percentage_as_neg_ctrl = 10
                                 , num_neg_ctrl = round( nrow(data_matrix)*percentage_as_neg_ctrl/100, 0)
-                                , q_val_thresh = 0.05
-                                , fdr_method = "qvalue") {
+                                , ruv_qval_cutoff = 0.05
+                                , ruv_fdr_method = "qvalue") {
 
   ## Both percentage_as_neg_ctrl and num_neg_ctrl is missing, and number of proteins >= 50 use only 10 percent of the proteins as negative control by default
   if((is.null(percentage_as_neg_ctrl) ||
@@ -1652,15 +1652,15 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
 
   aov <- c()
 
-  if ( fdr_method == "qvalue") {
+  if ( ruv_fdr_method == "qvalue") {
     aov <- qvalue(unlist(ps))$qvalues
-  } else if ( fdr_method == "BH") {
+  } else if ( ruv_fdr_method == "BH") {
     aov <- qvalue(unlist(ps), pi0=1)$qvalues
   } else {
-    error( paste( "Input FDR method", fdr_method, "not valid") )
+    error( paste( "Input FDR method", ruv_fdr_method, "not valid") )
   }
 
-  filtered_list <- aov[aov > q_val_thresh]
+  filtered_list <- aov[aov > ruv_qval_cutoff]
 
   list_size <- ifelse(num_neg_ctrl > length(filtered_list), length(filtered_list), num_neg_ctrl)
 

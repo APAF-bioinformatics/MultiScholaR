@@ -300,21 +300,24 @@ getFunctionNameSecondLevel <- function() {
 
 #' Check the parameters in the arguments list and the function parameters to see what param applies
 #' @export
-checkParamsObjectFunctionSimplify <- function(theObject, param_name_string, param_value, default_value = NULL) {
+checkParamsObjectFunctionSimplify <- function(theObject, param_name_string, default_value = NULL) {
 
   function_name <- getFunctionNameSecondLevel()
 
   # print(function_name)
+  param_value <- dynGet(param_name_string)
 
-  object_value <- theObject@args[[function_name]][[param_name_string]]
+  object_value <- (theObject@args)[[function_name]][[param_name_string]]
 
   # print(paste0("param_value = ", param_value))
 
   error <- paste0(function_name,  paste0(": '", param_name_string, "' is not defined.\n") )
 
   if( !is.null(param_value) ) {
+    print("use param value")
     return( param_value)
   } else if( !is.null(object_value) ) {
+    # print("use object value")
     return( object_value)
   } else if( !is.null(default_value) ) {
     return( default_value)
@@ -328,12 +331,12 @@ checkParamsObjectFunctionSimplify <- function(theObject, param_name_string, para
 
 #' Check the parameters in the arguments list and the function parameters to see what param applies
 #' @export
-checkParamsObjectFunctionSimplifyAcceptNull <- function(theObject, param_name_string, param_value, default_value = NULL) {
+checkParamsObjectFunctionSimplifyAcceptNull <- function(theObject, param_name_string, default_value = NULL) {
 
   function_name <- getFunctionNameSecondLevel()
 
   # print(function_name)
-
+  param_value <- dynGet(param_name_string)
   object_value <- theObject@args[[function_name]][[param_name_string]]
 
   # print(paste0("param_value = ", param_value))
@@ -355,16 +358,11 @@ checkParamsObjectFunctionSimplifyAcceptNull <- function(theObject, param_name_st
 
 #' Update the parameter in the object
 #'@export
-updateParamInObject <- function(theObject, param_name_string, param_value) {
+updateParamInObject <- function(theObject, param_name_string) {
 
   function_name <- getFunctionNameSecondLevel()
-#
-#   print(theObject@args)
-#   print(function_name)
-#   print(param_name_string)
-#   print(param_value)
 
-  theObject@args[[function_name]][[param_name_string]] <- param_value
+  theObject@args[[function_name]][[param_name_string]] <- dynGet(param_name_string)
 
   theObject
 
