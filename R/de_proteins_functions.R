@@ -607,6 +607,39 @@ countStatDeGenes <- function(data,
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+countStatDeGenesHelper <- function(de_table
+                                   , description
+                                   , facet_column = analysis_type
+                                   , comparison_column = "comparison"
+                                   , expression_column = "expression") {
+
+  # print(head(de_table))
+
+  de_table_updated <- purrr::map(de_table, \(x){  countStatDeGenes(x,
+                                              lfc_thresh = 0,
+                                              q_val_thresh = 0.05,
+                                              log_fc_column = logFC,
+                                              q_value_column = q.mod)})
+
+    list_of_tables <- purrr::map2(de_table_updated
+                ,names(de_table_updated)
+                ,\(.x, .y){ .x |>
+                    mutate(!!sym(comparison_column) := .y) })
+
+    # print(head(temp[[1]]))
+
+    merged_tables <- list_of_tables |>
+      bind_rows() |>
+      mutate({ { facet_column } } := description) |>
+      separate_wider_delim( !!sym(comparison_column ),
+                            delim = "=",
+                            names = c(comparison_column,
+                                      expression_column))
+
+    merged_tables
+}
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' Format results table for use in volcano plots, counting number of significant proteins, p-values distribution histogram.
 #' @param list_of_de_tables A list with each element being a results table with log fold-change and q-value per protein.
 #' @param list_of_descriptions  A list of strings describing the parameters used to generate the result table.
@@ -619,31 +652,19 @@ printCountDeGenesTable <- function(  list_of_de_tables
                                    , list_of_descriptions
                                    , formula_string = "analysis_type ~ comparison"
                                    , facet_column = analysis_type
-                                   , comparison_column = comparison
-                                   , expression_column = expression) {
+                                   , comparison_column = "comparison"
+                                   , expression_column = "expression") {
 
-  count_stat_de_genes_helper <- function(de_table, description) {
-    purrr::map(de_table, \(x){ countStatDeGenes(x,
-                                           lfc_thresh = 0,
-                                           q_val_thresh = 0.05,
-                                           log_fc_column = logFC,
-                                           q_value_column = q.mod)}) |>
-      purrr::map2(names(de_table),
-                  \(.x, .y){ .x |>
-                    mutate({ { comparison_column } } := .y) }) |>
-      bind_rows() |>
-      mutate({ { facet_column } } := description) |>
-      separate({ { comparison_column } },
-               sep = "=",
-               into = c(as_name(enquo(comparison_column)),
-                        as_name(enquo(expression_column))))
-  }
+
 
 
   num_significant_de_genes_all <- purrr::map2(list_of_de_tables,
                                               list_of_descriptions,
-                                              function(a, b) { count_stat_de_genes_helper(de_table = a,
-                                                                                          description = b) }) |>
+                                              function(a, b) { countStatDeGenesHelper( de_table = a
+                                                                                          , description = b
+                                                                                          , facet_column = {{facet_column}}
+                                                                                          , comparison_column = comparison_column
+                                                                                          , expression_column = expression_column) }) |>
     bind_rows()
 
   num_sig_de_genes_barplot <- num_significant_de_genes_all |>
@@ -702,8 +723,8 @@ getSignificantData <- function( list_of_de_tables
                                , fdr_value_column = fdr.mod
                                , log_q_value_column = lqm
                                , log_fc_column = logFC
-                               , comparison_column = comparison
-                               , expression_column = log_intensity
+                               , comparison_column = "comparison"
+                               , expression_column = "log_intensity"
                                , facet_column = analysis_type
                                , q_val_thresh = 0.05) {
 
@@ -720,10 +741,10 @@ getSignificantData <- function( list_of_de_tables
         mutate({ { comparison_column } } := .y) }) |>
       bind_rows() |>
       mutate({ { facet_column } } := description) |>
-      separate({ { comparison_column } },
-               sep = "=",
-               into = c( as_string(as_name(enquo(comparison_column))),
-               as_string(as_name(enquo(expression_column) ))) )
+      separate_wider_delim({ { comparison_column } },
+               delim = "=",
+               names = c( comparison_column,
+                          expression_column) )
 
   }
 
@@ -773,8 +794,8 @@ plotVolcano <- function( selected_data
                                    paste0("Significant, logFC <",
                                           1),
                                    "Not Significant")) +
-    geom_vline(xintercept = 1, colour = "black", size = 0.2) +
-    geom_vline(xintercept = -1, colour = "black", size = 0.2) +
+    geom_vline(xintercept = 1, colour = "black", linewidth = 0.2) +
+    geom_vline(xintercept = -1, colour = "black", linewidth = 0.2) +
     geom_hline(yintercept = -log10(q_val_thresh)) +
     theme_bw() +
     xlab("Log fold changes") +
@@ -854,8 +875,8 @@ plotOneVolcano <- function( input_data, input_title,
 
   if( !is.na(log2FC_thresh) ) {
   volcano_plot <- volcano_plot+
-    geom_vline(xintercept = log2FC_thresh, colour = "black", size = 0.2) +
-    geom_vline(xintercept = -log2FC_thresh, colour = "black", size = 0.2)
+    geom_vline(xintercept = log2FC_thresh, colour = "black", linewidth = 0.2) +
+    geom_vline(xintercept = -log2FC_thresh, colour = "black", linewidth = 0.2)
 
   }
 
@@ -1026,7 +1047,8 @@ getGlimmaVolcanoProteomicsWidget <- function( r_obj
                                         , display_columns = c(  "PROTEIN_NAMES"   )
                                         , additional_annotations = NULL
                                         , additional_annotations_join_column = NULL
-                                        , counts_tbl = NULL ) {
+                                        , counts_tbl = NULL
+                                        , groups = NULL) {
 
   if( coef <= ncol(r_obj$coefficients )) {
 
@@ -1073,6 +1095,7 @@ getGlimmaVolcanoProteomicsWidget <- function( r_obj
      glimmaVolcano(r_obj
                    , coef=coef
                    , counts = counts_tbl
+                   , groups = groups
                    , anno=anno_tbl
                    , display.columns = display_columns
                    , status=decideTests(r_obj, adjust.method="none")
@@ -2036,7 +2059,7 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
   de_proteins_long <- lfc_qval_tbl |>
     dplyr::select(-lqm, -colour, -analysis_type) |>
     dplyr::mutate( {{expression_column}} := str_replace_all({{expression_column}}, group_id, "")) |>
-    separate( {{expression_column}}, sep = "-", into = c("left_group", "right_group"))  |>
+    separate_wider_delim( {{expression_column}}, delim = "-", names = c("left_group", "right_group"))  |>
    left_join(norm_counts, by = left_join_columns) |>
     left_join(norm_counts, by = right_join_columns,
               suffix = c(".left", ".right")) |>
