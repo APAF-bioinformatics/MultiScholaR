@@ -586,11 +586,21 @@ setMethod(f="normalizeBetweenSamples"
 
             frozen_protein_matrix[!is.finite(frozen_protein_matrix)] <- NA
 
-
-            normalized_frozen_protein_matrix <- normalizeBetweenArrays( frozen_protein_matrix
-                                                                        , method = normalisation_method  )
-
-
+            normalized_frozen_protein_matrix <- frozen_protein_matrix
+            switch( normalisation_method
+                    , "cyclicloess" = {
+                      normalized_frozen_protein_matrix <- normalizeCyclicLoess( frozen_protein_matrix )
+                    }
+                    , "quantile" = {
+                      normalized_frozen_protein_matrix <- normalizeQuantiles( frozen_protein_matrix  )
+                    }
+                    , "scale" = {
+                      normalized_frozen_protein_matrix <- normalizeMedianAbsValues( frozen_protein_matrix\  )
+                    }
+                    , "none" = {
+                      normalized_frozen_protein_matrix <- frozen_protein_matrix
+                    }
+            )
 
             normalized_frozen_protein_matrix[!is.finite(normalized_frozen_protein_matrix)] <- NA
 
@@ -1203,7 +1213,7 @@ setMethod( f = "chooseBestProteinAccession"
 
 
              theObject@protein_id_table <- protein_id_table
-             theObject@protein_quant_table <- summed_data
+             theObject@protein_quant_table <- summed_data[, colnames(protein_quant_table)]
 
              return(theObject)
 
