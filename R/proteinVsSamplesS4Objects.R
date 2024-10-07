@@ -1072,6 +1072,57 @@ setMethod( f = "averageTechReps"
 
 
 #'@export
+setGeneric(name="preservePeptideNaValues"
+           , def=function( peptide_obj, protein_obj)  {
+             standardGeneric("preservePeptideNaValues")
+           }
+           , signature=c("peptide_obj", "protein_obj" ))
+
+#'@export
+setMethod( f = "preservePeptideNaValues"
+           , signature=c( "PeptideQuantitativeData", "ProteinQuantitativeData" )
+           , definition= function( peptide_obj, protein_obj) {
+             preservePeptideNaValuesHelper( peptide_obj, protein_obj)
+           })
+
+
+preservePeptideNaValuesHelper <- function( peptide_obj, protein_obj) {
+
+  sample_id_column <- peptide_obj@sample_id
+  protein_id_column <- peptide_obj@protein_id_column
+
+  check_peptide_value <- peptide_obj@peptide_data |>
+    group_by( !!sym( sample_id_column), !!sym(protein_id_column) ) |>
+    summarise( Peptide.Normalized = sum( Peptide.Normalized, na.rm=TRUE)
+               , is_na = sum( is.na(Peptide.Normalized ))
+               , num_values = n() ) |>
+    mutate( Peptide.Normalized = if_else( is_na == num_values, NA_real_, Peptide.Normalized)) |>
+    ungroup() |>
+    arrange( !!sym( sample_id_column)) |>
+    pivot_wider( id_cols = !!sym(protein_id_column)
+                 , names_from = !!sym(sample_id_column)
+                 , values_from = Peptide.Normalized
+                 , values_fill = NA_real_)
+
+  check_peptide_value_cln <- check_peptide_value[rownames(protein_obj@protein_quant_table)
+                                                 , colnames(  protein_obj@protein_quant_table)]
+
+  if( length( which (rownames(protein_obj@protein_quant_table) ==  rownames(check_peptide_value_cln))) != nrow(check_peptide_value_cln) ) {
+    stop("The rows in the protein object and the peptide object do not match")
+  }
+
+  if( length( which( colnames( protein_obj@protein_quant_table) == colnames(check_peptide_value_cln) )) != ncol(check_peptide_value_cln) ) {
+    stop("The columns in the protein object and the peptide object do not match")
+  }
+
+  protein_obj@protein_quant_table [is.na(check_peptide_value_cln)] <- NA
+
+  protein_obj
+}
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+#'@export
 setGeneric(name="chooseBestProteinAccession"
            , def=function( theObject, delim=NULL, seqinr_obj=NULL, seqinr_accession_column=NULL ) {
              standardGeneric("chooseBestProteinAccession")
@@ -1118,17 +1169,38 @@ setMethod( f = "chooseBestProteinAccession"
                dplyr::select(-row_id, -!!sym( as.character(seqinr_accession_column)))
 
 
+             # summed_data <- protein_log2_quant_cln |>
+             #   mutate( !!sym(protein_id_column) := purrr::map_chr( !!sym(protein_id_column), \(x){ str_split(x, ":")[[1]][1] } ) )  |>
+             #   group_by(!!sym(protein_id_column)) |>
+             #   summarise( across( !matches(protein_id_column), \(x) { sum(x, na.rm=TRUE) } )) |>
+             #   ungroup()
+             #
+             # summed_data[summed_data == 0] <- NA
+
              summed_data <- protein_log2_quant_cln |>
                mutate( !!sym(protein_id_column) := purrr::map_chr( !!sym(protein_id_column), \(x){ str_split(x, ":")[[1]][1] } ) )  |>
-               group_by(!!sym(protein_id_column)) |>
-               summarise( across( !matches(protein_id_column), \(x) { sum(x, na.rm=TRUE) } )) |>
-               ungroup()
+               pivot_longer( cols = !matches(protein_id_column)
+                            , names_to = "sample_id"
+                            , values_to = "temporary_values_choose_accession") |>
+               group_by( !!sym(protein_id_column), sample_id ) |>
+               summarise( is_na = sum( is.na(temporary_values_choose_accession ))
+                          , temporary_values_choose_accession = sum( temporary_values_choose_accession, na.rm=TRUE)
+                          , num_values = n() ) |>
+               mutate( temporary_values_choose_accession = if_else( is_na == num_values, NA_real_, temporary_values_choose_accession)) |>
+               ungroup() |>
+               pivot_wider( id_cols = !!sym(protein_id_column)
+                            , names_from = sample_id
+                            , values_from = temporary_values_choose_accession
+                            , values_fill = NA_real_)
 
+             print( summed_data)
 
              protein_id_table <- protein_log2_quant_cln |>
                mutate( !!sym(paste0(protein_id_column, "_list")) := !!sym(protein_id_column)  ) |>
                mutate( !!sym(protein_id_column) := purrr::map_chr( !!sym(protein_id_column), \(x){ str_split(x, ":")[[1]][1] } ) )  |>
                distinct(  !!sym(protein_id_column) , !!sym(paste0(protein_id_column, "_list")))
+
+
 
              theObject@protein_id_table <- protein_id_table
              theObject@protein_quant_table <- summed_data

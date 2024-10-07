@@ -442,6 +442,10 @@ outputDeAnalysisResults <- function(de_analysis_results_list
   ## PCA plot
   plot_pca_plot <- de_analysis_results_list$pca_plot
 
+  dir.create(file.path( publication_graphs_dir, "PCA")
+             , recursive = TRUE
+             , showWarnings = FALSE)
+
   for( format_ext in plots_format) {
     file_name <- file.path( publication_graphs_dir, "PCA", paste0("PCA_plot.",format_ext))
     ggsave(filename = file_name, plot = plot_pca_plot, limitsize = FALSE)
@@ -455,6 +459,10 @@ outputDeAnalysisResults <- function(de_analysis_results_list
 
   ## RLE plot
   plot_rle_plot <- de_analysis_results_list$rle_plot
+
+  dir.create(file.path( publication_graphs_dir, "RLE")
+             , recursive = TRUE
+             , showWarnings = FALSE)
 
   for( format_ext in plots_format) {
     file_name <- file.path( publication_graphs_dir, "RLE", paste0("RLE_plot.",format_ext))
