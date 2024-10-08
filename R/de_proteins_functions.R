@@ -1003,8 +1003,6 @@ getGlimmaVolcanoProteomics <- function( r_obj
 
     }
 
-    print("Beep beep beep ")
-
       anno_tbl <- data.frame( uniprot_acc = rownames(r_obj@.Data[[1]])
                               , best_uniprot_acc = best_uniprot_acc )
 
@@ -1021,26 +1019,20 @@ getGlimmaVolcanoProteomics <- function( r_obj
 
       r_obj$p.value[,coef] <- qvalue( r_obj$p.value[,coef])$qvalues
 
-
-      print("Beep beep beep 2")
-      print(length(rownames(anno_tbl)))
-      print (nrow(anno_tbl))
-
       htmlwidgets::saveWidget( widget = glimmaVolcano(r_obj
                                                       , coef=coef
-                                                      , anno=anno_tbl
-                                                      , counts = counts_tbl
-                                                      , groups = groups
-                                                      , display.columns = colnames(anno_tbl )
-                                                      , status=decideTests(r_obj, adjust.method="none")
-                                                      , p.adj.method = "none"
-                                                      , transform.counts='none') #the plotly object
+                                                      #, anno=anno_tbl
+                                                      # , counts = counts_tbl
+                                                      # , groups = groups
+                                                      # , display.columns = colnames(anno_tbl )
+                                                      # , status=decideTests(r_obj, adjust.method="none")
+                                                      # , p.adj.method = "none"
+                                                      # , transform.counts='none'
+                                                      ) #the plotly object
                                , file = file.path( output_dir
                                                    , paste0(colnames(r_obj$coefficients)[coef], ".html"))  #the path & file name
                                , selfcontained = TRUE #creates a single html file
       )
-
-      print("Beep beep beep 3")
 
     }
 

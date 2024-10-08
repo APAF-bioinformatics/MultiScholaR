@@ -283,12 +283,11 @@ peptideIntensityFilteringHelper <- function(input_table
 #'@return A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values.
 #'@export
 removePeptidesWithMissingValuesPercentHelper <- function(input_table
-                                               , cols
                                                , design_matrix
                                                , sample_id
                                                , protein_id_column
                                                , peptide_sequence_column
-                                               , group_column
+                                               , grouping_variable
                                                , groupwise_percentage_cutoff = 1
                                                , max_groups_percentage_cutoff = 50
                                                , abundance_threshold
@@ -304,8 +303,8 @@ removePeptidesWithMissingValuesPercentHelper <- function(input_table
                 , by = join_by({{sample_id}} ) )
 
   count_values_per_group <- abundance_long |>
-    distinct( {{sample_id}} , {{ group_column }} ) |>
-    group_by( {{ group_column }} ) |>
+    distinct( {{sample_id}} , {{ grouping_variable }} ) |>
+    group_by( {{ grouping_variable }} ) |>
     summarise(  num_per_group = n()) |>
     ungroup()
 
@@ -313,13 +312,13 @@ removePeptidesWithMissingValuesPercentHelper <- function(input_table
     mutate(is_missing = ifelse( !is.na( !!sym( abundance_column ))
                                 & !!sym( abundance_column ) > abundance_threshold
                                 , 0, 1)) |>
-    group_by( row_id, {{ group_column }} ) |>
+    group_by( row_id, {{ grouping_variable }} ) |>
     summarise( num_missing_per_group = sum(is_missing)) |>
     ungroup()
 
   count_percent_missing_per_group <- count_values_missing_per_group |>
     full_join( count_values_per_group,
-               by = join_by( {{ group_column }} )) |>
+               by = join_by( {{ grouping_variable }} )) |>
     mutate(  perc_below_thresh_per_group = num_missing_per_group / num_per_group * 100 )
 
   total_num_of_groups <- count_values_per_group |> nrow()

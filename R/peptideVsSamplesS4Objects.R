@@ -419,7 +419,6 @@ setMethod( f = "removePeptidesWithMissingValuesPercent"
              # print(min_protein_intensity_threshold )
 
              theObject@peptide_data <- removePeptidesWithMissingValuesPercentHelper( peptide_data
-                                                                               , cols= !matches("row_id")
                                                                                , design_matrix = design_matrix
                                                                                , sample_id = !!sym(sample_id)
                                                                                , protein_id_column = !!sym(protein_id_column)
@@ -427,7 +426,7 @@ setMethod( f = "removePeptidesWithMissingValuesPercent"
                                                                                , grouping_variable = !!sym(grouping_variable)
                                                                                , groupwise_percentage_cutoff = groupwise_percentage_cutoff
                                                                                , max_groups_percentage_cutoff = max_groups_percentage_cutoff
-                                                                               , abundance_threshold = min_protein_intensity_threshold
+                                                                               , abundance_threshold = peptides_intensity_cutoff_percentile
                                                                                , abundance_column =  norm_quantity_column )
 
 
