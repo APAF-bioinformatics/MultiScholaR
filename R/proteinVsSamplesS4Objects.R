@@ -609,7 +609,7 @@ setMethod(f="normaliseBetweenSamples"
 
             normalised_frozen_protein_matrix_filt <- as.data.frame( normalised_frozen_protein_matrix ) |>
               #rownames_to_column("Protein.Ids") |>
-              dplyr::filter( across( everything(), \(x) { !is.na(x) } ) ) |>
+              dplyr::filter( if_all( everything(), \(x) { !is.na(x) } ) ) |>
               #column_to_rownames("Protein.Ids") |>
               as.matrix()
 
