@@ -181,44 +181,44 @@ rollUpPrecursorToPeptideHelper <- function( input_table
                                       , peptide_sequence_column = Stripped.Sequence
                                       , modified_peptide_sequence_column = Modified.Sequence
                                       , precursor_quantity_column = Precursor.Quantity
-                                      , precursor_normalized_column = Precursor.Normalised
+                                      , precursor_normalised_column = Precursor.Normalised
                                       , core_utilisation) {
 
-  peptide_normalized_tbl <- NA
+  peptide_normalised_tbl <- NA
   if( length(which(is.na(core_utilisation))) == 0 ) {
 
-    peptide_normalized_tbl <- input_table  |>
+    peptide_normalised_tbl <- input_table  |>
       group_by( {{sample_id_column}}, {{protein_id_column}}, {{peptide_sequence_column}}, {{modified_peptide_sequence_column}} ) |>
       summarise( Peptide.RawQuantity = sum( {{precursor_quantity_column}} )
-                 ,  Peptide.Normalized = sum( {{precursor_normalized_column}} ) ) |>
+                 ,  Peptide.Normalised = sum( {{precursor_normalised_column}} ) ) |>
       ungroup() |>
       group_by( {{sample_id_column}}, {{protein_id_column}}, {{peptide_sequence_column}} ) |>
       summarise( Peptide.RawQuantity = sum( Peptide.RawQuantity )
-                 ,  Peptide.Normalized = sum( Peptide.Normalized )
+                 ,  Peptide.Normalised = sum( Peptide.Normalised )
                  ,  peptidoform_count = n()) |>
       ungroup()
 
   } else {
-    peptide_normalized_tbl <- input_table  |>
+    peptide_normalised_tbl <- input_table  |>
 
       group_by( {{sample_id_column}}, {{protein_id_column}}, {{peptide_sequence_column}}, {{modified_peptide_sequence_column}} ) |>
       partition(core_utilisation) |>
       summarise( Peptide.RawQuantity = sum( {{precursor_quantity_column}} )
-                 ,  Peptide.Normalized = sum( {{precursor_normalized_column}} ) ) |>
+                 ,  Peptide.Normalised = sum( {{precursor_normalised_column}} ) ) |>
       collect() |>
       ungroup() |>
 
       group_by( {{sample_id_column}}, {{protein_id_column}}, {{peptide_sequence_column}} ) |>
       partition(core_utilisation) |>
       summarise( Peptide.RawQuantity = sum( Peptide.RawQuantity )
-                 ,  Peptide.Normalized = sum( Peptide.Normalized )
+                 ,  Peptide.Normalised = sum( Peptide.Normalised )
                  , peptidoform_count = n() ) |>
       collect() |>
       ungroup()
 
   }
 
-  peptide_normalized_tbl
+  peptide_normalised_tbl
 }
 
 #' @export
@@ -228,7 +228,7 @@ peptideIntensityFilteringHelper <- function(input_table
                                       , peptides_proportion_of_samples_below_cutoff = 1
                                       , protein_id_column = Protein.Ids
                                       , peptide_sequence_column = Stripped.Sequence
-                                      , peptide_quantity_column = Peptide.Normalized
+                                      , peptide_quantity_column = Peptide.Normalised
                                       , core_utilisation) {
   num_values_per_peptide <- NA
 
@@ -257,13 +257,13 @@ peptideIntensityFilteringHelper <- function(input_table
 
   }
 
-  peptide_normalized_pif_cln <- input_table |>
+  peptide_normalised_pif_cln <- input_table |>
     inner_join ( num_values_per_peptide |>
                    dplyr::select( -num_below_intesnity_treshold, -samples_counts)
                  , by = join_by( {{protein_id_column}}, {{peptide_sequence_column}} ) )
 
 
-  peptide_normalized_pif_cln
+  peptide_normalised_pif_cln
 
 
 }
@@ -474,18 +474,18 @@ getPairsOfSamplesTable <- function ( input_table
 #'@description Calculate the Pearson correlation of the abundances of peptides between two samples X and Y.
 #'@param ms_filename_x A string representing the sample file name X (for a pair of sample in the same technical replicate group) for correlation score calculation.
 #'@param ms_filename_y A string representing the sample file name Y (for a pair of sample in the same technical replicate group) for correlation score calculation.
-#'@param input_table A data frame with the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalized peptide abundances
+#'@param input_table A data frame with the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalised peptide abundances
 #'@param sample_id_column Sample ID column, tidyverse format (default = Run).
 #'@param protein_id_column Protein accession column, tidyverse format (default = Protein.Ids).
 #'@param peptide_sequence_column Peptide sequence column, tidyverse fromat (default =  Stripped.Sequence).
-#'@param peptide_normalized_column Normalized peptide abundance column name as string (default = "Peptide.Normalized").
+#'@param peptide_normalised_column Normalised peptide abundance column name as string (default = "Peptide.Normalised").
 #'@return The pearson correlation value of the abundances of peptides between two samples X and Y.
 #' @export
 calulatePearsonCorrelation <- function( ms_filename_x, ms_filename_y, input_table
                                         , sample_id_column = Run
                                         , protein_id_column = Protein.Ids
                                         , peptide_sequence_column = Stripped.Sequence
-                                        , peptide_normalized_column = "Peptide.Normalized")  {
+                                        , peptide_normalised_column = "Peptide.Normalised")  {
 
   tab_x <- input_table |>
     dplyr::filter( {{sample_id_column}} == ms_filename_x )
@@ -497,12 +497,12 @@ calulatePearsonCorrelation <- function( ms_filename_x, ms_filename_y, input_tabl
     inner_join( tab_y, by=join_by( {{protein_id_column}}, {{peptide_sequence_column}}) )
 
   # merged_tbl |>
-  #   dplyr::filter(!is.na( !!sym(paste0(peptide_normalized_column, ".x")) ) & !is.na( !!sym(paste0(peptide_normalized_column, ".x")))) |>
+  #   dplyr::filter(!is.na( !!sym(paste0(peptide_normalised_column, ".x")) ) & !is.na( !!sym(paste0(peptide_normalised_column, ".x")))) |>
   #   head() |> print()
 
   # print( paste(ms_filename_x, ms_filename_y))
-  input_x <-  merged_tbl[[ paste0(peptide_normalized_column, ".x") ]]
-  input_y <- merged_tbl[[paste0(peptide_normalized_column, ".y")]]
+  input_x <-  merged_tbl[[ paste0(peptide_normalised_column, ".x") ]]
+  input_y <- merged_tbl[[paste0(peptide_normalised_column, ".y")]]
   if( length(input_x) > 0 & length(input_y) >0  ) {
     cor_result <- cor( input_x
                        , input_y
@@ -525,7 +525,7 @@ calulatePearsonCorrelationForSamplePairsHelper <- function( samples_id_tbl
                                                       , sample_id_column = Run
                                                       , protein_id_column = Protein.Ids
                                                       , peptide_sequence_column = Stripped.Sequence
-                                                      , peptide_normalized_column = "Peptide.Normalized") {
+                                                      , peptide_normalised_column = "Peptide.Normalised") {
 
 
   pairs_for_comparison <- getPairsOfSamplesTable(samples_id_tbl
@@ -547,7 +547,7 @@ calulatePearsonCorrelationForSamplePairsHelper <- function( samples_id_tbl
                                                                                         , sample_id_column = {{sample_id_column}}
                                                                                         , protein_id_column = {{protein_id_column}}
                                                                                         , peptide_sequence_column = {{peptide_sequence_column}}
-                                                                                        , peptide_normalized_column = {{peptide_normalized_column}}) }))
+                                                                                        , peptide_normalised_column = {{peptide_normalised_column}}) }))
 
   pearson_correlation_per_pair
 
@@ -556,13 +556,13 @@ calulatePearsonCorrelationForSamplePairsHelper <- function( samples_id_tbl
 
 #'@description Remove samples which is correlated with any technical replicate samples
 #'@param pearson_correlation_per_pair A data frame with the following columns: 1. ID of technical replicate group, 2. sample file name X, 3. sample file name Y, 4. Pearson correlation of the abundances of peptides between sample X and Y.
-#'@param peptide_keep_samples_with_min_num_peptides A data frame with the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalized peptide abundances
+#'@param peptide_keep_samples_with_min_num_peptides A data frame with the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalised peptide abundances
 #'@param min_pearson_correlation_threshold Minimum pearson correlation for a pair of files to be considered to be consistent and kept for further analysis
 #'@param filename_column_x Name of column containing the sample file name X (for a pair of sample in the same technical replicate group). Tidyverse column header format, not a string.
 #'@param filename_column_y Name of column containing the sample file name Y (for a pair of sample in the same technical replicate group). Tidyverse column header format, not a string.
 #'@param correlation_column Name of column containing the Pearson's correlation score between Sample X and Y. Tidyverse column header format, not a string.
 #'@param filename_id_column A string indicating the name of column that contains the sample ID or Run ID in the data frame `peptide_keep_samples_with_min_num_peptides`.
-#'@return A table without samples that are poorly correlated with the rest of the samples in the technical replicate group. Contains the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalized peptide abundances
+#'@return A table without samples that are poorly correlated with the rest of the samples in the technical replicate group. Contains the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalised peptide abundances
 #' @export
 filterSamplesByPeptideCorrelationThreshold <- function(pearson_correlation_per_pair
                                                 , peptide_keep_samples_with_min_num_peptides
@@ -626,7 +626,7 @@ findSamplesPairBelowPeptideCorrelationThreshold <- function(pearson_correlation_
 #'@param protein_id_column Name of column containing the protein ID. Tidyverse column header format, not a string.
 #'@param correlation_column Name of column containing the Pearson's correlation score between Sample X and Y. Tidyverse column header format, not a string.
 #'@param filename_id_column A string indicating the name of column that contains the sample ID or Run ID in the data frame `peptide_keep_samples_with_min_num_peptides`.
-#'@return A table without samples that are poorly correlated with the rest of the samples in the technical replicate group. Contains the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalized peptide abundances
+#'@return A table without samples that are poorly correlated with the rest of the samples in the technical replicate group. Contains the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalised peptide abundances
 #' @export
 filterSamplesByProteinCorrelationThresholdHelper <- function(pearson_correlation_per_pair
                                                        , protein_intensity_table
@@ -760,14 +760,14 @@ removeProteinWithOnlyOneReplicate <- function(input_table
 
 #' peptideMissingValueImputationHelper
 #' @description Perform peptide level missing value imputation
-#'@param input_table A data frame with the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalized peptide abundances
+#'@param input_table A data frame with the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalised peptide abundances
 #'@param metadata_table A data table with the following columns: 1. the sample file name or run name (as per parameter sample_id_tbl_sample_id_column), 2. The replicate group ID (as per parameter replicate_group_column)
 #'@param input_table_sample_id_column The name of the column in the input_table that contained the run information or sample file name as per the input_table parameter (default: Run)
 #'@param sample_id_tbl_sample_id_column The name of the column in the input_table that contained the run information or sample file name as per the metadata_table parameter (default: ms_filename)
 #'@param replicate_group_column (default: general_sample_info)
 #'@param protein_id_column Protein accession column, tidyverse format (default = Protein.Ids).
 #'@param peptide_sequence_column Peptide sequence column, tidyverse fromat (default =  Stripped.Sequence).
-#'@param quantity_to_impute_column Name of column containing the peptide abundance that needs to be normalized in tidyverse format (default: Peptide.RawQuantity)
+#'@param quantity_to_impute_column Name of column containing the peptide abundance that needs to be normalised in tidyverse format (default: Peptide.RawQuantity)
 #'@param hek_string The string denoting samples that are controls using HEK cells (default: "HEK")
 #'@param proportion_missing_values The proportion of sample replicates in a group that is missing below which the peptide intensity will be imputed (default: 0.50)
 #'@export
@@ -778,7 +778,7 @@ peptideMissingValueImputationHelper <- function( input_table
                                            , replicate_group_column = general_sample_info
                                            , protein_id_column = Protein.Ids
                                            , peptide_sequence_column = Stripped.Sequence
-                                           , quantity_to_impute_column = Peptide.Normalized
+                                           , quantity_to_impute_column = Peptide.Normalised
                                            , imputed_value_column = Peptide.Imputed
                                            , hek_string = "HEK"
                                            , proportion_missing_values = 0.50
@@ -887,7 +887,7 @@ peptideMissingValueImputationHelper <- function( input_table
 calculatePercentMissingPeptidePerReplicate <- function( input_table
                                                         , metadata_table
                                                         , protein_id_column = Protein.Ids
-                                                        , intensity_column = Peptide.Normalized
+                                                        , intensity_column = Peptide.Normalised
                                                         , replicate_id_column = Run
                                                         , peptide_sequence_column = Stripped.Sequence ) {
 
@@ -1677,7 +1677,7 @@ removeProteinsWithOnlyOneReplicateHelper <- function(input_table
                                                , sample_id_tbl_sample_id_column  =  ms_filename
                                                , replicate_group_column = general_sample_info
                                                , protein_id_column = Protein.Ids
-                                               , quantity_column = Protein.Normalized
+                                               , quantity_column = Protein.Normalised
                                                , core_utilisation ) {
 
   # Count the number of technical replicates per sample and peptide combination
@@ -1726,13 +1726,13 @@ removeProteinsWithOnlyOneReplicateHelper <- function(input_table
 
 #' proteinMissingValueImputation
 #' @description Perform protein level missing value imputation
-#'@param input_table A data frame with the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Normalized protein abundances
+#'@param input_table A data frame with the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Normalised protein abundances
 #'@param metadata_table A data table with the following columns: 1. the sample file name or run name (as per parameter sample_id_tbl_sample_id_column), 2. The replicate group ID (as per parameter replicate_group_column)
 #'@param input_table_sample_id_column The name of the column in the input_table that contained the run information or sample file name as per the input_table parameter (default: Run)
 #'@param sample_id_tbl_sample_id_column The name of the column in the input_table that contained the run information or sample file name as per the metadata_table parameter (default: ms_filename)
 #'@param replicate_group_column (default: general_sample_info)
 #'@param protein_id_column Protein accession column, tidyverse format (default = Protein.Ids).
-#'@param quantity_to_impute_column Name of column containing the peptide abundance that needs to be normalized in tidyverse format (default: Peptide.RawQuantity)
+#'@param quantity_to_impute_column Name of column containing the peptide abundance that needs to be normalised in tidyverse format (default: Peptide.RawQuantity)
 #'@param hek_string The string denoting samples that are controls using HEK cells (default: "HEK")
 #'@export
 proteinMissingValueImputation <- function( input_table
@@ -1741,7 +1741,7 @@ proteinMissingValueImputation <- function( input_table
                                            , sample_id_tbl_sample_id_column  =  ms_filename
                                            , replicate_group_column = general_sample_info
                                            , protein_id_column = Protein.Ids
-                                           , quantity_to_impute_column = Protein.Normalized
+                                           , quantity_to_impute_column = Protein.Normalised
                                            , imputed_value_column = Protein.Imputed
                                            , hek_string = "HEK"
                                            , core_utilisation ) {

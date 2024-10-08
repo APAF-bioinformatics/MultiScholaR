@@ -172,7 +172,7 @@ setMethod( f="proteinIntensityFiltering"
 
              min_peptide_intensity_threshold <- ceiling( quantile( data_long_cln$log_values, na.rm=TRUE, probs = c(proteins_intensity_cutoff_percentile) ))[1]
 
-             peptide_normalized_pif_cln <- peptideIntensityFilteringHelper( data_long_cln
+             peptide_normalised_pif_cln <- peptideIntensityFilteringHelper( data_long_cln
                                                                       , min_peptide_intensity_threshold = min_peptide_intensity_threshold
                                                                       , proteins_proportion_of_samples_below_cutoff = proteins_proportion_of_samples_below_cutoff
                                                                       , protein_id_column = !!sym( theObject@protein_id_column)
@@ -181,7 +181,7 @@ setMethod( f="proteinIntensityFiltering"
                                                                       , core_utilisation = core_utilisation)
 
 
-             theObject@protein_quant_table <- peptide_normalized_pif_cln |>
+             theObject@protein_quant_table <- peptide_normalised_pif_cln |>
                dplyr::select( -temp) |>
                pivot_wider( id_cols = theObject@protein_id_column , names_from = !!sym(theObject@sample_id), values_from = log_values)
 
@@ -553,18 +553,20 @@ setMethod( f = "proteinTechRepCorrelation"
 
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-## Normalize between Arrays
+## normalise between Arrays
 
 #'@export
-setGeneric(name="normalizeBetweenSamples"
+setGeneric(name="normaliseBetweenSamples"
            , def=function( theObject, normalisation_method = NULL) {
-             standardGeneric("normalizeBetweenSamples")
+             standardGeneric("normaliseBetweenSamples")
            }
            , signature=c("theObject", "normalisation_method"))
 
 
 #'@export
-setMethod(f="normalizeBetweenSamples"
+#'@param theObject Object of class ProteinQuantitativeData
+#'@param normalisation_method Method to use for normalisation. Options are cyclicloess, quantile, scale, none
+setMethod(f="normaliseBetweenSamples"
           , signature="ProteinQuantitativeData"
           , definition=function( theObject,  normalisation_method= NULL) {
             protein_quant_table <- theObject@protein_quant_table
@@ -572,13 +574,11 @@ setMethod(f="normalizeBetweenSamples"
             design_matrix <- theObject@design_matrix
             sample_id <- theObject@sample_id
 
-
-            method <- checkParamsObjectFunctionSimplify( theObject
+            normalisation_method <- checkParamsObjectFunctionSimplify( theObject
                                                          , "normalisation_method"
                                                          , "cyclicloess")
 
             theObject <- updateParamInObject(theObject, "normalisation_method")
-
 
             frozen_protein_matrix <- protein_quant_table |>
               column_to_rownames(protein_id_column) |>
@@ -586,32 +586,34 @@ setMethod(f="normalizeBetweenSamples"
 
             frozen_protein_matrix[!is.finite(frozen_protein_matrix)] <- NA
 
-            normalized_frozen_protein_matrix <- frozen_protein_matrix
+            normalised_frozen_protein_matrix <- frozen_protein_matrix
+
+            print(paste0("normalisation_method = ", normalisation_method))
+
             switch( normalisation_method
-                    , "cyclicloess" = {
-                      normalized_frozen_protein_matrix <- normalizeCyclicLoess( frozen_protein_matrix )
+                    , cyclicloess = {
+                      normalised_frozen_protein_matrix <- normalizeCyclicLoess( frozen_protein_matrix )
                     }
-                    , "quantile" = {
-                      normalized_frozen_protein_matrix <- normalizeQuantiles( frozen_protein_matrix  )
+                    , quantile = {
+                      normalised_frozen_protein_matrix <- normalizeQuantiles( frozen_protein_matrix  )
                     }
-                    , "scale" = {
-                      normalized_frozen_protein_matrix <- normalizeMedianAbsValues( frozen_protein_matrix\  )
+                    , scale = {
+                      normalised_frozen_protein_matrix <- normalizeMedianAbsValues( frozen_protein_matrix  )
                     }
-                    , "none" = {
-                      normalized_frozen_protein_matrix <- frozen_protein_matrix
+                    , none = {
+                      normalised_frozen_protein_matrix <- frozen_protein_matrix
                     }
             )
 
-            normalized_frozen_protein_matrix[!is.finite(normalized_frozen_protein_matrix)] <- NA
+            normalised_frozen_protein_matrix[!is.finite(normalised_frozen_protein_matrix)] <- NA
 
-            normalized_frozen_protein_matrix_filt <- as.data.frame( normalized_frozen_protein_matrix ) |>
+            normalised_frozen_protein_matrix_filt <- as.data.frame( normalised_frozen_protein_matrix ) |>
               #rownames_to_column("Protein.Ids") |>
               dplyr::filter( across( everything(), \(x) { !is.na(x) } ) ) |>
               #column_to_rownames("Protein.Ids") |>
               as.matrix()
 
-
-            theObject@protein_quant_table <- normalized_frozen_protein_matrix_filt |>
+            theObject@protein_quant_table <- normalised_frozen_protein_matrix |>
                       as.data.frame() |>
                       rownames_to_column(protein_id_column)
 
@@ -623,9 +625,7 @@ setMethod(f="normalizeBetweenSamples"
 
           })
 
-
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 
 #'@export
 setGeneric(name="pearsonCorForSamplePairs"
@@ -649,7 +649,7 @@ setMethod(f="pearsonCorForSamplePairs"
 
             frozen_mat_pca_long <- protein_quant_table |>
               pivot_longer( cols=!matches(protein_id_column)
-                            , values_to = "Protein.Normalized"
+                            , values_to = "Protein.normalised"
                             , names_to = sample_id) |>
               left_join( design_matrix
                          , by = join_by( !!sym(sample_id) == !!sym(sample_id))) |>
@@ -665,7 +665,7 @@ setMethod(f="pearsonCorForSamplePairs"
                                                                                                        , sample_id_column = !!sym(sample_id)
                                                                                                        , protein_id_column = !!sym(protein_id_column)
                                                                                                        , peptide_sequence_column = temp
-                                                                                                       , peptide_normalized_column = "Protein.Normalized")
+                                                                                                       , peptide_normalised_column = "Protein.normalised")
 
             correlation_vec_before_cyclic_loess <- correlation_results_before_cyclic_loess |>
               dplyr::filter( !str_detect(!!sym(replicate_group_column), tech_rep_remove_regex )  )
@@ -705,7 +705,7 @@ setMethod(f="getNegCtrlProtAnova"
             sample_id <- theObject@sample_id
             replicate_group_column <- theObject@technical_replicate_id
 
-            normalized_frozen_protein_matrix_filt <- protein_quant_table |>
+            normalised_frozen_protein_matrix_filt <- protein_quant_table |>
               column_to_rownames(protein_id_column) |>
               as.matrix()
 
@@ -723,7 +723,7 @@ setMethod(f="getNegCtrlProtAnova"
             theObject <- updateParamInObject(theObject, "ruv_qval_cutoff")
             theObject <- updateParamInObject(theObject, "ruv_fdr_method")
 
-            control_genes_index <- getNegCtrlProtAnovaHelper( normalized_frozen_protein_matrix_filt[,design_matrix |> pull(!!sym(sample_id)) ]
+            control_genes_index <- getNegCtrlProtAnovaHelper( normalised_frozen_protein_matrix_filt[,design_matrix |> pull(!!sym(sample_id)) ]
                                                         , design_matrix = design_matrix |>
                                                           column_to_rownames(sample_id) |>
                                                           dplyr::select( -!!sym(group_id))
@@ -836,13 +836,13 @@ setMethod( f = "ruvCancor"
                stop(paste0( "The number of negative control molecules entered is less than 5. Please check the 'ctl' parameter."))
              }
 
-             normalized_frozen_protein_matrix_filt <- protein_quant_table |>
+             normalised_frozen_protein_matrix_filt <- protein_quant_table |>
                column_to_rownames(protein_id_column) |>
                as.matrix()
 
-             Y <-  t( normalized_frozen_protein_matrix_filt[,design_matrix |> pull(!!sym(sample_id))])
-             if( length(which( is.na(normalized_frozen_protein_matrix_filt) )) > 0 ) {
-               Y <- impute.nipals( t( normalized_frozen_protein_matrix_filt[,design_matrix |> pull(!!sym(sample_id))])
+             Y <-  t( normalised_frozen_protein_matrix_filt[,design_matrix |> pull(!!sym(sample_id))])
+             if( length(which( is.na(normalised_frozen_protein_matrix_filt) )) > 0 ) {
+               Y <- impute.nipals( t( normalised_frozen_protein_matrix_filt[,design_matrix |> pull(!!sym(sample_id))])
                                    , ncomp=num_components_to_impute)
              }
 
@@ -918,11 +918,11 @@ setMethod( f = "ruvIII_C_Varying"
              theObject <- updateParamInObject(theObject, "ruv_number_k")
              theObject <- updateParamInObject(theObject, "ctrl")
 
-             normalized_frozen_protein_matrix_filt <- protein_quant_table |>
+             normalised_frozen_protein_matrix_filt <- protein_quant_table |>
                column_to_rownames(protein_id_column) |>
                as.matrix()
 
-             Y <-  t( normalized_frozen_protein_matrix_filt[,design_matrix |> pull(!!sym(sample_id))])
+             Y <-  t( normalised_frozen_protein_matrix_filt[,design_matrix |> pull(!!sym(sample_id))])
 
              M <- getRuvIIIReplicateMatrixHelper( design_matrix
                                             , !!sym(sample_id)
@@ -941,11 +941,11 @@ setMethod( f = "ruvIII_C_Varying"
              cln_mat_3 <- t(cln_mat_2)
              cln_mat_4 <- cln_mat_3[rowSums(is.na(cln_mat_3) | is.nan(cln_mat_3)) != ncol(cln_mat_3),]
 
-             ruv_normalized_results_cln <- cln_mat_4 |>
+             ruv_normalised_results_cln <- cln_mat_4 |>
                as.data.frame() |>
                rownames_to_column(protein_id_column)
 
-             theObject@protein_quant_table <- ruv_normalized_results_cln
+             theObject@protein_quant_table <- ruv_normalised_results_cln
 
              theObject <- cleanDesignMatrix(theObject)
 
@@ -1037,6 +1037,11 @@ setGeneric(name="averageTechReps"
            , signature=c("theObject", "design_matrix_columns" ))
 
 #'@export
+#'@param theObject The object to be processed
+#'@param design_matrix_columns The columns to be used in the design matrix
+#'@param protein_id_column The column name of the protein id
+#'@param sample_id The column name of the sample id
+#'@param replicate_group_column The column name of the technical replicate id
 setMethod( f = "averageTechReps"
            , signature="ProteinQuantitativeData"
            , definition=function( theObject, design_matrix_columns=c()  ) {
@@ -1103,15 +1108,15 @@ preservePeptideNaValuesHelper <- function( peptide_obj, protein_obj) {
 
   check_peptide_value <- peptide_obj@peptide_data |>
     group_by( !!sym( sample_id_column), !!sym(protein_id_column) ) |>
-    summarise( Peptide.Normalized = sum( Peptide.Normalized, na.rm=TRUE)
-               , is_na = sum( is.na(Peptide.Normalized ))
+    summarise( Peptide.Normalised = sum( Peptide.Normalised, na.rm=TRUE)
+               , is_na = sum( is.na(Peptide.Normalised ))
                , num_values = n() ) |>
-    mutate( Peptide.Normalized = if_else( is_na == num_values, NA_real_, Peptide.Normalized)) |>
+    mutate( Peptide.Normalised = if_else( is_na == num_values, NA_real_, Peptide.Normalised)) |>
     ungroup() |>
     arrange( !!sym( sample_id_column)) |>
     pivot_wider( id_cols = !!sym(protein_id_column)
                  , names_from = !!sym(sample_id_column)
-                 , values_from = Peptide.Normalized
+                 , values_from = Peptide.Normalised
                  , values_fill = NA_real_)
 
   check_peptide_value_cln <- check_peptide_value[rownames(protein_obj@protein_quant_table)
@@ -1134,15 +1139,22 @@ preservePeptideNaValuesHelper <- function( peptide_obj, protein_obj) {
 
 #'@export
 setGeneric(name="chooseBestProteinAccession"
-           , def=function( theObject, delim=NULL, seqinr_obj=NULL, seqinr_accession_column=NULL ) {
+           , def=function( theObject, delim=NULL, seqinr_obj=NULL, seqinr_accession_column=NULL, replace_zero_with_na = NULL ) {
              standardGeneric("chooseBestProteinAccession")
            }
            , signature=c("theObject", "delim", "seqinr_obj", "seqinr_accession_column" ))
 
 #'@export
+#'@param theObject The object of class ProteinQuantitativeData
+#'@param delim The delimiter used to split the protein accessions
+#'@param seqinr_obj The object of class Seqinr::seqinr
+#'@param seqinr_accession_column The column in the seqinr object that contains the protein accessions
+#'@param replace_zero_with_na Replace zero values with NA
 setMethod( f = "chooseBestProteinAccession"
            , signature="ProteinQuantitativeData"
-           , definition=function( theObject, delim=NULL, seqinr_obj=NULL, seqinr_accession_column=NULL  ) {
+           , definition=function( theObject, delim=NULL, seqinr_obj=NULL
+                                  , seqinr_accession_column=NULL
+                                  , replace_zero_with_na = NULL  ) {
 
              protein_quant_table <- theObject@protein_quant_table
              protein_id_column <- theObject@protein_id_column
@@ -1152,10 +1164,14 @@ setMethod( f = "chooseBestProteinAccession"
              seqinr_accession_column <- checkParamsObjectFunctionSimplify( theObject
                                                                            , "seqinr_accession_column"
                                                                            , default_value = NULL)
+             replace_zero_with_na <- checkParamsObjectFunctionSimplify( theObject
+                                                                        , "replace_zero_with_na"
+                                                                        , default_value = FALSE)
 
              theObject <- updateParamInObject(theObject, "delim")
              theObject <- updateParamInObject(theObject, "seqinr_obj")
              theObject <- updateParamInObject(theObject, "seqinr_accession_column")
+             theObject <- updateParamInObject(theObject, "replace_zero_with_na")
 
              evidence_tbl_cleaned <- protein_quant_table |>
                distinct() |>
@@ -1203,14 +1219,16 @@ setMethod( f = "chooseBestProteinAccession"
                             , values_from = temporary_values_choose_accession
                             , values_fill = NA_real_)
 
-             print( summed_data)
+
+             if( replace_zero_with_na == TRUE) {
+               summed_data[is.na(summed_data)] <- NA
+             }
+             # print( summed_data)
 
              protein_id_table <- protein_log2_quant_cln |>
                mutate( !!sym(paste0(protein_id_column, "_list")) := !!sym(protein_id_column)  ) |>
                mutate( !!sym(protein_id_column) := purrr::map_chr( !!sym(protein_id_column), \(x){ str_split(x, ":")[[1]][1] } ) )  |>
                distinct(  !!sym(protein_id_column) , !!sym(paste0(protein_id_column, "_list")))
-
-
 
              theObject@protein_id_table <- protein_id_table
              theObject@protein_quant_table <- summed_data[, colnames(protein_quant_table)]
@@ -1240,7 +1258,13 @@ setMethod( f = "chooseBestProteinAccessionSumDuplicates"
              protein_log2_quant_cln <- protein_quant_table |>
                mutate( !!sym(protein_id_column) := str_split_i(!!sym( protein_id_column), delim, 1 ) ) |>
                group_by( !!sym(protein_id_column) ) |>
-               summarise ( across( matches(quant_columns_pattern), \(x){ if(islogged==TRUE) {log2(sum(2^x, na.rm = TRUE)) } else { sum(x, na.rm = TRUE)}    })) |>
+               summarise ( across( matches(quant_columns_pattern)
+                                   , \(x){ if(islogged==TRUE) {
+                                                log2(sum(2^x, na.rm = TRUE))
+                                           } else {
+                                                sum(x, na.rm = TRUE)
+                                           }
+                                         } )) |>
                ungroup()
 
              theObject@protein_quant_table <- protein_log2_quant_cln

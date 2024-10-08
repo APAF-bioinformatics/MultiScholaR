@@ -324,6 +324,12 @@ writeInteractiveVolcanoPlotProteomics <- function( de_proteins_long
 
     purrr::walk( seq_len( ncol(fit.eb$coefficients))
                  , \(coef) { # print(coef)
+
+                   print(paste0("coef = ", coef))
+#                    print(head( counts_tbl))
+#                    print(groups)
+#                    print( output_dir)
+
                    getGlimmaVolcanoProteomics( fit.eb
                                                , coef = coef
                                                , volcano_plot_tab  = volcano_plot_tab
@@ -378,8 +384,9 @@ writeInteractiveVolcanoPlotProteomicsWidget <- function( de_proteins_long
     dplyr::mutate( my_alpha = case_when ( gene_name !=  "" ~ 1
                                           , TRUE ~ 0.5))
 
-  interactive_volcano_plots <- purrr::map( seq_len( ncol(fit.eb$coefficients))
-               , \(coef) { # print(coef)
+  interactive_volcano_plots <- purrr::map(seq_len( ncol(fit.eb$coefficients))
+               , \(coef) {
+                 # print(paste0( "coef = ", coef))
                  getGlimmaVolcanoProteomicsWidget( fit.eb
                                              , coef = coef
                                              , volcano_plot_tab  = volcano_plot_tab
@@ -737,19 +744,20 @@ outputDeAnalysisResults <- function(de_analysis_results_list
   this_groups <- this_design_matrix[colnames( counts_mat), "group"]
 
   writeInteractiveVolcanoPlotProteomics( de_proteins_long
-                                         , groups = this_groups
-                                         , uniprot_tbl = uniprot_tbl
-                                         , fit.eb = contrasts_results$fit.eb
-                                         , args_row_id = args_row_id
-                                         , publication_graphs_dir= publication_graphs_dir
-                                         , de_q_val_thresh = de_q_val_thresh
-                                         , counts_tbl = counts_mat
-                                         , fdr_column = fdr_column
-                                         , raw_p_value_column = raw_p_value_column
-                                         , log2fc_column = log2fc_column
-                                         , uniprot_id_column = uniprot_id_column
-                                         , gene_names_column = gene_names_column
-                                         , display_columns = display_columns )
+                                          , uniprot_tbl = uniprot_tbl
+                                          , fit.eb = contrasts_results$fit.eb
+                                          , publication_graphs_dir= publication_graphs_dir
+                                          , args_row_id = args_row_id
+                                          , fdr_column = fdr_column
+                                          , raw_p_value_column = raw_p_value_column
+                                          , log2fc_column = log2fc_column
+                                          , de_q_val_thresh = de_q_val_thresh
+                                          , counts_tbl = counts_mat
+
+                                          , groups = this_groups
+                                          , uniprot_id_column = uniprot_id_column
+                                          , gene_names_column = gene_names_column
+                                          , display_columns = display_columns )
 
 }
 

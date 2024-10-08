@@ -990,7 +990,6 @@ getGlimmaVolcanoProteomics <- function( r_obj
                      , {{gene_name_column}}, any_of( display_columns) ) |>
       distinct()
 
-    print(head(volcano_plot_tab_cln))
 
     if( !is.null( additional_annotations )
         & !is.null( additional_annotations_join_column ) ) {
@@ -1003,6 +1002,8 @@ getGlimmaVolcanoProteomics <- function( r_obj
                        ,any_of( display_columns))
 
     }
+
+    print("Beep beep beep ")
 
       anno_tbl <- data.frame( uniprot_acc = rownames(r_obj@.Data[[1]])
                               , best_uniprot_acc = best_uniprot_acc )
@@ -1020,8 +1021,14 @@ getGlimmaVolcanoProteomics <- function( r_obj
 
       r_obj$p.value[,coef] <- qvalue( r_obj$p.value[,coef])$qvalues
 
+
+      print("Beep beep beep 2")
+      print(length(rownames(anno_tbl)))
+      print (nrow(anno_tbl))
+
       htmlwidgets::saveWidget( widget = glimmaVolcano(r_obj
-                                                      , coef=coef, anno=anno_tbl
+                                                      , coef=coef
+                                                      , anno=anno_tbl
                                                       , counts = counts_tbl
                                                       , groups = groups
                                                       , display.columns = colnames(anno_tbl )
@@ -1032,6 +1039,9 @@ getGlimmaVolcanoProteomics <- function( r_obj
                                                    , paste0(colnames(r_obj$coefficients)[coef], ".html"))  #the path & file name
                                , selfcontained = TRUE #creates a single html file
       )
+
+      print("Beep beep beep 3")
+
     }
 
 }
@@ -1259,8 +1269,8 @@ ebFit <- function(data, design, contr.matrix)
 #'@return A data frame with the following columns:
 #' row.names = the protein accessions
 #' comparison A string showing log({group B's name}) minus log({group A's name})
-#' meanA     mean of the normalized log abundance value of the gene across samples from experimental group A
-#' meanB     mean of the normalized log abundance value of the gene across samples from experimental group B
+#' meanA     mean of the normalised log abundance value of the gene across samples from experimental group A
+#' meanB     mean of the normalised log abundance value of the gene across samples from experimental group B
 #' logFC     log fold-change
 #' tstats    t-test statistics
 #' tmod      moderated t-test statistics
@@ -1356,8 +1366,8 @@ getTypeOfGrouping <- function(design_matrix, group_id, sample_id) {
 #'@return A list of data frames, the name of each element represents each pairwise comparison. Each data frame has the following columns:
 #' row.names = the protein accessions
 #' comparison A string showing log({group B's name}) minus log({group A's name})
-#' meanA     mean of the normalized log abundance value of the gene across samples from experimental group A
-#' meanB     mean of the normalized log abundance value of the gene across samples from experimental group B
+#' meanA     mean of the normalised log abundance value of the gene across samples from experimental group A
+#' meanB     mean of the normalised log abundance value of the gene across samples from experimental group B
 #' logFC     log fold-change
 #' tstats    t-test statistics
 #' tmod      moderated t-test statistics

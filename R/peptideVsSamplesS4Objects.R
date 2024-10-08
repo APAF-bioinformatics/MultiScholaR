@@ -106,7 +106,7 @@ PeptideQuantitativeData <- setClass("PeptideQuantitativeData"
 
                                        if(!object@raw_quantity_column %in% colnames(object@peptide_data) &
                                           !object@norm_quantity_column %in% colnames(object@peptide_data) ) {
-                                         stop("Precursor raw quantity or normalized quantity column must be in the peptide data table")
+                                         stop("Precursor raw quantity or normalised quantity column must be in the peptide data table")
                                        }
 
                                        if( ! object@sample_id %in% colnames(object@design_matrix) ) {
@@ -302,11 +302,11 @@ setMethod(f="rollUpPrecursorToPeptide"
                                                                , protein_id_column = !!sym(protein_id_column)
                                                                , peptide_sequence_column = !!sym(peptide_sequence_column)
                                                                , precursor_quantity_column = !!sym(raw_quantity_column)
-                                                               , precursor_normalized_column = !!sym(norm_quantity_column)
+                                                               , precursor_normalised_column = !!sym(norm_quantity_column)
                                                                , core_utilisation = core_utilisation)
 
              theObject@raw_quantity_column   <- "Peptide.RawQuantity"
-             theObject@norm_quantity_column <- "Peptide.Normalized"
+             theObject@norm_quantity_column <- "Peptide.Normalised"
 
              theObject <- cleanDesignMatrixPeptide(theObject)
 
@@ -343,7 +343,7 @@ setMethod( f="peptideIntensityFiltering"
 
              min_peptide_intensity_threshold <- ceiling( quantile( peptide_data |> pull(!!sym(raw_quantity_column)), na.rm=TRUE, probs = c(peptides_intensity_cutoff_percentile) ))[1]
 
-             peptide_normalized_pif_cln <- peptideIntensityFilteringHelper( peptide_data
+             peptide_normalised_pif_cln <- peptideIntensityFilteringHelper( peptide_data
                                                                       , min_peptide_intensity_threshold = min_peptide_intensity_threshold
                                                                       , peptides_proportion_of_samples_below_cutoff = peptides_proportion_of_samples_below_cutoff
                                                                       , protein_id_column = !!sym( theObject@protein_id_column)
@@ -351,7 +351,7 @@ setMethod( f="peptideIntensityFiltering"
                                                                       , peptide_quantity_column = !!sym(raw_quantity_column)
                                                                       , core_utilisation = core_utilisation)
 
-             theObject@peptide_data <- peptide_normalized_pif_cln
+             theObject@peptide_data <- peptide_normalised_pif_cln
 
              theObject <- cleanDesignMatrixPeptide(theObject)
 
