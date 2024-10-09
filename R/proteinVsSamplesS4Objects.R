@@ -607,11 +607,9 @@ setMethod(f="normaliseBetweenSamples"
 
             normalised_frozen_protein_matrix[!is.finite(normalised_frozen_protein_matrix)] <- NA
 
-            normalised_frozen_protein_matrix_filt <- as.data.frame( normalised_frozen_protein_matrix ) |>
-              #rownames_to_column("Protein.Ids") |>
-              dplyr::filter( if_all( everything(), \(x) { !is.na(x) } ) ) |>
-              #column_to_rownames("Protein.Ids") |>
-              as.matrix()
+            # normalised_frozen_protein_matrix_filt <- as.data.frame( normalised_frozen_protein_matrix ) |>
+            #   dplyr::filter( if_all( everything(), \(x) { !is.na(x) } ) ) |>
+            #   as.matrix()
 
             theObject@protein_quant_table <- normalised_frozen_protein_matrix |>
                       as.data.frame() |>
