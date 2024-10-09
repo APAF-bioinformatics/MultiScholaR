@@ -41,7 +41,7 @@ getFastaFields <- function(string, pattern) {
 #' Parse FASTA object from seqinr
 #' @description parse_fasta_object: Parse FASTA headers
 #' @param aa_seq AAStringSet object, output from running seqinr
-#' @return A table containing the protein evidence, isoform number, uniprot accession without isoform number, gene name
+#' @return A table containing the protein evidence, isoform number, uniprot accession without isoform number in the uniprot_acc column, gene name
 #' @export
 parseFastaObject <- function(aa_seq ) {
 

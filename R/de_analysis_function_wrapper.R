@@ -627,7 +627,7 @@ outputDeAnalysisResults <- function(de_analysis_results_list
                                   paste0(file_prefix, "_wide.xlsx")))
 
   de_proteins_wide_annot <- de_proteins_wide |>
-    mutate( uniprot_acc_cleaned = str_split( uniprot_acc, "-" )  |>
+    mutate( uniprot_acc_cleaned = str_split( {{args_row_id}}, "-" )  |>
               purrr::map_chr(1) ) |>
     left_join( uniprot_tbl, by = join_by( uniprot_acc_cleaned == Entry ) ) |>
     dplyr::select( -uniprot_acc_cleaned)
@@ -652,7 +652,7 @@ outputDeAnalysisResults <- function(de_analysis_results_list
 
 
   de_proteins_long_annot <- de_proteins_long |>
-    mutate( uniprot_acc_cleaned = str_split( uniprot_acc, "-" )  |>
+    mutate( uniprot_acc_cleaned = str_split( {{args_row_id}}, "-" )  |>
               purrr::map_chr(1) )|>
     left_join( uniprot_tbl, by = join_by( uniprot_acc_cleaned == Entry ) ) |>
     dplyr::select( -uniprot_acc_cleaned)

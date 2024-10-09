@@ -984,8 +984,8 @@ getGlimmaVolcanoProteomics <- function( r_obj
       purrr::map_chr(1)
 
     volcano_plot_tab_cln <- volcano_plot_tab |>
-      dplyr::rename( best_uniprot_acc =  {{uniprot_column}}
-                     , gene_name = {{gene_name_column}}   ) |>
+      # dplyr::rename( best_uniprot_acc =  {{uniprot_column}}
+      #                , gene_name = {{gene_name_column}}   ) |>
       dplyr::select( {{uniprot_column}}
                      , {{gene_name_column}}, any_of( display_columns) ) |>
       distinct()
@@ -1003,13 +1003,14 @@ getGlimmaVolcanoProteomics <- function( r_obj
 
     }
 
-      anno_tbl <- data.frame( uniprot_acc = rownames(r_obj@.Data[[1]])
-                              , best_uniprot_acc = best_uniprot_acc )
+    anno_tbl <- data.frame( uniprot_acc = rownames(r_obj@.Data[[1]])
+                            , temp_column = best_uniprot_acc ) |>
+      dplyr::rename( {{uniprot_column}} := temp_column)
 
       anno_tbl <- anno_tbl |>
         left_join( volcano_plot_tab_cln
-                   , by = join_by(best_uniprot_acc == {{uniprot_column}}) )  |>
-        mutate( gene_name = case_when( is.na( gene_name) ~ best_uniprot_acc,
+                   , by = join_by({{uniprot_column}} == {{uniprot_column}}) )  |>
+        mutate( gene_name = case_when( is.na( gene_name) ~ {{uniprot_column}},
                                        TRUE ~ gene_name) )
 
       gene_names <- anno_tbl |>
@@ -1060,8 +1061,6 @@ getGlimmaVolcanoProteomicsWidget <- function( r_obj
     # print(head(best_uniprot_acc))
 
     volcano_plot_tab_cln <- volcano_plot_tab  |>
-      dplyr::rename( best_uniprot_acc =  {{uniprot_column}}
-                     , gene_name = {{gene_name_column}}   ) |>
       dplyr::select ( {{uniprot_column}}
                        , {{gene_name_column}}, any_of( display_columns)) |>
       distinct()
@@ -1073,17 +1072,17 @@ getGlimmaVolcanoProteomicsWidget <- function( r_obj
 
       volcano_plot_tab_cln <- volcano_plot_tab_cln |>
         left_join( additional_annotations
-                   , by = join_by( {{unipro_column}} == {{additional_annotations_join_column}} ) ) |>
+                   , by = join_by( {{uniprot_column}} == {{additional_annotations_join_column}} ) ) |>
         dplyr::select( {{uniprot_column}}
                        , {{gene_name_column}}
                        , any_of( display_columns))
     }
 
-    anno_tbl <- data.frame( uniprot_acc = rownames(r_obj@.Data[[1]])
-                            , best_uniprot_acc = best_uniprot_acc ) |>
+    anno_tbl <- data.frame( uniprot_acc = rownames(r_obj@.Data[[1]]) # This uniprot_acc does not matter, only shows in glimma Volcano table
+                            , {{uniprot_column}} := best_uniprot_acc ) |>
       left_join( volcano_plot_tab_cln
-                 , by = c("best_uniprot_acc") )  |>
-      mutate( gene_name = case_when( is.na( gene_name) ~ best_uniprot_acc,
+                 , by = join_by({{uniprot_column}} == {{uniprot_column}}) )  |>
+      mutate( gene_name = case_when( is.na( gene_name) ~ {{uniprot_column}},
                                      TRUE ~ gene_name) )
 
     gene_names <- anno_tbl |>
@@ -1565,43 +1564,6 @@ saveDeProteinList <- function(list_of_de_tables, row_id, sort_by_column = q.mod,
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#'@export
-analyseRanking <- function(data, uniprot_acc_column = uniprot_acc) {
-
-  results_tbl <- data |>
-    as.data.frame() |>
-    rownames_to_column(as_string(as_name(enquo(uniprot_acc_column)))) |>
-    dplyr::select(all_of(c( as_string(as_name(enquo(uniprot_acc_column))), "q.mod", "logFC"))) |>
-    arrange(desc(q.mod)) |>
-    mutate(ctrl_gene_rank = row_number())
-
-  return(results_tbl)
-}
-
-#'@export
-getControlGenes <- function(data,
-                            q.value = 0.05,
-                            logFC_threshold = 1,
-                            uniprot_acc_column = uniprot_acc) {
-
-  temp <- purrr::map(data, \(x) { analyseRanking(x, uniprot_acc_column = { { uniprot_acc_column } })})
-
-  ctrl_genes_list <- temp |>
-    bind_rows(.id = "Test") |>
-    dplyr::filter(q.mod >= q.value &
-                    abs(logFC) <= logFC_threshold) |>
-    group_by({ { uniprot_acc_column } }) |>
-    summarise(total_num_set = n()) |>
-    ungroup() |>
-    dplyr::filter(total_num_set == length(data)) |>
-    dplyr::select({ { uniprot_acc_column } })
-
-  return(ctrl_genes_list)
-
-}
-
-
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #' Identify negative control proteins for use in removal of unwanted variation, using an ANOVA test.
 #' @param data_matrix A matrix containing the log (base 2) protein abundance values where each column represents a sample and each row represents a protein group, and proteins as rows. The row ID are the protein accessions. The data is preferably median-scaled with missing values imputed.
@@ -1920,78 +1882,6 @@ uniprotGoIdToTerm <- function(uniprot_dat, uniprot_id_column = UNIPROTKB
 
 }
 
-
-
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-## Convert uniprot_acc to entrez_id
-## gene with two proteins, choose the one with best q-value
-#'@export
-mergeWithEntrezId <- function(input_table, lookup_table) {
-
-  de_prot_for_camera_helper <- input_table |>
-    mutate(protein_id = row_number()) |>
-    inner_join(lookup_table |> dplyr::filter(!is.na(ENTREZ_GENE)), by = c("uniprot_acc" = "UNIPROTKB"))
-
-  without_entrez_id <- input_table |>
-    left_join(lookup_table |> dplyr::filter(!is.na(ENTREZ_GENE)), by = c("uniprot_acc" = "UNIPROTKB")) |>
-    dplyr::filter(is.na(ENTREZ_GENE))
-
-  ## Find rows with duplicated ids
-  duplicated_row_id <- de_prot_for_camera_helper |>
-    dplyr::group_by(ENTREZ_GENE, comparison) |>
-    summarise(counts = n()) |>
-    ungroup() |>
-    dplyr::filter(counts > 1) |>
-    dplyr::select(-counts)
-
-  to_be_selected <- de_prot_for_camera_helper |>
-    inner_join(duplicated_row_id, by = c("ENTREZ_GENE", "comparison"))
-
-  ## Duplicates with best q-value
-  selected_one_helper <- to_be_selected |>
-    inner_join(to_be_selected |>
-                 group_by(comparison, ENTREZ_GENE) |>
-                 summarise(q.mod = min(q.mod)) |>
-                 ungroup() |>
-                 dplyr::select( comparison, ENTREZ_GENE, q.mod),
-               by = c("comparison" = "comparison",
-                      "ENTREZ_GENE" = "ENTREZ_GENE",
-                      "q.mod" = "q.mod"))
-
-  selected_one  <- selected_one_helper  |>
-    inner_join(selected_one_helper |>
-                 group_by(comparison, ENTREZ_GENE) |>
-                 mutate( gene_rank  = row_number()) |>
-                 ungroup() |>
-                 dplyr::filter( gene_rank == 1) |>
-                 dplyr::select(-gene_rank) |>
-                 dplyr::select( comparison, ENTREZ_GENE, uniprot_acc, protein_id),
-               by = c("comparison" = "comparison",
-                      "uniprot_acc" = "uniprot_acc",
-                      "ENTREZ_GENE" = "ENTREZ_GENE",
-                      "protein_id" = "protein_id")  )
-
-  ## List of rows that were discarded as they are duplicates
-  excluded_duplicates <- to_be_selected |>
-    anti_join(selected_one, by = c("protein_id" = "protein_id",
-                                   "comparison" = "comparison"))
-
-  ## Combine those that are not duplicates
-  de_prot_for_camera_no_dup <- de_prot_for_camera_helper |>
-    anti_join(duplicated_row_id, by = c("ENTREZ_GENE", "comparison"))
-
-  de_prot_for_camera_cleaned <- selected_one |>
-    bind_rows(de_prot_for_camera_no_dup) |>
-    dplyr::arrange(comparison, q.mod)
-
-  de_prot_for_camera_tab <- de_prot_for_camera_cleaned |>
-    dplyr::select(-protein_id) |>
-    relocate(ENTREZ_GENE, .before = comparison)
-
-  return(list(de_proteins = de_prot_for_camera_tab,
-              without_entrez_id = without_entrez_id,
-              excluded_duplicates = excluded_duplicates))
-}
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Create the de_protein_long and de_phos_long tables
