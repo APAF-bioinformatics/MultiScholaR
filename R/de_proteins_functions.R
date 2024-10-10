@@ -1079,7 +1079,8 @@ getGlimmaVolcanoProteomicsWidget <- function( r_obj
     }
 
     anno_tbl <- data.frame( uniprot_acc = rownames(r_obj@.Data[[1]]) # This uniprot_acc does not matter, only shows in glimma Volcano table
-                            , {{uniprot_column}} := best_uniprot_acc ) |>
+                            , temp_column = best_uniprot_acc ) |>
+      dplyr::rename( {{uniprot_column}} := temp_column) |>
       left_join( volcano_plot_tab_cln
                  , by = join_by({{uniprot_column}} == {{uniprot_column}}) )  |>
       mutate( gene_name = case_when( is.na( gene_name) ~ {{uniprot_column}},
