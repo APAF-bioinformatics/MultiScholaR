@@ -22,7 +22,8 @@ output: html_document
 
 
 ## Packages Management
-```{r}
+### Unless you need alternate packages this should be left as default
+```{r Packages}
 
 # Install and load required packages if not already installed
 packages_to_install <- c("BiocManager", "pacman", "RUVIIIC", "ProteomeScholaR")
@@ -45,15 +46,15 @@ library(pacman)
 p_load(BiocManager, tidyverse, seqinr, lazyeval, rlang, glue, GGally, here, tibble, mixOmics, limma, magrittr,
        future.apply, tictoc, beepr, furrr, readxl, writexl, RColorBrewer, multidplyr,
        RSpectra, progress, Rcpp, RcppEigen, qvalue, Glimma, ruv,
-       ProteomeScholaR, iq, ggrepel, patchwork, RUVIIIC)
+       ProteomeScholaR, iq, ggrepel, patchwork, RUVIIIC, dplyr, UniProt.ws)
 
 ```
 
 ## Directories, Hardware Management & Orgnamism Annotation
 #### Set and create directories for outputs and project management, set number of cores for threaded tasks
 ##### IT IS HIGHLY RECOMMENDED YOU DO NOT EDIT THIS SECTION UNLESS YOU PLAN TO CHANGE THE PROJECT STRUCTURE THROUGHOUT #####
-```{r}
-# Directory management
+```{r Directories}
+# Directory Management
 base_dir <- here::here()
 c(
   results_dir <- file.path(base_dir, "results", "proteomics"),
@@ -67,12 +68,19 @@ c(
 ) |>
   sapply(dir.create, recursive = TRUE)
 
-# Hardware management
+# Hardware Management
 ## Change this if you have large experiments and need more compute, or are running a toaster and don't have many cores to work with :)
 cluster <- new_cluster(4)
 cluster_library(cluster, c("tidyverse", "glue", "rlang", "lazyeval"))
 num_of_cores <- 8
 
+# Annotation Management
+## Please download the organism fasta file from UniProt. If UniProt is not available, the program will extract the 
+## relevant identifiers from the fasta provided and attempt to match them to user supplied UniProt / UniParc conversions
+ Please set the name of your fasta file here in the root directory if you already have it
+fasta_file_path <- file.path( data_dir, "UniProt", "04153260899A.fasta")
+uniprot_search_results <- vroom::vroom(file.path(data_dir, "UniProt", "idmapping_2024_10_07.tsv"))
+uniparc_search_results <- vroom::vroom(file.path(data_dir, "UniProt", "kv_uniparc.csv"))
 
 ```
 ```
@@ -81,10 +89,6 @@ num_of_cores <- 8
 ## Input Parameters for Quality Control
 ### Parameters in this section are experiment-specific. Their default parameters are intended as a guide only - every source of variance is different just as every set of proteins going through a mass spectrometer is different! One size does not fit all and you *will* most likely need to fine tune these to get the most out of your data.
 ```{r}
-# Please select one of these from the list
-experiment_type <- DIANN | LFQ-PD | DIA-PD | LFQ-Fragpipe | DIA-Fragpipe
-# Please set the name of your fasta file here in the root directory if you already have it
-fasta_file <- your_organism.fasta
 
 choose_only_proteotypic_peptide <- 1
 num_peptides_per_protein_thresh <- 1
@@ -106,37 +110,23 @@ plots_format <- c("pdf", "png")
 ## Read experiment data from search program
 ### Your search results output table should be contained in your project directory
 ```{r, message=FALSE, warning=FALSE}
-##NB we can change this to read off the experiment type and select the right file to copy to dir
-##eg if experiment == DIANN, report file... else if experiment == LFQ, PD/fragpipe file...etc
-  
+base_dir <- here::here()
+results_dir <- file.path(base_dir, "results", "proteomics")
+data_dir <- file.path(base_dir, "data")
+data_proteomics_dir <- 
+source_dir <- file.path(base_dir, "scripts", "proteomics")
+de_output_dir <- file.path( results_dir, "de_proteins")
+tmp_dir <- file.path(results_dir, "cache")
+publication_graphs_dir <- file.path( results_dir, "publication_graphs")
 
-if (length(report_file) == 1) {
-  # Create the directory for DIA-NN output
-  dir.create(file.path(data_dir, "proteomics", "DIA_NN_Output"), recursive = TRUE, showWarnings = FALSE)
-  
-  file.copy(
-    from = report_file,
-    to = file.path(data_dir, "proteomics", "DIA_NN_Output", "report.tsv"),
-    overwrite = TRUE
-  )
-  
-  data_tbl <- vroom::vroom(file.path(data_dir, "proteomics", "DIA_NN_Output", "report.tsv"))
-} else if (length(report_file) > 1) {
-  warning("Multiple report.tsv files found. Copying the first one.")
-  
-  # Create the directory for DIA-NN output
-  dir.create(file.path(data_dir, "proteomics", "DIA_NN_Output"), recursive = TRUE, showWarnings = FALSE)
-  
-  file.copy(
-    from = report_file[1],
-    to = file.path(data_dir, "proteomics", "DIA_NN_Output", "report.tsv"),
-    overwrite = TRUE
-  )
-  
-  data_tbl <- vroom::vroom(file.path(data_dir, "proteomics", "DIA_NN_Output", "report.tsv"))
-} else {
-  stop("No report.tsv file found in the base directory or its subdirectories.")
-}
+createDirectoryIfNotExists(file.path( results_dir))
+createDirectoryIfNotExists(tmp_dir)
+createOutputDir(de_output_dir, FALSE)
+createOutputDir(file.path( results_dir, "clean_proteins"), FALSE)
+createOutputDir(file.path(results_dir, "protein_qc"), FALSE)
+createOutputDir(file.path(results_dir, "peptide_qc"), FALSE)
+createOutputDir(publication_graphs_dir, FALSE)
+
 ```
 
 # Read in search data and user edited design matrix
@@ -321,23 +311,128 @@ vroom::vroom_write( peptide_values_imputed@peptide_data |>
         , peptide_values_imputed_file )
 ```
 
+```{r Fasta Function}
+
+process_fasta_file <- function(fasta_file_path, uniprot_search_results, uniparc_search_results, fasta_meta_file) {
+  startsWith <- function(x, prefix) {
+  	substr(x, 1, nchar(prefix)) == prefix
+		}
+  fasta_file_raw <- vroom::vroom(fasta_file_path, delim = "\n", col_names = FALSE)
+  first_line <- fasta_file_raw$X1[1]
+
+  if (startsWith(first_line, ">sp|") || startsWith(first_line, ">tr|")) {
+    aa_seq_tbl <- parseFastaFile(fasta_file_path)
+    saveRDS(aa_seq_tbl, fasta_meta_file)
+    return(aa_seq_tbl)
+  } else {  # Custom parsing for non-standard headers
+
+    parseFastaHeader <- function(header) {
+  parts <- strsplit(substr(header, 2, nchar(header)), " ", fixed = TRUE)[[1]]
+  id_parts <- strsplit(parts[1], "|", fixed = TRUE)[[1]]
+  accession <- id_parts[2]
+  attributes <- paste(parts[-1], collapse = " ")
+  locus_tag <- str_extract(attributes, "(?<=\\[locus_tag=)[^\\]]+")
+  protein <- str_extract(attributes, "(?<=\\[protein=)[^\\]]+")
+  ncbi_refseq <- str_extract(attributes, "(?<=\\[protein_id=)WP_[^\\]]+")
+  list(
+    accession = accession,
+    protein_id = locus_tag,
+    protein = protein,
+    ncbi_refseq = ncbi_refseq,
+    attributes = attributes
+  )
+}
+
+parseFastaFile <- function(fasta_file) {
+  aa_seqinr <- read.fasta(file = fasta_file, seqtype = "AA", 
+                          whole.header = TRUE, as.string = TRUE)
+  headers <- names(aa_seqinr)
+  parsed_headers <- lapply(headers, parseFastaHeader)
+  acc_detail_tab <- bind_rows(parsed_headers)
+  aa_seq_tbl <- acc_detail_tab |>
+    mutate(seq = map_chr(aa_seqinr, 1),
+           seq_length = map_int(seq, str_length),
+           description = headers)
+  
+  return(aa_seq_tbl)
+}
+
+
+aa_seq_tbl <- parseFastaFile(fasta_file)
+colnames(uniprot_search_results)
+
+match_and_update_dataframes <- function(aa_seq_tbl, uniprot_search_results, uniparc_search_results) {
+
+  uniprot_filtered <- uniprot_search_results |>
+    dplyr::filter(Organism == "Klebsiella variicola") |>
+    dplyr::select("ncbi_refseq", "uniprot_id")
+
+  uniparc_prepared <- uniparc_search_results |>
+    dplyr::select(ncbi_refseq, uniparc_id = uniprot_id)
+
+  aa_seq_tbl_updated <- aa_seq_tbl |>
+    dplyr::left_join(uniprot_filtered, by = "ncbi_refseq") |>
+    dplyr::left_join(uniparc_prepared, by = "ncbi_refseq") |>
+    dplyr::mutate(database_id = dplyr::coalesce(uniprot_id, uniparc_id)) |>
+    dplyr::select(-uniprot_id, -uniparc_id)
+
+  return(aa_seq_tbl_updated)
+}
+
+# Usage
+aa_seq_tbl_final <- match_and_update_dataframes(aa_seq_tbl, uniprot_search_results, uniparc_search_results)
+
+vroom::vroom_write(aa_seq_tbl,
+                   file = "aa_seq_tbl.tsv",
+                   delim = "\t",
+                   na = "",
+                   quote = "none")
+
+
+
+saveRDS(aa_seq_tbl, "parsed_fasta_data.rds")
+
+update_protein_ids <- function(protein_data, aa_seq_tbl_final) {
+  protein_data <- protein_data |>
+    dplyr::mutate(matching_id = str_extract(Protein.Ids, "NZ_LR130543.1_prot_.*?_\\d+"))
+  
+  lookup_table <- aa_seq_tbl_final |>
+    dplyr::mutate(matching_id = str_extract(accession, "NZ_LR130543.1_prot_.*?_\\d+")) |>
+    dplyr::select(matching_id, database_id, ncbi_refseq)
+
+  updated_protein_data <- protein_data |>
+    dplyr::left_join(lookup_table, by = "matching_id") |>
+    dplyr::mutate(Protein.Ids_new = coalesce(database_id, ncbi_refseq, Protein.Ids)) |>
+    dplyr::select(-matching_id, -database_id, -ncbi_refseq)
+
+  changes <- sum(updated_protein_data$Protein.Ids_new != updated_protein_data$Protein.Ids)
+  cat("Number of Protein.Ids that would be updated:", changes, "\n")
+
+  if (changes > 0) {
+    cat("\nSample of changes:\n")
+    changed <- which(updated_protein_data$Protein.Ids_new != updated_protein_data$Protein.Ids)
+    sample_changes <- head(changed, 5)
+    for (i in sample_changes) {
+      cat("Old:", updated_protein_data$Protein.Ids[i], "-> New:", updated_protein_data$Protein.Ids_new[i], "\n")
+    }
+  }
+
+  # Replace old Protein.Ids with new ones
+  updated_protein_data$Protein.Ids <- updated_protein_data$Protein.Ids_new
+  updated_protein_data$Protein.Ids_new <- NULL
+
+  return(updated_protein_data)
+}
+```
+
+
 
 ## Read in the fasta organism specific fasta file to extract details on the protein sequences
 ```{r}
-tmp_dir <- file.path(results_dir, "cache")
-dir.create(tmp_dir, recursive=TRUE)
+fasta_meta_file <- "parsed_fasta_data.rds"
 
-fasta_meta_file<-file.path(tmp_dir,"aa_seq_tbl.RDS")
-
-fasta_file <- file.path( data_dir, "proteomics", "UniProt", "UP000002032_469008.fasta")
-
-if (file.exists(fasta_meta_file))
-{
-  aa_seq_tbl <- readRDS(fasta_meta_file)
-}else{
-  aa_seq_tbl <- parseFastaFile(fasta_file)
-  saveRDS(aa_seq_tbl, fasta_meta_file)
-}
+aa_seq_tbl_final <- process_fasta_file(fasta_file_path, uniprot_search_results, uniparc_search_results, fasta_meta_file)
+data_cln <- update_protein_ids(data_cln, aa_seq_tbl_final)
 
 ```
 

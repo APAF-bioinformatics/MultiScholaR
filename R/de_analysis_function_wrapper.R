@@ -92,8 +92,8 @@ deAnalysisWrapperFunction <- function( theObject
 
   rownames( theObject@design_matrix ) <- theObject@design_matrix |> pull( one_of(theObject@sample_id ))
 
-  # requires statmod library
-  contrasts_results <- runTestsContrasts(runTestsContrasts(as.matrix(column_to_rownames(theObject@protein_quant_table, theObject@protein_id_column)),
+
+  contrasts_results <- runTestsContrasts(as.matrix(column_to_rownames(theObject@protein_quant_table, theObject@protein_id_column)),
                                          contrast_strings = contrasts_tbl[, 1][[1]],
                                          design_matrix = theObject@design_matrix,
                                          formula_string = formula_string,
@@ -189,6 +189,7 @@ deAnalysisWrapperFunction <- function( theObject
                                                  group_pattern = args_group_pattern,
                                                  design_matrix_norm = theObject@design_matrix,
                                                  design_matrix_raw =  theObject@design_matrix,
+                                                 ##POTENTIAL ISSUE
                                                  protein_id_table = theObject@protein_quant_table)
 
   return_list$de_proteins_long <- de_proteins_long
