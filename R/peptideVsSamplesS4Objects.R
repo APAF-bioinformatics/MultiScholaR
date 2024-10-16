@@ -341,7 +341,7 @@ setMethod( f="peptideIntensityFiltering"
              theObject <- updateParamInObject(theObject, "peptides_proportion_of_samples_below_cutoff")
              theObject <- updateParamInObject(theObject, "core_utilisation")
 
-             min_peptide_intensity_threshold <- ceiling( quantile( peptide_data |> pull(!!sym(raw_quantity_column)), na.rm=TRUE, probs = c(peptides_intensity_cutoff_percentile) ))[1]
+             min_peptide_intensity_threshold <- ceiling( quantile( peptide_data |> pull(!!sym(raw_quantity_column)), na.rm=TRUE, probs = c(peptides_intensity_cutoff_percentile/100) ))[1]
 
              peptide_normalised_pif_cln <- peptideIntensityFilteringHelper( peptide_data
                                                                       , min_peptide_intensity_threshold = min_peptide_intensity_threshold
@@ -665,4 +665,59 @@ setMethod( f="peptideMissingValueImputation"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+# I want to input two peptide data objects and compare them,
+# to see how the number of proteins and peptides changes and how the number of samples changed
+# Use set diff or set intersect to compare the peptides, proteins, samples in the two objects
+#'@export
+compareTwoPeptideDataObjects <- function( object_a, object_b) {
 
+  object_a_peptides <- object_a@peptide_data |>
+    distinct(!!sym(object_a@protein_id_column), !!sym(object_a@peptide_sequence_column))
+
+  object_b_peptides <- object_b@peptide_data |>
+    distinct(!!sym(object_b@protein_id_column), !!sym(object_b@peptide_sequence_column))
+
+  object_a_proteins <- object_a@peptide_data |>
+    distinct(!!sym(object_a@protein_id_column)) |>
+    pull(!!sym(object_a@protein_id_column))
+
+  object_b_proteins <- object_b@peptide_data |>
+    distinct(!!sym(object_b@protein_id_column)) |>
+    pull(!!sym(object_b@protein_id_column))
+
+  object_a_samples <- object_a@design_matrix |>
+    distinct(!!sym(object_a@sample_id)) |>
+    pull(!!sym(object_a@sample_id))
+
+  object_b_samples <- object_b@design_matrix |>
+    distinct(!!sym(object_b@sample_id)) |>
+    pull(!!sym(object_b@sample_id))
+
+
+  peptides_in_a_not_b <- nrow( dplyr::setdiff( object_a_peptides, object_b_peptides) )
+  peptides_intersect_a_and_b <- nrow( dplyr::intersect( object_a_peptides, object_b_peptides) )
+  peptides_in_b_not_a <- nrow(  dplyr::setdiff( object_b_peptides, object_a_peptides) )
+
+  proteins_in_a_not_b <- length( setdiff( object_a_proteins, object_b_proteins) )
+  proteins_intersect_a_and_b <- length( intersect( object_a_proteins, object_b_proteins) )
+  proteins_in_b_not_a <- length( setdiff( object_b_proteins, object_a_proteins) )
+
+
+  samples_in_a_not_b <- length( setdiff( object_a_samples, object_b_samples) )
+  samples_intersect_a_and_b <- length( intersect( object_a_samples, object_b_samples) )
+  samples_in_b_not_a <- length( setdiff( object_b_samples, object_a_samples) )
+
+  comparisons_list <- list( peptides = list( in_a_not_b = peptides_in_a_not_b
+                                             , intersect_a_and_b = peptides_intersect_a_and_b
+                                             , in_b_not_a = peptides_in_b_not_a)
+                            , proteins = list( in_a_not_b = proteins_in_a_not_b
+                                               , intersect_a_and_b = proteins_intersect_a_and_b
+                                               , in_b_not_a = proteins_in_b_not_a)
+                            , samples = list( in_a_not_b = samples_in_a_not_b
+                                              , intersect_a_and_b = samples_intersect_a_and_b
+                                              , in_b_not_a = samples_in_b_not_a)
+  )
+
+  comparisons_list
+
+}

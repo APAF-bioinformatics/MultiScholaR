@@ -1315,3 +1315,48 @@ setMethod( f = "filterSamplesByProteinCorrelationThreshold"
 
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# I want to input two protein data objects and compare them,
+# to see how the number of proteins changes and how the number of samples changed
+# Use set diff or set intersect to compare the list of proteins and samples in the two objects
+#' @export
+compareTwoProteinDataObjects <- function( object_a, object_b) {
+
+
+  object_a_proteins <- object_a@protein_quant_table |>
+    distinct(!!sym(object_a@protein_id_column)) |>
+    pull(!!sym(object_a@protein_id_column))
+
+  object_b_proteins <- object_b@protein_quant_table |>
+    distinct(!!sym(object_a@protein_id_column)) |>
+    pull(!!sym(object_a@protein_id_column))
+
+  object_a_samples <- object_a@design_matrix |>
+    distinct(!!sym(object_a@sample_id)) |>
+    pull(!!sym(object_a@sample_id))
+
+  object_b_samples <- object_a@design_matrix |>
+    distinct(!!sym(object_a@sample_id)) |>
+    pull(!!sym(object_a@sample_id))
+
+
+  proteins_in_a_not_b <- length( setdiff( object_a_proteins, object_b_proteins))
+  proteins_intersect_a_and_b <- length( intersect( object_a_proteins, object_b_proteins))
+  proteins_in_b_not_a <- length( setdiff( object_b_proteins, object_a_proteins))
+
+
+  samples_in_a_not_b <- length( setdiff( object_a_samples, object_b_samples))
+  samples_intersect_a_and_b <- length( intersect( object_a_samples, object_b_samples))
+  samples_in_b_not_a <- length( setdiff( object_b_samples, object_a_samples))
+
+  comparisons_list <- list( proteins = list( in_a_not_b = proteins_in_a_not_b
+                                               , intersect_a_and_b = proteins_intersect_a_and_b
+                                               , in_b_not_a = proteins_in_b_not_a)
+                            , samples = list( in_a_not_b = samples_in_a_not_b
+                                              , intersect_a_and_b = samples_intersect_a_and_b
+                                              , in_b_not_a = samples_in_b_not_a)
+  )
+
+  comparisons_list
+
+}

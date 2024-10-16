@@ -314,7 +314,6 @@ checkParamsObjectFunctionSimplify <- function(theObject, param_name_string, defa
   error <- paste0(function_name,  paste0(": '", param_name_string, "' is not defined.\n") )
 
   if( !is.null(param_value) ) {
-    print("use param value")
     return( param_value)
   } else if( !is.null(object_value) ) {
     # print("use object value")
@@ -379,8 +378,7 @@ readConfigFile <- function( file=file.path(source_dir, "config.ini")) {
 
   config_list <- read.config(file=file, file.type = "ini" )
 
-  # These two lines needs to be run before starting the codes
-
+  # to set the number of cores to be used in the parallel processing
   if("globalParameters" %in% names(config_list)) {
     if ( "number_of_cpus" %in% names( config_list[["globalParameters"]])  ) {
 
@@ -396,17 +394,28 @@ readConfigFile <- function( file=file.path(source_dir, "config.ini")) {
                                            , "removePeptidesWithOnlyOneReplicate"
                                            , "peptideMissingValueImputation")
 
-      setCoreUtilisation <- function(function_name) {
-        if (function_name %in% names(config_list)) {
-          config_list[[function_name]][["core_utilisation"]] <- core_utilisation
+      setCoreUtilisation <- function(config_list, function_name) {
+        if (!function_name %in% names(config_list)) {
+          config_list[[function_name]] <- list()
         }
+        config_list[[function_name]][["core_utilisation"]] <- core_utilisation
+
+        config_list
       }
 
-      purrr::walk ( list_of_multithreaded_functions
-                    , \(x) { setCoreUtilisation(x) })
+      for( x in list_of_multithreaded_functions) {
+        config_list <- setCoreUtilisation(config_list, x)
+      }
     }}
 
+  getConfigValue <- function (config_list, section, value) {
+    config_list[[section]][[value]]
+  }
 
+  setConfigValueAsNumeric <- function (config_list, section, value) {
+    config_list[[section]][[value]] <- as.numeric(config_list[[section]][[value]])
+    config_list
+  }
 
   if("srlQvalueProteotypicPeptideClean" %in% names(config_list)) {
     config_list[["srlQvalueProteotypicPeptideClean"]][["input_matrix_column_ids"]] <- str_split(config_list[["srlQvalueProteotypicPeptideClean"]][["input_matrix_column_ids"]], ",")[[1]]
@@ -414,7 +423,75 @@ readConfigFile <- function( file=file.path(source_dir, "config.ini")) {
     print(paste0("Read srlQvalueProteotypicPeptideClean: input_matrix_column_ids = "
                  , paste0(config_list[["srlQvalueProteotypicPeptideClean"]][["input_matrix_column_ids"]]
                           , collapse=", ")))
+
+    config_list <- setConfigValueAsNumeric(config_list
+                                           , "srlQvalueProteotypicPeptideClean"
+                                           , "qvalue_threshold")
+    config_list <- setConfigValueAsNumeric(config_list
+                                           , "srlQvalueProteotypicPeptideClean"
+                                           , "global_qvalue_threshold")
+    config_list <- setConfigValueAsNumeric(config_list
+                                           , "srlQvalueProteotypicPeptideClean"
+                                           , "choose_only_proteotypic_peptide")
+
+  }
+
+
+  if("peptideIntensityFiltering" %in% names(config_list)) {
+    config_list <- setConfigValueAsNumeric(config_list
+                                           , "peptideIntensityFiltering"
+                                           , "peptides_intensity_cutoff_percentile")
+    config_list <- setConfigValueAsNumeric(config_list
+                                           , "peptideIntensityFiltering"
+                                           , "peptides_proportion_of_samples_below_cutoff")
+  }
+
+
+  if("filterMinNumPeptidesPerProtein" %in% names(config_list)) {
+    config_list <- setConfigValueAsNumeric(config_list
+                                           , "filterMinNumPeptidesPerProtein"
+                                           , "peptides_per_protein_cutoff")
+    config_list <- setConfigValueAsNumeric(config_list
+                                           , "filterMinNumPeptidesPerProtein"
+                                           , "peptidoforms_per_protein_cutoff")
+    # config_list <- setConfigValueAsNumeric(config_list
+    #                                        , ""
+    #                                        , "")
+  }
+
+  if("filterMinNumPeptidesPerSample" %in% names(config_list)) {
+    config_list <- setConfigValueAsNumeric(config_list
+                                           , "filterMinNumPeptidesPerSample"
+                                           , "peptides_per_sample_cutoff")
+
+    if(!"inclusion_list" %in% names( config_list[["filterMinNumPeptidesPerSample"]])) {
+      config_list[["filterMinNumPeptidesPerSample"]][["inclusion_list"]] <- ""
     }
+
+    config_list[["filterMinNumPeptidesPerSample"]][["inclusion_list"]] <- str_split(config_list[["filterMinNumPeptidesPerSample"]][["inclusion_list"]], ",")[[1]]
+
+  }
+
+  if("peptideMissingValueImputation" %in% names(config_list)) {
+    config_list <- setConfigValueAsNumeric(config_list
+                                           , "peptideMissingValueImputation"
+                                           , "proportion_missing_values")
+  }
+
+  if("removeRowsWithMissingValuesPercent" %in% names(config_list)) {
+    config_list <- setConfigValueAsNumeric(config_list
+                                           , "removeRowsWithMissingValuesPercent"
+                                           , "groupwise_percentage_cutoff")
+
+    config_list <- setConfigValueAsNumeric(config_list
+                                           , "removeRowsWithMissingValuesPercent"
+                                           , "max_groups_percentage_cutoff")
+
+    config_list <- setConfigValueAsNumeric(config_list
+                                           , "removeRowsWithMissingValuesPercent"
+                                           , "proteins_intensity_cutoff_percentile")
+
+  }
 
   if("plotRle" %in% names(config_list)) {
     config_list[["plotRle"]][["yaxis_limit"]] <- str_split(config_list[["plotRle"]][["yaxis_limit"]], ",")[[1]] |>
