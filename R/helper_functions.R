@@ -371,11 +371,13 @@ updateParamInObject <- function(theObject, param_name_string) {
 
 ##################################################################################################################
 
+#' @export
+#' @description Read the config file and return the list of parameters
+#' @param file The file path to the config file
+#' @param file_type The type of the file (default: "ini")
+readConfigFile <- function( file=file.path(source_dir, "config.ini")) {
 
-readConfigFile <- function( file=file.path(source_dir, "config.ini")
-                            , file_type = "ini" ) {
-
-  config_list <- read.config(file=file, file.type = file_type )
+  config_list <- read.config(file=file, file.type = "ini" )
 
   # These two lines needs to be run before starting the codes
 
@@ -429,7 +431,12 @@ readConfigFile <- function( file=file.path(source_dir, "config.ini")
 
 
 
-
+#' @export
+#' @description Read the config file and specify the section and or parameter to update the object
+#' @param theObject The object to be updated
+#' @param file The file path to the config file
+#' @param section The section to be updated
+#' @param value The parameter value to be updated
 readConfigFileSection <- function( theObject
                             , file=file.path(source_dir, "config.ini")
                             , section
