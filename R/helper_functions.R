@@ -370,3 +370,87 @@ updateParamInObject <- function(theObject, param_name_string) {
 
 
 ##################################################################################################################
+
+
+readConfigFile <- function( file=file.path(source_dir, "config.ini")
+                            , file_type = "ini" ) {
+
+  config_list <- read.config(file=file, file.type = file_type )
+
+  # These two lines needs to be run before starting the codes
+
+  if("globalParameters" %in% names(config_list)) {
+    if ( "number_of_cpus" %in% names( config_list[["globalParameters"]])  ) {
+
+      print(paste0("Read globalParameters: number_of_cpus = "
+                   , config_list$globalParameters$number_of_cpus))
+      core_utilisation <- new_cluster(config_list$globalParameters$number_of_cpus)
+      cluster_library(core_utilisation, c("tidyverse", "glue", "rlang", "lazyeval"))
+
+      list_of_multithreaded_functions <- c("rollUpPrecursorToPeptide"
+                                           , "peptideIntensityFiltering"
+                                           , "filterMinNumPeptidesPerProtein"
+                                           , "filterMinNumPeptidesPerSample"
+                                           , "removePeptidesWithOnlyOneReplicate"
+                                           , "peptideMissingValueImputation")
+
+      setCoreUtilisation <- function(function_name) {
+        if (function_name %in% names(config_list)) {
+          config_list[[function_name]][["core_utilisation"]] <- core_utilisation
+        }
+      }
+
+      purrr::walk ( list_of_multithreaded_functions
+                    , \(x) { setCoreUtilisation(x) })
+    }}
+
+
+
+  if("srlQvalueProteotypicPeptideClean" %in% names(config_list)) {
+    config_list[["srlQvalueProteotypicPeptideClean"]][["input_matrix_column_ids"]] <- str_split(config_list[["srlQvalueProteotypicPeptideClean"]][["input_matrix_column_ids"]], ",")[[1]]
+
+    print(paste0("Read srlQvalueProteotypicPeptideClean: input_matrix_column_ids = "
+                 , paste0(config_list[["srlQvalueProteotypicPeptideClean"]][["input_matrix_column_ids"]]
+                          , collapse=", ")))
+    }
+
+  if("plotRle" %in% names(config_list)) {
+    config_list[["plotRle"]][["yaxis_limit"]] <- str_split(config_list[["plotRle"]][["yaxis_limit"]], ",")[[1]] |>
+      purrr::map_dbl( \(x) as.numeric(x) )
+
+    print(paste0("Read plotRle: yaxis_limit = "
+                 , paste0(config_list[["plotRle"]][["yaxis_limit"]], collapse=", ")))
+  }
+
+  config_list
+}
+
+
+
+
+
+
+readConfigFileSection <- function( theObject
+                            , file=file.path(source_dir, "config.ini")
+                            , section
+                            , value = NULL ) {
+
+  config_list <- readConfigFile( file=file
+                              , file_type = "ini" )
+
+  if ( is.null(value) ) {
+    theObject@args[[section]] <- config_list[[section]]
+  } else {
+    theObject@args[[section]][[value]] <- config_list[[section]][[value]]
+  }
+
+  theObject
+}
+
+
+##################################################################################################################
+
+
+
+
+
