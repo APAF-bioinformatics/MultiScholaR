@@ -11,7 +11,9 @@ deAnalysisWrapperFunction <- function( theObject
                                        , eBayes_trend = NULL
                                        , eBayes_robust = NULL
                                        , args_group_pattern = NULL
-                                       , args_row_id = NULL ) {
+                                       , args_row_id = NULL
+                                       , qvalue_column = "fdr_qvalue"
+                                       , raw_pvalue_colum = "raw_pvalue") {
 
   contrasts_tbl <- checkParamsObjectFunctionSimplify( theObject, "contrasts_tbl", NULL)
   formula_string <- checkParamsObjectFunctionSimplify( theObject, "formula_string", " ~ 0 + group")
@@ -112,9 +114,9 @@ deAnalysisWrapperFunction <- function( theObject
   significant_rows <- getSignificantData(list_of_de_tables = list(contrasts_results_table),
                                          list_of_descriptions = list("RUV applied"),
                                          row_id = !!sym(args_row_id),
-                                         p_value_column = p.mod,
-                                         q_value_column = q.mod,
-                                         fdr_value_column = fdr.mod,
+                                         p_value_column = !!sym(raw_pvalue_colum),
+                                         q_value_column = !!sym(qvalue_column),
+                                         fdr_value_column = fdr_value_bh_adjustment,
                                          log_q_value_column = lqm,
                                          log_fc_column = logFC,
                                          comparison_column = "comparison",
@@ -144,7 +146,7 @@ deAnalysisWrapperFunction <- function( theObject
 
   ## Print p-values distribution figure
   pvalhist <- printPValuesDistribution(significant_rows,
-                                       p_value_column = p.mod,
+                                       p_value_column = !!sym(raw_pvalue_colum),
                                        formula_string = "analysis_type ~ comparison")
 
   return_list$pvalhist <- pvalhist
@@ -167,10 +169,10 @@ deAnalysisWrapperFunction <- function( theObject
     pivot_wider(id_cols = c(!!sym(args_row_id)),
                 names_from = c(comparison),
                 names_sep = ":",
-                values_from = c(log2FC, q.mod, p.mod)) |>
-    left_join(theObject@protein_quant_table, by = join_by(!!sym(args_row_id) == !!sym(theObject@protein_id_column))) |>
-    left_join(theObject@protein_id_table, by = join_by(!!sym(args_row_id) == !!sym(theObject@protein_id_column))) |>
-    dplyr::arrange(across(matches("q.mod"))) |>
+                values_from = c(log2FC, !!sym(qvalue_column), !!sym(raw_pvalue_colum))) |>
+    left_join(counts_table_to_use, by = join_by( !!sym(args_row_id)  == !!sym(theObject@protein_id_column)  )   ) |>
+    left_join(theObject@protein_id_table, by = join_by( !!sym(args_row_id) == !!sym(theObject@protein_id_column) )  ) |>
+    dplyr::arrange(across(matches("!!sym(qvalue_column)"))) |>
     distinct()
 
 
@@ -197,10 +199,10 @@ deAnalysisWrapperFunction <- function( theObject
 
   ## Plot static volcano plot
   static_volcano_plot_data <- de_proteins_long |>
-    mutate( lqm = -log10(q.mod ) ) |>
-    dplyr::mutate(label = case_when( q.mod < de_q_val_thresh ~ "Significant",
+    mutate( lqm = -log10(!!sym(qvalue_column) ) ) |>
+    dplyr::mutate(label = case_when( !!sym(qvalue_column) < de_q_val_thresh ~ "Significant",
                                      TRUE ~ "Not sig.")) |>
-    dplyr::mutate(colour = case_when( q.mod < de_q_val_thresh ~ "purple",
+    dplyr::mutate(colour = case_when( !!sym(qvalue_column) < de_q_val_thresh ~ "purple",
                                       TRUE ~ "black")) |>
     dplyr::mutate(colour = factor(colour, levels = c("black", "purple")))
 
@@ -218,9 +220,9 @@ deAnalysisWrapperFunction <- function( theObject
 
   ## Return the number of significant molecules
   num_sig_de_molecules <- significant_rows %>%
-    dplyr::mutate(status = case_when(q.mod  >= de_q_val_thresh ~ "Not significant",
-                                       log2FC >= 0 & q.mod < de_q_val_thresh ~ "Significant and Up",
-                                     log2FC < 0 &  q.mod < de_q_val_thresh ~ "Significant and Down",
+    dplyr::mutate(status = case_when(!!sym(qvalue_column)  >= de_q_val_thresh ~ "Not significant",
+                                       log2FC >= 0 & !!sym(qvalue_column) < de_q_val_thresh ~ "Significant and Up",
+                                     log2FC < 0 &  !!sym(qvalue_column) < de_q_val_thresh ~ "Significant and Down",
                                       TRUE ~ "Not significant")) %>%
     group_by( comparison,  status) %>% # expression, analysis_type,
     summarise(counts = n()) %>%
@@ -286,8 +288,8 @@ writeInteractiveVolcanoPlotProteomics <- function( de_proteins_long
                                                    , fit.eb
                                                    , publication_graphs_dir
                                                    , args_row_id = "uniprot_acc"
-                                                   , fdr_column = "q.mod"
-                                                   , raw_p_value_column = "p.mod"
+                                                   , fdr_column = "fdr_qvalue"
+                                                   , raw_p_value_column = "raw_pvalue"
                                                    , log2fc_column = "log2FC"
                                                    , de_q_val_thresh = 0.05
                                                    , counts_tbl = NULL
@@ -300,7 +302,8 @@ writeInteractiveVolcanoPlotProteomics <- function( de_proteins_long
     volcano_plot_tab <- de_proteins_long  |>
       left_join(uniprot_tbl, by = join_by( !!sym(args_row_id) == !!sym( uniprot_id_column) ) ) |>
       dplyr::rename( UNIPROT_GENENAME = gene_names_column ) |>
-      mutate( UNIPROT_GENENAME = purrr::map_chr( UNIPROT_GENENAME, \(x){str_split(x, " ")[[1]][1]})) |>
+      mutate( UNIPROT_GENENAME = purrr::map_chr( UNIPROT_GENENAME, \(x){str_split(x, " |:")[[1]][1]})) |>
+      dplyr::mutate(gene_name = UNIPROT_GENENAME ) |>
       mutate( lqm = -log10(!!sym(fdr_column)))  |>
       dplyr::mutate(label = case_when(abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) >= de_q_val_thresh ~ "Not sig., logFC >= 1",
                                       abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) < de_q_val_thresh ~ "Sig., logFC >= 1",
@@ -310,7 +313,6 @@ writeInteractiveVolcanoPlotProteomics <- function( de_proteins_long
                                        abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) < de_q_val_thresh ~ "purple",
                                        abs(!!sym(log2fc_column)) < 1 & !!sym(fdr_column) < de_q_val_thresh ~ "blue",
                                        TRUE ~ "black")) |>
-      dplyr::mutate(gene_name = str_split(UNIPROT_GENENAME, " |:" ) |> purrr::map_chr(1)  ) |>
       dplyr::mutate(best_uniprot_acc = str_split(!!sym(args_row_id), ":" ) |> purrr::map_chr(1)  ) |>
       dplyr::mutate(analysis_type = comparison)  |>
       dplyr::select( best_uniprot_acc, lqm, !!sym(fdr_column), !!sym(raw_p_value_column), !!sym(log2fc_column), comparison, label, colour,  gene_name
@@ -353,8 +355,8 @@ writeInteractiveVolcanoPlotProteomicsWidget <- function( de_proteins_long
                                                    , uniprot_tbl
                                                    , fit.eb
                                                    , args_row_id = "uniprot_acc"
-                                                   , fdr_column = "q.mod"
-                                                   , raw_p_value_column = "p.mod"
+                                                   , fdr_column = "fdr_qvalue"
+                                                   , raw_p_value_column = "raw_pvalue"
                                                    , log2fc_column = "log2FC"
                                                    , de_q_val_thresh = 0.05
                                                    , counts_tbl = NULL
@@ -427,8 +429,8 @@ outputDeAnalysisResults <- function(de_analysis_results_list
   args_row_id <- checkParamsObjectFunctionSimplify(theObject, "args_row_id", "uniprot_acc")
   de_q_val_thresh <- checkParamsObjectFunctionSimplify(theObject, "de_q_val_thresh", 0.05)
   gene_names_column <- checkParamsObjectFunctionSimplify(theObject, "gene_names_column", "Gene Names")
-  fdr_column <- checkParamsObjectFunctionSimplify(theObject, "fdr_column", "q.mod")
-  raw_p_value_column <- checkParamsObjectFunctionSimplify(theObject, "raw_p_value_column", "p.mod")
+  fdr_column <- checkParamsObjectFunctionSimplify(theObject, "fdr_column", "fdr_qvalue")
+  raw_p_value_column <- checkParamsObjectFunctionSimplify(theObject, "raw_p_value_column", "raw_pvalue")
   log2fc_column <- checkParamsObjectFunctionSimplify(theObject, "log2fc_column", "log2FC")
   uniprot_id_column <- checkParamsObjectFunctionSimplify(theObject, "uniprot_id_column", "Entry")
   display_columns <- checkParamsObjectFunctionSimplify(theObject, "display_columns", c( "best_uniprot_acc" ))
@@ -631,7 +633,9 @@ outputDeAnalysisResults <- function(de_analysis_results_list
     mutate( uniprot_acc_cleaned = str_split( !!sym(args_row_id), "-" )  |>
               purrr::map_chr(1) ) |>
     left_join( uniprot_tbl, by = join_by( uniprot_acc_cleaned == Entry ) ) |>
-    dplyr::select( -uniprot_acc_cleaned)
+    dplyr::select( -uniprot_acc_cleaned)  |>
+    mutate( gene_name = purrr::map_chr( !!sym(gene_names_column), \(x){str_split(x, " |:")[[1]][1]})) |>
+    relocate( gene_name, .after = !!sym(args_row_id))
 
   vroom::vroom_write( de_proteins_wide_annot,
                       file.path( de_output_dir,
@@ -655,7 +659,9 @@ outputDeAnalysisResults <- function(de_analysis_results_list
     mutate( uniprot_acc_cleaned = str_split( !!sym(args_row_id), "-" )  |>
               purrr::map_chr(1) )|>
     left_join( uniprot_tbl, by = join_by( uniprot_acc_cleaned == Entry ) )  |>
-    dplyr::select( -uniprot_acc_cleaned)
+    dplyr::select( -uniprot_acc_cleaned)  |>
+    mutate( gene_name = purrr::map_chr( !!sym(gene_names_column), \(x){str_split(x, " |:")[[1]][1]})) |>
+    relocate( gene_name, .after = !!sym(args_row_id))
 
   vroom::vroom_write( de_proteins_long_annot,
                       file.path( de_output_dir,
@@ -791,8 +797,8 @@ writeInteractiveVolcanoPlotProteomicsMain <- function(de_analysis_results_list
   args_row_id <- checkParamsObjectFunctionSimplify(theObject, "args_row_id", "uniprot_acc")
   de_q_val_thresh <- checkParamsObjectFunctionSimplify(theObject, "de_q_val_thresh", 0.05)
   gene_names_column <- checkParamsObjectFunctionSimplify(theObject, "gene_names_column", "Gene Names")
-  fdr_column <- checkParamsObjectFunctionSimplify(theObject, "fdr_column", "q.mod")
-  raw_p_value_column <- checkParamsObjectFunctionSimplify(theObject, "raw_p_value_column", "p.mod")
+  fdr_column <- checkParamsObjectFunctionSimplify(theObject, "fdr_column", "fdr_qvalue")
+  raw_p_value_column <- checkParamsObjectFunctionSimplify(theObject, "raw_p_value_column", "raw_pvalue")
   log2fc_column <- checkParamsObjectFunctionSimplify(theObject, "log2fc_column", "log2FC")
   uniprot_id_column <- checkParamsObjectFunctionSimplify(theObject, "uniprot_id_column", "Entry")
   display_columns <- checkParamsObjectFunctionSimplify(theObject, "display_columns", c( "best_uniprot_acc" ))

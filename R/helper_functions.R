@@ -314,7 +314,6 @@ checkParamsObjectFunctionSimplify <- function(theObject, param_name_string, defa
   error <- paste0(function_name,  paste0(": '", param_name_string, "' is not defined.\n") )
 
   if( !is.null(param_value) ) {
-    print("use param value")
     return( param_value)
   } else if( !is.null(object_value) ) {
     # print("use object value")
@@ -370,7 +369,9 @@ updateParamInObject <- function(theObject, param_name_string) {
 
 
 ##################################################################################################################
-# Helper function to neatly print out the figures as they get produced
+
+#' @description Helper function to neatly print out the figures as they get produced
+#' @export
 summarize_qc_plots <- function(qc_figure) {
   cat("RLE Plots:\n")
   cat(paste(" -", names(qc_figure@rle_plots), "\n"))
@@ -381,3 +382,173 @@ summarize_qc_plots <- function(qc_figure) {
   cat("\nPearson Correlation Plots:\n")
   cat(paste(" -", names(qc_figure@pearson_plots), "\n"))
 }
+
+
+#' @export
+#' @description Read the config file and return the list of parameters
+#' @param file The file path to the config file
+#' @param file_type The type of the file (default: "ini")
+readConfigFile <- function( file=file.path(source_dir, "config.ini")) {
+
+  config_list <- read.config(file=file, file.type = "ini" )
+
+  # to set the number of cores to be used in the parallel processing
+  if("globalParameters" %in% names(config_list)) {
+    if ( "number_of_cpus" %in% names( config_list[["globalParameters"]])  ) {
+
+      print(paste0("Read globalParameters: number_of_cpus = "
+                   , config_list$globalParameters$number_of_cpus))
+      core_utilisation <- new_cluster(config_list$globalParameters$number_of_cpus)
+      cluster_library(core_utilisation, c("tidyverse", "glue", "rlang", "lazyeval"))
+
+      list_of_multithreaded_functions <- c("rollUpPrecursorToPeptide"
+                                           , "peptideIntensityFiltering"
+                                           , "filterMinNumPeptidesPerProtein"
+                                           , "filterMinNumPeptidesPerSample"
+                                           , "removePeptidesWithOnlyOneReplicate"
+                                           , "peptideMissingValueImputation")
+
+      setCoreUtilisation <- function(config_list, function_name) {
+        if (!function_name %in% names(config_list)) {
+          config_list[[function_name]] <- list()
+        }
+        config_list[[function_name]][["core_utilisation"]] <- core_utilisation
+
+        config_list
+      }
+
+      for( x in list_of_multithreaded_functions) {
+        config_list <- setCoreUtilisation(config_list, x)
+      }
+    }}
+
+  getConfigValue <- function (config_list, section, value) {
+    config_list[[section]][[value]]
+  }
+
+  setConfigValueAsNumeric <- function (config_list, section, value) {
+    config_list[[section]][[value]] <- as.numeric(config_list[[section]][[value]])
+    config_list
+  }
+
+  if("srlQvalueProteotypicPeptideClean" %in% names(config_list)) {
+    config_list[["srlQvalueProteotypicPeptideClean"]][["input_matrix_column_ids"]] <- str_split(config_list[["srlQvalueProteotypicPeptideClean"]][["input_matrix_column_ids"]], ",")[[1]]
+
+    print(paste0("Read srlQvalueProteotypicPeptideClean: input_matrix_column_ids = "
+                 , paste0(config_list[["srlQvalueProteotypicPeptideClean"]][["input_matrix_column_ids"]]
+                          , collapse=", ")))
+
+    config_list <- setConfigValueAsNumeric(config_list
+                                           , "srlQvalueProteotypicPeptideClean"
+                                           , "qvalue_threshold")
+    config_list <- setConfigValueAsNumeric(config_list
+                                           , "srlQvalueProteotypicPeptideClean"
+                                           , "global_qvalue_threshold")
+    config_list <- setConfigValueAsNumeric(config_list
+                                           , "srlQvalueProteotypicPeptideClean"
+                                           , "choose_only_proteotypic_peptide")
+
+  }
+
+
+  if("peptideIntensityFiltering" %in% names(config_list)) {
+    config_list <- setConfigValueAsNumeric(config_list
+                                           , "peptideIntensityFiltering"
+                                           , "peptides_intensity_cutoff_percentile")
+    config_list <- setConfigValueAsNumeric(config_list
+                                           , "peptideIntensityFiltering"
+                                           , "peptides_proportion_of_samples_below_cutoff")
+  }
+
+
+  if("filterMinNumPeptidesPerProtein" %in% names(config_list)) {
+    config_list <- setConfigValueAsNumeric(config_list
+                                           , "filterMinNumPeptidesPerProtein"
+                                           , "peptides_per_protein_cutoff")
+    config_list <- setConfigValueAsNumeric(config_list
+                                           , "filterMinNumPeptidesPerProtein"
+                                           , "peptidoforms_per_protein_cutoff")
+    # config_list <- setConfigValueAsNumeric(config_list
+    #                                        , ""
+    #                                        , "")
+  }
+
+  if("filterMinNumPeptidesPerSample" %in% names(config_list)) {
+    config_list <- setConfigValueAsNumeric(config_list
+                                           , "filterMinNumPeptidesPerSample"
+                                           , "peptides_per_sample_cutoff")
+
+    if(!"inclusion_list" %in% names( config_list[["filterMinNumPeptidesPerSample"]])) {
+      config_list[["filterMinNumPeptidesPerSample"]][["inclusion_list"]] <- ""
+    }
+
+    config_list[["filterMinNumPeptidesPerSample"]][["inclusion_list"]] <- str_split(config_list[["filterMinNumPeptidesPerSample"]][["inclusion_list"]], ",")[[1]]
+
+  }
+
+  if("peptideMissingValueImputation" %in% names(config_list)) {
+    config_list <- setConfigValueAsNumeric(config_list
+                                           , "peptideMissingValueImputation"
+                                           , "proportion_missing_values")
+  }
+
+  if("removeRowsWithMissingValuesPercent" %in% names(config_list)) {
+    config_list <- setConfigValueAsNumeric(config_list
+                                           , "removeRowsWithMissingValuesPercent"
+                                           , "groupwise_percentage_cutoff")
+
+    config_list <- setConfigValueAsNumeric(config_list
+                                           , "removeRowsWithMissingValuesPercent"
+                                           , "max_groups_percentage_cutoff")
+
+    config_list <- setConfigValueAsNumeric(config_list
+                                           , "removeRowsWithMissingValuesPercent"
+                                           , "proteins_intensity_cutoff_percentile")
+
+  }
+
+  if("plotRle" %in% names(config_list)) {
+    config_list[["plotRle"]][["yaxis_limit"]] <- str_split(config_list[["plotRle"]][["yaxis_limit"]], ",")[[1]] |>
+      purrr::map_dbl( \(x) as.numeric(x) )
+
+    print(paste0("Read plotRle: yaxis_limit = "
+                 , paste0(config_list[["plotRle"]][["yaxis_limit"]], collapse=", ")))
+  }
+
+  config_list
+}
+
+
+
+
+
+#' @export
+#' @description Read the config file and specify the section and or parameter to update the object
+#' @param theObject The object to be updated
+#' @param file The file path to the config file
+#' @param section The section to be updated
+#' @param value The parameter value to be updated
+readConfigFileSection <- function( theObject
+                            , file=file.path(source_dir, "config.ini")
+                            , function_name
+                            , parameter_name = NULL ) {
+
+  config_list <- readConfigFile( file=file
+                              , file_type = "ini" )
+
+  if ( is.null(parameter_name) ) {
+    theObject@args[[function_name]] <- config_list[[function_name]]
+  } else {
+    theObject@args[[function_name]][[parameter_name]] <- config_list[[function_name]][[parameter_name]]
+  }
+
+  theObject
+}
+
+
+##################################################################################################################
+
+
+
+
+

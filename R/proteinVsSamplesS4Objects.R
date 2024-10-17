@@ -1274,7 +1274,7 @@ setMethod( f = "chooseBestProteinAccession"
              protein_quant_table <- theObject@protein_quant_table
              protein_id_column <- theObject@protein_id_column
 
-             delim <- checkParamsObjectFunctionSimplify(theObject, "delim",  default_value = ";")
+             delim <- checkParamsObjectFunctionSimplify(theObject, "delim",  default_value =  " |;|:|\\|")
              seqinr_obj <- checkParamsObjectFunctionSimplify(theObject, "seqinr_obj",  default_value = NULL)
              seqinr_accession_column <- checkParamsObjectFunctionSimplify( theObject
                                                                            , "seqinr_accession_column"
@@ -1296,11 +1296,9 @@ setMethod( f = "chooseBestProteinAccession"
              accession_gene_name_tbl <- chooseBestProteinAccessionHelper( input_tbl = evidence_tbl_cleaned,
                                                                           acc_detail_tab = seqinr_obj,
                                                                           accessions_column = !!sym( protein_id_column),
-                                                                          row_id_column = "uniprot_acc", #!!sym( seqinr_accession_column),
+                                                                          row_id_column = seqinr_accession_column,
                                                                           group_id = row_id,
                                                                           delim = ";")
-
-             # print(seqinr_accession_column)
 
              protein_log2_quant_cln <- evidence_tbl_cleaned |>
                left_join( accession_gene_name_tbl |>
@@ -1308,6 +1306,21 @@ setMethod( f = "chooseBestProteinAccession"
                           , by = join_by( row_id ) ) |>
                mutate( !!sym( theObject@protein_id_column ) :=!!sym( as.character(seqinr_accession_column)) )  |>
                dplyr::select(-row_id, -!!sym( as.character(seqinr_accession_column)))
+
+
+             protein_id_table <- evidence_tbl_cleaned |>
+               left_join( accession_gene_name_tbl |>
+                            dplyr::distinct( row_id, !!sym( as.character(seqinr_accession_column) ))
+                          , by = join_by( row_id ) ) |>
+               distinct(  uniprot_acc, !!sym( protein_id_column) ) |>
+               mutate( !!sym(paste0(protein_id_column, "_list")) := !!sym( protein_id_column)  ) |>
+               mutate( !!sym(protein_id_column) := !!sym("uniprot_acc") )  |>
+               distinct( !!sym(protein_id_column) , !!sym(paste0(protein_id_column, "_list"))) |>
+               group_by( !!sym(protein_id_column)) |>
+               summarise( !!sym(paste0(protein_id_column, "_list")) := paste(!!sym(paste0(protein_id_column, "_list")), collapse = ";") ) |>
+               ungroup( ) |>
+               mutate( !!sym(paste0(protein_id_column, "_list")) := purrr::map_chr( !!sym(paste0(protein_id_column, "_list"))
+                                                                                    , \(x){  paste(unique( sort(str_split(x, ";")[[1]])), collapse=";")  } ) )
 
 
              # summed_data <- protein_log2_quant_cln |>
@@ -1319,7 +1332,7 @@ setMethod( f = "chooseBestProteinAccession"
              # summed_data[summed_data == 0] <- NA
 
              summed_data <- protein_log2_quant_cln |>
-               mutate( !!sym(protein_id_column) := purrr::map_chr( !!sym(protein_id_column), \(x){ str_split(x, ":")[[1]][1] } ) )  |>
+               mutate( !!sym(protein_id_column) := purrr::map_chr( !!sym(protein_id_column), \(x){ str_split(x,  delim)[[1]][1] } ) )  |>
                pivot_longer( cols = !matches(protein_id_column)
                             , names_to = "sample_id"
                             , values_to = "temporary_values_choose_accession") |>
@@ -1340,10 +1353,14 @@ setMethod( f = "chooseBestProteinAccession"
              }
              # print( summed_data)
 
-             protein_id_table <- protein_log2_quant_cln |>
-               mutate( !!sym(paste0(protein_id_column, "_list")) := !!sym(protein_id_column)  ) |>
-               mutate( !!sym(protein_id_column) := purrr::map_chr( !!sym(protein_id_column), \(x){ str_split(x, ":")[[1]][1] } ) )  |>
-               distinct(  !!sym(protein_id_column) , !!sym(paste0(protein_id_column, "_list")))
+             protein_id_table <- rankProteinAccessionHelper( input_tbl = protein_id_table,
+                                                                          acc_detail_tab = seqinr_obj,
+                                                                          accessions_column = !!sym(paste0(protein_id_column, "_list")),
+                                                                          row_id_column = seqinr_accession_column,
+                                                                          group_id =  !!sym(protein_id_column),
+                                                                          delim = ";") |>
+               dplyr::rename( !!sym(paste0(protein_id_column, "_list")):= seqinr_accession_column ) |>
+               dplyr::select(-num_gene_names, -gene_names, -is_unique)
 
              theObject@protein_id_table <- protein_id_table
              theObject@protein_quant_table <- summed_data[, colnames(protein_quant_table)]
@@ -1432,3 +1449,71 @@ setMethod( f = "filterSamplesByProteinCorrelationThreshold"
 
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# I want to input two protein data objects and compare them,
+# to see how the number of proteins changes and how the number of samples changed
+# Use set diff or set intersect to compare the list of proteins and samples in the two objects
+#' @export
+compareTwoProteinDataObjects <- function( object_a, object_b) {
+
+
+  object_a_proteins <- object_a@protein_quant_table |>
+    distinct(!!sym(object_a@protein_id_column)) |>
+    pull(!!sym(object_a@protein_id_column))
+
+  object_b_proteins <- object_b@protein_quant_table |>
+    distinct(!!sym(object_b@protein_id_column)) |>
+    pull(!!sym(object_b@protein_id_column))
+
+  object_a_samples <- object_a@design_matrix |>
+    distinct(!!sym(object_a@sample_id)) |>
+    pull(!!sym(object_a@sample_id))
+
+  object_b_samples <- object_b@design_matrix |>
+    distinct(!!sym(object_b@sample_id)) |>
+    pull(!!sym(object_b@sample_id))
+
+
+  proteins_in_a_not_b <- length( setdiff( object_a_proteins, object_b_proteins))
+  proteins_intersect_a_and_b <- length( intersect( object_a_proteins, object_b_proteins))
+  proteins_in_b_not_a <- length( setdiff( object_b_proteins, object_a_proteins))
+
+
+  samples_in_a_not_b <- length( setdiff( object_a_samples, object_b_samples))
+  samples_intersect_a_and_b <- length( intersect( object_a_samples, object_b_samples))
+  samples_in_b_not_a <- length( setdiff( object_b_samples, object_a_samples))
+
+  comparisons_list <- list( proteins = list( in_a_not_b = proteins_in_a_not_b
+                                               , intersect_a_and_b = proteins_intersect_a_and_b
+                                               , in_b_not_a = proteins_in_b_not_a)
+                            , samples = list( in_a_not_b = samples_in_a_not_b
+                                              , intersect_a_and_b = samples_intersect_a_and_b
+                                              , in_b_not_a = samples_in_b_not_a)
+  )
+
+  comparison_tibble <- comparisons_list |>
+    purrr::map_df( tibble::as_tibble) |>
+    add_column( Levels = c( "proteins", "samples")) |>
+    relocate( Levels, .before="in_a_not_b")
+
+  comparison_tibble
+
+
+}
+
+#'@export
+summariseProteinObject <- function ( theObject) {
+  num_proteins <- theObject@protein_quant_table |>
+    distinct(!!sym(theObject@protein_id_column)) |>
+    pull(!!sym(theObject@protein_id_column))
+
+  num_samples <- theObject@design_matrix |>
+    distinct(!!sym(theObject@sample_id)) |>
+    pull(!!sym(theObject@sample_id))
+
+  summary_list <- list( num_proteins = length(num_proteins)
+       , num_samples = length(num_samples))
+
+  summary_list
+
+}

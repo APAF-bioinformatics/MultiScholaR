@@ -579,7 +579,7 @@ countStatDeGenes <- function(data,
                              lfc_thresh = 0,
                              q_val_thresh = 0.05,
                              log_fc_column = log2FC,
-                             q_value_column = q.mod) {
+                             q_value_column = fdr_qvalue) {
 
   # comparison <- as.data.frame(data) |>
   #   distinct(comparison) |>
@@ -619,7 +619,7 @@ countStatDeGenesHelper <- function(de_table
                                               lfc_thresh = 0,
                                               q_val_thresh = 0.05,
                                               log_fc_column = logFC,
-                                              q_value_column = q.mod)})
+                                              q_value_column = fdr_qvalue)})
 
     list_of_tables <- purrr::map2(de_table_updated
                 ,names(de_table_updated)
@@ -718,9 +718,9 @@ printCountDeGenesTable <- function(  list_of_de_tables
 getSignificantData <- function( list_of_de_tables
                                , list_of_descriptions
                                , row_id = uniprot_acc
-                               , p_value_column = p.mod
-                               , q_value_column = q.mod
-                               , fdr_value_column = fdr.mod
+                               , p_value_column = raw_pvalue
+                               , q_value_column = fdr_qvalue
+                               , fdr_value_column = fdr_value_bh_adjustment
                                , log_q_value_column = lqm
                                , log_fc_column = logFC
                                , comparison_column = "comparison"
@@ -753,7 +753,7 @@ getSignificantData <- function( list_of_de_tables
     bind_rows()
 
   selected_data <- logfc_tbl_all |>
-    mutate({ { log_q_value_column } } := -log10(q.mod)) |>
+    mutate({ { log_q_value_column } } := -log10(fdr_qvalue)) |>
     dplyr::select({ { row_id } }, { { log_q_value_column } }, { { q_value_column } }, { { p_value_column } }, { { log_fc_column } },
                   { { comparison_column } }, { { expression_column } },
                   { { facet_column } }) |>
@@ -1182,7 +1182,7 @@ getGlimmaVolcanoPhosphoproteomics <- function( r_obj
 #' @param log_p_value_column The name of the column representing the p-value.
 #' @param formula_string The formula string used in the facet_grid command for the ggplot scatter plot.
 #'@export
-printPValuesDistribution <- function(selected_data, p_value_column = p.mod, formula_string = "is_ruv_applied ~ comparison") {
+printPValuesDistribution <- function(selected_data, p_value_column = raw_pvalue, formula_string = "is_ruv_applied ~ comparison") {
 
   breaks <- c(0, 0.001, 0.01, 0.05,
               seq(0.1, 1, by = 0.1))
@@ -1238,11 +1238,11 @@ ebFit <- function(data, design, contr.matrix)
     fit.eb$stdev.unscaled[, 1]
   t.mod <- fit.eb$t[, 1]
   p.ord <- 2 * pt(-abs(t.ord), fit.eb$df.residual)
-  p.mod <- fit.eb$p.value[, 1]
+  raw_pvalue <- fit.eb$p.value[, 1]
   q.ord <- qvalue(p.ord)$q
-  q.mod <- qvalue(p.mod)$q
+  fdr_qvalue <- qvalue(raw_pvalue)$q
 
-  return(list(table = data.frame(logFC, t.ord, t.mod, p.ord, p.mod, q.ord, q.mod, df.r, df.0, s2.0, s2, s2.post),
+  return(list(table = data.frame(logFC, t.ord, t.mod, p.ord, raw_pvalue, q.ord, fdr_qvalue, df.r, df.0, s2.0, s2, s2.post),
               fit.eb = fit.eb))
 }
 
@@ -1267,9 +1267,9 @@ ebFit <- function(data, design, contr.matrix)
 #' tstats    t-test statistics
 #' tmod      moderated t-test statistics
 #' pval      t-test p-value
-#' pmod      moderated t-test p-value
+#' raw_pvalue      moderated t-test p-value
 #' qval      t-test q-value
-#' q.mod     moderated t-test q-value
+#' fdr_qvalue     moderated t-test q-value
 #'@export
 runTest <- function(ID, A, B, group_A, group_B, design_matrix, formula_string,
                     contrast_variable = "group",
@@ -1313,9 +1313,9 @@ runTest <- function(ID, A, B, group_A, group_B, design_matrix, formula_string,
                                  tstats = r$t.ord,
                                  tmod = r$t.mod,
                                  pval = r$p.ord,
-                                 pmod = r$p.mod,
+                                 raw_pvalue = r$raw_pvalue,
                                  qval = r$q.ord,
-                                 q.mod = r$q.mod),
+                                 fdr_qvalue = r$fdr_qvalue),
               fit.eb = fit.eb))
 }
 
@@ -1364,9 +1364,9 @@ getTypeOfGrouping <- function(design_matrix, group_id, sample_id) {
 #' tstats    t-test statistics
 #' tmod      moderated t-test statistics
 #' pval      t-test p-value
-#' pmod      moderated t-test p-value
+#' raw_pvalue      moderated t-test p-value
 #' qval      t-test q-value
-#' q.mod     moderated t-test q-value
+#' fdr_qvalue     moderated t-test q-value
 #' @seealso \code{\link{get_rows_to_keep_list}}
 #' @seealso \code{\link{get_type_of_grouping}}
 #'@export
@@ -1446,9 +1446,9 @@ runTestsContrasts <- function(data,
                               contrast_strings,
                               design_matrix,
                               formula_string,
-                              p_value_column = p.mod,
-                              q_value_column = q.mod,
-                              fdr_value_column = fdr.mod,
+                              p_value_column = raw_pvalue,
+                              q_value_column = fdr_qvalue,
+                              fdr_value_column = fdr_value_bh_adjustment,
                               weights = NA,
                               treat_lfc_cutoff = NA,
                               eBayes_trend = FALSE,
@@ -1552,7 +1552,7 @@ extractResults <- function(results_list) {
 #'@param results_dir The results directory to store the output file
 #'@param file_suffix The file suffix string to aadd to the name of each comparison from the list_of_de_tables.
 #'@export
-saveDeProteinList <- function(list_of_de_tables, row_id, sort_by_column = q.mod, results_dir, file_suffix) {
+saveDeProteinList <- function(list_of_de_tables, row_id, sort_by_column = fdr_qvalue, results_dir, file_suffix) {
 
   purrr::walk2(list_of_de_tables, names(list_of_de_tables),
 
@@ -1960,7 +1960,7 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
               suffix = c(".left", ".right")) |>
   left_join( protein_id_table
                , by = join_by( !!sym(row_id) == !!sym( colnames( protein_id_table)[1]))) |>
-    arrange( comparison, q.mod, log2FC) |>
+    arrange( comparison, fdr_qvalue, log2FC) |>
     distinct()
 
   de_proteins_long
