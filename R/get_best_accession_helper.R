@@ -253,3 +253,78 @@ chooseBestProteinAccessionHelper <- function(input_tbl
 }
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#'@export
+processFastaFile <- function(fasta_file_path, uniprot_search_results, uniparc_search_results, fasta_meta_file) {
+  startsWith <- function(x, prefix) {
+    substr(x, 1, nchar(prefix)) == prefix
+  }
+  fasta_file_raw <- vroom::vroom(fasta_file_path, delim = "\n", col_names = FALSE)
+  first_line <- fasta_file_raw$X1[1]
+
+  if (startsWith(first_line, ">sp|") || startsWith(first_line, ">tr|")) {
+    aa_seq_tbl <- parseFastaFile(fasta_file_path)
+    saveRDS(aa_seq_tbl, fasta_meta_file)
+    return(aa_seq_tbl)
+  } else {  # Custom parsing for non-standard headers
+    parseFastaHeader <- function(header) {
+      parts <- strsplit(substr(header, 2, nchar(header)), " ", fixed = TRUE)[[1]]
+      id_parts <- strsplit(parts[1], "|", fixed = TRUE)[[1]]
+      accession <- id_parts[2]
+      attributes <- paste(parts[-1], collapse = " ")
+      locus_tag <- str_extract(attributes, "(?<=\\[locus_tag=)[^\\]]+")
+      protein <- str_extract(attributes, "(?<=\\[protein=)[^\\]]+")
+      ncbi_refseq <- str_extract(attributes, "(?<=\\[protein_id=)WP_[^\\]]+")
+      list(
+        accession = accession,
+        protein_id = locus_tag,
+        protein = protein,
+        ncbi_refseq = ncbi_refseq,
+        attributes = attributes
+      )
+    }
+
+    parseFastaFile <- function(fasta_file) {
+      aa_seqinr <- read.fasta(file = fasta_file, seqtype = "AA", 
+                              whole.header = TRUE, as.string = TRUE)
+      headers <- names(aa_seqinr)
+      parsed_headers <- lapply(headers, parseFastaHeader)
+      acc_detail_tab <- bind_rows(parsed_headers)
+      aa_seq_tbl <- acc_detail_tab |>
+        mutate(seq = map_chr(aa_seqinr, 1),
+               seq_length = map_int(seq, str_length),
+               description = headers)
+      
+      return(aa_seq_tbl)
+    }
+
+    aa_seq_tbl <- parseFastaFile(fasta_file_path)
+    
+    matchAndUpdateDataFrames <- function(aa_seq_tbl, uniprot_search_results, uniparc_search_results) {
+      uniprot_filtered <- uniprot_search_results |>
+        dplyr::filter(Organism == "Klebsiella variicola") |>
+        dplyr::select("ncbi_refseq", "uniprot_id")
+
+      uniparc_prepared <- uniparc_search_results |>
+        dplyr::select(ncbi_refseq, uniparc_id = uniprot_id)
+
+      aa_seq_tbl_updated <- aa_seq_tbl |>
+        dplyr::left_join(uniprot_filtered, by = "ncbi_refseq") |>
+        dplyr::left_join(uniparc_prepared, by = "ncbi_refseq") |>
+        dplyr::mutate(database_id = dplyr::coalesce(uniprot_id, uniparc_id)) |>
+        dplyr::select(-uniprot_id, -uniparc_id)
+
+      return(aa_seq_tbl_updated)
+    }
+
+    aa_seq_tbl_final <- matchAndUpdateDataFrames(aa_seq_tbl, uniprot_search_results, uniparc_search_results)
+
+    vroom::vroom_write(aa_seq_tbl_final,
+                       file = "aa_seq_tbl.tsv",
+                       delim = "\t",
+                       na = "",
+                       quote = "none")
+
+    saveRDS(aa_seq_tbl_final, fasta_meta_file)
+    return(aa_seq_tbl_final)
+  }
+}
