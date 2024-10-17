@@ -727,3 +727,27 @@ compareTwoPeptideDataObjects <- function( object_a, object_b) {
 
 
 }
+
+
+#'@export
+summarisePeptideObject <- function(theObject) {
+
+  num_peptides <- theObject@peptide_data |>
+    distinct(!!sym(theObject@protein_id_column), !!sym(theObject@peptide_sequence_column))
+
+  num_proteins <- theObject@peptide_data |>
+    distinct(!!sym(theObject@protein_id_column)) |>
+    pull(!!sym(theObject@protein_id_column))
+
+  num_samples <- theObject@design_matrix |>
+    distinct(!!sym(theObject@sample_id)) |>
+    pull(!!sym(theObject@sample_id))
+
+  summary_list <- list( num_peptides = nrow(num_peptides)
+                       , num_proteins = length(num_proteins)
+                       , num_samples = length(num_samples))
+
+  summary_list
+
+
+}

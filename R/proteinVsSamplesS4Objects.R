@@ -1157,7 +1157,7 @@ setMethod( f = "chooseBestProteinAccession"
              protein_quant_table <- theObject@protein_quant_table
              protein_id_column <- theObject@protein_id_column
 
-             delim <- checkParamsObjectFunctionSimplify(theObject, "delim",  default_value = ";")
+             delim <- checkParamsObjectFunctionSimplify(theObject, "delim",  default_value =  " |;|:|\\|")
              seqinr_obj <- checkParamsObjectFunctionSimplify(theObject, "seqinr_obj",  default_value = NULL)
              seqinr_accession_column <- checkParamsObjectFunctionSimplify( theObject
                                                                            , "seqinr_accession_column"
@@ -1193,6 +1193,12 @@ setMethod( f = "chooseBestProteinAccession"
                dplyr::select(-row_id, -!!sym( as.character(seqinr_accession_column)))
 
 
+             protein_id_table_temp <- evidence_tbl_cleaned |>
+               left_join( accession_gene_name_tbl |>
+                            dplyr::distinct( row_id, !!sym( as.character(seqinr_accession_column) ))
+                          , by = join_by( row_id ) ) |>
+               distinct(  uniprot_acc, !!sym( protein_id_column) )
+
              # summed_data <- protein_log2_quant_cln |>
              #   mutate( !!sym(protein_id_column) := purrr::map_chr( !!sym(protein_id_column), \(x){ str_split(x, ":")[[1]][1] } ) )  |>
              #   group_by(!!sym(protein_id_column)) |>
@@ -1202,7 +1208,7 @@ setMethod( f = "chooseBestProteinAccession"
              # summed_data[summed_data == 0] <- NA
 
              summed_data <- protein_log2_quant_cln |>
-               mutate( !!sym(protein_id_column) := purrr::map_chr( !!sym(protein_id_column), \(x){ str_split(x, ":")[[1]][1] } ) )  |>
+               mutate( !!sym(protein_id_column) := purrr::map_chr( !!sym(protein_id_column), \(x){ str_split(x,  delim)[[1]][1] } ) )  |>
                pivot_longer( cols = !matches(protein_id_column)
                             , names_to = "sample_id"
                             , values_to = "temporary_values_choose_accession") |>
@@ -1223,10 +1229,28 @@ setMethod( f = "chooseBestProteinAccession"
              }
              # print( summed_data)
 
-             protein_id_table <- protein_log2_quant_cln |>
-               mutate( !!sym(paste0(protein_id_column, "_list")) := !!sym(protein_id_column)  ) |>
-               mutate( !!sym(protein_id_column) := purrr::map_chr( !!sym(protein_id_column), \(x){ str_split(x, ":")[[1]][1] } ) )  |>
-               distinct(  !!sym(protein_id_column) , !!sym(paste0(protein_id_column, "_list")))
+             protein_id_table <- protein_id_table_temp |>
+               mutate( !!sym(paste0(protein_id_column, "_list")) := !!sym( protein_id_column)  ) |>
+               mutate( !!sym(protein_id_column) := !!sym("uniprot_acc") )  |>
+               distinct(  !!sym(protein_id_column) , !!sym(paste0(protein_id_column, "_list"))) |>
+               group_by( !!sym(protein_id_column)) |>
+               summarise( !!sym(paste0(protein_id_column, "_list")) := paste(!!sym(paste0(protein_id_column, "_list")), collapse = ";") ) |>
+               ungroup( ) |>
+               mutate( !!sym(paste0(protein_id_column, "_list")) := purrr::map_chr( !!sym(paste0(protein_id_column, "_list"))
+                                                                                    , \(x){  paste(unique( sort(str_split(x, ";")[[1]])), collapse=";")  } ) )
+
+#
+#              protein_id_table <- chooseBestProteinAccessionHelper( input_tbl = protein_id_table,
+#                                                                           acc_detail_tab = seqinr_obj,
+#                                                                           accessions_column = !!sym(paste0(protein_id_column, "_list")),
+#                                                                           row_id_column = "uniprot_acc", #!!sym( seqinr_accession_column),
+#                                                                           group_id = !!sym(protein_id_column) ,
+#                                                                           delim = ";")
+
+
+
+
+
 
              theObject@protein_id_table <- protein_id_table
              theObject@protein_quant_table <- summed_data[, colnames(protein_quant_table)]
@@ -1328,16 +1352,16 @@ compareTwoProteinDataObjects <- function( object_a, object_b) {
     pull(!!sym(object_a@protein_id_column))
 
   object_b_proteins <- object_b@protein_quant_table |>
-    distinct(!!sym(object_a@protein_id_column)) |>
-    pull(!!sym(object_a@protein_id_column))
+    distinct(!!sym(object_b@protein_id_column)) |>
+    pull(!!sym(object_b@protein_id_column))
 
   object_a_samples <- object_a@design_matrix |>
     distinct(!!sym(object_a@sample_id)) |>
     pull(!!sym(object_a@sample_id))
 
-  object_b_samples <- object_a@design_matrix |>
-    distinct(!!sym(object_a@sample_id)) |>
-    pull(!!sym(object_a@sample_id))
+  object_b_samples <- object_b@design_matrix |>
+    distinct(!!sym(object_b@sample_id)) |>
+    pull(!!sym(object_b@sample_id))
 
 
   proteins_in_a_not_b <- length( setdiff( object_a_proteins, object_b_proteins))
@@ -1364,5 +1388,22 @@ compareTwoProteinDataObjects <- function( object_a, object_b) {
 
   comparison_tibble
 
+
+}
+
+#'@export
+summariseProteinObject <- function ( theObject) {
+  num_proteins <- theObject@protein_quant_table |>
+    distinct(!!sym(theObject@protein_id_column)) |>
+    pull(!!sym(theObject@protein_id_column))
+
+  num_samples <- theObject@design_matrix |>
+    distinct(!!sym(theObject@sample_id)) |>
+    pull(!!sym(theObject@sample_id))
+
+  summary_list <- list( num_proteins = length(num_proteins)
+       , num_samples = length(num_samples))
+
+  summary_list
 
 }
