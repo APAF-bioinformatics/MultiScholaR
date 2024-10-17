@@ -707,7 +707,7 @@ compareTwoPeptideDataObjects <- function( object_a, object_b) {
   samples_intersect_a_and_b <- length( intersect( object_a_samples, object_b_samples) )
   samples_in_b_not_a <- length( setdiff( object_b_samples, object_a_samples) )
 
-  comparisons_list <- list( peptides = list( in_a_not_b = peptides_in_a_not_b
+  comparisons_list <- list(  peptides = list( in_a_not_b = peptides_in_a_not_b
                                              , intersect_a_and_b = peptides_intersect_a_and_b
                                              , in_b_not_a = peptides_in_b_not_a)
                             , proteins = list( in_a_not_b = proteins_in_a_not_b
@@ -718,6 +718,12 @@ compareTwoPeptideDataObjects <- function( object_a, object_b) {
                                               , in_b_not_a = samples_in_b_not_a)
   )
 
-  comparisons_list
+  comparison_tibble <- comparisons_list |>
+    purrr::map_df( tibble::as_tibble) |>
+    add_column( Levels = c("peptides", "proteins", "samples")) |>
+    relocate( Levels, .before="in_a_not_b")
+
+  comparison_tibble
+
 
 }

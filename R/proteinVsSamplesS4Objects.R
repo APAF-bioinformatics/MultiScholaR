@@ -1357,6 +1357,12 @@ compareTwoProteinDataObjects <- function( object_a, object_b) {
                                               , in_b_not_a = samples_in_b_not_a)
   )
 
-  comparisons_list
+  comparison_tibble <- comparisons_list |>
+    purrr::map_df( tibble::as_tibble) |>
+    add_column( Levels = c( "proteins", "samples")) |>
+    relocate( Levels, .before="in_a_not_b")
+
+  comparison_tibble
+
 
 }

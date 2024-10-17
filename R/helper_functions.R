@@ -516,16 +516,16 @@ readConfigFile <- function( file=file.path(source_dir, "config.ini")) {
 #' @param value The parameter value to be updated
 readConfigFileSection <- function( theObject
                             , file=file.path(source_dir, "config.ini")
-                            , section
-                            , value = NULL ) {
+                            , function_name
+                            , parameter_name = NULL ) {
 
   config_list <- readConfigFile( file=file
                               , file_type = "ini" )
 
-  if ( is.null(value) ) {
-    theObject@args[[section]] <- config_list[[section]]
+  if ( is.null(parameter_name) ) {
+    theObject@args[[function_name]] <- config_list[[function_name]]
   } else {
-    theObject@args[[section]][[value]] <- config_list[[section]][[value]]
+    theObject@args[[function_name]][[parameter_name]] <- config_list[[function_name]][[parameter_name]]
   }
 
   theObject
