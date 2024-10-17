@@ -584,26 +584,26 @@ setMethod(f="plotPearson",
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Create empty QC Grid
 #' @export
-setClass("GridPlotData",
-         slots = list(
-           pca_plots = "list",
-           rle_plots = "list",
-           pearson_plots = "list"
-         ))
+#setClass("GridPlotData",
+#         slots = list(
+#           pca_plots = "list",
+#           rle_plots = "list",
+#           pearson_plots = "list"
+#         ))
 
 #' @export
-setGeneric("InitialiseGrid", function() {
-  standardGeneric("InitialiseGrid")
-})
+#setGeneric("InitialiseGrid", function() {
+#  standardGeneric("InitialiseGrid")
+#})
 
 #' @export
-setMethod("InitialiseGrid", 
-          signature(),
-          function() {
-            new("GridPlotData",
-                pca_plots = list(),
-                rle_plots = list(),
-                pearson_plots = list())
+#setMethod("InitialiseGrid", 
+#          signature(),
+#          function() {
+#            new("GridPlotData",
+#                pca_plots = list(),
+#                rle_plots = list(),
+#                pearson_plots = list())
           })
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
