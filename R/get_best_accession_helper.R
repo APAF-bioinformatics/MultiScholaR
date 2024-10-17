@@ -254,21 +254,8 @@ chooseBestProteinAccessionHelper <- function(input_tbl
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#'@export
-processFastaFile <- function(fasta_file_path, uniprot_search_results, uniparc_search_results, fasta_meta_file) {
-  startsWith <- function(x, prefix) {
-  	substr(x, 1, nchar(prefix)) == prefix
-		}
-  fasta_file_raw <- vroom::vroom(fasta_file_path, delim = "\n", col_names = FALSE)
-  first_line <- fasta_file_raw$X1[1]
-
-  if (startsWith(first_line, ">sp|") || startsWith(first_line, ">tr|")) {
-    aa_seq_tbl <- parseFastaFile(fasta_file_path)
-    saveRDS(aa_seq_tbl, fasta_meta_file)
-    return(aa_seq_tbl)
-  } else {  # Custom parsing for non-standard headers
-
-    parseFastaHeader <- function(header) {
+#' @export
+parseFastaHeader <- function(header) {
   parts <- strsplit(substr(header, 2, nchar(header)), " ", fixed = TRUE)[[1]]
   id_parts <- strsplit(parts[1], "|", fixed = TRUE)[[1]]
   accession <- id_parts[2]
@@ -279,12 +266,12 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results, uniparc_se
   list(
     accession = accession,
     protein_id = locus_tag,
-    protein = protein,
     ncbi_refseq = ncbi_refseq,
     attributes = attributes
   )
 }
 
+#' @export
 parseFastaFile <- function(fasta_file) {
   aa_seqinr <- read.fasta(file = fasta_file, seqtype = "AA", 
                           whole.header = TRUE, as.string = TRUE)
@@ -299,14 +286,10 @@ parseFastaFile <- function(fasta_file) {
   return(aa_seq_tbl)
 }
 
-
-aa_seq_tbl <- parseFastaFile(fasta_file)
-colnames(uniprot_search_results)
-
-matchAndUpdateDataFrames <- function(aa_seq_tbl, uniprot_search_results, uniparc_search_results) {
-
+#' @export
+matchAndUpdateDataFrames <- function(aa_seq_tbl, uniprot_search_results, uniparc_search_results, organism = "Klebsiella variicola") {
   uniprot_filtered <- uniprot_search_results |>
-    dplyr::filter(Organism == "Klebsiella variicola") |>
+    dplyr::filter(Organism == organism) |>
     dplyr::select("ncbi_refseq", "uniprot_id")
 
   uniparc_prepared <- uniparc_search_results |>
@@ -321,47 +304,18 @@ matchAndUpdateDataFrames <- function(aa_seq_tbl, uniprot_search_results, uniparc
   return(aa_seq_tbl_updated)
 }
 
-# Usage
-aa_seq_tbl_final <- matchAndUpdateDataFrames(aa_seq_tbl, uniprot_search_results, uniparc_search_results)
+#' @export
+processFastaFile <- function(fasta_file_path, uniprot_search_results, uniparc_search_results, fasta_meta_file, organism = "Klebsiella variicola") {
+  fasta_file_raw <- vroom::vroom(fasta_file_path, delim = "\n", col_names = FALSE)
+  first_line <- fasta_file_raw$X1[1]
 
-vroom::vroom_write(aa_seq_tbl,
-                   file = "aa_seq_tbl.tsv",
-                   delim = "\t",
-                   na = "",
-                   quote = "none")
-
-
-
-saveRDS(aa_seq_tbl, "parsed_fasta_data.rds")
-
-updateProteinIds <- function(protein_data, aa_seq_tbl_final) {
-  protein_data <- protein_data |>
-    dplyr::mutate(matching_id = str_extract(Protein.Ids, "NZ_LR130543.1_prot_.*?_\\d+"))
-  
-  lookup_table <- aa_seq_tbl_final |>
-    dplyr::mutate(matching_id = str_extract(accession, "NZ_LR130543.1_prot_.*?_\\d+")) |>
-    dplyr::select(matching_id, database_id, ncbi_refseq)
-
-  updated_protein_data <- protein_data |>
-    dplyr::left_join(lookup_table, by = "matching_id") |>
-    dplyr::mutate(Protein.Ids_new = coalesce(database_id, ncbi_refseq, Protein.Ids)) |>
-    dplyr::select(-matching_id, -database_id, -ncbi_refseq)
-
-  changes <- sum(updated_protein_data$Protein.Ids_new != updated_protein_data$Protein.Ids)
-  cat("Number of Protein.Ids that would be updated:", changes, "\n")
-
-  if (changes > 0) {
-    cat("\nSample of changes:\n")
-    changed <- which(updated_protein_data$Protein.Ids_new != updated_protein_data$Protein.Ids)
-    sample_changes <- head(changed, 5)
-    for (i in sample_changes) {
-      cat("Old:", updated_protein_data$Protein.Ids[i], "-> New:", updated_protein_data$Protein.Ids_new[i], "\n")
-    }
+  if (startsWith(first_line, ">sp|") || startsWith(first_line, ">tr|")) {
+    aa_seq_tbl <- parseFastaFile(fasta_file_path)
+  } else {
+    aa_seq_tbl <- parseFastaFile(fasta_file_path)
+    aa_seq_tbl <- matchAndUpdateDataFrames(aa_seq_tbl, uniprot_search_results, uniparc_search_results, organism)
   }
 
-  # Replace old Protein.Ids with new ones
-  updated_protein_data$Protein.Ids <- updated_protein_data$Protein.Ids_new
-  updated_protein_data$Protein.Ids_new <- NULL
-
-  return(updated_protein_data)
+  saveRDS(aa_seq_tbl, fasta_meta_file)
+  return(aa_seq_tbl)
 }

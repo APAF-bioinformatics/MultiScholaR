@@ -468,6 +468,9 @@ best_k
 
 
 ## Run RUVIII-C and QC
+### RLE plot 
+### PCA plot
+### Pearson correlation
 ```{r}
 ruv_normalized_results_temp_obj <- ruvIII_C_VaryingObj( normalized_frozen_protein_matrix_obj
                      , ruv_group_id_column = "group"
@@ -505,9 +508,8 @@ summarize_qc_plots(QC_composite_figure)
 
 
 ## RUV normalized data for de analysis
-
-After RUVIII-C is performed, some proteins will have their values blanked out as NA by RUV (most likely assoicated with their batch effects).
-Therefore, we need to remove proteins with high proportion of missing values in each group before procceding to DE analysis.
+### After RUVIII-C is performed, some proteins will have their values blanked out as NA by RUV (most likely assoicated with their batch effects).
+### Therefore, we need to remove proteins with high proportion of missing values in each group before procceding to DE analysis.
 ```{r}
 
 ruv_normalized_filtered_results_obj <- filterSamplesByProteinCorrelationThreshold(ruv_normalized_results_cln_obj
@@ -548,12 +550,9 @@ vroom::vroom_write( design_matrix |>
                       dplyr::rename( Run = replicates)
                     , file.path(results_dir, "protein_qc", "design_matrix_avrg.tsv") )
 
-
-
 ruv_normalized_for_de_analysis_mat <- ruv_normalized_for_de_analysis |>
   column_to_rownames("uniprot_acc") |>
   as.matrix()
-
 ```
 
 
@@ -605,8 +604,6 @@ ruv_normalized_for_de_analysis_mat <- ruv_normalized_for_de_analysis |>
 * Then I need to recreate the cleaned_accession_to_protein_group.tab file
 ```{r}
 #  ruv_normalized_results <- saveRDS( file.path( results_dir, "protein_qc", "ruv_normalized_results.RDS"))
-
-
 cleaned_accession_table <- data.frame( protein_ids = setdiff(colnames(ruv_normalized_results_cln_obj@protein_data), "Protein")) |>
         left_join( uniprot_tbl
         , by = join_by( protein_ids == Entry)) |>
@@ -616,17 +613,14 @@ cleaned_accession_table <- data.frame( protein_ids = setdiff(colnames(ruv_normal
         mutate( is_unique = "Unique") |>
         mutate ( uniprot_acc = protein_ids) |>
         dplyr::select(maxquant_row_id,	num_gene_names,	gene_names,	uniprot_acc,	is_unique,	protein_ids )
-
 cleaned_accession_table
-
 
 vroom::vroom_write(cleaned_accession_table
         , file.path(results_dir, "clean_proteins", "cleaned_accession_to_protein_group.tab"))
-
-
 ```
 
-
+## Create the composite QC figure
+### Change the titles here if you so wish
 ```{r}
 
 pca_ruv_rle_correlation_merged <- createGridQC(QC_composite_figure = QC_composite_figure
