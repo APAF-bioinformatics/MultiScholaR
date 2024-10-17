@@ -1179,11 +1179,9 @@ setMethod( f = "chooseBestProteinAccession"
              accession_gene_name_tbl <- chooseBestProteinAccessionHelper( input_tbl = evidence_tbl_cleaned,
                                                                           acc_detail_tab = seqinr_obj,
                                                                           accessions_column = !!sym( protein_id_column),
-                                                                          row_id_column = "uniprot_acc", #!!sym( seqinr_accession_column),
+                                                                          row_id_column = seqinr_accession_column,
                                                                           group_id = row_id,
                                                                           delim = ";")
-
-             # print(seqinr_accession_column)
 
              protein_log2_quant_cln <- evidence_tbl_cleaned |>
                left_join( accession_gene_name_tbl |>
@@ -1193,11 +1191,20 @@ setMethod( f = "chooseBestProteinAccession"
                dplyr::select(-row_id, -!!sym( as.character(seqinr_accession_column)))
 
 
-             protein_id_table_temp <- evidence_tbl_cleaned |>
+             protein_id_table <- evidence_tbl_cleaned |>
                left_join( accession_gene_name_tbl |>
                             dplyr::distinct( row_id, !!sym( as.character(seqinr_accession_column) ))
                           , by = join_by( row_id ) ) |>
-               distinct(  uniprot_acc, !!sym( protein_id_column) )
+               distinct(  uniprot_acc, !!sym( protein_id_column) ) |>
+               mutate( !!sym(paste0(protein_id_column, "_list")) := !!sym( protein_id_column)  ) |>
+               mutate( !!sym(protein_id_column) := !!sym("uniprot_acc") )  |>
+               distinct( !!sym(protein_id_column) , !!sym(paste0(protein_id_column, "_list"))) |>
+               group_by( !!sym(protein_id_column)) |>
+               summarise( !!sym(paste0(protein_id_column, "_list")) := paste(!!sym(paste0(protein_id_column, "_list")), collapse = ";") ) |>
+               ungroup( ) |>
+               mutate( !!sym(paste0(protein_id_column, "_list")) := purrr::map_chr( !!sym(paste0(protein_id_column, "_list"))
+                                                                                    , \(x){  paste(unique( sort(str_split(x, ";")[[1]])), collapse=";")  } ) )
+
 
              # summed_data <- protein_log2_quant_cln |>
              #   mutate( !!sym(protein_id_column) := purrr::map_chr( !!sym(protein_id_column), \(x){ str_split(x, ":")[[1]][1] } ) )  |>
@@ -1229,28 +1236,14 @@ setMethod( f = "chooseBestProteinAccession"
              }
              # print( summed_data)
 
-             protein_id_table <- protein_id_table_temp |>
-               mutate( !!sym(paste0(protein_id_column, "_list")) := !!sym( protein_id_column)  ) |>
-               mutate( !!sym(protein_id_column) := !!sym("uniprot_acc") )  |>
-               distinct(  !!sym(protein_id_column) , !!sym(paste0(protein_id_column, "_list"))) |>
-               group_by( !!sym(protein_id_column)) |>
-               summarise( !!sym(paste0(protein_id_column, "_list")) := paste(!!sym(paste0(protein_id_column, "_list")), collapse = ";") ) |>
-               ungroup( ) |>
-               mutate( !!sym(paste0(protein_id_column, "_list")) := purrr::map_chr( !!sym(paste0(protein_id_column, "_list"))
-                                                                                    , \(x){  paste(unique( sort(str_split(x, ";")[[1]])), collapse=";")  } ) )
-
-#
-#              protein_id_table <- chooseBestProteinAccessionHelper( input_tbl = protein_id_table,
-#                                                                           acc_detail_tab = seqinr_obj,
-#                                                                           accessions_column = !!sym(paste0(protein_id_column, "_list")),
-#                                                                           row_id_column = "uniprot_acc", #!!sym( seqinr_accession_column),
-#                                                                           group_id = !!sym(protein_id_column) ,
-#                                                                           delim = ";")
-
-
-
-
-
+             protein_id_table <- rankProteinAccessionHelper( input_tbl = protein_id_table,
+                                                                          acc_detail_tab = seqinr_obj,
+                                                                          accessions_column = !!sym(paste0(protein_id_column, "_list")),
+                                                                          row_id_column = seqinr_accession_column,
+                                                                          group_id =  !!sym(protein_id_column),
+                                                                          delim = ";") |>
+               dplyr::rename( !!sym(paste0(protein_id_column, "_list")):= seqinr_accession_column ) |>
+               dplyr::select(-num_gene_names, -gene_names, -is_unique)
 
              theObject@protein_id_table <- protein_id_table
              theObject@protein_quant_table <- summed_data[, colnames(protein_quant_table)]
