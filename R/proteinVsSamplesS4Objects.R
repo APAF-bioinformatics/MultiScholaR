@@ -553,6 +553,123 @@ setMethod( f = "proteinTechRepCorrelation"
 
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Plot Pearson Correlation
+#' @export
+setGeneric(name="plotPearson",
+           def=function(theObject, tech_rep_remove_regex, y_limit) {
+             standardGeneric("plotPearson")
+           },
+           signature=c("theObject", "tech_rep_remove_regex", "y_limit"))
+
+#' @export
+setMethod(f="plotPearson",
+          signature="ProteinQuantitativeData",
+          definition=function(theObject, tech_rep_remove_regex = "pool") {
+           
+            correlation_vec <- pearsonCorForSamplePairs(theObject, tech_rep_remove_regex)
+            
+            pearson_plot <- correlation_vec |>
+              ggplot(aes(pearson_correlation)) +
+              geom_histogram(breaks = seq(min(round(correlation_vec$pearson_correlation - 0.5, 2), na.rm = TRUE), 1, 0.001)) +
+              scale_y_continuous(breaks = seq(0, 4, 1), limits = c(0, 4)) +
+              xlab("Pearson Correlation") +
+              ylab("Counts") +
+              theme(panel.grid.major = element_blank(),
+                    panel.grid.minor = element_blank(),
+                    panel.background = element_blank())
+            
+            return(pearson_plot)
+          })
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Create empty QC Grid
+#' @export
+setClass("GridPlotData",
+         slots = list(
+           pca_plots = "list",
+           rle_plots = "list",
+           pearson_plots = "list"
+         ))
+
+#' @export
+setGeneric("InitialiseGrid", function(dummy = NULL) {
+  standardGeneric("InitialiseGrid")
+})
+
+#' @export
+setMethod("InitialiseGrid", 
+          signature(dummy = "ANY"),
+          function(dummy = NULL) {
+            new("GridPlotData",
+                pca_plots = list(),
+                rle_plots = list(),
+                pearson_plots = list())
+          })
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Create a QC composite figure
+
+#' @export
+#' @export
+setGeneric(name = "createGridQC",
+           def = function(theObject, pca_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_rle_pearson_corr_plots_merged") {
+             standardGeneric("createGridQC")
+           },
+           signature = c("theObject", "pca_titles", "rle_titles", "pearson_titles", "save_path", "file_name"))
+
+#' @export
+setMethod(f = "createGridQC",
+          signature = "GridPlotData",
+          definition = function(theObject, pca_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_rle_pearson_corr_plots_merged") {
+            
+            createPcaPlot <- function(plot, title) {
+              plot +
+                xlim(-40, 45) + ylim(-30, 25) + ggtitle(title) +
+                theme(text = element_text(size = 15),
+                      panel.grid.major = element_blank(),
+                      panel.grid.minor = element_blank(),
+                      panel.background = element_blank())
+            }
+            
+            createRlePlot <- function(plot, title) {
+              plot + ggtitle(title) +
+                theme(text = element_text(size = 15),
+                      axis.text.x = element_blank(),
+                      axis.ticks.x = element_blank())
+            }
+            
+            createPearsonPlot <- function(plot, title) {
+              plot + ggtitle(title) +
+                theme(text = element_text(size = 15))
+            }
+            
+            created_pca_plots <- mapply(createPcaPlot, theObject@pca_plots, pca_titles, SIMPLIFY = FALSE)
+            created_rle_plots <- mapply(createRlePlot, theObject@rle_plots, rle_titles, SIMPLIFY = FALSE)
+            created_pearson_plots <- mapply(createPearsonPlot, theObject@pearson_plots, pearson_titles, SIMPLIFY = FALSE)
+            
+            combined_plot <- 
+              (created_pca_plots[[1]] + created_pca_plots[[2]] + created_pca_plots[[3]]) +
+              (created_rle_plots[[1]] + created_rle_plots[[2]] + created_rle_plots[[3]]) +
+              (created_pearson_plots[[1]] + created_pearson_plots[[2]] + created_pearson_plots[[3]]) +
+              plot_layout(ncol = 3, guides = 'collect')
+
+              if (!is.null(save_path)) {
+              sapply(c("png", "pdf", "svg"), function(ext) {
+                ggsave(
+                  plot = combined_plot,
+                  filename = file.path(save_path, paste0(file_name, ".", ext)),
+                  width = 14,
+                  height = 14
+                )
+              })
+              message(paste("Plots saved in", save_path))
+            }
+            
+            return(combined_plot)
+          })
+
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## normalise between Arrays
 
 #'@export

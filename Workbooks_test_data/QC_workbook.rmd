@@ -85,6 +85,7 @@ num_of_cores <- 8
 experiment_type <- DIANN | LFQ-PD | DIA-PD | LFQ-Fragpipe | DIA-Fragpipe
 # Please set the name of your fasta file here in the root directory if you already have it
 fasta_file <- your_organism.fasta
+
 choose_only_proteotypic_peptide <- 1
 num_peptides_per_protein_thresh <- 1
 num_peptidoforms_per_protein_thresh <- 2
