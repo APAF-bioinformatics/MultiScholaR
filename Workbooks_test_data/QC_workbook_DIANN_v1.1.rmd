@@ -308,7 +308,7 @@ protein_obj <- ProteinQuantitativeData(
   # Protein Data Matrix Information
   protein_data=protein_log2_quant
   , protein_id_column= "Protein.Ids"
-  , protein_id_table = data.frame( )
+  , protein_id_table = protein_log2_quant |> distinct(Protein.Ids)
   # Design Matrix Information
   , design_matrix = peptide_values_imputed@design_matrix
   , sample_id="Run"
@@ -322,10 +322,11 @@ protein_obj <- ProteinQuantitativeData(
 ## Arrange the protein ID's list to opt for the best accession in the list to be placed first
 ### It requires the information from the fasta file to choose the best accession for the protein ID.
 ```{r}
-protein_log2_quant_cln <- chooseBestProteinAccessionObj( theObject = protein_obj
+protein_log2_quant_cln <- chooseBestProteinAccession( theObject = protein_obj
                                                       , delim = ";"
                                                       , seqinr_obj = aa_seq_tbl
-                                                      , seqinr_accession_column = "uniprot_acc")
+                                                      , seqinr_accession_column = "uniprot_acc"
+                                                      , replace_zero_with_na = TRUE)
 ```
 
 
@@ -335,7 +336,7 @@ protein_log2_quant_cln <- chooseBestProteinAccessionObj( theObject = protein_obj
 ### It is recommended to leave this as default - however if you wish to be more stringent with your requirements for inclusion (ie want protein x reliably appearing in 80% of samples / group) then do it here
 ```{r}
 protein_normalized_pif_cln <-  removeRowsWithMissingValuesPercent(protein_log2_quant_cln
-                                      , ruv_grouping_variable =  'group'
+                          , ruv_grouping_variable =  'group'
                            , groupwise_percentage_cutoff = 60
                            , max_groups_percentage_cutoff = 60
                            , min_protein_intensity_percentile = 1)
@@ -464,6 +465,9 @@ cancorplot_r1
 best_k <- findBestK(cancorplot_r1)
 # Display the best k
 best_k
+
+
+##SAVE BEST K AND NUMBER OF PROTEINS USED AS A CONTROL TO SOME KIND OF OUTPUT ->
 ```
 
 
@@ -472,8 +476,8 @@ best_k
 ### PCA plot
 ### Pearson correlation
 ```{r}
-ruv_normalized_results_temp_obj <- ruvIII_C_VaryingObj( normalized_frozen_protein_matrix_obj
-                     , ruv_group_id_column = "group"
+ruv_normalized_results_temp_obj <- ruvIII_C_Varying( normalized_frozen_protein_matrix_obj
+                     , ruv_grouping_variable = "group"
                      , k = best_k
                      , ctl = control_genes_index) 
 
@@ -511,7 +515,7 @@ summarize_qc_plots(QC_composite_figure)
 ### After RUVIII-C is performed, some proteins will have their values blanked out as NA by RUV (most likely assoicated with their batch effects).
 ### Therefore, we need to remove proteins with high proportion of missing values in each group before procceding to DE analysis.
 ```{r}
-
+##CHUNK TO FUNCTION
 ruv_normalized_filtered_results_obj <- filterSamplesByProteinCorrelationThreshold(ruv_normalized_results_cln_obj
                                            , ruv_correlation_vec          
                                            , min_pearson_correlation_threshold = 0.5 )
@@ -526,6 +530,7 @@ saveRDS( ruv_normalized_filtered_results_obj
 
 ruv_normalized_for_de_analysis_obj <-  ruv_normalized_filtered_results_obj
 
+##CHUNK TO FUNCTION
 ruv_normalized_for_de_analysis <- ruv_normalized_for_de_analysis_obj@protein_quant_table |>
   pivot_longer( cols= !matches("Protein.Ids")
                 , names_to = "replicates"
@@ -553,12 +558,8 @@ vroom::vroom_write( design_matrix |>
 ruv_normalized_for_de_analysis_mat <- ruv_normalized_for_de_analysis |>
   column_to_rownames("uniprot_acc") |>
   as.matrix()
-```
 
-
-## Create input files for ProteomeScholar
-```{r}
-vroom::vroom_write( ruv_normalized_filtered_results_obj@protein_quant_table
+  vroom::vroom_write( ruv_normalized_filtered_results_obj@protein_quant_table
               , file.path(results_dir, "protein_qc",  "ruv_normalized_results_cln_with_replicates.tsv"))
 
 
@@ -567,36 +568,14 @@ saveRDS( ruv_normalized_filtered_results_obj
 
 
 ruv_normalized_for_de_analysis_obj <-  ruv_normalized_filtered_results_obj
-
-ruv_normalized_for_de_analysis <- ruv_normalized_for_de_analysis_obj@protein_quant_table |>
-  pivot_longer( cols= !matches("Protein.Ids")
-                , names_to = "replicates"
-                , values_to = "Log2.Protein.Imputed") |>
-  dplyr::select( Protein.Ids, replicates, Log2.Protein.Imputed) |>
-  mutate( Protein.Imputed = 2^Log2.Protein.Imputed) |>
-  mutate( Protein.Imputed = ifelse( is.na(Protein.Imputed), NA, Protein.Imputed)) |>
-  pivot_wider( id_cols = Protein.Ids
-               , names_from = replicates
-               , values_from = Protein.Imputed) |>
-  dplyr::rename(uniprot_acc = "Protein.Ids")
-
-vroom::vroom_write(ruv_normalized_for_de_analysis
-        , file.path(results_dir, "protein_qc", "ruv_normalized_results.tsv"))
-
-vroom::vroom_write(ruv_normalized_for_de_analysis |>
-                     dplyr::mutate(across(!matches("uniprot_acc"), log2))
-        , file.path(results_dir, "protein_qc", "ruv_normalized_results_log.tsv"))
-
-vroom::vroom_write( design_matrix |>
-                      distinct( replicates, group) |>
-                      dplyr::rename( Run = replicates)
-                    , file.path(results_dir, "protein_qc", "design_matrix_avrg.tsv") )
+```
 
 
+## Create input files for ProteomeScholar
+```{r}
+##CHUNK TO FUNCTION
 
-ruv_normalized_for_de_analysis_mat <- ruv_normalized_for_de_analysis |>
-  column_to_rownames("uniprot_acc") |>
-  as.matrix()
+
 ```
 # maxquant_row_id	num_gene_names	gene_names	uniprot_acc	is_unique	protein_ids
 

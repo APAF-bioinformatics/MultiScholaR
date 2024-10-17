@@ -190,7 +190,7 @@ deAnalysisWrapperFunction <- function( theObject
                                                  design_matrix_norm = theObject@design_matrix,
                                                  design_matrix_raw =  theObject@design_matrix,
                                                  ##POTENTIAL ISSUE
-                                                 protein_id_table = theObject@protein_quant_table)
+                                                 protein_id_table = theObject@protein_id_table)
 
   return_list$de_proteins_long <- de_proteins_long
 
