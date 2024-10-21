@@ -399,3 +399,37 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results, uniparc_se
   }
 }
 
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#'@export
+
+updateProteinIDs <- function(protein_data, aa_seq_tbl_final) {
+  protein_data <- protein_data |>
+    dplyr::mutate(matching_id = str_extract(Protein.Ids, "NZ_LR130543.1_prot_.*?_\\d+"))
+  
+  lookup_table <- aa_seq_tbl_final |>
+    dplyr::mutate(matching_id = str_extract(accession, "NZ_LR130543.1_prot_.*?_\\d+")) |>
+    dplyr::select(matching_id, database_id, ncbi_refseq)
+
+  updated_protein_data <- protein_data |>
+    dplyr::left_join(lookup_table, by = "matching_id") |>
+    dplyr::mutate(Protein.Ids_new = coalesce(database_id, ncbi_refseq, Protein.Ids)) |>
+    dplyr::select(-matching_id, -database_id, -ncbi_refseq)
+
+  changes <- sum(updated_protein_data$Protein.Ids_new != updated_protein_data$Protein.Ids)
+  cat("Number of Protein.Ids that would be updated:", changes, "\n")
+
+  if (changes > 0) {
+    cat("\nSample of changes:\n")
+    changed <- which(updated_protein_data$Protein.Ids_new != updated_protein_data$Protein.Ids)
+    sample_changes <- head(changed, 5)
+    for (i in sample_changes) {
+      cat("Old:", updated_protein_data$Protein.Ids[i], "-> New:", updated_protein_data$Protein.Ids_new[i], "\n")
+    }
+  }
+
+  # Replace old Protein.Ids with new ones
+  updated_protein_data$Protein.Ids <- updated_protein_data$Protein.Ids_new
+  updated_protein_data$Protein.Ids_new <- NULL
+
+  return(updated_protein_data)
+}
