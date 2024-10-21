@@ -648,11 +648,11 @@ setMethod(f = "createGridQC",
             created_pearson_plots <- mapply(createPearsonPlot, theObject@pearson_plots, pearson_titles, SIMPLIFY = FALSE)
             
             combined_plot <- (
-              (created_pca_plots[[1]] | created_pca_plots[[2]] | created_pca_plots[[3]]) /
-              (created_rle_plots[[1]] | created_rle_plots[[2]] | created_rle_plots[[3]]) /
-              (created_pearson_plots[[1]] | created_pearson_plots[[2]] | created_pearson_plots[[3]])
+              wrap_plots(created_pca_plots, ncol = 3) /
+              wrap_plots(created_rle_plots, ncol = 3) /
+              wrap_plots(created_pearson_plots, ncol = 3)
             ) +
-              plot_layout(ncol = 3, guides = 'collect')
+              plot_layout(guides = 'collect')
 
             if (!is.null(save_path)) {
               sapply(c("png", "pdf", "svg"), function(ext) {
