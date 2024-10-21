@@ -372,15 +372,24 @@ updateParamInObject <- function(theObject, param_name_string) {
 
 #' @description Helper function to neatly print out the figures as they get produced
 #' @export
-summarize_qc_plots <- function(qc_figure) {
-  cat("RLE Plots:\n")
-  cat(paste(" -", names(qc_figure@rle_plots), "\n"))
-  
-  cat("\nPCA Plots:\n")
-  cat(paste(" -", names(qc_figure@pca_plots), "\n"))
-  
-  cat("\nPearson Correlation Plots:\n")
-  cat(paste(" -", names(qc_figure@pearson_plots), "\n"))
+summarizeQCPlot <- function(qc_figure) {
+            cat("RLE Plots:\n")
+            for (plot_name in names(qc_figure@rle_plots)) {
+              cat(paste(" -", plot_name, "\n"))
+              print(qc_figure@rle_plots[[plot_name]])
+            }
+            
+            cat("\nPCA Plots:\n")
+            for (plot_name in names(qc_figure@pca_plots)) {
+              cat(paste(" -", plot_name, "\n"))
+              print(qc_figure@pca_plots[[plot_name]])
+            }
+            
+            cat("\nPearson Correlation Plots:\n")
+            for (plot_name in names(qc_figure@pearson_plots)) {
+              cat(paste(" -", plot_name, "\n"))
+              print(qc_figure@pearson_plots[[plot_name]])
+            }
 }
 
 
