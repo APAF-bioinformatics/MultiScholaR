@@ -6,6 +6,8 @@ editor_options:
 
 # ProteomeScholaR
 
+v0.75 is a command line focused version. Latest verion using RStudio Notebook templates will be pushed here soon. Be sure to Star the repo and you'll receive the latest notifications.
+
 Tools for Proteomics and Phosphoproteomics analysis.
 
 ## Getting Started
