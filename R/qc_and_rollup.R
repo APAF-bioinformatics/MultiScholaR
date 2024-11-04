@@ -2351,7 +2351,7 @@ filtering_progress <- new("FilteringProgress",
 #' }
 #' 
 #' @export
-update_protein_filtering <- function(data, step_name, overwrite = FALSE, return_grid = FALSE) {
+update_protein_filtering <- function(data, step_name, publication_graphs_dir = NULL, overwrite = FALSE, return_grid = FALSE) {
   # Calculate all metrics
   protein_count <- count_unique_proteins(data)
   total_peptides <- calc_total_peptides(data)
