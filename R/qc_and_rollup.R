@@ -2225,3 +2225,315 @@ apafTheme <- function() {
   )
 }
 
+##################################################################################################################
+
+#' FilteringProgress Class
+#' 
+#' @description
+#' An S4 class to track and store the progress of protein filtering steps in
+#' proteomics data analysis. This class maintains records of protein and peptide
+#' counts at each filtering stage.
+#' 
+#' @slot steps Character vector storing names of filtering steps
+#' @slot proteins Numeric vector storing protein counts for each step
+#' @slot total_peptides Numeric vector storing total peptide counts for each step
+#' @slot peptides_per_protein List storing peptides per protein distributions for each step
+#' @slot proteins_per_run List storing proteins per run counts for each step
+#' @slot peptides_per_run List storing peptides per run counts for each step
+#' 
+#' @export
+setClass("FilteringProgress",
+  slots = list(
+    steps = "character",
+    proteins = "numeric",
+    total_peptides = "numeric",
+    peptides_per_protein = "list",
+    proteins_per_run = "list",
+    peptides_per_run = "list"
+  )
+)
+
+##################################################################################################################
+
+#' Initialize a new FilteringProgress object
+#' 
+#' @description
+#' Creates a new FilteringProgress object with empty slots to track protein
+#' filtering progress.
+#' 
+#' @return A new FilteringProgress object
+#' 
+#' @examples
+#' filtering_progress <- new("FilteringProgress",
+#'   steps = character(),
+#'   proteins = numeric(),
+#'   total_peptides = numeric(),
+#'   peptides_per_protein = list(),
+#'   proteins_per_run = list(),
+#'   peptides_per_run = list()
+#' )
+#' 
+#' @export
+filtering_progress <- new("FilteringProgress",
+  steps = character(),
+  proteins = numeric(),
+  total_peptides = numeric(),
+  peptides_per_protein = list(),
+  proteins_per_run = list(),
+  peptides_per_run = list()
+)
+
+##################################################################################################################
+
+#' Update and visualize protein filtering progress
+#' 
+#' @description
+#' This function updates the filtering progress tracker and generates comprehensive
+#' visualization plots to monitor the effects of filtering steps on protein and
+#' peptide counts. It tracks changes across multiple metrics including total
+#' proteins, total peptides, peptides per protein distribution, and per-run
+#' statistics.
+#' 
+#' @param data A data frame or S4 object containing peptide data. If an S4 object
+#'   is provided, it must have a 'peptide_data' slot.
+#' @param step_name Character string naming the current filtering step
+#' @param overwrite Logical indicating whether to overwrite existing step data (default: FALSE)
+#' @param return_grid Logical indicating whether to return a combined grid of plots (default: FALSE)
+#' 
+#' @return If return_grid is TRUE, returns a combined grid of plots using gridExtra.
+#'         If FALSE, displays individual plots and returns them invisibly as a list
+#'         with components:
+#'         \itemize{
+#'           \item proteins_total: Bar plot of total proteins per step
+#'           \item peptides_total: Bar plot of total peptides per step
+#'           \item peptides_per_protein: Boxplot of peptides per protein distribution
+#'           \item proteins_per_run: Grouped bar plot of proteins per run
+#'           \item peptides_per_run: Grouped bar plot of peptides per run
+#'         }
+#' 
+#' @details
+#' The function generates five different visualizations:
+#' 1. Total number of proteins at each filtering step
+#' 2. Total number of unique peptides at each step
+#' 3. Distribution of peptides per protein
+#' 4. Number of proteins identified in each run
+#' 5. Number of peptides identified in each run
+#' 
+#' The function maintains a global filtering_progress object that tracks all metrics
+#' across filtering steps. When overwrite = TRUE, it will update existing step data
+#' rather than adding a new step.
+#' 
+#' @importFrom ggplot2 ggplot aes geom_bar geom_text labs theme_minimal theme
+#'             element_text coord_cartesian scale_fill_manual geom_boxplot
+#'             position_dodge2
+#' @importFrom dplyr bind_rows mutate
+#' @importFrom gridExtra grid.arrange arrangeGrob
+#' @importFrom stats quantile
+#' 
+#' @examples
+#' \dontrun{
+#' # Initialize progress tracker (should be done once)
+#' filtering_progress <- new("FilteringProgress")
+#' 
+#' # Update progress after initial data load
+#' update_protein_filtering(raw_data, "Raw Data")
+#' 
+#' # Update after removing missing values
+#' filtered_data <- remove_missing_values(raw_data)
+#' update_protein_filtering(filtered_data, "Remove Missing Values")
+#' 
+#' # Update after removing contaminants
+#' final_data <- remove_contaminants(filtered_data)
+#' update_protein_filtering(final_data, "Remove Contaminants")
+#' 
+#' # Get combined plot grid for final visualization
+#' update_protein_filtering(final_data, "Final", return_grid = TRUE)
+#' }
+#' 
+#' @export
+update_protein_filtering <- function(data, step_name, overwrite = FALSE, return_grid = FALSE) {
+  # Calculate all metrics
+  protein_count <- count_unique_proteins(data)
+  total_peptides <- calc_total_peptides(data)
+  peptides_per_protein <- calc_peptides_per_protein(data)
+  proteins_per_run <- count_proteins_per_run(data)
+  peptides_per_run <- count_peptides_per_run(data)
+  
+  if (step_name %in% filtering_progress@steps) {
+    if (!overwrite) {
+      stop("Step name '", step_name, "' already exists. Use overwrite = TRUE to replace it.")
+    } else {
+      idx <- which(filtering_progress@steps == step_name)
+      filtering_progress@proteins[idx] <<- protein_count
+      filtering_progress@total_peptides[idx] <<- total_peptides
+      filtering_progress@peptides_per_protein[[idx]] <<- peptides_per_protein
+      filtering_progress@proteins_per_run[[idx]] <<- proteins_per_run
+      filtering_progress@peptides_per_run[[idx]] <<- peptides_per_run
+    }
+  } else {
+    filtering_progress@steps <<- c(filtering_progress@steps, step_name)
+    filtering_progress@proteins <<- c(filtering_progress@proteins, protein_count)
+    filtering_progress@total_peptides <<- c(filtering_progress@total_peptides, total_peptides)
+    filtering_progress@peptides_per_protein <<- c(filtering_progress@peptides_per_protein, list(peptides_per_protein))
+    filtering_progress@proteins_per_run <<- c(filtering_progress@proteins_per_run, list(proteins_per_run))
+    filtering_progress@peptides_per_run <<- c(filtering_progress@peptides_per_run, list(peptides_per_run))
+  }
+  
+  # Create plots
+  p1 <- ggplot(data.frame(
+    step = factor(filtering_progress@steps, levels = filtering_progress@steps),
+    proteins = filtering_progress@proteins
+  ), aes(x = step, y = proteins)) +
+    geom_bar(stat = "identity", fill = "steelblue", width = 0.7) +
+    geom_text(aes(label = proteins), 
+              vjust = -0.5, 
+              size = 4) +
+    labs(
+      title = "Number of Proteins",
+      x = "Filtering Step",
+      y = "Unique Proteins"
+    ) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      panel.grid.major.x = element_blank()
+    )
+  
+  p2 <- ggplot(data.frame(
+    step = factor(filtering_progress@steps, levels = filtering_progress@steps),
+    total_peptides = filtering_progress@total_peptides
+  ), aes(x = step, y = total_peptides)) +
+    geom_bar(stat = "identity", fill = "forestgreen", width = 0.7) +
+    geom_text(aes(label = total_peptides), 
+              vjust = -0.5, 
+              size = 4) +
+    labs(
+      title = "Total Unique Peptides",
+      x = "Filtering Step",
+      y = "Unique Peptides"
+    ) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      panel.grid.major.x = element_blank()
+    )
+  
+  p3 <- ggplot() +
+    geom_boxplot(data = bind_rows(filtering_progress@peptides_per_protein, .id = "step") |>
+                   mutate(step = filtering_progress@steps[as.numeric(step)]),
+                 aes(x = factor(step, levels = filtering_progress@steps), 
+                     y = n_peptides),
+                 fill = "darkred",
+                 alpha = 0.5,
+                 outlier.shape = NA) +
+    labs(
+      title = "Peptides per Protein Distribution",
+      x = "Filtering Step",
+      y = "Number of Peptides"
+    ) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      panel.grid.major.x = element_blank()
+    ) +
+    coord_cartesian(
+      ylim = c(0, 
+               quantile(bind_rows(filtering_progress@peptides_per_protein)$n_peptides, 0.95))
+    )
+  
+  # Function to generate color palettes dynamically
+  get_color_palette <- function(n, base_color) {
+    colorRampPalette(c(base_color, "black"))(n)
+  }
+  
+  p4 <- ggplot(data = bind_rows(filtering_progress@proteins_per_run, .id = "step") |>
+                 mutate(step = filtering_progress@steps[as.numeric(step)]),
+               aes(x = Run, y = n_proteins, fill = factor(step, levels = rev(filtering_progress@steps)))) +
+    geom_bar(stat = "identity", position = position_dodge2(reverse = TRUE)) +
+    labs(
+      title = "Proteins per Run",
+      x = "Run ID",
+      y = "Number of Proteins",
+      fill = "Step"
+    ) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      panel.grid.major.x = element_blank()
+    ) +
+    scale_fill_manual(values = get_color_palette(length(filtering_progress@steps), "steelblue"))
+  
+  p5 <- ggplot(data = bind_rows(filtering_progress@peptides_per_run, .id = "step") |>
+                 mutate(step = filtering_progress@steps[as.numeric(step)]),
+               aes(x = Run, y = n_peptides, fill = factor(step, levels = rev(filtering_progress@steps)))) +
+    geom_bar(stat = "identity", position = position_dodge2(reverse = TRUE)) +
+    labs(
+      title = "Peptides per Run",
+      x = "Run ID",
+      y = "Number of Peptides",
+      fill = "Step"
+    ) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      panel.grid.major.x = element_blank()
+    ) +
+    scale_fill_manual(values = get_color_palette(length(filtering_progress@steps), "forestgreen"))
+  
+  # Create list of plots
+  plot_list <- list(
+    proteins_total = p1,
+    peptides_total = p2,
+    peptides_per_protein = p3,
+    proteins_per_run = p4,
+    peptides_per_run = p5
+  )
+  
+ Save plots if directory is specified
+  if (!is.null(publication_graphs_dir)) {
+    # Save individual plots
+    for (plot_name in names(plot_list)) {
+      filename <- file.path(time_dir, 
+                          sprintf("%s_%s.png", step_name, plot_name))
+      ggsave(filename, 
+             plot = plot_list[[plot_name]], 
+             width = 10, 
+             height = 8, 
+             dpi = 300)
+    }
+    
+    # Save grid plot if requested
+    if (return_grid) {
+      # Create the grid
+      grid_plot <- gridExtra::grid.arrange(
+        gridExtra::arrangeGrob(p1, p2, p3, ncol = 3),
+        gridExtra::arrangeGrob(p4, p5, ncol = 2),
+        heights = c(1, 1)
+      )
+      
+      # Save the grid
+      filename <- file.path(time_dir, 
+                          sprintf("%s_combined_plots.png", step_name))
+      ggsave(filename, 
+             plot = grid_plot, 
+             width = 15, 
+             height = 12, 
+             dpi = 300)
+    }
+  }
+  
+  # Return/display plots as before
+  if(return_grid) {
+    grid_plot <- gridExtra::grid.arrange(
+      gridExtra::arrangeGrob(p1, p2, p3, ncol = 3),
+      gridExtra::arrangeGrob(p4, p5, ncol = 2),
+      heights = c(1, 1)
+    )
+    return(grid_plot)
+  } else {
+    # Print each plot individually
+    for(plot in plot_list) {
+      print(plot)
+    }
+    # Return the list invisibly
+    invisible(plot_list)

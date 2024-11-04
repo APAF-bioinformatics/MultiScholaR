@@ -324,7 +324,119 @@ rankProteinAccessionHelper <- function(input_tbl
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
-processFastaFile <- function(fasta_file_path, uniprot_search_results, uniparc_search_results, fasta_meta_file) {
+processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uniparc_search_results = NULL, fasta_meta_file) {
+  startsWith <- function(x, prefix) {
+    substr(x, 1, nchar(prefix)) == prefix
+  }
+  
+  parseFastaFile <- function(fasta_file) {
+    aa_seqinr <- seqinr::read.fasta(file = fasta_file, seqtype = "AA", 
+                            whole.header = TRUE, as.string = TRUE)
+    headers <- names(aa_seqinr)
+    
+    parsed_headers <- lapply(headers, function(header) {
+      parts <- strsplit(substr(header, 2, nchar(header)), " ", fixed = TRUE)[[1]]
+      id_parts <- strsplit(parts[1], "|", fixed = TRUE)[[1]]
+      list(
+        accession = id_parts[2],
+        database_id = id_parts[2],
+        protein = paste(parts[-1], collapse = " "),
+        attributes = paste(parts[-1], collapse = " ")
+      )
+    })
+    
+    acc_detail_tab <- dplyr::bind_rows(parsed_headers)
+    aa_seq_tbl <- acc_detail_tab |>
+      dplyr::mutate(
+        seq = purrr::map_chr(aa_seqinr, 1),
+        seq_length = stringr::str_length(seq),
+        description = headers
+      )
+    
+    return(aa_seq_tbl)
+  }
+  
+
+  parseFastaHeader <- function(header) {
+    parts <- strsplit(substr(header, 2, nchar(header)), " ", fixed = TRUE)[[1]]
+    id_parts <- strsplit(parts[1], "|", fixed = TRUE)[[1]]
+    accession <- id_parts[2]
+    attributes <- paste(parts[-1], collapse = " ")
+    locus_tag <- stringr::str_extract(attributes, "(?<=\\[locus_tag=)[^\\]]+")
+    protein <- stringr::str_extract(attributes, "(?<=\\[protein=)[^\\]]+")
+    ncbi_refseq <- stringr::str_extract(attributes, "(?<=\\[protein_id=)WP_[^\\]]+")
+    list(
+      accession = accession,
+      protein_id = locus_tag,
+      protein = protein,
+      ncbi_refseq = ncbi_refseq,
+      attributes = attributes
+    )
+  }
+  parseFastaFileNonStandard <- function(fasta_file) {
+    aa_seqinr <- seqinr::read.fasta(file = fasta_file, seqtype = "AA", 
+                            whole.header = TRUE, as.string = TRUE)
+    headers <- names(aa_seqinr)
+    parsed_headers <- lapply(headers, parseFastaHeader)
+    acc_detail_tab <- dplyr::bind_rows(parsed_headers)
+    aa_seq_tbl <- acc_detail_tab |>
+      dplyr::mutate(
+        seq = purrr::map_chr(aa_seqinr, 1),
+        seq_length = stringr::str_length(seq),
+        description = headers
+      )
+    
+    return(aa_seq_tbl)
+  }
+  
+  matchAndUpdateDataFrames <- function(aa_seq_tbl, uniprot_search_results, uniparc_search_results) {
+    uniprot_filtered <- uniprot_search_results |>
+      dplyr::filter(Organism == "Klebsiella variicola") |>
+      dplyr::select("ncbi_refseq", "uniprot_id")
+
+    uniparc_prepared <- uniparc_search_results |>
+      dplyr::select(ncbi_refseq, uniparc_id = uniprot_id)
+
+    aa_seq_tbl_updated <- aa_seq_tbl |>
+      dplyr::left_join(uniprot_filtered, by = "ncbi_refseq") |>
+      dplyr::left_join(uniparc_prepared, by = "ncbi_refseq") |>
+      dplyr::mutate(database_id = dplyr::coalesce(uniprot_id, uniparc_id)) |>
+      dplyr::select(-uniprot_id, -uniparc_id)
+
+    return(aa_seq_tbl_updated)
+  }
+
+  fasta_file_raw <- vroom::vroom(fasta_file_path, delim = "\n", col_names = FALSE)
+  first_line <- fasta_file_raw$X1[1]
+
+  if (startsWith(first_line, ">sp|") || startsWith(first_line, ">tr|")) {
+    aa_seq_tbl <- parseFastaFile(fasta_file_path)
+    saveRDS(aa_seq_tbl, fasta_meta_file)
+    return(aa_seq_tbl)
+  } else {
+    aa_seq_tbl <- parseFastaFileNonStandard(fasta_file_path)
+    
+    if (!is.null(uniprot_search_results) && !is.null(uniparc_search_results)) {
+      aa_seq_tbl_final <- matchAndUpdateDataFrames(aa_seq_tbl, uniprot_search_results, uniparc_search_results)
+    } else {
+      aa_seq_tbl_final <- aa_seq_tbl |>
+        dplyr::mutate(database_id = NA_character_)
+    }
+
+    vroom::vroom_write(aa_seq_tbl_final,
+                      file = "aa_seq_tbl.tsv",
+                      delim = "\t",
+                      na = "",
+                      quote = "none")
+
+    saveRDS(aa_seq_tbl_final, fasta_meta_file)
+    return(aa_seq_tbl_final)
+  }
+}
+
+################################################################################################################################################################################################
+
+processFastaFile_deprecated <- function(fasta_file_path, uniprot_search_results, uniparc_search_results, fasta_meta_file) {
   startsWith <- function(x, prefix) {
     substr(x, 1, nchar(prefix)) == prefix
   }
@@ -404,10 +516,10 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results, uniparc_se
 
 updateProteinIDs <- function(protein_data, aa_seq_tbl_final) {
   protein_data <- protein_data |>
-    dplyr::mutate(matching_id = str_extract(Protein.Ids, "NZ_LR130543.1_prot_.*?_\\d+"))
+    dplyr::mutate(matching_id = str_extract(Protein.Ids, "NZ_LR130543.1_prot_.*?_\\d+")) ## need to work out how to make this generic for all orgs from ncbi
   
   lookup_table <- aa_seq_tbl_final |>
-    dplyr::mutate(matching_id = str_extract(accession, "NZ_LR130543.1_prot_.*?_\\d+")) |>
+    dplyr::mutate(matching_id = str_extract(accession, "NZ_LR130543.1_prot_.*?_\\d+")) |> ## need to work out how to make this generic for all orgs from ncbi
     dplyr::select(matching_id, database_id, ncbi_refseq)
 
   updated_protein_data <- protein_data |>

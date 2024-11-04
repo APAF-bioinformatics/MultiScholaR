@@ -556,8 +556,298 @@ readConfigFileSection <- function( theObject
 
 
 ##################################################################################################################
+#' @title Load ProteomeScholaR Dependencies
+#'
+#' @description
+#' Installs and loads all required packages for ProteomeScholaR. This includes packages from CRAN, Bioconductor, and GitHub.
+#'
+#' @param verbose logical; if TRUE (default), displays progress messages during 
+#'   package installation and loading
+#'
+#' @details
+#' Checks for and installs missing packages, then loads all required
+#' dependencies. It handles special cases for GitHub packages (RUVIIIC and 
+#' ProteomeScholaR) and ensures all necessary packages are available for the DIA 
+#' workflow.
+#'
+#' @return None (called for side effects)
+#'
+#' @examples
+#' \dontrun{
+#' # Load with default verbose messaging
+#' load_dependencies()
+#'
+#' # Load silently
+#' load_dependencies(verbose = FALSE)
+#' }
+#'
+#' @importFrom devtools install_github
+#' @importFrom pacman p_load
+#'
+#' @export
+load_dependencies <- function(verbose = TRUE) {
+    # First ensure pacman is installed
+    if (!requireNamespace("pacman", quietly = TRUE)) {
+        if (verbose) message("Installing pacman...")
+        install.packages("pacman")
+    }
+    required_packages <- c(
+        # CRAN packages
+        "tidyverse", "seqinr", "lazyeval", "rlang", "glue", "GGally",
+        "here", "tibble", "mixOmics", "limma", "magrittr", "future.apply", 
+        "tictoc", "beepr", "furrr", "readxl", "writexl", "RColorBrewer",
+        "multidplyr", "RSpectra", "progress", "Rcpp", "RcppEigen",
+        "qvalue", "Glimma", "ruv", "iq", "ggrepel", "patchwork",
+        "dplyr", "gtools", "shiny", "DT",
+        # Bioconductor packages
+        "BiocManager",
+        # GitHub packages
+        "RUVIIIC", "ProteomeScholaR", "UniProt.ws"
+    )
+    library(pacman)
+
+    # Install packages if missing
+    if (!requireNamespace("RUVIIIC", quietly = TRUE)) {
+        if (verbose) message("Installing RUVIIIC from GitHub...")
+        devtools::install_github("cran/RUVIIIC")
+    }
+    if (!requireNamespace("ProteomeScholaR", quietly = TRUE)) {
+        if (verbose) message("Installing ProteomeScholaR from GitHub...")
+        devtools::install_github("APAF-BIOINFORMATICS/ProteomeScholaR", ref = "dev-jr")
+    }
+    if (verbose) message("Loading all required packages...")
+    p_load(char = required_packages)
+    if (verbose) message("All dependencies loaded successfully!")
+}
+
+##################################################################################################################
+#' @title Extract Substrings from Underscore-Separated Strings
+#'
+#' @description
+#' Extracts substrings from underscore-separated strings using different modes:
+#' range (between positions), start (first element), or end (last element).
+#'
+#' @param x Character vector containing the strings to process
+#' @param mode Character string specifying extraction mode:
+#'   * "range": Extract elements between two underscore positions
+#'   * "start": Extract from start to first underscore
+#'   * "end": Extract from last underscore to end
+#' @param start Integer: Starting position for range mode (1-based)
+#' @param end Integer: Ending position for range mode (1-based, required for range mode)
+#'
+#' @return Character vector with extracted strings. Returns NA for strings where
+#'   requested positions are out of bounds.
+#'
+#' @examples
+#' x <- "20140602_ffs_expt1_r1_junk"
+#' extract_experiment(x, mode = "range", start = 1, end = 3)  # "20140602_ffs_expt1"
+#' extract_experiment(x, mode = "start")  # "20140602"
+#' extract_experiment(x, mode = "end")    # "junk"
+#'
+#' # Multiple strings
+#' x <- c("20140602_ffs_expt1_r1_junk", "20140603_ffs_expt2_r2_test")
+#' extract_experiment(x, mode = "range", start = 2, end = 3)  # c("ffs_expt1", "ffs_expt2")
+#'
+#' @export
+extract_experiment <- function(x, mode = "range", start = 1, end = NULL) {
+  if (!mode %in% c("range", "start", "end")) {
+    stop("Mode must be one of: 'range', 'start', 'end'")
+  }
+  
+  process_string <- function(str) {
+    parts <- unlist(strsplit(str, "_"))
+    
+    if (mode == "range") {
+      if (is.null(end)) stop("End position required for range mode")
+      if (start > length(parts) || end > length(parts)) {
+        warning("Position out of bounds for string: ", str)
+        
+        return(NA_character_)
+      }
+      return(paste(parts[start:end], collapse = "_"))
+    }
+    
+    else if (mode == "start") {
+      return(parts[1])
+    }
+    
+    else if (mode == "end") {
+      return(parts[length(parts)])
+    }
+  }
+  
+  sapply(x, process_string)
+}
+
+##################################################################################################################
+
+#' Count unique proteins in peptide data
+#' 
+#' @description
+#' Calculates the number of unique proteins in a peptide dataset. Works with both
+#' data frames and S4 objects containing peptide data.
+#' 
+#' @param data A data frame or S4 object containing peptide data. If an S4 object
+#'   is provided, it must have a 'peptide_data' slot.
+#' 
+#' @return An integer representing the count of unique proteins.
+#' 
+#' @examples
+#' \dontrun{
+#' # With a data frame
+#' protein_count <- count_unique_proteins(peptide_df)
+#' 
+#' # With an S4 object
+#' protein_count <- count_unique_proteins(peptide_object)
+#' }
+#' 
+#' @export
+count_unique_proteins <- function(data) {
+  if (isS4(data) && "peptide_data" %in% slotNames(data)) {
+    data <- data@peptide_data
+  }
+  
+  data |> 
+    distinct(Protein.Ids) |> 
+    nrow()
+}
 
 
+##################################################################################################################
+#' Calculate total unique peptides
+#' 
+#' @description
+#' Calculates the total number of unique peptides across all proteins in the dataset.
+#' Works with both data frames and S4 objects containing peptide data.
+#' 
+#' @param data A data frame or S4 object containing peptide data. If an S4 object
+#'   is provided, it must have a 'peptide_data' slot.
+#' 
+#' @return An integer representing the count of unique peptides.
+#' 
+#' @examples
+#' \dontrun{
+#' # With a data frame
+#' peptide_count <- calc_total_peptides(peptide_df)
+#' 
+#' # With an S4 object
+#' peptide_count <- calc_total_peptides(peptide_object)
+#' }
+#' 
+#' @export
+calc_total_peptides <- function(data) {
+  if (isS4(data) && "peptide_data" %in% slotNames(data)) {
+    data <- data@peptide_data
+  }
+  
+  data |>
+    distinct(Protein.Ids, Stripped.Sequence) |>
+    nrow()
+}
 
 
+##################################################################################################################
+#' Calculate peptides per protein
+#' 
+#' @description
+#' Calculates the number of unique peptides associated with each protein in the dataset.
+#' Works with both data frames and S4 objects containing peptide data.
+#' 
+#' @param data A data frame or S4 object containing peptide data. If an S4 object
+#'   is provided, it must have a 'peptide_data' slot.
+#' 
+#' @return A data frame with columns:
+#'   \item{Protein.Ids}{Character. Protein identifiers}
+#'   \item{n_peptides}{Integer. Number of unique peptides for each protein}
+#' 
+#' @examples
+#' \dontrun{
+#' # With a data frame
+#' peptides_per_protein <- calc_peptides_per_protein(peptide_df)
+#' 
+#' # With an S4 object
+#' peptides_per_protein <- calc_peptides_per_protein(peptide_object)
+#' }
+#' 
+#' @export
+calc_peptides_per_protein <- function(data) {
+  if (isS4(data) && "peptide_data" %in% slotNames(data)) {
+    data <- data@peptide_data
+  }
+  
+  data |>
+    group_by(Protein.Ids) |>
+    summarise(n_peptides = n_distinct(Stripped.Sequence), .groups = "drop")
+}
 
+
+##################################################################################################################
+#' Count proteins per run
+#' 
+#' @description
+#' Calculates the number of unique proteins identified in each experimental run.
+#' Works with both data frames and S4 objects containing peptide data.
+#' 
+#' @param data A data frame or S4 object containing peptide data. If an S4 object
+#'   is provided, it must have a 'peptide_data' slot.
+#' 
+#' @return A data frame with columns:
+#'   \item{Run}{Character or factor. Run identifier}
+#'   \item{n_proteins}{Integer. Number of unique proteins in each run}
+#' 
+#' @examples
+#' \dontrun{
+#' # With a data frame
+#' proteins_per_run <- count_proteins_per_run(peptide_df)
+#' 
+#' # With an S4 object
+#' proteins_per_run <- count_proteins_per_run(peptide_object)
+#' }
+#' 
+#' @export
+count_proteins_per_run <- function(data) {
+  if (isS4(data) && "peptide_data" %in% slotNames(data)) {
+    data <- data@peptide_data
+  }
+  
+  data |>
+    group_by(Run) |>
+    summarise(n_proteins = n_distinct(Protein.Ids), .groups = "drop") |>
+    arrange(Run)
+}
+
+#' Count peptides per run
+#' 
+#' @description
+#' Calculates the number of unique peptides identified in each experimental run.
+#' Works with both data frames and S4 objects containing peptide data.
+#' 
+#' @param data A data frame or S4 object containing peptide data. If an S4 object
+#'   is provided, it must have a 'peptide_data' slot.
+#' 
+#' @return A data frame with columns:
+#'   \item{Run}{Character or factor. Run identifier}
+#'   \item{n_peptides}{Integer. Number of unique peptides in each run}
+#' 
+#' @examples
+#' \dontrun{
+#' # With a data frame
+#' peptides_per_run <- count_peptides_per_run(peptide_df)
+#' 
+#' # With an S4 object
+#' peptides_per_run <- count_peptides_per_run(peptide_object)
+#' }
+#' 
+#' @export
+count_peptides_per_run <- function(data) {
+  if (isS4(data) && "peptide_data" %in% slotNames(data)) {
+    data <- data@peptide_data
+  }
+  
+  data |>
+    group_by(Run) |>
+    summarise(n_peptides = n_distinct(Stripped.Sequence), .groups = "drop") |>
+    arrange(Run)
+}
+
+##################################################################################################################
