@@ -2489,7 +2489,7 @@ update_protein_filtering <- function(data, step_name, overwrite = FALSE, return_
     peptides_per_run = p5
   )
   
- Save plots if directory is specified
+ # Save plots if directory is specified
   if (!is.null(publication_graphs_dir)) {
     # Save individual plots
     for (plot_name in names(plot_list)) {

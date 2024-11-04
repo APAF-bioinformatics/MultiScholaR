@@ -544,4 +544,4 @@ updateProteinIDs <- function(protein_data, aa_seq_tbl_final) {
   updated_protein_data$Protein.Ids_new <- NULL
 
   return(updated_protein_data)
-}
+} 
