@@ -2352,6 +2352,17 @@ filtering_progress <- new("FilteringProgress",
 #' 
 #' @export
 update_protein_filtering <- function(data, step_name, publication_graphs_dir = NULL, overwrite = FALSE, return_grid = FALSE) {
+
+    # Initialize filtering_progress if it doesn't exist in the global environment
+  if (!exists("filtering_progress", envir = .GlobalEnv)) {
+    filtering_progress <- new("FilteringProgress")
+    assign("filtering_progress", filtering_progress, envir = .GlobalEnv)
+  }
+  
+ 
+  # Get the current filtering_progress object
+  filtering_progress <- get("filtering_progress", envir = .GlobalEnv)
+  
   # Calculate all metrics
   protein_count <- count_unique_proteins(data)
   total_peptides <- calc_total_peptides(data)
@@ -2364,20 +2375,24 @@ update_protein_filtering <- function(data, step_name, publication_graphs_dir = N
       stop("Step name '", step_name, "' already exists. Use overwrite = TRUE to replace it.")
     } else {
       idx <- which(filtering_progress@steps == step_name)
-      filtering_progress@proteins[idx] <<- protein_count
-      filtering_progress@total_peptides[idx] <<- total_peptides
-      filtering_progress@peptides_per_protein[[idx]] <<- peptides_per_protein
-      filtering_progress@proteins_per_run[[idx]] <<- proteins_per_run
-      filtering_progress@peptides_per_run[[idx]] <<- peptides_per_run
+      filtering_progress@proteins[idx] <- protein_count
+      filtering_progress@total_peptides[idx] <- total_peptides
+      filtering_progress@peptides_per_protein[[idx]] <- peptides_per_protein
+      filtering_progress@proteins_per_run[[idx]] <- proteins_per_run
+      filtering_progress@peptides_per_run[[idx]] <- peptides_per_run
     }
   } else {
-    filtering_progress@steps <<- c(filtering_progress@steps, step_name)
-    filtering_progress@proteins <<- c(filtering_progress@proteins, protein_count)
-    filtering_progress@total_peptides <<- c(filtering_progress@total_peptides, total_peptides)
-    filtering_progress@peptides_per_protein <<- c(filtering_progress@peptides_per_protein, list(peptides_per_protein))
-    filtering_progress@proteins_per_run <<- c(filtering_progress@proteins_per_run, list(proteins_per_run))
-    filtering_progress@peptides_per_run <<- c(filtering_progress@peptides_per_run, list(peptides_per_run))
+    filtering_progress@steps <- c(filtering_progress@steps, step_name)
+    filtering_progress@proteins <- c(filtering_progress@proteins, protein_count)
+    filtering_progress@total_peptides <- c(filtering_progress@total_peptides, total_peptides)
+    filtering_progress@peptides_per_protein <- c(filtering_progress@peptides_per_protein, list(peptides_per_protein))
+    filtering_progress@proteins_per_run <- c(filtering_progress@proteins_per_run, list(proteins_per_run))
+    filtering_progress@peptides_per_run <- c(filtering_progress@peptides_per_run, list(peptides_per_run))
   }
+  
+  # Update the global filtering_progress object
+  assign("filtering_progress", filtering_progress, envir = .GlobalEnv)
+  
   
   # Create plots
   p1 <- ggplot(data.frame(
