@@ -2537,3 +2537,5 @@ update_protein_filtering <- function(data, step_name, overwrite = FALSE, return_
     }
     # Return the list invisibly
     invisible(plot_list)
+  }
+}
