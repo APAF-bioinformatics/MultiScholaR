@@ -329,11 +329,7 @@ RunApplet <- function(applet_type) {
     # Run the app and capture results
     result <- runApp(
       shinyApp(ui, server),
-      launch.browser = TRUE,
-      options = list(
-        height = "auto",
-        width = "auto"
-      )
+      launch.browser = TRUE
     )
     
     # Handle results if they exist
