@@ -15,53 +15,6 @@ create_base_ui <- function(title, sidebar_content, main_content) {
   )
 }
 
-#########################################################################################
-
-#' Design Matrix Applet Components
-#' @keywords internal
-create_design_matrix_ui <- function(design_matrix_raw) {
-  sidebar_content <- tagList(
-    h4("Add New Group"),
-    textInput("new_group", "Enter new group name:"),
-    actionButton("add_group", "Add Group"),
-    
-    hr(),
-    
-    h4("Assign Metadata"),
-    selectizeInput("selected_runs", "Select Runs:",
-                  choices = gtools::mixedsort(design_matrix_raw$Run),
-                  multiple = TRUE),
-    
-    selectInput("group_select", "Select Group:",
-               choices = c("")),
-    
-    uiOutput("replicate_inputs"),
-    
-    actionButton("assign_metadata", "Assign Metadata"),
-    
-    hr(),
-    
-    downloadButton("download_data", "Download, Save and Close")
-  )
-  
-  main_content <- DTOutput("data_table")
-  
-  create_base_ui(
-    title = "Metadata Assignment Tool",
-    sidebar_content = sidebar_content,
-    main_content = main_content
-  )
-}
-
-#' Design Matrix Server Logic
-#' @keywords internal
-design_matrix_server <- function(input, output, session) {
-  # [Previous server code remains the same]
-  # ... [Insert the entire server_designMatrix function content here]
-}
-
-
-#########################################################################################
 #' Create Design Matrix UI
 #'
 #' Creates the user interface for the design matrix applet
@@ -74,16 +27,15 @@ design_matrix_server <- function(input, output, session) {
 #' @importFrom DT DTOutput
 #' @importFrom gtools mixedsort
 create_design_matrix_ui <- function(design_matrix_raw) {
-  # Sidebar content
   sidebar_content <- tagList(
-    # Group management 
+    # Group management section
     h4("Add New Group"),
     textInput("new_group", "Enter new group name:"),
     actionButton("add_group", "Add Group"),
     
     hr(),
     
-    # Metadata assignment
+    # Metadata assignment section
     h4("Assign Metadata"),
     selectizeInput(
       "selected_runs", 
@@ -105,7 +57,6 @@ create_design_matrix_ui <- function(design_matrix_raw) {
       multiple = FALSE
     ),
     
-    # Dynamic input rendering
     uiOutput("replicate_inputs"),
     
     actionButton(
@@ -117,20 +68,43 @@ create_design_matrix_ui <- function(design_matrix_raw) {
     
     hr(),
     
-    # Download section
-    downloadButton(
-      "download_data", 
-      "Download, Save and Close",
+    # Contrast section
+    h4("Add Contrasts"),
+    selectInput(
+      "contrast_group1",
+      "Numerator Group:",
+      choices = c(""),
+      multiple = FALSE
+    ),
+    selectInput(
+      "contrast_group2", 
+      "Denominator Group:",
+      choices = c(""),
+      multiple = FALSE
+    ),
+    actionButton(
+      "add_contrast",
+      "Add Contrast",
+      class = "btn-info",
+      style = "margin-top: 10px; margin-bottom: 10px;"
+    ),
+    
+    hr(),
+    
+    # Save button
+    actionButton(
+      "save_and_close",
+      "Save and Close",
       class = "btn-success"
     )
   )
   
-  # Main panel content
   main_content <- tagList(
-    DTOutput("data_table")
+    DTOutput("data_table"),
+    h4("Defined Contrasts"),
+    tableOutput("contrast_table")
   )
   
-  # Create UI
   create_base_ui(
     title = "Metadata Assignment Tool",
     sidebar_content = sidebar_content,
@@ -138,7 +112,135 @@ create_design_matrix_ui <- function(design_matrix_raw) {
   )
 }
 
-#########################################################################################
+#' Design Matrix Server Logic
+#' @keywords internal
+design_matrix_server <- function(input, output, session) {
+  # Reactive values for design matrix
+  design_matrix <- reactiveVal(design_matrix_raw)
+  
+  # Reactive values for groups
+  groups <- reactiveVal(character())
+  
+  # Reactive values for contrasts
+  contrasts <- reactiveVal(data.frame(
+    contrast_name = character(),
+    numerator = character(),
+    denominator = character(),
+    stringsAsFactors = FALSE
+  ))
+  
+  # Update group choices for contrast selection
+  observe({
+    current_groups <- unique(design_matrix()$Group)
+    current_groups <- current_groups[!is.na(current_groups)]
+    updateSelectInput(session, "contrast_group1", choices = current_groups)
+    updateSelectInput(session, "contrast_group2", choices = current_groups)
+    updateSelectInput(session, "group_select", choices = current_groups)
+  })
+  
+  # Add new group handler
+  observeEvent(input$add_group, {
+    req(input$new_group)
+    current_groups <- groups()
+    if (!input$new_group %in% current_groups) {
+      groups(c(current_groups, input$new_group))
+    }
+  })
+  
+  # Assign metadata handler
+  observeEvent(input$assign_metadata, {
+    req(input$selected_runs, input$group_select)
+    current_matrix <- design_matrix()
+    current_matrix$Group[current_matrix$Run %in% input$selected_runs] <- input$group_select
+    design_matrix(current_matrix)
+  })
+  
+  # Add contrast button handler
+  observeEvent(input$add_contrast, {
+    req(input$contrast_group1, input$contrast_group2)
+    if(input$contrast_group1 != input$contrast_group2) {
+      current_contrasts <- contrasts()
+      contrast_name <- paste0(
+        gsub(" ", "", input$contrast_group1), 
+        ".minus.", 
+        gsub(" ", "", input$contrast_group2)
+      )
+      new_contrast <- data.frame(
+        contrast_name = contrast_name,
+        numerator = input$contrast_group1,
+        denominator = input$contrast_group2,
+        stringsAsFactors = FALSE
+      )
+      contrasts(rbind(current_contrasts, new_contrast))
+    }
+  })
+  
+  # Display data table
+  output$data_table <- renderDT({
+    design_matrix()
+  }, selection = 'none', options = list(pageLength = 25))
+  
+  # Display contrast table
+  output$contrast_table <- renderTable({
+    contrast_data <- contrasts()
+    if(nrow(contrast_data) > 0) {
+      data.frame(
+        Contrast = paste0(
+          contrast_data$contrast_name,
+          "=",
+          contrast_data$numerator,
+          "-",
+          contrast_data$denominator
+        )
+      )
+    }
+  })
+  
+  # Save and close handler
+  observeEvent(input$save_and_close, {
+    # Save the design matrix
+    design_matrix_final <- design_matrix()
+    assign("design_matrix", design_matrix_final, envir = parent.frame())
+    
+    # Create and save contrast strings file
+    contrast_data <- contrasts()
+    if(nrow(contrast_data) > 0) {
+      # Create contrast strings in required format
+      contrast_strings <- c(
+        "contrasts",
+        sapply(1:nrow(contrast_data), function(i) {
+          paste0(
+            contrast_data$contrast_name[i],
+            "=",
+            contrast_data$numerator[i],
+            "-",
+            contrast_data$denominator[i]
+          )
+        })
+      )
+      
+      # Write contrast strings to file
+      writeLines(
+        contrast_strings,
+        file.path(source_dir, "contrast_strings.tab")
+      )
+      
+      # Create contrasts_tbl
+      contrasts_tbl <- data.frame(
+        numerator = contrast_data$numerator,
+        denominator = contrast_data$denominator,
+        stringsAsFactors = FALSE
+      )
+      assign("contrasts_tbl", contrasts_tbl, envir = parent.frame())
+    }
+    
+    # Close the app
+    stopApp(list(
+      design_matrix = design_matrix_final,
+      contrasts_tbl = if(exists("contrasts_tbl")) contrasts_tbl else NULL
+    ))
+  })
+}
 
 #' Run Various Shiny Applets
 #'
@@ -178,12 +280,15 @@ RunApplet <- function(applet_type) {
     ui <- create_design_matrix_ui(design_matrix_raw)
     server <- design_matrix_server
     
+    # Run the app and handle results
+    result <- shinyApp(ui, server)
+    if (!is.null(result)) {
+      assign("design_matrix", result$design_matrix, envir = parent.frame())
+      assign("contrasts_tbl", result$contrasts_tbl, envir = parent.frame())
+    }
+    invisible(result)
+    
   } else if (applet_type == "future_applet") {
-			# Insert future applet type here
     stop("Future applet type not yet implemented")
   }
-  
-  # Run the app
-  result <- shinyApp(ui, server)
-  invisible(result)
 }
