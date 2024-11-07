@@ -143,7 +143,7 @@ design_matrix_server <- function(input, output, session) {
   design_matrix <- reactiveVal(design_matrix_raw)
   
   # Initialize groups with existing groups from design matrix
-  initial_groups <- unique(design_matrix_raw$Group)
+  initial_groups <- unique(design_matrix_raw$group)
   initial_groups <- initial_groups[!is.na(initial_groups) & initial_groups != ""]
   
   # Reactive values for groups
@@ -179,7 +179,6 @@ design_matrix_server <- function(input, output, session) {
       if (!input$new_group %in% current_groups) {
         groups(c(current_groups, input$new_group))
       }
-      # Clear the input after adding
       updateTextInput(session, "new_group", value = "")
     }
   })
@@ -188,10 +187,9 @@ design_matrix_server <- function(input, output, session) {
   observeEvent(input$assign_metadata, {
     req(input$selected_runs, input$group_select)
     current_matrix <- design_matrix()
-    current_matrix$Group[current_matrix$Run %in% input$selected_runs] <- input$group_select
+    current_matrix$group[current_matrix$Run %in% input$selected_runs] <- input$group_select
     design_matrix(current_matrix)
     
-    # Add this line to ensure groups are maintained
     current_groups <- groups()
     if(!input$group_select %in% current_groups) {
       groups(c(current_groups, input$group_select))
@@ -206,15 +204,14 @@ design_matrix_server <- function(input, output, session) {
        input$contrast_group1 != input$contrast_group2) {
       current_contrasts <- contrasts()
       contrast_name <- paste0(
-        "group",  # Add "group" prefix
         gsub(" ", "", input$contrast_group1), 
-        "-group",  # Add "group" prefix
+        ".minus.", 
         gsub(" ", "", input$contrast_group2)
       )
       new_contrast <- data.frame(
         contrast_name = contrast_name,
-        numerator = input$contrast_group1,
-        denominator = input$contrast_group2,
+        numerator = paste0("group", input$contrast_group1),
+        denominator = paste0("group", input$contrast_group2),
         stringsAsFactors = FALSE
       )
       contrasts(rbind(current_contrasts, new_contrast))
@@ -244,14 +241,11 @@ design_matrix_server <- function(input, output, session) {
   
   # Save and close handler
   observeEvent(input$save_and_close, {
-    # Save the design matrix
     design_matrix_final <- design_matrix()
     assign("design_matrix", design_matrix_final, envir = parent.frame())
     
-    # Create and save contrast strings file
     contrast_data <- contrasts()
     if(nrow(contrast_data) > 0) {
-      # Create contrast strings in required format
       contrast_strings <- c(
         "contrasts",
         sapply(1:nrow(contrast_data), function(i) {
@@ -265,13 +259,11 @@ design_matrix_server <- function(input, output, session) {
         })
       )
       
-      # Write contrast strings to file
       writeLines(
         contrast_strings,
         file.path(source_dir, "contrast_strings.tab")
       )
       
-      # Create contrasts_tbl
       contrasts_tbl <- data.frame(
         numerator = contrast_data$numerator,
         denominator = contrast_data$denominator,
@@ -280,7 +272,6 @@ design_matrix_server <- function(input, output, session) {
       assign("contrasts_tbl", contrasts_tbl, envir = parent.frame())
     }
     
-    # Close the app
     stopApp(list(
       design_matrix = design_matrix_final,
       contrasts_tbl = if(exists("contrasts_tbl")) contrasts_tbl else NULL
