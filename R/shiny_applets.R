@@ -182,8 +182,9 @@ design_matrix_server <- function(input, output, session) {
        input$contrast_group1 != input$contrast_group2) {
       current_contrasts <- contrasts()
       contrast_name <- paste0(
+        "group",  # Add "group" prefix
         gsub(" ", "", input$contrast_group1), 
-        ".minus.", 
+        "-group",  # Add "group" prefix
         gsub(" ", "", input$contrast_group2)
       )
       new_contrast <- data.frame(
