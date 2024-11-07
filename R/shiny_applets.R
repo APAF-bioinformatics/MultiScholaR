@@ -7,10 +7,34 @@
 #' @keywords internal
 create_base_ui <- function(title, sidebar_content, main_content) {
   fluidPage(
+    tags$head(
+      tags$style(HTML("
+        .container-fluid {
+          padding: 20px;
+          max-width: 1400px;
+        }
+        .well {
+          max-height: 800px;
+          overflow-y: auto;
+        }
+        .main-panel {
+          max-height: 800px;
+          overflow-y: auto;
+        }
+      "))
+    ),
     titlePanel(title),
     sidebarLayout(
-      sidebarPanel(sidebar_content),
-      mainPanel(main_content)
+      sidebarPanel(
+        width = 3,
+        sidebar_content
+      ),
+      mainPanel(
+        width = 9,
+        div(class = "main-panel",
+          main_content
+        )
+      )
     )
   )
 }
@@ -303,7 +327,14 @@ RunApplet <- function(applet_type) {
     server <- design_matrix_server
     
     # Run the app and capture results
-    result <- runApp(shinyApp(ui, server))
+    result <- runApp(
+      shinyApp(ui, server),
+      launch.browser = TRUE,
+      options = list(
+        height = "auto",
+        width = "auto"
+      )
+    )
     
     # Handle results if they exist
     if (!is.null(result)) {
