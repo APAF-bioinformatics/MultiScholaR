@@ -136,8 +136,6 @@ create_design_matrix_ui <- function(design_matrix_raw) {
   )
 }
 
-#' Design Matrix Server Logic
-#' @keywords internal
 design_matrix_server <- function(input, output, session) {
   # Reactive values for design matrix
   design_matrix <- reactiveVal(design_matrix_raw)
@@ -183,11 +181,28 @@ design_matrix_server <- function(input, output, session) {
     }
   })
   
+  # Add replicate inputs UI
+  output$replicate_inputs <- renderUI({
+    req(input$selected_runs)
+    numericInput("replicate_start", 
+                 paste("Starting replicate number for", length(input$selected_runs), "selected runs:"),
+                 value = 1, 
+                 min = 1)
+  })
+
   # Assign metadata handler
   observeEvent(input$assign_metadata, {
-    req(input$selected_runs, input$group_select)
+    req(input$selected_runs, input$group_select, input$replicate_start)
     current_matrix <- design_matrix()
+    
+    # Generate sequential replicate numbers
+    replicate_numbers <- seq(input$replicate_start, 
+                           length.out = length(input$selected_runs))
+    
+    # Update both group and replicates columns
     current_matrix$group[current_matrix$Run %in% input$selected_runs] <- input$group_select
+    current_matrix$replicates[match(input$selected_runs, current_matrix$Run)] <- replicate_numbers
+    
     design_matrix(current_matrix)
     
     current_groups <- groups()
@@ -210,8 +225,8 @@ design_matrix_server <- function(input, output, session) {
       )
       new_contrast <- data.frame(
         contrast_name = contrast_name,
-        numerator = paste0("group", input$contrast_group1),
-        denominator = paste0("group", input$contrast_group2),
+        numerator = input$contrast_group1,
+        denominator = input$contrast_group2,
         stringsAsFactors = FALSE
       )
       contrasts(rbind(current_contrasts, new_contrast))
@@ -246,27 +261,24 @@ design_matrix_server <- function(input, output, session) {
     
     contrast_data <- contrasts()
     if(nrow(contrast_data) > 0) {
+      # Create all contrast strings
       contrast_strings <- c(
         "contrasts",
         sapply(1:nrow(contrast_data), function(i) {
           paste0(
             contrast_data$contrast_name[i],
-            "=",
+            "=group",
             contrast_data$numerator[i],
-            "-",
+            "-group",
             contrast_data$denominator[i]
           )
         })
       )
       
-      writeLines(
-        contrast_strings,
-        file.path(source_dir, "contrast_strings.tab")
-      )
-      
-      contrasts_tbl <- data.frame(
-        numerator = contrast_data$numerator,
-        denominator = contrast_data$denominator,
+      # Write to file
+    writeLines(contrast_strings, file.path(source_dir, "contrast_strings.tab"))
+          contrasts_tbl <- data.frame(
+        contrasts = contrast_strings,
         stringsAsFactors = FALSE
       )
       assign("contrasts_tbl", contrasts_tbl, envir = parent.frame())
@@ -278,7 +290,6 @@ design_matrix_server <- function(input, output, session) {
     ))
   })
 }
-
 #' Run Various Shiny Applets
 #'
 #' A function to run different types of Shiny applets with consistent UI structure.
