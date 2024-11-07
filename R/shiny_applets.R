@@ -131,14 +131,11 @@ design_matrix_server <- function(input, output, session) {
   
   # Update group choices for contrast selection
   observe({
-    # Changed to use groups() instead of looking at design matrix directly
-    current_groups <- groups()
-    # Only update if there are groups
-    if(length(current_groups) > 0) {
-      updateSelectInput(session, "contrast_group1", choices = current_groups)
-      updateSelectInput(session, "contrast_group2", choices = current_groups)
-      updateSelectInput(session, "group_select", choices = current_groups)
-    }
+    current_groups <- unique(design_matrix()$Group)
+    current_groups <- current_groups[!is.na(current_groups)]
+    updateSelectInput(session, "contrast_group1", choices = current_groups)
+    updateSelectInput(session, "contrast_group2", choices = current_groups)
+    updateSelectInput(session, "group_select", choices = current_groups)
   })
   
   # Add new group handler
@@ -156,12 +153,6 @@ design_matrix_server <- function(input, output, session) {
     current_matrix <- design_matrix()
     current_matrix$Group[current_matrix$Run %in% input$selected_runs] <- input$group_select
     design_matrix(current_matrix)
-    
-    # Add this line to ensure groups are maintained
-    current_groups <- groups()
-    if(!input$group_select %in% current_groups) {
-      groups(c(current_groups, input$group_select))
-    }
   })
   
   # Add contrast button handler
@@ -289,11 +280,15 @@ RunApplet <- function(applet_type) {
     ui <- create_design_matrix_ui(design_matrix_raw)
     server <- design_matrix_server
     
-    # Run the app and handle results
-    result <- shinyApp(ui, server)
+    # Run the app and capture results
+    result <- runApp(shinyApp(ui, server))
+    
+    # Handle results if they exist
     if (!is.null(result)) {
       assign("design_matrix", result$design_matrix, envir = parent.frame())
-      assign("contrasts_tbl", result$contrasts_tbl, envir = parent.frame())
+      if (!is.null(result$contrasts_tbl)) {
+        assign("contrasts_tbl", result$contrasts_tbl, envir = parent.frame())
+      }
     }
     invisible(result)
     
