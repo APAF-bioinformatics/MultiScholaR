@@ -118,8 +118,12 @@ design_matrix_server <- function(input, output, session) {
   # Reactive values for design matrix
   design_matrix <- reactiveVal(design_matrix_raw)
   
+  # Initialize groups with existing groups from design matrix
+  initial_groups <- unique(design_matrix_raw$Group)
+  initial_groups <- initial_groups[!is.na(initial_groups) & initial_groups != ""]
+  
   # Reactive values for groups
-  groups <- reactiveVal(character())
+  groups <- reactiveVal(initial_groups)
   
   # Reactive values for contrasts
   contrasts <- reactiveVal(data.frame(
@@ -129,21 +133,30 @@ design_matrix_server <- function(input, output, session) {
     stringsAsFactors = FALSE
   ))
   
-  # Update group choices for contrast selection
+  # Update group choices for all dropdowns whenever groups change
   observe({
-    current_groups <- unique(design_matrix()$Group)
-    current_groups <- current_groups[!is.na(current_groups)]
-    updateSelectInput(session, "contrast_group1", choices = current_groups)
-    updateSelectInput(session, "contrast_group2", choices = current_groups)
-    updateSelectInput(session, "group_select", choices = current_groups)
+    current_groups <- groups()
+    updateSelectInput(session, "group_select", 
+                     choices = c("", current_groups),
+                     selected = "")
+    updateSelectInput(session, "contrast_group1", 
+                     choices = c("", current_groups),
+                     selected = "")
+    updateSelectInput(session, "contrast_group2", 
+                     choices = c("", current_groups),
+                     selected = "")
   })
   
   # Add new group handler
   observeEvent(input$add_group, {
     req(input$new_group)
-    current_groups <- groups()
-    if (!input$new_group %in% current_groups) {
-      groups(c(current_groups, input$new_group))
+    if(input$new_group != "") {
+      current_groups <- groups()
+      if (!input$new_group %in% current_groups) {
+        groups(c(current_groups, input$new_group))
+      }
+      # Clear the input after adding
+      updateTextInput(session, "new_group", value = "")
     }
   })
   
@@ -153,12 +166,20 @@ design_matrix_server <- function(input, output, session) {
     current_matrix <- design_matrix()
     current_matrix$Group[current_matrix$Run %in% input$selected_runs] <- input$group_select
     design_matrix(current_matrix)
+    
+    # Add this line to ensure groups are maintained
+    current_groups <- groups()
+    if(!input$group_select %in% current_groups) {
+      groups(c(current_groups, input$group_select))
+    }
   })
   
   # Add contrast button handler
   observeEvent(input$add_contrast, {
     req(input$contrast_group1, input$contrast_group2)
-    if(input$contrast_group1 != input$contrast_group2) {
+    if(input$contrast_group1 != "" && 
+       input$contrast_group2 != "" && 
+       input$contrast_group1 != input$contrast_group2) {
       current_contrasts <- contrasts()
       contrast_name <- paste0(
         gsub(" ", "", input$contrast_group1), 
