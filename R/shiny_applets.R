@@ -131,11 +131,14 @@ design_matrix_server <- function(input, output, session) {
   
   # Update group choices for contrast selection
   observe({
-    current_groups <- unique(design_matrix()$Group)
-    current_groups <- current_groups[!is.na(current_groups)]
-    updateSelectInput(session, "contrast_group1", choices = current_groups)
-    updateSelectInput(session, "contrast_group2", choices = current_groups)
-    updateSelectInput(session, "group_select", choices = current_groups)
+    # Changed to use groups() instead of looking at design matrix directly
+    current_groups <- groups()
+    # Only update if there are groups
+    if(length(current_groups) > 0) {
+      updateSelectInput(session, "contrast_group1", choices = current_groups)
+      updateSelectInput(session, "contrast_group2", choices = current_groups)
+      updateSelectInput(session, "group_select", choices = current_groups)
+    }
   })
   
   # Add new group handler
@@ -153,6 +156,12 @@ design_matrix_server <- function(input, output, session) {
     current_matrix <- design_matrix()
     current_matrix$Group[current_matrix$Run %in% input$selected_runs] <- input$group_select
     design_matrix(current_matrix)
+    
+    # Add this line to ensure groups are maintained
+    current_groups <- groups()
+    if(!input$group_select %in% current_groups) {
+      groups(c(current_groups, input$group_select))
+    }
   })
   
   # Add contrast button handler
