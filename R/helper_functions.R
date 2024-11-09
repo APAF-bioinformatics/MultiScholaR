@@ -375,10 +375,10 @@ updateParamInObject <- function(theObject, param_name_string) {
 summarize_qc_plots <- function(qc_figure) {
   cat("RLE Plots:\n")
   cat(paste(" -", names(qc_figure@rle_plots), "\n"))
-  
+
   cat("\nPCA Plots:\n")
   cat(paste(" -", names(qc_figure@pca_plots), "\n"))
-  
+
   cat("\nPearson Correlation Plots:\n")
   cat(paste(" -", names(qc_figure@pearson_plots), "\n"))
 }
@@ -406,7 +406,8 @@ readConfigFile <- function( file=file.path(source_dir, "config.ini")) {
                                            , "filterMinNumPeptidesPerProtein"
                                            , "filterMinNumPeptidesPerSample"
                                            , "removePeptidesWithOnlyOneReplicate"
-                                           , "peptideMissingValueImputation")
+                                           , "peptideMissingValueImputation"
+                                           , "removeProteinsWithOnlyOneReplicate")
 
       setCoreUtilisation <- function(config_list, function_name) {
         if (!function_name %in% names(config_list)) {
@@ -505,6 +506,13 @@ readConfigFile <- function( file=file.path(source_dir, "config.ini")) {
                                            , "removeRowsWithMissingValuesPercent"
                                            , "proteins_intensity_cutoff_percentile")
 
+  }
+
+
+  if("ruvIII_C_Varying" %in% names(config_list)) {
+    config_list <- setConfigValueAsNumeric(config_list
+                                           , "ruvIII_C_Varying"
+                                           , "ruv_number_k")
   }
 
   if("plotRle" %in% names(config_list)) {
