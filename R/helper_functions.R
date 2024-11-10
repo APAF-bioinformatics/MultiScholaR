@@ -622,7 +622,7 @@ loadDependencies <- function(verbose = TRUE) {
         "tictoc", "beepr", "furrr", "readxl", "writexl", "RColorBrewer",
         "multidplyr", "RSpectra", "progress", "Rcpp", "RcppEigen",
         "qvalue", "Glimma", "ruv", "iq", "ggrepel", "patchwork",
-        "dplyr", "gtools", "shiny", "DT", "gh"
+        "dplyr", "gtools", "shiny", "DT", "gh",
         # Bioconductor packages
         "BiocManager",
         # GitHub packages
