@@ -585,7 +585,7 @@ readConfigFileSection <- function( theObject
 #' @importFrom pacman p_load
 #'
 #' @export
-load_dependencies <- function(verbose = TRUE) {
+loadDependencies <- function(verbose = TRUE) {
     # First ensure pacman is installed
     if (!requireNamespace("pacman", quietly = TRUE)) {
         if (verbose) message("Installing pacman...")
@@ -598,7 +598,7 @@ load_dependencies <- function(verbose = TRUE) {
         "tictoc", "beepr", "furrr", "readxl", "writexl", "RColorBrewer",
         "multidplyr", "RSpectra", "progress", "Rcpp", "RcppEigen",
         "qvalue", "Glimma", "ruv", "iq", "ggrepel", "patchwork",
-        "dplyr", "gtools", "shiny", "DT",
+        "dplyr", "gtools", "shiny", "DT", "gh"
         # Bioconductor packages
         "BiocManager",
         # GitHub packages
@@ -851,3 +851,123 @@ count_peptides_per_run <- function(data) {
 }
 
 ##################################################################################################################
+
+
+
+#' @import methods
+setClass("DirectoryManager",
+    slots = c(
+        base_dir = "character",
+        results_dir = "character",
+        data_dir = "character",
+        source_dir = "character",
+        de_output_dir = "character",
+        publication_graphs_dir = "character",
+        timestamp = "character",
+        qc_dir = "character",
+        time_dir = "character"
+    )
+)
+
+#' @title Setup Project Directories
+#' @description Creates and manages project directories with version control
+#' @param base_dir Base directory path (optional, defaults to here::here())
+#' @return DirectoryManager object containing all directory paths
+#' @export
+setupDirectories <- function(base_dir = here::here()) {
+    # Assign all directories to global environment
+    assign("base_dir", base_dir, envir = .GlobalEnv)
+    assign("results_dir", file.path(base_dir, "results", "proteomics"), envir = .GlobalEnv)
+    assign("data_dir", file.path(base_dir, "data"), envir = .GlobalEnv)
+    assign("source_dir", file.path(base_dir, "scripts", "proteomics"), envir = .GlobalEnv)
+    assign("de_output_dir", file.path(results_dir, "de_proteins"), envir = .GlobalEnv)
+    assign("publication_graphs_dir", file.path(results_dir, "publication_graphs"), envir = .GlobalEnv)
+    assign("timestamp", format(Sys.time(), "%Y%m%d_%H%M%S"), envir = .GlobalEnv)
+    assign("qc_dir", file.path(publication_graphs_dir, "filtering_qc"), envir = .GlobalEnv)
+    assign("time_dir", file.path(qc_dir, timestamp), envir = .GlobalEnv)
+    
+    # Directory management function with versioning
+    manage_directory_with_prev <- function(dir_path) {
+        if (dir.exists(dir_path)) {
+            prev_dir <- paste0(dir_path, "_prev")
+            if (dir.exists(prev_dir)) {
+                unlink(prev_dir, recursive = TRUE)
+            }
+            if (dir.exists(dir_path) && length(list.files(dir_path)) > 0) {
+                file.rename(dir_path, prev_dir)
+            }
+        }
+        if (!dir.exists(dir_path)) {
+            dir.create(dir_path, recursive = TRUE)
+        }
+    }
+    
+    # Simple directory creation without versioning
+    create_directory <- function(dir_path) {
+        dir.create(dir_path, recursive = TRUE, showWarnings = FALSE)
+    }
+    
+    # Create data and source directories (no versioning)
+    c(data_dir, source_dir) |> 
+        sapply(create_directory)
+    
+    # Create results directories (with versioning)
+    c(
+        results_dir,
+        de_output_dir,
+        publication_graphs_dir,
+        qc_dir,
+        time_dir,
+        file.path(results_dir, "clean_proteins"),
+        file.path(results_dir, "protein_qc"),
+        file.path(results_dir, "peptide_qc")
+    ) |> 
+        sapply(manage_directory_with_prev)
+    
+    # Still return the DirectoryManager object for compatibility
+    return(new("DirectoryManager",
+        base_dir = base_dir,
+        results_dir = results_dir,
+        data_dir = data_dir,
+        source_dir = source_dir,
+        de_output_dir = de_output_dir,
+        publication_graphs_dir = publication_graphs_dir,
+        timestamp = timestamp,
+        qc_dir = qc_dir,
+        time_dir = time_dir
+    ))
+}
+
+showDirectories <- function() {
+    # List of all directory variables we want to show
+    dir_vars <- c(
+        "base_dir", "results_dir", "data_dir", "source_dir", 
+        "de_output_dir", "publication_graphs_dir", 
+        "qc_dir", "time_dir"
+    )
+    
+    cat("Project Directory Structure:\n")
+    cat("===========================\n\n")
+    
+    for (var_name in dir_vars) {
+        # Get the path from global environment
+        dir_path <- get(var_name, envir = .GlobalEnv)
+        exists <- dir.exists(dir_path)
+        prev_path <- paste0(dir_path, "_prev")
+        has_prev <- dir.exists(prev_path)
+        
+        # Format the output
+        status <- if (exists) "✓" else "✗"
+        
+        cat(sprintf("%-25s [%s] %s\n", 
+            gsub("_dir$", "", var_name),  # Remove _dir suffix for display
+            status,
+            dir_path
+        ))
+        if (has_prev) {
+            cat(sprintf("%25s %s\n", "", prev_path))
+        }
+    }
+    
+    cat("\nLegend: ✓ = exists, ✗ = missing\n")
+}
