@@ -9,8 +9,8 @@ RunApplet <- function(applet_type) {
   # Handle different applet types
   if (applet_type == "designMatrix") {
     # Check for required objects
-    if (!exists("data_cln", envir = parent.frame())) {
-      stop("data_cln not found in the current environment")
+    if (!exists("data_tbl", envir = parent.frame())) {
+      stop("data_tbl not found in the current environment")
     }
     if (!exists("source_dir", envir = parent.frame())) {
       stop("source_dir not found in the current environment")
@@ -20,9 +20,14 @@ RunApplet <- function(applet_type) {
     }
     
     # Get required objects
-    data_cln <- get("data_cln", envir = parent.frame())
+    data_tbl <- get("data_tbl", envir = parent.frame())
     source_dir <- get("source_dir", envir = parent.frame())
     config_list <- get("config_list", envir = parent.frame())
+    
+    # Initialize data_cln with numeric conversions
+    data_cln <- data_tbl |>
+      mutate(Precursor.Normalised = as.numeric(Precursor.Normalised)) |>
+      mutate(Precursor.Quantity = as.numeric(Precursor.Quantity))
     
     # Initialize design matrix with factor column
     design_matrix_raw <- tibble(
@@ -36,14 +41,14 @@ RunApplet <- function(applet_type) {
     )
     
     # Create UI function
-        # Create UI function
     create_design_matrix_ui <- function(design_matrix_raw) {
-              sorted_runs <- gtools::mixedsort(design_matrix_raw$Run)
+      # Sort the Run names initially
+      sorted_runs <- gtools::mixedsort(design_matrix_raw$Run)
+      
       fluidPage(
         titlePanel("Design Matrix Builder"),
-
         
-# Main layout
+        # Main layout
         fluidRow(
           # Management tools in tabs on the left
           column(4,
@@ -54,7 +59,7 @@ RunApplet <- function(applet_type) {
                   h4("Individual Rename"),
                   fluidRow(
                     column(6, selectizeInput("sample_to_rename", "Select Sample:",
-                                       choices = sorted_runs)),  # Use sorted runs
+                                       choices = sorted_runs)),
                     column(6, textInput("new_sample_name", "New Name:"))
                   ),
                   actionButton("rename_sample", "Rename"),
@@ -63,7 +68,7 @@ RunApplet <- function(applet_type) {
                   
                   h4("Bulk Rename"),
                   selectizeInput("samples_to_transform", "Select Samples:",
-                            choices = sorted_runs,  # Use sorted runs
+                            choices = sorted_runs,
                             multiple = TRUE),
                   radioButtons("transform_mode", "Transformation Mode:",
                           choices = c(
@@ -97,7 +102,7 @@ RunApplet <- function(applet_type) {
                 tabPanel("Assign Metadata",
                   h4("Assign Metadata"),
                   selectizeInput("selected_runs", "Select Runs:",
-                            choices = design_matrix_raw$Run,
+                            choices = sorted_runs,
                             multiple = TRUE),
                   selectInput("group_select", "Select Group:", choices = c("")),
                   selectInput("factor_select", "Select Factor:", choices = c("")),
@@ -116,7 +121,8 @@ RunApplet <- function(applet_type) {
                 # Formula tab
                 tabPanel("Formula",
                   h4("Model Formula"),
-                  textInput("formula_string", "Formula:", value = "~0+group+factor")
+                  textInput("formula_string", "Formula:", 
+                          value = config_list[["deAnalysisParameters"]][["formula_string"]])
                 )
               )
             )
@@ -149,6 +155,7 @@ RunApplet <- function(applet_type) {
     server <- function(input, output, session) {
       # Reactive values
       design_matrix <- reactiveVal(design_matrix_raw)
+      data_cln_reactive <- reactiveVal(data_cln)
       
       # Initialize groups and factors
       initial_groups <- unique(design_matrix_raw$group)
@@ -189,13 +196,20 @@ RunApplet <- function(applet_type) {
       observeEvent(input$rename_sample, {
         req(input$sample_to_rename, input$new_sample_name)
         if(input$new_sample_name != "") {
+          # Update design matrix
           current_matrix <- design_matrix()
           current_matrix$Run[current_matrix$Run == input$sample_to_rename] <- input$new_sample_name
           design_matrix(current_matrix)
           
-          # Sort the runs when updating
+          # Update data_cln
+          current_data_cln <- data_cln_reactive()
+          current_data_cln$Run[current_data_cln$Run == input$sample_to_rename] <- input$new_sample_name
+          data_cln_reactive(current_data_cln)
+          
+          # Sort runs for UI updates
           sorted_runs <- gtools::mixedsort(current_matrix$Run)
           
+          # Update UI elements
           updateSelectizeInput(session, "sample_to_rename",
                              choices = sorted_runs)
           updateSelectizeInput(session, "selected_runs",
@@ -207,12 +221,14 @@ RunApplet <- function(applet_type) {
         }
       })
       
-            # Bulk rename handler
+      # Bulk rename handler
       observeEvent(input$bulk_rename, {
         req(input$samples_to_transform)
         current_matrix <- design_matrix()
+        current_data_cln <- data_cln_reactive()
         
-        new_names <- sapply(input$samples_to_transform, function(sample_name) {
+        # Create transformation function based on mode
+        transform_fn <- function(sample_name) {
           if(input$transform_mode == "range") {
             req(input$range_start, input$range_end)
             extract_experiment(sample_name, 
@@ -224,18 +240,25 @@ RunApplet <- function(applet_type) {
           } else if(input$transform_mode == "after_underscore") {
             extract_experiment(sample_name, mode = "end")
           }
-        })
-        
-        # Update the Run names
-        for(i in seq_along(input$samples_to_transform)) {
-          current_matrix$Run[current_matrix$Run == input$samples_to_transform[i]] <- new_names[i]
         }
         
-        # Update the design matrix
-        design_matrix(current_matrix)
+        # Apply transformations
+        new_names <- sapply(input$samples_to_transform, transform_fn)
         
-        # Sort and update all dropdowns
+        # Update both matrices
+        for(i in seq_along(input$samples_to_transform)) {
+          current_matrix$Run[current_matrix$Run == input$samples_to_transform[i]] <- new_names[i]
+          current_data_cln$Run[current_data_cln$Run == input$samples_to_transform[i]] <- new_names[i]
+        }
+        
+        # Update reactive values
+        design_matrix(current_matrix)
+        data_cln_reactive(current_data_cln)
+        
+        # Sort runs for UI updates
         sorted_runs <- gtools::mixedsort(current_matrix$Run)
+        
+        # Update UI elements
         updateSelectizeInput(session, "sample_to_rename",
                            choices = sorted_runs)
         updateSelectizeInput(session, "selected_runs",
@@ -349,13 +372,17 @@ RunApplet <- function(applet_type) {
         }
       })
       
+
       # Save and close handler
       observeEvent(input$save_and_close, {
         design_matrix_final <- design_matrix()
-        assign("design_matrix", design_matrix_final, envir = parent.frame())
+        data_cln_final <- data_cln_reactive()
         
-        # Save formula to config list
-        config_list$modelFormula$formula_string <- input$formula_string
+        assign("design_matrix", design_matrix_final, envir = parent.frame())
+        assign("data_cln", data_cln_final, envir = parent.frame())
+        
+        # Save formula to correct nested path in config list
+        config_list[["deAnalysisParameters"]][["formula_string"]] <- input$formula_string
         assign("config_list", config_list, envir = parent.frame())
         
         contrast_data <- contrasts()
@@ -384,7 +411,8 @@ RunApplet <- function(applet_type) {
         stopApp(list(
           design_matrix = design_matrix_final,
           contrasts_tbl = if(exists("contrasts_tbl")) contrasts_tbl else NULL,
-          config_list = config_list
+          config_list = config_list,
+          data_cln = data_cln_final
         ))
       })
     }
@@ -405,6 +433,7 @@ RunApplet <- function(applet_type) {
         assign("contrasts_tbl", result$contrasts_tbl, envir = parent.frame())
       }
       assign("config_list", result$config_list, envir = parent.frame())
+      assign("data_cln", result$data_cln, envir = parent.frame())
     }
     invisible(result)
     
