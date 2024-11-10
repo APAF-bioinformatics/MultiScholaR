@@ -392,7 +392,7 @@ summarizeQCPlot <- function(qc_figure) {
             }
 }
 
-
+##################################################################################################################
 #' @export
 #' @description Read the config file and return the list of parameters
 #' @param file The file path to the config file
@@ -524,8 +524,32 @@ readConfigFile <- function( file=file.path(source_dir, "config.ini")) {
                  , paste0(config_list[["plotRle"]][["yaxis_limit"]], collapse=", ")))
   }
 
+   if("deAnalysisParameters" %in% names(config_list)) {
+    # Handle plots_format as array
+    config_list[["deAnalysisParameters"]][["plots_format"]] <- 
+      str_split(config_list[["deAnalysisParameters"]][["plots_format"]], ",")[[1]]
+    
+    # Convert numeric parameters
+    config_list <- setConfigValueAsNumeric(config_list, 
+                                         "deAnalysisParameters", 
+                                         "treat_lfc_cutoff")
+    config_list <- setConfigValueAsNumeric(config_list, 
+                                         "deAnalysisParameters", 
+                                         "de_q_val_thresh")
+    
+    # Convert boolean parameters
+    config_list[["deAnalysisParameters"]][["eBayes_trend"]] <- 
+      tolower(config_list[["deAnalysisParameters"]][["eBayes_trend"]]) == "true"
+    config_list[["deAnalysisParameters"]][["eBayes_robust"]] <- 
+      tolower(config_list[["deAnalysisParameters"]][["eBayes_robust"]]) == "true"
+    
+    print(paste0("Read deAnalysisParameters: formula_string = ", 
+                config_list[["deAnalysisParameters"]][["formula_string"]]))
+  }
+
   config_list
 }
+
 
 
 
@@ -575,10 +599,10 @@ readConfigFileSection <- function( theObject
 #' @examples
 #' \dontrun{
 #' # Load with default verbose messaging
-#' load_dependencies()
+#' loadDependencies()
 #'
 #' # Load silently
-#' load_dependencies(verbose = FALSE)
+#' loadDependencies(verbose = FALSE)
 #' }
 #'
 #' @importFrom devtools install_github
@@ -887,7 +911,7 @@ setupDirectories <- function(base_dir = here::here()) {
     assign("time_dir", file.path(qc_dir, timestamp), envir = .GlobalEnv)
     
     # Directory management function with versioning
-    manage_directory_with_prev <- function(dir_path) {
+    manageDirectoryWithPrev <- function(dir_path) {
         if (dir.exists(dir_path)) {
             prev_dir <- paste0(dir_path, "_prev")
             if (dir.exists(prev_dir)) {
@@ -903,13 +927,13 @@ setupDirectories <- function(base_dir = here::here()) {
     }
     
     # Simple directory creation without versioning
-    create_directory <- function(dir_path) {
+    createDirectory <- function(dir_path) {
         dir.create(dir_path, recursive = TRUE, showWarnings = FALSE)
     }
     
     # Create data and source directories (no versioning)
     c(data_dir, source_dir) |> 
-        sapply(create_directory)
+        sapply(createDirectory)
     
     # Create results directories (with versioning)
     c(
@@ -922,7 +946,7 @@ setupDirectories <- function(base_dir = here::here()) {
         file.path(results_dir, "protein_qc"),
         file.path(results_dir, "peptide_qc")
     ) |> 
-        sapply(manage_directory_with_prev)
+        sapply(manageDirectoryWithPrev)
     
     # Still return the DirectoryManager object for compatibility
     return(new("DirectoryManager",
@@ -971,3 +995,114 @@ showDirectories <- function() {
     
     cat("\nLegend: ✓ = exists, ✗ = missing\n")
 }
+
+##################################################################################################################
+#' @import methods
+setClass("WorkflowArgs",
+    slots = c(
+        workflow_name = "character",
+        timestamp = "character",
+        args = "list",
+        description = "character",
+        git_info = "list"
+    )
+)
+
+#' @title Create Workflow Arguments Container from Config
+#' @param workflow_name Name of the workflow
+#' @param description Optional description of the workflow
+#' @return WorkflowArgs object
+#' @export
+createWorkflowArgsFromConfig <- function(workflow_name, description = "") {
+  
+    # Get git information
+    branch_info <- gh("/repos/APAF-BIOINFORMATICS/ProteomeScholaR/branches/dev-jr")
+    git_info <- list(
+        commit_sha = branch_info$commit$sha,
+        branch = "dev-jr",
+        repo = "ProteomeScholaR",
+        timestamp = branch_info$commit$commit$author$date
+    )
+    
+    new("WorkflowArgs",
+        workflow_name = workflow_name,
+        timestamp = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
+        args = config_list,  # Make sure config_list is defined somewhere
+        description = description,
+        git_info = git_info
+    )
+}
+
+#' @title Format Configuration List
+#' @param config_list List of configuration parameters
+#' @param indent Number of spaces for indentation
+formatConfigList <- function(config_list, indent = 0) {
+    output <- character()
+    
+    for (name in names(config_list)) {
+        value <- config_list[[name]]
+        # Skip core_utilisation and complex objects
+        if (name == "core_utilisation" || 
+            any(class(value) %in% c("process", "R6", "multidplyr_cluster"))) {
+            next
+        }
+        
+        # Format the name
+        name_formatted <- gsub("\\.", " ", name)
+        name_formatted <- gsub("_", " ", name_formatted)
+        name_formatted <- tools::toTitleCase(name_formatted)
+        
+        # Handle different value types
+        if (is.list(value)) {
+            output <- c(output, 
+                paste0(paste(rep(" ", indent), collapse = ""), 
+                      name_formatted, ":"))
+            output <- c(output, 
+                formatConfigList(value, indent + 2))
+        } else {
+            output <- c(output,
+                paste0(paste(rep(" ", indent), collapse = ""),
+                      name_formatted, ": ", value))
+        }
+    }
+    return(output)
+}
+
+setMethod("show",
+    "WorkflowArgs",
+    function(object) {
+        # Basic info
+        header <- c(
+            "Study Parameters",
+            "================",
+            "",
+            "Basic Information:",
+            "-----------------",
+            paste("Workflow Name:", object@workflow_name),
+            paste("Description:", object@description),
+            paste("Timestamp:", object@timestamp),
+            "",
+            "Git Information:",
+            "---------------",
+            paste("Repository:", object@git_info$repo),
+            paste("Branch:", object@git_info$branch),
+            paste("Commit:", object@git_info$commit_sha),
+            paste("Git Timestamp:", object@git_info$timestamp),
+            "",
+            "Configuration Parameters:",
+            "------------------------"
+        )
+        
+        # Format configuration parameters
+        params <- formatConfigList(object@args)
+        
+        # Combine and print
+        output <- c(header, params)
+        cat(paste(output, collapse = "\n"), "\n")
+        
+        # Save to file
+        output_file <- file.path(source_dir, "study_parameters.txt")
+        writeLines(output, output_file)
+        cat("\nParameters saved to:", output_file, "\n")
+    }
+)
