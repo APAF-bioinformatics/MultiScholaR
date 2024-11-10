@@ -529,10 +529,14 @@ readConfigFile <- function( file=file.path(source_dir, "config.ini")) {
     config_list[["deAnalysisParameters"]][["plots_format"]] <- 
       str_split(config_list[["deAnalysisParameters"]][["plots_format"]], ",")[[1]]
     
+    # Add new lfc_cutoff parameter
+    config_list[["deAnalysisParameters"]][["lfc_cutoff"]] <- FALSE
+    
+    # Modify treat_lfc_cutoff to use ifelse
+    config_list[["deAnalysisParameters"]][["treat_lfc_cutoff"]] <- 
+      ifelse(config_list[["deAnalysisParameters"]][["lfc_cutoff"]], log2(1.5), 0)
+    
     # Convert numeric parameters
-    config_list <- setConfigValueAsNumeric(config_list, 
-                                         "deAnalysisParameters", 
-                                         "treat_lfc_cutoff")
     config_list <- setConfigValueAsNumeric(config_list, 
                                          "deAnalysisParameters", 
                                          "de_q_val_thresh")
@@ -545,7 +549,7 @@ readConfigFile <- function( file=file.path(source_dir, "config.ini")) {
     
     print(paste0("Read deAnalysisParameters: formula_string = ", 
                 config_list[["deAnalysisParameters"]][["formula_string"]]))
-  }
+}
 
   config_list
 }
