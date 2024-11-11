@@ -707,32 +707,39 @@ extract_experiment <- function(x, mode = "range", start = 1, end = NULL) {
   sapply(x, process_string)
 }
 
-##################################################################################################################
-
-#' Count unique proteins in peptide data
+#' Count unique proteins in peptide or protein data
 #' 
 #' @description
-#' Calculates the number of unique proteins in a peptide dataset. Works with both
-#' data frames and S4 objects containing peptide data.
+#' Calculates the number of unique proteins in a dataset. Works with data frames,
+#' S4 objects containing peptide data, and protein quantification tables.
 #' 
-#' @param data A data frame or S4 object containing peptide data. If an S4 object
-#'   is provided, it must have a 'peptide_data' slot.
+#' @param data A data frame or S4 object containing protein/peptide data. If an S4 object
+#'   is provided, it must have either a 'peptide_data' slot or 'protein_quant_table' slot.
 #' 
 #' @return An integer representing the count of unique proteins.
 #' 
 #' @examples
 #' \dontrun{
 #' # With a data frame
-#' protein_count <- count_unique_proteins(peptide_df)
+#' protein_count <- countUniqueProteins(peptide_df)
 #' 
-#' # With an S4 object
-#' protein_count <- count_unique_proteins(peptide_object)
+#' # With an S4 object containing peptide data
+#' protein_count <- countUniqueProteins(peptide_object)
+#' 
+#' # With protein quantification data
+#' protein_count <- countUniqueProteins(protein_quant_object)
 #' }
 #' 
 #' @export
-count_unique_proteins <- function(data) {
-  if (isS4(data) && "peptide_data" %in% slotNames(data)) {
-    data <- data@peptide_data
+countUniqueProteins <- function(data) {
+  if (isS4(data)) {
+    if ("peptide_data" %in% slotNames(data)) {
+      data <- data@peptide_data
+    } else if ("protein_quant_table" %in% slotNames(data)) {
+      return(data@protein_quant_table |> 
+             distinct(Protein) |> 
+             nrow())
+    }
   }
   
   data |> 
@@ -740,32 +747,39 @@ count_unique_proteins <- function(data) {
     nrow()
 }
 
-
-##################################################################################################################
 #' Calculate total unique peptides
 #' 
 #' @description
 #' Calculates the total number of unique peptides across all proteins in the dataset.
-#' Works with both data frames and S4 objects containing peptide data.
+#' Works with both data frames and S4 objects containing peptide data. Returns NA
+#' for protein quantification table data.
 #' 
 #' @param data A data frame or S4 object containing peptide data. If an S4 object
-#'   is provided, it must have a 'peptide_data' slot.
+#'   is provided, it must have a 'peptide_data' slot or 'protein_quant_table' slot.
 #' 
-#' @return An integer representing the count of unique peptides.
+#' @return An integer representing the count of unique peptides, or NA if using
+#'   protein quantification data.
 #' 
 #' @examples
 #' \dontrun{
 #' # With a data frame
-#' peptide_count <- calc_total_peptides(peptide_df)
+#' peptide_count <- calcTotalPeptides(peptide_df)
 #' 
-#' # With an S4 object
-#' peptide_count <- calc_total_peptides(peptide_object)
+#' # With an S4 object containing peptide data
+#' peptide_count <- calcTotalPeptides(peptide_object)
+#' 
+#' # With protein quantification data (returns NA)
+#' peptide_count <- calcTotalPeptides(protein_quant_object)
 #' }
 #' 
 #' @export
-calc_total_peptides <- function(data) {
-  if (isS4(data) && "peptide_data" %in% slotNames(data)) {
-    data <- data@peptide_data
+calcTotalPeptides <- function(data) {
+  if (isS4(data)) {
+    if ("protein_quant_table" %in% slotNames(data)) {
+      return(NA_integer_)
+    } else if ("peptide_data" %in% slotNames(data)) {
+      data <- data@peptide_data
+    }
   }
   
   data |>
@@ -773,34 +787,41 @@ calc_total_peptides <- function(data) {
     nrow()
 }
 
-
-##################################################################################################################
 #' Calculate peptides per protein
 #' 
 #' @description
 #' Calculates the number of unique peptides associated with each protein in the dataset.
-#' Works with both data frames and S4 objects containing peptide data.
+#' Works with both data frames and S4 objects containing peptide data. Returns empty
+#' dataframe for protein quantification table data.
 #' 
 #' @param data A data frame or S4 object containing peptide data. If an S4 object
-#'   is provided, it must have a 'peptide_data' slot.
+#'   is provided, it must have a 'peptide_data' slot or 'protein_quant_table' slot.
 #' 
 #' @return A data frame with columns:
 #'   \item{Protein.Ids}{Character. Protein identifiers}
 #'   \item{n_peptides}{Integer. Number of unique peptides for each protein}
+#'   Returns empty dataframe if using protein quantification data.
 #' 
 #' @examples
 #' \dontrun{
 #' # With a data frame
-#' peptides_per_protein <- calc_peptides_per_protein(peptide_df)
+#' peptides_per_protein <- calcPeptidesPerProtein(peptide_df)
 #' 
-#' # With an S4 object
-#' peptides_per_protein <- calc_peptides_per_protein(peptide_object)
+#' # With an S4 object containing peptide data
+#' peptides_per_protein <- calcPeptidesPerProtein(peptide_object)
+#' 
+#' # With protein quantification data (returns empty dataframe)
+#' peptides_per_protein <- calcPeptidesPerProtein(protein_quant_object)
 #' }
 #' 
 #' @export
-calc_peptides_per_protein <- function(data) {
-  if (isS4(data) && "peptide_data" %in% slotNames(data)) {
-    data <- data@peptide_data
+calcPeptidesPerProtein <- function(data) {
+  if (isS4(data)) {
+    if ("protein_quant_table" %in% slotNames(data)) {
+      return(data.frame(Protein.Ids = character(), n_peptides = integer()))
+    } else if ("peptide_data" %in% slotNames(data)) {
+      data <- data@peptide_data
+    }
   }
   
   data |>
@@ -808,16 +829,15 @@ calc_peptides_per_protein <- function(data) {
     summarise(n_peptides = n_distinct(Stripped.Sequence), .groups = "drop")
 }
 
-
-##################################################################################################################
 #' Count proteins per run
 #' 
 #' @description
 #' Calculates the number of unique proteins identified in each experimental run.
-#' Works with both data frames and S4 objects containing peptide data.
+#' Works with data frames, S4 objects containing peptide data, and protein
+#' quantification tables.
 #' 
-#' @param data A data frame or S4 object containing peptide data. If an S4 object
-#'   is provided, it must have a 'peptide_data' slot.
+#' @param data A data frame or S4 object containing protein/peptide data. If an S4 object
+#'   is provided, it must have either a 'peptide_data' slot or 'protein_quant_table' slot.
 #' 
 #' @return A data frame with columns:
 #'   \item{Run}{Character or factor. Run identifier}
@@ -826,16 +846,26 @@ calc_peptides_per_protein <- function(data) {
 #' @examples
 #' \dontrun{
 #' # With a data frame
-#' proteins_per_run <- count_proteins_per_run(peptide_df)
+#' proteins_per_run <- countProteinsPerRun(peptide_df)
 #' 
-#' # With an S4 object
-#' proteins_per_run <- count_proteins_per_run(peptide_object)
+#' # With an S4 object containing peptide data
+#' proteins_per_run <- countProteinsPerRun(peptide_object)
+#' 
+#' # With protein quantification data
+#' proteins_per_run <- countProteinsPerRun(protein_quant_object)
 #' }
 #' 
 #' @export
-count_proteins_per_run <- function(data) {
-  if (isS4(data) && "peptide_data" %in% slotNames(data)) {
-    data <- data@peptide_data
+countProteinsPerRun <- function(data) {
+  if (isS4(data)) {
+    if ("peptide_data" %in% slotNames(data)) {
+      data <- data@peptide_data
+    } else if ("protein_quant_table" %in% slotNames(data)) {
+      return(data@protein_quant_table |>
+             group_by(Run) |>
+             summarise(n_proteins = n_distinct(Protein), .groups = "drop") |>
+             arrange(Run))
+    }
   }
   
   data |>
@@ -848,28 +878,37 @@ count_proteins_per_run <- function(data) {
 #' 
 #' @description
 #' Calculates the number of unique peptides identified in each experimental run.
-#' Works with both data frames and S4 objects containing peptide data.
+#' Works with both data frames and S4 objects containing peptide data. Returns empty
+#' dataframe for protein quantification table data.
 #' 
 #' @param data A data frame or S4 object containing peptide data. If an S4 object
-#'   is provided, it must have a 'peptide_data' slot.
+#'   is provided, it must have a 'peptide_data' slot or 'protein_quant_table' slot.
 #' 
 #' @return A data frame with columns:
 #'   \item{Run}{Character or factor. Run identifier}
 #'   \item{n_peptides}{Integer. Number of unique peptides in each run}
+#'   Returns empty dataframe if using protein quantification data.
 #' 
 #' @examples
 #' \dontrun{
 #' # With a data frame
-#' peptides_per_run <- count_peptides_per_run(peptide_df)
+#' peptides_per_run <- countPeptidesPerRun(peptide_df)
 #' 
-#' # With an S4 object
-#' peptides_per_run <- count_peptides_per_run(peptide_object)
+#' # With an S4 object containing peptide data
+#' peptides_per_run <- countPeptidesPerRun(peptide_object)
+#' 
+#' # With protein quantification data (returns empty dataframe)
+#' peptides_per_run <- countPeptidesPerRun(protein_quant_object)
 #' }
 #' 
 #' @export
-count_peptides_per_run <- function(data) {
-  if (isS4(data) && "peptide_data" %in% slotNames(data)) {
-    data <- data@peptide_data
+countPeptidesPerRun <- function(data) {
+  if (isS4(data)) {
+    if ("protein_quant_table" %in% slotNames(data)) {
+      return(data.frame(Run = character(), n_peptides = integer()))
+    } else if ("peptide_data" %in% slotNames(data)) {
+      data <- data@peptide_data
+    }
   }
   
   data |>
@@ -877,8 +916,6 @@ count_peptides_per_run <- function(data) {
     summarise(n_peptides = n_distinct(Stripped.Sequence), .groups = "drop") |>
     arrange(Run)
 }
-
-##################################################################################################################
 
 
 

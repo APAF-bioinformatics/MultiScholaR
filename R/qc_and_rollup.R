@@ -2364,11 +2364,11 @@ updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NUL
   filtering_progress <- get("filtering_progress", envir = .GlobalEnv)
   
   # Calculate all metrics
-  protein_count <- count_unique_proteins(data)
-  total_peptides <- calc_total_peptides(data)
-  peptides_per_protein <- calc_peptides_per_protein(data)
-  proteins_per_run <- count_proteins_per_run(data)
-  peptides_per_run <- count_peptides_per_run(data)
+  protein_count <- countUniqueProteins(data)
+  total_peptides <- calcTotalPeptides(data)
+  peptides_per_protein <- calcPeptidesPerProtein(data)
+  proteins_per_run <- countProteinsPerRun(data)
+  peptides_per_run <- countPeptidesPerRun(data)
   
   if (step_name %in% filtering_progress@steps) {
     if (!overwrite) {
