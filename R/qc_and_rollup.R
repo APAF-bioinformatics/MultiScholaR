@@ -2766,10 +2766,10 @@ updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NUL
         peptides_per_run = p5
     )
     
-    # Save plots if directory is specified
+       # Save plots if directory is specified
     if (!is.null(publication_graphs_dir)) {
         for (plot_name in names(plot_list)) {
-            filename <- file.path(publication_graphs_dir, 
+            filename <- file.path(time_dir, 
                                 sprintf("%s_%s.png", step_name, plot_name))
             ggsave(filename, 
                    plot = plot_list[[plot_name]], 
@@ -2803,9 +2803,9 @@ updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NUL
             )
         }
         
-        # Save the grid if directory is specified
+       # Save the grid if directory is specified
         if (!is.null(publication_graphs_dir)) {
-            filename <- file.path(publication_graphs_dir, 
+            filename <- file.path(time_dir, 
                                 sprintf("%s_combined_plots.png", step_name))
             ggsave(filename, 
                    plot = grid_plot, 
