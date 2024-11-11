@@ -719,7 +719,8 @@ setClass("DirectoryManager",
         publication_graphs_dir = "character",
         timestamp = "character",
         qc_dir = "character",
-        time_dir = "character"
+        time_dir = "character",
+        results_summary_dir = "character"
     )
 )
 
@@ -739,6 +740,7 @@ setupDirectories <- function(base_dir = here::here()) {
     assign("timestamp", format(Sys.time(), "%Y%m%d_%H%M%S"), envir = .GlobalEnv)
     assign("qc_dir", file.path(publication_graphs_dir, "filtering_qc"), envir = .GlobalEnv)
     assign("time_dir", file.path(qc_dir, timestamp), envir = .GlobalEnv)
+    assign("results_summary_dir", file.path(base_dir, "results_summary", "proteomics"), envir = .GlobalEnv)
     
     # Directory management function with versioning
     manageDirectoryWithPrev <- function(dir_path) {
@@ -772,13 +774,14 @@ setupDirectories <- function(base_dir = here::here()) {
         publication_graphs_dir,
         qc_dir,
         time_dir,
+        results_summary_dir,
         file.path(results_dir, "clean_proteins"),
         file.path(results_dir, "protein_qc"),
         file.path(results_dir, "peptide_qc")
     ) |> 
         sapply(manageDirectoryWithPrev)
     
-    # Still return the DirectoryManager object for compatibility
+    # Return the DirectoryManager object
     return(new("DirectoryManager",
         base_dir = base_dir,
         results_dir = results_dir,
@@ -788,7 +791,8 @@ setupDirectories <- function(base_dir = here::here()) {
         publication_graphs_dir = publication_graphs_dir,
         timestamp = timestamp,
         qc_dir = qc_dir,
-        time_dir = time_dir
+        time_dir = time_dir,
+        results_summary_dir = results_summary_dir
     ))
 }
 
@@ -797,7 +801,7 @@ showDirectories <- function() {
     dir_vars <- c(
         "base_dir", "results_dir", "data_dir", "source_dir", 
         "de_output_dir", "publication_graphs_dir", 
-        "qc_dir", "time_dir"
+        "qc_dir", "time_dir", "results_summary_dir"
     )
     
     cat("Project Directory Structure:\n")
