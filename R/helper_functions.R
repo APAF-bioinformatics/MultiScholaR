@@ -935,14 +935,30 @@ setMethod("show",
         
         # Format configuration parameters
         params <- formatConfigList(object@args)
+
+        # Add contrasts information if it exists
+        if (!is.null(object@args$contrasts_tbl)) {
+            contrasts_header <- c(
+                "",
+                "Contrasts:",
+                "----------"
+            )
+            contrasts_info <- apply(object@args$contrasts_tbl, 1, function(row) {
+                paste("  ", row["contrasts"])
+            })
+            output <- c(header, params, contrasts_header, contrasts_info)
+        } else {
+            output <- c(header, params)
+        }
         
         # Combine and print
-        output <- c(header, params)
         cat(paste(output, collapse = "\n"), "\n")
         
-        # Save to file
-        output_file <- file.path(source_dir, "study_parameters.txt")
-        writeLines(output, output_file)
-        cat("\nParameters saved to:", output_file, "\n")
+        # Save to file if source_dir is defined
+        if (exists("source_dir")) {
+            output_file <- file.path(source_dir, "study_parameters.txt")
+            writeLines(output, output_file)
+            cat("\nParameters saved to:", output_file, "\n")
+        }
     }
 )
