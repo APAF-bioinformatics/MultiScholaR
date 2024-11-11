@@ -515,21 +515,21 @@ processFastaFile_deprecated <- function(fasta_file_path, uniprot_search_results,
 #'@export
 
 updateProteinIDs <- function(protein_data, aa_seq_tbl_final) {
-  # Generic NCBI protein ID patterns
+  # Generic NCBI protein ID patterns - escaped special characters
   ncbi_patterns <- c(
-    "WP_\\d+\\.?\\d*",                    # WP_123456789.1
-    "[A-Z]{2}_\\d+\\.?\\d*",             # NP_123456.1, XP_123456.1
-    "[A-Z]{3}\\d+\\.?\\d*",              # ABC12345.1
-    "\\w+\\.\\d_prot_\\w+_\\d+"          # Assembly specific patterns like NZ_LR130543.1_prot_ABC_123
+    "WP_\\d+\\.?\\d*",                     # WP_123456789.1
+    "[A-Z]{2}_\\d+\\.?\\d*",              # NP_123456.1, XP_123456.1
+    "[A-Z]{3}\\d+\\.?\\d*",               # ABC12345.1
+    "\\w+\\.\\d+_prot_\\w+_\\d+"          # Assembly specific patterns like NZ_LR130543.1_prot_ABC_123
   )
   
-  pattern <- paste(ncbi_patterns, collapse = "|")
+  pattern <- paste0("(", paste(ncbi_patterns, collapse = "|"), ")")
   
   protein_data <- protein_data |>
-    dplyr::mutate(matching_id = str_extract(Protein.Ids, pattern))
+    dplyr::mutate(matching_id = stringr::str_extract(Protein.Ids, pattern))
   
   lookup_table <- aa_seq_tbl_final |>
-    dplyr::mutate(matching_id = str_extract(accession, pattern)) |>
+    dplyr::mutate(matching_id = stringr::str_extract(accession, pattern)) |>
     dplyr::select(matching_id, database_id, ncbi_refseq)
 
   updated_protein_data <- protein_data |>

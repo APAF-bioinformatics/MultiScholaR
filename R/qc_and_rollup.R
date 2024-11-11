@@ -2351,7 +2351,7 @@ filtering_progress <- new("FilteringProgress",
 #' }
 #' 
 #' @export
-update_protein_filtering <- function(data, step_name, publication_graphs_dir = NULL, overwrite = FALSE, return_grid = FALSE) {
+updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NULL, overwrite = FALSE, return_grid = FALSE) {
 
     # Initialize filtering_progress if it doesn't exist in the global environment
   if (!exists("filtering_progress", envir = .GlobalEnv)) {
@@ -2461,39 +2461,51 @@ update_protein_filtering <- function(data, step_name, publication_graphs_dir = N
     colorRampPalette(c(base_color, "black"))(n)
   }
   
-  p4 <- ggplot(data = bind_rows(filtering_progress@proteins_per_run, .id = "step") |>
-                 mutate(step = filtering_progress@steps[as.numeric(step)]),
-               aes(x = Run, y = n_proteins, fill = factor(step, levels = rev(filtering_progress@steps)))) +
-    geom_bar(stat = "identity", position = position_dodge2(reverse = TRUE)) +
+  # Modify p4 to be a line plot with runs ordered by protein count
+  p4 <- bind_rows(filtering_progress@proteins_per_run, .id = "step") |>
+    mutate(step = filtering_progress@steps[as.numeric(step)]) |>
+    group_by(Run) |>
+    mutate(avg_proteins = mean(n_proteins)) |>
+    ungroup() |>
+    mutate(Run = fct_reorder(Run, avg_proteins)) |>
+    ggplot(aes(x = Run, y = n_proteins, group = step, color = factor(step, levels = filtering_progress@steps))) +
+    geom_line() +
+    geom_point() +
     labs(
       title = "Proteins per Run",
-      x = "Run ID",
+      x = "Run ID (ordered by average protein count)",
       y = "Number of Proteins",
-      fill = "Step"
+      color = "Step"
     ) +
     theme_minimal() +
     theme(
       axis.text.x = element_text(angle = 45, hjust = 1),
       panel.grid.major.x = element_blank()
     ) +
-    scale_fill_manual(values = get_color_palette(length(filtering_progress@steps), "steelblue"))
-  
-  p5 <- ggplot(data = bind_rows(filtering_progress@peptides_per_run, .id = "step") |>
-                 mutate(step = filtering_progress@steps[as.numeric(step)]),
-               aes(x = Run, y = n_peptides, fill = factor(step, levels = rev(filtering_progress@steps)))) +
-    geom_bar(stat = "identity", position = position_dodge2(reverse = TRUE)) +
+    scale_color_manual(values = get_color_palette(length(filtering_progress@steps), "steelblue"))
+
+  # Modify p5 to be a line plot with runs ordered by peptide count
+  p5 <- bind_rows(filtering_progress@peptides_per_run, .id = "step") |>
+    mutate(step = filtering_progress@steps[as.numeric(step)]) |>
+    group_by(Run) |>
+    mutate(avg_peptides = mean(n_peptides)) |>
+    ungroup() |>
+    mutate(Run = fct_reorder(Run, avg_peptides)) |>
+    ggplot(aes(x = Run, y = n_peptides, group = step, color = factor(step, levels = filtering_progress@steps))) +
+    geom_line() +
+    geom_point() +
     labs(
       title = "Peptides per Run",
-      x = "Run ID",
+      x = "Run ID (ordered by average peptide count)",
       y = "Number of Peptides",
-      fill = "Step"
+      color = "Step"
     ) +
     theme_minimal() +
     theme(
       axis.text.x = element_text(angle = 45, hjust = 1),
       panel.grid.major.x = element_blank()
     ) +
-    scale_fill_manual(values = get_color_palette(length(filtering_progress@steps), "forestgreen"))
+    scale_color_manual(values = get_color_palette(length(filtering_progress@steps), "forestgreen"))
   
   # Create list of plots
   plot_list <- list(
@@ -2504,7 +2516,7 @@ update_protein_filtering <- function(data, step_name, publication_graphs_dir = N
     peptides_per_run = p5
   )
   
- # Save plots if directory is specified
+  # Save plots if directory is specified
   if (!is.null(publication_graphs_dir)) {
     # Save individual plots
     for (plot_name in names(plot_list)) {
@@ -2516,34 +2528,34 @@ update_protein_filtering <- function(data, step_name, publication_graphs_dir = N
              height = 8, 
              dpi = 300)
     }
+  }
+  
+  # Return/display plots based on return_grid parameter
+  if(return_grid) {
+    # Create three separate grids
+    grid1 <- gridExtra::arrangeGrob(p1, p2, p3, ncol = 3)
+    grid2 <- gridExtra::arrangeGrob(p4, ncol = 1)
+    grid3 <- gridExtra::arrangeGrob(p5, ncol = 1)
     
-    # Save grid plot if requested
-    if (return_grid) {
-      # Create the grid
-      grid_plot <- gridExtra::grid.arrange(
-        gridExtra::arrangeGrob(p1, p2, p3, ncol = 3),
-        gridExtra::arrangeGrob(p4, p5, ncol = 2),
-        heights = c(1, 1)
-      )
-      
-      # Save the grid
+    # Combine all grids vertically
+    grid_plot <- gridExtra::grid.arrange(
+      grid1,
+      grid2,
+      grid3,
+      heights = c(1, 1, 1)
+    )
+    
+    # Save the grid if directory is specified
+    if (!is.null(publication_graphs_dir)) {
       filename <- file.path(time_dir, 
                           sprintf("%s_combined_plots.png", step_name))
       ggsave(filename, 
              plot = grid_plot, 
              width = 15, 
-             height = 12, 
+             height = 18,  # Increased height to accommodate three grids
              dpi = 300)
     }
-  }
-  
-  # Return/display plots as before
-  if(return_grid) {
-    grid_plot <- gridExtra::grid.arrange(
-      gridExtra::arrangeGrob(p1, p2, p3, ncol = 3),
-      gridExtra::arrangeGrob(p4, p5, ncol = 2),
-      heights = c(1, 1)
-    )
+    
     return(grid_plot)
   } else {
     # Print each plot individually
