@@ -536,10 +536,11 @@ readConfigFile <- function( file=file.path(source_dir, "config.ini")) {
     config_list[["deAnalysisParameters"]][["treat_lfc_cutoff"]] <- 
       ifelse(config_list[["deAnalysisParameters"]][["lfc_cutoff"]], log2(1.5), 0)
     
-    # Handle args_group_pattern - remove extra quotes and preserve backslashes
+    # Handle args_group_pattern - remove extra quotes and fix double escaping
     if("args_group_pattern" %in% names(config_list[["deAnalysisParameters"]])) {
       config_list[["deAnalysisParameters"]][["args_group_pattern"]] <- 
-        gsub('^"|"$', '', config_list[["deAnalysisParameters"]][["args_group_pattern"]])
+        gsub('^"|"$', '', config_list[["deAnalysisParameters"]][["args_group_pattern"]]) |>
+        gsub(pattern = "\\\\", replacement = "\\")
     }
     
     # Convert numeric parameters
