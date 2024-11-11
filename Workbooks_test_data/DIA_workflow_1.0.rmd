@@ -20,42 +20,31 @@ author: Your fancy self
 output: html_document
 ---
 
-
 ## Dependency, Directory, Hardware Management & Orgnamism Annotation
 #### Set and create directories for outputs and project management, set number of cores for threaded tasks
-##### IT IS HIGHLY RECOMMENDED YOU DO NOT EDIT THIS SECTION UNLESS YOU PLAN TO CHANGE THE PROJECT STRUCTURE THROUGHOUT #####
+
 ```{r Environment Management}
+devtools::install_github("APAF-BIOINFORMATICS/ProteomeScholaR", ref = "dev-jr")
+library(ProteomeScholaR)
 # Dependency Management
 ## Load required packages
 ## Checks your R environment for the required packages to run ProteomeScholaR, and installs them if they are not.
 ## Please note that you will require a Github account in order to install the ProteomeScholaR package.
 ## Github account creation is free, and is a very useful tool for learning to code and also to engage with the wider coding community.
-load_dependencies()
+loadDependencies()
+
+# Hardware Management
+## Change this if you have large experiments and need more compute, or are running a toaster and don't have many cores to work with :)
+#core_utilisation <- new_cluster(4)
+#cluster_library(core_utilisation, c("tidyverse", "glue", "rlang", "lazyeval"))
+
 
 # Directory Management
 ## Set up the project directory structure
 ## This section sets up the project directory structure for ProteomeScholaR
 ## Directory management can be challenging, particularly when managing objects across multiple chunks within a single R Markdown document.
-base_dir <- here::here()
-c(
-  results_dir <- file.path(base_dir, "results", "proteomics"),
-  data_dir <- file.path(base_dir, "data"),
-  source_dir <- file.path(base_dir, "scripts", "proteomics"),
-  de_output_dir <- file.path(results_dir, "de_proteins"),
-  publication_graphs_dir <- file.path(results_dir, "publication_graphs"),
-  timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S"),
-  qc_dir <- file.path(publication_graphs_dir, "filtering_qc"),
-  time_dir <- file.path(qc_dir, timestamp), ##this is a way to distinguish between different QC runs of the same data in case you change params
-  file.path(results_dir, "clean_proteins"),
-  file.path(results_dir, "protein_qc"),
-  file.path(results_dir, "peptide_qc")
-) |>
-  sapply(dir.create, recursive = TRUE)
-
-# Hardware Management
-## Change this if you have large experiments and need more compute, or are running a toaster and don't have many cores to work with :)
-core_utilisation <- new_cluster(4)
-cluster_library(core_utilisation, c("tidyverse", "glue", "rlang", "lazyeval"))
+setupDirectories()
+showDirectories()
 
 # Annotation Management
 ## Please download the organism fasta file from UniProt. If UniProt is not available, the program will extract the 
@@ -63,7 +52,9 @@ cluster_library(core_utilisation, c("tidyverse", "glue", "rlang", "lazyeval"))
 ## Please set the name of your fasta file here in the root directory if you already have it
 data_tbl <- vroom::vroom( file.path(data_dir, "proteomics", "KV_DIANN_report.tsv"))
 fasta_file_path <- file.path( data_dir, "UniProt", "04153260899A.fasta")
+#uniprot_search_results <- NULL
 uniprot_search_results <- vroom::vroom(file.path(data_dir, "UniProt", "idmapping_2024_10_07.tsv"))
+#uniparc_search_results <- NULL
 uniparc_search_results <- vroom::vroom(file.path(data_dir, "UniProt", "kv_uniparc.csv"))
 
 ## Please supply your organism's taxon ID here
@@ -72,90 +63,11 @@ taxon_id <- 244366
 
 
 ## Input Parameters for Quality Control
-### Parameters in this section are experiment-specific. Their default parameters are intended as a guide only - every source of variance is different just as every set of proteins going through a mass spectrometer is different! One size does not fit all and you *will* most likely need to fine tune these to get the most out of your data.
+### Parameters in this section are experiment-specific. Their default parameters are intended as a guide only - every source of variance is different just as every set of proteins ### going through a mass spectrometer is different! One size does not fit all and you *will* most likely need to fine tune these to get the most out of your data.
 ```{r}
-## FDR management
-global_qvalue_threshold <- 0.01
-qvalue_threshold <- 0.01
+# Read the entire config file 
+config_list <- readConfigFile( file = file.path(source_dir, "config.ini") )
 
-## Peptide filtering
-choose_only_proteotypic_peptide <- 1
-peptides_intensity_cutoff_percentile <- 1
-peptides_proportion_of_samples_below_cutoff <- 0.5
-peptides_per_protein_cutoff <- 1
-peptidoforms_per_protein_cutoff <- 2
-peptides_per_sample_cutoff <- 5000
-num_of_cores <- 8
-min_pearson_correlation_threshold <- 0.70
-proportion_missing_for_imputation <- 0.50
-
-## DE analysis parameters
-experimental_contrast_file <- file.path( source_dir, "contrast_strings.tab")
-plots_format <- c("pdf", "png")
-formula_string <- "~ 0 + group"
-lfc_cutoff <- FALSE
-treat_lfc_cutoff <- ifelse(lfc_cutoff, log2(1.5), 0)
-eBayes_trend <- TRUE
-eBayes_robust <- TRUE
-de_q_val_thresh <- 0.05
-args_row_id <- "uniprot_acc"
-args_group_pattern="(\\d+)"
-```
-
-
-## Read experiment data from search program
-### Your search results output table should be contained in your project directory
-### Apply the search function to map uniprot IDs
-```{r Sample cleanup and design matrix construction}
-#' # Flexible string extraction from underscore-separated strings
-#' # Example string: "20140602_ffs_expt1_r1_junk"
-#' # extract_experiment(x, mode = "range", start = 1, end = 3)  # "20140602_ffs_expt1"
-#' # extract_experiment(x, mode = "start")  # "20140602"
-#' # extract_experiment(x, mode = "end")  # "junk"
-
-# Read in the formatted data table
-data_cln <- data_tbl |>
-        #Remove any unwanted information from your sample names
-        mutate(Run = extract_experiment(Run, mode = "start")) |>
-        # Ensure that the Precursor.Normalised and Precursor.Quantity columns are numbers
-        mutate(Precursor.Normalised = as.numeric(Precursor.Normalised)) |>
-        mutate(Precursor.Quantity = as.numeric(Precursor.Quantity)) 
-
-# Create an empty design matrix with Run IDs and placeholder columns for metadata
-if (!exists("design_matrix_raw")) { #NEED TO UPDATE THIS WITH WHETHER THE FILE LOCATION EXISTS, AND IF NOT, CREATE IT
-  design_matrix_raw <- tibble(
-    Run = data_cln |> 
-      # Get unique Run values, removing duplicates
-      distinct(Run) |>
-      # Keep only the Run column
-      dplyr::select(Run) |>
-      # Extract only the numeric portion from Run IDs (e.g., "51655" from "RPMI_51655")
-      dplyr::mutate(Run = stringr::str_extract(Run, "\\d+")) |>
-      # Convert from data frame to vector
-      dplyr::pull(Run),
-    # Add empty character column for group assignments
-    group = NA_character_,
-    # Add empty integer column for replicate numbers
-    replicates = NA_integer_
-  )
-}
-design_matrix_raw <- tibble(
-  Run = data_cln |> 
-    # Get unique Run values, removing duplicates
-    distinct(Run) |>
-    # Keep only the Run column
-    dplyr::select(Run) |>
-    # Extract only the numeric portion from Run IDs (e.g., "51655" from "RPMI_51655")
-    dplyr::mutate(Run = stringr::str_extract(Run, "\\d+")) |>
-    # Convert from data frame to vector
-    dplyr::pull(Run),
-  # Add empty character column for group assignments
-  group = NA_character_,
-  # Add empty integer column for replicate numbers
-  replicates = NA_integer_
-)
-
-print(design_matrix_raw$Run)
 ```
 
 
@@ -170,16 +82,10 @@ aa_seq_tbl_final <- processFastaFile(fasta_file_path, uniprot_search_results, un
 data_cln <- updateProteinIDs(data_cln, aa_seq_tbl_final)
 ```
 
-
 ## Create the PeptideQuantitativeData object
 ### This section initializes a PeptideQuantitativeData object with peptide-level quantitative data and experimental design information.
 ### It specifies the column names for various data attributes and sets up the design matrix for the experiment.
 ```{r}
-## This section initializes a PeptideQuantitativeData object with peptide-level quantitative data and experimental design information.
-## It specifies the column names for various data attributes and sets up the design matrix for the experiment.
-## This makes it easier to manage the data and perform quality control checks and normalization steps.
-## For example, the object can be used to filter out peptides with low intensity values or missing values, or to normalize the data between samples.
-## In the next chunk, the object will be used to perform quality control checks and normalization steps.
 peptide_data <- new( "PeptideQuantitativeData"
   
   # Protein vs Sample quantitative data
@@ -199,56 +105,17 @@ peptide_data <- new( "PeptideQuantitativeData"
   , group_id="group"
   , technical_replicate_id="replicates"
   
-  , args = list( srlQvalueProteotypicPeptideClean = list( qvalue_threshold = qvalue_threshold
-                                                          , global_qvalue_threshold = global_qvalue_threshold
-                                                          , choose_only_proteotypic_peptide = choose_only_proteotypic_peptide
-                                                          , input_matrix_column_ids = c("Run"
-                                                                                 , "Precursor.Id"
-                                                                                 , "Protein.Ids"
-                                                                                 , "Stripped.Sequence"
-                                                                                 , "Modified.Sequence"
-                                                                                 , "Precursor.Charge"
-                                                                                 , "Precursor.Quantity"
-                                                                                 , "Precursor.Normalised") )
-                 , rollUpPrecursorToPeptide = list( core_utilisation=core_utilisation )
-                 , peptideIntensityFiltering = list( peptides_intensity_cutoff_percentile = peptides_intensity_cutoff_percentile
-                                                     , peptides_proportion_of_samples_below_cutoff = peptides_proportion_of_samples_below_cutoff
-                                                     , core_utilisation = core_utilisation )
-                 , filterMinNumPeptidesPerProtein = list( peptides_per_protein_cutoff = peptides_per_protein_cutoff
-                                                         , peptidoforms_per_protein_cutoff = peptidoforms_per_protein_cutoff
-                                                         , core_utilisation = core_utilisation )
-                 , filterMinNumPeptidesPerSample = list( peptides_per_sample_cutoff = peptides_per_sample_cutoff
-                                                        , core_utilisation = core_utilisation
-                                                        , inclusion_list = c(  ))
-                 , removePeptidesWithOnlyOneReplicate = list( grouping_variable  = "group"
-                                                             , core_utilisation = core_utilisation )
-                 , peptideMissingValueImputation = list( imputed_value_column = "Peptide.Imputed"
-                                                         , proportion_missing_values = proportion_missing_for_imputation
-                                                         , core_utilisation = core_utilisation )
-                 , chooseBestProteinAccession = list( delim = ";"
-                                                     , seqinr_obj = aa_seq_tbl_final
-                                                     , seqinr_accession_column = "database_id")
-                 , removeRowsWithMissingValuesPercent = list( ruv_grouping_variable =  'group'
-                                                             , groupwise_percentage_cutoff = 50
-                                                             , max_groups_percentage_cutoff = 50
-                                                             , min_protein_intensity_percentile = 1)
-                 , proteinTechRepCorrelation = list( tech_rep_num_column =  "Run"
-                                                    , tech_rep_remove_regex = "pool")
-                 , removeProteinsWithOnlyOneReplicate = list( core_utilisation = core_utilisation
-                                                              , grouping_variable = "group" )
-                 , normalizeBetweenSamples = list( method = "cyclicloess" )
-                 , pearsonCorForSamplePairs = list( tech_rep_remove_regex = "pool")
-                 , plotRle = list( ylim=c(-0.75, 0.75)) )) 
- 
+  , args = config_list)  
 ```
 
-
+# Raw Data QC
 ```{r}
-update_protein_filtering(
+
+updateProteinFiltering(
   data = data_cln,
   step_name = "Raw Data",
-  publication_graphs_dir, = publication_graphs_dir,
-  return_grid = FALSE,
+  publication_graphs_dir = publication_graphs_dir,
+  return_grid = TRUE,
   overwrite = TRUE
 )
 ```
@@ -259,7 +126,7 @@ update_protein_filtering(
 
 search_srl_quant_cln <-  srlQvalueProteotypicPeptideClean( theObject = peptide_data  )
 
-update_protein_filtering(
+updateProteinFiltering(
   data = search_srl_quant_cln@peptide_data,
   step_name = "qval Filtered",
   publication_graphs_dir = publication_graphs_dir,
@@ -277,16 +144,11 @@ peptide_normalized_tbl@peptide_data |>
   dplyr::filter( peptidoform_count > 1)
 
 peptide_normalized_tbl@peptide_data |> distinct(Protein.Ids) |> nrow()
-peptide_normalized_pif_cln@peptide_data |> distinct(Protein.Ids) |> nrow()
 
-peptide_normalized_pif_cln@peptide_data |>
-    group_by(Run) |>
-    summarise(n_proteins = n_distinct(Protein.Ids), .groups = "drop") |>
-    arrange(Run)  # Sort by Run ID
-
-update_protein_filtering(
-peptide_normalized_pif_cln@peptide_data,
-  "peptidoform count",
+updateProteinFiltering(
+    data = peptide_normalized_tbl@peptide_data,
+  step_name = "peptidoform count",
+  publication_graphs_dir = publication_graphs_dir,
   return_grid = TRUE,
 overwrite = TRUE
 )
@@ -301,10 +163,11 @@ peptide_normalized_pif_cln <- peptideIntensityFiltering( theObject = peptide_nor
 
 peptide_normalized_pif_cln@peptide_data |> distinct(Protein.Ids) |> nrow()
 
-update_protein_filtering(
-  peptide_normalized_pif_cln@peptide_data,
-  "peptideIntensityFiltering",
-  return_grid = FALSE,
+updateProteinFiltering(
+  data = peptide_normalized_pif_cln@peptide_data,
+  step_name = "peptideIntensityFiltering",
+  publication_graphs_dir = publication_graphs_dir,
+  return_grid = TRUE,
 overwrite = TRUE
 )
 ```
@@ -319,14 +182,13 @@ removed_peptides_with_less_than_two_peptides <- filterMinNumPeptidesPerProtein( 
 
 removed_peptides_with_less_than_two_peptides@peptide_data |> distinct(Protein.Ids) |> nrow()
 
-update_protein_filtering(
-removed_peptides_with_less_than_two_peptides@peptide_data,
-  "<2pep",
-  return_grid = FALSE,
+updateProteinFiltering(
+  data = removed_peptides_with_less_than_two_peptides@peptide_data,
+  step_name = "<2pep",
+  publication_graphs_dir = publication_graphs_dir,
+  return_grid = TRUE,
 overwrite = TRUE
 )
-
-removed_peptides_with_less_than_two_peptides
 ```
 
 
@@ -338,6 +200,14 @@ peptide_keep_samples_with_min_num_peptides <- filterMinNumPeptidesPerSample(theO
 (removed_peptides_with_less_than_two_peptides@args)$filterMinNumPeptidesPerSample
 
 peptide_keep_samples_with_min_num_peptides@peptide_data |> distinct(Protein.Ids) |> nrow()
+
+updateProteinFiltering(
+  data = peptide_keep_samples_with_min_num_peptides@peptide_data,
+  step_name = "minpeppersample",
+  publication_graphs_dir = publication_graphs_dir,
+  return_grid = TRUE,
+overwrite = TRUE
+)
 
 
 removed_peptides_with_less_than_two_peptides@peptide_data |> distinct(Run,Protein.Ids, Stripped.Sequence
@@ -358,10 +228,17 @@ removed_peptides_with_only_one_replicate <- removePeptidesWithOnlyOneReplicate(p
 
 removed_peptides_with_only_one_replicate@peptide_data |> distinct(Protein.Ids) |> nrow()
 
+updateProteinFiltering(
+  data = removed_peptides_with_only_one_replicate@peptide_data,
+  step_name = "peptidesonerep",
+  publication_graphs_dir = publication_graphs_dir,
+  return_grid = TRUE,
+overwrite = TRUE
+)
+
 peptide_keep_samples_with_min_num_peptides@peptide_data |> distinct(Protein.Ids, Stripped.Sequence) |> nrow()
 removed_peptides_with_only_one_replicate@peptide_data |> distinct(Protein.Ids, Stripped.Sequence) |> nrow()
 
-plotPeptidesProteinsCountsPerSample(removed_peptides_with_only_one_replicate )
 ```
 
 
@@ -442,6 +319,7 @@ protein_obj <- ProteinQuantitativeData(
 ### It requires the information from the fasta file to choose the best accession for the protein ID.
 ### Please skip this section if you have uploaded your own annotation from Uniprot/uniparc
 ```{r}
+#please run this if you have a uniprot-sourced fasta
 #protein_log2_quant_cln <- chooseBestProteinAccession( theObject = protein_obj
 #                                                      , delim = ";"
 #                                                      , seqinr_obj = aa_seq_tbl
@@ -453,18 +331,23 @@ protein_log2_quant_cln <- protein_obj
 ```
 
 
+
 ## Remove protein based on the intensity threshold and the proportion of samples below the threshold
 ### The threshold is determined by the 1% quantile of the protein intensity values
 ### This helps to ensure that only reliably quantified proteins are retained for further analysis
-### It is recommended to leave this as default - however if you wish to be more stringent with your requirements for inclusion (ie want protein x reliably appearing in 80% of samples / group) then do it here
 ```{r}
-protein_normalized_pif_cln <-  removeRowsWithMissingValuesPercent(protein_log2_quant_cln
-                           , ruv_grouping_variable =  'group'
-                           , groupwise_percentage_cutoff = 60
-                           , max_groups_percentage_cutoff = 60
-                           , proteins_intensity_cutoff_percentile = 1)
+protein_normalized_pif_cln <-  removeRowsWithMissingValuesPercent(protein_log2_quant_cln )
+
+updateProteinFiltering(
+  data = protein_normalized_pif_cln@protein_quant_table,
+  step_name = "protein_missingvals_percent",
+  publication_graphs_dir = publication_graphs_dir,
+  return_grid = TRUE,
+overwrite = TRUE
+)
 
 protein_normalized_pif_cln@protein_quant_table |> distinct(Protein.Ids) |> nrow()
+
 ```
 
 
@@ -494,8 +377,18 @@ protein_normalized_pif_cln@protein_quant_table |> distinct(Protein.Ids) |> nrow(
 ## Remove proteins with only one replicate in the data set
 ### No need to change this unless you wish to include single replicate proteins
 ```{r}
+core_utilisation <- new_cluster(4) #note to change this in the below function to cores from config_list
 remove_proteins_with_only_one_rep <- removeProteinsWithOnlyOneReplicate (  protein_normalized_pif_cln, core_utilisation, grouping_variable = "group" )
 vroom::vroom_write(remove_proteins_with_only_one_rep@protein_quant_table, file.path( results_dir, "protein_qc", "remove_proteins_with_only_one_rep.tsv"))
+
+updateProteinFiltering(
+  data = remove_proteins_with_only_one_rep@protein_quant_table,
+  step_name = "proteins_onerep_filter",
+  publication_graphs_dir = publication_graphs_dir,
+  return_grid = TRUE,
+overwrite = TRUE
+)
+
 remove_proteins_with_only_one_rep@protein_quant_table |> distinct(Protein.Ids) |> nrow()
 ```
 
@@ -568,6 +461,8 @@ save_plot(QC_composite_figure@pearson_plots$pearson_correlation_pair_before_ruvI
 ### The k value with the highest separation between All and 'Control' group is selected as the best k.
 #### It is a heuristic and the best_k value can be adjusted manually, if required.
 ```{r}
+
+#REDRAW RUV GRAPH with line for best_k????? as a vertical line
 control_genes_index <-  getNegCtrlProtAnova(normalised_frozen_protein_matrix_obj
                                             , ruv_grouping_variable = "group"
                                             # Percentage of dataset to use as a negative control.
@@ -655,6 +550,8 @@ saveRDS( ruv_normalised_filtered_results_obj
 ruv_normalised_for_de_analysis_obj <-  ruv_normalised_filtered_results_obj
 
 ##CHUNK TO FUNCTION
+##THIS NEEDS TO GO INTO THE OUTPUT FUNCTION?????
+
 ruv_normalised_for_de_analysis <- ruv_normalised_for_de_analysis_obj@protein_quant_table |>
   pivot_longer( cols= !matches("Protein.Ids")
                 , names_to = "replicates"
@@ -690,7 +587,7 @@ ruv_normalised_for_de_analysis_mat <- ruv_normalised_for_de_analysis |>
 saveRDS( ruv_normalised_filtered_results_obj
         , file.path( results_dir, "protein_qc", "ruv_normalised_results_cln_with_replicates.RDS"))
 
-
+####CHUNK END
 ruv_normalised_for_de_analysis_obj <-  ruv_normalised_filtered_results_obj
 
 ruv_normalised_for_de_analysis_obj
@@ -698,6 +595,7 @@ ruv_normalised_for_de_analysis_obj
 
 
 # maxquant_row_id	num_gene_names	gene_names	uniprot_acc	is_unique	protein_ids
+## ONLY RUN THIS if you have imported a UniProt tfasta
 * I need to import the UniProt tab file
 * Then I need to recreate the cleaned_accession_to_protein_group.tab file
 ```{r}
@@ -717,12 +615,59 @@ vroom::vroom_write(cleaned_accession_table
         , file.path(results_dir, "clean_proteins", "cleaned_accession_to_protein_group.tab"))
 ```
 
+# Add up to date annotation data
+```{r}
+up <- UniProt.ws(taxId=taxon_id)
+tmp_dir <- file.path(getwd(), "tmp")
+if (!dir.exists(tmp_dir)) {
+  dir.create(tmp_dir)
+}
+annotations <- NULL
+if (!file.exists(file.path(tmp_dir, "uniprot_annotations.RDS"))) {
+  
+  annotations <- batchQueryEvidenceGeneId(
+    ruv_normalised_for_de_analysis_obj@protein_quant_table,
+    gene_id_column = "Protein.Ids",
+    uniprot_handle = up,
+    uniprot_columns = c(
+      "protein_existence",
+      "annotation_score",
+      "reviewed",
+      "gene_names",
+      "protein_name",
+      "length",
+      "xref_ensembl",
+      "go_id",
+      "keyword"
+    )
+  ) 
+   # |> dplyr::rename(uniprot_acc = From)  # Debug to check if the From column needed renaming
+  
+  uniprot_dat_cln <- annotations |>
+    uniprotGoIdToTerm(
+      uniprot_id_column = Entry,
+      go_id_column = Gene.Ontology.IDs,
+      sep = "; "
+    ) |>
+    dplyr::rename(
+      Protein_existence = "Protein.existence",
+      Protein_names = "Protein.names"
+    )
+  
+  saveRDS(uniprot_dat_cln, file.path(tmp_dir, "uniprot_annotations.RDS"))
+  
+} else {
+  uniprot_dat_cln <- readRDS(file.path(tmp_dir, "uniprot_annotations.RDS"))
+}
+```
+
+
 ## Create the composite QC figure
 ### Change the titles here if you so wish
 
 ```{r}
 
-pca_ruv_rle_correlation_merged <- test(QC_composite_figure
+pca_ruv_rle_correlation_merged <- createGridQC(QC_composite_figure
      , pca_titles = c("a)", "b)", "c)")
      , rle_titles = c("d)", "e)", "f)")
      , pearson_titles = c("g)", "h)", "i)")
@@ -733,109 +678,63 @@ pca_ruv_rle_correlation_merged
 ```
 
 
+
 ## Run Differential Abundance Analysis
 ```{r}
-contrasts_tbl <- vroom::vroom(experimental_contrast_file, delim = "\t")
+
+#RunApplet2("contrastMatrix")
+# change linear model string for more complicated experiments
+# output is formula_string
+# OUTPUT FILE CREATION - CONFIG FILE PARAMS + PARAMS IN WORKBOOK + CONTRAST STRING + LIMMA MODEL
+
+#contrasts_tbl <- read.table(file.path(source_dir, "contrast_strings.tab"), header = TRUE, sep = "\t")
+contrasts_tbl <- as.data.frame(contrasts_tbl)[-1, , drop = FALSE] #need to fix this in the shiny output
+config_list$deAnalysisParameters$args_group_pattern <-"(\\d+)" #need to fix this in the config list readin
 de_analysis_results_list <- deAnalysisWrapperFunction ( ruv_normalised_for_de_analysis_obj
                                        , contrasts_tbl
-                                       , formula_string = formula_string
-                                       , de_q_val_thresh = de_q_val_thresh
-                                       , treat_lfc_cutoff = treat_lfc_cutoff
-                                       , eBayes_trend = eBayes_trend
-                                       , eBayes_robust = eBayes_robust
-                                       , args_group_pattern = args_group_pattern
-                                       , args_row_id = args_row_id ) 
-```
-
-
-```{r}
-up <- UniProt.ws(taxId=taxon_id)
-
-annotations <-  NULL
-if( !file.exists( file.path( tmp_dir, "uniprot_annotations.RDS"))) {
-
-
-  annotations <- batchQueryEvidenceGeneId( ruv_normalised_for_de_analysis_obj@protein_quant_table
-                                           , gene_id_column = "Protein.Ids"
-                                           , uniprot_handle = up
-                                           , uniprot_columns = c( "protein_existence"
-                                                                  , "annotation_score"#?
-                                                                  , "reviewed"
-                                                                  , "gene_names"
-                                                                  , "protein_name"
-                                                                  , "length"
-                                                                  , "xref_ensembl"
-                                                                  , "go_id"
-                                                                  , "keyword" ))  
-  
-  uniprot_dat_cln <- uniprotGoIdToTerm(annotations, uniprot_id_column = Entry
-                                       , go_id_column = Gene.Ontology.IDs
-                                       , sep="; " )  |>
-    dplyr::rename( Protein_existence = "Protein.existence"
-                   , Protein_names = "Protein.names")
-  
-  saveRDS( uniprot_dat_cln, file.path( tmp_dir, "uniprot_annotations.RDS") )
-  
-} else {
-  uniprot_dat_cln <- readRDS( file.path( tmp_dir, "uniprot_annotations.RDS") )
-}
-
+                                       , formula_string = config_list$deAnalysisParameters$formula_string
+                                       , de_q_val_thresh = config_list$deAnalysisParameters$de_q_val_thresh
+                                       , treat_lfc_cutoff = config_list$deAnalysisParameters$treat_lfc_cutoff
+                                       , eBayes_trend = config_list$deAnalysisParameters$eBayes_trend
+                                       , eBayes_robust = config_list$deAnalysisParameters$eBayes_robust
+                                       , args_group_pattern = config_list$deAnalysisParameters$args_group_pattern
+                                       , args_row_id = config_list$deAnalysisParameters$args_row_id ) 
 
 ```
 
 
 ## Output the results of the DE analysis
 ```{r}
-class(uniprot_dat_cln)
+
 outputDeAnalysisResults (de_analysis_results_list
                          , ruv_normalised_for_de_analysis_obj
                          , uniprot_dat_cln
                          , de_output_dir
                          , publication_graphs_dir
                          , file_prefix="de_proteins"
-                         , plots_format = plots_format
+                         , plots_format = config_list$deAnalysisParameters$plots_format
                          , args_row_id = "uniprot_acc"
                          , de_q_val_thresh=0.05
                          , gene_names_column = "Gene.Names")
-
 ```
 
+
 ```{r}
-  ## Write interactive volcano plot
-  counts_mat <- (de_analysis_results_list$theObject)@protein_data |>
-    column_to_rownames((de_analysis_results_list$theObject)@protein_id_column  ) |>
-    as.matrix()
-  
-  this_design_matrix <- de_analysis_results_list$theObject@design_matrix
-  
-   rownames( this_design_matrix ) <- this_design_matrix$Run
+# Create workflow args with config and git info
+workflow_args <- createWorkflowArgsFromConfig(
+    workflow_name = "DIA Proteomics Workflow",
+    description = "Full protein analysis workflow with config parameters" #ADD A MEANINGFUL LABEL HERE FOR TRACKING WHAT YOU DID
+)
 
-   this_groups <- this_design_matrix[colnames( counts_mat), "group"]
-  
-    
-  writeInteractiveVolcanoPlotProteomics(  de_analysis_results_list$de_proteins_long
-                                         , groups = this_groups
-                                         , uniprot_dat_edited 
-                                         , de_analysis_results_list$contrasts_results$fit.eb
-                                         , args_row_id = "uniprot_acc"
-                                         , publication_graphs_dir
-                                         , de_q_val_thresh = 0.05
-                                         , counts_tbl = counts_mat
-                                         , gene_names_column = "Gene.Names"
-                                         , display_columns= c(  "noAHA_log2_intensity"
-                                                                , "noAHA_percentile"
-                                                                , "WT_vs_noAHA_log2_fc"
-                                                                , "TG_vs_noAHA_log2_fc"
-                                                                , "Protein_existence"
-                                                               , "Annotation"
-                                                               , "Reviewed"
-                                                               , "Protein_names" 
-                                                               , "Length"
-                                                               , "Ensembl"
-                                                               , "Keywords"
-                                                               , "go_term_go_biological_process" 
-                                                               , "go_term_go_cellular_compartment"
-                                                               , "go_term_go_molecular_function"  ))
-  
+# Show the workflow arguments
+workflow_args
 
+### add a second output for params used as config_timestamp.ini
+```
+
+# Copy all the relevant files to a publication directory
+```{r}
+## Need to write down where these all are systematically
+## copy to results_summary_dir/proteomics
+## report doc will pull everything necessary from this folder
 ```
