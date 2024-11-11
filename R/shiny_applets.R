@@ -387,18 +387,15 @@ RunApplet <- function(applet_type) {
         
         contrast_data <- contrasts()
         if(nrow(contrast_data) > 0) {
-          contrast_strings <- c(
-            "contrasts",
-            sapply(1:nrow(contrast_data), function(i) {
-              paste0(
-                contrast_data$contrast_name[i],
-                "=group",
-                contrast_data$numerator[i],
-                "-group",
-                contrast_data$denominator[i]
-              )
-            })
-          )
+          contrast_strings <- sapply(1:nrow(contrast_data), function(i) {
+            paste0(
+              contrast_data$contrast_name[i],
+              "=group",
+              contrast_data$numerator[i],
+              "-group",
+              contrast_data$denominator[i]
+            )
+          })
           
           writeLines(contrast_strings, file.path(source_dir, "contrast_strings.tab"))
           contrasts_tbl <- data.frame(
