@@ -62,7 +62,13 @@ config_list <- readConfigFile( file = file.path(source_dir, "config.ini") )
 
 
 ```{r}
-RunApplet("designMatrix")
+if (exists("design_matrix", envir = .GlobalEnv)) {
+    print("Design matrix already set :) No need to run app again!")
+} else {
+    RunApplet("designMatrix")
+}
+# Comment in if you wish to run manually
+#RunApplet("designMatrix")
 ```
 
 # Convert the protein identifiers to Uniprot or Uniparc accessions if those annotations are available 
