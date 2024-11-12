@@ -999,6 +999,14 @@ copyToResultsSummary <- function() {
             is_dir = FALSE,
             display_name = "Correlation Filtered Plots"
         ),
+        # Add RUV normalized results
+        list(
+            source = file.path(results_dir, "protein_qc", "ruv_normalised_results_cln_with_replicates.tsv"),
+            dest = "Publication_tables",
+            is_dir = FALSE,
+            display_name = "RUV Normalized Results",
+            new_name = "RUV_normalised_results.tsv"
+        ),
         list(
             source = file.path(results_dir, "protein_qc", "composite_QC_figure.pdf"),
             dest = "QC_figures",
