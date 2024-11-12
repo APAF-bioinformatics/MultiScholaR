@@ -421,6 +421,9 @@ readConfigFile <- function( file=file.path(source_dir, "config.ini")) {
       for( x in list_of_multithreaded_functions) {
         config_list <- setCoreUtilisation(config_list, x)
       }
+
+      config_list[["globalParameters"]][["plots_format"]] <- str_split(config_list[["globalParameters"]][["plots_format"]], ",")[[1]]
+
     }}
 
   getConfigValue <- function (config_list, section, value) {
