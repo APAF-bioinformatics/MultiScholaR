@@ -1,5 +1,5 @@
 ---
-title: "DIA-NN Analysis Workbook"
+title: "QC Analysis for xyz"
 format:
     html:
         embed-resources: true
@@ -176,7 +176,7 @@ removed_peptides_with_less_than_two_peptides@peptide_data |> distinct(Protein.Id
 
 updateProteinFiltering(
   data = removed_peptides_with_less_than_two_peptides@peptide_data,
-  step_name = "<2pep",
+  step_name = "2pep",
   publication_graphs_dir = publication_graphs_dir,
   return_grid = TRUE,
 overwrite = TRUE
@@ -198,7 +198,7 @@ overwrite = TRUE
 )
 
 
-removed_peptides_with_less_than_two_peptides@peptide_data |> distinct(Run,Protein.Ids, Stripped.Sequence
+peptide_keep_samples_with_min_num_peptides@peptide_data |> distinct(Run,Protein.Ids, Stripped.Sequence
 , peptidoform_count) |> group_by( Run) |> summarise( n = sum(peptidoform_count) ) |> arrange( desc(n))
 ## Show the distinct number of Samples to manually check how many samples are removed from the previous step
 peptide_keep_samples_with_min_num_peptides@peptide_data |> distinct(Run) |> nrow()
@@ -474,7 +474,7 @@ cancorplot_r1
 ```{r}
 ruv_normalised_results_temp_obj <- ruvIII_C_Varying( normalised_frozen_protein_matrix_obj
                      , ruv_grouping_variable = "group"
-                     , ruv_number_k = 2
+                     , ruv_number_k = best_k
                      , ctrl = control_genes_index) 
 
 ## Sometimes RUV will blank out some of the values, so we need to remove proteins if too many values are blanked out 
@@ -667,7 +667,7 @@ pca_ruv_rle_correlation_merged
 ## Run Differential Abundance Analysis
 ```{r}
 #Debug - if regex readin from config doesnt work
-#config_list$deAnalysisParameters$args_group_pattern <- "(\\d+)"
+config_list$deAnalysisParameters$args_group_pattern <- "(\\d+)"
 de_analysis_results_list <- deAnalysisWrapperFunction ( ruv_normalised_for_de_analysis_obj
                                        , contrasts_tbl
                                        , formula_string = config_list$deAnalysisParameters$formula_string
