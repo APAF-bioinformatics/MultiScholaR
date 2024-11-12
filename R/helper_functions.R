@@ -634,6 +634,9 @@ loadDependencies <- function(verbose = TRUE) {
         "multidplyr", "RSpectra", "progress", "Rcpp", "RcppEigen",
         "qvalue", "Glimma", "ruv", "iq", "ggrepel", "patchwork",
         "dplyr", "gtools", "shiny", "DT", "gh",
+        # Additional packages
+        "plotly", "vroom", "gplots", "iheatmapr",
+        "UpSetR", "gt", "gprofiler2", "htmltools",
         # Bioconductor packages
         "BiocManager",
         # GitHub packages
