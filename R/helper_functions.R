@@ -539,8 +539,8 @@ readConfigFile <- function( file=file.path(source_dir, "config.ini")) {
     # Handle args_group_pattern - fix double escaping
     if("args_group_pattern" %in% names(config_list[["deAnalysisParameters"]])) {
       config_list[["deAnalysisParameters"]][["args_group_pattern"]] <- 
-        gsub(pattern = "\\\\(?!\\d|w|s|[[:punct:]])", replacement = "\\", 
-             config_list[["deAnalysisParameters"]][["args_group_pattern"]])
+        gsub(pattern = "\\\\\\\\(?!\\d|w|s|[[:punct:]])", replacement = "\\\\", 
+          config_list[["deAnalysisParameters"]][["args_group_pattern"]])
     }
     
     # Convert numeric parameters
