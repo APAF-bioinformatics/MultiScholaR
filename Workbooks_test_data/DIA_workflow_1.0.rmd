@@ -1,5 +1,5 @@
 ---
-title: "QC Analysis for xyz"
+title: "DIA-NN Analysis Workbook"
 format:
     html:
         embed-resources: true
@@ -26,18 +26,13 @@ output: html_document
 ```{r Environment Management}
 devtools::install_github("APAF-BIOINFORMATICS/ProteomeScholaR", ref = "dev-jr")
 library(ProteomeScholaR)
+
 # Dependency Management
 ## Load required packages
 ## Checks your R environment for the required packages to run ProteomeScholaR, and installs them if they are not.
 ## Please note that you will require a Github account in order to install the ProteomeScholaR package.
 ## Github account creation is free, and is a very useful tool for learning to code and also to engage with the wider coding community.
 loadDependencies()
-
-# Hardware Management
-## Change this if you have large experiments and need more compute, or are running a toaster and don't have many cores to work with :)
-#core_utilisation <- new_cluster(4)
-#cluster_library(core_utilisation, c("tidyverse", "glue", "rlang", "lazyeval"))
-
 
 # Directory Management
 ## Set up the project directory structure
@@ -59,15 +54,10 @@ uniparc_search_results <- vroom::vroom(file.path(data_dir, "UniProt", "kv_unipar
 
 ## Please supply your organism's taxon ID here
 taxon_id <- 244366
-```
-
 
 ## Input Parameters for Quality Control
-### Parameters in this section are experiment-specific. Their default parameters are intended as a guide only - every source of variance is different just as every set of proteins ### going through a mass spectrometer is different! One size does not fit all and you *will* most likely need to fine tune these to get the most out of your data.
-```{r}
-# Read the entire config file 
+## Parameters in this section are experiment-specific. Their default parameters are intended as a guide only - every source of variance is ## different just as every set of proteins going through a mass spectrometer is different! One size does not fit all and you *will* most likely need to fine tune these to get the most out of your data.
 config_list <- readConfigFile( file = file.path(source_dir, "config.ini") )
-
 ```
 
 
@@ -75,7 +65,8 @@ config_list <- readConfigFile( file = file.path(source_dir, "config.ini") )
 RunApplet("designMatrix")
 ```
 
-
+# Convert the protein identifiers to Uniprot or Uniparc accessions if those annotations are available 
+## Otherwise makes use of pre-supplied uniprot fasta annotations
 ```{r}
 fasta_meta_file <- "parsed_fasta_data.rds"
 aa_seq_tbl_final <- processFastaFile(fasta_file_path, uniprot_search_results, uniparc_search_results, fasta_meta_file)
@@ -126,6 +117,8 @@ updateProteinFiltering(
 
 search_srl_quant_cln <-  srlQvalueProteotypicPeptideClean( theObject = peptide_data  )
 
+search_srl_quant_cln@peptide_data |> distinct(Protein.Ids) |> nrow()
+
 updateProteinFiltering(
   data = search_srl_quant_cln@peptide_data,
   step_name = "qval Filtered",
@@ -140,8 +133,8 @@ updateProteinFiltering(
 ```{r}
 peptide_normalized_tbl <- rollUpPrecursorToPeptide( search_srl_quant_cln  )
 
-peptide_normalized_tbl@peptide_data |> 
-  dplyr::filter( peptidoform_count > 1)
+#peptide_normalized_tbl@peptide_data |> 
+#  dplyr::filter( peptidoform_count > 1)
 
 peptide_normalized_tbl@peptide_data |> distinct(Protein.Ids) |> nrow()
 
@@ -179,7 +172,6 @@ overwrite = TRUE
 ```{r}
 removed_peptides_with_less_than_two_peptides <- filterMinNumPeptidesPerProtein( theObject =peptide_normalized_pif_cln ) 
 
-
 removed_peptides_with_less_than_two_peptides@peptide_data |> distinct(Protein.Ids) |> nrow()
 
 updateProteinFiltering(
@@ -197,10 +189,6 @@ overwrite = TRUE
 ```{r}
 peptide_keep_samples_with_min_num_peptides <- filterMinNumPeptidesPerSample(theObject = removed_peptides_with_less_than_two_peptides )
 
-(removed_peptides_with_less_than_two_peptides@args)$filterMinNumPeptidesPerSample
-
-peptide_keep_samples_with_min_num_peptides@peptide_data |> distinct(Protein.Ids) |> nrow()
-
 updateProteinFiltering(
   data = peptide_keep_samples_with_min_num_peptides@peptide_data,
   step_name = "minpeppersample",
@@ -212,7 +200,6 @@ overwrite = TRUE
 
 removed_peptides_with_less_than_two_peptides@peptide_data |> distinct(Run,Protein.Ids, Stripped.Sequence
 , peptidoform_count) |> group_by( Run) |> summarise( n = sum(peptidoform_count) ) |> arrange( desc(n))
-
 ## Show the distinct number of Samples to manually check how many samples are removed from the previous step
 peptide_keep_samples_with_min_num_peptides@peptide_data |> distinct(Run) |> nrow()
 ```
@@ -225,7 +212,6 @@ peptide_keep_samples_with_min_num_peptides@peptide_data |> distinct(Run) |> nrow
 
 removed_peptides_with_only_one_replicate <- removePeptidesWithOnlyOneReplicate(peptide_keep_samples_with_min_num_peptides  )
 
-
 removed_peptides_with_only_one_replicate@peptide_data |> distinct(Protein.Ids) |> nrow()
 
 updateProteinFiltering(
@@ -236,8 +222,6 @@ updateProteinFiltering(
 overwrite = TRUE
 )
 
-peptide_keep_samples_with_min_num_peptides@peptide_data |> distinct(Protein.Ids, Stripped.Sequence) |> nrow()
-removed_peptides_with_only_one_replicate@peptide_data |> distinct(Protein.Ids, Stripped.Sequence) |> nrow()
 
 ```
 
@@ -251,13 +235,7 @@ removed_peptides_with_only_one_replicate@peptide_data |> distinct(Protein.Ids, S
 
 peptide_values_imputed <- peptideMissingValueImputation( theObject = removed_peptides_with_only_one_replicate )
 
-# colnames( removed_peptides_with_only_one_replicate@peptide_data  )
-
-(removed_peptides_with_only_one_replicate@args)$peptideMissingValueImputation
-
 peptide_values_imputed@peptide_data |> distinct(Protein.Ids) |> nrow()
-
-#head(peptide_values_imputed)
 
 peptide_values_imputed_file <- file.path( results_dir
         , "peptide_qc"
@@ -461,30 +439,32 @@ save_plot(QC_composite_figure@pearson_plots$pearson_correlation_pair_before_ruvI
 ### The k value with the highest separation between All and 'Control' group is selected as the best k.
 #### It is a heuristic and the best_k value can be adjusted manually, if required.
 ```{r}
+control_genes_index <- getNegCtrlProtAnova(normalised_frozen_protein_matrix_obj)
+cancorplot_r1 <- ruvCancor(normalised_frozen_protein_matrix_obj,
+                          ctrl = control_genes_index,
+                          num_components_to_impute = 5,
+                          ruv_grouping_variable = "group")
 
-#REDRAW RUV GRAPH with line for best_k????? as a vertical line
-control_genes_index <-  getNegCtrlProtAnova(normalised_frozen_protein_matrix_obj
-                                            , ruv_grouping_variable = "group"
-                                            # Percentage of dataset to use as a negative control.
-                                            # Best left to default.
-                                            , percentage_as_neg_ctrl = 10
-                                            , ruv_qval_cutoff = 0.05
-                                            , ruv_fdr_method = "BH" )
-cancorplot_r1 <- ruvCancor(normalised_frozen_protein_matrix_obj
-                              , ctrl = control_genes_index
-                              , num_components_to_impute= 5
-                              , ruv_grouping_variable = "group")
-cancorplot_r1 + xlim(1, ncol(normalised_frozen_protein_matrix_obj@protein_quant_table)-1)
-
-save_plot(cancorplot_r1, results_dir, "canonical_correlation_plot")
-# Display the plot
-cancorplot_r1
 # Find the best k
 best_k <- findBestK(cancorplot_r1)
-# Display the best k
-best_k
+
+# Add vertical line for best_k
+cancorplot_r1 <- cancorplot_r1 + 
+  geom_vline(xintercept = best_k, 
+             color = "blue", 
+             linetype = "dashed",
+             size = 1) +
+  annotate("text", 
+           x = best_k + 0.5, 
+           y = max(layer_scales(cancorplot_r1)$y$range$range), 
+           label = paste("Best k =", best_k),
+           hjust = 0) +
+  xlim(1, ncol(normalised_frozen_protein_matrix_obj@protein_quant_table)-1)
+
+# Save and display the plot
+save_plot(cancorplot_r1, results_dir, "canonical_correlation_plot")
+cancorplot_r1
 ```
-Use ANOVA to define subset (negative controls) of proteins that do not change in the dataset
 
 
 ## Run RUVIII-C and QC
@@ -528,27 +508,35 @@ summarizeQCPlot(QC_composite_figure)
 
 
 ## RUV normalized data for de analysis
-### After RUVIII-C is performed, some proteins will have their values blanked out as NA by RUV (most likely assoicated with their batch effects).
-### Therefore, we need to remove proteins with high proportion of missing values in each group before procceding to DE analysis.
+### After RUVIII-C is performed, we want to removed samples that are not correalated from further analysis
 ```{r}
-##CHUNK TO FUNCTION
-
 ruv_correlation_vec <-  pearsonCorForSamplePairs(ruv_normalised_results_cln_obj
                             , tech_rep_remove_regex = "pool" ) 
 ruv_normalised_filtered_results_obj <- filterSamplesByProteinCorrelationThreshold(ruv_normalised_results_cln_obj
                                            , pearson_correlation_per_pair  = ruv_correlation_vec
                                            , min_pearson_correlation_threshold = 0.5 )
 
+updateProteinFiltering(
+  data = ruv_normalised_filtered_results_obj@protein_quant_table,
+  step_name = "correlation_filtered",
+  publication_graphs_dir = publication_graphs_dir,
+  return_grid = TRUE,
+overwrite = TRUE
+)
+
 vroom::vroom_write( ruv_normalised_filtered_results_obj@protein_quant_table
               , file.path(results_dir, "protein_qc",  "ruv_normalized_results_cln_with_replicates.tsv"))
-
 
 saveRDS( ruv_normalised_filtered_results_obj
         , file.path( results_dir, "protein_qc", "ruv_normalized_results_cln_with_replicates.RDS"))
 
 
 ruv_normalised_for_de_analysis_obj <-  ruv_normalised_filtered_results_obj
+```
 
+
+# This section creates output files of the data for  audit trail downstream.
+```{r}
 ##CHUNK TO FUNCTION
 ##THIS NEEDS TO GO INTO THE OUTPUT FUNCTION?????
 
@@ -587,10 +575,7 @@ ruv_normalised_for_de_analysis_mat <- ruv_normalised_for_de_analysis |>
 saveRDS( ruv_normalised_filtered_results_obj
         , file.path( results_dir, "protein_qc", "ruv_normalised_results_cln_with_replicates.RDS"))
 
-####CHUNK END
-ruv_normalised_for_de_analysis_obj <-  ruv_normalised_filtered_results_obj
-
-ruv_normalised_for_de_analysis_obj
+##CHUNK END
 ```
 
 
@@ -615,7 +600,8 @@ vroom::vroom_write(cleaned_accession_table
         , file.path(results_dir, "clean_proteins", "cleaned_accession_to_protein_group.tab"))
 ```
 
-# Add up to date annotation data
+# Add up to date annotation data from Uniprot
+## Will take some time to complete if  you are doing this for first time
 ```{r}
 up <- UniProt.ws(taxId=taxon_id)
 tmp_dir <- file.path(getwd(), "tmp")
@@ -666,7 +652,6 @@ if (!file.exists(file.path(tmp_dir, "uniprot_annotations.RDS"))) {
 ### Change the titles here if you so wish
 
 ```{r}
-
 pca_ruv_rle_correlation_merged <- createGridQC(QC_composite_figure
      , pca_titles = c("a)", "b)", "c)")
      , rle_titles = c("d)", "e)", "f)")
@@ -681,15 +666,8 @@ pca_ruv_rle_correlation_merged
 
 ## Run Differential Abundance Analysis
 ```{r}
-
-#RunApplet2("contrastMatrix")
-# change linear model string for more complicated experiments
-# output is formula_string
-# OUTPUT FILE CREATION - CONFIG FILE PARAMS + PARAMS IN WORKBOOK + CONTRAST STRING + LIMMA MODEL
-
-#contrasts_tbl <- read.table(file.path(source_dir, "contrast_strings.tab"), header = TRUE, sep = "\t")
-contrasts_tbl <- as.data.frame(contrasts_tbl)[-1, , drop = FALSE] #need to fix this in the shiny output
-config_list$deAnalysisParameters$args_group_pattern <-"(\\d+)" #need to fix this in the config list readin
+#Debug - if regex readin from config doesnt work
+#config_list$deAnalysisParameters$args_group_pattern <- "(\\d+)"
 de_analysis_results_list <- deAnalysisWrapperFunction ( ruv_normalised_for_de_analysis_obj
                                        , contrasts_tbl
                                        , formula_string = config_list$deAnalysisParameters$formula_string
@@ -699,13 +677,11 @@ de_analysis_results_list <- deAnalysisWrapperFunction ( ruv_normalised_for_de_an
                                        , eBayes_robust = config_list$deAnalysisParameters$eBayes_robust
                                        , args_group_pattern = config_list$deAnalysisParameters$args_group_pattern
                                        , args_row_id = config_list$deAnalysisParameters$args_row_id ) 
-
 ```
 
 
 ## Output the results of the DE analysis
 ```{r}
-
 outputDeAnalysisResults (de_analysis_results_list
                          , ruv_normalised_for_de_analysis_obj
                          , uniprot_dat_cln
@@ -716,27 +692,22 @@ outputDeAnalysisResults (de_analysis_results_list
                          , args_row_id = "uniprot_acc"
                          , de_q_val_thresh=0.05
                          , gene_names_column = "Gene.Names")
-
-
 ```
 
 
 ```{r}
 # Create workflow args with config and git info
 workflow_args <- createWorkflowArgsFromConfig(
-    workflow_name = "DIA Proteomics Workflow",
+    workflow_name = "DIA Proteomics Workflow", #WANT TO ADD ANALYSTS NAME
     description = "Full protein analysis workflow with config parameters" #ADD A MEANINGFUL LABEL HERE FOR TRACKING WHAT YOU DID
-)
+) #NEED TO ADD contrasts_tbl
 
 # Show the workflow arguments
 workflow_args
 
-### add a second output for params used as config_timestamp.ini
 ```
 
 # Copy all the relevant files to a publication directory
 ```{r}
-## Need to write down where these all are systematically
-## copy to results_summary_dir/proteomics
-## report doc will pull everything necessary from this folder
+copyToResultsSummary()
 ```
