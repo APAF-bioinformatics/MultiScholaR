@@ -1046,6 +1046,20 @@ copyToResultsSummary <- function() {
             type = "object",
             save_as = "design_matrix.tab",
             display_name = "Design Matrix"
+        ),
+        
+        list(
+            source = file.path(de_output_dir, "de_proteins_long_annot.xlsx"),
+            dest = "Publication_tables",
+            is_dir = FALSE,
+            display_name = "Proteomics Data Annotated",
+            new_name = "Proteomics_data_annotated.xlsx"
+        ),
+        list(
+            source = file.path(source_dir, "study_parameters.txt"),
+            dest = "Study_report",
+            is_dir = FALSE,
+            display_name = "Study Parameters"
         )
     )
     
@@ -1110,7 +1124,8 @@ copyToResultsSummary <- function() {
                 }
             } else {
                 source_path <- file_spec$source
-                dest_path <- file.path(dest_dir, basename(source_path))
+                dest_path <- file.path(dest_dir, 
+                    if (!is.null(file_spec$new_name)) file_spec$new_name else basename(source_path))
                 
                 if (source_exists) {
                     file.copy(
