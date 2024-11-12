@@ -963,3 +963,186 @@ setMethod("show",
         }
     }
 )
+
+
+##################################################################################################################
+
+#' @title Copy Files to Results Summary and Show Status
+#' @description Copies specified files to results summary directory and displays copy status
+#' @return Invisible NULL
+#' @export
+copyToResultsSummary <- function() {
+    # Define subdirectories to create
+    summary_subdirs <- c(
+        "QC_figures",
+        "Publication_figures", 
+        "Publication_tables",
+        "Study_report"
+    )
+    
+    # Create subdirectories in results_summary_dir
+    summary_subdirs |> 
+        sapply(\(subdir) {
+            dir.create(
+                file.path(results_summary_dir, subdir), 
+                recursive = TRUE, 
+                showWarnings = FALSE
+            )
+        })
+    
+    # Define files to copy with their display names
+    files_to_copy <- list(
+        # QC Figures
+        list(
+            source = file.path(time_dir, "correlation_filtered_combined_plots.png"),
+            dest = "QC_figures",
+            is_dir = FALSE,
+            display_name = "Correlation Filtered Plots"
+        ),
+        list(
+            source = file.path(results_dir, "protein_qc", "composite_QC_figure.pdf"),
+            dest = "QC_figures",
+            is_dir = FALSE,
+            display_name = "Composite QC (PDF)"
+        ),
+        list(
+            source = file.path(results_dir, "protein_qc", "composite_QC_figure.png"),
+            dest = "QC_figures",
+            is_dir = FALSE,
+            display_name = "Composite QC (PNG)"
+        ),
+        
+        # Publication Figures
+        list(
+            source = file.path(publication_graphs_dir, "Interactive_Volcano_Plots"),
+            dest = "Publication_figures",
+            is_dir = TRUE,
+            display_name = "Interactive Volcano Plots"
+        ),
+        list(
+            source = file.path(publication_graphs_dir, "NumSigDeMolecules"),
+            dest = "Publication_figures",
+            is_dir = TRUE,
+            display_name = "Num Sig DE Molecules"
+        ),
+        list(
+            source = file.path(publication_graphs_dir, "Volcano_Plots"),
+            dest = "Publication_figures",
+            is_dir = TRUE,
+            display_name = "Volcano Plots"
+        ),
+        
+        # Study Report Tables
+        list(
+            source = "contrasts_tbl",
+            dest = "Study_report",
+            type = "object",
+            save_as = "contrasts_tbl.tab",
+            display_name = "Contrasts Table"
+        ),
+        list(
+            source = "design_matrix",
+            dest = "Study_report",
+            type = "object",
+            save_as = "design_matrix.tab",
+            display_name = "Design Matrix"
+        )
+    )
+    
+    cat("Copying files to Results Summary...\n")
+    cat("===================================\n\n")
+    
+    # Copy and check each file/folder
+    files_to_copy |> 
+        lapply(\(file_spec) {
+            dest_dir <- file.path(results_summary_dir, file_spec$dest)
+            
+            # Get initial status
+            if (!is.null(file_spec$type) && file_spec$type == "object") {
+                source_exists <- exists(file_spec$source, envir = .GlobalEnv)
+            } else {
+                source_exists <- if (file_spec$is_dir) {
+                    dir.exists(file_spec$source)
+                } else {
+                    file.exists(file_spec$source)
+                }
+            }
+            
+            # Perform copy operation
+            if (!is.null(file_spec$type) && file_spec$type == "object") {
+                if (source_exists) {
+                    obj <- get(file_spec$source, envir = .GlobalEnv)
+                    write.table(
+                        obj,
+                        file = file.path(dest_dir, file_spec$save_as),
+                        sep = "\t",
+                        row.names = FALSE,
+                        quote = FALSE
+                    )
+                }
+                dest_path <- file.path(dest_dir, file_spec$save_as)
+                dest_exists <- file.exists(dest_path)
+            } else if (file_spec$is_dir) {
+                source_path <- file_spec$source
+                dest_path <- file.path(dest_dir, basename(source_path))
+                
+                if (source_exists) {
+                    # Create destination directory
+                    dir.create(dest_path, showWarnings = FALSE, recursive = TRUE)
+                    
+                    # Copy all files from source to destination
+                    files_to_copy <- list.files(source_path, full.names = TRUE, recursive = TRUE)
+                    
+                    files_to_copy |> 
+                        lapply(\(f) {
+                            rel_path <- sub(paste0("^", source_path, "/"), "", f)
+                            dest_file <- file.path(dest_path, rel_path)
+                            dir.create(dirname(dest_file), showWarnings = FALSE, recursive = TRUE)
+                            file.copy(f, dest_file, overwrite = TRUE)
+                        })
+                }
+                dest_exists <- dir.exists(dest_path)
+                
+                # Get file counts for directories
+                if (source_exists && dest_exists) {
+                    source_files <- list.files(source_path, recursive = TRUE)
+                    dest_files <- list.files(dest_path, recursive = TRUE)
+                }
+            } else {
+                source_path <- file_spec$source
+                dest_path <- file.path(dest_dir, basename(source_path))
+                
+                if (source_exists) {
+                    file.copy(
+                        from = source_path,
+                        to = dest_path,
+                        overwrite = TRUE
+                    )
+                }
+                dest_exists <- file.exists(dest_path)
+            }
+            
+            # Format and display status
+            source_status <- if (source_exists) "✓" else "✗"
+            dest_status <- if (dest_exists) "✓" else "✗"
+            
+            cat(sprintf("%-25s [%s → %s] %s\n",
+                file_spec$display_name,
+                source_status,
+                dest_status,
+                if (!is.null(file_spec$is_dir) && file_spec$is_dir) "Directory" else "File"
+            ))
+            
+            if (!is.null(file_spec$is_dir) && file_spec$is_dir && source_exists && dest_exists) {
+                cat(sprintf("%25s Files: %d → %d\n", "", 
+                    length(source_files), 
+                    length(dest_files)
+                ))
+            }
+        })
+    
+    cat("\nLegend: ✓ = exists, ✗ = missing\n")
+    cat("Arrow (→) shows source → destination status\n")
+    
+    invisible(NULL)
+}
