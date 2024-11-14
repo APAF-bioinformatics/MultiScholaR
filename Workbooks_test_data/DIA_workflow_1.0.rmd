@@ -1,5 +1,5 @@
 ---
-title: "DIA-NN Analysis Workbook"
+title: "QC Analysis for xyz"
 format:
     html:
         embed-resources: true
@@ -62,7 +62,13 @@ config_list <- readConfigFile( file = file.path(source_dir, "config.ini") )
 
 
 ```{r}
-RunApplet("designMatrix")
+if (exists("design_matrix", envir = .GlobalEnv)) {
+    print("Design matrix already set :) No need to run app again!")
+} else {
+    RunApplet("designMatrix")
+}
+# Comment in if you wish to run manually
+#RunApplet("designMatrix")
 ```
 
 # Convert the protein identifiers to Uniprot or Uniparc accessions if those annotations are available 
@@ -176,7 +182,7 @@ removed_peptides_with_less_than_two_peptides@peptide_data |> distinct(Protein.Id
 
 updateProteinFiltering(
   data = removed_peptides_with_less_than_two_peptides@peptide_data,
-  step_name = "<2pep",
+  step_name = "2pep",
   publication_graphs_dir = publication_graphs_dir,
   return_grid = TRUE,
 overwrite = TRUE
@@ -198,7 +204,7 @@ overwrite = TRUE
 )
 
 
-removed_peptides_with_less_than_two_peptides@peptide_data |> distinct(Run,Protein.Ids, Stripped.Sequence
+peptide_keep_samples_with_min_num_peptides@peptide_data |> distinct(Run,Protein.Ids, Stripped.Sequence
 , peptidoform_count) |> group_by( Run) |> summarise( n = sum(peptidoform_count) ) |> arrange( desc(n))
 ## Show the distinct number of Samples to manually check how many samples are removed from the previous step
 peptide_keep_samples_with_min_num_peptides@peptide_data |> distinct(Run) |> nrow()
@@ -474,7 +480,7 @@ cancorplot_r1
 ```{r}
 ruv_normalised_results_temp_obj <- ruvIII_C_Varying( normalised_frozen_protein_matrix_obj
                      , ruv_grouping_variable = "group"
-                     , ruv_number_k = 2
+                     , ruv_number_k = best_k
                      , ctrl = control_genes_index) 
 
 ## Sometimes RUV will blank out some of the values, so we need to remove proteins if too many values are blanked out 
@@ -667,7 +673,7 @@ pca_ruv_rle_correlation_merged
 ## Run Differential Abundance Analysis
 ```{r}
 #Debug - if regex readin from config doesnt work
-#config_list$deAnalysisParameters$args_group_pattern <- "(\\d+)"
+config_list$deAnalysisParameters$args_group_pattern <- "(\\d+)"
 de_analysis_results_list <- deAnalysisWrapperFunction ( ruv_normalised_for_de_analysis_obj
                                        , contrasts_tbl
                                        , formula_string = config_list$deAnalysisParameters$formula_string
@@ -677,6 +683,22 @@ de_analysis_results_list <- deAnalysisWrapperFunction ( ruv_normalised_for_de_an
                                        , eBayes_robust = config_list$deAnalysisParameters$eBayes_robust
                                        , args_group_pattern = config_list$deAnalysisParameters$args_group_pattern
                                        , args_row_id = config_list$deAnalysisParameters$args_row_id ) 
+
+## Debug - possible wrapper function for >1 contrasts
+#de_analysis_results_list <- contrasts_tbl |>#
+#  purrr::map(function(contrast) {
+#    deAnalysisWrapperFunction(
+#      ruv_normalised_for_de_analysis_obj,
+#      contrast,
+#      formula_string = config_list$deAnalysisParameters$formula_string,
+#      de_q_val_thresh = config_list$deAnalysisParameters$de_q_val_thresh,
+#      treat_lfc_cutoff = config_list$deAnalysisParameters$treat_lfc_cutoff,
+#      eBayes_trend = config_list$deAnalysisParameters$eBayes_trend,
+#      eBayes_robust = config_list$deAnalysisParameters$eBayes_robust,
+#      args_group_pattern = config_list$deAnalysisParameters$args_group_pattern,
+#      args_row_id = config_list$deAnalysisParameters$args_row_id
+#   )
+#  })
 ```
 
 

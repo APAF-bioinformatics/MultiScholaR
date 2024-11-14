@@ -634,6 +634,9 @@ loadDependencies <- function(verbose = TRUE) {
         "multidplyr", "RSpectra", "progress", "Rcpp", "RcppEigen",
         "qvalue", "Glimma", "ruv", "iq", "ggrepel", "patchwork",
         "dplyr", "gtools", "shiny", "DT", "gh",
+        # Additional packages
+        "plotly", "vroom", "gplots", "iheatmapr",
+        "UpSetR", "gt", "gprofiler2", "htmltools",
         # Bioconductor packages
         "BiocManager",
         # GitHub packages
@@ -998,6 +1001,14 @@ copyToResultsSummary <- function() {
             dest = "QC_figures",
             is_dir = FALSE,
             display_name = "Correlation Filtered Plots"
+        ),
+        # Add RUV normalized results
+        list(
+            source = file.path(results_dir, "protein_qc", "ruv_normalised_results_cln_with_replicates.tsv"),
+            dest = "Publication_tables",
+            is_dir = FALSE,
+            display_name = "RUV Normalized Results",
+            new_name = "RUV_normalised_results.tsv"
         ),
         list(
             source = file.path(results_dir, "protein_qc", "composite_QC_figure.pdf"),
