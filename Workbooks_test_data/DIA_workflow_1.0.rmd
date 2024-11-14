@@ -683,6 +683,22 @@ de_analysis_results_list <- deAnalysisWrapperFunction ( ruv_normalised_for_de_an
                                        , eBayes_robust = config_list$deAnalysisParameters$eBayes_robust
                                        , args_group_pattern = config_list$deAnalysisParameters$args_group_pattern
                                        , args_row_id = config_list$deAnalysisParameters$args_row_id ) 
+
+## Debug - possible wrapper function for >1 contrasts
+#de_analysis_results_list <- contrasts_tbl |>#
+#  purrr::map(function(contrast) {
+#    deAnalysisWrapperFunction(
+#      ruv_normalised_for_de_analysis_obj,
+#      contrast,
+#      formula_string = config_list$deAnalysisParameters$formula_string,
+#      de_q_val_thresh = config_list$deAnalysisParameters$de_q_val_thresh,
+#      treat_lfc_cutoff = config_list$deAnalysisParameters$treat_lfc_cutoff,
+#      eBayes_trend = config_list$deAnalysisParameters$eBayes_trend,
+#      eBayes_robust = config_list$deAnalysisParameters$eBayes_robust,
+#      args_group_pattern = config_list$deAnalysisParameters$args_group_pattern,
+#      args_row_id = config_list$deAnalysisParameters$args_row_id
+#   )
+#  })
 ```
 
 
