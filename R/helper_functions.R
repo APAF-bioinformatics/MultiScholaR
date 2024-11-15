@@ -372,19 +372,20 @@ updateParamInObject <- function(theObject, param_name_string) {
 
 #' @description Helper function to neatly print out the figures as they get produced
 #' @export
+
 summarizeQCPlot <- function(qc_figure) {
             cat("RLE Plots:\n")
             for (plot_name in names(qc_figure@rle_plots)) {
               cat(paste(" -", plot_name, "\n"))
               print(qc_figure@rle_plots[[plot_name]])
             }
-            
+
             cat("\nPCA Plots:\n")
             for (plot_name in names(qc_figure@pca_plots)) {
               cat(paste(" -", plot_name, "\n"))
               print(qc_figure@pca_plots[[plot_name]])
             }
-            
+
             cat("\nPearson Correlation Plots:\n")
             for (plot_name in names(qc_figure@pearson_plots)) {
               cat(paste(" -", plot_name, "\n"))
@@ -415,7 +416,8 @@ readConfigFile <- function( file=file.path(source_dir, "config.ini")) {
                                            , "filterMinNumPeptidesPerProtein"
                                            , "filterMinNumPeptidesPerSample"
                                            , "removePeptidesWithOnlyOneReplicate"
-                                           , "peptideMissingValueImputation")
+                                           , "peptideMissingValueImputation"
+                                           , "removeProteinsWithOnlyOneReplicate")
 
       setCoreUtilisation <- function(config_list, function_name) {
         if (!function_name %in% names(config_list)) {
@@ -429,6 +431,9 @@ readConfigFile <- function( file=file.path(source_dir, "config.ini")) {
       for( x in list_of_multithreaded_functions) {
         config_list <- setCoreUtilisation(config_list, x)
       }
+
+      config_list[["globalParameters"]][["plots_format"]] <- str_split(config_list[["globalParameters"]][["plots_format"]], ",")[[1]]
+
     }}
 
   getConfigValue <- function (config_list, section, value) {
@@ -516,6 +521,13 @@ readConfigFile <- function( file=file.path(source_dir, "config.ini")) {
 
   }
 
+
+  if("ruvIII_C_Varying" %in% names(config_list)) {
+    config_list <- setConfigValueAsNumeric(config_list
+                                           , "ruvIII_C_Varying"
+                                           , "ruv_number_k")
+  }
+
   if("plotRle" %in% names(config_list)) {
     config_list[["plotRle"]][["yaxis_limit"]] <- str_split(config_list[["plotRle"]][["yaxis_limit"]], ",")[[1]] |>
       purrr::map_dbl( \(x) as.numeric(x) )
@@ -526,35 +538,35 @@ readConfigFile <- function( file=file.path(source_dir, "config.ini")) {
 
    if("deAnalysisParameters" %in% names(config_list)) {
     # Handle plots_format as array
-    config_list[["deAnalysisParameters"]][["plots_format"]] <- 
+    config_list[["deAnalysisParameters"]][["plots_format"]] <-
       str_split(config_list[["deAnalysisParameters"]][["plots_format"]], ",")[[1]]
-    
+
     # Add new lfc_cutoff parameter
     config_list[["deAnalysisParameters"]][["lfc_cutoff"]] <- FALSE
-    
+
     # Modify treat_lfc_cutoff to use ifelse
-    config_list[["deAnalysisParameters"]][["treat_lfc_cutoff"]] <- 
+    config_list[["deAnalysisParameters"]][["treat_lfc_cutoff"]] <-
       ifelse(config_list[["deAnalysisParameters"]][["lfc_cutoff"]], log2(1.5), 0)
-    
+
     # Handle args_group_pattern - remove quotes and fix escaping
     if("args_group_pattern" %in% names(config_list[["deAnalysisParameters"]])) {
-      config_list[["deAnalysisParameters"]][["args_group_pattern"]] <- 
+      config_list[["deAnalysisParameters"]][["args_group_pattern"]] <-
         gsub('^"|"$', '', config_list[["deAnalysisParameters"]][["args_group_pattern"]]) |>
         gsub(pattern = "\\\\", replacement = "\\")
     }
-    
+
     # Convert numeric parameters
-    config_list <- setConfigValueAsNumeric(config_list, 
-                                         "deAnalysisParameters", 
+    config_list <- setConfigValueAsNumeric(config_list,
+                                         "deAnalysisParameters",
                                          "de_q_val_thresh")
-    
+
     # Convert boolean parameters
-    config_list[["deAnalysisParameters"]][["eBayes_trend"]] <- 
+    config_list[["deAnalysisParameters"]][["eBayes_trend"]] <-
       tolower(config_list[["deAnalysisParameters"]][["eBayes_trend"]]) == "true"
-    config_list[["deAnalysisParameters"]][["eBayes_robust"]] <- 
+    config_list[["deAnalysisParameters"]][["eBayes_robust"]] <-
       tolower(config_list[["deAnalysisParameters"]][["eBayes_robust"]]) == "true"
-    
-    print(paste0("Read deAnalysisParameters: formula_string = ", 
+
+    print(paste0("Read deAnalysisParameters: formula_string = ",
                 config_list[["deAnalysisParameters"]][["formula_string"]]))
 }
 
@@ -596,13 +608,13 @@ readConfigFileSection <- function( theObject
 #' @description
 #' Installs and loads all required packages for ProteomeScholaR. This includes packages from CRAN, Bioconductor, and GitHub.
 #'
-#' @param verbose logical; if TRUE (default), displays progress messages during 
+#' @param verbose logical; if TRUE (default), displays progress messages during
 #'   package installation and loading
 #'
 #' @details
 #' Checks for and installs missing packages, then loads all required
-#' dependencies. It handles special cases for GitHub packages (RUVIIIC and 
-#' ProteomeScholaR) and ensures all necessary packages are available for the DIA 
+#' dependencies. It handles special cases for GitHub packages (RUVIIIC and
+#' ProteomeScholaR) and ensures all necessary packages are available for the DIA
 #' workflow.
 #'
 #' @return None (called for side effects)
@@ -629,7 +641,7 @@ loadDependencies <- function(verbose = TRUE) {
     required_packages <- c(
         # CRAN packages
         "tidyverse", "seqinr", "lazyeval", "rlang", "glue", "GGally",
-        "here", "tibble", "mixOmics", "limma", "magrittr", "future.apply", 
+        "here", "tibble", "mixOmics", "limma", "magrittr", "future.apply",
         "tictoc", "beepr", "furrr", "readxl", "writexl", "RColorBrewer",
         "multidplyr", "RSpectra", "progress", "Rcpp", "RcppEigen",
         "qvalue", "Glimma", "ruv", "iq", "ggrepel", "patchwork",
@@ -691,29 +703,29 @@ extract_experiment <- function(x, mode = "range", start = 1, end = NULL) {
   if (!mode %in% c("range", "start", "end")) {
     stop("Mode must be one of: 'range', 'start', 'end'")
   }
-  
+
   process_string <- function(str) {
     parts <- unlist(strsplit(str, "_"))
-    
+
     if (mode == "range") {
       if (is.null(end)) stop("End position required for range mode")
       if (start > length(parts) || end > length(parts)) {
         warning("Position out of bounds for string: ", str)
-        
+
         return(NA_character_)
       }
       return(paste(parts[start:end], collapse = "_"))
     }
-    
+
     else if (mode == "start") {
       return(parts[1])
     }
-    
+
     else if (mode == "end") {
       return(parts[length(parts)])
     }
   }
-  
+
   sapply(x, process_string)
 }
 
@@ -751,7 +763,7 @@ setupDirectories <- function(base_dir = here::here()) {
     assign("qc_dir", file.path(publication_graphs_dir, "filtering_qc"), envir = .GlobalEnv)
     assign("time_dir", file.path(qc_dir, timestamp), envir = .GlobalEnv)
     assign("results_summary_dir", file.path(base_dir, "results_summary", "proteomics"), envir = .GlobalEnv)
-    
+
     # Directory management function with versioning
     manageDirectoryWithPrev <- function(dir_path) {
         if (dir.exists(dir_path)) {
@@ -767,16 +779,16 @@ setupDirectories <- function(base_dir = here::here()) {
             dir.create(dir_path, recursive = TRUE)
         }
     }
-    
+
     # Simple directory creation without versioning
     createDirectory <- function(dir_path) {
         dir.create(dir_path, recursive = TRUE, showWarnings = FALSE)
     }
-    
+
     # Create data and source directories (no versioning)
-    c(data_dir, source_dir) |> 
+    c(data_dir, source_dir) |>
         sapply(createDirectory)
-    
+
     # Create results directories (with versioning)
     c(
         results_dir,
@@ -788,9 +800,9 @@ setupDirectories <- function(base_dir = here::here()) {
         file.path(results_dir, "clean_proteins"),
         file.path(results_dir, "protein_qc"),
         file.path(results_dir, "peptide_qc")
-    ) |> 
+    ) |>
         sapply(manageDirectoryWithPrev)
-    
+
     # Return the DirectoryManager object
     return(new("DirectoryManager",
         base_dir = base_dir,
@@ -809,25 +821,25 @@ setupDirectories <- function(base_dir = here::here()) {
 showDirectories <- function() {
     # List of all directory variables we want to show
     dir_vars <- c(
-        "base_dir", "results_dir", "data_dir", "source_dir", 
-        "de_output_dir", "publication_graphs_dir", 
+        "base_dir", "results_dir", "data_dir", "source_dir",
+        "de_output_dir", "publication_graphs_dir",
         "qc_dir", "time_dir", "results_summary_dir"
     )
-    
+
     cat("Project Directory Structure:\n")
     cat("===========================\n\n")
-    
+
     for (var_name in dir_vars) {
         # Get the path from global environment
         dir_path <- get(var_name, envir = .GlobalEnv)
         exists <- dir.exists(dir_path)
         prev_path <- paste0(dir_path, "_prev")
         has_prev <- dir.exists(prev_path)
-        
+
         # Format the output
         status <- if (exists) "✓" else "✗"
-        
-        cat(sprintf("%-25s [%s] %s\n", 
+
+        cat(sprintf("%-25s [%s] %s\n",
             gsub("_dir$", "", var_name),  # Remove _dir suffix for display
             status,
             dir_path
@@ -836,7 +848,7 @@ showDirectories <- function() {
             cat(sprintf("%25s %s\n", "", prev_path))
         }
     }
-    
+
     cat("\nLegend: ✓ = exists, ✗ = missing\n")
 }
 
@@ -858,7 +870,7 @@ setClass("WorkflowArgs",
 #' @return WorkflowArgs object
 #' @export
 createWorkflowArgsFromConfig <- function(workflow_name, description = "") {
-  
+
     # Get git information
     branch_info <- gh("/repos/APAF-BIOINFORMATICS/ProteomeScholaR/branches/dev-jr")
     git_info <- list(
@@ -867,7 +879,7 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "") {
         repo = "ProteomeScholaR",
         timestamp = branch_info$commit$commit$author$date
     )
-    
+
     new("WorkflowArgs",
         workflow_name = workflow_name,
         timestamp = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
@@ -882,26 +894,26 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "") {
 #' @param indent Number of spaces for indentation
 formatConfigList <- function(config_list, indent = 0) {
     output <- character()
-    
+
     for (name in names(config_list)) {
         value <- config_list[[name]]
         # Skip core_utilisation and complex objects
-        if (name == "core_utilisation" || 
+        if (name == "core_utilisation" ||
             any(class(value) %in% c("process", "R6", "multidplyr_cluster"))) {
             next
         }
-        
+
         # Format the name
         name_formatted <- gsub("\\.", " ", name)
         name_formatted <- gsub("_", " ", name_formatted)
         name_formatted <- tools::toTitleCase(name_formatted)
-        
+
         # Handle different value types
         if (is.list(value)) {
-            output <- c(output, 
-                paste0(paste(rep(" ", indent), collapse = ""), 
+            output <- c(output,
+                paste0(paste(rep(" ", indent), collapse = ""),
                       name_formatted, ":"))
-            output <- c(output, 
+            output <- c(output,
                 formatConfigList(value, indent + 2))
         } else {
             output <- c(output,
@@ -936,7 +948,7 @@ setMethod("show",
             "Configuration Parameters:",
             "------------------------"
         )
-        
+
         # Format configuration parameters
         params <- formatConfigList(object@args)
 
@@ -954,10 +966,10 @@ setMethod("show",
         } else {
             output <- c(header, params)
         }
-        
+
         # Combine and print
         cat(paste(output, collapse = "\n"), "\n")
-        
+
         # Save to file if source_dir is defined
         if (exists("source_dir")) {
             output_file <- file.path(source_dir, "study_parameters.txt")
@@ -978,21 +990,21 @@ copyToResultsSummary <- function() {
     # Define subdirectories to create
     summary_subdirs <- c(
         "QC_figures",
-        "Publication_figures", 
+        "Publication_figures",
         "Publication_tables",
         "Study_report"
     )
-    
+
     # Create subdirectories in results_summary_dir
-    summary_subdirs |> 
+    summary_subdirs |>
         sapply(\(subdir) {
             dir.create(
-                file.path(results_summary_dir, subdir), 
-                recursive = TRUE, 
+                file.path(results_summary_dir, subdir),
+                recursive = TRUE,
                 showWarnings = FALSE
             )
         })
-    
+
     # Define files to copy with their display names
     files_to_copy <- list(
         # QC Figures
@@ -1022,7 +1034,7 @@ copyToResultsSummary <- function() {
             is_dir = FALSE,
             display_name = "Composite QC (PNG)"
         ),
-        
+
         # Publication Figures
         list(
             source = file.path(publication_graphs_dir, "Interactive_Volcano_Plots"),
@@ -1042,7 +1054,7 @@ copyToResultsSummary <- function() {
             is_dir = TRUE,
             display_name = "Volcano Plots"
         ),
-        
+
         # Study Report Tables
         list(
             source = "contrasts_tbl",
@@ -1058,7 +1070,7 @@ copyToResultsSummary <- function() {
             save_as = "design_matrix.tab",
             display_name = "Design Matrix"
         ),
-        
+
         list(
             source = file.path(de_output_dir, "de_proteins_long_annot.xlsx"),
             dest = "Publication_tables",
@@ -1073,15 +1085,15 @@ copyToResultsSummary <- function() {
             display_name = "Study Parameters"
         )
     )
-    
+
     cat("Copying files to Results Summary...\n")
     cat("===================================\n\n")
-    
+
     # Copy and check each file/folder
-    files_to_copy |> 
+    files_to_copy |>
         lapply(\(file_spec) {
             dest_dir <- file.path(results_summary_dir, file_spec$dest)
-            
+
             # Get initial status
             if (!is.null(file_spec$type) && file_spec$type == "object") {
                 source_exists <- exists(file_spec$source, envir = .GlobalEnv)
@@ -1092,7 +1104,7 @@ copyToResultsSummary <- function() {
                     file.exists(file_spec$source)
                 }
             }
-            
+
             # Perform copy operation
             if (!is.null(file_spec$type) && file_spec$type == "object") {
                 if (source_exists) {
@@ -1110,15 +1122,15 @@ copyToResultsSummary <- function() {
             } else if (file_spec$is_dir) {
                 source_path <- file_spec$source
                 dest_path <- file.path(dest_dir, basename(source_path))
-                
+
                 if (source_exists) {
                     # Create destination directory
                     dir.create(dest_path, showWarnings = FALSE, recursive = TRUE)
-                    
+
                     # Copy all files from source to destination
                     files_to_copy <- list.files(source_path, full.names = TRUE, recursive = TRUE)
-                    
-                    files_to_copy |> 
+
+                    files_to_copy |>
                         lapply(\(f) {
                             rel_path <- sub(paste0("^", source_path, "/"), "", f)
                             dest_file <- file.path(dest_path, rel_path)
@@ -1127,7 +1139,7 @@ copyToResultsSummary <- function() {
                         })
                 }
                 dest_exists <- dir.exists(dest_path)
-                
+
                 # Get file counts for directories
                 if (source_exists && dest_exists) {
                     source_files <- list.files(source_path, recursive = TRUE)
@@ -1135,9 +1147,9 @@ copyToResultsSummary <- function() {
                 }
             } else {
                 source_path <- file_spec$source
-                dest_path <- file.path(dest_dir, 
+                dest_path <- file.path(dest_dir,
                     if (!is.null(file_spec$new_name)) file_spec$new_name else basename(source_path))
-                
+
                 if (source_exists) {
                     file.copy(
                         from = source_path,
@@ -1147,28 +1159,28 @@ copyToResultsSummary <- function() {
                 }
                 dest_exists <- file.exists(dest_path)
             }
-            
+
             # Format and display status
             source_status <- if (source_exists) "✓" else "✗"
             dest_status <- if (dest_exists) "✓" else "✗"
-            
+
             cat(sprintf("%-25s [%s → %s] %s\n",
                 file_spec$display_name,
                 source_status,
                 dest_status,
                 if (!is.null(file_spec$is_dir) && file_spec$is_dir) "Directory" else "File"
             ))
-            
+
             if (!is.null(file_spec$is_dir) && file_spec$is_dir && source_exists && dest_exists) {
-                cat(sprintf("%25s Files: %d → %d\n", "", 
-                    length(source_files), 
+                cat(sprintf("%25s Files: %d → %d\n", "",
+                    length(source_files),
                     length(dest_files)
                 ))
             }
         })
-    
+
     cat("\nLegend: ✓ = exists, ✗ = missing\n")
     cat("Arrow (→) shows source → destination status\n")
-    
+
     invisible(NULL)
 }
