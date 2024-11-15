@@ -6,6 +6,10 @@ editor_options:
 
 # ProteomeScholaR v0.8
 
+##Contributors 
+Ignatius Pang (ignatius.pang at mq.edu.au) 
+Will Klare (william.klare at mq.edu.au) 
+
 ## v0.8 provides a feature complete workflow for processing searched DIA-NN proteomics data.
 1. Download data and directory structure from [here](https://drive.google.com/file/d/1TO1a3muF0KKnRQN0W_qg1asCG1LgHZMB/view?usp=sharing).
 
@@ -26,3 +30,5 @@ editor_options:
 1. Do the science :)
 
 Enjoy!
+
+
