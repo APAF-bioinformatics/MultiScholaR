@@ -22,6 +22,7 @@ PeptideQuantitativeData <- setClass("PeptideQuantitativeData"
                                        , sample_id="character"
                                        , group_id="character"
                                        , technical_replicate_id="character"
+                                       , args = "list"
                                      )
 
                                      , prototype = list(
@@ -39,6 +40,9 @@ PeptideQuantitativeData <- setClass("PeptideQuantitativeData"
                                        , sample_id="Sample_id"
                                        , group_id="group"
                                        , technical_replicate_id="replicates"
+
+                                       # Parameters for methods and functions
+                                       , args = NULL
 
                                      )
 
@@ -102,7 +106,7 @@ PeptideQuantitativeData <- setClass("PeptideQuantitativeData"
 
                                        if(!object@raw_quantity_column %in% colnames(object@peptide_data) &
                                           !object@norm_quantity_column %in% colnames(object@peptide_data) ) {
-                                         stop("Precursor raw quantity or normalized quantity column must be in the peptide data table")
+                                         stop("Precursor raw quantity or normalised quantity column must be in the peptide data table")
                                        }
 
                                        if( ! object@sample_id %in% colnames(object@design_matrix) ) {
@@ -124,17 +128,56 @@ PeptideQuantitativeData <- setClass("PeptideQuantitativeData"
 #' @export PeptideQuantitativeData
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#' @export
+PeptideQuantitativeDataDiann <- function( peptide_data
+                                          , design_matrix
+                                          , sample_id = "Run"
+                                          , group_id = "group"
+                                          , technical_replicate_id = "replicates"
+                                          , args = NA) {
+
+
+
+  peptide_data <- new( "PeptideQuantitativeData"
+
+    # Protein vs Sample quantitative data
+    , peptide_data = peptide_data
+    , protein_id_column = "Protein.Ids"
+    , peptide_sequence_column = "Stripped.Sequence"
+    , q_value_column = "Q.Value"
+    , global_q_value_column = "Global.Q.Value"
+    , proteotypic_peptide_sequence_column = "Proteotypic"
+    , raw_quantity_column = "Precursor.Quantity"
+    , norm_quantity_column = "Precursor.Normalised"
+    , is_logged_data = FALSE
+
+    # Design Matrix Information
+    , design_matrix = design_matrix
+    , sample_id= sample_id
+    , group_id= group_id
+    , technical_replicate_id= technical_replicate_id
+    , args = args
+  )
+
+  peptide_data
+
+}
+
+
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Format the design matrix so that only metadata for samples in the protein data are retained, and also
 # sort the sample IDs in the same order as the data matrix
-#'@exportGeneric cleanDesignMatrixPeptideObj
-setGeneric(name ="cleanDesignMatrixPeptideObj"
+#'@exportGeneric cleanDesignMatrixPeptide
+setGeneric(name ="cleanDesignMatrixPeptide"
            , def=function( theObject) {
-             standardGeneric("cleanDesignMatrixPeptideObj")
+             standardGeneric("cleanDesignMatrixPeptide")
            })
 
-#'@exportMethod cleanDesignMatrixPeptideObj
-setMethod( f ="cleanDesignMatrixPeptideObj"
+#'@exportMethod cleanDesignMatrixPeptide
+setMethod( f ="cleanDesignMatrixPeptide"
            , signature = "PeptideQuantitativeData"
            , definition=function( theObject ) {
 
@@ -151,26 +194,23 @@ setMethod( f ="cleanDesignMatrixPeptideObj"
            })
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
 #'@export
-setGeneric(name="srlQvalueProteotypicPeptideCleanObj"
-           , def=function( theObject, q_value_thresh, global_q_value_thresh, choose_only_proteotypic_peptide, srl_quant_columns ) {
-             standardGeneric("srlQvalueProteotypicPeptideCleanObj")
+setGeneric(name="srlQvalueProteotypicPeptideClean"
+           , def=function( theObject, qvalue_threshold = NULL, global_qvalue_threshold = NULL, choose_only_proteotypic_peptide = NULL, input_matrix_column_ids = NULL) {
+             standardGeneric("srlQvalueProteotypicPeptideClean")
            }
-           , signature = c("theObject", "q_value_thresh", "global_q_value_thresh", "choose_only_proteotypic_peptide", "srl_quant_columns") )
+           , signature = c("theObject", "qvalue_threshold", "global_qvalue_threshold", "choose_only_proteotypic_peptide", "input_matrix_column_ids") )
 
 
 #'@export
-setMethod( f ="srlQvalueProteotypicPeptideCleanObj"
+setMethod( f ="srlQvalueProteotypicPeptideClean"
            , signature="PeptideQuantitativeData"
            , definition=function ( theObject
-                                  , q_value_thresh = 0.01
-                                  , global_q_value_thresh = 0.01
-                                  , choose_only_proteotypic_peptide = 1
-                                  , srl_quant_columns =  c("Run"
-                                                          , "Precursor.Id", "Protein.Ids", "Stripped.Sequence",  "Modified.Sequence"
-                                                          , "Precursor.Charge"
-                                                          , "Precursor.Quantity", "Precursor.Normalised") ) {
+                                  , qvalue_threshold = NULL
+                                  , global_qvalue_threshold = NULL
+                                  , choose_only_proteotypic_peptide = NULL
+                                  , input_matrix_column_ids =  NULL
+                                  ) {
              peptide_data <- theObject@peptide_data
              protein_id_column <- theObject@protein_id_column
              q_value_column <- theObject@q_value_column
@@ -180,18 +220,46 @@ setMethod( f ="srlQvalueProteotypicPeptideCleanObj"
              raw_quantity_column <- theObject@raw_quantity_column
              norm_quantity_column <- theObject@norm_quantity_column
 
-             search_srl_quant_cln <- srlQvalueProteotypicPeptideClean( input_table = peptide_data
-                                                                       , srl_quant_columns = unique(c(srl_quant_columns, protein_id_column, peptide_sequence_column, peptide_sequence_column))
+             qvalue_threshold <- checkParamsObjectFunctionSimplify( theObject, "qvalue_threshold", 0.01)
+
+             global_qvalue_threshold <- checkParamsObjectFunctionSimplify( theObject, "global_qvalue_threshold", 0.01)
+
+             choose_only_proteotypic_peptide <- checkParamsObjectFunctionSimplify( theObject
+                                                                                   , "choose_only_proteotypic_peptide"
+                                                                                   , 1 )
+
+             input_matrix_column_ids <- checkParamsObjectFunctionSimplify( theObject
+                                                                           , "input_matrix_column_ids" )
+
+             theObject <- updateParamInObject(theObject, "qvalue_threshold")
+             theObject <- updateParamInObject(theObject, "global_qvalue_threshold")
+             theObject <- updateParamInObject(theObject, "choose_only_proteotypic_peptide")
+
+             dia_nn_default_columns <- c("Protein.Ids"
+                                        , "Stripped.Sequence"
+                                        , "Q.Value"
+                                        , "Global.Q.Value"
+                                        , "Precursor.Quantity"
+                                        , "Precursor.Normalised")
+
+             theObject <- updateParamInObject(theObject, "input_matrix_column_ids")
+
+             # print( paste("qvalue_threshold: ", qvalue_threshold))
+             search_srl_quant_cln <- srlQvalueProteotypicPeptideCleanHelper( input_table = peptide_data
+                                                                       , input_matrix_column_ids = unique(c(input_matrix_column_ids
+                                                                                                      , protein_id_column
+                                                                                                      , peptide_sequence_column
+                                                                                                      , peptide_sequence_column))
                                                                        , protein_id_column = !!sym(protein_id_column)
                                                                        , q_value_column = !!sym(q_value_column)
                                                                        , global_q_value_column = !!sym(global_q_value_column)
-                                                                       , global_q_value_thresh = global_q_value_thresh
-                                                                       , q_value_thresh = q_value_thresh
+                                                                       , global_qvalue_threshold = global_qvalue_threshold
+                                                                       , qvalue_threshold = qvalue_threshold
                                                                        , choose_only_proteotypic_peptide = choose_only_proteotypic_peptide)
 
              theObject@peptide_data <- search_srl_quant_cln
 
-             theObject <- cleanDesignMatrixPeptideObj(theObject)
+             theObject <- cleanDesignMatrixPeptide(theObject)
 
              return(theObject)
            })
@@ -199,16 +267,16 @@ setMethod( f ="srlQvalueProteotypicPeptideCleanObj"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #'@export
-setGeneric(name="rollUpPrecursorToPeptideObj"
-           , def=function( theObject, cluster ) {
-             standardGeneric("rollUpPrecursorToPeptideObj")
+setGeneric(name="rollUpPrecursorToPeptide"
+           , def=function( theObject, core_utilisation = NULL) {
+             standardGeneric("rollUpPrecursorToPeptide")
            }
-           , signature=c("theObject", "cluster"))
+           , signature=c("theObject", "core_utilisation"))
 
 #'@export
-setMethod(f="rollUpPrecursorToPeptideObj"
+setMethod(f="rollUpPrecursorToPeptide"
           , signature="PeptideQuantitativeData"
-          , definition=function (theObject, cluster) {
+          , definition=function (theObject, core_utilisation = NULL) {
 
             peptide_data <- theObject@peptide_data
             protein_id_column <- theObject@protein_id_column
@@ -226,68 +294,162 @@ setMethod(f="rollUpPrecursorToPeptideObj"
             group_id <- theObject@group_id
             technical_replicate_id <- theObject@technical_replicate_id
 
-            theObject@peptide_data <- rollUpPrecursorToPeptide(input_table = peptide_data
+            core_utilisation <- checkParamsObjectFunctionSimplify( theObject, "core_utilisation", NA)
+            theObject <- updateParamInObject(theObject, "core_utilisation")
+
+            theObject@peptide_data <- rollUpPrecursorToPeptideHelper(input_table = peptide_data
                                                                , sample_id_column = !!sym(sample_id)
                                                                , protein_id_column = !!sym(protein_id_column)
                                                                , peptide_sequence_column = !!sym(peptide_sequence_column)
                                                                , precursor_quantity_column = !!sym(raw_quantity_column)
-                                                               , precursor_normalized_column = !!sym(norm_quantity_column)
-                                                               , cluster = cluster)
+                                                               , precursor_normalised_column = !!sym(norm_quantity_column)
+                                                               , core_utilisation = core_utilisation)
 
              theObject@raw_quantity_column   <- "Peptide.RawQuantity"
-             theObject@norm_quantity_column <- "Peptide.Normalized"
+             theObject@norm_quantity_column <- "Peptide.Normalised"
 
-             theObject <- cleanDesignMatrixPeptideObj(theObject)
+             theObject <- cleanDesignMatrixPeptide(theObject)
 
             return(theObject)
           })
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
-setGeneric(name="peptideIntensityFilteringObj"
-           , def=function( theObject, min_peptide_intensity_percentile, proportion_samples_below_intensity_threshold, cluster) {
-             standardGeneric("peptideIntensityFilteringObj")
+setGeneric(name="peptideIntensityFiltering"
+           , def=function( theObject, peptides_intensity_cutoff_percentile = NULL, peptides_proportion_of_samples_below_cutoff = NULL, core_utilisation = NULL) {
+             standardGeneric("peptideIntensityFiltering")
            }
-           , signature=c("theObject", "min_peptide_intensity_percentile", "proportion_samples_below_intensity_threshold", "cluster"))
+           , signature=c("theObject", "peptides_intensity_cutoff_percentile", "peptides_proportion_of_samples_below_cutoff", "core_utilisation"))
 
 #'@export
-setMethod( f="peptideIntensityFilteringObj"
+setMethod( f="peptideIntensityFiltering"
            , signature="PeptideQuantitativeData"
-           , definition = function( theObject, min_peptide_intensity_percentile, proportion_samples_below_intensity_threshold, cluster) {
+           , definition = function( theObject, peptides_intensity_cutoff_percentile = NULL, peptides_proportion_of_samples_below_cutoff = NULL, core_utilisation = NULL) {
              peptide_data <- theObject@peptide_data
              raw_quantity_column <- theObject@raw_quantity_column
              norm_quantity_column <- theObject@norm_quantity_column
 
-             min_peptide_intensity_threshold <- ceiling( quantile( peptide_data |> pull(!!sym(raw_quantity_column)), na.rm=TRUE, probs = c(min_peptide_intensity_percentile) ))[1]
+             peptides_intensity_cutoff_percentile <- checkParamsObjectFunctionSimplify( theObject
+                                                                                    , "peptides_intensity_cutoff_percentile")
 
-             peptide_normalized_pif_cln <- peptideIntensityFiltering( peptide_data
+             peptides_proportion_of_samples_below_cutoff <- checkParamsObjectFunctionSimplify( theObject
+                                                                                                , "peptides_proportion_of_samples_below_cutoff")
+
+             core_utilisation <- checkParamsObjectFunctionSimplify( theObject, "core_utilisation", NA)
+
+             theObject <- updateParamInObject(theObject, "peptides_intensity_cutoff_percentile")
+             theObject <- updateParamInObject(theObject, "peptides_proportion_of_samples_below_cutoff")
+             theObject <- updateParamInObject(theObject, "core_utilisation")
+
+             min_peptide_intensity_threshold <- ceiling( quantile( peptide_data |> pull(!!sym(raw_quantity_column)), na.rm=TRUE, probs = c(peptides_intensity_cutoff_percentile/100) ))[1]
+
+             peptide_normalised_pif_cln <- peptideIntensityFilteringHelper( peptide_data
                                                                       , min_peptide_intensity_threshold = min_peptide_intensity_threshold
-                                                                      , proportion_samples_below_intensity_threshold = proportion_samples_below_intensity_threshold
+                                                                      , peptides_proportion_of_samples_below_cutoff = peptides_proportion_of_samples_below_cutoff
                                                                       , protein_id_column = !!sym( theObject@protein_id_column)
                                                                       , peptide_sequence_column = !!sym(theObject@peptide_sequence_column)
                                                                       , peptide_quantity_column = !!sym(raw_quantity_column)
-                                                                      , cluster = cluster)
+                                                                      , core_utilisation = core_utilisation)
 
-             theObject@peptide_data <- peptide_normalized_pif_cln
+             theObject@peptide_data <- peptide_normalised_pif_cln
 
-             theObject <- cleanDesignMatrixPeptideObj(theObject)
+             theObject <- cleanDesignMatrixPeptide(theObject)
 
              return(theObject)
            })
+
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#'@export
+setGeneric(name="removePeptidesWithMissingValuesPercent"
+           , def=function( theObject
+                           , grouping_variable = NULL
+                           , groupwise_percentage_cutoff = NULL
+                           , max_groups_percentage_cutoff = NULL
+                           , peptides_intensity_cutoff_percentile = NULL) {
+             standardGeneric("removePeptidesWithMissingValuesPercent")
+           }
+           , signature=c("theObject"
+                         , "grouping_variable"
+                         , "groupwise_percentage_cutoff"
+                         , "max_groups_percentage_cutoff"
+                         , "peptides_intensity_cutoff_percentile" ))
+
+#'@export
+setMethod( f = "removePeptidesWithMissingValuesPercent"
+           , signature="PeptideQuantitativeData"
+           , definition=function( theObject
+                                  , grouping_variable = NULL
+                                  , groupwise_percentage_cutoff = NULL
+                                  , max_groups_percentage_cutoff = NULL
+                                  , peptides_intensity_cutoff_percentile = NULL) {
+
+             peptide_data <- theObject@peptide_data
+             protein_id_column <- theObject@protein_id_column
+             peptide_sequence_column <- theObject@peptide_sequence_column
+             raw_quantity_column <- theObject@raw_quantity_column
+             norm_quantity_column <- theObject@norm_quantity_column
+             sample_id <- theObject@sample_id
+
+             design_matrix <- theObject@design_matrix
+
+             grouping_variable <- checkParamsObjectFunctionSimplify( theObject
+                                                                   , "grouping_variable"
+                                                                   , NULL)
+             groupwise_percentage_cutoff <- checkParamsObjectFunctionSimplify( theObject
+                                                                                   , "groupwise_percentage_cutoff"
+                                                                                   , 50)
+             max_groups_percentage_cutoff <- checkParamsObjectFunctionSimplify( theObject
+                                                                                   , "max_groups_percentage_cutoff"
+                                                                                   , 50)
+             peptides_intensity_cutoff_percentile <- checkParamsObjectFunctionSimplify( theObject
+                                                                                    , "peptides_intensity_cutoff_percentile"
+                                                                                    , 50)
+
+             theObject <- updateParamInObject(theObject, "grouping_variable")
+             theObject <- updateParamInObject(theObject, "groupwise_percentage_cutoff")
+             theObject <- updateParamInObject(theObject, "max_groups_percentage_cutoff")
+             theObject <- updateParamInObject(theObject, "peptides_intensity_cutoff_percentile")
+
+             min_protein_intensity_threshold <- ceiling( quantile( peptide_data |>
+                                                                     dplyr::filter( !is.nan(!!sym(norm_quantity_column)) & !is.infinite(!!sym(norm_quantity_column))) |>
+                                                                     pull(!!sym(norm_quantity_column))
+                                                                   , na.rm=TRUE
+                                                                   , probs = c(peptides_intensity_cutoff_percentile/100) ))[1]
+
+             # print(min_protein_intensity_threshold )
+
+             theObject@peptide_data <- removePeptidesWithMissingValuesPercentHelper( peptide_data
+                                                                               , design_matrix = design_matrix
+                                                                               , sample_id = !!sym(sample_id)
+                                                                               , protein_id_column = !!sym(protein_id_column)
+                                                                               , peptide_sequence_column = !!sym(peptide_sequence_column)
+                                                                               , grouping_variable = !!sym(grouping_variable)
+                                                                               , groupwise_percentage_cutoff = groupwise_percentage_cutoff
+                                                                               , max_groups_percentage_cutoff = max_groups_percentage_cutoff
+                                                                               , abundance_threshold = peptides_intensity_cutoff_percentile
+                                                                               , abundance_column =  norm_quantity_column )
+
+
+             theObject <- cleanDesignMatrixPeptide(theObject)
+
+             return(theObject)
+
+           })
+
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #'@export
-setGeneric(name="filterMinNumPeptidesPerProteinObj"
+setGeneric(name="filterMinNumPeptidesPerProtein"
            , def=function( theObject
-                           , num_peptides_per_protein_thresh
-                           , num_peptidoforms_per_protein_thresh
-                           , cluster) {
-             standardGeneric("filterMinNumPeptidesPerProteinObj")
+                           , num_peptides_per_protein_thresh = NULL
+                           , num_peptidoforms_per_protein_thresh = NULL
+                           , core_utilisation = NULL ) {
+             standardGeneric("filterMinNumPeptidesPerProtein")
            }
            , signature=c("theObject"
                          , "num_peptides_per_protein_thresh"
                          , "num_peptidoforms_per_protein_thresh"
-                         , "cluster"))
+                         , "core_utilisation"))
 
 #'@export
 #'@description
@@ -295,23 +457,40 @@ setGeneric(name="filterMinNumPeptidesPerProteinObj"
 #'@param theObject Object of class PeptideQuantitativeData
 #'@param num_peptides_per_protein_thresh Minimum number of peptides per protein
 #'@param num_peptidoforms_per_protein_thresh Minimum number of peptidoforms per protein
-#'@param cluster Cluster to use for parallel processing
-setMethod( f="filterMinNumPeptidesPerProteinObj"
+#'@param core_utilisation core_utilisation to use for parallel processing
+setMethod( f="filterMinNumPeptidesPerProtein"
            , signature="PeptideQuantitativeData"
            , definition = function( theObject
-                                    , num_peptides_per_protein_thresh = 1
-                                    , num_peptidoforms_per_protein_thresh = 2
-                                    , cluster) {
+                                    , num_peptides_per_protein_thresh = NULL
+                                    , num_peptidoforms_per_protein_thresh = NULL
+                                    , core_utilisation = NULL
+
+                                    ) {
              peptide_data <- theObject@peptide_data
              protein_id_column <- theObject@protein_id_column
 
-             theObject@peptide_data <- filterMinNumPeptidesPerProtein ( input_table = peptide_data
-                                                         , num_peptides_per_protein_thresh = num_peptides_per_protein_thresh
-                                                         , num_peptidoforms_per_protein_thresh = num_peptidoforms_per_protein_thresh
-                                                         , protein_id_column = !!sym(protein_id_column)
-                                                         , cluster = cluster)
+             num_peptides_per_protein_thresh <- checkParamsObjectFunctionSimplify( theObject
+                                                                                   , "num_peptides_per_protein_thresh"
+                                                                                   , 1)
 
-             theObject <- cleanDesignMatrixPeptideObj(theObject)
+             num_peptidoforms_per_protein_thresh <- checkParamsObjectFunctionSimplify( theObject
+                                                                                       , "num_peptidoforms_per_protein_thresh"
+                                                                                       , 2)
+
+             core_utilisation <- checkParamsObjectFunctionSimplify( theObject, "core_utilisation", NA)
+
+
+             theObject <- updateParamInObject(theObject, "num_peptides_per_protein_thresh")
+             theObject <- updateParamInObject(theObject, "num_peptidoforms_per_protein_thresh")
+             theObject <- updateParamInObject(theObject, "core_utilisation")
+
+             theObject@peptide_data <- filterMinNumPeptidesPerProteinHelper ( input_table = peptide_data
+                                                                        , num_peptides_per_protein_thresh = num_peptides_per_protein_thresh
+                                                                        , num_peptidoforms_per_protein_thresh = num_peptidoforms_per_protein_thresh
+                                                                        , protein_id_column = !!sym(protein_id_column)
+                                                                        , core_utilisation = core_utilisation)
+
+             theObject <- cleanDesignMatrixPeptide(theObject)
 
              theObject
            })
@@ -319,27 +498,44 @@ setMethod( f="filterMinNumPeptidesPerProteinObj"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #'@export
-setGeneric( name="filterMinNumPeptidesPerSampleObj"
-            , def=function( theObject, min_num_peptides_in_sample, cluster, inclusion_list) {
-              standardGeneric("filterMinNumPeptidesPerSampleObj")
+setGeneric( name="filterMinNumPeptidesPerSample"
+            , def=function( theObject, peptides_per_sample_cutoff = NULL, core_utilisation = NULL, inclusion_list = NULL) {
+              standardGeneric("filterMinNumPeptidesPerSample")
            }
-           , signature=c("theObject", "min_num_peptides_in_sample", "cluster", "inclusion_list" ))
+           , signature=c("theObject", "peptides_per_sample_cutoff", "core_utilisation", "inclusion_list" ))
 
 #'@export
-setMethod( f="filterMinNumPeptidesPerSampleObj"
+setMethod( f="filterMinNumPeptidesPerSample"
            , signature="PeptideQuantitativeData"
-           , definition = function( theObject, min_num_peptides_in_sample = 5000, cluster, inclusion_list = c()) {
+           , definition = function( theObject
+                                    , peptides_per_sample_cutoff = NULL
+                                    , core_utilisation = NULL
+                                    , inclusion_list = NULL) {
 
              peptide_data <- theObject@peptide_data
              sample_id_column <- theObject@sample_id
 
-             theObject@peptide_data <- filterMinNumPeptidesPerSample( peptide_data
-                                            , min_num_peptides_in_sample = min_num_peptides_in_sample
-                                            , sample_id_column = !!sym(sample_id_column)
-                                            , cluster
-                                            , inclusion_list = c())
+             peptides_per_sample_cutoff <- checkParamsObjectFunctionSimplify( theObject
+                                                                              , "peptides_per_sample_cutoff"
+                                                                              , 5000)
 
-             theObject <- cleanDesignMatrixPeptideObj(theObject)
+             inclusion_list <- checkParamsObjectFunctionSimplifyAcceptNull( theObject
+                                                                            , "inclusion_list"
+                                                                            , NULL)
+
+             core_utilisation <- checkParamsObjectFunctionSimplify( theObject, "core_utilisation", NA)
+
+             theObject <- updateParamInObject(theObject, "peptides_per_sample_cutoff")
+             theObject <- updateParamInObject(theObject, "inclusion_list")
+             theObject <- updateParamInObject(theObject, "core_utilisation")
+
+             theObject@peptide_data <- filterMinNumPeptidesPerSampleHelper( peptide_data
+                                            , peptides_per_sample_cutoff = peptides_per_sample_cutoff
+                                            , sample_id_column = !!sym(sample_id_column)
+                                            , core_utilisation
+                                            , inclusion_list = inclusion_list )
+
+             theObject <- cleanDesignMatrixPeptide(theObject)
 
              theObject
            })
@@ -347,70 +543,211 @@ setMethod( f="filterMinNumPeptidesPerSampleObj"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #'@export
-setGeneric( name="removePeptidesWithOnlyOneReplicateObj"
-            , def=function( theObject, column_to_filter_on, cluster, inclusion_list) {
-              standardGeneric("removePeptidesWithOnlyOneReplicateObj")
+setGeneric( name="removePeptidesWithOnlyOneReplicate"
+            , def=function( theObject, replicate_group_column = NULL, core_utilisation = NULL) {
+              standardGeneric("removePeptidesWithOnlyOneReplicate")
             }
-            , signature=c("theObject", "column_to_filter_on", "cluster", "inclusion_list" ))
+            , signature=c("theObject", "replicate_group_column", "core_utilisation" ))
 
 #'@export
-setMethod( f="removePeptidesWithOnlyOneReplicateObj"
+setMethod( f="removePeptidesWithOnlyOneReplicate"
            , signature="PeptideQuantitativeData"
-           , definition = function( theObject, column_to_filter_on, cluster, inclusion_list = c()) {
+           , definition = function( theObject, replicate_group_column = NULL, core_utilisation = NULL) {
 
              peptide_data <- theObject@peptide_data
              sample_id_column <- theObject@sample_id
              replicate_group_column <- theObject@technical_replicate_id
              design_matrix <- theObject@design_matrix
 
-             theObject@peptide_data <- removePeptidesWithOnlyOneReplicate( input_table = peptide_data
+
+             grouping_variable <- checkParamsObjectFunctionSimplifyAcceptNull( theObject
+                                                                       , "replicate_group_column"
+                                                                       , NULL)
+
+             core_utilisation <- checkParamsObjectFunctionSimplify( theObject
+                                                           , "core_utilisation"
+                                                           , NA)
+
+             theObject <- updateParamInObject(theObject, "replicate_group_column")
+             theObject <- updateParamInObject(theObject, "core_utilisation")
+
+             theObject@peptide_data <- removePeptidesWithOnlyOneReplicateHelper( input_table = peptide_data
                                                                                              , samples_id_tbl = design_matrix
                                                                                              , input_table_sample_id_column = !!sym(sample_id_column)
                                                                                              , sample_id_tbl_sample_id_column  = !!sym(sample_id_column)
-                                                                                             , replicate_group_column = !!sym(column_to_filter_on)
-                                                                                             , cluster = cluster)
-             theObject <- cleanDesignMatrixPeptideObj(theObject)
+                                                                                             , replicate_group_column = !!sym(replicate_group_column)
+                                                                                             , core_utilisation = core_utilisation)
+             theObject <- cleanDesignMatrixPeptide(theObject)
 
              theObject
            })
 
 
+
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #'@export
-setGeneric( name="peptideMissingValueImputationObj"
-            , def=function( theObject,  imputed_value_column, prop_missing, cluster) {
-              standardGeneric("peptideMissingValueImputationObj")
+
+setGeneric( name="plotPeptidesProteinsCountsPerSample"
+            , def=function( theObject ) {
+              standardGeneric("plotPeptidesProteinsCountsPerSample")
             }
-            , signature=c("theObject", "imputed_value_column", "prop_missing", "cluster" ))
+            , signature=c("theObject" ))
+
+
 
 #'@export
-setMethod( f="peptideMissingValueImputationObj"
+setMethod( f="plotPeptidesProteinsCountsPerSample"
            , signature="PeptideQuantitativeData"
-           , definition = function( theObject,  imputed_value_column, prop_missing, cluster) {
+           , definition = function( theObject ) {
+
+             plotPeptidesProteinsCountsPerSampleHelper( theObject@peptide_data
+                                                  , intensity_column =  !!sym( theObject@norm_quantity_column)
+                                                  , protein_id_column = !!sym(theObject@protein_id_column)
+                                                  , peptide_id_column = !!sym(theObject@peptide_sequence_column)
+                                                  , sample_id_column = !!sym( theObject@sample_id )
+                                                  , peptide_sequence_column = !!sym( theObject@peptide_sequence_column) )
+
+
+           })
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#'@export
+setGeneric( name="peptideMissingValueImputation"
+            , def=function( theObject,  imputed_value_column = NULL, proportion_missing_values = NULL, core_utilisation = NULL) {
+              standardGeneric("peptideMissingValueImputation")
+            }
+            , signature=c("theObject", "imputed_value_column", "proportion_missing_values", "core_utilisation" ))
+
+#'@export
+setMethod( f="peptideMissingValueImputation"
+           , signature="PeptideQuantitativeData"
+           , definition = function( theObject,  imputed_value_column = NULL, proportion_missing_values = NULL, core_utilisation = NULL) {
              peptide_data <- theObject@peptide_data
              raw_quantity_column <- theObject@raw_quantity_column
              sample_id_column <- theObject@sample_id
              replicate_group_column <- theObject@technical_replicate_id
              design_matrix <- theObject@design_matrix
 
-             peptide_values_imputed <- peptideMissingValueImputation( input_table = peptide_data
+
+             imputed_value_column <- checkParamsObjectFunctionSimplifyAcceptNull( theObject
+                                                           , "imputed_value_column"
+                                                           , NULL)
+
+             proportion_missing_values <- checkParamsObjectFunctionSimplifyAcceptNull( theObject
+                                                           , "proportion_missing_values"
+                                                           , NULL)
+
+             core_utilisation <- checkParamsObjectFunctionSimplify( theObject
+                                                           , "core_utilisation"
+                                                           , NA)
+
+             theObject <- updateParamInObject(theObject, "imputed_value_column")
+             theObject <- updateParamInObject(theObject, "proportion_missing_values")
+             theObject <- updateParamInObject(theObject, "core_utilisation")
+
+             peptide_values_imputed <- peptideMissingValueImputationHelper( input_table = peptide_data
                                                                       , metadata_table = design_matrix
                                                                       , quantity_to_impute_column = !!sym( raw_quantity_column )
                                                                       , imputed_value_column = !!sym(imputed_value_column)
-                                                                      , cluster = cluster
+                                                                      , core_utilisation = core_utilisation
                                                                       , input_table_sample_id_column = !!sym( sample_id_column)
                                                                       , sample_id_tbl_sample_id_column = !!sym( sample_id_column)
                                                                       , replicate_group_column = !!sym( replicate_group_column)
-                                                                      , prop_missing = prop_missing )
+                                                                      , proportion_missing_values = proportion_missing_values )
 
              theObject@peptide_data <- peptide_values_imputed
 
-             theObject <- cleanDesignMatrixPeptideObj(theObject)
+             theObject <- cleanDesignMatrixPeptide(theObject)
 
              theObject
            })
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+# I want to input two peptide data objects and compare them,
+# to see how the number of proteins and peptides changes and how the number of samples changed
+# Use set diff or set intersect to compare the peptides, proteins, samples in the two objects
+#'@export
+compareTwoPeptideDataObjects <- function( object_a, object_b) {
 
+  object_a_peptides <- object_a@peptide_data |>
+    distinct(!!sym(object_a@protein_id_column), !!sym(object_a@peptide_sequence_column))
+
+  object_b_peptides <- object_b@peptide_data |>
+    distinct(!!sym(object_b@protein_id_column), !!sym(object_b@peptide_sequence_column))
+
+  object_a_proteins <- object_a@peptide_data |>
+    distinct(!!sym(object_a@protein_id_column)) |>
+    pull(!!sym(object_a@protein_id_column))
+
+  object_b_proteins <- object_b@peptide_data |>
+    distinct(!!sym(object_b@protein_id_column)) |>
+    pull(!!sym(object_b@protein_id_column))
+
+  object_a_samples <- object_a@design_matrix |>
+    distinct(!!sym(object_a@sample_id)) |>
+    pull(!!sym(object_a@sample_id))
+
+  object_b_samples <- object_b@design_matrix |>
+    distinct(!!sym(object_b@sample_id)) |>
+    pull(!!sym(object_b@sample_id))
+
+
+  peptides_in_a_not_b <- nrow( dplyr::setdiff( object_a_peptides, object_b_peptides) )
+  peptides_intersect_a_and_b <- nrow( dplyr::intersect( object_a_peptides, object_b_peptides) )
+  peptides_in_b_not_a <- nrow(  dplyr::setdiff( object_b_peptides, object_a_peptides) )
+
+  proteins_in_a_not_b <- length( setdiff( object_a_proteins, object_b_proteins) )
+  proteins_intersect_a_and_b <- length( intersect( object_a_proteins, object_b_proteins) )
+  proteins_in_b_not_a <- length( setdiff( object_b_proteins, object_a_proteins) )
+
+
+  samples_in_a_not_b <- length( setdiff( object_a_samples, object_b_samples) )
+  samples_intersect_a_and_b <- length( intersect( object_a_samples, object_b_samples) )
+  samples_in_b_not_a <- length( setdiff( object_b_samples, object_a_samples) )
+
+  comparisons_list <- list(  peptides = list( in_a_not_b = peptides_in_a_not_b
+                                             , intersect_a_and_b = peptides_intersect_a_and_b
+                                             , in_b_not_a = peptides_in_b_not_a)
+                            , proteins = list( in_a_not_b = proteins_in_a_not_b
+                                               , intersect_a_and_b = proteins_intersect_a_and_b
+                                               , in_b_not_a = proteins_in_b_not_a)
+                            , samples = list( in_a_not_b = samples_in_a_not_b
+                                              , intersect_a_and_b = samples_intersect_a_and_b
+                                              , in_b_not_a = samples_in_b_not_a)
+  )
+
+  comparison_tibble <- comparisons_list |>
+    purrr::map_df( tibble::as_tibble) |>
+    add_column( Levels = c("peptides", "proteins", "samples")) |>
+    relocate( Levels, .before="in_a_not_b")
+
+  comparison_tibble
+
+
+}
+
+
+#'@export
+summarisePeptideObject <- function(theObject) {
+
+  num_peptides <- theObject@peptide_data |>
+    distinct(!!sym(theObject@protein_id_column), !!sym(theObject@peptide_sequence_column))
+
+  num_proteins <- theObject@peptide_data |>
+    distinct(!!sym(theObject@protein_id_column)) |>
+    pull(!!sym(theObject@protein_id_column))
+
+  num_samples <- theObject@design_matrix |>
+    distinct(!!sym(theObject@sample_id)) |>
+    pull(!!sym(theObject@sample_id))
+
+  summary_list <- list( num_peptides = nrow(num_peptides)
+                       , num_proteins = length(num_proteins)
+                       , num_samples = length(num_samples))
+
+  summary_list
+
+
+}

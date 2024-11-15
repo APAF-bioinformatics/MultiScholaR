@@ -187,9 +187,9 @@ runOneGoEnrichmentInOutFunction <- function(comparison_column,
                                               , get_cluster_profiler_object = get_cluster_profiler_object )
   }
 
-  query_list <- input_table %>%
-    dplyr::filter( {{comparison_column}} == input_comparison) %>%
-    distinct(  {{protein_id_column}})
+  query_list <- input_table |>
+    dplyr::filter( {{comparison_column}} == input_comparison) |>
+    distinct(  {{protein_id_column}}) |>
     pull( {{protein_id_column}})
 
   # print( paste( "size of query list = ", length( query_list)) )
@@ -832,7 +832,8 @@ saveFilteredFunctionalEnrichmentTable <- function( enriched_results_tbl,
                                                    set_size_min,
                                                    set_size_max,
                                                    results_dir,
-                                                   file_name  ) {
+                                                   file_name,
+                                                   list_of_columns_to_trim = c("gene_symbol")) {
 
   max_excel_cell_length <- 32760
 
@@ -845,7 +846,7 @@ saveFilteredFunctionalEnrichmentTable <- function( enriched_results_tbl,
   writexl::write_xlsx( enriched_results_tbl %>%
                          dplyr::filter( min_set_size == set_size_min,
                                         max_set_size == set_size_max) %>%
-                         mutate_at( c( "gene_symbol"), ~substr(., 1, max_excel_cell_length)) ,
+                         mutate( across( one_of(list_of_columns_to_trim ), \(x)substr(x, 1, max_excel_cell_length)) ),
                        path=file.path(results_dir,
                                       paste0( file_name, ".xlsx" ) ))
 
@@ -854,7 +855,7 @@ saveFilteredFunctionalEnrichmentTable <- function( enriched_results_tbl,
                                 paste0( file_name, "_unfiltered.tab" )))
 
   writexl::write_xlsx( enriched_results_tbl %>%
-                         mutate_at( c( "gene_symbol"), ~substr(., 1, max_excel_cell_length)) ,
+                         mutate( across( one_of(list_of_columns_to_trim ), \(x)substr(x, 1, max_excel_cell_length)) ),
                        path=file.path(results_dir,
                                       paste0( file_name, "_unfiltered.xlsx" ) ))
 
@@ -897,7 +898,8 @@ drawListOfFunctionalEnrichmentHeatmaps <- function(enriched_results_tbl,
 
   added_columns <- unique( added_columns)
 
-  input_table <- enriched_results_tbl %>%
+  input_table <- enriched_results_tbl |>
+    distinct() %>%
     dplyr::filter( min_set_size == set_size_min,
                    max_set_size == set_size_max) %>%
     group_by(  across(  c(any_of(added_columns), comparison, gene_set, go_type)  )) %>%
@@ -1224,7 +1226,7 @@ plotEnrichmentBarplot <- function( input_table
     xlab ( xlab_string) +
     ylab ( ylab_string) +
     theme_bw() +
-    scale_x_continuous(limits = c(0,-log10( min ( proteomics_go_helper$qvalue ) )), expand = c(0, 0))
+    scale_x_continuous(limits = c(0,-log10( min ( proteomics_go_helper|>pull({{fdr_column}}) ) )*1.05), expand = c(0, 0))
   #+
     #facet_grid( rows = vars({{gene_set_column}})  , scales="free_y", space = "free_y")
 
@@ -1571,7 +1573,7 @@ cnetplotEdited <- function(
                       data = NULL, alpha = I(alpha_gene)) +
       scale_size(range=c(3, 8) * cex_category) +
       # scale_colour_gradient2(name = "fold change") +
-      set_enrichplot_color(colors = get_enrichplot_color(3), name = "fold change")
+      set_enrichplot_color(colors = rev(get_enrichplot_color(3)), name = "fold change")
 
 
   } else {

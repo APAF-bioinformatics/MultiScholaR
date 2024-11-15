@@ -3,20 +3,44 @@
 
 #' @export
 deAnalysisWrapperFunction <- function( theObject
-                                       , contrasts_tbl
-                                       , formula_string = " ~ 0 + group"
-                                       , group_id = "group"
-                                       , de_q_val_thresh = 0.05
-                                       , treat_lfc_cutoff = 0
-                                       , eBayes_trend = TRUE
-                                       , eBayes_robust = TRUE
-                                       , args_group_pattern = "(\\d+)"
-                                       , args_row_id = "uniprot_acc" ) {
+                                       , contrasts_tbl = NULL
+                                       , formula_string = NULL
+                                       , group_id = NULL
+                                       , de_q_val_thresh = NULL
+                                       , treat_lfc_cutoff = NULL
+                                       , eBayes_trend = NULL
+                                       , eBayes_robust = NULL
+                                       , args_group_pattern = NULL
+                                       , args_row_id = NULL
+                                       , qvalue_column = "fdr_qvalue"
+                                       , raw_pvalue_colum = "raw_pvalue") {
+
+  contrasts_tbl <- checkParamsObjectFunctionSimplify( theObject, "contrasts_tbl", NULL)
+  formula_string <- checkParamsObjectFunctionSimplify( theObject, "formula_string", " ~ 0 + group")
+  group_id <- checkParamsObjectFunctionSimplify( theObject, "group_id", "group")
+  de_q_val_thresh <- checkParamsObjectFunctionSimplify( theObject, "de_q_val_thresh", 0.05)
+  treat_lfc_cutoff <- checkParamsObjectFunctionSimplify( theObject, "treat_lfc_cutoff", 0)
+  eBayes_trend <- checkParamsObjectFunctionSimplify( theObject, "eBayes_trend", TRUE)
+  eBayes_robust <- checkParamsObjectFunctionSimplify( theObject, "eBayes_robust", TRUE)
+  args_group_pattern <- checkParamsObjectFunctionSimplify( theObject, "args_group_pattern", "(\\d+)")
+  args_row_id <- checkParamsObjectFunctionSimplify( theObject, "args_row_id", "uniprot_acc")
+
+
+  theObject <- updateParamInObject(theObject, "contrasts_tbl")
+  theObject <- updateParamInObject(theObject, "formula_string")
+  theObject <- updateParamInObject(theObject, "group_id")
+  theObject <- updateParamInObject(theObject, "de_q_val_thresh")
+  theObject <- updateParamInObject(theObject, "treat_lfc_cutoff")
+  theObject <- updateParamInObject(theObject, "eBayes_trend")
+  theObject <- updateParamInObject(theObject, "eBayes_robust")
+  theObject <- updateParamInObject(theObject, "args_group_pattern")
+  theObject <- updateParamInObject(theObject, "args_row_id")
 
   return_list <- list()
+  return_list$theObject <- theObject
 
   ## plot RLE plot
-  rle_plot <-   plotRleObj(theObject = theObject, theObject@group_id  ) +
+  rle_plot <-   plotRle(theObject = theObject, theObject@group_id  ) +
     theme(axis.text.x = element_text(size = 13))   +
     theme(axis.text.y = element_text(size = 13))  +
     theme(axis.title.x = element_text(size = 12))  +
@@ -30,11 +54,11 @@ deAnalysisWrapperFunction <- function( theObject
 
   ## plot PCA plot
 
-  pca_plot <-  plotPcaObj( theObject
-                           , group_column = theObject@group_id
+  pca_plot <-  plotPca( theObject
+                           , grouping_variable = theObject@group_id
                            , label_column = ""
                            , title = ""
-                           , geom_text_size = 8) +
+                           , font_size = 8) +
     theme_bw() +
     theme(axis.text.x = element_text(size = 12)) +
     theme(axis.text.y = element_text(size = 12)) +
@@ -46,15 +70,32 @@ deAnalysisWrapperFunction <- function( theObject
 
   return_list$pca_plot <- pca_plot
 
+
+  pca_plot_with_labels <-  plotPca( theObject
+                        , grouping_variable = theObject@group_id
+                        , label_column = theObject@sample_id
+                        , title = ""
+                        , font_size = 8) +
+    theme_bw() +
+    theme(axis.text.x = element_text(size = 12)) +
+    theme(axis.text.y = element_text(size = 12)) +
+    theme(axis.title.x = element_text(size = 12)) +
+    theme(axis.title.y = element_text(size = 12)) +
+    theme(plot.title = element_text(size = 12)) +
+    theme(legend.text = element_text(size = 12)) +
+    theme(legend.title = element_text(size = 12))
+
+  return_list$pca_plot_with_labels <- pca_plot_with_labels
+
   ## Count the number of values
-  return_list$plot_num_of_values <- plotNumOfValuesNoLog(theObject@protein_data)
+  return_list$plot_num_of_values <- plotNumOfValuesNoLog(theObject@protein_quant_table)
 
   ## Compare the different experimental groups and obtain lists of differentially expressed proteins.")
 
   rownames( theObject@design_matrix ) <- theObject@design_matrix |> pull( one_of(theObject@sample_id ))
 
-  # requires statmod library
-  contrasts_results <- runTestsContrasts(theObject@protein_data |> column_to_rownames(theObject@protein_id_column  ) |> as.matrix(),
+
+  contrasts_results <- runTestsContrasts(as.matrix(column_to_rownames(theObject@protein_quant_table, theObject@protein_id_column)),
                                          contrast_strings = contrasts_tbl[, 1][[1]],
                                          design_matrix = theObject@design_matrix,
                                          formula_string = formula_string,
@@ -73,17 +114,16 @@ deAnalysisWrapperFunction <- function( theObject
   significant_rows <- getSignificantData(list_of_de_tables = list(contrasts_results_table),
                                          list_of_descriptions = list("RUV applied"),
                                          row_id = !!sym(args_row_id),
-                                         p_value_column = p.mod,
-                                         q_value_column = q.mod,
-                                         fdr_value_column = fdr.mod,
+                                         p_value_column = !!sym(raw_pvalue_colum),
+                                         q_value_column = !!sym(qvalue_column),
+                                         fdr_value_column = fdr_value_bh_adjustment,
                                          log_q_value_column = lqm,
                                          log_fc_column = logFC,
-                                         comparison_column = comparison,
-                                         expression_column = expression,
+                                         comparison_column = "comparison",
+                                         expression_column = "log_intensity",
                                          facet_column = analysis_type,
                                          q_val_thresh = de_q_val_thresh) |>
     dplyr::rename(log2FC = "logFC")
-
 
   return_list$significant_rows <- significant_rows
 
@@ -97,7 +137,7 @@ deAnalysisWrapperFunction <- function( theObject
 
   return_list$volplot_plot <- volplot_plot
 
-  ## Count the number of up or down significnat differentially expressed proteins.
+  ## Count the number of up or down significant differentially expressed proteins.
   num_sig_de_molecules_first_go <- printCountDeGenesTable(list_of_de_tables = list(contrasts_results_table),
                                                  list_of_descriptions = list( "RUV applied"),
                                                  formula_string = "analysis_type ~ comparison")
@@ -106,7 +146,7 @@ deAnalysisWrapperFunction <- function( theObject
 
   ## Print p-values distribution figure
   pvalhist <- printPValuesDistribution(significant_rows,
-                                       p_value_column = p.mod,
+                                       p_value_column = !!sym(raw_pvalue_colum),
                                        formula_string = "analysis_type ~ comparison")
 
   return_list$pvalhist <- pvalhist
@@ -114,7 +154,7 @@ deAnalysisWrapperFunction <- function( theObject
   ## Create wide format output file
   norm_counts <- NA
 
-  counts_table_to_use <- theObject@protein_data
+  counts_table_to_use <- theObject@protein_quant_table
 
   norm_counts <- counts_table_to_use |>
     as.data.frame() |>
@@ -129,9 +169,10 @@ deAnalysisWrapperFunction <- function( theObject
     pivot_wider(id_cols = c(!!sym(args_row_id)),
                 names_from = c(comparison),
                 names_sep = ":",
-                values_from = c(log2FC, q.mod, p.mod)) |>
+                values_from = c(log2FC, !!sym(qvalue_column), !!sym(raw_pvalue_colum))) |>
     left_join(counts_table_to_use, by = join_by( !!sym(args_row_id)  == !!sym(theObject@protein_id_column)  )   ) |>
-    dplyr::arrange(across(matches("q.mod"))) |>
+    left_join(theObject@protein_id_table, by = join_by( !!sym(args_row_id) == !!sym(theObject@protein_id_column) )  ) |>
+    dplyr::arrange(across(matches("!!sym(qvalue_column)"))) |>
     distinct()
 
 
@@ -142,24 +183,26 @@ deAnalysisWrapperFunction <- function( theObject
 
   de_proteins_long <- createDeResultsLongFormat( lfc_qval_tbl = significant_rows |>
                                                    dplyr::filter(analysis_type == "RUV applied") ,
-                                                 norm_counts_input_tbl = counts_table_to_use |> column_to_rownames( theObject@protein_id_column) |> as.matrix(),
-                                                 raw_counts_input_tbl = counts_table_to_use |> column_to_rownames(theObject@protein_id_column) |> as.matrix(),
+                                                 norm_counts_input_tbl = as.matrix(column_to_rownames(theObject@protein_quant_table, theObject@protein_id_column)),
+                                                 raw_counts_input_tbl = as.matrix(column_to_rownames(theObject@protein_quant_table, theObject@protein_id_column)),
                                                  row_id = args_row_id,
                                                  sample_id = theObject@sample_id,
                                                  group_id = group_id,
                                                  group_pattern = args_group_pattern,
                                                  design_matrix_norm = theObject@design_matrix,
-                                                 design_matrix_raw =  theObject@design_matrix )
+                                                 design_matrix_raw =  theObject@design_matrix,
+                                                 ##POTENTIAL ISSUE
+                                                 protein_id_table = theObject@protein_id_table)
 
   return_list$de_proteins_long <- de_proteins_long
 
 
   ## Plot static volcano plot
   static_volcano_plot_data <- de_proteins_long |>
-    mutate( lqm = -log10(q.mod ) ) |>
-    dplyr::mutate(label = case_when( q.mod < de_q_val_thresh ~ "Significant",
+    mutate( lqm = -log10(!!sym(qvalue_column) ) ) |>
+    dplyr::mutate(label = case_when( !!sym(qvalue_column) < de_q_val_thresh ~ "Significant",
                                      TRUE ~ "Not sig.")) |>
-    dplyr::mutate(colour = case_when( q.mod < de_q_val_thresh ~ "purple",
+    dplyr::mutate(colour = case_when( !!sym(qvalue_column) < de_q_val_thresh ~ "purple",
                                       TRUE ~ "black")) |>
     dplyr::mutate(colour = factor(colour, levels = c("black", "purple")))
 
@@ -177,9 +220,9 @@ deAnalysisWrapperFunction <- function( theObject
 
   ## Return the number of significant molecules
   num_sig_de_molecules <- significant_rows %>%
-    dplyr::mutate(status = case_when(q.mod  >= de_q_val_thresh ~ "Not significant",
-                                       log2FC >= 0 & q.mod < de_q_val_thresh ~ "Significant and Up",
-                                     log2FC < 0 &  q.mod < de_q_val_thresh ~ "Significant and Down",
+    dplyr::mutate(status = case_when(!!sym(qvalue_column)  >= de_q_val_thresh ~ "Not significant",
+                                       log2FC >= 0 & !!sym(qvalue_column) < de_q_val_thresh ~ "Significant and Up",
+                                     log2FC < 0 &  !!sym(qvalue_column) < de_q_val_thresh ~ "Significant and Down",
                                       TRUE ~ "Not significant")) %>%
     group_by( comparison,  status) %>% # expression, analysis_type,
     summarise(counts = n()) %>%
@@ -239,73 +282,197 @@ deAnalysisWrapperFunction <- function( theObject
 
 #' @export
 # de_analysis_results_list$contrasts_results$fit.eb
-
-writeInteractiveVolcanoPlotProteomics <- function( de_proteins_long, uniprot_tbl, fit.eb, args_row_id = "uniprot_acc", publication_graphs_dir, de_q_val_thresh = 0.05) {
+# No full stops in the nme of columns of interactive table in glimma plot. It won't display column with full stop in the column name.
+writeInteractiveVolcanoPlotProteomics <- function( de_proteins_long
+                                                   , uniprot_tbl
+                                                   , fit.eb
+                                                   , publication_graphs_dir
+                                                   , args_row_id = "uniprot_acc"
+                                                   , fdr_column = "fdr_qvalue"
+                                                   , raw_p_value_column = "raw_pvalue"
+                                                   , log2fc_column = "log2FC"
+                                                   , de_q_val_thresh = 0.05
+                                                   , counts_tbl = NULL
+                                                   , groups = NULL
+                                                   , uniprot_id_column = "Entry"
+                                                   , gene_names_column = "Gene Names"
+                                                   , display_columns = c( "best_uniprot_acc" )) {
 
 
     volcano_plot_tab <- de_proteins_long  |>
-      left_join(uniprot_tbl, by = join_by( !!sym(args_row_id) == Entry ) ) |>
-      dplyr::rename( UNIPROT_GENENAME = "Gene Names" ) |>
-      dplyr::rename(PROTEIN_NAMES = "Protein names") |>
-      mutate( UNIPROT_GENENAME = purrr::map_chr( UNIPROT_GENENAME, \(x){str_split(x, " ")[[1]][1]})) |>
-      mutate( lqm = -log10(q.mod))  |>
-      dplyr::mutate(label = case_when(abs(log2FC) >= 1 & q.mod >= de_q_val_thresh ~ "Not sig., logFC >= 1",
-                                      abs(log2FC) >= 1 & q.mod < de_q_val_thresh ~ "Sig., logFC >= 1",
-                                      abs(log2FC) < 1 & q.mod < de_q_val_thresh ~ "Sig., logFC < 1",
+      left_join(uniprot_tbl, by = join_by( !!sym(args_row_id) == !!sym( uniprot_id_column) ) ) |>
+      dplyr::rename( UNIPROT_GENENAME = gene_names_column ) |>
+      mutate( UNIPROT_GENENAME = purrr::map_chr( UNIPROT_GENENAME, \(x){str_split(x, " |:")[[1]][1]})) |>
+      dplyr::mutate(gene_name = UNIPROT_GENENAME ) |>
+      mutate( lqm = -log10(!!sym(fdr_column)))  |>
+      dplyr::mutate(label = case_when(abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) >= de_q_val_thresh ~ "Not sig., logFC >= 1",
+                                      abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) < de_q_val_thresh ~ "Sig., logFC >= 1",
+                                      abs(!!sym(log2fc_column)) < 1 & !!sym(fdr_column) < de_q_val_thresh ~ "Sig., logFC < 1",
                                       TRUE ~ "Not sig.")) |>
-      dplyr::mutate(colour = case_when(abs(log2FC) >= 1 & q.mod >= de_q_val_thresh ~ "orange",
-                                       abs(log2FC) >= 1 & q.mod < de_q_val_thresh ~ "purple",
-                                       abs(log2FC) < 1 & q.mod < de_q_val_thresh ~ "blue",
+      dplyr::mutate(colour = case_when(abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) >= de_q_val_thresh ~ "orange",
+                                       abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) < de_q_val_thresh ~ "purple",
+                                       abs(!!sym(log2fc_column)) < 1 & !!sym(fdr_column) < de_q_val_thresh ~ "blue",
                                        TRUE ~ "black")) |>
-      dplyr::mutate(gene_name = str_split(UNIPROT_GENENAME, " |:" ) |> purrr::map_chr(1)  ) |>
       dplyr::mutate(best_uniprot_acc = str_split(!!sym(args_row_id), ":" ) |> purrr::map_chr(1)  ) |>
       dplyr::mutate(analysis_type = comparison)  |>
-      dplyr::select( best_uniprot_acc, lqm, q.mod, p.mod, log2FC, comparison, label, colour,  gene_name, `PROTEIN_NAMES`)   |>
+      dplyr::select( best_uniprot_acc, lqm, !!sym(fdr_column), !!sym(raw_p_value_column), !!sym(log2fc_column), comparison, label, colour,  gene_name
+                     , any_of( display_columns ))   |>
       dplyr::mutate( my_alpha = case_when ( gene_name !=  "" ~ 1
                                             , TRUE ~ 0.5))
-
-    print(head(volcano_plot_tab))
-
-    ncol(fit.eb$coefficients)
-    colnames(fit.eb$coefficients)
 
     output_dir <- file.path( publication_graphs_dir
                              ,  "Interactive_Volcano_Plots")
 
-    dir.create(output_dir, recursive = TRUE)
+    dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
 
     purrr::walk( seq_len( ncol(fit.eb$coefficients))
                  , \(coef) { # print(coef)
-                   ProteomeRiver::getGlimmaVolcanoProteomics( fit.eb
-                                                              , coef = coef
-                                                              , volcano_plot_tab  = volcano_plot_tab
-                                                              , uniprot_column = best_uniprot_acc
-                                                              , gene_name_column = gene_name
-                                                              , display_columns = c( "best_uniprot_acc",  "PROTEIN_NAMES"   )
-                                                              , output_dir = output_dir ) } )
+
+                   print(paste0("coef = ", coef))
+#                    print(head( counts_tbl))
+#                    print(groups)
+#                    print( output_dir)
+
+                   getGlimmaVolcanoProteomics( fit.eb
+                                               , coef = coef
+                                               , volcano_plot_tab  = volcano_plot_tab
+                                               , uniprot_column = best_uniprot_acc
+                                               , gene_name_column = gene_name
+                                               , display_columns = display_columns
+                                               , counts_tbl = counts_tbl
+                                               , groups = groups
+                                               , output_dir = output_dir ) } )
 
 }
 
 
+
+
 #' @export
-outputDeAnalysisResults <- function(de_analysis_results_list, uniprot_tbl
-                                    , de_output_dir
-                                    , publication_graphs_dir
-                                    , file_prefix
-                                    , plots_format
-                                    , args_row_id = "uniprot_acc"
-                                    , de_q_val_thresh = 0.05) {
+# de_analysis_results_list$contrasts_results$fit.eb
+# No full stops in the nme of columns of interactive table in glimma plot. It won't display column with full stop in the column name.
+writeInteractiveVolcanoPlotProteomicsWidget <- function( de_proteins_long
+                                                   , uniprot_tbl
+                                                   , fit.eb
+                                                   , args_row_id = "uniprot_acc"
+                                                   , fdr_column = "fdr_qvalue"
+                                                   , raw_p_value_column = "raw_pvalue"
+                                                   , log2fc_column = "log2FC"
+                                                   , de_q_val_thresh = 0.05
+                                                   , counts_tbl = NULL
+                                                   , groups = NULL
+                                                   , uniprot_id_column = "Entry"
+                                                   , gene_names_column = "Gene Names"
+                                                   , display_columns = c( "best_uniprot_acc" )) {
+
+
+  volcano_plot_tab <- de_proteins_long  |>
+    left_join(uniprot_tbl, by = join_by( !!sym(args_row_id) == !!sym( uniprot_id_column) ) ) |>
+    dplyr::rename( UNIPROT_GENENAME = gene_names_column ) |>
+    mutate( UNIPROT_GENENAME = purrr::map_chr( UNIPROT_GENENAME, \(x){str_split(x, " ")[[1]][1]})) |>
+    mutate( lqm = -log10(!!sym(fdr_column)))  |>
+    dplyr::mutate(label = case_when(abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) >= de_q_val_thresh ~ "Not sig., logFC >= 1",
+                                    abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) < de_q_val_thresh ~ "Sig., logFC >= 1",
+                                    abs(!!sym(log2fc_column)) < 1 & !!sym(fdr_column) < de_q_val_thresh ~ "Sig., logFC < 1",
+                                    TRUE ~ "Not sig.")) |>
+    dplyr::mutate(colour = case_when(abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) >= de_q_val_thresh ~ "orange",
+                                     abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) < de_q_val_thresh ~ "purple",
+                                     abs(!!sym(log2fc_column)) < 1 & !!sym(fdr_column) < de_q_val_thresh ~ "blue",
+                                     TRUE ~ "black")) |>
+    dplyr::mutate(gene_name = str_split(UNIPROT_GENENAME, " |:" ) |> purrr::map_chr(1)  ) |>
+    dplyr::mutate(best_uniprot_acc = str_split(!!sym(args_row_id), ":" ) |> purrr::map_chr(1)  ) |>
+    dplyr::mutate(analysis_type = comparison)  |>
+    dplyr::select( best_uniprot_acc, lqm, !!sym(fdr_column), !!sym(raw_p_value_column), !!sym(log2fc_column), comparison, label, colour,  gene_name
+                   , any_of( display_columns ))   |>
+    dplyr::mutate( my_alpha = case_when ( gene_name !=  "" ~ 1
+                                          , TRUE ~ 0.5))
+
+  interactive_volcano_plots <- purrr::map(seq_len( ncol(fit.eb$coefficients))
+               , \(coef) {
+                 # print(paste0( "coef = ", coef))
+                 getGlimmaVolcanoProteomicsWidget( fit.eb
+                                             , coef = coef
+                                             , volcano_plot_tab  = volcano_plot_tab
+                                             , uniprot_column = best_uniprot_acc
+                                             , gene_name_column = gene_name
+                                             , display_columns = display_columns
+                                             , counts_tbl = counts_tbl
+                                             , groups = groups ) } )
+
+  interactive_volcano_plots
+}
+
+#' @export
+outputDeAnalysisResults <- function(de_analysis_results_list
+                                    , theObject
+                                    , uniprot_tbl
+                                    , de_output_dir = NULL
+                                    , publication_graphs_dir = NULL
+                                    , file_prefix = NULL
+                                    , plots_format = NULL
+                                    , args_row_id = NULL
+                                    , de_q_val_thresh = NULL
+                                    , gene_names_column = NULL
+                                    , fdr_column = NULL
+                                    , raw_p_value_column = NULL
+                                    , log2fc_column = NULL
+                                    , uniprot_id_column = NULL
+                                    , display_columns = NULL
+                                    ) {
+
+
+  uniprot_tbl <- checkParamsObjectFunctionSimplify(theObject, "uniprot_tbl", NULL)
+  de_output_dir <- checkParamsObjectFunctionSimplify(theObject, "de_output_dir", NULL)
+  publication_graphs_dir <- checkParamsObjectFunctionSimplify(theObject, "publication_graphs_dir", NULL)
+  file_prefix <- checkParamsObjectFunctionSimplify(theObject, "file_prefix", "de_proteins")
+  plots_format <- checkParamsObjectFunctionSimplify(theObject, "plots_format", c("pdf", "png"))
+  args_row_id <- checkParamsObjectFunctionSimplify(theObject, "args_row_id", "uniprot_acc")
+  de_q_val_thresh <- checkParamsObjectFunctionSimplify(theObject, "de_q_val_thresh", 0.05)
+  gene_names_column <- checkParamsObjectFunctionSimplify(theObject, "gene_names_column", "Gene Names")
+  fdr_column <- checkParamsObjectFunctionSimplify(theObject, "fdr_column", "fdr_qvalue")
+  raw_p_value_column <- checkParamsObjectFunctionSimplify(theObject, "raw_p_value_column", "raw_pvalue")
+  log2fc_column <- checkParamsObjectFunctionSimplify(theObject, "log2fc_column", "log2FC")
+  uniprot_id_column <- checkParamsObjectFunctionSimplify(theObject, "uniprot_id_column", "Entry")
+  display_columns <- checkParamsObjectFunctionSimplify(theObject, "display_columns", c( "best_uniprot_acc" ))
+
+  theObject <- updateParamInObject(theObject, "uniprot_tbl")
+  theObject <- updateParamInObject(theObject, "de_output_dir")
+  theObject <- updateParamInObject(theObject, "publication_graphs_dir")
+  theObject <- updateParamInObject(theObject, "file_prefix")
+  theObject <- updateParamInObject(theObject, "plots_format")
+  theObject <- updateParamInObject(theObject, "args_row_id")
+  theObject <- updateParamInObject(theObject, "de_q_val_thresh")
+  theObject <- updateParamInObject(theObject, "gene_names_column")
+  theObject <- updateParamInObject(theObject, "fdr_column")
+  theObject <- updateParamInObject(theObject, "raw_p_value_column")
+  theObject <- updateParamInObject(theObject, "log2fc_column")
+  theObject <- updateParamInObject(theObject, "uniprot_id_column")
+  theObject <- updateParamInObject(theObject, "display_columns")
 
   ## PCA plot
   plot_pca_plot <- de_analysis_results_list$pca_plot
+
+  dir.create(file.path( publication_graphs_dir, "PCA")
+             , recursive = TRUE
+             , showWarnings = FALSE)
 
   for( format_ext in plots_format) {
     file_name <- file.path( publication_graphs_dir, "PCA", paste0("PCA_plot.",format_ext))
     ggsave(filename = file_name, plot = plot_pca_plot, limitsize = FALSE)
   }
 
+  plot_pca_plot_with_labels <- de_analysis_results_list$pca_plot_with_labels
+  for( format_ext in plots_format) {
+    file_name <- file.path( publication_graphs_dir, "PCA", paste0("PCA_plot_with_sample_ids.",format_ext))
+    ggsave(filename = file_name, plot = plot_pca_plot_with_labels, limitsize = FALSE)
+  }
+
   ## RLE plot
   plot_rle_plot <- de_analysis_results_list$rle_plot
+
+  dir.create(file.path( publication_graphs_dir, "RLE")
+             , recursive = TRUE
+             , showWarnings = FALSE)
 
   for( format_ext in plots_format) {
     file_name <- file.path( publication_graphs_dir, "RLE", paste0("RLE_plot.",format_ext))
@@ -462,7 +629,21 @@ outputDeAnalysisResults <- function(de_analysis_results_list, uniprot_tbl
                        file.path( de_output_dir,
                                   paste0(file_prefix, "_wide.xlsx")))
 
+  de_proteins_wide_annot <- de_proteins_wide |>
+    mutate( uniprot_acc_cleaned = str_split( !!sym(args_row_id), "-" )  |>
+              purrr::map_chr(1) ) |>
+    left_join( uniprot_tbl, by = join_by( uniprot_acc_cleaned == Entry ) ) |>
+    dplyr::select( -uniprot_acc_cleaned)  |>
+    mutate( gene_name = purrr::map_chr( !!sym(gene_names_column), \(x){str_split(x, " |:")[[1]][1]})) |>
+    relocate( gene_name, .after = !!sym(args_row_id))
 
+  vroom::vroom_write( de_proteins_wide_annot,
+                      file.path( de_output_dir,
+                                 paste0(file_prefix, "_wide_annot.tsv")))
+
+  writexl::write_xlsx( de_proteins_wide_annot,
+                       file.path( de_output_dir,
+                                  paste0(file_prefix, "_wide_annot.xlsx")))
 
   ## Create long format output file
   de_proteins_long <- de_analysis_results_list$de_proteins_long
@@ -474,9 +655,26 @@ outputDeAnalysisResults <- function(de_analysis_results_list, uniprot_tbl
                        file.path( de_output_dir,
                                   paste0(file_prefix, "_long.xlsx")))
 
+  de_proteins_long_annot <- de_proteins_long |>
+    mutate( uniprot_acc_cleaned = str_split( !!sym(args_row_id), "-" )  |>
+              purrr::map_chr(1) )|>
+    left_join( uniprot_tbl, by = join_by( uniprot_acc_cleaned == Entry ) )  |>
+    dplyr::select( -uniprot_acc_cleaned)  |>
+    mutate( gene_name = purrr::map_chr( !!sym(gene_names_column), \(x){str_split(x, " |:")[[1]][1]})) |>
+    relocate( gene_name, .after = !!sym(args_row_id))
+
+  vroom::vroom_write( de_proteins_long_annot,
+                      file.path( de_output_dir,
+                                 paste0(file_prefix, "_long_annot.tsv")))
+
+  writexl::write_xlsx( de_proteins_long_annot,
+                       file.path( de_output_dir,
+                                  paste0(file_prefix, "_long_annot.xlsx")))
 
   ## Static volcano plots
-  dir.create(file.path( publication_graphs_dir, "Volcano_Plots"), recursive = TRUE)
+  dir.create(file.path( publication_graphs_dir, "Volcano_Plots")
+             , recursive = TRUE
+             , showWarnings = FALSE)
 
   list_of_volcano_plots <- de_analysis_results_list$list_of_volcano_plots
 
@@ -541,13 +739,31 @@ outputDeAnalysisResults <- function(de_analysis_results_list, uniprot_tbl
   }
 
   ## Write interactive volcano plot
-  writeInteractiveVolcanoPlotProteomics( de_proteins_long
-                                         , uniprot_tbl
-                                         , contrasts_results$fit.eb
-                                         , args_row_id = args_row_id
-                                         , publication_graphs_dir
-                                         , de_q_val_thresh = de_q_val_thresh)
+  counts_mat <- (de_analysis_results_list$theObject)@protein_quant_table |>
+    column_to_rownames((de_analysis_results_list$theObject)@protein_id_column  ) |>
+    as.matrix()
 
+  this_design_matrix <- de_analysis_results_list$theObject@design_matrix
+
+  rownames( this_design_matrix ) <- this_design_matrix[,de_analysis_results_list$theObject@sample_id]
+
+  this_groups <- this_design_matrix[colnames( counts_mat), "group"]
+
+  writeInteractiveVolcanoPlotProteomics( de_proteins_long
+                                          , uniprot_tbl = uniprot_tbl
+                                          , fit.eb = contrasts_results$fit.eb
+                                          , publication_graphs_dir= publication_graphs_dir
+                                          , args_row_id = args_row_id
+                                          , fdr_column = fdr_column
+                                          , raw_p_value_column = raw_p_value_column
+                                          , log2fc_column = log2fc_column
+                                          , de_q_val_thresh = de_q_val_thresh
+                                          , counts_tbl = counts_mat
+
+                                          , groups = this_groups
+                                          , uniprot_id_column = uniprot_id_column
+                                          , gene_names_column = gene_names_column
+                                          , display_columns = display_columns )
 
 }
 
@@ -558,3 +774,76 @@ outputDeAnalysisResults <- function(de_analysis_results_list, uniprot_tbl
 
 
 
+#' @export
+writeInteractiveVolcanoPlotProteomicsMain <- function(de_analysis_results_list
+                                    , theObject
+                                    , uniprot_tbl
+                                    , publication_graphs_dir = NULL
+                                    , file_prefix = NULL
+                                    , plots_format = NULL
+                                    , args_row_id = NULL
+                                    , de_q_val_thresh = NULL
+                                    , gene_names_column = NULL
+                                    , fdr_column = NULL
+                                    , raw_p_value_column = NULL
+                                    , log2fc_column = NULL
+                                    , uniprot_id_column = NULL
+                                    , display_columns = NULL
+) {
+
+
+  uniprot_tbl <- checkParamsObjectFunctionSimplify(theObject, "uniprot_tbl", NULL)
+  publication_graphs_dir <- checkParamsObjectFunctionSimplify(theObject, "publication_graphs_dir", NULL)
+  args_row_id <- checkParamsObjectFunctionSimplify(theObject, "args_row_id", "uniprot_acc")
+  de_q_val_thresh <- checkParamsObjectFunctionSimplify(theObject, "de_q_val_thresh", 0.05)
+  gene_names_column <- checkParamsObjectFunctionSimplify(theObject, "gene_names_column", "Gene Names")
+  fdr_column <- checkParamsObjectFunctionSimplify(theObject, "fdr_column", "fdr_qvalue")
+  raw_p_value_column <- checkParamsObjectFunctionSimplify(theObject, "raw_p_value_column", "raw_pvalue")
+  log2fc_column <- checkParamsObjectFunctionSimplify(theObject, "log2fc_column", "log2FC")
+  uniprot_id_column <- checkParamsObjectFunctionSimplify(theObject, "uniprot_id_column", "Entry")
+  display_columns <- checkParamsObjectFunctionSimplify(theObject, "display_columns", c( "best_uniprot_acc" ))
+
+  theObject <- updateParamInObject(theObject, "uniprot_tbl")
+  theObject <- updateParamInObject(theObject, "publication_graphs_dir")
+  theObject <- updateParamInObject(theObject, "args_row_id")
+  theObject <- updateParamInObject(theObject, "de_q_val_thresh")
+  theObject <- updateParamInObject(theObject, "gene_names_column")
+  theObject <- updateParamInObject(theObject, "fdr_column")
+  theObject <- updateParamInObject(theObject, "raw_p_value_column")
+  theObject <- updateParamInObject(theObject, "log2fc_column")
+  theObject <- updateParamInObject(theObject, "uniprot_id_column")
+  theObject <- updateParamInObject(theObject, "display_columns")
+
+
+  ## Write interactive volcano plot
+
+  de_proteins_long <- de_analysis_results_list$de_proteins_long
+  contrasts_results <- de_analysis_results_list$contrasts_results
+
+  counts_mat <- (de_analysis_results_list$theObject)@protein_quant_table |>
+    column_to_rownames((de_analysis_results_list$theObject)@protein_id_column  ) |>
+    as.matrix()
+
+  this_design_matrix <- de_analysis_results_list$theObject@design_matrix
+
+  rownames( this_design_matrix ) <- this_design_matrix[,de_analysis_results_list$theObject@sample_id]
+
+  this_groups <- this_design_matrix[colnames( counts_mat), "group"]
+
+  writeInteractiveVolcanoPlotProteomics( de_proteins_long
+                                         , uniprot_tbl = uniprot_tbl
+                                         , fit.eb = contrasts_results$fit.eb
+                                         , publication_graphs_dir= publication_graphs_dir
+                                         , args_row_id = args_row_id
+                                         , fdr_column = fdr_column
+                                         , raw_p_value_column = raw_p_value_column
+                                         , log2fc_column = log2fc_column
+                                         , de_q_val_thresh = de_q_val_thresh
+                                         , counts_tbl = counts_mat
+
+                                         , groups = this_groups
+                                         , uniprot_id_column = uniprot_id_column
+                                         , gene_names_column = gene_names_column
+                                         , display_columns = display_columns )
+
+}

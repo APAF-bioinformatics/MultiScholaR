@@ -41,7 +41,7 @@ getFastaFields <- function(string, pattern) {
 #' Parse FASTA object from seqinr
 #' @description parse_fasta_object: Parse FASTA headers
 #' @param aa_seq AAStringSet object, output from running seqinr
-#' @return A table containing the protein evidence, isoform number, uniprot accession without isoform number, gene name
+#' @return A table containing the protein evidence, isoform number, uniprot accession without isoform number in the uniprot_acc column, gene name
 #' @export
 parseFastaObject <- function(aa_seq ) {
 
@@ -197,41 +197,43 @@ chooseBestPhosphositeAccession <- function(input_tbl, acc_detail_tab, accessions
 #'  uniprot_acc: List of uniprot accessions, but with the list ordered by the best one to less useful one to use
 #'  is_unique: Is the protein group assined to a unique UniProt accession or multiple UniProt accessions
 #'@export
-chooseBestProteinAccession <- function(input_tbl
-                                       , acc_detail_tab
-                                       , accessions_column
-                                       , row_id_column = uniprot_acc
-                                       , group_id
-                                       , delim= ";") {
+chooseBestProteinAccessionHelper <- function(input_tbl
+                                             , acc_detail_tab
+                                             , accessions_column
+                                             , row_id_column = "uniprot_acc"
+                                             , group_id
+                                             , delim= ";") {
 
   resolve_acc_helper <- input_tbl |>
     dplyr::select( { { group_id } }, { { accessions_column } }) |>
-    mutate( { { row_id_column } } := str_split({ { accessions_column } }, delim)) |>
-    unnest( { { row_id_column } }) |>
-    mutate( cleaned_acc = cleanIsoformNumber({ { row_id_column } })) |>
-    left_join( acc_detail_tab,
-               by = join_by( cleaned_acc == {{ row_id_column }} )) |>
-    dplyr::select( { { group_id } }, one_of(c(as_string(as_name(enquo(row_id_column)) ), "gene_name", "cleaned_acc",
-                                             "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"))) |>
+    mutate( !!sym(row_id_column) := str_split({ { accessions_column } }, delim)) |>
+    unnest( !!sym(row_id_column)) |>
+    mutate( cleaned_acc = cleanIsoformNumber(row_id_column))   |>
+    left_join( acc_detail_tab ,
+               by = join_by( cleaned_acc == !!sym(row_id_column) ),
+               copy = TRUE,
+               keep = NULL)  |>
+    dplyr::select( { { group_id } }, one_of(c(row_id_column, "gene_name", "cleaned_acc",
+                                              "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"))) |>
     distinct() |>
     arrange( { { group_id } }, protein_evidence, status, is_isoform, desc(seq_length), isoform_num)
+
 
   score_isoforms <- resolve_acc_helper |>
     mutate(gene_name = ifelse(is.na(gene_name) | gene_name == "", "NA", gene_name)) |>
     group_by({ { group_id } }, gene_name) |>
     arrange( { { group_id } }, protein_evidence,
-            status, is_isoform, desc(seq_length), isoform_num, cleaned_acc) |>
+             status, is_isoform, desc(seq_length), isoform_num, cleaned_acc) |>
     mutate( ranking = row_number()) |>
     ungroup()
 
 
   ## For each gene name find the uniprot_acc with the lowest rankinG
-
   group_gene_names_and_uniprot_accs <- score_isoforms |>
     distinct( { { group_id } }, gene_name, ranking) |>
     dplyr::filter(ranking == 1) |>
     left_join(score_isoforms |>
-                dplyr::select({ { group_id } }, ranking, gene_name, {{row_id_column}}),
+                dplyr::select({ { group_id } }, ranking, gene_name, !!sym(row_id_column)),
               by = join_by( {{ group_id }} == {{ group_id }}
                             , ranking == ranking
                             , gene_name == gene_name)) |>
@@ -240,7 +242,7 @@ chooseBestProteinAccession <- function(input_tbl
     group_by({ { group_id } }) |>
     summarise(num_gene_names = n(),
               gene_names = paste(gene_name, collapse = ":"),
-              { { row_id_column } } := paste({ { row_id_column } }, collapse = ":")) |>
+              !!sym(row_id_column) := paste(!!sym(row_id_column), collapse = ":")) |>
     ungroup() |>
     mutate(is_unique = case_when(num_gene_names == 1 ~ "Unique",
                                  TRUE ~ "Multimapped"))
@@ -248,4 +250,308 @@ chooseBestProteinAccession <- function(input_tbl
 
   return(group_gene_names_and_uniprot_accs)
 
+}
+
+
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#'@description From a list of UniProt accessions, rank the accession to use based on the UniProt score for quality of annotation for the protein entries
+#'@param input_tbl Contain the following columns, 'group_id' which is the Id for each protein group, 'accessions_column' which is the column with the accession of the protein
+#'@param acc_detail_tabl The out table from running the function 'parseFastaFile'
+#'@param accessions_column The name of the column with the list of protein accessions, separated by ';' semi-colon. No need to quote the name as we are using tidyverse programming quosure.
+#'@param group_id The name of the column with the group ID for each protein group. No need to quote the name as we are using tidyverse programming quosure.
+#' @returns A table with the following columns:
+#'  maxquant_row_id: Row ID
+#'  num_gene_names: Number of gene names associated with this row ID
+#'  gene_names: The gene names
+#'  uniprot_acc: List of uniprot accessions, but with the list ordered by the best one to less useful one to use
+#'  is_unique: Is the protein group assined to a unique UniProt accession or multiple UniProt accessions
+#'@export
+rankProteinAccessionHelper <- function(input_tbl
+                                             , acc_detail_tab
+                                             , accessions_column
+                                             , row_id_column = "uniprot_acc"
+                                             , group_id
+                                             , delim= ";") {
+
+  resolve_acc_helper <- input_tbl |>
+    dplyr::select( { { group_id } }, { { accessions_column } }) |>
+    mutate( !!sym(row_id_column) := str_split({ { accessions_column } }, delim)) |>
+    unnest( !!sym(row_id_column)) |>
+    mutate( cleaned_acc = cleanIsoformNumber(row_id_column))   |>
+    left_join( acc_detail_tab ,
+               by = join_by( cleaned_acc == !!sym(row_id_column) ),
+               copy = TRUE,
+               keep = NULL)  |>
+    dplyr::select( { { group_id } }, one_of(c(row_id_column, "gene_name", "cleaned_acc",
+                                              "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"))) |>
+    distinct() |>
+    arrange( { { group_id } }, protein_evidence, status, is_isoform, desc(seq_length), isoform_num)
+
+
+  score_isoforms <- resolve_acc_helper |>
+    mutate(gene_name = ifelse(is.na(gene_name) | gene_name == "", "NA", gene_name)) |>
+    group_by({ { group_id } }, gene_name) |>
+    arrange( { { group_id } }, protein_evidence,
+             status, is_isoform, desc(seq_length), isoform_num, cleaned_acc) |>
+    mutate( ranking = row_number()) |>
+    ungroup()
+
+
+  ## For each gene name find the uniprot_acc with the lowest rankinG
+  group_gene_names_and_uniprot_accs <- score_isoforms |>
+    distinct( { { group_id } }, gene_name, ranking) |>
+    left_join(score_isoforms |>
+                dplyr::select({ { group_id } }, ranking, gene_name, !!sym(row_id_column)),
+              by = join_by( {{ group_id }} == {{ group_id }}
+                            , ranking == ranking
+                            , gene_name == gene_name)) |>
+
+    dplyr::select(-ranking) |>
+    group_by({ { group_id } }) |>
+    summarise(num_gene_names = n(),
+              gene_names = paste(gene_name, collapse = ":"),
+              !!sym(row_id_column) := paste(!!sym(row_id_column), collapse = ":")) |>
+    ungroup() |>
+    mutate(is_unique = case_when(num_gene_names == 1 ~ "Unique",
+                                 TRUE ~ "Multimapped"))
+
+
+  return(group_gene_names_and_uniprot_accs)
+
+}
+
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#'@export
+processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uniparc_search_results = NULL, fasta_meta_file) {
+  startsWith <- function(x, prefix) {
+    substr(x, 1, nchar(prefix)) == prefix
+  }
+  
+  parseFastaFile <- function(fasta_file) {
+    aa_seqinr <- seqinr::read.fasta(file = fasta_file, seqtype = "AA", 
+                            whole.header = TRUE, as.string = TRUE)
+    headers <- names(aa_seqinr)
+    
+    parsed_headers <- lapply(headers, function(header) {
+      parts <- strsplit(substr(header, 2, nchar(header)), " ", fixed = TRUE)[[1]]
+      id_parts <- strsplit(parts[1], "|", fixed = TRUE)[[1]]
+      list(
+        accession = id_parts[2],
+        database_id = id_parts[2],
+        protein = paste(parts[-1], collapse = " "),
+        attributes = paste(parts[-1], collapse = " ")
+      )
+    })
+    
+    acc_detail_tab <- dplyr::bind_rows(parsed_headers)
+    aa_seq_tbl <- acc_detail_tab |>
+      dplyr::mutate(
+        seq = purrr::map_chr(aa_seqinr, 1),
+        seq_length = stringr::str_length(seq),
+        description = headers
+      )
+    
+    return(aa_seq_tbl)
+  }
+  
+
+  parseFastaHeader <- function(header) {
+    parts <- strsplit(substr(header, 2, nchar(header)), " ", fixed = TRUE)[[1]]
+    id_parts <- strsplit(parts[1], "|", fixed = TRUE)[[1]]
+    accession <- id_parts[2]
+    attributes <- paste(parts[-1], collapse = " ")
+    locus_tag <- stringr::str_extract(attributes, "(?<=\\[locus_tag=)[^\\]]+")
+    protein <- stringr::str_extract(attributes, "(?<=\\[protein=)[^\\]]+")
+    ncbi_refseq <- stringr::str_extract(attributes, "(?<=\\[protein_id=)WP_[^\\]]+")
+    list(
+      accession = accession,
+      protein_id = locus_tag,
+      protein = protein,
+      ncbi_refseq = ncbi_refseq,
+      attributes = attributes
+    )
+  }
+  parseFastaFileNonStandard <- function(fasta_file) {
+    aa_seqinr <- seqinr::read.fasta(file = fasta_file, seqtype = "AA", 
+                            whole.header = TRUE, as.string = TRUE)
+    headers <- names(aa_seqinr)
+    parsed_headers <- lapply(headers, parseFastaHeader)
+    acc_detail_tab <- dplyr::bind_rows(parsed_headers)
+    aa_seq_tbl <- acc_detail_tab |>
+      dplyr::mutate(
+        seq = purrr::map_chr(aa_seqinr, 1),
+        seq_length = stringr::str_length(seq),
+        description = headers
+      )
+    
+    return(aa_seq_tbl)
+  }
+  
+  matchAndUpdateDataFrames <- function(aa_seq_tbl, uniprot_search_results, uniparc_search_results) {
+    uniprot_filtered <- uniprot_search_results |>
+      dplyr::filter(Organism == "Klebsiella variicola") |>
+      dplyr::select("ncbi_refseq", "uniprot_id")
+
+    uniparc_prepared <- uniparc_search_results |>
+      dplyr::select(ncbi_refseq, uniparc_id = uniprot_id)
+
+    aa_seq_tbl_updated <- aa_seq_tbl |>
+      dplyr::left_join(uniprot_filtered, by = "ncbi_refseq") |>
+      dplyr::left_join(uniparc_prepared, by = "ncbi_refseq") |>
+      dplyr::mutate(database_id = dplyr::coalesce(uniprot_id, uniparc_id)) |>
+      dplyr::select(-uniprot_id, -uniparc_id)
+
+    return(aa_seq_tbl_updated)
+  }
+
+  fasta_file_raw <- vroom::vroom(fasta_file_path, delim = "\n", col_names = FALSE)
+  first_line <- fasta_file_raw$X1[1]
+
+  if (startsWith(first_line, ">sp|") || startsWith(first_line, ">tr|")) {
+    aa_seq_tbl <- parseFastaFile(fasta_file_path)
+    saveRDS(aa_seq_tbl, fasta_meta_file)
+    return(aa_seq_tbl)
+  } else {
+    aa_seq_tbl <- parseFastaFileNonStandard(fasta_file_path)
+    
+    if (!is.null(uniprot_search_results) && !is.null(uniparc_search_results)) {
+      aa_seq_tbl_final <- matchAndUpdateDataFrames(aa_seq_tbl, uniprot_search_results, uniparc_search_results)
+    } else {
+      aa_seq_tbl_final <- aa_seq_tbl |>
+        dplyr::mutate(database_id = NA_character_)
+    }
+
+    vroom::vroom_write(aa_seq_tbl_final,
+                      file = "aa_seq_tbl.tsv",
+                      delim = "\t",
+                      na = "",
+                      quote = "none")
+
+    saveRDS(aa_seq_tbl_final, fasta_meta_file)
+    return(aa_seq_tbl_final)
+  }
+}
+
+################################################################################################################################################################################################
+
+processFastaFile_deprecated <- function(fasta_file_path, uniprot_search_results, uniparc_search_results, fasta_meta_file) {
+  startsWith <- function(x, prefix) {
+    substr(x, 1, nchar(prefix)) == prefix
+  }
+  fasta_file_raw <- vroom::vroom(fasta_file_path, delim = "\n", col_names = FALSE)
+  first_line <- fasta_file_raw$X1[1]
+
+  if (startsWith(first_line, ">sp|") || startsWith(first_line, ">tr|")) {
+    aa_seq_tbl <- parseFastaFile(fasta_file_path)
+    saveRDS(aa_seq_tbl, fasta_meta_file)
+    return(aa_seq_tbl)
+  } else {  # Custom parsing for non-standard headers
+    parseFastaHeader <- function(header) {
+      parts <- strsplit(substr(header, 2, nchar(header)), " ", fixed = TRUE)[[1]]
+      id_parts <- strsplit(parts[1], "|", fixed = TRUE)[[1]]
+      accession <- id_parts[2]
+      attributes <- paste(parts[-1], collapse = " ")
+      locus_tag <- str_extract(attributes, "(?<=\\[locus_tag=)[^\\]]+")
+      protein <- str_extract(attributes, "(?<=\\[protein=)[^\\]]+")
+      ncbi_refseq <- str_extract(attributes, "(?<=\\[protein_id=)WP_[^\\]]+")
+      list(
+        accession = accession,
+        protein_id = locus_tag,
+        protein = protein,
+        ncbi_refseq = ncbi_refseq,
+        attributes = attributes
+      )
+    }
+
+    parseFastaFile <- function(fasta_file) {
+      aa_seqinr <- read.fasta(file = fasta_file, seqtype = "AA", 
+                              whole.header = TRUE, as.string = TRUE)
+      headers <- names(aa_seqinr)
+      parsed_headers <- lapply(headers, parseFastaHeader)
+      acc_detail_tab <- bind_rows(parsed_headers)
+      aa_seq_tbl <- acc_detail_tab |>
+        mutate(seq = map_chr(aa_seqinr, 1),
+               seq_length = map_int(seq, str_length),
+               description = headers)
+      
+      return(aa_seq_tbl)
+    }
+
+    aa_seq_tbl <- parseFastaFile(fasta_file_path)
+    
+    matchAndUpdateDataFrames <- function(aa_seq_tbl, uniprot_search_results, uniparc_search_results) {
+      uniprot_filtered <- uniprot_search_results |>
+        dplyr::filter(Organism == "Klebsiella variicola") |>
+        dplyr::select("ncbi_refseq", "uniprot_id")
+
+      uniparc_prepared <- uniparc_search_results |>
+        dplyr::select(ncbi_refseq, uniparc_id = uniprot_id)
+
+      aa_seq_tbl_updated <- aa_seq_tbl |>
+        dplyr::left_join(uniprot_filtered, by = "ncbi_refseq") |>
+        dplyr::left_join(uniparc_prepared, by = "ncbi_refseq") |>
+        dplyr::mutate(database_id = dplyr::coalesce(uniprot_id, uniparc_id)) |>
+        dplyr::select(-uniprot_id, -uniparc_id)
+
+      return(aa_seq_tbl_updated)
+    }
+
+    aa_seq_tbl_final <- matchAndUpdateDataFrames(aa_seq_tbl, uniprot_search_results, uniparc_search_results)
+
+    vroom::vroom_write(aa_seq_tbl_final,
+                       file = "aa_seq_tbl.tsv",
+                       delim = "\t",
+                       na = "",
+                       quote = "none")
+
+    saveRDS(aa_seq_tbl_final, fasta_meta_file)
+    return(aa_seq_tbl_final)
+  }
+}
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#'@export
+
+updateProteinIDs <- function(protein_data, aa_seq_tbl_final) {
+  # Generic NCBI protein ID patterns - escaped special characters
+  ncbi_patterns <- c(
+    "WP_\\d+\\.?\\d*",                     # WP_123456789.1
+    "[A-Z]{2}_\\d+\\.?\\d*",              # NP_123456.1, XP_123456.1
+    "[A-Z]{3}\\d+\\.?\\d*",               # ABC12345.1
+    "\\w+\\.\\d+_prot_\\w+_\\d+"          # Assembly specific patterns like NZ_LR130543.1_prot_ABC_123
+  )
+  
+  pattern <- paste0("(", paste(ncbi_patterns, collapse = "|"), ")")
+  
+  protein_data <- protein_data |>
+    dplyr::mutate(matching_id = stringr::str_extract(Protein.Ids, pattern))
+  
+  lookup_table <- aa_seq_tbl_final |>
+    dplyr::mutate(matching_id = stringr::str_extract(accession, pattern)) |>
+    dplyr::select(matching_id, database_id, ncbi_refseq)
+
+  updated_protein_data <- protein_data |>
+    dplyr::left_join(lookup_table, by = "matching_id") |>
+    dplyr::mutate(Protein.Ids_new = coalesce(database_id, ncbi_refseq, Protein.Ids)) |>
+    dplyr::select(-matching_id, -database_id, -ncbi_refseq)
+
+  changes <- sum(updated_protein_data$Protein.Ids_new != updated_protein_data$Protein.Ids)
+  cat("Number of Protein.Ids that would be updated:", changes, "\n")
+
+  if (changes > 0) {
+    cat("\nSample of changes:\n")
+    changed <- which(updated_protein_data$Protein.Ids_new != updated_protein_data$Protein.Ids)
+    sample_changes <- head(changed, 5)
+    for (i in sample_changes) {
+      cat("Old:", updated_protein_data$Protein.Ids[i], "-> New:", updated_protein_data$Protein.Ids_new[i], "\n")
+    }
+  }
+
+  # Replace old Protein.Ids with new ones
+  updated_protein_data$Protein.Ids <- updated_protein_data$Protein.Ids_new
+  updated_protein_data$Protein.Ids_new <- NULL
+
+  return(updated_protein_data)
 }

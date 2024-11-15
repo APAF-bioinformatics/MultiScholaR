@@ -91,27 +91,27 @@ plotNumSamplesPerMachine <- function( metadata_table
 }
 
 
-#' plotPeptidesProteinsCountsPerSample
+#' plotPeptidesProteinsCountsPerSampleHelper
 #' @description Plot the number of proteins and peptides identified per sample
 #' @export
-plotPeptidesProteinsCountsPerSample <- function( input_table
+plotPeptidesProteinsCountsPerSampleHelper <- function( input_table
                                                  , intensity_column = Peptide.RawQuantity
                                                  , protein_id_column = Protein.Ids
                                                  , peptide_id_column = Stripped.Sequence
-                                                 , replicate_id_column = Run
+                                                 , sample_id_column = Run
                                                  , peptide_sequence_column = Stripped.Sequence ) {
 
   num_proteins_per_sample <- input_table |>
     dplyr::filter( !is.na(  {{intensity_column}} )) |>
-    distinct( {{replicate_id_column}}, {{protein_id_column}} ) |>
-    group_by( {{replicate_id_column}} ) |>
+    distinct( {{sample_id_column}}, {{protein_id_column}} ) |>
+    group_by( {{sample_id_column}} ) |>
     summarise( count = n()  ) |>
     ungroup()
 
   num_peptides_per_sample <- input_table |>
     dplyr::filter( !is.na(  {{intensity_column}} )) |>
-    distinct( {{replicate_id_column}}, {{protein_id_column}}, {{peptide_id_column}} ) |>
-    group_by( {{replicate_id_column}}) |>
+    distinct( {{sample_id_column}}, {{protein_id_column}}, {{peptide_id_column}} ) |>
+    group_by( {{sample_id_column}}) |>
     summarise( count = n()  ) |>
     ungroup()
 
@@ -119,12 +119,12 @@ plotPeptidesProteinsCountsPerSample <- function( input_table
     mutate( type = "Protein" ) |>
     bind_rows( num_peptides_per_sample |>
                  mutate( type = "Peptide")) |>
-    pivot_wider( id_cols = {{replicate_id_column}}
+    pivot_wider( id_cols = {{sample_id_column}}
                  , names_from = type
                  , values_from = count)
 
   output_plot <- combined_counts |>
-    ggplot( aes( reorder({{replicate_id_column}}, Peptide) )) +
+    ggplot( aes( reorder({{sample_id_column}}, Peptide) )) +
     geom_point(aes(y = Peptide/10, shape="Peptide" ),  show.legend = TRUE) +
     geom_point(aes(y = Protein, shape="Protein"  ),  show.legend = TRUE) +
     scale_y_continuous(name = "Protein",
@@ -144,11 +144,11 @@ plotPeptidesProteinsCountsPerSample <- function( input_table
 
 #' @description Keep spectrum-peptide matches that is within q-value threshold and are proteotypic
 #' @export
-srlQvalueProteotypicPeptideClean <- function(input_table
-                                             , q_value_thresh = 0.01
-                                             , global_q_value_thresh = 0.01
+srlQvalueProteotypicPeptideCleanHelper <- function(input_table
+                                             , qvalue_threshold = 0.01
+                                             , global_qvalue_threshold = 0.01
                                              , choose_only_proteotypic_peptide = 1
-                                             ,   srl_quant_columns = c("Run"
+                                             ,   input_matrix_column_ids = c("Run"
                                                                        , "Precursor.Id"
                                                                        , "Protein.Ids"
                                                                        , "Stripped.Sequence"
@@ -164,10 +164,10 @@ srlQvalueProteotypicPeptideClean <- function(input_table
 
 
   search_srl_quant_cln <- input_table |>
-    dplyr::filter( {{q_value_column}} < q_value_thresh &
-                     {{global_q_value_column}} < global_q_value_thresh &
+    dplyr::filter( {{q_value_column}} < qvalue_threshold &
+                     {{global_q_value_column}} < global_qvalue_threshold &
                      {{proteotypic_peptide_sequence_column}} == choose_only_proteotypic_peptide ) |>
-    dplyr::select(one_of( srl_quant_columns))
+    dplyr::select(all_of( input_matrix_column_ids))
 
   search_srl_quant_cln
 
@@ -175,96 +175,171 @@ srlQvalueProteotypicPeptideClean <- function(input_table
 
 #' @description  Peptides of with charges and modifications are rolled up (summed) together
 #' @export
-rollUpPrecursorToPeptide <- function( input_table
+rollUpPrecursorToPeptideHelper <- function( input_table
                                       , sample_id_column = Run
                                       , protein_id_column = Protein.Ids
                                       , peptide_sequence_column = Stripped.Sequence
                                       , modified_peptide_sequence_column = Modified.Sequence
                                       , precursor_quantity_column = Precursor.Quantity
-                                      , precursor_normalized_column = Precursor.Normalised
-                                      , cluster) {
+                                      , precursor_normalised_column = Precursor.Normalised
+                                      , core_utilisation) {
 
-  peptide_normalized_tbl <- NA
-  if( length(which(is.na(cluster))) == 0 ) {
+  peptide_normalised_tbl <- NA
+  if( length(which(is.na(core_utilisation))) == 0 ) {
 
-    peptide_normalized_tbl <- input_table  |>
+    peptide_normalised_tbl <- input_table  |>
       group_by( {{sample_id_column}}, {{protein_id_column}}, {{peptide_sequence_column}}, {{modified_peptide_sequence_column}} ) |>
       summarise( Peptide.RawQuantity = sum( {{precursor_quantity_column}} )
-                 ,  Peptide.Normalized = sum( {{precursor_normalized_column}} ) ) |>
+                 ,  Peptide.Normalised = sum( {{precursor_normalised_column}} ) ) |>
       ungroup() |>
       group_by( {{sample_id_column}}, {{protein_id_column}}, {{peptide_sequence_column}} ) |>
       summarise( Peptide.RawQuantity = sum( Peptide.RawQuantity )
-                 ,  Peptide.Normalized = sum( Peptide.Normalized )
+                 ,  Peptide.Normalised = sum( Peptide.Normalised )
                  ,  peptidoform_count = n()) |>
       ungroup()
 
   } else {
-    peptide_normalized_tbl <- input_table  |>
+    peptide_normalised_tbl <- input_table  |>
 
       group_by( {{sample_id_column}}, {{protein_id_column}}, {{peptide_sequence_column}}, {{modified_peptide_sequence_column}} ) |>
-      partition(cluster) |>
+      partition(core_utilisation) |>
       summarise( Peptide.RawQuantity = sum( {{precursor_quantity_column}} )
-                 ,  Peptide.Normalized = sum( {{precursor_normalized_column}} ) ) |>
+                 ,  Peptide.Normalised = sum( {{precursor_normalised_column}} ) ) |>
       collect() |>
       ungroup() |>
 
       group_by( {{sample_id_column}}, {{protein_id_column}}, {{peptide_sequence_column}} ) |>
-      partition(cluster) |>
+      partition(core_utilisation) |>
       summarise( Peptide.RawQuantity = sum( Peptide.RawQuantity )
-                 ,  Peptide.Normalized = sum( Peptide.Normalized )
+                 ,  Peptide.Normalised = sum( Peptide.Normalised )
                  , peptidoform_count = n() ) |>
       collect() |>
       ungroup()
 
   }
 
-  peptide_normalized_tbl
+  peptide_normalised_tbl
 }
 
 #' @export
 #' @description Remove peptide based on the intensity threshold and the proportion of samples below the threshold
-peptideIntensityFiltering <- function(input_table
+peptideIntensityFilteringHelper <- function(input_table
                                       , min_peptide_intensity_threshold = 15
-                                      , proportion_samples_below_intensity_threshold = 1
+                                      , peptides_proportion_of_samples_below_cutoff = 1
                                       , protein_id_column = Protein.Ids
                                       , peptide_sequence_column = Stripped.Sequence
-                                      , peptide_quantity_column = Peptide.Normalized
-                                      , cluster) {
+                                      , peptide_quantity_column = Peptide.Normalised
+                                      , core_utilisation) {
   num_values_per_peptide <- NA
 
-  if( length(which(is.na(cluster))) == 0 ) {
+  if( length(which(is.na(core_utilisation))) == 0 ) {
     num_values_per_peptide <- input_table |>
       mutate(  below_intensity_threshold = case_when( {{peptide_quantity_column}} < min_peptide_intensity_threshold ~ 1,
                                                       TRUE ~ 0) ) |>
       group_by( {{protein_id_column}}, {{peptide_sequence_column}}) |>
-      #partition(cluster) |>
+      #partition(core_utilisation) |>
       summarise (samples_counts = n(),
                  num_below_intesnity_treshold = sum(below_intensity_threshold)) |>
       #collect() |>
       ungroup() |>
-      dplyr::filter( num_below_intesnity_treshold/samples_counts < proportion_samples_below_intensity_threshold )
+      dplyr::filter( num_below_intesnity_treshold/samples_counts < peptides_proportion_of_samples_below_cutoff )
   } else {
     num_values_per_peptide <- input_table |>
       mutate(  below_intensity_threshold = case_when( {{peptide_quantity_column}} < min_peptide_intensity_threshold ~ 1,
                                                       TRUE ~ 0) ) |>
       group_by( {{protein_id_column}}, {{peptide_sequence_column}}) |>
-      partition(cluster) |>
+      partition(core_utilisation) |>
       summarise (samples_counts = n(),
                  num_below_intesnity_treshold = sum(below_intensity_threshold)) |>
       collect() |>
       ungroup() |>
-      dplyr::filter( num_below_intesnity_treshold/samples_counts < proportion_samples_below_intensity_threshold )
+      dplyr::filter( num_below_intesnity_treshold/samples_counts < peptides_proportion_of_samples_below_cutoff )
 
   }
 
-  peptide_normalized_pif_cln <- input_table |>
+  peptide_normalised_pif_cln <- input_table |>
     inner_join ( num_values_per_peptide |>
                    dplyr::select( -num_below_intesnity_treshold, -samples_counts)
                  , by = join_by( {{protein_id_column}}, {{peptide_sequence_column}} ) )
 
 
-  peptide_normalized_pif_cln
+  peptide_normalised_pif_cln
 
+
+}
+
+
+
+#'@param input_table An input table with a column containing the row ID and the rest of the columns representing abundance values for each sample.
+#'@param cols A tidyselect command to select the columns. This includes the functions starts_with(), ends_with(), contains(), matches(), and num_range()
+#'@param design_matrix A data frame with a column containing the sample ID (as per the sample_id param) and the experimental group (as per the group param). Each row as the sample ID as row name in the data frame.
+#'@param sample_id The name of the column in design_matrix table that has the sample ID.
+#'@param row_id A unique ID for each row of the 'input_table' variable.
+#'@param group_column The name of the column in design_matrix table that has the experimental group.
+#'@param groupwise_percentage_cutoff The maximum percentage of values below threshold allow in each group for a peptide .
+#'@param max_groups_percentage_cutoff The maximum percentage of groups allowed with too many samples with peptide abundance values below threshold.
+#'@param abundance_threshold Abundance threshold in which the protein in the sample must be above for it to be considered for inclusion into data analysis.
+#'@param temporary_abundance_column The name of a temporary column to keep the abundance value you want to filter upon
+#'@return A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values.
+#'@export
+removePeptidesWithMissingValuesPercentHelper <- function(input_table
+                                               , design_matrix
+                                               , sample_id
+                                               , protein_id_column
+                                               , peptide_sequence_column
+                                               , grouping_variable
+                                               , groupwise_percentage_cutoff = 1
+                                               , max_groups_percentage_cutoff = 50
+                                               , abundance_threshold
+                                               , abundance_column = "Abundance") {
+
+  abundance_long <- input_table |>
+    mutate( row_id = purrr::map2_chr( {{protein_id_column}}
+                                     , {{peptide_sequence_column}}
+                                     , \(x,y)paste(x , y, sep="_")) ) |>
+    mutate( {{sample_id}} := purrr::map_chr(   {{sample_id}}  , as.character)   ) |>
+    left_join(  design_matrix |>
+                mutate(  {{sample_id}} := purrr::map_chr( {{sample_id}} , as.character ))
+                , by = join_by({{sample_id}} ) )
+
+  count_values_per_group <- abundance_long |>
+    distinct( {{sample_id}} , {{ grouping_variable }} ) |>
+    group_by( {{ grouping_variable }} ) |>
+    summarise(  num_per_group = n()) |>
+    ungroup()
+
+  count_values_missing_per_group <- abundance_long |>
+    mutate(is_missing = ifelse( !is.na( !!sym( abundance_column ))
+                                & !!sym( abundance_column ) > abundance_threshold
+                                , 0, 1)) |>
+    group_by( row_id, {{ grouping_variable }} ) |>
+    summarise( num_missing_per_group = sum(is_missing)) |>
+    ungroup()
+
+  count_percent_missing_per_group <- count_values_missing_per_group |>
+    full_join( count_values_per_group,
+               by = join_by( {{ grouping_variable }} )) |>
+    mutate(  perc_below_thresh_per_group = num_missing_per_group / num_per_group * 100 )
+
+  total_num_of_groups <- count_values_per_group |> nrow()
+
+  remove_rows_temp <- count_percent_missing_per_group |>
+    dplyr::filter(groupwise_percentage_cutoff <  perc_below_thresh_per_group) |>
+    group_by( row_id ) |>
+    summarise( percent  = n()/total_num_of_groups*100 ) |>
+    ungroup() |>
+    dplyr::filter(percent > max_groups_percentage_cutoff)
+
+  print(nrow(remove_rows_temp))
+
+  filtered_tbl <- input_table |>
+    mutate( row_id = purrr::map2_chr( {{protein_id_column}}
+                                     , {{peptide_sequence_column}}
+                                     , \(x,y)paste(x , y, sep="_")) ) |>
+    dplyr::anti_join(remove_rows_temp, by = join_by(row_id)) |>
+    dplyr::select(-row_id)
+
+  return(filtered_tbl)
 
 }
 
@@ -274,26 +349,26 @@ peptideIntensityFiltering <- function(input_table
 #' @param num_peptides_per_protein_thresh Minimum number of peptides per protein
 #' @param num_peptidoforms_per_protein_thresh Minimum number of peptidoforms per protein
 #' @param protein_id_column Protein ID column name as string
-#' @param cluster Cluster to use for parallel processing
-filterMinNumPeptidesPerProtein <- function( input_table
+#' @param core_utilisation core_utilisation to use for parallel processing
+filterMinNumPeptidesPerProteinHelper <- function( input_table
           , num_peptides_per_protein_thresh = 1
           , num_peptidoforms_per_protein_thresh = 2
           , protein_id_column = Protein.Ids
-          , cluster) {
+          , core_utilisation) {
 
   num_peptides_per_protein <- NA
-  if( length(which(is.na(cluster))) == 0 ) {
+  if( length(which(is.na(core_utilisation))) == 0 ) {
     num_peptides_per_protein <- input_table |>
       group_by( {{protein_id_column}} ) |>
-      dplyr::summarise( peptide_count = n()
-                 , peptidoform_count = sum( peptidoform_count, na.rm=TRUE)) |>
+      dplyr::summarise( peptides_for_protein_count = n()
+                 , peptidoforms_for_protein_count = sum( peptidoform_count, na.rm=TRUE)) |>
       ungroup()
   } else {
     num_peptides_per_protein <- input_table |>
       group_by( {{protein_id_column}} ) |>
-      partition(cluster) |>
-      dplyr::summarise( peptide_count = n()
-                 , peptidoform_count = sum( peptidoform_count, na.rm=TRUE)) |>
+      partition(core_utilisation) |>
+      dplyr::summarise( peptides_for_protein_count = n()
+                 , peptidoforms_for_protein_count = sum( peptidoform_count, na.rm=TRUE)) |>
       collect() |>
       ungroup()
   }
@@ -305,12 +380,11 @@ filterMinNumPeptidesPerProtein <- function( input_table
     print(num_peptides_per_protein)
 
     protein_peptide_cln <- input_table |>
-      dplyr::select(-peptidoform_count )|>
       inner_join( num_peptides_per_protein
                   , by = join_by({{protein_id_column}})) |>
-      dplyr::filter(   peptidoform_count >= num_peptidoforms_per_protein_thresh
+      dplyr::filter(   peptidoforms_for_protein_count >= num_peptidoforms_per_protein_thresh
                       ,
-                      peptide_count >= num_peptides_per_protein_thresh
+                      peptides_for_protein_count >= num_peptides_per_protein_thresh
                      )
   } else {
     stop("filterMinNumPeptidesPerProtein: num_peptides_per_protein_thresh and num_peptidoforms_per_protein_thresh must be provided.")
@@ -323,32 +397,32 @@ filterMinNumPeptidesPerProtein <- function( input_table
 #' @export
 #' @description Remove sample if it has less than a certain number of peptides identified
 #' @param List of samples to keep regardless of how many peptides it has because it is am important sample
-filterMinNumPeptidesPerSample <- function ( input_table
-                                            , min_num_peptides_in_sample = 5000
+filterMinNumPeptidesPerSampleHelper <- function ( input_table
+                                            , peptides_per_sample_cutoff = 5000
                                             , sample_id_column = Run
-                                            , cluster
+                                            , core_utilisation
                                             , inclusion_list = c()) {
 
   samples_passing_filter <- NA
-  if( length(which(is.na(cluster))) == 0 ) {
+  if( length(which(is.na(core_utilisation))) == 0 ) {
     samples_passing_filter <- input_table |>
       group_by( {{sample_id_column}} ) |>
-      #partition(cluster) |>
+      #partition(core_utilisation) |>
       summarise( counts = n()) |>
       #collect() |>
       ungroup() |>
-      dplyr::filter( counts >= min_num_peptides_in_sample |
+      dplyr::filter( counts >= peptides_per_sample_cutoff |
                        ( {{sample_id_column}} %in% inclusion_list)  ) |>
       dplyr::select(-counts)
 
   } else {
     samples_passing_filter <- input_table |>
       group_by( {{sample_id_column}} ) |>
-      partition(cluster) |>
+      partition(core_utilisation) |>
       summarise( counts = n()) |>
       collect() |>
       ungroup() |>
-      dplyr::filter( counts >= min_num_peptides_in_sample |
+      dplyr::filter( counts >= peptides_per_sample_cutoff |
                        ( {{sample_id_column}} %in% inclusion_list)  ) |>
       dplyr::select(-counts)
   }
@@ -399,18 +473,18 @@ getPairsOfSamplesTable <- function ( input_table
 #'@description Calculate the Pearson correlation of the abundances of peptides between two samples X and Y.
 #'@param ms_filename_x A string representing the sample file name X (for a pair of sample in the same technical replicate group) for correlation score calculation.
 #'@param ms_filename_y A string representing the sample file name Y (for a pair of sample in the same technical replicate group) for correlation score calculation.
-#'@param input_table A data frame with the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalized peptide abundances
+#'@param input_table A data frame with the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalised peptide abundances
 #'@param sample_id_column Sample ID column, tidyverse format (default = Run).
 #'@param protein_id_column Protein accession column, tidyverse format (default = Protein.Ids).
 #'@param peptide_sequence_column Peptide sequence column, tidyverse fromat (default =  Stripped.Sequence).
-#'@param peptide_normalized_column Normalized peptide abundance column name as string (default = "Peptide.Normalized").
+#'@param peptide_normalised_column Normalised peptide abundance column name as string (default = "Peptide.Normalised").
 #'@return The pearson correlation value of the abundances of peptides between two samples X and Y.
 #' @export
 calulatePearsonCorrelation <- function( ms_filename_x, ms_filename_y, input_table
                                         , sample_id_column = Run
                                         , protein_id_column = Protein.Ids
                                         , peptide_sequence_column = Stripped.Sequence
-                                        , peptide_normalized_column = "Peptide.Normalized")  {
+                                        , peptide_normalised_column = "Peptide.Normalised")  {
 
   tab_x <- input_table |>
     dplyr::filter( {{sample_id_column}} == ms_filename_x )
@@ -422,12 +496,12 @@ calulatePearsonCorrelation <- function( ms_filename_x, ms_filename_y, input_tabl
     inner_join( tab_y, by=join_by( {{protein_id_column}}, {{peptide_sequence_column}}) )
 
   # merged_tbl |>
-  #   dplyr::filter(!is.na( !!sym(paste0(peptide_normalized_column, ".x")) ) & !is.na( !!sym(paste0(peptide_normalized_column, ".x")))) |>
+  #   dplyr::filter(!is.na( !!sym(paste0(peptide_normalised_column, ".x")) ) & !is.na( !!sym(paste0(peptide_normalised_column, ".x")))) |>
   #   head() |> print()
 
   # print( paste(ms_filename_x, ms_filename_y))
-  input_x <-  merged_tbl[[ paste0(peptide_normalized_column, ".x") ]]
-  input_y <- merged_tbl[[paste0(peptide_normalized_column, ".y")]]
+  input_x <-  merged_tbl[[ paste0(peptide_normalised_column, ".x") ]]
+  input_y <- merged_tbl[[paste0(peptide_normalised_column, ".y")]]
   if( length(input_x) > 0 & length(input_y) >0  ) {
     cor_result <- cor( input_x
                        , input_y
@@ -442,7 +516,7 @@ calulatePearsonCorrelation <- function( ms_filename_x, ms_filename_y, input_tabl
 
 
 #' @export
-calulatePearsonCorrelationForSamplePairs <- function( samples_id_tbl
+calulatePearsonCorrelationForSamplePairsHelper <- function( samples_id_tbl
                                                       , run_id_column = "ms_filename"
                                                       , replicate_group_column = "general_sample_info"
                                                       , input_table
@@ -450,7 +524,7 @@ calulatePearsonCorrelationForSamplePairs <- function( samples_id_tbl
                                                       , sample_id_column = Run
                                                       , protein_id_column = Protein.Ids
                                                       , peptide_sequence_column = Stripped.Sequence
-                                                      , peptide_normalized_column = "Peptide.Normalized") {
+                                                      , peptide_normalised_column = "Peptide.Normalised") {
 
 
   pairs_for_comparison <- getPairsOfSamplesTable(samples_id_tbl
@@ -472,7 +546,7 @@ calulatePearsonCorrelationForSamplePairs <- function( samples_id_tbl
                                                                                         , sample_id_column = {{sample_id_column}}
                                                                                         , protein_id_column = {{protein_id_column}}
                                                                                         , peptide_sequence_column = {{peptide_sequence_column}}
-                                                                                        , peptide_normalized_column = {{peptide_normalized_column}}) }))
+                                                                                        , peptide_normalised_column = {{peptide_normalised_column}}) }))
 
   pearson_correlation_per_pair
 
@@ -481,15 +555,15 @@ calulatePearsonCorrelationForSamplePairs <- function( samples_id_tbl
 
 #'@description Remove samples which is correlated with any technical replicate samples
 #'@param pearson_correlation_per_pair A data frame with the following columns: 1. ID of technical replicate group, 2. sample file name X, 3. sample file name Y, 4. Pearson correlation of the abundances of peptides between sample X and Y.
-#'@param peptide_keep_samples_with_min_num_peptides A data frame with the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalized peptide abundances
+#'@param peptide_keep_samples_with_min_num_peptides A data frame with the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalised peptide abundances
 #'@param min_pearson_correlation_threshold Minimum pearson correlation for a pair of files to be considered to be consistent and kept for further analysis
 #'@param filename_column_x Name of column containing the sample file name X (for a pair of sample in the same technical replicate group). Tidyverse column header format, not a string.
 #'@param filename_column_y Name of column containing the sample file name Y (for a pair of sample in the same technical replicate group). Tidyverse column header format, not a string.
 #'@param correlation_column Name of column containing the Pearson's correlation score between Sample X and Y. Tidyverse column header format, not a string.
 #'@param filename_id_column A string indicating the name of column that contains the sample ID or Run ID in the data frame `peptide_keep_samples_with_min_num_peptides`.
-#'@return A table without samples that are poorly correlated with the rest of the samples in the technical replicate group. Contains the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalized peptide abundances
+#'@return A table without samples that are poorly correlated with the rest of the samples in the technical replicate group. Contains the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalised peptide abundances
 #' @export
-filterSamplesByCorrelationThreshold <- function(pearson_correlation_per_pair
+filterSamplesByPeptideCorrelationThreshold <- function(pearson_correlation_per_pair
                                                 , peptide_keep_samples_with_min_num_peptides
                                                 , min_pearson_correlation_threshold = 0.75
                                                 , filename_column_x = ms_filename.x
@@ -513,7 +587,7 @@ filterSamplesByCorrelationThreshold <- function(pearson_correlation_per_pair
 }
 
 #' @export
-findSamplesPairBelowCorrelationThreshold <- function(pearson_correlation_per_pair
+findSamplesPairBelowPeptideCorrelationThreshold <- function(pearson_correlation_per_pair
                                                      , peptide_keep_samples_with_min_num_peptides
                                                      , min_pearson_correlation_threshold = 0.75
                                                      , filename_column_x = ms_filename.x
@@ -540,26 +614,77 @@ findSamplesPairBelowCorrelationThreshold <- function(pearson_correlation_per_pai
 
 
 #---------------------------------------------------------------------------------------
+
+
+#'@description Remove samples which is correlated with any technical replicate samples
+#'@param protein_intensity_table A data frame with the following columns: 1. ID of technical replicate group, 2. sample file name X, 3. sample file name Y, 4. Pearson correlation of the abundances of peptides between sample X and Y.
+#'@param peptide_keep_samples_with_min_num_peptides A data frame with the proteins as rows and samples ID as columns.
+#'@param min_pearson_correlation_threshold Minimum pearson correlation for a pair of files to be considered to be consistent and kept for further analysis
+#'@param filename_column_x Name of column containing the sample file name X (for a pair of sample in the same technical replicate group). Tidyverse column header format, not a string.
+#'@param filename_column_y Name of column containing the sample file name Y (for a pair of sample in the same technical replicate group). Tidyverse column header format, not a string.
+#'@param protein_id_column Name of column containing the protein ID. Tidyverse column header format, not a string.
+#'@param correlation_column Name of column containing the Pearson's correlation score between Sample X and Y. Tidyverse column header format, not a string.
+#'@param filename_id_column A string indicating the name of column that contains the sample ID or Run ID in the data frame `peptide_keep_samples_with_min_num_peptides`.
+#'@return A table without samples that are poorly correlated with the rest of the samples in the technical replicate group. Contains the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalised peptide abundances
+#' @export
+filterSamplesByProteinCorrelationThresholdHelper <- function(pearson_correlation_per_pair
+                                                       , protein_intensity_table
+                                                       , min_pearson_correlation_threshold = 0.75
+                                                       , filename_column_x = ms_filename.x
+                                                       , filename_column_y = ms_filename.y
+                                                       , protein_id_column = Protein.Ids
+                                                       , correlation_column = pearson_correlation ) {
+
+  # All Samples
+  all_samples <-  pearson_correlation_per_pair |>
+    pivot_longer( cols =c({{filename_column_x}}, {{filename_column_y}})
+                  , values_to = "temp_column" ) |>
+    dplyr::distinct( temp_column )
+
+  # Samples to keep include all those pairs of samples with correlation score passing threshold
+  samples_to_keep <-  pearson_correlation_per_pair |>
+    dplyr::filter( {{correlation_column}} >= min_pearson_correlation_threshold) |>
+    pivot_longer( cols =c({{filename_column_x}}, {{filename_column_y}})
+                  , values_to = "temp_column" ) |>
+    dplyr::distinct( temp_column )
+
+  # Samples to keep anyway
+  samples_to_keep_anyway <-setdiff( setdiff(colnames(protein_intensity_table), (all_samples |> pull( temp_column )))
+                                    ,  as_string({{protein_id_column}})  )
+
+  print( samples_to_keep_anyway)
+
+  # Samples in the table to keep
+  samples_to_keep_subset <- colnames(protein_intensity_table)[colnames(protein_intensity_table) %in% (samples_to_keep |> pull( temp_column ))]
+
+  samples_above_correlation_theshold <- protein_intensity_table |>
+    dplyr::select( {{protein_id_column}}, all_of( c(samples_to_keep_anyway, samples_to_keep_subset)))
+
+  samples_above_correlation_theshold
+
+}
+
+#---------------------------------------------------------------------------------------
 #' @description Remove peptides that only have data for one technical replicate for all sample.
 #' This can be repurposed for removing peptides that only have one biological replicates for all experimental groups.
 #' This function can be repurposed for filtering on proteins as well (we just have to create a dummy variable for peptide_sequence_column)
 #' @export
-removePeptidesWithOnlyOneReplicate <- function(input_table
+removePeptidesWithOnlyOneReplicateHelper <- function(input_table
                                                , samples_id_tbl
                                                , input_table_sample_id_column = Run
                                                , sample_id_tbl_sample_id_column  =  ms_filename
                                                , replicate_group_column = general_sample_info
                                                , protein_id_column = Protein.Ids
                                                , peptide_sequence_column = Stripped.Sequence
-                                               , cluster ) {
+                                               , core_utilisation ) {
 
   # Count the number of technical replicates per sample and peptide combination
   num_tech_reps_per_sample_and_peptide <- NA
-  if( length(which(is.na(cluster))) == 0 ) {
+  if( length(which(is.na(core_utilisation))) == 0 ) {
     num_tech_reps_per_sample_and_peptide <- input_table |>
       left_join( samples_id_tbl, by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>
       group_by( {{replicate_group_column}}, {{protein_id_column}}, {{peptide_sequence_column}}) |>
-      #partition(cluster) |>
+      #partition(core_utilisation) |>
       summarise(counts = n() ) |>
       #collect() |>
       ungroup()
@@ -567,7 +692,7 @@ removePeptidesWithOnlyOneReplicate <- function(input_table
     num_tech_reps_per_sample_and_peptide <- input_table |>
       left_join( samples_id_tbl, by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>
       group_by( {{replicate_group_column}}, {{protein_id_column}}, {{peptide_sequence_column}}) |>
-      partition(cluster) |>
+      partition(core_utilisation) |>
       summarise(counts = n() ) |>
       collect() |>
       ungroup()
@@ -596,15 +721,15 @@ removeProteinWithOnlyOneReplicate <- function(input_table
                                                , sample_id_tbl_sample_id_column  =  ms_filename
                                                , replicate_group_column = general_sample_info
                                                , protein_id_column = Protein.Ids
-                                               , cluster ) {
+                                               , core_utilisation ) {
 
   # Count the number of technical replicates per sample and protein combination
   num_tech_reps_per_sample_and_protein <- NA
-  if( length(which(is.na(cluster))) == 0 ) {
+  if( length(which(is.na(core_utilisation))) == 0 ) {
     num_tech_reps_per_sample_and_protein <- input_table |>
       left_join( samples_id_tbl, by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>
       group_by( {{replicate_group_column}}, {{protein_id_column}}) |>
-      #partition(cluster) |>
+      #partition(core_utilisation) |>
       summarise(counts = n() ) |>
       #collect() |>
       ungroup()
@@ -612,7 +737,7 @@ removeProteinWithOnlyOneReplicate <- function(input_table
     num_tech_reps_per_sample_and_protein <- input_table |>
       left_join( samples_id_tbl, by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>
       group_by( {{replicate_group_column}}, {{protein_id_column}}) |>
-      partition(cluster) |>
+      partition(core_utilisation) |>
       summarise(counts = n() ) |>
       collect() |>
       ungroup()
@@ -632,31 +757,31 @@ removeProteinWithOnlyOneReplicate <- function(input_table
 
 ##-----------------------------------------------------------------------------------------
 
-#' peptideMissingValueImputation
+#' peptideMissingValueImputationHelper
 #' @description Perform peptide level missing value imputation
-#'@param input_table A data frame with the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalized peptide abundances
+#'@param input_table A data frame with the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalised peptide abundances
 #'@param metadata_table A data table with the following columns: 1. the sample file name or run name (as per parameter sample_id_tbl_sample_id_column), 2. The replicate group ID (as per parameter replicate_group_column)
 #'@param input_table_sample_id_column The name of the column in the input_table that contained the run information or sample file name as per the input_table parameter (default: Run)
 #'@param sample_id_tbl_sample_id_column The name of the column in the input_table that contained the run information or sample file name as per the metadata_table parameter (default: ms_filename)
 #'@param replicate_group_column (default: general_sample_info)
 #'@param protein_id_column Protein accession column, tidyverse format (default = Protein.Ids).
 #'@param peptide_sequence_column Peptide sequence column, tidyverse fromat (default =  Stripped.Sequence).
-#'@param quantity_to_impute_column Name of column containing the peptide abundance that needs to be normalized in tidyverse format (default: Peptide.RawQuantity)
+#'@param quantity_to_impute_column Name of column containing the peptide abundance that needs to be normalised in tidyverse format (default: Peptide.RawQuantity)
 #'@param hek_string The string denoting samples that are controls using HEK cells (default: "HEK")
-#'@param prop_missing The proportion of sample replicates in a group that is missing below which the peptide intensity will be imputed (default: 0.50)
+#'@param proportion_missing_values The proportion of sample replicates in a group that is missing below which the peptide intensity will be imputed (default: 0.50)
 #'@export
-peptideMissingValueImputation <- function( input_table
+peptideMissingValueImputationHelper <- function( input_table
                                            , metadata_table
                                            , input_table_sample_id_column = Run
                                            , sample_id_tbl_sample_id_column  =  ms_filename
                                            , replicate_group_column = general_sample_info
                                            , protein_id_column = Protein.Ids
                                            , peptide_sequence_column = Stripped.Sequence
-                                           , quantity_to_impute_column = Peptide.Normalized
+                                           , quantity_to_impute_column = Peptide.Normalised
                                            , imputed_value_column = Peptide.Imputed
                                            , hek_string = "HEK"
-                                           , prop_missing = 0.50
-                                           , cluster ) {
+                                           , proportion_missing_values = 0.50
+                                           , core_utilisation ) {
 
   # Max number of technical replicates per group
   num_tech_rep_per_sample <-  metadata_table  |>
@@ -669,7 +794,7 @@ peptideMissingValueImputation <- function( input_table
   # Count the number of technical replicates per sample and peptide combination
   num_tech_reps_per_sample_and_peptide <- NA
 
-  if( length(which(is.na(cluster))) == 0 ) {
+  if( length(which(is.na(core_utilisation))) == 0 ) {
     num_tech_reps_per_sample_and_peptide <- input_table |>
       left_join( metadata_table
                  , by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>
@@ -677,7 +802,7 @@ peptideMissingValueImputation <- function( input_table
       dplyr::filter( !is.na({{quantity_to_impute_column}}) ) |>
       distinct( {{replicate_group_column}}, {{protein_id_column}}, {{peptide_sequence_column}}, {{quantity_to_impute_column}}) |>
       group_by( {{replicate_group_column}}, {{protein_id_column}}, {{peptide_sequence_column}}) |>
-      #partition(cluster) |>
+      #partition(core_utilisation) |>
       summarise( num_tech_rep = n()
                  , average_value = mean({{quantity_to_impute_column}}, na.rm=TRUE )) |>
       #collect() |>
@@ -690,7 +815,7 @@ peptideMissingValueImputation <- function( input_table
       dplyr::filter( !is.na({{quantity_to_impute_column}}) ) |>
       distinct( {{replicate_group_column}}, {{protein_id_column}}, {{peptide_sequence_column}}, {{quantity_to_impute_column}}) |>
       group_by( {{replicate_group_column}}, {{protein_id_column}}, {{peptide_sequence_column}}) |>
-      partition(cluster) |>
+      partition(core_utilisation) |>
       summarise( num_tech_rep = n()
                  , average_value = mean({{quantity_to_impute_column}}, na.rm=TRUE)) |>
       collect() |>
@@ -699,10 +824,15 @@ peptideMissingValueImputation <- function( input_table
   }
 
   ## Calculate proportion of replicates in a group that is missing
-  rows_needing_imputation <-  num_tech_reps_per_sample_and_peptide |>
+  rows_needing_imputation_temp <-  num_tech_reps_per_sample_and_peptide |>
     left_join( num_tech_rep_per_sample
-               , by = join_by( {{replicate_group_column}} ) ) |>
-    dplyr::filter(    (1 - num_tech_rep / total_num_tech_rep ) < prop_missing )
+               , by = join_by( {{replicate_group_column}} ) )
+
+
+  print(rows_needing_imputation_temp)
+
+  rows_needing_imputation <-   rows_needing_imputation_temp |>
+    dplyr::filter(    (1 - num_tech_rep / total_num_tech_rep ) < proportion_missing_values )
 
   get_combinations_part_1 <- metadata_table |>
     distinct( {{sample_id_tbl_sample_id_column}}, {{replicate_group_column}}) |>
@@ -756,7 +886,7 @@ peptideMissingValueImputation <- function( input_table
 calculatePercentMissingPeptidePerReplicate <- function( input_table
                                                         , metadata_table
                                                         , protein_id_column = Protein.Ids
-                                                        , intensity_column = Peptide.Normalized
+                                                        , intensity_column = Peptide.Normalised
                                                         , replicate_id_column = Run
                                                         , peptide_sequence_column = Stripped.Sequence ) {
 
@@ -850,8 +980,7 @@ plotDensityOfPercentMissingPerIndvidual <- function( percent_missing_table
 plotHistogramOfPercentMissingPerIndvidual <- function( percent_missing_table
                                                        , percent_missing_column = percent_missing) {
   percent_missing_table |>
-    ggplot( aes( {{percent_missing_column}}
-    )) +
+    ggplot( aes( {{percent_missing_column}})) +
     geom_histogram() +
     apafTheme() +
     xlab("Percent Missing") +
@@ -910,11 +1039,11 @@ removePeptidesOnlyInHek293 <- function( input_table
                                         , peptide_sequence_column = Stripped.Sequence
                                         , hek_string = "HEK"
                                         , general_sample_info = general_sample_info
-                                        , cluster= cluster) {
+                                        , core_utilisation= core_utilisation) {
 
 
   peptides_found_in_hek_samples_only <- NA
-  if( length(which(is.na(cluster))) == 0 ) {
+  if( length(which(is.na(core_utilisation))) == 0 ) {
 
     peptides_found_in_hek_samples_only <- input_table |>
       left_join( metadata_table |>
@@ -923,7 +1052,7 @@ removePeptidesOnlyInHek293 <- function( input_table
       mutate( sample_type = case_when ( str_detect( {{general_sample_info}}, hek_string) ~ hek_string,
                                         TRUE ~ "Cohort_Sample")) |>
       group_by( {{protein_id_column}}, {{peptide_sequence_column}}, sample_type ) |>
-      partition(cluster) |>
+      partition(core_utilisation) |>
       summarise( counts = n()) |>
       collect() |>
       ungroup() |>
@@ -940,7 +1069,7 @@ removePeptidesOnlyInHek293 <- function( input_table
       mutate( sample_type = case_when ( str_detect( {{general_sample_info}}, hek_string) ~ hek_string,
                                         TRUE ~ "Cohort_Sample")) |>
       group_by( {{protein_id_column}}, {{peptide_sequence_column}}, sample_type ) |>
-      #partition(cluster) |>
+      #partition(core_utilisation) |>
       summarise( counts = n()) |>
       #collect() |>
       ungroup() |>
@@ -1323,7 +1452,7 @@ getCategoricalAndContinuousColourRules <- function( metadata_tbl
 
   cln_meatadata_tbl <- metadata_tbl |>
     column_to_rownames(as_name( enquo(sample_id_column ))) |>
-    dplyr::select( one_of( c(metadata_column_selected) ) )
+    dplyr::select( all_of( c(metadata_column_selected) ) )
 
   colour_rules <- getCategoricalColourRules( metadata_tbl =  cln_meatadata_tbl
                                              , metadata_column_labels = metadata_column_labels
@@ -1420,7 +1549,7 @@ getSamplesCorrelationHeatMap <- function(correlation_matrix
     dplyr::filter( {{sample_id_column}} %in% correlation_samples_to_use) |>
     arrange( {{sample_id_column}}) |>
     column_to_rownames( as_name( enquo( sample_id_column)  ))|>
-    dplyr::select( one_of( setdiff( metadata_column_selected, columns_to_exclude) ) )
+    dplyr::select( all_of( setdiff( metadata_column_selected, columns_to_exclude) ) )
 
   columns_to_use <- setdiff(names(colour_rules), metadata_column_labels[columns_to_exclude])
   colour_rules_filt <- colour_rules[columns_to_use]
@@ -1430,13 +1559,13 @@ getSamplesCorrelationHeatMap <- function(correlation_matrix
   colnames(cln_meatadata_tbl) <-  metadata_column_labels[colnames(cln_meatadata_orig_col_name)]
 
   top_annotation <- HeatmapAnnotation(df = cln_meatadata_tbl |>
-                                        dplyr::select( - one_of(metadata_column_labels[columns_to_exclude] ))
+                                        dplyr::select( - any_of(metadata_column_labels[columns_to_exclude] ))
                                       , col = colour_rules_filt
                                       , show_legend = FALSE )
 
   print("Add row annotation")
   row_ha <- rowAnnotation( df = cln_meatadata_tbl |>
-                             dplyr::select( - one_of(metadata_column_labels[columns_to_exclude] ))
+                             dplyr::select( - any_of(metadata_column_labels[columns_to_exclude] ))
                            , col = colour_rules_filt
                            , show_legend = FALSE)
 
@@ -1541,23 +1670,23 @@ proteinIntensityMatrixPivotLonger <- function( input_matrix
 #' Remove proteins that have been identified in only one replicate across all patients
 #' (e.g. identified no more than one relpicate in any patient)
 #' @export
-removeProteinsWithOnlyOneReplicate <- function(input_table
+removeProteinsWithOnlyOneReplicateHelper <- function(input_table
                                                , samples_id_tbl
                                                , input_table_sample_id_column = Run
                                                , sample_id_tbl_sample_id_column  =  ms_filename
                                                , replicate_group_column = general_sample_info
                                                , protein_id_column = Protein.Ids
-                                               , quantity_column = Protein.Normalized
-                                               , cluster ) {
+                                               , quantity_column = Protein.Normalised
+                                               , core_utilisation ) {
 
   # Count the number of technical replicates per sample and peptide combination
   num_tech_reps_per_sample_and_protein <- NA
-  if( length(which(is.na(cluster))) == 0 ) {
+  if( length(which(is.na(core_utilisation))) == 0 ) {
     num_tech_reps_per_sample_and_protein <- input_table |>
       left_join( samples_id_tbl, by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>
       dplyr::filter( !is.na( {{quantity_column}}))  |>
       group_by( {{replicate_group_column}}, {{protein_id_column}} ) |>
-      #partition(cluster) |>
+      #partition(core_utilisation) |>
       summarise(counts = n() ) |>
       #collect() |>
       ungroup()
@@ -1566,7 +1695,7 @@ removeProteinsWithOnlyOneReplicate <- function(input_table
       left_join( samples_id_tbl, by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>
       dplyr::filter( !is.na( {{quantity_column}}))  |>
       group_by( {{replicate_group_column}}, {{protein_id_column}}) |>
-      partition(cluster) |>
+      partition(core_utilisation) |>
       summarise(counts = n() ) |>
       collect() |>
       ungroup()
@@ -1596,13 +1725,13 @@ removeProteinsWithOnlyOneReplicate <- function(input_table
 
 #' proteinMissingValueImputation
 #' @description Perform protein level missing value imputation
-#'@param input_table A data frame with the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Normalized protein abundances
+#'@param input_table A data frame with the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Normalised protein abundances
 #'@param metadata_table A data table with the following columns: 1. the sample file name or run name (as per parameter sample_id_tbl_sample_id_column), 2. The replicate group ID (as per parameter replicate_group_column)
 #'@param input_table_sample_id_column The name of the column in the input_table that contained the run information or sample file name as per the input_table parameter (default: Run)
 #'@param sample_id_tbl_sample_id_column The name of the column in the input_table that contained the run information or sample file name as per the metadata_table parameter (default: ms_filename)
 #'@param replicate_group_column (default: general_sample_info)
 #'@param protein_id_column Protein accession column, tidyverse format (default = Protein.Ids).
-#'@param quantity_to_impute_column Name of column containing the peptide abundance that needs to be normalized in tidyverse format (default: Peptide.RawQuantity)
+#'@param quantity_to_impute_column Name of column containing the peptide abundance that needs to be normalised in tidyverse format (default: Peptide.RawQuantity)
 #'@param hek_string The string denoting samples that are controls using HEK cells (default: "HEK")
 #'@export
 proteinMissingValueImputation <- function( input_table
@@ -1611,10 +1740,10 @@ proteinMissingValueImputation <- function( input_table
                                            , sample_id_tbl_sample_id_column  =  ms_filename
                                            , replicate_group_column = general_sample_info
                                            , protein_id_column = Protein.Ids
-                                           , quantity_to_impute_column = Protein.Normalized
+                                           , quantity_to_impute_column = Protein.Normalised
                                            , imputed_value_column = Protein.Imputed
                                            , hek_string = "HEK"
-                                           , cluster ) {
+                                           , core_utilisation ) {
 
   # Max number of technical replicates
   num_tech_rep_per_sample <-  metadata_table  |>
@@ -1627,7 +1756,7 @@ proteinMissingValueImputation <- function( input_table
   # Count the number of technical replicates per sample and protein combination
   num_tech_reps_per_sample_and_protein <- NA
 
-  if( length(which(is.na(cluster))) == 0 ) {
+  if( length(which(is.na(core_utilisation))) == 0 ) {
     num_tech_reps_per_sample_and_protein <- input_table |>
       left_join( metadata_table
                  , by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>
@@ -1635,7 +1764,7 @@ proteinMissingValueImputation <- function( input_table
       dplyr::filter( !is.na( {{quantity_to_impute_column}}))  |>
       distinct( {{replicate_group_column}}, {{protein_id_column}}, {{quantity_to_impute_column}}) |>
       group_by( {{replicate_group_column}}, {{protein_id_column}} ) |>
-      #partition(cluster) |>
+      #partition(core_utilisation) |>
       summarise( num_tech_rep = n()
                  , average_value = mean({{quantity_to_impute_column}}, na.rm=TRUE )) |>
       #collect() |>
@@ -1648,7 +1777,7 @@ proteinMissingValueImputation <- function( input_table
       dplyr::filter( !is.na( {{quantity_to_impute_column}}))  |>
       distinct( {{replicate_group_column}}, {{protein_id_column}}, {{quantity_to_impute_column}}) |>
       group_by( {{replicate_group_column}}, {{protein_id_column}}) |>
-      partition(cluster) |>
+      partition(core_utilisation) |>
       summarise( num_tech_rep = n()
                  , average_value = mean({{quantity_to_impute_column}}, na.rm=TRUE)) |>
       collect() |>
@@ -1877,7 +2006,7 @@ getProteinsHeatMap <- function( protein_matrix
                                 # , ms_machine_column
                                 , colour_rules
                                 , columns_to_exclude
-                                , cluster_samples = TRUE
+                                , core_utilisation_samples = TRUE
                                 , sort_by_sample_id = TRUE
                                 , sample_id_column = Run
                                 , use_raster = TRUE
@@ -1903,7 +2032,7 @@ getProteinsHeatMap <- function( protein_matrix
     dplyr::filter( {{is_HEK_column}} == FALSE)  |>
     dplyr::filter( {{sample_id_column}} %in% samples_to_use) |>
     arrange( {{sample_id_column}}) |>
-    dplyr::select( {{sample_id_column}}, one_of( setdiff(metadata_column_selected, columns_to_exclude) ) ) |>
+    dplyr::select( {{sample_id_column}}, all_of( setdiff(metadata_column_selected, columns_to_exclude) ) ) |>
     distinct()  |>
     column_to_rownames( as_label( enquo(sample_id_column) ) )
 
@@ -1940,7 +2069,7 @@ getProteinsHeatMap <- function( protein_matrix
                       , row_names_gp = gpar(fontsize = 12, fontfamily = "sans")
                       , column_names_gp = gpar(fontsize = 12)
                       , heatmap_legend_param = heatmap_legend_param
-                      , cluster_columns = cluster_samples )
+                      , core_utilisation_columns = core_utilisation_samples )
 
   output_legends <- purrr::map2 (colour_rules_filt
                                  , names(colour_rules_filt)
@@ -1989,7 +2118,7 @@ calculatePercentMissingPerProtein <- function( intensity_wide_table
                                                   is.na(Avg.Log2.Protein.Imputed)  ~ TRUE
                                                 , TRUE ~ FALSE)) |>
     relocate({{is_missing_column}}, .after=!!sym(values_to)  ) |>
-    pivot_longer( cols = any_of(list_of_columns_to_pivot)
+    pivot_longer( cols = all_of(list_of_columns_to_pivot)
                   , names_to = "parameter_name"
                   , values_to = "values" )
 
@@ -2094,5 +2223,605 @@ apafTheme <- function() {
     plot.margin = unit(c(1, 1, 1, 1), "cm")
 
   )
+}
+
+##################################################################################################################
+
+#' FilteringProgress Class
+#' 
+#' @description
+#' An S4 class to track and store the progress of protein filtering steps in
+#' proteomics data analysis. This class maintains records of protein and peptide
+#' counts at each filtering stage.
+#' 
+#' @slot steps Character vector storing names of filtering steps
+#' @slot proteins Numeric vector storing protein counts for each step
+#' @slot total_peptides Numeric vector storing total peptide counts for each step
+#' @slot peptides_per_protein List storing peptides per protein distributions for each step
+#' @slot proteins_per_run List storing proteins per run counts for each step
+#' @slot peptides_per_run List storing peptides per run counts for each step
+#' 
+#' @export
+setClass("FilteringProgress",
+  slots = list(
+    steps = "character",
+    proteins = "numeric",
+    total_peptides = "numeric",
+    peptides_per_protein = "list",
+    proteins_per_run = "list",
+    peptides_per_run = "list"
+  )
+)
+
+##################################################################################################################
+
+#' Initialize a new FilteringProgress object
+#' 
+#' @description
+#' Creates a new FilteringProgress object with empty slots to track protein
+#' filtering progress.
+#' 
+#' @return A new FilteringProgress object
+#' 
+#' @examples
+#' filtering_progress <- new("FilteringProgress",
+#'   steps = character(),
+#'   proteins = numeric(),
+#'   total_peptides = numeric(),
+#'   peptides_per_protein = list(),
+#'   proteins_per_run = list(),
+#'   peptides_per_run = list()
+#' )
+#' 
+#' @export
+filtering_progress <- new("FilteringProgress",
+  steps = character(),
+  proteins = numeric(),
+  total_peptides = numeric(),
+  peptides_per_protein = list(),
+  proteins_per_run = list(),
+  peptides_per_run = list()
+)
+
+##################################################################################################################
+
+#' Generate a color palette
+#' 
+#' @param n Number of colors needed
+#' @param base_color Base color to use
+#' @return Vector of colors
+get_color_palette <- function(n, base_color) {
+  colorRampPalette(c(base_color, "black"))(n)
+}
+
+
+#' Count unique proteins in peptide or protein data
+#' 
+#' @param data A data frame or S4 object containing protein/peptide data
+#' @return Integer count of unique proteins
+countUniqueProteins <- function(data) {
+  if (isS4(data)) {
+    if ("peptide_data" %in% slotNames(data)) {
+      return(data@peptide_data |> 
+             distinct(Protein.Ids) |> 
+             nrow())
+    }
+    if ("protein_quant_table" %in% slotNames(data)) {
+      return(nrow(data@protein_quant_table))
+    }
+  }
+  
+  # For regular dataframes
+  if ("Protein.Ids" %in% names(data)) {
+    # Check if it's a protein quantification table
+    if (all(sapply(data[setdiff(names(data), "Protein.Ids")], is.numeric))) {
+      return(nrow(data))  # Each row is a unique protein
+    }
+    return(distinct(data, Protein.Ids) |> nrow())
+  }
+  stop("No Protein.Ids column found")
+}
+
+#' Count proteins per run
+#' 
+#' @param data A data frame or S4 object containing protein/peptide data
+#' @return Data frame with run IDs and protein counts
+countProteinsPerRun <- function(data) {
+  if (isS4(data)) {
+    if ("peptide_data" %in% slotNames(data)) {
+      return(data@peptide_data |>
+             group_by(Run) |>
+             summarise(n_proteins = n_distinct(Protein.Ids), 
+                      .groups = "drop") |>
+             arrange(Run))
+    }
+    if ("protein_quant_table" %in% slotNames(data)) {
+      data <- data@protein_quant_table
+      run_cols <- setdiff(names(data), "Protein.Ids")
+      
+      # For each run (column), count non-NA values
+      result <- data.frame(
+        Run = run_cols,
+        n_proteins = sapply(run_cols, function(col) {
+          sum(!is.na(data[[col]]))
+        })
+      ) |> arrange(Run)
+      
+      return(result)
+    }
+  }
+  
+  # For regular dataframes
+  if ("Protein.Ids" %in% names(data)) {
+    # Check if it's a protein quantification table
+    if (all(sapply(data[setdiff(names(data), "Protein.Ids")], is.numeric))) {
+      run_cols <- setdiff(names(data), "Protein.Ids")
+      
+      # For each run (column), count non-NA values
+      result <- data.frame(
+        Run = run_cols,
+        n_proteins = sapply(run_cols, function(col) {
+          sum(!is.na(data[[col]]))
+        })
+      ) |> arrange(Run)
+      
+      return(result)
+    }
+    
+    # For peptide data
+    if ("Run" %in% names(data)) {
+      return(data |>
+             group_by(Run) |>
+             summarise(n_proteins = n_distinct(Protein.Ids), 
+                      .groups = "drop") |>
+             arrange(Run))
+    }
+  }
+  stop("Required columns not found")
+}
+
+#' Calculate total unique peptides
+#' 
+#' @param data A data frame or S4 object containing protein/peptide data
+#' @return Integer count of unique peptide-protein combinations
+calcTotalPeptides <- function(data) {
+  # For protein quantification data, return NA
+  if (isS4(data)) {
+    if ("protein_quant_table" %in% slotNames(data)) {
+      return(NA_integer_)
+    }
+    if ("peptide_data" %in% slotNames(data)) {
+      return(data@peptide_data |>
+             distinct(Protein.Ids, Stripped.Sequence) |>
+             nrow())
+    }
+  }
+  
+  # For regular dataframes, check if it's protein quantification data
+  if ("Protein.Ids" %in% names(data)) {
+    if (all(sapply(data[setdiff(names(data), "Protein.Ids")], is.numeric))) {
+      return(NA_integer_)
+    }
+    
+    if ("Stripped.Sequence" %in% names(data)) {
+      return(distinct(data, Protein.Ids, Stripped.Sequence) |> nrow())
+    }
+  }
+  stop("Required columns not found")
+}
+
+#' Calculate peptides per protein
+#' 
+#' @param data A data frame or S4 object containing protein/peptide data
+#' @return Data frame with protein IDs and peptide counts
+calcPeptidesPerProtein <- function(data) {
+  # For protein quantification data, return empty data frame
+  if (isS4(data)) {
+    if ("protein_quant_table" %in% slotNames(data)) {
+      return(data.frame(Protein.Ids = character(), 
+                       n_peptides = integer()))
+    }
+    if ("peptide_data" %in% slotNames(data)) {
+      return(data@peptide_data |>
+             group_by(Protein.Ids) |>
+             summarise(n_peptides = n_distinct(Stripped.Sequence), 
+                      .groups = "drop"))
+    }
+  }
+  
+  # For regular dataframes, check if it's protein quantification data
+  if ("Protein.Ids" %in% names(data)) {
+    if (all(sapply(data[setdiff(names(data), "Protein.Ids")], is.numeric))) {
+      return(data.frame(Protein.Ids = character(), 
+                       n_peptides = integer()))
+    }
+    
+    if ("Stripped.Sequence" %in% names(data)) {
+      return(data |>
+             group_by(Protein.Ids) |>
+             summarise(n_peptides = n_distinct(Stripped.Sequence), 
+                      .groups = "drop"))
+    }
+  }
+  stop("Required columns not found")
+}
+
+#' Count peptides per run
+#' 
+#' @param data A data frame or S4 object containing protein/peptide data
+#' @return Data frame with run IDs and peptide counts
+countPeptidesPerRun <- function(data) {
+  # For protein quantification data, return empty data frame
+  if (isS4(data)) {
+    if ("protein_quant_table" %in% slotNames(data)) {
+      return(data.frame(Run = character(), 
+                       n_peptides = integer()))
+    }
+    if ("peptide_data" %in% slotNames(data)) {
+      return(data@peptide_data |>
+             group_by(Run) |>
+             summarise(n_peptides = n_distinct(Stripped.Sequence), 
+                      .groups = "drop") |>
+             arrange(Run))
+    }
+  }
+  
+  # For regular dataframes, check if it's protein quantification data
+  if ("Protein.Ids" %in% names(data)) {
+    if (all(sapply(data[setdiff(names(data), "Protein.Ids")], is.numeric))) {
+      return(data.frame(Run = character(), 
+                       n_peptides = integer()))
+    }
+    
+    if (all(c("Run", "Stripped.Sequence") %in% names(data))) {
+      return(data |>
+             group_by(Run) |>
+             summarise(n_peptides = n_distinct(Stripped.Sequence), 
+                      .groups = "drop") |>
+             arrange(Run))
+    }
+  }
+  stop("Required columns not found")
+}
+
+updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NULL, 
+                                 overwrite = FALSE, return_grid = FALSE) {
+    
+    # Initialize filtering_progress if it doesn't exist
+    if (!exists("filtering_progress", envir = .GlobalEnv)) {
+        filtering_progress <- new("FilteringProgress")
+        assign("filtering_progress", filtering_progress, envir = .GlobalEnv)
+    }
+    
+    # Get the current filtering_progress object
+    filtering_progress <- get("filtering_progress", envir = .GlobalEnv)
+    
+    # Determine if we're working with protein_quant_table
+    is_protein_quant <- if (isS4(data)) {
+        "protein_quant_table" %in% slotNames(data)
+    } else {
+        # For data frames, check if it looks like a protein quant table
+        if ("Protein.Ids" %in% names(data)) {
+            all(sapply(data[setdiff(names(data), "Protein.Ids")], is.numeric))
+        } else {
+            FALSE
+        }
+    }
+    
+    # Calculate protein metrics (always done)
+    protein_count <- countUniqueProteins(data)
+    proteins_per_run <- countProteinsPerRun(data)
+    
+    # Update filtering progress based on data type
+    if (step_name %in% filtering_progress@steps) {
+        if (!overwrite) {
+            stop("Step name '", step_name, "' already exists. Use overwrite = TRUE to replace it.")
+        }
+        idx <- which(filtering_progress@steps == step_name)
+        
+        # Always update protein metrics
+        filtering_progress@proteins[idx] <- protein_count
+        filtering_progress@proteins_per_run[[idx]] <- proteins_per_run
+        
+        if (!is_protein_quant) {
+            # Update peptide metrics only for peptide data
+            filtering_progress@total_peptides[idx] <- calcTotalPeptides(data)
+            filtering_progress@peptides_per_protein[[idx]] <- calcPeptidesPerProtein(data)
+            filtering_progress@peptides_per_run[[idx]] <- countPeptidesPerRun(data)
+        }
+    } else {
+        filtering_progress@steps <- c(filtering_progress@steps, step_name)
+        filtering_progress@proteins <- c(filtering_progress@proteins, protein_count)
+        filtering_progress@proteins_per_run <- c(filtering_progress@proteins_per_run, 
+                                               list(proteins_per_run))
+        
+        if (!is_protein_quant) {
+            # Add peptide metrics only for peptide data
+            filtering_progress@total_peptides <- c(filtering_progress@total_peptides, 
+                                                 calcTotalPeptides(data))
+            filtering_progress@peptides_per_protein <- c(filtering_progress@peptides_per_protein, 
+                                                       list(calcPeptidesPerProtein(data)))
+            filtering_progress@peptides_per_run <- c(filtering_progress@peptides_per_run, 
+                                                   list(countPeptidesPerRun(data)))
+        } else {
+            # For protein data, maintain existing peptide metrics or add NA/empty entries
+            if (length(filtering_progress@total_peptides) > 0) {
+                filtering_progress@total_peptides <- c(filtering_progress@total_peptides, 
+                                                     filtering_progress@total_peptides[length(filtering_progress@total_peptides)])
+                filtering_progress@peptides_per_protein <- c(filtering_progress@peptides_per_protein, 
+                                                           filtering_progress@peptides_per_protein[length(filtering_progress@peptides_per_protein)])
+                filtering_progress@peptides_per_run <- c(filtering_progress@peptides_per_run, 
+                                                       filtering_progress@peptides_per_run[length(filtering_progress@peptides_per_run)])
+            } else {
+                filtering_progress@total_peptides <- c(filtering_progress@total_peptides, NA_integer_)
+                filtering_progress@peptides_per_protein <- c(filtering_progress@peptides_per_protein, 
+                                                           list(data.frame(Protein.Ids = character(), 
+                                                                         n_peptides = integer())))
+                filtering_progress@peptides_per_run <- c(filtering_progress@peptides_per_run, 
+                                                       list(data.frame(Run = character(), 
+                                                                     n_peptides = integer())))
+            }
+        }
+    }
+    
+    # Update the global filtering_progress object
+    assign("filtering_progress", filtering_progress, envir = .GlobalEnv)
+    
+    # Create base protein count plot (always shown)
+    p1 <- ggplot(data.frame(
+        step = factor(filtering_progress@steps, levels = filtering_progress@steps),
+        proteins = filtering_progress@proteins
+    ), aes(x = step, y = proteins)) +
+        geom_bar(stat = "identity", fill = "steelblue", width = 0.7) +
+        geom_text(aes(label = proteins), 
+                  vjust = -0.5, 
+                  size = 4) +
+        labs(
+            title = "Number of Proteins",
+            x = "Filtering Step",
+            y = "Unique Proteins"
+        ) +
+        theme_minimal() +
+        theme(
+            axis.text.x = element_text(angle = 45, hjust = 1),
+            panel.grid.major.x = element_blank()
+        )
+    
+    # Create proteins per run plot (always shown)
+    p4 <- bind_rows(filtering_progress@proteins_per_run, .id = "step") |>
+        mutate(step = filtering_progress@steps[as.numeric(step)]) |>
+        group_by(Run) |>
+        mutate(avg_proteins = mean(n_proteins)) |>
+        ungroup() |>
+        mutate(Run = fct_reorder(Run, avg_proteins)) |>
+        ggplot(aes(x = Run, y = n_proteins, 
+                  group = step, 
+                  color = factor(step, levels = filtering_progress@steps))) +
+        geom_line() +
+        geom_point() +
+        labs(
+            title = "Proteins per Run",
+            x = "Run ID (ordered by average protein count)",
+            y = "Number of Proteins",
+            color = "Step"
+        ) +
+        theme_minimal() +
+        theme(
+            axis.text.x = element_text(angle = 45, hjust = 1),
+            panel.grid.major.x = element_blank()
+        ) +
+        scale_color_manual(values = get_color_palette(length(filtering_progress@steps), "steelblue"))
+    
+    # Initialize peptide plots
+    if (is_protein_quant) {
+        # For protein data, create empty placeholder plots if no peptide data exists
+        if (all(is.na(filtering_progress@total_peptides))) {
+            p2 <- p3 <- p5 <- ggplot() + 
+                annotate("text", x = 0.5, y = 0.5, 
+                        label = "No peptide data available for protein quantification data") +
+                theme_void()
+        } else {
+            # If peptide data exists from previous steps, create plots with existing data
+            p2 <- ggplot(data.frame(
+                step = factor(filtering_progress@steps, levels = filtering_progress@steps),
+                total_peptides = filtering_progress@total_peptides
+            ), aes(x = step, y = total_peptides)) +
+                geom_bar(stat = "identity", fill = "forestgreen", width = 0.7) +
+                geom_text(aes(label = total_peptides), 
+                          vjust = -0.5, 
+                          size = 4) +
+                labs(
+                    title = "Total Unique Peptides (from last peptide data)",
+                    x = "Filtering Step",
+                    y = "Unique Peptides"
+                ) +
+                theme_minimal() +
+                theme(
+                    axis.text.x = element_text(angle = 45, hjust = 1),
+                    panel.grid.major.x = element_blank()
+                )
+            
+            p3 <- ggplot() +
+                geom_boxplot(data = bind_rows(filtering_progress@peptides_per_protein, .id = "step") |>
+                             mutate(step = filtering_progress@steps[as.numeric(step)]),
+                           aes(x = factor(step, levels = filtering_progress@steps), 
+                               y = n_peptides),
+                           fill = "darkred",
+                           alpha = 0.5,
+                           outlier.shape = NA) +
+                labs(
+                    title = "Peptides per Protein Distribution (from last peptide data)",
+                    x = "Filtering Step",
+                    y = "Number of Peptides"
+                ) +
+                theme_minimal() +
+                theme(
+                    axis.text.x = element_text(angle = 45, hjust = 1),
+                    panel.grid.major.x = element_blank()
+                ) +
+                coord_cartesian(
+                    ylim = c(0, 
+                             quantile(bind_rows(filtering_progress@peptides_per_protein)$n_peptides, 0.95))
+                )
+            
+            p5 <- bind_rows(filtering_progress@peptides_per_run, .id = "step") |>
+                mutate(step = filtering_progress@steps[as.numeric(step)]) |>
+                group_by(Run) |>
+                mutate(avg_peptides = mean(n_peptides)) |>
+                ungroup() |>
+                mutate(Run = fct_reorder(Run, avg_peptides)) |>
+                ggplot(aes(x = Run, y = n_peptides, 
+                          group = step, 
+                          color = factor(step, levels = filtering_progress@steps))) +
+                geom_line() +
+                geom_point() +
+                labs(
+                    title = "Peptides per Run (from last peptide data)",
+                    x = "Run ID (ordered by average peptide count)",
+                    y = "Number of Peptides",
+                    color = "Step"
+                ) +
+                theme_minimal() +
+                theme(
+                    axis.text.x = element_text(angle = 45, hjust = 1),
+                    panel.grid.major.x = element_blank()
+                ) +
+                scale_color_manual(values = get_color_palette(length(filtering_progress@steps), "forestgreen"))
+        }
+    } else {
+        # For peptide data, create normal plots
+        p2 <- ggplot(data.frame(
+            step = factor(filtering_progress@steps, levels = filtering_progress@steps),
+            total_peptides = filtering_progress@total_peptides
+        ), aes(x = step, y = total_peptides)) +
+            geom_bar(stat = "identity", fill = "forestgreen", width = 0.7) +
+            geom_text(aes(label = total_peptides), 
+                      vjust = -0.5, 
+                      size = 4) +
+            labs(
+                title = "Total Unique Peptides",
+                x = "Filtering Step",
+                y = "Unique Peptides"
+            ) +
+            theme_minimal() +
+            theme(
+                axis.text.x = element_text(angle = 45, hjust = 1),
+                panel.grid.major.x = element_blank()
+            )
+        
+        p3 <- ggplot() +
+            geom_boxplot(data = bind_rows(filtering_progress@peptides_per_protein, .id = "step") |>
+                         mutate(step = filtering_progress@steps[as.numeric(step)]),
+                       aes(x = factor(step, levels = filtering_progress@steps), 
+                           y = n_peptides),
+                       fill = "darkred",
+                       alpha = 0.5,
+                       outlier.shape = NA) +
+            labs(
+                title = "Peptides per Protein Distribution",
+                x = "Filtering Step",
+                y = "Number of Peptides"
+            ) +
+            theme_minimal() +
+            theme(
+                axis.text.x = element_text(angle = 45, hjust = 1),
+                panel.grid.major.x = element_blank()
+            ) +
+            coord_cartesian(
+                ylim = c(0, 
+                         quantile(bind_rows(filtering_progress@peptides_per_protein)$n_peptides, 0.95))
+            )
+        
+        p5 <- bind_rows(filtering_progress@peptides_per_run, .id = "step") |>
+            mutate(step = filtering_progress@steps[as.numeric(step)]) |>
+            group_by(Run) |>
+            mutate(avg_peptides = mean(n_peptides)) |>
+            ungroup() |>
+            mutate(Run = fct_reorder(Run, avg_peptides)) |>
+            ggplot(aes(x = Run, y = n_peptides, 
+                      group = step, 
+                      color = factor(step, levels = filtering_progress@steps))) +
+            geom_line() +
+            geom_point() +
+            labs(
+                title = "Peptides per Run",
+                x = "Run ID (ordered by average peptide count)",
+                y = "Number of Peptides",
+                color = "Step"
+            ) +
+            theme_minimal() +
+            theme(
+                axis.text.x = element_text(angle = 45, hjust = 1),
+                panel.grid.major.x = element_blank()
+            ) +
+            scale_color_manual(values = get_color_palette(length(filtering_progress@steps), "forestgreen"))
+    }
+    
+    # Create plot list based on data type
+    plot_list <- list(
+        proteins_total = p1,
+        proteins_per_run = p4,
+        peptides_total = p2,
+        peptides_per_protein = p3,
+        peptides_per_run = p5
+    )
+    
+       # Save plots if directory is specified
+    if (!is.null(publication_graphs_dir)) {
+        for (plot_name in names(plot_list)) {
+            filename <- file.path(time_dir, 
+                                sprintf("%s_%s.png", step_name, plot_name))
+            ggsave(filename, 
+                   plot = plot_list[[plot_name]], 
+                   width = 10, 
+                   height = 8, 
+                   dpi = 300)
+        }
+    }
+    
+    # Return/display plots based on return_grid parameter
+    if(return_grid) {
+        if (!is_protein_quant || !all(is.na(filtering_progress@total_peptides))) {
+            # Create full grid with all plots if peptide data exists
+            grid1 <- gridExtra::arrangeGrob(p1, p2, p3, ncol = 3)
+            grid2 <- gridExtra::arrangeGrob(p4, ncol = 1)
+            grid3 <- gridExtra::arrangeGrob(p5, ncol = 1)
+            
+            grid_plot <- gridExtra::grid.arrange(
+                grid1,
+                grid2,
+                grid3,
+                heights = c(1, 1, 1)
+            )
+        } else {
+            # For protein_quant_table without peptide data, only show protein plots
+            grid_plot <- gridExtra::grid.arrange(
+                p1,
+                p4,
+                ncol = 1,
+                heights = c(1, 1)
+            )
+        }
+        
+       # Save the grid if directory is specified
+        if (!is.null(publication_graphs_dir)) {
+            filename <- file.path(time_dir, 
+                                sprintf("%s_combined_plots.png", step_name))
+            ggsave(filename, 
+                   plot = grid_plot, 
+                   width = 15, 
+                   height = if (!is_protein_quant || !all(is.na(filtering_progress@total_peptides))) 18 else 12,
+                   dpi = 300)
+        }
+        
+        return(grid_plot)
+    } else {
+        # Print each plot individually
+        for(plot in plot_list) {
+            print(plot)
+        }
+        # Return the list invisibly
+        invisible(plot_list)
+    }
 }
 
