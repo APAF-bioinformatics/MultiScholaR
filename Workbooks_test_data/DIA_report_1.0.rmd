@@ -1,0 +1,488 @@
+```{r setup, include=FALSE}
+library(here)
+base_dir <- here::here()
+results_summary_dir <- file.path( base_dir, "results_summary", "proteomics" ) 
+results_summary_dir <- file.path(base_dir, "results_summary", "proteomics")
+```
+
+---
+title: "DIA Report"
+author: "Analyst's Name"
+output: 
+  html_document:
+    code_folding: hide
+    self_contained: true
+    toc: false
+    css: styles.css
+runtime: shiny
+knit: (function(inputFile, encoding) {
+    rmarkdown::render(
+        inputFile,
+        encoding = encoding,
+        output_dir = get("results_summary_dir", envir = .GlobalEnv),
+        output_file = "DIA_Report.html")}
+        )
+---
+
+
+-   Collaborator: xyz
+-   Date report created: `r format(Sys.Date(), "%d %B %Y")`
+-   Report Prepared by: abc (abc@mq.edu.au)
+-   APAF project ID: 12345
+
+
+# Aims
+
+-   Quality control analysis of the proteomics data
+    -   Remove batch effects and normalize the data
+-   Identify potential biological signals in the data
+    -   Identify differentially abundant proteins between the subgroups
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+knitr::opts_chunk$set(
+  message = FALSE,
+  warning = FALSE,
+  echo = FALSE
+)
+library(ProteomeScholaR)
+loadDependencies()
+
+#Initial setup and data loading
+base_dir <- here::here()
+results_summary_dir <- file.path( base_dir, "results_summary", "proteomics" ) 
+
+proteomics_data <- readxl::read_excel(
+file.path(results_summary_dir, "Publication_tables", "Proteomics_data_annotated.xlsx")
+)
+
+# Get comparison information
+comparisons <- proteomics_data |>
+    dplyr::select(comparison, left_group, right_group) |>
+    dplyr::distinct()
+
+# Number of comparisons
+n_comparisons <- nrow(comparisons)
+
+# Count samples per group for each comparison
+sample_counts <- comparisons |>
+    purrr::pmap_dfr(function(comparison, left_group, right_group) {
+        n_left <- proteomics_data |>
+            dplyr::filter(comparison == !!comparison) |>
+            dplyr::select(matches("log2norm\\.[0-9]+\\.left")) |>
+            purrr::map_lgl(~!all(is.na(.x))) |>
+            sum()
+        
+        n_right <- proteomics_data |>
+            dplyr::filter(comparison == !!comparison) |>
+            dplyr::select(matches("log2norm\\.[0-9]+\\.right")) |>
+            purrr::map_lgl(~!all(is.na(.x))) |>
+            sum()
+        
+        total <- n_left + n_right
+        
+        tibble::tibble(
+            comparison = comparison,
+            left_group = left_group,
+            right_group = right_group,
+            n_left = n_left,
+            n_right = n_right,
+            total = total
+        )
+    })
+
+# Get DE counts for each comparison
+de_counts <- proteomics_data |>
+    dplyr::group_by(comparison) |>
+    dplyr::summarise(
+        up = sum(log2FC > 0 & fdr_qvalue < 0.05),
+        down = sum(log2FC < 0 & fdr_qvalue < 0.05)
+    )
+
+# Total proteins
+total_proteins <- nrow(proteomics_data)
+
+# Number of comparisons
+
+
+```
+
+
+## Data Filtering
+Several rounds of data filtering were performed in order to remove low-confidence data and improve the quality of the dataset.
+
+`r if(n_comparisons == 1) {
+    paste('After QC and filtering, this analysis compared', sample_counts$left_group, 'to', 
+          sample_counts$right_group, 'with', sample_counts$n_left, 'and', 
+          sample_counts$n_right, 'samples respectively', 
+          '(', sample_counts$total, 'samples total).')
+} else {
+    paste('After QC and filtering, this analysis included', n_comparisons, 'comparisons:', 
+          paste(purrr::pmap_chr(sample_counts, 
+                ~paste0(.x$left_group, ' vs ', .x$right_group, 
+                       ' (', .x$n_left, ' and ', .x$n_right, ' samples respectively)')), 
+                collapse = ', '), '.')
+}`
+
+A total of `r total_proteins` reliably measured high confidence proteins were subsequently quantified and used for statistical analysis.
+
+A summary of all parameters used for filtering steps can be found in study_parameters.txt file in the results directory provided with this report.
+
+##### ANALYSTS COMMENT
+<Insert any commentary about whether samples were filtered out, which step, why etc>.
+
+```{r}
+knitr::include_graphics(
+file.path(results_summary_dir, "QC_figures", "correlation_filtered_combined_plots.png")
+)
+```
+
+#### Figure 1 shows the qreults of sequential rounds of filtering on both the peptide and protein level
+
+
+
+
+
+## Quality Control Analysis
+
+#### ANALYSTS COMMENT
+<Insert any commentary about dataset quality improvements gained or any erroneous artifacts etc>.
+
+```{r}
+knitr::include_graphics(
+file.path(results_summary_dir, "QC_figures", "composite_QC_figure.png")
+)
+```
+
+#### Figure 2. QC outputs of data after log2 normalisation (leftmost column, a, d, g) followed by cyclic loess normalisation (centre column, b, e, h) and finally RUVIII-C normalisation (rightmost column, c, f, i).
+
+
+#### Principle Component Analysis (PCA) Plot
+The above shows PCA of the data. The colour corresponds to different batches. The density distribution shows the distribution of the data in PC1 and PC2. Before log2 data transformation and cyclic loess normalization, the batch effects were notable in the data. After the cyclic loess normalization, batch effects were still present in PC1 but batch effects were removed in PC2. After RUVIII-C and cyclic loess normalization, the PC1 and PC2 showed lower percentage of variance explained than in the previous step. This indicates that the unwanted variations were removed from the samples.
+
+
+#### Relative Log Expression (RLE) plot
+The relative log expression (RLE) plot is designed to show the bias present in the data. In the ideal situation, the abundance level of each protein in each sample in comparison to the median abundance of the protein across all samples should be minimized, the box-and-whiskers plot for each sample should have a median of zero and a small and equal interquartile range (IQR). The RLE plot shows that the unwanted variations were removed due to the smaller IQR of some samples.
+
+For more details of the meaning of the RLE plot, please refer to this reference article: Gandolfo LC, Speed TP (2018) RLE plots: Visualizing unwanted variation in high dimensional data. PLoS ONE 13(2): e0191629. ![https://doi.org/10.1371/journal.pone.0191629]{https://doi.org/10.1371/journal.pone.0191629}
+
+#### Pearson correlation between replicate samples 
+The pearson correlation between proteins after successive rounds of normalisation resulted in an increasinly higher pearson correlation coefficient between technical replicates, with distribution of data centred close to r = 1 after final RUVIII-C normalisation, indicating high technical reproducibility.
+
+
+
+
+## Differential Expression Analysis
+
+`r if(n_comparisons == 1) {
+    paste('Statistical analysis identified', 
+          de_counts$up, 
+          'increased and', 
+          de_counts$down, 
+          'decreased proteins (FDR < 0.05) in', 
+          sample_counts$left_group, 
+          'compared to', 
+          sample_counts$right_group, 
+          '.')
+} else {
+    paste('Statistical analysis (FDR < 0.05) identified the following:', 
+          paste(purrr::pmap_chr(
+              list(
+                  sample_counts$left_group, 
+                  sample_counts$right_group, 
+                  de_counts$up, 
+                  de_counts$down
+              ),
+              ~paste0(.x, ' vs ', .y, ': ', .z, ' increased, ', .w, ' decreased')
+          ), 
+          collapse = '; '), 
+          '.')
+}`
+
+```{r}
+knitr::include_graphics(
+file.path(results_summary_dir, "Publication_figures", "NumSigDeMolecules",
+"num_sig_de_molecules_with_not_significant.png")
+)
+```
+
+### Figure 3. Number of proteins that were significantly altered in abundance between groups
+
+
+### Top 10 Differentially Expressed Proteins for each comparison
+
+```{r generate tables}
+# Function to create tables for one comparison
+create_de_tables <- function(data, comp_name, left_grp, right_grp) {
+    # Create increased proteins table
+    increased_proteins <- data |>
+        dplyr::filter(comparison == comp_name) |>
+        dplyr::filter(log2FC > 0 & fdr_qvalue < 0.05) |>
+        dplyr::select(gene_name, Protein_names, log2FC, fdr_qvalue) |>
+        dplyr::arrange(fdr_qvalue) |>
+        dplyr::slice_head(n = 10) |>
+        dplyr::mutate(
+            log2FC = round(log2FC, 2),
+            fdr_qvalue = format(fdr_qvalue, scientific = TRUE, digits = 2)
+        )
+
+    # Create decreased proteins table
+    decreased_proteins <- data |>
+        dplyr::filter(comparison == comp_name) |>
+        dplyr::filter(log2FC < 0 & fdr_qvalue < 0.05) |>
+        dplyr::select(gene_name, Protein_names, log2FC, fdr_qvalue) |>
+        dplyr::arrange(fdr_qvalue) |>
+        dplyr::slice_head(n = 10) |>
+        dplyr::mutate(
+            log2FC = round(log2FC, 2),
+            fdr_qvalue = format(fdr_qvalue, scientific = TRUE, digits = 2)
+        )
+    
+    # Return list of tables and group names
+    list(
+        increased = increased_proteins,
+        decreased = decreased_proteins,
+        left_group = left_grp,
+        right_group = right_grp
+    )
+}
+
+# Generate tables for all comparisons
+top10_tables <- comparisons |>
+    purrr::pmap(function(comparison, left_group, right_group) {
+        create_de_tables(proteomics_data, comparison, left_group, right_group)
+    })
+```
+
+```{r}
+
+knitr::kable(top10_tables[[1]]$increased,
+col.names = c("Gene Name", "Protein Name", "Log2 Fold Change", "FDR"),
+align = c('l', 'l', 'r', 'r'),
+caption = paste0("Top 10 Proteins Increased in ", top10_tables[[1]]$left_group)
+)
+knitr::kable(top10_tables[[1]]$decreased,
+col.names = c("Gene Name", "Protein Name", "Log2 Fold Change", "FDR"),
+align = c('l', 'l', 'r', 'r'),
+caption = paste0("Top 10 Proteins Decreased in ", top10_tables[[1]]$left_group)
+)
+```
+
+
+```{r}
+library(crosstalk)
+library(DT)
+library(plotly)
+library(htmltools)
+
+create_comparison_plot <- function(comp) {
+    # Prepare data
+    comp_data <- proteomics_data |>
+        dplyr::filter(comparison == comp) |>
+        dplyr::mutate(
+            significance = case_when(
+                abs(log2FC) >= 1 & fdr_qvalue >= 0.05 ~ "Not sig., logFC >= 1",
+                abs(log2FC) >= 1 & fdr_qvalue < 0.05 ~ "Sig., logFC >= 1",
+                abs(log2FC) < 1 & fdr_qvalue < 0.05 ~ "Sig., logFC < 1",
+                TRUE ~ "Not sig."
+            )
+        )
+    
+    # Create long format data for boxplots
+    left_cols <- names(comp_data)[grep("log2norm.*left", names(comp_data))]
+    right_cols <- names(comp_data)[grep("log2norm.*right", names(comp_data))]
+    
+    boxplot_data <- comp_data |>
+        tidyr::pivot_longer(
+            cols = c(all_of(left_cols), all_of(right_cols)),
+            names_to = "sample",
+            values_to = "abundance"
+        ) |>
+        dplyr::mutate(
+            group = ifelse(grepl("left", sample), 
+                         unique(comp_data$left_group), 
+                         unique(comp_data$right_group))
+        )
+    
+    # Create shared data object with selection type
+    sd <- SharedData$new(comp_data, key = ~gene_name, group = "Select")
+    
+    # Volcano plot with selection
+    p_volcano <- plot_ly(
+        data = sd,
+        x = ~log2FC,
+        y = ~-log10(fdr_qvalue),
+        text = ~paste("Gene:", gene_name,
+                     "\nProtein:", Protein_names,
+                     "\nlog2FC:", round(log2FC, 2),
+                     "\nFDR:", signif(fdr_qvalue, 3)),
+        color = ~significance,
+        type = "scatter",
+        mode = "markers",
+        height = 600,
+        source = paste0("volcano_", comp),
+        selectedpoints = FALSE,
+        marker = list(
+            size = 8,
+            opacity = 0.6,
+            line = list(
+                color = 'black',
+                width = 1
+            ),
+            selected = list(
+                marker = list(
+                    size = 12,
+                    color = 'red',
+                    opacity = 1,
+                    line = list(
+                        color = 'black',
+                        width = 2
+                    )
+                )
+            )
+        )
+    ) |>
+        layout(
+            title = comp,
+            xaxis = list(title = "log2 Fold Change"),
+            yaxis = list(title = "-log10(FDR)"),
+            width = 800,
+            dragmode = "select",
+            clickmode = "event+select",  # Changed to single selection mode
+            selectionrevision = TRUE,    # Force selection update
+            showlegend = FALSE,
+            hovermode = 'closest'
+        ) |>
+        event_register('plotly_selected') |>  # Register only selected event
+        event_register('plotly_click')        # Register click event
+    
+    # Empty boxplot that will update with selection
+    p_boxplot <- plot_ly(
+        type = "box",
+        height = 600,
+        width = 400
+    ) |>
+        layout(
+            title = "Click points to show abundance",
+            xaxis = list(title = "Group"),
+            yaxis = list(title = "Log2 Normalized Abundance"),
+            showlegend = FALSE
+        )
+    
+    # Create selection handler
+    selection <- reactiveValues(selected_gene = NULL)
+    
+    observeEvent(event_data("plotly_selected", source = p_volcano$source), {
+        selected <- event_data("plotly_selected", source = p_volcano$source)
+        if (!is.null(selected)) {
+            selected_gene <- selected$customdata
+            
+            # Get data from DT
+            dt_data <- sd$data() |>
+                dplyr::filter(gene_name %in% selected_gene)
+            
+            # Create boxplot data from DT data
+            selected_data <- dt_data |>
+                tidyr::pivot_longer(
+                    cols = c(all_of(left_cols), all_of(right_cols)),
+                    names_to = "sample",
+                    values_to = "abundance"
+                ) |>
+                dplyr::mutate(
+                    group = ifelse(grepl("left", sample), 
+                                 unique(comp_data$left_group), 
+                                 unique(comp_data$right_group))
+                )
+            
+            # Update boxplot
+            p_boxplot <- plot_ly(
+                data = selected_data,
+                y = ~abundance,
+                x = ~group,
+                type = "box",
+                boxpoints = "all",
+                jitter = 0.3,
+                pointpos = 0,
+                boxmean = TRUE
+            ) |>
+                layout(
+                    title = paste("Abundance:", selected_gene),
+                    xaxis = list(title = "Group"),
+                    yaxis = list(title = "Log2 Normalized Abundance"),
+                    showlegend = FALSE
+                )
+        }
+    })
+    
+    # First prepare the DT data
+    dt_data <- sd$data() |>
+        dplyr::select(
+            `Gene Name` = gene_name,
+            `Protein Name` = Protein_names,
+            `Log2 FC` = log2FC,
+            FDR = fdr_qvalue,
+            Significance = significance,
+            `Biological Process` = go_term_go_biological_process,
+            `Cellular Component` = go_term_go_cellular_compartment,
+            `Molecular Function` = go_term_go_molecular_function,
+            dplyr::all_of(left_cols),
+            dplyr::all_of(right_cols)
+        )
+    
+    # Create new shared data object for DT
+    sd_dt <- SharedData$new(dt_data, key = ~`Gene Name`, group = "Select")
+    
+    # Data table with shared data
+    dt <- datatable(
+        sd_dt,
+        extensions = "Scroller",
+        style = "bootstrap",
+        class = "compact",
+        width = "100%",
+        options = list(
+            deferRender = TRUE,
+            scrollY = 300,
+            scroller = TRUE,
+            dom = "frtip",
+            pageLength = 10,
+            columnDefs = list(
+                list(
+                    targets = c(2, 3, 8:(8 + length(c(left_cols, right_cols)) - 1)),
+                    render = JS(
+                        "function(data, type, row, meta) {
+                            return type === 'display' ? Number.parseFloat(data).toFixed(3) : data;
+                        }"
+                    )
+                )
+            )
+        )
+    )
+    
+    # Return the widget
+    widget <- tagList(
+        h3(comp),
+        bscols(
+            list(
+                bscols(
+                    p_volcano,
+                    p_boxplot,
+                    widths = c(8, 4)
+                )
+            ),
+            dt,
+            widths = c(12, 12)
+        ),
+        hr()
+    )
+    
+    return(widget)
+}
+
+# Create list of plots
+comparison_plots <- comparisons |>
+    purrr::set_names() |>
+    purrr::map(create_comparison_plot)
+```
+
+```{r}
+comparison_plots[["Sera.minus.RPMI"]]
+```
