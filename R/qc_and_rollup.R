@@ -2225,3 +2225,603 @@ apafTheme <- function() {
   )
 }
 
+##################################################################################################################
+
+#' FilteringProgress Class
+#' 
+#' @description
+#' An S4 class to track and store the progress of protein filtering steps in
+#' proteomics data analysis. This class maintains records of protein and peptide
+#' counts at each filtering stage.
+#' 
+#' @slot steps Character vector storing names of filtering steps
+#' @slot proteins Numeric vector storing protein counts for each step
+#' @slot total_peptides Numeric vector storing total peptide counts for each step
+#' @slot peptides_per_protein List storing peptides per protein distributions for each step
+#' @slot proteins_per_run List storing proteins per run counts for each step
+#' @slot peptides_per_run List storing peptides per run counts for each step
+#' 
+#' @export
+setClass("FilteringProgress",
+  slots = list(
+    steps = "character",
+    proteins = "numeric",
+    total_peptides = "numeric",
+    peptides_per_protein = "list",
+    proteins_per_run = "list",
+    peptides_per_run = "list"
+  )
+)
+
+##################################################################################################################
+
+#' Initialize a new FilteringProgress object
+#' 
+#' @description
+#' Creates a new FilteringProgress object with empty slots to track protein
+#' filtering progress.
+#' 
+#' @return A new FilteringProgress object
+#' 
+#' @examples
+#' filtering_progress <- new("FilteringProgress",
+#'   steps = character(),
+#'   proteins = numeric(),
+#'   total_peptides = numeric(),
+#'   peptides_per_protein = list(),
+#'   proteins_per_run = list(),
+#'   peptides_per_run = list()
+#' )
+#' 
+#' @export
+filtering_progress <- new("FilteringProgress",
+  steps = character(),
+  proteins = numeric(),
+  total_peptides = numeric(),
+  peptides_per_protein = list(),
+  proteins_per_run = list(),
+  peptides_per_run = list()
+)
+
+##################################################################################################################
+
+#' Generate a color palette
+#' 
+#' @param n Number of colors needed
+#' @param base_color Base color to use
+#' @return Vector of colors
+get_color_palette <- function(n, base_color) {
+  colorRampPalette(c(base_color, "black"))(n)
+}
+
+
+#' Count unique proteins in peptide or protein data
+#' 
+#' @param data A data frame or S4 object containing protein/peptide data
+#' @return Integer count of unique proteins
+countUniqueProteins <- function(data) {
+  if (isS4(data)) {
+    if ("peptide_data" %in% slotNames(data)) {
+      return(data@peptide_data |> 
+             distinct(Protein.Ids) |> 
+             nrow())
+    }
+    if ("protein_quant_table" %in% slotNames(data)) {
+      return(nrow(data@protein_quant_table))
+    }
+  }
+  
+  # For regular dataframes
+  if ("Protein.Ids" %in% names(data)) {
+    # Check if it's a protein quantification table
+    if (all(sapply(data[setdiff(names(data), "Protein.Ids")], is.numeric))) {
+      return(nrow(data))  # Each row is a unique protein
+    }
+    return(distinct(data, Protein.Ids) |> nrow())
+  }
+  stop("No Protein.Ids column found")
+}
+
+#' Count proteins per run
+#' 
+#' @param data A data frame or S4 object containing protein/peptide data
+#' @return Data frame with run IDs and protein counts
+countProteinsPerRun <- function(data) {
+  if (isS4(data)) {
+    if ("peptide_data" %in% slotNames(data)) {
+      return(data@peptide_data |>
+             group_by(Run) |>
+             summarise(n_proteins = n_distinct(Protein.Ids), 
+                      .groups = "drop") |>
+             arrange(Run))
+    }
+    if ("protein_quant_table" %in% slotNames(data)) {
+      data <- data@protein_quant_table
+      run_cols <- setdiff(names(data), "Protein.Ids")
+      
+      # For each run (column), count non-NA values
+      result <- data.frame(
+        Run = run_cols,
+        n_proteins = sapply(run_cols, function(col) {
+          sum(!is.na(data[[col]]))
+        })
+      ) |> arrange(Run)
+      
+      return(result)
+    }
+  }
+  
+  # For regular dataframes
+  if ("Protein.Ids" %in% names(data)) {
+    # Check if it's a protein quantification table
+    if (all(sapply(data[setdiff(names(data), "Protein.Ids")], is.numeric))) {
+      run_cols <- setdiff(names(data), "Protein.Ids")
+      
+      # For each run (column), count non-NA values
+      result <- data.frame(
+        Run = run_cols,
+        n_proteins = sapply(run_cols, function(col) {
+          sum(!is.na(data[[col]]))
+        })
+      ) |> arrange(Run)
+      
+      return(result)
+    }
+    
+    # For peptide data
+    if ("Run" %in% names(data)) {
+      return(data |>
+             group_by(Run) |>
+             summarise(n_proteins = n_distinct(Protein.Ids), 
+                      .groups = "drop") |>
+             arrange(Run))
+    }
+  }
+  stop("Required columns not found")
+}
+
+#' Calculate total unique peptides
+#' 
+#' @param data A data frame or S4 object containing protein/peptide data
+#' @return Integer count of unique peptide-protein combinations
+calcTotalPeptides <- function(data) {
+  # For protein quantification data, return NA
+  if (isS4(data)) {
+    if ("protein_quant_table" %in% slotNames(data)) {
+      return(NA_integer_)
+    }
+    if ("peptide_data" %in% slotNames(data)) {
+      return(data@peptide_data |>
+             distinct(Protein.Ids, Stripped.Sequence) |>
+             nrow())
+    }
+  }
+  
+  # For regular dataframes, check if it's protein quantification data
+  if ("Protein.Ids" %in% names(data)) {
+    if (all(sapply(data[setdiff(names(data), "Protein.Ids")], is.numeric))) {
+      return(NA_integer_)
+    }
+    
+    if ("Stripped.Sequence" %in% names(data)) {
+      return(distinct(data, Protein.Ids, Stripped.Sequence) |> nrow())
+    }
+  }
+  stop("Required columns not found")
+}
+
+#' Calculate peptides per protein
+#' 
+#' @param data A data frame or S4 object containing protein/peptide data
+#' @return Data frame with protein IDs and peptide counts
+calcPeptidesPerProtein <- function(data) {
+  # For protein quantification data, return empty data frame
+  if (isS4(data)) {
+    if ("protein_quant_table" %in% slotNames(data)) {
+      return(data.frame(Protein.Ids = character(), 
+                       n_peptides = integer()))
+    }
+    if ("peptide_data" %in% slotNames(data)) {
+      return(data@peptide_data |>
+             group_by(Protein.Ids) |>
+             summarise(n_peptides = n_distinct(Stripped.Sequence), 
+                      .groups = "drop"))
+    }
+  }
+  
+  # For regular dataframes, check if it's protein quantification data
+  if ("Protein.Ids" %in% names(data)) {
+    if (all(sapply(data[setdiff(names(data), "Protein.Ids")], is.numeric))) {
+      return(data.frame(Protein.Ids = character(), 
+                       n_peptides = integer()))
+    }
+    
+    if ("Stripped.Sequence" %in% names(data)) {
+      return(data |>
+             group_by(Protein.Ids) |>
+             summarise(n_peptides = n_distinct(Stripped.Sequence), 
+                      .groups = "drop"))
+    }
+  }
+  stop("Required columns not found")
+}
+
+#' Count peptides per run
+#' 
+#' @param data A data frame or S4 object containing protein/peptide data
+#' @return Data frame with run IDs and peptide counts
+countPeptidesPerRun <- function(data) {
+  # For protein quantification data, return empty data frame
+  if (isS4(data)) {
+    if ("protein_quant_table" %in% slotNames(data)) {
+      return(data.frame(Run = character(), 
+                       n_peptides = integer()))
+    }
+    if ("peptide_data" %in% slotNames(data)) {
+      return(data@peptide_data |>
+             group_by(Run) |>
+             summarise(n_peptides = n_distinct(Stripped.Sequence), 
+                      .groups = "drop") |>
+             arrange(Run))
+    }
+  }
+  
+  # For regular dataframes, check if it's protein quantification data
+  if ("Protein.Ids" %in% names(data)) {
+    if (all(sapply(data[setdiff(names(data), "Protein.Ids")], is.numeric))) {
+      return(data.frame(Run = character(), 
+                       n_peptides = integer()))
+    }
+    
+    if (all(c("Run", "Stripped.Sequence") %in% names(data))) {
+      return(data |>
+             group_by(Run) |>
+             summarise(n_peptides = n_distinct(Stripped.Sequence), 
+                      .groups = "drop") |>
+             arrange(Run))
+    }
+  }
+  stop("Required columns not found")
+}
+
+updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NULL, 
+                                 overwrite = FALSE, return_grid = FALSE) {
+    
+    # Initialize filtering_progress if it doesn't exist
+    if (!exists("filtering_progress", envir = .GlobalEnv)) {
+        filtering_progress <- new("FilteringProgress")
+        assign("filtering_progress", filtering_progress, envir = .GlobalEnv)
+    }
+    
+    # Get the current filtering_progress object
+    filtering_progress <- get("filtering_progress", envir = .GlobalEnv)
+    
+    # Determine if we're working with protein_quant_table
+    is_protein_quant <- if (isS4(data)) {
+        "protein_quant_table" %in% slotNames(data)
+    } else {
+        # For data frames, check if it looks like a protein quant table
+        if ("Protein.Ids" %in% names(data)) {
+            all(sapply(data[setdiff(names(data), "Protein.Ids")], is.numeric))
+        } else {
+            FALSE
+        }
+    }
+    
+    # Calculate protein metrics (always done)
+    protein_count <- countUniqueProteins(data)
+    proteins_per_run <- countProteinsPerRun(data)
+    
+    # Update filtering progress based on data type
+    if (step_name %in% filtering_progress@steps) {
+        if (!overwrite) {
+            stop("Step name '", step_name, "' already exists. Use overwrite = TRUE to replace it.")
+        }
+        idx <- which(filtering_progress@steps == step_name)
+        
+        # Always update protein metrics
+        filtering_progress@proteins[idx] <- protein_count
+        filtering_progress@proteins_per_run[[idx]] <- proteins_per_run
+        
+        if (!is_protein_quant) {
+            # Update peptide metrics only for peptide data
+            filtering_progress@total_peptides[idx] <- calcTotalPeptides(data)
+            filtering_progress@peptides_per_protein[[idx]] <- calcPeptidesPerProtein(data)
+            filtering_progress@peptides_per_run[[idx]] <- countPeptidesPerRun(data)
+        }
+    } else {
+        filtering_progress@steps <- c(filtering_progress@steps, step_name)
+        filtering_progress@proteins <- c(filtering_progress@proteins, protein_count)
+        filtering_progress@proteins_per_run <- c(filtering_progress@proteins_per_run, 
+                                               list(proteins_per_run))
+        
+        if (!is_protein_quant) {
+            # Add peptide metrics only for peptide data
+            filtering_progress@total_peptides <- c(filtering_progress@total_peptides, 
+                                                 calcTotalPeptides(data))
+            filtering_progress@peptides_per_protein <- c(filtering_progress@peptides_per_protein, 
+                                                       list(calcPeptidesPerProtein(data)))
+            filtering_progress@peptides_per_run <- c(filtering_progress@peptides_per_run, 
+                                                   list(countPeptidesPerRun(data)))
+        } else {
+            # For protein data, maintain existing peptide metrics or add NA/empty entries
+            if (length(filtering_progress@total_peptides) > 0) {
+                filtering_progress@total_peptides <- c(filtering_progress@total_peptides, 
+                                                     filtering_progress@total_peptides[length(filtering_progress@total_peptides)])
+                filtering_progress@peptides_per_protein <- c(filtering_progress@peptides_per_protein, 
+                                                           filtering_progress@peptides_per_protein[length(filtering_progress@peptides_per_protein)])
+                filtering_progress@peptides_per_run <- c(filtering_progress@peptides_per_run, 
+                                                       filtering_progress@peptides_per_run[length(filtering_progress@peptides_per_run)])
+            } else {
+                filtering_progress@total_peptides <- c(filtering_progress@total_peptides, NA_integer_)
+                filtering_progress@peptides_per_protein <- c(filtering_progress@peptides_per_protein, 
+                                                           list(data.frame(Protein.Ids = character(), 
+                                                                         n_peptides = integer())))
+                filtering_progress@peptides_per_run <- c(filtering_progress@peptides_per_run, 
+                                                       list(data.frame(Run = character(), 
+                                                                     n_peptides = integer())))
+            }
+        }
+    }
+    
+    # Update the global filtering_progress object
+    assign("filtering_progress", filtering_progress, envir = .GlobalEnv)
+    
+    # Create base protein count plot (always shown)
+    p1 <- ggplot(data.frame(
+        step = factor(filtering_progress@steps, levels = filtering_progress@steps),
+        proteins = filtering_progress@proteins
+    ), aes(x = step, y = proteins)) +
+        geom_bar(stat = "identity", fill = "steelblue", width = 0.7) +
+        geom_text(aes(label = proteins), 
+                  vjust = -0.5, 
+                  size = 4) +
+        labs(
+            title = "Number of Proteins",
+            x = "Filtering Step",
+            y = "Unique Proteins"
+        ) +
+        theme_minimal() +
+        theme(
+            axis.text.x = element_text(angle = 45, hjust = 1),
+            panel.grid.major.x = element_blank()
+        )
+    
+    # Create proteins per run plot (always shown)
+    p4 <- bind_rows(filtering_progress@proteins_per_run, .id = "step") |>
+        mutate(step = filtering_progress@steps[as.numeric(step)]) |>
+        group_by(Run) |>
+        mutate(avg_proteins = mean(n_proteins)) |>
+        ungroup() |>
+        mutate(Run = fct_reorder(Run, avg_proteins)) |>
+        ggplot(aes(x = Run, y = n_proteins, 
+                  group = step, 
+                  color = factor(step, levels = filtering_progress@steps))) +
+        geom_line() +
+        geom_point() +
+        labs(
+            title = "Proteins per Run",
+            x = "Run ID (ordered by average protein count)",
+            y = "Number of Proteins",
+            color = "Step"
+        ) +
+        theme_minimal() +
+        theme(
+            axis.text.x = element_text(angle = 45, hjust = 1),
+            panel.grid.major.x = element_blank()
+        ) +
+        scale_color_manual(values = get_color_palette(length(filtering_progress@steps), "steelblue"))
+    
+    # Initialize peptide plots
+    if (is_protein_quant) {
+        # For protein data, create empty placeholder plots if no peptide data exists
+        if (all(is.na(filtering_progress@total_peptides))) {
+            p2 <- p3 <- p5 <- ggplot() + 
+                annotate("text", x = 0.5, y = 0.5, 
+                        label = "No peptide data available for protein quantification data") +
+                theme_void()
+        } else {
+            # If peptide data exists from previous steps, create plots with existing data
+            p2 <- ggplot(data.frame(
+                step = factor(filtering_progress@steps, levels = filtering_progress@steps),
+                total_peptides = filtering_progress@total_peptides
+            ), aes(x = step, y = total_peptides)) +
+                geom_bar(stat = "identity", fill = "forestgreen", width = 0.7) +
+                geom_text(aes(label = total_peptides), 
+                          vjust = -0.5, 
+                          size = 4) +
+                labs(
+                    title = "Total Unique Peptides (from last peptide data)",
+                    x = "Filtering Step",
+                    y = "Unique Peptides"
+                ) +
+                theme_minimal() +
+                theme(
+                    axis.text.x = element_text(angle = 45, hjust = 1),
+                    panel.grid.major.x = element_blank()
+                )
+            
+            p3 <- ggplot() +
+                geom_boxplot(data = bind_rows(filtering_progress@peptides_per_protein, .id = "step") |>
+                             mutate(step = filtering_progress@steps[as.numeric(step)]),
+                           aes(x = factor(step, levels = filtering_progress@steps), 
+                               y = n_peptides),
+                           fill = "darkred",
+                           alpha = 0.5,
+                           outlier.shape = NA) +
+                labs(
+                    title = "Peptides per Protein Distribution (from last peptide data)",
+                    x = "Filtering Step",
+                    y = "Number of Peptides"
+                ) +
+                theme_minimal() +
+                theme(
+                    axis.text.x = element_text(angle = 45, hjust = 1),
+                    panel.grid.major.x = element_blank()
+                ) +
+                coord_cartesian(
+                    ylim = c(0, 
+                             quantile(bind_rows(filtering_progress@peptides_per_protein)$n_peptides, 0.95))
+                )
+            
+            p5 <- bind_rows(filtering_progress@peptides_per_run, .id = "step") |>
+                mutate(step = filtering_progress@steps[as.numeric(step)]) |>
+                group_by(Run) |>
+                mutate(avg_peptides = mean(n_peptides)) |>
+                ungroup() |>
+                mutate(Run = fct_reorder(Run, avg_peptides)) |>
+                ggplot(aes(x = Run, y = n_peptides, 
+                          group = step, 
+                          color = factor(step, levels = filtering_progress@steps))) +
+                geom_line() +
+                geom_point() +
+                labs(
+                    title = "Peptides per Run (from last peptide data)",
+                    x = "Run ID (ordered by average peptide count)",
+                    y = "Number of Peptides",
+                    color = "Step"
+                ) +
+                theme_minimal() +
+                theme(
+                    axis.text.x = element_text(angle = 45, hjust = 1),
+                    panel.grid.major.x = element_blank()
+                ) +
+                scale_color_manual(values = get_color_palette(length(filtering_progress@steps), "forestgreen"))
+        }
+    } else {
+        # For peptide data, create normal plots
+        p2 <- ggplot(data.frame(
+            step = factor(filtering_progress@steps, levels = filtering_progress@steps),
+            total_peptides = filtering_progress@total_peptides
+        ), aes(x = step, y = total_peptides)) +
+            geom_bar(stat = "identity", fill = "forestgreen", width = 0.7) +
+            geom_text(aes(label = total_peptides), 
+                      vjust = -0.5, 
+                      size = 4) +
+            labs(
+                title = "Total Unique Peptides",
+                x = "Filtering Step",
+                y = "Unique Peptides"
+            ) +
+            theme_minimal() +
+            theme(
+                axis.text.x = element_text(angle = 45, hjust = 1),
+                panel.grid.major.x = element_blank()
+            )
+        
+        p3 <- ggplot() +
+            geom_boxplot(data = bind_rows(filtering_progress@peptides_per_protein, .id = "step") |>
+                         mutate(step = filtering_progress@steps[as.numeric(step)]),
+                       aes(x = factor(step, levels = filtering_progress@steps), 
+                           y = n_peptides),
+                       fill = "darkred",
+                       alpha = 0.5,
+                       outlier.shape = NA) +
+            labs(
+                title = "Peptides per Protein Distribution",
+                x = "Filtering Step",
+                y = "Number of Peptides"
+            ) +
+            theme_minimal() +
+            theme(
+                axis.text.x = element_text(angle = 45, hjust = 1),
+                panel.grid.major.x = element_blank()
+            ) +
+            coord_cartesian(
+                ylim = c(0, 
+                         quantile(bind_rows(filtering_progress@peptides_per_protein)$n_peptides, 0.95))
+            )
+        
+        p5 <- bind_rows(filtering_progress@peptides_per_run, .id = "step") |>
+            mutate(step = filtering_progress@steps[as.numeric(step)]) |>
+            group_by(Run) |>
+            mutate(avg_peptides = mean(n_peptides)) |>
+            ungroup() |>
+            mutate(Run = fct_reorder(Run, avg_peptides)) |>
+            ggplot(aes(x = Run, y = n_peptides, 
+                      group = step, 
+                      color = factor(step, levels = filtering_progress@steps))) +
+            geom_line() +
+            geom_point() +
+            labs(
+                title = "Peptides per Run",
+                x = "Run ID (ordered by average peptide count)",
+                y = "Number of Peptides",
+                color = "Step"
+            ) +
+            theme_minimal() +
+            theme(
+                axis.text.x = element_text(angle = 45, hjust = 1),
+                panel.grid.major.x = element_blank()
+            ) +
+            scale_color_manual(values = get_color_palette(length(filtering_progress@steps), "forestgreen"))
+    }
+    
+    # Create plot list based on data type
+    plot_list <- list(
+        proteins_total = p1,
+        proteins_per_run = p4,
+        peptides_total = p2,
+        peptides_per_protein = p3,
+        peptides_per_run = p5
+    )
+    
+       # Save plots if directory is specified
+    if (!is.null(publication_graphs_dir)) {
+        for (plot_name in names(plot_list)) {
+            filename <- file.path(time_dir, 
+                                sprintf("%s_%s.png", step_name, plot_name))
+            ggsave(filename, 
+                   plot = plot_list[[plot_name]], 
+                   width = 10, 
+                   height = 8, 
+                   dpi = 300)
+        }
+    }
+    
+    # Return/display plots based on return_grid parameter
+    if(return_grid) {
+        if (!is_protein_quant || !all(is.na(filtering_progress@total_peptides))) {
+            # Create full grid with all plots if peptide data exists
+            grid1 <- gridExtra::arrangeGrob(p1, p2, p3, ncol = 3)
+            grid2 <- gridExtra::arrangeGrob(p4, ncol = 1)
+            grid3 <- gridExtra::arrangeGrob(p5, ncol = 1)
+            
+            grid_plot <- gridExtra::grid.arrange(
+                grid1,
+                grid2,
+                grid3,
+                heights = c(1, 1, 1)
+            )
+        } else {
+            # For protein_quant_table without peptide data, only show protein plots
+            grid_plot <- gridExtra::grid.arrange(
+                p1,
+                p4,
+                ncol = 1,
+                heights = c(1, 1)
+            )
+        }
+        
+       # Save the grid if directory is specified
+        if (!is.null(publication_graphs_dir)) {
+            filename <- file.path(time_dir, 
+                                sprintf("%s_combined_plots.png", step_name))
+            ggsave(filename, 
+                   plot = grid_plot, 
+                   width = 15, 
+                   height = if (!is_protein_quant || !all(is.na(filtering_progress@total_peptides))) 18 else 12,
+                   dpi = 300)
+        }
+        
+        return(grid_plot)
+    } else {
+        # Print each plot individually
+        for(plot in plot_list) {
+            print(plot)
+        }
+        # Return the list invisibly
+        invisible(plot_list)
+    }
+}
+
