@@ -1,30 +1,19 @@
 ---
 title: "QC Analysis for xyz"
-format:
-    html:
-        embed-resources: true
-        self-contained: true
-        code-fold: true
-        code-summary: "Show the code"
-        #toc: true
-        #toc-depth: 3
-        #number-sections: true
-        html-math-method: katex
-        css: styles.css
-editor: source
-execute:
-    echo: false
-    warning: false
-    message: false
+output:
+  html_document:
+    self_contained: true
+    code_folding: show
+    toc: false
+    css: styles.css
 author: Your fancy self
-output: html_document
 ---
 
 ## Dependency, Directory, Hardware Management & Orgnamism Annotation
 #### Set and create directories for outputs and project management, set number of cores for threaded tasks
 
 ```{r Environment Management}
-devtools::install_github("APAF-BIOINFORMATICS/ProteomeScholaR", ref = "dev-jr")
+devtools::install_github("APAF-BIOINFORMATICS/ProteomeScholaR", ref = "main")
 library(ProteomeScholaR)
 
 # Dependency Management

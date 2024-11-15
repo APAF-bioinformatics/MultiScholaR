@@ -1,7 +1,7 @@
 Package: ProteomeScholaR
 Title: Tools for Proteomics and Phosphoproteomics analysis.
 Version: 0.80
-Authors@R: 
+Authors@R: c(
     person(given = "Ignatius",
            family = "Pang",
            role = c("aut", "cre"),
@@ -11,7 +11,8 @@ Authors@R:
            family = "Klare",
            role = c("aut", "cre"),
            email = "william.klare@mq.edu.au",
-           comment = c(ORCID = "YOUR-ORCID-ID")),
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+    )
 Description: Tools for Proteomics and Phosphoproteomics analysis.
 License: LGPL (>= 3)
 Encoding: UTF-8
