@@ -24,42 +24,64 @@ output: html_document
   #### Set and create directories for outputs and project management, set number of cores for threaded tasks
   
 ```{r Environment Management}
-devtools::install_github("APAF-BIOINFORMATICS/ProteomeScholaR", ref = "main")
+devtools::install_github(
+  "APAF-BIOINFORMATICS/ProteomeScholaR", 
+  ref = "main"
+)
 library(ProteomeScholaR)
 
 # Dependency Management
 ## Load required packages
-## Checks your R environment for the required packages to run ProteomeScholaR, and installs them if they are not.
-## Please note that you will require a Github account in order to install the ProteomeScholaR package.
-## Github account creation is free, and is a very useful tool for learning to code and also to engage with the wider coding community.
+## Checks your R environment for the required packages to run ProteomeScholaR, 
+## and installs them if they are not.
+## Please note that you will require a Github account in order to install the 
+## ProteomeScholaR package.
+## Github account creation is free, and is a very useful tool for learning to 
+## code and also to engage with the wider coding community.
 loadDependencies()
 
 # Directory Management
 ## Set up the project directory structure
 ## This section sets up the project directory structure for ProteomeScholaR
-## Directory management can be challenging, particularly when managing objects across multiple chunks within a single R Markdown document.
+## Directory management can be challenging, particularly when managing objects 
+## across multiple chunks within a single R Markdown document.
 setupDirectories()
 showDirectories()
 
 # Annotation Management
-## Please download the organism fasta file from UniProt. If UniProt is not available, the program will extract the 
-## relevant identifiers from the fasta provided and attempt to match them to user supplied UniProt / UniParc conversions
-## Please set the name of your fasta file here in the root directory if you already have it
-data_tbl <- vroom::vroom( file.path(data_dir, "proteomics", "KV_DIANN_report.tsv"))
-fasta_file_path <- file.path( data_dir, "UniProt", "04153260899A.fasta")
+## Please download the organism fasta file from UniProt. If UniProt is not 
+## available, the program will extract the relevant identifiers from the fasta 
+## provided and attempt to match them to user supplied UniProt/UniParc conversions
+## Please set the name of your fasta file here in the root directory if you 
+## already have it
+data_tbl <- vroom::vroom(
+  file.path(data_dir, "proteomics", "KV_DIANN_report.tsv")
+)
+fasta_file_path <- file.path(
+  data_dir, 
+  "UniProt", 
+  "04153260899A.fasta"
+)
 #uniprot_search_results <- NULL
-uniprot_search_results <- vroom::vroom(file.path(data_dir, "UniProt", "idmapping_2024_10_07.tsv"))
+uniprot_search_results <- vroom::vroom(
+  file.path(data_dir, "UniProt", "idmapping_2024_10_07.tsv")
+)
 #uniparc_search_results <- NULL
-uniparc_search_results <- vroom::vroom(file.path(data_dir, "UniProt", "kv_uniparc.csv"))
+uniparc_search_results <- vroom::vroom(
+  file.path(data_dir, "UniProt", "kv_uniparc.csv")
+)
 
 ## Please supply your organism's taxon ID here
 taxon_id <- 244366
 
 ## Input Parameters for Quality Control
-## Parameters in this section are experiment-specific. Their default parameters are intended as a guide only - every source of variance is ## different just as every set of proteins going through a mass spectrometer is different! One size does not fit all and you *will* most likely need to fine tune these to get the most out of your data.
-config_list <- readConfigFile( file = file.path(source_dir, "config.ini") )
+## Parameters in this section are experiment-specific. Their default parameters 
+## are intended as a guide only - every source of variance is different just as 
+## every set of proteins going through a mass spectrometer is different! One 
+## size does not fit all and you *will* most likely need to fine tune these to 
+## get the most out of your data.
+config_list <- readConfigFile(file = file.path(source_dir, "config.ini"))
 ```
-
 
 ```{r}
 if (exists("design_matrix", envir = .GlobalEnv)) {
@@ -71,38 +93,48 @@ if (exists("design_matrix", envir = .GlobalEnv)) {
 #RunApplet("designMatrix")
 ```
 
-# Convert the protein identifiers to Uniprot or Uniparc accessions if those annotations are available 
+# Convert the protein identifiers to Uniprot or Uniparc accessions if those 
+# annotations are available 
 ## Otherwise makes use of pre-supplied uniprot fasta annotations
 ```{r}
 fasta_meta_file <- "parsed_fasta_data.rds"
-aa_seq_tbl_final <- processFastaFile(fasta_file_path, uniprot_search_results, uniparc_search_results, fasta_meta_file)
+aa_seq_tbl_final <- processFastaFile(
+  fasta_file_path, 
+  uniprot_search_results, 
+  uniparc_search_results, 
+  fasta_meta_file
+)
 data_cln <- updateProteinIDs(data_cln, aa_seq_tbl_final)
 ```
 
 ## Create the PeptideQuantitativeData object
-### This section initializes a PeptideQuantitativeData object with peptide-level quantitative data and experimental design information.
-### It specifies the column names for various data attributes and sets up the design matrix for the experiment.
+### This section initializes a PeptideQuantitativeData object with peptide-level 
+### quantitative data and experimental design information.
+### It specifies the column names for various data attributes and sets up the 
+### design matrix for the experiment.
 ```{r}
-peptide_data <- new( "PeptideQuantitativeData"
-                     
-                     # Protein vs Sample quantitative data
-                     , peptide_data = data_cln
-                     , protein_id_column = "Protein.Ids"
-                     , peptide_sequence_column = "Stripped.Sequence"
-                     , q_value_column = "Q.Value"
-                     , global_q_value_column = "Global.Q.Value"
-                     , proteotypic_peptide_sequence_column = "Proteotypic"
-                     , raw_quantity_column = "Precursor.Quantity"
-                     , norm_quantity_column = "Precursor.Normalised"
-                     , is_logged_data = FALSE
-                     
-                     # Design Matrix Information
-                     , design_matrix = design_matrix
-                     , sample_id="Run"
-                     , group_id="group"
-                     , technical_replicate_id="replicates"
-                     
-                     , args = config_list)  
+peptide_data <- new(
+  "PeptideQuantitativeData",
+  
+  # Protein vs Sample quantitative data
+  peptide_data = data_cln,
+  protein_id_column = "Protein.Ids",
+  peptide_sequence_column = "Stripped.Sequence",
+  q_value_column = "Q.Value",
+  global_q_value_column = "Global.Q.Value",
+  proteotypic_peptide_sequence_column = "Proteotypic",
+  raw_quantity_column = "Precursor.Quantity",
+  norm_quantity_column = "Precursor.Normalised",
+  is_logged_data = FALSE,
+  
+  # Design Matrix Information
+  design_matrix = design_matrix,
+  sample_id = "Run",
+  group_id = "group",
+  technical_replicate_id = "replicates",
+  
+  args = config_list
+)
 ```
 
 # Raw Data QC

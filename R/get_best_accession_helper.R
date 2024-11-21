@@ -515,6 +515,12 @@ processFastaFile_deprecated <- function(fasta_file_path, uniprot_search_results,
 #'@export
 
 updateProteinIDs <- function(protein_data, aa_seq_tbl_final) {
+  # Check if ncbi_refseq column exists in aa_seq_tbl_final
+  if (!"ncbi_refseq" %in% colnames(aa_seq_tbl_final)) {
+    message("No ncbi_refseq column found in aa_seq_tbl_final. Returning original data unchanged.")
+    return(protein_data)
+  }
+  
   # Generic NCBI protein ID patterns - escaped special characters
   ncbi_patterns <- c(
     "WP_\\d+\\.?\\d*",                     # WP_123456789.1
