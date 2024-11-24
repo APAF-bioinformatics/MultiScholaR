@@ -330,32 +330,38 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uni
   }
   
   parseFastaFile <- function(fasta_file) {
-    aa_seqinr <- seqinr::read.fasta(file = fasta_file, seqtype = "AA", 
-                            whole.header = TRUE, as.string = TRUE)
-    headers <- names(aa_seqinr)
-    
-    parsed_headers <- lapply(headers, function(header) {
-      parts <- strsplit(substr(header, 2, nchar(header)), " ", fixed = TRUE)[[1]]
-      id_parts <- strsplit(parts[1], "|", fixed = TRUE)[[1]]
-      list(
-        accession = id_parts[2],
-        database_id = id_parts[2],
-        protein = paste(parts[-1], collapse = " "),
-        attributes = paste(parts[-1], collapse = " ")
-      )
-    })
-    
-    acc_detail_tab <- dplyr::bind_rows(parsed_headers)
-    aa_seq_tbl <- acc_detail_tab |>
-      dplyr::mutate(
-        seq = purrr::map_chr(aa_seqinr, 1),
-        seq_length = stringr::str_length(seq),
-        description = headers
-      )
-    
-    return(aa_seq_tbl)
-  }
+  aa_seqinr <- seqinr::read.fasta(file = fasta_file, seqtype = "AA", 
+                          whole.header = TRUE, as.string = TRUE)
+  headers <- names(aa_seqinr)
   
+  parsed_headers <- lapply(headers, function(header) {
+    parts <- strsplit(substr(header, 2, nchar(header)), " ", fixed = TRUE)[[1]]
+    id_parts <- strsplit(parts[1], "|", fixed = TRUE)[[1]]
+    
+    # Extract just protein evidence level
+    protein_evidence <- stringr::str_extract(header, "PE=[0-9]") |> 
+      stringr::str_extract("[0-9]") |>
+      as.integer()
+    
+    list(
+      accession = id_parts[2],
+      database_id = id_parts[2],
+      protein = paste(parts[-1], collapse = " "),
+      attributes = paste(parts[-1], collapse = " "),
+      protein_evidence = protein_evidence
+    )
+  })
+  
+  acc_detail_tab <- dplyr::bind_rows(parsed_headers)
+  aa_seq_tbl <- acc_detail_tab |>
+    dplyr::mutate(
+      seq = purrr::map_chr(aa_seqinr, 1),
+      seq_length = stringr::str_length(seq),
+      description = headers
+    )
+  
+  return(aa_seq_tbl)
+}
 
   parseFastaHeader <- function(header) {
     parts <- strsplit(substr(header, 2, nchar(header)), " ", fixed = TRUE)[[1]]
