@@ -40,8 +40,7 @@ RunApplet <- function(applet_type) {
       factor2 = NA_character_,
       replicates = NA_integer_
     )
-    
-    # Create UI function
+        # Create UI function
     create_design_matrix_ui <- function(design_matrix_raw) {
       # Sort the Run names initially
       sorted_runs <- gtools::mixedsort(design_matrix_raw$Run)
@@ -145,8 +144,7 @@ RunApplet <- function(applet_type) {
         )
       )
     }
-    
-    # Create server function
+        # Create server function
     server <- function(input, output, session) {
       # Reactive values
       design_matrix <- reactiveVal(design_matrix_raw)
@@ -179,16 +177,19 @@ RunApplet <- function(applet_type) {
       # Update dropdown choices
       observe({
         current_factors <- factors()
-        current_groups <- groups()
         
         updateSelectInput(session, "factor1_select", 
-                         choices = c("", current_factors))
+                         choices = c("", current_factors),
+                         selected = "")
         updateSelectInput(session, "factor2_select", 
-                         choices = c("", current_factors))
+                         choices = c("", current_factors),
+                         selected = "")
         updateSelectInput(session, "contrast_group1", 
-                         choices = c("", current_groups))
+                         choices = c("", groups()),
+                         selected = "")
         updateSelectInput(session, "contrast_group2", 
-                         choices = c("", current_groups))
+                         choices = c("", groups()),
+                         selected = "")
       })
       
       # Individual rename handler
@@ -219,8 +220,7 @@ RunApplet <- function(applet_type) {
           updateTextInput(session, "new_sample_name", value = "")
         }
       })
-      
-      # Bulk rename handler
+            # Bulk rename handler
       observeEvent(input$bulk_rename, {
         req(input$samples_to_transform)
         current_matrix <- design_matrix()
@@ -313,27 +313,18 @@ RunApplet <- function(applet_type) {
         # Update groups
         unique_groups <- unique(current_matrix$group[!is.na(current_matrix$group)])
         groups(unique_groups)
-      })
-      
-      # Contrast factors info
-      output$contrast_factors_info <- renderText({
-        req(input$contrast_group1, input$contrast_group2)
         
-        if(input$contrast_group1 != "" && input$contrast_group2 != "") {
-          current_matrix <- design_matrix()
-          
-          group1_row <- which(current_matrix$group == input$contrast_group1)[1]
-          group2_row <- which(current_matrix$group == input$contrast_group2)[1]
-          
-          paste0(
-            "Comparing:\n",
-            "Group 1: ", current_matrix$factor1[group1_row], " + ", current_matrix$factor2[group1_row], "\n",
-            "Group 2: ", current_matrix$factor1[group2_row], " + ", current_matrix$factor2[group2_row]
-          )
+        # Update factors
+        current_factors <- factors()
+        if(input$factor1_select != "" && !input$factor1_select %in% current_factors) {
+          factors(c(current_factors, input$factor1_select))
+        }
+        if(input$factor2_select != "" && !input$factor2_select %in% current_factors) {
+          factors(c(current_factors, input$factor2_select))
         }
       })
       
-      # Add contrast handler
+            # Add contrast handler
       observeEvent(input$add_contrast, {
         req(input$contrast_group1, input$contrast_group2)
         if(input$contrast_group1 != "" && 
@@ -343,6 +334,7 @@ RunApplet <- function(applet_type) {
           current_contrasts <- contrasts()
           current_matrix <- design_matrix()
           
+          # Get the factors for each group
           group1_row <- which(current_matrix$group == input$contrast_group1)[1]
           group2_row <- which(current_matrix$group == input$contrast_group2)[1]
           
@@ -377,17 +369,19 @@ RunApplet <- function(applet_type) {
         if(nrow(contrast_data) > 0) {
           data.frame(
             Contrast = paste0(
-              contrast_data$contrast_name,
-              " = ",
-              "(", contrast_data$factor1_num, " + ", contrast_data$factor2_num, ")",
-              " - ",
-              "(", contrast_data$factor1_den, " + ", contrast_data$factor2_den, ")"
+              paste(contrast_data$factor1_num, contrast_data$factor2_num, sep = "_"),
+              ".minus.",
+              paste(contrast_data$factor1_den, contrast_data$factor2_den, sep = "_"),
+              " = group",
+              paste(contrast_data$factor1_num, contrast_data$factor2_num, sep = "_"),
+              "-group",
+              paste(contrast_data$factor1_den, contrast_data$factor2_den, sep = "_")
             )
           )
         }
       })
       
-      # Save and close handler
+            # Save and close handler
       observeEvent(input$save_and_close, {
         design_matrix_final <- design_matrix()
         data_cln_final <- data_cln_reactive()
@@ -399,25 +393,28 @@ RunApplet <- function(applet_type) {
         config_list[["deAnalysisParameters"]][["formula_string"]] <- input$formula_string
         assign("config_list", config_list, envir = parent.frame())
         
-contrast_data <- contrasts()
-if(nrow(contrast_data) > 0) {
-  contrast_strings <- sapply(1:nrow(contrast_data), function(i) {
-    paste0(
-      contrast_data$contrast_name[i],
-      "=",
-      "group", gsub(" ", "", contrast_data$numerator[i]),
-      "-",
-      "group", gsub(" ", "", contrast_data$denominator[i])
-    )
-  })
-  
-  writeLines(contrast_strings, file.path(source_dir, "contrast_strings.tab"))
-  contrasts_tbl <- data.frame(
-    contrasts = contrast_strings,
-    stringsAsFactors = FALSE
-  )
-  assign("contrasts_tbl", contrasts_tbl, envir = parent.frame())
-}
+        contrast_data <- contrasts()
+        if(nrow(contrast_data) > 0) {
+          # Modified contrast string generation to match required format
+          contrast_strings <- sapply(1:nrow(contrast_data), function(i) {
+            paste0(
+              paste(contrast_data$factor1_num[i], contrast_data$factor2_num[i], sep = "_"),
+              ".minus.",
+              paste(contrast_data$factor1_den[i], contrast_data$factor2_den[i], sep = "_"),
+              "=group",
+              paste(contrast_data$factor1_num[i], contrast_data$factor2_num[i], sep = "_"),
+              "-group",
+              paste(contrast_data$factor1_den[i], contrast_data$factor2_den[i], sep = "_")
+            )
+          })
+          
+          writeLines(contrast_strings, file.path(source_dir, "contrast_strings.tab"))
+          contrasts_tbl <- data.frame(
+            contrasts = contrast_strings,
+            stringsAsFactors = FALSE
+          )
+          assign("contrasts_tbl", contrasts_tbl, envir = parent.frame())
+        }
         
         stopApp(list(
           design_matrix = design_matrix_final,
