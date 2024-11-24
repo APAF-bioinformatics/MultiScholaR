@@ -1301,33 +1301,28 @@ setMethod( f = "chooseBestProteinAccession"
                                                                           group_id = row_id,
                                                                           delim = ";")
 
-protein_log2_quant_cln <- evidence_tbl_cleaned |>
-  left_join(
-    accession_gene_name_tbl |>
-      dplyr::distinct(row_id, !!sym(as.character(seqinr_accession_column))),
-    by = join_by(row_id)
-  ) |>
-  # Keep both the original and cleaned IDs
-  mutate(
-    original_protein_ids = !!sym(theObject@protein_id_column),
-    !!sym(theObject@protein_id_column) := !!sym(as.character(seqinr_accession_column))
-  ) |>
-  dplyr::select(-row_id, -!!sym(as.character(seqinr_accession_column)), -original_protein_ids)
+             protein_log2_quant_cln <- evidence_tbl_cleaned |>
+               left_join( accession_gene_name_tbl |>
+                            dplyr::distinct( row_id, !!sym( as.character(seqinr_accession_column) ))
+                          , by = join_by( row_id ) ) |>
+               mutate( !!sym( theObject@protein_id_column ) :=!!sym( as.character(seqinr_accession_column)) )  |>
+               dplyr::select(-row_id, -!!sym( as.character(seqinr_accession_column)))
 
 
-            protein_id_table <- evidence_tbl_cleaned |>
-  left_join(accession_gene_name_tbl |>
-              dplyr::distinct(row_id, !!sym(as.character(seqinr_accession_column))),
-            by = join_by(row_id)) |>
-  distinct(!!sym(as.character(seqinr_accession_column)), !!sym(protein_id_column)) |>
-  mutate(!!sym(paste0(protein_id_column, "_list")) := !!sym(protein_id_column)) |>
-  mutate(!!sym(protein_id_column) := !!sym(as.character(seqinr_accession_column))) |>
-  distinct(!!sym(protein_id_column), !!sym(paste0(protein_id_column, "_list"))) |>
-  group_by(!!sym(protein_id_column)) |>
-  summarise(!!sym(paste0(protein_id_column, "_list")) := paste(!!sym(paste0(protein_id_column, "_list")), collapse = ";")) |>
-  ungroup() |>
-  mutate(!!sym(paste0(protein_id_column, "_list")) := purrr::map_chr(!!sym(paste0(protein_id_column, "_list")),
-                                                                     \(x) { paste(unique(sort(str_split(x, ";")[[1]])), collapse=";") }))
+             protein_id_table <- evidence_tbl_cleaned |>
+               left_join( accession_gene_name_tbl |>
+                            dplyr::distinct( row_id, !!sym( as.character(seqinr_accession_column) ))
+                          , by = join_by( row_id ) ) |>
+               distinct(  uniprot_acc, !!sym( protein_id_column) ) |>
+               mutate( !!sym(paste0(protein_id_column, "_list")) := !!sym( protein_id_column)  ) |>
+               mutate( !!sym(protein_id_column) := !!sym("uniprot_acc") )  |>
+               distinct( !!sym(protein_id_column) , !!sym(paste0(protein_id_column, "_list"))) |>
+               group_by( !!sym(protein_id_column)) |>
+               summarise( !!sym(paste0(protein_id_column, "_list")) := paste(!!sym(paste0(protein_id_column, "_list")), collapse = ";") ) |>
+               ungroup( ) |>
+               mutate( !!sym(paste0(protein_id_column, "_list")) := purrr::map_chr( !!sym(paste0(protein_id_column, "_list"))
+                                                                                    , \(x){  paste(unique( sort(str_split(x, ";")[[1]])), collapse=";")  } ) )
+
 
              # summed_data <- protein_log2_quant_cln |>
              #   mutate( !!sym(protein_id_column) := purrr::map_chr( !!sym(protein_id_column), \(x){ str_split(x, ":")[[1]][1] } ) )  |>

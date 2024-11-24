@@ -197,34 +197,26 @@ chooseBestPhosphositeAccession <- function(input_tbl, acc_detail_tab, accessions
 #'  uniprot_acc: List of uniprot accessions, but with the list ordered by the best one to less useful one to use
 #'  is_unique: Is the protein group assined to a unique UniProt accession or multiple UniProt accessions
 #'@export
-chooseBestProteinAccessionHelper <- function(input_tbl,
-                                           acc_detail_tab,
-                                           accessions_column,
-                                           row_id_column,
-                                           group_id,
-                                           delim = ";") {
-  
+chooseBestProteinAccessionHelper <- function(input_tbl
+                                             , acc_detail_tab
+                                             , accessions_column
+                                             , row_id_column = "uniprot_acc"
+                                             , group_id
+                                             , delim= ";") {
+
   resolve_acc_helper <- input_tbl |>
-    dplyr::select({{ group_id }}, {{ accessions_column }}) |>
-    mutate(!!sym(row_id_column) := str_split({{ accessions_column }}, delim)) |>
-    unnest(!!sym(row_id_column)) |>
-    mutate(cleaned_acc = cleanIsoformNumber(row_id_column)) |>
-    left_join(acc_detail_tab,
-              by = join_by(cleaned_acc == !!sym(row_id_column)),
-              copy = TRUE,
-              keep = NULL) |>
-    dplyr::select({{ group_id }}, 
-                  one_of(c(row_id_column, "gene_name",
-                          "protein_evidence", "status", 
-                          "is_isoform", "isoform_num", 
-                          "seq_length"))) |>
+    dplyr::select( { { group_id } }, { { accessions_column } }) |>
+    mutate( !!sym(row_id_column) := str_split({ { accessions_column } }, delim)) |>
+    unnest( !!sym(row_id_column)) |>
+    mutate( cleaned_acc = cleanIsoformNumber(row_id_column))   |>
+    left_join( acc_detail_tab ,
+               by = join_by( cleaned_acc == !!sym(row_id_column) ),
+               copy = TRUE,
+               keep = NULL)  |>
+    dplyr::select( { { group_id } }, one_of(c(row_id_column, "gene_name", "cleaned_acc",
+                                              "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"))) |>
     distinct() |>
-    arrange({{ group_id }}, 
-            protein_evidence, 
-            status, 
-            is_isoform, 
-            desc(seq_length), 
-            isoform_num)
+    arrange( { { group_id } }, protein_evidence, status, is_isoform, desc(seq_length), isoform_num)
 
 
   score_isoforms <- resolve_acc_helper |>
@@ -346,34 +338,17 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uni
     parts <- strsplit(substr(header, 2, nchar(header)), " ", fixed = TRUE)[[1]]
     id_parts <- strsplit(parts[1], "|", fixed = TRUE)[[1]]
     
-    # Extract protein evidence level
+    # Extract just protein evidence level
     protein_evidence <- stringr::str_extract(header, "PE=[0-9]") |> 
       stringr::str_extract("[0-9]") |>
       as.integer()
     
-    # Determine status based on entry type
-    status <- if(startsWith(header, ">sp|")) "reviewed" else "unreviewed"
-    
-    # Extract gene name (GN=)
-    gene_name <- stringr::str_extract(header, "GN=\\S+") |>
-      stringr::str_remove("GN=")
-    
-    # For entries without isoforms, set defaults
-    is_isoform <- FALSE
-    isoform_num <- 0L   
-    cleaned_acc <- id_parts[2] 
-    
     list(
       accession = id_parts[2],
       database_id = id_parts[2],
-      cleaned_acc = cleaned_acc,
-      gene_name = gene_name,
       protein = paste(parts[-1], collapse = " "),
       attributes = paste(parts[-1], collapse = " "),
-      protein_evidence = protein_evidence,
-      status = status,
-      is_isoform = is_isoform,
-      isoform_num = isoform_num
+      protein_evidence = protein_evidence
     )
   })
   
