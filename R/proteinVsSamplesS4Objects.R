@@ -1301,12 +1301,18 @@ setMethod( f = "chooseBestProteinAccession"
                                                                           group_id = row_id,
                                                                           delim = ";")
 
-             protein_log2_quant_cln <- evidence_tbl_cleaned |>
-               left_join( accession_gene_name_tbl |>
-                            dplyr::distinct( row_id, !!sym( as.character(seqinr_accession_column) ))
-                          , by = join_by( row_id ) ) |>
-               mutate( !!sym( theObject@protein_id_column ) :=!!sym( as.character(seqinr_accession_column)) )  |>
-               dplyr::select(-row_id, -!!sym( as.character(seqinr_accession_column)))
+protein_log2_quant_cln <- evidence_tbl_cleaned |>
+  left_join(
+    accession_gene_name_tbl |>
+      dplyr::distinct(row_id, !!sym(as.character(seqinr_accession_column))),
+    by = join_by(row_id)
+  ) |>
+  # Keep both the original and cleaned IDs
+  mutate(
+    original_protein_ids = !!sym(theObject@protein_id_column),
+    !!sym(theObject@protein_id_column) := !!sym(as.character(seqinr_accession_column))
+  ) |>
+  dplyr::select(-row_id, -!!sym(as.character(seqinr_accession_column)), -original_protein_ids)
 
 
             protein_id_table <- evidence_tbl_cleaned |>
