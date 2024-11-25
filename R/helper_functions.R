@@ -640,11 +640,12 @@ loadDependencies <- function(verbose = TRUE) {
     }
     required_packages <- c(
         # CRAN packages
+        
         "tidyverse", "seqinr", "lazyeval", "rlang", "glue", "GGally",
         "here", "tibble", "mixOmics", "limma", "magrittr", "future.apply",
         "tictoc", "beepr", "furrr", "readxl", "writexl", "RColorBrewer",
         "multidplyr", "RSpectra", "progress", "Rcpp", "RcppEigen",
-        "qvalue", "Glimma", "ruv", "iq", "ggrepel", "patchwork",
+        "qvalue", "ruv", "iq", "ggrepel", "patchwork",
         "dplyr", "gtools", "shiny", "DT", "gh",
         # Additional packages
         "plotly", "vroom", "gplots", "iheatmapr",
@@ -652,7 +653,7 @@ loadDependencies <- function(verbose = TRUE) {
         # Bioconductor packages
         "BiocManager",
         # GitHub packages
-        "RUVIIIC", "ProteomeScholaR", "UniProt.ws"
+        "UniProt.ws"
     )
     library(pacman)
 
@@ -664,6 +665,10 @@ loadDependencies <- function(verbose = TRUE) {
     if (!requireNamespace("ProteomeScholaR", quietly = TRUE)) {
         if (verbose) message("Installing ProteomeScholaR from GitHub...")
         devtools::install_github("APAF-BIOINFORMATICS/ProteomeScholaR", ref = "dev-jr")
+    }
+    if (!requireNamespace("GlimmaV2", quietly = TRUE)) {
+        if (verbose) message("Installing GlimmaV2 from GitHub...")
+        devtools::install_github("APAF-bioinformatics/GlimmaV2")
     }
     if (verbose) message("Loading all required packages...")
     p_load(char = required_packages)
