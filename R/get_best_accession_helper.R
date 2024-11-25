@@ -330,32 +330,55 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uni
   }
   
   parseFastaFile <- function(fasta_file) {
-    aa_seqinr <- seqinr::read.fasta(file = fasta_file, seqtype = "AA", 
-                            whole.header = TRUE, as.string = TRUE)
-    headers <- names(aa_seqinr)
-    
-    parsed_headers <- lapply(headers, function(header) {
-      parts <- strsplit(substr(header, 2, nchar(header)), " ", fixed = TRUE)[[1]]
-      id_parts <- strsplit(parts[1], "|", fixed = TRUE)[[1]]
-      list(
-        accession = id_parts[2],
-        database_id = id_parts[2],
-        protein = paste(parts[-1], collapse = " "),
-        attributes = paste(parts[-1], collapse = " ")
-      )
-    })
-    
-    acc_detail_tab <- dplyr::bind_rows(parsed_headers)
-    aa_seq_tbl <- acc_detail_tab |>
-      dplyr::mutate(
-        seq = purrr::map_chr(aa_seqinr, 1),
-        seq_length = stringr::str_length(seq),
-        description = headers
-      )
-    
-    return(aa_seq_tbl)
-  }
+  aa_seqinr <- seqinr::read.fasta(file = fasta_file, seqtype = "AA", 
+                          whole.header = TRUE, as.string = TRUE)
+  headers <- names(aa_seqinr)
   
+  parsed_headers <- lapply(headers, function(header) {
+    parts <- strsplit(substr(header, 2, nchar(header)), " ", fixed = TRUE)[[1]]
+    id_parts <- strsplit(parts[1], "|", fixed = TRUE)[[1]]
+    
+    # Extract protein evidence level
+    protein_evidence <- stringr::str_extract(header, "PE=[0-9]") |> 
+      stringr::str_extract("[0-9]") |>
+      as.integer()
+    
+    # Determine status based on entry type
+    status <- if(startsWith(header, ">sp|")) "reviewed" else "unreviewed"
+    
+    # Extract gene name (GN=)
+    gene_name <- stringr::str_extract(header, "GN=\\S+") |>
+      stringr::str_remove("GN=")
+    
+    # For entries without isoforms, set defaults
+    is_isoform <- FALSE
+    isoform_num <- 0L   
+    cleaned_acc <- id_parts[2] 
+    
+    list(
+      accession = id_parts[2],
+      database_id = id_parts[2],
+      cleaned_acc = cleaned_acc,
+      gene_name = gene_name,
+      protein = paste(parts[-1], collapse = " "),
+      attributes = paste(parts[-1], collapse = " "),
+      protein_evidence = protein_evidence,
+      status = status,
+      is_isoform = is_isoform,
+      isoform_num = isoform_num
+    )
+  })
+  
+  acc_detail_tab <- dplyr::bind_rows(parsed_headers)
+  aa_seq_tbl <- acc_detail_tab |>
+    dplyr::mutate(
+      seq = purrr::map_chr(aa_seqinr, 1),
+      seq_length = stringr::str_length(seq),
+      description = headers
+    )
+  
+  return(aa_seq_tbl)
+}
 
   parseFastaHeader <- function(header) {
     parts <- strsplit(substr(header, 2, nchar(header)), " ", fixed = TRUE)[[1]]
@@ -515,6 +538,12 @@ processFastaFile_deprecated <- function(fasta_file_path, uniprot_search_results,
 #'@export
 
 updateProteinIDs <- function(protein_data, aa_seq_tbl_final) {
+  # Check if ncbi_refseq column exists in aa_seq_tbl_final
+  if (!"ncbi_refseq" %in% colnames(aa_seq_tbl_final)) {
+    message("No ncbi_refseq column found in aa_seq_tbl_final. Returning original data unchanged.")
+    return(protein_data)
+  }
+  
   # Generic NCBI protein ID patterns - escaped special characters
   ncbi_patterns <- c(
     "WP_\\d+\\.?\\d*",                     # WP_123456789.1
