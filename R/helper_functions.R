@@ -633,14 +633,9 @@ readConfigFileSection <- function( theObject
 #'
 #' @export
 loadDependencies <- function(verbose = TRUE) {
-    # First ensure pacman is installed
-    if (!requireNamespace("pacman", quietly = TRUE)) {
-        if (verbose) message("Installing pacman...")
-        install.packages("pacman")
-    }
+    # Define all required packages
     required_packages <- c(
         # CRAN packages
-        
         "tidyverse", "seqinr", "lazyeval", "rlang", "glue", "GGally",
         "here", "tibble", "mixOmics", "limma", "magrittr", "future.apply",
         "tictoc", "beepr", "furrr", "readxl", "writexl", "RColorBrewer",
@@ -655,23 +650,47 @@ loadDependencies <- function(verbose = TRUE) {
         # GitHub packages
         "UniProt.ws"
     )
-    library(pacman)
-
-    # Install packages if missing
-    if (!requireNamespace("RUVIIIC", quietly = TRUE)) {
-        if (verbose) message("Installing RUVIIIC from GitHub...")
-        devtools::install_github("cran/RUVIIIC")
+    
+    # Install pacman if not present
+    if (!requireNamespace("pacman", quietly = TRUE)) {
+        if (verbose) message("Installing pacman...")
+        utils::install.packages("pacman")
     }
-    if (!requireNamespace("ProteomeScholaR", quietly = TRUE)) {
-        if (verbose) message("Installing ProteomeScholaR from GitHub...")
-        devtools::install_github("APAF-BIOINFORMATICS/ProteomeScholaR", ref = "dev-jr")
+    
+    # Install BiocManager if not present
+    if (!requireNamespace("BiocManager", quietly = TRUE)) {
+        if (verbose) message("Installing BiocManager...")
+        utils::install.packages("BiocManager")
     }
+    
+    # Install GlimmaV2 from GitHub
     if (!requireNamespace("GlimmaV2", quietly = TRUE)) {
         if (verbose) message("Installing GlimmaV2 from GitHub...")
-        devtools::install_github("APAF-bioinformatics/GlimmaV2")
+        tryCatch({
+            "GlimmaV2" |> 
+                paste0("APAF-bioinformatics/", .) |>
+                devtools::install_github()
+        }, error = function(e) {
+            stop("Failed to install GlimmaV2: ", e$message)
+        })
     }
-    if (verbose) message("Loading all required packages...")
-    p_load(char = required_packages)
+    
+    # Install and load required packages using purrr::map
+    required_packages |>
+        purrr::map(~pacman::p_load(char = .x, character.only = TRUE))
+    
+    # Install RUVIIIC from GitHub
+    tryCatch({
+        if (!requireNamespace("RUVIIIC", quietly = TRUE)) {
+            if (verbose) message("Installing RUVIIIC from GitHub...")
+            "RUVIIIC" |>
+                paste0("cran/", .) |>
+                devtools::install_github()
+        }
+    }, error = function(e) {
+        warning("Failed to install RUVIIIC: ", e$message)
+    })
+    
     if (verbose) message("All dependencies loaded successfully!")
 }
 
