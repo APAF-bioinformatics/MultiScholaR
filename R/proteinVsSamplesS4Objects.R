@@ -1255,10 +1255,10 @@ preservePeptideNaValuesHelper <- function( peptide_obj, protein_obj) {
 
 #'@export
 setGeneric(name="chooseBestProteinAccession"
-           , def=function( theObject, delim=NULL, seqinr_obj=NULL, seqinr_accession_column=NULL, replace_zero_with_na = NULL ) {
+           , def=function(theObject, delim=NULL, seqinr_obj=NULL, seqinr_accession_column=NULL, replace_zero_with_na = NULL, aggregation_method = NULL) {
              standardGeneric("chooseBestProteinAccession")
            }
-           , signature=c("theObject", "delim", "seqinr_obj", "seqinr_accession_column" ))
+           , signature=c("theObject", "delim", "seqinr_obj", "seqinr_accession_column"))
 
 #'@export
 #'@param theObject The object of class ProteinQuantitativeData
@@ -1266,109 +1266,115 @@ setGeneric(name="chooseBestProteinAccession"
 #'@param seqinr_obj The object of class Seqinr::seqinr
 #'@param seqinr_accession_column The column in the seqinr object that contains the protein accessions
 #'@param replace_zero_with_na Replace zero values with NA
-setMethod( f = "chooseBestProteinAccession"
-           , signature="ProteinQuantitativeData"
-           , definition=function( theObject, delim=NULL, seqinr_obj=NULL
-                                  , seqinr_accession_column=NULL
-                                  , replace_zero_with_na = NULL  ) {
-
-             protein_quant_table <- theObject@protein_quant_table
-             protein_id_column <- theObject@protein_id_column
-
-             delim <- checkParamsObjectFunctionSimplify(theObject, "delim",  default_value =  " |;|:|\\|")
-             seqinr_obj <- checkParamsObjectFunctionSimplify(theObject, "seqinr_obj",  default_value = NULL)
-             seqinr_accession_column <- checkParamsObjectFunctionSimplify( theObject
-                                                                           , "seqinr_accession_column"
-                                                                           , default_value = NULL)
-             replace_zero_with_na <- checkParamsObjectFunctionSimplify( theObject
-                                                                        , "replace_zero_with_na"
-                                                                        , default_value = FALSE)
-
-             theObject <- updateParamInObject(theObject, "delim")
-             theObject <- updateParamInObject(theObject, "seqinr_obj")
-             theObject <- updateParamInObject(theObject, "seqinr_accession_column")
-             theObject <- updateParamInObject(theObject, "replace_zero_with_na")
-
-             evidence_tbl_cleaned <- protein_quant_table |>
-               distinct() |>
-               mutate( row_id = row_number() -1 )
-
-
-             accession_gene_name_tbl <- chooseBestProteinAccessionHelper( input_tbl = evidence_tbl_cleaned,
-                                                                          acc_detail_tab = seqinr_obj,
-                                                                          accessions_column = !!sym( protein_id_column),
-                                                                          row_id_column = seqinr_accession_column,
-                                                                          group_id = row_id,
-                                                                          delim = ";")
-
-             protein_log2_quant_cln <- evidence_tbl_cleaned |>
-               left_join( accession_gene_name_tbl |>
-                            dplyr::distinct( row_id, !!sym( as.character(seqinr_accession_column) ))
-                          , by = join_by( row_id ) ) |>
-               mutate( !!sym( theObject@protein_id_column ) :=!!sym( as.character(seqinr_accession_column)) )  |>
-               dplyr::select(-row_id, -!!sym( as.character(seqinr_accession_column)))
-
-
-             protein_id_table <- evidence_tbl_cleaned |>
-               left_join( accession_gene_name_tbl |>
-                            dplyr::distinct( row_id, !!sym( as.character(seqinr_accession_column) ))
-                          , by = join_by( row_id ) ) |>
-               distinct(  uniprot_acc, !!sym( protein_id_column) ) |>
-               mutate( !!sym(paste0(protein_id_column, "_list")) := !!sym( protein_id_column)  ) |>
-               mutate( !!sym(protein_id_column) := !!sym("uniprot_acc") )  |>
-               distinct( !!sym(protein_id_column) , !!sym(paste0(protein_id_column, "_list"))) |>
-               group_by( !!sym(protein_id_column)) |>
-               summarise( !!sym(paste0(protein_id_column, "_list")) := paste(!!sym(paste0(protein_id_column, "_list")), collapse = ";") ) |>
-               ungroup( ) |>
-               mutate( !!sym(paste0(protein_id_column, "_list")) := purrr::map_chr( !!sym(paste0(protein_id_column, "_list"))
-                                                                                    , \(x){  paste(unique( sort(str_split(x, ";")[[1]])), collapse=";")  } ) )
-
-
-             # summed_data <- protein_log2_quant_cln |>
-             #   mutate( !!sym(protein_id_column) := purrr::map_chr( !!sym(protein_id_column), \(x){ str_split(x, ":")[[1]][1] } ) )  |>
-             #   group_by(!!sym(protein_id_column)) |>
-             #   summarise( across( !matches(protein_id_column), \(x) { sum(x, na.rm=TRUE) } )) |>
-             #   ungroup()
-             #
-             # summed_data[summed_data == 0] <- NA
-
-             summed_data <- protein_log2_quant_cln |>
-               mutate( !!sym(protein_id_column) := purrr::map_chr( !!sym(protein_id_column), \(x){ str_split(x,  delim)[[1]][1] } ) )  |>
-               pivot_longer( cols = !matches(protein_id_column)
-                            , names_to = "sample_id"
-                            , values_to = "temporary_values_choose_accession") |>
-               group_by( !!sym(protein_id_column), sample_id ) |>
-               summarise( is_na = sum( is.na(temporary_values_choose_accession ))
-                          , temporary_values_choose_accession = sum( temporary_values_choose_accession, na.rm=TRUE)
-                          , num_values = n() ) |>
-               mutate( temporary_values_choose_accession = if_else( is_na == num_values, NA_real_, temporary_values_choose_accession)) |>
-               ungroup() |>
-               pivot_wider( id_cols = !!sym(protein_id_column)
-                            , names_from = sample_id
-                            , values_from = temporary_values_choose_accession
-                            , values_fill = NA_real_)
-
-
-             if( replace_zero_with_na == TRUE) {
-               summed_data[is.na(summed_data)] <- NA
-             }
-             # print( summed_data)
-
-             protein_id_table <- rankProteinAccessionHelper( input_tbl = protein_id_table,
-                                                                          acc_detail_tab = seqinr_obj,
-                                                                          accessions_column = !!sym(paste0(protein_id_column, "_list")),
-                                                                          row_id_column = seqinr_accession_column,
-                                                                          group_id =  !!sym(protein_id_column),
-                                                                          delim = ";") |>
-               dplyr::rename( !!sym(paste0(protein_id_column, "_list")):= seqinr_accession_column ) |>
-               dplyr::select(-num_gene_names, -gene_names, -is_unique)
-
-             theObject@protein_id_table <- protein_id_table
-             theObject@protein_quant_table <- summed_data[, colnames(protein_quant_table)]
-
-             return(theObject)
-
-           })
+#'@param aggregation_method Method to aggregate protein values: "sum", "mean", or "median" (default: "sum")
+setMethod(f = "chooseBestProteinAccession"
+          , signature="ProteinQuantitativeData"
+          , definition=function(theObject, delim=NULL, seqinr_obj=NULL
+                              , seqinr_accession_column=NULL
+                              , replace_zero_with_na = NULL
+                              , aggregation_method = NULL) {
+            
+            protein_quant_table <- theObject@protein_quant_table
+            protein_id_column <- theObject@protein_id_column
+            
+            delim <- checkParamsObjectFunctionSimplify(theObject, "delim",  default_value =  " |;|:|\\|")
+            seqinr_obj <- checkParamsObjectFunctionSimplify(theObject, "seqinr_obj",  default_value = NULL)
+            seqinr_accession_column <- checkParamsObjectFunctionSimplify(theObject
+                                                                       , "seqinr_accession_column"
+                                                                       , default_value = NULL)
+            replace_zero_with_na <- checkParamsObjectFunctionSimplify(theObject
+                                                                    , "replace_zero_with_na"
+                                                                    , default_value = FALSE)
+            aggregation_method <- checkParamsObjectFunctionSimplify(theObject
+                                                                  , "aggregation_method"
+                                                                  , default_value = "sum")
+            
+            if (!aggregation_method %in% c("sum", "mean", "median")) {
+              stop("aggregation_method must be one of: 'sum', 'mean', 'median'")
+            }
+            
+            theObject <- updateParamInObject(theObject, "delim")
+            theObject <- updateParamInObject(theObject, "seqinr_obj")
+            theObject <- updateParamInObject(theObject, "seqinr_accession_column")
+            theObject <- updateParamInObject(theObject, "replace_zero_with_na")
+            theObject <- updateParamInObject(theObject, "aggregation_method")
+            
+            evidence_tbl_cleaned <- protein_quant_table |>
+              distinct() |>
+              mutate(row_id = row_number() -1)
+            
+            accession_gene_name_tbl <- chooseBestProteinAccessionHelper(input_tbl = evidence_tbl_cleaned,
+                                                                      acc_detail_tab = seqinr_obj,
+                                                                      accessions_column = !!sym(protein_id_column),
+                                                                      row_id_column = seqinr_accession_column,
+                                                                      group_id = row_id,
+                                                                      delim = ";")
+            
+            protein_log2_quant_cln <- evidence_tbl_cleaned |>
+              left_join(accession_gene_name_tbl |>
+                         dplyr::distinct(row_id, !!sym(as.character(seqinr_accession_column)))
+                       , by = join_by(row_id)) |>
+              mutate(!!sym(theObject@protein_id_column) := !!sym(as.character(seqinr_accession_column))) |>
+              dplyr::select(-row_id, -!!sym(as.character(seqinr_accession_column)))
+            
+            protein_id_table <- evidence_tbl_cleaned |>
+              left_join(accession_gene_name_tbl |>
+                         dplyr::distinct(row_id, !!sym(as.character(seqinr_accession_column)))
+                       , by = join_by(row_id)) |>
+              distinct(uniprot_acc, !!sym(protein_id_column)) |>
+              mutate(!!sym(paste0(protein_id_column, "_list")) := !!sym(protein_id_column)) |>
+              mutate(!!sym(protein_id_column) := !!sym("uniprot_acc")) |>
+              distinct(!!sym(protein_id_column), !!sym(paste0(protein_id_column, "_list"))) |>
+              group_by(!!sym(protein_id_column)) |>
+              summarise(!!sym(paste0(protein_id_column, "_list")) := paste(!!sym(paste0(protein_id_column, "_list")), collapse = ";")) |>
+              ungroup() |>
+              mutate(!!sym(paste0(protein_id_column, "_list")) := purrr::map_chr(!!sym(paste0(protein_id_column, "_list"))
+                                                                                , \(x){ paste(unique(sort(str_split(x, ";")[[1]])), collapse=";") }))
+            
+            summed_data <- protein_log2_quant_cln |>
+              mutate(!!sym(protein_id_column) := purrr::map_chr(!!sym(protein_id_column), \(x){ str_split(x, delim)[[1]][1] })) |>
+              pivot_longer(
+                cols = !matches(protein_id_column),
+                names_to = "sample_id",
+                values_to = "temporary_values_choose_accession"
+              ) |>
+              group_by(!!sym(protein_id_column), sample_id) |>
+              summarise(
+                is_na = sum(is.na(temporary_values_choose_accession)),
+                temporary_values_choose_accession = case_when(
+                  all(is.na(temporary_values_choose_accession)) ~ NA_real_,
+                  aggregation_method == "sum" ~ sum(temporary_values_choose_accession, na.rm = TRUE),
+                  aggregation_method == "mean" ~ mean(temporary_values_choose_accession, na.rm = TRUE),
+                  aggregation_method == "median" ~ median(temporary_values_choose_accession, na.rm = TRUE)
+                ),
+                num_values = n()
+              ) |>
+              ungroup() |>
+              pivot_wider(
+                id_cols = !!sym(protein_id_column),
+                names_from = sample_id,
+                values_from = temporary_values_choose_accession,
+                values_fill = NA_real_
+              )
+            
+            if(replace_zero_with_na == TRUE) {
+              summed_data[is.na(summed_data)] <- NA
+            }
+            
+            protein_id_table <- rankProteinAccessionHelper(input_tbl = protein_id_table,
+                                                         acc_detail_tab = seqinr_obj,
+                                                         accessions_column = !!sym(paste0(protein_id_column, "_list")),
+                                                         row_id_column = seqinr_accession_column,
+                                                         group_id = !!sym(protein_id_column),
+                                                         delim = ";") |>
+              dplyr::rename(!!sym(paste0(protein_id_column, "_list")) := seqinr_accession_column) |>
+              dplyr::select(-num_gene_names, -gene_names, -is_unique)
+            
+            theObject@protein_id_table <- protein_id_table
+            theObject@protein_quant_table <- summed_data[, colnames(protein_quant_table)]
+            
+            return(theObject)
+          })
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
