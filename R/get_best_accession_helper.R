@@ -338,17 +338,34 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uni
     parts <- strsplit(substr(header, 2, nchar(header)), " ", fixed = TRUE)[[1]]
     id_parts <- strsplit(parts[1], "|", fixed = TRUE)[[1]]
     
-    # Extract just protein evidence level
+    # Extract protein evidence level
     protein_evidence <- stringr::str_extract(header, "PE=[0-9]") |> 
       stringr::str_extract("[0-9]") |>
       as.integer()
     
+    # Determine status based on entry type
+    status <- if(startsWith(header, ">sp|")) "reviewed" else "unreviewed"
+    
+    # Extract gene name (GN=)
+    gene_name <- stringr::str_extract(header, "GN=\\S+") |>
+      stringr::str_remove("GN=")
+    
+    # For entries without isoforms, set defaults
+    is_isoform <- FALSE
+    isoform_num <- 0L   
+    cleaned_acc <- id_parts[2] 
+    
     list(
       accession = id_parts[2],
       database_id = id_parts[2],
+      cleaned_acc = cleaned_acc,
+      gene_name = gene_name,
       protein = paste(parts[-1], collapse = " "),
       attributes = paste(parts[-1], collapse = " "),
-      protein_evidence = protein_evidence
+      protein_evidence = protein_evidence,
+      status = status,
+      is_isoform = is_isoform,
+      isoform_num = isoform_num
     )
   })
   
