@@ -663,33 +663,32 @@ loadDependencies <- function(verbose = TRUE) {
         utils::install.packages("BiocManager")
     }
     
-    # Install GlimmaV2 from GitHub
-    if (!requireNamespace("GlimmaV2", quietly = TRUE)) {
-        if (verbose) message("Installing GlimmaV2 from GitHub...")
-        tryCatch({
-            "GlimmaV2" |> 
-                paste0("APAF-bioinformatics/", .) |>
-                devtools::install_github()
-        }, error = function(e) {
-            stop("Failed to install GlimmaV2: ", e$message)
-        })
-    }
-    
-    # Install and load required packages using purrr::map
+    # Check and install/load packages
     required_packages |>
-        purrr::map(~pacman::p_load(char = .x, character.only = TRUE))
+        purrr::map(function(pkg) {
+            if (!requireNamespace(pkg, quietly = TRUE)) {
+                if (verbose) message("Installing ", pkg, "...")
+                pacman::p_load(char = pkg, character.only = TRUE)
+            } else {
+                if (verbose) message(pkg, " is already installed, loading...")
+                pacman::p_load(char = pkg, character.only = TRUE)
+            }
+        })
     
-    # Install RUVIIIC from GitHub
-    tryCatch({
-        if (!requireNamespace("RUVIIIC", quietly = TRUE)) {
-            if (verbose) message("Installing RUVIIIC from GitHub...")
+    # Handle RUVIIIC separately as it's from GitHub
+    if (!requireNamespace("RUVIIIC", quietly = TRUE)) {
+        if (verbose) message("Installing RUVIIIC from GitHub...")
+        tryCatch({
             "RUVIIIC" |>
                 paste0("cran/", .) |>
                 devtools::install_github()
-        }
-    }, error = function(e) {
-        warning("Failed to install RUVIIIC: ", e$message)
-    })
+        }, error = function(e) {
+            warning("Failed to install RUVIIIC: ", e$message)
+        })
+    } else {
+        if (verbose) message("RUVIIIC is already installed, loading...")
+        pacman::p_load(RUVIIIC)
+    }
     
     if (verbose) message("All dependencies loaded successfully!")
 }
