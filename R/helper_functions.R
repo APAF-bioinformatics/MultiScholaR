@@ -1152,23 +1152,22 @@ copyToResultsSummary <- function(contrasts_tbl) {
             openxlsx::writeData(combined_wb, sheet_name, data)
         })
     
-    # Save the combined workbook
+    # Create Publication_tables directory if it doesn't exist
+    dir.create(file.path(results_summary_dir, "Publication_tables"), 
+               recursive = TRUE, 
+               showWarnings = FALSE)
+    
+    # Save the combined workbook directly to the destination
     combined_path <- file.path(results_summary_dir, "Publication_tables", "DE_proteins_results.xlsx")
     openxlsx::saveWorkbook(combined_wb, combined_path, overwrite = TRUE)
 
-    # Add the combined workbook to files_to_copy
-    files_to_copy <- c(
-        files_to_copy,
-        list(
-            list(
-                source = combined_path,
-                dest = "Publication_tables",
-                is_dir = FALSE,
-                display_name = "DE Proteins Results (Combined)",
-                new_name = "DE_proteins_results.xlsx"
-            )
-        )
-    )
+    # Add a status message for the combined workbook
+    cat(sprintf("%-25s [%s → %s] %s\n",
+        "DE Proteins Combined",
+        "✓",
+        if(file.exists(combined_path)) "✓" else "✗",
+        "File"
+    ))
 
     cat("Copying files to Results Summary...\n")
     cat("===================================\n\n")
