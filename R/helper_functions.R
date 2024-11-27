@@ -1104,6 +1104,14 @@ copyToResultsSummary <- function() {
             save_as = "design_matrix.tab",
             display_name = "Design Matrix"
         ),
+
+        list(
+            source = file.path(de_output_dir, "de_proteins_long_annot.xlsx"),
+            dest = "Publication_tables",
+            is_dir = FALSE,
+            display_name = "Proteomics Data Annotated",
+            new_name = "Proteomics_data_annotated.xlsx"
+        ),
         list(
             source = file.path(source_dir, "study_parameters.txt"),
             dest = "Study_report",
@@ -1119,19 +1127,38 @@ copyToResultsSummary <- function() {
         full.names = TRUE
     )
 
-    de_file_specs <- de_files |>
-        purrr::map(\(file) {
+    # Create a combined workbook
+    combined_wb <- openxlsx::createWorkbook()
+    
+    # Read and add each file as a sheet
+    de_files |>
+        purrr::walk(\(file) {
+            sheet_name <- basename(file) |>
+                stringr::str_remove("de_proteins_") |>
+                stringr::str_remove("_long_annot.xlsx")
+            
+            data <- openxlsx::read.xlsx(file)
+            openxlsx::addWorksheet(combined_wb, sheet_name)
+            openxlsx::writeData(combined_wb, sheet_name, data)
+        })
+    
+    # Save the combined workbook
+    combined_path <- file.path(results_summary_dir, "Publication_tables", "DE_proteins_results.xlsx")
+    openxlsx::saveWorkbook(combined_wb, combined_path, overwrite = TRUE)
+
+    # Add the combined workbook to files_to_copy
+    files_to_copy <- c(
+        files_to_copy,
+        list(
             list(
-                source = file,
+                source = combined_path,
                 dest = "Publication_tables",
                 is_dir = FALSE,
-                display_name = paste("DE Proteins:", basename(file)),
-                new_name = basename(file)
+                display_name = "DE Proteins Results (Combined)",
+                new_name = "DE_proteins_results.xlsx"
             )
-        })
-
-    # Combine original files_to_copy with de_file_specs
-    files_to_copy <- c(files_to_copy, de_file_specs)
+        )
+    )
 
     cat("Copying files to Results Summary...\n")
     cat("===================================\n\n")
