@@ -1,11 +1,11 @@
 #' Create DE Results for Enrichment
-' 
-' @param contrasts_tbl A tibble containing contrast information
-' @param design_matrix A data frame containing the design matrix
-' @param de_output_dir Directory containing DE results files
-' @return An S4 object of class de_results_for_enrichment
-' @export
-reateDEResultsForEnrichment <- function(contrasts_tbl, design_matrix, de_output_dir) {
+#' 
+#' @param contrasts_tbl A tibble containing contrast information
+#' @param design_matrix A data frame containing the design matrix
+#' @param de_output_dir Directory containing DE results files
+#' @return An S4 object of class de_results_for_enrichment
+#' @export
+createDEResultsForEnrichment <- function(contrasts_tbl, design_matrix, de_output_dir) {
    # Define the S4 class if it doesn't exist
    if (!isClass("de_results_for_enrichment")) {
        setClass("de_results_for_enrichment",
