@@ -1037,7 +1037,7 @@ copyToResultsSummary <- function(contrasts_tbl) {
     files_to_copy <- list(
         # QC Figures
         list(
-            source = file.path(time_dir, "correlation_filtered_combined_plots.png"),
+            source = file.path(time_dir, "12_correlation_filtered_combined_plots.png"),
             dest = "QC_figures",
             is_dir = FALSE,
             display_name = "Correlation Filtered Plots"
