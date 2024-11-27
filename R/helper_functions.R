@@ -641,7 +641,7 @@ loadDependencies <- function(verbose = TRUE) {
         "tictoc", "beepr", "furrr", "readxl", "writexl", "RColorBrewer",
         "multidplyr", "RSpectra", "progress", "Rcpp", "RcppEigen",
         "qvalue", "ruv", "iq", "ggrepel", "patchwork",
-        "dplyr", "gtools", "shiny", "DT", "gh",
+        "dplyr", "gtools", "shiny", "DT", "gh", "openxlsx",
         # Additional packages
         "plotly", "vroom", "gplots", "iheatmapr",
         "UpSetR", "gt", "gprofiler2", "htmltools",
