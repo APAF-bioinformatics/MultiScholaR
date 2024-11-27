@@ -1011,9 +1011,10 @@ setMethod("show",
 
 #' @title Copy Files to Results Summary and Show Status
 #' @description Copies specified files to results summary directory and displays copy status
+#' @param contrasts_tbl A tibble containing contrast information
 #' @return Invisible NULL
 #' @export
-copyToResultsSummary <- function() {
+copyToResultsSummary <- function(contrasts_tbl) {
     # Define subdirectories to create
     summary_subdirs <- c(
         "QC_figures",
@@ -1130,12 +1131,27 @@ copyToResultsSummary <- function() {
     # Create a combined workbook
     combined_wb <- openxlsx::createWorkbook()
     
+    # Create lookup table from contrasts_tbl
+    contrast_lookup <- contrasts_tbl$contrasts |>
+        stringr::str_split("=") |>
+        purrr::map_chr(~.x[1]) |>
+        stringr::str_replace_all("\\.", "_") |>
+        purrr::set_names(paste0("Comparison", seq_along(.)))
+    
     # Read and add each file as a sheet
     de_files |>
         purrr::walk(\(file) {
-            sheet_name <- basename(file) |>
+            base_name <- basename(file) |>
                 stringr::str_remove("de_proteins_") |>
                 stringr::str_remove("_long_annot.xlsx")
+            
+            # Find matching comparison number
+            sheet_name <- names(contrast_lookup)[contrast_lookup == base_name]
+            
+            if(length(sheet_name) == 0) {
+                warning("No matching contrast found for file: ", basename(file))
+                sheet_name <- paste0("Extra_", basename(file))
+            }
             
             data <- openxlsx::read.xlsx(file)
             openxlsx::addWorksheet(combined_wb, sheet_name)
