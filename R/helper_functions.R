@@ -1132,11 +1132,13 @@ copyToResultsSummary <- function(contrasts_tbl) {
     combined_wb <- openxlsx::createWorkbook()
     
     # Create lookup table from contrasts_tbl
-    contrast_lookup <- contrasts_tbl$contrasts |>
+    contrast_numbers <- paste0("Comparison", seq_along(contrasts_tbl$contrasts))
+    contrast_names <- contrasts_tbl$contrasts |>
         stringr::str_split("=") |>
         purrr::map_chr(~.x[1]) |>
-        stringr::str_replace_all("\\.", "_") |>
-        purrr::set_names(paste0("Comparison", seq_along(.)))
+        stringr::str_replace_all("\\.", "_")
+    
+    contrast_lookup <- stats::setNames(contrast_names, contrast_numbers)
     
     # Read and add each file as a sheet
     de_files |>
