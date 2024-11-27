@@ -1105,14 +1105,6 @@ copyToResultsSummary <- function(contrasts_tbl) {
             save_as = "design_matrix.tab",
             display_name = "Design Matrix"
         ),
-
-        list(
-            source = file.path(de_output_dir, "de_proteins_long_annot.xlsx"),
-            dest = "Publication_tables",
-            is_dir = FALSE,
-            display_name = "Proteomics Data Annotated",
-            new_name = "Proteomics_data_annotated.xlsx"
-        ),
         list(
             source = file.path(source_dir, "study_parameters.txt"),
             dest = "Study_report",
