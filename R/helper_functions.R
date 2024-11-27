@@ -1041,6 +1041,13 @@ copyToResultsSummary <- function() {
             is_dir = FALSE,
             display_name = "Correlation Filtered Plots"
         ),
+        # Add pathway directory
+        list(
+            source = pathway_dir,
+            dest = "Publication_figures",
+            is_dir = TRUE,
+            display_name = "Pathway Analysis"
+        ),
         # Add RUV normalized results
         list(
             source = file.path(results_dir, "protein_qc", "ruv_normalised_results_cln_with_replicates.tsv"),

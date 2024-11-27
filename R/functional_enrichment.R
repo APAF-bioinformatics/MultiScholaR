@@ -1,3 +1,50 @@
+#' Create DE Results For Enrichment
+#' 
+#' @param contrasts_tbl A tibble containing contrast information
+#' @param design_matrix A data frame containing the design matrix
+#' @param de_output_dir Directory containing DE results files
+#' @return An S4 object of class de_results_for_enrichment
+#' @export
+createDEResultsForEnrichment <- function(contrasts_tbl, design_matrix, de_output_dir) {
+  # Define S4 class
+  setClass("de_results_for_enrichment",
+           slots = list(
+             contrasts = "tbl_df",
+             de_data = "list",
+             design_matrix = "data.frame"
+           ))
+  
+  # Helper function to format contrast filename
+  format_contrast_filename <- function(contrast_string) {
+    contrast_name <- stringr::str_split(contrast_string, "=")[[1]][1] |>
+      stringr::str_replace_all("\\.", "_")
+    
+    paste0("de_proteins_", contrast_name, "_long_annot.tsv")
+  }
+  
+  # Create new S4 object
+  de_results <- new("de_results_for_enrichment")
+  
+  # Fill slots
+  de_results@contrasts <- contrasts_tbl
+  de_results@design_matrix <- design_matrix
+  de_results@de_data <- contrasts_tbl$contrasts |>
+    purrr::set_names() |>
+    purrr::map(function(contrast) {
+      filename <- format_contrast_filename(contrast)
+      filepath <- file.path(de_output_dir, filename)
+      
+      if (!file.exists(filepath)) {
+        warning("File not found: ", filepath)
+        return(NULL)
+      }
+      
+      readr::read_tsv(filepath, show_col_types = FALSE)
+    })
+  
+  return(de_results)
+}
+
 # S4 class definition
 setClass("EnrichmentResults",
          slots = list(
@@ -49,7 +96,7 @@ perform_enrichment <- function(data_subset, species, threshold, sources, domain_
         correction_method = "gSCS",
         evcodes = TRUE,
         custom_bg = background_IDs,
-        significant = FALSE
+        significant = TRUE
       )
       
       # If no significant results, return NULL immediately without retrying
