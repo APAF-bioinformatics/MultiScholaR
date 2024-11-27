@@ -1,5 +1,3 @@
-this works perfectly
-
 # S4 class definition
 setClass("EnrichmentResults",
          slots = list(
