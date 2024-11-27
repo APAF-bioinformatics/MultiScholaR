@@ -765,7 +765,8 @@ setClass("DirectoryManager",
         timestamp = "character",
         qc_dir = "character",
         time_dir = "character",
-        results_summary_dir = "character"
+        results_summary_dir = "character",
+        pathway_dir = "character"
     )
 )
 
@@ -786,6 +787,7 @@ setupDirectories <- function(base_dir = here::here()) {
     assign("qc_dir", file.path(publication_graphs_dir, "filtering_qc"), envir = .GlobalEnv)
     assign("time_dir", file.path(qc_dir, timestamp), envir = .GlobalEnv)
     assign("results_summary_dir", file.path(base_dir, "results_summary", "proteomics"), envir = .GlobalEnv)
+    assign("pathway_dir", file.path(results_dir, "pathway_enrichment"), envir = .GlobalEnv)
 
     # Directory management function with versioning
     manageDirectoryWithPrev <- function(dir_path) {
@@ -820,6 +822,7 @@ setupDirectories <- function(base_dir = here::here()) {
         qc_dir,
         time_dir,
         results_summary_dir,
+        pathway_dir,
         file.path(results_dir, "clean_proteins"),
         file.path(results_dir, "protein_qc"),
         file.path(results_dir, "peptide_qc")
@@ -837,7 +840,8 @@ setupDirectories <- function(base_dir = here::here()) {
         timestamp = timestamp,
         qc_dir = qc_dir,
         time_dir = time_dir,
-        results_summary_dir = results_summary_dir
+        results_summary_dir = results_summary_dir,
+        pathway_dir = pathway_dir
     ))
 }
 
@@ -846,7 +850,7 @@ showDirectories <- function() {
     dir_vars <- c(
         "base_dir", "results_dir", "data_dir", "source_dir",
         "de_output_dir", "publication_graphs_dir",
-        "qc_dir", "time_dir", "results_summary_dir"
+        "qc_dir", "time_dir", "results_summary_dir", "pathway_dir"
     )
 
     cat("Project Directory Structure:\n")
