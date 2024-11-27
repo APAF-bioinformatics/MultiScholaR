@@ -1104,14 +1104,6 @@ copyToResultsSummary <- function() {
             save_as = "design_matrix.tab",
             display_name = "Design Matrix"
         ),
-
-        list(
-            source = file.path(de_output_dir, "de_proteins_long_annot.xlsx"),
-            dest = "Publication_tables",
-            is_dir = FALSE,
-            display_name = "Proteomics Data Annotated",
-            new_name = "Proteomics_data_annotated.xlsx"
-        ),
         list(
             source = file.path(source_dir, "study_parameters.txt"),
             dest = "Study_report",
@@ -1119,6 +1111,27 @@ copyToResultsSummary <- function() {
             display_name = "Study Parameters"
         )
     )
+
+    # Add all DE protein files dynamically
+    de_files <- list.files(
+        path = de_output_dir,
+        pattern = "de_proteins.*_long_annot\\.xlsx$",
+        full.names = TRUE
+    )
+
+    de_file_specs <- de_files |>
+        purrr::map(\(file) {
+            list(
+                source = file,
+                dest = "Publication_tables",
+                is_dir = FALSE,
+                display_name = paste("DE Proteins:", basename(file)),
+                new_name = basename(file)
+            )
+        })
+
+    # Combine original files_to_copy with de_file_specs
+    files_to_copy <- c(files_to_copy, de_file_specs)
 
     cat("Copying files to Results Summary...\n")
     cat("===================================\n\n")
