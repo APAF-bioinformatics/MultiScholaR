@@ -53,7 +53,7 @@ installProteomeScholaR <- function(verbose = TRUE) {
    tryCatch({
        devtools::install_github(
            "APAF-BIOINFORMATICS/ProteomeScholaR",
-           ref = "dev-jr",
+           ref = "main",
            dependencies = TRUE,
            upgrade = "never",
            force = TRUE
