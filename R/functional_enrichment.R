@@ -25,6 +25,9 @@ createDEResultsForEnrichment <- function(contrasts_tbl, design_matrix, de_output
   # Create new S4 object
   de_results <- new("de_results_for_enrichment")
   
+  # Convert contrasts_tbl to tibble if it isn't already
+  contrasts_tbl <- tibble::as_tibble(contrasts_tbl)
+  
   # Fill slots
   de_results@contrasts <- contrasts_tbl
   de_results@design_matrix <- design_matrix
