@@ -1,3 +1,11 @@
+# Define S4 class outside of any function
+setClass("de_results_for_enrichment",
+         slots = list(
+           contrasts = "tbl_df",
+           de_data = "list",
+           design_matrix = "data.frame"
+         ))
+
 #' Create DE Results For Enrichment
 #' 
 #' @param contrasts_tbl A tibble containing contrast information
@@ -6,14 +14,6 @@
 #' @return An S4 object of class de_results_for_enrichment
 #' @export
 createDEResultsForEnrichment <- function(contrasts_tbl, design_matrix, de_output_dir) {
-  # Define S4 class
-  setClass("de_results_for_enrichment",
-           slots = list(
-             contrasts = "tbl_df",
-             de_data = "list",
-             design_matrix = "data.frame"
-           ))
-  
   # Helper function to format contrast filename
   format_contrast_filename <- function(contrast_string) {
     contrast_name <- stringr::str_split(contrast_string, "=")[[1]][1] |>
