@@ -221,7 +221,7 @@ processEnrichments <- function(de_results,
                              up_cutoff = 0, 
                              down_cutoff = 0, 
                              q_cutoff = 0.05, 
-                             pathway_dir
+                             pathway_dir,
                              go_annotations = NULL) {
   
   # Common model organisms lookup
