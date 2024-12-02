@@ -221,7 +221,8 @@ processEnrichments <- function(de_results,
                              up_cutoff = 0, 
                              down_cutoff = 0, 
                              q_cutoff = 0.05, 
-                             pathway_dir) {
+                             pathway_dir
+                             go_annotations = NULL) {
   
   # Common model organisms lookup
   supported_organisms <- tibble::tribble(
@@ -355,11 +356,265 @@ processEnrichments <- function(de_results,
     return(enrichment_results)
     
   } else {
-    stop(sprintf("Taxon ID %s not found in gprofiler2 supported organisms. 
-                 ClusterProfiler implementation pending. 
-                 Current supported organisms in gprofiler2: %s", 
-                 taxon_id,
-                 paste(unique(supported_organisms$taxon_id), collapse = ", ")))
+    if(is.null(go_annotations)) {
+      stop("For unsupported organisms, GO annotations must be provided")
+    }
+    
+    message(sprintf("Using custom GO annotations for taxon ID %s", taxon_id))
+    
+    # Prepare GO term mappings
+    bp_terms <- go_annotations |>
+      dplyr::filter(!is.na(go_id_go_biological_process)) |>
+      tidyr::separate_rows(go_id_go_biological_process, sep = "; ") |>
+      dplyr::select(Entry, go_id_go_biological_process) |>
+      dplyr::rename(TERM = go_id_go_biological_process)
+
+    mf_terms <- go_annotations |>
+      dplyr::filter(!is.na(go_id_go_molecular_function)) |>
+      tidyr::separate_rows(go_id_go_molecular_function, sep = "; ") |>
+      dplyr::select(Entry, go_id_go_molecular_function) |>
+      dplyr::rename(TERM = go_id_go_molecular_function)
+
+    cc_terms <- go_annotations |>
+      dplyr::filter(!is.na(go_id_go_cellular_compartment)) |>
+      tidyr::separate_rows(go_id_go_cellular_compartment, sep = "; ") |>
+      dplyr::select(Entry, go_id_go_cellular_compartment) |>
+      dplyr::rename(TERM = go_id_go_cellular_compartment)
+
+    # Combine all terms
+    all_terms <- rbind(
+      cbind(bp_terms, ONTOLOGY = "BP"),
+      cbind(mf_terms, ONTOLOGY = "MF"),
+      cbind(cc_terms, ONTOLOGY = "CC")
+    )
+
+    # Create term mappings with explicit dplyr namespace
+    term2gene <- all_terms |>
+      dplyr::select(TERM, Entry) |>
+      dplyr::distinct()
+
+    term2name <- data.frame(
+      TERM = unique(all_terms$TERM),
+      NAME = purrr::map_chr(unique(all_terms$TERM), 
+                           ~tryCatch(GO.db::Term(GO.db::GOTERM[[.x]]),
+                                   error = function(e) .x))
+    )
+
+    enrichment_results <- createEnrichmentResults(de_results@contrasts)
+    
+    # Process each contrast
+    results <- de_results@de_data |>
+      purrr::map(function(de_data) {
+        if(is.null(de_data)) {
+          warning("No DE data found for contrast")
+          return(NULL)
+        }
+        
+        # Split data into up/down regulated
+        subset_sig <- de_data |>
+          filter(fdr_qvalue < q_cutoff)
+        
+        up_genes <- subset_sig |>
+          filter(log2FC > up_cutoff) |>
+          pull(uniprot_acc)
+        
+        down_genes <- subset_sig |>
+          filter(log2FC < -down_cutoff) |>
+          pull(uniprot_acc)
+        
+        # Background genes
+        background_IDs <- unique(de_data$uniprot_acc)
+        
+        # Process up and down regulated genes
+        list(
+          up = tryCatch({
+            if(length(up_genes) > 0) {
+              clusterProfiler::enricher(
+                gene = up_genes,
+                universe = background_IDs,
+                TERM2GENE = term2gene,
+                TERM2NAME = term2name,
+                pvalueCutoff = q_cutoff,
+                pAdjustMethod = "BH"
+              )
+            } else NULL
+          }, error = function(e) {
+            warning(sprintf("Error processing up-regulated genes: %s", e$message))
+            NULL
+          }),
+          
+          down = tryCatch({
+            if(length(down_genes) > 0) {
+              clusterProfiler::enricher(
+                gene = down_genes,
+                universe = background_IDs,
+                TERM2GENE = term2gene,
+                TERM2NAME = term2name,
+                pvalueCutoff = q_cutoff,
+                pAdjustMethod = "BH"
+              )
+            } else NULL
+          }, error = function(e) {
+            warning(sprintf("Error processing down-regulated genes: %s", e$message))
+            NULL
+          })
+        )
+      })
+    
+    # Store enrichment results
+    enrichment_results@enrichment_data <- results
+    
+            # Create GO term mappings once (moved outside the plotting function)
+    go_term_map <- dplyr::bind_rows(
+        go_annotations |>
+            tidyr::separate_rows(go_id_go_biological_process, go_term_go_biological_process, sep = "; ") |>
+            dplyr::select(go_id_go_biological_process, go_term_go_biological_process) |>
+            dplyr::rename(ID = go_id_go_biological_process, term = go_term_go_biological_process),
+        
+        go_annotations |>
+            tidyr::separate_rows(go_id_go_molecular_function, go_term_go_molecular_function, sep = "; ") |>
+            dplyr::select(go_id_go_molecular_function, go_term_go_molecular_function) |>
+            dplyr::rename(ID = go_id_go_molecular_function, term = go_term_go_molecular_function),
+        
+        go_annotations |>
+            tidyr::separate_rows(go_id_go_cellular_compartment, go_term_go_cellular_compartment, sep = "; ") |>
+            dplyr::select(go_id_go_cellular_compartment, go_term_go_cellular_compartment) |>
+            dplyr::rename(ID = go_id_go_cellular_compartment, term = go_term_go_cellular_compartment)
+    ) |>
+        dplyr::distinct()
+    
+    # Create category mapping once
+    go_category_map <- all_terms |>
+        dplyr::distinct(TERM, ONTOLOGY) |>
+        dplyr::mutate(
+            source = dplyr::case_when(
+                ONTOLOGY == "BP" ~ "GO:BP",
+                ONTOLOGY == "CC" ~ "GO:CC",
+                ONTOLOGY == "MF" ~ "GO:MF"
+            )
+        )
+    
+    # Process results and generate plots/tables
+    plot_results <- purrr::map(names(results), function(contrast) {
+        # Process both up and down regulation
+        purrr::map(c("up", "down"), function(direction) {
+            tryCatch({
+                result_data <- results[[contrast]][[direction]]
+                
+                if(!is.null(result_data) && nrow(result_data@result) > 0) {
+                    message(sprintf("Processing %s-regulated genes for contrast %s", direction, contrast))
+                    
+                    # Prepare data for plotting and tables
+plot_data <- result_data@result |>
+    dplyr::left_join(go_category_map, by = c("ID" = "TERM")) |>
+    dplyr::left_join(go_term_map, by = "ID") |>
+    dplyr::mutate(
+        source = dplyr::coalesce(source, "Other"),
+        source = factor(source, levels = c("GO:BP", "GO:CC", "GO:MF", "Other")),
+        neg_log10_p = -log10(p.adjust),
+        gene_count = Count
+        # Removed the full_description creation here
+    ) |>
+    # Ensure term column exists
+    dplyr::mutate(
+        term = dplyr::coalesce(term, Description)
+    )
+                    
+                    # Save results table
+                    readr::write_tsv(
+                        plot_data,
+                        file.path(pathway_dir, 
+                                paste0(contrast, "_", direction, "_enrichment_results.tsv"))
+                    )
+                    
+                    # Generate static plot
+# Update the tooltip to use separate term column
+static <- ggplot2::ggplot(plot_data, 
+                        ggplot2::aes(x = source, 
+                                   y = neg_log10_p,
+                                   text = paste0(
+                                       "Term: ", term, "\n",
+                                       "ID: ", ID, "\n",
+                                       "Genes: ", Count, "\n",
+                                       "Gene Ratio: ", GeneRatio, "\n",
+                                       "Background Ratio: ", BgRatio, "\n",
+                                       "Adjusted p-value: ", signif(p.adjust, 3)
+                                   ))) +
+                        ggplot2::geom_hline(yintercept = -log10(0.05), 
+                                          linetype = "dashed", 
+                                          color = "darkgrey") +
+                        ggplot2::geom_jitter(ggplot2::aes(size = gene_count,
+                                                         color = -log10(p.adjust)),
+                                           alpha = 0.7,
+                                           width = 0.2) +
+                        ggplot2::scale_color_gradient(low = "#FED976", 
+                                                    high = "#800026",
+                                                    name = "-log10(adj.P)") +
+                        ggplot2::scale_size_continuous(name = "Gene Count",
+                                                     range = c(3, 12)) +
+                        ggplot2::theme_minimal() +
+                        ggplot2::theme(
+                            axis.text.x = ggplot2::element_text(size = 10, angle = 0),
+                            axis.text.y = ggplot2::element_text(size = 8),
+                            plot.title = ggplot2::element_text(size = 12, face = "bold"),
+                            legend.title = ggplot2::element_text(size = 10),
+                            legend.text = ggplot2::element_text(size = 8)
+                        ) +
+                        ggplot2::labs(
+                            title = paste0(contrast, " ", tools::toTitleCase(direction), "-regulated"),
+                            x = "GO Category",
+                            y = "-log10(adjusted p-value)"
+                        )
+                    
+                    list(
+                        static = static,
+                        interactive = plotly::ggplotly(static, tooltip = "text")
+                    )
+                } else {
+                    message(sprintf("No enrichment results for %s-regulated genes in contrast %s", 
+                                  direction, contrast))
+                    NULL
+                }
+            }, error = function(e) {
+                message(sprintf("Error processing %s-regulated genes for contrast %s: %s", 
+                              direction, contrast, e$message))
+                NULL
+            })
+        }) |>
+            purrr::set_names(c("up", "down"))
+    }) |>
+        purrr::set_names(names(results))
+    
+    # Store plots and save interactive versions
+    enrichment_results@enrichment_plots <- purrr::map(plot_results, function(x) {
+        list(
+            up = if(!is.null(x$up)) x$up$static else NULL,
+            down = if(!is.null(x$down)) x$down$static else NULL
+        )
+    })
+    
+    enrichment_results@enrichment_plotly <- purrr::map(plot_results, function(x) {
+        list(
+            up = if(!is.null(x$up)) x$up$interactive else NULL,
+            down = if(!is.null(x$down)) x$down$interactive else NULL
+        )
+    })
+    
+    # Save interactive plots
+    purrr::walk2(names(results), plot_results, function(contrast, plots) {
+        purrr::walk(c("up", "down"), function(direction) {
+            if(!is.null(plots[[direction]]) && !is.null(plots[[direction]]$interactive)) {
+                htmlwidgets::saveWidget(
+                    plots[[direction]]$interactive,
+                    file.path(pathway_dir, 
+                             paste0(contrast, "_", direction, "_enrichment_plot.html")),
+                    selfcontained = TRUE
+                )
+            }
+        })
+    })
+    
+    return(enrichment_results)
   }
 }
 
