@@ -92,8 +92,8 @@ config_list <- readConfigFile( file = file.path(source_dir, "config.ini") )
 ## Please download the organism fasta file from UniProt. If UniProt is not available, the program will extract the 
 ## relevant identifiers from the fasta provided and attempt to match them to user supplied UniProt / UniParc conversions
 ## Please set the name of your fasta file here in the root directory if you already have it
-DIANN_filename <- "90111_report.tsv"
-fasta_filename <- "uniprotkb_proteome_UP000005640_2024_10_27.fasta"
+DIANN_filename <- "DIANN_report.tsv"
+fasta_filename <- "your_organism.fasta"
 uniprot_search_results <- NULL
 uniparc_search_results <- NULL
 ## Please supply your organism's taxon ID here
