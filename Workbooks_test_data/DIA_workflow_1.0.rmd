@@ -53,7 +53,7 @@ installProteomeScholaR <- function(verbose = TRUE) {
    tryCatch({
        devtools::install_github(
            "APAF-BIOINFORMATICS/ProteomeScholaR",
-           ref = "main",
+           ref = "dev-jr",
            dependencies = TRUE,
            upgrade = "never",
            force = TRUE
@@ -837,6 +837,7 @@ enrichment_results <- processEnrichments(
    down_cutoff = 0,          # FC filtering
    q_cutoff = 0.05,          # FDR threshold
    pathway_dir = pathway_dir # Output directory
+   go_annotations = uniprot_dat_cln # GO annotations
 )
 
 ```
