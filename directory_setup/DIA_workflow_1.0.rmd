@@ -25,12 +25,30 @@ installProteomeScholaR <- function(verbose = TRUE) {
        }
    }
    
-   # First ensure devtools is available
+   # First ensure devtools and BiocManager are available
    if (!requireNamespace("devtools", quietly = TRUE)) {
        if (verbose) message("Installing devtools...")
        utils::install.packages("devtools")
    } else {
        if (verbose) message("devtools is already installed, skipping...")
+   }
+   
+   if (!requireNamespace("BiocManager", quietly = TRUE)) {
+       if (verbose) message("Installing BiocManager...")
+       utils::install.packages("BiocManager")
+   } else {
+       if (verbose) message("BiocManager is already installed, skipping...")
+   }
+   
+   # Install Bioconductor dependencies
+   bioc_packages <- c("clusterProfiler", "GO.db")
+   for (pkg in bioc_packages) {
+       if (!requireNamespace(pkg, quietly = TRUE)) {
+           if (verbose) message(sprintf("Installing %s from Bioconductor...", pkg))
+           BiocManager::install(pkg, update = FALSE)
+       } else {
+           if (verbose) message(sprintf("%s is already installed, skipping...", pkg))
+       }
    }
    
    # Install GlimmaV2 from GitHub if not already installed
@@ -61,9 +79,12 @@ installProteomeScholaR <- function(verbose = TRUE) {
    }, error = function(e) {
        stop("Failed to install ProteomeScholaR: ", e$message)
    })
-   library(ProteomeScholaR)
    
-   if (verbose) message("ProteomeScholaR installation completed and loaded!")
+   # Load all required packages
+   required_packages <- c("ProteomeScholaR", "clusterProfiler", "GO.db")
+   sapply(required_packages, library, character.only = TRUE)
+   
+   if (verbose) message("Installation completed and all packages loaded!")
 }
 
 installProteomeScholaR()
