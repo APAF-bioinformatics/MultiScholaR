@@ -679,9 +679,7 @@ loadDependencies <- function(verbose = TRUE) {
     if (!requireNamespace("RUVIIIC", quietly = TRUE)) {
         if (verbose) message("Installing RUVIIIC from GitHub...")
         tryCatch({
-            "RUVIIIC" |>
-                paste0("cran/", .) |>
-                devtools::install_github()
+            devtools::install_github("cran/RUVIIIC")
         }, error = function(e) {
             warning("Failed to install RUVIIIC: ", e$message)
         })
