@@ -92,12 +92,14 @@ config_list <- readConfigFile( file = file.path(source_dir, "config.ini") )
 ## Please download the organism fasta file from UniProt. If UniProt is not available, the program will extract the 
 ## relevant identifiers from the fasta provided and attempt to match them to user supplied UniProt / UniParc conversions
 ## Please set the name of your fasta file here in the root directory if you already have it
-DIANN_filename <- "DIANN_report.tsv"
-fasta_filename <- "your_organism.fasta"
+DIANN_filename <- "240903_Run1_Reanalysis.tsv"
+fasta_filename <- "uniprotkb_proteome_UP000189702_2024_10_29.fasta"
 uniprot_search_results <- NULL
 uniparc_search_results <- NULL
 ## Please supply your organism's taxon ID here
-taxon_id <- 9606
+taxon_id <- your_organism_id_here
+## Please supply your organism's name here
+organism_name <- "your_organism_name_here"
 
 data_tbl <- vroom::vroom( file.path(data_dir, "proteomics", DIANN_filename)) 
 fasta_file_path <- file.path( data_dir, "UniProt", fasta_filename)
@@ -127,7 +129,7 @@ if (exists("design_matrix", envir = .GlobalEnv)) {
 ```{r}
 # Commented code to read the design matrix back in later
  design_matrix <- read.table(
-   file = file.path(source_dir, "design_matrix.tsv"),
+   file = file.path(source_dir, "design_matrix.tab"),
    sep = "\t",
    header = TRUE,
    stringsAsFactors = FALSE
@@ -138,7 +140,7 @@ if (exists("design_matrix", envir = .GlobalEnv)) {
 ## Otherwise makes use of pre-supplied uniprot fasta annotations
 ```{r}
 fasta_meta_file <- "parsed_fasta_data.rds"
-aa_seq_tbl_final <- processFastaFile(fasta_file_path, uniprot_search_results, uniparc_search_results, fasta_meta_file)
+aa_seq_tbl_final <- processFastaFile(fasta_file_path, uniprot_search_results, uniparc_search_results, fasta_meta_file, organism_name)
 data_cln <- updateProteinIDs(data_cln, aa_seq_tbl_final)
 ```
 
@@ -402,7 +404,7 @@ if (is.null(uniprot_search_results)) {
 ```{r}
 protein_normalized_pif_cln <-  removeRowsWithMissingValuesPercent(protein_log2_quant_cln 
                                                                   , groupwise_percentage_cutoff = 60
-                                                                , max_groups_percentage_cutoff = 80
+                                                                , max_groups_percentage_cutoff = 60
                                                                 , proteins_intensity_cutoff_percentile = 1 )
 
 updateProteinFiltering(
@@ -783,6 +785,7 @@ if (!file.exists(file.path(tmp_dir, "uniprot_annotations.RDS"))) {
 } else {
   uniprot_dat_cln <- readRDS(file.path(tmp_dir, "uniprot_annotations.RDS"))
 }
+
 ```
 
 
@@ -837,9 +840,22 @@ enrichment_results <- processEnrichments(
    down_cutoff = 0,          # FC filtering
    q_cutoff = 0.05,          # FDR threshold
    pathway_dir = pathway_dir # Output directory
-   go_annotations = uniprot_dat_cln # GO annotations
 )
 
+```
+
+
+
+```{r Enrichment Analysis 2.0 for non-model organism}
+enrichment_results <- processEnrichments_v2(
+   de_results_for_enrichment,
+   taxon_id = "your_taxon_id",
+   up_cutoff = 0,
+   down_cutoff = 0,
+   q_cutoff = 0.05,
+   pathway_dir = pathway_dir,
+   go_annotations = uniprot_dat_cln  # Replace with your actual dataframe
+)
 ```
 
 
