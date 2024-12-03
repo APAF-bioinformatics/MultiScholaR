@@ -408,6 +408,14 @@ RunApplet <- function(applet_type) {
         design_matrix_final <- design_matrix()
         data_cln_final <- data_cln_reactive()
         
+        # Filter data_cln to only include runs with assigned metadata
+        assigned_runs <- design_matrix_final |>
+            filter(!is.na(group)) |>
+            pull(Run)
+        
+        data_cln_final <- data_cln_final |>
+            filter(Run %in% assigned_runs)
+        
         assign("design_matrix", design_matrix_final, envir = parent.frame())
         assign("data_cln", data_cln_final, envir = parent.frame())
         
