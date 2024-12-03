@@ -460,6 +460,23 @@ RunApplet <- function(applet_type) {
           assign("contrasts_tbl", contrasts_tbl, envir = parent.frame())
         }
         
+        # Create base filename
+        base_file <- file.path(source_dir, "design_matrix.tab")
+        
+        # If file exists, append timestamp
+        if (file.exists(base_file)) {
+          timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
+          output_file <- file.path(source_dir, paste0("design_matrix_", timestamp, ".tab"))
+        } else {
+          output_file <- base_file
+        }
+        
+        write.table(design_matrix_final, 
+                    file = output_file,
+                    sep = "\t",
+                    row.names = FALSE,
+                    quote = FALSE)
+        
         stopApp(list(
           design_matrix = design_matrix_final,
           contrasts_tbl = if(exists("contrasts_tbl")) contrasts_tbl else NULL,
