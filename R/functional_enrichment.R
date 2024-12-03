@@ -511,11 +511,10 @@ plot_data <- result_data@result |>
     dplyr::mutate(
         source = dplyr::coalesce(source, "Other"),
         source = factor(source, levels = c("GO:BP", "GO:CC", "GO:MF", "Other")),
-        neg_log10_p = -log10(p.adjust),
-        gene_count = Count
-        # Removed the full_description creation here
+        neg_log10_q = -log10(qvalue),  # Using qvalue directly from clusterProfiler output
+        gene_count = Count,
+        significant = qvalue < q_cutoff  # Add significance flag based on q_cutoff
     ) |>
-    # Ensure term column exists
     dplyr::mutate(
         term = dplyr::coalesce(term, Description)
     )
@@ -527,29 +526,29 @@ plot_data <- result_data@result |>
                                 paste0(contrast, "_", direction, "_enrichment_results.tsv"))
                     )
                     
-                    # Generate static plot
+                    # Generate static plot with q-value threshold line
 # Update the tooltip to use separate term column
 static <- ggplot2::ggplot(plot_data, 
                         ggplot2::aes(x = source, 
-                                   y = neg_log10_p,
+                                   y = neg_log10_q,
                                    text = paste0(
                                        "Term: ", term, "\n",
                                        "ID: ", ID, "\n",
                                        "Genes: ", Count, "\n",
                                        "Gene Ratio: ", GeneRatio, "\n",
                                        "Background Ratio: ", BgRatio, "\n",
-                                       "Adjusted p-value: ", signif(p.adjust, 3)
+                                       "Q-value: ", signif(qvalue, 3)
                                    ))) +
-                        ggplot2::geom_hline(yintercept = -log10(0.05), 
+                        ggplot2::geom_hline(yintercept = -log10(q_cutoff), 
                                           linetype = "dashed", 
                                           color = "darkgrey") +
                         ggplot2::geom_jitter(ggplot2::aes(size = gene_count,
-                                                         color = -log10(p.adjust)),
+                                                         color = -log10(qvalue)),
                                            alpha = 0.7,
                                            width = 0.2) +
                         ggplot2::scale_color_gradient(low = "#FED976", 
                                                     high = "#800026",
-                                                    name = "-log10(adj.P)") +
+                                                    name = "-log10(q-value)") +
                         ggplot2::scale_size_continuous(name = "Gene Count",
                                                      range = c(3, 12)) +
                         ggplot2::theme_minimal() +
@@ -563,7 +562,7 @@ static <- ggplot2::ggplot(plot_data,
                         ggplot2::labs(
                             title = paste0(contrast, " ", tools::toTitleCase(direction), "-regulated"),
                             x = "GO Category",
-                            y = "-log10(adjusted p-value)"
+                            y = "-log10(q-value)"
                         )
                     
                     list(
