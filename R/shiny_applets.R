@@ -290,19 +290,24 @@ RunApplet <- function(applet_type) {
       # Assign metadata handler
       observeEvent(input$assign_metadata, {
         req(input$selected_runs)
-        req(input$factor1_select, input$factor2_select)
+        req(input$factor1_select)  # Only require factor1
         
         current_matrix <- design_matrix()
         
         replicate_numbers <- seq(input$replicate_start, 
                                length.out = length(input$selected_runs))
         
-        # Update the selected runs with both factors and group
+        # Update the selected runs with factors
         current_matrix$factor1[current_matrix$Run %in% input$selected_runs] <- input$factor1_select
         current_matrix$factor2[current_matrix$Run %in% input$selected_runs] <- input$factor2_select
         
-        # Create group names
-        group_name <- paste(input$factor1_select, input$factor2_select, sep = "_")
+        # Create group names based on whether factor2 is empty or not
+        group_name <- if (input$factor2_select == "") {
+          input$factor1_select
+        } else {
+          paste(input$factor1_select, input$factor2_select, sep = "_")
+        }
+        
         current_matrix$group[current_matrix$Run %in% input$selected_runs] <- group_name
         
         # Update replicates
@@ -368,15 +373,32 @@ RunApplet <- function(applet_type) {
         contrast_data <- contrasts()
         if(nrow(contrast_data) > 0) {
           data.frame(
-            Contrast = paste0(
-              paste(contrast_data$factor1_num, contrast_data$factor2_num, sep = "_"),
-              ".minus.",
-              paste(contrast_data$factor1_den, contrast_data$factor2_den, sep = "_"),
-              " = group",
-              paste(contrast_data$factor1_num, contrast_data$factor2_num, sep = "_"),
-              "-group",
-              paste(contrast_data$factor1_den, contrast_data$factor2_den, sep = "_")
-            )
+            Contrast = sapply(1:nrow(contrast_data), function(i) {
+              # Create numerator group name
+              num_group <- if (contrast_data$factor2_num[i] == "") {
+                contrast_data$factor1_num[i]
+              } else {
+                paste(contrast_data$factor1_num[i], contrast_data$factor2_num[i], sep = "_")
+              }
+              
+              # Create denominator group name
+              den_group <- if (contrast_data$factor2_den[i] == "") {
+                contrast_data$factor1_den[i]
+              } else {
+                paste(contrast_data$factor1_den[i], contrast_data$factor2_den[i], sep = "_")
+              }
+              
+              # Create full contrast string
+              paste0(
+                num_group,
+                ".minus.",
+                den_group,
+                " = group",
+                num_group,
+                "-group",
+                den_group
+              )
+            })
           )
         }
       })
@@ -397,14 +419,28 @@ RunApplet <- function(applet_type) {
         if(nrow(contrast_data) > 0) {
           # Modified contrast string generation to match required format
           contrast_strings <- sapply(1:nrow(contrast_data), function(i) {
-            paste0(
-              paste(contrast_data$factor1_num[i], contrast_data$factor2_num[i], sep = "_"),
-              ".minus.",
-              paste(contrast_data$factor1_den[i], contrast_data$factor2_den[i], sep = "_"),
-              "=group",
-              paste(contrast_data$factor1_num[i], contrast_data$factor2_num[i], sep = "_"),
-              "-group",
+            # Create numerator group name
+            num_group <- if (contrast_data$factor2_num[i] == "") {
+              contrast_data$factor1_num[i]
+            } else {
+              paste(contrast_data$factor1_num[i], contrast_data$factor2_num[i], sep = "_")
+            }
+            
+            # Create denominator group name
+            den_group <- if (contrast_data$factor2_den[i] == "") {
+              contrast_data$factor1_den[i]
+            } else {
               paste(contrast_data$factor1_den[i], contrast_data$factor2_den[i], sep = "_")
+            }
+            
+            paste0(
+              num_group,
+              ".minus.",
+              den_group,
+              "=group",
+              num_group,
+              "-group",
+              den_group
             )
           })
           
