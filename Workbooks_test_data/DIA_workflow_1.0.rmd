@@ -25,12 +25,30 @@ installProteomeScholaR <- function(verbose = TRUE) {
        }
    }
    
-   # First ensure devtools is available
+   # First ensure devtools and BiocManager are available
    if (!requireNamespace("devtools", quietly = TRUE)) {
        if (verbose) message("Installing devtools...")
        utils::install.packages("devtools")
    } else {
        if (verbose) message("devtools is already installed, skipping...")
+   }
+   
+   if (!requireNamespace("BiocManager", quietly = TRUE)) {
+       if (verbose) message("Installing BiocManager...")
+       utils::install.packages("BiocManager")
+   } else {
+       if (verbose) message("BiocManager is already installed, skipping...")
+   }
+   
+   # Install Bioconductor dependencies
+   bioc_packages <- c("clusterProfiler", "GO.db")
+   for (pkg in bioc_packages) {
+       if (!requireNamespace(pkg, quietly = TRUE)) {
+           if (verbose) message(sprintf("Installing %s from Bioconductor...", pkg))
+           BiocManager::install(pkg, update = FALSE)
+       } else {
+           if (verbose) message(sprintf("%s is already installed, skipping...", pkg))
+       }
    }
    
    # Install GlimmaV2 from GitHub if not already installed
@@ -61,14 +79,19 @@ installProteomeScholaR <- function(verbose = TRUE) {
    }, error = function(e) {
        stop("Failed to install ProteomeScholaR: ", e$message)
    })
-   library(ProteomeScholaR)
    
-   if (verbose) message("ProteomeScholaR installation completed and loaded!")
+   # Load all required packages
+   required_packages <- c("ProteomeScholaR", "clusterProfiler", "GO.db")
+   sapply(required_packages, library, character.only = TRUE)
+   
+   if (verbose) message("Installation completed and all packages loaded!")
 }
 
 installProteomeScholaR()
 ```
 
+
+# Set up your environment and project directory
 ```{r Environment Management}
 # Dependency Management
 ## Load required packages
@@ -84,6 +107,11 @@ loadDependencies()
 setupDirectories()
 showDirectories()
 
+```
+
+# At this step, please copy your data, fasta file and other data necessary into the appropriate directories
+## You should also start a new R Studio project in the root of this directory structure
+```{r}
 ## Input Parameters for Quality Control
 ## Parameters in this section are experiment-specific. Their default parameters are intended as a guide only - every source of variance is ## different just as every set of proteins going through a mass spectrometer is different! One size does not fit all and you *will* most likely need to fine tune these to get the most out of your data.
 config_list <- readConfigFile( file = file.path(source_dir, "config.ini") )
@@ -92,8 +120,8 @@ config_list <- readConfigFile( file = file.path(source_dir, "config.ini") )
 ## Please download the organism fasta file from UniProt. If UniProt is not available, the program will extract the 
 ## relevant identifiers from the fasta provided and attempt to match them to user supplied UniProt / UniParc conversions
 ## Please set the name of your fasta file here in the root directory if you already have it
-DIANN_filename <- "240903_Run1_Reanalysis.tsv"
-fasta_filename <- "uniprotkb_proteome_UP000189702_2024_10_29.fasta"
+DIANN_filename <- "report.tsv"
+fasta_filename <- "fasta.fasta"
 uniprot_search_results <- NULL
 uniparc_search_results <- NULL
 ## Please supply your organism's taxon ID here
@@ -109,9 +137,6 @@ config_list[["globalParameters"]][["peptides_input_file"]] <- DIANN_filename
 
 #uniprot_search_results <- vroom::vroom(file.path(data_dir, "UniProt", uniprot_search_results))
 #uniparc_search_results <- vroom::vroom(file.path(data_dir, "UniProt", uniparc_search_results))
-
-
-
 
 ```
 # Set your design matrix (for the first time)
@@ -142,6 +167,7 @@ if (exists("design_matrix", envir = .GlobalEnv)) {
 fasta_meta_file <- "parsed_fasta_data.rds"
 aa_seq_tbl_final <- processFastaFile(fasta_file_path, uniprot_search_results, uniparc_search_results, fasta_meta_file, organism_name)
 data_cln <- updateProteinIDs(data_cln, aa_seq_tbl_final)
+
 ```
 
 ## Create the PeptideQuantitativeData object
@@ -397,15 +423,21 @@ if (is.null(uniprot_search_results)) {
 ```
 
 
+## Helper function to set your filtering parameters to allow for the minimum number of values/groups to be present for quantitation
+```{r}
+config_list <- updateMissingValueParameters(design_matrix
+                                            , config_list
+                                            , min_reps_per_group = 2
+                                            , min_groups = 2)
+```
+
 
 ## Remove protein based on the intensity threshold and the proportion of samples below the threshold
 ### The threshold is determined by the 1% quantile of the protein intensity values
 ### This helps to ensure that only reliably quantified proteins are retained for further analysis
 ```{r}
-protein_normalized_pif_cln <-  removeRowsWithMissingValuesPercent(protein_log2_quant_cln 
-                                                                  , groupwise_percentage_cutoff = 60
-                                                                , max_groups_percentage_cutoff = 60
-                                                                , proteins_intensity_cutoff_percentile = 1 )
+
+protein_normalized_pif_cln <-  removeRowsWithMissingValuesPercent(protein_log2_quant_cln )
 
 updateProteinFiltering(
   data = protein_normalized_pif_cln@protein_quant_table,
@@ -785,7 +817,6 @@ if (!file.exists(file.path(tmp_dir, "uniprot_annotations.RDS"))) {
 } else {
   uniprot_dat_cln <- readRDS(file.path(tmp_dir, "uniprot_annotations.RDS"))
 }
-
 ```
 
 
@@ -824,6 +855,7 @@ names(de_analysis_results_list) |>
   })
 ```
 
+
 ```{r Enrichment Analysis}
 # Create S4 object of the DE results for enrichment analysis
 de_results_for_enrichment <- createDEResultsForEnrichment(
@@ -842,20 +874,6 @@ enrichment_results <- processEnrichments(
    pathway_dir = pathway_dir # Output directory
 )
 
-```
-
-
-
-```{r Enrichment Analysis 2.0 for non-model organism}
-enrichment_results <- processEnrichments_v2(
-   de_results_for_enrichment,
-   taxon_id = "your_taxon_id",
-   up_cutoff = 0,
-   down_cutoff = 0,
-   q_cutoff = 0.05,
-   pathway_dir = pathway_dir,
-   go_annotations = uniprot_dat_cln  # Replace with your actual dataframe
-)
 ```
 
 
