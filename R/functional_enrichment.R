@@ -68,7 +68,7 @@ createEnrichmentResults <- function(contrasts_tbl) {
       enrichment_summaries = list())
 }
 
-perform_enrichment <- function(data_subset, species, threshold, sources, domain_scope, background_IDs, max_retries = 5, wait_time = 5) {
+perform_enrichment <- function(data_subset, species, threshold, sources, domain_scope, custom_bg, max_retries = 5, wait_time = 5) {
   if (nrow(data_subset) == 0) {
     return(NULL)
   }
@@ -79,9 +79,9 @@ perform_enrichment <- function(data_subset, species, threshold, sources, domain_
     data_subset <- data_subset |> filter(!is.na(uniprot_acc))
   }
 
-  if (any(is.na(background_IDs))) {
-    warning("NA values found in background IDs")
-    background_IDs <- background_IDs[!is.na(background_IDs)]
+  if (any(is.na(custom_bg))) {
+    warning("NA values found in custom background IDs")
+    custom_bg <- custom_bg[!is.na(custom_bg)]
   }
   
   result <- NULL
@@ -98,7 +98,7 @@ perform_enrichment <- function(data_subset, species, threshold, sources, domain_
         domain_scope = domain_scope,
         correction_method = "gSCS",
         evcodes = TRUE,
-        custom_bg = background_IDs,
+        custom_bg = custom_bg,
         significant = TRUE
       )
       
@@ -273,7 +273,7 @@ processEnrichments <- function(de_results,
           filter(log2FC < -down_cutoff)
         
         # Get background IDs from the full de_data for this contrast
-        background_IDs <- de_data |>
+        custom_bg <- de_data |>
           pull(uniprot_acc) |>
           unique()
         
@@ -287,7 +287,7 @@ processEnrichments <- function(de_results,
                 threshold = q_cutoff,
                 sources = c("GO:BP", "GO:MF", "GO:CC", "KEGG", "REAC"),
                 domain_scope = "custom",
-                background_IDs = background_IDs
+                custom_bg = custom_bg
               )
             } else NULL
           }, error = function(e) {
@@ -303,7 +303,7 @@ processEnrichments <- function(de_results,
                 threshold = q_cutoff,
                 sources = c("GO:BP", "GO:MF", "GO:CC", "KEGG", "REAC"),
                 domain_scope = "custom",
-                background_IDs = background_IDs
+                custom_bg = custom_bg
               )
             } else NULL
           }, error = function(e) {
