@@ -277,6 +277,8 @@ processEnrichments <- function(de_results,
           pull(uniprot_acc) |>
           unique()
         
+        message(sprintf("Using %d unique proteins as background for enrichment analysis", length(custom_bg)))
+        
         # Process up and down regulated genes
         list(
           up = tryCatch({
