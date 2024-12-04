@@ -272,8 +272,10 @@ processEnrichments <- function(de_results,
         down_matrix <- subset_sig |>
           filter(log2FC < -down_cutoff)
         
-        # Get background IDs - using uniprot_acc instead of best_uniprot_acc
-        background_IDs <- unique(de_data$uniprot_acc)
+        # Get background IDs from the full de_data for this contrast
+        background_IDs <- de_data |>
+          pull(uniprot_acc) |>
+          unique()
         
         # Process up and down regulated genes
         list(

@@ -1279,6 +1279,7 @@ copyToResultsSummary <- function(contrasts_tbl) {
 #' @param config_list A list containing configuration parameters. Must have a 
 #'                   'removeRowsWithMissingValuesPercent' nested list with 'groupwise_percentage_cutoff'
 #'                   and 'max_groups_percentage_cutoff' parameters.
+#' @param min_reps_per_group Integer specifying the minimum number of replicates required in each passing group
 #' @param min_groups Integer specifying the minimum number of groups required to have sufficient
 #'                  quantifiable values. Default is 2.
 #'
@@ -1291,11 +1292,11 @@ copyToResultsSummary <- function(contrasts_tbl) {
 #' 
 #' @examples
 #' \dontrun{
-#' config_list <- updateMissingValueParameters(design_matrix, config_list, min_groups = 2)
+#' config_list <- updateMissingValueParameters(design_matrix, config_list, min_reps_per_group = 2)
 #' }
 #'
 #' @export
-updateMissingValueParameters <- function(design_matrix, config_list, min_groups = 2) {
+updateMissingValueParameters <- function(design_matrix, config_list, min_reps_per_group = 2, min_groups = 2) {
     # Get number of replicates per group
     reps_per_group <- design_matrix |>
         group_by(group) |>
@@ -1314,23 +1315,39 @@ updateMissingValueParameters <- function(design_matrix, config_list, min_groups 
         unique() |>
         length()
     
-    # Calculate cutoffs
-    groupwise_cutoff <- (1/reps_per_group) * 100  # Allow 1 missing value per group
-    max_groups_cutoff <- ((total_groups - min_groups) / total_groups) * 100
+    if (min_groups > total_groups) {
+        stop("min_groups cannot be larger than total number of groups")
+    }
+    
+    if (min_reps_per_group > reps_per_group) {
+        stop("min_reps_per_group cannot be larger than total replicates per group")
+    }
+    
+    # Calculate maximum missing allowed per group
+    max_missing_per_group <- reps_per_group - min_reps_per_group
+    groupwise_cutoff <- round((max_missing_per_group/reps_per_group) * 100, 3)
+    
+    # Calculate maximum failing groups allowed
+    max_failing_groups <- total_groups - min_groups
+    max_groups_cutoff <- round((max_failing_groups/total_groups) * 100, 3)
     
     # Update config_list
     config_list$removeRowsWithMissingValuesPercent$groupwise_percentage_cutoff <- groupwise_cutoff
     config_list$removeRowsWithMissingValuesPercent$max_groups_percentage_cutoff <- max_groups_cutoff
+    config_list$removeRowsWithMissingValuesPercent$proteins_intensity_cutoff_percentile <- 1
     
     # Print informative message
     message(sprintf("Updated missing value parameters in config_list:
-    - Will require at least %d values in each passing group
-    - At least %d out of %d groups must pass
-    - groupwise_percentage_cutoff set to %.1f%%
-    - max_groups_percentage_cutoff set to %.1f%%", 
-        reps_per_group - 1, 
+    - Requiring at least %d out of %d replicates in each passing group (%.3f%% missing allowed per group)
+    - Requiring at least %d out of %d groups to pass (%.3f%% failing groups allowed)
+    - groupwise_percentage_cutoff set to %.3f%%
+    - max_groups_percentage_cutoff set to %.3f%%", 
+        min_reps_per_group,
+        reps_per_group,
+        groupwise_cutoff,
         min_groups,
         total_groups,
+        max_groups_cutoff,
         groupwise_cutoff,
         max_groups_cutoff))
     
