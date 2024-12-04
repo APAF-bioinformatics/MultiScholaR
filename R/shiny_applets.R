@@ -408,9 +408,12 @@ RunApplet <- function(applet_type) {
         design_matrix_final <- design_matrix()
         data_cln_final <- data_cln_reactive()
         
-        # Filter data_cln to only include runs with assigned metadata
+        # Filter design_matrix_final to only include rows with assigned metadata
+        design_matrix_final <- design_matrix_final |>
+            filter(!is.na(group))
+        
+        # Get assigned runs directly from filtered design matrix        
         assigned_runs <- design_matrix_final |>
-            filter(!is.na(group)) |>
             pull(Run)
         
         data_cln_final <- data_cln_final |>
