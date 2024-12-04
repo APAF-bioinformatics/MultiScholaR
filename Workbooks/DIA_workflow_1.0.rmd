@@ -167,7 +167,6 @@ if (exists("design_matrix", envir = .GlobalEnv)) {
 fasta_meta_file <- "parsed_fasta_data.rds"
 aa_seq_tbl_final <- processFastaFile(fasta_file_path, uniprot_search_results, uniparc_search_results, fasta_meta_file, organism_name)
 data_cln <- updateProteinIDs(data_cln, aa_seq_tbl_final)
-
 ```
 
 ## Create the PeptideQuantitativeData object
@@ -871,7 +870,8 @@ enrichment_results <- processEnrichments(
    up_cutoff = 0,            # FC filtering
    down_cutoff = 0,          # FC filtering
    q_cutoff = 0.05,          # FDR threshold
-   pathway_dir = pathway_dir # Output directory
+   pathway_dir = pathway_dir, # Output directory
+   go_annotations = uniprot_dat_cln, # Annotation data
 )
 
 ```
