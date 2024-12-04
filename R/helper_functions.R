@@ -1265,3 +1265,74 @@ copyToResultsSummary <- function(contrasts_tbl) {
 
     invisible(NULL)
 }
+
+
+#' Update Missing Value Parameters in Configuration List
+#' 
+#' @description 
+#' Automatically calculates and updates the missing value filtering parameters in the configuration list
+#' based on the experimental design matrix. The function ensures at least a specified number of groups
+#' have sufficient quantifiable values for analysis.
+#' 
+#' @param design_matrix A tibble containing the experimental design. Must have a 'group' column and
+#'                     equal number of replicates per group.
+#' @param config_list A list containing configuration parameters. Must have a 
+#'                   'removeRowsWithMissingValuesPercent' nested list with 'groupwise_percentage_cutoff'
+#'                   and 'max_groups_percentage_cutoff' parameters.
+#' @param min_groups Integer specifying the minimum number of groups required to have sufficient
+#'                  quantifiable values. Default is 2.
+#'
+#' @return Updated config_list with modified missing value parameters
+#' 
+#' @details 
+#' The function calculates:
+#' - groupwise_percentage_cutoff: Allows 1 missing value per group
+#' - max_groups_percentage_cutoff: Based on minimum required groups
+#' 
+#' @examples
+#' \dontrun{
+#' config_list <- updateMissingValueParameters(design_matrix, config_list, min_groups = 2)
+#' }
+#'
+#' @export
+updateMissingValueParameters <- function(design_matrix, config_list, min_groups = 2) {
+    # Get number of replicates per group
+    reps_per_group <- design_matrix |>
+        group_by(group) |>
+        summarise(n_reps = n()) |>
+        pull(n_reps) |>
+        unique()
+    
+    # Ensure all groups have same number of replicates
+    if (length(reps_per_group) != 1) {
+        stop("All groups must have the same number of replicates")
+    }
+    
+    # Get total number of groups
+    total_groups <- design_matrix |>
+        pull(group) |>
+        unique() |>
+        length()
+    
+    # Calculate cutoffs
+    groupwise_cutoff <- (1/reps_per_group) * 100  # Allow 1 missing value per group
+    max_groups_cutoff <- ((total_groups - min_groups) / total_groups) * 100
+    
+    # Update config_list
+    config_list$removeRowsWithMissingValuesPercent$groupwise_percentage_cutoff <- groupwise_cutoff
+    config_list$removeRowsWithMissingValuesPercent$max_groups_percentage_cutoff <- max_groups_cutoff
+    
+    # Print informative message
+    message(sprintf("Updated missing value parameters in config_list:
+    - Will require at least %d values in each passing group
+    - At least %d out of %d groups must pass
+    - groupwise_percentage_cutoff set to %.1f%%
+    - max_groups_percentage_cutoff set to %.1f%%", 
+        reps_per_group - 1, 
+        min_groups,
+        total_groups,
+        groupwise_cutoff,
+        max_groups_cutoff))
+    
+    return(config_list)
+}
