@@ -263,14 +263,19 @@ processEnrichments <- function(de_results,
         }
         
         # Split data into up/down regulated
+        message(sprintf("Total proteins before filtering: %d", nrow(de_data)))
+        
         subset_sig <- de_data |>
           filter(fdr_qvalue < q_cutoff)
+        message(sprintf("Proteins passing FDR cutoff (%g): %d", q_cutoff, nrow(subset_sig)))
         
         up_matrix <- subset_sig |>
           filter(log2FC > up_cutoff)
+        message(sprintf("Up-regulated proteins (log2FC > %g): %d", up_cutoff, nrow(up_matrix)))
         
         down_matrix <- subset_sig |>
           filter(log2FC < -down_cutoff)
+        message(sprintf("Down-regulated proteins (log2FC < -%g): %d", down_cutoff, nrow(down_matrix)))
         
         # Get background IDs from the full de_data for this contrast
         custom_bg <- de_data |>
@@ -415,8 +420,11 @@ processEnrichments <- function(de_results,
         }
         
         # Split data into up/down regulated
+        message(sprintf("Total proteins before filtering: %d", nrow(de_data)))
+        
         subset_sig <- de_data |>
           filter(fdr_qvalue < q_cutoff)
+        message(sprintf("Proteins passing FDR cutoff (%g): %d", q_cutoff, nrow(subset_sig)))
         
         up_genes <- subset_sig |>
           filter(log2FC > up_cutoff) |>
