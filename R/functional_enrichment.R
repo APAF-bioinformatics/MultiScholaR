@@ -232,7 +232,17 @@ processEnrichments <- function(de_results,
                              down_cutoff = 0, 
                              q_cutoff = 0.05, 
                              pathway_dir,
-                             go_annotations = NULL) {
+                             go_annotations = NULL,
+                             exclude_iea = NULL) {  # Default to NULL to force explicit choice
+  
+  # Validate exclude_iea parameter
+  if (is.null(exclude_iea)) {
+    stop("exclude_iea must be explicitly set to TRUE or FALSE")
+  }
+  
+  if (!is.logical(exclude_iea)) {
+    stop("exclude_iea must be a logical value (TRUE or FALSE)")
+  }
   
   # Common model organisms lookup
   supported_organisms <- tibble::tribble(
