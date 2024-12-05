@@ -68,7 +68,15 @@ createEnrichmentResults <- function(contrasts_tbl) {
       enrichment_summaries = list())
 }
 
-perform_enrichment <- function(data_subset, species, threshold, sources, domain_scope, custom_bg, max_retries = 5, wait_time = 5) {
+perform_enrichment <- function(data_subset, 
+                             species, 
+                             threshold, 
+                             sources, 
+                             domain_scope, 
+                             custom_bg, 
+                             exclude_iea = FALSE, 
+                             max_retries = 5, 
+                             wait_time = 5) {
   if (nrow(data_subset) == 0) {
     return(NULL)
   }
@@ -95,11 +103,13 @@ perform_enrichment <- function(data_subset, species, threshold, sources, domain_
         ordered_query = FALSE,
         sources = sources,
         user_threshold = threshold,
-        domain_scope = domain_scope,
         correction_method = "gSCS",
+        exclude_iea = exclude_iea,
         evcodes = TRUE,
+        domain_scope = domain_scope,
         custom_bg = custom_bg,
-        significant = TRUE
+        significant = TRUE,
+        highlight = TRUE
       )
       
       # If no significant results, return NULL immediately without retrying
@@ -294,7 +304,8 @@ processEnrichments <- function(de_results,
                 threshold = q_cutoff,
                 sources = c("GO:BP", "GO:MF", "GO:CC", "KEGG", "REAC"),
                 domain_scope = "custom",
-                custom_bg = custom_bg
+                custom_bg = custom_bg,
+                exclude_iea = exclude_iea
               )
             } else NULL
           }, error = function(e) {
@@ -310,7 +321,8 @@ processEnrichments <- function(de_results,
                 threshold = q_cutoff,
                 sources = c("GO:BP", "GO:MF", "GO:CC", "KEGG", "REAC"),
                 domain_scope = "custom",
-                custom_bg = custom_bg
+                custom_bg = custom_bg,
+                exclude_iea = exclude_iea
               )
             } else NULL
           }, error = function(e) {
