@@ -1,7 +1,7 @@
 #' Push Standard Project Files to GitHub
 #'
 #' @param base_dir Base directory of the project
-#' @param source_dir Source directory containing workflow files
+#' @param source_dir Source directory containing workflow files (scripts/proteomics)
 #' @param project_id Project identifier for the new repository and workflow file
 #' @param github_org Your GitHub organization or username
 #' @param github_user_email Email associated with GitHub account
@@ -19,10 +19,6 @@ pushProjectToGithub <- function(base_dir,
                                github_user_name = getOption("github_user_name", "your_github_username"),
                                commit_message = "Initial project commit",
                                private = TRUE) {
-  
-  # Load required packages
-  requireNamespace("gh", quietly = TRUE)
-  requireNamespace("git2r", quietly = TRUE)
   
   # Use gh package's token function
   github_token <- gh::gh_token()
@@ -48,48 +44,56 @@ pushProjectToGithub <- function(base_dir,
   }
   dir.create(temp_dir, recursive = TRUE)
   
-  # Define standard files to copy
-  workflow_file <- file.path(base_dir, paste0(project_id, ".rmd"))
-  rproj_file <- file.path(base_dir, paste0(project_id, ".Rproj"))
-  
-  # Verify files exist
-  if (!dir.exists(source_dir)) {
-    stop("source_dir does not exist: ", source_dir)
-  }
-  if (!file.exists(workflow_file)) {
-    stop("Workflow file does not exist: ", workflow_file)
-  }
-  if (!file.exists(rproj_file)) {
-    stop("R project file does not exist: ", rproj_file)
-  }
-  
-  # Copy source directory with proper recursive copying
-  source_dir_name <- "study_parameters" 
-  dir.create(file.path(temp_dir, source_dir_name), recursive = TRUE)
-  file.copy(
-    from = list.files(source_dir, full.names = TRUE),
-    to = file.path(temp_dir, source_dir_name),
-    recursive = TRUE,
-    overwrite = TRUE
+  # Find workflow file with any case
+  possible_workflow_files <- c(
+    file.path(source_dir, "DIA_workflow.rmd"),
+    file.path(source_dir, "DIA_workflow.Rmd"),
+    file.path(source_dir, "DIA_workflow.RMD")
   )
+  workflow_file <- possible_workflow_files[file.exists(possible_workflow_files)][1]
   
-  # Copy workflow file maintaining directory structure
-  workflow_dir <- file.path(temp_dir, "Workbooks")
-  dir.create(workflow_dir, recursive = TRUE)
+  if (is.na(workflow_file)) {
+    stop("Could not find DIA workflow file in: ", source_dir)
+  }
+  
+  # Define the new workflow filename with project_id
+  new_workflow_name <- paste0(project_id, ".rmd")
+  
+  # Create directory structure in temp folder
+  scripts_proteomics_dir <- file.path(temp_dir, "scripts", "proteomics")
+  dir.create(scripts_proteomics_dir, recursive = TRUE)
+  
+  # Copy and rename workflow file to scripts/proteomics with new name
   file.copy(
     from = workflow_file,
-    to = file.path(workflow_dir, basename(workflow_file)),
+    to = file.path(scripts_proteomics_dir, new_workflow_name),
     overwrite = TRUE
   )
   
   # Copy Rproj file
+  rproj_file <- file.path(base_dir, paste0(project_id, ".Rproj"))
+  if (!file.exists(rproj_file)) {
+    stop("R project file does not exist: ", rproj_file)
+  }
   file.copy(
     from = rproj_file,
     to = file.path(temp_dir, basename(rproj_file)),
     overwrite = TRUE
   )
   
-    # Initialize git repository
+  # Copy other files from source_dir (excluding any DIA workflow files)
+  source_files <- list.files(source_dir, full.names = TRUE)
+  source_files <- source_files[!grepl("DIA_workflow\\.R[mM][dD]$", source_files)]
+  if (length(source_files) > 0) {
+    file.copy(
+      from = source_files,
+      to = scripts_proteomics_dir,
+      recursive = TRUE,
+      overwrite = TRUE
+    )
+  }
+  
+  # Initialize git repository
   repo <- git2r::init(temp_dir)
   
   # Configure git user
@@ -138,20 +142,7 @@ pushProjectToGithub <- function(base_dir,
   repo_url <- sprintf("https://github.com/%s/%s", github_org, repo_name)
   message("Successfully pushed files to ", repo_url)
   message("Repository created at: ", repo_url)
+  message("Workflow file renamed to: ", new_workflow_name)
   
   invisible(TRUE)
 }
-
-### Example Usage
-###  options(
-###  github_org = "your org",
-###  github_user_email = "your email",
-###  github_user_name = "your username"
-### )
-
-#Example usage:
-### pushProjectToGithub(
-### base_dir = base_dir,
-### source_dir = source_dir,
-### project_id = "your project"
-### )
