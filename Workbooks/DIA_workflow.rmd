@@ -1,5 +1,5 @@
 ---
-title: "DIANN = Analysis for xyz"
+title: "DIANN Analysis for xyz"
 version: "1.0"
 author: "Your fancy self"
 output:
@@ -11,10 +11,9 @@ output:
     message: false
 ---
   
-  # Dependency, Directory, Hardware Management & Orgnamism Annotation
-#### Set and create directories for outputs and project management, set number of cores for threaded tasks
-  
-
+# Dependency, Directory, Hardware Management & Orgnamism Annotation
+## Set and create directories for outputs and project management, set number of cores for threaded tasks
+## Checks your R environment for the required packages to run ProteomeScholaR, and installs them if they are not.
 ```{r ProteomeScholaR Install}
 installProteomeScholaR <- function(verbose = TRUE) {
    # Detach package if it's loaded
@@ -88,18 +87,12 @@ installProteomeScholaR <- function(verbose = TRUE) {
 }
 
 installProteomeScholaR()
+loadDependencies()
 ```
 
 
 # Set up your environment and project directory
 ```{r Project Environment Management}
-# Dependency Management
-## Load required packages
-## Checks your R environment for the required packages to run ProteomeScholaR, and installs them if they are not.
-## Please note that you will require a Github account in order to install the ProteomeScholaR package.
-## Github account creation is free, and is a very useful tool for learning to code and also to engage with the wider coding community.
-loadDependencies()
-
 # Directory Management
 ## Set up the project directory structure
 ## This section sets up the project directory structure for ProteomeScholaR
@@ -110,7 +103,6 @@ showDirectories()
 ```
 
 # At this step, please copy your data, fasta file and other data necessary into the appropriate directories
-## You should also start a new R Studio project in the root of this directory structure
 ```{r Data Management}
 ## Input Parameters for Quality Control
 ## Parameters in this section are experiment-specific. Their default parameters are intended as a guide only - every source of variance is ## different just as every set of proteins going through a mass spectrometer is different! One size does not fit all and you *will* most likely need to fine tune these to get the most out of your data.
