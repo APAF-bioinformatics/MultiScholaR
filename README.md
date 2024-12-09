@@ -1,9 +1,3 @@
----
-editor_options: 
-  markdown: 
-    wrap: 72
----
-
 # ProteomeScholaR <img src="https://img.shields.io/badge/Version-0.8-green?style=for-the-badge" alt="Version 0.8">
 
 ## Quick Start
@@ -28,7 +22,7 @@ editor_options:
 
 ## Setup Instructions
 
-1. Install RStudio Desktop if you haven't already (use button above)
+1. Install RStudio Desktop and R if you haven't already (use button above)
 2. Download the setup script using the button above
 3. Open the downloaded file in RStudio
 4. Change the project name at the top of the script (optional: specify custom directory)
