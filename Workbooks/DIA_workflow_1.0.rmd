@@ -918,7 +918,24 @@ workflow_args
 
 
 # Copy all the relevant files to a publication directory
-```{r}
+```{r Copy Files to Publication Directory}
 copyToResultsSummary(contrasts_tbl)
 
+```
+
+# Copy all study parameters to a Github repo for audit trail
+```{r Copy Output to Github}
+
+options(
+github_org = "your org",
+github_user_email = "your email",
+github_user_name = "your username"
+)
+
+
+pushProjectToGithub(
+base_dir = base_dir,
+source_dir = source_dir,
+project_id = "your project"
+)
 ```
