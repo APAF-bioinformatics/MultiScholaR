@@ -16,7 +16,7 @@
 
 ### 2. Setup Script
 
-<a href="https://raw.githubusercontent.com/APAF-bioinformatics/ProteomeScholaR/dev-jr/project_setup.R" download="project_setup.R">
+<a href="javascript:void(0)" onclick="fetch('https://raw.githubusercontent.com/APAF-bioinformatics/ProteomeScholaR/dev-jr/project_setup.R').then(r => r.text()).then(t => {const a = document.createElement('a'); a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(t); a.download = 'project_setup.R'; a.click()})">
     <img src="https://img.shields.io/badge/Download-Setup_Script-blue?style=for-the-badge&logo=r" alt="Download Setup Script">
 </a>
 
