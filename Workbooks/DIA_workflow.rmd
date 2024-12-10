@@ -127,8 +127,11 @@ fasta_file_path <- file.path( data_dir, "UniProt", fasta_filename)
 config_list[["globalParameters"]][["fasta_file"]] <- fasta_filename
 config_list[["globalParameters"]][["peptides_input_file"]] <- DIANN_filename
 
-#uniprot_search_results <- vroom::vroom(file.path(data_dir, "UniProt", uniprot_search_results))
-#uniparc_search_results <- vroom::vroom(file.path(data_dir, "UniProt", uniparc_search_results))
+# Load search results if files exist
+if (!is.null(uniprot_search_results) && !is.null(uniparc_search_results)) {
+    uniprot_search_results <- vroom::vroom(file.path(data_dir, "UniProt", uniprot_search_results))
+    uniparc_search_results <- vroom::vroom(file.path(data_dir, "UniProt", uniparc_search_results))
+}
 
 ```
 
@@ -461,20 +464,23 @@ protein_normalized_pif_cln@protein_quant_table |> distinct(Protein.Ids) |> nrow(
 
 # Identify duplicates
 duplicates <- protein_normalized_pif_cln@protein_quant_table |>
-  group_by(Protein.Ids) |>
-  filter(n() > 1) |>
-  pull(Protein.Ids) |>
-  unique()
+  dplyr::group_by(Protein.Ids) |>
+  dplyr::filter(n() > 1) |>
+  dplyr::select(Protein.Ids) |>
+  dplyr::distinct() |>
+  dplyr::pull(Protein.Ids)
 
 duplicates
 
 # Clean duplicates
 protein_normalized_pif_cln@protein_quant_table <- protein_normalized_pif_cln@protein_quant_table |>
-  group_by(Protein.Ids) |>
-  summarise(across(matches("\\d+"), ~ mean(.x, na.rm = TRUE))) |>
-  ungroup()
+  dplyr::group_by(Protein.Ids) |>
+  dplyr::summarise(dplyr::across(matches("\\d+"), ~ mean(.x, na.rm = TRUE))) |>
+  dplyr::ungroup()
 
-protein_normalized_pif_cln@protein_quant_table |> distinct(Protein.Ids) |> nrow()
+protein_normalized_pif_cln@protein_quant_table |> 
+  dplyr::distinct(Protein.Ids) |> 
+  nrow()
 ```
 
 ## Remove proteins with only one replicate in the data set
@@ -618,11 +624,8 @@ config_list$ruvParameters$percentage_as_neg_ctrl <- percentage_as_neg_ctrl
 config_list$ruvParameters$num_neg_ctrl
 ## Sometimes RUV will blank out some of the values, so we need to remove proteins if too many values are blanked out 
 
-ruv_normalised_results_cln_obj <-  removeRowsWithMissingValuesPercent(theObject = ruv_normalised_results_temp_obj
-                                                                      , ruv_grouping_variable =  'group'
-                                                                      , groupwise_percentage_cutoff = 60
-                                                                      , max_groups_percentage_cutoff = 60
-                                                                      , proteins_intensity_cutoff_percentile = 1 )
+ruv_normalised_results_cln_obj <-  removeRowsWithMissingValuesPercent(theObject = ruv_normalised_results_temp_obj )
+
 
 updateProteinFiltering(
   data = ruv_normalised_results_cln_obj@protein_quant_table,
@@ -757,7 +760,7 @@ config_list$deAnalysisParameters$args_group_pattern <- "(\\d+)" #NB here tempora
 
 # Create contrast names first
 contrast_names <- contrasts_tbl |> 
-  pull(contrasts) |>
+  dplyr::pull(contrasts) |>
   stringr::str_extract("^[^=]+") |>  # Extract everything before the = sign
   stringr::str_replace_all("\\.", "_")  # Replace dots with underscores
 
@@ -890,6 +893,7 @@ enrichment_results <- processEnrichments(
    q_cutoff = 0.05,          # FDR threshold
    pathway_dir = pathway_dir, # Output directory
    go_annotations = uniprot_dat_cln, # Annotation data
+   exclude_iea = FALSE
 )
 
 ```
