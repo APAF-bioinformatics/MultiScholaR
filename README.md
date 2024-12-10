@@ -83,9 +83,9 @@ C --> F[Unsupervised Analysis & Interactive Plots]
 C --> G[Enhanced Enrichment Analysis]
 G --> H[Greater Control Over Enrichment Platforms]
 G --> I[Improved Data Visualisation for Enrichments]
-style A fill:#90EE90
-style B fill:#FFE4B5
-style C fill:#FFB6C1
+style A fill:#90EE90,color:#000000
+style B fill:#FFE4B5,color:#000000
+style C fill:#FFB6C1,color:#000000
 ```
 
 ## Need Help?
