@@ -16,22 +16,9 @@
 
 ### 2. Setup Script
 
-<a href="https://github.com/APAF-bioinformatics/ProteomeScholaR/releases/latest/download/project_setup.R" download="project_setup.R">
+<a href="https://raw.githubusercontent.com/APAF-bioinformatics/ProteomeScholaR/dev-jr/project_setup.R" download="project_setup.R">
     <img src="https://img.shields.io/badge/Download-Setup_Script-blue?style=for-the-badge&logo=r" alt="Download Setup Script">
 </a>
-
-### 3. Tutorial Data (Optional)
-
-<a href="https://drive.google.com/file/d/1qeS2X1uA_Y7HFGMVru0_tAbEQmVjsdlD/view?usp=drive_link" target="_blank">
-    <img src="https://img.shields.io/badge/Download-Tutorial_Data-orange?style=for-the-badge&logo=google-drive" alt="Download Tutorial Data">
-</a>
-
-This tutorial dataset contains example data from *Klebsiella variicola*, including:
-- Example DIA-NN search results
-- Example organism FASTA file
-- NCBI annotation protein data searched against UniProt and UniParc databases
-
-The data is derived from the publicly available dataset published in [Mu, Klare, Baines, Pang et al., (2023) Nature Communications](https://www.nature.com/articles/s41467-023-37200-w), which performed integrative omics analysis on sepsis-causing bacteria.
 
 ## Setup Instructions
 
