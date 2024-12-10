@@ -16,7 +16,7 @@
 
 ### 2. Setup Script
 
-<a href="javascript:void(0)" onclick="fetch('https://raw.githubusercontent.com/APAF-bioinformatics/ProteomeScholaR/dev-jr/project_setup.R').then(r => r.text()).then(t => {const a = document.createElement('a'); a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(t); a.download = 'project_setup.R'; a.click()})">
+<a href="https://github.com/APAF-bioinformatics/ProteomeScholaR/releases/latest/download/project_setup.R" download="project_setup.R">
     <img src="https://img.shields.io/badge/Download-Setup_Script-blue?style=for-the-badge&logo=r" alt="Download Setup Script">
 </a>
 
@@ -36,7 +36,7 @@ The data is derived from the publicly available dataset published in [Mu, Klare,
 ## Setup Instructions
 
 1. Install RStudio Desktop and R if you haven't already (use button above)
-2. Download the setup script using the button above
+2. Download the setup script using the button above (right click + save as)
 3. Open the downloaded file in RStudio
 4. Change the project name at the top of the script (optional: specify custom directory)
 5. Run the entire script (Ctrl+A then Ctrl+Enter)
