@@ -70,7 +70,22 @@ The data is derived from the publicly available dataset published in [Mu, Klare,
 
 v0.8 provides a feature-complete workflow for processing searched DIA-NN proteomics data.
 
+## Roadmap
+
 ## Need Help?
+mermaid
+graph TD
+A[Current Version 0.8] --> B[Version 0.9]
+B --> C[Version 1.0]
+B --> D[Interactive Volcano Plots]
+B --> E[Enhanced Dynamic Report Generation]
+C --> F[Unsupervised Analysis & Interactive Plots]
+C --> G[Enhanced Enrichment Analysis]
+G --> H[Greater Control Over Enrichment Platforms]
+G --> I[Improved Data Visualisation for Enrichments]
+style A fill:#90EE90
+style B fill:#FFE4B5
+style C fill:#FFB6C1
 
 If you encounter any issues:
 1. Check the [Issues](https://github.com/APAF-bioinformatics/ProteomeScholaR/issues) page
