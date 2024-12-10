@@ -185,66 +185,22 @@ message("Created R project file: ", rproj_file)
 
 # Create .Rprofile for automatic workflow opening
 startup_script <- file.path(project_path, ".Rprofile")
-startup_content <- sprintf('
-# Function to safely open workflow
-open_workflow <- function() {
-    message("Initializing project...")
-    Sys.sleep(5)  # Wait for project to fully load
-    
-    # Check if RStudio is actually available
-    if (!requireNamespace("rstudioapi", quietly = TRUE)) {
-        message("rstudioapi package not available")
-        return(FALSE)
-    }
-    
-    # Wait and retry logic for RStudio initialization
-    max_attempts <- 5
-    for(i in 1:max_attempts) {
-        if (rstudioapi::isAvailable()) {
-            break
-        }
-        message("Waiting for RStudio to initialize (attempt ", i, "/", max_attempts, ")...")
-        Sys.sleep(2)
-    }
-    
-    if (!rstudioapi::isAvailable()) {
-        message("RStudio not available after waiting. Please open the workflow file manually at scripts/proteomics/DIA_workflow.rmd")
-        return(FALSE)
-    }
-    
-    message("Opening workflow file...")
-    possible_files <- c(
-        file.path("%s", "scripts", "proteomics", "DIA_workflow.rmd"),
-        file.path("%s", "scripts", "proteomics", "DIA_workflow.Rmd"),
-        file.path("%s", "scripts", "proteomics", "DIA_workflow.RMD")
-    )
-    
-    workflow_file <- possible_files[file.exists(possible_files)][1]
-    
-    if (!is.na(workflow_file)) {
-        tryCatch({
-            rstudioapi::navigateToFile(workflow_file)
-            message("Workflow file opened successfully")
-            return(TRUE)
-        }, error = function(e) {
-            message("Error opening workflow: ", e$message)
-            message("Please open the workflow file manually at scripts/proteomics/DIA_workflow.rmd")
-            return(FALSE)
-        })
-    } else {
-        message("Warning: Could not find workflow file. Please check scripts/proteomics/DIA_workflow.rmd")
-        return(FALSE)
-    }
-}
-
-# Only run in interactive sessions
-if (interactive()) {
-    # Delay the execution slightly to ensure RStudio is ready
-    later::later(function() {
-        open_workflow()
-    }, 3)
-}
-', project_path, project_path, project_path)
+startup_content <- paste0(
+    'if (interactive()) {\n',
+    '  message("Initializing project...")\n',
+    '  if (!requireNamespace("later", quietly = TRUE)) install.packages("later")\n',
+    '  if (!requireNamespace("rstudioapi", quietly = TRUE)) install.packages("rstudioapi")\n',
+    '  later::later(function() {\n',
+    '    Sys.sleep(2)\n',
+    '    workflow_path <- file.path("scripts", "proteomics", "DIA_workflow.rmd")\n',
+    '    if (file.exists(workflow_path) && rstudioapi::isAvailable()) {\n',
+    '      try(rstudioapi::navigateToFile(workflow_path))\n',
+    '    } else {\n',
+    '      message("Please open the workflow file manually at: ", workflow_path)\n',
+    '    }\n',
+    '  }, 3)\n',
+    '}\n'
+)
 
 writeLines(startup_content, startup_script)
 message("Created startup script for automatic workflow opening")
