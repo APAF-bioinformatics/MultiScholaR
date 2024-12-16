@@ -16,74 +16,45 @@ output:
 ## Checks your R environment for the required packages to run ProteomeScholaR, and installs them if they are not.
 ```{r ProteomeScholaR Install}
 installProteomeScholaR <- function(verbose = TRUE) {
-   # Detach package if it's loaded
-   detach_if_attached <- function(pkg) {
-       package_name <- paste0("package:", pkg)
-       if (package_name %in% search()) {
-           detach(package_name, character.only = TRUE, unload = TRUE, force = TRUE)
-       }
-   }
-   
-   # First ensure devtools and BiocManager are available
-   if (!requireNamespace("devtools", quietly = TRUE)) {
-       if (verbose) message("Installing devtools...")
-       utils::install.packages("devtools")
-   } else {
-       if (verbose) message("devtools is already installed, skipping...")
-   }
-   
-   if (!requireNamespace("BiocManager", quietly = TRUE)) {
-       if (verbose) message("Installing BiocManager...")
-       utils::install.packages("BiocManager")
-   } else {
-       if (verbose) message("BiocManager is already installed, skipping...")
-   }
-   
-   # Install Bioconductor dependencies
-   bioc_packages <- c("clusterProfiler", "GO.db")
-   for (pkg in bioc_packages) {
-       if (!requireNamespace(pkg, quietly = TRUE)) {
-           if (verbose) message(sprintf("Installing %s from Bioconductor...", pkg))
-           BiocManager::install(pkg, update = FALSE)
-       } else {
-           if (verbose) message(sprintf("%s is already installed, skipping...", pkg))
-       }
-   }
-   
-   # Install GlimmaV2 from GitHub if not already installed
-   if (!requireNamespace("Glimma", quietly = TRUE)) {
-       if (verbose) message("Installing GlimmaV2 from GitHub...")
-       detach_if_attached("GlimmaV2")
-       tryCatch({
-           devtools::install_github("APAF-bioinformatics/GlimmaV2", force = TRUE)
-       }, error = function(e) {
-           stop("Failed to install GlimmaV2: ", e$message)
-       })
-   } else {
-       if (verbose) message("GlimmaV2 is already installed, skipping...")
-   }
-   library(Glimma)
-   
-   # Always install ProteomeScholaR
-   if (verbose) message("Installing ProteomeScholaR...")
-   detach_if_attached("ProteomeScholaR")
-   tryCatch({
-       devtools::install_github(
-           "APAF-BIOINFORMATICS/ProteomeScholaR",
-           ref = "dev-jr",
-           dependencies = TRUE,
-           upgrade = "never",
-           force = TRUE
-       )
-   }, error = function(e) {
-       stop("Failed to install ProteomeScholaR: ", e$message)
-   })
-   
-   # Load all required packages
-   required_packages <- c("ProteomeScholaR", "clusterProfiler", "GO.db")
-   sapply(required_packages, library, character.only = TRUE)
-   
-   if (verbose) message("Installation completed and all packages loaded!")
+    # Helper function for package installation
+    install_if_missing <- function(pkg, source = "CRAN") {
+        if (!requireNamespace(pkg, quietly = TRUE)) {
+            if (verbose) message(sprintf("Installing %s from %s...", pkg, source))
+            switch(source,
+                "CRAN" = install.packages(pkg),
+                "Bioc" = BiocManager::install(pkg, update = FALSE),
+                "Github" = devtools::install_github(pkg, force = TRUE)
+            )
+        } else if (verbose) message(sprintf("%s already installed, skipping...", pkg))
+    }
+
+    # Install basic dependencies
+    install_if_missing("devtools")
+    install_if_missing("BiocManager")
+
+    # Install Bioconductor packages
+    bioc_packages <- c("clusterProfiler", "GO.db", "UniProt.ws", "mixOmics")
+    invisible(sapply(bioc_packages, function(pkg) install_if_missing(pkg, "Bioc")))
+
+    # Install GlimmaV2 from GitHub
+    install_if_missing("APAF-bioinformatics/GlimmaV2", "Github")
+
+    # Install ProteomeScholaR
+    if (verbose) message("Installing ProteomeScholaR...")
+    tryCatch({
+        devtools::install_github(
+            "APAF-BIOINFORMATICS/ProteomeScholaR",
+            ref = "dev-jr",
+            dependencies = TRUE,
+            upgrade = "never",
+            force = TRUE
+        )
+    }, error = function(e) stop("Failed to install ProteomeScholaR: ", e$message))
+
+    # Load all packages
+    invisible(sapply(c("ProteomeScholaR", bioc_packages), library, character.only = TRUE))
+    
+    if (verbose) message("Installation completed and all packages loaded!")
 }
 
 installProteomeScholaR()
