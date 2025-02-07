@@ -1,6 +1,6 @@
 # Author(s): Ignatius Pang, Pablo Galaviz
 # Email: cmri-bioinformatics@cmri.org.au
-# Children’s Medical Research Institute, finding cures for childhood genetic diseases
+# Children's Medical Research Institute, finding cures for childhood genetic diseases
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' @export
@@ -141,7 +141,7 @@ chooseBestPhosphositeAccession <- function(input_tbl, acc_detail_tab, accessions
                                           "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"  ))) %>%
 
     distinct %>%
-    arrange( {{group_id}}, protein_evidence, status, is_isoform, desc(seq_length), isoform_num )
+    arrange( {{group_id}}, desc(protein_evidence), status, is_isoform, desc(seq_length), isoform_num )
 
   # print( colnames(head(resolve_acc_helper)) )
 
@@ -149,7 +149,7 @@ chooseBestPhosphositeAccession <- function(input_tbl, acc_detail_tab, accessions
   score_isoforms <- resolve_acc_helper %>%
     mutate( gene_name = ifelse( is.na(gene_name) | gene_name == "", "NA", gene_name)) %>%
     group_by( {{group_id}},  gene_name ) %>%
-    arrange( {{group_id}},  protein_evidence,
+    arrange( {{group_id}},  desc(protein_evidence),
              status, is_isoform, desc(seq_length), isoform_num, cleaned_acc )  %>%
     mutate(ranking = row_number()) %>%
     ungroup
@@ -216,13 +216,13 @@ chooseBestProteinAccessionHelper <- function(input_tbl
     dplyr::select( { { group_id } }, one_of(c(row_id_column, "gene_name", "cleaned_acc",
                                               "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"))) |>
     distinct() |>
-    arrange( { { group_id } }, protein_evidence, status, is_isoform, desc(seq_length), isoform_num)
+    arrange( { { group_id } }, desc(protein_evidence), status, is_isoform, desc(seq_length), isoform_num)
 
 
   score_isoforms <- resolve_acc_helper |>
     mutate(gene_name = ifelse(is.na(gene_name) | gene_name == "", "NA", gene_name)) |>
     group_by({ { group_id } }, gene_name) |>
-    arrange( { { group_id } }, protein_evidence,
+    arrange( { { group_id } }, desc(protein_evidence),
              status, is_isoform, desc(seq_length), isoform_num, cleaned_acc) |>
     mutate( ranking = row_number()) |>
     ungroup()
@@ -286,13 +286,13 @@ rankProteinAccessionHelper <- function(input_tbl
     dplyr::select( { { group_id } }, one_of(c(row_id_column, "gene_name", "cleaned_acc",
                                               "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"))) |>
     distinct() |>
-    arrange( { { group_id } }, protein_evidence, status, is_isoform, desc(seq_length), isoform_num)
+    arrange( { { group_id } }, desc(protein_evidence), status, is_isoform, desc(seq_length), isoform_num)
 
 
   score_isoforms <- resolve_acc_helper |>
     mutate(gene_name = ifelse(is.na(gene_name) | gene_name == "", "NA", gene_name)) |>
     group_by({ { group_id } }, gene_name) |>
-    arrange( { { group_id } }, protein_evidence,
+    arrange( { { group_id } }, desc(protein_evidence),
              status, is_isoform, desc(seq_length), isoform_num, cleaned_acc) |>
     mutate( ranking = row_number()) |>
     ungroup()
