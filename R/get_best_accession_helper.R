@@ -325,60 +325,91 @@ rankProteinAccessionHelper <- function(input_tbl
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
 processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uniparc_search_results = NULL, fasta_meta_file, organism_name) {
+  # Properly suppress all vroom messages
+  withr::local_options(list(
+    vroom.show_col_types = FALSE,
+    vroom.show_progress = FALSE
+  ))
+  
   startsWith <- function(x, prefix) {
     substr(x, 1, nchar(prefix)) == prefix
   }
   
   parseFastaFileStandard <- function(fasta_file) {
-  aa_seqinr <- seqinr::read.fasta(file = fasta_file, seqtype = "AA", 
-                          whole.header = TRUE, as.string = TRUE)
-  headers <- names(aa_seqinr)
-  
-  parsed_headers <- lapply(headers, function(header) {
-    parts <- strsplit(substr(header, 2, nchar(header)), " ", fixed = TRUE)[[1]]
-    id_parts <- strsplit(parts[1], "|", fixed = TRUE)[[1]]
+    message("Reading FASTA file with seqinr...")
+    utils::flush.console()
     
-    # Extract protein evidence level
-    protein_evidence <- stringr::str_extract(header, "PE=[0-9]") |> 
-      stringr::str_extract("[0-9]") |>
-      as.integer()
+    aa_seqinr <- seqinr::read.fasta(file = fasta_file, seqtype = "AA", 
+                            whole.header = TRUE, as.string = TRUE)
+    headers <- names(aa_seqinr)
+    total_entries <- length(headers)
     
-    # Determine status based on entry type
-    status <- if(startsWith(header, ">sp|")) "reviewed" else "unreviewed"
+    message(sprintf("\nProcessing %d FASTA entries...", total_entries))
+    utils::flush.console()
     
-    # Extract gene name (GN=)
-    gene_name <- stringr::str_extract(header, "GN=\\S+") |>
-      stringr::str_remove("GN=")
+    # Create a text progress bar
+    pb <- utils::txtProgressBar(min = 0, max = total_entries, style = 3, width = 50)
     
-    # For entries without isoforms, set defaults
-    is_isoform <- FALSE
-    isoform_num <- 0L   
-    cleaned_acc <- id_parts[2] 
+    parsed_headers <- vector("list", length(headers))
     
-    list(
-      accession = id_parts[2],
-      database_id = id_parts[2],
-      cleaned_acc = cleaned_acc,
-      gene_name = gene_name,
-      protein = paste(parts[-1], collapse = " "),
-      attributes = paste(parts[-1], collapse = " "),
-      protein_evidence = protein_evidence,
-      status = status,
-      is_isoform = is_isoform,
-      isoform_num = isoform_num
-    )
-  })
-  
-  acc_detail_tab <- dplyr::bind_rows(parsed_headers)
-  aa_seq_tbl <- acc_detail_tab |>
-    dplyr::mutate(
-      seq = purrr::map_chr(aa_seqinr, 1),
-      seq_length = stringr::str_length(seq),
-      description = headers
-    )
-  
-  return(aa_seq_tbl)
-}
+    for(i in seq_along(headers)) {
+      header <- headers[i]
+      parsed_headers[[i]] <- {
+        parts <- strsplit(substr(header, 2, nchar(header)), " ", fixed = TRUE)[[1]]
+        id_parts <- strsplit(parts[1], "|", fixed = TRUE)[[1]]
+        
+        # Extract protein evidence level
+        protein_evidence <- stringr::str_extract(header, "PE=[0-9]") |> 
+          stringr::str_extract("[0-9]") |>
+          as.integer()
+        
+        # Determine status based on entry type
+        status <- if(startsWith(header, ">sp|")) "reviewed" else "unreviewed"
+        
+        # Extract gene name (GN=)
+        gene_name <- stringr::str_extract(header, "GN=\\S+") |>
+          stringr::str_remove("GN=")
+        
+        # For entries without isoforms, set defaults
+        is_isoform <- FALSE
+        isoform_num <- 0L   
+        cleaned_acc <- id_parts[2] 
+        
+        list(
+          accession = id_parts[2],
+          database_id = id_parts[2],
+          cleaned_acc = cleaned_acc,
+          gene_name = gene_name,
+          protein = paste(parts[-1], collapse = " "),
+          attributes = paste(parts[-1], collapse = " "),
+          protein_evidence = protein_evidence,
+          status = status,
+          is_isoform = is_isoform,
+          isoform_num = isoform_num
+        )
+      }
+      
+      # Update progress bar every 100 entries
+      if(i %% 100 == 0 || i == total_entries) {
+        utils::setTxtProgressBar(pb, i)
+      }
+    }
+    
+    close(pb)
+    
+    message("\nBinding rows and creating final table...")
+    utils::flush.console()
+    
+    acc_detail_tab <- dplyr::bind_rows(parsed_headers)
+    aa_seq_tbl <- acc_detail_tab |>
+      dplyr::mutate(
+        seq = purrr::map_chr(aa_seqinr, 1),
+        seq_length = stringr::str_length(seq),
+        description = headers
+      )
+    
+    return(aa_seq_tbl)
+  }
 
   parseFastaHeader <- function(header) {
     parts <- strsplit(substr(header, 2, nchar(header)), " ", fixed = TRUE)[[1]]
@@ -396,11 +427,39 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uni
       attributes = attributes
     )
   }
+
   parseFastaFileNonStandard <- function(fasta_file) {
+    message("Reading FASTA file with seqinr...")
+    utils::flush.console()
+    
     aa_seqinr <- seqinr::read.fasta(file = fasta_file, seqtype = "AA", 
                             whole.header = TRUE, as.string = TRUE)
     headers <- names(aa_seqinr)
-    parsed_headers <- lapply(headers, parseFastaHeader)
+    total_entries <- length(headers)
+    
+    message(sprintf("\nProcessing %d non-standard FASTA entries...", total_entries))
+    utils::flush.console()
+    
+    # Create a text progress bar
+    pb <- utils::txtProgressBar(min = 0, max = total_entries, style = 3, width = 50)
+    
+    parsed_headers <- vector("list", length(headers))
+    
+    for(i in seq_along(headers)) {
+      header <- headers[i]
+      parsed_headers[[i]] <- parseFastaHeader(header)
+      
+      # Update progress bar every 100 entries
+      if(i %% 100 == 0 || i == total_entries) {
+        utils::setTxtProgressBar(pb, i)
+      }
+    }
+    
+    close(pb)
+    
+    message("\nBinding rows and creating final table...")
+    utils::flush.console()
+    
     acc_detail_tab <- dplyr::bind_rows(parsed_headers)
     aa_seq_tbl <- acc_detail_tab |>
       dplyr::mutate(
@@ -413,6 +472,9 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uni
   }
   
   matchAndUpdateDataFrames <- function(aa_seq_tbl, uniprot_search_results, uniparc_search_results, organism_name) {
+    message("Matching and updating dataframes...")
+    flush.console()
+    
     uniprot_filtered <- uniprot_search_results |>
       dplyr::filter(Organism == organism_name) |>
       dplyr::select("ncbi_refseq", "uniprot_id")
@@ -429,14 +491,25 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uni
     return(aa_seq_tbl_updated)
   }
 
-  fasta_file_raw <- vroom::vroom(fasta_file_path, delim = "\n", col_names = FALSE)
+  message("Reading FASTA file...")
+  flush.console()
+  
+  suppressMessages({
+    fasta_file_raw <- vroom::vroom(fasta_file_path, delim = "\n", col_names = FALSE, progress = FALSE)
+  })
   first_line <- fasta_file_raw$X1[1]
 
   if (startsWith(first_line, ">sp|") || startsWith(first_line, ">tr|")) {
+    message("Processing standard UniProt FASTA format...")
+    flush.console()
     aa_seq_tbl <- parseFastaFileStandard(fasta_file_path)
+    message("Saving results...")
+    flush.console()
     saveRDS(aa_seq_tbl, fasta_meta_file)
     return(aa_seq_tbl)
   } else {
+    message("Processing non-standard FASTA format...")
+    flush.console()
     aa_seq_tbl <- parseFastaFileNonStandard(fasta_file_path)
     
     if (!is.null(uniprot_search_results) && !is.null(uniparc_search_results)) {
@@ -446,11 +519,15 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uni
         dplyr::mutate(database_id = NA_character_)
     }
 
+    message("Writing results...")
+    flush.console()
+    
     vroom::vroom_write(aa_seq_tbl_final,
                       file = "aa_seq_tbl.tsv",
                       delim = "\t",
                       na = "",
-                      quote = "none")
+                      quote = "none",
+                      progress = FALSE)
 
     saveRDS(aa_seq_tbl_final, fasta_meta_file)
     return(aa_seq_tbl_final)
