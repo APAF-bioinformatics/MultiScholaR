@@ -1,0 +1,71 @@
+name: 🔨 Function Implementation (Child)
+description: Create a new task for implementing a specific function (child of a feature request)
+title: "[IMPL] "
+labels: ["implementation", "child"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This template is for creating specific implementation tasks that are part of a larger feature request.
+        
+  - type: input
+    id: parent-issue
+    attributes:
+      label: Parent Feature Request
+      description: Link to the parent feature request issue
+      placeholder: "#123"
+    validations:
+      required: true
+      
+  - type: textarea
+    id: function-description
+    attributes:
+      label: Function Description
+      description: Describe the specific function or component to be implemented
+      placeholder: "Example: Implement parseMultipleDatasets() function to handle batch processing"
+    validations:
+      required: true
+      
+  - type: textarea
+    id: technical-requirements
+    attributes:
+      label: Technical Requirements
+      description: List the specific technical requirements for this function
+      placeholder: |
+        - Input parameters: ...
+        - Expected output: ...
+        - Error handling requirements: ...
+    validations:
+      required: true
+      
+  - type: textarea
+    id: implementation-details
+    attributes:
+      label: Implementation Details
+      description: Provide any specific implementation details, algorithms, or approaches to be used
+      placeholder: |
+        - Algorithm to be used: ...
+        - Key steps: ...
+        - Dependencies: ...
+    validations:
+      required: true
+      
+  - type: textarea
+    id: testing-requirements
+    attributes:
+      label: Testing Requirements
+      description: Specify how this function should be tested
+      placeholder: |
+        - [ ] Unit tests for...
+        - [ ] Integration tests for...
+        - [ ] Test cases to cover...
+    validations:
+      required: true
+      
+  - type: textarea
+    id: additional-notes
+    attributes:
+      label: Additional Notes
+      description: Any additional implementation notes, considerations, or references
+    validations:
+      required: false 

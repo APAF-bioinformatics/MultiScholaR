@@ -1,0 +1,166 @@
+name: 📝 Documentation Section (Child)
+description: Create a specific documentation task that is part of a larger documentation project
+title: "[DOCS-SECTION] "
+labels: ["documentation", "child"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This template is for creating specific documentation tasks that are part of a larger documentation project.
+        
+  - type: input
+    id: parent-issue
+    attributes:
+      label: Parent Documentation Project
+      description: Link to the parent documentation issue
+      placeholder: "#123"
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: estimated-effort
+    attributes:
+      label: Estimated Effort
+      description: How much effort is required for this section?
+      options:
+        - XS (< 2 hours)
+        - S (2-4 hours)
+        - M (4-8 hours)
+        - L (1-2 days)
+        - XL (2+ days)
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: content-type
+    attributes:
+      label: Content Type
+      description: What type of content is this section?
+      options:
+        - Conceptual (Explaining concepts)
+        - Procedural (Step-by-step guide)
+        - Reference (API/Function documentation)
+        - Tutorial (Hands-on exercise)
+        - Troubleshooting Guide
+    validations:
+      required: true
+      
+  - type: textarea
+    id: section-description
+    attributes:
+      label: Section Description
+      description: Describe the specific section or component to be documented
+      placeholder: "Example: Installation Guide for Windows Users"
+    validations:
+      required: true
+      
+  - type: textarea
+    id: section-outline
+    attributes:
+      label: Section Outline
+      description: Provide a detailed outline of the section's content
+      placeholder: |
+        1. Introduction
+           - Purpose of this section
+           - Prerequisites
+           
+        2. Main Content Structure
+           - Key topics to cover
+           - Order of presentation
+           
+        3. Examples/Demonstrations
+           - Code samples needed
+           - Screenshots required
+           
+        4. Related Information
+           - Links to other sections
+           - External references
+    validations:
+      required: true
+      
+  - type: textarea
+    id: technical-content
+    attributes:
+      label: Technical Content Requirements
+      description: Specific technical details that must be included
+      placeholder: |
+        Code Examples:
+        - Function signatures
+        - Example use cases
+        - Expected outputs
+        
+        Technical Details:
+        - Performance considerations
+        - Memory requirements
+        - Error handling
+        
+        API Documentation:
+        - Parameters
+        - Return values
+        - Exceptions
+    validations:
+      required: true
+      
+  - type: textarea
+    id: required-examples
+    attributes:
+      label: Required Examples
+      description: List any examples, code snippets, or screenshots needed
+      placeholder: |
+        Code Examples:
+        - Basic usage example
+        - Advanced usage example
+        - Error handling example
+        
+        Visual Assets:
+        - UI screenshots
+        - Workflow diagrams
+        - Output examples
+    validations:
+      required: true
+      
+  - type: textarea
+    id: accessibility-checklist
+    attributes:
+      label: Accessibility Checklist
+      description: Ensure this section meets accessibility requirements
+      placeholder: |
+        Text Content:
+        - [ ] Clear heading structure
+        - [ ] Plain language used
+        - [ ] Abbreviations explained
+        
+        Visual Content:
+        - [ ] Alt text for images
+        - [ ] Descriptive link text
+        - [ ] Sufficient color contrast
+        
+        Code Examples:
+        - [ ] Properly formatted
+        - [ ] Comments included
+        - [ ] Screen reader compatible
+    validations:
+      required: true
+      
+  - type: textarea
+    id: review-checklist
+    attributes:
+      label: Review Checklist
+      description: What needs to be checked before this section is complete?
+      placeholder: |
+        Technical Accuracy:
+        - [ ] Code examples tested
+        - [ ] API documentation verified
+        - [ ] Links validated
+        
+        Content Quality:
+        - [ ] Grammar and spelling
+        - [ ] Technical accuracy
+        - [ ] Clarity and completeness
+        
+        Accessibility:
+        - [ ] Screen reader test
+        - [ ] Color contrast check
+        - [ ] Navigation structure
+    validations:
+      required: true

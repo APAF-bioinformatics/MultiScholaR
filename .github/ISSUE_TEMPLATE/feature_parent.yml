@@ -1,0 +1,248 @@
+name: 🌟 Feature Project (Parent)
+description: Propose a new feature that requires multiple implementation tasks
+title: "[FEATURE] "
+labels: ["feature", "parent"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This template is for major feature projects that require multiple sub-tasks to implement.
+        
+  - type: dropdown
+    id: feature-type
+    attributes:
+      label: Feature Type
+      description: What type of feature is this?
+      options:
+        - Core Functionality (Essential Feature)
+        - Analysis Pipeline (Data Processing)
+        - Visualization (Data Display)
+        - Integration (External Systems)
+        - User Interface (UI/UX)
+        - Export/Import (Data Exchange)
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature?
+      options:
+        - P0 (Core Requirement)
+        - P1 (High Priority)
+        - P2 (Medium Priority)
+        - P3 (Nice to Have)
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: Implementation Complexity
+      description: How complex is this feature to implement?
+      options:
+        - High (Multiple Systems)
+        - Medium (Several Components)
+        - Low (Single Component)
+        - Unknown (Needs Research)
+    validations:
+      required: true
+      
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: Feature Description
+      description: Provide a high-level description of the feature
+      placeholder: |
+        Overview:
+        - What is this feature?
+        - What problem does it solve?
+        - How will users interact with it?
+        
+        Key Functionality:
+        - Core capabilities
+        - Main user interactions
+        - Expected outcomes
+    validations:
+      required: true
+      
+  - type: textarea
+    id: user-stories
+    attributes:
+      label: User Stories
+      description: Describe the key user stories this feature addresses
+      placeholder: |
+        Primary Stories:
+        1. As a [user type], I want to [action]
+           so that [benefit/value]
+        2. As a [user type], I need to [action]
+           so that [benefit/value]
+        
+        Secondary Stories:
+        1. As a [user type], I should be able to [action]
+           so that [benefit/value]
+    validations:
+      required: true
+      
+  - type: textarea
+    id: business-value
+    attributes:
+      label: Business Value
+      description: What value does this feature bring?
+      placeholder: |
+        User Benefits:
+        - Workflow improvements
+        - Time savings
+        - Error reduction
+        
+        Research Benefits:
+        - New capabilities
+        - Analysis improvements
+        - Data quality enhancements
+        
+        Strategic Benefits:
+        - Competitive advantages
+        - Future opportunities
+        - Technical advantages
+    validations:
+      required: true
+      
+  - type: textarea
+    id: technical-scope
+    attributes:
+      label: Technical Scope
+      description: Define the technical scope of this feature
+      placeholder: |
+        Components Needed:
+        - New modules required
+        - Existing modules to modify
+        - Integration points
+        
+        Data Requirements:
+        - Data structures needed
+        - Storage requirements
+        - Processing requirements
+        
+        Interface Requirements:
+        - UI components
+        - API endpoints
+        - External interfaces
+    validations:
+      required: true
+      
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: List dependencies and prerequisites
+      placeholder: |
+        Technical Dependencies:
+        - Required packages/libraries
+        - System requirements
+        - External services
+        
+        Feature Dependencies:
+        - Related features needed
+        - Prerequisite functionality
+        - Affected systems
+        
+        Research Dependencies:
+        - Required methodologies
+        - Validation requirements
+        - Domain expertise needed
+    validations:
+      required: true
+      
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints and Limitations
+      description: List any constraints or limitations
+      placeholder: |
+        Technical Constraints:
+        - Performance requirements
+        - Memory limitations
+        - Processing constraints
+        
+        Operational Constraints:
+        - Time limitations
+        - Resource constraints
+        - Expertise requirements
+        
+        Research Constraints:
+        - Methodological limitations
+        - Data availability
+        - Validation requirements
+    validations:
+      required: true
+      
+  - type: textarea
+    id: validation-criteria
+    attributes:
+      label: Validation Criteria
+      description: How will this feature be validated?
+      placeholder: |
+        Technical Validation:
+        - Unit test requirements
+        - Integration test scope
+        - Performance benchmarks
+        
+        Scientific Validation:
+        - Accuracy requirements
+        - Precision targets
+        - Methodology validation
+        
+        User Validation:
+        - Usability requirements
+        - Acceptance criteria
+        - User testing plans
+    validations:
+      required: true
+      
+  - type: textarea
+    id: implementation-strategy
+    attributes:
+      label: Implementation Strategy
+      description: High-level implementation approach
+      placeholder: |
+        Development Phases:
+        1. Research and Design
+           - Technical investigation
+           - Architecture design
+           - Prototype development
+        
+        2. Implementation
+           - Core functionality
+           - Integration points
+           - User interface
+        
+        3. Validation
+           - Technical testing
+           - Scientific validation
+           - User acceptance
+    validations:
+      required: true
+      
+  - type: textarea
+    id: success-criteria
+    attributes:
+      label: Success Criteria
+      description: What defines success for this feature?
+      placeholder: |
+        Technical Success:
+        - [ ] All components implemented
+        - [ ] Tests passing
+        - [ ] Performance targets met
+        
+        Scientific Success:
+        - [ ] Accuracy requirements met
+        - [ ] Validation completed
+        - [ ] Results reproducible
+        
+        User Success:
+        - [ ] User acceptance achieved
+        - [ ] Documentation complete
+        - [ ] Training materials ready
+    validations:
+      required: true 
