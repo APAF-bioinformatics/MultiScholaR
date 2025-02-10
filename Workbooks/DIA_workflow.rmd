@@ -620,8 +620,8 @@ QC_composite_figure@pearson_plots$pearson_correlation_pair_after_ruvIIIc_group <
                                                                                               , tech_rep_remove_regex = "pool")
 
 
-save_plot(QC_composite_figure@rle_plots$rle_plot_after_ruvIIIc_group, results_dir, "pca_plot_after_ruvIIIc")
-save_plot(QC_composite_figure@pca_plots$pca_plot_after_ruvIIIc_group, results_dir, "rle_plot_after_ruvIIIc_by_group")
+save_plot(QC_composite_figure@rle_plots$rle_plot_after_ruvIIIc_group, results_dir, "rle_plot_after_ruvIIIc_by_group")
+save_plot(QC_composite_figure@pca_plots$pca_plot_after_ruvIIIc_group, results_dir, "pca_plot_after_ruvIIIc")
 save_plot(QC_composite_figure@pearson_plots$pearson_correlation_pair_after_ruvIIIc_group, results_dir, "pearson_correlation_pair_after_ruvIIIc_group")     
 ruv_normalised_results_cln_obj
 summarizeQCPlot(QC_composite_figure)
