@@ -54,7 +54,7 @@ body:
     attributes:
       label: Feature Description
       description: Provide a high-level description of the feature
-      placeholder: |
+      value: |
         Overview:
         - What is this feature?
         - What problem does it solve?
@@ -83,7 +83,7 @@ body:
         1. As a [user type], I should be able to [action]
            so that [benefit/value]
     validations:
-      required: true
+      required: false
       
   - type: textarea
     id: business-value
@@ -106,7 +106,7 @@ body:
         - Future opportunities
         - Technical advantages
     validations:
-      required: true
+      required: false
       
   - type: textarea
     id: technical-scope
@@ -129,7 +129,7 @@ body:
         - API endpoints
         - External interfaces
     validations:
-      required: true
+      required: false
       
   - type: textarea
     id: dependencies
@@ -152,7 +152,7 @@ body:
         - Validation requirements
         - Domain expertise needed
     validations:
-      required: true
+      required: false
       
   - type: textarea
     id: constraints
@@ -175,7 +175,7 @@ body:
         - Data availability
         - Validation requirements
     validations:
-      required: true
+      required: false
       
   - type: textarea
     id: validation-criteria
@@ -198,7 +198,7 @@ body:
         - Acceptance criteria
         - User testing plans
     validations:
-      required: true
+      required: false
       
   - type: textarea
     id: implementation-strategy
@@ -222,7 +222,7 @@ body:
            - Scientific validation
            - User acceptance
     validations:
-      required: true
+      required: false
       
   - type: textarea
     id: success-criteria
@@ -245,4 +245,4 @@ body:
         - [ ] Documentation complete
         - [ ] Training materials ready
     validations:
-      required: true 
+      required: false 

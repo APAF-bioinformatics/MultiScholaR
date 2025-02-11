@@ -47,7 +47,7 @@ body:
       
   - type: textarea
     id: section-description
-    attributes:
+    value:
       label: Section Description
       description: Describe the specific section or component to be documented
       placeholder: "Example: Installation Guide for Windows Users"
@@ -76,7 +76,7 @@ body:
            - Links to other sections
            - External references
     validations:
-      required: true
+      required: false
       
   - type: textarea
     id: technical-content
@@ -99,7 +99,7 @@ body:
         - Return values
         - Exceptions
     validations:
-      required: true
+      required: false
       
   - type: textarea
     id: required-examples
@@ -117,7 +117,7 @@ body:
         - Workflow diagrams
         - Output examples
     validations:
-      required: true
+      required: false
       
   - type: textarea
     id: accessibility-checklist
@@ -140,7 +140,7 @@ body:
         - [ ] Comments included
         - [ ] Screen reader compatible
     validations:
-      required: true
+      required: false
       
   - type: textarea
     id: review-checklist
@@ -163,4 +163,4 @@ body:
         - [ ] Color contrast check
         - [ ] Navigation structure
     validations:
-      required: true
+      required: false

@@ -61,7 +61,7 @@ body:
       
   - type: textarea
     id: task-description
-    attributes:
+    value:
       label: Task Description
       description: Describe the specific enhancement task to be implemented
       placeholder: "Example: Implement data caching layer for improved query performance"
@@ -89,7 +89,7 @@ body:
         - Resource requirements
         - Optimization opportunities
     validations:
-      required: true
+      required: false
       
   - type: textarea
     id: implementation-requirements
@@ -112,7 +112,7 @@ body:
         - Data formats
         - Protocol requirements
     validations:
-      required: true
+      required: false
       
   - type: textarea
     id: testing-plan
@@ -140,7 +140,7 @@ body:
         - [ ] Authentication/Authorization
         - [ ] Data protection
     validations:
-      required: true
+      required: false
       
   - type: textarea
     id: dependencies-impacts
@@ -163,7 +163,7 @@ body:
         - User workflows
         - Performance implications
     validations:
-      required: true
+      required: false
       
   - type: textarea
     id: rollback-plan
@@ -186,7 +186,7 @@ body:
         - [ ] Data integrity checks
         - [ ] User impact assessment
     validations:
-      required: true
+      required: false
       
   - type: textarea
     id: completion-checklist
@@ -209,4 +209,4 @@ body:
         - [ ] Deployment verified
         - [ ] Monitoring in place
     validations:
-      required: true
+      required: false

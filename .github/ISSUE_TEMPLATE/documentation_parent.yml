@@ -38,7 +38,7 @@ body:
       
   - type: textarea
     id: documentation-scope
-    attributes:
+    value:
       label: Documentation Scope
       description: What area of the project needs documentation?
       placeholder: "Example: Complete user guide for data analysis workflow"
@@ -63,7 +63,7 @@ body:
         - Required knowledge
         - Required tools/software
     validations:
-      required: true
+      required: false
       
   - type: textarea
     id: required-sections
@@ -84,7 +84,7 @@ body:
            - Best practices
            - Troubleshooting
     validations:
-      required: true
+      required: false
       
   - type: textarea
     id: resources-needed
@@ -105,7 +105,7 @@ body:
         - API documentation links
         - Reference papers
     validations:
-      required: true
+      required: false
       
   - type: textarea
     id: technical-requirements
@@ -125,7 +125,7 @@ body:
         - Memory requirements
         - Processing time expectations
     validations:
-      required: true
+      required: false
       
   - type: textarea
     id: accessibility-requirements
@@ -138,7 +138,7 @@ body:
         - Color contrast requirements
         - Multiple format availability (PDF, HTML, etc.)
     validations:
-      required: true
+      required: false
       
   - type: textarea
     id: version-tracking
@@ -155,7 +155,7 @@ body:
         - How will updates be tracked?
         - Where will changelog be maintained?
     validations:
-      required: true
+      required: false
       
   - type: textarea
     id: completion-criteria
@@ -178,4 +178,4 @@ body:
         - [ ] Indexed for search
         - [ ] Integrated with existing docs
     validations:
-      required: true
+      required: false
