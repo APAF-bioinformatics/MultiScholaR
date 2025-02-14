@@ -1,6 +1,6 @@
 # Author(s): Ignatius Pang
 # Email: ipang@cmri.org.au
-# Children’s Medical Research Institute, finding cures for childhood genetic diseases
+# Children's Medical Research Institute, finding cures for childhood genetic diseases
 
 ##################################################################################################################
 
@@ -143,7 +143,7 @@ cmriWelcome <- function(name, autors) {
   loginfo("   \\ \\_____\\  \\ \\_\\ \\ \\_\\  \\ \\_\\ \\_\\  \\ \\_\\    ")
   loginfo("    \\/_____/   \\/_/  \\/_/   \\/_/ /_/   \\/_/    ")
   loginfo("")
-  loginfo("---- Children’s Medical Research Institute ----")
+  loginfo("---- Children's Medical Research Institute ----")
   loginfo(" Finding cures for childhood genetic diseases  ")
   loginfo("")
   loginfo(" ==============================================")
@@ -1123,34 +1123,49 @@ copyToResultsSummary <- function(contrasts_tbl) {
     # Create a combined workbook
     combined_wb <- openxlsx::createWorkbook()
     
-    # Create lookup table from contrasts_tbl
-    contrast_numbers <- paste0("Comparison", seq_along(contrasts_tbl$contrasts))
-    contrast_names <- contrasts_tbl$contrasts |>
-        stringr::str_split("=") |>
-        purrr::map_chr(~.x[1]) |>
-        stringr::str_replace_all("\\.", "_")
+    # Create an index sheet first
+    openxlsx::addWorksheet(combined_wb, "Index")
     
-    contrast_lookup <- stats::setNames(contrast_names, contrast_numbers)
+    # Create index data frame
+    index_data <- data.frame(
+        Sheet = character(),
+        Description = character(),
+        stringsAsFactors = FALSE
+    )
     
-    # Read and add each file as a sheet
+    # Process each DE file
     de_files |>
-        purrr::walk(\(file) {
+        purrr::imap(\(file, idx) {
+            # Create simple sheet name
+            sheet_name <- sprintf("Sheet%d", idx)
+            
+            # Get base name for index
             base_name <- basename(file) |>
                 stringr::str_remove("de_proteins_") |>
                 stringr::str_remove("_long_annot.xlsx")
             
-            # Find matching comparison number
-            sheet_name <- names(contrast_lookup)[contrast_lookup == base_name]
+            # Add to index
+            index_data <<- rbind(index_data, 
+                               data.frame(
+                                   Sheet = sheet_name,
+                                   Description = base_name,
+                                   stringsAsFactors = FALSE
+                               ))
             
-            if(length(sheet_name) == 0) {
-                warning("No matching contrast found for file: ", basename(file))
-                sheet_name <- paste0("Extra_", basename(file))
-            }
-            
+            # Add data sheet
             data <- openxlsx::read.xlsx(file)
             openxlsx::addWorksheet(combined_wb, sheet_name)
             openxlsx::writeData(combined_wb, sheet_name, data)
         })
+    
+    # Write index sheet
+    openxlsx::writeData(combined_wb, "Index", index_data)
+    
+    # Apply some formatting to index sheet
+    openxlsx::setColWidths(combined_wb, "Index", cols = 1:2, widths = c(10, 50))
+    openxlsx::addStyle(combined_wb, "Index", 
+                      style = openxlsx::createStyle(textDecoration = "bold"),
+                      rows = 1, cols = 1:2)
     
     # Create Publication_tables directory if it doesn't exist
     dir.create(file.path(results_summary_dir, "Publication_tables"), 
@@ -1160,14 +1175,6 @@ copyToResultsSummary <- function(contrasts_tbl) {
     # Save the combined workbook directly to the destination
     combined_path <- file.path(results_summary_dir, "Publication_tables", "DE_proteins_results.xlsx")
     openxlsx::saveWorkbook(combined_wb, combined_path, overwrite = TRUE)
-
-    # Add a status message for the combined workbook
-    cat(sprintf("%-25s [%s → %s] %s\n",
-        "DE Proteins Combined",
-        "✓",
-        if(file.exists(combined_path)) "✓" else "✗",
-        "File"
-    ))
 
     cat("Copying files to Results Summary...\n")
     cat("===================================\n\n")
