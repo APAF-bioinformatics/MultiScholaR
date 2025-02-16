@@ -47,7 +47,7 @@ body:
       
   - type: textarea
     id: section-description
-    value:
+    attributes:
       label: Section Description
       description: Describe the specific section or component to be documented
       placeholder: "Example: Installation Guide for Windows Users"

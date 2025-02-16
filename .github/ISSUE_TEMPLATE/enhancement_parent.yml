@@ -51,7 +51,7 @@ body:
       
   - type: textarea
     id: enhancement-description
-    value:
+    attributes:
       label: Enhancement Description
       description: Provide a high-level description of the enhancement
       placeholder: "Example: Improve data visualization capabilities with interactive plots"
