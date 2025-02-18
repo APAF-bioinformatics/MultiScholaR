@@ -4,6 +4,25 @@
 
 ##################################################################################################################
 
+#' @import methods
+setClass("DirectoryManager",
+    slots = c(
+        base_dir = "character",
+        results_dir = "character",
+        data_dir = "character",
+        source_dir = "character",
+        de_output_dir = "character",
+        publication_graphs_dir = "character",
+        timestamp = "character",
+        qc_dir = "character",
+        time_dir = "character",
+        results_summary_dir = "character",
+        pathway_dir = "character"
+    )
+)
+
+##################################################################################################################
+
 ### Function: create_id_to_attribute_hash
 ### Description: Create a hash function that map keys to attributes.
 
@@ -15,7 +34,6 @@
 ## An environment that act as a hash to convert keys to attributes.
 #' @export
 createIdToAttributeHash <- function(keys, attributes) {
-
 	keys <- as.character( as.vector(keys))
 	attribute <- as.vector(attributes)
 
@@ -26,9 +44,8 @@ createIdToAttributeHash <- function(keys, attributes) {
 		return(1)
 	}
 
-	for ( i in 1:length(keys) )  {
-		base::assign( keys[i], attributes[i], envir = hash)
-	}
+	mapply(function(k, a) base::assign(k, a, envir = hash), 
+		   keys, attributes)
 
 	return(hash)
 }
@@ -157,55 +174,54 @@ cmriWelcome <- function(name, autors) {
 #' @export
 testRequiredFiles <- function(files) {
   missing_files <- !file.exists(files)
-  for (file in files[missing_files]) {
+  invisible(sapply(files[missing_files], function(file) {
     logerror("Missing required file: %s", file)
     q()
-  }
+  }))
 }
 
 #' @export
 testRequiredFilesWarning <- function(files) {
   missing_files <- !file.exists(files)
-  for (file in files[missing_files]) {
+  invisible(sapply(files[missing_files], function(file) {
     logwarn("Missing required file: %s", file)
-    #q()
-  }
+  }))
 }
 
 #' @export
 testRequiredArguments <- function(arg_list, parameters) {
-  for (par in parameters) {
+  invisible(sapply(parameters, function(par) {
     if (!par %in% names(arg_list)) {
       logerror("Missing required argument: %s", par)
       q()
     }
-  }
+  }))
 }
 
 #' @export
 parseType<-function (arg_list,parameters,functType){
-  for(key in parameters){
+  invisible(sapply(parameters, function(key) {
     arg_list[key]<-functType(arg_list[key])
-  }
+  }))
   return (arg_list)
 }
 
 #' @export
 parseString<-function (arg_list,parameters){
-  for(key in parameters){
+  invisible(sapply(parameters, function(key) {
     if(key %in% names(arg_list)) {
       arg_list[key] <- str_replace_all(arg_list[key], c("\"" = "", "\'" = ""))
     }
-  }
+  }))
   return (arg_list)
 }
 
 #' @export
 parseList<-function (arg_list,parameters){
-  for(key in parameters){
+  invisible(sapply(parameters, function(key) {
     items<-str_replace_all(as.character(arg_list[key])," ","")
     arg_list[key]<- base::strsplit(items,split=",")
-  }
+  }))
   return (arg_list)
 }
 
@@ -752,131 +768,126 @@ extract_experiment <- function(x, mode = "range", start = 1, end = NULL) {
   sapply(x, process_string)
 }
 
-
-#' @import methods
-setClass("DirectoryManager",
-    slots = c(
-        base_dir = "character",
-        results_dir = "character",
-        data_dir = "character",
-        source_dir = "character",
-        de_output_dir = "character",
-        publication_graphs_dir = "character",
-        timestamp = "character",
-        qc_dir = "character",
-        time_dir = "character",
-        results_summary_dir = "character",
-        pathway_dir = "character"
-    )
-)
-
 #' @title Setup Project Directories
 #' @description Creates and manages project directories with version control
 #' @param base_dir Base directory path (optional, defaults to here::here())
-#' @return DirectoryManager object containing all directory paths
+#' @param label Optional label to append to proteomics directory name (e.g., "proteomics_MyLabel")
+#' @param force Logical; if TRUE, skips user confirmation (default: FALSE)
+#' @return List of directory paths
 #' @export
-setupDirectories <- function(base_dir = here::here()) {
-    # Assign all directories to global environment
-    assign("base_dir", base_dir, envir = .GlobalEnv)
-    assign("results_dir", file.path(base_dir, "results", "proteomics"), envir = .GlobalEnv)
-    assign("data_dir", file.path(base_dir, "data"), envir = .GlobalEnv)
-    assign("source_dir", file.path(base_dir, "scripts", "proteomics"), envir = .GlobalEnv)
-    assign("de_output_dir", file.path(results_dir, "de_proteins"), envir = .GlobalEnv)
-    assign("publication_graphs_dir", file.path(results_dir, "publication_graphs"), envir = .GlobalEnv)
-    assign("timestamp", format(Sys.time(), "%Y%m%d_%H%M%S"), envir = .GlobalEnv)
-    assign("qc_dir", file.path(publication_graphs_dir, "filtering_qc"), envir = .GlobalEnv)
-    assign("time_dir", file.path(qc_dir, timestamp), envir = .GlobalEnv)
-    assign("results_summary_dir", file.path(base_dir, "results_summary", "proteomics"), envir = .GlobalEnv)
-    assign("pathway_dir", file.path(results_dir, "pathway_enrichment"), envir = .GlobalEnv)
-
-    # Directory management function with versioning
-    manageDirectoryWithPrev <- function(dir_path) {
-        if (dir.exists(dir_path)) {
-            prev_dir <- paste0(dir_path, "_prev")
-            if (dir.exists(prev_dir)) {
-                unlink(prev_dir, recursive = TRUE)
-            }
-            if (dir.exists(dir_path) && length(list.files(dir_path)) > 0) {
-                file.rename(dir_path, prev_dir)
-            }
+setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force = FALSE) {
+    # Create base paths and names
+    proteomics_dirname <- if (!is.null(label)) paste0("proteomics_", substr(label, 1, 30)) else "proteomics"
+    
+    # Check if directories already exist
+    results_path <- file.path(base_dir, "results", proteomics_dirname)
+    results_summary_path <- file.path(base_dir, "results_summary", proteomics_dirname)
+    
+    if (!force && (dir.exists(results_path) || dir.exists(results_summary_path))) {
+        cat(sprintf("\nWarning: Directory(ies) already exist:\n"))
+        if (dir.exists(results_path)) cat(sprintf("- %s\n", results_path))
+        if (dir.exists(results_summary_path)) cat(sprintf("- %s\n", results_summary_path))
+        
+        response <- readline(prompt = "Do you want to overwrite? (y/n): ")
+        
+        if (tolower(substr(response, 1, 1)) != "y") {
+            message("Setup cancelled by user")
+            return(invisible(NULL))
         }
-        if (!dir.exists(dir_path)) {
-            dir.create(dir_path, recursive = TRUE)
-        }
+        
+        # Remove existing directories if user confirmed
+        if (dir.exists(results_path)) unlink(results_path, recursive = TRUE)
+        if (dir.exists(results_summary_path)) unlink(results_summary_path, recursive = TRUE)
     }
-
-    # Simple directory creation without versioning
-    createDirectory <- function(dir_path) {
-        dir.create(dir_path, recursive = TRUE, showWarnings = FALSE)
-    }
-
-    # Create data and source directories (no versioning)
-    c(data_dir, source_dir) |>
-        sapply(createDirectory)
-
-    # Create results directories (with versioning)
-    c(
-        results_dir,
-        de_output_dir,
-        publication_graphs_dir,
-        qc_dir,
-        time_dir,
-        results_summary_dir,
-        pathway_dir,
-        file.path(results_dir, "clean_proteins"),
-        file.path(results_dir, "protein_qc"),
-        file.path(results_dir, "peptide_qc")
-    ) |>
-        sapply(manageDirectoryWithPrev)
-
-    # Return the DirectoryManager object
-    return(new("DirectoryManager",
-        base_dir = base_dir,
-        results_dir = results_dir,
-        data_dir = data_dir,
-        source_dir = source_dir,
-        de_output_dir = de_output_dir,
-        publication_graphs_dir = publication_graphs_dir,
-        timestamp = timestamp,
-        qc_dir = qc_dir,
-        time_dir = time_dir,
-        results_summary_dir = results_summary_dir,
-        pathway_dir = pathway_dir
-    ))
-}
-
-showDirectories <- function() {
-    # List of all directory variables we want to show
-    dir_vars <- c(
-        "base_dir", "results_dir", "data_dir", "source_dir",
-        "de_output_dir", "publication_graphs_dir",
-        "qc_dir", "time_dir", "results_summary_dir", "pathway_dir"
+    
+    # Define all paths and subdirs in one structure
+    paths <- list(
+        results = list(
+            base = file.path(base_dir, "results", proteomics_dirname),
+            subdirs = c("protein_qc", "peptide_qc", "clean_proteins", "de_proteins", 
+                       "publication_graphs", "pathway_enrichment",
+                       file.path("publication_graphs", "filtering_qc"))
+        ),
+        results_summary = list(
+            base = file.path(base_dir, "results_summary", proteomics_dirname),
+            subdirs = c("QC_figures", "Publication_figures", "Publication_tables", "Study_report")
+        ),
+        special = list(
+            data = file.path(base_dir, "data"),
+            scripts = file.path(base_dir, "scripts", proteomics_dirname),
+            time = file.path(base_dir, "results", proteomics_dirname, "publication_graphs", 
+                           "filtering_qc", format(Sys.time(), "%Y%m%d_%H%M%S"))
+        )
     )
-
-    cat("Project Directory Structure:\n")
-    cat("===========================\n\n")
-
-    for (var_name in dir_vars) {
-        # Get the path from global environment
-        dir_path <- get(var_name, envir = .GlobalEnv)
-        exists <- dir.exists(dir_path)
-        prev_path <- paste0(dir_path, "_prev")
-        has_prev <- dir.exists(prev_path)
-
-        # Format the output
-        status <- if (exists) "✓" else "✗"
-
-        cat(sprintf("%-25s [%s] %s\n",
-            gsub("_dir$", "", var_name),  # Remove _dir suffix for display
-            status,
-            dir_path
-        ))
-        if (has_prev) {
-            cat(sprintf("%25s %s\n", "", prev_path))
+    
+    # Handle existing content and create directories in one pass
+    lapply(c("results", "results_summary"), function(type) {
+        existing <- dir.exists(file.path(base_dir, type, "proteomics"))
+        if (existing) {
+            # Get source path
+            source_base <- file.path(base_dir, type, "proteomics")
+            
+            # Copy each subdirectory's contents
+            sapply(paths[[type]]$subdirs, function(subdir) {
+                src_dir <- file.path(source_base, subdir)
+                dest_dir <- file.path(paths[[type]]$base, subdir)
+                
+                if (dir.exists(src_dir)) {
+                    # Create destination directory
+                    dir.create(dest_dir, recursive = TRUE, showWarnings = FALSE)
+                    
+                    # Copy all files maintaining structure
+                    files <- list.files(src_dir, full.names = TRUE, recursive = TRUE)
+                    if (length(files) > 0) {
+                        sapply(files, function(f) {
+                            rel_path <- sub(paste0("^", src_dir, "/"), "", f)
+                            dest_file <- file.path(dest_dir, rel_path)
+                            dir.create(dirname(dest_file), recursive = TRUE, showWarnings = FALSE)
+                            file.copy(f, dest_file, overwrite = TRUE)
+                        })
+                    }
+                }
+            })
         }
-    }
-
-    cat("\nLegend: ✓ = exists, ✗ = missing\n")
+        
+        # Create any missing subdirectories
+        invisible(sapply(
+            file.path(paths[[type]]$base, paths[[type]]$subdirs),
+            dir.create, recursive = TRUE, showWarnings = FALSE
+        ))
+    })
+    
+    # Create special directories
+    invisible(sapply(paths$special, dir.create, recursive = TRUE, showWarnings = FALSE))
+    
+    # Build and assign global variables
+    dir_paths <- c(
+        list(base_dir = base_dir),
+        setNames(
+            lapply(paths$results$subdirs, function(d) file.path(paths$results$base, d)),
+            paste0(gsub("-", "_", tolower(paths$results$subdirs)), "_dir")
+        ),
+        list(
+            results_dir = paths$results$base,
+            results_summary_dir = paths$results_summary$base,
+            data_dir = paths$special$data,
+            source_dir = paths$special$scripts,
+            time_dir = paths$special$time
+        )
+    )
+    
+    # Assign to global environment and print status
+    list2env(dir_paths, envir = .GlobalEnv)
+    
+    # Print simple directory structure with file counts
+    cat("\nDirectory Structure:\n")
+    invisible(lapply(dir_paths, function(p) {
+        if (dir.exists(p)) {
+            cat(sprintf("%s (%d files)\n", p, length(list.files(p, recursive = TRUE))))
+        }
+    }))
+    
+    invisible(dir_paths)
 }
 
 ##################################################################################################################
@@ -940,12 +951,15 @@ formatConfigList <- function(config_list, indent = 0) {
             output <- c(output,
                 paste0(paste(rep(" ", indent), collapse = ""),
                       name_formatted, ":"))
-            output <- c(output,
-                formatConfigList(value, indent + 2))
+                output <- c(output,
+                    formatConfigList(value, indent + 2))
+                )
+            )
         } else {
             output <- c(output,
                 paste0(paste(rep(" ", indent), collapse = ""),
                       name_formatted, ": ", value))
+            )
         }
     }
     return(output)
@@ -1012,9 +1026,12 @@ setMethod("show",
 #' @title Copy Files to Results Summary and Show Status
 #' @description Copies specified files to results summary directory and displays copy status
 #' @param contrasts_tbl A tibble containing contrast information
-#' @return Invisible NULL
+#' @return Invisible list of failed copies for error handling
 #' @export
 copyToResultsSummary <- function(contrasts_tbl) {
+    # Track failed copies
+    failed_copies <- list()
+    
     # Define subdirectories to create
     summary_subdirs <- c(
         "QC_figures",
@@ -1026,11 +1043,15 @@ copyToResultsSummary <- function(contrasts_tbl) {
     # Create subdirectories in results_summary_dir
     summary_subdirs |>
         sapply(\(subdir) {
-            dir.create(
-                file.path(results_summary_dir, subdir),
-                recursive = TRUE,
-                showWarnings = FALSE
-            )
+            dir_path <- file.path(results_summary_dir, subdir)
+            if (!dir.create(dir_path, recursive = TRUE, showWarnings = FALSE)) {
+                warning(sprintf("Failed to create directory: %s", dir_path))
+                failed_copies[[length(failed_copies) + 1]] <- list(
+                    type = "directory_creation",
+                    path = dir_path,
+                    error = "Failed to create directory"
+                )
+            }
         })
 
     # Define files to copy with their display names
@@ -1176,92 +1197,141 @@ copyToResultsSummary <- function(contrasts_tbl) {
     combined_path <- file.path(results_summary_dir, "Publication_tables", "DE_proteins_results.xlsx")
     openxlsx::saveWorkbook(combined_wb, combined_path, overwrite = TRUE)
 
-    cat("Copying files to Results Summary...\n")
+    cat("\nCopying files to Results Summary...\n")
     cat("===================================\n\n")
 
     # Copy and check each file/folder
     files_to_copy |>
         lapply(\(file_spec) {
             dest_dir <- file.path(results_summary_dir, file_spec$dest)
+            copy_success <- TRUE
+            error_msg <- NULL
 
-            # Get initial status
+            # Get initial status and verify source exists
             if (!is.null(file_spec$type) && file_spec$type == "object") {
                 source_exists <- exists(file_spec$source, envir = .GlobalEnv)
+                if (!source_exists) {
+                    error_msg <- sprintf("Object '%s' not found in global environment", file_spec$source)
+                }
             } else {
                 source_exists <- if (file_spec$is_dir) {
                     dir.exists(file_spec$source)
                 } else {
                     file.exists(file_spec$source)
                 }
+                if (!source_exists) {
+                    error_msg <- sprintf("Source %s not found: %s", 
+                        if(file_spec$is_dir) "directory" else "file",
+                        file_spec$source)
+                }
             }
 
-            # Perform copy operation
-            if (!is.null(file_spec$type) && file_spec$type == "object") {
-                if (source_exists) {
-                    obj <- get(file_spec$source, envir = .GlobalEnv)
-                    write.table(
-                        obj,
-                        file = file.path(dest_dir, file_spec$save_as),
-                        sep = "\t",
-                        row.names = FALSE,
-                        quote = FALSE
-                    )
-                }
-                dest_path <- file.path(dest_dir, file_spec$save_as)
-                dest_exists <- file.exists(dest_path)
-            } else if (file_spec$is_dir) {
-                source_path <- file_spec$source
-                dest_path <- file.path(dest_dir, basename(source_path))
+            # Perform copy operation with detailed error checking
+            if (source_exists) {
+                if (!is.null(file_spec$type) && file_spec$type == "object") {
+                    tryCatch({
+                        obj <- get(file_spec$source, envir = .GlobalEnv)
+                        dest_path <- file.path(dest_dir, file_spec$save_as)
+                        write.table(
+                            obj,
+                            file = dest_path,
+                            sep = "\t",
+                            row.names = FALSE,
+                            quote = FALSE
+                        )
+                        # Verify file was created and has content
+                        if (!file.exists(dest_path) || file.size(dest_path) == 0) {
+                            copy_success <- FALSE
+                            error_msg <- "Failed to write object to file or file is empty"
+                        }
+                    }, error = function(e) {
+                        copy_success <- FALSE
+                        error_msg <<- sprintf("Error writing object: %s", e$message)
+                    })
+                } else if (file_spec$is_dir) {
+                    source_path <- file_spec$source
+                    dest_path <- file.path(dest_dir, basename(source_path))
 
-                if (source_exists) {
                     # Create destination directory
-                    dir.create(dest_path, showWarnings = FALSE, recursive = TRUE)
-
-                    # Copy all files from source to destination
-                    files_to_copy <- list.files(source_path, full.names = TRUE, recursive = TRUE)
-
-                    files_to_copy |>
-                        lapply(\(f) {
-                            rel_path <- sub(paste0("^", source_path, "/"), "", f)
-                            dest_file <- file.path(dest_path, rel_path)
-                            dir.create(dirname(dest_file), showWarnings = FALSE, recursive = TRUE)
-                            file.copy(f, dest_file, overwrite = TRUE)
-                        })
-                }
-                dest_exists <- dir.exists(dest_path)
-
-                # Get file counts for directories
-                if (source_exists && dest_exists) {
-                    source_files <- list.files(source_path, recursive = TRUE)
-                    dest_files <- list.files(dest_path, recursive = TRUE)
-                }
-            } else {
-                source_path <- file_spec$source
-                dest_path <- file.path(dest_dir,
-                    if (!is.null(file_spec$new_name)) file_spec$new_name else basename(source_path))
-
-                if (source_exists) {
-                    file.copy(
-                        from = source_path,
-                        to = dest_path,
-                        overwrite = TRUE
+                    if (!dir.create(dest_path, showWarnings = FALSE, recursive = TRUE)) {
+                        copy_success <- FALSE
+                        error_msg <- "Failed to create destination directory"
+                    } else {
+                        # Copy all files from source to destination
+                        files_to_copy <- list.files(source_path, full.names = TRUE, recursive = TRUE)
+                        
+                        copy_results <- files_to_copy |>
+                            sapply(\(f) {
+                                rel_path <- sub(paste0("^", source_path, "/"), "", f)
+                                dest_file <- file.path(dest_path, rel_path)
+                                dir.create(dirname(dest_file), showWarnings = FALSE, recursive = TRUE)
+                                file.copy(f, dest_file, overwrite = TRUE)
+                            })
+                        
+                        if (!all(copy_results)) {
+                            copy_success <- FALSE
+                            failed_files <- files_to_copy[!copy_results]
+                            error_msg <- sprintf("Failed to copy %d files", length(failed_files))
+                        }
+                        
+                        # Verify file counts match
+                        source_files <- list.files(source_path, recursive = TRUE)
+                        dest_files <- list.files(dest_path, recursive = TRUE)
+                        if (length(source_files) != length(dest_files)) {
+                            copy_success <- FALSE
+                            error_msg <- sprintf("File count mismatch: %d source files, %d destination files",
+                                length(source_files), length(dest_files))
+                        }
+                    }
+                } else {
+                    source_path <- file_spec$source
+                    dest_path <- file.path(dest_dir,
+                        if (!is.null(file_spec$new_name)) file_spec$new_name else basename(source_path)
                     )
+
+                    if (!file.copy(from = source_path, to = dest_path, overwrite = TRUE)) {
+                        copy_success <- FALSE
+                        error_msg <- "Failed to copy file"
+                    } else {
+                        # Verify file sizes match
+                        source_size <- file.size(source_path)
+                        dest_size <- file.size(dest_path)
+                        if (source_size != dest_size) {
+                            copy_success <- FALSE
+                            error_msg <- sprintf("File size mismatch: source=%d bytes, dest=%d bytes",
+                                source_size, dest_size)
+                        }
+                    }
                 }
-                dest_exists <- file.exists(dest_path)
             }
 
-            # Format and display status
+            # Track failed copies
+            if (!source_exists || !copy_success) {
+                failed_copies[[length(failed_copies) + 1]] <- list(
+                    type = if(file_spec$is_dir) "directory" else "file",
+                    source = file_spec$source,
+                    destination = dest_dir,
+                    display_name = file_spec$display_name,
+                    error = error_msg
+                )
+            }
+
+            # Format and display status with error messages
             source_status <- if (source_exists) "✓" else "✗"
-            dest_status <- if (dest_exists) "✓" else "✗"
+            copy_status <- if (copy_success && source_exists) "✓" else "✗"
 
             cat(sprintf("%-25s [%s → %s] %s\n",
                 file_spec$display_name,
                 source_status,
-                dest_status,
+                copy_status,
                 if (!is.null(file_spec$is_dir) && file_spec$is_dir) "Directory" else "File"
             ))
 
-            if (!is.null(file_spec$is_dir) && file_spec$is_dir && source_exists && dest_exists) {
+            if (!is.null(error_msg)) {
+                cat(sprintf("%25s Error: %s\n", "", error_msg))
+            }
+
+            if (!is.null(file_spec$is_dir) && file_spec$is_dir && source_exists && copy_success) {
                 cat(sprintf("%25s Files: %d → %d\n", "",
                     length(source_files),
                     length(dest_files)
@@ -1269,10 +1339,23 @@ copyToResultsSummary <- function(contrasts_tbl) {
             }
         })
 
-    cat("\nLegend: ✓ = exists, ✗ = missing\n")
+    cat("\nLegend: ✓ = exists/success, ✗ = missing/failed\n")
     cat("Arrow (→) shows source → destination status\n")
 
-    invisible(NULL)
+    # Report summary of failures
+    if (length(failed_copies) > 0) {
+        cat("\nFailed Copies Summary:\n")
+        cat("=====================\n")
+        lapply(failed_copies, function(failure) {
+            cat(sprintf("\n%s: %s\n", failure$display_name, failure$error))
+            cat(sprintf("Source: %s\n", failure$source))
+            cat(sprintf("Destination: %s\n", failure$destination))
+        })
+        warning(sprintf("%d files/directories failed to copy correctly", length(failed_copies)))
+    }
+
+    # Return failed copies list for error handling
+    invisible(failed_copies)
 }
 
 
