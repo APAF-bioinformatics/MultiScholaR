@@ -14,7 +14,7 @@ output:
 # Dependency, Directory, Hardware Management & Orgnamism Annotation
 ## Set and create directories for outputs and project management, set number of cores for threaded tasks
 ## Checks your R environment for the required packages to run ProteomeScholaR, and installs them if they are not.
-```{r ProteomeScholaR Install}
+```{r ProteomeScholaR FIRST INSTALL }
 installProteomeScholaR <- function(verbose = TRUE) {
     # Helper function for package installation
     install_if_missing <- function(pkg, source = "CRAN") {
@@ -61,6 +61,11 @@ installProteomeScholaR()
 loadDependencies()
 ```
 
+# START HERE if you already have ProteomeScholaR installed
+```{r Load ProteomeScholaR}
+library(ProteomeScholar)
+loadDependencies()
+```
 
 # Set up your environment and project directory
 ```{r Project Environment Management}
@@ -68,8 +73,9 @@ loadDependencies()
 ## Set up the project directory structure
 ## This section sets up the project directory structure for ProteomeScholaR
 ## Directory management can be challenging, particularly when managing objects across multiple chunks within a single R Markdown document.
-setupDirectories()
-showDirectories()
+setupAndShowDirectories(label = "your_experiment_here"
+                        , force = FALSE)
+
 
 ```
 
