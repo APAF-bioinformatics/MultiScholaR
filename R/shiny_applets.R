@@ -422,13 +422,15 @@ RunApplet <- function(applet_type, force = FALSE) {
         data_cln_final <- data_cln_reactive()
         
         # Show saving modal
-        showModal(modalDialog(
+        showModal(shiny::modalDialog(
           title = "Saving Data",
-          div(
-            style = "text-align: center;",
-            div(style = "font-size: 48px; margin: 20px;",
-                shiny::icon("spinner", class = "fa-spin")),
-            tags$p("Saving cleaned data and design matrix...")
+          shiny::div(
+            style = "text-align: center",
+            shiny::tags$div(
+              style = "font-size: 48px; margin: 20px;",
+              shiny::icon("spinner", class = "fa-spin")
+            ),
+            shiny::tags$p("Saving cleaned data and design matrix...")
           ),
           footer = NULL,
           easyClose = FALSE,
