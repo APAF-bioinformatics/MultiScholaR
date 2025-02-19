@@ -1,4 +1,8 @@
 RunApplet <- function(applet_type, force = FALSE) {
+  # Load required packages
+  require(shiny)
+  require(DT)
+  
   # Validation
   valid_types <- c("designMatrix")
   if (!applet_type %in% valid_types) {
@@ -55,10 +59,6 @@ RunApplet <- function(applet_type, force = FALSE) {
       sorted_runs <- gtools::mixedsort(design_matrix_raw$Run)
       
       fluidPage(
-        tags$head(
-          tags$link(rel = "stylesheet", 
-                   href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css")
-        ),
         titlePanel("Design Matrix Builder"),
         
         # Main layout
@@ -426,8 +426,8 @@ RunApplet <- function(applet_type, force = FALSE) {
           title = "Saving Data",
           div(
             style = "text-align: center;",
-            tags$div(class = "fa-3x",
-                    tags$i(class = "fa fa-spinner fa-spin")),
+            div(style = "font-size: 48px; margin: 20px;",
+                icon("spinner", class = "fa-spin")),
             tags$p("Saving cleaned data and design matrix...")
           ),
           footer = NULL,
