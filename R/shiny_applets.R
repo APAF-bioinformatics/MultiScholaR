@@ -427,7 +427,7 @@ RunApplet <- function(applet_type, force = FALSE) {
           div(
             style = "text-align: center;",
             div(style = "font-size: 48px; margin: 20px;",
-                icon("spinner", class = "fa-spin")),
+                shiny::icon("spinner", class = "fa-spin")),
             tags$p("Saving cleaned data and design matrix...")
           ),
           footer = NULL,
