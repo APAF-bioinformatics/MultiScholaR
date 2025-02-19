@@ -470,12 +470,20 @@ RunApplet <- function(applet_type) {
         if (file.exists(base_file)) {
           timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
           output_file <- file.path(source_dir, paste0("design_matrix_", timestamp, ".tab"))
+          data_cln_output_file <- file.path(source_dir, paste0("data_cln_", timestamp, ".tab"))
         } else {
           output_file <- base_file
+          data_cln_output_file <- file.path(source_dir, "data_cln.tab")
         }
         
         write.table(design_matrix_final, 
                     file = output_file,
+                    sep = "\t",
+                    row.names = FALSE,
+                    quote = FALSE)
+                    
+        write.table(data_cln_final, 
+                    file = data_cln_output_file,
                     sep = "\t",
                     row.names = FALSE,
                     quote = FALSE)
