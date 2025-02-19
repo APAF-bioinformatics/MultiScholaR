@@ -1,4 +1,4 @@
-RunApplet <- function(applet_type) {
+RunApplet <- function(applet_type, force = FALSE) {
   # Validation
   valid_types <- c("designMatrix")
   if (!applet_type %in% valid_types) {
@@ -17,6 +17,15 @@ RunApplet <- function(applet_type) {
     }
     if (!exists("config_list", envir = parent.frame())) {
       stop("config_list not found in the current environment")
+    }
+    
+    # Check for existing files with timestamps
+    existing_files <- list.files(source_dir, pattern = "^(design_matrix|data_cln).*\\.tab$")
+    if (length(existing_files) > 0 && !force) {
+      message("Found existing files in ", source_dir, ":")
+      message(paste(" -", existing_files, collapse = "\n"))
+      message("\nTo overwrite, rerun with force = TRUE")
+      return(invisible(NULL))
     }
     
     # Get required objects
