@@ -1,4 +1,8 @@
-RunApplet <- function(applet_type) {
+RunApplet <- function(applet_type, force = FALSE) {
+  # Load required packages
+  require(shiny)
+  require(DT)
+  
   # Validation
   valid_types <- c("designMatrix")
   if (!applet_type %in% valid_types) {
@@ -17,6 +21,15 @@ RunApplet <- function(applet_type) {
     }
     if (!exists("config_list", envir = parent.frame())) {
       stop("config_list not found in the current environment")
+    }
+    
+    # Check for existing files with timestamps
+    existing_files <- list.files(source_dir, pattern = "^(design_matrix|data_cln).*\\.tab$")
+    if (length(existing_files) > 0 && !force) {
+      message("Found existing files in ", source_dir, ":")
+      message(paste(" -", existing_files, collapse = "\n"))
+      message("\nTo overwrite, rerun with force = TRUE")
+      return(invisible(NULL))
     }
     
     # Get required objects
@@ -408,6 +421,22 @@ RunApplet <- function(applet_type) {
         design_matrix_final <- design_matrix()
         data_cln_final <- data_cln_reactive()
         
+        # Show saving modal
+        showModal(shiny::modalDialog(
+          title = "Saving Data",
+          shiny::div(
+            style = "text-align: center",
+            shiny::tags$div(
+              style = "font-size: 48px; margin: 20px;",
+              shiny::icon("spinner", class = "fa-spin")
+            ),
+            shiny::tags$p("Saving cleaned data and design matrix...")
+          ),
+          footer = NULL,
+          easyClose = FALSE,
+          size = "s"
+        ))
+        
         # Filter design_matrix_final to only include rows with assigned metadata
         design_matrix_final <- design_matrix_final |>
             filter(!is.na(group))
@@ -470,8 +499,10 @@ RunApplet <- function(applet_type) {
         if (file.exists(base_file)) {
           timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
           output_file <- file.path(source_dir, paste0("design_matrix_", timestamp, ".tab"))
+          data_cln_output_file <- file.path(source_dir, paste0("data_cln_", timestamp, ".tab"))
         } else {
           output_file <- base_file
+          data_cln_output_file <- file.path(source_dir, "data_cln.tab")
         }
         
         write.table(design_matrix_final, 
@@ -479,6 +510,15 @@ RunApplet <- function(applet_type) {
                     sep = "\t",
                     row.names = FALSE,
                     quote = FALSE)
+                    
+        write.table(data_cln_final, 
+                    file = data_cln_output_file,
+                    sep = "\t",
+                    row.names = FALSE,
+                    quote = FALSE)
+        
+        # Remove modal before stopping app
+        removeModal()
         
         stopApp(list(
           design_matrix = design_matrix_final,
