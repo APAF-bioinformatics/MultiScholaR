@@ -1028,20 +1028,172 @@ setMethod("show",
 #' @return Invisible list of failed copies for error handling
 #' @export
 copyToResultsSummary <- function(contrasts_tbl) {
-    # Get all enrichment result files
-    enrichment_files <- list.files(
-        path = pathway_dir,
-        pattern = "_enrichment_results.tsv$",
+    # Track failed copies
+    failed_copies <- list()
+    
+    # Define subdirectories to create
+    summary_subdirs <- c(
+        "QC_figures",
+        "Publication_figures",
+        "Publication_tables",
+        "Study_report"
+    )
+
+    # Create subdirectories in results_summary_dir
+    summary_subdirs |>
+        sapply(\(subdir) {
+            dir_path <- file.path(results_summary_dir, subdir)
+            if (!dir.create(dir_path, recursive = TRUE, showWarnings = FALSE)) {
+                warning(sprintf("Failed to create directory: %s", dir_path))
+                failed_copies[[length(failed_copies) + 1]] <- list(
+                    type = "directory_creation",
+                    path = dir_path,
+                    error = "Failed to create directory"
+                )
+            }
+        })
+
+    # Define files to copy with their display names
+    files_to_copy <- list(
+        # QC Figures
+        list(
+            source = file.path(time_dir, "12_correlation_filtered_combined_plots.png"),
+            dest = "QC_figures",
+            is_dir = FALSE,
+            display_name = "Correlation Filtered Plots"
+        ),
+        # Add pathway directory
+        list(
+            source = pathway_dir,
+            dest = "Publication_figures",
+            is_dir = TRUE,
+            display_name = "Pathway Analysis"
+        ),
+        # Add RUV normalized results
+        list(
+            source = file.path(results_dir, "protein_qc", "ruv_normalised_results_cln_with_replicates.tsv"),
+            dest = "Publication_tables",
+            is_dir = FALSE,
+            display_name = "RUV Normalized Results",
+            new_name = "RUV_normalised_results.tsv"
+        ),
+        list(
+            source = file.path(results_dir, "protein_qc", "composite_QC_figure.pdf"),
+            dest = "QC_figures",
+            is_dir = FALSE,
+            display_name = "Composite QC (PDF)"
+        ),
+        list(
+            source = file.path(results_dir, "protein_qc", "composite_QC_figure.png"),
+            dest = "QC_figures",
+            is_dir = FALSE,
+            display_name = "Composite QC (PNG)"
+        ),
+
+        # Publication Figures
+        list(
+            source = file.path(publication_graphs_dir, "Interactive_Volcano_Plots"),
+            dest = "Publication_figures",
+            is_dir = TRUE,
+            display_name = "Interactive Volcano Plots"
+        ),
+        list(
+            source = file.path(publication_graphs_dir, "NumSigDeMolecules"),
+            dest = "Publication_figures",
+            is_dir = TRUE,
+            display_name = "Num Sig DE Molecules"
+        ),
+        list(
+            source = file.path(publication_graphs_dir, "Volcano_Plots"),
+            dest = "Publication_figures",
+            is_dir = TRUE,
+            display_name = "Volcano Plots"
+        ),
+
+        # Study Report Tables
+        list(
+            source = "contrasts_tbl",
+            dest = "Study_report",
+            type = "object",
+            save_as = "contrasts_tbl.tab",
+            display_name = "Contrasts Table"
+        ),
+        list(
+            source = "design_matrix",
+            dest = "Study_report",
+            type = "object",
+            save_as = "design_matrix.tab",
+            display_name = "Design Matrix"
+        ),
+        list(
+            source = file.path(source_dir, "study_parameters.txt"),
+            dest = "Study_report",
+            is_dir = FALSE,
+            display_name = "Study Parameters"
+        )
+    )
+
+    # Add all DE protein files dynamically
+    de_files <- list.files(
+        path = de_output_dir,
+        pattern = "de_proteins.*_long_annot\\.xlsx$",
         full.names = TRUE
     )
+
+    # Create a combined workbook for DE results
+    de_wb <- openxlsx::createWorkbook()
     
-    # Create a workbook for pathway enrichment results
+    # Create an index sheet first
+    openxlsx::addWorksheet(de_wb, "DE_Results_Index")
+    
+    # Create index data frame for DE results
+    de_index_data <- data.frame(
+        Sheet = character(),
+        Description = character(),
+        stringsAsFactors = FALSE
+    )
+    
+    # Process each DE file
+    de_files |>
+        purrr::imap(\(file, idx) {
+            # Create simple sheet name
+            sheet_name <- sprintf("DE_Sheet%d", idx)
+            
+            # Get base name for index
+            base_name <- basename(file) |>
+                stringr::str_remove("de_proteins_") |>
+                stringr::str_remove("_long_annot.xlsx")
+            
+            # Add to index
+            de_index_data <<- rbind(de_index_data, 
+                               data.frame(
+                                   Sheet = sheet_name,
+                                   Description = base_name,
+                                   stringsAsFactors = FALSE
+                               ))
+            
+            # Add data sheet
+            data <- openxlsx::read.xlsx(file)
+            openxlsx::addWorksheet(de_wb, sheet_name)
+            openxlsx::writeData(de_wb, sheet_name, data)
+        })
+    
+    # Write DE index sheet
+    openxlsx::writeData(de_wb, "DE_Results_Index", de_index_data)
+    
+    # Apply formatting to DE index sheet
+    openxlsx::setColWidths(de_wb, "DE_Results_Index", cols = 1:2, widths = c(10, 50))
+    openxlsx::addStyle(de_wb, "DE_Results_Index", 
+                      style = openxlsx::createStyle(textDecoration = "bold"),
+                      rows = 1, cols = 1:2)
+    
+    # Create a new workbook for pathway enrichment results
     enrichment_wb <- openxlsx::createWorkbook()
     
-    # Create an index sheet
+    # Create an index sheet for enrichment results
     openxlsx::addWorksheet(enrichment_wb, "Enrichment_Index")
     
-    # Create index data frame
+    # Create index data frame for enrichment results
     enrichment_index_data <- data.frame(
         Sheet = character(),
         Contrast = character(),
@@ -1049,50 +1201,221 @@ copyToResultsSummary <- function(contrasts_tbl) {
         stringsAsFactors = FALSE
     )
     
-    # Process each enrichment file
-    if (length(enrichment_files) > 0) {
-        enrichment_files |>
-            purrr::imap(\(file, idx) {
-                # Extract contrast and direction from filename
-                file_parts <- basename(file) |>
-                    stringr::str_remove("_enrichment_results.tsv") |>
-                    stringr::str_split("_") |>
-                    unlist()
-                
-                contrast <- file_parts[1]
-                direction <- file_parts[2]
-                sheet_name <- sprintf("Enrichment_Sheet%d", idx)
-                
-                # Add to index
-                enrichment_index_data <<- rbind(enrichment_index_data,
-                                              data.frame(
-                                                  Sheet = sheet_name,
-                                                  Contrast = contrast,
-                                                  Direction = direction,
-                                                  stringsAsFactors = FALSE
-                                              ))
-                
-                # Add data sheet
-                data <- readr::read_tsv(file, show_col_types = FALSE)
-                openxlsx::addWorksheet(enrichment_wb, sheet_name)
-                openxlsx::writeData(enrichment_wb, sheet_name, data)
-            })
-        
-        # Write index sheet
-        openxlsx::writeData(enrichment_wb, "Enrichment_Index", enrichment_index_data)
-        
-        # Apply formatting to index sheet
-        openxlsx::setColWidths(enrichment_wb, "Enrichment_Index", cols = 1:3, widths = c(15, 30, 15))
-        openxlsx::addStyle(enrichment_wb, "Enrichment_Index",
-                          style = openxlsx::createStyle(textDecoration = "bold"),
-                          rows = 1, cols = 1:3)
-        
-        # Save the workbook
-        enrichment_wb_path <- file.path(results_summary_dir, "Publication_tables", "Pathway_enrichment_results.xlsx")
-        openxlsx::saveWorkbook(enrichment_wb, enrichment_wb_path, overwrite = TRUE)
-    }
+    # Get all enrichment result files
+    enrichment_files <- list.files(
+        path = pathway_dir,
+        pattern = "_enrichment_results.tsv$",
+        full.names = TRUE
+    )
     
-    invisible(NULL)
+    # Process each enrichment file
+    enrichment_files |>
+        purrr::imap(\(file, idx) {
+            # Extract contrast and direction from filename
+            file_parts <- basename(file) |>
+                stringr::str_remove("_enrichment_results.tsv") |>
+                stringr::str_split("_") |>
+                unlist()
+            
+            contrast <- file_parts[1]
+            direction <- file_parts[2]
+            sheet_name <- sprintf("Enrichment_Sheet%d", idx)
+            
+            # Add to index
+            enrichment_index_data <<- rbind(enrichment_index_data,
+                                          data.frame(
+                                              Sheet = sheet_name,
+                                              Contrast = contrast,
+                                              Direction = direction,
+                                              stringsAsFactors = FALSE
+                                          ))
+            
+            # Add data sheet
+            data <- readr::read_tsv(file, show_col_types = FALSE)
+            openxlsx::addWorksheet(enrichment_wb, sheet_name)
+            openxlsx::writeData(enrichment_wb, sheet_name, data)
+        })
+    
+    # Write enrichment index sheet
+    openxlsx::writeData(enrichment_wb, "Enrichment_Index", enrichment_index_data)
+    
+    # Apply formatting to enrichment index sheet
+    openxlsx::setColWidths(enrichment_wb, "Enrichment_Index", cols = 1:3, widths = c(15, 30, 15))
+    openxlsx::addStyle(enrichment_wb, "Enrichment_Index",
+                      style = openxlsx::createStyle(textDecoration = "bold"),
+                      rows = 1, cols = 1:3)
+    
+    # Create Publication_tables directory if it doesn't exist
+    dir.create(file.path(results_summary_dir, "Publication_tables"), 
+               recursive = TRUE, 
+               showWarnings = FALSE)
+    
+    # Save the workbooks
+    de_wb_path <- file.path(results_summary_dir, "Publication_tables", "DE_proteins_results.xlsx")
+    enrichment_wb_path <- file.path(results_summary_dir, "Publication_tables", "Pathway_enrichment_results.xlsx")
+    
+    openxlsx::saveWorkbook(de_wb, de_wb_path, overwrite = TRUE)
+    openxlsx::saveWorkbook(enrichment_wb, enrichment_wb_path, overwrite = TRUE)
+
+    cat("\nCopying files to Results Summary...\n")
+    cat("===================================\n\n")
+
+    # Copy and check each file/folder
+    files_to_copy |>
+        lapply(\(file_spec) {
+            dest_dir <- file.path(results_summary_dir, file_spec$dest)
+            copy_success <- TRUE
+            error_msg <- NULL
+
+            # Get initial status and verify source exists
+            if (!is.null(file_spec$type) && file_spec$type == "object") {
+                source_exists <- exists(file_spec$source, envir = .GlobalEnv)
+                if (!source_exists) {
+                    error_msg <- sprintf("Object '%s' not found in global environment", file_spec$source)
+                }
+            } else {
+                source_exists <- if (file_spec$is_dir) {
+                    dir.exists(file_spec$source)
+                } else {
+                    file.exists(file_spec$source)
+                }
+                if (!source_exists) {
+                    error_msg <- sprintf("Source %s not found: %s", 
+                        if(file_spec$is_dir) "directory" else "file",
+                        file_spec$source)
+                }
+            }
+
+            # Perform copy operation with detailed error checking
+            if (source_exists) {
+                if (!is.null(file_spec$type) && file_spec$type == "object") {
+                    tryCatch({
+                        obj <- get(file_spec$source, envir = .GlobalEnv)
+                        dest_path <- file.path(dest_dir, file_spec$save_as)
+                        write.table(
+                            obj,
+                            file = dest_path,
+                            sep = "\t",
+                            row.names = FALSE,
+                            quote = FALSE
+                        )
+                        # Verify file was created and has content
+                        if (!file.exists(dest_path) || file.size(dest_path) == 0) {
+                            copy_success <- FALSE
+                            error_msg <- "Failed to write object to file or file is empty"
+                        }
+                    }, error = function(e) {
+                        copy_success <- FALSE
+                        error_msg <<- sprintf("Error writing object: %s", e$message)
+                    })
+                } else if (file_spec$is_dir) {
+                    source_path <- file_spec$source
+                    dest_path <- file.path(dest_dir, basename(source_path))
+
+                    # Create destination directory
+                    if (!dir.create(dest_path, showWarnings = FALSE, recursive = TRUE)) {
+                        copy_success <- FALSE
+                        error_msg <- "Failed to create destination directory"
+                    } else {
+                        # Copy all files from source to destination
+                        files_to_copy <- list.files(source_path, full.names = TRUE, recursive = TRUE)
+                        
+                        copy_results <- files_to_copy |>
+                            sapply(\(f) {
+                                rel_path <- sub(paste0("^", source_path, "/"), "", f)
+                                dest_file <- file.path(dest_path, rel_path)
+                                dir.create(dirname(dest_file), showWarnings = FALSE, recursive = TRUE)
+                                file.copy(f, dest_file, overwrite = TRUE)
+                            })
+                        
+                        if (!all(copy_results)) {
+                            copy_success <- FALSE
+                            failed_files <- files_to_copy[!copy_results]
+                            error_msg <- sprintf("Failed to copy %d files", length(failed_files))
+                        }
+                        
+                        # Verify file counts match
+                        source_files <- list.files(source_path, recursive = TRUE)
+                        dest_files <- list.files(dest_path, recursive = TRUE)
+                        if (length(source_files) != length(dest_files)) {
+                            copy_success <- FALSE
+                            error_msg <- sprintf("File count mismatch: %d source files, %d destination files",
+                                length(source_files), length(dest_files))
+                        }
+                    }
+                } else {
+                    source_path <- file_spec$source
+                    dest_path <- file.path(dest_dir,
+                        if (!is.null(file_spec$new_name)) file_spec$new_name else basename(source_path)
+                    )
+
+                    if (!file.copy(from = source_path, to = dest_path, overwrite = TRUE)) {
+                        copy_success <- FALSE
+                        error_msg <- "Failed to copy file"
+                    } else {
+                        # Verify file sizes match
+                        source_size <- file.size(source_path)
+                        dest_size <- file.size(dest_path)
+                        if (source_size != dest_size) {
+                            copy_success <- FALSE
+                            error_msg <- sprintf("File size mismatch: source=%d bytes, dest=%d bytes",
+                                source_size, dest_size)
+                        }
+                    }
+                }
+            }
+
+            # Track failed copies
+            if (!source_exists || !copy_success) {
+                failed_copies[[length(failed_copies) + 1]] <- list(
+                    type = if(file_spec$is_dir) "directory" else "file",
+                    source = file_spec$source,
+                    destination = dest_dir,
+                    display_name = file_spec$display_name,
+                    error = error_msg
+                )
+            }
+
+            # Format and display status with error messages
+            source_status <- if (source_exists) "✓" else "✗"
+            copy_status <- if (copy_success && source_exists) "✓" else "✗"
+
+            cat(sprintf("%-25s [%s → %s] %s\n",
+                file_spec$display_name,
+                source_status,
+                copy_status,
+                if (!is.null(file_spec$is_dir) && file_spec$is_dir) "Directory" else "File"
+            ))
+
+            if (!is.null(error_msg)) {
+                cat(sprintf("%25s Error: %s\n", "", error_msg))
+            }
+
+            if (!is.null(file_spec$is_dir) && file_spec$is_dir && source_exists && copy_success) {
+                cat(sprintf("%25s Files: %d → %d\n", "",
+                    length(source_files),
+                    length(dest_files)
+                ))
+            }
+        })
+
+    cat("\nLegend: ✓ = exists/success, ✗ = missing/failed\n")
+    cat("Arrow (→) shows source → destination status\n")
+
+    # Report summary of failures
+    if (length(failed_copies) > 0) {
+        cat("\nFailed Copies Summary:\n")
+        cat("=====================\n")
+        lapply(failed_copies, function(failure) {
+            cat(sprintf("\n%s: %s\n", failure$display_name, failure$error))
+            cat(sprintf("Source: %s\n", failure$source))
+            cat(sprintf("Destination: %s\n", failure$destination))
+        })
+        warning(sprintf("%d files/directories failed to copy correctly", length(failed_copies)))
+    }
+
+    # Return failed copies list for error handling
+    invisible(failed_copies)
 }
 
 
