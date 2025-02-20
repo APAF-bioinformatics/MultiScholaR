@@ -1023,11 +1023,97 @@ setMethod("show",
 #' @title Copy Files to Results Summary and Show Status
 #' @description Copies specified files to results summary directory and displays copy status
 #' @param contrasts_tbl A tibble containing contrast information
+#' @param label Optional label to append to backup directory name (e.g., "backup_MyLabel")
+#' @param force Logical; if TRUE, skips user confirmation (default: FALSE)
 #' @return Invisible list of failed copies for error handling
 #' @export
-copyToResultsSummary <- function(contrasts_tbl) {
+copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE) {
     # Track failed copies
     failed_copies <- list()
+    
+    # Define target directories
+    pub_tables_dir <- file.path(results_summary_dir, "Publication_tables")
+    
+    # Check if results_summary directory exists
+    if (dir.exists(results_summary_dir)) {
+        # Create backup directory name with optional label and timestamp
+        backup_dirname <- if (!is.null(label)) {
+            paste0("proteomics_", substr(label, 1, 30), "_backup_", 
+                  format(Sys.time(), "%Y%m%d_%H%M%S"))
+        } else {
+            paste0("proteomics_backup_", format(Sys.time(), "%Y%m%d_%H%M%S"))
+        }
+        
+        # Create full backup path in the parent directory
+        backup_dir <- file.path(dirname(results_summary_dir), backup_dirname)
+        
+        # Only prompt if force=FALSE
+        should_proceed <- if (!force) {
+            cat(sprintf("\nResults summary directory exists:\n- %s\n", results_summary_dir))
+            repeat {
+                response <- readline(prompt = "Do you want to backup existing directory and proceed? (y/n): ")
+                response <- tolower(substr(response, 1, 1))
+                if (response %in% c("y", "n")) {
+                    break
+                }
+                cat("Please enter 'y' or 'n'\n")
+            }
+            response == "y"
+        } else {
+            cat("Force mode enabled - backing up and proceeding...\n")
+            TRUE
+        }
+        
+        if (!should_proceed) {
+            message("Copy operation cancelled by user")
+            return(invisible(NULL))
+        }
+        
+        # Create backup directory
+        dir.create(backup_dir, recursive = TRUE, showWarnings = FALSE)
+        
+        # Copy contents directly to backup directory without creating nested structure
+        file.copy(
+            list.files(results_summary_dir, full.names = TRUE),
+            backup_dir,
+            recursive = TRUE
+        )
+        
+        if (length(list.files(backup_dir)) > 0) {
+            cat(sprintf("Backed up results_summary directory to: %s\n", backup_dir))
+            
+            # Create a backup info file
+            backup_info <- data.frame(
+                original_dir = results_summary_dir,
+                backup_time = Sys.time(),
+                label = if(!is.null(label)) label else NA_character_,
+                stringsAsFactors = FALSE
+            )
+            
+            write.table(
+                backup_info,
+                file = file.path(backup_dir, "backup_info.txt"),
+                sep = "\t",
+                row.names = FALSE,
+                quote = FALSE
+            )
+            
+            # Remove original directory after successful backup
+            unlink(results_summary_dir, recursive = TRUE)
+            dir.create(results_summary_dir, recursive = TRUE, showWarnings = FALSE)
+        } else {
+            warning("Failed to create backup, proceeding without backup")
+            failed_copies[[length(failed_copies) + 1]] <- list(
+                type = "backup_creation",
+                path = backup_dir,
+                error = "Failed to create backup"
+            )
+        }
+    }
+    
+    # Check if Excel files already exist
+    de_results_path <- file.path(pub_tables_dir, "DE_proteins_results.xlsx")
+    enrichment_path <- file.path(pub_tables_dir, "Pathway_enrichment_results.xlsx")
     
     # Define subdirectories to create
     summary_subdirs <- c(
@@ -1042,12 +1128,14 @@ copyToResultsSummary <- function(contrasts_tbl) {
         sapply(\(subdir) {
             dir_path <- file.path(results_summary_dir, subdir)
             if (!dir.create(dir_path, recursive = TRUE, showWarnings = FALSE)) {
-                warning(sprintf("Failed to create directory: %s", dir_path))
-                failed_copies[[length(failed_copies) + 1]] <- list(
-                    type = "directory_creation",
-                    path = dir_path,
-                    error = "Failed to create directory"
-                )
+                if (!dir.exists(dir_path)) {  # Only warn if creation failed and dir doesn't exist
+                    warning(sprintf("Failed to create directory: %s", dir_path))
+                    failed_copies[[length(failed_copies) + 1]] <- list(
+                        type = "directory_creation",
+                        path = dir_path,
+                        error = "Failed to create directory"
+                    )
+                }
             }
         })
 
@@ -1059,13 +1147,6 @@ copyToResultsSummary <- function(contrasts_tbl) {
             dest = "QC_figures",
             is_dir = FALSE,
             display_name = "Correlation Filtered Plots"
-        ),
-        # Add pathway directory
-        list(
-            source = pathway_dir,
-            dest = "Publication_figures",
-            is_dir = TRUE,
-            display_name = "Pathway Analysis"
         ),
         # Add RUV normalized results
         list(
@@ -1138,14 +1219,14 @@ copyToResultsSummary <- function(contrasts_tbl) {
         full.names = TRUE
     )
 
-    # Create a combined workbook
-    combined_wb <- openxlsx::createWorkbook()
+    # Create a combined workbook for DE results
+    de_wb <- openxlsx::createWorkbook()
     
     # Create an index sheet first
-    openxlsx::addWorksheet(combined_wb, "Index")
+    openxlsx::addWorksheet(de_wb, "DE_Results_Index")
     
-    # Create index data frame
-    index_data <- data.frame(
+    # Create index data frame for DE results
+    de_index_data <- data.frame(
         Sheet = character(),
         Description = character(),
         stringsAsFactors = FALSE
@@ -1155,7 +1236,7 @@ copyToResultsSummary <- function(contrasts_tbl) {
     de_files |>
         purrr::imap(\(file, idx) {
             # Create simple sheet name
-            sheet_name <- sprintf("Sheet%d", idx)
+            sheet_name <- sprintf("DE_Sheet%d", idx)
             
             # Get base name for index
             base_name <- basename(file) |>
@@ -1163,7 +1244,7 @@ copyToResultsSummary <- function(contrasts_tbl) {
                 stringr::str_remove("_long_annot.xlsx")
             
             # Add to index
-            index_data <<- rbind(index_data, 
+            de_index_data <<- rbind(de_index_data, 
                                data.frame(
                                    Sheet = sheet_name,
                                    Description = base_name,
@@ -1172,27 +1253,104 @@ copyToResultsSummary <- function(contrasts_tbl) {
             
             # Add data sheet
             data <- openxlsx::read.xlsx(file)
-            openxlsx::addWorksheet(combined_wb, sheet_name)
-            openxlsx::writeData(combined_wb, sheet_name, data)
+            openxlsx::addWorksheet(de_wb, sheet_name)
+            openxlsx::writeData(de_wb, sheet_name, data)
         })
     
-    # Write index sheet
-    openxlsx::writeData(combined_wb, "Index", index_data)
+    # Write DE index sheet
+    openxlsx::writeData(de_wb, "DE_Results_Index", de_index_data)
     
-    # Apply some formatting to index sheet
-    openxlsx::setColWidths(combined_wb, "Index", cols = 1:2, widths = c(10, 50))
-    openxlsx::addStyle(combined_wb, "Index", 
+    # Apply formatting to DE index sheet
+    openxlsx::setColWidths(de_wb, "DE_Results_Index", cols = 1:2, widths = c(10, 50))
+    openxlsx::addStyle(de_wb, "DE_Results_Index", 
                       style = openxlsx::createStyle(textDecoration = "bold"),
                       rows = 1, cols = 1:2)
     
-    # Create Publication_tables directory if it doesn't exist
-    dir.create(file.path(results_summary_dir, "Publication_tables"), 
-               recursive = TRUE, 
-               showWarnings = FALSE)
+    # Create a new workbook for pathway enrichment results
+    enrichment_wb <- openxlsx::createWorkbook()
     
-    # Save the combined workbook directly to the destination
-    combined_path <- file.path(results_summary_dir, "Publication_tables", "DE_proteins_results.xlsx")
-    openxlsx::saveWorkbook(combined_wb, combined_path, overwrite = TRUE)
+    # Create an index sheet for enrichment results
+    openxlsx::addWorksheet(enrichment_wb, "Enrichment_Index")
+    
+    # Create index data frame for enrichment results
+    enrichment_index_data <- data.frame(
+        Sheet = character(),
+        Contrast = character(),
+        Direction = character(),
+        stringsAsFactors = FALSE
+    )
+    
+    # Get all enrichment result files
+    enrichment_files <- list.files(
+        path = pathway_dir,
+        pattern = "_enrichment_results.tsv$",
+        full.names = TRUE
+    )
+    
+    # Process each enrichment file
+    enrichment_files |>
+        purrr::imap(\(file, idx) {
+            # Extract contrast and direction from filename
+            file_parts <- basename(file) |>
+                stringr::str_remove("_enrichment_results.tsv") |>
+                stringr::str_split("_") |>
+                unlist()
+            
+            contrast <- file_parts[1]
+            direction <- file_parts[2]
+            sheet_name <- sprintf("Enrichment_Sheet%d", idx)
+            
+            # Add to index
+            enrichment_index_data <<- rbind(enrichment_index_data,
+                                          data.frame(
+                                              Sheet = sheet_name,
+                                              Contrast = contrast,
+                                              Direction = direction,
+                                              stringsAsFactors = FALSE
+                                          ))
+            
+            # Add data sheet
+            data <- readr::read_tsv(file, show_col_types = FALSE)
+            openxlsx::addWorksheet(enrichment_wb, sheet_name)
+            openxlsx::writeData(enrichment_wb, sheet_name, data)
+        })
+    
+    # Write enrichment index sheet
+    openxlsx::writeData(enrichment_wb, "Enrichment_Index", enrichment_index_data)
+    
+    # Apply formatting to enrichment index sheet
+    openxlsx::setColWidths(enrichment_wb, "Enrichment_Index", cols = 1:3, widths = c(15, 30, 15))
+    openxlsx::addStyle(enrichment_wb, "Enrichment_Index",
+                      style = openxlsx::createStyle(textDecoration = "bold"),
+                      rows = 1, cols = 1:3)
+    
+    # Before saving, ensure the Publication_tables directory exists
+    dir.create(pub_tables_dir, recursive = TRUE, showWarnings = FALSE)
+    
+    # Save the workbooks with a try-catch to handle potential write errors
+    tryCatch({
+        openxlsx::saveWorkbook(de_wb, de_results_path, overwrite = TRUE)
+        cat(sprintf("Successfully saved: %s\n", de_results_path))
+    }, error = function(e) {
+        failed_copies[[length(failed_copies) + 1]] <- list(
+            type = "workbook_save",
+            path = de_results_path,
+            error = e$message
+        )
+        warning(sprintf("Failed to save DE results workbook: %s", e$message))
+    })
+    
+    tryCatch({
+        openxlsx::saveWorkbook(enrichment_wb, enrichment_path, overwrite = TRUE)
+        cat(sprintf("Successfully saved: %s\n", enrichment_path))
+    }, error = function(e) {
+        failed_copies[[length(failed_copies) + 1]] <- list(
+            type = "workbook_save",
+            path = enrichment_path,
+            error = e$message
+        )
+        warning(sprintf("Failed to save enrichment workbook: %s", e$message))
+    })
 
     cat("\nCopying files to Results Summary...\n")
     cat("===================================\n\n")
