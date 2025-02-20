@@ -950,15 +950,12 @@ formatConfigList <- function(config_list, indent = 0) {
         if (is.list(value)) {
             output <- c(output,
                 paste0(paste(rep(" ", indent), collapse = ""),
-                      name_formatted, ":"))
-                output <- c(output,
-                    formatConfigList(value, indent + 2))
-                    )
+                      name_formatted, ":"),
+                formatConfigList(value, indent + 2))
         } else {
             output <- c(output,
                 paste0(paste(rep(" ", indent), collapse = ""),
                       name_formatted, ": ", value))
-            )
         }
     }
     return(output)
