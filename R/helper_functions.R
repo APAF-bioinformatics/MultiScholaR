@@ -1141,14 +1141,14 @@ copyToResultsSummary <- function(contrasts_tbl) {
         full.names = TRUE
     )
 
-    # Create a combined workbook
-    combined_wb <- openxlsx::createWorkbook()
+    # Create a combined workbook for DE results
+    de_wb <- openxlsx::createWorkbook()
     
     # Create an index sheet first
-    openxlsx::addWorksheet(combined_wb, "Index")
+    openxlsx::addWorksheet(de_wb, "DE_Results_Index")
     
-    # Create index data frame
-    index_data <- data.frame(
+    # Create index data frame for DE results
+    de_index_data <- data.frame(
         Sheet = character(),
         Description = character(),
         stringsAsFactors = FALSE
@@ -1158,7 +1158,7 @@ copyToResultsSummary <- function(contrasts_tbl) {
     de_files |>
         purrr::imap(\(file, idx) {
             # Create simple sheet name
-            sheet_name <- sprintf("Sheet%d", idx)
+            sheet_name <- sprintf("DE_Sheet%d", idx)
             
             # Get base name for index
             base_name <- basename(file) |>
@@ -1166,7 +1166,7 @@ copyToResultsSummary <- function(contrasts_tbl) {
                 stringr::str_remove("_long_annot.xlsx")
             
             # Add to index
-            index_data <<- rbind(index_data, 
+            de_index_data <<- rbind(de_index_data, 
                                data.frame(
                                    Sheet = sheet_name,
                                    Description = base_name,
@@ -1175,27 +1175,88 @@ copyToResultsSummary <- function(contrasts_tbl) {
             
             # Add data sheet
             data <- openxlsx::read.xlsx(file)
-            openxlsx::addWorksheet(combined_wb, sheet_name)
-            openxlsx::writeData(combined_wb, sheet_name, data)
+            openxlsx::addWorksheet(de_wb, sheet_name)
+            openxlsx::writeData(de_wb, sheet_name, data)
         })
     
-    # Write index sheet
-    openxlsx::writeData(combined_wb, "Index", index_data)
+    # Write DE index sheet
+    openxlsx::writeData(de_wb, "DE_Results_Index", de_index_data)
     
-    # Apply some formatting to index sheet
-    openxlsx::setColWidths(combined_wb, "Index", cols = 1:2, widths = c(10, 50))
-    openxlsx::addStyle(combined_wb, "Index", 
+    # Apply formatting to DE index sheet
+    openxlsx::setColWidths(de_wb, "DE_Results_Index", cols = 1:2, widths = c(10, 50))
+    openxlsx::addStyle(de_wb, "DE_Results_Index", 
                       style = openxlsx::createStyle(textDecoration = "bold"),
                       rows = 1, cols = 1:2)
+    
+    # Create a new workbook for pathway enrichment results
+    enrichment_wb <- openxlsx::createWorkbook()
+    
+    # Create an index sheet for enrichment results
+    openxlsx::addWorksheet(enrichment_wb, "Enrichment_Index")
+    
+    # Create index data frame for enrichment results
+    enrichment_index_data <- data.frame(
+        Sheet = character(),
+        Contrast = character(),
+        Direction = character(),
+        stringsAsFactors = FALSE
+    )
+    
+    # Get all enrichment result files
+    enrichment_files <- list.files(
+        path = pathway_dir,
+        pattern = "_enrichment_results.tsv$",
+        full.names = TRUE
+    )
+    
+    # Process each enrichment file
+    enrichment_files |>
+        purrr::imap(\(file, idx) {
+            # Extract contrast and direction from filename
+            file_parts <- basename(file) |>
+                stringr::str_remove("_enrichment_results.tsv") |>
+                stringr::str_split("_") |>
+                unlist()
+            
+            contrast <- file_parts[1]
+            direction <- file_parts[2]
+            sheet_name <- sprintf("Enrichment_Sheet%d", idx)
+            
+            # Add to index
+            enrichment_index_data <<- rbind(enrichment_index_data,
+                                          data.frame(
+                                              Sheet = sheet_name,
+                                              Contrast = contrast,
+                                              Direction = direction,
+                                              stringsAsFactors = FALSE
+                                          ))
+            
+            # Add data sheet
+            data <- readr::read_tsv(file, show_col_types = FALSE)
+            openxlsx::addWorksheet(enrichment_wb, sheet_name)
+            openxlsx::writeData(enrichment_wb, sheet_name, data)
+        })
+    
+    # Write enrichment index sheet
+    openxlsx::writeData(enrichment_wb, "Enrichment_Index", enrichment_index_data)
+    
+    # Apply formatting to enrichment index sheet
+    openxlsx::setColWidths(enrichment_wb, "Enrichment_Index", cols = 1:3, widths = c(15, 30, 15))
+    openxlsx::addStyle(enrichment_wb, "Enrichment_Index",
+                      style = openxlsx::createStyle(textDecoration = "bold"),
+                      rows = 1, cols = 1:3)
     
     # Create Publication_tables directory if it doesn't exist
     dir.create(file.path(results_summary_dir, "Publication_tables"), 
                recursive = TRUE, 
                showWarnings = FALSE)
     
-    # Save the combined workbook directly to the destination
-    combined_path <- file.path(results_summary_dir, "Publication_tables", "DE_proteins_results.xlsx")
-    openxlsx::saveWorkbook(combined_wb, combined_path, overwrite = TRUE)
+    # Save the workbooks
+    de_wb_path <- file.path(results_summary_dir, "Publication_tables", "DE_proteins_results.xlsx")
+    enrichment_wb_path <- file.path(results_summary_dir, "Publication_tables", "Pathway_enrichment_results.xlsx")
+    
+    openxlsx::saveWorkbook(de_wb, de_wb_path, overwrite = TRUE)
+    openxlsx::saveWorkbook(enrichment_wb, enrichment_wb_path, overwrite = TRUE)
 
     cat("\nCopying files to Results Summary...\n")
     cat("===================================\n\n")
