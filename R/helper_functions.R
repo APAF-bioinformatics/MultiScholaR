@@ -770,7 +770,7 @@ extract_experiment <- function(x, mode = "range", start = 1, end = NULL) {
 
 #' @title Setup Project Directories
 #' @description Creates and manages project directories with version control
-#' @param base_dir Base directory path (optional, defaults to getwd())
+#' @param base_dir Base directory path (optional, defaults to here::here())
 #' @param label Optional label to append to proteomics directory name (e.g., "proteomics_MyLabel")
 #' @param force Logical; if TRUE, skips user confirmation (default: FALSE)
 #' @return List of directory paths
@@ -950,12 +950,16 @@ formatConfigList <- function(config_list, indent = 0) {
         if (is.list(value)) {
             output <- c(output,
                 paste0(paste(rep(" ", indent), collapse = ""),
-                      name_formatted, ":"),
-                formatConfigList(value, indent + 2))
+                      name_formatted, ":"))
+                output <- c(output,
+                    formatConfigList(value, indent + 2))
+                )
+            )
         } else {
             output <- c(output,
                 paste0(paste(rep(" ", indent), collapse = ""),
                       name_formatted, ": ", value))
+            )
         }
     }
     return(output)
