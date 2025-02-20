@@ -775,7 +775,7 @@ extract_experiment <- function(x, mode = "range", start = 1, end = NULL) {
 #' @param force Logical; if TRUE, skips user confirmation (default: FALSE)
 #' @return List of directory paths
 #' @export
-setupAndShowDirectories <- function(base_dir = getwd(), label = NULL, force = FALSE) {
+setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force = FALSE) {
     # Create base paths and names
     proteomics_dirname <- if (!is.null(label)) paste0("proteomics_", substr(label, 1, 30)) else "proteomics"
     
