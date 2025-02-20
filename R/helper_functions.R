@@ -1022,11 +1022,97 @@ setMethod("show",
 #' @title Copy Files to Results Summary and Show Status
 #' @description Copies specified files to results summary directory and displays copy status
 #' @param contrasts_tbl A tibble containing contrast information
+#' @param label Optional label to append to backup directory name (e.g., "backup_MyLabel")
+#' @param force Logical; if TRUE, skips user confirmation (default: FALSE)
 #' @return Invisible list of failed copies for error handling
 #' @export
-copyToResultsSummary <- function(contrasts_tbl) {
+copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE) {
     # Track failed copies
     failed_copies <- list()
+    
+    # Define target directories
+    pub_tables_dir <- file.path(results_summary_dir, "Publication_tables")
+    
+    # Check if results_summary directory exists
+    if (dir.exists(results_summary_dir)) {
+        # Create backup directory name with optional label and timestamp
+        backup_dirname <- if (!is.null(label)) {
+            paste0("proteomics_", substr(label, 1, 30), "_backup_", 
+                  format(Sys.time(), "%Y%m%d_%H%M%S"))
+        } else {
+            paste0("proteomics_backup_", format(Sys.time(), "%Y%m%d_%H%M%S"))
+        }
+        
+        # Create full backup path in the parent directory
+        backup_dir <- file.path(dirname(results_summary_dir), backup_dirname)
+        
+        # Only prompt if force=FALSE
+        should_proceed <- if (!force) {
+            cat(sprintf("\nResults summary directory exists:\n- %s\n", results_summary_dir))
+            repeat {
+                response <- readline(prompt = "Do you want to backup existing directory and proceed? (y/n): ")
+                response <- tolower(substr(response, 1, 1))
+                if (response %in% c("y", "n")) {
+                    break
+                }
+                cat("Please enter 'y' or 'n'\n")
+            }
+            response == "y"
+        } else {
+            cat("Force mode enabled - backing up and proceeding...\n")
+            TRUE
+        }
+        
+        if (!should_proceed) {
+            message("Copy operation cancelled by user")
+            return(invisible(NULL))
+        }
+        
+        # Create backup directory
+        dir.create(backup_dir, recursive = TRUE, showWarnings = FALSE)
+        
+        # Copy contents directly to backup directory without creating nested structure
+        file.copy(
+            list.files(results_summary_dir, full.names = TRUE),
+            backup_dir,
+            recursive = TRUE
+        )
+        
+        if (length(list.files(backup_dir)) > 0) {
+            cat(sprintf("Backed up results_summary directory to: %s\n", backup_dir))
+            
+            # Create a backup info file
+            backup_info <- data.frame(
+                original_dir = results_summary_dir,
+                backup_time = Sys.time(),
+                label = if(!is.null(label)) label else NA_character_,
+                stringsAsFactors = FALSE
+            )
+            
+            write.table(
+                backup_info,
+                file = file.path(backup_dir, "backup_info.txt"),
+                sep = "\t",
+                row.names = FALSE,
+                quote = FALSE
+            )
+            
+            # Remove original directory after successful backup
+            unlink(results_summary_dir, recursive = TRUE)
+            dir.create(results_summary_dir, recursive = TRUE, showWarnings = FALSE)
+        } else {
+            warning("Failed to create backup, proceeding without backup")
+            failed_copies[[length(failed_copies) + 1]] <- list(
+                type = "backup_creation",
+                path = backup_dir,
+                error = "Failed to create backup"
+            )
+        }
+    }
+    
+    # Check if Excel files already exist
+    de_results_path <- file.path(pub_tables_dir, "DE_proteins_results.xlsx")
+    enrichment_path <- file.path(pub_tables_dir, "Pathway_enrichment_results.xlsx")
     
     # Define subdirectories to create
     summary_subdirs <- c(
@@ -1041,12 +1127,14 @@ copyToResultsSummary <- function(contrasts_tbl) {
         sapply(\(subdir) {
             dir_path <- file.path(results_summary_dir, subdir)
             if (!dir.create(dir_path, recursive = TRUE, showWarnings = FALSE)) {
-                warning(sprintf("Failed to create directory: %s", dir_path))
-                failed_copies[[length(failed_copies) + 1]] <- list(
-                    type = "directory_creation",
-                    path = dir_path,
-                    error = "Failed to create directory"
-                )
+                if (!dir.exists(dir_path)) {  # Only warn if creation failed and dir doesn't exist
+                    warning(sprintf("Failed to create directory: %s", dir_path))
+                    failed_copies[[length(failed_copies) + 1]] <- list(
+                        type = "directory_creation",
+                        path = dir_path,
+                        error = "Failed to create directory"
+                    )
+                }
             }
         })
 
@@ -1058,13 +1146,6 @@ copyToResultsSummary <- function(contrasts_tbl) {
             dest = "QC_figures",
             is_dir = FALSE,
             display_name = "Correlation Filtered Plots"
-        ),
-        # Add pathway directory
-        list(
-            source = pathway_dir,
-            dest = "Publication_figures",
-            is_dir = TRUE,
-            display_name = "Pathway Analysis"
         ),
         # Add RUV normalized results
         list(
@@ -1242,17 +1323,33 @@ copyToResultsSummary <- function(contrasts_tbl) {
                       style = openxlsx::createStyle(textDecoration = "bold"),
                       rows = 1, cols = 1:3)
     
-    # Create Publication_tables directory if it doesn't exist
-    dir.create(file.path(results_summary_dir, "Publication_tables"), 
-               recursive = TRUE, 
-               showWarnings = FALSE)
+    # Before saving, ensure the Publication_tables directory exists
+    dir.create(pub_tables_dir, recursive = TRUE, showWarnings = FALSE)
     
-    # Save the workbooks
-    de_wb_path <- file.path(results_summary_dir, "Publication_tables", "DE_proteins_results.xlsx")
-    enrichment_wb_path <- file.path(results_summary_dir, "Publication_tables", "Pathway_enrichment_results.xlsx")
+    # Save the workbooks with a try-catch to handle potential write errors
+    tryCatch({
+        openxlsx::saveWorkbook(de_wb, de_results_path, overwrite = TRUE)
+        cat(sprintf("Successfully saved: %s\n", de_results_path))
+    }, error = function(e) {
+        failed_copies[[length(failed_copies) + 1]] <- list(
+            type = "workbook_save",
+            path = de_results_path,
+            error = e$message
+        )
+        warning(sprintf("Failed to save DE results workbook: %s", e$message))
+    })
     
-    openxlsx::saveWorkbook(de_wb, de_wb_path, overwrite = TRUE)
-    openxlsx::saveWorkbook(enrichment_wb, enrichment_wb_path, overwrite = TRUE)
+    tryCatch({
+        openxlsx::saveWorkbook(enrichment_wb, enrichment_path, overwrite = TRUE)
+        cat(sprintf("Successfully saved: %s\n", enrichment_path))
+    }, error = function(e) {
+        failed_copies[[length(failed_copies) + 1]] <- list(
+            type = "workbook_save",
+            path = enrichment_path,
+            error = e$message
+        )
+        warning(sprintf("Failed to save enrichment workbook: %s", e$message))
+    })
 
     cat("\nCopying files to Results Summary...\n")
     cat("===================================\n\n")
