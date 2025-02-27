@@ -565,9 +565,9 @@ setGeneric(name="plotPearson",
 setMethod(f="plotPearson",
           signature="ProteinQuantitativeData",
           definition=function(theObject, tech_rep_remove_regex = "pool") {
-           
+
             correlation_vec <- pearsonCorForSamplePairs(theObject, tech_rep_remove_regex)
-            
+
             pearson_plot <- correlation_vec |>
               ggplot(aes(pearson_correlation)) +
               geom_histogram(breaks = seq(min(round(correlation_vec$pearson_correlation - 0.5, 2), na.rm = TRUE), 1, 0.001)) +
@@ -577,7 +577,7 @@ setMethod(f="plotPearson",
               theme(panel.grid.major = element_blank(),
                     panel.grid.minor = element_blank(),
                     panel.background = element_blank())
-            
+
             return(pearson_plot)
           })
 
@@ -597,7 +597,7 @@ setGeneric("InitialiseGrid", function(dummy = NULL) {
 })
 
 #' @export
-setMethod("InitialiseGrid", 
+setMethod("InitialiseGrid",
           signature(dummy = "ANY"),
           function(dummy = NULL) {
             new("GridPlotData",
@@ -620,8 +620,9 @@ setGeneric(name = "createGridQC",
 #' @export
 setMethod(f = "createGridQC",
           signature = "GridPlotData",
-          definition = function(theObject, pca_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_rle_pearson_corr_plots_merged") {
-            
+          definition = function(theObject, pca_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_rle_pearson_corr_plots_merged"
+                                , num_of_columns = 3) {
+
             createPcaPlot <- function(plot, title) {
               plot +
                 xlim(-40, 45) + ylim(-30, 25) + ggtitle(title) +
@@ -630,27 +631,27 @@ setMethod(f = "createGridQC",
                       panel.grid.minor = element_blank(),
                       panel.background = element_blank())
             }
-            
+
             createRlePlot <- function(plot, title) {
               plot + ggtitle(title) +
                 theme(text = element_text(size = 15),
                       axis.text.x = element_blank(),
                       axis.ticks.x = element_blank())
             }
-            
+
             createPearsonPlot <- function(plot, title) {
               plot + ggtitle(title) +
                 theme(text = element_text(size = 15))
             }
-            
+
             created_pca_plots <- mapply(createPcaPlot, theObject@pca_plots, pca_titles, SIMPLIFY = FALSE)
             created_rle_plots <- mapply(createRlePlot, theObject@rle_plots, rle_titles, SIMPLIFY = FALSE)
             created_pearson_plots <- mapply(createPearsonPlot, theObject@pearson_plots, pearson_titles, SIMPLIFY = FALSE)
-            
+
             combined_plot <- (
-              wrap_plots(created_pca_plots, ncol = 3) /
-              wrap_plots(created_rle_plots, ncol = 3) /
-              wrap_plots(created_pearson_plots, ncol = 3)
+              wrap_plots(created_pca_plots, ncol = num_of_columns) /
+              wrap_plots(created_rle_plots, ncol = num_of_columns) /
+              wrap_plots(created_pearson_plots, ncol = num_of_columns)
             ) +
               plot_layout(guides = 'collect')
 
@@ -659,13 +660,13 @@ setMethod(f = "createGridQC",
                 ggsave(
                   plot = combined_plot,
                   filename = file.path(save_path, paste0(file_name, ".", ext)),
-                  width = 14,
-                  height = 14
+                  width = 12/3*num_of_columns + 2,
+                  height = 12/3*num_of_columns + 2
                 )
               })
               message(paste("Plots saved in", save_path))
             }
-            
+
             return(combined_plot)
           })
 
@@ -1273,10 +1274,10 @@ setMethod(f = "chooseBestProteinAccession"
                               , seqinr_accession_column=NULL
                               , replace_zero_with_na = NULL
                               , aggregation_method = NULL) {
-            
+
             protein_quant_table <- theObject@protein_quant_table
             protein_id_column <- theObject@protein_id_column
-            
+
             delim <- checkParamsObjectFunctionSimplify(theObject, "delim",  default_value =  " |;|:|\\|")
             seqinr_obj <- checkParamsObjectFunctionSimplify(theObject, "seqinr_obj",  default_value = NULL)
             seqinr_accession_column <- checkParamsObjectFunctionSimplify(theObject
@@ -1288,35 +1289,35 @@ setMethod(f = "chooseBestProteinAccession"
             aggregation_method <- checkParamsObjectFunctionSimplify(theObject
                                                                   , "aggregation_method"
                                                                   , default_value = "sum")
-            
+
             if (!aggregation_method %in% c("sum", "mean", "median")) {
               stop("aggregation_method must be one of: 'sum', 'mean', 'median'")
             }
-            
+
             theObject <- updateParamInObject(theObject, "delim")
             theObject <- updateParamInObject(theObject, "seqinr_obj")
             theObject <- updateParamInObject(theObject, "seqinr_accession_column")
             theObject <- updateParamInObject(theObject, "replace_zero_with_na")
             theObject <- updateParamInObject(theObject, "aggregation_method")
-            
+
             evidence_tbl_cleaned <- protein_quant_table |>
               distinct() |>
               mutate(row_id = row_number() -1)
-            
+
             accession_gene_name_tbl <- chooseBestProteinAccessionHelper(input_tbl = evidence_tbl_cleaned,
                                                                       acc_detail_tab = seqinr_obj,
                                                                       accessions_column = !!sym(protein_id_column),
                                                                       row_id_column = seqinr_accession_column,
                                                                       group_id = row_id,
                                                                       delim = ";")
-            
+
             protein_log2_quant_cln <- evidence_tbl_cleaned |>
               left_join(accession_gene_name_tbl |>
                          dplyr::distinct(row_id, !!sym(as.character(seqinr_accession_column)))
                        , by = join_by(row_id)) |>
               mutate(!!sym(theObject@protein_id_column) := !!sym(as.character(seqinr_accession_column))) |>
               dplyr::select(-row_id, -!!sym(as.character(seqinr_accession_column)))
-            
+
             protein_id_table <- evidence_tbl_cleaned |>
               left_join(accession_gene_name_tbl |>
                          dplyr::distinct(row_id, !!sym(as.character(seqinr_accession_column)))
@@ -1330,7 +1331,7 @@ setMethod(f = "chooseBestProteinAccession"
               ungroup() |>
               mutate(!!sym(paste0(protein_id_column, "_list")) := purrr::map_chr(!!sym(paste0(protein_id_column, "_list"))
                                                                                 , \(x){ paste(unique(sort(str_split(x, ";")[[1]])), collapse=";") }))
-            
+
             summed_data <- protein_log2_quant_cln |>
               mutate(!!sym(protein_id_column) := purrr::map_chr(!!sym(protein_id_column), \(x){ str_split(x, delim)[[1]][1] })) |>
               pivot_longer(
@@ -1356,11 +1357,11 @@ setMethod(f = "chooseBestProteinAccession"
                 values_from = temporary_values_choose_accession,
                 values_fill = NA_real_
               )
-            
+
             if(replace_zero_with_na == TRUE) {
               summed_data[is.na(summed_data)] <- NA
             }
-            
+
             protein_id_table <- rankProteinAccessionHelper(input_tbl = protein_id_table,
                                                          acc_detail_tab = seqinr_obj,
                                                          accessions_column = !!sym(paste0(protein_id_column, "_list")),
@@ -1369,10 +1370,10 @@ setMethod(f = "chooseBestProteinAccession"
                                                          delim = ";") |>
               dplyr::rename(!!sym(paste0(protein_id_column, "_list")) := seqinr_accession_column) |>
               dplyr::select(-num_gene_names, -gene_names, -is_unique)
-            
+
             theObject@protein_id_table <- protein_id_table
             theObject@protein_quant_table <- summed_data[, colnames(protein_quant_table)]
-            
+
             return(theObject)
           })
 
