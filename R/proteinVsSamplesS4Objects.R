@@ -612,7 +612,7 @@ setMethod("InitialiseGrid",
 #' @export
 #' @export
 setGeneric(name = "createGridQC",
-           def = function(theObject, pca_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_rle_pearson_corr_plots_merged", num_of_colums = 3) {
+           def = function(theObject, pca_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_rle_pearson_corr_plots_merged", num_of_columns = 3) {
              standardGeneric("createGridQC")
            },
            signature = c("theObject", "pca_titles", "rle_titles", "pearson_titles", "save_path", "file_name", "num_of_columns"))
