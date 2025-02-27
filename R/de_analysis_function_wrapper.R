@@ -55,10 +55,10 @@ deAnalysisWrapperFunction <- function( theObject
   ## plot PCA plot
 
   pca_plot <-  plotPca( theObject
-                           , grouping_variable = theObject@group_id
-                           , label_column = ""
-                           , title = ""
-                           , font_size = 8) +
+                        , grouping_variable = theObject@group_id
+                        , label_column = ""
+                        , title = ""
+                        , font_size = 8) +
     theme_bw() +
     theme(axis.text.x = element_text(size = 12)) +
     theme(axis.text.y = element_text(size = 12)) +
@@ -72,10 +72,10 @@ deAnalysisWrapperFunction <- function( theObject
 
 
   pca_plot_with_labels <-  plotPca( theObject
-                        , grouping_variable = theObject@group_id
-                        , label_column = theObject@sample_id
-                        , title = ""
-                        , font_size = 8) +
+                                    , grouping_variable = theObject@group_id
+                                    , label_column = theObject@sample_id
+                                    , title = ""
+                                    , font_size = 8) +
     theme_bw() +
     theme(axis.text.x = element_text(size = 12)) +
     theme(axis.text.y = element_text(size = 12)) +
@@ -139,8 +139,8 @@ deAnalysisWrapperFunction <- function( theObject
 
   ## Count the number of up or down significant differentially expressed proteins.
   num_sig_de_molecules_first_go <- printCountDeGenesTable(list_of_de_tables = list(contrasts_results_table),
-                                                 list_of_descriptions = list( "RUV applied"),
-                                                 formula_string = "analysis_type ~ comparison")
+                                                          list_of_descriptions = list( "RUV applied"),
+                                                          formula_string = "analysis_type ~ comparison")
 
   return_list$num_sig_de_molecules_first_go <- num_sig_de_molecules_first_go
 
@@ -221,9 +221,9 @@ deAnalysisWrapperFunction <- function( theObject
   ## Return the number of significant molecules
   num_sig_de_molecules <- significant_rows %>%
     dplyr::mutate(status = case_when(!!sym(qvalue_column)  >= de_q_val_thresh ~ "Not significant",
-                                       log2FC >= 0 & !!sym(qvalue_column) < de_q_val_thresh ~ "Significant and Up",
+                                     log2FC >= 0 & !!sym(qvalue_column) < de_q_val_thresh ~ "Significant and Up",
                                      log2FC < 0 &  !!sym(qvalue_column) < de_q_val_thresh ~ "Significant and Down",
-                                      TRUE ~ "Not significant")) %>%
+                                     TRUE ~ "Not significant")) %>%
     group_by( comparison,  status) %>% # expression, analysis_type,
     summarise(counts = n()) %>%
     ungroup()
@@ -299,49 +299,49 @@ writeInteractiveVolcanoPlotProteomics <- function( de_proteins_long
                                                    , display_columns = c( "best_uniprot_acc" )) {
 
 
-    volcano_plot_tab <- de_proteins_long  |>
-      left_join(uniprot_tbl, by = join_by( !!sym(args_row_id) == !!sym( uniprot_id_column) ) ) |>
-      dplyr::rename( UNIPROT_GENENAME = gene_names_column ) |>
-      mutate( UNIPROT_GENENAME = purrr::map_chr( UNIPROT_GENENAME, \(x){str_split(x, " |:")[[1]][1]})) |>
-      dplyr::mutate(gene_name = UNIPROT_GENENAME ) |>
-      mutate( lqm = -log10(!!sym(fdr_column)))  |>
-      dplyr::mutate(label = case_when(abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) >= de_q_val_thresh ~ "Not sig., logFC >= 1",
-                                      abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) < de_q_val_thresh ~ "Sig., logFC >= 1",
-                                      abs(!!sym(log2fc_column)) < 1 & !!sym(fdr_column) < de_q_val_thresh ~ "Sig., logFC < 1",
-                                      TRUE ~ "Not sig.")) |>
-      dplyr::mutate(colour = case_when(abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) >= de_q_val_thresh ~ "orange",
-                                       abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) < de_q_val_thresh ~ "purple",
-                                       abs(!!sym(log2fc_column)) < 1 & !!sym(fdr_column) < de_q_val_thresh ~ "blue",
-                                       TRUE ~ "black")) |>
-      dplyr::mutate(best_uniprot_acc = str_split(!!sym(args_row_id), ":" ) |> purrr::map_chr(1)  ) |>
-      dplyr::mutate(analysis_type = comparison)  |>
-      dplyr::select( best_uniprot_acc, lqm, !!sym(fdr_column), !!sym(raw_p_value_column), !!sym(log2fc_column), comparison, label, colour,  gene_name
-                     , any_of( display_columns ))   |>
-      dplyr::mutate( my_alpha = case_when ( gene_name !=  "" ~ 1
-                                            , TRUE ~ 0.5))
+  volcano_plot_tab <- de_proteins_long  |>
+    left_join(uniprot_tbl, by = join_by( !!sym(args_row_id) == !!sym( uniprot_id_column) ) ) |>
+    dplyr::rename( UNIPROT_GENENAME = gene_names_column ) |>
+    mutate( UNIPROT_GENENAME = purrr::map_chr( UNIPROT_GENENAME, \(x){str_split(x, " |:")[[1]][1]})) |>
+    dplyr::mutate(gene_name = UNIPROT_GENENAME ) |>
+    mutate( lqm = -log10(!!sym(fdr_column)))  |>
+    dplyr::mutate(label = case_when(abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) >= de_q_val_thresh ~ "Not sig., logFC >= 1",
+                                    abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) < de_q_val_thresh ~ "Sig., logFC >= 1",
+                                    abs(!!sym(log2fc_column)) < 1 & !!sym(fdr_column) < de_q_val_thresh ~ "Sig., logFC < 1",
+                                    TRUE ~ "Not sig.")) |>
+    dplyr::mutate(colour = case_when(abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) >= de_q_val_thresh ~ "orange",
+                                     abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) < de_q_val_thresh ~ "purple",
+                                     abs(!!sym(log2fc_column)) < 1 & !!sym(fdr_column) < de_q_val_thresh ~ "blue",
+                                     TRUE ~ "black")) |>
+    dplyr::mutate(best_uniprot_acc = str_split(!!sym(args_row_id), ":" ) |> purrr::map_chr(1)  ) |>
+    dplyr::mutate(analysis_type = comparison)  |>
+    dplyr::select( best_uniprot_acc, lqm, !!sym(fdr_column), !!sym(raw_p_value_column), !!sym(log2fc_column), comparison, label, colour,  gene_name
+                   , any_of( display_columns ))   |>
+    dplyr::mutate( my_alpha = case_when ( gene_name !=  "" ~ 1
+                                          , TRUE ~ 0.5))
 
-    output_dir <- file.path( publication_graphs_dir
-                             ,  "Interactive_Volcano_Plots")
+  output_dir <- file.path( publication_graphs_dir
+                           ,  "Interactive_Volcano_Plots")
 
-    dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+  dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
 
-    purrr::walk( seq_len( ncol(fit.eb$coefficients))
-                 , \(coef) { # print(coef)
+  purrr::walk( seq_len( ncol(fit.eb$coefficients))
+               , \(coef) { # print(coef)
 
-                   print(paste0("coef = ", coef))
-#                    print(head( counts_tbl))
-#                    print(groups)
-#                    print( output_dir)
+                 print(paste0("coef = ", coef))
+                 #                    print(head( counts_tbl))
+                 #                    print(groups)
+                 #                    print( output_dir)
 
-                   getGlimmaVolcanoProteomics( fit.eb
-                                               , coef = coef
-                                               , volcano_plot_tab  = volcano_plot_tab
-                                               , uniprot_column = best_uniprot_acc
-                                               , gene_name_column = gene_name
-                                               , display_columns = display_columns
-                                               , counts_tbl = counts_tbl
-                                               , groups = groups
-                                               , output_dir = output_dir ) } )
+                 getGlimmaVolcanoProteomics( fit.eb
+                                             , coef = coef
+                                             , volcano_plot_tab  = volcano_plot_tab
+                                             , uniprot_column = best_uniprot_acc
+                                             , gene_name_column = gene_name
+                                             , display_columns = display_columns
+                                             , counts_tbl = counts_tbl
+                                             , groups = groups
+                                             , output_dir = output_dir ) } )
 
 }
 
@@ -352,18 +352,18 @@ writeInteractiveVolcanoPlotProteomics <- function( de_proteins_long
 # de_analysis_results_list$contrasts_results$fit.eb
 # No full stops in the nme of columns of interactive table in glimma plot. It won't display column with full stop in the column name.
 writeInteractiveVolcanoPlotProteomicsWidget <- function( de_proteins_long
-                                                   , uniprot_tbl
-                                                   , fit.eb
-                                                   , args_row_id = "uniprot_acc"
-                                                   , fdr_column = "fdr_qvalue"
-                                                   , raw_p_value_column = "raw_pvalue"
-                                                   , log2fc_column = "log2FC"
-                                                   , de_q_val_thresh = 0.05
-                                                   , counts_tbl = NULL
-                                                   , groups = NULL
-                                                   , uniprot_id_column = "Entry"
-                                                   , gene_names_column = "Gene Names"
-                                                   , display_columns = c( "best_uniprot_acc" )) {
+                                                         , uniprot_tbl
+                                                         , fit.eb
+                                                         , args_row_id = "uniprot_acc"
+                                                         , fdr_column = "fdr_qvalue"
+                                                         , raw_p_value_column = "raw_pvalue"
+                                                         , log2fc_column = "log2FC"
+                                                         , de_q_val_thresh = 0.05
+                                                         , counts_tbl = NULL
+                                                         , groups = NULL
+                                                         , uniprot_id_column = "Entry"
+                                                         , gene_names_column = "Gene Names"
+                                                         , display_columns = c( "best_uniprot_acc" )) {
 
 
   volcano_plot_tab <- de_proteins_long  |>
@@ -388,16 +388,16 @@ writeInteractiveVolcanoPlotProteomicsWidget <- function( de_proteins_long
                                           , TRUE ~ 0.5))
 
   interactive_volcano_plots <- purrr::map(seq_len( ncol(fit.eb$coefficients))
-               , \(coef) {
-                 # print(paste0( "coef = ", coef))
-                 getGlimmaVolcanoProteomicsWidget( fit.eb
-                                             , coef = coef
-                                             , volcano_plot_tab  = volcano_plot_tab
-                                             , uniprot_column = best_uniprot_acc
-                                             , gene_name_column = gene_name
-                                             , display_columns = display_columns
-                                             , counts_tbl = counts_tbl
-                                             , groups = groups ) } )
+                                          , \(coef) {
+                                            # print(paste0( "coef = ", coef))
+                                            getGlimmaVolcanoProteomicsWidget( fit.eb
+                                                                              , coef = coef
+                                                                              , volcano_plot_tab  = volcano_plot_tab
+                                                                              , uniprot_column = best_uniprot_acc
+                                                                              , gene_name_column = gene_name
+                                                                              , display_columns = display_columns
+                                                                              , counts_tbl = counts_tbl
+                                                                              , groups = groups ) } )
 
   interactive_volcano_plots
 }
@@ -418,7 +418,7 @@ outputDeAnalysisResults <- function(de_analysis_results_list
                                     , log2fc_column = NULL
                                     , uniprot_id_column = NULL
                                     , display_columns = NULL
-                                    ) {
+) {
 
 
   uniprot_tbl <- checkParamsObjectFunctionSimplify(theObject, "uniprot_tbl", NULL)
@@ -595,7 +595,7 @@ outputDeAnalysisResults <- function(de_analysis_results_list
   num_sig_de_molecules_first_go <- de_analysis_results_list$num_sig_de_molecules_first_go
   vroom::vroom_write(num_sig_de_molecules_first_go$table,
                      file.path(de_output_dir,
-                                paste0(file_prefix, "_num_significant_differentially_abundant_all.tab") ))
+                               paste0(file_prefix, "_num_significant_differentially_abundant_all.tab") ))
 
   writexl::write_xlsx(num_sig_de_molecules_first_go$table,
                       file.path(de_output_dir,
@@ -676,18 +676,16 @@ outputDeAnalysisResults <- function(de_analysis_results_list
   list_of_volcano_plots <- de_analysis_results_list$list_of_volcano_plots
 
 
-  message(paste("Print static volcano plots"))
-
   purrr::walk2( list_of_volcano_plots %>% pull(title),
                 list_of_volcano_plots %>% pull(plot),
                 ~{file_name_part <- file.path( publication_graphs_dir, "Volcano_Plots", paste0(.x, "."))
                 # gg_save_logging ( .y, file_name_part, plots_format)
                 for( format_ext in plots_format) {
                   file_name <- paste0(file_name_part, format_ext)
-                    ggsave(plot=.y
-                           , filename = file_name
-                           , width=7
-                           , height=7 )
+                  ggsave(plot=.y
+                         , filename = file_name
+                         , width=7
+                         , height=7 )
                 }
                 } )
 
@@ -708,12 +706,12 @@ outputDeAnalysisResults <- function(de_analysis_results_list
     num_of_comparison_only_significant <- de_analysis_results_list$num_of_comparison_only_significant
 
 
-    ggsave(filename = file.path(publication_graphs_dir, "NumSigDeMolecules", "num_sig_de_molecules.png" ),
+    ggsave(filename = file.path(publication_graphs_dir, "NumSigDeMolecules", paste0( file_prefix, "_num_sig_de_molecules.png" )),
            plot = num_sig_de_genes_barplot_only_significant,
            height = 6,
            width = (num_of_comparison_only_significant + 2) *7/6 )
 
-    ggsave(filename = file.path(publication_graphs_dir, "NumSigDeMolecules", "num_sig_de_molecules.pdf" ),
+    ggsave(filename = file.path(publication_graphs_dir, "NumSigDeMolecules", paste0( file_prefix, "num_sig_de_molecules.pdf" )),
            plot = num_sig_de_genes_barplot_only_significant,
            height = 6,
            width = (num_of_comparison_only_significant + 2) *7/6 )
@@ -727,12 +725,12 @@ outputDeAnalysisResults <- function(de_analysis_results_list
     num_of_comparison_with_not_significant <- de_analysis_results_list$num_of_comparison_with_not_significant
 
     print("print bar plot")
-    ggsave(filename = file.path(publication_graphs_dir, "NumSigDeMolecules", "num_sig_de_molecules_with_not_significant.png" ),
+    ggsave(filename = file.path(publication_graphs_dir, "NumSigDeMolecules", paste0( file_prefix, "num_sig_de_molecules_with_not_significant.png" )),
            plot = num_sig_de_genes_barplot_with_not_significant,
            height = 6,
            width = (num_of_comparison_with_not_significant + 2) *7/6 )
 
-    ggsave(filename = file.path(publication_graphs_dir, "NumSigDeMolecules", "num_sig_de_molecules_with_not_significant.pdf" ),
+    ggsave(filename = file.path(publication_graphs_dir, "NumSigDeMolecules", paste0( file_prefix, "num_sig_de_molecules_with_not_significant.pdf" )),
            plot = num_sig_de_genes_barplot_with_not_significant,
            height = 6,
            width = (num_of_comparison_with_not_significant + 2) *7/6 )
@@ -752,20 +750,20 @@ outputDeAnalysisResults <- function(de_analysis_results_list
   this_groups <- this_design_matrix[colnames( counts_mat), "group"]
 
   writeInteractiveVolcanoPlotProteomics( de_proteins_long
-                                          , uniprot_tbl = uniprot_tbl
-                                          , fit.eb = contrasts_results$fit.eb
-                                          , publication_graphs_dir= publication_graphs_dir
-                                          , args_row_id = args_row_id
-                                          , fdr_column = fdr_column
-                                          , raw_p_value_column = raw_p_value_column
-                                          , log2fc_column = log2fc_column
-                                          , de_q_val_thresh = de_q_val_thresh
-                                          , counts_tbl = counts_mat
+                                         , uniprot_tbl = uniprot_tbl
+                                         , fit.eb = contrasts_results$fit.eb
+                                         , publication_graphs_dir= publication_graphs_dir
+                                         , args_row_id = args_row_id
+                                         , fdr_column = fdr_column
+                                         , raw_p_value_column = raw_p_value_column
+                                         , log2fc_column = log2fc_column
+                                         , de_q_val_thresh = de_q_val_thresh
+                                         , counts_tbl = counts_mat
 
-                                          , groups = this_groups
-                                          , uniprot_id_column = uniprot_id_column
-                                          , gene_names_column = gene_names_column
-                                          , display_columns = display_columns )
+                                         , groups = this_groups
+                                         , uniprot_id_column = uniprot_id_column
+                                         , gene_names_column = gene_names_column
+                                         , display_columns = display_columns )
 
 }
 
@@ -778,19 +776,19 @@ outputDeAnalysisResults <- function(de_analysis_results_list
 
 #' @export
 writeInteractiveVolcanoPlotProteomicsMain <- function(de_analysis_results_list
-                                    , theObject
-                                    , uniprot_tbl
-                                    , publication_graphs_dir = NULL
-                                    , file_prefix = NULL
-                                    , plots_format = NULL
-                                    , args_row_id = NULL
-                                    , de_q_val_thresh = NULL
-                                    , gene_names_column = NULL
-                                    , fdr_column = NULL
-                                    , raw_p_value_column = NULL
-                                    , log2fc_column = NULL
-                                    , uniprot_id_column = NULL
-                                    , display_columns = NULL
+                                                      , theObject
+                                                      , uniprot_tbl
+                                                      , publication_graphs_dir = NULL
+                                                      , file_prefix = NULL
+                                                      , plots_format = NULL
+                                                      , args_row_id = NULL
+                                                      , de_q_val_thresh = NULL
+                                                      , gene_names_column = NULL
+                                                      , fdr_column = NULL
+                                                      , raw_p_value_column = NULL
+                                                      , log2fc_column = NULL
+                                                      , uniprot_id_column = NULL
+                                                      , display_columns = NULL
 ) {
 
 

@@ -158,15 +158,15 @@ removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample
 #'@return A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values.
 #'@export
 removeRowsWithMissingValuesPercentHelper <- function(input_table
-                                               , cols
-                                               , design_matrix
-                                               , sample_id
-                                               , row_id
-                                               , grouping_variable
-                                               , groupwise_percentage_cutoff = 1
-                                               , max_groups_percentage_cutoff = 50
-                                               , proteins_intensity_cutoff_percentile = 1
-                                        , temporary_abundance_column = "Abundance") {
+                                                     , cols
+                                                     , design_matrix
+                                                     , sample_id
+                                                     , row_id
+                                                     , grouping_variable
+                                                     , groupwise_percentage_cutoff = 1
+                                                     , max_groups_percentage_cutoff = 50
+                                                     , proteins_intensity_cutoff_percentile = 1
+                                                     , temporary_abundance_column = "Abundance") {
 
   abundance_long <- input_table |>
     pivot_longer(cols = { { cols } },
@@ -314,12 +314,12 @@ getRuvIIIReplicateMatrixHelper <- function(design_matrix, sample_id_column, grou
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
 plotPcaHelper <- function(data,
-                    design_matrix,
-                    sample_id_column = "Sample_ID",
-                    grouping_variable = "group",
-                    label_column = NULL,
-                    title, geom.text.size = 11, ncomp = 2,
-                    ...) {
+                          design_matrix,
+                          sample_id_column = "Sample_ID",
+                          grouping_variable = "group",
+                          label_column = NULL,
+                          title, geom.text.size = 11, ncomp = 2,
+                          ...) {
 
   pca.res <- mixOmics::pca(t(as.matrix(data)), ncomp = ncomp)
   proportion_explained <- pca.res$prop_expl_var
