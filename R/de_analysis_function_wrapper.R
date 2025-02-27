@@ -92,7 +92,7 @@ deAnalysisWrapperFunction <- function( theObject
 
   ## Compare the different experimental groups and obtain lists of differentially expressed proteins.")
 
-  rownames( theObject@design_matrix ) <- theObject@design_matrix |> pull( one_of(theObject@sample_id ))
+  rownames( theObject@design_matrix ) <- theObject@design_matrix |> dplyr::pull( one_of(theObject@sample_id ))
 
 
   contrasts_results <- runTestsContrasts(as.matrix(column_to_rownames(theObject@protein_quant_table, theObject@protein_id_column)),
@@ -521,16 +521,6 @@ outputDeAnalysisResults <- function(de_analysis_results_list
     ggsave(filename = file_name, plot = volplot_plot, width = 7.29, height = 6)
   }
 
-  ## Count the number of up or down significnat differentially expressed proteins.
-  num_sig_de_molecules <- de_analysis_results_list$num_sig_de_molecules
-
-  for( format_ext in plots_format) {
-    file_name<-file.path(de_output_dir, paste0("num_sda_entities_barplot.",format_ext))
-    ggsave(filename = file_name,
-           plot = num_sig_de_molecules$plot,
-           height = 10,
-           width = 7)
-  }
 
   ## Number of values graph
   plot_num_of_values <- de_analysis_results_list$plot_num_of_values
@@ -577,39 +567,46 @@ outputDeAnalysisResults <- function(de_analysis_results_list
 
   volcano_plot <- de_analysis_results_list$volcano_plot
   for( format_ext in plots_format) {
-    file_name <- file.path(de_output_dir,paste0("volplot_gg_all.",format_ext))
+    file_name <- file.path(de_output_dir,paste0(file_prefix, "_volplot_gg_all.",format_ext))
     ggsave(filename = file_name, plot = volplot_plot, width = 7.29, height = 6)
   }
 
   ## Count the number of up or down significnat differentially expressed proteins.
-  num_sig_de_molecules <- de_analysis_results_list$num_sig_de_molecules
-  for( format_ext in plots_format) {
-    file_name<-file.path(de_output_dir,paste0("num_sda_entities_barplot.",format_ext))
-    ggsave(filename = file_name,
-           plot = num_sig_de_molecules$plot,
-           height = 10,
-           width = 7)
+  if( !is.null(de_analysis_results_list$num_sig_de_genes_barplot_only_significant)) {
+    num_sig_de_genes_barplot_only_significant <- de_analysis_results_list$num_sig_de_genes_barplot_only_significant
+    num_of_comparison_only_significant <- de_analysis_results_list$num_of_comparison_only_significant
+
+
+    ggsave(filename = file.path(de_output_dir,paste0(file_prefix, "_num_sda_entities_barplot.", "png")),
+           plot = num_sig_de_genes_barplot_only_significant,
+           height = 6,
+           width = (num_of_comparison_only_significant + 2) *7/6 )
+
+    ggsave(filename = file.path(de_output_dir,paste0(file_prefix, "_num_sda_entities_barplot.", "pdf")),
+           plot = num_sig_de_genes_barplot_only_significant,
+           height = 6,
+           width = (num_of_comparison_only_significant + 2) *7/6 )
+
 
   }
-
 
 
   ## Count the number of up or down significnat differentially expressed proteins.
   num_sig_de_molecules_first_go <- de_analysis_results_list$num_sig_de_molecules_first_go
   vroom::vroom_write(num_sig_de_molecules_first_go$table,
                      file.path(de_output_dir,
-                               "num_significant_differentially_abundant_all.tab"))
+                                paste0(file_prefix, "_num_significant_differentially_abundant_all.tab") ))
 
   writexl::write_xlsx(num_sig_de_molecules_first_go$table,
                       file.path(de_output_dir,
-                                "num_significant_differentially_abundant_all.xlsx"))
+                                paste0(file_prefix, "_num_significant_differentially_abundant_all.xlsx")) )
 
 
 
   ## Print p-values distribution figure
   pvalhist <- de_analysis_results_list$pvalhist
   for( format_ext in plots_format) {
-    file_name<-file.path(de_output_dir,paste0("p_values_distn.",format_ext))
+    file_name<-file.path(de_output_dir,paste0(file_prefix, "_p_values_distn.",format_ext))
     ggsave(filename = file_name,
            plot = pvalhist,
            height = 10,
@@ -678,6 +675,9 @@ outputDeAnalysisResults <- function(de_analysis_results_list
 
   list_of_volcano_plots <- de_analysis_results_list$list_of_volcano_plots
 
+
+  message(paste("Print static volcano plots"))
+
   purrr::walk2( list_of_volcano_plots %>% pull(title),
                 list_of_volcano_plots %>% pull(plot),
                 ~{file_name_part <- file.path( publication_graphs_dir, "Volcano_Plots", paste0(.x, "."))
@@ -708,15 +708,16 @@ outputDeAnalysisResults <- function(de_analysis_results_list
     num_of_comparison_only_significant <- de_analysis_results_list$num_of_comparison_only_significant
 
 
-    ggsave(filename = file.path(publication_graphs_dir, "NumSigDeMolecules", "num_sig_de_genes_barplot.png" ),
+    ggsave(filename = file.path(publication_graphs_dir, "NumSigDeMolecules", "num_sig_de_molecules.png" ),
            plot = num_sig_de_genes_barplot_only_significant,
            height = 6,
            width = (num_of_comparison_only_significant + 2) *7/6 )
 
-    ggsave(filename = file.path(publication_graphs_dir, "NumSigDeMolecules", "num_sig_de_genes_barplot.pdf" ),
+    ggsave(filename = file.path(publication_graphs_dir, "NumSigDeMolecules", "num_sig_de_molecules.pdf" ),
            plot = num_sig_de_genes_barplot_only_significant,
            height = 6,
            width = (num_of_comparison_only_significant + 2) *7/6 )
+
 
   }
 
@@ -725,6 +726,7 @@ outputDeAnalysisResults <- function(de_analysis_results_list
     num_sig_de_genes_barplot_with_not_significant <- de_analysis_results_list$num_sig_de_genes_barplot_with_not_significant
     num_of_comparison_with_not_significant <- de_analysis_results_list$num_of_comparison_with_not_significant
 
+    print("print bar plot")
     ggsave(filename = file.path(publication_graphs_dir, "NumSigDeMolecules", "num_sig_de_molecules_with_not_significant.png" ),
            plot = num_sig_de_genes_barplot_with_not_significant,
            height = 6,

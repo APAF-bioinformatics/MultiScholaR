@@ -357,12 +357,12 @@ plotPcaHelper <- function(data,
 
 #'@export
 plotPcaListHelper <- function(data,
-                          design_matrix,
-                          sample_id_column = "Sample_ID",
-                          grouping_variables_list = c("group"),
-                          label_column = NULL,
-                          title, geom.text.size = 11, ncomp = 2,
-                          ...) {
+                              design_matrix,
+                              sample_id_column = "Sample_ID",
+                              grouping_variables_list = c("group"),
+                              label_column = NULL,
+                              title, geom.text.size = 11, ncomp = 2,
+                              ...) {
 
   pca.res <- mixOmics::pca(t(as.matrix(data)), ncomp = ncomp)
   proportion_explained <- pca.res$prop_expl_var
@@ -428,7 +428,7 @@ plotPcaGgpairs <- function( data_matrix
   }
 
   pc_list <- purrr::map_chr( seq_len(ncomp)
-                         , \(comp_idx){ pca_prop_explained_helper(pca.res, comp_idx)})
+                             , \(comp_idx){ pca_prop_explained_helper(pca.res, comp_idx)})
 
   pca_variates_x <- pca.res$variates$X
 
@@ -451,7 +451,7 @@ plotPcaGgpairs <- function( data_matrix
 #'@export
 #'@param Y  Rows = Samples, Columns = Proteins or Peptides
 plotRleHelper <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75,
-                                                 0.95), yaxis_limit = c(-0.5, 0.5))
+                                                       0.95), yaxis_limit = c(-0.5, 0.5))
 {
   #  checks = check.ggplot()
   # if (checks) {
@@ -544,16 +544,16 @@ rlePcaPlotList <- function(list_of_data_matrix, list_of_design_matrix,
                            sample_id_column = Sample_ID, grouping_variable = group, list_of_descriptions) {
 
   rle_list <- purrr::pmap( list( data_matrix=list_of_data_matrix, description=list_of_descriptions, design_matrix=list_of_design_matrix),
-                          function( data_matrix, description, design_matrix) { plotRleHelper(t(as.matrix(data_matrix)),
-                                   rowinfo = design_matrix[colnames(data_matrix), as_name(enquo(grouping_variable))]  )  +
-                            labs(title = description)} )
+                           function( data_matrix, description, design_matrix) { plotRleHelper(t(as.matrix(data_matrix)),
+                                                                                              rowinfo = design_matrix[colnames(data_matrix), as_name(enquo(grouping_variable))]  )  +
+                               labs(title = description)} )
 
   pca_list <- purrr::pmap(list( data_matrix=list_of_data_matrix, description=list_of_descriptions, design_matrix=list_of_design_matrix),
                           function( data_matrix, description, design_matrix) { plotPcaHelper(data_matrix,
-                                   design_matrix = design_matrix,
-                                   sample_id_column = sample_id_column ,
-                                   grouping_variable =  grouping_variable ,
-                                   title = description, cex = 7) })
+                                                                                             design_matrix = design_matrix,
+                                                                                             sample_id_column = sample_id_column ,
+                                                                                             grouping_variable =  grouping_variable ,
+                                                                                             title = description, cex = 7) })
 
   list_of_plots <- c(rle_list, pca_list)
 
@@ -616,27 +616,27 @@ countStatDeGenesHelper <- function(de_table
   # print(head(de_table))
 
   de_table_updated <- purrr::map(de_table, \(x){  countStatDeGenes(x,
-                                              lfc_thresh = 0,
-                                              q_val_thresh = 0.05,
-                                              log_fc_column = logFC,
-                                              q_value_column = fdr_qvalue)})
+                                                                   lfc_thresh = 0,
+                                                                   q_val_thresh = 0.05,
+                                                                   log_fc_column = logFC,
+                                                                   q_value_column = fdr_qvalue)})
 
-    list_of_tables <- purrr::map2(de_table_updated
-                ,names(de_table_updated)
-                ,\(.x, .y){ .x |>
-                    mutate(!!sym(comparison_column) := .y) })
+  list_of_tables <- purrr::map2(de_table_updated
+                                ,names(de_table_updated)
+                                ,\(.x, .y){ .x |>
+                                    mutate(!!sym(comparison_column) := .y) })
 
-    # print(head(temp[[1]]))
+  # print(head(temp[[1]]))
 
-    merged_tables <- list_of_tables |>
-      bind_rows() |>
-      mutate({ { facet_column } } := description) |>
-      separate_wider_delim( !!sym(comparison_column ),
-                            delim = "=",
-                            names = c(comparison_column,
-                                      expression_column))
+  merged_tables <- list_of_tables |>
+    bind_rows() |>
+    mutate({ { facet_column } } := description) |>
+    separate_wider_delim( !!sym(comparison_column ),
+                          delim = "=",
+                          names = c(comparison_column,
+                                    expression_column))
 
-    merged_tables
+  merged_tables
 }
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -649,11 +649,11 @@ countStatDeGenesHelper <- function(de_table
 #' @param expression_column The name of the column that will contain the formula expressions of the contrasts.
 #'@export
 printCountDeGenesTable <- function(  list_of_de_tables
-                                   , list_of_descriptions
-                                   , formula_string = "analysis_type ~ comparison"
-                                   , facet_column = analysis_type
-                                   , comparison_column = "comparison"
-                                   , expression_column = "expression") {
+                                     , list_of_descriptions
+                                     , formula_string = "analysis_type ~ comparison"
+                                     , facet_column = analysis_type
+                                     , comparison_column = "comparison"
+                                     , expression_column = "expression") {
 
 
 
@@ -661,10 +661,10 @@ printCountDeGenesTable <- function(  list_of_de_tables
   num_significant_de_genes_all <- purrr::map2(list_of_de_tables,
                                               list_of_descriptions,
                                               function(a, b) { countStatDeGenesHelper( de_table = a
-                                                                                          , description = b
-                                                                                          , facet_column = {{facet_column}}
-                                                                                          , comparison_column = comparison_column
-                                                                                          , expression_column = expression_column) }) |>
+                                                                                       , description = b
+                                                                                       , facet_column = {{facet_column}}
+                                                                                       , comparison_column = comparison_column
+                                                                                       , expression_column = expression_column) }) |>
     bind_rows()
 
   num_sig_de_genes_barplot <- num_significant_de_genes_all |>
@@ -716,13 +716,13 @@ printCountDeGenesTable <- function(  list_of_de_tables
 #'   black = all other values
 #' @export
 getSignificantData <- function( list_of_de_tables
-                               , list_of_descriptions
-                               , row_id = uniprot_acc
-                               , p_value_column = raw_pvalue
-                               , q_value_column = fdr_qvalue
-                               , fdr_value_column = fdr_value_bh_adjustment
-                               , log_q_value_column = lqm
-                               , log_fc_column = logFC
+                                , list_of_descriptions
+                                , row_id = uniprot_acc
+                                , p_value_column = raw_pvalue
+                                , q_value_column = fdr_qvalue
+                                , fdr_value_column = fdr_value_bh_adjustment
+                                , log_q_value_column = lqm
+                                , log_fc_column = logFC
                                , comparison_column = "comparison"
                                , expression_column = "log_intensity"
                                , facet_column = analysis_type
