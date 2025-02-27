@@ -1,0 +1,105 @@
+name: To-Do List
+description: General purpose task tracking template
+title: "[Todo]: "
+labels: ["task"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Task List
+        Track your to-do items and progress here. Perfect for general tasks, ideas, and planning.
+
+  - type: dropdown
+    id: task-type
+    attributes:
+      label: Type of Task
+      description: What kind of task is this?
+      options:
+        - General Task
+        - Planning
+        - Research
+        - Review
+        - Meeting
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: timeline
+    attributes:
+      label: Timeline
+      description: When does this need to be done?
+      options:
+        - ASAP
+        - This Week
+        - This Month
+        - Next Quarter
+        - No Rush
+    validations:
+      required: true
+
+  - type: textarea
+    id: task-list
+    attributes:
+      label: Task List
+      description: List your to-do items below (they will automatically format as checkboxes)
+      placeholder: |
+        - [ ] Task 1
+        - [ ] Task 2
+        - [ ] Task 3
+        
+        ### Optional Subheadings
+        - [ ] Subtask A
+        - [ ] Subtask B
+    validations:
+      required: true
+
+  - type: textarea
+    id: resources-needed
+    attributes:
+      label: Resources Needed
+      description: List any resources, tools, or people needed
+      placeholder: |
+        - Resource 1
+        - Person to contact
+        - Tool needed
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes & Context
+      description: Any additional notes, links, or context
+      placeholder: Add any helpful notes, links, or context here...
+
+  - type: checkboxes
+    id: task-properties
+    attributes:
+      label: Task Properties
+      description: Check all that apply
+      options:
+        - label: Requires collaboration
+        - label: Blocked by other tasks
+        - label: Can be done remotely
+        - label: Needs follow-up
+        - label: Regular/Recurring task
+
+  - type: input
+    id: due-date
+    attributes:
+      label: Due Date (if applicable)
+      description: When should this be completed?
+      placeholder: "YYYY-MM-DD or 'Ongoing' or 'Flexible'"
+
+  - type: textarea
+    id: progress-updates
+    attributes:
+      label: Progress Updates
+      description: Track progress and updates here
+      placeholder: |
+        ### YYYY-MM-DD
+        - Progress note 1
+        - Progress note 2
+        
+        ### Next Steps
+        - [ ] Next step 1
+        - [ ] Next step 2 

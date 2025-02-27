@@ -1,0 +1,112 @@
+name: Feature Request / Update
+description: Template for tracking new features or updates
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Feature Request / Update
+        Please describe the changes or features needed. Add details in relevant sections below.
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority Level
+      description: How urgent is this feature/update?
+      options:
+        - Critical
+        - High
+        - Medium
+        - Low
+    validations:
+      required: true
+
+  - type: input
+    id: area
+    attributes:
+      label: Area of Change
+      description: Which part of the project does this affect?
+      placeholder: "e.g., Frontend, Database, Documentation"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: ui-changes
+    attributes:
+      label: UI/Frontend Changes
+      description: Visual or interface changes needed
+      options:
+        - label: Text/Content updates
+        - label: Layout modifications
+        - label: Navigation changes
+        - label: Style/Design updates
+        - label: Button/Interactive elements
+        - label: Form changes
+        - label: Other UI elements
+
+  - type: checkboxes
+    id: backend-changes
+    attributes:
+      label: Backend/System Changes
+      description: Technical changes or system updates needed
+      options:
+        - label: Database modifications
+        - label: API changes
+        - label: Authentication/Security updates
+        - label: Performance improvements
+        - label: Integration with external services
+        - label: Configuration changes
+        - label: Other backend changes
+
+  - type: checkboxes
+    id: documentation
+    attributes:
+      label: Documentation Needs
+      description: Documentation updates required
+      options:
+        - label: README updates
+        - label: API documentation
+        - label: User guide changes
+        - label: Technical documentation
+        - label: Comments/Code documentation
+        - label: Other documentation
+
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: Detailed Description
+      description: Provide a detailed description of the changes needed
+      placeholder: Describe what needs to be changed and why...
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What needs to be completed for this to be considered done?
+      placeholder: |
+        - [ ] Criteria 1
+        - [ ] Criteria 2
+        - [ ] Criteria 3
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any other information, screenshots, or context that might be helpful
+      placeholder: Add any other context about the feature here...
+
+  - type: checkboxes
+    id: considerations
+    attributes:
+      label: Implementation Considerations
+      description: Check all that apply
+      options:
+        - label: Requires testing
+        - label: Needs security review
+        - label: Has dependencies on other features
+        - label: Requires deployment changes
+        - label: Needs performance testing
+        - label: Requires user documentation 
