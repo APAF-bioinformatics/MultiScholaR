@@ -1676,5 +1676,264 @@ extract_geneSets <- function(x, n) {
 }
 
 
+#' Perform protein pathway enrichment analysis
+#' 
+#' @description
+#' This function performs pathway enrichment analysis on protein data using GO terms and gene symbols
+#' downloaded from UniProt. The data is cached for future use to improve performance.
+#' 
+#' @param protein_data A data frame containing protein quantification data with columns for protein IDs,
+#' log fold changes, and FDR values
+#' @param protein_id_column Name of the column containing protein IDs (default: "Protein.Ids")
+#' @param log_fc_column Name of the column containing log fold change values (default: "log2FC")
+#' @param fdr_column Name of the column containing FDR values (default: "q.mod")
+#' @param protein_p_val_thresh P-value threshold for protein significance (default: 0.05)
+#' @param comparison_column Name of the column containing comparison information (default: "comparison")
+#' @param organism_taxid NCBI taxonomy ID for the organism (e.g., "9606" for human)
+#' @param min_gene_set_size Minimum number of genes in a gene set (default: 4)
+#' @param max_gene_set_size Maximum number of genes in a gene set (default: 200)
+#' @param p_val_thresh P-value threshold for enrichment significance (default: 0.05)
+#' @param cache_dir Directory to store cached UniProt data (default: "cache")
+#' @param output_dir Directory for output files (default: "proteins_pathways_enricher")
+#' @param use_cached Whether to use cached data if available (default: TRUE)
+#' 
+#' @return A list containing enrichment results and plots
+#' 
+#' @import UniProt.ws
+#' @import clusterProfiler
+#' @import GO.db
+#' @import dplyr
+#' @import tidyr
+#' @import ggplot2
+#' @import plotly
+#' @importFrom magrittr %>%
+#' 
+#' @export
+enrichProteinsPathways <- function(protein_data,
+                                  protein_id_column = "Protein.Ids",
+                                  log_fc_column = "log2FC",
+                                  fdr_column = "q.mod",
+                                  protein_p_val_thresh = 0.05,
+                                  comparison_column = "comparison",
+                                  organism_taxid,
+                                  min_gene_set_size = 4,
+                                  max_gene_set_size = 200,
+                                  p_val_thresh = 0.05,
+                                  cache_dir = "cache",
+                                  output_dir = "proteins_pathways_enricher",
+                                  use_cached = TRUE) {
+  
+  # Create directories if they don't exist
+  dir.create(cache_dir, showWarnings = FALSE, recursive = TRUE)
+  dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
+  
+  # Cache file paths
+  go_cache_file <- file.path(cache_dir, paste0("go_terms_", organism_taxid, ".rds"))
+  gene_cache_file <- file.path(cache_dir, paste0("gene_symbols_", organism_taxid, ".rds"))
+  
+  # Function to get or create cached data
+  get_cached_data <- function(cache_file, download_fn) {
+    if (use_cached && file.exists(cache_file)) {
+      readRDS(cache_file)
+    } else {
+      data <- download_fn()
+      saveRDS(data, cache_file)
+      data
+    }
+  }
+  
+  # Set up UniProt.ws
+  up <- UniProt.ws::UniProt.ws(taxId = organism_taxid)
+  
+  # Download GO terms
+  download_go_terms <- function() {
+    UniProt.ws::select(up, 
+                      keys = unique(protein_data[[protein_id_column]]),
+                      columns = c("GO ID", "GO term", "GO domain"),
+                      keytype = "UniProtKB")
+  }
+  
+  # Download gene symbols
+  download_gene_symbols <- function() {
+    UniProt.ws::select(up, 
+                      keys = unique(protein_data[[protein_id_column]]),
+                      columns = c("Gene names", "Entry name"),
+                      keytype = "UniProtKB")
+  }
+  
+  # Get cached or fresh data
+  go_data <- get_cached_data(go_cache_file, download_go_terms)
+  gene_data <- get_cached_data(gene_cache_file, download_gene_symbols)
+  
+  # Process protein data
+  positive_proteins <- protein_data %>%
+    dplyr::filter(!!sym(fdr_column) < protein_p_val_thresh & 
+                   !!sym(log_fc_column) > 0) %>%
+    group_by(!!sym(comparison_column)) %>%
+    summarise(proteins = list(!!sym(protein_id_column)))
+  
+  negative_proteins <- protein_data %>%
+    dplyr::filter(!!sym(fdr_column) < protein_p_val_thresh & 
+                   !!sym(log_fc_column) < 0) %>%
+    group_by(!!sym(comparison_column)) %>%
+    summarise(proteins = list(!!sym(protein_id_column)))
+  
+  # Background proteins
+  background_proteins <- unique(protein_data[[protein_id_column]])
+  
+  # Perform enrichment for each comparison
+  enrichment_results <- list()
+  
+  for (comp in unique(protein_data[[comparison_column]])) {
+    # Create directory for comparison
+    comp_dir <- file.path(output_dir, comp)
+    dir.create(comp_dir, showWarnings = FALSE)
+    
+    # Get proteins for this comparison
+    pos_prots <- positive_proteins$proteins[positive_proteins[[comparison_column]] == comp][[1]]
+    neg_prots <- negative_proteins$proteins[negative_proteins[[comparison_column]] == comp][[1]]
+    
+    # Perform enrichment analysis
+    pos_enrich <- clusterProfiler::enrichGO(
+      gene = pos_prots,
+      universe = background_proteins,
+      OrgDb = GO.db::GO.db,
+      ont = "ALL",
+      pvalueCutoff = p_val_thresh,
+      minGSSize = min_gene_set_size,
+      maxGSSize = max_gene_set_size
+    )
+    
+    neg_enrich <- clusterProfiler::enrichGO(
+      gene = neg_prots,
+      universe = background_proteins,
+      OrgDb = GO.db::GO.db,
+      ont = "ALL",
+      pvalueCutoff = p_val_thresh,
+      minGSSize = min_gene_set_size,
+      maxGSSize = max_gene_set_size
+    )
+    
+    # Save results
+    if (!is.null(pos_enrich) && nrow(as.data.frame(pos_enrich)) > 0) {
+      write.table(as.data.frame(pos_enrich),
+                  file = file.path(comp_dir, "positive_enrichment.tab"),
+                  sep = "\t", row.names = FALSE, quote = FALSE)
+      
+      # Generate and save plots
+      pdf(file.path(comp_dir, "positive_enrichment_plots.pdf"))
+      print(barplot(pos_enrich, showCategory = 20))
+      print(cnetplot(pos_enrich))
+      dev.off()
+    }
+    
+    if (!is.null(neg_enrich) && nrow(as.data.frame(neg_enrich)) > 0) {
+      write.table(as.data.frame(neg_enrich),
+                  file = file.path(comp_dir, "negative_enrichment.tab"),
+                  sep = "\t", row.names = FALSE, quote = FALSE)
+      
+      # Generate and save plots
+      pdf(file.path(comp_dir, "negative_enrichment_plots.pdf"))
+      print(barplot(neg_enrich, showCategory = 20))
+      print(cnetplot(neg_enrich))
+      dev.off()
+    }
+    
+    enrichment_results[[comp]] <- list(
+      positive = pos_enrich,
+      negative = neg_enrich
+    )
+  }
+  
+  return(enrichment_results)
+}
+
+# Helper function to clean up protein IDs
+.cleanProteinIds <- function(ids) {
+  ids %>%
+    stringr::str_split(":") %>%
+    purrr::map_chr(1) %>%
+    stringr::str_replace_all("-\\d+$", "")
+}
+
+
+
+
+# ... existing code ...
+
+#' Perform pathway enrichment analysis on ProteinQuantitativeData object
+#' 
+#' @param object A ProteinQuantitativeData object
+#' @param organism_taxid NCBI taxonomy ID for the organism (e.g., "9606" for human)
+#' @param protein_p_val_thresh P-value threshold for protein significance (default: 0.05)
+#' @param min_gene_set_size Minimum number of genes in a gene set (default: 4)
+#' @param max_gene_set_size Maximum number of genes in a gene set (default: 200)
+#' @param p_val_thresh P-value threshold for enrichment significance (default: 0.05)
+#' @param cache_dir Directory to store cached UniProt data (default: "cache")
+#' @param output_dir Directory for output files (default: "proteins_pathways_enricher")
+#' @param use_cached Whether to use cached data if available (default: TRUE)
+#' 
+#' @return A list containing enrichment results and plots
+#' 
+#' @export
+setMethod("enrichPathways", 
+          signature = signature(object = "ProteinQuantitativeData"),
+          function(object,
+                   organism_taxid,
+                   protein_p_val_thresh = 0.05,
+                   min_gene_set_size = 4,
+                   max_gene_set_size = 200,
+                   p_val_thresh = 0.05,
+                   cache_dir = "cache",
+                   output_dir = "proteins_pathways_enricher",
+                   use_cached = TRUE) {
+            
+            # Convert protein quantification data to long format
+            protein_data <- object@protein_quant_table %>%
+              tidyr::pivot_longer(cols = -object@protein_id_column,
+                                names_to = "comparison",
+                                values_to = "log2FC") %>%
+              dplyr::filter(!is.na(log2FC))
+            
+            # Add FDR values if available in the object
+            if ("q.mod" %in% names(object@protein_quant_table)) {
+              protein_data <- protein_data %>%
+                dplyr::left_join(object@protein_quant_table %>%
+                                  dplyr::select(object@protein_id_column, q.mod),
+                                by = object@protein_id_column)
+            } else {
+              # If FDR values not available, use p-values or set to 1
+              protein_data$q.mod <- 1
+            }
+            
+            # Call the enrichment function
+            enrichment_results <- enrichProteinsPathways(
+              protein_data = protein_data,
+              protein_id_column = object@protein_id_column,
+              log_fc_column = "log2FC",
+              fdr_column = "q.mod",
+              protein_p_val_thresh = protein_p_val_thresh,
+              comparison_column = "comparison",
+              organism_taxid = organism_taxid,
+              min_gene_set_size = min_gene_set_size,
+              max_gene_set_size = max_gene_set_size,
+              p_val_thresh = p_val_thresh,
+              cache_dir = cache_dir,
+              output_dir = output_dir,
+              use_cached = use_cached
+            )
+            
+            return(enrichment_results)
+          })
+
+#' Generic for pathway enrichment analysis
+#' 
+#' @param object The object to perform enrichment analysis on
+#' @param ... Additional arguments passed to methods
+#' 
+#' @export
+setGeneric("enrichPathways", function(object, ...) standardGeneric("enrichPathways"))
+
+
 
 ###################
