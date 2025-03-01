@@ -213,9 +213,6 @@ chooseBestProteinAccessionHelper <- function(input_tbl
     dplyr::filter( !str_detect(!!sym(row_id_column), "REV__")) |>
     dplyr::filter( !str_detect(!!sym(row_id_column), "CON__"))
 
-  print("hellow temp message4")
-  print(head( resolve_acc_temp |> dplyr::filter( str_detect(!!sym(row_id_column), "REV__"))))
-
   resolve_acc_helper <- resolve_acc_temp |>
     left_join( acc_detail_tab ,
                by = join_by( !!sym(row_id_column) == !!sym(row_id_column) ),
