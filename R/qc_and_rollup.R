@@ -2496,6 +2496,15 @@ updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NUL
     # Get the current filtering_progress object
     filtering_progress <- get("filtering_progress", envir = .GlobalEnv)
     
+    # Create necessary directories without prompting if publication_graphs_dir is provided
+    if (!is.null(publication_graphs_dir)) {
+        qc_dir <- file.path(publication_graphs_dir, "filtering_qc")
+        time_dir <- file.path(qc_dir, format(Sys.time(), "%Y%m%d_%H%M%S"))
+        dir.create(qc_dir, recursive = TRUE, showWarnings = FALSE)
+        dir.create(time_dir, recursive = TRUE, showWarnings = FALSE)
+        assign("time_dir", time_dir, envir = .GlobalEnv)
+    }
+    
     # Determine if we're working with protein_quant_table
     is_protein_quant <- if (isS4(data)) {
         "protein_quant_table" %in% slotNames(data)

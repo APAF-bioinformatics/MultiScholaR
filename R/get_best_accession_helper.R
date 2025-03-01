@@ -202,18 +202,19 @@ chooseBestProteinAccessionHelper <- function(input_tbl
                                              , accessions_column
                                              , row_id_column = "uniprot_acc"
                                              , group_id
-                                             , delim= ";") {
+                                             , delim= ":") {
 
 
   resolve_acc_temp <- input_tbl |>
     dplyr::select( { { group_id } }, { { accessions_column } }) |>
     mutate(row_id_column_with_isoform = str_split({ { accessions_column } }, delim)) |>
     unnest( row_id_column_with_isoform ) |>
-    mutate( !!sym(row_id_column) := cleanIsoformNumber( row_id_column_with_isoform))
+    mutate( !!sym(row_id_column) := cleanIsoformNumber( row_id_column_with_isoform)) |>
+    dplyr::filter( !str_detect(!!sym(row_id_column), "REV__")) |>
+    dplyr::filter( !str_detect(!!sym(row_id_column), "CON__"))
 
-  print(head( resolve_acc_temp))
-
-  print(head( acc_detail_tab))
+  print("hellow temp message4")
+  print(head( resolve_acc_temp |> dplyr::filter( str_detect(!!sym(row_id_column), "REV__"))))
 
   resolve_acc_helper <- resolve_acc_temp |>
     left_join( acc_detail_tab ,
@@ -813,8 +814,6 @@ cleanMaxQuantProteins <- function(
   evidence_tbl <- dat_cln %>%
     mutate(maxquant_row_id = id)
 
-  print(aa_seq_tbl)
-
   # Filter and clean data
   loginfo("Identify best UniProt accession per entry, extract sample number and simplify column header")
 
@@ -848,7 +847,8 @@ processAndFilterData <- function(
     unique_peptides_group_col,
     column_pattern,
     aa_seq_tbl,
-    extract_replicate_group
+    extract_replicate_group,
+    delim = ":"
 ) {
   # Initialize tracking of protein numbers
   num_proteins_remaining <- numeric(3)
@@ -914,14 +914,12 @@ processAndFilterData <- function(
 
   ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-  print(head(evidence_tbl_cleaned))
-
-
   accession_gene_name_tbl <- chooseBestProteinAccessionHelper(input_tbl = evidence_tbl_cleaned,
                                                         acc_detail_tab = aa_seq_tbl,
                                                         accessions_column = protein_ids,
                                                         row_id_column = "uniprot_acc",
-                                                        group_id = maxquant_row_id)
+                                                        group_id = maxquant_row_id,
+                                                        delim = delim)
 
 
   accession_gene_name_tbl_record <- accession_gene_name_tbl %>%
