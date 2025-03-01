@@ -1,6 +1,6 @@
 # Author(s): Ignatius Pang, Pablo Galaviz
 # Email: cmri-bioinformatics@cmri.org.au
-# Children’s Medical Research Institute, finding cures for childhood genetic diseases
+# Children's Medical Research Institute, finding cures for childhood genetic diseases
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'Remove rows in the table where the columns specified by the column regular expression pattern are all zero or NA value.
@@ -908,15 +908,15 @@ plotOneVolcanoNoVerticalLines <- function( input_data, input_title,
   print(colour_tbl)
 
   colour_map <- colour_tbl |>
-    pull({{points_color}} ) |>
+    dplyr::pull({{points_color}} ) |>
     as.vector()
 
   names( colour_map ) <- colour_tbl |>
-    pull({{points_type_label}} )
+    dplyr::pull({{points_type_label}} )
 
   avail_labels <- input_data |>
     distinct({{points_type_label}}) |>
-    pull({{points_type_label}})
+    dplyr::pull({{points_type_label}})
 
   avail_colours <- colour_map[avail_labels]
 
@@ -1702,16 +1702,19 @@ subsetQuery <- function(data, subset, accessions_col_name, uniprot_handle, unipr
   # print(subset)
   my_keys <- data |>
     dplyr::filter(round == subset) |>
-    pull({ { accessions_col_name } })
+    dplyr::pull({ { accessions_col_name } })
 
-   # print(my_keys)
+   print(head( my_keys) )
 
   # print(uniprot_keytype)
+  # Learning in progress
 
-  UniProt.ws::select(uniprot_handle,
+  output <- UniProt.ws::select(uniprot_handle,
                      keys = my_keys,
                      columns = uniprot_columns,
                      keytype = uniprot_keytype)
+
+  print(head(output))
 }
 
 
@@ -1734,13 +1737,6 @@ batchQueryEvidence <- function(uniprot_acc_tbl, uniprot_acc_column, uniprot_hand
                                uniprot_columns = c("EXISTENCE", "SCORE", "REVIEWED", "GENENAME", "PROTEIN-NAMES", "LENGTH"),
                                uniprot_keytype = "UniProtKB") {
 
-  # uniprot_evidence_levels <- c("Evidence at protein level",
-  #                              "Evidence at transcript level",
-  #                              "Inferred from homology",
-  #                              "Predicted",
-  #                              "Uncertain",
-  #                              NA)
-
   all_uniprot_acc <- batchQueryEvidenceHelper(uniprot_acc_tbl,
                                               { { uniprot_acc_column } })
 
@@ -1752,12 +1748,12 @@ batchQueryEvidence <- function(uniprot_acc_tbl, uniprot_acc_column, uniprot_hand
                                   uniprot_keytype = uniprot_keytype)
 
   rounds_list <- all_uniprot_acc |>
-    distinct(round) |>
-    arrange(round) |>
-    pull(round)
+    dplyr::distinct(round) |>
+    dplyr::arrange(round) |>
+    dplyr::pull(round)
 
   all_uniprot_evidence <- purrr::map(rounds_list, \(x){ partial_subset_query(subset = x) }) |>
-    bind_rows()
+    dplyr::bind_rows()
 
   return(all_uniprot_evidence)
 }
@@ -1770,13 +1766,20 @@ batchQueryEvidenceHelperGeneId <- function(input_tbl, gene_id_column) {
 
   all_uniprot_acc <- input_tbl |>
     dplyr::select({ { gene_id_column } }) |>
-    arrange({ { gene_id_column } }) |>
-    dplyr::mutate(round = ceiling(row_number() / 100))  ## 100 is the maximum number of queries at one time
+    dplyr::arrange({ { gene_id_column } }) |>
+    dplyr::mutate(round = ceiling(dplyr::row_number() / 100))  ## 100 is the maximum number of queries at one time
+
+  return(all_uniprot_acc)
 }
 
 #' @export
 batchQueryEvidenceGeneId <- function(input_tbl, gene_id_column, uniprot_handle, uniprot_keytype = "UniProtKB",
                                      uniprot_columns = c("EXISTENCE", "SCORE", "REVIEWED", "GENENAME", "PROTEIN-NAMES", "LENGTH")) {
+
+  print("hahahahaha")
+
+  print(head(input_tbl))
+  print( gene_id_column)
 
   all_gene_id <- batchQueryEvidenceHelperGeneId(input_tbl, {{ gene_id_column }})
 
@@ -1788,12 +1791,12 @@ batchQueryEvidenceGeneId <- function(input_tbl, gene_id_column, uniprot_handle, 
                                   uniprot_keytype = uniprot_keytype)
 
   rounds_list <- all_gene_id |>
-    distinct(round) |>
-    arrange(round) |>
-    pull(round)
+    dplyr::distinct(round) |>
+    dplyr::arrange(round) |>
+    dplyr::pull(round)
 
   all_uniprot_evidence <- purrr::map(rounds_list, \(x) { partial_subset_query(subset = x) }) |>
-    bind_rows()
+    dplyr::bind_rows()
 
   return(all_uniprot_evidence)
 }

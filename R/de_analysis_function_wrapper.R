@@ -158,8 +158,11 @@ deAnalysisWrapperFunction <- function( theObject
 
   norm_counts <- counts_table_to_use |>
     as.data.frame() |>
-    set_colnames(paste0(colnames(counts_table_to_use), ".log2norm")) |>
+    column_to_rownames(args_row_id) |>
+    set_colnames(paste0(colnames(counts_table_to_use[-1]), ".log2norm")) |>
     rownames_to_column(args_row_id)
+
+  print(head( norm_counts))
 
   return_list$norm_counts <- norm_counts
 
