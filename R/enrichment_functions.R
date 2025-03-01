@@ -1733,36 +1733,12 @@ enrichProteinsPathways <- function(de_analysis_results,
     }
   }
 
-  # Set up UniProt.ws
-  up <- UniProt.ws::UniProt.ws(taxId = organism_taxid)
 
   # Extract protein IDs from all rows
   protein_data <- de_analysis_results$de_proteins_wide |>
     dplyr::select(uniprot_acc) |>
     distinct()
 
-  # Download UniProt data using batchQueryEvidenceGeneId
-  download_uniprot_data <- function() {
-    annotations <- batchQueryEvidenceGeneId(
-      protein_data,
-      gene_id_column = "uniprot_acc",
-      uniprot_handle = up,
-      uniprot_columns = c(
-        "gene_names",
-        "go_id"
-      )
-    ) 
-    
-    # Process the annotations to get GO terms and gene symbols
-    uniprot_dat_cln <- annotations |>
-      uniprotGoIdToTerm(
-        uniprot_id_column = Entry,
-        go_id_column = Gene.Ontology.IDs,
-        sep = "; "
-      )
-    
-    return(uniprot_dat_cln)
-  }
 
   # Get cached or fresh data
   uniprot_data <- get_cached_data(uniprot_cache_file, download_uniprot_data)
@@ -1949,3 +1925,104 @@ setMethod("enrichPathways",
           })
 
 ###################
+
+#'@export
+download_uniprot_data <- function(protein_ids, cache_file, uniprot_handle, protein_id_delimiter=":") {
+  # First split the protein IDs and take the first accession
+  protein_ids <- protein_ids |>
+    dplyr::mutate(Protein.Ids = purrr::map_chr(Protein.Ids, \(x) {
+      stringr::str_split(x, protein_id_delimiter) |> purrr::map_chr(1)
+    }))
+  
+  # Check if cache exists
+  if (file.exists(cache_file)) {
+    cached_data <- readRDS(cache_file)
+    
+    # Get unique protein IDs from input
+    input_ids <- unique(protein_ids$Protein.Ids)
+    
+    # Find which IDs are not in cache
+    missing_ids <- setdiff(input_ids, cached_data$Entry)
+    
+    if (length(missing_ids) > 0) {
+      message(paste("Downloading data for", length(missing_ids), "new protein IDs"))
+      
+      # Download data for missing IDs
+      new_data <- batchQueryEvidenceGeneId(
+        data.frame(Protein.Ids = missing_ids),
+        gene_id_column = "Protein.Ids",
+        uniprot_handle = uniprot_handle,
+        uniprot_columns = c(
+          "protein_existence",
+          "annotation_score",
+          "reviewed",
+          "gene_names",
+          "protein_name",
+          "length",
+          "xref_ensembl",
+          "go_id",
+          "keyword"
+        )
+      )
+      
+      # Process new data
+      if (!is.null(new_data) && nrow(new_data) > 0) {
+        new_data_processed <- new_data |>
+          uniprotGoIdToTerm(
+            uniprot_id_column = Entry,
+            go_id_column = go_id,
+            sep = "; "
+          ) |>
+          dplyr::rename(
+            Protein_existence = "Protein.existence",
+            Protein_names = "Protein.names"
+          )
+        
+        # Combine with cached data
+        combined_data <- dplyr::bind_rows(cached_data, new_data_processed)
+        
+        # Update cache
+        saveRDS(combined_data, cache_file)
+        return(combined_data)
+      }
+    }
+    return(cached_data)
+  } else {
+    # If no cache exists, download all data
+    message("No cache found. Downloading data for all protein IDs")
+    all_data <- batchQueryEvidenceGeneId(
+      data.frame(Protein.Ids = unique(protein_ids$Protein.Ids)),
+      gene_id_column = "Protein.Ids",
+      uniprot_handle = uniprot_handle,
+      uniprot_columns = c(
+        "protein_existence",
+        "annotation_score",
+        "reviewed",
+        "gene_names",
+        "protein_name",
+        "length",
+        "xref_ensembl",
+        "go_id",
+        "keyword"
+      )
+    )
+    
+    if (!is.null(all_data) && nrow(all_data) > 0) {
+      processed_data <- all_data |>
+        uniprotGoIdToTerm(
+          uniprot_id_column = Entry,
+          go_id_column = go_id,
+          sep = "; "
+        ) |>
+        dplyr::rename(
+          Protein_existence = "Protein.existence",
+          Protein_names = "Protein.names"
+        )
+      
+      # Save to cache
+      saveRDS(processed_data, cache_file)
+      return(processed_data)
+    }
+  }
+  return(NULL)
+}
