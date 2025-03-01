@@ -1712,8 +1712,10 @@ enrichProteinsPathways <- function(de_analysis_results,
                                   p_val_thresh = 0.05,
                                   protein_p_val_thresh = 0.05,
                                   cache_dir = "cache",
+                                  cache_file = "uniprot_annotations.RDS",
                                   output_dir = "proteins_pathways_enricher",
-                                  use_cached = TRUE) {
+                                  use_cached = TRUE, 
+                                  protein_id_delimiter = ":") {
 
   # Create directories if they don't exist
   dir.create(cache_dir, showWarnings = FALSE, recursive = TRUE)
@@ -1741,7 +1743,11 @@ enrichProteinsPathways <- function(de_analysis_results,
 
 
   # Get cached or fresh data
-  uniprot_data <- get_cached_data(uniprot_cache_file, download_uniprot_data)
+  uniprot_data <- get_cached_data(uniprot_cache_file
+  , \(x){ download_uniprot_data(protein_ids = protein_data, cache_file = uniprot_cache_file, uniprot_handle = up, protein_id_delimiter = protein_id_delimiter)      })
+
+# download_uniprot_data (protein_ids, cache_file, uniprot_handle, protein_id_delimiter=":") 
+
 
   # Process protein data for each comparison
   enrichment_results <- list()
@@ -1892,6 +1898,7 @@ setGeneric("enrichPathways", function(de_results, organism_taxid, ...) standardG
 #' @param cache_dir Directory to store cached UniProt data (default: "cache")
 #' @param output_dir Directory for output files (default: "proteins_pathways_enricher")
 #' @param use_cached Whether to use cached data if available (default: TRUE)
+#' @param protein_id_delimiter Delimiter for protein IDs (default: ":")
 #'
 #' @return A list containing enrichment results and plots
 #'
@@ -1905,8 +1912,10 @@ setMethod("enrichPathways",
                    max_gene_set_size = 200,
                    p_val_thresh = 0.05,
                    cache_dir = "cache",
+                   cache_file = "uniprot_annotations.RDS",
                    output_dir = "proteins_pathways_enricher",
-                   use_cached = TRUE) {
+                   use_cached = TRUE, 
+                   protein_id_delimiter = ":") {
 
             # Call the enrichment function
             enrichment_results <- enrichProteinsPathways(
@@ -1917,8 +1926,10 @@ setMethod("enrichPathways",
               p_val_thresh = p_val_thresh,
               protein_p_val_thresh = protein_p_val_thresh,
               cache_dir = cache_dir,
+              cache_file = cache_file,
               output_dir = output_dir,
-              use_cached = use_cached
+              use_cached = use_cached,
+              protein_id_delimiter = protein_id_delimiter
             )
 
             return(enrichment_results)
