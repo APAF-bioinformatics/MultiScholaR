@@ -181,7 +181,7 @@ removeRowsWithMissingValuesPercentHelper <- function(input_table
 
   min_protein_intensity_threshold <- ceiling( quantile( abundance_long |>
                                                           dplyr::filter( !is.nan(!!sym(temporary_abundance_column)) & !is.infinite(!!sym(temporary_abundance_column))) |>
-                                                          pull(!!sym(temporary_abundance_column))
+                                                          dplyr::pull(!!sym(temporary_abundance_column))
                                                         , na.rm=TRUE
                                                         , probs = c(proteins_intensity_cutoff_percentile/100) ))[1]
 
@@ -329,7 +329,7 @@ plotPcaHelper <- function(data,
     rownames_to_column(var = sample_id_column) |>
     left_join(design_matrix, by = sample_id_column)
 
-  unique_groups <- temp_tbl |> distinct(!!sym(grouping_variable)) |> pull(!!sym(grouping_variable))
+  unique_groups <- temp_tbl |> distinct(!!sym(grouping_variable)) |> dplyr::pull(!!sym(grouping_variable))
 
   if (is.null(label_column) || label_column == "") {
     output <- temp_tbl |>
@@ -374,7 +374,7 @@ plotPcaListHelper <- function(data,
 
 
   plotOneGgplotPca <- function( grouping_variable ) {
-    unique_groups <- temp_tbl |> distinct(!!sym(grouping_variable)) |> pull(!!sym(grouping_variable))
+    unique_groups <- temp_tbl |> distinct(!!sym(grouping_variable)) |> dplyr::pull(!!sym(grouping_variable))
 
     if (is.null(label_column) || label_column == "") {
       output <- temp_tbl |>
@@ -467,7 +467,7 @@ plotRleHelper <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75,
     my.x.factor.levels <- df_temp |>
       arrange(rowinfo) |>
       distinct(rle.x.factor) |>
-      pull(rle.x.factor)
+      dplyr::pull(rle.x.factor)
 
     df <- df_temp |>
       mutate(rle.x.factor = factor(rle.x.factor,
@@ -838,15 +838,15 @@ plotOneVolcano <- function( input_data, input_title,
   # print(colour_tbl)
 
   colour_map <- colour_tbl |>
-    pull({{points_color}} ) |>
+    dplyr::pull({{points_color}} ) |>
     as.vector()
 
   names( colour_map ) <- colour_tbl |>
-    pull({{points_type_label}} )
+    dplyr::pull({{points_type_label}} )
 
   avail_labels <- input_data |>
     distinct({{points_type_label}}) |>
-    pull({{points_type_label}})
+    dplyr::pull({{points_type_label}})
 
   avail_colours <- colour_map[avail_labels]
 
@@ -1014,7 +1014,7 @@ getGlimmaVolcanoProteomics <- function( r_obj
                                        TRUE ~ gene_name) )
 
       gene_names <- anno_tbl |>
-        pull(gene_name)
+        dplyr::pull(gene_name)
 
       rownames( r_obj@.Data[[1]] ) <- gene_names
 
@@ -1087,7 +1087,7 @@ getGlimmaVolcanoProteomicsWidget <- function( r_obj
                                      TRUE ~ gene_name) )
 
     gene_names <- anno_tbl |>
-      pull(gene_name)
+      dplyr::pull(gene_name)
 
     rownames( r_obj@.Data[[1]] ) <- gene_names
 
@@ -1151,7 +1151,7 @@ getGlimmaVolcanoPhosphoproteomics <- function( r_obj
                  , by = join_by(sites_id == {{sites_id_column}} ) )
 
     sites_id_short_list <- anno_tbl |>
-                   pull(sites_id_short)
+                   dplyr::pull(sites_id_short)
 
     rownames( r_obj@.Data[[1]] ) <- sites_id_short_list
 
@@ -1334,8 +1334,8 @@ getTypeOfGrouping <- function(design_matrix, group_id, sample_id) {
     summarise(!!rlang::sym(sample_id) := list(!!rlang::sym(sample_id))) |>
     ungroup()
 
-  type_of_grouping <- temp_type_of_grouping |> pull(!!rlang::sym(sample_id))
-  names(type_of_grouping) <- temp_type_of_grouping |> pull(!!rlang::sym(group_id))
+  type_of_grouping <- temp_type_of_grouping |> dplyr::pull(!!rlang::sym(sample_id))
+  names(type_of_grouping) <- temp_type_of_grouping |> dplyr::pull(!!rlang::sym(group_id))
 
   return(type_of_grouping)
 
@@ -2005,7 +2005,7 @@ proteinTechRepCorrelationHelper <- function( design_matrix_tech_rep, data_matrix
                                              , protein_id_column = "Protein.Ids"
                                              , sample_id_column="Sample_ID", tech_rep_column = "replicates", tech_rep_num_column = "tech_rep_num", tech_rep_remove_regex = "pool" ) {
 
-  tech_reps_list <- design_matrix_tech_rep |> pull( !!sym(tech_rep_num_column )) |> unique()
+  tech_reps_list <- design_matrix_tech_rep |> dplyr::pull( !!sym(tech_rep_num_column )) |> unique()
 
   frozen_protein_matrix_tech_rep <- data_matrix  |>
     as.data.frame() |>

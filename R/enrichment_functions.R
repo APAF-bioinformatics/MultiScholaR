@@ -145,89 +145,151 @@ oneGoEnrichment <- function( go_annot
 
 
 #'@export
-runOneGoEnrichmentInOutFunction <- function(comparison_column,
-                                            protein_id_column,
-                                            go_annot = go_annot,
-                                            background_list,
-                                            id_to_annotation_dictionary,
-                                            annotation_id,
-                                            protein_id,
-                                            aspect_column,
-                                            p_val_thresh,
-                                            ## These are the parameters that are usually presented as different combinations via the cross functions
-                                            names_of_genes_list,
-                                            input_table,
-                                            go_aspect,
-                                            input_comparison,
-                                            min_gene_set_size,
-                                            max_gene_set_size
-                                            , get_cluster_profiler_object = FALSE) {
+runOneGoEnrichmentInOutFunction <- function(significant_proteins,
+                                          background_proteins,
+                                          go_annotations,
+                                          uniprot_data,
+                                          p_val_thresh = 0.05,
+                                          min_gene_set_size = 4,
+                                          max_gene_set_size = 200,
+                                          min_sig_gene_set_size = 2) {
 
-  oneGoEnrichmentPartial <- NA
-  if(!is.null(aspect_column )) {
-    oneGoEnrichmentPartial <- purrr::partial( oneGoEnrichment,
-                                              go_annot = go_annot,
-                                              background_list = background_list,
-                                              id_to_annotation_dictionary=id_to_annotation_dictionary,
-                                              annotation_id= {{annotation_id}},
-                                              protein_id={{protein_id}},
-                                              aspect_column=!!rlang::sym(aspect_column),
-                                              p_val_thresh=p_val_thresh
-                                              , get_cluster_profiler_object = get_cluster_profiler_object )
-  } else {
-    oneGoEnrichmentPartial <- purrr::partial( oneGoEnrichment,
-                                              go_annot = go_annot,
-                                              background_list = background_list,
-                                              id_to_annotation_dictionary=id_to_annotation_dictionary,
-                                              annotation_id= {{annotation_id}},
-                                              protein_id={{protein_id}},
-                                              aspect_column=aspect_column,
-                                              p_val_thresh=p_val_thresh
-                                              , get_cluster_profiler_object = get_cluster_profiler_object )
-  }
-
-  query_list <- input_table |>
-    dplyr::filter( {{comparison_column}} == input_comparison) |>
-    distinct(  {{protein_id_column}}) |>
-    dplyr::pull( {{protein_id_column}})
-
-  # print( paste( "size of query list = ", length( query_list)) )
-
-  enrichment_temp <- oneGoEnrichmentPartial(
-    go_aspect = go_aspect,
-    query_list=query_list,
-    min_gene_set_size=min_gene_set_size,
-    max_gene_set_size=max_gene_set_size )
+  # Debug information
+  print("Starting enrichment analysis")
+  print(paste("Number of significant proteins:", length(significant_proteins)))
+  print(paste("Number of background proteins:", length(background_proteins)))
+  print("UniProt data columns:")
+  print(colnames(uniprot_data))
 
 
-  if( get_cluster_profiler_object == TRUE) {
-    if(typeof(enrichment_temp) == "list"  ) {
-      enrichment_result <- enrichment_temp[["output_table"]] %>%
-        dplyr::mutate(  {{comparison_column}} := input_comparison ) %>%
-        dplyr::mutate( names_of_genes_list = names_of_genes_list)
+  significant_df <- data.frame(uniprot_acc = significant_proteins)
+  background_df <- data.frame(uniprot_acc = background_proteins)
 
-      enrichment_object <- enrichment_temp[["cluster_profiler_object"]]
+  filtered_go_annotations <- go_annotations |>
+    inner_join( background_df
+                , by =join_by( uniprot_acc == uniprot_acc  ) )  |>
+    group_by( go_id ) |>
+    dplyr::summarise(counts =n()) |>
+    ungroup() |>
+    dplyr::filter( counts <= max_gene_set_size & counts >= min_gene_set_size ) |>
+    dplyr::select(-counts)
 
-      return( list( enrichment_result = enrichment_result,
-                    enrichment_object = enrichment_object) )
-    } else {
-      return (NA)
-    }
-  } else {
-    if(typeof(enrichment_temp) == "list" ) {
+  ## There should be at least that many significnat proteins in a go term before it is accepted for analysis
+  filtered_go_annotations_by_sig_proteins <- go_annotations |>
+    inner_join( significant_df
+                , by =join_by( uniprot_acc == uniprot_acc  ) )  |>
+    group_by( go_id ) |>
+    dplyr::summarise(counts =n()) |>
+    ungroup() |>
+    dplyr::filter( counts >= min_sig_gene_set_size ) |>
+    dplyr::select(-counts)
 
-      enrichment_result <- enrichment_temp %>%
-        dplyr::mutate(  {{comparison_column}} := input_comparison ) %>%
-        dplyr::mutate( names_of_genes_list = names_of_genes_list)
 
-      return(enrichment_result )
+  # Create term2gene and term2name for enricher
+  term2gene <- go_annotations |>
+    inner_join( filtered_go_annotations
+                , by= join_by( go_id) ) |>
+    inner_join( filtered_go_annotations_by_sig_proteins
+                , by= join_by( go_id) ) |>
+    dplyr::select(go_id, uniprot_acc, go_type) |>
+    dplyr::distinct()
+
+  term2name <- go_annotations |>
+    inner_join( filtered_go_annotations
+                , by= join_by( go_id) ) |>
+    inner_join( filtered_go_annotations_by_sig_proteins
+                , by= join_by( go_id) ) |>
+    dplyr::select(go_id, go_term, go_type) |>
+    dplyr::distinct()
+
+
+  # Run enricher
+  enricher_result <- purrr::map( c("biological_process", "cellular_compartment", "molecular_function")
+  , \(x) {clusterProfiler::enricher(
+    gene = significant_proteins,
+    universe = background_proteins,
+    TERM2GENE = term2gene |>
+      dplyr::filter( go_type == x) |>
+      dplyr::select(go_id, uniprot_acc) ,
+    TERM2NAME = term2name |>
+      dplyr::filter( go_type == x) |>
+      dplyr::select(go_id, go_term),
+    pvalueCutoff = p_val_thresh,
+    minGSSize = min_gene_set_size,
+    maxGSSize = max_gene_set_size
+  ) }) |>
+    purrr::discard(is.null) |>  # Remove NULL results
+    purrr::map(\(x) {
+      if (is(x, "enrichResult") && nrow(x@result) > 0) {
+        as.data.frame(x@result)
       } else {
-        return (NA)
+        NULL
       }
+    }) |>
+    purrr::discard(is.null) |>  # Remove empty results
+    purrr::reduce(bind_rows, .init = NULL)  # Safely combine results
 
+
+
+  # If no enrichment found, return NULL
+  if (is.null(enricher_result)) {
+    print("No enrichment results found")
+    return(NULL)
   }
 
+  print("Processing enrichment results")
 
+  # Get the column name for gene names in uniprot_data
+  gene_name_col <- if ("Gene.Names" %in% colnames(uniprot_data)) {
+    "Gene.Names"
+  } else if ("GENENAME" %in% colnames(uniprot_data)) {
+    "GENENAME"
+  } else if ("gene_names" %in% colnames(uniprot_data)) {
+    "gene_names"
+  } else {
+    stop("Could not find gene names column in uniprot_data. Available columns: ",
+         paste(colnames(uniprot_data), collapse = ", "))
+  }
+
+  # Get the column name for UniProt accessions in uniprot_data
+  uniprot_acc_col <- if ("Entry" %in% colnames(uniprot_data)) {
+    "Entry"
+  } else if ("UNIPROTKB" %in% colnames(uniprot_data)) {
+    "UNIPROTKB"
+  } else if ("uniprot_acc" %in% colnames(uniprot_data)) {
+    "uniprot_acc"
+  } else {
+    stop("Could not find UniProt accession column in uniprot_data. Available columns: ",
+         paste(colnames(uniprot_data), collapse = ", "))
+  }
+
+  # Convert to data frame and add gene symbols
+  enrichment_results <- enricher_result |>
+    dplyr::left_join(term2name, by = c("ID" = "go_id")) |>
+    dplyr::rename(Category = go_type) |>
+    dplyr::mutate(
+      # Split gene list and get corresponding gene symbols
+      uniprot_list = purrr::map(geneID, \(x) stringr::str_split(x, "/")[[1]]),
+      gene_symbols = purrr::map_chr(uniprot_list, \(acc_list) {
+        genes <- uniprot_data |>
+          dplyr::filter(!!sym(uniprot_acc_col) %in% acc_list) |>
+          dplyr::pull(!!sym(gene_name_col))
+
+        if (length(genes) == 0) {
+          return(NA_character_)
+        }
+
+        unique_genes <- unique(unlist(stringr::str_split(genes, "\\s+")))
+        paste(unique_genes[!is.na(unique_genes)], collapse = ";")
+      })
+    ) |>
+    dplyr::rename(
+      uniprot_ids = geneID,
+      gene_names = gene_symbols
+    )
+
+  print(paste("Found", nrow(enrichment_results), "enriched terms"))
+  return(enrichment_results)
 }
 
 #'@export
@@ -1811,24 +1873,21 @@ enrichProteinsPathways <- function(de_analysis_results,
     background_proteins <- protein_data |>
       dplyr::pull(uniprot_acc)
 
-    print("Get uniprot data shapte")
+    print("Get uniprot data shape")
     print(head( uniprot_data))
 
     # Create GO annotation data frame from UniProt data
     go_annot <- uniprot_data |>
-      dplyr::select(Entry, go_id) |>
+      dplyr::select(uniprot_acc, go_id, go_term, go_type) |>
       tidyr::separate_rows(go_id, sep = "; ") |>
-      dplyr::filter(!is.na(go_id)) |>
-      dplyr::rename(
-        uniprot_acc = Entry,
-        GO = go_id
-      )
+      dplyr::filter(!is.na(go_id))
 
     # Perform enrichment analysis
     pos_enrich <- runOneGoEnrichmentInOutFunction(
       significant_proteins = pos_prots,
       background_proteins = background_proteins,
       go_annotations = go_annot,
+      uniprot_data = uniprot_data,
       p_val_thresh = p_val_thresh,
       min_gene_set_size = min_gene_set_size,
       max_gene_set_size = max_gene_set_size
@@ -1838,47 +1897,11 @@ enrichProteinsPathways <- function(de_analysis_results,
       significant_proteins = neg_prots,
       background_proteins = background_proteins,
       go_annotations = go_annot,
+      uniprot_data = uniprot_data,
       p_val_thresh = p_val_thresh,
       min_gene_set_size = min_gene_set_size,
       max_gene_set_size = max_gene_set_size
     )
-
-    # Save results
-    if (!is.null(pos_enrich) && nrow(pos_enrich) > 0) {
-      write.table(pos_enrich,
-                  file = file.path(comp_dir, "positive_enrichment.tab"),
-                  sep = "\t", row.names = FALSE, quote = FALSE)
-
-      # Generate and save plots if the enrichment results contain the necessary columns
-      if (all(c("Description", "GeneRatio", "p.adjust") %in% colnames(pos_enrich))) {
-        pdf(file.path(comp_dir, "positive_enrichment_plots.pdf"))
-        print(plotEnrichmentResults(pos_enrich, showCategory = 20))
-        dev.off()
-
-        # Save PNG version
-        png(file.path(comp_dir, "positive_enrichment_barplot.png"))
-        print(plotEnrichmentResults(pos_enrich, showCategory = 20))
-        dev.off()
-      }
-    }
-
-    if (!is.null(neg_enrich) && nrow(neg_enrich) > 0) {
-      write.table(neg_enrich,
-                  file = file.path(comp_dir, "negative_enrichment.tab"),
-                  sep = "\t", row.names = FALSE, quote = FALSE)
-
-      # Generate and save plots if the enrichment results contain the necessary columns
-      if (all(c("Description", "GeneRatio", "p.adjust") %in% colnames(neg_enrich))) {
-        pdf(file.path(comp_dir, "negative_enrichment_plots.pdf"))
-        print(plotEnrichmentResults(neg_enrich, showCategory = 20))
-        dev.off()
-
-        # Save PNG version
-        png(file.path(comp_dir, "negative_enrichment_barplot.png"))
-        print(plotEnrichmentResults(neg_enrich, showCategory = 20))
-        dev.off()
-      }
-    }
 
     enrichment_results[[comp]] <- list(
       positive = pos_enrich,
@@ -1988,7 +2011,7 @@ download_uniprot_data <- function(protein_ids, cache_file, uniprot_handle, prote
       # Download only missing proteins
       message("Downloading data for ", nrow(missing_proteins), " new protein IDs")
       new_data <- batchQueryEvidenceGeneId(
-        data.frame(uniprot_acc = unique(missing_proteins$uniprot_acc)),
+        data.frame(uniprot_acc = unique(missing_proteins$uniprot_acc)  ),
         gene_id_column = "uniprot_acc",
         uniprot_handle = uniprot_handle,
         uniprot_columns = c(
@@ -2009,12 +2032,9 @@ download_uniprot_data <- function(protein_ids, cache_file, uniprot_handle, prote
         new_data_processed <- new_data |>
           uniprotGoIdToTermSimple(
             uniprot_id_column = Entry,
-            go_id_column = go_id,  # Using the correct column name
+            gene_name_column = Gene.Names,
+            go_id_column = Gene.Ontology.IDs,  # Using the correct column name
             sep = "; "
-          ) |>
-          dplyr::rename(
-            Protein_existence = "Protein.existence",
-            Protein_names = "Protein.names"
           )
 
         # Combine with cached data
@@ -2040,7 +2060,7 @@ download_uniprot_data <- function(protein_ids, cache_file, uniprot_handle, prote
   message("Downloading data for all protein IDs")
 
   all_data <- batchQueryEvidenceGeneId(
-    data.frame(uniprot_acc = unique(protein_ids$uniprot_acc)),
+    data.frame(uniprot_acc = unique(protein_ids$uniprot_acc) ),
     gene_id_column = "uniprot_acc",
     uniprot_handle = uniprot_handle,
     uniprot_columns = c(
@@ -2060,13 +2080,9 @@ download_uniprot_data <- function(protein_ids, cache_file, uniprot_handle, prote
     processed_data <- all_data |>
       uniprotGoIdToTermSimple(
         uniprot_id_column = Entry,
-        go_id_column = go_id,  # Using the correct column name
+        gene_name_column = Gene.Names,
+        go_id_column = Gene.Ontology.IDs,  # Using the correct column name
         sep = "; "
-      ) |>
-      dplyr::rename(
-        Entry = uniprot_acc,
-        Protein_existence = "Protein.existence",
-        Protein_names = "Protein.names"
       )
 
     # Try to save to cache
@@ -2093,12 +2109,15 @@ download_uniprot_data <- function(protein_ids, cache_file, uniprot_handle, prote
 uniprotGoIdToTermSimple <- function(uniprot_dat
                                    , uniprot_id_column = UNIPROTKB
                                    , go_id_column = `GO-IDs`
+                                   , gene_name_column = Gene.Names
                                    , sep = "; "
                                    , goterms = AnnotationDbi::Term(GO.db::GOTERM)
                                    , gotypes = AnnotationDbi::Ontology(GO.db::GOTERM)) {
 
+  print("Run uniprotGoIdToTermSimple")
+
   uniprot_acc_to_go_term <- uniprot_dat |>
-    dplyr::distinct({{uniprot_id_column}}, {{go_id_column}}) |>
+    dplyr::distinct({{uniprot_id_column}}, {{gene_name_column}}, {{go_id_column}}) |>
     tidyr::separate_rows({{go_id_column}}, sep = sep) |>
     dplyr::filter(!is.na({{go_id_column}})) |>
     dplyr::mutate(
