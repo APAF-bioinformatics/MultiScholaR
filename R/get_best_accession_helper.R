@@ -141,7 +141,7 @@ chooseBestPhosphositeAccession <- function(input_tbl, acc_detail_tab, accessions
                                           "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"  ))) %>%
 
     distinct %>%
-    arrange( {{group_id}}, desc(protein_evidence), status, is_isoform, desc(seq_length), isoform_num )
+    arrange( {{group_id}}, protein_evidence, status, is_isoform, desc(seq_length), isoform_num )
 
   # print( colnames(head(resolve_acc_helper)) )
 
@@ -149,7 +149,7 @@ chooseBestPhosphositeAccession <- function(input_tbl, acc_detail_tab, accessions
   score_isoforms <- resolve_acc_helper %>%
     mutate( gene_name = ifelse( is.na(gene_name) | gene_name == "", "NA", gene_name)) %>%
     group_by( {{group_id}},  gene_name ) %>%
-    arrange( {{group_id}},  desc(protein_evidence),
+    arrange( {{group_id}},  protein_evidence,
              status, is_isoform, desc(seq_length), isoform_num, cleaned_acc )  %>%
     mutate(ranking = row_number()) %>%
     ungroup
@@ -221,13 +221,13 @@ chooseBestProteinAccessionHelper <- function(input_tbl
     dplyr::select( { { group_id } }, one_of(c(row_id_column, "gene_name", "cleaned_acc",
                                               "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"))) |>
     distinct() |>
-    arrange( { { group_id } }, desc(protein_evidence), status, is_isoform, desc(seq_length), isoform_num)
+    arrange( { { group_id } }, protein_evidence, status, is_isoform, desc(seq_length), isoform_num)
 
 
   score_isoforms <- resolve_acc_helper |>
     mutate(gene_name = ifelse(is.na(gene_name) | gene_name == "", "NA", gene_name)) |>
     group_by({ { group_id } }, gene_name) |>
-    arrange( { { group_id } }, desc(protein_evidence),
+    arrange( { { group_id } }, protein_evidence,
              status, is_isoform, desc(seq_length), isoform_num, cleaned_acc) |>
     mutate( ranking = row_number()) |>
     ungroup()
@@ -238,13 +238,13 @@ chooseBestProteinAccessionHelper <- function(input_tbl
     distinct( { { group_id } }, gene_name, ranking) |>
     dplyr::filter(ranking == 1) |>
     left_join(score_isoforms |>
-                dplyr::select({ { group_id } }, ranking, gene_name, !!sym(row_id_column)),
+                dplyr::select({ { group_id } }, ranking, gene_name, !!sym(row_id_column), protein_evidence),
               by = join_by( {{ group_id }} == {{ group_id }}
                             , ranking == ranking
                             , gene_name == gene_name)) |>
-
     dplyr::select(-ranking) |>
     group_by({ { group_id } }) |>
+    arrange( {{group_id}}, protein_evidence) |>
     summarise(num_gene_names = n(),
               gene_names = paste(gene_name, collapse = ":"),
               !!sym(row_id_column) := paste(!!sym(row_id_column), collapse = ":")) |>
@@ -291,13 +291,13 @@ rankProteinAccessionHelper <- function(input_tbl
     dplyr::select( { { group_id } }, one_of(c(row_id_column, "gene_name", "cleaned_acc",
                                               "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"))) |>
     distinct() |>
-    arrange( { { group_id } }, desc(protein_evidence), status, is_isoform, desc(seq_length), isoform_num)
+    arrange( { { group_id } }, protein_evidence, status, is_isoform, desc(seq_length), isoform_num)
 
 
   score_isoforms <- resolve_acc_helper |>
     mutate(gene_name = ifelse(is.na(gene_name) | gene_name == "", "NA", gene_name)) |>
     group_by({ { group_id } }, gene_name) |>
-    arrange( { { group_id } }, desc(protein_evidence),
+    arrange( { { group_id } }, protein_evidence,
              status, is_isoform, desc(seq_length), isoform_num, cleaned_acc) |>
     mutate( ranking = row_number()) |>
     ungroup()
@@ -917,6 +917,12 @@ processAndFilterData <- function(
                                                         row_id_column = "uniprot_acc",
                                                         group_id = maxquant_row_id,
                                                         delim = delim)
+
+
+
+   print( accession_gene_name_tbl|>
+    dplyr::filter (str_detect( uniprot_acc, "A0A024R1R8")) )
+
 
 
   accession_gene_name_tbl_record <- accession_gene_name_tbl %>%
