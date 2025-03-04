@@ -303,7 +303,8 @@ writeInteractiveVolcanoPlotProteomics <- function( de_proteins_long
 
 
   volcano_plot_tab <- de_proteins_long  |>
-    left_join(uniprot_tbl, by = join_by( !!sym(args_row_id) == !!sym( uniprot_id_column) ) ) |>
+    dplyr::mutate(best_uniprot_acc = str_split(!!sym(args_row_id), ":" ) |> purrr::map_chr(1)  ) |>
+    left_join(uniprot_tbl, by = join_by( best_uniprot_acc == !!sym( uniprot_id_column) ) ) |>
     dplyr::rename( UNIPROT_GENENAME = gene_names_column ) |>
     mutate( UNIPROT_GENENAME = purrr::map_chr( UNIPROT_GENENAME, \(x){str_split(x, " |:")[[1]][1]})) |>
     dplyr::mutate(gene_name = UNIPROT_GENENAME ) |>
@@ -316,7 +317,6 @@ writeInteractiveVolcanoPlotProteomics <- function( de_proteins_long
                                      abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) < de_q_val_thresh ~ "purple",
                                      abs(!!sym(log2fc_column)) < 1 & !!sym(fdr_column) < de_q_val_thresh ~ "blue",
                                      TRUE ~ "black")) |>
-    dplyr::mutate(best_uniprot_acc = str_split(!!sym(args_row_id), ":" ) |> purrr::map_chr(1)  ) |>
     dplyr::mutate(analysis_type = comparison)  |>
     dplyr::select( best_uniprot_acc, lqm, !!sym(fdr_column), !!sym(raw_p_value_column), !!sym(log2fc_column), comparison, label, colour,  gene_name
                    , any_of( display_columns ))   |>
@@ -328,10 +328,12 @@ writeInteractiveVolcanoPlotProteomics <- function( de_proteins_long
 
   dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
 
+
   purrr::walk( seq_len( ncol(fit.eb$coefficients))
                , \(coef) { # print(coef)
 
-                 print(paste0("coef = ", coef))
+                 print( paste("run volcano plot", coef) )
+
                  #                    print(head( counts_tbl))
                  #                    print(groups)
                  #                    print( output_dir)
@@ -679,13 +681,13 @@ outputDeAnalysisResults <- function(de_analysis_results_list
   list_of_volcano_plots <- de_analysis_results_list$list_of_volcano_plots
 
 
-  purrr::walk2( list_of_volcano_plots %>% pull(title),
-                list_of_volcano_plots %>% pull(plot),
-                ~{file_name_part <- file.path( publication_graphs_dir, "Volcano_Plots", paste0(.x, "."))
+  purrr::walk2( list_of_volcano_plots %>% dplyr::pull(title),
+                list_of_volcano_plots %>% dplyr::pull(plot),
+                \(x,y){file_name_part <- file.path( publication_graphs_dir, "Volcano_Plots", paste0(x, "."))
                 # gg_save_logging ( .y, file_name_part, plots_format)
                 for( format_ext in plots_format) {
                   file_name <- paste0(file_name_part, format_ext)
-                  ggsave(plot=.y
+                  ggsave(plot=y
                          , filename = file_name
                          , width=7
                          , height=7 )
@@ -694,7 +696,7 @@ outputDeAnalysisResults <- function(de_analysis_results_list
 
   ggsave(
     filename = file.path(publication_graphs_dir, "Volcano_Plots", "list_of_volcano_plots.pdf" ),
-    plot = gridExtra::marrangeGrob( (list_of_volcano_plots  %>% pull(plot)), nrow=1, ncol=1),
+    plot = gridExtra::marrangeGrob( (list_of_volcano_plots  %>% dplyr::pull(plot)), nrow=1, ncol=1),
     width = 7, height = 7
   )
 

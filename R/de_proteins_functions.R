@@ -1020,7 +1020,7 @@ getGlimmaVolcanoProteomics <- function( r_obj
 
       r_obj$p.value[,coef] <- qvalue( r_obj$p.value[,coef])$qvalues
 
-      htmlwidgets::saveWidget( widget = glimmaVolcano(r_obj
+      htmlwidgets::saveWidget( widget = Glimma::glimmaVolcano(r_obj
                                                       , coef=coef
                                                       , anno=anno_tbl
                                                       , counts = counts_tbl
@@ -1762,10 +1762,11 @@ batchQueryEvidence <- function(uniprot_acc_tbl, uniprot_acc_column, uniprot_hand
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # The UniProt.ws::select function limits the number of keys queried to 100. This gives a batch number for it to be queried in batches.
-batchQueryEvidenceHelperGeneId <- function(input_tbl, gene_id_column) {
+batchQueryEvidenceHelperGeneId <- function(input_tbl, gene_id_column, delim =":") {
 
   all_uniprot_acc <- input_tbl |>
     dplyr::select({ { gene_id_column } }) |>
+    separate_longer_delim({ { gene_id_column } }, delim= delim ) |>
     dplyr::arrange({ { gene_id_column } }) |>
     dplyr::mutate(round = ceiling(dplyr::row_number() / 100))  ## 100 is the maximum number of queries at one time
 
@@ -1776,10 +1777,6 @@ batchQueryEvidenceHelperGeneId <- function(input_tbl, gene_id_column) {
 batchQueryEvidenceGeneId <- function(input_tbl, gene_id_column, uniprot_handle, uniprot_keytype = "UniProtKB",
                                      uniprot_columns = c("EXISTENCE", "SCORE", "REVIEWED", "GENENAME", "PROTEIN-NAMES", "LENGTH")) {
 
-  print("hahahahaha")
-
-  print(head(input_tbl))
-  print( gene_id_column)
 
   all_gene_id <- batchQueryEvidenceHelperGeneId(input_tbl, {{ gene_id_column }})
 
