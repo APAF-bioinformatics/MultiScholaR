@@ -1827,7 +1827,8 @@ enrichProteinsPathways <- function(de_analysis_results,
   protein_data <- de_analysis_results$de_proteins_wide |>
     dplyr::select(!!sym(protein_id_column)) |>
     distinct() |>
-    tidyr::separate_rows(!!sym(protein_id_column), sep = protein_id_delimiter) |>
+    # tidyr::separate_rows(!!sym(protein_id_column), sep = protein_id_delimiter) |>
+    mutate( !!sym(protein_id_column) := purrr::map_chr( !!sym(protein_id_column), \(x){str_split(x, protein_id_delimiter)[[1]][1] }) ) |>
     dplyr::mutate(uniprot_acc = .cleanProteinIds(!!sym(protein_id_column)))
 
   # Get cached or fresh data
@@ -1855,7 +1856,7 @@ enrichProteinsPathways <- function(de_analysis_results,
     sig_data <- de_analysis_results$significant_rows |>
       dplyr::filter(analysis_type == "RUV applied",
                    comparison == comp) |>
-      tidyr::separate_rows(!!sym(protein_id_column), sep = protein_id_delimiter) |>
+      mutate( !!sym(protein_id_column) := purrr::map_chr( !!sym(protein_id_column), \(x){str_split(x, protein_id_delimiter)[[1]][1] }) ) |>
       dplyr::mutate(uniprot_acc = .cleanProteinIds(!!sym(protein_id_column)))
 
     # Get positive and negative proteins
