@@ -152,10 +152,7 @@ runOneGoEnrichmentInOutFunction <- function(significant_proteins,
                                           p_val_thresh = 0.05,
                                           min_gene_set_size = 4,
                                           max_gene_set_size = 200,
-                                          min_sig_gene_set_size = 2,
-                                          run_revigo = TRUE,
-                                          revigo_cutoff = 0.7,
-                                          revigo_taxon = 9606 ) {
+                                          min_sig_gene_set_size = 2) {
 
   # Debug information
   print("Starting enrichment analysis")
@@ -1814,9 +1811,7 @@ enrichProteinsPathwaysHelper <- function(de_analysis_results,
                                   output_dir = "proteins_pathways_enricher",
                                   use_cached = TRUE,
                                   protein_id_delimiter = ":",
-                                  protein_id_column = "Protein.Ids",
-                                  run_revigo = TRUE,
-                                  revigo_cutoff = 0.9
+                                  protein_id_column = "Protein.Ids"
                                   ) {
 
   # Create directories if they don't exist
@@ -1929,10 +1924,7 @@ enrichProteinsPathwaysHelper <- function(de_analysis_results,
     uniprot_data = uniprot_data,
     p_val_thresh = p_val_thresh,
     min_gene_set_size = min_gene_set_size,
-    max_gene_set_size = max_gene_set_size,
-    run_revigo = run_revigo,
-    revigo_cutoff = revigo_cutoff,
-    revigo_taxon = organism_taxid
+    max_gene_set_size = max_gene_set_size
   )
 
   neg_enrich <- runOneGoEnrichmentInOutFunction(
@@ -1942,10 +1934,7 @@ enrichProteinsPathwaysHelper <- function(de_analysis_results,
     uniprot_data = uniprot_data,
     p_val_thresh = p_val_thresh,
     min_gene_set_size = min_gene_set_size,
-    max_gene_set_size = max_gene_set_size,
-    run_revigo = run_revigo,
-    revigo_cutoff = revigo_cutoff,
-    revigo_taxon = organism_taxid
+    max_gene_set_size = max_gene_set_size
   )
 
   # Handle NULL results
@@ -1994,9 +1983,7 @@ enrichProteinsPathways <- function(de_analysis_results_list,
                                  p_val_thresh = 0.05,
                                  cache_dir = "cache",
                                  cache_file = "uniprot_annotations.RDS",
-                                 use_cached = TRUE,
-                                 run_revigo = TRUE,
-                                 revigo_cutoff = 0.9) {
+                                 use_cached = TRUE   ) {
 
   # Create a list to store all enrichment results
   all_enrichment_results_by_group <- names(de_analysis_results_list) |>
@@ -2018,10 +2005,7 @@ enrichProteinsPathways <- function(de_analysis_results_list,
         cache_dir = cache_dir,
         cache_file = cache_file,
         use_cached = use_cached,
-        protein_id_delimiter = protein_id_delimiter,
-        run_revigo = run_revigo,
-        revigo_cutoff = revigo_cutoff
-      )
+        protein_id_delimiter = protein_id_delimiter )
 
       return(enrichment_result)
     })
