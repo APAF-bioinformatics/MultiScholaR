@@ -77,16 +77,19 @@ perform_enrichment <- function(data_subset,
                              exclude_iea = FALSE,
                              max_retries = 5,
                              wait_time = 5,
-                             protein_id_column = uniprot_acc) {
+                             protein_id_column) {
   if (nrow(data_subset) == 0) {
     return(NULL)
   }
 
   # Clean data before enrichment
-  if (any(is.na(data_subset|> dplyr::pull( {{protein_id_column}})))) {
-    warning(paste( "NA values found in", as_string({{protein_id_column}}),"column"))
-    data_subset <- data_subset |> filter(!is.na({{protein_id_column}}))
+  protein_ids <- data_subset[[protein_id_column]]
+
+  if (any(is.na(protein_ids))) {
+    warning(paste("NA values found in", protein_id_column, "column"))
+    data_subset <- data_subset |> dplyr::filter(!is.na(.data[[protein_id_column]]))
   }
+
 
   if (any(is.na(custom_bg))) {
     warning("NA values found in custom background IDs")
@@ -99,7 +102,7 @@ perform_enrichment <- function(data_subset,
   while (is.null(result) && attempt <= max_retries) {
     tryCatch({
       result <- gprofiler2::gost(
-        query = data_subset[[{{protein_id_column}}]] ,
+        query = protein_ids,
         organism = species,
         ordered_query = FALSE,
         sources = sources,
@@ -132,6 +135,9 @@ perform_enrichment <- function(data_subset,
         return(NULL)
       } else {
         warning(paste("Error in enrichment analysis:", e$message))
+        message("Debug info:")
+        message("Number of proteins in query: ", length(protein_ids))
+        message("First few protein IDs: ", paste(head(protein_ids), collapse = ", "))
         return(NULL)
       }
     })
@@ -290,7 +296,9 @@ processEnrichments <- function(de_results,
         subset_sig <- de_data |>
           dplyr::mutate( {{protein_id_column}} := purrr::map_chr( {{protein_id_column}}, \(x){str_split(x, ":")[[1]][1]} )) |>
           filter(fdr_qvalue < q_cutoff)
+
         message(sprintf("Proteins passing FDR cutoff (%g): %d", q_cutoff, nrow(subset_sig)))
+
 
         up_matrix <- subset_sig |>
           filter(log2FC > up_cutoff)
@@ -311,6 +319,8 @@ processEnrichments <- function(de_results,
         list(
           up = tryCatch({
             if(nrow(up_matrix) > 0) {
+              # Convert protein_id_column to string for passing to perform_enrichment
+              protein_col <- rlang::as_label(rlang::ensym(protein_id_column))
               perform_enrichment(
                 data_subset = up_matrix,
                 species = species,
@@ -319,16 +329,20 @@ processEnrichments <- function(de_results,
                 domain_scope = "custom",
                 custom_bg = custom_bg,
                 exclude_iea = exclude_iea,
-                protein_id_column = {{protein_id_column}}
+                protein_id_column = protein_col
               )
             } else NULL
           }, error = function(e) {
             warning(sprintf("Error processing up-regulated genes: %s", e$message))
+            message("Debug info for up-regulated genes:")
+            message("Number of proteins: ", nrow(up_matrix))
             NULL
           }),
 
           down = tryCatch({
             if(nrow(down_matrix) > 0) {
+              # Convert protein_id_column to string for passing to perform_enrichment
+              protein_col <- rlang::as_label(rlang::ensym(protein_id_column))
               perform_enrichment(
                 data_subset = down_matrix,
                 species = species,
@@ -337,11 +351,13 @@ processEnrichments <- function(de_results,
                 domain_scope = "custom",
                 custom_bg = custom_bg,
                 exclude_iea = exclude_iea,
-                protein_id_column = {{protein_id_column}}
+                protein_id_column = protein_col
               )
             } else NULL
           }, error = function(e) {
             warning(sprintf("Error processing down-regulated genes: %s", e$message))
+            message("Debug info for down-regulated genes:")
+            message("Number of proteins: ", nrow(down_matrix))
             NULL
           })
         )
@@ -452,9 +468,6 @@ processEnrichments <- function(de_results,
         subset_sig <- de_data |>
           filter(fdr_qvalue < q_cutoff)
 
-        message("Available columns in subset_sig:")
-        message(paste(colnames(subset_sig), collapse = "\n"))
-
         message(sprintf("Proteins passing FDR cutoff (%g): %d", q_cutoff, nrow(subset_sig)))
 
         up_genes <- subset_sig |>
@@ -507,7 +520,7 @@ processEnrichments <- function(de_results,
     # Store enrichment results
     enrichment_results@enrichment_data <- results
 
-            # Create GO term mappings once (moved outside the plotting function)
+    # Create GO term mappings once (moved outside the plotting function)
     go_term_map <- dplyr::bind_rows(
         go_annotations |>
             tidyr::separate_rows(go_id_go_biological_process, go_term_go_biological_process, sep = "; ") |>

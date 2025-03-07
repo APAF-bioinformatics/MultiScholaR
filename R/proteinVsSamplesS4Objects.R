@@ -256,16 +256,16 @@ setMethod(f="removeProteinsWithOnlyOneReplicate"
 
 #'@export
 setGeneric(name="plotRle"
-           , def=function( theObject, grouping_variable, yaxis_limit = c()) {
+           , def=function( theObject, grouping_variable, yaxis_limit = c(), sample_label = NULL) {
              standardGeneric("plotRle")
            }
-           , signature=c("theObject", "grouping_variable", "yaxis_limit"))
+           , signature=c("theObject", "grouping_variable", "yaxis_limit", "sample_label"))
 
 
 #'@export
 setMethod(f="plotRle"
           , signature="ProteinQuantitativeData"
-          , definition=function( theObject, grouping_variable, yaxis_limit = c()) {
+          , definition=function( theObject, grouping_variable, yaxis_limit = c(), sample_label = NULL) {
             protein_quant_table <- theObject@protein_quant_table
             protein_id_column <- theObject@protein_id_column
             design_matrix <- theObject@design_matrix
@@ -276,7 +276,15 @@ setMethod(f="plotRle"
               as.matrix()
 
             design_matrix <- as.data.frame(design_matrix)
-            rownames( design_matrix) <- design_matrix[,sample_id]
+
+            if(!is.null(sample_label)) {
+              if ( sample_label %in% colnames(design_matrix)) {
+                rownames( design_matrix) <- design_matrix[,sample_label]
+                colnames( frozen_protein_matrix ) <- design_matrix[,sample_label]
+
+              } } else {
+                rownames( design_matrix) <- design_matrix[,sample_id]
+              }
 
             # print( design_matrix)
 
@@ -285,6 +293,9 @@ setMethod(f="plotRle"
               rowinfo_vector <-  design_matrix[colnames(frozen_protein_matrix), grouping_variable]
             }
 
+            print(rownames( design_matrix))
+            print(colnames( frozen_protein_matrix))
+            print(rowinfo_vector)
               rle_plot_before_cyclic_loess <- plotRleHelper( t(frozen_protein_matrix)
                                                        , rowinfo = rowinfo_vector
                                                        , yaxis_limit = yaxis_limit)
@@ -1545,7 +1556,7 @@ summariseProteinObject <- function ( theObject) {
 }
 
 #' Perform pathway enrichment analysis on differential expression results
-#' 
+#'
 #' @param de_results Output from deAnalysisWrapperFunction containing differential expression results
 #' @param organism_taxid NCBI taxonomy ID for the organism (e.g., "9606" for human)
 #' @param protein_p_val_thresh P-value threshold for protein significance (default: 0.05)
@@ -1555,11 +1566,11 @@ summariseProteinObject <- function ( theObject) {
 #' @param cache_dir Directory to store cached UniProt data (default: "cache")
 #' @param output_dir Directory for output files (default: "proteins_pathways_enricher")
 #' @param use_cached Whether to use cached data if available (default: TRUE)
-#' 
+#'
 #' @return A list containing enrichment results and plots
-#' 
+#'
 #' @export
-setMethod("enrichPathways", 
+setMethod("enrichPathways",
           signature = signature(de_results = "list", organism_taxid = "character"),
           function(de_results,
                    organism_taxid,
@@ -1570,7 +1581,7 @@ setMethod("enrichPathways",
                    cache_dir = "cache",
                    output_dir = "proteins_pathways_enricher",
                    use_cached = TRUE) {
-            
+
             # Call the enrichment function
             enrichment_results <- enrichProteinsPathways(
               de_analysis_results = de_results,
@@ -1583,6 +1594,6 @@ setMethod("enrichPathways",
               output_dir = output_dir,
               use_cached = use_cached
             )
-            
+
             return(enrichment_results)
           })

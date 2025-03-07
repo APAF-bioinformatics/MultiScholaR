@@ -703,7 +703,7 @@ outputDeAnalysisResults <- function(de_analysis_results_list
   ## Number of significant molecules
   createDirIfNotExists(file.path(publication_graphs_dir, "NumSigDeMolecules"))
   vroom::vroom_write( de_analysis_results_list$num_sig_de_molecules,
-                      file.path(publication_graphs_dir, "NumSigDeMolecules", "num_sig_de_molecules.tab" ) )
+                      file.path(publication_graphs_dir, "NumSigDeMolecules", paste0(file_prefix, "_num_sig_de_molecules.tab" ) ))
 
 
   if( !is.null(de_analysis_results_list$num_sig_de_genes_barplot_only_significant)) {
@@ -716,7 +716,7 @@ outputDeAnalysisResults <- function(de_analysis_results_list
            height = 6,
            width = (num_of_comparison_only_significant + 2) *7/6 )
 
-    ggsave(filename = file.path(publication_graphs_dir, "NumSigDeMolecules", paste0( file_prefix, "num_sig_de_molecules.pdf" )),
+    ggsave(filename = file.path(publication_graphs_dir, "NumSigDeMolecules", paste0( file_prefix, "_num_sig_de_molecules.pdf" )),
            plot = num_sig_de_genes_barplot_only_significant,
            height = 6,
            width = (num_of_comparison_only_significant + 2) *7/6 )
