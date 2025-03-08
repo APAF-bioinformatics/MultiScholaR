@@ -205,7 +205,7 @@ runOneGoEnrichmentInOutFunction <- function(significant_proteins,
 
 
   # Run enricher
-  enricher_result <- purrr::map( c("biological_process", "cellular_compartment", "molecular_function")
+  enricher_result <- purrr::map( c("Biological Process", "Cellular Compartment", "Molecular Function")
                                  , \(x) {
                                    clusterProfiler::enricher(
                                      gene = significant_proteins,
@@ -552,6 +552,9 @@ queryRevigo <- function( input_list,
 
   userData <-  paste(input_list,  collapse= "\n")
 
+  print("userData")
+  print(userData)
+
   httr::POST(
     url = "http://revigo.irb.hr/Revigo", # .aspx
     body = list(
@@ -569,6 +572,7 @@ queryRevigo <- function( input_list,
 
   dat <- httr::content(res, encoding = "UTF-8")
 
+  print("This is dat")
   print(dat)
 
 
@@ -594,6 +598,8 @@ queryRevigo <- function( input_list,
   if( file.exists( temp_file) ) {
     file.remove(temp_file)
   }
+
+  print("QueryRevigoExit")
 
   revigo_tbl
 }
@@ -714,7 +720,9 @@ getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot
     }
   }
 
-  get_colour <- list( negative_list = "blue", positive_list = "red",
+  get_colour <- list( negative = "blue",
+                      positive = "red",
+                      negative_list = "blue", positive_list = "red",
                       positive_only = "red",
                       negative_only = "blue",
                       positive_sum_sig_phosphosites = "red",
@@ -919,6 +927,73 @@ filterResultsWithRevigo <- function( enriched_results_tbl
   return( enrich_revigo)
 }
 
+
+
+filterResultsWithRevigoScholar <- function( enriched_results_tbl
+                                     , added_columns
+                                     , is_run_revigo=TRUE
+                                     , revigo_cutoff=0.7
+                                     , species_taxon = 9606 # Human
+) {
+
+  enrich_revigo <- NA
+
+  if ( is_run_revigo == TRUE) {
+
+    annotation_list <-  enriched_results_tbl %>%
+      group_by( across( c(any_of(added_columns),  go_type) )) %>%
+      nest() %>%
+      ungroup() %>%
+      mutate( annot_id_list = purrr::map( data, ~{ dplyr::pull(., ID)} ))
+
+    annotation_list_revigo <-  annotation_list %>%
+      mutate( revigo_results = purrr::map( annot_id_list,
+                                           function(x){queryRevigo(x,
+                                                                   cutoff=revigo_cutoff,
+                                                                   speciesTaxon = species_taxon,
+                                                                   temp_file=NA )}))
+
+    # annotation_list_revigo %>%
+    #   unnest(revigo_results) %>%
+    #   colnames %>% print
+    #
+    # annotation_list_revigo %>%
+    #   unnest(revigo_results) %>% head %>% print
+
+    revigo_tbl <- annotation_list_revigo %>%
+      unnest(revigo_results)  %>%
+      dplyr::select(-data, - annot_id_list)
+
+    if(nrow(revigo_tbl) > 0 )  {
+      revigo_tbl <- revigo_tbl %>%
+        dplyr::rename(go_id = "Term ID")
+
+      join_condition <- rlang::set_names(c("go_id", "go_type", added_columns),
+                                         c("go_id", "go_type", added_columns))
+
+      enrich_revigo <- enriched_results_tbl |>
+        dplyr::rename( go_id = ID) |>
+        left_join( revigo_tbl |>
+                     dplyr::select(-Name),
+                   by = join_condition) %>%
+        dplyr::filter( Eliminated == "False" |
+                         is.na(Eliminated))
+
+    } else {
+      warning("filterResultsWithRevigo: Revigo summarizatio did not return any useful GO terms, return original input table.")
+      enrich_revigo <- enriched_results_tbl
+    }
+
+
+  } else {
+
+    enrich_revigo <- enriched_results_tbl
+  }
+
+  return( enrich_revigo)
+}
+
+
 #'@export
 saveFilteredFunctionalEnrichmentTable <- function( enriched_results_tbl,
                                                    set_size_min,
@@ -994,6 +1069,65 @@ drawListOfFunctionalEnrichmentHeatmaps <- function(enriched_results_tbl,
     distinct() %>%
     dplyr::filter( min_set_size == set_size_min,
                    max_set_size == set_size_max) %>%
+    group_by(  across(  c(any_of(added_columns), comparison, gene_set, go_type)  )) %>%
+    arrange( comparison, pvalue) %>%
+    mutate(  ranking = row_number() ) %>%
+    ungroup()
+
+  if ( nrow(input_table) == 0 ) {
+    stop("drawListOfFunctionalEnrichmentHeatmaps: No more rows for clustering analysis after gene set size filtering.")
+  }
+
+  list_of_columns_to_exclude <- c(as_name(enquo(x_axis)))
+  if(! is.na( quo_get_expr(enquo(facet_by_column) ) ) ) {
+    list_of_columns_to_exclude <- c(as_name(enquo(x_axis)), as_name(enquo(facet_by_column)))
+  }
+
+  annot_heat_map_ordered <- clusterPathways( input_table,
+                                             added_columns,
+                                             remove_duplicted_entries = remove_duplicted_entries) %>%
+    unite(  {{analysis_column}} , comparison, any_of( c(setdiff(added_columns, list_of_columns_to_exclude))) )
+
+  combinations <- annot_heat_map_ordered %>%
+    distinct(  go_type)
+
+  list_of_heatmaps <- purrr::pmap( combinations, function( go_type){
+    print( paste(  go_type) )
+    getEnrichmentHeatmap( input_table=annot_heat_map_ordered,
+                          x_axis={{x_axis}},
+                          input_go_type=go_type,
+                          input_plot_title=go_type,
+                          facet_by_column = {{facet_by_column}},
+                          xaxis_levels = xaxis_levels,
+                          scales=scales) } )
+
+  names( list_of_heatmaps) <- annot_heat_map_ordered %>%
+    distinct(  go_type) %>%
+    mutate( output_name = go_type ) %>%
+    dplyr::pull(output_name)
+
+  return(list_of_heatmaps)
+
+}
+
+
+
+
+
+#'@export
+drawListOfFunctionalEnrichmentHeatmapsScholar <- function(enriched_results_tbl,
+                                                   added_columns,
+                                                   x_axis = Analysis_Type,
+                                                   analysis_column = Analysis_Type,
+                                                   facet_by_column = NA,
+                                                   remove_duplicted_entries = TRUE,
+                                                   xaxis_levels=NA,
+                                                   scales="fixed") {
+
+  added_columns <- unique( added_columns)
+
+  input_table <- enriched_results_tbl |>
+    distinct() %>%
     group_by(  across(  c(any_of(added_columns), comparison, gene_set, go_type)  )) %>%
     arrange( comparison, pvalue) %>%
     mutate(  ranking = row_number() ) %>%
@@ -1875,10 +2009,13 @@ enrichProteinsPathwaysHelper <- function(de_analysis_results,
    goterms <- AnnotationDbi::Term(GO.db::GOTERM)
    gotypes <- AnnotationDbi::Ontology(GO.db::GOTERM)
 
-    go_annot <- uniprot_data_updated |>
+    go_annot_temp <- uniprot_data_updated |>
       pivot_longer( cols=matches("go_id"), names_to = "go_type", values_to = "go_id") |>
       dplyr::select(-go_type) |>
-      separate_rows(go_id, sep = "; ") |>
+      separate_rows(go_id, sep = "; ")
+
+    go_id_to_term <- go_annot_temp |>
+      distinct(go_id)    |>
       dplyr::mutate(
         go_term = purrr::map_chr(go_id, \(x) {
           if (x %in% names(goterms)) {
@@ -1890,14 +2027,17 @@ enrichProteinsPathwaysHelper <- function(de_analysis_results,
           if (x %in% names(gotypes)) {
             type <- gotypes[[x]]
             return(dplyr::case_when(
-              type == "BP" ~ "biological_process",
-              type == "CC" ~ "cellular_compartment",
-              type == "MF" ~ "molecular_function",
+              type == "BP" ~ "Biological Process",
+              type == "CC" ~ "Cellular Compartment",
+              type == "MF" ~ "Molecular Function",
               TRUE ~ NA_character_
             ))
           }
           return(NA_character_)
-        }) ) |>
+        }) )
+
+    go_annot <- go_annot_temp |>
+      left_join( go_id_to_term, by = "go_id") |>
       dplyr::distinct(uniprot_acc, go_id, go_term, go_type)  |>
       dplyr::filter(!is.na(go_id))
 
@@ -2169,9 +2309,9 @@ uniprotGoIdToTermSimple <- function(uniprot_dat
         if (x %in% names(gotypes)) {
           type <- gotypes[[x]]
           return(dplyr::case_when(
-            type == "BP" ~ "biological_process",
-            type == "CC" ~ "cellular_compartment",
-            type == "MF" ~ "molecular_function",
+            type == "BP" ~ "Biological Process",
+            type == "CC" ~ "Cellular Compartment",
+            type == "MF" ~ "Molecular Function",
             TRUE ~ NA_character_
           ))
         }

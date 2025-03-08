@@ -849,7 +849,6 @@ setMethod(f="getNegCtrlProtAnova"
             design_matrix <- theObject@design_matrix
             group_id <- theObject@group_id
             sample_id <- theObject@sample_id
-            replicate_group_column <- theObject@technical_replicate_id
 
             normalised_frozen_protein_matrix_filt <- protein_quant_table |>
               column_to_rownames(protein_id_column) |>
@@ -958,7 +957,6 @@ setMethod( f = "ruvCancor"
              design_matrix <- theObject@design_matrix
              group_id <- theObject@group_id
              sample_id <- theObject@sample_id
-             replicate_group_column <- theObject@technical_replicate_id
 
              ctrl <- checkParamsObjectFunctionSimplify( theObject, "ctrl", NULL)
              num_components_to_impute <- checkParamsObjectFunctionSimplify( theObject, "num_components_to_impute", 2)

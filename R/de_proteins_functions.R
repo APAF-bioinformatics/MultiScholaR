@@ -883,6 +883,66 @@ plotOneVolcano <- function( input_data, input_title,
   volcano_plot
 }
 
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#' @param input_table The input table with the log fold-change and q-value columns.
+#' @param protein_id_column The name of the column representing the protein ID (tidyverse style).
+#' @param uniprot_table The uniprot table with the imporatnt info on each protein
+#' @param uniprot_protein_id_column The name of the column representing the protein ID in the uniprot table (tidyverse style).
+#' @param number_of_genes The number of genes to show in the volcano plot.
+#' @param fdr_threshold The FDR threshold for the volcano plot.
+#' @param fdr_column The name of the column representing the FDR value (tidyverse style).
+#' @param log2FC_column The name of the column representing the log fold-change (tidyverse style).
+#' @return A table with the following columns:
+#' label  The label of the significant proteins.
+#' log2FC The log2 fold-change of the significant proteins.
+#' lqm  The -log10 of the q-value.
+#' colour The colour of the significant proteins.
+#' rank_positive: The rank of the positive fold-change values.
+#' rank_negative: The rank of the negative fold-change values.
+#' gene_name_significant  The gene name of the significant proteins.
+#'
+prepareDataForVolcanoPlot <- function(input_table
+                                      , protein_id_column = uniprot_acc
+                                      , uniprot_table
+                                      , uniprot_protein_id_column = uniprot_acc_first
+                                      , gene_name_column = gene_name
+                                      , number_of_genes = 3000
+                                      , fdr_threshold = 0.05
+                                      , fdr_column = q.mod
+                                      , log2FC_column = log2FC){
+
+  temp_col_name <-  as_string(as_name(enquo(protein_id_column)))
+
+  proteomics_volcano_tbl <- input_table |>
+    dplyr::mutate( uniprot_acc_first  = purrr::map_chr( {{protein_id_column}}, \(x) { str_split( x, ":")[[1]][1] } ) ) |>
+    dplyr::relocate( uniprot_acc_first, .after=temp_col_name) |>
+    dplyr::select (uniprot_acc_first, {{fdr_column}}, {{log2FC_column}}) |>
+    left_join(uniprot_table
+              , by = join_by( uniprot_acc_first == {{uniprot_protein_id_column}})) |>
+    mutate( colour = case_when ( {{fdr_column}} < fdr_threshold & {{log2FC_column}} > 0 ~ "red"
+                                 , {{fdr_column}} < fdr_threshold & {{log2FC_column}} < 0 ~ "blue"
+                                 , TRUE ~ "grey" )) |>
+    mutate( lqm = -log10({{fdr_column}})) |>
+    mutate( label = case_when (  {{fdr_column}} < fdr_threshold & {{log2FC_column}} > 0 ~ "Significant Increase"
+                                 , {{fdr_column}} < fdr_threshold & {{log2FC_column}} < 0 ~ "Significant Decrease"
+                                 , TRUE ~ "Not significant" )) |>
+    mutate( label = factor( label, levels = c( "Significant Increase"
+                                               , "Significant Decrease"
+                                               , "Not significant" ))) |>
+    mutate ( rank_positive = case_when( {{log2FC_column}} > 0 ~ {{fdr_column}}
+                                        , TRUE ~ NA_real_) |> rank() ) |>
+    mutate ( rank_negative = case_when( {{log2FC_column}} < 0 ~ {{fdr_column}}
+                                        , TRUE ~ NA_real_) |> rank() ) |>
+    mutate ( {{gene_name_column}} := purrr::map_chr( {{gene_name_column}}, \(x) { str_split( x, " ")[[1]][1] } ) ) |>
+    mutate( gene_name_significant = case_when( {{fdr_column}} < fdr_threshold &
+                                                 ( rank_positive <= number_of_genes |
+                                                   rank_negative <= number_of_genes ) ~  {{gene_name_column}}
+                                               , TRUE ~ NA ) )
+
+  proteomics_volcano_tbl
+}
+
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' Draw the volcano plot, used in publication graphs
@@ -905,8 +965,6 @@ plotOneVolcanoNoVerticalLines <- function( input_data, input_title,
   colour_tbl <- input_data |>
     distinct( {{points_type_label}}, {{points_color}} )
 
-  print(colour_tbl)
-
   colour_map <- colour_tbl |>
     dplyr::pull({{points_color}} ) |>
     as.vector()
@@ -920,16 +978,11 @@ plotOneVolcanoNoVerticalLines <- function( input_data, input_title,
 
   avail_colours <- colour_map[avail_labels]
 
-  print(avail_labels)
-  print(avail_colours)
-
   volcano_plot <-  input_data |>
     ggplot(aes(y = {{log_q_value_column}},
                x = {{log_fc_column}},
                col={{points_type_label}})) +
     geom_point()
-
-  print(volcano_plot)
 
   volcano_plot <-   volcano_plot +
     scale_colour_manual(values = avail_colours) +
@@ -953,6 +1006,66 @@ plotOneVolcanoNoVerticalLines <- function( input_data, input_title,
   volcano_plot
 }
 
+
+## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#'  This function creates a volcano plot with protein labels
+#' @param input_table The input table to be used for the volcano plot, contains the protein_id_column, fdr_column and log2FC_column
+#' @param uniprot_table The uniprot table to be used for the volcano plot, contains the uniprot_protein_id_column and gene_name_column
+#' @param protein_id_column The column name in the input_table that contains the protein ids (tidyverse format)
+#' @param uniprot_protein_id_column The column name in the uniprot_table that contains the uniprot protein ids (tidyverse format)
+#' @param gene_name_column The column name in the uniprot_table that contains the gene names (tidyverse format)
+#' @param number_of_genes Increasing P-value rank for the number of proteins to display on the volcano plot, default is 100`
+#' @param fdr_threshold The FDR threshold to use for the volcano plot, default is 0.05
+#' @param fdr_column The column name in the input_table that contains the FDR values (tidyverse format)
+#' @param log2FC_column The column name in the input_table that contains the log2FC values (tidyverse format)
+#' @param input_title The title to use for the volcano plot
+#' @param max.overlaps The maximum number of overlaps to allow for the protein labels using ggrepel (default is 20)
+#' @return A ggplot object with the volcano plot and protein labels
+printOneVolcanoPlotWithProteinLabel <- function( input_table
+                                                 , uniprot_table
+                                                 , protein_id_column = Protein.Ids
+                                                 , uniprot_protein_id_column = Entry
+                                                 , gene_name_column = gene_name
+                                                 , number_of_genes = 100
+                                                 , fdr_threshold = 0.05
+                                                 , fdr_column = fdr_qvalue
+                                                 , log2FC_column = log2FC
+                                                 , input_title = "Proteomics"
+                                                 , include_protein_label = TRUE
+                                                 , max.overlaps = 20) {
+  proteomics_volcano_tbl <- prepareDataForVolcanoPlot( input_table
+                                                       , protein_id_column = {{protein_id_column}}
+                                                       , uniprot_table = uniprot_table
+                                                       , uniprot_protein_id_column = {{uniprot_protein_id_column}}
+                                                       , gene_name_column = {{gene_name_column}}
+                                                       , number_of_genes = number_of_genes
+                                                       , fdr_threshold = fdr_threshold
+                                                       , fdr_column = {{fdr_column}}
+                                                       , log2FC_column = {{log2FC_column}})
+
+  proteomics_volcano_plot <- plotOneVolcanoNoVerticalLines ( proteomics_volcano_tbl,
+                                                                                 input_title = input_title,
+                                                                                 log_q_value_column = lqm,
+                                                                                 log_fc_column = log2FC,
+                                                                                 points_type_label = label,
+                                                                                 points_color = colour,
+                                                                                 q_val_thresh= fdr_threshold)
+
+  proteomics_volcano_plot_with_proteins_label <- proteomics_volcano_plot
+
+  if( include_protein_label == TRUE) {
+
+    proteomics_volcano_plot_with_proteins_label <- proteomics_volcano_plot +
+      ggrepel::geom_text_repel( aes( label = gene_name_significant)
+                                , show.legend = FALSE
+                                , max.overlaps = max.overlaps)
+
+  }
+
+  proteomics_volcano_plot_with_proteins_label
+
+}
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' getGlimmaVolcanoProteomics

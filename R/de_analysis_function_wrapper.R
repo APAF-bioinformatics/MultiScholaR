@@ -221,6 +221,20 @@ deAnalysisWrapperFunction <- function( theObject
   return_list$list_of_volcano_plots <- list_of_volcano_plots
 
 
+  printOneVolcanoPlotWithProteinLabel <- function( input_table
+                                                   , uniprot_table
+                                                   , protein_id_column = Protein.Ids
+                                                   , uniprot_protein_id_column = Entry
+                                                   , gene_name_column = gene_name
+                                                   , number_of_genes = 100
+                                                   , fdr_threshold = 0.05
+                                                   , fdr_column = fdr_qvalue
+                                                   , log2FC_column = log2FC
+                                                   , input_title = "Proteomics"
+                                                   , include_protein_label = TRUE
+                                                   , max.overlaps = 20)
+
+
   ## Return the number of significant molecules
   num_sig_de_molecules <- significant_rows %>%
     dplyr::mutate(status = case_when(!!sym(qvalue_column)  >= de_q_val_thresh ~ "Not significant",
@@ -568,14 +582,6 @@ outputDeAnalysisResults <- function(de_analysis_results_list
     writexl::write_xlsx(file.path(de_output_dir, "lfc_qval_long.xlsx"))
 
 
-  ## Print Volcano plot
-
-  volcano_plot <- de_analysis_results_list$volcano_plot
-  for( format_ext in plots_format) {
-    file_name <- file.path(de_output_dir,paste0(file_prefix, "_volplot_gg_all.",format_ext))
-    ggsave(filename = file_name, plot = volplot_plot, width = 7.29, height = 6)
-  }
-
   ## Count the number of up or down significnat differentially expressed proteins.
   if( !is.null(de_analysis_results_list$num_sig_de_genes_barplot_only_significant)) {
     num_sig_de_genes_barplot_only_significant <- de_analysis_results_list$num_sig_de_genes_barplot_only_significant
@@ -685,6 +691,8 @@ outputDeAnalysisResults <- function(de_analysis_results_list
                 list_of_volcano_plots %>% dplyr::pull(plot),
                 \(x,y){file_name_part <- file.path( publication_graphs_dir, "Volcano_Plots", paste0(x, "."))
                 # gg_save_logging ( .y, file_name_part, plots_format)
+
+                ggsave( y, file=paste0( file_name_part, "RDS"))
                 for( format_ext in plots_format) {
                   file_name <- paste0(file_name_part, format_ext)
                   ggsave(plot=y
