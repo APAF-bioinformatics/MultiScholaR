@@ -25,6 +25,36 @@ deAnalysisWrapperFunction <- function( theObject
   args_group_pattern <- checkParamsObjectFunctionSimplify( theObject, "args_group_pattern", "(\\d+)")
   args_row_id <- checkParamsObjectFunctionSimplify( theObject, "args_row_id", "uniprot_acc")
 
+  # Add preprocessing for group names that start with numbers
+  design_matrix <- theObject@design_matrix
+  group_col <- design_matrix[["group"]]
+  
+  # Check if any group names start with numbers and create mapping
+  starts_with_number <- grepl("^[0-9]", group_col)
+  if(any(starts_with_number)) {
+    original_groups <- unique(group_col)
+    safe_groups <- purrr::map_chr(original_groups, \(x) {
+      if(grepl("^[0-9]", x)) paste0("grp_", x) else x
+    })
+    group_mapping <- setNames(original_groups, safe_groups)
+    
+    # Update design matrix with safe names
+    design_matrix[["group"]] <- purrr::map_chr(group_col, \(x) {
+      if(grepl("^[0-9]", x)) paste0("grp_", x) else x
+    })
+    
+    # Update contrasts table if it exists
+    if(!is.null(contrasts_tbl)) {
+      contrasts_tbl[[1]] <- purrr::map_chr(contrasts_tbl[[1]], \(x) {
+        for(orig in names(group_mapping)) {
+          x <- gsub(group_mapping[orig], orig, x, fixed = TRUE)
+        }
+        x
+      })
+    }
+    
+    theObject@design_matrix <- design_matrix
+  }
 
   theObject <- updateParamInObject(theObject, "contrasts_tbl")
   theObject <- updateParamInObject(theObject, "formula_string")
@@ -104,7 +134,19 @@ deAnalysisWrapperFunction <- function( theObject
                                          eBayes_trend = as.logical(eBayes_trend),
                                          eBayes_robust = as.logical(eBayes_robust))
 
-  contrasts_results_table <- contrasts_results$results
+  # Map back to original group names in results if needed
+  if(exists("group_mapping")) {
+    contrasts_results_table <- contrasts_results$results |>
+      dplyr::mutate(comparison = purrr::map_chr(comparison, \(x) {
+        result <- x
+        for(safe_name in names(group_mapping)) {
+          result <- gsub(safe_name, group_mapping[safe_name], result, fixed = TRUE)
+        }
+        result
+      }))
+  } else {
+    contrasts_results_table <- contrasts_results$results
+  }
 
   return_list$contrasts_results <- contrasts_results
   return_list$contrasts_results_table <- contrasts_results_table
