@@ -146,13 +146,13 @@ oneGoEnrichment <- function( go_annot
 
 #'@export
 runOneGoEnrichmentInOutFunction <- function(significant_proteins,
-                                          background_proteins,
-                                          go_annotations,
-                                          uniprot_data,
-                                          p_val_thresh = 0.05,
-                                          min_gene_set_size = 4,
-                                          max_gene_set_size = 200,
-                                          min_sig_gene_set_size = 2) {
+                                            background_proteins,
+                                            go_annotations,
+                                            uniprot_data,
+                                            p_val_thresh = 0.05,
+                                            min_gene_set_size = 4,
+                                            max_gene_set_size = 200,
+                                            min_sig_gene_set_size = 2) {
 
   # Debug information
   print("Starting enrichment analysis")
@@ -295,7 +295,7 @@ runOneGoEnrichmentInOutFunction <- function(significant_proteins,
   # Convert to data frame and add gene symbols
   enrichment_results <- enricher_result_filt |>
     dplyr::left_join(term2name, by = c("ID" = "go_id")) |>
-     # Split gene list and get corresponding gene symbols
+    # Split gene list and get corresponding gene symbols
     dplyr::mutate(
       uniprot_list = purrr::map(
         geneID,
@@ -303,18 +303,18 @@ runOneGoEnrichmentInOutFunction <- function(significant_proteins,
       )
     ) |>
     mutate( gene_names = purrr::map_chr(uniprot_list, \(acc_list) {
-        genes <- uniprot_data |>
-          dplyr::filter( Entry %in% acc_list) |>
-          dplyr::mutate( gene_names_first = purrr::map_chr( gene_names, \(x) str_split(x, ";")[[1]][1])) |>
-          dplyr::pull(gene_names_first)
+      genes <- uniprot_data |>
+        dplyr::filter( Entry %in% acc_list) |>
+        dplyr::mutate( gene_names_first = purrr::map_chr( gene_names, \(x) str_split(x, ";")[[1]][1])) |>
+        dplyr::pull(gene_names_first)
 
-        if (length(genes) == 0) {
-          return(NA_character_)
-        }
+      if (length(genes) == 0) {
+        return(NA_character_)
+      }
 
-        unique_genes <- unique(unlist(stringr::str_split(genes, "\\s+")))
-        paste(unique_genes[!is.na(unique_genes)], collapse = ";")
-      })
+      unique_genes <- unique(unlist(stringr::str_split(genes, "\\s+")))
+      paste(unique_genes[!is.na(unique_genes)], collapse = ";")
+    })
     )
 
   print(paste("Found", nrow(enrichment_results), "enriched terms"))
@@ -517,9 +517,9 @@ runEnricher <- function(index_name, contrast_name, list_of_de_proteins, list_of_
 
 #'@export
 getUniprotAccToGeneSymbolDictionary <- function( input_table,
-              protein_id_lookup_column,
-          gene_symbol_column,
-          protein_id) {
+                                                 protein_id_lookup_column,
+                                                 gene_symbol_column,
+                                                 protein_id) {
 
   # Clean up protein ID to gene sybmol table
   uniprot_to_gene_symbol <- input_table  %>%
@@ -827,7 +827,7 @@ readEnrichmentResultFiles <- function( table_of_files, file_names_column=file_na
     dplyr::pull( {{file_names_column}})
 
   added_columns <- setdiff(colnames(table_of_files),
-          as_name(enquo(file_names_column)))
+                           as_name(enquo(file_names_column)))
 
   ## Gets error if input table have zero rows, so need filtering to remove table with zero rows
   list_of_tables <- purrr::map( list_of_files, vroom::vroom)
@@ -843,8 +843,8 @@ readEnrichmentResultFiles <- function( table_of_files, file_names_column=file_na
 
   enriched_results_tbl <- cleaned_tbl %>%
     dplyr::rename(annotation_id = "ID", gene_set = "names_of_genes_list",
-           min_set_size = "min_gene_set_size",
-           max_set_size = "max_gene_set_size") %>%
+                  min_set_size = "min_gene_set_size",
+                  max_set_size = "max_gene_set_size") %>%
     left_join( table_of_files, by = as_name(enquo(file_names_column)) ) %>%
     relocate( any_of(added_columns ) ,
               .before=as_name(enquo(file_names_column))) %>%
@@ -868,7 +868,7 @@ filterResultsWithRevigo <- function( enriched_results_tbl
                                      , is_run_revigo=TRUE
                                      , revigo_cutoff=0.7
                                      , species_taxon = 9606 # Human
-                                     ) {
+) {
 
   enrich_revigo <- NA
 
@@ -902,16 +902,16 @@ filterResultsWithRevigo <- function( enriched_results_tbl
       revigo_tbl <- revigo_tbl %>%
         dplyr::rename(annotation_id = "Term ID")
 
-    join_condition <- rlang::set_names(c("annotation_id", "comparison", "go_type", "gene_set", added_columns),
-                                       c("annotation_id", "comparison", "go_type", "gene_set", added_columns))
+      join_condition <- rlang::set_names(c("annotation_id", "comparison", "go_type", "gene_set", added_columns),
+                                         c("annotation_id", "comparison", "go_type", "gene_set", added_columns))
 
-    enrich_revigo <- enriched_results_tbl %>%
-      dplyr::mutate( annotation_id = as.character( annotation_id)) %>%
-      left_join( revigo_tbl %>%
-                   dplyr::select(-Name),
-                 by = join_condition) %>%
-      dplyr::filter( Eliminated == "False" |
-                       is.na(Eliminated))
+      enrich_revigo <- enriched_results_tbl %>%
+        dplyr::mutate( annotation_id = as.character( annotation_id)) %>%
+        left_join( revigo_tbl %>%
+                     dplyr::select(-Name),
+                   by = join_condition) %>%
+        dplyr::filter( Eliminated == "False" |
+                         is.na(Eliminated))
 
     } else {
       warning("filterResultsWithRevigo: Revigo summarizatio did not return any useful GO terms, return original input table.")
@@ -930,10 +930,10 @@ filterResultsWithRevigo <- function( enriched_results_tbl
 
 
 filterResultsWithRevigoScholar <- function( enriched_results_tbl
-                                     , added_columns
-                                     , is_run_revigo=TRUE
-                                     , revigo_cutoff=0.7
-                                     , species_taxon = 9606 # Human
+                                            , added_columns
+                                            , is_run_revigo=TRUE
+                                            , revigo_cutoff=0.7
+                                            , species_taxon = 9606 # Human
 ) {
 
   enrich_revigo <- NA
@@ -1043,7 +1043,7 @@ evaluateBestMinMaxGeneSetSize <- function(enrichment_results_tble, added_columns
 
   plotting_data %>%
     unite(  custom_comparison , comparison, any_of( added_columns ) ) %>%
-  ggplot( aes( set_size, counts, group=custom_comparison)) +
+    ggplot( aes( set_size, counts, group=custom_comparison)) +
     geom_line(aes(col=custom_comparison)) +
     theme (axis.text.x = element_text (angle = 90, vjust = 1))  +
     facet_wrap( . ~ gene_set_mod    , scales="free_y")
@@ -1116,13 +1116,13 @@ drawListOfFunctionalEnrichmentHeatmaps <- function(enriched_results_tbl,
 
 #'@export
 drawListOfFunctionalEnrichmentHeatmapsScholar <- function(enriched_results_tbl,
-                                                   added_columns,
-                                                   x_axis = Analysis_Type,
-                                                   analysis_column = Analysis_Type,
-                                                   facet_by_column = NA,
-                                                   remove_duplicted_entries = TRUE,
-                                                   xaxis_levels=NA,
-                                                   scales="fixed") {
+                                                          added_columns,
+                                                          x_axis = Analysis_Type,
+                                                          analysis_column = Analysis_Type,
+                                                          facet_by_column = NA,
+                                                          remove_duplicted_entries = TRUE,
+                                                          xaxis_levels=NA,
+                                                          scales="fixed") {
 
   added_columns <- unique( added_columns)
 
@@ -1190,29 +1190,19 @@ saveListOfFunctionalEnrichmentHeatmaps <- function(list_of_heatmaps,
     stop("Length of plot_width and plot_height should be one or same as the lenght of list of heatmaps.")
   }
 
-  purrr::pwalk( list( output_name = names( list_of_heatmaps),
-                      plot = list_of_heatmaps ,
-                      plot_width = plot_width,
-                      plot_height = plot_height),
-               function(output_name, plot, plot_width, plot_height){
-                 ggsave( filename=file.path( results_dir,
-                                             paste0(file_name, "_", output_name   ,".pdf")),
-                         plot=plot,
-                         width = plot_width,
-                         height=plot_height,
-                         limitsize = FALSE)   }  )
 
   purrr::pwalk( list( output_name = names( list_of_heatmaps),
                       plot = list_of_heatmaps ,
                       plot_width = plot_width,
                       plot_height = plot_height),
                 function(output_name, plot, plot_width, plot_height){
-                  ggsave( filename=file.path( results_dir,
-                                              paste0(file_name, "_", output_name   ,".png")),
-                          plot=plot,
-                          width = plot_width,
-                          height=plot_height,
-                          limitsize = FALSE)   }  )
+                  savePlot( plot=plot,
+                            base_dir=results_dir,
+                            plot_name = paste0( file_name, "_", output_name)
+                            width = plot_width,
+                            height=plot_height,
+                            limitsize=FALSE) }
+  )
 
 
 }

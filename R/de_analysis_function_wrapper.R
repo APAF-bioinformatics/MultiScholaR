@@ -221,18 +221,19 @@ deAnalysisWrapperFunction <- function( theObject
   return_list$list_of_volcano_plots <- list_of_volcano_plots
 
 
-  printOneVolcanoPlotWithProteinLabel <- function( input_table
-                                                   , uniprot_table
-                                                   , protein_id_column = Protein.Ids
-                                                   , uniprot_protein_id_column = Entry
-                                                   , gene_name_column = gene_name
-                                                   , number_of_genes = 100
-                                                   , fdr_threshold = 0.05
-                                                   , fdr_column = fdr_qvalue
-                                                   , log2FC_column = log2FC
-                                                   , input_title = "Proteomics"
-                                                   , include_protein_label = TRUE
-                                                   , max.overlaps = 20)
+  list_of_volcano_plots_with_gene_names <-  static_volcano_plot_data %>%
+    group_by( comparison) %>%
+    nest() %>%
+    ungroup() %>%
+    mutate( title = paste( comparison)) %>%
+    mutate( plot = purrr:::map2( data, \(x) {
+      printOneVolcanoPlotWithProteinLabel( input_table=  x$de_proteins_long
+                                           , uniprot_table = uniprot_dat_cln |>
+                                             mutate( gene_name = purrr::map_chr( gene_names
+                                                                                 , \(x) str_split(x, "; ")[[1]][1])) )
+       } ) )
+
+  return_list$list_of_volcano_plots_with_gene_names <- list_of_volcano_plots_with_gene_names
 
 
   ## Return the number of significant molecules
@@ -587,16 +588,13 @@ outputDeAnalysisResults <- function(de_analysis_results_list
     num_sig_de_genes_barplot_only_significant <- de_analysis_results_list$num_sig_de_genes_barplot_only_significant
     num_of_comparison_only_significant <- de_analysis_results_list$num_of_comparison_only_significant
 
+    savePlot(num_sig_de_genes_barplot_only_significant,
+             base_path = de_output_dir,
+             plot_name = paste0(file_prefix, "_num_sda_entities_barplot_only_significant"),
+             formats =  c("pdf", "png", "svg"),
+             width = (num_of_comparison_only_significant + 2) *7/6,
+             height = 6)
 
-    ggsave(filename = file.path(de_output_dir,paste0(file_prefix, "_num_sda_entities_barplot.", "png")),
-           plot = num_sig_de_genes_barplot_only_significant,
-           height = 6,
-           width = (num_of_comparison_only_significant + 2) *7/6 )
-
-    ggsave(filename = file.path(de_output_dir,paste0(file_prefix, "_num_sda_entities_barplot.", "pdf")),
-           plot = num_sig_de_genes_barplot_only_significant,
-           height = 6,
-           width = (num_of_comparison_only_significant + 2) *7/6 )
 
 
   }
@@ -689,24 +687,42 @@ outputDeAnalysisResults <- function(de_analysis_results_list
 
   purrr::walk2( list_of_volcano_plots %>% dplyr::pull(title),
                 list_of_volcano_plots %>% dplyr::pull(plot),
-                \(x,y){file_name_part <- file.path( publication_graphs_dir, "Volcano_Plots", paste0(x, "."))
+                \(x,y){
                 # gg_save_logging ( .y, file_name_part, plots_format)
 
-                ggsave( y, file=paste0( file_name_part, "RDS"))
-                for( format_ext in plots_format) {
-                  file_name <- paste0(file_name_part, format_ext)
-                  ggsave(plot=y
-                         , filename = file_name
-                         , width=7
-                         , height=7 )
-                }
-                } )
+                savePlot( y
+                          , base_path = file.path( publication_graphs_dir, "Volcano_Plots")
+                          , plot_name =  x
+                          , formats = plots_format, width = 7, height = 7)
+
+                })
+
 
   ggsave(
     filename = file.path(publication_graphs_dir, "Volcano_Plots", "list_of_volcano_plots.pdf" ),
     plot = gridExtra::marrangeGrob( (list_of_volcano_plots  %>% dplyr::pull(plot)), nrow=1, ncol=1),
     width = 7, height = 7
   )
+
+  list_of_volcano_plots_with_gene_names <- de_analysis_results_list$list_of_volcano_plots_with_gene_names
+
+
+  purrr::walk2( list_of_volcano_plots_with_gene_names %>% dplyr::pull(title)
+                , list_of_volcano_plots_with_gene_names %>% dplyr::pull(plot)
+                , \(x, y) {
+
+                  savePlot( x
+                            , file.path( publication_graphs_dir, "Volcano_Plots")
+                            , paste0( y,"_with_protein_labels"))
+                })
+
+
+  ggsave(
+    filename = file.path(publication_graphs_dir, "Volcano_Plots", "list_of_volcano_plots_with_gene_names.pdf" ),
+    plot = gridExtra::marrangeGrob( (list_of_volcano_plots_with_gene_names  %>% dplyr::pull(plot)), nrow=1, ncol=1),
+    width = 7, height = 7
+  )
+
 
   ## Number of significant molecules
   createDirIfNotExists(file.path(publication_graphs_dir, "NumSigDeMolecules"))
@@ -718,16 +734,12 @@ outputDeAnalysisResults <- function(de_analysis_results_list
     num_sig_de_genes_barplot_only_significant <- de_analysis_results_list$num_sig_de_genes_barplot_only_significant
     num_of_comparison_only_significant <- de_analysis_results_list$num_of_comparison_only_significant
 
-
-    ggsave(filename = file.path(publication_graphs_dir, "NumSigDeMolecules", paste0( file_prefix, "_num_sig_de_molecules.png" )),
-           plot = num_sig_de_genes_barplot_only_significant,
-           height = 6,
-           width = (num_of_comparison_only_significant + 2) *7/6 )
-
-    ggsave(filename = file.path(publication_graphs_dir, "NumSigDeMolecules", paste0( file_prefix, "_num_sig_de_molecules.pdf" )),
-           plot = num_sig_de_genes_barplot_only_significant,
-           height = 6,
-           width = (num_of_comparison_only_significant + 2) *7/6 )
+    savePlot(plot = num_sig_de_genes_barplot_only_significant,
+             base_path = file.path(publication_graphs_dir, "NumSigDeMolecules")
+             plot_name = paste0(file_prefix, "_num_sig_de_molecules."),
+             formats = plots_format,
+             width = (num_of_comparison_only_significant + 2) *7/6,
+             height = 6)
 
 
   }
@@ -738,17 +750,13 @@ outputDeAnalysisResults <- function(de_analysis_results_list
     num_of_comparison_with_not_significant <- de_analysis_results_list$num_of_comparison_with_not_significant
 
     print("print bar plot")
-    ggsave(filename = file.path(publication_graphs_dir, "NumSigDeMolecules", paste0( file_prefix, "num_sig_de_molecules_with_not_significant.png" )),
-           plot = num_sig_de_genes_barplot_with_not_significant,
-           height = 6,
-           width = (num_of_comparison_with_not_significant + 2) *7/6 )
 
-    ggsave(filename = file.path(publication_graphs_dir, "NumSigDeMolecules", paste0( file_prefix, "num_sig_de_molecules_with_not_significant.pdf" )),
-           plot = num_sig_de_genes_barplot_with_not_significant,
-           height = 6,
-           width = (num_of_comparison_with_not_significant + 2) *7/6 )
-
-
+    savePlot(num_sig_de_genes_barplot_with_not_significant,
+             base_path = file.path(publication_graphs_dir, "NumSigDeMolecules"),
+             plot_name = paste0(file_prefix, "_num_sig_de_molecules_with_not_significant"),
+             formats = plots_format,
+             width = (num_of_comparison_with_not_significant + 2) *7/6,
+             height = 6))
   }
 
   ## Write interactive volcano plot
@@ -779,11 +787,6 @@ outputDeAnalysisResults <- function(de_analysis_results_list
                                          , display_columns = display_columns )
 
 }
-
-
-
-
-
 
 
 

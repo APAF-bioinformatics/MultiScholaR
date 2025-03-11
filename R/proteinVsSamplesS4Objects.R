@@ -678,14 +678,12 @@ setMethod(f = "createGridQC",
               plot_layout(guides = 'collect')
 
             if (!is.null(save_path)) {
-              sapply(c("png", "pdf", "svg"), function(ext) {
-                ggsave(
-                  plot = combined_plot,
-                  filename = file.path(save_path, paste0(file_name, ".", ext)),
-                  width = 12/3*num_of_columns + 2,
-                  height = 12/3*num_of_columns + 2
-                )
-              })
+              savePlot(combined_plot
+                       , file = file.path(save_path, paste0(file_name, ".RData"))
+                       , formats = c( "png", "pdf", "svg")
+                       , width = 12/3*num_of_columns + 2
+                       , height = 12/3*num_of_columns + 2
+                       )
               message(paste("Plots saved in", save_path))
             }
 

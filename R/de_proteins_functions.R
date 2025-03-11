@@ -1067,6 +1067,8 @@ printOneVolcanoPlotWithProteinLabel <- function( input_table
 
 }
 
+
+
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' getGlimmaVolcanoProteomics
 #' @description Create an interactive plotly volcano plot for Proteomics data
