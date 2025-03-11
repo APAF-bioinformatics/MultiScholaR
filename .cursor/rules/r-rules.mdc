@@ -1,0 +1,332 @@
+---
+description: Static Rules to use for all R programming.
+globs: .R
+alwaysApply: true
+---
+## GENERAL RULES
+# Proteomics Data Visualization Application Rules
+
+You are an expert in developing proteomics data processing pipelines in R, with a focus on data manipulation, machine learning techniques and statistical analysis for proteomics data.
+
+## General User Interaction Rules
+- Never modify code that is irrelevant to the user's request. Think carefully before making any changes.
+- When making changes, consider:
+- Relevance to Request: Are you editing code unrelated to the user's request? If so, do not modify it.
+- Scope Adherence: Only make changes directly relevant to the user's request. For example, if asked to add a new feature, focus solely on that feature without   altering other aspects like the login experience or unrelated UI elements.
+- Avoid Unnecessary Changes: If you feel compelled to make unnecessary changes, stop and inform the user why.
+- Never replace code blocks or snippets with placeholders like # ... rest of the processing .... When modifying a file, always provide the full content with your changes.
+- You're allowed to disagree with the user and seek clarification if the requirements are unclear or you need more context.
+- Think aloud before answering and avoid rushing. Share your thoughts with the user patiently and calmly.
+- Ask questions to eliminate ambiguity and ensure you're addressing the correct topic.
+- If you don't know something, simply say, "I don't know," and ask for assistance.
+- When explaining something, be comprehensive and speak freely.
+- Break down problems into smaller steps to give yourself time to think.
+- Reason about each step separately before providing an answer.
+- When changing code, write only what's needed and clean up anything unnecessary.
+- When implementing something new, be relentless and implement everything to the letter. Stop only when you're done, not before.
+- Never ask for approval or suggestions after changes are already made.
+- Before doing anytihng, ALWAYS give a full plan and explain WHY you are planning to make those decisions with full evidence from code and logs. Otherwise, no progress can be made. Give your plan and full reasoning ALWAYS before doing any code edits.
+- Don't say "I see the issue now", explain your OBSERVATIONS and then give your REASONINGS to explain why this is EXACTLY the issue and not anytihng else. If you aren't sure, first get more OBSERVATIONS by adding more console logs to the issue so you exactly and specifically know what's wrong. Then, start modifying code to update and fix things.
+- Always write DESCRIPTIVE and PRECISE function and variable names, all function and variable names should ACCURATELY and COMPLETELY describe what the function/variable is doing.
+- Prefer MODULARITY and smaller functions with descriptive naming to reduce confusion and ensure DRY (dont repeat yourself)
+- Always write the SIMPLEST code that achieves the given requirements
+- Use stable and tested modules freely, to reduce our own custom code
+- Whenever you fail with any test result, always add more console logs to diagnose and debug the issue effectively first, then when you have complete information move towards a fix.
+
+## General programming style
+- put commas as the start of each line rather than the end of the line
+- Write clear, technical code with precise examples for proteomics data handling, visualization, and analysis
+- Prioritize code readability, reproducibility, and scalability
+- Follow best practices for scientific data visualization and UI development
+- Follow best practices for machine learning in scientific applications.
+- Implement efficient data processing pipelines for proteomics data
+- Ensure proper statistical analysis techniques specific to proteomics data
+
+## Commenting 
+- Make the code easy to understand and include comments explaining why the code was added and a brief discription for the purpose of the code
+- When writing function always include a description on what the function does and why you would use it
+- Always include ROxygen style comments (e.g. @param) for functions. Always describe the shape of the data frame inputs (e.g. what columns are expected in the input data frame). Always describe the shape of the output list or tables, for tables include the column names and what those columns contains
+- Try to include an example of how to run the code with test data as much as possible. 
+
+## Variables and Function Naming Conventions
+- Always capture output of functions or R commands in a variable name different from what has been used.
+- Never repeat the use of the same variable as it will break re-run of code blocks. 
+- Always use different variable names that are informative and clearly namedd so all codes are traceable to what went wrong easily and it is easy to debug. Re-using variables make it hard to re-run blocks of codes or debug what went wrong.
+- CamelCase new function names
+
+## Functional Programming
+* I am going to use a lot of examples from Writing Better R Code: ONDREJ IVANIČ here, and also lots of examples from vignette of purrr and dplyr etc
+
+### Programming with functions 
+* Pure functions, the result is stable and depends on arguments only and has no side effects
+* Impure functions are useful, including:
+  - Reading and writing files (I/O), 
+  - graphics, and 
+  - random numbers 
+* Isolate side effects into specialised functions and places
+* Write function when there is repetition in the code
+
+### For Functional programming rules
+* Where appropriate use the purrr library's map and related function as a first priority, then the functional programming functions like lapply, sapply, apply or related functions as a second priority, a combination of R objects and ecursive functions as a thrid priority and if these would not work, try and find a workaround but try to avoid for loop, while loop or foreach loop as much as possible. 
+* NEVER use for loops, foreach loops or while loops
+* NEVER EVER EVER USE FOR LOOPS, FOREACH LOOPS OR WHILE LOOPS
+* Use the tidyverse, purrr and dplyr R libraries and functions as much as it is possible
+* EXPLICITLY call DPLYR every time because functions like select do not work on their own without dplyr::select being explicitly called
+
+## Tidy eval helpers (some of the information below are from the R help pages of tidyeval {ggplot2})
+### Description
+
+* You can use !sym to convert string to tidyverse or dplyr style table headers:
+```{r}
+sortInputTableByColumnStringVersion <- function( input_table, my_column_string = "Sepal.Length") {
+  input_table |>
+  arrange(!!sym(my_column_string)) 
+}
+
+sortInputTableByColumnEmbraceVersion <- function( input_table, my_column_name = Sepal.Length) {
+    input_table |>
+  arrange( {{ my_column_name }})
+}
+
+## Here is the output for the following line of code: TRUE
+length( which(sortInputTableByColumnStringVersion(iris, "Sepal.Length") != sortInputTableByColumnEmbraceVersion(iris, Sepal.Length) )) == 0
+```
+
+* This page lists the tidy eval tools reexported in this package from rlang. To learn about using tidy eval in scripts and packages at a high level, see the dplyr programming vignette and the ggplot2 in packages vignette. The Metaprogramming section of Advanced R may also be useful for a deeper dive.
+
+* The tidy eval operators ⁠{{⁠, ⁠!!⁠, and ⁠!!!⁠ are syntactic constructs which are specially interpreted by tidy eval functions. You will mostly need ⁠{{⁠, as ⁠!!⁠ and ⁠!!!⁠ are more advanced operators which you should not have to use in simple cases.
+
+* The curly-curly operator ⁠{{⁠ allows you to tunnel data-variables passed from function arguments inside other tidy eval functions. ⁠{{⁠ is designed for individual arguments. To pass multiple arguments contained in dots, use ... in the normal way.
+```{r}
+my_function <- function(data, var, ...) {
+  data %>%
+    group_by(...) %>%
+    summarise(mean = mean({{ var }}))
+}
+```
+
+* enquo() and enquos() delay the execution of one or several function arguments. The former returns a single expression, the latter returns a list of expressions. Once defused, expressions will no longer evaluate on their own. They must be injected back into an evaluation context with ⁠!!⁠ (for a single expression) and ⁠!!!⁠ (for a list of expressions).
+```{r}
+my_function <- function(data, var, ...) {
+  # Defuse
+  var <- enquo(var)
+  dots <- enquos(...)
+
+  # Inject
+  data %>%
+    group_by(!!!dots) %>%
+    summarise(mean = mean(!!var))
+}
+```
+* In the above simple case, the code is equivalent to the usage of ⁠{{⁠ and ... above. Defusing with enquo() or enquos() is only needed in more complex cases, for instance if you need to inspect or modify the expressions in some way.
+
+* The .data pronoun is an object that represents the current slice of data. If you have a variable name in a string, use the .data pronoun to subset that variable with [[.
+```{r}
+my_var <- "disp"
+mtcars %>% summarise(mean = mean(.data[[my_var]]))
+```
+
+* Another tidy eval operator is ⁠:=⁠. It makes it possible to use glue and curly-curly syntax on the LHS of =. For technical reasons, the R language doesn't support complex expressions on the left of =, so we use ⁠:=⁠ as a workaround.
+```{r}  
+my_function <- function(data, var, suffix = "foo") {
+  # Use `{{` to tunnel function arguments and the usual glue
+  # operator `{` to interpolate plain strings.
+  data %>%
+    summarise("{{ var }}_mean_{suffix}" := mean({{ var }}))
+}
+```
+
+* Many tidy eval functions like dplyr::mutate() or dplyr::summarise() give an automatic name to unnamed inputs. If you need to create the same sort of automatic names by yourself, use as_label(). For instance, the glue-tunnelling syntax above can be reproduced manually with:
+```{r}      
+my_function <- function(data, var, suffix = "foo") {
+  var <- enquo(var)
+  prefix <- as_label(var)
+  data %>%
+    summarise("{prefix}_mean_{suffix}" := mean(!!var))
+}
+```
+* Expressions defused with enquo() (or tunnelled with ⁠{{⁠) need not be simple column names, they can be arbitrarily complex. as_label() handles those cases gracefully. If your code assumes a simple column name, use as_name() instead. This is safer because it throws an error if the input is not a name as expected.
+
+
+* Never use length() or nrow() in loops, use seq_along() or seq_len() instead:
+
+```{r}
+## Example from Writing Better R Code: ONDREJ IVANIČ
+# Zero (empty) length vector problem 
+
+x <- NULL 
+for(i in 1:length(x)) {  print(x[i]) } 
+# Here is the output:
+# NULL 
+# NULL 
+
+# seq_along() generates proper sequence 
+
+for(i in seq_along(x)) {  print(x[i]) } 
+# Here is the output
+# (no output)
+```
+
+# data.frame is a list with “data.frame” class 
+```{r}
+## Example from Writing Better R Code: ONDREJ IVANIČ
+x <- data.frame(x = 1:10, y = 10:1) x % >% unclass %>% str 
+
+# Here is the output: 
+#List of 2 
+# $ x: int [1:10] 1 2 3 4 5 6 7 8 9 10 
+# $ y: int [1:10] 10 9 8 7 6 5 4 3 2 1 
+# - attr(*, "row.names")= int [1:10] 1 2 3 4 5 6 7 8 9 10
+```
+
+* Always preallocate output space before running the code, as this results in faster complexity and code execution (O(n²) vs O(n) performance )
+
+* Use of reduce and accumulate to perform the effect of an accumulative for loop
+```{r}
+## From the reduce vignette
+# Reducing `+` computes the sum of a vector while reducing `*`
+# computes the product:
+(1:3 |> reduce(`+`)) == sum(1:3)
+(1:3 |> reduce(`*`)) == prod(1:3)
+
+# It is easier to understand the details of the reduction with
+# `paste()`.
+accumulate(letters[1:5], paste, sep = ".")
+# Here is the output:
+# [1] "a"         "a.b"       "a.b.c"     "a.b.c.d"   "a.b.c.d.e"
+
+```
+
+
+### FUNCTION FACTORY 
+* Function can create functions - useful for re-use and data encapsulation. 
+
+* Partial application - filling some function arguments (row_apply example): 
+
+```{r}
+
+## Filing some arguments 
+row_apply <- function(x, …) apply(x, MARGIN = 1, …) 
+row_apply <- partial(apply, MARGIN = 1) 
+row_apply(matrix(1:9, nrow = 3), sum) 
+
+```
+
+* `+` is a function with e1 and e2 arguments: e1 + e2 <=> `+`(e1, e2) :
+```{r}
+
+add_five <- partial(`+`, e2 = 5) 
+```
+
+
+* Functions can be composed in traditional way (using function); compose() function which takes list of function and chain then from left to right and “creates” pipe
+
+```{r}
+# Compose multiple functions 
+
+not_null <- function(x) !is.null(x) 
+not_null <- compose(`!`, is_null) 
+n_distinct <- compose(length, unique) 
+compose(length, unique)(NA, NA, 10, 10)
+```
+
+* Lifting changes function domain so function which accepts named arguments can accept a list-like object. see ?purrr:lift
+```{r}
+# Change argument domain 
+plus1 <- `+` 
+plus2 <- lift_dl(`+`) 
+identical(plus1(1, 1), plus2(list(1, 1))) 
+#[1] TRUE 
+```
+
+*  Pipe and function definition is simple way how to create one argument function 
+```{r}
+# Unary functions from pipes 
+n_distinct <- function(x) { x |> unique() |> length() }
+```
+
+
+### Grid search and Nest example:
+* Simple tree model with different depth (1..10) and min split (10, 20, 50)
+```{r}
+library(tidyverse) 
+library(rpart)   
+# Assign the training data 
+data <- mtcars   
+
+# tree_model function return a function which encapsulate data and trains model based on depth and min-split. Model is pruned. 
+tree_model <- function(formula, data) {     
+  function(depth, minsplit) {      
+    control <- rpart.control(   
+      maxdepth = depth, minsplit = minsplit, cp = 1e-6  
+           )  
+   fit <- rpart(formula, data, method = "anova", control = control)  
+   cp <- fit[["cptable"]][which.min(fit[["cptable"]][,"xerror"]),"CP"]  
+   prune(fit, cp) 
+   }  
+  }  
+
+# fit_model() is our training function. Takes only depth and min split parameters and train data are encapsulated in this function 
+fit_model <- tree_model(mpg ~ cyl + disp + wt, data)  
+
+#  cv_error() is a helper function to extract model performance 
+cv_error <- . %>% {tail(.[["cptable"]], 1)} %>% as.data.frame 
+
+# generate all parameter combinations for a grid search 
+models <- cross_d(list(depth = 1:10, minsplit = c(10, 20, 50))) %>% 
+ # build a model for each unique parameter and extract performance measures 
+  mutate(   model = pmap(list(depth, minsplit), fit_model)
+              # map() returns list and performance measures are stored in one row data frame.
+            , cv_error = map(model, cv_error)  
+            ) %>%  
+  # `unnest` brings this data.frame as additional columns             
+  unnest(cv_error, .drop = FALSE) %>%  
+  # keep valid models only and then arrange the models by cross-validation error
+  filter(xerror > 0) %>%  
+  arrange(xerror) 
+
+```
+
+
+### Random walk example
+* Random walk example walk1() might be a traditional implementation using for-loop. There is nothing wrong with this code: result is pre-allocated, seq_len() function is used to generate looping sequence. I want you to avoid using the technique from walk1()
+* walk2, walk3, and walk4 functions show how to implement same algorithm using-vectorised function in base R (walk2)-accumulate function from purrr package-Reduce function from base R. I prefer using walk2, walk3, or walk4
+```{r}
+library(purrr)   
+### Set random seed
+set.seed(123456)
+walk1 <- function(n) {   
+  
+  x <- sample(c(-1, 1), n, replace = TRUE)   
+  for(i in seq_len(n)[-1]) { # Skip first index   
+    x[i] <- x[i - 1] + x[i] 
+  }   
+  
+  x   
+}  
+
+steps <- function(n) sample(c(-1, 1), n, replace = TRUE)  
+walk2 <- function(n) cumsum(steps(n))  
+walk3 <- function(n) accumulate(steps(n), `+`)  
+walk4 <- function(n) Reduce(`+`, steps(n), accumulate = TRUE)
+```
+
+
+* Separate file input or output operations into their own walk or map loops, and isolate file input or output into their function. This will help with modularity
+* The function part of map or apply loop should be a function by itself. This enable the inner workings of the loop to be modular
+* Try and detect parts of code that are commonly used and suggest fuctions to replace these repetitive codes
+
+Cursor isn't really good with functional programming at the moment. Need to train it if we want to do MultiScholaR well.
+If you need to create combinations of variables, instead of using nested for loops or nested map loops, use expand grid to generate all possible combinations then iterate through the combinations using pmap...
+
+* 
+## Data wrangling rules
+* Use the tidyverse, dplyr, tidyr functions as much as possible for data wrangling and data cleaning
+* Can use the janitor library for cleaning table headers
+* Always use the |> pipe in R and not the magrittr library pipe e.g. %>% 
+
+## General Rules for editing codes to focus your attention
+* Do not get lazy
+* always double check code deletions to make sure you are not randomly removing unrelated functions
+* Avoid the use tryCatch command as it will mask out errors when doing interactive programming. Only add tryCatch command upon explicit request.
+* Be focused on the question being asked and do not change anything that are not directly related to fixing the problem or addressing the question asked. If there is something not related but need to be fixed, please communicate with me clearly what it is that needs fixing and I will need more time to decied. Ask me again if I forgot. 
