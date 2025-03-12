@@ -2593,6 +2593,8 @@ updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NUL
         group_by(Run) |>
         mutate(avg_proteins = mean(n_proteins)) |>
         ungroup() |>
+        # Convert Run to character before using fct_reorder
+        mutate(Run = as.character(Run)) |>
         mutate(Run = fct_reorder(Run, avg_proteins)) |>
         ggplot(aes(x = Run, y = n_proteins, 
                   group = step, 
@@ -2669,6 +2671,8 @@ updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NUL
                 group_by(Run) |>
                 mutate(avg_peptides = mean(n_peptides)) |>
                 ungroup() |>
+                # Convert Run to character before using fct_reorder
+                mutate(Run = as.character(Run)) |>
                 mutate(Run = fct_reorder(Run, avg_peptides)) |>
                 ggplot(aes(x = Run, y = n_peptides, 
                           group = step, 
@@ -2737,6 +2741,8 @@ updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NUL
             group_by(Run) |>
             mutate(avg_peptides = mean(n_peptides)) |>
             ungroup() |>
+            # Convert Run to character before using fct_reorder
+            mutate(Run = as.character(Run)) |>
             mutate(Run = fct_reorder(Run, avg_peptides)) |>
             ggplot(aes(x = Run, y = n_peptides, 
                       group = step, 
