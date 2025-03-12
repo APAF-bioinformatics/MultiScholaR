@@ -842,8 +842,17 @@ setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force
         
         # Copy all files from scripts directory except .rmd files
         script_files <- list.files(scripts_source, full.names = TRUE, recursive = TRUE)
-        # Filter out .rmd files (case-insensitive)
-        script_files <- script_files[!grepl("\\.rmd$", script_files, ignore.case = TRUE)]
+        
+        # Add debugging to see what files are being found
+        cat("Files found in scripts directory before filtering:\n")
+        print(script_files)
+        
+        # Filter out .rmd files (case-insensitive) with improved pattern
+        script_files <- script_files[!grepl("\\.[rR][mM][dD]$", script_files)]
+        
+        # Add debugging to see what files remain after filtering
+        cat("Files after filtering out .rmd files:\n")
+        print(script_files)
         
         if (length(script_files) > 0) {
             sapply(script_files, function(f) {
