@@ -317,7 +317,7 @@ plotPcaHelper <- function(data,
                     design_matrix,
                     sample_id_column = "Sample_ID",
                     grouping_variable = "group",
-                    shape_variable = NULL,
+                    shape_variable = "group",
                     label_column = NULL,
                     title, geom.text.size = 11, ncomp = 2,
                     ...) {
