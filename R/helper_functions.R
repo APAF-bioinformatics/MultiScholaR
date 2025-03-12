@@ -782,11 +782,13 @@ setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force
     # Check if directories already exist
     results_path <- file.path(base_dir, "results", proteomics_dirname)
     results_summary_path <- file.path(base_dir, "results_summary", proteomics_dirname)
+    scripts_path <- file.path(base_dir, "scripts", proteomics_dirname)
     
-    if (!force && (dir.exists(results_path) || dir.exists(results_summary_path))) {
+    if (!force && (dir.exists(results_path) || dir.exists(results_summary_path) || dir.exists(scripts_path))) {
         cat(sprintf("\nWarning: Directory(ies) already exist:\n"))
         if (dir.exists(results_path)) cat(sprintf("- %s\n", results_path))
         if (dir.exists(results_summary_path)) cat(sprintf("- %s\n", results_summary_path))
+        if (dir.exists(scripts_path)) cat(sprintf("- %s\n", scripts_path))
         
         response <- readline(prompt = "Do you want to overwrite? (y/n): ")
         
@@ -798,6 +800,7 @@ setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force
         # Remove existing directories if user confirmed
         if (dir.exists(results_path)) unlink(results_path, recursive = TRUE)
         if (dir.exists(results_summary_path)) unlink(results_summary_path, recursive = TRUE)
+        if (dir.exists(scripts_path)) unlink(scripts_path, recursive = TRUE)
     }
     
     # Define all paths and subdirs in one structure
@@ -820,42 +823,33 @@ setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force
         )
     )
     
-    # Handle existing content and create directories in one pass
+    # Create directories without copying content from existing ones
+    # Create results and results_summary directories
     lapply(c("results", "results_summary"), function(type) {
-        existing <- dir.exists(file.path(base_dir, type, "proteomics"))
-        if (existing) {
-            # Get source path
-            source_base <- file.path(base_dir, type, "proteomics")
-            
-            # Copy each subdirectory's contents
-            sapply(paths[[type]]$subdirs, function(subdir) {
-                src_dir <- file.path(source_base, subdir)
-                dest_dir <- file.path(paths[[type]]$base, subdir)
-                
-                if (dir.exists(src_dir)) {
-                    # Create destination directory
-                    dir.create(dest_dir, recursive = TRUE, showWarnings = FALSE)
-                    
-                    # Copy all files maintaining structure
-                    files <- list.files(src_dir, full.names = TRUE, recursive = TRUE)
-                    if (length(files) > 0) {
-                        sapply(files, function(f) {
-                            rel_path <- sub(paste0("^", src_dir, "/"), "", f)
-                            dest_file <- file.path(dest_dir, rel_path)
-                            dir.create(dirname(dest_file), recursive = TRUE, showWarnings = FALSE)
-                            file.copy(f, dest_file, overwrite = TRUE)
-                        })
-                    }
-                }
-            })
-        }
-        
-        # Create any missing subdirectories
+        # Create any subdirectories
         invisible(sapply(
             file.path(paths[[type]]$base, paths[[type]]$subdirs),
             dir.create, recursive = TRUE, showWarnings = FALSE
         ))
     })
+    
+    # Handle scripts directory copying
+    scripts_source <- file.path(base_dir, "scripts", "proteomics")
+    if (dir.exists(scripts_source)) {
+        # Create destination directory
+        dir.create(paths$special$scripts, recursive = TRUE, showWarnings = FALSE)
+        
+        # Copy all files from scripts directory
+        script_files <- list.files(scripts_source, full.names = TRUE, recursive = TRUE)
+        if (length(script_files) > 0) {
+            sapply(script_files, function(f) {
+                rel_path <- sub(paste0("^", scripts_source, "/"), "", f)
+                dest_file <- file.path(paths$special$scripts, rel_path)
+                dir.create(dirname(dest_file), recursive = TRUE, showWarnings = FALSE)
+                file.copy(f, dest_file, overwrite = TRUE)
+            })
+        }
+    }
     
     # Create special directories
     invisible(sapply(paths$special, dir.create, recursive = TRUE, showWarnings = FALSE))
