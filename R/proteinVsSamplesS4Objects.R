@@ -617,6 +617,7 @@ setMethod(f="plotPearson",
 setClass("GridPlotData",
          slots = list(
            pca_plots = "list",
+           density_plots = "list",
            rle_plots = "list",
            pearson_plots = "list"
          ))
@@ -632,6 +633,7 @@ setMethod("InitialiseGrid",
           function(dummy = NULL) {
             new("GridPlotData",
                 pca_plots = list(),
+                density_plots = list(),
                 rle_plots = list(),
                 pearson_plots = list())
           })
@@ -642,19 +644,27 @@ setMethod("InitialiseGrid",
 #' @export
 #' @export
 setGeneric(name = "createGridQC",
-           def = function(theObject, pca_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_rle_pearson_corr_plots_merged") {
+           def = function(theObject, pca_titles, density_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
              standardGeneric("createGridQC")
            },
-           signature = c("theObject", "pca_titles", "rle_titles", "pearson_titles", "save_path", "file_name"))
+           signature = c("theObject", "pca_titles", "density_titles", "rle_titles", "pearson_titles", "save_path", "file_name"))
 
 #' @export
 setMethod(f = "createGridQC",
           signature = "GridPlotData",
-          definition = function(theObject, pca_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_rle_pearson_corr_plots_merged") {
+          definition = function(theObject, pca_titles, density_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
             
             createPcaPlot <- function(plot, title) {
               plot +
                 xlim(-40, 45) + ylim(-30, 25) + ggtitle(title) +
+                theme(text = element_text(size = 15),
+                      panel.grid.major = element_blank(),
+                      panel.grid.minor = element_blank(),
+                      panel.background = element_blank())
+            }
+            
+            createDensityPlot <- function(plot, title) {
+              plot + ggtitle(title) +
                 theme(text = element_text(size = 15),
                       panel.grid.major = element_blank(),
                       panel.grid.minor = element_blank(),
@@ -674,11 +684,13 @@ setMethod(f = "createGridQC",
             }
             
             created_pca_plots <- mapply(createPcaPlot, theObject@pca_plots, pca_titles, SIMPLIFY = FALSE)
+            created_density_plots <- mapply(createDensityPlot, theObject@density_plots, density_titles, SIMPLIFY = FALSE)
             created_rle_plots <- mapply(createRlePlot, theObject@rle_plots, rle_titles, SIMPLIFY = FALSE)
             created_pearson_plots <- mapply(createPearsonPlot, theObject@pearson_plots, pearson_titles, SIMPLIFY = FALSE)
             
             combined_plot <- (
               wrap_plots(created_pca_plots, ncol = 3) /
+              wrap_plots(created_density_plots, ncol = 3) /
               wrap_plots(created_rle_plots, ncol = 3) /
               wrap_plots(created_pearson_plots, ncol = 3)
             ) +
@@ -1554,3 +1566,196 @@ summariseProteinObject <- function ( theObject) {
   summary_list
 
 }
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#'@export
+setGeneric(name="plotDensity"
+           , def=function(theObject, grouping_variable, title = "", font_size = 8) {
+             standardGeneric("plotDensity")
+           }
+           , signature=c("theObject", "grouping_variable", "title", "font_size"))
+
+#'@export
+setMethod(f="plotDensity"
+          , signature="ProteinQuantitativeData"
+          , definition=function(theObject, grouping_variable, title = "", font_size = 8) {
+            # Defensive checks
+            if (!is.character(grouping_variable) || length(grouping_variable) != 1) {
+              stop("grouping_variable must be a single character string")
+            }
+            
+            if (!grouping_variable %in% colnames(theObject@design_matrix)) {
+              stop(sprintf("grouping_variable '%s' not found in design matrix", grouping_variable))
+            }
+            
+            # Get PCA data
+            pca_data <- getPcaMatrix(theObject)
+            
+            # Create PC1 boxplot
+            pc1_box <- ggplot(pca_data, aes(x = !!sym(grouping_variable), y = PC1, fill = !!sym(grouping_variable))) +
+              geom_boxplot(notch = TRUE) +
+              theme_bw() +
+              labs(title = title,
+                   x = "",
+                   y = "PC1") +
+              theme(
+                legend.position = "none",
+                axis.text.x = element_blank(),
+                axis.ticks.x = element_blank(),
+                text = element_text(size = font_size),
+                plot.margin = margin(b = 0, t = 5, l = 5, r = 5),
+                panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                panel.background = element_blank()
+              )
+            
+            # Create PC2 boxplot
+            pc2_box <- ggplot(pca_data, aes(x = !!sym(grouping_variable), y = PC2, fill = !!sym(grouping_variable))) +
+              geom_boxplot(notch = TRUE) +
+              theme_bw() +
+              labs(x = "",
+                   y = "PC2") +
+              theme(
+                legend.position = "none",
+                axis.text.x = element_blank(),
+                axis.ticks.x = element_blank(),
+                text = element_text(size = font_size),
+                plot.margin = margin(t = 0, b = 5, l = 5, r = 5),
+                panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                panel.background = element_blank()
+              )
+            
+            # Combine plots with minimal spacing
+            combined_plot <- pc1_box / pc2_box + 
+              plot_layout(heights = c(1, 1)) +
+              plot_annotation(theme = theme(plot.margin = margin(0, 0, 0, 0)))
+            
+            return(combined_plot)
+          })
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#'@export
+setMethod(f="plotDensity"
+          , signature="ggplot"
+          , definition=function(theObject, grouping_variable, title = "", font_size = 8) {
+            # Extract the data from the ggplot object
+            pca_data <- as_tibble(ggplot_build(theObject)$data[[1]])
+            
+            # If the data doesn't have PC1/PC2, try to extract from the plot's environment
+            if (!("PC1" %in% colnames(pca_data) && "PC2" %in% colnames(pca_data))) {
+              # Try to get the data from the plot's environment
+              if (exists("data", envir = environment(theObject$mapping$x))) {
+                pca_data <- as_tibble(get("data", envir = environment(theObject$mapping$x)))
+              } else {
+                stop("Could not extract PCA data from the ggplot object")
+              }
+            }
+            
+            # Check if grouping variable exists in the data
+            if (!grouping_variable %in% colnames(pca_data)) {
+              stop(sprintf("grouping_variable '%s' not found in the data", grouping_variable))
+            }
+            
+            # Create PC1 boxplot
+            pc1_box <- ggplot(pca_data, aes(x = !!sym(grouping_variable), y = PC1, fill = !!sym(grouping_variable))) +
+              geom_boxplot(notch = TRUE) +
+              theme_bw() +
+              labs(title = title,
+                   x = "",
+                   y = "PC1") +
+              theme(
+                legend.position = "none",
+                axis.text.x = element_blank(),
+                axis.ticks.x = element_blank(),
+                text = element_text(size = font_size),
+                plot.margin = margin(b = 0, t = 5, l = 5, r = 5),
+                panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                panel.background = element_blank()
+              )
+            
+            # Create PC2 boxplot
+            pc2_box <- ggplot(pca_data, aes(x = !!sym(grouping_variable), y = PC2, fill = !!sym(grouping_variable))) +
+              geom_boxplot(notch = TRUE) +
+              theme_bw() +
+              labs(x = "",
+                   y = "PC2") +
+              theme(
+                legend.position = "none",
+                axis.text.x = element_blank(),
+                axis.ticks.x = element_blank(),
+                text = element_text(size = font_size),
+                plot.margin = margin(t = 0, b = 5, l = 5, r = 5),
+                panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                panel.background = element_blank()
+              )
+            
+            # Combine plots with minimal spacing
+            combined_plot <- pc1_box / pc2_box + 
+              plot_layout(heights = c(1, 1)) +
+              plot_annotation(theme = theme(plot.margin = margin(0, 0, 0, 0)))
+            
+            return(combined_plot)
+          })
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#'@export
+setGeneric(name="plotDensityList"
+           , def=function(theObject, grouping_variables_list, title = "", font_size = 8) {
+             standardGeneric("plotDensityList")
+           }
+           , signature=c("theObject", "grouping_variables_list", "title", "font_size"))
+
+#'@export
+setMethod(f="plotDensityList"
+          , signature="ProteinQuantitativeData"
+          , definition=function(theObject, grouping_variables_list, title = "", font_size = 8) {
+            
+            # Create a list of density plots for each grouping variable
+            density_plots_list <- purrr::map(grouping_variables_list, function(group_var) {
+              tryCatch({
+                plotDensity(theObject, 
+                           grouping_variable = group_var,
+                           title = title,
+                           font_size = font_size)
+              }, error = function(e) {
+                warning(sprintf("Error creating density plot for %s: %s", group_var, e$message))
+                return(NULL)
+              })
+            })
+            
+            # Name the list elements with the grouping variables
+            names(density_plots_list) <- grouping_variables_list
+            
+            # Remove any NULL elements (failed plots)
+            density_plots_list <- density_plots_list[!sapply(density_plots_list, is.null)]
+            
+            return(density_plots_list)
+          })
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#' @export
+savePlotDensityList <- function(input_list, prefix = "Density", suffix = c("png", "pdf"), output_dir) {
+  
+  list_of_filenames <- expand_grid(column = names(input_list), suffix = suffix) |>
+    mutate(filename = paste0(prefix, "_", column, ".", suffix)) |>
+    left_join(tibble(column = names(input_list),
+                     plots = input_list),
+              by = join_by(column))
+  
+  purrr::walk2(list_of_filenames$plots,
+               list_of_filenames$filename,
+               \(.x, .y) {
+                 ggsave(plot = .x, filename = file.path(output_dir, .y))
+               })
+  
+  list_of_filenames
+}
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
