@@ -367,8 +367,8 @@ vroom::vroom_write(
 ### It uses the IQ tool (https://github.com/tvpham/iq), which implements the same algorithm as DIA-NN's maxLFQ but runs faster (written in C++) 
 ### Unless your experiment has specific requirements or you wish to use IQ differently, it is recommended to leave default settings here
 ```{r Peptide to Protein Rollup}
-process_long_format(
-  input_data = peptide_values_imputed_file
+iq::process_long_format(
+    peptide_values_imputed_file
   , output_filename = file.path(results_dir, "protein_qc", "iq_output_file.txt")
   , sample_id = "Run"
   , primary_id = "Protein.Ids"
