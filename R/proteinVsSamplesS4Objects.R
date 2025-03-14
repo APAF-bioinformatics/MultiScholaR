@@ -620,7 +620,11 @@ setClass("GridPlotData",
            pca_plots = "list",
            density_plots = "list",
            rle_plots = "list",
-           pearson_plots = "list"
+           pearson_plots = "list",
+           pca_titles = "list",
+           density_titles = "list",
+           rle_titles = "list",
+           pearson_titles = "list"
          ))
 
 #' @export
@@ -636,7 +640,11 @@ setMethod("InitialiseGrid",
                 pca_plots = list(),
                 density_plots = list(),
                 rle_plots = list(),
-                pearson_plots = list())
+                pearson_plots = list(),
+                pca_titles = list(),
+                density_titles = list(),
+                rle_titles = list(),
+                pearson_titles = list())
           })
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -748,8 +756,10 @@ setMethod(f = "createGridQC",
                 )
               })
               message(paste("Plots saved in", save_path))
+            }
+            
             return(combined_plot)
-          }) 
+          })
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## normalise between Arrays
