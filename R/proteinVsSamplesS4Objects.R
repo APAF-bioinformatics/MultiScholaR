@@ -1567,8 +1567,14 @@ summariseProteinObject <- function ( theObject) {
 
 }
 
-
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#'@export
+setGeneric(name="plotDensity"
+           , def=function(theObject, grouping_variable, title = "", font_size = 8) {
+             standardGeneric("plotDensity")
+           }
+           , signature=c("theObject", "grouping_variable", "title", "font_size"))
 
 #'@export
 setMethod(f="plotDensity"
