@@ -672,10 +672,10 @@ setMethod(f = "createGridQC",
             # Create label plots - simple text labels
             createLabelPlot <- function(title) {
               ggplot() + 
-                annotate("text", x = 0.5, y = 0.5, label = title, size = 5) +
+                annotate("text", x = 0, y = 0.5, label = title, size = 5, hjust = 0) +
                 theme_void() +
                 theme(
-                  plot.margin = margin(0, 0, 0, 0),
+                  plot.margin = margin(5, 5, 5, 5),
                   panel.background = element_blank()
                 )
             }
