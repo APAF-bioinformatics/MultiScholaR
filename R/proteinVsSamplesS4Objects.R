@@ -1574,10 +1574,12 @@ summariseProteinObject <- function ( theObject) {
 #'@export
 setGeneric(name="plotDensity"
            , def=function(theObject, grouping_variable, title = "", font_size = 8) {
-             # If it's a gg object, convert to ggplot
+             # If it's a gg object but not a ggplot, convert it to ggplot
              if (inherits(theObject, "gg") && !inherits(theObject, "ggplot")) {
+               # Create a copy of the object to avoid modifying the original
                gg_obj <- theObject
-               class(gg_obj) <- "ggplot"
+               # Add "ggplot" to the class vector rather than replacing it
+               class(gg_obj) <- c("ggplot", class(gg_obj))
                return(standardGeneric("plotDensity")(gg_obj, grouping_variable, title, font_size))
              }
              standardGeneric("plotDensity")
