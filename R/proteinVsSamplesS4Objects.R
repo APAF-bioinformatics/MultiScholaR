@@ -1574,17 +1574,21 @@ summariseProteinObject <- function ( theObject) {
 #'@export
 setGeneric(name="plotDensity"
            , def=function(theObject, grouping_variable, title = "", font_size = 8) {
-             # If it's a gg object but not a ggplot, convert it to ggplot
-             if (inherits(theObject, "gg") && !inherits(theObject, "ggplot")) {
-               # Create a copy of the object to avoid modifying the original
-               gg_obj <- theObject
-               # Add "ggplot" to the class vector rather than replacing it
-               class(gg_obj) <- c("ggplot", class(gg_obj))
-               return(standardGeneric("plotDensity")(gg_obj, grouping_variable, title, font_size))
-             }
              standardGeneric("plotDensity")
            }
            , signature=c("theObject", "grouping_variable", "title", "font_size"))
+
+#'@export
+setMethod(f="plotDensity"
+          , signature="gg"
+          , definition=function(theObject, grouping_variable, title = "", font_size = 8) {
+            # For gg class objects, create a copy and change its class to ggplot
+            gg_obj <- theObject
+            class(gg_obj) <- "ggplot"
+            
+            # Then call the ggplot method
+            plotDensity(gg_obj, grouping_variable, title, font_size)
+          })
 
 #'@export
 setMethod(f="plotDensity"
@@ -1654,7 +1658,7 @@ setMethod(f="plotDensity"
               plot_annotation(theme = theme(plot.margin = margin(0, 0, 0, 0)))
             
             return(combined_plot)
-          })
+          }) 
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
