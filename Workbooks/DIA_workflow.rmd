@@ -367,8 +367,8 @@ vroom::vroom_write(
 ### It uses the IQ tool (https://github.com/tvpham/iq), which implements the same algorithm as DIA-NN's maxLFQ but runs faster (written in C++) 
 ### Unless your experiment has specific requirements or you wish to use IQ differently, it is recommended to leave default settings here
 ```{r Peptide to Protein Rollup}
-process_long_format(
-  input_data = peptide_values_imputed_file
+iq::process_long_format(
+    peptide_values_imputed_file
   , output_filename = file.path(results_dir, "protein_qc", "iq_output_file.txt")
   , sample_id = "Run"
   , primary_id = "Protein.Ids"
@@ -542,6 +542,11 @@ QC_composite_figure@pca_plots$pca_plot_before_cyclic_loess_group <- plotPca(
   , font_size = 8
 )
 
+QC_composite_figure@density_plots$density_plot_before_cyclic_loess_group <- plotDensity(
+  QC_composite_figure@pca_plots$pca_plot_before_cyclic_loess_group,
+  grouping_variable = "group"
+)
+
 pca_mixomics_before_cyclic_loess <- getPcaMatrix(remove_proteins_with_only_one_rep)
 
 QC_composite_figure@pearson_plots$pearson_correlation_pair_before_cyclic_loess <- 
@@ -561,6 +566,11 @@ save_plot(
   QC_composite_figure@pca_plots$pca_plot_before_cyclic_loess_group 
   , results_dir 
   , "pca_plot_before_cyclic_loess"
+)
+save_plot(
+  QC_composite_figure@density_plots$density_plot_before_cyclic_loess_group
+  , results_dir
+  , "density_plot_before_cyclic_loess"  
 )
 save_plot(
   QC_composite_figure@pearson_plots$pearson_correlation_pair_before_cyclic_loess 
@@ -600,6 +610,11 @@ QC_composite_figure@pca_plots$pca_plot_before_ruvIIIc_group <- plotPca(
   , font_size = 8
 )
 
+QC_composite_figure@density_plots$density_plot_before_ruvIIIc_group <- plotDensity(
+  QC_composite_figure@pca_plots$pca_plot_before_ruvIIIc_group,
+  grouping_variable = "group"
+)
+
 pca_mixomics_before_ruvIIIc <- getPcaMatrix(normalised_frozen_protein_matrix_obj)
 
 QC_composite_figure@pearson_plots$pca_plot_before_ruvIIIc_group <- plotPearson(
@@ -618,6 +633,11 @@ save_plot(
   QC_composite_figure@pca_plots$pca_plot_before_ruvIIIc_group 
   , results_dir 
   , "pca_plot_before_ruvIIIc_by_group"
+)
+save_plot(
+  QC_composite_figure@density_plots$density_plot_before_ruvIIIc_group
+  , results_dir
+  , "density_plot_before_ruvIIIc_by_group"  
 )
 save_plot(
   QC_composite_figure@pearson_plots$pearson_correlation_pair_before_ruvIIIc 
@@ -709,6 +729,11 @@ QC_composite_figure@pca_plots$pca_plot_after_ruvIIIc_group <- plotPca(
   , font_size = 8
 )
 
+QC_composite_figure@density_plots$density_plot_after_ruvIIIc_group <- plotDensity(
+  QC_composite_figure@pca_plots$pca_plot_after_ruvIIIc_group,
+  grouping_variable = "group"
+)
+
 pca_mixomics_after_ruvIIIc <- getPcaMatrix(ruv_normalised_results_cln_obj)
 
 QC_composite_figure@pearson_plots$pearson_correlation_pair_after_ruvIIIc_group <- 
@@ -726,6 +751,11 @@ save_plot(
   QC_composite_figure@pca_plots$pca_plot_after_ruvIIIc_group 
   , results_dir 
   , "pca_plot_after_ruvIIIc"
+)
+save_plot(
+  QC_composite_figure@density_plots$density_plot_after_ruvIIIc_group
+  , results_dir
+  , "density_plot_after_ruvIIIc_by_group"  
 )
 save_plot(
   QC_composite_figure@pearson_plots$pearson_correlation_pair_after_ruvIIIc_group 
@@ -844,8 +874,9 @@ saveRDS(
 pca_ruv_rle_correlation_merged <- createGridQC(
   QC_composite_figure
   , pca_titles = c("a)", "b)", "c)")
-  , rle_titles = c("d)", "e)", "f)")
-  , pearson_titles = c("g)", "h)", "i)")
+  , density_titles = c("d)", "e)", "f)")
+  , rle_titles = c("g)", "h)", "i)")
+  , pearson_titles = c("j)", "k)", "l)")
   , save_path = file.path(results_dir, "protein_qc")
   , file_name = "composite_QC_figure"
 )

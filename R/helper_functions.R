@@ -661,6 +661,7 @@ loadDependencies <- function(verbose = TRUE) {
         # Additional packages
         "plotly", "vroom", "gplots", "iheatmapr",
         "UpSetR", "gt", "gprofiler2", "htmltools",
+        "rstudioapi",
         # Git and GitHub related packages
         "git2r", "gh",
         # Bioconductor packages
@@ -782,11 +783,13 @@ setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force
     # Check if directories already exist
     results_path <- file.path(base_dir, "results", proteomics_dirname)
     results_summary_path <- file.path(base_dir, "results_summary", proteomics_dirname)
+    scripts_path <- file.path(base_dir, "scripts", proteomics_dirname)
     
-    if (!force && (dir.exists(results_path) || dir.exists(results_summary_path))) {
+    if (!force && (dir.exists(results_path) || dir.exists(results_summary_path) || dir.exists(scripts_path))) {
         cat(sprintf("\nWarning: Directory(ies) already exist:\n"))
         if (dir.exists(results_path)) cat(sprintf("- %s\n", results_path))
         if (dir.exists(results_summary_path)) cat(sprintf("- %s\n", results_summary_path))
+        if (dir.exists(scripts_path)) cat(sprintf("- %s\n", scripts_path))
         
         response <- readline(prompt = "Do you want to overwrite? (y/n): ")
         
@@ -798,6 +801,7 @@ setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force
         # Remove existing directories if user confirmed
         if (dir.exists(results_path)) unlink(results_path, recursive = TRUE)
         if (dir.exists(results_summary_path)) unlink(results_summary_path, recursive = TRUE)
+        if (dir.exists(scripts_path)) unlink(scripts_path, recursive = TRUE)
     }
     
     # Define all paths and subdirs in one structure
@@ -820,42 +824,45 @@ setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force
         )
     )
     
-    # Handle existing content and create directories in one pass
+    # Create directories without copying content from existing ones
+    # Create results and results_summary directories
     lapply(c("results", "results_summary"), function(type) {
-        existing <- dir.exists(file.path(base_dir, type, "proteomics"))
-        if (existing) {
-            # Get source path
-            source_base <- file.path(base_dir, type, "proteomics")
-            
-            # Copy each subdirectory's contents
-            sapply(paths[[type]]$subdirs, function(subdir) {
-                src_dir <- file.path(source_base, subdir)
-                dest_dir <- file.path(paths[[type]]$base, subdir)
-                
-                if (dir.exists(src_dir)) {
-                    # Create destination directory
-                    dir.create(dest_dir, recursive = TRUE, showWarnings = FALSE)
-                    
-                    # Copy all files maintaining structure
-                    files <- list.files(src_dir, full.names = TRUE, recursive = TRUE)
-                    if (length(files) > 0) {
-                        sapply(files, function(f) {
-                            rel_path <- sub(paste0("^", src_dir, "/"), "", f)
-                            dest_file <- file.path(dest_dir, rel_path)
-                            dir.create(dirname(dest_file), recursive = TRUE, showWarnings = FALSE)
-                            file.copy(f, dest_file, overwrite = TRUE)
-                        })
-                    }
-                }
-            })
-        }
-        
-        # Create any missing subdirectories
+        # Create any subdirectories
         invisible(sapply(
             file.path(paths[[type]]$base, paths[[type]]$subdirs),
             dir.create, recursive = TRUE, showWarnings = FALSE
         ))
     })
+    
+    # Handle scripts directory copying
+    scripts_source <- file.path(base_dir, "scripts", "proteomics")
+    if (dir.exists(scripts_source)) {
+        # Create destination directory
+        dir.create(paths$special$scripts, recursive = TRUE, showWarnings = FALSE)
+        
+        # Copy all files from scripts directory except .rmd files
+        script_files <- list.files(scripts_source, full.names = TRUE, recursive = TRUE)
+        
+        # Add debugging to see what files are being found
+        cat("Files found in scripts directory before filtering:\n")
+        print(script_files)
+        
+        # Filter out .rmd files (case-insensitive) with improved pattern
+        script_files <- script_files[!grepl("\\.[rR][mM][dD]$", script_files)]
+        
+        # Add debugging to see what files remain after filtering
+        cat("Files after filtering out .rmd files:\n")
+        print(script_files)
+        
+        if (length(script_files) > 0) {
+            sapply(script_files, function(f) {
+                rel_path <- sub(paste0("^", scripts_source, "/"), "", f)
+                dest_file <- file.path(paths$special$scripts, rel_path)
+                dir.create(dirname(dest_file), recursive = TRUE, showWarnings = FALSE)
+                file.copy(f, dest_file, overwrite = TRUE)
+            })
+        }
+    }
     
     # Create special directories
     invisible(sapply(paths$special, dir.create, recursive = TRUE, showWarnings = FALSE))
@@ -1025,11 +1032,80 @@ setMethod("show",
 #' @param contrasts_tbl A tibble containing contrast information
 #' @param label Optional label to append to backup directory name (e.g., "backup_MyLabel")
 #' @param force Logical; if TRUE, skips user confirmation (default: FALSE)
+#' @param current_rmd Optional path to the current .Rmd file being worked on; if NULL (default),
+#'                    the function will attempt to detect and save the currently active .Rmd file in RStudio
 #' @return Invisible list of failed copies for error handling
 #' @export
-copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE) {
+copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE, current_rmd = NULL) {
     # Track failed copies
     failed_copies <- list()
+    
+    # Try to detect the currently active .Rmd file if none provided
+    if (is.null(current_rmd) && exists("rstudioapi") && requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
+        # Get the active document context
+        context <- rstudioapi::getActiveDocumentContext()
+        
+        # Check if it's an .Rmd file
+        if (!is.null(context) && !is.null(context$path) && grepl("\\.rmd$", context$path, ignore.case = TRUE)) {
+            current_rmd <- context$path
+            cat(sprintf("Detected active .Rmd file: %s\n", current_rmd))
+        }
+    }
+    
+    # Handle current Rmd file if provided or detected
+    if (!is.null(current_rmd) && file.exists(current_rmd)) {
+        # Attempt to save the current Rmd file to ensure latest changes are captured
+        tryCatch({
+            # This will trigger a save in RStudio if the file is open and has unsaved changes
+            if (exists("rstudioapi") && requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
+                # Get all open documents
+                context <- rstudioapi::getActiveDocumentContext()
+                
+                # Check if our target file is open and active
+                if (!is.null(context) && !is.null(context$path) && 
+                    normalizePath(context$path) == normalizePath(current_rmd)) {
+                    # Save the document
+                    rstudioapi::documentSave(context$id)
+                    cat(sprintf("Saved current Rmd file: %s\n", current_rmd))
+                } else {
+                    # Try to find the document among all open documents
+                    docs <- rstudioapi::getSourceEditorContexts()
+                    for (doc in docs) {
+                        if (!is.null(doc$path) && normalizePath(doc$path) == normalizePath(current_rmd)) {
+                            rstudioapi::documentSave(doc$id)
+                            cat(sprintf("Saved Rmd file: %s\n", current_rmd))
+                            break
+                        }
+                    }
+                }
+            }
+            
+            # Copy the Rmd file to the scripts directory
+            if (exists("source_dir") && dir.exists(source_dir)) {
+                dest_file <- file.path(source_dir, basename(current_rmd))
+                file.copy(current_rmd, dest_file, overwrite = TRUE)
+                cat(sprintf("Copied Rmd file to scripts directory: %s\n", dest_file))
+            } else {
+                warning("Scripts directory not found, could not copy Rmd file")
+                failed_copies[[length(failed_copies) + 1]] <- list(
+                    type = "rmd_copy",
+                    source = current_rmd,
+                    destination = "scripts directory",
+                    display_name = "Current Rmd File",
+                    error = "Scripts directory not found"
+                )
+            }
+        }, error = function(e) {
+            warning(sprintf("Failed to save/copy Rmd file: %s", e$message))
+            failed_copies[[length(failed_copies) + 1]] <- list(
+                type = "rmd_copy",
+                source = current_rmd,
+                destination = "scripts directory",
+                display_name = "Current Rmd File",
+                error = e$message
+            )
+        })
+    }
     
     # Define target directories
     pub_tables_dir <- file.path(results_summary_dir, "Publication_tables")

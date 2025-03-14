@@ -1,6 +1,6 @@
 # Author(s): Ignatius Pang, Pablo Galaviz
 # Email: cmri-bioinformatics@cmri.org.au
-# Children’s Medical Research Institute, finding cures for childhood genetic diseases
+# Children's Medical Research Institute, finding cures for childhood genetic diseases
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'Remove rows in the table where the columns specified by the column regular expression pattern are all zero or NA value.
@@ -342,26 +342,36 @@ plotPcaHelper <- function(data,
     stop(sprintf("Shape variable '%s' not found in the data", shape_variable))
   }
 
-  base_plot <- if (is.null(label_column) || label_column == "") {
-    temp_tbl |>
-      ggplot(aes(PC1, PC2, 
-                 color = !!sym(grouping_variable),
-                 shape = if (!is.null(shape_variable)) !!sym(shape_variable) else NULL))
+  # Create base plot with appropriate aesthetics based on whether shape_variable is NULL
+  if (is.null(label_column) || label_column == "") {
+    if (is.null(shape_variable)) {
+      # No shape variation, only color
+      base_plot <- temp_tbl |>
+        ggplot(aes(PC1, PC2, color = !!sym(grouping_variable)))
+    } else {
+      # Both color and shape
+      base_plot <- temp_tbl |>
+        ggplot(aes(PC1, PC2, color = !!sym(grouping_variable), shape = !!sym(shape_variable)))
+    }
   } else {
     if (!label_column %in% colnames(temp_tbl)) {
       stop(sprintf("Label column '%s' not found in the data", label_column))
     }
     
-    temp_tbl |>
-      ggplot(aes(PC1, PC2, 
-                 color = !!sym(grouping_variable),
-                 shape = if (!is.null(shape_variable)) !!sym(shape_variable) else NULL,
-                 label = !!sym(label_column)))
+    if (is.null(shape_variable)) {
+      # No shape variation, only color, with labels
+      base_plot <- temp_tbl |>
+        ggplot(aes(PC1, PC2, color = !!sym(grouping_variable), label = !!sym(label_column)))
+    } else {
+      # Both color and shape, with labels
+      base_plot <- temp_tbl |>
+        ggplot(aes(PC1, PC2, color = !!sym(grouping_variable), shape = !!sym(shape_variable), 
+                   label = !!sym(label_column)))
+    }
   }
 
   output <- base_plot +
     geom_point(size = 3) +
-    scale_shape_manual(values = c(16, 17, 15, 18, 19, 8)) + # circle, triangle, square, diamond, circle filled, asterisk
     xlab(paste("PC1 (", round(proportion_explained$X[["PC1"]] * 100, 0), "%)", sep = "")) +
     ylab(paste("PC2 (", round(proportion_explained$X[["PC2"]] * 100, 0), "%)", sep = "")) +
     labs(title = title) +
