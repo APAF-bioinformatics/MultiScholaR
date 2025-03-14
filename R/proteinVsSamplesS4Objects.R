@@ -1569,64 +1569,6 @@ summariseProteinObject <- function ( theObject) {
 }
 
 
-#'@export
-setMethod(f="plotDensity_old"
-          , signature="ProteinQuantitativeData"
-          , definition=function(theObject, grouping_variable, title = "", font_size = 8) {
-            # Defensive checks
-            if (!is.character(grouping_variable) || length(grouping_variable) != 1) {
-              stop("grouping_variable must be a single character string")
-            }
-            
-            if (!grouping_variable %in% colnames(theObject@design_matrix)) {
-              stop(sprintf("grouping_variable '%s' not found in design matrix", grouping_variable))
-            }
-            
-            # Get PCA data
-            pca_data <- getPcaMatrix(theObject)
-            
-            # Create PC1 boxplot
-            pc1_box <- ggplot(pca_data, aes(x = !!sym(grouping_variable), y = PC1, fill = !!sym(grouping_variable))) +
-              geom_boxplot(notch = TRUE) +
-              theme_bw() +
-              labs(title = title,
-                   x = "",
-                   y = "PC1") +
-              theme(
-                legend.position = "none",
-                axis.text.x = element_blank(),
-                axis.ticks.x = element_blank(),
-                text = element_text(size = font_size),
-                plot.margin = margin(b = 0, t = 5, l = 5, r = 5),
-                panel.grid.major = element_blank(),
-                panel.grid.minor = element_blank(),
-                panel.background = element_blank()
-            
-            # Create PC2 boxplot
-            pc2_box <- ggplot(pca_data, aes(x = !!sym(grouping_variable), y = PC2, fill = !!sym(grouping_variable))) +
-              geom_boxplot(notch = TRUE) +
-              theme_bw() +
-              labs(x = "",
-                   y = "PC2") +
-              theme(
-                legend.position = "none",
-                axis.text.x = element_blank(),
-                axis.ticks.x = element_blank(),
-                text = element_text(size = font_size),
-                plot.margin = margin(t = 0, b = 5, l = 5, r = 5),
-                panel.grid.major = element_blank(),
-                panel.grid.minor = element_blank(),
-                panel.background = element_blank()
-              )
-            
-            # Combine plots with minimal spacing
-            combined_plot <- pc1_box / pc2_box + 
-              plot_layout(heights = c(1, 1)) +
-              plot_annotation(theme = theme(plot.margin = margin(0, 0, 0, 0)))
-            
-            return(combined_plot)
-          })
-
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #'@export
