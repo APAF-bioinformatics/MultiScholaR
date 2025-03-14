@@ -1580,7 +1580,7 @@ setGeneric(name="plotDensity"
 
 #'@export
 setMethod(f="plotDensity"
-          , signature="gg"
+          , signature="ggplot"
           , definition=function(theObject, grouping_variable, title = "", font_size = 8) {
             # First try to get data directly from the ggplot object's data element
             if (!is.null(theObject$data) && is.data.frame(theObject$data)) {
@@ -1672,8 +1672,8 @@ setMethod(f="plotDensityList"
               }, error = function(e) {
                 warning(sprintf("Error creating density plot for %s: %s", group_var, e$message))
                 return(NULL)
+                              })
               })
-            })
             
             # Name the list elements with the grouping variables
             names(density_plots_list) <- grouping_variables_list
