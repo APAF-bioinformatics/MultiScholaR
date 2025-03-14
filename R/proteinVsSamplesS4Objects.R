@@ -734,7 +734,7 @@ setMethod(f = "createGridQC",
             rle_labels <- lapply(rle_titles, createLabelPlot)
             pearson_labels <- lapply(pearson_titles, createLabelPlot)
             
-            # Combine with labels above each row
+            # Combine with labels above each row - modified to keep legends with their plots
             combined_plot <- (
               wrap_plots(pca_labels, ncol = 3) /
               wrap_plots(created_pca_plots, ncol = 3) /
@@ -745,7 +745,7 @@ setMethod(f = "createGridQC",
               wrap_plots(pearson_labels, ncol = 3) /
               wrap_plots(created_pearson_plots, ncol = 3)
             ) +
-              plot_layout(guides = 'collect', heights = c(0.1, 1, 0.1, 1, 0.1, 1, 0.1, 1))
+              plot_layout(heights = c(0.1, 1, 0.1, 1, 0.1, 1, 0.1, 1))
 
             if (!is.null(save_path)) {
               sapply(c("png", "pdf", "svg"), function(ext) {
