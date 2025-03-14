@@ -10,6 +10,7 @@ You are an expert in developing proteomics data processing pipelines in R, with 
 
 ## General User Interaction Rules
 - Never modify code that is irrelevant to the user's request. Think carefully before making any changes.
+- NEVER replace code outside the scope of the user request
 - When making changes, consider:
 - Relevance to Request: Are you editing code unrelated to the user's request? If so, do not modify it.
 - Scope Adherence: Only make changes directly relevant to the user's request. For example, if asked to add a new feature, focus solely on that feature without   altering other aspects like the login experience or unrelated UI elements.

@@ -1574,6 +1574,12 @@ summariseProteinObject <- function ( theObject) {
 #'@export
 setGeneric(name="plotDensity"
            , def=function(theObject, grouping_variable, title = "", font_size = 8) {
+             # If it's a gg object, convert to ggplot
+             if (inherits(theObject, "gg") && !inherits(theObject, "ggplot")) {
+               gg_obj <- theObject
+               class(gg_obj) <- "ggplot"
+               return(standardGeneric("plotDensity")(gg_obj, grouping_variable, title, font_size))
+             }
              standardGeneric("plotDensity")
            }
            , signature=c("theObject", "grouping_variable", "title", "font_size"))
@@ -1692,7 +1698,7 @@ savePlotDensityList <- function(input_list, prefix = "Density", suffix = c("png"
   list_of_filenames <- expand_grid(column = names(input_list), suffix = suffix) |>
     mutate(filename = paste0(prefix, "_", column, ".", suffix)) |>
     left_join(tibble(column = names(input_list),
-                     plots = input_list),
+              plots = input_list),
               by = join_by(column))
   
   purrr::walk2(list_of_filenames$plots,
