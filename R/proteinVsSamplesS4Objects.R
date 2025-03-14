@@ -653,36 +653,47 @@ setGeneric(name = "createGridQC",
 #' @export
 setMethod(f = "createGridQC",
           signature = "GridPlotData",
-          definition = function(theObject, pca_titles, density_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
+          definition = function(theObject, pca_titles = NULL, density_titles = NULL, rle_titles = NULL, pearson_titles = NULL, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
             
-            createPcaPlot <- function(plot, title) {
+            # Use stored titles if not provided as parameters
+            pca_titles <- if(is.null(pca_titles)) theObject@pca_titles else pca_titles
+            density_titles <- if(is.null(density_titles)) theObject@density_titles else density_titles
+            rle_titles <- if(is.null(rle_titles)) theObject@rle_titles else rle_titles
+            pearson_titles <- if(is.null(pearson_titles)) theObject@pearson_titles else pearson_titles
+            
+            # Create label plots - simple text labels
+            createLabelPlot <- function(title) {
+              ggplot() + 
+                annotate("text", x = 0.5, y = 0.5, label = title, size = 5) +
+                theme_void() +
+                theme(
+                  plot.margin = margin(0, 0, 0, 0),
+                  panel.background = element_blank()
+                )
+            }
+            
+            # Create basic plots without titles
+            createPcaPlot <- function(plot) {
               plot +
-                xlim(-40, 45) + ylim(-30, 25) + ggtitle(title) +
+                xlim(-40, 45) + ylim(-30, 25) +
                 theme(text = element_text(size = 15),
                       panel.grid.major = element_blank(),
                       panel.grid.minor = element_blank(),
                       panel.background = element_blank())
             }
             
-            createDensityPlot <- function(plot, title) {
-              # For composite density plots, add title using patchwork's annotation
+            createDensityPlot <- function(plot) {
+              # For all plots, just apply the theme without adding title
               if (inherits(plot, "patchwork")) {
-                plot + 
-                  plot_annotation(
-                    title = title,
-                    theme = theme(
-                      plot.title = element_text(size = 15, hjust = 0),
-                      text = element_text(size = 15)
-                    )
-                  ) &
+                plot & 
                   theme(
                     panel.grid.major = element_blank(),
                     panel.grid.minor = element_blank(),
-                    panel.background = element_blank()
+                    panel.background = element_blank(),
+                    text = element_text(size = 15)
                   )
               } else {
-                # For non-composite plots, use the standard approach
-                plot + ggtitle(title) +
+                plot +
                   theme(text = element_text(size = 15),
                         panel.grid.major = element_blank(),
                         panel.grid.minor = element_blank(),
@@ -690,30 +701,42 @@ setMethod(f = "createGridQC",
               }
             }
             
-            createRlePlot <- function(plot, title) {
-              plot + ggtitle(title) +
+            createRlePlot <- function(plot) {
+              plot +
                 theme(text = element_text(size = 15),
                       axis.text.x = element_blank(),
                       axis.ticks.x = element_blank())
             }
             
-            createPearsonPlot <- function(plot, title) {
-              plot + ggtitle(title) +
+            createPearsonPlot <- function(plot) {
+              plot +
                 theme(text = element_text(size = 15))
             }
             
-            created_pca_plots <- mapply(createPcaPlot, theObject@pca_plots, pca_titles, SIMPLIFY = FALSE)
-            created_density_plots <- mapply(createDensityPlot, theObject@density_plots, density_titles, SIMPLIFY = FALSE)
-            created_rle_plots <- mapply(createRlePlot, theObject@rle_plots, rle_titles, SIMPLIFY = FALSE)
-            created_pearson_plots <- mapply(createPearsonPlot, theObject@pearson_plots, pearson_titles, SIMPLIFY = FALSE)
+            # Create plots without titles
+            created_pca_plots <- lapply(theObject@pca_plots, createPcaPlot)
+            created_density_plots <- lapply(theObject@density_plots, createDensityPlot)
+            created_rle_plots <- lapply(theObject@rle_plots, createRlePlot)
+            created_pearson_plots <- lapply(theObject@pearson_plots, createPearsonPlot)
             
+            # Create label plots
+            pca_labels <- lapply(pca_titles, createLabelPlot)
+            density_labels <- lapply(density_titles, createLabelPlot)
+            rle_labels <- lapply(rle_titles, createLabelPlot)
+            pearson_labels <- lapply(pearson_titles, createLabelPlot)
+            
+            # Combine with labels above each row
             combined_plot <- (
+              wrap_plots(pca_labels, ncol = 3) /
               wrap_plots(created_pca_plots, ncol = 3) /
+              wrap_plots(density_labels, ncol = 3) /
               wrap_plots(created_density_plots, ncol = 3) /
+              wrap_plots(rle_labels, ncol = 3) /
               wrap_plots(created_rle_plots, ncol = 3) /
+              wrap_plots(pearson_labels, ncol = 3) /
               wrap_plots(created_pearson_plots, ncol = 3)
             ) +
-              plot_layout(guides = 'collect')
+              plot_layout(guides = 'collect', heights = c(0.1, 1, 0.1, 1, 0.1, 1, 0.1, 1))
 
             if (!is.null(save_path)) {
               sapply(c("png", "pdf", "svg"), function(ext) {
@@ -721,15 +744,12 @@ setMethod(f = "createGridQC",
                   plot = combined_plot,
                   filename = file.path(save_path, paste0(file_name, ".", ext)),
                   width = 14,
-                  height = 14
+                  height = 16 # Increased height to accommodate label rows
                 )
               })
               message(paste("Plots saved in", save_path))
-            }
-            
             return(combined_plot)
-          })
-
+          }) 
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## normalise between Arrays
