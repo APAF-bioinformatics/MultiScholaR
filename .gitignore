@@ -14,6 +14,7 @@
 cursor-rules.json
 .cursor-rules.yaml
 cursor-rules.yaml
+r-rules.mdc
 
 # Example code in package build process
 *-Ex.R
