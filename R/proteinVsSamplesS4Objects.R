@@ -665,16 +665,23 @@ setMethod(f = "createGridQC",
             }
             
             createDensityPlot <- function(plot, title) {
-              # Check if the plot is already a composite/patchwork
+              # For composite density plots, add title using patchwork's annotation
               if (inherits(plot, "patchwork")) {
-                # For patchwork objects, add the title to the entire composite
-                plot + plot_annotation(title = title) +
-                  theme(text = element_text(size = 15),
-                        panel.grid.major = element_blank(),
-                        panel.grid.minor = element_blank(),
-                        panel.background = element_blank())
+                plot + 
+                  plot_annotation(
+                    title = title,
+                    theme = theme(
+                      plot.title = element_text(size = 15, hjust = 0),
+                      text = element_text(size = 15)
+                    )
+                  ) &
+                  theme(
+                    panel.grid.major = element_blank(),
+                    panel.grid.minor = element_blank(),
+                    panel.background = element_blank()
+                  )
               } else {
-                # For single ggplot objects, add title directly
+                # For non-composite plots, use the standard approach
                 plot + ggtitle(title) +
                   theme(text = element_text(size = 15),
                         panel.grid.major = element_blank(),
@@ -1694,9 +1701,9 @@ setMethod(f="plotDensityList"
                            font_size = font_size)
               }, error = function(e) {
                 warning(sprintf("Error creating density plot for %s: %s", group_var, e$message))
-                return(NULL)
+              return(NULL)
+                  })
                               })
-              })
             
             # Name the list elements with the grouping variables
             names(density_plots_list) <- grouping_variables_list
