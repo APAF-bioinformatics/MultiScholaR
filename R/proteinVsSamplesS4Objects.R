@@ -669,10 +669,11 @@ setMethod(f = "createGridQC",
             rle_titles <- if(is.null(rle_titles)) theObject@rle_titles else rle_titles
             pearson_titles <- if(is.null(pearson_titles)) theObject@pearson_titles else pearson_titles
             
-            # Create label plots - simple text labels
             createLabelPlot <- function(title) {
+              # Option 1: Use xlim to expand the plot area and position text at left edge
               ggplot() + 
                 annotate("text", x = 0, y = 0.5, label = title, size = 5, hjust = 0) +
+                xlim(0, 1) +  # Explicitly set the x limits
                 theme_void() +
                 theme(
                   plot.margin = margin(5, 5, 5, 5),
