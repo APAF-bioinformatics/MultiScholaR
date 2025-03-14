@@ -665,11 +665,22 @@ setMethod(f = "createGridQC",
             }
             
             createDensityPlot <- function(plot, title) {
-              plot + ggtitle(title) +
-                theme(text = element_text(size = 15),
-                      panel.grid.major = element_blank(),
-                      panel.grid.minor = element_blank(),
-                      panel.background = element_blank())
+              # Check if the plot is already a composite/patchwork
+              if (inherits(plot, "patchwork")) {
+                # For patchwork objects, add the title to the entire composite
+                plot + plot_annotation(title = title) +
+                  theme(text = element_text(size = 15),
+                        panel.grid.major = element_blank(),
+                        panel.grid.minor = element_blank(),
+                        panel.background = element_blank())
+              } else {
+                # For single ggplot objects, add title directly
+                plot + ggtitle(title) +
+                  theme(text = element_text(size = 15),
+                        panel.grid.major = element_blank(),
+                        panel.grid.minor = element_blank(),
+                        panel.background = element_blank())
+              }
             }
             
             createRlePlot <- function(plot, title) {
