@@ -696,10 +696,11 @@ ruv_normalised_results_temp_obj <- ruvIII_C_Varying(
   , ctrl = control_genes_index
 ) 
 
-config_list$ruvParameters$best_k <- best_k
-config_list$ruvParameters$num_neg_ctrl <- length(control_genes_index)
-config_list$ruvParameters$percentage_as_neg_ctrl <- percentage_as_neg_ctrl
-config_list$ruvParameters$num_neg_ctrl
+configList <- updateRuvParameters(
+  config_list
+  , best_k
+  , control_genes_index
+  , percentage_as_neg_ctrl)
 
 ## Sometimes RUV will blank out some of the values, so we need to remove proteins 
 ## if too many values are blanked out 

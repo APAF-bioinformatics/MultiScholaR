@@ -1676,3 +1676,17 @@ updateMissingValueParameters <- function(design_matrix, config_list, min_reps_pe
     
     return(config_list)
 }
+
+##################################################################################################################
+
+updateRuvParameters <- function(config_list, best_k, control_genes_index, percentage_as_neg_ctrl) {
+  config_list$ruvParameters$best_k <- best_k
+  config_list$ruvParameters$num_neg_ctrl <- length(control_genes_index)
+  config_list$ruvParameters$percentage_as_neg_ctrl <- percentage_as_neg_ctrl
+  
+  # Print the number of negative controls (as in the original code)
+  config_list$ruvParameters$num_neg_ctrl
+  
+  # Return the updated config list
+  return(config_list)
+}
