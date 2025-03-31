@@ -1,0 +1,218 @@
+name: 🔸 Feature Task (Child)
+description: Create a specific implementation task that is part of a larger feature project
+title: "[FEATURE-TASK] "
+labels: ["feature", "child"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This template is for creating specific implementation tasks that are part of a larger feature project.
+        
+  - type: input
+    id: parent-issue
+    attributes:
+      label: Parent Feature Project
+      description: Link to the parent feature issue
+      placeholder: "#123"
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: task-type
+    attributes:
+      label: Task Type
+      description: What type of task is this?
+      options:
+        - Core Implementation (Main Functionality)
+        - Data Processing (Analysis Logic)
+        - UI Development (Interface)
+        - Integration (External Systems)
+        - Testing (Validation)
+        - Documentation (User/Technical)
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: estimated-effort
+    attributes:
+      label: Estimated Effort
+      description: How much effort is required for this task?
+      options:
+        - XS (< 2 hours)
+        - S (2-4 hours)
+        - M (4-8 hours)
+        - L (1-2 days)
+        - XL (2+ days)
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: Implementation Complexity
+      description: How complex is this task?
+      options:
+        - High (Complex Logic/Integration)
+        - Medium (Moderate Complexity)
+        - Low (Straightforward)
+        - Unknown (Needs Investigation)
+    validations:
+      required: true
+      
+  - type: textarea
+    id: task-description
+    attributes:
+      label: Task Description
+      description: Describe the specific task to be implemented
+      placeholder: |
+        Objective:
+        - What needs to be implemented?
+        - What are the key requirements?
+        - What are the expected outcomes?
+        
+        Context:
+        - Why is this task needed?
+        - How does it fit into the larger feature?
+    validations:
+      required: true
+      
+  - type: textarea
+    id: technical-approach
+    attributes:
+      label: Technical Approach
+      description: Outline the technical implementation approach
+      placeholder: |
+        Design Approach:
+        - Architecture/design patterns
+        - Key algorithms/methods
+        - Data structures
+        
+        Implementation Steps:
+        1. [Step 1 description]
+           - Technical details
+           - Considerations
+        2. [Step 2 description]
+           - Technical details
+           - Considerations
+        
+        Technical Considerations:
+        - Performance implications
+        - Memory management
+        - Error handling
+    validations:
+      required: true
+      
+  - type: textarea
+    id: implementation-requirements
+    attributes:
+      label: Implementation Requirements
+      description: Specific requirements for this task
+      placeholder: |
+        Functional Requirements:
+        - Input specifications
+        - Processing requirements
+        - Output specifications
+        
+        Technical Requirements:
+        - Performance criteria
+        - Memory constraints
+        - Error handling
+        
+        Quality Requirements:
+        - Code standards
+        - Documentation needs
+        - Test coverage
+    validations:
+      required: true
+      
+  - type: textarea
+    id: testing-approach
+    attributes:
+      label: Testing Approach
+      description: How will this implementation be tested?
+      placeholder: |
+        Unit Tests:
+        - [ ] Core functionality tests
+        - [ ] Edge case tests
+        - [ ] Error handling tests
+        
+        Integration Tests:
+        - [ ] Component integration
+        - [ ] System integration
+        - [ ] Performance testing
+        
+        Validation Tests:
+        - [ ] Scientific accuracy
+        - [ ] Result reproducibility
+        - [ ] User acceptance
+    validations:
+      required: true
+      
+  - type: textarea
+    id: dependencies-impacts
+    attributes:
+      label: Dependencies and Impacts
+      description: List dependencies and potential impacts
+      placeholder: |
+        Implementation Dependencies:
+        - Required components
+        - External libraries
+        - Data dependencies
+        
+        Impact Analysis:
+        - Affected components
+        - Performance impacts
+        - User workflow changes
+        
+        Integration Points:
+        - APIs/interfaces
+        - Data exchange
+        - System interactions
+    validations:
+      required: true
+      
+  - type: textarea
+    id: documentation-needs
+    attributes:
+      label: Documentation Needs
+      description: What documentation is required?
+      placeholder: |
+        Code Documentation:
+        - [ ] Function documentation
+        - [ ] Class documentation
+        - [ ] Example usage
+        
+        Technical Documentation:
+        - [ ] Architecture details
+        - [ ] Integration guide
+        - [ ] API documentation
+        
+        User Documentation:
+        - [ ] User guide updates
+        - [ ] Tutorial content
+        - [ ] Help documentation
+    validations:
+      required: true
+      
+  - type: textarea
+    id: completion-checklist
+    attributes:
+      label: Completion Checklist
+      description: Requirements for task completion
+      placeholder: |
+        Implementation:
+        - [ ] Code complete
+        - [ ] Tests written
+        - [ ] Documentation updated
+        
+        Quality:
+        - [ ] Code review passed
+        - [ ] Tests passing
+        - [ ] Performance verified
+        
+        Validation:
+        - [ ] Scientific validation
+        - [ ] Integration verified
+        - [ ] User acceptance
+    validations:
+      required: true 
