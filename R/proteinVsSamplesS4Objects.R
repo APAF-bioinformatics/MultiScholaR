@@ -609,8 +609,13 @@ setMethod(f="plotPearson",
 setClass("GridPlotData",
          slots = list(
            pca_plots = "list",
+           density_plots = "list",
            rle_plots = "list",
-           pearson_plots = "list"
+           pearson_plots = "list",
+           pca_titles = "list",
+           density_titles = "list",
+           rle_titles = "list",
+           pearson_titles = "list"
          ))
 
 #' @export
@@ -619,13 +624,18 @@ setGeneric("InitialiseGrid", function(dummy = NULL) {
 })
 
 #' @export
-setMethod("InitialiseGrid",
+setMethod("InitialiseGrid", 
           signature(dummy = "ANY"),
           function(dummy = NULL) {
             new("GridPlotData",
                 pca_plots = list(),
+                density_plots = list(),
                 rle_plots = list(),
-                pearson_plots = list())
+                pearson_plots = list(),
+                pca_titles = list(),
+                density_titles = list(),
+                rle_titles = list(),
+                pearson_titles = list())
           })
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -634,63 +644,114 @@ setMethod("InitialiseGrid",
 #' @export
 #' @export
 setGeneric(name = "createGridQC",
-           def = function(theObject, pca_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_rle_pearson_corr_plots_merged", num_of_columns = 3) {
+           def = function(theObject, pca_titles, density_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
              standardGeneric("createGridQC")
            },
-           signature = c("theObject", "pca_titles", "rle_titles", "pearson_titles", "save_path", "file_name", "num_of_columns"))
+           signature = c("theObject", "pca_titles", "density_titles", "rle_titles", "pearson_titles", "save_path", "file_name"))
 
 #' @export
 setMethod(f = "createGridQC",
           signature = "GridPlotData",
-          definition = function(theObject, pca_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_rle_pearson_corr_plots_merged"
-                                , num_of_columns = 3) {
-
-            createPcaPlot <- function(plot, title) {
+          definition = function(theObject, pca_titles = NULL, density_titles = NULL, rle_titles = NULL, pearson_titles = NULL, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
+            
+            # Use stored titles if not provided as parameters
+            pca_titles <- if(is.null(pca_titles)) theObject@pca_titles else pca_titles
+            density_titles <- if(is.null(density_titles)) theObject@density_titles else density_titles
+            rle_titles <- if(is.null(rle_titles)) theObject@rle_titles else rle_titles
+            pearson_titles <- if(is.null(pearson_titles)) theObject@pearson_titles else pearson_titles
+            
+            createLabelPlot <- function(title) {
+              # Option 1: Use xlim to expand the plot area and position text at left edge
+              ggplot() + 
+                annotate("text", x = 0, y = 0.5, label = title, size = 5, hjust = 0) +
+                xlim(0, 1) +  # Explicitly set the x limits
+                theme_void() +
+                theme(
+                  plot.margin = margin(5, 5, 5, 5),
+                  panel.background = element_blank()
+                )
+            }
+            
+            # Create basic plots without titles
+            createPcaPlot <- function(plot) {
               plot +
-                xlim(-40, 45) + ylim(-30, 25) + ggtitle(title) +
+                xlim(-40, 45) + ylim(-30, 25) +
                 theme(text = element_text(size = 15),
                       panel.grid.major = element_blank(),
                       panel.grid.minor = element_blank(),
                       panel.background = element_blank())
             }
-
-            createRlePlot <- function(plot, title) {
-              plot + ggtitle(title) +
+            
+            createDensityPlot <- function(plot) {
+              # For all plots, just apply the theme without adding title
+              if (inherits(plot, "patchwork")) {
+                plot & 
+                  theme(
+                    panel.grid.major = element_blank(),
+                    panel.grid.minor = element_blank(),
+                    panel.background = element_blank(),
+                    text = element_text(size = 15)
+                  )
+              } else {
+                plot +
+                  theme(text = element_text(size = 15),
+                        panel.grid.major = element_blank(),
+                        panel.grid.minor = element_blank(),
+                        panel.background = element_blank())
+              }
+            }
+            
+            createRlePlot <- function(plot) {
+              plot +
                 theme(text = element_text(size = 15),
                       axis.text.x = element_blank(),
                       axis.ticks.x = element_blank())
             }
-
-            createPearsonPlot <- function(plot, title) {
-              plot + ggtitle(title) +
+            
+            createPearsonPlot <- function(plot) {
+              plot +
                 theme(text = element_text(size = 15))
             }
-
-            created_pca_plots <- mapply(createPcaPlot, theObject@pca_plots, pca_titles, SIMPLIFY = FALSE)
-            created_rle_plots <- mapply(createRlePlot, theObject@rle_plots, rle_titles, SIMPLIFY = FALSE)
-            created_pearson_plots <- mapply(createPearsonPlot, theObject@pearson_plots, pearson_titles, SIMPLIFY = FALSE)
-
+            
+            # Create plots without titles
+            created_pca_plots <- lapply(theObject@pca_plots, createPcaPlot)
+            created_density_plots <- lapply(theObject@density_plots, createDensityPlot)
+            created_rle_plots <- lapply(theObject@rle_plots, createRlePlot)
+            created_pearson_plots <- lapply(theObject@pearson_plots, createPearsonPlot)
+            
+            # Create label plots
+            pca_labels <- lapply(pca_titles, createLabelPlot)
+            density_labels <- lapply(density_titles, createLabelPlot)
+            rle_labels <- lapply(rle_titles, createLabelPlot)
+            pearson_labels <- lapply(pearson_titles, createLabelPlot)
+            
+            # Combine with labels above each row - modified to keep legends with their plots
             combined_plot <- (
-              wrap_plots(created_pca_plots, ncol = num_of_columns) /
-                wrap_plots(created_rle_plots, ncol = num_of_columns) /
-                wrap_plots(created_pearson_plots, ncol = num_of_columns)
+              wrap_plots(pca_labels, ncol = 3) /
+              wrap_plots(created_pca_plots, ncol = 3) /
+              wrap_plots(density_labels, ncol = 3) /
+              wrap_plots(created_density_plots, ncol = 3) /
+              wrap_plots(rle_labels, ncol = 3) /
+              wrap_plots(created_rle_plots, ncol = 3) /
+              wrap_plots(pearson_labels, ncol = 3) /
+              wrap_plots(created_pearson_plots, ncol = 3)
             ) +
-              plot_layout(guides = 'collect')
+              plot_layout(heights = c(0.1, 1, 0.1, 1, 0.1, 1, 0.1, 1))
 
             if (!is.null(save_path)) {
-              savePlot(combined_plot
-                       , file = file.path(save_path, paste0(file_name, ".RData"))
-                       , formats = c( "png", "pdf", "svg")
-                       , width = 12/3*num_of_columns + 2
-                       , height = 12/3*num_of_columns + 2
-                       )
+              sapply(c("png", "pdf", "svg"), function(ext) {
+                ggsave(
+                  plot = combined_plot,
+                  filename = file.path(save_path, paste0(file_name, ".", ext)),
+                  width = 14,
+                  height = 16 # Increased height to accommodate label rows
+                )
+              })
               message(paste("Plots saved in", save_path))
             }
-
+            
             return(combined_plot)
           })
-
-
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## normalise between Arrays
 
