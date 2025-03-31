@@ -64,12 +64,12 @@ createIdToAttributeHash <- function(keys, attributes) {
 #' @export
 convertKeyToAttribute <- function(key, hash) {
 
-	if ( base::exists(key, hash) ) {
-		return ( base::get(key, hash))
-	}
-	else {
-		return (NA)
-	}
+  if ( base::exists(key, hash) ) {
+    return ( base::get(key, hash))
+  }
+  else {
+    return (NA)
+  }
 }
 
 ##################################################################################################################
@@ -78,12 +78,12 @@ convertKeyToAttribute <- function(key, hash) {
 #' @export
 createDirectoryIfNotExists <- function(file_path, mode = "0777") {
 
-	### Create directory recursively if it doesn't exist
-	if (! file.exists(file_path)){
+  ### Create directory recursively if it doesn't exist
+  if (! file.exists(file_path)){
 
-		dir.create(file_path, showWarnings = TRUE, recursive = TRUE, mode = mode)
+    dir.create(file_path, showWarnings = TRUE, recursive = TRUE, mode = mode)
 
-	}
+  }
 
 }
 
@@ -99,7 +99,7 @@ createDirIfNotExists  <- function(file_path, mode = "0777") {
 # https://stackoverflow.com/questions/10966109/how-to-source-r-markdown-file-like-sourcemyfile-r
 #' @export
 sourceRmdFileSimple <- function(x, ...) {
-	source(purl(x, output = tempfile()), ...)
+  source(purl(x, output = tempfile()), ...)
 }
 
 ##################################################################################################################
@@ -113,19 +113,19 @@ sourceRmdFileSimple <- function(x, ...) {
 #' @return This function is called for its side effects
 #' @export
 sourceRmdFile <- function(file, skip_plots = TRUE) {
-	temp = tempfile(fileext=".R")
-	knitr::purl(file, output=temp)
+  temp = tempfile(fileext=".R")
+  knitr::purl(file, output=temp)
 
-	if(skip_plots) {
-		old_dev = getOption('device')
-		options(device = function(...) {
-			.Call("R_GD_nullDevice", PACKAGE = "grDevices")
-		})
-	}
-	source(temp)
-	if(skip_plots) {
-		options(device = old_dev)
-	}
+  if(skip_plots) {
+    old_dev = getOption('device')
+    options(device = function(...) {
+      .Call("R_GD_nullDevice", PACKAGE = "grDevices")
+    })
+  }
+  source(temp)
+  if(skip_plots) {
+    options(device = old_dev)
+  }
 }
 
 
@@ -255,27 +255,52 @@ setArgsDefault <- function(args, value_name, as_func, default_val=NA ) {
 
 ##################################################################################################################
 
+
 #' Save a plot in multiple formats
 #'
-#' This function saves a given plot in multiple specified formats.
+#' This function saves a given plot in multiple specified formats and also save the ggplot object as a rds file.
 #'
 #' @param plot The plot object to be saved
 #' @param base_path The base directory path where the plot will be saved
 #' @param plot_name The name to be used for the saved plot files
 #' @param formats A vector of file formats to save the plot in (default: c("pdf", "png"))
+#' @param width The width of the plot (default: 7)
+#' @param height The height of the plot (default: 7)
+#' @param ... Additional arguments to be passed to ggsave
 #'
 #' @return This function is called for its side effects (saving files)
 #' @export
 #'
 #'
-save_plot <- function(plot, base_path, plot_name, formats = c("pdf", "png")) {
-  for (format in formats) {
-    file_path <- file.path(base_path, "protein_qc", paste0(plot_name, ".", format))
-    ggsave(filename = file_path, plot = plot, device = format)
-  }
+savePlot <- function(plot, base_path, plot_name, formats = c("pdf", "png"), width=7, height=7, ... ) {
+  saveRDS( plot, file.path(base_path, paste0(plot_name, ".rds")))
+  purrr::walk( formats, \(format){
+    file_path <- file.path(base_path, paste0(plot_name, ".", format))
+    ggsave(filename = file_path, plot = plot, device = format, width=width, height=height, ...)
+  })
 }
 
-##################################################################################################################
+
+
+#' Save a plot in multiple formats
+#'
+#' This function saves a given plot in multiple specified formats and also save the ggplot object as a rds file.
+#'
+#' @param plot The plot object to be saved
+#' @param base_path The base directory path where the plot will be saved
+#' @param plot_name The name to be used for the saved plot files
+#' @param formats A vector of file formats to save the plot in (default: c("pdf", "png"))
+#'#' @param width The width of the plot (default: 7)
+#' @param height The height of the plot (default: 7)
+#' @param ... Additional arguments to be passed to ggsave
+#'
+#' @return This function is called for its side effects (saving files)
+#' @export
+#'
+#'
+save_plot <- function(plot, base_path, plot_name, formats = c("pdf", "png"), width=7, height=7, ... ) {
+  savePlot(plot, base_path, plot_name, formats, width, height, ...)
+}
 
 
 ##################################################################################################################
@@ -1608,15 +1633,15 @@ copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE, cur
 
 
 #' Update Missing Value Parameters in Configuration List
-#' 
-#' @description 
+#'
+#' @description
 #' Automatically calculates and updates the missing value filtering parameters in the configuration list
 #' based on the experimental design matrix. The function ensures at least a specified number of groups
 #' have sufficient quantifiable values for analysis.
-#' 
+#'
 #' @param design_matrix A tibble containing the experimental design. Must have a 'group' column and
 #'                     equal number of replicates per group.
-#' @param config_list A list containing configuration parameters. Must have a 
+#' @param config_list A list containing configuration parameters. Must have a
 #'                   'removeRowsWithMissingValuesPercent' nested list with 'groupwise_percentage_cutoff'
 #'                   and 'max_groups_percentage_cutoff' parameters.
 #' @param min_reps_per_group Integer specifying the minimum number of replicates required in each passing group
@@ -1624,12 +1649,12 @@ copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE, cur
 #'                  quantifiable values. Default is 2.
 #'
 #' @return Updated config_list with modified missing value parameters
-#' 
-#' @details 
+#'
+#' @details
 #' The function calculates:
 #' - groupwise_percentage_cutoff: Allows 1 missing value per group
 #' - max_groups_percentage_cutoff: Based on minimum required groups
-#' 
+#'
 #' @examples
 #' \dontrun{
 #' config_list <- updateMissingValueParameters(design_matrix, config_list, min_reps_per_group = 2)
@@ -1643,45 +1668,45 @@ updateMissingValueParameters <- function(design_matrix, config_list, min_reps_pe
         summarise(n_reps = n()) |>
         pull(n_reps) |>
         unique()
-    
+
     # Ensure all groups have same number of replicates
     if (length(reps_per_group) != 1) {
         stop("All groups must have the same number of replicates")
     }
-    
+
     # Get total number of groups
     total_groups <- design_matrix |>
         pull(group) |>
         unique() |>
         length()
-    
+
     if (min_groups > total_groups) {
         stop("min_groups cannot be larger than total number of groups")
     }
-    
+
     if (min_reps_per_group > reps_per_group) {
         stop("min_reps_per_group cannot be larger than total replicates per group")
     }
-    
+
     # Calculate maximum missing allowed per group
     max_missing_per_group <- reps_per_group - min_reps_per_group
     groupwise_cutoff <- round((max_missing_per_group/reps_per_group) * 100, 3)
-    
+
     # Calculate maximum failing groups allowed
     max_failing_groups <- total_groups - min_groups
     max_groups_cutoff <- round((max_failing_groups/total_groups) * 100, 3)
-    
+
     # Update config_list
     config_list$removeRowsWithMissingValuesPercent$groupwise_percentage_cutoff <- groupwise_cutoff
     config_list$removeRowsWithMissingValuesPercent$max_groups_percentage_cutoff <- max_groups_cutoff
     config_list$removeRowsWithMissingValuesPercent$proteins_intensity_cutoff_percentile <- 1
-    
+
     # Print informative message
     message(sprintf("Updated missing value parameters in config_list:
     - Requiring at least %d out of %d replicates in each passing group (%.3f%% missing allowed per group)
     - Requiring at least %d out of %d groups to pass (%.3f%% failing groups allowed)
     - groupwise_percentage_cutoff set to %.3f%%
-    - max_groups_percentage_cutoff set to %.3f%%", 
+    - max_groups_percentage_cutoff set to %.3f%%",
         min_reps_per_group,
         reps_per_group,
         groupwise_cutoff,
@@ -1690,7 +1715,7 @@ updateMissingValueParameters <- function(design_matrix, config_list, min_reps_pe
         max_groups_cutoff,
         groupwise_cutoff,
         max_groups_cutoff))
-    
+
     return(config_list)
 }
 
