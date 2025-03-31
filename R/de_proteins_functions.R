@@ -314,13 +314,17 @@ getRuvIIIReplicateMatrixHelper <- function(design_matrix, sample_id_column, grou
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
 plotPcaHelper <- function(data,
-                          design_matrix,
-                          sample_id_column = "Sample_ID",
-                          grouping_variable = "group",
-                          label_column = NULL,
-                          title, geom.text.size = 11, ncomp = 2,
-                          ...) {
-
+                    design_matrix,
+                    sample_id_column = "Sample_ID",
+                    grouping_variable = "group",
+                    shape_variable = NULL,
+                    label_column = NULL,
+                    title, geom.text.size = 11, ncomp = 2,
+                    ...) {
+    
+  # Ensure design_matrix is a data frame
+  design_matrix <- as.data.frame(design_matrix)
+  
   pca.res <- mixOmics::pca(t(as.matrix(data)), ncomp = ncomp)
   proportion_explained <- pca.res$prop_expl_var
 
@@ -329,25 +333,52 @@ plotPcaHelper <- function(data,
     rownames_to_column(var = sample_id_column) |>
     left_join(design_matrix, by = sample_id_column)
 
-  unique_groups <- temp_tbl |> distinct(!!sym(grouping_variable)) |> dplyr::pull(!!sym(grouping_variable))
+  # More defensive check for grouping variables
+  if (!grouping_variable %in% colnames(temp_tbl)) {
+    stop(sprintf("Grouping variable '%s' not found in the data", grouping_variable))
+  }
+  
+  if (!is.null(shape_variable) && !shape_variable %in% colnames(temp_tbl)) {
+    stop(sprintf("Shape variable '%s' not found in the data", shape_variable))
+  }
 
+  # Create base plot with appropriate aesthetics based on whether shape_variable is NULL
   if (is.null(label_column) || label_column == "") {
-    output <- temp_tbl |>
-      ggplot(aes(PC1, PC2, col = !!sym(grouping_variable))) +
-      geom_point() +
-      xlab(paste("PC1 (", round(proportion_explained$X[["PC1"]] * 100, 0), "%)", sep = "")) +
-      ylab(paste("PC2 (", round(proportion_explained$X[["PC2"]] * 100, 0), "%)", sep = "")) +
-      labs(title = title) +
-      theme(legend.title = element_blank())
+    if (is.null(shape_variable)) {
+      # No shape variation, only color
+      base_plot <- temp_tbl |>
+        ggplot(aes(PC1, PC2, color = !!sym(grouping_variable)))
+    } else {
+      # Both color and shape
+      base_plot <- temp_tbl |>
+        ggplot(aes(PC1, PC2, color = !!sym(grouping_variable), shape = !!sym(shape_variable)))
+    }
   } else {
-    output <- temp_tbl |>
-      ggplot(aes(PC1, PC2, col = !!sym(grouping_variable), label = !!sym(label_column))) +
-      geom_point() +
-      geom_text_repel(size = geom.text.size, show.legend = FALSE) +
-      xlab(paste("PC1 (", round(proportion_explained$X[["PC1"]] * 100, 0), "%)", sep = "")) +
-      ylab(paste("PC2 (", round(proportion_explained$X[["PC2"]] * 100, 0), "%)", sep = "")) +
-      labs(title = title) +
-      theme(legend.title = element_blank())
+    if (!label_column %in% colnames(temp_tbl)) {
+      stop(sprintf("Label column '%s' not found in the data", label_column))
+    }
+    
+    if (is.null(shape_variable)) {
+      # No shape variation, only color, with labels
+      base_plot <- temp_tbl |>
+        ggplot(aes(PC1, PC2, color = !!sym(grouping_variable), label = !!sym(label_column)))
+    } else {
+      # Both color and shape, with labels
+      base_plot <- temp_tbl |>
+        ggplot(aes(PC1, PC2, color = !!sym(grouping_variable), shape = !!sym(shape_variable), 
+                   label = !!sym(label_column)))
+    }
+  }
+
+  output <- base_plot +
+    geom_point(size = 3) +
+    xlab(paste("PC1 (", round(proportion_explained$X[["PC1"]] * 100, 0), "%)", sep = "")) +
+    ylab(paste("PC2 (", round(proportion_explained$X[["PC2"]] * 100, 0), "%)", sep = "")) +
+    labs(title = title) +
+    theme(legend.title = element_blank())
+
+  if (!is.null(label_column) && label_column != "") {
+    output <- output + geom_text_repel(size = geom.text.size, show.legend = FALSE)
   }
 
   output
