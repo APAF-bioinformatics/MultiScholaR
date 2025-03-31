@@ -667,7 +667,11 @@ loadDependencies <- function(verbose = TRUE) {
         # Bioconductor packages
         "BiocManager",
         # GitHub packages
-        "UniProt.ws"
+        "UniProt.ws",
+        # Add previously separate Bioconductor packages
+        "clusterProfiler", 
+        "GO.db", 
+        "mixOmics"
     )
     
     # Install pacman if not present
@@ -705,6 +709,19 @@ loadDependencies <- function(verbose = TRUE) {
     } else {
         if (verbose) message("RUVIIIC is already installed, loading...")
         pacman::p_load(RUVIIIC)
+    }
+    
+    # Handle GlimmaV2 separately as it's from GitHub
+    if (!requireNamespace("GlimmaV2", quietly = TRUE)) {
+        if (verbose) message("Installing GlimmaV2 from GitHub...")
+        tryCatch({
+            devtools::install_github("APAF-bioinformatics/GlimmaV2")
+        }, error = function(e) {
+            warning("Failed to install GlimmaV2: ", e$message)
+        })
+    } else {
+        if (verbose) message("GlimmaV2 is already installed, loading...")
+        pacman::p_load(GlimmaV2)
     }
     
     if (verbose) message("All dependencies loaded successfully!")
