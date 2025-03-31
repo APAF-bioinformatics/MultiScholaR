@@ -1276,7 +1276,8 @@ copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE, cur
             dest = "Publication_figures",
             is_dir = TRUE,
             display_name = "Interactive Volcano Plots"
-        ),        list(
+        ),
+        list(
             source = file.path(publication_graphs_dir, "NumSigDeMolecules"),
             dest = "Publication_figures",
             is_dir = TRUE,
@@ -1310,26 +1311,6 @@ copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE, cur
             is_dir = FALSE,
             display_name = "Study Parameters"
         )
-    )
-
-    # Add all DE protein files dynamically
-    de_files <- list.files(
-        path = de_output_dir,
-        pattern = "de_proteins.*_long_annot\\.xlsx$",
-        full.names = TRUE
-    )
-
-    # Create a combined workbook for DE results
-    de_wb <- openxlsx::createWorkbook()
-    
-    # Create an index sheet first
-    openxlsx::addWorksheet(de_wb, "DE_Results_Index")
-    
-    # Create index data frame for DE results
-    de_index_data <- data.frame(
-        Sheet = character(),
-        Description = character(),
-        stringsAsFactors = FALSE
     )
     
     # Process each DE file
@@ -1914,4 +1895,18 @@ updateMissingValueParameters <- function(design_matrix, config_list, min_reps_pe
         max_groups_cutoff))
 
     return(config_list)
+}
+
+##################################################################################################################
+
+updateRuvParameters <- function(config_list, best_k, control_genes_index, percentage_as_neg_ctrl) {
+  config_list$ruvParameters$best_k <- best_k
+  config_list$ruvParameters$num_neg_ctrl <- length(control_genes_index)
+  config_list$ruvParameters$percentage_as_neg_ctrl <- percentage_as_neg_ctrl
+  
+  # Print the number of negative controls (as in the original code)
+  config_list$ruvParameters$num_neg_ctrl
+  
+  # Return the updated config list
+  return(config_list)
 }
