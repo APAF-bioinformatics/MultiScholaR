@@ -66,7 +66,7 @@ RunApplet <- function(applet_type, force = FALSE) {
           # Management tools in tabs on the left
           column(4,
             wellPanel(
-              tabsetPanel(
+              tabsetPanel(id = "main_tabs",
                 # Sample renaming tab
                 tabPanel("Rename Samples",
                   h4("Individual Rename"),
@@ -130,6 +130,39 @@ RunApplet <- function(applet_type, force = FALSE) {
                   h4("Model Formula"),
                   textInput("formula_string", "Formula:", 
                           value = config_list[["deAnalysisParameters"]][["formula_string"]])
+                ),
+                
+                # Settings tab for global operations
+                tabPanel("Settings",
+                  h4("Session Management"),
+                  p("Reset options allow you to revert changes made during this session."),
+                  
+                  div(
+                    style = "margin-top: 15px;",
+                    selectInput("reset_scope", "Reset Scope:",
+                             choices = c(
+                               "All Changes" = "all",
+                               "Sample Names Only" = "sample_names",
+                               "Factors Only" = "factors",
+                               "Contrasts Only" = "contrasts",
+                               "Formula Only" = "formula"
+                             ),
+                             selected = "all"
+                    )
+                  ),
+                  
+                  div(
+                    style = "margin-top: 15px;",
+                    actionButton("reset_changes", "Reset to Initial State", 
+                               class = "btn-warning", 
+                               icon = icon("rotate-left"),
+                               width = "100%")
+                  ),
+                  
+                  hr(),
+                  
+                  h4("Information"),
+                  verbatimTextOutput("session_info")
                 )
               )
             )
@@ -159,22 +192,28 @@ RunApplet <- function(applet_type, force = FALSE) {
     }
         # Create server function
     server <- function(input, output, session) {
-      # Reactive values
+      # Create reactive values for initial state that won't change
+      initial_state <- reactiveValues(
+        design_matrix = design_matrix_raw,
+        data_cln = data_cln,
+        groups = unique(design_matrix_raw$group[!is.na(design_matrix_raw$group) & design_matrix_raw$group != ""]),
+        factors = unique(c(
+          design_matrix_raw$factor1[!is.na(design_matrix_raw$factor1)],
+          design_matrix_raw$factor2[!is.na(design_matrix_raw$factor2)]
+        )[c(
+          design_matrix_raw$factor1[!is.na(design_matrix_raw$factor1)] != "",
+          design_matrix_raw$factor2[!is.na(design_matrix_raw$factor2)] != ""
+        )]),
+        formula = config_list[["deAnalysisParameters"]][["formula_string"]]
+      )
+      
+      # Reactive values for current state
       design_matrix <- reactiveVal(design_matrix_raw)
       data_cln_reactive <- reactiveVal(data_cln)
       
       # Initialize groups and factors
-      initial_groups <- unique(design_matrix_raw$group)
-      initial_groups <- initial_groups[!is.na(initial_groups) & initial_groups != ""]
-      
-      initial_factors <- unique(c(
-        design_matrix_raw$factor1[!is.na(design_matrix_raw$factor1)],
-        design_matrix_raw$factor2[!is.na(design_matrix_raw$factor2)]
-      ))
-      initial_factors <- initial_factors[initial_factors != ""]
-      
-      groups <- reactiveVal(initial_groups)
-      factors <- reactiveVal(initial_factors)
+      groups <- reactiveVal(initial_state$groups)
+      factors <- reactiveVal(initial_state$factors)
       
       contrasts <- reactiveVal(data.frame(
         contrast_name = character(),
@@ -203,6 +242,133 @@ RunApplet <- function(applet_type, force = FALSE) {
         updateSelectInput(session, "contrast_group2", 
                          choices = c("", groups()),
                          selected = "")
+      })
+      
+      # Session information for the settings tab
+      output$session_info <- renderText({
+        paste0(
+          "Total samples: ", nrow(design_matrix()), "\n",
+          "Assigned samples: ", sum(!is.na(design_matrix()$group)), "\n",
+          "Available factors: ", paste(factors(), collapse = ", "), "\n",
+          "Defined contrasts: ", nrow(contrasts()), "\n",
+          "Last modified: ", format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+        )
+      })
+      
+      # Reset handler with scope options
+      observeEvent(input$reset_changes, {
+        # Get scope description for the modal
+        scope_desc <- switch(input$reset_scope,
+                           "all" = "all changes",
+                           "sample_names" = "sample names",
+                           "factors" = "factor definitions",
+                           "contrasts" = "contrast definitions",
+                           "formula" = "formula")
+        
+        # Show confirmation modal
+        showModal(modalDialog(
+          title = "Confirm Reset",
+          HTML(paste0(
+            "<p>This will revert <strong>", scope_desc, "</strong> to their initial state.</p>",
+            "<p>This action cannot be undone. Are you sure?</p>"
+          )),
+          footer = tagList(
+            modalButton("Cancel"),
+            actionButton("confirm_reset", "Reset", class = "btn-danger")
+          ),
+          easyClose = TRUE
+        ))
+      })
+      
+      # Confirm reset handler with scoped reset functionality
+      observeEvent(input$confirm_reset, {
+        # Perform reset based on selected scope
+        scope <- input$reset_scope
+        
+        if(scope == "all" || scope == "sample_names") {
+          # Reset sample names in both datasets
+          current_matrix <- design_matrix()
+          current_data <- data_cln_reactive()
+          
+          # Find runs that were renamed and restore them
+          for(i in 1:nrow(initial_state$design_matrix)) {
+            original_run <- initial_state$design_matrix$Run[i]
+            current_index <- which(current_matrix$Run == current_matrix$Run[i])
+            if(length(current_index) > 0) {
+              current_matrix$Run[current_index] <- original_run
+            }
+          }
+          
+          # Reset data_cln Run names to match initial state
+          for(run in unique(initial_state$data_cln$Run)) {
+            current_data$Run[current_data$Run == run] <- run
+          }
+          
+          if(scope == "all") {
+            # Reset entire matrices if scope is "all"
+            design_matrix(initial_state$design_matrix)
+            data_cln_reactive(initial_state$data_cln)
+          } else {
+            # Otherwise just update the run names
+            design_matrix(current_matrix)
+            data_cln_reactive(current_data)
+          }
+        }
+        
+        if(scope == "all" || scope == "factors") {
+          factors(initial_state$factors)
+          
+          if(scope == "factors") {
+            # When resetting just factors, keep existing assignments in design matrix
+            # but remove any factors that no longer exist
+            current_matrix <- design_matrix()
+            valid_factors <- initial_state$factors
+            
+            current_matrix$factor1[!current_matrix$factor1 %in% valid_factors] <- NA
+            current_matrix$factor2[!current_matrix$factor2 %in% valid_factors] <- NA
+            
+            design_matrix(current_matrix)
+          }
+        }
+        
+        if(scope == "all" || scope == "contrasts") {
+          contrasts(data.frame(
+            contrast_name = character(),
+            numerator = character(),
+            denominator = character(),
+            factor1_num = character(),
+            factor2_num = character(),
+            factor1_den = character(),
+            factor2_den = character(),
+            stringsAsFactors = FALSE
+          ))
+        }
+        
+        if(scope == "all" || scope == "formula") {
+          updateTextInput(session, "formula_string", 
+                        value = initial_state$formula)
+        }
+        
+        # Update UI elements
+        if(scope == "all" || scope == "sample_names") {
+          sorted_runs <- gtools::mixedsort(design_matrix()$Run)
+          updateSelectizeInput(session, "sample_to_rename", choices = sorted_runs)
+          updateSelectizeInput(session, "selected_runs", choices = sorted_runs)
+          updateSelectizeInput(session, "samples_to_transform", choices = sorted_runs)
+        }
+        
+        if(scope == "all") {
+          groups(initial_state$groups)
+          updateTabsetPanel(session, "main_tabs", selected = "Rename Samples")
+        }
+        
+        # Close the modal
+        removeModal()
+        
+        # Show success message
+        showNotification(paste("Reset of", scope_desc, "completed successfully"), 
+                       type = "message", 
+                       duration = 3)
       })
       
       # Individual rename handler
