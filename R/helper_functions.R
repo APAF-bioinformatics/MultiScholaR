@@ -1276,8 +1276,7 @@ copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE, cur
             dest = "Publication_figures",
             is_dir = TRUE,
             display_name = "Interactive Volcano Plots"
-        ),
-        list(
+        ),        list(
             source = file.path(publication_graphs_dir, "NumSigDeMolecules"),
             dest = "Publication_figures",
             is_dir = TRUE,
