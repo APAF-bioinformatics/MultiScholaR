@@ -1312,6 +1312,26 @@ copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE, cur
             display_name = "Study Parameters"
         )
     )
+
+    # Add all DE protein files dynamically
+    de_files <- list.files(
+        path = de_output_dir,
+        pattern = "de_proteins.*_long_annot\\.xlsx$",
+        full.names = TRUE
+    )
+
+    # Create a combined workbook for DE results
+    de_wb <- openxlsx::createWorkbook()
+    
+    # Create an index sheet first
+    openxlsx::addWorksheet(de_wb, "DE_Results_Index")
+    
+    # Create index data frame for DE results
+    de_index_data <- data.frame(
+        Sheet = character(),
+        Description = character(),
+        stringsAsFactors = FALSE
+    )
     
     # Process each DE file
     de_files |>
@@ -1592,221 +1612,6 @@ copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE, cur
 
     # Return failed copies list for error handling
     invisible(failed_copies)
-}urce = file.path(results_dir, "protein_qc", "ruv_normalised_results_cln_with_replicates.tsv"),
-            dest = "Publication_tables",
-            is_dir = FALSE,
-            display_name = "RUV Normalized Results",
-            new_name = "RUV_normalised_results.tsv"
-        ),
-        list(
-            source = file.path(results_dir, "protein_qc", "composite_QC_figure.pdf"),
-            dest = "QC_figures",
-            is_dir = FALSE,
-            display_name = "Composite QC (PDF)"
-        ),
-        list(
-            source = file.path(results_dir, "protein_qc", "composite_QC_figure.png"),
-            dest = "QC_figures",
-            is_dir = FALSE,
-            display_name = "Composite QC (PNG)"
-        ),
-
-        # Publication Figures
-        list(
-            source = file.path(publication_graphs_dir, "Interactive_Volcano_Plots"),
-            dest = "Publication_figures",
-            is_dir = TRUE,
-            display_name = "Interactive Volcano Plots"
-        ),
-        list(
-            source = file.path(publication_graphs_dir, "NumSigDeMolecules"),
-            dest = "Publication_figures",
-            is_dir = TRUE,
-            display_name = "Num Sig DE Molecules"
-        ),
-        list(
-            source = file.path(publication_graphs_dir, "Volcano_Plots"),
-            dest = "Publication_figures",
-            is_dir = TRUE,
-            display_name = "Volcano Plots"
-        ),
-
-        # Study Report Tables
-        list(
-            source = "contrasts_tbl",
-            dest = "Study_report",
-            type = "object",
-            save_as = "contrasts_tbl.tab",
-            display_name = "Contrasts Table"
-        ),
-        list(
-            source = "design_matrix",
-            dest = "Study_report",
-            type = "object",
-            save_as = "design_matrix.tab",
-            display_name = "Design Matrix"
-        ),
-        list(
-            source = file.path(source_dir, "study_parameters.txt"),
-            dest = "Study_report",
-            is_dir = FALSE,
-            display_name = "Study Parameters"
-        )
-    )
-
-    # Add all DE protein files dynamically
-    de_files <- list.files(
-        path = de_output_dir,
-        pattern = "de_proteins.*_long_annot\\.xlsx$",
-        full.names = TRUE
-    )
-
-    # Create a combined workbook
-    combined_wb <- openxlsx::createWorkbook()
-
-    # Create lookup table from contrasts_tbl
-    contrast_numbers <- paste0("Comparison", seq_along(contrasts_tbl$contrasts))
-    contrast_names <- contrasts_tbl$contrasts |>
-        stringr::str_split("=") |>
-        purrr::map_chr(~.x[1]) |>
-        stringr::str_replace_all("\\.", "_")
-
-    contrast_lookup <- stats::setNames(contrast_names, contrast_numbers)
-
-    # Read and add each file as a sheet
-    de_files |>
-        purrr::walk(\(file) {
-            base_name <- basename(file) |>
-                stringr::str_remove("de_proteins_") |>
-                stringr::str_remove("_long_annot.xlsx")
-
-            # Find matching comparison number
-            sheet_name <- names(contrast_lookup)[contrast_lookup == base_name]
-
-            if(length(sheet_name) == 0) {
-                warning("No matching contrast found for file: ", basename(file))
-                sheet_name <- paste0("Extra_", basename(file))
-            }
-
-            data <- openxlsx::read.xlsx(file)
-            openxlsx::addWorksheet(combined_wb, sheet_name)
-            openxlsx::writeData(combined_wb, sheet_name, data)
-        })
-
-    # Create Publication_tables directory if it doesn't exist
-    dir.create(file.path(results_summary_dir, "Publication_tables"),
-               recursive = TRUE,
-               showWarnings = FALSE)
-
-    # Save the combined workbook directly to the destination
-    combined_path <- file.path(results_summary_dir, "Publication_tables", "DE_proteins_results.xlsx")
-    openxlsx::saveWorkbook(combined_wb, combined_path, overwrite = TRUE)
-
-    # Add a status message for the combined workbook
-    cat(sprintf("%-25s [%s → %s] %s\n",
-        "DE Proteins Combined",
-        "✓",
-        if(file.exists(combined_path)) "✓" else "✗",
-        "File"
-    ))
-
-    cat("Copying files to Results Summary...\n")
-    cat("===================================\n\n")
-
-    # Copy and check each file/folder
-    files_to_copy |>
-        lapply(\(file_spec) {
-            dest_dir <- file.path(results_summary_dir, file_spec$dest)
-
-            # Get initial status
-            if (!is.null(file_spec$type) && file_spec$type == "object") {
-                source_exists <- exists(file_spec$source, envir = .GlobalEnv)
-            } else {
-                source_exists <- if (file_spec$is_dir) {
-                    dir.exists(file_spec$source)
-                } else {
-                    file.exists(file_spec$source)
-                }
-            }
-
-            # Perform copy operation
-            if (!is.null(file_spec$type) && file_spec$type == "object") {
-                if (source_exists) {
-                    obj <- get(file_spec$source, envir = .GlobalEnv)
-                    write.table(
-                        obj,
-                        file = file.path(dest_dir, file_spec$save_as),
-                        sep = "\t",
-                        row.names = FALSE,
-                        quote = FALSE
-                    )
-                }
-                dest_path <- file.path(dest_dir, file_spec$save_as)
-                dest_exists <- file.exists(dest_path)
-            } else if (file_spec$is_dir) {
-                source_path <- file_spec$source
-                dest_path <- file.path(dest_dir, basename(source_path))
-
-                if (source_exists) {
-                    # Create destination directory
-                    dir.create(dest_path, showWarnings = FALSE, recursive = TRUE)
-
-                    # Copy all files from source to destination
-                    files_to_copy <- list.files(source_path, full.names = TRUE, recursive = TRUE)
-
-                    files_to_copy |>
-                        lapply(\(f) {
-                            rel_path <- sub(paste0("^", source_path, "/"), "", f)
-                            dest_file <- file.path(dest_path, rel_path)
-                            dir.create(dirname(dest_file), showWarnings = FALSE, recursive = TRUE)
-                            file.copy(f, dest_file, overwrite = TRUE)
-                        })
-                }
-                dest_exists <- dir.exists(dest_path)
-
-                # Get file counts for directories
-                if (source_exists && dest_exists) {
-                    source_files <- list.files(source_path, recursive = TRUE)
-                    dest_files <- list.files(dest_path, recursive = TRUE)
-                }
-            } else {
-                source_path <- file_spec$source
-                dest_path <- file.path(dest_dir,
-                    if (!is.null(file_spec$new_name)) file_spec$new_name else basename(source_path))
-
-                if (source_exists) {
-                    file.copy(
-                        from = source_path,
-                        to = dest_path,
-                        overwrite = TRUE
-                    )
-                }
-                dest_exists <- file.exists(dest_path)
-            }
-
-            # Format and display status
-            source_status <- if (source_exists) "✓" else "✗"
-            dest_status <- if (dest_exists) "✓" else "✗"
-
-            cat(sprintf("%-25s [%s → %s] %s\n",
-                file_spec$display_name,
-                source_status,
-                dest_status,
-                if (!is.null(file_spec$is_dir) && file_spec$is_dir) "Directory" else "File"
-            ))
-
-            if (!is.null(file_spec$is_dir) && file_spec$is_dir && source_exists && dest_exists) {
-                cat(sprintf("%25s Files: %d → %d\n", "",
-                    length(source_files),
-                    length(dest_files)
-                ))
-            }
-        })
-
-    cat("\nLegend: ✓ = exists, ✗ = missing\n")
-    cat("Arrow (→) shows source → destination status\n")
-
-    invisible(NULL)
 }
 
 
