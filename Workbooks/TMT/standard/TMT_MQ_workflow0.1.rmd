@@ -1,6 +1,6 @@
 ---
-title: "DIANN Analysis for xyz"
-version: "1.0"
+title: "TMT Analysis for xyz"
+version: "0.1"
 author: "Your fancy self"
 output:
   html_document:
@@ -10,6 +10,9 @@ output:
     warning: false
     message: false
 ---
+
+###-DISCLAIMER-###
+This workbook is currently untested and is here as a placeholder for now.
   
 # Dependency, Directory, Hardware Management & Orgnamism Annotation
 ## Set and create directories for outputs and project management, set number of cores for threaded tasks
