@@ -21,6 +21,16 @@ installProteomeScholaR <- function(verbose = TRUE) {
         install.packages("devtools")
     }
 
+    # Check if ProteomeScholaR is loaded and detach/remove if necessary
+    if ("package:ProteomeScholaR" %in% search()) {
+        message("Detaching previously loaded ProteomeScholaR...")
+        try(detach("package:ProteomeScholaR", unload = TRUE, force = TRUE), silent = TRUE)
+    }
+    if (requireNamespace("ProteomeScholaR", quietly = TRUE)) {
+        message("Removing previously installed ProteomeScholaR...")
+        try(remove.packages("ProteomeScholaR"), silent = TRUE)
+    }
+
     # Install ProteomeScholaR
     if (verbose) message("Installing ProteomeScholaR...")
     tryCatch({

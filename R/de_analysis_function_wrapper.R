@@ -798,7 +798,7 @@ outputDeAnalysisResults <- function(de_analysis_results_list
              plot_name = paste0(file_prefix, "_num_sig_de_molecules_with_not_significant"),
              formats = plots_format,
              width = (num_of_comparison_with_not_significant + 2) *7/6,
-             height = 6))
+             height = 6)
   }
 
   ## Write interactive volcano plot
