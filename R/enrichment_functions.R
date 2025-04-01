@@ -1198,7 +1198,7 @@ saveListOfFunctionalEnrichmentHeatmaps <- function(list_of_heatmaps,
                 function(output_name, plot, plot_width, plot_height){
                   savePlot( plot=plot,
                             base_dir=results_dir,
-                            plot_name = paste0( file_name, "_", output_name)
+                            plot_name = paste0( file_name, "_", output_name),
                             width = plot_width,
                             height=plot_height,
                             limitsize=FALSE) }
