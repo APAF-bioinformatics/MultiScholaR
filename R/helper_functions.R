@@ -852,6 +852,9 @@ setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force
         if (dir.exists(scripts_path)) unlink(scripts_path, recursive = TRUE)
     }
     
+    # Create timestamp for this run
+    timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
+    
     # Define all paths and subdirs in one structure
     paths <- list(
         results = list(
@@ -867,20 +870,27 @@ setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force
         special = list(
             data = file.path(base_dir, "data"),
             scripts = file.path(base_dir, "scripts", proteomics_dirname),
+            qc = file.path(base_dir, "results", proteomics_dirname, "publication_graphs", "filtering_qc"),
             time = file.path(base_dir, "results", proteomics_dirname, "publication_graphs", 
-                           "filtering_qc", format(Sys.time(), "%Y%m%d_%H%M%S"))
+                           "filtering_qc", timestamp)
         )
     )
     
     # Create directories without copying content from existing ones
     # Create results and results_summary directories
     lapply(c("results", "results_summary"), function(type) {
+        # Create base directory first
+        dir.create(paths[[type]]$base, recursive = TRUE, showWarnings = FALSE)
+        
         # Create any subdirectories
         invisible(sapply(
             file.path(paths[[type]]$base, paths[[type]]$subdirs),
             dir.create, recursive = TRUE, showWarnings = FALSE
         ))
     })
+    
+    # Create special directories
+    invisible(sapply(paths$special, dir.create, recursive = TRUE, showWarnings = FALSE))
     
     # Handle scripts directory copying
     scripts_source <- file.path(base_dir, "scripts", "proteomics")
@@ -891,16 +901,8 @@ setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force
         # Copy all files from scripts directory except .rmd files
         script_files <- list.files(scripts_source, full.names = TRUE, recursive = TRUE)
         
-        # Add debugging to see what files are being found
-        cat("Files found in scripts directory before filtering:\n")
-        print(script_files)
-        
         # Filter out .rmd files (case-insensitive) with improved pattern
         script_files <- script_files[!grepl("\\.[rR][mM][dD]$", script_files)]
-        
-        # Add debugging to see what files remain after filtering
-        cat("Files after filtering out .rmd files:\n")
-        print(script_files)
         
         if (length(script_files) > 0) {
             sapply(script_files, function(f) {
@@ -912,33 +914,42 @@ setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force
         }
     }
     
-    # Create special directories
-    invisible(sapply(paths$special, dir.create, recursive = TRUE, showWarnings = FALSE))
+    # Build global variables directory paths
+    publication_graphs_dir <- file.path(paths$results$base, "publication_graphs")
+    qc_dir <- file.path(publication_graphs_dir, "filtering_qc")
     
-    # Build and assign global variables
-    dir_paths <- c(
-        list(base_dir = base_dir),
-        setNames(
-            lapply(paths$results$subdirs, function(d) file.path(paths$results$base, d)),
-            paste0(gsub("-", "_", tolower(paths$results$subdirs)), "_dir")
-        ),
-        list(
-            results_dir = paths$results$base,
-            results_summary_dir = paths$results_summary$base,
-            data_dir = paths$special$data,
-            source_dir = paths$special$scripts,
-            time_dir = paths$special$time
-        )
+    # Assign all directories to global environment (matching original setupDirectories)
+    dir_paths <- list(
+        base_dir = base_dir,
+        results_dir = paths$results$base,
+        data_dir = paths$special$data,
+        source_dir = paths$special$scripts,
+        de_output_dir = file.path(paths$results$base, "de_proteins"),
+        publication_graphs_dir = publication_graphs_dir,
+        timestamp = timestamp,
+        qc_dir = qc_dir,
+        time_dir = paths$special$time,
+        results_summary_dir = paths$results_summary$base,
+        pathway_dir = file.path(paths$results$base, "pathway_enrichment"),
+        protein_qc_dir = file.path(paths$results$base, "protein_qc"),
+        peptide_qc_dir = file.path(paths$results$base, "peptide_qc"),
+        clean_proteins_dir = file.path(paths$results$base, "clean_proteins"),
+        qc_figures_dir = file.path(paths$results_summary$base, "QC_figures"),
+        publication_figures_dir = file.path(paths$results_summary$base, "Publication_figures"),
+        publication_tables_dir = file.path(paths$results_summary$base, "Publication_tables"),
+        study_report_dir = file.path(paths$results_summary$base, "Study_report")
     )
     
-    # Assign to global environment and print status
+    # Assign to global environment
     list2env(dir_paths, envir = .GlobalEnv)
     
     # Print simple directory structure with file counts
     cat("\nDirectory Structure:\n")
     invisible(lapply(dir_paths, function(p) {
-        if (dir.exists(p)) {
+        if (is.character(p) && dir.exists(p)) {
             cat(sprintf("%s (%d files)\n", p, length(list.files(p, recursive = TRUE))))
+        } else if (is.character(p)) {
+            cat(sprintf("%s\n", p))
         }
     }))
     
