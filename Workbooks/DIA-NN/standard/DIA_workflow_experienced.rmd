@@ -556,14 +556,14 @@ QC_composite_figure <- InitialiseGrid()
 QC_composite_figure@rle_plots$rle_plot_before_cyclic_loess <- plotRle(
   remove_proteins_with_only_one_rep 
   , "group"
-  , yaxis_limit = c(-4, 4)
+  , yaxis_limit = c(-6, 6)
 )
 
 QC_composite_figure@pca_plots$pca_plot_before_cyclic_loess_group <- plotPca(
   remove_proteins_with_only_one_rep
   , grouping_variable = "group"
   , label_column = ""
-  , shape_variable = ""
+  , shape_variable = "group"
   , title = ""
   , font_size = 8
 )
@@ -579,6 +579,7 @@ QC_composite_figure@pearson_plots$pearson_correlation_pair_before_cyclic_loess <
   plotPearson(
     remove_proteins_with_only_one_rep
     , tech_rep_remove_regex = "pool"
+    , correlation_group = "group"
   )
 
 summarizeQCPlot(QC_composite_figure)
@@ -627,14 +628,14 @@ normalised_frozen_protein_matrix_obj <- normaliseBetweenSamples(
 QC_composite_figure@rle_plots$rle_plot_before_ruvIIIc_group <- plotRle(
   normalised_frozen_protein_matrix_obj 
   , "group"
-  , yaxis_limit = c(-4, 4)
+  , yaxis_limit = c(-6, 6)
 )
 
 QC_composite_figure@pca_plots$pca_plot_before_ruvIIIc_group <- plotPca(
   normalised_frozen_protein_matrix_obj
   , grouping_variable = "group"
   , label_column = ""
-  , shape_variable = ""
+  , shape_variable = "group"
   , title = ""
   , font_size = 8
 )
@@ -649,7 +650,8 @@ pca_mixomics_before_ruvIIIc <- getPcaMatrix(normalised_frozen_protein_matrix_obj
 QC_composite_figure@pearson_plots$pca_plot_before_ruvIIIc_group <- plotPearson(
   normalised_frozen_protein_matrix_obj
   , tech_rep_remove_regex = "pool"
-)
+  , correlation_group = "group"
+  )
 
 summarizeQCPlot(QC_composite_figure)
 
@@ -759,7 +761,7 @@ QC_composite_figure@pca_plots$pca_plot_after_ruvIIIc_group <- plotPca(
   ruv_normalised_results_cln_obj
   , grouping_variable = "group"
   , label_column = ""
-  , shape_variable = ""
+  , shape_variable = "group"
   , title = ""
   , font_size = 8
 )
@@ -775,6 +777,7 @@ QC_composite_figure@pearson_plots$pearson_correlation_pair_after_ruvIIIc_group <
   plotPearson(
     ruv_normalised_results_cln_obj
     , tech_rep_remove_regex = "pool"
+    , correlation_group = "group"
   )
 
 save_plot(

@@ -256,7 +256,7 @@ deAnalysisWrapperFunction <- function( theObject
     nest() %>%
     ungroup() %>%
     mutate( title = paste( comparison)) %>%
-    mutate( plot = purrr:::map2( data, title, \(x,y) { plotOneVolcanoNoVerticalLines(x, y
+    mutate( plot = purrr::map2( data, title, \(x,y) { plotOneVolcanoNoVerticalLines(x, y
                                                                                      , log_q_value_column = lqm
                                                                                      , log_fc_column = log2FC) } ) )
 
@@ -268,8 +268,8 @@ deAnalysisWrapperFunction <- function( theObject
     nest() %>%
     ungroup() %>%
     mutate( title = paste( comparison)) %>%
-    mutate( plot = purrr:::map2( data, \(x) {
-      printOneVolcanoPlotWithProteinLabel( input_table=  x$de_proteins_long
+    mutate( plot = purrr::map( data, \(x) {
+      printOneVolcanoPlotWithProteinLabel( input_table=  x
                                            , uniprot_table = uniprot_dat_cln |>
                                              mutate( gene_name = purrr::map_chr( gene_names
                                                                                  , \(x) str_split(x, "; ")[[1]][1])) )

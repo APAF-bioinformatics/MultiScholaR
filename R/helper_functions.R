@@ -427,6 +427,12 @@ summarizeQCPlot <- function(qc_figure) {
               print(qc_figure@pca_plots[[plot_name]])
             }
 
+            cat("\nDensity Plots:\n")
+            for (plot_name in names(qc_figure@density_plots)) {
+              cat(paste(" -", plot_name, "\n"))
+              print(qc_figure@density_plots[[plot_name]])
+            }
+
             cat("\nPearson Correlation Plots:\n")
             for (plot_name in names(qc_figure@pearson_plots)) {
               cat(paste(" -", plot_name, "\n"))
