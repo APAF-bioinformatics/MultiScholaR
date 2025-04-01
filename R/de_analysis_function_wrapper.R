@@ -777,7 +777,7 @@ outputDeAnalysisResults <- function(de_analysis_results_list
     num_of_comparison_only_significant <- de_analysis_results_list$num_of_comparison_only_significant
 
     savePlot(plot = num_sig_de_genes_barplot_only_significant,
-             base_path = file.path(publication_graphs_dir, "NumSigDeMolecules")
+             base_path = file.path(publication_graphs_dir, "NumSigDeMolecules"),
              plot_name = paste0(file_prefix, "_num_sig_de_molecules."),
              formats = plots_format,
              width = (num_of_comparison_only_significant + 2) *7/6,

@@ -52,6 +52,8 @@ installProteomeScholaR <- function(verbose = TRUE) {
     }, error = function(e) {
         stop("Failed to install ProteomeScholaR: ", e$message)
     })
+    
+    library(ProteomeScholaR)
 
     if (verbose) message("ProteomeScholaR installation completed!")
 }
