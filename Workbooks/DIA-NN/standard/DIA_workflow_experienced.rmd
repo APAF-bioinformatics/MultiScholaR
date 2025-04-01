@@ -812,6 +812,7 @@ This section filters samples based on their Pearson correlation with other sampl
 ruv_correlation_vec <- pearsonCorForSamplePairs(
   ruv_normalised_results_cln_obj
   , tech_rep_remove_regex = "pool"
+  , correlation_group = "group"
 ) 
 
 ruv_normalised_filtered_results_obj <- filterSamplesByProteinCorrelationThreshold(
@@ -927,52 +928,6 @@ pca_ruv_rle_correlation_merged <- createGridQC(
 pca_ruv_rle_correlation_merged
 ```
 
-## Read in Previously Assigned Contrasts (optional)
-This section reads in predefined contrast specifications from a file, allowing for consistent and reproducible differential expression analysis. Contrasts define the comparisons between experimental groups (e.g., treatment vs. control) that will be tested for protein abundance differences. By defining these contrasts in a separate file, the workflow becomes more flexible and allows for complex experimental designs. This approach also makes it easy to update the analysis with new comparisons without changing the main workflow code. The contrast strings follow a specific format that will be interpreted by the differential expression analysis function to create the appropriate statistical tests.
-
-```{r Read in Previousl Assigned Contrasts (optional)}
-contrasts_tbl <- file.path(source_dir, "contrast_strings.tab") |>
-  readLines() |>
-  {\(x) x[!grepl("^contrasts", x)]}() |>
-  as_tibble() |>
-  rename(contrasts = value)
-```
-
-## DE Analysis Generation
-This section performs differential expression analysis to identify proteins with statistically significant abundance differences between experimental conditions. The analysis uses limma, a well-established statistical framework that applies linear models and empirical Bayes methods to improve statistical power - particularly beneficial for proteomics data where sample sizes are often limited. For each contrast defined in the previous step, the code runs a complete differential expression analysis, including moderated t-tests with robust estimation and trend-based variance modeling. The TREAT method can optionally be applied to test for minimum fold-change thresholds in addition to statistical significance. The results are stored in a named list where each element contains the complete differential expression statistics for one contrast, ready for downstream visualization and biological interpretation.
-
-```{r DE Analysis Generation}
-#Debug - if regex readin from config doesnt work
-#NB here temporarily until config readin logic fixed for this pattern
-config_list$deAnalysisParameters$args_group_pattern <- "(\\d+)" 
-
-# Create contrast names first
-contrast_names <- contrasts_tbl |> 
-  dplyr::pull(contrasts) |>
-  stringr::str_extract("^[^=]+") |>  # Extract everything before the = sign
-  stringr::str_replace_all("\\.", "_")  # Replace dots with underscores
-
-# Run DE analysis and explicitly set names
-de_analysis_results_list <- seq_len(nrow(contrasts_tbl)) |>
-  purrr::set_names(contrast_names) |>  # This ensures the list will be named
-  purrr::map(\(contrast_idx) {
-    deAnalysisWrapperFunction(
-      ruv_normalised_for_de_analysis_obj
-      , contrasts_tbl |> slice(contrast_idx)
-      , formula_string = config_list$deAnalysisParameters$formula_string
-      , de_q_val_thresh = config_list$deAnalysisParameters$de_q_val_thresh
-      , treat_lfc_cutoff = config_list$deAnalysisParameters$treat_lfc_cutoff
-      , eBayes_trend = config_list$deAnalysisParameters$eBayes_trend
-      , eBayes_robust = config_list$deAnalysisParameters$eBayes_robust
-      , args_group_pattern = config_list$deAnalysisParameters$args_group_pattern
-      , args_row_id = config_list$deAnalysisParameters$args_row_id
-    )
-  })
-
-# Verify we have names
-print(names(de_analysis_results_list))
-```
-
 # Add up to date annotation data from Uniprot
 ## Will take some time to complete if  you are doing this for first time
 ## Good spot to grab a coffee :)
@@ -1014,7 +969,8 @@ if (!file.exists(file.path(tmp_dir, "uniprot_annotations.RDS"))) {
     dplyr::rename(
       Protein_existence = "Protein.existence"
       , Protein_names = "Protein.names"
-    )
+    ) |>
+    dplyr::rename(gene_names = Gene.Names)
   
   saveRDS(uniprot_dat_cln, file.path(tmp_dir, "uniprot_annotations.RDS"))
   
@@ -1022,6 +978,53 @@ if (!file.exists(file.path(tmp_dir, "uniprot_annotations.RDS"))) {
   uniprot_dat_cln <- readRDS(file.path(tmp_dir, "uniprot_annotations.RDS"))
 }
 ```
+
+## Read in Previously Assigned Contrasts (optional)
+This section reads in predefined contrast specifications from a file, allowing for consistent and reproducible differential expression analysis. Contrasts define the comparisons between experimental groups (e.g., treatment vs. control) that will be tested for protein abundance differences. By defining these contrasts in a separate file, the workflow becomes more flexible and allows for complex experimental designs. This approach also makes it easy to update the analysis with new comparisons without changing the main workflow code. The contrast strings follow a specific format that will be interpreted by the differential expression analysis function to create the appropriate statistical tests.
+
+```{r Read in Previousl Assigned Contrasts (optional)}
+contrasts_tbl <- file.path(source_dir, "contrast_strings.tab") |>
+  readLines() |>
+  {\(x) x[!grepl("^contrasts", x)]}() |>
+  as_tibble() |>
+  rename(contrasts = value)
+```
+
+## DE Analysis Generation
+This section performs differential expression analysis to identify proteins with statistically significant abundance differences between experimental conditions. The analysis uses limma, a well-established statistical framework that applies linear models and empirical Bayes methods to improve statistical power - particularly beneficial for proteomics data where sample sizes are often limited. For each contrast defined in the previous step, the code runs a complete differential expression analysis, including moderated t-tests with robust estimation and trend-based variance modeling. The TREAT method can optionally be applied to test for minimum fold-change thresholds in addition to statistical significance. The results are stored in a named list where each element contains the complete differential expression statistics for one contrast, ready for downstream visualization and biological interpretation.
+
+```{r DE Analysis Generation}
+#Debug - if regex readin from config doesnt work
+#NB here temporarily until config readin logic fixed for this pattern
+config_list$deAnalysisParameters$args_group_pattern <- "(\\d+)" 
+
+# Create contrast names first
+contrast_names <- contrasts_tbl |> 
+  dplyr::pull(contrasts) |>
+  stringr::str_extract("^[^=]+") |>  # Extract everything before the = sign
+  stringr::str_replace_all("\\.", "_")  # Replace dots with underscores
+
+# Run DE analysis and explicitly set names
+de_analysis_results_list <- seq_len(nrow(contrasts_tbl)) |>
+  purrr::set_names(contrast_names) |>  # This ensures the list will be named
+  purrr::map(\(contrast_idx) {
+    deAnalysisWrapperFunction(
+      ruv_normalised_for_de_analysis_obj
+      , contrasts_tbl |> dplyr::slice(contrast_idx)
+      , formula_string = config_list$deAnalysisParameters$formula_string
+      , de_q_val_thresh = config_list$deAnalysisParameters$de_q_val_thresh
+      , treat_lfc_cutoff = config_list$deAnalysisParameters$treat_lfc_cutoff
+      , eBayes_trend = config_list$deAnalysisParameters$eBayes_trend
+      , eBayes_robust = config_list$deAnalysisParameters$eBayes_robust
+      , args_group_pattern = config_list$deAnalysisParameters$args_group_pattern
+      , args_row_id = ruv_normalised_for_de_analysis_obj@protein_id_column
+    )
+  })
+
+# Verify we have names
+print(names(de_analysis_results_list))
+```
+
 
 ## Output the results of the DE analysis
 This section outputs the differential expression analysis results in various formats for interpretation and publication. For each contrast, the code generates comprehensive result tables and visualizations, including volcano plots that highlight significantly changing proteins. The function takes advantage of the annotations retrieved from UniProt to enrich the results with biological context, including gene names and protein descriptions. Error handling with tryCatch ensures that the workflow continues even if individual contrasts encounter issues. Multiple output files are generated for each contrast, including TSV files for downstream analysis in other tools and publication-quality figures in various formats. These outputs provide both the raw statistical results and their biological interpretation, facilitating the transition from statistical significance to biological insight.

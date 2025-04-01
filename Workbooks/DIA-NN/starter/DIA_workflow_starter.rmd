@@ -1295,7 +1295,6 @@ ruv_correlation_vec <- pearsonCorForSamplePairs(
   , tech_rep_remove_regex = "pool"
   , correlation_group = "group"
 ) 
-) 
 
 ruv_normalised_filtered_results_obj <- filterSamplesByProteinCorrelationThreshold(
   ruv_normalised_results_cln_obj
@@ -1444,6 +1443,74 @@ pca_ruv_rle_correlation_merged <- createGridQC(
 pca_ruv_rle_correlation_merged
 ```
 
+# Add up to date annotation data from Uniprot
+## Will take some time to complete if  you are doing this for first time
+## Good spot to grab a coffee :)
+
+### Further Reading
+#### UniProt Database
+- [UniProt Knowledgebase](https://academic.oup.com/nar/article/47/D1/D506/5160987) - Comprehensive guide to the UniProt database
+- [Protein Annotation Standards](https://www.nature.com/articles/nmeth.3283) - Standards for protein annotation
+- [UniProt API Documentation](https://www.uniprot.org/help/api) - Official documentation for UniProt web services
+
+#### Protein Functional Annotation
+- [Gene Ontology Resources](https://academic.oup.com/nar/article/47/D1/D330/5160994) - Understanding Gene Ontology annotations
+- [Protein Function Prediction](https://www.nature.com/articles/s41592-019-0687-2) - Methods for protein function prediction
+- [Evidence Codes in Annotation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6124377/) - Understanding evidence codes in annotations
+
+#### Bioconductor Tools for Annotation
+- [UniProt.ws Package](https://bioconductor.org/packages/release/bioc/html/UniProt.ws.html) - Bioconductor interface to UniProt
+- [Annotation Workflows](https://www.bioconductor.org/packages/release/workflows/vignettes/annotation/inst/doc/annotation.html) - Complete annotation workflows in Bioconductor
+- [Programmatic Access to Biological Data](https://f1000research.com/articles/5-2122) - Best practices for accessing biological databases
+
+This section retrieves and integrates up-to-date protein annotation data from UniProt, the leading universal protein resource database. The annotation process uses the UniProt.ws Bioconductor package to query the UniProt database for comprehensive information about each protein identified in your dataset. This information includes metadata like protein existence evidence, annotation score, review status, gene names, protein names, sequence length, cross-references to Ensembl, Gene Ontology (GO) terms, and keywords. By caching the results in an RDS file, the workflow avoids redundant queries in subsequent runs, significantly speeding up the process while still ensuring data freshness. This annotation step is crucial for biological interpretation of your results, as it provides the functional context needed to understand the biological significance of differentially expressed proteins.
+
+```{r Uniprot Data Annotation}
+up <- UniProt.ws(taxId = taxon_id)
+tmp_dir <- file.path(getwd(), "tmp")
+if (!dir.exists(tmp_dir)) {
+  dir.create(tmp_dir)
+}
+annotations <- NULL
+if (!file.exists(file.path(tmp_dir, "uniprot_annotations.RDS"))) {
+  
+  annotations <- batchQueryEvidenceGeneId(
+    ruv_normalised_for_de_analysis_obj@protein_quant_table
+    , gene_id_column = "Protein.Ids"
+    , uniprot_handle = up
+    , uniprot_columns = c(
+      "protein_existence"
+      , "annotation_score"
+      , "reviewed"
+      , "gene_names"
+      , "protein_name"
+      , "length"
+      , "xref_ensembl"
+      , "go_id"
+      , "keyword"
+    )
+  ) 
+  # |> dplyr::rename(uniprot_acc = From)  # Debug to check if the From column needed renaming
+  
+  uniprot_dat_cln <- annotations |>
+    uniprotGoIdToTerm(
+      uniprot_id_column = Entry
+      , go_id_column = Gene.Ontology.IDs
+      , sep = "; "
+    ) |>
+    dplyr::rename(
+      Protein_existence = "Protein.existence"
+      , Protein_names = "Protein.names"
+    ) |>
+    dplyr::rename(gene_names = Gene.Names)
+  
+  saveRDS(uniprot_dat_cln, file.path(tmp_dir, "uniprot_annotations.RDS"))
+  
+} else {
+  uniprot_dat_cln <- readRDS(file.path(tmp_dir, "uniprot_annotations.RDS"))
+}
+```
+
 ## Read in Previously Assigned Contrasts (optional)
 
 ### Further Reading
@@ -1504,14 +1571,14 @@ de_analysis_results_list <- seq_len(nrow(contrasts_tbl)) |>
   purrr::map(\(contrast_idx) {
     deAnalysisWrapperFunction(
       ruv_normalised_for_de_analysis_obj
-      , contrasts_tbl |> slice(contrast_idx)
+      , contrasts_tbl |> dplyr::slice(contrast_idx)
       , formula_string = config_list$deAnalysisParameters$formula_string
       , de_q_val_thresh = config_list$deAnalysisParameters$de_q_val_thresh
       , treat_lfc_cutoff = config_list$deAnalysisParameters$treat_lfc_cutoff
       , eBayes_trend = config_list$deAnalysisParameters$eBayes_trend
       , eBayes_robust = config_list$deAnalysisParameters$eBayes_robust
       , args_group_pattern = config_list$deAnalysisParameters$args_group_pattern
-      , args_row_id = config_list$deAnalysisParameters$args_row_id
+      , args_row_id = ruv_normalised_for_de_analysis_obj@protein_id_column
     )
   })
 
@@ -1519,72 +1586,7 @@ de_analysis_results_list <- seq_len(nrow(contrasts_tbl)) |>
 print(names(de_analysis_results_list))
 ```
 
-# Add up to date annotation data from Uniprot
-## Will take some time to complete if  you are doing this for first time
-## Good spot to grab a coffee :)
 
-### Further Reading
-#### UniProt Database
-- [UniProt Knowledgebase](https://academic.oup.com/nar/article/47/D1/D506/5160987) - Comprehensive guide to the UniProt database
-- [Protein Annotation Standards](https://www.nature.com/articles/nmeth.3283) - Standards for protein annotation
-- [UniProt API Documentation](https://www.uniprot.org/help/api) - Official documentation for UniProt web services
-
-#### Protein Functional Annotation
-- [Gene Ontology Resources](https://academic.oup.com/nar/article/47/D1/D330/5160994) - Understanding Gene Ontology annotations
-- [Protein Function Prediction](https://www.nature.com/articles/s41592-019-0687-2) - Methods for protein function prediction
-- [Evidence Codes in Annotation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6124377/) - Understanding evidence codes in annotations
-
-#### Bioconductor Tools for Annotation
-- [UniProt.ws Package](https://bioconductor.org/packages/release/bioc/html/UniProt.ws.html) - Bioconductor interface to UniProt
-- [Annotation Workflows](https://www.bioconductor.org/packages/release/workflows/vignettes/annotation/inst/doc/annotation.html) - Complete annotation workflows in Bioconductor
-- [Programmatic Access to Biological Data](https://f1000research.com/articles/5-2122) - Best practices for accessing biological databases
-
-This section retrieves and integrates up-to-date protein annotation data from UniProt, the leading universal protein resource database. The annotation process uses the UniProt.ws Bioconductor package to query the UniProt database for comprehensive information about each protein identified in your dataset. This information includes metadata like protein existence evidence, annotation score, review status, gene names, protein names, sequence length, cross-references to Ensembl, Gene Ontology (GO) terms, and keywords. By caching the results in an RDS file, the workflow avoids redundant queries in subsequent runs, significantly speeding up the process while still ensuring data freshness. This annotation step is crucial for biological interpretation of your results, as it provides the functional context needed to understand the biological significance of differentially expressed proteins.
-
-```{r Uniprot Data Annotation}
-up <- UniProt.ws(taxId = taxon_id)
-tmp_dir <- file.path(getwd(), "tmp")
-if (!dir.exists(tmp_dir)) {
-  dir.create(tmp_dir)
-}
-annotations <- NULL
-if (!file.exists(file.path(tmp_dir, "uniprot_annotations.RDS"))) {
-  
-  annotations <- batchQueryEvidenceGeneId(
-    ruv_normalised_for_de_analysis_obj@protein_quant_table
-    , gene_id_column = "Protein.Ids"
-    , uniprot_handle = up
-    , uniprot_columns = c(
-      "protein_existence"
-      , "annotation_score"
-      , "reviewed"
-      , "gene_names"
-      , "protein_name"
-      , "length"
-      , "xref_ensembl"
-      , "go_id"
-      , "keyword"
-    )
-  ) 
-  # |> dplyr::rename(uniprot_acc = From)  # Debug to check if the From column needed renaming
-  
-  uniprot_dat_cln <- annotations |>
-    uniprotGoIdToTerm(
-      uniprot_id_column = Entry
-      , go_id_column = Gene.Ontology.IDs
-      , sep = "; "
-    ) |>
-    dplyr::rename(
-      Protein_existence = "Protein.existence"
-      , Protein_names = "Protein.names"
-    )
-  
-  saveRDS(uniprot_dat_cln, file.path(tmp_dir, "uniprot_annotations.RDS"))
-  
-} else {
-  uniprot_dat_cln <- readRDS(file.path(tmp_dir, "uniprot_annotations.RDS"))
-}
-```
 
 ## Output the results of the DE analysis
 
