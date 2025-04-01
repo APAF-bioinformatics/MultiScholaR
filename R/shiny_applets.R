@@ -66,7 +66,7 @@ RunApplet <- function(applet_type, force = FALSE) {
           # Management tools in tabs on the left
           column(4,
             wellPanel(
-              tabsetPanel(
+              tabsetPanel(id = "main_tabs",
                 # Sample renaming tab
                 tabPanel("Rename Samples",
                   h4("Individual Rename"),
@@ -130,6 +130,39 @@ RunApplet <- function(applet_type, force = FALSE) {
                   h4("Model Formula"),
                   textInput("formula_string", "Formula:", 
                           value = config_list[["deAnalysisParameters"]][["formula_string"]])
+                ),
+                
+                # Settings tab for global operations
+                tabPanel("Settings",
+                  h4("Session Management"),
+                  p("Reset options allow you to revert changes made during this session."),
+                  
+                  div(
+                    style = "margin-top: 15px;",
+                    selectInput("reset_scope", "Reset Scope:",
+                             choices = c(
+                               "All Changes" = "all",
+                               "Sample Names Only" = "sample_names",
+                               "Factors Only" = "factors",
+                               "Contrasts Only" = "contrasts",
+                               "Formula Only" = "formula"
+                             ),
+                             selected = "all"
+                    )
+                  ),
+                  
+                  div(
+                    style = "margin-top: 15px;",
+                    actionButton("reset_changes", "Reset to Initial State", 
+                               class = "btn-warning", 
+                               icon = icon("rotate-left"),
+                               width = "100%")
+                  ),
+                  
+                  hr(),
+                  
+                  h4("Information"),
+                  verbatimTextOutput("session_info")
                 )
               )
             )
@@ -159,22 +192,28 @@ RunApplet <- function(applet_type, force = FALSE) {
     }
         # Create server function
     server <- function(input, output, session) {
-      # Reactive values
-      design_matrix <- reactiveVal(design_matrix_raw)
-      data_cln_reactive <- reactiveVal(data_cln)
+      # Create a REGULAR list for initial state that won't change
+      initial_state <- list(
+        design_matrix = design_matrix_raw,
+        data_cln = data_cln,
+        groups = unique(design_matrix_raw$group[!is.na(design_matrix_raw$group) & design_matrix_raw$group != ""]),
+        factors = unique(c(
+          design_matrix_raw$factor1[!is.na(design_matrix_raw$factor1)],
+          design_matrix_raw$factor2[!is.na(design_matrix_raw$factor2)]
+        )[c(
+          design_matrix_raw$factor1[!is.na(design_matrix_raw$factor1)] != "",
+          design_matrix_raw$factor2[!is.na(design_matrix_raw$factor2)] != ""
+        )]),
+        formula = config_list[["deAnalysisParameters"]][["formula_string"]]
+      )
       
-      # Initialize groups and factors
-      initial_groups <- unique(design_matrix_raw$group)
-      initial_groups <- initial_groups[!is.na(initial_groups) & initial_groups != ""]
+      # Reactive values for current state
+      design_matrix <- reactiveVal(initial_state$design_matrix) # Use list access
+      data_cln_reactive <- reactiveVal(initial_state$data_cln) # Use list access
       
-      initial_factors <- unique(c(
-        design_matrix_raw$factor1[!is.na(design_matrix_raw$factor1)],
-        design_matrix_raw$factor2[!is.na(design_matrix_raw$factor2)]
-      ))
-      initial_factors <- initial_factors[initial_factors != ""]
-      
-      groups <- reactiveVal(initial_groups)
-      factors <- reactiveVal(initial_factors)
+      # Initialize groups and factors using the pre-calculated values from the list
+      groups <- reactiveVal(initial_state$groups) 
+      factors <- reactiveVal(initial_state$factors)
       
       contrasts <- reactiveVal(data.frame(
         contrast_name = character(),
@@ -204,6 +243,180 @@ RunApplet <- function(applet_type, force = FALSE) {
                          choices = c("", groups()),
                          selected = "")
       })
+      
+      # Session information for the settings tab
+      output$session_info <- renderText({
+        paste0(
+          "Total samples: ", nrow(design_matrix()), "\n",
+          "Assigned samples: ", sum(!is.na(design_matrix()$group)), "\n",
+          "Available factors: ", paste(factors(), collapse = ", "), "\n",
+          "Defined contrasts: ", nrow(contrasts()), "\n",
+          "Last modified: ", format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+        )
+      })
+      
+      # Reset handler with scope options
+      observeEvent(input$reset_changes, {
+        # Get scope description for the modal
+        scope_desc <- switch(input$reset_scope,
+                           "all" = "all changes",
+                           "sample_names" = "sample names",
+                           "factors" = "factor definitions",
+                           "contrasts" = "contrast definitions",
+                           "formula" = "formula")
+        
+        # Show confirmation modal
+        showModal(modalDialog(
+          title = "Confirm Reset",
+          HTML(paste0(
+            "<p>This will revert <strong>", scope_desc, "</strong> to their initial state.</p>",
+            "<p>This action cannot be undone. Are you sure?</p>"
+          )),
+          footer = tagList(
+            modalButton("Cancel"),
+            actionButton("confirm_reset", "Reset", class = "btn-danger")
+          ),
+          easyClose = TRUE
+        ))
+      })
+      
+      # Confirm reset handler with scoped reset functionality
+  observeEvent(input$confirm_reset, {
+    # Perform reset based on selected scope
+    scope <- input$reset_scope
+    
+    if(scope == "all" || scope == "sample_names") {
+        if(scope == "all") {
+            # Reset entire matrices if scope is "all" using non-reactive initial_state
+            design_matrix(initial_state$design_matrix)
+            data_cln_reactive(initial_state$data_cln)
+        } else { # scope == "sample_names"
+            # Get the current reactive data frames
+            current_matrix <- design_matrix()
+            current_data <- data_cln_reactive()
+
+            # Capture current Run names from design_matrix BEFORE reset
+            current_run_names_in_matrix <- current_matrix$Run 
+            initial_run_names_in_matrix <- initial_state$design_matrix$Run
+
+            # --- Reset design_matrix$Run (assuming row order preserved) ---
+            if (nrow(current_matrix) == nrow(initial_state$design_matrix)) {
+                current_matrix$Run <- initial_run_names_in_matrix
+            } else {
+                # Fallback if rows don't match (shouldn't happen ideally)
+                showNotification("Error: Row mismatch during design matrix reset. Resetting entire matrix.", type = "error", duration = 5)
+                current_matrix <- initial_state$design_matrix 
+            }
+
+            # --- Reset data_cln$Run using mapping based on design_matrix changes ---
+            # Create a map: current name -> initial name
+            if (length(current_run_names_in_matrix) == length(initial_run_names_in_matrix)) {
+                # Check for duplicate current names, which makes the map ambiguous
+                if(any(duplicated(current_run_names_in_matrix))) {
+                    showNotification("Warning: Duplicate sample names detected. Resetting data_cln based on initial state.", type = "warning", duration = 5)
+                    # Fallback: Reset data_cln Run names based on initial_state$data_cln
+                    if (nrow(current_data) == nrow(initial_state$data_cln)) {
+                        current_data$Run <- initial_state$data_cln$Run
+                    } else {
+                        current_data <- initial_state$data_cln # Full reset if rows mismatch
+                    }
+                } else {
+                    # Create the map only if names are unique
+                    run_map_current_to_original <- setNames(initial_run_names_in_matrix, current_run_names_in_matrix)
+                    
+                    # Apply the mapping to data_cln
+                    current_run_names_in_data <- current_data$Run
+                    original_run_names_for_data <- run_map_current_to_original[current_run_names_in_data]
+                    
+                    # Only replace if a mapping was found, otherwise keep current name
+                    current_data$Run <- ifelse(!is.na(original_run_names_for_data), 
+                                               original_run_names_for_data, 
+                                               current_run_names_in_data)
+                }
+            } else {
+                 showNotification("Error: Name vector length mismatch during data reset. Resetting data_cln.", type = "error", duration = 5)
+                 current_data <- initial_state$data_cln # Fallback
+            }
+
+            # Update the reactive values
+            design_matrix(current_matrix)
+            data_cln_reactive(current_data)
+        }
+    }
+
+    if(scope == "all" || scope == "factors") {
+      # Reset factors using the non-reactive initial_state list
+      factors(initial_state$factors) 
+      
+      if(scope == "factors") {
+        # When resetting just factors, keep existing assignments in design matrix
+        # but remove any factors that no longer exist
+        current_matrix <- design_matrix()
+        # Use factors from the non-reactive initial_state list
+        valid_factors <- initial_state$factors 
+        
+        current_matrix$factor1[!current_matrix$factor1 %in% valid_factors] <- NA
+        current_matrix$factor2[!current_matrix$factor2 %in% valid_factors] <- NA
+        
+        design_matrix(current_matrix)
+      }
+    }
+    
+    if(scope == "all" || scope == "contrasts") {
+      contrasts(data.frame(
+        contrast_name = character(),
+        numerator = character(),
+        denominator = character(),
+        factor1_num = character(),
+        factor2_num = character(),
+        factor1_den = character(),
+        factor2_den = character(),
+        stringsAsFactors = FALSE
+      ))
+    }
+    
+    if(scope == "all" || scope == "formula") {
+      updateTextInput(session, "formula_string", 
+                      # Reset formula using the non-reactive initial_state list
+                      value = initial_state$formula) 
+    }
+    
+    # Update UI elements
+    if(scope == "all" || scope == "sample_names") {
+       # Get the freshly reset runs (or initial runs if scope==all)
+       # If scope was 'sample_names', design_matrix() now holds the reset matrix.
+       dm_to_sort <- if(scope == "all") initial_state$design_matrix else design_matrix()
+       sorted_runs <- gtools::mixedsort(dm_to_sort$Run) 
+       updateSelectizeInput(session, "sample_to_rename", choices = sorted_runs, selected = "") # Clear selection
+       updateSelectizeInput(session, "selected_runs", choices = sorted_runs, selected = "") # Clear selection
+       updateSelectizeInput(session, "samples_to_transform", choices = sorted_runs, selected = "") # Clear selection
+    }
+    
+    if(scope == "all") {
+      # Reset groups using the non-reactive initial_state list
+      groups(initial_state$groups) 
+      updateTabsetPanel(session, "main_tabs", selected = "Rename Samples")
+      # Also reset factor dropdowns if scope is all
+       updateSelectInput(session, "factor1_select", choices = c("", initial_state$factors), selected = "")
+       updateSelectInput(session, "factor2_select", choices = c("", initial_state$factors), selected = "")
+       updateSelectInput(session, "contrast_group1", choices = c("", initial_state$groups), selected = "")
+       updateSelectInput(session, "contrast_group2", choices = c("", initial_state$groups), selected = "")
+    }
+    
+    # Close the modal
+    removeModal()
+    
+    # Show success message
+    scope_desc <- switch(input$reset_scope,
+                       "all" = "all changes",
+                       "sample_names" = "sample names",
+                       "factors" = "factor definitions",
+                       "contrasts" = "contrast definitions",
+                       "formula" = "formula")
+    showNotification(paste("Reset of", scope_desc, "completed successfully"), 
+                   type = "message", 
+                   duration = 3)
+  }) 
       
       # Individual rename handler
       observeEvent(input$rename_sample, {
@@ -418,6 +631,18 @@ RunApplet <- function(applet_type, force = FALSE) {
       
             # Save and close handler
       observeEvent(input$save_and_close, {
+        
+        if (!exists("source_dir") || is.null(source_dir) || !nzchar(source_dir) || !dir.exists(source_dir)) {
+            showNotification(paste("Error: Invalid source directory detected:", source_dir), type = "error", duration = 10)
+            message("Error: source_dir is invalid or does not exist: ", source_dir)
+            # Optionally, stop the save process here if source_dir is invalid
+            # return() 
+            # Or try to stop the app gracefully without saving
+            stopApp(NULL) # Stop app returning NULL as result
+            return() # Prevent further execution in this observer
+        }
+        message("Debug: source_dir path for saving: ", source_dir) # Print to console
+
         design_matrix_final <- design_matrix()
         data_cln_final <- data_cln_reactive()
         
@@ -443,7 +668,7 @@ RunApplet <- function(applet_type, force = FALSE) {
         
         # Get assigned runs directly from filtered design matrix        
         assigned_runs <- design_matrix_final |>
-            pull(Run)
+            dplyr::pull(Run)
         
         data_cln_final <- data_cln_final |>
             filter(Run %in% assigned_runs)
@@ -460,19 +685,24 @@ RunApplet <- function(applet_type, force = FALSE) {
           # Modified contrast string generation to match required format
           contrast_strings <- sapply(1:nrow(contrast_data), function(i) {
             # Create numerator group name
-            num_group <- if (contrast_data$factor2_num[i] == "") {
+            num_group <- if (is.na(contrast_data$factor2_num[i]) || contrast_data$factor2_num[i] == "") { # Check NA
               contrast_data$factor1_num[i]
             } else {
               paste(contrast_data$factor1_num[i], contrast_data$factor2_num[i], sep = "_")
             }
             
             # Create denominator group name
-            den_group <- if (contrast_data$factor2_den[i] == "") {
+            den_group <- if (is.na(contrast_data$factor2_den[i]) || contrast_data$factor2_den[i] == "") { # Check NA
               contrast_data$factor1_den[i]
             } else {
               paste(contrast_data$factor1_den[i], contrast_data$factor2_den[i], sep = "_")
             }
             
+            # Ensure groups are valid before pasting
+            if (is.na(num_group) || is.na(den_group) || num_group == "" || den_group == "") {
+                return(NA_character_) # Skip contrast if groups are invalid
+            }
+
             paste0(
               num_group,
               ".minus.",
@@ -484,12 +714,35 @@ RunApplet <- function(applet_type, force = FALSE) {
             )
           })
           
-          writeLines(contrast_strings, file.path(source_dir, "contrast_strings.tab"))
-          contrasts_tbl <- data.frame(
-            contrasts = contrast_strings,
-            stringsAsFactors = FALSE
-          )
-          assign("contrasts_tbl", contrasts_tbl, envir = parent.frame())
+          # Filter out any NA contrasts before writing
+          contrast_strings <- na.omit(contrast_strings)
+
+          if (length(contrast_strings) > 0) {
+              contrast_path <- file.path(source_dir, "contrast_strings.tab")
+              message("Debug: Writing contrasts to: ", contrast_path) # Print path
+              tryCatch({
+                  writeLines(contrast_strings, contrast_path)
+                  contrasts_tbl <- data.frame(
+                    contrasts = contrast_strings,
+                    stringsAsFactors = FALSE
+                  )
+                  assign("contrasts_tbl", contrasts_tbl, envir = parent.frame())
+              }, error = function(e) {
+                  showNotification(paste("Error writing contrast file:", e$message), type = "error", duration = 10)
+                  message("Error writing contrast file: ", e$message)
+              })
+          } else {
+              contrasts_tbl <- NULL # Ensure contrasts_tbl exists even if no contrasts are written
+              if (exists("contrasts_tbl", envir = parent.frame())) {
+                 # Remove existing contrasts_tbl if it exists and no new ones are valid
+                 remove(list = "contrasts_tbl", envir = parent.frame())
+              }
+          }
+        } else {
+           contrasts_tbl <- NULL # Ensure contrasts_tbl exists as NULL if no contrasts defined
+           if (exists("contrasts_tbl", envir = parent.frame())) {
+              remove(list = "contrasts_tbl", envir = parent.frame())
+           }
         }
         
         # Create base filename
@@ -505,27 +758,49 @@ RunApplet <- function(applet_type, force = FALSE) {
           data_cln_output_file <- file.path(source_dir, "data_cln.tab")
         }
         
-        write.table(design_matrix_final, 
-                    file = output_file,
-                    sep = "\t",
-                    row.names = FALSE,
-                    quote = FALSE)
+        # Wrap write.table calls in tryCatch
+        message("Debug: Writing design matrix to: ", output_file) # Print path
+        tryCatch({
+          write.table(design_matrix_final, 
+                      file = output_file,
+                      sep = "\t",
+                      row.names = FALSE,
+                      quote = FALSE)
+        }, error = function(e) {
+            showNotification(paste("Error writing design matrix:", e$message), type = "error", duration = 10)
+            message("Error writing design matrix: ", e$message)
+            removeModal() # Remove modal on error
+            stopApp(NULL) # Stop app
+            return()
+        })
                     
-        write.table(data_cln_final, 
-                    file = data_cln_output_file,
-                    sep = "\t",
-                    row.names = FALSE,
-                    quote = FALSE)
-        
+        message("Debug: Writing cleaned data to: ", data_cln_output_file) # Print path
+        tryCatch({
+          write.table(data_cln_final, 
+                      file = data_cln_output_file,
+                      sep = "\t",
+                      row.names = FALSE,
+                      quote = FALSE)
+        }, error = function(e) {
+            showNotification(paste("Error writing cleaned data:", e$message), type = "error", duration = 10)
+            message("Error writing cleaned data: ", e$message)
+            removeModal() # Remove modal on error
+            stopApp(NULL) # Stop app
+            return()
+        })
+
         # Remove modal before stopping app
         removeModal()
         
-        stopApp(list(
+        # Pass the potentially NULL contrasts_tbl
+        final_result <- list(
           design_matrix = design_matrix_final,
-          contrasts_tbl = if(exists("contrasts_tbl")) contrasts_tbl else NULL,
+          contrasts_tbl = if(exists("contrasts_tbl", envir = parent.frame())) contrasts_tbl else NULL, 
           config_list = config_list,
           data_cln = data_cln_final
-        ))
+        )
+
+        stopApp(final_result) # Pass the final result list
       })
     }
     
