@@ -725,7 +725,9 @@ outputDeAnalysisResults <- function(de_analysis_results_list
              , showWarnings = FALSE)
 
   list_of_volcano_plots <- de_analysis_results_list$list_of_volcano_plots
-
+  
+  # Print diagnostic info about the volcano plots
+  message(sprintf("Number of volcano plots: %d", nrow(list_of_volcano_plots)))
 
   purrr::walk2( list_of_volcano_plots %>% dplyr::pull(title),
                 list_of_volcano_plots %>% dplyr::pull(plot),
@@ -741,15 +743,20 @@ outputDeAnalysisResults <- function(de_analysis_results_list
 
   # Generate a multi-page PDF with all volcano plots
   volcano_plots_list <- list_of_volcano_plots %>% dplyr::pull(plot)
-  pdf(file = file.path(publication_graphs_dir, "Volcano_Plots", "list_of_volcano_plots.pdf"),
-      width = 7, height = 7)
-  for (i in seq_along(volcano_plots_list)) {
-    print(volcano_plots_list[[i]])
-  }
-  dev.off()
+  
+  # Generate combined PDF with all plots, one per page
+  pdf_file <- file.path(publication_graphs_dir, "Volcano_Plots", "list_of_volcano_plots.pdf")
+  pdf(file = pdf_file, width = 7, height = 7, onefile = TRUE)
+  purrr::walk(volcano_plots_list, print)
+  invisible(dev.off())
+  
+  # Verify the PDF was created with the right number of pages
+  message(sprintf("Created multi-page PDF at %s", pdf_file))
 
   list_of_volcano_plots_with_gene_names <- de_analysis_results_list$list_of_volcano_plots_with_gene_names
-
+  
+  # Print diagnostic info about the labeled volcano plots
+  message(sprintf("Number of labeled volcano plots: %d", nrow(list_of_volcano_plots_with_gene_names)))
 
   purrr::walk2( list_of_volcano_plots_with_gene_names %>% dplyr::pull(title)
                 , list_of_volcano_plots_with_gene_names %>% dplyr::pull(plot)
@@ -762,13 +769,15 @@ outputDeAnalysisResults <- function(de_analysis_results_list
 
   # Generate a multi-page PDF with all labeled volcano plots
   volcano_plots_with_genes_list <- list_of_volcano_plots_with_gene_names %>% dplyr::pull(plot)
-  pdf(file = file.path(publication_graphs_dir, "Volcano_Plots", "list_of_volcano_plots_with_gene_names.pdf"),
-      width = 7, height = 7)
-  for (i in seq_along(volcano_plots_with_genes_list)) {
-    print(volcano_plots_with_genes_list[[i]])
-  }
-  dev.off()
-
+  
+  # Generate combined PDF with all labeled plots, one per page
+  pdf_file_with_genes <- file.path(publication_graphs_dir, "Volcano_Plots", "list_of_volcano_plots_with_gene_names.pdf")
+  pdf(file = pdf_file_with_genes, width = 7, height = 7, onefile = TRUE)
+  purrr::walk(volcano_plots_with_genes_list, print)
+  invisible(dev.off())
+  
+  # Verify the labeled PDF was created with the right number of pages
+  message(sprintf("Created multi-page labeled PDF at %s", pdf_file_with_genes))
 
   ## Number of significant molecules
   createDirIfNotExists(file.path(publication_graphs_dir, "NumSigDeMolecules"))
