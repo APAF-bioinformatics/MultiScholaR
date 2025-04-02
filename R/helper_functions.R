@@ -1429,19 +1429,18 @@ copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE, cur
             base_name <- basename(file) |>
                 stringr::str_remove("_enrichment_results.tsv")
             
-            # Extract direction first (always "up" or "down" before "enrichment")
-            direction <- ifelse(
-                stringr::str_detect(base_name, "_up_enrichment"), 
-                "up", 
+            # Extract direction (last part of the base_name which should be "up" or "down")
+            direction <- if (stringr::str_ends(base_name, "_up")) {
+                "up"
+            } else if (stringr::str_ends(base_name, "_down")) {
                 "down"
-            )
+            } else {
+                warning("Could not determine direction from filename: ", basename(file))
+                "unknown"
+            }
             
-            # Extract contrast (everything before _up_ or _down_)
-            contrast <- stringr::str_replace(
-                base_name, 
-                "_(up|down)_enrichment.*$", 
-                ""
-            )
+            # Extract contrast (everything before _up or _down)
+            contrast <- stringr::str_replace(base_name, "_(up|down)$", "")
             
             sheet_name <- sprintf("Enrichment_Sheet%d", idx)
             
