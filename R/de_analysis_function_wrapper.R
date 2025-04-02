@@ -720,80 +720,64 @@ outputDeAnalysisResults <- function(de_analysis_results_list
                                   paste0(file_prefix, "_long_annot.xlsx")))
 
   ## Static volcano plots
-  dir.create(file.path(publication_graphs_dir, "Volcano_Plots"), 
-             recursive = TRUE, 
-             showWarnings = FALSE)
+  dir.create(file.path( publication_graphs_dir, "Volcano_Plots")
+             , recursive = TRUE
+             , showWarnings = FALSE)
 
   list_of_volcano_plots <- de_analysis_results_list$list_of_volcano_plots
   
-  # Explicitly print info about the volcano plots for debugging
-  print(paste0("Number of volcano plots: ", nrow(list_of_volcano_plots)))
-  print(paste0("Volcano plot titles: ", paste(list_of_volcano_plots$title, collapse = ", ")))
+  # Print diagnostic info about the volcano plots
+  message(sprintf("Number of volcano plots: %d", nrow(list_of_volcano_plots)))
 
-  # Save individual plots
-  purrr::walk2(list_of_volcano_plots %>% dplyr::pull(title),
-               list_of_volcano_plots %>% dplyr::pull(plot),
-               \(x, y) {
-                 savePlot(y,
-                         base_path = file.path(publication_graphs_dir, "Volcano_Plots"),
-                         plot_name = x,
-                         formats = plots_format, width = 7, height = 7)
-               })
+  purrr::walk2( list_of_volcano_plots %>% dplyr::pull(title),
+                list_of_volcano_plots %>% dplyr::pull(plot),
+                \(x,y){
+                # gg_save_logging ( .y, file_name_part, plots_format)
 
-  # Create a multi-page PDF with all volcano plots - direct PDF approach
-  all_plots <- list_of_volcano_plots %>% dplyr::pull(plot)
+                savePlot( y
+                          , base_path = file.path( publication_graphs_dir, "Volcano_Plots")
+                          , plot_name =  x
+                          , formats = plots_format, width = 7, height = 7)
+
+                })
+
+  # Generate a multi-page PDF with all volcano plots
+  volcano_plots_list <- list_of_volcano_plots %>% dplyr::pull(plot)
   
-  if (length(all_plots) > 0) {
-    output_path <- file.path(publication_graphs_dir, "Volcano_Plots", "list_of_volcano_plots.pdf")
-    
-    # Direct approach with grDevices
-    pdf(output_path, width = 7, height = 7, onefile = TRUE)
-    # Use purrr::walk to print each plot on a new page
-    purrr::walk(all_plots, \(p) {
-      print(p)
-      # Force a new page after each plot except the last one
-    })
-    dev.off()
-    print(paste0("Created multi-page PDF with ", length(all_plots), " plots at: ", output_path))
-  } else {
-    print("No volcano plots found to combine into PDF")
-  }
+  # Generate combined PDF with all plots, one per page
+  pdf_file <- file.path(publication_graphs_dir, "Volcano_Plots", "list_of_volcano_plots.pdf")
+  pdf(file = pdf_file, width = 7, height = 7, onefile = TRUE)
+  purrr::walk(volcano_plots_list, print)
+  invisible(dev.off())
+  
+  # Verify the PDF was created with the right number of pages
+  message(sprintf("Created multi-page PDF at %s", pdf_file))
 
-  # Now do the same for plots with gene names
   list_of_volcano_plots_with_gene_names <- de_analysis_results_list$list_of_volcano_plots_with_gene_names
   
-  # Explicitly print info for debugging
-  print(paste0("Number of labeled volcano plots: ", nrow(list_of_volcano_plots_with_gene_names)))
-  print(paste0("Labeled volcano plot titles: ", paste(list_of_volcano_plots_with_gene_names$title, collapse = ", ")))
+  # Print diagnostic info about the labeled volcano plots
+  message(sprintf("Number of labeled volcano plots: %d", nrow(list_of_volcano_plots_with_gene_names)))
 
-  # Save individual plots
-  purrr::walk2(list_of_volcano_plots_with_gene_names %>% dplyr::pull(title),
-               list_of_volcano_plots_with_gene_names %>% dplyr::pull(plot),
-               \(x, y) {
-                 savePlot(y,
-                         base_path = file.path(publication_graphs_dir, "Volcano_Plots"),
-                         plot_name = paste0(x, "_with_protein_labels"),
-                         formats = plots_format, width = 7, height = 7)
-               })
+  purrr::walk2( list_of_volcano_plots_with_gene_names %>% dplyr::pull(title)
+                , list_of_volcano_plots_with_gene_names %>% dplyr::pull(plot)
+                , \(x, y) {
 
-  # Create a multi-page PDF for labeled plots - direct PDF approach
-  all_labeled_plots <- list_of_volcano_plots_with_gene_names %>% dplyr::pull(plot)
+                  savePlot( x
+                            , file.path( publication_graphs_dir, "Volcano_Plots")
+                            , paste0( y,"_with_protein_labels"))
+                })
+
+  # Generate a multi-page PDF with all labeled volcano plots
+  volcano_plots_with_genes_list <- list_of_volcano_plots_with_gene_names %>% dplyr::pull(plot)
   
-  if (length(all_labeled_plots) > 0) {
-    output_path <- file.path(publication_graphs_dir, "Volcano_Plots", "list_of_volcano_plots_with_gene_names.pdf")
-    
-    # Direct approach with grDevices
-    pdf(output_path, width = 7, height = 7, onefile = TRUE)
-    # Use purrr::walk to print each plot on a new page
-    purrr::walk(all_labeled_plots, \(p) {
-      print(p)
-      # Force a new page after each plot except the last one
-    })
-    dev.off()
-    print(paste0("Created multi-page PDF with ", length(all_labeled_plots), " labeled plots at: ", output_path))
-  } else {
-    print("No labeled volcano plots found to combine into PDF")
-  }
+  # Generate combined PDF with all labeled plots, one per page
+  pdf_file_with_genes <- file.path(publication_graphs_dir, "Volcano_Plots", "list_of_volcano_plots_with_gene_names.pdf")
+  pdf(file = pdf_file_with_genes, width = 7, height = 7, onefile = TRUE)
+  purrr::walk(volcano_plots_with_genes_list, print)
+  invisible(dev.off())
+  
+  # Verify the labeled PDF was created with the right number of pages
+  message(sprintf("Created multi-page labeled PDF at %s", pdf_file_with_genes))
 
   ## Number of significant molecules
   createDirIfNotExists(file.path(publication_graphs_dir, "NumSigDeMolecules"))
