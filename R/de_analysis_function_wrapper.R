@@ -739,12 +739,14 @@ outputDeAnalysisResults <- function(de_analysis_results_list
 
                 })
 
-
-  ggsave(
-    filename = file.path(publication_graphs_dir, "Volcano_Plots", "list_of_volcano_plots.pdf" ),
-    plot = gridExtra::marrangeGrob( (list_of_volcano_plots  %>% dplyr::pull(plot)), nrow=1, ncol=1),
-    width = 7, height = 7
-  )
+  # Generate a multi-page PDF with all volcano plots
+  volcano_plots_list <- list_of_volcano_plots %>% dplyr::pull(plot)
+  pdf(file = file.path(publication_graphs_dir, "Volcano_Plots", "list_of_volcano_plots.pdf"),
+      width = 7, height = 7)
+  for (i in seq_along(volcano_plots_list)) {
+    print(volcano_plots_list[[i]])
+  }
+  dev.off()
 
   list_of_volcano_plots_with_gene_names <- de_analysis_results_list$list_of_volcano_plots_with_gene_names
 
@@ -758,12 +760,14 @@ outputDeAnalysisResults <- function(de_analysis_results_list
                             , paste0( y,"_with_protein_labels"))
                 })
 
-
-  ggsave(
-    filename = file.path(publication_graphs_dir, "Volcano_Plots", "list_of_volcano_plots_with_gene_names.pdf" ),
-    plot = gridExtra::marrangeGrob( (list_of_volcano_plots_with_gene_names  %>% dplyr::pull(plot)), nrow=1, ncol=1),
-    width = 7, height = 7
-  )
+  # Generate a multi-page PDF with all labeled volcano plots
+  volcano_plots_with_genes_list <- list_of_volcano_plots_with_gene_names %>% dplyr::pull(plot)
+  pdf(file = file.path(publication_graphs_dir, "Volcano_Plots", "list_of_volcano_plots_with_gene_names.pdf"),
+      width = 7, height = 7)
+  for (i in seq_along(volcano_plots_with_genes_list)) {
+    print(volcano_plots_with_genes_list[[i]])
+  }
+  dev.off()
 
 
   ## Number of significant molecules
