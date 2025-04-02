@@ -1670,12 +1670,13 @@ copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE, cur
 #' based on the experimental design matrix. The function ensures at least a specified number of groups
 #' have sufficient quantifiable values for analysis.
 #'
-#' @param design_matrix A tibble containing the experimental design. Must have a 'group' column and
-#'                     equal number of replicates per group.
+#' @param design_matrix A tibble containing the experimental design. Must have a 'group' column.
+#'                     Groups can have different numbers of replicates.
 #' @param config_list A list containing configuration parameters. Must have a
 #'                   'removeRowsWithMissingValuesPercent' nested list with 'groupwise_percentage_cutoff'
 #'                   and 'max_groups_percentage_cutoff' parameters.
-#' @param min_reps_per_group Integer specifying the minimum number of replicates required in each passing group
+#' @param min_reps_per_group Integer specifying the minimum number of replicates required in each passing group.
+#'                          If a group has fewer total replicates than this value, the minimum is adjusted.
 #' @param min_groups Integer specifying the minimum number of groups required to have sufficient
 #'                  quantifiable values. Default is 2.
 #'
@@ -1683,7 +1684,7 @@ copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE, cur
 #'
 #' @details
 #' The function calculates:
-#' - groupwise_percentage_cutoff: Allows 1 missing value per group
+#' - groupwise_percentage_cutoff: Based on minimum required replicates per group
 #' - max_groups_percentage_cutoff: Based on minimum required groups
 #'
 #' @examples
@@ -1694,59 +1695,67 @@ copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE, cur
 #' @export
 updateMissingValueParameters <- function(design_matrix, config_list, min_reps_per_group = 2, min_groups = 2) {
     # Get number of replicates per group
-    reps_per_group <- design_matrix |>
+    reps_per_group_tbl <- design_matrix |>
         group_by(group) |>
         summarise(n_reps = n()) |>
-        pull(n_reps) |>
-        unique()
-
-    # Ensure all groups have same number of replicates
-    if (length(reps_per_group) != 1) {
-        stop("All groups must have the same number of replicates")
-    }
-
+        ungroup()
+    
     # Get total number of groups
-    total_groups <- design_matrix |>
-        pull(group) |>
-        unique() |>
-        length()
-
+    total_groups <- nrow(reps_per_group_tbl)
+    
     if (min_groups > total_groups) {
         stop("min_groups cannot be larger than total number of groups")
     }
-
-    if (min_reps_per_group > reps_per_group) {
-        stop("min_reps_per_group cannot be larger than total replicates per group")
-    }
-
-    # Calculate maximum missing allowed per group
-    max_missing_per_group <- reps_per_group - min_reps_per_group
-    groupwise_cutoff <- round((max_missing_per_group/reps_per_group) * 100, 3)
-
+    
+    # Calculate percentage missing allowed for each group
+    group_thresholds <- reps_per_group_tbl |>
+        mutate(
+            adjusted_min_reps = pmin(n_reps, min_reps_per_group),
+            max_missing = n_reps - adjusted_min_reps,
+            missing_percent = round((max_missing / n_reps) * 100, 3)
+        )
+    
+    # Use a consistent percentage threshold across all groups
+    # Take the minimum percentage to ensure all groups meet minimum requirements
+    groupwise_cutoff <- max(group_thresholds$missing_percent)
+    
     # Calculate maximum failing groups allowed
     max_failing_groups <- total_groups - min_groups
-    max_groups_cutoff <- round((max_failing_groups/total_groups) * 100, 3)
-
+    max_groups_cutoff <- round((max_failing_groups / total_groups) * 100, 3)
+    
     # Update config_list
     config_list$removeRowsWithMissingValuesPercent$groupwise_percentage_cutoff <- groupwise_cutoff
     config_list$removeRowsWithMissingValuesPercent$max_groups_percentage_cutoff <- max_groups_cutoff
     config_list$removeRowsWithMissingValuesPercent$proteins_intensity_cutoff_percentile <- 1
-
-    # Print informative message
-    message(sprintf("Updated missing value parameters in config_list:
-    - Requiring at least %d out of %d replicates in each passing group (%.3f%% missing allowed per group)
+    
+    # Create informative message
+    basic_msg <- sprintf(
+        "Updated missing value parameters in config_list:
+    - Requiring at least %d replicates in each passing group (varies by group size)
     - Requiring at least %d out of %d groups to pass (%.3f%% failing groups allowed)
     - groupwise_percentage_cutoff set to %.3f%%
     - max_groups_percentage_cutoff set to %.3f%%",
         min_reps_per_group,
-        reps_per_group,
-        groupwise_cutoff,
         min_groups,
         total_groups,
         max_groups_cutoff,
         groupwise_cutoff,
-        max_groups_cutoff))
-
+        max_groups_cutoff
+    )
+    
+    # Add details for each group
+    group_detail_strings <- group_thresholds |>
+        mutate(
+            detail = sprintf("    Group %s: %d out of %d replicates required (%.3f%% missing allowed)",
+                             group, adjusted_min_reps, n_reps, missing_percent)
+        ) |>
+        dplyr::pull(detail)
+        
+    group_details <- paste(group_detail_strings, collapse = "\n")
+    
+    # Print the message
+    message(paste(basic_msg, "\n\nGroup details:", group_details, sep = "\n"))
+    
     return(config_list)
 }
 
