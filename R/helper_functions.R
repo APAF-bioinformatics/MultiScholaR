@@ -1426,13 +1426,23 @@ copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE, cur
     enrichment_files |>
         purrr::imap(\(file, idx) {
             # Extract contrast and direction from filename
-            file_parts <- basename(file) |>
-                stringr::str_remove("_enrichment_results.tsv") |>
-                stringr::str_split("_") |>
-                unlist()
+            base_name <- basename(file) |>
+                stringr::str_remove("_enrichment_results.tsv")
             
-            contrast <- file_parts[1]
-            direction <- file_parts[2]
+            # Extract direction first (always "up" or "down" before "enrichment")
+            direction <- ifelse(
+                stringr::str_detect(base_name, "_up_enrichment"), 
+                "up", 
+                "down"
+            )
+            
+            # Extract contrast (everything before _up_ or _down_)
+            contrast <- stringr::str_replace(
+                base_name, 
+                "_(up|down)_enrichment.*$", 
+                ""
+            )
+            
             sheet_name <- sprintf("Enrichment_Sheet%d", idx)
             
             # Add to index
@@ -1451,13 +1461,18 @@ copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE, cur
         })
     
     # Write enrichment index sheet
-    openxlsx::writeData(enrichment_wb, "Enrichment_Index", enrichment_index_data)
-    
-    # Apply formatting to enrichment index sheet
-    openxlsx::setColWidths(enrichment_wb, "Enrichment_Index", cols = 1:3, widths = c(15, 30, 15))
-    openxlsx::addStyle(enrichment_wb, "Enrichment_Index",
-                      style = openxlsx::createStyle(textDecoration = "bold"),
-                      rows = 1, cols = 1:3)
+    openxlsx::writeDataTable(enrichment_wb, "Enrichment_Index", 
+        enrichment_index_data,
+        tableStyle = "TableStyleLight9",
+        headerStyle = openxlsx::createStyle(textDecoration = "bold"),
+        withFilter = TRUE
+    )
+
+    # Add an explanatory note at the top of the index sheet
+    openxlsx::writeData(enrichment_wb, "Enrichment_Index", 
+        data.frame(Note = "Contrast represents the comparison (e.g., Group1_minus_Group2). Direction shows up-regulated or down-regulated genes."),
+        startRow = nrow(enrichment_index_data) + 3
+    )
     
     # Before saving, ensure the Publication_tables directory exists
     dir.create(pub_tables_dir, recursive = TRUE, showWarnings = FALSE)

@@ -1195,7 +1195,7 @@ ruv_normalised_results_temp_obj <- ruvIII_C_Varying(
   , ctrl = control_genes_index
 ) 
 
-configList <- updateRuvParameters(
+config_list <- updateRuvParameters(
   config_list
   , best_k
   , control_genes_index
