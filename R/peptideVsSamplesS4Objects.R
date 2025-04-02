@@ -556,7 +556,6 @@ setMethod( f="removePeptidesWithOnlyOneReplicate"
 
              peptide_data <- theObject@peptide_data
              sample_id_column <- theObject@sample_id
-             replicate_group_column <- theObject@technical_replicate_id
              design_matrix <- theObject@design_matrix
 
 

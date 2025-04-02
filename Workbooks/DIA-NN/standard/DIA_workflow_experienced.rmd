@@ -327,7 +327,8 @@ This step removes peptides that appear in only one replicate, focusing the analy
 
 ```{r Filter Peptides on Replicate Number}
 removed_peptides_with_only_one_replicate <- removePeptidesWithOnlyOneReplicate(
-  peptide_keep_samples_with_min_num_peptides
+  peptide_keep_samples_with_min_num_peptides,
+  replicate_group_column = peptide_keep_samples_with_min_num_peptides@technical_replicate_id
 )
 
 removed_peptides_with_only_one_replicate@peptide_data |> 
