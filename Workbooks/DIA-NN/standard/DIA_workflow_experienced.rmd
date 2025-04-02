@@ -428,7 +428,7 @@ This step ensures that protein accessions are standardized and prioritized accor
 ```{r Most Likely Protein Accession Rollup}
 if (is.null(uniprot_search_results)) {
     aa_seq_tbl_final <- aa_seq_tbl_final |>
-        rename(uniprot_acc = database_id)
+        dplyr::rename(uniprot_acc = database_id)
     
     protein_log2_quant_cln <- chooseBestProteinAccession(
         theObject = protein_obj
@@ -1051,15 +1051,17 @@ names(de_analysis_results_list) |>
         , publication_graphs_dir
         , file_prefix = paste0("de_proteins_", contrast_name)
         , plots_format = config_list$deAnalysisParameters$plots_format
-        , args_row_id = "uniprot_acc"
+        , args_row_id = ruv_normalised_for_de_analysis_obj@protein_id_column
         , de_q_val_thresh = 0.05
-        , gene_names_column = "Gene.Names"
+        , gene_names_column = "gene_names"
       )
     }, error = function(e) {
       message(paste("Error processing contrast:", contrast_name))
       message(paste("Error message:", e$message))
     })
   })
+
+
 ```
 
 ## Enrichment Analysis
@@ -1086,6 +1088,8 @@ enrichment_results <- processEnrichments(
    , pathway_dir = pathway_dir # Output directory
    , go_annotations = uniprot_dat_cln # Annotation data
    , exclude_iea = FALSE
+   , protein_id_column = ruv_normalised_for_de_analysis_obj@protein_id_column
+   , contrast_names = (names(de_analysis_results_list))
 )
 ```
 

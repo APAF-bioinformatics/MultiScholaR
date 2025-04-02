@@ -240,8 +240,11 @@ processEnrichments <- function(de_results,
                                q_cutoff = 0.05,
                                pathway_dir,
                                go_annotations = NULL,
-                               exclude_iea = NULL,
-                               protein_id_column = uniprot_acc ) {  # Default to NULL to force explicit choice
+                               exclude_iea = FALSE,
+                               protein_id_column = "Protein.IDs",
+                               contrast_names = NULL) {
+
+  message("--- RUNNING processEnrichments VERSION [Timestamp: ", Sys.time(), "] ---")
 
   # Validate exclude_iea parameter
   if (is.null(exclude_iea)) {
@@ -405,6 +408,72 @@ processEnrichments <- function(de_results,
     }) |>
       purrr::set_names(names(results))
 
+    # Explicitly ensure the names of plot_results match contrast_names_to_use
+    # This guards against issues if names were lost or mismatched during creation
+    if (!identical(names(plot_results), contrast_names)) {
+       message("DEBUG: Mismatch detected or names missing in plot_results. Reassigning names.")
+       # Check if the number of elements still matches before trying to assign names
+       if(length(plot_results) == length(contrast_names)) {
+         names(plot_results) <- contrast_names
+       } else {
+         stop("Critical error: Number of plot results does not match the number of contrast names.")
+       }
+    }
+
+    # Save plots using the desired contrast names for files
+    purrr::iwalk(contrast_names, function(contrast, i) {
+      plots <- plot_results[[contrast]]
+
+      # Double-check if plots object is NULL, which might happen if naming failed
+      if(is.null(plots)) {
+          warning(paste("Could not find plot data for contrast:", contrast, "- Skipping save for this contrast."))
+          return(NULL) # Skip to the next iteration
+      }
+
+      # Simple sanitization (should be redundant now)
+      sanitized_contrast <- gsub("[^A-Za-z0-9_.-]", "_", contrast)
+
+      message(paste("Loop", i, "- Saving plots for contrast:", contrast, " (Sanitized:", sanitized_contrast, ")")) # Debug
+
+      purrr::walk(c("up", "down"), function(direction) {
+        # Check if the plot component exists and is not NULL
+        if (!is.null(plots[[direction]]) && !is.null(plots[[direction]]$interactive)) {
+
+          file_name <- paste0(sanitized_contrast, "_", direction, "_enrichment_plot.html")
+          file_path <- file.path(pathway_dir, file_name)
+
+          message(paste("  Attempting to save:", file_path)) # Debug
+
+          # Ensure the directory exists before saving
+          target_dir_for_file <- dirname(file_path)
+          if (!dir.exists(target_dir_for_file)) {
+             message(paste("  Creating directory:", target_dir_for_file)) # Debug
+             dir.create(target_dir_for_file, recursive = TRUE)
+          }
+
+          tryCatch({
+            htmlwidgets::saveWidget(
+              plots[[direction]]$interactive,
+              file_path,
+              selfcontained = TRUE
+            )
+            message(paste("  Successfully saved:", file_path)) # Debug success
+          }, error = function(e) {
+            # Print more detailed error context
+            warning(paste("  ERROR saving widget for contrast:", contrast,
+                          "direction:", direction,
+                          "path:", file_path,
+                          "- Error message:", e$message))
+            # Optionally print the structure of the specific plot object causing trouble
+            # message("  Structure of problematic plot object:")
+            # print(str(plots[[direction]]$interactive))
+          })
+        } else {
+           message(paste("  Skipping save for direction:", direction, "- Plot component is NULL or not interactive."))
+        }
+      })
+    })
+
     return(enrichment_results)
 
   } else {
@@ -452,14 +521,37 @@ processEnrichments <- function(de_results,
                                       error = function(e) .x))
     )
 
+    # Get the internal long names (only used initially if short names aren't provided or needed for mapping)
+    internal_contrast_names <- names(de_results@de_data)
+
+    # Determine which names to use (Prefer explicitly passed short names)
+    if (is.null(contrast_names)) {
+      warning("Explicit contrast_names not provided, using internal names from de_results@de_data which might be long or contain invalid characters.")
+      contrast_names_to_use <- internal_contrast_names
+    } else {
+      if(length(contrast_names) != length(internal_contrast_names)) {
+        stop("Length of provided 'contrast_names' does not match the number of contrasts in 'de_results@de_data'.")
+      }
+      contrast_names_to_use <- contrast_names # Use the short names
+    }
+    message("DEBUG: Using the following contrast names for processing and output:")
+    print(contrast_names_to_use)
+
+    # Initialize lists
+    results_list_long_names <- list() # Temporary list to hold results with original names
     enrichment_results <- createEnrichmentResults(de_results@contrasts)
 
-    # Process each contrast
-    results <- de_results@de_data |>
-      purrr::map(function(de_data) {
+    # --- Step 1: Process enrichment using internal loop mapped to short names ---
+    message("--- Starting Enrichment Processing Loop ---")
+    results_list_long_names <- purrr::map2(contrast_names_to_use, internal_contrast_names, function(short_name, long_name) {
+        message(paste("Processing contrast:", short_name, "(original:", long_name, ")"))
+
+        de_data <- de_results@de_data[[long_name]] # Access input data using long name
+
         if(is.null(de_data)) {
-          warning("No DE data found for contrast")
-          return(NULL)
+          warning(paste("No DE data found for internal contrast:", long_name))
+          # Return NULL for both up and down to keep list structure aligned
+          return(list(up = NULL, down = NULL))
         }
 
         # Split data into up/down regulated
@@ -479,46 +571,56 @@ processEnrichments <- function(de_results,
           dplyr::pull({{protein_id_column}})
 
         # Background genes
-        background_IDs <- unique(de_data |> dplyr::pull( {{protein_id_column}}) )
+        background_IDs <- unique(de_data |> dplyr::pull({{protein_id_column}}))
 
-        # Process up and down regulated genes
-        list(
-          up = tryCatch({
-            if(length(up_genes) > 0) {
-              clusterProfiler::enricher(
-                gene = up_genes,
-                universe = background_IDs,
-                TERM2GENE = term2gene,
-                TERM2NAME = term2name,
-                pvalueCutoff = q_cutoff,
-                pAdjustMethod = "BH"
-              )
-            } else NULL
-          }, error = function(e) {
-            warning(sprintf("Error processing up-regulated genes: %s", e$message))
-            NULL
-          }),
+        # Perform enrichment for up-regulated genes
+        up_enrich <- tryCatch({
+          if(length(up_genes) > 0) {
+            clusterProfiler::enricher(
+              gene = up_genes,
+              universe = background_IDs,
+              TERM2GENE = term2gene,
+              TERM2NAME = term2name,
+              pvalueCutoff = q_cutoff,
+              pAdjustMethod = "BH"
+            )
+          } else NULL
+        }, error = function(e) {
+          warning(sprintf("Error processing up-regulated genes: %s", e$message))
+          NULL
+        })
 
-          down = tryCatch({
-            if(length(down_genes) > 0) {
-              clusterProfiler::enricher(
-                gene = down_genes,
-                universe = background_IDs,
-                TERM2GENE = term2gene,
-                TERM2NAME = term2name,
-                pvalueCutoff = q_cutoff,
-                pAdjustMethod = "BH"
-              )
-            } else NULL
-          }, error = function(e) {
-            warning(sprintf("Error processing down-regulated genes: %s", e$message))
-            NULL
-          })
-        )
-      })
+        # Perform enrichment for down-regulated genes
+        down_enrich <- tryCatch({
+          if(length(down_genes) > 0) {
+            clusterProfiler::enricher(
+              gene = down_genes,
+              universe = background_IDs,
+              TERM2GENE = term2gene,
+              TERM2NAME = term2name,
+              pvalueCutoff = q_cutoff,
+              pAdjustMethod = "BH"
+            )
+          } else NULL
+        }, error = function(e) {
+          warning(sprintf("Error processing down-regulated genes: %s", e$message))
+          NULL
+        })
 
-    # Store enrichment results
-    enrichment_results@enrichment_data <- results
+        # Return results for this contrast
+        list(up = up_enrich, down = down_enrich)
+    }) |> purrr::set_names(internal_contrast_names)
+    message("--- Finished Enrichment Processing Loop ---")
+
+    # --- Step 2: Assign results to the S4 object with SHORT names ---
+    if(length(results_list_long_names) == length(contrast_names_to_use)) {
+        names(results_list_long_names) <- contrast_names_to_use # Rename the temporary list
+        enrichment_results@enrichment_data <- results_list_long_names # Assign renamed list
+        message("DEBUG: Assigned enrichment data to S4 object with short names.")
+    } else {
+        stop("Mismatch between number of processed results and expected contrast names.")
+    }
+    # Now enrichment_results@enrichment_data uses SHORT names
 
     # Create GO term mappings once (moved outside the plotting function)
     go_term_map <- dplyr::bind_rows(
@@ -550,124 +652,154 @@ processEnrichments <- function(de_results,
         )
       )
 
-    # Process results and generate plots/tables
-    plot_results <- purrr::map(names(results), function(contrast) {
-      # Process both up and down regulation
-      purrr::map(c("up", "down"), function(direction) {
-        tryCatch({
-          result_data <- results[[contrast]][[direction]]
+    # --- Step 3: Generate Plots using SHORT names ---
+    message("--- Starting Plot Generation Loop ---")
+    plot_results_list <- purrr::map(contrast_names_to_use, function(contrast) {
+        message(paste("Generating plots for contrast:", contrast))
+        # Access enrichment data using SHORT name
+        current_enrich_data <- enrichment_results@enrichment_data[[contrast]]
 
-          if(!is.null(result_data) && nrow(result_data@result) > 0) {
-            message(sprintf("Processing %s-regulated genes for contrast %s", direction, contrast))
+        # Process up and down directions
+        direction_results <- purrr::map(c("up", "down"), function(direction) {
+            result_data <- current_enrich_data[[direction]] # Access up/down list
 
-            # Prepare data for plotting and tables
-            plot_data <- result_data@result |>
-              dplyr::left_join(go_category_map, by = c("ID" = "TERM")) |>
-              dplyr::left_join(go_term_map, by = "ID") |>
-              dplyr::mutate(
-                source = dplyr::coalesce(source, "Other"),
-                source = factor(source, levels = c("GO:BP", "GO:CC", "GO:MF", "Other")),
-                neg_log10_q = -log10(qvalue),  # Using qvalue directly from clusterProfiler output
-                gene_count = Count,
-                significant = qvalue < q_cutoff  # Add significance flag based on q_cutoff
-              ) |>
-              dplyr::mutate(
-                term = dplyr::coalesce(term, Description)
-              )
+            if(!is.null(result_data) && nrow(result_data@result) > 0) {
+                message(sprintf("Processing %s-regulated genes for contrast %s", direction, contrast))
 
-            # Save results table
-            readr::write_tsv(
-              plot_data,
-              file.path(pathway_dir,
-                        paste0(contrast, "_", direction, "_enrichment_results.tsv"))
-            )
+                # Prepare data for plotting and tables
+                plot_data <- result_data@result |>
+                  dplyr::left_join(go_category_map, by = c("ID" = "TERM")) |>
+                  dplyr::left_join(go_term_map, by = "ID") |>
+                  dplyr::mutate(
+                    source = dplyr::coalesce(source, "Other"),
+                    source = factor(source, levels = c("GO:BP", "GO:CC", "GO:MF", "Other")),
+                    neg_log10_q = -log10(qvalue),  # Using qvalue directly from clusterProfiler output
+                    gene_count = Count,
+                    significant = qvalue < q_cutoff  # Add significance flag based on q_cutoff
+                  ) |>
+                  dplyr::mutate(
+                    term = dplyr::coalesce(term, Description)
+                  )
 
-            # Generate static plot with q-value threshold line
-            # Update the tooltip to use separate term column
-            static <- ggplot2::ggplot(plot_data,
-                                      ggplot2::aes(x = source,
-                                                   y = neg_log10_q,
-                                                   text = paste0(
-                                                     "Term: ", term, "\n",
-                                                     "ID: ", ID, "\n",
-                                                     "Genes: ", Count, "\n",
-                                                     "Gene Ratio: ", GeneRatio, "\n",
-                                                     "Background Ratio: ", BgRatio, "\n",
-                                                     "Q-value: ", signif(qvalue, 3)
-                                                   ))) +
-              ggplot2::geom_hline(yintercept = -log10(q_cutoff),
-                                  linetype = "dashed",
-                                  color = "darkgrey") +
-              ggplot2::geom_jitter(ggplot2::aes(size = gene_count,
-                                                color = -log10(qvalue)),
-                                   alpha = 0.7,
-                                   width = 0.2) +
-              ggplot2::scale_color_gradient(low = "#FED976",
-                                            high = "#800026",
-                                            name = "-log10(q-value)") +
-              ggplot2::scale_size_continuous(name = "Gene Count",
-                                             range = c(3, 12)) +
-              ggplot2::theme_minimal() +
-              ggplot2::theme(
-                axis.text.x = ggplot2::element_text(size = 10, angle = 0),
-                axis.text.y = ggplot2::element_text(size = 8),
-                plot.title = ggplot2::element_text(size = 12, face = "bold"),
-                legend.title = ggplot2::element_text(size = 10),
-                legend.text = ggplot2::element_text(size = 8)
-              ) +
-              ggplot2::labs(
-                title = paste0(contrast, " ", tools::toTitleCase(direction), "-regulated"),
-                x = "GO Category",
-                y = "-log10(q-value)"
-              )
+                # Save results table
+                readr::write_tsv(
+                  plot_data,
+                  file.path(pathway_dir,
+                            paste0(contrast, "_", direction, "_enrichment_results.tsv"))
+                )
 
-            list(
-              static = static,
-              interactive = plotly::ggplotly(static, tooltip = "text")
-            )
-          } else {
-            message(sprintf("No enrichment results for %s-regulated genes in contrast %s",
-                            direction, contrast))
-            NULL
-          }
-        }, error = function(e) {
-          message(sprintf("Error processing %s-regulated genes for contrast %s: %s",
-                          direction, contrast, e$message))
-          NULL
-        })
-      }) |>
-        purrr::set_names(c("up", "down"))
-    }) |>
-      purrr::set_names(names(results))
+                # Generate static plot with q-value threshold line
+                static <- ggplot2::ggplot(plot_data,
+                                          ggplot2::aes(x = source,
+                                                       y = neg_log10_q,
+                                                       text = paste0(
+                                                         "Term: ", term, "\n",
+                                                         "ID: ", ID, "\n",
+                                                         "Genes: ", Count, "\n",
+                                                         "Gene Ratio: ", GeneRatio, "\n",
+                                                         "Background Ratio: ", BgRatio, "\n",
+                                                         "Q-value: ", signif(qvalue, 3)
+                                                       ))) +
+                  ggplot2::geom_hline(yintercept = -log10(q_cutoff),
+                                      linetype = "dashed",
+                                      color = "darkgrey") +
+                  ggplot2::geom_jitter(ggplot2::aes(size = gene_count,
+                                                    color = -log10(qvalue)),
+                                       alpha = 0.7,
+                                       width = 0.2) +
+                  ggplot2::scale_color_gradient(low = "#FED976",
+                                                high = "#800026",
+                                                name = "-log10(q-value)") +
+                  ggplot2::scale_size_continuous(name = "Gene Count",
+                                                 range = c(3, 12)) +
+                  ggplot2::theme_minimal() +
+                  ggplot2::theme(
+                    axis.text.x = ggplot2::element_text(size = 10, angle = 0),
+                    axis.text.y = ggplot2::element_text(size = 8),
+                    plot.title = ggplot2::element_text(size = 12, face = "bold"),
+                    legend.title = ggplot2::element_text(size = 10),
+                    legend.text = ggplot2::element_text(size = 8)
+                  ) +
+                  ggplot2::labs(
+                    title = paste0(contrast, " ", tools::toTitleCase(direction), "-regulated"),
+                    x = "GO Category",
+                    y = "-log10(q-value)"
+                  )
 
-    # Store plots and save interactive versions
-    enrichment_results@enrichment_plots <- purrr::map(plot_results, function(x) {
-      list(
-        up = if(!is.null(x$up)) x$up$static else NULL,
-        down = if(!is.null(x$down)) x$down$static else NULL
-      )
+                list(
+                  static = static,
+                  interactive = plotly::ggplotly(static, tooltip = "text")
+                )
+            } else {
+                NULL # Return NULL if no results
+            }
+        }) |> purrr::set_names(c("up", "down"))
+        
+        # Return plot components for this contrast
+        direction_results
+    }) |> purrr::set_names(contrast_names_to_use)
+    message("--- Finished Plot Generation Loop ---")
+
+    # --- Step 4: Store plots in S4 object using SHORT names ---
+    enrichment_results@enrichment_plots <- purrr::map(plot_results_list, function(x) {
+      list(up = x$up$static, down = x$down$static) # Handle NULLs gracefully if needed
     })
-
-    enrichment_results@enrichment_plotly <- purrr::map(plot_results, function(x) {
-      list(
-        up = if(!is.null(x$up)) x$up$interactive else NULL,
-        down = if(!is.null(x$down)) x$down$interactive else NULL
-      )
+    enrichment_results@enrichment_plotly <- purrr::map(plot_results_list, function(x) {
+      list(up = x$up$interactive, down = x$down$interactive) # Handle NULLs
     })
+    message("DEBUG: Assigned plot data to S4 object slots.")
+    message("DEBUG: Names in enrichment_results@enrichment_plotly:")
+    print(names(enrichment_results@enrichment_plotly))
 
-    # Save interactive plots
-    purrr::walk2(names(results), plot_results, function(contrast, plots) {
-      purrr::walk(c("up", "down"), function(direction) {
-        if(!is.null(plots[[direction]]) && !is.null(plots[[direction]]$interactive)) {
-          htmlwidgets::saveWidget(
-            plots[[direction]]$interactive,
-            file.path(pathway_dir,
-                      paste0(contrast, "_", direction, "_enrichment_plot.html")),
-            selfcontained = TRUE
-          )
+    # --- Step 5: Save interactive plots using SHORT names ---
+    message("--- Starting Final Save Loop ---")
+    purrr::walk(contrast_names_to_use, function(contrast) {
+        # Access plot data using SHORT name (now stored with short names)
+        plots <- enrichment_results@enrichment_plotly[[contrast]]
+
+        if(is.null(plots)) {
+            # This warning should NOT trigger if steps above worked
+            warning(paste("Could not find plot data for contrast:", contrast, "- Skipping save. (This indicates an earlier issue)"))
+            return(NULL)
         }
-      })
+
+        # Sanitize (optional if short names are clean)
+        sanitized_contrast <- gsub("[^A-Za-z0-9_.-]", "_", contrast)
+        message(paste("Saving plots for contrast:", contrast))
+
+        # Process both directions
+        purrr::walk(c("up", "down"), function(direction) {
+            # Check if interactive plot exists
+            if (!is.null(plots[[direction]])) { # Access up/down list
+                interactive_plot <- plots[[direction]] # The actual plotly object
+
+                file_name <- paste0(sanitized_contrast, "_", direction, "_enrichment_plot.html")
+                file_path <- file.path(pathway_dir, file_name)
+                message(paste("  Attempting to save:", file_path))
+
+                # Ensure directory exists
+                target_dir_for_file <- dirname(file_path)
+                if (!dir.exists(target_dir_for_file)) {
+                   dir.create(target_dir_for_file, recursive = TRUE)
+                }
+
+                # Save the widget
+                tryCatch({
+                  htmlwidgets::saveWidget(
+                    interactive_plot, # Pass the plot object directly
+                    file_path,
+                    selfcontained = TRUE
+                  )
+                  message(paste("  Successfully saved:", file_path))
+                }, error = function(e) {
+                  warning(paste("  ERROR saving widget:", file_path, "-", e$message))
+                })
+            } else {
+                message(paste("  Skipping save for direction:", direction, "- Plot component is NULL."))
+            }
+        })
     })
+    message("--- Finished Final Save Loop ---")
 
     return(enrichment_results)
   }
