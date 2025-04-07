@@ -692,7 +692,7 @@ loadDependencies <- function(verbose = TRUE) {
         # Additional packages
         "plotly", "vroom", "gplots", "iheatmapr",
         "UpSetR", "gt", "gprofiler2", "htmltools",
-        "rstudioapi",
+        "rstudioapi", "flextable", "viridis",
         # Git and GitHub related packages
         "git2r", "gh",
         # Bioconductor packages
