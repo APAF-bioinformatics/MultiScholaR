@@ -88,6 +88,8 @@ B --> E[✓ Enhanced Dynamic Report Generation]
 C --> D[Interactive Volcano Plots]
 C --> F[Unsupervised Analysis & Interactive Plots]
 C --> G[Enhanced Enrichment Analysis]
+C --> J[LFQ & TMT Support]
+C --> K[FragPipe & MaxQuant Integration]
 G --> H[Greater Control Over Enrichment Platforms]
 G --> I[Improved Data Visualisation for Enrichments]
 style A fill:#D3D3D3,color:#000000
@@ -99,15 +101,6 @@ style F fill:#FFB6C1,color:#000000
 style G fill:#FFB6C1,color:#000000
 style H fill:#FFB6C1,color:#000000
 style I fill:#FFB6C1,color:#000000
+style J fill:#FFB6C1,color:#000000
+style K fill:#FFB6C1,color:#000000
 ```
-
-## Need Help?
-
-If you encounter any issues:
-1. Check the [Issues](https://github.com/APAF-bioinformatics/ProteomeScholaR/issues) page
-2. Contact the contributors
-3. Submit a new issue
-
-## We very much encourage you to report any and all bugs using the issues page - we are commited to making this tool as robust as possible and we would love your help to do this :)
-
-Enjoy! 🧬🔬
