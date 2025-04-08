@@ -1,4 +1,4 @@
-# ProteomeScholaR v0.8
+# ProteomeScholaR v0.9
 
 ## Contributors 
 * Ignatius Pang (ignatius.pang at mq.edu.au) 
