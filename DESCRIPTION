@@ -1,6 +1,6 @@
 Package: ProteomeScholaR
 Title: Tools for Proteomics and Phosphoproteomics analysis.
-Version: 0.80
+Version: 0.90
 Authors@R: c(
     person(given = "Ignatius",
            family = "Pang",

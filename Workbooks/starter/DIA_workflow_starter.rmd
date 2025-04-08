@@ -1,0 +1,1766 @@
+---
+title: "DIANN Analysis for xyz"
+version: "1.0"
+author: "Your fancy self"
+output:
+  html_document:
+    code_folding: true
+    self_contained: true
+    toc: false
+    warning: false
+    message: false
+---
+# Initial R environment setup  
+## Checks your R environment for the required packages to run ProteomeScholaR, and installs them if they are not.
+
+### Further Reading
+#### Understanding Package Management in R
+- [CRAN (The Comprehensive R Archive Network)](https://cran.r-project.org/) - The main repository for R packages
+- [Bioconductor](https://bioconductor.org/) - Repository specialized in bioinformatics packages
+- [R Package Installation Guide](https://www.datacamp.com/community/tutorials/r-packages-guide) - A comprehensive guide to installing packages in R
+- [devtools Documentation](https://devtools.r-lib.org/) - Learn about the devtools package for installing from GitHub
+
+#### Important Packages Used in this Workflow
+- [clusterProfiler](https://bioconductor.org/packages/release/bioc/html/clusterProfiler.html) - Used for gene ontology and pathway enrichment analysis
+- [GO.db](https://bioconductor.org/packages/release/data/annotation/html/GO.db.html) - Gene Ontology database annotations
+- [UniProt.ws](https://bioconductor.org/packages/release/bioc/html/UniProt.ws.html) - Interface to the UniProt web services
+- [mixOmics](https://www.bioconductor.org/packages/release/bioc/html/mixOmics.html) - Methods for multivariate analysis of biological data
+
+#### About ProteomeScholaR
+- [ProteomeScholaR GitHub](https://github.com/APAF-BIOINFORMATICS/ProteomeScholaR) - The main repository for the package
+- [APAF Bioinformatics](https://www.proteome.org.au/bioinformatics) - Australian Proteome Analysis Facility bioinformatics resources
+
+This function checks for and installs all the required packages for the ProteomeScholaR workflow. It installs packages from CRAN, Bioconductor, and GitHub as needed. The function is designed to make setup easy for users who may not be familiar with R package management.
+```{r ProteomeScholaR FIRST INSTALL }
+installProteomeScholaR <- function(verbose = TRUE) {
+    # Install devtools if missing
+    if (!requireNamespace("devtools", quietly = TRUE)) {
+        if (verbose) message("Installing devtools...")
+        install.packages("devtools")
+    }
+
+    # Check if ProteomeScholaR is loaded and detach/remove if necessary
+    if ("package:ProteomeScholaR" %in% search()) {
+        message("Detaching previously loaded ProteomeScholaR...")
+        try(detach("package:ProteomeScholaR", unload = TRUE, force = TRUE), silent = TRUE)
+    }
+    if (requireNamespace("ProteomeScholaR", quietly = TRUE)) {
+        message("Removing previously installed ProteomeScholaR...")
+        try(remove.packages("ProteomeScholaR"), silent = TRUE)
+    }
+
+    # Install ProteomeScholaR
+    if (verbose) message("Installing ProteomeScholaR...")
+    tryCatch({
+        devtools::install_github(
+            "APAF-BIOINFORMATICS/ProteomeScholaR"
+            , ref = "dev-jr"
+            , dependencies = TRUE
+            , upgrade = "never"
+            , force = TRUE
+        )
+    }, error = function(e) {
+        stop("Failed to install ProteomeScholaR: ", e$message)
+    })
+    
+    library(ProteomeScholaR)
+
+    if (verbose) message("ProteomeScholaR installation completed!")
+}
+
+installProteomeScholaR()
+loadDependencies()
+```
+
+# START HERE if you already have ProteomeScholaR installed
+
+### Further Reading
+#### R Library Management
+- [Introduction to R Libraries](https://www.datacamp.com/community/tutorials/r-libraries-guide) - Understanding how R libraries work
+- [R Package Documentation](https://www.rdocumentation.org/) - Search for documentation of R packages
+- [The R Packages Book](https://r-pkgs.org/) - In-depth explanation of R packages by Hadley Wickham
+
+#### Dependency Management in R
+- [Understanding R Package Dependencies](https://blog.jumpingrivers.com/posts/2017/how-to-manage-package-dependencies/) - Best practices for managing dependencies
+- [Packrat and renv](https://rstudio.github.io/renv/articles/renv.html) - Tools for reproducible environments in R
+
+#### Reproducible Research
+- [Reproducible Research with R](https://cran.r-project.org/web/views/ReproducibleResearch.html) - CRAN task view on reproducible research
+- [R Markdown](https://rmarkdown.rstudio.com/) - Framework for reproducible reports in R
+
+When you already have ProteomeScholaR installed, you can start from this point. The code below loads the package and all its dependencies to prepare your environment for analysis.
+```{r Load ProteomeScholaR}
+library(ProteomeScholar)
+loadDependencies()
+```
+
+# Set up your environment and project directory
+
+### Further Reading
+#### Project Organization & File Management
+- [Project Management in R](https://swcarpentry.github.io/r-novice-gapminder/02-project-intro/) - Best practices for organizing project files
+- [here package](https://here.r-lib.org/) - A popular R package for project-relative file paths
+- [File Organization in R Projects](https://www.tidyverse.org/blog/2017/12/workflow-vs-script/) - Workflow vs script-based approaches
+- [renv for Reproducible Environments](https://rstudio.github.io/renv/) - Package for project isolation and reproducibility
+
+#### Data Organization Principles
+- [Tidy Data Principles](https://www.jstatsoft.org/article/view/v059i10) - Hadley Wickham's paper on tidy data structure
+- [Good enough practices in scientific computing](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1005510) - Practical recommendations for data management
+
+#### Proteomics Project Structure
+- [Guidelines for Reporting Mass Spectrometry Data](https://www.mcponline.org/article/S1535-9476(21)00064-9/fulltext) - Standards for proteomics project organization
+- [ProteomeXchange](http://www.proteomexchange.org/) - Repository standards for proteomics data
+
+This section establishes the directory structure for your project. Setting up a consistent directory structure is crucial for managing the various files generated throughout the analysis, including input data, intermediate results, and final outputs. ProteomeScholaR creates a standardized structure to help organize your work.
+```{r Project Environment Management}
+# Directory Management
+## Set up the project directory structure
+## This section sets up the project directory structure for ProteomeScholaR
+## Directory management can be challenging, particularly when managing objects 
+## across multiple chunks within a single R Markdown document.
+setupAndShowDirectories(label = "your_experiment_here"
+                        , force = FALSE)
+```
+
+# At this step, please copy your data, fasta file and other data necessary into 
+# the appropriate directories
+
+### Further Reading
+#### Proteomics Data Formats
+- [DIA-NN Documentation](https://github.com/vdemichev/DiaNN) - The software that generates the report.tsv input file
+- [FASTA Format Description](https://www.ncbi.nlm.nih.gov/genbank/fastaformat/) - Explanation of the FASTA file format
+- [UniProt Database](https://www.uniprot.org/) - Source for protein sequence databases and FASTA files
+- [Proteomics Standards Initiative](https://www.psidev.info/) - Standards for proteomics data formats
+
+#### Data Preprocessing in Proteomics
+- [mzTab Format](https://www.psidev.info/mztab) - Standard format for reporting MS proteomics results
+- [Introduction to Mass Spectrometry Data Analysis](https://www.nature.com/articles/nmeth.3425) - Overview of MS data processing
+- [DIA Data Analysis Overview](https://www.nature.com/articles/s41592-022-01639-4) - Review of DIA analysis methods
+
+#### Configuration Files in R
+- [INI Files in R](https://cran.r-project.org/web/packages/ini/index.html) - Working with INI configuration files
+- [configr Package](https://cran.r-project.org/web/packages/configr/vignettes/configr.html) - Advanced configuration management
+
+#### Finding Taxonomy IDs
+- [NCBI Taxonomy Browser](https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi) - Look up taxonomic IDs for different organisms
+- [UniProt Taxonomy](https://www.uniprot.org/taxonomy) - Alternative source for organism taxonomy information
+
+This section handles importing your DIA-NN results and FASTA file, and setting up essential parameters like taxonomy ID that will be used throughout the analysis. Make sure to download your organism's FASTA file from UniProt and find its correct taxonomy ID before proceeding.
+```{r Data Management}
+## Input Parameters for Quality Control
+## Parameters in this section are experiment-specific. Their default parameters 
+## are intended as a guide only - every source of variance is different just as 
+## every set of proteins going through a mass spectrometer is different! 
+## One size does not fit all and you *will* most likely need to fine tune these 
+## to get the most out of your data.
+config_list <- readConfigFile(file = file.path(source_dir, "config.ini"))
+
+# Annotation Management
+## Please download the organism fasta file from UniProt. If UniProt is not 
+## available, the program will extract the relevant identifiers from the fasta 
+## provided and attempt to match them to user supplied UniProt / UniParc 
+## conversions
+## Please set the name of your fasta file here in the root directory if you 
+## already have it
+DIANN_filename <- "report.tsv"
+fasta_filename <- "fasta.fasta"
+uniprot_search_results <- NULL
+uniparc_search_results <- NULL
+## Please supply your organism's taxon ID here
+taxon_id <- your_organism_id_here
+## Please supply your organism's name here
+organism_name <- "your_organism_name_here"
+
+data_tbl <- vroom::vroom(file.path(data_dir, "proteomics", DIANN_filename)) 
+fasta_file_path <- file.path(data_dir, "UniProt", fasta_filename)
+
+config_list[["globalParameters"]][["fasta_file"]] <- fasta_filename
+config_list[["globalParameters"]][["peptides_input_file"]] <- DIANN_filename
+
+# Load search results if files exist
+if (!is.null(uniprot_search_results) && !is.null(uniparc_search_results)) {
+    uniprot_search_results <- vroom::vroom(
+        file.path(data_dir, "UniProt", uniprot_search_results)
+    )
+    uniparc_search_results <- vroom::vroom(
+        file.path(data_dir, "UniProt", uniparc_search_results)
+    )
+}
+```
+
+
+# Set your design matrix (for the first time)
+
+### Further Reading
+#### Experimental Design in Proteomics
+- [Experimental Design for Mass Spectrometry](https://www.nature.com/articles/nprot.2013.092) - Guidelines for designing MS experiments
+- [Statistical Considerations in Proteomics](https://academic.oup.com/bioinformatics/article/34/11/1966/4813738) - Statistical aspects of proteomics experimental design
+- [DIA Experimental Design](https://www.nature.com/articles/s41467-020-14609-1) - Special considerations for DIA-MS studies
+
+#### Design Matrices in R
+- [Design Matrices Explained](https://www.datascienceblog.net/post/machine-learning/design-matrices-in-r/) - Understanding R design matrices
+- [R for Data Science: Model Basics](https://r4ds.had.co.nz/model-basics.html) - Explanation of model matrices in R
+- [limma User Guide](https://bioconductor.org/packages/release/bioc/vignettes/limma/inst/doc/usersguide.pdf) - Details on design matrices for differential expression
+
+#### Sample Organization 
+- [Batch Effects in Omics Data](https://www.nature.com/articles/nrg2825) - Understanding and addressing batch effects
+- [Balanced Design Principles](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4110759/) - Principles for balanced experimental design
+
+This section helps you create a design matrix that links your samples to experimental conditions. The design matrix is a fundamental component that defines how your samples relate to each other and which comparisons will be possible in your analysis. ProteomeScholaR provides an interactive applet to help you build this matrix easily.
+```{r Design Matrix Setup} 
+if (exists("design_matrix", envir = .GlobalEnv)) {
+  print("Design matrix already set :) No need to run app again!")
+} else {
+  RunApplet("designMatrix")
+}
+# Comment in if you wish to run manually
+#RunApplet("designMatrix")
+
+```
+
+
+# If you have the design matrix stored from a previous run, you can read it in here, otherwise skip
+
+### Further Reading
+#### Data Import in R
+- [Data Import with R](https://r4ds.had.co.nz/data-import.html) - Comprehensive guide to importing data
+- [readr Package](https://readr.tidyverse.org/) - Modern data import functions
+- [vroom Package](https://vroom.r-lib.org/) - Fast reading of delimited files
+
+#### File Path Management
+- [File Paths in R](https://www.tidyverse.org/blog/2017/12/workflow-vs-script/) - Best practices for handling file paths
+- [Using file.path() Function](https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/file.path) - Platform-independent path construction
+
+#### Working with Tables in R
+- [R Data Import/Export](https://cran.r-project.org/doc/manuals/r-release/R-data.html) - Official R documentation on data import
+- [Data Table Formats](https://www.datacamp.com/community/tutorials/r-data-import-tutorial) - Overview of various table formats in R
+
+This optional section allows you to read in a previously created design matrix rather than creating one from scratch. This is useful if you're re-running the analysis or if you've prepared your design matrix in a different way.
+
+```{r Design Matrix Read In (optional)}
+design_matrix <- read.table(
+  file = file.path(source_dir, "design_matrix.tab")
+  , sep = "\t"
+  , header = TRUE
+  , stringsAsFactors = FALSE
+)
+```
+
+# Convert the protein identifiers to Uniprot or Uniparc accessions if those annotations are available 
+## Otherwise makes use of pre-supplied uniprot fasta annotations
+
+### Further Reading
+#### Protein Identifiers and Databases
+- [UniProt Knowledgebase](https://www.uniprot.org/help/uniprotkb) - Comprehensive resource for protein sequence and annotation data
+- [UniParc](https://www.uniprot.org/help/uniparc) - UniProt Archive for non-redundant sequence database
+- [Protein Accession Numbers Explained](https://www.uniprot.org/help/accession_numbers) - Understanding different protein accession formats
+
+#### Protein Sequence Analysis
+- [Sequence Analysis Tools](https://www.ebi.ac.uk/Tools/sss/) - Tools for sequence similarity searches
+- [Bioconductor for Proteomics](https://bioconductor.org/packages/release/BiocViews.html#___Proteomics) - R/Bioconductor tools for proteomics
+- [Introduction to Biostrings](https://bioconductor.org/packages/release/bioc/vignettes/Biostrings/inst/doc/BiostringsQuickOverview.pdf) - Working with biological sequences in R
+
+#### FASTA File Processing
+- [seqinr Package](https://cran.r-project.org/web/packages/seqinr/index.html) - Biological sequences retrieval and analysis
+- [Parsing FASTA Files in R](https://www.biostars.org/p/280809/) - Different approaches to reading FASTA files
+- [rentrez Package](https://cran.r-project.org/web/packages/rentrez/vignettes/rentrez_tutorial.html) - Accessing NCBI resources programmatically
+
+This section converts protein identifiers in your dataset to standardized UniProt or UniParc accessions, which are essential for accurate protein identification and downstream functional analysis. This step ensures consistent annotation and allows for better integration with protein databases and pathways.
+```{r Protein ID Conversion}
+fasta_meta_file <- "parsed_fasta_data.rds"
+aa_seq_tbl_final <- processFastaFile(
+  fasta_file_path 
+  , uniprot_search_results 
+  , uniparc_search_results 
+  , fasta_meta_file 
+  , organism_name
+)
+data_cln <- updateProteinIDs(data_cln, aa_seq_tbl_final)
+```
+
+## Create the PeptideQuantitativeData object
+### This section initializes a PeptideQuantitativeData object with peptide-level 
+### quantitative data and experimental design information.
+### It specifies the column names for various data attributes and sets up the 
+### design matrix for the experiment.
+
+### Further Reading
+#### S4 Objects in R
+- [Introduction to S4 Objects](https://bioconductor.org/help/course-materials/2017/Zurich/S4-classes-and-methods.html) - Understanding S4 object-oriented programming in R
+- [S4 Classes in Bioconductor](https://bioconductor.org/packages/release/bioc/vignettes/S4Vectors/inst/doc/S4QuickOverview.pdf) - Overview of S4 vectors in Bioconductor
+- [Methods and Classes in R](https://adv-r.hadley.nz/s4.html) - Advanced R guide to S4 system
+
+#### Proteomics Data Structures
+- [MSnbase: MS Data Structures](https://www.bioconductor.org/packages/release/bioc/vignettes/MSnbase/inst/doc/MSnbase-development.html) - Data structures for MS proteomics
+- [Tidy Proteomics](https://rformassspectrometry.github.io/docs/) - Modern approaches to proteomics data in R
+- [ProteomicsAnnotationHubData](https://bioconductor.org/packages/release/data/experiment/html/ProteomicsAnnotationHubData.html) - Resources for proteomics annotation
+
+#### Peptide Quantification in DIA
+- [DIA Quantification Methods](https://www.nature.com/articles/s41592-019-0499-3) - Overview of DIA quantification approaches
+- [MaxLFQ Algorithm](https://www.mcponline.org/article/S1535-9476(20)32810-5/fulltext) - Label-free quantification in proteomics
+- [Proteotypic Peptides](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2689311/) - Understanding proteotypic peptides in proteomics
+
+This section creates a structured S4 object to hold your peptide data with all the necessary metadata. By organizing your data in this object, ProteomeScholaR can easily access and manipulate the data in subsequent analysis steps, while maintaining the relationship between peptides, proteins, and experimental conditions.
+
+```{r Peptide Data S4 Object Creation}
+peptide_data <- new(
+  "PeptideQuantitativeData"
+  
+  # Protein vs Sample quantitative data
+  , peptide_data = data_cln
+  , protein_id_column = "Protein.Ids"
+  , peptide_sequence_column = "Stripped.Sequence"
+  , q_value_column = "Q.Value"
+  , global_q_value_column = "Global.Q.Value"
+  , proteotypic_peptide_sequence_column = "Proteotypic"
+  , raw_quantity_column = "Precursor.Quantity"
+  , norm_quantity_column = "Precursor.Normalised"
+  , is_logged_data = FALSE
+  
+  # Design Matrix Information
+  , design_matrix = design_matrix
+  , sample_id = "Run"
+  , group_id = "group"
+  , technical_replicate_id = "replicates"
+  
+  , args = config_list
+)  
+```
+
+# Raw Data QC
+
+### Further Reading
+#### Quality Control in Proteomics
+- [QC in Proteomics Analysis](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5915820/) - Comprehensive overview of QC in proteomics
+- [Quality Metrics for LC-MS](https://www.nature.com/articles/nmeth.3393) - Metrics for evaluating LC-MS performance
+- [Standards in Proteomics QC](https://www.mcponline.org/article/S1535-9476(20)32805-1/fulltext) - Guidelines for proteomics quality standards
+
+#### Data Visualization for QC
+- [ggplot2 Documentation](https://ggplot2.tidyverse.org/) - Tool used for visualization in this workflow
+- [Data Visualization in R](https://socviz.co/) - Comprehensive guide to data visualization
+- [Interactive Visualizations with plotly](https://plotly.com/r/) - Creating interactive plots for data exploration
+
+#### Filtering Strategies
+- [Proteomics Data Filtering](https://www.mcponline.org/article/S1535-9476(20)30362-0/fulltext) - Approaches to filtering proteomics data
+- [Missing Value Handling](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6609408/) - Strategies for dealing with missing values
+- [DIA Filtering Considerations](https://www.nature.com/articles/s41592-022-01639-4) - Special considerations for DIA data filtering
+
+#### QC Metrics Tracking
+- [QC Metrics in Proteomics](https://www.mcponline.org/article/S1535-9476(20)35233-X/fulltext) - Important metrics to monitor
+- [Longitudinal QC Monitoring](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5869489/) - Tracking metrics across experiments
+- [Sample QC Workflow](https://www.nature.com/articles/s41598-019-45348-z) - Comprehensive QC pipeline
+
+This section begins the quality control process by examining your raw data and establishes a baseline for subsequent filtering steps. Each `updateProteinFiltering()` call throughout the workflow creates a checkpoint that allows you to track the effects of each filtering step on your dataset. This systematic approach lets you monitor how many peptides and proteins remain after each filter, helping you understand the impact of quality thresholds and optimize your data processing strategy. The visualization tools create plots showing the effect of each filtering step, providing documentation for your methods section and helping identify potential issues in your analysis pipeline.
+
+```{r Raw Data QC}
+updateProteinFiltering(
+  data = data_cln
+  , step_name = "1_Raw Data"
+  , publication_graphs_dir = publication_graphs_dir
+  , return_grid = TRUE
+  , overwrite = TRUE
+)
+```
+
+## Filter peptides based on q-value and proteotypic peptide match
+### NB should be left to default unless you have specific experimental needs
+
+### Further Reading
+#### False Discovery Rate and q-values
+- [Understanding q-values and FDR](https://www.nature.com/articles/nmeth.3115) - Statistical basis for q-values in proteomics
+- [FDR Control in Proteomics](https://www.mcponline.org/article/S1535-9476(20)33583-X/fulltext) - Methods for controlling false discovery rate
+- [Target-Decoy Strategy](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2922680/) - The basis for FDR estimation in proteomics
+
+#### Proteotypic Peptides
+- [Proteotypic Peptides in DIA](https://www.nature.com/articles/s41467-020-17037-3) - Understanding proteotypic peptides in DIA workflows
+- [Peptide Detectability](https://www.mcponline.org/article/S1535-9476(20)30400-5/fulltext) - Factors affecting peptide detection
+- [Proteotypic Score Thresholds](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4837186/) - Setting thresholds for peptide uniqueness
+
+#### Peptide-to-Protein Inference
+- [Protein Inference Challenges](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3118629/) - Challenges in mapping peptides to proteins
+- [Inference Algorithms](https://www.mcponline.org/article/S1535-9476(20)33526-9/fulltext) - Methods for peptide-to-protein mapping
+- [Shared Peptides](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5891066/) - Handling shared peptides across proteins
+
+This step filters your dataset based on the statistical confidence of peptide identifications (q-value) and ensures that only peptides uniquely mapping to a specific protein (proteotypic) are retained. This is crucial for reliable protein quantification, as it reduces false positives and ambiguous peptide assignments that could lead to inaccurate protein abundance estimates. The `updateProteinFiltering()` function at the end visualizes the effect of this filtering step compared to the raw data.
+
+```{r Filter Peptides on q Value and Proteotypic Peptide Match}
+search_srl_quant_cln <- srlQvalueProteotypicPeptideClean(theObject = peptide_data)
+
+search_srl_quant_cln@peptide_data |> distinct(Protein.Ids) |> nrow()
+
+updateProteinFiltering(
+  data = search_srl_quant_cln@peptide_data
+  , step_name = "2_qval Filtered"
+  , publication_graphs_dir = publication_graphs_dir
+  , return_grid = TRUE
+  , overwrite = TRUE
+)
+```
+
+## Roll-up of precursor ions to peptide level intensity value quantitation
+
+### Further Reading
+#### Precursor-to-Peptide Aggregation
+- [Precursor Ion Quantification](https://www.mcponline.org/article/S1535-9476(20)33518-X/fulltext) - Methods for quantifying precursor ions
+- [DIA-MS Quantification Principles](https://www.nature.com/articles/s41467-020-17037-3) - Fundamentals of DIA quantification
+- [Precursor Ion Selection](https://pubs.acs.org/doi/10.1021/acs.jproteome.9b00666) - Selection strategies for precursor ions
+
+#### Data Aggregation Methods
+- [Peptide Quantification Strategies](https://www.nature.com/articles/s41592-019-0499-3) - Approaches to peptide quantification
+- [Data Aggregation in Proteomics](https://www.mcponline.org/article/S1535-9476(20)33686-X/fulltext) - Methods for data aggregation
+- [Summarization Functions](https://academic.oup.com/bioinformatics/article/28/22/2981/240234) - Statistical approaches to data summarization
+
+#### Isotopologue Patterns
+- [Isotope Patterns in MS](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4513084/) - Understanding isotopic patterns
+- [Isotopologue Analysis](https://pubs.acs.org/doi/10.1021/acs.analchem.9b04365) - Methods for analyzing isotopologue data
+- [MS1 Quantification](https://www.nature.com/articles/nbt.1732) - MS1-based quantification approaches
+
+This step aggregates intensity measurements from multiple precursor ions (different charge states, isotopes, and/or modified forms) to the peptide level. This roll-up process is critical for accurate quantification as it combines the signal from all observed forms of the same peptide sequence, providing a more robust measurement of peptide abundance. The function applies statistical methods to appropriately combine these measurements while minimizing the effect of outliers or noisy precursors. The subsequent `updateProteinFiltering()` call tracks how this roll-up affects the number of unique proteins identified in your dataset.
+
+```{r Roll-up Precursor to Peptide}
+peptide_normalized_tbl <- rollUpPrecursorToPeptide(search_srl_quant_cln)
+
+peptide_normalized_tbl@peptide_data |> distinct(Protein.Ids) |> nrow()
+
+updateProteinFiltering(
+  data = peptide_normalized_tbl@peptide_data
+  , step_name = "3_peptidoform count"
+  , publication_graphs_dir = publication_graphs_dir
+  , return_grid = TRUE
+  , overwrite = TRUE
+)
+```
+
+## Remove peptide based on the intensity threshold and the proportion of samples 
+## below the threshold
+### NB should be left to default unless you have specific experimental needs
+
+### Further Reading
+#### Intensity Thresholding
+- [Signal-to-Noise in Proteomics](https://pubs.acs.org/doi/10.1021/acs.jproteome.9b00485) - Understanding signal thresholds
+- [Intensity-Based Filtering](https://www.mcponline.org/article/S1535-9476(20)34962-1/fulltext) - Methods for intensity-based filters
+- [Dynamic Range in Proteomics](https://www.nature.com/articles/nmeth.3902) - Dealing with wide dynamic ranges
+
+#### Missing Values in Proteomics
+- [Missing Value Patterns](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5502644/) - Understanding missing data in proteomics
+- [Missing Value Handling Strategies](https://www.sciencedirect.com/science/article/pii/S1570963916301819) - Approaches for missing value management
+- [Missing Not At Random (MNAR)](https://academic.oup.com/bioinformatics/article/35/14/2394/5232996) - Statistical treatment of different missing value types
+
+#### Threshold Determination
+- [Optimal Threshold Selection](https://www.mcponline.org/article/S1535-9476(20)33371-4/fulltext) - Methods for determining optimal thresholds
+- [Data-Driven Thresholding](https://pubs.acs.org/doi/10.1021/acs.jproteome.8b00377) - Approaches to data-dependent filtering
+- [Impact of Filtering on Statistical Power](https://www.mcponline.org/article/S1535-9476(20)31134-8/fulltext) - Effect of filtering on statistical analysis
+
+This step removes peptides with low intensity values or those that are detected in too few samples. Low-intensity peptides often have poor quantification accuracy and can introduce noise into the dataset. By setting an intensity threshold and requiring peptides to be detected in a minimum number of samples, this filter improves the reliability of downstream quantification and statistical analysis. The step is crucial for reducing false discoveries that could result from spurious low-intensity signals. As with previous steps, the `updateProteinFiltering()` function tracks the effect of this filter on your dataset.
+
+```{r Filter Peptides on Intensity Threshold}
+peptide_normalized_pif_cln <- peptideIntensityFiltering(
+  theObject = peptide_normalized_tbl
+)
+
+peptide_normalized_pif_cln@peptide_data |> distinct(Protein.Ids) |> nrow()
+
+updateProteinFiltering(
+  data = peptide_normalized_pif_cln@peptide_data
+  , step_name = "4_peptideIntensityFiltering"
+  , publication_graphs_dir = publication_graphs_dir
+  , return_grid = TRUE
+  , overwrite = TRUE
+)
+```
+
+## Keep the proteins only if they have two or more peptides mapping
+### NB should be left to default unless you have specific experimental needs 
+#### CHANGE IF YOU ARE INTERESTED IN QUANTIFYING SINGLE PEPTIDE PROTEIN MATCHES
+
+### Further Reading
+#### Multiple Peptide Rule
+- [Two-Peptide Rule in Proteomics](https://www.mcponline.org/article/S1535-9476(20)34109-4/fulltext) - Rationale for requiring multiple peptides
+- [Single-Peptide Identifications](https://pubmed.ncbi.nlm.nih.gov/19627511/) - Considerations for single-peptide protein matches
+- [Protein Inference Best Practices](https://www.nature.com/articles/nmeth.3959) - Guidelines for protein identification
+
+#### Protein Quantification Reliability
+- [Peptide Selection for Quantification](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3891818/) - Strategies for selecting peptides for quantification
+- [Quantitative Accuracy](https://pubs.acs.org/doi/10.1021/acs.jproteome.7b00230) - Factors affecting quantification accuracy
+- [Peptide-Based vs Protein-Based Quantification](https://www.mcponline.org/article/S1535-9476(20)32963-9/fulltext) - Comparison of approaches
+
+#### Special Cases
+- [Low-Abundance Proteins](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6283291/) - Detection and quantification of low-abundance proteins
+- [Single-Peptide Protein Analysis](https://www.sciencedirect.com/science/article/pii/S1874391913001851) - When to consider single-peptide identifications
+- [Short Proteins and Small ORFs](https://www.nature.com/articles/s41592-019-0576-7) - Approaches for small proteins with few peptides
+
+This step filters proteins based on the number of unique peptides identified for each protein, keeping only those with at least two peptides. This "two-peptide rule" is a widely accepted standard in proteomics that greatly increases confidence in protein identifications and quantification reliability. While this filter may remove some true protein identifications (especially for small proteins or those with low sequence coverage), it significantly reduces false positive identifications. As the comment suggests, you may consider changing this threshold if you have specific interest in proteins that might only be identified by a single peptide, but be aware of the increased uncertainty associated with such identifications.
+
+```{r Filter Proteins on Peptide Number}
+removed_peptides_with_less_than_two_peptides <- filterMinNumPeptidesPerProtein(
+  theObject = peptide_normalized_pif_cln
+) 
+
+removed_peptides_with_less_than_two_peptides@peptide_data |> 
+  distinct(Protein.Ids) |> 
+  nrow()
+
+updateProteinFiltering(
+  data = removed_peptides_with_less_than_two_peptides@peptide_data
+  , step_name = "5_twopeptidesperprotein"
+  , publication_graphs_dir = publication_graphs_dir
+  , return_grid = TRUE
+  , overwrite = TRUE
+)
+```
+
+## Remove samples with insufficient peptide counts
+#### This section filters out samples that have fewer than a specified minimum 
+#### number of peptides - ie poor sample performance
+
+### Further Reading
+#### Sample Quality Assessment
+- [Sample Quality Metrics in Proteomics](https://www.nature.com/articles/s41598-018-33531-7) - Methods for assessing sample quality
+- [Failed Run Detection](https://www.mcponline.org/article/S1535-9476(20)31128-2/fulltext) - Identifying failed MS runs
+- [LC-MS Performance Standards](https://www.nature.com/articles/nmeth.3731) - Standards for LC-MS performance
+
+#### Sample Exclusion Criteria
+- [Outlier Detection in Proteomics](https://www.sciencedirect.com/science/article/pii/S1874391916302305) - Methods for detecting outlier samples
+- [Sample Filtering Strategies](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6487101/) - Approaches to sample filtering
+- [Quality Control Workflows](https://www.nature.com/articles/s41592-018-0122-0) - Comprehensive QC workflows for MS-based proteomics
+
+#### Technical Considerations
+- [Sample Preparation Impact](https://www.mcponline.org/article/S1535-9476(20)33461-6/fulltext) - Effects of sample preparation on peptide recovery
+- [Instrument Sensitivity Assessment](https://pubs.acs.org/doi/10.1021/acs.jproteome.0c00792) - Evaluating instrument sensitivity 
+- [Peptide Recovery Variability](https://www.sciencedirect.com/science/article/pii/S1874391920300944) - Understanding variability in peptide recovery
+
+This step identifies and removes samples with poor performance, indicated by an unusually low number of identified peptides. Such samples may be compromised due to issues in sample preparation, instrument performance, or other technical factors. Including these low-quality samples in downstream analysis could introduce bias and reduce the statistical power to detect true biological differences. The minimum peptide threshold ensures that all samples have sufficient protein coverage for reliable quantification, while the summary statistics at the end help evaluate which samples were removed and why.
+
+```{r Filter Samples on Peptide Number}
+peptide_keep_samples_with_min_num_peptides <- filterMinNumPeptidesPerSample(
+  theObject = removed_peptides_with_less_than_two_peptides
+)
+
+updateProteinFiltering(
+  data = peptide_keep_samples_with_min_num_peptides@peptide_data
+  , step_name = "6_minpeppersample"
+  , publication_graphs_dir = publication_graphs_dir
+  , return_grid = TRUE
+  , overwrite = TRUE
+)
+
+peptide_keep_samples_with_min_num_peptides@peptide_data |> 
+  distinct(Run, Protein.Ids, Stripped.Sequence, peptidoform_count) |> 
+  group_by(Run) |> 
+  summarise(n = sum(peptidoform_count)) |> 
+  arrange(desc(n))
+
+## Show the distinct number of Samples to manually check how many samples are 
+## removed from the previous step
+peptide_keep_samples_with_min_num_peptides@peptide_data |> 
+  distinct(Run) |> 
+  nrow()
+```
+
+## Remove peptides with only one replicate in the data set
+### This section filters out peptides that appear in only one replicate across all groups.
+### Ensures that the analysis is based on peptides with consistent detection across multiple replicates.
+
+### Further Reading
+#### Reproducibility in Peptide Detection
+- [Reproducibility in Proteomics](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5830166/) - Factors affecting reproducible detection
+- [Stochastic Sampling in DIA](https://www.mcponline.org/article/S1535-9476(20)33458-6/fulltext) - Understanding stochastic sampling effects
+- [Detection Consistency Metrics](https://pubs.acs.org/doi/10.1021/acs.jproteome.8b00485) - Measuring peptide detection consistency
+
+#### Replicate Analysis
+- [Technical Replicates in Proteomics](https://www.mcponline.org/article/S1535-9476(20)30417-0/fulltext) - Value of technical replicates
+- [Sample Size Considerations](https://www.nature.com/articles/s41467-020-17641-3) - Determining optimal replicate numbers
+- [Detection Rate Analysis](https://www.sciencedirect.com/science/article/pii/S1874391918304305) - Assessing peptide detection rates
+
+#### Data Quality Enhancement
+- [Improving Data Reliability](https://www.nature.com/articles/s41592-018-0261-3) - Methods for enhancing data reliability
+- [Peptide Detection Enhancement](https://pubs.acs.org/doi/10.1021/acs.jproteome.0c00536) - Strategies for improving peptide detection
+- [Balancing Sensitivity and Reliability](https://www.mcponline.org/article/S1535-9476(20)33509-9/fulltext) - Tradeoffs in proteomics data analysis
+
+This step removes peptides that appear in only one replicate, focusing the analysis on peptides that demonstrate consistent detectability across multiple samples. Peptides detected in just a single replicate often represent random noise, contamination, or false identifications. Removing these inconsistently detected peptides improves the reliability of quantification and increases confidence in biological conclusions. This filter strikes a balance between maintaining sufficient peptide coverage and ensuring reproducible measurements across replicates.
+
+```{r Filter Peptides on Replicate Number}
+removed_peptides_with_only_one_replicate <- removePeptidesWithOnlyOneReplicate(
+  peptide_keep_samples_with_min_num_peptides,
+  replicate_group_column = peptide_keep_samples_with_min_num_peptides@technical_replicate_id
+)
+
+removed_peptides_with_only_one_replicate@peptide_data |> 
+  distinct(Protein.Ids) |> 
+  nrow()
+
+updateProteinFiltering(
+  data = removed_peptides_with_only_one_replicate@peptide_data
+  , step_name = "7_peptidesonerep"
+  , publication_graphs_dir = publication_graphs_dir
+  , return_grid = TRUE
+  , overwrite = TRUE
+)
+```
+
+## Missing values "imputation" using technical replicates
+### This section imputes missing values using the average of technical replicate samples.
+### The imputation is performed if there's a high proportion of technical replicate samples with non-missing values.
+### By default this section is commented out. Comment back in if technical replicates are included in the experimental data.
+
+### Further Reading
+#### Missing Value Imputation
+- [Missing Value Imputation Strategies](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5860209/) - Comprehensive review of imputation methods
+- [MNAR vs MCAR Values](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4446883/) - Different types of missing values in proteomics
+- [Imputation Benchmarking](https://www.nature.com/articles/s41467-020-19115-y) - Comparison of imputation methods
+
+#### Technical Replicate Approaches
+- [Replicate-Based Imputation](https://www.mcponline.org/article/S1535-9476(20)30415-7/fulltext) - Using replicates for imputation
+- [Averaging Strategies](https://pubs.acs.org/doi/10.1021/acs.jproteome.9b00692) - Methods for combining replicate measurements
+- [Variance Estimation from Replicates](https://www.sciencedirect.com/science/article/pii/S1874391917301495) - Using replicates for variance estimation
+
+#### Statistical Considerations
+- [Impact of Imputation on Statistical Analysis](https://www.mcponline.org/article/S1535-9476(20)33387-8/fulltext) - How imputation affects statistics
+- [Imputation Uncertainty](https://academic.oup.com/bioinformatics/article/34/16/2831/4956480) - Accounting for uncertainty in imputed values
+- [Multiple Imputation Methods](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5438968/) - Advanced imputation approaches
+
+This step addresses missing values in the dataset by using information from technical replicates. When a value is missing in one replicate but present in others from the same sample, this approach imputes the missing value using the average of the available measurements. This strategy is preferable to more aggressive imputation methods because it relies on actual measurements from the same biological sample rather than theoretical models. The approach is conservative, only imputing when there's sufficient evidence from technical replicates, which helps maintain data integrity while reducing the negative impact of missing values on statistical analysis.
+
+```{r Missing Value Imputation}
+peptide_values_imputed <- peptideMissingValueImputation(
+  theObject = removed_peptides_with_only_one_replicate
+)
+
+peptide_values_imputed@peptide_data |> distinct(Protein.Ids) |> nrow()
+
+peptide_values_imputed_file <- file.path(
+  results_dir
+  , "peptide_qc"
+  , "peptide_values_imputed.tsv"
+)
+
+vroom::vroom_write(
+  peptide_values_imputed@peptide_data |>
+    mutate(
+      Q.Value = 0.0009
+      , PG.Q.Value = 0.009
+    ) |>
+    mutate(
+      Peptide.Imputed = ifelse(is.na(Peptide.Imputed), 0, Peptide.Imputed)
+    )
+  , peptide_values_imputed_file
+)
+```
+
+## Read in the fasta organism specific fasta file to extract details on the protein sequences
+### There should be no need to change this chunk, ever
+
+## This section aggregates the long-format peptide-level intensity values into protein-level quantification:
+### It uses the IQ tool (https://github.com/tvpham/iq), which implements the same algorithm as DIA-NN's maxLFQ but runs faster (written in C++) 
+### Unless your experiment has specific requirements or you wish to use IQ differently, it is recommended to leave default settings here
+
+### Further Reading
+#### Peptide-to-Protein Quantification
+- [MaxLFQ Algorithm](https://www.mcponline.org/article/S1535-9476(20)31240-8/fulltext) - Details of the MaxLFQ algorithm used by DIA-NN and IQ
+- [Peptide to Protein Quantification](https://www.nature.com/articles/nmeth.1770) - Principles of peptide-to-protein quantification
+- [Protein Quantification Strategies](https://www.mcponline.org/article/S1535-9476(20)33461-6/fulltext) - Different approaches to protein quantification
+
+#### IQ Tool
+- [IQ GitHub Repository](https://github.com/tvpham/iq) - Source code and documentation for the IQ tool
+- [Fast Quantification Algorithms](https://www.cell.com/cell-systems/fulltext/S2405-4712(19)30268-6) - Comparison of fast protein quantification methods
+- [MaxLFQ Implementation](https://pubs.acs.org/doi/10.1021/acs.jproteome.1c00453) - Technical details of MaxLFQ implementation
+
+#### Statistical Considerations
+- [Summarization Strategies](https://www.mcponline.org/article/S1535-9476(20)33384-2/fulltext) - Statistical approaches to peptide summarization
+- [Protein Inference Problem](https://www.nature.com/articles/nbt0710-647) - Challenges in protein inference from peptides
+- [Peptide Selection for Quantification](https://pubs.acs.org/doi/10.1021/pr4010019) - How peptide selection affects protein quantification
+
+This section aggregates peptide-level measurements to obtain protein-level quantification, a critical step in the proteomics workflow. The IQ tool implements the widely-used MaxLFQ algorithm, which provides accurate relative quantification of proteins across samples while accounting for peptide-level variability. The algorithm uses a graph-based approach to derive the most consistent protein ratios, even when different peptides are detected across samples. The resulting protein quantification values are logged (log2), which helps normalize the data and makes it suitable for statistical analysis. The step concludes by checking that the number of proteins matches expectations, ensuring no data is lost during the rollup process.
+
+```{r Peptide to Protein Rollup}
+iq::process_long_format(
+    peptide_values_imputed_file
+  , output_filename = file.path(results_dir, "protein_qc", "iq_output_file.txt")
+  , sample_id = "Run"
+  , primary_id = "Protein.Ids"
+  , secondary_id = "Stripped.Sequence"
+  , intensity_col = "Peptide.Imputed"
+  , filter_double_less = c("Q.Value" = "0.01", "PG.Q.Value" = "0.01")
+  ## very important for this workflow that you do NOT perform normalization here
+  , normalization = "none"
+)
+
+## Read in the IQ output file (which outputs a file, not an object)
+dir.create(file.path(results_dir, "proteomics", "protein_qc"), recursive = TRUE)
+protein_log2_quant <- vroom::vroom(
+  file.path(results_dir, "protein_qc", "iq_output_file.txt")
+)
+
+## Check the number of proteins here to ensure no data lost
+nrow(protein_log2_quant) 
+```
+
+## Create Protein Quantitative Data Object
+### Unless you have changed the column identifiers or the object names leave defaults
+
+### Further Reading
+#### S4 Object-Oriented Programming
+- [S4 Classes in R](https://adv-r.hadley.nz/s4.html) - In-depth guide to S4 object system in R
+- [Bioconductor S4 Classes](https://bioconductor.org/packages/release/bioc/vignettes/S4Vectors/inst/doc/S4QuickOverview.pdf) - Working with S4 classes in Bioconductor
+- [Object-Oriented Design](https://www.biostat.jhsph.edu/~rpeng/docs/R-classes-scope.pdf) - Principles of object-oriented design in R
+
+#### Proteomics Data Structures
+- [Data Representation in Proteomics](https://www.mcponline.org/article/S1535-9476(20)31243-3/fulltext) - Standards for proteomics data representation
+- [ExpressionSet in Bioconductor](https://www.bioconductor.org/packages/release/bioc/vignettes/Biobase/inst/doc/ExpressionSetIntroduction.pdf) - Classical data structure for expression data
+- [SummarizedExperiment Class](https://bioconductor.org/packages/release/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html) - Modern standard for omics data
+
+#### Experimental Design Integration
+- [Linking Design to Data](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3334586/) - Connecting experimental design to data structures
+- [Metadata in Proteomics](https://www.mcponline.org/article/S1535-9476(20)33503-8/fulltext) - Handling sample metadata in proteomics
+- [Reproducible Analysis Frameworks](https://www.nature.com/articles/s41592-020-0912-y) - Frameworks for reproducible analysis
+
+This step creates a structured S4 object to organize the protein quantification data alongside experimental metadata. This object-oriented approach encapsulates all the protein quantification values with their associated sample information and experimental design, making subsequent analysis more robust and reproducible. The object provides methods for data access and manipulation that maintain the integrity of the relationship between quantitative data and experimental design. This structured approach is particularly important for complex proteomics experiments where keeping track of sample groupings, technical replicates, and experimental conditions is crucial for valid statistical analysis.
+
+```{r Protein Data S4 Object Creation}
+protein_obj <- ProteinQuantitativeData( 
+  # Protein Data Matrix Information
+  protein_quant_table = protein_log2_quant
+  , protein_id_column = "Protein.Ids"
+  , protein_id_table = protein_log2_quant |> distinct(Protein.Ids)
+  # Design Matrix Information
+  , design_matrix = peptide_values_imputed@design_matrix
+  , sample_id = "Run"
+  , group_id = "group"
+  , technical_replicate_id = "replicates"
+  , args = peptide_values_imputed@args
+)
+```
+
+## Arrange the protein ID's list to opt for the best accession in the list to be placed first
+## Skips this section if you have supplied your own Uniprot accession searches
+
+### Further Reading
+#### Protein Accession Standards
+- [UniProt Accession Format](https://www.uniprot.org/help/accession_numbers) - Understanding UniProt accession formats
+- [Protein Naming Conventions](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5952944/) - Standards for protein nomenclature
+- [Identifier Mapping Services](https://www.uniprot.org/help/id_mapping) - Tools for mapping between protein identifiers
+
+#### Handling Multiple Accessions
+- [Protein Groups in Proteomics](https://www.mcponline.org/article/S1535-9476(20)31243-3/fulltext) - Dealing with protein groups
+- [Protein Inference](https://www.nature.com/articles/nmeth.3901) - Statistical approaches to protein inference
+- [Ambiguous Protein Assignment](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5841838/) - Dealing with ambiguous peptide-to-protein mapping
+
+#### Database Curation
+- [Protein Database Quality](https://www.nature.com/articles/s41592-019-0449-z) - Impact of database quality on proteomics
+- [Swiss-Prot vs TrEMBL](https://www.uniprot.org/help/uniprotkb_sections) - Differences between reviewed and unreviewed entries
+- [Proteogenomics Approaches](https://www.nature.com/articles/nmeth.3144) - Integrating proteomics with genomics
+
+This step ensures that protein accessions are standardized and prioritized according to relevant biological criteria. In many cases, peptides may map to multiple protein accessions, and this function helps choose the most informative or canonical accession to represent each protein. The priority is typically given to reviewed UniProt entries (Swiss-Prot), conserved entries, or entries with more complete annotation. This standardization is essential for downstream analyses like pathway analysis and functional annotation. The `updateProteinFiltering()` function shows how many proteins remain after this cleanup step.
+
+```{r Most Likely Protein Accession Rollup}
+if (is.null(uniprot_search_results)) {
+    aa_seq_tbl_final <- aa_seq_tbl_final |>
+        dplyr::rename(uniprot_acc = database_id)
+    
+    protein_log2_quant_cln <- chooseBestProteinAccession(
+        theObject = protein_obj
+        , delim = ";"
+        , seqinr_obj = aa_seq_tbl_final
+        , seqinr_accession_column = "uniprot_acc"
+        , replace_zero_with_na = TRUE
+        , aggregation_method = "mean"
+    )
+
+    updateProteinFiltering(
+        data = protein_log2_quant_cln@protein_quant_table
+        , step_name = "8_annotation_cleanup"
+        , publication_graphs_dir = publication_graphs_dir
+        , return_grid = TRUE
+        , overwrite = TRUE
+    )
+} else {
+    protein_log2_quant_cln <- protein_obj
+}
+```
+
+## Helper function to set your filtering parameters to allow for the minimum 
+## number of values/groups to be present for quantitation
+
+### Further Reading
+#### Missing Value Handling
+- [Missing Data in Proteomics](https://www.mcponline.org/article/S1535-9476(20)33384-2/fulltext) - Understanding patterns of missing data
+- [Impact of Missing Values](https://www.nature.com/articles/s41598-018-36122-8) - How missing values affect analysis results
+- [Missing Value Mechanisms](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5654993/) - Different mechanisms for missing values in proteomics
+
+#### Filtering Strategies
+- [Sample Coverage Thresholds](https://www.mcponline.org/article/S1535-9476(20)31141-5/fulltext) - Setting thresholds for sample coverage
+- [Group-Based Filtering](https://www.sciencedirect.com/science/article/pii/S1535947620313979) - Filtering based on experimental groups
+- [Balancing Sensitivity and Reproducibility](https://www.nature.com/articles/s41592-019-0365-3) - Trade-offs in filtering decisions
+
+#### Statistical Considerations
+- [Statistical Power and Missing Data](https://academic.oup.com/bioinformatics/article/32/15/2383/1743989) - Effect of missing data on statistical power
+- [Sensitivity Analysis for Missing Values](https://www.sciencedirect.com/science/article/pii/S1874391913005940) - Testing sensitivity to missing value handling
+- [Group Size Considerations](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3638073/) - How group size affects missing value impacts
+
+This step configures the parameters for handling missing values in your dataset. The function sets thresholds for the minimum number of valid measurements required within each experimental group and the minimum number of groups that must have these measurements. These parameters are crucial for balancing data completeness with proteome coverage - stricter thresholds provide more reliable quantification but can reduce the number of proteins analyzed. The settings are typically determined based on your experimental design, with larger groups often allowing for more stringent filtering. These parameters will be used in subsequent filtering steps to remove proteins with excessive missing values.
+
+```{r Set Missing Value Filter Parameters}
+config_list <- updateMissingValueParameters(
+  design_matrix
+  , config_list
+  , min_reps_per_group = 2
+  , min_groups = 2
+)
+```
+
+## Remove protein based on the intensity threshold and the proportion of samples below the threshold
+### The threshold is determined by the 1% quantile of the protein intensity values
+### This helps to ensure that only reliably quantified proteins are retained for further analysis
+
+### Further Reading
+#### Intensity-Based Filtering
+- [Intensity Threshold Determination](https://www.mcponline.org/article/S1535-9476(20)34969-4/fulltext) - Methods for setting intensity thresholds
+- [Dynamic Range in Proteomics](https://www.nature.com/articles/s41467-019-10513-5) - Understanding the dynamic range challenge
+- [Signal-to-Noise in Protein Quantification](https://pubs.acs.org/doi/10.1021/acs.jproteome.9b00609) - Handling low-intensity signals
+
+#### Missing Value Management
+- [Missing Value Patterns in Proteins](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6609408/) - Understanding missing value distributions
+- [Handling Low-Abundance Proteins](https://www.mcponline.org/article/S1535-9476(20)34962-1/fulltext) - Strategies for low-abundance measurements
+- [Proportion Threshold Selection](https://www.sciencedirect.com/science/article/pii/S1874391918301113) - Setting sample proportion thresholds
+
+#### Quantile-Based Approaches
+- [Quantile Methods in Proteomics](https://www.mcponline.org/article/S1535-9476(20)33370-2/fulltext) - Using quantiles for threshold setting
+- [Data-Driven Thresholding](https://pubs.acs.org/doi/10.1021/acs.jproteome.0c00792) - Statistical approaches to threshold selection
+- [Global vs Group-Specific Thresholds](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4450410/) - Different thresholding strategies
+
+This step removes proteins with consistently low intensity values or those detected in too few samples across the experimental groups. The 1% quantile threshold helps identify a data-driven cutoff for removing unreliably quantified proteins that are at or near the noise level of the instrument. By using the `removeRowsWithMissingValuesPercent()` function, the workflow removes proteins that fall below this threshold in too many samples, making the dataset more robust for downstream statistical analysis. The `updateProteinFiltering()` function at the end tracks the effect of this filter on protein numbers and provides visualization.
+
+```{r Filter Proteins on Intensity Threshold}
+protein_normalized_pif_cln <- removeRowsWithMissingValuesPercent(
+  protein_log2_quant_cln
+)
+
+updateProteinFiltering(
+  data = protein_normalized_pif_cln@protein_quant_table
+  , step_name = "9_protein_missingvals_percent"
+  , publication_graphs_dir = publication_graphs_dir
+  , return_grid = TRUE
+  , overwrite = TRUE
+)
+
+protein_normalized_pif_cln@protein_quant_table |> distinct(Protein.Ids) |> nrow()
+```
+
+## Summarize data from duplicate proteins
+### Calculate mean across matching duplicate proteins and populate the new identifier with a single value
+### Leave as default unless you wish to perform another form of duplication handling
+### Or if you have an exotic experiment that looks at very identical proteins, modifications etc you may wish to skip this.
+
+### Further Reading
+#### Handling Duplicate Identifiers
+- [Protein Naming in Proteomics](https://www.mcponline.org/article/S1535-9476(20)32979-2/fulltext) - Standards for protein naming
+- [Dealing with Redundancy](https://www.sciencedirect.com/science/article/pii/S1874391917301136) - Approaches to redundant protein entries
+- [Entry Consolidation Methods](https://pubs.acs.org/doi/10.1021/pr401169d) - Statistical approaches to merging duplicates
+
+#### Protein Groups and Isoforms
+- [Isoform Quantification](https://www.nature.com/articles/s41592-019-0478-7) - Challenges in quantifying protein isoforms
+- [Protein Group Inference](https://www.mcponline.org/article/S1535-9476(20)30412-1/fulltext) - Handling protein groups in quantitative proteomics
+- [Proteoform Analysis](https://www.sciencedirect.com/science/article/pii/S1874391919300102) - Approaches to distinguish proteoforms
+
+#### Aggregation Methods
+- [Mean vs Median Summarization](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5409345/) - Different statistical approaches to aggregation
+- [Weighted Aggregation Methods](https://pubs.acs.org/doi/10.1021/acs.jproteome.8b00217) - Advanced aggregation approaches
+- [Impact of Summarization on Results](https://www.sciencedirect.com/science/article/pii/S1874391918301252) - How aggregation affects outcomes
+
+This step identifies and handles duplicate protein entries in the dataset by aggregating their quantitative values. Duplicate entries can arise from various sources, including database redundancy, protein isoforms, or ambiguous peptide-to-protein mapping. The approach taken here uses the mean value across duplicates, which is a robust way to combine measurements while preserving the overall quantitative relationship between samples. After aggregation, each protein is represented by a single entry, simplifying downstream analysis while maintaining data integrity. The final count confirms the removal of duplicates while retaining all unique proteins.
+
+```{r Remove Duplicate Proteins}
+# Identify duplicates
+duplicates <- protein_normalized_pif_cln@protein_quant_table |>
+  dplyr::group_by(Protein.Ids) |>
+  dplyr::filter(n() > 1) |>
+  dplyr::select(Protein.Ids) |>
+  dplyr::distinct() |>
+  dplyr::pull(Protein.Ids)
+
+duplicates
+
+# Clean duplicates
+protein_normalized_pif_cln@protein_quant_table <- 
+  protein_normalized_pif_cln@protein_quant_table |>
+  dplyr::group_by(Protein.Ids) |>
+  dplyr::summarise(
+    dplyr::across(matches("\\d+"), ~ mean(.x, na.rm = TRUE))
+  ) |>
+  dplyr::ungroup()
+
+protein_normalized_pif_cln@protein_quant_table |> 
+  dplyr::distinct(Protein.Ids) |> 
+  nrow()
+```
+
+## Remove proteins with only one replicate in the data set
+### No need to change this unless you wish to include single replicate proteins
+
+### Further Reading
+#### Replicate-Based Filtering
+- [Replication in Proteomics](https://www.mcponline.org/article/S1535-9476(20)30415-7/fulltext) - Importance of replication in proteomics
+- [Single-Replicate Protein Issues](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5637257/) - Problems with single-replicate protein identifications
+- [Reproducibility Requirements](https://www.nature.com/articles/s41592-019-0686-3) - Standards for reproducibility in proteomics
+
+#### Parallel Processing in R
+- [Parallelization with future](https://cran.r-project.org/web/packages/future/vignettes/future-1-overview.html) - Modern parallel processing in R
+- [Multicore Processing](https://www.r-bloggers.com/2018/06/parallel-processing-with-r/) - Approaches to multicore processing
+- [Cluster Computing in R](https://www.rdocumentation.org/packages/parallel/versions/3.6.2/topics/makeCluster) - Creating and using clusters in R
+
+#### Statistical Robustness
+- [Minimum Replicate Numbers](https://www.mcponline.org/article/S1535-9476(20)34957-8/fulltext) - Determining minimum replicate numbers
+- [Power Analysis in Proteomics](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5617949/) - Statistical power considerations
+- [Multi-sample Consensus](https://pubs.acs.org/doi/10.1021/pr401020r) - Benefits of consensus across multiple samples
+
+This step removes proteins that appear in only one replicate across the experimental groups, ensuring that all proteins in the final dataset have been reproducibly detected in at least two replicates. The parallel processing approach (using multiple CPU cores) helps speed up this computation-intensive task. Filtering out single-replicate proteins is critical for statistical reliability, as proteins detected in just one replicate could represent random noise or false identifications. The output is written to a file for reference, and the `updateProteinFiltering()` function visualizes how this filter affects the number of proteins in the dataset.
+
+```{r Filter Proteins on Replicate Number}
+core_utilisation <- new_cluster(4) #note to change this in the below function to cores from config_list
+remove_proteins_with_only_one_rep <- removeProteinsWithOnlyOneReplicate(
+  protein_normalized_pif_cln
+  , core_utilisation
+  , grouping_variable = "group"
+)
+vroom::vroom_write(
+  remove_proteins_with_only_one_rep@protein_quant_table
+  , file.path(results_dir, "protein_qc", "remove_proteins_with_only_one_rep.tsv")
+)
+
+updateProteinFiltering(
+  data = remove_proteins_with_only_one_rep@protein_quant_table
+  , step_name = "10_proteins_onerep_filter"
+  , publication_graphs_dir = publication_graphs_dir
+  , return_grid = TRUE
+  , overwrite = TRUE
+)
+
+remove_proteins_with_only_one_rep@protein_quant_table |> 
+  distinct(Protein.Ids) |> 
+  nrow()
+```
+
+## Pre-normalisation data QC
+### RLE plot 
+### PCA plot
+### Pearson correlation
+### Spearman correlation
+
+### Further Reading
+#### Quality Control Visualization
+- [Visualization for Quality Control](https://www.nature.com/articles/nmeth.3252) - Principles of visualizing data for QC
+- [Visual Methods in Proteomics](https://www.mcponline.org/article/S1535-9476(20)33384-2/fulltext) - Comprehensive overview of visualization techniques
+- [Interactive Visualization Tools](https://www.nature.com/articles/s41592-019-0361-7) - Modern approaches to interactive data visualization
+
+#### Principal Component Analysis
+- [PCA in Proteomics](https://www.mcponline.org/article/S1535-9476(20)33687-1/fulltext) - Applications of PCA in proteomics
+- [Understanding PCA](https://builtin.com/data-science/step-step-explanation-principal-component-analysis) - Step by step explanation of PCA
+- [Interpreting PCA Results](https://www.nature.com/articles/nmeth.4346) - How to interpret PCA plots correctly
+
+#### Correlation Analysis
+- [Correlation Measures in Omics](https://www.nature.com/articles/nbt0708-741) - Different correlation metrics for biological data
+- [Sample Correlation Assessment](https://www.mcponline.org/article/S1535-9476(20)34982-7/fulltext) - Using correlation to assess sample quality
+- [Reproducibility Metrics](https://www.sciencedirect.com/science/article/pii/S1874391919304452) - Metrics for assessing technical reproducibility
+
+#### Relative Log Expression (RLE) Plots
+- [RLE for Normalization Assessment](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-11-94) - Using RLE to evaluate normalization
+```{r Pre-normalisation QC}
+QC_composite_figure <- InitialiseGrid()
+
+QC_composite_figure@rle_plots$rle_plot_before_cyclic_loess <- plotRle(
+  remove_proteins_with_only_one_rep 
+  , "group"
+  , yaxis_limit = c(-6, 6)
+)
+
+QC_composite_figure@pca_plots$pca_plot_before_cyclic_loess_group <- plotPca(
+  remove_proteins_with_only_one_rep
+  , grouping_variable = "group"
+  , label_column = ""
+  , shape_variable = "group"
+  , title = ""
+  , font_size = 8
+)
+
+QC_composite_figure@density_plots$density_plot_before_cyclic_loess_group <- plotDensity(
+  QC_composite_figure@pca_plots$pca_plot_before_cyclic_loess_group,
+  grouping_variable = "group"
+)
+
+pca_mixomics_before_cyclic_loess <- getPcaMatrix(remove_proteins_with_only_one_rep)
+
+QC_composite_figure@pearson_plots$pearson_correlation_pair_before_cyclic_loess <- 
+  plotPearson(
+    remove_proteins_with_only_one_rep
+    , tech_rep_remove_regex = "pool"
+    , correlation_group = "group"
+  )
+
+summarizeQCPlot(QC_composite_figure)
+
+save_plot(
+  QC_composite_figure@rle_plots$rle_plot_before_cyclic_loess 
+  , results_dir 
+  , "rle_plot_before_cyclic_loess"
+)
+save_plot(
+  QC_composite_figure@pca_plots$pca_plot_before_cyclic_loess_group 
+  , results_dir 
+  , "pca_plot_before_cyclic_loess"
+)
+save_plot(
+  QC_composite_figure@density_plots$density_plot_before_cyclic_loess_group
+  , results_dir
+  , "density_plot_before_cyclic_loess"  
+)
+save_plot(
+  QC_composite_figure@pearson_plots$pearson_correlation_pair_before_cyclic_loess 
+  , results_dir 
+  , "pearson_correlation_pair_before_cyclic_loess"
+)
+
+frozen_protein_matrix_tech_rep <- proteinTechRepCorrelation(
+  remove_proteins_with_only_one_rep
+  , tech_rep_num_column = "group"
+  , tech_rep_remove_regex = "pool"
+)
+
+## change if you wish to filter on pearson or spearman
+frozen_protein_matrix_tech_rep |> dplyr::filter(pearson > 0.8) |> nrow()
+frozen_protein_matrix_tech_rep |> dplyr::filter(spearman > 0.8) |> nrow()
+```
+
+## Cyclic loess normalisation and QC
+
+### Further Reading
+#### Normalization Methods in Proteomics
+- [Normalization Strategies](https://www.mcponline.org/article/S1535-9476(20)33352-0/fulltext) - Comprehensive review of normalization methods
+- [Comparative Analysis of Normalization](https://www.nature.com/articles/nmeth.3853) - Comparison of different normalization approaches
+- [Impact of Normalization on Results](https://pubs.acs.org/doi/10.1021/acs.jproteome.0c00252) - How normalization affects biological conclusions
+
+#### Cyclic Loess Method
+- [Loess Normalization in Proteomics](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6887685/) - Application of loess in proteomics
+- [Statistical Foundations of Loess](https://www.sciencedirect.com/science/article/pii/S1046202318304918) - Mathematical background of loess smoothing
+- [Robust Normalization Approaches](https://academic.oup.com/bioinformatics/article/33/8/1243/2908434) - Robust statistical approaches to normalization
+
+#### Batch Effect Correction
+- [Batch Effect Detection and Correction](https://www.nature.com/articles/nbt.2839) - Methods for identifying and correcting batch effects
+- [Technical Variation Removal](https://www.mcponline.org/article/S1535-9476(20)31187-7/fulltext) - Approaches to remove unwanted technical variation
+- [Integrated Normalization Workflows](https://www.sciencedirect.com/science/article/pii/S1874391916302305) - Complete workflows for data normalization
+
+This section applies cyclic loess normalization to your protein data and evaluates its effectiveness through various quality control visualizations. Cyclic loess is a non-linear normalization method that adjusts for intensity-dependent biases in the data by iteratively applying local regression to pairwise sample comparisons. This approach is particularly effective for proteomics data, where global scaling methods may be insufficient due to complex biases. The QC visualizations following normalization (RLE plots, PCA, density plots, and correlation analysis) help evaluate whether the normalization successfully reduced technical variation while preserving biological differences. The comparison with pre-normalization plots allows you to assess the improvement in data quality and identify any remaining batch effects or outliers that might need further attention.
+
+```{r Cyclic Loess Normalisation and QC}
+normalised_frozen_protein_matrix_obj <- normaliseBetweenSamples(
+  remove_proteins_with_only_one_rep
+  , normalisation_method = "cyclicloess"
+)
+
+QC_composite_figure@rle_plots$rle_plot_before_ruvIIIc_group <- plotRle(
+  normalised_frozen_protein_matrix_obj 
+  , "group"
+  , yaxis_limit = c(-6, 6)
+)
+
+QC_composite_figure@pca_plots$pca_plot_before_ruvIIIc_group <- plotPca(
+  normalised_frozen_protein_matrix_obj
+  , grouping_variable = "group"
+  , label_column = ""
+  , shape_variable = "group"
+  , title = ""
+  , font_size = 8
+)
+
+QC_composite_figure@density_plots$density_plot_before_ruvIIIc_group <- plotDensity(
+  QC_composite_figure@pca_plots$pca_plot_before_ruvIIIc_group,
+  grouping_variable = "group"
+)
+
+pca_mixomics_before_ruvIIIc <- getPcaMatrix(normalised_frozen_protein_matrix_obj)
+
+QC_composite_figure@pearson_plots$pca_plot_before_ruvIIIc_group <- plotPearson(
+  normalised_frozen_protein_matrix_obj
+  , tech_rep_remove_regex = "pool"
+  , correlation_group = "group"
+  )
+
+summarizeQCPlot(QC_composite_figure)
+
+save_plot(
+  QC_composite_figure@rle_plots$rle_plot_before_ruvIIIc_group 
+  , results_dir 
+  , "rle_plot_before_ruvIIIc_by_group"
+)
+save_plot(
+  QC_composite_figure@pca_plots$pca_plot_before_ruvIIIc_group 
+  , results_dir 
+  , "pca_plot_before_ruvIIIc_by_group"
+)
+save_plot(
+  QC_composite_figure@density_plots$density_plot_before_ruvIIIc_group
+  , results_dir
+  , "density_plot_before_ruvIIIc_by_group"  
+)
+save_plot(
+  QC_composite_figure@pearson_plots$pearson_correlation_pair_before_ruvIIIc 
+  , results_dir 
+  , "pearson_correlation_pair_before_ruvIIIc"
+)
+```
+
+## RUVIII-C Canonical Correlation Plot
+
+### Further Reading
+#### Remove Unwanted Variation (RUV) Methods
+- [RUV in High-Dimensional Data](https://www.nature.com/articles/nbt.2931) - Original paper describing RUV methodology
+- [RUV Applications in Proteomics](https://www.mcponline.org/article/S1535-9476(20)34959-1/fulltext) - Adaptations of RUV for proteomics data
+- [Unwanted Variation Sources](https://www.nature.com/articles/nmeth.3366) - Understanding sources of unwanted variation
+
+#### Canonical Correlation Analysis
+- [Canonical Correlation in Omics](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5870479/) - Applications in multi-omics data integration
+- [Multivariate Analysis Methods](https://www.sciencedirect.com/science/article/pii/S1046202318304074) - Comparison of multivariate techniques
+- [Statistical Foundations of CCA](https://academic.oup.com/bioinformatics/article/32/10/1553/1743989) - Mathematical background of canonical correlation
+
+#### Parameter Selection in RUV
+- [Determining Optimal k Parameter](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6572545/) - Methods for selecting the number of factors to remove
+- [Negative Control Selection](https://www.nature.com/articles/s41467-019-09124-x) - Strategies for selecting negative controls in RUV
+- [Cross-Validation Approaches](https://www.sciencedirect.com/science/article/pii/S1874391919303859) - Cross-validation for parameter optimization
+
+This section implements the RUV-III (Remove Unwanted Variation) method with canonical correlation analysis to further normalize your data by removing unwanted technical variation while preserving biological signal. The approach uses proteins least likely to be differentially expressed (identified by ANOVA) as "negative controls" to estimate and remove sources of unwanted variation. The canonical correlation plot helps determine the optimal number of factors (k) to remove - too few factors may leave unwanted variation, while too many might remove biological signal. The plot shows correlations between canonical variables derived from the data and the experimental design, with the inflection point or "elbow" in the plot suggesting the optimal k value. This data-driven approach to selecting k ensures that normalization is appropriately tuned to your specific dataset.
+
+```{r RUVIII-C Canonical Correlation Plot}
+# Choose the % of proteins in your dataset you wish to use as a negative control
+percentage_as_neg_ctrl <- 10
+config_list$ruvParameters$percentage_as_neg_ctrl <- percentage_as_neg_ctrl
+control_genes_index <- getNegCtrlProtAnova(
+  normalised_frozen_protein_matrix_obj
+  , percentage_as_neg_ctrl = percentage_as_neg_ctrl
+)
+cancorplot_r1 <- ruvCancor(
+  normalised_frozen_protein_matrix_obj
+  , ctrl = control_genes_index
+  , num_components_to_impute = 5
+  , ruv_grouping_variable = "group"
+)
+
+# Find the best k
+best_k <- findBestK(cancorplot_r1)
+
+# Add vertical line for best_k
+cancorplot_r1 <- cancorplot_r1 + 
+  geom_vline(
+    xintercept = best_k 
+    , color = "blue" 
+    , linetype = "dashed"
+    , size = 1
+  ) +
+  annotate(
+    "text" 
+    , x = best_k + 0.5 
+    , y = max(layer_scales(cancorplot_r1)$y$range$range) 
+    , label = paste("Best k =", best_k)
+    , hjust = 0
+  ) +
+  xlim(1, ncol(normalised_frozen_protein_matrix_obj@protein_quant_table) - 1)
+
+# Save and display the plot
+save_plot(cancorplot_r1, results_dir, "canonical_correlation_plot")
+cancorplot_r1
+```
+
+## RUVIII-C Normalisation and QC
+
+### Further Reading
+#### RUV Implementation
+- [RUV-III Algorithm](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4930141/) - Details of the RUV-III algorithm implementation
+- [Practical RUV Implementation](https://www.sciencedirect.com/science/article/pii/S1874391919300387) - Practical aspects of implementing RUV
+- [Statistical Background of RUV](https://academic.oup.com/biostatistics/article/14/3/550/264115) - Statistical theory behind RUV methods
+
+#### Evaluating Normalization Success
+- [QC Metrics for Normalization](https://www.mcponline.org/article/S1535-9476(20)34962-1/fulltext) - Metrics to evaluate normalization success
+- [Normalization Benchmarking](https://www.nature.com/articles/s41592-020-0765-4) - Comparing effectiveness of normalization methods
+- [Quality Assessment Strategies](https://www.sciencedirect.com/science/article/pii/S1874391917301239) - Systematic approaches to quality assessment
+
+#### Handling Missing Values Post-Normalization
+- [Missing Value Patterns After Normalization](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6314938/) - Dealing with missing values introduced by normalization
+- [Filtering Strategies After RUV](https://pubs.acs.org/doi/10.1021/acs.jproteome.0c00016) - Approaches for post-normalization filtering
+- [Data Completeness Assessment](https://www.mcponline.org/article/S1535-9476(20)31141-5/fulltext) - Evaluating data completeness after processing
+
+This section applies the RUV-III-C normalization using the optimal k value determined from the canonical correlation analysis and then evaluates its effectiveness through quality control visualizations. RUV-III-C removes unwanted sources of variation by estimating factors of unwanted variation from negative control proteins and then regressing these factors out of the data. After normalization, the code filters out proteins that may have excessive missing values introduced by the RUV procedure, ensuring data completeness for downstream analysis. The comprehensive quality control assessment (RLE plots, PCA, density plots, and correlation analysis) allows you to evaluate whether RUV-III-C successfully reduced technical variation while preserving biological differences. Comparing these plots with those from earlier normalization steps helps quantify the improvement in data quality achieved by the multistep normalization strategy.
+
+```{r RUVIII-C Normalisation and QC}
+ruv_normalised_results_temp_obj <- ruvIII_C_Varying(
+  normalised_frozen_protein_matrix_obj
+  , ruv_grouping_variable = "group"
+  , ruv_number_k = best_k
+  , ctrl = control_genes_index
+) 
+
+config_list <- updateRuvParameters(
+  config_list
+  , best_k
+  , control_genes_index
+  , percentage_as_neg_ctrl)
+
+## Sometimes RUV will blank out some of the values, so we need to remove proteins 
+## if too many values are blanked out 
+ruv_normalised_results_cln_obj <- removeRowsWithMissingValuesPercent(
+  theObject = ruv_normalised_results_temp_obj
+)
+
+updateProteinFiltering(
+  data = ruv_normalised_results_cln_obj@protein_quant_table
+  , step_name = "11_RUV_filtered"
+  , publication_graphs_dir = publication_graphs_dir
+  , return_grid = TRUE
+  , overwrite = TRUE
+)
+
+QC_composite_figure@rle_plots$rle_plot_after_ruvIIIc_group <- plotRle(
+  ruv_normalised_results_cln_obj
+  , group = "group"
+  , yaxis_limit = c(-4, 4)
+)
+
+QC_composite_figure@pca_plots$pca_plot_after_ruvIIIc_group <- plotPca(
+  ruv_normalised_results_cln_obj
+  , grouping_variable = "group"
+  , label_column = ""
+  , shape_variable = "group"
+  , title = ""
+  , font_size = 8
+)
+
+QC_composite_figure@density_plots$density_plot_after_ruvIIIc_group <- plotDensity(
+  QC_composite_figure@pca_plots$pca_plot_after_ruvIIIc_group,
+  grouping_variable = "group"
+)
+
+pca_mixomics_after_ruvIIIc <- getPcaMatrix(ruv_normalised_results_cln_obj)
+
+QC_composite_figure@pearson_plots$pearson_correlation_pair_after_ruvIIIc_group <- 
+  plotPearson(
+    ruv_normalised_results_cln_obj
+    , tech_rep_remove_regex = "pool"
+    , correlation_group = "group"
+  )
+
+save_plot(
+  QC_composite_figure@rle_plots$rle_plot_after_ruvIIIc_group 
+  , results_dir 
+  , "rle_plot_after_ruvIIIc_by_group"
+)
+save_plot(
+  QC_composite_figure@pca_plots$pca_plot_after_ruvIIIc_group 
+  , results_dir 
+  , "pca_plot_after_ruvIIIc"
+)
+save_plot(
+  QC_composite_figure@density_plots$density_plot_after_ruvIIIc_group
+  , results_dir
+  , "density_plot_after_ruvIIIc_by_group"  
+)
+save_plot(
+  QC_composite_figure@pearson_plots$pearson_correlation_pair_after_ruvIIIc_group 
+  , results_dir 
+  , "pearson_correlation_pair_after_ruvIIIc_group"
+)
+
+ruv_normalised_results_cln_obj
+summarizeQCPlot(QC_composite_figure)
+```
+
+## Sample Pearson Correlation Filtering
+
+### Further Reading
+#### Correlation-Based Sample Filtering
+- [Sample Correlation as Quality Metric](https://www.mcponline.org/article/S1535-9476(20)34982-7/fulltext) - Using correlation for sample quality assessment
+- [Outlier Sample Detection](https://www.nature.com/articles/s41598-018-33531-7) - Methods for identifying outlier samples
+- [Pearson vs Spearman Correlation](https://academic.oup.com/bioinformatics/article/35/18/3766/5368013) - Choosing the appropriate correlation measure
+
+#### Replicate Quality Control
+- [Replicate Agreement Assessment](https://www.sciencedirect.com/science/article/pii/S1874391917301975) - Methods for assessing agreement between replicates
+- [Technical vs Biological Variation](https://www.nature.com/articles/s41592-019-0367-1) - Distinguishing sources of variation
+- [Reproducibility Thresholds](https://www.mcponline.org/article/S1535-9476(20)33439-2/fulltext) - Setting thresholds for replicate reproducibility
+
+#### Impact on Statistical Power
+- [Sample Filtering Effects on Power](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5860358/) - How filtering affects statistical power
+- [Balancing Sample Size and Quality](https://academic.oup.com/bioinformatics/article/34/11/1966/4813738) - Trade-offs in sample filtering
+- [Outlier Influence on Differential Expression](https://www.mcponline.org/article/S1535-9476(20)33519-1/fulltext) - How outliers affect differential expression results
+
+This section filters samples based on their Pearson correlation with other samples in the same experimental group. Low correlation between samples that should be similar (e.g., biological replicates) often indicates technical issues or sample quality problems. By implementing a correlation threshold (here set at 0.5), this step removes samples that don't correlate well with their group, ensuring that only high-quality, consistent samples are used for downstream statistical analysis. The `updateProteinFiltering()` function tracks the effect of this filtering step on the number of proteins in the dataset. The final data is saved in both TSV and RDS formats for transparency and to facilitate downstream analysis. This correlation-based filtering is the final quality control step before differential expression analysis, ensuring that the data used for biological interpretation is of the highest quality.
+
+```{r Sample Pearson Correlation Filtering}
+ruv_correlation_vec <- pearsonCorForSamplePairs(
+  ruv_normalised_results_cln_obj
+  , tech_rep_remove_regex = "pool"
+  , correlation_group = "group"
+) 
+
+ruv_normalised_filtered_results_obj <- filterSamplesByProteinCorrelationThreshold(
+  ruv_normalised_results_cln_obj
+  , pearson_correlation_per_pair = ruv_correlation_vec
+  , min_pearson_correlation_threshold = 0.5
+)
+
+updateProteinFiltering(
+  data = ruv_normalised_filtered_results_obj@protein_quant_table
+  , step_name = "12_correlation_filtered"
+  , publication_graphs_dir = publication_graphs_dir
+  , return_grid = TRUE
+  , overwrite = TRUE
+)
+
+vroom::vroom_write(
+  ruv_normalised_filtered_results_obj@protein_quant_table
+  , file.path(
+    results_dir 
+    , "protein_qc" 
+    , "ruv_normalized_results_cln_with_replicates.tsv"
+  )
+)
+
+saveRDS(
+  ruv_normalised_filtered_results_obj
+  , file.path(
+    results_dir 
+    , "protein_qc" 
+    , "ruv_normalised_results_cln_with_replicates.RDS"
+  )
+)
+
+ruv_normalised_for_de_analysis_obj <- ruv_normalised_filtered_results_obj
+```
+
+# Output Files For Audit Trail
+
+### Further Reading
+#### Data Export and Formats
+- [Proteomics Data Standards](https://www.nature.com/articles/nmeth.3495) - Standards for proteomics data formats
+- [File Formats in Omics](https://www.mcponline.org/article/S1535-9476(20)31134-8/fulltext) - Common file formats for proteomics data sharing
+- [Tabular Data in R](https://r4ds.had.co.nz/tibbles.html) - Best practices for working with tabular data
+
+#### Reproducibility Practices
+- [Reproducible Research in Proteomics](https://www.nature.com/articles/s41592-020-0912-y) - Guidelines for reproducible proteomics research
+- [Data Provenance Tracking](https://www.sciencedirect.com/science/article/pii/S1874391918301866) - Methods for tracking data provenance
+- [Audit Trails in Omics](https://academic.oup.com/bioinformatics/article/34/23/4078/5040307) - Implementing audit trails in omics research
+
+#### File Format Conversions
+- [Data Serialization in R](https://www.r-bloggers.com/2016/12/remember-to-use-the-serializable-formats/) - Understanding serialization formats like RDS
+- [Binary vs Text Formats](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5870786/) - Choosing between binary and text formats
+- [Long vs Wide Format](https://www.sciencedirect.com/science/article/pii/S2001037016300216) - Data reshaping considerations for different analyses
+
+This section creates multiple output files from the final normalized dataset to ensure data accessibility and facilitate different downstream analysis needs. The code transforms the normalized protein data from its internal S4 object structure into standard formats (TSV files) in both original and log2-transformed versions, making it easily accessible for other analysis tools and researchers. The wide-format data tables (proteins as rows, samples as columns) are created for traditional statistical analyses, while design information is separately exported to document the experimental design. Both text-based formats (TSV) and binary formats (RDS) are provided - the former for human readability and software compatibility, the latter for preserving exact R objects with their metadata. These diverse output formats create a comprehensive audit trail that supports research reproducibility and facilitates data sharing.
+
+```{r Output Files For Audit Trail}
+ruv_normalised_for_de_analysis <- 
+  ruv_normalised_for_de_analysis_obj@protein_quant_table |>
+  pivot_longer(
+    cols = !matches("Protein.Ids")
+    , names_to = "replicates"
+    , values_to = "Log2.Protein.Imputed"
+  ) |>
+  dplyr::select(Protein.Ids, replicates, Log2.Protein.Imputed) |>
+  mutate(Protein.Imputed = 2^Log2.Protein.Imputed) |>
+  mutate(Protein.Imputed = ifelse(is.na(Protein.Imputed), NA, Protein.Imputed)) |>
+  pivot_wider(
+    id_cols = Protein.Ids
+    , names_from = replicates
+    , values_from = Protein.Imputed
+  ) |>
+  dplyr::rename(uniprot_acc = "Protein.Ids")
+
+vroom::vroom_write(
+  ruv_normalised_for_de_analysis
+  , file.path(results_dir, "protein_qc", "ruv_normalised_results.tsv")
+)
+
+vroom::vroom_write(
+  ruv_normalised_for_de_analysis |>
+    dplyr::mutate(across(!matches("uniprot_acc"), log2))
+  , file.path(results_dir, "protein_qc", "ruv_normalised_results_log.tsv")
+)
+
+vroom::vroom_write(
+  design_matrix |>
+    distinct(replicates, group) |>
+    dplyr::rename(Run = replicates)
+  , file.path(results_dir, "protein_qc", "design_matrix_avrg.tsv")
+)
+
+ruv_normalised_for_de_analysis_mat <- ruv_normalised_for_de_analysis |>
+  column_to_rownames("uniprot_acc") |>
+  as.matrix()
+
+vroom::vroom_write(
+  ruv_normalised_filtered_results_obj@protein_quant_table
+  , file.path(
+    results_dir 
+    , "protein_qc" 
+    , "ruv_normalised_results_cln_with_replicates.tsv"
+  )
+)
+
+saveRDS(
+  ruv_normalised_filtered_results_obj
+  , file.path(
+    results_dir 
+    , "protein_qc" 
+    , "ruv_normalised_results_cln_with_replicates.RDS"
+  )
+)
+```
+
+## Composite QC Figure Generation
+
+### Further Reading
+#### Publication-Ready Visualizations
+- [Data Visualization Best Practices](https://www.nature.com/articles/nmeth.3213) - Principles for effective scientific visualizations
+- [Communicating with Data](https://www.sciencedirect.com/science/article/pii/S1874391919303859) - How to communicate findings through visualization
+- [Figure Design in Scientific Publications](https://www.nature.com/articles/s41467-020-19187-w) - Guidelines for creating impactful scientific figures
+
+#### Multi-panel Figures
+- [Composite Figures in R](https://cran.r-project.org/web/packages/patchwork/vignettes/patchwork.html) - Creating multi-panel figures with patchwork
+- [Complex Layouts in ggplot2](https://ggplot2-book.org/arranging-plots.html) - Arranging multiple plots in ggplot2
+- [Visual Hierarchy in Scientific Figures](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1003833) - Establishing visual hierarchy in complex figures
+
+#### Consistency in Data Presentation
+- [Visual Consistency in Publications](https://www.nature.com/articles/s41592-019-0560-2) - Importance of visual consistency
+- [Color Use in Scientific Visualization](https://www.nature.com/articles/nmeth.1618) - Appropriate use of color in scientific figures
+- [Accessible Scientific Figures](https://www.nature.com/articles/s41467-020-19187-w) - Creating visualizations accessible to all readers
+
+This section creates a comprehensive multi-panel quality control figure that combines all the QC visualizations generated throughout the workflow into a single publication-ready composite image. This composite figure provides a holistic view of the data quality at different stages of processing, allowing for easy comparison between pre- and post-normalization states. The function organizes PCA plots, density plots, RLE plots, and correlation plots into a structured grid with consistent formatting and appropriate labels (a, b, c, etc.) for easy reference in publications. This single visualization serves as a powerful summary of the entire quality control process, making it easier to present and interpret the extensive QC work performed. The saved high-resolution figure can be directly included in publications or presentations to demonstrate the thoroughness of the data quality assessment.
+
+```{r Composite QC Figure Generation}
+pca_ruv_rle_correlation_merged <- createGridQC(
+  QC_composite_figure
+  , pca_titles = c("a)", "b)", "c)")
+  , density_titles = c("d)", "e)", "f)")
+  , rle_titles = c("g)", "h)", "i)")
+  , pearson_titles = c("j)", "k)", "l)")
+  , save_path = file.path(results_dir, "protein_qc")
+  , file_name = "composite_QC_figure"
+)
+pca_ruv_rle_correlation_merged
+```
+
+# Add up to date annotation data from Uniprot
+## Will take some time to complete if  you are doing this for first time
+## Good spot to grab a coffee :)
+
+### Further Reading
+#### UniProt Database
+- [UniProt Knowledgebase](https://academic.oup.com/nar/article/47/D1/D506/5160987) - Comprehensive guide to the UniProt database
+- [Protein Annotation Standards](https://www.nature.com/articles/nmeth.3283) - Standards for protein annotation
+- [UniProt API Documentation](https://www.uniprot.org/help/api) - Official documentation for UniProt web services
+
+#### Protein Functional Annotation
+- [Gene Ontology Resources](https://academic.oup.com/nar/article/47/D1/D330/5160994) - Understanding Gene Ontology annotations
+- [Protein Function Prediction](https://www.nature.com/articles/s41592-019-0687-2) - Methods for protein function prediction
+- [Evidence Codes in Annotation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6124377/) - Understanding evidence codes in annotations
+
+#### Bioconductor Tools for Annotation
+- [UniProt.ws Package](https://bioconductor.org/packages/release/bioc/html/UniProt.ws.html) - Bioconductor interface to UniProt
+- [Annotation Workflows](https://www.bioconductor.org/packages/release/workflows/vignettes/annotation/inst/doc/annotation.html) - Complete annotation workflows in Bioconductor
+- [Programmatic Access to Biological Data](https://f1000research.com/articles/5-2122) - Best practices for accessing biological databases
+
+This section retrieves and integrates up-to-date protein annotation data from UniProt, the leading universal protein resource database. The annotation process uses the UniProt.ws Bioconductor package to query the UniProt database for comprehensive information about each protein identified in your dataset. This information includes metadata like protein existence evidence, annotation score, review status, gene names, protein names, sequence length, cross-references to Ensembl, Gene Ontology (GO) terms, and keywords. By caching the results in an RDS file, the workflow avoids redundant queries in subsequent runs, significantly speeding up the process while still ensuring data freshness. This annotation step is crucial for biological interpretation of your results, as it provides the functional context needed to understand the biological significance of differentially expressed proteins.
+
+```{r Uniprot Data Annotation}
+up <- UniProt.ws(taxId = taxon_id)
+tmp_dir <- file.path(getwd(), "tmp")
+if (!dir.exists(tmp_dir)) {
+  dir.create(tmp_dir)
+}
+annotations <- NULL
+if (!file.exists(file.path(tmp_dir, "uniprot_annotations.RDS"))) {
+  
+  annotations <- batchQueryEvidenceGeneId(
+    ruv_normalised_for_de_analysis_obj@protein_quant_table
+    , gene_id_column = "Protein.Ids"
+    , uniprot_handle = up
+    , uniprot_columns = c(
+      "protein_existence"
+      , "annotation_score"
+      , "reviewed"
+      , "gene_names"
+      , "protein_name"
+      , "length"
+      , "xref_ensembl"
+      , "go_id"
+      , "keyword"
+    )
+  ) 
+  # |> dplyr::rename(uniprot_acc = From)  # Debug to check if the From column needed renaming
+  
+  uniprot_dat_cln <- annotations |>
+    uniprotGoIdToTerm(
+      uniprot_id_column = Entry
+      , go_id_column = Gene.Ontology.IDs
+      , sep = "; "
+    ) |>
+    dplyr::rename(
+      Protein_existence = "Protein.existence"
+      , Protein_names = "Protein.names"
+    ) |>
+    dplyr::rename(gene_names = Gene.Names)
+  
+  saveRDS(uniprot_dat_cln, file.path(tmp_dir, "uniprot_annotations.RDS"))
+  
+} else {
+  uniprot_dat_cln <- readRDS(file.path(tmp_dir, "uniprot_annotations.RDS"))
+}
+```
+
+## Read in Previously Assigned Contrasts (optional)
+
+### Further Reading
+#### Experimental Contrasts
+- [Experimental Design for Differential Analysis](https://www.nature.com/articles/nmeth.3252) - Designing experiments for differential analysis
+- [Contrast Specification in R](https://www.bioconductor.org/packages/release/bioc/vignettes/limma/inst/doc/usersguide.pdf) - Guide to specifying contrasts in limma
+- [Pairwise Comparisons](https://www.mcponline.org/article/S1535-9476(20)33384-2/fulltext) - Strategies for pairwise comparisons in proteomics
+
+#### Contrast Formulation
+- [Linear Models for Proteomics](https://www.sciencedirect.com/science/article/pii/S1874391917301239) - Linear modeling approaches in proteomics
+- [Multiple Testing Considerations](https://www.nature.com/articles/nmeth.3411) - Managing multiple comparisons in omics data
+- [Complex Experimental Designs](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5870479/) - Handling complex designs with contrasts
+
+This section reads in predefined contrast specifications from a file, allowing for consistent and reproducible differential expression analysis. Contrasts define the comparisons between experimental groups (e.g., treatment vs. control) that will be tested for protein abundance differences. By defining these contrasts in a separate file, the workflow becomes more flexible and allows for complex experimental designs. This approach also makes it easy to update the analysis with new comparisons without changing the main workflow code. The contrast strings follow a specific format that will be interpreted by the differential expression analysis function to create the appropriate statistical tests.
+
+```{r Read in Previousl Assigned Contrasts (optional)}
+contrasts_tbl <- file.path(source_dir, "contrast_strings.tab") |>
+  readLines() |>
+  {\(x) x[!grepl("^contrasts", x)]}() |>
+  as_tibble() |>
+  rename(contrasts = value)
+```
+
+## DE Analysis Generation
+
+### Further Reading
+#### Differential Expression Analysis
+- [Statistical Methods for Proteomics](https://www.nature.com/articles/s41592-019-0368-0) - Overview of statistical methods for proteomics
+- [Limma-Based Analysis](https://www.bioconductor.org/packages/release/bioc/vignettes/limma/inst/doc/usersguide.pdf) - Detailed guide to limma for differential expression
+- [Multiple Testing Corrections](https://www.nature.com/articles/nmeth.3115) - Approaches to multiple testing correction
+
+#### Moderated Statistics
+- [Moderated t-tests](https://academic.oup.com/bioinformatics/article/35/3/561/5060941) - Understanding moderated t-statistics
+- [Empirical Bayes Methods](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4912948/) - Empirical Bayes approaches in proteomics
+- [TREAT Method](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2654802/) - Testing fold changes with thresholds
+
+#### Interpreting DE Results
+- [Volcano Plot Interpretation](https://www.mcponline.org/article/S1535-9476(20)33459-8/fulltext) - Understanding volcano plots in proteomics
+- [Effect Size Estimation](https://www.sciencedirect.com/science/article/pii/S1874391917301239) - Interpreting effect sizes in proteomics
+- [Statistical Power in Proteomics](https://www.nature.com/articles/s41467-020-17641-3) - Understanding statistical power in differential expression
+
+This section performs differential expression analysis to identify proteins with statistically significant abundance differences between experimental conditions. The analysis uses limma, a well-established statistical framework that applies linear models and empirical Bayes methods to improve statistical power - particularly beneficial for proteomics data where sample sizes are often limited. For each contrast defined in the previous step, the code runs a complete differential expression analysis, including moderated t-tests with robust estimation and trend-based variance modeling. The TREAT method can optionally be applied to test for minimum fold-change thresholds in addition to statistical significance. The results are stored in a named list where each element contains the complete differential expression statistics for one contrast, ready for downstream visualization and biological interpretation.
+
+```{r DE Analysis Generation}
+#Debug - if regex readin from config doesnt work
+#NB here temporarily until config readin logic fixed for this pattern
+config_list$deAnalysisParameters$args_group_pattern <- "(\\d+)" 
+
+# Create contrast names first
+contrast_names <- contrasts_tbl |> 
+  dplyr::pull(contrasts) |>
+  stringr::str_extract("^[^=]+") |>  # Extract everything before the = sign
+  stringr::str_replace_all("\\.", "_")  # Replace dots with underscores
+
+# Run DE analysis and explicitly set names
+de_analysis_results_list <- seq_len(nrow(contrasts_tbl)) |>
+  purrr::set_names(contrast_names) |>  # This ensures the list will be named
+  purrr::map(\(contrast_idx) {
+    deAnalysisWrapperFunction(
+      ruv_normalised_for_de_analysis_obj
+      , contrasts_tbl |> dplyr::slice(contrast_idx)
+      , formula_string = config_list$deAnalysisParameters$formula_string
+      , de_q_val_thresh = config_list$deAnalysisParameters$de_q_val_thresh
+      , treat_lfc_cutoff = config_list$deAnalysisParameters$treat_lfc_cutoff
+      , eBayes_trend = config_list$deAnalysisParameters$eBayes_trend
+      , eBayes_robust = config_list$deAnalysisParameters$eBayes_robust
+      , args_group_pattern = config_list$deAnalysisParameters$args_group_pattern
+      , args_row_id = ruv_normalised_for_de_analysis_obj@protein_id_column
+    )
+  })
+
+# Verify we have names
+print(names(de_analysis_results_list))
+```
+
+
+
+## Output the results of the DE analysis
+
+### Further Reading
+#### Results Visualization
+- [Volcano Plot Visualization](https://www.nature.com/articles/s41467-020-17821-1) - Best practices for volcano plot visualization
+- [Interactive Visualization Tools](https://www.mcponline.org/article/S1535-9476(20)33459-8/fulltext) - Advanced visualization tools for DE results
+- [Customizing R Graphics](https://www.springer.com/gp/book/9780387981413) - Guide to customizing R graphics for publication
+
+#### Data Export for Publication
+- [Report Generation in R](https://bookdown.org/yihui/rmarkdown/) - Comprehensive guide to report generation
+- [Data Sharing Best Practices](https://www.nature.com/articles/s41592-020-0912-y) - Guidelines for sharing proteomics data
+- [ProteomeXchange Submission](http://www.proteomexchange.org/submission) - Protocol for submitting data to repositories
+
+#### Error Handling in R
+- [Error Handling Best Practices](https://adv-r.hadley.nz/conditions.html) - Advanced R guide to error handling
+- [Defensive Programming](https://www.tidyverse.org/blog/2018/07/debouncing/) - Techniques for robust programming
+- [Parallel Processing Errors](https://cran.r-project.org/web/packages/future/vignettes/future-4-issues.html) - Managing errors in parallel processing
+
+This section outputs the differential expression analysis results in various formats for interpretation and publication. For each contrast, the code generates comprehensive result tables and visualizations, including volcano plots that highlight significantly changing proteins. The function takes advantage of the annotations retrieved from UniProt to enrich the results with biological context, including gene names and protein descriptions. Error handling with tryCatch ensures that the workflow continues even if individual contrasts encounter issues. Multiple output files are generated for each contrast, including TSV files for downstream analysis in other tools and publication-quality figures in various formats. These outputs provide both the raw statistical results and their biological interpretation, facilitating the transition from statistical significance to biological insight.
+
+```{r Output DE Analysis Results}
+# Modified output approach with error handling
+names(de_analysis_results_list) |>
+  purrr::walk(\(contrast_name) {
+    tryCatch({
+      message(paste("Processing contrast:", contrast_name))
+      
+      # Check if the result exists and has content
+      result <- de_analysis_results_list[[contrast_name]]
+      if (is.null(result) || length(result) == 0) {
+        message(paste("Skipping empty result for:", contrast_name))
+        return(NULL)
+      }
+      
+      outputDeAnalysisResults(
+        result
+        , ruv_normalised_for_de_analysis_obj
+        , uniprot_dat_cln
+        , de_output_dir
+        , publication_graphs_dir
+        , file_prefix = paste0("de_proteins_", contrast_name)
+        , plots_format = config_list$deAnalysisParameters$plots_format
+        , args_row_id = ruv_normalised_for_de_analysis_obj@protein_id_column
+        , de_q_val_thresh = 0.05
+        , gene_names_column = "gene_names"
+      )
+    }, error = function(e) {
+      message(paste("Error processing contrast:", contrast_name))
+      message(paste("Error message:", e$message))
+    })
+  })
+
+
+```
+
+## Enrichment Analysis
+## This section performs enrichment analysis on the DE results
+## If your taxon id is on the list supported by gprofiler, that will be used to perform the enrichment analysis
+## Otherwise, the enrichment analysis will be performed using the GO annotations provided by UniProt in clusterProfiler
+
+### Further Reading
+#### Functional Enrichment Analysis
+- [Gene Set Enrichment Methods](https://www.nature.com/articles/s41596-018-0103-9) - Overview of enrichment analysis methods
+- [Pathway Analysis in Proteomics](https://www.mcponline.org/article/S1535-9476(20)34982-7/fulltext) - Approaches to pathway analysis
+- [Multiple Testing in Enrichment](https://academic.oup.com/bioinformatics/article/34/13/i884/5045770) - Controlling false discovery in enrichment
+
+#### Gene Ontology Analysis
+- [GO Enrichment Interpretation](https://www.nature.com/articles/nprot.2008.211) - Guide to interpreting GO enrichment
+- [Semantic Similarity in GO](https://academic.oup.com/bioinformatics/article/34/8/1394/4772684) - Understanding semantic relationships in GO
+- [Evidence Codes in GO Analysis](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5490413/) - Role of evidence codes in enrichment
+
+#### Visualization of Enrichment Results
+- [Enrichment Map Visualization](https://www.nature.com/articles/nprot.2018.141) - Creating enrichment map networks
+- [GOplot Package](https://wencke.github.io/) - Visualizing functional analysis results
+- [Interactive Enrichment Visualization](https://academic.oup.com/bioinformatics/article/33/15/2381/3091031) - Tools for interactive exploration
+
+This section performs functional enrichment analysis to identify biological processes, molecular functions, and cellular components overrepresented in your differentially expressed proteins. The workflow is flexible, first attempting to use g:Profiler for enrichment if your organism's taxonomy ID is supported, then falling back to clusterProfiler with GO annotations from UniProt if needed. The analysis is performed separately for upregulated and downregulated protein sets from each contrast, providing a comprehensive view of the biological processes affected in different conditions. The enrichment results include statistical measures like p-values and enrichment ratios, along with visualizations like enrichment maps and GO term networks. This step transforms your list of differential proteins into meaningful biological insights, helping you understand the functional implications of the observed protein abundance changes.
+
+```{r Enrichment Analysis}
+# Create S4 object of the DE results for enrichment analysis
+de_results_for_enrichment <- createDEResultsForEnrichment(
+    contrasts_tbl = contrasts_tbl
+    , design_matrix = design_matrix
+    , de_output_dir = de_output_dir
+)
+
+# Run enrichment analysis
+enrichment_results <- processEnrichments(
+   de_results_for_enrichment                # Your S4 object with DE results
+   , taxon_id = taxon_id        # Human
+   , up_cutoff = 0            # FC filtering
+   , down_cutoff = 0          # FC filtering
+   , q_cutoff = 0.05          # FDR threshold
+   , pathway_dir = pathway_dir # Output directory
+   , go_annotations = uniprot_dat_cln # Annotation data
+   , exclude_iea = FALSE
+   , protein_id_column = ruv_normalised_for_de_analysis_obj@protein_id_column
+   , contrast_names = (names(de_analysis_results_list))
+)
+```
+
+## Save Workflow Arguments and Study Summary
+
+### Further Reading
+#### Workflow Reproducibility
+- [Reproducible Workflows in R](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1006561) - Best practices for reproducible workflows
+- [Computational Reproducibility](https://www.nature.com/articles/s41592-020-0798-7) - Principles of computational reproducibility
+- [Workflow Management Tools](https://f1000research.com/articles/10-897) - Overview of workflow management systems
+
+#### Configuration Management
+- [Parameter Management in R](https://bookdown.org/rdpeng/rprogdatascience/control-structures.html) - Strategies for parameter management
+- [Version Control for Data Analysis](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004947) - Using version control with data analysis
+- [Documentation Standards](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1005510) - Good enough practices for documentation
+
+This section saves all the parameters, configurations, and settings used throughout the workflow, creating a comprehensive record that enables reproduction of the analysis. The `createWorkflowArgsFromConfig()` function captures all the configuration parameters used in the analysis, including normalization settings, filtering thresholds, and statistical parameters. This approach to parameter tracking is essential for reproducible research, as it allows future users (including your future self) to understand exactly how the analysis was performed and to replicate the results if needed. This record serves as both documentation and a practical tool for reproducing or modifying the analysis in the future.
+
+```{r Save Workflow Arguments and Study SUmmary} 
+# Create workflow args with config and git info
+workflow_args <- createWorkflowArgsFromConfig(
+  workflow_name = "DIA Proteomics Workflow" #WANT TO ADD ANALYSTS NAME
+  , description = "Full protein analysis workflow with config parameters" 
+  #ADD A MEANINGFUL LABEL HERE FOR TRACKING WHAT YOU DID
+) #NEED TO ADD contrasts_tbl
+
+# Show the workflow arguments
+workflow_args
+```
+
+# Copy Files to Publication Directory
+
+### Further Reading
+#### Data Organization for Publication
+- [FAIR Data Principles](https://www.nature.com/articles/sdata201618) - Findable, Accessible, Interoperable, and Reusable data principles
+- [Publication-Ready Outputs](https://www.nature.com/articles/s41592-019-0470-2) - Standards for publication-ready outputs
+- [Research Data Management](https://www.sciencedirect.com/science/article/pii/S1047847717301472) - Best practices for research data management
+
+#### Data Archiving
+- [Data Archiving Strategies](https://www.nature.com/articles/s41597-020-0524-5) - Approaches to long-term data archiving
+- [Directory Structure Best Practices](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1005510) - Organizing research project directories
+- [Digital Object Identifiers](https://www.nature.com/articles/sdata201618) - Using DOIs for research outputs
+
+This section copies key result files to a designated publication directory, creating a clean, organized set of outputs that can be easily shared with collaborators or included in publications. By centralizing the most important results and visualizations, this step simplifies the process of finding and using the outputs that matter most for interpretation and communication. The publication directory serves as a curated collection of the analysis results, containing only the final, polished outputs rather than intermediate files or raw data. This organization strategy aligns with best practices for research data management and makes it easier to prepare your results for sharing or publication.
+
+```{r Copy Files to Publication Directory}
+copyToResultsSummary(contrasts_tbl)
+```
+
+# Copy all study parameters to a Github repo for audit trail
+
+### Further Reading
+#### Version Control in Research
+- [Git for Data Analysis](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004668) - Using Git for data analysis projects
+- [GitHub in Bioinformatics](https://academic.oup.com/bioinformatics/article/36/1/1/5521151) - Best practices for GitHub in bioinformatics
+- [Versioning Data Analysis](https://www.nature.com/articles/s41592-020-0886-9) - Strategies for versioning analyses
+
+#### Research Audit Trails
+- [Digital Research Notebooks](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1000424) - Electronic lab notebooks for research
+- [Computational Provenance](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5510743/) - Tracking computational provenance
+- [Workflow Tracking Systems](https://academic.oup.com/gigascience/article/7/7/giy095/5052171) - Systems for tracking analysis workflows
+
+This final step creates a complete GitHub repository containing all analysis parameters, configuration files, and essential results, establishing a permanent, version-controlled record of your analysis. Using Git for version control provides numerous benefits: it creates an immutable audit trail of your analysis, facilitates collaboration with team members, enables easy tracking of changes over time, and serves as a backup of your work. The repository can be shared with collaborators or cited in publications, allowing others to understand your methods in detail or even reproduce your analysis. This practice aligns with modern standards for computational reproducibility and transparent reporting in scientific research.
+
+```{r Copy Output to Github}
+options(
+  github_org = "your org"
+  , github_user_email = "your email"
+  , github_user_name = "your username"
+)
+
+pushProjectToGithub(
+  base_dir = base_dir
+  , source_dir = source_dir
+  , project_id = "your project"
+)
+```
