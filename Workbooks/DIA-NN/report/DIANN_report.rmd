@@ -26,203 +26,6 @@ library(viridis)
 library(gt)
 library(plotly)
 
-# Directory setup function
-SetupDirectories <- function(suffix = "") {
-  base_dir <- here::here()
-  
-  # Determine proteomics folder name based on suffix
-  proteomics_folder <- if(suffix == "") "proteomics" else paste0("proteomics_", suffix)
-  
-  list(
-    source = file.path(base_dir, "scripts", proteomics_folder),
-    results = file.path(base_dir, "results_summary", proteomics_folder)
-  )
-}
-
-# User Input
-dirs <- SetupDirectories("Garima_firstpass")
-results_dir <- dirs$results
-source_dir <- dirs$source
-
-results_dir_pub <- file.path(results_dir, "Publication_tables")
-results_dir_pub
-
-results_dir
-# Load data
-ruv_normalised_data <- readRDS(
-  file.path(results_dir, "Publication_tables", "ruv_normalised_results_cln_with_replicates.RDS")
-)
-
-# Extract the components
-design_matrix_report <- ruv_normalised_data@design_matrix
-
-# Rest of the functions remain the same
-ReadStudyParams <- function(filepath) {
-  params_text <- readLines(filepath)
-  
-  params <- list()
-  current_section <- NULL
-  
-  purrr::walk(params_text, function(line) {
-    if(str_detect(line, ":$")) {
-      current_section <<- str_trim(str_remove(line, ":$"))
-      params[[current_section]] <<- list()
-    } else if(str_detect(line, ":") && !is.null(current_section)) {
-      kv <- str_split(line, ":", n = 2)[[1]]
-      params[[current_section]][[str_trim(kv[1])]] <<- str_trim(kv[2])
-    }
-  })
-  
-  return(params)
-}
-
-
-# Sample analysis functions
-CalculateSampleCounts <- function(group_summary) {
-  list(
-    total_samples = sum(group_summary$total_measurements),
-    tech_rep_samples = group_summary |>
-      filter(str_detect(group, "Pool")) |>
-      pull(total_measurements) |>
-      sum(),
-    patient_samples = group_summary |>
-      filter(!str_detect(group, "Pool")) |>
-      pull(total_measurements) |>
-      sum()
-  )
-}
-
-CalculatePatientMetrics <- function(numbers, group_summary) {
-  avg_tech_reps <- numbers$patient_samples / 
-    sum(group_summary$n_samples[!str_detect(group_summary$group, "Pool")])
-  
-  numbers$patients_per_group <- numbers$patient_samples / avg_tech_reps
-  numbers
-}
-
-ExtractStudyParameters <- function(study_params) {
-  # Basic parameters (already in the function)
-  basic_params <- list(
-    missing_values_cutoff = as.numeric(study_params$removeRowsWithMissingValuesPercent$`Groupwise Percentage Cutoff`),
-    intensity_cutoff_percentile = as.numeric(study_params$peptideIntensityFiltering$`Peptides Intensity Cutoff Percentile`),
-    normalisation_method = study_params$normaliseBetweenSamples$Method,
-    num_neg_ctrl = as.numeric(study_params$ruvParameters$`Num Neg Ctrl`) * 
-      (as.numeric(study_params$ruvParameters$`Percentage as Neg Ctrl`)/100),
-    best_k = as.numeric(study_params$ruvParameters$`Best k`)
-  )
-  
-  # Additional peptide filtering parameters
-  peptide_filtering_params <- list(
-    qvalue_threshold = as.numeric(study_params$srlQvalueProteotypicPeptideClean$`Qvalue Threshold`),
-    global_qvalue_threshold = as.numeric(study_params$srlQvalueProteotypicPeptideClean$`Global Qvalue Threshold`),
-    proteotypic_peptide_only = as.logical(as.numeric(study_params$srlQvalueProteotypicPeptideClean$`Choose Only Proteotypic Peptide`)),
-    intensity_column = study_params$srlQvalueProteotypicPeptideClean$`Input Matrix Column Ids`
-  )
-  
-  # Intensity filtering parameters
-  intensity_filtering_params <- list(
-    intensity_cutoff_percentile = as.numeric(study_params$peptideIntensityFiltering$`Peptides Intensity Cutoff Percentile`),
-    proportion_samples_below_cutoff = as.numeric(study_params$peptideIntensityFiltering$`Peptides Proportion of Samples Below Cutoff`)
-  )
-  
-  # Protein peptide requirements
-  protein_peptide_params <- list(
-    min_peptides_per_protein = as.numeric(study_params$filterMinNumPeptidesPerProtein$`Peptides per Protein Cutoff`),
-    min_peptidoforms_per_protein = as.numeric(study_params$filterMinNumPeptidesPerProtein$`Peptidoforms per Protein Cutoff`)
-  )
-  
-  # Sample filtering parameters
-  sample_filtering_params <- list(
-    min_peptides_per_sample = as.numeric(study_params$filterMinNumPeptidesPerSample$`Peptides per Sample Cutoff`)
-  )
-  
-  # Missing value parameters
-  missing_value_params <- list(
-    imputed_value_column = study_params$peptideMissingValueImputation$`Imputed Value Column`,
-    max_proportion_missing = as.numeric(study_params$peptideMissingValueImputation$`Proportion Missing Values`)
-  )
-  
-  # Protein missing value parameters
-  protein_missing_params <- list(
-    groupwise_missing_cutoff = as.numeric(study_params$removeRowsWithMissingValuesPercent$`Groupwise Percentage Cutoff`),
-    max_groups_missing_cutoff = as.numeric(study_params$removeRowsWithMissingValuesPercent$`Max Groups Percentage Cutoff`),
-    proteins_intensity_cutoff = as.numeric(study_params$removeRowsWithMissingValuesPercent$`Proteins Intensity Cutoff Percentile`)
-  )
-  
-  # RUV parameters (expanded)
-  ruv_params <- list(
-    ruv_grouping_variable = study_params$ruvIII_C_Varying$`Ruv Grouping Variable`,
-    ruv_number_k = as.numeric(study_params$ruvIII_C_Varying$`Ruv Number k`),
-    percentage_as_neg_ctrl = as.numeric(study_params$ruvParameters$`Percentage as Neg Ctrl`),
-    best_k = as.numeric(study_params$ruvParameters$`Best k`),
-    num_neg_ctrl = as.numeric(study_params$ruvParameters$`Num Neg Ctrl`)
-  )
-  
-  # Differential expression analysis parameters
-  de_params <- list(
-    formula_string = study_params$deAnalysisParameters$`Formula String`,
-    treat_lfc_cutoff = as.numeric(study_params$deAnalysisParameters$`Treat Lfc Cutoff`),
-    ebayes_trend = as.logical(as.character(study_params$deAnalysisParameters$`eBayes Trend`)),
-    ebayes_robust = as.logical(as.character(study_params$deAnalysisParameters$`eBayes Robust`)),
-    de_qvalue_threshold = as.numeric(study_params$deAnalysisParameters$`De q Val Thresh`),
-    lfc_cutoff = as.logical(as.character(study_params$deAnalysisParameters$`Lfc Cutoff`))
-  )
-  
-  # Combine all parameters
-  all_params <- c(
-    basic_params,
-    peptide_filtering_params,
-    intensity_filtering_params,
-    protein_peptide_params,
-    sample_filtering_params,
-    missing_value_params,
-    protein_missing_params,
-    ruv_params,
-    de_params
-  )
-  
-  # Return all parameters
-  return(all_params)
-}
-
-# Add this before the main() function
-AnalyzeSamples <- function(design_matrix, study_params) {
-  # Analyze group structure
-  group_summary <- AnalyzeGroups(design_matrix)
-  
-  # Calculate basic numbers
-  numbers <- CalculateSampleCounts(group_summary)
-  
-  # Add patient metrics
-  numbers <- CalculatePatientMetrics(numbers, group_summary)
-  
-  # Extract study parameters
-  params <- ExtractStudyParameters(study_params)
-  
-  # Combine parameters with numbers
-  numbers <- c(numbers, params)
-  
-  # Return results
-  list(
-    numbers = numbers,
-    table = group_summary
-  )
-}
-
-AnalyzeGroups <- function(design_df) {
-  unique(design_df$group) |>
-    purrr::map_dfr(function(g) {
-      group_data <- design_df |> 
-        filter(group == g)
-      
-      tibble(
-        group = g,
-        n_samples = n_distinct(group_data$factor2),
-        total_measurements = nrow(group_data)
-      )
-    })
-}
-
 ```
 
 ```{r Format Sample Details, echo=FALSE}
@@ -282,17 +85,11 @@ Samples with fewer than {numbers$min_peptides_per_sample} peptides were removed 
 
 Using the protein intensity matrix, zero values were replaced with NA denoting these are missing values. Proteins with {numbers$missing_values_cutoff} percent or more of the samples with missing values or values below the {numbers$intensity_cutoff_percentile}st percentile of intensity values were discarded from the analysis. The data matrix was then log (base 2) transformed and between-sample normalization were performed using the '{numbers$normalisation_method}' method from the 'limma' R package (Ritchie et al., 2015).
 
-To remove the batch effects from biological data, the remove unwanted variation (RUVIII-C) R package (Molania et al., 2019; Poulos et al., 2020) and information on the technical replicate samples were used to remove batch effects from the normalized data matrix.
+To remove the batch effects from biological data, the remove unwanted variation (RUVIII-C) R package (Molania et al., 2019; Poulos et al., 2020) and information on sample groupings were used to remove batch effects from the normalized data matrix. The method relies on having a set of endogenous negative control proteins, which are proteins with little or no changes in protein abundances between different samples. For this study, {round(numbers$num_neg_ctrl)} empirical negative control proteins were identified from an initial ANOVA test comparing across the technical replicate groups. {numbers$best_k} unwanted components were selected for removal.
 
-The method relies on having a set of endogenous negative control proteins, which are proteins with little or no changes in protein abundances between different samples.
+At each stage of the data normalization, the samples were checked for batch effects using principal component analysis (PCA) plot, density boxplots, relative log-expression (RLE) plots and the distribution of the Pearson correlation between replicate samples within groups.
 
-For this study, {round(numbers$num_neg_ctrl)} empirical negative control proteins (q-value < 0.05) were identified from an initial ANOVA test comparing across the technical replicate groups.
 
-{numbers$best_k} unwanted components were selected.
-
-At each stage of the data normalization, the samples were checked for batch effects using principal component analysis (PCA) plot and relative log-expression (RLE) plots and the distribution of the Pearson correlation of every pair of technical replicate samples were calculated.
-
-Technical replicate samples were averaged, and the pooled reference sample removed from the subsequent analysis.
 
 • Comments on test specific conditions information (e.g. temperature), where relevant  
 • Comments on deviations, modifications, additions, or exclusions to the method(s) including the acceptance from the client to proceed with them  
@@ -305,30 +102,14 @@ Technical replicate samples were averaged, and the pooled reference sample remov
 
 ```{r Result Section, echo=FALSE}
 FormatResults <- function(correlation_data, figures_dir = file.path(results_dir, "protein_qc")) {
-  # Set default values in case correlation_data is missing or incomplete
-  total_proteins <- "N/A"
-  high_corr_proteins <- "N/A"
-  percent_high_corr <- "N/A"
-  
-  # Try to extract values if correlation_data exists and has the right structure
-  tryCatch({
-    if (!is.null(correlation_data) && !is.null(correlation_data$protein_data)) {
-      total_proteins <- nrow(correlation_data$protein_data)
-      high_corr_proteins <- sum(correlation_data$protein_data$pearson >= 0.8, na.rm = TRUE)
-      percent_high_corr <- round(high_corr_proteins / total_proteins * 100, 1)
-    }
-  }, error = function(e) {
-    # If there's an error, keep using the default values
-  })
-  
   glue::glue("
-RESULTS  
+Quality Control  
 
 Quality Control Analysis  
 Figure 1 shows the QC metrics across three stages of data processing:  
-• Log2 normalisation (leftmost column, a, d, g)  
-• Cyclic loess normalisation (centre column, b, e, h)  
-• RUVIII-C normalisation (rightmost column, c, f, i)  
+• Log2 normalisation (leftmost column, a, d, g, j)  
+• Cyclic loess normalisation (centre column, b, e, h, k)  
+• RUVIII-C normalisation (rightmost column, c, f, i, l)  
 
 Principal Component Analysis  
 The PCA plots (Figures 1a-c) demonstrate the effectiveness of batch effect removal:  
@@ -336,20 +117,19 @@ The PCA plots (Figures 1a-c) demonstrate the effectiveness of batch effect remov
 • After cyclic loess normalization, batch effects remained in PC1 but were reduced in PC2  
 • Post RUVIII-C and cyclic loess normalization, batches merged effectively, suggesting successful removal of unwanted variations  
 
+Density Boxplots
+The density boxplots (Figures 1d-f) show the distribution of the PC1 and PC2 values for each group.
+• The density boxplots show that the distribution of the PC1 and PC2 values for each group are similar.
+• Successive rounds of normalisation have reduced the variability in the PC1 and PC2 values for each group.
+
 Relative Log Expression  
-The RLE plots (Figures 1d-f) show progressive improvement in data quality:  
+The RLE plots (Figures 1g-i) show progressive improvement in data quality:  
 • Smaller interquartile ranges (IQR) after normalization indicate reduced technical variation  
 • Final normalized data shows consistent median values near zero, suggesting successful bias removal  
 
-Post-Processing Analysis  
-After averaging technical replicates:  
-• PCA plot (Figure 2) shows improved sample clustering  
-• Density plots (Figure 3) indicate partial batch effect persistence, though significantly reduced  
+Pearson Correlation
+• The Pearson correlation matrix (Figures 1j-l) shows that the correlation between biological samples was high and consistent across all normalisation methods ",
 
-Technical Reproducibility  
-As shown in Table 1, analysis of {total_proteins} proteins revealed {high_corr_proteins} proteins ({percent_high_corr}%) with high technical reproducibility (r ≥ 0.8). The distribution of technical replicate correlations is shown in Figure 4, with the histogram demonstrating a strong right-skewed distribution centered near r = 1, indicating excellent reproducibility for the majority of proteins. The boxplot further confirms this observation, showing a tight distribution of correlation values in the upper range.  
-
-Individual protein correlations between technical replicates are visualized in Figure 5, showing scatter plots for the most highly reproducible proteins (r ≥ 0.8). These plots demonstrate strong linear relationships between technical replicates, with points closely following the identity line (y=x), further confirming the robust technical reproducibility of the data.  ",
 .trim = FALSE)
 }
 ```
@@ -372,6 +152,7 @@ Technical Performance
 Limitations  
 • Residual batch effects present but within acceptable ranges  
 • Technical variation adequately controlled through normalization steps  ",
+
 .trim = FALSE)
 }
 ```
@@ -396,12 +177,9 @@ OPINIONS AND INTERPRETATION
 Data Quality Assessment  
 • The dataset demonstrates robust technical quality  
 • Normalization strategy effectively reduced systematic biases  
-• {high_corr_proteins} highly reproducible proteins provide strong foundation for biological interpretation  
 
 Recommendations  
 1. Proceed with downstream analysis using normalized dataset  
-2. Consider batch information in statistical modeling  
-3. Focus on highly reproducible proteins for primary conclusions  
 
 Technical Validation  
 • Quality metrics support the reliability of the data  
@@ -441,33 +219,11 @@ FormatDEDetails <- function(numbers) {
   glue::glue("
 DIFFERENTIAL ABUNDANCE ANALYSIS
 
-Differential abundance analysis of proteins was performed using the adjusted abundance matrix. Differential abundance analysis of proteins was performed for comparing each pair of consensus clusters. The 'limma' R package (Ritchie et al., 2015) was used, the linear model for comparing each pair of time points was fitted using the formula '{numbers$formula_string}' with the 'lmFit' function, and the p-values calculated using the empirical Bayes method 'eBayes' function. {trend_robust_text} The false discovery rate correction was applied to the moderated p-values by calculating the q-values (Storey, 2002). {treat_desc} Significant differentially expressed proteins were defined as those with q-values less than {numbers$de_qvalue_threshold}.",
+Differential abundance analysis of proteins was performed using the adjusted abundance matrix for comparing each pair of consensus clusters. The 'limma' R package (Ritchie et al., 2015) was used, the linear model for comparing each pair of time points was fitted using the formula '{numbers$formula_string}' with the 'lmFit' function, and the p-values calculated using the empirical Bayes method 'eBayes' function. {trend_robust_text} The false discovery rate correction was applied to the moderated p-values by calculating the q-values (Storey, 2002). {treat_desc} Significant differentially expressed proteins were defined as those with q-values less than {numbers$de_qvalue_threshold}.",
 .trim = FALSE)
 }
 ```
 
-```{r}
-# Read inputs with error checking
-  params_path <- file.path(dirs$source, "study_parameters.txt")
-  if (!file.exists(params_path)) stop("Study parameters file not found: ", params_path)
-  study_params <- ReadStudyParams(params_path)
-  
-```
-
-```{r}
-
-  matrix_path <- file.path(dirs$source, "design_matrix.tab")
-  if (!file.exists(matrix_path)) stop("Design matrix file not found: ", matrix_path)
-  design_matrix <- read_tsv(matrix_path)
-
-  # Run analysis
-  analysis <- tryCatch({
-    AnalyzeSamples(design_matrix, study_params)
-  }, error = function(e) {
-    stop("Error in AnalyzeSamples: ", e$message)
-  })
-  
-```
 
 ```{r}
 # Sample analysis functions
@@ -636,6 +392,73 @@ AnalyzeSamples <- function(design_matrix, study_params) {
   )
 }
 
+
+```
+
+```{r Main Execution Function, echo=FALSE, warning=FALSE}
+# Directory setup function
+SetupDirectories <- function(suffix = "") {
+  base_dir <- here::here()
+  
+  # Determine proteomics folder name based on suffix
+  proteomics_folder <- if(suffix == "") "proteomics" else paste0("proteomics_", suffix)
+  
+  list(
+    source = file.path(base_dir, "scripts", proteomics_folder),
+    results = file.path(base_dir, "results_summary", proteomics_folder)
+  )
+}
+
+# User Input
+dirs <- SetupDirectories("Garima_firstpass")
+results_dir <- dirs$results
+source_dir <- dirs$source
+```
+
+```{r}
+
+# Rest of the functions remain the same
+ReadStudyParams <- function(filepath) {
+  params_text <- readLines(filepath)
+  
+  params <- list()
+  current_section <- NULL
+  
+  purrr::walk(params_text, function(line) {
+    if(str_detect(line, ":$")) {
+      current_section <<- str_trim(str_remove(line, ":$"))
+      params[[current_section]] <<- list()
+    } else if(str_detect(line, ":") && !is.null(current_section)) {
+      kv <- str_split(line, ":", n = 2)[[1]]
+      params[[current_section]][[str_trim(kv[1])]] <<- str_trim(kv[2])
+    }
+  })
+  
+  return(params)
+}
+# Read inputs with error checking
+  params_path <- file.path(dirs$source, "study_parameters.txt")
+  if (!file.exists(params_path)) stop("Study parameters file not found: ", params_path)
+  study_params <- ReadStudyParams(params_path)
+  
+```
+
+```{r}
+
+  matrix_path <- file.path(dirs$source, "design_matrix.tab")
+  if (!file.exists(matrix_path)) stop("Design matrix file not found: ", matrix_path)
+  design_matrix <- read_tsv(matrix_path)
+
+  # Run analysis
+  analysis <- tryCatch({
+    AnalyzeSamples(design_matrix, study_params)
+  }, error = function(e) {
+    stop("Error in AnalyzeSamples: ", e$message)
+  })
+  
+```
+
+```{r}
   # Run analysis
   analysis <- tryCatch({
     AnalyzeSamples(design_matrix, study_params)
@@ -644,11 +467,9 @@ AnalyzeSamples <- function(design_matrix, study_params) {
   })
   
   str(analysis)
-
-
 ```
 
-```{r Main Execution Function, echo=FALSE, warning=FALSE}
+```{r}
 # Main execution function with proper document formatting
 Main <- function(suffix = "") {
   # Setup directories with error checking
@@ -709,12 +530,8 @@ Main <- function(suffix = "") {
 }
 
 # Execute with a specific suffix
-results <- Main("Garima_firstpass")  # For "proteomics_pilot"
+results <- Main("Garima_firstpass") 
 
-# Or use the default
-# results <- Main()  # For just "proteomics"
-
-# For RMarkdown output:
 ```
 # Sample Details
 
@@ -732,6 +549,19 @@ results <- Main("Garima_firstpass")  # For "proteomics_pilot"
 knitr::include_graphics(file.path(results_dir, "QC_figures", "composite_QC_figure.png"))
 ```
 
+# Differential Expression Analysis
+
+`r results$content$de_details`
+
+```{r alphabetical_grid, echo=FALSE, out.width="50%", fig.show="hold", fig.cap="Figure 2: Volcano plots of differentially expressed proteins in alphabetical order"}
+# Get image files and sort them alphabetically
+volcano_plots <- sort(list.files(path = file.path(results_dir, "Publication_figures", "Volcano_Plots"), 
+                         , pattern = "\\.png$|\\.jpg$", 
+                         , full.names = TRUE))[1:4]
+
+list.files(path = file.path(results_dir, "Publication_figures", "Volcano_Plots"))
+knitr::include_graphics(volcano_plots)
+```
 
 # Comments
 
@@ -740,7 +570,3 @@ knitr::include_graphics(file.path(results_dir, "QC_figures", "composite_QC_figur
 # Opinions and Interpretation
 
 `r results$content$opinions`
-
-# Differential Expression Analysis
-
-`r results$content$de_details`

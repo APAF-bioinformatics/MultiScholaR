@@ -1099,6 +1099,18 @@ copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE, cur
     # Track failed copies
     failed_copies <- list()
     
+    # Print current directory paths for debugging
+    cat("\nCurrent directory paths:\n")
+    cat(sprintf("results_dir: %s\n", results_dir))
+    cat(sprintf("results_summary_dir: %s\n", results_summary_dir))
+    cat(sprintf("publication_graphs_dir: %s\n", publication_graphs_dir))
+    cat(sprintf("time_dir: %s\n", time_dir))
+    cat(sprintf("qc_dir: %s\n", qc_dir))
+    cat(sprintf("protein_qc_dir: %s\n", protein_qc_dir))
+    cat(sprintf("de_output_dir: %s\n", de_output_dir))
+    cat(sprintf("pathway_dir: %s\n", pathway_dir))
+    cat("\n")
+    
     # Try to detect the currently active .Rmd file if none provided
     if (is.null(current_rmd) && exists("rstudioapi") && requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
         # Get the active document context
@@ -1276,34 +1288,56 @@ copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE, cur
 
     # Define files to copy with their display names
     files_to_copy <- list(
-        # QC Figures
+        # QC Figures - look for correlation plot in multiple locations
         list(
-            source = file.path(time_dir, "12_correlation_filtered_combined_plots.png"),
+            source = ifelse(
+                file.exists(file.path(time_dir, "12_correlation_filtered_combined_plots.png")),
+                file.path(time_dir, "12_correlation_filtered_combined_plots.png"),
+                # fallback to try finding it in the qc_dir if not in time_dir
+                ifelse(
+                    file.exists(file.path(qc_dir, "12_correlation_filtered_combined_plots.png")),
+                    file.path(qc_dir, "12_correlation_filtered_combined_plots.png"),
+                    # ultimate fallback - search for any correlation plots
+                    ifelse(
+                        length(list.files(qc_dir, pattern = "correlation.*\\.png$", recursive = TRUE, full.names = TRUE)) > 0,
+                        list.files(qc_dir, pattern = "correlation.*\\.png$", recursive = TRUE, full.names = TRUE)[1],
+                        file.path(time_dir, "12_correlation_filtered_combined_plots.png") # if all else fails, use original path for error reporting
+                    )
+                )
+            ),
             dest = "QC_figures",
             is_dir = FALSE,
             display_name = "Correlation Filtered Plots"
         ),
-        # Add RUV normalized results
+        # Add RUV normalized results - use absolute paths to avoid confusion with results_dir
         list(
-            source = file.path(results_dir, "protein_qc", "ruv_normalised_results_cln_with_replicates.tsv"),
+            source = file.path(protein_qc_dir, "ruv_normalised_results_cln_with_replicates.tsv"),
             dest = "Publication_tables",
             is_dir = FALSE,
-            display_name = "RUV Normalized Results",
+            display_name = "RUV Normalized Results TSV",
             new_name = "RUV_normalised_results.tsv"
         ),
+        # Add RUV RDS file (newly added)
         list(
-            source = file.path(results_dir, "protein_qc", "composite_QC_figure.pdf"),
-            dest = "QC_figures",
+            source = file.path(protein_qc_dir, "ruv_normalised_results_cln_with_replicates.RDS"),
+            dest = "Publication_tables",
+            is_dir = FALSE,
+            display_name = "RUV Normalized Results RDS",
+            new_name = "ruv_normalised_results.RDS"
+        ),
+        list(
+            source = file.path(protein_qc_dir, "composite_QC_figure.pdf"),
+            dest = "QC_figures", 
             is_dir = FALSE,
             display_name = "Composite QC (PDF)"
         ),
         list(
-            source = file.path(results_dir, "protein_qc", "composite_QC_figure.png"),
+            source = file.path(protein_qc_dir, "composite_QC_figure.png"),
             dest = "QC_figures",
             is_dir = FALSE,
             display_name = "Composite QC (PNG)"
         ),
-
+        
         # Publication Figures
         list(
             source = file.path(publication_graphs_dir, "Interactive_Volcano_Plots"),
@@ -1323,7 +1357,7 @@ copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE, cur
             is_dir = TRUE,
             display_name = "Volcano Plots"
         ),
-
+        
         # Study Report Tables
         list(
             source = "contrasts_tbl",
@@ -1536,6 +1570,8 @@ copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE, cur
                     tryCatch({
                         obj <- get(file_spec$source, envir = .GlobalEnv)
                         dest_path <- file.path(dest_dir, file_spec$save_as)
+                        # Ensure destination directory exists
+                        dir.create(dirname(dest_path), recursive = TRUE, showWarnings = FALSE)
                         write.table(
                             obj,
                             file = dest_path,
@@ -1558,33 +1594,45 @@ copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE, cur
 
                     # Create destination directory
                     if (!dir.create(dest_path, showWarnings = FALSE, recursive = TRUE)) {
-                        copy_success <- FALSE
-                        error_msg <- "Failed to create destination directory"
-                    } else {
+                        # If creation failed, check if it already exists
+                        if (!dir.exists(dest_path)) {
+                            copy_success <- FALSE
+                            error_msg <- "Failed to create destination directory"
+                        }
+                    }
+                    
+                    if (copy_success) {
                         # Copy all files from source to destination
                         files_to_copy <- list.files(source_path, full.names = TRUE, recursive = TRUE)
                         
-                        copy_results <- files_to_copy |>
-                            sapply(\(f) {
-                                rel_path <- sub(paste0("^", source_path, "/"), "", f)
-                                dest_file <- file.path(dest_path, rel_path)
-                                dir.create(dirname(dest_file), showWarnings = FALSE, recursive = TRUE)
-                                file.copy(f, dest_file, overwrite = TRUE)
-                            })
-                        
-                        if (!all(copy_results)) {
-                            copy_success <- FALSE
-                            failed_files <- files_to_copy[!copy_results]
-                            error_msg <- sprintf("Failed to copy %d files", length(failed_files))
-                        }
-                        
-                        # Verify file counts match
+                        # Define these variables at the beginning
                         source_files <- list.files(source_path, recursive = TRUE)
-                        dest_files <- list.files(dest_path, recursive = TRUE)
-                        if (length(source_files) != length(dest_files)) {
-                            copy_success <- FALSE
-                            error_msg <- sprintf("File count mismatch: %d source files, %d destination files",
-                                length(source_files), length(dest_files))
+                        dest_files <- character(0)
+                        
+                        if (length(files_to_copy) > 0) {
+                            copy_results <- files_to_copy |>
+                                sapply(\(f) {
+                                    rel_path <- sub(paste0("^", source_path, "/"), "", f)
+                                    dest_file <- file.path(dest_path, rel_path)
+                                    # Make sure parent directory exists before copying
+                                    dir.create(dirname(dest_file), showWarnings = FALSE, recursive = TRUE)
+                                    file.copy(f, dest_file, overwrite = TRUE)
+                                })
+                            
+                            if (!all(copy_results)) {
+                                copy_success <- FALSE
+                                failed_files <- files_to_copy[!copy_results]
+                                error_msg <- sprintf("Failed to copy %d files", length(failed_files))
+                            }
+                            
+                            # Verify file counts match
+                            source_files <- list.files(source_path, recursive = TRUE)
+                            dest_files <- list.files(dest_path, recursive = TRUE)
+                            if (length(source_files) != length(dest_files)) {
+                                copy_success <- FALSE
+                                error_msg <- sprintf("File count mismatch: %d source files, %d destination files",
+                                    length(source_files), length(dest_files))
+                            }
                         }
                     }
                 } else {
@@ -1592,6 +1640,9 @@ copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE, cur
                     dest_path <- file.path(dest_dir,
                         if (!is.null(file_spec$new_name)) file_spec$new_name else basename(source_path)
                     )
+                    
+                    # Ensure destination directory exists
+                    dir.create(dirname(dest_path), recursive = TRUE, showWarnings = FALSE)
 
                     if (!file.copy(from = source_path, to = dest_path, overwrite = TRUE)) {
                         copy_success <- FALSE
@@ -1635,11 +1686,19 @@ copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE, cur
                 cat(sprintf("%25s Error: %s\n", "", error_msg))
             }
 
-            if (!is.null(file_spec$is_dir) && file_spec$is_dir && source_exists && copy_success) {
-                cat(sprintf("%25s Files: %d → %d\n", "",
-                    length(source_files),
-                    length(dest_files)
-                ))
+            # Only display file counts for directories that exist and where we've defined source_files
+            if (!is.null(file_spec$is_dir) && file_spec$is_dir && source_exists) {
+                # Only try to access source_files and dest_files if they're defined in this scope
+                tryCatch({
+                    if (exists("source_files", inherits = FALSE) && exists("dest_files", inherits = FALSE)) {
+                        cat(sprintf("%25s Files: %d → %d\n", "",
+                            length(source_files),
+                            length(dest_files)
+                        ))
+                    }
+                }, error = function(e) {
+                    cat(sprintf("%25s Files count unavailable: %s\n", "", e$message))
+                })
             }
         })
 
