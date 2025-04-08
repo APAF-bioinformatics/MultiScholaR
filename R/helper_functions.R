@@ -964,16 +964,20 @@ setClass("WorkflowArgs",
         timestamp = "character",
         args = "list",
         description = "character",
-        git_info = "list"
+        git_info = "list",
+        organism_info = "list"
     )
 )
 
 #' @title Create Workflow Arguments Container from Config
 #' @param workflow_name Name of the workflow
 #' @param description Optional description of the workflow
+#' @param organism_name Optional organism name (defaults to value from session if available)
+#' @param taxon_id Optional taxon ID (defaults to value from session if available)
 #' @return WorkflowArgs object
 #' @export
-createWorkflowArgsFromConfig <- function(workflow_name, description = "") {
+createWorkflowArgsFromConfig <- function(workflow_name, description = "", 
+                                        organism_name = NULL, taxon_id = NULL) {
 
     # Get git information
     branch_info <- gh("/repos/APAF-BIOINFORMATICS/ProteomeScholaR/branches/dev-jr")
@@ -983,13 +987,29 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "") {
         repo = "ProteomeScholaR",
         timestamp = branch_info$commit$commit$author$date
     )
+    
+    # Get organism information from session if not explicitly provided
+    if (is.null(organism_name) && exists("organism_name", envir = .GlobalEnv)) {
+        organism_name <- get("organism_name", envir = .GlobalEnv)
+    }
+    
+    if (is.null(taxon_id) && exists("taxon_id", envir = .GlobalEnv)) {
+        taxon_id <- get("taxon_id", envir = .GlobalEnv)
+    }
+    
+    # Create organism info list
+    organism_info <- list(
+        organism_name = organism_name,
+        taxon_id = taxon_id
+    )
 
     new("WorkflowArgs",
         workflow_name = workflow_name,
         timestamp = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
         args = config_list,  # Make sure config_list is defined somewhere
         description = description,
-        git_info = git_info
+        git_info = git_info,
+        organism_info = organism_info
     )
 }
 
@@ -1048,7 +1068,35 @@ setMethod("show",
             paste("Branch:", object@git_info$branch),
             paste("Commit:", object@git_info$commit_sha),
             paste("Git Timestamp:", object@git_info$timestamp),
-            "",
+            ""
+        )
+        
+        # Add organism information if available
+        if (!is.null(object@organism_info) && 
+            (!is.null(object@organism_info$organism_name) || 
+             !is.null(object@organism_info$taxon_id))) {
+            organism_header <- c(
+                "Organism Information:",
+                "---------------------"
+            )
+            
+            organism_details <- character()
+            if (!is.null(object@organism_info$organism_name)) {
+                organism_details <- c(organism_details, 
+                                     paste("Organism Name:", object@organism_info$organism_name))
+            }
+            if (!is.null(object@organism_info$taxon_id)) {
+                organism_details <- c(organism_details, 
+                                     paste("Taxon ID:", object@organism_info$taxon_id))
+            }
+            
+            organism_info <- c(organism_header, organism_details, "")
+        } else {
+            organism_info <- character()
+        }
+
+        # Configuration parameters header
+        config_header <- c(
             "Configuration Parameters:",
             "------------------------"
         )
@@ -1066,9 +1114,9 @@ setMethod("show",
             contrasts_info <- apply(object@args$contrasts_tbl, 1, function(row) {
                 paste("  ", row["contrasts"])
             })
-            output <- c(header, params, contrasts_header, contrasts_info)
+            output <- c(header, organism_info, config_header, params, contrasts_header, contrasts_info)
         } else {
-            output <- c(header, params)
+            output <- c(header, organism_info, config_header, params)
         }
 
         # Combine and print
@@ -1358,6 +1406,14 @@ copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE, cur
             display_name = "Volcano Plots"
         ),
         
+        # GO Enrichment Plots (newly added)
+        list(
+            source = file.path(results_dir, "pathway_enrichment"),
+            dest = "Publication_figures/Enrichment_Plots",
+            is_dir = TRUE,
+            display_name = "GO Enrichment Plots"
+        ),
+        
         # Study Report Tables
         list(
             source = "contrasts_tbl",
@@ -1590,7 +1646,15 @@ copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE, cur
                     })
                 } else if (file_spec$is_dir) {
                     source_path <- file_spec$source
-                    dest_path <- file.path(dest_dir, basename(source_path))
+                    # Check if destination path includes subdirectories
+                    if (grepl("/", file_spec$dest)) {
+                        # Extract the last part of the path to use as the custom destination name
+                        parts <- strsplit(file_spec$dest, "/")[[1]]
+                        dest_dir <- file.path(results_summary_dir, paste(parts[-length(parts)], collapse = "/"))
+                        dest_path <- file.path(dest_dir, parts[length(parts)])
+                    } else {
+                        dest_path <- file.path(dest_dir, basename(source_path))
+                    }
 
                     # Create destination directory
                     if (!dir.create(dest_path, showWarnings = FALSE, recursive = TRUE)) {
