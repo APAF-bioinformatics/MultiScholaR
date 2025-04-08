@@ -84,8 +84,8 @@ v0.9 provides significant enhancements to the workflow and introduces new functi
 graph TD
 A[Previous Version 0.8] --> B[Current Version 0.9]
 B --> C[Version 1.0]
-B --> D[✓ Interactive Volcano Plots]
 B --> E[✓ Enhanced Dynamic Report Generation]
+C --> D[Interactive Volcano Plots]
 C --> F[Unsupervised Analysis & Interactive Plots]
 C --> G[Enhanced Enrichment Analysis]
 G --> H[Greater Control Over Enrichment Platforms]
@@ -93,8 +93,12 @@ G --> I[Improved Data Visualisation for Enrichments]
 style A fill:#D3D3D3,color:#000000
 style B fill:#90EE90,color:#000000
 style C fill:#FFB6C1,color:#000000
-style D fill:#90EE90,color:#000000
+style D fill:#FFB6C1,color:#000000
 style E fill:#90EE90,color:#000000
+style F fill:#FFB6C1,color:#000000
+style G fill:#FFB6C1,color:#000000
+style H fill:#FFB6C1,color:#000000
+style I fill:#FFB6C1,color:#000000
 ```
 
 ## Need Help?
