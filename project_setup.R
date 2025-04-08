@@ -1,5 +1,5 @@
 # ============================================================================
-# DIA Workflow Project Setup Script
+# Proteomics Workflow Project Setup Script
 # ============================================================================
 # Hi there! Welcome to ProteomeScholaR :)
 # Instructions: 
@@ -12,9 +12,14 @@
 my_project_name <- "my_analysis"  # Required: Name your project
 my_project_dir <- NULL            # Optional: Set specific directory (leave as NULL for default Documents folder)
 
+
 # Examples for my_project_dir:
 # Windows: my_project_dir <- "C:/Users/username/Projects"
 # Mac:     my_project_dir <- "~/Projects"
+
+# SET YOUR WORKFLOW OPTIONS HERE:
+workflow_type <- "DIA-NN"  # Options: "DIA-NN", "LFQ - FragPipe", "LFQ - MaxQuant", "TMT - MaxQuant", "TMT - FragPipe"
+user_experience <- "experienced"  # Options: "experienced", "beginner"
 
 # ============================================================================
 # DO NOT MODIFY CODE BELOW THIS LINE
@@ -104,11 +109,53 @@ setup_dia_project <- function(root_dir = NULL, overwrite = FALSE) {
         }
     }
     
+    # Determine workflow file based on workflow_type and user_experience
+    get_workflow_url <- function(workflow_type, user_experience) {
+        base_url <- "https://raw.githubusercontent.com/APAF-bioinformatics/ProteomeScholaR/vers-0.9/Workbooks"
+        
+        if (workflow_type == "DIA-NN") {
+            if (user_experience == "experienced") {
+                return(paste0(base_url, "/standard/DIA_workflow_experienced.rmd"))
+            } else if (user_experience == "beginner") {
+                return(paste0(base_url, "/starter/DIA_workflow_starter.rmd"))
+            }
+        } else if (workflow_type == "TMT - MaxQuant") {
+            if (user_experience == "experienced") {
+                return(paste0(base_url, "/standard/TMT_MQ_workflow0.1.rmd"))
+            }
+        }
+        
+        # If no match found, return NULL
+        return(NULL)
+    }
+    
+    # Get the appropriate workflow URL
+    workflow_url <- get_workflow_url(workflow_type, user_experience)
+    
+    # Check if workflow exists
+    if (is.null(workflow_url)) {
+        stop("Workflow not implemented yet for ", workflow_type, " with ", user_experience, " experience level. ",
+             "Feel free to log a feature request at https://github.com/APAF-bioinformatics/ProteomeScholaR/issues")
+    }
+    
+    # Determine workflow filename
+    workflow_filename <- if (workflow_type == "DIA-NN") {
+        if (user_experience == "experienced") {
+            "DIA_workflow_experienced.rmd"
+        } else {
+            "DIA_workflow_starter.rmd"
+        }
+    } else if (workflow_type == "TMT - MaxQuant") {
+        "TMT_MQ_workflow.rmd"
+    } else {
+        paste0(gsub(" - ", "_", gsub(" ", "_", workflow_type)), "_workflow.rmd")
+    }
+    
     # Define GitHub raw content URLs
     templates <- list(
         workflow = list(
-            url = "https://raw.githubusercontent.com/APAF-bioinformatics/ProteomeScholaR/dev-jr/Workbooks/DIA_workflow.rmd",
-            dest = file.path(dirs$scripts_proteomics, "DIA_workflow.rmd")
+            url = workflow_url,
+            dest = file.path(dirs$scripts_proteomics, workflow_filename)
         ),
         config = list(
             url = "https://raw.githubusercontent.com/APAF-bioinformatics/ProteomeScholaR/dev-jr/Workbooks/config.ini",
@@ -137,7 +184,7 @@ setup_dia_project <- function(root_dir = NULL, overwrite = FALSE) {
     
     message("\nProject setup complete!")
     message("Project root: ", normalizePath(root_dir))
-    message("Workflow file: ", normalizePath(file.path(dirs$scripts_proteomics, "DIA_workflow.rmd")))
+    message("Workflow file: ", normalizePath(file.path(dirs$scripts_proteomics, workflow_filename)))
     message("Config file: ", normalizePath(templates$config$dest))
     
     return(invisible(list(
@@ -185,6 +232,20 @@ message("Created R project file: ", rproj_file)
 
 # Create .Rprofile for automatic workflow opening
 startup_script <- file.path(project_path, ".Rprofile")
+
+# Determine workflow filename for .Rprofile
+workflow_filename <- if (workflow_type == "DIA-NN") {
+    if (user_experience == "experienced") {
+        "DIA_workflow_experienced.rmd"
+    } else {
+        "DIA_workflow_starter.rmd"
+    }
+} else if (workflow_type == "TMT - MaxQuant") {
+    "TMT_MQ_workflow.rmd"
+} else {
+    paste0(gsub(" - ", "_", gsub(" ", "_", workflow_type)), "_workflow.rmd")
+}
+
 startup_content <- paste0(
     'if (interactive()) {\n',
     '  message("Initializing project...")\n',
@@ -192,7 +253,7 @@ startup_content <- paste0(
     '  if (!requireNamespace("rstudioapi", quietly = TRUE)) install.packages("rstudioapi")\n',
     '  later::later(function() {\n',
     '    Sys.sleep(2)\n',
-    '    workflow_path <- file.path("scripts", "proteomics", "DIA_workflow.rmd")\n',
+    '    workflow_path <- file.path("scripts", "proteomics", "', workflow_filename, '")\n',
     '    if (file.exists(workflow_path) && rstudioapi::isAvailable()) {\n',
     '      try(rstudioapi::navigateToFile(workflow_path))\n',
     '    } else {\n',
@@ -209,7 +270,7 @@ message("Created startup script for automatic workflow opening")
 if (rstudioapi::isAvailable()) {
     message("Opening new R project...")
     message("Note: If you have unsaved changes, you'll be prompted to save them")
-    message("The workflow file will open automatically in the new project at scripts/proteomics/DIA_workflow.rmd")
+    message("The workflow file will open automatically in the new project at scripts/proteomics/", workflow_filename)
     Sys.sleep(2)  # Give user time to read messages
     rstudioapi::openProject(rproj_file)
 }

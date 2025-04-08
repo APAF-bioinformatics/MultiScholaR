@@ -16,7 +16,7 @@
 
 ### 2. Setup Script
 
-<a href="https://raw.githubusercontent.com/APAF-bioinformatics/ProteomeScholaR/dev-jr/project_setup.R" download="project_setup.R">
+<a href="https://raw.githubusercontent.com/APAF-bioinformatics/ProteomeScholaR/vers-0.9/project_setup.R" download="project_setup.R">
     <img src="https://img.shields.io/badge/Download-Setup_Script-blue?style=for-the-badge&logo=r" alt="Download Setup Script">
 </a>
 
