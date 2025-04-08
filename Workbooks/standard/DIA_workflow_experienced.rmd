@@ -936,7 +936,7 @@ This section retrieves and integrates up-to-date protein annotation data from Un
 
 ```{r Uniprot Data Annotation}
 up <- UniProt.ws(taxId = taxon_id)
-tmp_dir <- file.path(getwd(), "tmp")
+tmp_dir <- file.path(results_dir, "tmp_folder")
 if (!dir.exists(tmp_dir)) {
   dir.create(tmp_dir)
 }
