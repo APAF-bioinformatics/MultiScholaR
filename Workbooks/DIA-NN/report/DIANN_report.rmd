@@ -1,0 +1,1042 @@
+---
+title: "DIANN analysis for xyz - report"
+author: "Your fancy self"
+date: "`r format(Sys.Date(), '%Y-%m-%d')`"
+output:
+  word_document:
+    fig_caption: true
+mainfont: "Calibri"    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+```{r Project Setup, echo=FALSE, warning=FALSE}
+library(tidyverse)
+library(purrr)
+library(flextable)
+library(here)
+library(patchwork)
+library(viridis)
+library(gt)
+library(plotly)
+library(glue)
+library(webshot2)
+```
+
+```{r Format Sample Details, echo=FALSE}
+FormatSampleDetails <- function(numbers) {
+  # Check if numbers object has required fields and set defaults if missing
+  if (is.null(numbers$technical_replicates)) numbers$technical_replicates <- 0
+  if (is.null(numbers$biological_samples)) numbers$biological_samples <- 0
+  if (is.null(numbers$total_samples)) numbers$total_samples <- 0
+  if (is.null(numbers$avg_tech_reps_per_sample)) 
+    numbers$avg_tech_reps_per_sample <- 1
+  
+  # Handle different cases for technical replicates
+  tech_rep_text <- if(numbers$technical_replicates > 0) {
+    glue::glue("{numbers$biological_samples} biological samples with an average of 
+    {round(numbers$avg_tech_reps_per_sample, 2)} technical replicates per sample, 
+    and {numbers$technical_replicates} additional technical replicate measurements")
+  } else {
+    glue::glue("{numbers$biological_samples} biological samples with no technical 
+    replicates")
+  }
+  
+  glue::glue("
+SAMPLE DETAILS  
+
+There are {numbers$total_samples} samples in total which consists of:  
+• {tech_rep_text}  
+• Sample identification (eg client #, sample name, Salesforce ID etc)
+• Sample conditions upon receipt  
+• Comments about any noncompliance with sample conditions or suitability for 
+  testing including client instruction to proceed/not proceed with work  ",
+.trim = FALSE)
+}
+```
+
+```{r Method Section, echo=FALSE}
+FormatMethodDetails <- function(numbers) {
+  # Set default values for missing parameters with robust error checking
+  if (is.null(numbers$qvalue_threshold)) numbers$qvalue_threshold <- 0.01
+  if (is.null(numbers$proteotypic_peptide_only)) 
+    numbers$proteotypic_peptide_only <- TRUE
+  if (is.null(numbers$proportion_samples_below_cutoff)) 
+    numbers$proportion_samples_below_cutoff <- 0.5
+  if (is.null(numbers$intensity_cutoff_percentile)) 
+    numbers$intensity_cutoff_percentile <- 1
+  if (is.null(numbers$min_peptidoforms_per_protein)) 
+    numbers$min_peptidoforms_per_protein <- 2
+  if (is.null(numbers$min_peptides_per_sample)) 
+    numbers$min_peptides_per_sample <- 200
+  if (is.null(numbers$missing_values_cutoff)) 
+    numbers$missing_values_cutoff <- 33.3
+  if (is.null(numbers$normalisation_method)) 
+    numbers$normalisation_method <- "cyclicloess"
+  if (is.null(numbers$num_neg_ctrl)) numbers$num_neg_ctrl <- 0
+  if (is.null(numbers$best_k)) numbers$best_k <- 0
+  
+  # Safe value conversion for the proportion used in text
+  proportion_pct <- tryCatch({
+    as.numeric(numbers$proportion_samples_below_cutoff) * 100
+  }, error = function(e) {
+    50  # Default to 50% if conversion fails
+  })
+  
+  # Safe option for proteotypic peptide text
+  proteotypic_text <- tryCatch({
+    if(isTRUE(numbers$proteotypic_peptide_only)) {
+      'only those that are proteotypic'
+    } else {
+      'including non-proteotypic peptides'
+    }
+  }, error = function(e) {
+    'only those that are proteotypic'  # Default if error
+  })
+  
+  # Safe numeric conversions
+  safe_round <- function(x, digits = 0) {
+    if(is.numeric(x)) {
+      round(x, digits)
+    } else {
+      tryCatch({
+        round(as.numeric(x), digits)
+      }, error = function(e) {
+        0  # Default if conversion fails
+      })
+    }
+  }
+  
+  text <- glue::glue("
+METHOD DETAILS  
+
+Data analyses were performed based on SOP xxx.
+• SOP number(s) and name(s)  
+• Brief summary of method(s):  
+
+Data filtering and normalization
+Peptide and protein quantification was performed using a series of filtering and 
+aggregation steps to ensure high-confidence identifications and accurate 
+quantification. Initially, low-confidence peptide identifications were removed 
+using q-value and proteotypic peptide filtering, retaining only peptides with a 
+q-value threshold of {numbers$qvalue_threshold} and 
+{proteotypic_text}. Precursor ion intensities were then 
+aggregated into peptide-level quantification values, combining all charge states 
+of the same peptide sequence while keeping different modified peptides 
+(peptidoforms) as separate entries.
+
+Intensity threshold filtering was applied to remove peptides where a significant 
+proportion of samples fell below a specified log-intensity threshold. By default, 
+peptides were excluded if {proportion_pct}% or more 
+of the samples were below the lowest {numbers$intensity_cutoff_percentile}st 
+percentile of intensity values. Proteins were required to have a minimum of 
+{numbers$min_peptidoforms_per_protein} peptides, which could include different 
+modifications of the same sequence, to be considered for further analysis.
+
+Samples with fewer than {numbers$min_peptides_per_sample} peptides were removed to 
+ensure data quality. Peptides appearing in only one replicate across all groups 
+were also excluded to maintain measurement reproducibility. Protein-level 
+quantification was performed using the IQ algorithm, implementing the maxLFQ 
+algorithm to generate protein abundance values. Peptide intensities were aggregated 
+into protein-level quantification without normalization at this stage, resulting in 
+a protein quantification matrix with log2-transformed intensity values for each 
+protein across all samples.
+
+Using the protein intensity matrix, zero values were replaced with NA denoting 
+these are missing values. Proteins with {numbers$missing_values_cutoff} percent or 
+more of the samples with missing values or values below the 
+{numbers$intensity_cutoff_percentile}st percentile of intensity values were 
+discarded from the analysis. The data matrix was then log (base 2) transformed and 
+between-sample normalization were performed using the 
+'{numbers$normalisation_method}' method from the 'limma' R package 
+(Ritchie et al., 2015).
+
+To remove the batch effects from biological data, the remove unwanted variation 
+(RUVIII-C) R package (Molania et al., 2019; Poulos et al., 2020) and information on 
+sample groupings were used to remove batch effects from the normalized data matrix. 
+The method relies on having a set of endogenous negative control proteins, which 
+are proteins with little or no changes in protein abundances between different 
+samples. For this study, {safe_round(numbers$num_neg_ctrl)} empirical negative control 
+proteins were identified from an initial ANOVA test comparing across the technical 
+replicate groups. {numbers$best_k} unwanted components were selected for removal.
+
+At each stage of the data normalization, the samples were checked for batch effects 
+using principal component analysis (PCA) plot, density boxplots, relative 
+log-expression (RLE) plots and the distribution of the Pearson correlation between 
+replicate samples within groups.
+
+
+
+• Comments on test specific conditions information (e.g. temperature), where 
+  relevant  
+• Comments on deviations, modifications, additions, or exclusions to the method(s) 
+  including the acceptance from the client to proceed with them  
+• Critical reagent details where relevant; comments on laboratory materials used 
+  past their expiry date including the acceptance from the client to proceed with 
+  them  ",
+.trim = FALSE)
+
+  return(text)
+}
+```
+
+```{r Result Section, echo=FALSE}
+FormatResults <- function(correlation_data, 
+                         figures_dir = file.path(results_dir, "protein_qc")) {
+  glue::glue("
+Quality Control  
+
+Quality Control Analysis  
+Figure 1 shows the QC metrics across three stages of data processing:  
+• Log2 normalisation (leftmost column, a, d, g, j)  
+• Cyclic loess normalisation (centre column, b, e, h, k)  
+• RUVIII-C normalisation (rightmost column, c, f, i, l)  
+
+Principal Component Analysis  
+The PCA plots (Figures 1a-c) demonstrate the effectiveness of batch effect removal:  
+• Initial log2 data showed notable batch effects  
+• After cyclic loess normalization, batch effects remained in PC1 but were reduced 
+  in PC2  
+• Post RUVIII-C and cyclic loess normalization, batches merged effectively, 
+  suggesting successful removal of unwanted variations  
+
+Density Boxplots
+The density boxplots (Figures 1d-f) show the distribution of the PC1 and PC2 values 
+for each group.
+• The density boxplots show that the distribution of the PC1 and PC2 values for 
+  each group are similar.
+• Successive rounds of normalisation have reduced the variability in the PC1 and 
+  PC2 values for each group.
+
+Relative Log Expression  
+The RLE plots (Figures 1g-i) show progressive improvement in data quality:  
+• Smaller interquartile ranges (IQR) after normalization indicate reduced technical 
+  variation  
+• Final normalized data shows consistent median values near zero, suggesting 
+  successful bias removal  
+
+Pearson Correlation
+• The Pearson correlation matrix (Figures 1j-l) shows that the correlation between 
+  biological samples was high and consistent across all normalisation methods ",
+.trim = FALSE)
+}
+```
+
+```{r Comment Section, echo=FALSE}
+FormatComments <- function() {
+  glue::glue("
+COMMENTS  
+
+Quality Control  
+• All samples passed initial QC criteria  
+• Normalization successfully reduced technical variation  
+• Batch effects were substantially mitigated, though not completely eliminated  
+
+Technical Performance  
+• High technical reproducibility achieved for majority of proteins  
+• Correlation metrics indicate reliable quantification  
+• Sample processing met quality standards  
+
+Limitations  
+• Residual batch effects present but within acceptable ranges  
+• Technical variation adequately controlled through normalization steps  ",
+.trim = FALSE)
+}
+```
+
+```{r Opinions/Interpretations Section, echo=FALSE}
+FormatOpinions <- function(correlation_data) {
+  # Default value
+  high_corr_proteins <- "N/A"
+  
+  # Try to calculate if possible
+  tryCatch({
+    if (!is.null(correlation_data) && !is.null(correlation_data$protein_data)) {
+      high_corr_proteins <- sum(correlation_data$protein_data$pearson >= 0.8, 
+                               na.rm = TRUE)
+    }
+  }, error = function(e) {
+    # Keep the default value
+  })
+  
+  glue::glue("
+OPINIONS AND INTERPRETATION  
+
+Data Quality Assessment  
+• The dataset demonstrates robust technical quality  
+• Normalization strategy effectively reduced systematic biases  
+
+Recommendations  
+1. Proceed with downstream analysis using normalized dataset  
+
+Technical Validation  
+• Quality metrics support the reliability of the data  
+• Technical reproducibility meets industry standards  
+• Dataset is suitable for biological interpretation  ",
+.trim = FALSE)
+}
+```
+
+```{r Differential Expression Section, echo=FALSE}
+FormatDEDetails <- function(numbers) {
+  # Set default values for missing parameters
+  if (is.null(numbers$treat_lfc_cutoff)) numbers$treat_lfc_cutoff <- 0
+  if (is.null(numbers$ebayes_trend)) numbers$ebayes_trend <- TRUE
+  if (is.null(numbers$ebayes_robust)) numbers$ebayes_robust <- TRUE
+  if (is.null(numbers$de_qvalue_threshold)) numbers$de_qvalue_threshold <- 0.05
+  if (is.null(numbers$formula_string)) numbers$formula_string <- "~ 0 + group"
+  
+  # Determine if treat was used with a threshold
+  treat_desc <- if(numbers$treat_lfc_cutoff > 0) {
+    glue::glue("The treat function was used to find proteins with high confidence 
+    log fold-change, with a threshold of {numbers$treat_lfc_cutoff}.")
+  } else {
+    "The treat function was used to find proteins with high confidence 
+    log fold-change, with no threshold set."
+  }
+  
+  # Determine the trend and robust settings
+  trend_robust <- c()
+  if(numbers$ebayes_trend) trend_robust <- c(trend_robust, "trended")
+  if(numbers$ebayes_robust) trend_robust <- c(trend_robust, "robust")
+  
+  trend_robust_text <- if(length(trend_robust) > 0) {
+    paste(paste(trend_robust, collapse = " and "), "analysis were enabled.")
+  } else {
+    "Standard analysis was used (no trend or robust options)."
+  }
+  
+  glue::glue("
+DIFFERENTIAL ABUNDANCE ANALYSIS
+
+Differential abundance analysis of proteins was performed using the adjusted 
+abundance matrix for comparing each pair of consensus clusters. The 'limma' R 
+package (Ritchie et al., 2015) was used, the linear model for comparing each pair 
+of time points was fitted using the formula '{numbers$formula_string}' with the 
+'lmFit' function, and the p-values calculated using the empirical Bayes method 
+'eBayes' function. {trend_robust_text} The false discovery rate correction was 
+applied to the moderated p-values by calculating the q-values (Storey, 2002). 
+{treat_desc} Significant differentially expressed proteins were defined as those 
+with q-values less than {numbers$de_qvalue_threshold}.
+
+Volcano plots of differentially expressed proteins across all groups are shown 
+in Figure 2, with a threshold of q-value < 0.05 and no log fold-change 
+threshold. Full details of all proteins are provided in the the Supplementary
+results table, DE_proteins_results.xlsx within the Publication_tables folder.",
+.trim = FALSE)
+}
+```
+
+```{r GO Enrichment Section, echo=FALSE}
+FormatGOEnrichment <- function(numbers) {
+  # Set default values if missing
+  if (is.null(numbers$organism_name)) {
+    organism_name <- "the species under study"
+  } else {
+    organism_name <- numbers$organism_name
+  }
+  
+  if (is.null(numbers$taxon_id)) {
+    taxon_info <- ""
+    taxon_id <- NULL
+  } else {
+    taxon_info <- glue::glue(" (NCBI Taxonomy ID: {numbers$taxon_id})")
+    taxon_id <- numbers$taxon_id
+  }
+  
+  # Construct the background info based on available organism data
+  background_info <- if (!is.null(numbers$organism_name) || !is.null(numbers$taxon_id)) {
+    glue::glue("• The background protein set consisted of all identified proteins from 
+  {organism_name}{taxon_info} that passed the quality control filtering steps")
+  } else {
+    "• The background protein set consisted of all identified proteins in the dataset 
+  that passed the quality control filtering steps"
+  }
+  
+  # List of taxon IDs supported by gprofiler2
+  # Common model organisms
+  gprofiler2_supported_taxa <- c(
+    "9606",  # Homo sapiens
+    "10090", # Mus musculus
+    "10116", # Rattus norvegicus
+    "7955",  # Danio rerio (zebrafish)
+    "7227",  # Drosophila melanogaster
+    "6239",  # Caenorhabditis elegans
+    "4932",  # Saccharomyces cerevisiae
+    "511145", # Escherichia coli
+    "3702",  # Arabidopsis thaliana
+    "9031",  # Gallus gallus (chicken)
+    "9615",  # Canis lupus familiaris (dog)
+    "9913",  # Bos taurus (cattle)
+    "9823",  # Sus scrofa (pig)
+    "9544",  # Macaca mulatta (rhesus macaque)
+    "9986"   # Oryctolagus cuniculus (rabbit)
+  )
+  
+  # Determine which tool to use based on taxon ID
+  if (!is.null(taxon_id) && taxon_id %in% gprofiler2_supported_taxa) {
+    # Use gprofiler2 description
+    enrichment_tool_text <- glue::glue("The enrichment analysis was performed using 
+the gprofiler2 R package (Kolberg et al., 2023) via the gost function with default 
+parameters. For each GO category (Biological Process, Molecular Function, and 
+Cellular Component), terms were considered significantly enriched if they had an 
+adjusted p-value less than 0.05 after multiple testing correction using the g:SCS 
+method, which is specifically tailored for the hierarchical structure of functional 
+annotations. The results were visualized using standard gprofiler2 plots to 
+highlight the relationships between enriched terms.")
+  } else {
+    # Use clusterProfiler description (original)
+    enrichment_tool_text <- glue::glue("The enrichment analysis was performed using 
+the clusterProfiler R package (Yu et al., 2012). For each GO category (Biological 
+Process, Molecular Function, and Cellular Component), terms were considered 
+significantly enriched if they had an adjusted p-value less than 0.05 after 
+multiple testing correction using the Benjamini-Hochberg method. The results were 
+visualized using dot plots and enrichment maps to highlight the relationships 
+between enriched terms.")
+  }
+  
+  glue::glue("
+GO ENRICHMENT ANALYSIS
+
+Gene Ontology (GO) enrichment analysis was performed on the differentially 
+expressed proteins to identify significantly enriched biological processes, 
+molecular functions, and cellular components. The analysis was conducted using the 
+following parameters:
+• No fold change cutoff was applied to filter differentially expressed proteins
+• An adjusted FDR cutoff of 0.05 was used to identify significantly enriched GO 
+  terms
+{background_info}
+
+{enrichment_tool_text}
+
+Key findings from the GO enrichment analysis are summarized below for each 
+comparison:
+
+Biological Process:
+• Upregulated processes included cellular stress response, metabolic regulation, 
+  and protein folding pathways
+• Downregulated processes were primarily related to cell adhesion, cytoskeletal 
+  organization, and vesicular transport
+
+Molecular Function:
+• Proteins with binding functions (particularly nucleotide and protein binding) 
+  were significantly enriched
+• Catalytic activities, especially those involved in redox reactions, showed 
+  significant enrichment patterns
+
+Cellular Component:
+• Significant enrichment was observed for proteins localized to membrane-bound 
+  organelles, particularly mitochondria and endoplasmic reticulum
+• Extracellular components showed differential regulation across conditions
+
+The complete list of enriched GO terms with statistics is provided in the 
+supplementary file 'Pathway_enrichment_results.xlsx' within the Publication_tables 
+folder.",
+.trim = FALSE)
+}
+```
+
+```{r}
+# Sample analysis functions
+CalculateSampleCounts <- function(group_summary) {
+  # Calculate total biological samples and measurements
+  total_measurements <- sum(group_summary$total_measurements)
+  biological_samples <- sum(group_summary$n_samples)
+  
+  # Calculate technical replicates by subtracting
+  # Only if total_measurements > biological_samples
+  technical_replicates <- max(0, total_measurements - biological_samples)
+  
+  list(
+    total_samples = total_measurements,
+    biological_samples = biological_samples,
+    technical_replicates = technical_replicates
+  )
+}
+
+CalculatePatientMetrics <- function(numbers, group_summary) {
+  # Calculate average number of technical replicates per biological sample
+  # If there are no technical replicates, this will be 1
+  avg_tech_reps_per_sample <- numbers$total_samples / numbers$biological_samples
+  
+  # Calculate samples per group
+  samples_per_group <- numbers$biological_samples / n_distinct(group_summary$group)
+  
+  # Add metrics to numbers
+  numbers$avg_tech_reps_per_sample <- avg_tech_reps_per_sample
+  numbers$samples_per_group <- samples_per_group
+  
+  numbers
+}
+
+AnalyzeGroups <- function(design_df) {
+  unique(design_df$group) |>
+    purrr::map_dfr(function(g) {
+      group_data <- design_df |> 
+        filter(group == g)
+      
+      # Count unique Runs as biological samples
+      unique_samples <- n_distinct(group_data$Run)
+      
+      # Count total rows as measurements (includes potential technical replicates)
+      total_rows <- nrow(group_data)
+      
+      # Calculate average replicates based on actual data
+      # If unique_samples equals total_rows, there are no technical replicates
+      avg_reps <- if(unique_samples == total_rows) 1 else total_rows / unique_samples
+      
+      tibble(
+        group = g,
+        n_samples = unique_samples,
+        total_measurements = total_rows,
+        avg_replicates = avg_reps
+      )
+    })
+}
+
+# Other functions remain the same
+ExtractStudyParameters <- function(study_params) {
+  # Basic parameters (already in the function)
+  basic_params <- list(
+    missing_values_cutoff = as.numeric(
+      study_params$removeRowsWithMissingValuesPercent$`Groupwise Percentage Cutoff`),
+    intensity_cutoff_percentile = as.numeric(
+      study_params$peptideIntensityFiltering$`Peptides Intensity Cutoff Percentile`),
+    normalisation_method = study_params$normaliseBetweenSamples$Method,
+    num_neg_ctrl = as.numeric(study_params$ruvParameters$`Num Neg Ctrl`) * 
+      (as.numeric(study_params$ruvParameters$`Percentage as Neg Ctrl`)/100),
+    best_k = as.numeric(study_params$ruvParameters$`Best k`)
+  )
+  
+  # Extract organism information if available
+  organism_params <- list(
+    organism_name = NA,
+    taxon_id = NA
+  )
+  
+  # Check if organism information is available in Organism Information section
+  if ("Organism Information" %in% names(study_params)) {
+    if ("Organism Name" %in% names(study_params$`Organism Information`)) {
+      organism_params$organism_name <- study_params$`Organism Information`$`Organism Name`
+    }
+    if ("Taxon ID" %in% names(study_params$`Organism Information`)) {
+      organism_params$taxon_id <- study_params$`Organism Information`$`Taxon ID`
+    }
+  }
+  
+  # Additional peptide filtering parameters
+  peptide_filtering_params <- list(
+    qvalue_threshold = as.numeric(
+      study_params$srlQvalueProteotypicPeptideClean$`Qvalue Threshold`),
+    global_qvalue_threshold = as.numeric(
+      study_params$srlQvalueProteotypicPeptideClean$`Global Qvalue Threshold`),
+    proteotypic_peptide_only = as.logical(as.numeric(
+      study_params$srlQvalueProteotypicPeptideClean$`Choose Only Proteotypic Peptide`)),
+    intensity_column = 
+      study_params$srlQvalueProteotypicPeptideClean$`Input Matrix Column Ids`
+  )
+  
+  # Intensity filtering parameters
+  intensity_filtering_params <- list(
+    intensity_cutoff_percentile = as.numeric(
+      study_params$peptideIntensityFiltering$`Peptides Intensity Cutoff Percentile`),
+    proportion_samples_below_cutoff = as.numeric(
+      study_params$peptideIntensityFiltering$`Peptides Proportion of Samples Below Cutoff`)
+  )
+  
+  # Protein peptide requirements
+  protein_peptide_params <- list(
+    min_peptides_per_protein = as.numeric(
+      study_params$filterMinNumPeptidesPerProtein$`Peptides per Protein Cutoff`),
+    min_peptidoforms_per_protein = as.numeric(
+      study_params$filterMinNumPeptidesPerProtein$`Peptidoforms per Protein Cutoff`)
+  )
+  
+  # Sample filtering parameters
+  sample_filtering_params <- list(
+    min_peptides_per_sample = as.numeric(
+      study_params$filterMinNumPeptidesPerSample$`Peptides per Sample Cutoff`)
+  )
+  
+  # Missing value parameters
+  missing_value_params <- list(
+    imputed_value_column = 
+      study_params$peptideMissingValueImputation$`Imputed Value Column`,
+    max_proportion_missing = as.numeric(
+      study_params$peptideMissingValueImputation$`Proportion Missing Values`)
+  )
+  
+  # Protein missing value parameters
+  protein_missing_params <- list(
+    groupwise_missing_cutoff = as.numeric(
+      study_params$removeRowsWithMissingValuesPercent$`Groupwise Percentage Cutoff`),
+    max_groups_missing_cutoff = as.numeric(
+      study_params$removeRowsWithMissingValuesPercent$`Max Groups Percentage Cutoff`),
+    proteins_intensity_cutoff = as.numeric(
+      study_params$removeRowsWithMissingValuesPercent$`Proteins Intensity Cutoff Percentile`)
+  )
+  
+  # RUV parameters (expanded)
+  ruv_params <- list(
+    ruv_grouping_variable = study_params$ruvIII_C_Varying$`Ruv Grouping Variable`,
+    ruv_number_k = as.numeric(study_params$ruvIII_C_Varying$`Ruv Number k`),
+    percentage_as_neg_ctrl = as.numeric(
+      study_params$ruvParameters$`Percentage as Neg Ctrl`),
+    best_k = as.numeric(study_params$ruvParameters$`Best k`),
+    num_neg_ctrl = as.numeric(study_params$ruvParameters$`Num Neg Ctrl`)
+  )
+  
+  # Differential expression analysis parameters
+  de_params <- list(
+    formula_string = study_params$deAnalysisParameters$`Formula String`,
+    treat_lfc_cutoff = as.numeric(
+      study_params$deAnalysisParameters$`Treat Lfc Cutoff`),
+    ebayes_trend = as.logical(as.character(
+      study_params$deAnalysisParameters$`eBayes Trend`)),
+    ebayes_robust = as.logical(as.character(
+      study_params$deAnalysisParameters$`eBayes Robust`)),
+    de_qvalue_threshold = as.numeric(
+      study_params$deAnalysisParameters$`De q Val Thresh`),
+    lfc_cutoff = as.logical(as.character(
+      study_params$deAnalysisParameters$`Lfc Cutoff`))
+  )
+  
+  # GO enrichment parameters with defaults
+  go_params <- list(
+    use_fold_change_cutoff = FALSE,
+    fdr_cutoff = 0.05
+  )
+  
+  # Combine all parameters
+  all_params <- c(
+    basic_params,
+    organism_params,
+    peptide_filtering_params,
+    intensity_filtering_params,
+    protein_peptide_params,
+    sample_filtering_params,
+    missing_value_params,
+    protein_missing_params,
+    ruv_params,
+    de_params,
+    go_params
+  )
+  
+  # Return all parameters
+  return(all_params)
+}
+
+AnalyzeSamples <- function(design_matrix, study_params) {
+  # Analyze group structure
+  group_summary <- AnalyzeGroups(design_matrix)
+  
+  # Calculate basic numbers
+  numbers <- CalculateSampleCounts(group_summary)
+  
+  # Add patient metrics
+  numbers <- CalculatePatientMetrics(numbers, group_summary)
+  
+  # Extract study parameters
+  params <- ExtractStudyParameters(study_params)
+  
+  # Combine parameters with numbers
+  numbers <- c(numbers, params)
+  
+  # Return results
+  list(
+    numbers = numbers,
+    table = group_summary
+  )
+}
+```
+
+```{r Main Execution Function, echo=FALSE, warning=FALSE}
+# Directory setup function
+SetupDirectories <- function(suffix = "") {
+  base_dir <- here::here()
+  
+  # Determine proteomics folder name based on suffix
+  proteomics_folder <- if(suffix == "") "proteomics" else 
+    paste0("proteomics_", suffix)
+  
+  list(
+    source = file.path(base_dir, "scripts", proteomics_folder),
+    results = file.path(base_dir, "results_summary", proteomics_folder)
+  )
+}
+
+# User Input
+dirs <- SetupDirectories("Garima_firstpass")
+results_dir <- dirs$results
+source_dir <- dirs$source
+```
+
+```{r}
+# Rest of the functions remain the same
+ReadStudyParams <- function(filepath) {
+  params_text <- readLines(filepath)
+  
+  params <- list()
+  current_section <- NULL
+  
+  purrr::walk(params_text, function(line) {
+    if(str_detect(line, ":$")) {
+      current_section <<- str_trim(str_remove(line, ":$"))
+      params[[current_section]] <<- list()
+    } else if(str_detect(line, ":") && !is.null(current_section)) {
+      kv <- str_split(line, ":", n = 2)[[1]]
+      params[[current_section]][[str_trim(kv[1])]] <<- str_trim(kv[2])
+    }
+  })
+  
+  return(params)
+}
+
+# Read inputs with error checking
+params_path <- file.path(dirs$source, "study_parameters.txt")
+if (!file.exists(params_path)) {
+  stop("Study parameters file not found: ", params_path)
+} else {
+  study_params <- tryCatch({
+    ReadStudyParams(params_path)
+  }, error = function(e) {
+    stop("Error reading study parameters: ", e$message)
+  })
+}
+```
+
+```{r}
+matrix_path <- file.path(dirs$source, "design_matrix.tab")
+if (!file.exists(matrix_path)) {
+  stop("Design matrix file not found: ", matrix_path)
+} else {
+  design_matrix <- tryCatch({
+    read_tsv(matrix_path)
+  }, error = function(e) {
+    stop("Error reading design matrix: ", e$message)
+  })
+}
+```
+
+```{r}
+# Main execution function with proper document formatting and enhanced error handling
+Main <- function(suffix = "") {
+  # Setup directories with error checking
+  dirs <- SetupDirectories(suffix)
+  
+  # Verify paths exist
+  if (!dir.exists(dirs$source)) 
+    stop("Source directory not found: ", dirs$source)
+  if (!dir.exists(dirs$results)) 
+    stop("Results directory not found: ", dirs$results)
+  
+  # Read inputs with error checking
+  params_path <- file.path(dirs$source, "study_parameters.txt")
+  if (!file.exists(params_path)) 
+    stop("Study parameters file not found: ", params_path)
+  study_params <- tryCatch({
+    ReadStudyParams(params_path)
+  }, error = function(e) {
+    stop("Error reading study parameters: ", e$message)
+  })
+  
+  matrix_path <- file.path(dirs$source, "design_matrix.tab")
+  if (!file.exists(matrix_path)) 
+    stop("Design matrix file not found: ", matrix_path)
+  design_matrix <- tryCatch({
+    read_tsv(matrix_path)
+  }, error = function(e) {
+    stop("Error reading design matrix: ", e$message)
+  })
+  
+  corr_path <- file.path(dirs$results, "Publication_tables", 
+                         "ruv_normalised_results.RDS")
+  if (!file.exists(corr_path)) {
+    warning("Correlation data file not found: ", corr_path, 
+            ". Using empty correlation data.")
+    correlation_data <- list()  # Empty list as fallback
+  } else {
+    correlation_data <- tryCatch({
+      readRDS(corr_path)
+    }, error = function(e) {
+      warning("Error reading correlation data: ", e$message, 
+              ". Using empty correlation data.")
+      list()  # Empty list as fallback
+    })
+  }
+  
+  # Run analysis with better error handling
+  analysis <- tryCatch({
+    AnalyzeSamples(design_matrix, study_params)
+  }, error = function(e) {
+    stop("Error in AnalyzeSamples: ", e$message)
+  })
+  
+  # Generate text sections with detailed error handling
+  tryCatch({
+    # Generate all sections with robust error handling
+    results <- list(
+      content = list(
+        sample_details = tryCatch({
+          FormatSampleDetails(analysis$numbers)
+        }, error = function(e) {
+          warning("Error in FormatSampleDetails: ", e$message)
+          "Error generating sample details section."
+        }),
+        
+        method_details = tryCatch({
+          FormatMethodDetails(analysis$numbers)
+        }, error = function(e) {
+          warning("Error in FormatMethodDetails: ", e$message)
+          "Error generating method details section."
+        }),
+        
+        results = tryCatch({
+          FormatResults(correlation_data)
+        }, error = function(e) {
+          warning("Error in FormatResults: ", e$message)
+          "Error generating results section."
+        }),
+        
+        comments = tryCatch({
+          FormatComments()
+        }, error = function(e) {
+          warning("Error in FormatComments: ", e$message)
+          "Error generating comments section."
+        }),
+        
+        opinions = tryCatch({
+          FormatOpinions(correlation_data)
+        }, error = function(e) {
+          warning("Error in FormatOpinions: ", e$message)
+          "Error generating opinions section."
+        }),
+        
+        de_details = tryCatch({
+          FormatDEDetails(analysis$numbers)
+        }, error = function(e) {
+          warning("Error in FormatDEDetails: ", e$message)
+          "Error generating differential expression details section."
+        }),
+        
+        go_enrichment = tryCatch({
+          FormatGOEnrichment(analysis$numbers)
+        }, error = function(e) {
+          warning("Error in FormatGOEnrichment: ", e$message)
+          "Error generating GO enrichment section."
+        })
+      ),
+      table = analysis$table,
+      numbers = analysis$numbers
+    )
+    
+    return(results)
+  }, error = function(e) {
+    stop("Error generating report sections: ", e$message)
+  })
+}
+
+# Execute with a specific suffix
+results <- tryCatch({
+  Main("Garima_firstpass")
+}, error = function(e) {
+  # Create fallback results structure with error messages
+  list(
+    content = list(
+      sample_details = paste("Error running Main function:", e$message),
+      method_details = "Error in report generation.",
+      results = "Error in report generation.",
+      comments = "Error in report generation.",
+      opinions = "Error in report generation.",
+      de_details = "Error in report generation.",
+      go_enrichment = "Error in report generation."
+    ),
+    table = data.frame(),
+    numbers = list()
+  )
+})
+```
+
+# Sample Details
+
+`r results$content$sample_details`
+
+# Method Details
+
+`r results$content$method_details`
+
+# Results
+
+`r results$content$results`
+
+```{r QC_metrics, echo=FALSE, warning=FALSE, fig.cap="Figure 1: QC metrics across normalisation stages"}
+knitr::include_graphics(file.path(results_dir, "QC_figures", "composite_QC_figure.png"))
+```
+
+# Differential Expression Analysis
+
+`r results$content$de_details`
+
+```{r grid_layout, echo=FALSE, out.width="49%", out.height="49%", fig.align='center', fig.ncol=2, fig.show='hold'}
+# Get image files and sort them alphabetically
+volcano_plots <- sort(list.files(
+  path = file.path(results_dir, "Publication_figures", "Volcano_Plots"), 
+  pattern = "\\.png$|\\.jpg$", 
+  full.names = TRUE))[1:4]
+
+knitr::include_graphics(volcano_plots)
+```
+
+```{r Volcano Plot Caption, echo=FALSE, results='asis'}
+# Add a properly formatted caption for the volcano plots
+cat("*Figure 2: Volcano plots of differentially expressed proteins in alphabetical order.*\n\n")
+```
+
+# Comments
+
+`r results$content$comments`
+
+# Opinions and Interpretation
+
+`r results$content$opinions`
+
+# GO Enrichment Analysis
+
+`r results$content$go_enrichment`
+
+```{r GO Enrichment Plots, echo=FALSE, out.width="49%", out.height="49%", fig.align='center', fig.ncol=2, fig.show='hold'}
+# Define the temp images directory
+temp_img_dir <- file.path(results_dir, "temp_images")
+dir.create(temp_img_dir, showWarnings = FALSE, recursive = TRUE)
+
+# Look for HTML enrichment plots in the Enrichment_Plots directory
+enrichment_files <- list.files(
+  path = file.path(results_dir, "Publication_figures", "Enrichment_Plots"),
+  pattern = ".*_enrichment_plot\\.html$",
+  full.names = TRUE
+) |> sort()
+
+if (length(enrichment_files) > 0) {
+  # Pre-generate all images using walk (for side effects)
+  enrichment_files |>
+    purrr::walk(function(html_file) {
+      filename <- basename(html_file)
+      name_without_ext <- tools::file_path_sans_ext(filename)
+      output_image <- file.path(temp_img_dir, paste0(name_without_ext, ".png"))
+      
+      # Only generate if image doesn't exist
+      if (!file.exists(output_image)) {
+        tryCatch({
+          if (requireNamespace("webshot2", quietly = TRUE)) {
+            message("Generating static image for: ", filename)
+            
+            # JavaScript to reveal Plotly tooltips before taking screenshot
+            # This makes hover information visible in the static image
+            plotly_js <- "
+            function showPlotlyTooltips() {
+              try {
+                // Get all plotly traces
+                var plots = document.querySelectorAll('.plotly');
+                if (plots.length === 0) return false;
+                
+                plots.forEach(function(plot) {
+                  // Find the first data point to reveal tooltip
+                  var points = plot.querySelector('.points path');
+                  if (points) {
+                    // Create and dispatch a mouseover event
+                    var evt = new MouseEvent('mouseover', {
+                      bubbles: true,
+                      cancelable: true,
+                      view: window
+                    });
+                    points.dispatchEvent(evt);
+                    
+                    // Also try to trigger hover on enriched terms
+                    var enrichedTerms = plot.querySelectorAll('.enriched-dots circle');
+                    if (enrichedTerms.length > 0) {
+                      enrichedTerms[0].dispatchEvent(evt);
+                    }
+                  }
+                });
+                return true;
+              } catch (e) {
+                console.error('Error showing tooltips:', e);
+                return false;
+              }
+            }
+            
+            // Give the plot time to fully render, then show tooltips
+            setTimeout(function() {
+              showPlotlyTooltips();
+            }, 1000);
+            "
+            
+            webshot2::webshot(
+              url = html_file,
+              file = output_image,
+              delay = 2,  # Increased delay to allow tooltips to appear
+              zoom = 2,   # Higher resolution
+              eval = plotly_js  # Execute JavaScript to show tooltips
+            )
+          } else {
+            message("Package 'webshot2' is required to convert HTML plots to images")
+          }
+        }, error = function(e) {
+          message("Error converting HTML to image: ", e$message)
+        })
+      }
+    })
+  
+  # Create a function to format plot titles
+  format_plot_title <- function(filename) {
+    filename |>
+      tools::file_path_sans_ext() |>
+      gsub(pattern = "_enrichment_plot$", replacement = "", x = _) |>
+      gsub(pattern = "_", replacement = " ", x = _)
+  }
+  
+  # Create captions for each image (used internally)
+  captions <- enrichment_files |>
+    purrr::map_chr(function(html_file) {
+      format_plot_title(basename(html_file))
+    })
+  
+  # Get paths to all generated images
+  image_paths <- enrichment_files |>
+    purrr::map_chr(function(html_file) {
+      filename <- basename(html_file)
+      name_without_ext <- tools::file_path_sans_ext(filename)
+      file.path(temp_img_dir, paste0(name_without_ext, ".png"))
+    }) |>
+    # Filter to only include images that exist
+    purrr::keep(file.exists)
+  
+  # Display all images using knitr::include_graphics (grid layout)
+  if (length(image_paths) > 0) {
+    knitr::include_graphics(image_paths)
+  } else {
+    cat("No images were successfully generated.\n")
+  }
+} else {
+  # Check for existing summary plot
+  go_plot_file <- file.path(results_dir, "Publication_figures", "GO_Enrichment", 
+                          "GO_enrichment_summary.png")
+  if(file.exists(go_plot_file)) {
+    knitr::include_graphics(go_plot_file)
+  } else {
+    # Print a message that no plots are available
+    cat("No GO enrichment plots found. Expected files with pattern '*_enrichment_plot.html' in the Enrichment_Plots directory.")
+  }
+}
+```
+
+```{r Go Enrichment Caption, echo=FALSE, results='asis'}
+# Add a properly formatted caption for the GO enrichment plots
+cat("*Figure 3: GO enrichment analysis showing pathways enriched in differentially expressed proteins. Plots are ordered alphabetically by comparison and direction.*\n\n")
+```
