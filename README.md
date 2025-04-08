@@ -1,4 +1,4 @@
-# ProteomeScholaR <img src="https://img.shields.io/badge/Version-0.8-green?style=for-the-badge" alt="Version 0.8">
+# ProteomeScholaR <img src="https://img.shields.io/badge/Version-0.9-green?style=for-the-badge" alt="Version 0.9">
 
 ## Quick Start
 
@@ -52,15 +52,16 @@ The data is derived from the publicly available dataset published in [Mu, Klare,
 ## Using the Workflow
 
 1. Run the DIA_workflow.rmd file (this should automatically have opened if you did the above correctly!)
+   - **NEW:** Beginners can try DIA_workflow_starter.rmd with detailed explanations and educational resources
 2. Please copy your organism .fasta to the data/UniProt subdirectory
 3. Please copy your searched data to the data/proteomics subdirectory
 4. Proceed chunk by chunk
-5. Use the embedded Shiny app to define your:
+5. Use the enhanced Shiny app to define your:
    - Experimental design
    - Contrasts
    - Linear model
 6. Find all results in the summary_results folder
-7. Run DIA_report_1.0.rmd to generate a shareable report (current not finished)
+7. **NEW:** Run DIA_report.rmd to generate comprehensive HTML and Word reports with publication-quality visualizations
 
 ## Contributors 
 * Ignatius Pang (ignatius.pang@mq.edu.au) 
@@ -68,24 +69,32 @@ The data is derived from the publicly available dataset published in [Mu, Klare,
 
 ## Version Information
 
-v0.8 provides a feature-complete workflow for processing searched DIA-NN proteomics data.
+v0.9 provides significant enhancements to the workflow and introduces new functionality:
+
+- **NEW:** Comprehensive automated report generation system
+- **NEW:** Beginner-friendly workflow with educational resources
+- **NEW:** Enhanced Shiny app with improved usability and error handling
+- **IMPROVED:** Enhanced visualization capabilities
+- **IMPROVED:** g:Profiler integration for enrichment analysis
+- **FIXED:** Multiple bugs related to filtering, missing values, and file paths
 
 ## Roadmap
 
-
 ```mermaid
 graph TD
-A[Current Version 0.8] --> B[Version 0.9]
+A[Previous Version 0.8] --> B[Current Version 0.9]
 B --> C[Version 1.0]
-B --> D[Interactive Volcano Plots]
-B --> E[Enhanced Dynamic Report Generation]
+B --> D[✓ Interactive Volcano Plots]
+B --> E[✓ Enhanced Dynamic Report Generation]
 C --> F[Unsupervised Analysis & Interactive Plots]
 C --> G[Enhanced Enrichment Analysis]
 G --> H[Greater Control Over Enrichment Platforms]
 G --> I[Improved Data Visualisation for Enrichments]
-style A fill:#90EE90,color:#000000
-style B fill:#FFE4B5,color:#000000
+style A fill:#D3D3D3,color:#000000
+style B fill:#90EE90,color:#000000
 style C fill:#FFB6C1,color:#000000
+style D fill:#90EE90,color:#000000
+style E fill:#90EE90,color:#000000
 ```
 
 ## Need Help?
