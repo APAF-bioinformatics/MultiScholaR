@@ -51,7 +51,7 @@ The data is derived from the publicly available dataset published in [Mu, Klare,
 
 ## Using the Workflow
 
-1. Run the DIA_workflow.rmd file (this should automatically have opened if you did the above correctly!)
+1. Run the DIA_workflow_experienced.rmd file (this should automatically have opened if you did the above correctly!)
    - **NEW:** Beginners can try DIA_workflow_starter.rmd with detailed explanations and educational resources
 2. Please copy your organism .fasta to the data/UniProt subdirectory
 3. Please copy your searched data to the data/proteomics subdirectory
@@ -60,7 +60,7 @@ The data is derived from the publicly available dataset published in [Mu, Klare,
    - Experimental design
    - Contrasts
    - Linear model
-6. Find all results in the summary_results folder
+6. Find all results in the results_summary folder
 7. **NEW:** Run DIA_report.rmd to generate comprehensive HTML and Word reports with publication-quality visualizations
 
 ## Contributors 
@@ -75,7 +75,6 @@ v0.9 provides significant enhancements to the workflow and introduces new functi
 - **NEW:** Beginner-friendly workflow with educational resources
 - **NEW:** Enhanced Shiny app with improved usability and error handling
 - **IMPROVED:** Enhanced visualization capabilities
-- **IMPROVED:** g:Profiler integration for enrichment analysis
 - **FIXED:** Multiple bugs related to filtering, missing values, and file paths
 
 ## Roadmap
