@@ -17,37 +17,28 @@ This function checks for and installs all the required packages for the Proteome
 installProteomeScholaR <- function(verbose = TRUE) {
     # Install devtools if missing
     if (!requireNamespace("devtools", quietly = TRUE)) {
-        if (verbose) message("Installing devtools...")
         install.packages("devtools")
     }
-
-    # Check if ProteomeScholaR is loaded and detach/remove if necessary
+    
+    # Detach if loaded
     if ("package:ProteomeScholaR" %in% search()) {
-        message("Detaching previously loaded ProteomeScholaR...")
         try(detach("package:ProteomeScholaR", unload = TRUE, force = TRUE), silent = TRUE)
     }
-    if (requireNamespace("ProteomeScholaR", quietly = TRUE)) {
-        message("Removing previously installed ProteomeScholaR...")
-        try(remove.packages("ProteomeScholaR"), silent = TRUE)
-    }
-
-    # Install ProteomeScholaR
-    if (verbose) message("Installing ProteomeScholaR...")
-    tryCatch({
-        devtools::install_github(
-            "APAF-BIOINFORMATICS/ProteomeScholaR"
-            , ref = "vers-0.9"
-            , dependencies = TRUE
-            , upgrade = "never"
-            , force = TRUE
-        )
-    }, error = function(e) {
-        stop("Failed to install ProteomeScholaR: ", e$message)
-    })
     
+    # Unload namespace
+    try(unloadNamespace("ProteomeScholaR"), silent = TRUE)
+    
+    # Install package
+    devtools::install_github(
+        "APAF-BIOINFORMATICS/ProteomeScholaR",
+        ref = "vers-0.9",
+        dependencies = TRUE,
+        upgrade = "never",
+        force = TRUE
+    )
+    
+    # Load it
     library(ProteomeScholaR)
-
-    if (verbose) message("ProteomeScholaR installation completed!")
 }
 
 installProteomeScholaR()
@@ -69,9 +60,9 @@ This section establishes the directory structure for your project. Setting up a 
 ## This section sets up the project directory structure for ProteomeScholaR
 ## Directory management can be challenging, particularly when managing objects 
 ## across multiple chunks within a single R Markdown document.
-experiment_label <- "0.9_finaltest" #NB this will affect directory structure and name of your experiment downstream
+experiment_label <- "" #NB this will affect directory structure and name of your experiment downstream
 
-setupAndShowDirectories(label = "experiment_label"
+setupAndShowDirectories(label = experiment_label
                         , force = FALSE)
 ```
 
@@ -138,7 +129,7 @@ if (exists("design_matrix", envir = .GlobalEnv)) {
 
 # If you have the design matrix stored from a previous run, you can read it in here, otherwise skip
 
-This optional section allows you to read in a previously created design matrix rather than creating one from scratch. This is useful if you're re-running the analysis or if you've prepared your design matrix in a different way.
+This optional section allows you to read in a previously created design matrix / cleaned data matrix rather than creating one from scratch. This is useful if you're re-running the analysis or if you've prepared your design matrix in a different way.
 
 ```{r Design Matrix Read In (optional)}
 design_matrix <- read.table(
@@ -146,6 +137,13 @@ design_matrix <- read.table(
   , sep = "\t"
   , header = TRUE
   , stringsAsFactors = FALSE
+)
+
+data_cln <- vroom::vroom(
+  file = file.path(source_dir, "data_cln.tab"),
+  delim = "\t",
+  col_types = cols(.default = col_guess()),
+  na = c("", "NA")
 )
 ```
 
@@ -587,24 +585,24 @@ QC_composite_figure@pearson_plots$pearson_correlation_pair_before_cyclic_loess <
 
 summarizeQCPlot(QC_composite_figure)
 
-save_plot(
+savePlot(
   QC_composite_figure@rle_plots$rle_plot_before_cyclic_loess 
-  , results_dir 
+  , protein_qc_dir
   , "rle_plot_before_cyclic_loess"
 )
-save_plot(
+savePlot(
   QC_composite_figure@pca_plots$pca_plot_before_cyclic_loess_group 
-  , results_dir 
+  , protein_qc_dir 
   , "pca_plot_before_cyclic_loess"
 )
-save_plot(
+savePlot(
   QC_composite_figure@density_plots$density_plot_before_cyclic_loess_group
-  , results_dir
+  , protein_qc_dir
   , "density_plot_before_cyclic_loess"  
 )
-save_plot(
+savePlot(
   QC_composite_figure@pearson_plots$pearson_correlation_pair_before_cyclic_loess 
-  , results_dir 
+  , protein_qc_dir 
   , "pearson_correlation_pair_before_cyclic_loess"
 )
 
@@ -658,24 +656,24 @@ QC_composite_figure@pearson_plots$pca_plot_before_ruvIIIc_group <- plotPearson(
 
 summarizeQCPlot(QC_composite_figure)
 
-save_plot(
+savePlot(
   QC_composite_figure@rle_plots$rle_plot_before_ruvIIIc_group 
-  , results_dir 
+  , protein_qc_dir 
   , "rle_plot_before_ruvIIIc_by_group"
 )
-save_plot(
+savePlot(
   QC_composite_figure@pca_plots$pca_plot_before_ruvIIIc_group 
-  , results_dir 
+  , protein_qc_dir 
   , "pca_plot_before_ruvIIIc_by_group"
 )
-save_plot(
+savePlot(
   QC_composite_figure@density_plots$density_plot_before_ruvIIIc_group
-  , results_dir
+  , protein_qc_dir
   , "density_plot_before_ruvIIIc_by_group"  
 )
-save_plot(
+savePlot(
   QC_composite_figure@pearson_plots$pearson_correlation_pair_before_ruvIIIc 
-  , results_dir 
+  , protein_qc_dir 
   , "pearson_correlation_pair_before_ruvIIIc"
 )
 ```
@@ -719,7 +717,7 @@ cancorplot_r1 <- cancorplot_r1 +
   xlim(1, ncol(normalised_frozen_protein_matrix_obj@protein_quant_table) - 1)
 
 # Save and display the plot
-save_plot(cancorplot_r1, results_dir, "canonical_correlation_plot")
+savePlot(cancorplot_r1, protein_qc_dir, "canonical_correlation_plot")
 cancorplot_r1
 ```
 
@@ -783,24 +781,24 @@ QC_composite_figure@pearson_plots$pearson_correlation_pair_after_ruvIIIc_group <
     , correlation_group = "group"
   )
 
-save_plot(
+savePlot(
   QC_composite_figure@rle_plots$rle_plot_after_ruvIIIc_group 
-  , results_dir 
+  , protein_qc_dir 
   , "rle_plot_after_ruvIIIc_by_group"
 )
-save_plot(
+savePlot(
   QC_composite_figure@pca_plots$pca_plot_after_ruvIIIc_group 
-  , results_dir 
+  , protein_qc_dir 
   , "pca_plot_after_ruvIIIc"
 )
-save_plot(
+savePlot(
   QC_composite_figure@density_plots$density_plot_after_ruvIIIc_group
-  , results_dir
+  , protein_qc_dir
   , "density_plot_after_ruvIIIc_by_group"  
 )
-save_plot(
+savePlot(
   QC_composite_figure@pearson_plots$pearson_correlation_pair_after_ruvIIIc_group 
-  , results_dir 
+  , protein_qc_dir 
   , "pearson_correlation_pair_after_ruvIIIc_group"
 )
 
@@ -937,49 +935,11 @@ pca_ruv_rle_correlation_merged
 This section retrieves and integrates up-to-date protein annotation data from UniProt, the leading universal protein resource database. The annotation process uses the UniProt.ws Bioconductor package to query the UniProt database for comprehensive information about each protein identified in your dataset. This information includes metadata like protein existence evidence, annotation score, review status, gene names, protein names, sequence length, cross-references to Ensembl, Gene Ontology (GO) terms, and keywords. By caching the results in an RDS file, the workflow avoids redundant queries in subsequent runs, significantly speeding up the process while still ensuring data freshness. This annotation step is crucial for biological interpretation of your results, as it provides the functional context needed to understand the biological significance of differentially expressed proteins.
 
 ```{r Uniprot Data Annotation}
-up <- UniProt.ws(taxId = taxon_id)
-tmp_dir <- file.path(results_dir, "tmp_folder")
-if (!dir.exists(tmp_dir)) {
-  dir.create(tmp_dir)
-}
-annotations <- NULL
-if (!file.exists(file.path(tmp_dir, "uniprot_annotations.RDS"))) {
-  
-  annotations <- batchQueryEvidenceGeneId(
-    ruv_normalised_for_de_analysis_obj@protein_quant_table
-    , gene_id_column = "Protein.Ids"
-    , uniprot_handle = up
-    , uniprot_columns = c(
-      "protein_existence"
-      , "annotation_score"
-      , "reviewed"
-      , "gene_names"
-      , "protein_name"
-      , "length"
-      , "xref_ensembl"
-      , "go_id"
-      , "keyword"
-    )
-  ) 
-  # |> dplyr::rename(uniprot_acc = From)  # Debug to check if the From column needed renaming
-  
-  uniprot_dat_cln <- annotations |>
-    uniprotGoIdToTerm(
-      uniprot_id_column = Entry
-      , go_id_column = Gene.Ontology.IDs
-      , sep = "; "
-    ) |>
-    dplyr::rename(
-      Protein_existence = "Protein.existence"
-      , Protein_names = "Protein.names"
-    ) |>
-    dplyr::rename(gene_names = Gene.Names)
-  
-  saveRDS(uniprot_dat_cln, file.path(tmp_dir, "uniprot_annotations.RDS"))
-  
-} else {
-  uniprot_dat_cln <- readRDS(file.path(tmp_dir, "uniprot_annotations.RDS"))
-}
+uniprot_dat_cln <- getUniprotAnnotations(
+  input_tbl = ruv_normalised_for_de_analysis_obj@protein_quant_table,
+  cache_dir = file.path(results_dir, "tmp_folder"),
+  taxon_id = taxon_id
+)
 ```
 
 ## Read in Previously Assigned Contrasts (optional)
@@ -1084,7 +1044,7 @@ de_results_for_enrichment <- createDEResultsForEnrichment(
 # Run enrichment analysis
 enrichment_results <- processEnrichments(
    de_results_for_enrichment                # Your S4 object with DE results
-   , taxon_id = taxon_id        # Human
+   , taxon_id = taxon_id        # your organism
    , up_cutoff = 0            # FC filtering
    , down_cutoff = 0          # FC filtering
    , q_cutoff = 0.05          # FDR threshold

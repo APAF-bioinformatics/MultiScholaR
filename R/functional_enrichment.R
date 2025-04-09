@@ -497,7 +497,8 @@ processEnrichments <- function(de_results,
               plot = plots[[direction]]$static,
               width = 10, 
               height = 8,
-              dpi = 300
+              dpi = 300,
+              bg = "white"
             )
             message(paste("  Successfully saved:", png_file_path)) # Debug success
           }, error = function(e) {
@@ -753,7 +754,7 @@ processEnrichments <- function(de_results,
                                        alpha = 0.7,
                                        width = 0.2) +
                   # Add labels for significant terms
-                  ggplot2::geom_text_repel(
+                  ggrepel::geom_text_repel(
                     data = top_terms,
                     ggplot2::aes(label = term),
                     size = 3,
@@ -861,7 +862,8 @@ processEnrichments <- function(de_results,
                       plot = static_plot,
                       width = 10, 
                       height = 8,
-                      dpi = 300
+                      dpi = 300,
+                      bg = "white"
                     )
                     message(paste("  Successfully saved:", png_file_path))
                   }

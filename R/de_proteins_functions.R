@@ -2172,3 +2172,237 @@ proteinTechRepCorrelationHelper <- function( design_matrix_tech_rep, data_matrix
   frozen_protein_matrix_tech_rep
 }
 
+#' Download and Process UniProt Annotations
+#' 
+#' @description
+#' Downloads protein information from UniProt for a list of protein IDs,
+#' processes the results including Gene Ontology annotations, and caches
+#' the result for future use.
+#'
+#' @param input_tbl Data frame containing protein IDs in a column named 'Protein.Ids'
+#' @param cache_dir Directory path for caching the results
+#' @param taxon_id Taxonomic identifier for the organism (e.g., 9606 for human)
+#' @param force_download Logical; if TRUE, forces new download even if cache exists
+#' @param batch_size Number of protein IDs to query in each batch
+#' @param timeout Timeout in seconds for the download operation
+#' @param api_delay Sleep time in seconds between API calls
+#'
+#' @return A data frame containing UniProt annotations and GO terms
+#'
+#' @export
+getUniprotAnnotations <- function(input_tbl, 
+                                 cache_dir, 
+                                 taxon_id,
+                                 force_download = FALSE,
+                                 batch_size = 25,
+                                 timeout = 600,
+                                 api_delay = 1) {
+  
+  # Ensure cache directory exists
+  if (!dir.exists(cache_dir)) {
+    dir.create(cache_dir, recursive = TRUE)
+  }
+  
+  # Define cache file paths
+  cache_file <- file.path(cache_dir, "uniprot_annotations.RDS")
+  raw_results_file <- file.path(cache_dir, "uniprot_results.tsv")
+  
+  # Check if cache exists and should be used
+  if (!force_download && file.exists(cache_file)) {
+    message("Loading cached UniProt annotations...")
+    return(readRDS(cache_file))
+  }
+  
+  # Download annotations if needed
+  message("Fetching UniProt annotations...")
+  annotations <- directUniprotDownload(
+    input_tbl = input_tbl,
+    output_path = raw_results_file,
+    taxon_id = taxon_id,
+    batch_size = batch_size,
+    timeout = timeout,
+    api_delay = api_delay
+  )
+  
+  # Process annotations or create empty table if download failed
+  if (!is.null(annotations) && nrow(annotations) > 0) {
+    message("Processing GO terms...")
+    processed_annotations <- annotations |>
+      uniprotGoIdToTerm(
+        uniprot_id_column = Entry,
+        go_id_column = Gene.Ontology.IDs,
+        sep = "; "
+      )
+    
+    # Standardize column names
+    uniprot_dat_cln <- standardizeUniprotColumns(processed_annotations)
+    
+    # Save to cache
+    saveRDS(uniprot_dat_cln, cache_file)
+    message("UniProt annotations saved to cache.")
+  } else {
+    warning("Failed to retrieve UniProt annotations. Using empty table.")
+    uniprot_dat_cln <- createEmptyUniprotTable()
+    saveRDS(uniprot_dat_cln, cache_file)
+  }
+  
+  return(uniprot_dat_cln)
+}
+
+#' Download Protein Data Directly from UniProt REST API
+#'
+#' @description
+#' Downloads protein information from UniProt REST API for a list of protein IDs.
+#' Processes proteins in batches to avoid overwhelming the API.
+#'
+#' @param input_tbl Data frame containing protein IDs in a column named 'Protein.Ids'
+#' @param output_path File path to save the raw results
+#' @param taxon_id Taxonomic identifier for the organism
+#' @param batch_size Number of protein IDs to query in each batch
+#' @param timeout Timeout in seconds for the download operation
+#' @param api_delay Sleep time in seconds between API calls
+#'
+#' @return A data frame containing the raw UniProt results
+#'
+#' @export
+directUniprotDownload <- function(input_tbl, 
+                                 output_path, 
+                                 taxon_id, 
+                                 batch_size = 25,
+                                 timeout = 600, 
+                                 api_delay = 1) {
+  # Set a longer timeout
+  old_timeout <- getOption("timeout")
+  on.exit(options(timeout = old_timeout))
+  options(timeout = timeout)
+  
+  # Extract unique protein IDs
+  protein_ids <- unique(input_tbl$Protein.Ids)
+  message(paste("Found", length(protein_ids), "unique protein IDs to query"))
+  
+  # Split into batches
+  chunks <- split(protein_ids, ceiling(seq_along(protein_ids)/batch_size))
+  message(paste("Split into", length(chunks), "chunks for processing"))
+  
+  # Function to process one chunk
+  process_chunk <- function(chunk, chunk_idx, total_chunks) {
+    message(paste("Processing chunk", chunk_idx, "of", total_chunks, "with", length(chunk), "IDs"))
+    
+    # Create query for this batch
+    query <- paste0("(", paste(chunk, collapse=" OR "), ") AND organism_id:", taxon_id)
+    
+    # Use httr to download
+    response <- httr::GET(
+      url = "https://rest.uniprot.org/uniprotkb/search",
+      query = list(
+        query = query,
+        format = "tsv",
+        fields = "accession,id,protein_name,gene_names,organism_name,length,go_id,reviewed"
+      ),
+      httr::timeout(30)
+    )
+    
+    # Be nice to the API
+    Sys.sleep(api_delay)
+    
+    # Check if successful
+    if (httr::status_code(response) == 200) {
+      content <- httr::content(response, "text", encoding = "UTF-8")
+      temp_file <- tempfile(fileext = ".tsv")
+      writeLines(content, temp_file)
+      
+      chunk_result <- suppressWarnings(
+        read.delim(temp_file, sep="\t", quote="", stringsAsFactors=FALSE)
+      )
+      
+      if (nrow(chunk_result) > 0) {
+        message(paste("  Found", nrow(chunk_result), "results"))
+        return(chunk_result)
+      }
+    } else {
+      message(paste("  Request failed with status", httr::status_code(response)))
+    }
+    
+    return(NULL)
+  }
+  
+  # Process all chunks using imap (provides both value and index)
+  total_chunks <- length(chunks)
+  results <- purrr::imap(chunks, ~ process_chunk(.x, .y, total_chunks)) |>
+    purrr::compact() # Remove NULL results
+  
+  # Combine results
+  if (length(results) > 0) {
+    all_results <- purrr::reduce(results, rbind)
+    
+    # Standardize column names for downstream processing
+    names(all_results) <- gsub(" ", ".", names(all_results))
+    
+    # Add From column needed for downstream processing
+    all_results$From <- all_results$Entry
+    
+    # Write to file
+    write.table(all_results, output_path, sep="\t", quote=FALSE, row.names=FALSE)
+    message(paste("Successfully retrieved", nrow(all_results), "entries from UniProt"))
+    return(all_results)
+  } else {
+    message("Failed to retrieve any data from UniProt")
+    return(NULL)
+  }
+}
+
+#' Standardize UniProt Column Names
+#'
+#' @description
+#' Standardizes column names from UniProt results for downstream processing.
+#' Handles missing columns gracefully.
+#'
+#' @param df Data frame with UniProt results
+#'
+#' @return Data frame with standardized column names
+#'
+#' @keywords internal
+standardizeUniprotColumns <- function(df) {
+  # Handle Protein existence column
+  if ("Protein.existence" %in% colnames(df)) {
+    df <- df |> dplyr::rename(Protein_existence = "Protein.existence")
+  } else {
+    df$Protein_existence <- NA_character_
+  }
+  
+  # Handle Protein names column
+  if ("Protein.names" %in% colnames(df)) {
+    df <- df |> dplyr::rename(Protein_names = "Protein.names")
+  } else {
+    df$Protein_names <- NA_character_
+  }
+  
+  # Handle Gene Names column (different versions of API may use different names)
+  gene_names_col <- grep("Gene\\.Names", colnames(df), value = TRUE)
+  if (length(gene_names_col) > 0) {
+    df <- df |> dplyr::rename_with(~"gene_names", .cols = matches("Gene.Names"))
+  } else {
+    df$gene_names <- NA_character_
+  }
+  
+  return(df)
+}
+
+#' Create Empty UniProt Table
+#'
+#' @description
+#' Creates an empty table with standard UniProt columns when download fails.
+#'
+#' @return Empty data frame with standard UniProt columns
+#'
+#' @keywords internal
+createEmptyUniprotTable <- function() {
+  data.frame(
+    Entry = character(0),
+    From = character(0),
+    "gene_names" = character(0),
+    "Protein_existence" = character(0),
+    "Protein_names" = character(0),
+    stringsAsFactors = FALSE
+  )
+}
