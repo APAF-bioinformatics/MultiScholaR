@@ -5,6 +5,8 @@ date: "`r format(Sys.Date(), '%Y-%m-%d')`"
 output:
   word_document:
     fig_caption: true
+params:
+  suffix: "DEFAULT"  # This will be dynamically replaced when rendering
 mainfont: "Calibri"    
 ---
 
@@ -658,7 +660,7 @@ AnalyzeSamples <- function(design_matrix, study_params) {
 
 ```{r Main Execution Function, echo=FALSE, warning=FALSE}
 # Directory setup function
-SetupDirectories <- function(suffix = "") {
+SetupDirectories <- function(suffix = params$suffix) {
   base_dir <- here::here()
   
   # Determine proteomics folder name based on suffix
@@ -671,8 +673,8 @@ SetupDirectories <- function(suffix = "") {
   )
 }
 
-# User Input
-dirs <- SetupDirectories("Garima_firstpass")
+# User Input - Use the suffix parameter passed from render
+dirs <- SetupDirectories()
 results_dir <- dirs$results
 source_dir <- dirs$source
 ```
@@ -726,7 +728,7 @@ if (!file.exists(matrix_path)) {
 
 ```{r}
 # Main execution function with proper document formatting and enhanced error handling
-Main <- function(suffix = "") {
+Main <- function(suffix = params$suffix) {
   # Setup directories with error checking
   dirs <- SetupDirectories(suffix)
   
@@ -842,9 +844,9 @@ Main <- function(suffix = "") {
   })
 }
 
-# Execute with a specific suffix
+# Execute with the parameter suffix
 results <- tryCatch({
-  Main("Garima_firstpass")
+  Main()
 }, error = function(e) {
   # Create fallback results structure with error messages
   list(

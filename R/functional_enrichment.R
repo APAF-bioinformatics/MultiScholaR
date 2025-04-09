@@ -162,17 +162,44 @@ generate_enrichment_plots <- function(enrichment_result, contrast, direction, pa
     ))
   }
 
-  # Generate static gostplot
-  static_plot <- gostplot(
+  # First get the default gostplot
+  static_plot_base <- gostplot(
     enrichment_result,
     capped = TRUE,
     interactive = FALSE,
     pal = c(`GO:MF` = "#dc3912", `GO:BP` = "#ff9900", `GO:CC` = "#109618",
             KEGG = "#dd4477", REAC = "#3366cc")
   )
+  
+  # Extract result data for custom plotting with labels
+  result_data <- enrichment_result$result
+  
+  # Identify top significant terms to label (5 most significant per source)
+  top_terms <- result_data %>%
+    dplyr::group_by(source) %>%
+    dplyr::arrange(p_value) %>%
+    dplyr::slice_head(n = 3) %>% # Top 3 per category
+    dplyr::ungroup()
+  
+  # Create custom static plot with labels for significant terms
+  custom_static_plot <- static_plot_base +
+    # Add labels for significant terms
+    ggrepel::geom_text_repel(
+      data = top_terms,
+      mapping = ggplot2::aes(
+        x = source, 
+        y = -log10(p_value),
+        label = term_name
+      ),
+      size = 3,
+      max.overlaps = 15,
+      box.padding = 0.5,
+      point.padding = 0.3,
+      force = 5
+    )
 
-  # Convert to plotly
-  interactive_plot <- plotly::ggplotly(static_plot)
+  # Convert to plotly (using the custom plot with labels)
+  interactive_plot <- plotly::ggplotly(custom_static_plot)
 
   # Save interactive plot
   plot_file <- file.path(pathway_dir,
@@ -203,7 +230,7 @@ generate_enrichment_plots <- function(enrichment_result, contrast, direction, pa
               quote = FALSE)
 
   return(list(
-    static = static_plot,
+    static = custom_static_plot,
     interactive = interactive_plot
   ))
 }
@@ -441,6 +468,10 @@ processEnrichments <- function(de_results,
 
           file_name <- paste0(sanitized_contrast, "_", direction, "_enrichment_plot.html")
           file_path <- file.path(pathway_dir, file_name)
+          
+          # Add PNG file path
+          png_file_name <- paste0(sanitized_contrast, "_", direction, "_enrichment_plot.png")
+          png_file_path <- file.path(pathway_dir, png_file_name)
 
           message(paste("  Attempting to save:", file_path)) # Debug
 
@@ -452,21 +483,29 @@ processEnrichments <- function(de_results,
           }
 
           tryCatch({
+            # Save the interactive Plotly HTML file
             htmlwidgets::saveWidget(
               plots[[direction]]$interactive,
               file_path,
               selfcontained = TRUE
             )
             message(paste("  Successfully saved:", file_path)) # Debug success
+            
+            # Save the static ggplot as PNG
+            ggplot2::ggsave(
+              filename = png_file_path,
+              plot = plots[[direction]]$static,
+              width = 10, 
+              height = 8,
+              dpi = 300
+            )
+            message(paste("  Successfully saved:", png_file_path)) # Debug success
           }, error = function(e) {
             # Print more detailed error context
-            warning(paste("  ERROR saving widget for contrast:", contrast,
+            warning(paste("  ERROR saving plots for contrast:", contrast,
                           "direction:", direction,
                           "path:", file_path,
                           "- Error message:", e$message))
-            # Optionally print the structure of the specific plot object causing trouble
-            # message("  Structure of problematic plot object:")
-            # print(str(plots[[direction]]$interactive))
           })
         } else {
            message(paste("  Skipping save for direction:", direction, "- Plot component is NULL or not interactive."))
@@ -689,6 +728,12 @@ processEnrichments <- function(de_results,
                 )
 
                 # Generate static plot with q-value threshold line
+                # First identify top significant terms to label
+                top_terms <- plot_data %>%
+                  dplyr::filter(qvalue < q_cutoff) %>%
+                  dplyr::arrange(qvalue) %>%
+                  dplyr::slice_head(n = 5) # Label top 5 most significant terms
+                
                 static <- ggplot2::ggplot(plot_data,
                                           ggplot2::aes(x = source,
                                                        y = neg_log10_q,
@@ -707,6 +752,16 @@ processEnrichments <- function(de_results,
                                                     color = -log10(qvalue)),
                                        alpha = 0.7,
                                        width = 0.2) +
+                  # Add labels for significant terms
+                  ggplot2::geom_text_repel(
+                    data = top_terms,
+                    ggplot2::aes(label = term),
+                    size = 3,
+                    max.overlaps = 15,
+                    box.padding = 0.5,
+                    point.padding = 0.3,
+                    force = 5
+                  ) +
                   ggplot2::scale_color_gradient(low = "#FED976",
                                                 high = "#800026",
                                                 name = "-log10(q-value)") +
@@ -772,9 +827,15 @@ processEnrichments <- function(de_results,
             # Check if interactive plot exists
             if (!is.null(plots[[direction]])) { # Access up/down list
                 interactive_plot <- plots[[direction]] # The actual plotly object
+                static_plot <- enrichment_results@enrichment_plots[[contrast]][[direction]] # The static ggplot
 
                 file_name <- paste0(sanitized_contrast, "_", direction, "_enrichment_plot.html")
                 file_path <- file.path(pathway_dir, file_name)
+                
+                # Add PNG file path
+                png_file_name <- paste0(sanitized_contrast, "_", direction, "_enrichment_plot.png")
+                png_file_path <- file.path(pathway_dir, png_file_name)
+                
                 message(paste("  Attempting to save:", file_path))
 
                 # Ensure directory exists
@@ -785,14 +846,27 @@ processEnrichments <- function(de_results,
 
                 # Save the widget
                 tryCatch({
+                  # Save HTML interactive plot
                   htmlwidgets::saveWidget(
                     interactive_plot, # Pass the plot object directly
                     file_path,
                     selfcontained = TRUE
                   )
                   message(paste("  Successfully saved:", file_path))
+                  
+                  # Save static ggplot as PNG
+                  if (!is.null(static_plot)) {
+                    ggplot2::ggsave(
+                      filename = png_file_path,
+                      plot = static_plot,
+                      width = 10, 
+                      height = 8,
+                      dpi = 300
+                    )
+                    message(paste("  Successfully saved:", png_file_path))
+                  }
                 }, error = function(e) {
-                  warning(paste("  ERROR saving widget:", file_path, "-", e$message))
+                  warning(paste("  ERROR saving plots:", file_path, "-", e$message))
                 })
             } else {
                 message(paste("  Skipping save for direction:", direction, "- Plot component is NULL."))
