@@ -1895,3 +1895,12 @@ updateRuvParameters <- function(config_list, best_k, control_genes_index, percen
   # Return the updated config list
   return(config_list)
 }
+
+##################################################################################################################
+RenderReport <- function(suffix) {
+  # Render this report with specific parameters
+  # Using the correct path where study_parameters.txt is located in scripts/proteomics_[suffix]
+  rmarkdown::render(file.path(here::here(), "scripts", "proteomics", "DIANN_report.rmd") 
+                  ,params = list(suffix = suffix)
+                ,output_file = file.path(here::here(), "results_summary", paste0("proteomics_", suffix), paste0("DIANN_report_", suffix, ".docx")))
+}

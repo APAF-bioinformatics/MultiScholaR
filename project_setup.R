@@ -129,8 +129,27 @@ setup_dia_project <- function(root_dir = NULL, overwrite = FALSE) {
         return(NULL)
     }
     
+    # Get report template URL based on workflow type
+    get_report_url <- function(workflow_type) {
+        base_url <- "https://raw.githubusercontent.com/APAF-bioinformatics/ProteomeScholaR/vers-0.9/Workbooks/report"
+        
+        if (workflow_type == "DIA-NN") {
+            return(paste0(base_url, "/DIANN_report.rmd"))
+        } else if (workflow_type == "TMT - MaxQuant" || workflow_type == "TMT - FragPipe") {
+            return(paste0(base_url, "/TMT_report.rmd"))
+        } else if (workflow_type == "LFQ - MaxQuant" || workflow_type == "LFQ - FragPipe") {
+            return(paste0(base_url, "/LFQ_report.rmd"))
+        }
+        
+        # If no match found, return NULL
+        return(NULL)
+    }
+    
     # Get the appropriate workflow URL
     workflow_url <- get_workflow_url(workflow_type, user_experience)
+    
+    # Get the appropriate report URL
+    report_url <- get_report_url(workflow_type)
     
     # Check if workflow exists
     if (is.null(workflow_url)) {
@@ -151,6 +170,17 @@ setup_dia_project <- function(root_dir = NULL, overwrite = FALSE) {
         paste0(gsub(" - ", "_", gsub(" ", "_", workflow_type)), "_workflow.rmd")
     }
     
+    # Determine report filename based on workflow type
+    report_filename <- if (workflow_type == "DIA-NN") {
+        "DIANN_report.rmd"
+    } else if (workflow_type == "TMT - MaxQuant" || workflow_type == "TMT - FragPipe") {
+        "TMT_report.rmd"
+    } else if (workflow_type == "LFQ - MaxQuant" || workflow_type == "LFQ - FragPipe") {
+        "LFQ_report.rmd"
+    } else {
+        paste0(gsub(" - ", "_", gsub(" ", "_", workflow_type)), "_report.rmd")
+    }
+    
     # Define GitHub raw content URLs
     templates <- list(
         workflow = list(
@@ -162,6 +192,14 @@ setup_dia_project <- function(root_dir = NULL, overwrite = FALSE) {
             dest = file.path(dirs$scripts_proteomics, "config.ini")
         )
     )
+    
+    # Add report template if URL exists
+    if (!is.null(report_url)) {
+        templates$report <- list(
+            url = report_url,
+            dest = file.path(dirs$scripts_proteomics, report_filename)
+        )
+    }
     
     # Check if files exist
     if (!overwrite && any(file.exists(sapply(templates, `[[`, "dest")))) {
