@@ -649,13 +649,13 @@ filterSamplesByProteinCorrelationThresholdHelper <- function(pearson_correlation
     dplyr::distinct( temp_column )
 
   # Samples to keep anyway
-  samples_to_keep_anyway <-setdiff( setdiff(colnames(protein_intensity_table), (all_samples |> pull( temp_column )))
+  samples_to_keep_anyway <-setdiff( setdiff(colnames(protein_intensity_table), (all_samples |> dplyr::pull( temp_column )))
                                     ,  as_string({{protein_id_column}})  )
 
   print( samples_to_keep_anyway)
 
   # Samples in the table to keep
-  samples_to_keep_subset <- colnames(protein_intensity_table)[colnames(protein_intensity_table) %in% (samples_to_keep |> pull( temp_column ))]
+  samples_to_keep_subset <- colnames(protein_intensity_table)[colnames(protein_intensity_table) %in% (samples_to_keep |> dplyr::pull( temp_column ))]
 
   samples_above_correlation_theshold <- protein_intensity_table |>
     dplyr::select( {{protein_id_column}}, all_of( c(samples_to_keep_anyway, samples_to_keep_subset)))
