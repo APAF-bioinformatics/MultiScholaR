@@ -1914,7 +1914,7 @@ batchQueryEvidenceHelperGeneId <- function(input_tbl, gene_id_column, delim =":"
     dplyr::select({ { gene_id_column } }) |>
     separate_longer_delim({ { gene_id_column } }, delim= delim ) |>
     dplyr::arrange({ { gene_id_column } }) |>
-    dplyr::mutate(round = ceiling(dplyr::row_number() / 100))  ## 100 is the maximum number of queries at one time
+    dplyr::mutate(round = ceiling(dplyr::row_number() / 25))  ## 25 is the maximum number of queries at one time
 
   return(all_uniprot_acc)
 }

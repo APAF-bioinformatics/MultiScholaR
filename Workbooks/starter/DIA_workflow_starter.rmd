@@ -90,7 +90,7 @@ loadDependencies()
 
 When you already have ProteomeScholaR installed, you can start from this point. The code below loads the package and all its dependencies to prepare your environment for analysis.
 ```{r Load ProteomeScholaR}
-library(ProteomeScholar)
+library(ProteomeScholaR)
 loadDependencies()
 ```
 
