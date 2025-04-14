@@ -1,6 +1,6 @@
 Package: ProteomeScholaR
 Title: Tools for Proteomics and Phosphoproteomics analysis.
-Version: 0.80
+Version: 0.90
 Authors@R: c(
     person(given = "Ignatius",
            family = "Pang",
@@ -18,43 +18,70 @@ License: LGPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Suggests: 
     EDASeq,
     RUVSeq,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Imports: 
+    beepr,
+    BiocManager,
     clusterProfiler,
     configr,
+    devtools,
+    DT,
     dplyr,
+    flextable,
     furrr,
+    future.apply,
     GGally,
     ggplot2,
     ggpubr,
     ggrepel,
+    gh,
+    git2r,
     Glimma,
     glue,
     GO.db,
+    gplots,
+    gprofiler2,
     gridExtra,
+    gtools,
+    gt,
     here,
+    htmltools,
     httr,
     igraph,
+    iheatmapr,
+    iq,
     janitor,
     knitr,
+    lazyeval,
     limma,
     logging,
     magrittr,
     mixOmics,
+    multidplyr,
+    openxlsx,
     optparse,
+    pacman,
+    patchwork,
     plotly,
+    progress,
     purrr,
     qvalue,
+    Rcpp,
+    RcppEigen,
+    RColorBrewer,
     readxl,
     rlang,
+    RSpectra,
+    rstudioapi,
     ruv,
     rvest,
     seqinr,
+    shiny,
     statmod,
     stringi,
     svglite,
@@ -64,6 +91,11 @@ Imports:
     tidyselect,
     tidyverse,
     UniProt.ws,
+    UpSetR,
+    viridis,
     vroom,
     writexl,
     xml2
+Remotes:
+    cran/RUVIIIC,
+    APAF-bioinformatics/GlimmaV2

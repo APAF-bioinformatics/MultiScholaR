@@ -649,13 +649,13 @@ filterSamplesByProteinCorrelationThresholdHelper <- function(pearson_correlation
     dplyr::distinct( temp_column )
 
   # Samples to keep anyway
-  samples_to_keep_anyway <-setdiff( setdiff(colnames(protein_intensity_table), (all_samples |> pull( temp_column )))
+  samples_to_keep_anyway <-setdiff( setdiff(colnames(protein_intensity_table), (all_samples |> dplyr::pull( temp_column )))
                                     ,  as_string({{protein_id_column}})  )
 
   print( samples_to_keep_anyway)
 
   # Samples in the table to keep
-  samples_to_keep_subset <- colnames(protein_intensity_table)[colnames(protein_intensity_table) %in% (samples_to_keep |> pull( temp_column ))]
+  samples_to_keep_subset <- colnames(protein_intensity_table)[colnames(protein_intensity_table) %in% (samples_to_keep |> dplyr::pull( temp_column ))]
 
   samples_above_correlation_theshold <- protein_intensity_table |>
     dplyr::select( {{protein_id_column}}, all_of( c(samples_to_keep_anyway, samples_to_keep_subset)))
@@ -2496,6 +2496,15 @@ updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NUL
     # Get the current filtering_progress object
     filtering_progress <- get("filtering_progress", envir = .GlobalEnv)
     
+    # Create necessary directories without prompting if publication_graphs_dir is provided
+    if (!is.null(publication_graphs_dir)) {
+        qc_dir <- file.path(publication_graphs_dir, "filtering_qc")
+        time_dir <- file.path(qc_dir, format(Sys.time(), "%Y%m%d_%H%M%S"))
+        dir.create(qc_dir, recursive = TRUE, showWarnings = FALSE)
+        dir.create(time_dir, recursive = TRUE, showWarnings = FALSE)
+        assign("time_dir", time_dir, envir = .GlobalEnv)
+    }
+    
     # Determine if we're working with protein_quant_table
     is_protein_quant <- if (isS4(data)) {
         "protein_quant_table" %in% slotNames(data)
@@ -2512,6 +2521,10 @@ updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NUL
     protein_count <- countUniqueProteins(data)
     proteins_per_run <- countProteinsPerRun(data)
     
+    # Ensure consistent data types in proteins_per_run
+    proteins_per_run$Run <- as.character(proteins_per_run$Run)
+    proteins_per_run$n_proteins <- as.numeric(proteins_per_run$n_proteins)
+    
     # Update filtering progress based on data type
     if (step_name %in% filtering_progress@steps) {
         if (!overwrite) {
@@ -2526,8 +2539,18 @@ updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NUL
         if (!is_protein_quant) {
             # Update peptide metrics only for peptide data
             filtering_progress@total_peptides[idx] <- calcTotalPeptides(data)
-            filtering_progress@peptides_per_protein[[idx]] <- calcPeptidesPerProtein(data)
-            filtering_progress@peptides_per_run[[idx]] <- countPeptidesPerRun(data)
+            peptides_per_protein <- calcPeptidesPerProtein(data)
+            peptides_per_run <- countPeptidesPerRun(data)
+            
+            # Ensure consistent data types
+            peptides_per_protein$Protein.Ids <- as.character(peptides_per_protein$Protein.Ids)
+            peptides_per_protein$n_peptides <- as.numeric(peptides_per_protein$n_peptides)
+            
+            peptides_per_run$Run <- as.character(peptides_per_run$Run)
+            peptides_per_run$n_peptides <- as.numeric(peptides_per_run$n_peptides)
+            
+            filtering_progress@peptides_per_protein[[idx]] <- peptides_per_protein
+            filtering_progress@peptides_per_run[[idx]] <- peptides_per_run
         }
     } else {
         filtering_progress@steps <- c(filtering_progress@steps, step_name)
@@ -2539,10 +2562,21 @@ updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NUL
             # Add peptide metrics only for peptide data
             filtering_progress@total_peptides <- c(filtering_progress@total_peptides, 
                                                  calcTotalPeptides(data))
+            
+            peptides_per_protein <- calcPeptidesPerProtein(data)
+            peptides_per_run <- countPeptidesPerRun(data)
+            
+            # Ensure consistent data types
+            peptides_per_protein$Protein.Ids <- as.character(peptides_per_protein$Protein.Ids)
+            peptides_per_protein$n_peptides <- as.numeric(peptides_per_protein$n_peptides)
+            
+            peptides_per_run$Run <- as.character(peptides_per_run$Run)
+            peptides_per_run$n_peptides <- as.numeric(peptides_per_run$n_peptides)
+            
             filtering_progress@peptides_per_protein <- c(filtering_progress@peptides_per_protein, 
-                                                       list(calcPeptidesPerProtein(data)))
+                                                       list(peptides_per_protein))
             filtering_progress@peptides_per_run <- c(filtering_progress@peptides_per_run, 
-                                                   list(countPeptidesPerRun(data)))
+                                                   list(peptides_per_run))
         } else {
             # For protein data, maintain existing peptide metrics or add NA/empty entries
             if (length(filtering_progress@total_peptides) > 0) {
@@ -2588,11 +2622,19 @@ updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NUL
         )
     
     # Create proteins per run plot (always shown)
-    p4 <- bind_rows(filtering_progress@proteins_per_run, .id = "step") |>
+    # First ensure all data frames in the list have consistent column types
+    proteins_per_run_list <- lapply(filtering_progress@proteins_per_run, function(df) {
+        df$Run <- as.character(df$Run)
+        df$n_proteins <- as.numeric(df$n_proteins)
+        return(df)
+    })
+    
+    p4 <- bind_rows(proteins_per_run_list, .id = "step") |>
         mutate(step = filtering_progress@steps[as.numeric(step)]) |>
         group_by(Run) |>
         mutate(avg_proteins = mean(n_proteins)) |>
         ungroup() |>
+        # Run is already character from our preprocessing
         mutate(Run = fct_reorder(Run, avg_proteins)) |>
         ggplot(aes(x = Run, y = n_proteins, 
                   group = step, 
@@ -2641,8 +2683,17 @@ updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NUL
                     panel.grid.major.x = element_blank()
                 )
             
+            # Ensure consistent data types in peptides_per_protein list
+            peptides_per_protein_list <- lapply(filtering_progress@peptides_per_protein, function(df) {
+                if (nrow(df) > 0) {
+                    df$Protein.Ids <- as.character(df$Protein.Ids)
+                    df$n_peptides <- as.numeric(df$n_peptides)
+                }
+                return(df)
+            })
+            
             p3 <- ggplot() +
-                geom_boxplot(data = bind_rows(filtering_progress@peptides_per_protein, .id = "step") |>
+                geom_boxplot(data = bind_rows(peptides_per_protein_list, .id = "step") |>
                              mutate(step = filtering_progress@steps[as.numeric(step)]),
                            aes(x = factor(step, levels = filtering_progress@steps), 
                                y = n_peptides),
@@ -2661,14 +2712,24 @@ updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NUL
                 ) +
                 coord_cartesian(
                     ylim = c(0, 
-                             quantile(bind_rows(filtering_progress@peptides_per_protein)$n_peptides, 0.95))
+                             quantile(bind_rows(peptides_per_protein_list)$n_peptides, 0.95))
                 )
             
-            p5 <- bind_rows(filtering_progress@peptides_per_run, .id = "step") |>
+            # Ensure consistent data types in peptides_per_run list
+            peptides_per_run_list <- lapply(filtering_progress@peptides_per_run, function(df) {
+                if (nrow(df) > 0) {
+                    df$Run <- as.character(df$Run)
+                    df$n_peptides <- as.numeric(df$n_peptides)
+                }
+                return(df)
+            })
+            
+            p5 <- bind_rows(peptides_per_run_list, .id = "step") |>
                 mutate(step = filtering_progress@steps[as.numeric(step)]) |>
                 group_by(Run) |>
                 mutate(avg_peptides = mean(n_peptides)) |>
                 ungroup() |>
+                # Run is already character from our preprocessing
                 mutate(Run = fct_reorder(Run, avg_peptides)) |>
                 ggplot(aes(x = Run, y = n_peptides, 
                           group = step, 
@@ -2709,8 +2770,17 @@ updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NUL
                 panel.grid.major.x = element_blank()
             )
         
+        # Ensure consistent data types in peptides_per_protein list
+        peptides_per_protein_list <- lapply(filtering_progress@peptides_per_protein, function(df) {
+            if (nrow(df) > 0) {
+                df$Protein.Ids <- as.character(df$Protein.Ids)
+                df$n_peptides <- as.numeric(df$n_peptides)
+            }
+            return(df)
+        })
+        
         p3 <- ggplot() +
-            geom_boxplot(data = bind_rows(filtering_progress@peptides_per_protein, .id = "step") |>
+            geom_boxplot(data = bind_rows(peptides_per_protein_list, .id = "step") |>
                          mutate(step = filtering_progress@steps[as.numeric(step)]),
                        aes(x = factor(step, levels = filtering_progress@steps), 
                            y = n_peptides),
@@ -2729,14 +2799,24 @@ updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NUL
             ) +
             coord_cartesian(
                 ylim = c(0, 
-                         quantile(bind_rows(filtering_progress@peptides_per_protein)$n_peptides, 0.95))
+                         quantile(bind_rows(peptides_per_protein_list)$n_peptides, 0.95))
             )
         
-        p5 <- bind_rows(filtering_progress@peptides_per_run, .id = "step") |>
+        # Ensure consistent data types in peptides_per_run list
+        peptides_per_run_list <- lapply(filtering_progress@peptides_per_run, function(df) {
+            if (nrow(df) > 0) {
+                df$Run <- as.character(df$Run)
+                df$n_peptides <- as.numeric(df$n_peptides)
+            }
+            return(df)
+        })
+        
+        p5 <- bind_rows(peptides_per_run_list, .id = "step") |>
             mutate(step = filtering_progress@steps[as.numeric(step)]) |>
             group_by(Run) |>
             mutate(avg_peptides = mean(n_peptides)) |>
             ungroup() |>
+            # Run is already character from our preprocessing
             mutate(Run = fct_reorder(Run, avg_peptides)) |>
             ggplot(aes(x = Run, y = n_peptides, 
                       group = step, 
@@ -2766,10 +2846,10 @@ updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NUL
         peptides_per_run = p5
     )
     
-       # Save plots if directory is specified
+    # Save plots if directory is specified
     if (!is.null(publication_graphs_dir)) {
         for (plot_name in names(plot_list)) {
-            filename <- file.path(time_dir, 
+            filename <- file.path(publication_graphs_dir, 
                                 sprintf("%s_%s.png", step_name, plot_name))
             ggsave(filename, 
                    plot = plot_list[[plot_name]], 
@@ -2803,9 +2883,9 @@ updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NUL
             )
         }
         
-       # Save the grid if directory is specified
+        # Save the grid if directory is specified
         if (!is.null(publication_graphs_dir)) {
-            filename <- file.path(time_dir, 
+            filename <- file.path(publication_graphs_dir, 
                                 sprintf("%s_combined_plots.png", step_name))
             ggsave(filename, 
                    plot = grid_plot, 

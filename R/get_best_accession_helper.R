@@ -1,6 +1,6 @@
 # Author(s): Ignatius Pang, Pablo Galaviz
 # Email: cmri-bioinformatics@cmri.org.au
-# Children’s Medical Research Institute, finding cures for childhood genetic diseases
+# Children's Medical Research Institute, finding cures for childhood genetic diseases
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' @export
@@ -202,15 +202,20 @@ chooseBestProteinAccessionHelper <- function(input_tbl
                                              , accessions_column
                                              , row_id_column = "uniprot_acc"
                                              , group_id
-                                             , delim= ";") {
+                                             , delim= ":") {
 
-  resolve_acc_helper <- input_tbl |>
+
+  resolve_acc_temp <- input_tbl |>
     dplyr::select( { { group_id } }, { { accessions_column } }) |>
-    mutate( !!sym(row_id_column) := str_split({ { accessions_column } }, delim)) |>
-    unnest( !!sym(row_id_column)) |>
-    mutate( cleaned_acc = cleanIsoformNumber(row_id_column))   |>
+    mutate(row_id_column_with_isoform = str_split({ { accessions_column } }, delim)) |>
+    unnest( row_id_column_with_isoform ) |>
+    mutate( !!sym(row_id_column) := cleanIsoformNumber( row_id_column_with_isoform)) |>
+    dplyr::filter( !str_detect(!!sym(row_id_column), "REV__")) |>
+    dplyr::filter( !str_detect(!!sym(row_id_column), "CON__"))
+
+  resolve_acc_helper <- resolve_acc_temp |>
     left_join( acc_detail_tab ,
-               by = join_by( cleaned_acc == !!sym(row_id_column) ),
+               by = join_by( !!sym(row_id_column) == !!sym(row_id_column) ),
                copy = TRUE,
                keep = NULL)  |>
     dplyr::select( { { group_id } }, one_of(c(row_id_column, "gene_name", "cleaned_acc",
@@ -233,13 +238,13 @@ chooseBestProteinAccessionHelper <- function(input_tbl
     distinct( { { group_id } }, gene_name, ranking) |>
     dplyr::filter(ranking == 1) |>
     left_join(score_isoforms |>
-                dplyr::select({ { group_id } }, ranking, gene_name, !!sym(row_id_column)),
+                dplyr::select({ { group_id } }, ranking, gene_name, !!sym(row_id_column), protein_evidence),
               by = join_by( {{ group_id }} == {{ group_id }}
                             , ranking == ranking
                             , gene_name == gene_name)) |>
-
     dplyr::select(-ranking) |>
     group_by({ { group_id } }) |>
+    arrange( {{group_id}}, protein_evidence) |>
     summarise(num_gene_names = n(),
               gene_names = paste(gene_name, collapse = ":"),
               !!sym(row_id_column) := paste(!!sym(row_id_column), collapse = ":")) |>
@@ -268,11 +273,11 @@ chooseBestProteinAccessionHelper <- function(input_tbl
 #'  is_unique: Is the protein group assined to a unique UniProt accession or multiple UniProt accessions
 #'@export
 rankProteinAccessionHelper <- function(input_tbl
-                                             , acc_detail_tab
-                                             , accessions_column
-                                             , row_id_column = "uniprot_acc"
-                                             , group_id
-                                             , delim= ";") {
+                                       , acc_detail_tab
+                                       , accessions_column
+                                       , row_id_column = "uniprot_acc"
+                                       , group_id
+                                       , delim= ";") {
 
   resolve_acc_helper <- input_tbl |>
     dplyr::select( { { group_id } }, { { accessions_column } }) |>
@@ -324,61 +329,92 @@ rankProteinAccessionHelper <- function(input_tbl
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
-processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uniparc_search_results = NULL, fasta_meta_file) {
+processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uniparc_search_results = NULL, fasta_meta_file, organism_name) {
+  # Properly suppress all vroom messages
+  withr::local_options(list(
+    vroom.show_col_types = FALSE,
+    vroom.show_progress = FALSE
+  ))
+
   startsWith <- function(x, prefix) {
     substr(x, 1, nchar(prefix)) == prefix
   }
-  
-  parseFastaFile <- function(fasta_file) {
-  aa_seqinr <- seqinr::read.fasta(file = fasta_file, seqtype = "AA", 
-                          whole.header = TRUE, as.string = TRUE)
-  headers <- names(aa_seqinr)
-  
-  parsed_headers <- lapply(headers, function(header) {
-    parts <- strsplit(substr(header, 2, nchar(header)), " ", fixed = TRUE)[[1]]
-    id_parts <- strsplit(parts[1], "|", fixed = TRUE)[[1]]
-    
-    # Extract protein evidence level
-    protein_evidence <- stringr::str_extract(header, "PE=[0-9]") |> 
-      stringr::str_extract("[0-9]") |>
-      as.integer()
-    
-    # Determine status based on entry type
-    status <- if(startsWith(header, ">sp|")) "reviewed" else "unreviewed"
-    
-    # Extract gene name (GN=)
-    gene_name <- stringr::str_extract(header, "GN=\\S+") |>
-      stringr::str_remove("GN=")
-    
-    # For entries without isoforms, set defaults
-    is_isoform <- FALSE
-    isoform_num <- 0L   
-    cleaned_acc <- id_parts[2] 
-    
-    list(
-      accession = id_parts[2],
-      database_id = id_parts[2],
-      cleaned_acc = cleaned_acc,
-      gene_name = gene_name,
-      protein = paste(parts[-1], collapse = " "),
-      attributes = paste(parts[-1], collapse = " "),
-      protein_evidence = protein_evidence,
-      status = status,
-      is_isoform = is_isoform,
-      isoform_num = isoform_num
-    )
-  })
-  
-  acc_detail_tab <- dplyr::bind_rows(parsed_headers)
-  aa_seq_tbl <- acc_detail_tab |>
-    dplyr::mutate(
-      seq = purrr::map_chr(aa_seqinr, 1),
-      seq_length = stringr::str_length(seq),
-      description = headers
-    )
-  
-  return(aa_seq_tbl)
-}
+
+  parseFastaFileStandard <- function(fasta_file) {
+    message("Reading FASTA file with seqinr...")
+    utils::flush.console()
+
+    aa_seqinr <- seqinr::read.fasta(file = fasta_file, seqtype = "AA",
+                                    whole.header = TRUE, as.string = TRUE)
+    headers <- names(aa_seqinr)
+    total_entries <- length(headers)
+
+    message(sprintf("\nProcessing %d FASTA entries...", total_entries))
+    utils::flush.console()
+
+    # Create a text progress bar
+    pb <- utils::txtProgressBar(min = 0, max = total_entries, style = 3, width = 50)
+
+    parsed_headers <- vector("list", length(headers))
+
+    for(i in seq_along(headers)) {
+      header <- headers[i]
+      parsed_headers[[i]] <- {
+        parts <- strsplit(substr(header, 2, nchar(header)), " ", fixed = TRUE)[[1]]
+        id_parts <- strsplit(parts[1], "|", fixed = TRUE)[[1]]
+
+        # Extract protein evidence level
+        protein_evidence <- stringr::str_extract(header, "PE=[0-9]") |>
+          stringr::str_extract("[0-9]") |>
+          as.integer()
+
+        # Determine status based on entry type
+        status <- if(startsWith(header, ">sp|")) "reviewed" else "unreviewed"
+
+        # Extract gene name (GN=)
+        gene_name <- stringr::str_extract(header, "GN=\\S+") |>
+          stringr::str_remove("GN=")
+
+        # For entries without isoforms, set defaults
+        is_isoform <- FALSE
+        isoform_num <- 0L
+        cleaned_acc <- id_parts[2]
+
+        list(
+          accession = id_parts[2],
+          database_id = id_parts[2],
+          cleaned_acc = cleaned_acc,
+          gene_name = gene_name,
+          protein = paste(parts[-1], collapse = " "),
+          attributes = paste(parts[-1], collapse = " "),
+          protein_evidence = protein_evidence,
+          status = status,
+          is_isoform = is_isoform,
+          isoform_num = isoform_num
+        )
+      }
+
+      # Update progress bar every 100 entries
+      if(i %% 100 == 0 || i == total_entries) {
+        utils::setTxtProgressBar(pb, i)
+      }
+    }
+
+    close(pb)
+
+    message("\nBinding rows and creating final table...")
+    utils::flush.console()
+
+    acc_detail_tab <- dplyr::bind_rows(parsed_headers)
+    aa_seq_tbl <- acc_detail_tab |>
+      dplyr::mutate(
+        seq = purrr::map_chr(aa_seqinr, 1),
+        seq_length = stringr::str_length(seq),
+        description = headers
+      )
+
+    return(aa_seq_tbl)
+  }
 
   parseFastaHeader <- function(header) {
     parts <- strsplit(substr(header, 2, nchar(header)), " ", fixed = TRUE)[[1]]
@@ -396,11 +432,39 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uni
       attributes = attributes
     )
   }
+
   parseFastaFileNonStandard <- function(fasta_file) {
-    aa_seqinr <- seqinr::read.fasta(file = fasta_file, seqtype = "AA", 
-                            whole.header = TRUE, as.string = TRUE)
+    message("Reading FASTA file with seqinr...")
+    utils::flush.console()
+
+    aa_seqinr <- seqinr::read.fasta(file = fasta_file, seqtype = "AA",
+                                    whole.header = TRUE, as.string = TRUE)
     headers <- names(aa_seqinr)
-    parsed_headers <- lapply(headers, parseFastaHeader)
+    total_entries <- length(headers)
+
+    message(sprintf("\nProcessing %d non-standard FASTA entries...", total_entries))
+    utils::flush.console()
+
+    # Create a text progress bar
+    pb <- utils::txtProgressBar(min = 0, max = total_entries, style = 3, width = 50)
+
+    parsed_headers <- vector("list", length(headers))
+
+    for(i in seq_along(headers)) {
+      header <- headers[i]
+      parsed_headers[[i]] <- parseFastaHeader(header)
+
+      # Update progress bar every 100 entries
+      if(i %% 100 == 0 || i == total_entries) {
+        utils::setTxtProgressBar(pb, i)
+      }
+    }
+
+    close(pb)
+
+    message("\nBinding rows and creating final table...")
+    utils::flush.console()
+
     acc_detail_tab <- dplyr::bind_rows(parsed_headers)
     aa_seq_tbl <- acc_detail_tab |>
       dplyr::mutate(
@@ -408,13 +472,16 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uni
         seq_length = stringr::str_length(seq),
         description = headers
       )
-    
+
     return(aa_seq_tbl)
   }
-  
-  matchAndUpdateDataFrames <- function(aa_seq_tbl, uniprot_search_results, uniparc_search_results) {
+
+  matchAndUpdateDataFrames <- function(aa_seq_tbl, uniprot_search_results, uniparc_search_results, organism_name) {
+    message("Matching and updating dataframes...")
+    flush.console()
+
     uniprot_filtered <- uniprot_search_results |>
-      dplyr::filter(Organism == "Klebsiella variicola") |>
+      dplyr::filter(Organism == organism_name) |>
       dplyr::select("ncbi_refseq", "uniprot_id")
 
     uniparc_prepared <- uniparc_search_results |>
@@ -429,28 +496,43 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uni
     return(aa_seq_tbl_updated)
   }
 
-  fasta_file_raw <- vroom::vroom(fasta_file_path, delim = "\n", col_names = FALSE)
+  message("Reading FASTA file...")
+  flush.console()
+
+  suppressMessages({
+    fasta_file_raw <- vroom::vroom(fasta_file_path, delim = "\n", col_names = FALSE, progress = FALSE)
+  })
   first_line <- fasta_file_raw$X1[1]
 
   if (startsWith(first_line, ">sp|") || startsWith(first_line, ">tr|")) {
-    aa_seq_tbl <- parseFastaFile(fasta_file_path)
+    message("Processing standard UniProt FASTA format...")
+    flush.console()
+    aa_seq_tbl <- parseFastaFileStandard(fasta_file_path)
+    message("Saving results...")
+    flush.console()
     saveRDS(aa_seq_tbl, fasta_meta_file)
     return(aa_seq_tbl)
   } else {
+    message("Processing non-standard FASTA format...")
+    flush.console()
     aa_seq_tbl <- parseFastaFileNonStandard(fasta_file_path)
-    
+
     if (!is.null(uniprot_search_results) && !is.null(uniparc_search_results)) {
-      aa_seq_tbl_final <- matchAndUpdateDataFrames(aa_seq_tbl, uniprot_search_results, uniparc_search_results)
+      aa_seq_tbl_final <- matchAndUpdateDataFrames(aa_seq_tbl, uniprot_search_results, uniparc_search_results, organism_name)
     } else {
       aa_seq_tbl_final <- aa_seq_tbl |>
         dplyr::mutate(database_id = NA_character_)
     }
 
+    message("Writing results...")
+    flush.console()
+
     vroom::vroom_write(aa_seq_tbl_final,
-                      file = "aa_seq_tbl.tsv",
-                      delim = "\t",
-                      na = "",
-                      quote = "none")
+                       file = "aa_seq_tbl.tsv",
+                       delim = "\t",
+                       na = "",
+                       quote = "none",
+                       progress = FALSE)
 
     saveRDS(aa_seq_tbl_final, fasta_meta_file)
     return(aa_seq_tbl_final)
@@ -489,7 +571,7 @@ processFastaFile_deprecated <- function(fasta_file_path, uniprot_search_results,
     }
 
     parseFastaFile <- function(fasta_file) {
-      aa_seqinr <- read.fasta(file = fasta_file, seqtype = "AA", 
+      aa_seqinr <- read.fasta(file = fasta_file, seqtype = "AA",
                               whole.header = TRUE, as.string = TRUE)
       headers <- names(aa_seqinr)
       parsed_headers <- lapply(headers, parseFastaHeader)
@@ -498,12 +580,12 @@ processFastaFile_deprecated <- function(fasta_file_path, uniprot_search_results,
         mutate(seq = map_chr(aa_seqinr, 1),
                seq_length = map_int(seq, str_length),
                description = headers)
-      
+
       return(aa_seq_tbl)
     }
 
     aa_seq_tbl <- parseFastaFile(fasta_file_path)
-    
+
     matchAndUpdateDataFrames <- function(aa_seq_tbl, uniprot_search_results, uniparc_search_results) {
       uniprot_filtered <- uniprot_search_results |>
         dplyr::filter(Organism == "Klebsiella variicola") |>
@@ -543,7 +625,7 @@ updateProteinIDs <- function(protein_data, aa_seq_tbl_final) {
     message("No ncbi_refseq column found in aa_seq_tbl_final. Returning original data unchanged.")
     return(protein_data)
   }
-  
+
   # Generic NCBI protein ID patterns - escaped special characters
   ncbi_patterns <- c(
     "WP_\\d+\\.?\\d*",                     # WP_123456789.1
@@ -551,12 +633,12 @@ updateProteinIDs <- function(protein_data, aa_seq_tbl_final) {
     "[A-Z]{3}\\d+\\.?\\d*",               # ABC12345.1
     "\\w+\\.\\d+_prot_\\w+_\\d+"          # Assembly specific patterns like NZ_LR130543.1_prot_ABC_123
   )
-  
+
   pattern <- paste0("(", paste(ncbi_patterns, collapse = "|"), ")")
-  
+
   protein_data <- protein_data |>
     dplyr::mutate(matching_id = stringr::str_extract(Protein.Ids, pattern))
-  
+
   lookup_table <- aa_seq_tbl_final |>
     dplyr::mutate(matching_id = stringr::str_extract(accession, pattern)) |>
     dplyr::select(matching_id, database_id, ncbi_refseq)
@@ -583,4 +665,328 @@ updateProteinIDs <- function(protein_data, aa_seq_tbl_final) {
   updated_protein_data$Protein.Ids_new <- NULL
 
   return(updated_protein_data)
+}
+
+
+
+#' Clean MaxQuant Protein Data
+#'
+#' This function processes and cleans protein data from MaxQuant output,
+#' filtering based on peptide counts and removing contaminants.
+#'
+#' @param fasta_file Path to input FASTA file
+#' @param raw_counts_file Path to MaxQuant proteinGroups.txt file
+#' @param output_counts_file Name of cleaned counts table output file
+#' @param accession_record_file Name of cleaned accession to protein group mapping file
+#' @param column_pattern Pattern to match intensity columns (e.g., "Reporter intensity corrected")
+#' @param group_pattern Pattern to identify experimental groups (default: "")
+#' @param razor_unique_peptides_group_thresh Threshold for razor + unique peptides (default: 0)
+#' @param unique_peptides_group_thresh Threshold for unique peptides (default: 1)
+#' @param fasta_meta_file Name of FASTA metadata RDS file (default: "aa_seq_tbl.RDS")
+#' @param output_dir Directory for results (default: "results/proteomics/clean_proteins")
+#' @param tmp_dir Directory for temporary files (default: "cache")
+#' @param log_file Name of log file (default: "output.log")
+#' @param debug Enable debug output (default: FALSE)
+#' @param silent Only print critical information (default: FALSE)
+#' @param no_backup Deactivate backup of previous run (default: FALSE)
+#' @return List containing cleaned data and statistics
+#' @import tidyverse vroom magrittr knitr rlang optparse seqinr ProteomeRiver janitor tictoc configr logging
+#' @export
+#'
+#' Test RStudio GitHub integration
+cleanMaxQuantProteins <- function(
+    fasta_file,
+    raw_counts_file,
+    output_counts_file = "counts_table_cleaned.tab",
+    accession_record_file = "cleaned_accession_to_protein_group.tab",
+    column_pattern = "Reporter intensity corrected",
+    group_pattern = "",
+    razor_unique_peptides_group_thresh = 0,
+    unique_peptides_group_thresh = 1,
+    fasta_meta_file = "aa_seq_tbl.RDS",
+    output_dir = "results/proteomics/clean_proteins",
+    tmp_dir = "cache",
+    log_file = "output.log",
+    debug = FALSE,
+    silent = FALSE,
+    no_backup = FALSE
+) {
+  tic()
+
+  # Initialize argument list with direct parameters
+  args <- list(
+    fasta_file = fasta_file,
+    raw_counts_file = raw_counts_file,
+    output_counts_file = output_counts_file,
+    accession_record_file = accession_record_file,
+    column_pattern = column_pattern,
+    group_pattern = group_pattern,
+    razor_unique_peptides_group_thresh = razor_unique_peptides_group_thresh,
+    unique_peptides_group_thresh = unique_peptides_group_thresh,
+    fasta_meta_file = fasta_meta_file,
+    output_dir = output_dir,
+    tmp_dir = tmp_dir,
+    log_file = log_file,
+    debug = debug,
+    silent = silent,
+    no_backup = no_backup
+  )
+
+  # Create directories
+  if (!dir.exists(args$output_dir)) {
+    dir.create(args$output_dir, recursive = TRUE)
+  }
+  if (!dir.exists(args$tmp_dir)) {
+    dir.create(args$tmp_dir, recursive = TRUE)
+  }
+
+  # Configure logging
+  logReset()
+  addHandler(writeToConsole)
+  addHandler(writeToFile, file = file.path(args$output_dir, args$log_file))
+
+  level <- ifelse(args$debug, loglevels["DEBUG"], loglevels["INFO"])
+  setLevel(level = ifelse(args$silent, loglevels["ERROR"], level))
+
+  # Log start of processing
+  loginfo("Starting protein data cleaning")
+
+  # Validate required files
+  required_files <- c(args$fasta_file, args$raw_counts_file)
+  missing_files <- required_files[!file.exists(required_files)]
+  if (length(missing_files) > 0) {
+    stop("Missing required files: ", paste(missing_files, collapse = ", "))
+  }
+
+  # Set default values for pattern suffixes
+  args$pattern_suffix <- "_\\d+"
+  args$extract_patt_suffix <- "_(\\d+)"
+  args$remove_more_peptides <- FALSE
+
+  # Read counts file
+  loginfo("Reading the counts file")
+  dat_tbl <- vroom::vroom(args$raw_counts_file)
+
+  # Clean counts table header
+  loginfo("Cleaning counts table header")
+  dat_cln <- janitor::clean_names(dat_tbl)
+  colnames(dat_cln) <- str_replace(colnames(dat_cln), "_i_ds", "_ids")
+
+  # Prepare regular expressions
+  pattern_suffix <- args$pattern_suffix
+  if (args$group_pattern != "") {
+    pattern_suffix <- paste(args$pattern_suffix, tolower(args$group_pattern), sep = "_")
+  }
+
+  extract_patt_suffix <- args$extract_patt_suffix
+  if (args$group_pattern != "") {
+    extract_patt_suffix <- paste0(args$extract_patt_suffix, "_(", tolower(args$group_pattern), ")")
+  }
+
+  column_pattern <- tolower(paste0(make_clean_names(args$column_pattern), pattern_suffix))
+  extract_replicate_group <- tolower(paste0(make_clean_names(args$column_pattern), extract_patt_suffix))
+
+  # Prepare peptide count columns
+  razor_unique_peptides_group_col <- "razor_unique_peptides"
+  unique_peptides_group_col <- "unique_peptides"
+
+  if (args$group_pattern != "") {
+    razor_unique_peptides_group_col <- paste0("razor_unique_peptides_", tolower(args$group_pattern))
+    unique_peptides_group_col <- paste0("unique_peptides_", tolower(args$group_pattern))
+  }
+
+  # Process FASTA file
+  fasta_meta_file <- file.path(args$tmp_dir, args$fasta_meta_file)
+  loginfo("Processing FASTA file")
+
+  if (file.exists(fasta_meta_file)) {
+    aa_seq_tbl <- readRDS(fasta_meta_file)
+  } else {
+    aa_seq_tbl <- parseFastaFile(args$fasta_file)
+
+    saveRDS(aa_seq_tbl, fasta_meta_file)
+  }
+
+  # Process and filter data
+  evidence_tbl <- dat_cln %>%
+    mutate(maxquant_row_id = id)
+
+  # Filter and clean data
+  loginfo("Identify best UniProt accession per entry, extract sample number and simplify column header")
+
+  filtered_data <- processAndFilterData(
+    evidence_tbl,
+    args,
+    razor_unique_peptides_group_col,
+    unique_peptides_group_col,
+    column_pattern,
+    aa_seq_tbl,
+    extract_replicate_group
+  )
+
+  # Save results
+  saveResults(filtered_data, args)
+
+  # Log completion and session info
+  te <- toc(quiet = TRUE)
+  loginfo("%f sec elapsed", te$toc - te$tic)
+  writeLines(capture.output(sessionInfo()), file.path(args$output_dir, "sessionInfo.txt"))
+
+  return(filtered_data)
+}
+
+#' Helper function to process and filter data
+#' @noRd
+processAndFilterData <- function(
+    evidence_tbl,
+    args,
+    razor_unique_peptides_group_col,
+    unique_peptides_group_col,
+    column_pattern,
+    aa_seq_tbl,
+    extract_replicate_group,
+    delim = ":"
+) {
+  # Initialize tracking of protein numbers
+  num_proteins_remaining <- numeric(3)
+  names(num_proteins_remaining) <- c(
+    "Number of proteins in raw unfiltered file",
+    "Number of proteins after removing reverse decoy and contaminant proteins",
+    paste0(
+      "Number of proteins after removing proteins with no. of razor + unique peptides < ",
+      args$razor_unique_peptides_group_thresh,
+      " and no. of unique peptides < ",
+      args$unique_peptides_group_thresh
+    )
+  )
+
+  # Filter and process data
+  select_columns <- evidence_tbl %>%
+    dplyr::select(
+      maxquant_row_id,
+      protein_ids,
+      !!rlang::sym(razor_unique_peptides_group_col),
+      !!rlang::sym(unique_peptides_group_col),
+      reverse,
+      potential_contaminant,
+      matches(column_pattern)
+    )
+
+  num_proteins_remaining[1] <- nrow(select_columns)
+
+  remove_reverse_and_contaminant <- select_columns  %>%
+    dplyr::filter( is.na(reverse) &
+                     is.na(potential_contaminant)) %>%
+    dplyr::filter( !str_detect(protein_ids, "^CON__") &
+                     !str_detect(protein_ids, "^REV__") )
+
+  remove_reverse_and_contaminant_more_hits <- remove_reverse_and_contaminant
+
+  # Remove reverse decoy peptides and contaminant peptides even if it is not the first ranked Protein IDs (e.g. it is lower down in the list of protein IDs)
+  if( args$remove_more_peptides == TRUE) {
+    remove_reverse_and_contaminant_more_hits <- remove_reverse_and_contaminant  %>%
+      dplyr::filter( is.na(reverse) &
+                       is.na(potential_contaminant)) %>%
+      dplyr::filter( !str_detect(protein_ids, "CON__") &
+                       !str_detect(protein_ids, "REV__") )
+  }
+
+  # Record the number of proteins after removing reverse decoy and contaminant proteins
+  # The numbers will be saved into the file 'number_of_proteins_remaining_after_each_filtering_step.tab'
+  num_proteins_remaining[2] <- nrow(remove_reverse_and_contaminant_more_hits)
+
+  helper_unnest_unique_and_razor_peptides <- remove_reverse_and_contaminant_more_hits %>%
+    dplyr::mutate(protein_ids = str_split(protein_ids, ";")) %>%
+    dplyr::mutate(!!rlang::sym(razor_unique_peptides_group_col) := str_split(!!rlang::sym(razor_unique_peptides_group_col), ";")) %>%
+    dplyr::mutate(!!rlang::sym(unique_peptides_group_col) := str_split(!!rlang::sym(unique_peptides_group_col), ";")) %>%
+    unnest(cols = c(protein_ids,
+                    !!rlang::sym(razor_unique_peptides_group_col),
+                    !!rlang::sym(unique_peptides_group_col)))
+
+
+  evidence_tbl_cleaned <- helper_unnest_unique_and_razor_peptides %>%
+    dplyr::filter(!!rlang::sym(razor_unique_peptides_group_col) >= args$razor_unique_peptides_group_thresh &
+                    !!rlang::sym(unique_peptides_group_col) >= args$unique_peptides_group_thresh)
+
+
+  ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+  accession_gene_name_tbl <- chooseBestProteinAccessionHelper(input_tbl = evidence_tbl_cleaned,
+                                                        acc_detail_tab = aa_seq_tbl,
+                                                        accessions_column = protein_ids,
+                                                        row_id_column = "uniprot_acc",
+                                                        group_id = maxquant_row_id,
+                                                        delim = delim)
+
+
+
+   print( accession_gene_name_tbl|>
+    dplyr::filter (str_detect( uniprot_acc, "A0A024R1R8")) )
+
+
+
+  accession_gene_name_tbl_record <- accession_gene_name_tbl %>%
+    left_join(evidence_tbl %>% dplyr::select(maxquant_row_id, protein_ids), by = c("maxquant_row_id"))
+
+
+  evidence_tbl_filt <- evidence_tbl_cleaned |>
+    inner_join(accession_gene_name_tbl |>
+                 dplyr::select(maxquant_row_id, uniprot_acc), by = "maxquant_row_id") |>
+    dplyr::select(uniprot_acc, matches(column_pattern), -contains(c("razor", "unique"))) |>
+    distinct()
+
+  # Record the number of proteins after removing proteins with low no. of razor + unique peptides and low no. of unique peptides
+  num_proteins_remaining[3] <- nrow( evidence_tbl_filt)
+
+  # Record the number of proteins remaining after each filtering step into the file 'number_of_proteins_remaining_after_each_filtering_step.tab'
+  num_proteins_remaining_tbl <- data.frame( step=names( num_proteins_remaining), num_proteins_remaining=num_proteins_remaining)
+
+  #TODO: This part need improvement. There is potential for bugs.
+  extraction_pattern <- "\\1"
+  if (args$group_pattern != "") {
+    extraction_pattern <- "\\1_\\2"
+  }
+
+  colnames(evidence_tbl_filt) <- str_replace_all(colnames(evidence_tbl_filt), tolower(extract_replicate_group), extraction_pattern) %>%
+    toupper( ) %>%
+    str_replace_all( "UNIPROT_ACC", "uniprot_acc")
+
+
+  return(list(
+    evidence_tbl_filt = evidence_tbl_filt,
+    num_proteins_remaining = num_proteins_remaining,
+    accession_gene_name_tbl_record = accession_gene_name_tbl_record
+  ))
+}
+
+#' Helper function to save results
+#' @noRd
+saveResults <- function(filtered_data, args) {
+  # Save cleaned counts
+  vroom::vroom_write(
+    filtered_data$evidence_tbl_filt,
+    file.path(args$output_dir, args$output_counts_file)
+  )
+
+  # Save accession records
+  vroom::vroom_write(
+    filtered_data$accession_gene_name_tbl_record,
+    file.path(args$output_dir, args$accession_record_file)
+  )
+
+  # Save protein numbers
+  vroom::vroom_write(
+    data.frame(
+      step = names(filtered_data$num_proteins_remaining),
+      num_proteins_remaining = filtered_data$num_proteins_remaining
+    ),
+    file.path(args$output_dir, "number_of_proteins_remaining_after_each_filtering_step.tab")
+  )
+
+  # Save sample names
+  sample_names <- colnames(filtered_data$evidence_tbl_filt)[-1]
+  vroom::vroom_write(
+    data.frame(sample_names = t(t(sample_names))),
+    file.path(args$output_dir, "sample_names.tab")
+  )
 }

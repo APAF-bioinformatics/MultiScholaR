@@ -58,7 +58,7 @@ ProteinQuantitativeData <- setClass("ProteinQuantitativeData"
 
            #Need to check the rows names in design matrix and the column names of the data table
            samples_in_protein_quant_table <- setdiff(colnames( object@protein_quant_table), object@protein_id_column)
-           samples_in_design_matrix <- object@design_matrix |> pull( !! sym( object@sample_id ) )
+           samples_in_design_matrix <- object@design_matrix |> dplyr::pull( !! sym( object@sample_id ) )
 
            if( length( which( sort(samples_in_protein_quant_table) != sort(samples_in_design_matrix) )) > 0 ) {
              stop("Samples in protein data and design matrix must be the same" )
@@ -138,7 +138,8 @@ setGeneric(name="proteinIntensityFiltering"
                            , proteins_proportion_of_samples_below_cutoff = NULL
                            , core_utilisation = NULL) {
              standardGeneric("proteinIntensityFiltering")
-           })
+           }
+           , signature=c("theObject", "proteins_intensity_cutoff_percentile", "proteins_proportion_of_samples_below_cutoff", "core_utilisation"))
 
 #'@export
 setMethod( f="proteinIntensityFiltering"
@@ -256,16 +257,16 @@ setMethod(f="removeProteinsWithOnlyOneReplicate"
 
 #'@export
 setGeneric(name="plotRle"
-           , def=function( theObject, grouping_variable, yaxis_limit = c()) {
+           , def=function( theObject, grouping_variable, yaxis_limit = c(), sample_label = NULL) {
              standardGeneric("plotRle")
            }
-           , signature=c("theObject", "grouping_variable", "yaxis_limit"))
+           , signature=c("theObject", "grouping_variable", "yaxis_limit", "sample_label"))
 
 
 #'@export
 setMethod(f="plotRle"
           , signature="ProteinQuantitativeData"
-          , definition=function( theObject, grouping_variable, yaxis_limit = c()) {
+          , definition=function( theObject, grouping_variable, yaxis_limit = c(), sample_label = NULL) {
             protein_quant_table <- theObject@protein_quant_table
             protein_id_column <- theObject@protein_id_column
             design_matrix <- theObject@design_matrix
@@ -276,7 +277,15 @@ setMethod(f="plotRle"
               as.matrix()
 
             design_matrix <- as.data.frame(design_matrix)
-            rownames( design_matrix) <- design_matrix[,sample_id]
+
+            if(!is.null(sample_label)) {
+              if ( sample_label %in% colnames(design_matrix)) {
+                rownames( design_matrix) <- design_matrix[,sample_label]
+                colnames( frozen_protein_matrix ) <- design_matrix[,sample_label]
+
+              } } else {
+                rownames( design_matrix) <- design_matrix[,sample_id]
+              }
 
             # print( design_matrix)
 
@@ -285,6 +294,9 @@ setMethod(f="plotRle"
               rowinfo_vector <-  design_matrix[colnames(frozen_protein_matrix), grouping_variable]
             }
 
+            print(rownames( design_matrix))
+            print(colnames( frozen_protein_matrix))
+            print(rowinfo_vector)
               rle_plot_before_cyclic_loess <- plotRleHelper( t(frozen_protein_matrix)
                                                        , rowinfo = rowinfo_vector
                                                        , yaxis_limit = yaxis_limit)
@@ -371,15 +383,32 @@ savePlotRleList <- function( input_list, prefix = "RLE", suffix = c("png", "pdf"
 
 #'@export
 setGeneric(name="plotPca"
-           , def=function( theObject, grouping_variable, label_column, title, font_size ) {
+           , def=function( theObject, grouping_variable, shape_variable = NULL, label_column, title, font_size ) {
              standardGeneric("plotPca")
            }
-           , signature=c("theObject", "grouping_variable", "label_column", "title", "font_size"))
+           , signature=c("theObject", "grouping_variable", "shape_variable", "label_column", "title", "font_size"))
 
 #'@export
 setMethod(f="plotPca"
           , signature="ProteinQuantitativeData"
-          , definition=function( theObject, grouping_variable, label_column, title, font_size=8) {
+          , definition=function( theObject, grouping_variable, shape_variable = NULL, label_column, title, font_size=8) {
+            # Defensive checks
+            if (!is.character(grouping_variable) || length(grouping_variable) != 1) {
+              stop("grouping_variable must be a single character string")
+            }
+            
+            if (!is.null(shape_variable) && (!is.character(shape_variable) || length(shape_variable) != 1)) {
+              stop("shape_variable must be NULL or a single character string")
+            }
+            
+            if (!grouping_variable %in% colnames(theObject@design_matrix)) {
+              stop(sprintf("grouping_variable '%s' not found in design matrix", grouping_variable))
+            }
+            
+            if (!is.null(shape_variable) && !shape_variable %in% colnames(theObject@design_matrix)) {
+              stop(sprintf("shape_variable '%s' not found in design matrix", shape_variable))
+            }
+
             protein_quant_table <- theObject@protein_quant_table
             protein_id_column <- theObject@protein_id_column
             design_matrix <- theObject@design_matrix
@@ -392,19 +421,32 @@ setMethod(f="plotPca"
             frozen_protein_matrix_pca <- frozen_protein_matrix
             frozen_protein_matrix_pca[!is.finite(frozen_protein_matrix_pca)] <- NA
 
-            if( is.na(label_column) || label_column == "") {
+            if(is.na(label_column) || label_column == "") {
               label_column <- ""
             }
 
-            pca_plot <- plotPcaHelper( frozen_protein_matrix_pca
-                                       , design_matrix
-                                       , sample_id_column =  sample_id
-                                       , grouping_variable = grouping_variable
-                                       , label_column =  label_column
-                                       , title = title
-                                       , geom.text.size = font_size )
+            required_cols <- c(sample_id, grouping_variable)
+            if (!is.null(shape_variable)) {
+              required_cols <- c(required_cols, shape_variable)
+            }
+            missing_cols <- setdiff(required_cols, colnames(design_matrix))
+            if (length(missing_cols) > 0) {
+              stop(sprintf("Missing columns in design matrix: %s", paste(missing_cols, collapse = ", ")))
+            }
 
-            return( pca_plot)
+            tryCatch({
+              pca_plot <- plotPcaHelper(frozen_protein_matrix_pca,
+                                           design_matrix,
+                                           sample_id_column = sample_id,
+                                           grouping_variable = grouping_variable,
+                                           shape_variable = shape_variable,
+                                           label_column = label_column,
+                                           title = title,
+                                           geom.text.size = font_size)
+              return(pca_plot)
+            }, error = function(e) {
+              stop(sprintf("Error in plotPcaHelper: %s", e$message))
+            })
           })
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -522,52 +564,63 @@ setGeneric(name="proteinTechRepCorrelation"
 setMethod( f = "proteinTechRepCorrelation"
            , signature="ProteinQuantitativeData"
            , definition=function( theObject,  tech_rep_num_column = NULL, tech_rep_remove_regex = NULL ) {
-            protein_quant_table <- theObject@protein_quant_table
-            protein_id_column <- theObject@protein_id_column
-            design_matrix <- theObject@design_matrix
-            sample_id <- theObject@sample_id
-            tech_rep_column <- theObject@technical_replicate_id
+             protein_quant_table <- theObject@protein_quant_table
+             protein_id_column <- theObject@protein_id_column
+             design_matrix <- theObject@design_matrix
+             sample_id <- theObject@sample_id
+             tech_rep_column <- theObject@technical_replicate_id
 
-            tech_rep_num_column <- checkParamsObjectFunctionSimplifyAcceptNull(theObject, "tech_rep_num_column", NULL)
-            tech_rep_remove_regex <- checkParamsObjectFunctionSimplifyAcceptNull(theObject, "tech_rep_remove_regex", NULL)
+             tech_rep_num_column <- checkParamsObjectFunctionSimplifyAcceptNull(theObject, "tech_rep_num_column", NULL)
+             tech_rep_remove_regex <- checkParamsObjectFunctionSimplifyAcceptNull(theObject, "tech_rep_remove_regex", NULL)
 
-            theObject <- updateParamInObject(theObject, "tech_rep_num_column")
-            theObject <- updateParamInObject(theObject, "tech_rep_remove_regex")
+             theObject <- updateParamInObject(theObject, "tech_rep_num_column")
+             theObject <- updateParamInObject(theObject, "tech_rep_remove_regex")
 
-            frozen_protein_matrix <- protein_quant_table |>
-              column_to_rownames(protein_id_column) |>
-              as.matrix()
+             frozen_protein_matrix <- protein_quant_table |>
+               column_to_rownames(protein_id_column) |>
+               as.matrix()
 
-            frozen_protein_matrix_pca <- frozen_protein_matrix
-            frozen_protein_matrix_pca[!is.finite(frozen_protein_matrix_pca)] <- NA
+             frozen_protein_matrix_pca <- frozen_protein_matrix
+             frozen_protein_matrix_pca[!is.finite(frozen_protein_matrix_pca)] <- NA
 
-            protein_matrix_tech_rep <-proteinTechRepCorrelationHelper( design_matrix, frozen_protein_matrix_pca
-                                                                       , protein_id_column = protein_id_column
-                                                                 , sample_id_column=sample_id
-                                                                 , tech_rep_column = tech_rep_column
-                                                                 , tech_rep_num_column = tech_rep_num_column
-                                                                 , tech_rep_remove_regex = tech_rep_remove_regex )
+             protein_matrix_tech_rep <-proteinTechRepCorrelationHelper( design_matrix, frozen_protein_matrix_pca
+                                                                        , protein_id_column = protein_id_column
+                                                                        , sample_id_column=sample_id
+                                                                        , tech_rep_column = tech_rep_column
+                                                                        , tech_rep_num_column = tech_rep_num_column
+                                                                        , tech_rep_remove_regex = tech_rep_remove_regex )
 
-            return( protein_matrix_tech_rep )
-          })
+             return( protein_matrix_tech_rep )
+           })
 
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Plot Pearson Correlation
+#' @param theObject is an object of the type ProteinQuantitativeData
+#' @param tech_rep_remove_regex samples containing this string are removed from correlation analysis (e.g. if you have lots of pooled sample and want to remove them)
+#' @param correlation_group is the group where every pair of samples are compared
 #' @export
 setGeneric(name="plotPearson",
-           def=function(theObject, tech_rep_remove_regex, y_limit) {
+           def=function(theObject, tech_rep_remove_regex, correlation_group = NA  ) {
              standardGeneric("plotPearson")
            },
-           signature=c("theObject", "tech_rep_remove_regex", "y_limit"))
+           signature=c("theObject", "tech_rep_remove_regex", "correlation_group" ))
 
 #' @export
 setMethod(f="plotPearson",
           signature="ProteinQuantitativeData",
-          definition=function(theObject, tech_rep_remove_regex = "pool") {
-           
-            correlation_vec <- pearsonCorForSamplePairs(theObject, tech_rep_remove_regex)
-            
+          definition=function(theObject, tech_rep_remove_regex = "pool", correlation_group = NA) {
+
+            correlation_group_to_use <- correlation_group
+
+            if( is.na( correlation_group)) {
+              correlation_group_to_use <- theObject@technical_replicate_id
+            }
+
+            correlation_vec <- pearsonCorForSamplePairs(theObject
+                                                        , tech_rep_remove_regex
+                                                        , correlation_group = correlation_group_to_use)
+
             pearson_plot <- correlation_vec |>
               ggplot(aes(pearson_correlation)) +
               geom_histogram(breaks = seq(min(round(correlation_vec$pearson_correlation - 0.5, 2), na.rm = TRUE), 1, 0.001)) +
@@ -577,7 +630,7 @@ setMethod(f="plotPearson",
               theme(panel.grid.major = element_blank(),
                     panel.grid.minor = element_blank(),
                     panel.background = element_blank())
-            
+
             return(pearson_plot)
           })
 
@@ -587,8 +640,13 @@ setMethod(f="plotPearson",
 setClass("GridPlotData",
          slots = list(
            pca_plots = "list",
+           density_plots = "list",
            rle_plots = "list",
-           pearson_plots = "list"
+           pearson_plots = "list",
+           pca_titles = "list",
+           density_titles = "list",
+           rle_titles = "list",
+           pearson_titles = "list"
          ))
 
 #' @export
@@ -602,9 +660,15 @@ setMethod("InitialiseGrid",
           function(dummy = NULL) {
             new("GridPlotData",
                 pca_plots = list(),
+                density_plots = list(),
                 rle_plots = list(),
-                pearson_plots = list())
+                pearson_plots = list(),
+                pca_titles = list(),
+                density_titles = list(),
+                rle_titles = list(),
+                pearson_titles = list())
           })
+
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #Create a QC composite figure
@@ -612,47 +676,99 @@ setMethod("InitialiseGrid",
 #' @export
 #' @export
 setGeneric(name = "createGridQC",
-           def = function(theObject, pca_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_rle_pearson_corr_plots_merged") {
+           def = function(theObject, pca_titles, density_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
              standardGeneric("createGridQC")
            },
-           signature = c("theObject", "pca_titles", "rle_titles", "pearson_titles", "save_path", "file_name"))
+           signature = c("theObject", "pca_titles", "density_titles", "rle_titles", "pearson_titles", "save_path", "file_name"))
 
 #' @export
 setMethod(f = "createGridQC",
           signature = "GridPlotData",
-          definition = function(theObject, pca_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_rle_pearson_corr_plots_merged") {
+          definition = function(theObject, pca_titles = NULL, density_titles = NULL, rle_titles = NULL, pearson_titles = NULL, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
             
-            createPcaPlot <- function(plot, title) {
+            # Use stored titles if not provided as parameters
+            pca_titles <- if(is.null(pca_titles)) theObject@pca_titles else pca_titles
+            density_titles <- if(is.null(density_titles)) theObject@density_titles else density_titles
+            rle_titles <- if(is.null(rle_titles)) theObject@rle_titles else rle_titles
+            pearson_titles <- if(is.null(pearson_titles)) theObject@pearson_titles else pearson_titles
+            
+            createLabelPlot <- function(title) {
+              # Option 1: Use xlim to expand the plot area and position text at left edge
+              ggplot() + 
+                annotate("text", x = 0, y = 0.5, label = title, size = 5, hjust = 0) +
+                xlim(0, 1) +  # Explicitly set the x limits
+                theme_void() +
+                theme(
+                  plot.margin = margin(5, 5, 5, 5),
+                  panel.background = element_blank()
+                )
+            }
+            
+            # Create basic plots without titles
+            createPcaPlot <- function(plot) {
               plot +
-                xlim(-40, 45) + ylim(-30, 25) + ggtitle(title) +
+                xlim(-40, 45) + ylim(-30, 25) +
                 theme(text = element_text(size = 15),
                       panel.grid.major = element_blank(),
                       panel.grid.minor = element_blank(),
                       panel.background = element_blank())
             }
             
-            createRlePlot <- function(plot, title) {
-              plot + ggtitle(title) +
+            createDensityPlot <- function(plot) {
+              # For all plots, just apply the theme without adding title
+              if (inherits(plot, "patchwork")) {
+                plot & 
+                  theme(
+                    panel.grid.major = element_blank(),
+                    panel.grid.minor = element_blank(),
+                    panel.background = element_blank(),
+                    text = element_text(size = 15)
+                  )
+              } else {
+                plot +
+                  theme(text = element_text(size = 15),
+                        panel.grid.major = element_blank(),
+                        panel.grid.minor = element_blank(),
+                        panel.background = element_blank())
+              }
+            }
+            
+            createRlePlot <- function(plot) {
+              plot +
                 theme(text = element_text(size = 15),
                       axis.text.x = element_blank(),
                       axis.ticks.x = element_blank())
             }
             
-            createPearsonPlot <- function(plot, title) {
-              plot + ggtitle(title) +
+            createPearsonPlot <- function(plot) {
+              plot +
                 theme(text = element_text(size = 15))
             }
             
-            created_pca_plots <- mapply(createPcaPlot, theObject@pca_plots, pca_titles, SIMPLIFY = FALSE)
-            created_rle_plots <- mapply(createRlePlot, theObject@rle_plots, rle_titles, SIMPLIFY = FALSE)
-            created_pearson_plots <- mapply(createPearsonPlot, theObject@pearson_plots, pearson_titles, SIMPLIFY = FALSE)
+            # Create plots without titles
+            created_pca_plots <- lapply(theObject@pca_plots, createPcaPlot)
+            created_density_plots <- lapply(theObject@density_plots, createDensityPlot)
+            created_rle_plots <- lapply(theObject@rle_plots, createRlePlot)
+            created_pearson_plots <- lapply(theObject@pearson_plots, createPearsonPlot)
             
+            # Create label plots
+            pca_labels <- lapply(pca_titles, createLabelPlot)
+            density_labels <- lapply(density_titles, createLabelPlot)
+            rle_labels <- lapply(rle_titles, createLabelPlot)
+            pearson_labels <- lapply(pearson_titles, createLabelPlot)
+            
+            # Combine with labels above each row - modified to keep legends with their plots
             combined_plot <- (
+              wrap_plots(pca_labels, ncol = 3) /
               wrap_plots(created_pca_plots, ncol = 3) /
+              wrap_plots(density_labels, ncol = 3) /
+              wrap_plots(created_density_plots, ncol = 3) /
+              wrap_plots(rle_labels, ncol = 3) /
               wrap_plots(created_rle_plots, ncol = 3) /
+              wrap_plots(pearson_labels, ncol = 3) /
               wrap_plots(created_pearson_plots, ncol = 3)
             ) +
-              plot_layout(guides = 'collect')
+              plot_layout(heights = c(0.1, 1, 0.1, 1, 0.1, 1, 0.1, 1))
 
             if (!is.null(save_path)) {
               sapply(c("png", "pdf", "svg"), function(ext) {
@@ -660,7 +776,7 @@ setMethod(f = "createGridQC",
                   plot = combined_plot,
                   filename = file.path(save_path, paste0(file_name, ".", ext)),
                   width = 14,
-                  height = 14
+                  height = 16 # Increased height to accommodate label rows
                 )
               })
               message(paste("Plots saved in", save_path))
@@ -668,7 +784,6 @@ setMethod(f = "createGridQC",
             
             return(combined_plot)
           })
-
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## normalise between Arrays
@@ -693,8 +808,8 @@ setMethod(f="normaliseBetweenSamples"
             sample_id <- theObject@sample_id
 
             normalisation_method <- checkParamsObjectFunctionSimplify( theObject
-                                                         , "normalisation_method"
-                                                         , "cyclicloess")
+                                                                       , "normalisation_method"
+                                                                       , "cyclicloess")
 
             theObject <- updateParamInObject(theObject, "normalisation_method")
 
@@ -743,22 +858,29 @@ setMethod(f="normaliseBetweenSamples"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#'@export
+#' @param theObject is an object of the type ProteinQuantitativeData
+#' @param tech_rep_remove_regex samples containing this string are removed from correlation analysis (e.g. if you have lots of pooled sample and want to remove them)
+#' @param correlation_group is the group where every pair of samples are compared
+#' @export
 setGeneric(name="pearsonCorForSamplePairs"
-           , def=function( theObject,   tech_rep_remove_regex = NULL ) {
+           , def=function( theObject,   tech_rep_remove_regex = NULL, correlation_group = NA ) {
              standardGeneric("pearsonCorForSamplePairs")
            }
-           , signature=c("theObject", "tech_rep_remove_regex"))
+           , signature=c("theObject", "tech_rep_remove_regex", "correlation_group"))
 
 #'@export
 setMethod(f="pearsonCorForSamplePairs"
           , signature="ProteinQuantitativeData"
-          , definition=function( theObject, tech_rep_remove_regex = NULL ) {
+          , definition=function( theObject, tech_rep_remove_regex = NULL, correlation_group = NA ) {
             protein_quant_table <- theObject@protein_quant_table
             protein_id_column <- theObject@protein_id_column
             design_matrix <- theObject@design_matrix
             sample_id <- theObject@sample_id
+
             replicate_group_column <- theObject@technical_replicate_id
+            if(!is.na( correlation_group )) {
+              replicate_group_column <- correlation_group
+            }
 
             tech_rep_remove_regex <- checkParamsObjectFunctionSimplifyAcceptNull(theObject, "tech_rep_remove_regex", "pool")
             theObject <- updateParamInObject(theObject, "tech_rep_remove_regex")
@@ -819,7 +941,6 @@ setMethod(f="getNegCtrlProtAnova"
             design_matrix <- theObject@design_matrix
             group_id <- theObject@group_id
             sample_id <- theObject@sample_id
-            replicate_group_column <- theObject@technical_replicate_id
 
             normalised_frozen_protein_matrix_filt <- protein_quant_table |>
               column_to_rownames(protein_id_column) |>
@@ -839,7 +960,7 @@ setMethod(f="getNegCtrlProtAnova"
             theObject <- updateParamInObject(theObject, "ruv_qval_cutoff")
             theObject <- updateParamInObject(theObject, "ruv_fdr_method")
 
-            control_genes_index <- getNegCtrlProtAnovaHelper( normalised_frozen_protein_matrix_filt[,design_matrix |> pull(!!sym(sample_id)) ]
+            control_genes_index <- getNegCtrlProtAnovaHelper( normalised_frozen_protein_matrix_filt[,design_matrix |> dplyr::pull(!!sym(sample_id)) ]
                                                         , design_matrix = design_matrix |>
                                                           column_to_rownames(sample_id) |>
                                                           dplyr::select( -!!sym(group_id))
@@ -928,7 +1049,6 @@ setMethod( f = "ruvCancor"
              design_matrix <- theObject@design_matrix
              group_id <- theObject@group_id
              sample_id <- theObject@sample_id
-             replicate_group_column <- theObject@technical_replicate_id
 
              ctrl <- checkParamsObjectFunctionSimplify( theObject, "ctrl", NULL)
              num_components_to_impute <- checkParamsObjectFunctionSimplify( theObject, "num_components_to_impute", 2)
@@ -956,15 +1076,15 @@ setMethod( f = "ruvCancor"
                column_to_rownames(protein_id_column) |>
                as.matrix()
 
-             Y <-  t( normalised_frozen_protein_matrix_filt[,design_matrix |> pull(!!sym(sample_id))])
+             Y <-  t( normalised_frozen_protein_matrix_filt[,design_matrix |> dplyr::pull(!!sym(sample_id))])
              if( length(which( is.na(normalised_frozen_protein_matrix_filt) )) > 0 ) {
-               Y <- impute.nipals( t( normalised_frozen_protein_matrix_filt[,design_matrix |> pull(!!sym(sample_id))])
+               Y <- impute.nipals( t( normalised_frozen_protein_matrix_filt[,design_matrix |> dplyr::pull(!!sym(sample_id))])
                                    , ncomp=num_components_to_impute)
              }
 
              cancorplot_r2 <- ruv_cancorplot( Y ,
                                               X = design_matrix |>
-                                                pull(!!sym(ruv_grouping_variable)),
+                                                dplyr::pull(!!sym(ruv_grouping_variable)),
                                               ctl = ctrl)
              cancorplot_r2
 
@@ -1038,7 +1158,7 @@ setMethod( f = "ruvIII_C_Varying"
                column_to_rownames(protein_id_column) |>
                as.matrix()
 
-             Y <-  t( normalised_frozen_protein_matrix_filt[,design_matrix |> pull(!!sym(sample_id))])
+             Y <-  t( normalised_frozen_protein_matrix_filt[,design_matrix |> dplyr::pull(!!sym(sample_id))])
 
              M <- getRuvIIIReplicateMatrixHelper( design_matrix
                                             , !!sym(sample_id)
@@ -1255,10 +1375,10 @@ preservePeptideNaValuesHelper <- function( peptide_obj, protein_obj) {
 
 #'@export
 setGeneric(name="chooseBestProteinAccession"
-           , def=function( theObject, delim=NULL, seqinr_obj=NULL, seqinr_accession_column=NULL, replace_zero_with_na = NULL ) {
+           , def=function(theObject, delim=NULL, seqinr_obj=NULL, seqinr_accession_column=NULL, replace_zero_with_na = NULL, aggregation_method = NULL) {
              standardGeneric("chooseBestProteinAccession")
            }
-           , signature=c("theObject", "delim", "seqinr_obj", "seqinr_accession_column" ))
+           , signature=c("theObject", "delim", "seqinr_obj", "seqinr_accession_column"))
 
 #'@export
 #'@param theObject The object of class ProteinQuantitativeData
@@ -1266,109 +1386,115 @@ setGeneric(name="chooseBestProteinAccession"
 #'@param seqinr_obj The object of class Seqinr::seqinr
 #'@param seqinr_accession_column The column in the seqinr object that contains the protein accessions
 #'@param replace_zero_with_na Replace zero values with NA
-setMethod( f = "chooseBestProteinAccession"
-           , signature="ProteinQuantitativeData"
-           , definition=function( theObject, delim=NULL, seqinr_obj=NULL
-                                  , seqinr_accession_column=NULL
-                                  , replace_zero_with_na = NULL  ) {
+#'@param aggregation_method Method to aggregate protein values: "sum", "mean", or "median" (default: "sum")
+setMethod(f = "chooseBestProteinAccession"
+          , signature="ProteinQuantitativeData"
+          , definition=function(theObject, delim=NULL, seqinr_obj=NULL
+                              , seqinr_accession_column=NULL
+                              , replace_zero_with_na = NULL
+                              , aggregation_method = NULL) {
 
-             protein_quant_table <- theObject@protein_quant_table
-             protein_id_column <- theObject@protein_id_column
+            protein_quant_table <- theObject@protein_quant_table
+            protein_id_column <- theObject@protein_id_column
 
-             delim <- checkParamsObjectFunctionSimplify(theObject, "delim",  default_value =  " |;|:|\\|")
-             seqinr_obj <- checkParamsObjectFunctionSimplify(theObject, "seqinr_obj",  default_value = NULL)
-             seqinr_accession_column <- checkParamsObjectFunctionSimplify( theObject
-                                                                           , "seqinr_accession_column"
-                                                                           , default_value = NULL)
-             replace_zero_with_na <- checkParamsObjectFunctionSimplify( theObject
-                                                                        , "replace_zero_with_na"
-                                                                        , default_value = FALSE)
+            delim <- checkParamsObjectFunctionSimplify(theObject, "delim",  default_value =  " |;|:|\\|")
+            seqinr_obj <- checkParamsObjectFunctionSimplify(theObject, "seqinr_obj",  default_value = NULL)
+            seqinr_accession_column <- checkParamsObjectFunctionSimplify(theObject
+                                                                       , "seqinr_accession_column"
+                                                                       , default_value = NULL)
+            replace_zero_with_na <- checkParamsObjectFunctionSimplify(theObject
+                                                                    , "replace_zero_with_na"
+                                                                    , default_value = FALSE)
+            aggregation_method <- checkParamsObjectFunctionSimplify(theObject
+                                                                  , "aggregation_method"
+                                                                  , default_value = "sum")
 
-             theObject <- updateParamInObject(theObject, "delim")
-             theObject <- updateParamInObject(theObject, "seqinr_obj")
-             theObject <- updateParamInObject(theObject, "seqinr_accession_column")
-             theObject <- updateParamInObject(theObject, "replace_zero_with_na")
+            if (!aggregation_method %in% c("sum", "mean", "median")) {
+              stop("aggregation_method must be one of: 'sum', 'mean', 'median'")
+            }
 
-             evidence_tbl_cleaned <- protein_quant_table |>
-               distinct() |>
-               mutate( row_id = row_number() -1 )
+            theObject <- updateParamInObject(theObject, "delim")
+            theObject <- updateParamInObject(theObject, "seqinr_obj")
+            theObject <- updateParamInObject(theObject, "seqinr_accession_column")
+            theObject <- updateParamInObject(theObject, "replace_zero_with_na")
+            theObject <- updateParamInObject(theObject, "aggregation_method")
 
+            evidence_tbl_cleaned <- protein_quant_table |>
+              distinct() |>
+              mutate(row_id = row_number() -1)
 
-             accession_gene_name_tbl <- chooseBestProteinAccessionHelper( input_tbl = evidence_tbl_cleaned,
-                                                                          acc_detail_tab = seqinr_obj,
-                                                                          accessions_column = !!sym( protein_id_column),
-                                                                          row_id_column = seqinr_accession_column,
-                                                                          group_id = row_id,
-                                                                          delim = ";")
+            accession_gene_name_tbl <- chooseBestProteinAccessionHelper(input_tbl = evidence_tbl_cleaned,
+                                                                      acc_detail_tab = seqinr_obj,
+                                                                      accessions_column = !!sym(protein_id_column),
+                                                                      row_id_column = seqinr_accession_column,
+                                                                      group_id = row_id,
+                                                                      delim = ";")
 
-             protein_log2_quant_cln <- evidence_tbl_cleaned |>
-               left_join( accession_gene_name_tbl |>
-                            dplyr::distinct( row_id, !!sym( as.character(seqinr_accession_column) ))
-                          , by = join_by( row_id ) ) |>
-               mutate( !!sym( theObject@protein_id_column ) :=!!sym( as.character(seqinr_accession_column)) )  |>
-               dplyr::select(-row_id, -!!sym( as.character(seqinr_accession_column)))
+            protein_log2_quant_cln <- evidence_tbl_cleaned |>
+              left_join(accession_gene_name_tbl |>
+                         dplyr::distinct(row_id, !!sym(as.character(seqinr_accession_column)))
+                       , by = join_by(row_id)) |>
+              mutate(!!sym(theObject@protein_id_column) := !!sym(as.character(seqinr_accession_column))) |>
+              dplyr::select(-row_id, -!!sym(as.character(seqinr_accession_column)))
 
+            protein_id_table <- evidence_tbl_cleaned |>
+              left_join(accession_gene_name_tbl |>
+                         dplyr::distinct(row_id, !!sym(as.character(seqinr_accession_column)))
+                       , by = join_by(row_id)) |>
+              distinct(uniprot_acc, !!sym(protein_id_column)) |>
+              mutate(!!sym(paste0(protein_id_column, "_list")) := !!sym(protein_id_column)) |>
+              mutate(!!sym(protein_id_column) := !!sym("uniprot_acc")) |>
+              distinct(!!sym(protein_id_column), !!sym(paste0(protein_id_column, "_list"))) |>
+              group_by(!!sym(protein_id_column)) |>
+              summarise(!!sym(paste0(protein_id_column, "_list")) := paste(!!sym(paste0(protein_id_column, "_list")), collapse = ";")) |>
+              ungroup() |>
+              mutate(!!sym(paste0(protein_id_column, "_list")) := purrr::map_chr(!!sym(paste0(protein_id_column, "_list"))
+                                                                                , \(x){ paste(unique(sort(str_split(x, ";")[[1]])), collapse=";") }))
 
-             protein_id_table <- evidence_tbl_cleaned |>
-               left_join( accession_gene_name_tbl |>
-                            dplyr::distinct( row_id, !!sym( as.character(seqinr_accession_column) ))
-                          , by = join_by( row_id ) ) |>
-               distinct(  uniprot_acc, !!sym( protein_id_column) ) |>
-               mutate( !!sym(paste0(protein_id_column, "_list")) := !!sym( protein_id_column)  ) |>
-               mutate( !!sym(protein_id_column) := !!sym("uniprot_acc") )  |>
-               distinct( !!sym(protein_id_column) , !!sym(paste0(protein_id_column, "_list"))) |>
-               group_by( !!sym(protein_id_column)) |>
-               summarise( !!sym(paste0(protein_id_column, "_list")) := paste(!!sym(paste0(protein_id_column, "_list")), collapse = ";") ) |>
-               ungroup( ) |>
-               mutate( !!sym(paste0(protein_id_column, "_list")) := purrr::map_chr( !!sym(paste0(protein_id_column, "_list"))
-                                                                                    , \(x){  paste(unique( sort(str_split(x, ";")[[1]])), collapse=";")  } ) )
+            summed_data <- protein_log2_quant_cln |>
+              mutate(!!sym(protein_id_column) := purrr::map_chr(!!sym(protein_id_column), \(x){ str_split(x, delim)[[1]][1] })) |>
+              pivot_longer(
+                cols = !matches(protein_id_column),
+                names_to = "sample_id",
+                values_to = "temporary_values_choose_accession"
+              ) |>
+              group_by(!!sym(protein_id_column), sample_id) |>
+              summarise(
+                is_na = sum(is.na(temporary_values_choose_accession)),
+                temporary_values_choose_accession = case_when(
+                  all(is.na(temporary_values_choose_accession)) ~ NA_real_,
+                  aggregation_method == "sum" ~ sum(temporary_values_choose_accession, na.rm = TRUE),
+                  aggregation_method == "mean" ~ mean(temporary_values_choose_accession, na.rm = TRUE),
+                  aggregation_method == "median" ~ median(temporary_values_choose_accession, na.rm = TRUE)
+                ),
+                num_values = n()
+              ) |>
+              ungroup() |>
+              pivot_wider(
+                id_cols = !!sym(protein_id_column),
+                names_from = sample_id,
+                values_from = temporary_values_choose_accession,
+                values_fill = NA_real_
+              )
 
+            if(replace_zero_with_na == TRUE) {
+              summed_data[is.na(summed_data)] <- NA
+            }
 
-             # summed_data <- protein_log2_quant_cln |>
-             #   mutate( !!sym(protein_id_column) := purrr::map_chr( !!sym(protein_id_column), \(x){ str_split(x, ":")[[1]][1] } ) )  |>
-             #   group_by(!!sym(protein_id_column)) |>
-             #   summarise( across( !matches(protein_id_column), \(x) { sum(x, na.rm=TRUE) } )) |>
-             #   ungroup()
-             #
-             # summed_data[summed_data == 0] <- NA
+            protein_id_table <- rankProteinAccessionHelper(input_tbl = protein_id_table,
+                                                         acc_detail_tab = seqinr_obj,
+                                                         accessions_column = !!sym(paste0(protein_id_column, "_list")),
+                                                         row_id_column = seqinr_accession_column,
+                                                         group_id = !!sym(protein_id_column),
+                                                         delim = ";") |>
+              dplyr::rename(!!sym(paste0(protein_id_column, "_list")) := seqinr_accession_column) |>
+              dplyr::select(-num_gene_names, -gene_names, -is_unique)
 
-             summed_data <- protein_log2_quant_cln |>
-               mutate( !!sym(protein_id_column) := purrr::map_chr( !!sym(protein_id_column), \(x){ str_split(x,  delim)[[1]][1] } ) )  |>
-               pivot_longer( cols = !matches(protein_id_column)
-                            , names_to = "sample_id"
-                            , values_to = "temporary_values_choose_accession") |>
-               group_by( !!sym(protein_id_column), sample_id ) |>
-               summarise( is_na = sum( is.na(temporary_values_choose_accession ))
-                          , temporary_values_choose_accession = sum( temporary_values_choose_accession, na.rm=TRUE)
-                          , num_values = n() ) |>
-               mutate( temporary_values_choose_accession = if_else( is_na == num_values, NA_real_, temporary_values_choose_accession)) |>
-               ungroup() |>
-               pivot_wider( id_cols = !!sym(protein_id_column)
-                            , names_from = sample_id
-                            , values_from = temporary_values_choose_accession
-                            , values_fill = NA_real_)
+            theObject@protein_id_table <- protein_id_table
+            theObject@protein_quant_table <- summed_data[, colnames(protein_quant_table)]
 
-
-             if( replace_zero_with_na == TRUE) {
-               summed_data[is.na(summed_data)] <- NA
-             }
-             # print( summed_data)
-
-             protein_id_table <- rankProteinAccessionHelper( input_tbl = protein_id_table,
-                                                                          acc_detail_tab = seqinr_obj,
-                                                                          accessions_column = !!sym(paste0(protein_id_column, "_list")),
-                                                                          row_id_column = seqinr_accession_column,
-                                                                          group_id =  !!sym(protein_id_column),
-                                                                          delim = ";") |>
-               dplyr::rename( !!sym(paste0(protein_id_column, "_list")):= seqinr_accession_column ) |>
-               dplyr::select(-num_gene_names, -gene_names, -is_unique)
-
-             theObject@protein_id_table <- protein_id_table
-             theObject@protein_quant_table <- summed_data[, colnames(protein_quant_table)]
-
-             return(theObject)
-
-           })
+            return(theObject)
+          })
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -1460,19 +1586,19 @@ compareTwoProteinDataObjects <- function( object_a, object_b) {
 
   object_a_proteins <- object_a@protein_quant_table |>
     distinct(!!sym(object_a@protein_id_column)) |>
-    pull(!!sym(object_a@protein_id_column))
+    dplyr::pull(!!sym(object_a@protein_id_column))
 
   object_b_proteins <- object_b@protein_quant_table |>
     distinct(!!sym(object_b@protein_id_column)) |>
-    pull(!!sym(object_b@protein_id_column))
+    dplyr::pull(!!sym(object_b@protein_id_column))
 
   object_a_samples <- object_a@design_matrix |>
     distinct(!!sym(object_a@sample_id)) |>
-    pull(!!sym(object_a@sample_id))
+    dplyr::pull(!!sym(object_a@sample_id))
 
   object_b_samples <- object_b@design_matrix |>
     distinct(!!sym(object_b@sample_id)) |>
-    pull(!!sym(object_b@sample_id))
+    dplyr::pull(!!sym(object_b@sample_id))
 
 
   proteins_in_a_not_b <- length( setdiff( object_a_proteins, object_b_proteins))
@@ -1506,11 +1632,11 @@ compareTwoProteinDataObjects <- function( object_a, object_b) {
 summariseProteinObject <- function ( theObject) {
   num_proteins <- theObject@protein_quant_table |>
     distinct(!!sym(theObject@protein_id_column)) |>
-    pull(!!sym(theObject@protein_id_column))
+    dplyr::pull(!!sym(theObject@protein_id_column))
 
   num_samples <- theObject@design_matrix |>
     distinct(!!sym(theObject@sample_id)) |>
-    pull(!!sym(theObject@sample_id))
+    dplyr::pull(!!sym(theObject@sample_id))
 
   summary_list <- list( num_proteins = length(num_proteins)
        , num_samples = length(num_samples))
@@ -1518,3 +1644,153 @@ summariseProteinObject <- function ( theObject) {
   summary_list
 
 }
+
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#'@export
+setGeneric(name="plotDensity"
+           , def=function(theObject, grouping_variable, title = "", font_size = 8) {
+             standardGeneric("plotDensity")
+           }
+           , signature=c("theObject", "grouping_variable", "title", "font_size"))
+
+#'@export
+setMethod(f="plotDensity"
+          , signature="gg"
+          , definition=function(theObject, grouping_variable, title = "", font_size = 8) {
+            # For gg class objects, create a copy and change its class to ggplot
+            gg_obj <- theObject
+            class(gg_obj) <- "ggplot"
+            
+            # Then call the ggplot method
+            plotDensity(gg_obj, grouping_variable, title, font_size)
+          })
+
+#'@export
+setMethod(f="plotDensity"
+          , signature="ggplot"
+          , definition=function(theObject, grouping_variable, title = "", font_size = 8) {
+            # First try to get data directly from the ggplot object's data element
+            if (!is.null(theObject$data) && is.data.frame(theObject$data)) {
+              pca_data <- as_tibble(theObject$data)
+            } else {
+              # Fall back to other extraction methods
+              pca_data <- as_tibble(ggplot_build(theObject)$data[[1]])
+              
+              # If the data doesn't have PC1/PC2, try to extract from the plot's environment
+              if (!("PC1" %in% colnames(pca_data) && "PC2" %in% colnames(pca_data))) {
+                # Try to get the data from the plot's environment
+                if (exists("data", envir = environment(theObject$mapping$x))) {
+                  pca_data <- as_tibble(get("data", envir = environment(theObject$mapping$x)))
+                } else {
+                  stop("Could not extract PCA data from the ggplot object")
+                }
+              }
+            }
+            
+            # Check if grouping variable exists in the data
+            if (!grouping_variable %in% colnames(pca_data)) {
+              stop(sprintf("grouping_variable '%s' not found in the data", grouping_variable))
+            }
+            
+            # Create PC1 boxplot
+            pc1_box <- ggplot(pca_data, aes(x = !!sym(grouping_variable), y = PC1, fill = !!sym(grouping_variable))) +
+              geom_boxplot(notch = TRUE) +
+              theme_bw() +
+              labs(title = title,
+                   x = "",
+                   y = "PC1") +
+              theme(
+                legend.position = "none",
+                axis.text.x = element_blank(),
+                axis.ticks.x = element_blank(),
+                text = element_text(size = font_size),
+                plot.margin = margin(b = 0, t = 5, l = 5, r = 5),
+                panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                panel.background = element_blank()
+              )
+            
+            # Create PC2 boxplot
+            pc2_box <- ggplot(pca_data, aes(x = !!sym(grouping_variable), y = PC2, fill = !!sym(grouping_variable))) +
+              geom_boxplot(notch = TRUE) +
+              theme_bw() +
+              labs(x = "",
+                   y = "PC2") +
+              theme(
+                legend.position = "none",
+                axis.text.x = element_blank(),
+                axis.ticks.x = element_blank(),
+                text = element_text(size = font_size),
+                plot.margin = margin(t = 0, b = 5, l = 5, r = 5),
+                panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                panel.background = element_blank()
+              )
+            
+            # Combine plots with minimal spacing
+            combined_plot <- pc1_box / pc2_box + 
+              plot_layout(heights = c(1, 1)) +
+              plot_annotation(theme = theme(plot.margin = margin(0, 0, 0, 0)))
+            
+            return(combined_plot)
+          }) 
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#'@export
+setGeneric(name="plotDensityList"
+           , def=function(theObject, grouping_variables_list, title = "", font_size = 8) {
+             standardGeneric("plotDensityList")
+           }
+           , signature=c("theObject", "grouping_variables_list", "title", "font_size"))
+
+#'@export
+setMethod(f="plotDensityList"
+          , signature="ProteinQuantitativeData"
+          , definition=function(theObject, grouping_variables_list, title = "", font_size = 8) {
+            
+            # Create a list of density plots for each grouping variable
+            density_plots_list <- purrr::map(grouping_variables_list, function(group_var) {
+              tryCatch({
+                plotDensity(theObject, 
+                           grouping_variable = group_var,
+                           title = title,
+                           font_size = font_size)
+              }, error = function(e) {
+                warning(sprintf("Error creating density plot for %s: %s", group_var, e$message))
+              return(NULL)
+                  })
+                              })
+            
+            # Name the list elements with the grouping variables
+            names(density_plots_list) <- grouping_variables_list
+            
+            # Remove any NULL elements (failed plots)
+            density_plots_list <- density_plots_list[!sapply(density_plots_list, is.null)]
+            
+            return(density_plots_list)
+          })
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#' @export
+savePlotDensityList <- function(input_list, prefix = "Density", suffix = c("png", "pdf"), output_dir) {
+  
+  list_of_filenames <- expand_grid(column = names(input_list), suffix = suffix) |>
+    mutate(filename = paste0(prefix, "_", column, ".", suffix)) |>
+    left_join(tibble(column = names(input_list),
+              plots = input_list),
+              by = join_by(column))
+  
+  purrr::walk2(list_of_filenames$plots,
+               list_of_filenames$filename,
+               \(.x, .y) {
+                 ggsave(plot = .x, filename = file.path(output_dir, .y))
+               })
+  
+  list_of_filenames
+}
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------

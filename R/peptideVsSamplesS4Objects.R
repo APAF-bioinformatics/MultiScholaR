@@ -115,8 +115,8 @@ PeptideQuantitativeData <- setClass("PeptideQuantitativeData"
 
 
                                        #Need to check the rows names in design matrix and the column names of the data table
-                                       samples_in_peptide_data <-  object@peptide_data |> distinct(!!sym(object@sample_id)) |> pull(!!sym(object@sample_id))
-                                       samples_in_design_matrix <- object@design_matrix |> pull( !! sym( object@sample_id ) )
+                                       samples_in_peptide_data <-  object@peptide_data |> distinct(!!sym(object@sample_id)) |> dplyr::pull(!!sym(object@sample_id))
+                                       samples_in_design_matrix <- object@design_matrix |> dplyr::pull( !! sym( object@sample_id ) )
 
                                        if( length( which( sort(samples_in_peptide_data) != sort(samples_in_design_matrix) )) > 0 ) {
                                          stop("Samples in peptide data and design matrix must be the same" )
@@ -181,7 +181,7 @@ setMethod( f ="cleanDesignMatrixPeptide"
            , signature = "PeptideQuantitativeData"
            , definition=function( theObject ) {
 
-             samples_id_vector <- theObject@peptide_data |> distinct(!!sym(theObject@sample_id)) |> pull(!!sym(theObject@sample_id))
+             samples_id_vector <- theObject@peptide_data |> distinct(!!sym(theObject@sample_id)) |> dplyr::pull(!!sym(theObject@sample_id))
 
              theObject@design_matrix <- data.frame( temp_sample_id = samples_id_vector )  |>
                inner_join( theObject@design_matrix
@@ -341,7 +341,7 @@ setMethod( f="peptideIntensityFiltering"
              theObject <- updateParamInObject(theObject, "peptides_proportion_of_samples_below_cutoff")
              theObject <- updateParamInObject(theObject, "core_utilisation")
 
-             min_peptide_intensity_threshold <- ceiling( quantile( peptide_data |> pull(!!sym(raw_quantity_column)), na.rm=TRUE, probs = c(peptides_intensity_cutoff_percentile/100) ))[1]
+             min_peptide_intensity_threshold <- ceiling( quantile( peptide_data |> dplyr::pull(!!sym(raw_quantity_column)), na.rm=TRUE, probs = c(peptides_intensity_cutoff_percentile/100) ))[1]
 
              peptide_normalised_pif_cln <- peptideIntensityFilteringHelper( peptide_data
                                                                       , min_peptide_intensity_threshold = min_peptide_intensity_threshold
@@ -412,7 +412,7 @@ setMethod( f = "removePeptidesWithMissingValuesPercent"
 
              min_protein_intensity_threshold <- ceiling( quantile( peptide_data |>
                                                                      dplyr::filter( !is.nan(!!sym(norm_quantity_column)) & !is.infinite(!!sym(norm_quantity_column))) |>
-                                                                     pull(!!sym(norm_quantity_column))
+                                                                     dplyr::pull(!!sym(norm_quantity_column))
                                                                    , na.rm=TRUE
                                                                    , probs = c(peptides_intensity_cutoff_percentile/100) ))[1]
 
@@ -556,7 +556,6 @@ setMethod( f="removePeptidesWithOnlyOneReplicate"
 
              peptide_data <- theObject@peptide_data
              sample_id_column <- theObject@sample_id
-             replicate_group_column <- theObject@technical_replicate_id
              design_matrix <- theObject@design_matrix
 
 
@@ -679,19 +678,19 @@ compareTwoPeptideDataObjects <- function( object_a, object_b) {
 
   object_a_proteins <- object_a@peptide_data |>
     distinct(!!sym(object_a@protein_id_column)) |>
-    pull(!!sym(object_a@protein_id_column))
+    dplyr::pull(!!sym(object_a@protein_id_column))
 
   object_b_proteins <- object_b@peptide_data |>
     distinct(!!sym(object_b@protein_id_column)) |>
-    pull(!!sym(object_b@protein_id_column))
+    dplyr::pull(!!sym(object_b@protein_id_column))
 
   object_a_samples <- object_a@design_matrix |>
     distinct(!!sym(object_a@sample_id)) |>
-    pull(!!sym(object_a@sample_id))
+    dplyr::pull(!!sym(object_a@sample_id))
 
   object_b_samples <- object_b@design_matrix |>
     distinct(!!sym(object_b@sample_id)) |>
-    pull(!!sym(object_b@sample_id))
+    dplyr::pull(!!sym(object_b@sample_id))
 
 
   peptides_in_a_not_b <- nrow( dplyr::setdiff( object_a_peptides, object_b_peptides) )
@@ -737,11 +736,11 @@ summarisePeptideObject <- function(theObject) {
 
   num_proteins <- theObject@peptide_data |>
     distinct(!!sym(theObject@protein_id_column)) |>
-    pull(!!sym(theObject@protein_id_column))
+    dplyr::pull(!!sym(theObject@protein_id_column))
 
   num_samples <- theObject@design_matrix |>
     distinct(!!sym(theObject@sample_id)) |>
-    pull(!!sym(theObject@sample_id))
+    dplyr::pull(!!sym(theObject@sample_id))
 
   summary_list <- list( num_peptides = nrow(num_peptides)
                        , num_proteins = length(num_proteins)
