@@ -82,49 +82,7 @@ metabolomics_data_file <- "metabolite_intensities.tsv" # Example: wide format (r
 metadata_file <- "metabolite_metadata.tsv" # Optional: File with ChEBI IDs, names, formulas etc. if not in main data file
 config_file <- "metabolomics_config.ini" # Configuration file for parameters
 
-# --- Configuration Loading ---
-# Reuse if applicable, otherwise load parameters manually
-# config_list <- readConfigFile(file = file.path(source_dir, config_file))
-# Example manual parameters if config file not used:
-config_list <- list(
-  globalParameters = list(
-    metabolomics_input_file = metabolomics_data_file,
-    metadata_input_file = metadata_file,
-    sample_id_column = "SampleID", # Column name for sample IDs in data/design matrix
-    metabolite_id_column = "MetaboliteID", # Column name for unique metabolite IDs in data/metadata
-    intensity_column = "Intensity", # Column name for intensity values (if long format)
-    feature_name_column = "MetaboliteName", # Column for display names
-    annotation_source = "ChEBI", # or "KEGG", "PubChem", "HMDB"
-    internal_standard_pattern = "ITSD", # Pattern to identify internal standards (e.g., in MetaboliteID or a dedicated column)
-    organism_kegg_code = "hsa" # Example: Homo sapiens KEGG code (used for pathway mapping)
-  ),
-  qcParameters = list(
-    min_fraction_detected_per_group = 0.7, # Minimum fraction of non-missing values within a group to keep a feature
-    min_groups_detected = 1, # Minimum number of groups meeting the fraction threshold
-    intensity_quantile_threshold = 0.01 # Quantile for low-intensity filtering (if used)
-  ),
-  normalizationParameters = list(
-    is_normalization_method = "sum", # Method to aggregate IS intensity ('sum', 'mean', 'median')
-    post_is_normalization = "log2" # Optional: 'log2', 'PQN', 'median', 'none'
-  ),
-  ruvParameters = list(
-    perform_ruv = TRUE,
-    k_value = NULL, # Set manually or determine using cancorplot
-    use_internal_standards_as_neg_ctrl = TRUE, # Use IS identified by pattern as negative controls for RUV
-    percentage_as_neg_ctrl = 10, # Alternative: Use % lowest variance features if not using IS
-    ruv_grouping_variable = "group" # Column in design matrix for RUV factor estimation
-  ),
-  correlationFilterParameters = list(
-    perform_correlation_filter = TRUE,
-    min_pearson_correlation_threshold = 0.6, # Threshold for filtering samples based on within-group correlation
-    correlation_group = "group" # Column in design matrix for grouping samples
-  )
-)
 
-log_info("Configuration parameters loaded/defined.")
-
-# --- Data Loading ---
-# Assuming wide format initially: rows=metabolites, cols=samples, first col = metabolite ID
 data_raw <- vroom::vroom(
   file.path(data_dir, "metabolomics", config_list$globalParameters$metabolomics_input_file),
   delim = "\t", # Adjust delimiter if needed
