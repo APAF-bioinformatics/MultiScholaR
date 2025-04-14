@@ -4,7 +4,13 @@
 
 ## Overview
 
-`MultiScholaR` aims to provide a standardized, reproducible, and user-friendly R environment for the analysis of various omics data types (proteomics, metabolomics, transcriptomics) and their integration. It leverages S4 objects and established Bioconductor principles for robust data handling and analysis.
+Modern multi-omics datasets require substantial programming expertise and practical knowledge to analyse. Analysis is skill-gated, making it challenging for many researchers to apply modern statistical best practices. MultiScholaR is a package in R that addresses this challenge by providing a novel pipeline aiming to enable users to perform comprehensive multi-omics analyses, including single-omic analyses (e.g. transcriptomics, proteomics, phosphoproteomics and metabolomics datasets) and integrative multi-omics analysis. Through well-documented workflow templates, researchers can systematically apply best-practice to all steps of integrative multi-omics analysis.
+
+MultiScholaR implements stringent quality control measures for multi-omics analysis by incorporating criteria such as false discovery rate thresholds, filtering criterias, and missing value limitations across samples. It integrates several sophisticated analytical tools: the IQ tool for peptide-to-protein quantitative data summarization, RUVIII-C for removing unwanted variation, and edgeR and/or limma for sample normalization and linear modelling. Pathway analysis can be performed either using user-supplied annotations via clusterProfiler or through automated analysis with gProfiler2. Multivariate and integrative multi-omics analyses are implemented using MOFA and MixOmics.
+
+Structured on modular, object-oriented components, MultiScholaR's architecture facilitates easy integration of new tools as they emerge. The inclusion of comprehensive, documented workbooks that guide users through each analytical step, facilitates reproducibility and enabling public sharing of analyses.
+
+By streamlining complex multi-omics analyses, MultiScholaR makes advanced analytical techniques accessible to researchers across all levels of programming expertise.
 
 ## Quick Start & Setup
 
@@ -47,13 +53,13 @@ graph TD
         D
         D1(MultiAssayExperiment Integration)
         D2(Cross-Omics Data Linking)
-        D3(Initial Integrated Visualization)
+        D3(Factor Analysis Methods - MOFA+Visualisation)
     end
      subgraph "v0.5"
         E
-        E1(Factor Analysis Methods - MOFA+)
-        E2(Advanced Integration Visualization)
-        E3(Pathway/Network Integration)
+        E1(Advanced Integration Visualization)
+        E2(Pathway/Network Integration)
+        E3(StringDB Integration)
     end
 
     style A fill:#ADD8E6,color:#000000
