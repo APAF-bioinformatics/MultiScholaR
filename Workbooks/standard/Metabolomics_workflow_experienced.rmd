@@ -1,0 +1,961 @@
+---
+title: "Metabolomics Analysis Workflow"
+version: "1.0"
+author: "Your fancy self"
+output:
+  html_document:
+    code_folding: true
+    self_contained: true
+    toc: true # Enable TOC for navigation
+    warning: false
+    message: false
+---
+
+# Initial R environment setup
+## Checks your R environment for the required packages to run MultiScholaR, and installs them if they are not.
+
+```{r MultiScholaR FIRST INSTALL, eval=FALSE}
+# This chunk likely needs modification if metabolomics requires different core dependencies
+# or if a separate MetabolomeScholaR package is created.
+# For now, assuming MultiScholaR contains shared core functions.
+
+installMultiScholaR <- function(verbose = TRUE) {
+    # Install devtools if missing
+    if (!requireNamespace("devtools", quietly = TRUE)) {
+        install.packages("devtools")
+    }
+    
+    # Detach if loaded
+    if ("package:MultiScholaR" %in% search()) {
+        try(detach("package:MultiScholaR", unload = TRUE, force = TRUE), silent = TRUE)
+    }
+    
+    # Unload namespace
+    try(unloadNamespace("MultiScholaR"), silent = TRUE)
+    
+
+    devtools::install_github(
+        "APAF-BIOINFORMATICS/MultiScholaR", 
+        ref = "main", # Example branch
+        dependencies = TRUE,
+        upgrade = "never",
+        force = TRUE
+    )
+    
+    # Load it
+    library(MultiScholaR)
+}
+
+installMultiScholaR()
+loadDependencies()
+```
+
+# START HERE if you already have MultiScholaR installed
+## Loads the package and its dependencies.
+
+```{r Load MultiScholaR}
+library(MultiScholaR) # Assuming core package exists
+loadDependencies()   # Load necessary libraries
+```
+
+# Set up your environment and project directory
+## Establishes a standardized directory structure for the metabolomics project.
+
+```{r Project Environment Management}
+# Reuse the existing function if suitable
+experiment_label <- "Metabolomics_Experiment_1" # NB this will affect directory structure and name
+multisetupAndShowDirectories(omic_type = "metabolomics"
+, label = experiment_label
+, force = FALSE)
+
+```
+
+# At this step, please copy your data and other necessary files into the appropriate directories
+## Define input files, parameters, and load configuration.
+
+```{r Data Management and Parameters}
+# --- Input File Names ---
+# Adjust filenames as needed
+metabolomics_data_file <- "metabolite_intensities.tsv" # Example: wide format (rows=metabolites, cols=samples) or long format
+metadata_file <- "metabolite_metadata.tsv" # Optional: File with ChEBI IDs, names, formulas etc. if not in main data file
+config_file <- "metabolomics_config.ini" # Configuration file for parameters
+
+# --- Configuration Loading ---
+# Reuse if applicable, otherwise load parameters manually
+# config_list <- readConfigFile(file = file.path(source_dir, config_file))
+# Example manual parameters if config file not used:
+config_list <- list(
+  globalParameters = list(
+    metabolomics_input_file = metabolomics_data_file,
+    metadata_input_file = metadata_file,
+    sample_id_column = "SampleID", # Column name for sample IDs in data/design matrix
+    metabolite_id_column = "MetaboliteID", # Column name for unique metabolite IDs in data/metadata
+    intensity_column = "Intensity", # Column name for intensity values (if long format)
+    feature_name_column = "MetaboliteName", # Column for display names
+    annotation_source = "ChEBI", # or "KEGG", "PubChem", "HMDB"
+    internal_standard_pattern = "ITSD", # Pattern to identify internal standards (e.g., in MetaboliteID or a dedicated column)
+    organism_kegg_code = "hsa" # Example: Homo sapiens KEGG code (used for pathway mapping)
+  ),
+  qcParameters = list(
+    min_fraction_detected_per_group = 0.7, # Minimum fraction of non-missing values within a group to keep a feature
+    min_groups_detected = 1, # Minimum number of groups meeting the fraction threshold
+    intensity_quantile_threshold = 0.01 # Quantile for low-intensity filtering (if used)
+  ),
+  normalizationParameters = list(
+    is_normalization_method = "sum", # Method to aggregate IS intensity ('sum', 'mean', 'median')
+    post_is_normalization = "log2" # Optional: 'log2', 'PQN', 'median', 'none'
+  ),
+  ruvParameters = list(
+    perform_ruv = TRUE,
+    k_value = NULL, # Set manually or determine using cancorplot
+    use_internal_standards_as_neg_ctrl = TRUE, # Use IS identified by pattern as negative controls for RUV
+    percentage_as_neg_ctrl = 10, # Alternative: Use % lowest variance features if not using IS
+    ruv_grouping_variable = "group" # Column in design matrix for RUV factor estimation
+  ),
+  correlationFilterParameters = list(
+    perform_correlation_filter = TRUE,
+    min_pearson_correlation_threshold = 0.6, # Threshold for filtering samples based on within-group correlation
+    correlation_group = "group" # Column in design matrix for grouping samples
+  )
+)
+
+log_info("Configuration parameters loaded/defined.")
+
+# --- Data Loading ---
+# Assuming wide format initially: rows=metabolites, cols=samples, first col = metabolite ID
+data_raw <- vroom::vroom(
+  file.path(data_dir, "metabolomics", config_list$globalParameters$metabolomics_input_file),
+  delim = "\t", # Adjust delimiter if needed
+  col_types = cols(.default = col_double(), !!config_list$globalParameters$metabolite_id_column := col_character()) # Ensure ID is char, others numeric
+)
+
+# --- Metadata Loading (Optional) ---
+# Load if metabolite annotations are in a separate file
+if (!is.null(config_list$globalParameters$metadata_input_file)) {
+  feature_metadata_raw <- vroom::vroom(
+    file.path(data_dir, "annotations", config_list$globalParameters$metadata_input_file),
+    delim = "\t" # Adjust delimiter if needed
+  )
+  log_info("Metabolite metadata loaded from: {config_list$globalParameters$metadata_input_file}")
+
+  # Basic check: Ensure metabolite ID column exists in metadata
+  if (!config_list$globalParameters$metabolite_id_column %in% names(feature_metadata_raw)) {
+      log_error("Metabolite ID column '{config_list$globalParameters$metabolite_id_column}' not found in metadata file.")
+      stop("Metadata file missing required ID column.")
+  }
+
+} else {
+  # If no separate metadata file, assume required info is in the main data file's non-numeric columns
+  # Or generate minimal metadata from the data_raw file
+  feature_metadata_raw <- data_raw |>
+      select(where(\\(x) !is.numeric(x))) # Select non-numeric columns as potential metadata
+  
+  # Ensure the primary ID column is present
+  if (!config_list$globalParameters$metabolite_id_column %in% names(feature_metadata_raw)) {
+      log_error("Metabolite ID column '{config_list$globalParameters$metabolite_id_column}' not found in data file.")
+      stop("Data file missing required ID column.")
+  }
+    
+  log_info("Metadata extracted from data file columns.")
+}
+
+# Separate quantitative data from metadata if combined initially
+quantitative_data_raw <- data_raw |>
+    select(!!config_list$globalParameters$metabolite_id_column, where(is.numeric)) |>
+    tibble::column_to_rownames(var = config_list$globalParameters$metabolite_id_column) |>
+    as.matrix()
+
+log_info("Raw quantitative data dimensions: {nrow(quantitative_data_raw)} metabolites x {ncol(quantitative_data_raw)} samples")
+log_info("Raw feature metadata dimensions: {nrow(feature_metadata_raw)} metabolites x {ncol(feature_metadata_raw)} annotations")
+
+# --- Placeholder for Initial Data Cleaning ---
+# e.g., Remove empty rows/columns, handle initial format conversions if needed
+# data_cln <- initialDataClean(quantitative_data_raw, feature_metadata_raw)
+# For now, assume raw data is relatively clean
+data_cln <- quantitative_data_raw
+feature_metadata_cln <- feature_metadata_raw |>
+    # Ensure the metabolite ID column used for joining/rownames is consistent
+    dplyr::rename(rowname_id = !!config_list$globalParameters$metabolite_id_column) |>
+    # Remove potential duplicate metadata rows if metabolite IDs are repeated
+    dplyr::distinct(rowname_id, .keep_all = TRUE) |>
+    # Ensure metadata rows match the quantitative data rows
+    dplyr::filter(rowname_id %in% rownames(data_cln))
+
+# Align metadata rows exactly with quantitative data rows
+feature_metadata_cln <- feature_metadata_cln[match(rownames(data_cln), feature_metadata_cln$rowname_id), ]
+
+log_info("Cleaned quantitative data dimensions: {nrow(data_cln)} x {ncol(data_cln)}")
+log_info("Cleaned feature metadata dimensions: {nrow(feature_metadata_cln)} x {ncol(feature_metadata_cln)}")
+
+```
+
+# Set your design matrix (for the first time)
+## Interactively create the design matrix linking samples to experimental conditions.
+
+```{r Design Matrix Setup}
+# Reuse the Shiny applet if available and compatible
+# Need to ensure the applet generates columns expected by downstream functions (e.g., 'Run', 'group', 'replicates')
+# The applet likely needs the sample names (column names from data_cln) as input.
+sample_names <- colnames(data_cln)
+
+if (exists("design_matrix", envir = .GlobalEnv)) {
+  log_info("Design matrix already exists in environment. Skipping applet.")
+} else {
+  log_info("Launching Design Matrix Applet...")
+  # RunApplet("designMatrix", sample_list = sample_names) # Pass sample names to the applet
+  # --- Applet Placeholder ---
+  # If RunApplet doesn't exist or isn't suitable, provide manual creation example:
+  log_warn("RunApplet function not found or not run. Creating a placeholder design matrix.")
+  design_matrix <- tibble::tibble(
+      Run = sample_names,
+      # --- !!! Manually define your groups and replicates here !!! ---
+      group = rep(c("Control", "Treatment"), each = ncol(data_cln)/2), # Example grouping
+      replicates = paste0("BioRep", 1:ncol(data_cln)) # Example replicate info
+      # Add other relevant columns (e.g., batch, timepoint)
+  )
+  # --- End Placeholder ---
+  log_info("Design matrix created.")
+  # Optional: Save the newly created design matrix
+  # write.table(design_matrix, file.path(source_dir, "design_matrix_metabolomics.tab"), sep = "\t", row.names = FALSE, quote = FALSE)
+}
+
+# Validate design matrix against data
+if (!all(colnames(data_cln) %in% design_matrix$Run)) {
+    log_error("Mismatch between sample names in data columns and 'Run' column in design matrix.")
+    stop("Sample ID mismatch. Check data loading and design matrix creation.")
+}
+# Ensure design matrix only contains samples present in the data
+design_matrix <- design_matrix |> filter(Run %in% colnames(data_cln))
+# Reorder data columns to match design matrix order (important for matrix operations)
+data_cln <- data_cln[, design_matrix$Run]
+
+log_info("Design matrix dimensions: {nrow(design_matrix)} samples x {ncol(design_matrix)} factors")
+print(head(design_matrix))
+
+```
+
+# If you have the design matrix stored from a previous run, you can read it in here, otherwise skip
+## Optional step to load a pre-existing design matrix.
+
+```{r Design Matrix Read In (optional), eval=FALSE}
+# This chunk allows loading a previously saved design matrix.
+design_matrix_file <- file.path(source_dir, "design_matrix_metabolomics.tab")
+if (file.exists(design_matrix_file)) {
+    design_matrix <- read.table(
+      file = design_matrix_file,
+      sep = "\t",
+      header = TRUE,
+      stringsAsFactors = FALSE
+    )
+    log_info("Loaded design matrix from: {design_matrix_file}")
+
+    # Re-validate and align data
+    if (!all(colnames(data_cln) %in% design_matrix$Run)) {
+        log_error("Mismatch between sample names in data columns and loaded 'Run' column in design matrix.")
+        stop("Sample ID mismatch after loading design matrix.")
+    }
+    design_matrix <- design_matrix |> filter(Run %in% colnames(data_cln))
+    data_cln <- data_cln[, design_matrix$Run]
+    log_info("Data columns reordered to match loaded design matrix.")
+
+} else {
+    log_warn("Design matrix file not found at: {design_matrix_file}. Skipping read-in.")
+}
+```
+
+# Fetch Metabolite Annotations
+## Retrieves annotations (e.g., KEGG pathways, chemical properties) based on metabolite identifiers (ChEBI ID, Name, etc.).
+
+```{r Metabolite Annotation}
+# This requires a new function: getMetaboliteAnnotations
+# Input: feature_metadata_cln, id_column (e.g., 'ChEBI_ID', 'MetaboliteName'), annotation_source ('ChEBI', 'KEGG', 'PubChem')
+# Output: Enriched feature_metadata_cln table
+
+# Placeholder function call - ** THIS FUNCTION NEEDS TO BE IMPLEMENTED **
+# It should handle different ID types and query relevant databases (KEGGREST, webchem, etc.)
+# Consider caching results to avoid repeated queries (like getUniprotAnnotations)
+# feature_metadata_annotated <- getMetaboliteAnnotations(
+#   feature_metadata = feature_metadata_cln,
+#   metabolite_id_column = config_list$globalParameters$metabolite_id_column, # Or a specific annotation ID column like 'ChEBI_ID'
+#   feature_name_column = config_list$globalParameters$feature_name_column,
+#   annotation_source = config_list$globalParameters$annotation_source,
+#   kegg_organism_code = config_list$globalParameters$organism_kegg_code,
+#   cache_dir = file.path(results_dir, "tmp_folder")
+# )
+
+# --- Placeholder Implementation ---
+log_warn("getMetaboliteAnnotations function not implemented. Using existing metadata.")
+feature_metadata_annotated <- feature_metadata_cln
+# Add mock columns if needed for downstream steps
+if (!"KEGG_ID" %in% names(feature_metadata_annotated)) feature_metadata_annotated$KEGG_ID <- NA
+if (!"Pathway" %in% names(feature_metadata_annotated)) feature_metadata_annotated$Pathway <- NA
+if (!"Formula" %in% names(feature_metadata_annotated)) feature_metadata_annotated$Formula <- NA
+if (!config_list$globalParameters$feature_name_column %in% names(feature_metadata_annotated)) {
+    # Use the ID column as name if specific name column doesn't exist
+    feature_metadata_annotated[[config_list$globalParameters$feature_name_column]] <- feature_metadata_annotated$rowname_id
+}
+# --- End Placeholder ---
+
+log_info("Feature metadata annotated (placeholder). Dimensions: {nrow(feature_metadata_annotated)} x {ncol(feature_metadata_annotated)}")
+
+# Ensure row order hasn't changed and still matches data_cln
+stopifnot(identical(rownames(data_cln), feature_metadata_annotated$rowname_id))
+
+# Make the primary metabolite ID the rownames for SE object compatibility
+rownames(feature_metadata_annotated) <- feature_metadata_annotated$rowname_id
+
+```
+
+# Create the MetabolomicsQuantitativeData S4 object
+## Initializes the S4 object to store quantitative data, metadata, and configuration.
+
+```{r Metabolite Data S4 Object Creation}
+# Ensure column names in design_matrix match expected IDs for the S4 object
+# The constructor/base class might expect specific names like 'sample_id', 'group_id'
+# Map columns from design_matrix to the expected names if necessary
+sample_data_for_s4 <- design_matrix |>
+  dplyr::rename(
+    # Rename columns if the S4 object or its methods expect specific names
+    # e.g., sample_id = !!config_list$globalParameters$sample_id_column, # Already 'Run' in example
+    group = group, # Assuming 'group' column exists
+    technical_replicate_id = replicates # Assuming 'replicates' column exists
+  ) |>
+  # Ensure the sample ID column becomes the rownames for colData
+  tibble::column_to_rownames(var = "Run") # Use the original sample ID column name
+
+# Create the object using the constructor defined earlier (or adapt as needed)
+metabolite_data_obj <- createMetabolomicsData(
+  quantitative_data = data_cln,
+  feature_metadata = feature_metadata_annotated,
+  sample_metadata = sample_data_for_s4,
+  metabolite_id_column = "rowname_id", # The consistent ID column in feature_metadata
+  sample_id_column = "Run", # The consistent ID column in sample_metadata (used for rownames)
+  config_list = config_list
+)
+
+# Add initial processing step to log
+metabolite_data_obj@processing_log$s4_creation <- list(
+    time = Sys.time(),
+    dims = dim(metabolite_data_obj),
+    description = "Created MetabolomicsQuantitativeData object from raw data."
+)
+
+log_info("MetabolomicsQuantitativeData object created.")
+print(metabolite_data_obj)
+
+```
+
+# Raw Data QC & Filtering
+## Initial quality control checks and filtering steps on the raw data.
+## We need an equivalent to `updateProteinFiltering` for metabolites.
+
+```{r Raw Data QC and Filtering}
+# --- Create Metabolite Filtering Tracker ---
+# ** THIS FUNCTION NEEDS TO BE IMPLEMENTED **
+# Analogous to updateProteinFiltering, should:
+# 1. Take the S4 object or data matrix
+# 2. Calculate summary stats (n_metabolites, n_samples, missingness)
+# 3. Generate QC plots (e.g., feature detection rate per sample, missingness heatmap)
+# 4. Store results/plots associated with a 'step_name'
+# 5. Return updated stats or plot grid
+
+# Placeholder function call
+# updateMetaboliteFiltering <- function(data_matrix, step_name, publication_graphs_dir, ...) {
+#   log_info("Running QC for step: {step_name}")
+#   n_metabolites <- nrow(data_matrix)
+#   n_samples <- ncol(data_matrix)
+#   missing_pct <- sum(is.na(data_matrix)) / length(data_matrix) * 100
+#   log_info("Metabolites: {n_metabolites}, Samples: {n_samples}, Missing: {round(missing_pct, 2)}%")
+#   # Add plotting logic here
+#   return(list(n_metabolites = n_metabolites, n_samples = n_samples, missing_pct = missing_pct))
+# }
+
+# Track raw data state
+raw_data_qc_stats <- updateMetaboliteFiltering(
+  data = assay(metabolite_data_obj),
+  step_name = "1_Raw_Data",
+  publication_graphs_dir = publication_graphs_dir,
+  # Add any other relevant parameters for plotting/stats
+  return_grid = FALSE, # Or TRUE if it returns a plot object
+  overwrite = TRUE
+)
+metabolite_data_obj@processing_log$`1_Raw_Data` <- list(
+    time = Sys.time(), stats = raw_data_qc_stats, description = "Initial raw data state."
+)
+
+# --- Filter based on Missing Values / Detection Frequency ---
+# Reuse removeRowsWithMissingValuesPercent or similar logic, adapted for metabolites
+# ** THIS FUNCTION MAY NEED ADAPTATION OR A METABOLOMICS-SPECIFIC VERSION **
+# Ensure it uses parameters from config_list (min_fraction_detected_per_group, min_groups_detected)
+# and correctly interprets the design matrix groups.
+
+# First, update parameters based on design matrix (reuse if function exists)
+# config_list <- updateMissingValueParameters(
+#   design_matrix = colData(metabolite_data_obj), # Use sample data from S4 object
+#   config_list = config_list,
+#   min_reps_per_group = config_list$qcParameters$min_fraction_detected_per_group, # Needs adjustment if interpretation differs
+#   min_groups = config_list$qcParameters$min_groups_detected
+# )
+
+# Apply filtering function (reuse or create metabolomics version)
+# This function should operate on and return the S4 object
+metabolite_data_filtered_mv <- removeRowsWithMissingValuesPercent(
+  theObject = metabolite_data_obj
+  # Pass relevant parameters explicitly if not read from object@args
+  # min_fraction_detected_per_group = config_list$qcParameters$min_fraction_detected_per_group,
+  # min_groups_detected = config_list$qcParameters$min_groups_detected,
+  # grouping_variable = config_list$ruvParameters$ruv_grouping_variable # Often the main experimental group
+)
+
+# Track filtering step
+filtered_mv_qc_stats <- updateMetaboliteFiltering(
+  data = assay(metabolite_data_filtered_mv),
+  step_name = "2_Filtered_MissingVals",
+  publication_graphs_dir = publication_graphs_dir,
+  return_grid = FALSE,
+  overwrite = TRUE
+)
+metabolite_data_filtered_mv@processing_log$`2_Filtered_MissingVals` <- list(
+    time = Sys.time(), stats = filtered_mv_qc_stats, description = "Filtered metabolites based on detection frequency across groups."
+)
+
+log_info("Metabolites remaining after missing value filtering: {nrow(metabolite_data_filtered_mv)}")
+metabolite_data_obj <- metabolite_data_filtered_mv # Update the main object
+
+# --- Optional: Filter based on Intensity Quantile ---
+# Remove features consistently in the lowest X% intensity range (often noise)
+# This is less common than missing value filtering but can be useful
+# ** THIS REQUIRES A NEW FUNCTION **
+# if (!is.null(config_list$qcParameters$intensity_quantile_threshold)) {
+#   metabolite_data_filtered_int <- filterLowIntensityMetabolites(
+#     theObject = metabolite_data_obj,
+#     quantile_threshold = config_list$qcParameters$intensity_quantile_threshold
+#   )
+#   # Track step...
+#   metabolite_data_obj <- metabolite_data_filtered_int
+# }
+
+# --- Filter Samples with Low Feature Counts ---
+# Remove samples where too few metabolites were detected (poor quality sample)
+# ** THIS REQUIRES A NEW FUNCTION (similar to filterMinNumPeptidesPerSample) **
+# metabolite_data_filtered_samples <- filterMinNumMetabolitesPerSample(
+#   theObject = metabolite_data_obj,
+#   min_metabolites = 100 # Example threshold - needs careful consideration
+# )
+# # Track step...
+# metabolite_data_obj <- metabolite_data_filtered_samples
+
+
+# --- QC Plots After Initial Filtering ---
+# Generate PCA, Density plots etc. on the filtered data before normalization
+# Reuse existing plotting functions if they accept the S4 object or matrix/design
+
+log_info("Generating QC plots after initial filtering...")
+pre_norm_qc_plots <- list()
+
+# PCA Plot
+# pre_norm_qc_plots$pca <- plotPca(
+#   theObject = metabolite_data_obj,
+#   grouping_variable = config_list$ruvParameters$ruv_grouping_variable, # Use the main group
+#   label_column = "", # Don't label points by default
+#   shape_variable = config_list$ruvParameters$ruv_grouping_variable,
+#   title = "PCA Plot (Filtered, Pre-Normalization)",
+#   font_size = 8
+# )
+# print(pre_norm_qc_plots$pca)
+# savePlot(pre_norm_qc_plots$pca, metabolite_qc_dir, "pca_plot_pre_normalization")
+
+# Add RLE, Density, Correlation plots here if desired...
+
+```
+
+# Normalization Strategy 1: Internal Standard (IS) Normalization
+## Normalizes data based on the intensity of one or more internal standards.
+
+```{r Internal Standard Normalization}
+# ** THIS REQUIRES A NEW FUNCTION: normalizeByInternalStandard **
+# Input: S4 object, is_pattern (from config), method ('sum', 'mean', 'median')
+# Output: S4 object with normalized assay data
+
+if (!is.null(config_list$globalParameters$internal_standard_pattern)) {
+    log_info("Performing Internal Standard normalization...")
+    metabolite_data_is_normalized <- normalizeByInternalStandard(
+        theObject = metabolite_data_obj,
+        is_pattern = config_list$globalParameters$internal_standard_pattern,
+        id_column = config_list$globalParameters$metabolite_id_column, # Column in rowData to find IS
+        method = config_list$normalizationParameters$is_normalization_method
+    )
+
+    # Track normalization step
+    is_norm_qc_stats <- updateMetaboliteFiltering(
+      data = assay(metabolite_data_is_normalized),
+      step_name = "3_IS_Normalized",
+      publication_graphs_dir = publication_graphs_dir,
+      return_grid = FALSE,
+      overwrite = TRUE
+    )
+    metabolite_data_is_normalized@processing_log$`3_IS_Normalized` <- list(
+        time = Sys.time(), stats = is_norm_qc_stats, description = "Applied Internal Standard normalization."
+    )
+    
+    log_info("Internal Standard normalization complete.")
+    metabolite_data_obj <- metabolite_data_is_normalized # Update the main object
+
+} else {
+    log_warn("Internal standard pattern not provided. Skipping IS normalization.")
+    metabolite_data_obj@processing_log$`3_IS_Normalization_Skipped` <- list(
+        time = Sys.time(), description = "Skipped Internal Standard normalization (no pattern provided)."
+    )
+}
+
+```
+
+# Normalization Strategy 2: Post-IS / Alternative Normalization
+## Apply additional normalization if needed (e.g., log transform, PQN).
+
+```{r Post IS Normalization}
+# Apply optional normalization specified in config
+norm_method <- config_list$normalizationParameters$post_is_normalization
+
+if (norm_method != "none") {
+    log_info("Applying post-IS normalization: {norm_method}")
+
+    # ** THIS MAY REQUIRE NEW or ADAPTED FUNCTIONS within normalizeData generic **
+    # Need methods for 'log2', 'PQN', 'median' etc. for MetabolomicsQuantitativeData
+    metabolite_data_normalized <- normalizeData(
+        theObject = metabolite_data_obj,
+        method = norm_method
+        # Add any specific args needed for the method
+    )
+
+    # Track step
+    post_norm_step_name <- paste0("4_Normalized_", toupper(norm_method))
+    post_norm_qc_stats <- updateMetaboliteFiltering(
+      data = assay(metabolite_data_normalized),
+      step_name = post_norm_step_name,
+      publication_graphs_dir = publication_graphs_dir,
+      return_grid = FALSE,
+      overwrite = TRUE
+    )
+    metabolite_data_normalized@processing_log[[post_norm_step_name]] <- list(
+        time = Sys.time(), stats = post_norm_qc_stats, description = "Applied {norm_method} normalization."
+    )
+    
+    log_info("{norm_method} normalization complete.")
+    metabolite_data_obj <- metabolite_data_normalized # Update the main object
+
+} else {
+    log_info("No additional normalization specified after IS normalization.")
+     metabolite_data_obj@processing_log$`4_Normalization_Skipped` <- list(
+        time = Sys.time(), description = "Skipped post-IS normalization."
+    )
+}
+
+# --- QC Plots After Normalization ---
+log_info("Generating QC plots after normalization...")
+post_norm_qc_plots <- list()
+
+# RLE Plot (Good for checking normalization effectiveness)
+# post_norm_qc_plots$rle <- plotRle(
+#   metabolite_data_obj,
+#   group = config_list$ruvParameters$ruv_grouping_variable,
+#   yaxis_limit = c(-2, 2) # Adjust limits based on data scale
+# )
+# print(post_norm_qc_plots$rle)
+# savePlot(post_norm_qc_plots$rle, metabolite_qc_dir, "rle_plot_post_normalization")
+
+# PCA Plot
+# post_norm_qc_plots$pca <- plotPca(
+#   theObject = metabolite_data_obj,
+#   grouping_variable = config_list$ruvParameters$ruv_grouping_variable,
+#   label_column = "",
+#   shape_variable = config_list$ruvParameters$ruv_grouping_variable,
+#   title = "PCA Plot (Normalized)",
+#   font_size = 8
+# )
+# print(post_norm_qc_plots$pca)
+# savePlot(post_norm_qc_plots$pca, metabolite_qc_dir, "pca_plot_post_normalization")
+
+# Add Density, Correlation plots...
+
+```
+
+# Batch Correction using RUV (Optional)
+## Applies RUV (RUVs, RUVg, or RUVIIIc if adapted) to remove unwanted variation.
+
+```{r RUV Batch Correction}
+if (config_list$ruvParameters$perform_ruv) {
+    log_info("Starting RUV batch correction...")
+
+    # --- Define Negative Controls ---
+    if (config_list$ruvParameters$use_internal_standards_as_neg_ctrl &&
+        !is.null(config_list$globalParameters$internal_standard_pattern)) {
+        
+        is_pattern <- config_list$globalParameters$internal_standard_pattern
+        id_column <- config_list$globalParameters$metabolite_id_column
+        
+        # Find IS based on pattern in the feature metadata
+        control_feature_indices <- which(
+            grepl(is_pattern, rowData(metabolite_data_obj)[[id_column]], ignore.case = TRUE)
+        )
+        
+        if (length(control_feature_indices) == 0) {
+            log_warn("No internal standards found matching pattern '{is_pattern}'. Skipping RUV or falling back to variance-based controls.")
+            # Decide fallback strategy: skip RUV or use variance-based
+            use_variance_controls <- TRUE # Example fallback
+        } else {
+            log_info("Using {length(control_feature_indices)} internal standards as negative controls for RUV.")
+            use_variance_controls <- FALSE
+        }
+    } else {
+         use_variance_controls <- TRUE
+    }
+
+    if (use_variance_controls) {
+        log_info("Using low variance features as negative controls for RUV.")
+        # ** NEED FUNCTION getNegCtrlMetabVariance or adapt ANOVA version **
+        # control_feature_indices <- getNegCtrlMetabVariance(
+        #   theObject = metabolite_data_obj,
+        #   percentage_as_neg_ctrl = config_list$ruvParameters$percentage_as_neg_ctrl,
+        #   grouping_variable = config_list$ruvParameters$ruv_grouping_variable
+        # )
+        log_warn("Variance-based negative control selection not implemented. Skipping RUV.")
+        config_list$ruvParameters$perform_ruv <- FALSE # Disable RUV if controls can't be found
+    }
+
+    # --- Determine Optimal K (if not set) ---
+    if (config_list$ruvParameters$perform_ruv && is.null(config_list$ruvParameters$k_value)) {
+        log_info("Determining optimal k for RUV using canonical correlation plot...")
+        # ** ruvCancor might need adaptation for Metabolomics object or use RUVSeq directly **
+        # Requires matrix input, design matrix, control indices
+        # Example using RUVSeq::RUVs workflow:
+        # 1. Transpose data: samples x features
+        Y <- t(assay(metabolite_data_obj))
+        # 2. Create design matrix for factors of interest
+        X <- model.matrix(formula(paste0("~", config_list$ruvParameters$ruv_grouping_variable)), data = colData(metabolite_data_obj))
+        # 3. Perform RUVs for a range of k
+        # ruvs_results_list <- lapply(1:5, function(k) RUVSeq::RUVs(Y, cIdx = control_feature_indices, k = k, scIdx = X))
+        # 4. Plot variance explained or use cancor approach if available/adapted
+        # ** CANCOR PLOT FUNCTIONALITY NEEDS IMPLEMENTATION/ADAPTATION **
+        # cancor_plot <- plotRuvCancor(...)
+        # best_k <- findBestK(cancor_plot)
+        
+        log_warn("Automatic k selection not implemented. Please set k manually in config_list$ruvParameters$k_value.")
+        # Set a default k for now, e.g., k=1 or k=2, or disable RUV
+        best_k <- 1 # Placeholder default
+        config_list$ruvParameters$k_value <- best_k
+        log_info("Using placeholder k = {best_k}")
+        # savePlot(cancor_plot, metabolite_qc_dir, "ruv_canonical_correlation_plot")
+    } else if (config_list$ruvParameters$perform_ruv) {
+        best_k <- config_list$ruvParameters$k_value
+        log_info("Using pre-defined k = {best_k} for RUV.")
+    }
+
+    # --- Apply RUV Correction ---
+    if (config_list$ruvParameters$perform_ruv && length(control_feature_indices) > 0 && best_k > 0) {
+        log_info("Applying RUVs correction with k = {best_k}...")
+        # ** NEED FUNCTION/Wrapper: applyRuvCorrection **
+        # Should take the S4 object, k, control indices, grouping variable
+        # Internally use RUVSeq::RUVs or similar
+        # Return the S4 object with the normalized assay slot updated
+        
+        # Example using RUVSeq::RUVs directly (modify S4 object manually after)
+        Y <- t(assay(metabolite_data_obj)) # samples x features
+        X <- model.matrix(formula(paste0("~", config_list$ruvParameters$ruv_grouping_variable)), data = colData(metabolite_data_obj))
+        
+        # Ensure control indices are valid
+        control_feature_indices <- control_feature_indices[control_feature_indices <= ncol(Y)]
+        
+        if (length(control_feature_indices) < best_k) {
+             log_warn("Number of control features ({length(control_feature_indices)}) is less than k ({best_k}). Reducing k.")
+             best_k <- max(1, length(control_feature_indices) -1) # Adjust k or handle error
+        }
+
+        if (best_k > 0 && length(control_feature_indices) > best_k) {
+            ruvs_result <- RUVSeq::RUVs(Y, cIdx = control_feature_indices, k = best_k, scIdx = X)
+            
+            # Create a new S4 object with the normalized data
+            metabolite_data_ruv_normalized <- metabolite_data_obj
+            assay(metabolite_data_ruv_normalized) <- t(ruvs_result$normalizedCounts) # features x samples
+            
+            # Log the step
+            ruv_step_name <- paste0("5_RUV_Normalized_k", best_k)
+            ruv_qc_stats <- updateMetaboliteFiltering(
+              data = assay(metabolite_data_ruv_normalized),
+              step_name = ruv_step_name,
+              publication_graphs_dir = publication_graphs_dir,
+              return_grid = FALSE,
+              overwrite = TRUE
+            )
+            metabolite_data_ruv_normalized@processing_log[[ruv_step_name]] <- list(
+                time = Sys.time(), stats = ruv_qc_stats, k = best_k, controls_used = length(control_feature_indices), description = "Applied RUVs normalization."
+            )
+            
+            log_info("RUVs normalization complete.")
+            metabolite_data_obj <- metabolite_data_ruv_normalized # Update the main object
+        } else {
+             log_error("Could not perform RUVs: Insufficient control features or k=0.")
+             metabolite_data_obj@processing_log$"5_RUV_Failed" <- list(
+                time = Sys.time(), description = "Failed RUVs normalization due to control/k issues."
+             )
+        }
+
+        # --- QC Plots After RUV ---
+        log_info("Generating QC plots after RUV normalization...")
+        post_ruv_qc_plots <- list()
+        
+        # RLE Plot
+        # post_ruv_qc_plots$rle <- plotRle(metabolite_data_obj, group = config_list$ruvParameters$ruv_grouping_variable, yaxis_limit = c(-2, 2))
+        # print(post_ruv_qc_plots$rle)
+        # savePlot(post_ruv_qc_plots$rle, metabolite_qc_dir, "rle_plot_post_ruv")
+        
+        # PCA Plot
+        # post_ruv_qc_plots$pca <- plotPca(theObject = metabolite_data_obj, grouping_variable = config_list$ruvParameters$ruv_grouping_variable, label_column = "", shape_variable = config_list$ruvParameters$ruv_grouping_variable, title = "PCA Plot (RUV Normalized)", font_size = 8)
+        # print(post_ruv_qc_plots$pca)
+        # savePlot(post_ruv_qc_plots$pca, metabolite_qc_dir, "pca_plot_post_ruv")
+        
+        # Add Density, Correlation plots...
+
+    } else {
+        log_info("Skipping RUV correction step based on configuration or lack of controls/k.")
+        metabolite_data_obj@processing_log$"5_RUV_Skipped" <- list(
+            time = Sys.time(), description = "Skipped RUV normalization."
+        )
+    }
+} else {
+     log_info("RUV correction disabled in configuration.")
+     metabolite_data_obj@processing_log$"5_RUV_Skipped" <- list(
+        time = Sys.time(), description = "Skipped RUV normalization (disabled in config)."
+     )
+}
+```
+
+# Sample Correlation Filtering (Optional)
+## Filters samples based on correlation to other samples within the same group, after normalization/batch correction.
+
+```{r Sample Pearson Correlation Filtering}
+
+if (config_list$correlationFilterParameters$perform_correlation_filter) {
+    log_info("Performing sample filtering based on within-group Pearson correlation...")
+
+    # Calculate pairwise correlations (reuse function if possible)
+    # ** This function needs to accept the Metabolomics S4 object **
+    sample_correlation_vec <- pearsonCorForSamplePairs(
+      theObject = metabolite_data_obj,
+      tech_rep_remove_regex = NULL, # Adjust if pools/standards need removal
+      correlation_group = config_list$correlationFilterParameters$correlation_group
+    )
+
+    # Filter samples based on threshold (reuse function if possible)
+    # ** This function needs to accept the Metabolomics S4 object **
+    metabolite_data_final <- filterSamplesByCorrelationThreshold(
+      theObject = metabolite_data_obj,
+      pearson_correlation_per_pair = sample_correlation_vec,
+      min_pearson_correlation_threshold = config_list$correlationFilterParameters$min_pearson_correlation_threshold
+    )
+
+    # Log the step
+    corr_filter_step_name <- "6_Correlation_Filtered_Samples"
+    final_qc_stats <- updateMetaboliteFiltering(
+      data = assay(metabolite_data_final),
+      step_name = corr_filter_step_name,
+      publication_graphs_dir = publication_graphs_dir,
+      return_grid = FALSE,
+      overwrite = TRUE
+    )
+    metabolite_data_final@processing_log[[corr_filter_step_name]] <- list(
+        time = Sys.time(), stats = final_qc_stats, threshold = config_list$correlationFilterParameters$min_pearson_correlation_threshold, description = "Filtered samples based on within-group correlation."
+    )
+    
+    samples_removed <- setdiff(colnames(metabolite_data_obj), colnames(metabolite_data_final))
+    if (length(samples_removed) > 0) {
+        log_info("Removed {length(samples_removed)} samples due to low correlation: {paste(samples_removed, collapse=', ')}")
+    } else {
+        log_info("No samples removed by correlation filtering.")
+    }
+    
+    metabolite_data_obj <- metabolite_data_final # Update the main object
+
+} else {
+    log_info("Sample correlation filtering disabled in configuration.")
+    metabolite_data_obj@processing_log$"6_Correlation_Filter_Skipped" <- list(
+        time = Sys.time(), description = "Skipped sample correlation filtering."
+    )
+}
+
+# Final object state
+log_info("Final dimensions after QC, Normalization, and Filtering:")
+print(dim(metabolite_data_obj))
+```
+
+# Output Files For Audit Trail and Downstream Analysis
+## Saves the final normalized matrix and S4 object.
+
+```{r Output Files For Audit Trail}
+log_info("Saving final normalized data and S4 object...")
+
+# --- Save Final S4 Object ---
+final_s4_object_file <- file.path(metabolite_qc_dir, paste0(experiment_label, "_final_metabolomics_s4_object.RDS"))
+saveRDS(
+  metabolite_data_obj,
+  file = final_s4_object_file
+)
+log_info("Final MetabolomicsQuantitativeData object saved to: {final_s4_object_file}")
+
+# --- Save Normalized Matrix ---
+# Extract the normalized assay data
+final_normalized_matrix <- assay(metabolite_data_obj)
+
+# Add feature names or other key metadata if desired for the output matrix file
+final_normalized_df <- as.data.frame(final_normalized_matrix) |>
+  tibble::rownames_to_column(var = config_list$globalParameters$metabolite_id_column) |>
+  # Optionally merge key annotations back in
+  dplyr::left_join(
+      rowData(metabolite_data_obj) |> as.data.frame() |> select(any_of(c(config_list$globalParameters$metabolite_id_column, config_list$globalParameters$feature_name_column, "KEGG_ID", "Formula"))),
+      by = config_list$globalParameters$metabolite_id_column
+  ) |>
+  # Reorder columns to have metadata first
+  dplyr::relocate(any_of(c(config_list$globalParameters$metabolite_id_column, config_list$globalParameters$feature_name_column, "KEGG_ID", "Formula")))
+
+
+normalized_matrix_file <- file.path(metabolite_qc_dir, paste0(experiment_label, "_final_normalized_matrix.tsv"))
+vroom::vroom_write(
+  final_normalized_df,
+  file = normalized_matrix_file,
+  delim = "\t"
+)
+log_info("Final normalized matrix saved to: {normalized_matrix_file}")
+
+
+# --- Save Final Design Matrix ---
+final_design_matrix <- colData(metabolite_data_obj) |>
+  as.data.frame() |>
+  tibble::rownames_to_column(var = "Run") # Ensure the sample ID column is present
+
+design_matrix_file <- file.path(metabolite_qc_dir, paste0(experiment_label, "_final_design_matrix.tsv"))
+vroom::vroom_write(
+  final_design_matrix,
+  file = design_matrix_file,
+  delim = "\t"
+)
+log_info("Final design matrix saved to: {design_matrix_file}")
+
+# --- Save Processing Log ---
+processing_log_file <- file.path(metabolite_qc_dir, paste0(experiment_label, "_processing_log.RDS"))
+saveRDS(
+    metabolite_data_obj@processing_log,
+    file = processing_log_file
+)
+log_info("Processing log saved to: {processing_log_file}")
+
+```
+
+# Save Workflow Arguments and Study Summary
+## Records parameters and settings for reproducibility.
+
+```{r Save Workflow Arguments}
+log_info("Saving workflow arguments...")
+
+# Create workflow args using existing function if suitable, or manually collect
+# workflow_args <- createWorkflowArgsFromConfig(
+#   workflow_name = "Metabolomics Workflow",
+#   description = "Metabolomics data processing up to normalized matrix.",
+#   config_list = config_list, # Pass the config list used
+#   # Add other relevant info like package versions, session info
+#   # design_matrix = final_design_matrix # Include final design
+# )
+
+# Manual creation example:
+workflow_args <- list(
+    workflow_name = "Metabolomics Workflow",
+    description = "Metabolomics data processing up to normalized matrix.",
+    run_time = Sys.time(),
+    experiment_label = experiment_label,
+    config_parameters = config_list,
+    final_dimensions = list(metabolites = nrow(metabolite_data_obj), samples = ncol(metabolite_data_obj)),
+    # Add key session info
+    session_info = sessionInfo()
+)
+
+# Save the workflow arguments object
+workflow_args_file <- file.path(results_dir, paste0(experiment_label, "_workflow_arguments.RDS"))
+saveRDS(workflow_args, file = workflow_args_file)
+
+log_info("Workflow arguments saved to: {workflow_args_file}")
+# print(workflow_args) # Optional: Print summary
+
+```
+
+# Copy Files to Publication Directory (Optional)
+## Copies key results to a cleaned-up directory for sharing.
+
+```{r Copy Files to Publication Directory, eval=FALSE}
+# Reuse function if applicable
+# copyToResultsSummary(
+#    files_to_copy = c(normalized_matrix_file, design_matrix_file, workflow_args_file),
+#    publication_dir = file.path(results_dir, "publication_summary") # Define target dir
+# )
+
+# Manual copy example:
+publication_summary_dir <- file.path(results_dir, "publication_summary")
+dir.create(publication_summary_dir, showWarnings = FALSE, recursive = TRUE)
+files_to_copy <- c(normalized_matrix_file, design_matrix_file, workflow_args_file, processing_log_file)
+# Add key QC plots here if desired (e.g., final PCA plot)
+# files_to_copy <- c(files_to_copy, file.path(metabolite_qc_dir, "pca_plot_post_ruv.png"))
+
+copy_success <- file.copy(
+    from = files_to_copy,
+    to = publication_summary_dir,
+    overwrite = TRUE
+)
+
+if (all(copy_success)) {
+    log_info("Key results copied to publication summary directory: {publication_summary_dir}")
+} else {
+    log_warn("Failed to copy some files to the publication summary directory.")
+}
+
+```
+
+# Copy all study parameters to a Github repo for audit trail (Optional)
+## Archives the project setup and parameters to GitHub.
+
+```{r Copy Output to Github, eval=FALSE}
+# Requires git setup and authentication configured
+# Reuse function if applicable
+# options(
+#   github_org = "your_org",
+#   github_user_email = "your_email@example.com",
+#   github_user_name = "your_username"
+# )
+#
+# pushProjectToGithub(
+#   base_dir = base_dir,
+#   source_dir = source_dir, # Directory containing config/design matrix
+#   project_id = paste0("Metabolomics_", experiment_label), # Unique repo name
+#   results_to_include = c(normalized_matrix_file, design_matrix_file, workflow_args_file) # Specify key files
+# )
+
+log_warn("GitHub push step skipped. Ensure git is configured and uncomment/run manually if needed.")
+
+```
+
+# Render Report
+## Generates the final HTML report.
+
+```{r Render Report, eval=FALSE}
+# Reuse function if available
+# RenderReport(suffix = experiment_label, output_dir = results_dir)
+
+# Manual render using rmarkdown::render
+rmarkdown::render(
+    input = current_input(), # Get path of the current Rmd file
+    output_file = paste0(tools::file_path_sans_ext(basename(current_input())), "_", experiment_label, ".html"),
+    output_dir = results_dir,
+    quiet = TRUE
+)
+
+log_info("HTML report rendered to: {results_dir}")
+
+```''', instructions='Create skeleton R Markdown workflow for metabolomics, mirroring proteomics workflow up to RUV step.'))
+```
