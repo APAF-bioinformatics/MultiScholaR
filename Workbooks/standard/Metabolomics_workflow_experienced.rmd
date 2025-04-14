@@ -36,7 +36,7 @@ installMultiScholaR <- function(verbose = TRUE) {
 
     devtools::install_github(
         "APAF-BIOINFORMATICS/MultiScholaR", 
-        ref = "main", # Example branch
+        ref = "main", # Main branch
         dependencies = TRUE,
         upgrade = "never",
         force = TRUE
@@ -62,12 +62,14 @@ loadDependencies()   # Load necessary libraries
 ## Establishes a standardized directory structure for the metabolomics project.
 
 ```{r Project Environment Management}
-# Reuse the existing function if suitable
-experiment_label <- "Metabolomics_Experiment_1" # NB this will affect directory structure and name
-multisetupAndShowDirectories(omic_type = "metabolomics"
-, label = experiment_label
-, force = FALSE)
-
+experiment_label <- "kvariicola"
+# Setup for the central pillars of molecular biology
+project_dirs <- multisetupAndShowDirectories(
+    omic_types = "metabolomics"
+    # Or: omic_types = c("proteomics", metabolomics", "transcriptomics"),
+    label = experiment_label,
+    force = FALSE # Set to TRUE to skip prompts if dirs exist
+)
 ```
 
 # At this step, please copy your data and other necessary files into the appropriate directories

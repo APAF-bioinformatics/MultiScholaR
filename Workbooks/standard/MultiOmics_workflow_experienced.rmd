@@ -1,0 +1,73 @@
+---
+title: "MultiOmics Simultaneous Analysis Workflow"
+version: "1.0"
+author: "Your fancy self"
+output:
+  html_document:
+    code_folding: true
+    self_contained: true
+    toc: true # Enable TOC for navigation
+    warning: false
+    message: false
+---
+
+# Initial R environment setup
+## Checks your R environment for the required packages to run MultiScholaR, and installs them if they are not.
+
+```{r MultiScholaR FIRST INSTALL, eval=FALSE}
+# This chunk likely needs modification if metabolomics requires different core dependencies
+# or if a separate MetabolomeScholaR package is created.
+# For now, assuming MultiScholaR contains shared core functions.
+
+installMultiScholaR <- function(verbose = TRUE) {
+    # Install devtools if missing
+    if (!requireNamespace("devtools", quietly = TRUE)) {
+        install.packages("devtools")
+    }
+
+    # Detach if loaded
+    if ("package:MultiScholaR" %in% search()) {
+        try(detach("package:MultiScholaR", unload = TRUE, force = TRUE), silent = TRUE)
+    }
+
+    # Unload namespace
+    try(unloadNamespace("MultiScholaR"), silent = TRUE)
+
+
+    devtools::install_github(
+        "APAF-BIOINFORMATICS/MultiScholaR",
+        ref = "main", # Main branch
+        dependencies = TRUE,
+        upgrade = "never",
+        force = TRUE
+    )
+
+    # Load it
+    library(MultiScholaR)
+}
+
+installMultiScholaR()
+loadDependencies()
+```
+
+# START HERE if you already have MultiScholaR installed
+## Loads the package and its dependencies.
+
+```{r Load MultiScholaR}
+library(MultiScholaR) # Assuming core package exists
+loadDependencies() # Load necessary libraries
+```
+
+# Set up your environment and project directory
+## Establishes a standardized directory structure for the metabolomics project.
+
+```{r Project Environment Management}
+experiment_label <- "kvariicola"
+# Setup for the central pillars of molecular biology
+project_dirs <- multisetupAndShowDirectories(
+    omic_types = "proteomics, metabolomics, transcriptomics",
+    # Or: omic_types = c("proteomics", metabolomics", "transcriptomics"),
+    label = experiment_label,
+    force = FALSE # Set to TRUE to skip prompts if dirs exist
+)
+```
