@@ -68,8 +68,8 @@ The data is derived from the publicly available dataset published in [Mu, Klare,
 
 ## What Gets Set Up
 
-- Complete directory structure for proteomics analysis
-- Latest version of DIA workflow
+- Complete directory structure for multiomics analysis
+- Latest versions of available workflows
 - Configuration files
 - R project file
 
