@@ -14,8 +14,6 @@ By streamlining complex multi-omics analyses, MultiScholaR makes advanced analyt
 
 ## Quick Start & Setup
 
-# MultiScholaR <img src="https://img.shields.io/badge/Version-0.9-green?style=for-the-badge" alt="Version 0.1">
-
 ### 1. Required Software
 
 #### (4/25) R VERSION 4.4.3 CURRENTLY LATEST SUPPORTED VERSION DUE TO DEPENDENCY MIGRATION LAG to R 4.5.0
