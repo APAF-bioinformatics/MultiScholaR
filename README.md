@@ -97,9 +97,9 @@ The data is derived from the publicly available dataset published in [Mu, Klare,
 ```mermaid
 graph TD
     A[v0.1: Foundation & Proteomics Core] --> B[v0.2: Metabolomics Module];
-    B --> C[v0.3: Transcriptomics Module];
-    C --> D[v0.4: Basic Multiomics Integration];
-    D --> E[v0.5: Advanced Multiomics Analysis & Visualization];
+    B --> C[v0.3: Basic Multiomics Integration];
+    C --> D[v0.4: Transcriptomics Module];
+    D --> E[v0.5: Advanced Multiomics Analysis & Visualisation];
 
     subgraph "v0.1"
         A
@@ -110,24 +110,24 @@ graph TD
     subgraph "v0.2"
         B
         B1(Metabolomics Data Input)
-        B2(Metabolomics QC & Normalization)
+        B2(Metabolomics QC & Normalisation)
         B3(Basic Metabolomics Analysis)
     end
     subgraph "v0.3"
         C
-        C1(Transcriptomics Data Input)
-        C2(Transcriptomics QC & Normalization)
-        C3(Basic Transcriptomics Analysis - DEGs)
+        C1(MultiAssayExperiment Integration)
+        C2(Cross-Omics Data Linking)
+        C3(Factor Analysis Methods - MOFA+Visualisation)
     end
      subgraph "v0.4"
         D
-        D1(MultiAssayExperiment Integration)
-        D2(Cross-Omics Data Linking)
-        D3(Factor Analysis Methods - MOFA+Visualisation)
+        D1(Transcriptomics Data Input)
+        D2(Transcriptomics QC & Normalisation)
+        D3(Basic Transcriptomics Analysis - DEGs)
     end
      subgraph "v0.5"
         E
-        E1(Advanced Integration Visualization)
+        E1(Advanced Integration Visualisation)
         E2(Pathway/Network Integration)
         E3(StringDB Integration)
     end
