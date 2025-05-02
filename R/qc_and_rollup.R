@@ -2484,6 +2484,84 @@ countPeptidesPerRun <- function(data) {
   stop("Required columns not found")
 }
 
+#' @title Update and Visualize Filtering Progress
+#' @description Tracks and visualizes the impact of filtering steps on peptide 
+#'   and protein counts. Updates a global `FilteringProgress` object and optionally 
+#'   saves plots summarizing the changes. Handles both peptide-level and 
+#'   protein-level data inputs.
+#' 
+#' @details 
+#' This function acts as a central hub for monitoring data reduction throughout 
+#' a filtering workflow. It performs the following actions:
+#' \itemize{
+#'   \item Initializes or retrieves a global S4 object named `filtering_progress` 
+#'     of class `FilteringProgress`.
+#'   \item Calculates key metrics (total unique proteins, proteins per run, 
+#'     total unique peptides, peptides per protein distribution, peptides per run) 
+#'     based on the input `data`. Peptide metrics are only calculated or updated 
+#'     if `data` is identified as peptide-level data. For protein-level data, 
+#'     peptide metrics from the last peptide step (if any) are carried forward or 
+#'     initialized as empty/NA.
+#'   \item Adds or updates these metrics in the `filtering_progress` object 
+#'     under the specified `step_name`.
+#'   \item Generates summary plots using `ggplot2`:
+#'     \itemize{
+#'       \item Bar plot of total unique proteins per step.
+#'       \item Bar plot of total unique peptides per step (or placeholder if only protein data).
+#'       \item Box plot of peptides per protein distribution per step (or placeholder).
+#'       \item Line plot of proteins per run across steps.
+#'       \item Line plot of peptides per run across steps (or placeholder).
+#'     }
+#'   \item If `publication_graphs_dir` is provided AND the global variable `time_dir` 
+#'     (expected to be set by `setupAndShowDirectories()`) exists, the generated 
+#'     plots are saved as PNG files within the `time_dir`. A warning is issued 
+#'     if `publication_graphs_dir` is given but `time_dir` is missing.
+#'   \item If `return_grid` is `TRUE`, arranges the plots into a single grid using 
+#'     `gridExtra` and returns the grid object (grob). Also saves this combined grid 
+#'     if plot saving is enabled.
+#'   \item If `return_grid` is `FALSE` (default), prints each plot individually 
+#'     and returns the list of plot objects invisibly.
+#' }
+#' 
+#' **Important:** This function relies on and modifies a global variable named 
+#' `filtering_progress`. It also depends on the global variable `time_dir` for 
+#' saving plots when `publication_graphs_dir` is specified. Ensure 
+#' `setupAndShowDirectories()` has been run previously in the session if you intend 
+#' to save plots.
+#' 
+#' @param data The input data object. Can be a data frame (expected to conform 
+#'   to typical peptide or protein quantification structures) or an S4 object 
+#'   containing relevant slots (e.g., inheriting from `SummarizedExperiment`). 
+#'   The function attempts to automatically detect if it's peptide or protein data.
+#' @param step_name A character string uniquely identifying the current filtering 
+#'   step (e.g., "InitialData", "FilteredByQuality", "Normalized"). This name is 
+#'   used for tracking in the `filtering_progress` object and plot labels.
+#' @param publication_graphs_dir Optional character string. The path to the base 
+#'   directory where publication graphs are stored. If provided, triggers plot 
+#'   saving into a subdirectory (`filtering_qc/<timestamp>/`), *provided* that 
+#'   the global variable `time_dir` exists. Defaults to `NULL` (no saving).
+#' @param overwrite Logical. If `TRUE`, allows overwriting an existing entry for 
+#'   `step_name` in the `filtering_progress` object. If `FALSE` (default) and 
+#'   `step_name` already exists, the function will stop with an error.
+#' @param return_grid Logical. If `TRUE`, returns a single combined plot grid 
+#'   object created with `gridExtra::grid.arrange()`. If `FALSE` (default), prints 
+#'   individual plots and returns an invisible list of the ggplot objects.
+#' 
+#' @return If `return_grid` is `TRUE`, returns a `grob` object (a grid graphical object). 
+#'   If `return_grid` is `FALSE`, returns an invisible list containing the individual 
+#'   `ggplot` objects (`proteins_total`, `proteins_per_run`, `peptides_total`, 
+#'   `peptides_per_protein`, `peptides_per_run`). Has side effects: modifies the 
+#'   global `filtering_progress` object and potentially saves plots to disk.
+#'   
+#' @importFrom ggplot2 ggplot aes geom_bar geom_text labs theme_minimal theme element_text panel_grid_major_x geom_line geom_point scale_color_manual annotate theme_void geom_boxplot coord_cartesian quantile ggsave
+#' @importFrom dplyr bind_rows mutate group_by ungroup mean %>%
+#' @importFrom forcats fct_reorder
+#' @importFrom gridExtra arrangeGrob grid.arrange
+#' @importFrom methods isS4 slotNames new
+#' @importFrom stats quantile
+#' 
+#'   
+#' @export
 updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NULL, 
                                  overwrite = FALSE, return_grid = FALSE) {
     
@@ -2496,13 +2574,11 @@ updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NUL
     # Get the current filtering_progress object
     filtering_progress <- get("filtering_progress", envir = .GlobalEnv)
     
-    # Create necessary directories without prompting if publication_graphs_dir is provided
-    if (!is.null(publication_graphs_dir)) {
-        qc_dir <- file.path(publication_graphs_dir, "filtering_qc")
-        time_dir <- file.path(qc_dir, format(Sys.time(), "%Y%m%d_%H%M%S"))
-        dir.create(qc_dir, recursive = TRUE, showWarnings = FALSE)
-        dir.create(time_dir, recursive = TRUE, showWarnings = FALSE)
-        assign("time_dir", time_dir, envir = .GlobalEnv)
+    # Ensure time_dir exists globally if we intend to save plots
+    save_plots <- !is.null(publication_graphs_dir) && exists("time_dir", envir = .GlobalEnv)
+    if (!is.null(publication_graphs_dir) && !exists("time_dir", envir = .GlobalEnv)) {
+        warning("publication_graphs_dir provided, but global 'time_dir' not found. Plots will not be saved. Run setupAndShowDirectories() first.")
+        save_plots <- FALSE
     }
     
     # Determine if we're working with protein_quant_table
@@ -2846,10 +2922,14 @@ updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NUL
         peptides_per_run = p5
     )
     
-    # Save plots if directory is specified
-    if (!is.null(publication_graphs_dir)) {
+    # Save plots if directory is specified and time_dir exists globally
+    if (save_plots) {
+        # Retrieve the globally defined time_dir
+        current_time_dir <- get("time_dir", envir = .GlobalEnv)
+        
         for (plot_name in names(plot_list)) {
-            filename <- file.path(publication_graphs_dir, 
+            # Use current_time_dir (the globally defined one) for saving
+            filename <- file.path(current_time_dir, 
                                 sprintf("%s_%s.png", step_name, plot_name))
             ggsave(filename, 
                    plot = plot_list[[plot_name]], 
@@ -2883,9 +2963,12 @@ updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NUL
             )
         }
         
-        # Save the grid if directory is specified
-        if (!is.null(publication_graphs_dir)) {
-            filename <- file.path(publication_graphs_dir, 
+        # Save the grid if directory is specified and time_dir exists globally
+        if (save_plots) {
+            # Retrieve the globally defined time_dir
+            current_time_dir <- get("time_dir", envir = .GlobalEnv)
+            # Use current_time_dir (the globally defined one) for saving
+            filename <- file.path(current_time_dir, 
                                 sprintf("%s_combined_plots.png", step_name))
             ggsave(filename, 
                    plot = grid_plot, 

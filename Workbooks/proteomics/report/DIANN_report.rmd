@@ -890,7 +890,7 @@ knitr::include_graphics(file.path(results_dir, "QC_figures", "composite_QC_figur
 volcano_plots <- sort(list.files(
   path = file.path(results_dir, "Publication_figures", "Volcano_Plots"), 
   pattern = "\\.png$|\\.jpg$", 
-  full.names = TRUE))[1:4]
+  full.names = TRUE))
 
 knitr::include_graphics(volcano_plots)
 ```
