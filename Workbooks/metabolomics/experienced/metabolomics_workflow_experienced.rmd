@@ -66,8 +66,9 @@ loadDependencies() # Load necessary libraries
 experiment_label <- "kvariicola"
 # Setup for the central pillars of molecular biology
 project_dirs <- multisetupAndShowDirectories(
-    omic_types = "metabolomics"
-    # Or: omic_types = c("proteomics", metabolomics", "transcriptomics"),
+    #omic_types = "metabolomics"
+    # Or: 
+    omic_types = c("proteomics", "metabolomics", "transcriptomics"),
     , label = experiment_label,
     force = FALSE # Set to TRUE to skip prompts if dirs exist
 )
