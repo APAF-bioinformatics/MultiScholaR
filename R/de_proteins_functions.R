@@ -377,6 +377,17 @@ plotPcaHelper <- function(data,
     labs(title = title) +
     theme(legend.title = element_blank())
 
+  # Calculate axis limits based on the full range of data
+  pc1_range <- range(temp_tbl$PC1, na.rm = TRUE)
+  pc2_range <- range(temp_tbl$PC2, na.rm = TRUE)
+  buffer_pc1 <- (pc1_range[2] - pc1_range[1]) * 0.05 # 5% buffer
+  buffer_pc2 <- (pc2_range[2] - pc2_range[1]) * 0.05 # 5% buffer
+
+  output <- output + coord_cartesian(
+    xlim = c(pc1_range[1] - buffer_pc1, pc1_range[2] + buffer_pc1),
+    ylim = c(pc2_range[1] - buffer_pc2, pc2_range[2] + buffer_pc2)
+  )
+  
   if (!is.null(label_column) && label_column != "") {
     output <- output + geom_text_repel(size = geom.text.size, show.legend = FALSE)
   }

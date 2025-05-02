@@ -7,7 +7,7 @@
 #' @importFrom logger log_info log_warn
 #' @importFrom stringr str_split str_trim
 #' @export
-multisetupAndShowDirectories <- function(base_dir = here::here(), omic_types, label = NULL, force = FALSE) {
+setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, force = FALSE) {
     # --- Input Parsing and Validation ---
 
     # Handle comma/space separated string or vector input
