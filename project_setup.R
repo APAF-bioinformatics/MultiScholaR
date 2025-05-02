@@ -1,7 +1,7 @@
 # ============================================================================
-# Proteomics Workflow Project Setup Script
+# MultiOmics Workflow Project Setup Script
 # ============================================================================
-# Hi there! Welcome to ProteomeScholaR :)
+# Hi there! Welcome to MultiScholaR :)
 # Instructions: 
 # 1. Set your project name and optional directory below
 # 2. Select ALL of this code (Ctrl+A or Cmd+A)
@@ -9,7 +9,7 @@
 # ============================================================================
 
 # SET YOUR PROJECT OPTIONS HERE:
-my_project_name <- "testing1234"  # Required: Name your project
+my_project_name <- "my_analysis"  # Required: Name your project
 my_project_dir <- NULL            # Optional: Set specific directory (leave as NULL for default Documents folder)
 
 
@@ -22,7 +22,7 @@ omic_types <- c("proteomics", "metabolomics") # Options: c("proteomics", "metabo
 
 # The following two options primarily apply when 'proteomics' is in omic_types:
 workflow_type <- "DIA-NN"  # Proteomics-specific: "DIA-NN", "LFQ - FragPipe", "LFQ - MaxQuant", "TMT - MaxQuant", "TMT - FragPipe"
-user_experience <- "experienced"  # Proteomics-specific: "experienced", "beginner"
+user_experience <- "beginner"  # Proteomics-specific: "experienced", "beginner"
 
 # ============================================================================
 # DO NOT MODIFY CODE BELOW THIS LINE
@@ -48,37 +48,45 @@ if (!is.character(my_project_name) || nchar(my_project_name) == 0) {
 
 # Determine workflow file URL based on omic type, workflow type, and user experience
 getWorkflowUrl <- function(wf_type, usr_exp, omic) {
-  base_url <- paste0("https://raw.githubusercontent.com/APAF-bioinformatics/ProteomeScholaR/main/Workbooks/", omic)
-  
+  base_url <- paste0("https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/main/Workbooks/", omic)
+  subfolder <- ifelse(usr_exp == "beginner", "starter", "standard")
+
   if (omic == "proteomics") {
-    # Proteomics: Use wf_type and usr_exp
+    # Proteomics-specific logic
     if (wf_type == "DIA-NN") {
-      if (usr_exp == "experienced") {
-        return(paste0(base_url, "/standard/DIA_workflow_experienced.rmd"))
-      } else if (usr_exp == "beginner") {
-        return(paste0(base_url, "/starter/DIA_workflow_starter.rmd"))
-      }
+      # Use specific filenames for DIA-NN based on experience
+      filename <- ifelse(usr_exp == "beginner", "DIA_workflow_starter.rmd", "DIA_workflow_experienced.rmd")
+      return(paste0(base_url, "/", subfolder, "/", filename))
     } else if (wf_type == "TMT - MaxQuant") {
+      # Assuming TMT-MQ only has standard/experienced version for now
       if (usr_exp == "experienced") {
-        return(paste0(base_url, "/standard/TMT_MQ_workflow0.1.rmd"))
+         # Note: TMT MQ workflow file name includes version 0.1
+        return(paste0(base_url, "/standard/TMT_MQ_workflow0.1.rmd")) 
+      } else {
+         warning("Beginner TMT-MQ workflow not currently available.")
+         return(NULL) # Or point to a default/starter if one exists
       }
-      # Add beginner TMT-MQ if it exists
-    } # Add other proteomics workflow_types here (LFQ etc.)
-    
+      # Add other proteomics workflow_types here (LFQ etc.) when available
+    }
+    # Fallback warning if specific proteomics workflow not found
     warning("Proteomics workflow URL not found for: type: ", wf_type, ", experience: ", usr_exp)
     return(NULL)
-    
+
   } else {
-    # Other Omics: Assume a standard workflow name, ignore wf_type and usr_exp
-    # Example: Assume workflow is always named '[omic]_workflow.rmd' in the 'standard' folder
-    standard_workflow_path <- paste0(base_url, "/standard/", omic, "_workflow.rmd")
-    return(standard_workflow_path)
+    # General Omics: Construct filename and path using omic type and user experience
+    experience_suffix <- ifelse(usr_exp == "beginner", "starter", "experienced")
+    workflow_filename <- paste0(omic, "_workflow_", experience_suffix, ".rmd")
+    workflow_path <- paste0(base_url, "/", subfolder, "/", workflow_filename)
+    
+    # Optional: Add a check here to see if the constructed URL is valid before returning?
+    # For now, we rely on the download step to report errors.
+    return(workflow_path)
   }
 }
 
 # Get report template URL based on omic type and workflow type
 getReportUrl <- function(wf_type, omic) {
-  base_url <- paste0("https://raw.githubusercontent.com/APAF-bioinformatics/ProteomeScholaR/main/Workbooks/", omic, "/report")
+  base_url <- paste0("https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/main/Workbooks/", omic, "/report")
   
   if (omic == "proteomics") {
     # Proteomics: Use wf_type to determine report
@@ -164,6 +172,27 @@ setupOmicsProject <- function(root_dir = NULL, overwrite = FALSE, omic_types, wo
   # List to store paths of downloaded workflow/config files (primarily for return value)
   downloaded_files <- list()
   
+  # --- Download central config.ini file --- 
+  config_url <- "https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/main/Workbooks/config.ini"
+  config_dest <- file.path(root_dir, "config.ini")
+  message("\nAttempting to download central config.ini...")
+  if (!overwrite && file.exists(config_dest)) {
+    message("Skipping existing file: config.ini")
+    downloaded_files$config <- normalizePath(config_dest)
+  } else {
+    response_config <- httr::GET(config_url)
+    if (httr::status_code(response_config) == 200) {
+      content_config <- httr::content(response_config, "raw")
+      writeBin(content_config, config_dest)
+      message("Successfully downloaded: config.ini to ", root_dir)
+      downloaded_files$config <- normalizePath(config_dest)
+    } else {
+      warning("Failed to download central config.ini. Status code: ", 
+              httr::status_code(response_config), ". URL: ", config_url)
+      downloaded_files$config <- NULL # Indicate failure
+    }
+  }
+  
   # --- Loop through each specified omic type ---
   for (current_omic_type in omic_types) {
     message(paste0("\n--- Setting up for: ", current_omic_type, " ---"))
@@ -212,11 +241,11 @@ setupOmicsProject <- function(root_dir = NULL, overwrite = FALSE, omic_types, wo
         dest = file.path(omic_dirs$scripts_omic, workflow_filename)
       )
       # Always add config (assuming one config per omic type folder)
-      config_url <- paste0("https://raw.githubusercontent.com/APAF-bioinformatics/ProteomeScholaR/main/Workbooks/", current_omic_type, "/config.ini")
-      templates$config <- list(
-        url = config_url,
-        dest = file.path(omic_dirs$scripts_omic, "config.ini")
-      )
+      # config_url <- paste0("https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/main/Workbooks/", current_omic_type, "/config.ini")
+      # templates$config <- list(
+      #  url = config_url,
+      #  dest = file.path(omic_dirs$scripts_omic, "config.ini")
+      # )
       
       # Add report template if URL exists
       if (!is.null(report_url) && !is.null(report_filename)) {
@@ -251,7 +280,7 @@ setupOmicsProject <- function(root_dir = NULL, overwrite = FALSE, omic_types, wo
           message("Successfully downloaded: ", basename(template$dest))
           # Store downloaded file path
           if (template_name == "workflow") downloaded_files$workflow[[current_omic_type]] <- normalizePath(template$dest)
-          if (template_name == "config") downloaded_files$config[[current_omic_type]] <- normalizePath(template$dest)
+          # if (template_name == "config") downloaded_files$config[[current_omic_type]] <- normalizePath(template$dest)
           if (template_name == "report") downloaded_files$report[[current_omic_type]] <- normalizePath(template$dest)
         } else {
           warning("Failed to download ", basename(template$dest), " for ", current_omic_type,
@@ -270,8 +299,8 @@ setupOmicsProject <- function(root_dir = NULL, overwrite = FALSE, omic_types, wo
   if (!is.null(downloaded_files$workflow[[first_omic]])) {
     message("Workflow file (first omic): ", downloaded_files$workflow[[first_omic]])
   }
-  if (!is.null(downloaded_files$config[[first_omic]])) {
-    message("Config file (first omic): ", downloaded_files$config[[first_omic]])
+  if (!is.null(downloaded_files$config)) { # Check the central config download
+    message("Config file: ", downloaded_files$config)
   }
   # You could add a loop here to print all downloaded files if needed
   
@@ -318,44 +347,76 @@ rproj_file <- file.path(project_path, paste0(my_project_name, ".Rproj"))
 writeLines(rproj_content, rproj_file)
 message("Created R project file: ", rproj_file)
 
-# Create .Rprofile for automatic workflow opening (opens the *first* specified omic workflow)
+# Create .Rprofile for automatic workflow opening
 startup_script <- file.path(project_path, ".Rprofile")
 
-# Determine workflow filename for the *first* omic type specified for .Rprofile
-first_omic_type <- omic_types[1]
-# NOW this call will work because getWorkflowUrl is global:
-first_workflow_url_for_profile <- getWorkflowUrl(workflow_type, user_experience, first_omic_type)
-first_workflow_filename_for_profile <- if (!is.null(first_workflow_url_for_profile)) basename(first_workflow_url_for_profile) else "UNKNOWN_WORKFLOW.rmd"
-
-# Generate .Rprofile content
-startup_content <- paste0(
-  'if (interactive()) {\n',
-  '  message("Initializing project...")\n',
-  '  if (!requireNamespace("later", quietly = TRUE)) install.packages("later")\n',
-  '  if (!requireNamespace("rstudioapi", quietly = TRUE)) install.packages("rstudioapi")\n',
-  '  later::later(function() {\n',
-  '    Sys.sleep(2)\n',
-  # Use the first omic type and its derived workflow filename
-  '    workflow_path <- file.path("scripts", "', first_omic_type, '", "', first_workflow_filename_for_profile, '")\n',
-  '    if (file.exists(workflow_path) && rstudioapi::isAvailable()) {\n',
-  '      message("Attempting to open workflow: ", workflow_path)\n',
-  '      try(rstudioapi::navigateToFile(workflow_path))\n',
-  '    } else {\n',
-  '      message("Could not automatically open workflow. Please open manually. Path checked: ", workflow_path)\n',
-  '    }\\n',
-  '  }, 3)\\n',
-  '}\\n'
+# Generate .Rprofile content to open ALL downloaded workflows
+startup_code_lines <- c(
+  'if (interactive()) {',
+  '  message("Initializing project...")',
+  '  if (!requireNamespace("later", quietly = TRUE)) install.packages("later")',
+  '  if (!requireNamespace("rstudioapi", quietly = TRUE)) install.packages("rstudioapi")',
+  '  later::later(function() {',
+  '    Sys.sleep(2) # Brief pause'
 )
 
+# Add commands to open each downloaded workflow
+opened_workflows_message <- c()
+if (!is.null(setup_result$downloaded_files$workflow) && length(setup_result$downloaded_files$workflow) > 0) {
+  for (omic in names(setup_result$downloaded_files$workflow)) {
+    workflow_path_full <- setup_result$downloaded_files$workflow[[omic]]
+    if (!is.null(workflow_path_full) && file.exists(workflow_path_full)) {
+      # Construct the relative path for use within the project
+      workflow_filename <- basename(workflow_path_full)
+      relative_workflow_path <- file.path("scripts", omic, workflow_filename)
+      # Escape backslashes for Windows paths within the R string
+      relative_workflow_path_escaped <- gsub("\\\\", "/", relative_workflow_path) 
+      
+      startup_code_lines <- c(
+        startup_code_lines,
+        paste0('    workflow_path_to_open <- "', relative_workflow_path_escaped, '"'),
+        '    if (file.exists(workflow_path_to_open) && rstudioapi::isAvailable()) {',
+        '      message("Attempting to open workflow: ", workflow_path_to_open)',
+        '      try(rstudioapi::navigateToFile(workflow_path_to_open))',
+        '    } else {',
+        '      message("Could not automatically open workflow. Path checked: ", workflow_path_to_open)',
+        '    }'
+      )
+      opened_workflows_message <- c(opened_workflows_message, relative_workflow_path_escaped)
+    } else {
+        startup_code_lines <- c(
+            startup_code_lines,
+            paste0('    message("Skipping auto-open for ', omic, ' workflow: File not found or path is NULL.")')
+        )
+    }
+  }
+} else {
+    startup_code_lines <- c(
+        startup_code_lines,
+        '    message("No downloaded workflow files found to configure for auto-opening.")'
+    )
+}
+
+startup_code_lines <- c(startup_code_lines, '  }, 3) # End later', '} # End interactive')
+startup_content <- paste(startup_code_lines, collapse = '\n')
+
 writeLines(startup_content, startup_script)
-message("Created startup script for automatic workflow opening (targets first omic type: ", first_omic_type, ")")
+if (length(opened_workflows_message) > 0) {
+    message("Created startup script (.Rprofile) to attempt opening the following workflows: ", paste(opened_workflows_message, collapse=", "))
+} else {
+    message("Created startup script (.Rprofile), but no workflows were found to configure for auto-opening.")
+}
+
 
 # Open the new project
 if (rstudioapi::isAvailable()) {
   message("Opening new R project...")
   message("Note: If you have unsaved changes, you\'ll be prompted to save them")
-  # Adjust message to reflect which workflow will attempt to open
-  message(paste0("The workflow file for the first omic type (", first_omic_type, ") will attempt to open automatically at scripts/", first_omic_type, "/", first_workflow_filename_for_profile))
+  if (length(opened_workflows_message) > 0) {
+      message("The following workflows will attempt to open automatically: ", paste(opened_workflows_message, collapse=", "))
+  } else {
+      message("No workflows configured to open automatically.")
+  }
   Sys.sleep(2)  # Give user time to read messages
   rstudioapi::openProject(rproj_file)
 }
