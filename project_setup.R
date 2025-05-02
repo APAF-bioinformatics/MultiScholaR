@@ -42,7 +42,7 @@ if (!is.character(my_project_name) || nchar(my_project_name) == 0) {
 }
 
 # Define the setup function
-setup_dia_project <- function(root_dir = NULL, overwrite = FALSE) {
+setupDiaProject <- function(root_dir = NULL, overwrite = FALSE) {
     # Set default root_dir based on OS
     if (is.null(root_dir)) {
         if (.Platform$OS.type == "windows") {
@@ -110,8 +110,8 @@ setup_dia_project <- function(root_dir = NULL, overwrite = FALSE) {
     }
     
     # Determine workflow file based on workflow_type and user_experience
-    get_workflow_url <- function(workflow_type, user_experience) {
-        base_url <- "https://raw.githubusercontent.com/APAF-bioinformatics/ProteomeScholaR/vers-0.9/Workbooks"
+    getWorkflowUrl <- function(workflow_type, user_experience) {
+        base_url <- "https://raw.githubusercontent.com/APAF-bioinformatics/ProteomeScholaR/main/Workbooks/proteomics"
         
         if (workflow_type == "DIA-NN") {
             if (user_experience == "experienced") {
@@ -130,8 +130,8 @@ setup_dia_project <- function(root_dir = NULL, overwrite = FALSE) {
     }
     
     # Get report template URL based on workflow type
-    get_report_url <- function(workflow_type) {
-        base_url <- "https://raw.githubusercontent.com/APAF-bioinformatics/ProteomeScholaR/vers-0.9/Workbooks/report"
+    getReportUrl <- function(workflow_type) {
+        base_url <- "https://raw.githubusercontent.com/APAF-bioinformatics/ProteomeScholaR/main/Workbooks/proteomics/report"
         
         if (workflow_type == "DIA-NN") {
             return(paste0(base_url, "/DIANN_report.rmd"))
@@ -146,10 +146,10 @@ setup_dia_project <- function(root_dir = NULL, overwrite = FALSE) {
     }
     
     # Get the appropriate workflow URL
-    workflow_url <- get_workflow_url(workflow_type, user_experience)
+    workflow_url <- getWorkflowUrl(workflow_type, user_experience)
     
     # Get the appropriate report URL
-    report_url <- get_report_url(workflow_type)
+    report_url <- getReportUrl(workflow_type)
     
     # Check if workflow exists
     if (is.null(workflow_url)) {
@@ -188,7 +188,7 @@ setup_dia_project <- function(root_dir = NULL, overwrite = FALSE) {
             dest = file.path(dirs$scripts_proteomics, workflow_filename)
         ),
         config = list(
-            url = "https://raw.githubusercontent.com/APAF-bioinformatics/ProteomeScholaR/dev-jr/Workbooks/config.ini",
+            url = "https://raw.githubusercontent.com/APAF-bioinformatics/ProteomeScholaR/main/Workbooks/config.ini",
             dest = file.path(dirs$scripts_proteomics, "config.ini")
         )
     )
@@ -246,7 +246,7 @@ if (!is.null(my_project_dir)) {
 
 # Create and setup the project
 message("Creating project: ", project_path)
-setup_result <- setup_dia_project(project_path, overwrite = TRUE)
+setup_result <- setupDiaProject(project_path, overwrite = TRUE)
 
 # Create and open R project
 rproj_content <- c(
