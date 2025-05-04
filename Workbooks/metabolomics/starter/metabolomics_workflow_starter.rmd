@@ -789,3 +789,51 @@ savePlot(
 #  tech_rep_remove_regex = "pool"
 #)
 ```
+
+# Cyclic Loess Normaliation
+
+```{r Cyclic Loess Normaliation}
+# Assuming metabolite_itsd_log_transformed is your log-transformed MetaboliteAssayData object
+metabolite_cyclicloess_normalised <- normaliseBetweenSamples(
+    metabolite_itsd_log_transformed,
+    normalisation_method = "cyclicloess" # Or "quantile", "scale", "none", or NULL to use config
+)
+
+
+QC_composite_figure@rle_plots$rle_plot_before_RUVIIc <- plotRle(
+  metabolite_cyclicloess_normalised,
+  "group",
+  yaxis_limit = c(-6, 6)
+)
+
+QC_composite_figure@pca_plots$pca_plot_before_RUVIIc <- plotPca(
+  metabolite_cyclicloess_normalised,
+  grouping_variable = "group",
+  label_column = "",
+  shape_variable = "group",
+  title = "",
+  font_size = 8
+)
+
+
+
+QC_composite_figure@density_plots$pca_plot_before_RUVIIc <- plotDensity(
+  QC_composite_figure@pca_plots$pca_plot_before_RUVIIc,
+  grouping_variable = "group"
+)
+
+#QC_composite_figure@density_plots$pca_plot_before_ITSD
+
+
+#pca_mixomics_before_cyclic_loess <- getPcaMatrix(remove_proteins_with_only_one_rep)
+
+QC_composite_figure@pearson_plots$pearson_correlation_pair_before_RUVIIc <-
+  plotPearson(
+    metabolite_cyclicloess_normalised,
+    tech_rep_remove_regex = "pool",
+    correlation_group = "group"
+  )
+
+
+summarizeQCPlot(QC_composite_figure)
+```
