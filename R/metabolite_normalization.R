@@ -1,363 +1,171 @@
----
-title: "Metabolomics Analysis Workflow for Multiomics Integration"
-version: "1.0"
-author: "Your fancy self"
-output:
-  html_document:
-    code_folding: true
-    self_contained: true
-    toc: true # Enable TOC for navigation
-    warning: false
-    message: false
----
-
-# Initial R environment setup
-## Checks your R environment for the required packages to run MultiScholaR, and installs them if they are not.
-
-```{r MultiScholaR FIRST INSTALL, eval=FALSE}
-installMultiScholaR <- function(verbose = TRUE) {
-    # Install devtools if missing
-    if (!requireNamespace("devtools", quietly = TRUE)) {
-        install.packages("devtools")
-    }
-
-    # Detach if loaded
-    if ("package:MultiScholaR" %in% search()) {
-        try(detach("package:MultiScholaR", unload = TRUE, force = TRUE), silent = TRUE)
-    }
-
-    # Unload namespace
-    try(unloadNamespace("MultiScholaR"), silent = TRUE)
-
-
-    devtools::install_github(
-        "APAF-BIOINFORMATICS/MultiScholaR",
-        ref = "main", # Main branch
-        dependencies = TRUE,
-        upgrade = "never",
-        force = TRUE
-    )
-
-    # Load it
-    library(MultiScholaR)
-}
-
-installMultiScholaR()
-loadDependencies()
-```
-
-# START HERE if you already have MultiScholaR installed
-## Loads the package and its dependencies.
-
-```{r Load MultiScholaR}
-library(MultiScholaR) # Assuming core package exists
-loadDependencies() # Load necessary libraries
-```
-
-# Set up your environment and project directory
-## Establishes a standardized directory structure for the metabolomics project.
-
-```{r Project Environment Management}
-# Directory Management
-## Set up the project directory structure
-## This section sets up the project directory structure for MultiScholaR
-## Directory management can be challenging, particularly when managing objects
-## across multiple chunks within a single R Markdown document.
-experiment_label <- "workshop_data"
-# Setup for the central pillars of molecular biology
-project_dirs <- setupDirectories(
-    #omic_types = "metabolomics"
-    # Or: 
-    omic_types = c("proteomics", "metabolomics", "transcriptomics"),
-    , label = experiment_label,
-    force = FALSE # Set to TRUE to skip prompts if dirs exist
-)
-```
-
-# At this step, please copy your data and other necessary files into the appropriate directories
-## Define input files, parameters, and load configuration.
-
-```{r Data Management and Parameters}
-## Input Parameters for Quality Control
-## Parameters in this section are experiment-specific. Their default parameters
-## are intended as a guide only - every source of variance is different just as
-## every set of proteins going through a mass spectrometer is different!
-## One size does not fit all and you *will* most likely need to fine tune these
-## to get the most out of your data.
-config_list <- readConfigFile(file = file.path(project_dirs$metabolomics$base_dir, "config.ini"))
-
-# Metabolomics Input File Management
-## Define the filenames for your metabolomics quantification results.
-## Files should be in 'data/metabolomics'. Set to NULL if not used.
-metabolite_filenames <- list(
-    LCMS_Neg = "m_MTBLS2322_LC-MS_negative_hilic_metabolite_profiling_v2_maf.tsv",
-    LCMS_Pos = NULL,
-    GCMS_Pos = NULL,
-    GCMS_Neg = "m_MTBLS2322_GC-MS___metabolite_profiling_v2_maf.tsv"
+#' Log2 Transform Assay Data Generic
+#'
+#' @description
+#' Defines the generic function for applying a log2 transformation to the
+#' quantitative data within assay objects.
+#'
+#' @param theObject The data object (e.g., MetaboliteAssayData).
+#' @param offset A small positive number to add before log transformation to handle zeros (default: 1).
+#' @param ... Additional arguments passed to methods.
+#'
+#' @return An updated object with log2 transformed quantitative data.
+#' @export
+setGeneric(name = "logTransformAssays",
+           def = function(theObject, offset = 1, ...) {
+             standardGeneric("logTransformAssays")
+           }
 )
 
-# --- Load Metabolomics Data into a Named List ---
-metabolite_data_tbl <- metabolite_filenames |>
-    purrr::keep(~ !is.null(.x)) |> # Keep only non-NULL filenames
-    purrr::map(~ {
-        file_path <- file.path(project_dirs$metabolomics$data_dir, "metabolomics", .x)
-        if (file.exists(file_path)) {
-            log_info("Loading: {basename(file_path)}")
-            tryCatch(
-                vroom::vroom(file_path, show_col_types = FALSE),
-                error = function(e) { # Handle potential loading errors
-                    log_error("Failed to load {basename(file_path)}: {e$message}")
-                    NULL
-                }
-            )
-        } else {
-            log_warn("File not found, skipping: {file_path}")
-            NULL # Return NULL for missing files
-        }
-    }) |>
-    purrr::compact() # Remove NULL elements from missing/failed files
+#' @title Log2 Transform Assay Data for MetaboliteAssayData
+#'
+#' @description
+#' Applies a log2 transformation (log2(x + offset)) to the numeric sample columns
+#' in all assay tibbles stored within the `metabolite_data` slot of a
+#' `MetaboliteAssayData` object.
+#'
+#' @details
+#' This transformation is often applied to reduce skewness and stabilize variance
+#' in quantitative omics data, especially before visualization or statistical modeling.
+#' Zeros in the data are handled by adding a small `offset` before transformation.
+#' Non-numeric columns and the metabolite ID column are preserved.
+#'
+#' @describeIn logTransformAssays Method for MetaboliteAssayData
+#'
+#' @param theObject A `MetaboliteAssayData` object.
+#' @param offset A small positive number to add before log transformation (default: 1).
+#' @param ... Currently unused.
+#'
+#' @return An updated `MetaboliteAssayData` object with log2 transformed values in the `metabolite_data` slot.
+#'
+#' @importFrom dplyr mutate across all_of select filter intersect union setdiff
+#' @importFrom rlang sym !!
+#' @importFrom purrr map set_names
+#' @importFrom methods slot slot<- is
+#' @importFrom tibble as_tibble is_tibble
+#'
+#' @export
+setMethod(f = "logTransformAssays",
+          signature = "MetaboliteAssayData",
+          definition = function(theObject, offset = 1, ...) {
 
-## Please supply your organism's taxon ID here
-taxon_id <- "244366"
-## Please supply your organism's name here
-organism_name <- "Klebsiella variicola"
-```
+            # --- Input Validation ---
+            if (!is.numeric(offset) || length(offset) != 1 || offset <= 0) {
+              stop("`offset` must be a single positive numeric value.")
+            }
+            message(sprintf("Applying log2(x + %s) transformation to assays.", as.character(offset)))
 
-# Set your design matrix (for the first time)
-## Interactively create the design matrix linking samples to experimental conditions.
+            # --- Get Object Slots ---
+            assay_list <- methods::slot(theObject, "metabolite_data")
+            metabolite_id_col_name <- methods::slot(theObject, "metabolite_id_column")
+            design_matrix <- methods::slot(theObject, "design_matrix")
+            sample_id_col_name <- methods::slot(theObject, "sample_id")
 
-```{r Design Matrix Setup}
-if (exists("metabolite_design_matrix", envir = .GlobalEnv)) {
-    print("Design matrix already set :) No need to run app again!")
-} else {
-    RunApplet("designMatrix")
-}
-# Comment in if you wish to run manually
-# RunApplet("designMatrix")
-```
-
-# If you have the design matrix stored from a previous run, you can read it in here, otherwise skip
-## Optional step to load a pre-existing design matrix.
-
-```{r Design Matrix Read In (optional), eval=FALSE}
-
-metabolite_data_cln <- metabolite_data_tbl 
-str(metabolite_data_cln)
-
-# Define the prefix to remove
-prefix_to_remove <- "102.100.100/" # Literal string for fixed=TRUE matching
-
-# Check if the list exists and has content
-if (exists("metabolite_data_cln") && is.list(metabolite_data_cln) && length(metabolite_data_cln) > 0) {
-    
-    log_info("Cleaning sample name prefixes in \'metabolite_data_cln\'...")
-    
-    metabolite_data_cln <- lapply(metabolite_data_cln, function(df) {
-      current_colnames <- colnames(df)
-      # Use fixed = TRUE for literal matching, which is safer and faster here
-      new_colnames <- gsub(prefix_to_remove, "", current_colnames, fixed = TRUE) 
-      colnames(df) <- new_colnames
-      return(df)
-    })
-    
-    log_info("Finished cleaning sample name prefixes.")
-    
-    # Optional: Verify the change
-    # log_info("Structure of \'metabolite_data_cln\' after cleaning names:")
-    # str(metabolite_data_cln)
-    
-} else {
-    log_warn("\'metabolite_data_cln\' not found or empty. Skipping sample name cleaning.")
-}
-# This chunk allows loading a previously saved design matrix.
-design_matrix_file <- file.path(project_dirs$metabolomics$source_dir, "design_matrix_metabolomics.tab")
-if (file.exists(design_matrix_file)) {
-    metabolite_design_matrix <- read.table(
-        file = design_matrix_file,
-        sep = "\t",
-        header = TRUE,
-        stringsAsFactors = FALSE
-    )
-    log_info("Loaded design matrix from: {design_matrix_file}")
-
-    # Check if metabolite_data_cln exists and is a list
-    if (exists("metabolite_data_cln") && is.list(metabolite_data_cln) && length(metabolite_data_cln) > 0) {
-        log_info("Aligning data frames in 'metabolite_data_cln' with loaded design matrix...")
-
-        metabolite_data_cln <- lapply(seq_along(metabolite_data_cln), function(i) {
-            current_df <- metabolite_data_cln[[i]]
-            df_name <- names(metabolite_data_cln)[i] # Get name for logging
-            if (is.null(df_name) || df_name == "") df_name <- paste("DataFrame", i)
-
-            # Identify sample columns present in both the current df and the design matrix
-            sample_cols_in_df <- intersect(colnames(current_df), design_matrix$Run)
-
-            if (length(sample_cols_in_df) == 0) {
-                log_warn("No matching sample columns found for '{df_name}'. Skipping alignment.")
-                return(current_df) # Return unmodified
+            if (length(assay_list) == 0) {
+              warning("MetaboliteAssayData object has no assays in 'metabolite_data' slot. No transformation performed.")
+              return(theObject)
             }
 
-            # Identify metadata columns (those not identified as sample columns)
-            metadata_cols <- setdiff(colnames(current_df), sample_cols_in_df)
+            # Ensure list is named
+            original_assay_names <- names(assay_list)
+             if (is.null(original_assay_names)) {
+                 names(assay_list) <- paste0("Assay_", seq_along(assay_list))
+                 warning("Assay list was unnamed. Using default names (Assay_1, Assay_2, ...).", immediate. = TRUE)
+             } else if (any(original_assay_names == "")) {
+                 needs_name <- which(original_assay_names == "")
+                 original_assay_names[needs_name] <- paste0("Assay_", needs_name)
+                 names(assay_list) <- original_assay_names
+                 warning("Some assays were unnamed. Using default names for them.", immediate. = TRUE)
+             }
+             assay_names <- names(assay_list) # Use the potentially corrected names
 
-            # Filter design matrix to keep only the rows relevant to this df's sample columns
-            design_matrix_filtered <- metabolite_design_matrix[metabolite_design_matrix$Run %in% sample_cols_in_df, , drop = FALSE]
 
-            # Order the sample columns according to the filtered design matrix
-            ordered_sample_cols <- design_matrix_filtered$Run
+            # --- Process Each Assay ---
+            transformed_assay_list <- lapply(seq_along(assay_list), function(i) {
+                assay_index_name <- assay_names[i] # Use the name from the corrected list
+                assay_tibble <- assay_list[[i]]
+                 message(sprintf("-- Processing assay: %s", assay_index_name))
 
-            # Reconstruct the dataframe with metadata first, then ordered sample columns
-            # Ensure all original columns are accounted for and in the correct order
-            final_df <- current_df[, c(metadata_cols, ordered_sample_cols), drop = FALSE]
+                 if (!tibble::is_tibble(assay_tibble)) {
+                     warning(sprintf("Assay '%s' is not a tibble. Attempting to coerce.", assay_index_name), immediate. = TRUE)
+                     assay_tibble <- tryCatch(tibble::as_tibble(assay_tibble), error = function(e) {
+                         warning(sprintf("Failed to coerce assay '%s' to tibble: %s. Skipping transformation.", assay_index_name, e$message), immediate. = TRUE)
+                         return(NULL)
+                     })
+                     if (is.null(assay_tibble)) return(assay_list[[i]]) # Return original if coercion failed
+                 }
 
-            log_info("Aligned '{df_name}'. Dimensions: {nrow(final_df)}x{ncol(final_df)}")
-            return(final_df)
-        })
+                 # Check for metabolite ID column
+                 if (!metabolite_id_col_name %in% colnames(assay_tibble)) {
+                     warning(sprintf("Assay '%s': Metabolite ID column '%s' not found. Skipping transformation.", assay_index_name, metabolite_id_col_name), immediate. = TRUE)
+                     return(assay_tibble) # Return original
+                 }
 
-        # Restore original names if they existed
-        if (!is.null(names(metabolite_data_cln))) {
-             names(metabolite_data_cln) <- names(metabolite_data_cln)
-        }
+                 # --- Identify Sample Columns ---
+                 if (!methods::is(design_matrix, "data.frame")) {
+                    stop("Slot 'design_matrix' is not a data.frame.")
+                 }
+                 if (!sample_id_col_name %in% colnames(design_matrix)) {
+                     stop(sprintf("Sample ID column '%s' not found in design_matrix. Cannot identify sample columns for transformation.", sample_id_col_name))
+                 }
+                 design_samples <- tryCatch(as.character(design_matrix[[sample_id_col_name]]), error = function(e){
+                     stop(sprintf("Could not extract sample IDs from design_matrix column '%s': %s", sample_id_col_name, e$message))
+                 })
+                 all_assay_cols <- colnames(assay_tibble)
+                 sample_cols <- intersect(all_assay_cols, design_samples)
+                 metadata_cols <- setdiff(all_assay_cols, sample_cols)
+                 # Ensure metabolite ID is not treated as a sample column
+                 metadata_cols <- union(metadata_cols, metabolite_id_col_name)
+                 sample_cols <- setdiff(all_assay_cols, metadata_cols)
+                 # ----------------------------- #
 
-        log_info("Finished aligning data frames in 'metabolite_data_cln'.")
+                 if (length(sample_cols) == 0) {
+                     warning(sprintf("Assay '%s': No numeric sample columns identified matching design matrix sample IDs. Skipping transformation.", assay_index_name), immediate. = TRUE)
+                     return(assay_tibble) # Return original
+                 }
 
-    } else {
-        log_warn("'metabolite_data_cln' not found, is not a list, or is empty. Skipping alignment.")
-    }
+                 # --- Apply Log2 Transformation ---
+                 transformed_tibble <- tryCatch({
+                     assay_tibble %>%
+                         # Replace negative values with 0 before log transformation
+                         dplyr::mutate(dplyr::across(dplyr::all_of(sample_cols), ~ ifelse(!is.na(.x) & .x < 0, 0, .x))) %>%
+                         # Ensure target columns are numeric before transformation
+                         dplyr::mutate(dplyr::across(dplyr::all_of(sample_cols), as.numeric)) %>%
+                         dplyr::mutate(dplyr::across(dplyr::all_of(sample_cols), ~ log2(.x + offset)))
+                 }, error = function(e) {
+                      warning(sprintf("Assay '%s': Error during log2 transformation: %s. Returning original assay data.", assay_index_name, e$message), immediate. = TRUE)
+                      return(assay_tibble) # Return original on error
+                 })
 
-} else {
-    log_warn("Design matrix file not found at: {design_matrix_file}. Skipping read-in.")
-}
+                 # Check if transformation actually happened (e.g., if error occurred)
+                 if (identical(transformed_tibble, assay_tibble)) {
+                    message(sprintf("Assay '%s': Transformation skipped or failed.", assay_index_name))
+                 } else {
+                    message(sprintf("Assay '%s': Successfully applied log2 transformation to %d sample column(s).", assay_index_name, length(sample_cols)))
+                 }
 
-# Optional: Verify structure after alignment
-# if (exists("metabolite_data_cln")) {
-#   log_info("Structure of 'metabolite_data_cln' after alignment attempt:")
-#   str(metabolite_data_cln)
-# }
-```
+                 return(transformed_tibble)
+            })
 
-# Create the MetabolomicsQuantitativeData S4 object
-## Initializes the S4 object to store quantitative data, metadata, and configuration.
+            # Restore original names if they existed
+            names(transformed_assay_list) <- assay_names
 
-```{r Metabolite Data S4 Object Creation}
-metabolite_design_matrix <- design_matrix
-# Create the object using the new constructor and specified column names
-metabolite_data_obj <- createMetaboliteAssayData(
-    metabolite_data = metabolite_data_cln # Pass the list of metabolomics data frames
-    , design_matrix = metabolite_design_matrix,
-    metabolite_id_column = "database_identifier" # Specify primary ID col name in assays
-    , annotation_id_column = "metabolite" # Specify annotation ID col name
-    , sample_id = "Run" # Specify sample ID col name in design_matrix
-    , group_id = "group" # Specify group col name in design_matrix
-    , technical_replicate_id = "replicates" # Use NA_character_ if tech rep column name is NA
-    , database_identifier_type = "CHEBI" # Specify type of ID in annotation_id_column
-    # (e.g., "HMDB", "KEGG", "CHEBI", "Mixed_CHEBI_Unknown", "InternalName").
-    , internal_standard_regex = "ITSD" # Specify regex (e.g IS in metabolite_id_column).
-    ## IF NO IS, SET TO NA
-    , args = config_list
+            # Assign the list of transformed assays back to the object
+            methods::slot(theObject, "metabolite_data") <- transformed_assay_list
+
+            # Optional: Add log transformation status to args (consider structure)
+            # Ensure args is a list
+            if (!is.list(theObject@args)) {
+                warning("Slot 'args' is not a list. Cannot record log transformation status.", immediate. = TRUE)
+            } else {
+                theObject@args$log_transformed <- TRUE
+                theObject@args$log_transform_offset <- offset
+            }
+
+
+            message("Log2 transformation complete for all assays.")
+            return(theObject)
+          }
 )
-
-# str(metabolite_data_obj) # Check the structure of the S4 object
-```
-
-# Fetch Metabolite Annotations
-## Retrieves annotations (e.g., KEGG pathways, chemical properties) based on metabolite identifiers (ChEBI ID, Name, etc.).
-
-```{r Metabolite Annotation}
-# This requires a new function: getMetaboliteAnnotations
-# Input: feature_metadata_cln, id_column (e.g., 'ChEBI_ID', 'MetaboliteName'), annotation_source ('ChEBI', 'KEGG', 'PubChem')
-# Output: Enriched feature_metadata_cln table
-
-# Placeholder function call - ** THIS FUNCTION NEEDS TO BE IMPLEMENTED **
-# It should handle different ID types and query relevant databases (KEGGREST, webchem, etc.)
-# Consider caching results to avoid repeated queries (like getUniprotAnnotations)
-# feature_metadata_annotated <- getMetaboliteAnnotations(
-#   feature_metadata = feature_metadata_cln,
-#   metabolite_id_column = config_list$globalParameters$metabolite_id_column, # Or a specific annotation ID column like 'ChEBI_ID'
-#   feature_name_column = config_list$globalParameters$feature_name_column,
-#   annotation_source = config_list$globalParameters$annotation_source,
-#   kegg_organism_code = config_list$globalParameters$organism_kegg_code,
-#   cache_dir = file.path(results_dir, "tmp_folder")
-# )
-
-# --- Placeholder Implementation ---
-log_warn("getMetaboliteAnnotations function not implemented. Using existing metadata.")
-feature_metadata_annotated <- feature_metadata_cln
-# Add mock columns if needed for downstream steps
-if (!"KEGG_ID" %in% names(feature_metadata_annotated)) feature_metadata_annotated$KEGG_ID <- NA
-if (!"Pathway" %in% names(feature_metadata_annotated)) feature_metadata_annotated$Pathway <- NA
-if (!"Formula" %in% names(feature_metadata_annotated)) feature_metadata_annotated$Formula <- NA
-if (!config_list$globalParameters$feature_name_column %in% names(feature_metadata_annotated)) {
-    # Use the ID column as name if specific name column doesn't exist
-    feature_metadata_annotated[[config_list$globalParameters$feature_name_column]] <- feature_metadata_annotated$rowname_id
-}
-# --- End Placeholder ---
-
-log_info("Feature metadata annotated (placeholder). Dimensions: {nrow(feature_metadata_annotated)} x {ncol(feature_metadata_annotated)}")
-
-# Ensure row order hasn't changed and still matches data_cln
-stopifnot(identical(rownames(data_cln), feature_metadata_annotated$rowname_id))
-
-# Make the primary metabolite ID the rownames for SE object compatibility
-rownames(feature_metadata_annotated) <- feature_metadata_annotated$rowname_id
-```
-
-# Raw Data QC
-## Initial quality control checks and filtering steps on the raw data.
-## We need an equivalent to `updateProteinFiltering` for metabolites.
-
-```{r Raw Data QC and Filtering}
-# Track raw data state
-
-rm(raw_data_qc_stats)
-raw_data_qc_stats <- updateMetaboliteFiltering(
-    theObject = metabolite_data_obj,
-    step_name = "1_Raw_Data",
-    omics_type = "metabolomics", # Just specify this
-    return_grid = TRUE,
-    overwrite = TRUE
-)
-```
-
-```{r Metabolite Intensity Filtering}
-    # Assuming 'metabolite_data_obj' is your MetaboliteAssayData object
-    metabolite_normalised_mif_cln <- metaboliteIntensityFiltering(metabolite_data_obj) 
-
-
-raw_data_qc_stats <- updateMetaboliteFiltering(
-    theObject = metabolite_normalised_mif_cln,
-    step_name = "2_IntesityFiltered_Data",
-    omics_type = "metabolomics", # Just specify this
-    return_grid = TRUE,
-    overwrite = TRUE
-)
-
-```
-
-
-```{r Remove Duplicate Features By Intensity}
-
-metabolite_normalised_duplicates_removed <- resolveDuplicateFeatures(metabolite_normalised_mif_cln,
-        itsd_pattern_columns = c("metabolite", "metabolite_identification")
-    )
-
-    duplicates_report <- findDuplicateFeatureIDs(metabolite_normalised_duplicates_removed)
-    print(duplicates_report)
-
-
-
-raw_data_qc_stats <- updateMetaboliteFiltering(
-    theObject = metabolite_normalised_duplicates_removed,
-    step_name = "3_DuplicatesRemoved",
-    omics_type = "metabolomics", # Just specify this
-    return_grid = TRUE,
-    overwrite = TRUE
-)
-
-
-```
-
-```{r}
 
 # --- Internal Standard Normalization ---
 
@@ -686,106 +494,3 @@ setMethod(f = "normaliseUntransformedData",
 #           signature = signature(theObject = "MetaboliteAssayData", method = "character"),
 #           definition = function(theObject, method = "PQN", ...) { ... }
 # ) 
-```
-
-
-```{r 4 ITSD Normalisation}
-
-metabolite_itsd_normalised <- normaliseUntransformedData(
-    metabolite_normalised_duplicates_removed,
-    method = "ITSD",
-    itsd_pattern_columns = c("metabolite", "metabolite_identification"),
-    itsd_aggregation = "mean", # Default is sum, can change to "mean" or "median"
-    remove_itsd_after_norm = FALSE # Default is TRUE
-)
-
-raw_data_qc_stats <- updateMetaboliteFiltering(
-    theObject = metabolite_itsd_normalised,
-    step_name = "4_ITSD_Normalised",
-    omics_type = "metabolomics", # Just specify this
-    return_grid = TRUE,
-    overwrite = TRUE
-)
-
-```
-
-```{r 5 Log Transform Data}
-metabolite_itsd_log_transformed <- logTransformAssays(metabolite_itsd_normalised)
-
-raw_data_qc_stats <- updateMetaboliteFiltering(
-    theObject = metabolite_itsd_log_transformed,
-    step_name = "5_ITSD_Log2Transformed",
-    omics_type = "metabolomics", # Just specify this
-    return_grid = TRUE,
-    overwrite = TRUE
-)
-```
-
-
-```{r Pre-Normalisation QC}
-QC_composite_figure <- InitialiseGrid()
-
-QC_composite_figure@rle_plots$rle_plot_before_ITSD <- plotRle(
-  metabolite_itsd_log_transformed,
-  "group",
-  yaxis_limit = c(-6, 6)
-)
-
-QC_composite_figure@pca_plots$pca_plot_before_ITSD <- plotPca(
-  metabolite_itsd_log_transformed,
-  grouping_variable = "group",
-  label_column = "",
-  shape_variable = "group",
-  title = "",
-  font_size = 8
-)
-
-
-
-QC_composite_figure@density_plots$pca_plot_before_ITSD <- plotDensity(
-  QC_composite_figure@pca_plots$pca_plot_before_ITSD,
-  grouping_variable = "group"
-)
-
-#QC_composite_figure@density_plots$pca_plot_before_ITSD
-
-
-#pca_mixomics_before_cyclic_loess <- getPcaMatrix(remove_proteins_with_only_one_rep)
-
-QC_composite_figure@pearson_plots$pearson_correlation_pair_before_ITSD <-
-  plotPearson(
-    metabolite_itsd_log_transformed,
-    tech_rep_remove_regex = "pool",
-    correlation_group = "group"
-  )
-
-
-summarizeQCPlot(QC_composite_figure)
-
-savePlot(
-  QC_composite_figure@rle_plots$rle_plot_before_cyclic_loess,
-  protein_qc_dir,
-  "rle_plot_before_cyclic_loess"
-)
-savePlot(
-  QC_composite_figure@pca_plots$pca_plot_before_cyclic_loess_group,
-  protein_qc_dir,
-  "pca_plot_before_cyclic_loess"
-)
-savePlot(
-  QC_composite_figure@density_plots$density_plot_before_cyclic_loess_group,
-  protein_qc_dir,
-  "density_plot_before_cyclic_loess"
-)
-savePlot(
-  QC_composite_figure@pearson_plots$pearson_correlation_pair_before_cyclic_loess,
-  protein_qc_dir,
-  "pearson_correlation_pair_before_cyclic_loess"
-)
-
-#frozen_protein_matrix_tech_rep <- proteinTechRepCorrelation(
-#  remove_proteins_with_only_one_rep,
-#  tech_rep_num_column = "group",
-#  tech_rep_remove_regex = "pool"
-#)
-```

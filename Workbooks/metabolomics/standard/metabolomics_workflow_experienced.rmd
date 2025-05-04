@@ -14,36 +14,83 @@ output:
 # Initial R environment setup
 ## Checks your R environment for the required packages to run MultiScholaR, and installs them if they are not.
 
-```{r MultiScholaR FIRST INSTALL, eval=FALSE}
-installMultiScholaR <- function(verbose = TRUE) {
-    # Install devtools if missing
-    if (!requireNamespace("devtools", quietly = TRUE)) {
-        install.packages("devtools")
-    }
+```{r MultiScholaR FIRST INSTALL, message=TRUE, warning=TRUE}
+# Function to install/update MultiScholaR
+# Set force_install = TRUE to force reinstallation from GitHub
+installMultiScholaR <- function(force_install = FALSE, verbose = TRUE) {
+  # Ensure devtools is available
+  if (!requireNamespace("devtools", quietly = TRUE)) {
+    if(verbose) message("Installing devtools...")
+    install.packages("devtools")
+  }
 
-    # Detach if loaded
-    if ("package:MultiScholaR" %in% search()) {
-        try(detach("package:MultiScholaR", unload = TRUE, force = TRUE), silent = TRUE)
-    }
+  # Detach and unload if already loaded to allow clean installation
+  if ("package:MultiScholaR" %in% search()) {
+      try(detach("package:MultiScholaR", unload = TRUE, force = TRUE), silent = TRUE)
+  }
+  try(unloadNamespace("MultiScholaR"), silent = TRUE)
 
-    # Unload namespace
-    try(unloadNamespace("MultiScholaR"), silent = TRUE)
+  if(verbose) message("Installing/Updating MultiScholaR from GitHub...")
+  devtools::install_github(
+    "APAF-BIOINFORMATICS/MultiScholaR", # Updated repo name
+    ref = "main",
+    dependencies = TRUE,
+    upgrade = "never",
+    force = force_install # Use the function argument to control force
+  )
 
-
-    devtools::install_github(
-        "APAF-BIOINFORMATICS/MultiScholaR",
-        ref = "main", # Main branch
-        dependencies = TRUE,
-        upgrade = "never",
-        force = TRUE
-    )
-
-    # Load it
-    library(MultiScholaR)
+  if(verbose) message("Loading MultiScholaR...")
+  # Load the newly installed/updated package
+  library(MultiScholaR) # Updated package name
 }
 
-installMultiScholaR()
-loadDependencies()
+# Check if MultiScholaR is installed
+if (requireNamespace("MultiScholaR", quietly = TRUE)) {
+    # Package is installed
+    installed_version <- packageVersion("MultiScholaR")
+    installed_version_str <- as.character(installed_version)
+    message(paste("MultiScholaR version", installed_version_str, "is installed."))
+
+    # Example: Check if it's an older version (< 0.1.0) - Suggest manual update
+    # Adjust version check if needed for MultiScholaR's versioning scheme
+    if (utils::compareVersion(installed_version_str, "0.1.0") < 0) {
+        message("\\n--- IMPORTANT: UPDATE RECOMMENDED --- ")
+        message("-> Your installed MultiScholaR version (", installed_version_str, ") is older than v0.1.")
+        message("-> Major changes may have been introduced.")
+        message("-> Please consider updating manually by running:")
+        message("   installMultiScholaR(force_install = TRUE)") # Updated function name
+        message("-> Also, update your project_setup.R (if used) and .Rmd files, available from the GitHub repository. :-) ")
+        message("-------------------------------------")
+        message("Loading existing older version...")
+        library(MultiScholaR) # Load the existing older version for now
+    } else {
+        message("-> Your version is 0.1.0 or newer. Loading...")
+        library(MultiScholaR) # Load the existing recent version
+    }
+
+} else {
+    # Package is NOT installed
+    message("MultiScholaR is not installed. Performing initial installation...")
+    # Call the function to install (force_install defaults to FALSE)
+    # The function will also load the library after installation
+    installMultiScholaR() # Updated function name
+}
+
+# Load dependencies AFTER MultiScholaR is guaranteed to be loaded
+# (either from existing install or fresh install)
+# Ensure installMultiScholaR is called if needed, then load dependencies
+# Note: The previous script called installProteomeScholaR again here - this might
+# be redundant if it was just installed or loaded. Consider if this re-call is necessary.
+# If just loading is needed, library(MultiScholaR) might suffice if already installed.
+# If ensuring the latest is loaded *after* the initial check, the call might be desired.
+# For safety/consistency with original logic, keeping the call but with updated name:
+installMultiScholaR(force_install = FALSE, verbose = TRUE) # Updated function name
+loadDependencies() # Assumes this function exists within MultiScholaR or is globally defined
+
+# Example of how to force an update manually if needed:
+# installMultiScholaR(force_install = TRUE) # Updated function name
+# loadDependencies() # Reload dependencies if you forced an update
+
 ```
 
 # START HERE if you already have MultiScholaR installed

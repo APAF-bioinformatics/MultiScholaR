@@ -1,19 +1,19 @@
-Package: MultiScholaR
-Title: MultiScholaR: Enabling Reproducible Analyses and Integration of Multi-Omics Datasets Through Easy-to-Follow Scripting Templates
-Version: 0.1
+Package: ProteomeScholaR
+Title: Tools for Proteomics and Phosphoproteomics analysis.
+Version: 0.90
 Authors@R: c(
     person(given = "Ignatius",
            family = "Pang",
            role = c("aut", "cre"),
            email = "ignatius.pang@mq.edu.au",
-           comment = c(ORCID = "YOUR-ORCID-ID")),
+           comment = c(ORCID = "0000-0001-9703-5741")),
     person(given = "William",
            family = "Klare",
            role = c("aut"),
            email = "william.klare@mq.edu.au",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+           comment = c(ORCID = "0000-0002-1490-9704"))
     )
-Description: Tools for Proteomics, Metabolomics, Transcriptomics and Multiomic integration.
+Description: Tools for Proteomics and Phosphoproteomics analysis.
 License: LGPL (>= 3)
 Encoding: UTF-8
 LazyData: true
@@ -22,12 +22,33 @@ RoxygenNote: 7.3.2
 Suggests: 
     EDASeq,
     RUVSeq,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    clusterProfiler, 
+    GO.db, 
+    GlimmaV2,
+    limma, 
+    mixOmics, 
+    qvalue,
+    UniProt.ws,
+    ggplot2,
+    plotly,
+    seqinr,
+    UpSetR,
+    tidyverse,
+    GGally,
+    logger,
+    ggpubr,
+    ggrepel,
+    patchwork,
+    svglite,
+    iheatmapr,
+    shiny,
+    gprofiler2,
+    webshot2,
+    
 Config/testthat/edition: 3
 Imports: 
     beepr,
-    BiocManager,
-    clusterProfiler,
     configr,
     devtools,
     DT,
@@ -35,17 +56,11 @@ Imports:
     flextable,
     furrr,
     future.apply,
-    GGally,
-    ggplot2,
-    ggpubr,
-    ggrepel,
+    fs,
     gh,
     git2r,
-    Glimma,
     glue,
-    GO.db,
     gplots,
-    gprofiler2,
     gridExtra,
     gtools,
     gt,
@@ -53,24 +68,18 @@ Imports:
     htmltools,
     httr,
     igraph,
-    iheatmapr,
     iq,
     janitor,
     knitr,
     lazyeval,
-    limma,
     logging,
     magrittr,
-    mixOmics,
     multidplyr,
     openxlsx,
     optparse,
     pacman,
-    patchwork,
-    plotly,
     progress,
     purrr,
-    qvalue,
     Rcpp,
     RcppEigen,
     RColorBrewer,
@@ -80,18 +89,12 @@ Imports:
     rstudioapi,
     ruv,
     rvest,
-    seqinr,
-    shiny,
     statmod,
     stringi,
-    svglite,
     tibble,
     tictoc,
     tidyr,
     tidyselect,
-    tidyverse,
-    UniProt.ws,
-    UpSetR,
     viridis,
     vroom,
     writexl,
