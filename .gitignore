@@ -7,7 +7,6 @@
 
 # User-specific files
 .Ruserdata
-*handover.md
 
 # Example code in package build process
 *-Ex.R
@@ -32,6 +31,10 @@ vignettes/*.pdf
 *_cache/
 /cache/
 
+# Testing files
+*test_checklist
+*handover.md
+
 # Temporary files created by R markdown
 *.utf8.md
 *.knit.md
@@ -46,3 +49,4 @@ vignettes/*.pdf
 #Doxygen generated files
 *.Rd
 *NAMESPACE
+

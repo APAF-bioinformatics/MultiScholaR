@@ -1,6 +1,6 @@
-Package: ProteomeScholaR
-Title: Tools for Proteomics and Phosphoproteomics analysis.
-Version: 0.90
+Package: MultiScholaR
+Title: Tools for analysis of multi-omics data.
+Version: 0.10
 Authors@R: c(
     person(given = "Ignatius",
            family = "Pang",
@@ -13,7 +13,7 @@ Authors@R: c(
            email = "william.klare@mq.edu.au",
            comment = c(ORCID = "0000-0002-1490-9704"))
     )
-Description: Tools for Proteomics and Phosphoproteomics analysis.
+Description: Tools for analysis of multi-omics data.
 License: LGPL (>= 3)
 Encoding: UTF-8
 LazyData: true
