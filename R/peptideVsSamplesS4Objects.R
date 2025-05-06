@@ -170,11 +170,7 @@ PeptideQuantitativeDataDiann <- function( peptide_data
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Format the design matrix so that only metadata for samples in the protein data are retained, and also
 # sort the sample IDs in the same order as the data matrix
-#'@export
-setGeneric(name ="cleanDesignMatrixPeptide"
-           , def=function( theObject) {
-             standardGeneric("cleanDesignMatrixPeptide")
-           })
+
 
 #'@exportMethod cleanDesignMatrixPeptide
 setMethod( f ="cleanDesignMatrixPeptide"

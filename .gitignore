@@ -46,7 +46,3 @@ vignettes/*.pdf
 .Rdata
 .DS_Store
 
-#Doxygen generated files
-*.Rd
-*NAMESPACE
-

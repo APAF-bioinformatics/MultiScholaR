@@ -108,11 +108,6 @@ setMethod( f ="setProteinData"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Format the design matrix so that only metadata for samples in the protein data are retained, and also
 # sort the sample IDs in the same order as the data matrix
-#'@export
-setGeneric(name ="cleanDesignMatrix"
-           , def=function( theObject) {
-             standardGeneric("cleanDesignMatrix")
-           })
 
 #'@export
 setMethod( f ="cleanDesignMatrix"
@@ -131,15 +126,6 @@ setMethod( f ="cleanDesignMatrix"
              return(theObject)
            })
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#'@export
-setGeneric(name="proteinIntensityFiltering"
-           , def=function( theObject
-                           , proteins_intensity_cutoff_percentile = NULL
-                           , proteins_proportion_of_samples_below_cutoff = NULL
-                           , core_utilisation = NULL) {
-             standardGeneric("proteinIntensityFiltering")
-           }
-           , signature=c("theObject", "proteins_intensity_cutoff_percentile", "proteins_proportion_of_samples_below_cutoff", "core_utilisation"))
 
 #'@export
 setMethod( f="proteinIntensityFiltering"
@@ -255,12 +241,6 @@ setMethod(f="removeProteinsWithOnlyOneReplicate"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#'@export
-setGeneric(name="plotRle"
-           , def=function( theObject, grouping_variable, yaxis_limit = c(), sample_label = NULL) {
-             standardGeneric("plotRle")
-           }
-           , signature=c("theObject", "grouping_variable", "yaxis_limit", "sample_label"))
 
 
 #'@export
@@ -308,12 +288,6 @@ setMethod(f="plotRle"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#'@export
-setGeneric(name="plotRleList"
-           , def=function( theObject, list_of_columns, yaxis_limit = c()) {
-             standardGeneric("plotRleList")
-           }
-           , signature=c("theObject", "list_of_columns", "yaxis_limit"))
 
 #'@export
 setMethod(f="plotRleList"
@@ -382,13 +356,6 @@ savePlotRleList <- function( input_list, prefix = "RLE", suffix = c("png", "pdf"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #'@export
-setGeneric(name="plotPca"
-           , def=function( theObject, grouping_variable, shape_variable = NULL, label_column, title, font_size ) {
-             standardGeneric("plotPca")
-           }
-           , signature=c("theObject", "grouping_variable", "shape_variable", "label_column", "title", "font_size"))
-
-#'@export
 setMethod(f="plotPca"
           , signature="ProteinQuantitativeData"
           , definition=function( theObject, grouping_variable, shape_variable = NULL, label_column, title, font_size=8) {
@@ -451,12 +418,6 @@ setMethod(f="plotPca"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#'@export
-setGeneric(name="plotPcaList"
-           , def=function( theObject, grouping_variables_list, label_column, title, font_size ) {
-             standardGeneric("plotPcaList")
-           }
-           , signature=c("theObject", "grouping_variables_list", "label_column", "title", "font_size"))
 
 #'@export
 setMethod(f="plotPcaList"
@@ -512,13 +473,6 @@ savePlotPcaList <- function( input_list, prefix = "PCA", suffix = c("png", "pdf"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#'@export
-setGeneric(name="getPcaMatrix"
-           , def=function( theObject) {
-             standardGeneric("getPcaMatrix")
-           }
-           , signature=c("theObject"))
-
 
 #'@export
 setMethod(f="getPcaMatrix"
@@ -550,15 +504,6 @@ setMethod(f="getPcaMatrix"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-
-# Calculate Pearson correlation between Tech rep 1 and 2
-#'@export
-setGeneric(name="proteinTechRepCorrelation"
-           , def=function( theObject,  tech_rep_num_column = NULL, tech_rep_remove_regex = NULL) {
-             standardGeneric("proteinTechRepCorrelation")
-           }
-           , signature=c("theObject", "tech_rep_num_column", "tech_rep_remove_regex"))
 
 #'@export
 setMethod( f = "proteinTechRepCorrelation"
@@ -599,13 +544,6 @@ setMethod( f = "proteinTechRepCorrelation"
 #' @param theObject is an object of the type ProteinQuantitativeData
 #' @param tech_rep_remove_regex samples containing this string are removed from correlation analysis (e.g. if you have lots of pooled sample and want to remove them)
 #' @param correlation_group is the group where every pair of samples are compared
-#' @export
-setGeneric(name="plotPearson",
-           def=function(theObject, tech_rep_remove_regex, correlation_group = NA  ) {
-             standardGeneric("plotPearson")
-           },
-           signature=c("theObject", "tech_rep_remove_regex", "correlation_group" ))
-
 #' @export
 setMethod(f="plotPearson",
           signature="ProteinQuantitativeData",
@@ -787,15 +725,6 @@ setMethod(f = "createGridQC",
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## normalise between Arrays
-
-#'@export
-setGeneric(name="normaliseBetweenSamples"
-           , def=function( theObject, normalisation_method = NULL) {
-             standardGeneric("normaliseBetweenSamples")
-           }
-           , signature=c("theObject", "normalisation_method"))
-
-
 #'@export
 #'@param theObject Object of class ProteinQuantitativeData
 #'@param normalisation_method Method to use for normalisation. Options are cyclicloess, quantile, scale, none
@@ -861,13 +790,6 @@ setMethod(f="normaliseBetweenSamples"
 #' @param theObject is an object of the type ProteinQuantitativeData
 #' @param tech_rep_remove_regex samples containing this string are removed from correlation analysis (e.g. if you have lots of pooled sample and want to remove them)
 #' @param correlation_group is the group where every pair of samples are compared
-#' @export
-setGeneric(name="pearsonCorForSamplePairs"
-           , def=function( theObject,   tech_rep_remove_regex = NULL, correlation_group = NA ) {
-             standardGeneric("pearsonCorForSamplePairs")
-           }
-           , signature=c("theObject", "tech_rep_remove_regex", "correlation_group"))
-
 #'@export
 setMethod(f="pearsonCorForSamplePairs"
           , signature="ProteinQuantitativeData"
@@ -1034,13 +956,6 @@ setMethod( f = "getLowCoefficientOfVariationProteins"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
-setGeneric(name="ruvCancor"
-           , def=function( theObject, ctrl= NULL, num_components_to_impute=NULL, ruv_grouping_variable = NULL ) {
-             standardGeneric("ruvCancor")
-           }
-           , signature=c("theObject", "ctrl", "num_components_to_impute", "ruv_grouping_variable"))
-
-#'@export
 setMethod( f = "ruvCancor"
            , signature="ProteinQuantitativeData"
            , definition=function( theObject, ctrl= NULL, num_components_to_impute=NULL, ruv_grouping_variable = NULL) {
@@ -1125,15 +1040,6 @@ setMethod( f = "getRuvIIIReplicateMatrix"
 
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-#'@export
-setGeneric(name="ruvIII_C_Varying"
-           , def=function( theObject, ruv_grouping_variable = NULL, ruv_number_k = NULL, ctrl = NULL)  {
-             standardGeneric("ruvIII_C_Varying")
-           }
-           , signature=c("theObject", "ruv_grouping_variable", "ruv_number_k", "ctrl"))
-
 #'@export
 setMethod( f = "ruvIII_C_Varying"
            , signature="ProteinQuantitativeData"
@@ -1649,13 +1555,6 @@ summariseProteinObject <- function ( theObject) {
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #'@export
-setGeneric(name="plotDensity"
-           , def=function(theObject, grouping_variable, title = "", font_size = 8) {
-             standardGeneric("plotDensity")
-           }
-           , signature=c("theObject", "grouping_variable", "title", "font_size"))
-
-#'@export
 setMethod(f="plotDensity"
           , signature="gg"
           , definition=function(theObject, grouping_variable, title = "", font_size = 8) {
@@ -1738,13 +1637,6 @@ setMethod(f="plotDensity"
           }) 
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-#'@export
-setGeneric(name="plotDensityList"
-           , def=function(theObject, grouping_variables_list, title = "", font_size = 8) {
-             standardGeneric("plotDensityList")
-           }
-           , signature=c("theObject", "grouping_variables_list", "title", "font_size"))
 
 #'@export
 setMethod(f="plotDensityList"

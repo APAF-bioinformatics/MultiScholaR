@@ -1,22 +1,5 @@
-#' Log2 Transform Assay Data Generic
-#'
-#' @description
-#' Defines the generic function for applying a log2 transformation to the
-#' quantitative data within assay objects.
-#'
-#' @param theObject The data object (e.g., MetaboliteAssayData).
-#' @param offset A small positive number to add before log transformation to handle zeros (default: 1).
-#' @param ... Additional arguments passed to methods.
-#'
-#' @return An updated object with log2 transformed quantitative data.
-#' @export
-setGeneric(name = "logTransformAssays",
-           def = function(theObject, offset = 1, ...) {
-             standardGeneric("logTransformAssays")
-           }
-)
 
-#' @title Log2 Transform Assay Data for MetaboliteAssayData
+' @title Log2 Transform Assay Data for MetaboliteAssayData
 #'
 #' @description
 #' Applies a log2 transformation (log2(x + offset)) to the numeric sample columns
@@ -167,26 +150,6 @@ setMethod(f = "logTransformAssays",
           }
 )
 
-# --- Internal Standard Normalization ---
-
-#' @title Normalize Untransformed Data Generic
-#'
-#' @description
-#' Defines the generic function for applying normalization methods directly to
-#' untransformed (or potentially pre-transformed but not log2) quantitative data
-#' within assay objects, primarily focusing on Internal Standard (ITSD) normalization.
-#'
-#' @param theObject The data object (e.g., MetaboliteAssayData).
-#' @param method The normalization method to apply (currently supports "ITSD").
-#' @param ... Additional arguments passed to specific methods.
-#'
-#' @return An updated object with normalized quantitative data.
-#' @export
-setGeneric(name = "normaliseUntransformedData",
-           def = function(theObject, method = "ITSD", ...) {
-             standardGeneric("normaliseUntransformedData")
-           }
-)
 
 #' @title Normalize by Internal Standard (ITSD) for MetaboliteAssayData
 #'
