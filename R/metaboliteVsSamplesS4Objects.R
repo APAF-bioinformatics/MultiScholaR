@@ -68,12 +68,16 @@ MetaboliteAssayData <- setClass("MetaboliteAssayData",
     ),
     validity = function(object) {
         errors <- character()
+        # --- Get required info ---
+        sample_id_col <- object@sample_id
+        metabolite_id_col <- object@metabolite_id_column
+        design_matrix <- object@design_matrix
+        metabolite_data <- object@metabolite_data
 
-        # --- Basic Type Checks ---
-        if (!is.list(object@metabolite_data)) {
+        # --- Basic slot type checks (as before) ---
+        if (!is.list(metabolite_data)) {
             errors <- c(errors, "`metabolite_data` must be a list.")
-        }
-        if (length(object@metabolite_data) > 0 && !all(sapply(object@metabolite_data, is.data.frame))) {
+        } else if (length(metabolite_data) > 0 && !all(sapply(metabolite_data, is.data.frame))) {
             errors <- c(errors, "All elements in `metabolite_data` must be data frames.")
         }
         if (!is.character(object@metabolite_id_column) || length(object@metabolite_id_column) != 1) {
@@ -105,55 +109,78 @@ MetaboliteAssayData <- setClass("MetaboliteAssayData",
         }
 
         # --- Content Checks ---
-        if (length(object@metabolite_data) > 0) {
-            # Check primary metabolite ID column exists in all assays
-            metabolite_col_exists <- sapply(object@metabolite_data, function(df) {
-                object@metabolite_id_column %in% colnames(df)
-            })
-            if (!all(metabolite_col_exists)) {
-                missing_in <- names(object@metabolite_data)[!metabolite_col_exists]
-                errors <- c(errors, paste0("Primary `metabolite_id_column` ('", object@metabolite_id_column, "') not found in assay(s): ", paste(missing_in, collapse = ", ")))
-            }
+        # Check design matrix first
+        if (!is.data.frame(design_matrix)) {
+             # Error already added by basic checks, but prevent further processing
+        } else if (!sample_id_col %in% colnames(design_matrix)) {
+             errors <- c(errors, paste0("`sample_id` column ('", sample_id_col, "') not found in `design_matrix`."))
+        } else {
+             # Get unique, sorted sample IDs from design matrix (ensure character)
+             samples_in_design <- tryCatch(
+                 design_matrix[[sample_id_col]] |> as.character() |> unique() |> sort(),
+                 error = function(e) { errors <- c(errors, "Error extracting sample IDs from design matrix."); character(0) }
+             )
 
-            # Check sample ID column exists in design matrix
-            if (!(object@sample_id %in% colnames(object@design_matrix))) {
-                errors <- c(errors, paste0("`sample_id` column ('", object@sample_id, "') not found in `design_matrix`."))
-            } else {
-                # Check consistency of samples between assays and design matrix
-                samples_in_design <- tryCatch(
-                    object@design_matrix |> dplyr::pull(!!rlang::sym(object@sample_id)) |> as.character() |> unique() |> sort(),
-                    error = function(e) character(0) # Handle case where column doesn't exist
-                )
+             if (length(samples_in_design) == 0 && length(errors) == 0) {
+                 errors <- c(errors, "No valid sample IDs found in design matrix.")
+             }
 
-                if (length(samples_in_design) == 0 && !(object@sample_id %in% colnames(object@design_matrix))) {
-                    # Error already captured above
-                } else {
-                    first_assay_samples <- NULL
-                    for (assay_name in names(object@metabolite_data)) {
-                        assay_df <- object@metabolite_data[[assay_name]]
-                        assay_samples <- setdiff(colnames(assay_df), object@metabolite_id_column) |> sort()
+             # Proceed with assay checks only if design matrix looks okay so far
+             if(length(metabolite_data) > 0 && length(errors) == 0) {
+                 assay_names_vec <- names(metabolite_data)
+                 if (is.null(assay_names_vec)) assay_names_vec <- paste0("Assay_", seq_along(metabolite_data))
+                 names(metabolite_data) <- assay_names_vec # Ensure the list is named for lapply output
 
-                        if (is.null(first_assay_samples)) {
-                            first_assay_samples <- assay_samples
-                        }
+                 # Use lapply to check each assay and collect results/errors
+                 assay_check_results <- lapply(assay_names_vec, function(assay_name) {
+                      assay_df <- metabolite_data[[assay_name]]
+                      assay_errors <- character()
 
-                        # Check all assays have the same sample columns
-                        if (!identical(assay_samples, first_assay_samples)) {
-                            errors <- c(errors, paste0("Sample columns differ between assays. Check assay '", assay_name, "'."))
-                            # Stop checking further assays for sample consistency after first mismatch
-                            break
-                        }
-                        # Check assay samples match design matrix samples (only need to check once if all assays are identical)
-                        if (assay_name == names(object@metabolite_data)[1]) {
-                            if (!identical(assay_samples, samples_in_design)) {
-                                errors <- c(errors, paste0("Sample columns in assays do not exactly match unique sample IDs ('", object@sample_id, "') in `design_matrix`."))
-                                # Stop checking further assays for sample consistency after first mismatch
-                                break
-                            }
-                        }
-                    }
-                }
-            }
+                      # Check metabolite ID column exists
+                      if (!metabolite_id_col %in% colnames(assay_df)) {
+                           assay_errors <- c(assay_errors, paste0("Assay '", assay_name,"': `metabolite_id_column` ('", metabolite_id_col, "') not found."))
+                      }
+
+                      # Identify actual sample columns in the assay
+                      assay_colnames <- colnames(assay_df)
+                      actual_sample_cols_in_assay <- intersect(assay_colnames, samples_in_design) |> sort()
+                      
+                      # Store results for later checks
+                      list(
+                          errors = assay_errors,
+                          sample_cols = actual_sample_cols_in_assay
+                      )
+                 })
+
+                 # Aggregate errors from individual assay checks
+                 all_assay_errors <- unlist(lapply(assay_check_results, `[[`, "errors"))
+                 errors <- c(errors, all_assay_errors)
+
+                 # Perform cross-assay consistency checks if no individual errors found yet
+                 if (length(errors) == 0 && length(assay_check_results) > 1) {
+                      first_assay_samples <- assay_check_results[[1]]$sample_cols
+                      consistency_check <- sapply(assay_check_results[-1], function(res) {
+                           identical(res$sample_cols, first_assay_samples)
+                      })
+                      if (!all(consistency_check)) {
+                           mismatched_assays <- assay_names_vec[c(FALSE, !consistency_check)] # Get names of inconsistent assays
+                           errors <- c(errors, paste0("Actual sample columns differ between assays. First mismatch found in: ", mismatched_assays[1]))
+                      }
+                 }
+                 
+                 # Perform comparison with design matrix if no errors found yet
+                 if (length(errors) == 0 && length(assay_check_results) >= 1) {
+                     first_assay_samples <- assay_check_results[[1]]$sample_cols # Get samples from first (or only) assay
+                     if (!identical(first_assay_samples, samples_in_design)) {
+                          errors <- c(errors, paste0("Sample columns in assays do not exactly match unique sample IDs ('", sample_id_col, "') in `design_matrix`."))
+                          # Add more detail:
+                          missing_in_assay <- setdiff(samples_in_design, first_assay_samples)
+                          extra_in_assay <- setdiff(first_assay_samples, samples_in_design)
+                          if(length(missing_in_assay) > 0) errors <- c(errors, paste0("   Samples in design_matrix missing from assay columns: ", paste(utils::head(missing_in_assay, 10), collapse=", "), ifelse(length(missing_in_assay)>10,"...","")))
+                          if(length(extra_in_assay) > 0) errors <- c(errors, paste0("   Sample columns in assay not found in design_matrix: ", paste(utils::head(extra_in_assay, 10), collapse=", "), ifelse(length(extra_in_assay)>10,"...","")))
+                     }
+                 }
+             }
         }
 
         # --- Final Check ---
@@ -659,7 +686,7 @@ setMethod(f = "plotDensity",
                    tryCatch({
                         # Create PC1 boxplot
                        pc1_box <- ggplot(pca_data_for_plot, aes(x = !!rlang::sym(grouping_variable), y = PC1, fill = !!rlang::sym(grouping_variable))) +
-                           geom_boxplot(notch = FALSE) +
+                           geom_boxplot(notch = TRUE) +
                            theme_bw() +
                            labs(title = assay_title,
                                 x = "",
@@ -677,7 +704,7 @@ setMethod(f = "plotDensity",
 
                        # Create PC2 boxplot
                        pc2_box <- ggplot(pca_data_for_plot, aes(x = !!rlang::sym(grouping_variable), y = PC2, fill = !!rlang::sym(grouping_variable))) +
-                           geom_boxplot(notch = FALSE) +
+                           geom_boxplot(notch = TRUE) +
                            theme_bw() +
                            labs(x = "",
                                 y = "PC2") +

@@ -27,7 +27,6 @@ Suggests:
     GO.db, 
     GlimmaV2,
     limma, 
-    mixOmics, 
     qvalue,
     UniProt.ws,
     ggplot2,
@@ -45,7 +44,6 @@ Suggests:
     shiny,
     gprofiler2,
     webshot2,
-    
 Config/testthat/edition: 3
 Imports: 
     beepr,
@@ -70,10 +68,12 @@ Imports:
     igraph,
     iq,
     janitor,
+    logger,
     knitr,
     lazyeval,
     logging,
     magrittr,
+    mixOmics,
     multidplyr,
     openxlsx,
     optparse,

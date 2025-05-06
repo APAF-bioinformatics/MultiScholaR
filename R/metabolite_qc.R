@@ -301,7 +301,8 @@ findDuplicateFeatureIDs <- function(theObject) {
 #' @param sample_cols Character vector. The names of the columns containing quantitative sample data.
 #'
 #' @return A tibble with duplicate features resolved based on highest average intensity.
-#' @noRd # Marks function as internal
+#' @keywords internal
+#' @noRd # Ensure this is the only content on this line
 #' @importFrom dplyr group_by summarise ungroup filter slice_max select rowwise mutate c_across any_of
 #' @importFrom rlang sym !!
 #' @importFrom tidyr pivot_longer pivot_wider
