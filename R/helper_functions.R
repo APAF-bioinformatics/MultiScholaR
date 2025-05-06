@@ -710,7 +710,7 @@ loadDependencies <- function(verbose = TRUE) {
         "shiny", "DT", "gh", "openxlsx", "plotly", "vroom",
         "gplots", "iheatmapr", "UpSetR", "gt", "gprofiler2",
         "htmltools", "rstudioapi", "flextable", "viridis", "here",
-        "git2r", "fs",
+        "git2r", "fs", "logger",
         "configr", "webshot2",
         # Added from Suggests:
         "testthat", "ggplot2", "ggpubr", "svglite"
