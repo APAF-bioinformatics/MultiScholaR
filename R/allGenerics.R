@@ -272,7 +272,7 @@ setGeneric(name="metaboliteIntensityFiltering"
            }
            , signature=c("theObject")) # Dispatch only on the object
 
-setGeneric("resolveDuplicateFeatures",
+setGeneric(name = "resolveDuplicateFeatures",
            def = function(theObject, itsd_pattern_columns = NULL) {
              standardGeneric("resolveDuplicateFeatures")
            }

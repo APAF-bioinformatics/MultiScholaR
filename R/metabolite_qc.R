@@ -39,30 +39,6 @@ metaboliteIntensityFilteringHelper <- function(assay_table
   return(filtered_assay_table)
 }
 
-#' @title Metabolite Intensity Filtering Generic
-#'
-#' @description
-#' Defines the generic function for filtering metabolites based on intensity
-#' thresholds and detection rates across samples within MetaboliteAssayData objects.
-#' Applies filtering to *all* assay tables found in the `metabolite_data` slot.
-#'
-#' @param theObject A MetaboliteAssayData object.
-#' @param metabolites_intensity_cutoff_percentile Numeric (0-100). The percentile used to determine
-#'   the minimum intensity threshold. Intensities below this percentile's value are considered low.
-#'   Resolved via `checkParamsObjectFunctionSimplify` using the config name `"metabolites_intensity_cutoff_percentile"`.
-#' @param metabolites_proportion_of_samples_below_cutoff Numeric (0-1). The maximum allowed proportion
-#'   of samples where a metabolite's intensity can be below the calculated threshold.
-#'   Metabolites exceeding this proportion are removed.
-#'   Resolved via `checkParamsObjectFunctionSimplify` using the config name `"metabolites_proportion_of_samples_below_cutoff"`.
-#'
-#' @return An updated MetaboliteAssayData object with filtering applied to all assays.
-#' @export
-setGeneric(name="metaboliteIntensityFiltering"
-           , def=function( theObject, metabolites_intensity_cutoff_percentile = NULL, metabolites_proportion_of_samples_below_cutoff = NULL) {
-             standardGeneric("metaboliteIntensityFiltering")
-           }
-           , signature=c("theObject")) # Dispatch only on the object
-
 #-------------------------------------------------------------------------------
 
 #' @title Metabolite Intensity Filtering Method for MetaboliteAssayData
@@ -302,7 +278,6 @@ findDuplicateFeatureIDs <- function(theObject) {
 #'
 #' @return A tibble with duplicate features resolved based on highest average intensity.
 #' @keywords internal
-#' @noRd # Ensure this is the only content on this line
 #' @importFrom dplyr group_by summarise ungroup filter slice_max select rowwise mutate c_across any_of
 #' @importFrom rlang sym !!
 #' @importFrom tidyr pivot_longer pivot_wider
@@ -363,61 +338,7 @@ resolveDuplicateFeaturesByIntensity <- function(assay_tibble, id_col, sample_col
 
 
 
-##-----------------------------------------------------------------------------
-## Method to Resolve Duplicate Features by Intensity
-##-----------------------------------------------------------------------------
 
-#' @title Resolve Duplicate Features in MetaboliteAssayData (with ITSD handling)
-#'
-#' @description
-#' Identifies duplicate feature IDs within each assay of a `MetaboliteAssayData`
-#' object. It prioritizes and preserves Internal Standards (ITSDs), renaming them
-#' based on annotation and handling ITSD duplicates by intensity ranking.
-#' For non-ITSD features, duplicates are resolved by keeping only the feature
-#' with the highest average intensity across all samples.
-#'
-#' @details
-#' This method iterates through the list of assay tibbles stored in the
-#' `metabolite_data` slot. For each tibble:
-#' 1.  **ITSD Identification:** Checks if the `internal_standard_regex` slot is set.
-#'     If yes, it uses the regex to identify ITSD rows based on the `annotation_id_column`.
-#' 2.  **Data Separation:** Temporarily separates identified ITSD rows from non-ITSD rows.
-#' 3.  **ITSD Processing:**
-#'     - The `metabolite_id_column` for ITSD rows is overwritten with the corresponding value
-#'       from the `annotation_id_column` (providing potentially more descriptive IDs).
-#'     - It checks for *duplicate* ITSD names (in the `metabolite_id_column`) within the ITSD set.
-#'     - If duplicate ITSD names exist, it calculates their average intensity, ranks them in
-#'       descending order of intensity, and appends a rank suffix (`_1`, `_2`, etc.)
-#'       to the `metabolite_id_column` to ensure uniqueness. The highest intensity feature gets `_1`.
-#' 4.  **Non-ITSD Processing:**
-#'     - Checks for duplicate values in the `metabolite_id_column` *only within the non-ITSD rows*.
-#'     - If duplicates exist, it calculates the average intensity for each duplicate group.
-#'     - It retains only the non-ITSD row with the maximum average intensity for each duplicated ID.
-#'       Ties are broken by keeping the first row encountered (`slice_max` with `with_ties = FALSE`).
-#' 5.  **Recombination:** The processed ITSD rows (potentially renamed and ranked) and the processed
-#'     non-ITSD rows (with duplicates resolved) are combined back into a single tibble.
-#' 6.  **Update:** The `metabolite_data` slot in the object is updated with the list of processed tibbles.
-#'
-#' @param theObject A `MetaboliteAssayData` object.
-#' @param itsd_pattern_columns Optional character vector. Specifies the column names
-#'   within the assay tibbles where the `internal_standard_regex` should be
-#'   applied to identify Internal Standards. If `NULL` (default), the column
-#'   specified in the `annotation_id_column` slot of `theObject` will be used.
-#'
-#' @return A modified `MetaboliteAssayData` object with duplicate features resolved
-#'   in the `metabolite_data` slot, preserving and uniquely identifying ITSDs.
-#'
-#' @importFrom dplyr group_by count filter slice_max select rowwise mutate c_across any_of ungroup %>% across pull distinct if_else arrange desc row_number bind_rows
-#' @importFrom rlang sym !! := .data
-#' @importFrom purrr map set_names reduce
-#' @importFrom methods slot slot<-
-#' @importFrom stringr str_detect
-#' @export
-setGeneric("resolveDuplicateFeatures",
-           def = function(theObject, itsd_pattern_columns = NULL) {
-             standardGeneric("resolveDuplicateFeatures")
-           }
-)
 
 #' @describeIn resolveDuplicateFeatures Method for MetaboliteAssayData
 #' @export
