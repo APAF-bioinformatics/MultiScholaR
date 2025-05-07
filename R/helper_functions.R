@@ -1953,7 +1953,7 @@ updateMissingValueParameters <- function(design_matrix, config_list, min_reps_pe
 }
 
 ##################################################################################################################
-
+#' @export
 updateRuvParameters <- function(config_list, best_k, control_genes_index, percentage_as_neg_ctrl) {
   config_list$ruvParameters$best_k <- best_k
   config_list$ruvParameters$num_neg_ctrl <- length(control_genes_index)
@@ -1967,6 +1967,7 @@ updateRuvParameters <- function(config_list, best_k, control_genes_index, percen
 }
 
 ##################################################################################################################
+#' @export
 RenderReport <- function(suffix) {
   # Render this report with specific parameters
   # Using the correct path where study_parameters.txt is located in scripts/proteomics_[suffix]
