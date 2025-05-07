@@ -59,6 +59,7 @@ setClass("EnrichmentResults",
          ))
 
 # Constructor function
+#' @export
 createEnrichmentResults <- function(contrasts_tbl) {
   new("EnrichmentResults",
       contrasts = contrasts_tbl,
@@ -68,6 +69,7 @@ createEnrichmentResults <- function(contrasts_tbl) {
       enrichment_summaries = list())
 }
 
+#' @export
 perform_enrichment <- function(data_subset,
                                species,
                                threshold,
@@ -154,6 +156,7 @@ perform_enrichment <- function(data_subset,
 }
 
 # Plot generation function
+#' @export
 generate_enrichment_plots <- function(enrichment_result, contrast, direction, pathway_dir) {
   if (is.null(enrichment_result) || nrow(enrichment_result$result) == 0) {
     return(list(
@@ -236,6 +239,7 @@ generate_enrichment_plots <- function(enrichment_result, contrast, direction, pa
 }
 
 # Summary function
+#' @export
 summarize_enrichment <- function(enrichment_result) {
   if (is.null(enrichment_result) || length(enrichment_result$result) == 0) {
     return(data.frame(
@@ -260,6 +264,7 @@ summarize_enrichment <- function(enrichment_result) {
   )
 }
 
+#' @export
 processEnrichments <- function(de_results,
                                taxon_id,
                                up_cutoff = 0,
@@ -882,6 +887,7 @@ processEnrichments <- function(de_results,
 }
 
 # Helper function to access results
+#' @export
 getEnrichmentResult <- function(enrichment_results, contrast, direction) {
   if(!contrast %in% names(enrichment_results@enrichment_data)) {
     stop("Contrast not found")
@@ -893,6 +899,7 @@ getEnrichmentResult <- function(enrichment_results, contrast, direction) {
 }
 
 # Helper function to access plotly objects
+#' @export
 getEnrichmentPlotly <- function(enrichment_results, contrast, direction) {
   if(!contrast %in% names(enrichment_results@enrichment_plotly)) {
     stop("Contrast not found")
@@ -904,6 +911,7 @@ getEnrichmentPlotly <- function(enrichment_results, contrast, direction) {
 }
 
 # Helper function to get summary
+#' @export
 getEnrichmentSummary <- function(enrichment_results) {
   summaries <- purrr::map_df(names(enrichment_results@enrichment_summaries), function(contrast) {
     summary <- enrichment_results@enrichment_summaries[[contrast]]

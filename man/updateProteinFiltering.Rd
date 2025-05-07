@@ -7,7 +7,8 @@
 updateProteinFiltering(
   data,
   step_name,
-  publication_graphs_dir = NULL,
+  omic_type = NULL,
+  experiment_label = NULL,
   overwrite = FALSE,
   return_grid = FALSE
 )
@@ -15,7 +16,8 @@ updateProteinFiltering(
 updateProteinFiltering(
   data,
   step_name,
-  publication_graphs_dir = NULL,
+  omic_type = NULL,
+  experiment_label = NULL,
   overwrite = FALSE,
   return_grid = FALSE
 )
@@ -24,16 +26,21 @@ updateProteinFiltering(
 \item{data}{The input data object. Can be a data frame (expected to conform
 to typical peptide or protein quantification structures) or an S4 object
 containing relevant slots (e.g., inheriting from \code{SummarizedExperiment}).
-The function attempts to automatically detect if it's peptide or protein data.}
+The function attempts to automatically detect if it\'s peptide or protein data.}
 
 \item{step_name}{A character string uniquely identifying the current filtering
 step (e.g., "InitialData", "FilteredByQuality", "Normalized"). This name is
 used for tracking in the \code{filtering_progress} object and plot labels.}
 
-\item{publication_graphs_dir}{Optional character string. The path to the base
-directory where publication graphs are stored. If provided, triggers plot
-saving into a subdirectory (\verb{filtering_qc/<timestamp>/}), \emph{provided} that
-the global variable \code{time_dir} exists. Defaults to \code{NULL} (no saving).}
+\item{omic_type}{Optional character string. The type of omics data
+(e.g., "proteomics", "metabolomics"). Used with \code{experiment_label} to
+derive save paths from the global \code{project_dirs} object. If \code{NULL} (default)
+or \code{experiment_label} is \code{NULL}, plots are not saved.}
+
+\item{experiment_label}{Optional character string. The specific experiment
+label (e.g., "workshop_data"). Used with \code{omic_type} to derive save paths
+from the global \code{project_dirs} object. If \code{NULL} (default) or \code{omic_type}
+is \code{NULL}, plots are not saved.}
 
 \item{overwrite}{Logical. If \code{TRUE}, allows overwriting an existing entry for
 \code{step_name} in the \code{filtering_progress} object. If \code{FALSE} (default) and
@@ -42,6 +49,11 @@ the global variable \code{time_dir} exists. Defaults to \code{NULL} (no saving).
 \item{return_grid}{Logical. If \code{TRUE}, returns a single combined plot grid
 object created with \code{gridExtra::grid.arrange()}. If \code{FALSE} (default), prints
 individual plots and returns an invisible list of the ggplot objects.}
+
+\item{publication_graphs_dir}{Optional character string. The path to the base
+directory where publication graphs are stored. If provided, triggers plot
+saving into a subdirectory (\verb{filtering_qc/<timestamp>/}), \emph{provided} that
+the global variable \code{time_dir} exists. Defaults to \code{NULL} (no saving).}
 }
 \value{
 If \code{return_grid} is \code{TRUE}, returns a \code{grob} object (a grid graphical object).
@@ -54,7 +66,8 @@ If \code{return_grid} is \code{TRUE}, returns a \code{grob} object (a grid graph
 If \code{return_grid} is \code{FALSE}, returns an invisible list containing the individual
 \code{ggplot} objects (\code{proteins_total}, \code{proteins_per_run}, \code{peptides_total},
 \code{peptides_per_protein}, \code{peptides_per_run}). Has side effects: modifies the
-global \code{filtering_progress} object and potentially saves plots to disk.
+global \code{filtering_progress} object and potentially saves plots to disk if
+\code{omic_type} and \code{experiment_label} are provided and paths are valid.
 }
 \description{
 Tracks and visualizes the impact of filtering steps on peptide
@@ -127,10 +140,10 @@ under the specified \code{step_name}.
 \item Line plot of proteins per run across steps.
 \item Line plot of peptides per run across steps (or placeholder).
 }
-\item If \code{publication_graphs_dir} is provided AND the global variable \code{time_dir}
-(expected to be set by \code{setupAndShowDirectories()}) exists, the generated
-plots are saved as PNG files within the \code{time_dir}. A warning is issued
-if \code{publication_graphs_dir} is given but \code{time_dir} is missing.
+\item If \code{omic_type} and \code{experiment_label} are provided and valid paths can be
+derived from the global \code{project_dirs} object, the generated plots are saved
+as PNG files into the derived \code{time_dir}. Warnings are issued if paths cannot be
+derived or if \code{project_dirs} is not found.
 \item If \code{return_grid} is \code{TRUE}, arranges the plots into a single grid using
 \code{gridExtra} and returns the grid object (grob). Also saves this combined grid
 if plot saving is enabled.
@@ -139,8 +152,7 @@ and returns the list of plot objects invisibly.
 }
 
 \strong{Important:} This function relies on and modifies a global variable named
-\code{filtering_progress}. It also depends on the global variable \code{time_dir} for
-saving plots when \code{publication_graphs_dir} is specified. Ensure
-\code{setupAndShowDirectories()} has been run previously in the session if you intend
-to save plots.
+\code{filtering_progress}. For saving plots, it depends on the global \code{project_dirs}
+object (expected to be populated by \code{setupDirectories()}) and the successful
+derivation of \code{time_dir} from it using \code{omic_type} and \code{experiment_label}.
 }

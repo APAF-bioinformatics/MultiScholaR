@@ -339,7 +339,6 @@ deAnalysisWrapperFunction <- function( theObject
 
 
 ## Create proteomics interactive volcano plot
-
 #' @export
 # de_analysis_results_list$contrasts_results$fit.eb
 # No full stops in the nme of columns of interactive table in glimma plot. It won't display column with full stop in the column name.

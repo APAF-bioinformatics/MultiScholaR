@@ -1173,6 +1173,7 @@ setMethod(f = "plotPearson",
 #' @importFrom rlang sym !!
 #' @importFrom stats cor
 #' @keywords internal
+#' @export
 calculateMetabolitePairCorrelation <- function(input_pair_table, feature_id_column, sample_id_column, value_column) {
 
     # Get the two unique sample IDs from the input table

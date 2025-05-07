@@ -1242,7 +1242,7 @@ setMethod( f = "preservePeptideNaValues"
              preservePeptideNaValuesHelper( peptide_obj, protein_obj)
            })
 
-
+#'@export
 preservePeptideNaValuesHelper <- function( peptide_obj, protein_obj) {
 
   sample_id_column <- peptide_obj@sample_id
