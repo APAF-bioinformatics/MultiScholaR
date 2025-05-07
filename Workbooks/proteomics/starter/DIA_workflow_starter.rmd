@@ -215,10 +215,16 @@ This section helps you create a design matrix that links your samples to experim
 if (exists("design_matrix", envir = .GlobalEnv)) {
   print("Design matrix already set :) No need to run app again!")
 } else {
-  RunApplet("designMatrix")
+      RunApplet(applet_type = "designMatrix"
+                , omic_type = "proteomics"
+                , experiment_label = experiment_label
+                , force = FALSE)
 }
 # Comment in if you wish to run manually
-# RunApplet("designMatrix")
+# RunApplet(applet_type = "designMatrix"
+                #, omic_type = "proteomics"
+                #, experiment_label = experiment_label
+                #, force = FALSE)
 ```
 
 

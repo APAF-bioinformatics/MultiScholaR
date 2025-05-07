@@ -1,407 +1,334 @@
+#' @param applet_type The type of applet to run (e.g., "designMatrix").
+#' @param omic_type The omics context for the applet (e.g., "proteomics", "metabolomics").
+#' @param experiment_label The label used when setting up directories (e.g., "workshop_data"). This is used to find the correct paths within the project_dirs_object.
+#' @param project_dirs_object_name The name of the list object in the parent frame that holds the directory structures (typically the output of setupDirectories). Defaults to "project_dirs".
+#' @param force Logical; if TRUE, skips user confirmation for overwriting existing files (specific to some applets).
 #' @export
-RunApplet <- function(applet_type, force = FALSE) {
+RunApplet <- function(applet_type, omic_type, experiment_label, project_dirs_object_name = "project_dirs", force = FALSE) {
   # Load required packages
   require(shiny)
   require(DT)
+  require(gtools) # For mixedsort
+  require(dplyr)  # For data manipulation
+  require(logger) # For logging
 
-  # Validation
-  valid_types <- c("designMatrix")
-  if (!applet_type %in% valid_types) {
+  # --- Input Validation ---
+  valid_applet_types <- c("designMatrix") # Add more as they are developed
+  if (!applet_type %in% valid_applet_types) {
     stop(
-      "Invalid applet type. Valid options are: ",
-      paste(valid_types, collapse = ", ")
+      "Invalid applet_type specified. Valid options are: ",
+      paste(valid_applet_types, collapse = ", ")
     )
   }
 
-  # Handle different applet types
-  if (applet_type == "designMatrix") {
-    # Check for required objects
-    if (!exists("data_tbl", envir = parent.frame())) {
-      stop("data_tbl not found in the current environment")
-    }
-    if (!exists("source_dir", envir = parent.frame())) {
-      stop("source_dir not found in the current environment")
-    }
-    if (!exists("config_list", envir = parent.frame())) {
-      stop("config_list not found in the current environment")
-    }
-
-    # Check for existing files with timestamps
-    existing_files <- list.files(source_dir, pattern = "^(design_matrix|data_cln).*\\.tab$")
-    if (length(existing_files) > 0 && !force) {
-      message("Found existing files in ", source_dir, ":")
-      message(paste(" -", existing_files, collapse = "\n"))
-      message("\nTo overwrite, rerun with force = TRUE")
-      return(invisible(NULL))
-    }
-
-    # Get required objects
-    data_tbl <- get("data_tbl", envir = parent.frame())
-    source_dir <- get("source_dir", envir = parent.frame())
-    config_list <- get("config_list", envir = parent.frame())
-
-    # Initialize data_cln with numeric conversions
-    data_cln <- data_tbl |>
-      mutate(Precursor.Normalised = as.numeric(Precursor.Normalised)) |>
-      mutate(Precursor.Quantity = as.numeric(Precursor.Quantity))
-
-    # Initialize design matrix with factor columns
-    design_matrix_raw <- tibble(
-      Run = data_cln |>
-        distinct(Run) |>
-        dplyr::select(Run) |>
-        dplyr::pull(Run),
-      group = NA_character_,
-      factor1 = NA_character_,
-      factor2 = NA_character_,
-      replicates = NA_integer_
+  valid_omic_types <- c("proteomics", "metabolomics", "lipidomics", "transcriptomics", "integration")
+  if (!omic_type %in% valid_omic_types) {
+    stop(
+      "Invalid omic_type specified. Valid options are: ",
+      paste(valid_omic_types, collapse = ", ")
     )
-    # Create UI function
-    createDesignMatrixUi <- function(design_matrix_raw) {
-      # Sort the Run names initially
-      sorted_runs <- gtools::mixedsort(design_matrix_raw$Run)
+  }
 
-      fluidPage(
-        titlePanel("Design Matrix Builder"),
+  if (!is.character(experiment_label) || length(experiment_label) != 1 || experiment_label == "") {
+      stop("'experiment_label' must be a single non-empty character string (e.g., 'workshop_data').")
+  }
+  
+  if (!is.character(project_dirs_object_name) || length(project_dirs_object_name) != 1 || project_dirs_object_name == "") {
+      stop("'project_dirs_object_name' must be a single non-empty character string.")
+  }
 
-        # Main layout
-        fluidRow(
-          # Management tools and Info panel on the left
-          column(
-            4,
-            wellPanel(
-              tabsetPanel(
-                id = "main_tabs",
-                # Sample renaming tab
-                tabPanel(
-                  "Rename Samples",
-                  h4("Individual Rename"),
-                  fluidRow(
-                    column(6, selectizeInput("sample_to_rename", "Select Sample:",
-                      choices = sorted_runs
-                    )),
-                    column(6, textInput("new_sample_name", "New Name:"))
-                  ),
-                  actionButton("rename_sample", "Rename"),
-                  hr(),
-                  h4("Bulk Rename"),
-                  selectizeInput("samples_to_transform", "Select Samples:",
-                    choices = sorted_runs,
-                    multiple = TRUE
-                  ),
-                  radioButtons("transform_mode", "Transformation Mode:",
-                    choices = c(
-                      "Keep Text BEFORE First Underscore" = "before_underscore",
-                      "Keep Text AFTER Last Underscore" = "after_underscore",
-                      "Extract by Position" = "range"
+  # --- Derive source_dir from project_dirs object and experiment_label ---
+  if (!exists(project_dirs_object_name, envir = parent.frame())) {
+    stop(paste0("Error: Project directories object ", sQuote(project_dirs_object_name), " not found in the calling environment. Please run setupDirectories() first."))
+  }
+  project_dirs <- get(project_dirs_object_name, envir = parent.frame())
+  if (!is.list(project_dirs)) {
+    stop(paste0("Error: ", sQuote(project_dirs_object_name), " is not a list as expected."))
+  }
+
+  list_key <- paste0(omic_type, "_", experiment_label)
+  if (!list_key %in% names(project_dirs)) {
+    stop(paste0("Error: No directory information found for ", sQuote(list_key), " in ", sQuote(project_dirs_object_name), ". Ensure omic_type and experiment_label are correct."))
+  }
+  
+  current_omic_paths <- project_dirs[[list_key]]
+  if (!is.list(current_omic_paths) || !"source_dir" %in% names(current_omic_paths)) {
+      stop(paste0("Error: 'source_dir' not found within the paths for ", sQuote(list_key), ". Check the structure of ", sQuote(project_dirs_object_name), "."))
+  }
+  
+  derived_source_dir <- current_omic_paths$source_dir
+
+  # Validate the derived_source_dir
+  if (!is.character(derived_source_dir) || length(derived_source_dir) != 1 || !dir.exists(derived_source_dir)) {
+    stop(
+      paste0("Error: Derived 'source_dir' (", derived_source_dir, ") for ", sQuote(list_key), " is not a single character string representing an existing directory. ",
+             "Please check the output of setupDirectories() and ensure the path is correct.")
+    )
+  }
+  
+  # At this point, derived_source_dir is validated and will be used by the applet logic.
+  # For simplicity within the existing applet code, we can assign it to a variable named source_dir.
+  source_dir <- derived_source_dir
+
+  # --- Omic Type Specific Logic ---
+  switch(omic_type,
+    "proteomics" = {
+      if (applet_type == "designMatrix") {
+        logger::log_info("Launching Design Matrix applet for PROTEOMICS (Experiment: {experiment_label}). Using source_dir: {source_dir}")
+
+        # Check for data_tbl and config_list in parent frame (specific to this applet's needs)
+        if (!exists("data_tbl", envir = parent.frame())) {
+          stop("Proteomics 'data_tbl' not found in the current environment for designMatrix applet.")
+        }
+        if (!exists("config_list", envir = parent.frame())) {
+          stop("Proteomics 'config_list' not found in the current environment for designMatrix applet.")
+        }
+
+        # Get data_tbl and config_list from parent frame
+        data_tbl <- get("data_tbl", envir = parent.frame())
+        config_list <- get("config_list", envir = parent.frame())
+
+        # The 'source_dir' is now correctly derived and validated above.
+
+        # Check for existing files with timestamps in the proteomics source_dir
+        existing_files <- list.files(source_dir, pattern = "^(design_matrix|data_cln).*\\.tab$")
+        if (length(existing_files) > 0 && !force) {
+          message("Found existing design/cleaned data files in ", source_dir, " for this proteomics experiment:")
+          message(paste(" -", existing_files, collapse = "\n"))
+          message("\nTo overwrite, relaunch the applet with force = TRUE argument in RunApplet().")
+          return(invisible(NULL))
+        }
+
+        # Initialize data_cln with numeric conversions (Proteomics specific)
+        data_cln <- data_tbl |>
+          dplyr::mutate(Precursor.Normalised = as.numeric(Precursor.Normalised)) |>
+          dplyr::mutate(Precursor.Quantity = as.numeric(Precursor.Quantity))
+
+        # Initialize design matrix with factor columns
+        design_matrix_raw <- tibble::tibble(
+          Run = data_cln |>
+            dplyr::distinct(Run) |>
+            dplyr::select(Run) |>
+            dplyr::pull(Run),
+          group = NA_character_,
+          factor1 = NA_character_,
+          factor2 = NA_character_,
+          replicates = NA_integer_
+        )
+        # Create UI function
+        createDesignMatrixUi <- function(design_matrix_raw) {
+          # Sort the Run names initially
+          sorted_runs <- gtools::mixedsort(design_matrix_raw$Run)
+
+          fluidPage(
+            titlePanel("Design Matrix Builder"),
+
+            # Main layout
+            fluidRow(
+              # Management tools and Info panel on the left
+              column(
+                4,
+                wellPanel(
+                  tabsetPanel(
+                    id = "main_tabs",
+                    # Sample renaming tab
+                    tabPanel(
+                      "Rename Samples",
+                      h4("Individual Rename"),
+                      fluidRow(
+                        column(6, selectizeInput("sample_to_rename", "Select Sample:",
+                          choices = sorted_runs
+                        )),
+                        column(6, textInput("new_sample_name", "New Name:"))
+                      ),
+                      actionButton("rename_sample", "Rename"),
+                      hr(),
+                      h4("Bulk Rename"),
+                      selectizeInput("samples_to_transform", "Select Samples:",
+                        choices = sorted_runs,
+                        multiple = TRUE
+                      ),
+                      radioButtons("transform_mode", "Transformation Mode:",
+                        choices = c(
+                          "Keep Text BEFORE First Underscore" = "before_underscore",
+                          "Keep Text AFTER Last Underscore" = "after_underscore",
+                          "Extract by Position" = "range"
+                        )
+                      ),
+                      helpText(HTML(
+                        "Select how to shorten the selected sample names using underscores as delimiters.",
+                        "<br><b>Keep Text BEFORE First Underscore:</b> Retains only the part before the very first '_'. Example: 'SampleA_T1_Rep1' &rarr; 'SampleA'.",
+                        "<br><b>Keep Text AFTER Last Underscore:</b> Retains only the part after the very last '_'. Example: 'SampleA_T1_Rep1' &rarr; 'Rep1'.",
+                        "<br><b>Extract by Underscore Position:</b> Keeps text segments based on underscore indices (1-based).",
+                        "<ul>",
+                        "<li>Start = 1: Text before the 1st underscore.</li>",
+                        "<li>End = 1: Text after the last underscore.</li>",
+                        "<li>Start = N, End = N: Text between the (N-1)th and Nth underscore.</li>",
+                        "<li>Start = N, End = M (N < M): Text between the (N-1)th and Mth underscore.</li>",
+                        "</ul>",
+                        "Example: 'SampleA_T1_Rep1' with Start=2, End=2 &rarr; 'T1'."
+                      )),
+                      conditionalPanel(
+                        condition = "input.transform_mode == 'range'",
+                        numericInput("range_start", "Start Underscore Index:", 1, min = 1),
+                        numericInput("range_end", "End Underscore Index:", 1, min = 1),
+                        # Add preview output for range
+                        h5("Preview (First Selected Sample):"),
+                        verbatimTextOutput("range_preview")
+                      ),
+                      actionButton("bulk_rename", "Apply Transformation")
+                    ),
+
+                    # Factor management tab
+                    tabPanel(
+                      "Factors",
+                      h4("Add New Factor"),
+                      textInput("new_factor", "New Factor Name:"),
+                      actionButton("add_factor", "Add Factor")
+                    ),
+
+                    # Metadata assignment tab
+                    tabPanel(
+                      "Assign Metadata",
+                      h4("Assign Metadata"),
+                      selectizeInput("selected_runs", "Select Runs:",
+                        choices = sorted_runs,
+                        multiple = TRUE
+                      ),
+                      selectInput("factor1_select", "Select Factor 1:", choices = c("")),
+                      selectInput("factor2_select", "Select Factor 2:", choices = c("")),
+                      uiOutput("replicate_inputs"),
+                      actionButton("assign_metadata", "Assign")
+                    ),
+
+                    # Contrast tab
+                    tabPanel(
+                      "Contrasts",
+                      h4("Define Contrasts"),
+                      selectInput("contrast_group1", "Group 1:", choices = c("")),
+                      selectInput("contrast_group2", "Group 2:", choices = c("")),
+                      verbatimTextOutput("contrast_factors_info"),
+                      actionButton("add_contrast", "Add Contrast")
+                    ),
+
+                    # Formula tab
+                    tabPanel(
+                      "Formula",
+                      h4("Model Formula"),
+                      textInput("formula_string", "Formula:",
+                        value = config_list[["deAnalysisParameters"]][["formula_string"]]
+                      )
+                    ),
+
+                    # Settings tab for global operations
+                    tabPanel(
+                      "Settings",
+                      h4("Session Management"),
+                      p("Reset options allow you to revert changes made during this session."),
+                      div(
+                        style = "margin-top: 15px;",
+                        selectInput("reset_scope", "Reset Scope:",
+                          choices = c(
+                            "All Changes" = "all",
+                            "Sample Names Only" = "sample_names",
+                            "Factors Only" = "factors",
+                            "Contrasts Only" = "contrasts",
+                            "Formula Only" = "formula"
+                          ),
+                          selected = "all"
+                        )
+                      ),
+                      div(
+                        style = "margin-top: 15px;",
+                        actionButton("reset_changes", "Reset to Initial State",
+                          class = "btn-warning",
+                          icon = icon("rotate-left"),
+                          width = "100%"
+                        )
+                      ),
+                      hr(),
+                      h4("Information"),
+                      verbatimTextOutput("session_info")
                     )
-                  ),
-                  helpText(HTML(
-                    "Select how to shorten the selected sample names using underscores as delimiters.",
-                    "<br><b>Keep Text BEFORE First Underscore:</b> Retains only the part before the very first '_'. Example: 'SampleA_T1_Rep1' &rarr; 'SampleA'.",
-                    "<br><b>Keep Text AFTER Last Underscore:</b> Retains only the part after the very last '_'. Example: 'SampleA_T1_Rep1' &rarr; 'Rep1'.",
-                    "<br><b>Extract by Underscore Position:</b> Keeps text segments based on underscore indices (1-based).",
-                    "<ul>",
-                    "<li>Start = 1: Text before the 1st underscore.</li>",
-                    "<li>End = 1: Text after the last underscore.</li>",
-                    "<li>Start = N, End = N: Text between the (N-1)th and Nth underscore.</li>",
-                    "<li>Start = N, End = M (N < M): Text between the (N-1)th and Mth underscore.</li>",
-                    "</ul>",
-                    "Example: 'SampleA_T1_Rep1' with Start=2, End=2 &rarr; 'T1'."
-                  )),
-                  conditionalPanel(
-                    condition = "input.transform_mode == 'range'",
-                    numericInput("range_start", "Start Underscore Index:", 1, min = 1),
-                    numericInput("range_end", "End Underscore Index:", 1, min = 1),
-                    # Add preview output for range
-                    h5("Preview (First Selected Sample):"),
-                    verbatimTextOutput("range_preview")
-                  ),
-                  actionButton("bulk_rename", "Apply Transformation")
-                ),
-
-                # Factor management tab
-                tabPanel(
-                  "Factors",
-                  h4("Add New Factor"),
-                  textInput("new_factor", "New Factor Name:"),
-                  actionButton("add_factor", "Add Factor")
-                ),
-
-                # Metadata assignment tab
-                tabPanel(
-                  "Assign Metadata",
-                  h4("Assign Metadata"),
-                  selectizeInput("selected_runs", "Select Runs:",
-                    choices = sorted_runs,
-                    multiple = TRUE
-                  ),
-                  selectInput("factor1_select", "Select Factor 1:", choices = c("")),
-                  selectInput("factor2_select", "Select Factor 2:", choices = c("")),
-                  uiOutput("replicate_inputs"),
-                  actionButton("assign_metadata", "Assign")
-                ),
-
-                # Contrast tab
-                tabPanel(
-                  "Contrasts",
-                  h4("Define Contrasts"),
-                  selectInput("contrast_group1", "Group 1:", choices = c("")),
-                  selectInput("contrast_group2", "Group 2:", choices = c("")),
-                  verbatimTextOutput("contrast_factors_info"),
-                  actionButton("add_contrast", "Add Contrast")
-                ),
-
-                # Formula tab
-                tabPanel(
-                  "Formula",
-                  h4("Model Formula"),
-                  textInput("formula_string", "Formula:",
-                    value = config_list[["deAnalysisParameters"]][["formula_string"]]
                   )
                 ),
 
-                # Settings tab for global operations
-                tabPanel(
-                  "Settings",
-                  h4("Session Management"),
-                  p("Reset options allow you to revert changes made during this session."),
-                  div(
-                    style = "margin-top: 15px;",
-                    selectInput("reset_scope", "Reset Scope:",
-                      choices = c(
-                        "All Changes" = "all",
-                        "Sample Names Only" = "sample_names",
-                        "Factors Only" = "factors",
-                        "Contrasts Only" = "contrasts",
-                        "Formula Only" = "formula"
-                      ),
-                      selected = "all"
-                    )
-                  ),
-                  div(
-                    style = "margin-top: 15px;",
-                    actionButton("reset_changes", "Reset to Initial State",
-                      class = "btn-warning",
-                      icon = icon("rotate-left"),
-                      width = "100%"
-                    )
-                  ),
+                # NEW: Information & Assignments Panel
+                wellPanel(
+                  h4("Information & Assignments"),
+                  helpText(HTML(
+                    "<b>Factors:</b> These represent the main experimental variables or conditions ",
+                    "that distinguish your samples (e.g., Treatment, Timepoint, Genotype, Condition). ",
+                    "They are used to group runs for analysis. Define potential factor names in the 'Factors' tab, ",
+                    "then assign the appropriate factor levels to your runs using the 'Assign Metadata' tab. ",
+                    "A 'group' is automatically created based on the combination of assigned factors (e.g., 'TreatmentA_Timepoint1')."
+                  )),
+                  helpText(HTML(
+                    "<b>Contrasts:</b> These define the specific statistical comparisons you want to make ",
+                    "between the groups you've defined (e.g., 'TreatmentA vs Control', 'Timepoint2 vs Timepoint1'). ",
+                    "Contrasts are essential for differential expression/abundance analysis, allowing the statistical model ",
+                    "to test specific hypotheses about differences between your experimental groups. Define them in the 'Contrasts' tab ",
+                    "after assigning metadata and creating groups."
+                  )),
                   hr(),
-                  h4("Information"),
-                  verbatimTextOutput("session_info")
+                  # NEW: Display Available Factors
+                  h5("Available Factors (Defined in 'Factors' Tab)"),
+                  uiOutput("available_factors_display"),
+                  hr(),
+                  # Display Defined Contrasts
+                  h5("Defined Contrasts"),
+                  # Placeholder for defined contrasts display (moved from RHS)
+                  uiOutput("defined_contrasts_display")
+                ) # End of new wellPanel (info)
+              ), # End of column 4
+
+              # Design matrix display on the right
+              column(
+                8,
+                # Design matrix table
+                wellPanel(
+                  h4("Current Design Matrix (All Runs) - Proteomics"), # Clarify context
+                  DTOutput("data_table")
+                ),
+
+                # Save button
+                actionButton("save_and_close", "Save and Close",
+                  class = "btn-primary",
+                  style = "float: right;"
                 )
               )
-            ),
-
-            # NEW: Information & Assignments Panel
-            wellPanel(
-              h4("Information & Assignments"),
-              helpText(HTML(
-                "<b>Factors:</b> These represent the main experimental variables or conditions ",
-                "that distinguish your samples (e.g., Treatment, Timepoint, Genotype, Condition). ",
-                "They are used to group runs for analysis. Define potential factor names in the 'Factors' tab, ",
-                "then assign the appropriate factor levels to your runs using the 'Assign Metadata' tab. ",
-                "A 'group' is automatically created based on the combination of assigned factors (e.g., 'TreatmentA_Timepoint1')."
-              )),
-              helpText(HTML(
-                "<b>Contrasts:</b> These define the specific statistical comparisons you want to make ",
-                "between the groups you've defined (e.g., 'TreatmentA vs Control', 'Timepoint2 vs Timepoint1'). ",
-                "Contrasts are essential for differential expression/abundance analysis, allowing the statistical model ",
-                "to test specific hypotheses about differences between your experimental groups. Define them in the 'Contrasts' tab ",
-                "after assigning metadata and creating groups."
-              )),
-              hr(),
-              # NEW: Display Available Factors
-              h5("Available Factors (Defined in 'Factors' Tab)"),
-              uiOutput("available_factors_display"),
-              hr(),
-              # Display Defined Contrasts
-              h5("Defined Contrasts"),
-              # Placeholder for defined contrasts display (moved from RHS)
-              uiOutput("defined_contrasts_display")
-            ) # End of new wellPanel (info)
-          ), # End of column 4
-
-          # Design matrix display on the right
-          column(
-            8,
-            # Design matrix table
-            wellPanel(
-              h4("Current Design Matrix (All Runs)"),
-              DTOutput("data_table")
-            ),
-
-            # Save button
-            actionButton("save_and_close", "Save and Close",
-              class = "btn-primary",
-              style = "float: right;"
             )
           )
-        )
-      )
-    }
-    # Create server function
-    server <- function(input, output, session) {
-      # Create a REGULAR list for initial state that won't change
-      initial_state <- list(
-        design_matrix = design_matrix_raw,
-        data_cln = data_cln,
-        groups = unique(design_matrix_raw$group[!is.na(design_matrix_raw$group) & design_matrix_raw$group != ""]),
-        factors = unique(c(
-          design_matrix_raw$factor1[!is.na(design_matrix_raw$factor1)],
-          design_matrix_raw$factor2[!is.na(design_matrix_raw$factor2)]
-        )[c(
-          design_matrix_raw$factor1[!is.na(design_matrix_raw$factor1)] != "",
-          design_matrix_raw$factor2[!is.na(design_matrix_raw$factor2)] != ""
-        )]),
-        formula = config_list[["deAnalysisParameters"]][["formula_string"]]
-      )
-
-      # Reactive values for current state
-      design_matrix <- reactiveVal(initial_state$design_matrix) # Use list access
-      data_cln_reactive <- reactiveVal(initial_state$data_cln) # Use list access
-
-      # Initialize groups and factors using the pre-calculated values from the list
-      groups <- reactiveVal(initial_state$groups)
-      factors <- reactiveVal(initial_state$factors)
-
-      # Create a proxy for the main data table to allow updates without state loss
-      proxy_data_table <- dataTableProxy("data_table")
-
-      contrasts <- reactiveVal(data.frame(
-        contrast_name = character(),
-        numerator = character(),
-        denominator = character(),
-        factor1_num = character(),
-        factor2_num = character(),
-        factor1_den = character(),
-        factor2_den = character(),
-        stringsAsFactors = FALSE
-      ))
-
-      # Session information for the settings tab
-      output$session_info <- renderText({
-        paste0(
-          "Total samples: ", nrow(design_matrix()), "\n",
-          "Assigned samples: ", sum(!is.na(design_matrix()$group)), "\n",
-          "Available factors: ", paste(factors(), collapse = ", "), "\n",
-          "Defined contrasts: ", nrow(contrasts()), "\n",
-          "Last modified: ", format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-        )
-      })
-
-      # Reset handler with scope options
-      observeEvent(input$reset_changes, {
-        # Get scope description for the modal
-        scope_desc <- switch(input$reset_scope,
-          "all" = "all changes",
-          "sample_names" = "sample names",
-          "factors" = "factor definitions",
-          "contrasts" = "contrast definitions",
-          "formula" = "formula"
-        )
-
-        # Show confirmation modal
-        showModal(modalDialog(
-          title = "Confirm Reset",
-          HTML(paste0(
-            "<p>This will revert <strong>", scope_desc, "</strong> to their initial state.</p>",
-            "<p>This action cannot be undone. Are you sure?</p>"
-          )),
-          footer = tagList(
-            modalButton("Cancel"),
-            actionButton("confirm_reset", "Reset", class = "btn-danger")
-          ),
-          easyClose = TRUE
-        ))
-      })
-
-      # Confirm reset handler with scoped reset functionality
-      observeEvent(input$confirm_reset, {
-        # Perform reset based on selected scope
-        scope <- input$reset_scope
-
-        if (scope == "all" || scope == "sample_names") {
-          if (scope == "all") {
-            # Reset entire matrices if scope is "all" using non-reactive initial_state
-            design_matrix(initial_state$design_matrix)
-            data_cln_reactive(initial_state$data_cln)
-          } else { # scope == "sample_names"
-            # Get the current reactive data frames
-            current_matrix <- design_matrix()
-            current_data <- data_cln_reactive()
-
-            # Capture current Run names from design_matrix BEFORE reset
-            current_run_names_in_matrix <- current_matrix$Run
-            initial_run_names_in_matrix <- initial_state$design_matrix$Run
-
-            # --- Reset design_matrix$Run (assuming row order preserved) ---
-            if (nrow(current_matrix) == nrow(initial_state$design_matrix)) {
-              current_matrix$Run <- initial_run_names_in_matrix
-            } else {
-              # Fallback if rows don't match (shouldn't happen ideally)
-              showNotification("Error: Row mismatch during design matrix reset. Resetting entire matrix.", type = "error", duration = 5)
-              current_matrix <- initial_state$design_matrix
-            }
-
-            # --- Reset data_cln$Run using mapping based on design_matrix changes ---
-            # Create a map: current name -> initial name
-            if (length(current_run_names_in_matrix) == length(initial_run_names_in_matrix)) {
-              # Check for duplicate current names, which makes the map ambiguous
-              if (any(duplicated(current_run_names_in_matrix))) {
-                showNotification("Warning: Duplicate sample names detected. Resetting data_cln based on initial state.", type = "warning", duration = 5)
-                # Fallback: Reset data_cln Run names based on initial_state$data_cln
-                if (nrow(current_data) == nrow(initial_state$data_cln)) {
-                  current_data$Run <- initial_state$data_cln$Run
-                } else {
-                  current_data <- initial_state$data_cln # Full reset if rows mismatch
-                }
-              } else {
-                # Create the map only if names are unique
-                run_map_current_to_original <- setNames(initial_run_names_in_matrix, current_run_names_in_matrix)
-
-                # Apply the mapping to data_cln
-                current_run_names_in_data <- current_data$Run
-                original_run_names_for_data <- run_map_current_to_original[current_run_names_in_data]
-
-                # Only replace if a mapping was found, otherwise keep current name
-                current_data$Run <- ifelse(!is.na(original_run_names_for_data),
-                  original_run_names_for_data,
-                  current_run_names_in_data
-                )
-              }
-            } else {
-              showNotification("Error: Name vector length mismatch during data reset. Resetting data_cln.", type = "error", duration = 5)
-              current_data <- initial_state$data_cln # Fallback
-            }
-
-            # Update the reactive values
-            design_matrix(current_matrix)
-            data_cln_reactive(current_data)
-          }
         }
+        # Create server function
+        server <- function(input, output, session) {
+          # Create a REGULAR list for initial state that won't change
+          initial_state <- list(
+            design_matrix = design_matrix_raw,
+            data_cln = data_cln,
+            groups = unique(design_matrix_raw$group[!is.na(design_matrix_raw$group) & design_matrix_raw$group != ""]),
+            factors = unique(c(
+              design_matrix_raw$factor1[!is.na(design_matrix_raw$factor1)],
+              design_matrix_raw$factor2[!is.na(design_matrix_raw$factor2)]
+            )[c(
+              design_matrix_raw$factor1[!is.na(design_matrix_raw$factor1)] != "",
+              design_matrix_raw$factor2[!is.na(design_matrix_raw$factor2)] != ""
+            )]),
+            formula = config_list[["deAnalysisParameters"]][["formula_string"]]
+          )
 
-        if (scope == "all" || scope == "factors") {
-          # Reset factors using the non-reactive initial_state list
-          factors(initial_state$factors)
+          # Reactive values for current state
+          design_matrix <- reactiveVal(initial_state$design_matrix) # Use list access
+          data_cln_reactive <- reactiveVal(initial_state$data_cln) # Use list access
 
-          if (scope == "factors") {
-            # When resetting just factors, keep existing assignments in design matrix
-            # but remove any factors that no longer exist
-            current_matrix <- design_matrix()
-            # Use factors from the non-reactive initial_state list
-            valid_factors <- initial_state$factors
+          # Initialize groups and factors using the pre-calculated values from the list
+          groups <- reactiveVal(initial_state$groups)
+          factors <- reactiveVal(initial_state$factors)
 
-            current_matrix$factor1[!current_matrix$factor1 %in% valid_factors] <- NA
-            current_matrix$factor2[!current_matrix$factor2 %in% valid_factors] <- NA
+          # Create a proxy for the main data table to allow updates without state loss
+          proxy_data_table <- dataTableProxy("data_table")
 
-            design_matrix(current_matrix)
-          }
-        }
-
-        if (scope == "all" || scope == "contrasts") {
-          contrasts(data.frame(
+          contrasts <- reactiveVal(data.frame(
             contrast_name = character(),
             numerator = character(),
             denominator = character(),
@@ -411,556 +338,725 @@ RunApplet <- function(applet_type, force = FALSE) {
             factor2_den = character(),
             stringsAsFactors = FALSE
           ))
-        }
 
-        if (scope == "all" || scope == "formula") {
-          updateTextInput(session, "formula_string",
-            # Reset formula using the non-reactive initial_state list
-            value = initial_state$formula
-          )
-        }
-
-        # Update UI elements
-        if (scope == "all" || scope == "sample_names") {
-          # Get the freshly reset runs (or initial runs if scope==all)
-          # If scope was 'sample_names', design_matrix() now holds the reset matrix.
-          dm_to_sort <- if (scope == "all") initial_state$design_matrix else design_matrix()
-          sorted_runs <- gtools::mixedsort(dm_to_sort$Run)
-          updateSelectizeInput(session, "sample_to_rename", choices = sorted_runs, selected = "") # Clear selection
-          updateSelectizeInput(session, "selected_runs", choices = sorted_runs, selected = "") # Clear selection
-          updateSelectizeInput(session, "samples_to_transform", choices = sorted_runs, selected = "") # Clear selection
-        }
-
-        if (scope == "all") {
-          # Reset groups using the non-reactive initial_state list
-          groups(initial_state$groups)
-          updateTabsetPanel(session, "main_tabs", selected = "Rename Samples")
-          # Also reset factor dropdowns if scope is all
-          updateSelectInput(session, "factor1_select", choices = c("", initial_state$factors), selected = "")
-          updateSelectInput(session, "factor2_select", choices = c("", initial_state$factors), selected = "")
-          updateSelectInput(session, "contrast_group1", choices = c("", initial_state$groups), selected = "")
-          updateSelectInput(session, "contrast_group2", choices = c("", initial_state$groups), selected = "")
-        }
-        # Add updates if only factors were reset
-        else if (scope == "factors") {
-          updateSelectInput(session, "factor1_select", choices = c("", initial_state$factors), selected = "")
-          updateSelectInput(session, "factor2_select", choices = c("", initial_state$factors), selected = "")
-        }
-        # Add updates if only contrasts were reset (groups affect contrast dropdowns)
-        else if (scope == "contrasts") {
-          # Groups don't reset here, so just ensure dropdowns reflect current groups
-          updateSelectInput(session, "contrast_group1", choices = c("", groups()), selected = "")
-          updateSelectInput(session, "contrast_group2", choices = c("", groups()), selected = "")
-        }
-
-        # Close the modal
-        removeModal()
-
-        # Show success message
-        scope_desc <- switch(input$reset_scope,
-          "all" = "all changes",
-          "sample_names" = "sample names",
-          "factors" = "factor definitions",
-          "contrasts" = "contrast definitions",
-          "formula" = "formula"
-        )
-        showNotification(paste("Reset of", scope_desc, "completed successfully"),
-          type = "message",
-          duration = 3
-        )
-      })
-
-      # Individual rename handler
-      observeEvent(input$rename_sample, {
-        req(input$sample_to_rename, input$new_sample_name)
-        if (input$new_sample_name != "") {
-          # Update design matrix
-          current_matrix <- design_matrix()
-          current_matrix$Run[current_matrix$Run == input$sample_to_rename] <- input$new_sample_name
-          design_matrix(current_matrix)
-
-          # Update data_cln
-          current_data_cln <- data_cln_reactive()
-          current_data_cln$Run[current_data_cln$Run == input$sample_to_rename] <- input$new_sample_name
-          data_cln_reactive(current_data_cln)
-
-          # Sort runs for UI updates
-          sorted_runs <- gtools::mixedsort(current_matrix$Run)
-
-          # Update UI elements
-          updateSelectizeInput(session, "sample_to_rename",
-            choices = sorted_runs
-          )
-          updateSelectizeInput(session, "selected_runs",
-            choices = sorted_runs
-          )
-          updateSelectizeInput(session, "samples_to_transform",
-            choices = sorted_runs
-          )
-
-          updateTextInput(session, "new_sample_name", value = "")
-        }
-      })
-
-      # NEW: Range preview handler
-      output$range_preview <- renderText({
-        req(input$transform_mode == "range")
-        req(input$samples_to_transform) # Require samples to be selected
-        req(input$range_start, input$range_end) # Require range inputs
-
-        # Ensure inputs are valid integers >= 1
-        start_idx <- as.integer(input$range_start)
-        end_idx <- as.integer(input$range_end)
-
-        # Basic validation: must be numbers >= 1
-        if (is.na(start_idx) || is.na(end_idx) || start_idx < 1 || end_idx < 1) {
-          return("Invalid index. Start and End must be numbers >= 1.")
-        }
-        # Note: We don't check start <= end here, as extract_experiment might handle different cases.
-
-        # Get the first selected sample name
-        first_sample <- input$samples_to_transform[1]
-
-        # Call the existing extract_experiment function to generate the preview
-        preview_name <- tryCatch(
-          {
-            # Ensure extract_experiment is available in the scope
-            # This assumes extract_experiment handles underscore logic and index validation
-            extract_experiment(first_sample, mode = "range", start = start_idx, end = end_idx)
-          },
-          error = function(e) {
-            # Display error message from extract_experiment if it fails
-            paste("Error:", e$message)
-          }
-        )
-
-        # Format and return the preview string
-        paste0(first_sample, " -> ", preview_name)
-      })
-
-      # Bulk rename handler
-      observeEvent(input$bulk_rename, {
-        req(input$samples_to_transform)
-        current_matrix <- design_matrix()
-        current_data_cln <- data_cln_reactive()
-
-        # Create transformation function based on mode
-        transform_fn <- function(sample_name) {
-          if (input$transform_mode == "range") {
-            req(input$range_start, input$range_end)
-            extract_experiment(sample_name,
-              mode = "range",
-              start = input$range_start,
-              end = input$range_end
-            )
-          } else if (input$transform_mode == "before_underscore") {
-            extract_experiment(sample_name, mode = "start")
-          } else if (input$transform_mode == "after_underscore") {
-            extract_experiment(sample_name, mode = "end")
-          }
-        }
-
-        # Apply transformations
-        new_names <- sapply(input$samples_to_transform, transform_fn)
-
-        # Update both matrices
-        for (i in seq_along(input$samples_to_transform)) {
-          current_matrix$Run[current_matrix$Run == input$samples_to_transform[i]] <- new_names[i]
-          current_data_cln$Run[current_data_cln$Run == input$samples_to_transform[i]] <- new_names[i]
-        }
-
-        # Update reactive values
-        design_matrix(current_matrix)
-        data_cln_reactive(current_data_cln)
-
-        # Sort runs for UI updates
-        sorted_runs <- gtools::mixedsort(current_matrix$Run)
-
-        # Update UI elements
-        updateSelectizeInput(session, "sample_to_rename",
-          choices = sorted_runs
-        )
-        updateSelectizeInput(session, "selected_runs",
-          choices = sorted_runs
-        )
-        updateSelectizeInput(session, "samples_to_transform",
-          choices = sorted_runs
-        )
-      })
-
-      # Add new factor handler
-      observeEvent(input$add_factor, {
-        req(input$new_factor)
-        if (input$new_factor != "") {
-          current_factors <- factors()
-          new_factor_name <- trimws(input$new_factor) # Trim whitespace
-          if (new_factor_name != "" && !new_factor_name %in% current_factors) {
-            new_factor_list <- c(current_factors, new_factor_name)
-            factors(new_factor_list)
-            # Update factor dropdowns after adding
-            updateSelectInput(session, "factor1_select", choices = c("", new_factor_list), selected = "")
-            updateSelectInput(session, "factor2_select", choices = c("", new_factor_list), selected = "")
-          }
-          updateTextInput(session, "new_factor", value = "")
-        }
-      })
-
-      # Replicate inputs UI
-      output$replicate_inputs <- renderUI({
-        req(input$selected_runs)
-        numericInput("replicate_start",
-          paste("Starting replicate number for", length(input$selected_runs), "selected runs:"),
-          value = 1,
-          min = 1
-        )
-      })
-
-      # Assign metadata handler
-      observeEvent(input$assign_metadata, {
-        req(input$selected_runs)
-        req(input$factor1_select) # Only require factor1
-
-        current_matrix <- design_matrix()
-
-        replicate_numbers <- seq(input$replicate_start,
-          length.out = length(input$selected_runs)
-        )
-
-        # Update the selected runs with factors
-        current_matrix$factor1[current_matrix$Run %in% input$selected_runs] <- input$factor1_select
-        current_matrix$factor2[current_matrix$Run %in% input$selected_runs] <- input$factor2_select
-
-        # Create group names based on whether factor2 is empty or not
-        group_name <- if (input$factor2_select == "") {
-          input$factor1_select
-        } else {
-          paste(input$factor1_select, input$factor2_select, sep = "_")
-        }
-
-        current_matrix$group[current_matrix$Run %in% input$selected_runs] <- group_name
-
-        # Update replicates
-        current_matrix$replicates[match(input$selected_runs, current_matrix$Run)] <- replicate_numbers
-
-        design_matrix(current_matrix)
-
-        # Update groups
-        unique_groups <- unique(current_matrix$group[!is.na(current_matrix$group)])
-        groups(unique_groups)
-
-        # Update factors
-        current_factors <- factors()
-        if (input$factor1_select != "" && !input$factor1_select %in% current_factors) {
-          factors(c(current_factors, input$factor1_select))
-        }
-        if (input$factor2_select != "" && !input$factor2_select %in% current_factors) {
-          factors(c(current_factors, input$factor2_select))
-        }
-
-        # Update dropdowns AFTER potential changes to groups/factors
-        updateSelectInput(session, "contrast_group1", choices = c("", groups()), selected = "")
-        updateSelectInput(session, "contrast_group2", choices = c("", groups()), selected = "")
-        # Also update factor dropdowns in case a factor was implicitly added (though not ideal)
-        updateSelectInput(session, "factor1_select", choices = c("", factors()), selected = input$factor1_select) # Preserve selection
-        updateSelectInput(session, "factor2_select", choices = c("", factors()), selected = input$factor2_select) # Preserve selection
-      })
-
-      # Add contrast handler
-      observeEvent(input$add_contrast, {
-        req(input$contrast_group1, input$contrast_group2)
-        if (input$contrast_group1 != "" &&
-          input$contrast_group2 != "" &&
-          input$contrast_group1 != input$contrast_group2) {
-          current_contrasts <- contrasts()
-          current_matrix <- design_matrix()
-
-          # Get the factors for each group
-          group1_row <- which(current_matrix$group == input$contrast_group1)[1]
-          group2_row <- which(current_matrix$group == input$contrast_group2)[1]
-
-          contrast_name <- paste0(
-            gsub(" ", "", input$contrast_group1),
-            ".minus.",
-            gsub(" ", "", input$contrast_group2)
-          )
-
-          new_contrast <- data.frame(
-            contrast_name = contrast_name,
-            numerator = input$contrast_group1,
-            denominator = input$contrast_group2,
-            factor1_num = current_matrix$factor1[group1_row],
-            factor2_num = current_matrix$factor2[group1_row],
-            factor1_den = current_matrix$factor1[group2_row],
-            factor2_den = current_matrix$factor2[group2_row],
-            stringsAsFactors = FALSE
-          )
-          contrasts(rbind(current_contrasts, new_contrast))
-        }
-      })
-
-      # Display data table (shows the full matrix including unassigned)
-      output$data_table <- renderDT(
-        {
-          design_matrix()
-        },
-        selection = "none",
-        options = list(pageLength = 10, scrollX = TRUE, server = FALSE)
-      ) # Adjusted pageLength
-
-      # Observer to update the main table data via proxy when design_matrix changes
-      observeEvent(design_matrix(), {
-        replaceData(proxy_data_table, design_matrix(), resetPaging = FALSE)
-      })
-
-      # NEW: Render UI for Available Factors Display (in LHS info panel)
-      output$available_factors_display <- renderUI({
-        current_factors <- factors()
-        if (length(current_factors) == 0) {
-          return(p("No factors defined yet (use the 'Factors' tab)."))
-        }
-        # Display as comma-separated text
-        p(paste(current_factors, collapse = ", "))
-      })
-
-      # NEW: Render UI for Defined Contrasts Display (in LHS info panel)
-      output$defined_contrasts_display <- renderUI({
-        contrast_data <- contrasts()
-        if (nrow(contrast_data) == 0) {
-          return(p("No contrasts defined yet."))
-        }
-
-        # Generate display strings for each contrast
-        contrast_display_strings <- sapply(1:nrow(contrast_data), function(i) {
-          # Use the stored numerator/denominator group names directly
-          num_group <- contrast_data$numerator[i]
-          den_group <- contrast_data$denominator[i]
-
-          # Construct "ContrastName: Group1 vs Group2" string
-          if (!is.na(num_group) && !is.na(den_group) && num_group != "" && den_group != "" &&
-            !is.na(contrast_data$contrast_name[i]) && contrast_data$contrast_name[i] != "") {
-            paste0(contrast_data$contrast_name[i], ": ", num_group, " vs ", den_group)
-          } else {
-            NA_character_ # Return NA if parts are missing
-          }
-        })
-
-        # Filter out any contrasts that couldn't be formatted correctly
-        valid_contrast_strings <- na.omit(contrast_display_strings)
-        if (length(valid_contrast_strings) == 0) {
-          return(p("No valid contrasts defined."))
-        }
-
-        # Display as a simple list using HTML paragraphs
-        tagList(
-          lapply(valid_contrast_strings, p)
-        )
-      })
-
-      # Save and close handler
-      observeEvent(input$save_and_close, {
-        if (!exists("source_dir") || is.null(source_dir) || !nzchar(source_dir) || !dir.exists(source_dir)) {
-          showNotification(paste("Error: Invalid source directory detected:", source_dir), type = "error", duration = 10)
-          message("Error: source_dir is invalid or does not exist: ", source_dir)
-          # Optionally, stop the save process here if source_dir is invalid
-          # return()
-          # Or try to stop the app gracefully without saving
-          stopApp(NULL) # Stop app returning NULL as result
-          return() # Prevent further execution in this observer
-        }
-        message("Debug: source_dir path for saving: ", source_dir) # Print to console
-
-        design_matrix_final <- design_matrix()
-        data_cln_final <- data_cln_reactive()
-
-        # Show saving modal
-        showModal(shiny::modalDialog(
-          title = "Saving Data",
-          shiny::div(
-            style = "text-align: center",
-            shiny::tags$div(
-              style = "font-size: 48px; margin: 20px;",
-              shiny::icon("spinner", class = "fa-spin")
-            ),
-            shiny::tags$p("Saving cleaned data and design matrix...")
-          ),
-          footer = NULL,
-          easyClose = FALSE,
-          size = "s"
-        ))
-
-        # Filter design_matrix_final to only include rows with assigned metadata
-        design_matrix_final <- design_matrix_final |>
-          filter(!is.na(group))
-
-        # Get assigned runs directly from filtered design matrix
-        assigned_runs <- design_matrix_final |>
-          dplyr::pull(Run)
-
-        data_cln_final <- data_cln_final |>
-          filter(Run %in% assigned_runs)
-
-        assign("design_matrix", design_matrix_final, envir = parent.frame())
-        assign("data_cln", data_cln_final, envir = parent.frame())
-
-        # Save formula to correct nested path in config list
-        config_list[["deAnalysisParameters"]][["formula_string"]] <- input$formula_string
-        assign("config_list", config_list, envir = parent.frame())
-
-        contrast_data <- contrasts()
-        if (nrow(contrast_data) > 0) {
-          # Modified contrast string generation to match required format
-          contrast_strings <- sapply(1:nrow(contrast_data), function(i) {
-            # Create numerator group name
-            num_group <- if (is.na(contrast_data$factor2_num[i]) || contrast_data$factor2_num[i] == "") { # Check NA
-              contrast_data$factor1_num[i]
-            } else {
-              paste(contrast_data$factor1_num[i], contrast_data$factor2_num[i], sep = "_")
-            }
-
-            # Create denominator group name
-            den_group <- if (is.na(contrast_data$factor2_den[i]) || contrast_data$factor2_den[i] == "") { # Check NA
-              contrast_data$factor1_den[i]
-            } else {
-              paste(contrast_data$factor1_den[i], contrast_data$factor2_den[i], sep = "_")
-            }
-
-            # Ensure groups are valid before pasting
-            if (is.na(num_group) || is.na(den_group) || num_group == "" || den_group == "") {
-              return(NA_character_) # Skip contrast if groups are invalid
-            }
-
+          # Session information for the settings tab
+          output$session_info <- renderText({
             paste0(
-              num_group,
-              ".minus.",
-              den_group,
-              "=group",
-              num_group,
-              "-group",
-              den_group
+              "Total samples: ", nrow(design_matrix()), "\n",
+              "Assigned samples: ", sum(!is.na(design_matrix()$group)), "\n",
+              "Available factors: ", paste(factors(), collapse = ", "), "\n",
+              "Defined contrasts: ", nrow(contrasts()), "\n",
+              "Last modified: ", format(Sys.time(), "%Y-%m-%d %H:%M:%S")
             )
           })
 
-          # Filter out any NA contrasts before writing
-          contrast_strings <- na.omit(contrast_strings)
+          # Reset handler with scope options
+          observeEvent(input$reset_changes, {
+            # Get scope description for the modal
+            scope_desc <- switch(input$reset_scope,
+              "all" = "all changes",
+              "sample_names" = "sample names",
+              "factors" = "factor definitions",
+              "contrasts" = "contrast definitions",
+              "formula" = "formula"
+            )
 
-          if (length(contrast_strings) > 0) {
-            contrast_path <- file.path(source_dir, "contrast_strings.tab")
-            message("Debug: Writing contrasts to: ", contrast_path) # Print path
-            tryCatch(
+            # Show confirmation modal
+            showModal(modalDialog(
+              title = "Confirm Reset",
+              HTML(paste0(
+                "<p>This will revert <strong>", scope_desc, "</strong> to their initial state.</p>",
+                "<p>This action cannot be undone. Are you sure?</p>"
+              )),
+              footer = tagList(
+                modalButton("Cancel"),
+                actionButton("confirm_reset", "Reset", class = "btn-danger")
+              ),
+              easyClose = TRUE
+            ))
+          })
+
+          # Confirm reset handler with scoped reset functionality
+          observeEvent(input$confirm_reset, {
+            # Perform reset based on selected scope
+            scope <- input$reset_scope
+
+            if (scope == "all" || scope == "sample_names") {
+              if (scope == "all") {
+                # Reset entire matrices if scope is "all" using non-reactive initial_state
+                design_matrix(initial_state$design_matrix)
+                data_cln_reactive(initial_state$data_cln)
+              } else { # scope == "sample_names"
+                # Get the current reactive data frames
+                current_matrix <- design_matrix()
+                current_data <- data_cln_reactive()
+
+                # Capture current Run names from design_matrix BEFORE reset
+                current_run_names_in_matrix <- current_matrix$Run
+                initial_run_names_in_matrix <- initial_state$design_matrix$Run
+
+                # --- Reset design_matrix$Run (assuming row order preserved) ---
+                if (nrow(current_matrix) == nrow(initial_state$design_matrix)) {
+                  current_matrix$Run <- initial_run_names_in_matrix
+                } else {
+                  # Fallback if rows don't match (shouldn't happen ideally)
+                  showNotification("Error: Row mismatch during design matrix reset. Resetting entire matrix.", type = "error", duration = 5)
+                  current_matrix <- initial_state$design_matrix
+                }
+
+                # --- Reset data_cln$Run using mapping based on design_matrix changes ---
+                # Create a map: current name -> initial name
+                if (length(current_run_names_in_matrix) == length(initial_run_names_in_matrix)) {
+                  # Check for duplicate current names, which makes the map ambiguous
+                  if (any(duplicated(current_run_names_in_matrix))) {
+                    showNotification("Warning: Duplicate sample names detected. Resetting data_cln based on initial state.", type = "warning", duration = 5)
+                    # Fallback: Reset data_cln Run names based on initial_state$data_cln
+                    if (nrow(current_data) == nrow(initial_state$data_cln)) {
+                      current_data$Run <- initial_state$data_cln$Run
+                    } else {
+                      current_data <- initial_state$data_cln # Full reset if rows mismatch
+                    }
+                  } else {
+                    # Create the map only if names are unique
+                    run_map_current_to_original <- setNames(initial_run_names_in_matrix, current_run_names_in_matrix)
+
+                    # Apply the mapping to data_cln
+                    current_run_names_in_data <- current_data$Run
+                    original_run_names_for_data <- run_map_current_to_original[current_run_names_in_data]
+
+                    # Only replace if a mapping was found, otherwise keep current name
+                    current_data$Run <- ifelse(!is.na(original_run_names_for_data),
+                      original_run_names_for_data,
+                      current_run_names_in_data
+                    )
+                  }
+                } else {
+                  showNotification("Error: Name vector length mismatch during data reset. Resetting data_cln.", type = "error", duration = 5)
+                  current_data <- initial_state$data_cln # Fallback
+                }
+
+                # Update the reactive values
+                design_matrix(current_matrix)
+                data_cln_reactive(current_data)
+              }
+            }
+
+            if (scope == "all" || scope == "factors") {
+              # Reset factors using the non-reactive initial_state list
+              factors(initial_state$factors)
+
+              if (scope == "factors") {
+                # When resetting just factors, keep existing assignments in design matrix
+                # but remove any factors that no longer exist
+                current_matrix <- design_matrix()
+                # Use factors from the non-reactive initial_state list
+                valid_factors <- initial_state$factors
+
+                current_matrix$factor1[!current_matrix$factor1 %in% valid_factors] <- NA
+                current_matrix$factor2[!current_matrix$factor2 %in% valid_factors] <- NA
+
+                design_matrix(current_matrix)
+              }
+            }
+
+            if (scope == "all" || scope == "contrasts") {
+              contrasts(data.frame(
+                contrast_name = character(),
+                numerator = character(),
+                denominator = character(),
+                factor1_num = character(),
+                factor2_num = character(),
+                factor1_den = character(),
+                factor2_den = character(),
+                stringsAsFactors = FALSE
+              ))
+            }
+
+            if (scope == "all" || scope == "formula") {
+              updateTextInput(session, "formula_string",
+                # Reset formula using the non-reactive initial_state list
+                value = initial_state$formula
+              )
+            }
+
+            # Update UI elements
+            if (scope == "all" || scope == "sample_names") {
+              # Get the freshly reset runs (or initial runs if scope==all)
+              # If scope was 'sample_names', design_matrix() now holds the reset matrix.
+              dm_to_sort <- if (scope == "all") initial_state$design_matrix else design_matrix()
+              sorted_runs <- gtools::mixedsort(dm_to_sort$Run)
+              updateSelectizeInput(session, "sample_to_rename", choices = sorted_runs, selected = "") # Clear selection
+              updateSelectizeInput(session, "selected_runs", choices = sorted_runs, selected = "") # Clear selection
+              updateSelectizeInput(session, "samples_to_transform", choices = sorted_runs, selected = "") # Clear selection
+            }
+
+            if (scope == "all") {
+              # Reset groups using the non-reactive initial_state list
+              groups(initial_state$groups)
+              updateTabsetPanel(session, "main_tabs", selected = "Rename Samples")
+              # Also reset factor dropdowns if scope is all
+              updateSelectInput(session, "factor1_select", choices = c("", initial_state$factors), selected = "")
+              updateSelectInput(session, "factor2_select", choices = c("", initial_state$factors), selected = "")
+              updateSelectInput(session, "contrast_group1", choices = c("", initial_state$groups), selected = "")
+              updateSelectInput(session, "contrast_group2", choices = c("", initial_state$groups), selected = "")
+            }
+            # Add updates if only factors were reset
+            else if (scope == "factors") {
+              updateSelectInput(session, "factor1_select", choices = c("", initial_state$factors), selected = "")
+              updateSelectInput(session, "factor2_select", choices = c("", initial_state$factors), selected = "")
+            }
+            # Add updates if only contrasts were reset (groups affect contrast dropdowns)
+            else if (scope == "contrasts") {
+              # Groups don't reset here, so just ensure dropdowns reflect current groups
+              updateSelectInput(session, "contrast_group1", choices = c("", groups()), selected = "")
+              updateSelectInput(session, "contrast_group2", choices = c("", groups()), selected = "")
+            }
+
+            # Close the modal
+            removeModal()
+
+            # Show success message
+            scope_desc <- switch(input$reset_scope,
+              "all" = "all changes",
+              "sample_names" = "sample names",
+              "factors" = "factor definitions",
+              "contrasts" = "contrast definitions",
+              "formula" = "formula"
+            )
+            showNotification(paste("Reset of", scope_desc, "completed successfully"),
+              type = "message",
+              duration = 3
+            )
+          })
+
+          # Individual rename handler
+          observeEvent(input$rename_sample, {
+            req(input$sample_to_rename, input$new_sample_name)
+            if (input$new_sample_name != "") {
+              # Update design matrix
+              current_matrix <- design_matrix()
+              current_matrix$Run[current_matrix$Run == input$sample_to_rename] <- input$new_sample_name
+              design_matrix(current_matrix)
+
+              # Update data_cln
+              current_data_cln <- data_cln_reactive()
+              current_data_cln$Run[current_data_cln$Run == input$sample_to_rename] <- input$new_sample_name
+              data_cln_reactive(current_data_cln)
+
+              # Sort runs for UI updates
+              sorted_runs <- gtools::mixedsort(current_matrix$Run)
+
+              # Update UI elements
+              updateSelectizeInput(session, "sample_to_rename",
+                choices = sorted_runs
+              )
+              updateSelectizeInput(session, "selected_runs",
+                choices = sorted_runs
+              )
+              updateSelectizeInput(session, "samples_to_transform",
+                choices = sorted_runs
+              )
+
+              updateTextInput(session, "new_sample_name", value = "")
+            }
+          })
+
+          # NEW: Range preview handler
+          output$range_preview <- renderText({
+            req(input$transform_mode == "range")
+            req(input$samples_to_transform) # Require samples to be selected
+            req(input$range_start, input$range_end) # Require range inputs
+
+            # Ensure inputs are valid integers >= 1
+            start_idx <- as.integer(input$range_start)
+            end_idx <- as.integer(input$range_end)
+
+            # Basic validation: must be numbers >= 1
+            if (is.na(start_idx) || is.na(end_idx) || start_idx < 1 || end_idx < 1) {
+              return("Invalid index. Start and End must be numbers >= 1.")
+            }
+            # Note: We don't check start <= end here, as extract_experiment might handle different cases.
+
+            # Get the first selected sample name
+            first_sample <- input$samples_to_transform[1]
+
+            # Call the existing extract_experiment function to generate the preview
+            preview_name <- tryCatch(
               {
-                writeLines(contrast_strings, contrast_path)
-                contrasts_tbl <- data.frame(
-                  contrasts = contrast_strings,
-                  stringsAsFactors = FALSE
-                )
-                assign("contrasts_tbl", contrasts_tbl, envir = parent.frame())
+                # Ensure extract_experiment is available in the scope
+                # This assumes extract_experiment handles underscore logic and index validation
+                extract_experiment(first_sample, mode = "range", start = start_idx, end = end_idx)
               },
               error = function(e) {
-                showNotification(paste("Error writing contrast file:", e$message), type = "error", duration = 10)
-                message("Error writing contrast file: ", e$message)
+                # Display error message from extract_experiment if it fails
+                paste("Error:", e$message)
               }
             )
-          } else {
-            contrasts_tbl <- NULL # Ensure contrasts_tbl exists even if no contrasts are written
-            if (exists("contrasts_tbl", envir = parent.frame())) {
-              # Remove existing contrasts_tbl if it exists and no new ones are valid
-              remove(list = "contrasts_tbl", envir = parent.frame())
+
+            # Format and return the preview string
+            paste0(first_sample, " -> ", preview_name)
+          })
+
+          # Bulk rename handler
+          observeEvent(input$bulk_rename, {
+            req(input$samples_to_transform)
+            current_matrix <- design_matrix()
+            current_data_cln <- data_cln_reactive()
+
+            # Create transformation function based on mode
+            transform_fn <- function(sample_name) {
+              if (input$transform_mode == "range") {
+                req(input$range_start, input$range_end)
+                extract_experiment(sample_name,
+                  mode = "range",
+                  start = input$range_start,
+                  end = input$range_end
+                )
+              } else if (input$transform_mode == "before_underscore") {
+                extract_experiment(sample_name, mode = "start")
+              } else if (input$transform_mode == "after_underscore") {
+                extract_experiment(sample_name, mode = "end")
+              }
             }
-          }
-        } else {
-          contrasts_tbl <- NULL # Ensure contrasts_tbl exists as NULL if no contrasts defined
-          if (exists("contrasts_tbl", envir = parent.frame())) {
-            remove(list = "contrasts_tbl", envir = parent.frame())
-          }
+
+            # Apply transformations
+            new_names <- sapply(input$samples_to_transform, transform_fn)
+
+            # Update both matrices
+            for (i in seq_along(input$samples_to_transform)) {
+              current_matrix$Run[current_matrix$Run == input$samples_to_transform[i]] <- new_names[i]
+              current_data_cln$Run[current_data_cln$Run == input$samples_to_transform[i]] <- new_names[i]
+            }
+
+            # Update reactive values
+            design_matrix(current_matrix)
+            data_cln_reactive(current_data_cln)
+
+            # Sort runs for UI updates
+            sorted_runs <- gtools::mixedsort(current_matrix$Run)
+
+            # Update UI elements
+            updateSelectizeInput(session, "sample_to_rename",
+              choices = sorted_runs
+            )
+            updateSelectizeInput(session, "selected_runs",
+              choices = sorted_runs
+            )
+            updateSelectizeInput(session, "samples_to_transform",
+              choices = sorted_runs
+            )
+          })
+
+          # Add new factor handler
+          observeEvent(input$add_factor, {
+            req(input$new_factor)
+            if (input$new_factor != "") {
+              current_factors <- factors()
+              new_factor_name <- trimws(input$new_factor) # Trim whitespace
+              if (new_factor_name != "" && !new_factor_name %in% current_factors) {
+                new_factor_list <- c(current_factors, new_factor_name)
+                factors(new_factor_list)
+                # Update factor dropdowns after adding
+                updateSelectInput(session, "factor1_select", choices = c("", new_factor_list), selected = "")
+                updateSelectInput(session, "factor2_select", choices = c("", new_factor_list), selected = "")
+              }
+              updateTextInput(session, "new_factor", value = "")
+            }
+          })
+
+          # Replicate inputs UI
+          output$replicate_inputs <- renderUI({
+            req(input$selected_runs)
+            numericInput("replicate_start",
+              paste("Starting replicate number for", length(input$selected_runs), "selected runs:"),
+              value = 1,
+              min = 1
+            )
+          })
+
+          # Assign metadata handler
+          observeEvent(input$assign_metadata, {
+            req(input$selected_runs)
+            req(input$factor1_select) # Only require factor1
+
+            current_matrix <- design_matrix()
+
+            replicate_numbers <- seq(input$replicate_start,
+              length.out = length(input$selected_runs)
+            )
+
+            # Update the selected runs with factors
+            current_matrix$factor1[current_matrix$Run %in% input$selected_runs] <- input$factor1_select
+            current_matrix$factor2[current_matrix$Run %in% input$selected_runs] <- input$factor2_select
+
+            # Create group names based on whether factor2 is empty or not
+            group_name <- if (input$factor2_select == "") {
+              input$factor1_select
+            } else {
+              paste(input$factor1_select, input$factor2_select, sep = "_")
+            }
+
+            current_matrix$group[current_matrix$Run %in% input$selected_runs] <- group_name
+
+            # Update replicates
+            current_matrix$replicates[match(input$selected_runs, current_matrix$Run)] <- replicate_numbers
+
+            design_matrix(current_matrix)
+
+            # Update groups
+            unique_groups <- unique(current_matrix$group[!is.na(current_matrix$group)])
+            groups(unique_groups)
+
+            # Update factors
+            current_factors <- factors()
+            if (input$factor1_select != "" && !input$factor1_select %in% current_factors) {
+              factors(c(current_factors, input$factor1_select))
+            }
+            if (input$factor2_select != "" && !input$factor2_select %in% current_factors) {
+              factors(c(current_factors, input$factor2_select))
+            }
+
+            # Update dropdowns AFTER potential changes to groups/factors
+            updateSelectInput(session, "contrast_group1", choices = c("", groups()), selected = "")
+            updateSelectInput(session, "contrast_group2", choices = c("", groups()), selected = "")
+            # Also update factor dropdowns in case a factor was implicitly added (though not ideal)
+            updateSelectInput(session, "factor1_select", choices = c("", factors()), selected = input$factor1_select) # Preserve selection
+            updateSelectInput(session, "factor2_select", choices = c("", factors()), selected = input$factor2_select) # Preserve selection
+          })
+
+          # Add contrast handler
+          observeEvent(input$add_contrast, {
+            req(input$contrast_group1, input$contrast_group2)
+            if (input$contrast_group1 != "" &&
+              input$contrast_group2 != "" &&
+              input$contrast_group1 != input$contrast_group2) {
+              current_contrasts <- contrasts()
+              current_matrix <- design_matrix()
+
+              # Get the factors for each group
+              group1_row <- which(current_matrix$group == input$contrast_group1)[1]
+              group2_row <- which(current_matrix$group == input$contrast_group2)[1]
+
+              contrast_name <- paste0(
+                gsub(" ", "", input$contrast_group1),
+                ".minus.",
+                gsub(" ", "", input$contrast_group2)
+              )
+
+              new_contrast <- data.frame(
+                contrast_name = contrast_name,
+                numerator = input$contrast_group1,
+                denominator = input$contrast_group2,
+                factor1_num = current_matrix$factor1[group1_row],
+                factor2_num = current_matrix$factor2[group1_row],
+                factor1_den = current_matrix$factor1[group2_row],
+                factor2_den = current_matrix$factor2[group2_row],
+                stringsAsFactors = FALSE
+              )
+              contrasts(rbind(current_contrasts, new_contrast))
+            }
+          })
+
+          # Display data table (shows the full matrix including unassigned)
+          output$data_table <- renderDT(
+            {
+              design_matrix()
+            },
+            selection = "none",
+            options = list(pageLength = 10, scrollX = TRUE, server = FALSE)
+          ) # Adjusted pageLength
+
+          # Observer to update the main table data via proxy when design_matrix changes
+          observeEvent(design_matrix(), {
+            replaceData(proxy_data_table, design_matrix(), resetPaging = FALSE)
+          })
+
+          # NEW: Render UI for Available Factors Display (in LHS info panel)
+          output$available_factors_display <- renderUI({
+            current_factors <- factors()
+            if (length(current_factors) == 0) {
+              return(p("No factors defined yet (use the 'Factors' tab)."))
+            }
+            # Display as comma-separated text
+            p(paste(current_factors, collapse = ", "))
+          })
+
+          # NEW: Render UI for Defined Contrasts Display (in LHS info panel)
+          output$defined_contrasts_display <- renderUI({
+            contrast_data <- contrasts()
+            if (nrow(contrast_data) == 0) {
+              return(p("No contrasts defined yet."))
+            }
+
+            # Generate display strings for each contrast
+            contrast_display_strings <- sapply(1:nrow(contrast_data), function(i) {
+              # Use the stored numerator/denominator group names directly
+              num_group <- contrast_data$numerator[i]
+              den_group <- contrast_data$denominator[i]
+
+              # Construct "ContrastName: Group1 vs Group2" string
+              if (!is.na(num_group) && !is.na(den_group) && num_group != "" && den_group != "" &&
+                !is.na(contrast_data$contrast_name[i]) && contrast_data$contrast_name[i] != "") {
+                paste0(contrast_data$contrast_name[i], ": ", num_group, " vs ", den_group)
+              } else {
+                NA_character_ # Return NA if parts are missing
+              }
+            })
+
+            # Filter out any contrasts that couldn't be formatted correctly
+            valid_contrast_strings <- na.omit(contrast_display_strings)
+            if (length(valid_contrast_strings) == 0) {
+              return(p("No valid contrasts defined."))
+            }
+
+            # Display as a simple list using HTML paragraphs
+            tagList(
+              lapply(valid_contrast_strings, p)
+            )
+          })
+
+          # Save and close handler
+          observeEvent(input$save_and_close, {
+            if (!exists("source_dir") || is.null(source_dir) || !nzchar(source_dir) || !dir.exists(source_dir)) {
+              showNotification(paste("Error: Invalid source directory detected:", source_dir), type = "error", duration = 10)
+              message("Error: source_dir is invalid or does not exist: ", source_dir)
+              # Optionally, stop the save process here if source_dir is invalid
+              # return()
+              # Or try to stop the app gracefully without saving
+              stopApp(NULL) # Stop app returning NULL as result
+              return() # Prevent further execution in this observer
+            }
+            message("Debug: source_dir path for saving: ", source_dir) # Print to console
+
+            design_matrix_final <- design_matrix()
+            data_cln_final <- data_cln_reactive()
+
+            # Show saving modal
+            showModal(shiny::modalDialog(
+              title = "Saving Data",
+              shiny::div(
+                style = "text-align: center",
+                shiny::tags$div(
+                  style = "font-size: 48px; margin: 20px;",
+                  shiny::icon("spinner", class = "fa-spin")
+                ),
+                shiny::tags$p("Saving cleaned data and design matrix...")
+              ),
+              footer = NULL,
+              easyClose = FALSE,
+              size = "s"
+            ))
+
+            # Filter design_matrix_final to only include rows with assigned metadata
+            design_matrix_final <- design_matrix_final |>
+              filter(!is.na(group))
+
+            # Get assigned runs directly from filtered design matrix
+            assigned_runs <- design_matrix_final |>
+              dplyr::pull(Run)
+
+            data_cln_final <- data_cln_final |>
+              filter(Run %in% assigned_runs)
+
+            assign("design_matrix", design_matrix_final, envir = parent.frame())
+            assign("data_cln", data_cln_final, envir = parent.frame())
+
+            # Save formula to correct nested path in config list
+            config_list[["deAnalysisParameters"]][["formula_string"]] <- input$formula_string
+            assign("config_list", config_list, envir = parent.frame())
+
+            contrast_data <- contrasts()
+            if (nrow(contrast_data) > 0) {
+              # Modified contrast string generation to match required format
+              contrast_strings <- sapply(1:nrow(contrast_data), function(i) {
+                # Create numerator group name
+                num_group <- if (is.na(contrast_data$factor2_num[i]) || contrast_data$factor2_num[i] == "") { # Check NA
+                  contrast_data$factor1_num[i]
+                } else {
+                  paste(contrast_data$factor1_num[i], contrast_data$factor2_num[i], sep = "_")
+                }
+
+                # Create denominator group name
+                den_group <- if (is.na(contrast_data$factor2_den[i]) || contrast_data$factor2_den[i] == "") { # Check NA
+                  contrast_data$factor1_den[i]
+                } else {
+                  paste(contrast_data$factor1_den[i], contrast_data$factor2_den[i], sep = "_")
+                }
+
+                # Ensure groups are valid before pasting
+                if (is.na(num_group) || is.na(den_group) || num_group == "" || den_group == "") {
+                  return(NA_character_) # Skip contrast if groups are invalid
+                }
+
+                paste0(
+                  num_group,
+                  ".minus.",
+                  den_group,
+                  "=group",
+                  num_group,
+                  "-group",
+                  den_group
+                )
+              })
+
+              # Filter out any NA contrasts before writing
+              contrast_strings <- na.omit(contrast_strings)
+
+              if (length(contrast_strings) > 0) {
+                contrast_path <- file.path(source_dir, "contrast_strings.tab")
+                message("Debug: Writing contrasts to: ", contrast_path) # Print path
+                tryCatch(
+                  {
+                    writeLines(contrast_strings, contrast_path)
+                    contrasts_tbl <- data.frame(
+                      contrasts = contrast_strings,
+                      stringsAsFactors = FALSE
+                    )
+                    assign("contrasts_tbl", contrasts_tbl, envir = parent.frame())
+                  },
+                  error = function(e) {
+                    showNotification(paste("Error writing contrast file:", e$message), type = "error", duration = 10)
+                    message("Error writing contrast file: ", e$message)
+                  }
+                )
+              } else {
+                contrasts_tbl <- NULL # Ensure contrasts_tbl exists even if no contrasts are written
+                if (exists("contrasts_tbl", envir = parent.frame())) {
+                  # Remove existing contrasts_tbl if it exists and no new ones are valid
+                  remove(list = "contrasts_tbl", envir = parent.frame())
+                }
+              }
+            } else {
+              contrasts_tbl <- NULL # Ensure contrasts_tbl exists as NULL if no contrasts defined
+              if (exists("contrasts_tbl", envir = parent.frame())) {
+                remove(list = "contrasts_tbl", envir = parent.frame())
+              }
+            }
+
+            # Create base filename
+            base_file <- file.path(source_dir, "design_matrix.tab")
+
+            # If file exists, append timestamp
+            if (file.exists(base_file)) {
+              timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
+              output_file <- file.path(source_dir, paste0("design_matrix_", timestamp, ".tab"))
+              data_cln_output_file <- file.path(source_dir, paste0("data_cln_", timestamp, ".tab"))
+            } else {
+              output_file <- base_file
+              data_cln_output_file <- file.path(source_dir, "data_cln.tab")
+            }
+
+            # Wrap write.table calls in tryCatch
+            message("Debug: Writing design matrix to: ", output_file) # Print path
+            tryCatch(
+              {
+                write.table(design_matrix_final,
+                  file = output_file,
+                  sep = "\t",
+                  row.names = FALSE,
+                  quote = FALSE
+                )
+              },
+              error = function(e) {
+                showNotification(paste("Error writing design matrix:", e$message), type = "error", duration = 10)
+                message("Error writing design matrix: ", e$message)
+                removeModal() # Remove modal on error
+                stopApp(NULL) # Stop app
+                return()
+              }
+            )
+
+            message("Debug: Writing cleaned data to: ", data_cln_output_file) # Print path
+            tryCatch(
+              {
+                write.table(data_cln_final,
+                  file = data_cln_output_file,
+                  sep = "\t",
+                  row.names = FALSE,
+                  quote = FALSE
+                )
+              },
+              error = function(e) {
+                showNotification(paste("Error writing cleaned data:", e$message), type = "error", duration = 10)
+                message("Error writing cleaned data: ", e$message)
+                removeModal() # Remove modal on error
+                stopApp(NULL) # Stop app
+                return()
+              }
+            )
+
+            # Remove modal before stopping app
+            removeModal()
+
+            # Pass the potentially NULL contrasts_tbl
+            final_result <- list(
+              design_matrix = design_matrix_final,
+              contrasts_tbl = if (exists("contrasts_tbl", envir = parent.frame())) contrasts_tbl else NULL,
+              config_list = config_list,
+              data_cln = data_cln_final
+            )
+
+            stopApp(final_result) # Pass the final result list
+          })
         }
 
-        # Create base filename
-        base_file <- file.path(source_dir, "design_matrix.tab")
+        # Create and run app for Proteomics Design Matrix
+        ui <- createDesignMatrixUi(design_matrix_raw)
+        result <- shiny::runApp(
+          shiny::shinyApp(ui, server),
+          launch.browser = TRUE
+        )
 
-        # If file exists, append timestamp
-        if (file.exists(base_file)) {
-          timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
-          output_file <- file.path(source_dir, paste0("design_matrix_", timestamp, ".tab"))
-          data_cln_output_file <- file.path(source_dir, paste0("data_cln_", timestamp, ".tab"))
-        } else {
-          output_file <- base_file
-          data_cln_output_file <- file.path(source_dir, "data_cln.tab")
+        # Handle results if they exist
+        if (!is.null(result)) {
+          assign("design_matrix", result$design_matrix, envir = parent.frame())
+          if (!is.null(result$contrasts_tbl)) {
+            assign("contrasts_tbl", result$contrasts_tbl, envir = parent.frame())
+          }
+          assign("config_list", result$config_list, envir = parent.frame())
+          assign("data_cln", result$data_cln, envir = parent.frame())
         }
-
-        # Wrap write.table calls in tryCatch
-        message("Debug: Writing design matrix to: ", output_file) # Print path
-        tryCatch(
-          {
-            write.table(design_matrix_final,
-              file = output_file,
-              sep = "\t",
-              row.names = FALSE,
-              quote = FALSE
-            )
-          },
-          error = function(e) {
-            showNotification(paste("Error writing design matrix:", e$message), type = "error", duration = 10)
-            message("Error writing design matrix: ", e$message)
-            removeModal() # Remove modal on error
-            stopApp(NULL) # Stop app
-            return()
-          }
-        )
-
-        message("Debug: Writing cleaned data to: ", data_cln_output_file) # Print path
-        tryCatch(
-          {
-            write.table(data_cln_final,
-              file = data_cln_output_file,
-              sep = "\t",
-              row.names = FALSE,
-              quote = FALSE
-            )
-          },
-          error = function(e) {
-            showNotification(paste("Error writing cleaned data:", e$message), type = "error", duration = 10)
-            message("Error writing cleaned data: ", e$message)
-            removeModal() # Remove modal on error
-            stopApp(NULL) # Stop app
-            return()
-          }
-        )
-
-        # Remove modal before stopping app
-        removeModal()
-
-        # Pass the potentially NULL contrasts_tbl
-        final_result <- list(
-          design_matrix = design_matrix_final,
-          contrasts_tbl = if (exists("contrasts_tbl", envir = parent.frame())) contrasts_tbl else NULL,
-          config_list = config_list,
-          data_cln = data_cln_final
-        )
-
-        stopApp(final_result) # Pass the final result list
-      })
-    }
-
-    # Create and run app
-    ui <- createDesignMatrixUi(design_matrix_raw)
-
-    # Run the app and capture results
-    result <- runApp(
-      shinyApp(ui, server),
-      launch.browser = TRUE
-    )
-
-    # Handle results if they exist
-    if (!is.null(result)) {
-      assign("design_matrix", result$design_matrix, envir = parent.frame())
-      if (!is.null(result$contrasts_tbl)) {
-        assign("contrasts_tbl", result$contrasts_tbl, envir = parent.frame())
+        return(invisible(result))
+      } else {
+        stop(paste("Applet type ", applet_type, " not implemented for proteomics yet."))
       }
-      assign("config_list", result$config_list, envir = parent.frame())
-      assign("data_cln", result$data_cln, envir = parent.frame())
+    },
+    "metabolomics" = {
+      if (applet_type == "designMatrix") {
+        logger::log_warn("Design Matrix applet not yet implemented for METABOLOMICS.")
+        stop("Design Matrix applet not yet implemented for METABOLOMICS.")
+      } else {
+        stop(paste("Applet type ", applet_type, " not implemented for metabolomics yet."))
+      }
+    },
+    "lipidomics" = {
+      if (applet_type == "designMatrix") {
+        logger::log_warn("Design Matrix applet not yet implemented for LIPIDOMICS.")
+        stop("Design Matrix applet not yet implemented for LIPIDOMICS.")
+      } else {
+        stop(paste("Applet type ", applet_type, " not implemented for lipidomics yet."))
+      }
+    },
+    "transcriptomics" = {
+      if (applet_type == "designMatrix") {
+        logger::log_warn("Design Matrix applet not yet implemented for TRANSCRIPTOMICS.")
+        stop("Design Matrix applet not yet implemented for TRANSCRIPTOMICS.")
+      } else {
+        stop(paste("Applet type ", applet_type, " not implemented for transcriptomics yet."))
+      }
+    },
+    "integration" = {
+      if (applet_type == "designMatrix") {
+        logger::log_warn("Design Matrix applet not applicable or not yet implemented for INTEGRATION (Experiment: {experiment_label}).")
+        stop("Design Matrix applet not applicable or not yet implemented for INTEGRATION.")
+      } else {
+        stop(paste("Applet type ", applet_type, " not implemented for integration (Experiment: ", experiment_label, ") yet."))
+      }
+    },
+    { # Default for the omic_type switch
+      logger::log_error("Unsupported omic_type provided to RunApplet: {omic_type}")
+      stop(paste("Unsupported omic_type:", omic_type))
     }
-    invisible(result)
-  } else if (applet_type == "future_applet") {
-    stop("Future applet type not yet implemented")
-  }
+  )
+  invisible(NULL) # Default return if not handled elsewhere
 }
