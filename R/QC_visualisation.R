@@ -561,6 +561,7 @@ setClass("FilteringProgressMetabolomics",
 #' @return The global `FilteringProgressMetabolomics` object.
 #' @keywords internal
 #' @noRd
+#' @export
 getFilteringProgressMetabolomics <- function() {
     if (!exists("filtering_progress_metabolomics", envir = .GlobalEnv)) {
         filtering_progress_metabolomics <- new("FilteringProgressMetabolomics")
@@ -586,6 +587,7 @@ getFilteringProgressMetabolomics <- function() {
 #'         Has the side effect of updating the global object.
 #' @keywords internal
 #' @noRd
+#' @export
 updateFilteringProgressMetabolomics <- function(prog_met,
                                                   step_name,
                                                   current_assay_names,
@@ -648,6 +650,7 @@ updateFilteringProgressMetabolomics <- function(prog_met,
 #' @importFrom dplyr select where
 #' @keywords internal
 #' @noRd
+#' @export 
 getMetaboliteQuantData <- function(assay_data) {
     # Identify quantitative (numeric) columns - assumes sample columns are numeric
     quant_cols <- sapply(assay_data, is.numeric)
@@ -679,6 +682,7 @@ getMetaboliteQuantData <- function(assay_data) {
 #' @importFrom dplyr pull distinct n
 #' @keywords internal
 #' @noRd
+#' @export 
 countUniqueMetabolites <- function(assay_data, metabolite_id_col) {
     if (!metabolite_id_col %in% colnames(assay_data)) {
         warning("Metabolite ID column '", metabolite_id_col, "' not found in assay data.")
@@ -706,6 +710,7 @@ countUniqueMetabolites <- function(assay_data, metabolite_id_col) {
 #' @importFrom dplyr group_by summarise n filter
 #' @keywords internal
 #' @noRd
+#' @export
 countMetabolitesPerSample <- function(assay_data, sample_id_col, metabolite_id_col) {
     quant_info <- getMetaboliteQuantData(assay_data)
     quant_data <- quant_info$quant_data
@@ -742,6 +747,7 @@ countMetabolitesPerSample <- function(assay_data, sample_id_col, metabolite_id_c
 #'
 #' @keywords internal
 #' @noRd
+#' @export
 calculateMissingness <- function(assay_data, sample_id_col) {
     # Get only the quantitative columns (sample columns)
     quant_info <- getMetaboliteQuantData(assay_data)
@@ -790,6 +796,7 @@ calculateMissingness <- function(assay_data, sample_id_col) {
 #' @importFrom dplyr group_by summarise
 #' @keywords internal
 #' @noRd
+#' @export
 calculateSumIntensityPerSample <- function(assay_data, sample_id_col) {
     quant_info <- getMetaboliteQuantData(assay_data)
     quant_data <- quant_info$quant_data
@@ -827,6 +834,7 @@ calculateSumIntensityPerSample <- function(assay_data, sample_id_col) {
 #' @importFrom dplyr distinct n
 #' @keywords internal
 #' @noRd
+#' @export
 calculateTotalUniqueMetabolitesAcrossAssays <- function(assay_list, metabolite_id_col) {
     if (length(assay_list) == 0) {
         return(0)
@@ -877,6 +885,7 @@ calculateTotalUniqueMetabolitesAcrossAssays <- function(assay_list, metabolite_i
 #' @importFrom stats sd na.omit
 #' @keywords internal
 #' @noRd
+#' @export
 calculateMetaboliteCVs <- function(assay_data,
                                    design_matrix,
                                    group_id_col,
@@ -1010,7 +1019,8 @@ calculateMetaboliteCVs <- function(assay_data,
 #' @importFrom stringr str_detect
 #' @importFrom stats sd na.omit
 #' @keywords internal
-#' @noRd
+#' @noRd   
+#' @export
 getInternalStandardMetrics <- function(assay_data,
                                        is_pattern,
                                        metabolite_id_col,
@@ -1388,6 +1398,7 @@ updateMetaboliteFiltering <- function(theObject,
 #' @importFrom tidyr pivot_longer
 #' @keywords internal
 #' @noRd
+#' @export
 generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
     # Get the global object if not provided
     if (is.null(prog_met)) {

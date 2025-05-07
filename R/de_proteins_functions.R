@@ -649,6 +649,7 @@ countStatDeGenes <- function(data,
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' @export
 countStatDeGenesHelper <- function(de_table
                                    , description
                                    , facet_column = analysis_type
@@ -944,6 +945,7 @@ plotOneVolcano <- function( input_data, input_title,
 #' rank_negative: The rank of the negative fold-change values.
 #' gene_name_significant  The gene name of the significant proteins.
 #'
+#' @export
 prepareDataForVolcanoPlot <- function(input_table
                                       , protein_id_column = uniprot_acc
                                       , uniprot_table

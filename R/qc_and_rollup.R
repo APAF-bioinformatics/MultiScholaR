@@ -2299,6 +2299,7 @@ get_color_palette <- function(n, base_color) {
 #' 
 #' @param data A data frame or S4 object containing protein/peptide data
 #' @return Integer count of unique proteins
+#' @export
 countUniqueProteins <- function(data) {
   if (isS4(data)) {
     if ("peptide_data" %in% slotNames(data)) {
@@ -2326,6 +2327,7 @@ countUniqueProteins <- function(data) {
 #' 
 #' @param data A data frame or S4 object containing protein/peptide data
 #' @return Data frame with run IDs and protein counts
+#' @export
 countProteinsPerRun <- function(data) {
   if (isS4(data)) {
     if ("peptide_data" %in% slotNames(data)) {
@@ -2384,6 +2386,7 @@ countProteinsPerRun <- function(data) {
 #' 
 #' @param data A data frame or S4 object containing protein/peptide data
 #' @return Integer count of unique peptide-protein combinations
+#' @export
 calcTotalPeptides <- function(data) {
   # For protein quantification data, return NA
   if (isS4(data)) {
@@ -2414,6 +2417,7 @@ calcTotalPeptides <- function(data) {
 #' 
 #' @param data A data frame or S4 object containing protein/peptide data
 #' @return Data frame with protein IDs and peptide counts
+#' @export
 calcPeptidesPerProtein <- function(data) {
   # For protein quantification data, return empty data frame
   if (isS4(data)) {
@@ -2450,6 +2454,7 @@ calcPeptidesPerProtein <- function(data) {
 #' 
 #' @param data A data frame or S4 object containing protein/peptide data
 #' @return Data frame with run IDs and peptide counts
+#' @export
 countPeptidesPerRun <- function(data) {
   # For protein quantification data, return empty data frame
   if (isS4(data)) {
@@ -2512,10 +2517,10 @@ countPeptidesPerRun <- function(data) {
 #'       \item Line plot of proteins per run across steps.
 #'       \item Line plot of peptides per run across steps (or placeholder).
 #'     }
-#'   \item If `publication_graphs_dir` is provided AND the global variable `time_dir` 
-#'     (expected to be set by `setupAndShowDirectories()`) exists, the generated 
-#'     plots are saved as PNG files within the `time_dir`. A warning is issued 
-#'     if `publication_graphs_dir` is given but `time_dir` is missing.
+#'   \item If `omic_type` and `experiment_label` are provided and valid paths can be 
+#'     derived from the global `project_dirs` object, the generated plots are saved 
+#'     as PNG files into the derived `time_dir`. Warnings are issued if paths cannot be 
+#'     derived or if `project_dirs` is not found.
 #'   \item If `return_grid` is `TRUE`, arranges the plots into a single grid using 
 #'     `gridExtra` and returns the grid object (grob). Also saves this combined grid 
 #'     if plot saving is enabled.
@@ -2524,22 +2529,25 @@ countPeptidesPerRun <- function(data) {
 #' }
 #' 
 #' **Important:** This function relies on and modifies a global variable named 
-#' `filtering_progress`. It also depends on the global variable `time_dir` for 
-#' saving plots when `publication_graphs_dir` is specified. Ensure 
-#' `setupAndShowDirectories()` has been run previously in the session if you intend 
-#' to save plots.
+#' `filtering_progress`. For saving plots, it depends on the global `project_dirs` 
+#' object (expected to be populated by `setupDirectories()`) and the successful 
+#' derivation of `time_dir` from it using `omic_type` and `experiment_label`.
 #' 
 #' @param data The input data object. Can be a data frame (expected to conform 
 #'   to typical peptide or protein quantification structures) or an S4 object 
 #'   containing relevant slots (e.g., inheriting from `SummarizedExperiment`). 
-#'   The function attempts to automatically detect if it's peptide or protein data.
+#'   The function attempts to automatically detect if it\'s peptide or protein data.
 #' @param step_name A character string uniquely identifying the current filtering 
 #'   step (e.g., "InitialData", "FilteredByQuality", "Normalized"). This name is 
 #'   used for tracking in the `filtering_progress` object and plot labels.
-#' @param publication_graphs_dir Optional character string. The path to the base 
-#'   directory where publication graphs are stored. If provided, triggers plot 
-#'   saving into a subdirectory (`filtering_qc/<timestamp>/`), *provided* that 
-#'   the global variable `time_dir` exists. Defaults to `NULL` (no saving).
+#' @param omic_type Optional character string. The type of omics data 
+#'   (e.g., "proteomics", "metabolomics"). Used with `experiment_label` to 
+#'   derive save paths from the global `project_dirs` object. If `NULL` (default) 
+#'   or `experiment_label` is `NULL`, plots are not saved.
+#' @param experiment_label Optional character string. The specific experiment 
+#'   label (e.g., "workshop_data"). Used with `omic_type` to derive save paths 
+#'   from the global `project_dirs` object. If `NULL` (default) or `omic_type` 
+#'   is `NULL`, plots are not saved.
 #' @param overwrite Logical. If `TRUE`, allows overwriting an existing entry for 
 #'   `step_name` in the `filtering_progress` object. If `FALSE` (default) and 
 #'   `step_name` already exists, the function will stop with an error.
@@ -2551,7 +2559,8 @@ countPeptidesPerRun <- function(data) {
 #'   If `return_grid` is `FALSE`, returns an invisible list containing the individual 
 #'   `ggplot` objects (`proteins_total`, `proteins_per_run`, `peptides_total`, 
 #'   `peptides_per_protein`, `peptides_per_run`). Has side effects: modifies the 
-#'   global `filtering_progress` object and potentially saves plots to disk.
+#'   global `filtering_progress` object and potentially saves plots to disk if 
+#'   `omic_type` and `experiment_label` are provided and paths are valid.
 #'   
 #' @importFrom ggplot2 ggplot aes geom_bar geom_text labs theme_minimal theme element_text panel_grid_major_x geom_line geom_point scale_color_manual annotate theme_void geom_boxplot coord_cartesian quantile ggsave
 #' @importFrom dplyr bind_rows mutate group_by ungroup mean %>%
@@ -2560,12 +2569,12 @@ countPeptidesPerRun <- function(data) {
 #' @importFrom methods isS4 slotNames new
 #' @importFrom stats quantile
 #' 
-#'   
 #' @export
-updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NULL, 
+updateProteinFiltering <- function(data, step_name, 
+                                 omic_type = NULL, experiment_label = NULL,
                                  overwrite = FALSE, return_grid = FALSE) {
     
-    # Initialize filtering_progress if it doesn't exist
+    # Initialize filtering_progress if it doesn\'t exist
     if (!exists("filtering_progress", envir = .GlobalEnv)) {
         filtering_progress <- new("FilteringProgress")
         assign("filtering_progress", filtering_progress, envir = .GlobalEnv)
@@ -2574,14 +2583,52 @@ updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NUL
     # Get the current filtering_progress object
     filtering_progress <- get("filtering_progress", envir = .GlobalEnv)
     
-    # Ensure time_dir exists globally if we intend to save plots
-    save_plots <- !is.null(publication_graphs_dir) && exists("time_dir", envir = .GlobalEnv)
-    if (!is.null(publication_graphs_dir) && !exists("time_dir", envir = .GlobalEnv)) {
-        warning("publication_graphs_dir provided, but global 'time_dir' not found. Plots will not be saved. Run setupAndShowDirectories() first.")
-        save_plots <- FALSE
+    # Path derivation and save_plots logic
+    derived_time_dir <- NULL
+    save_plots <- FALSE
+
+    if (!is.null(omic_type) && !is.null(experiment_label)) {
+        if (!exists("project_dirs", envir = .GlobalEnv)) {
+            warning("Global object \'project_dirs\' not found. Plots will not be saved. Ensure \'setupDirectories()\' has been run.")
+        } else {
+            project_dirs_global <- get("project_dirs", envir = .GlobalEnv)
+            omic_project_key <- paste0(omic_type, "_", experiment_label)
+
+            if (!omic_project_key %in% names(project_dirs_global)) {
+                warning(paste0("Entry for \'", omic_project_key, "\' not found in global \'project_dirs\'. Plots will not be saved."))
+            } else {
+                current_project_paths <- project_dirs_global[[omic_project_key]]
+                if (is.null(current_project_paths)) {
+                    warning(paste0("Entry for \'", omic_project_key, "\' in global \'project_dirs\' is NULL. Plots will not be saved."))
+                } else {
+                    derived_publication_graphs_dir <- current_project_paths$publication_graphs_dir
+                    temp_time_dir <- current_project_paths$time_dir
+
+                    if (is.null(temp_time_dir) || !is.character(temp_time_dir) || length(temp_time_dir) != 1 ||
+                        is.null(derived_publication_graphs_dir) || !is.character(derived_publication_graphs_dir) || length(derived_publication_graphs_dir) != 1) {
+                        warning(paste0("\'time_dir\' or \'publication_graphs_dir\' is missing, not a character string, or not a single path for \'", omic_project_key,
+                                       "\' in global \'project_dirs\'. Plots will not be saved."))
+                    } else {
+                        if (!dir.exists(temp_time_dir)) {
+                            warning(paste0("The derived \'time_dir\' (", temp_time_dir, ") for \'", omic_project_key,
+                                           "\' does not exist. Plots will not be saved. Ensure directories are created via setupDirectories()."))
+                        } else {
+                            derived_time_dir <- temp_time_dir
+                            save_plots <- TRUE
+                            message(paste0("Plots will be saved to: ", derived_time_dir))
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        # Message if omic_type/label are missing and saving might have been expected
+        if (return_grid && (is.null(omic_type) || is.null(experiment_label))) {
+             message("omic_type and/or experiment_label not provided. Plots will not be saved.")
+        }
     }
     
-    # Determine if we're working with protein_quant_table
+    # Determine if we\'re working with protein_quant_table
     is_protein_quant <- if (isS4(data)) {
         "protein_quant_table" %in% slotNames(data)
     } else {
@@ -2604,7 +2651,7 @@ updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NUL
     # Update filtering progress based on data type
     if (step_name %in% filtering_progress@steps) {
         if (!overwrite) {
-            stop("Step name '", step_name, "' already exists. Use overwrite = TRUE to replace it.")
+            stop("Step name \'", step_name, "\' already exists. Use overwrite = TRUE to replace it.")
         }
         idx <- which(filtering_progress@steps == step_name)
         
@@ -2922,14 +2969,10 @@ updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NUL
         peptides_per_run = p5
     )
     
-    # Save plots if directory is specified and time_dir exists globally
+    # Save plots if derived_time_dir is valid and save_plots is TRUE
     if (save_plots) {
-        # Retrieve the globally defined time_dir
-        current_time_dir <- get("time_dir", envir = .GlobalEnv)
-        
         for (plot_name in names(plot_list)) {
-            # Use current_time_dir (the globally defined one) for saving
-            filename <- file.path(current_time_dir, 
+            filename <- file.path(derived_time_dir,
                                 sprintf("%s_%s.png", step_name, plot_name))
             ggsave(filename, 
                    plot = plot_list[[plot_name]], 
@@ -2963,12 +3006,9 @@ updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NUL
             )
         }
         
-        # Save the grid if directory is specified and time_dir exists globally
+        # Save the grid if derived_time_dir is valid and save_plots is TRUE
         if (save_plots) {
-            # Retrieve the globally defined time_dir
-            current_time_dir <- get("time_dir", envir = .GlobalEnv)
-            # Use current_time_dir (the globally defined one) for saving
-            filename <- file.path(current_time_dir, 
+            filename <- file.path(derived_time_dir,
                                 sprintf("%s_combined_plots.png", step_name))
             ggsave(filename, 
                    plot = grid_plot, 
@@ -2980,8 +3020,8 @@ updateProteinFiltering <- function(data, step_name, publication_graphs_dir = NUL
         return(grid_plot)
     } else {
         # Print each plot individually
-        for(plot in plot_list) {
-            print(plot)
+        for(plot_obj in plot_list) { # Changed loop variable to avoid conflict with base::plot
+            print(plot_obj)
         }
         # Return the list invisibly
         invisible(plot_list)

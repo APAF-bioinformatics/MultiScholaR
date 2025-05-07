@@ -1,10 +1,10 @@
-#'@export
 #'@description Filter metabolites based on an intensity threshold and the proportion of samples below that threshold in a wide-format table.
 #'@param assay_table A wide data frame where rows are metabolites and columns include a metabolite identifier and numeric sample intensities.
 #'@param min_metabolite_intensity_threshold The calculated minimum intensity value. Metabolites in samples below this threshold are considered 'below threshold'.
 #'@param metabolites_proportion_of_samples_below_cutoff The maximum allowed proportion (0 to 1) of samples where a metabolite can be below the threshold. If a metabolite exceeds this proportion, it's removed.
 #'@param metabolite_id_column A string specifying the name of the column containing the unique metabolite identifiers.
 #'@return A filtered wide data frame containing only the metabolites that pass the filter.
+#' @export
 metaboliteIntensityFilteringHelper <- function(assay_table
                                                , min_metabolite_intensity_threshold
                                                , metabolites_proportion_of_samples_below_cutoff
@@ -180,7 +180,7 @@ setMethod( f="metaboliteIntensityFiltering"
 #'   If duplicates are found in an assay, the element will be a tibble showing
 #'   the duplicated identifiers and their counts. If no duplicates are found,
 #'   the element will be NULL.
-#' @export
+
 #' @importFrom dplyr count filter pull %>%
 #' @importFrom purrr map set_names
 #' @importFrom methods slot
@@ -195,6 +195,7 @@ setMethod( f="metaboliteIntensityFiltering"
 #' duplicates_assay1 <- duplicate_ids_list[[1]]
 #' print(duplicates_assay1)
 #' }
+#' @export
 findDuplicateFeatureIDs <- function(theObject) {
   if (!inherits(theObject, "MetaboliteAssayData")) {
     stop("Input must be a MetaboliteAssayData object.")
@@ -282,6 +283,7 @@ findDuplicateFeatureIDs <- function(theObject) {
 #' @importFrom rlang sym !!
 #' @importFrom tidyr pivot_longer pivot_wider
 #' @importFrom tibble column_to_rownames rownames_to_column
+#' @export
 resolveDuplicateFeaturesByIntensity <- function(assay_tibble, id_col, sample_cols) {
 
     if (!id_col %in% colnames(assay_tibble)) {

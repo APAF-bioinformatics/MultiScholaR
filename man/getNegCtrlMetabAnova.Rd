@@ -12,15 +12,6 @@
   ruv_qval_cutoff = NULL,
   ruv_fdr_method = NULL
 )
-
-\S4method{getNegCtrlMetabAnova}{MetaboliteAssayData}(
-  theObject,
-  ruv_grouping_variable = NULL,
-  percentage_as_neg_ctrl = NULL,
-  num_neg_ctrl = NULL,
-  ruv_qval_cutoff = NULL,
-  ruv_fdr_method = NULL
-)
 }
 \arguments{
 \item{theObject}{A \code{MetaboliteAssayData} object.}
@@ -64,8 +55,6 @@ This method iterates through each assay in the \code{MetaboliteAssayData} object
 }
 \section{Functions}{
 \itemize{
-\item \code{getNegCtrlMetabAnova(MetaboliteAssayData)}: Method for MetaboliteAssayData
-
 \item \code{getNegCtrlMetabAnova(MetaboliteAssayData)}: Method for MetaboliteAssayData
 
 }}

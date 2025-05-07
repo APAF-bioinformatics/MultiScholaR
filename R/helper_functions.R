@@ -1085,6 +1085,7 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
 #' @title Format Configuration List
 #' @param config_list List of configuration parameters
 #' @param indent Number of spaces for indentation
+#' @export
 formatConfigList <- function(config_list, indent = 0) {
     output <- character()
 

@@ -929,6 +929,7 @@ filterResultsWithRevigo <- function( enriched_results_tbl
 
 
 
+#'@export
 filterResultsWithRevigoScholar <- function( enriched_results_tbl
                                             , added_columns
                                             , is_run_revigo=TRUE

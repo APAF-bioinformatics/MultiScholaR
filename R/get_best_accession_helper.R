@@ -837,6 +837,7 @@ cleanMaxQuantProteins <- function(
 
 #' Helper function to process and filter data
 #' @noRd
+#' @export
 processAndFilterData <- function(
     evidence_tbl,
     args,
