@@ -8,7 +8,8 @@ createWorkflowArgsFromConfig(
   workflow_name,
   description = "",
   organism_name = NULL,
-  taxon_id = NULL
+  taxon_id = NULL,
+  source_dir_path = NULL
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ createWorkflowArgsFromConfig(
 \item{organism_name}{Optional organism name (defaults to value from session if available)}
 
 \item{taxon_id}{Optional taxon ID (defaults to value from session if available)}
+
+\item{source_dir_path}{Character string, the path to the source directory for this workflow instance.}
 }
 \value{
 WorkflowArgs object
