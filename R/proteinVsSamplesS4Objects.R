@@ -69,6 +69,36 @@ ProteinQuantitativeData <- setClass("ProteinQuantitativeData"
 )
 #'@export ProteinQuantitativeData
 
+# Initialize method to ensure design_matrix's sample_id column is character
+setMethod("initialize", "ProteinQuantitativeData",
+  function(.Object, ...) {
+    # Capture all arguments passed to the constructor
+    args_list <- list(...)
+
+    # If design_matrix and sample_id are provided in the arguments
+    if (!is.null(args_list$design_matrix) && !is.null(args_list$sample_id)) {
+      if (args_list$sample_id %in% names(args_list$design_matrix)) {
+        args_list$design_matrix[[args_list$sample_id]] <- as.character(args_list$design_matrix[[args_list$sample_id]])
+        logger::log_debug(
+          "Initialize ProteinQuantitativeData: Converted column '{args_list$sample_id}' in design_matrix to character."
+        )
+      } else {
+        # This case should ideally be caught by validity, but good to be aware
+        logger::log_warn(
+          "Initialize ProteinQuantitativeData: Sample ID column '{args_list$sample_id}' not found in the provided design_matrix during initialization."
+        )
+      }
+    }
+    
+    # Reconstruct the call to the default initializer with potentially modified args_list
+    # This uses do.call to pass arguments correctly after modification
+    .Object <- do.call(callNextMethod, c(list(.Object), args_list))
+    
+    # Explicitly return the object
+    return(.Object)
+  }
+)
+
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #' @export
