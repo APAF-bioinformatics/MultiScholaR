@@ -1043,19 +1043,39 @@ setClass("WorkflowArgs",
 #' @param description Optional description of the workflow
 #' @param organism_name Optional organism name (defaults to value from session if available)
 #' @param taxon_id Optional taxon ID (defaults to value from session if available)
+#' @param source_dir_path Character string, the path to the source directory for this workflow instance.
 #' @return WorkflowArgs object
 #' @export
 createWorkflowArgsFromConfig <- function(workflow_name, description = "", 
-                                        organism_name = NULL, taxon_id = NULL) {
+                                        organism_name = NULL, taxon_id = NULL,
+                                        source_dir_path = NULL) { # New parameter
 
     # Get git information
-    branch_info <- gh("/repos/APAF-BIOINFORMATICS/ProteomeScholaR/branches/dev-jr")
-    git_info <- list(
-        commit_sha = branch_info$commit$sha,
-        branch = "dev-jr",
-        repo = "ProteomeScholaR",
-        timestamp = branch_info$commit$commit$author$date
-    )
+    # Attempt to get git info, but allow failure gracefully
+    git_info <- tryCatch({
+        # Ensure gh is loaded if used directly. Consider adding gh:: to function calls.
+        if (requireNamespace("gh", quietly = TRUE)) {
+            # Check if a token is available to avoid interactive prompts if not in an interactive session
+            if (nzchar(gh::gh_token())) {
+                 branch_info <- gh::gh("/repos/APAF-BIOINFORMATICS/MultiScholaR/branches/main") # CHECK REPO/BRANCH
+                 list(
+                    commit_sha = branch_info$commit$sha,
+                    branch = "main", # Consider making this dynamic or a parameter
+                    repo = "MultiScholaR", 
+                    timestamp = branch_info$commit$commit$author$date
+                )
+            } else {
+                warning("GitHub token not found. Skipping Git information retrieval.", immediate. = TRUE)
+                list(commit_sha = NA_character_, branch = NA_character_, repo = NA_character_, timestamp = NA_character_)
+            }
+        } else {
+            warning("Package 'gh' not available. Skipping Git information retrieval.", immediate. = TRUE)
+            list(commit_sha = NA_character_, branch = NA_character_, repo = NA_character_, timestamp = NA_character_)
+        }
+    }, error = function(e) {
+        warning(paste("Could not retrieve Git information:", e$message), immediate. = TRUE)
+        list(commit_sha = NA_character_, branch = NA_character_, repo = NA_character_, timestamp = NA_character_)
+    })
     
     # Get organism information from session if not explicitly provided
     if (is.null(organism_name) && exists("organism_name", envir = .GlobalEnv)) {
@@ -1068,18 +1088,38 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
     
     # Create organism info list
     organism_info <- list(
-        organism_name = organism_name,
-        taxon_id = taxon_id
+        organism_name = if(is.null(organism_name) || !is.character(organism_name)) NA_character_ else organism_name,
+        taxon_id = if(is.null(taxon_id) || !(is.character(taxon_id) || is.numeric(taxon_id))) NA_character_ else as.character(taxon_id)
     )
 
-    new("WorkflowArgs",
+    # Ensure config_list is available (it's used directly in the new() call)
+    config_list_to_use <- list() # Default to empty list
+    if (exists("config_list", envir = parent.frame()) && is.list(get("config_list", envir = parent.frame()))) {
+        config_list_to_use <- get("config_list", envir = parent.frame())
+    } else if (exists("config_list", envir = .GlobalEnv) && is.list(get("config_list", envir = .GlobalEnv))) {
+        config_list_to_use <- get("config_list", envir = .GlobalEnv)
+    } else {
+        warning("'config_list' not found as a list in parent frame or global environment. WorkflowArgs @args slot will be empty or use prototype.", immediate. = TRUE)
+    }
+
+    new_workflow_args <- new("WorkflowArgs",
         workflow_name = workflow_name,
         timestamp = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
-        args = config_list,  # Make sure config_list is defined somewhere
+        args = config_list_to_use, 
         description = description,
         git_info = git_info,
         organism_info = organism_info
     )
+    
+    # Store source_dir_path within the 'args' slot using a specific name
+    if (!is.null(source_dir_path) && is.character(source_dir_path) && length(source_dir_path) == 1 && nzchar(source_dir_path)) {
+        new_workflow_args@args$internal_workflow_source_dir <- tools::file_path_as_absolute(source_dir_path)
+    } else {
+        new_workflow_args@args$internal_workflow_source_dir <- NULL 
+        warning("`source_dir_path` was not provided or invalid for createWorkflowArgsFromConfig. Study parameters might not be saved by show() method.", immediate. = TRUE)
+    }
+    
+    return(new_workflow_args)
 }
 
 #' @title Format Configuration List
@@ -1089,11 +1129,16 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
 formatConfigList <- function(config_list, indent = 0) {
     output <- character()
 
-    for (name in names(config_list)) {
+    # Exclude internal_workflow_source_dir from printing
+    names_to_process <- names(config_list)
+    names_to_process <- names_to_process[names_to_process != "internal_workflow_source_dir"]
+
+
+    for (name in names_to_process) {
         value <- config_list[[name]]
-        # Skip core_utilisation and complex objects
+        # Skip core_utilisation and complex objects from display
         if (name == "core_utilisation" ||
-            any(class(value) %in% c("process", "R6", "multidplyr_cluster"))) {
+            any(class(value) %in% c("process", "R6", "multidplyr_cluster", "cluster", "SOCKcluster"))) { # Added "cluster", "SOCKcluster"
             next
         }
 
@@ -1104,15 +1149,42 @@ formatConfigList <- function(config_list, indent = 0) {
 
         # Handle different value types
         if (is.list(value)) {
-            output <- c(output,
-                paste0(paste(rep(" ", indent), collapse = ""),
-                      name_formatted, ":"))
-            output <- c(output,
-                formatConfigList(value, indent + 2))
+            if (length(value) > 0 && !is.null(names(value))) { # Only print header and recurse if list is named and not empty
+                output <- c(output,
+                    paste0(paste(rep(" ", indent), collapse = ""),
+                          name_formatted, ":"))
+                output <- c(output,
+                    formatConfigList(value, indent + 2)) # Recursive call
+            } else if (length(value) > 0) { # Unnamed list, print elements
+                 output <- c(output,
+                    paste0(paste(rep(" ", indent), collapse = ""),
+                          name_formatted, ":"))
+                 for(item_idx in seq_along(value)){
+                     item_val <- value[[item_idx]]
+                     if(is.atomic(item_val) && length(item_val) == 1){
+                        output <- c(output, paste0(paste(rep(" ", indent + 2), collapse=""), "- ", as.character(item_val)))
+                     } else {
+                        output <- c(output, paste0(paste(rep(" ", indent + 2), collapse=""), "- [Complex List Element]"))
+                     }
+                 }
+            } else { # Empty list
+                 output <- c(output,
+                    paste0(paste(rep(" ", indent), collapse = ""),
+                          name_formatted, ": [Empty List]"))
+            }
         } else {
+            # Truncate long character vectors for display
+            if (is.character(value) && length(value) > 5) {
+                value_display <- paste(c(utils::head(value, 5), "..."), collapse = ", ")
+            } else if (is.character(value) && length(value) > 1) {
+                value_display <- paste(value, collapse = ", ")
+            } else {
+                value_display <- as.character(value) # Ensure it's character
+                 if (length(value_display) == 0) value_display <- "[Empty/NULL]"
+            }
             output <- c(output,
                 paste0(paste(rep(" ", indent), collapse = ""),
-                      name_formatted, ": ", value))
+                      name_formatted, ": ", value_display))
         }
     }
     return(output)
@@ -1129,74 +1201,108 @@ setMethod("show",
             "Basic Information:",
             "-----------------",
             paste("Workflow Name:", object@workflow_name),
-            paste("Description:", object@description),
+            paste("Description:", if(nzchar(object@description)) object@description else "N/A"),
             paste("Timestamp:", object@timestamp),
-            "",
-            "Git Information:",
-            "---------------",
-            paste("Repository:", object@git_info$repo),
-            paste("Branch:", object@git_info$branch),
-            paste("Commit:", object@git_info$commit_sha),
-            paste("Git Timestamp:", object@git_info$timestamp),
             ""
         )
         
-        # Add organism information if available
-        if (!is.null(object@organism_info) && 
-            (!is.null(object@organism_info$organism_name) || 
-             !is.null(object@organism_info$taxon_id))) {
-            organism_header <- c(
-                "Organism Information:",
-                "---------------------"
-            )
-            
-            organism_details <- character()
-            if (!is.null(object@organism_info$organism_name)) {
-                organism_details <- c(organism_details, 
-                                     paste("Organism Name:", object@organism_info$organism_name))
-            }
-            if (!is.null(object@organism_info$taxon_id)) {
-                organism_details <- c(organism_details, 
-                                     paste("Taxon ID:", object@organism_info$taxon_id))
-            }
-            
-            organism_info <- c(organism_header, organism_details, "")
+        git_info_vec <- character()
+        if (!is.null(object@git_info) && is.list(object@git_info)) {
+             gi <- object@git_info
+             git_info_vec <- c(
+                 paste("Repository:",    ifelse(!is.null(gi$repo) && !is.na(gi$repo), gi$repo, "N/A")),
+                 paste("Branch:",         ifelse(!is.null(gi$branch) && !is.na(gi$branch), gi$branch, "N/A")),
+                 paste("Commit:",         ifelse(!is.null(gi$commit_sha) && !is.na(gi$commit_sha), substr(gi$commit_sha,1,7), "N/A")),
+                 paste("Git Timestamp:", ifelse(!is.null(gi$timestamp) && !is.na(gi$timestamp), gi$timestamp, "N/A"))
+             )
         } else {
-            organism_info <- character()
+            git_info_vec <- c("Git Information: N/A")
+        }
+        git_section <- c("Git Information:", "---------------", git_info_vec, "")
+        
+        organism_info_vec <- character()
+        if (!is.null(object@organism_info) && is.list(object@organism_info)) {
+            oi <- object@organism_info
+            if (!is.null(oi$organism_name) && !is.na(oi$organism_name) && nzchar(oi$organism_name)) {
+                organism_info_vec <- c(organism_info_vec, paste("Organism Name:", oi$organism_name))
+            }
+            if (!is.null(oi$taxon_id) && !is.na(oi$taxon_id) && nzchar(oi$taxon_id)) {
+                organism_info_vec <- c(organism_info_vec, paste("Taxon ID:", oi$taxon_id))
+            }
+        }
+        
+        organism_section <- character()
+        if (length(organism_info_vec) > 0) {
+            organism_section <- c(
+                "Organism Information:",
+                "---------------------",
+                organism_info_vec,
+                ""
+            )
         }
 
-        # Configuration parameters header
         config_header <- c(
-            "Configuration Parameters:",
-            "------------------------"
+            "Configuration Parameters (from @args slot):",
+            "-----------------------------------------"
         )
+        
+        args_to_print <- object@args
+        # internal_workflow_source_dir is already excluded by formatConfigList
 
-        # Format configuration parameters
-        params <- formatConfigList(object@args)
+        params <- formatConfigList(args_to_print) 
 
-        # Add contrasts information if it exists
-        if (!is.null(object@args$contrasts_tbl)) {
+        # Add contrasts information if it exists and is a data.frame/tibble
+        contrasts_section <- character()
+        # Check if contrasts_tbl exists and is not NULL and has rows
+        if (!is.null(object@args$contrasts_tbl) && 
+            (is.data.frame(object@args$contrasts_tbl) || tibble::is_tibble(object@args$contrasts_tbl)) && 
+            nrow(object@args$contrasts_tbl) > 0) {
+            
             contrasts_header <- c(
                 "",
-                "Contrasts:",
-                "----------"
+                "Contrasts (from @args$contrasts_tbl):",
+                "------------------------------------"
             )
-            contrasts_info <- apply(object@args$contrasts_tbl, 1, function(row) {
-                paste("  ", row["contrasts"])
-            })
-            output <- c(header, organism_info, config_header, params, contrasts_header, contrasts_info)
-        } else {
-            output <- c(header, organism_info, config_header, params)
+            # Ensure the 'contrasts' column exists before trying to apply
+            if ("contrasts" %in% colnames(object@args$contrasts_tbl)) {
+                contrasts_info <- apply(object@args$contrasts_tbl, 1, function(row) {
+                    paste("  ", row["contrasts"])
+                })
+                contrasts_section <- c(contrasts_header, contrasts_info)
+            } else {
+                 contrasts_section <- c(contrasts_header, "  [Column 'contrasts' not found in contrasts_tbl]")
+            }
         }
 
-        # Combine and print
-        cat(paste(output, collapse = "\n"), "\n")
+        output <- c(header, git_section, organism_section, config_header, params, contrasts_section)
+        cat(paste(output, collapse = "
+"), "
+")
 
-        # Save to file if source_dir is defined
-        if (exists("source_dir")) {
-            output_file <- file.path(source_dir, "study_parameters.txt")
-            writeLines(output, output_file)
-            cat("\nParameters saved to:", output_file, "\n")
+        # Save to file if internal_workflow_source_dir is defined in args and is valid
+        workflow_source_dir_to_use <- object@args$internal_workflow_source_dir
+
+        if (!is.null(workflow_source_dir_to_use) && 
+            is.character(workflow_source_dir_to_use) && 
+            length(workflow_source_dir_to_use) == 1 && # Ensure it's a single string
+            nzchar(workflow_source_dir_to_use) && 
+            dir.exists(workflow_source_dir_to_use)) {
+            
+            output_file <- file.path(workflow_source_dir_to_use, "study_parameters.txt")
+            tryCatch({
+                writeLines(output, output_file)
+                cat("
+Parameters saved to:", output_file, "
+")
+            }, error = function(e) {
+                warning(paste("Failed to save study parameters to", output_file, ":", e$message), immediate. = TRUE)
+            })
+        } else {
+            cat("
+Warning: `internal_workflow_source_dir` not found, invalid, or directory does not exist in WorkflowArgs @args. Parameters not saved to file.
+")
+            if(!is.null(workflow_source_dir_to_use)) cat("Attempted path:", workflow_source_dir_to_use, "
+")
         }
     }
 )
@@ -1205,62 +1311,101 @@ setMethod("show",
 ##################################################################################################################
 
 #' @title Copy Files to Results Summary and Show Status
-#' @description Copies specified files to results summary directory and displays copy status
-#' @param contrasts_tbl A tibble containing contrast information
-#' @param label Optional label to append to backup directory name (e.g., "backup_MyLabel")
-#' @param force Logical; if TRUE, skips user confirmation (default: FALSE)
+#' @description Copies specified files to results summary directory and displays copy status.
+#'              It now derives paths from a global `project_dirs` object using `omic_type` and `experiment_label`.
+#' @param omic_type Character string specifying the omics type (e.g., "proteomics", "metabolomics").
+#' @param experiment_label Character string specifying the experiment label.
+#' @param contrasts_tbl A tibble containing contrast information (typically from the global environment if not passed directly).
+#' @param design_matrix A data frame for the design matrix (typically from the global environment if not passed directly).
+#' @param force Logical; if TRUE, skips user confirmation for backup (default: FALSE).
 #' @param current_rmd Optional path to the current .Rmd file being worked on; if NULL (default),
-#'                    the function will attempt to detect and save the currently active .Rmd file in RStudio
-#' @return Invisible list of failed copies for error handling
+#'                    the function will attempt to detect and save the currently active .Rmd file in RStudio.
+#' @param project_dirs_object_name The name of the list object in the global environment that holds the directory structures (typically the output of setupDirectories). Defaults to "project_dirs".
+#' @return Invisible list of failed copies for error handling.
+#' @importFrom rlang abort
+#' @importFrom tools file_path_as_absolute
 #' @export
-copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE, current_rmd = NULL) {
+copyToResultsSummary <- function(omic_type,
+                                 experiment_label,
+                                 contrasts_tbl = NULL,
+                                 design_matrix = NULL,
+                                 force = FALSE, 
+                                 current_rmd = NULL,
+                                 project_dirs_object_name = "project_dirs") {
+
+    # --- Start: Path Derivation and Validation --- #
+    if (missing(omic_type) || !is.character(omic_type) || length(omic_type) != 1 || omic_type == "") {
+        rlang::abort("`omic_type` must be a single non-empty character string.")
+    }
+    if (missing(experiment_label) || !is.character(experiment_label) || length(experiment_label) != 1 || experiment_label == "") {
+        rlang::abort("`experiment_label` must be a single non-empty character string.")
+    }
+    if (!exists(project_dirs_object_name, envir = .GlobalEnv)) {
+        rlang::abort(paste0("Global object ", sQuote(project_dirs_object_name), " not found. Run setupDirectories() first."))
+    }
+    
+    project_dirs_global <- get(project_dirs_object_name, envir = .GlobalEnv)
+    current_omic_key <- paste0(omic_type, "_", experiment_label)
+
+    if (!current_omic_key %in% names(project_dirs_global)) {
+        rlang::abort(paste0("Key ", sQuote(current_omic_key), " not found in ", sQuote(project_dirs_object_name), ". Check omic_type and experiment_label."))
+    }
+    current_paths <- project_dirs_global[[current_omic_key]]
+    
+    # Validate that current_paths is a list and contains essential directory paths
+    required_paths_in_current <- c("results_dir", "results_summary_dir", "publication_graphs_dir", 
+                                   "time_dir", "qc_dir", "de_output_dir", "pathway_dir", "source_dir", "feature_qc_dir")
+    if (!is.list(current_paths) || !all(required_paths_in_current %in% names(current_paths))) {
+        missing_req <- setdiff(required_paths_in_current, names(current_paths))
+        rlang::abort(paste0("Essential paths missing from project_dirs for key ", sQuote(current_omic_key), ": ", paste(missing_req, collapse=", ")))
+    }
+    # --- End: Path Derivation and Validation ---
+
     # Track failed copies
     failed_copies <- list()
     
-    # Print current directory paths for debugging
-    cat("\nCurrent directory paths:\n")
-    cat(sprintf("results_dir: %s\n", results_dir))
-    cat(sprintf("results_summary_dir: %s\n", results_summary_dir))
-    cat(sprintf("publication_graphs_dir: %s\n", publication_graphs_dir))
-    cat(sprintf("time_dir: %s\n", time_dir))
-    cat(sprintf("qc_dir: %s\n", qc_dir))
-    cat(sprintf("protein_qc_dir: %s\n", protein_qc_dir))
-    cat(sprintf("de_output_dir: %s\n", de_output_dir))
-    cat(sprintf("pathway_dir: %s\n", pathway_dir))
+    cat("\nRelevant directory paths for: ", current_omic_key, "\n")
+    cat(sprintf("Results Dir: %s\n", current_paths$results_dir))
+    cat(sprintf("Results Summary Dir: %s\n", current_paths$results_summary_dir))
+    cat(sprintf("Publication Graphs Dir: %s\n", current_paths$publication_graphs_dir))
+    cat(sprintf("Time Dir (current run): %s\n", current_paths$time_dir))
+    cat(sprintf("DE Output Dir: %s\n", current_paths$de_output_dir))
+    cat(sprintf("Pathway Dir: %s\n", current_paths$pathway_dir))
+    cat(sprintf("Source (Scripts) Dir: %s\n", current_paths$source_dir))
+    cat(sprintf("Feature QC Dir: %s\n", current_paths$feature_qc_dir))
+    if(!is.null(current_paths$subfeature_qc_dir)) cat(sprintf("Sub-feature QC Dir: %s\n", current_paths$subfeature_qc_dir))
     cat("\n")
+
+    # Try to get contrasts_tbl and design_matrix from the calling environment if NULL
+    if (is.null(contrasts_tbl) && exists("contrasts_tbl", envir = parent.frame())) {
+        contrasts_tbl <- get("contrasts_tbl", envir = parent.frame())
+        message("Using 'contrasts_tbl' from the calling environment.")
+    }
+    if (is.null(design_matrix) && exists("design_matrix", envir = parent.frame())) {
+        design_matrix <- get("design_matrix", envir = parent.frame())
+        message("Using 'design_matrix' from the calling environment.")
+    }
     
-    # Try to detect the currently active .Rmd file if none provided
+    # Handle current Rmd file
     if (is.null(current_rmd) && exists("rstudioapi") && requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
-        # Get the active document context
         context <- rstudioapi::getActiveDocumentContext()
-        
-        # Check if it's an .Rmd file
         if (!is.null(context) && !is.null(context$path) && grepl("\\.rmd$", context$path, ignore.case = TRUE)) {
             current_rmd <- context$path
             cat(sprintf("Detected active .Rmd file: %s\n", current_rmd))
         }
     }
     
-    # Handle current Rmd file if provided or detected
     if (!is.null(current_rmd) && file.exists(current_rmd)) {
-        # Attempt to save the current Rmd file to ensure latest changes are captured
         tryCatch({
-            # This will trigger a save in RStudio if the file is open and has unsaved changes
             if (exists("rstudioapi") && requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
-                # Get all open documents
                 context <- rstudioapi::getActiveDocumentContext()
-                
-                # Check if our target file is open and active
-                if (!is.null(context) && !is.null(context$path) && 
-                    normalizePath(context$path) == normalizePath(current_rmd)) {
-                    # Save the document
+                if (!is.null(context) && !is.null(context$path) && normalizePath(tools::file_path_as_absolute(context$path)) == normalizePath(tools::file_path_as_absolute(current_rmd))) {
                     rstudioapi::documentSave(context$id)
                     cat(sprintf("Saved current Rmd file: %s\n", current_rmd))
                 } else {
-                    # Try to find the document among all open documents
                     docs <- rstudioapi::getSourceEditorContexts()
                     for (doc in docs) {
-                        if (!is.null(doc$path) && normalizePath(doc$path) == normalizePath(current_rmd)) {
+                        if (!is.null(doc$path) && normalizePath(tools::file_path_as_absolute(doc$path)) == normalizePath(tools::file_path_as_absolute(current_rmd))) {
                             rstudioapi::documentSave(doc$id)
                             cat(sprintf("Saved Rmd file: %s\n", current_rmd))
                             break
@@ -1268,59 +1413,28 @@ copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE, cur
                     }
                 }
             }
-            
-            # Copy the Rmd file to the scripts directory
-            if (exists("source_dir") && dir.exists(source_dir)) {
-                dest_file <- file.path(source_dir, basename(current_rmd))
-                file.copy(current_rmd, dest_file, overwrite = TRUE)
-                cat(sprintf("Copied Rmd file to scripts directory: %s\n", dest_file))
-            } else {
-                warning("Scripts directory not found, could not copy Rmd file")
-                failed_copies[[length(failed_copies) + 1]] <- list(
-                    type = "rmd_copy",
-                    source = current_rmd,
-                    destination = "scripts directory",
-                    display_name = "Current Rmd File",
-                    error = "Scripts directory not found"
-                )
-            }
+            dest_file <- file.path(current_paths$source_dir, basename(current_rmd))
+            file.copy(current_rmd, dest_file, overwrite = TRUE)
+            cat(sprintf("Copied Rmd file to project scripts directory: %s\n", dest_file))
         }, error = function(e) {
             warning(sprintf("Failed to save/copy Rmd file: %s", e$message))
-            failed_copies[[length(failed_copies) + 1]] <- list(
-                type = "rmd_copy",
-                source = current_rmd,
-                destination = "scripts directory",
-                display_name = "Current Rmd File",
-                error = e$message
-            )
+            failed_copies[[length(failed_copies) + 1]] <- list(type = "rmd_copy", source = current_rmd, destination = current_paths$source_dir, display_name = "Current Rmd File", error = e$message)
         })
     }
     
-    # Define target directories
-    pub_tables_dir <- file.path(results_summary_dir, "Publication_tables")
+    # Define target directories using derived paths
+    pub_tables_dir <- file.path(current_paths$results_summary_dir, "Publication_tables")
     
-    # Check if results_summary directory exists
-    if (dir.exists(results_summary_dir)) {
-        # Create backup directory name with optional label and timestamp
-        backup_dirname <- if (!is.null(label)) {
-            paste0("proteomics_", substr(label, 1, 30), "_backup_", 
-                  format(Sys.time(), "%Y%m%d_%H%M%S"))
-        } else {
-            paste0("proteomics_backup_", format(Sys.time(), "%Y%m%d_%H%M%S"))
-        }
+    if (dir.exists(current_paths$results_summary_dir)) {
+        backup_dirname <- paste0(current_omic_key, "_backup_", format(Sys.time(), "%Y%m%d_%H%M%S"))
+        backup_dir <- file.path(dirname(current_paths$results_summary_dir), backup_dirname)
         
-        # Create full backup path in the parent directory
-        backup_dir <- file.path(dirname(results_summary_dir), backup_dirname)
-        
-        # Only prompt if force=FALSE
         should_proceed <- if (!force) {
-            cat(sprintf("\nResults summary directory exists:\n- %s\n", results_summary_dir))
+            cat(sprintf("\nResults summary directory for %s exists:\n- %s\n", current_omic_key, current_paths$results_summary_dir))
             repeat {
                 response <- readline(prompt = "Do you want to backup existing directory and proceed? (y/n): ")
                 response <- tolower(substr(response, 1, 1))
-                if (response %in% c("y", "n")) {
-                    break
-                }
+                if (response %in% c("y", "n")) break
                 cat("Please enter 'y' or 'n'\n")
             }
             response == "y"
@@ -1330,528 +1444,193 @@ copyToResultsSummary <- function(contrasts_tbl, label = NULL, force = FALSE, cur
         }
         
         if (!should_proceed) {
-            message("Copy operation cancelled by user")
+            message("Copy operation cancelled by user for ", current_omic_key)
             return(invisible(NULL))
         }
         
-        # Create backup directory
         dir.create(backup_dir, recursive = TRUE, showWarnings = FALSE)
+        file.copy(list.files(current_paths$results_summary_dir, full.names = TRUE), backup_dir, recursive = TRUE)
         
-        # Copy contents directly to backup directory without creating nested structure
-        file.copy(
-            list.files(results_summary_dir, full.names = TRUE),
-            backup_dir,
-            recursive = TRUE
-        )
-        
-        if (length(list.files(backup_dir)) > 0) {
-            cat(sprintf("Backed up results_summary directory to: %s\n", backup_dir))
-            
-            # Create a backup info file
-            backup_info <- data.frame(
-                original_dir = results_summary_dir,
-                backup_time = Sys.time(),
-                label = if(!is.null(label)) label else NA_character_,
-                stringsAsFactors = FALSE
-            )
-            
-            write.table(
-                backup_info,
-                file = file.path(backup_dir, "backup_info.txt"),
-                sep = "\t",
-                row.names = FALSE,
-                quote = FALSE
-            )
-            
-            # Remove original directory after successful backup
-            unlink(results_summary_dir, recursive = TRUE)
-            dir.create(results_summary_dir, recursive = TRUE, showWarnings = FALSE)
+        if (length(list.files(backup_dir)) > 0 || dir.exists(current_paths$results_summary_dir)) { # Check if source was empty
+            cat(sprintf("Backed up %s results_summary directory to: %s\n", current_omic_key, backup_dir))
+            backup_info <- data.frame(original_dir = current_paths$results_summary_dir, backup_time = Sys.time(), omic_key = current_omic_key, stringsAsFactors = FALSE)
+            write.table(backup_info, file = file.path(backup_dir, "backup_info.txt"), sep = "\t", row.names = FALSE, quote = FALSE)
+            unlink(current_paths$results_summary_dir, recursive = TRUE)
+            dir.create(current_paths$results_summary_dir, recursive = TRUE, showWarnings = FALSE)
         } else {
-            warning("Failed to create backup, proceeding without backup")
-            failed_copies[[length(failed_copies) + 1]] <- list(
-                type = "backup_creation",
-                path = backup_dir,
-                error = "Failed to create backup"
-            )
+            warning("Failed to create backup for ", current_omic_key, ", or source was empty. Proceeding without backup/deletion of original.")
+            failed_copies[[length(failed_copies) + 1]] <- list(type = "backup_creation", path = backup_dir, error = "Failed to create backup or source empty")
         }
     }
     
-    # Check if Excel files already exist
-    de_results_path <- file.path(pub_tables_dir, "DE_proteins_results.xlsx")
-    enrichment_path <- file.path(pub_tables_dir, "Pathway_enrichment_results.xlsx")
-    
-    # Define subdirectories to create
-    summary_subdirs <- c(
-        "QC_figures",
-        "Publication_figures",
-        "Publication_tables",
-        "Study_report"
-    )
+    summary_subdirs <- c("QC_figures", "Publication_figures", "Publication_tables", "Study_report")
+    sapply(summary_subdirs, \(subdir) {
+        dir_path <- file.path(current_paths$results_summary_dir, subdir)
+        if (!dir.create(dir_path, recursive = TRUE, showWarnings = FALSE) && !dir.exists(dir_path)) {
+            warning(sprintf("Failed to create directory: %s", dir_path))
+            failed_copies[[length(failed_copies) + 1]] <- list(type = "directory_creation", path = dir_path, error = "Failed to create directory")
+        }
+    })
 
-    # Create subdirectories in results_summary_dir
-    summary_subdirs |>
-        sapply(\(subdir) {
-            dir_path <- file.path(results_summary_dir, subdir)
-            if (!dir.create(dir_path, recursive = TRUE, showWarnings = FALSE)) {
-                if (!dir.exists(dir_path)) {  # Only warn if creation failed and dir doesn't exist
-                    warning(sprintf("Failed to create directory: %s", dir_path))
-                    failed_copies[[length(failed_copies) + 1]] <- list(
-                        type = "directory_creation",
-                        path = dir_path,
-                        error = "Failed to create directory"
-                    )
-                }
-            }
-        })
-
-    # Define files to copy with their display names
+    # Define files to copy - make paths relative to current_paths elements
     files_to_copy <- list(
-        # QC Figures - look for correlation plot in multiple locations
-        list(
-            source = ifelse(
-                file.exists(file.path(time_dir, "12_correlation_filtered_combined_plots.png")),
-                file.path(time_dir, "12_correlation_filtered_combined_plots.png"),
-                # fallback to try finding it in the qc_dir if not in time_dir
-                ifelse(
-                    file.exists(file.path(qc_dir, "12_correlation_filtered_combined_plots.png")),
-                    file.path(qc_dir, "12_correlation_filtered_combined_plots.png"),
-                    # ultimate fallback - search for any correlation plots
-                    ifelse(
-                        length(list.files(qc_dir, pattern = "correlation.*\\.png$", recursive = TRUE, full.names = TRUE)) > 0,
-                        list.files(qc_dir, pattern = "correlation.*\\.png$", recursive = TRUE, full.names = TRUE)[1],
-                        file.path(time_dir, "12_correlation_filtered_combined_plots.png") # if all else fails, use original path for error reporting
-                    )
-                )
-            ),
-            dest = "QC_figures",
-            is_dir = FALSE,
-            display_name = "Correlation Filtered Plots"
-        ),
-        # Add RUV normalized results - use absolute paths to avoid confusion with results_dir
-        list(
-            source = file.path(protein_qc_dir, "ruv_normalised_results_cln_with_replicates.tsv"),
-            dest = "Publication_tables",
-            is_dir = FALSE,
-            display_name = "RUV Normalized Results TSV",
-            new_name = "RUV_normalised_results.tsv"
-        ),
-        # Add RUV RDS file (newly added)
-        list(
-            source = file.path(protein_qc_dir, "ruv_normalised_results_cln_with_replicates.RDS"),
-            dest = "Publication_tables",
-            is_dir = FALSE,
-            display_name = "RUV Normalized Results RDS",
-            new_name = "ruv_normalised_results.RDS"
-        ),
-        list(
-            source = file.path(protein_qc_dir, "composite_QC_figure.pdf"),
-            dest = "QC_figures", 
-            is_dir = FALSE,
-            display_name = "Composite QC (PDF)"
-        ),
-        list(
-            source = file.path(protein_qc_dir, "composite_QC_figure.png"),
-            dest = "QC_figures",
-            is_dir = FALSE,
-            display_name = "Composite QC (PNG)"
-        ),
-        
-        # Publication Figures
-        list(
-            source = file.path(publication_graphs_dir, "Interactive_Volcano_Plots"),
-            dest = "Publication_figures",
-            is_dir = TRUE,
-            display_name = "Interactive Volcano Plots"
-        ),
-        list(
-            source = file.path(publication_graphs_dir, "NumSigDeMolecules"),
-            dest = "Publication_figures",
-            is_dir = TRUE,
-            display_name = "Num Sig DE Molecules"
-        ),
-        list(
-            source = file.path(publication_graphs_dir, "Volcano_Plots"),
-            dest = "Publication_figures",
-            is_dir = TRUE,
-            display_name = "Volcano Plots"
-        ),
-        
-        # GO Enrichment Plots (newly added)
-        list(
-            source = file.path(results_dir, "pathway_enrichment"),
-            dest = "Publication_figures/Enrichment_Plots",
-            is_dir = TRUE,
-            display_name = "GO Enrichment Plots"
-        ),
-        
-        # Study Report Tables
-        list(
-            source = "contrasts_tbl",
-            dest = "Study_report",
-            type = "object",
-            save_as = "contrasts_tbl.tab",
-            display_name = "Contrasts Table"
-        ),
-        list(
-            source = "design_matrix",
-            dest = "Study_report",
-            type = "object",
-            save_as = "design_matrix.tab",
-            display_name = "Design Matrix"
-        ),
-        list(
-            source = file.path(source_dir, "study_parameters.txt"),
-            dest = "Study_report",
-            is_dir = FALSE,
-            display_name = "Study Parameters"
-        )
+        list(source = file.path(current_paths$time_dir, "12_correlation_filtered_combined_plots.png"), dest = "QC_figures", is_dir = FALSE, display_name = "Correlation Filtered Plots"),
+        list(source = file.path(current_paths$feature_qc_dir, "composite_QC_figure.pdf"), dest = "QC_figures", is_dir = FALSE, display_name = "Composite QC (PDF)", new_name = paste0(omic_type, "_composite_QC_figure.pdf")),
+        list(source = file.path(current_paths$feature_qc_dir, "composite_QC_figure.png"), dest = "QC_figures", is_dir = FALSE, display_name = "Composite QC (PNG)", new_name = paste0(omic_type, "_composite_QC_figure.png")),
+        list(source = file.path(current_paths$publication_graphs_dir, "Interactive_Volcano_Plots"), dest = "Publication_figures", is_dir = TRUE, display_name = "Interactive Volcano Plots"),
+        list(source = file.path(current_paths$publication_graphs_dir, "NumSigDeMolecules"), dest = "Publication_figures", is_dir = TRUE, display_name = "Num Sig DE Molecules"),
+        list(source = file.path(current_paths$publication_graphs_dir, "Volcano_Plots"), dest = "Publication_figures", is_dir = TRUE, display_name = "Volcano Plots"),
+        list(source = current_paths$pathway_dir, dest = "Publication_figures/Enrichment_Plots", is_dir = TRUE, display_name = "Pathway Enrichment Plots"),
+        list(source = "contrasts_tbl", dest = "Study_report", type = "object", save_as = "contrasts_tbl.tab", display_name = "Contrasts Table"),
+        list(source = "design_matrix", dest = "Study_report", type = "object", save_as = "design_matrix.tab", display_name = "Design Matrix"),
+        list(source = file.path(current_paths$source_dir, "study_parameters.txt"), dest = "Study_report", is_dir = FALSE, display_name = "Study Parameters")
     )
 
-    # Add all DE protein files dynamically
-    de_files <- list.files(
-        path = de_output_dir,
-        pattern = "de_proteins.*_long_annot\\.xlsx$",
-        full.names = TRUE
-    )
+    if (omic_type == "proteomics") {
+        files_to_copy <- c(files_to_copy, list(
+            list(source = file.path(current_paths$feature_qc_dir, "ruv_normalised_results_cln_with_replicates.tsv"), dest = "Publication_tables", is_dir = FALSE, display_name = "RUV Normalized Results TSV", new_name = "RUV_normalised_results.tsv"),
+            list(source = file.path(current_paths$feature_qc_dir, "ruv_normalised_results_cln_with_replicates.RDS"), dest = "Publication_tables", is_dir = FALSE, display_name = "RUV Normalized Results RDS", new_name = "ruv_normalised_results.RDS")
+        ))
+    } # Add else if for other omic-specific files if necessary
+    
+    # Excel files paths
+    de_results_excel_path <- file.path(pub_tables_dir, paste0("DE_results_", omic_type, ".xlsx"))
+    enrichment_excel_path <- file.path(pub_tables_dir, paste0("Pathway_enrichment_results_", omic_type, ".xlsx"))
 
-    # Create a combined workbook for DE results
+    # Create combined DE workbook
     de_wb <- openxlsx::createWorkbook()
-    
-    # Create an index sheet first
     openxlsx::addWorksheet(de_wb, "DE_Results_Index")
+    de_index_data <- data.frame(Sheet = character(), Description = character(), stringsAsFactors = FALSE)
+    de_files <- list.files(path = current_paths$de_output_dir, pattern = paste0("de_", "\\w+", "_long_annot\\.xlsx$"), full.names = TRUE) # More generic pattern
     
-    # Create index data frame for DE results
-    de_index_data <- data.frame(
-        Sheet = character(),
-        Description = character(),
-        stringsAsFactors = FALSE
-    )
-    
-    # Process each DE file
-    de_files |>
-        purrr::imap(\(file, idx) {
-            # Create simple sheet name
-            sheet_name <- sprintf("DE_Sheet%d", idx)
-            
-            # Get base name for index
-            base_name <- basename(file) |>
-                stringr::str_remove("de_proteins_") |>
-                stringr::str_remove("_long_annot.xlsx")
-            
-            # Add to index
-            de_index_data <<- rbind(de_index_data, 
-                               data.frame(
-                                   Sheet = sheet_name,
-                                   Description = base_name,
-                                   stringsAsFactors = FALSE
-                               ))
-            
-            # Add data sheet
-            data <- openxlsx::read.xlsx(file)
-            openxlsx::addWorksheet(de_wb, sheet_name)
-            openxlsx::writeData(de_wb, sheet_name, data)
-        })
-    
-    # Write DE index sheet
+    purrr::imap(de_files, \(file, idx) {
+        sheet_name <- sprintf("DE_Sheet%d", idx)
+        base_name <- basename(file) |> stringr::str_remove(paste0("de_", omic_type, "_|", "_long_annot\\.xlsx$"))
+        de_index_data <<- rbind(de_index_data, data.frame(Sheet = sheet_name, Description = base_name, stringsAsFactors = FALSE))
+        data_content <- tryCatch(openxlsx::read.xlsx(file), error = function(e) NULL)
+        if (!is.null(data_content)) {
+             openxlsx::addWorksheet(de_wb, sheet_name)
+             openxlsx::writeData(de_wb, sheet_name, data_content)
+        } else {
+            warning(paste0("Failed to read DE Excel file: ", file))
+            failed_copies[[length(failed_copies) + 1]] <- list(type = "de_excel_read", source = file, error = "Failed to read")
+        }
+    })
     openxlsx::writeData(de_wb, "DE_Results_Index", de_index_data)
-    
-    # Apply formatting to DE index sheet
-    openxlsx::setColWidths(de_wb, "DE_Results_Index", cols = 1:2, widths = c(10, 50))
-    openxlsx::addStyle(de_wb, "DE_Results_Index", 
-                      style = openxlsx::createStyle(textDecoration = "bold"),
-                      rows = 1, cols = 1:2)
-    
-    # Create a new workbook for pathway enrichment results
+    openxlsx::setColWidths(de_wb, "DE_Results_Index", cols = 1:2, widths = c(15, 50))
+    openxlsx::addStyle(de_wb, "DE_Results_Index", style = openxlsx::createStyle(textDecoration = "bold"), rows = 1, cols = 1:2)
+
+    # Create combined Enrichment workbook
     enrichment_wb <- openxlsx::createWorkbook()
-    
-    # Create an index sheet for enrichment results
     openxlsx::addWorksheet(enrichment_wb, "Enrichment_Index")
+    enrichment_index_data <- data.frame(Sheet = character(), Contrast = character(), Direction = character(), stringsAsFactors = FALSE)
+    enrichment_files <- list.files(path = current_paths$pathway_dir, pattern = "_enrichment_results\\.tsv$", full.names = TRUE)
     
-    # Create index data frame for enrichment results
-    enrichment_index_data <- data.frame(
-        Sheet = character(),
-        Contrast = character(),
-        Direction = character(),
-        stringsAsFactors = FALSE
-    )
-    
-    # Get all enrichment result files
-    enrichment_files <- list.files(
-        path = pathway_dir,
-        pattern = "_enrichment_results.tsv$",
-        full.names = TRUE
-    )
-    
-    # Process each enrichment file
-    enrichment_files |>
-        purrr::imap(\(file, idx) {
-            # Extract contrast and direction from filename
-            base_name <- basename(file) |>
-                stringr::str_remove("_enrichment_results.tsv")
-            
-            # Extract direction (last part of the base_name which should be "up" or "down")
-            direction <- if (stringr::str_ends(base_name, "_up")) {
-                "up"
-            } else if (stringr::str_ends(base_name, "_down")) {
-                "down"
-            } else {
-                warning("Could not determine direction from filename: ", basename(file))
-                "unknown"
-            }
-            
-            # Extract contrast (everything before _up or _down)
-            contrast <- stringr::str_replace(base_name, "_(up|down)$", "")
-            
-            sheet_name <- sprintf("Enrichment_Sheet%d", idx)
-            
-            # Add to index
-            enrichment_index_data <<- rbind(enrichment_index_data,
-                                          data.frame(
-                                              Sheet = sheet_name,
-                                              Contrast = contrast,
-                                              Direction = direction,
-                                              stringsAsFactors = FALSE
-                                          ))
-            
-            # Add data sheet
-            data <- readr::read_tsv(file, show_col_types = FALSE)
+    purrr::imap(enrichment_files, \(file, idx) {
+        base_name <- basename(file) |> stringr::str_remove("_enrichment_results\\.tsv$")
+        direction <- ifelse(stringr::str_ends(base_name, "_up"), "up", ifelse(stringr::str_ends(base_name, "_down"), "down", "unknown"))
+        contrast_label <- stringr::str_replace(base_name, "_(up|down)$", "")
+        sheet_name <- sprintf("Enrich_Sheet%d", idx)
+        enrichment_index_data <<- rbind(enrichment_index_data, data.frame(Sheet = sheet_name, Contrast = contrast_label, Direction = direction, stringsAsFactors = FALSE))
+        data_content <- tryCatch(readr::read_tsv(file, show_col_types = FALSE), error = function(e) NULL)
+         if (!is.null(data_content)) {
             openxlsx::addWorksheet(enrichment_wb, sheet_name)
-            openxlsx::writeData(enrichment_wb, sheet_name, data)
-        })
+            openxlsx::writeData(enrichment_wb, sheet_name, data_content)
+        } else {
+            warning(paste0("Failed to read Enrichment TSV file: ", file))
+            failed_copies[[length(failed_copies) + 1]] <- list(type = "enrichment_tsv_read", source = file, error = "Failed to read")
+        }
+    })
+    openxlsx::writeDataTable(enrichment_wb, "Enrichment_Index", enrichment_index_data, tableStyle = "TableStyleLight9", headerStyle = openxlsx::createStyle(textDecoration = "bold"), withFilter = TRUE)
+    openxlsx::writeData(enrichment_wb, "Enrichment_Index", data.frame(Note = "Contrast represents the comparison (e.g., Group1_minus_Group2). Direction shows up-regulated or down-regulated genes."), startRow = nrow(enrichment_index_data) + 3)
     
-    # Write enrichment index sheet
-    openxlsx::writeDataTable(enrichment_wb, "Enrichment_Index", 
-        enrichment_index_data,
-        tableStyle = "TableStyleLight9",
-        headerStyle = openxlsx::createStyle(textDecoration = "bold"),
-        withFilter = TRUE
-    )
-
-    # Add an explanatory note at the top of the index sheet
-    openxlsx::writeData(enrichment_wb, "Enrichment_Index", 
-        data.frame(Note = "Contrast represents the comparison (e.g., Group1_minus_Group2). Direction shows up-regulated or down-regulated genes."),
-        startRow = nrow(enrichment_index_data) + 3
-    )
-    
-    # Before saving, ensure the Publication_tables directory exists
     dir.create(pub_tables_dir, recursive = TRUE, showWarnings = FALSE)
-    
-    # Save the workbooks with a try-catch to handle potential write errors
-    tryCatch({
-        openxlsx::saveWorkbook(de_wb, de_results_path, overwrite = TRUE)
-        cat(sprintf("Successfully saved: %s\n", de_results_path))
-    }, error = function(e) {
-        failed_copies[[length(failed_copies) + 1]] <- list(
-            type = "workbook_save",
-            path = de_results_path,
-            error = e$message
-        )
-        warning(sprintf("Failed to save DE results workbook: %s", e$message))
-    })
-    
-    tryCatch({
-        openxlsx::saveWorkbook(enrichment_wb, enrichment_path, overwrite = TRUE)
-        cat(sprintf("Successfully saved: %s\n", enrichment_path))
-    }, error = function(e) {
-        failed_copies[[length(failed_copies) + 1]] <- list(
-            type = "workbook_save",
-            path = enrichment_path,
-            error = e$message
-        )
-        warning(sprintf("Failed to save enrichment workbook: %s", e$message))
-    })
+    tryCatch({ openxlsx::saveWorkbook(de_wb, de_results_excel_path, overwrite = TRUE); cat(sprintf("Successfully saved DE results to: %s\n", de_results_excel_path)) }, error = function(e) { failed_copies[[length(failed_copies) + 1]] <- list(type = "workbook_save", path = de_results_excel_path, error = e$message); warning(sprintf("Failed to save DE workbook: %s", e$message)) })
+    tryCatch({ openxlsx::saveWorkbook(enrichment_wb, enrichment_excel_path, overwrite = TRUE); cat(sprintf("Successfully saved Enrichment results to: %s\n", enrichment_excel_path)) }, error = function(e) { failed_copies[[length(failed_copies) + 1]] <- list(type = "workbook_save", path = enrichment_excel_path, error = e$message); warning(sprintf("Failed to save Enrichment workbook: %s", e$message)) })
 
-    cat("\nCopying files to Results Summary...\n")
-    cat("===================================\n\n")
+    cat("\nCopying individual files/folders to Results Summary for ", current_omic_key, "...\n")
+    cat("==============================================================\n\n")
 
-    # Copy and check each file/folder
     files_to_copy |>
         lapply(\(file_spec) {
-            dest_dir <- file.path(results_summary_dir, file_spec$dest)
+            dest_dir_final <- file.path(current_paths$results_summary_dir, file_spec$dest)
             copy_success <- TRUE
             error_msg <- NULL
+            source_display <- file_spec$source # For display purposes
 
-            # Get initial status and verify source exists
             if (!is.null(file_spec$type) && file_spec$type == "object") {
-                source_exists <- exists(file_spec$source, envir = .GlobalEnv)
-                if (!source_exists) {
-                    error_msg <- sprintf("Object '%s' not found in global environment", file_spec$source)
-                }
+                source_exists <- !is.null(get0(file_spec$source, envir = parent.frame())) # Use get0 to avoid error if object doesn't exist
+                if (!source_exists) error_msg <- sprintf("Object '%s' not found in parent/global environment", file_spec$source)
             } else {
-                source_exists <- if (file_spec$is_dir) {
-                    dir.exists(file_spec$source)
-                } else {
-                    file.exists(file_spec$source)
-                }
-                if (!source_exists) {
-                    error_msg <- sprintf("Source %s not found: %s", 
-                        if(file_spec$is_dir) "directory" else "file",
-                        file_spec$source)
-                }
+                source_exists <- if (file_spec$is_dir) dir.exists(file_spec$source) else file.exists(file_spec$source)
+                if (!source_exists) error_msg <- sprintf("Source %s not found: %s", if(file_spec$is_dir) "directory" else "file", file_spec$source)
             }
 
-            # Perform copy operation with detailed error checking
             if (source_exists) {
+                dir.create(dest_dir_final, recursive = TRUE, showWarnings = FALSE)
                 if (!is.null(file_spec$type) && file_spec$type == "object") {
                     tryCatch({
-                        obj <- get(file_spec$source, envir = .GlobalEnv)
-                        dest_path <- file.path(dest_dir, file_spec$save_as)
-                        # Ensure destination directory exists
-                        dir.create(dirname(dest_path), recursive = TRUE, showWarnings = FALSE)
-                        write.table(
-                            obj,
-                            file = dest_path,
-                            sep = "\t",
-                            row.names = FALSE,
-                            quote = FALSE
-                        )
-                        # Verify file was created and has content
-                        if (!file.exists(dest_path) || file.size(dest_path) == 0) {
+                        obj <- get(file_spec$source, envir = parent.frame())
+                        dest_path <- file.path(dest_dir_final, file_spec$save_as)
+                        write.table(obj, file = dest_path, sep = "\t", row.names = FALSE, quote = FALSE)
+                        if (!file.exists(dest_path) || (file.exists(dest_path) && file.size(dest_path) == 0 && nrow(obj) > 0) ) {
                             copy_success <- FALSE
-                            error_msg <- "Failed to write object to file or file is empty"
+                            error_msg <- "Failed to write object or file is empty"
                         }
-                    }, error = function(e) {
-                        copy_success <- FALSE
-                        error_msg <<- sprintf("Error writing object: %s", e$message)
-                    })
+                    }, error = function(e) { copy_success <<- FALSE; error_msg <<- sprintf("Error writing object: %s", e$message) })
                 } else if (file_spec$is_dir) {
-                    source_path <- file_spec$source
-                    # Check if destination path includes subdirectories
-                    if (grepl("/", file_spec$dest)) {
-                        # Extract the last part of the path to use as the custom destination name
-                        parts <- strsplit(file_spec$dest, "/")[[1]]
-                        dest_dir <- file.path(results_summary_dir, paste(parts[-length(parts)], collapse = "/"))
-                        dest_path <- file.path(dest_dir, parts[length(parts)])
-                    } else {
-                        dest_path <- file.path(dest_dir, basename(source_path))
-                    }
-
-                    # Create destination directory
-                    if (!dir.create(dest_path, showWarnings = FALSE, recursive = TRUE)) {
-                        # If creation failed, check if it already exists
-                        if (!dir.exists(dest_path)) {
+                    # For directories, copy contents. Destination is dest_dir_final itself if not nested, or specific if dest includes subdirs.
+                    # The file_spec$dest might be "Publication_figures/Enrichment_Plots"
+                    # In this case dest_dir_final is already .../results_summary_dir/Publication_figures/Enrichment_Plots
+                    all_source_files <- list.files(file_spec$source, full.names = TRUE, recursive = TRUE)
+                    if (length(all_source_files) > 0) {
+                        copy_results <- sapply(all_source_files, function(f) {
+                            rel_path_from_source_base <- sub(paste0("^", tools::file_path_as_absolute(file_spec$source), "/?"), "", tools::file_path_as_absolute(f))
+                            dest_file_abs <- file.path(dest_dir_final, rel_path_from_source_base)
+                            dir.create(dirname(dest_file_abs), showWarnings = FALSE, recursive = TRUE)
+                            file.copy(f, dest_file_abs, overwrite = TRUE)
+                        })
+                        if (!all(copy_results)) {
                             copy_success <- FALSE
-                            error_msg <- "Failed to create destination directory"
+                            error_msg <- sprintf("Failed to copy some files from %s", file_spec$source)
                         }
-                    }
-                    
-                    if (copy_success) {
-                        # Copy all files from source to destination
-                        files_to_copy <- list.files(source_path, full.names = TRUE, recursive = TRUE)
-                        
-                        # Define these variables at the beginning
-                        source_files <- list.files(source_path, recursive = TRUE)
-                        dest_files <- character(0)
-                        
-                        if (length(files_to_copy) > 0) {
-                            copy_results <- files_to_copy |>
-                                sapply(\(f) {
-                                    rel_path <- sub(paste0("^", source_path, "/"), "", f)
-                                    dest_file <- file.path(dest_path, rel_path)
-                                    # Make sure parent directory exists before copying
-                                    dir.create(dirname(dest_file), showWarnings = FALSE, recursive = TRUE)
-                                    file.copy(f, dest_file, overwrite = TRUE)
-                                })
-                            
-                            if (!all(copy_results)) {
-                                copy_success <- FALSE
-                                failed_files <- files_to_copy[!copy_results]
-                                error_msg <- sprintf("Failed to copy %d files", length(failed_files))
-                            }
-                            
-                            # Verify file counts match
-                            source_files <- list.files(source_path, recursive = TRUE)
-                            dest_files <- list.files(dest_path, recursive = TRUE)
-                            if (length(source_files) != length(dest_files)) {
-                                copy_success <- FALSE
-                                error_msg <- sprintf("File count mismatch: %d source files, %d destination files",
-                                    length(source_files), length(dest_files))
-                            }
-                        }
+                    } else {
+                        # Source directory might be empty, which is not an error for the copy operation itself
+                        message(sprintf("Source directory %s is empty. Nothing to copy.", file_spec$source))
                     }
                 } else {
-                    source_path <- file_spec$source
-                    dest_path <- file.path(dest_dir,
-                        if (!is.null(file_spec$new_name)) file_spec$new_name else basename(source_path)
-                    )
-                    
-                    # Ensure destination directory exists
-                    dir.create(dirname(dest_path), recursive = TRUE, showWarnings = FALSE)
-
-                    if (!file.copy(from = source_path, to = dest_path, overwrite = TRUE)) {
+                    dest_path <- file.path(dest_dir_final, if (!is.null(file_spec$new_name)) file_spec$new_name else basename(file_spec$source))
+                    if (!file.copy(from = file_spec$source, to = dest_path, overwrite = TRUE)) {
                         copy_success <- FALSE
                         error_msg <- "Failed to copy file"
-                    } else {
-                        # Verify file sizes match
-                        source_size <- file.size(source_path)
-                        dest_size <- file.size(dest_path)
-                        if (source_size != dest_size) {
-                            copy_success <- FALSE
-                            error_msg <- sprintf("File size mismatch: source=%d bytes, dest=%d bytes",
-                                source_size, dest_size)
-                        }
+                    } else if (file.exists(file_spec$source) && file.exists(dest_path) && file.size(file_spec$source) != file.size(dest_path)) {
+                        copy_success <- FALSE
+                        error_msg <- sprintf("File size mismatch: source=%d, dest=%d bytes", file.size(file_spec$source), file.size(dest_path))
                     }
                 }
             }
 
-            # Track failed copies
             if (!source_exists || !copy_success) {
-                failed_copies[[length(failed_copies) + 1]] <- list(
-                    type = if(file_spec$is_dir) "directory" else "file",
-                    source = file_spec$source,
-                    destination = dest_dir,
-                    display_name = file_spec$display_name,
-                    error = error_msg
-                )
+                failed_copies[[length(failed_copies) + 1]] <- list(type = if(!is.null(file_spec$type) && file_spec$type == "object") "object" else if(file_spec$is_dir) "directory" else "file", source = source_display, destination = dest_dir_final, display_name = file_spec$display_name, error = error_msg)
             }
-
-            # Format and display status with error messages
-            source_status <- if (source_exists) "✓" else "✗"
-            copy_status <- if (copy_success && source_exists) "✓" else "✗"
-
-            cat(sprintf("%-25s [%s → %s] %s\n",
-                file_spec$display_name,
-                source_status,
-                copy_status,
-                if (!is.null(file_spec$is_dir) && file_spec$is_dir) "Directory" else "File"
-            ))
-
-            if (!is.null(error_msg)) {
-                cat(sprintf("%25s Error: %s\n", "", error_msg))
-            }
-
-            # Only display file counts for directories that exist and where we've defined source_files
-            if (!is.null(file_spec$is_dir) && file_spec$is_dir && source_exists) {
-                # Only try to access source_files and dest_files if they're defined in this scope
-                tryCatch({
-                    if (exists("source_files", inherits = FALSE) && exists("dest_files", inherits = FALSE)) {
-                        cat(sprintf("%25s Files: %d → %d\n", "",
-                            length(source_files),
-                            length(dest_files)
-                        ))
-                    }
-                }, error = function(e) {
-                    cat(sprintf("%25s Files count unavailable: %s\n", "", e$message))
-                })
-            }
+            cat(sprintf("%-35s [%s -> %s] %s\n", file_spec$display_name, if(source_exists) "✓" else "✗", if(copy_success && source_exists) "✓" else "✗", if(!is.null(file_spec$type) && file_spec$type == "object") "Object" else if(file_spec$is_dir) "Directory" else "File"))
+            if (!is.null(error_msg)) cat(sprintf("%35s Error: %s\n", "", error_msg))
         })
 
     cat("\nLegend: ✓ = exists/success, ✗ = missing/failed\n")
-    cat("Arrow (→) shows source → destination status\n")
+    cat("Arrow (->) shows source -> destination status\n")
 
-    # Report summary of failures
     if (length(failed_copies) > 0) {
-        cat("\nFailed Copies Summary:\n")
-        cat("=====================\n")
+        cat("\nFailed Copies Summary for ", current_omic_key, ":\n")
+        cat("=====================================\n")
         lapply(failed_copies, function(failure) {
             cat(sprintf("\n%s: %s\n", failure$display_name, failure$error))
-            cat(sprintf("Source: %s\n", failure$source))
-            cat(sprintf("Destination: %s\n", failure$destination))
+            cat(sprintf("  Source: %s\n", as.character(failure$source))) # Ensure source is char
+            cat(sprintf("  Destination Attempted: %s\n", failure$destination))
         })
-        warning(sprintf("%d files/directories failed to copy correctly", length(failed_copies)))
+        warning(sprintf("%d files/objects/directories failed to copy correctly for %s", length(failed_copies), current_omic_key))
     }
-
-    # Return failed copies list for error handling
+    cat("--- End of copyToResultsSummary for ", current_omic_key, " ---\n\n")
     invisible(failed_copies)
 }
 

@@ -5,25 +5,35 @@
 \title{Copy Files to Results Summary and Show Status}
 \usage{
 copyToResultsSummary(
-  contrasts_tbl,
-  label = NULL,
+  omic_type,
+  experiment_label,
+  contrasts_tbl = NULL,
+  design_matrix = NULL,
   force = FALSE,
-  current_rmd = NULL
+  current_rmd = NULL,
+  project_dirs_object_name = "project_dirs"
 )
 }
 \arguments{
-\item{contrasts_tbl}{A tibble containing contrast information}
+\item{omic_type}{Character string specifying the omics type (e.g., "proteomics", "metabolomics").}
 
-\item{label}{Optional label to append to backup directory name (e.g., "backup_MyLabel")}
+\item{experiment_label}{Character string specifying the experiment label.}
 
-\item{force}{Logical; if TRUE, skips user confirmation (default: FALSE)}
+\item{contrasts_tbl}{A tibble containing contrast information (typically from the global environment if not passed directly).}
+
+\item{design_matrix}{A data frame for the design matrix (typically from the global environment if not passed directly).}
+
+\item{force}{Logical; if TRUE, skips user confirmation for backup (default: FALSE).}
 
 \item{current_rmd}{Optional path to the current .Rmd file being worked on; if NULL (default),
-the function will attempt to detect and save the currently active .Rmd file in RStudio}
+the function will attempt to detect and save the currently active .Rmd file in RStudio.}
+
+\item{project_dirs_object_name}{The name of the list object in the global environment that holds the directory structures (typically the output of setupDirectories). Defaults to "project_dirs".}
 }
 \value{
-Invisible list of failed copies for error handling
+Invisible list of failed copies for error handling.
 }
 \description{
-Copies specified files to results summary directory and displays copy status
+Copies specified files to results summary directory and displays copy status.
+It now derives paths from a global \code{project_dirs} object using \code{omic_type} and \code{experiment_label}.
 }
