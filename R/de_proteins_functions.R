@@ -160,24 +160,30 @@ removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample
 removeRowsWithMissingValuesPercentHelper <- function(input_table
                                                      , cols
                                                      , design_matrix
-                                                     , sample_id
-                                                     , row_id
-                                                     , grouping_variable
+                                                     , sample_id # symbol, e.g. Run
+                                                     , row_id    # symbol
+                                                     , grouping_variable # symbol
                                                      , groupwise_percentage_cutoff = 1
                                                      , max_groups_percentage_cutoff = 50
                                                      , proteins_intensity_cutoff_percentile = 1
                                                      , temporary_abundance_column = "Abundance") {
 
+  # Ensure the sample ID column name is a string for robust use
+  sample_id_col_name_string <- rlang::as_string(rlang::ensym(sample_id))
+
   abundance_long <- input_table |>
-    pivot_longer(cols = { { cols } },
-                 names_to =   as_string(as_name( enquo( sample_id ))) ,
-                 values_to = temporary_abundance_column  ) |>
-    mutate( {{sample_id}} := purrr::map_chr(   {{sample_id}}  , as.character)   ) |>
-    mutate( !!sym(temporary_abundance_column) := case_when (is.nan(!!sym(temporary_abundance_column)) ~ NA_real_
+    tidyr::pivot_longer(cols = { { cols } }
+                 , names_to = sample_id_col_name_string # Use the explicit string name
+                 , values_to = temporary_abundance_column  ) |>
+    # Convert the newly created sample ID column to character, using its string name
+    dplyr::mutate( !!rlang::sym(sample_id_col_name_string) := as.character(!!rlang::sym(sample_id_col_name_string)) ) |>
+    dplyr::mutate( !!sym(temporary_abundance_column) := dplyr::case_when (is.nan(!!sym(temporary_abundance_column)) ~ NA_real_
                                                             , TRUE ~ !!sym(temporary_abundance_column) ) ) |>
-    left_join(design_matrix |>
-                mutate(  {{sample_id}} := purrr::map_chr(    {{sample_id}} , as.character)   )
-              , by = join_by({{sample_id}} ) )
+    dplyr::left_join(design_matrix |>
+                # Convert the sample ID column in design_matrix to character
+                # {{sample_id}} correctly refers to the column (e.g., 'Run') in design_matrix here
+                dplyr::mutate( {{sample_id}} := as.character( {{sample_id}} ) )
+              , by = sample_id_col_name_string ) # Join using the explicit string name
 
   min_protein_intensity_threshold <- ceiling( quantile( abundance_long |>
                                                           dplyr::filter( !is.nan(!!sym(temporary_abundance_column)) & !is.infinite(!!sym(temporary_abundance_column))) |>

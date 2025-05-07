@@ -2290,6 +2290,7 @@ filtering_progress <- new("FilteringProgress",
 #' @param n Number of colors needed
 #' @param base_color Base color to use
 #' @return Vector of colors
+#' @export 
 get_color_palette <- function(n, base_color) {
   colorRampPalette(c(base_color, "black"))(n)
 }
