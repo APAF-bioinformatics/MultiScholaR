@@ -1,3 +1,4 @@
+#' @export
 RunApplet <- function(applet_type, force = FALSE) {
   # Load required packages
   require(shiny)

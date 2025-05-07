@@ -205,16 +205,18 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
         # If 'publication_graphs' is not in omic_config$results_subdirs, it will be created if time_dir needs it.
         qc_dir_base <- file.path(results_path, "publication_graphs", "filtering_qc")
 
-
-        common_data_dir <- file.path(base_dir, "data")
-        dir.create(common_data_dir, recursive = TRUE, showWarnings = FALSE) # Idempotent
+        # Create Omic-Specific Data Directory (e.g., base_dir/data/proteomics)
+        # This is different from the previous common_data_dir
+        omic_specific_data_dir <- file.path(base_dir, "data", current_omic_type) # Uses current_omic_type, no label
+        dir.create(omic_specific_data_dir, recursive = TRUE, showWarnings = FALSE) # Idempotent
+        logger::log_info("Ensured omic-specific data directory exists: {omic_specific_data_dir}")
 
         current_omic_paths_def <- list( # Using a temporary name to avoid confusion with return list
             results_base = results_path,
             # results_subdirs paths will be fully qualified below
             results_summary_base = results_summary_path,
             # results_summary_subdirs paths will be fully qualified below
-            data_dir = common_data_dir,
+            data_dir = omic_specific_data_dir, # Corrected to omic-specific data directory
             scripts_dest_dir = scripts_path,
             scripts_source_dir = file.path(base_dir, "scripts", omic_config$scripts_source_leaf),
             publication_graphs_dir = publication_graphs_dir_base, # May not exist for all omics
@@ -303,6 +305,14 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
             publication_tables_dir = file.path(current_omic_paths_def$results_summary_base, "Publication_tables"),
             study_report_dir = file.path(current_omic_paths_def$results_summary_base, "Study_report")
         )
+
+        # Add UniProt Annotation Directory specifically for proteomics
+        if (current_omic_type == "proteomics") {
+            uniprot_annotation_path <- file.path(base_dir, "data", "UniProt")
+            dir.create(uniprot_annotation_path, recursive = TRUE, showWarnings = FALSE)
+            logger::log_info("Ensured UniProt annotation directory exists: {uniprot_annotation_path}")
+            omic_specific_paths_list$uniprot_annotation_dir <- uniprot_annotation_path
+        }
 
         # Add omics-category specific paths from global_vars config
         # These are more specific than the general subdirs and provide convenient named variables
