@@ -1,0 +1,745 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+
+```{r}
+
+# load pacman package manager
+if (!require(pacman)) {
+  install.packages("pacman")
+  library(pacman)
+}
+
+p_load(optparse)
+p_load(tictoc)
+p_load(tidyverse)
+p_load(plotly)
+p_load(vroom)
+p_load(qvalue)
+p_load(writexl)
+p_load(magrittr)
+p_load(knitr)
+p_load(rlang)
+p_load(ggrepel)
+p_load(gridExtra)
+p_load(MOFA2)
+p_load(ggraph)
+
+p_load(xml2)
+p_load(rvest)
+p_load(httr)
+p_load(stringi)
+p_load(reticulate)
+p_load(configr)
+p_load(logging)
+
+organism <- "org.Hs.eg.db"
+#BiocManager::install(organism, character.only = TRUE)
+p_load(organism, character.only = TRUE)
+
+
+```
+
+
+
+
+## Parameters to change
+
+```{r}
+mixomics_analysis_inclusions <-   "with_phospho" # "" #  "with_phospho_and_kinase" # 
+
+```
+
+## Directories management
+
+```{r}
+base_dir <-  here::here() 
+data_dir <- file.path( base_dir, "data")
+results_dir <- file.path(base_dir, "results")
+source_dir <- file.path(base_dir, "scripts")
+
+results_mofa_dir <- file.path(results_dir, "MultiOmics", "MOFA")
+
+dir.create( results_mofa_dir , recursive=TRUE)
+
+
+
+```
+
+
+## Load proteomics data
+```{r}
+proteomics_dat <- vroom::vroom( file.path( data_dir, "proteomics", "ruv_normalized_results_cln_with_replicates.tsv" ) )
+```
+
+
+## Load transcriptomics data
+```{r}
+transcriptomics_dat <- vroom::vroom( file.path( results_dir, "transcriptomics", "transcriptomics_normalized_data.tsv" ))
+```
+
+
+```{r}
+transcriptomics_dat
+```
+
+## Reading the data tables
+```{r}
+
+## Note that over here the columns represents samples and the rows represents the molecules for each individual table.
+
+transcriptomics_cln <- transcriptomics_dat |>
+  column_to_rownames("Run") |>
+  as.data.frame() |>
+  t() |>
+  as.data.frame() |>
+  mutate( across( everything(), ~ as.numeric(.x) )) |>
+  dplyr::select( -`51519`)
+
+proteomics_cln <- proteomics_dat |>
+  column_to_rownames("Protein.Ids") |>
+  as.data.frame()
+
+## Since the proteomics data had only 11 samples (one sample was deleted due to low total number of peptides),
+## we also have to remove the corresponding sample from all other omics. 
+transcriptomics_sort <- transcriptomics_cln[, sort( colnames(transcriptomics_cln) )]
+proteomics_sort <- proteomics_cln[, sort( colnames(proteomics_cln) )]
+
+## The First six sample IDs sorted from smalllest to largest are RPMI and the rest of the larger numbers are Sera.
+updated_column_names <- purrr::map2_chr( c(rep("R", 6), rep("S", 5) )
+                 , c(1:6, 1:5)
+                 , \(x,y) { paste0(x,y) } )
+
+## When we put the data into MOFA2, the corresponding biological replicates should be in the same column order across 
+## all -omics layer. e.g. the first column of all omics data table should correspond to the same biological replicate, and then the second column of all omics data table should be the same biological replicate etc... 
+sample_names_lookup <- data.frame(original_sample_id_transcriptome =  sort( colnames(transcriptomics_cln) )
+                                  , original_sample_id_proteome =  sort( colnames(proteomics_cln) )
+                                  , updated_sample_id = updated_column_names)
+
+colnames(transcriptomics_sort) <- updated_column_names
+colnames(proteomics_sort) <- updated_column_names      
+
+##################**********************8888888888888888888*********************##################################
+
+### Ideally we have a step where we convert all the names of the molecules to the gene, protein, metabolite, names we use in the figures. We can use the accessions as they won't be used in the figures. I don't have that here....
+
+## ******* #### Will please convert all accessions to their gene name or metabolite name here, or else all figures will be showing the accession number and not reader friendly gene names. We also need to add a small 'p' to denote proteins. ######## 
+
+# Before we put the input tables into MOFA, we need to make sure we determine what gene names, protein names, metabolites names we want to display in the figures. The row names that you use will be directly transfer to the features importance figures, and there are no easy way to change them back, unless you do names conversion systematically on the output tables afterwards. If you do not do names conversion beforehand, all of the default plotting functions will only show the accession numbers.
+
+##################**********************8888888888888888888*********************##################################
+
+
+
+## Note that we need to Z-transform over each molecule. Then we need to transform it back to 
+## having columns as samples and rows as molecules for input into MOFA. 
+
+  mofa_matrix_input <- list(transcriptome = t(scale(t(transcriptomics_sort)))
+                            , proteome = t(scale(t(proteomics_sort)))
+                            # , metabolome = t(scale(metabolomics))
+                            )
+```
+
+## Prepare the design matrix
+```{r}
+design_matrix <- vroom:::vroom(file.path( data_dir, "proteomics", "design_matrix.tab")) |>
+  mutate( Run = purrr::map_chr(Run, as.character)) |>
+  left_join( sample_names_lookup |>
+               dplyr::select(-original_sample_id_transcriptome) 
+             , by = join_by( Run == original_sample_id_proteome)) 
+
+Y <- design_matrix |>
+  dplyr::filter( Run %in% colnames(proteomics_cln) ) |>
+  arrange(Run) |>
+  pull( group) |>
+  factor( levels = c("RPMI", "Sera"))
+```
+
+
+## Create MOFA object
+
+```{r}
+MOFAobject <- create_mofa(mofa_matrix_input )
+
+```
+
+
+
+
+## Reference
+
+Reference: <https://raw.githack.com/bioFAM/MOFA2_tutorials/master/R_tutorials/getting_started_R.html>
+
+## Define data options
+
+-   scale_groups: if groups have different ranges/variances, it is good practice to scale each group to unit variance. Default is FALSE
+-   scale_views: if views have different ranges/variances, it is good practice to scale each view to unit variance. Default is FALSE
+
+```{r}
+
+data_opts <- get_default_data_options(MOFAobject)
+# head(data_opts)
+
+# data_opts$scale_views <- TRUE
+
+data_opts$center_groups <- FALSE
+head(data_opts)
+
+```
+
+## Define model options
+
+-   num_factors: number of factors
+-   likelihoods: likelihood per view (options are “gaussian”, “poisson”, “bernoulli”). By default they are learnt automatically. We advise users to use “gaussian” whenever possible!
+-   spikeslab_factors: use spike-slab sparsity prior in the factors? default is FALSE.
+-   spikeslab_weights: use spike-slab sparsity prior in the weights? default is TRUE.
+-   ard_factors: use ARD prior in the factors? Default is TRUE if using multiple groups.
+-   ard_weights: use ARD prior in the weights? Default is TRUE if using multiple views. Only change the default model options if you are familiar with the underlying mathematical model!
+
+```{r}
+model_opts <- get_default_model_options(MOFAobject)
+head(model_opts)
+```
+
+## Define train options
+
+-   maxiter: number of iterations. Default is 1000.
+-   convergence_mode: “fast”, “medium”, “slow”. For exploration, the fast mode is good enough.
+-   startELBO: initial iteration to compute the ELBO (the objective function used to assess convergence).
+-   freqELBO: frequency of computations of the ELBO.
+-   gpu_mode: use GPU mode? (needs cupy installed and a functional GPU).
+-   stochastic: use stochastic inference? (default is FALSE).
+-   verbose: verbose mode?
+-   seed: random seed
+
+```{r}
+train_opts <- get_default_training_options(MOFAobject)
+head(train_opts)
+```
+
+## Build and train the MOFA object
+
+Prepare the MOFA object
+
+```{r}
+
+
+MOFAobject <- prepare_mofa(
+  object = MOFAobject,
+  data_options = data_opts,
+  model_options = model_opts,
+  training_options = train_opts
+)
+```
+
+```{r }
+outfile <- file.path( results_mofa_dir, "model.hdf5")
+
+## Note you'll need to install "pip3 install mofapy2"
+## and also run reticulate library 
+
+model <- NA 
+if(!file.exists(outfile)) {
+
+  MOFAobject.trained <- run_mofa(MOFAobject, outfile, use_basilisk=TRUE)
+  model <- MOFAobject.trained
+head(MOFAobject.trained@samples_metadata, n=3)
+
+saveRDS(model, file.path( results_mofa_dir, "model.RDS"))
+} else {
+  model <- readRDS( file.path( results_mofa_dir, "model.RDS"))
+
+}
+
+```
+
+### Set the RPMI and Sera labels 
+```{r}
+Nsamples <- sum(model@dimensions$N)
+
+sample_metadata <- data.frame(
+  sample = samples_names(model)[[1]],
+  condition = Y
+)
+
+samples_metadata(model) <- sample_metadata
+head(model@samples_metadata, n=3)
+```
+
+## Variance Decomposition
+
+```{r}
+# Total variance explained per view and group
+head(model@cache$variance_explained$r2_total[[1]]) # group 1
+# head(model@cache$variance_explained$r2_total[[2]]) # group 2
+
+```
+
+
+
+
+# Variance explained for every factor and -omics layer
+
+```{r}
+head(model@cache$variance_explained$r2_per_factor[[1]]) # group 1
+
+# head(model@cache$variance_explained$r2_per_factor[[2]]) # group 2
+
+
+names(model@cache$variance_explained
+      )
+```
+
+# Variance explained plot
+
+```{r}
+model_copy <- model
+model_copy@cache$variance_explained$r2_per_factor$group1 <- model_copy@cache$variance_explained$r2_per_factor$group1[, c( "transcriptome",  "proteome" )]
+
+model_copy@cache$variance_explained$r2_total$group1 <- model_copy@cache$variance_explained$r2_total$group1[ c( "transcriptome",  "proteome")]
+
+views_names(model_copy) <- c("transcriptome", "proteome")
+
+variance_explained_plot <- plot_variance_explained(model_copy, x="view", y="factor")
+
+variance_explained_plot
+ggsave( plot = variance_explained_plot
+        , filename = file.path( results_mofa_dir, "variance_explained_plot.png"))
+
+
+ggsave( plot = variance_explained_plot
+        , filename = file.path( results_mofa_dir, "variance_explained_plot.pdf"))
+```
+
+
+## plot variance explained per factor
+
+```{r}
+variance_tbl <- model@cache$variance_explained$r2_per_factor$group1  |>
+  as.data.frame() |> 
+  rownames_to_column("factor") |>
+  pivot_longer( cols=!matches("factor")
+                , names_to = "view"
+                , values_to = "variance") 
+
+variance_explained_per_factor <- variance_tbl |>
+  ggplot(aes( variance, factor, fill=view)) +
+  geom_bar( stat = "identity")
+
+variance_explained_per_factor
+
+ggsave( plot = variance_explained_per_factor
+        , filename = file.path( results_mofa_dir, "variance_explained_per_factor.png"))
+
+
+ggsave( plot = variance_explained_per_factor
+        , filename = file.path( results_mofa_dir, "variance_explained_per_factor.pdf"))
+
+```
+
+## plot variance explained total
+
+```{r}
+variance_total_tbl <- model@cache$variance_explained$r2_total$group1  |>
+  as.data.frame() |> 
+  rownames_to_column("view") |>
+  pivot_longer( cols=!matches("view")
+                , names_to = "group"
+                , values_to = "variance") 
+
+
+total_variance_explained_plot <- variance_tbl |>
+  ggplot(aes(  view, variance, fill=view)) +
+  geom_bar( stat = "identity") 
+
+total_variance_explained_plot
+
+
+ggsave( plot = total_variance_explained_plot
+        , filename = file.path( results_mofa_dir, "total_variance_explained_plot.png"))
+
+
+ggsave( plot = total_variance_explained_plot
+        , filename = file.path( results_mofa_dir, "total_variance_explained_plot.pdf"))
+
+
+```
+
+```{r}
+plot_variance_explained(model, x="view", y="factor", plot_total = TRUE)[[1]]
+plot_variance_explained(model, x="view", y="factor", plot_total = TRUE)[[2]]
+```
+
+## Plotting of samples
+
+```{r}
+p <- plot_factor(model, 
+  factors = c(1,2,3),
+  color_by = "condition",
+  dot_size = 3,        # change dot size
+  dodge = T,           # dodge points with different colors
+  legend = F,          # remove legend
+  add_violin = T,      # add violin plots,
+  violin_alpha = 0.25  # transparency of violin plots
+)
+
+# The output of plot_factor is a ggplot2 object that we can edit
+sample_group_vs_factor_values <- p + 
+  scale_color_manual(values=c("RPMI"="skyblue", "Sera"="salmon")) +
+  scale_fill_manual(values=c("RPMI"="skyblue", "Sera"="salmon"))
+
+print(sample_group_vs_factor_values)
+
+sample_group_vs_factor_values
+
+
+ggsave( plot = sample_group_vs_factor_values
+        , filename = file.path( results_mofa_dir, "sample_group_vs_factor_values.png"))
+
+
+ggsave( plot = sample_group_vs_factor_values
+        , filename = file.path( results_mofa_dir, "sample_group_vs_factor_values.pdf"))
+
+```
+
+## Visualisation of combinations of factors
+
+```{r}
+mofa_pca_plot <- plot_factors(model, 
+  factors = 1:3,
+  color_by = "condition"
+) + 
+  scale_color_manual(values=c("RPMI"="skyblue", "Sera"="salmon")) +
+  scale_fill_manual(values=c("RPMI"="skyblue", "Sera"="salmon"))
+
+
+mofa_pca_plot
+
+
+ggsave( plot = mofa_pca_plot
+        , filename = file.path( results_mofa_dir, "mofa_pca_plot.png"))
+
+
+ggsave( plot = mofa_pca_plot
+        , filename = file.path( results_mofa_dir, "mofa_pca_plot.pdf"))
+
+```
+
+## Visualization of Feature Weights
+
+```{r}
+transcriptome_plot_weights <- plot_weights(model,
+  view = "transcriptome",
+  factor = 1,
+  nfeatures = 10,     # Number of features to highlight
+  scale = T,          # Scale weights from -1 to 1
+  abs = F             # Take the absolute value?
+)
+
+transcriptome_plot_weights
+
+ggsave( plot = transcriptome_plot_weights
+        , filename = file.path( results_mofa_dir, "transcriptome_plot_weights.png"))
+
+
+ggsave( plot = transcriptome_plot_weights
+        , filename = file.path( results_mofa_dir, "transcriptome_plot_weights.pdf"))
+
+
+proteome_plot_weights <- plot_weights(model,
+  view = "proteome",
+  factor = 1,
+  nfeatures = 10,     # Number of features to highlight
+  scale = T,          # Scale weights from -1 to 1
+  abs = F             # Take the absolute value?
+)
+
+proteome_plot_weights
+
+
+ggsave( plot = proteome_plot_weights
+        , filename = file.path( results_mofa_dir, "proteome_plot_weights.png"))
+
+
+ggsave( plot = proteome_plot_weights
+        , filename = file.path( results_mofa_dir, "proteome_plot_weights.pdf"))
+
+
+# metabolome_plot_weights <- plot_weights(model,
+#   view = "metabolome",
+#   factor = 1,
+#   nfeatures = 10,     # Number of features to highlight
+#   scale = T,          # Scale weights from -1 to 1
+#   abs = F             # Take the absolute value?
+# )
+# 
+# metabolome_plot_weights
+# 
+# ggsave( plot = metabolome_plot_weights
+#         , filename = file.path( results_mofa_dir, "metabolome_plot_weights.png"))
+# 
+# 
+# ggsave( plot = metabolome_plot_weights
+#         , filename = file.path( results_mofa_dir, "metabolome_plot_weights.pdf"))
+
+```
+
+```{r}
+transcriptome_plot_top_weights <- plot_top_weights(model,
+  view = "transcriptome",
+  factor = 1,
+  nfeatures = 20
+)
+
+
+transcriptome_plot_top_weights
+
+# ggsave( plot = transcriptome_plot_top_weights
+#         , filename = file.path( results_mofa_dir, "transcriptome_plot_top_weights.png"))
+# 
+# 
+# ggsave( plot = transcriptome_plot_top_weights
+#         , filename = file.path( results_mofa_dir, "transcriptome_plot_top_weights.pdf"))
+
+
+proteome_plot_top_weights <- plot_top_weights(model,
+  view = "proteome",
+  factor = 1,
+  nfeatures = 20
+)
+
+
+proteome_plot_top_weights
+
+# ggsave( plot = proteome_plot_top_weights
+#         , filename = file.path( results_mofa_dir, "proteome_plot_top_weights.png"))
+# 
+# 
+# ggsave( plot = proteome_plot_top_weights
+#         , filename = file.path( results_mofa_dir, "proteome_plot_top_weights.pdf"))
+
+
+# metabolome_plot_top_weights <- plot_top_weights(model,
+#   view = "metabolome",
+#   factor = 1,
+#   nfeatures = 20
+# )
+# 
+# 
+# metabolome_plot_top_weights
+
+# ggsave( plot = metabolome_plot_top_weights
+#         , filename = file.path( results_mofa_dir, "metabolome_plot_top_weights.png"))
+# 
+# 
+# ggsave( plot = metabolome_plot_top_weights
+#         , filename = file.path( results_mofa_dir, "metabolome_plot_top_weights.pdf"))
+
+```
+
+```{r}
+
+
+
+plotMofaWeights <- function( input_table, factor_level = Factor1) {
+
+
+transcriptome_weights_helper <- input_table |>
+  as.data.frame () |>
+  dplyr::mutate( abs_factor1 = abs({{factor_level}})) |>
+  mutate( Direction = case_when( sign({{factor_level}}) == 1 ~ "Positive"
+                            , TRUE ~ "Negative") ) |>
+  mutate( Direction = factor( Direction, levels=c("Positive", "Negative"))) |>
+  arrange( desc(abs_factor1) ) |> 
+  mutate( rank = row_number()) |>
+  
+  dplyr::filter (rank <= 20) |>
+  rownames_to_column("gene_symbol") |>
+  mutate( gene_symbol = str_replace( gene_symbol, "_transcriptome$", "")) |>
+  mutate( gene_symbol = str_replace( gene_symbol, "_proteome$", "")) 
+
+
+transcriptome_weights_helper |>
+  mutate( gene_symbol = factor( gene_symbol, levels=rev(unique( transcriptome_weights_helper$gene_symbol) )) ) |>
+  ggplot(aes( gene_symbol, abs(Factor1), fill= Direction ) ) +
+  geom_bar(stat = "identity") +
+  scale_fill_discrete( type= c("red", "blue")) +
+  theme_bw() +
+  theme (axis.text.x = element_text (angle = 90, vjust = 1)) +
+  xlab("Molecules") +
+  ylab( "Factor 1 Weights") + 
+  coord_flip()
+
+
+}
+
+plotMofaWeights_transcriptome <- plotMofaWeights (  get_weights(model)$transcriptome)  +
+  ggtitle("transcriptome")
+plotMofaWeights_transcriptome 
+ggsave( filename=file.path( results_mofa_dir, "transcriptome_plot_top_weights_cln.png")
+        , plot=plotMofaWeights_transcriptome)
+ggsave( filename=file.path( results_mofa_dir, "transcriptome_plot_top_weights_cln.pdf")
+        , plot=plotMofaWeights_transcriptome)
+
+plotMofaWeights_proteome <- plotMofaWeights (  get_weights(model)$proteome) +
+  ggtitle("proteome")
+plotMofaWeights_proteome  
+ggsave( filename=file.path( results_mofa_dir, "proteome_plot_top_weights_cln.png")
+        , plot=plotMofaWeights_proteome)
+ggsave( filename=file.path( results_mofa_dir, "proteome_plot_top_weights_cln.pdf")
+        , plot=plotMofaWeights_proteome)
+
+# 
+# metabolites_weights_cln <- get_weights(model)$metabolome    |>
+#   as.data.frame() |>
+#   rownames_to_column("names_to_use") |>
+#   left_join( metabolites_dictionary |>
+#                distinct()
+#              , by = join_by( names_to_use ))  |>
+#   dplyr::select( - CHEMICAL_ID,  -names_to_use, -Abbreviation, -dotted_name) |>
+#   column_to_rownames("BIOCHEMICAL")
+# 
+# 
+# plotMofaWeights_metabolome <- plotMofaWeights ( metabolites_weights_cln ) +
+#   ggtitle("metabolome")
+# plotMofaWeights_metabolome 
+# ggsave( filename=file.path( results_mofa_dir, "metabolome_plot_top_weights_cln.png")
+#         , plot=plotMofaWeights_metabolome)
+# ggsave( filename=file.path( results_mofa_dir, "metabolome_plot_top_weights_cln.pdf")
+#         , plot=plotMofaWeights_metabolome)
+
+
+sort( get_weights(model)$proteome[, "Factor1"] )
+
+```
+
+
+
+
+
+## Visualisation of patterns in the input data
+
+```{r}
+plot_data_heatmap(model,
+  view = "transcriptome",         # view of interest
+  factor = 1,             # factor of interest
+  features = 20,          # number of features to plot (they are selected by weight)
+  
+  # extra arguments that are passed to the `pheatmap` function
+  cluster_rows = TRUE, cluster_cols = FALSE,
+  show_rownames = TRUE, show_colnames = FALSE
+)
+
+plot_data_heatmap(model,
+  view = "proteome",         # view of interest
+  factor = 1,             # factor of interest
+  features = 20,          # number of features to plot (they are selected by weight)
+  
+  # extra arguments that are passed to the `pheatmap` function
+  cluster_rows = TRUE, cluster_cols = FALSE,
+  show_rownames = TRUE, show_colnames = FALSE
+)
+
+
+# plot_data_heatmap(model,
+#   view = "metabolome",         # view of interest
+#   factor = 1,             # factor of interest
+#   features = 20,          # number of features to plot (they are selected by weight)
+#   
+#   # extra arguments that are passed to the `pheatmap` function
+#   cluster_rows = TRUE, cluster_cols = FALSE,
+#   show_rownames = TRUE, show_colnames = FALSE
+# )
+```
+
+
+## Scatterplots
+
+```{r}
+transcriptome_scatter_plot <- plot_data_scatter(model,
+  view = "transcriptome",         # view of interest
+  factor = 1,             # factor of interest
+  features = 20,           # number of features to plot (they are selected by weight)
+  add_lm = FALSE # ,          # add linear regression
+  # color_by = "group"
+)
+transcriptome_scatter_plot
+ggsave( filename=file.path(results_mofa_dir, "transcriptome_scatter_plot.png"))
+ggsave( filename=file.path(results_mofa_dir, "transcriptome_scatter_plot.pdf"))
+
+
+proteome_scatter_plot <- plot_data_scatter(model,
+  view = "proteome",         # view of interest
+  factor = 1,             # factor of interest
+  features = 20,           # number of features to plot (they are selected by weight)
+  add_lm = FALSE # ,          # add linear regression
+  # color_by = "group"
+)
+proteome_scatter_plot
+ggsave( filename=file.path(results_mofa_dir, "proteome_scatter_plot.png"))
+ggsave( filename=file.path(results_mofa_dir, "proteome_scatter_plot.pdf"))
+
+# 
+# metabolome_scatter_plot <- plot_data_scatter(model,
+#   view = "metabolome",         # view of interest
+#   factor = 1,             # factor of interest
+#   features = 20,           # number of features to plot (they are selected by weight)
+#   add_lm = FALSE # ,          # add linear regression
+#   # color_by = "group"
+# )
+# 
+# metabolome_scatter_plot
+# ggsave( filename=file.path(results_mofa_dir, "metabolome_scatter_plot.png"))
+# ggsave( filename=file.path(results_mofa_dir, "metabolome_scatter_plot.pdf"))
+
+
+```
+
+## Non-linear dimensionality reduction
+
+```{r}
+set.seed(42)
+ model <- run_umap(model, n_neighbors=11)
+# Plot non-linear dimensionality reduction
+
+plot_dimred(model,
+  method = "UMAP",  # method can be either "TSNE" or "UMAP"
+  color_by = "condition"
+)
+
+model <- run_tsne(model, perplexity=1)
+plot_dimred(model,
+  method = "TSNE",  # method can be either "TSNE" or "UMAP"
+  color_by = "condition"
+)
+
+```
+
+## Extracting data
+
+```{r}
+# For convenience, the user can extract the data in long data.frame format:
+
+factors <- get_factors(model, as.data.frame = T)
+head(factors, n=3)
+
+vroom::vroom_write( factors, file.path(results_mofa_dir, "factors.tab"))
+
+weights <- get_weights(model, as.data.frame = T)
+head(weights, n=3)
+
+vroom::vroom_write( weights, file.path(results_mofa_dir, "weights.tab"))
+
+
+data <- get_data(model, as.data.frame = T)
+head(data, n=3)
+
+vroom::vroom_write( data, file.path(results_mofa_dir, "data.tab"))
+
+# get_variance_explained(model, as.data.frame = T)
+
+apropos("^get_")
+```

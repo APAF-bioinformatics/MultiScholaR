@@ -11,7 +11,7 @@ output:
     message: false
 ---
 # Initial R environment setup  
-## Checks your R environment for the required packages to run ProteomeScholaR, and installs them if they are not.
+## Checks your R environment for the required packages to run MultiScholaR, and installs them if they are not.
 
 ### Further Reading
 #### Understanding Package Management in R
@@ -26,94 +26,47 @@ output:
 - [UniProt.ws](https://bioconductor.org/packages/release/bioc/html/UniProt.ws.html) - Interface to the UniProt web services
 - [mixOmics](https://www.bioconductor.org/packages/release/bioc/html/mixOmics.html) - Methods for multivariate analysis of biological data
 
-#### About ProteomeScholaR
-- [ProteomeScholaR GitHub](https://github.com/APAF-BIOINFORMATICS/ProteomeScholaR) - The main repository for the package
+#### About MultiScholaR
+- [MultiScholaR GitHub](https://github.com/APAF-BIOINFORMATICS/MultiScholaR) - The main repository for the package
 - [APAF Bioinformatics](https://www.proteome.org.au/bioinformatics) - Australian Proteome Analysis Facility bioinformatics resources
 
-This function checks for and installs all the required packages for the ProteomeScholaR workflow. It installs packages from CRAN, Bioconductor, and GitHub as needed. The function is designed to make setup easy for users who may not be familiar with R package management.
+This function checks for and installs all the required packages for the MultiScholaR workflow. It installs packages from CRAN, Bioconductor, and GitHub as needed. The function is designed to make setup easy for users who may not be familiar with R package management.
 
 ## IF THIS IS YOUR FIRST INSTALL, THIS WILL TAKE SOME TIME AS THERE ARE A NUMBER OF DEPENDENCIES TO INSTALL :)
 ## GOOD POINT TO GRAB A COFFEE!
 ```{r MultiScholaR FIRST INSTALL, message=TRUE, warning=TRUE}
-# Function to install/update MultiScholaR
-# Set force_install = TRUE to force reinstallation from GitHub
-installMultiScholaR <- function(force_install = FALSE, verbose = TRUE) {
-  # Ensure devtools is available
-  if (!requireNamespace("devtools", quietly = TRUE)) {
-    if(verbose) message("Installing devtools...")
-    install.packages("devtools")
-  }
-
-  # Detach and unload if already loaded to allow clean installation
-  if ("package:MultiScholaR" %in% search()) {
-      try(detach("package:MultiScholaR", unload = TRUE, force = TRUE), silent = TRUE)
-  }
-  try(unloadNamespace("MultiScholaR"), silent = TRUE)
-
-  if(verbose) message("Installing/Updating MultiScholaR from GitHub...")
-  devtools::install_github(
-    "APAF-BIOINFORMATICS/MultiScholaR", # Updated repo name
-    ref = "main",
-    dependencies = TRUE,
-    upgrade = "never",
-    force = force_install # Use the function argument to control force
-  )
-
-  if(verbose) message("Loading MultiScholaR...")
-  # Load the newly installed/updated package
-  library(MultiScholaR) # Updated package name
-}
-
-# Check if MultiScholaR is installed
-if (requireNamespace("MultiScholaR", quietly = TRUE)) {
-    # Package is installed
-    installed_version <- packageVersion("MultiScholaR")
-    installed_version_str <- as.character(installed_version)
-    message(paste("MultiScholaR version", installed_version_str, "is installed."))
-
-    # Example: Check if it's an older version (< 0.1.0) - Suggest manual update
-    # Adjust version check if needed for MultiScholaR's versioning scheme
-    if (utils::compareVersion(installed_version_str, "0.1.0") < 0) {
-        message("\\n--- IMPORTANT: UPDATE RECOMMENDED --- ")
-        message("-> Your installed MultiScholaR version (", installed_version_str, ") is older than v0.1.")
-        message("-> Major changes may have been introduced.")
-        message("-> Please consider updating manually by running:")
-        message("   installMultiScholaR(force_install = TRUE)") # Updated function name
-        message("-> Also, update your project_setup.R (if used) and .Rmd files, available from the GitHub repository. :-) ")
-        message("-------------------------------------")
-        message("Loading existing older version...")
-        library(MultiScholaR) # Load the existing older version for now
-    } else {
-        message("-> Your version is 0.1.0 or newer. Loading...")
-        library(MultiScholaR) # Load the existing recent version
+installMultiScholaR <- function(verbose = TRUE) {
+    # Install devtools if missing
+    if (!requireNamespace("devtools", quietly = TRUE)) {
+        install.packages("devtools")
     }
 
-} else {
-    # Package is NOT installed
-    message("MultiScholaR is not installed. Performing initial installation...")
-    # Call the function to install (force_install defaults to FALSE)
-    # The function will also load the library after installation
-    installMultiScholaR() # Updated function name
+    # Detach if loaded
+    if ("package:MultiScholaR" %in% search()) {
+        try(detach("package:MultiScholaR", unload = TRUE, force = TRUE), silent = TRUE)
+    }
+
+    # Unload namespace
+    try(unloadNamespace("MultiScholaR"), silent = TRUE)
+
+
+    devtools::install_github(
+        "APAF-BIOINFORMATICS/MultiScholaR",
+        ref = "main", # Main branch
+        dependencies = TRUE,
+        upgrade = "never",
+        force = TRUE
+    )
+
+    # Load it
+    library(MultiScholaR)
 }
 
-# Load dependencies AFTER MultiScholaR is guaranteed to be loaded
-# (either from existing install or fresh install)
-# Ensure installMultiScholaR is called if needed, then load dependencies
-# Note: The previous script called installProteomeScholaR again here - this might
-# be redundant if it was just installed or loaded. Consider if this re-call is necessary.
-# If just loading is needed, library(MultiScholaR) might suffice if already installed.
-# If ensuring the latest is loaded *after* the initial check, the call might be desired.
-# For safety/consistency with original logic, keeping the call but with updated name:
-installMultiScholaR(force_install = FALSE, verbose = TRUE) # Updated function name
-loadDependencies() # Assumes this function exists within MultiScholaR or is globally defined
-
-# Example of how to force an update manually if needed:
-# installMultiScholaR(force_install = TRUE) # Updated function name
-# loadDependencies() # Reload dependencies if you forced an update
-
+installMultiScholaR()
+loadDependencies()
 ```
 
-# START HERE if you already have ProteomeScholaR installed
+# START HERE if you already have MultiScholaR installed
 
 ### Further Reading
 #### R Library Management
@@ -129,9 +82,9 @@ loadDependencies() # Assumes this function exists within MultiScholaR or is glob
 - [Reproducible Research with R](https://cran.r-project.org/web/views/ReproducibleResearch.html) - CRAN task view on reproducible research
 - [R Markdown](https://rmarkdown.rstudio.com/) - Framework for reproducible reports in R
 
-When you already have ProteomeScholaR installed (and you don't want to check for updates), you can start from this point. The code below loads the package and all its dependencies to prepare your environment for analysis.
-```{r Load ProteomeScholaR}
-library(ProteomeScholaR)
+When you already have MultiScholaR installed (and you don't want to check for updates), you can start from this point. The code below loads the package and all its dependencies to prepare your environment for analysis.
+```{r Load MultiScholaR}
+library(MultiScholaR)
 loadDependencies()
 ```
 
@@ -152,19 +105,21 @@ loadDependencies()
 - [Guidelines for Reporting Mass Spectrometry Data](https://www.mcponline.org/article/S1535-9476(21)00064-9/fulltext) - Standards for proteomics project organization
 - [ProteomeXchange](http://www.proteomexchange.org/) - Repository standards for proteomics data
 
-This section establishes the directory structure for your project. Setting up a consistent directory structure is crucial for managing the various files generated throughout the analysis, including input data, intermediate results, and final outputs. ProteomeScholaR creates a standardized structure to help organize your work.
+This section establishes the directory structure for your project. Setting up a consistent directory structure is crucial for managing the various files generated throughout the analysis, including input data, intermediate results, and final outputs. MultiScholaR creates a standardized structure to help organize your work.
 ```{r Project Environment Management}
 # Directory Management
 ## Set up the project directory structure
-## This section sets up the project directory structure for ProteomeScholaR
+## This section sets up the project directory structure for MultiScholaR
 ## Directory management can be challenging, particularly when managing objects
 ## across multiple chunks within a single R Markdown document.
-
-experiment_label <- "my_experiment" # NB this will affect directory structure and name of your experiment downstream
-
-setupAndShowDirectories(
-  label = experiment_label,
-  force = FALSE
+experiment_label <- "workshop_data"
+# Setup for the central pillars of molecular biology
+project_dirs <- setupDirectories(
+    #omic_types = "metabolomics"
+    # Or: 
+    omic_types = c("proteomics", "metabolomics", "transcriptomics"),
+    , label = experiment_label,
+    force = FALSE # Set to TRUE to skip prompts if dirs exist
 )
 ```
 
@@ -202,7 +157,7 @@ This section handles importing your DIA-NN results and FASTA file, and setting u
 ## every set of proteins going through a mass spectrometer is different!
 ## One size does not fit all and you *will* most likely need to fine tune these
 ## to get the most out of your data.
-config_list <- readConfigFile(file = file.path(source_dir, "config.ini"))
+config_list <- readConfigFile(file = file.path(project_dirs$proteomics$base_dir, "config.ini"))
 
 # Annotation Management
 ## Please download the organism fasta file from UniProt. If UniProt is not
@@ -211,17 +166,17 @@ config_list <- readConfigFile(file = file.path(source_dir, "config.ini"))
 ## conversions
 ## Please set the name of your fasta file here in the root directory if you
 ## already have it
-DIANN_filename <- "report.tsv" ## copy to /data/proteomics in your project directory
-fasta_filename <- "fasta.fasta" ## copy to /data/UniProt in your project directory
-uniprot_search_results <- NULL ## copy to /data/UniProt in your project directory eg "idmapping.tsv"
-uniparc_search_results <- NULL ## copy to /data/UniProt in your project directory eg "idmapping.tsv"
+DIANN_filename <- "KV_DIANN_report.tsv" ## copy to /data/proteomics in your project directory
+fasta_filename <- "04153260899A.fasta" ## copy to /data/UniProt in your project directory
+uniprot_search_results <- "idmapping_2024_10_07.tsv" ## copy to /data/UniProt in your project directory eg "idmapping.tsv"
+uniparc_search_results <- "kv_uniparc.csv" ## copy to /data/UniProt in your project directory eg "idmapping.tsv"
 ## Please supply your organism's taxon ID here
-taxon_id <- your_organism_id_here # You can find this at the links above.
+taxon_id <- 244366 # You can find this at the links above.
 ## Please supply your organism's name here
-organism_name <- "your_organism_name_here" # If you don't know this by now, you have bigger problems than this workflow!
+organism_name <- "Klebsiella variicola" # If you don't know this by now, you have bigger problems than this workflow!
 
-data_tbl <- vroom::vroom(file.path(data_dir, "proteomics", DIANN_filename))
-fasta_file_path <- file.path(data_dir, "UniProt", fasta_filename)
+data_tbl <- vroom::vroom(file.path(project_dirs$proteomics$data_dir, DIANN_filename))
+fasta_file_path <- file.path(project_dirs$proteomics$uniprot_annotation_dir, fasta_filename)
 
 config_list[["globalParameters"]][["fasta_file"]] <- fasta_filename
 config_list[["globalParameters"]][["peptides_input_file"]] <- DIANN_filename
@@ -229,10 +184,10 @@ config_list[["globalParameters"]][["peptides_input_file"]] <- DIANN_filename
 # Load search results if files exist
 if (!is.null(uniprot_search_results) && !is.null(uniparc_search_results)) {
   uniprot_search_results <- vroom::vroom(
-    file.path(data_dir, "UniProt", uniprot_search_results)
+    file.path(project_dirs$proteomics$uniprot_annotation_dir, uniprot_search_results)
   )
   uniparc_search_results <- vroom::vroom(
-    file.path(data_dir, "UniProt", uniparc_search_results)
+    file.path(project_dirs$proteomics$uniprot_annotation_dir, uniparc_search_results)
   )
 }
 ```
@@ -255,7 +210,7 @@ if (!is.null(uniprot_search_results) && !is.null(uniparc_search_results)) {
 - [Batch Effects in Omics Data](https://www.nature.com/articles/nrg2825) - Understanding and addressing batch effects
 - [Balanced Design Principles](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4110759/) - Principles for balanced experimental design
 
-This section helps you create a design matrix that links your samples to experimental conditions. The design matrix is a fundamental component that defines how your samples relate to each other and which comparisons will be possible in your analysis. ProteomeScholaR provides an interactive applet to help you build this matrix easily.
+This section helps you create a design matrix that links your samples to experimental conditions. The design matrix is a fundamental component that defines how your samples relate to each other and which comparisons will be possible in your analysis. MultiScholaR provides an interactive applet to help you build this matrix easily.
 ```{r Design Matrix Setup} 
 if (exists("design_matrix", envir = .GlobalEnv)) {
   print("Design matrix already set :) No need to run app again!")
@@ -355,7 +310,7 @@ data_cln <- updateProteinIDs(data_cln, aa_seq_tbl_final)
 - [MaxLFQ Algorithm](https://www.mcponline.org/article/S1535-9476(20)32810-5/fulltext) - Label-free quantification in proteomics
 - [Proteotypic Peptides](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2689311/) - Understanding proteotypic peptides in proteomics
 
-This section creates a structured S4 object to hold your peptide data with all the necessary metadata. By organizing your data in this object, ProteomeScholaR can easily access and manipulate the data in subsequent analysis steps, while maintaining the relationship between peptides, proteins, and experimental conditions.
+This section creates a structured S4 object to hold your peptide data with all the necessary metadata. By organizing your data in this object, MultiScholaR can easily access and manipulate the data in subsequent analysis steps, while maintaining the relationship between peptides, proteins, and experimental conditions.
 
 ```{r Peptide Data S4 Object Creation}
 peptide_data <- new(
