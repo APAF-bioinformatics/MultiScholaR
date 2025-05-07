@@ -690,7 +690,7 @@ updateProteinIDs <- function(protein_data, aa_seq_tbl_final) {
 #' @param silent Only print critical information (default: FALSE)
 #' @param no_backup Deactivate backup of previous run (default: FALSE)
 #' @return List containing cleaned data and statistics
-#' @import tidyverse vroom magrittr knitr rlang optparse seqinr ProteomeRiver janitor tictoc configr logging
+#' @import tidyverse vroom magrittr knitr rlang optparse seqinr janitor tictoc configr logging
 #' @export
 #'
 #' Test RStudio GitHub integration

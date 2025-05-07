@@ -18,7 +18,8 @@ my_project_dir <- NULL            # Optional: Set specific directory (leave as N
 # Mac:     my_project_dir <- "~/Projects"
 
 # SET YOUR WORKFLOW OPTIONS HERE:
-omic_types <- c("proteomics", "metabolomics") # Options: c("proteomics", "metabolomics", "transcriptomics", ...) Add more as they become available
+omic_types <- c("proteomics", "metabolomics", "transcriptomics", "lipidomics", "integration") 
+# Options: c("proteomics", "metabolomics", "transcriptomics", ...) 
 
 # The following two options primarily apply when 'proteomics' is in omic_types:
 workflow_type <- "DIA-NN"  # Proteomics-specific: "DIA-NN", "LFQ - FragPipe", "LFQ - MaxQuant", "TMT - MaxQuant", "TMT - FragPipe"
