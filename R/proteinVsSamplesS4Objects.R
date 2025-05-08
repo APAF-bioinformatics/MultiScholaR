@@ -1179,7 +1179,7 @@ setMethod( f = "removeRowsWithMissingValuesPercent"
 
 
              theObject@protein_quant_table <- removeRowsWithMissingValuesPercentHelper( protein_quant_table
-                                                                           , cols= !matches(protein_id_column)
+                                                                           , cols= protein_id_column
                                                                            , design_matrix = design_matrix
                                                                            , sample_id = !!sym(sample_id)
                                                                            , row_id = !!sym(protein_id_column)
