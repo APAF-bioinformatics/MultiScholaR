@@ -1425,41 +1425,104 @@ copyToResultsSummary <- function(omic_type,
     # Define target directories using derived paths
     pub_tables_dir <- file.path(current_paths$results_summary_dir, "Publication_tables")
     
-    if (dir.exists(current_paths$results_summary_dir)) {
+    # Ensure results_summary_dir exists before checking its contents (it should, from setupDirectories)
+    if (!dir.exists(current_paths$results_summary_dir)) {
+        dir.create(current_paths$results_summary_dir, recursive = TRUE, showWarnings = FALSE)
+        logger::log_info("Created results_summary_dir as it was missing: {current_paths$results_summary_dir}")
+    }
+    
+    # Check if the results_summary_dir has any content
+    contents_of_summary_dir <- list.files(current_paths$results_summary_dir, recursive = TRUE, all.files = TRUE, no.. = TRUE)
+    
+    if (length(contents_of_summary_dir) > 0) {
+        logger::log_info("Results summary directory for {current_omic_key} ({current_paths$results_summary_dir}) contains existing files/folders.")
         backup_dirname <- paste0(current_omic_key, "_backup_", format(Sys.time(), "%Y%m%d_%H%M%S"))
         backup_dir <- file.path(dirname(current_paths$results_summary_dir), backup_dirname)
         
-        should_proceed <- if (!force) {
-            cat(sprintf("\nResults summary directory for %s exists:\n- %s\n", current_omic_key, current_paths$results_summary_dir))
+        should_proceed_with_backup <- if (!force) {
+            cat(sprintf("\\nResults summary directory for %s contains content:\\n- %s\\n", current_omic_key, current_paths$results_summary_dir))
             repeat {
-                response <- readline(prompt = "Do you want to backup existing directory and proceed? (y/n): ")
+                response <- readline(prompt = "Do you want to backup existing directory and proceed by overwriting? (y/n): ")
                 response <- tolower(substr(response, 1, 1))
                 if (response %in% c("y", "n")) break
-                cat("Please enter 'y' or 'n'\n")
+                cat("Please enter 'y' or 'n'\\n")
             }
             response == "y"
         } else {
-            cat("Force mode enabled - backing up and proceeding...\n")
+            logger::log_info("Force mode enabled - backing up and proceeding with overwrite for {current_omic_key}...")
             TRUE
         }
         
-        if (!should_proceed) {
-            message("Copy operation cancelled by user for ", current_omic_key)
-            return(invisible(NULL))
+        if (!should_proceed_with_backup) {
+            logger::log_info("Overwrite of {current_paths$results_summary_dir} for {current_omic_key} cancelled by user. No backup made, original files untouched.")
+            # Return a list indicating cancellation, which can be checked by the caller.
+            return(invisible(list(status="cancelled", omic_key=current_omic_key, message=paste0("Backup and overwrite for ", current_omic_key, " cancelled by user."))))
         }
         
-        dir.create(backup_dir, recursive = TRUE, showWarnings = FALSE)
-        file.copy(list.files(current_paths$results_summary_dir, full.names = TRUE), backup_dir, recursive = TRUE)
-        
-        if (length(list.files(backup_dir)) > 0 || dir.exists(current_paths$results_summary_dir)) { # Check if source was empty
-            cat(sprintf("Backed up %s results_summary directory to: %s\n", current_omic_key, backup_dir))
-            backup_info <- data.frame(original_dir = current_paths$results_summary_dir, backup_time = Sys.time(), omic_key = current_omic_key, stringsAsFactors = FALSE)
-            write.table(backup_info, file = file.path(backup_dir, "backup_info.txt"), sep = "\t", row.names = FALSE, quote = FALSE)
-            unlink(current_paths$results_summary_dir, recursive = TRUE)
-            dir.create(current_paths$results_summary_dir, recursive = TRUE, showWarnings = FALSE)
+        # Proceed with backup and clearing
+        if (!dir.create(backup_dir, recursive = TRUE, showWarnings = FALSE) && !dir.exists(backup_dir)) {
+             logger::log_warn("Failed to create backup directory: {backup_dir} for {current_omic_key}. Original directory will not be cleared.")
+             failed_copies[[length(failed_copies) + 1]] <- list(type = "backup_dir_creation", path = backup_dir, error = "Failed to create backup directory")
+             # Do not proceed with unlink if backup dir creation fails
         } else {
-            warning("Failed to create backup for ", current_omic_key, ", or source was empty. Proceeding without backup/deletion of original.")
-            failed_copies[[length(failed_copies) + 1]] <- list(type = "backup_creation", path = backup_dir, error = "Failed to create backup or source empty")
+            items_to_backup <- list.files(current_paths$results_summary_dir, full.names = TRUE, all.files = TRUE, no.. = TRUE)
+            backup_copy_successful <- TRUE
+            if (length(items_to_backup) > 0) {
+                dir.create(backup_dir, showWarnings = FALSE, recursive = TRUE) # Ensure backup_dir itself exists
+                copy_results <- file.copy(from = items_to_backup, to = backup_dir, overwrite = TRUE, recursive = TRUE, copy.mode = TRUE, copy.date = TRUE)
+                if (!all(copy_results)) {
+                    backup_copy_successful <- FALSE
+                    logger::log_warn("Not all items were successfully copied from {current_paths$results_summary_dir} to backup directory {backup_dir}.")
+                }
+            }
+
+            backup_has_content <- length(list.files(backup_dir, recursive=TRUE, all.files=TRUE, no..=TRUE)) > 0
+            
+            if (backup_copy_successful && (backup_has_content || length(contents_of_summary_dir) == 0) ) {
+                logger::log_info("Successfully backed up content of {current_paths$results_summary_dir} to: {backup_dir}")
+                backup_info <- data.frame(original_dir = current_paths$results_summary_dir, backup_time = Sys.time(), omic_key = current_omic_key, stringsAsFactors = FALSE)
+                tryCatch(
+                    write.table(backup_info, file = file.path(backup_dir, "backup_info.txt"), sep = "\\t", row.names = FALSE, quote = FALSE),
+                    error = function(e) logger::log_warn("Failed to write backup_info.txt: {e$message}")
+                )
+                
+                logger::log_info("Clearing original results_summary_dir: {current_paths$results_summary_dir}")
+                unlink_success <- tryCatch({
+                    unlink(current_paths$results_summary_dir, recursive = TRUE, force = TRUE)
+                    TRUE # Return TRUE on success
+                }, error = function(e) {
+                    logger::log_error("Error unlinking {current_paths$results_summary_dir}: {e$message}")
+                    FALSE # Return FALSE on error
+                })
+
+                if(unlink_success) {
+                    if (!dir.create(current_paths$results_summary_dir, recursive = TRUE, showWarnings = FALSE) && !dir.exists(current_paths$results_summary_dir)) {
+                        warning_msg <- sprintf("CRITICAL: Failed to recreate results_summary_dir %s after backup and unlink. Subsequent operations will likely fail.", current_paths$results_summary_dir)
+                        logger::log_error(warning_msg)
+                        failed_copies[[length(failed_copies) + 1]] <- list(type = "critical_dir_recreation", path = current_paths$results_summary_dir, error = warning_msg)
+                        # Potentially stop execution or return an error status here
+                    } else {
+                         logger::log_info("Successfully cleared and recreated results_summary_dir: {current_paths$results_summary_dir}")
+                    }
+                } else {
+                     warning_msg <- sprintf("Failed to clear original results_summary_dir %s after backup. Subsequent operations may overwrite or mix files.", current_paths$results_summary_dir)
+                     logger::log_warn(warning_msg)
+                     failed_copies[[length(failed_copies) + 1]] <- list(type = "dir_clear_failure", path = current_paths$results_summary_dir, error = warning_msg)
+                }
+            } else {
+                logger::log_warn("Failed to copy all items to backup for {current_omic_key}, or backup is unexpectedly empty. Original directory {current_paths$results_summary_dir} was NOT cleared.")
+                failed_copies[[length(failed_copies) + 1]] <- list(type = "backup_content_copy", source = current_paths$results_summary_dir, destination = backup_dir, error = "Failed to copy items to backup or backup empty; original not cleared")
+            }
+        }
+    } else {
+        logger::log_info("Results summary directory for {current_omic_key} ({current_paths$results_summary_dir}) is empty. No backup needed. Proceeding to create subdirectories.")
+        # Ensure the main directory exists (it should if we got here and it was empty, or it was just created if missing)
+        if (!dir.exists(current_paths$results_summary_dir)) {
+             if(!dir.create(current_paths$results_summary_dir, recursive = TRUE, showWarnings = FALSE)) {
+                 warning_msg <- sprintf("CRITICAL: Failed to create initially empty results_summary_dir %s. Subsequent operations may fail.", current_paths$results_summary_dir)
+                 logger::log_error(warning_msg)
+                 failed_copies[[length(failed_copies) + 1]] <- list(type = "critical_empty_dir_creation", path = current_paths$results_summary_dir, error = warning_msg)
+             }
         }
     }
     
@@ -1477,9 +1540,9 @@ copyToResultsSummary <- function(omic_type,
         list(source = file.path(current_paths$time_dir, "12_correlation_filtered_combined_plots.png"), dest = "QC_figures", is_dir = FALSE, display_name = "Correlation Filtered Plots"),
         list(source = file.path(current_paths$feature_qc_dir, "composite_QC_figure.pdf"), dest = "QC_figures", is_dir = FALSE, display_name = "Composite QC (PDF)", new_name = paste0(omic_type, "_composite_QC_figure.pdf")),
         list(source = file.path(current_paths$feature_qc_dir, "composite_QC_figure.png"), dest = "QC_figures", is_dir = FALSE, display_name = "Composite QC (PNG)", new_name = paste0(omic_type, "_composite_QC_figure.png")),
-        list(source = file.path(current_paths$publication_graphs_dir, "Interactive_Volcano_Plots"), dest = "Publication_figures", is_dir = TRUE, display_name = "Interactive Volcano Plots"),
-        list(source = file.path(current_paths$publication_graphs_dir, "NumSigDeMolecules"), dest = "Publication_figures", is_dir = TRUE, display_name = "Num Sig DE Molecules"),
-        list(source = file.path(current_paths$publication_graphs_dir, "Volcano_Plots"), dest = "Publication_figures", is_dir = TRUE, display_name = "Volcano Plots"),
+        list(source = file.path(current_paths$publication_graphs_dir, "Interactive_Volcano_Plots"), dest = "Publication_figures/Interactive_Volcano_Plots", is_dir = TRUE, display_name = "Interactive Volcano Plots"),
+        list(source = file.path(current_paths$publication_graphs_dir, "NumSigDeMolecules"), dest = "Publication_figures/NumSigDeMolecules", is_dir = TRUE, display_name = "Num Sig DE Molecules"),
+        list(source = file.path(current_paths$publication_graphs_dir, "Volcano_Plots"), dest = "Publication_figures/Volcano_Plots", is_dir = TRUE, display_name = "Volcano Plots"),
         list(source = current_paths$pathway_dir, dest = "Publication_figures/Enrichment_Plots", is_dir = TRUE, display_name = "Pathway Enrichment Plots"),
         list(source = "contrasts_tbl", dest = "Study_report", type = "object", save_as = "contrasts_tbl.tab", display_name = "Contrasts Table"),
         list(source = "design_matrix", dest = "Study_report", type = "object", save_as = "design_matrix.tab", display_name = "Design Matrix"),
@@ -1747,12 +1810,117 @@ updateRuvParameters <- function(config_list, best_k, control_genes_index, percen
 
 ##################################################################################################################
 #' @export
-RenderReport <- function(suffix) {
-  # Render this report with specific parameters
-  # Using the correct path where study_parameters.txt is located in scripts/proteomics_[suffix]
-  rmarkdown::render(file.path(here::here(), "scripts", "proteomics", "DIANN_report.rmd") 
-                  ,params = list(suffix = suffix)
-                ,output_file = file.path(here::here(), "results_summary", paste0("proteomics_", suffix), paste0("DIANN_report_", suffix, ".docx")))
+#' @importFrom rlang abort
+#' @importFrom tools file_path_sans_ext
+RenderReport <- function(omic_type,
+                         experiment_label,
+                         rmd_filename = "DIANN_report.rmd",
+                         project_dirs_object_name = "project_dirs",
+                         output_format = NULL) {
+
+    # --- Validate Inputs ---
+    if (missing(omic_type) || !is.character(omic_type) || length(omic_type) != 1 || omic_type == "") {
+        rlang::abort("`omic_type` must be a single non-empty character string.")
+    }
+    if (missing(experiment_label) || !is.character(experiment_label) || length(experiment_label) != 1 || experiment_label == "") {
+        rlang::abort("`experiment_label` must be a single non-empty character string.")
+    }
+    if (!is.character(rmd_filename) || length(rmd_filename) != 1 || rmd_filename == "") {
+        rlang::abort("`rmd_filename` must be a single non-empty character string.")
+    }
+
+    # --- Retrieve Paths from Global Project Directories Object ---
+    if (!exists(project_dirs_object_name, envir = .GlobalEnv)) {
+        rlang::abort(paste0("Global object ", sQuote(project_dirs_object_name), " not found. Run setupDirectories() first."))
+    }
+    
+    project_dirs_global <- get(project_dirs_object_name, envir = .GlobalEnv)
+    current_omic_key <- paste0(omic_type, "_", experiment_label)
+
+    if (!current_omic_key %in% names(project_dirs_global)) {
+        rlang::abort(paste0("Key ", sQuote(current_omic_key), " not found in ", 
+                           sQuote(project_dirs_object_name), 
+                           ". Check omic_type ('", omic_type, "') and experiment_label ('", experiment_label, "')."))
+    }
+    current_paths <- project_dirs_global[[current_omic_key]] # This contains base_dir, results_summary_dir etc. for the *labelled* omic
+
+    if (!is.list(current_paths) || 
+        is.null(current_paths$base_dir) || # Need base_dir to find the template Rmd
+        is.null(current_paths$results_summary_dir)) {
+        rlang::abort(paste0("Essential paths (base_dir, results_summary_dir) missing for key ", 
+                           sQuote(current_omic_key), " in ", sQuote(project_dirs_object_name), "."))
+    }
+
+    # --- Determine the source Rmd template directory (e.g., scripts/proteomics) ---
+    # This logic mirrors part of setupDirectories to find the correct unlabelled script source leaf.
+    omic_script_template_leaf <- switch(omic_type,
+        proteomics = "proteomics",
+        metabolomics = "metabolomics",
+        transcriptomics = "transcriptomics",
+        lipidomics = "lipidomics",
+        integration = "integration",
+        {
+            rlang::abort(paste0("Internal error: Unrecognized omic_type ", sQuote(omic_type), " for Rmd template path construction."))
+        }
+    )
+    
+    rmd_template_dir <- file.path(current_paths$base_dir, "scripts", omic_script_template_leaf)
+    rmd_input_path <- file.path(rmd_template_dir, rmd_filename)
+    
+    if (!file.exists(rmd_input_path)) {
+        rlang::abort(paste0("R Markdown template file not found at the expected location: ", sQuote(rmd_input_path),
+                           ". This should be in the general scripts/<omic_type> directory (e.g., scripts/proteomics)."))
+    }
+
+    # --- Construct Output Path (in the labelled results_summary directory) ---
+    output_file_basename <- paste0(tools::file_path_sans_ext(rmd_filename), 
+                                   "_", omic_type, 
+                                   "_", experiment_label)
+                                   
+    output_ext <- ".docx" # Default
+    if (!is.null(output_format)){
+        if(output_format == "word_document" || grepl("word", output_format, ignore.case=TRUE)){
+            output_ext <- ".docx"
+        } else if (output_format == "html_document" || grepl("html", output_format, ignore.case=TRUE)){
+            output_ext <- ".html"
+        } else if (grepl("pdf", output_format, ignore.case=TRUE)){
+            output_ext <- ".pdf"
+        }
+    }
+
+    output_file_path <- file.path(current_paths$results_summary_dir, paste0(output_file_basename, output_ext))
+
+    logger::log_info("Attempting to render report:")
+    logger::log_info("- Rmd Source (Template): {rmd_input_path}")
+    logger::log_info("- Output File: {output_file_path}")
+    logger::log_info("- Params: omic_type=\'{omic_type}\', experiment_label=\'{experiment_label}\'")
+
+    # --- Render the Report ---
+    rendered_path <- tryCatch({
+        rmarkdown::render(
+            input = rmd_input_path,
+            params = list(
+                omic_type = omic_type,
+                experiment_label = experiment_label
+            ),
+            output_file = output_file_path,
+            output_format = output_format, # Pass this along; if NULL, Rmd default is used
+            envir = new.env(parent = globalenv()) # Render in a clean environment
+        )
+    }, error = function(e) {
+        logger::log_error("Failed to render R Markdown report: {e$message}")
+        logger::log_error("Input path: {rmd_input_path}")
+        logger::log_error("Output path: {output_file_path}")
+        NULL # Return NULL on failure
+    })
+
+    if (!is.null(rendered_path) && file.exists(rendered_path)) {
+        logger::log_info("Report successfully rendered to: {rendered_path}")
+    } else {
+        logger::log_warn("Report rendering failed or output file not found at expected location.")
+    }
+    
+    invisible(rendered_path)
 }
 
 #' @title Update Parameter in S4 Object Args and Global Config List
