@@ -172,7 +172,7 @@ removeRowsWithMissingValuesPercentHelper <- function(input_table
   sample_id_col_name_string <- rlang::as_string(rlang::ensym(sample_id))
 
   abundance_long <- input_table |>
-    tidyr::pivot_longer(cols = !all_of(cols) # Use !all_of() with the cols string directly
+    tidyr::pivot_longer(cols = { { cols } }
                  , names_to = sample_id_col_name_string # Use the explicit string name
                  , values_to = temporary_abundance_column  ) |>
     # Convert the newly created sample ID column to character, using its string name
