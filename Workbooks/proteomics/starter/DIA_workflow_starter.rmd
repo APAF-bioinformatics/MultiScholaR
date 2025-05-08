@@ -1879,5 +1879,7 @@ pushProjectToGithub(
 
 
 ```{r Render Report}
-RenderReport(suffix = experiment_label)
+RenderReport(omic_type = omic_type
+                         , experiment_label = experiment_label
+                         , rmd_filename = "DIANN_report.rmd")
 ```
