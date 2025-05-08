@@ -190,6 +190,7 @@ if (!is.null(uniprot_search_results) && !is.null(uniparc_search_results)) {
   uniparc_search_results <- vroom::vroom(
     file.path(project_dirs$proteomics$uniprot_annotation_dir, uniparc_search_results)
   )
+  }
 ```
 
 

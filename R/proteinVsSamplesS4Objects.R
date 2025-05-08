@@ -1156,38 +1156,39 @@ setMethod( f = "removeRowsWithMissingValuesPercent"
              sample_id <- theObject@sample_id
              replicate_group_column <- theObject@technical_replicate_id
 
-             # print(groupwise_percentage_cutoff)
-             # print(min_protein_intensity_threshold )
-
-             ruv_grouping_variable <- checkParamsObjectFunctionSimplify(theObject
+             ruv_grouping_variable_resolved <- checkParamsObjectFunctionSimplify(theObject
                                                                         , "ruv_grouping_variable"
-                                                                        , NULL)
-             groupwise_percentage_cutoff <- checkParamsObjectFunctionSimplify(theObject
+                                                                        , ruv_grouping_variable)
+
+             groupwise_percentage_cutoff_resolved <- checkParamsObjectFunctionSimplify(theObject
                                                                               , "groupwise_percentage_cutoff"
-                                                                              , 50)
-             max_groups_percentage_cutoff <- checkParamsObjectFunctionSimplify(theObject
+                                                                              , groupwise_percentage_cutoff)
+
+             max_groups_percentage_cutoff_resolved <- checkParamsObjectFunctionSimplify(theObject
                                                                                , "max_groups_percentage_cutoff"
-                                                                               , 50)
-             proteins_intensity_cutoff_percentile <- checkParamsObjectFunctionSimplify(theObject
+                                                                               , max_groups_percentage_cutoff)
+
+             proteins_intensity_cutoff_percentile_resolved <- checkParamsObjectFunctionSimplify(theObject
                                                                                    , "proteins_intensity_cutoff_percentile"
-                                                                                   , 1)
+                                                                                   , proteins_intensity_cutoff_percentile)
 
              theObject <- updateParamInObject(theObject, "ruv_grouping_variable")
              theObject <- updateParamInObject(theObject, "groupwise_percentage_cutoff")
              theObject <- updateParamInObject(theObject, "max_groups_percentage_cutoff")
              theObject <- updateParamInObject(theObject, "proteins_intensity_cutoff_percentile")
 
-
-             theObject@protein_quant_table <- removeRowsWithMissingValuesPercentHelper( protein_quant_table
-                                                                           , cols= !matches(protein_id_column)
+             new_protein_quant_table <- removeRowsWithMissingValuesPercentHelper( protein_quant_table
+                                                                           , cols= protein_id_column # Pass the string name directly
                                                                            , design_matrix = design_matrix
                                                                            , sample_id = !!sym(sample_id)
                                                                            , row_id = !!sym(protein_id_column)
-                                                                           , grouping_variable = !!sym(ruv_grouping_variable)
-                                                                           , groupwise_percentage_cutoff = groupwise_percentage_cutoff
-                                                                           , max_groups_percentage_cutoff = max_groups_percentage_cutoff
-                                                                           , proteins_intensity_cutoff_percentile = proteins_intensity_cutoff_percentile
+                                                                           , grouping_variable = !!sym(ruv_grouping_variable_resolved) # Use resolved
+                                                                           , groupwise_percentage_cutoff = groupwise_percentage_cutoff_resolved # Use resolved
+                                                                           , max_groups_percentage_cutoff = max_groups_percentage_cutoff_resolved # Use resolved
+                                                                           , proteins_intensity_cutoff_percentile = proteins_intensity_cutoff_percentile_resolved # Use resolved
                                                                            , temporary_abundance_column = "Log_Abundance")
+
+             theObject@protein_quant_table <- new_protein_quant_table
 
              theObject <- cleanDesignMatrix(theObject)
 
