@@ -1,7 +1,7 @@
 ---
 title: "DIANN Analysis for xyz"
 version: "1.0"
-author: "Your fancy self"
+author: "Your_fancy_self"
 output:
   html_document:
     code_folding: true
@@ -168,7 +168,7 @@ config_list <- readConfigFile(file = file.path(project_dirs$proteomics$base_dir,
 ## Please set the name of your fasta file here in the root directory if you
 ## already have it
 DIANN_filename <- "report.tsv" ## copy to /data/proteomics in your project directory
-fasta_filename <- "04153260899A.fasta" ## copy to /data/UniProt in your project directory
+fasta_filename <- "fasta.fasta" ## copy to /data/UniProt in your project directory
 uniprot_search_results <- NULL ## copy to /data/UniProt in your project directory eg "idmapping.tsv"
 uniparc_search_results <- NULL ## copy to /data/UniProt in your project directory eg "idmapping.tsv"
 ## Please supply your organism's taxon ID here
@@ -1273,7 +1273,7 @@ This section implements the RUV-III (Remove Unwanted Variation) method with cano
 
 ```{r RUVIII-C Canonical Correlation Plot}
 # Choose the % of proteins in your dataset you wish to use as a negative control
-percentage_as_neg_ctrl <- 15
+percentage_as_neg_ctrl <- 5
 config_list$ruvParameters$percentage_as_neg_ctrl <- percentage_as_neg_ctrl
 control_genes_index <- getNegCtrlProtAnova(
   normalised_frozen_protein_matrix_obj,
@@ -1478,6 +1478,14 @@ saveRDS(
   file.path(
     project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir,
     "ruv_normalised_results_cln_with_replicates.RDS"
+  )
+)
+
+saveRDS(
+  ruv_normalised_filtered_results_obj, 
+  file.path(
+    project_dirs[[paste0("integration_", experiment_label)]]$multiomic_inputs_dir, 
+    "ruv_normalised_results_cln_with_replicates.RDS" 
   )
 )
 

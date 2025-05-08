@@ -1,6 +1,6 @@
 ---
 title: "DIANN analysis for xyz - report"
-author: "Your fancy self"
+author: "Your_fancy_self"
 date: "`r format(Sys.Date(), '%Y-%m-%d')`"
 output:
   word_document:
