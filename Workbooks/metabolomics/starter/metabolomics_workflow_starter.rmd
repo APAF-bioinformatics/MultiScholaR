@@ -62,13 +62,13 @@ loadDependencies() # Load necessary libraries
 ## Set up the project directory structure
 ## This section sets up the project directory structure for MultiScholaR
 ## Directory management can be challenging, particularly when managing objects
-## across multiple chunks within a single R Markdown document.
-experiment_label <- "workshop_data"
+experiment_label <- "your_analysis"
+omic_type <- "metabolomics" # Set this to the type of analysis you are doing
 # Setup for the central pillars of molecular biology
 project_dirs <- setupDirectories(
     #omic_types = "metabolomics"
     # Or: 
-    omic_types = c("proteomics", "metabolomics", "transcriptomics"),
+    omic_types = c("proteomics", "metabolomics", "transcriptomics","integration"),
     , label = experiment_label,
     force = FALSE # Set to TRUE to skip prompts if dirs exist
 )
@@ -90,17 +90,17 @@ config_list <- readConfigFile(file = file.path(project_dirs$metabolomics$base_di
 ## Define the filenames for your metabolomics quantification results.
 ## Files should be in 'data/metabolomics'. Set to NULL if not used.
 metabolite_filenames <- list(
-    LCMS_Neg = "m_MTBLS2322_LC-MS_negative_hilic_metabolite_profiling_v2_maf.tsv",
+    LCMS_Neg = "",
     LCMS_Pos = NULL,
     GCMS_Pos = NULL,
-    GCMS_Neg = "m_MTBLS2322_GC-MS___metabolite_profiling_v2_maf.tsv"
+    GCMS_Neg = ""
 )
 
 # --- Load Metabolomics Data into a Named List ---
 metabolite_data_tbl <- metabolite_filenames |>
     purrr::keep(~ !is.null(.x)) |> # Keep only non-NULL filenames
     purrr::map(~ {
-        file_path <- file.path(project_dirs$metabolomics$data_dir, "metabolomics", .x)
+        file_path <- file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir, .x)
         if (file.exists(file_path)) {
             log_info("Loading: {basename(file_path)}")
             tryCatch(
@@ -118,9 +118,9 @@ metabolite_data_tbl <- metabolite_filenames |>
     purrr::compact() # Remove NULL elements from missing/failed files
 
 ## Please supply your organism's taxon ID here
-taxon_id <- "244366"
+taxon_id <- ""
 ## Please supply your organism's name here
-organism_name <- "Klebsiella variicola"
+organism_name <- ""
 ```
 
 # Set your design matrix (for the first time)
@@ -143,7 +143,7 @@ if (exists("metabolite_design_matrix", envir = .GlobalEnv)) {
 metabolite_data_cln <- metabolite_data_tbl 
 str(metabolite_data_cln)
 
-# Define the prefix to remove
+# Define the prefix to remove if you want to clean the sample names
 prefix_to_remove <- "102.100.100/" # Literal string for fixed=TRUE matching
 
 # Check if the list exists and has content
@@ -169,7 +169,7 @@ if (exists("metabolite_data_cln") && is.list(metabolite_data_cln) && length(meta
     log_warn("\'metabolite_data_cln\' not found or empty. Skipping sample name cleaning.")
 }
 # This chunk allows loading a previously saved design matrix.
-design_matrix_file <- file.path(project_dirs$metabolomics$source_dir, "design_matrix_metabolomics.tab")
+design_matrix_file <- file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$source_dir, "design_matrix_metabolomics.tab")
 if (file.exists(design_matrix_file)) {
     metabolite_design_matrix <- read.table(
         file = design_matrix_file,
@@ -250,48 +250,6 @@ metabolite_data_obj <- createMetaboliteAssayData(
 )
 
 # str(metabolite_data_obj) # Check the structure of the S4 object
-```
-
-# Fetch Metabolite Annotations
-## Retrieves annotations (e.g., KEGG pathways, chemical properties) based on metabolite identifiers (ChEBI ID, Name, etc.).
-
-```{r Metabolite Annotation}
-# This requires a new function: getMetaboliteAnnotations
-# Input: feature_metadata_cln, id_column (e.g., 'ChEBI_ID', 'MetaboliteName'), annotation_source ('ChEBI', 'KEGG', 'PubChem')
-# Output: Enriched feature_metadata_cln table
-
-# Placeholder function call - ** THIS FUNCTION NEEDS TO BE IMPLEMENTED **
-# It should handle different ID types and query relevant databases (KEGGREST, webchem, etc.)
-# Consider caching results to avoid repeated queries (like getUniprotAnnotations)
-# feature_metadata_annotated <- getMetaboliteAnnotations(
-#   feature_metadata = feature_metadata_cln,
-#   metabolite_id_column = config_list$globalParameters$metabolite_id_column, # Or a specific annotation ID column like 'ChEBI_ID'
-#   feature_name_column = config_list$globalParameters$feature_name_column,
-#   annotation_source = config_list$globalParameters$annotation_source,
-#   kegg_organism_code = config_list$globalParameters$organism_kegg_code,
-#   cache_dir = file.path(results_dir, "tmp_folder")
-# )
-
-# --- Placeholder Implementation ---
-log_warn("getMetaboliteAnnotations function not implemented. Using existing metadata.")
-feature_metadata_annotated <- feature_metadata_cln
-# Add mock columns if needed for downstream steps
-if (!"KEGG_ID" %in% names(feature_metadata_annotated)) feature_metadata_annotated$KEGG_ID <- NA
-if (!"Pathway" %in% names(feature_metadata_annotated)) feature_metadata_annotated$Pathway <- NA
-if (!"Formula" %in% names(feature_metadata_annotated)) feature_metadata_annotated$Formula <- NA
-if (!config_list$globalParameters$feature_name_column %in% names(feature_metadata_annotated)) {
-    # Use the ID column as name if specific name column doesn't exist
-    feature_metadata_annotated[[config_list$globalParameters$feature_name_column]] <- feature_metadata_annotated$rowname_id
-}
-# --- End Placeholder ---
-
-log_info("Feature metadata annotated (placeholder). Dimensions: {nrow(feature_metadata_annotated)} x {ncol(feature_metadata_annotated)}")
-
-# Ensure row order hasn't changed and still matches data_cln
-stopifnot(identical(rownames(data_cln), feature_metadata_annotated$rowname_id))
-
-# Make the primary metabolite ID the rownames for SE object compatibility
-rownames(feature_metadata_annotated) <- feature_metadata_annotated$rowname_id
 ```
 
 # Raw Data QC
@@ -376,12 +334,9 @@ metabolite_itsd_log_transformed <- logTransformAssays(metabolite_itsd_normalised
 raw_data_qc_stats <- updateMetaboliteFiltering(
     theObject = metabolite_itsd_log_transformed,
     step_name = "5_ITSD_Log2Transformed",
-    omics_type = "metabolomics", 
     return_grid = TRUE,
     overwrite = TRUE
 )
-
-
 ```
 
 ```{r Pre-Normalisation QC}
@@ -427,22 +382,22 @@ summarizeQCPlot(QC_composite_figure)
 
 savePlot(
   QC_composite_figure@rle_plots$rle_plot_before_cyclic_loess,
-  protein_qc_dir,
+project_dirs[[paste0(omic_type, "_", experiment_label)]]$metabolite_qc_dir,
   "rle_plot_before_cyclic_loess"
 )
 savePlot(
   QC_composite_figure@pca_plots$pca_plot_before_cyclic_loess_group,
-  protein_qc_dir,
+  project_dirs[[paste0(omic_type, "_", experiment_label)]]$metabolite_qc_dir,
   "pca_plot_before_cyclic_loess"
 )
 savePlot(
   QC_composite_figure@density_plots$density_plot_before_cyclic_loess_group,
-  protein_qc_dir,
+  project_dirs[[paste0(omic_type, "_", experiment_label)]]$metabolite_qc_dir,
   "density_plot_before_cyclic_loess"
 )
 savePlot(
   QC_composite_figure@pearson_plots$pearson_correlation_pair_before_cyclic_loess,
-  protein_qc_dir,
+  project_dirs[[paste0(omic_type, "_", experiment_label)]]$metabolite_qc_dir,
   "pearson_correlation_pair_before_cyclic_loess"
 )
 
@@ -452,86 +407,8 @@ savePlot(
 #  tech_rep_remove_regex = "pool"
 #)
 
-str(metabolite_itsd_log_transformed)
+
 ```
-
-# Cyclic Loess Normaliation
-```{r}
-#' @describeIn cleanDesignMatrix Method for MetaboliteAssayData
-#' @importFrom dplyr inner_join select rename filter all_of any_of
-#' @importFrom rlang sym !!
-#' @importFrom methods slot
-#' @importFrom tibble tibble
-#' @export
-setMethod(f = "cleanDesignMatrix",
-          signature = "MetaboliteAssayData",
-          definition = function(theObject) {
-
-            assay_list <- methods::slot(theObject, "metabolite_data")
-            design_matrix <- methods::slot(theObject, "design_matrix")
-            sample_id_col_name <- methods::slot(theObject, "sample_id")
-            metabolite_id_col_name <- methods::slot(theObject, "metabolite_id_column") # Needed to exclude from sample cols
-
-            if (length(assay_list) == 0) {
-                warning("cleanDesignMatrix: No assays found in `metabolite_data`. Returning object unchanged.")
-                return(theObject)
-            }
-
-            # Assume sample columns are consistent across assays (enforced by validity)
-            # Get sample columns from the first assay
-            first_assay <- assay_list[[1]]
-
-            # --- Identify Sample Columns in the Assay --- #
-            design_samples <- tryCatch(as.character(design_matrix[[sample_id_col_name]]), error = function(e) { character(0) })
-            if (length(design_samples) == 0) {
-                 warning(sprintf("cleanDesignMatrix: Could not extract valid sample IDs from design matrix column '%s'. Returning object unchanged.", sample_id_col_name), immediate. = TRUE)
-                 return(theObject)
-            }
-            all_assay_cols <- colnames(first_assay)
-            sample_cols_in_assay <- intersect(all_assay_cols, design_samples)
-            if (length(sample_cols_in_assay) == 0) {
-                warning("cleanDesignMatrix: No sample columns identified in the first assay matching design matrix sample IDs. Returning object unchanged.")
-                return(theObject)
-            }
-            # Ensure columns are treated as character for join consistency
-            sample_cols_vector <- as.character(sample_cols_in_assay)
-
-            # --- Filter and Reorder Design Matrix --- #
-            # Ensure the sample ID column in the original design matrix is character for join
-            design_matrix_char_id <- design_matrix |>
-                 dplyr::mutate(!!rlang::sym(sample_id_col_name) := as.character(!!rlang::sym(sample_id_col_name)))
-
-            cleaned_design_matrix <- tryCatch({
-                 # Create a tibble with just the sample IDs in the order they appear in the data
-                 sample_order_tibble <- tibble::tibble(temp_sample_id = sample_cols_vector)
-
-                 # Join with the design matrix to filter and reorder
-                 sample_order_tibble |>
-                     dplyr::inner_join(design_matrix_char_id,
-                                      by = c("temp_sample_id" = sample_id_col_name))
-             }, error = function(e) {
-                 warning(sprintf("cleanDesignMatrix: Error during inner_join: %s. Returning object unchanged.", e$message))
-                 return(NULL) # Signal error
-             })
-
-             if(is.null(cleaned_design_matrix)) {
-                 return(theObject) # Return original if join failed
-             }
-
-            # Rename the temporary column back to the original sample ID column name
-            cleaned_design_matrix <- cleaned_design_matrix |>
-                dplyr::rename(!!rlang::sym(sample_id_col_name) := "temp_sample_id")
-
-            # Final check to ensure only expected samples remain (redundant but safe)
-             final_cleaned_design <- cleaned_design_matrix |>
-                 dplyr::filter(!!rlang::sym(sample_id_col_name) %in% sample_cols_vector)
-
-            theObject@design_matrix <- as.data.frame(final_cleaned_design) # Ensure it's stored as data.frame
-
-            return(theObject)
-          })
-```
-
 
 ```{r Cyclic Loess Normaliation}
 # Assuming metabolite_itsd_log_transformed is your log-transformed MetaboliteAssayData object
@@ -578,7 +455,26 @@ QC_composite_figure@pearson_plots$pearson_correlation_pair_before_RUVIIc <-
 
 summarizeQCPlot(QC_composite_figure)
 
-str(metabolite_cyclicloess_normalised)
+savePlot(
+  QC_composite_figure@rle_plots$rle_plot_before_cyclic_loess,
+project_dirs[[paste0(omic_type, "_", experiment_label)]]$metabolite_qc_dir,
+  "rle_plot_before_RUVIIIc"
+)
+savePlot(
+  QC_composite_figure@pca_plots$pca_plot_before_cyclic_loess_group,
+  project_dirs[[paste0(omic_type, "_", experiment_label)]]$metabolite_qc_dir,
+  "pca_plot_before_RUVIIIc"
+)
+savePlot(
+  QC_composite_figure@density_plots$density_plot_before_cyclic_loess_group,
+  project_dirs[[paste0(omic_type, "_", experiment_label)]]$metabolite_qc_dir,
+  "density_plot_before_RUVIIIc"
+)
+savePlot(
+  QC_composite_figure@pearson_plots$pearson_correlation_pair_before_cyclic_loess,
+  project_dirs[[paste0(omic_type, "_", experiment_label)]]$metabolite_qc_dir,
+  "pearson_correlation_pair_before_RUVIIIc"
+)
 ```
 
 
@@ -597,9 +493,6 @@ cancorplot_r1 <- ruvCancor(
   ruv_grouping_variable = "group"
 )
 cancorplot_r1
-
-
-
 
 # Find the best k
 best_k <- findBestKForAssayList(cancorplot_r1)
@@ -644,15 +537,15 @@ modified_cancor_plots <- purrr::map2(
         xintercept = current_best_k,
         color = "blue",
         linetype = "dashed",
-        linewidth = 1 # Use linewidth (newer ggplot2)
+        linewidth = 1 
       ) +
       annotate(
         "text",
-        x = current_best_k + 0.5, # Position text slightly right of the line
-        y = max_y * 0.95,       # Position text near the top
+        x = current_best_k + 0.5, 
+        y = max_y * 0.95,       
         label = paste("Best k =", current_best_k),
-        hjust = 0,              # Left-align text
-        size = 3                # Adjust text size as needed
+        hjust = 0,              
+        size = 3                
       )
       
     return(plot_with_line)
@@ -660,6 +553,16 @@ modified_cancor_plots <- purrr::map2(
 )
 modified_cancor_plots
 
+savePlot(modified_cancor_plots$Assay_1, project_dirs[[paste0(omic_type, "_", experiment_label)]]$metabolite_qc_dir, "cancorplot_r1_Assay1")
+savePlot(modified_cancor_plots$Assay_2, project_dirs[[paste0(omic_type, "_", experiment_label)]]$metabolite_qc_dir, "cancorplot_r1_Assay2")
+
+purrr::iwalk(modified_cancor_plots, function(plot_object, assay_name_from_list) {
+  savePlot(
+    plot_object,
+    project_dirs[[paste0(omic_type, "_", experiment_label)]]$metabolite_qc_dir,
+    paste0("cancorplot_r1_", gsub("_", "", assay_name_from_list)) # e.g., "Assay_1" -> "cancorplot_r1_Assay1"
+  )
+})
 ```
 
 
@@ -723,8 +626,7 @@ QC_composite_figure@pearson_plots$pearson_correlation_pair_after_ruvIIIc_group <
   )
 
 summarizeQCPlot(QC_composite_figure)
-QC_composite_figure@pca_plots$pca_plot_before_RUVIIc
-QC_composite_figure@pca_plots$pca_plot_after_ruvIIIc_group
+
 ```
 
 
@@ -738,5 +640,13 @@ final_s4_object_file <- file.path(project_dirs$metabolomics$metabolite_qc_dir, p
 saveRDS(
     ruv_normalised_metabolites_temp_obj,
     file = final_s4_object_file
+)
+
+saveRDS(
+  ruv_normalised_metabolites_temp_obj, # The same object
+  file.path(
+    project_dirs[[paste0("integration_", experiment_label)]]$multiomic_inputs_dir, # The new directory path
+    "ruv_normalised_results_metabolites.RDS" # Using the same filename
+  )
 )
 ```

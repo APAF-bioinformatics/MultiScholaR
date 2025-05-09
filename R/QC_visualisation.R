@@ -1162,10 +1162,10 @@ updateMetaboliteFiltering <- function(theObject,
                                       metabolite_id_col = NULL,
                                       is_pattern = NULL) {
 
-    # --- 1. Initialize/Get Global Progress Object --- #
+
     prog_met <- getFilteringProgressMetabolomics()
 
-    # --- 2. Input Validation and Parameter Extraction --- #
+
     if (!isS4(theObject)) {
         stop("`theObject` must be an S4 object.")
     }
@@ -1228,10 +1228,9 @@ updateMetaboliteFiltering <- function(theObject,
     
     design_matrix <- as.data.frame(design_matrix) # Ensure it's a data frame
 
-    # --- 4. Calculate Metrics per Assay --- #
+
     metrics_list_this_step <- list()
     if(length(assay_list) > 0) {
-        # Replace for loop with purrr::imap
         metrics_list_this_step <- purrr::imap(assay_list, function(current_assay_data, current_assay_name) {
             # Ensure current_assay_data is a data frame/tibble
             if (!is.data.frame(current_assay_data)) {
@@ -1247,7 +1246,6 @@ updateMetaboliteFiltering <- function(theObject,
                 ))
             }
 
-            # --- 5. Call Helper Functions --- #
             list(
                 n_metabolites = countUniqueMetabolites(current_assay_data, metabolite_id_col),
                 detected_per_sample = countMetabolitesPerSample(current_assay_data, sample_id_col, metabolite_id_col),
@@ -1263,79 +1261,83 @@ updateMetaboliteFiltering <- function(theObject,
         return(invisible(NULL)) # Or handle appropriately
     }
 
-    # --- 6. Calculate Overall Metrics --- #
+
     total_metabolites <- calculateTotalUniqueMetabolitesAcrossAssays(assay_list, metabolite_id_col)
 
-    # --- 7. Update Global Object --- #
+
     updateFilteringProgressMetabolomics(prog_met, step_name, assay_names, metrics_list_this_step, total_metabolites, overwrite)
 
-    # --- 8. Generate Plots --- #
+
     plot_list <- generateMetaboliteFilteringPlots(getFilteringProgressMetabolomics()) # Pass updated global object
 
     # --- 9. Directory handling and plot saving --- #
-    # Enhanced logic to find time_dir from different sources
-    current_time_dir <- NULL
-        save_plots <- FALSE
+    actual_save_dir <- NULL # Will hold the final directory path for saving
+
+    message("--- Plot Saving Diagnostics ---")
+    message(sprintf("Value of publication_graphs_dir argument in function call: %s", ifelse(is.null(publication_graphs_dir), "NULL", publication_graphs_dir)))
+    # The omics_type and time_dir arguments to this function are not directly used for path construction here;
+    # we rely on global omic_type, experiment_label, and project_dirs.
+    message(sprintf("Value of omics_type argument in function call: %s", ifelse(is.null(omics_type), "NULL", omics_type)))
+    message(sprintf("Value of time_dir argument in function call: %s", ifelse(is.null(time_dir), "NULL", time_dir)))
+
+    message("Attempting to determine save directory using global project_dirs, omic_type, and experiment_label...")
     
-    # First check if time_dir was provided directly
-    if (!is.null(time_dir)) {
-        current_time_dir <- time_dir
-        save_plots <- !is.null(publication_graphs_dir)
-    } 
-    # Then check if it's in global environment
-    else if (exists("time_dir", envir = .GlobalEnv)) {
-        current_time_dir <- get("time_dir", envir = .GlobalEnv)
-        save_plots <- !is.null(publication_graphs_dir)
-    } 
-    # Try to get from project_dirs if omics_type is provided
-    else if (!is.null(omics_type) && exists("project_dirs", envir = .GlobalEnv)) {
-        project_dirs <- get("project_dirs", envir = .GlobalEnv)
-        if (omics_type %in% names(project_dirs) && "time_dir" %in% names(project_dirs[[omics_type]])) {
-            current_time_dir <- project_dirs[[omics_type]]$time_dir
-            save_plots <- !is.null(publication_graphs_dir)
+    if (exists("project_dirs", envir = .GlobalEnv) &&
+        exists("omic_type", envir = .GlobalEnv) &&
+        exists("experiment_label", envir = .GlobalEnv)) {
+        
+        message("Global variables project_dirs, omic_type, and experiment_label found.")
+        local_project_dirs <- get("project_dirs", envir = .GlobalEnv)
+        local_omic_type <- get("omic_type", envir = .GlobalEnv)
+        local_experiment_label <- get("experiment_label", envir = .GlobalEnv)
+        message(sprintf("Global omic_type value: '%s', Global experiment_label value: '%s'", local_omic_type, local_experiment_label))
+        
+        omics_key <- paste0(local_omic_type, "_", local_experiment_label)
+        message(sprintf("Constructed omics_key for project_dirs: '%s'", omics_key))
+        
+        if (omics_key %in% names(local_project_dirs) &&
+            !is.null(local_project_dirs[[omics_key]]) && 
+            "time_dir" %in% names(local_project_dirs[[omics_key]])) {
             
-            # If publication_graphs_dir not provided, try to get it from project_dirs too
-            if (is.null(publication_graphs_dir) && "publication_graphs_dir" %in% names(project_dirs[[omics_type]])) {
-                publication_graphs_dir <- project_dirs[[omics_type]]$publication_graphs_dir
-                save_plots <- TRUE
+            message(sprintf("omics_key '%s' found in project_dirs and has a 'time_dir' entry.", omics_key))
+            retrieved_time_dir <- local_project_dirs[[omics_key]]$time_dir
+            message(sprintf("Retrieved time_dir from project_dirs: %s", ifelse(is.null(retrieved_time_dir), "NULL", retrieved_time_dir)))
+            
+            if (is.null(retrieved_time_dir) || !is.character(retrieved_time_dir) || !nzchar(retrieved_time_dir)) {
+                warning(sprintf("project_dirs[['%s']]$time_dir is NULL, not a character string, or empty. Plots will not be saved.", omics_key))
+                message("Reason: retrieved_time_dir is invalid.")
+            } else {
+                actual_save_dir <- retrieved_time_dir
+                message(sprintf("Successfully set actual_save_dir for plot saving to: '%s'", actual_save_dir))
             }
+        } else {
+            warning(sprintf("Could not find omics_key '%s' in project_dirs, or it lacks a 'time_dir' entry. Plots will not be saved.", omics_key))
+            message(sprintf("Details: omics_key '%s' in names(project_dirs): %s. project_dirs[['%s']] is NULL: %s. 'time_dir' in names(project_dirs[['%s']]): %s.", 
+                          omics_key, omics_key %in% names(local_project_dirs), 
+                          omics_key, is.null(local_project_dirs[[omics_key]]), 
+                          omics_key, if (omics_key %in% names(local_project_dirs) && !is.null(local_project_dirs[[omics_key]])) "time_dir" %in% names(local_project_dirs[[omics_key]]) else NA))
+            message("Available keys in project_dirs: ", paste(names(local_project_dirs), collapse=", "))
         }
-    }
-    # Try to infer omics_type from publication_graphs_dir path
-    else if (!is.null(publication_graphs_dir) && exists("project_dirs", envir = .GlobalEnv)) {
-        project_dirs <- get("project_dirs", envir = .GlobalEnv)
-        # Try to find which omics type this path belongs to
-        for (possible_omics in names(project_dirs)) {
-            if ("publication_graphs_dir" %in% names(project_dirs[[possible_omics]]) && 
-                !is.null(project_dirs[[possible_omics]]$publication_graphs_dir) &&
-                publication_graphs_dir == project_dirs[[possible_omics]]$publication_graphs_dir) {
-                
-                if ("time_dir" %in% names(project_dirs[[possible_omics]])) {
-                    current_time_dir <- project_dirs[[possible_omics]]$time_dir
-                    save_plots <- TRUE
-                    message("Found matching omics type: ", possible_omics, 
-                           ", using time_dir from project_dirs$", possible_omics, "$time_dir")
-                    break
-                }
-            }
-        }
-    }
-    
-    # Warning if we can't save plots
-    if (!is.null(publication_graphs_dir) && is.null(current_time_dir)) {
-        warning("publication_graphs_dir provided, but time_dir not found. Plots will not be saved. ",
-                "Either provide time_dir, specify omics_type, ensure time_dir exists in the global environment, ",
-                "or run setupAndShowDirectories() first.")
-        save_plots <- FALSE
+    } else {
+        warning("One or more global variables ('project_dirs', 'omic_type', 'experiment_label') not found. Plots will not be saved.")
+        message(sprintf("Exists project_dirs: %s, Exists omic_type: %s, Exists experiment_label: %s", 
+                      exists("project_dirs", envir = .GlobalEnv),
+                      exists("omic_type", envir = .GlobalEnv),
+                      exists("experiment_label", envir = .GlobalEnv)))
     }
 
-    if (save_plots) {
-        plot_save_dir <- file.path(current_time_dir, "metabolomics_qc_filtering") # Specific subdir
-        if (!dir.exists(plot_save_dir)) dir.create(plot_save_dir, recursive = TRUE)
+    # Proceed with saving ONLY if actual_save_dir was successfully determined from global project_dirs
+    if (!is.null(actual_save_dir)) {
+        message(sprintf("Proceeding to save plots to derived directory: %s", actual_save_dir))
+        if (!dir.exists(actual_save_dir)) {
+            dir.create(actual_save_dir, recursive = TRUE)
+            message("Created directory for QC plots: ", actual_save_dir)
+        }
 
-        # Save individual plots - replace for loop with purrr::iwalk
+        # Save individual plots directly into actual_save_dir (which is the time_dir)
         purrr::iwalk(plot_list, function(plot, plot_name) {
-            filename <- file.path(plot_save_dir, sprintf("%s_%s.png", step_name, plot_name))
+            filename <- file.path(actual_save_dir, sprintf("%s_%s.png", step_name, plot_name))
+            message(sprintf("Saving plot: %s", filename))
             ggsave(filename, 
                    plot = plot, 
                    width = 10, 
@@ -1344,27 +1346,48 @@ updateMetaboliteFiltering <- function(theObject,
         })
 
         # Save combined grid if return_grid is TRUE and plots exist
-        if (return_grid && length(plot_list) > 0 && !is.null(plot_list[[1]])) {
-             # Create grid layout based on the number of plots
-             grid_plot <- do.call(gridExtra::grid.arrange, c(plot_list, ncol = 2))
-             filename_grid <- file.path(plot_save_dir, sprintf("%s_combined_plots.png", step_name))
-             ggsave(filename_grid, plot = grid_plot, width = 15, height = 15, dpi = 300)
+        if (return_grid && length(plot_list) > 0 && !is.null(plot_list[[1]]) && inherits(plot_list[[1]], "ggplot")) {
+             grid_plot_obj <- do.call(gridExtra::grid.arrange, c(plot_list, ncol = 2)) 
+             filename_grid <- file.path(actual_save_dir, sprintf("%s_combined_plots.png", step_name))
+             message(sprintf("Saving combined grid plot: %s", filename_grid))
+             ggsave(filename_grid, plot = grid_plot_obj, width = 15, height = 15, dpi = 300)
+        }
+        message("Metabolomics QC plots saved to: ", actual_save_dir)
+    } else {
+        # This block means actual_save_dir is still NULL. 
+        # This implies either globals were missing or project_dirs structure was invalid for deriving time_dir.
+        message("No valid save directory determined from global project_dirs. Plots will not be saved.")
+        # If publication_graphs_dir was provided in the call, and we still ended up here, it means the global lookup failed.
+        if(!is.null(publication_graphs_dir)){
+            warning("Function was called with a publication_graphs_dir path, but plot saving still failed because a valid time_dir could not be derived from global project_dirs.")
         }
     }
+    message("--- End of Plot Saving Diagnostics ---")
 
-    # --- 10. Return --- #
     if (return_grid) {
         # Combine plots into a grid
-        if(length(plot_list) > 0 && !is.null(plot_list[[1]])) {
-             grid_plot <- do.call(gridExtra::grid.arrange, c(plot_list, ncol = 2))
-             return(grid_plot)
+        if (length(plot_list) > 0 && !is.null(plot_list[[1]]) && inherits(plot_list[[1]], "ggplot")) {
+            message("Attempting to arrange plots into a grid.")
+            grid_plot_obj <- do.call(gridExtra::grid.arrange, c(plot_list, ncol = 2))
+            return(grid_plot_obj)
         } else {
-            message("Returning NULL grid as plots were not generated.")
+            message("No valid plots to arrange into a grid, or plot_list is empty. Returning NULL for the grid.")
             return(NULL)
         }
     } else {
-        # Print each plot individually - replace for loop with purrr::walk
-        purrr::walk(plot_list, print)
+        # Print each plot individually
+        if (length(plot_list) > 0) {
+            message("Printing plots individually as return_grid is FALSE or grid could not be formed.")
+            purrr::walk(plot_list, function(plot) {
+                if (inherits(plot, "ggplot")) {
+                    print(plot)
+                } else {
+                    message("Encountered a non-ggplot object in plot_list when trying to print individually.")
+                }
+            })
+        } else {
+            message("Plot list is empty, nothing to print.")
+        }
         # Return the list invisibly
         invisible(plot_list)
     }
