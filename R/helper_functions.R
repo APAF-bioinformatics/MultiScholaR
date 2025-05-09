@@ -713,14 +713,16 @@ loadDependencies <- function(verbose = TRUE) {
         "git2r", "fs", "logger",
         "configr", "webshot2",
         # Added from Suggests:
-        "testthat", "ggplot2", "ggpubr", "svglite"
+        "testthat", "ggplot2", "ggpubr", "svglite",
+        "ggraph", "reticulate"
     )
 
     bioc_packages <- c(
         "UniProt.ws", "mixOmics", "limma", "qvalue",
         "clusterProfiler", "GO.db", # GO.db is often a dependency, ensure it's listed
         # Added from Suggests:
-        "EDASeq", "RUVSeq"
+        "EDASeq", "RUVSeq",
+        "MOFA2"
     )
 
     github_packages <- list(
