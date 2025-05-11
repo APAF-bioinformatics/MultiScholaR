@@ -3,87 +3,271 @@ title: "R Notebook"
 output: html_notebook
 ---
 
+# Initial R environment setup
+
+## Checks your R environment for the required packages to run MultiScholaR, and installs them if they are not.
+
+### Further Reading
+
+#### Understanding Package Management in R
+
+*   [CRAN (The Comprehensive R Archive Network)](https://cran.r-project.org/) - The main repository for R packages.
+*   [Bioconductor](https://bioconductor.org/) - Repository specialized in bioinformatics packages for high-throughput genomic data.
+*   [R Package Installation Guide](https://www.datacamp.com/community/tutorials/r-packages-guide) - A comprehensive guide to installing packages in R.
+*   [devtools Documentation](https://devtools.r-lib.org/) - Learn about the `devtools` package for installing from GitHub and other development tasks.
+*   [renv for Reproducible Environments](https://rstudio.github.io/renv/) - A powerful tool for creating isolated, reproducible R environments. MOFA2, used later in this workflow, often benefits from `renv` due to its Python dependencies.
+
+#### Key Packages for this Workflow
+*   **MultiScholaR**: The core package for this multi-omics analysis workflow.
+*   **MOFA2**: The primary tool for multi-omics factor analysis. (CRAN: `MOFA2`, Bioconductor: `MOFAdata`, Python: `mofapy2`)
+*   **SummarizedExperiment**: A Bioconductor core S4 class for storing rectangular matrices of experimental data with associated annotations.
+*   **tidyverse**: A collection of R packages for data science (e.g., `dplyr`, `ggplot2`, `tidyr`, `purrr`).
+*   **vroom**: For fast reading of delimited files.
+
+#### About Multi-Omics Factor Analysis (MOFA)
+*   [MOFA2 Publication (Argelaguet et al., 2020)](https://www.embopress.org/doi/full/10.15252/msb.20199306) - The primary paper describing MOFA2.
+*   [MOFA2 Tutorials](https://biofam.github.io/MOFA2/tutorials.html) - Official tutorials for using MOFA2.
+*   [Understanding Latent Variable Models](https://www.nature.com/articles/s41592-018-0122-0) - General context for methods like MOFA.
+
+This function, `installMultiScholaR`, checks for and installs all the required packages for the MultiScholaR workflow. It installs packages from CRAN, Bioconductor, and GitHub as needed. The function is designed to make setup easy for users who may not be familiar with R package management, especially when dealing with dependencies across different sources like R and Python (for MOFA2).
+
+**IF THIS IS YOUR FIRST INSTALL, THIS WILL TAKE SOME TIME AS THERE ARE A NUMBER OF DEPENDENCIES TO INSTALL, INCLUDING THE PYTHON ENVIRONMENT FOR MOFA2.**
+**THIS IS A GOOD POINT TO GRAB A COFFEE!**
+
+```{r MultiScholaR FIRST INSTALL, message=TRUE, warning=TRUE}
+installMultiScholaR <- function(verbose = TRUE) {
+    # Install devtools if missing
+    if (!requireNamespace("devtools", quietly = TRUE)) {
+        install.packages("devtools")
+    }
+
+    # Detach if loaded
+    if ("package:MultiScholaR" %in% search()) {
+        try(detach("package:MultiScholaR", unload = TRUE, force = TRUE), silent = TRUE)
+    }
+
+    # Unload namespace
+    try(unloadNamespace("MultiScholaR"), silent = TRUE)
 
 
-```{r}
+    devtools::install_github(
+        "APAF-BIOINFORMATICS/MultiScholaR",
+        ref = "main", # Main branch
+        dependencies = TRUE,
+        upgrade = "never",
+        force = TRUE
+    )
 
-# load pacman package manager
-if (!require(pacman)) {
-  install.packages("pacman")
-  library(pacman)
+    # Load it
+    library(MultiScholaR)
 }
 
-p_load(optparse)
-p_load(tictoc)
-p_load(tidyverse)
-p_load(plotly)
-p_load(vroom)
-p_load(qvalue)
-p_load(writexl)
-p_load(magrittr)
-p_load(knitr)
-p_load(rlang)
-p_load(ggrepel)
-p_load(gridExtra)
-p_load(MOFA2)
-p_load(ggraph)
-
-p_load(xml2)
-p_load(rvest)
-p_load(httr)
-p_load(stringi)
-p_load(reticulate)
-p_load(configr)
-p_load(logging)
-
-organism <- "org.Hs.eg.db"
-#BiocManager::install(organism, character.only = TRUE)
-p_load(organism, character.only = TRUE)
-
-
+installMultiScholaR()
+loadDependencies()
 ```
 
+# START HERE if you already have MultiScholaR and its dependencies installed
 
+### Further Reading
 
+#### R Library Management
+*   [Introduction to R Libraries](https://www.datacamp.com/community/tutorials/r-libraries-guide) - Understanding how R libraries work.
+*   [R Package Documentation (`help()` function)](https://www.rdocumentation.org/) - Accessing documentation within R (e.g., `?MultiScholaR`, `help(package = "MultiScholaR")`).
+*   [The R Packages Book by Hadley Wickham](https://r-pkgs.org/) - In-depth explanation of R packages.
 
-## Parameters to change
+#### Dependency Management in R
+*   [Understanding R Package Dependencies](https://blog.jumpingrivers.com/posts/2017/how-to-manage-package-dependencies/) - Best practices for managing dependencies.
+*   [Using `renv` for Project-Specific Environments](https://rstudio.github.io/renv/articles/renv.html) - `renv` helps manage package versions for a project, which is crucial for reproducibility, especially when MOFA2 and its Python dependencies are involved.
+*   [`sessionInfo()` and `devtools::session_info()`](https://www.rdocumentation.org/packages/utils/versions/3.6.2/topics/sessionInfo) - Functions to record package versions used in a session, vital for reproducibility.
 
-```{r}
-mixomics_analysis_inclusions <-   "with_phospho" # "" #  "with_phospho_and_kinase" # 
+#### Reproducible Research in Multi-Omics
+*   [Reproducible Research with R and RStudio](https://rstudio-education.github.io/reproducible-research/) - General principles.
+*   [Bioconductor Guidelines for Reproducible Research](https://www.bioconductor.org/help/publications/reproducibility_guidelines/) - Specific to bioinformatics.
+*   [Challenges in Multi-Omics Reproducibility](https://www.nature.com/articles/s41592-020-0912-y) - Discusses common issues and solutions.
 
+If you have already successfully installed `MultiScholaR` and all its dependencies (including Python components for MOFA2, which `installMultiScholaR()` aims to handle), you can start from this point. The code below loads the `MultiScholaR` package and its associated helper function `loadDependencies()` to prepare your R environment for the multi-omics integration analysis. `loadDependencies()` typically loads commonly used packages for the workflows within `MultiScholaR`.
+
+```{r Load MultiScholaR}
+library(MultiScholaR)
+loadDependencies()
 ```
+
+# Set up your project environment and directory structure
+
+### Further Reading
+
+#### Project Organization & File Management for Reproducibility
+*   [A Quick Guide to Organizing Computational Biology Projects (Noble, 2009)](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1000424) - Classic paper on project organization.
+*   [Good Enough Practices in Scientific Computing (Wilson et al., 2017)](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1005510) - Practical advice for managing scientific projects, including data and code.
+*   [The `here` package](https://here.r-lib.org/) - Simplifies file path management by creating paths relative to the project root, enhancing portability.
+*   [RStudio Projects](https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects) - Using RStudio projects helps keep everything organized and self-contained.
+
+#### Data Organization Principles for Multi-Omics
+*   [Tidy Data Principles (Wickham, 2014)](https://www.jstatsoft.org/article/view/v059i10) - Structuring datasets to facilitate analysis.
+*   [FAIR Guiding Principles for Scientific Data Management and Stewardship](https://www.nature.com/articles/sdata201618) - Making data Findable, Accessible, Interoperable, and Reusable.
+*   [Structuring Multi-Omics Data with `MultiAssayExperiment`](https://bioconductor.org/packages/release/bioc/vignettes/MultiAssayExperiment/inst/doc/MultiAssayExperiment.html) - A Bioconductor object for coordinating multiple assays on a common set of samples. MOFA2 often ingests data that could be initially organized this way.
+
+#### Multi-Omics Integration Specifics
+*   [Considerations for Multi-Omics Study Design](https://www.nature.com/articles/s41576-018-0077-5) - Review covering experimental design aspects crucial for successful integration.
+*   [Managing metadata in multi-omics projects](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-02209-x) - Importance and best practices for metadata.
+
+This section establishes a consistent and organized directory structure for your multi-omics integration project. Proper project and data organization is paramount in multi-omics studies due to the complexity and volume of data from different sources.
+
+The `setupDirectories` function from `MultiScholaR` (or a similar utility) automates the creation of a standardized folder hierarchy. This typically includes separate directories for:
+*   `data/`: Raw and processed data for each omics type.
+*   `results/`: Output from analyses (e.g., MOFA results, plots, tables).
+*   `scripts/` or `R/`: R scripts and functions.
+*   `docs/`: Documentation, reports.
+*   `metadata/`: Sample sheets, experimental design files.
+
+Using a consistent structure makes your project:
+*   **Easier to navigate:** Quickly find specific files.
+*   **More reproducible:** Others (and your future self) can understand the workflow.
+*   **Simpler to share:** Standardized organization facilitates collaboration.
+
+The `experiment_label` allows you to manage multiple analyses or versions within the same project structure. The `omic_type` is set to "integration" here, signifying that this workflow focuses on combining data from multiple omics layers (e.g., proteomics, metabolomics, transcriptomics). The `omic_types` parameter lists all omics types that might be part of this integration study, ensuring dedicated subdirectories are created if needed. The `force = FALSE` argument prevents accidental overwriting of existing directories, prompting the user if directories already exist.
 
 ## Directories management
+```{r Project Environment Management}
+# Directory Management
+## Set up the project directory structure
+## This section sets up the project directory structure for MultiScholaR
+## Directory management can be challenging, particularly when managing objects
+## across multiple chunks within a single R Markdown document.
+experiment_label <- "your_analysis"
+omic_type <- "integration" # Set this to the type of analysis you are doing eg "proteomics", "metabolomics", "transcriptomics"
+# Setup for the central pillars of molecular biology
+project_dirs <- setupDirectories(
+    #omic_types = "metabolomics"
+    # Or: 
+    omic_types = c("proteomics", "metabolomics", "transcriptomics", "integration"),
+    , label = experiment_label,
+    force = FALSE # Set to TRUE to skip prompts if dirs exist
+)
+```
 
-```{r}
-base_dir <-  here::here() 
-data_dir <- file.path( base_dir, "data")
-results_dir <- file.path(base_dir, "results")
-source_dir <- file.path(base_dir, "scripts")
+# Load tabular data for Proteomics and Transcriptomics
 
-results_mofa_dir <- file.path(results_dir, "MultiOmics", "MOFA")
+### Further Reading
 
-dir.create( results_mofa_dir , recursive=TRUE)
+#### Data Input/Output in R
+*   [R Data Import/Export Manual](https://cran.r-project.org/doc/manuals/r-release/R-data.html) - Official R documentation.
+*   [`vroom` package for fast reading of delimited files](https://vroom.r-lib.org/) - Used here for its speed with large files.
+*   [`readr` package (part of tidyverse)](https://readr.tidyverse.org/) - Another excellent option for reading rectangular data.
+*   [Data import chapter in "R for Data Science"](https://r4ds.had.co.nz/data-import.html) - Comprehensive guide to importing various data types.
 
+#### File Path Management
+*   [`file.path()` function](https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/file.path) - Constructing platform-independent file paths (as used here). This is crucial for reproducibility across different operating systems.
+*   [The `here` package for project-relative paths](https://here.r-lib.org/) - A very useful alternative for managing paths relative to the project root.
 
+#### Preparing Data for MOFA
+*   [MOFA2 Data Input Requirements](https://biofam.github.io/MOFA2/input_data.html) - Official documentation on how to format data for MOFA2. MOFA2 expects a list of matrices, where rows are features and columns are samples. Samples should be matched across matrices.
+*   [Data Preprocessing for Multi-Omics Integration](https://www.nature.com/articles/nrm.2017.135) - General considerations for preparing different omics data types for integration. This includes normalization, handling missing values, and feature alignment.
+
+This section focuses on loading the pre-processed proteomics and transcriptomics datasets. These datasets are expected to be in a tabular format (e.g., TSV or CSV files) where:
+*   Rows  represent features (proteins, transcripts).
+*   Columns  represent samples.
+
+The `vroom::vroom()` function is used here for its efficiency in reading large delimited files. The `file.path()` function constructs the full path to the data files in a way that is compatible across different operating systems (Windows, macOS, Linux). It uses the `project_dirs` object (created in the previous step) to locate the appropriate `data_dir` for the specified `omic_type` and `experiment_label`.
+
+**Important Considerations for ECRs:**
+*   **File Paths:** Ensure the file names (`ruv_normalized_results_cln_with_replicates.tsv` and `transcriptomics_normalized_data.tsv`) exactly match the files you have placed in the `data_dir` created by `setupDirectories`.
+*   **Data Origin:** Understand where these files came from. They are typically the output of upstream processing workflows (like the `DIA_workflow_starter.Rmd` for proteomics).
+*   **Normalization:** The file names suggest that the data has already undergone some normalization (e.g., "ruv_normalized", "transcriptomics_normalized"). MOFA2 can also perform its own scaling, but initial within-omics normalization is common.
+*   **Sample Matching:** Crucially for MOFA, the samples in `proteomics_dat` and `transcriptomics_dat` (and later, metabolomics data) need to correspond to the same biological entities. Subsequent steps will handle aligning and renaming samples.
+
+```{r Tabular Data Management}
+
+proteomics_dat <- vroom::vroom( file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir, "ruv_normalized_results_cln_with_replicates.tsv" ) )
+transcriptomics_dat <- vroom::vroom( file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir, "transcriptomics_normalized_data.tsv" ) )
 
 ```
 
+# Load and preprocess Metabolomics data from an S4 object
 
-## Load proteomics data
-```{r}
-proteomics_dat <- vroom::vroom( file.path( data_dir, "proteomics", "ruv_normalized_results_cln_with_replicates.tsv" ) )
-```
+### Further Reading
+
+#### Working with S4 Objects in R
+*   [An Introduction to S4 Classes and Methods (Bioconductor)](https://bioconductor.org/help/course-materials/2017/Zurich/S4-classes-and-methods.html) - Gentle introduction.
+*   [Advanced R: S4 by Hadley Wickham](https://adv-r.hadley.nz/s4.html) - Comprehensive guide to the S4 object system.
+*   [`SummarizedExperiment` S4 class](https://bioconductor.org/packages/release/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html) - A common S4 class for omics data, often a component of more complex S4 objects. Your metabolomics object might be or contain a `SummarizedExperiment`.
+*   [Accessing S4 Object Slots (`@`) and Methods (`assay()`, `colData()`)](https://www.bioconductor.org/packages/devel/bioc/vignettes/S4Vectors/inst/doc/S4QuickOverview.html#accessing-s4-object-slots-and-methods) - How to interact with S4 objects.
+
+#### Metabolomics Data Processing
+*   [A Review of Metabolomics Data Preprocessing](https://www.mdpi.com/2218-1989/10/1/25) - Covers common steps like filtering, normalization, and scaling.
+*   [Handling Missing Values in Metabolomics](https://pubs.acs.org/doi/10.1021/acs.analchem.8b05425) - Specific challenges and methods for metabolomics.
+*   [Metabolite Identification and Annotation](https://www.nature.com/articles/s41570-020-00231-7) - Critical aspects of metabolomics. The filtering based on "ITSD" suggests internal standards or contaminants are being removed.
+
+#### Data Manipulation with `dplyr` and `purrr`
+*   [`dplyr` for data manipulation](https://dplyr.tidyverse.org/) - Used extensively here for filtering (`filter()`) and selecting (`select()`) columns.
+*   [`stringr` for string manipulation](https://stringr.tidyverse.org/) - Used for `str_detect()` to find patterns in metabolite identifiers.
+*   [`tidyr` for tidying data](https://tidyr.tidyverse.org/) (e.g. `column_to_rownames`)
+*   [`purrr` for functional programming](https://purrr.tidyverse.org/) - Used for `map2_chr()` to generate new column names.
+
+This section handles the loading and initial preprocessing of metabolomics data. Unlike the proteomics and transcriptomics data which were loaded from flat files (TSV), the metabolomics data is loaded from an `.RDS` file. This file contains a saved R object, likely an S4 object specifically designed to store metabolomics experiment data (e.g., a `MetabolomicsData` class from `MultiScholaR` or a similar custom S4 object).
+
+**Key steps performed in this chunk:**
+
+1.  **Load S4 Object:** `readRDS()` loads the R object from the specified path.
+2.  **Extract Assay Data:** The code accesses specific assay data (quantitative matrices) from slots within the S4 object (e.g., `metabolomics_obj@metabolite_data[[1]]` and `metabolomics_obj@metabolite_data[[2]]`). This suggests the S4 object might store data from multiple metabolomics assays (e.g., different chromatography methods like LC-MS and GC-MS, or different ionization modes).
+3.  **Filter Features:**
+    *   Metabolites with identifiers starting with "ITSD" are removed. These could be internal standards, known contaminants, or other features not intended for downstream analysis.
+    *   Specific metadata columns (like "chemical_formula", "smiles", "inchi") and a sample column ("51591") are removed. The sample column "51591" is noted as also being removed from proteomics, indicating a sample exclusion step for consistency across omics.
+4.  **Reshape Data:** `column_to_rownames("metabolite")` converts the metabolite identifier column into row names, a common format for quantitative matrices in R.
+5.  **Sort Columns (Samples):** Sample columns are sorted alphabetically (`sort(colnames(...))`). This is an important step to ensure consistent sample order before renaming and later merging with other omics datasets.
+6.  **Rename Columns (Samples):**
+    *   A new set of standardized sample names (`updated_column_names`) is generated using `purrr::map2_chr`. The pattern "R1, R2...S1, S2..." suggests grouping into "RPMI" and "Sera" conditions with numbered replicates.
+    *   These new names are assigned to the columns of the metabolomics assay matrices. This consistent naming is critical for MOFA, which requires samples to be matched across different omics layers.
+
+**Important Considerations for ECRs:**
+*   **S4 Object Structure:** Understanding the structure of `metabolomics_obj` is key. If it's a custom object from `MultiScholaR`, refer to its documentation. If it's based on standard Bioconductor classes like `SummarizedExperiment`, their documentation will be helpful.
+*   **Filtering Rationale:** The reasons for filtering specific metabolites (e.g., "ITSD") or metadata columns should be documented in the original metabolomics processing workflow.
+*   **Sample Consistency:** The removal of sample "51591" and the subsequent standardized renaming are crucial steps to ensure that the samples in the metabolomics data align correctly with samples in the proteomics and transcriptomics data. MOFA relies on this alignment.
+*   **Multiple Assays:** If your metabolomics S4 object contains multiple assays (like `metabolite_data[[1]]` and `metabolite_data[[2]]`), ensure you understand what each assay represents (e.g., LC-MS positive mode, LC-MS negative mode, GC-MS). These will become separate "views" in the MOFA analysis.
+
+## Load metabolomics data
+```{r S4 Object Output Data Management}
+metabolomics_obj <- readRDS( file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir, "workshop_data_final_metabolomics_s4_object.RDS" ))
+
+metabolomics_assay_1 <- metabolomics_obj@metabolite_data[[1]] |>
+  dplyr::filter(!stringr::str_detect(database_identifier, "^ITSD") 
+                & !stringr::str_detect(metabolite_identification, "^ITSD") ) |>
+  dplyr::select(-dplyr::any_of(c(
+    "51591",  #note we are removing the 51591 column as it has also been removed from the proteomics data
+    "chemical_formula", 
+    "smiles", 
+    "inchi", 
+    "metabolite_identification", 
+    "database_identifier"
+  ))) |>
+  column_to_rownames("metabolite") |>
+  as.data.frame()
 
 
-## Load transcriptomics data
-```{r}
-transcriptomics_dat <- vroom::vroom( file.path( results_dir, "transcriptomics", "transcriptomics_normalized_data.tsv" ))
-```
+metabolomics_assay_2 <- metabolomics_obj@metabolite_data[[2]] |>
+  dplyr::filter(!stringr::str_detect(database_identifier, "^ITSD") 
+                & !stringr::str_detect(metabolite_identification, "^ITSD") ) |>
+  dplyr::select(-dplyr::any_of(c(
+    "51591",  #note we are removing the 51591 column as it has also been removed from the proteomics data
+    "chemical_formula", 
+    "smiles", 
+    "inchi", 
+    "metabolite_identification", 
+    "database_identifier"
+  ))) |>
+  column_to_rownames("metabolite") |>
+  as.data.frame()
 
+metabolomics_assay_1_sort <- metabolomics_assay_1[, sort( colnames(metabolomics_assay_1) )]
+metabolomics_assay_2_sort <- metabolomics_assay_2[, sort( colnames(metabolomics_assay_2) )]
 
-```{r}
-transcriptomics_dat
+ ## The First six sample IDs sorted from smalllest to largest are RPMI and the rest of the larger numbers are Sera.
+updated_column_names <- purrr::map2_chr( c(rep("R", 6), rep("S", 5) )
+                 , c(1:6, 1:5)
+                 , \(x,y) { paste0(x,y) } )
+
+colnames(metabolomics_assay_1_sort) <- updated_column_names
+colnames(metabolomics_assay_2_sort) <- updated_column_names  
 ```
 
 ## Reading the data tables
@@ -117,10 +301,170 @@ updated_column_names <- purrr::map2_chr( c(rep("R", 6), rep("S", 5) )
 ## all -omics layer. e.g. the first column of all omics data table should correspond to the same biological replicate, and then the second column of all omics data table should be the same biological replicate etc... 
 sample_names_lookup <- data.frame(original_sample_id_transcriptome =  sort( colnames(transcriptomics_cln) )
                                   , original_sample_id_proteome =  sort( colnames(proteomics_cln) )
+                                  , original_sample_id_metabolome_lc =  sort( colnames(metabolomics_assay_1) )
+                                  , original_sample_id_metabolome_gc =  sort( colnames(metabolomics_assay_2) )
                                   , updated_sample_id = updated_column_names)
 
 colnames(transcriptomics_sort) <- updated_column_names
-colnames(proteomics_sort) <- updated_column_names      
+colnames(proteomics_sort) <- updated_column_names  
+```
+
+# Process and align Proteomics and Transcriptomics data
+
+### Further Reading
+
+#### Data Wrangling in R
+*   [`dplyr` for data manipulation](https://dplyr.tidyverse.org/): Functions like `column_to_rownames`, `mutate`, `across`, `select`.
+*   [`tidyr` for data tidying](https://tidyr.tidyverse.org/): Functions like `column_to_rownames` (though often part of `tibble` or loaded with `tidyverse`).
+*   [Data Transformation chapter in "R for Data Science"](https://r4ds.had.co.nz/transform.html): Covers `dplyr` in detail.
+*   [Matrix Transposition (`t()`)](https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/t): Basic R function for transposing matrices/data frames.
+
+#### Data Types and Coercion
+*   [R Data Types](https://www.datacamp.com/community/tutorials/data-types-in-r): Understanding numeric, character, factor, etc.
+*   `as.data.frame()`, `as.numeric()`: Explicitly converting data to the desired type is crucial for many analytical functions.
+
+#### Sample Alignment in Multi-Omics
+*   [Importance of Sample Matching in Multi-Omics Integration](https://www.frontiersin.org/articles/10.3389/fgene.2019.00567/full): Ensuring corresponding samples are correctly aligned.
+*   [Strategies for Dealing with Missing Samples](https://www.nature.com/articles/s41467-020-19115-y): Discusses how to handle datasets where not all samples are present in all omics layers.
+
+This R chunk performs several critical data wrangling steps to prepare the proteomics and transcriptomics data for integration with MOFA. The main goals are:
+1.  Ensure data is in the correct format (features as rows, samples as columns).
+2.  Convert data to numeric types where appropriate.
+3.  Handle any sample discrepancies between omics layers.
+4.  Standardize sample names across all omics datasets.
+5.  Create a lookup table to map original sample IDs to the new standardized IDs.
+
+**Key steps for Transcriptomics Data (`transcriptomics_cln`):**
+1.  **Set Row Names:** `column_to_rownames("Run")` converts the "Run" column (presumably sample identifiers) to row names.
+2.  **Transpose Data:** `t()` transposes the data frame. If samples were rows and features were columns, they are now swapped (features as rows, samples as columns). This is the format MOFA expects.
+3.  **Convert to Numeric:** `mutate(across(everything(), ~ as.numeric(.x)))` attempts to convert all columns to numeric. This is essential for quantitative analysis.
+4.  **Remove Specific Sample:** `dplyr::select(-`51519`)` removes a sample column named "51519". This indicates a specific sample was excluded, likely due to quality control reasons identified in upstream analysis or to match exclusions in other omics layers.
+
+**Key steps for Proteomics Data (`proteomics_cln`):**
+1.  **Set Row Names:** `column_to_rownames("Protein.Ids")` sets protein identifiers as row names.
+    *   *Assumption*: The proteomics data is already in `features (proteins) x samples` format, so no transposition is explicitly shown here, unlike the transcriptomics data.
+
+**Sample Alignment and Renaming (Common to all omics layers):**
+1.  **Sort Sample Columns:** `transcriptomics_cln[, sort(colnames(transcriptomics_cln))]` and similar for proteomics. This ensures samples are in a consistent, sorted order before renaming. This step is vital for correct mapping.
+2.  **Handle Missing Sample in Other Omics:** The comment "Since the proteomics data had only 11 samples (one sample was deleted due to low total number of peptides), we also have to remove the corresponding sample from all other omics" highlights an important step. The transcriptomics data (and implicitly, the metabolomics data from the previous chunk) had a sample "51519" removed to match the proteomics data where a sample was likely lost during QC.
+3.  **Generate Standardized Sample Names:** `updated_column_names` is created (same as in the metabolomics chunk) using `purrr::map2_chr` to generate names like "R1", "R2", ..., "S1", "S2", ...
+4.  **Create Sample Name Lookup Table (`sample_names_lookup`):**
+    *   This data frame is crucial. It maps the original sample identifiers from each omic dataset (after sorting and any initial cleaning) to the new, unified `updated_sample_id`. This table provides an audit trail for sample renaming and is essential for ensuring that the correct samples are aligned across all omics layers when passed to MOFA.
+5.  **Apply Standardized Sample Names:** The `colnames` of the processed transcriptomics and proteomics data frames are updated with `updated_column_names`.
+
+**ECR Checklist:**
+*   **Understand Data Orientation:** Is your data `features x samples` or `samples x features`? Transpose if necessary.
+*   **Data Types:** Are quantitative values numeric? Use `str()` or `glimpse()` to check and `as.numeric()` to convert.
+*   **Sample Removal:** If a sample is removed from one omics layer, ensure it's consistently removed from all others. The `sample_names_lookup` table helps verify this.
+*   **Sample ID Consistency:** The most critical part for MOFA is that the *order* and *identity* of samples in the final matrices for each omic layer must match. The `sample_names_lookup` table and standardized renaming process are designed to achieve this.
+
+## Reading the data tables
+```{r}
+
+## Note that over here the columns represents samples and the rows represents the molecules for each individual table.
+
+transcriptomics_cln <- transcriptomics_dat |>
+  column_to_rownames("Run") |>
+  as.data.frame() |>
+  t() |>
+  as.data.frame() |>
+  mutate( across( everything(), ~ as.numeric(.x) )) |>
+  dplyr::select( -`51519`)
+
+proteomics_cln <- proteomics_dat |>
+  column_to_rownames("Protein.Ids") |>
+  as.data.frame()
+
+## Since the proteomics data had only 11 samples (one sample was deleted due to low total number of peptides),
+## we also have to remove the corresponding sample from all other omics. 
+transcriptomics_sort <- transcriptomics_cln[, sort( colnames(transcriptomics_cln) )]
+proteomics_sort <- proteomics_cln[, sort( colnames(proteomics_cln) )]
+
+## The First six sample IDs sorted from smalllest to largest are RPMI and the rest of the larger numbers are Sera.
+updated_column_names <- purrr::map2_chr( c(rep("R", 6), rep("S", 5) )
+                 , c(1:6, 1:5)
+                 , \(x,y) { paste0(x,y) } )
+
+## When we put the data into MOFA2, the corresponding biological replicates should be in the same column order across 
+## all -omics layer. e.g. the first column of all omics data table should correspond to the same biological replicate, and then the second column of all omics data table should be the same biological replicate etc... 
+sample_names_lookup <- data.frame(original_sample_id_transcriptome =  sort( colnames(transcriptomics_cln) )
+                                  , original_sample_id_proteome =  sort( colnames(proteomics_cln) )
+                                  , original_sample_id_metabolome_lc =  sort( colnames(metabolomics_assay_1) )
+                                  , original_sample_id_metabolome_gc =  sort( colnames(metabolomics_assay_2) )
+                                  , updated_sample_id = updated_column_names)
+
+colnames(transcriptomics_sort) <- updated_column_names
+colnames(proteomics_sort) <- updated_column_names  
+```
+
+```{r Create Sample Lookup Table Function}
+#' Create a Lookup Table for Sample Names
+#'
+#' This function generates a data frame that maps original sample identifiers
+#' from different omics datasets to a unified, updated sample identifier.
+#' It assumes that the input column names for each omic data have been
+#' pre-sorted and correspond to each other.
+#'
+#' @param transcriptomics_cols A character vector of sorted column names from the transcriptomics data.
+#' @param proteomics_cols A character vector of sorted column names from the proteomics data.
+#' @param metabolomics_lc_cols A character vector of sorted column names from the LC-metabolomics data.
+#' @param metabolomics_gc_cols A character vector of sorted column names from the GC-metabolomics data.
+#' @param updated_sample_names A character vector of the new, standardized sample names
+#'        that correspond to the sorted original names.
+#'
+#' @return A data frame with columns for original sample IDs from each omic type
+#'         and a column for the `updated_sample_id`.
+#' @export
+#' @examples
+#' \dontrun{
+#' trans_cols <- sort(paste0("T_Sample", 1:5))
+#' prot_cols <- sort(paste0("P_Sample", 1:5))
+#' metab_lc_cols <- sort(paste0("LC_Sample", 1:5))
+#' metab_gc_cols <- sort(paste0("GC_Sample", 1:5))
+#' new_names <- paste0("Unified_S", 1:5)
+#' lookup <- createSampleLookupTable(trans_cols, prot_cols, metab_lc_cols, metab_gc_cols, new_names)
+#' print(lookup)
+#' }
+createSampleLookupTable <- function(transcriptomics_cols,
+                                    proteomics_cols,
+                                    metabolomics_lc_cols,
+                                    metabolomics_gc_cols,
+                                    updated_sample_names) {
+  # Basic validation
+  if (!is.character(transcriptomics_cols) || !is.character(proteomics_cols) ||
+      !is.character(metabolomics_lc_cols) || !is.character(metabolomics_gc_cols) ||
+      !is.character(updated_sample_names)) {
+    stop("All input arguments must be character vectors.")
+  }
+
+  lengths <- c(
+    length(transcriptomics_cols),
+    length(proteomics_cols),
+    length(metabolomics_lc_cols),
+    length(metabolomics_gc_cols),
+    length(updated_sample_names)
+  )
+
+  if (length(unique(lengths)) != 1) {
+    stop("All input vectors must have the same length. Current lengths: ",
+         paste(lengths, collapse = ", "))
+  }
+
+  lookup_df <- data.frame(
+    original_sample_id_transcriptome = transcriptomics_cols,
+    original_sample_id_proteome = proteomics_cols,
+    original_sample_id_metabolome_lc = metabolomics_lc_cols,
+    original_sample_id_metabolome_gc = metabolomics_gc_cols,
+    updated_sample_id = updated_sample_names,
+    stringsAsFactors = FALSE
+  )
+
+  return(lookup_df)
+}
+```
+
+## Tidy up display names
+```{r eval=FALSE}
 
 ##################**********************8888888888888888888*********************##################################
 
@@ -131,16 +475,197 @@ colnames(proteomics_sort) <- updated_column_names
 # Before we put the input tables into MOFA, we need to make sure we determine what gene names, protein names, metabolites names we want to display in the figures. The row names that you use will be directly transfer to the features importance figures, and there are no easy way to change them back, unless you do names conversion systematically on the output tables afterwards. If you do not do names conversion beforehand, all of the default plotting functions will only show the accession numbers.
 
 ##################**********************8888888888888888888*********************##################################
+## Convert protein to gene names 
+prot_refseq_id_to_uniprot_acc <- vroom::vroom(file.path(  data_dir, "UniProt", "Galaxy4-[Diamond on data 1_ Blast Tabular].tabular" ),
+  col_names = c(
+    "query_seq_id",
+    "sbjct_seq_id",
+    "perc_idl_matches",
+    "aln_length",
+    "num_of_mismatches",
+    "num_of_gap_openings",
+    "start_of_aln_in_query",
+    "end_of_aln_in_query",
+    "start_of_aln_in_sbjct",
+    "end_of_aln_in_sbjct",
+    "expect_value",
+    "bit_score"
+  )) |>
+  separate( sbjct_seq_id, into = c("db", "sbjct_uniprot_acc", "sbjct_uniprot_id"), sep = "\\|") 
+
+
+uniprot_lookup_tbl <- vroom::vroom(file.path(  data_dir, "UniProt","idmapping_2025_05_08.tsv" )) |>
+  janitor::clean_names() 
+
+prot_refseq_id_to_gene_name <- prot_refseq_id_to_uniprot_acc |>
+  dplyr::select( query_seq_id, sbjct_uniprot_acc) |>
+  left_join( uniprot_lookup_tbl |>
+               dplyr::select( uniprot_acc = entry, gene_name = gene_names)
+             , by = join_by( sbjct_uniprot_acc == uniprot_acc)) |>
+  dplyr::mutate( gene_name = str_split_i(gene_name, " ", 1)) |>
+  dplyr::select( query_seq_id, gene_name) |>
+  distinct() |>
+  ## duplicated proteins are given different copy id 
+  dplyr::group_by( gene_name) |>
+  mutate( copy_id = row_number()) |>
+  ungroup() |>
+  dplyr::mutate( gene_name = case_when( copy_id == 1 ~ gene_name
+                                        , TRUE ~ paste0(gene_name, "_", copy_id)) ) |>
+  dplyr::select(-copy_id) 
+  
+vroom::vroom_write( prot_refseq_id_to_gene_name
+                     , file.path( data_dir, "UniProt", "prot_refseq_id_to_gene_name.tsv"  ))
+
+
+## Load UniParc lookup table
+uniparc_tbl <-   vroom::vroom(file.path(  data_dir, "proteomics","kv_uniparc.csv"))
+
+## Load UniProt lookup table
+protein_id_to_uniprot_acc_kv_tbl <-   vroom::vroom(file.path(  data_dir, "UniProt","idmapping_2025_05_08.tsv")) |>
+  dplyr::select( ncbi_refseq, uniprot_id)
+
+
+protein_id_to_uniprot_uniparc_tbl <- protein_id_to_uniprot_acc_kv_tbl |>
+  bind_rows(uniparc_tbl)
+
+uniprot_id_to_refseeq_protein_id <- proteomics_sort |>
+    rownames_to_column("uniprot_id")  |>
+  left_join( protein_id_to_uniprot_uniparc_tbl
+    , by= join_by( uniprot_id == uniprot_id)) |>
+   dplyr::select(uniprot_id, ncbi_refseq) |>
+   mutate(uniprot_id = case_when(is.na(ncbi_refseq) ~ uniprot_id
+                                 , TRUE ~ uniprot_id)) 
+
+## Convert the uniprot_id in the RUVIII normalized table to gene name
+uniprot_id_to_gene_name <- uniprot_id_to_refseeq_protein_id  |>
+  left_join( prot_refseq_id_to_gene_name
+             , by = join_by( ncbi_refseq == query_seq_id )) |>
+  dplyr::filter(!is.na(uniprot_id)) |>
+  mutate(gene_name = case_when( is.na(gene_name) ~ uniprot_id
+                                , TRUE ~ gene_name)) |>
+  dplyr::select(-ncbi_refseq)
+
+vroom::vroom_write( uniprot_id_to_gene_name
+                     , file.path( data_dir, "UniProt", "uniprot_id_to_gene_name.tsv"  ))
+```    
+
+## Cleaning transcriptomics display names 
+
+```{r eval=FALSE}
+gff3_tbl <- vroom::vroom(file.path(  data_dir, "proteomics", "k_variicola.gff3" )
+                         , comment="#"
+                         , col_names = c("seqid", "source", "type", "start", "end", "score", "strand", "phase", "attributes")) 
+
+
+gff3_cln <- gff3_tbl |>
+  separate_rows ( attributes, sep = ";") |> 
+  separate( attributes, into = c("key", "value"), sep = "=")  |>
+  pivot_wider( names_from = key, values_from = value) 
+
+
+
+gff3_coding  <- gff3_cln |>
+   dplyr::filter( !is.na(protein_id)) |>
+  dplyr::distinct(protein_id, locus_tag) |>
+  left_join( prot_refseq_id_to_gene_name
+             , by = join_by( protein_id == query_seq_id))  |>
+  dplyr::select(-protein_id) |>
+  mutate( gene_name = case_when( is.na(gene_name) ~ locus_tag
+                                , TRUE ~ gene_name)) 
+
+
+gff3_non_coding <- gff3_cln |>
+   dplyr::filter( is.na(protein_id)) |>
+  anti_join( gff3_cln |>
+             dplyr::filter( !is.na(protein_id)) |>
+               dplyr::select(Parent) |>
+               dplyr::rename( ID = "Parent")
+             , by= join_by( ID == ID)) 
+
+
+list_of_non_protein_coding_elements <- gff3_non_coding |>
+ dplyr::filter( !is.na(product)  & (is.na(pseudo) | pseudo != "true"  ) )   |>
+  dplyr::distinct( locus_tag, product) |>
+  arrange( product, locus_tag) |>
+  dplyr::rename( gene_name = "product")  |>
+  mutate( gene_name = case_when(str_length(locus_tag) < str_length(gene_name) ~ locus_tag
+                                , TRUE ~ gene_name) )|>
+  group_by( gene_name) |>
+  mutate( copy_id = row_number()) |>
+  ungroup() |>
+  dplyr::mutate( gene_name = case_when( locus_tag == gene_name ~ gene_name
+                                        , TRUE ~ paste0(gene_name, "_", copy_id))) |>
+  dplyr::select(-copy_id)  
+
+
+gff_remaining <- gff3_non_coding |>
+  anti_join( list_of_non_protein_coding_elements
+             ,  by=join_by( locus_tag == locus_tag))  |>
+ dplyr::filter(  source != "tRNAscan-SE"  &
+                   (is.na(gene_biotype) | gene_biotype != "tRNA" ) ) |>
+  dplyr::filter(!is.na(locus_tag)) |>
+  dplyr::distinct( locus_tag ) |>
+  arrange(  locus_tag) |>
+  dplyr::mutate( gene_name = locus_tag)  
+
+
+transcript_id_to_gene_name  <-  gff3_coding |>
+  bind_rows( list_of_non_protein_coding_elements ) |>
+  bind_rows( gff_remaining ) 
+
+vroom::vroom_write(transcript_id_to_gene_name, 
+                   file.path( data_dir, "Read_counts", "transcript_id_to_gene_name.tsv" ))
+```
+
+
+## Convert accessions into readable names then use tables for MOFA analyses
+```{r}
+
+uniprot_id_to_gene_name <- vroom::vroom(  file.path( data_dir, "UniProt", "uniprot_id_to_gene_name.tsv"  ))
+
+transcript_id_to_gene_name <- vroom::vroom(file.path( data_dir, "Read_counts", "transcript_id_to_gene_name.tsv" ))
+
+### Convert column names to readable names
+proteomics_sort_updated <- proteomics_sort |>
+    rownames_to_column("uniprot_id") |>
+  left_join( uniprot_id_to_gene_name
+            , by=join_by( uniprot_id == uniprot_id))  |>
+  mutate( gene_name = case_when( is.na(gene_name) ~ uniprot_id
+                                , TRUE ~ gene_name)) |>
+  dplyr::select(-uniprot_id) |>
+  column_to_rownames("gene_name") 
+  
+
+
+
+transcriptomics_sort_updated <- transcriptomics_sort |>
+  rownames_to_column("locus_tag") |>
+  left_join(transcript_id_to_gene_name
+            , by=join_by( locus_tag == locus_tag))  |>
+  mutate( gene_name = case_when( is.na(gene_name) ~ locus_tag
+                                , TRUE ~ gene_name)) |>
+  dplyr::select(-locus_tag) |>
+  column_to_rownames("gene_name") 
 
 
 
 ## Note that we need to Z-transform over each molecule. Then we need to transform it back to 
 ## having columns as samples and rows as molecules for input into MOFA. 
 
-  mofa_matrix_input <- list(transcriptome = t(scale(t(transcriptomics_sort)))
-                            , proteome = t(scale(t(proteomics_sort)))
-                            # , metabolome = t(scale(metabolomics))
-                            )
+## LCMS_neg is assay 1 and GCMS_neg is assay 2
+###*****####$$$$$$$$$$$$######*******##
+###*
+###* Here you have to make sure you transfer the name of each omics layer to the MOFA input list. 
+###* The name used here will appear in future plots and figures
+###* 
+###*****####$$$$$$$$$$$$######*******##
+###*
+  mofa_matrix_input <- list(transcriptome = t(scale(t(transcriptomics_sort_updated)))
+                            , proteome = t(scale(t(proteomics_sort_updated)))
+                            , metabolome_lc = t(scale(t(metabolomics_assay_1_sort)))
+                            , metabolome_gc = t(scale(t(metabolomics_assay_2_sort))) )
+  
+  
 ```
 
 ## Prepare the design matrix
@@ -193,7 +718,7 @@ head(data_opts)
 ## Define model options
 
 -   num_factors: number of factors
--   likelihoods: likelihood per view (options are “gaussian”, “poisson”, “bernoulli”). By default they are learnt automatically. We advise users to use “gaussian” whenever possible!
+-   likelihoods: likelihood per view (options are "gaussian", "poisson", "bernoulli"). By default they are learnt automatically. We advise users to use "gaussian" whenever possible!
 -   spikeslab_factors: use spike-slab sparsity prior in the factors? default is FALSE.
 -   spikeslab_weights: use spike-slab sparsity prior in the weights? default is TRUE.
 -   ard_factors: use ARD prior in the factors? Default is TRUE if using multiple groups.
@@ -201,13 +726,14 @@ head(data_opts)
 
 ```{r}
 model_opts <- get_default_model_options(MOFAobject)
+model_opts$num_factors <- 2
 head(model_opts)
 ```
 
 ## Define train options
 
 -   maxiter: number of iterations. Default is 1000.
--   convergence_mode: “fast”, “medium”, “slow”. For exploration, the fast mode is good enough.
+-   convergence_mode: "fast", "medium", "slow". For exploration, the fast mode is good enough.
 -   startELBO: initial iteration to compute the ELBO (the objective function used to assess convergence).
 -   freqELBO: frequency of computations of the ELBO.
 -   gpu_mode: use GPU mode? (needs cupy installed and a functional GPU).
@@ -238,20 +764,26 @@ MOFAobject <- prepare_mofa(
 ```{r }
 outfile <- file.path( results_mofa_dir, "model.hdf5")
 
+#se_python(python= "/opt/homebrew/bin/python3", required = NULL)
+
 ## Note you'll need to install "pip3 install mofapy2"
 ## and also run reticulate library 
 
 model <- NA 
 if(!file.exists(outfile)) {
+  
+  ## IN my mac you need to run this once first otherwise the Use basilisk version doesn't work (this will fail by the way)
+ try(
+    MOFAobject.init <- run_mofa(MOFAobject, outfile, use_basilisk=FALSE) )
 
   MOFAobject.trained <- run_mofa(MOFAobject, outfile, use_basilisk=TRUE)
   model <- MOFAobject.trained
-head(MOFAobject.trained@samples_metadata, n=3)
-
-saveRDS(model, file.path( results_mofa_dir, "model.RDS"))
+  head(MOFAobject.trained@samples_metadata, n=3)
+  saveRDS(model, file.path( results_mofa_dir, "model.RDS"))
+  
 } else {
   model <- readRDS( file.path( results_mofa_dir, "model.RDS"))
-
+  
 }
 
 ```
@@ -297,11 +829,11 @@ names(model@cache$variance_explained
 
 ```{r}
 model_copy <- model
-model_copy@cache$variance_explained$r2_per_factor$group1 <- model_copy@cache$variance_explained$r2_per_factor$group1[, c( "transcriptome",  "proteome" )]
+model_copy@cache$variance_explained$r2_per_factor$group1 <- model_copy@cache$variance_explained$r2_per_factor$group1[, c( "transcriptome",  "proteome", "metabolome_lc", "metabolome_gc" )]
 
-model_copy@cache$variance_explained$r2_total$group1 <- model_copy@cache$variance_explained$r2_total$group1[ c( "transcriptome",  "proteome")]
+model_copy@cache$variance_explained$r2_total$group1 <- model_copy@cache$variance_explained$r2_total$group1[ c( "transcriptome",  "proteome", "metabolome_lc", "metabolome_gc")]
 
-views_names(model_copy) <- c("transcriptome", "proteome")
+views_names(model_copy) <- c("transcriptome", "proteome", "metabolome_lc", "metabolome_gc")
 
 variance_explained_plot <- plot_variance_explained(model_copy, x="view", y="factor")
 
@@ -377,7 +909,7 @@ plot_variance_explained(model, x="view", y="factor", plot_total = TRUE)[[2]]
 
 ```{r}
 p <- plot_factor(model, 
-  factors = c(1,2,3),
+  factors = c(1,2),
   color_by = "condition",
   dot_size = 3,        # change dot size
   dodge = T,           # dodge points with different colors
@@ -409,7 +941,7 @@ ggsave( plot = sample_group_vs_factor_values
 
 ```{r}
 mofa_pca_plot <- plot_factors(model, 
-  factors = 1:3,
+  factors = 1:2,
   color_by = "condition"
 ) + 
   scale_color_manual(values=c("RPMI"="skyblue", "Sera"="salmon")) +
@@ -431,63 +963,179 @@ ggsave( plot = mofa_pca_plot
 ## Visualization of Feature Weights
 
 ```{r}
-transcriptome_plot_weights <- plot_weights(model,
-  view = "transcriptome",
-  factor = 1,
-  nfeatures = 10,     # Number of features to highlight
-  scale = T,          # Scale weights from -1 to 1
-  abs = F             # Take the absolute value?
-)
-
-transcriptome_plot_weights
-
-ggsave( plot = transcriptome_plot_weights
-        , filename = file.path( results_mofa_dir, "transcriptome_plot_weights.png"))
+list_of_views <- colnames( model@cache$variance_explained$r2_per_factor[[1]])
 
 
-ggsave( plot = transcriptome_plot_weights
-        , filename = file.path( results_mofa_dir, "transcriptome_plot_weights.pdf"))
+plotMofaFeatureWeightsVsRank <- function(model, view) {
+  view_plot_weights <- plot_weights(model,
+                                    view = view,
+                                    factor = 1,
+                                    nfeatures = 10,     # Number of features to highlight
+                                    scale = T,          # Scale weights from -1 to 1
+                                    abs = F             # Take the absolute value?
+  )
+  
+  view_plot_weights
+  
+  ggsave( plot = view_plot_weights
+          , filename = file.path( results_mofa_dir, paste0( view, "_plot_weights.png")))
+  
+  
+  ggsave( plot = view_plot_weights
+          , filename = file.path( results_mofa_dir, paste0( view, "_plot_weights.pdf")))
+  
+  return(view_plot_weights)
+}
 
-
-proteome_plot_weights <- plot_weights(model,
-  view = "proteome",
-  factor = 1,
-  nfeatures = 10,     # Number of features to highlight
-  scale = T,          # Scale weights from -1 to 1
-  abs = F             # Take the absolute value?
-)
-
-proteome_plot_weights
-
-
-ggsave( plot = proteome_plot_weights
-        , filename = file.path( results_mofa_dir, "proteome_plot_weights.png"))
-
-
-ggsave( plot = proteome_plot_weights
-        , filename = file.path( results_mofa_dir, "proteome_plot_weights.pdf"))
-
-
-# metabolome_plot_weights <- plot_weights(model,
-#   view = "metabolome",
-#   factor = 1,
-#   nfeatures = 10,     # Number of features to highlight
-#   scale = T,          # Scale weights from -1 to 1
-#   abs = F             # Take the absolute value?
-# )
-# 
-# metabolome_plot_weights
-# 
-# ggsave( plot = metabolome_plot_weights
-#         , filename = file.path( results_mofa_dir, "metabolome_plot_weights.png"))
-# 
-# 
-# ggsave( plot = metabolome_plot_weights
-#         , filename = file.path( results_mofa_dir, "metabolome_plot_weights.pdf"))
+purrr::map( list_of_views, plotMofaFeatureWeightsVsRank, model = model)
 
 ```
 
+## Proteomics GO enrichment rank-based
 ```{r}
+
+weights <- get_expectations(model, "W", as.data.frame= TRUE) 
+
+  
+prot_refseq_id_to_gene_name <- vroom::vroom(  file.path( data_dir
+                                                         , "UniProt"
+                                                         , "prot_refseq_id_to_gene_name.tsv"  ))
+
+
+protein_go_enrich_input <- weights |>
+  dplyr::filter(view == "proteome" & factor=="Factor1") |>
+  mutate( feature = str_replace_all( feature, "_proteome", "")) |>
+  left_join( prot_refseq_id_to_gene_name
+             , by= join_by( feature == gene_name)) 
+
+dir.create( file.path( results_dir, "GO_enrichment", "proteome") , recursive=TRUE)
+
+protein_go_enrich_input
+
+output_enrich_mofa_proteomics <- runOneStringDbRankEnrichmentMofa( protein_go_enrich_input
+                                  ,   identifier_column_name = "query_seq_id"
+                                  ,   value_column_name = "value"
+                                  ,  result_label = "GO_enrich_proteome"
+                                  , results_dir = file.path( results_dir, "GO_enrichment", "proteome")
+                                  , api_key = "bsjXYSW0kKTt"
+                                  , species = "STRG0A62HCE"
+                                  , ge_fdr = 0.05
+                                  , ge_enrichment_rank_direction = -1
+                                  , polling_interval_seconds = 10
+                                  , max_polling_attempts = 30)
+
+saveRDS(output_enrich_mofa_proteomics, file.path( results_dir, "GO_enrichment", "proteome", "output_enrich_mofa_proteomics.RDS"))
+
+
+```
+
+
+
+```{r}
+output_enrich_mofa_proteomics <- readRDS( file.path( results_dir, "GO_enrichment", "proteome", "output_enrich_mofa_proteomics.RDS")) |>
+  mutate(comparison = "RPMI vs Sera")
+
+output_proteomics_enrichment_table <- printStringDbFunctionalEnrichmentBarGraph ( output_enrich_mofa_proteomics)
+
+output_proteomics_enrichment_table
+
+ggsave(
+  filename = file.path( results_dir
+                        , "GO_enrichment"
+                        , "proteome"
+                        , "string_db_enrichment_proteome_results.pdf")
+  , width = 15, height = 10)
+
+ 
+
+```
+
+## Transcriptomics GO enrichment rank-based
+```{r}
+
+
+go_enrichment_transcriptome_input <- weights |>
+  dplyr::filter(view == "transcriptome" & factor=="Factor1") |>
+  mutate( feature = str_replace_all( feature, "_transcriptome", "")) |>
+  left_join( transcript_id_to_gene_name
+             , by= join_by( feature == gene_name))  |>
+  left_join( prot_refseq_id_to_gene_name
+             , by = join_by( feature == gene_name)) |>
+  dplyr::filter(!is.na(query_seq_id)) |>
+  dplyr::select( query_seq_id, value) 
+
+
+dir.create( file.path( results_dir, "GO_enrichment", "transcriptome") , recursive=TRUE)
+
+go_enrichment_transcriptome_input
+
+output_enrich_mofa_transcriptomics <- runOneStringDbRankEnrichmentMofa( go_enrichment_transcriptome_input
+                                  ,   identifier_column_name = "query_seq_id"
+                                  ,   value_column_name = "value"
+                                  ,  result_label = "GO_enrich_transcriptome"
+                                  , results_dir = file.path( results_dir, "GO_enrichment", "transcriptome")
+                                  , api_key = "bsjXYSW0kKTt"
+                                  , species = "STRG0A62HCE"
+                                  , ge_fdr = 0.05
+                                  , ge_enrichment_rank_direction = -1
+                                  , polling_interval_seconds = 10
+                                  , max_polling_attempts = 30)
+
+saveRDS(output_enrich_mofa_transcriptomics
+        , file.path( results_dir, "GO_enrichment", "transcriptome", "output_enrich_mofa_transcriptomics.RDS"))
+
+```
+
+
+
+## Transcroptomics GO enrichment rank-based 
+```{r}
+output_enrich_mofa_transcriptomics <- readRDS( file.path( results_dir, "GO_enrichment"
+                                                          , "transcriptome"
+                                                          , "output_enrich_mofa_transcriptomics.RDS")) |>
+  mutate(comparison = "RPMI vs Sera")
+
+output_transcriptomics_enrichment_table <- printStringDbFunctionalEnrichmentBarGraph ( output_enrich_mofa_transcriptomics)
+
+output_transcriptomics_enrichment_table
+
+ggsave(
+  filename = file.path( results_dir
+                        , "GO_enrichment"
+                        , "transcriptome"
+                        , "string_db_enrichment_transcriptome_results.pdf")
+  , width = 15, height = 35)
+
+```
+
+
+## Combine proteomics and transcriptomics GO enrichment results
+```{r}
+
+output_enrich_mofa_combined <- output_enrich_mofa_proteomics |>
+  mutate( comparison = "Proteome") |>
+  bind_rows( output_enrich_mofa_transcriptomics |>
+  mutate( comparison = "Transcriptome"))
+
+output_combined_enrichment_table <- printStringDbFunctionalEnrichmentBarGraph ( output_enrich_mofa_combined)
+
+output_combined_enrichment_table
+
+ggsave(
+  filename = file.path( results_dir
+                        , "GO_enrichment"
+                        , "combined"
+                        , "string_db_enrichment_combined_results.pdf")
+  , width = 15, height = 30)
+
+ 
+
+```
+## Plot the name of the top molecules for each omics layer
+```{r eval=FALSE}
+
+
+
 transcriptome_plot_top_weights <- plot_top_weights(model,
   view = "transcriptome",
   factor = 1,
@@ -540,79 +1188,61 @@ proteome_plot_top_weights
 
 ```
 
+## Plot the name of the top molecules for each omics layer (I prefer this method of plotting)
+
 ```{r}
 
-
-
-plotMofaWeights <- function( input_table, factor_level = Factor1) {
-
-
-transcriptome_weights_helper <- input_table |>
-  as.data.frame () |>
-  dplyr::mutate( abs_factor1 = abs({{factor_level}})) |>
-  mutate( Direction = case_when( sign({{factor_level}}) == 1 ~ "Positive"
-                            , TRUE ~ "Negative") ) |>
-  mutate( Direction = factor( Direction, levels=c("Positive", "Negative"))) |>
-  arrange( desc(abs_factor1) ) |> 
-  mutate( rank = row_number()) |>
+plotMofaWeights <- function( model, view, factor_level = Factor1) {
   
-  dplyr::filter (rank <= 20) |>
-  rownames_to_column("gene_symbol") |>
-  mutate( gene_symbol = str_replace( gene_symbol, "_transcriptome$", "")) |>
-  mutate( gene_symbol = str_replace( gene_symbol, "_proteome$", "")) 
-
-
-transcriptome_weights_helper |>
-  mutate( gene_symbol = factor( gene_symbol, levels=rev(unique( transcriptome_weights_helper$gene_symbol) )) ) |>
-  ggplot(aes( gene_symbol, abs(Factor1), fill= Direction ) ) +
-  geom_bar(stat = "identity") +
-  scale_fill_discrete( type= c("red", "blue")) +
-  theme_bw() +
-  theme (axis.text.x = element_text (angle = 90, vjust = 1)) +
-  xlab("Molecules") +
-  ylab( "Factor 1 Weights") + 
-  coord_flip()
-
-
+  input_table <- get_weights(model)[[view]] 
+  
+  view_weights_helper <- input_table |>
+    as.data.frame () |>
+    dplyr::mutate( abs_factor1 = abs({{factor_level}})) |>
+    mutate( Direction = case_when( sign({{factor_level}}) == 1 ~ "Positive"
+                                   , TRUE ~ "Negative") ) |>
+    mutate( Direction = factor( Direction, levels=c("Positive", "Negative"))) |>
+    arrange( desc(abs_factor1) ) |> 
+    mutate( rank = row_number()) |>
+    
+    dplyr::filter (rank <= 20) |>
+    rownames_to_column("gene_symbol") |>
+    mutate( gene_symbol = str_replace( gene_symbol, "_transcriptome$", "")) |>
+    mutate( gene_symbol = str_replace( gene_symbol, "_proteome$", "")) 
+  
+  
+  plotMofaWeightsAll <- view_weights_helper |>
+    mutate( gene_symbol = factor( gene_symbol, levels=rev(unique( view_weights_helper$gene_symbol) )) ) |>
+    ggplot(aes( gene_symbol, abs(Factor1), fill= Direction ) ) +
+    geom_bar(stat = "identity") +
+    scale_fill_discrete( type= c("red", "blue")) +
+    theme_bw() +
+    theme (axis.text.x = element_text (angle = 90, vjust = 1)) +
+    xlab("Molecules") +
+    ylab( "Factor 1 Weights") + 
+    coord_flip() +
+    ggtitle( view )
+  
+  ggsave( filename=file.path( results_mofa_dir, paste0(view, "_plot_top_weights_cln.png"))
+          , plot=plotMofaWeightsAll)
+  ggsave( filename=file.path( results_mofa_dir, paste0(view, "_plot_top_weights_cln.pdf"))
+          , plot=plotMofaWeightsAll)
+  
+  plotMofaWeightsAll
 }
 
-plotMofaWeights_transcriptome <- plotMofaWeights (  get_weights(model)$transcriptome)  +
-  ggtitle("transcriptome")
-plotMofaWeights_transcriptome 
-ggsave( filename=file.path( results_mofa_dir, "transcriptome_plot_top_weights_cln.png")
-        , plot=plotMofaWeights_transcriptome)
-ggsave( filename=file.path( results_mofa_dir, "transcriptome_plot_top_weights_cln.pdf")
-        , plot=plotMofaWeights_transcriptome)
+list_of_views <- colnames( model@cache$variance_explained$r2_per_factor[[1]])
 
-plotMofaWeights_proteome <- plotMofaWeights (  get_weights(model)$proteome) +
-  ggtitle("proteome")
-plotMofaWeights_proteome  
-ggsave( filename=file.path( results_mofa_dir, "proteome_plot_top_weights_cln.png")
-        , plot=plotMofaWeights_proteome)
-ggsave( filename=file.path( results_mofa_dir, "proteome_plot_top_weights_cln.pdf")
-        , plot=plotMofaWeights_proteome)
+list_of_weights_figures <- purrr::map( list_of_views
+                                       , \(x) {plotMofaWeights( view= x
+                                                                , model = model
+                                                                , factor_level = Factor1)} )
 
-# 
-# metabolites_weights_cln <- get_weights(model)$metabolome    |>
-#   as.data.frame() |>
-#   rownames_to_column("names_to_use") |>
-#   left_join( metabolites_dictionary |>
-#                distinct()
-#              , by = join_by( names_to_use ))  |>
-#   dplyr::select( - CHEMICAL_ID,  -names_to_use, -Abbreviation, -dotted_name) |>
-#   column_to_rownames("BIOCHEMICAL")
-# 
-# 
-# plotMofaWeights_metabolome <- plotMofaWeights ( metabolites_weights_cln ) +
-#   ggtitle("metabolome")
-# plotMofaWeights_metabolome 
-# ggsave( filename=file.path( results_mofa_dir, "metabolome_plot_top_weights_cln.png")
-#         , plot=plotMofaWeights_metabolome)
-# ggsave( filename=file.path( results_mofa_dir, "metabolome_plot_top_weights_cln.pdf")
-#         , plot=plotMofaWeights_metabolome)
+list_of_weights_figures
 
 
-sort( get_weights(model)$proteome[, "Factor1"] )
+
+# sort( get_weights(model)$proteome[, "Factor1"] )
 
 ```
 
