@@ -933,6 +933,7 @@ printStringDbFunctionalEnrichmentBarGraph <- function( input_table){
 #' @param kegg_species_code KEGG species code (e.g., "kpn" for Klebsiella pneumoniae)
 #' @param reactome_organism Organism name to use for Reactome filtering (e.g., "Homo sapiens")
 #' @return A data frame with enrichment results formatted for visualization
+#' @export
 runMetabolomicsEnrichmentAnalysis <- function(weights, 
                                              metabolomics_obj,
                                              mapping_table,
@@ -1073,6 +1074,7 @@ runMetabolomicsEnrichmentAnalysis <- function(weights,
 #' @param assay_name Name of the assay
 #' @param kegg_species_code KEGG species code (e.g., "kpn" for Klebsiella pneumoniae)
 #' @return A data frame with KEGG pathway enrichment results
+#' @export
 runKeggEnrichment <- function(ranked_list, 
                              mapping_table, 
                              project_dirs,
@@ -1875,6 +1877,7 @@ runKeggEnrichment <- function(ranked_list,
 #' @param assay_name Name of the assay
 #' @param reactome_organism Organism to use for Reactome (e.g., "Klebsiella pneumoniae")
 #' @return A data frame with Reactome pathway enrichment results
+#' @export
 runReactomeEnrichment <- function(ranked_list, 
                                  mapping_table, 
                                  project_dirs,
@@ -2305,6 +2308,7 @@ runReactomeEnrichment <- function(ranked_list,
 #' @param kegg_species_code KEGG species code (e.g., "kpn" for Klebsiella pneumoniae)
 #' @param reactome_organism Organism name to use for Reactome filtering (optional)
 #' @return A combined data frame with enrichment results for both assays
+#' @export
 runMetabolomicsPathwayEnrichment <- function(weights, 
                                             metabolomics_obj, 
                                             mapping_table, 

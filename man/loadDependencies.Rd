@@ -2,7 +2,7 @@
 % Please edit documentation in R/helper_functions.R
 \name{loadDependencies}
 \alias{loadDependencies}
-\title{Load ProteomeScholaR Dependencies}
+\title{Load MultiScholaR Dependencies}
 \usage{
 loadDependencies(verbose = TRUE)
 }
@@ -14,13 +14,13 @@ package installation and loading}
 None (called for side effects)
 }
 \description{
-Installs and loads all required packages for ProteomeScholaR. This includes packages from CRAN, Bioconductor, and GitHub.
+Installs and loads all required packages for MultiScholaR This includes packages from CRAN, Bioconductor, and GitHub.
 }
 \details{
 Checks for and installs missing packages, then loads all required
 dependencies. It handles special cases for GitHub packages (RUVIIIC and
-ProteomeScholaR) and ensures all necessary packages are available for the DIA
-workflow.
+MultiScholaR) and ensures all necessary packages are available for the
+workflows.
 }
 \examples{
 \dontrun{
