@@ -43,8 +43,7 @@ Suggests:
     iheatmapr,
     shiny,
     gprofiler2,
-    webshot2,
-    basilisk
+    webshot2
 Config/testthat/edition: 3
 Imports: 
     beepr,
