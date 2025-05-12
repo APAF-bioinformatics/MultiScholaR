@@ -108,7 +108,7 @@ loadDependencies()
 *   [Structuring Multi-Omics Data with `MultiAssayExperiment`](https://bioconductor.org/packages/release/bioc/vignettes/MultiAssayExperiment/inst/doc/MultiAssayExperiment.html) - A Bioconductor object for coordinating multiple assays on a common set of samples. MOFA2 often ingests data that could be initially organized this way.
 
 #### Multi-Omics Integration Specifics
-*   [Considerations for Multi-Omics Study Design](https://www.nature.com/articles/s41576-018-0077-5) - Review covering experimental design aspects crucial for successful integration.
+*   [Considerations for Multi-Omics Study Design](https://www.nature.com/articles/nrm.2017.135) - Review covering experimental design aspects crucial for successful integration.
 *   [Managing metadata in multi-omics projects](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-02209-x) - Importance and best practices for metadata.
 
 This section establishes a consistent and organized directory structure for your multi-omics integration project. Proper project and data organization is paramount in multi-omics studies due to the complexity and volume of data from different sources.
@@ -270,45 +270,6 @@ colnames(metabolomics_assay_1_sort) <- updated_column_names
 colnames(metabolomics_assay_2_sort) <- updated_column_names  
 ```
 
-## Reading the data tables
-```{r}
-
-## Note that over here the columns represents samples and the rows represents the molecules for each individual table.
-
-transcriptomics_cln <- transcriptomics_dat |>
-  column_to_rownames("Run") |>
-  as.data.frame() |>
-  t() |>
-  as.data.frame() |>
-  mutate( across( everything(), ~ as.numeric(.x) )) |>
-  dplyr::select( -`51519`)
-
-proteomics_cln <- proteomics_dat |>
-  column_to_rownames("Protein.Ids") |>
-  as.data.frame()
-
-## Since the proteomics data had only 11 samples (one sample was deleted due to low total number of peptides),
-## we also have to remove the corresponding sample from all other omics. 
-transcriptomics_sort <- transcriptomics_cln[, sort( colnames(transcriptomics_cln) )]
-proteomics_sort <- proteomics_cln[, sort( colnames(proteomics_cln) )]
-
-## The First six sample IDs sorted from smalllest to largest are RPMI and the rest of the larger numbers are Sera.
-updated_column_names <- purrr::map2_chr( c(rep("R", 6), rep("S", 5) )
-                 , c(1:6, 1:5)
-                 , \(x,y) { paste0(x,y) } )
-
-## When we put the data into MOFA2, the corresponding biological replicates should be in the same column order across 
-## all -omics layer. e.g. the first column of all omics data table should correspond to the same biological replicate, and then the second column of all omics data table should be the same biological replicate etc... 
-sample_names_lookup <- data.frame(original_sample_id_transcriptome =  sort( colnames(transcriptomics_cln) )
-                                  , original_sample_id_proteome =  sort( colnames(proteomics_cln) )
-                                  , original_sample_id_metabolome_lc =  sort( colnames(metabolomics_assay_1) )
-                                  , original_sample_id_metabolome_gc =  sort( colnames(metabolomics_assay_2) )
-                                  , updated_sample_id = updated_column_names)
-
-colnames(transcriptomics_sort) <- updated_column_names
-colnames(proteomics_sort) <- updated_column_names  
-```
-
 # Process and align Proteomics and Transcriptomics data
 
 ### Further Reading
@@ -397,86 +358,60 @@ colnames(transcriptomics_sort) <- updated_column_names
 colnames(proteomics_sort) <- updated_column_names  
 ```
 
-```{r Create Sample Lookup Table Function}
-#' Create a Lookup Table for Sample Names
-#'
-#' This function generates a data frame that maps original sample identifiers
-#' from different omics datasets to a unified, updated sample identifier.
-#' It assumes that the input column names for each omic data have been
-#' pre-sorted and correspond to each other.
-#'
-#' @param transcriptomics_cols A character vector of sorted column names from the transcriptomics data.
-#' @param proteomics_cols A character vector of sorted column names from the proteomics data.
-#' @param metabolomics_lc_cols A character vector of sorted column names from the LC-metabolomics data.
-#' @param metabolomics_gc_cols A character vector of sorted column names from the GC-metabolomics data.
-#' @param updated_sample_names A character vector of the new, standardized sample names
-#'        that correspond to the sorted original names.
-#'
-#' @return A data frame with columns for original sample IDs from each omic type
-#'         and a column for the `updated_sample_id`.
-#' @export
-#' @examples
-#' \dontrun{
-#' trans_cols <- sort(paste0("T_Sample", 1:5))
-#' prot_cols <- sort(paste0("P_Sample", 1:5))
-#' metab_lc_cols <- sort(paste0("LC_Sample", 1:5))
-#' metab_gc_cols <- sort(paste0("GC_Sample", 1:5))
-#' new_names <- paste0("Unified_S", 1:5)
-#' lookup <- createSampleLookupTable(trans_cols, prot_cols, metab_lc_cols, metab_gc_cols, new_names)
-#' print(lookup)
-#' }
-createSampleLookupTable <- function(transcriptomics_cols,
-                                    proteomics_cols,
-                                    metabolomics_lc_cols,
-                                    metabolomics_gc_cols,
-                                    updated_sample_names) {
-  # Basic validation
-  if (!is.character(transcriptomics_cols) || !is.character(proteomics_cols) ||
-      !is.character(metabolomics_lc_cols) || !is.character(metabolomics_gc_cols) ||
-      !is.character(updated_sample_names)) {
-    stop("All input arguments must be character vectors.")
-  }
-
-  lengths <- c(
-    length(transcriptomics_cols),
-    length(proteomics_cols),
-    length(metabolomics_lc_cols),
-    length(metabolomics_gc_cols),
-    length(updated_sample_names)
-  )
-
-  if (length(unique(lengths)) != 1) {
-    stop("All input vectors must have the same length. Current lengths: ",
-         paste(lengths, collapse = ", "))
-  }
-
-  lookup_df <- data.frame(
-    original_sample_id_transcriptome = transcriptomics_cols,
-    original_sample_id_proteome = proteomics_cols,
-    original_sample_id_metabolome_lc = metabolomics_lc_cols,
-    original_sample_id_metabolome_gc = metabolomics_gc_cols,
-    updated_sample_id = updated_sample_names,
-    stringsAsFactors = FALSE
-  )
-
-  return(lookup_df)
-}
-```
-
 ## Tidy up display names
+
+### Further Reading
+
+#### Feature Identifiers and Annotation
+*   [Gene Nomenclature (HGNC for human)](https://www.genenames.org/) - Understanding gene symbols and names.
+*   [UniProt Knowledgebase (UniProtKB)](https://www.uniprot.org/help/uniprotkb) - Protein sequences and functional information.
+*   [NCBI Gene Database](https://www.ncbi.nlm.nih.gov/gene) - Gene-specific information.
+*   [Ensembl Genome Browser](https://www.ensembl.org/) - Genome annotation and gene information.
+*   [KEGG Pathway Database](https://www.genome.jp/kegg/pathway.html) - For understanding gene/protein functions in pathways.
+
+#### Data Wrangling for ID Mapping
+*   [`dplyr` for data manipulation](https://dplyr.tidyverse.org/) - Essential for joining and transforming ID tables.
+*   [`tidyr` for tidying data](https://tidyr.tidyverse.org/) - Useful for reshaping lookup tables if needed.
+*   [Best Practices for Data Cleaning (Nature Article)](https://www.nature.com/articles/s41597-021-00860-1) - General principles for data cleaning and preparation.
+
+In multi-omics analysis, features (proteins, transcripts, metabolites) are often represented by various database identifiers (e.g., RefSeq IDs, UniProt Accessions, Ensembl IDs, Locus Tags). While these IDs are precise, they are not always human-readable or ideal for figures and biological interpretation. This section focuses on converting these diverse identifiers into more commonly recognized gene names or metabolite names.
+
+This process typically involves:
+1.  **Loading Annotation Files:** Using external files that map different ID types (e.g., UniProt ID mapping files, GFF3 genome annotation files).
+2.  **Joining Data:** Merging your experimental data (or feature lists) with these annotation tables based on shared identifiers.
+3.  **Handling Discrepancies:** Managing cases where mappings are one-to-many (e.g., isoforms, gene families) or where no direct mapping exists.
+4.  **Creating Lookup Tables:** Generating clean lookup tables that can be used to update the feature names in your datasets.
+
+The following `eval=FALSE` chunks are designed to prepare these lookup tables. They are set to `eval=FALSE` because their primary role is to generate intermediate files (the lookup tables themselves, e.g., `prot_refseq_id_to_gene_name.tsv`, `uniprot_id_to_gene_name.tsv`, `transcript_id_to_gene_name.tsv`). You would typically run these chunks once (or when your annotation sources change) to create these files. The subsequent `eval=TRUE` chunk will then load these files to perform the actual name conversions on your data matrices before MOFA analysis.
+
+**Key for ECRs:**
+*   **Consistency is Key:** Using standardized, human-readable names makes your results much easier to interpret and compare across different omics layers or with published literature.
+*   **ID Hell:** Identifier mapping can be complex due to different databases, outdated IDs, and varying nomenclature. Patience and careful cross-referencing are often needed.
+*   **Document Your Sources:** Always keep track of which annotation versions and files you used for reproducibility.
+*   **Lookup Tables are Your Friends:** Creating intermediate lookup tables is a good practice. It separates the often-messy ID conversion logic from your main analysis workflow.
+
+### Cleaning Proteomics Display Names (RefSeq to Gene Name)
+
+This first `eval=FALSE` chunk focuses on creating a lookup table to map protein identifiers (primarily from RefSeq and UniProt accessions) to common gene names. It involves several steps:
+
+1.  **RefSeq to UniProt Mapping:** It starts by loading a BLAST tabular output file (`Galaxy4-[Diamond on data 1_ Blast Tabular].tabular`). This file is assumed to contain mappings where RefSeq protein IDs (from your experimental data, `query_seq_id`) are mapped to UniProt accession numbers (`sbjct_uniprot_acc`).
+2.  **UniProt to Gene Name Mapping:** It then loads an official UniProt ID mapping file (`idmapping_2025_05_08.tsv`). This file provides comprehensive mappings from UniProt accessions to gene names and other identifiers.
+3.  **Initial Lookup Creation (`prot_refseq_id_to_gene_name`):** The RefSeq-to-UniProt mappings are joined with the UniProt-to-GeneName mappings. This creates an initial lookup table (`prot_refseq_id_to_gene_name.tsv`) that translates RefSeq IDs (often found in proteomics search results) to gene names. It also includes logic to handle cases where a single gene name might correspond to multiple RefSeq IDs (e.g., isoforms) by appending a `_copy_id` to make them unique.
+4.  **Consolidating UniProt-based Identifiers:** The chunk then loads additional mapping files: `kv_uniparc.csv` (a UniParc lookup) and reuses the UniProt ID mapping file. This aims to create a more comprehensive mapping (`protein_id_to_uniprot_uniparc_tbl`) that links various protein IDs (including those already in UniProt format from your `proteomics_sort` table) back to NCBI RefSeq IDs if possible.
+5.  **Final Lookup (`uniprot_id_to_gene_name`):** The `proteomics_sort` data (which should have UniProt IDs as rownames after initial processing) is used. Its rownames are joined with the consolidated mapping to find corresponding NCBI RefSeq IDs. These RefSeq IDs are then used with the `prot_refseq_id_to_gene_name` table (created in step 3) to map UniProt IDs to gene names. This final lookup table (`uniprot_id_to_gene_name.tsv`) is saved and will be used by the next `eval=TRUE` chunk to rename proteins in the `proteomics_sort_updated` matrix.
+
+**ECR Note on `eval=FALSE`:** This chunk generates critical lookup files. Run it (by setting `eval=TRUE` temporarily or running interactively) if these files (`prot_refseq_id_to_gene_name.tsv`, `uniprot_id_to_gene_name.tsv`) don't exist in your `data_dir/UniProt/` directory, or if your source annotation files have been updated.
+
 ```{r eval=FALSE}
 
 ##################**********************8888888888888888888*********************##################################
-
-### Ideally we have a step where we convert all the names of the molecules to the gene, protein, metabolite, names we use in the figures. We can use the accessions as they won't be used in the figures. I don't have that here....
-
-## ******* #### Will please convert all accessions to their gene name or metabolite name here, or else all figures will be showing the accession number and not reader friendly gene names. We also need to add a small 'p' to denote proteins. ######## 
-
-# Before we put the input tables into MOFA, we need to make sure we determine what gene names, protein names, metabolites names we want to display in the figures. The row names that you use will be directly transfer to the features importance figures, and there are no easy way to change them back, unless you do names conversion systematically on the output tables afterwards. If you do not do names conversion beforehand, all of the default plotting functions will only show the accession numbers.
-
+# Before we put the input tables into MOFA, we need to make sure we determine what gene names, protein names, metabolites names we want to display in the figures. 
+# The row names that you use will be directly transfer to the features importance figures, and there are no easy way to change them back, 
+# unless you do names conversion systematically on the output tables afterwards. If you do not do names conversion beforehand, all of the 
+# default plotting functions will only show the accession numbers.
 ##################**********************8888888888888888888*********************##################################
 ## Convert protein to gene names 
-prot_refseq_id_to_uniprot_acc <- vroom::vroom(file.path(  data_dir, "UniProt", "Galaxy4-[Diamond on data 1_ Blast Tabular].tabular" ),
+prot_refseq_id_to_uniprot_acc <- vroom::vroom(file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir, "Galaxy4-[Diamond on data 1_ Blast Tabular].tabular" ),
   col_names = c(
     "query_seq_id",
     "sbjct_seq_id",
@@ -494,7 +429,7 @@ prot_refseq_id_to_uniprot_acc <- vroom::vroom(file.path(  data_dir, "UniProt", "
   separate( sbjct_seq_id, into = c("db", "sbjct_uniprot_acc", "sbjct_uniprot_id"), sep = "\\|") 
 
 
-uniprot_lookup_tbl <- vroom::vroom(file.path(  data_dir, "UniProt","idmapping_2025_05_08.tsv" )) |>
+uniprot_lookup_tbl <- vroom::vroom(file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir,"idmapping_2025_05_08.tsv" )) |>
   janitor::clean_names() 
 
 prot_refseq_id_to_gene_name <- prot_refseq_id_to_uniprot_acc |>
@@ -514,15 +449,14 @@ prot_refseq_id_to_gene_name <- prot_refseq_id_to_uniprot_acc |>
   dplyr::select(-copy_id) 
   
 vroom::vroom_write( prot_refseq_id_to_gene_name
-                     , file.path( data_dir, "UniProt", "prot_refseq_id_to_gene_name.tsv"  ))
+                     , file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir, "prot_refseq_id_to_gene_name.tsv"  ))
 
 
 ## Load UniParc lookup table
-uniparc_tbl <-   vroom::vroom(file.path(  data_dir, "proteomics","kv_uniparc.csv"))
+uniparc_tbl <-   vroom::vroom(file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir,"kv_uniparc.csv"))
 
 ## Load UniProt lookup table
-protein_id_to_uniprot_acc_kv_tbl <-   vroom::vroom(file.path(  data_dir, "UniProt","idmapping_2025_05_08.tsv")) |>
-  dplyr::select( ncbi_refseq, uniprot_id)
+protein_id_to_uniprot_acc_kv_tbl <-   vroom::vroom(file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir,"idmapping_2025_05_08.tsv"))
 
 
 protein_id_to_uniprot_uniparc_tbl <- protein_id_to_uniprot_acc_kv_tbl |>
@@ -546,13 +480,71 @@ uniprot_id_to_gene_name <- uniprot_id_to_refseeq_protein_id  |>
   dplyr::select(-ncbi_refseq)
 
 vroom::vroom_write( uniprot_id_to_gene_name
-                     , file.path( data_dir, "UniProt", "uniprot_id_to_gene_name.tsv"  ))
-```    
+                     , file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir, "uniprot_id_to_gene_name.tsv"  ))
+```
+
+## Cleaning Transcriptomics Display Names from GFF3 Annotation
+
+### Further Reading
+
+#### Gene Annotation and GFF3 Format
+*   [GFF3 Format Specification (Gene Ontology Consortium)](http://gmod.org/wiki/GFF3) - Detailed description of the General Feature Format Version 3.
+*   [NCBI Genome Data Viewer](https://www.ncbi.nlm.nih.gov/genome/gdv/) - Tool to visualize and download genome annotations, often in GFF3 format.
+*   [Ensembl Genome Browser](https://www.ensembl.org/) - Another major resource for genome annotation and GFF3 files.
+*   [Parsing GFF files in R (e.g., `rtracklayer`, `GenomicFeatures`)](https://bioconductor.org/packages/release/bioc/html/rtracklayer.html) - Bioconductor packages for handling genomic annotation files. While `vroom` is used here for simplicity, these packages offer more specialized tools.
+
+#### Transcript Identifiers and Gene Nomenclature
+*   [Locus Tag Prefixes (NCBI)](https://www.ncbi.nlm.nih.gov/books/NBK21091/#_A1050_Valid_locus_tag_prefixes_) - Understanding locus tags in prokaryotic genomes.
+*   [RNAcentral](https://rnacentral.org/) - Database of non-coding RNA sequences.
+*   [Gene Naming Conventions (refer to organism-specific databases)](https://www.genenames.org/) - Gene nomenclature can vary by species.
+
+#### Data Wrangling with `dplyr` and `tidyr`
+*   [`dplyr` for data manipulation](https://dplyr.tidyverse.org/) - Used for `filter`, `distinct`, `mutate`, `left_join`, `select`, `group_by`, `ungroup`, `anti_join`.
+*   [`tidyr` for tidying data](https://tidyr.tidyverse.org/) - Used for `separate_rows`, `separate`, `pivot_wider`.
+*   [`stringr` for string manipulation](https://stringr.tidyverse.org/) - Implicitly used via functions like `str_length` if needed, though not explicit in this chunk.
+
+This R code chunk focuses on processing a GFF3 (General Feature Format Version 3) file to create a lookup table that maps transcript identifiers (often `locus_tag` or other IDs from the GFF3) to more human-readable gene names or product descriptions. This is analogous to the protein ID mapping performed earlier but tailored for transcriptomics data, which often relies on genome annotation files like GFF3s.
+
+**Key Operations in this Chunk:**
+
+1.  **Load GFF3 File:**
+    *   `vroom::vroom()` loads the GFF3 file (e.g., `k_variicola.gff3`). GFF3 files contain detailed annotations of genomic features. The `comment="#"` argument skips header lines, and `col_names` assigns standard names to the 9 GFF3 columns.
+2.  **Parse Attributes Column:**
+    *   The crucial information in GFF3 files (like gene IDs, product names, locus tags, protein IDs for coding transcripts) is often packed into the 9th "attributes" column as a semicolon-separated list of key-value pairs (e.g., `ID=gene001;Name=gene_name;locus_tag=KV1_0001`).
+    *   `separate_rows()` splits these attributes into individual rows.
+    *   `separate()` splits each key-value pair into "key" and "value" columns.
+    *   `pivot_wider()` transforms this long format into a wide format where each unique "key" becomes a column, making it easier to access specific attributes like `protein_id`, `locus_tag`, `product`, `gene_name`, etc. The result is `gff3_cln`.
+3.  **Process Coding Transcripts (`gff3_coding`):**
+    *   Filters for entries that have a `protein_id` (i.e., coding transcripts).
+    *   Selects distinct `protein_id` and `locus_tag` pairs.
+    *   It then `left_join`s with `prot_refseq_id_to_gene_name` (created in the previous proteomics name tidying chunk). This step cleverly leverages the protein-to-gene name mapping. If a transcript codes for a protein whose gene name is already known, that gene name is used.
+    *   If a gene name isn't found via the protein mapping, it defaults to using the `locus_tag` as the `gene_name`.
+4.  **Process Non-Coding Elements:**
+    *   `gff3_non_coding`: Filters the cleaned GFF3 data (`gff3_cln`) for entries that *do not* have a `protein_id`.
+    *   It then further refines this by removing elements that are `Parent` features of coding transcripts using an `anti_join`. This helps isolate true non-coding features from parent gene entries that might also have coding children (CDS).
+    *   `list_of_non_protein_coding_elements`: From the `gff3_non_coding` set, it extracts features that have a `product` description and are not pseudo-genes. It prioritizes `locus_tag` if it's shorter than the `product` description for the `gene_name`, and handles duplicates by appending copy numbers, similar to the protein name cleaning.
+    *   `gff_remaining`: Captures any remaining non-coding elements that weren't covered by the previous step (e.g., those without a `product` description but with a `locus_tag`, excluding tRNAs identified by tRNAscan-SE or specific gene_biotypes). These default to using their `locus_tag` as the `gene_name`.
+5.  **Combine and Save Transcript Lookup Table:**
+    *   `transcript_id_to_gene_name`: The mappings from coding transcripts, product-containing non-coding elements, and other remaining non-coding elements are combined using `bind_rows()`.
+    *   `vroom::vroom_write()` saves this final lookup table as `transcript_id_to_gene_name.tsv` in the `Read_counts` subdirectory of `data_dir`. This table will be used later to convert transcript identifiers in the transcriptomics data matrix to these cleaned gene names.
+
+**Why `eval=FALSE`?**
+
+Similar to the proteomics name tidying chunk, this chunk is set to `eval=FALSE`.
+*   **Reasoning:** Its main purpose is to generate the `transcript_id_to_gene_name.tsv` file from the GFF3 annotation. Once this file is created, subsequent chunks will load it to perform the actual name conversion on the transcriptomics data.
+*   **When to run:** You would run this chunk manually (or set `eval=TRUE` temporarily) if the GFF3 file is new or updated, or if the logic for parsing GFF3 attributes or deriving gene names needs modification.
+
+**ECR Advice:**
+*   **GFF3 File Source:** Ensure your GFF3 file is the correct and most up-to-date version for your organism and genome assembly.
+*   **GFF3 Complexity:** GFF3 files can be complex and sometimes inconsistent in how attributes are formatted. The parsing logic here (`separate_rows`, `separate`, `pivot_wider`) is a common approach, but might need adjustments depending on the specifics of your GFF3 file. Inspecting `gff3_cln` after parsing is often a good debugging step.
+*   **Identifier Hierarchy:** Understand the relationship between different identifiers in your GFF3 (e.g., gene IDs, transcript IDs, CDS IDs, locus_tags, protein_ids). The logic here tries to derive a sensible "gene_name" based on this hierarchy.
+*   **`data_dir` Variable:** Ensure the `data_dir` variable is correctly defined and accessible, pointing to the location of your GFF3 file and the `prot_refseq_id_to_gene_name.tsv` file (from the previous chunk).
+*   **Cross-Omics Consistency:** Note how this chunk reuses `prot_refseq_id_to_gene_name` from the proteomics section. This is a good practice to ensure consistency in gene names if the same genes are measured by different omics.
 
 ## Cleaning transcriptomics display names 
 
 ```{r eval=FALSE}
-gff3_tbl <- vroom::vroom(file.path(  data_dir, "proteomics", "k_variicola.gff3" )
+gff3_tbl <- vroom::vroom(file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir,"k_variicola.gff3")
                          , comment="#"
                          , col_names = c("seqid", "source", "type", "start", "end", "score", "strand", "phase", "attributes")) 
 
@@ -614,16 +606,65 @@ transcript_id_to_gene_name  <-  gff3_coding |>
   bind_rows( gff_remaining ) 
 
 vroom::vroom_write(transcript_id_to_gene_name, 
-                   file.path( data_dir, "Read_counts", "transcript_id_to_gene_name.tsv" ))
+                   file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir, "transcript_id_to_gene_name.tsv" ))
 ```
 
 
-## Convert accessions into readable names then use tables for MOFA analyses
+## Convert Accessions into Readable Names then Use Tables for MOFA Analyses
+
+### Further Reading
+
+#### Importance of Identifier Mapping
+*   [Best Practices in Data Annotation (Nature Genetics Editorial)](https://www.nature.com/articles/ng.3140) - Discusses the importance of consistent and clear feature annotation.
+*   [UniProt ID Mapping Service](https://www.uniprot.org/id-mapping) - A powerful tool for converting between different protein identifiers.
+
+#### Data Wrangling with `dplyr`
+*   [`left_join()` for merging data](https://dplyr.tidyverse.org/reference/mutate-joins.html) - Essential for combining data with lookup tables.
+*   [`mutate()` and `case_when()` for conditional logic](https://dplyr.tidyverse.org/reference/mutate.html) - Useful for handling missing mappings or creating derived columns.
+*   [`rownames_to_column()` and `column_to_rownames()`](https://tibble.tidyverse.org/reference/rownames.html) - For easy conversion between explicit columns and row names.
+
+This R chunk is where the previously generated lookup tables (from the `eval=FALSE` chunks under "Tidy up display names") are actually used to convert the feature identifiers in your main proteomics and transcriptomics data matrices into more human-readable gene names. It then prepares these matrices, along with the metabolomics data, for input into MOFA by performing Z-score normalization.
+
+**Key Steps:**
+
+1.  **Load Lookup Tables:**
+    *   `uniprot_id_to_gene_name <- vroom::vroom(...)`: Loads the table that maps UniProt IDs (expected in `proteomics_sort`) to gene names.
+    *   `transcript_id_to_gene_name <- vroom::vroom(...)`: Loads the table that maps transcript locus tags (expected in `transcriptomics_sort`) to gene names/product descriptions.
+    *   **ECR Note:** This step relies on the `eval=FALSE` chunks having been run previously to generate these `.tsv` files in the correct `data_dir` subdirectories. If these files are missing, this chunk will fail.
+
+2.  **Convert Proteomics Feature Names:**
+    *   `proteomics_sort_updated <- proteomics_sort |> ...`:
+        *   `rownames_to_column("uniprot_id")`: Converts the current row names (expected to be UniProt IDs) of `proteomics_sort` into an explicit column.
+        *   `left_join(uniprot_id_to_gene_name, ...)`: Joins the proteomics data with the UniProt-to-gene name lookup table.
+        *   `mutate(gene_name = case_when(is.na(gene_name) ~ uniprot_id, TRUE ~ gene_name))`: If a gene name mapping is missing (`NA`), it defaults to using the original `uniprot_id` as the feature name. This ensures every feature still has a name.
+        *   `dplyr::select(-uniprot_id)`: Removes the original `uniprot_id` column as it's now superseded by `gene_name`.
+        *   `column_to_rownames("gene_name")`: Sets the newly acquired (or defaulted) `gene_name` as the row names for the proteomics matrix.
+
+3.  **Convert Transcriptomics Feature Names:**
+    *   `transcriptomics_sort_updated <- transcriptomics_sort |> ...`:
+        *   A similar process is followed for the transcriptomics data, using `locus_tag` as the initial identifier and the `transcript_id_to_gene_name` lookup table.
+        *   Missing mappings default to the original `locus_tag`.
+
+4.  **Prepare Data for MOFA Input (Normalization and Structuring):**
+    *   `mofa_matrix_input <- list(...)`: MOFA2 expects the input data as a named list of matrices. Each element of the list corresponds to one omics layer (a "view").
+    *   **Naming Views:** The names given to the list elements (e.g., `transcriptome`, `proteome`, `metabolome_lc`, `metabolome_gc`) are important as they will be used to identify these views in downstream MOFA plots and outputs.
+    *   **Data Orientation:** For each matrix, the features (genes, proteins, metabolites) must be in rows, and samples must be in columns.
+    *   **Z-score Normalization:** `t(scale(t(omics_matrix)))` is a common R idiom for performing Z-score normalization *per feature (row-wise)*.
+        *   `t(omics_matrix)`: Transposes the matrix so features become columns.
+        *   `scale(...)`: `scale()` by default centers and scales columns to have a mean of 0 and standard deviation of 1 (Z-score).
+        *   `t(...)`: Transposes the matrix back to the original orientation (features as rows).
+        *   This normalization step is applied to `transcriptomics_sort_updated`, `proteomics_sort_updated`, and the two metabolomics assays (`metabolomics_assay_1_sort`, `metabolomics_assay_2_sort`). Standardizing the scale of features within each omics layer is crucial for MOFA, as it prevents features with intrinsically larger variances or different units from dominating the factor analysis.
+
+**Key for ECRs:**
+*   **Human-Readable Features:** The primary goal here is to make your MOFA results (especially feature weight plots) interpretable by using common gene/metabolite names instead of obscure database IDs.
+*   **Handling Missing Mappings:** The `case_when(is.na(gene_name) ~ original_id, ...)` strategy is a robust way to ensure all features retain an identifier, even if a direct mapping to a gene name isn't available.
+*   **Z-Score Normalization:** Understand why Z-scoring per feature is important. It ensures that each feature contributes to the variance calculations on a comparable scale, regardless of its original absolute abundance or variability.
+*   **MOFA Input Structure:** Pay attention to the `list` structure required by `create_mofa()`. Each element must be a matrix with features as rows and samples as columns, and sample names/order must be consistent across all matrices in the list.
 ```{r}
 
-uniprot_id_to_gene_name <- vroom::vroom(  file.path( data_dir, "UniProt", "uniprot_id_to_gene_name.tsv"  ))
+uniprot_id_to_gene_name <- vroom::vroom(file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir, "uniprot_id_to_gene_name.tsv"  ))
 
-transcript_id_to_gene_name <- vroom::vroom(file.path( data_dir, "Read_counts", "transcript_id_to_gene_name.tsv" ))
+transcript_id_to_gene_name <- vroom::vroom(file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir, "transcript_id_to_gene_name.tsv" ))
 
 ### Convert column names to readable names
 proteomics_sort_updated <- proteomics_sort |>
@@ -668,9 +709,54 @@ transcriptomics_sort_updated <- transcriptomics_sort |>
   
 ```
 
+## Prepare the Design Matrix and Sample Grouping Factor
+
+### Further Reading
+
+#### Experimental Design and Metadata
+*   [Understanding Experimental Design in Omics (Nature Reviews Genetics)](https://www.nature.com/articles/nrg.2017.108) - Principles of good experimental design.
+*   [Sample Metadata Best Practices (FAIR Principles)](https://www.nature.com/articles/sdata201618) - Importance of comprehensive and standardized metadata.
+*   [The `here` package for file paths](https://here.r-lib.org/) - Useful for robustly locating files within a project structure.
+
+#### Data Manipulation with `dplyr` and `purrr`
+*   [`dplyr` for data manipulation](https://dplyr.tidyverse.org/): `mutate`, `left_join`, `filter`, `arrange`, `pull`, `select`.
+*   [`purrr` for functional programming](https://purrr.tidyverse.org/): `map_chr` for type-specific iteration.
+*   [Factors in R](https://r4ds.had.co.nz/factors.html) - Understanding how R handles categorical data using factors.
+
+This R chunk is responsible for loading and preparing the experimental design matrix and creating a factor variable that represents the primary sample groups for downstream analysis and visualization with MOFA.
+
+**Key Operations in this Chunk:**
+
+1.  **Load Design Matrix File:**
+    *   `vroom::vroom(file.path( data_dir, "proteomics", "design_matrix.tab"))`: Loads a tab-separated file named `design_matrix.tab`. This file is expected to contain metadata about each sample (Run), including at least the original sample identifiers and their group assignments.
+    *   **ECR Note:** The path suggests this design matrix might be originally from a proteomics-specific part of the project or a general metadata location. Ensure this file exists and is correctly formatted. It should have a column corresponding to sample IDs that can be matched with your omics data.
+
+2.  **Process `design_matrix`:**
+    *   `mutate(Run = purrr::map_chr(Run, as.character))`: Ensures that the `Run` column (containing sample identifiers) is of character type. This is important for consistent joining with other tables.
+    *   `left_join( sample_names_lookup |> dplyr::select(-original_sample_id_transcriptome) , by = join_by( Run == original_sample_id_proteome))`: This step merges the loaded `design_matrix` with the `sample_names_lookup` table (created in an earlier chunk).
+        *   The join is performed using the `Run` column from `design_matrix` and the `original_sample_id_proteome` column from `sample_names_lookup`. This implies that the `Run` identifiers in `design_matrix.tab` are expected to match the original proteomics sample IDs.
+        *   The purpose of this join is likely to integrate the standardized `updated_sample_id` (from `sample_names_lookup`) and potentially other consistent metadata into the `design_matrix`. The `select(-original_sample_id_transcriptome)` part is a bit unusual as it removes a column from `sample_names_lookup` *before* the join; the key is that `original_sample_id_proteome` and `updated_sample_id` are present for the join and subsequent use.
+
+3.  **Create Grouping Factor `Y`:**
+    *   `Y <- design_matrix |> ... |> factor( levels = c("RPMI", "Sera"))`: This creates a factor variable `Y` that will hold the group assignment for each sample.
+    *   `dplyr::filter(Run %in% colnames(proteomics_cln))`: Filters the `design_matrix` to include only those samples (`Run`) that are actually present as column names in the `proteomics_cln` data matrix (which was one of the cleaned input matrices before renaming for MOFA). This ensures `Y` corresponds to the samples analyzed.
+    *   `arrange(Run)`: Sorts the filtered design matrix by the `Run` identifier. This is important to ensure that the order of `Y` matches the order of samples in other data structures if they are also sorted by `Run`.
+    *   `pull(group)`: Extracts the `group` column (containing group assignments like "RPMI" or "Sera") as a vector.
+    *   `factor( levels = c("RPMI", "Sera"))`: Converts this vector into a factor, explicitly defining the order of levels as "RPMI" first, then "Sera". This explicit ordering is good practice and controls how these groups will appear in legends and some analyses.
+    *   **Purpose of `Y`:** This `Y` vector is commonly used in MOFA and other analyses for:
+        *   Coloring or shaping points in plots (e.g., PCA plots, factor plots).
+        *   Defining groups for statistical comparisons.
+        *   As a covariate in the MOFA model if relevant.
+
+**ECR Advice:**
+*   **`design_matrix.tab` Content:** Carefully inspect your `design_matrix.tab` file. It must contain accurate sample identifiers that can be mapped to your omics data and correct group assignments.
+*   **Sample ID Consistency:** The join `by = join_by(Run == original_sample_id_proteome)` is critical. Ensure the `Run` column in `design_matrix.tab` uses the same type of identifiers as `original_sample_id_proteome` in your `sample_names_lookup` table.
+*   **Factor Levels:** The explicit definition of `levels = c("RPMI", "Sera")` for the factor `Y` is good. If you have different group names or more groups, you'll need to adjust this accordingly. The order of levels can affect plot legends and some statistical model outputs.
+*   **`data_dir` Variable:** Ensure `data_dir` is correctly defined and points to the location of `design_matrix.tab`.
+
 ## Prepare the design matrix
 ```{r}
-design_matrix <- vroom:::vroom(file.path( data_dir, "proteomics", "design_matrix.tab")) |>
+design_matrix <- vroom:::vroom(file.path(project_dirs[[paste0("proteomics_", experiment_label)]]$source_dir, "design_matrix.tab")) |>
   mutate( Run = purrr::map_chr(Run, as.character)) |>
   left_join( sample_names_lookup |>
                dplyr::select(-original_sample_id_transcriptome) 
@@ -679,19 +765,49 @@ design_matrix <- vroom:::vroom(file.path( data_dir, "proteomics", "design_matrix
 Y <- design_matrix |>
   dplyr::filter( Run %in% colnames(proteomics_cln) ) |>
   arrange(Run) |>
-  pull( group) |>
+  dplyr::pull( group) |>
   factor( levels = c("RPMI", "Sera"))
 ```
 
 
 ## Create MOFA object
 
+### Further Reading
+
+#### MOFA Framework
+* [MOFA Publications Page](https://biofam.github.io/MOFA2/publications.html) - Academic papers describing MOFA and its applications
+* [MOFA2 GitHub Repository](https://github.com/bioFAM/MOFA2) - Source code and detailed documentation for the MOFA2 package
+* [Multi-Omics Factor Analysis Tutorial](https://biofam.github.io/MOFA2/tutorials.html) - Official tutorials for MOFA2
+* [Multi-omics Integration Methods](https://www.nature.com/articles/s41592-019-0703-0) - Review paper of multi-omics integration approaches
+
+#### S4 Objects in R
+* [Introduction to S4 Objects](https://bioconductor.org/help/course-materials/2017/Zurich/S4-classes-and-methods.html) - Explanation of the S4 object-oriented system in R
+* [Advanced R: S4 Objects](https://adv-r.hadley.nz/s4.html) - Detailed coverage of S4 objects from Hadley Wickham's Advanced R
+* [Bioconductor S4 Vectors](https://bioconductor.org/packages/release/bioc/vignettes/S4Vectors/inst/doc/S4QuickOverview.pdf) - Working with S4 vectors in Bioconductor
+
+#### Statistical Latent Variable Models
+* [Factor Analysis in R](https://www.StatisticsGlobe.com/factor-analysis-in-r) - Introduction to factor analysis in R
+* [Principal Component Analysis vs. Factor Analysis](https://www.sciencedirect.com/science/article/abs/pii/S016974391730184X) - Comparison of PCA and factor analysis
+* [Latent Variable Models in Biology](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6455620/) - Overview of latent variable models in biological data
+
+This section creates the central object that will be used throughout the MOFA (Multi-Omics Factor Analysis) workflow. The `create_mofa()` function takes the prepared multi-omics data matrices and initializes a specialized S4 object designed specifically for MOFA analysis.
+
+MOFA is a statistical framework that discovers the principal sources of variation across multiple data modalities. It works by projecting the data onto a latent space of factors, similar to Principal Component Analysis (PCA), but with the crucial difference that it can integrate multiple data types simultaneously.
+
+The `MOFAobject` created here will store:
+1. The input data matrices (`mofa_matrix_input`) containing the normalized and preprocessed omics data
+2. The relationships between samples across all omics layers
+3. Configuration settings that will guide the model training
+4. (Eventually) The learned factors and weights after model training
+
+This object-oriented approach helps manage the complex data structures needed for multi-omics integration. The S4 system in R provides formal class definitions with validation, making it particularly suitable for representing the complex relationships in multi-omics data.
+
+**Key for ECRs:** Think of the `MOFAobject` as a container that holds both your data and the analytical machinery needed to identify patterns across your different omics layers. All subsequent analysis steps will involve this object.
+
 ```{r}
-MOFAobject <- create_mofa(mofa_matrix_input )
+MOFAobject <- create_mofa(mofa_matrix_input)
 
 ```
-
-
 
 
 ## Reference
@@ -700,22 +816,77 @@ Reference: <https://raw.githack.com/bioFAM/MOFA2_tutorials/master/R_tutorials/ge
 
 ## Define data options
 
+### Further Reading
+
+#### Data Processing Options
+* [MOFA2 Data Processing Options](https://biofam.github.io/MOFA2/data_options.html) - Official documentation of MOFA2 data processing options
+* [Data Normalization Strategies](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5870621/) - Review of normalization approaches for multi-omics data
+* [Cross-Platform Normalization Methods](https://academic.oup.com/bib/article/19/5/888/3800191) - Methods for normalizing data across different platforms
+
+#### Data Scaling Principles
+* [The Art of Scaling in Omics](https://www.frontiersin.org/articles/10.3389/fgene.2019.00454/full) - Overview of scaling approaches in omics data
+* [Mean-Centering and Unit Variance Scaling](https://bmcgenomics.biomedcentral.com/articles/10.1186/1471-2164-7-142) - Impact of different scaling methods
+* [Heterogeneity in Multi-omics Data](https://www.nature.com/articles/s41467-020-18081-9) - Managing heterogeneity across omics layers
+
+#### Group-wise vs. Global Scaling
+* [Batch Effects in Multi-omics Data](https://www.nature.com/articles/srep42361) - How scaling helps mitigate batch effects
+* [Group-wise Normalization Strategies](https://academic.oup.com/bib/article/18/3/451/2562836) - Approaches to normalize data within groups
+* [Impact of Scaling on Factor Analysis](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1007819) - How scaling choices affect factor analysis results
+
+This section configures how MOFA will handle data scaling and centering during model training. The options set here are crucial because they directly impact how MOFA interprets the variance in your data and, consequently, the factors it will identify.
+
+MOFA provides several data processing options that control how the input data matrices are handled before factor analysis. Two particularly important options are:
+
+1. **`scale_groups`**: Determines whether to scale data to unit variance *within each group* separately. This is useful when different experimental groups have different variance ranges (e.g., treatment vs. control with very different variability patterns).
+
+2. **`scale_views`**: Controls whether to scale each omics data type (view) to unit variance. This is often needed because different omics technologies produce data with vastly different numeric ranges (e.g., transcriptomics vs. proteomics).
+
+In this code, we first retrieve the default data options using `get_default_data_options()`, and then we explicitly set `center_groups = FALSE` to prevent mean-centering the data by group. This can be appropriate when the absolute levels (not just the relative differences) are meaningful across groups.
+
+**Key for ECRs:** The scaling decisions are crucial for multi-omics integration. Without appropriate scaling, omics layers with larger numerical values or higher variance would dominate the analysis, potentially obscuring important biological signals from other omics layers with smaller variance. The defaults are generally sensible, but understanding these options allows for fine-tuning the analysis to specific data characteristics.
+
 -   scale_groups: if groups have different ranges/variances, it is good practice to scale each group to unit variance. Default is FALSE
 -   scale_views: if views have different ranges/variances, it is good practice to scale each view to unit variance. Default is FALSE
 
-```{r}
-
-data_opts <- get_default_data_options(MOFAobject)
-# head(data_opts)
-
-# data_opts$scale_views <- TRUE
-
-data_opts$center_groups <- FALSE
-head(data_opts)
-
-```
-
 ## Define model options
+
+### Further Reading
+
+#### MOFA Model Parameters
+* [MOFA2 Model Options Documentation](https://biofam.github.io/MOFA2/model_options.html) - Official documentation of MOFA2 model options
+* [MOFA2 Technical Paper](https://www.embopress.org/doi/full/10.15252/msb.20199986) - Technical description of the MOFA2 model
+* [Generative Models in Bioinformatics](https://academic.oup.com/bib/article/19/6/1329/4108134) - Overview of generative models similar to MOFA
+
+#### Likelihood Models
+* [Gaussian vs. Non-Gaussian Likelihoods](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5870478/) - When to use different likelihood models
+* [Probabilistic Models for Count Data](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-020-3397-x) - Models for count-based omics data
+* [Bernoulli Models for Binary Data](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1007993) - Applications to presence/absence data
+
+#### Sparsity and Regularization
+* [Sparsity in Latent Factor Models](https://www.nature.com/articles/nmeth.3865) - The role of sparsity in factor models
+* [Automatic Relevance Determination](https://www.mitpressjournals.org/doi/10.1162/neco.1993.5.4.613) - Overview of ARD priors
+* [Spike-and-Slab Priors](https://projecteuclid.org/journals/annals-of-statistics/volume-31/issue-3/The-variable-selection-problem/10.1214/aos/1056562461.full) - Statistical foundations of spike-and-slab priors
+
+This section configures the core model parameters that define how MOFA will learn patterns from your multi-omics data. These settings control the statistical approach used to identify factors of variation across your omics layers.
+
+Key model parameters include:
+
+1. **`num_factors`**: This determines how many latent factors MOFA will extract from the data. Similar to principal components in PCA, these factors represent major sources of variation. Here we set it to 2, which is a reasonable starting point for exploration. For more comprehensive analyses, you might consider using more factors.
+
+2. **`likelihoods`**: These specify the statistical distribution assumed for each data type. Options include:
+   - "gaussian" for continuous data (appropriate for most normalized omics data)
+   - "poisson" for count data (e.g., raw RNA-seq counts)
+   - "bernoulli" for binary data (e.g., mutation presence/absence)
+
+3. **Sparsity options**:
+   - `spikeslab_weights`: When TRUE, this encourages each factor to be associated with only a subset of features, making the model more interpretable.
+   - `spikeslab_factors`: Similarly controls sparsity in how factors relate to samples.
+
+4. **Automatic Relevance Determination (ARD) options**:
+   - `ard_factors`: When TRUE, this allows the model to automatically determine the relevance of each factor for each group.
+   - `ard_weights`: Similarly determines the relevance of each factor for each view (omics layer).
+
+**Key for ECRs:** The most critical parameter to set is `num_factors`, which controls the complexity of your model. Start with a small number (2-5) for initial exploration, then increase if needed. The other parameters have sensible defaults that work well for most multi-omics datasets. Only change them if you have specific knowledge about your data's statistical properties or if you're trying to address specific modeling challenges.
 
 -   num_factors: number of factors
 -   likelihoods: likelihood per view (options are "gaussian", "poisson", "bernoulli"). By default they are learnt automatically. We advise users to use "gaussian" whenever possible!
@@ -724,13 +895,50 @@ head(data_opts)
 -   ard_factors: use ARD prior in the factors? Default is TRUE if using multiple groups.
 -   ard_weights: use ARD prior in the weights? Default is TRUE if using multiple views. Only change the default model options if you are familiar with the underlying mathematical model!
 
-```{r}
-model_opts <- get_default_model_options(MOFAobject)
-model_opts$num_factors <- 2
-head(model_opts)
-```
 
 ## Define train options
+
+### Further Reading
+
+#### Model Training Parameters
+* [MOFA2 Training Options Documentation](https://biofam.github.io/MOFA2/training_options.html) - Official documentation of MOFA2 training options
+* [Variational Inference in Practice](https://arxiv.org/abs/1906.03566) - Tutorial on variational inference, the method used by MOFA
+* [Convergence in Machine Learning](https://www.cs.cornell.edu/cv/ResearchPDF/19ways+.pdf) - General principles of convergence in machine learning
+
+#### Optimization and Convergence
+* [ELBO (Evidence Lower Bound)](https://arxiv.org/abs/1601.00670) - Explanation of the ELBO objective function
+* [Stochastic Variational Inference](https://www.jmlr.org/papers/volume14/hoffman13a/hoffman13a.pdf) - Introduction to stochastic approaches to variational inference
+* [Convergence Diagnostics](https://mc-stan.org/docs/2_19/reference-manual/convergence.html) - Ways to assess convergence in Bayesian models
+
+#### Hardware Acceleration
+* [GPU Acceleration in R](https://blogs.rstudio.com/ai/posts/2020-06-02-gpu-accelerated-machine-learning-in-r/) - Overview of GPU acceleration for machine learning in R
+* [Efficient Computation in R](https://adv-r.hadley.nz/perf-improve.html) - Strategies for improving computational performance in R
+* [Parallel Processing in Bioinformatics](https://academic.oup.com/bioinformatics/article/35/20/4074/5418798) - Approaches to parallel processing for bioinformatics applications
+
+This section configures the computational parameters that control how MOFA trains its model. These options govern the optimization process, determining how long training runs, how it measures progress, and what computational resources it uses.
+
+Key training options include:
+
+1. **`maxiter`**: The maximum number of iterations for the optimization algorithm. The default is 1000, which is usually sufficient for convergence. Increase for complex datasets or decrease for faster exploration.
+
+2. **`convergence_mode`**: Controls how stringently to assess convergence. Options are:
+   - "fast": Uses less stringent convergence criteria, useful for initial exploration
+   - "medium": Balanced between speed and thoroughness
+   - "slow": More stringent criteria, better for final analyses
+
+3. **ELBO parameters**: The Evidence Lower Bound (ELBO) is the objective function that MOFA optimizes.
+   - `startELBO`: Iteration to start computing the ELBO (computing it is expensive)
+   - `freqELBO`: How frequently to compute the ELBO to check convergence
+
+4. **Computational options**:
+   - `gpu_mode`: Whether to use GPU acceleration (requires GPU hardware and the cupy Python package)
+   - `stochastic`: Whether to use stochastic variational inference (faster but potentially less accurate)
+
+5. **Miscellaneous**:
+   - `verbose`: Whether to print detailed progress information
+   - `seed`: Random seed for reproducibility
+
+**Key for ECRs:** The default training options are suitable for most analyses. For initial exploration, you might consider using `convergence_mode = "fast"` to get quicker results. For final analyses, the default "medium" setting provides a good balance between thoroughness and computational time. If you have GPU hardware available, setting `gpu_mode = TRUE` can significantly speed up training, especially for large datasets.
 
 -   maxiter: number of iterations. Default is 1000.
 -   convergence_mode: "fast", "medium", "slow". For exploration, the fast mode is good enough.
@@ -742,17 +950,69 @@ head(model_opts)
 -   seed: random seed
 
 ```{r}
+# Data options
+data_opts <- get_default_data_options(MOFAobject)
+# head(data_opts)
+
+# data_opts$scale_views <- TRUE
+
+data_opts$center_groups <- FALSE
+head(data_opts)
+
+# Model options (from former "Define model options" chunk)
+model_opts <- get_default_model_options(MOFAobject)
+model_opts$num_factors <- 2
+head(model_opts)
+
+# Train options (from former "Define train options" chunk)
 train_opts <- get_default_training_options(MOFAobject)
 head(train_opts)
 ```
 
+
 ## Build and train the MOFA object
+
+### Further Reading
+
+#### MOFA Training Process
+* [MOFA2 Model Training Tutorial](https://raw.githack.com/bioFAM/MOFA2_tutorials/master/R_tutorials/getting_started_R.html) - Official tutorial on training MOFA models
+* [Variational Autoencoders](https://arxiv.org/abs/1312.6114) - Technical background on variational methods used in MOFA
+* [Probabilistic Factor Analysis](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3138098/) - Statistical foundations of factor analysis models
+
+#### Reticulate and Python Integration
+* [Reticulate Package Documentation](https://rstudio.github.io/reticulate/) - Details on the R package for Python integration
+* [Basilisk Package for Bioconductor](https://bioconductor.org/packages/release/bioc/html/basilisk.html) - Managing Python environments in Bioconductor
+* [Python in R for Data Science](https://www.r-bloggers.com/2018/03/reticulate-running-python-within-r/) - Guide to using Python within R workflows
+
+#### Model Persistence
+* [Saving and Loading Models](https://www.r-bloggers.com/2017/02/how-to-save-and-load-datasets-in-r-an-overview/) - Overview of approaches to save R objects
+* [HDF5 File Format](https://www.h5py.org/) - Documentation for the HDF5 file format used by MOFA
+* [Reproducible Machine Learning](https://www.nature.com/articles/s42256-019-0035-5) - Best practices for reproducible machine learning workflows
+
+This section contains two crucial steps:
+
+1. **Preparing the MOFA object**: The `prepare_mofa()` function integrates all the options we've defined (data, model, and training options) into the MOFA object, setting up the model for training.
+
+2. **Training the model**: The `run_mofa()` function performs the actual model training, finding the latent factors that best explain the variation across all omics layers.
+
+The training process uses variational Bayesian inference to learn the latent factors and the weights that connect these factors to the original features in each omics layer. This is computationally intensive, especially for large datasets.
+
+MOFA's underlying algorithms are implemented in Python, so the `run_mofa()` function uses the reticulate package to interface between R and Python. This is handled in two ways:
+- **First attempt**: Uses a direct Python installation (will fail if mofapy2 is not properly installed)
+- **Second attempt**: Uses Bioconductor's basilisk system, which creates an isolated Python environment with all required dependencies
+
+The trained model is saved in two formats:
+1. As an HDF5 file (.hdf5), which is a standard format for storing hierarchical data
+2. As an R object (.RDS), which preserves the entire R object structure
+
+**Key for ECRs:** 
+- The first run of MOFA on a new system may take some time, as basilisk needs to set up its Python environment
+- The conditional logic (`if(!file.exists(outfile))`) prevents re-running the time-consuming training if a model file already exists
+- If you change any aspect of your input data or options, remember to delete or rename the existing model files to force retraining
 
 Prepare the MOFA object
 
 ```{r}
-
-
 MOFAobject <- prepare_mofa(
   object = MOFAobject,
   data_options = data_opts,
@@ -761,8 +1021,47 @@ MOFAobject <- prepare_mofa(
 )
 ```
 
+### Further Reading
+
+#### Training Large Models
+* [Computational Challenges in Multi-omics](https://www.sciencedirect.com/science/article/pii/S2001037020303573) - Dealing with computational challenges in multi-omics analysis
+* [Error Handling in R](https://adv-r.hadley.nz/conditions.html) - Guide to error handling with try/catch in R
+* [Memory Management in R](https://adv-r.hadley.nz/names-values.html#gc) - Understanding memory management for large objects in R
+
+#### Python Integration 
+* [Mofapy2 Python Package](https://github.com/bioFAM/mofapy2) - The Python package that powers MOFA's computational engine
+* [Reticulate Configuration](https://rstudio.github.io/reticulate/articles/versions.html) - Managing Python versions with reticulate
+* [Basilisk for Isolated Python Environments](https://www.bioconductor.org/packages/release/bioc/vignettes/basilisk/inst/doc/basilisk.html) - Using basilisk for reproducible Python environments
+
+#### Model Serialization
+* [Efficient Storage of Large Models](https://www.r-bloggers.com/2017/10/remembering-how-to-save-in-r/) - Strategies for saving large R objects
+* [RDS vs HDF5 Formats](https://www.r-bloggers.com/2016/12/remember-to-use-the-serializable-formats/) - Comparison of serialization formats in R
+* [Working with HDF5 Files](https://www.bioconductor.org/packages/release/bioc/vignettes/rhdf5/inst/doc/rhdf5.html) - Guide to HDF5 files in R
+
+This chunk performs the actual model training, which is the most computationally intensive part of the MOFA workflow. Here's what happens in this code:
+
+1. **Define output file paths**: The trained model will be saved as both an HDF5 file (standard format for MOFA models) and an RDS file (R's native format).
+
+2. **Set up Python environment**: The code includes commented lines for explicitly configuring Python. These might be needed on some systems if the default Python environment isn't properly configured.
+
+3. **Training approach**:
+   - MOFA first tries to run with `use_basilisk=FALSE`, which attempts to use an external Python installation with mofapy2
+   - This will likely fail unless you've manually set up mofapy2, which is why it's wrapped in `try()`
+   - Then it runs with `use_basilisk=TRUE`, which uses Bioconductor's basilisk system to create an isolated Python environment with all needed dependencies
+
+4. **Caching strategy**:
+   - The code checks if the output file already exists using `if(!file.exists(outfile))`
+   - If a trained model exists, it simply loads it with `readRDS()` rather than retraining
+   - This saves substantial computation time when rerunning the analysis
+
+**Key for ECRs:** 
+- The first time you run MOFA, the training process may take considerable time (minutes to hours depending on dataset size)
+- You might see warnings when the first training attempt (`use_basilisk=FALSE`) fails - this is expected
+- Be patient during training, especially for larger datasets
+- If you modify any input data or parameters, delete the output files to force retraining
+
 ```{r }
-outfile <- file.path( results_mofa_dir, "model.hdf5")
+outfile <- file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_inputs_dir, "model.hdf5")
 
 #se_python(python= "/opt/homebrew/bin/python3", required = NULL)
 
@@ -779,16 +1078,57 @@ if(!file.exists(outfile)) {
   MOFAobject.trained <- run_mofa(MOFAobject, outfile, use_basilisk=TRUE)
   model <- MOFAobject.trained
   head(MOFAobject.trained@samples_metadata, n=3)
-  saveRDS(model, file.path( results_mofa_dir, "model.RDS"))
+  saveRDS(model, file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_inputs_dir, "model.RDS"))
   
 } else {
-  model <- readRDS( file.path( results_mofa_dir, "model.RDS"))
+  model <- readRDS( file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_inputs_dir, "model.RDS"))
   
 }
 
 ```
 
 ### Set the RPMI and Sera labels 
+
+### Further Reading
+
+#### Sample Metadata in MOFA
+* [MOFA2 Sample Metadata Documentation](https://biofam.github.io/MOFA2/samples_metadata.html) - Official guide to working with sample metadata in MOFA2
+* [Visualizing with Metadata](https://bioconductor.org/packages/release/bioc/vignettes/MOFA2/inst/doc/getting_started_R.html#6_Visualize_samples_in_factor_space) - Using metadata for visualization in MOFA2
+* [Experimental Design in Omics](https://www.nature.com/articles/nrg.2017.59) - Principles of experimental design in omics studies
+
+#### R Data Frames for Metadata
+* [R Data Frames](https://r4ds.had.co.nz/tibbles.html) - Working with data frames in R
+* [Annotation in Bioconductor](https://www.bioconductor.org/help/course-materials/2019/BSS2019/04_Annotation.html) - Using and manipulating annotation data in Bioconductor
+* [Metadata Standards in Bioinformatics](https://www.nature.com/articles/s41587-020-0499-z) - Guidelines for metadata in bioinformatics
+
+#### S4 Methods in Bioconductor
+* [Accessor Functions in Bioconductor](https://bioconductor.org/packages/release/bioc/vignettes/S4Vectors/inst/doc/S4QuickOverview.pdf) - Using accessor functions for S4 objects
+* [Object-Oriented Programming in R](https://adv-r.hadley.nz/oo.html) - Guide to object-oriented programming in R
+* [Working with Bioconductor Classes](https://www.bioconductor.org/packages/release/bioc/vignettes/BiocGenerics/inst/doc/BiocGenerics.html) - Overview of working with Bioconductor S4 classes
+
+This section adds experimental condition information to the trained MOFA model. By attaching metadata to the model, we can:
+1. Color points in visualizations according to experimental conditions
+2. Test for associations between factors and experimental variables
+3. Interpret the biological meaning of the discovered factors
+
+The code does the following:
+
+1. **Get sample count**: `Nsamples <- sum(model@dimensions$N)` retrieves the total number of samples in the model.
+
+2. **Create metadata data frame**: A data frame is constructed with two columns:
+   - `sample`: Sample identifiers from the model
+   - `condition`: The experimental condition (`Y`) for each sample (RPMI or Sera in this dataset)
+
+3. **Attach metadata to model**: `samples_metadata(model) <- sample_metadata` attaches this information to the model.
+
+4. **View result**: `head(model@samples_metadata, n=3)` shows the first few rows of the attached metadata.
+
+**Key for ECRs:**
+- This step links your experimental design information to the MOFA results
+- The `Y` vector was created earlier and contains the group assignments (RPMI or Sera) for each sample
+- The `samples_metadata()` function is an accessor method for the MOFA object - note the distinction between `samples_metadata(model)` (the function call, which accesses or modifies the slot) and `model@samples_metadata` (direct slot access, often used just for viewing)
+- This metadata will be automatically used in many of the visualization functions that follow
+
 ```{r}
 Nsamples <- sum(model@dimensions$N)
 
@@ -803,29 +1143,179 @@ head(model@samples_metadata, n=3)
 
 ## Variance Decomposition
 
+### Further Reading
+
+#### Variance Decomposition in Factor Analysis
+* [MOFA2 Variance Decomposition Documentation](https://biofam.github.io/MOFA2/variance_explained.html) - Official guide to variance decomposition in MOFA2
+* [Partitioning of Variance](https://www.nature.com/articles/nmeth.3252) - Statistical principles of variance partitioning in omics data
+* [Sources of Variation in Omics](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-02032-0) - Understanding different sources of variation in multi-omics studies
+
+#### Interpreting Variance Explained
+* [Variance Explained Metrics](https://academic.oup.com/bioinformatics/article/34/17/i884/5085550) - Different metrics for quantifying explained variance
+* [R-squared in Multivariate Models](https://www.sciencedirect.com/science/article/pii/S2452310016300208) - Understanding R-squared in multivariate context
+* [Evaluating Factor Models](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5870479/) - Approaches to evaluate the performance of factor models
+
+#### Multi-omics Variance Assessment
+* [Disentangling Technical and Biological Variance](https://www.nature.com/articles/s41467-020-15937-y) - Methods for separating technical and biological variance components
+* [Cross-Platform Omics Variation](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-02032-0) - Understanding variation across different omics platforms
+* [Quantifying Uncertainty in Factor Models](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1008161) - Methods to assess uncertainty in factor analysis
+
+This section examines how much of the total variance in each omics layer is explained by the MOFA factors. This is a crucial analysis as it helps us:
+
+1. Evaluate how well MOFA captures the patterns in each omics dataset
+2. Identify which omics layers contain the strongest signals
+3. Understand which factors are most important for explaining variation
+
+MOFA quantifies variance explained (R²) at two levels:
+
+1. **Total variance explained per view/group**: This shows how much of the total variance in each omics layer is captured by all MOFA factors combined.
+
+2. **Variance explained per factor for each view/group**: This breaks down the contribution of each individual factor to explaining variance in each omics layer.
+
+The code below accesses these metrics from the model's cache:
+- `model@cache$variance_explained$r2_total[[1]]` retrieves the total variance explained for group 1
+- `model@cache$variance_explained$r2_per_factor[[1]]` gets the per-factor breakdown for group 1
+
+**Key for ECRs:**
+- Higher R² values indicate better capture of the data's patterns
+- Comparing R² across omics layers helps identify which datasets have the strongest signals
+- Different factors often explain different omics layers - this is a key insight from multi-omics integration
+- In datasets with multiple groups, you would examine R² for each group separately
+
+# Variance explained for every factor and -omics layer
+
+### Further Reading
+
+#### Factor-specific Variance Analysis
+* [MOFA2 Factor Variance Tutorial](https://biofam.github.io/MOFA2/variance_explained.html#variance-explained-per-factor) - Tutorial on factor-specific variance analysis in MOFA2
+* [Interpreting Latent Factors](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-1983-x) - Approaches to interpret the meaning of latent factors
+* [Factor Relevance Assessment](https://www.nature.com/articles/s41467-018-07243-5) - Methods to assess the relevance of individual factors
+
+#### Visualization of Variance Decomposition
+* [Heatmaps for Variance Visualization](https://f1000research.com/articles/5-1074) - Using heatmaps to visualize variance components
+* [Information Visualization in Multi-omics](https://www.annualreviews.org/doi/abs/10.1146/annurev-biodatasci-080917-013427) - Principles for visualizing complex multi-omics relationships
+* [Effective Scientific Visualization](https://www.nature.com/articles/nmeth.4074) - Guidelines for effective visualization of scientific data
+
+#### Prioritizing Factors for Interpretation
+* [Factor Selection in Latent Variable Models](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1005510) - Approaches to selecting the most important factors
+* [Biological Relevance of Factors](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6283291/) - Assessing the biological relevance of statistical factors
+* [Integrative Analysis Workflows](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-1932-8) - Workflows for integrative analysis of multi-omics data
+
+This section provides a more detailed breakdown of how each MOFA factor explains variance across the different omics layers. While the previous section looked at total variance explained, here we examine the contribution of each factor individually.
+
+Understanding the factor-specific variance decomposition helps us:
+1. Identify which factors are most important for which omics layers
+2. Discover cross-omics patterns (factors that explain variance in multiple omics types)
+3. Find omics-specific factors (those that primarily explain variance in just one data type)
+
+The code extracts:
+1. `model@cache$variance_explained$r2_per_factor[[1]]` - The variance explained by each factor for each omics layer in group 1
+2. `names(model@cache$variance_explained)` - The available variance explained metrics in the model
+
+**Key for ECRs:** 
+- Factors that explain substantial variance across multiple omics layers are particularly interesting - they represent biological processes that manifest at multiple molecular levels
+- Omics-specific factors (high variance explained in one omics type, low in others) may represent processes that are primarily visible at that molecular level
+- The variance explained pattern helps prioritize which factors to focus on for deeper biological interpretation
+- Factor 1 typically explains the most variance, with subsequent factors explaining progressively less
+
 ```{r}
 # Total variance explained per view and group
 head(model@cache$variance_explained$r2_total[[1]]) # group 1
 # head(model@cache$variance_explained$r2_total[[2]]) # group 2
 
-```
-
-
-
-
 # Variance explained for every factor and -omics layer
-
-```{r}
 head(model@cache$variance_explained$r2_per_factor[[1]]) # group 1
-
 # head(model@cache$variance_explained$r2_per_factor[[2]]) # group 2
-
-
-names(model@cache$variance_explained
-      )
+names(model@cache$variance_explained)
 ```
+
 
 # Variance explained plot
+
+### Further Reading
+
+#### Visualization of Variance Components
+* [MOFA2 Plotting Functions Documentation](https://biofam.github.io/MOFA2/plot_variance.html) - Official guide to plotting variance in MOFA2
+* [Visualization of Multi-omics Data](https://www.nature.com/articles/s41592-019-0703-0) - Best practices for multi-omics data visualization
+* [ggplot2 for Scientific Visualization](https://ggplot2-book.org/) - Comprehensive guide to scientific visualization with ggplot2
+
+#### Interpreting Variance Plots
+* [Heatmap Interpretation in Omics](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4207427/) - Guidelines for interpreting heatmaps in omics studies
+* [Color Schemes for Scientific Data](https://www.nature.com/articles/nmeth.1618) - Choosing appropriate color schemes for scientific visualization
+* [Accessible Color Palettes](https://www.nature.com/articles/s41592-020-0976-8) - Color palette considerations for accessibility
+
+#### Saving Publication-Quality Figures
+* [ggsave Function Documentation](https://ggplot2.tidyverse.org/reference/ggsave.html) - Reference for the ggsave function
+* [Vector vs. Raster Graphics](https://www.nature.com/articles/nmeth.3685) - Choosing between vector (PDF) and raster (PNG) formats
+* [Resolution and Size for Publication](https://www.nature.com/articles/nmeth.3831) - Guidelines for figure resolution and size for publication
+
+This section creates a comprehensive visualization of how variance is explained across different omics layers and factors. This is one of the most informative plots in the MOFA workflow, as it provides a complete overview of the multi-omics integration results.
+
+Before creating the plot, the code makes a few preparatory steps:
+1. Creates a copy of the model to avoid modifying the original
+2. Explicitly sets the order of the views (omics layers) for consistent visualization
+3. Ensures the view names are standardized
+
+The `plot_variance_explained()` function then generates a heatmap-style visualization where:
+- Columns represent different omics layers ("view")
+- Rows represent different factors
+- Color intensity shows the proportion of variance explained
+- The scale ranges from 0 (no variance explained) to 1 (all variance explained)
+
+The resulting plot is saved in both PNG and PDF formats using `ggsave()`:
+- PNG format is useful for presentations and web display
+- PDF format is vector-based and better for publication
+
+**Key for ECRs:**
+- This plot helps identify which factors are most important for which omics layers
+- Factors that show high variance explained across multiple omics types (multiple columns with intense color) represent biological processes that affect multiple molecular levels
+- Factors with high variance in just one omics type may represent molecular-level specific processes
+- The total variance explained (bottom row) helps compare how well MOFA captures patterns in each omics layer
+
+
+## plot variance explained per factor
+
+### Further Reading
+
+#### Data Transformation for Visualization
+* [Data Reshaping with tidyr](https://tidyr.tidyverse.org/articles/pivot.html) - Guide to reshaping data with pivot_longer/pivot_wider
+* [Working with tibbles](https://r4ds.had.co.nz/tibbles.html) - Guide to working with tibbles in the tidyverse
+* [Converting Data Frames to Tidy Format](https://www.jstatsoft.org/article/view/v059i10) - Principles of tidy data transformations
+
+#### Bar Plot Visualization
+* [ggplot2 Bar Charts](https://ggplot2.tidyverse.org/reference/geom_bar.html) - Reference for bar charts in ggplot2
+* [Color Palettes in R](https://www.datanovia.com/en/blog/top-r-color-palettes-to-know-for-great-data-visualization/) - Guide to color palettes for visualization
+* [Customizing ggplot2 Graphics](https://ggplot2.tidyverse.org/reference/theme.html) - Detailed customization of ggplot2 graphics
+
+#### Effective Data Visualization
+* [Principles of Data Visualization](https://www.nature.com/articles/nmeth.4361) - Best practices for effective data visualization
+* [Summarizing Complex Results](https://www.nature.com/articles/nmeth.3960) - Strategies for summarizing complex results visually
+* [Omics Data Visualization](https://www.nature.com/articles/s41592-019-0703-0) - Specialized visualization approaches for omics data
+
+This section creates a bar plot visualization of variance explained by each factor across the different omics layers. While the previous heatmap provided a comprehensive overview, this bar plot offers a more direct representation of how each factor contributes to explaining variance in each data type.
+
+The code follows these steps:
+1. **Data preparation**: 
+   - Extracts the variance explained information from the model
+   - Converts it to a data frame with rownames becoming a column
+   - Reshapes it to "long" format using `pivot_longer()`, where each factor-view combination becomes a row
+
+2. **Visualization**:
+   - Creates a stacked bar chart with `ggplot()`
+   - Factors are on the y-axis and variance explained on the x-axis
+   - The stacked bars are colored by omics layer ("view")
+   - This allows easy comparison of how each factor's explanatory power is distributed across omics types
+
+3. **Output**:
+   - Displays the plot
+   - Saves it in both PNG and PDF formats using `ggsave()`
+
+**Key for ECRs:**
+- In this plot, each row represents a factor
+- The total length of each bar shows the total variance explained by that factor across all omics layers
+- The colored segments show how that explanatory power is distributed across omics types
+- Factors with bars of similar length but different color distributions represent factors that explain similar amounts of total variance but in different omics layers
+- This visualization helps prioritize which factors to focus on for biological interpretation
 
 ```{r}
 model_copy <- model
@@ -838,18 +1328,14 @@ views_names(model_copy) <- c("transcriptome", "proteome", "metabolome_lc", "meta
 variance_explained_plot <- plot_variance_explained(model_copy, x="view", y="factor")
 
 variance_explained_plot
-ggsave( plot = variance_explained_plot
-        , filename = file.path( results_mofa_dir, "variance_explained_plot.png"))
 
+savePlot(
+  plot = variance_explained_plot,
+  base_path = project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_plots_dir,
+  plot_name = "variance_explained_plot",
+  formats = c("png", "pdf")
+)
 
-ggsave( plot = variance_explained_plot
-        , filename = file.path( results_mofa_dir, "variance_explained_plot.pdf"))
-```
-
-
-## plot variance explained per factor
-
-```{r}
 variance_tbl <- model@cache$variance_explained$r2_per_factor$group1  |>
   as.data.frame() |> 
   rownames_to_column("factor") |>
@@ -863,18 +1349,13 @@ variance_explained_per_factor <- variance_tbl |>
 
 variance_explained_per_factor
 
-ggsave( plot = variance_explained_per_factor
-        , filename = file.path( results_mofa_dir, "variance_explained_per_factor.png"))
+savePlot(
+  plot = variance_explained_per_factor,
+  base_path = project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_plots_dir,
+  plot_name = "variance_explained_per_factor",
+  formats = c("png", "pdf")
+)
 
-
-ggsave( plot = variance_explained_per_factor
-        , filename = file.path( results_mofa_dir, "variance_explained_per_factor.pdf"))
-
-```
-
-## plot variance explained total
-
-```{r}
 variance_total_tbl <- model@cache$variance_explained$r2_total$group1  |>
   as.data.frame() |> 
   rownames_to_column("view") |>
@@ -889,16 +1370,46 @@ total_variance_explained_plot <- variance_tbl |>
 
 total_variance_explained_plot
 
-
-ggsave( plot = total_variance_explained_plot
-        , filename = file.path( results_mofa_dir, "total_variance_explained_plot.png"))
-
-
-ggsave( plot = total_variance_explained_plot
-        , filename = file.path( results_mofa_dir, "total_variance_explained_plot.pdf"))
-
+savePlot(
+  plot = total_variance_explained_plot,
+  base_path = project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_plots_dir,
+  plot_name = "total_variance_explained_plot",
+  formats = c("png", "pdf")
+)
 
 ```
+
+## Plotting of variance explained - expanded
+### Further Reading
+
+#### Alternative Visualization Approaches
+* [MOFA2 Built-in Plot Functions](https://biofam.github.io/MOFA2/plot_variance.html) - Overview of built-in plotting functions for variance in MOFA2
+* [Customizing Heatmaps](https://jokergoo.github.io/ComplexHeatmap-reference/book/) - Advanced heatmap customization with ComplexHeatmap
+* [Combined Visualizations](https://cran.r-project.org/web/packages/patchwork/vignettes/patchwork.html) - Combining multiple ggplot2 visualizations
+
+#### Variance Analysis Approaches
+* [Multivariate Variance Partitioning](https://academic.oup.com/bioinformatics/article/34/13/2251/4904063) - Approaches to partition variance in multivariate data
+* [Variance Component Analysis](https://www.nature.com/articles/s41592-018-0054-7) - Methods for variance component analysis in biological data
+* [Patterns of Shared Variation](https://www.sciencedirect.com/science/article/pii/S2001037018300916) - Analysis of shared variation patterns across omics layers
+
+This chunk uses the built-in MOFA2 plotting function `plot_variance_explained()` to generate alternative visualizations of the variance explained by the model. This function provides a more comprehensive view than our custom plots, showing both:
+1. The per-factor breakdown (individual factors' contributions)
+2. The total variance explained (sum across all factors)
+
+The function is called with these key parameters:
+- `x="view"`: Places omics layers on the x-axis
+- `y="factor"`: Places factors on the y-axis
+- `plot_total = TRUE`: Generates both per-factor and total variance plots
+
+The function returns a list of two plots:
+1. [[1]]: The per-factor variance heatmap
+2. [[2]]: The total variance bar plot
+
+**Key for ECRs:**
+- These built-in functions provide a quick way to get standardized visualizations
+- The combined view helps connect the per-factor breakdown to the total variance explained
+- The built-in functions often have sensible defaults that produce publication-ready figures
+- These plots complement our custom visualizations and provide different perspectives on the same variance information
 
 ```{r}
 plot_variance_explained(model, x="view", y="factor", plot_total = TRUE)[[1]]
@@ -906,6 +1417,81 @@ plot_variance_explained(model, x="view", y="factor", plot_total = TRUE)[[2]]
 ```
 
 ## Plotting of samples
+
+### Further Reading
+
+#### Sample Visualization in Factor Space
+* [MOFA2 Sample Plotting Guide](https://biofam.github.io/MOFA2/plot_samples.html) - Official documentation for sample visualization in MOFA2
+* [Dimensionality Reduction Visualization](https://www.nature.com/articles/nbt.4314) - Best practices for visualizing dimensionality reduction results
+* [Interpreting Factor Plots](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6097639/) - Guidelines for interpreting factor space visualizations
+
+#### Customizing ggplot2 Visualizations
+* [ggplot2 Extensions Gallery](https://exts.ggplot2.tidyverse.org/) - Gallery of ggplot2 extension packages
+* [The ggplot2 Book](https://ggplot2-book.org/) - Comprehensive guide to ggplot2
+* [Color Palettes for Biological Data](https://www.nature.com/articles/nmeth.1618) - Choosing appropriate color palettes for biological data
+
+#### Statistical Considerations
+* [Effect Sizes in Dimensionality Reduction](https://academic.oup.com/bioinformatics/article/32/24/3821/2525651) - Understanding effect sizes in reduced dimension spaces
+* [Visualization of Group Differences](https://www.nature.com/articles/nbt.3138) - Methods for visualizing group differences
+* [Sample Variability Assessment](https://www.sciencedirect.com/science/article/pii/S0022103116301692) - Assessing variability in grouped samples
+
+This section visualizes the samples in the latent factor space learned by MOFA. This is one of the most intuitive and informative visualizations, as it shows how samples cluster based on the discovered factors, similar to a PCA plot but capturing patterns from multiple omics layers simultaneously.
+
+The code uses the `plot_factor()` function to create a visualization where:
+1. Samples are positioned according to their values for Factors 1 and 2
+2. Samples are colored according to their experimental condition (RPMI or Sera)
+3. Violin plots on the margins show the distribution of samples along each factor
+
+The function is called with these key parameters:
+- `factors = c(1,2)`: Shows the first two factors (typically the most important ones)
+- `color_by = "condition"`: Colors points by the experimental condition
+- `dodge = T`: Slightly separates points with different colors for better visibility
+- `add_violin = T`: Adds violin plots showing the distribution of sample scores
+
+The resulting plot is then customized by adding specific colors for the RPMI and Sera conditions.
+
+**Key for ECRs:**
+- This plot shows how well the MOFA factors separate your experimental groups
+- Clear separation along a factor suggests that factor captures a major source of variation related to your experimental conditions
+- The violin plots help assess the distribution of samples along each factor
+- This visualization is analogous to a PCA plot, but integrates signals from multiple omics layers
+
+## Visualisation of combinations of factors
+
+### Further Reading
+
+#### Multi-Factor Visualization
+* [Visualizing Multiple Dimensions](https://www.nature.com/articles/nmeth.4330) - Methods for visualizing high-dimensional data
+* [MOFA2 Factors Plotting Documentation](https://biofam.github.io/MOFA2/plot_factors.html) - Official guide to visualizing multiple factors in MOFA2
+* [Interactive Visualization of Factors](https://bioconductor.org/packages/release/bioc/vignettes/iSEE/inst/doc/iSEE_lab.html) - Interactive approaches to exploring factor spaces
+
+#### Scatter Plot Visualization
+* [ggplot2 Scatter Plots](https://ggplot2.tidyverse.org/reference/geom_point.html) - Reference for creating scatter plots in ggplot2
+* [Enhancing Scatter Plots](https://www.nature.com/articles/nmeth.2837) - Methods to enhance scatter plot visualizations
+* [Dealing with Overplotting](https://www.r-bloggers.com/2018/06/dealing-with-overplotting-in-r/) - Techniques to address overplotting in scatter plots
+
+#### Interpreting Factor Analysis Results
+* [Latent Factor Interpretation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5870479/) - Approaches to interpreting latent factors
+* [Biological Inference from Dimensionality Reduction](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-02021-3) - Drawing biological conclusions from reduced dimensions
+* [Factor Analysis vs. PCA](https://www.sciencedirect.com/science/article/pii/S0092867419307755) - Understanding differences between factor analysis and PCA
+
+This section creates a scatter plot visualization that shows samples in the space of the first two MOFA factors. Unlike the previous plot which showed factors separately with violin plots, this provides a more traditional scatter plot view similar to a PCA biplot.
+
+The code uses the `plot_factors()` function to create a visualization where:
+1. Samples are positioned on a 2D scatter plot according to their values for Factors 1 and 2
+2. Samples are colored according to their experimental condition (RPMI or Sera)
+
+This representation helps visualize how samples cluster in the integrated factor space and whether the experimental groups separate along any of the factors.
+
+The resulting plot is customized with specific colors for each condition and saved in both PNG and PDF formats.
+
+**Key for ECRs:**
+- This plot allows you to examine the relationship between multiple factors simultaneously
+- Clear separation between experimental groups suggests that the factors capture biologically relevant variation
+- The pattern of separation (e.g., horizontal, vertical, diagonal) indicates which factors are associated with the experimental conditions
+- Compare this plot with PCA plots from individual omics layers to see if MOFA provides better separation through integration
+- The `plot_factors()` function can be extended to visualize more than two factors using faceting or pairwise plots
+
 
 ```{r}
 p <- plot_factor(model, 
@@ -918,7 +1504,6 @@ p <- plot_factor(model,
   violin_alpha = 0.25  # transparency of violin plots
 )
 
-# The output of plot_factor is a ggplot2 object that we can edit
 sample_group_vs_factor_values <- p + 
   scale_color_manual(values=c("RPMI"="skyblue", "Sera"="salmon")) +
   scale_fill_manual(values=c("RPMI"="skyblue", "Sera"="salmon"))
@@ -927,19 +1512,13 @@ print(sample_group_vs_factor_values)
 
 sample_group_vs_factor_values
 
+savePlot(
+  plot = sample_group_vs_factor_values,
+  base_path = project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_plots_dir,
+  plot_name = "sample_group_vs_factor_values",
+  formats = c("png", "pdf")
+)
 
-ggsave( plot = sample_group_vs_factor_values
-        , filename = file.path( results_mofa_dir, "sample_group_vs_factor_values.png"))
-
-
-ggsave( plot = sample_group_vs_factor_values
-        , filename = file.path( results_mofa_dir, "sample_group_vs_factor_values.pdf"))
-
-```
-
-## Visualisation of combinations of factors
-
-```{r}
 mofa_pca_plot <- plot_factors(model, 
   factors = 1:2,
   color_by = "condition"
@@ -947,20 +1526,54 @@ mofa_pca_plot <- plot_factors(model,
   scale_color_manual(values=c("RPMI"="skyblue", "Sera"="salmon")) +
   scale_fill_manual(values=c("RPMI"="skyblue", "Sera"="salmon"))
 
-
 mofa_pca_plot
 
-
-ggsave( plot = mofa_pca_plot
-        , filename = file.path( results_mofa_dir, "mofa_pca_plot.png"))
-
-
-ggsave( plot = mofa_pca_plot
-        , filename = file.path( results_mofa_dir, "mofa_pca_plot.pdf"))
-
+savePlot(
+  plot = mofa_pca_plot,
+  base_path = project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_plots_dir,
+  plot_name = "mofa_pca_plot",
+  formats = c("png", "pdf")
+)
 ```
 
 ## Visualization of Feature Weights
+
+### Further Reading
+
+#### Understanding Feature Weights
+* [MOFA2 Weights Documentation](https://biofam.github.io/MOFA2/plot_weights.html) - Official guide to feature weights in MOFA2
+* [Interpreting Latent Factor Models](https://academic.oup.com/bioinformatics/article/33/14/i83/3953972) - Approaches to interpreting weights in latent factor models
+* [Feature Importance in Multi-omics](https://www.nature.com/articles/s41592-019-0367-1) - Assessing feature importance in multi-omics integration
+
+#### Advanced Visualization Techniques
+* [Customizing Plotting Functions](https://www.r-graph-gallery.com/) - Gallery of advanced visualization techniques in R
+* [Function Mapping with purrr](https://purrr.tidyverse.org/articles/purrr-intro.html) - Using purrr for mapping functions across elements
+* [Creating Custom Functions](https://r4ds.had.co.nz/functions.html) - Guide to creating custom functions in R
+
+#### Biological Interpretation of Weights
+* [Molecular Signatures in Multi-omics](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-1934-6) - Identifying molecular signatures from multi-omics data
+* [Prioritizing Features for Follow-up](https://www.nature.com/articles/s41596-019-0128-8) - Strategies for prioritizing features for experimental validation
+* [Pathway Analysis from Feature Weights](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6440661/) - Using feature weights for pathway analysis
+
+This section examines the feature weights associated with each factor, which reveal which specific molecules (genes, proteins, metabolites) drive the patterns captured by each factor. These weights are crucial for biological interpretation, as they connect the abstract factors to specific molecular entities.
+
+The code defines a function `plotMofaFeatureWeightsVsRank` that:
+1. Takes a MOFA model and an omics layer (view) as input
+2. Uses `plot_weights()` to create a scatter plot of the feature weights for Factor 1
+3. Highlights the top 10 features with the highest absolute weights
+4. Scales weights to a range from -1 to 1 for easier comparison
+5. Saves the plot in both PNG and PDF formats
+6. Returns the plot object
+
+This function is then applied to each omics layer in the model using `purrr::map()`, creating a separate weight plot for each data type.
+
+**Key for ECRs:**
+- Feature weights indicate how strongly each molecule contributes to a factor
+- Positive weights indicate positive association with the factor (higher molecule levels → higher factor scores)
+- Negative weights indicate negative association (lower molecule levels → higher factor scores)
+- The highlighted top features are the most important molecules driving the pattern captured by the factor
+- Comparing weights across omics layers helps identify coordinated molecular changes
+- These weights form the basis for subsequent biological interpretation through pathway analysis or gene set enrichment
 
 ```{r}
 list_of_views <- colnames( model@cache$variance_explained$r2_per_factor[[1]])
@@ -977,12 +1590,12 @@ plotMofaFeatureWeightsVsRank <- function(model, view) {
   
   view_plot_weights
   
-  ggsave( plot = view_plot_weights
-          , filename = file.path( results_mofa_dir, paste0( view, "_plot_weights.png")))
-  
-  
-  ggsave( plot = view_plot_weights
-          , filename = file.path( results_mofa_dir, paste0( view, "_plot_weights.pdf")))
+  savePlot(
+    plot = view_plot_weights,
+    base_path = project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_plots_dir,
+    plot_name = paste0(view, "_plot_weights"),
+    formats = c("png", "pdf")
+  )
   
   return(view_plot_weights)
 }
@@ -991,14 +1604,65 @@ purrr::map( list_of_views, plotMofaFeatureWeightsVsRank, model = model)
 
 ```
 
-## Proteomics GO enrichment rank-based
+## Proteomics GO Enrichment (Rank-Based using MOFA Weights)
+
+### Further Reading
+
+#### Functional Enrichment Analysis
+*   [Gene Ontology Consortium](http://geneontology.org/) - The source for GO terms and annotations.
+*   [STRING Database](https://string-db.org/) - Protein-protein interaction networks and functional enrichment analysis.
+*   [Over-Representation Analysis (ORA) vs. Gene Set Enrichment Analysis (GSEA)](https://www.nature.com/articles/nrg2619) - Review of common enrichment methods.
+*   [Understanding False Discovery Rate (FDR)](https://www.nature.com/articles/nmeth.4643) - Critical concept in multiple hypothesis testing.
+
+#### MOFA Outputs and Interpretation
+*   [MOFA2 Paper (Argelaguet et al., 2020)](https://www.embopress.org/doi/full/10.15252/msb.20199306) - Understanding how factors and weights are derived.
+*   [Interpreting Feature Weights in MOFA](https://biofam.github.io/MOFA2/plot_weights.html) - Official documentation.
+
+#### API Interaction
+*   [Best Practices for Using Web APIs (Nature Article)](https://www.nature.com/articles/d41586-019-02519-7)
+*   [`httr` R package for working with HTTP](https://httr.r-lib.org/)
+*   [`jsonlite` R package for working with JSON data](https://cran.r-project.org/web/packages/jsonlite/vignettes/json-mapping.html)
+
+This section performs functional enrichment analysis (specifically Gene Ontology - GO enrichment) for the proteomics data. The goal is to identify biological pathways or functions that are significantly associated with the patterns captured by a MOFA factor (here, Factor 1). Instead of using a simple list of "significant" proteins, this analysis leverages the continuous feature weights from MOFA. Proteins with higher (absolute) weights for Factor 1 are considered more influential in defining that factor.
+
+**Key Steps and Concepts:**
+
+1.  **Extract MOFA Weights:**
+    *   `get_expectations(model, "W", as.data.frame= TRUE)` retrieves the feature weights (W) from the trained MOFA model. Each feature (protein, in this case) has a weight for each factor, indicating its contribution to that factor.
+
+2.  **Prepare Input for STRING DB:**
+    *   The code filters for weights corresponding to the "proteome" view and "Factor1".
+    *   Feature names are cleaned (e.g., removing suffixes like `_proteome`).
+    *   Crucially, the script maps your internal feature names (which might be gene symbols after the "Tidy up display names" step) back to protein identifiers that STRING DB can recognize (e.g., RefSeq IDs or UniProt accessions). This is done using the `prot_refseq_id_to_gene_name` lookup table created earlier. The `value` column (Factor 1 weights) and the mapped `query_seq_id` are prepared for submission.
+
+3.  **Rank-Based Enrichment via `runOneStringDbRankEnrichmentMofa`:**
+    *   This custom function (from `R/multiomics_enrichment_functions.R`) orchestrates the enrichment analysis using the STRING database API.
+    *   **API Call Workflow:**
+        *   It internally calls `submitStringDBEnrichment`. This function takes your list of protein identifiers (`identifier_column_name = "query_seq_id"`) and their associated numerical values (`value_column_name = "value"`, which are the Factor 1 weights). It sends these to the STRING "values/ranks enrichment" API endpoint.
+        *   STRING uses these values to rank the proteins. This means proteins with higher weights (positive or negative, depending on the `ge_enrichment_rank_direction` parameter, here set to -1, suggesting that more negative weights are ranked higher, or simply that the sign indicates directionality and magnitude matters) are given more importance in the enrichment calculation. This is more nuanced than a simple over-representation analysis on a fixed set of differentially expressed proteins.
+        *   The submission requires a `caller_identity` (your script/project name) and an `api_key` for STRING DB. A `species` identifier (e.g., "STRG0A62HCE" for *Klebsiella variicola*, or 9606 for *Homo sapiens*) and an FDR threshold (`ge_fdr`) are also specified.
+        *   `submitStringDBEnrichment` returns a `job_id`.
+        *   `runOneStringDbRankEnrichmentMofa` then calls `retrieveStringDBEnrichmentResults`. This function polls the STRING API using the `job_id` and `api_key` until the analysis is complete.
+        *   Once complete, it downloads the enrichment results (a TSV file) and an optional enrichment graph image.
+    *   The results (enriched terms, p-values, FDRs, genes mapped, etc.) are saved as an RDS file.
+
+4.  **Visualize Enrichment Results:**
+    *   The saved RDS file is reloaded.
+    *   The custom function `printStringDbFunctionalEnrichmentBarGraph` (also from `R/multiomics_enrichment_functions.R`) is used to generate a bar plot of the top enriched terms. This plot typically shows the enrichment score, with points indicating significance (e.g., -log10(FDR)) and the number of genes mapped to each term.
+    *   The plot is saved as a PDF.
+
+**Key for ECRs:**
+*   **Biological Interpretation:** This step helps translate the abstract MOFA factors into understandable biological themes by identifying which pathways/functions are driven by the top-weighted proteins for Factor 1.
+*   **Weight-Driven Enrichment:** Understand that the Factor 1 weights guide the enrichment, making it a "rank-based" or "value-based" analysis, which can be more sensitive than methods relying on arbitrary cutoffs.
+*   **API Keys & Species:** Ensure you have a valid STRING API key if you plan to run this frequently. The species ID must match your data.
+*   **Interpreting Output:** Look for GO terms with low FDR values and high enrichment scores. The `termDescription` tells you the biological process/function, and `genesMapped` shows how many of your top-weighted proteins are associated with that term.
+
 ```{r}
 
 weights <- get_expectations(model, "W", as.data.frame= TRUE) 
 
   
-prot_refseq_id_to_gene_name <- vroom::vroom(  file.path( data_dir
-                                                         , "UniProt"
+prot_refseq_id_to_gene_name <- vroom::vroom(  file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir
                                                          , "prot_refseq_id_to_gene_name.tsv"  ))
 
 
@@ -1008,15 +1672,13 @@ protein_go_enrich_input <- weights |>
   left_join( prot_refseq_id_to_gene_name
              , by= join_by( feature == gene_name)) 
 
-dir.create( file.path( results_dir, "GO_enrichment", "proteome") , recursive=TRUE)
-
 protein_go_enrich_input
 
 output_enrich_mofa_proteomics <- runOneStringDbRankEnrichmentMofa( protein_go_enrich_input
                                   ,   identifier_column_name = "query_seq_id"
                                   ,   value_column_name = "value"
                                   ,  result_label = "GO_enrich_proteome"
-                                  , results_dir = file.path( results_dir, "GO_enrichment", "proteome")
+                                  , results_dir = file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$integration_enrichment_tables_dir)
                                   , api_key = "bsjXYSW0kKTt"
                                   , species = "STRG0A62HCE"
                                   , ge_fdr = 0.05
@@ -1024,36 +1686,62 @@ output_enrich_mofa_proteomics <- runOneStringDbRankEnrichmentMofa( protein_go_en
                                   , polling_interval_seconds = 10
                                   , max_polling_attempts = 30)
 
-saveRDS(output_enrich_mofa_proteomics, file.path( results_dir, "GO_enrichment", "proteome", "output_enrich_mofa_proteomics.RDS"))
+saveRDS(output_enrich_mofa_proteomics, file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$integration_enrichment_tables_dir, "output_enrich_mofa_proteomics.RDS"))
 
-
-```
-
-
-
-```{r}
-output_enrich_mofa_proteomics <- readRDS( file.path( results_dir, "GO_enrichment", "proteome", "output_enrich_mofa_proteomics.RDS")) |>
+output_enrich_mofa_proteomics <- readRDS( file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$integration_enrichment_tables_dir, "output_enrich_mofa_proteomics.RDS")) |>
   mutate(comparison = "RPMI vs Sera")
 
 output_proteomics_enrichment_table <- printStringDbFunctionalEnrichmentBarGraph ( output_enrich_mofa_proteomics)
 
 output_proteomics_enrichment_table
 
-ggsave(
-  filename = file.path( results_dir
-                        , "GO_enrichment"
-                        , "proteome"
-                        , "string_db_enrichment_proteome_results.pdf")
-  , width = 15, height = 10)
-
- 
-
+savePlot(
+  plot = output_proteomics_enrichment_table,
+  base_path = project_dirs[[paste0(omic_type, "_", experiment_label)]]$integration_enrichment_plots_dir,
+  plot_name = "string_db_enrichment_proteome_results",
+  formats = "pdf",
+  width = 15,
+  height = 10
+)
 ```
 
 ## Transcriptomics GO enrichment rank-based
+
+### Further Reading
+
+#### Transcriptomics Functional Analysis
+* [RNA-Seq Functional Analysis](https://www.nature.com/articles/s41596-018-0103-9) - Methods for functional analysis of transcriptomics data
+* [Transcription Factor Analysis](https://www.nature.com/articles/s41467-019-14081-6) - Analyzing transcription factor activity from gene expression
+* [Functional Analysis of Gene Lists](https://academic.oup.com/nar/article/45/W1/W199/3796342) - Approaches to functional analysis of gene lists
+
+#### Cross-Omics Functional Analysis
+* [Integrative Functional Analysis](https://www.nature.com/articles/s41467-018-07766-x) - Approaches to integrative functional analysis
+* [Multi-omics Pathway Analysis](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-1934-6) - Methods for pathway analysis across multiple omics layers
+* [Concordance in Enrichment Results](https://www.sciencedirect.com/science/article/pii/S1874391919303872) - Assessing concordance of enrichment results across omics layers
+
+#### Data Preparation for Enrichment
+* [Identifier Mapping for Enrichment](https://www.nature.com/articles/nbt0307-243) - Strategies for mapping between different identifier systems
+* [Handling Missing Annotations](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1002582) - Dealing with incomplete annotation data
+* [Feature Selection for Enrichment](https://academic.oup.com/bioinformatics/article/31/20/3283/196496) - Approaches to feature selection for enrichment analysis
+
+This section performs Gene Ontology (GO) enrichment analysis on the transcriptomics data based on the feature weights from Factor 1, similar to the previous analysis for proteomics. This allows comparison of biological processes between the two omics layers, helping identify common themes or layer-specific functions.
+
+The analysis follows these steps:
+1. **Prepare input data**: Filters the weights for transcriptome features in Factor 1, removes suffix tags, and maps genes to protein identifiers
+2. **Join with reference data**: Links transcriptomic gene names to protein identifiers through multiple join operations
+3. **Filter and select**: Focuses on transcripts that can be mapped to proteins with known identifiers
+4. **Create output directory**: Ensures the necessary directory structure exists
+5. **Perform enrichment analysis**: Uses `runOneStringDbRankEnrichmentMofa()` to send the data to STRING for rank-based enrichment analysis
+6. **Save results**: Stores the enrichment results as an RDS file for later visualization and comparison
+
+**Key for ECRs:**
+- This parallel analysis of transcriptomics data allows for direct comparison with the proteomics results
+- The joined mapping between transcript IDs and protein IDs ensures consistent annotation across omics layers
+- The complex data wrangling with multiple joins demonstrates how to handle the common challenge of identifier mapping in multi-omics analysis
+- The enrichment results will reveal whether the same biological processes are implicated at both the transcriptome and proteome levels
+- Similarities in enriched terms across omics layers strengthen confidence in the biological interpretation
+
 ```{r}
-
-
 go_enrichment_transcriptome_input <- weights |>
   dplyr::filter(view == "transcriptome" & factor=="Factor1") |>
   mutate( feature = str_replace_all( feature, "_transcriptome", "")) |>
@@ -1065,15 +1753,13 @@ go_enrichment_transcriptome_input <- weights |>
   dplyr::select( query_seq_id, value) 
 
 
-dir.create( file.path( results_dir, "GO_enrichment", "transcriptome") , recursive=TRUE)
-
 go_enrichment_transcriptome_input
 
 output_enrich_mofa_transcriptomics <- runOneStringDbRankEnrichmentMofa( go_enrichment_transcriptome_input
                                   ,   identifier_column_name = "query_seq_id"
                                   ,   value_column_name = "value"
                                   ,  result_label = "GO_enrich_transcriptome"
-                                  , results_dir = file.path( results_dir, "GO_enrichment", "transcriptome")
+                                  , results_dir = file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$integration_enrichment_tables_dir)
                                   , api_key = "bsjXYSW0kKTt"
                                   , species = "STRG0A62HCE"
                                   , ge_fdr = 0.05
@@ -1082,16 +1768,9 @@ output_enrich_mofa_transcriptomics <- runOneStringDbRankEnrichmentMofa( go_enric
                                   , max_polling_attempts = 30)
 
 saveRDS(output_enrich_mofa_transcriptomics
-        , file.path( results_dir, "GO_enrichment", "transcriptome", "output_enrich_mofa_transcriptomics.RDS"))
+        , file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$integration_enrichment_tables_dir, "output_enrich_mofa_transcriptomics.RDS"))
 
-```
-
-
-
-## Transcroptomics GO enrichment rank-based 
-```{r}
-output_enrich_mofa_transcriptomics <- readRDS( file.path( results_dir, "GO_enrichment"
-                                                          , "transcriptome"
+output_enrich_mofa_transcriptomics <- readRDS( file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$integration_enrichment_tables_dir
                                                           , "output_enrich_mofa_transcriptomics.RDS")) |>
   mutate(comparison = "RPMI vs Sera")
 
@@ -1099,12 +1778,14 @@ output_transcriptomics_enrichment_table <- printStringDbFunctionalEnrichmentBarG
 
 output_transcriptomics_enrichment_table
 
-ggsave(
-  filename = file.path( results_dir
-                        , "GO_enrichment"
-                        , "transcriptome"
-                        , "string_db_enrichment_transcriptome_results.pdf")
-  , width = 15, height = 35)
+savePlot(
+  plot = output_transcriptomics_enrichment_table,
+  base_path = project_dirs[[paste0(omic_type, "_", experiment_label)]]$integration_enrichment_plots_dir,
+  plot_name = "string_db_enrichment_transcriptome_results",
+  formats = c("pdf", "png")
+  width = 15,
+  height = 35
+)
 
 ```
 
@@ -1121,20 +1802,16 @@ output_combined_enrichment_table <- printStringDbFunctionalEnrichmentBarGraph ( 
 
 output_combined_enrichment_table
 
-ggsave(
-  filename = file.path( results_dir
-                        , "GO_enrichment"
-                        , "combined"
-                        , "string_db_enrichment_combined_results.pdf")
-  , width = 15, height = 30)
+savePlot(
+  plot = output_combined_enrichment_table,
+  base_path = file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$results_dir, "GO_enrichment", "combined"),
+  plot_name = "string_db_enrichment_combined_results",
+  formats = "pdf",
+  width = 15,
+  height = 30
+)
 
- 
-
-```
 ## Plot the name of the top molecules for each omics layer
-```{r eval=FALSE}
-
-
 
 transcriptome_plot_top_weights <- plot_top_weights(model,
   view = "transcriptome",
@@ -1144,13 +1821,6 @@ transcriptome_plot_top_weights <- plot_top_weights(model,
 
 
 transcriptome_plot_top_weights
-
-# ggsave( plot = transcriptome_plot_top_weights
-#         , filename = file.path( results_mofa_dir, "transcriptome_plot_top_weights.png"))
-# 
-# 
-# ggsave( plot = transcriptome_plot_top_weights
-#         , filename = file.path( results_mofa_dir, "transcriptome_plot_top_weights.pdf"))
 
 
 proteome_plot_top_weights <- plot_top_weights(model,
@@ -1162,14 +1832,6 @@ proteome_plot_top_weights <- plot_top_weights(model,
 
 proteome_plot_top_weights
 
-# ggsave( plot = proteome_plot_top_weights
-#         , filename = file.path( results_mofa_dir, "proteome_plot_top_weights.png"))
-# 
-# 
-# ggsave( plot = proteome_plot_top_weights
-#         , filename = file.path( results_mofa_dir, "proteome_plot_top_weights.pdf"))
-
-
 # metabolome_plot_top_weights <- plot_top_weights(model,
 #   view = "metabolome",
 #   factor = 1,
@@ -1179,57 +1841,12 @@ proteome_plot_top_weights
 # 
 # metabolome_plot_top_weights
 
-# ggsave( plot = metabolome_plot_top_weights
-#         , filename = file.path( results_mofa_dir, "metabolome_plot_top_weights.png"))
-# 
-# 
-# ggsave( plot = metabolome_plot_top_weights
-#         , filename = file.path( results_mofa_dir, "metabolome_plot_top_weights.pdf"))
-
 ```
+
 
 ## Plot the name of the top molecules for each omics layer (I prefer this method of plotting)
 
 ```{r}
-
-plotMofaWeights <- function( model, view, factor_level = Factor1) {
-  
-  input_table <- get_weights(model)[[view]] 
-  
-  view_weights_helper <- input_table |>
-    as.data.frame () |>
-    dplyr::mutate( abs_factor1 = abs({{factor_level}})) |>
-    mutate( Direction = case_when( sign({{factor_level}}) == 1 ~ "Positive"
-                                   , TRUE ~ "Negative") ) |>
-    mutate( Direction = factor( Direction, levels=c("Positive", "Negative"))) |>
-    arrange( desc(abs_factor1) ) |> 
-    mutate( rank = row_number()) |>
-    
-    dplyr::filter (rank <= 20) |>
-    rownames_to_column("gene_symbol") |>
-    mutate( gene_symbol = str_replace( gene_symbol, "_transcriptome$", "")) |>
-    mutate( gene_symbol = str_replace( gene_symbol, "_proteome$", "")) 
-  
-  
-  plotMofaWeightsAll <- view_weights_helper |>
-    mutate( gene_symbol = factor( gene_symbol, levels=rev(unique( view_weights_helper$gene_symbol) )) ) |>
-    ggplot(aes( gene_symbol, abs(Factor1), fill= Direction ) ) +
-    geom_bar(stat = "identity") +
-    scale_fill_discrete( type= c("red", "blue")) +
-    theme_bw() +
-    theme (axis.text.x = element_text (angle = 90, vjust = 1)) +
-    xlab("Molecules") +
-    ylab( "Factor 1 Weights") + 
-    coord_flip() +
-    ggtitle( view )
-  
-  ggsave( filename=file.path( results_mofa_dir, paste0(view, "_plot_top_weights_cln.png"))
-          , plot=plotMofaWeightsAll)
-  ggsave( filename=file.path( results_mofa_dir, paste0(view, "_plot_top_weights_cln.pdf"))
-          , plot=plotMofaWeightsAll)
-  
-  plotMofaWeightsAll
-}
 
 list_of_views <- colnames( model@cache$variance_explained$r2_per_factor[[1]])
 
@@ -1240,17 +1857,45 @@ list_of_weights_figures <- purrr::map( list_of_views
 
 list_of_weights_figures
 
-
-
-# sort( get_weights(model)$proteome[, "Factor1"] )
-
 ```
 
-
-
-
-
 ## Visualisation of patterns in the input data
+### Further Reading
+
+*   [MOFA2 Plotting Documentation (`plot_data_heatmap`)](https://biofam.github.io/MOFA2/plot_data.html#plot_data_heatmap) - Official documentation.
+*   [Pheatmap R Package](https://cran.r-project.org/web/packages/pheatmap/index.html) - The underlying package used by `plot_data_heatmap` for creating heatmaps.
+*   [Effective Use of Heatmaps in Omics Data (Review)](https://www.nature.com/articles/nmeth.3252) - Discusses best practices.
+
+This section demonstrates how to visualize the raw(ish) input data for features that are most strongly associated with a given MOFA factor. The `plot_data_heatmap` function is used to generate a heatmap of the original data values for the top N features (selected by weight) for a specific factor and view.
+
+**Key Functionality:**
+
+*   **`plot_data_heatmap(model, view = "...", factor = ..., features = ..., ...)`:**
+    *   `model`: The trained MOFA model.
+    *   `view`: The omics layer (e.g., "transcriptome", "proteome") to display.
+    *   `factor`: The MOFA factor whose top features will be selected.
+    *   `features`: The number of top features (by weight for the specified factor) to include in the heatmap.
+    *   Additional arguments (`...`) are passed directly to the `pheatmap` function, allowing for customization (e.g., `cluster_rows`, `cluster_cols`, `show_rownames`, `show_colnames`).
+
+*   **Heatmap Interpretation:**
+    *   **Rows:** Typically represent the top features.
+    *   **Columns:** Represent the samples.
+    *   **Colors:** Indicate the (often scaled) abundance of each feature in each sample.
+    *   This visualization helps to see if the samples cluster according to the experimental conditions (e.g., "RPMI" vs. "Sera") based on the expression/abundance of these factor-associated features. It also shows the actual data patterns that the factor is summarizing.
+
+**Usage in the Chunk:**
+
+The code calls `plot_data_heatmap` for the "transcriptome" and "proteome" views, focusing on Factor 1 and displaying the top 20 features.
+*   `cluster_rows = TRUE`: Rows (features) will be clustered based on similarity in their patterns across samples.
+*   `cluster_cols = FALSE`: Columns (samples) will NOT be clustered; they will likely appear in their original order or an order defined by sample metadata if supplied elsewhere to `pheatmap` (though not explicitly here).
+*   `show_rownames = TRUE`: Feature names will be displayed.
+*   `show_colnames = FALSE`: Sample names will not be displayed (often done to save space if sample groups are clear from other annotations or column ordering).
+
+**Key for ECRs:**
+*   **Connecting Factors to Raw Data:** This plot directly links the abstract MOFA factor back to the patterns in your original input data for the most important features. You can see how the top features for Factor 1 behave across your samples.
+*   **Identifying Co-regulated Features:** Clustering of rows can reveal groups of features that show similar patterns of abundance across samples, suggesting co-regulation or involvement in common pathways.
+*   **Assessing Sample Separation:** Observe if the columns (samples) show a clear separation according to your experimental groups (e.g., if all "RPMI" samples cluster together based on these features). This reinforces the biological relevance of the factor.
+*   **Data Scaling:** Be aware that the data displayed in the heatmap is often scaled (e.g., Z-score transformation per feature) by `pheatmap` by default to make patterns comparable across features with different absolute abundance ranges.
 
 ```{r}
 plot_data_heatmap(model,
@@ -1286,7 +1931,43 @@ plot_data_heatmap(model,
 ```
 
 
-## Scatterplots
+## Scatterplots of Feature Data vs. Factor Values
+
+### Further Reading
+
+*   [MOFA2 Plotting Documentation (`plot_data_scatter`)](https://biofam.github.io/MOFA2/plot_data.html#plot_data_scatter) - Official documentation.
+*   [`ggplot2` for scatter plots](https://ggplot2.tidyverse.org/reference/geom_point.html) - The underlying plotting engine.
+*   [Correlation and Regression Basics](https://www.statmethods.net/stats/correlations.html) - For understanding relationships plotted.
+
+This section uses the `plot_data_scatter` function to create scatter plots that show the relationship between the original data values of top features and the sample scores for a chosen MOFA factor. Each point in a scatter plot represents a sample.
+
+**Key Functionality:**
+
+*   **`plot_data_scatter(model, view = "...", factor = ..., features = ..., ...)`:**
+    *   `model`: The trained MOFA model.
+    *   `view`: The omics layer of interest.
+    *   `factor`: The MOFA factor whose sample scores will be on one axis.
+    *   `features`: The number of top features (selected by weight for the specified factor) for which to generate scatter plots. The function will typically create a faceted plot, with one panel per feature.
+    *   `add_lm = FALSE`: This argument, if TRUE, would add a linear regression line to each scatter plot to indicate the trend. It's set to `FALSE` here.
+    *   `color_by`: Can be used to color points by sample metadata (e.g., experimental condition), though not used in the direct calls in this chunk.
+
+*   **Plot Interpretation:**
+    *   **X-axis:** Typically the sample scores for the specified MOFA factor.
+    *   **Y-axis:** The (often normalized) original data value for a specific feature in each sample.
+    *   Each plot panel corresponds to one of the top features.
+    *   These plots help to visually assess the correlation between a feature's abundance and the factor. A strong positive or negative correlation suggests that the feature is a key contributor to the factor.
+
+**Usage in the Chunk:**
+
+The code generates scatter plots for the top 20 features of Factor 1 for both "transcriptome" and "proteome" views.
+*   The `add_lm = FALSE` means no regression lines will be drawn.
+*   The plots are saved as PNG and PDF files.
+
+**Key for ECRs:**
+*   **Visualizing Feature-Factor Correlation:** This provides a direct look at how individual high-weight features relate to the factor scores across samples. For example, if a feature has a strong positive weight for Factor 1, you'd expect to see samples with high Factor 1 scores also having high abundance for that feature (a positive slope in the scatter plot).
+*   **Identifying Linear vs. Non-Linear Relationships:** While `add_lm` shows a linear trend, the scatter itself can hint at non-linear relationships if present.
+*   **Outlier Detection:** These plots can sometimes help identify samples that are outliers with respect to a particular feature and its relationship with the factor.
+
 
 ```{r}
 transcriptome_scatter_plot <- plot_data_scatter(model,
@@ -1297,8 +1978,15 @@ transcriptome_scatter_plot <- plot_data_scatter(model,
   # color_by = "group"
 )
 transcriptome_scatter_plot
-ggsave( filename=file.path(results_mofa_dir, "transcriptome_scatter_plot.png"))
-ggsave( filename=file.path(results_mofa_dir, "transcriptome_scatter_plot.pdf"))
+# ggsave(plot = transcriptome_scatter_plot, filename=file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_plots_dir, "transcriptome_scatter_plot.png"))
+# ggsave(plot = transcriptome_scatter_plot, filename=file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_plots_dir, "transcriptome_scatter_plot.pdf"))
+
+savePlot(
+  plot = transcriptome_scatter_plot,
+  base_path = project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_plots_dir,
+  plot_name = "transcriptome_scatter_plot",
+  formats = c("png", "pdf")
+)
 
 
 proteome_scatter_plot <- plot_data_scatter(model,
@@ -1309,9 +1997,17 @@ proteome_scatter_plot <- plot_data_scatter(model,
   # color_by = "group"
 )
 proteome_scatter_plot
-ggsave( filename=file.path(results_mofa_dir, "proteome_scatter_plot.png"))
-ggsave( filename=file.path(results_mofa_dir, "proteome_scatter_plot.pdf"))
+# ggsave(plot = proteome_scatter_plot, filename=file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_plots_dir, "proteome_scatter_plot.png"))
+# ggsave(plot = proteome_scatter_plot, filename=file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_plots_dir, "proteome_scatter_plot.pdf"))
 
+savePlot(
+  plot = proteome_scatter_plot,
+  base_path = project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_plots_dir,
+  plot_name = "proteome_scatter_plot",
+  formats = c("png", "pdf")
+)
+
+# 
 # 
 # metabolome_scatter_plot <- plot_data_scatter(model,
 #   view = "metabolome",         # view of interest
@@ -1325,10 +2021,37 @@ ggsave( filename=file.path(results_mofa_dir, "proteome_scatter_plot.pdf"))
 # ggsave( filename=file.path(results_mofa_dir, "metabolome_scatter_plot.png"))
 # ggsave( filename=file.path(results_mofa_dir, "metabolome_scatter_plot.pdf"))
 
-
 ```
 
-## Non-linear dimensionality reduction
+## Non-linear Dimensionality Reduction (UMAP & t-SNE) on MOFA Factors
+
+### Further Reading
+
+*   [UMAP (Uniform Manifold Approximation and Projection) Paper (McInnes et al., 2018)](https://arxiv.org/abs/1802.03426)
+*   [t-SNE (t-distributed Stochastic Neighbor Embedding) Paper (van der Maaten & Hinton, 2008)](https://www.jmlr.org/papers/volume9/vandermaaten08a/vandermaaten08a.pdf)
+*   [MOFA2 Dimensionality Reduction Functions (`run_umap`, `run_tsne`, `plot_dimred`)](https://biofam.github.io/MOFA2/downstream_analysis.html#non-linear-dimensionality-reduction) - Official documentation.
+*   [Understanding UMAP (StatQuest with Josh Starmer)](https://www.youtube.com/watch?v=eN0wFzBA4kM) - Intuitive video explanation.
+
+While MOFA factors themselves provide a linear dimensionality reduction, this section explores applying non-linear dimensionality reduction techniques (UMAP and t-SNE) *to the MOFA factor space*. This means we take the sample scores from the MOFA factors (e.g., Factor 1 and Factor 2 scores for each sample) as input for UMAP or t-SNE. This can sometimes reveal more complex structures or groupings in the data that are not apparent in the linear factor space.
+
+**Key Steps:**
+
+1.  **Running UMAP/t-SNE on MOFA Factors:**
+    *   `set.seed(42)`: Ensures reproducibility of the UMAP/t-SNE algorithms, which have a stochastic component.
+    *   `model <- run_umap(model, n_neighbors=11)`: Calculates UMAP coordinates based on the existing factors in the `model`.
+        *   `n_neighbors`: A UMAP parameter that controls the balance between local and global structure in the embedding.
+    *   `model <- run_tsne(model, perplexity=1)`: Calculates t-SNE coordinates.
+        *   `perplexity`: A t-SNE parameter related to the number of effective nearest neighbors. A low perplexity like 1 used here is unusual and might be for specific illustrative purposes or small datasets; typical values are often between 5 and 50. It suggests the model will focus *very* locally.
+
+2.  **Plotting Non-linear Embeddings:**
+    *   `plot_dimred(model, method = "UMAP", color_by = "condition")`: Visualizes the UMAP embedding. Samples are colored by their experimental "condition".
+    *   `plot_dimred(model, method = "TSNE", color_by = "condition")`: Visualizes the t-SNE embedding, also colored by "condition".
+
+**Key for ECRs:**
+*   **Revealing Non-Linear Structure:** UMAP and t-SNE are powerful for visualizing high-dimensional data in 2D or 3D and can often separate groups or show transitions that are not clear in linear projections like PCA or raw factor plots. Applying them to MOFA factors can refine the visualization of sample relationships.
+*   **Parameter Sensitivity:** Both UMAP (`n_neighbors`) and t-SNE (`perplexity`) have parameters that can significantly affect the resulting visualization. It's often useful to try a few different parameter values. The `perplexity=1` for t-SNE is very low and might lead to a very fragmented plot, focusing on immediate neighbors only.
+*   **Interpretation Caution:** While visually appealing, the distances between clusters in UMAP/t-SNE plots are not always directly interpretable in terms of actual separation magnitude. Focus on whether distinct groups emerge and if these correspond to known sample attributes (like "condition").
+*   **Complementary to Linear Factors:** These non-linear embeddings of the MOFA factors provide an alternative view of the sample structure summarized by MOFA. They don't replace the interpretation of the factors themselves but can enhance the visualization of sample relationships.
 
 ```{r}
 set.seed(42)
@@ -1348,7 +2071,42 @@ plot_dimred(model,
 
 ```
 
-## Extracting data
+## Extracting Data from the MOFA Model
+
+### Further Reading
+
+*   [MOFA2 Accessor Functions (`get_factors`, `get_weights`, `get_data`)](https://biofam.github.io/MOFA2/access_data.html) - Official documentation.
+*   [Tidy Data Principles (Hadley Wickham)](https://www.jstatsoft.org/article/view/v059i10) - The `as.data.frame = TRUE` argument often returns data in a "tidy" long format.
+*   [`vroom` package for fast file writing](https://vroom.r-lib.org/)
+
+This final section demonstrates how to extract the key components from the trained MOFA model into standard R data frames for further custom analysis, reporting, or use with other tools. MOFA2 provides convenient accessor functions for this purpose.
+
+**Key Data Components Extracted:**
+
+1.  **Factors (`get_factors`):**
+    *   `factors <- get_factors(model, as.data.frame = TRUE)`: Retrieves the matrix of factor scores for each sample.
+        *   If `as.data.frame = TRUE`, the output is a long-format data frame with columns typically like `sample`, `factor`, `value`, and any sample metadata.
+        *   If `as.data.frame = FALSE` (default), it returns a list of matrices (one per group, if groups are defined), where rows are factors and columns are samples.
+    *   The extracted `factors` data frame is then saved to a tab-separated file (`factors.tab`) using `vroom::vroom_write()`.
+
+2.  **Feature Weights (`get_weights`):**
+    *   `weights <- get_weights(model, as.data.frame = TRUE)`: Retrieves the matrix of feature weights. These weights indicate the contribution of each feature (gene, protein, metabolite) to each factor.
+        *   If `as.data.frame = TRUE`, the output is a long-format data frame with columns like `view`, `feature`, `factor`, and `value`.
+        *   If `as.data.frame = FALSE` (default), it returns a list of matrices (one per view), where rows are features and columns are factors.
+    *   The `weights` data frame is saved to `weights.tab`.
+
+3.  **Reconstructed Data / Input Data (`get_data`):**
+    *   `data <- get_data(model, as.data.frame = TRUE)`: Retrieves the input data matrices that were used to train the MOFA model. This can also be used to get reconstructed data if the model has imputation capabilities for missing values (though not explicitly shown here).
+        *   If `as.data.frame = TRUE`, it returns a long-format data frame typically containing `sample`, `feature`, `view`, and `value`.
+        *   If `as.data.frame = FALSE` (default), it returns a list of the original input matrices.
+    *   The `data` data frame is saved to `data.tab`.
+
+4.  **Other Accessors (Example: `get_variance_explained`):**
+    *   The commented line `# get_variance_explained(model, as.data.frame = T)` shows an example of another accessor function.
+    *   `apropos("^get_")` is a useful R function that lists all objects (including functions) in the search path that start with "get_", helping you discover other available accessor functions in MOFA2 or other loaded packages.
+
+**Key for ECRs:**
+*   **Data Accessibility:** These functions are crucial for making the results of your MOFA analysis accessible for custom plotting, statistical testing, or integration with other analytical pipelines.
 
 ```{r}
 # For convenience, the user can extract the data in long data.frame format:
@@ -1356,18 +2114,18 @@ plot_dimred(model,
 factors <- get_factors(model, as.data.frame = T)
 head(factors, n=3)
 
-vroom::vroom_write( factors, file.path(results_mofa_dir, "factors.tab"))
+vroom::vroom_write( factors, file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_tables_dir, "factors.tab"))
 
 weights <- get_weights(model, as.data.frame = T)
 head(weights, n=3)
 
-vroom::vroom_write( weights, file.path(results_mofa_dir, "weights.tab"))
+vroom::vroom_write( weights, file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_tables_dir, "weights.tab"))
 
 
 data <- get_data(model, as.data.frame = T)
 head(data, n=3)
 
-vroom::vroom_write( data, file.path(results_mofa_dir, "data.tab"))
+vroom::vroom_write( data, file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_tables_dir, "data.tab"))
 
 # get_variance_explained(model, as.data.frame = T)
 
