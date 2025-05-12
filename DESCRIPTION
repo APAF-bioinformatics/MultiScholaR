@@ -44,7 +44,6 @@ Suggests:
     shiny,
     gprofiler2,
     webshot2,
-    MOFA2,
     basilisk
 Config/testthat/edition: 3
 Imports: 
