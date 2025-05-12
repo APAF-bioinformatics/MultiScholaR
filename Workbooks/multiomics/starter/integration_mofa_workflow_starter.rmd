@@ -1144,8 +1144,6 @@ proteomics_sort_updated <- proteomics_sort |>
   column_to_rownames("gene_name") 
   
 
-rownames(proteomics_sort_updated)
-
 transcriptomics_sort_updated <- transcriptomics_sort |>
   rownames_to_column("locus_tag") |>
   left_join(transcript_id_to_gene_name
