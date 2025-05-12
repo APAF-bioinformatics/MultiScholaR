@@ -669,7 +669,7 @@ once (or when your annotation sources change) to create these files. The
 subsequent `eval=TRUE` chunk will then load these files to perform the
 actual name conversions on your data matrices before MOFA analysis.
 
-**Key for ECRs:** \* **Consistency is Key:** Using standardized,
+**Key Considerations:** \* **Consistency is Key:** Using standardized,
 human-readable names makes your results much easier to interpret and
 compare across different omics layers or with published literature. \*
 **ID Hell:** Identifier mapping can be complex due to different
@@ -1112,7 +1112,7 @@ input into MOFA by performing Z-score normalization.
             intrinsically larger variances or different units from
             dominating the factor analysis.
 
-**Key for ECRs:** \* **Human-Readable Features:** The primary goal here
+**Key Considerations:** \* **Human-Readable Features:** The primary goal here
 is to make your MOFA results (especially feature weight plots)
 interpretable by using common gene/metabolite names instead of obscure
 database IDs. \* **Handling Missing Mappings:** The
@@ -1128,7 +1128,6 @@ samples as columns, and sample names/order must be consistent across all
 matrices in the list.
 
 ```{r}
-
 uniprot_id_to_gene_name <- vroom::vroom(file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir, "uniprot_id_to_gene_name.tsv"  ))
 
 transcript_id_to_gene_name <- vroom::vroom(file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir, "transcript_id_to_gene_name.tsv" ))
@@ -1157,21 +1156,11 @@ transcriptomics_sort_updated <- transcriptomics_sort |>
 
 ## Note that we need to Z-transform over each molecule. Then we need to transform it back to 
 ## having columns as samples and rows as molecules for input into MOFA. 
-
-## LCMS_neg is assay 1 and GCMS_neg is assay 2
-###*****####$$$$$$$$$$$$######*******##
-###*
-###* Here you have to make sure you transfer the name of each omics layer to the MOFA input list. 
-###* The name used here will appear in future plots and figures
-###* 
-###*****####$$$$$$$$$$$$######*******##
-###*
+### The names used here will appear in future plots and figures
   mofa_matrix_input <- list(transcriptome = t(scale(t(transcriptomics_sort_updated)))
                             , proteome = t(scale(t(proteomics_sort_updated)))
                             , metabolome_lc = t(scale(t(metabolomics_assay_1_sort)))
                             , metabolome_gc = t(scale(t(metabolomics_assay_2_sort))) )
-  
-  
 ```
 
 ## Prepare the Design Matrix and Sample Grouping Factor
@@ -1358,7 +1347,7 @@ needed for multi-omics integration. The S4 system in R provides formal
 class definitions with validation, making it particularly suitable for
 representing the complex relationships in multi-omics data.
 
-**Key for ECRs:** Think of the `MOFAobject` as a container that holds
+**Key Considerations:** Think of the `MOFAobject` as a container that holds
 both your data and the analytical machinery needed to identify patterns
 across your different omics layers. All subsequent analysis steps will
 involve this object.
@@ -1438,7 +1427,7 @@ In this code, we first retrieve the default data options using
 This can be appropriate when the absolute levels (not just the relative
 differences) are meaningful across groups.
 
-**Key for ECRs:** The scaling decisions are crucial for multi-omics
+**Key Considerations:** The scaling decisions are crucial for multi-omics
 integration. Without appropriate scaling, omics layers with larger
 numerical values or higher variance would dominate the analysis,
 potentially obscuring important biological signals from other omics
@@ -1527,7 +1516,7 @@ Key model parameters include:
     -   `ard_weights`: Similarly determines the relevance of each factor
         for each view (omics layer).
 
-**Key for ECRs:** The most critical parameter to set is `num_factors`,
+**Key Considerations:** The most critical parameter to set is `num_factors`,
 which controls the complexity of your model. Start with a small number
 (2-5) for initial exploration, then increase if needed. The other
 parameters have sensible defaults that work well for most multi-omics
@@ -1628,7 +1617,7 @@ Key training options include:
     -   `verbose`: Whether to print detailed progress information
     -   `seed`: Random seed for reproducibility
 
-**Key for ECRs:** The default training options are suitable for most
+**Key Considerations:** The default training options are suitable for most
 analyses. For initial exploration, you might consider using
 `convergence_mode = "fast"` to get quicker results. For final analyses,
 the default "medium" setting provides a good balance between
@@ -1730,7 +1719,7 @@ The trained model is saved in two formats: 1. As an HDF5 file (.hdf5),
 which is a standard format for storing hierarchical data 2. As an R
 object (.RDS), which preserves the entire R object structure
 
-**Key for ECRs:** - The first run of MOFA on a new system may take some
+**Key Considerations:** - The first run of MOFA on a new system may take some
 time, as basilisk needs to set up its Python environment - The
 conditional logic (`if(!file.exists(outfile))`) prevents re-running the
 time-consuming training if a model file already exists - If you change
@@ -1815,7 +1804,7 @@ in this code:
     -   This saves substantial computation time when rerunning the
         analysis
 
-**Key for ECRs:** - The first time you run MOFA, the training process
+**Key Considerations:** - The first time you run MOFA, the training process
 may take considerable time (minutes to hours depending on dataset
 size) - You might see warnings when the first training attempt
 (`use_basilisk=FALSE`) fails - this is expected - Be patient during
@@ -1825,10 +1814,10 @@ or parameters, delete the output files to force retraining
 ```{r }
 outfile <- file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_inputs_dir, "model.hdf5")
 
-#se_python(python= "/opt/homebrew/bin/python3", required = NULL)
-
 ## Note you'll need to install "pip3 install mofapy2"
 ## and also run reticulate library 
+## Please make sure you have pointed your RStudio at your python install or you'll have to download everything again
+## (You might still have to anyway, R<>python can be funny sometimes)
 
 model <- NA 
 if(!file.exists(outfile)) {
@@ -1844,9 +1833,7 @@ if(!file.exists(outfile)) {
   
 } else {
   model <- readRDS( file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_inputs_dir, "model.RDS"))
-  
 }
-
 ```
 
 ### Set the RPMI and Sera labels
@@ -1913,7 +1900,7 @@ The code does the following:
 4.  **View result**: `head(model@samples_metadata, n=3)` shows the first
     few rows of the attached metadata.
 
-**Key for ECRs:** - This step links your experimental design information
+**Key Considerations:** - This step links your experimental design information
 to the MOFA results - The `Y` vector was created earlier and contains
 the group assignments (RPMI or Sera) for each sample - The
 `samples_metadata()` function is an accessor method for the MOFA
@@ -1999,7 +1986,7 @@ variance explained for group 1 -
 `model@cache$variance_explained$r2_per_factor[[1]]` gets the per-factor
 breakdown for group 1
 
-**Key for ECRs:** - Higher R² values indicate better capture of the
+**Key Considerations:** - Higher R² values indicate better capture of the
 data's patterns - Comparing R² across omics layers helps identify which
 datasets have the strongest signals - Different factors often explain
 different omics layers - this is a key insight from multi-omics
@@ -2063,7 +2050,7 @@ explained by each factor for each omics layer in group 1 2.
 `names(model@cache$variance_explained)` - The available variance
 explained metrics in the model
 
-**Key for ECRs:** - Factors that explain substantial variance across
+**Key Considerations:** - Factors that explain substantial variance across
 multiple omics layers are particularly interesting - they represent
 biological processes that manifest at multiple molecular levels -
 Omics-specific factors (high variance explained in one omics type, low
@@ -2143,7 +2130,7 @@ The resulting plot is saved in both PNG and PDF formats using
 `ggsave()`: - PNG format is useful for presentations and web display -
 PDF format is vector-based and better for publication
 
-**Key for ECRs:** - This plot helps identify which factors are most
+**Key Considerations:** - This plot helps identify which factors are most
 important for which omics layers - Factors that show high variance
 explained across multiple omics types (multiple columns with intense
 color) represent biological processes that affect multiple molecular
@@ -2212,7 +2199,7 @@ using `pivot_longer()`, where each factor-view combination becomes a row
     -   Displays the plot
     -   Saves it in both PNG and PDF formats using `ggsave()`
 
-**Key for ECRs:** - In this plot, each row represents a factor - The
+**Key Considerations:** - In this plot, each row represents a factor - The
 total length of each bar shows the total variance explained by that
 factor across all omics layers - The colored segments show how that
 explanatory power is distributed across omics types - Factors with bars
@@ -2326,7 +2313,7 @@ variance plots
 The function returns a list of two plots: 1. [[1]]: The per-factor
 variance heatmap 2. [[2]]: The total variance bar plot
 
-**Key for ECRs:** - These built-in functions provide a quick way to get
+**Key Considerations:** - These built-in functions provide a quick way to get
 standardized visualizations - The combined view helps connect the
 per-factor breakdown to the total variance explained - The built-in
 functions often have sensible defaults that produce publication-ready
@@ -2398,7 +2385,7 @@ distribution of sample scores
 The resulting plot is then customized by adding specific colors for the
 RPMI and Sera conditions.
 
-**Key for ECRs:** - This plot shows how well the MOFA factors separate
+**Key Considerations:** - This plot shows how well the MOFA factors separate
 your experimental groups - Clear separation along a factor suggests that
 factor captures a major source of variation related to your experimental
 conditions - The violin plots help assess the distribution of samples
@@ -2462,7 +2449,7 @@ along any of the factors.
 The resulting plot is customized with specific colors for each condition
 and saved in both PNG and PDF formats.
 
-**Key for ECRs:** - This plot allows you to examine the relationship
+**Key Considerations:** - This plot allows you to examine the relationship
 between multiple factors simultaneously - Clear separation between
 experimental groups suggests that the factors capture biologically
 relevant variation - The pattern of separation (e.g., horizontal,
@@ -2569,7 +2556,7 @@ weights 4. Scales weights to a range from -1 to 1 for easier comparison
 This function is then applied to each omics layer in the model using
 `purrr::map()`, creating a separate weight plot for each data type.
 
-**Key for ECRs:** - Feature weights indicate how strongly each molecule
+**Key Considerations:** - Feature weights indicate how strongly each molecule
 contributes to a factor - Positive weights indicate positive association
 with the factor (higher molecule levels → higher factor scores) -
 Negative weights indicate negative association (lower molecule levels →
@@ -2715,7 +2702,7 @@ defining that factor.
         to each term.
     -   The plot is saved as a PDF.
 
-**Key for ECRs:** \* **Biological Interpretation:** This step helps
+**Key Considerations:** \* **Biological Interpretation:** This step helps
 translate the abstract MOFA factors into understandable biological
 themes by identifying which pathways/functions are driven by the
 top-weighted proteins for Factor 1. \* **Weight-Driven Enrichment:**
@@ -2833,7 +2820,7 @@ directory**: Ensures the necessary directory structure exists 5.
 rank-based enrichment analysis 6. **Save results**: Stores the
 enrichment results as an RDS file for later visualization and comparison
 
-**Key for ECRs:** - This parallel analysis of transcriptomics data
+**Key Considerations:** - This parallel analysis of transcriptomics data
 allows for direct comparison with the proteomics results - The joined
 mapping between transcript IDs and protein IDs ensures consistent
 annotation across omics layers - The complex data wrangling with
@@ -2923,7 +2910,7 @@ The analysis follows these steps:
 6. **Combine results**: Merges pathway findings from both MS technologies and both databases
 7. **Visualize**: Creates standardized visualization of the enrichment results
 
-**Key for ECRs:**
+**Key Considerations:**
 - Metabolomics pathway analysis is more challenging than other omics due to incomplete annotation and database coverage
 - The code handles critical identifier mappings between ChEBI, KEGG compound IDs with the necessary "cpd:" prefix
 - Rank-based enrichment with GSEA is used to capitalize on the continuous nature of the weights rather than binary cutoffs
@@ -2963,7 +2950,11 @@ saveRDS(output_enrich_mofa_metabolomics,
         file.path(project_dirs[[paste0("integration", "_", experiment_label)]]$integration_enrichment_plots_dir, 
                  "output_enrich_mofa_metabolomics.RDS"))
 
+```
+
+
 # Combine with proteomics and transcriptomics results
+```{r}
 output_enrich_mofa_combined <- output_enrich_mofa_proteomics |>
   mutate(comparison = "Proteome") |>
   bind_rows(output_enrich_mofa_transcriptomics |>
@@ -3005,7 +2996,7 @@ The analysis follows these steps:
 4. **Create collection of plots**: Generates one weight plot per omics layer and stores them in a list
 5. **Display results**: Renders all plots for direct comparison between omics layers
 
-**Key for ECRs:**
+**Key Considerations:**
 - This visualization complements the pathway analysis by showing individual molecular drivers
 - The uniform application across all omics types allows direct cross-comparison of feature importance
 - The plots typically show a "barcode" pattern where features are ranked by their contribution
@@ -3087,7 +3078,7 @@ here). \* `show_rownames = TRUE`: Feature names will be displayed. \*
 to save space if sample groups are clear from other annotations or
 column ordering).
 
-**Key for ECRs:** \* **Connecting Factors to Raw Data:** This plot
+**Key Considerations:** \* **Connecting Factors to Raw Data:** This plot
 directly links the abstract MOFA factor back to the patterns in your
 original input data for the most important features. You can see how the
 top features for Factor 1 behave across your samples. \* **Identifying
@@ -3146,6 +3137,166 @@ plot_data_heatmap(model,
 )
 ```
 
+# This section is used to create boxplots of the features matching the search term
+## DMG and betaine were found to be crucial to pathogen adaptation
+
+```{r}
+# Helper function to process an omics data frame for features matching a search term
+processOmicForPlot <- function(omic_df, omic_df_name_str, search_term) {
+  # Ensure the input is a data.frame or matrix and has row names
+  if (!is.data.frame(omic_df) && !is.matrix(omic_df)) {
+    print(paste("Error:", omic_df_name_str, "is not a data.frame or matrix."))
+    return(NULL)
+  }
+  if (is.null(rownames(omic_df))) {
+    print(paste("Error: Data frame/matrix", omic_df_name_str, "does not have row names."))
+    return(NULL)
+  }
+
+  # Use the search term regex, ignore case
+  matching_rownames <- grep(search_term, rownames(omic_df), ignore.case = TRUE, value = TRUE)
+
+  if (length(matching_rownames) > 0) {
+    all_long_data_for_omic <- list() # To store data frames for each match
+
+    for (i in 1:length(matching_rownames)) {
+        target_rowname <- matching_rownames[i]
+        print(paste("Processing '", target_rowname, "' in ", omic_df_name_str, sep=""))
+
+        row_data_slice <- omic_df[target_rowname, , drop = FALSE] # drop=FALSE ensures it stays a data.frame/matrix
+
+        if (is.data.frame(row_data_slice) || is.matrix(row_data_slice)) {
+             data_wide <- as.numeric(as.matrix(row_data_slice[1,])) # Take the first (and only) row
+        } else {
+             data_wide <- as.numeric(row_data_slice) # Should ideally not happen with drop=FALSE
+        }
+
+        sample_names_local <- colnames(omic_df)
+
+        current_long_data <- data.frame(
+          sample_id = sample_names_local,
+          value = data_wide,
+          group = ifelse(startsWith(sample_names_local, "R"), "R_Group", "S_Group"),
+          omic_layer = omic_df_name_str,
+          feature_name = target_rowname # Store the specific feature name
+        )
+        all_long_data_for_omic[[i]] <- na.omit(current_long_data)
+    }
+
+    if (length(all_long_data_for_omic) > 0) {
+        return(do.call(rbind, all_long_data_for_omic))
+    } else {
+        return(NULL) # Should not be reached if length(matching_rownames) > 0
+    }
+
+  } else {
+    print(paste("No row names found matching '", search_term, "' in ", omic_df_name_str, sep=""))
+    return(NULL)
+  }
+}
+
+proteomics_search_term <- "betI"
+
+
+  proteomics_betI_long <- processOmicForPlot(proteomics_sort_updated, "Proteomics", search_term = proteomics_search_term)
+  transcriptomics_betI_long <- processOmicForPlot(transcriptomics_sort_updated, "Transcriptomics", search_term = proteomics_search_term)
+
+  
+  
+  # --- Combine Data ---
+  combined_betI_data <- NULL
+  if (!is.null(proteomics_betI_long)) {
+    combined_betI_data <- proteomics_betI_long
+  }
+  if (!is.null(transcriptomics_betI_long)) {
+    if (is.null(combined_betI_data)) {
+      combined_betI_data <- transcriptomics_betI_long
+    } else {
+      combined_betI_data <- rbind(combined_betI_data, transcriptomics_betI_long)
+    }
+  }
+
+  # --- Create Plot ---
+  if (!is.null(combined_betI_data) && nrow(combined_betI_data) > 0) {
+    
+    hybrid_betI_boxplot <- ggplot(combined_betI_data, aes(x = group, y = value, fill = group)) +
+      geom_boxplot(alpha = 0.7, width = 0.6, outlier.shape = NA) + 
+      geom_jitter(width = 0.15, alpha = 0.6, size = 2) +
+      scale_fill_manual(values = c("R_Group" = "skyblue3", "S_Group" = "salmon3")) +
+      facet_wrap(~ omic_layer + feature_name, scales = "free_y", ncol = 2) + 
+      labs(
+        title = "Comparison of R vs S Groups for Features Matching 'betI'",
+        subtitle = "Data from Proteomics and Transcriptomics Layers",
+        x = "Sample Group",
+        y = "Log2 Intensity (or Relative Value)" 
+      ) +
+      theme_bw(base_size = 12) + 
+      theme(
+        legend.position = "none",
+        strip.text = element_text(size = 9, face = "bold.italic"), 
+        plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+        plot.subtitle = element_text(hjust = 0.5, size = 11),
+        axis.title = element_text(size = 11, face = "bold"),
+        axis.text = element_text(size = 9),
+        panel.spacing.x = unit(1, "lines") # Add a bit of space between facets
+      )
+    
+    print(hybrid_betI_boxplot)
+    
+  } else {
+    print("No data found for features matching 'betI' in the provided datasets to create a combined plot.")
+  }
+
+
+
+# Define the search term regex for "dimethylglycine" OR "betaine"
+  metabolomics_search_term <- "dimethylglycine|betaine"
+  
+lcms_results <- processOmicForPlot(metabolomics_assay_1_sort, "Metabolomics_LC", search_term = metabolomics_search_term)
+  gcms_results <- processOmicForPlot(metabolomics_assay_2_sort, "Metabolomics_GC", search_term = metabolomics_search_term)
+
+  # --- Combine Metabolomics Data ---
+  list_of_metab_results <- list(lcms_results, gcms_results)
+  combined_metab_data <- do.call(rbind, list_of_metab_results[!sapply(list_of_metab_results, is.null)]) # Combine non-NULL results
+
+  # --- Create Plot ---
+  if (!is.null(combined_metab_data) && nrow(combined_metab_data) > 0) {
+
+    # Ensure omic_layer is a factor for consistent ordering in facets
+    combined_metab_data$omic_layer <- factor(combined_metab_data$omic_layer,
+                                             levels = c("Metabolomics_LC", "Metabolomics_GC"))
+
+    metabolomics_hybrid_boxplot <- ggplot(combined_metab_data, aes(x = group, y = value, fill = group)) +
+      geom_boxplot(alpha = 0.7, width = 0.6, outlier.shape = NA) +
+      geom_jitter(width = 0.15, alpha = 0.6, size = 2) +
+      scale_fill_manual(values = c("R_Group" = "skyblue3", "S_Group" = "salmon3")) +
+      # Facet by omic layer first, then by the specific feature name found
+      facet_wrap(~ omic_layer + feature_name, scales = "free_y", ncol = 2) + # Adjust ncol if needed
+      labs(
+        title = "Comparison of R vs S Groups for Features Matching 'Dimethylglycine' or 'Betaine'",
+        subtitle = "Data from Metabolomics (LC-MS and GC-MS) Layers", # Updated subtitle
+        x = "Sample Group",
+        y = "Relative Intensity / Value" # Adjusted y-axis label
+      ) +
+      theme_bw(base_size = 12) +
+      theme(
+        legend.position = "none",
+        strip.text = element_text(size = 9, face = "bold.italic"),
+        plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+        plot.subtitle = element_text(hjust = 0.5, size = 11),
+        axis.title = element_text(size = 11, face = "bold"),
+        axis.text = element_text(size = 9),
+        panel.spacing.x = unit(1, "lines")
+      )
+
+    print(metabolomics_hybrid_boxplot)
+
+  } else {
+    print(paste("No data found for features matching '", metabolomics_search_term, "' in Metabolomics datasets.", sep=""))
+  }
+```
+
+
 ## Scatterplots of Feature Data vs. Factor Values
 
 ### Further Reading
@@ -3200,7 +3351,7 @@ both "transcriptome" and "proteome" views. \* The `add_lm = FALSE` means
 no regression lines will be drawn. \* The plots are saved as PNG and PDF
 files.
 
-**Key for ECRs:** \* **Visualizing Feature-Factor Correlation:** This
+**Key Considerations:** \* **Visualizing Feature-Factor Correlation:** This
 provides a direct look at how individual high-weight features relate to
 the factor scores across samples. For example, if a feature has a strong
 positive weight for Factor 1, you'd expect to see samples with high
@@ -3330,7 +3481,7 @@ apparent in the linear factor space.
     -   `plot_dimred(model, method = "TSNE", color_by = "condition")`:
         Visualizes the t-SNE embedding, also colored by "condition".
 
-**Key for ECRs:** \* **Revealing Non-Linear Structure:** UMAP and t-SNE
+**Key Considerations:** \* **Revealing Non-Linear Structure:** UMAP and t-SNE
 are powerful for visualizing high-dimensional data in 2D or 3D and can
 often separate groups or show transitions that are not clear in linear
 projections like PCA or raw factor plots. Applying them to MOFA factors
@@ -3431,7 +3582,7 @@ accessor functions for this purpose.
         "get\_", helping you discover other available accessor functions
         in MOFA2 or other loaded packages.
 
-**Key for ECRs:** \* **Data Accessibility:** These functions are crucial
+**Key Considerations:** \* **Data Accessibility:** These functions are crucial
 for making the results of your MOFA analysis accessible for custom
 plotting, statistical testing, or integration with other analytical
 pipelines.
