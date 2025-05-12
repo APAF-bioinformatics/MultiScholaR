@@ -650,10 +650,10 @@ readConfigFileSection <- function( theObject
 
 
 ##################################################################################################################
-#' @title Load ProteomeScholaR Dependencies
+#' @title Load MultiScholaR Dependencies
 #'
 #' @description
-#' Installs and loads all required packages for ProteomeScholaR. This includes packages from CRAN, Bioconductor, and GitHub.
+#' Installs and loads all required packages for MultiScholaR This includes packages from CRAN, Bioconductor, and GitHub.
 #'
 #' @param verbose logical; if TRUE (default), displays progress messages during
 #'   package installation and loading
@@ -661,8 +661,8 @@ readConfigFileSection <- function( theObject
 #' @details
 #' Checks for and installs missing packages, then loads all required
 #' dependencies. It handles special cases for GitHub packages (RUVIIIC and
-#' ProteomeScholaR) and ensures all necessary packages are available for the DIA
-#' workflow.
+#' MultiScholaR) and ensures all necessary packages are available for the
+#' workflows.
 #'
 #' @return None (called for side effects)
 #'
