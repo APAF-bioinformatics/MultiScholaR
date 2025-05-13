@@ -722,7 +722,7 @@ loadDependencies <- function(verbose = TRUE) {
         "clusterProfiler", "GO.db", # GO.db is often a dependency, ensure it's listed
         # Added from Suggests:
         "EDASeq", "RUVSeq",
-        "MOFA2", "basilisk"
+        "basilisk"
     )
 
     github_packages <- list(

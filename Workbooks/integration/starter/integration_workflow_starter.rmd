@@ -1,9 +1,14 @@
 ---
-title: "R Notebook"
-output: html_notebook
-editor_options: 
-  markdown: 
-    wrap: 72
+title: "Integration Analysis for xyz"
+version: "0.2"
+author: "Your_fancy_self"
+output:
+  html_document:
+    code_folding: true
+    self_contained: true
+    toc: false
+    warning: false
+    message: false
 ---
 
 # Initial R environment setup
@@ -47,13 +52,10 @@ editor_options:
 #### About Multi-Omics Factor Analysis (MOFA)
 
 -   [MOFA2 Publication (Argelaguet et al.,
-    2020)](https://www.embopress.org/doi/full/10.15252/msb.20199306) -
+    2020)](https://www.embopress.org/doi/full/10.15252/msb.20178124) -
     The primary paper describing MOFA2.
 -   [MOFA2 Tutorials](https://biofam.github.io/MOFA2/tutorials.html) -
     Official tutorials for using MOFA2.
--   [Understanding Latent Variable
-    Models](https://www.nature.com/articles/s41592-018-0122-0) - General
-    context for methods like MOFA.
 
 This function, `installMultiScholaR`, checks for and installs all the
 required packages for the MultiScholaR workflow. It installs packages
@@ -66,7 +68,7 @@ sources like R and Python (for MOFA2).
 NUMBER OF DEPENDENCIES TO INSTALL, INCLUDING THE PYTHON ENVIRONMENT FOR
 MOFA2.** **THIS IS A GOOD POINT TO GRAB A COFFEE!**
 
-```{r MultiScholaR FIRST INSTALL, message=TRUE, warning=TRUE}
+```{r 1 MultiScholaR FIRST INSTALL, message=TRUE, warning=TRUE}
 installMultiScholaR <- function(verbose = TRUE) {
     # Install devtools if missing
     if (!requireNamespace("devtools", quietly = TRUE)) {
@@ -96,6 +98,13 @@ installMultiScholaR <- function(verbose = TRUE) {
 
 installMultiScholaR()
 loadDependencies()
+ if (!requireNamespace("MOFA2", quietly = TRUE)) {
+    if (!requireNamespace("BiocManager", quietly = TRUE)) {
+        install.packages("BiocManager")
+    }
+    BiocManager::install("MOFA2")
+}
+library(MOFA2)
 ```
 
 # START HERE if you already have MultiScholaR and its dependencies installed
@@ -105,7 +114,7 @@ loadDependencies()
 #### R Library Management
 
 -   [Introduction to R
-    Libraries](https://www.datacamp.com/community/tutorials/r-libraries-guide) -
+    Libraries](https://www.datacamp.com/tutorial/r-packages-guide) -
     Understanding how R libraries work.
 -   [R Package Documentation (`help()`
     function)](https://www.rdocumentation.org/) - Accessing
@@ -117,7 +126,7 @@ loadDependencies()
 #### Dependency Management in R
 
 -   [Understanding R Package
-    Dependencies](https://blog.jumpingrivers.com/posts/2017/how-to-manage-package-dependencies/) -
+    Dependencies](https://www.r-bloggers.com/2023/05/dependency-management/) -
     Best practices for managing dependencies.
 -   [Using `renv` for Project-Specific
     Environments](https://rstudio.github.io/renv/articles/renv.html) -
@@ -132,13 +141,10 @@ loadDependencies()
 #### Reproducible Research in Multi-Omics
 
 -   [Reproducible Research with R and
-    RStudio](https://rstudio-education.github.io/reproducible-research/) -
+    RStudio](https://geanders.github.io/RProgrammingForResearch/reproducible-research-1.html) -
     General principles.
--   [Bioconductor Guidelines for Reproducible
-    Research](https://www.bioconductor.org/help/publications/reproducibility_guidelines/) -
-    Specific to bioinformatics.
 -   [Challenges in Multi-Omics
-    Reproducibility](https://www.nature.com/articles/s41592-020-0912-y) -
+    Reproducibility](https://pmc.ncbi.nlm.nih.gov/articles/PMC3226701/) -
     Discusses common issues and solutions.
 
 If you have already successfully installed `MultiScholaR` and all its
@@ -149,10 +155,18 @@ helper function `loadDependencies()` to prepare your R environment for
 the multi-omics integration analysis. `loadDependencies()` typically
 loads commonly used packages for the workflows within `MultiScholaR`.
 
-```{r Load MultiScholaR}
+```{r 2 Load MultiScholaR}
 library(MultiScholaR)
 loadDependencies()
+ if (!requireNamespace("MOFA2", quietly = TRUE)) {
+    if (!requireNamespace("BiocManager", quietly = TRUE)) {
+        install.packages("BiocManager")
+    }
+    BiocManager::install("MOFA2")
+}
+library(MOFA2)
 ```
+
 
 # Set up your project environment and directory structure
 
@@ -192,11 +206,11 @@ loadDependencies()
 #### Multi-Omics Integration Specifics
 
 -   [Considerations for Multi-Omics Study
-    Design](https://www.nature.com/articles/nrm.2017.135) - Review
+    Design](https://pmc.ncbi.nlm.nih.gov/articles/PMC8058243/) - Review
     covering experimental design aspects crucial for successful
     integration.
 -   [Managing metadata in multi-omics
-    projects](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-02209-x) -
+    projects](https://academic.oup.com/gigascience/article/doi/10.1093/gigascience/giad052/7232111) -
     Importance and best practices for metadata.
 
 This section establishes a consistent and organized directory structure
@@ -229,7 +243,7 @@ user if directories already exist.
 
 ## Directories management
 
-```{r Project Environment Management}
+```{r 3 Project Environment Management}
 # Directory Management
 ## Set up the project directory structure
 ## This section sets up the project directory structure for MultiScholaR
@@ -279,12 +293,12 @@ project_dirs <- setupDirectories(
 #### Preparing Data for MOFA
 
 -   [MOFA2 Data Input
-    Requirements](https://biofam.github.io/MOFA2/input_data.html) -
+    Requirements](https://rdrr.io/github/bioFAM/MOFA2/man/plot_data_overview.html) -
     Official documentation on how to format data for MOFA2. MOFA2
     expects a list of matrices, where rows are features and columns are
     samples. Samples should be matched across matrices.
 -   [Data Preprocessing for Multi-Omics
-    Integration](https://www.nature.com/articles/nrm.2017.135) - General
+    Integration](https://www.sciencedirect.com/science/article/pii/S1570963913000927) - General
     considerations for preparing different omics data types for
     integration. This includes normalization, handling missing values,
     and feature alignment.
@@ -316,7 +330,7 @@ samples in `proteomics_dat` and `transcriptomics_dat` (and later,
 metabolomics data) need to correspond to the same biological entities.
 Subsequent steps will handle aligning and renaming samples.
 
-```{r Tabular Data Management}
+```{r 4 Tabular Data Management}
 
 proteomics_dat <- vroom::vroom( file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir, "ruv_normalized_results_cln_with_replicates.tsv" ) )
 transcriptomics_dat <- vroom::vroom( file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir, "transcriptomics_normalized_data.tsv" ) )
@@ -433,7 +447,7 @@ MOFA analysis.
 
 ## Load metabolomics data
 
-```{r S4 Object Output Data Management}
+```{r 5 S4 Object Output Data Management}
 metabolomics_obj <- readRDS( file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir, "workshop_data_final_metabolomics_s4_object.RDS" ))
 
 metabolomics_assay_1 <- metabolomics_obj@metabolite_data[[1]] |>
@@ -576,7 +590,7 @@ matrices for each omic layer must match. The `sample_names_lookup` table
 and standardized renaming process are designed to achieve this.
 
 ## Reading the data tables
-```{r}
+```{r 6 Reading the data tables}
 
 ## Note that over here the columns represents samples and the rows represents the molecules for each individual table.
 
@@ -729,7 +743,7 @@ directory, or if your source annotation files have been updated.
 
 
 ## Tidy up display names
-```{r eval=FALSE}
+```{r 7 Tidy up display names}
 ##################**********************8888888888888888888*********************##################################
 
 # Before we put the input tables into MOFA, we need to make sure we determine what gene names, protein names, metabolites names we want to display in the figures. The row names that you use will be directly transfer to the features importance figures, and there are no easy way to change them back, unless you do names conversion systematically on the output tables afterwards. If you do not do names conversion beforehand, all of the default plotting functions will only show the accession numbers.
@@ -950,7 +964,7 @@ the same genes are measured by different omics.
 
 ## Cleaning transcriptomics display names
 
-```{r eval=FALSE}
+```{r 8 Cleaning transcriptomics display names}
 gff3_tbl <- vroom::vroom(file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir,"k_variicola.gff3")
                          , comment="#"
                          , col_names = c("seqid", "source", "type", "start", "end", "score", "strand", "phase", "attributes")) 
@@ -1127,7 +1141,7 @@ Input Structure:** Pay attention to the `list` structure required by
 samples as columns, and sample names/order must be consistent across all
 matrices in the list.
 
-```{r}
+```{r 9 Convert Accessions into Readable Names then Use Tables for MOFA Analyses}
 uniprot_id_to_gene_name <- vroom::vroom(file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir, "uniprot_id_to_gene_name.tsv"  ))
 
 transcript_id_to_gene_name <- vroom::vroom(file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir, "transcript_id_to_gene_name.tsv" ))
@@ -1270,7 +1284,7 @@ is correctly defined and points to the location of `design_matrix.tab`.
 
 ## Prepare the design matrix
 
-```{r}
+```{r 10 Prepare the design matrix}
 design_matrix <- vroom:::vroom(file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir, "design_matrix.tab")) |>
   mutate( Run = purrr::map_chr(Run, as.character)) |>
   left_join( sample_names_lookup |>
@@ -1352,7 +1366,7 @@ both your data and the analytical machinery needed to identify patterns
 across your different omics layers. All subsequent analysis steps will
 involve this object.
 
-```{r}
+```{r 11 Create MOFA object}
 MOFAobject <- create_mofa(mofa_matrix_input)
 
 ```
@@ -1636,7 +1650,7 @@ especially for large datasets.
 -   verbose: verbose mode?
 -   seed: random seed
 
-```{r}
+```{r 12 Define train options}
 # Data options
 data_opts <- get_default_data_options(MOFAobject)
 # head(data_opts)
@@ -1728,7 +1742,7 @@ the existing model files to force retraining
 
 Prepare the MOFA object
 
-```{r}
+```{r 13 Prepare the MOFA object}
 MOFAobject <- prepare_mofa(
   object = MOFAobject,
   data_options = data_opts,
@@ -1811,8 +1825,8 @@ size) - You might see warnings when the first training attempt
 training, especially for larger datasets - If you modify any input data
 or parameters, delete the output files to force retraining
 
-```{r }
-## Please note that we have omitted running this due to timing constraints and it might not work on "BYO toaster"
+```{r 14 Build and train the MOFA object}
+## Please note that we have omitted running this due to timing constraints and it might not work on all systems
 ## The code here will work if you would like to use this on your own data
 
 # outfile <- file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_inputs_dir, "model.hdf5")
@@ -1838,7 +1852,7 @@ or parameters, delete the output files to force retraining
 #   model <- readRDS( file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_inputs_dir, "model.RDS"))
 # }
 ## We have done this for you offline :)
-model <- readRDS( file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_inputs_dir, "model.RDS"))
+model <- readRDS( file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir, "model.RDS"))
 ```
 
 ### Set the RPMI and Sera labels
@@ -1915,7 +1929,7 @@ function call, which accesses or modifies the slot) and
 viewing) - This metadata will be automatically used in many of the
 visualization functions that follow
 
-```{r}
+```{r 15 Set the RPMI and Sera labels}
 Nsamples <- sum(model@dimensions$N)
 
 sample_metadata <- data.frame(
@@ -2065,7 +2079,7 @@ factors to focus on for deeper biological interpretation - Factor 1
 typically explains the most variance, with subsequent factors explaining
 progressively less
 
-```{r}
+```{r 16 Total variance explained per view and group}
 # Total variance explained per view and group
 head(model@cache$variance_explained$r2_total[[1]]) # group 1
 # head(model@cache$variance_explained$r2_total[[2]]) # group 2
@@ -2213,7 +2227,7 @@ that explain similar amounts of total variance but in different omics
 layers - This visualization helps prioritize which factors to focus on
 for biological interpretation
 
-```{r}
+```{r 17 Plot variance explained per factor}
 model_copy <- model
 model_copy@cache$variance_explained$r2_per_factor$group1 <- model_copy@cache$variance_explained$r2_per_factor$group1[, c( "transcriptome",  "proteome", "metabolome_lc", "metabolome_gc" )]
 
@@ -2325,7 +2339,7 @@ functions often have sensible defaults that produce publication-ready
 figures - These plots complement our custom visualizations and provide
 different perspectives on the same variance information
 
-```{r}
+```{r 18 Plot variance explained per factor}
 plot_variance_explained(model, x="view", y="factor", plot_total = TRUE)[[1]]
 plot_variance_explained(model, x="view", y="factor", plot_total = TRUE)[[2]]
 ```
@@ -2464,7 +2478,7 @@ individual omics layers to see if MOFA provides better separation
 through integration - The `plot_factors()` function can be extended to
 visualize more than two factors using faceting or pairwise plots
 
-```{r}
+```{r 19 Plot variance explained per factor}
 p <- plot_factor(model, 
   factors = c(1,2),
   color_by = "condition",
@@ -2572,7 +2586,7 @@ molecular changes - These weights form the basis for subsequent
 biological interpretation through pathway analysis or gene set
 enrichment
 
-```{r}
+```{r 20 Plot variance explained per factor}
 list_of_views <- colnames( model@cache$variance_explained$r2_per_factor[[1]])
 
 
@@ -2721,7 +2735,7 @@ terms with low FDR values and high enrichment scores. The
 `genesMapped` shows how many of your top-weighted proteins are
 associated with that term.
 
-```{r}
+```{r 21 Extract MOFA Weights}
 weights <- get_expectations(model, "W", as.data.frame= TRUE) 
 
   
@@ -2836,7 +2850,7 @@ transcriptome and proteome levels - Similarities in enriched terms
 across omics layers strengthen confidence in the biological
 interpretation
 
-```{r}
+```{r 22 Prepare input data}
 go_enrichment_transcriptome_input <- weights |>
   dplyr::filter(view == "transcriptome" & factor=="Factor1") |>
   mutate( feature = str_replace_all( feature, "_transcriptome", "")) |>
@@ -2934,7 +2948,7 @@ The approach generates a series of weight plots that display:
 
 These visualizations allow researchers to quickly identify key molecular players across different data types that may be driving the biological differences observed between conditions, providing potential targets for validation or further investigation.
 
-```{r}
+```{r 23 Prepare input data}
 mapping_table <- vroom::vroom( file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir
                                         , "metaboliteIDmapping.txt" ))
 
@@ -2959,7 +2973,7 @@ saveRDS(output_enrich_mofa_metabolomics,
 
 
 # Combine with proteomics and transcriptomics results
-```{r}
+```{r 24 Combine with proteomics and transcriptomics results}
 output_enrich_mofa_combined <- output_enrich_mofa_proteomics |>
   mutate(comparison = "Proteome") |>
   bind_rows(output_enrich_mofa_transcriptomics |>
@@ -3012,7 +3026,7 @@ The analysis follows these steps:
 
 By examining both the high-level pathway enrichment and the specific molecular drivers, researchers gain comprehensive understanding of the biological processes distinguishing experimental conditions at multiple levels of resolution.
 
-```{r}
+```{r 25 Plot the name of the top molecules for each omics layer}
 list_of_views <- colnames( model@cache$variance_explained$r2_per_factor[[1]])
 
 list_of_weights_figures <- purrr::map( list_of_views
@@ -3099,7 +3113,7 @@ Z-score transformation per feature) by `pheatmap` by default to make
 patterns comparable across features with different absolute abundance
 ranges.
 
-```{r}
+```{r 26 Visualisation of patterns in the input data}
 plot_data_heatmap(model,
   view = "transcriptome",         # view of interest
   factor = 1,             # factor of interest
@@ -3145,8 +3159,7 @@ plot_data_heatmap(model,
 # This section is used to create boxplots of the features matching the search term
 ## DMG and betaine were found to be crucial to pathogen adaptation
 
-```{r}
-# Helper function to process an omics data frame for features matching a search term
+```{r 27 Helper function to process an omics data frame for features matching a search term}
 processOmicForPlot <- function(omic_df, omic_df_name_str, search_term) {
   # Ensure the input is a data.frame or matrix and has row names
   if (!is.data.frame(omic_df) && !is.matrix(omic_df)) {
@@ -3368,7 +3381,7 @@ Detection:** These plots can sometimes help identify samples that are
 outliers with respect to a particular feature and its relationship with
 the factor.
 
-```{r}
+```{r 28 Scatterplots of Feature Data vs. Factor Values}
 transcriptome_scatter_plot <- plot_data_scatter(model,
   view = "transcriptome",         # view of interest
   factor = 1,             # factor of interest
@@ -3505,7 +3518,7 @@ MOFA factors provide an alternative view of the sample structure
 summarized by MOFA. They don't replace the interpretation of the factors
 themselves but can enhance the visualization of sample relationships.
 
-```{r}
+```{r 29 Running UMAP/t-SNE on MOFA Factors}
 set.seed(42)
  model <- run_umap(model, n_neighbors=11)
 # Plot non-linear dimensionality reduction
@@ -3592,7 +3605,7 @@ for making the results of your MOFA analysis accessible for custom
 plotting, statistical testing, or integration with other analytical
 pipelines.
 
-```{r}
+```{r 30 Extracting Data from the MOFA Model}
 # For convenience, the user can extract the data in long data.frame format:
 
 factors <- get_factors(model, as.data.frame = T)
