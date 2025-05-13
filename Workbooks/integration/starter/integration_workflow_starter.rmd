@@ -1271,7 +1271,7 @@ is correctly defined and points to the location of `design_matrix.tab`.
 ## Prepare the design matrix
 
 ```{r}
-design_matrix <- vroom:::vroom(file.path(project_dirs[[paste0("proteomics_", experiment_label)]]$source_dir, "design_matrix.tab")) |>
+design_matrix <- vroom:::vroom(file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir, "design_matrix.tab")) |>
   mutate( Run = purrr::map_chr(Run, as.character)) |>
   left_join( sample_names_lookup |>
                dplyr::select(-original_sample_id_transcriptome) 
@@ -1812,28 +1812,33 @@ training, especially for larger datasets - If you modify any input data
 or parameters, delete the output files to force retraining
 
 ```{r }
-outfile <- file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_inputs_dir, "model.hdf5")
+## Please note that we have omitted running this due to timing constraints and it might not work on "BYO toaster"
+## The code here will work if you would like to use this on your own data
 
-## Note you'll need to install "pip3 install mofapy2"
-## and also run reticulate library 
-## Please make sure you have pointed your RStudio at your python install or you'll have to download everything again
-## (You might still have to anyway, R<>python can be funny sometimes)
-
-model <- NA 
-if(!file.exists(outfile)) {
-  
-  ## IN my mac you need to run this once first otherwise the Use basilisk version doesn't work (this will fail by the way)
- try(
-    MOFAobject.init <- run_mofa(MOFAobject, outfile, use_basilisk=FALSE) )
-
-  MOFAobject.trained <- run_mofa(MOFAobject, outfile, use_basilisk=TRUE)
-  model <- MOFAobject.trained
-  head(MOFAobject.trained@samples_metadata, n=3)
-  saveRDS(model, file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_inputs_dir, "model.RDS"))
-  
-} else {
-  model <- readRDS( file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_inputs_dir, "model.RDS"))
-}
+# outfile <- file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_inputs_dir, "model.hdf5")
+# 
+# ## Note you'll need to install "pip3 install mofapy2"
+# ## and also run reticulate library 
+# ## Please make sure you have pointed your RStudio at your python install or you'll have to download everything again
+# ## (You might still have to anyway, R<>python can be funny sometimes)
+# 
+# model <- NA 
+# if(!file.exists(outfile)) {
+#   
+#   ## IN my mac you need to run this once first otherwise the Use basilisk version doesn't work (this will fail by the way)
+#  try(
+#     MOFAobject.init <- run_mofa(MOFAobject, outfile, use_basilisk=FALSE) )
+# 
+#   MOFAobject.trained <- run_mofa(MOFAobject, outfile, use_basilisk=TRUE)
+#   model <- MOFAobject.trained
+#   head(MOFAobject.trained@samples_metadata, n=3)
+#   saveRDS(model, file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_inputs_dir, "model.RDS"))
+#   
+# } else {
+#   model <- readRDS( file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_inputs_dir, "model.RDS"))
+# }
+## We have done this for you offline :)
+model <- readRDS( file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_inputs_dir, "model.RDS"))
 ```
 
 ### Set the RPMI and Sera labels
