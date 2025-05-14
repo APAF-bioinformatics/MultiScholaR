@@ -315,7 +315,7 @@ operating systems (Windows, macOS, Linux). It uses the `project_dirs`
 object (created in the previous step) to locate the appropriate
 `data_dir` for the specified `omic_type` and `experiment_label`.
 
-**Important Considerations for ECRs:** \* **File Paths:** Ensure the
+**Important Considerations:** \* **File Paths:** Ensure the
 file names (`ruv_normalized_results_cln_with_replicates.tsv` and
 `transcriptomics_normalized_data.tsv`) exactly match the files you have
 placed in the `data_dir` created by `setupDirectories`. \* **Data
@@ -355,7 +355,7 @@ transcriptomics_dat <- vroom::vroom( file.path(project_dirs[[paste0(omic_type, "
     S4 objects. Your metabolomics object might be or contain a
     `SummarizedExperiment`.
 -   [Accessing S4 Object Slots (`@`) and Methods (`assay()`,
-    `colData()`)](https://www.bioconductor.org/packages/devel/bioc/vignettes/S4Vectors/inst/doc/S4QuickOverview.html#accessing-s4-object-slots-and-methods) -
+    `colData()`)](https://rdrr.io/r/methods/Introduction.html) -
     How to interact with S4 objects.
 
 #### Metabolomics Data Processing
@@ -364,12 +364,11 @@ transcriptomics_dat <- vroom::vroom( file.path(project_dirs[[paste0(omic_type, "
     Preprocessing](https://www.mdpi.com/2218-1989/10/1/25) - Covers
     common steps like filtering, normalization, and scaling.
 -   [Handling Missing Values in
-    Metabolomics](https://pubs.acs.org/doi/10.1021/acs.analchem.8b05425) -
+    Metabolomics](https://www.nature.com/articles/s41598-023-50646-8) -
     Specific challenges and methods for metabolomics.
 -   [Metabolite Identification and
-    Annotation](https://www.nature.com/articles/s41570-020-00231-7) -
-    Critical aspects of metabolomics. The filtering based on "ITSD"
-    suggests internal standards or contaminants are being removed.
+    Annotation](https://www.nature.com/articles/s41467-022-34537-6) -
+    Critical aspects of metabolomics.
 
 #### Data Manipulation with `dplyr` and `purrr`
 
@@ -399,8 +398,8 @@ object).
 2.  **Extract Assay Data:** The code accesses specific assay data
     (quantitative matrices) from slots within the S4 object (e.g.,
     `metabolomics_obj@metabolite_data[[1]]` and
-    `metabolomics_obj@metabolite_data[[2]]`). This suggests the S4
-    object might store data from multiple metabolomics assays (e.g.,
+    `metabolomics_obj@metabolite_data[[2]]`). The S4
+    object stores data from multiple metabolomics assays (e.g.,
     different chromatography methods like LC-MS and GC-MS, or different
     ionization modes).
 3.  **Filter Features:**
@@ -421,14 +420,14 @@ object).
 6.  **Rename Columns (Samples):**
     -   A new set of standardized sample names (`updated_column_names`)
         is generated using `purrr::map2_chr`. The pattern "R1, R2...S1,
-        S2..." suggests grouping into "RPMI" and "Sera" conditions with
+        S2..." groups into "RPMI" and "Sera" conditions with
         numbered replicates.
     -   These new names are assigned to the columns of the metabolomics
         assay matrices. This consistent naming is critical for MOFA,
         which requires samples to be matched across different omics
         layers.
 
-**Important Considerations for ECRs:** \* **S4 Object Structure:**
+**Important Considerations:** \* **S4 Object Structure:**
 Understanding the structure of `metabolomics_obj` is key. If it's a
 custom object from `MultiScholaR`, refer to its documentation. If it's
 based on standard Bioconductor classes like `SummarizedExperiment`,
@@ -520,12 +519,8 @@ colnames(metabolomics_assay_2_sort) <- updated_column_names
 #### Sample Alignment in Multi-Omics
 
 -   [Importance of Sample Matching in Multi-Omics
-    Integration](https://www.frontiersin.org/articles/10.3389/fgene.2019.00567/full):
+    Integration](https://www.sciencedirect.com/science/article/pii/S2693125725000019):
     Ensuring corresponding samples are correctly aligned.
--   [Strategies for Dealing with Missing
-    Samples](https://www.nature.com/articles/s41467-020-19115-y):
-    Discusses how to handle datasets where not all samples are present
-    in all omics layers.
 
 This R chunk performs several critical data wrangling steps to prepare
 the proteomics and transcriptomics data for integration with MOFA. The
@@ -578,7 +573,7 @@ when passed to MOFA. 5. **Apply Standardized Sample Names:** The
 `colnames` of the processed transcriptomics and proteomics data frames
 are updated with `updated_column_names`.
 
-**ECR Checklist:** \* **Understand Data Orientation:** Is your data
+**Considerations:** \* **Understand Data Orientation:** Is your data
 `features x samples` or `samples x features`? Transpose if necessary. \*
 **Data Types:** Are quantitative values numeric? Use `str()` or
 `glimpse()` to check and `as.numeric()` to convert. \* **Sample
@@ -653,7 +648,7 @@ colnames(proteomics_sort) <- updated_column_names
 -   [`tidyr` for tidying data](https://tidyr.tidyverse.org/) - Useful
     for reshaping lookup tables if needed.
 -   [Best Practices for Data Cleaning (Nature
-    Article)](https://www.nature.com/articles/s41597-021-00860-1) -
+    Article)](https://pmc.ncbi.nlm.nih.gov/articles/PMC10557005/) -
     General principles for data cleaning and preparation.
 
 In multi-omics analysis, features (proteins, transcripts, metabolites)
@@ -674,15 +669,6 @@ no direct mapping exists. 4. **Creating Lookup Tables:** Generating
 clean lookup tables that can be used to update the feature names in your
 datasets.
 
-The following `eval=FALSE` chunks are designed to prepare these lookup
-tables. They are set to `eval=FALSE` because their primary role is to
-generate intermediate files (the lookup tables themselves, e.g.,
-`prot_refseq_id_to_gene_name.tsv`, `uniprot_id_to_gene_name.tsv`,
-`transcript_id_to_gene_name.tsv`). You would typically run these chunks
-once (or when your annotation sources change) to create these files. The
-subsequent `eval=TRUE` chunk will then load these files to perform the
-actual name conversions on your data matrices before MOFA analysis.
-
 **Key Considerations:** \* **Consistency is Key:** Using standardized,
 human-readable names makes your results much easier to interpret and
 compare across different omics layers or with published literature. \*
@@ -696,7 +682,7 @@ often-messy ID conversion logic from your main analysis workflow.
 
 ### Cleaning Proteomics Display Names (RefSeq to Gene Name)
 
-This first `eval=FALSE` chunk focuses on creating a lookup table to map
+This first chunk focuses on creating a lookup table to map
 protein identifiers (primarily from RefSeq and UniProt accessions) to
 common gene names. It involves several steps:
 
@@ -734,7 +720,7 @@ common gene names. It involves several steps:
     next `eval=TRUE` chunk to rename proteins in the
     `proteomics_sort_updated` matrix.
 
-**ECR Note on `eval=FALSE`:** This chunk generates critical lookup
+**Considerations:** This chunk generates critical lookup
 files. Run it (by setting `eval=TRUE` temporarily or running
 interactively) if these files (`prot_refseq_id_to_gene_name.tsv`,
 `uniprot_id_to_gene_name.tsv`) don't exist in your `data_dir/UniProt/`
@@ -933,18 +919,9 @@ GFF3s.
         convert transcript identifiers in the transcriptomics data
         matrix to these cleaned gene names.
 
-**Why `eval=FALSE`?**
 
-Similar to the proteomics name tidying chunk, this chunk is set to
-`eval=FALSE`. \* **Reasoning:** Its main purpose is to generate the
-`transcript_id_to_gene_name.tsv` file from the GFF3 annotation. Once
-this file is created, subsequent chunks will load it to perform the
-actual name conversion on the transcriptomics data. \* **When to run:**
-You would run this chunk manually (or set `eval=TRUE` temporarily) if
-the GFF3 file is new or updated, or if the logic for parsing GFF3
-attributes or deriving gene names needs modification.
 
-**ECR Advice:** \* **GFF3 File Source:** Ensure your GFF3 file is the
+**Considerations:** \* **GFF3 File Source:** Ensure your GFF3 file is the
 correct and most up-to-date version for your organism and genome
 assembly. \* **GFF3 Complexity:** GFF3 files can be complex and
 sometimes inconsistent in how attributes are formatted. The parsing
@@ -1036,8 +1013,7 @@ vroom::vroom_write(transcript_id_to_gene_name,
 
 #### Importance of Identifier Mapping
 
--   [Best Practices in Data Annotation (Nature Genetics
-    Editorial)](https://www.nature.com/articles/ng.3140) - Discusses the
+-   [Best Practices in Data Annotation](https://link.springer.com/protocol/10.1007/978-1-61779-027-0_3) - Discusses the
     importance of consistent and clear feature annotation.
 -   [UniProt ID Mapping Service](https://www.uniprot.org/id-mapping) - A
     powerful tool for converting between different protein identifiers.
@@ -1054,8 +1030,7 @@ vroom::vroom_write(transcript_id_to_gene_name,
     `column_to_rownames()`](https://tibble.tidyverse.org/reference/rownames.html) -
     For easy conversion between explicit columns and row names.
 
-This R chunk is where the previously generated lookup tables (from the
-`eval=FALSE` chunks under "Tidy up display names") are actually used to
+This R chunk is where the previously generated lookup tables are actually used to
 convert the feature identifiers in your main proteomics and
 transcriptomics data matrices into more human-readable gene names. It
 then prepares these matrices, along with the metabolomics data, for
@@ -1070,10 +1045,6 @@ input into MOFA by performing Z-score normalization.
     -   `transcript_id_to_gene_name <- vroom::vroom(...)`: Loads the
         table that maps transcript locus tags (expected in
         `transcriptomics_sort`) to gene names/product descriptions.
-    -   **ECR Note:** This step relies on the `eval=FALSE` chunks having
-        been run previously to generate these `.tsv` files in the
-        correct `data_dir` subdirectories. If these files are missing,
-        this chunk will fail.
 2.  **Convert Proteomics Feature Names:**
     -   `proteomics_sort_updated <- proteomics_sort |> ...`:
         -   `rownames_to_column("uniprot_id")`: Converts the current row
@@ -1183,8 +1154,7 @@ transcriptomics_sort_updated <- transcriptomics_sort |>
 
 #### Experimental Design and Metadata
 
--   [Understanding Experimental Design in Omics (Nature Reviews
-    Genetics)](https://www.nature.com/articles/nrg.2017.108) -
+-   [Understanding Experimental Design in Omics ](https://www.sciencedirect.com/science/article/pii/S2452310017300835) -
     Principles of good experimental design.
 -   [Sample Metadata Best Practices (FAIR
     Principles)](https://www.nature.com/articles/sdata201618) -
@@ -1213,9 +1183,7 @@ sample groups for downstream analysis and visualization with MOFA.
         is expected to contain metadata about each sample (Run),
         including at least the original sample identifiers and their
         group assignments.
-    -   **ECR Note:** The path suggests this design matrix might be
-        originally from a proteomics-specific part of the project or a
-        general metadata location. Ensure this file exists and is
+    -   **Considerations:** Ensure this file exists and is
         correctly formatted. It should have a column corresponding to
         sample IDs that can be matched with your omics data.
 2.  **Process `design_matrix`:**
@@ -1268,7 +1236,7 @@ sample groups for downstream analysis and visualization with MOFA.
         -   Defining groups for statistical comparisons.
         -   As a covariate in the MOFA model if relevant.
 
-**ECR Advice:** \* **`design_matrix.tab` Content:** Carefully inspect
+**Considerations:** \* **`design_matrix.tab` Content:** Carefully inspect
 your `design_matrix.tab` file. It must contain accurate sample
 identifiers that can be mapped to your omics data and correct group
 assignments. \* **Sample ID Consistency:** The join
@@ -1304,17 +1272,12 @@ Y <- design_matrix |>
 
 #### MOFA Framework
 
--   [MOFA Publications
-    Page](https://biofam.github.io/MOFA2/publications.html) - Academic
-    papers describing MOFA and its applications
--   [MOFA2 GitHub Repository](https://github.com/bioFAM/MOFA2) - Source
-    code and detailed documentation for the MOFA2 package
 -   [Multi-Omics Factor Analysis
     Tutorial](https://biofam.github.io/MOFA2/tutorials.html) - Official
     tutorials for MOFA2
 -   [Multi-omics Integration
-    Methods](https://www.nature.com/articles/s41592-019-0703-0) - Review
-    paper of multi-omics integration approaches
+    Methods](https://frontlinegenomics.com/a-guide-to-multi-omics-integration-strategies/) 
+    - Review of multi-omics integration approaches
 
 #### S4 Objects in R
 
@@ -1332,12 +1295,6 @@ Y <- design_matrix |>
 -   [Factor Analysis in
     R](https://www.StatisticsGlobe.com/factor-analysis-in-r) -
     Introduction to factor analysis in R
--   [Principal Component Analysis vs. Factor
-    Analysis](https://www.sciencedirect.com/science/article/abs/pii/S016974391730184X) -
-    Comparison of PCA and factor analysis
--   [Latent Variable Models in
-    Biology](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6455620/) -
-    Overview of latent variable models in biological data
 
 This section creates the central object that will be used throughout the
 MOFA (Multi-Omics Factor Analysis) workflow. The `create_mofa()`
@@ -1386,34 +1343,31 @@ Reference:
     Options](https://biofam.github.io/MOFA2/data_options.html) -
     Official documentation of MOFA2 data processing options
 -   [Data Normalization
-    Strategies](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5870621/) -
+    Strategies](https://pmc.ncbi.nlm.nih.gov/articles/PMC11851094/) -
     Review of normalization approaches for multi-omics data
 -   [Cross-Platform Normalization
-    Methods](https://academic.oup.com/bib/article/19/5/888/3800191) -
+    Methods](https://www.nature.com/articles/s42003-023-04588-6) -
     Methods for normalizing data across different platforms
 
 #### Data Scaling Principles
 
 -   [The Art of Scaling in
-    Omics](https://www.frontiersin.org/articles/10.3389/fgene.2019.00454/full) -
+    Omics](https://blog.biostrand.ai/multidimensional-scalability-in-multi-omics-research) -
     Overview of scaling approaches in omics data
 -   [Mean-Centering and Unit Variance
     Scaling](https://bmcgenomics.biomedcentral.com/articles/10.1186/1471-2164-7-142) -
     Impact of different scaling methods
--   [Heterogeneity in Multi-omics
-    Data](https://www.nature.com/articles/s41467-020-18081-9) - Managing
-    heterogeneity across omics layers
 
 #### Group-wise vs. Global Scaling
 
 -   [Batch Effects in Multi-omics
-    Data](https://www.nature.com/articles/srep42361) - How scaling helps
+    Data](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-024-03401-9) - How scaling helps
     mitigate batch effects
 -   [Group-wise Normalization
-    Strategies](https://academic.oup.com/bib/article/18/3/451/2562836) -
+    Strategies](https://pmc.ncbi.nlm.nih.gov/articles/PMC6789750/) -
     Approaches to normalize data within groups
 -   [Impact of Scaling on Factor
-    Analysis](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1007819) -
+    Analysis](hhttps://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2019.00887/full) -
     How scaling choices affect factor analysis results
 
 This section configures how MOFA will handle data scaling and centering
@@ -1456,43 +1410,6 @@ specific data characteristics.
 
 ## Define model options
 
-### Further Reading
-
-#### MOFA Model Parameters
-
--   [MOFA2 Model Options
-    Documentation](https://biofam.github.io/MOFA2/model_options.html) -
-    Official documentation of MOFA2 model options
--   [MOFA2 Technical
-    Paper](https://www.embopress.org/doi/full/10.15252/msb.20199986) -
-    Technical description of the MOFA2 model
--   [Generative Models in
-    Bioinformatics](https://academic.oup.com/bib/article/19/6/1329/4108134) -
-    Overview of generative models similar to MOFA
-
-#### Likelihood Models
-
--   [Gaussian vs. Non-Gaussian
-    Likelihoods](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5870478/) -
-    When to use different likelihood models
--   [Probabilistic Models for Count
-    Data](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-020-3397-x) -
-    Models for count-based omics data
--   [Bernoulli Models for Binary
-    Data](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1007993) -
-    Applications to presence/absence data
-
-#### Sparsity and Regularization
-
--   [Sparsity in Latent Factor
-    Models](https://www.nature.com/articles/nmeth.3865) - The role of
-    sparsity in factor models
--   [Automatic Relevance
-    Determination](https://www.mitpressjournals.org/doi/10.1162/neco.1993.5.4.613) -
-    Overview of ARD priors
--   [Spike-and-Slab
-    Priors](https://projecteuclid.org/journals/annals-of-statistics/volume-31/issue-3/The-variable-selection-problem/10.1214/aos/1056562461.full) -
-    Statistical foundations of spike-and-slab priors
 
 This section configures the core model parameters that define how MOFA
 will learn patterns from your multi-omics data. These settings control
@@ -1554,42 +1471,6 @@ modeling challenges.
 
 ## Define train options
 
-### Further Reading
-
-#### Model Training Parameters
-
--   [MOFA2 Training Options
-    Documentation](https://biofam.github.io/MOFA2/training_options.html) -
-    Official documentation of MOFA2 training options
--   [Variational Inference in
-    Practice](https://arxiv.org/abs/1906.03566) - Tutorial on
-    variational inference, the method used by MOFA
--   [Convergence in Machine
-    Learning](https://www.cs.cornell.edu/cv/ResearchPDF/19ways+.pdf) -
-    General principles of convergence in machine learning
-
-#### Optimization and Convergence
-
--   [ELBO (Evidence Lower Bound)](https://arxiv.org/abs/1601.00670) -
-    Explanation of the ELBO objective function
--   [Stochastic Variational
-    Inference](https://www.jmlr.org/papers/volume14/hoffman13a/hoffman13a.pdf) -
-    Introduction to stochastic approaches to variational inference
--   [Convergence
-    Diagnostics](https://mc-stan.org/docs/2_19/reference-manual/convergence.html) -
-    Ways to assess convergence in Bayesian models
-
-#### Hardware Acceleration
-
--   [GPU Acceleration in
-    R](https://blogs.rstudio.com/ai/posts/2020-06-02-gpu-accelerated-machine-learning-in-r/) -
-    Overview of GPU acceleration for machine learning in R
--   [Efficient Computation in
-    R](https://adv-r.hadley.nz/perf-improve.html) - Strategies for
-    improving computational performance in R
--   [Parallel Processing in
-    Bioinformatics](https://academic.oup.com/bioinformatics/article/35/20/4074/5418798) -
-    Approaches to parallel processing for bioinformatics applications
 
 This section configures the computational parameters that control how
 MOFA trains its model. These options govern the optimization process,
@@ -1680,7 +1561,7 @@ head(train_opts)
 -   [Variational Autoencoders](https://arxiv.org/abs/1312.6114) -
     Technical background on variational methods used in MOFA
 -   [Probabilistic Factor
-    Analysis](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3138098/) -
+    Analysis](https://arxiv.org/pdf/2101.00734) -
     Statistical foundations of factor analysis models
 
 #### Reticulate and Python Integration
@@ -1703,7 +1584,7 @@ head(train_opts)
 -   [HDF5 File Format](https://www.h5py.org/) - Documentation for the
     HDF5 file format used by MOFA
 -   [Reproducible Machine
-    Learning](https://www.nature.com/articles/s42256-019-0035-5) - Best
+    Learning](https://arxiv.org/abs/2307.10320) - Best
     practices for reproducible machine learning workflows
 
 This section contains two crucial steps:
@@ -1756,7 +1637,7 @@ MOFAobject <- prepare_mofa(
 #### Training Large Models
 
 -   [Computational Challenges in
-    Multi-omics](https://www.sciencedirect.com/science/article/pii/S2001037020303573) -
+    Multi-omics](https://www.nature.com/articles/s43588-021-00086-z) -
     Dealing with computational challenges in multi-omics analysis
 -   [Error Handling in R](https://adv-r.hadley.nz/conditions.html) -
     Guide to error handling with try/catch in R
@@ -1772,7 +1653,7 @@ MOFAobject <- prepare_mofa(
     Configuration](https://rstudio.github.io/reticulate/articles/versions.html) -
     Managing Python versions with reticulate
 -   [Basilisk for Isolated Python
-    Environments](https://www.bioconductor.org/packages/release/bioc/vignettes/basilisk/inst/doc/basilisk.html) -
+    Environments](https://rdrr.io/github/LTLA/basilisk/man/setupBasiliskEnv.html) -
     Using basilisk for reproducible Python environments
 
 #### Model Serialization
@@ -1867,20 +1748,11 @@ model <- readRDS( file.path( project_dirs[[paste0(omic_type, "_", experiment_lab
 -   [Visualizing with
     Metadata](https://bioconductor.org/packages/release/bioc/vignettes/MOFA2/inst/doc/getting_started_R.html#6_Visualize_samples_in_factor_space) -
     Using metadata for visualization in MOFA2
--   [Experimental Design in
-    Omics](https://www.nature.com/articles/nrg.2017.59) - Principles of
-    experimental design in omics studies
 
 #### R Data Frames for Metadata
 
 -   [R Data Frames](https://r4ds.had.co.nz/tibbles.html) - Working with
     data frames in R
--   [Annotation in
-    Bioconductor](https://www.bioconductor.org/help/course-materials/2019/BSS2019/04_Annotation.html) -
-    Using and manipulating annotation data in Bioconductor
--   [Metadata Standards in
-    Bioinformatics](https://www.nature.com/articles/s41587-020-0499-z) -
-    Guidelines for metadata in bioinformatics
 
 #### S4 Methods in Bioconductor
 
@@ -1890,9 +1762,6 @@ model <- readRDS( file.path( project_dirs[[paste0(omic_type, "_", experiment_lab
 -   [Object-Oriented Programming in
     R](https://adv-r.hadley.nz/oo.html) - Guide to object-oriented
     programming in R
--   [Working with Bioconductor
-    Classes](https://www.bioconductor.org/packages/release/bioc/vignettes/BiocGenerics/inst/doc/BiocGenerics.html) -
-    Overview of working with Bioconductor S4 classes
 
 This section adds experimental condition information to the trained MOFA
 model. By attaching metadata to the model, we can: 1. Color points in
@@ -1948,38 +1817,17 @@ head(model@samples_metadata, n=3)
 #### Variance Decomposition in Factor Analysis
 
 -   [MOFA2 Variance Decomposition
-    Documentation](https://biofam.github.io/MOFA2/variance_explained.html) -
+    Documentation](https://rdrr.io/github/bioFAM/MOFA2/man/calculate_variance_explained.html) -
     Official guide to variance decomposition in MOFA2
--   [Partitioning of
-    Variance](https://www.nature.com/articles/nmeth.3252) - Statistical
-    principles of variance partitioning in omics data
 -   [Sources of Variation in
-    Omics](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-02032-0) -
+    Omics](https://doi.org/10.1002/prca.200800092) -
     Understanding different sources of variation in multi-omics studies
 
 #### Interpreting Variance Explained
 
--   [Variance Explained
-    Metrics](https://academic.oup.com/bioinformatics/article/34/17/i884/5085550) -
-    Different metrics for quantifying explained variance
 -   [R-squared in Multivariate
-    Models](https://www.sciencedirect.com/science/article/pii/S2452310016300208) -
+    Models](https://doi.org/10.1080/00273171.2019.1660605) -
     Understanding R-squared in multivariate context
--   [Evaluating Factor
-    Models](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5870479/) -
-    Approaches to evaluate the performance of factor models
-
-#### Multi-omics Variance Assessment
-
--   [Disentangling Technical and Biological
-    Variance](https://www.nature.com/articles/s41467-020-15937-y) -
-    Methods for separating technical and biological variance components
--   [Cross-Platform Omics
-    Variation](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-02032-0) -
-    Understanding variation across different omics platforms
--   [Quantifying Uncertainty in Factor
-    Models](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1008161) -
-    Methods to assess uncertainty in factor analysis
 
 This section examines how much of the total variance in each omics layer
 is explained by the MOFA factors. This is a crucial analysis as it helps
@@ -2014,43 +1862,6 @@ each group separately
 
 # Variance explained for every factor and -omics layer
 
-### Further Reading
-
-#### Factor-specific Variance Analysis
-
--   [MOFA2 Factor Variance
-    Tutorial](https://biofam.github.io/MOFA2/variance_explained.html#variance-explained-per-factor) -
-    Tutorial on factor-specific variance analysis in MOFA2
--   [Interpreting Latent
-    Factors](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-1983-x) -
-    Approaches to interpret the meaning of latent factors
--   [Factor Relevance
-    Assessment](https://www.nature.com/articles/s41467-018-07243-5) -
-    Methods to assess the relevance of individual factors
-
-#### Visualization of Variance Decomposition
-
--   [Heatmaps for Variance
-    Visualization](https://f1000research.com/articles/5-1074) - Using
-    heatmaps to visualize variance components
--   [Information Visualization in
-    Multi-omics](https://www.annualreviews.org/doi/abs/10.1146/annurev-biodatasci-080917-013427) -
-    Principles for visualizing complex multi-omics relationships
--   [Effective Scientific
-    Visualization](https://www.nature.com/articles/nmeth.4074) -
-    Guidelines for effective visualization of scientific data
-
-#### Prioritizing Factors for Interpretation
-
--   [Factor Selection in Latent Variable
-    Models](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1005510) -
-    Approaches to selecting the most important factors
--   [Biological Relevance of
-    Factors](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6283291/) -
-    Assessing the biological relevance of statistical factors
--   [Integrative Analysis
-    Workflows](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-1932-8) -
-    Workflows for integrative analysis of multi-omics data
 
 This section provides a more detailed breakdown of how each MOFA factor
 explains variance across the different omics layers. While the previous
@@ -2099,23 +1910,8 @@ names(model@cache$variance_explained)
 -   [MOFA2 Plotting Functions
     Documentation](https://biofam.github.io/MOFA2/plot_variance.html) -
     Official guide to plotting variance in MOFA2
--   [Visualization of Multi-omics
-    Data](https://www.nature.com/articles/s41592-019-0703-0) - Best
-    practices for multi-omics data visualization
 -   [ggplot2 for Scientific Visualization](https://ggplot2-book.org/) -
     Comprehensive guide to scientific visualization with ggplot2
-
-#### Interpreting Variance Plots
-
--   [Heatmap Interpretation in
-    Omics](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4207427/) -
-    Guidelines for interpreting heatmaps in omics studies
--   [Color Schemes for Scientific
-    Data](https://www.nature.com/articles/nmeth.1618) - Choosing
-    appropriate color schemes for scientific visualization
--   [Accessible Color
-    Palettes](https://www.nature.com/articles/s41592-020-0976-8) - Color
-    palette considerations for accessibility
 
 #### Saving Publication-Quality Figures
 
@@ -2125,9 +1921,6 @@ names(model@cache$variance_explained)
 -   [Vector vs. Raster
     Graphics](https://www.nature.com/articles/nmeth.3685) - Choosing
     between vector (PDF) and raster (PNG) formats
--   [Resolution and Size for
-    Publication](https://www.nature.com/articles/nmeth.3831) -
-    Guidelines for figure resolution and size for publication
 
 This section creates a comprehensive visualization of how variance is
 explained across different omics layers and factors. This is one of the
@@ -2185,17 +1978,6 @@ layer
     Graphics](https://ggplot2.tidyverse.org/reference/theme.html) -
     Detailed customization of ggplot2 graphics
 
-#### Effective Data Visualization
-
--   [Principles of Data
-    Visualization](https://www.nature.com/articles/nmeth.4361) - Best
-    practices for effective data visualization
--   [Summarizing Complex
-    Results](https://www.nature.com/articles/nmeth.3960) - Strategies
-    for summarizing complex results visually
--   [Omics Data
-    Visualization](https://www.nature.com/articles/s41592-019-0703-0) -
-    Specialized visualization approaches for omics data
 
 This section creates a bar plot visualization of variance explained by
 each factor across the different omics layers. While the previous
@@ -2291,31 +2073,6 @@ savePlot(
 
 ## Plotting of variance explained - expanded
 
-### Further Reading
-
-#### Alternative Visualization Approaches
-
--   [MOFA2 Built-in Plot
-    Functions](https://biofam.github.io/MOFA2/plot_variance.html) -
-    Overview of built-in plotting functions for variance in MOFA2
--   [Customizing
-    Heatmaps](https://jokergoo.github.io/ComplexHeatmap-reference/book/) -
-    Advanced heatmap customization with ComplexHeatmap
--   [Combined
-    Visualizations](https://cran.r-project.org/web/packages/patchwork/vignettes/patchwork.html) -
-    Combining multiple ggplot2 visualizations
-
-#### Variance Analysis Approaches
-
--   [Multivariate Variance
-    Partitioning](https://academic.oup.com/bioinformatics/article/34/13/2251/4904063) -
-    Approaches to partition variance in multivariate data
--   [Variance Component
-    Analysis](https://www.nature.com/articles/s41592-018-0054-7) -
-    Methods for variance component analysis in biological data
--   [Patterns of Shared
-    Variation](https://www.sciencedirect.com/science/article/pii/S2001037018300916) -
-    Analysis of shared variation patterns across omics layers
 
 This chunk uses the built-in MOFA2 plotting function
 `plot_variance_explained()` to generate alternative visualizations of
@@ -2346,41 +2103,6 @@ plot_variance_explained(model, x="view", y="factor", plot_total = TRUE)[[2]]
 
 ## Plotting of samples
 
-### Further Reading
-
-#### Sample Visualization in Factor Space
-
--   [MOFA2 Sample Plotting
-    Guide](https://biofam.github.io/MOFA2/plot_samples.html) - Official
-    documentation for sample visualization in MOFA2
--   [Dimensionality Reduction
-    Visualization](https://www.nature.com/articles/nbt.4314) - Best
-    practices for visualizing dimensionality reduction results
--   [Interpreting Factor
-    Plots](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6097639/) -
-    Guidelines for interpreting factor space visualizations
-
-#### Customizing ggplot2 Visualizations
-
--   [ggplot2 Extensions Gallery](https://exts.ggplot2.tidyverse.org/) -
-    Gallery of ggplot2 extension packages
--   [The ggplot2 Book](https://ggplot2-book.org/) - Comprehensive guide
-    to ggplot2
--   [Color Palettes for Biological
-    Data](https://www.nature.com/articles/nmeth.1618) - Choosing
-    appropriate color palettes for biological data
-
-#### Statistical Considerations
-
--   [Effect Sizes in Dimensionality
-    Reduction](https://academic.oup.com/bioinformatics/article/32/24/3821/2525651) -
-    Understanding effect sizes in reduced dimension spaces
--   [Visualization of Group
-    Differences](https://www.nature.com/articles/nbt.3138) - Methods for
-    visualizing group differences
--   [Sample Variability
-    Assessment](https://www.sciencedirect.com/science/article/pii/S0022103116301692) -
-    Assessing variability in grouped samples
 
 This section visualizes the samples in the latent factor space learned
 by MOFA. This is one of the most intuitive and informative
@@ -2415,18 +2137,6 @@ integrates signals from multiple omics layers
 
 ### Further Reading
 
-#### Multi-Factor Visualization
-
--   [Visualizing Multiple
-    Dimensions](https://www.nature.com/articles/nmeth.4330) - Methods
-    for visualizing high-dimensional data
--   [MOFA2 Factors Plotting
-    Documentation](https://biofam.github.io/MOFA2/plot_factors.html) -
-    Official guide to visualizing multiple factors in MOFA2
--   [Interactive Visualization of
-    Factors](https://bioconductor.org/packages/release/bioc/vignettes/iSEE/inst/doc/iSEE_lab.html) -
-    Interactive approaches to exploring factor spaces
-
 #### Scatter Plot Visualization
 
 -   [ggplot2 Scatter
@@ -2442,14 +2152,12 @@ integrates signals from multiple omics layers
 #### Interpreting Factor Analysis Results
 
 -   [Latent Factor
-    Interpretation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5870479/) -
+    Interpretation](https://www.tandfonline.com/doi/full/10.1080/01621459.2019.1635485) -
     Approaches to interpreting latent factors
 -   [Biological Inference from Dimensionality
     Reduction](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-02021-3) -
     Drawing biological conclusions from reduced dimensions
--   [Factor Analysis vs.
-    PCA](https://www.sciencedirect.com/science/article/pii/S0092867419307755) -
-    Understanding differences between factor analysis and PCA
+
 
 This section creates a scatter plot visualization that shows samples in
 the space of the first two MOFA factors. Unlike the previous plot which
@@ -2549,14 +2257,8 @@ savePlot(
 
 #### Biological Interpretation of Weights
 
--   [Molecular Signatures in
-    Multi-omics](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-1934-6) -
-    Identifying molecular signatures from multi-omics data
--   [Prioritizing Features for
-    Follow-up](https://www.nature.com/articles/s41596-019-0128-8) -
-    Strategies for prioritizing features for experimental validation
 -   [Pathway Analysis from Feature
-    Weights](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6440661/) -
+    Weights](https://www.nature.com/articles/cr2011149) -
     Using feature weights for pathway analysis
 
 This section examines the feature weights associated with each factor,
@@ -2626,28 +2328,19 @@ purrr::map( list_of_views, plotMofaFeatureWeightsVsRank, model = model)
 -   [STRING Database](https://string-db.org/) - Protein-protein
     interaction networks and functional enrichment analysis.
 -   [Over-Representation Analysis (ORA) vs. Gene Set Enrichment Analysis
-    (GSEA)](https://www.nature.com/articles/nrg2619) - Review of common
+    (GSEA)](https://pluto.bio/resources/Learning%20Series/gsea-vs-ora-two-key-pathway-analysis-approaches-for-next-gen-sequencing-data) - Review of common
     enrichment methods.
 -   [Understanding False Discovery Rate
-    (FDR)](https://www.nature.com/articles/nmeth.4643) - Critical
+    (FDR)](https://books.google.com.au/books?hl=en&lr=&id=_agtEQAAQBAJ&oi=fnd&pg=PR9&dq=Understanding+False+Discovery+Rate+(FDR)&ots=cRHR_FFT6r&sig=89xNVbipXucZv_nodec2My0Jr60#v=onepage&q=Understanding%20False%20Discovery%20Rate%20(FDR)&f=false) - Critical
     concept in multiple hypothesis testing.
 
-#### MOFA Outputs and Interpretation
-
--   [MOFA2 Paper (Argelaguet et al.,
-    2020)](https://www.embopress.org/doi/full/10.15252/msb.20199306) -
-    Understanding how factors and weights are derived.
--   [Interpreting Feature Weights in
-    MOFA](https://biofam.github.io/MOFA2/plot_weights.html) - Official
-    documentation.
 
 #### API Interaction
 
 -   [Best Practices for Using Web APIs (Nature
-    Article)](https://www.nature.com/articles/d41586-019-02519-7)
+    Article)](https://stackoverflow.blog/2020/03/02/best-practices-for-rest-api-design/)
 -   [`httr` R package for working with HTTP](https://httr.r-lib.org/)
--   [`jsonlite` R package for working with JSON
-    data](https://cran.r-project.org/web/packages/jsonlite/vignettes/json-mapping.html)
+
 
 This section performs functional enrichment analysis (specifically Gene
 Ontology - GO enrichment) for the proteomics data. The goal is to
@@ -2790,36 +2483,24 @@ savePlot(
 -   [RNA-Seq Functional
     Analysis](https://www.nature.com/articles/s41596-018-0103-9) -
     Methods for functional analysis of transcriptomics data
--   [Transcription Factor
-    Analysis](https://www.nature.com/articles/s41467-019-14081-6) -
-    Analyzing transcription factor activity from gene expression
 -   [Functional Analysis of Gene
-    Lists](https://academic.oup.com/nar/article/45/W1/W199/3796342) -
+    Lists](https://hbctraining.github.io/Training-modules/DGE-functional-analysis/#:~:text=Functional%20analysis%20methods%20help%20us,analysis%2C%20proteomics%20analysis%2C%20etc.) -
     Approaches to functional analysis of gene lists
 
 #### Cross-Omics Functional Analysis
 
--   [Integrative Functional
-    Analysis](https://www.nature.com/articles/s41467-018-07766-x) -
-    Approaches to integrative functional analysis
 -   [Multi-omics Pathway
-    Analysis](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-1934-6) -
+    Analysis](https://academic.oup.com/bib/article/23/6/bbac435/6761962?login=false) -
     Methods for pathway analysis across multiple omics layers
 -   [Concordance in Enrichment
-    Results](https://www.sciencedirect.com/science/article/pii/S1874391919303872) -
-    Assessing concordance of enrichment results across omics layers
+    Results](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1009935) -
+    Highlights need for concordance of enrichment results across omics layers
 
 #### Data Preparation for Enrichment
 
 -   [Identifier Mapping for
-    Enrichment](https://www.nature.com/articles/nbt0307-243) -
+    Enrichment](https://cytoscape.org/cytoscape-tutorials/protocols/enrichmentmap-pipeline/3) -
     Strategies for mapping between different identifier systems
--   [Handling Missing
-    Annotations](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1002582) -
-    Dealing with incomplete annotation data
--   [Feature Selection for
-    Enrichment](https://academic.oup.com/bioinformatics/article/31/20/3283/196496) -
-    Approaches to feature selection for enrichment analysis
 
 This section performs Gene Ontology (GO) enrichment analysis on the
 transcriptomics data based on the feature weights from Factor 1, similar
@@ -2902,20 +2583,8 @@ savePlot(
 
 ### Metabolomics Pathway Analysis
 
-- [Metabolomics Pathway Analysis: An Overview](https://www.frontiersin.org/articles/10.3389/fmolb.2022.850638/full) - Current methods for metabolomics pathway analysis
-- [Metabolite Set Enrichment Analysis](https://academic.oup.com/bioinformatics/article/26/22/2954/227540) - Computational approaches to identify biologically meaningful patterns
-- [MetaboAnalyst: A Web Server for Metabolomic Data Analysis](https://academic.oup.com/nar/article/37/suppl_2/W652/1152150) - Popular tool for metabolomics pathway enrichment
-
-### Integration with Other Omics
-
-- [Multi-omics Pathway Analysis](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-017-1215-1) - Approaches for integrating metabolites with other omics data
-- [Integrating Metabolomics with Genomics](https://www.nature.com/articles/s41576-018-0018-x) - Strategies for cross-omics integration
-- [Joint Pathway Analysis](https://www.sciencedirect.com/science/article/pii/S1359644618301442) - Methods for analyzing pathways across multiple omics layers
-
-### Data Preparation for Metabolomics Enrichment
-
-- [Metabolite Identification in Pathway Analysis](https://www.mdpi.com/2218-1989/9/1/7) - Handling metabolite identifiers
-- [Overcoming Challenges in Metabolomics Enrichment](https://pubs.acs.org/doi/10.1021/acs.analchem.9b05941) - Common challenges and solutions
+- [Metabolomics Pathway Analysis: An Overview](https://www.mdpi.com/2218-1989/12/4/357) - Current methods for metabolomics pathway analysis
+- [Metabolite Set Enrichment Analysis](https://pubmed.ncbi.nlm.nih.gov/20457745/) - Computational approaches to identify biologically meaningful patterns
 - [Databases for Metabolic Pathway Analysis](https://www.nature.com/articles/s41592-018-0110-3) - Review of databases for metabolomics enrichment
 
 This section performs pathway enrichment analysis on metabolomics data based on the feature weights from Factor 1, using both KEGG and Reactome pathway databases. This allows for the identification of metabolic pathways that are enriched in the most variant metabolites across sample groups, completing the multi-omics functional interpretation alongside the proteomics and transcriptomics analyses.
@@ -2998,13 +2667,7 @@ savePlot(
 
 ## Plot the name of the top molecules for each omics layer
 
-### Further Reading
-
 #### Feature Weight Interpretation
-
-- [Interpreting Latent Factors](https://www.nature.com/articles/s41592-019-0616-3) - How to interpret latent factors in multi-omics integration
-- [Feature Importance in Multi-omics](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-02021-3) - Understanding the relative importance of features
-- [Visualization of Multi-omics Data](https://www.nature.com/articles/s41467-019-13542-2) - Effective visualization strategies for complex datasets
 
 This section creates intuitive visualizations that identify and rank the top contributing molecules from each omics layer based on their Factor 1 weights in the MOFA model. This provides direct insight into which specific features (metabolites, proteins, transcripts) are most influential in explaining the biological variation captured by the model.
 
@@ -3040,18 +2703,6 @@ list_of_weights_figures
 
 ## Visualisation of patterns in the input data
 
-### Further Reading
-
--   [MOFA2 Plotting Documentation
-    (`plot_data_heatmap`)](https://biofam.github.io/MOFA2/plot_data.html#plot_data_heatmap) -
-    Official documentation.
--   [Pheatmap R
-    Package](https://cran.r-project.org/web/packages/pheatmap/index.html) -
-    The underlying package used by `plot_data_heatmap` for creating
-    heatmaps.
--   [Effective Use of Heatmaps in Omics Data
-    (Review)](https://www.nature.com/articles/nmeth.3252) - Discusses
-    best practices.
 
 This section demonstrates how to visualize the raw(ish) input data for
 features that are most strongly associated with a given MOFA factor. The
@@ -3158,6 +2809,8 @@ plot_data_heatmap(model,
 
 # This section is used to create boxplots of the features matching the search term
 ## DMG and betaine were found to be crucial to pathogen adaptation
+### Helper function to process an omics data frame for features matching a search term
+#### You can use this function to lookup other features of interest if you wish. Have a go, look at the other weighted molecules
 
 ```{r 27 Helper function to process an omics data frame for features matching a search term}
 processOmicForPlot <- function(omic_df, omic_df_name_str, search_term) {
@@ -3319,9 +2972,6 @@ lcms_results <- processOmicForPlot(metabolomics_assay_1_sort, "Metabolomics_LC",
 
 ### Further Reading
 
--   [MOFA2 Plotting Documentation
-    (`plot_data_scatter`)](https://biofam.github.io/MOFA2/plot_data.html#plot_data_scatter) -
-    Official documentation.
 -   [`ggplot2` for scatter
     plots](https://ggplot2.tidyverse.org/reference/geom_point.html) -
     The underlying plotting engine.
@@ -3461,12 +3111,7 @@ savePlot(
 -   [t-SNE (t-distributed Stochastic Neighbor Embedding) Paper (van der
     Maaten & Hinton,
     2008)](https://www.jmlr.org/papers/volume9/vandermaaten08a/vandermaaten08a.pdf)
--   [MOFA2 Dimensionality Reduction Functions (`run_umap`, `run_tsne`,
-    `plot_dimred`)](https://biofam.github.io/MOFA2/downstream_analysis.html#non-linear-dimensionality-reduction) -
-    Official documentation.
--   [Understanding UMAP (StatQuest with Josh
-    Starmer)](https://www.youtube.com/watch?v=eN0wFzBA4kM) - Intuitive
-    video explanation.
+
 
 While MOFA factors themselves provide a linear dimensionality reduction,
 this section explores applying non-linear dimensionality reduction
@@ -3538,16 +3183,6 @@ plot_dimred(model,
 
 ## Extracting Data from the MOFA Model
 
-### Further Reading
-
--   [MOFA2 Accessor Functions (`get_factors`, `get_weights`,
-    `get_data`)](https://biofam.github.io/MOFA2/access_data.html) -
-    Official documentation.
--   [Tidy Data Principles (Hadley
-    Wickham)](https://www.jstatsoft.org/article/view/v059i10) - The
-    `as.data.frame = TRUE` argument often returns data in a "tidy" long
-    format.
--   [`vroom` package for fast file writing](https://vroom.r-lib.org/)
 
 This final section demonstrates how to extract the key components from
 the trained MOFA model into standard R data frames for further custom
