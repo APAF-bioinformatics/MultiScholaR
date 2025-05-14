@@ -1,4 +1,4 @@
-# MultiScholaR <img src="https://img.shields.io/badge/Version-0.1-orange?style=for-the-badge" alt="Version 0.1">
+# MultiScholaR <img src="https://img.shields.io/badge/Version-0.1-orange?style=for-the-badge" alt="Version 0.2">
 
 >**⚠️ Disclaimer:** `MultiScholaR` is currently under active development and is **not yet ready for general use**. The core package structure and initial multiomics workflow are being established. The proteomics functionality is ready however. Functionality described in the roadmap is planned for future releases.
 
@@ -55,10 +55,11 @@ This tutorial dataset contains example data from *Klebsiella variicola*, includi
 - Example QC + normalised LCMS metabolomics data
 - Example QC + normalised GCMS metabolomics data
 - Example QC + normalised transcriptomics data
+- Annotation files and MOFA model required to run the alpha integration workflow
 
 The data is derived from the publicly available dataset published in [Mu, Klare, Baines, Pang et al., (2023) Nature Communications](https://www.nature.com/articles/s41467-023-37200-w), which performed integrative omics analysis on sepsis-causing bacteria.
 
-## Setup Instructions
+## Setup Instructions to work with the tutorial dataset
 
 1. Install RStudio Desktop and R if you haven't already (use button above).
 2. (If you are on WindowS). Install RTools (match version numbers to your R install).
@@ -98,40 +99,49 @@ The data is derived from the publicly available dataset published in [Mu, Klare,
 
 ```mermaid
 graph TD
-    A[v0.1: Foundation & Proteomics Core] --> B[v0.2: Metabolomics Module];
-    B --> C[v0.3: Basic Multiomics Integration];
-    C --> D[v0.4: Transcriptomics Module];
-    D --> E[v0.5: Advanced Multiomics Analysis & Visualisation];
+    A[v0.1: Foundation & Proteomics Core] --> B[v0.2: Multiomics Module];
+    B --> C[v0.3: Expanding Core Omic Capabilities];
+    C --> D[v0.4: Expanding Multiomic Capabilities];
+    D --> E[v0.5: Applet Embedding and Publication];
 
     subgraph "v0.1"
         A
         A1(✓ Refactor Core Package)
-        A2(✓ Solidify Proteomics Workflow)
+        A2(✓ Solidify DIA Workflow)
         A3(✓ Establish S4 Structure)
     end
     subgraph "v0.2"
-        B
-        B1(Metabolomics Data Input)
-        B2(Metabolomics QC & Normalisation)
-        B3(Basic Metabolomics Analysis)
+        B1(✓ Metabolomics Data Input)
+        B2(✓ Metabolomics QC & Normalisation)
+        B3(✓ MultiAssayExperiment Integration)
+        B4(✓ Cross-Omics Data Linking)
+        B5(✓ Factor Analysis Methods - MOFA+Visualisation)
+        B6(✓ Pathway/Network Integration)
+        B7(✓ StringDB Integration)
+        B8(✓ Integrative Multiomic Pathway Visualisations)
+        B9(✓ Diverse Output Compatability)
     end
     subgraph "v0.3"
-        C
-        C1(MultiAssayExperiment Integration)
-        C2(Cross-Omics Data Linking)
-        C3(Factor Analysis Methods - MOFA+Visualisation)
+        C1(Transcriptomics Data Input)
+        C2(Transcriptomics QC & Normalisation)
+        C3(Transcriptomics Analysis and Enrichment)
+        C4(Metabolomics Analysis and Enrichment)
+        C5(TMT Workflow for ProteomeScholaR)
+        C6(LFQ WOrkflow for ProteomeScholaR)
     end
      subgraph "v0.4"
-        D
-        D1(Transcriptomics Data Input)
-        D2(Transcriptomics QC & Normalisation)
-        D3(Basic Transcriptomics Analysis - DEGs)
+        D1(Mixed Analysis Methods - MixOmics+Visualisations)
+        D2(Cross-Omic Comparison Between Mixed Methods)
+        D3(Standardised Multiomic Reporting)
     end
      subgraph "v0.5"
-        E
-        E1(Advanced Integration Visualisation)
-        E2(Pathway/Network Integration)
-        E3(StringDB Integration)
+        E1(Polish and publication)
+    end
+    subgraph "v0.6"
+        F1(Glycomics)
+    end
+    subgraph "v0.7"
+        G1(Lipidomics)
     end
 
     style A fill:#ADD8E6,color:#000000
@@ -139,4 +149,6 @@ graph TD
     style C fill:#90EE90,color:#000000
     style D fill:#FFDAB9,color:#000000
     style E fill:#E6E6FA,color:#000000
+    style F1 fill:#FFFFE0,color:#000000
+    style G1 fill:#AFEEEE,color:#000000
 ```
