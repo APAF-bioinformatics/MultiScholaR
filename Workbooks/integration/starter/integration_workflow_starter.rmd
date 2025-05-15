@@ -2785,7 +2785,7 @@ plot_data_heatmap(model,
   
   # extra arguments that are passed to the `pheatmap` function
   cluster_rows = TRUE, cluster_cols = FALSE,
-  show_rownames = TRUE, show_colnames = FALSE
+  show_rownames = TRUE, show_colnames = TRUE
 )
 
 plot_data_heatmap(model,
@@ -2795,7 +2795,7 @@ plot_data_heatmap(model,
   
   # extra arguments that are passed to the `pheatmap` function
   cluster_rows = TRUE, cluster_cols = FALSE,
-  show_rownames = TRUE, show_colnames = FALSE
+  show_rownames = TRUE, show_colnames = TRUE
 )
 
 
@@ -2806,7 +2806,7 @@ plot_data_heatmap(model,
 
   # extra arguments that are passed to the `pheatmap` function
   cluster_rows = TRUE, cluster_cols = FALSE,
-  show_rownames = TRUE, show_colnames = FALSE
+  show_rownames = TRUE, show_colnames = TRUE
 )
 
 plot_data_heatmap(model,
@@ -2816,7 +2816,7 @@ plot_data_heatmap(model,
 
   # extra arguments that are passed to the `pheatmap` function
   cluster_rows = TRUE, cluster_cols = FALSE,
-  show_rownames = TRUE, show_colnames = FALSE
+  show_rownames = TRUE, show_colnames = TRUE
 )
 ```
 
