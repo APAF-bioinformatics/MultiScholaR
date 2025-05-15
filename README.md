@@ -98,57 +98,97 @@ The data is derived from the publicly available dataset published in [Mu, Klare,
 ## Development Roadmap
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '18px'}}}%%
 graph TD
-    A[v0.1: Foundation & Proteomics Core] --> B[v0.2: Multiomics Module];
-    B --> C[v0.3: Expanding Core Omic Capabilities];
-    C --> D[v0.4: Expanding Multiomic Capabilities];
-    D --> E[v0.5: Applet Embedding and Publication];
+    A[**v0.1: Foundation & Proteomics Core**] --> B[**v0.2: Multiomics Functionality**];
+    B --> C[**Expanding Individual Omic Capabilities**];
+    C --> D[**v0.3: Metabolomics Workflows**];
+    D --> E[**v0.4: Transcriptomics Workflows**];
+    E --> F[**v0.5: Proteomics Workflow Expansion**]; 
+    F --> G[**v0.6 Expanding Multiomic Capabailities**];
+    G --> H[**Open Project to Community-Driven**];
+    H --> I[**v0.7 Community Consultation for Glycomics**]
+    I --> J[**v0.8 Community Consultation for Lipidomics**]
+    H -- **Integrate workflows with MultiScholaR** -->  G
 
-    subgraph "v0.1"
+    subgraph "**ProteomeScholaR**"
         A
         A1(✓ Refactor Core Package)
         A2(✓ Solidify DIA Workflow)
         A3(✓ Establish S4 Structure)
     end
-    subgraph "v0.2"
-        B1(✓ Metabolomics Data Input)
-        B2(✓ Metabolomics QC & Normalisation)
-        B3(✓ MultiAssayExperiment Integration)
+    subgraph " "
+        B
         B4(✓ Cross-Omics Data Linking)
-        B5(✓ Factor Analysis Methods - MOFA+Visualisation)
-        B6(✓ Pathway/Network Integration)
-        B7(✓ StringDB Integration)
-        B8(✓ Integrative Multiomic Pathway Visualisations)
-        B9(✓ Diverse Output Compatability)
+        B5(✓ Factor Analysis Methods MOFA+Visualisation)
+        B6(✓ Pathway/StringDB Integration)
+        B8(✓ Multiomic Pathway Visualisations)
     end
-    subgraph "v0.3"
-        C1(Transcriptomics Data Input)
-        C2(Transcriptomics QC & Normalisation)
-        C3(Transcriptomics Analysis and Enrichment)
-        C4(Metabolomics Analysis and Enrichment)
-        C5(TMT Workflow for ProteomeScholaR)
-        C6(LFQ WOrkflow for ProteomeScholaR)
+    subgraph " "
+        C
+     subgraph "**MetaboScholaR** "
+        D
+        D1(✓ Metabolomics Data Input)
+        D2(✓ Metabolomics QC & Normalisation)
+        D3(Metabolomics Analysis and Enrichment)
+        XX(**DOI Citable Workflows**)
+        end
+    subgraph "**TranscriptScholaR**"
+        E
+        E1(Transcriptomics Data Input)
+        E2(Transcriptomics QC & Normalisation)
+        E3(Transcriptomics Analysis and Enrichment)
+        YY(**DOI Citable Workflows**)
+        
     end
-     subgraph "v0.4"
-        D1(Mixed Analysis Methods - MixOmics+Visualisations)
-        D2(Cross-Omic Comparison Between Mixed Methods)
-        D3(Standardised Multiomic Reporting)
-    end
-     subgraph "v0.5"
-        E1(Polish and publication)
-    end
-    subgraph "v0.6"
-        F1(Glycomics)
-    end
-    subgraph "v0.7"
-        G1(Lipidomics)
+     subgraph "**ProteomeScholaR v1.1**"
+        F
+        F1(TMT QC, Normalisation and Analysis)
+        F2(LFQ QC, Normalisation and Analysis)
+        F3(PTM QC, Normalisation and Analysis)
+        ZZ(**DOI Citable Workflows**)
     end
 
-    style A fill:#ADD8E6,color:#000000
-    style B fill:#FFB6C1,color:#000000
-    style C fill:#90EE90,color:#000000
-    style D fill:#FFDAB9,color:#000000
-    style E fill:#E6E6FA,color:#000000
-    style F1 fill:#FFFFE0,color:#000000
-    style G1 fill:#AFEEEE,color:#000000
+    end
+    subgraph "**MultiScholaR**"
+        G
+        G1(Mixed Analysis Methods & MixOmics+Visualisations)
+        G2(Cross-Omic Comparison Between Mixed Methods)
+        G3(Standardised Multiomic Reporting)
+        X(**Polish and Publication**)
+    end
+    subgraph " "
+        H
+    subgraph "**GlycoScholaR**"
+        I
+        I1(Glycomics Data Input)
+        I2(Glycomics QC & Normalisation)
+        I3(Glycomics Analysis and Enrichment)
+        Y(**DOI Citable Workflows Publication**)
+    end
+    subgraph "**LipidScholaR**"
+        J
+        J1(Lipidomics Data Input)
+        J2(Lipidomics QC & Normalisation)
+        J3(Lipidomics Analysis and Enrichment)
+        Z(**DOI Citable Workflows Publication**)
+    end
+    end
+
+    style A fill:#D1E2FF,color:#000000
+    style B fill:#C4E1FF,color:#000000
+    style C fill:#B7F1E8,color:#000000
+    style D fill:#BDECB6,color:#000000
+    style E fill:#D4F8D4,color:#000000
+    style F fill:#FFFFE0,color:#000000
+    style G fill:#FFEFD5,color:#000000
+    style H fill:#FFDAB9,color:#000000
+    style I fill:#FFC0CB,color:#000000
+    style J fill:#FFB6C1,color:#000000
+    style X fill:#D4F8D4,color:#000000
+    style Y fill:#FFDAB9,color:#000000
+    style Z fill:#FFDAB9,color:#000000
+    style XX fill:#FFDAB9,color:#000000
+    style YY fill:#FFDAB9,color:#000000
+    style ZZ fill:#FFDAB9,color:#00000
 ```
