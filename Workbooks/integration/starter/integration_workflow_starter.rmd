@@ -10,7 +10,7 @@ output:
     warning: false
     message: false
 ---
-
+# Please note this is currently a work in progress, and specifically tooled for the demo data provided.
 # Initial R environment setup
 
 ## Checks your R environment for the required packages to run MultiScholaR, and installs them if they are not.
