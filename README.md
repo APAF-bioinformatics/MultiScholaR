@@ -1,5 +1,8 @@
 # MultiScholaR <img src="https://img.shields.io/badge/Version-0.1-orange?style=for-the-badge" alt="Version 0.2">
 
+![Banner](images/MultiScholaR.png "MultiScholaR Banner")
+<img src="images/MultiScholaR.png" alt="MultiScholaR Banner" width="100%" />
+
 >**⚠️ Disclaimer:** `MultiScholaR` is currently under active development and is **not yet ready for general use**. The core package structure and initial multiomics workflow are being established. The proteomics functionality is ready however. Functionality described in the roadmap is planned for future releases.
 
 ## Overview
@@ -110,6 +113,7 @@ graph TD
     H --> I[**v0.7 Community Consultation for Glycomics**]
     I --> J[**v0.8 Community Consultation for Lipidomics**]
     H -- **Integrate workflows with MultiScholaR** -->  G
+    linkStyle 9 stroke:red,stroke-width:2px;
 
     subgraph "**ProteomeScholaR**"
         A
