@@ -2640,6 +2640,17 @@ saveRDS(output_enrich_mofa_metabolomics,
         file.path(project_dirs[[paste0("integration", "_", experiment_label)]]$integration_enrichment_plots_dir, 
                  "output_enrich_mofa_metabolomics.RDS"))
 
+output_metabolomics_enrichment_table <- printStringDbFunctionalEnrichmentBarGraph(output_enrich_mofa_metabolomics)
+
+savePlot(
+  plot = output_metabolomics_enrichment_table,
+  base_path = project_dirs[[paste0("integration", "_", experiment_label)]]$integration_enrichment_plots_dir,
+  plot_name = "string_db_enrichment_metabolome_results",
+  formats = c("pdf", "png"),
+  width = 15,
+  height = 5
+)
+
 ```
 
 
