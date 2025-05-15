@@ -1,7 +1,6 @@
 # MultiScholaR <img src="https://img.shields.io/badge/Version-0.1-orange?style=for-the-badge" alt="Version 0.2">
 
 ![Banner](images/MultiScholaR.png "MultiScholaR Banner")
-<img src="images/MultiScholaR.png" alt="MultiScholaR Banner" width="100%" />
 
 >**⚠️ Disclaimer:** `MultiScholaR` is currently under active development and is **not yet ready for general use**. The core package structure and initial multiomics workflow are being established. The proteomics functionality is ready however. Functionality described in the roadmap is planned for future releases.
 
