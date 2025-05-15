@@ -2470,7 +2470,7 @@ savePlot(
   plot = output_proteomics_enrichment_table,
   base_path = project_dirs[[paste0(omic_type, "_", experiment_label)]]$integration_enrichment_plots_dir,
   plot_name = "string_db_enrichment_proteome_results",
-  formats = "pdf",
+  formats = c("pdf", "png"),
   width = 15,
   height = 10
 )
