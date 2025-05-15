@@ -11,6 +11,8 @@ output:
     message: false
 ---
 # Please note this is currently a work in progress, and specifically tooled for the demo data provided.
+## We are working on making this a general purpose workflow and will be progressively updating it as such :)
+
 # Initial R environment setup
 
 ## Checks your R environment for the required packages to run MultiScholaR, and installs them if they are not.
