@@ -2430,7 +2430,7 @@ terms with low FDR values and high enrichment scores. The
 `genesMapped` shows how many of your top-weighted proteins are
 associated with that term.
 
-```{r 21 Extract MOFA Weights}
+```{r 21 Extract MOFA Weights and Perform GO Enrichment - Proteomics}
 weights <- get_expectations(model, "W", as.data.frame= TRUE) 
 
   
@@ -2533,7 +2533,7 @@ transcriptome and proteome levels - Similarities in enriched terms
 across omics layers strengthen confidence in the biological
 interpretation
 
-```{r 22 Prepare input data}
+```{r 22 Extract MOFA Weights and Perform GO Enrichment - Transcriptomics}
 go_enrichment_transcriptome_input <- weights |>
   dplyr::filter(view == "transcriptome" & factor=="Factor1") |>
   mutate( feature = str_replace_all( feature, "_transcriptome", "")) |>
@@ -2619,7 +2619,7 @@ The approach generates a series of weight plots that display:
 
 These visualizations allow researchers to quickly identify key molecular players across different data types that may be driving the biological differences observed between conditions, providing potential targets for validation or further investigation.
 
-```{r 23 Prepare input data}
+```{r 23 Extract MOFA Weights and Perform GO Enrichment - Metabolomics}
 mapping_table <- vroom::vroom( file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir
                                         , "metaboliteIDmapping.txt" ))
 
