@@ -73,7 +73,6 @@ Imports:
     lazyeval,
     logging,
     magrittr,
-    mixOmics,
     multidplyr,
     openxlsx,
     optparse,
