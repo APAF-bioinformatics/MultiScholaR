@@ -97,6 +97,12 @@ The data is derived from the publicly available dataset published in [Mu, Klare,
 * Ignatius Pang (ignatius.pang@mq.edu.au) 
 * Will Klare (william.klare@mq.edu.au) 
 
+## Attributions
+This work is a derivative of the tool <a href="https://bitbucket.org/cmri-bioinformatics/proteomeriver/src/main/" target="_blank">ProteomeRiver</a>,
+originally built for batching proteomics and phosphoproteomic analysis, which is licensed under the GNU Lesser General Public License v3.
+Significant modifications and new code have been made by APAF-bioinformatics to create this independent library.
+See LICENSE file for details.
+
 ## Development Roadmap
 
 ```mermaid

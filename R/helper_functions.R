@@ -1,6 +1,3 @@
-# Author(s): Ignatius Pang
-# Email: ipang@cmri.org.au
-# Children's Medical Research Institute, finding cures for childhood genetic diseases
 
 ##################################################################################################################
 
@@ -74,7 +71,6 @@ convertKeyToAttribute <- function(key, hash) {
 
 ##################################################################################################################
 
-#TODO: Move to an Rpackage RCMRI with common functions. It may be a dependency for each CMRI's project.
 #' @export
 createDirectoryIfNotExists <- function(file_path, mode = "0777") {
 
@@ -130,9 +126,6 @@ sourceRmdFile <- function(file, skip_plots = TRUE) {
 
 
 ##################################################################################################################
-
-
-#TODO: create an Rpackage RCMRI with common functions. It may be a dependency for each CMRI's project.
 #=====================================================================================================
 #' @export
 createOutputDir <- function(output_dir, no_backup) {
@@ -152,24 +145,6 @@ createOutputDir <- function(output_dir, no_backup) {
   dir.create(output_dir, recursive = TRUE)
 }
 
-#' @export
-cmriWelcome <- function(name, autors) {
-  loginfo("   ______     __    __     ______     __       ")
-  loginfo('  /\\  ___\\   /\\ "-./  \\   /\\  == \\   /\\ \\      ')
-  loginfo("  \\ \\ \\____  \\ \\ \\-./\\ \\  \\ \\  __<   \\ \\ \\     ")
-  loginfo("   \\ \\_____\\  \\ \\_\\ \\ \\_\\  \\ \\_\\ \\_\\  \\ \\_\\    ")
-  loginfo("    \\/_____/   \\/_/  \\/_/   \\/_/ /_/   \\/_/    ")
-  loginfo("")
-  loginfo("---- Children's Medical Research Institute ----")
-  loginfo(" Finding cures for childhood genetic diseases  ")
-  loginfo("")
-  loginfo(" ==============================================")
-  loginfo(" %s", name)
-  loginfo(" Author(s): %s", paste(autors, sep = ", "))
-  loginfo(" cmri-bioinformatics@cmri.org.au")
-  loginfo(" ==============================================")
-  loginfo("")
-}
 
 #' @export
 testRequiredFiles <- function(files) {
@@ -230,8 +205,6 @@ isArgumentDefined<-function(arg_list,parameter){
   return (!is.null(arg_list[parameter]) & (parameter %in% names(arg_list)) & as.character(arg_list[parameter]) != "")
 }
 
-#' @export
-cmriFormatter <- function(record) { sprintf('CMRI Bioinformatics %s [%s] | %s', record$levelname, record$timestamp, record$msg) }
 
 
 #' @export

@@ -1,6 +1,3 @@
-
-
-
 #' @export
 deAnalysisWrapperFunction <- function( theObject
                                        , contrasts_tbl = NULL

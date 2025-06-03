@@ -58,37 +58,7 @@ count_num_peptides <- function( input_table
 }
 
 
-#' @description
-#' Plot the number of replicate samples analyzed by each mass spec. machine
-#'
-#' @export
-plotNumSamplesPerMachine <- function( metadata_table
-                                      , machine_id_column = Machine
-                                      , machine_colour_values = getCmriMachineColour()) {
 
-  counts_tbl <- metadata_table |>
-    group_by( {{machine_id_column}} ) |>
-    summarise(counts  = n() ) |>
-    ungroup()
-
-  results_plot <-  counts_tbl |>
-    ggplot( aes( {{machine_id_column}}, counts, fill={{machine_id_column}})) +
-    geom_bar(stat = "identity") +
-    apafTheme() +
-    ylab( "Number of sample runs") +
-    ggtitle("Sample Distribution") +
-    scale_y_continuous( expand = expansion(  mult=c(0, 0.1)))
-
-  #  xlim( 0, x_max_value)
-
-  if(!is.null(machine_colour_values)) {
-    results_plot <- results_plot +
-      scale_fill_manual( values= machine_colour_values)
-  }
-
-  results_plot
-
-}
 
 
 #' plotPeptidesProteinsCountsPerSampleHelper
@@ -944,37 +914,6 @@ calculatePercentMissingProteinPerReplicate <- function( input_table
 }
 
 
-#' @description
-#' Get a standard colour for each mass spect machine at CMRI
-#' @export
-getCmriMachineColour <- function() {
-
-  colour_definition <- RColorBrewer::brewer.pal(8, "Set2")
-  names(colour_definition) <- paste0("M0", 1:8 )
-  colour_definition
-}
-
-#' @description
-#' A density plot of percent missing per individual per machine. Machine with standardized colour for each machine.
-#'  Depends on the output of the function `calculatePercentMissingPerReplicate`
-#' @export
-plotDensityOfPercentMissingPerIndvidual <- function( percent_missing_table
-                                                     , percent_missing_column = percent_missing
-                                                     , machine_id_column = Machine
-                                                     , colour_definition = getCmriMachineColour() ) {
-  percent_missing_table |>
-    ggplot( aes( {{percent_missing_column}}
-                 , group = {{machine_id_column}}
-                 , fill={{machine_id_column}}
-                 , alpha=0.5
-    )) +
-    geom_density() +
-    scale_fill_manual( values = colour_definition) +
-    scale_alpha(guide = 'none') +
-    apafTheme()  +
-    scale_y_continuous( expand = expansion(  mult=c(0, 0.1)))
-
-}
 
 #' @export
 plotHistogramOfPercentMissingPerIndvidual <- function( percent_missing_table
@@ -989,45 +928,6 @@ plotHistogramOfPercentMissingPerIndvidual <- function( percent_missing_table
 
 }
 
-#---------------------------------------------------------------------------------------
-
-#' plotBarplotMissingnessPerReplicate
-#' @description Plot missing rate for each replicate sample in a bar plot. Colour the bar according to the 'fill_column'.
-#'  Depends on the output of the function `calculatePercentMissingPerReplicate`
-#' @export
-plotBarplotMissingnessPerReplicate <- function( input_table
-                                                , percent_missing_column = percent_missing
-                                                , fill_column = Machine
-                                                , fill_colour_values = getCmriMachineColour()) {
-
-  summary_data <- summary( input_table |> pull( {{percent_missing_column}} ) )
-
-  #print(summary_data)
-
-  result_plot <- input_table |>
-    ggplot( aes( reorder(Run, {{percent_missing_column}})
-                 , {{percent_missing_column}}
-                 , fill={{fill_column}})) +
-    geom_bar(stat = "identity") +
-    scale_y_continuous(breaks = seq(0, summary_data[6], by=10), limits=c(0,summary_data[6])) +
-    xlab("Samples") +
-    ylab("Missing Rate (%)") +
-    apafTheme() +
-    theme(    panel.grid.major.y = element_line(color = "gray", linetype = "solid")
-              , panel.grid.major.x = element_blank()
-              , axis.text.x=element_blank(),
-              axis.ticks.x=element_blank()) +
-    geom_hline(yintercept = c(summary_data[c(2,3,5)]), linetype = "dashed", color = "grey") +
-    scale_y_continuous( expand = expansion(  mult=c(0, 0.1)))
-
-  if ( !is.null( fill_colour_values )) {
-    result_plot <- result_plot +
-      scale_fill_manual( values =  fill_colour_values )
-  }
-
-  result_plot
-
-}
 
 #---------------------------------------------------------------------------------------
 #' @export
@@ -1253,73 +1153,6 @@ getCategoricalColourPalette <- function() {
 }
 
 
-
-#' getCategoricalColourRules
-#' @export
-getCategoricalColourRules <- function( metadata_tbl
-                                       , metadata_column_labels
-                                       , metadata_column_selected
-                                       , categorical_columns
-                                       , ms_machine_column
-                                       , columns_to_exclude
-                                       , colour_palette = getCategoricalColourPalette()
-                                       , na_colour = "white" ) {
-
-  names(metadata_column_labels) <- metadata_column_selected
-
-  if(!is.na(ms_machine_column) ) {
-    colour_palette <- setdiff(colour_palette, getCmriMachineColour())
-  }
-
-  categorical_columns_tbl <- purrr::map( setdiff( categorical_columns, ms_machine_column)
-                                         , \(x)  { metadata_tbl |>
-                                             dplyr::distinct(!!rlang::sym(x) ) |>
-                                             dplyr::mutate( values =  purrr::map_chr( !!rlang::sym(x) , as.character ) ) |>
-                                             mutate( column_name = x)  |>
-                                             dplyr::select(-!!rlang::sym(x )) }  ) |>
-    bind_rows()
-
-  categorical_colour_tbl_part_1 <- categorical_columns_tbl |>
-    dplyr::filter( !is.na(values) ) |>
-    mutate( colours =  colour_palette[seq_len( nrow( categorical_columns_tbl|>
-                                                       dplyr::filter( !is.na(values) )) ) ])
-
-  print(categorical_colour_tbl_part_1)
-
-  categorical_colour_tbl_part_2 <- categorical_columns_tbl |>
-    dplyr::filter( is.na(values) )    |>
-    mutate( values = "NA") |>
-    mutate( colours = na_colour )
-
-  categorical_colour_tbl <- categorical_colour_tbl_part_1 |>
-    bind_rows( categorical_colour_tbl_part_2 ) |>
-    arrange( column_name) |>
-    group_by(column_name) |>
-    summarise( values_list = list(values)
-               , colours_list = list(colours)) |>
-    ungroup() |>
-    mutate( colours_values_list = purrr::map2(values_list, colours_list, \(x,y){  names(y) <- x ; return(y)  }  ) )
-
-  colour_rules <- categorical_colour_tbl |> pull( colours_values_list )
-  names( colour_rules ) <-  metadata_column_labels[categorical_colour_tbl |> pull( column_name )]
-
-  if( ! ms_machine_column %in% columns_to_exclude) {
-    # Deal with the machine colour
-    list_of_machines_used <- metadata_tbl |>
-      distinct( !!(sym(ms_machine_column)) ) |>
-      arrange( !!(sym(ms_machine_column)) ) |>
-      pull(!!(sym(ms_machine_column)))
-
-    # get the machines that we need and format as list with the ms_machine_column as the top-level name
-    # e.g. list( Machine = list( M01 = ""#8DA0CB", M02 = "#FFD92F", M04 = "#E78AC3", M05= "#66C2A5" ))
-    machine_colour_rule <- list( getCmriMachineColour()[list_of_machines_used] )
-    names(machine_colour_rule) <- metadata_column_labels[ms_machine_column]
-
-    colour_rules <- c( colour_rules, machine_colour_rule )
-  }
-
-  return( colour_rules)
-}
 
 #' getOneContinousPalette
 # getOneContinousPalette <- function(metadata_tbl, column_name, palette_name, num_colours=9) {

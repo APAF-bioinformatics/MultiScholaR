@@ -1,8 +1,3 @@
-# Author(s): Ignatius Pang, Pablo Galaviz
-# Email: cmri-bioinformatics@cmri.org.au
-# Children’s Medical Research Institute, finding cures for childhood genetic diseases
-
-
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' @export
 addColumnsToEvidenceTbl <- function(evidence_tbl, phospho_site_prob_col = phospho_sty_probabilities) {
