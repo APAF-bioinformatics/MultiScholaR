@@ -1,10 +1,4 @@
-# Author(s): Ignatius Pang, Pablo Galaviz
-# Email: cmri-bioinformatics@cmri.org.au
-# Children's Medical Research Institute, finding cures for childhood genetic diseases
-
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'Remove rows in the table where the columns specified by the column regular expression pattern are all zero or NA value.
-
 #'@param input_table Input table with columns recording protein abundances for each sample. The name of these columns matches a regular expression pattern, defined by 'col_pattern'. Remove rows with all samples having no protein abundance.
 #'@param col_pattern String representing regular expression pattern that matches the name of columns containing the protein abundance values.
 #'@param row_id The column name with the row_id, tidyverse style name.
