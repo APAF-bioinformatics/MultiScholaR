@@ -684,7 +684,8 @@ loadDependencies <- function(verbose = TRUE) {
         "gplots", "iheatmapr", "UpSetR", "gt", "gprofiler2",
         "htmltools", "rstudioapi", "flextable", "viridis", "here",
         "git2r", "fs", "logger",
-        "configr", "webshot2",
+        "configr", "webshot2", "shiny", "shinyjs", "shinyWidgets",
+        "shinydashboard", "shinythemes", "shinycssloaders",
         # Added from Suggests:
         "testthat", "ggplot2", "ggpubr", "svglite",
         "ggraph", "reticulate"
@@ -693,9 +694,7 @@ loadDependencies <- function(verbose = TRUE) {
     bioc_packages <- c(
         "UniProt.ws", "mixOmics", "limma", "qvalue",
         "clusterProfiler", "GO.db", # GO.db is often a dependency, ensure it's listed
-        # Added from Suggests:
-        "EDASeq", "RUVSeq",
-        "basilisk", "mixOmics"
+        "basilisk"
     )
 
     github_packages <- list(
