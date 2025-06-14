@@ -321,10 +321,10 @@ plotPcaHelper <- function(data,
                     label_column = NULL,
                     title, geom.text.size = 11, ncomp = 2,
                     ...) {
-    
+
   # Ensure design_matrix is a data frame
   design_matrix <- as.data.frame(design_matrix)
-  
+
   pca.res <- mixOmics::pca(t(as.matrix(data)), ncomp = ncomp)
   proportion_explained <- pca.res$prop_expl_var
 
@@ -337,7 +337,7 @@ plotPcaHelper <- function(data,
   if (!grouping_variable %in% colnames(temp_tbl)) {
     stop(sprintf("Grouping variable '%s' not found in the data", grouping_variable))
   }
-  
+
   if (!is.null(shape_variable) && !shape_variable %in% colnames(temp_tbl)) {
     stop(sprintf("Shape variable '%s' not found in the data", shape_variable))
   }
@@ -357,7 +357,7 @@ plotPcaHelper <- function(data,
     if (!label_column %in% colnames(temp_tbl)) {
       stop(sprintf("Label column '%s' not found in the data", label_column))
     }
-    
+
     if (is.null(shape_variable)) {
       # No shape variation, only color, with labels
       base_plot <- temp_tbl |>
@@ -365,7 +365,7 @@ plotPcaHelper <- function(data,
     } else {
       # Both color and shape, with labels
       base_plot <- temp_tbl |>
-        ggplot(aes(PC1, PC2, color = !!sym(grouping_variable), shape = !!sym(shape_variable), 
+        ggplot(aes(PC1, PC2, color = !!sym(grouping_variable), shape = !!sym(shape_variable),
                    label = !!sym(label_column)))
     }
   }
@@ -387,7 +387,7 @@ plotPcaHelper <- function(data,
     xlim = c(pc1_range[1] - buffer_pc1, pc1_range[2] + buffer_pc1),
     ylim = c(pc2_range[1] - buffer_pc2, pc2_range[2] + buffer_pc2)
   )
-  
+
   if (!is.null(label_column) && label_column != "") {
     output <- output + geom_text_repel(size = geom.text.size, show.legend = FALSE)
   }
@@ -492,64 +492,150 @@ plotPcaGgpairs <- function( data_matrix
 
 #'@export
 #'@param Y  Rows = Samples, Columns = Proteins or Peptides
-plotRleHelper <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75,
-                                                       0.95), yaxis_limit = c(-0.5, 0.5))
-{
-  #  checks = check.ggplot()
-  # if (checks) {
-  rle <- t(apply(t(Y) - apply(Y, 2, function(x){median(x, na.rm=TRUE)}), 2, function(x){quantile(x, probs = probs, na.rm=TRUE)}))
-  colnames(rle) <- c("min", "lower", "middle", "upper",
-                     "max")
-  df <- cbind(data.frame(rle.x.factor = rownames(rle)), data.frame(rle))
+#'
+plotRleHelper <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75, 0.95), yaxis_limit = c(-0.5, 0.5)) {
+message("--- Entering plotRleHelper ---")
+message(sprintf("   plotRleHelper: Y dimensions = %d x %d", nrow(Y), ncol(Y)))
+message("   plotRleHelper: Y structure:")
+str(Y)
+message(sprintf("   plotRleHelper: rowinfo class = %s", class(rowinfo)))
+message("   plotRleHelper: rowinfo structure:")
+str(rowinfo)
 
-  if (!is.null(rowinfo)) {
-    rowinfo <- data.frame(rowinfo = rowinfo)
-    df_temp <- cbind(df, rowinfo)
-
-    my.x.factor.levels <- df_temp |>
-      arrange(rowinfo) |>
-      distinct(rle.x.factor) |>
-      dplyr::pull(rle.x.factor)
-
-    df <- df_temp |>
-      mutate(rle.x.factor = factor(rle.x.factor,
-                                   levels = my.x.factor.levels)) |>
-      arrange(rowinfo)
-  }
-
-  rleplot <- ggplot(df, aes(x = .data[["rle.x.factor"]])) +
-    geom_boxplot(aes(lower = .data[["lower"]]
-                     , middle = .data[["middle"]]
-                     , upper = .data[["upper"]]
-                     , max = .data[["max"]]
-                     , min = .data[["min"]]),
-                 stat = "identity") +
-    theme_bw() +
-    theme(axis.title.x = element_blank(),
-          axis.text.x = element_text(angle = 90) #, axis.ticks.x = element_blank()
-    ) +
-    theme(axis.title.y = element_blank(), axis.text.y = element_text(size = rel(1.5))) +
-    geom_hline(yintercept = 0)
-
-
-  if( length( yaxis_limit ) ==2 ) {
-
-    rleplot <- rleplot +
-      coord_cartesian(ylim = yaxis_limit)
-
-  }
-
-
-  if (!is.null(rowinfo)) {
-    if (ncol(rowinfo) == 1) {
-      rleplot <- rleplot + aes(fill = rowinfo) + labs(fill = "")
-    }
-  }
-
-  return(rleplot)
-  # }
-  # else return(FALSE)
+# Check if Y is numeric
+if (!is.numeric(Y)) {
+  stop("Input matrix Y must be numeric")
 }
+
+# Calculate RLE
+message("   plotRleHelper: Calculating RLE...")
+rle <- t(apply(t(Y) - apply(Y, 2, function(x) {
+  message(sprintf("      Calculating median for column: %s", paste(head(x), collapse=", ")))
+  median(x, na.rm=TRUE)
+}), 2, function(x) {
+  message(sprintf("      Calculating quantiles for column: %s", paste(head(x), collapse=", ")))
+  quantile(x, probs = probs, na.rm=TRUE)
+}))
+
+message("   plotRleHelper: RLE calculation complete")
+message("   plotRleHelper: RLE structure:")
+str(rle)
+
+colnames(rle) <- c("min", "lower", "middle", "upper", "max")
+df <- cbind(data.frame(rle.x.factor = rownames(rle)), data.frame(rle))
+
+if (!is.null(rowinfo)) {
+  message("   plotRleHelper: Processing rowinfo...")
+  rowinfo <- data.frame(rowinfo = rowinfo)
+  df_temp <- cbind(df, rowinfo)
+
+  my.x.factor.levels <- df_temp |>
+    arrange(rowinfo) |>
+    distinct(rle.x.factor) |>
+    dplyr::pull(rle.x.factor)
+
+  df <- df_temp |>
+    mutate(rle.x.factor = factor(rle.x.factor, levels = my.x.factor.levels)) |>
+    arrange(rowinfo)
+}
+
+message("   plotRleHelper: Creating plot...")
+rleplot <- ggplot(df, aes(x = .data[["rle.x.factor"]])) +
+  geom_boxplot(aes(lower = .data[["lower"]],
+                   middle = .data[["middle"]],
+                   upper = .data[["upper"]],
+                   max = .data[["max"]],
+                   min = .data[["min"]]),
+               stat = "identity") +
+  theme_bw() +
+  theme(axis.title.x = element_blank(),
+        axis.text.x = element_text(angle = 90)) +
+  theme(axis.title.y = element_blank(),
+        axis.text.y = element_text(size = rel(1.5))) +
+  geom_hline(yintercept = 0)
+
+if (length(yaxis_limit) == 2) {
+  rleplot <- rleplot + coord_cartesian(ylim = yaxis_limit)
+}
+
+if (!is.null(rowinfo)) {
+  if (ncol(rowinfo) == 1) {
+    rleplot <- rleplot + aes(fill = rowinfo) + labs(fill = "")
+  }
+}
+
+message("   plotRleHelper: Plot creation complete")
+return(rleplot)
+}
+#'
+# plotRleHelper <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75,
+#                                                        0.95), yaxis_limit = c(-0.5, 0.5))
+# {
+#
+#   message("--- Entering plotRleHelper ---")
+#   message(sprintf("   plotRleHelper: Y dimensions = %d x %d", nrow(Y), ncol(Y)))
+#   message("   plotRleHelper: Y structure:")
+#   str(Y)
+#   message(sprintf("   plotRleHelper: rowinfo class = %s", class(rowinfo)))
+#   message("   plotRleHelper: rowinfo structure:")
+#   str(rowinfo)
+#   message(sprintf("   plotRleHelper: yaxis_limit = %s", paste(yaxis_limit, collapse=", ")))
+#
+#   #  checks = check.ggplot()
+#   # if (checks) {
+#   rle <- t(apply(t(Y) - apply(Y, 2, function(x){median(x, na.rm=TRUE)}), 2, function(x){quantile(x, probs = probs, na.rm=TRUE)}))
+#   colnames(rle) <- c("min", "lower", "middle", "upper",
+#                      "max")
+#   df <- cbind(data.frame(rle.x.factor = rownames(rle)), data.frame(rle))
+#
+#   if (!is.null(rowinfo)) {
+#     rowinfo <- data.frame(rowinfo = rowinfo)
+#     df_temp <- cbind(df, rowinfo)
+#
+#     my.x.factor.levels <- df_temp |>
+#       arrange(rowinfo) |>
+#       distinct(rle.x.factor) |>
+#       dplyr::pull(rle.x.factor)
+#
+#     df <- df_temp |>
+#       mutate(rle.x.factor = factor(rle.x.factor,
+#                                    levels = my.x.factor.levels)) |>
+#       arrange(rowinfo)
+#   }
+#
+#   rleplot <- ggplot(df, aes(x = .data[["rle.x.factor"]])) +
+#     geom_boxplot(aes(lower = .data[["lower"]]
+#                      , middle = .data[["middle"]]
+#                      , upper = .data[["upper"]]
+#                      , max = .data[["max"]]
+#                      , min = .data[["min"]]),
+#                  stat = "identity") +
+#     theme_bw() +
+#     theme(axis.title.x = element_blank(),
+#           axis.text.x = element_text(angle = 90) #, axis.ticks.x = element_blank()
+#     ) +
+#     theme(axis.title.y = element_blank(), axis.text.y = element_text(size = rel(1.5))) +
+#     geom_hline(yintercept = 0)
+#
+#
+#   if( length( yaxis_limit ) ==2 ) {
+#
+#     rleplot <- rleplot +
+#       coord_cartesian(ylim = yaxis_limit)
+#
+#   }
+#
+#
+#   if (!is.null(rowinfo)) {
+#     if (ncol(rowinfo) == 1) {
+#       rleplot <- rleplot + aes(fill = rowinfo) + labs(fill = "")
+#     }
+#   }
+#
+#   return(rleplot)
+#   # }
+#   # else return(FALSE)
+# }
 
 
 #' @export
@@ -956,34 +1042,102 @@ prepareDataForVolcanoPlot <- function(input_table
                                       , fdr_column = q.mod
                                       , log2FC_column = log2FC){
 
-  temp_col_name <-  as_string(as_name(enquo(protein_id_column)))
+  message("   Preparing data for volcano plot...")
+  message("   Input table structure:")
+  str(input_table)
+  
+  temp_col_name <- as_string(as_name(enquo(protein_id_column)))
+  
+  # Check if we're dealing with metabolite data (no protein IDs)
+  is_metabolite_data <- !any(grepl("Protein.Ids|uniprot_acc", names(input_table)))
+  
+  if (is_metabolite_data) {
+    message("   Processing metabolite data...")
+    proteomics_volcano_tbl <- input_table |>
+      dplyr::select({{protein_id_column}}, {{fdr_column}}, {{log2FC_column}}) |>
+      mutate(
+        colour = case_when(
+          {{fdr_column}} < fdr_threshold & {{log2FC_column}} > 0 ~ "red",
+          {{fdr_column}} < fdr_threshold & {{log2FC_column}} < 0 ~ "blue",
+          TRUE ~ "grey"
+        ),
+        lqm = -log10({{fdr_column}}),
+        label = case_when(
+          {{fdr_column}} < fdr_threshold & {{log2FC_column}} > 0 ~ "Significant Increase",
+          {{fdr_column}} < fdr_threshold & {{log2FC_column}} < 0 ~ "Significant Decrease",
+          TRUE ~ "Not significant"
+        ),
+        label = factor(label, levels = c(
+          "Significant Increase",
+          "Significant Decrease",
+          "Not significant"
+        )),
+        rank_positive = case_when(
+          {{log2FC_column}} > 0 ~ {{fdr_column}},
+          TRUE ~ NA_real_
+        ) |> rank(),
+        rank_negative = case_when(
+          {{log2FC_column}} < 0 ~ {{fdr_column}},
+          TRUE ~ NA_real_
+        ) |> rank(),
+        gene_name_significant = case_when(
+          {{fdr_column}} < fdr_threshold &
+            (rank_positive <= number_of_genes |
+               rank_negative <= number_of_genes) ~ as.character({{protein_id_column}}),
+          TRUE ~ NA
+        )
+      )
+  } else {
+    message("   Processing protein data...")
+    proteomics_volcano_tbl <- input_table |>
+      dplyr::mutate(uniprot_acc_first = purrr::map_chr({{protein_id_column}}, \(x) {
+        str_split(x, ":")[[1]][1]
+      })) |>
+      dplyr::relocate(uniprot_acc_first, .after = temp_col_name) |>
+      dplyr::select(uniprot_acc_first, {{fdr_column}}, {{log2FC_column}}) |>
+      left_join(uniprot_table,
+        by = join_by(uniprot_acc_first == {{uniprot_protein_id_column}})
+      ) |>
+      mutate(
+        colour = case_when(
+          {{fdr_column}} < fdr_threshold & {{log2FC_column}} > 0 ~ "red",
+          {{fdr_column}} < fdr_threshold & {{log2FC_column}} < 0 ~ "blue",
+          TRUE ~ "grey"
+        ),
+        lqm = -log10({{fdr_column}}),
+        label = case_when(
+          {{fdr_column}} < fdr_threshold & {{log2FC_column}} > 0 ~ "Significant Increase",
+          {{fdr_column}} < fdr_threshold & {{log2FC_column}} < 0 ~ "Significant Decrease",
+          TRUE ~ "Not significant"
+        ),
+        label = factor(label, levels = c(
+          "Significant Increase",
+          "Significant Decrease",
+          "Not significant"
+        )),
+        rank_positive = case_when(
+          {{log2FC_column}} > 0 ~ {{fdr_column}},
+          TRUE ~ NA_real_
+        ) |> rank(),
+        rank_negative = case_when(
+          {{log2FC_column}} < 0 ~ {{fdr_column}},
+          TRUE ~ NA_real_
+        ) |> rank(),
+        {{gene_name_column}} := purrr::map_chr({{gene_name_column}}, \(x) {
+          str_split(x, " ")[[1]][1]
+        }),
+        gene_name_significant = case_when(
+          {{fdr_column}} < fdr_threshold &
+            (rank_positive <= number_of_genes |
+               rank_negative <= number_of_genes) ~ {{gene_name_column}},
+          TRUE ~ NA
+        )
+      )
+  }
 
-  proteomics_volcano_tbl <- input_table |>
-    dplyr::mutate( uniprot_acc_first  = purrr::map_chr( {{protein_id_column}}, \(x) { str_split( x, ":")[[1]][1] } ) ) |>
-    dplyr::relocate( uniprot_acc_first, .after=temp_col_name) |>
-    dplyr::select (uniprot_acc_first, {{fdr_column}}, {{log2FC_column}}) |>
-    left_join(uniprot_table
-              , by = join_by( uniprot_acc_first == {{uniprot_protein_id_column}})) |>
-    mutate( colour = case_when ( {{fdr_column}} < fdr_threshold & {{log2FC_column}} > 0 ~ "red"
-                                 , {{fdr_column}} < fdr_threshold & {{log2FC_column}} < 0 ~ "blue"
-                                 , TRUE ~ "grey" )) |>
-    mutate( lqm = -log10({{fdr_column}})) |>
-    mutate( label = case_when (  {{fdr_column}} < fdr_threshold & {{log2FC_column}} > 0 ~ "Significant Increase"
-                                 , {{fdr_column}} < fdr_threshold & {{log2FC_column}} < 0 ~ "Significant Decrease"
-                                 , TRUE ~ "Not significant" )) |>
-    mutate( label = factor( label, levels = c( "Significant Increase"
-                                               , "Significant Decrease"
-                                               , "Not significant" ))) |>
-    mutate ( rank_positive = case_when( {{log2FC_column}} > 0 ~ {{fdr_column}}
-                                        , TRUE ~ NA_real_) |> rank() ) |>
-    mutate ( rank_negative = case_when( {{log2FC_column}} < 0 ~ {{fdr_column}}
-                                        , TRUE ~ NA_real_) |> rank() ) |>
-    mutate ( {{gene_name_column}} := purrr::map_chr( {{gene_name_column}}, \(x) { str_split( x, " ")[[1]][1] } ) ) |>
-    mutate( gene_name_significant = case_when( {{fdr_column}} < fdr_threshold &
-                                                 ( rank_positive <= number_of_genes |
-                                                   rank_negative <= number_of_genes ) ~  {{gene_name_column}}
-                                               , TRUE ~ NA ) )
-
+  message("   Final volcano plot table structure:")
+  str(proteomics_volcano_tbl)
+  
   proteomics_volcano_tbl
 }
 
@@ -2136,70 +2290,83 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
                                        expression_column = log_intensity,
                                        protein_id_table
 ) {
-
+  message("--- Entering createDeResultsLongFormat ---")
+  message("   Input parameters:")
+  message(sprintf("   - row_id: %s", row_id))
+  message(sprintf("   - sample_id: %s", sample_id))
+  message(sprintf("   - group_id: %s", group_id))
+  message(sprintf("   - group_pattern: %s", group_pattern))
+  
+  message("   Input data structures:")
+  message("   - lfc_qval_tbl structure:")
+  str(lfc_qval_tbl)
+  message("   - norm_counts_input_tbl structure:")
+  str(norm_counts_input_tbl)
+  message("   - raw_counts_input_tbl structure:")
+  str(raw_counts_input_tbl)
+  message("   - protein_id_table structure:")
+  str(protein_id_table)
+  
+  # Create left and right join columns
+  left_join_columns <- c(row_id, "left_group")
+  right_join_columns <- c(row_id, "right_group")
+  
+  message("   Join columns:")
+  message(sprintf("   - left_join_columns: %s", paste(left_join_columns, collapse=", ")))
+  message(sprintf("   - right_join_columns: %s", paste(right_join_columns, collapse=", ")))
+  
+  # Create normalized and raw counts tables
+  message("   Creating normalized and raw counts tables...")
   norm_counts <- norm_counts_input_tbl |>
     as.data.frame() |>
-    rownames_to_column(row_id) |>
-    pivot_longer(cols = matches(group_pattern),
-                 names_to = sample_id,
-                 values_to = "log2norm") |>
-    left_join(design_matrix_norm, by = sample_id) |>
-    group_by(!!sym(row_id), !!sym(group_id)) |>
-    arrange(!!sym(row_id), !!sym(group_id), !!sym(sample_id)) |>
-    mutate(replicate_number = paste0("log2norm.", row_number())) |>
-    ungroup() |>
-    pivot_wider(id_cols = c(!!sym(row_id), !!sym(group_id)),
-                names_from = replicate_number,
-                values_from = log2norm) |>
-    mutate( {{group_id}} := purrr::map_chr( !!sym(group_id), as.character))
-
-
-  # print(head(norm_counts))
-
+    {function(x) {
+      if (!has_rownames(x)) {
+        column_to_rownames(x, row_id)
+      } else {
+        x
+      }
+    }}() |>
+    set_colnames(paste0(colnames(norm_counts_input_tbl[-1]), ".log2norm")) |>
+    rownames_to_column(row_id)
+    
   raw_counts <- raw_counts_input_tbl |>
     as.data.frame() |>
-    rownames_to_column(row_id) |>
-    pivot_longer(cols = matches(group_pattern),
-                 names_to = sample_id,
-                 values_to = "raw") |>
-    left_join(design_matrix_raw, by = sample_id) |>
-    group_by(!!sym(row_id), !!sym(group_id)) |>
-    arrange(!!sym(row_id), !!sym(group_id), !!sym(sample_id)) |>
-    mutate(replicate_number = paste0("raw.", row_number())) |>
-    ungroup() |>
-    pivot_wider(id_cols = c(!!sym(row_id), !!sym(group_id)),
-                names_from = replicate_number,
-                values_from = raw)  |>
-    mutate( {{group_id}} := purrr::map_chr( !!sym(group_id), as.character))
-
-  # print(head(raw_counts))
-
-  left_join_columns <- rlang::set_names(c(row_id, group_id ),
-                                        c(row_id, "left_group"))
-
-  right_join_columns <- rlang::set_names(c(row_id, group_id ),
-                                         c(row_id, "right_group"))
-
-   # print(head(lfc_qval_tbl))
-
-  print( row_id)
-  print(colnames( protein_id_table)[1])
-
+    {function(x) {
+      if (!has_rownames(x)) {
+        column_to_rownames(x, row_id)
+      } else {
+        x
+      }
+    }}() |>
+    set_colnames(paste0(colnames(raw_counts_input_tbl[-1]), ".raw")) |>
+    rownames_to_column(row_id)
+    
+  message("   Created counts tables:")
+  message("   - norm_counts structure:")
+  str(norm_counts)
+  message("   - raw_counts structure:")
+  str(raw_counts)
+  
+  message("   Creating long format results...")
   de_proteins_long <- lfc_qval_tbl |>
     dplyr::select(-lqm, -colour, -analysis_type) |>
     dplyr::mutate( {{expression_column}} := str_replace_all({{expression_column}}, group_id, "")) |>
     separate_wider_delim( {{expression_column}}, delim = "-", names = c("left_group", "right_group"))  |>
-   left_join(norm_counts, by = left_join_columns) |>
+    left_join(norm_counts, by = left_join_columns) |>
     left_join(norm_counts, by = right_join_columns,
               suffix = c(".left", ".right")) |>
     left_join(raw_counts, by = left_join_columns) |>
     left_join(raw_counts, by = right_join_columns,
               suffix = c(".left", ".right")) |>
-  left_join( protein_id_table
+    left_join( protein_id_table
                , by = join_by( !!sym(row_id) == !!sym( colnames( protein_id_table)[1]))) |>
     arrange( comparison, fdr_qvalue, log2FC) |>
     distinct()
-
+    
+  message("   Final long format results structure:")
+  str(de_proteins_long)
+  message("--- Exiting createDeResultsLongFormat ---")
+  
   de_proteins_long
 }
 
@@ -2264,7 +2431,7 @@ proteinTechRepCorrelationHelper <- function( design_matrix_tech_rep, data_matrix
 }
 
 #' Download and Process UniProt Annotations
-#' 
+#'
 #' @description
 #' Downloads protein information from UniProt for a list of protein IDs,
 #' processes the results including Gene Ontology annotations, and caches
@@ -2281,29 +2448,29 @@ proteinTechRepCorrelationHelper <- function( design_matrix_tech_rep, data_matrix
 #' @return A data frame containing UniProt annotations and GO terms
 #'
 #' @export
-getUniprotAnnotations <- function(input_tbl, 
-                                 cache_dir, 
+getUniprotAnnotations <- function(input_tbl,
+                                 cache_dir,
                                  taxon_id,
                                  force_download = FALSE,
                                  batch_size = 25,
                                  timeout = 600,
                                  api_delay = 1) {
-  
+
   # Ensure cache directory exists
   if (!dir.exists(cache_dir)) {
     dir.create(cache_dir, recursive = TRUE)
   }
-  
+
   # Define cache file paths
   cache_file <- file.path(cache_dir, "uniprot_annotations.RDS")
   raw_results_file <- file.path(cache_dir, "uniprot_results.tsv")
-  
+
   # Check if cache exists and should be used
   if (!force_download && file.exists(cache_file)) {
     message("Loading cached UniProt annotations...")
     return(readRDS(cache_file))
   }
-  
+
   # Download annotations if needed
   message("Fetching UniProt annotations...")
   annotations <- directUniprotDownload(
@@ -2314,7 +2481,7 @@ getUniprotAnnotations <- function(input_tbl,
     timeout = timeout,
     api_delay = api_delay
   )
-  
+
   # Process annotations or create empty table if download failed
   if (!is.null(annotations) && nrow(annotations) > 0) {
     message("Processing GO terms...")
@@ -2324,10 +2491,10 @@ getUniprotAnnotations <- function(input_tbl,
         go_id_column = Gene.Ontology.IDs,
         sep = "; "
       )
-    
+
     # Standardize column names
     uniprot_dat_cln <- standardizeUniprotColumns(processed_annotations)
-    
+
     # Save to cache
     saveRDS(uniprot_dat_cln, cache_file)
     message("UniProt annotations saved to cache.")
@@ -2336,7 +2503,7 @@ getUniprotAnnotations <- function(input_tbl,
     uniprot_dat_cln <- createEmptyUniprotTable()
     saveRDS(uniprot_dat_cln, cache_file)
   }
-  
+
   return(uniprot_dat_cln)
 }
 
@@ -2356,32 +2523,32 @@ getUniprotAnnotations <- function(input_tbl,
 #' @return A data frame containing the raw UniProt results
 #'
 #' @export
-directUniprotDownload <- function(input_tbl, 
-                                 output_path, 
-                                 taxon_id, 
+directUniprotDownload <- function(input_tbl,
+                                 output_path,
+                                 taxon_id,
                                  batch_size = 25,
-                                 timeout = 600, 
+                                 timeout = 600,
                                  api_delay = 1) {
   # Set a longer timeout
   old_timeout <- getOption("timeout")
   on.exit(options(timeout = old_timeout))
   options(timeout = timeout)
-  
+
   # Extract unique protein IDs
   protein_ids <- unique(input_tbl$Protein.Ids)
   message(paste("Found", length(protein_ids), "unique protein IDs to query"))
-  
+
   # Split into batches
   chunks <- split(protein_ids, ceiling(seq_along(protein_ids)/batch_size))
   message(paste("Split into", length(chunks), "chunks for processing"))
-  
+
   # Function to process one chunk
   process_chunk <- function(chunk, chunk_idx, total_chunks) {
     message(paste("Processing chunk", chunk_idx, "of", total_chunks, "with", length(chunk), "IDs"))
-    
+
     # Create query for this batch
     query <- paste0("(", paste(chunk, collapse=" OR "), ") AND organism_id:", taxon_id)
-    
+
     # Use httr to download
     response <- httr::GET(
       url = "https://rest.uniprot.org/uniprotkb/search",
@@ -2392,20 +2559,20 @@ directUniprotDownload <- function(input_tbl,
       ),
       httr::timeout(30)
     )
-    
+
     # Be nice to the API
     Sys.sleep(api_delay)
-    
+
     # Check if successful
     if (httr::status_code(response) == 200) {
       content <- httr::content(response, "text", encoding = "UTF-8")
       temp_file <- tempfile(fileext = ".tsv")
       writeLines(content, temp_file)
-      
+
       chunk_result <- suppressWarnings(
         read.delim(temp_file, sep="\t", quote="", stringsAsFactors=FALSE)
       )
-      
+
       if (nrow(chunk_result) > 0) {
         message(paste("  Found", nrow(chunk_result), "results"))
         return(chunk_result)
@@ -2413,25 +2580,25 @@ directUniprotDownload <- function(input_tbl,
     } else {
       message(paste("  Request failed with status", httr::status_code(response)))
     }
-    
+
     return(NULL)
   }
-  
+
   # Process all chunks using imap (provides both value and index)
   total_chunks <- length(chunks)
   results <- purrr::imap(chunks, ~ process_chunk(.x, .y, total_chunks)) |>
     purrr::compact() # Remove NULL results
-  
+
   # Combine results
   if (length(results) > 0) {
     all_results <- purrr::reduce(results, rbind)
-    
+
     # Standardize column names for downstream processing
     names(all_results) <- gsub(" ", ".", names(all_results))
-    
+
     # Add From column needed for downstream processing
     all_results$From <- all_results$Entry
-    
+
     # Write to file
     write.table(all_results, output_path, sep="\t", quote=FALSE, row.names=FALSE)
     message(paste("Successfully retrieved", nrow(all_results), "entries from UniProt"))
@@ -2460,14 +2627,14 @@ standardizeUniprotColumns <- function(df) {
   } else {
     df$Protein_existence <- NA_character_
   }
-  
+
   # Handle Protein names column
   if ("Protein.names" %in% colnames(df)) {
     df <- df |> dplyr::rename(Protein_names = "Protein.names")
   } else {
     df$Protein_names <- NA_character_
   }
-  
+
   # Handle Gene Names column (different versions of API may use different names)
   gene_names_col <- grep("Gene\\.Names", colnames(df), value = TRUE)
   if (length(gene_names_col) > 0) {
@@ -2475,7 +2642,7 @@ standardizeUniprotColumns <- function(df) {
   } else {
     df$gene_names <- NA_character_
   }
-  
+
   return(df)
 }
 
