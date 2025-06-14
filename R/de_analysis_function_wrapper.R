@@ -25,7 +25,7 @@ deAnalysisWrapperFunction <- function( theObject
   # Add preprocessing for group names that start with numbers
   design_matrix <- theObject@design_matrix
   group_col <- design_matrix[["group"]]
-  
+
   # Check if any group names start with numbers and create mapping
   starts_with_number <- grepl("^[0-9]", group_col)
   if(any(starts_with_number)) {
@@ -34,12 +34,12 @@ deAnalysisWrapperFunction <- function( theObject
       if(grepl("^[0-9]", x)) paste0("grp_", x) else x
     })
     group_mapping <- setNames(original_groups, safe_groups)
-    
+
     # Update design matrix with safe names
     design_matrix[["group"]] <- purrr::map_chr(group_col, \(x) {
       if(grepl("^[0-9]", x)) paste0("grp_", x) else x
     })
-    
+
     # Update contrasts table if it exists
     if(!is.null(contrasts_tbl)) {
       contrasts_tbl[[1]] <- purrr::map_chr(contrasts_tbl[[1]], \(x) {
@@ -49,7 +49,7 @@ deAnalysisWrapperFunction <- function( theObject
         x
       })
     }
-    
+
     theObject@design_matrix <- design_matrix
   }
 
@@ -65,6 +65,12 @@ deAnalysisWrapperFunction <- function( theObject
 
   return_list <- list()
   return_list$theObject <- theObject
+
+  message("--- Entering deAnalysisWrapperFunction ---")
+  message(sprintf("   deAnalysisWrapperFunction: theObject class = %s", class(theObject)))
+  message(sprintf("   deAnalysisWrapperFunction: theObject@group_id = %s", theObject@group_id))
+  message("   deAnalysisWrapperFunction: theObject structure:")
+  str(theObject)
 
   ## plot RLE plot
   rle_plot <-   plotRle(theObject = theObject, theObject@group_id  ) +
@@ -115,21 +121,44 @@ deAnalysisWrapperFunction <- function( theObject
   return_list$pca_plot_with_labels <- pca_plot_with_labels
 
   ## Count the number of values
-  return_list$plot_num_of_values <- plotNumOfValuesNoLog(theObject@protein_quant_table)
+  if (inherits(theObject, "MetaboliteAssayData")) {
+    # Convert metabolite data to matrix format
+    metabolite_matrix <- as.matrix(theObject@metabolite_data[, -1]) # Exclude Name column
+    colnames(metabolite_matrix) <- colnames(theObject@metabolite_data)[-1]
+    rownames(metabolite_matrix) <- theObject@metabolite_data$Name
+    return_list$plot_num_of_values <- plotNumOfValuesNoLog(metabolite_matrix)
+  } else if(inherits(theObject, "ProteinQuantitativeData") ) {
+    return_list$plot_num_of_values <- plotNumOfValuesNoLog(theObject@protein_quant_table)
+  }
 
   ## Compare the different experimental groups and obtain lists of differentially expressed proteins.")
 
   rownames( theObject@design_matrix ) <- theObject@design_matrix |> dplyr::pull( one_of(theObject@sample_id ))
 
+  # Prepare data matrix for DE analysis
+  data_matrix <- NA
+  
+  if (inherits(theObject, "MetaboliteAssayData")) {
+    # Convert metabolite data to matrix format
+    matrix_data <- as.matrix(theObject@metabolite_data[, -1]) # Exclude Name column
+    colnames(matrix_data) <- colnames(theObject@metabolite_data)[-1]
+    rownames(matrix_data) <- theObject@metabolite_data$Name
+    data_matrix <- matrix_data
+  } else if (inherits(theObject, "ProteinQuantitativeData")) {
+    data_matrix <- as.matrix(column_to_rownames(theObject@protein_quant_table, theObject@protein_id_column))
+  } else {
+    stop("Unsupported object type")
+  }
 
-  contrasts_results <- runTestsContrasts(as.matrix(column_to_rownames(theObject@protein_quant_table, theObject@protein_id_column)),
-                                         contrast_strings = contrasts_tbl[, 1][[1]],
-                                         design_matrix = theObject@design_matrix,
-                                         formula_string = formula_string,
-                                         weights = NA,
-                                         treat_lfc_cutoff = as.double(treat_lfc_cutoff),
-                                         eBayes_trend = as.logical(eBayes_trend),
-                                         eBayes_robust = as.logical(eBayes_robust))
+  contrasts_results <- runTestsContrasts(
+    data_matrix,
+    contrast_strings = contrasts_tbl$contrasts,
+    design_matrix = theObject@design_matrix,
+    formula_string = formula_string,
+    treat_lfc_cutoff = treat_lfc_cutoff,
+    eBayes_trend = eBayes_trend,
+    eBayes_robust = eBayes_robust
+  )
 
   # Map back to original group names in results if needed
   if(exists("group_mapping")) {
@@ -193,7 +222,24 @@ deAnalysisWrapperFunction <- function( theObject
   ## Create wide format output file
   norm_counts <- NA
 
-  counts_table_to_use <- theObject@protein_quant_table
+  message("--- Checking object type and data access ---")
+  message(sprintf("   Object class: %s", class(theObject)))
+  message("   Object structure:")
+  str(theObject)
+
+  # Get the appropriate data table based on object type
+  if (inherits(theObject, "MetaboliteAssayData")) {
+    message("   Using metabolite_data for MetaboliteAssayData object")
+    counts_table_to_use <- theObject@metabolite_data
+  } else if (inherits(theObject, "ProteinQuantitativeData")) {
+    message("   Using protein_quant_table for ProteinQuantitativeData object")
+    counts_table_to_use <- theObject@protein_quant_table
+  } else {
+    stop(sprintf("Unsupported object type: %s", class(theObject)))
+  }
+
+  message("   Data table structure:")
+  str(counts_table_to_use)
 
   norm_counts <- counts_table_to_use |>
     as.data.frame() |>
@@ -201,9 +247,26 @@ deAnalysisWrapperFunction <- function( theObject
     set_colnames(paste0(colnames(counts_table_to_use[-1]), ".log2norm")) |>
     rownames_to_column(args_row_id)
 
-  print(head( norm_counts))
+  message("   Normalized counts structure:")
+  str(norm_counts)
+  print(head(norm_counts))
 
   return_list$norm_counts <- norm_counts
+
+
+  dealWithProeinIdJoining <- function(df) {
+      if (inherits(theObject, "MetaboliteAssayData")) {
+        # For metabolites, we don't need to join with protein_id_table
+        df
+      } else if (inherits(theObject, "ProteinQuantitativeData")) {
+        # For proteins, join with protein_id_table
+        df |>
+          left_join(theObject@protein_id_table, 
+                   by = join_by(!!sym(args_row_id) == !!sym(theObject@protein_id_column)))
+      } else {
+        stop(sprintf("Unsupported object type: %s", class(theObject)))
+      }
+    }
 
   de_proteins_wide <- significant_rows |>
     dplyr::filter(analysis_type == "RUV applied") |>
@@ -212,8 +275,8 @@ deAnalysisWrapperFunction <- function( theObject
                 names_from = c(comparison),
                 names_sep = ":",
                 values_from = c(log2FC, !!sym(qvalue_column), !!sym(raw_pvalue_colum))) |>
-    left_join(counts_table_to_use, by = join_by( !!sym(args_row_id)  == !!sym(theObject@protein_id_column)  )   ) |>
-    left_join(theObject@protein_id_table, by = join_by( !!sym(args_row_id) == !!sym(theObject@protein_id_column) )  ) |>
+    left_join(counts_table_to_use, by = join_by(!!sym(args_row_id) == !!sym(args_row_id))) |>
+    dealWithProeinIdJoining() |>
     dplyr::arrange(across(matches("!!sym(qvalue_column)"))) |>
     distinct()
 
@@ -222,19 +285,47 @@ deAnalysisWrapperFunction <- function( theObject
 
 
   ## Create long format output file
+  message("--- Creating long format output ---")
+  message(sprintf("   Object class: %s", class(theObject)))
+  message("   Object structure:")
+  str(theObject)
 
-  de_proteins_long <- createDeResultsLongFormat( lfc_qval_tbl = significant_rows |>
-                                                   dplyr::filter(analysis_type == "RUV applied") ,
-                                                 norm_counts_input_tbl = as.matrix(column_to_rownames(theObject@protein_quant_table, theObject@protein_id_column)),
-                                                 raw_counts_input_tbl = as.matrix(column_to_rownames(theObject@protein_quant_table, theObject@protein_id_column)),
-                                                 row_id = args_row_id,
-                                                 sample_id = theObject@sample_id,
-                                                 group_id = group_id,
-                                                 group_pattern = args_group_pattern,
-                                                 design_matrix_norm = theObject@design_matrix,
-                                                 design_matrix_raw =  theObject@design_matrix,
-                                                 ##POTENTIAL ISSUE
-                                                 protein_id_table = theObject@protein_id_table)
+  # Create appropriate ID table based on object type
+  id_table <- if (inherits(theObject, "MetaboliteAssayData")) {
+    message("   Using metabolite data as ID table for MetaboliteAssayData")
+    message("   Metabolite data structure:")
+    str(theObject@metabolite_data)
+    message(sprintf("   Using row_id: %s", args_row_id))
+    # For metabolites, create a simple ID table from the metabolite data
+    theObject@metabolite_data |>
+      dplyr::select(!!sym(args_row_id)) |>
+      dplyr::distinct()
+  } else if (inherits(theObject, "ProteinQuantitativeData")) {
+    message("   Using protein_id_table for ProteinQuantitativeData")
+    theObject@protein_id_table
+  } else {
+    stop(sprintf("Unsupported object type: %s", class(theObject)))
+  }
+
+  message("   ID table structure:")
+  str(id_table)
+
+  de_proteins_long <- createDeResultsLongFormat(
+    lfc_qval_tbl = significant_rows |>
+      dplyr::filter(analysis_type == "RUV applied"),
+    norm_counts_input_tbl = getDataMatrix(theObject),
+    raw_counts_input_tbl = getDataMatrix(theObject),
+    row_id = args_row_id,
+    sample_id = theObject@sample_id,
+    group_id = group_id,
+    group_pattern = args_group_pattern,
+    design_matrix_norm = theObject@design_matrix,
+    design_matrix_raw = theObject@design_matrix,
+    protein_id_table = id_table
+  )
+
+  message("   Long format results structure:")
+  str(de_proteins_long)
 
   return_list$de_proteins_long <- de_proteins_long
 
@@ -721,7 +812,7 @@ outputDeAnalysisResults <- function(de_analysis_results_list
              , showWarnings = FALSE)
 
   list_of_volcano_plots <- de_analysis_results_list$list_of_volcano_plots
-  
+
   # Print diagnostic info about the volcano plots
   message(sprintf("Number of volcano plots: %d", nrow(list_of_volcano_plots)))
 
@@ -739,18 +830,18 @@ outputDeAnalysisResults <- function(de_analysis_results_list
 
   # Generate a multi-page PDF with all volcano plots
   volcano_plots_list <- list_of_volcano_plots %>% dplyr::pull(plot)
-  
+
   # Generate combined PDF with all plots, one per page
   pdf_file <- file.path(publication_graphs_dir, "Volcano_Plots", "list_of_volcano_plots.pdf")
   pdf(file = pdf_file, width = 7, height = 7, onefile = TRUE)
   purrr::walk(volcano_plots_list, print)
   invisible(dev.off())
-  
+
   # Verify the PDF was created with the right number of pages
   message(sprintf("Created multi-page PDF at %s", pdf_file))
 
   list_of_volcano_plots_with_gene_names <- de_analysis_results_list$list_of_volcano_plots_with_gene_names
-  
+
   # Print diagnostic info about the labeled volcano plots
   message(sprintf("Number of labeled volcano plots: %d", nrow(list_of_volcano_plots_with_gene_names)))
 
@@ -765,13 +856,13 @@ outputDeAnalysisResults <- function(de_analysis_results_list
 
   # Generate a multi-page PDF with all labeled volcano plots
   volcano_plots_with_genes_list <- list_of_volcano_plots_with_gene_names %>% dplyr::pull(plot)
-  
+
   # Generate combined PDF with all labeled plots, one per page
   pdf_file_with_genes <- file.path(publication_graphs_dir, "Volcano_Plots", "list_of_volcano_plots_with_gene_names.pdf")
   pdf(file = pdf_file_with_genes, width = 7, height = 7, onefile = TRUE)
   purrr::walk(volcano_plots_with_genes_list, print)
   invisible(dev.off())
-  
+
   # Verify the labeled PDF was created with the right number of pages
   message(sprintf("Created multi-page labeled PDF at %s", pdf_file_with_genes))
 
@@ -785,7 +876,7 @@ outputDeAnalysisResults <- function(de_analysis_results_list
     num_sig_de_genes_barplot_only_significant <- de_analysis_results_list$num_sig_de_genes_barplot_only_significant
     num_of_comparison_only_significant <- de_analysis_results_list$num_of_comparison_only_significant
 
-    savePlot(plot = num_sig_de_genes_barplot_only_significant,
+    savePlot(num_sig_de_genes_barplot_only_significant,
              base_path = file.path(publication_graphs_dir, "NumSigDeMolecules"),
              plot_name = paste0(file_prefix, "_num_sig_de_molecules."),
              formats = plots_format,
@@ -811,7 +902,7 @@ outputDeAnalysisResults <- function(de_analysis_results_list
   }
 
   ## Write interactive volcano plot
-  counts_mat <- (de_analysis_results_list$theObject)@protein_quant_table |>
+  counts_mat <- getCountsTable(de_analysis_results_list$theObject) |>
     column_to_rownames((de_analysis_results_list$theObject)@protein_id_column  ) |>
     as.matrix()
 
@@ -887,7 +978,7 @@ writeInteractiveVolcanoPlotProteomicsMain <- function(de_analysis_results_list
   de_proteins_long <- de_analysis_results_list$de_proteins_long
   contrasts_results <- de_analysis_results_list$contrasts_results
 
-  counts_mat <- (de_analysis_results_list$theObject)@protein_quant_table |>
+  counts_mat <- getCountsTable(de_analysis_results_list$theObject) |>
     column_to_rownames((de_analysis_results_list$theObject)@protein_id_column  ) |>
     as.matrix()
 
@@ -913,4 +1004,48 @@ writeInteractiveVolcanoPlotProteomicsMain <- function(de_analysis_results_list
                                          , gene_names_column = gene_names_column
                                          , display_columns = display_columns )
 
+}
+
+# Helper function to get data matrix
+getDataMatrix <- function(obj) {
+    if (inherits(obj, "MetaboliteAssayData")) {
+        message(sprintf("   Getting data matrix for object of class: %s", class(obj)[1]))
+        message(sprintf("   Processing MetaboliteAssayData"))
+        message(sprintf("   Metabolite data dimensions: %d rows, %d cols", 
+                      nrow(obj@metabolite_data), ncol(obj@metabolite_data)))
+        matrix_data <- as.matrix(obj@metabolite_data[, -1]) # Exclude Name column
+        colnames(matrix_data) <- colnames(obj@metabolite_data)[-1]
+        rownames(matrix_data) <- obj@metabolite_data$Name
+        message(sprintf("   Created matrix with dimensions: %d rows, %d cols", 
+                      nrow(matrix_data), ncol(matrix_data)))
+        matrix_data
+    } else if (inherits(obj, "ProteinQuantitativeData")) {
+        message(sprintf("   Processing ProteinQuantitativeData"))
+        message(sprintf("   Protein quant table dimensions: %d rows, %d cols", 
+                      nrow(obj@protein_quant_table), ncol(obj@protein_quant_table)))
+        result <- as.matrix(column_to_rownames(obj@protein_quant_table, obj@protein_id_column))
+        message(sprintf("   Created matrix with dimensions: %d rows, %d cols", 
+                      nrow(result), ncol(result)))
+        result
+    } else {
+        message(sprintf("   ERROR: Unsupported object type: %s", class(obj)[1]))
+        stop("Unsupported object type")
+    }
+}
+
+# Helper function to get counts table
+getCountsTable <- function(obj) {
+    if (inherits(obj, "MetaboliteAssayData")) {
+        message(sprintf("   Getting counts table for object of class: %s", class(obj)[1]))
+        message(sprintf("   Returning metabolite_data with dimensions: %d rows, %d cols", 
+                      nrow(obj@metabolite_data), ncol(obj@metabolite_data)))
+        obj@metabolite_data
+    } else if (inherits(obj, "ProteinQuantitativeData")) {
+        message(sprintf("   Returning protein_quant_table with dimensions: %d rows, %d cols", 
+                      nrow(obj@protein_quant_table), ncol(obj@protein_quant_table)))
+        obj@protein_quant_table
+    } else {
+        message(sprintf("   ERROR: Unsupported object type: %s", class(obj)[1]))
+        stop("Unsupported object type")
+    }
 }

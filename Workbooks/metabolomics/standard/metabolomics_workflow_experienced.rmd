@@ -151,6 +151,9 @@ if (exists("metabolite_data_cln") && is.list(metabolite_data_cln) && length(meta
     
     log_info("Cleaning sample name prefixes in \'metabolite_data_cln\'...")
     
+    # Maintain the original names of the list elements
+    list_names <-  names( metabolite_data_cln)
+  
     metabolite_data_cln <- lapply(metabolite_data_cln, function(df) {
       current_colnames <- colnames(df)
       # Use fixed = TRUE for literal matching, which is safer and faster here
@@ -158,6 +161,11 @@ if (exists("metabolite_data_cln") && is.list(metabolite_data_cln) && length(meta
       colnames(df) <- new_colnames
       return(df)
     })
+    
+    # Preserve the original names of the list
+    if (!is.null(list_names)) {
+        names(metabolite_data_cln) <- list_names
+    }
     
     log_info("Finished cleaning sample name prefixes.")
     
