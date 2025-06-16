@@ -28,20 +28,6 @@ R/shiny/
 │   └── [omics]/            # Omics-specific modules
 └── www/                     # Static assets (CSS, JS, images)
 ```
-
-Additionally, omics-specific workflow functions are organized in:
-
-```
-R/
-├── proteomics/
-│   ├── workflow/           # Proteomics workflow functions
-│   └── utils/              # Proteomics utility functions
-├── metabolomics/
-│   ├── workflow/           # Metabolomics workflow functions
-│   └── utils/              # Metabolomics utility functions
-└── [other omics]/
-```
-
 ## Running the App
 
 To run the application:

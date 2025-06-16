@@ -10,6 +10,11 @@ library(logger)
 # Handle namespace conflicts explicitly
 library(DT, warn.conflicts = FALSE)
 
+# Load shinyFiles if available
+if (requireNamespace("shinyFiles", quietly = TRUE)) {
+  library(shinyFiles)
+}
+
 # Source helper functions to get access to loadDependencies
 if (file.exists("../../helper_functions.R")) {
   source("../../helper_functions.R")
@@ -17,6 +22,15 @@ if (file.exists("../../helper_functions.R")) {
   # Function already available (e.g., from package namespace)
 } else {
   warning("loadDependencies function not found. Dependencies may not be properly loaded.")
+}
+
+# Source file_management.R to get access to setupDirectories
+if (file.exists("../../file_management.R")) {
+  source("../../file_management.R")
+} else if (exists("setupDirectories", mode = "function")) {
+  # Function already available (e.g., from package namespace)
+} else {
+  warning("setupDirectories function not found. Directory setup may not work properly.")
 }
 
 # Source shiny_applets.R for RunApplet function
@@ -257,8 +271,39 @@ server <- function(input, output, session) {
     workflow_state = list(),
     current_tab = "home",
     project_dirs = NULL,
-    experiment_label = NULL
+    experiment_label = NULL,
+    project_base_dir = NULL
   )
+  
+  # Set up volumes for shinyFiles at the top level
+  message("--- app.R: Setting up volumes for shinyFiles ---")
+  volumes <- NULL
+  if (requireNamespace("shinyFiles", quietly = TRUE)) {
+    message("   app.R: shinyFiles package is available")
+    volumes <- shinyFiles::getVolumes()
+    message(sprintf("   app.R: Created volumes. Type = %s, class = %s", 
+                    typeof(volumes), paste(class(volumes), collapse = ", ")))
+    
+    # Inspect volumes
+    tryCatch({
+      if (is.function(volumes)) {
+        message("   app.R: volumes is a FUNCTION")
+        vol_test <- volumes()
+        message(sprintf("   app.R: Called volumes(). Result type = %s, length = %d", 
+                        typeof(vol_test), length(vol_test)))
+        if (length(vol_test) > 0) {
+          message(sprintf("   app.R: Volume names: %s", 
+                          paste(names(vol_test), collapse = ", ")))
+        }
+      } else {
+        message("   app.R: volumes is NOT a function")
+      }
+    }, error = function(e) {
+      message(sprintf("   app.R ERROR inspecting volumes: %s", e$message))
+    })
+  } else {
+    message("   app.R: shinyFiles package NOT available")
+  }
   
   # Track omics selection
   observe({
@@ -275,13 +320,51 @@ server <- function(input, output, session) {
       return()
     }
     
-    # Show modal to get experiment label
+    # Show modal to get experiment label and output directory
     showModal(modalDialog(
       title = "Experiment Setup",
-      textInput("experiment_label", 
-                "Experiment Label:", 
-                value = paste0("analysis_", format(Sys.Date(), "%Y%m%d")),
-                placeholder = "e.g., workshop_data"),
+      size = "m",
+      shiny::fluidRow(
+        shiny::column(12,
+          shiny::textInput("experiment_label", 
+                    "Experiment Label:", 
+                    value = paste0("analysis_", format(Sys.Date(), "%Y%m%d")),
+                    placeholder = "e.g., workshop_data",
+                    width = "100%"),
+          shiny::br(),
+          shiny::h4("Project Output Directory"),
+          shiny::p("Select where to create the project directories:"),
+          shiny::fluidRow(
+            shiny::column(9,
+              shiny::textInput("project_dir", 
+                        "Directory Path:",
+                        value = normalizePath("~", winslash = "/"),
+                        placeholder = "Enter directory path",
+                        width = "100%")
+            ),
+            shiny::column(3,
+              if (requireNamespace("shinyFiles", quietly = TRUE)) {
+                shinyFiles::shinyDirButton("browse_dir", 
+                                          "Browse...", 
+                                          "Select Project Output Directory",
+                                          icon = shiny::icon("folder-open"),
+                                          style = "width: 100%; margin-top: 25px;")
+              } else {
+                shiny::actionButton("browse_dir_fallback", 
+                            "Browse...", 
+                            icon = shiny::icon("folder-open"),
+                            width = "100%",
+                            style = "margin-top: 25px;")
+              }
+            )
+          ),
+          shiny::tags$small(
+            shiny::tags$i(
+              "A new folder will be created here with your experiment label"
+            )
+          )
+        )
+      ),
       footer = tagList(
         modalButton("Cancel"),
         actionButton("confirm_setup", "Continue", class = "btn-primary")
@@ -289,41 +372,151 @@ server <- function(input, output, session) {
     ))
   })
   
+
+  
+  # Set up shinyFiles directory browser if available
+  if (requireNamespace("shinyFiles", quietly = TRUE) && !is.null(volumes)) {
+    shinyFiles::shinyDirChoose(input, "browse_dir", 
+                              roots = volumes, 
+                              session = session)
+    
+    observeEvent(input$browse_dir, {
+      if (!is.null(input$browse_dir) && !is.integer(input$browse_dir)) {
+        path <- shinyFiles::parseDirPath(volumes, input$browse_dir)
+        if (length(path) > 0) {
+          updateTextInput(session, "project_dir", value = path)
+        }
+      }
+    })
+  } else {
+    # Fallback for when shinyFiles is not available
+    observeEvent(input$browse_dir_fallback, {
+      showNotification(
+        "Please install the 'shinyFiles' package for directory browsing, or enter the path manually.",
+        type = "message",
+        duration = 5
+      )
+    })
+  }
+  
   # Handle experiment setup confirmation
   observeEvent(input$confirm_setup, {
     req(input$experiment_label)
+    req(input$project_dir)
+    
+    # Validate directory
+    if (!dir.exists(input$project_dir)) {
+      showNotification(
+        paste("Directory does not exist:", input$project_dir),
+        type = "error",
+        duration = NULL
+      )
+      return()
+    }
     
     values$experiment_label <- input$experiment_label
+    values$project_base_dir <- input$project_dir
     removeModal()
     
     # Log the selection
     logger::log_info("Starting analysis for: {paste(values$selected_omics, collapse = ', ')}")
     logger::log_info("Experiment label: {values$experiment_label}")
     
-    # Initialize project directories
+    # Initialize project directories using setupDirectories
     tryCatch({
-      # Don't actually create directories - just set up the structure needed for the workflow
-      values$project_dirs <- list()
-      
-      for (omic in values$selected_omics) {
-        key <- paste0(omic, "_", values$experiment_label)
-        values$project_dirs[[key]] <- list(
-          base_dir = getwd(),
-          data_dir = file.path(tempdir(), "multischolar", values$experiment_label, "data", omic),
-          results_dir = file.path(tempdir(), "multischolar", values$experiment_label, "results", omic),
-          source_dir = file.path(tempdir(), "multischolar", values$experiment_label, "source", omic),
-          # These are used by various functions but won't actually be created
-          results_summary_dir = file.path(tempdir(), "multischolar", values$experiment_label, "results_summary", omic),
-          qc_dir = file.path(tempdir(), "multischolar", values$experiment_label, "results", omic, "qc"),
-          de_output_dir = file.path(tempdir(), "multischolar", values$experiment_label, "results", omic, "de_output")
-        )
+      # Source file_management.R if setupDirectories is not available
+      if (!exists("setupDirectories", mode = "function")) {
+        file_management_path <- "../../file_management.R"
+        if (file.exists(file_management_path)) {
+          source(file_management_path)
+          logger::log_info("Loaded file_management.R")
+        } else {
+          stop("setupDirectories function not found and file_management.R not available")
+        }
       }
       
-      logger::log_info("Created temporary workflow structure with keys: {paste(names(values$project_dirs), collapse = ', ')}")
+      # Determine the correct base directory (project root, not shiny app directory)
+      # Go up two levels from R/shiny/ to get to project root
+      base_dir <- normalizePath(file.path(dirname(dirname(getwd())), ".."))
+      
+      # If that doesn't work, try to find the project root by looking for key files
+      if (!file.exists(file.path(base_dir, "DESCRIPTION"))) {
+        # Try alternative methods to find project root
+        possible_roots <- c(
+          normalizePath("../.."),
+          normalizePath(file.path(dirname(getwd()), "..")),
+          here::here()  # Use here package if available
+        )
+        
+        for (root in possible_roots) {
+          if (file.exists(file.path(root, "DESCRIPTION")) || 
+              file.exists(file.path(root, "R")) ||
+              file.exists(file.path(root, ".Rproj"))) {
+            base_dir <- root
+            break
+          }
+        }
+      }
+      
+      message(sprintf("Using base directory: %s", base_dir))
+      
+      # Call setupDirectories with the correct base directory
+      # Wrap in suppressMessages to avoid logger interpolation issues
+      values$project_dirs <- suppressMessages({
+        setupDirectories(
+          base_dir = base_dir,
+          omic_types = values$selected_omics,
+          label = values$experiment_label,
+          force = TRUE  # Skip user confirmation in Shiny context
+        )
+      })
+      
+      # Create a subdirectory for this experiment in the user-specified location
+      experiment_dir <- file.path(values$project_base_dir, values$experiment_label)
+      
+      message(sprintf("Creating project in: %s", experiment_dir))
+      
+      # Call setupDirectories with the user-specified directory
+      # Wrap in suppressMessages to avoid logger interpolation issues
+      values$project_dirs <- suppressMessages({
+        setupDirectories(
+          base_dir = experiment_dir,
+          omic_types = values$selected_omics,
+          label = NULL,  # Don't add label again since it's already in the path
+          force = TRUE   # Skip user confirmation in Shiny context
+        )
+      })
+      
+      # Debug: Check what was created
+      message(sprintf("Working directory: %s", getwd()))
+      message(sprintf("Experiment directory: %s", experiment_dir))
+      message(sprintf("Project dirs keys: %s", paste(names(values$project_dirs), collapse = ", ")))
+      
+      # Check if directories actually exist
+      for (key in names(values$project_dirs)) {
+        paths <- values$project_dirs[[key]]
+        if (is.list(paths) && !is.null(paths$results_dir)) {
+          exists <- dir.exists(paths$results_dir)
+          message(sprintf("  %s results_dir exists: %s (%s)", key, exists, paths$results_dir))
+        }
+      }
+      
+      logger::log_info("Created project directories with keys: {paste(names(values$project_dirs), collapse = ', ')}")
+      
+      # Show success notification
+      showNotification(
+        paste("Project directories created for:", paste(values$selected_omics, collapse = ", ")),
+        type = "success",
+        duration = 5
+      )
       
     }, error = function(e) {
-      logger::log_error("Failed to create workflow structure: {e$message}")
-      showNotification("Failed to create workflow structure", type = "error")
+      logger::log_error("Failed to create project directories: {e$message}")
+      showNotification(
+        paste("Failed to create project directories:", e$message), 
+        type = "error",
+        duration = NULL
+      )
       return()
     })
     
@@ -389,7 +582,7 @@ server <- function(input, output, session) {
               
               # Check if it's actually a function
               if (!is.function(ui_function)) {
-                message(sprintf("   [%s] ERROR: Object is not a function!", omic))
+                message(sprintf("   [%s] ERROR: Object is not a function!"))
                 stop(sprintf("%s is not a function", ui_function_name))
               }
               
@@ -464,12 +657,15 @@ server <- function(input, output, session) {
           message(sprintf("     project_dirs: %s", typeof(values$project_dirs)))
           message(sprintf("     omic_type: %s", omic))
           message(sprintf("     experiment_label: %s", values$experiment_label))
+          message(sprintf("     volumes: type = %s, is.null = %s", 
+                          typeof(volumes), is.null(volumes)))
           
           workflow_data <- server_function(
             id = paste0(omic, "_workflow"),
             project_dirs = values$project_dirs,
             omic_type = omic,
-            experiment_label = values$experiment_label
+            experiment_label = values$experiment_label,
+            volumes = volumes
           )
           
           message(sprintf("   Server function returned. Type: %s", typeof(workflow_data)))
