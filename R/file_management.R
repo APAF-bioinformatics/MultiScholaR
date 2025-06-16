@@ -3,11 +3,13 @@
 #' @param omic_types Character vector or comma/space-separated string indicating the types of omics data (e.g., c("proteomics", "metabolomics"), "proteomics, transcriptomics").
 #' @param label Optional label to append to each omic type directory name (e.g., "proteomics_MyLabel").
 #' @param force Logical; if TRUE, skips user confirmation for overwriting existing directories (default: FALSE).
+#' @param reuse_existing Logical; if TRUE, uses an existing directory structure without prompting or overwriting (default: FALSE). For non-interactive use.
 #' @return A named list where each name is an omic type. Each element is a list containing the relevant directory paths for that omic type.
 #' @importFrom logger log_info log_warn
 #' @importFrom stringr str_split str_trim
+#' @importFrom here here
 #' @export
-setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, force = FALSE) {
+setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, force = FALSE, reuse_existing = FALSE) {
     # --- Input Parsing and Validation ---
 
     # Handle comma/space separated string or vector input
@@ -160,10 +162,13 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
         process_current_omic <- TRUE
         reuse_current_omic_dirs <- FALSE
 
-        # Check Existing Directories and User Confirmation (only if force = FALSE)
+        # Check Existing Directories and User Confirmation
         existing_dirs_found <- dir.exists(results_path) || dir.exists(results_summary_path) || dir.exists(scripts_path)
 
-        if (!force && existing_dirs_found) {
+        if (reuse_existing && existing_dirs_found) {
+            logger::log_info("Reusing existing directory structure for '{omic_label_dirname}' as requested by non-interactive call.")
+            reuse_current_omic_dirs <- TRUE
+        } else if (!force && existing_dirs_found) {
             logger::log_warn("Key directory(ies) for '{current_omic_type}' (label: '{omic_label_dirname}') already exist:")
             if (dir.exists(results_path)) logger::log_warn("- {results_path}")
             if (dir.exists(results_summary_path)) logger::log_warn("- {results_summary_path}")

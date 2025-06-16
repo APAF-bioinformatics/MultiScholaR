@@ -179,6 +179,19 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
   message(sprintf("--- Entering setupImportServer ---"))
   message(sprintf("   setupImportServer Arg: id = %s", id))
   message(sprintf("   setupImportServer Arg: volumes is NULL = %s", is.null(volumes)))
+  message(sprintf("   setupImportServer Arg: experiment_paths is NULL = %s", is.null(experiment_paths)))
+  if (!is.null(experiment_paths)) {
+    message(sprintf("   setupImportServer Arg: experiment_paths type = %s, class = %s", 
+                    typeof(experiment_paths), paste(class(experiment_paths), collapse = ", ")))
+    # Check if it's a list with expected keys
+    if (is.list(experiment_paths)) {
+      message(sprintf("   setupImportServer Arg: experiment_paths names = %s", 
+                      paste(names(experiment_paths), collapse = ", ")))
+      if ("results_dir" %in% names(experiment_paths)) {
+        message(sprintf("   setupImportServer Arg: results_dir = %s", experiment_paths$results_dir))
+      }
+    }
+  }
   if (!is.null(volumes)) {
     message(sprintf("   setupImportServer Arg: volumes type = %s, class = %s", 
                     typeof(volumes), paste(class(volumes), collapse = ", ")))
@@ -415,10 +428,10 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
         local_data$detected_format <- format_info$format
         local_data$format_confidence <- format_info$confidence
         
-        log_info("Detected format: {format_info$format} (confidence: {format_info$confidence})")
+        log_info(sprintf("Detected format: %s (confidence: %s)", format_info$format, format_info$confidence))
         
       }, error = function(e) {
-        log_error("Error detecting file format: {e$message}")
+        log_error(paste("Error detecting file format:", e$message))
         local_data$detected_format <- "unknown"
         local_data$format_confidence <- 0
       })
@@ -524,15 +537,17 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
                       id = "processing_notification",
                       duration = NULL)
       
-              tryCatch({
-          # Read data based on format
-          log_info("Reading {format} data from {search_results_path}")
+      tryCatch({
+        # Read data based on format
+        log_info(sprintf("Reading %s data from %s", format, search_results_path))
         
-                  data_import_result <- switch(format,
+        # Import data with error handling
+        data_import_result <- tryCatch({
+          switch(format,
             "diann" = importDIANNData(
               filepath = search_results_path,
-            use_precursor_norm = input$diann_use_precursor_norm %||% TRUE
-                      ),
+              use_precursor_norm = input$diann_use_precursor_norm %||% TRUE
+            ),
             "spectronaut" = importSpectronautData(
               filepath = search_results_path,
               quantity_type = input$spectronaut_quantity %||% "pg"
@@ -543,11 +558,22 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
             ),
             "maxquant" = importMaxQuantData(
               filepath = search_results_path,
-            use_lfq = input$maxquant_use_lfq %||% TRUE,
-            filter_contaminants = input$maxquant_filter_contaminants %||% TRUE
-          ),
-          stop("Unsupported format: ", format)
-        )
+              use_lfq = input$maxquant_use_lfq %||% TRUE,
+              filter_contaminants = input$maxquant_filter_contaminants %||% TRUE
+            ),
+            stop("Unsupported format: ", format)
+          )
+        }, error = function(e) {
+          log_error(paste("Error in data import function:", e$message))
+          stop("Failed to import data: ", e$message)
+        })
+        
+        # Validate import result
+        if (is.null(data_import_result) || is.null(data_import_result$data)) {
+          stop("Data import returned NULL or empty data")
+        }
+        
+        log_info(sprintf("Data imported successfully. Rows: %d", nrow(data_import_result$data)))
         
         # Store in workflow data
         workflow_data$data_tbl <- data_import_result$data
@@ -555,8 +581,82 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
         workflow_data$data_type <- data_import_result$data_type  # "peptide" or "protein"
         workflow_data$column_mapping <- data_import_result$column_mapping
         
+        # Initialize data_cln as a copy of data_tbl (will be modified by design matrix)
+        workflow_data$data_cln <- data_import_result$data
+        
         # Read FASTA file path (we don't parse it here, just store the path)
         workflow_data$fasta_file_path <- fasta_path
+        
+        # Process FASTA file to create aa_seq_tbl_final
+        log_info("Processing FASTA file...")
+        
+        # Get mapping files if provided
+        uniprot_mapping <- if (!is.null(workflow_data$uniprot_mapping)) {
+          workflow_data$uniprot_mapping
+        } else {
+          NULL
+        }
+        
+        uniparc_mapping <- if (!is.null(workflow_data$uniparc_mapping)) {
+          workflow_data$uniparc_mapping
+        } else {
+          NULL
+        }
+        
+        # Create fasta meta file path in experiment directory
+        log_info("Checking experiment_paths...")
+        log_info(sprintf("experiment_paths is NULL: %s", is.null(experiment_paths)))
+        if (!is.null(experiment_paths)) {
+          log_info(sprintf("experiment_paths type: %s", typeof(experiment_paths)))
+          log_info(sprintf("experiment_paths class: %s", paste(class(experiment_paths), collapse=", ")))
+          log_info(sprintf("experiment_paths names: %s", paste(names(experiment_paths), collapse=", ")))
+          if ("results_dir" %in% names(experiment_paths)) {
+            log_info(sprintf("results_dir value: %s", experiment_paths$results_dir))
+          }
+        }
+        
+        if (is.null(experiment_paths) || is.null(experiment_paths$results_dir)) {
+          if (is.null(experiment_paths)) {
+            log_warn("experiment_paths is NULL")
+          } else if (is.null(experiment_paths$results_dir)) {
+            log_warn("experiment_paths$results_dir is NULL")
+            log_warn(paste("experiment_paths contains:", paste(names(experiment_paths), collapse = ", ")))
+          }
+          log_warn("experiment_paths not properly initialized, using temp directory for cache")
+          cache_dir <- file.path(tempdir(), "proteomics_cache")
+          fasta_meta_file <- file.path(cache_dir, "aa_seq_tbl.RDS")
+        } else {
+          fasta_meta_file <- file.path(
+            experiment_paths$results_dir, 
+            "cache", 
+            "aa_seq_tbl.RDS"
+          )
+          cache_dir <- file.path(experiment_paths$results_dir, "cache")
+        }
+        
+        # Create cache directory if it doesn't exist
+        if (!dir.exists(cache_dir)) {
+          dir.create(cache_dir, recursive = TRUE)
+        }
+        
+        # Process FASTA file
+        tryCatch({
+          aa_seq_tbl_final <- processFastaFile(
+            fasta_file_path = fasta_path,
+            uniprot_search_results = uniprot_mapping,
+            uniparc_search_results = uniparc_mapping,
+            fasta_meta_file = fasta_meta_file,
+            organism_name = input$organism_name
+          )
+          
+          workflow_data$aa_seq_tbl_final <- aa_seq_tbl_final
+          log_info(sprintf("FASTA file processed successfully. Found %d sequences", nrow(aa_seq_tbl_final)))
+          
+        }, error = function(e) {
+          log_warn(paste("Error processing FASTA file:", e$message))
+          log_warn("Continuing without FASTA processing - protein ID conversion will be skipped")
+          workflow_data$aa_seq_tbl_final <- NULL
+        })
         
         # Set organism info
         workflow_data$taxon_id <- input$taxon_id
@@ -570,7 +670,7 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
         }
         
         if (!is.null(config_path)) {
-          log_info("Reading configuration from {config_path}")
+          log_info(paste("Reading configuration from", config_path))
           config_list <- ini::read.ini(config_path)
         } else {
           log_info("Using default configuration")
@@ -621,6 +721,32 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
         }
         
         # Update processing log
+        log_info("Creating processing log...")
+        
+        # Safely get column names with defaults
+        run_col <- data_import_result$column_mapping$run_col
+        protein_col <- data_import_result$column_mapping$protein_col
+        peptide_col <- data_import_result$column_mapping$peptide_col
+        
+        # Calculate statistics with error handling
+        n_runs <- if (!is.null(run_col) && run_col %in% names(data_import_result$data)) {
+          length(unique(data_import_result$data[[run_col]]))
+        } else {
+          NA
+        }
+        
+        n_proteins <- if (!is.null(protein_col) && protein_col %in% names(data_import_result$data)) {
+          length(unique(data_import_result$data[[protein_col]]))
+        } else {
+          NA
+        }
+        
+        n_peptides <- if (!is.null(peptide_col) && peptide_col %in% names(data_import_result$data)) {
+          length(unique(data_import_result$data[[peptide_col]]))
+        } else {
+          NA
+        }
+        
         workflow_data$processing_log$setup_import <- list(
           timestamp = Sys.time(),
           search_file = search_filename,
@@ -630,28 +756,38 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
           taxon_id = input$taxon_id,
           organism = input$organism_name,
           n_rows = nrow(data_import_result$data),
-          n_runs = length(unique(data_import_result$data[[data_import_result$column_mapping$run_col]])),
-          n_proteins = length(unique(data_import_result$data[[data_import_result$column_mapping$protein_col]])),
-          n_peptides = if (!is.null(data_import_result$column_mapping$peptide_col)) {
-            length(unique(data_import_result$data[[data_import_result$column_mapping$peptide_col]]))
-          } else {
-            NA
-          }
+          n_runs = n_runs,
+          n_proteins = n_proteins,
+          n_peptides = n_peptides
         )
+        
+        log_info("Processing log created successfully")
         
         # Mark this tab as complete
         workflow_data$tab_status$setup_import <- "complete"
         
         shiny::removeNotification("processing_notification")
-        shiny::showNotification("Data import successful!", type = "success")
+        shiny::showNotification("Data import successful!", type = "message")
         
         local_data$processing <- FALSE
         
       }, error = function(e) {
-        log_error("Error during data import: {e$message}")
+        log_error(paste("Error during data import:", e$message))
         shiny::removeNotification("processing_notification")
         shiny::showNotification(paste("Error:", e$message), type = "error")
         local_data$processing <- FALSE
+        
+        # Clean up workflow_data on error to prevent inconsistent state
+        workflow_data$data_tbl <- NULL
+        workflow_data$data_format <- NULL
+        workflow_data$data_type <- NULL
+        workflow_data$column_mapping <- NULL
+        workflow_data$data_cln <- NULL
+        workflow_data$fasta_file_path <- NULL
+        workflow_data$aa_seq_tbl_final <- NULL
+        workflow_data$config_list <- NULL
+        workflow_data$processing_log$setup_import <- NULL
+        workflow_data$tab_status$setup_import <- "incomplete"
       })
     })
     
@@ -680,23 +816,35 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
     # Render data summary
     output$data_summary <- shiny::renderUI({
       shiny::req(workflow_data$data_tbl)
+      shiny::req(workflow_data$processing_log$setup_import)
       
       summary_info <- workflow_data$processing_log$setup_import
+      
+      # Build the list items, only including peptides if available
+      list_items <- list(
+        shiny::tags$li(paste("Data format:", toupper(summary_info$detected_format))),
+        shiny::tags$li(paste("Data type:", summary_info$data_type)),
+        shiny::tags$li(paste("Total rows:", format(summary_info$n_rows, big.mark = ","))),
+        shiny::tags$li(paste("Number of runs:", summary_info$n_runs)),
+        shiny::tags$li(paste("Number of protein groups:", format(summary_info$n_proteins, big.mark = ",")))
+      )
+      
+      # Add peptides info only if available
+      if (!is.null(summary_info$n_peptides) && !is.na(summary_info$n_peptides)) {
+        list_items <- append(list_items, list(
+          shiny::tags$li(paste("Number of peptides:", format(summary_info$n_peptides, big.mark = ",")))
+        ))
+      }
+      
+      # Add organism info
+      list_items <- append(list_items, list(
+        shiny::tags$li(paste("Organism:", summary_info$organism, "(taxon:", summary_info$taxon_id, ")"))
+      ))
       
       shiny::tags$div(
         class = "well",
         shiny::h4("Data Summary"),
-        shiny::tags$ul(
-          shiny::tags$li(paste("Data format:", toupper(summary_info$detected_format))),
-          shiny::tags$li(paste("Data type:", summary_info$data_type)),
-          shiny::tags$li(paste("Total rows:", format(summary_info$n_rows, big.mark = ","))),
-          shiny::tags$li(paste("Number of runs:", summary_info$n_runs)),
-          shiny::tags$li(paste("Number of protein groups:", format(summary_info$n_proteins, big.mark = ","))),
-          if (!is.na(summary_info$n_peptides)) {
-            shiny::tags$li(paste("Number of peptides:", format(summary_info$n_peptides, big.mark = ",")))
-          },
-          shiny::tags$li(paste("Organism:", summary_info$organism, "(taxon:", summary_info$taxon_id, ")"))
-        )
+        do.call(shiny::tags$ul, list_items)
       )
     })
     
@@ -778,12 +926,47 @@ detectProteomicsFormat <- function(headers, filename, preview_lines = NULL) {
 #' @return List with data, data_type, and column_mapping
 #' @export
 importDIANNData <- function(filepath, use_precursor_norm = TRUE) {
-  data <- vroom::vroom(filepath, show_col_types = FALSE)
+  log_info(paste("Starting DIA-NN import from:", filepath))
+  
+  # Check file exists
+  if (!file.exists(filepath)) {
+    stop("File not found: ", filepath)
+  }
+  
+  # Read data
+  data <- tryCatch({
+    vroom::vroom(filepath, show_col_types = FALSE)
+  }, error = function(e) {
+    stop("Failed to read file: ", e$message)
+  })
+  
+  log_info(sprintf("Read %d rows and %d columns", nrow(data), ncol(data)))
+  
+  # Check for required columns
+  required_cols <- c("Protein.Group", "Stripped.Sequence", "Run")
+  missing_cols <- setdiff(required_cols, names(data))
+  if (length(missing_cols) > 0) {
+    log_error(paste("Missing required columns:", paste(missing_cols, collapse = ', ')))
+    log_error(paste("Available columns:", paste(head(names(data), 20), collapse = ', ')))
+    stop("Missing required DIA-NN columns: ", paste(missing_cols, collapse = ", "))
+  }
   
   # Convert Precursor.Normalised if needed
   if (use_precursor_norm && "Precursor.Normalised" %in% names(data)) {
+    log_info("Converting Precursor.Normalised to numeric")
     data$Precursor.Normalised <- as.numeric(data$Precursor.Normalised)
   }
+  
+  # Determine quantity column
+  quantity_col <- if (use_precursor_norm && "Precursor.Normalised" %in% names(data)) {
+    "Precursor.Normalised"
+  } else if ("Precursor.Quantity" %in% names(data)) {
+    "Precursor.Quantity"
+  } else {
+    stop("No suitable quantity column found (Precursor.Normalised or Precursor.Quantity)")
+  }
+  
+  log_info(paste("Using quantity column:", quantity_col))
   
   return(list(
     data = data,
@@ -792,7 +975,7 @@ importDIANNData <- function(filepath, use_precursor_norm = TRUE) {
       protein_col = "Protein.Group",
       peptide_col = "Stripped.Sequence",
       run_col = "Run",
-      quantity_col = if (use_precursor_norm) "Precursor.Normalised" else "Precursor.Quantity",
+      quantity_col = quantity_col,
       qvalue_col = "Q.Value",
       pg_qvalue_col = "PG.Q.Value"
     )

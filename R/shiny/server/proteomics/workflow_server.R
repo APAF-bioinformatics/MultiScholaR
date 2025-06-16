@@ -38,6 +38,11 @@ proteomicsWorkflowServer <- function(id, project_dirs, omic_type, experiment_lab
       design_matrix = NULL,
       data_cln = NULL,
       contrasts_tbl = NULL,
+      
+      # R6 state manager for S4 objects
+      state_manager = WorkflowState$new(),
+      
+      # Legacy S4 object slots (can be deprecated later)
       peptide_data = NULL,
       protein_log2_quant = NULL,
       protein_data = NULL,
@@ -63,30 +68,38 @@ proteomicsWorkflowServer <- function(id, project_dirs, omic_type, experiment_lab
     message("   proteomicsWorkflowServer Step: workflow_data created successfully")
     
     # Get paths for this proteomics experiment
-    # First try with experiment label, then without
-    paths_key <- paste0(omic_type, "_", experiment_label)
-    log_info("Looking for project_dirs key: {paths_key}")
-    log_info("Available keys: {paste(names(project_dirs), collapse = ', ')}")
+    # The key in project_dirs is just the omic type (no experiment label)
+    paths_key <- omic_type
+    log_info(paste("Looking for project_dirs key:", paths_key))
+    log_info(paste("Available keys:", paste(names(project_dirs), collapse = ', ')))
     
     message(sprintf("   proteomicsWorkflowServer Step: Checking project_dirs for key: %s", paths_key))
     message(sprintf("   proteomicsWorkflowServer Step: project_dirs names: %s", 
                     paste(names(project_dirs), collapse = ", ")))
     
     if (!paths_key %in% names(project_dirs)) {
-      # Try just the omic type without experiment label
-      paths_key <- omic_type
-      message(sprintf("   proteomicsWorkflowServer Step: Key not found, trying: %s", paths_key))
-      
-      if (!paths_key %in% names(project_dirs)) {
-        message(sprintf("   proteomicsWorkflowServer ERROR: No directory information found for %s", paths_key))
-        log_error("No directory information found for {paths_key}")
-        return()
-      }
+      message(sprintf("   proteomicsWorkflowServer ERROR: No directory information found for %s", paths_key))
+      log_error(paste("No directory information found for", paths_key))
+      return()
     }
     
     experiment_paths <- project_dirs[[paths_key]]
     message(sprintf("   proteomicsWorkflowServer Step: Retrieved experiment_paths. Type: %s", 
                     typeof(experiment_paths)))
+    
+    # Debug what's in experiment_paths
+    if (!is.null(experiment_paths)) {
+      message(sprintf("   proteomicsWorkflowServer Step: experiment_paths is list: %s", is.list(experiment_paths)))
+      message(sprintf("   proteomicsWorkflowServer Step: experiment_paths names: %s", 
+                      paste(names(experiment_paths), collapse = ", ")))
+      if ("results_dir" %in% names(experiment_paths)) {
+        message(sprintf("   proteomicsWorkflowServer Step: results_dir = %s", experiment_paths$results_dir))
+      } else {
+        message("   proteomicsWorkflowServer Step: results_dir NOT found in experiment_paths")
+      }
+    } else {
+      message("   proteomicsWorkflowServer Step: experiment_paths is NULL!")
+    }
     
     # Tab 1: Setup & Import
     message("   proteomicsWorkflowServer Step: Calling setupImportServer...")
@@ -95,11 +108,11 @@ proteomicsWorkflowServer <- function(id, project_dirs, omic_type, experiment_lab
     setupImportServer("setup_import", workflow_data, experiment_paths, volumes)
     
     # Tab 2: Design Matrix
-    message("   proteomicsWorkflowServer Step: Calling designMatrixServer...")
-    designMatrixServer("design_matrix", workflow_data, experiment_paths, omic_type, experiment_label)
+    message("   proteomicsWorkflowServer Step: Calling designMatrixAppletServer...")
+    designMatrixAppletServer("design_matrix", workflow_data, experiment_paths, volumes)
     
     # Tab 3: Quality Control
-    # qualityControlServer("quality_control", workflow_data, experiment_paths)
+    qualityControlAppletServer("quality_control", workflow_data, experiment_paths, omic_type, experiment_label)
     
     # Tab 4: Normalization
     # normalizationServer("normalization", workflow_data, experiment_paths)

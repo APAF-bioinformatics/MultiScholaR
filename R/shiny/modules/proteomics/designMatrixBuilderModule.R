@@ -1,0 +1,611 @@
+#' @title designMatrixBuilderModule
+#'
+#' @description A Shiny module to build a design matrix for proteomics experiments.
+#' This module is a refactored version of the standalone design matrix applet,
+#' designed to be embedded within the main MultiScholaR Shiny application.
+#'
+#' @param id The module ID.
+#' @param data_tbl A reactive expression that returns the data table
+#'   (e.g., from the setup & import tab).
+#' @param config_list A reactive expression that returns the main configuration list.
+#'
+#' @return A reactive expression that returns a list containing the results
+#'   when the "Save" button is clicked. The list includes:
+#'   - `design_matrix`: The final, filtered design matrix.
+#'   - `data_cln`: The data table, filtered to include only assigned runs.
+#'   - `contrasts_tbl`: A data frame of the defined contrasts.
+#'   - `config_list`: The updated configuration list with the new formula.
+#'
+#' @import shiny
+#' @import shinydashboard
+#' @import DT
+#' @import gtools
+#' @import dplyr
+#' @importFrom tibble tibble
+#' @export
+NULL
+
+#' Design Matrix Builder UI Module
+#'
+#' @param id Module ID.
+#' @return A tagList containing the UI for the design matrix builder.
+#' @rdname designMatrixBuilderModule
+designMatrixBuilderUI <- function(id) {
+    ns <- NS(id)
+    # The UI is extensive, so it is defined here. It is based on the
+    # createDesignMatrixUi function from the original shiny_applets.R file.
+    shiny::fluidPage(
+        titlePanel("Design Matrix Builder"),
+
+        # Main layout
+        shiny::fluidRow(
+            # Management tools and Info panel on the left
+            shiny::column(
+                4,
+                shiny::wellPanel(
+                    shiny::tabsetPanel(
+                        id = ns("main_tabs"),
+                        # Sample renaming tab
+                        shiny::tabPanel(
+                            "Rename Samples",
+                            shiny::h4("Individual Rename"),
+                            shiny::fluidRow(
+                                shiny::column(6, shiny::selectizeInput(ns("sample_to_rename"), "Select Sample:",
+                                    choices = NULL # Will be populated by server
+                                )),
+                                shiny::column(6, shiny::textInput(ns("new_sample_name"), "New Name:"))
+                            ),
+                            shiny::actionButton(ns("rename_sample"), "Rename"),
+                            shiny::hr(),
+                            shiny::h4("Bulk Rename"),
+                            shiny::selectizeInput(ns("samples_to_transform"), "Select Samples:",
+                                choices = NULL, # Will be populated by server
+                                multiple = TRUE
+                            ),
+                            shiny::radioButtons(ns("transform_mode"), "Transformation Mode:",
+                                choices = c(
+                                    "Keep Text BEFORE First Underscore" = "before_underscore",
+                                    "Keep Text AFTER Last Underscore" = "after_underscore",
+                                    "Extract by Position" = "range"
+                                )
+                            ),
+                            shiny::helpText(HTML(
+                                "Select how to shorten the selected sample names using underscores as delimiters.",
+                                "<br><b>Keep Text BEFORE First Underscore:</b> Retains only the part before the very first '_'. Example: 'SampleA_T1_Rep1' &rarr; 'SampleA'.",
+                                "<br><b>Keep Text AFTER Last Underscore:</b> Retains only the part after the very last '_'. Example: 'SampleA_T1_Rep1' &rarr; 'Rep1'.",
+                                "<br><b>Extract by Underscore Position:</b> Keeps text segments based on underscore indices (1-based).",
+                                "<ul>",
+                                "<li>Start = 1: Text before the 1st underscore.</li>",
+                                "<li>End = 1: Text after the last underscore.</li>",
+                                "<li>Start = N, End = N: Text between the (N-1)th and Nth underscore.</li>",
+                                "<li>Start = N, End = M (N < M): Text between the (N-1)th and Mth underscore.</li>",
+                                "</ul>",
+                                "Example: 'SampleA_T1_Rep1' with Start=2, End=2 &rarr; 'T1'."
+                            )),
+                            shiny::conditionalPanel(
+                                condition = paste0("input['", ns("transform_mode"), "'] == 'range'"),
+                                shiny::numericInput(ns("range_start"), "Start Underscore Index:", 1, min = 1),
+                                shiny::numericInput(ns("range_end"), "End Underscore Index:", 1, min = 1),
+                                shiny::h5("Preview (First Selected Sample):"),
+                                shiny::verbatimTextOutput(ns("range_preview"))
+                            ),
+                            shiny::actionButton(ns("bulk_rename"), "Apply Transformation")
+                        ),
+
+                        # Factor management tab
+                        shiny::tabPanel(
+                            "Factors",
+                            shiny::h4("Add New Factor"),
+                            shiny::textInput(ns("new_factor"), "New Factor Name:"),
+                            shiny::actionButton(ns("add_factor"), "Add Factor")
+                        ),
+
+                        # Metadata assignment tab
+                        shiny::tabPanel(
+                            "Assign Metadata",
+                            shiny::h4("Assign Metadata"),
+                            shiny::selectizeInput(ns("selected_runs"), "Select Runs:",
+                                choices = NULL, # Will be populated by server
+                                multiple = TRUE
+                            ),
+                            shiny::selectInput(ns("factor1_select"), "Select Factor 1:", choices = c("")),
+                            shiny::selectInput(ns("factor2_select"), "Select Factor 2:", choices = c("")),
+                            shiny::uiOutput(ns("replicate_inputs")),
+                            shiny::actionButton(ns("assign_metadata"), "Assign")
+                        ),
+
+                        # Contrast tab
+                        shiny::tabPanel(
+                            "Contrasts",
+                            shiny::h4("Define Contrasts"),
+                            shiny::selectInput(ns("contrast_group1"), "Group 1:", choices = c("")),
+                            shiny::selectInput(ns("contrast_group2"), "Group 2:", choices = c("")),
+                            shiny::verbatimTextOutput(ns("contrast_factors_info")),
+                            shiny::actionButton(ns("add_contrast"), "Add Contrast")
+                        ),
+
+                        # Formula tab
+                        shiny::tabPanel(
+                            "Formula",
+                            shiny::h4("Model Formula"),
+                            shiny::textInput(ns("formula_string"), "Formula:",
+                                value = "" # Will be populated by server
+                            )
+                        ),
+
+                        # Settings tab for global operations
+                        shiny::tabPanel(
+                            "Settings",
+                            shiny::h4("Session Management"),
+                            shiny::p("Reset options allow you to revert changes made during this session."),
+                            shiny::div(
+                                style = "margin-top: 15px;",
+                                shiny::selectInput(ns("reset_scope"), "Reset Scope:",
+                                    choices = c(
+                                        "All Changes" = "all",
+                                        "Sample Names Only" = "sample_names",
+                                        "Factors Only" = "factors",
+                                        "Contrasts Only" = "contrasts",
+                                        "Formula Only" = "formula"
+                                    ),
+                                    selected = "all"
+                                )
+                            ),
+                            shiny::div(
+                                style = "margin-top: 15px;",
+                                shiny::actionButton(ns("reset_changes"), "Reset to Initial State",
+                                    class = "btn-warning",
+                                    icon = icon("rotate-left"),
+                                    width = "100%"
+                                )
+                            ),
+                            shiny::hr(),
+                            shiny::h4("Information"),
+                            shiny::verbatimTextOutput(ns("session_info"))
+                        )
+                    )
+                ),
+
+                # Information & Assignments Panel
+                shiny::wellPanel(
+                    shiny::h4("Information & Assignments"),
+                    shiny::helpText(HTML(
+                        "<b>Factors:</b> These represent the main experimental variables or conditions ",
+                        "that distinguish your samples (e.g., Treatment, Timepoint, Genotype, Condition). ",
+                        "They are used to group runs for analysis. Define potential factor names in the 'Factors' tab, ",
+                        "then assign the appropriate factor levels to your runs using the 'Assign Metadata' tab. ",
+                        "A 'group' is automatically created based on the combination of assigned factors (e.g., 'TreatmentA_Timepoint1')."
+                    )),
+                    shiny::helpText(HTML(
+                        "<b>Contrasts:</b> These define the specific statistical comparisons you want to make ",
+                        "between the groups you've defined (e.g., 'TreatmentA vs Control', 'Timepoint2 vs Timepoint1'). ",
+                        "Contrasts are essential for differential expression/abundance analysis, allowing the statistical model ",
+                        "to test specific hypotheses about differences between your experimental groups. Define them in the 'Contrasts' tab ",
+                        "after assigning metadata and creating groups."
+                    )),
+                    shiny::hr(),
+                    shiny::h5("Available Factors (Defined in 'Factors' Tab)"),
+                    shiny::uiOutput(ns("available_factors_display")),
+                    shiny::hr(),
+                    shiny::h5("Defined Contrasts"),
+                    shiny::uiOutput(ns("defined_contrasts_display"))
+                )
+            ),
+
+            # Design matrix display on the right
+            shiny::column(
+                8,
+                shiny::wellPanel(
+                    shiny::h4("Current Design Matrix (All Runs) - Proteomics"),
+                    DT::DTOutput(ns("data_table"))
+                ),
+                # The save button is now the primary action for the module to return data.
+                # The parent module will handle closing/hiding this UI.
+                shiny::actionButton(ns("save_results"), "Save Design",
+                    class = "btn-primary",
+                    icon = shiny::icon("save"),
+                    style = "float: right;"
+                )
+            )
+        )
+    )
+}
+
+
+#' Design Matrix Builder Server Module
+#' @rdname designMatrixBuilderModule
+designMatrixBuilderServer <- function(id, data_tbl, config_list) {
+    moduleServer(id, function(input, output, session) {
+
+        # Reactive value to store the final results
+        result_rv <- reactiveVal(NULL)
+
+        # == Initial State Setup =================================================
+        # This section sets up the initial state from the provided data.
+        # It runs only once when the module is initialized.
+
+        # Create a non-reactive list for the initial state to enable resets.
+        initial_state <- reactive({
+            req(data_tbl())
+            req(config_list())
+
+            df <- data_tbl()
+            conf <- config_list()
+
+            # Initialize data_cln with numeric conversions (Proteomics specific)
+            data_cln <- df |>
+                dplyr::mutate(Precursor.Normalised = as.numeric(Precursor.Normalised)) |>
+                dplyr::mutate(Precursor.Quantity = as.numeric(Precursor.Quantity))
+
+            # Initialize design matrix with factor columns
+            design_matrix_raw <- tibble::tibble(
+                Run = data_cln |>
+                    dplyr::distinct(Run) |>
+                    dplyr::select(Run) |>
+                    dplyr::pull(Run) |>
+                    gtools::mixedsort(),
+                group = NA_character_,
+                factor1 = NA_character_,
+                factor2 = NA_character_,
+                replicates = NA_integer_
+            )
+
+            list(
+                design_matrix = design_matrix_raw,
+                data_cln = data_cln,
+                groups = unique(design_matrix_raw$group[!is.na(design_matrix_raw$group) & design_matrix_raw$group != ""]),
+                factors = character(0), # No factors defined initially
+                formula = conf[["deAnalysisParameters"]][["formula_string"]],
+                contrasts = data.frame(
+                    contrast_name = character(),
+                    numerator = character(),
+                    denominator = character(),
+                    stringsAsFactors = FALSE
+                )
+            )
+        })
+
+        # Reactive values for the current, mutable state of the builder
+        design_matrix <- reactiveVal()
+        data_cln_reactive <- reactiveVal()
+        groups <- reactiveVal()
+        factors <- reactiveVal()
+        contrasts <- reactiveVal()
+
+        # Observer to initialize/reset the reactive values from the initial state
+        observe({
+            state <- initial_state()
+            req(state)
+            design_matrix(state$design_matrix)
+            data_cln_reactive(state$data_cln)
+            groups(state$groups)
+            factors(state$factors)
+            contrasts(state$contrasts)
+            
+            # Update UI elements that depend on the initial state
+            sorted_runs <- state$design_matrix$Run
+            updateSelectizeInput(session, "sample_to_rename", choices = sorted_runs, selected = "")
+            updateSelectizeInput(session, "selected_runs", choices = sorted_runs, selected = "")
+            updateSelectizeInput(session, "samples_to_transform", choices = sorted_runs, selected = "")
+            updateTextInput(session, "formula_string", value = state$formula)
+        })
+
+        # Create a proxy for the main data table to allow updates without state loss
+        proxy_data_table <- DT::dataTableProxy("data_table")
+
+        # == UI Rendering and Updates =============================================
+
+        # Update sample selection inputs when names change
+        observeEvent(design_matrix(), {
+            # This observer updates all sample dropdowns if the run names in the
+            # design matrix change (e.g., through renaming).
+            req(design_matrix())
+            sorted_runs <- gtools::mixedsort(design_matrix()$Run)
+            
+            # Preserve existing selections if possible
+            isolate({
+                selected_rename <- input$sample_to_rename
+                selected_meta <- input$selected_runs
+                selected_transform <- input$samples_to_transform
+            })
+
+            updateSelectizeInput(session, "sample_to_rename", choices = sorted_runs, selected = selected_rename)
+            updateSelectizeInput(session, "selected_runs", choices = sorted_runs, selected = selected_meta)
+            updateSelectizeInput(session, "samples_to_transform", choices = sorted_runs, selected = selected_transform)
+        }, ignoreNULL = TRUE, ignoreInit = TRUE)
+
+        # Update factor and group dropdowns when they change
+        observe({
+            # This observer keeps the factor and group dropdowns in sync with the
+            # reactive values `factors()` and `groups()`.
+            
+            # Preserve selections
+            isolate({
+                f1 <- input$factor1_select
+                f2 <- input$factor2_select
+                g1 <- input$contrast_group1
+                g2 <- input$contrast_group2
+            })
+            
+            current_factors <- factors()
+            current_groups <- groups()
+
+            updateSelectInput(session, "factor1_select", choices = c("", current_factors), selected = f1)
+            updateSelectInput(session, "factor2_select", choices = c("", current_factors), selected = f2)
+            updateSelectInput(session, "contrast_group1", choices = c("", current_groups), selected = g1)
+            updateSelectInput(session, "contrast_group2", choices = c("", current_groups), selected = g2)
+        })
+
+
+        # Render the main data table
+        output$data_table <- DT::renderDT({
+                req(design_matrix())
+                design_matrix()
+            },
+            selection = "none",
+            options = list(pageLength = 10, scrollX = TRUE, server = FALSE)
+        )
+
+        # Use a proxy to update the table data without redrawing the whole thing
+        observeEvent(design_matrix(), {
+            req(proxy_data_table)
+            DT::replaceData(proxy_data_table, design_matrix(), resetPaging = FALSE)
+        })
+
+        # Render UI for Available Factors Display
+        output$available_factors_display <- renderUI({
+            current_factors <- factors()
+            if (length(current_factors) == 0) {
+                return(shiny::p("No factors defined yet (use the 'Factors' tab)."))
+            }
+            shiny::p(paste(current_factors, collapse = ", "))
+        })
+
+        # Render UI for Defined Contrasts Display
+        output$defined_contrasts_display <- renderUI({
+            contrast_data <- contrasts()
+            if (is.null(contrast_data) || nrow(contrast_data) == 0) {
+                return(shiny::p("No contrasts defined yet."))
+            }
+            # Display as a simple list using HTML paragraphs
+            shiny::tagList(
+                lapply(contrast_data$contrast_name, shiny::p)
+            )
+        })
+        
+        # Render replicate number input UI
+        output$replicate_inputs <- renderUI({
+            ns <- session$ns
+            req(input$selected_runs)
+            shiny::numericInput(ns("replicate_start"),
+                paste("Starting replicate number for", length(input$selected_runs), "selected runs:"),
+                value = 1,
+                min = 1
+            )
+        })
+
+        # == Event Handlers for UI Actions ========================================
+
+        # Handler for individual sample renaming
+        observeEvent(input$rename_sample, {
+            req(input$sample_to_rename, input$new_sample_name)
+            
+            # Get current state
+            current_matrix <- design_matrix()
+            current_data_cln <- data_cln_reactive()
+
+            # Update names in both tables
+            current_matrix$Run[current_matrix$Run == input$sample_to_rename] <- input$new_sample_name
+            current_data_cln$Run[current_data_cln$Run == input$sample_to_rename] <- input$new_sample_name
+
+            # Update reactive values
+            design_matrix(current_matrix)
+            data_cln_reactive(current_data_cln)
+
+            # Clear the input
+            updateTextInput(session, "new_sample_name", value = "")
+        })
+
+        # Handler for bulk renaming
+        observeEvent(input$bulk_rename, {
+            req(input$samples_to_transform)
+            
+            current_matrix <- design_matrix()
+            current_data_cln <- data_cln_reactive()
+
+            # Transformation function based on selected mode
+            transform_fn <- function(sample_name) {
+                if (input$transform_mode == "range") {
+                    req(input$range_start, input$range_end)
+                    extract_experiment(sample_name, mode = "range", start = input$range_start, end = input$range_end)
+                } else if (input$transform_mode == "before_underscore") {
+                    extract_experiment(sample_name, mode = "start")
+                } else if (input$transform_mode == "after_underscore") {
+                    extract_experiment(sample_name, mode = "end")
+                }
+            }
+
+            # Apply transformation to selected samples
+            new_names <- sapply(input$samples_to_transform, transform_fn)
+
+            # Update both tables
+            for (i in seq_along(input$samples_to_transform)) {
+                original_name <- input$samples_to_transform[i]
+                new_name <- new_names[i]
+                current_matrix$Run[current_matrix$Run == original_name] <- new_name
+                current_data_cln$Run[current_data_cln$Run == original_name] <- new_name
+            }
+
+            # Update reactive values
+            design_matrix(current_matrix)
+            data_cln_reactive(current_data_cln)
+        })
+        
+        # Handler for adding a new factor
+        observeEvent(input$add_factor, {
+            req(input$new_factor)
+            new_factor_name <- trimws(input$new_factor)
+            if (new_factor_name != "" && !new_factor_name %in% factors()) {
+                factors(c(factors(), new_factor_name))
+            }
+            updateTextInput(session, "new_factor", value = "")
+        })
+
+        # Handler for assigning metadata to runs
+        observeEvent(input$assign_metadata, {
+            req(input$selected_runs, input$factor1_select)
+
+            current_matrix <- design_matrix()
+            
+            # Generate replicate numbers
+            replicate_numbers <- if (!is.null(input$replicate_start)) {
+                seq(input$replicate_start, length.out = length(input$selected_runs))
+            } else {
+                NA_integer_
+            }
+            
+            # Update the selected rows with factors and replicates
+            selected_indices <- which(current_matrix$Run %in% input$selected_runs)
+            current_matrix$factor1[selected_indices] <- input$factor1_select
+            current_matrix$factor2[selected_indices] <- input$factor2_select
+            current_matrix$replicates[selected_indices] <- replicate_numbers
+
+            # Create group names based on factors
+            group_name <- if (input$factor2_select == "") {
+                input$factor1_select
+            } else {
+                paste(input$factor1_select, input$factor2_select, sep = "_")
+            }
+            current_matrix$group[selected_indices] <- group_name
+
+            design_matrix(current_matrix)
+
+            # Update the list of unique groups
+            unique_groups <- unique(current_matrix$group[!is.na(current_matrix$group) & current_matrix$group != ""])
+            groups(unique_groups)
+        })
+
+        # Handler for adding a new contrast
+        observeEvent(input$add_contrast, {
+            req(input$contrast_group1, input$contrast_group2)
+            g1 <- input$contrast_group1
+            g2 <- input$contrast_group2
+
+            if (g1 != "" && g2 != "" && g1 != g2) {
+                contrast_name <- paste0(g1, ".vs.", g2)
+                
+                # Avoid adding duplicate contrasts
+                if(!contrast_name %in% contrasts()$contrast_name) {
+                    new_contrast <- data.frame(
+                        contrast_name = contrast_name,
+                        numerator = g1,
+                        denominator = g2,
+                        stringsAsFactors = FALSE
+                    )
+                    contrasts(rbind(contrasts(), new_contrast))
+                }
+            }
+        })
+
+        # Handler for resetting state
+        observeEvent(input$reset_changes, {
+            # Show confirmation modal
+            showModal(modalDialog(
+                title = "Confirm Reset",
+                HTML(paste0("<p>This will revert <strong>", input$reset_scope, "</strong> to their initial state. This action cannot be undone.</p>")),
+                footer = tagList(
+                    modalButton("Cancel"),
+                    actionButton(session$ns("confirm_reset"), "Reset", class = "btn-danger")
+                ),
+                easyClose = TRUE
+            ))
+        })
+
+        # Handler for reset confirmation
+        observeEvent(input$confirm_reset, {
+            scope <- input$reset_scope
+            state <- initial_state()
+
+            if (scope == "all" || scope == "sample_names") {
+                design_matrix(state$design_matrix)
+                data_cln_reactive(state$data_cln)
+            }
+            if (scope == "all" || scope == "factors") {
+                factors(state$factors)
+                # Clear assignments if factors are reset
+                current_matrix <- design_matrix()
+                current_matrix$factor1 <- NA_character_
+                current_matrix$factor2 <- NA_character_
+                current_matrix$group <- NA_character_
+                design_matrix(current_matrix)
+                groups(state$groups)
+            }
+            if (scope == "all" || scope == "contrasts") {
+                contrasts(state$contrasts)
+            }
+            if (scope == "all" || scope == "formula") {
+                updateTextInput(session, "formula_string", value = state$formula)
+            }
+            
+            removeModal()
+            showNotification(paste("Reset of", scope, "completed."), type = "message")
+        })
+
+        # == Final Save Action ====================================================
+
+        observeEvent(input$save_results, {
+            # This is the main action of the module. It prepares the final
+            # data objects and returns them in a list via a reactive value.
+
+            # 1. Filter design matrix to only include assigned runs
+            design_matrix_final <- design_matrix() |>
+                dplyr::filter(!is.na(group) & group != "")
+            
+            if(nrow(design_matrix_final) == 0) {
+                showNotification("No samples have been assigned to groups. Please assign metadata before saving.", type="warning")
+                return()
+            }
+
+            # 2. Filter main data to match the assigned runs
+            assigned_runs <- design_matrix_final$Run
+            data_cln_final <- data_cln_reactive() |>
+                dplyr::filter(Run %in% assigned_runs)
+
+            # 3. Prepare contrasts table
+            contrast_data <- contrasts()
+            contrasts_tbl <- if (!is.null(contrast_data) && nrow(contrast_data) > 0) {
+                # Format for limma/DEqMS
+                contrast_strings <- sapply(1:nrow(contrast_data), function(i) {
+                    paste0(
+                        "group", contrast_data$numerator[i],
+                        "-group", contrast_data$denominator[i]
+                    )
+                })
+                data.frame(
+                    contrasts = contrast_strings,
+                    stringsAsFactors = FALSE
+                )
+            } else {
+                NULL
+            }
+            
+            # 4. Update config list with formula
+            config_list_final <- config_list()
+            config_list_final[["deAnalysisParameters"]][["formula_string"]] <- input$formula_string
+            
+            # 5. Set the final result list to the reactive value
+            final_result <- list(
+                design_matrix = design_matrix_final,
+                data_cln = data_cln_final,
+                contrasts_tbl = contrasts_tbl,
+                config_list = config_list_final
+            )
+            result_rv(final_result)
+            
+            showNotification("Design saved successfully. You can close this builder.", type="message", duration = 5)
+        })
+
+        # The return value of the module server is the reactive containing the results
+        return(result_rv)
+    })
+} 
