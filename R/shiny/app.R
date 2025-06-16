@@ -62,13 +62,13 @@ tryCatch({
     loadDependencies(verbose = FALSE)
   }
 }, error = function(e) {
-  logger::log_warn("Failed to load some dependencies: {e$message}")
+        logger::log_warn(paste("Failed to load some dependencies:", e$message))
 })
 
 # Source all module files
 sourceDir <- function(path, recursive = TRUE) {
   if (!dir.exists(path)) {
-    logger::log_warn("Directory does not exist: {path}")
+          logger::log_warn(paste("Directory does not exist:", path))
     return(invisible(NULL))
   }
   files <- list.files(path, pattern = "\\.R$", full.names = TRUE, recursive = recursive)
@@ -407,7 +407,7 @@ server <- function(input, output, session) {
     # Validate directory
     if (!dir.exists(input$project_dir)) {
       showNotification(
-        paste("Directory does not exist:", input$project_dir),
+        paste("Base directory does not exist:", input$project_dir),
         type = "error",
         duration = NULL
       )
@@ -415,111 +415,103 @@ server <- function(input, output, session) {
     }
     
     values$experiment_label <- input$experiment_label
-    values$project_base_dir <- input$project_dir
-    removeModal()
+    values$project_base_dir <- file.path(input$project_dir, input$experiment_label)
     
-    # Log the selection
-    logger::log_info("Starting analysis for: {paste(values$selected_omics, collapse = ', ')}")
-    logger::log_info("Experiment label: {values$experiment_label}")
-    
-    # Initialize project directories using setupDirectories
-    tryCatch({
-      # Source file_management.R if setupDirectories is not available
-      if (!exists("setupDirectories", mode = "function")) {
-        file_management_path <- "../../file_management.R"
-        if (file.exists(file_management_path)) {
-          source(file_management_path)
-          logger::log_info("Loaded file_management.R")
-        } else {
-          stop("setupDirectories function not found and file_management.R not available")
-        }
-      }
-      
-      # Determine the correct base directory (project root, not shiny app directory)
-      # Go up two levels from R/shiny/ to get to project root
-      base_dir <- normalizePath(file.path(dirname(dirname(getwd())), ".."))
-      
-      # If that doesn't work, try to find the project root by looking for key files
-      if (!file.exists(file.path(base_dir, "DESCRIPTION"))) {
-        # Try alternative methods to find project root
-        possible_roots <- c(
-          normalizePath("../.."),
-          normalizePath(file.path(dirname(getwd()), "..")),
-          here::here()  # Use here package if available
+    # Check if the final experiment directory already exists
+    if (dir.exists(values$project_base_dir)) {
+      # Show modal asking user what to do
+      showModal(modalDialog(
+        title = "Project Already Exists",
+        paste("A project named '", values$experiment_label, "' already exists at this location."),
+        "What would you like to do?",
+        footer = tagList(
+          modalButton("Cancel"),
+          actionButton("reuse_project", "Use Existing Project"),
+          actionButton("overwrite_project", "Overwrite Project", class = "btn-danger")
         )
-        
-        for (root in possible_roots) {
-          if (file.exists(file.path(root, "DESCRIPTION")) || 
-              file.exists(file.path(root, "R")) ||
-              file.exists(file.path(root, ".Rproj"))) {
-            base_dir <- root
-            break
+      ))
+    } else {
+      # Directory doesn't exist, so proceed with creation
+      # Using a reactiveVal to trigger the setup process
+      setup_action("create_new")
+    }
+  })
+
+  # Reactive value to control the setup process
+  setup_action <- reactiveVal(NULL)
+
+  # Observer for "Use Existing"
+  observeEvent(input$reuse_project, {
+    removeModal()
+    setup_action("reuse_existing")
+  })
+
+  # Observer for "Overwrite"
+  observeEvent(input$overwrite_project, {
+    removeModal()
+    setup_action("create_new") # Same action as creating new, but 'force' will handle it
+  })
+  
+  # Centralized observer to run setupDirectories
+  observeEvent(setup_action(), {
+    action <- setup_action()
+    req(action)
+
+    experiment_dir <- values$project_base_dir
+    
+    tryCatch({
+      # Call setupDirectories with the appropriate arguments
+      
+      # For both "create_new" and "overwrite", we pre-stage scripts and use force=TRUE
+      if (action == "create_new") {
+        logger::log_info("Creating new project directories...")
+        # Pre-stage script templates
+        for (omic in values$selected_omics) {
+          source_template_dir <- file.path(here::here(), "Workbooks", omic, "starter")
+          dest_template_dir <- file.path(experiment_dir, "scripts", omic)
+          if (dir.exists(source_template_dir)) {
+            fs::dir_copy(source_template_dir, dest_template_dir, overwrite = TRUE)
           }
         }
-      }
-      
-      message(sprintf("Using base directory: %s", base_dir))
-      
-      # Call setupDirectories with the correct base directory
-      # Wrap in suppressMessages to avoid logger interpolation issues
-      values$project_dirs <- suppressMessages({
-        setupDirectories(
-          base_dir = base_dir,
-          omic_types = values$selected_omics,
-          label = values$experiment_label,
-          force = TRUE  # Skip user confirmation in Shiny context
-        )
-      })
-      
-      # Create a subdirectory for this experiment in the user-specified location
-      experiment_dir <- file.path(values$project_base_dir, values$experiment_label)
-      
-      message(sprintf("Creating project in: %s", experiment_dir))
-      
-      # Call setupDirectories with the user-specified directory
-      # Wrap in suppressMessages to avoid logger interpolation issues
-      values$project_dirs <- suppressMessages({
-        setupDirectories(
+        
+        project_dirs_list <- setupDirectories(
           base_dir = experiment_dir,
           omic_types = values$selected_omics,
-          label = NULL,  # Don't add label again since it's already in the path
-          force = TRUE   # Skip user confirmation in Shiny context
+          label = NULL,
+          force = TRUE # This will handle overwriting if the button was clicked
         )
-      })
-      
-      # Debug: Check what was created
-      message(sprintf("Working directory: %s", getwd()))
-      message(sprintf("Experiment directory: %s", experiment_dir))
-      message(sprintf("Project dirs keys: %s", paste(names(values$project_dirs), collapse = ", ")))
-      
-      # Check if directories actually exist
-      for (key in names(values$project_dirs)) {
-        paths <- values$project_dirs[[key]]
-        if (is.list(paths) && !is.null(paths$results_dir)) {
-          exists <- dir.exists(paths$results_dir)
-          message(sprintf("  %s results_dir exists: %s (%s)", key, exists, paths$results_dir))
-        }
+
+      } else if (action == "reuse_existing") {
+        logger::log_info("Reusing existing project directories...")
+        project_dirs_list <- setupDirectories(
+          base_dir = experiment_dir,
+          omic_types = values$selected_omics,
+          label = NULL,
+          force = FALSE,
+          reuse_existing = TRUE # Use the new parameter
+        )
+      } else {
+        return() # Do nothing if action is not recognized
       }
+
+      values$project_dirs <- project_dirs_list
       
-      logger::log_info("Created project directories with keys: {paste(names(values$project_dirs), collapse = ', ')}")
+      logger::log_info(paste("Project setup complete. Action:", action))
       
-      # Show success notification
-      showNotification(
-        paste("Project directories created for:", paste(values$selected_omics, collapse = ", ")),
-        type = "success",
-        duration = 5
-      )
+      # Common logic to proceed after setup
+      proceed_with_analysis()
       
     }, error = function(e) {
-      logger::log_error("Failed to create project directories: {e$message}")
-      showNotification(
-        paste("Failed to create project directories:", e$message), 
-        type = "error",
-        duration = NULL
-      )
-      return()
+      logger::log_error(paste("Failed to set up project directories:", e$message))
+      showNotification(paste("Failed to set up project directories:", e$message), type = "error", duration = NULL)
     })
     
+    # Reset the action so it can be triggered again
+    setup_action(NULL)
+  })
+
+  # Helper function to continue the app initialization after directory setup
+  proceed_with_analysis <- function() {
     # Load omics-specific modules if not already loaded
     for (omic in values$selected_omics) {
       if (omic != "proteomics") { # proteomics already loaded
@@ -527,9 +519,9 @@ server <- function(input, output, session) {
           sourceDir(paste0("modules/", omic))
           sourceDir(paste0("ui/", omic))
           sourceDir(paste0("server/", omic))
-          logger::log_info("Loaded modules for {omic}")
+          logger::log_info(paste("Loaded modules for", omic))
         }, error = function(e) {
-          logger::log_warn("Could not load modules for {omic}: {e$message}")
+          logger::log_warn(paste("Could not load modules for", omic, ":", e$message))
         })
       }
     }
@@ -678,14 +670,14 @@ server <- function(input, output, session) {
         }
       }, error = function(e) {
         message(sprintf("   ERROR initializing server for %s: %s", omic, e$message))
-        logger::log_error("Could not initialize server for {omic}: {e$message}")
+        logger::log_error(paste("Could not initialize server for", omic, ":", e$message))
       })
     }
     message("--- Server module initialization complete ---")
     
     # Switch to first omics tab
     shinydashboard::updateTabItems(session, "main_menu", paste0(values$selected_omics[1], "_tab"))
-  })
+  }
 }
 
 # Run the app

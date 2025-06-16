@@ -58,8 +58,8 @@ proteomicsWorkflowUi <- function(id) {
   })
   
   # Create design matrix tab
-  message("   proteomicsWorkflowUi Step: Calling designMatrixUi...")
-  design_matrix_content <- designMatrixUi(ns("design_matrix"))
+  message("   proteomicsWorkflowUi Step: Calling designMatrixAppletUI...")
+  design_matrix_content <- designMatrixAppletUI(ns("design_matrix"))
   
   # Create QC tab content
   message("   proteomicsWorkflowUi Step: Creating QC tab content...")
@@ -170,7 +170,7 @@ proteomicsWorkflowUi <- function(id) {
         value = "qc",
         icon = shiny::icon("chart-line"),
         shiny::br(),
-        qc_tab_content
+        qualityControlAppletUI(ns("quality_control"))
       ),
       
       # Tab 4: Normalization
