@@ -21,10 +21,9 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Suggests: 
     testthat (>= 3.0.0),
-    clusterProfiler, 
     GlimmaV2,
     ggplot2,
-    plotly,
+    plotly, 
     seqinr,
     UpSetR,
     tidyverse,
@@ -36,6 +35,7 @@ Suggests:
     svglite,
     iheatmapr,
     shiny,
+    reticulate,
     gprofiler2,
     webshot2
 Config/testthat/edition: 3
@@ -92,8 +92,7 @@ Imports:
     vroom,
     writexl,
     xml2,
-    ggraph,
-    reticulate
+    ggraph
 Remotes:
     cran/RUVIIIC,
     APAF-bioinformatics/GlimmaV2

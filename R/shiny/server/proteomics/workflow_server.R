@@ -10,13 +10,18 @@
 #' @importFrom shiny moduleServer reactive reactiveValues observeEvent req
 #' @importFrom logger log_info log_error
 #' @export
-proteomicsWorkflowServer <- function(id, project_dirs, omic_type, experiment_label) {
+proteomicsWorkflowServer <- function(id, project_dirs, omic_type, experiment_label, volumes = NULL) {
   message(sprintf("--- Entering proteomicsWorkflowServer ---"))
   message(sprintf("   proteomicsWorkflowServer Arg: id = %s", id))
   message(sprintf("   proteomicsWorkflowServer Arg: omic_type = %s", omic_type))
   message(sprintf("   proteomicsWorkflowServer Arg: experiment_label = %s", experiment_label))
   message(sprintf("   proteomicsWorkflowServer Arg: project_dirs type = %s, class = %s", 
                   typeof(project_dirs), class(project_dirs)))
+  message(sprintf("   proteomicsWorkflowServer Arg: volumes is NULL = %s", is.null(volumes)))
+  if (!is.null(volumes)) {
+    message(sprintf("   proteomicsWorkflowServer Arg: volumes type = %s, class = %s", 
+                    typeof(volumes), paste(class(volumes), collapse = ", ")))
+  }
   
   moduleServer(id, function(input, output, session) {
     message(sprintf("   proteomicsWorkflowServer Step: Inside moduleServer function"))
@@ -58,6 +63,7 @@ proteomicsWorkflowServer <- function(id, project_dirs, omic_type, experiment_lab
     message("   proteomicsWorkflowServer Step: workflow_data created successfully")
     
     # Get paths for this proteomics experiment
+    # First try with experiment label, then without
     paths_key <- paste0(omic_type, "_", experiment_label)
     log_info("Looking for project_dirs key: {paths_key}")
     log_info("Available keys: {paste(names(project_dirs), collapse = ', ')}")
@@ -67,9 +73,15 @@ proteomicsWorkflowServer <- function(id, project_dirs, omic_type, experiment_lab
                     paste(names(project_dirs), collapse = ", ")))
     
     if (!paths_key %in% names(project_dirs)) {
-      message(sprintf("   proteomicsWorkflowServer ERROR: No directory information found for %s", paths_key))
-      log_error("No directory information found for {paths_key}")
-      return()
+      # Try just the omic type without experiment label
+      paths_key <- omic_type
+      message(sprintf("   proteomicsWorkflowServer Step: Key not found, trying: %s", paths_key))
+      
+      if (!paths_key %in% names(project_dirs)) {
+        message(sprintf("   proteomicsWorkflowServer ERROR: No directory information found for %s", paths_key))
+        log_error("No directory information found for {paths_key}")
+        return()
+      }
     }
     
     experiment_paths <- project_dirs[[paths_key]]
@@ -78,7 +90,9 @@ proteomicsWorkflowServer <- function(id, project_dirs, omic_type, experiment_lab
     
     # Tab 1: Setup & Import
     message("   proteomicsWorkflowServer Step: Calling setupImportServer...")
-    setupImportServer("setup_import", workflow_data, experiment_paths)
+    message(sprintf("   proteomicsWorkflowServer Step: Passing volumes to setupImportServer. is.null = %s, type = %s", 
+                    is.null(volumes), typeof(volumes)))
+    setupImportServer("setup_import", workflow_data, experiment_paths, volumes)
     
     # Tab 2: Design Matrix
     message("   proteomicsWorkflowServer Step: Calling designMatrixServer...")
