@@ -62,6 +62,7 @@ Imports:
     igraph,
     iq,
     janitor,
+    shinyjqui,
     logger,
     knitr,
     lazyeval,

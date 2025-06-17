@@ -671,12 +671,24 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
         
         if (!is.null(config_path)) {
           log_info(paste("Reading configuration from", config_path))
-          config_list <- ini::read.ini(config_path)
+          # ✅ FIXED: Use readConfigFile instead of ini::read.ini for proper processing
+          config_list <- readConfigFile(file = config_path)
         } else {
           log_info("Using default configuration")
-          config_list <- getDefaultProteomicsConfig()
+          # Use readConfigFile with default config.ini if it exists
+          default_config_path <- file.path(experiment_paths$source_dir, "config.ini")
+          if (file.exists(default_config_path)) {
+            config_list <- readConfigFile(file = default_config_path)
+          } else {
+            # Fall back to minimal default if no config.ini exists
+            config_list <- getDefaultProteomicsConfig()
+          }
         }
         workflow_data$config_list <- config_list
+        
+        # ✅ FIXED: Create global config_list for updateConfigParameter compatibility
+        assign("config_list", config_list, envir = .GlobalEnv)
+        log_info("Created global config_list for updateConfigParameter compatibility")
         
         # Read optional mapping files
         uniprot_path <- if (use_shiny_files) {

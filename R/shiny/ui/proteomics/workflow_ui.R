@@ -61,80 +61,6 @@ proteomicsWorkflowUi <- function(id) {
   message("   proteomicsWorkflowUi Step: Calling designMatrixAppletUI...")
   design_matrix_content <- designMatrixAppletUI(ns("design_matrix"))
   
-  # Create QC tab content
-  message("   proteomicsWorkflowUi Step: Creating QC tab content...")
-  qc_tab_content <- shiny::fluidRow(
-          shiny::column(3,
-            shiny::wellPanel(
-              shiny::h4("QC Parameters"),
-              shiny::sliderInput(
-                ns("q_value_threshold"),
-                "Q-value Threshold:",
-                min = 0.001,
-                max = 0.1,
-                value = 0.01,
-                step = 0.001
-              ),
-              shiny::sliderInput(
-                ns("intensity_percentile"),
-                "Intensity Cutoff Percentile:",
-                min = 0,
-                max = 10,
-                value = 1,
-                step = 0.5
-              ),
-              shiny::numericInput(
-                ns("min_peptides_per_protein"),
-                "Min Peptides per Protein:",
-                value = 2,
-                min = 1,
-                max = 10
-              ),
-              shiny::numericInput(
-                ns("min_peptides_per_sample"),
-                "Min Peptides per Sample:",
-                value = 1000,
-                min = 100,
-                max = 10000,
-                step = 100
-              ),
-              shiny::br(),
-              shiny::actionButton(
-                ns("run_qc"),
-                "Run QC Filters",
-                class = "btn-primary",
-                width = "100%"
-              )
-            )
-          ),
-          shiny::column(9,
-            shiny::tabsetPanel(
-              shiny::tabPanel(
-                "Filtering Summary",
-                shiny::br(),
-                shiny::plotOutput(ns("filtering_summary_plot"), height = "600px")
-              ),
-              shiny::tabPanel(
-                "QC Metrics",
-                shiny::br(),
-                shiny::fluidRow(
-                  shiny::column(6, shiny::plotOutput(ns("rle_plot"))),
-                  shiny::column(6, shiny::plotOutput(ns("pca_plot")))
-                ),
-                shiny::fluidRow(
-                  shiny::column(6, shiny::plotOutput(ns("density_plot"))),
-                  shiny::column(6, shiny::plotOutput(ns("correlation_plot")))
-                )
-              ),
-              shiny::tabPanel(
-                "Filtered Data",
-                shiny::br(),
-                DT::DTOutput(ns("filtered_data_preview"))
-              )
-            )
-          )
-        )
-  
   # Now build the complete tagList
   message("   proteomicsWorkflowUi Step: Creating tabsetPanel...")
   result <- shiny::tagList(
@@ -180,152 +106,223 @@ proteomicsWorkflowUi <- function(id) {
         icon = shiny::icon("balance-scale"),
         shiny::br(),
         shiny::fluidRow(
-            shiny::column(3,
-              shiny::wellPanel(
-                shiny::h4("QC Parameters"),
-                shiny::sliderInput(
-                  ns("q_value_threshold"),
-                  "Q-value Threshold:",
-                  min = 0.001,
-                  max = 0.1,
-                  value = 0.01,
-                  step = 0.001
-                ),
-                shiny::sliderInput(
-                  ns("intensity_percentile"),
-                  "Intensity Cutoff Percentile:",
-                  min = 0,
-                  max = 10,
-                  value = 1,
-                  step = 0.5
-                ),
-                shiny::numericInput(
-                  ns("min_peptides_per_protein"),
-                  "Min Peptides per Protein:",
-                  value = 2,
-                  min = 1,
-                  max = 10
-                ),
-                shiny::numericInput(
-                  ns("min_peptides_per_sample"),
-                  "Min Peptides per Sample:",
-                  value = 1000,
-                  min = 100,
-                  max = 10000,
-                  step = 100
-                ),
-                shiny::br(),
-                shiny::actionButton(
-                  ns("run_qc"),
-                  "Run QC Filters",
-                  class = "btn-primary",
-                  width = "100%"
-                )
-              )
-            ),
-            shiny::column(9,
-              shiny::tabsetPanel(
-                shiny::tabPanel(
-                  "Filtering Summary",
-                  shiny::br(),
-                  shiny::plotOutput(ns("filtering_summary_plot"), height = "600px")
-                ),
-                shiny::tabPanel(
-                  "QC Metrics",
-                  shiny::br(),
-                  shiny::fluidRow(
-                    shiny::column(6, shiny::plotOutput(ns("rle_plot"))),
-                    shiny::column(6, shiny::plotOutput(ns("pca_plot")))
-                  ),
-                  shiny::fluidRow(
-                    shiny::column(6, shiny::plotOutput(ns("density_plot"))),
-                    shiny::column(6, shiny::plotOutput(ns("correlation_plot")))
-                  )
-                ),
-                shiny::tabPanel(
-                  "Filtered Data",
-                  shiny::br(),
-                  DT::DTOutput(ns("filtered_data_preview"))
-                )
-              )
-            )
-          )
-      ),
-      
-      # Tab 4: Normalization
-      shiny::tabPanel(
-        "Normalization",
-        value = "normalization",
-        icon = shiny::icon("balance-scale"),
-        shiny::br(),
-        shiny::fluidRow(
           shiny::column(3,
             shiny::wellPanel(
               shiny::h4("Normalization Options"),
-              shiny::radioButtons(
+              
+              # Normalization method selection
+              shiny::selectInput(
                 ns("norm_method"),
                 "Normalization Method:",
                 choices = list(
                   "Cyclic Loess" = "cyclicloess",
-                  "Quantile" = "quantile",
-                  "RLE" = "rle",
-                  "TMM" = "TMM"
+                  "Quantile" = "quantile", 
+                  "Scale (Median Absolute Values)" = "scale",
+                  "None" = "none"
                 ),
-                selected = "cyclicloess"
+                selected = "cyclicloess",
+                width = "100%"
               ),
+              shiny::helpText("Method for between-sample normalization (default: Cyclic Loess)"),
+              
               shiny::hr(),
-              shiny::h4("RUV-III Parameters"),
-              shiny::sliderInput(
-                ns("ruv_percentage"),
-                "% Proteins as Negative Controls:",
-                min = 1,
-                max = 20,
-                value = 5,
-                step = 1
+              
+              # Plot aesthetics controls
+              shiny::h4("Plot Aesthetics"),
+              shiny::selectInput(
+                ns("color_variable"),
+                "Color by:",
+                choices = c("group", "factor1", "factor2"),
+                selected = "group",
+                width = "100%"
               ),
-              numericInput(
-                ns("ruv_k"),
-                "Number of Factors (k):",
-                value = NULL,
-                min = 1,
-                max = 10
+              shiny::helpText("Variable to use for plot coloring"),
+              
+              shiny::selectInput(
+                ns("shape_variable"),
+                "Shape by:",
+                choices = c("group", "factor1", "factor2"),
+                selected = "group",
+                width = "100%"
               ),
-              br(),
-              actionButton(
+              shiny::helpText("Variable to use for plot shapes"),
+              
+              shiny::hr(),
+              
+              # RUV-III options
+              shiny::h4("RUV-III Batch Correction"),
+              shiny::radioButtons(
+                ns("ruv_mode"),
+                "RUV Parameter Tuning:",
+                choices = list(
+                  "Automatic (recommended)" = "automatic",
+                  "Manual (advanced users)" = "manual"
+                ),
+                selected = "automatic",
+                width = "100%"
+              ),
+              
+              # Manual RUV controls (shown when manual mode selected)
+              shiny::conditionalPanel(
+                condition = "input.ruv_mode == 'manual'",
+                ns = ns,
+                
+                shiny::sliderInput(
+                  ns("ruv_percentage"),
+                  "% Proteins as Negative Controls:",
+                  min = 1,
+                  max = 20,
+                  value = 5,
+                  step = 1,
+                  width = "100%"
+                ),
+                shiny::helpText("Percentage of most stable proteins used as negative controls"),
+                
+                shiny::numericInput(
+                  ns("ruv_k"),
+                  "Number of Factors (k):",
+                  value = NULL,
+                  min = 1,
+                  max = 10,
+                  width = "100%"
+                ),
+                shiny::helpText("Will be auto-populated from canonical correlation analysis"),
+                
+                shiny::br()
+              ),
+              
+              # Normalization action button
+              shiny::actionButton(
                 ns("run_normalization"),
-                "Run Normalization",
+                "Run Normalization & RUV",
                 class = "btn-primary",
+                width = "100%"
+              ),
+              
+              shiny::br(),
+              shiny::br(),
+              
+              # Reset button
+              shiny::actionButton(
+                ns("reset_normalization"),
+                "Reset to Pre-Normalization",
+                class = "btn-warning",
                 width = "100%"
               )
             )
           ),
-          column(9,
-            tabsetPanel(
-              tabPanel(
-                "Canonical Correlation",
-                br(),
-                plotOutput(ns("cancor_plot"), height = "500px"),
-                br(),
-                verbatimTextOutput(ns("best_k_suggestion"))
-              ),
-              tabPanel(
-                "Before/After Comparison",
-                br(),
-                fluidRow(
-                  column(6, 
-                    h4("Before Normalization"),
-                    plotOutput(ns("before_norm_plots"))
+          
+          # QC plot panels with 3-column layout structure
+          shiny::column(9,
+            shiny::tabsetPanel(
+              id = ns("norm_qc_tabs"),
+              
+              # PCA Tab
+              shiny::tabPanel(
+                "PCA",
+                icon = shiny::icon("project-diagram"),
+                shiny::br(),
+                shiny::fluidRow(
+                  shiny::column(4,
+                    shiny::h5("Post-Filtering", style = "text-align: center;"),
+                    shinyjqui::jqui_resizable(
+                      shiny::plotOutput(ns("pca_post_filtering"), height = "400px")
+                    )
                   ),
-                  column(6,
-                    h4("After Normalization"),
-                    plotOutput(ns("after_norm_plots"))
+                  shiny::column(4,
+                    shiny::h5("Post-Normalization", style = "text-align: center;"),
+                    shinyjqui::jqui_resizable(
+                      shiny::plotOutput(ns("pca_post_normalization"), height = "400px")
+                    )
+                  ),
+                  shiny::column(4,
+                    shiny::h5("RUV-Corrected", style = "text-align: center;"),
+                    shinyjqui::jqui_resizable(
+                      shiny::plotOutput(ns("pca_ruv_corrected"), height = "400px")
+                    )
                   )
                 )
               ),
-              tabPanel(
-                "Normalized Data",
-                br(),
-                DTOutput(ns("normalized_data_preview"))
+              
+              # Density Tab
+              shiny::tabPanel(
+                "Density",
+                icon = shiny::icon("chart-area"),
+                shiny::br(),
+                shiny::fluidRow(
+                  shiny::column(4,
+                    shiny::h5("Post-Filtering", style = "text-align: center;"),
+                    shinyjqui::jqui_resizable(
+                      shiny::plotOutput(ns("density_post_filtering"), height = "400px")
+                    )
+                  ),
+                  shiny::column(4,
+                    shiny::h5("Post-Normalization", style = "text-align: center;"),
+                    shinyjqui::jqui_resizable(
+                      shiny::plotOutput(ns("density_post_normalization"), height = "400px")
+                    )
+                  ),
+                  shiny::column(4,
+                    shiny::h5("RUV-Corrected", style = "text-align: center;"),
+                    shinyjqui::jqui_resizable(
+                      shiny::plotOutput(ns("density_ruv_corrected"), height = "400px")
+                    )
+                  )
+                )
+              ),
+              
+              # RLE Tab
+              shiny::tabPanel(
+                "RLE",
+                icon = shiny::icon("chart-line"),
+                shiny::br(),
+                shiny::fluidRow(
+                  shiny::column(4,
+                    shiny::h5("Post-Filtering", style = "text-align: center;"),
+                    shinyjqui::jqui_resizable(
+                      shiny::plotOutput(ns("rle_post_filtering"), height = "400px")
+                    )
+                  ),
+                  shiny::column(4,
+                    shiny::h5("Post-Normalization", style = "text-align: center;"),
+                    shinyjqui::jqui_resizable(
+                      shiny::plotOutput(ns("rle_post_normalization"), height = "400px")
+                    )
+                  ),
+                  shiny::column(4,
+                    shiny::h5("RUV-Corrected", style = "text-align: center;"),
+                    shinyjqui::jqui_resizable(
+                      shiny::plotOutput(ns("rle_ruv_corrected"), height = "400px")
+                    )
+                  )
+                )
+              ),
+              
+              # Correlation Tab
+              shiny::tabPanel(
+                "Correlation",
+                icon = shiny::icon("th"),
+                shiny::br(),
+                shiny::fluidRow(
+                  shiny::column(4,
+                    shiny::h5("Post-Filtering", style = "text-align: center;"),
+                    shinyjqui::jqui_resizable(
+                      shiny::plotOutput(ns("correlation_post_filtering"), height = "400px")
+                    )
+                  ),
+                  shiny::column(4,
+                    shiny::h5("Post-Normalization", style = "text-align: center;"),
+                    shinyjqui::jqui_resizable(
+                      shiny::plotOutput(ns("correlation_post_normalization"), height = "400px")
+                    )
+                  ),
+                  shiny::column(4,
+                    shiny::h5("RUV-Corrected", style = "text-align: center;"),
+                    shinyjqui::jqui_resizable(
+                      shiny::plotOutput(ns("correlation_ruv_corrected"), height = "400px")
+                    )
+                  )
+                )
               )
             )
           )
@@ -333,77 +330,78 @@ proteomicsWorkflowUi <- function(id) {
       ),
       
       # Tab 5: Differential Expression
-      tabPanel(
+      shiny::tabPanel(
         "Differential Expression",
-        value = "de_analysis",
-        icon = shiny::icon("dna"),
-        br(),
-        fluidRow(
-          column(3,
-            wellPanel(
-              h4("DE Analysis Settings"),
-              textAreaInput(
+        value = "de",
+        icon = shiny::icon("chart-bar"),
+        shiny::br(),
+        shiny::fluidRow(
+          shiny::column(3,
+            shiny::wellPanel(
+              shiny::h4("DE Analysis Settings"),
+              shiny::textAreaInput(
                 ns("formula_string"),
                 "Model Formula:",
                 value = "~ 0 + group",
-                height = "80px"
+                height = "60px"
               ),
-              hr(),
-              h4("Contrasts"),
-              uiOutput(ns("contrast_builder")),
-              actionButton(
-                ns("add_contrast"),
-                "Add Contrast",
-                icon = shiny::icon("plus"),
-                class = "btn-sm"
-              ),
-              hr(),
-              sliderInput(
-                ns("de_qval_threshold"),
+              shiny::helpText("Linear model formula for DE analysis"),
+              shiny::br(),
+              shiny::numericInput(
+                ns("de_q_val_thresh"),
                 "Q-value Threshold:",
-                min = 0.01,
-                max = 0.1,
                 value = 0.05,
-                step = 0.01
+                min = 0.001,
+                max = 0.2,
+                step = 0.005
               ),
-              sliderInput(
-                ns("treat_lfc"),
-                "Min Log2 Fold Change:",
+              shiny::numericInput(
+                ns("treat_lfc_cutoff"),
+                "Log Fold-Change Cutoff:",
+                value = 0,
                 min = 0,
                 max = 2,
-                value = 0,
                 step = 0.1
               ),
-              br(),
-              actionButton(
+              shiny::br(),
+              shiny::actionButton(
                 ns("run_de_analysis"),
                 "Run DE Analysis",
                 class = "btn-primary",
                 width = "100%"
+              ),
+              shiny::br(),
+              shiny::br(),
+              shiny::downloadButton(
+                ns("download_de_results"),
+                "Download Results",
+                class = "btn-success",
+                width = "100%"
               )
             )
           ),
-          column(9,
-            tabsetPanel(
-              tabPanel(
-                "Results Summary",
-                br(),
-                DTOutput(ns("de_summary_table"))
+          shiny::column(9,
+            shiny::tabsetPanel(
+              shiny::tabPanel(
+                "Volcano Plot",
+                shiny::br(),
+                shiny::uiOutput(ns("contrast_selector")),
+                shiny::br(),
+                shiny::plotOutput(ns("volcano_plot"), height = "600px")
               ),
-              tabPanel(
-                "Volcano Plots",
-                br(),
-                uiOutput(ns("volcano_plot_selector")),
-                plotOutput(ns("volcano_plot"), height = "600px")
+              shiny::tabPanel(
+                "Results Table",
+                shiny::br(),
+                shiny::uiOutput(ns("results_contrast_selector")),
+                shiny::br(),
+                DT::DTOutput(ns("de_results_table"))
               ),
-              tabPanel(
-                "DE Tables",
-                br(),
-                uiOutput(ns("de_table_selector")),
-                br(),
-                downloadButton(ns("download_de_results"), "Download Results"),
-                br(), br(),
-                DTOutput(ns("de_results_table"))
+              shiny::tabPanel(
+                "MA Plot",
+                shiny::br(),
+                shiny::uiOutput(ns("ma_contrast_selector")),
+                shiny::br(),
+                shiny::plotOutput(ns("ma_plot"), height = "600px")
               )
             )
           )
@@ -411,46 +409,46 @@ proteomicsWorkflowUi <- function(id) {
       ),
       
       # Tab 6: Enrichment Analysis
-      tabPanel(
+      shiny::tabPanel(
         "Enrichment Analysis",
         value = "enrichment",
-        icon = shiny::icon("sitemap"),
-        br(),
-        fluidRow(
-          column(3,
-            wellPanel(
-              h4("Enrichment Settings"),
-              radioButtons(
+        icon = shiny::icon("network-wired"),
+        shiny::br(),
+        shiny::fluidRow(
+          shiny::column(3,
+            shiny::wellPanel(
+              shiny::h4("Enrichment Settings"),
+              shiny::selectInput(
                 ns("enrichment_method"),
-                "Enrichment Method:",
+                "Method:",
                 choices = list(
                   "g:Profiler" = "gprofiler",
                   "clusterProfiler" = "clusterprofiler"
                 ),
                 selected = "gprofiler"
               ),
-              checkboxGroupInput(
-                ns("enrichment_sources"),
-                "Data Sources:",
+              shiny::checkboxGroupInput(
+                ns("enrichment_databases"),
+                "Databases:",
                 choices = list(
-                  "GO:BP" = "GO:BP",
-                  "GO:MF" = "GO:MF",
-                  "GO:CC" = "GO:CC",
-                  "KEGG" = "KEGG",
+                  "GO Biological Process" = "GO:BP",
+                  "GO Molecular Function" = "GO:MF", 
+                  "GO Cellular Component" = "GO:CC",
+                  "KEGG Pathways" = "KEGG",
                   "Reactome" = "REAC"
                 ),
-                selected = c("GO:BP", "GO:MF", "GO:CC")
+                selected = c("GO:BP", "KEGG", "REAC")
               ),
-              sliderInput(
-                ns("enrichment_qval"),
+              shiny::numericInput(
+                ns("enrichment_q_threshold"),
                 "Q-value Threshold:",
-                min = 0.01,
-                max = 0.1,
                 value = 0.05,
-                step = 0.01
+                min = 0.001,
+                max = 0.2,
+                step = 0.005
               ),
-              br(),
-              actionButton(
+              shiny::br(),
+              shiny::actionButton(
                 ns("run_enrichment"),
                 "Run Enrichment",
                 class = "btn-primary",
@@ -458,24 +456,24 @@ proteomicsWorkflowUi <- function(id) {
               )
             )
           ),
-          column(9,
-            tabsetPanel(
-              tabPanel(
+          shiny::column(9,
+            shiny::tabsetPanel(
+              shiny::tabPanel(
                 "Enrichment Results",
-                br(),
-                uiOutput(ns("enrichment_contrast_selector")),
-                br(),
-                DTOutput(ns("enrichment_results_table"))
+                shiny::br(),
+                shiny::uiOutput(ns("enrichment_contrast_selector")),
+                shiny::br(),
+                DT::DTOutput(ns("enrichment_results_table"))
               ),
-              tabPanel(
+              shiny::tabPanel(
                 "Enrichment Plots",
-                br(),
-                plotOutput(ns("enrichment_plot"), height = "700px")
+                shiny::br(),
+                shiny::plotOutput(ns("enrichment_plot"), height = "700px")
               ),
-              tabPanel(
+              shiny::tabPanel(
                 "Network View",
-                br(),
-                plotOutput(ns("enrichment_network"), height = "700px")
+                shiny::br(),
+                shiny::plotOutput(ns("enrichment_network"), height = "700px")
               )
             )
           )
@@ -483,26 +481,26 @@ proteomicsWorkflowUi <- function(id) {
       ),
       
       # Tab 7: Report Generation
-      tabPanel(
+      shiny::tabPanel(
         "Report",
         value = "report",
         icon = shiny::icon("file-alt"),
-        br(),
-        fluidRow(
-          column(6,
-            wellPanel(
-              h4("Report Settings"),
-              textInput(
+        shiny::br(),
+        shiny::fluidRow(
+          shiny::column(6,
+            shiny::wellPanel(
+              shiny::h4("Report Settings"),
+              shiny::textInput(
                 ns("report_title"),
                 "Report Title:",
                 value = "Proteomics Analysis Report"
               ),
-              textInput(
+              shiny::textInput(
                 ns("report_author"),
                 "Author:",
                 value = ""
               ),
-              checkboxGroupInput(
+              shiny::checkboxGroupInput(
                 ns("report_sections"),
                 "Include Sections:",
                 choices = list(
@@ -515,8 +513,8 @@ proteomicsWorkflowUi <- function(id) {
                 ),
                 selected = c("summary", "qc", "norm", "de", "enrichment", "methods")
               ),
-              br(),
-              actionButton(
+              shiny::br(),
+              shiny::actionButton(
                 ns("generate_report"),
                 "Generate Report",
                 class = "btn-primary",
@@ -525,26 +523,42 @@ proteomicsWorkflowUi <- function(id) {
               )
             )
           ),
-          column(6,
-            wellPanel(
-              h4("Export Options"),
-              downloadButton(
+          shiny::column(6,
+            shiny::wellPanel(
+              shiny::h4("Export Options"),
+              shiny::checkboxGroupInput(
+                ns("export_formats"),
+                "Report Formats:",
+                choices = list(
+                  "HTML" = "html",
+                  "PDF" = "pdf",
+                  "Word" = "docx"
+                ),
+                selected = c("html", "pdf")
+              ),
+              shiny::br(),
+              shiny::h5("Data Exports"),
+              shiny::downloadButton(
                 ns("download_processed_data"),
                 "Download Processed Data",
                 class = "btn-info",
-                style = "width: 100%; margin-bottom: 10px;"
+                width = "100%"
               ),
-              downloadButton(
+              shiny::br(),
+              shiny::br(),
+              shiny::downloadButton(
                 ns("download_session"),
-                "Download R Session",
-                class = "btn-info",
-                style = "width: 100%; margin-bottom: 10px;"
+                "Download Session File",
+                class = "btn-info", 
+                width = "100%"
               ),
-              downloadButton(
-                ns("download_workflow_params"),
-                "Download Workflow Parameters",
+              shiny::br(),
+              shiny::br(),
+              shiny::downloadButton(
+                ns("download_parameters"),
+                "Download Parameters",
                 class = "btn-info",
-                style = "width: 100%;"
+                width = "100%"
               )
             )
           )
@@ -553,9 +567,6 @@ proteomicsWorkflowUi <- function(id) {
     )
   )
   
-  message(sprintf("   proteomicsWorkflowUi Step: tagList created. Type: %s, Class: %s", 
-                  typeof(result), class(result)))
-  message(sprintf("--- Exiting proteomicsWorkflowUi ---"))
-  
+  message("   proteomicsWorkflowUi Step: tagList created successfully")
   return(result)
 } 

@@ -80,6 +80,9 @@ sourceDir("modules/common")
 sourceDir("ui/common")
 sourceDir("server/common")
 
+# Source shiny_logging.R for custom logger
+source("shiny_logging.R")
+
 # Pre-load proteomics modules (as they're ready)
 sourceDir("modules/proteomics")
 sourceDir("ui/proteomics")
@@ -124,6 +127,45 @@ ui <- dashboardPage(
         .omic-selection-box.selected {
           background-color: #d1ecf1;
           border-color: #bee5eb;
+        }
+        #log-terminal-wrapper {
+          position: fixed;
+          bottom: 10px;
+          left: 10px;
+          width: 230px;
+          height: 250px;
+          z-index: 1050; /* Above most other elements */
+        }
+        #log-terminal-panel {
+          background-color: #2b3e50;
+          border-radius: 5px;
+          box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+          color: #ecf0f1;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+        }
+        #log-terminal-header {
+          padding: 5px 10px;
+          background-color: #34495e;
+          cursor: pointer;
+          border-bottom: 1px solid #2c3e50;
+          border-top-left-radius: 5px;
+          border-top-right-radius: 5px;
+        }
+        #log-terminal-header h5 {
+          margin: 0;
+          color: #ecf0f1;
+          font-weight: bold;
+        }
+        #log-terminal-content {
+          padding: 10px;
+          overflow-y: auto;
+          flex-grow: 1;
+          font-family: 'Courier New', Courier, monospace;
+          font-size: 0.8em;
+          white-space: pre-wrap;
+          word-break: break-all;
         }
       "))
     ),
@@ -221,6 +263,9 @@ ui <- dashboardPage(
       uiOutput("dynamic_tabs")
     ),
     
+    # Log Terminal UI
+    shiny::uiOutput("log_terminal_ui"),
+    
     # JavaScript for handling omics selection - use shiny:: prefix
     shiny::tags$script(shiny::HTML("
       var selectedOmics = [];
@@ -265,6 +310,9 @@ ui <- dashboardPage(
 
 # Define server
 server <- function(input, output, session) {
+  # Initialize the logger for Shiny
+  setup_shiny_logger()
+
   # Initialize reactive values
   values <- reactiveValues(
     selected_omics = character(),
@@ -275,8 +323,37 @@ server <- function(input, output, session) {
     project_base_dir = NULL
   )
   
+  # Log Terminal UI Rendering
+  output$log_terminal_ui <- shiny::renderUI({
+    shinyjqui::jqui_resizable(
+      shiny::div(id = "log-terminal-wrapper",
+        shiny::div(id = "log-terminal-panel",
+          shiny::div(id = "log-terminal-header", 
+                     onclick = "Shiny.setInputValue('toggle_log', Math.random())",
+                     shiny::h5(shiny::icon("terminal"), "Log Output")
+          ),
+          shinyjs::hidden(
+            shiny::div(id = "log-content-wrapper",
+              shiny::verbatimTextOutput("log_terminal_content")
+            )
+          )
+        )
+      )
+    )
+  })
+
+  # Render log content
+  output$log_terminal_content <- shiny::renderText({
+    log_messages()
+  })
+
+  # Toggle log visibility
+  observeEvent(input$toggle_log, {
+    shinyjs::toggle(id = "log-content-wrapper", anim = TRUE)
+  })
+  
   # Set up volumes for shinyFiles at the top level
-  message("--- app.R: Setting up volumes for shinyFiles ---")
+  logger::log_info("--- MultiScholaR App Starting ---")
   volumes <- NULL
   if (requireNamespace("shinyFiles", quietly = TRUE)) {
     message("   app.R: shinyFiles package is available")

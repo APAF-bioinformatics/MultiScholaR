@@ -115,7 +115,8 @@ proteomicsWorkflowServer <- function(id, project_dirs, omic_type, experiment_lab
     qualityControlAppletServer("quality_control", workflow_data, experiment_paths, omic_type, experiment_label)
     
     # Tab 4: Normalization
-    # normalizationServer("normalization", workflow_data, experiment_paths)
+    message("   proteomicsWorkflowServer Step: Calling normalizationAppletServer...")
+    normalizationAppletServer("normalization", workflow_data, experiment_paths, omic_type, experiment_label)
     
     # Tab 5: Differential Expression
     # differentialExpressionServer("differential_expression", workflow_data, experiment_paths)
@@ -136,6 +137,16 @@ proteomicsWorkflowServer <- function(id, project_dirs, omic_type, experiment_lab
       # Enable QC tab after design matrix is complete
       if (workflow_data$tab_status$design_matrix == "complete") {
         workflow_data$tab_status$quality_control <- "pending"
+      }
+      
+      # Enable normalization tab after QC is complete
+      if (workflow_data$tab_status$quality_control == "complete") {
+        workflow_data$tab_status$normalization <- "pending"
+      }
+      
+      # Enable DE tab after normalization is complete
+      if (workflow_data$tab_status$normalization == "complete") {
+        workflow_data$tab_status$differential_expression <- "pending"
       }
       
       # And so on for other tabs...

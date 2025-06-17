@@ -86,12 +86,23 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
     # This checks if 'volumes' is the getVolumes() function and calls it,
     # or creates it if it's NULL.
     resolved_volumes <- shiny::isolate({
-      if (is.function(volumes)) {
+      base_volumes <- if (is.function(volumes)) {
         volumes()
       } else if (is.null(volumes)) {
         shinyFiles::getVolumes()()
       } else {
         volumes
+      }
+      
+      # ✅ Add base_dir as default starting location for import
+      if (!is.null(experiment_paths) && !is.null(experiment_paths$base_dir) && 
+          dir.exists(experiment_paths$base_dir)) {
+        # Put base_dir first so it's the default
+        enhanced_volumes <- c("Project Base Dir" = experiment_paths$base_dir, base_volumes)
+        logger::log_info(paste("Added base_dir to volumes for easier navigation:", experiment_paths$base_dir))
+        enhanced_volumes
+      } else {
+        base_volumes
       }
     })
 
@@ -144,6 +155,35 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
       shiny::showNotification("Importing design files...", id = "importing_design", duration = NULL)
       
       tryCatch({
+        # ---[ ADDED LOGIC FOR CONFIG FILE ] ---
+        # Ensure a config file is available, downloading a default if necessary.
+        config_path <- file.path(experiment_paths$source_dir, "config.ini")
+        
+        if (!file.exists(config_path)) {
+          logger::log_info("config.ini not found in project. Downloading default config.")
+          tryCatch({
+            default_config_url <- "https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/main/Workbooks/config.ini"
+            download.file(default_config_url, destfile = config_path, quiet = TRUE)
+            logger::log_info(paste("Default config.ini downloaded to:", config_path))
+            shiny::showNotification("Using default config.ini.", type = "message")
+          }, error = function(e_download) {
+            msg <- paste("Failed to download default config.ini:", e_download$message)
+            logger::log_error(msg)
+            shiny::showNotification(msg, type = "error", duration = 10)
+            # Stop execution if config is essential and cannot be obtained
+            stop("Could not obtain a configuration file.")
+          })
+        }
+        
+        # Now, load the config_list into the workflow
+        logger::log_info("Loading config.ini from project.")
+        workflow_data$config_list <- readConfigFile(file = config_path)
+        
+        # ✅ FIXED: Create global config_list for updateConfigParameter compatibility
+        assign("config_list", workflow_data$config_list, envir = .GlobalEnv)
+        logger::log_info("Created global config_list for updateConfigParameter compatibility")
+        # ---[ END OF ADDED LOGIC ] ---
+
         # Read files
         imported_design <- vroom::vroom(design_file, show_col_types = FALSE)
         imported_data_cln <- vroom::vroom(cln_data_file, show_col_types = FALSE)
@@ -238,6 +278,10 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
       workflow_data$data_cln <- results$data_cln
       workflow_data$contrasts_tbl <- results$contrasts_tbl
       workflow_data$config_list <- results$config_list
+      
+      # ✅ FIXED: Create global config_list for updateConfigParameter compatibility
+      assign("config_list", workflow_data$config_list, envir = .GlobalEnv)
+      logger::log_info("Updated global config_list for updateConfigParameter compatibility")
       
       # 2. Get the source directory for writing config files
       source_dir <- experiment_paths$source_dir

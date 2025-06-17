@@ -54,26 +54,26 @@ MultiScholaRapp <- function(launch.browser = TRUE, clean_env = TRUE, ...) {
     dev_app_path <- file.path(pkg_path, "R", "shiny")
     if (dir.exists(dev_app_path) && file.exists(file.path(dev_app_path, "app.R"))) {
       app_path <- dev_app_path
-      log_info("Running app from development location: {app_path}")
+      message(paste("Running app from development location:", app_path))
       
       # Source necessary files for development
       shiny_applets_path <- file.path(pkg_path, "R", "shiny_applets.R")
       if (file.exists(shiny_applets_path)) {
         source(shiny_applets_path)
-        log_info("Loaded shiny_applets.R")
+        message("Loaded shiny_applets.R")
       }
       
       # Make sure other key functions are available
       helper_functions_path <- file.path(pkg_path, "R", "helper_functions.R")
       if (file.exists(helper_functions_path) && !exists("loadDependencies")) {
         source(helper_functions_path)
-        log_info("Loaded helper_functions.R")
+        message("Loaded helper_functions.R")
       }
       
       file_management_path <- file.path(pkg_path, "R", "file_management.R")
       if (file.exists(file_management_path) && !exists("setupDirectories")) {
         source(file_management_path)
-        log_info("Loaded file_management.R")
+        message("Loaded file_management.R")
       }
     }
     
@@ -82,7 +82,7 @@ MultiScholaRapp <- function(launch.browser = TRUE, clean_env = TRUE, ...) {
       inst_app_path <- system.file("shiny", package = "MultiScholaR")
       if (dir.exists(inst_app_path) && file.exists(file.path(inst_app_path, "app.R"))) {
         app_path <- inst_app_path
-        log_info("Running app from installed package location: {app_path}")
+        message(paste("Running app from installed package location:", app_path))
       }
     }
   }
@@ -97,19 +97,19 @@ MultiScholaRapp <- function(launch.browser = TRUE, clean_env = TRUE, ...) {
   if (exists("loadDependencies", mode = "function")) {
     assign("loadDependencies", loadDependencies, envir = .GlobalEnv)
   } else {
-    log_warn("loadDependencies function not found")
+    warning("loadDependencies function not found")
   }
   
   if (exists("setupDirectories", mode = "function")) {
     assign("setupDirectories", setupDirectories, envir = .GlobalEnv)
   } else {
-    log_warn("setupDirectories function not found")
+    warning("setupDirectories function not found")
   }
   
   if (exists("RunApplet", mode = "function")) {
     assign("RunApplet", RunApplet, envir = .GlobalEnv)
   } else {
-    log_warn("RunApplet function not found")
+    warning("RunApplet function not found")
   }
   
   # Load dependencies
@@ -118,7 +118,7 @@ MultiScholaRapp <- function(launch.browser = TRUE, clean_env = TRUE, ...) {
     tryCatch({
       loadDependencies(verbose = FALSE)
     }, error = function(e) {
-      log_warn("Some dependencies may not have loaded properly: {e$message}")
+      warning(paste("Some dependencies may not have loaded properly:", e$message))
     })
   }
   
