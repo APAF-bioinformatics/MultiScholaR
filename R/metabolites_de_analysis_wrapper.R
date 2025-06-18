@@ -9,16 +9,30 @@
 #' @slot contrasts_results_table Data frame with differential abundance statistics
 #'
 #' @export
-setClass("MetabolomicsDifferentialAbundanceResults",
-         slots = c(
-           theObject = "MetaboliteAssayData",
-           fit.eb = "MArrayLM",
-           contrasts_results_table = "list"
+setClass("MetabolomicsDifferentialAbundanceResults"
+         , slots = c(
+             theObject = "MetaboliteAssayData"
+           , fit.eb = "MArrayLM"
+           , contrasts_results_table = "list"
+           , num_sig_diff_bar_plot = "list"
+           , num_sig_diff_table = "list"
+           , volcano_plot = "list"
+           , interactive_volcano_plot = "list"
+           , p_value_dist_plot = "list"
+           , results_table_long = "data.frame"
+           , results_table_wide = "data.frame"
          ),
          prototype = list(
-           theObject = NULL,
-           fit.eb = NULL,
-           contrasts_results_table = list()
+           , theObject = NULL
+           , fit.eb = NULL
+           , contrasts_results_table = list()
+           , num_sig_diff_bar_plot = NULL
+           , num_sig_diff_table = NULL
+           , volcano_plot = NULL
+           , interactive_volcano_plot = list()
+           , p_value_dist_plot = NULL
+           , results_table_long = NULL
+           , results_table_wide = NULL
          )
 )
 
