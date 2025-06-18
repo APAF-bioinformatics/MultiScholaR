@@ -1,18 +1,105 @@
+
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#'@export
+setGeneric( name ="differentialAbundanceAnalysis"
+            , def=function(objectsList
+                           , contrasts_tbl = NULL
+                           , formula_string = NULL
+                           , de_q_val_thresh = NULL
+                           , treat_lfc_cutoff = NULL
+                           , eBayes_trend = NULL
+                           , eBayes_robust = NULL
+                           , args_group_pattern = NULL
+                           , args_row_id = NULL) {
+              standardGeneric("differentialAbundanceAnalysis")})
+
+#'@export
+setMethod( f ="differentialAbundanceAnalysis"
+           , signature = "MetaboliteAssayData"
+           , definition=function( objectsList
+                                  , contrasts_tbl = NULL
+                                  , formula_string = NULL
+                                  , de_q_val_thresh = NULL
+                                  , treat_lfc_cutoff = NULL
+                                  , eBayes_trend = NULL
+                                  , eBayes_robust = NULL
+                                  , args_group_pattern = NULL
+                                  , args_row_id = NULL ) {
+
+             # Run DE analysis and explicitly set names
+             results_list <- purrr::map(    objectsList
+                                            , \( obj) {
+                                              differentialAbundanceAnalysisHelper(  obj
+                                                                                    , contrasts_tbl = contrasts_tbl
+                                                                                    , formula_string = formula_string
+                                                                                    , de_q_val_thresh = de_q_val_thresh
+                                                                                    , treat_lfc_cutoff = treat_lfc_cutoff
+                                                                                    , eBayes_trend = eBayes_trend
+                                                                                    , eBayes_robust = eBayes_robust
+                                                                                    , args_group_pattern = args_group_pattern
+                                                                                    , args_row_id = args_row_id
+                                              )
+                                            })
+
+             return(results_list)
+
+           })
+
+#'@export
+setMethod( f ="differentialAbundanceAnalysis"
+           , signature = "list"
+           , definition=function( objectsList
+                                  , contrasts_tbl = NULL
+                                  , formula_string = NULL
+                                  , de_q_val_thresh = NULL
+                                  , treat_lfc_cutoff = NULL
+                                  , eBayes_trend = NULL
+                                  , eBayes_robust = NULL
+                                  , args_group_pattern = NULL
+                                  , args_row_id = NULL ) {
+
+             # Validate that all objects in the list are MetaboliteAssayData
+             if (!all(purrr::map_lgl(objectsList, ~inherits(.x, "MetaboliteAssayData")))) {
+               stop("All objects in objectsList must be of class MetaboliteAssayData")
+             }
+
+             # Run DE analysis and explicitly set names
+             results_list <- purrr::map(    objectsList
+                                            , \( obj) {
+                                              differentialAbundanceAnalysisHelper(  obj
+                                                                                    , contrasts_tbl = contrasts_tbl
+                                                                                    , formula_string = formula_string
+                                                                                    , de_q_val_thresh = de_q_val_thresh
+                                                                                    , treat_lfc_cutoff = treat_lfc_cutoff
+                                                                                    , eBayes_trend = eBayes_trend
+                                                                                    , eBayes_robust = eBayes_robust
+                                                                                    , args_group_pattern = args_group_pattern
+                                                                                    , args_row_id = args_row_id
+                                              )
+                                            })
+
+             # Set names if the input list had names
+             if (!is.null(names(objectsList))) {
+               names(results_list) <- names(objectsList)
+             }
+
+             return(results_list)
+
+           })
+
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
 setGeneric( name ="differentialAbundanceAnalysisHelper"
             , def=function(theObject
-                           , contrasts_tbl
-                           , formula_string
-                           , group_id
-                           , de_q_val_thresh
-                           , treat_lfc_cutoff
-                           , eBayes_trend
-                           , eBayes_robust
-                           , args_group_pattern
-                           , args_row_id
-                           , qvalue_column
-                           , raw_pvalue_colum ) {
+                           , contrasts_tbl = NULL
+                           , formula_string = NULL
+                           , de_q_val_thresh = NULL
+                           , treat_lfc_cutoff = NULL
+                           , eBayes_trend = NULL
+                           , eBayes_robust = NULL
+                           , args_group_pattern = NULL
+                           , args_row_id = NULL) {
               standardGeneric("differentialAbundanceAnalysisHelper")
             })
 
@@ -22,25 +109,23 @@ setMethod( f ="differentialAbundanceAnalysisHelper"
            , definition=function( theObject
                                   , contrasts_tbl = NULL
                                   , formula_string = NULL
-                                  , group_id = NULL
                                   , de_q_val_thresh = NULL
                                   , treat_lfc_cutoff = NULL
                                   , eBayes_trend = NULL
                                   , eBayes_robust = NULL
                                   , args_group_pattern = NULL
-                                  , args_row_id = NULL
-                                  , qvalue_column = "fdr_qvalue"
-                                  , raw_pvalue_colum = "raw_pvalue" ) {
+                                  , args_row_id = NULL ) {
 
   contrasts_tbl <- checkParamsObjectFunctionSimplify( theObject, "contrasts_tbl", NULL)
   formula_string <- checkParamsObjectFunctionSimplify( theObject, "formula_string", " ~ 0 + group")
-  group_id <- checkParamsObjectFunctionSimplify( theObject, "group_id", "group")
   de_q_val_thresh <- checkParamsObjectFunctionSimplify( theObject, "de_q_val_thresh", 0.05)
   treat_lfc_cutoff <- checkParamsObjectFunctionSimplify( theObject, "treat_lfc_cutoff", 0)
   eBayes_trend <- checkParamsObjectFunctionSimplify( theObject, "eBayes_trend", TRUE)
   eBayes_robust <- checkParamsObjectFunctionSimplify( theObject, "eBayes_robust", TRUE)
   args_group_pattern <- checkParamsObjectFunctionSimplify( theObject, "args_group_pattern", "(\\d+)")
   args_row_id <- checkParamsObjectFunctionSimplify( theObject, "args_row_id", "uniprot_acc")
+
+  print(formula_string)
 
   # Add preprocessing for group names that start with numbers
   design_matrix <- theObject@design_matrix
@@ -75,7 +160,6 @@ setMethod( f ="differentialAbundanceAnalysisHelper"
 
   theObject <- updateParamInObject(theObject, "contrasts_tbl")
   theObject <- updateParamInObject(theObject, "formula_string")
-  theObject <- updateParamInObject(theObject, "group_id")
   theObject <- updateParamInObject(theObject, "de_q_val_thresh")
   theObject <- updateParamInObject(theObject, "treat_lfc_cutoff")
   theObject <- updateParamInObject(theObject, "eBayes_trend")
@@ -88,56 +172,28 @@ setMethod( f ="differentialAbundanceAnalysisHelper"
 
   message("--- Entering differentialAbundanceAnalysis ---")
   message(sprintf("   differentialAbundanceAnalysis: theObject class = %s", class(theObject)))
-  message(sprintf("   differentialAbundanceAnalysis: theObject@group_id = %s", theObject@group_id))
 
-#
-#   ## plot RLE plot
-#   rle_plot <-   plotRle(theObject = theObject, theObject@group_id  ) +
-#     theme(axis.text.x = element_text(size = 13))   +
-#     theme(axis.text.y = element_text(size = 13))  +
-#     theme(axis.title.x = element_text(size = 12))  +
-#     theme(axis.title.y = element_text(size = 12))  +
-#     theme(plot.title = element_text(size = 12)) +
-#     theme(legend.text = element_text(size = 12)) +
-#     theme(legend.title = element_text(size = 12)) +
-#     xlab("Samples")
-#
-#   return_list$rle_plot <- rle_plot
-#
-#   ## plot PCA plot
-#
-#   pca_plot <-  plotPca( theObject
-#                         , grouping_variable = theObject@group_id
-#                         , label_column = ""
-#                         , title = ""
-#                         , font_size = 8) +
-#     theme_bw() +
-#     theme(axis.text.x = element_text(size = 12)) +
-#     theme(axis.text.y = element_text(size = 12)) +
-#     theme(axis.title.x = element_text(size = 12)) +
-#     theme(axis.title.y = element_text(size = 12)) +
-#     theme(plot.title = element_text(size = 12)) +
-#     theme(legend.text = element_text(size = 12)) +
-#     theme(legend.title = element_text(size = 12))
-#
-#   return_list$pca_plot <- pca_plot
-#
-#
-#   pca_plot_with_labels <-  plotPca( theObject
-#                                     , grouping_variable = theObject@group_id
-#                                     , label_column = theObject@sample_id
-#                                     , title = ""
-#                                     , font_size = 8) +
-#     theme_bw() +
-#     theme(axis.text.x = element_text(size = 12)) +
-#     theme(axis.text.y = element_text(size = 12)) +
-#     theme(axis.title.x = element_text(size = 12)) +
-#     theme(axis.title.y = element_text(size = 12)) +
-#     theme(plot.title = element_text(size = 12)) +
-#     theme(legend.text = element_text(size = 12)) +
-#     theme(legend.title = element_text(size = 12))
-#
-#   return_list$pca_plot_with_labels <- pca_plot_with_labels
+  # Debug: Print parameter values before conversion
+  message(sprintf("   eBayes_trend value: %s (class: %s)", eBayes_trend, class(eBayes_trend)))
+  message(sprintf("   eBayes_robust value: %s (class: %s)", eBayes_robust, class(eBayes_robust)))
+
+  # Ensure logical values - handle character strings that might represent logical values
+  if (is.character(eBayes_trend)) {
+    eBayes_trend <- as.logical(toupper(eBayes_trend) %in% c("TRUE", "T", "1", "YES"))
+    message(sprintf("   eBayes_trend converted from character '%s' to logical: %s", eBayes_trend, eBayes_trend))
+  } else {
+    eBayes_trend <- as.logical(eBayes_trend)
+  }
+
+  if (is.character(eBayes_robust)) {
+    eBayes_robust <- as.logical(toupper(eBayes_robust) %in% c("TRUE", "T", "1", "YES"))
+    message(sprintf("   eBayes_robust converted from character '%s' to logical: %s", eBayes_robust, eBayes_robust))
+  } else {
+    eBayes_robust <- as.logical(eBayes_robust)
+  }
+
+  message(sprintf("   eBayes_trend after conversion: %s (class: %s)", eBayes_trend, class(eBayes_trend)))
+  message(sprintf("   eBayes_robust after conversion: %s (class: %s)", eBayes_robust, class(eBayes_robust)))
 
   ## Count the number of values
     # Convert metabolite data to matrix format

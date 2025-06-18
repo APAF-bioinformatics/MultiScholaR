@@ -41,7 +41,7 @@ createIdToAttributeHash <- function(keys, attributes) {
 		return(1)
 	}
 
-	mapply(function(k, a) base::assign(k, a, envir = hash), 
+	mapply(function(k, a) base::assign(k, a, envir = hash),
 		   keys, attributes)
 
 	return(hash)
@@ -246,11 +246,33 @@ setArgsDefault <- function(args, value_name, as_func, default_val=NA ) {
 #'
 #'
 savePlot <- function(plot, base_path, plot_name, formats = c("pdf", "png"), width=7, height=7, ... ) {
-  saveRDS( plot, file.path(base_path, paste0(plot_name, ".rds")))
-  purrr::walk( formats, \(format){
-    file_path <- file.path(base_path, paste0(plot_name, ".", format))
-    ggsave(filename = file_path, plot = plot, device = format, width=width, height=height, ...)
-  })
+
+  if(!is.list( plot)) {
+
+
+    saveRDS( plot, file.path(base_path, paste0(plot_name, ".rds")))
+    purrr::walk( formats, \(format){
+      file_path <- file.path(base_path, paste0(plot_name, ".", format))
+      ggsave(filename = file_path, plot = plot, device = format, width=width, height=height, ...)
+    })
+
+  } else {
+
+    purrr::walk2( plot, names(plot), \(x, y) {
+
+
+      saveRDS( x, file.path(base_path, paste0(plot_name, "_", y,  ".rds")))
+
+
+      purrr::walk( formats, \(format){
+        file_path <- file.path(base_path, paste0(plot_name, "_", y, ".", format))
+        ggsave(filename = file_path, plot = x, device = format, width=width, height=height, ...)
+      })
+
+    } )
+  }
+
+
 }
 
 
@@ -833,12 +855,12 @@ extract_experiment <- function(x, mode = "range", start = 1, end = NULL) {
 setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force = FALSE) {
     # --- Define Base Paths and Names ---
     proteomics_dirname <- if (!is.null(label)) paste0("proteomics_", substr(label, 1, 30)) else "proteomics"
-    
+
     # Define all expected paths in one structure for easier management
     paths <- list(
         results = list(
             base = file.path(base_dir, "results", proteomics_dirname),
-            subdirs = c("protein_qc", "peptide_qc", "clean_proteins", "de_proteins", 
+            subdirs = c("protein_qc", "peptide_qc", "clean_proteins", "de_proteins",
                        "publication_graphs", "pathway_enrichment",
                        file.path("publication_graphs", "filtering_qc"))
         ),
@@ -853,13 +875,13 @@ setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force
             # 'time' directory path defined later using timestamp
         )
     )
-    
+
     results_path <- paths$results$base
     results_summary_path <- paths$results_summary$base
     scripts_path <- paths$special$scripts
-    
+
     # Flag to track if we should skip creation/copying and just set vars
-    reuse_existing <- FALSE 
+    reuse_existing <- FALSE
 
     # --- Handle Existing Directories ---
     if (!force && (dir.exists(results_path) || dir.exists(results_summary_path) || dir.exists(scripts_path))) {
@@ -867,9 +889,9 @@ setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force
         if (dir.exists(results_path)) cat(sprintf("- %s\n", results_path))
         if (dir.exists(results_summary_path)) cat(sprintf("- %s\n", results_summary_path))
         if (dir.exists(scripts_path)) cat(sprintf("- %s\n", scripts_path))
-        
+
         response_overwrite <- readline(prompt = "Do you want to overwrite these directories? (y/n): ")
-        
+
         if (tolower(substr(response_overwrite, 1, 1)) == "y") {
             # User chose to overwrite: Delete existing directories
             message("Overwriting existing directories as requested...")
@@ -894,7 +916,7 @@ setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force
         if (dir.exists(results_summary_path)) unlink(results_summary_path, recursive = TRUE, force = TRUE)
         if (dir.exists(scripts_path)) unlink(scripts_path, recursive = TRUE, force = TRUE)
     }
-    
+
     # --- Timestamp and Final Path Definitions ---
     timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
     # Define timestamp-specific path (needed regardless of reuse)
@@ -912,7 +934,7 @@ setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force
             dir.create, recursive = TRUE, showWarnings = FALSE
         ))
     })
-    
+
         # Create special directories (ensure qc_base exists for time dir)
         dir.create(paths$special$qc_base, recursive = TRUE, showWarnings = FALSE)
         dir.create(paths$special$data, recursive = TRUE, showWarnings = FALSE)
@@ -925,7 +947,7 @@ setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force
             message("Copying script files (excluding .Rmd) from template...")
             script_files <- list.files(scripts_template_source, full.names = TRUE, recursive = TRUE)
             script_files <- script_files[!grepl("\\.[rR][mM][dD]$", script_files)] # Filter out .Rmd
-        
+
         if (length(script_files) > 0) {
             sapply(script_files, function(f) {
                     # Calculate relative path within the source template
@@ -950,8 +972,8 @@ setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force
     # This part runs whether creating new or reusing existing structure.
     publication_graphs_dir <- file.path(paths$results$base, "publication_graphs")
     # qc_dir now refers to the timestamped directory base
-    qc_dir <- paths$special$qc_base 
-    
+    qc_dir <- paths$special$qc_base
+
     dir_paths <- list(
         base_dir = base_dir,
         results_dir = paths$results$base,
@@ -972,11 +994,11 @@ setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force
         publication_tables_dir = file.path(paths$results_summary$base, "Publication_tables"),
         study_report_dir = file.path(paths$results_summary$base, "Study_report")
     )
-    
+
     # --- Assign to Global Environment ---
     message("Assigning directory paths to global environment...")
     list2env(dir_paths, envir = .GlobalEnv)
-    
+
     # --- Print Structure Summary ---
     cat("\nFinal Directory Structure Set in Global Environment:\n")
     print_paths <- sort(names(dir_paths)) # Sort for consistent order
@@ -984,7 +1006,7 @@ setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force
         p <- dir_paths[[name]]
         # Check existence only for paths expected to be directories within the project
         is_project_dir <- startsWith(p, base_dir) && name != "base_dir" && name != "timestamp"
-        
+
         if (is_project_dir && dir.exists(p)) {
             file_count <- length(list.files(p, recursive = TRUE, all.files = TRUE))
             cat(sprintf("%s = %s (%d files/dirs)\n", name, p, file_count))
@@ -995,7 +1017,7 @@ setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force
             cat(sprintf("%s = %s [Non-character path]\n", name, p)) # Should not happen
         }
     }))
-    
+
     # Return the list of paths invisibly
     invisible(dir_paths)
 }
@@ -1021,7 +1043,7 @@ setClass("WorkflowArgs",
 #' @param source_dir_path Character string, the path to the source directory for this workflow instance.
 #' @return WorkflowArgs object
 #' @export
-createWorkflowArgsFromConfig <- function(workflow_name, description = "", 
+createWorkflowArgsFromConfig <- function(workflow_name, description = "",
                                         organism_name = NULL, taxon_id = NULL,
                                         source_dir_path = NULL) { # New parameter
 
@@ -1036,7 +1058,7 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
                  list(
                     commit_sha = branch_info$commit$sha,
                     branch = "main", # Consider making this dynamic or a parameter
-                    repo = "MultiScholaR", 
+                    repo = "MultiScholaR",
                     timestamp = branch_info$commit$commit$author$date
                 )
             } else {
@@ -1051,16 +1073,16 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
         warning(paste("Could not retrieve Git information:", e$message), immediate. = TRUE)
         list(commit_sha = NA_character_, branch = NA_character_, repo = NA_character_, timestamp = NA_character_)
     })
-    
+
     # Get organism information from session if not explicitly provided
     if (is.null(organism_name) && exists("organism_name", envir = .GlobalEnv)) {
         organism_name <- get("organism_name", envir = .GlobalEnv)
     }
-    
+
     if (is.null(taxon_id) && exists("taxon_id", envir = .GlobalEnv)) {
         taxon_id <- get("taxon_id", envir = .GlobalEnv)
     }
-    
+
     # Create organism info list
     organism_info <- list(
         organism_name = if(is.null(organism_name) || !is.character(organism_name)) NA_character_ else organism_name,
@@ -1080,20 +1102,20 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
     new_workflow_args <- new("WorkflowArgs",
         workflow_name = workflow_name,
         timestamp = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
-        args = config_list_to_use, 
+        args = config_list_to_use,
         description = description,
         git_info = git_info,
         organism_info = organism_info
     )
-    
+
     # Store source_dir_path within the 'args' slot using a specific name
     if (!is.null(source_dir_path) && is.character(source_dir_path) && length(source_dir_path) == 1 && nzchar(source_dir_path)) {
         new_workflow_args@args$internal_workflow_source_dir <- tools::file_path_as_absolute(source_dir_path)
     } else {
-        new_workflow_args@args$internal_workflow_source_dir <- NULL 
+        new_workflow_args@args$internal_workflow_source_dir <- NULL
         warning("`source_dir_path` was not provided or invalid for createWorkflowArgsFromConfig. Study parameters might not be saved by show() method.", immediate. = TRUE)
     }
-    
+
     return(new_workflow_args)
 }
 
@@ -1180,7 +1202,7 @@ setMethod("show",
             paste("Timestamp:", object@timestamp),
             ""
         )
-        
+
         git_info_vec <- character()
         if (!is.null(object@git_info) && is.list(object@git_info)) {
              gi <- object@git_info
@@ -1194,7 +1216,7 @@ setMethod("show",
             git_info_vec <- c("Git Information: N/A")
         }
         git_section <- c("Git Information:", "---------------", git_info_vec, "")
-        
+
         organism_info_vec <- character()
         if (!is.null(object@organism_info) && is.list(object@organism_info)) {
             oi <- object@organism_info
@@ -1205,7 +1227,7 @@ setMethod("show",
                 organism_info_vec <- c(organism_info_vec, paste("Taxon ID:", oi$taxon_id))
             }
         }
-        
+
         organism_section <- character()
         if (length(organism_info_vec) > 0) {
             organism_section <- c(
@@ -1220,19 +1242,19 @@ setMethod("show",
             "Configuration Parameters (from @args slot):",
             "-----------------------------------------"
         )
-        
+
         args_to_print <- object@args
         # internal_workflow_source_dir is already excluded by formatConfigList
 
-        params <- formatConfigList(args_to_print) 
+        params <- formatConfigList(args_to_print)
 
         # Add contrasts information if it exists and is a data.frame/tibble
         contrasts_section <- character()
         # Check if contrasts_tbl exists and is not NULL and has rows
-        if (!is.null(object@args$contrasts_tbl) && 
-            (is.data.frame(object@args$contrasts_tbl) || tibble::is_tibble(object@args$contrasts_tbl)) && 
+        if (!is.null(object@args$contrasts_tbl) &&
+            (is.data.frame(object@args$contrasts_tbl) || tibble::is_tibble(object@args$contrasts_tbl)) &&
             nrow(object@args$contrasts_tbl) > 0) {
-            
+
             contrasts_header <- c(
                 "",
                 "Contrasts (from @args$contrasts_tbl):",
@@ -1257,12 +1279,12 @@ setMethod("show",
         # Save to file if internal_workflow_source_dir is defined in args and is valid
         workflow_source_dir_to_use <- object@args$internal_workflow_source_dir
 
-        if (!is.null(workflow_source_dir_to_use) && 
-            is.character(workflow_source_dir_to_use) && 
+        if (!is.null(workflow_source_dir_to_use) &&
+            is.character(workflow_source_dir_to_use) &&
             length(workflow_source_dir_to_use) == 1 && # Ensure it's a single string
-            nzchar(workflow_source_dir_to_use) && 
+            nzchar(workflow_source_dir_to_use) &&
             dir.exists(workflow_source_dir_to_use)) {
-            
+
             output_file <- file.path(workflow_source_dir_to_use, "study_parameters.txt")
             tryCatch({
                 writeLines(output, output_file)
@@ -1304,7 +1326,7 @@ copyToResultsSummary <- function(omic_type,
                                  experiment_label,
                                  contrasts_tbl = NULL,
                                  design_matrix = NULL,
-                                 force = FALSE, 
+                                 force = FALSE,
                                  current_rmd = NULL,
                                  project_dirs_object_name = "project_dirs") {
 
@@ -1318,7 +1340,7 @@ copyToResultsSummary <- function(omic_type,
     if (!exists(project_dirs_object_name, envir = .GlobalEnv)) {
         rlang::abort(paste0("Global object ", sQuote(project_dirs_object_name), " not found. Run setupDirectories() first."))
     }
-    
+
     project_dirs_global <- get(project_dirs_object_name, envir = .GlobalEnv)
     current_omic_key <- paste0(omic_type, "_", experiment_label)
 
@@ -1326,9 +1348,9 @@ copyToResultsSummary <- function(omic_type,
         rlang::abort(paste0("Key ", sQuote(current_omic_key), " not found in ", sQuote(project_dirs_object_name), ". Check omic_type and experiment_label."))
     }
     current_paths <- project_dirs_global[[current_omic_key]]
-    
+
     # Validate that current_paths is a list and contains essential directory paths
-    required_paths_in_current <- c("results_dir", "results_summary_dir", "publication_graphs_dir", 
+    required_paths_in_current <- c("results_dir", "results_summary_dir", "publication_graphs_dir",
                                    "time_dir", "qc_dir", "de_output_dir", "pathway_dir", "source_dir", "feature_qc_dir")
     if (!is.list(current_paths) || !all(required_paths_in_current %in% names(current_paths))) {
         missing_req <- setdiff(required_paths_in_current, names(current_paths))
@@ -1338,7 +1360,7 @@ copyToResultsSummary <- function(omic_type,
 
     # Track failed copies
     failed_copies <- list()
-    
+
     cat("\nRelevant directory paths for: ", current_omic_key, "\n")
     cat(sprintf("Results Dir: %s\n", current_paths$results_dir))
     cat(sprintf("Results Summary Dir: %s\n", current_paths$results_summary_dir))
@@ -1360,7 +1382,7 @@ copyToResultsSummary <- function(omic_type,
         design_matrix <- get("design_matrix", envir = parent.frame())
         message("Using 'design_matrix' from the calling environment.")
     }
-    
+
     # Handle current Rmd file
     if (is.null(current_rmd) && exists("rstudioapi") && requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
         context <- rstudioapi::getActiveDocumentContext()
@@ -1369,7 +1391,7 @@ copyToResultsSummary <- function(omic_type,
             cat(sprintf("Detected active .Rmd file: %s\n", current_rmd))
         }
     }
-    
+
     if (!is.null(current_rmd) && file.exists(current_rmd)) {
         tryCatch({
             if (exists("rstudioapi") && requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
@@ -1396,24 +1418,24 @@ copyToResultsSummary <- function(omic_type,
             failed_copies[[length(failed_copies) + 1]] <- list(type = "rmd_copy", source = current_rmd, destination = current_paths$source_dir, display_name = "Current Rmd File", error = e$message)
         })
     }
-    
+
     # Define target directories using derived paths
     pub_tables_dir <- file.path(current_paths$results_summary_dir, "Publication_tables")
-    
+
     # Ensure results_summary_dir exists before checking its contents (it should, from setupDirectories)
     if (!dir.exists(current_paths$results_summary_dir)) {
         dir.create(current_paths$results_summary_dir, recursive = TRUE, showWarnings = FALSE)
         logger::log_info("Created results_summary_dir as it was missing: {current_paths$results_summary_dir}")
     }
-    
+
     # Check if the results_summary_dir has any content
     contents_of_summary_dir <- list.files(current_paths$results_summary_dir, recursive = TRUE, all.files = TRUE, no.. = TRUE)
-    
+
     if (length(contents_of_summary_dir) > 0) {
         logger::log_info("Results summary directory for {current_omic_key} ({current_paths$results_summary_dir}) contains existing files/folders.")
         backup_dirname <- paste0(current_omic_key, "_backup_", format(Sys.time(), "%Y%m%d_%H%M%S"))
         backup_dir <- file.path(dirname(current_paths$results_summary_dir), backup_dirname)
-        
+
         should_proceed_with_backup <- if (!force) {
             cat(sprintf("\\nResults summary directory for %s contains content:\\n- %s\\n", current_omic_key, current_paths$results_summary_dir))
             repeat {
@@ -1427,13 +1449,13 @@ copyToResultsSummary <- function(omic_type,
             logger::log_info("Force mode enabled - backing up and proceeding with overwrite for {current_omic_key}...")
             TRUE
         }
-        
+
         if (!should_proceed_with_backup) {
             logger::log_info("Overwrite of {current_paths$results_summary_dir} for {current_omic_key} cancelled by user. No backup made, original files untouched.")
             # Return a list indicating cancellation, which can be checked by the caller.
             return(invisible(list(status="cancelled", omic_key=current_omic_key, message=paste0("Backup and overwrite for ", current_omic_key, " cancelled by user."))))
         }
-        
+
         # Proceed with backup and clearing
         if (!dir.create(backup_dir, recursive = TRUE, showWarnings = FALSE) && !dir.exists(backup_dir)) {
              logger::log_warn("Failed to create backup directory: {backup_dir} for {current_omic_key}. Original directory will not be cleared.")
@@ -1452,7 +1474,7 @@ copyToResultsSummary <- function(omic_type,
             }
 
             backup_has_content <- length(list.files(backup_dir, recursive=TRUE, all.files=TRUE, no..=TRUE)) > 0
-            
+
             if (backup_copy_successful && (backup_has_content || length(contents_of_summary_dir) == 0) ) {
                 logger::log_info("Successfully backed up content of {current_paths$results_summary_dir} to: {backup_dir}")
                 backup_info <- data.frame(original_dir = current_paths$results_summary_dir, backup_time = Sys.time(), omic_key = current_omic_key, stringsAsFactors = FALSE)
@@ -1460,7 +1482,7 @@ copyToResultsSummary <- function(omic_type,
                     write.table(backup_info, file = file.path(backup_dir, "backup_info.txt"), sep = "\\t", row.names = FALSE, quote = FALSE),
                     error = function(e) logger::log_warn("Failed to write backup_info.txt: {e$message}")
                 )
-                
+
                 logger::log_info("Clearing original results_summary_dir: {current_paths$results_summary_dir}")
                 unlink_success <- tryCatch({
                     unlink(current_paths$results_summary_dir, recursive = TRUE, force = TRUE)
@@ -1500,7 +1522,7 @@ copyToResultsSummary <- function(omic_type,
              }
         }
     }
-    
+
     summary_subdirs <- c("QC_figures", "Publication_figures", "Publication_tables", "Study_report")
     sapply(summary_subdirs, \(subdir) {
         dir_path <- file.path(current_paths$results_summary_dir, subdir)
@@ -1530,7 +1552,7 @@ copyToResultsSummary <- function(omic_type,
             list(source = file.path(current_paths$feature_qc_dir, "ruv_normalised_results_cln_with_replicates.RDS"), dest = "Publication_tables", is_dir = FALSE, display_name = "RUV Normalized Results RDS", new_name = "ruv_normalised_results.RDS")
         ))
     } # Add else if for other omic-specific files if necessary
-    
+
     # Excel files paths
     de_results_excel_path <- file.path(pub_tables_dir, paste0("DE_results_", omic_type, ".xlsx"))
     enrichment_excel_path <- file.path(pub_tables_dir, paste0("Pathway_enrichment_results_", omic_type, ".xlsx"))
@@ -1540,7 +1562,7 @@ copyToResultsSummary <- function(omic_type,
     openxlsx::addWorksheet(de_wb, "DE_Results_Index")
     de_index_data <- data.frame(Sheet = character(), Description = character(), stringsAsFactors = FALSE)
     de_files <- list.files(path = current_paths$de_output_dir, pattern = paste0("de_", "\\w+", "_long_annot\\.xlsx$"), full.names = TRUE) # More generic pattern
-    
+
     purrr::imap(de_files, \(file, idx) {
         sheet_name <- sprintf("DE_Sheet%d", idx)
         base_name <- basename(file) |> stringr::str_remove(paste0("de_", omic_type, "_|", "_long_annot\\.xlsx$"))
@@ -1563,7 +1585,7 @@ copyToResultsSummary <- function(omic_type,
     openxlsx::addWorksheet(enrichment_wb, "Enrichment_Index")
     enrichment_index_data <- data.frame(Sheet = character(), Contrast = character(), Direction = character(), stringsAsFactors = FALSE)
     enrichment_files <- list.files(path = current_paths$pathway_dir, pattern = "_enrichment_results\\.tsv$", full.names = TRUE)
-    
+
     purrr::imap(enrichment_files, \(file, idx) {
         base_name <- basename(file) |> stringr::str_remove("_enrichment_results\\.tsv$")
         direction <- ifelse(stringr::str_ends(base_name, "_up"), "up", ifelse(stringr::str_ends(base_name, "_down"), "down", "unknown"))
@@ -1581,7 +1603,7 @@ copyToResultsSummary <- function(omic_type,
     })
     openxlsx::writeDataTable(enrichment_wb, "Enrichment_Index", enrichment_index_data, tableStyle = "TableStyleLight9", headerStyle = openxlsx::createStyle(textDecoration = "bold"), withFilter = TRUE)
     openxlsx::writeData(enrichment_wb, "Enrichment_Index", data.frame(Note = "Contrast represents the comparison (e.g., Group1_minus_Group2). Direction shows up-regulated or down-regulated genes."), startRow = nrow(enrichment_index_data) + 3)
-    
+
     dir.create(pub_tables_dir, recursive = TRUE, showWarnings = FALSE)
     tryCatch({ openxlsx::saveWorkbook(de_wb, de_results_excel_path, overwrite = TRUE); cat(sprintf("Successfully saved DE results to: %s\n", de_results_excel_path)) }, error = function(e) { failed_copies[[length(failed_copies) + 1]] <- list(type = "workbook_save", path = de_results_excel_path, error = e$message); warning(sprintf("Failed to save DE workbook: %s", e$message)) })
     tryCatch({ openxlsx::saveWorkbook(enrichment_wb, enrichment_excel_path, overwrite = TRUE); cat(sprintf("Successfully saved Enrichment results to: %s\n", enrichment_excel_path)) }, error = function(e) { failed_copies[[length(failed_copies) + 1]] <- list(type = "workbook_save", path = enrichment_excel_path, error = e$message); warning(sprintf("Failed to save Enrichment workbook: %s", e$message)) })
@@ -1709,14 +1731,14 @@ updateMissingValueParameters <- function(design_matrix, config_list, min_reps_pe
         group_by(group) |>
         summarise(n_reps = n()) |>
         ungroup()
-    
+
     # Get total number of groups
     total_groups <- nrow(reps_per_group_tbl)
-    
+
     if (min_groups > total_groups) {
         stop("min_groups cannot be larger than total number of groups")
     }
-    
+
     # Calculate percentage missing allowed for each group
     group_thresholds <- reps_per_group_tbl |>
         mutate(
@@ -1724,20 +1746,20 @@ updateMissingValueParameters <- function(design_matrix, config_list, min_reps_pe
             max_missing = n_reps - adjusted_min_reps,
             missing_percent = round((max_missing / n_reps) * 100, 3)
         )
-    
+
     # Use a consistent percentage threshold across all groups
     # Take the minimum percentage to ensure all groups meet minimum requirements
     groupwise_cutoff <- max(group_thresholds$missing_percent)
-    
+
     # Calculate maximum failing groups allowed
     max_failing_groups <- total_groups - min_groups
     max_groups_cutoff <- round((max_failing_groups / total_groups) * 100, 3)
-    
+
     # Update config_list
     config_list$removeRowsWithMissingValuesPercent$groupwise_percentage_cutoff <- groupwise_cutoff
     config_list$removeRowsWithMissingValuesPercent$max_groups_percentage_cutoff <- max_groups_cutoff
     config_list$removeRowsWithMissingValuesPercent$proteins_intensity_cutoff_percentile <- 1
-    
+
     # Create informative message
     basic_msg <- sprintf(
         "Updated missing value parameters in config_list:
@@ -1752,7 +1774,7 @@ updateMissingValueParameters <- function(design_matrix, config_list, min_reps_pe
         groupwise_cutoff,
         max_groups_cutoff
     )
-    
+
     # Add details for each group
     group_detail_strings <- group_thresholds |>
         mutate(
@@ -1760,12 +1782,12 @@ updateMissingValueParameters <- function(design_matrix, config_list, min_reps_pe
                              group, adjusted_min_reps, n_reps, missing_percent)
         ) |>
         dplyr::pull(detail)
-        
+
     group_details <- paste(group_detail_strings, collapse = "\n")
-    
+
     # Print the message
     message(paste(basic_msg, "\n\nGroup details:", group_details, sep = "\n"))
-    
+
     return(config_list)
 }
 
@@ -1775,10 +1797,10 @@ updateRuvParameters <- function(config_list, best_k, control_genes_index, percen
   config_list$ruvParameters$best_k <- best_k
   config_list$ruvParameters$num_neg_ctrl <- length(control_genes_index)
   config_list$ruvParameters$percentage_as_neg_ctrl <- percentage_as_neg_ctrl
-  
+
   # Print the number of negative controls (as in the original code)
   config_list$ruvParameters$num_neg_ctrl
-  
+
   # Return the updated config list
   return(config_list)
 }
@@ -1808,21 +1830,21 @@ RenderReport <- function(omic_type,
     if (!exists(project_dirs_object_name, envir = .GlobalEnv)) {
         rlang::abort(paste0("Global object ", sQuote(project_dirs_object_name), " not found. Run setupDirectories() first."))
     }
-    
+
     project_dirs_global <- get(project_dirs_object_name, envir = .GlobalEnv)
     current_omic_key <- paste0(omic_type, "_", experiment_label)
 
     if (!current_omic_key %in% names(project_dirs_global)) {
-        rlang::abort(paste0("Key ", sQuote(current_omic_key), " not found in ", 
-                           sQuote(project_dirs_object_name), 
+        rlang::abort(paste0("Key ", sQuote(current_omic_key), " not found in ",
+                           sQuote(project_dirs_object_name),
                            ". Check omic_type ('", omic_type, "') and experiment_label ('", experiment_label, "')."))
     }
     current_paths <- project_dirs_global[[current_omic_key]] # This contains base_dir, results_summary_dir etc. for the *labelled* omic
 
-    if (!is.list(current_paths) || 
+    if (!is.list(current_paths) ||
         is.null(current_paths$base_dir) || # Need base_dir to find the template Rmd
         is.null(current_paths$results_summary_dir)) {
-        rlang::abort(paste0("Essential paths (base_dir, results_summary_dir) missing for key ", 
+        rlang::abort(paste0("Essential paths (base_dir, results_summary_dir) missing for key ",
                            sQuote(current_omic_key), " in ", sQuote(project_dirs_object_name), "."))
     }
 
@@ -1838,20 +1860,20 @@ RenderReport <- function(omic_type,
             rlang::abort(paste0("Internal error: Unrecognized omic_type ", sQuote(omic_type), " for Rmd template path construction."))
         }
     )
-    
+
     rmd_template_dir <- file.path(current_paths$base_dir, "scripts", omic_script_template_leaf)
     rmd_input_path <- file.path(rmd_template_dir, rmd_filename)
-    
+
     if (!file.exists(rmd_input_path)) {
         rlang::abort(paste0("R Markdown template file not found at the expected location: ", sQuote(rmd_input_path),
                            ". This should be in the general scripts/<omic_type> directory (e.g., scripts/proteomics)."))
     }
 
     # --- Construct Output Path (in the labelled results_summary directory) ---
-    output_file_basename <- paste0(tools::file_path_sans_ext(rmd_filename), 
-                                   "_", omic_type, 
+    output_file_basename <- paste0(tools::file_path_sans_ext(rmd_filename),
+                                   "_", omic_type,
                                    "_", experiment_label)
-                                   
+
     output_ext <- ".docx" # Default
     if (!is.null(output_format)){
         if(output_format == "word_document" || grepl("word", output_format, ignore.case=TRUE)){
@@ -1894,7 +1916,7 @@ RenderReport <- function(omic_type,
     } else {
         logger::log_warn("Report rendering failed or output file not found at expected location.")
     }
-    
+
     invisible(rendered_path)
 }
 
