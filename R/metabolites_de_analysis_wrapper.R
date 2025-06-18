@@ -1,24 +1,24 @@
 #' MetabolomicsDifferentialAbundanceResults S4 Class
-#' 
+#'
 #' @description
 #' S4 class to store essential results from metabolomics differential abundance analysis.
 #' This class contains the original data object, fitted model, and results table.
-#' 
+#'
 #' @slot theObject The original MetaboliteAssayData object used for analysis
 #' @slot fit.eb The fitted eBayes model from limma analysis
 #' @slot contrasts_results_table Data frame with differential abundance statistics
-#' 
+#'
 #' @export
 setClass("MetabolomicsDifferentialAbundanceResults",
          slots = c(
            theObject = "MetaboliteAssayData",
            fit.eb = "MArrayLM",
-           contrasts_results_table = "data.frame"
+           contrasts_results_table = "list"
          ),
          prototype = list(
            theObject = NULL,
            fit.eb = NULL,
-           contrasts_results_table = data.frame()
+           contrasts_results_table = list()
          )
 )
 
@@ -36,37 +36,7 @@ setGeneric( name ="differentialAbundanceAnalysis"
                            , args_row_id = NULL) {
               standardGeneric("differentialAbundanceAnalysis")})
 
-#'@export
-setMethod( f ="differentialAbundanceAnalysis"
-           , signature = "MetaboliteAssayData"
-           , definition=function( objectsList
-                                  , contrasts_tbl = NULL
-                                  , formula_string = NULL
-                                  , de_q_val_thresh = NULL
-                                  , treat_lfc_cutoff = NULL
-                                  , eBayes_trend = NULL
-                                  , eBayes_robust = NULL
-                                  , args_group_pattern = NULL
-                                  , args_row_id = NULL ) {
 
-             # Run DE analysis and explicitly set names
-             results_list <- purrr::map(    objectsList
-                                            , \( obj) {
-                                              differentialAbundanceAnalysisHelper(  obj
-                                                                                    , contrasts_tbl = contrasts_tbl
-                                                                                    , formula_string = formula_string
-                                                                                    , de_q_val_thresh = de_q_val_thresh
-                                                                                    , treat_lfc_cutoff = treat_lfc_cutoff
-                                                                                    , eBayes_trend = eBayes_trend
-                                                                                    , eBayes_robust = eBayes_robust
-                                                                                    , args_group_pattern = args_group_pattern
-                                                                                    , args_row_id = args_row_id
-                                              )
-                                            })
-
-             return(results_list)
-
-           })
 
 #'@export
 setMethod( f ="differentialAbundanceAnalysis"
@@ -239,9 +209,12 @@ setMethod( f ="differentialAbundanceAnalysisHelper"
     eBayes_robust = eBayes_robust
   )
 
+  # Combine all contrast results into a single data frame
+  contrasts_results_table <-  contrasts_results$results
+
   # Map back to original group names in results if needed
   if(exists("group_mapping")) {
-    contrasts_results_table <- contrasts_results$results |>
+    contrasts_results_table <- contrasts_results_table |>
       dplyr::mutate(comparison = purrr::map_chr(comparison, \(x) {
         result <- x
         for(safe_name in names(group_mapping)) {
@@ -249,8 +222,6 @@ setMethod( f ="differentialAbundanceAnalysisHelper"
         }
         result
       }))
-  } else {
-    contrasts_results_table <- contrasts_results$results
   }
 
   return_list$fit.eb <- contrasts_results$fit.eb
