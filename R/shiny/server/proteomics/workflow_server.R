@@ -114,12 +114,17 @@ proteomicsWorkflowServer <- function(id, project_dirs, omic_type, experiment_lab
     # Tab 3: Quality Control
     qualityControlAppletServer("quality_control", workflow_data, experiment_paths, omic_type, experiment_label)
     
+    # Create reactive for selected tab to pass to normalization module
+    selected_tab <- reactive({
+      input$workflow_tabs
+    })
+    
     # Tab 4: Normalization
     message("   proteomicsWorkflowServer Step: Calling normalizationAppletServer...")
-    normalizationAppletServer("normalization", workflow_data, experiment_paths, omic_type, experiment_label)
+    normalizationAppletServer("normalization", workflow_data, experiment_paths, omic_type, experiment_label, selected_tab)
     
     # Tab 5: Differential Expression
-    # differentialExpressionServer("differential_expression", workflow_data, experiment_paths)
+    differentialExpressionAppletServer("differential_expression", workflow_data, experiment_paths, omic_type, experiment_label)
     
     # Tab 6: Enrichment Analysis
     # enrichmentAnalysisServer("enrichment_analysis", workflow_data, experiment_paths)

@@ -1009,17 +1009,18 @@ qualityControlAppletServer <- function(id, workflow_data, experiment_paths, omic
         logger::log_info("QC Step: Applying protein peptide count filter (min: {input$min_peptides_per_protein})")
         
         # ✅ FIXED: Use updateConfigParameter to sync S4 object AND global config_list
+        # Use config.ini parameter names, not function parameter names
         current_s4 <- updateConfigParameter(
           theObject = current_s4,
           function_name = "filterMinNumPeptidesPerProtein",
-          parameter_name = "num_peptides_per_protein_thresh",
+          parameter_name = "peptides_per_protein_cutoff",
           new_value = input$min_peptides_per_protein
         )
         
         current_s4 <- updateConfigParameter(
           theObject = current_s4,
           function_name = "filterMinNumPeptidesPerProtein",
-          parameter_name = "num_peptidoforms_per_protein_thresh",
+          parameter_name = "peptidoforms_per_protein_cutoff",
           new_value = input$min_peptidoforms_per_protein
         )
         
