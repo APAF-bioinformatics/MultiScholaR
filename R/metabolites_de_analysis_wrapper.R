@@ -1,4 +1,26 @@
-
+#' MetabolomicsDifferentialAbundanceResults S4 Class
+#' 
+#' @description
+#' S4 class to store essential results from metabolomics differential abundance analysis.
+#' This class contains the original data object, fitted model, and results table.
+#' 
+#' @slot theObject The original MetaboliteAssayData object used for analysis
+#' @slot fit.eb The fitted eBayes model from limma analysis
+#' @slot contrasts_results_table Data frame with differential abundance statistics
+#' 
+#' @export
+setClass("MetabolomicsDifferentialAbundanceResults",
+         slots = c(
+           theObject = "MetaboliteAssayData",
+           fit.eb = "MArrayLM",
+           contrasts_results_table = "data.frame"
+         ),
+         prototype = list(
+           theObject = NULL,
+           fit.eb = NULL,
+           contrasts_results_table = data.frame()
+         )
+)
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
@@ -195,24 +217,17 @@ setMethod( f ="differentialAbundanceAnalysisHelper"
   message(sprintf("   eBayes_trend after conversion: %s (class: %s)", eBayes_trend, class(eBayes_trend)))
   message(sprintf("   eBayes_robust after conversion: %s (class: %s)", eBayes_robust, class(eBayes_robust)))
 
-  ## Count the number of values
-    # Convert metabolite data to matrix format
-    # metabolite_matrix <- as.matrix(theObject@metabolite_data[, -1]) # Exclude Name column
-    # colnames(metabolite_matrix) <- colnames(theObject@metabolite_data)[-1]
-    # rownames(metabolite_matrix) <- theObject@metabolite_data$Name
-    # return_list$plot_num_of_values <- plotNumOfValuesNoLog(metabolite_matrix)
-
-  ## Compare the different experimental groups and obtain lists of differentially expressed proteins.")
+  ## Compare the different experimental groups and obtain lists of differentially expressed metabolites
 
   rownames( theObject@design_matrix ) <- theObject@design_matrix |> dplyr::pull( one_of(theObject@sample_id ))
 
   # Prepare data matrix for DE analysis
   data_matrix <- NA
 
-    matrix_data <- as.matrix(theObject@metabolite_data[, -1]) # Exclude Name column
-    colnames(matrix_data) <- colnames(theObject@metabolite_data)[-1]
-    rownames(matrix_data) <- theObject@metabolite_data$Name
-    data_matrix <- matrix_data
+  matrix_data <- as.matrix(theObject@metabolite_data[, -1]) # Exclude Name column
+  colnames(matrix_data) <- colnames(theObject@metabolite_data)[-1]
+  rownames(matrix_data) <- theObject@metabolite_data$Name
+  data_matrix <- matrix_data
 
   contrasts_results <- runTestsContrasts(
     data_matrix,
@@ -238,244 +253,17 @@ setMethod( f ="differentialAbundanceAnalysisHelper"
     contrasts_results_table <- contrasts_results$results
   }
 
-  return_list$contrasts_results <- contrasts_results
+  return_list$fit.eb <- contrasts_results$fit.eb
   return_list$contrasts_results_table <- contrasts_results_table
 
-  ## Prepare data for drawing the volcano plots
+  # Create and return the S4 object
+  result_object <- new("MetabolomicsDifferentialAbundanceResults",
+                       theObject = return_list$theObject,
+                       fit.eb = return_list$fit.eb,
+                       contrasts_results_table = return_list$contrasts_results_table
+  )
 
-  # significant_rows <- getSignificantData(list_of_de_tables = list(contrasts_results_table),
-  #                                        list_of_descriptions = list("RUV applied"),
-  #                                        row_id = !!sym(args_row_id),
-  #                                        p_value_column = !!sym(raw_pvalue_colum),
-  #                                        q_value_column = !!sym(qvalue_column),
-  #                                        fdr_value_column = fdr_value_bh_adjustment,
-  #                                        log_q_value_column = lqm,
-  #                                        log_fc_column = logFC,
-  #                                        comparison_column = "comparison",
-  #                                        expression_column = "log_intensity",
-  #                                        facet_column = analysis_type,
-  #                                        q_val_thresh = de_q_val_thresh) |>
-  #   dplyr::rename(log2FC = "logFC")
-  #
-  # return_list$significant_rows <- significant_rows
-
-
-#
-#   # Print the volcano plots
-#   volplot_plot <- plotVolcano(significant_rows,
-#                               log_q_value_column = lqm,
-#                               log_fc_column = log2FC,
-#                               q_val_thresh = de_q_val_thresh,
-#                               formula_string = "analysis_type ~ comparison")
-#
-#
-#   return_list$volplot_plot <- volplot_plot
-#
-#   ## Count the number of up or down significant differentially expressed proteins.
-#   num_sig_de_molecules_first_go <- printCountDeGenesTable(list_of_de_tables = list(contrasts_results_table),
-#                                                           list_of_descriptions = list( "RUV applied"),
-#                                                           formula_string = "analysis_type ~ comparison")
-#
-#   return_list$num_sig_de_molecules_first_go <- num_sig_de_molecules_first_go
-#
-#   ## Print p-values distribution figure
-#   pvalhist <- printPValuesDistribution(significant_rows,
-#                                        p_value_column = !!sym(raw_pvalue_colum),
-#                                        formula_string = "analysis_type ~ comparison")
-#
-#   return_list$pvalhist <- pvalhist
-
-  # ## Create wide format output file
-  # norm_counts <- NA
-  #
-  # # Get the appropriate data table based on object type
-  #   message("   Using metabolite_data for MetaboliteAssayData object")
-  #   counts_table_to_use <- theObject@metabolite_data
-  #
-  # message("   Data table structure:")
-  # str(counts_table_to_use)
-  #
-  # norm_counts <- counts_table_to_use |>
-  #   as.data.frame() |>
-  #   column_to_rownames(args_row_id) |>
-  #   set_colnames(paste0(colnames(counts_table_to_use[-1]), ".log2norm")) |>
-  #   rownames_to_column(args_row_id)
-  #
-  # message("   Normalized counts structure:")
-  # str(norm_counts)
-  # print(head(norm_counts))
-  #
-  # return_list$norm_counts <- norm_counts
-
-
-  # dealWithProeinIdJoining <- function(df) {
-  #   if (inherits(theObject, "MetaboliteAssayData")) {
-  #     # For metabolites, we don't need to join with protein_id_table
-  #     df
-  #   } else if (inherits(theObject, "ProteinQuantitativeData")) {
-  #     # For proteins, join with protein_id_table
-  #     df |>
-  #       left_join(theObject@protein_id_table,
-  #                 by = join_by(!!sym(args_row_id) == !!sym(theObject@protein_id_column)))
-  #   } else {
-  #     stop(sprintf("Unsupported object type: %s", class(theObject)))
-  #   }
-  # }
-
-  # de_proteins_wide <- significant_rows |>
-  #   dplyr::filter(analysis_type == "RUV applied") |>
-  #   dplyr::select(-lqm, -colour, -analysis_type) |>
-  #   pivot_wider(id_cols = c(!!sym(args_row_id)),
-  #               names_from = c(comparison),
-  #               names_sep = ":",
-  #               values_from = c(log2FC, !!sym(qvalue_column), !!sym(raw_pvalue_colum))) |>
-  #   left_join(counts_table_to_use, by = join_by(!!sym(args_row_id) == !!sym(args_row_id))) |>
-  #   dealWithProeinIdJoining() |>
-  #   dplyr::arrange(across(matches("!!sym(qvalue_column)"))) |>
-  #   distinct()
-  #
-  #
-  # return_list$de_proteins_wide <- de_proteins_wide
-
-#
-#   ## Create long format output file
-#   message("--- Creating long format output ---")
-#   message(sprintf("   Object class: %s", class(theObject)))
-#   message("   Object structure:")
-#   str(theObject)
-#
-#   # Create appropriate ID table based on object type
-#   id_table <- if (inherits(theObject, "MetaboliteAssayData")) {
-#     message("   Using metabolite data as ID table for MetaboliteAssayData")
-#     message("   Metabolite data structure:")
-#     str(theObject@metabolite_data)
-#     message(sprintf("   Using row_id: %s", args_row_id))
-#     # For metabolites, create a simple ID table from the metabolite data
-#     theObject@metabolite_data |>
-#       dplyr::select(!!sym(args_row_id)) |>
-#       dplyr::distinct()
-#   } else if (inherits(theObject, "ProteinQuantitativeData")) {
-#     message("   Using protein_id_table for ProteinQuantitativeData")
-#     theObject@protein_id_table
-#   } else {
-#     stop(sprintf("Unsupported object type: %s", class(theObject)))
-#   }
-#
-#   message("   ID table structure:")
-#   str(id_table)
-#
-#   de_proteins_long <- createDeResultsLongFormat(
-#     lfc_qval_tbl = significant_rows |>
-#       dplyr::filter(analysis_type == "RUV applied"),
-#     norm_counts_input_tbl = getDataMatrix(theObject),
-#     raw_counts_input_tbl = getDataMatrix(theObject),
-#     row_id = args_row_id,
-#     sample_id = theObject@sample_id,
-#     group_id = group_id,
-#     group_pattern = args_group_pattern,
-#     design_matrix_norm = theObject@design_matrix,
-#     design_matrix_raw = theObject@design_matrix,
-#     protein_id_table = id_table
-#   )
-#
-#   message("   Long format results structure:")
-#   str(de_proteins_long)
-#
-#   return_list$de_proteins_long <- de_proteins_long
-
-#
-#   ## Plot static volcano plot
-#   static_volcano_plot_data <- de_proteins_long |>
-#     mutate( lqm = -log10(!!sym(qvalue_column) ) ) |>
-#     dplyr::mutate(label = case_when( !!sym(qvalue_column) < de_q_val_thresh ~ "Significant",
-#                                      TRUE ~ "Not sig.")) |>
-#     dplyr::mutate(colour = case_when( !!sym(qvalue_column) < de_q_val_thresh ~ "purple",
-#                                       TRUE ~ "black")) |>
-#     dplyr::mutate(colour = factor(colour, levels = c("black", "purple")))
-#
-#   list_of_volcano_plots <- static_volcano_plot_data %>%
-#     group_by( comparison) %>%
-#     nest() %>%
-#     ungroup() %>%
-#     mutate( title = paste( comparison)) %>%
-#     mutate( plot = purrr::map2( data, title, \(x,y) { plotOneVolcanoNoVerticalLines(x, y
-#                                                                                     , log_q_value_column = lqm
-#                                                                                     , log_fc_column = log2FC) } ) )
-#
-#   return_list$list_of_volcano_plots <- list_of_volcano_plots
-
-#
-#   list_of_volcano_plots_with_gene_names <-  static_volcano_plot_data %>%
-#     group_by( comparison) %>%
-#     nest() %>%
-#     ungroup() %>%
-#     mutate( title = paste( comparison)) %>%
-#     mutate( plot = purrr::map( data, \(x) {
-#       printOneVolcanoPlotWithProteinLabel( input_table=  x
-#                                            , uniprot_table = uniprot_dat_cln |>
-#                                              mutate( gene_name = purrr::map_chr( gene_names
-#                                                                                  , \(x) str_split(x, "; ")[[1]][1])) )
-#     } ) )
-#
-#   return_list$list_of_volcano_plots_with_gene_names <- list_of_volcano_plots_with_gene_names
-
-#
-#   ## Return the number of significant molecules
-#   num_sig_de_molecules <- significant_rows %>%
-#     dplyr::mutate(status = case_when(!!sym(qvalue_column)  >= de_q_val_thresh ~ "Not significant",
-#                                      log2FC >= 0 & !!sym(qvalue_column) < de_q_val_thresh ~ "Significant and Up",
-#                                      log2FC < 0 &  !!sym(qvalue_column) < de_q_val_thresh ~ "Significant and Down",
-#                                      TRUE ~ "Not significant")) %>%
-#     group_by( comparison,  status) %>% # expression, analysis_type,
-#     summarise(counts = n()) %>%
-#     ungroup()
-#
-#   formula_string <- ". ~ comparison"
-#
-#   return_list$num_sig_de_molecules <- num_sig_de_molecules
-#
-#   if (num_sig_de_molecules %>%
-#       dplyr::filter(status != "Not significant") |>
-#       nrow() > 0 ) {
-#
-#     num_sig_de_genes_barplot_only_significant <- num_sig_de_molecules %>%
-#       dplyr::filter(status != "Not significant") %>%
-#       ggplot(aes(x = status, y = counts)) +
-#       geom_bar(stat = "identity") +
-#       geom_text(stat = 'identity', aes(label = counts), vjust = -0.5) +
-#       theme(axis.text.x = element_text(angle = 90))  +
-#       facet_wrap(as.formula(formula_string))
-#
-#     num_of_comparison_only_significant <- num_sig_de_molecules |>
-#       distinct(comparison) |>
-#       nrow()
-#
-#     return_list$num_sig_de_genes_barplot_only_significant <- num_sig_de_genes_barplot_only_significant
-#     return_list$num_of_comparison_only_significant <- num_of_comparison_only_significant
-#   }
-#
-#   if (num_sig_de_molecules %>%
-#       dplyr::filter(status != "Not significant") |>
-#       nrow() > 0 ) {
-#
-#     num_sig_de_genes_barplot_with_not_significant <- num_sig_de_molecules %>%
-#       ggplot(aes(x = status, y = counts)) +
-#       geom_bar(stat = "identity") +
-#       geom_text(stat = 'identity', aes(label = counts), vjust = -0.5) +
-#       theme(axis.text.x = element_text(angle = 90))  +
-#       facet_wrap(as.formula(formula_string))
-#
-#     num_of_comparison_with_not_significant <- num_sig_de_molecules |>
-#       distinct(comparison) |>
-#       nrow()
-#
-#     return_list$num_sig_de_genes_barplot_with_not_significant <- num_sig_de_genes_barplot_with_not_significant
-#     return_list$num_of_comparison_with_not_significant <- num_of_comparison_with_not_significant
-#
-#   }
-
-  return_list
-
+  return(result_object)
 })
 
 #'
