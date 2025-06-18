@@ -496,11 +496,11 @@ plotPcaGgpairs <- function( data_matrix
 plotRleHelper <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75, 0.95), yaxis_limit = c(-0.5, 0.5)) {
 message("--- Entering plotRleHelper ---")
 message(sprintf("   plotRleHelper: Y dimensions = %d x %d", nrow(Y), ncol(Y)))
-message("   plotRleHelper: Y structure:")
-str(Y)
+# message("   plotRleHelper: Y structure:")
+# str(Y)
 message(sprintf("   plotRleHelper: rowinfo class = %s", class(rowinfo)))
-message("   plotRleHelper: rowinfo structure:")
-str(rowinfo)
+# message("   plotRleHelper: rowinfo structure:")
+# str(rowinfo)
 
 # Check if Y is numeric
 if (!is.numeric(Y)) {
@@ -510,16 +510,16 @@ if (!is.numeric(Y)) {
 # Calculate RLE
 message("   plotRleHelper: Calculating RLE...")
 rle <- t(apply(t(Y) - apply(Y, 2, function(x) {
-  message(sprintf("      Calculating median for column: %s", paste(head(x), collapse=", ")))
+  # message(sprintf("      Calculating median for column: %s", paste(head(x), collapse=", ")))
   median(x, na.rm=TRUE)
 }), 2, function(x) {
-  message(sprintf("      Calculating quantiles for column: %s", paste(head(x), collapse=", ")))
+  # message(sprintf("      Calculating quantiles for column: %s", paste(head(x), collapse=", ")))
   quantile(x, probs = probs, na.rm=TRUE)
 }))
 
 message("   plotRleHelper: RLE calculation complete")
-message("   plotRleHelper: RLE structure:")
-str(rle)
+# message("   plotRleHelper: RLE structure:")
+# str(rle)
 
 colnames(rle) <- c("min", "lower", "middle", "upper", "max")
 df <- cbind(data.frame(rle.x.factor = rownames(rle)), data.frame(rle))
@@ -1045,12 +1045,12 @@ prepareDataForVolcanoPlot <- function(input_table
   message("   Preparing data for volcano plot...")
   message("   Input table structure:")
   str(input_table)
-  
+
   temp_col_name <- as_string(as_name(enquo(protein_id_column)))
-  
+
   # Check if we're dealing with metabolite data (no protein IDs)
   is_metabolite_data <- !any(grepl("Protein.Ids|uniprot_acc", names(input_table)))
-  
+
   if (is_metabolite_data) {
     message("   Processing metabolite data...")
     proteomics_volcano_tbl <- input_table |>
@@ -1137,7 +1137,7 @@ prepareDataForVolcanoPlot <- function(input_table
 
   message("   Final volcano plot table structure:")
   str(proteomics_volcano_tbl)
-  
+
   proteomics_volcano_tbl
 }
 
@@ -2296,7 +2296,7 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
   message(sprintf("   - sample_id: %s", sample_id))
   message(sprintf("   - group_id: %s", group_id))
   message(sprintf("   - group_pattern: %s", group_pattern))
-  
+
   message("   Input data structures:")
   message("   - lfc_qval_tbl structure:")
   str(lfc_qval_tbl)
@@ -2306,15 +2306,15 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
   str(raw_counts_input_tbl)
   message("   - protein_id_table structure:")
   str(protein_id_table)
-  
+
   # Create left and right join columns
   left_join_columns <- c(row_id, "left_group")
   right_join_columns <- c(row_id, "right_group")
-  
+
   message("   Join columns:")
   message(sprintf("   - left_join_columns: %s", paste(left_join_columns, collapse=", ")))
   message(sprintf("   - right_join_columns: %s", paste(right_join_columns, collapse=", ")))
-  
+
   # Create normalized and raw counts tables
   message("   Creating normalized and raw counts tables...")
   norm_counts <- norm_counts_input_tbl |>
@@ -2328,7 +2328,7 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
     }}() |>
     set_colnames(paste0(colnames(norm_counts_input_tbl[-1]), ".log2norm")) |>
     rownames_to_column(row_id)
-    
+
   raw_counts <- raw_counts_input_tbl |>
     as.data.frame() |>
     {function(x) {
@@ -2340,13 +2340,13 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
     }}() |>
     set_colnames(paste0(colnames(raw_counts_input_tbl[-1]), ".raw")) |>
     rownames_to_column(row_id)
-    
+
   message("   Created counts tables:")
   message("   - norm_counts structure:")
   str(norm_counts)
   message("   - raw_counts structure:")
   str(raw_counts)
-  
+
   message("   Creating long format results...")
   de_proteins_long <- lfc_qval_tbl |>
     dplyr::select(-lqm, -colour, -analysis_type) |>
@@ -2362,11 +2362,11 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
                , by = join_by( !!sym(row_id) == !!sym( colnames( protein_id_table)[1]))) |>
     arrange( comparison, fdr_qvalue, log2FC) |>
     distinct()
-    
+
   message("   Final long format results structure:")
   str(de_proteins_long)
   message("--- Exiting createDeResultsLongFormat ---")
-  
+
   de_proteins_long
 }
 
