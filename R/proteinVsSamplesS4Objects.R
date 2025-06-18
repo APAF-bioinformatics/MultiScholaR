@@ -1149,6 +1149,8 @@ setMethod( f = "removeRowsWithMissingValuesPercent"
                                   , max_groups_percentage_cutoff = NULL
                                   , proteins_intensity_cutoff_percentile = NULL) {
 
+             print("--- Entering removeRowsWithMissingValuesPercent S4 Method ---")
+             
              protein_quant_table <- theObject@protein_quant_table
              protein_id_column <- theObject@protein_id_column
              design_matrix <- theObject@design_matrix
@@ -1156,27 +1158,52 @@ setMethod( f = "removeRowsWithMissingValuesPercent"
              sample_id <- theObject@sample_id
              replicate_group_column <- theObject@technical_replicate_id
 
+             print("   removeRowsWithMissingValuesPercent: Extracting input arguments...")
+             print(sprintf("      Arg: protein_id_column = %s", protein_id_column))
+             print(sprintf("      Arg: sample_id = %s", sample_id))
+             print(sprintf("      Arg: group_id = %s", group_id))
+             print(sprintf("      Data State (protein_quant_table): Dims = %d rows, %d cols", nrow(protein_quant_table), ncol(protein_quant_table)))
+             print(sprintf("      Data State (design_matrix): Dims = %d rows, %d cols", nrow(design_matrix), ncol(design_matrix)))
+             print(head(design_matrix))
+
              # print(groupwise_percentage_cutoff)
              # print(min_protein_intensity_threshold )
 
+             print("   removeRowsWithMissingValuesPercent: Resolving parameters with checkParamsObjectFunctionSimplify...")
              ruv_grouping_variable <- checkParamsObjectFunctionSimplify(theObject
                                                                         , "ruv_grouping_variable"
                                                                         , NULL)
+             print(sprintf("      Resolved ruv_grouping_variable = %s", ifelse(is.null(ruv_grouping_variable), "NULL", ruv_grouping_variable)))
+             
              groupwise_percentage_cutoff <- checkParamsObjectFunctionSimplify(theObject
                                                                               , "groupwise_percentage_cutoff"
                                                                               , 50)
+             print(sprintf("      Resolved groupwise_percentage_cutoff = %g", groupwise_percentage_cutoff))
+             
              max_groups_percentage_cutoff <- checkParamsObjectFunctionSimplify(theObject
                                                                                , "max_groups_percentage_cutoff"
                                                                                , 50)
+             print(sprintf("      Resolved max_groups_percentage_cutoff = %g", max_groups_percentage_cutoff))
+             
              proteins_intensity_cutoff_percentile <- checkParamsObjectFunctionSimplify(theObject
                                                                                    , "proteins_intensity_cutoff_percentile"
                                                                                    , 1)
+             print(sprintf("      Resolved proteins_intensity_cutoff_percentile = %g", proteins_intensity_cutoff_percentile))
 
+             print("   removeRowsWithMissingValuesPercent: Updating parameters in S4 object...")
              theObject <- updateParamInObject(theObject, "ruv_grouping_variable")
              theObject <- updateParamInObject(theObject, "groupwise_percentage_cutoff")
              theObject <- updateParamInObject(theObject, "max_groups_percentage_cutoff")
              theObject <- updateParamInObject(theObject, "proteins_intensity_cutoff_percentile")
 
+             print("   removeRowsWithMissingValuesPercent: About to call helper function...")
+             print(sprintf("      Helper Args: cols = %s", protein_id_column))
+             print(sprintf("      Helper Args: sample_id = %s", sample_id))
+             print(sprintf("      Helper Args: row_id = %s", protein_id_column))
+             print(sprintf("      Helper Args: grouping_variable = %s", ruv_grouping_variable))
+             print(sprintf("      Helper Args: groupwise_percentage_cutoff = %g", groupwise_percentage_cutoff))
+             print(sprintf("      Helper Args: max_groups_percentage_cutoff = %g", max_groups_percentage_cutoff))
+             print(sprintf("      Helper Args: proteins_intensity_cutoff_percentile = %g", proteins_intensity_cutoff_percentile))
 
              theObject@protein_quant_table <- removeRowsWithMissingValuesPercentHelper( protein_quant_table
                                                                            , cols= protein_id_column
@@ -1189,8 +1216,13 @@ setMethod( f = "removeRowsWithMissingValuesPercent"
                                                                            , proteins_intensity_cutoff_percentile = proteins_intensity_cutoff_percentile
                                                                            , temporary_abundance_column = "Log_Abundance")
 
+             print(sprintf("   removeRowsWithMissingValuesPercent: Helper function returned. New dims = %d rows, %d cols", 
+                           nrow(theObject@protein_quant_table), ncol(theObject@protein_quant_table)))
+
+             print("   removeRowsWithMissingValuesPercent: Cleaning design matrix...")
              theObject <- cleanDesignMatrix(theObject)
 
+             print("--- Exiting removeRowsWithMissingValuesPercent S4 Method ---")
              return(theObject)
 
            })

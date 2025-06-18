@@ -101,6 +101,25 @@ proteomicsWorkflowServer <- function(id, project_dirs, omic_type, experiment_lab
       message("   proteomicsWorkflowServer Step: experiment_paths is NULL!")
     }
     
+    # ✅ FIXED: Load aa_seq_tbl_final from scripts directory if resuming session
+    if (!is.null(experiment_paths) && !is.null(experiment_paths$source_dir)) {
+      aa_seq_file_path <- file.path(experiment_paths$source_dir, "aa_seq_tbl_final.RDS")
+      if (file.exists(aa_seq_file_path)) {
+        message("   proteomicsWorkflowServer Step: Loading existing aa_seq_tbl_final from scripts directory for session resumption")
+        log_info("Loading existing aa_seq_tbl_final from scripts directory for session resumption")
+        tryCatch({
+          aa_seq_tbl_final <- readRDS(aa_seq_file_path)
+          workflow_data$aa_seq_tbl_final <- aa_seq_tbl_final
+          assign("aa_seq_tbl_final", aa_seq_tbl_final, envir = .GlobalEnv)
+          log_info(sprintf("Successfully loaded aa_seq_tbl_final with %d sequences", nrow(aa_seq_tbl_final)))
+        }, error = function(e) {
+          log_warn(paste("Error loading aa_seq_tbl_final:", e$message))
+        })
+      } else {
+        message("   proteomicsWorkflowServer Step: No existing aa_seq_tbl_final found in scripts directory")
+      }
+    }
+    
     # Tab 1: Setup & Import
     message("   proteomicsWorkflowServer Step: Calling setupImportServer...")
     message(sprintf("   proteomicsWorkflowServer Step: Passing volumes to setupImportServer. is.null = %s, type = %s", 

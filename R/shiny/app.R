@@ -509,6 +509,7 @@ server <- function(input, output, session) {
       ))
     } else {
       # Directory doesn't exist, so proceed with creation
+      removeModal()
       # Using a reactiveVal to trigger the setup process
       setup_action("create_new")
     }

@@ -162,9 +162,31 @@ removeRowsWithMissingValuesPercentHelper <- function(input_table
                                                      , proteins_intensity_cutoff_percentile = 1
                                                      , temporary_abundance_column = "Abundance") {
 
+  print(">>> Entering removeRowsWithMissingValuesPercentHelper <<<")
+  
+  print(paste("      removeRowsWithMissingValuesPercentHelper Arg: cols =", deparse(cols)))
+  print(sprintf("      removeRowsWithMissingValuesPercentHelper Arg: groupwise_percentage_cutoff = %g", groupwise_percentage_cutoff))
+  print(sprintf("      removeRowsWithMissingValuesPercentHelper Arg: max_groups_percentage_cutoff = %g", max_groups_percentage_cutoff))
+  print(sprintf("      removeRowsWithMissingValuesPercentHelper Arg: proteins_intensity_cutoff_percentile = %g", proteins_intensity_cutoff_percentile))
+  print(sprintf("      removeRowsWithMissingValuesPercentHelper Arg: temporary_abundance_column = %s", temporary_abundance_column))
+  
+  print(sprintf("      Data State (input_table): Dims = %d rows, %d cols", nrow(input_table), ncol(input_table)))
+  print("      Data State (input_table) Structure:")
+  utils::str(input_table)
+  print("      Data State (input_table) Head:")
+  print(head(input_table))
+  
+  print(sprintf("      Data State (design_matrix): Dims = %d rows, %d cols", nrow(design_matrix), ncol(design_matrix)))
+  print("      Data State (design_matrix) Structure:")
+  utils::str(design_matrix)
+  print("      Data State (design_matrix) Head:")
+  print(head(design_matrix))
+
   # Ensure the sample ID column name is a string for robust use
   sample_id_col_name_string <- rlang::as_string(rlang::ensym(sample_id))
+  print(sprintf("      removeRowsWithMissingValuesPercentHelper: sample_id_col_name_string = %s", sample_id_col_name_string))
 
+  print("      removeRowsWithMissingValuesPercentHelper Step: Pivoting data to long format...")
   abundance_long <- input_table |>
     tidyr::pivot_longer(cols = !all_of(cols) # Use !all_of() with the cols string directly
                  , names_to = sample_id_col_name_string # Use the explicit string name
@@ -178,19 +200,42 @@ removeRowsWithMissingValuesPercentHelper <- function(input_table
                 # {{sample_id}} correctly refers to the column (e.g., 'Run') in design_matrix here
                 dplyr::mutate( {{sample_id}} := as.character( {{sample_id}} ) )
               , by = sample_id_col_name_string ) # Join using the explicit string name
+  
+  print("      removeRowsWithMissingValuesPercentHelper Step: Long format data created.")
+  print(sprintf("      Data State (abundance_long): Dims = %d rows, %d cols", nrow(abundance_long), ncol(abundance_long)))
+  print("      Data State (abundance_long) Structure:")
+  utils::str(abundance_long)
+  print("      Data State (abundance_long) Head:")
+  print(head(abundance_long))
 
-  min_protein_intensity_threshold <- ceiling( quantile( abundance_long |>
-                                                          dplyr::filter( !is.nan(!!sym(temporary_abundance_column)) & !is.infinite(!!sym(temporary_abundance_column))) |>
-                                                          dplyr::pull(!!sym(temporary_abundance_column))
+  print("      removeRowsWithMissingValuesPercentHelper Step: Calculating intensity threshold...")
+  # Get non-missing values for threshold calculation
+  valid_values <- abundance_long |>
+    dplyr::filter( !is.nan(!!sym(temporary_abundance_column)) & !is.infinite(!!sym(temporary_abundance_column))) |>
+    dplyr::pull(!!sym(temporary_abundance_column))
+  
+  print(sprintf("      removeRowsWithMissingValuesPercentHelper: Found %d valid (non-NaN, non-Inf) abundance values", length(valid_values)))
+  print(sprintf("      removeRowsWithMissingValuesPercentHelper: Valid values range: %g to %g", min(valid_values, na.rm=TRUE), max(valid_values, na.rm=TRUE)))
+  
+  min_protein_intensity_threshold <- ceiling( quantile( valid_values
                                                         , na.rm=TRUE
                                                         , probs = c(proteins_intensity_cutoff_percentile/100) ))[1]
+  
+  print(sprintf("      removeRowsWithMissingValuesPercentHelper: Calculated min_protein_intensity_threshold = %g (percentile %g%%)", 
+                 min_protein_intensity_threshold, proteins_intensity_cutoff_percentile))
 
+  print("      removeRowsWithMissingValuesPercentHelper Step: Counting values per group...")
   count_values_per_group <- abundance_long |>
     distinct( {{ sample_id }}, {{ grouping_variable }} ) |>
     group_by(  {{ grouping_variable }} ) |>
     summarise(  num_per_group = n()) |>
     ungroup()
+  
+  print("      Data State (count_values_per_group):")
+  print(count_values_per_group)
 
+  print("      removeRowsWithMissingValuesPercentHelper Step: Calculating missing values per group...")
+  print("      removeRowsWithMissingValuesPercentHelper: Missing logic = is.na(value) OR value <= threshold")
   count_values_missing_per_group <- abundance_long |>
     mutate(is_missing = ifelse( !is.na( !!sym(temporary_abundance_column))
                                 & !!sym(temporary_abundance_column) > min_protein_intensity_threshold
@@ -198,24 +243,54 @@ removeRowsWithMissingValuesPercentHelper <- function(input_table
     group_by( {{ row_id }}, {{ grouping_variable }} ) |>
     summarise( num_missing_per_group = sum(is_missing)) |>
     ungroup()
+  
+  print(sprintf("      Data State (count_values_missing_per_group): Dims = %d rows, %d cols", nrow(count_values_missing_per_group), ncol(count_values_missing_per_group)))
+  print("      Data State (count_values_missing_per_group) Head:")
+  print(head(count_values_missing_per_group, 10))
 
+  print("      removeRowsWithMissingValuesPercentHelper Step: Calculating percentage missing per group...")
   count_percent_missing_per_group <- count_values_missing_per_group |>
     full_join( count_values_per_group,
                by = join_by( {{ grouping_variable }} )) |>
     mutate(  perc_missing_per_group = num_missing_per_group / num_per_group * 100 )
+  
+  print(sprintf("      Data State (count_percent_missing_per_group): Dims = %d rows, %d cols", nrow(count_percent_missing_per_group), ncol(count_percent_missing_per_group)))
+  print("      Data State (count_percent_missing_per_group) Head:")
+  print(head(count_percent_missing_per_group, 10))
 
   total_num_of_groups <- count_values_per_group |> nrow()
+  print(sprintf("      removeRowsWithMissingValuesPercentHelper: total_num_of_groups = %d", total_num_of_groups))
 
-  remove_rows_temp <- count_percent_missing_per_group |>
-    dplyr::filter(groupwise_percentage_cutoff <  perc_missing_per_group) |>
+  print("      removeRowsWithMissingValuesPercentHelper Step: Identifying proteins to remove...")
+  print(sprintf("      removeRowsWithMissingValuesPercentHelper: Filtering for perc_missing_per_group > %g%%", groupwise_percentage_cutoff))
+  
+  # Show some examples of proteins failing the groupwise threshold
+  failing_groupwise <- count_percent_missing_per_group |>
+    dplyr::filter(groupwise_percentage_cutoff <  perc_missing_per_group)
+  
+  print("      removeRowsWithMissingValuesPercentHelper: Examples of proteins failing groupwise threshold:")
+  print(head(failing_groupwise, 15))
+  
+  remove_rows_temp <- failing_groupwise |>
     group_by( { { row_id } }) |>
     summarise( percent  = n()/total_num_of_groups*100 ) |>
     ungroup() |>
     dplyr::filter(percent > max_groups_percentage_cutoff)
+  
+  print(sprintf("      Data State (remove_rows_temp): Dims = %d rows, %d cols", nrow(remove_rows_temp), ncol(remove_rows_temp)))
+  print(sprintf("      removeRowsWithMissingValuesPercentHelper: %d proteins will be REMOVED (failing in >%g%% of groups)", nrow(remove_rows_temp), max_groups_percentage_cutoff))
+  print("      Data State (remove_rows_temp) - Proteins to remove:")
+  print(remove_rows_temp)
 
+  print("      removeRowsWithMissingValuesPercentHelper Step: Applying anti_join to remove proteins...")
   filtered_tbl <- input_table |>
     dplyr::anti_join(remove_rows_temp, by = join_by({{row_id}}))
 
+  print(sprintf("      removeRowsWithMissingValuesPercentHelper: Original table had %d proteins", nrow(input_table)))
+  print(sprintf("      removeRowsWithMissingValuesPercentHelper: Filtered table has %d proteins", nrow(filtered_tbl)))
+  print(sprintf("      removeRowsWithMissingValuesPercentHelper: ACTUALLY REMOVED: %d proteins", nrow(input_table) - nrow(filtered_tbl)))
+
+  print("<<< Exiting removeRowsWithMissingValuesPercentHelper <<<")
   return(filtered_tbl)
 
 }
@@ -1211,23 +1286,59 @@ getGlimmaVolcanoProteomicsWidget <- function( r_obj
                                         , counts_tbl = NULL
                                         , groups = NULL) {
 
+  message("--- Entering getGlimmaVolcanoProteomicsWidget ---")
+  message(sprintf("   getGlimmaVolcanoProteomicsWidget Arg: coef = %d", coef))
+  message(sprintf("   getGlimmaVolcanoProteomicsWidget Arg: r_obj class = %s", class(r_obj)))
+  message(sprintf("   getGlimmaVolcanoProteomicsWidget Arg: volcano_plot_tab dims = %d rows, %d cols", nrow(volcano_plot_tab), ncol(volcano_plot_tab)))
+  message("   getGlimmaVolcanoProteomicsWidget Arg: volcano_plot_tab structure:")
+  utils::str(volcano_plot_tab)
+  message("   getGlimmaVolcanoProteomicsWidget Arg: volcano_plot_tab head:")
+  print(head(volcano_plot_tab))
+
   if( coef <= ncol(r_obj$coefficients )) {
+    message("   getGlimmaVolcanoProteomicsWidget Step: Coefficient validation passed...")
+    message(sprintf("      Data State: r_obj$coefficients has %d columns", ncol(r_obj$coefficients)))
+
+    message("   getGlimmaVolcanoProteomicsWidget Step: Extracting best_uniprot_acc from rownames...")
+    message("      Data State: r_obj@.Data[[1]] structure before extraction:")
+    utils::str(r_obj@.Data[[1]])
+    message(sprintf("      Data State: r_obj@.Data[[1]] dims = %d rows, %d cols", nrow(r_obj@.Data[[1]]), ncol(r_obj@.Data[[1]])))
+    message("      Data State: rownames(r_obj@.Data[[1]]) head:")
+    print(head(rownames(r_obj@.Data[[1]])))
 
     best_uniprot_acc <- str_split(rownames(r_obj@.Data[[1]]), " |:" ) |>
       purrr::map_chr(1)
+    
+    message("   getGlimmaVolcanoProteomicsWidget Step: best_uniprot_acc extraction completed.")
+    message(sprintf("      Data State: best_uniprot_acc length = %d", length(best_uniprot_acc)))
+    message("      Data State: best_uniprot_acc head:")
+    print(head(best_uniprot_acc))
 
     # print(paste("nrow = ", nrow(r_obj@.Data[[1]])))
     # print(head(best_uniprot_acc))
 
+    message("   getGlimmaVolcanoProteomicsWidget Step: Cleaning volcano_plot_tab...")
+    message("      Data State: volcano_plot_tab before cleaning:")
+    utils::str(volcano_plot_tab)
+    
     volcano_plot_tab_cln <- volcano_plot_tab  |>
       dplyr::select ( {{uniprot_column}}
                        , {{gene_name_column}}, any_of( display_columns)) |>
       distinct()
+    
+    message("   getGlimmaVolcanoProteomicsWidget Step: volcano_plot_tab cleaning completed.")
+    message(sprintf("      Data State: volcano_plot_tab_cln dims = %d rows, %d cols", nrow(volcano_plot_tab_cln), ncol(volcano_plot_tab_cln)))
+    message("      Data State: volcano_plot_tab_cln head:")
+    print(head(volcano_plot_tab_cln))
 
     # print (head( volcano_plot_tab_cln))
 
     if( !is.null( additional_annotations )
         & !is.null( additional_annotations_join_column ) ) {
+      
+      message("   getGlimmaVolcanoProteomicsWidget Step: Processing additional annotations...")
+      message("      Data State: additional_annotations structure:")
+      utils::str(additional_annotations)
 
       volcano_plot_tab_cln <- volcano_plot_tab_cln |>
         left_join( additional_annotations
@@ -1235,8 +1346,15 @@ getGlimmaVolcanoProteomicsWidget <- function( r_obj
         dplyr::select( {{uniprot_column}}
                        , {{gene_name_column}}
                        , any_of( display_columns))
+                       
+      message("   getGlimmaVolcanoProteomicsWidget Step: Additional annotations processing completed.")
+      message(sprintf("      Data State: volcano_plot_tab_cln after annotation dims = %d rows, %d cols", nrow(volcano_plot_tab_cln), ncol(volcano_plot_tab_cln)))
+    } else {
+      message("   getGlimmaVolcanoProteomicsWidget Step: No additional annotations to process.")
     }
 
+    message("   getGlimmaVolcanoProteomicsWidget Step: Creating annotation table...")
+    
     anno_tbl <- data.frame( uniprot_acc = rownames(r_obj@.Data[[1]]) # This uniprot_acc does not matter, only shows in glimma Volcano table
                             , temp_column = best_uniprot_acc ) |>
       dplyr::rename( {{uniprot_column}} := temp_column) |>
@@ -1244,15 +1362,61 @@ getGlimmaVolcanoProteomicsWidget <- function( r_obj
                  , by = join_by({{uniprot_column}} == {{uniprot_column}}) )  |>
       mutate( gene_name = case_when( is.na( gene_name) ~ {{uniprot_column}},
                                      TRUE ~ gene_name) )
+                                     
+    message("   getGlimmaVolcanoProteomicsWidget Step: Annotation table creation completed.")
+    message(sprintf("      Data State: anno_tbl dims = %d rows, %d cols", nrow(anno_tbl), ncol(anno_tbl)))
+    message("      Data State: anno_tbl structure:")
+    utils::str(anno_tbl)
+    message("      Data State: anno_tbl head:")
+    print(head(anno_tbl))
 
+    message("   getGlimmaVolcanoProteomicsWidget Step: Extracting gene names...")
     gene_names <- anno_tbl |>
       dplyr::pull(gene_name)
+      
+    message("   getGlimmaVolcanoProteomicsWidget Step: Gene names extraction completed.")
+    message(sprintf("      Data State: gene_names length = %d", length(gene_names)))
+    message("      Data State: gene_names head:")
+    print(head(gene_names))
 
+    message("   getGlimmaVolcanoProteomicsWidget Step: Updating rownames in r_obj...")
+    message("      Data State: r_obj@.Data[[1]] rownames before update:")
+    print(head(rownames(r_obj@.Data[[1]])))
+    
     rownames( r_obj@.Data[[1]] ) <- gene_names
+    
+    message("   getGlimmaVolcanoProteomicsWidget Step: Rownames update completed.")
+    message("      Data State: r_obj@.Data[[1]] rownames after update:")
+    print(head(rownames(r_obj@.Data[[1]])))
+
+    message("   getGlimmaVolcanoProteomicsWidget Step: Updating p-values with qvalue...")
+    message(sprintf("      Data State: r_obj$p.value dimensions = %d rows, %d cols", nrow(r_obj$p.value), ncol(r_obj$p.value)))
+    message(sprintf("      Data State: coef = %d, ncol(r_obj$p.value) = %d", coef, ncol(r_obj$p.value)))
+    message("      Data State: r_obj$p.value[,coef] before qvalue transformation:")
+    print(head(r_obj$p.value[,coef]))
 
     r_obj$p.value[,coef] <- qvalue( r_obj$p.value[,coef])$qvalues
+    
+    message("   getGlimmaVolcanoProteomicsWidget Step: P-value qvalue transformation completed.")
+    message("      Data State: r_obj$p.value[,coef] after qvalue transformation:")
+    print(head(r_obj$p.value[,coef]))
 
-     glimmaVolcano(r_obj
+    message("   getGlimmaVolcanoProteomicsWidget Step: Calling glimmaVolcano...")
+    message("      glimmaVolcano parameters:")
+    message(sprintf("        coef = %d", coef))
+    message(sprintf("        counts_tbl is.null = %s", is.null(counts_tbl)))
+    if (!is.null(counts_tbl)) {
+      message(sprintf("        counts_tbl dims = %d rows, %d cols", nrow(counts_tbl), ncol(counts_tbl)))
+    }
+    message(sprintf("        groups is.null = %s", is.null(groups)))
+    if (!is.null(groups)) {
+      message(sprintf("        groups length = %d", length(groups)))
+      message("        groups head:")
+      print(head(groups))
+    }
+    message(sprintf("        display_columns = %s", paste(display_columns, collapse = ", ")))
+
+    result <- glimmaVolcano(r_obj
                    , coef=coef
                    , counts = counts_tbl
                    , groups = groups
@@ -1261,7 +1425,18 @@ getGlimmaVolcanoProteomicsWidget <- function( r_obj
                    , status=decideTests(r_obj, adjust.method="none")
                    , p.adj.method="none"
                    , transform.counts='none') #the plotly object
+                   
+    message("   getGlimmaVolcanoProteomicsWidget Step: glimmaVolcano call completed successfully.")
+    message("      Data State: result class:")
+    print(class(result))
+    
+    message("--- Exiting getGlimmaVolcanoProteomicsWidget ---")
+    return(result)
 
+  } else {
+    message(sprintf("   getGlimmaVolcanoProteomicsWidget Condition FALSE: coef (%d) > ncol(r_obj$coefficients) (%d)", coef, ncol(r_obj$coefficients)))
+    message("--- Exiting getGlimmaVolcanoProteomicsWidget (early exit) ---")
+    return(NULL)
   }
 
 }

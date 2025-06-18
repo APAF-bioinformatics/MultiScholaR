@@ -194,6 +194,30 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
           NULL
         }
         
+        # ✅ FIXED: Load aa_seq_tbl_final if it exists in the import directory or scripts
+        aa_seq_file_import <- file.path(import_path, "aa_seq_tbl_final.RDS")
+        aa_seq_file_scripts <- file.path(experiment_paths$source_dir, "aa_seq_tbl_final.RDS")
+        
+        if (file.exists(aa_seq_file_import)) {
+          logger::log_info("Loading aa_seq_tbl_final from import directory.")
+          aa_seq_tbl_final <- readRDS(aa_seq_file_import)
+          workflow_data$aa_seq_tbl_final <- aa_seq_tbl_final
+          assign("aa_seq_tbl_final", aa_seq_tbl_final, envir = .GlobalEnv)
+          
+          # Copy to scripts directory for future use
+          saveRDS(aa_seq_tbl_final, aa_seq_file_scripts)
+          logger::log_info("Copied aa_seq_tbl_final to scripts directory for persistence.")
+          
+        } else if (file.exists(aa_seq_file_scripts)) {
+          logger::log_info("Loading existing aa_seq_tbl_final from scripts directory.")
+          aa_seq_tbl_final <- readRDS(aa_seq_file_scripts)
+          workflow_data$aa_seq_tbl_final <- aa_seq_tbl_final
+          assign("aa_seq_tbl_final", aa_seq_tbl_final, envir = .GlobalEnv)
+        } else {
+          logger::log_warn("No aa_seq_tbl_final found. Protein accession cleanup will be skipped.")
+          workflow_data$aa_seq_tbl_final <- NULL
+        }
+        
         # --- Update workflow_data with imported data ---
         workflow_data$design_matrix <- imported_design
         workflow_data$data_cln <- imported_data_cln

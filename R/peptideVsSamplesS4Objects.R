@@ -321,23 +321,52 @@ setGeneric(name="peptideIntensityFiltering"
 setMethod( f="peptideIntensityFiltering"
            , signature="PeptideQuantitativeData"
            , definition = function( theObject, peptides_intensity_cutoff_percentile = NULL, peptides_proportion_of_samples_below_cutoff = NULL, core_utilisation = NULL) {
+             print("--- Entering peptideIntensityFiltering S4 Method ---")
+             
              peptide_data <- theObject@peptide_data
              raw_quantity_column <- theObject@raw_quantity_column
              norm_quantity_column <- theObject@norm_quantity_column
 
+             print("   peptideIntensityFiltering: Extracting input data...")
+             print(sprintf("      Arg: raw_quantity_column = %s", raw_quantity_column))
+             print(sprintf("      Arg: norm_quantity_column = %s", norm_quantity_column))
+             print(sprintf("      Data State (peptide_data): Dims = %d rows, %d cols", nrow(peptide_data), ncol(peptide_data)))
+
+             print("   peptideIntensityFiltering: Resolving parameters with checkParamsObjectFunctionSimplify...")
              peptides_intensity_cutoff_percentile <- checkParamsObjectFunctionSimplify( theObject
                                                                                     , "peptides_intensity_cutoff_percentile")
+             print(sprintf("      Resolved peptides_intensity_cutoff_percentile = %g", peptides_intensity_cutoff_percentile))
 
              peptides_proportion_of_samples_below_cutoff <- checkParamsObjectFunctionSimplify( theObject
                                                                                                 , "peptides_proportion_of_samples_below_cutoff")
+             print(sprintf("      Resolved peptides_proportion_of_samples_below_cutoff = %g", peptides_proportion_of_samples_below_cutoff))
 
              core_utilisation <- checkParamsObjectFunctionSimplify( theObject, "core_utilisation", NA)
+             print(sprintf("      Resolved core_utilisation = %s", ifelse(is.na(core_utilisation), "NA", as.character(core_utilisation))))
 
+             print("   peptideIntensityFiltering: Updating parameters in S4 object...")
              theObject <- updateParamInObject(theObject, "peptides_intensity_cutoff_percentile")
              theObject <- updateParamInObject(theObject, "peptides_proportion_of_samples_below_cutoff")
              theObject <- updateParamInObject(theObject, "core_utilisation")
 
+             print("   peptideIntensityFiltering: Calculating intensity threshold...")
+             # Get non-missing values for threshold calculation
+             valid_values <- peptide_data |> dplyr::pull(!!sym(raw_quantity_column))
+             valid_values <- valid_values[!is.na(valid_values) & !is.nan(valid_values) & !is.infinite(valid_values)]
+             
+             print(sprintf("      peptideIntensityFiltering: Found %d valid intensity values", length(valid_values)))
+             print(sprintf("      peptideIntensityFiltering: Valid values range: %g to %g", min(valid_values, na.rm=TRUE), max(valid_values, na.rm=TRUE)))
+             
              min_peptide_intensity_threshold <- ceiling( quantile( peptide_data |> dplyr::pull(!!sym(raw_quantity_column)), na.rm=TRUE, probs = c(peptides_intensity_cutoff_percentile/100) ))[1]
+             print(sprintf("      peptideIntensityFiltering: Calculated min_peptide_intensity_threshold = %g (percentile %g%%)", 
+                          min_peptide_intensity_threshold, peptides_intensity_cutoff_percentile))
+
+             print("   peptideIntensityFiltering: About to call helper function...")
+             print(sprintf("      Helper Args: min_peptide_intensity_threshold = %g", min_peptide_intensity_threshold))
+             print(sprintf("      Helper Args: peptides_proportion_of_samples_below_cutoff = %g", peptides_proportion_of_samples_below_cutoff))
+             print(sprintf("      Helper Args: protein_id_column = %s", theObject@protein_id_column))
+             print(sprintf("      Helper Args: peptide_sequence_column = %s", theObject@peptide_sequence_column))
+             print(sprintf("      Helper Args: peptide_quantity_column = %s", raw_quantity_column))
 
              peptide_normalised_pif_cln <- peptideIntensityFilteringHelper( peptide_data
                                                                       , min_peptide_intensity_threshold = min_peptide_intensity_threshold
@@ -347,10 +376,15 @@ setMethod( f="peptideIntensityFiltering"
                                                                       , peptide_quantity_column = !!sym(raw_quantity_column)
                                                                       , core_utilisation = core_utilisation)
 
+             print(sprintf("   peptideIntensityFiltering: Helper function returned. New dims = %d rows, %d cols", 
+                          nrow(peptide_normalised_pif_cln), ncol(peptide_normalised_pif_cln)))
+
              theObject@peptide_data <- peptide_normalised_pif_cln
 
+             print("   peptideIntensityFiltering: Cleaning design matrix...")
              theObject <- cleanDesignMatrixPeptide(theObject)
 
+             print("--- Exiting peptideIntensityFiltering S4 Method ---")
              return(theObject)
            })
 

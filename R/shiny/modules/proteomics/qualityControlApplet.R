@@ -399,11 +399,11 @@ qualityControlAppletUI <- function(id) {
                       
                       shiny::selectInput(ns("aggregation_method"), 
                         "Aggregation Method", 
-                        choices = c("mean", "median", "max"),
+                        choices = c("sum", "mean", "median"),
                         selected = "mean",
                         width = "100%"
                       ),
-                      shiny::helpText("Method for combining duplicate protein measurements (default: mean)"),
+                      shiny::helpText("Method for combining duplicate protein measurements (S4 default: mean)"),
                       
                       shiny::hr(),
                       shiny::div(
@@ -453,21 +453,15 @@ qualityControlAppletUI <- function(id) {
                       
                       shiny::hr(),
                       
-                      # Intensity filter parameters (chunk 21)
-                      shiny::h5("Intensity Filter Parameters"),
-                      shiny::numericInput(ns("groupwise_percentage_cutoff"), 
-                        "Groupwise Percentage Cutoff (%)", 
-                        value = 60, min = 10, max = 100, step = 10,
-                        width = "100%"
+                      # Calculated percentages (read-only display)
+                      shiny::h5("Calculated Thresholds"),
+                      shiny::p(style = "background-color: #f0f0f0; padding: 10px; border-radius: 5px;",
+                        shiny::strong("These values are automatically calculated from your replicate settings above:"),
+                        shiny::br(),
+                        shiny::textOutput(ns("calculated_groupwise_percent"), inline = TRUE),
+                        shiny::br(),
+                        shiny::textOutput(ns("calculated_max_groups_percent"), inline = TRUE)
                       ),
-                      shiny::helpText("Max % missing values within groups (default: 60%)"),
-                      
-                      shiny::numericInput(ns("max_groups_percentage_cutoff"), 
-                        "Max Groups Percentage Cutoff (%)", 
-                        value = 60, min = 10, max = 100, step = 10,
-                        width = "100%"
-                      ),
-                      shiny::helpText("Max % of groups with missing values (default: 60%)"),
                       
                       shiny::numericInput(ns("proteins_intensity_cutoff_percentile"), 
                         "Protein Intensity Cutoff Percentile (%)", 
@@ -1381,6 +1375,62 @@ qualityControlAppletServer <- function(id, workflow_data, experiment_paths, omic
       })
     })
     
+    # == Real-time Calculated Values Display ================================
+    
+    # Show calculated percentages based on replicate settings
+    output$calculated_groupwise_percent <- shiny::renderText({
+      shiny::req(input$min_reps_per_group, input$min_groups)
+      
+      # Get design matrix if available
+      current_state <- workflow_data$state_manager$current_state
+      if (!is.null(current_state)) {
+        current_s4 <- workflow_data$state_manager$getState(current_state)
+        if (!is.null(current_s4) && !is.null(current_s4@design_matrix)) {
+          design_matrix <- current_s4@design_matrix
+          
+          # Calculate the same way as updateMissingValueParameters
+          reps_per_group_tbl <- design_matrix |>
+            dplyr::group_by(group) |>
+            dplyr::summarise(n_reps = n()) |>
+            dplyr::ungroup()
+          
+          group_thresholds <- reps_per_group_tbl |>
+            dplyr::mutate(
+              adjusted_min_reps = pmin(n_reps, input$min_reps_per_group),
+              max_missing = n_reps - adjusted_min_reps,
+              missing_percent = round((max_missing / n_reps) * 100, 3)
+            )
+          
+          groupwise_cutoff <- max(group_thresholds$missing_percent)
+          return(sprintf("Groupwise Percentage Cutoff: %.3f%% (calculated)", groupwise_cutoff))
+        }
+      }
+      
+      return("Groupwise Percentage Cutoff: [Design matrix needed]")
+    })
+    
+    output$calculated_max_groups_percent <- shiny::renderText({
+      shiny::req(input$min_reps_per_group, input$min_groups)
+      
+      # Get design matrix if available
+      current_state <- workflow_data$state_manager$current_state
+      if (!is.null(current_state)) {
+        current_s4 <- workflow_data$state_manager$getState(current_state)
+        if (!is.null(current_s4) && !is.null(current_s4@design_matrix)) {
+          design_matrix <- current_s4@design_matrix
+          
+          # Calculate the same way as updateMissingValueParameters
+          total_groups <- design_matrix |> dplyr::distinct(group) |> nrow()
+          max_failing_groups <- total_groups - input$min_groups
+          max_groups_cutoff <- round((max_failing_groups / total_groups) * 100, 3)
+          
+          return(sprintf("Max Groups Percentage Cutoff: %.3f%% (calculated)", max_groups_cutoff))
+        }
+      }
+      
+      return("Max Groups Percentage Cutoff: [Design matrix needed]")
+    })
+
     # == Plot Rendering Functions ==============================================
     
     # Render Q-value filter plot
@@ -1716,21 +1766,11 @@ qualityControlAppletServer <- function(id, workflow_data, experiment_paths, omic
         )
         current_s4@args <- config_list
         
-        # ✅ FIXED: Use updateConfigParameter to sync S4 object AND global config_list (chunk 21)
-        current_s4 <- updateConfigParameter(
-          theObject = current_s4,
-          function_name = "removeRowsWithMissingValuesPercent",
-          parameter_name = "groupwise_percentage_cutoff",
-          new_value = input$groupwise_percentage_cutoff
-        )
+        # ✅ FIXED: Use ONLY the calculated percentages from updateMissingValueParameters
+        # The replicate-based inputs (min_reps_per_group, min_groups) automatically calculate the percentages
+        # No need to override with UI percentage inputs - they would conflict!
         
-        current_s4 <- updateConfigParameter(
-          theObject = current_s4,
-          function_name = "removeRowsWithMissingValuesPercent",
-          parameter_name = "max_groups_percentage_cutoff",
-          new_value = input$max_groups_percentage_cutoff
-        )
-        
+        # Only update the intensity cutoff percentile since it's not calculated by updateMissingValueParameters
         current_s4 <- updateConfigParameter(
           theObject = current_s4,
           function_name = "removeRowsWithMissingValuesPercent",
@@ -1748,8 +1788,8 @@ qualityControlAppletServer <- function(id, workflow_data, experiment_paths, omic
           config_object = list(
             min_reps_per_group = input$min_reps_per_group,
             min_groups = input$min_groups,
-            groupwise_percentage_cutoff = input$groupwise_percentage_cutoff,
-            max_groups_percentage_cutoff = input$max_groups_percentage_cutoff,
+            groupwise_percentage_cutoff = config_list$removeRowsWithMissingValuesPercent$groupwise_percentage_cutoff,
+            max_groups_percentage_cutoff = config_list$removeRowsWithMissingValuesPercent$max_groups_percentage_cutoff,
             proteins_intensity_cutoff_percentile = input$proteins_intensity_cutoff_percentile
           ),
           description = "Applied missing value parameters and protein intensity filter"
@@ -1766,8 +1806,8 @@ qualityControlAppletServer <- function(id, workflow_data, experiment_paths, omic
           sprintf("Proteins remaining: %d\n", protein_count),
           sprintf("Min replicates per group: %d\n", input$min_reps_per_group),
           sprintf("Min groups required: %d\n", input$min_groups),
-          sprintf("Groupwise %% cutoff: %d%%\n", input$groupwise_percentage_cutoff),
-          sprintf("Max groups %% cutoff: %d%%\n", input$max_groups_percentage_cutoff),
+          sprintf("Groupwise %% cutoff: %.3f%% (calculated)\n", config_list$removeRowsWithMissingValuesPercent$groupwise_percentage_cutoff),
+          sprintf("Max groups %% cutoff: %.3f%% (calculated)\n", config_list$removeRowsWithMissingValuesPercent$max_groups_percentage_cutoff),
           sprintf("Intensity cutoff percentile: %.1f%%\n", input$proteins_intensity_cutoff_percentile),
           "State saved as: 'protein_intensity_filtered'\n"
         )
