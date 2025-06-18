@@ -1,8 +1,8 @@
 #' @title normalizationAppletModule
 #'
 #' @description A Shiny module for the Normalization step of the proteomics
-#' workflow. Automatically generates pre-normalization QC plots and handles
-#' normalization methods and RUV-III batch correction.
+#' workflow. Handles normalization methods, RUV-III batch correction, and
+#' correlation-based sample filtering before preparing data for DE analysis.
 #'
 #' @name normalizationAppletModule
 NULL
@@ -121,7 +121,7 @@ normalizationAppletUI <- function(id) {
       )
     ),
     
-    # QC plot panels with 3-column layout structure
+    # QC plot panels with 3-column layout structure and correlation filtering tab
     shiny::column(9,
       shiny::tabsetPanel(
         id = ns("norm_qc_tabs"),
@@ -232,6 +232,73 @@ normalizationAppletUI <- function(id) {
               )
             )
           )
+        ),
+        
+        # NEW: Post-Normalisation QC Tab (Filtering Summary) - BEFORE Correlation Filtering
+        shiny::tabPanel(
+          "Post-Normalisation QC",
+          icon = shiny::icon("chart-bar"),
+          shiny::br(),
+          shiny::fluidRow(
+            shiny::column(12,
+              shiny::h5("Filtering Progression Summary", style = "text-align: center;"),
+              shiny::helpText("Summary of protein filtering steps through normalization and RUV correction. This step removes proteins with excessive missing values after RUV processing."),
+              shinyjqui::jqui_resizable(
+                shiny::plotOutput(ns("post_norm_filtering_summary"), height = "600px")
+              ),
+              shiny::br(),
+              shiny::verbatimTextOutput(ns("filtering_summary_text"))
+            )
+          )
+        ),
+        
+        # NEW: Correlation Filtering Tab (Chunk 28) - FINAL step before DE
+        shiny::tabPanel(
+          "Correlation Filtering",
+          icon = shiny::icon("filter"),
+          shiny::br(),
+          shiny::fluidRow(
+            shiny::column(4,
+              shiny::wellPanel(
+                shiny::h5("Sample Correlation Filtering"),
+                shiny::helpText("FINAL STEP: Filter samples based on their correlation with other samples in the same group. Low correlation indicates potential technical issues or sample quality problems. This is the last filtering step before differential expression analysis."),
+                
+                shiny::sliderInput(
+                  ns("min_pearson_correlation_threshold"),
+                  "Min. Pearson Correlation Threshold:",
+                  min = 0.0,
+                  max = 1.0,
+                  value = 0.5,
+                  step = 0.05,
+                  width = "100%"
+                ),
+                shiny::helpText("Samples with correlation below this threshold will be removed from the analysis"),
+                
+                shiny::br(),
+                
+                shiny::actionButton(
+                  ns("apply_correlation_filter"),
+                  "Apply Correlation Filter",
+                  class = "btn-primary",
+                  width = "100%",
+                  icon = shiny::icon("play")
+                ),
+                
+                shiny::br(),
+                shiny::br(),
+                
+                shiny::h5("Filter Results"),
+                shiny::verbatimTextOutput(ns("correlation_filter_summary"))
+              )
+            ),
+            shiny::column(8,
+              shiny::h5("Final Filtered Data QC", style = "text-align: center;"),
+              shiny::helpText("Quality control plots for the final dataset after correlation filtering"),
+              shinyjqui::jqui_resizable(
+                shiny::plotOutput(ns("final_qc_plot"), height = "500px")
+              )
+            )
+          )
         )
       )
     )
@@ -255,6 +322,7 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
       pre_norm_qc_generated = FALSE,
       normalization_complete = FALSE,
       ruv_complete = FALSE,
+      correlation_filtering_complete = FALSE,
       
       # QC plot objects - 3 columns: post-filtering, post-normalization, ruv-corrected
       qc_plots = list(
@@ -281,8 +349,18 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
       # Normalization results
       normalized_protein_obj = NULL,
       ruv_normalized_obj = NULL,
+      correlation_filtered_obj = NULL,
       best_k = NULL,
-      control_genes_index = NULL
+      control_genes_index = NULL,
+      
+      # Correlation filtering results
+      correlation_vector = NULL,
+      correlation_threshold = NULL,
+      final_qc_plot = NULL,
+      
+      # Post-normalisation filtering summary
+      post_norm_filtering_plot = NULL,
+      filtering_summary_text = NULL
     )
     
     # Helper function to get current plot aesthetics
@@ -658,14 +736,53 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
           
           tryCatch({
             ruv_corrected_s4_clean <- removeRowsWithMissingValuesPercent(
-              ruv_corrected_s4,
-              ruv_grouping_variable = getPlotAesthetics()$color_var,
-              groupwise_percentage_cutoff = 60,
-              max_groups_percentage_cutoff = 60,
-              proteins_intensity_cutoff_percentile = 1
+              theObject = ruv_corrected_s4
             )
+            
+            # Log protein count after RUV filtering (matching RMarkdown chunk 27)
+            ruvfilt_protein_count <- ruv_corrected_s4_clean@protein_quant_table |>
+              dplyr::distinct(Protein.Ids) |>
+              nrow()
+            message(sprintf("Number of distinct proteins remaining after RUV normalization and filtering: %d", ruvfilt_protein_count))
+            
+            # Update protein filtering tracking (matching RMarkdown chunk 27)
+            filtering_plot <- updateProteinFiltering(
+              data = ruv_corrected_s4_clean@protein_quant_table,
+              step_name = "11_RUV_filtered",
+              omic_type = omic_type,
+              experiment_label = experiment_label,
+              return_grid = TRUE,
+              overwrite = TRUE
+            )
+            
+            # Store the filtering summary plot for display
+            norm_data$post_norm_filtering_plot <- filtering_plot
+            
+            # Generate filtering summary text
+            norm_data$filtering_summary_text <- sprintf(
+              "Filtering Summary through Normalization & RUV:\n\n• Pre-normalization proteins: [Previous step]\n• Post-RUV filtering: %d proteins\n• Proteins removed by RUV: [Calculated from difference]\n\nRUV Parameters:\n• Normalization method: %s\n• RUV mode: %s\n• RUV k value: %d\n• Negative control %%: %.1f",
+              ruvfilt_protein_count,
+              input$norm_method,
+              input$ruv_mode,
+              best_k,
+              percentage_as_neg_ctrl
+            )
+            
             norm_data$ruv_normalized_obj <- ruv_corrected_s4_clean
             message("*** STEP 5: Missing values cleanup completed ***")
+            
+            # Save post-normalization state to R6 state manager (includes RUV + missing value filtering)
+            workflow_data$state_manager$saveState(
+              state_name = "ruv_corrected",
+              s4_data_object = ruv_corrected_s4_clean,
+              config_object = list(
+                norm_method = input$norm_method,
+                ruv_mode = input$ruv_mode,
+                ruv_k = best_k,
+                percentage_as_neg_ctrl = percentage_as_neg_ctrl
+              ),
+              description = "Post-normalization complete: RUV-III correction and missing value cleanup completed"
+            )
             
           }, error = function(e) {
             stop(paste("Step 5 (missing values cleanup) error:", e$message))
@@ -684,21 +801,17 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
             stop(paste("Step 6 (RUV-corrected QC) error:", e$message))
           })
           
-          # Update workflow data with final normalized object
-          message("*** STEP 7: Updating workflow data ***")
-          workflow_data$ruv_normalised_for_de_analysis_obj <- ruv_corrected_s4_clean
-          
-          # Update tab status to enable differential expression
-          workflow_data$tab_status$normalization <- "complete"
-          workflow_data$tab_status$differential_expression <- "pending"
-          message("*** STEP 7: Workflow data updated ***")
+          # CRITICAL FIX: Only enable correlation filtering tab, NOT differential expression
+          message("*** STEP 7: Enabling correlation filtering step ***")
+          # Remove premature DE enablement - correlation filtering must happen first
+          message("*** STEP 7: Normalization and RUV workflow completed - ready for correlation filtering ***")
           
         })
         
         shiny::showNotification(
-          "Normalization and RUV correction completed successfully!",
+          "Normalization and RUV correction completed! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step.",
           type = "success",
-          duration = 5
+          duration = 10
         )
         
         message("Normalization workflow completed successfully")
@@ -713,34 +826,137 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
       })
     })
     
-    # Reset normalization button logic
-    observeEvent(input$reset_normalization, {
-      message("Resetting normalization...")
+    # NEW: Correlation Filtering Button Logic (Chunk 28)
+    observeEvent(input$apply_correlation_filter, {
+      message("=== CORRELATION FILTERING BUTTON CLICKED ===")
       
-      # Reset normalization state
-      norm_data$normalization_complete <- FALSE
-      norm_data$ruv_complete <- FALSE
-      norm_data$normalized_protein_obj <- NULL
-      norm_data$ruv_normalized_obj <- NULL
-      norm_data$best_k <- NULL
-      norm_data$control_genes_index <- NULL
-      
-      # Clear post-normalization and RUV plots
-      norm_data$qc_plots$post_normalization <- list(pca = NULL, density = NULL, rle = NULL, correlation = NULL)
-      norm_data$qc_plots$ruv_corrected <- list(pca = NULL, density = NULL, rle = NULL, correlation = NULL)
-      
-      # Reset workflow data
-      workflow_data$ruv_normalised_for_de_analysis_obj <- NULL
-      workflow_data$tab_status$normalization <- "pending"
-      workflow_data$tab_status$differential_expression <- "disabled"
-      
-      shiny::showNotification(
-        "Normalization has been reset to pre-normalization state",
-        type = "warning",
-        duration = 3
-      )
-      
-      message("Normalization reset completed")
+      tryCatch({
+        # Get RUV-corrected object (should exist after normalization)
+        ruv_s4 <- norm_data$ruv_normalized_obj
+        if (is.null(ruv_s4)) {
+          stop("RUV correction must be completed before correlation filtering")
+        }
+        
+        shiny::withProgress(message = "Applying correlation filter...", value = 0, {
+          
+          # Step 1: Calculate correlation vector (chunk 28)
+          shiny::incProgress(0.3, detail = "Calculating sample correlations...")
+          message("*** CORRELATION STEP 1: Calculating sample correlations ***")
+          
+          correlation_vec <- pearsonCorForSamplePairs(
+            ruv_s4,
+            tech_rep_remove_regex = "pool",
+            correlation_group = getPlotAesthetics()$color_var
+          )
+          norm_data$correlation_vector <- correlation_vec
+          norm_data$correlation_threshold <- input$min_pearson_correlation_threshold
+          message("*** CORRELATION STEP 1: Sample correlations calculated ***")
+          
+          # Step 2: Apply correlation threshold filter (chunk 28)
+          shiny::incProgress(0.4, detail = "Filtering low-correlation samples...")
+          message("*** CORRELATION STEP 2: Applying correlation threshold filter ***")
+          
+          final_s4_for_de <- filterSamplesByProteinCorrelationThreshold(
+            ruv_s4,
+            pearson_correlation_per_pair = correlation_vec,
+            min_pearson_correlation_threshold = input$min_pearson_correlation_threshold
+          )
+          norm_data$correlation_filtered_obj <- final_s4_for_de
+          message("*** CORRELATION STEP 2: Correlation filtering applied ***")
+          
+          # Step 3: Update protein filtering tracking (chunk 28)
+          shiny::incProgress(0.2, detail = "Updating tracking...")
+          message("*** CORRELATION STEP 3: Updating protein filtering tracking ***")
+          
+          updateProteinFiltering(
+            data = final_s4_for_de@protein_quant_table,
+            step_name = "12_correlation_filtered",
+            omic_type = omic_type,
+            experiment_label = experiment_label,
+            return_grid = TRUE,
+            overwrite = TRUE
+          )
+          
+          # Generate final QC plot
+          tryCatch({
+            norm_data$final_qc_plot <- plotPca(
+              final_s4_for_de,
+              grouping_variable = getPlotAesthetics()$color_var,
+              label_column = "",
+              shape_variable = getPlotAesthetics()$shape_var,
+              title = "Final Correlation-Filtered Data",
+              font_size = 8
+            )
+          }, error = function(e) {
+            message(paste("Error generating final QC plot:", e$message))
+          })
+          
+          # Step 4: Save final results as TSV and RDS (chunk 28)
+          shiny::incProgress(0.1, detail = "Saving results...")
+          message("*** CORRELATION STEP 4: Saving final results ***")
+          
+          tryCatch({
+            # Save TSV file
+            if (!is.null(experiment_paths) && "protein_qc_dir" %in% names(experiment_paths)) {
+              vroom::vroom_write(
+                final_s4_for_de@protein_quant_table,
+                file.path(experiment_paths$protein_qc_dir, "ruv_normalised_results_cln_with_replicates.tsv")
+              )
+              
+              # Save RDS file
+              saveRDS(
+                final_s4_for_de,
+                file.path(experiment_paths$protein_qc_dir, "ruv_normalised_results_cln_with_replicates.RDS")
+              )
+            }
+          }, error = function(e) {
+            message(paste("Warning: Could not save files:", e$message))
+          })
+          
+        })
+        
+        # CRITICAL: THIS is where the final object becomes ready for DE
+        workflow_data$ruv_normalised_for_de_analysis_obj <- final_s4_for_de
+        
+        # Save to R6 state manager with new state
+        workflow_data$state_manager$saveState(
+          state_name = "correlation_filtered",
+          s4_data_object = final_s4_for_de,
+          config_object = list(min_pearson_correlation_threshold = input$min_pearson_correlation_threshold),
+          description = "Applied final sample correlation filter (chunk 28)"
+        )
+        
+        # NOW enable differential expression tab
+        workflow_data$tab_status$normalization <- "complete"
+        workflow_data$tab_status$differential_expression <- "pending"
+        
+        # Update summary display
+        correlation_summary <- sprintf(
+          "Correlation filtering completed successfully!\n\nThreshold: %.2f\nProteins remaining: %d\nSamples remaining: %d\n\nReady for differential expression analysis.",
+          input$min_pearson_correlation_threshold,
+          length(unique(final_s4_for_de@protein_quant_table$Protein.Ids)),
+          length(unique(final_s4_for_de@protein_quant_table$sample_id))
+        )
+        output$correlation_filter_summary <- shiny::renderText(correlation_summary)
+        
+        norm_data$correlation_filtering_complete <- TRUE
+        
+        shiny::showNotification(
+          "Correlation filtering completed! Ready for differential expression analysis.",
+          type = "success",
+          duration = 5
+        )
+        
+        message("=== CORRELATION FILTERING COMPLETED SUCCESSFULLY ===")
+        
+      }, error = function(e) {
+        message(paste("Error in correlation filtering:", e$message))
+        shiny::showNotification(
+          paste("Error in correlation filtering:", e$message),
+          type = "error",
+          duration = 10
+        )
+      })
     })
     
     # Render QC plots - Post-filtering column
@@ -851,6 +1067,76 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
       } else {
         plot.new()
         text(0.5, 0.5, "Run RUV correction to generate plots", cex = 1.2)
+      }
+    })
+    
+    # Reset normalization button logic
+    observeEvent(input$reset_normalization, {
+      message("Resetting normalization...")
+      
+      # Reset normalization state
+      norm_data$normalization_complete <- FALSE
+      norm_data$ruv_complete <- FALSE
+      norm_data$correlation_filtering_complete <- FALSE
+      norm_data$normalized_protein_obj <- NULL
+      norm_data$ruv_normalized_obj <- NULL
+      norm_data$correlation_filtered_obj <- NULL
+      norm_data$best_k <- NULL
+      norm_data$control_genes_index <- NULL
+      norm_data$correlation_vector <- NULL
+      norm_data$correlation_threshold <- NULL
+      norm_data$final_qc_plot <- NULL
+      norm_data$post_norm_filtering_plot <- NULL
+      norm_data$filtering_summary_text <- NULL
+      
+      # Clear post-normalization, RUV, and correlation plots
+      norm_data$qc_plots$post_normalization <- list(pca = NULL, density = NULL, rle = NULL, correlation = NULL)
+      norm_data$qc_plots$ruv_corrected <- list(pca = NULL, density = NULL, rle = NULL, correlation = NULL)
+      
+      # Reset workflow data
+      workflow_data$ruv_normalised_for_de_analysis_obj <- NULL
+      workflow_data$tab_status$normalization <- "pending"
+      workflow_data$tab_status$differential_expression <- "disabled"
+      
+      # Clear correlation filter summary and filtering summary
+      output$correlation_filter_summary <- shiny::renderText("No correlation filtering applied yet")
+      output$filtering_summary_text <- shiny::renderText("Filtering summary will be available after normalization and RUV correction.")
+      
+      shiny::showNotification(
+        "Normalization has been reset to pre-normalization state",
+        type = "warning",
+        duration = 3
+      )
+      
+      message("Normalization reset completed")
+    })
+    
+    # NEW: Render post-normalisation filtering summary plot
+    output$post_norm_filtering_summary <- shiny::renderPlot({
+      if (!is.null(norm_data$post_norm_filtering_plot)) {
+        norm_data$post_norm_filtering_plot
+      } else {
+        plot.new()
+        text(0.5, 0.5, "Complete normalization and RUV correction\nto generate filtering summary", cex = 1.2)
+      }
+    })
+    
+    # NEW: Render filtering summary text
+    output$filtering_summary_text <- shiny::renderText({
+      if (!is.null(norm_data$filtering_summary_text)) {
+        norm_data$filtering_summary_text
+      } else {
+        "Filtering summary will be available after normalization and RUV correction."
+      }
+    })
+    
+    # NEW: Render final QC plot after correlation filtering
+    output$final_qc_plot <- shiny::renderPlot({
+      if (!is.null(norm_data$final_qc_plot)) {
+        norm_data$final_qc_plot
+      } else {
+        plot.new()
+        text(0.5, 0.5, "Apply correlation filter to generate final QC plot", cex = 1.2)
       }
     })
     

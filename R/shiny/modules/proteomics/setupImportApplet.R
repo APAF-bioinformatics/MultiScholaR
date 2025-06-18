@@ -650,6 +650,17 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
           )
           
           workflow_data$aa_seq_tbl_final <- aa_seq_tbl_final
+          
+          # ✅ FIXED: Store in global environment for chooseBestProteinAccession to find
+          assign("aa_seq_tbl_final", aa_seq_tbl_final, envir = .GlobalEnv)
+          
+          # ✅ FIXED: Save to /scripts directory for session persistence
+          if (!is.null(experiment_paths) && !is.null(experiment_paths$source_dir)) {
+            scripts_aa_seq_path <- file.path(experiment_paths$source_dir, "aa_seq_tbl_final.RDS")
+            saveRDS(aa_seq_tbl_final, scripts_aa_seq_path)
+            log_info(sprintf("Saved aa_seq_tbl_final to scripts directory: %s", scripts_aa_seq_path))
+          }
+          
           log_info(sprintf("FASTA file processed successfully. Found %d sequences", nrow(aa_seq_tbl_final)))
           
         }, error = function(e) {
@@ -680,8 +691,24 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
           if (file.exists(default_config_path)) {
             config_list <- readConfigFile(file = default_config_path)
           } else {
-            # Fall back to minimal default if no config.ini exists
-            config_list <- getDefaultProteomicsConfig()
+            # ✅ FIXED: Download default config.ini like in designMatrixApplet
+            log_info("config.ini not found in project. Downloading default config.")
+            tryCatch({
+              default_config_url <- "https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/main/Workbooks/config.ini"
+              download.file(default_config_url, destfile = default_config_path, quiet = TRUE)
+              log_info(paste("Default config.ini downloaded to:", default_config_path))
+              shiny::showNotification("Downloaded default config.ini to scripts directory.", type = "message")
+              
+              # Now read the downloaded config
+              config_list <- readConfigFile(file = default_config_path)
+            }, error = function(e_download) {
+              msg <- paste("Failed to download default config.ini:", e_download$message)
+              log_error(msg)
+              shiny::showNotification(msg, type = "warning", duration = 10)
+              # Fall back to minimal default if download fails
+              log_info("Using minimal fallback configuration")
+              config_list <- getDefaultProteomicsConfig()
+            })
           }
         }
         workflow_data$config_list <- config_list

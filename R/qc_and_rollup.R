@@ -200,9 +200,27 @@ peptideIntensityFilteringHelper <- function(input_table
                                       , peptide_sequence_column = Stripped.Sequence
                                       , peptide_quantity_column = Peptide.Normalised
                                       , core_utilisation) {
+  print(">>> Entering peptideIntensityFilteringHelper <<<")
+  
+  print(sprintf("      peptideIntensityFilteringHelper Arg: min_peptide_intensity_threshold = %g", min_peptide_intensity_threshold))
+  print(sprintf("      peptideIntensityFilteringHelper Arg: peptides_proportion_of_samples_below_cutoff = %g", peptides_proportion_of_samples_below_cutoff))
+  print(sprintf("      peptideIntensityFilteringHelper Arg: protein_id_column = %s", deparse(substitute(protein_id_column))))
+  print(sprintf("      peptideIntensityFilteringHelper Arg: peptide_sequence_column = %s", deparse(substitute(peptide_sequence_column))))
+  print(sprintf("      peptideIntensityFilteringHelper Arg: peptide_quantity_column = %s", deparse(substitute(peptide_quantity_column))))
+  
+  print(sprintf("      Data State (input_table): Dims = %d rows, %d cols", nrow(input_table), ncol(input_table)))
+  print("      Data State (input_table) Structure:")
+  utils::str(input_table)
+  print("      Data State (input_table) Head:")
+  print(head(input_table))
+
   num_values_per_peptide <- NA
 
+  print("      peptideIntensityFilteringHelper Step: Checking core utilisation...")
+  print(sprintf("      peptideIntensityFilteringHelper: is.na(core_utilisation) = %s", is.na(core_utilisation)))
+
   if( length(which(is.na(core_utilisation))) == 0 ) {
+    print("      peptideIntensityFilteringHelper Step: Processing WITHOUT parallelization...")
     num_values_per_peptide <- input_table |>
       mutate(  below_intensity_threshold = case_when( {{peptide_quantity_column}} < min_peptide_intensity_threshold ~ 1,
                                                       TRUE ~ 0) ) |>
@@ -214,6 +232,7 @@ peptideIntensityFilteringHelper <- function(input_table
       ungroup() |>
       dplyr::filter( num_below_intesnity_treshold/samples_counts < peptides_proportion_of_samples_below_cutoff )
   } else {
+    print("      peptideIntensityFilteringHelper Step: Processing WITH parallelization...")
     num_values_per_peptide <- input_table |>
       mutate(  below_intensity_threshold = case_when( {{peptide_quantity_column}} < min_peptide_intensity_threshold ~ 1,
                                                       TRUE ~ 0) ) |>
@@ -227,14 +246,28 @@ peptideIntensityFilteringHelper <- function(input_table
 
   }
 
+  print("      peptideIntensityFilteringHelper Step: Filtering calculations completed.")
+  print(sprintf("      Data State (num_values_per_peptide): Dims = %d rows, %d cols", nrow(num_values_per_peptide), ncol(num_values_per_peptide)))
+  print("      Data State (num_values_per_peptide) Head:")
+  print(head(num_values_per_peptide, 10))
+
+  print("      peptideIntensityFilteringHelper Step: Applying inner_join to keep only passing peptides...")
   peptide_normalised_pif_cln <- input_table |>
     inner_join ( num_values_per_peptide |>
                    dplyr::select( -num_below_intesnity_treshold, -samples_counts)
                  , by = join_by( {{protein_id_column}}, {{peptide_sequence_column}} ) )
 
+  print(sprintf("      peptideIntensityFilteringHelper: Original table had %d rows", nrow(input_table)))
+  print(sprintf("      peptideIntensityFilteringHelper: Filtered table has %d rows", nrow(peptide_normalised_pif_cln)))
+  print(sprintf("      peptideIntensityFilteringHelper: ACTUALLY REMOVED: %d rows", nrow(input_table) - nrow(peptide_normalised_pif_cln)))
 
-  peptide_normalised_pif_cln
+  # Count proteins before and after
+  proteins_before <- input_table |> dplyr::distinct({{protein_id_column}}) |> nrow()
+  proteins_after <- peptide_normalised_pif_cln |> dplyr::distinct({{protein_id_column}}) |> nrow()
+  print(sprintf("      peptideIntensityFilteringHelper: Proteins before: %d, after: %d, removed: %d", proteins_before, proteins_after, proteins_before - proteins_after))
 
+  print("<<< Exiting peptideIntensityFilteringHelper <<<")
+  return(peptide_normalised_pif_cln)
 
 }
 

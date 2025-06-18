@@ -428,15 +428,20 @@ differentialExpressionAppletServer <- function(id, workflow_data, experiment_pat
     
     # Fetch formula and contrasts from S4 object when module loads
     observe({
+      message("=== DE TAB: Checking for S4 object and contrasts ===")
+      
       # Get current S4 object from state manager
       if (!is.null(workflow_data$state_manager)) {
         current_state <- workflow_data$state_manager$current_state
+        message(sprintf("   DE TAB: Current state = %s", current_state))
         
-        # Should be getting the normalized protein object
-        if (current_state %in% c("protein_replicate_filtered", "normalized", "ruv_corrected")) {
+        # Should be getting the correlation-filtered protein object (final state before DE)
+        if (current_state == "correlation_filtered") {
+          message("   DE TAB: State is valid for DE analysis (correlation-filtered state found)")
           current_s4 <- workflow_data$state_manager$getState(current_state)
           
           if (!is.null(current_s4)) {
+            message(sprintf("   DE TAB: S4 object retrieved, class = %s", class(current_s4)))
             de_data$current_s4_object <- current_s4
             
             # Extract formula from S4 @args
@@ -444,6 +449,7 @@ differentialExpressionAppletServer <- function(id, workflow_data, experiment_pat
               if ("formula_string" %in% names(current_s4@args$deAnalysisParameters)) {
                 formula_from_s4 <- current_s4@args$deAnalysisParameters$formula_string
                 de_data$formula_from_s4 <- formula_from_s4
+                message(sprintf("   DE TAB: Formula from S4 = %s", formula_from_s4))
                 
                 # Update UI with formula from S4
                 shiny::updateTextAreaInput(
@@ -451,29 +457,66 @@ differentialExpressionAppletServer <- function(id, workflow_data, experiment_pat
                   "formula_string",
                   value = formula_from_s4
                 )
+              } else {
+                message("   DE TAB: No formula_string in deAnalysisParameters")
               }
+            } else {
+              message("   DE TAB: No deAnalysisParameters in S4 @args")
             }
             
             # Get contrasts from design matrix or S4 args
             if (!is.null(current_s4@design_matrix)) {
-              # For now, extract unique groups to create basic contrasts
-              # This should ideally come from the design matrix applet
+              message("   DE TAB: Design matrix found in S4 object")
+              message(sprintf("   DE TAB: Design matrix dims = %d rows, %d cols", nrow(current_s4@design_matrix), ncol(current_s4@design_matrix)))
+              
+              # Check for contrasts_tbl in global environment
               if (exists("contrasts_tbl", envir = .GlobalEnv)) {
                 contrasts_tbl <- get("contrasts_tbl", envir = .GlobalEnv)
-                de_data$contrasts_available <- contrasts_tbl$comparison
+                                 message("   DE TAB: Found contrasts_tbl in global environment")
+                 message("   DE TAB: contrasts_tbl structure:")
+                 utils::str(contrasts_tbl)
+                
+                if ("comparison" %in% names(contrasts_tbl)) {
+                  de_data$contrasts_available <- contrasts_tbl$comparison
+                  message(sprintf("   DE TAB: Set contrasts from comparison column: %s", paste(de_data$contrasts_available, collapse = ", ")))
+                } else if ("contrasts" %in% names(contrasts_tbl)) {
+                  de_data$contrasts_available <- contrasts_tbl$contrasts
+                  message(sprintf("   DE TAB: Set contrasts from contrasts column: %s", paste(de_data$contrasts_available, collapse = ", ")))
+                } else {
+                  message("   DE TAB: contrasts_tbl found but no recognized column names")
+                  # Try first column
+                  de_data$contrasts_available <- contrasts_tbl[[1]]
+                  message(sprintf("   DE TAB: Using first column: %s", paste(de_data$contrasts_available, collapse = ", ")))
+                }
               } else {
+                message("   DE TAB: No contrasts_tbl in global environment, creating basic contrasts")
                 # Create basic contrasts from groups
                 groups <- unique(current_s4@design_matrix$group)
+                message(sprintf("   DE TAB: Found groups in design matrix: %s", paste(groups, collapse = ", ")))
+                
                 if (length(groups) >= 2) {
                   # Create pairwise contrasts (placeholder)
                   basic_contrasts <- combn(groups, 2, function(x) paste(x[1], "-", x[2]), simplify = TRUE)
                   de_data$contrasts_available <- basic_contrasts
+                  message(sprintf("   DE TAB: Created basic contrasts: %s", paste(basic_contrasts, collapse = ", ")))
+                } else {
+                  message("   DE TAB: Not enough groups to create contrasts")
                 }
               }
+            } else {
+              message("   DE TAB: No design matrix found in S4 object")
             }
+          } else {
+            message("   DE TAB: S4 object is NULL")
           }
+        } else {
+          message(sprintf("   DE TAB: State '%s' not valid for DE analysis (expecting: correlation_filtered)", current_state))
         }
+      } else {
+        message("   DE TAB: workflow_data$state_manager is NULL")
       }
+      
+      message("=== DE TAB: Contrast detection complete ===")
     })
     
     # Update contrast dropdowns when contrasts become available
@@ -493,7 +536,7 @@ differentialExpressionAppletServer <- function(id, workflow_data, experiment_pat
       if (!is.null(de_data$contrasts_available)) {
         paste(de_data$contrasts_available, collapse = "\n")
       } else {
-        "No contrasts available.\nComplete normalization first."
+        "No contrasts available.\nComplete normalization and\ncorrelation filtering first."
       }
     })
     
@@ -521,45 +564,43 @@ differentialExpressionAppletServer <- function(id, workflow_data, experiment_pat
       tryCatch({
         shiny::withProgress(message = "Running DE analysis...", value = 0, {
           
-          # Step 1: Prepare data for limma analysis
-          shiny::incProgress(0.2, detail = "Preparing data for limma...")
+          # Step 1: Prepare contrasts table for analysis
+          shiny::incProgress(0.2, detail = "Preparing contrasts for analysis...")
           
-          # This is where the actual limma-based DE analysis would happen
-          # For now, create placeholder structure
-          
-          # Step 2: Run limma analysis for each contrast
-          shiny::incProgress(0.4, detail = "Running limma analysis...")
-          
-          # Placeholder: Create mock DE results for each contrast
-          mock_de_results <- list()
-          for (contrast in de_data$contrasts_available) {
-            # This would be replaced with actual deAnalysisWrapperFunction call
-            mock_de_results[[contrast]] <- data.frame(
-              Protein.Ids = paste0("PROTEIN_", 1:100),
-              logFC = rnorm(100, 0, 2),
-              AveExpr = rnorm(100, 10, 3),
-              t = rnorm(100, 0, 3),
-              P.Value = runif(100, 0, 1),
-              adj.P.Val = runif(100, 0, 1),
-              B = rnorm(100, 0, 2),
+          # Get contrasts from global environment or create basic ones
+          contrasts_tbl <- NULL
+          if (exists("contrasts_tbl", envir = .GlobalEnv)) {
+            contrasts_tbl <- get("contrasts_tbl", envir = .GlobalEnv)
+          } else {
+            # Create basic contrasts from available contrasts
+            contrasts_tbl <- data.frame(
+              contrasts = de_data$contrasts_available,
               stringsAsFactors = FALSE
             )
           }
           
-          # Step 3: Generate plots for all contrasts
-          shiny::incProgress(0.6, detail = "Generating plots...")
+          # Step 2: Run actual differential expression analysis
+          shiny::incProgress(0.4, detail = "Running limma analysis...")
           
-          # Placeholder for plot generation
-          # This would create volcano plots, heatmaps, etc. for each contrast
+          # Use the new modular DE analysis function
+          de_results_list <- differentialExpressionAnalysis(
+            theObject = de_data$current_s4_object,
+            contrasts_tbl = contrasts_tbl,
+            formula_string = input$formula_string,
+            de_q_val_thresh = input$de_q_val_thresh,
+            treat_lfc_cutoff = input$treat_lfc_cutoff,
+            qvalue_column = "fdr_qvalue",
+            raw_pvalue_column = "raw_pvalue"
+          )
           
-          # Step 4: Save results
-          shiny::incProgress(0.8, detail = "Saving results...")
+          # Step 3: Store results
+          shiny::incProgress(0.8, detail = "Processing results...")
           
-          de_data$de_results_list <- mock_de_results
+          de_data$de_results_list <- de_results_list
           de_data$analysis_complete <- TRUE
           
           # Update workflow data
-          workflow_data$de_analysis_results_list <- mock_de_results
+          workflow_data$de_analysis_results_list <- de_results_list
           workflow_data$tab_status$differential_expression <- "complete"
           workflow_data$tab_status$enrichment_analysis <- "pending"
           
@@ -575,9 +616,9 @@ differentialExpressionAppletServer <- function(id, workflow_data, experiment_pat
         message("=== DIFFERENTIAL EXPRESSION ANALYSIS COMPLETED ===")
         
       }, error = function(e) {
-        message(paste("*** ERROR in DE analysis:", e$message))
+        message(sprintf("*** ERROR in DE analysis: %s", e$message))
         shiny::showNotification(
-          paste("Error in DE analysis:", e$message),
+          sprintf("Error in DE analysis: %s", e$message),
           type = "error",
           duration = 10
         )
@@ -590,14 +631,40 @@ differentialExpressionAppletServer <- function(id, workflow_data, experiment_pat
     output$volcano_glimma <- shiny::renderUI({
       shiny::req(input$volcano_contrast, de_data$de_results_list)
       
-      # Placeholder for interactive Glimma volcano plot
-      shiny::div(
-        style = "text-align: center; padding: 50px;",
-        shiny::h4("Interactive Volcano Plot"),
-        shiny::p(paste("Contrast:", input$volcano_contrast)),
-        shiny::p("Glimma interactive plot would render here"),
-        shiny::p("(Placeholder - will be replaced with actual glimmaVolcano output)")
-      )
+      tryCatch({
+        # Get UniProt annotations if available
+        uniprot_tbl <- NULL
+        if (exists("uniprot_dat_cln", envir = .GlobalEnv)) {
+          uniprot_tbl <- get("uniprot_dat_cln", envir = .GlobalEnv)
+        }
+        
+        # Generate interactive Glimma volcano plot using new function
+        glimma_widget <- generateVolcanoPlotGlimma(
+          de_results_list = de_data$de_results_list,
+          selected_contrast = input$volcano_contrast,
+          uniprot_tbl = uniprot_tbl,
+          de_q_val_thresh = input$de_q_val_thresh
+        )
+        
+        if (!is.null(glimma_widget)) {
+          # Return the Glimma widget
+          glimma_widget
+        } else {
+          shiny::div(
+            style = "text-align: center; padding: 20px;",
+            shiny::h5("No data available for selected contrast"),
+            shiny::p("Please check contrast selection and ensure analysis has completed.")
+          )
+        }
+        
+      }, error = function(e) {
+        message(sprintf("*** ERROR in volcano plot generation: %s", e$message))
+        shiny::div(
+          style = "text-align: center; padding: 20px;",
+          shiny::h5("Error generating volcano plot"),
+          shiny::p(sprintf("Error: %s", e$message))
+        )
+      })
     })
     
     output$volcano_static <- shiny::renderPlot({
@@ -612,137 +679,29 @@ differentialExpressionAppletServer <- function(id, workflow_data, experiment_pat
     output$heatmap_plot <- shiny::renderPlot({
       shiny::req(input$heatmap_contrast, de_data$de_results_list)
       
-      # Get the current results for the selected contrast
-      current_results <- de_data$de_results_list[[input$heatmap_contrast]]
-      
-      if (!is.null(current_results)) {
-        # Filter for significant results and get top N
-        significant_results <- current_results[current_results$adj.P.Val < input$de_q_val_thresh, ]
+      tryCatch({
+        # Generate heatmap using new function
+        heatmap_plot <- generateDEHeatmap(
+          de_results_list = de_data$de_results_list,
+          selected_contrast = input$heatmap_contrast,
+          top_n_genes = input$heatmap_top_n,
+          clustering_method = input$heatmap_cluster_method,
+          distance_method = input$heatmap_distance_method,
+          cluster_rows = input$heatmap_clustering %in% c("both", "row"),
+          cluster_cols = input$heatmap_clustering %in% c("both", "column"),
+          scale_data = input$heatmap_scaling,
+          color_scheme = input$heatmap_color_scheme,
+          show_gene_names = input$heatmap_show_labels,
+          de_q_val_thresh = input$de_q_val_thresh
+        )
         
-        if (nrow(significant_results) > 0) {
-          # Order by absolute fold change and take top N
-          significant_results <- significant_results[order(abs(significant_results$logFC), decreasing = TRUE), ]
-          top_genes <- head(significant_results, input$heatmap_top_n)
-          
-          # Create mock expression matrix for these genes
-          # In real implementation, this would extract from the S4 object
-          n_samples <- 12  # Mock number of samples
-          expr_matrix <- matrix(
-            rnorm(nrow(top_genes) * n_samples, mean = 0, sd = 2),
-            nrow = nrow(top_genes),
-            ncol = n_samples,
-            dimnames = list(
-              top_genes$Protein.Ids,
-              paste0("Sample_", 1:n_samples)
-            )
-          )
-          
-          # Apply scaling
-          if (input$heatmap_scaling == "row") {
-            expr_matrix <- t(scale(t(expr_matrix)))
-          } else if (input$heatmap_scaling == "column") {
-            expr_matrix <- scale(expr_matrix)
-          } else if (input$heatmap_scaling == "both") {
-            expr_matrix <- scale(t(scale(t(expr_matrix))))
-          }
-          
-          # Set up clustering parameters
-          if (input$heatmap_clustering != "none") {
-            # Calculate distance matrix based on user selection
-            if (input$heatmap_distance_method %in% c("pearson", "spearman")) {
-              # For correlation-based distances
-              if (input$heatmap_distance_method == "pearson") {
-                row_dist <- as.dist(1 - cor(t(expr_matrix), method = "pearson"))
-                col_dist <- as.dist(1 - cor(expr_matrix, method = "pearson"))
-              } else {
-                row_dist <- as.dist(1 - cor(t(expr_matrix), method = "spearman"))
-                col_dist <- as.dist(1 - cor(expr_matrix, method = "spearman"))
-              }
-            } else {
-              # For standard distance metrics
-              row_dist <- dist(expr_matrix, method = input$heatmap_distance_method)
-              col_dist <- dist(t(expr_matrix), method = input$heatmap_distance_method)
-            }
-            
-            # Perform hierarchical clustering
-            row_clust <- hclust(row_dist, method = input$heatmap_cluster_method)
-            col_clust <- hclust(col_dist, method = input$heatmap_cluster_method)
-            
-            # Apply tree cutting if requested
-            if (input$heatmap_tree_cut_method != "none") {
-              if (input$heatmap_tree_cut_method == "k_clusters") {
-                row_clusters <- cutree(row_clust, k = input$heatmap_n_clusters)
-                col_clusters <- cutree(col_clust, k = input$heatmap_n_clusters)
-              } else if (input$heatmap_tree_cut_method == "height_cutoff") {
-                row_clusters <- cutree(row_clust, h = input$heatmap_cut_height)
-                col_clusters <- cutree(col_clust, h = input$heatmap_cut_height)
-              } else if (input$heatmap_tree_cut_method == "dynamic") {
-                # For dynamic tree cutting, use a simplified approach
-                # In real implementation, would use dynamicTreeCut package
-                row_clusters <- cutree(row_clust, k = max(2, min(input$heatmap_min_cluster_size, nrow(expr_matrix)/3)))
-                col_clusters <- cutree(col_clust, k = max(2, min(input$heatmap_min_cluster_size, ncol(expr_matrix)/3)))
-              }
-              
-              # Store cluster information for summary
-              de_data$current_row_clusters <- row_clusters
-              de_data$current_col_clusters <- col_clusters
-            }
-          }
-          
-          # Create the heatmap
-          # Set up clustering parameters for heatmap function
-          if (input$heatmap_clustering == "both") {
-            cluster_rows <- if (input$heatmap_clustering != "none") row_clust else FALSE
-            cluster_cols <- if (input$heatmap_clustering != "none") col_clust else FALSE
-          } else if (input$heatmap_clustering == "row") {
-            cluster_rows <- if (input$heatmap_clustering != "none") row_clust else FALSE
-            cluster_cols <- FALSE
-          } else if (input$heatmap_clustering == "column") {
-            cluster_rows <- FALSE
-            cluster_cols <- if (input$heatmap_clustering != "none") col_clust else FALSE
+        if (!is.null(heatmap_plot)) {
+          if (is.function(heatmap_plot)) {
+            # For base R heatmap functions
+            heatmap_plot()
           } else {
-            cluster_rows <- FALSE
-            cluster_cols <- FALSE
-          }
-          
-          # Choose color palette
-          colors <- switch(input$heatmap_color_scheme,
-            "RdBu" = colorRampPalette(c("red", "white", "blue"))(100),
-            "RdYlBu" = colorRampPalette(c("red", "yellow", "blue"))(100),
-            "coolwarm" = colorRampPalette(c("blue", "white", "red"))(100),
-            "viridis" = viridis::viridis(100),
-            "plasma" = viridis::plasma(100),
-            "inferno" = viridis::inferno(100),
-            colorRampPalette(c("red", "white", "blue"))(100)
-          )
-          
-          # Generate the heatmap
-          if (requireNamespace("ComplexHeatmap", quietly = TRUE)) {
-            # Use ComplexHeatmap if available for more control
-            ComplexHeatmap::Heatmap(
-              expr_matrix,
-              name = "Expression",
-              col = colors,
-              cluster_rows = cluster_rows,
-              cluster_columns = cluster_cols,
-              show_row_names = input$heatmap_show_labels,
-              show_column_names = TRUE,
-              show_row_dend = input$heatmap_show_dendro && input$heatmap_clustering %in% c("both", "row"),
-              show_column_dend = input$heatmap_show_dendro && input$heatmap_clustering %in% c("both", "column"),
-              column_title = paste("Heatmap - Top", input$heatmap_top_n, "genes\nContrast:", input$heatmap_contrast),
-              heatmap_legend_param = list(title = "Scaled\nExpression")
-            )
-          } else {
-            # Fallback to base heatmap
-            heatmap(
-              expr_matrix,
-              main = paste("Heatmap - Top", input$heatmap_top_n, "genes\nContrast:", input$heatmap_contrast),
-              col = colors,
-              Rowv = if (input$heatmap_clustering %in% c("both", "row")) as.dendrogram(row_clust) else NA,
-              Colv = if (input$heatmap_clustering %in% c("both", "column")) as.dendrogram(col_clust) else NA,
-              labRow = if (input$heatmap_show_labels) rownames(expr_matrix) else rep("", nrow(expr_matrix)),
-              cexRow = if (input$heatmap_show_labels) 0.8 else 0.1
-            )
+            # For ComplexHeatmap objects
+            heatmap_plot
           }
         } else {
           # No significant genes found
@@ -750,7 +709,13 @@ differentialExpressionAppletServer <- function(id, workflow_data, experiment_pat
                main = paste("No significant genes found for contrast:", input$heatmap_contrast))
           text(1, 1, "Adjust significance thresholds\nor select different contrast", cex = 1.2)
         }
-      }
+        
+      }, error = function(e) {
+        message(sprintf("*** ERROR in heatmap generation: %s", e$message))
+        plot(1, 1, type = "n", axes = FALSE, xlab = "", ylab = "",
+             main = "Error generating heatmap")
+        text(1, 1, sprintf("Error: %s", e$message), cex = 1.2)
+      })
     })
     
     # Cluster Summary Output
@@ -777,62 +742,97 @@ differentialExpressionAppletServer <- function(id, workflow_data, experiment_pat
     output$de_results_table <- DT::renderDT({
       shiny::req(input$table_contrast, de_data$de_results_list)
       
-      current_results <- de_data$de_results_list[[input$table_contrast]]
-      
-      if (!is.null(current_results)) {
-        # Filter based on significance selection
-        if (input$table_significance == "significant") {
-          current_results <- current_results[current_results$adj.P.Val < input$de_q_val_thresh, ]
-        } else if (input$table_significance == "up") {
-          current_results <- current_results[current_results$adj.P.Val < input$de_q_val_thresh & 
-                                           current_results$logFC > input$treat_lfc_cutoff, ]
-        } else if (input$table_significance == "down") {
-          current_results <- current_results[current_results$adj.P.Val < input$de_q_val_thresh & 
-                                           current_results$logFC < -input$treat_lfc_cutoff, ]
+      tryCatch({
+        # Get DE results from the new format
+        if (!is.null(de_data$de_results_list$de_proteins_long)) {
+          # Filter for selected contrast
+          current_results <- de_data$de_results_list$de_proteins_long |>
+            dplyr::filter(comparison == input$table_contrast)
+          
+          if (nrow(current_results) > 0) {
+            # Filter based on significance selection
+            if (input$table_significance == "significant") {
+              current_results <- current_results[current_results$fdr_qvalue < input$de_q_val_thresh, ]
+            } else if (input$table_significance == "up") {
+              current_results <- current_results[current_results$fdr_qvalue < input$de_q_val_thresh & 
+                                               current_results$log2FC > input$treat_lfc_cutoff, ]
+            } else if (input$table_significance == "down") {
+              current_results <- current_results[current_results$fdr_qvalue < input$de_q_val_thresh & 
+                                               current_results$log2FC < -input$treat_lfc_cutoff, ]
+            }
+            
+            # Limit rows
+            if (nrow(current_results) > input$table_max_rows) {
+              current_results <- current_results[1:input$table_max_rows, ]
+            }
+            
+            # Select relevant columns for display
+            display_columns <- c("uniprot_acc", "log2FC", "raw_pvalue", "fdr_qvalue")
+            current_results <- current_results |>
+              dplyr::select(any_of(display_columns))
+            
+            DT::datatable(
+              current_results,
+              options = list(
+                pageLength = 25,
+                scrollX = TRUE,
+                dom = 'Bfrtip',
+                buttons = c('copy', 'csv', 'excel')
+              ),
+              extensions = 'Buttons'
+            ) |>
+            DT::formatRound(columns = c("log2FC", "raw_pvalue", "fdr_qvalue"), digits = 4)
+          } else {
+            # No results for this contrast
+            DT::datatable(data.frame(Message = "No results available for selected contrast"))
+          }
+        } else {
+          # No DE results available
+          DT::datatable(data.frame(Message = "No DE analysis results available"))
         }
         
-        # Limit rows
-        if (nrow(current_results) > input$table_max_rows) {
-          current_results <- current_results[1:input$table_max_rows, ]
-        }
-        
-        DT::datatable(
-          current_results,
-          options = list(
-            pageLength = 25,
-            scrollX = TRUE,
-            dom = 'Bfrtip',
-            buttons = c('copy', 'csv', 'excel')
-          ),
-          extensions = 'Buttons'
-        ) |>
-        DT::formatRound(columns = c("logFC", "AveExpr", "t", "P.Value", "adj.P.Val", "B"), digits = 4)
-      }
+      }, error = function(e) {
+        message(sprintf("*** ERROR in DE results table: %s", e$message))
+        DT::datatable(data.frame(Message = sprintf("Error: %s", e$message)))
+      })
     })
     
     # Summary statistics
     output$de_summary_stats <- shiny::renderText({
       shiny::req(input$table_contrast, de_data$de_results_list)
       
-      current_results <- de_data$de_results_list[[input$table_contrast]]
-      
-      if (!is.null(current_results)) {
-        total_genes <- nrow(current_results)
-        significant <- sum(current_results$adj.P.Val < input$de_q_val_thresh, na.rm = TRUE)
-        up_reg <- sum(current_results$adj.P.Val < input$de_q_val_thresh & 
-                     current_results$logFC > input$treat_lfc_cutoff, na.rm = TRUE)
-        down_reg <- sum(current_results$adj.P.Val < input$de_q_val_thresh & 
-                       current_results$logFC < -input$treat_lfc_cutoff, na.rm = TRUE)
+      tryCatch({
+        if (!is.null(de_data$de_results_list$de_proteins_long)) {
+          # Filter for selected contrast
+          current_results <- de_data$de_results_list$de_proteins_long |>
+            dplyr::filter(comparison == input$table_contrast)
+          
+          if (nrow(current_results) > 0) {
+            total_genes <- nrow(current_results)
+            significant <- sum(current_results$fdr_qvalue < input$de_q_val_thresh, na.rm = TRUE)
+            up_reg <- sum(current_results$fdr_qvalue < input$de_q_val_thresh & 
+                         current_results$log2FC > input$treat_lfc_cutoff, na.rm = TRUE)
+            down_reg <- sum(current_results$fdr_qvalue < input$de_q_val_thresh & 
+                           current_results$log2FC < -input$treat_lfc_cutoff, na.rm = TRUE)
+            
+            paste(
+              sprintf("Total genes: %d", total_genes),
+              sprintf("Significant (q < %.3f): %d", input$de_q_val_thresh, significant),
+              sprintf("Up-regulated: %d", up_reg),
+              sprintf("Down-regulated: %d", down_reg),
+              sprintf("Fold-change cutoff: %.2f", input$treat_lfc_cutoff),
+              sep = "\n"
+            )
+          } else {
+            "No results available for selected contrast"
+          }
+        } else {
+          "No DE analysis results available"
+        }
         
-        paste(
-          sprintf("Total genes: %d", total_genes),
-          sprintf("Significant (q < %.3f): %d", input$de_q_val_thresh, significant),
-          sprintf("Up-regulated: %d", up_reg),
-          sprintf("Down-regulated: %d", down_reg),
-          sprintf("Fold-change cutoff: %.2f", input$treat_lfc_cutoff),
-          sep = "\n"
-        )
-      }
+      }, error = function(e) {
+        sprintf("Error calculating statistics: %s", e$message)
+      })
     })
     
     # Download handler for results
