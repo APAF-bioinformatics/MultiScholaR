@@ -2558,3 +2558,310 @@ setMethod(f = "ruvIII_C_Varying",
             return(theObject)
           })
 
+#' plot number of significant differentially expressed metabolites
+#'@export
+setGeneric(name="plotNumSigDiffExpBarPlot",
+           def=function(objectsList ) {
+             standardGeneric("plotNumSigDiffExpBarPlot")
+           },
+           signature=c("objectsList"  ))
+
+
+# MetabolomicsDifferentialAbundanceResults
+#'@export
+setMethod(f = "plotNumSigDiffExpBarPlot",
+          signature = "list",
+          definition = function(objectsList) {
+
+           return_object_list <-  purrr::map( objectsList
+                        , function(object ) {
+
+                          ## Count the number of up or down significant differentially expressed metabolites.
+                          # The contrasts_results_table is already a list of data frames (one per contrast)
+                          # So we don't need to wrap it in another list
+                          num_sig_de_molecules_first_go <- printCountDeGenesTableHelper(
+                            list_of_de_tables = object@contrasts_results_table,
+                            list_of_descriptions = names(object@contrasts_results_table)
+                          )
+
+
+                          object@num_sig_diff_exp_bar_plot <- num_sig_de_molecules_first_go$plot
+
+                          object@num_sig_diff_table <- num_sig_de_molecules_first_go$table
+
+                          object
+                        })
+
+           return_object_list
+
+ })
+
+
+
+
+
+
+#' Plot static volcano plot (without gene names)
+
+#' plot number of significant differentially expressed metabolites
+#'@export
+setGeneric(name="plotVolcano",
+           def=function(objectsList,
+                        de_q_val_thresh = 0.05,
+                        qvalue_column = "q_value",
+                        log2fc_column = "logFC") {
+             standardGeneric("plotVolcano")
+           },
+           signature=c("objectsList"))
+
+#'@export
+setMethod(f = "plotVolcano",
+          signature = "list",
+          definition = function(objectsList
+                                , de_q_val_thresh = 0.05
+                                , qvalue_column = "fdr_qvalue"
+                                , log2fc_column = "logFC") {
+
+
+            return_object_list <-  purrr::map( objectsList
+                                               , function(object ) {
+
+                                                 ## Plot static volcano plot
+                                                 static_volcano_plot_data <- object@contrasts_results_table  |>
+                                                   bind_rows(.id="comparison") |>
+                                                   mutate( lqm = -log10(!!sym(qvalue_column) ) ) |>
+                                                   dplyr::mutate(label = case_when( !!sym(qvalue_column) < de_q_val_thresh ~ "Significant",
+                                                                                    TRUE ~ "Not sig.")) |>
+                                                   dplyr::mutate(colour = case_when( !!sym(qvalue_column) < de_q_val_thresh ~ "purple",
+                                                                                     TRUE ~ "black")) |>
+                                                   dplyr::mutate(colour = factor(colour, levels = c("black", "purple"))) |>
+                                                   dplyr::mutate( title =  str_split_i( comparison, "=", 1))
+
+                                                 print( head( static_volcano_plot_data))
+
+                                                 list_of_volcano_plots <- static_volcano_plot_data |>
+                                                   group_by( comparison, title) |>
+                                                   nest() |>
+                                                    mutate( plot = purrr::map2( data, title, \(x,y) { plotOneVolcanoNoVerticalLines(x, y
+                                                                                                                                   , log_q_value_column = "lqm"
+                                                                                                                                   , log_fc_column = log2fc_column) } ) )
+
+                                                  object@volcano_plot  <- list_of_volcano_plots |> dplyr::pull( plot )
+                                                   return(object)
+                                               })
+
+            return_object_list
+
+          })
+
+
+# Get the differential expression results in wide format
+#'@export
+setGeneric(name="getDeResultsWideFormat"
+           , def=function(objectsList
+                        , qvalue_column = "fdr_qvalue"
+                        , raw_pvalue_column = "raw_pvalue"
+                        , log2fc_column = "logFC") {
+             standardGeneric("getDeResultsWideFormat")
+           },
+           signature=c("objectsList"))
+
+#'@export
+setMethod(f = "getDeResultsWideFormat"
+          , signature = "list"
+          , definition = function(objectsList
+                                , qvalue_column = "fdr_qvalue"
+                                , raw_pvalue_column = "raw_pvalue"
+                                , log2fc_column = "logFC")  {
+
+
+            return_object_list <-  purrr::map( objectsList, function(object) {
+
+              # Correctly access the metabolite data from the nested 'theObject' slot.
+              # This defensively handles cases where the slot might hold a list of
+              # data frames (correct) or a single data frame (incorrect but handled).
+              counts_data_slot <- object@theObject@metabolite_data
+              counts_table_to_use <- if (is.list(counts_data_slot) && !is.data.frame(counts_data_slot)) {
+                counts_data_slot[[1]]
+              } else {
+                counts_data_slot
+              }
+
+              id_col_name <- object@theObject@metabolite_id_column
+
+              # Bind the list of data frames into a single tidy data frame
+              tidy_results <- object@contrasts_results_table |>
+                dplyr::bind_rows(.id="comparison") |>
+                dplyr::mutate( comparision_short = str_split_i( comparison, "=", 1))
+
+              # Pivot the tidy data frame to a wide format using the correct ID column
+              wide_results <- tidy_results |>
+                tidyr::pivot_wider(id_cols = c(!!sym(id_col_name)),
+                                   names_from = c(comparision_short),
+                                   names_sep = ":",
+                                   values_from = c(!!sym(log2fc_column), !!sym(qvalue_column), !!sym(raw_pvalue_column))) |>
+                # Join with original counts using the correct ID column.
+                dplyr::left_join(counts_table_to_use, by = join_by( !!sym(id_col_name) == !!sym(id_col_name))) |>
+                dplyr::arrange(dplyr::across(matches(qvalue_column))) |>
+                dplyr::distinct()
+
+              # Assign to the correct slot and return the object
+              object@results_table_wide <- wide_results
+              return(object)
+            })
+
+            return(return_object_list)
+          })
+
+
+
+
+# Get the differential expression results in wide format
+#'@export
+setGeneric(name="getDeResultsLongFormat"
+           , def=function(objectsList) {
+             standardGeneric("getDeResultsLongFormat")
+           },
+           signature=c("objectsList"))
+
+#'@export
+setMethod(f = "getDeResultsLongFormat"
+          , signature = "list"
+          , definition = function(objectsList)  {
+
+
+            return_object_list <-  purrr::map( objectsList, function(object) {
+
+              # Correctly access the metabolite data from the nested 'theObject' slot.
+              # This defensively handles cases where the slot might hold a list of
+              # data frames (correct) or a single data frame (incorrect but handled).
+              counts_data_slot <- object@theObject@metabolite_data
+              counts_table_to_use <- if (is.list(counts_data_slot) && !is.data.frame(counts_data_slot)) {
+                counts_data_slot[[1]]
+              } else {
+                counts_data_slot
+              }
+
+              id_col_name <- object@theObject@metabolite_id_column
+
+              # Bind the list of data frames into a single tidy data frame
+              tidy_results <- object@contrasts_results_table |>
+                dplyr::bind_rows(.id="comparison") |>
+                dplyr::mutate( comparision_short = str_split_i( comparison, "=", 1))
+
+              # Pivot the tidy data frame to a wide format using the correct ID column
+              long_results <- tidy_results |>
+                # Join with original counts using the correct ID column.
+                dplyr::left_join(counts_table_to_use, by = join_by( !!sym(id_col_name) == !!sym(id_col_name))) |>
+                dplyr::distinct()
+
+              print(head( long_results))
+
+              # Assign to the correct slot and return the object
+              object@results_table_long <- long_results
+              return(object)
+            })
+
+            return(return_object_list)
+          })
+
+
+
+
+
+## Create proteomics interactive volcano plot
+#' @export
+setGeneric(name="plotInteractiveVolcano"
+           , def=function(objectsList, anno_tbl = NULL) {
+             standardGeneric("plotInteractiveVolcano")
+           },
+           signature=c("objectsList", "anno_tbl"))
+
+#'@export
+setMethod(f = "plotInteractiveVolcano"
+          , signature = "list"
+          , definition =
+            function( objectsList, anno_tbl = NULL ) {
+
+              list_of_objects <- purrr::map( objectsList,
+                                             \(de_output_object) {
+
+
+
+                                               updateWithQvalue <-function(r_obj) {
+                                                 r_obj_output <- r_obj
+
+                                                 # Prepare the data for the interactive volcano plot
+                                                 for(coef in seq_len( ncol( de_analysis_long_table$LCMS_Pos@fit.eb$p.value))) {
+
+                                                   r_obj_output$p.value[,coef] <- qvalue( r_obj$p.value[,coef])$qvalues
+                                                 }
+
+                                                 r_obj_output
+
+                                               }
+
+                                               my_fit_eb <-   updateWithQvalue( de_output_object@fit.eb)
+
+                                               counts_matrix <- de_output_object@theObject@metabolite_data |>
+                                                 column_to_rownames( de_output_object@theObject@metabolite_id_column) |>
+                                                 as.matrix()
+                                               #
+                                               # # anno_tbl <- de_output_object@theObject@metabolite_data |>
+                                               # #   dplyr::select( !!sym(de_output_object@theObject@metabolite_id_column) ) |>
+                                               # #   mutate( random_stuff = NA_real_ )
+                                               #
+                                               # anno_tbl$random_stuff <- rnorm( n=nrow( anno_tbl))
+
+
+                                               groups <- data.frame( Run = colnames(counts_matrix) ) |>
+                                                 left_join( de_output_object@theObject@design_matrix
+                                                           , by=join_by( !!sym(de_output_object@theObject@sample_id) == !!sym(de_output_object@theObject@sample_id) )) |>
+                                                 dplyr::pull(genotype_group)
+
+
+                                               list_of_glimma_objs <- purrr::map( seq_len( ncol( de_analysis_long_table$LCMS_Pos@fit.eb$p.value))
+
+                                                                                  , \(idx) {
+
+                                                                                    anno_tbl_filt <-  de_output_object@contrasts_results_table[[idx]] |>
+                                                                                      dplyr::select( !!sym(de_output_object@theObject@metabolite_id_column )) |>
+                                                                                      left_join( anno_tbl, by=join_by( !!sym(de_output_object@theObject@metabolite_id_column)  == !!sym(de_output_object@theObject@metabolite_id_column) ) )
+
+                                                                                    Glimma::glimmaVolcano(my_fit_eb
+                                                                                                          , coef=idx
+                                                                                                          , anno=anno_tbl_filt
+                                                                                                          , counts = counts_matrix
+                                                                                                          , groups = groups
+                                                                                                          , display.columns = colnames(anno_tbl )
+                                                                                                          , status=decideTests(my_fit_eb, adjust.method="none")
+                                                                                                          , p.adj.method = "none"
+                                                                                                          , transform.counts='none')
+
+                                                                                  })
+
+                                               de_output_object@interactive_volcano_plot <- list_of_glimma_objs
+
+                                               de_output_object })
+
+              list_of_objects
+
+            } )
+
+
+
+    # htmlwidgets::saveWidget( widget = Glimma::glimmaVolcano(r_obj
+    #                                                         , coef=coef
+    #                                                         , anno=anno_tbl
+    #                                                         , counts = counts_tbl
+    #                                                         , groups = groups
+    #                                                         , display.columns = colnames(anno_tbl )
+    #                                                         , status=decideTests(r_obj, adjust.method="none")
+    #                                                         , p.adj.method = "none"
+    #                                                         , transform.counts='none'
+    # ) #the plotly object
+    # , file = file.path( output_dir
+    #                     , paste0(colnames(r_obj$coefficients)[coef], ".html"))  #the path & file name
+    # , selfcontained = TRUE #creates a single html file
+    # )
+

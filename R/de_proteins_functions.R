@@ -738,11 +738,8 @@ countStatDeGenes <- function(data,
 #' @export
 countStatDeGenesHelper <- function(de_table
                                    , description
-                                   , facet_column = analysis_type
                                    , comparison_column = "comparison"
                                    , expression_column = "expression") {
-
-  # print(head(de_table))
 
   de_table_updated <- purrr::map(de_table, \(x){  countStatDeGenes(x,
                                                                    lfc_thresh = 0,
@@ -750,22 +747,22 @@ countStatDeGenesHelper <- function(de_table
                                                                    log_fc_column = logFC,
                                                                    q_value_column = fdr_qvalue)})
 
+  # print(head( de_table_updated[[1]]))
+
   list_of_tables <- purrr::map2(de_table_updated
                                 ,names(de_table_updated)
                                 ,\(.x, .y){ .x |>
-                                    mutate(!!sym(comparison_column) := .y) })
+                                    mutate(!!sym(comparison_column) := .y) |>
+                                    separate_wider_delim( !!sym(comparison_column ),
+                                                          delim = "=",
+                                                          names = c(comparison_column,
+                                                                    expression_column)) })
 
-  # print(head(temp[[1]]))
 
-  merged_tables <- list_of_tables |>
-    bind_rows() |>
-    mutate({ { facet_column } } := description) |>
-    separate_wider_delim( !!sym(comparison_column ),
-                          delim = "=",
-                          names = c(comparison_column,
-                                    expression_column))
 
-  merged_tables
+  # print(head( merged_tables))
+
+  list_of_tables
 }
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -777,42 +774,35 @@ countStatDeGenesHelper <- function(de_table
 #' @param comparison_column The name of the column describing the contrasts or comparison between groups (tidyverse style).
 #' @param expression_column The name of the column that will contain the formula expressions of the contrasts.
 #'@export
-printCountDeGenesTable <- function(  list_of_de_tables
+printCountDeGenesTableHelper <- function(  list_of_de_tables
                                      , list_of_descriptions
-                                     , formula_string = "analysis_type ~ comparison"
-                                     , facet_column = analysis_type
                                      , comparison_column = "comparison"
                                      , expression_column = "expression") {
 
 
 
 
-  num_significant_de_genes_all <- purrr::map2(list_of_de_tables,
-                                              list_of_descriptions,
-                                              function(a, b) { countStatDeGenesHelper( de_table = a
-                                                                                       , description = b
-                                                                                       , facet_column = {{facet_column}}
-                                                                                       , comparison_column = comparison_column
-                                                                                       , expression_column = expression_column) }) |>
-    bind_rows()
-
-  num_sig_de_genes_barplot <- num_significant_de_genes_all |>
-    dplyr::filter(status != "Not significant") |>
-    ggplot(aes(x = status, y = counts)) +
-    geom_bar(stat = "identity") +
-    geom_text(stat = 'identity', aes(label = counts), vjust = -0.5) +
-    theme(axis.text.x = element_text(angle = 90))
-
-  # print(head(num_sig_de_genes_barplot))
-
-  if (!is.na(formula_string)) {
-
-    num_sig_de_genes_barplot <- num_sig_de_genes_barplot +
-      facet_grid(as.formula(formula_string))
-  }
+  num_significant_de_genes_all <- countStatDeGenesHelper( de_table = list_of_de_tables
+                                                          , description = list_of_descriptions
+                                                          , comparison_column = comparison_column
+                                                          , expression_column = expression_column)
 
 
-  return(list(plot = num_sig_de_genes_barplot, table = num_significant_de_genes_all))
+  num_sig_de_genes_barplot <- purrr::map(num_significant_de_genes_all, \(x) {
+
+    comparison_name <- x |> dplyr::distinct( !!sym(comparison_column)) |> dplyr::pull(!!sym(comparison_column))
+
+    num_sig_de_genes_barplot <- x |>
+      dplyr::filter(status != "Not significant") |>
+      ggplot(aes(x = status, y = counts)) +
+      geom_bar(stat = "identity") +
+      geom_text(stat = 'identity', aes(label = counts), vjust = -0.5) +
+      theme(axis.text.x = element_text(angle = 90)) +
+      ggtitle(comparison_name)
+
+  })
+
+  return(list(plot = num_sig_de_genes_barplot, table = num_significant_de_genes_all |> bind_rows()))
 }
 
 
@@ -898,48 +888,48 @@ getSignificantData <- function( list_of_de_tables
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-#' Draw the volcano plot.
-#' @param selected_data A table that is generated by running the function \code{\link{get_significant_data}}.
-#' @param log_q_value_column The name of the column representing the log q-value.
-#' @param log_fc_column The name of the column representing the log fold-change.
-#' @param q_val_thresh A numerical value specifying the q-value threshold for statistically significant proteins.
-#' @param formula_string The formula string used in the facet_grid command for the ggplot scatter plot.
-#' @export
-plotVolcano <- function( selected_data
-                         , log_q_value_column = lqm
-                         , log_fc_column = logFC
-                         , q_val_thresh = 0.05
-                         , formula_string = "analysis_type ~ comparison" ) {
-
-  volplot_gg.all <- selected_data |>
-    ggplot(aes(y = { { log_q_value_column } }, x = { { log_fc_column } })) +
-    geom_point(aes(col = colour)) +
-    scale_colour_manual(values = c(levels(selected_data$colour)),
-                        labels = c(paste0("Not significant, logFC > ",
-                                          1),
-                                   paste0("Significant, logFC >= ",
-                                          1),
-                                   paste0("Significant, logFC <",
-                                          1),
-                                   "Not Significant")) +
-    geom_vline(xintercept = 1, colour = "black", linewidth = 0.2) +
-    geom_vline(xintercept = -1, colour = "black", linewidth = 0.2) +
-    geom_hline(yintercept = -log10(q_val_thresh)) +
-    theme_bw() +
-    xlab("Log fold changes") +
-    ylab("-log10 q-value") +
-    theme(legend.position = "none")
-
-  volplot_gg.plot <- volplot_gg.all
-  if( !is.na(formula_string) | formula_string != "" ) {
-    volplot_gg.plot <- volplot_gg.all +
-      facet_grid( as.formula(formula_string),
-                  labeller = labeller(facet_category = label_wrap_gen(width = 10)))
-  }
-
-  volplot_gg.plot
-}
+#'
+#' #' Draw the volcano plot.
+#' #' @param selected_data A table that is generated by running the function \code{\link{get_significant_data}}.
+#' #' @param log_q_value_column The name of the column representing the log q-value.
+#' #' @param log_fc_column The name of the column representing the log fold-change.
+#' #' @param q_val_thresh A numerical value specifying the q-value threshold for statistically significant proteins.
+#' #' @param formula_string The formula string used in the facet_grid command for the ggplot scatter plot.
+#' #' @export
+#' plotVolcano <- function( selected_data
+#'                          , log_q_value_column = lqm
+#'                          , log_fc_column = logFC
+#'                          , q_val_thresh = 0.05
+#'                          , formula_string = "analysis_type ~ comparison" ) {
+#'
+#'   volplot_gg.all <- selected_data |>
+#'     ggplot(aes(y = { { log_q_value_column } }, x = { { log_fc_column } })) +
+#'     geom_point(aes(col = colour)) +
+#'     scale_colour_manual(values = c(levels(selected_data$colour)),
+#'                         labels = c(paste0("Not significant, logFC > ",
+#'                                           1),
+#'                                    paste0("Significant, logFC >= ",
+#'                                           1),
+#'                                    paste0("Significant, logFC <",
+#'                                           1),
+#'                                    "Not Significant")) +
+#'     geom_vline(xintercept = 1, colour = "black", linewidth = 0.2) +
+#'     geom_vline(xintercept = -1, colour = "black", linewidth = 0.2) +
+#'     geom_hline(yintercept = -log10(q_val_thresh)) +
+#'     theme_bw() +
+#'     xlab("Log fold changes") +
+#'     ylab("-log10 q-value") +
+#'     theme(legend.position = "none")
+#'
+#'   volplot_gg.plot <- volplot_gg.all
+#'   if( !is.na(formula_string) | formula_string != "" ) {
+#'     volplot_gg.plot <- volplot_gg.all +
+#'       facet_grid( as.formula(formula_string),
+#'                   labeller = labeller(facet_category = label_wrap_gen(width = 10)))
+#'   }
+#'
+#'   volplot_gg.plot
+#' }
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1154,11 +1144,24 @@ prepareDataForVolcanoPlot <- function(input_table
 #' @param formula_string The formula string used in the facet_grid command for the ggplot scatter plot.
 #' @export
 plotOneVolcanoNoVerticalLines <- function( input_data, input_title,
-                            log_q_value_column = lqm,
-                            log_fc_column = logFC,
-                            points_type_label = label,
-                            points_color = colour,
+                            log_q_value_column = "lqm",
+                            log_fc_column = "logFC",
+                            points_type_label = "label",
+                            points_color = "colour",
                             q_val_thresh=0.05) {
+
+ if (is.character(log_q_value_column)) {
+    log_q_value_column <- rlang::sym(log_q_value_column)
+  }
+  if (is.character(log_fc_column)) {
+    log_fc_column <- rlang::sym(log_fc_column)
+  }
+  if (is.character(points_type_label)) {
+    points_type_label <- rlang::sym(points_type_label)
+  }
+  if (is.character(points_color)) {
+    points_color <- rlang::sym(points_color)
+  }
 
   colour_tbl <- input_data |>
     distinct( {{points_type_label}}, {{points_color}} )
