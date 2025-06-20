@@ -2558,16 +2558,6 @@ setMethod(f = "ruvIII_C_Varying",
           })
 
 #' plot number of significant differentially expressed metabolites
-#'@export
-setGeneric(name="plotNumSigDiffExpBarPlot",
-           def=function(objectsList ) {
-             standardGeneric("plotNumSigDiffExpBarPlot")
-           },
-           signature=c("objectsList"  ))
-
-
-# MetabolomicsDifferentialAbundanceResults
-#'@export
 setMethod(f = "plotNumSigDiffExpBarPlot",
           signature = "list",
           definition = function(objectsList) {
@@ -2602,16 +2592,7 @@ setMethod(f = "plotNumSigDiffExpBarPlot",
 
 #' Plot static volcano plot (without gene names)
 
-#' plot number of significant differentially expressed metabolites
-#'@export
-setGeneric(name="plotVolcano",
-           def=function(objectsList,
-                        de_q_val_thresh = 0.05,
-                        qvalue_column = "q_value",
-                        log2fc_column = "logFC") {
-             standardGeneric("plotVolcano")
-           },
-           signature=c("objectsList"))
+
 
 #'@export
 setMethod(f = "plotVolcano",
@@ -2659,15 +2640,6 @@ setMethod(f = "plotVolcano",
 
 
 # Get the differential expression results in wide format
-#'@export
-setGeneric(name="getDeResultsWideFormat"
-           , def=function(objectsList
-                        , qvalue_column = "fdr_qvalue"
-                        , raw_pvalue_column = "raw_pvalue"
-                        , log2fc_column = "logFC") {
-             standardGeneric("getDeResultsWideFormat")
-           },
-           signature=c("objectsList"))
 
 #'@export
 setMethod(f = "getDeResultsWideFormat"
@@ -2721,13 +2693,6 @@ setMethod(f = "getDeResultsWideFormat"
 
 # Get the differential expression results in wide format
 #'@export
-setGeneric(name="getDeResultsLongFormat"
-           , def=function(objectsList) {
-             standardGeneric("getDeResultsLongFormat")
-           },
-           signature=c("objectsList"))
-
-#'@export
 setMethod(f = "getDeResultsLongFormat"
           , signature = "list"
           , definition = function(objectsList)  {
@@ -2773,13 +2738,6 @@ setMethod(f = "getDeResultsLongFormat"
 
 
 ## Create proteomics interactive volcano plot
-#' @export
-setGeneric(name="plotInteractiveVolcano"
-           , def=function(objectsList, anno_tbl = NULL) {
-             standardGeneric("plotInteractiveVolcano")
-           },
-           signature=c("objectsList", "anno_tbl"))
-
 #'@export
 setMethod(f = "plotInteractiveVolcano"
           , signature = "list"
@@ -2872,14 +2830,6 @@ setMethod(f = "plotInteractiveVolcano"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #Create a QC composite figure
-
-#' @export
-#' @export
-setGeneric(name = "createGridQCMetabolomics",
-           def = function(theObject, pca_titles, density_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
-             standardGeneric("createGridQCMetabolomics")
-           },
-           signature = c("theObject", "pca_titles", "density_titles", "rle_titles", "pearson_titles", "save_path", "file_name"))
 
 #' @export
 setMethod(f = "createGridQCMetabolomics",
