@@ -366,4 +366,29 @@ setGeneric(name="plotNumSigDiffExpBarPlot",
            },
            signature=c("objectsList"  ))
 
+#'@export
+setGeneric( name ="differentialAbundanceAnalysisHelper"
+            , def=function(theObject
+                           , contrasts_tbl = NULL
+                           , formula_string = NULL
+                           , de_q_val_thresh = NULL
+                           , treat_lfc_cutoff = NULL
+                           , eBayes_trend = NULL
+                           , eBayes_robust = NULL
+                           , args_group_pattern = NULL) {
+              standardGeneric("differentialAbundanceAnalysisHelper")
+            })
+
+#'@export
+setGeneric( name ="differentialAbundanceAnalysis"
+            , def=function(objectsList
+                           , contrasts_tbl = NULL
+                           , formula_string = NULL
+                           , de_q_val_thresh = NULL
+                           , treat_lfc_cutoff = NULL
+                           , eBayes_trend = NULL
+                           , eBayes_robust = NULL
+                           , args_group_pattern = NULL) {
+              standardGeneric("differentialAbundanceAnalysis")})
+
 
