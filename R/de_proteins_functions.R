@@ -815,7 +815,7 @@ printCountDeGenesTableHelper <- function(  list_of_de_tables
   printCountDeGenesTableHelper (  list_of_de_tables
                                              , list_of_descriptions
                                              , comparison_column
-                                             , expression_column
+                                             , expression_column )
 }
 
 
