@@ -273,7 +273,7 @@ createMetaboliteAssayData <- function(
 #' @export
 setMethod(f = "plotPca",
           signature = c("MetaboliteAssayData", "ANY", "ANY", "ANY", "ANY", "ANY"),
-          definition = function(theObject, grouping_variable, shape_variable = NULL, label_column, title, font_size = 8) {
+          definition = function(theObject, grouping_variable, shape_variable = NULL, label_column, title = NULL, font_size = 8) {
             # --- Input Validation ---
             if (!is.character(grouping_variable) || length(grouping_variable) != 1) {
               stop("`grouping_variable` must be a single character string.")
@@ -379,7 +379,7 @@ setMethod(f = "plotPca",
                  design_matrix_filtered_final <- design_matrix_filtered[design_matrix_filtered[[sample_id_col_name]] %in% colnames(frozen_metabolite_matrix_pca_final), ]
 
                 # Generate title for this specific assay
-                assay_title <- paste(title, "-", assay_name)
+                assay_title <- if (!is.null(title) && title != "") paste(title, "-", assay_name) else ""
 
                 # --- Ensure consistent type for sample ID column before join ---
                 design_matrix_filtered_final[[sample_id_col_name]] <- as.character(design_matrix_filtered_final[[sample_id_col_name]])
@@ -701,14 +701,14 @@ setMethod(f = "plotDensity",
 
 
                    # --- Create Density/Box Plots ---
-                   assay_title <- paste(title, "-", assay_name)
+                   # assay_title <- paste0( ifelse( is.null(title) | is.na(title) | title == "", "", paste0(title, " - ")), assay_name)
 
                    tryCatch({
                         # Create PC1 boxplot
                        pc1_box <- ggplot(pca_data_for_plot, aes(x = !!rlang::sym(grouping_variable), y = PC1, fill = !!rlang::sym(grouping_variable))) +
                            geom_boxplot(notch = TRUE) +
                            theme_bw() +
-                           labs(title = assay_title,
+                           labs(title = paste(title, "-", assay_name),
                                 x = "",
                                 y = "PC1") +
                            theme(
@@ -1140,7 +1140,6 @@ setMethod(f = "plotPearson",
                  # Use finer breaks, similar to protein version, clamped to [0, 1]
                  # Note: Protein version uses 0.001 step, using 0.01 here for potentially better visibility first.
                  hist_breaks <- seq(0, 1, 0.01)
-
 
                 # --- Create Plot ---
                 tryCatch({
@@ -2637,20 +2636,24 @@ setMethod(f = "plotVolcano",
                                                    dplyr::mutate(colour = factor(colour, levels = c("black", "purple"))) |>
                                                    dplyr::mutate( title =  str_split_i( comparison, "=", 1))
 
-                                                 print( head( static_volcano_plot_data))
-
-                                                 list_of_volcano_plots <- static_volcano_plot_data |>
+                                                 list_of_volcano_plots_tbl <- static_volcano_plot_data |>
                                                    group_by( comparison, title) |>
                                                    nest() |>
                                                     mutate( plot = purrr::map2( data, title, \(x,y) { plotOneVolcanoNoVerticalLines(x, y
                                                                                                                                    , log_q_value_column = "lqm"
                                                                                                                                    , log_fc_column = log2fc_column) } ) )
 
-                                                  object@volcano_plot  <- list_of_volcano_plots |> dplyr::pull( plot )
-                                                   return(object)
+                                                  # THE FIX: Extract the 'plot' column to get a LIST of plots,
+                                                  # and correctly name the list elements.
+                                                  plots_list <- list_of_volcano_plots_tbl$plot
+                                                  names(plots_list) <- list_of_volcano_plots_tbl$comparison
+
+                                                  # Assign the LIST of plots to the slot, not the whole table
+                                                  object@volcano_plot <- plots_list
+                                                  return(object)
                                                })
 
-            return_object_list
+            return(return_object_list)
 
           })
 
@@ -2864,4 +2867,125 @@ setMethod(f = "plotInteractiveVolcano"
     #                     , paste0(colnames(r_obj$coefficients)[coef], ".html"))  #the path & file name
     # , selfcontained = TRUE #creates a single html file
     # )
+
+
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Create a QC composite figure
+
+#' @export
+#' @export
+setGeneric(name = "createGridQCMetabolomics",
+           def = function(theObject, pca_titles, density_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
+             standardGeneric("createGridQCMetabolomics")
+           },
+           signature = c("theObject", "pca_titles", "density_titles", "rle_titles", "pearson_titles", "save_path", "file_name"))
+
+#' @export
+setMethod(f = "createGridQCMetabolomics",
+          signature = "GridPlotData",
+          definition = function(theObject, pca_titles = NULL, density_titles = NULL, rle_titles = NULL, pearson_titles = NULL, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
+
+            # --- Identify all unique assay names from the plot lists ---
+            all_plot_lists <- c(theObject@pca_plots, theObject@density_plots, theObject@rle_plots, theObject@pearson_plots)
+            all_plot_lists <- all_plot_lists[sapply(all_plot_lists, function(x) is.list(x) && length(x) > 0)]
+
+            assay_names <- if (length(all_plot_lists) > 0) unique(unlist(lapply(all_plot_lists, names))) else character(0)
+
+            if (length(assay_names) == 0 || all(sapply(assay_names, is.null))) {
+                warning("No assays with named plots found. Cannot generate composite QC plot.", immediate. = TRUE)
+                return(list())
+            }
+
+            # --- Determine the grid layout ---
+            # Assume the layout is defined by the number of PCA plot types passed
+            num_cols <- length(theObject@pca_plots)
+
+            # --- Loop over each assay to create a composite plot ---
+            composite_plots_list <- purrr::map(assay_names, function(current_assay_name) {
+                message(sprintf("--- Generating composite QC plot for assay: %s ---", current_assay_name))
+
+                # Helper to extract and prepare plots for the current assay
+                prepare_plot_row <- function(plot_groups_list) {
+                    plots <- purrr::map(plot_groups_list, ~ .x[[current_assay_name]])
+                    # Replace any NULLs with a blank plot to maintain grid alignment
+                    lapply(plots, function(p) if(is.null(p)) ggplot() + theme_void() else p)
+                }
+
+                # Extract and prepare plots for the current assay
+                pca_plots_assay <- prepare_plot_row(theObject@pca_plots)
+                density_plots_assay <- prepare_plot_row(theObject@density_plots)
+                rle_plots_assay <- prepare_plot_row(theObject@rle_plots)
+                pearson_plots_assay <- prepare_plot_row(theObject@pearson_plots)
+
+                # --- Plot creation helper functions ---
+                createLabelPlot <- function(title) {
+                  ggplot() +
+                    annotate("text", x = 0, y = 0.5, label = title, size = 5, hjust = 0) +
+                    xlim(0, 1) +
+                    theme_void() +
+                    theme(plot.margin = margin(5, 5, 5, 5), panel.background = element_blank())
+                }
+                # These functions now only apply theme, as titles are handled by labels
+                applyTheme <- function(plot) {
+                    if (inherits(plot, "ggplot") && !is.null(plot$data)) { # Check if it's not an empty plot
+                         plot <- plot + theme(text = element_text(size = 15),
+                                   panel.grid.major = element_blank(),
+                                   panel.grid.minor = element_blank(),
+                                   panel.background = element_blank())
+                         if("patchwork" %in% class(plot)) { # for density plots
+                             plot <- plot & theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+                         }
+                    }
+                    plot
+                }
+
+
+                # --- Generate and combine plots for the current assay ---
+                plots_to_combine <- list()
+                add_plot_row <- function(plots, titles, create_fn) {
+                    # Only add row if there are titles provided for it
+                    if (!is.null(titles) && length(titles) > 0) {
+                        list(wrap_plots(lapply(titles, createLabelPlot), ncol = num_cols),
+                             wrap_plots(lapply(plots, create_fn), ncol = num_cols))
+                    } else {
+                        list()
+                    }
+                }
+
+                plots_to_combine <- c(plots_to_combine, add_plot_row(pca_plots_assay, pca_titles, applyTheme))
+                plots_to_combine <- c(plots_to_combine, add_plot_row(density_plots_assay, density_titles, applyTheme))
+                plots_to_combine <- c(plots_to_combine, add_plot_row(rle_plots_assay, rle_titles, applyTheme))
+                plots_to_combine <- c(plots_to_combine, add_plot_row(pearson_plots_assay, pearson_titles, applyTheme))
+
+                if (length(plots_to_combine) == 0) {
+                    warning(paste("No plots to combine for assay:", current_assay_name))
+                    return(NULL)
+                }
+
+                num_rows <- length(plots_to_combine) / 2
+                layout_heights <- rep(c(0.1, 1), num_rows)
+
+                combined_plot <- wrap_plots(plots_to_combine, ncol = 1) + plot_layout(heights = layout_heights)
+
+                if (!is.null(save_path)) {
+                  assay_file_name <- paste0(file_name, "_", current_assay_name)
+                  sapply(c("png", "pdf", "svg"), function(ext) {
+                    ggsave(
+                      plot = combined_plot,
+                      filename = file.path(save_path, paste0(assay_file_name, ".", ext)),
+                      width = 3.5 * num_cols,
+                      height = 4 * num_rows
+                    )
+                  })
+                  message(paste("Plots saved for assay '", current_assay_name, "' in", save_path))
+                }
+
+                return(combined_plot)
+            })
+
+            names(composite_plots_list) <- assay_names
+            composite_plots_list[!sapply(composite_plots_list, is.null)]
+          })
+
 
