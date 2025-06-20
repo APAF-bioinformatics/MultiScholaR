@@ -805,6 +805,19 @@ printCountDeGenesTableHelper <- function(  list_of_de_tables
   return(list(plot = num_sig_de_genes_barplot, table = num_significant_de_genes_all |> bind_rows()))
 }
 
+#'@export
+printCountDeGenesTableHelper <- function(  list_of_de_tables
+                                           , list_of_descriptions
+                                           , comparison_column = "comparison"
+                                           , expression_column = "expression") {
+
+
+  printCountDeGenesTableHelper (  list_of_de_tables
+                                             , list_of_descriptions
+                                             , comparison_column
+                                             , expression_column
+}
+
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' Format results table for use in volcano plots, counting number of significant proteins, p-values distribution histogram.
