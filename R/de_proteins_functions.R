@@ -806,7 +806,7 @@ printCountDeGenesTableHelper <- function(  list_of_de_tables
 }
 
 #'@export
-printCountDeGenesTableHelper <- function(  list_of_de_tables
+printCountDeGenesTable <- function(  list_of_de_tables
                                            , list_of_descriptions
                                            , comparison_column = "comparison"
                                            , expression_column = "expression") {
