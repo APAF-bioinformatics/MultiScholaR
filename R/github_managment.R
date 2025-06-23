@@ -1,3 +1,61 @@
+#' Push Standard Project Files to GitHub (Wrapper for New Directory Structure)
+#'
+#' @param project_dirs The project_dirs object returned by setupDirectories()
+#' @param omic_type The omic type (e.g., "proteomics", "metabolomics")
+#' @param experiment_label The experiment label
+#' @param project_id Project identifier for the new repository and workflow file
+#' @param github_org Your GitHub organization or username
+#' @param github_user_email Email associated with GitHub account
+#' @param github_user_name GitHub username for commits
+#' @param commit_message Commit message (default: "Initial project commit")
+#' @param private Boolean indicating if repository should be private (default: TRUE)
+#'
+#' @return Invisible TRUE if successful
+#' @export
+pushProjectToGithubFromDirs <- function(project_dirs,
+                                       omic_type,
+                                       experiment_label,
+                                       project_id,
+                                       github_org = getOption("github_org", "your_organization_here"),
+                                       github_user_email = getOption("github_user_email", "your_email@example.com"),
+                                       github_user_name = getOption("github_user_name", "your_github_username"),
+                                       commit_message = "Initial project commit",
+                                       private = TRUE) {
+  
+  # Extract the directory key for this omic type and experiment
+  dir_key <- paste0(omic_type, "_", experiment_label)
+  
+  # Check if the key exists in project_dirs
+  if (!dir_key %in% names(project_dirs)) {
+    # Try without the experiment label (for cases where label is NULL)
+    dir_key <- omic_type
+    if (!dir_key %in% names(project_dirs)) {
+      stop("Cannot find directory structure for omic_type '", omic_type, 
+           "' and experiment_label '", experiment_label, "' in project_dirs. ",
+           "Available keys: ", paste(names(project_dirs), collapse = ", "))
+    }
+  }
+  
+  # Extract the paths from the project_dirs structure
+  current_paths <- project_dirs[[dir_key]]
+  
+  if (is.null(current_paths$base_dir) || is.null(current_paths$source_dir)) {
+    stop("Missing required paths (base_dir or source_dir) in project_dirs structure for key: ", dir_key)
+  }
+  
+  # Call the original pushProjectToGithub function with extracted paths
+  pushProjectToGithub(
+    base_dir = current_paths$base_dir,
+    source_dir = current_paths$source_dir,
+    project_id = project_id,
+    github_org = github_org,
+    github_user_email = github_user_email,
+    github_user_name = github_user_name,
+    commit_message = commit_message,
+    private = private
+  )
+}
+
 #' Push Standard Project Files to GitHub
 #'
 #' @param base_dir Base directory of the project
@@ -104,10 +162,11 @@ pushProjectToGithub <- function(base_dir,
         stop("User cancelled file selection.")
     }
     workflow_file <- all_rmd_files[selection]
-    # Convert selected fs_path back to character for downstream use if needed, though file.copy handles it
-    workflow_file_char <- as.character(workflow_file) 
-    message("Selected workflow file: ", fs::path_rel(workflow_file_char, start = base_dir))
+    message("Selected workflow file: ", fs::path_rel(workflow_file, start = base_dir))
   }
+  
+  # Convert selected workflow file to character for downstream use
+  workflow_file_char <- as.character(workflow_file)
   
   # Define the new workflow filename with project_id
   new_workflow_name <- paste0(project_id, ".Rmd") # Use consistent .Rmd extension

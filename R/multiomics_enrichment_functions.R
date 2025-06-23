@@ -2500,3 +2500,482 @@ runMetabolomicsPathwayEnrichment <- function(weights,
   message("--- Exiting runMetabolomicsPathwayEnrichment ---")
   return(combined_results)
 }
+
+#' Run STRING DB Enrichment Analysis from DE Results S4 Object
+#'
+#' @description
+#' This function extracts differential expression data from a de_results_for_enrichment S4 object,
+#' applies the specified ranking method, and performs STRING DB enrichment analysis using the
+#' existing runOneStringDbRankEnrichmentMofa function.
+#'
+#' @param de_results_for_enrichment An S4 object of class de_results_for_enrichment containing
+#'   differential expression results across multiple contrasts.
+#' @param contrast_name Character string. Name of the specific contrast to analyze.
+#'   Must match one of the names in de_results_for_enrichment@de_data.
+#'   If NULL, will use the first contrast. Default: NULL.
+#' @param ranking_method Character string. Method for ranking proteins. Options:
+#'   - "fdr_qvalue": Rank by FDR q-value (ascending, most significant first)
+#'   - "log2fc": Rank by log2 fold change (descending, highest FC first)  
+#'   - "combined_score": Use sign(log2FC) * (-log10(fdr_qvalue)) for ranking
+#'   - "none": No ranking applied (proteins in original order)
+#'   Default: "combined_score".
+#' @param identifier_column Character string. Name of the column containing protein identifiers.
+#'   Default: "Protein.Ids".
+#' @param filter_significant Logical. Whether to filter to only significant proteins (fdr_qvalue < 0.05).
+#'   Default: FALSE (include all proteins).
+#' @param fdr_threshold Numeric. FDR threshold for filtering significant proteins when filter_significant=TRUE.
+#'   Default: 0.05.
+#' @param result_label Character string. A label used for naming output files.
+#'   If NULL, will use the contrast name. Default: NULL.
+#' @param results_dir Character string. The path to the directory where enrichment
+#'   results will be saved. Default: "string_enrichment_results".
+#' @param api_key Character string. Your personal STRING API key.
+#'   Default: NULL.
+#' @param species Character string. NCBI/STRING species identifier.
+#'   Default: "9606" (Homo sapiens).
+#' @param ge_fdr Numeric. FDR threshold for gene expression enrichment.
+#'   Default: 0.05.
+#' @param ge_enrichment_rank_direction Integer. Direction for enrichment rank
+#'   (-1, 0, or 1). Default: -1.
+#' @param polling_interval_seconds Numeric. Seconds to wait between polling attempts.
+#'   Default: 10.
+#' @param max_polling_attempts Numeric. Maximum polling attempts before timing out.
+#'   Default: 30.
+#'
+#' @return A data frame containing the enrichment results from STRING DB.
+#'   Returns NULL if the process fails.
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # Assuming you have a de_results_for_enrichment object
+#' enrichment_results <- runStringDbEnrichmentFromDEResults(
+#'   de_results_for_enrichment = my_de_results,
+#'   contrast_name = "T2.minus.MSO=groupT2-groupMSO",
+#'   ranking_method = "combined_score",
+#'   filter_significant = FALSE,
+#'   result_label = "T2_vs_MSO_enrichment",
+#'   results_dir = "string_enrichment_output",
+#'   api_key = "your_api_key",
+#'   species = "9606"
+#' )
+#' }
+runStringDbEnrichmentFromDEResults <- function(de_results_for_enrichment,
+                                             contrast_name = NULL,
+                                             ranking_method = "combined_score",
+                                             identifier_column = "Protein.Ids",
+                                             filter_significant = FALSE,
+                                             fdr_threshold = 0.05,
+                                             result_label = NULL,
+                                             results_dir = "string_enrichment_results",
+                                             api_key = NULL,
+                                             species = "9606",
+                                             ge_fdr = 0.05,
+                                             ge_enrichment_rank_direction = -1,
+                                             polling_interval_seconds = 10,
+                                             max_polling_attempts = 30) {
+  
+  # Load required packages
+  if (!requireNamespace("dplyr", quietly = TRUE)) {
+    stop("Package 'dplyr' is required but not installed.")
+  }
+  if (!requireNamespace("stringr", quietly = TRUE)) {
+    stop("Package 'stringr' is required but not installed.")
+  }
+  
+  # Validate input S4 object
+  if (!inherits(de_results_for_enrichment, "de_results_for_enrichment")) {
+    stop("Input must be an S4 object of class 'de_results_for_enrichment'")
+  }
+  
+  # Get available contrasts
+  available_contrasts <- names(de_results_for_enrichment@de_data)
+  
+  if (length(available_contrasts) == 0) {
+    stop("No contrasts found in de_results_for_enrichment@de_data")
+  }
+  
+  # Select contrast
+  if (is.null(contrast_name)) {
+    contrast_name <- available_contrasts[1]
+    message(paste("No contrast specified. Using:", contrast_name))
+  } else if (!contrast_name %in% available_contrasts) {
+    stop(paste("Contrast", contrast_name, "not found. Available contrasts:", 
+               paste(available_contrasts, collapse = ", ")))
+  }
+  
+  # Extract data for the specified contrast
+  de_data <- de_results_for_enrichment@de_data[[contrast_name]]
+  
+  if (is.null(de_data) || nrow(de_data) == 0) {
+    stop(paste("No data found for contrast:", contrast_name))
+  }
+  
+  # Validate required columns
+  required_cols <- c(identifier_column, "fdr_qvalue", "log2FC")
+  missing_cols <- required_cols[!required_cols %in% colnames(de_data)]
+  if (length(missing_cols) > 0) {
+    stop(paste("Missing required columns:", paste(missing_cols, collapse = ", ")))
+  }
+  
+  # Validate ranking method
+  valid_methods <- c("fdr_qvalue", "log2fc", "combined_score", "none")
+  if (!ranking_method %in% valid_methods) {
+    stop(paste("Invalid ranking_method. Must be one of:", paste(valid_methods, collapse = ", ")))
+  }
+  
+  # Filter significant proteins if requested
+  if (filter_significant) {
+    initial_count <- nrow(de_data)
+    de_data <- de_data |>
+      dplyr::filter(fdr_qvalue < fdr_threshold)
+    final_count <- nrow(de_data)
+    message(paste("Filtered from", initial_count, "to", final_count, 
+                  "proteins using FDR threshold of", fdr_threshold))
+    
+    if (nrow(de_data) == 0) {
+      stop("No proteins remain after filtering for significance")
+    }
+  }
+  
+  # Clean protein IDs (remove anything after ":")  
+  de_data_processed <- de_data |>
+    dplyr::mutate(
+      protein_id = purrr::map_chr(!!sym(identifier_column), 
+                                  ~stringr::str_split(.x, ":")[[1]][1])
+    ) |>
+    dplyr::filter(!is.na(protein_id), protein_id != "")
+  
+  # Apply ranking method and create score column
+  if (ranking_method == "fdr_qvalue") {
+    # Rank by FDR (ascending - most significant first)
+    # Use negative log10 for proper ordering in STRING DB
+    de_data_processed <- de_data_processed |>
+      dplyr::arrange(fdr_qvalue) |>
+      dplyr::mutate(score = -log10(fdr_qvalue + 1e-10))  # Add small value to avoid log(0)
+    
+  } else if (ranking_method == "log2fc") {
+    # Rank by log2FC (descending - highest FC first)
+    de_data_processed <- de_data_processed |>
+      dplyr::arrange(desc(abs(log2FC))) |>
+      dplyr::mutate(score = log2FC)
+    
+  } else if (ranking_method == "combined_score") {
+    # Use sign(log2FC) * (-log10(fdr_qvalue))
+    de_data_processed <- de_data_processed |>
+      dplyr::mutate(score = sign(log2FC) * (-log10(fdr_qvalue + 1e-10))) |>
+      dplyr::arrange(desc(abs(score)))
+    
+  } else if (ranking_method == "none") {
+    # No ranking - use original order with a neutral score
+    de_data_processed <- de_data_processed |>
+      dplyr::mutate(score = 1)
+  }
+  
+  # Prepare input table for STRING DB
+  string_input_table <- de_data_processed |>
+    dplyr::select(protein_id, score) |>
+    dplyr::filter(!is.na(score), !is.infinite(score))
+  
+  if (nrow(string_input_table) == 0) {
+    stop("No valid protein-score pairs remain after processing")
+  }
+  
+  # Set result label
+  if (is.null(result_label)) {
+    result_label <- paste0(contrast_name, "_", ranking_method)
+  }
+  
+  message(paste("Submitting", nrow(string_input_table), "proteins to STRING DB"))
+  message(paste("Ranking method:", ranking_method))
+  message(paste("Result label:", result_label))
+  
+  # Call the existing MOFA function
+  enrichment_results <- runOneStringDbRankEnrichmentMofa(
+    input_table = string_input_table,
+    identifier_column_name = "protein_id",
+    value_column_name = "score",
+    result_label = result_label,
+    results_dir = results_dir,
+    api_key = api_key,
+    species = species,
+    ge_fdr = ge_fdr,
+    ge_enrichment_rank_direction = ge_enrichment_rank_direction,
+    polling_interval_seconds = polling_interval_seconds,
+    max_polling_attempts = max_polling_attempts
+  )
+  
+  return(enrichment_results)
+}
+
+#' Run STRING DB Enrichment Analysis for Multiple Contrasts from DE Results
+#'
+#' @description
+#' This function runs STRING DB enrichment analysis for all or selected contrasts
+#' from a de_results_for_enrichment S4 object.
+#'
+#' @param de_results_for_enrichment An S4 object of class de_results_for_enrichment.
+#' @param contrast_names Character vector. Names of contrasts to analyze. 
+#'   If NULL, analyzes all available contrasts. Default: NULL.
+#' @param ranking_method Character string. Same options as runStringDbEnrichmentFromDEResults.
+#'   Default: "combined_score".
+#' @param ... Additional arguments passed to runStringDbEnrichmentFromDEResults.
+#'
+#' @return A named list of enrichment results, one for each contrast.
+#'
+#' @export
+runStringDbEnrichmentFromDEResultsMultiple <- function(de_results_for_enrichment,
+                                                      contrast_names = NULL,
+                                                      ranking_method = "combined_score",
+                                                      ...) {
+  
+  # Get available contrasts
+  available_contrasts <- names(de_results_for_enrichment@de_data)
+  
+  if (is.null(contrast_names)) {
+    contrast_names <- available_contrasts
+  } else {
+    # Validate contrast names
+    invalid_contrasts <- contrast_names[!contrast_names %in% available_contrasts]
+    if (length(invalid_contrasts) > 0) {
+      stop(paste("Invalid contrast names:", paste(invalid_contrasts, collapse = ", ")))
+    }
+  }
+  
+  # Run enrichment for each contrast
+  results_list <- purrr::map(contrast_names, function(contrast) {
+    message(paste("Processing contrast:", contrast))
+    
+    tryCatch({
+      runStringDbEnrichmentFromDEResults(
+        de_results_for_enrichment = de_results_for_enrichment,
+        contrast_name = contrast,
+        ranking_method = ranking_method,
+        result_label = paste0(contrast, "_", ranking_method),
+        ...
+      )
+    }, error = function(e) {
+      message(paste("Error processing contrast", contrast, ":", e$message))
+      return(NULL)
+    })
+  })
+  
+  # Name the results list
+  names(results_list) <- contrast_names
+  
+  return(results_list)
+}
+
+#' Get Available Species from STRING DB
+#'
+#' @description
+#' This function queries the STRING DB API to retrieve all available species
+#' and their corresponding species identifiers. This is useful for finding
+#' the correct species code to use in STRING DB enrichment analyses.
+#'
+#' @param search_term Character string. Optional search term to filter species
+#'   by name (case-insensitive partial matching). If NULL, returns all species.
+#'   Default: NULL.
+#' @param api_key Character string. Your STRING DB API key. Default: NULL.
+#'
+#' @return A data frame containing available species with columns:
+#'   - species_id: STRING DB species identifier (e.g., "9606", "STRG0A62HCE")
+#'   - official_name: Official species name
+#'   - compact_name: Compact species name
+#'   - taxon_id: NCBI taxonomy ID
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # Get all available species
+#' all_species <- getStringDbSpecies()
+#' 
+#' # Search for human species
+#' human_species <- getStringDbSpecies("sapiens")
+#' 
+#' # Search for mouse species  
+#' mouse_species <- getStringDbSpecies("musculus")
+#' 
+#' # Search for a specific genus
+#' zingiber_species <- getStringDbSpecies("zingiber")
+#' }
+getStringDbSpecies <- function(search_term = NULL, api_key = NULL) {
+  
+  # Load required packages
+  if (!requireNamespace("httr", quietly = TRUE)) {
+    stop("Package 'httr' is required but not installed.")
+  }
+  if (!requireNamespace("jsonlite", quietly = TRUE)) {
+    stop("Package 'jsonlite' is required but not installed.")
+  }
+  if (!requireNamespace("dplyr", quietly = TRUE)) {
+    stop("Package 'dplyr' is required but not installed.")
+  }
+  
+  # STRING DB API endpoint for species
+  api_url <- "https://version-12-0.string-db.org/api/json/get_string_ids"
+  
+  # Prepare parameters
+  params <- list(format = "json")
+  if (!is.null(api_key)) {
+    params$api_key <- api_key
+  }
+  
+  message("Querying STRING DB for available species...")
+  
+  # Make API request
+  response <- tryCatch({
+    httr::GET(url = "https://version-12-0.string-db.org/api/json/species", 
+              query = params)
+  }, error = function(e) {
+    stop(paste("Failed to connect to STRING DB API:", e$message))
+  })
+  
+  # Check if request was successful
+  if (httr::http_error(response)) {
+    stop(paste("STRING DB API request failed with status:", httr::status_code(response)))
+  }
+  
+  # Parse JSON response
+  content_text <- httr::content(response, "text", encoding = "UTF-8")
+  species_data <- tryCatch({
+    jsonlite::fromJSON(content_text, flatten = TRUE)
+  }, error = function(e) {
+    stop(paste("Failed to parse JSON response from STRING DB:", e$message))
+  })
+  
+  # Convert to data frame if it's not already
+  if (!is.data.frame(species_data)) {
+    stop("Unexpected response format from STRING DB species API")
+  }
+  
+  # Standardize column names (STRING DB API might have different column names)
+  # Try to identify the key columns
+  col_mapping <- list()
+  
+  for (col in colnames(species_data)) {
+    lower_col <- tolower(col)
+    if (grepl("species.*id|taxon.*id", lower_col)) {
+      col_mapping$species_id <- col
+    } else if (grepl("official.*name|species.*name", lower_col)) {
+      col_mapping$official_name <- col
+    } else if (grepl("compact.*name|short.*name", lower_col)) {
+      col_mapping$compact_name <- col
+    } else if (grepl("^taxon$|ncbi.*id", lower_col)) {
+      col_mapping$taxon_id <- col
+    }
+  }
+  
+  # Create standardized data frame
+  result_df <- species_data
+  
+  # Rename columns if mappings were found
+  for (new_name in names(col_mapping)) {
+    old_name <- col_mapping[[new_name]]
+    if (old_name %in% colnames(result_df)) {
+      result_df <- result_df |>
+        dplyr::rename(!!new_name := !!old_name)
+    }
+  }
+  
+  # Ensure we have at least species_id and one name column
+  if (!"species_id" %in% colnames(result_df)) {
+    # Try to find any ID column
+    id_cols <- colnames(result_df)[grepl("id", colnames(result_df), ignore.case = TRUE)]
+    if (length(id_cols) > 0) {
+      result_df <- result_df |>
+        dplyr::rename(species_id = !!id_cols[1])
+    } else {
+      stop("Could not identify species ID column in STRING DB response")
+    }
+  }
+  
+  # Apply search filter if provided
+  if (!is.null(search_term)) {
+    message(paste("Filtering species with search term:", search_term))
+    
+    # Create a search pattern (case-insensitive)
+    search_pattern <- paste0("(?i)", search_term)
+    
+    # Search across all text columns
+    text_cols <- colnames(result_df)[sapply(result_df, is.character)]
+    
+    # Create a combined search field
+    if (length(text_cols) > 0) {
+      result_df <- result_df |>
+        dplyr::mutate(
+          search_field = paste(!!!syms(text_cols), sep = " ", collapse = " ")
+        ) |>
+        dplyr::filter(grepl(search_pattern, search_field)) |>
+        dplyr::select(-search_field)
+    }
+  }
+  
+  # Sort by species_id for consistent output
+  result_df <- result_df |>
+    dplyr::arrange(species_id)
+  
+  message(paste("Found", nrow(result_df), "species matching your criteria"))
+  
+  return(result_df)
+}
+
+#' Search STRING DB Species by Name
+#'
+#' @description
+#' A convenience function to search for STRING DB species by name.
+#' This is a wrapper around getStringDbSpecies with better error handling
+#' and formatted output for common use cases.
+#'
+#' @param species_name Character string. The species name to search for
+#'   (case-insensitive partial matching).
+#' @param api_key Character string. Your STRING DB API key. Default: NULL.
+#' @param show_top_n Integer. Maximum number of results to display. Default: 10.
+#'
+#' @return A data frame with the most relevant species matches.
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # Search for human
+#' searchStringDbSpecies("human")
+#' searchStringDbSpecies("homo sapiens")
+#' 
+#' # Search for mouse
+#' searchStringDbSpecies("mouse")
+#' searchStringDbSpecies("mus musculus")
+#' 
+#' # Search for your organism
+#' searchStringDbSpecies("zingiber")
+#' searchStringDbSpecies("ginger")
+#' }
+searchStringDbSpecies <- function(species_name, api_key = NULL, show_top_n = 10) {
+  
+  if (missing(species_name) || is.null(species_name) || species_name == "") {
+    stop("Please provide a species name to search for")
+  }
+  
+  # Get species data
+  species_df <- getStringDbSpecies(search_term = species_name, api_key = api_key)
+  
+  if (nrow(species_df) == 0) {
+    message(paste("No species found matching:", species_name))
+    message("Try using a more general search term or check the spelling")
+    return(tibble::tibble())
+  }
+  
+  # Limit results
+  if (nrow(species_df) > show_top_n) {
+    message(paste("Showing top", show_top_n, "results out of", nrow(species_df), "total matches"))
+    species_df <- species_df |> dplyr::slice_head(n = show_top_n)
+  }
+  
+  # Display helpful information
+  message("\nSpecies search results:")
+  message("Use the 'species_id' column value as the 'species' parameter in STRING DB functions")
+  
+  return(species_df)
+}

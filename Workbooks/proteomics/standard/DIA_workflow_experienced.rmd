@@ -1219,9 +1219,10 @@ options(
   github_user_name = "your username"
 )
 
-pushProjectToGithub(
-  base_dir = base_dir,
-  source_dir = source_dir,
+pushProjectToGithubFromDirs(
+  project_dirs = project_dirs,
+  omic_type = omic_type,
+  experiment_label = experiment_label,
   project_id = "your project"
 )
 ```

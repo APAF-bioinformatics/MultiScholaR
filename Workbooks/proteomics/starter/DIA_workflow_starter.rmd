@@ -1129,7 +1129,7 @@ summarizeQCPlot(QC_composite_figure)
 
 savePlot(
   QC_composite_figure@rle_plots$rle_plot_before_ruvIIIc_group,
-  project_dirs[[paste0(omic_type, "_", ... = experiment_label)]]$protein_qc_dir,
+  project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir,
   "rle_plot_before_ruvIIIc_by_group"
 )
 savePlot(
@@ -1165,25 +1165,57 @@ savePlot(
 - [Determining Optimal k Parameter](https://medium.com/analytics-vidhya/how-to-determine-the-optimal-k-for-k-means-708505d204eb) - Methods for selecting the number of factors to remove
 - [Cross-Validation Approaches](https://medium.com/@fraidoonomarzai99/hyperparameters-tunning-and-cross-validation-in-depth-d0918b62d986) - Cross-validation for parameter optimization
 
-This section implements the RUV-III (Remove Unwanted Variation) method with canonical correlation analysis to further normalize your data by removing unwanted technical variation while preserving biological signal. The approach uses proteins least likely to be differentially expressed (identified by ANOVA) as "negative controls" to estimate and remove sources of unwanted variation. The canonical correlation plot helps determine the optimal number of factors (k) to remove - too few factors may leave unwanted variation, while too many might remove biological signal. The plot shows correlations between canonical variables derived from the data and the experimental design, with the inflection point or "elbow" in the plot suggesting the optimal k value. This data-driven approach to selecting k ensures that normalization is appropriately tuned to your specific dataset.
+This section implements the RUV-III (Remove Unwanted Variation) method with canonical correlation analysis to further normalize your data by removing unwanted technical variation while preserving biological signal. The approach uses proteins least likely to be differentially expressed (identified by ANOVA) as "negative controls" to estimate and remove sources of unwanted variation. 
 
-```{r 26 RUVIII-C Canonical Correlation Plot}
-# Choose the % of proteins in your dataset you wish to use as a negative control
-percentage_as_neg_ctrl <- 5
+**NEW: Automated Optimization**: Instead of manually selecting the percentage of proteins to use as negative controls, this workflow now includes an automated optimization function (`findBestNegCtrlPercentage`) that tests different percentages (1% to 20%) and finds the one that gives the best separation between "All" and "Control" groups in the canonical correlation plot. This removes the subjectivity from parameter selection and ensures optimal results for your specific dataset.
+
+The canonical correlation plot helps determine the optimal number of factors (k) to remove - too few factors may leave unwanted variation, while too many might remove biological signal. The plot shows correlations between canonical variables derived from the data and the experimental design, with the inflection point or "elbow" in the plot suggesting the optimal k value. This data-driven approach to selecting both the percentage of negative controls and k ensures that normalization is appropriately tuned to your specific dataset.
+
+```{r 26A Automated Optimization of Negative Control Percentage}
+# AUTOMATED APPROACH: Find the optimal percentage of proteins to use as negative controls
+# This function tests different percentages and finds the one with best separation quality
+# while considering the resulting k value to avoid over-correction
+# NEW: Now uses ADAPTIVE penalty by default - automatically adjusts thresholds based on sample size
+
+# Check sample size and adjust percentage range accordingly
+sample_size <- ncol(normalised_frozen_protein_matrix_obj@protein_quant_table) - 1
+if (sample_size < 15) {
+  cat("Small dataset detected (n =", sample_size, "samples). Using extended percentage range for better optimization.\n")
+  percentage_range_to_use <- seq(1, 50, by = 2)  # Extended range for small datasets
+} else {
+  percentage_range_to_use <- seq(1, 20, by = 1)  # Standard range for larger datasets
+}
+
+optimization_result <- findBestNegCtrlPercentage(
+  normalised_frozen_protein_matrix_obj,
+  percentage_range = percentage_range_to_use,  # Adaptive percentage range based on sample size
+  separation_metric = "max_difference",         # Use maximum difference as quality metric
+  k_penalty_weight = 0.5,                      # Weight for penalizing high k values (0-1)
+  # adaptive_k_penalty = TRUE,                 # Default: automatically sets max_acceptable_k based on sample size
+  verbose = TRUE                               # Show progress messages
+)
+
+# Extract results from optimization
+percentage_as_neg_ctrl <- optimization_result$best_percentage
+control_genes_index <- optimization_result$best_control_genes_index
+cancorplot_r1 <- optimization_result$best_cancor_plot
+best_k <- optimization_result$best_k  # No need to call findBestK() again!
+
+# Update config with optimal percentage
 config_list$ruvParameters$percentage_as_neg_ctrl <- percentage_as_neg_ctrl
-control_genes_index <- getNegCtrlProtAnova(
-  normalised_frozen_protein_matrix_obj,
-  percentage_as_neg_ctrl = percentage_as_neg_ctrl
-)
-cancorplot_r1 <- ruvCancor(
-  normalised_frozen_protein_matrix_obj,
-  ctrl = control_genes_index,
-  num_components_to_impute = 5,
-  ruv_grouping_variable = "group"
-)
 
-# Find the best k
-best_k <- findBestK(cancorplot_r1)
+# Display optimization results
+cat("Optimization Results:\n")
+cat("  Sample size:", optimization_result$sample_size, "samples\n")
+cat("  Adaptive max_k threshold:", optimization_result$max_acceptable_k, "\n")
+cat("  Best percentage:", percentage_as_neg_ctrl, "%\n")
+cat("  Best k value:", best_k, "\n")
+cat("  Separation score:", round(optimization_result$best_separation_score, 4), "\n")
+cat("  Composite score:", round(optimization_result$best_composite_score, 4), "\n")
+cat("  Number of control genes:", sum(control_genes_index, na.rm = TRUE), "\n")
+
+# View all tested percentages and their scores
+print(optimization_result$optimization_results)
 
 # Add vertical line for best_k
 cancorplot_r1 <- cancorplot_r1 +
@@ -1205,6 +1237,70 @@ cancorplot_r1 <- cancorplot_r1 +
 # Save and display the plot
 savePlot(cancorplot_r1, project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir, "canonical_correlation_plot")
 cancorplot_r1
+```
+
+```{r 26A-Advanced Custom Parameters (Optional)}
+# ADVANCED: Custom parameter tuning (only needed for special cases)
+# The default adaptive penalty should work well for most datasets
+
+# Example: More conservative approach (smaller datasets or regulatory requirements)
+# optimization_result_conservative <- findBestNegCtrlPercentage(
+#   normalised_frozen_protein_matrix_obj,
+#   k_penalty_weight = 0.7,              # Higher penalty for k values
+#   adaptive_k_penalty = FALSE,          # Use fixed penalty if needed
+#   max_acceptable_k = 2,                # Very conservative threshold
+#   verbose = TRUE
+# )
+
+# Example: More permissive approach (large datasets with complex designs)  
+# optimization_result_permissive <- findBestNegCtrlPercentage(
+#   normalised_frozen_protein_matrix_obj,
+#   k_penalty_weight = 0.3,              # Lower penalty for k values
+#   percentage_range = seq(1, 30, by = 1), # Wider percentage range
+#   verbose = TRUE
+# )
+
+# For most users: stick with the default adaptive approach above!
+```
+
+```{r 26B Manual Approach (Alternative)}
+# MANUAL APPROACH: Choose the % of proteins manually (use this if you want to override the automated approach)
+# percentage_as_neg_ctrl <- 5
+# config_list$ruvParameters$percentage_as_neg_ctrl <- percentage_as_neg_ctrl
+# control_genes_index <- getNegCtrlProtAnova(
+#   normalised_frozen_protein_matrix_obj,
+#   percentage_as_neg_ctrl = percentage_as_neg_ctrl
+# )
+# cancorplot_r1 <- ruvCancor(
+#   normalised_frozen_protein_matrix_obj,
+#   ctrl = control_genes_index,
+#   num_components_to_impute = 5,
+#   ruv_grouping_variable = "group"
+# )
+# 
+# # Find the best k
+# best_k <- findBestK(cancorplot_r1)
+# 
+# # Add vertical line for best_k
+# cancorplot_r1 <- cancorplot_r1 +
+#   geom_vline(
+#     xintercept = best_k,
+#     color = "blue",
+#     linetype = "dashed",
+#     size = 1
+#   ) +
+#   annotate(
+#     "text",
+#     x = best_k + 0.5,
+#     y = max(layer_scales(cancorplot_r1)$y$range$range),
+#     label = paste("Best k =", best_k),
+#     hjust = 0
+#   ) +
+#   xlim(1, ncol(normalised_frozen_protein_matrix_obj@protein_quant_table) - 1)
+# 
+# # Save and display the plot
+# savePlot(cancorplot_r1, project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir, "canonical_correlation_plot")
+# cancorplot_r1
 ```
 
 ## RUVIII-C Normalisation and QC
@@ -1372,7 +1468,7 @@ saveRDS(
 saveRDS(
   ruv_normalised_filtered_results_obj, 
   file.path(
-    project_dirs[[paste0("integration_", experiment_label)]]$multiomic_inputs_dir, 
+    project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir, 
     "ruv_normalised_results_cln_with_replicates.RDS" 
   )
 )
@@ -1724,9 +1820,10 @@ options(
   github_user_name = "your username"
 )
 
-pushProjectToGithub(
-  base_dir = base_dir,
-  source_dir = source_dir,
+pushProjectToGithubFromDirs(
+  project_dirs = project_dirs,
+  omic_type = omic_type,
+  experiment_label = experiment_label,
   project_id = "your project"
 )
 ```
