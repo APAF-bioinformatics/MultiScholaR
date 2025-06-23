@@ -62,10 +62,15 @@ proteomicsWorkflowServer <- function(id, project_dirs, omic_type, experiment_lab
         report_generation = "disabled"
       ),
       
+      # DEBUG66: Initialize state update trigger
+      state_update_trigger = NULL,
+      
       # Processing logs
       processing_log = list()
     )
-    message("   proteomicsWorkflowServer Step: workflow_data created successfully")
+    cat("   proteomicsWorkflowServer Step: workflow_data created successfully\n")
+    cat(sprintf("   proteomicsWorkflowServer Step: state_update_trigger initialized = %s\n", !is.null(workflow_data$state_update_trigger)))
+    cat(sprintf("   proteomicsWorkflowServer Step: state_manager initialized = %s\n", !is.null(workflow_data$state_manager)))
     
     # Get paths for this proteomics experiment
     # The key in project_dirs is just the omic type (no experiment label)
@@ -143,7 +148,8 @@ proteomicsWorkflowServer <- function(id, project_dirs, omic_type, experiment_lab
     normalizationAppletServer("normalization", workflow_data, experiment_paths, omic_type, experiment_label, selected_tab)
     
     # Tab 5: Differential Expression
-    differentialExpressionAppletServer("differential_expression", workflow_data, experiment_paths, omic_type, experiment_label)
+    message("   proteomicsWorkflowServer Step: Calling differentialExpressionAppletServer...")
+    differentialExpressionAppletServer("differential_expression", workflow_data, experiment_paths, omic_type, experiment_label, selected_tab)
     
     # Tab 6: Enrichment Analysis
     # enrichmentAnalysisServer("enrichment_analysis", workflow_data, experiment_paths)

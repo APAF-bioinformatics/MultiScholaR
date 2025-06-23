@@ -1550,6 +1550,32 @@ qualityControlAppletServer <- function(id, workflow_data, experiment_paths, omic
           args = peptide_s4@args
         )
         
+        # --- START DEBUGGING ---
+        message("\n\n--- DEBUG: Inspecting S4 object AFTER Protein Creation ---")
+        message(sprintf("S4 object class: %s", class(protein_obj)))
+
+        if (methods::is(protein_obj, "ProteinQuantitativeData")) {
+          message(sprintf("Dimensions of protein_obj@protein_quant_table: %d rows, %d cols",
+                          nrow(protein_obj@protein_quant_table), ncol(protein_obj@protein_quant_table)))
+
+          head_output <- capture.output(head(protein_obj@protein_quant_table))
+          message("Head of protein_obj@protein_quant_table:")
+          for (line in head_output) {
+            message(line)
+          }
+
+          message("Head of protein_obj@design_matrix:")
+          head_dm_output <- capture.output(head(protein_obj@design_matrix))
+           for (line in head_dm_output) {
+            message(line)
+          }
+
+        } else {
+          message("DEBUG: The created S4 object is NOT of class ProteinQuantitativeData.")
+        }
+        message("--- END DEBUGGING ---\n\n")
+        # --- END DEBUGGING ---
+        
         # Save S4 object as new state (combined rollup + S4 creation)
         workflow_data$state_manager$saveState(
           state_name = "protein_s4_created",

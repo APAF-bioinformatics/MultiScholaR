@@ -367,9 +367,38 @@ designMatrixBuilderServer <- function(id, data_tbl, config_list) {
             if (is.null(contrast_data) || nrow(contrast_data) == 0) {
                 return(shiny::p("No contrasts defined yet."))
             }
-            # Display as a simple list using HTML paragraphs
+            
+            # Check if formula uses ~ 0 + group pattern
+            formula_uses_group_prefix <- grepl("~ *0 *\\+ *group", input$formula_string)
+            
+            # Generate the actual contrast format that will be used
+            contrast_info <- lapply(1:nrow(contrast_data), function(i) {
+                # Create friendly name (replace dots with underscores for consistency)
+                friendly_name <- gsub("\\.", "_", contrast_data$contrast_name[i])
+                friendly_name <- gsub("\\.vs\\.", "_minus_", friendly_name)
+                
+                # Create actual contrast string based on formula
+                if (formula_uses_group_prefix) {
+                    contrast_string <- paste0(
+                        "group", contrast_data$numerator[i],
+                        "-group", contrast_data$denominator[i]
+                    )
+                } else {
+                    contrast_string <- paste0(
+                        contrast_data$numerator[i],
+                        "-", contrast_data$denominator[i]
+                    )
+                }
+                
+                # Return the full format
+                paste0(friendly_name, "=", contrast_string)
+            })
+            
+            # Display the full format
             shiny::tagList(
-                lapply(contrast_data$contrast_name, shiny::p)
+                lapply(contrast_info, function(full_format) {
+                    shiny::p(shiny::tags$code(full_format))
+                })
             )
         })
         
@@ -382,6 +411,16 @@ designMatrixBuilderServer <- function(id, data_tbl, config_list) {
                 value = 1,
                 min = 1
             )
+        })
+
+        # Render contrast factors info
+        output$contrast_factors_info <- renderText({
+            formula_uses_group_prefix <- grepl("~ *0 *\\+ *group", input$formula_string)
+            if (formula_uses_group_prefix) {
+                "Note: Contrasts will use 'group' prefix (e.g., groupGA_Control-groupGA_Elevated)\nbased on current formula: ~ 0 + group"
+            } else {
+                "Note: Contrasts will use group names as-is (e.g., GA_Control-GA_Elevated)"
+            }
         })
 
         # == Event Handlers for UI Actions ========================================
@@ -571,18 +610,49 @@ designMatrixBuilderServer <- function(id, data_tbl, config_list) {
             data_cln_final <- data_cln_reactive() |>
                 dplyr::filter(Run %in% assigned_runs)
 
-            # 3. Prepare contrasts table
+            # 3. Prepare contrasts table with both friendly names and contrast strings
             contrast_data <- contrasts()
             contrasts_tbl <- if (!is.null(contrast_data) && nrow(contrast_data) > 0) {
-                # Format for limma/DEqMS
-                contrast_strings <- sapply(1:nrow(contrast_data), function(i) {
-                    paste0(
-                        "group", contrast_data$numerator[i],
-                        "-group", contrast_data$denominator[i]
+                # Check if formula uses ~ 0 + group pattern (which creates groupXXX columns)
+                formula_uses_group_prefix <- grepl("~ *0 *\\+ *group", input$formula_string)
+                
+                # Create both friendly names and actual contrast strings
+                contrast_info <- lapply(1:nrow(contrast_data), function(i) {
+                    # Create friendly name (replace dots with underscores for consistency)
+                    friendly_name <- gsub("\\.", "_", contrast_data$contrast_name[i])
+                    friendly_name <- gsub("\\.vs\\.", "_minus_", friendly_name)
+                    
+                    # Create actual contrast string based on formula
+                    if (formula_uses_group_prefix) {
+                        # If formula is ~ 0 + group, we need to prefix with "group"
+                        contrast_string <- paste0(
+                            "group", contrast_data$numerator[i],
+                            "-group", contrast_data$denominator[i]
+                        )
+                    } else {
+                        # Otherwise, use group names as-is
+                        contrast_string <- paste0(
+                            contrast_data$numerator[i],
+                            "-", contrast_data$denominator[i]
+                        )
+                    }
+                    
+                    # Return in the format: friendly_name=contrast_string
+                    # But for compatibility, we'll just return the contrast string
+                    # The friendly name can be derived later if needed
+                    list(
+                        friendly_name = friendly_name,
+                        contrast_string = contrast_string,
+                        full_format = paste0(friendly_name, "=", contrast_string)
                     )
                 })
+                
+                # For now, maintain compatibility by returning just the contrast strings
+                # But store the full information for potential future use
                 data.frame(
-                    contrasts = contrast_strings,
+                    contrasts = sapply(contrast_info, function(x) x$contrast_string),
+                    friendly_names = sapply(contrast_info, function(x) x$friendly_name),
+                    full_format = sapply(contrast_info, function(x) x$full_format),
                     stringsAsFactors = FALSE
                 )
             } else {

@@ -357,6 +357,7 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
       correlation_vector = NULL,
       correlation_threshold = NULL,
       final_qc_plot = NULL,
+      final_filtering_plot = NULL,
       
       # Post-normalisation filtering summary
       post_norm_filtering_plot = NULL,
@@ -531,12 +532,15 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
           
           if (!is.null(workflow_data$state_manager)) {
             current_state <- workflow_data$state_manager$current_state
+            
+            # Define valid states where this tab can be active
+            valid_states_for_norm_tab <- c("protein_replicate_filtered", "ruv_corrected", "correlation_filtered")
+            
             message(sprintf("Current state: '%s'", current_state))
-            message(sprintf("Target state: 'protein_replicate_filtered'"))
-            message(sprintf("States match: %s", current_state == "protein_replicate_filtered"))
+            message(sprintf("Target trigger state: 'protein_replicate_filtered'"))
             message(sprintf("Pre-norm QC generated: %s", norm_data$pre_norm_qc_generated))
             
-            # Check if protein filtering is complete using CORRECT R6 pattern
+            # Auto-trigger only fires if we've just completed QC and haven't run pre-norm QC yet
             if (current_state == "protein_replicate_filtered" && !norm_data$pre_norm_qc_generated) {
               
               message("*** AUTO-TRIGGERING PRE-NORMALIZATION QC (chunk 24) ***")
@@ -556,18 +560,20 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
                   duration = 10
                 )
               })
-            } else {
-              message("*** CONDITIONS NOT MET FOR AUTO-TRIGGER ***")
-              message(sprintf("- State correct: %s", current_state == "protein_replicate_filtered"))
-              message(sprintf("- QC not generated: %s", !norm_data$pre_norm_qc_generated))
               
-              if (current_state != "protein_replicate_filtered") {
-                shiny::showNotification(
-                  "Please complete the Quality Control filtering steps before accessing normalization.",
-                  type = "warning",
-                  duration = 5
-                )
-              }
+            } else if (current_state %in% valid_states_for_norm_tab) {
+              # If we are in a later, valid state (e.g., correlation_filtered),
+              # or have already run the QC, we don't need to do anything.
+              message(sprintf("State is '%s'. Skipping auto-trigger as it's not applicable or already done.", current_state))
+              
+            } else {
+              # This case handles when the user has not completed the required prior steps
+              message(sprintf("*** State '%s' is not valid for normalization. User needs to complete QC. ***", current_state))
+              shiny::showNotification(
+                "Please complete the Quality Control filtering steps before accessing normalization.",
+                type = "warning",
+                duration = 5
+              )
             }
           } else {
             message("*** workflow_data$state_manager is NULL - cannot check state ***")
@@ -868,7 +874,8 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
           shiny::incProgress(0.2, detail = "Updating tracking...")
           message("*** CORRELATION STEP 3: Updating protein filtering tracking ***")
           
-          updateProteinFiltering(
+          # Fix Issue 3: Capture the filtering plot for final QC display
+          final_filtering_plot <- updateProteinFiltering(
             data = final_s4_for_de@protein_quant_table,
             step_name = "12_correlation_filtered",
             omic_type = omic_type,
@@ -876,6 +883,9 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
             return_grid = TRUE,
             overwrite = TRUE
           )
+          
+          # Store the complete filtering progression for final QC display
+          norm_data$final_filtering_plot <- final_filtering_plot
           
           # Generate final QC plot
           tryCatch({
@@ -926,16 +936,32 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
           description = "Applied final sample correlation filter (chunk 28)"
         )
         
+        # DEBUG66: CRITICAL STATE UPDATE TRIGGER
+        cat("--- Entering STATE UPDATE TRIGGER setting ---\n")
+        cat("   STATE UPDATE Step: Setting workflow_data$state_update_trigger...\n")
+        old_trigger_value <- workflow_data$state_update_trigger
+        new_trigger_value <- Sys.time()
+        workflow_data$state_update_trigger <- new_trigger_value
+        cat(sprintf("   STATE UPDATE Step: Old trigger value = %s\n", old_trigger_value))
+        cat(sprintf("   STATE UPDATE Step: New trigger value = %s\n", new_trigger_value))
+        cat("   STATE UPDATE Step: state_update_trigger SET SUCCESSFULLY\n")
+        
         # NOW enable differential expression tab
+        cat("   STATE UPDATE Step: Setting tab status...\n")
         workflow_data$tab_status$normalization <- "complete"
         workflow_data$tab_status$differential_expression <- "pending"
+        cat(sprintf("   STATE UPDATE Step: normalization status = %s\n", workflow_data$tab_status$normalization))
+        cat(sprintf("   STATE UPDATE Step: differential_expression status = %s\n", workflow_data$tab_status$differential_expression))
+        cat("--- Exiting STATE UPDATE TRIGGER setting ---\n")
         
         # Update summary display
         correlation_summary <- sprintf(
           "Correlation filtering completed successfully!\n\nThreshold: %.2f\nProteins remaining: %d\nSamples remaining: %d\n\nReady for differential expression analysis.",
           input$min_pearson_correlation_threshold,
           length(unique(final_s4_for_de@protein_quant_table$Protein.Ids)),
-          length(unique(final_s4_for_de@protein_quant_table$sample_id))
+          # Fix Issue 2: Use correct column counting for samples 
+          # Sample columns are all columns except the protein ID column
+          length(setdiff(colnames(final_s4_for_de@protein_quant_table), final_s4_for_de@protein_id_column))
         )
         output$correlation_filter_summary <- shiny::renderText(correlation_summary)
         
@@ -1086,6 +1112,7 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
       norm_data$correlation_vector <- NULL
       norm_data$correlation_threshold <- NULL
       norm_data$final_qc_plot <- NULL
+      norm_data$final_filtering_plot <- NULL
       norm_data$post_norm_filtering_plot <- NULL
       norm_data$filtering_summary_text <- NULL
       
@@ -1114,7 +1141,8 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
     # NEW: Render post-normalisation filtering summary plot
     output$post_norm_filtering_summary <- shiny::renderPlot({
       if (!is.null(norm_data$post_norm_filtering_plot)) {
-        norm_data$post_norm_filtering_plot
+        # Fix Issue 1: Add proper grob rendering like qualityControlApplet
+        grid::grid.draw(norm_data$post_norm_filtering_plot)
       } else {
         plot.new()
         text(0.5, 0.5, "Complete normalization and RUV correction\nto generate filtering summary", cex = 1.2)
@@ -1132,7 +1160,28 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
     
     # NEW: Render final QC plot after correlation filtering
     output$final_qc_plot <- shiny::renderPlot({
-      if (!is.null(norm_data$final_qc_plot)) {
+      # Fix Issue 3: Show both PCA and complete filtering progression
+      if (!is.null(norm_data$final_qc_plot) && !is.null(norm_data$final_filtering_plot)) {
+        # Create a combined layout: PCA on top, filtering progression below
+        grid::grid.newpage()
+        grid::pushViewport(grid::viewport(layout = grid::grid.layout(2, 1, heights = c(0.4, 0.6))))
+        
+        # Top: PCA plot
+        grid::pushViewport(grid::viewport(layout.pos.row = 1))
+        grid::grid.draw(ggplotGrob(norm_data$final_qc_plot))
+        grid::popViewport()
+        
+        # Bottom: Complete filtering progression 
+        grid::pushViewport(grid::viewport(layout.pos.row = 2))
+        grid::grid.draw(norm_data$final_filtering_plot)
+        grid::popViewport()
+        
+        grid::popViewport()
+      } else if (!is.null(norm_data$final_filtering_plot)) {
+        # Show just filtering progression if PCA failed
+        grid::grid.draw(norm_data$final_filtering_plot)
+      } else if (!is.null(norm_data$final_qc_plot)) {
+        # Show just PCA if filtering progression failed
         norm_data$final_qc_plot
       } else {
         plot.new()
