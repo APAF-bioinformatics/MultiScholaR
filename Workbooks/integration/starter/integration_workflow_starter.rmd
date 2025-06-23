@@ -2476,6 +2476,102 @@ savePlot(
 )
 ```
 
+## Alternative STRING DB Enrichment Using DE Results Object
+
+This example shows how to use the new `runStringDbEnrichmentFromDEResults` function with a `de_results_for_enrichment` S4 object, which provides more flexibility in ranking methods.
+
+```{r}
+# Example: Create a de_results_for_enrichment object from existing DE analysis results
+# (This assumes you have run differential expression analysis previously)
+
+# Option 1: Using combined score ranking (recommended for most cases)
+# This uses sign(log2FC) * (-log10(fdr_qvalue)) for ranking
+enrichment_combined_score <- runStringDbEnrichmentFromDEResults(
+  de_results_for_enrichment = de_results_for_enrichment_object,  # Your S4 object
+  contrast_name = "T2.minus.MSO=groupT2-groupMSO",  # Specify which contrast
+  ranking_method = "combined_score",  # Combines direction and significance
+  filter_significant = FALSE,  # Include all proteins (you can set to TRUE to filter)
+  result_label = "T2_vs_MSO_combined_score",
+  results_dir = file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$integration_enrichment_tables_dir),
+  api_key = "bsjXYSW0kKTt",
+  species = "STRG0A62HCE",  # Adjust for your species
+  ge_fdr = 0.05,
+  ge_enrichment_rank_direction = -1,
+  polling_interval_seconds = 10,
+  max_polling_attempts = 30
+)
+
+# Option 2: Using FDR-based ranking (focuses on significance only)
+enrichment_fdr_ranking <- runStringDbEnrichmentFromDEResults(
+  de_results_for_enrichment = de_results_for_enrichment_object,
+  contrast_name = "T3.minus.MSO=groupT3-groupMSO",
+  ranking_method = "fdr_qvalue",  # Rank by significance only
+  filter_significant = TRUE,  # Only include significant proteins
+  fdr_threshold = 0.05,
+  result_label = "T3_vs_MSO_fdr_ranking",
+  results_dir = file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$integration_enrichment_tables_dir),
+  api_key = "bsjXYSW0kKTt",
+  species = "STRG0A62HCE"
+)
+
+# Option 3: Using log2FC-based ranking (focuses on effect size)
+enrichment_fc_ranking <- runStringDbEnrichmentFromDEResults(
+  de_results_for_enrichment = de_results_for_enrichment_object,
+  contrast_name = "T3.minus.T2=groupT3-groupT2",
+  ranking_method = "log2fc",  # Rank by fold change magnitude
+  filter_significant = FALSE,
+  result_label = "T3_vs_T2_fc_ranking",
+  results_dir = file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$integration_enrichment_tables_dir),
+  api_key = "bsjXYSW0kKTt",
+  species = "STRG0A62HCE"
+)
+
+# Option 4: Run enrichment for ALL contrasts at once
+all_contrast_enrichment <- runStringDbEnrichmentFromDEResultsMultiple(
+  de_results_for_enrichment = de_results_for_enrichment_object,
+  contrast_names = NULL,  # NULL means analyze all contrasts
+  ranking_method = "combined_score",
+  filter_significant = FALSE,
+  results_dir = file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$integration_enrichment_tables_dir),
+  api_key = "bsjXYSW0kKTt",
+  species = "STRG0A62HCE"
+)
+
+# Save results
+if (!is.null(enrichment_combined_score)) {
+  saveRDS(enrichment_combined_score, 
+          file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$integration_enrichment_tables_dir, 
+                   "enrichment_combined_score.RDS"))
+  
+  # Create visualization
+  enrichment_plot <- printStringDbFunctionalEnrichmentBarGraph(
+    enrichment_combined_score |> mutate(comparison = "T2 vs MSO")
+  )
+  
+  savePlot(
+    plot = enrichment_plot,
+    base_path = project_dirs[[paste0(omic_type, "_", experiment_label)]]$integration_enrichment_plots_dir,
+    plot_name = "string_db_enrichment_de_results_combined_score",
+    formats = c("pdf", "png"),
+    width = 15,
+    height = 10
+  )
+}
+
+# Print summary of available ranking methods
+cat("Available ranking methods for runStringDbEnrichmentFromDEResults:\n")
+cat("1. 'combined_score': sign(log2FC) * (-log10(fdr_qvalue)) - Best for most analyses\n")
+cat("2. 'fdr_qvalue': Rank by significance (ascending, most significant first)\n")
+cat("3. 'log2fc': Rank by fold change magnitude (descending, highest FC first)\n") 
+cat("4. 'none': No ranking applied (original order)\n\n")
+
+cat("Best practices:\n")
+cat("- Use 'combined_score' for general pathway enrichment (considers both effect size and significance)\n")
+cat("- Use 'fdr_qvalue' when you want to focus on the most statistically significant proteins\n")
+cat("- Use 'log2fc' when effect size is more important than statistical significance\n")
+cat("- Set filter_significant=TRUE to focus only on significantly differentially expressed proteins\n")
+```
+
 ## Transcriptomics GO enrichment rank-based
 
 ### Further Reading
