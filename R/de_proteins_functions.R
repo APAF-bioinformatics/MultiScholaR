@@ -1788,68 +1788,133 @@ runTestsContrasts <- function(data,
                               eBayes_trend = FALSE,
                               eBayes_robust = FALSE) {
 
+  message("--- Entering runTestsContrasts ---")
+  message(sprintf("   runTestsContrasts: data dims = %d x %d, %d contrasts", nrow(data), ncol(data), length(contrast_strings)))
+  message(sprintf("   runTestsContrasts: contrasts = %s", paste(contrast_strings, collapse=", ")))
+  message(sprintf("   runTestsContrasts: treat_lfc_cutoff = %s", treat_lfc_cutoff))
+
+  # Create formula and design matrix
   ff <- as.formula(formula_string)
   mod_frame <- model.frame(ff, design_matrix)
   design_m <- model.matrix(ff, mod_frame)
+  message(sprintf("   runTestsContrasts: design_m dims = %d x %d", nrow(design_m), ncol(design_m)))
 
+  # Subset data to match design matrix
   data_subset <- data[, rownames( design_m)]
+  message(sprintf("   runTestsContrasts: data_subset dims = %d x %d", nrow(data_subset), ncol(data_subset)))
 
-  ## Make contrasts
+  # Create contrast matrix
+  message("   runTestsContrasts: Creating contrast matrix...")
   contr.matrix <- makeContrasts(contrasts = contrast_strings,
                                 levels = colnames(design_m))
+  message(sprintf("   runTestsContrasts: contr.matrix dims = %d x %d", nrow(contr.matrix), ncol(contr.matrix)))
 
-  ## Attach weights
+  # Check weights
   if (!is.na(weights)) {
+    message("   runTestsContrasts: Attaching weights...")
     if (nrow(weights) == nrow(design_m)) {
       design_m <- cbind(design_m, weights)
     } else {
       stop("Stop: nrow(weights) should be equal to nrow(design_m)")
     }
-
   }
 
+  # Run limma analysis
+  message("   runTestsContrasts: Running lmFit...")
   fit <- lmFit(data_subset, design = design_m)
-
+  
+  message("   runTestsContrasts: Running contrasts.fit...")
   cfit <- contrasts.fit(fit, contrasts = contr.matrix)
-
+  
+  message("   runTestsContrasts: Running eBayes...")
   eb.fit <- eBayes( cfit, trend = eBayes_trend, robust = eBayes_robust )
 
-  ## Run treat over here
+  # Run treat or standard analysis
   t.fit <- NA
   result_tables <- NA
   if( !is.na( treat_lfc_cutoff)) {
-    t.fit <- treat(eb.fit, lfc=as.double(treat_lfc_cutoff)) ## assign log fold change threshold below which is scientifically not relevant
-
+    message("   runTestsContrasts: Running treat analysis...")
+    t.fit <- treat(eb.fit, lfc=as.double(treat_lfc_cutoff))
+    
+    message(sprintf("   runTestsContrasts: Processing %d contrasts with topTreat...", length(contrast_strings)))
     result_tables <- purrr::map(contrast_strings,
                                 function(contrast) {
-                                  de_tbl <- topTreat(t.fit, coef = contrast, n = Inf) |>
-                                    mutate({ { q_value_column } } := qvalue(P.Value)$q) |>
-                                    mutate({ { fdr_value_column } } := p.adjust(P.Value, method="BH")) |>
-
-                                    dplyr::rename({ { p_value_column } } := P.Value)
+                                  message(sprintf("      [map] Processing contrast: %s", contrast))
+                                  
+                                  tryCatch({
+                                    message(sprintf("      About to call topTreat with coef = %s", contrast))
+                                    de_tbl <- topTreat(t.fit, coef = contrast, n = Inf)
+                                    message(sprintf("      [map] topTreat success: %d rows", nrow(de_tbl)))
+                                    
+                                    message("      Adding qvalue column...")
+                                    de_tbl <- de_tbl |>
+                                      mutate({ { q_value_column } } := qvalue(P.Value)$q)
+                                    message("      qvalue column added")
+                                    
+                                    message("      Adding FDR column...")
+                                    de_tbl <- de_tbl |>
+                                      mutate({ { fdr_value_column } } := p.adjust(P.Value, method="BH"))
+                                    message("      FDR column added")
+                                    
+                                    message("      Renaming P.Value column...")
+                                    de_tbl <- de_tbl |>
+                                      dplyr::rename({ { p_value_column } } := P.Value)
+                                    message("      P.Value column renamed")
+                                    
+                                    message(sprintf("   [map] Completed processing contrast: %s", contrast))
+                                    return(de_tbl)
+                                    
+                                  }, error = function(e) {
+                                    message(sprintf("      [map] ERROR in contrast %s: %s", contrast, e$message))
+                                    message(sprintf("      [map] ERROR call stack: %s", capture.output(traceback())))
+                                    stop(e)
+                                  })
                                 }
     )
   } else {
+    message("   runTestsContrasts: Running standard analysis...")
     t.fit <- eb.fit
-
+    
+    message(sprintf("   runTestsContrasts: Processing %d contrasts with topTable...", length(contrast_strings)))
     result_tables <- purrr::map(contrast_strings,
                                 function(contrast) {
-                                  de_tbl <- topTable(t.fit, coef = contrast, n = Inf) |>
-                                    mutate({ { q_value_column } } := qvalue(P.Value)$q) |>
-                                    mutate({ { fdr_value_column } } := p.adjust(P.Value, method="BH")) |>
-
-                                    dplyr::rename({ { p_value_column } } := P.Value)
+                                  message(sprintf("      [map] Processing contrast: %s", contrast))
+                                  
+                                  tryCatch({
+                                    message(sprintf("      About to call topTable with coef = %s", contrast))
+                                    de_tbl <- topTable(t.fit, coef = contrast, n = Inf)
+                                    message(sprintf("      [map] topTable success: %d rows", nrow(de_tbl)))
+                                    
+                                    message("      Adding qvalue column...")
+                                    de_tbl <- de_tbl |>
+                                      mutate({ { q_value_column } } := qvalue(P.Value)$q)
+                                    message("      qvalue column added")
+                                    
+                                    message("      Adding FDR column...")
+                                    de_tbl <- de_tbl |>
+                                      mutate({ { fdr_value_column } } := p.adjust(P.Value, method="BH"))
+                                    message("      FDR column added")
+                                    
+                                    message("      Renaming P.Value column...")
+                                    de_tbl <- de_tbl |>
+                                      dplyr::rename({ { p_value_column } } := P.Value)
+                                    message("      P.Value column renamed")
+                                    
+                                    message(sprintf("   [map] Completed processing contrast: %s", contrast))
+                                    return(de_tbl)
+                                    
+                                  }, error = function(e) {
+                                    message(sprintf("      [map] ERROR in contrast %s: %s", contrast, e$message))
+                                    message(sprintf("      [map] ERROR call stack: %s", capture.output(traceback())))
+                                    stop(e)
+                                  })
                                 }
     )
   }
 
-
-
   names(result_tables) <- contrast_strings
-
-
-  return(list(results = result_tables,
-              fit.eb = t.fit))
+  message("--- Exiting runTestsContrasts ---")
+  return(list(results = result_tables, fit.eb = t.fit))
 }
 
 
@@ -2312,6 +2377,13 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
                                        protein_id_table
 ) {
 
+  message("   DEBUG66: createDeResultsLongFormat - Starting norm_counts processing")
+  message(sprintf("      DEBUG66: norm_counts_input_tbl dims = %d x %d", nrow(norm_counts_input_tbl), ncol(norm_counts_input_tbl)))
+  message(sprintf("      DEBUG66: group_pattern = %s", group_pattern))
+  message(sprintf("      DEBUG66: row_id = %s", row_id))
+  message(sprintf("      DEBUG66: sample_id = %s", sample_id))
+  message(sprintf("      DEBUG66: group_id = %s", group_id))
+  
   norm_counts <- norm_counts_input_tbl |>
     as.data.frame() |>
     rownames_to_column(row_id) |>
@@ -2327,6 +2399,8 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
                 names_from = replicate_number,
                 values_from = log2norm) |>
     mutate( {{group_id}} := purrr::map_chr( !!sym(group_id), as.character))
+  
+  message("   DEBUG66: norm_counts processing completed")
 
 
   # print(head(norm_counts))
@@ -2357,8 +2431,9 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
 
    # print(head(lfc_qval_tbl))
 
-  print( row_id)
-  print(colnames( protein_id_table)[1])
+  # DEBUG66: Commented out print statements that were causing confusion
+  # print( row_id)
+  # print(colnames( protein_id_table)[1])
 
   de_proteins_long <- lfc_qval_tbl |>
     dplyr::select(-lqm, -colour, -analysis_type) |>

@@ -45,24 +45,55 @@ setMethod( f ="differentialExpressionAnalysis"
                                   , qvalue_column = "fdr_qvalue"
                                   , raw_pvalue_column = "raw_pvalue" ) {
 
+  # IMMEDIATE ERROR CATCH - Check if we even get here
+  message("*** ENTERING differentialExpressionAnalysis METHOD ***")
+  message(sprintf("*** METHOD SIGNATURE MATCHED: ProteinQuantitativeData ***"))
+  
+  # Try to catch the index error immediately
+  tryCatch({
+    message("*** Testing parameter access ***")
+    if (!is.null(contrasts_tbl)) {
+      test <- contrasts_tbl[[1]]
+      message("*** Parameter access successful ***")
+    }
+  }, error = function(e) {
+    message(sprintf("*** IMMEDIATE ERROR: %s ***", e$message))
+    message(sprintf("*** ERROR CLASS: %s ***", class(e)))
+    stop(e)
+  })
+
   message("--- Entering differentialExpressionAnalysis ---")
   message(sprintf("   differentialExpressionAnalysis: theObject class = %s", class(theObject)))
+  message(sprintf("   differentialExpressionAnalysis: contrasts_tbl provided = %s", !is.null(contrasts_tbl)))
+  if(!is.null(contrasts_tbl)) {
+    message(sprintf("   differentialExpressionAnalysis: contrasts_tbl dims = %d x %d", nrow(contrasts_tbl), ncol(contrasts_tbl)))
+    message(sprintf("   differentialExpressionAnalysis: contrasts_tbl content = %s", paste(contrasts_tbl[[1]], collapse=", ")))
+  }
 
-  # Run DE analysis using the helper function
-  results_list <- differentialExpressionAnalysisHelper(  theObject
-                                                        , contrasts_tbl = contrasts_tbl
-                                                        , formula_string = formula_string
-                                                        , group_id = group_id
-                                                        , de_q_val_thresh = de_q_val_thresh
-                                                        , treat_lfc_cutoff = treat_lfc_cutoff
-                                                        , eBayes_trend = eBayes_trend
-                                                        , eBayes_robust = eBayes_robust
-                                                        , args_group_pattern = args_group_pattern
-                                                        , args_row_id = args_row_id
-                                                        , qvalue_column = qvalue_column
-                                                        , raw_pvalue_column = raw_pvalue_column
-                                                        )
+  # Wrap the helper function call in tryCatch to get better error info
+  message("   differentialExpressionAnalysis: About to call differentialExpressionAnalysisHelper...")
+  
+  results_list <- tryCatch({
+    differentialExpressionAnalysisHelper(  theObject
+                                          , contrasts_tbl = contrasts_tbl
+                                          , formula_string = formula_string
+                                          , group_id = group_id
+                                          , de_q_val_thresh = de_q_val_thresh
+                                          , treat_lfc_cutoff = treat_lfc_cutoff
+                                          , eBayes_trend = eBayes_trend
+                                          , eBayes_robust = eBayes_robust
+                                          , args_group_pattern = args_group_pattern
+                                          , args_row_id = args_row_id
+                                          , qvalue_column = qvalue_column
+                                          , raw_pvalue_column = raw_pvalue_column
+                                          )
+  }, error = function(e) {
+    message(sprintf("   differentialExpressionAnalysis ERROR in helper function: %s", e$message))
+    message(sprintf("   differentialExpressionAnalysis ERROR call stack: %s", capture.output(traceback())))
+    stop(e)
+  })
 
+  message("   differentialExpressionAnalysis: Helper function completed successfully!")
   message("--- Exiting differentialExpressionAnalysis ---")
   return(results_list)
 
@@ -105,7 +136,37 @@ setMethod( f ="differentialExpressionAnalysisHelper"
                                   , raw_pvalue_column = "raw_pvalue" ) {
 
   message("--- Entering differentialExpressionAnalysisHelper ---")
+  
+  # IMMEDIATE PARAMETER VALIDATION TO CATCH INDEX ERROR
+  message("   PARAMETER VALIDATION Step: Checking all input parameters...")
+  message(sprintf("      theObject is NULL: %s", is.null(theObject)))
+  message(sprintf("      contrasts_tbl is NULL: %s", is.null(contrasts_tbl)))
+  if (!is.null(contrasts_tbl)) {
+    message(sprintf("      contrasts_tbl class: %s", class(contrasts_tbl)))
+    message(sprintf("      contrasts_tbl type: %s", typeof(contrasts_tbl)))
+    message("      contrasts_tbl print:")
+    print(contrasts_tbl)
+    message("      Trying to access contrasts_tbl[[1]]...")
+    tryCatch({
+      first_col <- contrasts_tbl[[1]]
+      message(sprintf("      SUCCESS: contrasts_tbl[[1]] class: %s", class(first_col)))
+      message(sprintf("      SUCCESS: contrasts_tbl[[1]] length: %d", length(first_col)))
+      message(sprintf("      SUCCESS: contrasts_tbl[[1]] content: %s", paste(first_col, collapse=", ")))
+    }, error = function(e) {
+      message(sprintf("      ERROR accessing contrasts_tbl[[1]]: %s", e$message))
+    })
+  }
+  
+  message("   DEBUG66: Initial parameter inspection")
+  message(sprintf("      DEBUG66: theObject class = %s", class(theObject)))
+  message(sprintf("      DEBUG66: contrasts_tbl param is.null = %s", is.null(contrasts_tbl)))
+  if (!is.null(contrasts_tbl)) {
+    message(sprintf("      DEBUG66: contrasts_tbl param class = %s", class(contrasts_tbl)))
+    message("      DEBUG66: contrasts_tbl param structure:")
+    str(contrasts_tbl)
+  }
 
+  message("   differentialExpressionAnalysisHelper Step: Extracting parameters...")
   # Extract parameters from S4 object with fallbacks
   contrasts_tbl <- checkParamsObjectFunctionSimplify( theObject, "contrasts_tbl", contrasts_tbl)
   formula_string <- checkParamsObjectFunctionSimplify( theObject, "formula_string", "~ 0 + group")
@@ -116,43 +177,116 @@ setMethod( f ="differentialExpressionAnalysisHelper"
   eBayes_robust <- checkParamsObjectFunctionSimplify( theObject, "eBayes_robust", TRUE)
   args_group_pattern <- checkParamsObjectFunctionSimplify( theObject, "args_group_pattern", "(\\d+)")
   args_row_id <- checkParamsObjectFunctionSimplify( theObject, "args_row_id", "uniprot_acc")
+  
+  message("   DEBUG66: After parameter extraction")
+  message(sprintf("      DEBUG66: contrasts_tbl class = %s", class(contrasts_tbl)))
+  message("      DEBUG66: contrasts_tbl structure:")
+  str(contrasts_tbl)
 
   message(sprintf("   differentialExpressionAnalysisHelper: formula_string = %s", formula_string))
   message(sprintf("   differentialExpressionAnalysisHelper: group_id = %s", group_id))
   message(sprintf("   differentialExpressionAnalysisHelper: de_q_val_thresh = %f", de_q_val_thresh))
 
+  message("   differentialExpressionAnalysisHelper Step: Processing group names...")
   # Handle group names that start with numbers (same pattern as original wrapper)
   design_matrix <- theObject@design_matrix
   group_col <- design_matrix[[group_id]]
+  message(sprintf("   differentialExpressionAnalysisHelper: group_col length = %d", length(group_col)))
+  message(sprintf("   differentialExpressionAnalysisHelper: group_col content = %s", paste(head(group_col, 10), collapse=", ")))
   
   # Check if any group names start with numbers and create mapping
   starts_with_number <- grepl("^[0-9]", group_col)
+  message(sprintf("   differentialExpressionAnalysisHelper: any start with number? %s", any(starts_with_number)))
+  
   if(any(starts_with_number)) {
     message("   differentialExpressionAnalysisHelper Step: Fixing group names that start with numbers...")
+    
     original_groups <- unique(group_col)
-    safe_groups <- purrr::map_chr(original_groups, \(x) {
-      if(grepl("^[0-9]", x)) paste0("grp_", x) else x
+    message(sprintf("   differentialExpressionAnalysisHelper: original_groups = %s", paste(original_groups, collapse=", ")))
+    message(sprintf("   differentialExpressionAnalysisHelper: About to process %d original groups with purrr::map_chr", length(original_groups)))
+    
+    tryCatch({
+      message("      DEBUG66: Before safe_groups purrr::map_chr")
+      message(sprintf("      DEBUG66: original_groups class = %s", class(original_groups)))
+      message(sprintf("      DEBUG66: original_groups length = %d", length(original_groups)))
+      message("      DEBUG66: original_groups content:")
+      print(original_groups)
+      
+      safe_groups <- purrr::map_chr(original_groups, \(x) {
+        message(sprintf("         DEBUG66: Processing group item: '%s' (class: %s)", x, class(x)))
+        result <- if(grepl("^[0-9]", x)) paste0("grp_", x) else x
+        message(sprintf("         DEBUG66: Result for '%s' -> '%s'", x, result))
+        result
+      })
+      message("   differentialExpressionAnalysisHelper: safe_groups processing SUCCESS")
+      message("      DEBUG66: safe_groups result:")
+      print(safe_groups)
+    }, error = function(e) {
+      message(sprintf("   differentialExpressionAnalysisHelper ERROR in safe_groups purrr::map_chr: %s", e$message))
+      message("      DEBUG66: Error details:")
+      message(sprintf("      DEBUG66: Error class: %s", class(e)))
+      print(str(e))
+      stop(e)
     })
+    
     group_mapping <- setNames(original_groups, safe_groups)
+    message("   differentialExpressionAnalysisHelper: group_mapping created")
     
     # Update design matrix with safe names
-    design_matrix[[group_id]] <- purrr::map_chr(group_col, \(x) {
-      if(grepl("^[0-9]", x)) paste0("grp_", x) else x
+    message("   differentialExpressionAnalysisHelper: About to update design matrix with purrr::map_chr")
+    tryCatch({
+      design_matrix[[group_id]] <- purrr::map_chr(group_col, \(x) {
+        if(grepl("^[0-9]", x)) paste0("grp_", x) else x
+      })
+      message("   differentialExpressionAnalysisHelper: design matrix update SUCCESS")
+    }, error = function(e) {
+      message(sprintf("   differentialExpressionAnalysisHelper ERROR in design matrix purrr::map_chr: %s", e$message))
+      stop(e)
     })
     
     # Update contrasts table if it exists
     if(!is.null(contrasts_tbl)) {
-      contrasts_tbl[[1]] <- purrr::map_chr(contrasts_tbl[[1]], \(x) {
-        for(orig in names(group_mapping)) {
-          x <- gsub(group_mapping[orig], orig, x, fixed = TRUE)
-        }
-        x
+      message("   differentialExpressionAnalysisHelper: About to update contrasts table with purrr::map_chr")
+      message(sprintf("   differentialExpressionAnalysisHelper: contrasts_tbl[[1]] = %s", paste(contrasts_tbl[[1]], collapse=", ")))
+      
+      message("      DEBUG66: Contrasts table inspection before purrr::map_chr")
+      message(sprintf("      DEBUG66: contrasts_tbl class = %s", class(contrasts_tbl)))
+      message(sprintf("      DEBUG66: contrasts_tbl dim = %d x %d", nrow(contrasts_tbl), ncol(contrasts_tbl)))
+      message("      DEBUG66: contrasts_tbl structure:")
+      str(contrasts_tbl)
+      message(sprintf("      DEBUG66: contrasts_tbl[[1]] class = %s", class(contrasts_tbl[[1]])))
+      message(sprintf("      DEBUG66: contrasts_tbl[[1]] length = %d", length(contrasts_tbl[[1]])))
+      message("      DEBUG66: group_mapping content:")
+      print(group_mapping)
+      
+      tryCatch({
+        contrasts_tbl[[1]] <- purrr::map_chr(contrasts_tbl[[1]], \(x) {
+          message(sprintf("         DEBUG66: Processing contrast: '%s' (class: %s)", x, class(x)))
+          message(sprintf("         DEBUG66: group_mapping names: %s", paste(names(group_mapping), collapse=", ")))
+          result <- x
+          for(orig in names(group_mapping)) {
+            message(sprintf("            DEBUG66: Checking gsub: '%s' -> '%s'", group_mapping[orig], orig))
+            result <- gsub(group_mapping[orig], orig, result, fixed = TRUE)
+          }
+          message(sprintf("         DEBUG66: Final result: '%s' -> '%s'", x, result))
+          result
+        })
+        message("   differentialExpressionAnalysisHelper: contrasts table update SUCCESS")
+        message("      DEBUG66: Updated contrasts_tbl[[1]]:")
+        print(contrasts_tbl[[1]])
+      }, error = function(e) {
+        message(sprintf("   differentialExpressionAnalysisHelper ERROR in contrasts table purrr::map_chr: %s", e$message))
+        message("      DEBUG66: Error details:")
+        message(sprintf("      DEBUG66: Error class: %s", class(e)))
+        print(str(e))
+        stop(e)
       })
     }
     
     theObject@design_matrix <- design_matrix
   }
 
+  message("   differentialExpressionAnalysisHelper Step: Updating S4 object parameters...")
   # Update object with validated parameters
   theObject <- updateParamInObject(theObject, "contrasts_tbl")
   theObject <- updateParamInObject(theObject, "formula_string")
@@ -220,17 +354,32 @@ setMethod( f ="differentialExpressionAnalysisHelper"
   message("   differentialExpressionAnalysisHelper Step: Running limma contrasts analysis...")
 
   # Prepare design matrix for limma
+  message("   DEBUG66: About to prepare design matrix rownames")
+  message(paste("      DEBUG66: theObject@sample_id =", theObject@sample_id))
+  message(paste("      DEBUG66: design_matrix dims before =", nrow(theObject@design_matrix), "x", ncol(theObject@design_matrix)))
+  message("      DEBUG66: design_matrix column names:")
+  print(colnames(theObject@design_matrix))
+  
   rownames( theObject@design_matrix ) <- theObject@design_matrix |> dplyr::pull( one_of(theObject@sample_id ))
+  
+  message("      DEBUG66: design_matrix rownames set successfully")
 
   # Run the core limma analysis using existing function
-  contrasts_results <- runTestsContrasts(as.matrix(column_to_rownames(theObject@protein_quant_table, theObject@protein_id_column)),
-                                         contrast_strings = contrasts_tbl[, 1][[1]],
+  protein_quant_matrix <- as.matrix(column_to_rownames(theObject@protein_quant_table, theObject@protein_id_column))
+  contrast_strings_to_use <- contrasts_tbl[, 1]
+  message(paste("   differentialExpressionAnalysisHelper: About to call runTestsContrasts with", length(contrast_strings_to_use), "contrasts"))
+  message(paste("   differentialExpressionAnalysisHelper: protein_quant_matrix dims =", nrow(protein_quant_matrix), "x", ncol(protein_quant_matrix)))
+  
+  contrasts_results <- runTestsContrasts(protein_quant_matrix,
+                                         contrast_strings = contrast_strings_to_use,
                                          design_matrix = theObject@design_matrix,
                                          formula_string = formula_string,
                                          weights = NA,
                                          treat_lfc_cutoff = as.double(treat_lfc_cutoff),
                                          eBayes_trend = as.logical(eBayes_trend),
                                          eBayes_robust = as.logical(eBayes_robust))
+
+  message("   differentialExpressionAnalysisHelper Step: runTestsContrasts completed successfully!")
 
   # Map back to original group names in results if needed
   if(exists("group_mapping")) {
@@ -412,7 +561,7 @@ generateVolcanoPlotGlimma <- function( de_results_list
                                        , display_columns = c( "best_uniprot_acc" )) {
 
   message("--- Entering generateVolcanoPlotGlimma ---")
-  message(sprintf("   generateVolcanoPlotGlimma Arg: selected_contrast = %s", selected_contrast))
+  message(paste("   generateVolcanoPlotGlimma Arg: selected_contrast =", selected_contrast))
 
   if (is.null(de_results_list) || is.null(de_results_list$de_proteins_long)) {
     message("   generateVolcanoPlotGlimma: No DE results available")
@@ -428,15 +577,26 @@ generateVolcanoPlotGlimma <- function( de_results_list
   de_proteins_long <- de_results_list$de_proteins_long
   contrasts_results <- de_results_list$contrasts_results
 
-  # Filter for selected contrast
+  # CRITICAL FIX: Extract comparison name from selected_contrast if it contains "="
+  # The selected_contrast might be the full name like "GA_Elevated.minus.GA_Control=groupGA_Elevated-groupGA_Control"
+  # But the comparison column in de_proteins_long contains only "GA_Elevated.minus.GA_Control"
+  comparison_to_search <- stringr::str_extract(selected_contrast, "^[^=]+")
+  message(paste("   generateVolcanoPlotGlimma: Searching for comparison =", comparison_to_search))
+  message(paste("   generateVolcanoPlotGlimma: Original selected_contrast =", selected_contrast))
+
+  # Filter for selected contrast using the extracted comparison name
   contrast_data <- de_proteins_long |>
-    dplyr::filter(comparison == selected_contrast)
+    dplyr::filter(comparison == comparison_to_search)
 
   if (nrow(contrast_data) == 0) {
-    message(sprintf("   generateVolcanoPlotGlimma: No data found for contrast %s", selected_contrast))
+    message(paste("   generateVolcanoPlotGlimma: No data found for contrast", comparison_to_search))
+    # DEBUG: Show what comparisons are actually available
+    available_comparisons <- unique(de_proteins_long$comparison)
+    message(paste("   generateVolcanoPlotGlimma: Available comparisons:", paste(available_comparisons, collapse = ", ")))
     return(NULL)
   }
 
+  message(paste("   generateVolcanoPlotGlimma: Found", nrow(contrast_data), "rows for contrast", comparison_to_search))
   message("   generateVolcanoPlotGlimma Step: Preparing volcano plot data...")
 
   # Prepare volcano plot table
@@ -475,13 +635,24 @@ generateVolcanoPlotGlimma <- function( de_results_list
   message("   generateVolcanoPlotGlimma Step: Generating interactive plot widget...")
 
   # Find the coefficient index for this contrast
+  # Use the original selected_contrast (full name) for coefficient lookup since limma stores full names
   coef_names <- colnames(contrasts_results$fit.eb$coefficients)
+  message(paste("   generateVolcanoPlotGlimma: Available coefficient names:", paste(coef_names, collapse = ", ")))
+  
+  # Try both the full name and the comparison name for coefficient lookup
   coef_index <- which(coef_names == selected_contrast)
+  if (length(coef_index) == 0) {
+    # Try with comparison name
+    coef_index <- which(coef_names == comparison_to_search)
+  }
 
   if (length(coef_index) == 0) {
-    message(sprintf("   generateVolcanoPlotGlimma: Contrast %s not found in coefficients", selected_contrast))
+    message(paste("   generateVolcanoPlotGlimma: Contrast", selected_contrast, "not found in coefficients"))
+    message(paste("   generateVolcanoPlotGlimma: Also tried", comparison_to_search, "not found in coefficients"))
     return(NULL)
   }
+
+  message(paste("   generateVolcanoPlotGlimma: Using coefficient index", coef_index, "for contrast", coef_names[coef_index]))
 
   # Prepare counts matrix and groups
   counts_mat <- de_results_list$theObject@protein_quant_table |>

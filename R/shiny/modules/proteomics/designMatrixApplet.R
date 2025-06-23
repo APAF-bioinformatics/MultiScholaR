@@ -223,6 +223,12 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
         workflow_data$data_cln <- imported_data_cln
         workflow_data$contrasts_tbl <- imported_contrasts
         
+        # ✅ FIXED: Save contrasts_tbl to global environment for DE analysis
+        if (!is.null(imported_contrasts)) {
+          assign("contrasts_tbl", imported_contrasts, envir = .GlobalEnv)
+          logger::log_info("Saved contrasts_tbl to global environment for DE analysis.")
+        }
+        
         # --- Create S4 Object and Save State (same logic as builder) ---
         logger::log_info("Creating PeptideQuantitativeData S4 object from imported design.")
         peptide_data_s4 <- new(
@@ -303,6 +309,12 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
       workflow_data$contrasts_tbl <- results$contrasts_tbl
       workflow_data$config_list <- results$config_list
       
+      # ✅ FIXED: Save contrasts_tbl to global environment immediately when workflow_data is updated
+      if (!is.null(results$contrasts_tbl)) {
+        assign("contrasts_tbl", results$contrasts_tbl, envir = .GlobalEnv)
+        logger::log_info("Updated contrasts_tbl in global environment from design builder.")
+      }
+      
       # ✅ FIXED: Create global config_list for updateConfigParameter compatibility
       assign("config_list", workflow_data$config_list, envir = .GlobalEnv)
       logger::log_info("Updated global config_list for updateConfigParameter compatibility")
@@ -333,6 +345,10 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
               contrast_path <- file.path(source_dir, "contrast_strings.tab")
               logger::log_info(paste("Writing contrasts to:", contrast_path))
               writeLines(results$contrasts_tbl$contrasts, contrast_path)
+              
+              # ✅ FIXED: Save contrasts_tbl to global environment for DE analysis
+              assign("contrasts_tbl", results$contrasts_tbl, envir = .GlobalEnv)
+              logger::log_info("Saved contrasts_tbl to global environment for DE analysis.")
           }
 
           # --- Create S4 Object and Save Initial State ---

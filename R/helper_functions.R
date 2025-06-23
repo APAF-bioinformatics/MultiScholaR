@@ -1,4 +1,3 @@
-
 ##################################################################################################################
 
 #' @import methods
@@ -321,7 +320,13 @@ checkParamsObjectFunctionSimplify <- function(theObject, param_name_string, defa
   # print(function_name)
   param_value <- dynGet(param_name_string)
 
-  object_value <- (theObject@args)[[function_name]][[param_name_string]]
+  # Fix: Safely access nested list to avoid index errors
+  object_value <- NULL
+  if (!is.null(theObject@args) && 
+      !is.null(theObject@args[[function_name]]) && 
+      is.list(theObject@args[[function_name]])) {
+    object_value <- theObject@args[[function_name]][[param_name_string]]
+  }
 
   # print(paste0("param_value = ", param_value))
 
@@ -1582,8 +1587,19 @@ copyToResultsSummary <- function(omic_type,
     openxlsx::writeData(enrichment_wb, "Enrichment_Index", data.frame(Note = "Contrast represents the comparison (e.g., Group1_minus_Group2). Direction shows up-regulated or down-regulated genes."), startRow = nrow(enrichment_index_data) + 3)
     
     dir.create(pub_tables_dir, recursive = TRUE, showWarnings = FALSE)
-    tryCatch({ openxlsx::saveWorkbook(de_wb, de_results_excel_path, overwrite = TRUE); cat(sprintf("Successfully saved DE results to: %s\n", de_results_excel_path)) }, error = function(e) { failed_copies[[length(failed_copies) + 1]] <- list(type = "workbook_save", path = de_results_excel_path, error = e$message); warning(sprintf("Failed to save DE workbook: %s", e$message)) })
-    tryCatch({ openxlsx::saveWorkbook(enrichment_wb, enrichment_excel_path, overwrite = TRUE); cat(sprintf("Successfully saved Enrichment results to: %s\n", enrichment_excel_path)) }, error = function(e) { failed_copies[[length(failed_copies) + 1]] <- list(type = "workbook_save", path = enrichment_excel_path, error = e$message); warning(sprintf("Failed to save Enrichment workbook: %s", e$message)) })
+    tryCatch({ 
+      openxlsx::saveWorkbook(de_wb, de_results_excel_path, overwrite = TRUE)
+      cat(paste("Successfully saved DE results to:", de_results_excel_path, "\n"))
+    }, error = function(e) { 
+      failed_copies[[length(failed_copies) + 1]] <- list(type = "workbook_save", path = de_results_excel_path, error = e$message)
+    })
+    
+    tryCatch({ 
+      openxlsx::saveWorkbook(enrichment_wb, enrichment_excel_path, overwrite = TRUE)
+      cat(paste("Successfully saved Enrichment results to:", enrichment_excel_path, "\n"))
+    }, error = function(e) { 
+      failed_copies[[length(failed_copies) + 1]] <- list(type = "workbook_save", path = enrichment_excel_path, error = e$message)
+    })
 
     cat("\nCopying individual files/folders to Results Summary for ", current_omic_key, "...\n")
     cat("==============================================================\n\n")

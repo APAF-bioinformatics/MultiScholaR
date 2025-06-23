@@ -7,7 +7,7 @@
 
 # User-specific files
 .Ruserdata
-*session_strategy.md
+/mem/
 
 # Example code in package build process
 *-Ex.R
@@ -34,7 +34,6 @@ vignettes/*.pdf
 
 # Testing files
 *test_checklist
-*handover.md
 
 # Temporary files created by R markdown
 *.utf8.md
