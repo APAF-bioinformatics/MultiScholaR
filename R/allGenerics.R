@@ -377,7 +377,8 @@ setGeneric( name ="differentialAbundanceAnalysisHelper"
                            , eBayes_robust = NULL
                            , args_group_pattern = NULL) {
               standardGeneric("differentialAbundanceAnalysisHelper")
-            })
+            }
+            , signature=c("theObject"))
 
 #'@export
 setGeneric( name ="differentialAbundanceAnalysis"
@@ -389,6 +390,8 @@ setGeneric( name ="differentialAbundanceAnalysis"
                            , eBayes_trend = NULL
                            , eBayes_robust = NULL
                            , args_group_pattern = NULL) {
-              standardGeneric("differentialAbundanceAnalysis")})
+              standardGeneric("differentialAbundanceAnalysis")
+            }
+            , signature=c("objectsList"))
 
 
