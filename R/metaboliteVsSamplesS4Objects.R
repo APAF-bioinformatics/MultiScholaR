@@ -272,7 +272,7 @@ createMetaboliteAssayData <- function(
 #' @importFrom tibble column_to_rownames
 #' @export
 setMethod(f = "plotPca",
-          signature = c("MetaboliteAssayData", "ANY", "ANY", "ANY", "ANY", "ANY"),
+          signature = "MetaboliteAssayData",
           definition = function(theObject, grouping_variable, shape_variable = NULL, label_column, title = NULL, font_size = 8) {
             # --- Input Validation ---
             if (!is.character(grouping_variable) || length(grouping_variable) != 1) {
@@ -418,7 +418,7 @@ setMethod(f = "plotPca",
 #' @export
 #'
 setMethod(f = "plotRle",
-          signature = c("MetaboliteAssayData", "ANY", "ANY", "ANY"),
+          signature = "MetaboliteAssayData",
           definition = function(theObject, grouping_variable, yaxis_limit = c(), sample_label = NULL) {
             # --- Input Validation ---
             if (!is.character(grouping_variable) || length(grouping_variable) != 1 || is.na(grouping_variable)) {
@@ -2558,19 +2558,21 @@ setMethod(f = "ruvIII_C_Varying",
           })
 
 #' plot number of significant differentially expressed metabolites
+#' @export
 setMethod(f = "plotNumSigDiffExpBarPlot",
           signature = "list",
           definition = function(objectsList) {
 
-           return_object_list <-  purrr::map( objectsList
-                        , function(object ) {
+           return_object_list <-  purrr::imap( objectsList
+                        , function(object, idx ) {
 
                           ## Count the number of up or down significant differentially expressed metabolites.
                           # The contrasts_results_table is already a list of data frames (one per contrast)
                           # So we don't need to wrap it in another list
                           num_sig_de_molecules_first_go <- printCountDeGenesTableHelper(
                             list_of_de_tables = object@contrasts_results_table,
-                            list_of_descriptions = names(object@contrasts_results_table)
+                            list_of_descriptions = names(object@contrasts_results_table),
+                            input_title = idx
                           )
 
 
@@ -2586,15 +2588,8 @@ setMethod(f = "plotNumSigDiffExpBarPlot",
  })
 
 
-
-
-
-
 #' Plot static volcano plot (without gene names)
-
-
-
-#'@export
+#' @export
 setMethod(f = "plotVolcano",
           signature = "list",
           definition = function(objectsList
@@ -2745,36 +2740,52 @@ setMethod(f = "plotInteractiveVolcano"
           , definition =
             function( objectsList, anno_tbl = NULL ) {
 
-              list_of_objects <- purrr::map( objectsList,
-                                             \(de_output_object) {
+              list_of_objects <- purrr::imap( objectsList,
+                                             \(de_output_object, idx) {
 
-
-
+                                               # This helper function now correctly uses its own argument 'r_obj'
+                                               # and includes error handling for the qvalue calculation.
                                                updateWithQvalue <-function(r_obj) {
                                                  r_obj_output <- r_obj
+                                                 if (is.null(r_obj$p.value)) return(r_obj_output)
 
-                                                 # Prepare the data for the interactive volcano plot
-                                                 for(coef in seq_len( ncol( de_analysis_long_table$LCMS_Pos@fit.eb$p.value))) {
-
-                                                   r_obj_output$p.value[,coef] <- qvalue( r_obj$p.value[,coef])$qvalues
+                                                 for(coef in seq_len(ncol(r_obj$p.value))) {
+                                                   p_values <- r_obj$p.value[, coef]
+                                                   if (any(is.na(p_values))) {
+                                                       warning(sprintf("NA p-values found in coefficient %d. These will result in NA q-values.", coef), call. = FALSE)
+                                                   }
+                                                   q_result <- tryCatch({
+                                                       qvalue::qvalue(p_values)$qvalues
+                                                   }, error = function(e) {
+                                                       warning(sprintf("qvalue calculation failed for coefficient %d: %s. Returning original p-values as q-values.", coef, e$message), call. = FALSE)
+                                                       p_values # Fallback to p-values on error
+                                                   })
+                                                   r_obj_output$p.value[,coef] <- q_result
                                                  }
-
                                                  r_obj_output
-
                                                }
 
                                                my_fit_eb <-   updateWithQvalue( de_output_object@fit.eb)
 
-                                               counts_matrix <- de_output_object@theObject@metabolite_data |>
+                                               counts_matrix <- de_output_object@theObject@metabolite_data[[1]] |>
                                                  column_to_rownames( de_output_object@theObject@metabolite_id_column) |>
                                                  as.matrix()
-                                               #
-                                               # # anno_tbl <- de_output_object@theObject@metabolite_data |>
-                                               # #   dplyr::select( !!sym(de_output_object@theObject@metabolite_id_column) ) |>
-                                               # #   mutate( random_stuff = NA_real_ )
-                                               #
-                                               # anno_tbl$random_stuff <- rnorm( n=nrow( anno_tbl))
 
+                                               # Defensive measure: ensure my_fit_eb components have rownames.
+                                               # `MArrayLM` objects don't have a `rownames<-` method, so we edit the components.
+                                               if (!is.null(my_fit_eb$coefficients) && is.null(rownames(my_fit_eb$coefficients))) {
+                                                   if (nrow(my_fit_eb$coefficients) == nrow(counts_matrix)) {
+                                                       warning("`my_fit_eb` components were missing rownames. Assigning them from `counts_matrix`.", call. = FALSE)
+                                                       feature_names <- rownames(counts_matrix)
+                                                       rownames(my_fit_eb$coefficients) <- feature_names
+                                                       rownames(my_fit_eb$p.value) <- feature_names
+                                                       if (!is.null(my_fit_eb$t)) { rownames(my_fit_eb$t) <- feature_names }
+                                                       if (!is.null(my_fit_eb$stdev.unscaled)) { rownames(my_fit_eb$stdev.unscaled) <- feature_names }
+                                                       if (!is.null(my_fit_eb$genes)) { rownames(my_fit_eb$genes) <- feature_names }
+                                                   } else {
+                                                       stop("`my_fit_eb` components are missing rownames, and their row count does not match `counts_matrix`. Cannot proceed.")
+                                                   }
+                                               }
 
                                                groups <- data.frame( Run = colnames(counts_matrix) ) |>
                                                  left_join( de_output_object@theObject@design_matrix
@@ -2782,26 +2793,48 @@ setMethod(f = "plotInteractiveVolcano"
                                                  dplyr::pull(genotype_group)
 
 
-                                               list_of_glimma_objs <- purrr::map( seq_len( ncol( de_analysis_long_table$LCMS_Pos@fit.eb$p.value))
+                                               list_of_glimma_objs <- purrr::map( seq_len( ncol( de_output_object@fit.eb$p.value))
 
                                                                                   , \(idx) {
 
-                                                                                    anno_tbl_filt <-  de_output_object@contrasts_results_table[[idx]] |>
-                                                                                      dplyr::select( !!sym(de_output_object@theObject@metabolite_id_column )) |>
-                                                                                      left_join( anno_tbl, by=join_by( !!sym(de_output_object@theObject@metabolite_id_column)  == !!sym(de_output_object@theObject@metabolite_id_column) ) )
+                                                                                    id_col_name <- de_output_object@theObject@metabolite_id_column
+
+                                                                                    # More robust way to create the base annotation table
+                                                                                    base_anno_tbl <- data.frame(id = rownames(my_fit_eb))
+                                                                                    colnames(base_anno_tbl) <- id_col_name
+
+
+                                                                                    # If a user-provided anno_tbl exists, join it.
+                                                                                    anno_tbl_joined <- if (!is.null(anno_tbl)) {
+                                                                                        # Defensive check: ensure anno_tbl is a data.frame and has the join column
+                                                                                        if (!is.data.frame(anno_tbl) || !id_col_name %in% colnames(anno_tbl)) {
+                                                                                            warning(sprintf("Provided 'anno_tbl' is not a data.frame or is missing the join column '%s'. Ignoring 'anno_tbl'.", id_col_name))
+                                                                                            base_anno_tbl
+                                                                                        } else {
+                                                                                            dplyr::left_join(base_anno_tbl, anno_tbl, by = id_col_name)
+                                                                                        }
+                                                                                    } else {
+                                                                                        base_anno_tbl
+                                                                                    }
+
+                                                                                    # Glimma requires a data.frame with rownames set to the feature IDs.
+                                                                                    anno_df_for_glimma <- as.data.frame(anno_tbl_joined)
+                                                                                    rownames(anno_df_for_glimma) <- anno_df_for_glimma[[id_col_name]]
+
 
                                                                                     Glimma::glimmaVolcano(my_fit_eb
                                                                                                           , coef=idx
-                                                                                                          , anno=anno_tbl_filt
+                                                                                                          , anno=anno_df_for_glimma
                                                                                                           , counts = counts_matrix
                                                                                                           , groups = groups
-                                                                                                          , display.columns = colnames(anno_tbl )
+                                                                                                          , display.columns = if(!is.null(anno_tbl)) colnames(anno_tbl) else NULL
                                                                                                           , status=decideTests(my_fit_eb, adjust.method="none")
                                                                                                           , p.adj.method = "none"
                                                                                                           , transform.counts='none')
 
                                                                                   })
 
+                                               names(list_of_glimma_objs) <- colnames(my_fit_eb$coefficients)
                                                de_output_object@interactive_volcano_plot <- list_of_glimma_objs
 
                                                de_output_object })

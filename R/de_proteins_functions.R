@@ -777,7 +777,8 @@ countStatDeGenesHelper <- function(de_table
 printCountDeGenesTableHelper <- function(  list_of_de_tables
                                      , list_of_descriptions
                                      , comparison_column = "comparison"
-                                     , expression_column = "expression") {
+                                     , expression_column = "expression"
+                                     , input_title = "") {
 
 
 
@@ -792,13 +793,19 @@ printCountDeGenesTableHelper <- function(  list_of_de_tables
 
     comparison_name <- x |> dplyr::distinct( !!sym(comparison_column)) |> dplyr::pull(!!sym(comparison_column))
 
+    if (is.null(input_title) || is.na(input_title) || input_title == "") {
+      input_title <- ""
+    } else {
+      input_title <- paste0(input_title, " - ")
+    }
+
     num_sig_de_genes_barplot <- x |>
       dplyr::filter(status != "Not significant") |>
       ggplot(aes(x = status, y = counts)) +
       geom_bar(stat = "identity") +
       geom_text(stat = 'identity', aes(label = counts), vjust = -0.5) +
       theme(axis.text.x = element_text(angle = 90)) +
-      ggtitle(comparison_name)
+      ggtitle( paste(input_title, comparison_name) )
 
   })
 
