@@ -336,7 +336,7 @@ setGeneric(name="plotInteractiveVolcano"
            , def=function(objectsList, anno_tbl = NULL) {
              standardGeneric("plotInteractiveVolcano")
            },
-           signature=c("objectsList", "anno_tbl"))
+           signature=c("objectsList"))
 
 
 #Create a QC composite figure
@@ -345,7 +345,7 @@ setGeneric(name = "createGridQCMetabolomics",
            def = function(theObject, pca_titles, density_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
              standardGeneric("createGridQCMetabolomics")
            },
-           signature = c("theObject", "pca_titles", "density_titles", "rle_titles", "pearson_titles", "save_path", "file_name"))
+           signature = c("theObject"))
 
 #' plot number of significant differentially expressed metabolites
 #'@export

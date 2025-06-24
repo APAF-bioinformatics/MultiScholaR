@@ -40,7 +40,7 @@ setClass("MetabolomicsDifferentialAbundanceResults"
 
 #'@export
 setMethod( f ="differentialAbundanceAnalysis"
-           , signature = "list"
+           , signature = "objectList"
            , definition=function( objectsList
                                   , contrasts_tbl = NULL
                                   , formula_string = NULL
