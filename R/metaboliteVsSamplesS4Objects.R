@@ -1152,7 +1152,7 @@ setMethod(f = "plotPearson",
                         # scale_y_continuous(breaks = seq(0, 4, 1), limits = c(0, 4), expand = c(0, 0)) +
                         xlab("Pearson Correlation") +
                         ylab("Counts") +
-                        ggtitle(paste("Pearson Correlation -", assay_name)) +
+                        #ggtitle(paste(assay_name)) +
                         theme_bw() +
                         theme(
                             panel.grid.major = element_blank(),
@@ -2603,8 +2603,8 @@ setMethod(f = "plotVolcano",
                                 , log2fc_column = "logFC") {
 
 
-            return_object_list <-  purrr::map( objectsList
-                                               , function(object ) {
+            return_object_list <-  purrr::imap( objectsList
+                                               , function(object, idx ) {
 
                                                  ## Plot static volcano plot
                                                  static_volcano_plot_data <- object@contrasts_results_table  |>
@@ -2620,7 +2620,8 @@ setMethod(f = "plotVolcano",
                                                  list_of_volcano_plots_tbl <- static_volcano_plot_data |>
                                                    group_by( comparison, title) |>
                                                    nest() |>
-                                                    mutate( plot = purrr::map2( data, title, \(x,y) { plotOneVolcanoNoVerticalLines(x, y
+                                                    mutate( plot = purrr::map2( data, title, \(x,y) { plotOneVolcanoNoVerticalLines(x
+                                                                                                                                    , paste0(idx, " - ", y)
                                                                                                                                    , log_q_value_column = "lqm"
                                                                                                                                    , log_fc_column = log2fc_column) } ) )
 
@@ -2811,16 +2812,7 @@ setMethod(f = "plotInteractiveVolcano"
 
 
 
-    # htmlwidgets::saveWidget( widget = Glimma::glimmaVolcano(r_obj
-    #                                                         , coef=coef
-    #                                                         , anno=anno_tbl
-    #                                                         , counts = counts_tbl
-    #                                                         , groups = groups
-    #                                                         , display.columns = colnames(anno_tbl )
-    #                                                         , status=decideTests(r_obj, adjust.method="none")
-    #                                                         , p.adj.method = "none"
-    #                                                         , transform.counts='none'
-    # ) #the plotly object
+    # htmlwidgets::saveWidget( widget = theObject@interactive_volcano_plot
     # , file = file.path( output_dir
     #                     , paste0(colnames(r_obj$coefficients)[coef], ".html"))  #the path & file name
     # , selfcontained = TRUE #creates a single html file

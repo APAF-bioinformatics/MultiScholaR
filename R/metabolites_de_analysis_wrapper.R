@@ -44,6 +44,7 @@ setMethod( f ="differentialAbundanceAnalysis"
            , definition=function( objectsList
                                   , contrasts_tbl = NULL
                                   , formula_string = NULL
+                                  , group_id = NULL
                                   , de_q_val_thresh = NULL
                                   , treat_lfc_cutoff = NULL
                                   , eBayes_trend = NULL
@@ -61,6 +62,7 @@ setMethod( f ="differentialAbundanceAnalysis"
                                               differentialAbundanceAnalysisHelper(  obj
                                                                                     , contrasts_tbl = contrasts_tbl
                                                                                     , formula_string = formula_string
+                                                                                    , group_id = group_id
                                                                                     , de_q_val_thresh = de_q_val_thresh
                                                                                     , treat_lfc_cutoff = treat_lfc_cutoff
                                                                                     , eBayes_trend = eBayes_trend
@@ -86,6 +88,7 @@ setMethod( f ="differentialAbundanceAnalysisHelper"
            , definition=function( theObject
                                   , contrasts_tbl = NULL
                                   , formula_string = NULL
+                                  , group_id = NULL
                                   , de_q_val_thresh = NULL
                                   , treat_lfc_cutoff = NULL
                                   , eBayes_trend = NULL
@@ -102,6 +105,12 @@ setMethod( f ="differentialAbundanceAnalysisHelper"
   eBayes_robust <- checkParamsObjectFunctionSimplify( theObject, "eBayes_robust", TRUE)
   args_group_pattern <- checkParamsObjectFunctionSimplify( theObject, "args_group_pattern", "(\\d+)")
 
+  if( is.null( group_id ) ) {
+    group_id <- theObject@group_id
+  } else {
+    group_id <- checkParamsObjectFunctionSimplify( theObject, "group_id", "group")
+  }
+
   #message("   differentialAbundanceAnalysisHelper Arg: contrasts_tbl = ")
   #print(utils::str(contrasts_tbl))
 
@@ -109,7 +118,7 @@ setMethod( f ="differentialAbundanceAnalysisHelper"
 
   # Add preprocessing for group names that start with numbers
   design_matrix <- theObject@design_matrix
-  group_col <- design_matrix[["group"]]
+  group_col <- design_matrix[[theObject@group_id]]
 
   # Check if any group names start with numbers and create mapping
   starts_with_number <- grepl("^[0-9]", group_col)
@@ -121,7 +130,7 @@ setMethod( f ="differentialAbundanceAnalysisHelper"
     group_mapping <- setNames(original_groups, safe_groups)
 
     # Update design matrix with safe names
-    design_matrix[["group"]] <- purrr::map_chr(group_col, \(x) {
+    design_matrix[[theObject@group_id]] <- purrr::map_chr(group_col, \(x) {
       if(grepl("^[0-9]", x)) paste0("grp_", x) else x
     })
 
@@ -181,8 +190,8 @@ setMethod( f ="differentialAbundanceAnalysisHelper"
   # Prepare data matrix for DE analysis
   data_matrix <- NA
 
-  matrix_data <- as.matrix(theObject@metabolite_data[, -1]) # Exclude Name column
-  colnames(matrix_data) <- colnames(theObject@metabolite_data)[-1]
+  matrix_data <- as.matrix(theObject@metabolite_data[[1]][, -1]) # Exclude Name column
+  colnames(matrix_data) <- colnames(theObject@metabolite_data[[1]])[-1]
   rownames(matrix_data) <- theObject@metabolite_data$Name
   data_matrix <- matrix_data
   message("   differentialAbundanceAnalysisHelper Step: Calling runTestsContrasts...")
