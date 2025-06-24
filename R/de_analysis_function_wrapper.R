@@ -24,7 +24,7 @@ deAnalysisWrapperFunction <- function( theObject
 
   # Add preprocessing for group names that start with numbers
   design_matrix <- theObject@design_matrix
-  group_col <- design_matrix[["group"]]
+  group_col <- design_matrix[[theObject@group_id]]
 
   # Check if any group names start with numbers and create mapping
   starts_with_number <- grepl("^[0-9]", group_col)
@@ -36,7 +36,7 @@ deAnalysisWrapperFunction <- function( theObject
     group_mapping <- setNames(original_groups, safe_groups)
 
     # Update design matrix with safe names
-    design_matrix[["group"]] <- purrr::map_chr(group_col, \(x) {
+    design_matrix[[theObject@group_id]] <- purrr::map_chr(group_col, \(x) {
       if(grepl("^[0-9]", x)) paste0("grp_", x) else x
     })
 
@@ -137,7 +137,7 @@ deAnalysisWrapperFunction <- function( theObject
 
   # Prepare data matrix for DE analysis
   data_matrix <- NA
-  
+
   if (inherits(theObject, "MetaboliteAssayData")) {
     # Convert metabolite data to matrix format
     matrix_data <- as.matrix(theObject@metabolite_data[, -1]) # Exclude Name column
@@ -261,7 +261,7 @@ deAnalysisWrapperFunction <- function( theObject
       } else if (inherits(theObject, "ProteinQuantitativeData")) {
         # For proteins, join with protein_id_table
         df |>
-          left_join(theObject@protein_id_table, 
+          left_join(theObject@protein_id_table,
                    by = join_by(!!sym(args_row_id) == !!sym(theObject@protein_id_column)))
       } else {
         stop(sprintf("Unsupported object type: %s", class(theObject)))
@@ -1011,20 +1011,20 @@ getDataMatrix <- function(obj) {
     if (inherits(obj, "MetaboliteAssayData")) {
         message(sprintf("   Getting data matrix for object of class: %s", class(obj)[1]))
         message(sprintf("   Processing MetaboliteAssayData"))
-        message(sprintf("   Metabolite data dimensions: %d rows, %d cols", 
+        message(sprintf("   Metabolite data dimensions: %d rows, %d cols",
                       nrow(obj@metabolite_data), ncol(obj@metabolite_data)))
         matrix_data <- as.matrix(obj@metabolite_data[, -1]) # Exclude Name column
         colnames(matrix_data) <- colnames(obj@metabolite_data)[-1]
         rownames(matrix_data) <- obj@metabolite_data$Name
-        message(sprintf("   Created matrix with dimensions: %d rows, %d cols", 
+        message(sprintf("   Created matrix with dimensions: %d rows, %d cols",
                       nrow(matrix_data), ncol(matrix_data)))
         matrix_data
     } else if (inherits(obj, "ProteinQuantitativeData")) {
         message(sprintf("   Processing ProteinQuantitativeData"))
-        message(sprintf("   Protein quant table dimensions: %d rows, %d cols", 
+        message(sprintf("   Protein quant table dimensions: %d rows, %d cols",
                       nrow(obj@protein_quant_table), ncol(obj@protein_quant_table)))
         result <- as.matrix(column_to_rownames(obj@protein_quant_table, obj@protein_id_column))
-        message(sprintf("   Created matrix with dimensions: %d rows, %d cols", 
+        message(sprintf("   Created matrix with dimensions: %d rows, %d cols",
                       nrow(result), ncol(result)))
         result
     } else {
@@ -1037,11 +1037,11 @@ getDataMatrix <- function(obj) {
 getCountsTable <- function(obj) {
     if (inherits(obj, "MetaboliteAssayData")) {
         message(sprintf("   Getting counts table for object of class: %s", class(obj)[1]))
-        message(sprintf("   Returning metabolite_data with dimensions: %d rows, %d cols", 
+        message(sprintf("   Returning metabolite_data with dimensions: %d rows, %d cols",
                       nrow(obj@metabolite_data), ncol(obj@metabolite_data)))
         obj@metabolite_data
     } else if (inherits(obj, "ProteinQuantitativeData")) {
-        message(sprintf("   Returning protein_quant_table with dimensions: %d rows, %d cols", 
+        message(sprintf("   Returning protein_quant_table with dimensions: %d rows, %d cols",
                       nrow(obj@protein_quant_table), ncol(obj@protein_quant_table)))
         obj@protein_quant_table
     } else {
