@@ -22,37 +22,37 @@ setGeneric(name="proteinIntensityFiltering"
                            , core_utilisation = NULL) {
              standardGeneric("proteinIntensityFiltering")
            }
-           , signature=c("theObject", "proteins_intensity_cutoff_percentile", "proteins_proportion_of_samples_below_cutoff", "core_utilisation"))
+           , signature=c("theObject"))
 
 setGeneric(name="removeProteinsWithOnlyOneReplicate"
            , def=function( theObject, core_utilisation = NULL, grouping_variable = NULL) {
              standardGeneric("removeProteinsWithOnlyOneReplicate")
            }
-           , signature=c("theObject", "core_utilisation", "grouping_variable"))
+           , signature=c("theObject"))
 
 setGeneric(name="plotRle"
            , def=function( theObject, grouping_variable, yaxis_limit = c(), sample_label = NULL) {
              standardGeneric("plotRle")
            }
-           , signature=c("theObject", "grouping_variable", "yaxis_limit", "sample_label"))
+           , signature=c("theObject"))
 
 setGeneric(name="plotRleList"
            , def=function( theObject, list_of_columns, yaxis_limit = c()) {
              standardGeneric("plotRleList")
            }
-           , signature=c("theObject", "list_of_columns", "yaxis_limit"))
+           , signature=c("theObject"))
 
 setGeneric(name="plotPca"
            , def=function( theObject, grouping_variable, shape_variable = NULL, label_column, title, font_size ) {
              standardGeneric("plotPca")
            }
-           , signature=c("theObject", "grouping_variable", "shape_variable", "label_column", "title", "font_size"))
+           , signature=c("theObject"))
 
 setGeneric(name="plotPcaList"
            , def=function( theObject, grouping_variables_list, label_column, title, font_size ) {
              standardGeneric("plotPcaList")
            }
-           , signature=c("theObject", "grouping_variables_list", "label_column", "title", "font_size"))
+           , signature=c("theObject"))
 
 setGeneric(name="getPcaMatrix"
            , def=function( theObject) {
@@ -64,13 +64,13 @@ setGeneric(name="proteinTechRepCorrelation"
            , def=function( theObject,  tech_rep_num_column = NULL, tech_rep_remove_regex = NULL) {
              standardGeneric("proteinTechRepCorrelation")
            }
-           , signature=c("theObject", "tech_rep_num_column", "tech_rep_remove_regex"))
+           , signature=c("theObject"))
 
 setGeneric(name="plotPearson",
            def=function(theObject, tech_rep_remove_regex, correlation_group = NA  ) {
              standardGeneric("plotPearson")
            },
-           signature=c("theObject", "tech_rep_remove_regex", "correlation_group" ))
+           signature=c("theObject" ))
 
 setGeneric("InitialiseGrid", function(dummy = NULL) {
   standardGeneric("InitialiseGrid")
@@ -80,19 +80,19 @@ setGeneric(name = "createGridQC",
            def = function(theObject, pca_titles, density_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
              standardGeneric("createGridQC")
            },
-           signature = c("theObject", "pca_titles", "density_titles", "rle_titles", "pearson_titles", "save_path", "file_name"))
+           signature = c("theObject"))
 
 setGeneric(name="normaliseBetweenSamples"
            , def=function( theObject, normalisation_method = NULL) {
              standardGeneric("normaliseBetweenSamples")
            }
-           , signature=c("theObject", "normalisation_method"))
+           , signature=c("theObject"))
 
 setGeneric(name="pearsonCorForSamplePairs"
            , def=function( theObject,   tech_rep_remove_regex = NULL, correlation_group = NA ) {
              standardGeneric("pearsonCorForSamplePairs")
            }
-           , signature=c("theObject", "tech_rep_remove_regex", "correlation_group"))
+           , signature=c("theObject"))
 
 setGeneric(name="getNegCtrlProtAnova"
            , def=function( theObject
@@ -103,7 +103,7 @@ setGeneric(name="getNegCtrlProtAnova"
                            , ruv_fdr_method = NULL ) {
              standardGeneric("getNegCtrlProtAnova")
            }
-           , signature=c("theObject", "ruv_grouping_variable", "num_neg_ctrl", "ruv_qval_cutoff", "ruv_fdr_method"))
+           , signature=c("theObject"))
 
 setGeneric(name="getLowCoefficientOfVariationProteins"
            , def=function( theObject
@@ -111,25 +111,25 @@ setGeneric(name="getLowCoefficientOfVariationProteins"
                            , num_neg_ctrl = NULL ) {
              standardGeneric("getLowCoefficientOfVariationProteins")
            }
-           , signature=c("theObject", "percentage_as_neg_ctrl", "num_neg_ctrl"))
+           , signature=c("theObject"))
 
 setGeneric(name="ruvCancor"
            , def=function( theObject, ctrl= NULL, num_components_to_impute=NULL, ruv_grouping_variable = NULL ) {
              standardGeneric("ruvCancor")
            }
-           , signature=c("theObject", "ctrl", "num_components_to_impute", "ruv_grouping_variable"))
+           , signature=c("theObject"))
 
 setGeneric(name="getRuvIIIReplicateMatrix"
            , def=function( theObject,  ruv_grouping_variable = NULL) {
              standardGeneric("getRuvIIIReplicateMatrix")
            }
-           , signature=c("theObject", "ruv_grouping_variable"))
+           , signature=c("theObject"))
 
 setGeneric(name="ruvIII_C_Varying"
            , def=function( theObject, ruv_grouping_variable = NULL, ruv_number_k = NULL, ctrl = NULL)  {
              standardGeneric("ruvIII_C_Varying")
            }
-           , signature=c("theObject", "ruv_grouping_variable", "ruv_number_k", "ctrl"))
+           , signature=c("theObject"))
 
 setGeneric(name="removeRowsWithMissingValuesPercent"
            , def=function( theObject
@@ -139,17 +139,13 @@ setGeneric(name="removeRowsWithMissingValuesPercent"
                            , proteins_intensity_cutoff_percentile = NULL ) {
              standardGeneric("removeRowsWithMissingValuesPercent")
            }
-           , signature=c("theObject"
-                         , "ruv_grouping_variable"
-                         , "groupwise_percentage_cutoff"
-                         , "max_groups_percentage_cutoff"
-                         , "proteins_intensity_cutoff_percentile" ))
+           , signature=c("theObject" ))
 
 setGeneric(name="averageTechReps"
            , def=function( theObject, design_matrix_columns ) {
              standardGeneric("averageTechReps")
            }
-           , signature=c("theObject", "design_matrix_columns" ))
+           , signature=c("theObject" ))
 
 setGeneric(name="preservePeptideNaValues"
            , def=function( peptide_obj, protein_obj)  {
@@ -161,31 +157,31 @@ setGeneric(name="chooseBestProteinAccession"
            , def=function(theObject, delim=NULL, seqinr_obj=NULL, seqinr_accession_column=NULL, replace_zero_with_na = NULL, aggregation_method = NULL) {
              standardGeneric("chooseBestProteinAccession")
            }
-           , signature=c("theObject", "delim", "seqinr_obj", "seqinr_accession_column"))
+           , signature=c("theObject"))
 
 setGeneric(name="chooseBestProteinAccessionSumDuplicates" # Note: This might be redundant or specific, verify usage
            , def=function(theObject, delim=NULL, seqinr_obj=NULL, seqinr_accession_column=NULL, replace_zero_with_na = NULL, aggregation_method = NULL) {
              standardGeneric("chooseBestProteinAccessionSumDuplicates")
            }
-           , signature=c("theObject", "delim", "seqinr_obj", "seqinr_accession_column"))
+           , signature=c("theObject"))
 
 setGeneric(name="filterSamplesByProteinCorrelationThreshold"
            , def=function( theObject, threshold = NULL, correlation_group = NULL, tech_rep_remove_regex = NULL) {
              standardGeneric("filterSamplesByProteinCorrelationThreshold")
            }
-           , signature=c("theObject", "threshold", "correlation_group", "tech_rep_remove_regex"))
+           , signature=c("theObject"))
 
 setGeneric(name="plotDensity"
            , def=function( theObject, grouping_variable, title = "", font_size = 8) {
              standardGeneric("plotDensity")
            }
-           , signature=c("theObject", "grouping_variable", "title", "font_size")) # Base signature might need refinement based on methods
+           , signature=c("theObject")) # Base signature might need refinement based on methods
 
 setGeneric(name="plotDensityList"
            , def=function( theObject, grouping_variables_list, title = "", font_size = 8) {
              standardGeneric("plotDensityList")
            }
-           , signature=c("theObject", "grouping_variables_list", "title", "font_size"))
+           , signature=c("theObject"))
 
 
 # --- From peptideVsSamplesS4Objects.R ---
@@ -199,19 +195,19 @@ setGeneric(name="srlQvalueProteotypicPeptideClean"
            , def=function( theObject, qvalue_threshold = NULL, global_qvalue_threshold = NULL, choose_only_proteotypic_peptide = NULL, input_matrix_column_ids = NULL) {
              standardGeneric("srlQvalueProteotypicPeptideClean")
            }
-           , signature = c("theObject", "qvalue_threshold", "global_qvalue_threshold", "choose_only_proteotypic_peptide", "input_matrix_column_ids") )
+           , signature = c("theObject") )
 
 setGeneric(name="rollUpPrecursorToPeptide"
            , def=function( theObject, core_utilisation = NULL) {
              standardGeneric("rollUpPrecursorToPeptide")
            }
-           , signature=c("theObject", "core_utilisation"))
+           , signature=c("theObject"))
 
 setGeneric(name="peptideIntensityFiltering"
            , def=function( theObject, peptides_intensity_cutoff_percentile = NULL, peptides_proportion_of_samples_below_cutoff = NULL, core_utilisation = NULL) {
              standardGeneric("peptideIntensityFiltering")
            }
-           , signature=c("theObject", "peptides_intensity_cutoff_percentile", "peptides_proportion_of_samples_below_cutoff", "core_utilisation"))
+           , signature=c("theObject"))
 
 setGeneric(name="removePeptidesWithMissingValuesPercent"
            , def=function( theObject
@@ -221,11 +217,7 @@ setGeneric(name="removePeptidesWithMissingValuesPercent"
                            , peptides_intensity_cutoff_percentile = NULL) {
              standardGeneric("removePeptidesWithMissingValuesPercent")
            }
-           , signature=c("theObject"
-                         , "grouping_variable"
-                         , "groupwise_percentage_cutoff"
-                         , "max_groups_percentage_cutoff"
-                         , "peptides_intensity_cutoff_percentile" ))
+           , signature=c("theObject" ))
 
 setGeneric(name="filterMinNumPeptidesPerProtein"
            , def=function( theObject
@@ -234,22 +226,19 @@ setGeneric(name="filterMinNumPeptidesPerProtein"
                            , core_utilisation = NULL ) {
              standardGeneric("filterMinNumPeptidesPerProtein")
            }
-           , signature=c("theObject"
-                         , "num_peptides_per_protein_thresh"
-                         , "num_peptidoforms_per_protein_thresh"
-                         , "core_utilisation"))
+           , signature=c("theObject"))
 
 setGeneric( name="filterMinNumPeptidesPerSample"
             , def=function( theObject, peptides_per_sample_cutoff = NULL, core_utilisation = NULL, inclusion_list = NULL) {
               standardGeneric("filterMinNumPeptidesPerSample")
            }
-           , signature=c("theObject", "peptides_per_sample_cutoff", "core_utilisation", "inclusion_list" ))
+           , signature=c("theObject" ))
 
 setGeneric( name="removePeptidesWithOnlyOneReplicate"
             , def=function( theObject, replicate_group_column = NULL, core_utilisation = NULL) {
               standardGeneric("removePeptidesWithOnlyOneReplicate")
             }
-            , signature=c("theObject", "replicate_group_column", "core_utilisation" ))
+            , signature=c("theObject" ))
 
 setGeneric( name="plotPeptidesProteinsCountsPerSample"
             , def=function( theObject ) {
@@ -261,7 +250,7 @@ setGeneric( name="peptideMissingValueImputation"
             , def=function( theObject,  imputed_value_column = NULL, proportion_missing_values = NULL, core_utilisation = NULL) {
               standardGeneric("peptideMissingValueImputation")
             }
-            , signature=c("theObject", "imputed_value_column", "proportion_missing_values", "core_utilisation" ))
+            , signature=c("theObject" ))
 
 
 # --- From metabolite_qc.R ---
