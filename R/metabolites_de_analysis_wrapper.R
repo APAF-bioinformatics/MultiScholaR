@@ -40,7 +40,7 @@ setClass("MetabolomicsDifferentialAbundanceResults"
 
 #'@export
 setMethod( f ="differentialAbundanceAnalysis"
-           , signature = "objectList"
+           , signature = "list"
            , definition=function( objectsList
                                   , contrasts_tbl = NULL
                                   , formula_string = NULL
@@ -192,7 +192,7 @@ setMethod( f ="differentialAbundanceAnalysisHelper"
 
   matrix_data <- as.matrix(theObject@metabolite_data[[1]][, -1]) # Exclude Name column
   colnames(matrix_data) <- colnames(theObject@metabolite_data[[1]])[-1]
-  rownames(matrix_data) <- theObject@metabolite_data$Name
+  rownames(matrix_data) <- theObject@metabolite_data[[1]]$Name
   data_matrix <- matrix_data
   message("   differentialAbundanceAnalysisHelper Step: Calling runTestsContrasts...")
   contrasts_results <- runTestsContrasts(
