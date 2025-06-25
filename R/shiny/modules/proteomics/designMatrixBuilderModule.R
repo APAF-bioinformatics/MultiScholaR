@@ -402,6 +402,28 @@ designMatrixBuilderServer <- function(id, data_tbl, config_list) {
             )
         })
         
+        # Render preview for range extraction transformation
+        output$range_preview <- renderText({
+            req(input$samples_to_transform)
+            req(input$range_start, input$range_end)
+            
+            # Get the first selected sample for preview
+            first_sample <- input$samples_to_transform[1]
+            
+            # Apply the transformation
+            tryCatch({
+                preview_result <- extract_experiment(
+                    first_sample, 
+                    mode = "range", 
+                    start = input$range_start, 
+                    end = input$range_end
+                )
+                paste0("\"", first_sample, "\" → \"", preview_result, "\"")
+            }, error = function(e) {
+                paste("Error:", e$message)
+            })
+        })
+        
         # Render replicate number input UI
         output$replicate_inputs <- renderUI({
             ns <- session$ns

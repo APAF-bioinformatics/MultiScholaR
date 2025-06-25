@@ -1688,37 +1688,66 @@ copyToResultsSummary <- function(omic_type,
 }
 
 
-#' Update Missing Value Parameters in Configuration List
+#' Update Missing Value Parameters in Configuration List and S4 Object
 #'
 #' @description
 #' Automatically calculates and updates the missing value filtering parameters in the configuration list
-#' based on the experimental design matrix. The function ensures at least a specified number of groups
-#' have sufficient quantifiable values for analysis.
+#' and S4 object @args based on the experimental design matrix. The function ensures at least a specified 
+#' number of groups have sufficient quantifiable values for analysis.
 #'
-#' @param design_matrix A tibble containing the experimental design. Must have a 'group' column.
-#'                     Groups can have different numbers of replicates.
-#' @param config_list A list containing configuration parameters. Must have a
-#'                   'removeRowsWithMissingValuesPercent' nested list with 'groupwise_percentage_cutoff'
-#'                   and 'max_groups_percentage_cutoff' parameters.
+#' @param theObject An S4 object containing the experimental data and design matrix.
 #' @param min_reps_per_group Integer specifying the minimum number of replicates required in each passing group.
 #'                          If a group has fewer total replicates than this value, the minimum is adjusted.
 #' @param min_groups Integer specifying the minimum number of groups required to have sufficient
 #'                  quantifiable values. Default is 2.
+#' @param config_list_name The name of the global config list variable (defaults to "config_list").
+#' @param env The environment where the global config list resides (defaults to .GlobalEnv).
 #'
-#' @return Updated config_list with modified missing value parameters
+#' @return Updated S4 object with synchronized @args and global config_list
 #'
 #' @details
 #' The function calculates:
 #' - groupwise_percentage_cutoff: Based on minimum required replicates per group
 #' - max_groups_percentage_cutoff: Based on minimum required groups
+#' 
+#' Both the S4 object's @args slot and the global config_list are updated to maintain synchronization.
 #'
 #' @examples
 #' \dontrun{
-#' config_list <- updateMissingValueParameters(design_matrix, config_list, min_reps_per_group = 2)
+#' protein_log2_quant_cln <- updateMissingValueParameters(
+#'   theObject = protein_log2_quant_cln, 
+#'   min_reps_per_group = 2, 
+#'   min_groups = 2
+#' )
 #' }
 #'
 #' @export
-updateMissingValueParameters <- function(design_matrix, config_list, min_reps_per_group = 2, min_groups = 2) {
+updateMissingValueParameters <- function(theObject, 
+                                       min_reps_per_group = 2, 
+                                       min_groups = 2,
+                                       config_list_name = "config_list",
+                                       env = .GlobalEnv) {
+    
+    # --- Input Validation ---
+    if (!isS4(theObject)) {
+        stop("'theObject' must be an S4 object.")
+    }
+    if (!"design_matrix" %in% methods::slotNames(theObject)) {
+        stop("'theObject' must have a '@design_matrix' slot.")
+    }
+    if (!"args" %in% methods::slotNames(theObject)) {
+        stop("'theObject' must have an '@args' slot.")
+    }
+    if (!exists(config_list_name, envir = env)) {
+        stop("Global config list '", config_list_name, "' not found in the specified environment.")
+    }
+    
+    # Extract design matrix from S4 object
+    design_matrix <- theObject@design_matrix
+    
+    # Retrieve the global config list
+    config_list <- get(config_list_name, envir = env)
+    
     # Get number of replicates per group
     reps_per_group_tbl <- design_matrix |>
         group_by(group) |>
@@ -1741,21 +1770,39 @@ updateMissingValueParameters <- function(design_matrix, config_list, min_reps_pe
         )
     
     # Use a consistent percentage threshold across all groups
-    # Take the minimum percentage to ensure all groups meet minimum requirements
+    # Take the maximum percentage to ensure all groups meet minimum requirements
     groupwise_cutoff <- max(group_thresholds$missing_percent)
     
     # Calculate maximum failing groups allowed
     max_failing_groups <- total_groups - min_groups
     max_groups_cutoff <- round((max_failing_groups / total_groups) * 100, 3)
     
-    # Update config_list
+    # Update global config_list
+    if (is.null(config_list$removeRowsWithMissingValuesPercent)) {
+        config_list$removeRowsWithMissingValuesPercent <- list()
+    }
     config_list$removeRowsWithMissingValuesPercent$groupwise_percentage_cutoff <- groupwise_cutoff
     config_list$removeRowsWithMissingValuesPercent$max_groups_percentage_cutoff <- max_groups_cutoff
     config_list$removeRowsWithMissingValuesPercent$proteins_intensity_cutoff_percentile <- 1
     
+    # Assign updated config_list back to global environment
+    assign(config_list_name, config_list, envir = env)
+    
+    # Update S4 object @args to match config_list
+    if (is.null(theObject@args)) {
+        theObject@args <- list()
+    }
+    if (is.null(theObject@args$removeRowsWithMissingValuesPercent)) {
+        theObject@args$removeRowsWithMissingValuesPercent <- list()
+    }
+    
+    theObject@args$removeRowsWithMissingValuesPercent$groupwise_percentage_cutoff <- groupwise_cutoff
+    theObject@args$removeRowsWithMissingValuesPercent$max_groups_percentage_cutoff <- max_groups_cutoff
+    theObject@args$removeRowsWithMissingValuesPercent$proteins_intensity_cutoff_percentile <- 1
+    
     # Create informative message
     basic_msg <- sprintf(
-        "Updated missing value parameters in config_list:
+        "Updated missing value parameters in both config_list and S4 object @args:
     - Requiring at least %d replicates in each passing group (varies by group size)
     - Requiring at least %d out of %d groups to pass (%.3f%% failing groups allowed)
     - groupwise_percentage_cutoff set to %.3f%%
@@ -1780,8 +1827,9 @@ updateMissingValueParameters <- function(design_matrix, config_list, min_reps_pe
     
     # Print the message
     message(paste(basic_msg, "\n\nGroup details:", group_details, sep = "\n"))
+    message("✅ S4 object @args and global config_list are now synchronized")
     
-    return(config_list)
+    return(theObject)
 }
 
 ##################################################################################################################

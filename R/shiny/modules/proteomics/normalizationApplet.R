@@ -71,6 +71,87 @@ normalizationAppletUI <- function(id) {
           width = "100%"
         ),
         
+        # RUV grouping variable selection
+        shiny::selectInput(
+          ns("ruv_grouping_variable"),
+          "RUV Grouping Variable:",
+          choices = c("group", "factor1", "factor2"),
+          selected = "group",
+          width = "100%"
+        ),
+        shiny::helpText("Experimental factor to preserve during batch correction. RUV-III will remove unwanted variation while preserving differences between groups defined by this variable."),
+        
+        shiny::hr(),
+        
+        # Automatic RUV controls (shown when automatic mode selected)
+        shiny::conditionalPanel(
+          condition = "input.ruv_mode == 'automatic'",
+          ns = ns,
+          
+          shiny::h5("Automatic Optimization Parameters"),
+          shiny::helpText("These parameters control the automatic optimization of RUV-III negative control selection. The function tests different percentages and finds the optimal balance between separation quality and k value."),
+          
+          # Percentage range control
+          shiny::fluidRow(
+            shiny::column(6,
+              shiny::numericInput(
+                ns("auto_percentage_min"),
+                "Min %:",
+                value = 1,
+                min = 1,
+                max = 50,
+                width = "100%"
+              )
+            ),
+            shiny::column(6,
+              shiny::numericInput(
+                ns("auto_percentage_max"), 
+                "Max %:",
+                value = 20,
+                min = 1,
+                max = 50,
+                width = "100%"
+              )
+            )
+          ),
+          shiny::helpText("Range of percentages to test (1-50%). Start with 1-20% for most datasets. Larger datasets may benefit from higher ranges."),
+          
+          shiny::selectInput(
+            ns("separation_metric"),
+            "Separation Quality Metric:",
+            choices = list(
+              "Maximum Difference (recommended)" = "max_difference",
+              "Mean Difference" = "mean_difference", 
+              "Area Under Curve" = "auc",
+              "Weighted Difference" = "weighted_difference"
+            ),
+            selected = "max_difference",
+            width = "100%"
+          ),
+          shiny::helpText("Method for evaluating separation between All and Control groups in canonical correlation plots. Max difference is most robust for typical datasets."),
+          
+          shiny::sliderInput(
+            ns("k_penalty_weight"),
+            "K Value Penalty Weight:",
+            min = 0.1,
+            max = 0.9,
+            value = 0.5,
+            step = 0.1,
+            width = "100%"
+          ),
+          shiny::helpText("Controls how strongly high k values are penalized (0.1 = lenient, 0.9 = strict). Higher values favor lower k to preserve biological signal."),
+          
+          shiny::checkboxInput(
+            ns("adaptive_k_penalty"),
+            "Adaptive K Penalty (sample size aware)",
+            value = TRUE,
+            width = "100%"
+          ),
+          shiny::helpText("Automatically adjusts penalty thresholds based on dataset size. Recommended for most analyses."),
+          
+          shiny::br()
+        ),
+        
         # Manual RUV controls (shown when manual mode selected)
         shiny::conditionalPanel(
           condition = "input.ruv_mode == 'manual'",
@@ -125,6 +206,39 @@ normalizationAppletUI <- function(id) {
     shiny::column(9,
       shiny::tabsetPanel(
         id = ns("norm_qc_tabs"),
+        
+        # NEW: RUV QC Tab (first tab)
+        shiny::tabPanel(
+          "RUV QC",
+          icon = shiny::icon("chart-line"),
+          shiny::br(),
+          shiny::fluidRow(
+            shiny::column(12,
+              shiny::h5("RUV Parameter Optimization Results", style = "text-align: center;"),
+              shiny::helpText("Canonical correlation plot and optimization summary for RUV-III parameter selection. This plot shows the separation between 'All' and 'Control' protein groups across different k values."),
+              
+              shiny::fluidRow(
+                shiny::column(8,
+                  shinyjqui::jqui_resizable(
+                    shiny::plotOutput(ns("ruv_canonical_correlation_plot"), height = "500px")
+                  )
+                ),
+                shiny::column(4,
+                  shiny::wellPanel(
+                    shiny::h5("Optimization Summary"),
+                    shiny::verbatimTextOutput(ns("ruv_optimization_summary")),
+                    
+                    shiny::br(),
+                    
+                    shiny::h5("Optimization Results"),
+                    shiny::helpText("Detailed results for all tested percentages:"),
+                    DT::dataTableOutput(ns("ruv_optimization_table"))
+                  )
+                )
+              )
+            )
+          )
+        ),
         
         # PCA Tab
         shiny::tabPanel(
@@ -361,8 +475,48 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
       
       # Post-normalisation filtering summary
       post_norm_filtering_plot = NULL,
-      filtering_summary_text = NULL
+      filtering_summary_text = NULL,
+      
+      # RUV optimization results
+      ruv_optimization_result = NULL
     )
+    
+    # Update plot aesthetic choices based on design matrix
+    observe({
+      if (!is.null(workflow_data$design_matrix)) {
+        design_cols <- colnames(workflow_data$design_matrix)
+        
+        # Filter to common experimental variables for plot aesthetics
+        plot_available_vars <- intersect(design_cols, c("group", "factor1", "factor2", "technical_replicate_id", "sample_id"))
+        
+        if (length(plot_available_vars) > 0) {
+          # Update color variable choices
+          shiny::updateSelectInput(session, "color_variable",
+            choices = plot_available_vars,
+            selected = if("group" %in% plot_available_vars) "group" else plot_available_vars[1]
+          )
+          
+          # Update shape variable choices  
+          shiny::updateSelectInput(session, "shape_variable",
+            choices = plot_available_vars,
+            selected = if("group" %in% plot_available_vars) "group" else plot_available_vars[1]
+          )
+        }
+        
+        # Filter to experimental grouping variables for RUV (exclude technical IDs)
+        ruv_available_vars <- intersect(design_cols, c("group", "factor1", "factor2"))
+        
+        if (length(ruv_available_vars) > 0) {
+          # Update RUV grouping variable choices
+          shiny::updateSelectInput(session, "ruv_grouping_variable",
+            choices = ruv_available_vars,
+            selected = if("group" %in% ruv_available_vars) "group" else ruv_available_vars[1]
+          )
+          
+          message(sprintf("*** RUV: Updated grouping variable choices to: %s ***", paste(ruv_available_vars, collapse = ", ")))
+        }
+      }
+    })
     
     # Helper function to get current plot aesthetics
     getPlotAesthetics <- function() {
@@ -370,6 +524,15 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
         color_var = if(is.null(input$color_variable) || input$color_variable == "") "group" else input$color_variable,
         shape_var = if(is.null(input$shape_variable) || input$shape_variable == "") "group" else input$shape_variable
       )
+    }
+    
+    # Helper function to get current RUV grouping variable
+    getRuvGroupingVariable <- function() {
+      if(is.null(input$ruv_grouping_variable) || input$ruv_grouping_variable == "") {
+        "group"  # Default fallback
+      } else {
+        input$ruv_grouping_variable
+      }
     }
     
     # Helper function to generate pre-normalization QC plots
@@ -494,30 +657,6 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
         correlation_group = aesthetics$color_var
       )
     }
-    
-    # Update plot aesthetic choices based on design matrix
-    observe({
-      if (!is.null(workflow_data$design_matrix)) {
-        design_cols <- colnames(workflow_data$design_matrix)
-        
-        # Filter to common experimental variables
-        available_vars <- intersect(design_cols, c("group", "factor1", "factor2", "technical_replicate_id", "sample_id"))
-        
-        if (length(available_vars) > 0) {
-          # Update color variable choices
-          shiny::updateSelectInput(session, "color_variable",
-            choices = available_vars,
-            selected = if("group" %in% available_vars) "group" else available_vars[1]
-          )
-          
-          # Update shape variable choices  
-          shiny::updateSelectInput(session, "shape_variable",
-            choices = available_vars,
-            selected = if("group" %in% available_vars) "group" else available_vars[1]
-          )
-        }
-      }
-    })
     
     # Auto-trigger pre-normalization QC when normalization tab is clicked
     # Observe tab selection passed from parent workflow
@@ -672,52 +811,169 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
           tryCatch({
             # Get RUV parameters based on mode
             if (input$ruv_mode == "automatic") {
-              # Use default parameters (placeholder for automatic tuning)
-              percentage_as_neg_ctrl <- 5
-              ruv_k <- 3  # Default, will be optimized
+              message("*** STEP 3a: Running automatic RUV optimization ***")
+              
+              # Validate automatic parameters
+              percentage_min <- if(is.null(input$auto_percentage_min) || is.na(input$auto_percentage_min)) 1 else input$auto_percentage_min
+              percentage_max <- if(is.null(input$auto_percentage_max) || is.na(input$auto_percentage_max)) 20 else input$auto_percentage_max
+              
+              if (percentage_min >= percentage_max) {
+                stop("Minimum percentage must be less than maximum percentage")
+              }
+              
+              percentage_range <- seq(percentage_min, percentage_max, by = 1)
+              
+              # Run findBestNegCtrlPercentage optimization
+              shiny::withProgress(message = "Optimizing RUV parameters...", detail = "Testing percentage range...", value = 0.5, {
+                
+                # 🔧 DEBUG: Log all parameters before calling optimization
+                message("=== AUTOMATIC RUV OPTIMIZATION DEBUG ===")
+                message(sprintf("*** DEBUG: percentage_range = %s ***", paste(percentage_range, collapse = ", ")))
+                message(sprintf("*** DEBUG: separation_metric = %s ***", input$separation_metric))
+                message(sprintf("*** DEBUG: k_penalty_weight = %.2f ***", input$k_penalty_weight))
+                message(sprintf("*** DEBUG: adaptive_k_penalty = %s ***", input$adaptive_k_penalty))
+                message(sprintf("*** DEBUG: ruv_grouping_variable = %s ***", getRuvGroupingVariable()))
+                message(sprintf("*** DEBUG: normalized_s4 class = %s ***", class(normalized_s4)))
+                message(sprintf("*** DEBUG: normalized_s4 dims = %d x %d ***", nrow(normalized_s4@protein_quant_table), ncol(normalized_s4@protein_quant_table)))
+                
+                optimization_result <- findBestNegCtrlPercentage(
+                  normalised_protein_matrix_obj = normalized_s4,
+                  percentage_range = percentage_range,
+                  separation_metric = input$separation_metric,
+                  k_penalty_weight = input$k_penalty_weight,
+                  adaptive_k_penalty = input$adaptive_k_penalty,
+                  ruv_grouping_variable = getRuvGroupingVariable(),
+                  verbose = TRUE
+                )
+                
+                # 🔧 DEBUG: Log optimization results
+                message("*** DEBUG: Optimization completed ***")
+                message(sprintf("*** DEBUG: optimization_result class = %s ***", class(optimization_result)))
+                message(sprintf("*** DEBUG: best_percentage = %.1f ***", optimization_result$best_percentage))
+                message(sprintf("*** DEBUG: best_k = %d ***", optimization_result$best_k))
+                message(sprintf("*** DEBUG: best_composite_score = %.6f ***", optimization_result$best_composite_score))
+                message(sprintf("*** DEBUG: best_separation_score = %.6f ***", optimization_result$best_separation_score))
+                if (!is.null(optimization_result$optimization_results)) {
+                  message("*** DEBUG: First few optimization results: ***")
+                  print(head(optimization_result$optimization_results, 3))
+                } else {
+                  message("*** DEBUG: optimization_results is NULL! ***")
+                }
+                
+                # 🔧 DETAILED DEBUG: Check optimization_results structure
+                message("*** DEBUG: Checking optimization_results structure ***")
+                message(sprintf("*** DEBUG: optimization_results class = %s ***", class(optimization_result$optimization_results)))
+                if (is.data.frame(optimization_result$optimization_results)) {
+                  message(sprintf("*** DEBUG: optimization_results dims = %d x %d ***", 
+                                 nrow(optimization_result$optimization_results), 
+                                 ncol(optimization_result$optimization_results)))
+                  message(sprintf("*** DEBUG: optimization_results columns = %s ***", 
+                                 paste(colnames(optimization_result$optimization_results), collapse = ", ")))
+                  
+                  # Show full results table for debugging
+                  message("*** DEBUG: FULL optimization_results table: ***")
+                  print(optimization_result$optimization_results)
+                } else {
+                  message("*** DEBUG: optimization_results is not a data.frame ***")
+                }
+                
+                # 🔧 DEBUG: Test if verbose is working by calling with message override
+                message("*** DEBUG: Testing verbose logging override ***")
+                message("*** DEBUG: This should help us see if the function is running at all ***")
+                
+                # Store optimization results for display
+                norm_data$ruv_optimization_result <- optimization_result
+                
+                # Extract optimized parameters
+                percentage_as_neg_ctrl <- optimization_result$best_percentage
+                ruv_k <- optimization_result$best_k
+                control_genes_index <- optimization_result$best_control_genes_index
+                
+                message(sprintf("*** STEP 3a: Automatic optimization completed - Best %%: %.1f, Best k: %d ***", 
+                               percentage_as_neg_ctrl, ruv_k))
+              })
+              
+              # ✅ AUDIT TRAIL: Log automatic RUV parameters to global config_list
+              tryCatch({
+                if (exists("config_list", envir = .GlobalEnv)) {
+                  config_list <- get("config_list", envir = .GlobalEnv)
+                  config_list <- updateRuvParameters(config_list, ruv_k, control_genes_index, percentage_as_neg_ctrl)
+                  assign("config_list", config_list, envir = .GlobalEnv)
+                  message("*** AUDIT: Logged automatic RUV parameters to config_list ***")
+                } else {
+                  message("*** WARNING: config_list not found in global environment - audit trail not updated ***")
+                }
+              }, error = function(e) {
+                message(paste("*** WARNING: Could not update config_list audit trail:", e$message, "***"))
+              })
+              
             } else {
+              # Manual mode - use existing logic
+              message("*** STEP 3a: Using manual RUV parameters ***")
               percentage_as_neg_ctrl <- input$ruv_percentage
               ruv_k <- if(is.null(input$ruv_k) || is.na(input$ruv_k)) 3 else input$ruv_k
-            }
-            
-            # Get negative control proteins
-            message("*** STEP 3a: Getting negative control proteins ***")
-            control_genes_index <- getNegCtrlProtAnova(
-              normalized_s4,
-              ruv_grouping_variable = getPlotAesthetics()$color_var,
-              percentage_as_neg_ctrl = percentage_as_neg_ctrl,
-              ruv_qval_cutoff = 0.05,
-              ruv_fdr_method = "BH"
-            )
-            norm_data$control_genes_index <- control_genes_index
-            message("*** STEP 3a: Negative control proteins completed ***")
-            
-          }, error = function(e) {
-            stop(paste("Step 3a (negative controls) error:", e$message))
-          })
-          
-          # Determine best k using canonical correlation
-          tryCatch({
-            if (input$ruv_mode == "automatic") {
-              message("*** STEP 3b: Determining best k using canonical correlation ***")
-              cancor_result <- ruvCancor(
+              
+              # Get negative control proteins for manual parameters
+              control_genes_index <- getNegCtrlProtAnova(
                 normalized_s4,
-                ctrl = control_genes_index,
-                num_components_to_impute = 2,
-                ruv_grouping_variable = getPlotAesthetics()$color_var
+                ruv_grouping_variable = getRuvGroupingVariable(),
+                percentage_as_neg_ctrl = percentage_as_neg_ctrl,
+                ruv_qval_cutoff = 0.05,
+                ruv_fdr_method = "BH"
               )
-              # Find best k (simplified - take the one with highest canonical correlation)
-              best_k <- which.max(cancor_result) + 1  # Add 1 since index starts at 0
-              norm_data$best_k <- best_k
-              message("*** STEP 3b: Canonical correlation completed ***")
-            } else {
-              best_k <- ruv_k
-              norm_data$best_k <- best_k
-              message("*** STEP 3b: Using manual k value ***")
+              
+              # ✅ AUDIT TRAIL: Log manual RUV parameters to global config_list
+              tryCatch({
+                if (exists("config_list", envir = .GlobalEnv)) {
+                  config_list <- get("config_list", envir = .GlobalEnv)
+                  config_list <- updateRuvParameters(config_list, ruv_k, control_genes_index, percentage_as_neg_ctrl)
+                  assign("config_list", config_list, envir = .GlobalEnv)
+                  message("*** AUDIT: Logged manual RUV parameters to config_list ***")
+                } else {
+                  message("*** WARNING: config_list not found in global environment - audit trail not updated ***")
+                }
+              }, error = function(e) {
+                message(paste("*** WARNING: Could not update config_list audit trail:", e$message, "***"))
+              })
+              
+              # For manual mode, generate canonical correlation plot for display
+              tryCatch({
+                cancor_plot <- ruvCancor(
+                  normalized_s4,
+                  ctrl = control_genes_index,
+                  num_components_to_impute = 2,
+                  ruv_grouping_variable = getRuvGroupingVariable()
+                )
+                
+                # Store manual results in same format as automatic for consistent display
+                norm_data$ruv_optimization_result <- list(
+                  best_percentage = percentage_as_neg_ctrl,
+                  best_k = ruv_k,
+                  best_control_genes_index = control_genes_index,
+                  best_cancor_plot = cancor_plot,
+                  optimization_results = data.frame(
+                    percentage = percentage_as_neg_ctrl,
+                    separation_score = NA,
+                    best_k = ruv_k,
+                    composite_score = NA,
+                    num_controls = sum(control_genes_index, na.rm = TRUE),
+                    valid_plot = TRUE
+                  ),
+                  separation_metric_used = "manual",
+                  k_penalty_weight = NA,
+                  adaptive_k_penalty_used = FALSE
+                )
+              }, error = function(e) {
+                message(paste("Warning: Could not generate canonical correlation plot for manual mode:", e$message))
+              })
             }
             
+            norm_data$control_genes_index <- control_genes_index
+            norm_data$best_k <- ruv_k
+            message("*** STEP 3: RUV parameter determination completed ***")
+            
           }, error = function(e) {
-            stop(paste("Step 3b (canonical correlation) error:", e$message))
+            stop(paste("Step 3 (RUV parameter determination) error:", e$message))
           })
           
           # Apply RUV-III correction
@@ -727,8 +983,8 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
           tryCatch({
             ruv_corrected_s4 <- ruvIII_C_Varying(
               normalized_s4,
-              ruv_grouping_variable = getPlotAesthetics()$color_var,
-              ruv_number_k = best_k,
+              ruv_grouping_variable = getRuvGroupingVariable(),
+              ruv_number_k = ruv_k,
               ctrl = control_genes_index
             )
             message("*** STEP 4: RUV-III correction completed ***")
@@ -770,7 +1026,7 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
               ruvfilt_protein_count,
               input$norm_method,
               input$ruv_mode,
-              best_k,
+              ruv_k,
               percentage_as_neg_ctrl
             )
             
@@ -784,7 +1040,7 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
               config_object = list(
                 norm_method = input$norm_method,
                 ruv_mode = input$ruv_mode,
-                ruv_k = best_k,
+                ruv_k = ruv_k,
                 percentage_as_neg_ctrl = percentage_as_neg_ctrl
               ),
               description = "Post-normalization complete: RUV-III correction and missing value cleanup completed"
@@ -852,7 +1108,7 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
           correlation_vec <- pearsonCorForSamplePairs(
             ruv_s4,
             tech_rep_remove_regex = "pool",
-            correlation_group = getPlotAesthetics()$color_var
+            correlation_group = getRuvGroupingVariable()
           )
           norm_data$correlation_vector <- correlation_vec
           norm_data$correlation_threshold <- input$min_pearson_correlation_threshold
@@ -889,11 +1145,12 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
           
           # Generate final QC plot
           tryCatch({
+            aesthetics <- getPlotAesthetics()
             norm_data$final_qc_plot <- plotPca(
               final_s4_for_de,
-              grouping_variable = getPlotAesthetics()$color_var,
+              grouping_variable = aesthetics$color_var,
               label_column = "",
-              shape_variable = getPlotAesthetics()$shape_var,
+              shape_variable = aesthetics$shape_var,
               title = "Final Correlation-Filtered Data",
               font_size = 8
             )
@@ -1096,48 +1353,6 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
       }
     })
     
-    # Reset normalization button logic
-    observeEvent(input$reset_normalization, {
-      message("Resetting normalization...")
-      
-      # Reset normalization state
-      norm_data$normalization_complete <- FALSE
-      norm_data$ruv_complete <- FALSE
-      norm_data$correlation_filtering_complete <- FALSE
-      norm_data$normalized_protein_obj <- NULL
-      norm_data$ruv_normalized_obj <- NULL
-      norm_data$correlation_filtered_obj <- NULL
-      norm_data$best_k <- NULL
-      norm_data$control_genes_index <- NULL
-      norm_data$correlation_vector <- NULL
-      norm_data$correlation_threshold <- NULL
-      norm_data$final_qc_plot <- NULL
-      norm_data$final_filtering_plot <- NULL
-      norm_data$post_norm_filtering_plot <- NULL
-      norm_data$filtering_summary_text <- NULL
-      
-      # Clear post-normalization, RUV, and correlation plots
-      norm_data$qc_plots$post_normalization <- list(pca = NULL, density = NULL, rle = NULL, correlation = NULL)
-      norm_data$qc_plots$ruv_corrected <- list(pca = NULL, density = NULL, rle = NULL, correlation = NULL)
-      
-      # Reset workflow data
-      workflow_data$ruv_normalised_for_de_analysis_obj <- NULL
-      workflow_data$tab_status$normalization <- "pending"
-      workflow_data$tab_status$differential_expression <- "disabled"
-      
-      # Clear correlation filter summary and filtering summary
-      output$correlation_filter_summary <- shiny::renderText("No correlation filtering applied yet")
-      output$filtering_summary_text <- shiny::renderText("Filtering summary will be available after normalization and RUV correction.")
-      
-      shiny::showNotification(
-        "Normalization has been reset to pre-normalization state",
-        type = "warning",
-        duration = 3
-      )
-      
-      message("Normalization reset completed")
-    })
-    
     # NEW: Render post-normalisation filtering summary plot
     output$post_norm_filtering_summary <- shiny::renderPlot({
       if (!is.null(norm_data$post_norm_filtering_plot)) {
@@ -1187,6 +1402,165 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
         plot.new()
         text(0.5, 0.5, "Apply correlation filter to generate final QC plot", cex = 1.2)
       }
+    })
+    
+    # NEW: Render RUV QC outputs
+    output$ruv_canonical_correlation_plot <- shiny::renderPlot({
+      if (!is.null(norm_data$ruv_optimization_result) && !is.null(norm_data$ruv_optimization_result$best_cancor_plot)) {
+        norm_data$ruv_optimization_result$best_cancor_plot
+      } else {
+        plot.new()
+        text(0.5, 0.5, "Run normalization to generate RUV canonical correlation plot", cex = 1.2)
+      }
+    })
+    
+    output$ruv_optimization_summary <- shiny::renderText({
+      if (!is.null(norm_data$ruv_optimization_result)) {
+        result <- norm_data$ruv_optimization_result
+        
+        if (input$ruv_mode == "automatic") {
+          sprintf(
+            "Automatic RUV Optimization Results:\n\n• Best percentage: %.1f%%\n• Best k value: %d\n• Separation score: %.4f\n• Composite score: %.4f\n• Control genes: %d\n• RUV grouping variable: %s\n• Separation metric: %s\n• K penalty weight: %.1f\n• Adaptive penalty: %s\n• Sample size: %s",
+            result$best_percentage,
+            result$best_k,
+            ifelse(is.null(result$best_separation_score), 0, result$best_separation_score),
+            ifelse(is.null(result$best_composite_score), 0, result$best_composite_score),
+            sum(result$best_control_genes_index, na.rm = TRUE),
+            getRuvGroupingVariable(),
+            result$separation_metric_used,
+            ifelse(is.null(result$k_penalty_weight), 0, result$k_penalty_weight),
+            ifelse(is.null(result$adaptive_k_penalty_used), FALSE, result$adaptive_k_penalty_used),
+            ifelse(is.null(result$sample_size), "N/A", result$sample_size)
+          )
+        } else {
+          sprintf(
+            "Manual RUV Parameters:\n\n• Selected percentage: %.1f%%\n• Selected k value: %d\n• Control genes: %d\n• RUV grouping variable: %s\n• Mode: Manual selection",
+            result$best_percentage,
+            result$best_k,
+            sum(result$best_control_genes_index, na.rm = TRUE),
+            getRuvGroupingVariable()
+          )
+        }
+      } else {
+        "Run normalization to see RUV optimization results"
+      }
+    })
+    
+    output$ruv_optimization_table <- DT::renderDataTable({
+      if (!is.null(norm_data$ruv_optimization_result) && !is.null(norm_data$ruv_optimization_result$optimization_results)) {
+        
+        # Format the optimization results table
+        results_df <- norm_data$ruv_optimization_result$optimization_results
+        
+        # Round numeric columns for display
+        if ("separation_score" %in% colnames(results_df)) {
+          results_df$separation_score <- round(results_df$separation_score, 4)
+        }
+        if ("composite_score" %in% colnames(results_df)) {
+          results_df$composite_score <- round(results_df$composite_score, 4)
+        }
+        
+        # Highlight the best result
+        best_percentage <- norm_data$ruv_optimization_result$best_percentage
+        
+        DT::datatable(
+          results_df,
+          options = list(
+            pageLength = 10,
+            scrollY = "300px",
+            scrollCollapse = TRUE,
+            dom = 't'  # Only show table, no search/pagination controls
+          ),
+          rownames = FALSE
+        ) |>
+          DT::formatStyle(
+            "percentage",
+            target = "row",
+            backgroundColor = DT::styleEqual(best_percentage, "#e6f3ff")
+          )
+      } else {
+        DT::datatable(data.frame(Message = "Run normalization to see optimization results"))
+      }
+    })
+    
+    # Reset normalization button logic
+    observeEvent(input$reset_normalization, {
+      message("Resetting normalization...")
+      
+      tryCatch({
+        # ✅ CRITICAL FIX: Revert R6 state manager to pre-normalization state
+        if (!is.null(workflow_data$state_manager)) {
+          # Use smart revert pattern like QC tabs - find the actual previous state
+          history <- workflow_data$state_manager$getHistory()
+          # Define possible pre-normalization states in reverse chronological order
+          pre_norm_states <- c("protein_replicate_filtered", "imputed", "replicate_filtered", "sample_filtered", "protein_peptide_filtered", "intensity_filtered", "precursor_rollup", "qvalue_filtered", "raw_data_s4")
+          # Find the most recent state that actually exists
+          prev_state <- intersect(rev(history), pre_norm_states)[1]
+          
+          if (!is.null(prev_state)) {
+            reverted_s4 <- workflow_data$state_manager$revertToState(prev_state)
+            message(sprintf("*** RESET: Reverted R6 state manager to '%s' (actual previous state) ***", prev_state))
+          } else {
+            message("*** WARNING: No valid pre-normalization state found in history ***")
+          }
+        } else {
+          message("*** WARNING: workflow_data$state_manager is NULL - cannot revert state ***")
+        }
+        
+        # Reset normalization state
+        norm_data$normalization_complete <- FALSE
+        norm_data$ruv_complete <- FALSE
+        norm_data$correlation_filtering_complete <- FALSE
+        norm_data$normalized_protein_obj <- NULL
+        norm_data$ruv_normalized_obj <- NULL
+        norm_data$correlation_filtered_obj <- NULL
+        norm_data$best_k <- NULL
+        norm_data$control_genes_index <- NULL
+        norm_data$correlation_vector <- NULL
+        norm_data$correlation_threshold <- NULL
+        norm_data$final_qc_plot <- NULL
+        norm_data$final_filtering_plot <- NULL
+        norm_data$post_norm_filtering_plot <- NULL
+        norm_data$filtering_summary_text <- NULL
+        norm_data$ruv_optimization_result <- NULL  # Reset RUV optimization results
+        
+        # Clear post-normalization, RUV, and correlation plots
+        norm_data$qc_plots$post_normalization <- list(pca = NULL, density = NULL, rle = NULL, correlation = NULL)
+        norm_data$qc_plots$ruv_corrected <- list(pca = NULL, density = NULL, rle = NULL, correlation = NULL)
+        
+        # Reset workflow data
+        workflow_data$ruv_normalised_for_de_analysis_obj <- NULL
+        workflow_data$tab_status$normalization <- "pending"
+        workflow_data$tab_status$differential_expression <- "disabled"
+        
+        # Clear correlation filter summary and filtering summary
+        output$correlation_filter_summary <- shiny::renderText("No correlation filtering applied yet")
+        output$filtering_summary_text <- shiny::renderText("Filtering summary will be available after normalization and RUV correction.")
+        output$ruv_optimization_summary <- shiny::renderText("Run normalization to see RUV optimization results")
+        
+        # Create dynamic notification message based on actual revert state
+        notification_msg <- if (!is.null(prev_state)) {
+          sprintf("Normalization has been reset to pre-normalization state (%s)", prev_state)
+        } else {
+          "Normalization has been reset (no valid previous state found)"
+        }
+        
+        shiny::showNotification(
+          notification_msg,
+          type = "warning",
+          duration = 5
+        )
+        
+        message("*** RESET: Normalization reset completed successfully ***")
+        
+      }, error = function(e) {
+        message(paste("*** ERROR in normalization reset:", e$message, "***"))
+        shiny::showNotification(
+          paste("Error resetting normalization:", e$message),
+          type = "error",
+          duration = 10
+        )
+      })
     })
     
     # Return normalization data for potential use by parent module

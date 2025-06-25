@@ -8,6 +8,7 @@
 # User-specific files
 .Ruserdata
 /mem/
+/debug/
 
 # Example code in package build process
 *-Ex.R
