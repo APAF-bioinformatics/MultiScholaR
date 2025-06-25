@@ -2,36 +2,36 @@
 % Please edit documentation in R/helper_functions.R
 \name{updateMissingValueParameters}
 \alias{updateMissingValueParameters}
-\title{Update Missing Value Parameters in Configuration List}
+\title{Update Missing Value Parameters in Configuration List and S4 Object}
 \usage{
 updateMissingValueParameters(
-  design_matrix,
-  config_list,
+  theObject,
   min_reps_per_group = 2,
-  min_groups = 2
+  min_groups = 2,
+  config_list_name = "config_list",
+  env = .GlobalEnv
 )
 }
 \arguments{
-\item{design_matrix}{A tibble containing the experimental design. Must have a 'group' column.
-Groups can have different numbers of replicates.}
-
-\item{config_list}{A list containing configuration parameters. Must have a
-'removeRowsWithMissingValuesPercent' nested list with 'groupwise_percentage_cutoff'
-and 'max_groups_percentage_cutoff' parameters.}
+\item{theObject}{An S4 object containing the experimental data and design matrix.}
 
 \item{min_reps_per_group}{Integer specifying the minimum number of replicates required in each passing group.
 If a group has fewer total replicates than this value, the minimum is adjusted.}
 
 \item{min_groups}{Integer specifying the minimum number of groups required to have sufficient
 quantifiable values. Default is 2.}
+
+\item{config_list_name}{The name of the global config list variable (defaults to "config_list").}
+
+\item{env}{The environment where the global config list resides (defaults to .GlobalEnv).}
 }
 \value{
-Updated config_list with modified missing value parameters
+Updated S4 object with synchronized @args and global config_list
 }
 \description{
 Automatically calculates and updates the missing value filtering parameters in the configuration list
-based on the experimental design matrix. The function ensures at least a specified number of groups
-have sufficient quantifiable values for analysis.
+and S4 object @args based on the experimental design matrix. The function ensures at least a specified 
+number of groups have sufficient quantifiable values for analysis.
 }
 \details{
 The function calculates:
@@ -39,10 +39,16 @@ The function calculates:
 \item groupwise_percentage_cutoff: Based on minimum required replicates per group
 \item max_groups_percentage_cutoff: Based on minimum required groups
 }
+
+Both the S4 object's @args slot and the global config_list are updated to maintain synchronization.
 }
 \examples{
 \dontrun{
-config_list <- updateMissingValueParameters(design_matrix, config_list, min_reps_per_group = 2)
+protein_log2_quant_cln <- updateMissingValueParameters(
+  theObject = protein_log2_quant_cln, 
+  min_reps_per_group = 2, 
+  min_groups = 2
+)
 }
 
 }
