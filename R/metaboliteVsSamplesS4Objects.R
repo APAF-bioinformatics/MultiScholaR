@@ -2753,7 +2753,7 @@ setMethod(f = "getDeResultsLongFormat"
 setMethod(f = "plotInteractiveVolcano"
           , signature = "list"
           , definition =
-            function( objectsList, anno_tbl = NULL ) {
+            function( objectsList, anno_list = NULL ) {
 
               list_of_objects <- purrr::imap( objectsList,
                                              \(de_output_object, idx) {
@@ -2810,7 +2810,7 @@ setMethod(f = "plotInteractiveVolcano"
 
                                                list_of_glimma_objs <- purrr::map( seq_len( ncol( de_output_object@fit.eb$p.value))
 
-                                                                                  , \(idx) {
+                                                                                  , \(idxb) {
 
                                                                                     id_col_name <- de_output_object@theObject@metabolite_id_column
 
@@ -2820,13 +2820,18 @@ setMethod(f = "plotInteractiveVolcano"
 
 
                                                                                     # If a user-provided anno_tbl exists, join it.
-                                                                                    anno_tbl_joined <- if (!is.null(anno_tbl)) {
+                                                                                    anno_tbl_joined <- if (!is.null(anno_list)) {
+                                                                                      print(paste( "idx=", idx))
+                                                                                      anno_tbl <- anno_list[[idx]]
                                                                                         # Defensive check: ensure anno_tbl is a data.frame and has the join column
                                                                                         if (!is.data.frame(anno_tbl) || !id_col_name %in% colnames(anno_tbl)) {
                                                                                             warning(sprintf("Provided 'anno_tbl' is not a data.frame or is missing the join column '%s'. Ignoring 'anno_tbl'.", id_col_name))
                                                                                             base_anno_tbl
                                                                                         } else {
-                                                                                            dplyr::left_join(base_anno_tbl, anno_tbl, by = id_col_name)
+                                                                                            dplyr::left_join(base_anno_tbl |>
+                                                                                                               mutate( !!sym(id_col_name) := purrr::map_chr( !!sym(id_col_name), as.character))
+                                                                                                             , anno_tbl |>
+                                                                                                               mutate( !!sym(id_col_name) := purrr::map_chr( !!sym(id_col_name), as.character)), by = id_col_name)
                                                                                         }
                                                                                     } else {
                                                                                         base_anno_tbl
@@ -2838,7 +2843,7 @@ setMethod(f = "plotInteractiveVolcano"
 
 
                                                                                     Glimma::glimmaVolcano(my_fit_eb
-                                                                                                          , coef=idx
+                                                                                                          , coef=idxb
                                                                                                           , anno=anno_df_for_glimma
                                                                                                           , counts = counts_matrix
                                                                                                           , groups = groups
@@ -2876,6 +2881,12 @@ setMethod(f = "createGridQCMetabolomics",
           signature = "GridPlotData",
           definition = function(theObject, pca_titles = NULL, density_titles = NULL, rle_titles = NULL, pearson_titles = NULL, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
 
+            # --- Defensive check on input titles ---
+            stopifnot("pca_titles must be a character vector or NULL" = is.null(pca_titles) || is.character(pca_titles))
+            stopifnot("density_titles must be a character vector or NULL" = is.null(density_titles) || is.character(density_titles))
+            stopifnot("rle_titles must be a character vector or NULL" = is.null(rle_titles) || is.character(rle_titles))
+            stopifnot("pearson_titles must be a character vector or NULL" = is.null(pearson_titles) || is.character(pearson_titles))
+
             # --- Identify all unique assay names from the plot lists ---
             all_plot_lists <- c(theObject@pca_plots, theObject@density_plots, theObject@rle_plots, theObject@pearson_plots)
             all_plot_lists <- all_plot_lists[sapply(all_plot_lists, function(x) is.list(x) && length(x) > 0)]
@@ -2886,10 +2897,6 @@ setMethod(f = "createGridQCMetabolomics",
                 warning("No assays with named plots found. Cannot generate composite QC plot.", immediate. = TRUE)
                 return(list())
             }
-
-            # --- Determine the grid layout ---
-            # Assume the layout is defined by the number of PCA plot types passed
-            num_cols <- length(theObject@pca_plots)
 
             # --- Loop over each assay to create a composite plot ---
             composite_plots_list <- purrr::map(assay_names, function(current_assay_name) {
@@ -2935,9 +2942,23 @@ setMethod(f = "createGridQCMetabolomics",
                 plots_to_combine <- list()
                 add_plot_row <- function(plots, titles, create_fn) {
                     # Only add row if there are titles provided for it
-                    if (!is.null(titles) && length(titles) > 0) {
-                        list(wrap_plots(lapply(titles, createLabelPlot), ncol = num_cols),
-                             wrap_plots(lapply(plots, create_fn), ncol = num_cols))
+                    if (!is.null(titles) && length(titles) > 0 && length(plots) > 0) {
+                        # Number of columns is now determined by the number of plots for THIS row
+                        num_cols_row <- length(plots)
+                        # Ensure the number of titles matches the number of plots
+                        if(length(titles) != num_cols_row){
+                             warning(sprintf("Mismatch between number of titles (%d) and number of plots (%d). Adjusting titles to match plots.", length(titles), num_cols_row), immediate. = TRUE)
+                             # Create a character vector of the correct length, filled with blanks
+                             adjusted_titles <- character(num_cols_row)
+                             # Copy the provided titles into the new vector
+                             n_to_copy <- min(length(titles), num_cols_row)
+                             if (n_to_copy > 0) {
+                                adjusted_titles[1:n_to_copy] <- titles[1:n_to_copy]
+                             }
+                             titles <- adjusted_titles
+                        }
+                        list(wrap_plots(lapply(titles, createLabelPlot), ncol = num_cols_row),
+                             wrap_plots(lapply(plots, create_fn), ncol = num_cols_row))
                     } else {
                         list()
                     }
@@ -2955,6 +2976,14 @@ setMethod(f = "createGridQCMetabolomics",
 
                 num_rows <- length(plots_to_combine) / 2
                 layout_heights <- rep(c(0.1, 1), num_rows)
+                
+                # Determine overall width by the row with the maximum number of plots
+                max_cols <- max(
+                    length(pca_plots_assay), 
+                    length(density_plots_assay), 
+                    length(rle_plots_assay), 
+                    length(pearson_plots_assay)
+                )
 
                 combined_plot <- wrap_plots(plots_to_combine, ncol = 1) + plot_layout(heights = layout_heights)
 
@@ -2964,7 +2993,7 @@ setMethod(f = "createGridQCMetabolomics",
                     ggsave(
                       plot = combined_plot,
                       filename = file.path(save_path, paste0(assay_file_name, ".", ext)),
-                      width = 3.5 * num_cols,
+                      width = 3.5 * max_cols,
                       height = 4 * num_rows
                     )
                   })
