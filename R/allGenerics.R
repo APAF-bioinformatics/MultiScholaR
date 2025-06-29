@@ -333,7 +333,7 @@ setGeneric(name="getDeResultsLongFormat"
 ## Create proteomics interactive volcano plot
 #' @export
 setGeneric(name="plotInteractiveVolcano"
-           , def=function(objectsList, anno_tbl = NULL) {
+           , def=function(objectsList, anno_list = NULL) {
              standardGeneric("plotInteractiveVolcano")
            },
            signature=c("objectsList"))
