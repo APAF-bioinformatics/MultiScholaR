@@ -669,6 +669,83 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
           workflow_data$aa_seq_tbl_final <- NULL
         })
         
+                # ✅ OPTIMIZED: Create efficient UniProt annotation lookup from actual data
+        log_info("Creating optimized UniProt annotation lookup from actual data...")
+        tryCatch({
+          
+          cat("*** UNIPROT LOOKUP: Starting OPTIMIZED annotation lookup from actual data ***\n")
+          
+          # Create cache directory for UniProt annotations
+          uniprot_cache_dir <- if (!is.null(experiment_paths) && !is.null(experiment_paths$results_dir)) {
+            file.path(experiment_paths$results_dir, "cache", "uniprot_annotations")
+          } else {
+            file.path(cache_dir, "uniprot_annotations")
+          }
+          
+          if (!dir.exists(uniprot_cache_dir)) {
+            dir.create(uniprot_cache_dir, recursive = TRUE)
+          }
+          
+          # Detect protein ID column from imported data
+          protein_column <- if("Protein.Group" %in% names(workflow_data$data_tbl)) {
+            "Protein.Group"
+          } else if("Protein.Ids" %in% names(workflow_data$data_tbl)) {
+            "Protein.Ids"  
+          } else if("Proteins" %in% names(workflow_data$data_tbl)) {
+            "Proteins"
+          } else {
+            # Find first column with protein-like content
+            potential_cols <- names(workflow_data$data_tbl)[grepl("protein|Protein|PROTEIN", names(workflow_data$data_tbl))]
+            if (length(potential_cols) > 0) potential_cols[1] else "Protein.Group"
+          }
+          
+          cat(sprintf("*** UNIPROT LOOKUP: Using protein column: %s ***\n", protein_column))
+          cat(sprintf("*** UNIPROT LOOKUP: Processing %d rows of actual data ***\n", nrow(workflow_data$data_tbl)))
+          
+          # Use the optimized annotation function that works with actual data
+          uniprot_dat_cln <- getUniprotAnnotationsFull(
+            data_tbl = workflow_data$data_tbl,
+            protein_id_column = protein_column,
+            cache_dir = uniprot_cache_dir,
+            taxon_id = input$taxon_id
+          )
+          
+          cat(sprintf("*** UNIPROT LOOKUP: Successfully created annotation lookup with %d entries ***\n", nrow(uniprot_dat_cln)))
+          
+          # Store in workflow data and global environment
+          workflow_data$uniprot_dat_cln <- uniprot_dat_cln
+          assign("uniprot_dat_cln", uniprot_dat_cln, envir = .GlobalEnv)
+          
+          # Save to scripts directory for session persistence
+          if (!is.null(experiment_paths) && !is.null(experiment_paths$source_dir)) {
+            scripts_uniprot_path <- file.path(experiment_paths$source_dir, "uniprot_dat_cln.RDS")
+            saveRDS(uniprot_dat_cln, scripts_uniprot_path)
+            log_info(sprintf("Saved uniprot_dat_cln to scripts directory: %s", scripts_uniprot_path))
+          }
+          
+          log_info(sprintf("UniProt annotations retrieved successfully. Found %d annotations", nrow(uniprot_dat_cln)))
+          
+          # Show notification to user
+          shiny::showNotification(
+            sprintf("UniProt annotation lookup created: %d protein annotations available for enrichment analysis", nrow(uniprot_dat_cln)),
+            type = "message",
+            duration = 5
+          )
+          
+        }, error = function(e) {
+          log_warn(paste("Error getting UniProt annotations:", e$message))
+          log_warn("Enrichment analysis may have limited functionality without UniProt annotations")
+          workflow_data$uniprot_dat_cln <- NULL
+          
+          shiny::showNotification(
+            paste("Warning: Could not retrieve UniProt annotations:", e$message, "Enrichment analysis may be limited."),
+            type = "warning",
+            duration = 8
+          )
+        })
+        
+        cat("*** UNIPROT LOOKUP: Annotation process completed ***\n")
+        
         # Set organism info
         workflow_data$taxon_id <- input$taxon_id
         workflow_data$organism_name <- input$organism_name

@@ -123,155 +123,16 @@ proteomicsWorkflowUi <- function(id) {
         value = "enrichment",
         icon = shiny::icon("network-wired"),
         shiny::br(),
-        shiny::fluidRow(
-          shiny::column(3,
-            shiny::wellPanel(
-              shiny::h4("Enrichment Settings"),
-              shiny::selectInput(
-                ns("enrichment_method"),
-                "Method:",
-                choices = list(
-                  "g:Profiler" = "gprofiler",
-                  "clusterProfiler" = "clusterprofiler"
-                ),
-                selected = "gprofiler"
-              ),
-              shiny::checkboxGroupInput(
-                ns("enrichment_databases"),
-                "Databases:",
-                choices = list(
-                  "GO Biological Process" = "GO:BP",
-                  "GO Molecular Function" = "GO:MF", 
-                  "GO Cellular Component" = "GO:CC",
-                  "KEGG Pathways" = "KEGG",
-                  "Reactome" = "REAC"
-                ),
-                selected = c("GO:BP", "KEGG", "REAC")
-              ),
-              shiny::numericInput(
-                ns("enrichment_q_threshold"),
-                "Q-value Threshold:",
-                value = 0.05,
-                min = 0.001,
-                max = 0.2,
-                step = 0.005
-              ),
-              shiny::br(),
-              shiny::actionButton(
-                ns("run_enrichment"),
-                "Run Enrichment",
-                class = "btn-primary",
-                width = "100%"
-              )
-            )
-          ),
-          shiny::column(9,
-            shiny::tabsetPanel(
-              shiny::tabPanel(
-                "Enrichment Results",
-                shiny::br(),
-                shiny::uiOutput(ns("enrichment_contrast_selector")),
-                shiny::br(),
-                DT::DTOutput(ns("enrichment_results_table"))
-              ),
-              shiny::tabPanel(
-                "Enrichment Plots",
-                shiny::br(),
-                shiny::plotOutput(ns("enrichment_plot"), height = "700px")
-              ),
-              shiny::tabPanel(
-                "Network View",
-                shiny::br(),
-                shiny::plotOutput(ns("enrichment_network"), height = "700px")
-              )
-            )
-          )
-        )
+        enrichmentAnalysisAppletUI(ns("enrichment_analysis"))
       ),
       
-      # Tab 7: Report Generation
+      # Tab 7: Session Summary & Report Generation
       shiny::tabPanel(
-        "Report",
-        value = "report",
-        icon = shiny::icon("file-alt"),
+        "Session Summary & Report",
+        value = "session_summary",
+        icon = shiny::icon("file-export"),
         shiny::br(),
-        shiny::fluidRow(
-          shiny::column(6,
-            shiny::wellPanel(
-              shiny::h4("Report Settings"),
-              shiny::textInput(
-                ns("report_title"),
-                "Report Title:",
-                value = "Proteomics Analysis Report"
-              ),
-              shiny::textInput(
-                ns("report_author"),
-                "Author:",
-                value = ""
-              ),
-              shiny::checkboxGroupInput(
-                ns("report_sections"),
-                "Include Sections:",
-                choices = list(
-                  "Data Summary" = "summary",
-                  "Quality Control" = "qc",
-                  "Normalization" = "norm",
-                  "Differential Expression" = "de",
-                  "Enrichment Analysis" = "enrichment",
-                  "Methods" = "methods"
-                ),
-                selected = c("summary", "qc", "norm", "de", "enrichment", "methods")
-              ),
-              shiny::br(),
-              shiny::actionButton(
-                ns("generate_report"),
-                "Generate Report",
-                class = "btn-primary",
-                icon = shiny::icon("file-export"),
-                width = "100%"
-              )
-            )
-          ),
-          shiny::column(6,
-            shiny::wellPanel(
-              shiny::h4("Export Options"),
-              shiny::checkboxGroupInput(
-                ns("export_formats"),
-                "Report Formats:",
-                choices = list(
-                  "HTML" = "html",
-                  "PDF" = "pdf",
-                  "Word" = "docx"
-                ),
-                selected = c("html", "pdf")
-              ),
-              shiny::br(),
-              shiny::h5("Data Exports"),
-              shiny::downloadButton(
-                ns("download_processed_data"),
-                "Download Processed Data",
-                class = "btn-info",
-                width = "100%"
-              ),
-              shiny::br(),
-              shiny::br(),
-              shiny::downloadButton(
-                ns("download_session"),
-                "Download Session File",
-                class = "btn-info", 
-                width = "100%"
-              ),
-              shiny::br(),
-              shiny::br(),
-              shiny::downloadButton(
-                ns("download_parameters"),
-                "Download Parameters",
-                class = "btn-info",
-                width = "100%"
-              )
-            )
-          )
-        )
+        sessionSummaryUI(ns("session_summary"))
       )
     )
   )

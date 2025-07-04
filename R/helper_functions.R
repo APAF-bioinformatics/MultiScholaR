@@ -262,7 +262,7 @@ savePlot <- function(plot, base_path, plot_name, formats = c("pdf", "png"), widt
 #' @param base_path The base directory path where the plot will be saved
 #' @param plot_name The name to be used for the saved plot files
 #' @param formats A vector of file formats to save the plot in (default: c("pdf", "png"))
-#'#' @param width The width of the plot (default: 7)
+##' @param width The width of the plot (default: 7)
 #' @param height The height of the plot (default: 7)
 #' @param ... Additional arguments to be passed to ggsave
 #'
@@ -1005,119 +1005,32 @@ setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force
 }
 
 ##################################################################################################################
-#' @import methods
-setClass("WorkflowArgs",
-    slots = c(
-        workflow_name = "character",
-        timestamp = "character",
-        args = "list",
-        description = "character",
-        git_info = "list",
-        organism_info = "list"
-    )
-)
+# S4 class WorkflowArgs removed - replaced with createStudyParametersFile function
 
-#' @title Create Workflow Arguments Container from Config
-#' @param workflow_name Name of the workflow
-#' @param description Optional description of the workflow
-#' @param organism_name Optional organism name (defaults to value from session if available)
-#' @param taxon_id Optional taxon ID (defaults to value from session if available)
-#' @param source_dir_path Character string, the path to the source directory for this workflow instance.
-#' @return WorkflowArgs object
-#' @export
-createWorkflowArgsFromConfig <- function(workflow_name, description = "", 
-                                        organism_name = NULL, taxon_id = NULL,
-                                        source_dir_path = NULL) { # New parameter
-
-    # Get git information
-    # Attempt to get git info, but allow failure gracefully
-    git_info <- tryCatch({
-        # Ensure gh is loaded if used directly. Consider adding gh:: to function calls.
-        if (requireNamespace("gh", quietly = TRUE)) {
-            # Check if a token is available to avoid interactive prompts if not in an interactive session
-            if (nzchar(gh::gh_token())) {
-                 branch_info <- gh::gh("/repos/APAF-BIOINFORMATICS/MultiScholaR/branches/main") # CHECK REPO/BRANCH
-                 list(
-                    commit_sha = branch_info$commit$sha,
-                    branch = "main", # Consider making this dynamic or a parameter
-                    repo = "MultiScholaR", 
-                    timestamp = branch_info$commit$commit$author$date
-                )
-            } else {
-                warning("GitHub token not found. Skipping Git information retrieval.", immediate. = TRUE)
-                list(commit_sha = NA_character_, branch = NA_character_, repo = NA_character_, timestamp = NA_character_)
-            }
-        } else {
-            warning("Package 'gh' not available. Skipping Git information retrieval.", immediate. = TRUE)
-            list(commit_sha = NA_character_, branch = NA_character_, repo = NA_character_, timestamp = NA_character_)
-        }
-    }, error = function(e) {
-        warning(paste("Could not retrieve Git information:", e$message), immediate. = TRUE)
-        list(commit_sha = NA_character_, branch = NA_character_, repo = NA_character_, timestamp = NA_character_)
-    })
-    
-    # Get organism information from session if not explicitly provided
-    if (is.null(organism_name) && exists("organism_name", envir = .GlobalEnv)) {
-        organism_name <- get("organism_name", envir = .GlobalEnv)
-    }
-    
-    if (is.null(taxon_id) && exists("taxon_id", envir = .GlobalEnv)) {
-        taxon_id <- get("taxon_id", envir = .GlobalEnv)
-    }
-    
-    # Create organism info list
-    organism_info <- list(
-        organism_name = if(is.null(organism_name) || !is.character(organism_name)) NA_character_ else organism_name,
-        taxon_id = if(is.null(taxon_id) || !(is.character(taxon_id) || is.numeric(taxon_id))) NA_character_ else as.character(taxon_id)
-    )
-
-    # Ensure config_list is available (it's used directly in the new() call)
-    config_list_to_use <- list() # Default to empty list
-    if (exists("config_list", envir = parent.frame()) && is.list(get("config_list", envir = parent.frame()))) {
-        config_list_to_use <- get("config_list", envir = parent.frame())
-    } else if (exists("config_list", envir = .GlobalEnv) && is.list(get("config_list", envir = .GlobalEnv))) {
-        config_list_to_use <- get("config_list", envir = .GlobalEnv)
-    } else {
-        warning("'config_list' not found as a list in parent frame or global environment. WorkflowArgs @args slot will be empty or use prototype.", immediate. = TRUE)
-    }
-
-    new_workflow_args <- new("WorkflowArgs",
-        workflow_name = workflow_name,
-        timestamp = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
-        args = config_list_to_use, 
-        description = description,
-        git_info = git_info,
-        organism_info = organism_info
-    )
-    
-    # Store source_dir_path within the 'args' slot using a specific name
-    if (!is.null(source_dir_path) && is.character(source_dir_path) && length(source_dir_path) == 1 && nzchar(source_dir_path)) {
-        new_workflow_args@args$internal_workflow_source_dir <- tools::file_path_as_absolute(source_dir_path)
-    } else {
-        new_workflow_args@args$internal_workflow_source_dir <- NULL 
-        warning("`source_dir_path` was not provided or invalid for createWorkflowArgsFromConfig. Study parameters might not be saved by show() method.", immediate. = TRUE)
-    }
-    
-    return(new_workflow_args)
-}
+# Old complex createWorkflowArgsFromConfig function removed - replaced with simple wrapper below
 
 #' @title Format Configuration List
 #' @param config_list List of configuration parameters
 #' @param indent Number of spaces for indentation
 #' @export
 formatConfigList <- function(config_list, indent = 0) {
+    message(sprintf("--- DEBUG66: Entering formatConfigList with %d items, indent=%d ---", length(config_list), indent))
     output <- character()
 
     # Exclude internal_workflow_source_dir from printing
     names_to_process <- names(config_list)
     names_to_process <- names_to_process[names_to_process != "internal_workflow_source_dir"]
-
+    message(sprintf("   DEBUG66: Processing %d items after exclusions", length(names_to_process)))
 
     for (name in names_to_process) {
+        message(sprintf("   DEBUG66: Processing config item '%s'", name))
         value <- config_list[[name]]
+        message(sprintf("   DEBUG66: Item '%s' class: %s", name, paste(class(value), collapse=", ")))
+        
         # Skip core_utilisation and complex objects from display
         if (name == "core_utilisation" ||
             any(class(value) %in% c("process", "R6", "multidplyr_cluster", "cluster", "SOCKcluster"))) { # Added "cluster", "SOCKcluster"
+            message(sprintf("   DEBUG66: Skipping '%s' due to complex class", name))
             next
         }
 
@@ -1128,18 +1041,22 @@ formatConfigList <- function(config_list, indent = 0) {
 
         # Handle different value types
         if (is.list(value)) {
+            message(sprintf("   DEBUG66: '%s' is a list with %d elements", name, length(value)))
             if (length(value) > 0 && !is.null(names(value))) { # Only print header and recurse if list is named and not empty
                 output <- c(output,
                     paste0(paste(rep(" ", indent), collapse = ""),
                           name_formatted, ":"))
+                message(sprintf("   DEBUG66: Recursing into list '%s'", name))
                 output <- c(output,
                     formatConfigList(value, indent + 2)) # Recursive call
             } else if (length(value) > 0) { # Unnamed list, print elements
+                message(sprintf("   DEBUG66: '%s' is unnamed list, processing elements", name))
                  output <- c(output,
                     paste0(paste(rep(" ", indent), collapse = ""),
                           name_formatted, ":"))
                  for(item_idx in seq_along(value)){
                      item_val <- value[[item_idx]]
+                     message(sprintf("   DEBUG66: Processing unnamed list item %d, class: %s", item_idx, paste(class(item_val), collapse=", ")))
                      if(is.atomic(item_val) && length(item_val) == 1){
                         output <- c(output, paste0(paste(rep(" ", indent + 2), collapse=""), "- ", as.character(item_val)))
                      } else {
@@ -1147,18 +1064,22 @@ formatConfigList <- function(config_list, indent = 0) {
                      }
                  }
             } else { # Empty list
+                message(sprintf("   DEBUG66: '%s' is empty list", name))
                  output <- c(output,
                     paste0(paste(rep(" ", indent), collapse = ""),
                           name_formatted, ": [Empty List]"))
             }
         } else {
+            message(sprintf("   DEBUG66: '%s' is atomic/non-list, attempting conversion", name))
             # Truncate long character vectors for display
             if (is.character(value) && length(value) > 5) {
                 value_display <- paste(c(utils::head(value, 5), "..."), collapse = ", ")
             } else if (is.character(value) && length(value) > 1) {
                 value_display <- paste(value, collapse = ", ")
             } else {
+                message(sprintf("   DEBUG66: About to convert '%s' to character", name))
                 value_display <- as.character(value) # Ensure it's character
+                message(sprintf("   DEBUG66: Conversion successful for '%s'", name))
                  if (length(value_display) == 0) value_display <- "[Empty/NULL]"
             }
             output <- c(output,
@@ -1166,125 +1087,11 @@ formatConfigList <- function(config_list, indent = 0) {
                       name_formatted, ": ", value_display))
         }
     }
+    message(sprintf("--- DEBUG66: Exiting formatConfigList, returning %d lines ---", length(output)))
     return(output)
 }
 
-setMethod("show",
-    "WorkflowArgs",
-    function(object) {
-        # Basic info
-        header <- c(
-            "Study Parameters",
-            "================",
-            "",
-            "Basic Information:",
-            "-----------------",
-            paste("Workflow Name:", object@workflow_name),
-            paste("Description:", if(nzchar(object@description)) object@description else "N/A"),
-            paste("Timestamp:", object@timestamp),
-            ""
-        )
-        
-        git_info_vec <- character()
-        if (!is.null(object@git_info) && is.list(object@git_info)) {
-             gi <- object@git_info
-             git_info_vec <- c(
-                 paste("Repository:",    ifelse(!is.null(gi$repo) && !is.na(gi$repo), gi$repo, "N/A")),
-                 paste("Branch:",         ifelse(!is.null(gi$branch) && !is.na(gi$branch), gi$branch, "N/A")),
-                 paste("Commit:",         ifelse(!is.null(gi$commit_sha) && !is.na(gi$commit_sha), substr(gi$commit_sha,1,7), "N/A")),
-                 paste("Git Timestamp:", ifelse(!is.null(gi$timestamp) && !is.na(gi$timestamp), gi$timestamp, "N/A"))
-             )
-        } else {
-            git_info_vec <- c("Git Information: N/A")
-        }
-        git_section <- c("Git Information:", "---------------", git_info_vec, "")
-        
-        organism_info_vec <- character()
-        if (!is.null(object@organism_info) && is.list(object@organism_info)) {
-            oi <- object@organism_info
-            if (!is.null(oi$organism_name) && !is.na(oi$organism_name) && nzchar(oi$organism_name)) {
-                organism_info_vec <- c(organism_info_vec, paste("Organism Name:", oi$organism_name))
-            }
-            if (!is.null(oi$taxon_id) && !is.na(oi$taxon_id) && nzchar(oi$taxon_id)) {
-                organism_info_vec <- c(organism_info_vec, paste("Taxon ID:", oi$taxon_id))
-            }
-        }
-        
-        organism_section <- character()
-        if (length(organism_info_vec) > 0) {
-            organism_section <- c(
-                "Organism Information:",
-                "---------------------",
-                organism_info_vec,
-                ""
-            )
-        }
-
-        config_header <- c(
-            "Configuration Parameters (from @args slot):",
-            "-----------------------------------------"
-        )
-        
-        args_to_print <- object@args
-        # internal_workflow_source_dir is already excluded by formatConfigList
-
-        params <- formatConfigList(args_to_print) 
-
-        # Add contrasts information if it exists and is a data.frame/tibble
-        contrasts_section <- character()
-        # Check if contrasts_tbl exists and is not NULL and has rows
-        if (!is.null(object@args$contrasts_tbl) && 
-            (is.data.frame(object@args$contrasts_tbl) || tibble::is_tibble(object@args$contrasts_tbl)) && 
-            nrow(object@args$contrasts_tbl) > 0) {
-            
-            contrasts_header <- c(
-                "",
-                "Contrasts (from @args$contrasts_tbl):",
-                "------------------------------------"
-            )
-            # Ensure the 'contrasts' column exists before trying to apply
-            if ("contrasts" %in% colnames(object@args$contrasts_tbl)) {
-                contrasts_info <- apply(object@args$contrasts_tbl, 1, function(row) {
-                    paste("  ", row["contrasts"])
-                })
-                contrasts_section <- c(contrasts_header, contrasts_info)
-            } else {
-                 contrasts_section <- c(contrasts_header, "  [Column 'contrasts' not found in contrasts_tbl]")
-            }
-        }
-
-        output <- c(header, git_section, organism_section, config_header, params, contrasts_section)
-        cat(paste(output, collapse = "
-"), "
-")
-
-        # Save to file if internal_workflow_source_dir is defined in args and is valid
-        workflow_source_dir_to_use <- object@args$internal_workflow_source_dir
-
-        if (!is.null(workflow_source_dir_to_use) && 
-            is.character(workflow_source_dir_to_use) && 
-            length(workflow_source_dir_to_use) == 1 && # Ensure it's a single string
-            nzchar(workflow_source_dir_to_use) && 
-            dir.exists(workflow_source_dir_to_use)) {
-            
-            output_file <- file.path(workflow_source_dir_to_use, "study_parameters.txt")
-            tryCatch({
-                writeLines(output, output_file)
-                cat("
-Parameters saved to:", output_file, "
-")
-            }, error = function(e) {
-                warning(paste("Failed to save study parameters to", output_file, ":", e$message), immediate. = TRUE)
-            })
-        } else {
-            cat("
-Warning: `internal_workflow_source_dir` not found, invalid, or directory does not exist in WorkflowArgs @args. Parameters not saved to file.
-")
-            if(!is.null(workflow_source_dir_to_use)) cat("Attempted path:", workflow_source_dir_to_use, "
-")
-        }
-    }
-)
+# S4 show method for WorkflowArgs removed - replaced with createStudyParametersFile function
 
 
 ##################################################################################################################
@@ -1543,11 +1350,11 @@ copyToResultsSummary <- function(omic_type,
     de_wb <- openxlsx::createWorkbook()
     openxlsx::addWorksheet(de_wb, "DE_Results_Index")
     de_index_data <- data.frame(Sheet = character(), Description = character(), stringsAsFactors = FALSE)
-    de_files <- list.files(path = current_paths$de_output_dir, pattern = paste0("de_", "\\w+", "_long_annot\\.xlsx$"), full.names = TRUE) # More generic pattern
+    de_files <- list.files(path = current_paths$de_output_dir, pattern = paste0("de_.+_long_annot\\.xlsx$"), full.names = TRUE) # Changed from \\w+ to .+ to allow hyphens
     
     purrr::imap(de_files, \(file, idx) {
         sheet_name <- sprintf("DE_Sheet%d", idx)
-        base_name <- basename(file) |> stringr::str_remove(paste0("de_", omic_type, "_|", "_long_annot\\.xlsx$"))
+        base_name <- basename(file) |> stringr::str_remove("^de_") |> stringr::str_remove("_long_annot\\.xlsx$")
         de_index_data <<- rbind(de_index_data, data.frame(Sheet = sheet_name, Description = base_name, stringsAsFactors = FALSE))
         data_content <- tryCatch(openxlsx::read.xlsx(file), error = function(e) NULL)
         if (!is.null(data_content)) {
@@ -2062,4 +1869,555 @@ updateConfigParameter <- function(theObject,
 
   # --- Return the modified object ---
   return(theObject)
+}
+
+#' Choose Best Protein Accession for Data Frame (S3 Version)
+#'
+#' @description A simplified S3 version of chooseBestProteinAccession that works
+#' directly on data frames. Resolves protein groups by selecting the best
+#' representative protein based on FASTA sequence data and aggregates
+#' quantitative values.
+#'
+#' @param data_tbl Data frame containing protein quantitative data
+#' @param protein_id_column Character string specifying the protein ID column name
+#' @param seqinr_obj Data frame with FASTA sequence information (aa_seq_tbl_final)
+#' @param seqinr_accession_column Character string specifying the accession column in seqinr_obj
+#' @param delim Character string delimiter used to separate protein groups (default: ";")
+#' @param replace_zero_with_na Logical, whether to replace zeros with NA (default: TRUE)
+#' @param aggregation_method Character string aggregation method ("mean", "median", "sum") (default: "mean")
+#'
+#' @return Data frame with cleaned protein IDs and aggregated values
+#'
+#' @details
+#' This function processes protein groups (e.g., "P12345;P67890;Q11111") by:
+#' \itemize{
+#'   \item Splitting groups using the specified delimiter
+#'   \item Finding the best representative protein using FASTA sequence data
+#'   \item Aggregating quantitative values for the chosen protein
+#'   \item Returning cleaned data with single protein IDs
+#' }
+#'
+#' The selection of "best" protein is based on:
+#' \itemize{
+#'   \item Presence in FASTA sequence database
+#'   \item Protein length (longer sequences preferred)
+#'   \item Alphabetical order as tiebreaker
+#' }
+#'
+#' @examples
+#' \dontrun{
+#' cleaned_data <- chooseBestProteinAccession_s3(
+#'   data_tbl = protein_data,
+#'   protein_id_column = "Protein.Group",
+#'   seqinr_obj = aa_seq_tbl_final,
+#'   seqinr_accession_column = "uniprot_acc"
+#' )
+#' }
+#'
+#' @export
+chooseBestProteinAccession_s3 <- function(data_tbl,
+                                          protein_id_column,
+                                          seqinr_obj,
+                                          seqinr_accession_column = "uniprot_acc",
+                                          delim = ";",
+                                          replace_zero_with_na = TRUE,
+                                          aggregation_method = "mean") {
+  
+  cat("=== Starting chooseBestProteinAccession_s3 ===\n")
+  
+  tryCatch({
+    # Validate inputs with detailed error messages
+    cat("*** S3 CLEANUP: Validating inputs ***\n")
+    
+    if (is.null(data_tbl) || !is.data.frame(data_tbl)) {
+      stop("data_tbl must be a non-null data frame")
+    }
+    
+    if (nrow(data_tbl) == 0) {
+      stop("data_tbl cannot be empty")
+    }
+    
+    cat(sprintf("*** S3 CLEANUP: data_tbl dimensions: %d rows x %d cols ***\n", nrow(data_tbl), ncol(data_tbl)))
+    cat(sprintf("*** S3 CLEANUP: data_tbl column names: %s ***\n", paste(head(names(data_tbl), 10), collapse = ", ")))
+    
+    if (!protein_id_column %in% names(data_tbl)) {
+      stop(sprintf("Protein ID column '%s' not found in data. Available columns: %s", 
+                   protein_id_column, paste(names(data_tbl), collapse = ", ")))
+    }
+    
+    if (is.null(seqinr_obj) || !is.data.frame(seqinr_obj)) {
+      stop("seqinr_obj must be a non-null data frame")
+    }
+    
+    if (nrow(seqinr_obj) == 0) {
+      stop("seqinr_obj cannot be empty")
+    }
+    
+    cat(sprintf("*** S3 CLEANUP: seqinr_obj dimensions: %d rows x %d cols ***\n", nrow(seqinr_obj), ncol(seqinr_obj)))
+    cat(sprintf("*** S3 CLEANUP: seqinr_obj column names: %s ***\n", paste(head(names(seqinr_obj), 10), collapse = ", ")))
+    
+    if (!seqinr_accession_column %in% names(seqinr_obj)) {
+      stop(sprintf("Accession column '%s' not found in sequence data. Available columns: %s", 
+                   seqinr_accession_column, paste(names(seqinr_obj), collapse = ", ")))
+    }
+    
+    cat("*** S3 CLEANUP: Input validation passed ***\n")
+    
+    # Get non-quantitative columns (metadata columns) with error handling
+    cat("*** S3 CLEANUP: Identifying column types ***\n")
+    
+    numeric_cols <- tryCatch({
+      sapply(data_tbl, is.numeric)
+    }, error = function(e) {
+      stop(sprintf("Error checking column types: %s", e$message))
+    })
+    
+    quant_cols <- names(data_tbl)[numeric_cols]
+    meta_cols <- names(data_tbl)[!numeric_cols]
+    
+    cat(sprintf("*** S3 CLEANUP: Found %d quantitative columns and %d metadata columns ***\n", 
+                length(quant_cols), length(meta_cols)))
+    cat(sprintf("*** S3 CLEANUP: Quantitative columns: %s ***\n", paste(head(quant_cols, 5), collapse = ", ")))
+    cat(sprintf("*** S3 CLEANUP: Metadata columns: %s ***\n", paste(head(meta_cols, 5), collapse = ", ")))
+  
+    # Replace zeros with NA if requested
+    if (replace_zero_with_na && length(quant_cols) > 0) {
+      cat("*** S3 CLEANUP: Replacing zeros with NA in quantitative columns ***\n")
+      
+      tryCatch({
+        data_tbl[quant_cols] <- lapply(data_tbl[quant_cols], function(x) {
+          if (is.numeric(x)) {
+            x[x == 0] <- NA
+          }
+          x
+        })
+        cat("*** S3 CLEANUP: Zero replacement completed ***\n")
+      }, error = function(e) {
+        stop(sprintf("Error replacing zeros with NA: %s", e$message))
+      })
+    }
+    
+    # Get unique protein groups
+    cat("*** S3 CLEANUP: Getting unique protein groups ***\n")
+    
+    protein_groups <- tryCatch({
+      unique(data_tbl[[protein_id_column]])
+    }, error = function(e) {
+      stop(sprintf("Error getting unique protein groups: %s", e$message))
+    })
+    
+    cat(sprintf("*** S3 CLEANUP: Processing %d unique protein groups ***\n", length(protein_groups)))
+    cat(sprintf("*** S3 CLEANUP: First 5 protein groups: %s ***\n", paste(head(protein_groups, 5), collapse = ", ")))
+    
+    # Create lookup table for sequence information
+    cat("*** S3 CLEANUP: Creating sequence lookup table ***\n")
+    
+    seq_lookup <- tryCatch({
+      if ("length" %in% names(seqinr_obj)) {
+        cat("*** S3 CLEANUP: Using existing length column ***\n")
+        seqinr_obj |>
+          dplyr::select(dplyr::all_of(c(seqinr_accession_column, "length"))) |>
+          dplyr::distinct()
+      } else {
+        cat("*** S3 CLEANUP: Creating default length column ***\n")
+        # If no length column, create one or use a default
+        seqinr_obj |>
+          dplyr::select(dplyr::all_of(seqinr_accession_column)) |>
+          dplyr::distinct() |>
+          dplyr::mutate(length = 1000)  # Default length
+      }
+    }, error = function(e) {
+      stop(sprintf("Error creating sequence lookup: %s", e$message))
+    })
+    
+    cat(sprintf("*** S3 CLEANUP: Created sequence lookup with %d entries ***\n", nrow(seq_lookup)))
+  
+    # Function to choose best protein from a group
+    cat("*** S3 CLEANUP: Defining chooseBestFromGroup function ***\n")
+    
+    chooseBestFromGroup <- function(group_string) {
+      tryCatch({
+        if (is.na(group_string) || group_string == "") {
+          return(NA_character_)
+        }
+        
+        # Split the group
+        proteins <- stringr::str_split(group_string, delim)[[1]]
+        proteins <- stringr::str_trim(proteins)  # Remove whitespace
+        proteins <- proteins[proteins != ""]     # Remove empty strings
+        
+        if (length(proteins) == 1) {
+          return(proteins[1])
+        }
+        
+        # Find proteins that exist in sequence database
+        proteins_in_db <- proteins[proteins %in% seq_lookup[[seqinr_accession_column]]]
+        
+        if (length(proteins_in_db) == 0) {
+          # No proteins found in database, return first one
+          return(proteins[1])
+        }
+        
+        if (length(proteins_in_db) == 1) {
+          return(proteins_in_db[1])
+        }
+        
+        # Multiple proteins in database - choose by length (longest first)
+        protein_info <- seq_lookup |>
+          dplyr::filter(!!sym(seqinr_accession_column) %in% proteins_in_db) |>
+          dplyr::arrange(desc(length), !!sym(seqinr_accession_column))
+        
+        return(protein_info[[seqinr_accession_column]][1])
+        
+      }, error = function(e) {
+        warning(sprintf("Error processing protein group '%s': %s", group_string, e$message))
+        return(group_string)  # Return original if processing fails
+      })
+    }
+    
+    # Create mapping of original groups to best proteins
+    cat("*** S3 CLEANUP: Creating protein group mapping ***\n")
+    
+    protein_mapping <- tryCatch({
+      data.frame(
+        original_group = protein_groups,
+        best_protein = sapply(protein_groups, chooseBestFromGroup, USE.NAMES = FALSE),
+        stringsAsFactors = FALSE
+      )
+    }, error = function(e) {
+      stop(sprintf("Error creating protein mapping: %s", e$message))
+    })
+    
+    # Count reductions
+    groups_with_multiple <- tryCatch({
+      sum(stringr::str_detect(protein_mapping$original_group, delim), na.rm = TRUE)
+    }, error = function(e) {
+      cat(sprintf("*** S3 CLEANUP: Warning - could not count multi-protein groups: %s ***\n", e$message))
+      0
+    })
+    
+    cat(sprintf("*** S3 CLEANUP: Found %d protein groups with multiple proteins ***\n", groups_with_multiple))
+  
+    # Add mapping to data
+    cat("*** S3 CLEANUP: Applying protein mapping to data ***\n")
+    
+    data_with_mapping <- tryCatch({
+      data_tbl |>
+        dplyr::left_join(
+          protein_mapping,
+          by = setNames("original_group", protein_id_column)
+        )
+    }, error = function(e) {
+      stop(sprintf("Error applying protein mapping: %s", e$message))
+    })
+    
+    cat(sprintf("*** S3 CLEANUP: Data mapping completed. Mapped data has %d rows ***\n", nrow(data_with_mapping)))
+    
+    # Group by best protein and aggregate
+    cat(sprintf("*** S3 CLEANUP: Aggregating data using method: %s ***\n", aggregation_method))
+    
+    # Define aggregation function
+    agg_func <- switch(aggregation_method,
+      "mean" = function(x) mean(x, na.rm = TRUE),
+      "median" = function(x) median(x, na.rm = TRUE),
+      "sum" = function(x) sum(x, na.rm = TRUE),
+      function(x) mean(x, na.rm = TRUE)  # Default to mean
+    )
+    
+    # Separate quantitative and metadata columns for different aggregation
+    cat("*** S3 CLEANUP: Aggregating quantitative data ***\n")
+    
+    quant_data <- tryCatch({
+      if (length(quant_cols) > 0) {
+        data_with_mapping |>
+          dplyr::select(best_protein, dplyr::all_of(quant_cols)) |>
+          dplyr::group_by(best_protein) |>
+          dplyr::summarise(
+            dplyr::across(dplyr::all_of(quant_cols), agg_func),
+            .groups = "drop"
+          )
+      } else {
+        data.frame(best_protein = unique(data_with_mapping$best_protein))
+      }
+    }, error = function(e) {
+      stop(sprintf("Error aggregating quantitative data: %s", e$message))
+    })
+    
+    cat("*** S3 CLEANUP: Aggregating metadata ***\n")
+    
+    # For metadata columns, take the first non-NA value for each best protein
+    meta_data <- tryCatch({
+      if (length(meta_cols) > 0) {
+        data_with_mapping |>
+          dplyr::select(best_protein, dplyr::all_of(meta_cols)) |>
+          dplyr::group_by(best_protein) |>
+          dplyr::summarise(
+            dplyr::across(dplyr::all_of(meta_cols), ~ dplyr::first(na.omit(.))[1]),
+            .groups = "drop"
+          )
+      } else {
+        data.frame(best_protein = unique(data_with_mapping$best_protein))
+      }
+    }, error = function(e) {
+      stop(sprintf("Error aggregating metadata: %s", e$message))
+    })
+    
+    cat("*** S3 CLEANUP: Combining results ***\n")
+    
+    # Combine results
+    result_data <- tryCatch({
+      quant_data |>
+        dplyr::left_join(meta_data, by = "best_protein") |>
+        dplyr::rename(!!sym(protein_id_column) := best_protein)
+    }, error = function(e) {
+      stop(sprintf("Error combining results: %s", e$message))
+    })
+    
+    cat("*** S3 CLEANUP: Reordering columns ***\n")
+    
+    # Reorder columns to match original
+    result_data <- tryCatch({
+      result_data |>
+        dplyr::select(dplyr::all_of(names(data_tbl)))
+    }, error = function(e) {
+      stop(sprintf("Error reordering columns: %s", e$message))
+    })
+    
+    # Final statistics
+    original_proteins <- length(unique(data_tbl[[protein_id_column]]))
+    final_proteins <- length(unique(result_data[[protein_id_column]]))
+    reduction_pct <- round(((original_proteins - final_proteins) / original_proteins) * 100, 1)
+    
+    cat(sprintf("*** S3 CLEANUP: Protein cleanup completed: %d -> %d proteins (%.1f%% reduction) ***\n",
+                     original_proteins, final_proteins, reduction_pct))
+    
+    return(result_data)
+    
+  }, error = function(e) {
+    cat(sprintf("*** S3 CLEANUP FATAL ERROR: %s ***\n", e$message))
+    cat("*** S3 CLEANUP: Returning original data ***\n")
+    return(data_tbl)  # Return original data if everything fails
+  })
+}
+
+#' Create Study Parameters File
+#'
+#' @description
+#' Creates a study parameters text file directly without using S4 objects.
+#' This replaces the overly complex createWorkflowArgsFromConfig + WorkflowArgs show() approach.
+#'
+#' @param workflow_name Character string, name of the workflow
+#' @param description Character string, description of the analysis
+#' @param organism_name Character string, organism name (optional)
+#' @param taxon_id Character string or numeric, taxon ID (optional)
+#' @param source_dir_path Character string, path to save the study_parameters.txt file
+#' @param contrasts_tbl Data frame, contrasts table (optional)
+#' @param config_list_name Character string, name of the global config list (default: "config_list")
+#' @param env Environment where the config list resides (default: .GlobalEnv)
+#'
+#' @return Character string path to the created study_parameters.txt file
+#'
+#' @examples
+#' \dontrun{
+#' file_path <- createStudyParametersFile(
+#'   workflow_name = "proteomics_analysis",
+#'   description = "DIA proteomics analysis",
+#'   source_dir_path = "/path/to/scripts"
+#' )
+#' }
+#'
+#' @export
+createStudyParametersFile <- function(workflow_name, 
+                                      description = "", 
+                                      organism_name = NULL, 
+                                      taxon_id = NULL,
+                                      source_dir_path = NULL,
+                                      contrasts_tbl = NULL,
+                                      config_list_name = "config_list",
+                                      env = .GlobalEnv) {
+    
+    # Validate required inputs
+    if (missing(workflow_name) || !is.character(workflow_name) || length(workflow_name) != 1) {
+        stop("workflow_name must be a single character string")
+    }
+    
+    if (is.null(source_dir_path) || !is.character(source_dir_path) || length(source_dir_path) != 1) {
+        stop("source_dir_path must be a single character string")
+    }
+    
+    if (!dir.exists(source_dir_path)) {
+        stop("source_dir_path directory does not exist: ", source_dir_path)
+    }
+    
+    # Get git information
+    git_info <- tryCatch({
+        if (requireNamespace("gh", quietly = TRUE)) {
+            if (nzchar(gh::gh_token())) {
+                branch_info <- gh::gh("/repos/APAF-BIOINFORMATICS/MultiScholaR/branches/main")
+                list(
+                    commit_sha = branch_info$commit$sha,
+                    branch = "main",
+                    repo = "MultiScholaR", 
+                    timestamp = branch_info$commit$commit$author$date
+                )
+            } else {
+                list(commit_sha = NA_character_, branch = NA_character_, repo = NA_character_, timestamp = NA_character_)
+            }
+        } else {
+            list(commit_sha = NA_character_, branch = NA_character_, repo = NA_character_, timestamp = NA_character_)
+        }
+    }, error = function(e) {
+        list(commit_sha = NA_character_, branch = NA_character_, repo = NA_character_, timestamp = NA_character_)
+    })
+    
+    # Get organism information from session if not provided
+    if (is.null(organism_name) && exists("organism_name", envir = .GlobalEnv)) {
+        organism_name <- get("organism_name", envir = .GlobalEnv)
+    }
+    
+    if (is.null(taxon_id) && exists("taxon_id", envir = .GlobalEnv)) {
+        taxon_id <- get("taxon_id", envir = .GlobalEnv)
+    }
+    
+    # Get config list
+    config_list <- if (exists(config_list_name, envir = env)) {
+        get(config_list_name, envir = env)
+    } else {
+        list()
+    }
+    
+    # Get contrasts_tbl if not provided
+    if (is.null(contrasts_tbl)) {
+        if (exists("contrasts_tbl", envir = parent.frame())) {
+            contrasts_tbl <- get("contrasts_tbl", envir = parent.frame())
+        } else if (exists("contrasts_tbl", envir = .GlobalEnv)) {
+            contrasts_tbl <- get("contrasts_tbl", envir = .GlobalEnv)
+        }
+    }
+    
+    # Build the output content
+    output_lines <- c(
+        "Study Parameters",
+        "================",
+        "",
+        "Basic Information:",
+        "-----------------",
+        paste("Workflow Name:", workflow_name),
+        paste("Description:", if(nzchar(description)) description else "N/A"),
+        paste("Timestamp:", format(Sys.time(), "%Y-%m-%d %H:%M:%S")),
+        ""
+    )
+    
+    # Add git information
+    if (!is.null(git_info) && is.list(git_info)) {
+        git_lines <- c(
+            "Git Information:",
+            "---------------",
+            paste("Repository:", ifelse(!is.null(git_info$repo) && !is.na(git_info$repo), git_info$repo, "N/A")),
+            paste("Branch:", ifelse(!is.null(git_info$branch) && !is.na(git_info$branch), git_info$branch, "N/A")),
+            paste("Commit:", ifelse(!is.null(git_info$commit_sha) && !is.na(git_info$commit_sha), substr(git_info$commit_sha, 1, 7), "N/A")),
+            paste("Git Timestamp:", ifelse(!is.null(git_info$timestamp) && !is.na(git_info$timestamp), git_info$timestamp, "N/A")),
+            ""
+        )
+        output_lines <- c(output_lines, git_lines)
+    }
+    
+    # Add organism information
+    if (!is.null(organism_name) && !is.na(organism_name) && nzchar(organism_name)) {
+        organism_lines <- c(
+            "Organism Information:",
+            "---------------------",
+            paste("Organism Name:", organism_name)
+        )
+        if (!is.null(taxon_id) && !is.na(taxon_id) && nzchar(taxon_id)) {
+            organism_lines <- c(organism_lines, paste("Taxon ID:", taxon_id))
+        }
+        organism_lines <- c(organism_lines, "")
+        output_lines <- c(output_lines, organism_lines)
+    }
+    
+    # Add configuration parameters
+    config_lines <- c(
+        "Configuration Parameters:",
+        "-------------------------"
+    )
+    
+    # Clean the config list (remove problematic objects)
+    clean_config <- config_list
+    # Remove the internal source dir if it exists
+    if (!is.null(clean_config$internal_workflow_source_dir)) {
+        clean_config$internal_workflow_source_dir <- NULL
+    }
+    
+    # Format the config list
+    if (length(clean_config) > 0) {
+        config_params <- formatConfigList(clean_config)
+        config_lines <- c(config_lines, config_params)
+    } else {
+        config_lines <- c(config_lines, "No configuration parameters available")
+    }
+    
+    output_lines <- c(output_lines, config_lines)
+    
+    # Add contrasts information
+    if (!is.null(contrasts_tbl) && (is.data.frame(contrasts_tbl) || tibble::is_tibble(contrasts_tbl)) && nrow(contrasts_tbl) > 0) {
+        contrasts_lines <- c(
+            "",
+            "Contrasts:",
+            "----------"
+        )
+        
+        if ("contrasts" %in% colnames(contrasts_tbl)) {
+            contrasts_info <- tryCatch({
+                contrasts_col <- contrasts_tbl[["contrasts"]]
+                paste("  ", as.character(contrasts_col))
+            }, error = function(e) {
+                paste("  [Error extracting contrasts:", e$message, "]")
+            })
+            contrasts_lines <- c(contrasts_lines, contrasts_info)
+        } else {
+            contrasts_lines <- c(contrasts_lines, "  [Column 'contrasts' not found in contrasts_tbl]")
+        }
+        
+        output_lines <- c(output_lines, contrasts_lines)
+    }
+    
+    # Write to file
+    output_file <- file.path(source_dir_path, "study_parameters.txt")
+    
+    tryCatch({
+        writeLines(output_lines, output_file)
+        message("Study parameters saved to: ", output_file)
+        return(output_file)
+    }, error = function(e) {
+        stop("Failed to write study parameters file: ", e$message)
+    })
+}
+
+# Keep the old function name as a wrapper for backward compatibility
+#' @export
+createWorkflowArgsFromConfig <- function(workflow_name, description = "", 
+                                        organism_name = NULL, taxon_id = NULL,
+                                        source_dir_path = NULL) {
+    
+    warning("createWorkflowArgsFromConfig is deprecated. Use createStudyParametersFile instead.", 
+            immediate. = TRUE)
+    
+    # If source_dir_path is provided, call the new function
+    if (!is.null(source_dir_path)) {
+        return(createStudyParametersFile(
+            workflow_name = workflow_name,
+            description = description,
+            organism_name = organism_name,
+            taxon_id = taxon_id,
+            source_dir_path = source_dir_path
+        ))
+    } else {
+        # Return a simple list for backward compatibility
+        return(list(
+            workflow_name = workflow_name,
+            description = description,
+            timestamp = format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+        ))
+    }
 }

@@ -1601,6 +1601,7 @@ uniprot_dat_cln <- getUniprotAnnotations(
 - [Linear Models for Proteomics](https://pnnl-comp-mass-spec.github.io/proteomics-data-analysis-tutorial/linear-reg.html) - Linear modeling approaches in proteomics
 - [Multiple Testing Considerations](https://pmc.ncbi.nlm.nih.gov/articles/PMC5506159/) - Managing multiple comparisons in omics data
 
+####----(Optional) this section is not required if you have already defined the contrasts earlier in the same R session----#####
 This section reads in predefined contrast specifications from a file, allowing for consistent and reproducible differential expression analysis. Contrasts define the comparisons between experimental groups (e.g., treatment vs. control) that will be tested for protein abundance differences. By defining these contrasts in a separate file, the workflow becomes more flexible and allows for complex experimental designs. This approach also makes it easy to update the analysis with new comparisons without changing the main workflow code. The contrast strings follow a specific format that will be interpreted by the differential expression analysis function to create the appropriate statistical tests.
 
 ```{r 32 Read in Previously Assigned Contrasts (optional)}

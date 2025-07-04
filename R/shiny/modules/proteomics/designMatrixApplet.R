@@ -189,7 +189,42 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
         imported_data_cln <- vroom::vroom(cln_data_file, show_col_types = FALSE)
         
         imported_contrasts <- if(file.exists(contrast_file)) {
-          data.frame(contrasts = readLines(contrast_file))
+          # Read the raw contrast strings
+          contrast_strings <- readLines(contrast_file)
+          
+          # Reconstruct the full contrasts_tbl format with all required columns
+          if (length(contrast_strings) > 0) {
+            contrast_info <- lapply(contrast_strings, function(contrast_string) {
+              # Parse the contrast string to extract friendly name
+              # Expected format: "groupGA_Elevated-groupGA_Control"
+              
+              # Remove "group" prefixes if present for friendly name
+              clean_string <- gsub("^group", "", contrast_string)
+              clean_string <- gsub("-group", "-", clean_string)
+              
+              # Create friendly name by replacing - with _vs_
+              friendly_name <- gsub("-", "_vs_", clean_string)
+              
+              # Create full format: friendly_name=original_contrast_string
+              full_format <- paste0(friendly_name, "=", contrast_string)
+              
+              list(
+                contrast_string = contrast_string,
+                friendly_name = friendly_name,
+                full_format = full_format
+              )
+            })
+            
+            # Create properly formatted contrasts_tbl
+            data.frame(
+              contrasts = sapply(contrast_info, function(x) x$contrast_string),
+              friendly_names = sapply(contrast_info, function(x) x$friendly_name),
+              full_format = sapply(contrast_info, function(x) x$full_format),
+              stringsAsFactors = FALSE
+            )
+          } else {
+            NULL
+          }
         } else {
           NULL
         }

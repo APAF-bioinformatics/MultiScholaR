@@ -260,17 +260,107 @@ deAnalysisWrapperFunction <- function( theObject
   return_list$list_of_volcano_plots <- list_of_volcano_plots
 
 
-  list_of_volcano_plots_with_gene_names <-  static_volcano_plot_data %>%
-    group_by( comparison) %>%
-    nest() %>%
-    ungroup() %>%
-    mutate( title = paste( comparison)) %>%
-    mutate( plot = purrr::map( data, \(x) {
-      printOneVolcanoPlotWithProteinLabel( input_table=  x
-                                           , uniprot_table = uniprot_dat_cln |>
-                                             mutate( gene_name = purrr::map_chr( gene_names
-                                                                                 , \(x) str_split(x, "; ")[[1]][1])) )
-       } ) )
+  # Generate volcano plots with gene names
+  cat("DEBUG_66: About to generate volcano plots with gene names\n")
+  cat(sprintf("DEBUG_66: static_volcano_plot_data has %d rows\n", nrow(static_volcano_plot_data)))
+  cat("DEBUG_66: static_volcano_plot_data structure:\n")
+  str(static_volcano_plot_data)
+  
+  list_of_volcano_plots_with_gene_names <- tryCatch({
+    cat("DEBUG_66: Starting volcano plot generation pipeline\n")
+    
+    # Step 1: Group by comparison
+    grouped_data <- static_volcano_plot_data %>%
+      group_by(comparison)
+    cat(sprintf("DEBUG_66: Grouped data has %d groups\n", n_groups(grouped_data)))
+    
+    # Step 2: Nest
+    nested_data <- grouped_data %>%
+      nest()
+    cat(sprintf("DEBUG_66: Nested data has %d rows\n", nrow(nested_data)))
+    cat("DEBUG_66: Nested data structure:\n")
+    str(nested_data)
+    
+    # Step 3: Ungroup
+    ungrouped_data <- nested_data %>%
+      ungroup()
+    
+    # Step 4: Add title
+    with_title <- ungrouped_data %>%
+      mutate(title = paste(comparison))
+    cat("DEBUG_66: Added titles successfully\n")
+    
+    # Step 5: Add plots with detailed error handling
+    with_plots <- with_title %>%
+      mutate(plot = purrr::map(data, \(x) {
+        cat(sprintf("DEBUG_66: Processing plot for data with %d rows\n", nrow(x)))
+        
+        # Check uniprot_dat_cln structure
+        cat(sprintf("DEBUG_66: uniprot_dat_cln has %d rows\n", nrow(uniprot_dat_cln)))
+        cat("DEBUG_66: uniprot_dat_cln columns:\n")
+        print(colnames(uniprot_dat_cln))
+        
+        # Check if gene_names column exists
+        if (!"gene_names" %in% colnames(uniprot_dat_cln)) {
+          cat("DEBUG_66: ERROR - gene_names column not found in uniprot_dat_cln!\n")
+          cat("DEBUG_66: Available columns in uniprot_dat_cln:\n")
+          print(colnames(uniprot_dat_cln))
+          stop("gene_names column missing from uniprot_dat_cln")
+        }
+        
+        # Process gene names with detailed debugging
+        cat("DEBUG_66: Processing gene names\n")
+        uniprot_with_gene_names <- tryCatch({
+          uniprot_dat_cln |>
+            mutate(gene_name = purrr::map_chr(gene_names, \(x) {
+              tryCatch({
+                if(is.na(x) || is.null(x) || x == "") {
+                  ""
+                } else {
+                  split_result <- str_split(x, "; ")[[1]]
+                  if(length(split_result) > 0) split_result[1] else ""
+                }
+              }, error = function(e) {
+                cat(sprintf("DEBUG_66: Error processing gene name: %s\n", e$message))
+                ""
+              })
+            }))
+        }, error = function(e) {
+          cat(sprintf("DEBUG_66: ERROR in gene name processing: %s\n", e$message))
+          cat("DEBUG_66: Error details:\n")
+          print(e)
+          stop(e)
+        })
+        
+        cat("DEBUG_66: Gene names processed successfully\n")
+        
+        # Call plot function
+        printOneVolcanoPlotWithProteinLabel(
+          input_table = x,
+          uniprot_table = uniprot_with_gene_names,
+          protein_id_column = protein_id_column,
+          x_axis_label = "log2 fold change",
+          title = "",
+          lfc_threshold = treat_lfc_cutoff,
+          q_threshold = de_q_val_thresh,
+          color_up = "darkred",
+          color_down = "darkblue",
+          color_null = "grey",
+          label_top_n = 10
+        )
+      }))
+    
+    cat("DEBUG_66: All plots generated successfully\n")
+    with_plots
+    
+  }, error = function(e) {
+    cat(sprintf("DEBUG_66: CRITICAL ERROR in volcano plot generation: %s\n", e$message))
+    cat("DEBUG_66: Full error object:\n")
+    print(e)
+    cat("DEBUG_66: Traceback:\n")
+    print(traceback())
+    NULL
+  })
 
   return_list$list_of_volcano_plots_with_gene_names <- list_of_volcano_plots_with_gene_names
 
@@ -351,7 +441,7 @@ writeInteractiveVolcanoPlotProteomics <- function( de_proteins_long
                                                    , counts_tbl = NULL
                                                    , groups = NULL
                                                    , uniprot_id_column = "Entry"
-                                                   , gene_names_column = "Gene Names"
+                                                   , gene_names_column = "gene_names"
                                                    , display_columns = c( "best_uniprot_acc" )) {
 
 
@@ -359,7 +449,16 @@ writeInteractiveVolcanoPlotProteomics <- function( de_proteins_long
     dplyr::mutate(best_uniprot_acc = str_split(!!sym(args_row_id), ":" ) |> purrr::map_chr(1)  ) |>
     left_join(uniprot_tbl, by = join_by( best_uniprot_acc == !!sym( uniprot_id_column) ) ) |>
     dplyr::rename( UNIPROT_GENENAME = gene_names_column ) |>
-    mutate( UNIPROT_GENENAME = purrr::map_chr( UNIPROT_GENENAME, \(x){str_split(x, " |:")[[1]][1]})) |>
+    mutate( UNIPROT_GENENAME = purrr::map_chr( UNIPROT_GENENAME, \(x){
+      tryCatch({
+        if(is.na(x) || is.null(x) || x == "") {
+          ""
+        } else {
+          split_result <- str_split(x, " |:")[[1]]
+          if(length(split_result) > 0) split_result[1] else ""
+        }
+      }, error = function(e) "")
+    })) |>
     dplyr::mutate(gene_name = UNIPROT_GENENAME ) |>
     mutate( lqm = -log10(!!sym(fdr_column)))  |>
     dplyr::mutate(label = case_when(abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) >= de_q_val_thresh ~ "Not sig., logFC >= 1",
@@ -420,14 +519,23 @@ writeInteractiveVolcanoPlotProteomicsWidget <- function( de_proteins_long
                                                          , counts_tbl = NULL
                                                          , groups = NULL
                                                          , uniprot_id_column = "Entry"
-                                                         , gene_names_column = "Gene Names"
+                                                         , gene_names_column = "gene_names"
                                                          , display_columns = c( "best_uniprot_acc" )) {
 
 
   volcano_plot_tab <- de_proteins_long  |>
     left_join(uniprot_tbl, by = join_by( !!sym(args_row_id) == !!sym( uniprot_id_column) ) ) |>
     dplyr::rename( UNIPROT_GENENAME = gene_names_column ) |>
-    mutate( UNIPROT_GENENAME = purrr::map_chr( UNIPROT_GENENAME, \(x){str_split(x, " ")[[1]][1]})) |>
+    mutate( UNIPROT_GENENAME = purrr::map_chr( UNIPROT_GENENAME, \(x){
+      tryCatch({
+        if(is.na(x) || is.null(x) || x == "") {
+          ""
+        } else {
+          split_result <- str_split(x, " ")[[1]]
+          if(length(split_result) > 0) split_result[1] else ""
+        }
+      }, error = function(e) "")
+    })) |>
     mutate( lqm = -log10(!!sym(fdr_column)))  |>
     dplyr::mutate(label = case_when(abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) >= de_q_val_thresh ~ "Not sig., logFC >= 1",
                                     abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) < de_q_val_thresh ~ "Sig., logFC >= 1",
@@ -486,7 +594,7 @@ outputDeAnalysisResults <- function(de_analysis_results_list
   plots_format <- checkParamsObjectFunctionSimplify(theObject, "plots_format", c("pdf", "png"))
   args_row_id <- checkParamsObjectFunctionSimplify(theObject, "args_row_id", "uniprot_acc")
   de_q_val_thresh <- checkParamsObjectFunctionSimplify(theObject, "de_q_val_thresh", 0.05)
-  gene_names_column <- checkParamsObjectFunctionSimplify(theObject, "gene_names_column", "Gene Names")
+  gene_names_column <- checkParamsObjectFunctionSimplify(theObject, "gene_names_column", "gene_names")
   fdr_column <- checkParamsObjectFunctionSimplify(theObject, "fdr_column", "fdr_qvalue")
   raw_p_value_column <- checkParamsObjectFunctionSimplify(theObject, "raw_p_value_column", "raw_pvalue")
   log2fc_column <- checkParamsObjectFunctionSimplify(theObject, "log2fc_column", "log2FC")
@@ -613,11 +721,11 @@ outputDeAnalysisResults <- function(de_analysis_results_list
   ## Write all the results in one single table
   significant_rows <- de_analysis_results_list$significant_rows
   significant_rows |>
-    dplyr:::select(-colour, -lqm) |>
+    dplyr::select(-colour, -lqm) |>
     vroom::vroom_write(file.path(de_output_dir, "lfc_qval_long.tsv"))
 
   significant_rows |>
-    dplyr:::select(-colour, -lqm) |>
+    dplyr::select(-colour, -lqm) |>
     writexl::write_xlsx(file.path(de_output_dir, "lfc_qval_long.xlsx"))
 
 
@@ -678,7 +786,31 @@ outputDeAnalysisResults <- function(de_analysis_results_list
               purrr::map_chr(1) ) |>
     left_join( uniprot_tbl, by = join_by( uniprot_acc_cleaned == Entry ) ) |>
     dplyr::select( -uniprot_acc_cleaned)  |>
-    mutate( gene_name = purrr::map_chr( !!sym(gene_names_column), \(x){str_split(x, " |:")[[1]][1]})) |>
+    mutate( gene_name = if("gene_names" %in% names(.)) {
+      purrr::map_chr( gene_names, \(x){
+        tryCatch({
+          if(is.na(x) || is.null(x) || x == "") {
+            ""
+          } else {
+            split_result <- str_split(x, " |:")[[1]]
+            if(length(split_result) > 0) split_result[1] else ""
+          }
+        }, error = function(e) "")
+      })
+    } else if(!!sym(gene_names_column) %in% names(.)) {
+      purrr::map_chr( !!sym(gene_names_column), \(x){
+        tryCatch({
+          if(is.na(x) || is.null(x) || x == "") {
+            ""
+          } else {
+            split_result <- str_split(x, " |:")[[1]]
+            if(length(split_result) > 0) split_result[1] else ""
+          }
+        }, error = function(e) "")
+      })
+    } else {
+      ""
+    }) |>
     relocate( gene_name, .after = !!sym(args_row_id))
 
   vroom::vroom_write( de_proteins_wide_annot,
@@ -704,7 +836,31 @@ outputDeAnalysisResults <- function(de_analysis_results_list
               purrr::map_chr(1) )|>
     left_join( uniprot_tbl, by = join_by( uniprot_acc_cleaned == Entry ) )  |>
     dplyr::select( -uniprot_acc_cleaned)  |>
-    mutate( gene_name = purrr::map_chr( !!sym(gene_names_column), \(x){str_split(x, " |:")[[1]][1]})) |>
+    mutate( gene_name = if("gene_names" %in% names(.)) {
+      purrr::map_chr( gene_names, \(x){
+        tryCatch({
+          if(is.na(x) || is.null(x) || x == "") {
+            ""
+          } else {
+            split_result <- str_split(x, " |:")[[1]]
+            if(length(split_result) > 0) split_result[1] else ""
+          }
+        }, error = function(e) "")
+      })
+    } else if(!!sym(gene_names_column) %in% names(.)) {
+      purrr::map_chr( !!sym(gene_names_column), \(x){
+        tryCatch({
+          if(is.na(x) || is.null(x) || x == "") {
+            ""
+          } else {
+            split_result <- str_split(x, " |:")[[1]]
+            if(length(split_result) > 0) split_result[1] else ""
+          }
+        }, error = function(e) "")
+      })
+    } else {
+      ""
+    }) |>
     relocate( gene_name, .after = !!sym(args_row_id))
 
   vroom::vroom_write( de_proteins_long_annot,
@@ -785,7 +941,7 @@ outputDeAnalysisResults <- function(de_analysis_results_list
     num_sig_de_genes_barplot_only_significant <- de_analysis_results_list$num_sig_de_genes_barplot_only_significant
     num_of_comparison_only_significant <- de_analysis_results_list$num_of_comparison_only_significant
 
-    savePlot(plot = num_sig_de_genes_barplot_only_significant,
+    savePlot(num_sig_de_genes_barplot_only_significant,
              base_path = file.path(publication_graphs_dir, "NumSigDeMolecules"),
              plot_name = paste0(file_prefix, "_num_sig_de_molecules."),
              formats = plots_format,
@@ -863,7 +1019,7 @@ writeInteractiveVolcanoPlotProteomicsMain <- function(de_analysis_results_list
   publication_graphs_dir <- checkParamsObjectFunctionSimplify(theObject, "publication_graphs_dir", NULL)
   args_row_id <- checkParamsObjectFunctionSimplify(theObject, "args_row_id", "uniprot_acc")
   de_q_val_thresh <- checkParamsObjectFunctionSimplify(theObject, "de_q_val_thresh", 0.05)
-  gene_names_column <- checkParamsObjectFunctionSimplify(theObject, "gene_names_column", "Gene Names")
+  gene_names_column <- checkParamsObjectFunctionSimplify(theObject, "gene_names_column", "gene_names")
   fdr_column <- checkParamsObjectFunctionSimplify(theObject, "fdr_column", "fdr_qvalue")
   raw_p_value_column <- checkParamsObjectFunctionSimplify(theObject, "raw_p_value_column", "raw_pvalue")
   log2fc_column <- checkParamsObjectFunctionSimplify(theObject, "log2fc_column", "log2FC")

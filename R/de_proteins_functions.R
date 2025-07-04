@@ -1416,15 +1416,65 @@ getGlimmaVolcanoProteomicsWidget <- function( r_obj
     }
     message(sprintf("        display_columns = %s", paste(display_columns, collapse = ", ")))
 
-    result <- glimmaVolcano(r_obj
-                   , coef=coef
-                   , counts = counts_tbl
-                   , groups = groups
-                   , anno=anno_tbl
-                   , display.columns = display_columns
-                   , status=decideTests(r_obj, adjust.method="none")
-                   , p.adj.method="none"
-                   , transform.counts='none') #the plotly object
+    result <- tryCatch({
+      message("      About to call glimmaVolcano with parameters...")
+      
+      # Validate key parameters before calling
+      message(sprintf("      Validation: r_obj class = %s", class(r_obj)))
+      message(sprintf("      Validation: coef = %d", coef))
+      message(sprintf("      Validation: ncol(r_obj$coefficients) = %d", ncol(r_obj$coefficients)))
+      message(sprintf("      Validation: anno_tbl nrow = %d", nrow(anno_tbl)))
+      message(sprintf("      Validation: display_columns = %s", paste(display_columns, collapse = ", ")))
+      
+      # Check if decideTests works and clean up any issues
+      message("      Testing decideTests...")
+      status_result <- decideTests(r_obj, adjust.method="none")
+      message(sprintf("      decideTests completed: %d x %d", nrow(status_result), ncol(status_result)))
+      
+      # CRITICAL FIX: Handle NA values that cause dimension mismatches in glimmaVolcano
+      message("      Checking for NA values in status_result...")
+      na_count <- sum(is.na(status_result))
+      message(sprintf("      Found %d NA values in status_result", na_count))
+      
+      if (na_count > 0) {
+        message("      Cleaning NA values from status_result (setting to 0 = nonDE)...")
+        status_result[is.na(status_result)] <- 0
+        message("      NA values cleaned")
+      }
+      
+      # Additional safety: Check for dimension alignment
+      message("      Verifying dimensions before glimmaVolcano call...")
+      message(sprintf("      r_obj coefficients: %d x %d", nrow(r_obj$coefficients), ncol(r_obj$coefficients)))
+      message(sprintf("      r_obj p.value: %d x %d", nrow(r_obj$p.value), ncol(r_obj$p.value)))
+      message(sprintf("      status_result: %d x %d", nrow(status_result), ncol(status_result)))
+      message(sprintf("      anno_tbl: %d rows", nrow(anno_tbl)))
+      message(sprintf("      counts_tbl: %d x %d", nrow(counts_tbl), ncol(counts_tbl)))
+      
+      message("      Now calling glimmaVolcano...")
+      widget <- glimmaVolcano(r_obj
+                     , coef=coef
+                     , counts = counts_tbl
+                     , groups = groups
+                     , anno=anno_tbl
+                     , display.columns = display_columns
+                     , status=status_result
+                     , p.adj.method="none"
+                     , transform.counts='none') #the plotly object
+      
+      message("      glimmaVolcano call returned successfully!")
+      message(sprintf("      Widget class: %s", class(widget)))
+      message(sprintf("      Widget is.null: %s", is.null(widget)))
+      
+      return(widget)
+      
+    }, error = function(e) {
+      message(sprintf("      ERROR in glimmaVolcano call: %s", e$message))
+      message("      Full error details:")
+      message(capture.output(print(e)))
+      message("      Traceback:")
+      message(capture.output(traceback()))
+      return(NULL)
+    })
                    
     message("   getGlimmaVolcanoProteomicsWidget Step: glimmaVolcano call completed successfully.")
     message("      Data State: result class:")
