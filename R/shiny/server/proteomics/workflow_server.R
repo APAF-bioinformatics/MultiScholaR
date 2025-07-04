@@ -59,7 +59,7 @@ proteomicsWorkflowServer <- function(id, project_dirs, omic_type, experiment_lab
         normalization = "disabled",
         differential_expression = "disabled",
         enrichment_analysis = "disabled",
-        report_generation = "disabled"
+        session_summary = "disabled"
       ),
       
       # DEBUG66: Initialize state update trigger
@@ -152,10 +152,12 @@ proteomicsWorkflowServer <- function(id, project_dirs, omic_type, experiment_lab
     differentialExpressionAppletServer("differential_expression", workflow_data, experiment_paths, omic_type, experiment_label, selected_tab)
     
     # Tab 6: Enrichment Analysis
-    # enrichmentAnalysisServer("enrichment_analysis", workflow_data, experiment_paths)
+    message("   proteomicsWorkflowServer Step: Calling enrichmentAnalysisAppletServer...")
+    enrichmentAnalysisAppletServer("enrichment_analysis", workflow_data, experiment_paths, omic_type, experiment_label, selected_tab)
     
-    # Tab 7: Report Generation
-    # reportGenerationServer("report_generation", workflow_data, experiment_paths)
+    # Tab 7: Session Summary & Report Generation
+    message("   proteomicsWorkflowServer Step: Calling sessionSummaryServer...")
+    sessionSummaryServer("session_summary", project_dirs, omic_type, experiment_label, workflow_data)
     
     # Enable tabs based on completion status
     observeEvent(workflow_data$tab_status, {
@@ -179,7 +181,15 @@ proteomicsWorkflowServer <- function(id, project_dirs, omic_type, experiment_lab
         workflow_data$tab_status$differential_expression <- "pending"
       }
       
-      # And so on for other tabs...
+      # Enable enrichment analysis tab after DE is complete
+      if (workflow_data$tab_status$differential_expression == "complete") {
+        workflow_data$tab_status$enrichment_analysis <- "pending"
+      }
+      
+      # Enable session summary after enrichment is complete
+      if (workflow_data$tab_status$enrichment_analysis == "complete") {
+        workflow_data$tab_status$session_summary <- "pending"
+      }
     })
     
     # Return workflow data for potential use by parent module

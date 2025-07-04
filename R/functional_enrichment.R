@@ -264,6 +264,21 @@ summarize_enrichment <- function(enrichment_result) {
   )
 }
 
+#' Process Enrichments
+#'
+#' @param de_results S4 object containing differential expression results
+#' @param taxon_id NCBI taxonomy ID for the organism
+#' @param up_cutoff Log2 fold change cutoff for up-regulated proteins (default: 0)
+#' @param down_cutoff Log2 fold change cutoff for down-regulated proteins (default: 0)
+#' @param q_cutoff FDR q-value threshold for enrichment significance (default: 0.05)
+#' @param pathway_dir Directory for saving pathway results
+#' @param go_annotations UniProt GO annotations (required for unsupported organisms)
+#' @param exclude_iea Whether to exclude IEA (Inferred Electronic Annotation) terms (default: FALSE)
+#' @param protein_id_column Name of the protein ID column (default: "Protein.IDs")
+#' @param contrast_names Vector of contrast names for output labeling
+#'
+#' @return S4 EnrichmentResults object containing enrichment data, plots, and summaries
+#'
 #' @export
 processEnrichments <- function(de_results,
                                taxon_id,
@@ -329,17 +344,31 @@ processEnrichments <- function(de_results,
         message(sprintf("Total proteins before filtering: %d", nrow(de_data)))
 
         subset_sig <- de_data |>
-          dplyr::mutate( {{protein_id_column}} := purrr::map_chr( {{protein_id_column}}, \(x){str_split(x, ":")[[1]][1]} )) |>
+          dplyr::mutate( {{protein_id_column}} := purrr::map_chr( {{protein_id_column}}, \(x){
+            tryCatch({
+              # Attempt to split and take first element
+              stringr::str_split(x, ":")[[1]][1]
+            }, error = function(e) {
+              # If splitting fails, return original value
+              message(sprintf("Warning: Failed to split protein ID '%s', using original value", x))
+              x
+            })
+          })) |>
+          filter(fdr_qvalue < protein_p_val_thresh)
+
+        message(sprintf("Proteins passing protein p-value cutoff (%.3f): %d", protein_p_val_thresh, nrow(subset_sig)))
+
+        # Apply enrichment q-value filter for final significance
+        subset_for_enrichment <- subset_sig |>
           filter(fdr_qvalue < q_cutoff)
+        
+        message(sprintf("Proteins passing enrichment q-value cutoff (%.3f): %d", q_cutoff, nrow(subset_for_enrichment)))
 
-        message(sprintf("Proteins passing FDR cutoff (%g): %d", q_cutoff, nrow(subset_sig)))
-
-
-        up_matrix <- subset_sig |>
+        up_matrix <- subset_for_enrichment |>
           filter(log2FC > up_cutoff)
         message(sprintf("Up-regulated proteins (log2FC > %g): %d", up_cutoff, nrow(up_matrix)))
 
-        down_matrix <- subset_sig |>
+        down_matrix <- subset_for_enrichment |>
           filter(log2FC < -down_cutoff)
         message(sprintf("Down-regulated proteins (log2FC < -%g): %d", down_cutoff, nrow(down_matrix)))
 

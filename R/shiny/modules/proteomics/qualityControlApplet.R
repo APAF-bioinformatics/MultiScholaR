@@ -1,8 +1,8 @@
 # Import extracted components at top of file
-source("../../ui/proteomics/qc/peptideQCApplet_ui.R")
-source("../../server/proteomics/qc/peptideQCApplet_server.R")
-source("../../ui/proteomics/qc/proteinQCApplet_ui.R")
-source("../../server/proteomics/qc/proteinQCApplet_server.R")
+source("ui/proteomics/qc/peptideQCApplet_ui.R")
+source("server/proteomics/qc/peptideQCApplet_server.R")
+source("ui/proteomics/qc/proteinQCApplet_ui.R")
+source("server/proteomics/qc/proteinQCApplet_server.R")
 
 #' @title qualityControlAppletModule
 #'

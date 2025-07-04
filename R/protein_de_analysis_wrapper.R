@@ -557,7 +557,7 @@ generateVolcanoPlotGlimma <- function( de_results_list
                                        , log2fc_column = "log2FC"
                                        , de_q_val_thresh = 0.05
                                        , uniprot_id_column = "Entry"
-                                       , gene_names_column = "Gene Names"
+                                       , gene_names_column = "gene_names"
                                        , display_columns = c( "best_uniprot_acc" )) {
 
   message("--- Entering generateVolcanoPlotGlimma ---")
@@ -608,7 +608,16 @@ generateVolcanoPlotGlimma <- function( de_results_list
     volcano_plot_tab <- volcano_plot_tab |>
       left_join(uniprot_tbl, by = join_by( best_uniprot_acc == !!sym( uniprot_id_column) )) |>
       dplyr::rename( UNIPROT_GENENAME = !!sym(gene_names_column) ) |>
-      mutate( UNIPROT_GENENAME = purrr::map_chr( UNIPROT_GENENAME, \(x){str_split(x, " |:")[[1]][1]})) |>
+      mutate( UNIPROT_GENENAME = purrr::map_chr( UNIPROT_GENENAME, \(x){
+        tryCatch({
+          if(is.na(x) || is.null(x) || x == "") {
+            ""
+          } else {
+            split_result <- str_split(x, " |:")[[1]]
+            if(length(split_result) > 0) split_result[1] else ""
+          }
+        }, error = function(e) "")
+      })) |>
       dplyr::mutate(gene_name = UNIPROT_GENENAME )
   } else {
     volcano_plot_tab <- volcano_plot_tab |>
@@ -635,20 +644,35 @@ generateVolcanoPlotGlimma <- function( de_results_list
   message("   generateVolcanoPlotGlimma Step: Generating interactive plot widget...")
 
   # Find the coefficient index for this contrast
-  # Use the original selected_contrast (full name) for coefficient lookup since limma stores full names
+  # CRITICAL FIX: Use grep for reliable pattern matching instead of stringr
   coef_names <- colnames(contrasts_results$fit.eb$coefficients)
   message(paste("   generateVolcanoPlotGlimma: Available coefficient names:", paste(coef_names, collapse = ", ")))
+  message(paste("   generateVolcanoPlotGlimma: Looking for pattern:", paste0("^", comparison_to_search, "=")))
   
-  # Try both the full name and the comparison name for coefficient lookup
-  coef_index <- which(coef_names == selected_contrast)
+  # Use grep to find coefficient that starts with friendly name followed by "="
+  coef_index <- grep(paste0("^", comparison_to_search, "="), coef_names)
+  message(paste("   generateVolcanoPlotGlimma: Pattern match found indices:", paste(coef_index, collapse = ", ")))
+  
+  # Fallback: try exact match with the friendly name (for backwards compatibility)
   if (length(coef_index) == 0) {
-    # Try with comparison name
+    message("   generateVolcanoPlotGlimma: Pattern match failed, trying exact match with friendly name")
     coef_index <- which(coef_names == comparison_to_search)
+  }
+  
+  # Last resort: try exact match with selected_contrast
+  if (length(coef_index) == 0) {
+    message("   generateVolcanoPlotGlimma: Exact friendly name match failed, trying selected_contrast")
+    coef_index <- which(coef_names == selected_contrast)
   }
 
   if (length(coef_index) == 0) {
-    message(paste("   generateVolcanoPlotGlimma: Contrast", selected_contrast, "not found in coefficients"))
-    message(paste("   generateVolcanoPlotGlimma: Also tried", comparison_to_search, "not found in coefficients"))
+    message(paste("   generateVolcanoPlotGlimma: FINAL FAILURE - No coefficient found for:", selected_contrast))
+    message(paste("   generateVolcanoPlotGlimma: Also tried:", comparison_to_search))
+    message("   generateVolcanoPlotGlimma: Available coefficient patterns:")
+    for (i in seq_along(coef_names)) {
+      message(sprintf("     [%d] %s", i, coef_names[i]))
+    }
+    message(paste("   generateVolcanoPlotGlimma: Pattern attempted:", paste0("^", comparison_to_search, "=")))
     return(NULL)
   }
 
@@ -854,4 +878,279 @@ generateDEHeatmap <- function( de_results_list
 
   message("--- Exiting generateDEHeatmap ---")
   return(heatmap_plot)
-} 
+}
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' Output DE Analysis Results for All Contrasts
+#' 
+#' Writes DE analysis results to disk for all contrasts simultaneously,
+#' using contrast-specific filenames to avoid overwriting.
+#' 
+#' @export
+setGeneric(name = "outputDeResultsAllContrasts",
+           def = function(theObject,
+                         de_results_list_all_contrasts = NULL,
+                         uniprot_tbl = NULL,
+                         de_output_dir = NULL,
+                         publication_graphs_dir = NULL,
+                         file_prefix = "de_proteins",
+                         args_row_id = NULL,
+                         gene_names_column = "gene_names",
+                         uniprot_id_column = "Entry") {
+             standardGeneric("outputDeResultsAllContrasts")
+           })
+
+#' @export
+setMethod(f = "outputDeResultsAllContrasts",
+          signature = "ProteinQuantitativeData",
+          definition = function(theObject,
+                               de_results_list_all_contrasts = NULL,
+                               uniprot_tbl = NULL,
+                               de_output_dir = NULL,
+                               publication_graphs_dir = NULL,
+                               file_prefix = "de_proteins",
+                               args_row_id = NULL,
+                               gene_names_column = "gene_names",
+                               uniprot_id_column = "Entry") {
+
+  message("--- Entering outputDeResultsAllContrasts ---")
+  message(sprintf("   outputDeResultsAllContrasts: de_output_dir = %s", de_output_dir))
+  message(sprintf("   outputDeResultsAllContrasts: file_prefix = %s", file_prefix))
+  
+  # Extract parameters from S4 object with fallbacks
+  uniprot_tbl <- checkParamsObjectFunctionSimplify(theObject, "uniprot_tbl", uniprot_tbl)
+  de_output_dir <- checkParamsObjectFunctionSimplify(theObject, "de_output_dir", de_output_dir)
+  publication_graphs_dir <- checkParamsObjectFunctionSimplify(theObject, "publication_graphs_dir", publication_graphs_dir)
+  args_row_id <- checkParamsObjectFunctionSimplify(theObject, "args_row_id", args_row_id)
+  gene_names_column <- checkParamsObjectFunctionSimplify(theObject, "gene_names_column", gene_names_column)
+  uniprot_id_column <- checkParamsObjectFunctionSimplify(theObject, "uniprot_id_column", uniprot_id_column)
+  
+  # Ensure output directory exists (CRITICAL FIX!)
+  if (!dir.exists(de_output_dir)) {
+    dir.create(de_output_dir, recursive = TRUE, showWarnings = FALSE)
+    message(sprintf("   outputDeResultsAllContrasts: Created output directory: %s", de_output_dir))
+  }
+  
+  message(sprintf("   outputDeResultsAllContrasts: Processing %d contrasts", length(de_results_list_all_contrasts)))
+  
+  # Write results for each contrast with UNIQUE filenames
+  for (contrast_name in names(de_results_list_all_contrasts)) {
+    message(sprintf("   outputDeResultsAllContrasts: Writing files for contrast: %s", contrast_name))
+    
+    contrast_result <- de_results_list_all_contrasts[[contrast_name]]
+    
+    if (!is.null(contrast_result$de_proteins_long)) {
+      # Clean contrast name for safe filename
+      safe_contrast_name <- gsub("[^A-Za-z0-9_-]", "_", contrast_name)
+      
+             # Create annotated version (FIXED: proper conditional logic)
+       de_proteins_long_annot <- contrast_result$de_proteins_long |>
+         mutate(uniprot_acc_cleaned = str_split(!!sym(args_row_id), "-") |>
+                  purrr::map_chr(1))
+       
+       # Add UniProt annotations if available
+       if (!is.null(uniprot_tbl) && nrow(uniprot_tbl) > 0) {
+         de_proteins_long_annot <- de_proteins_long_annot |>
+           left_join(uniprot_tbl, by = join_by(uniprot_acc_cleaned == !!sym(uniprot_id_column))) |>
+           dplyr::select(-uniprot_acc_cleaned)
+       } else {
+         de_proteins_long_annot <- de_proteins_long_annot |>
+           dplyr::select(-uniprot_acc_cleaned)
+       }
+       
+       # Add gene_name column with proper conditional logic
+       if ("gene_names" %in% names(de_proteins_long_annot)) {
+         de_proteins_long_annot <- de_proteins_long_annot |>
+           mutate(gene_name = purrr::map_chr(gene_names, \(x){
+             tryCatch({
+               if(is.na(x) || is.null(x) || x == "") {
+                 ""
+               } else {
+                 split_result <- str_split(x, " |:")[[1]]
+                 if(length(split_result) > 0) split_result[1] else ""
+               }
+             }, error = function(e) "")
+           }))
+       } else if (gene_names_column %in% names(de_proteins_long_annot)) {
+         de_proteins_long_annot <- de_proteins_long_annot |>
+           mutate(gene_name = purrr::map_chr(.data[[gene_names_column]], \(x){
+             tryCatch({
+               if(is.na(x) || is.null(x) || x == "") {
+                 ""
+               } else {
+                 split_result <- str_split(x, " |:")[[1]]
+                 if(length(split_result) > 0) split_result[1] else ""
+               }
+             }, error = function(e) "")
+           }))
+       } else {
+         de_proteins_long_annot <- de_proteins_long_annot |>
+           mutate(gene_name = "")
+       }
+       
+       # Relocate gene_name column
+       de_proteins_long_annot <- de_proteins_long_annot |>
+         relocate(gene_name, .after = !!sym(args_row_id))
+      
+      # CRITICAL FIX: Use contrast-specific filename!
+      contrast_filename <- paste0(file_prefix, "_", safe_contrast_name, "_long_annot.tsv")
+      output_path <- file.path(de_output_dir, contrast_filename)
+      
+      message(sprintf("   outputDeResultsAllContrasts: Writing %s", output_path))
+      
+      # Write the file
+      vroom::vroom_write(de_proteins_long_annot, output_path)
+      
+      # Verify file was written
+      if (file.exists(output_path)) {
+        file_size <- file.size(output_path)
+        message(sprintf("   outputDeResultsAllContrasts: SUCCESS - File written: %s (%d bytes)", 
+                       contrast_filename, file_size))
+      } else {
+        message(sprintf("   outputDeResultsAllContrasts: ERROR - File NOT written: %s", output_path))
+      }
+      
+      # Also write Excel version
+      excel_filename <- paste0(file_prefix, "_", safe_contrast_name, "_long_annot.xlsx")
+      excel_path <- file.path(de_output_dir, excel_filename)
+      writexl::write_xlsx(de_proteins_long_annot, excel_path)
+      
+      message(sprintf("   outputDeResultsAllContrasts: Also wrote Excel: %s", excel_filename))
+      
+      # ✅ NEW: Generate volcano plot for this contrast
+      message(sprintf("   outputDeResultsAllContrasts: Generating volcano plot for contrast: %s", contrast_name))
+      
+      # Extract parameters - try direct access first, then use checkParams
+      de_q_val_thresh <- if (!is.null(theObject@args$outputDeResultsAllContrasts$de_q_val_thresh)) {
+        theObject@args$outputDeResultsAllContrasts$de_q_val_thresh
+      } else {
+        checkParamsObjectFunctionSimplify(theObject, "de_q_val_thresh", 0.05)
+      }
+      
+      fdr_column <- if (!is.null(theObject@args$outputDeResultsAllContrasts$fdr_column)) {
+        theObject@args$outputDeResultsAllContrasts$fdr_column
+      } else {
+        checkParamsObjectFunctionSimplify(theObject, "fdr_column", "fdr_qvalue")
+      }
+      
+      log2fc_column <- if (!is.null(theObject@args$outputDeResultsAllContrasts$log2fc_column)) {
+        theObject@args$outputDeResultsAllContrasts$log2fc_column
+      } else {
+        checkParamsObjectFunctionSimplify(theObject, "log2fc_column", "log2FC")
+      }
+      
+      # Prepare data for volcano plot (same logic as in differentialExpressionAnalysisHelper)
+      volcano_data <- contrast_result$de_proteins_long |>
+        mutate(lqm = -log10(!!sym(fdr_column))) |>
+        dplyr::mutate(label = case_when(!!sym(fdr_column) < de_q_val_thresh ~ "Significant",
+                                       TRUE ~ "Not sig.")) |>
+        dplyr::mutate(colour = case_when(!!sym(fdr_column) < de_q_val_thresh ~ "purple",
+                                        TRUE ~ "black")) |>
+        dplyr::mutate(colour = factor(colour, levels = c("black", "purple")))
+      
+      # Generate the volcano plot
+      volcano_plot <- plotOneVolcanoNoVerticalLines(
+        volcano_data, 
+        contrast_name,
+        log_q_value_column = lqm,
+        log_fc_column = !!sym(log2fc_column)
+      )
+      
+      # Create Volcano_Plots directory if it doesn't exist
+      volcano_dir <- file.path(publication_graphs_dir, "Volcano_Plots")
+      if (!dir.exists(volcano_dir)) {
+        dir.create(volcano_dir, recursive = TRUE, showWarnings = FALSE)
+        message(sprintf("   outputDeResultsAllContrasts: Created volcano plots directory: %s", volcano_dir))
+      }
+      
+      # Save volcano plot with contrast-specific filename
+      volcano_png_path <- file.path(volcano_dir, paste0(safe_contrast_name, ".png"))
+      volcano_pdf_path <- file.path(volcano_dir, paste0(safe_contrast_name, ".pdf"))
+      
+      # Save as PNG
+      tryCatch({
+        ggplot2::ggsave(volcano_png_path, volcano_plot, width = 7, height = 7, dpi = 300)
+        message(sprintf("   outputDeResultsAllContrasts: Saved volcano plot PNG: %s", basename(volcano_png_path)))
+      }, error = function(e) {
+        message(sprintf("   outputDeResultsAllContrasts: ERROR saving PNG: %s", e$message))
+      })
+      
+      # Save as PDF
+      tryCatch({
+        ggplot2::ggsave(volcano_pdf_path, volcano_plot, width = 7, height = 7)
+        message(sprintf("   outputDeResultsAllContrasts: Saved volcano plot PDF: %s", basename(volcano_pdf_path)))
+      }, error = function(e) {
+        message(sprintf("   outputDeResultsAllContrasts: ERROR saving PDF: %s", e$message))
+      })
+    }
+  }
+  
+  # ✅ NEW: Generate combined multi-page PDF with all volcano plots
+  message("   outputDeResultsAllContrasts: Creating combined volcano plots PDF...")
+  
+  volcano_dir <- file.path(publication_graphs_dir, "Volcano_Plots")
+  combined_pdf_path <- file.path(volcano_dir, "all_volcano_plots_combined.pdf")
+  
+  tryCatch({
+    # Re-extract parameters for combined PDF generation (in case they were modified)
+    de_q_val_thresh <- if (!is.null(theObject@args$outputDeResultsAllContrasts$de_q_val_thresh)) {
+      theObject@args$outputDeResultsAllContrasts$de_q_val_thresh
+    } else {
+      0.05
+    }
+    
+    fdr_column <- if (!is.null(theObject@args$outputDeResultsAllContrasts$fdr_column)) {
+      theObject@args$outputDeResultsAllContrasts$fdr_column
+    } else {
+      "fdr_qvalue"
+    }
+    
+    log2fc_column <- if (!is.null(theObject@args$outputDeResultsAllContrasts$log2fc_column)) {
+      theObject@args$outputDeResultsAllContrasts$log2fc_column
+    } else {
+      "log2FC"
+    }
+    
+    # Collect all volcano plots
+    all_volcano_plots <- list()
+    
+    for (contrast_name in names(de_results_list_all_contrasts)) {
+      contrast_result <- de_results_list_all_contrasts[[contrast_name]]
+      
+      if (!is.null(contrast_result$de_proteins_long)) {
+        # Recreate the volcano plot
+        volcano_data <- contrast_result$de_proteins_long |>
+          mutate(lqm = -log10(!!sym(fdr_column))) |>
+          dplyr::mutate(label = case_when(!!sym(fdr_column) < de_q_val_thresh ~ "Significant",
+                                         TRUE ~ "Not sig.")) |>
+          dplyr::mutate(colour = case_when(!!sym(fdr_column) < de_q_val_thresh ~ "purple",
+                                          TRUE ~ "black")) |>
+          dplyr::mutate(colour = factor(colour, levels = c("black", "purple")))
+        
+        volcano_plot <- plotOneVolcanoNoVerticalLines(
+          volcano_data, 
+          contrast_name,
+          log_q_value_column = lqm,
+          log_fc_column = !!sym(log2fc_column)
+        )
+        
+        all_volcano_plots[[contrast_name]] <- volcano_plot
+      }
+    }
+    
+    # Generate multi-page PDF
+    if (length(all_volcano_plots) > 0) {
+      pdf(file = combined_pdf_path, width = 7, height = 7, onefile = TRUE)
+      purrr::walk(all_volcano_plots, print)
+      invisible(dev.off())
+      message(sprintf("   outputDeResultsAllContrasts: Created combined PDF with %d volcano plots: %s", 
+                     length(all_volcano_plots), basename(combined_pdf_path)))
+    }
+    
+  }, error = function(e) {
+    message(sprintf("   outputDeResultsAllContrasts: ERROR creating combined PDF: %s", e$message))
+  })
+  
+  message("--- Exiting outputDeResultsAllContrasts ---")
+  return(TRUE)
+}) 
