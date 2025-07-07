@@ -780,3 +780,227 @@ summarisePeptideObject <- function(theObject) {
 
 
 }
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#'@export
+setGeneric(name="calcPeptideMatrix"
+           , def=function( theObject ) {
+             standardGeneric("calcPeptideMatrix")
+           }
+           , signature=c("theObject"))
+
+#'@export
+setMethod(f="calcPeptideMatrix"
+          , signature="PeptideQuantitativeData"
+          , definition=function( theObject ) {
+            
+            peptide_data <- theObject@peptide_data
+            raw_quantity_column <- theObject@raw_quantity_column
+            sample_id_column <- theObject@sample_id
+            protein_id_column <- theObject@protein_id_column
+            peptide_sequence_column <- theObject@peptide_sequence_column
+
+            peptide_quant_table <- peptide_data |>
+              dplyr::select(!!sym(sample_id_column)
+                            , !!sym(theObject@protein_id_column)
+                            , !!sym(theObject@peptide_sequence_column)
+                            , !!sym(raw_quantity_column)) |>
+              mutate( !!sym(raw_quantity_column)  := purrr::map_dbl(!!sym(raw_quantity_column), as.numeric )) |>
+              tidyr::pivot_wider(names_from = !!sym(sample_id_column)
+                                 , values_from = !!sym(raw_quantity_column)) |>
+              dplyr::rename(Protein.Ids = !!sym(theObject@protein_id_column)
+                            , Stripped.Sequence = !!sym(theObject@peptide_sequence_column))
+            
+            
+            normalised_frozen_peptide_matrix_filt <- peptide_quant_table |>
+              mutate(Protein.Ids = as.character(Protein.Ids)
+                     , Stripped.Sequence = as.character(Stripped.Sequence) ) |>
+              mutate(peptide_ids = paste(Protein.Ids, Stripped.Sequence, sep = "%")) |>
+              dplyr::select(-Protein.Ids,-Stripped.Sequence) |>
+              column_to_rownames("peptide_ids") |>
+              as.matrix()           
+            
+            theObject@peptide_matrix <- normalised_frozen_peptide_matrix_filt
+                                                   
+            # print(head( normalised_frozen_peptide_matrix_filt))                                                   
+            
+            return(theObject)
+            
+          } )           
+
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#'@export
+setGeneric(name="getNegCtrlProtAnovaPeptides"
+           , def=function( theObject
+                           , ruv_grouping_variable  = NULL
+                           , percentage_as_neg_ctrl  = NULL
+                           , num_neg_ctrl  = NULL
+                           , ruv_qval_cutoff = NULL
+                           , ruv_fdr_method = NULL ) {
+             standardGeneric("getNegCtrlProtAnovaPeptides")
+           }
+           , signature=c("theObject", "ruv_grouping_variable", "num_neg_ctrl", "ruv_qval_cutoff", "ruv_fdr_method"))
+
+#'@export
+setMethod(f="getNegCtrlProtAnovaPeptides"
+          , signature="PeptideQuantitativeData"
+          , definition=function( theObject
+                                 , ruv_grouping_variable = NULL
+                                 , percentage_as_neg_ctrl = NULL
+                                 , num_neg_ctrl = NULL
+                                 , ruv_qval_cutoff = NULL
+                                 , ruv_fdr_method = NULL ) {
+            
+            peptide_data <- theObject@peptide_data
+            raw_quantity_column <- theObject@raw_quantity_column
+            sample_id_column <- theObject@sample_id
+            replicate_group_column <- theObject@technical_replicate_id
+            design_matrix <- theObject@design_matrix
+            protein_id_column <- theObject@protein_id_column
+            peptide_sequence_column <- theObject@peptide_sequence_column
+            group_id <- theObject@group_id
+            
+            normalised_frozen_peptide_matrix_filt <- theObject@peptide_matrix
+            
+            ruv_grouping_variable <- checkParamsObjectFunctionSimplify( theObject, "ruv_grouping_variable", "replicates")
+            percentage_as_neg_ctrl <- checkParamsObjectFunctionSimplify( theObject, "percentage_as_neg_ctrl", 10)
+            num_neg_ctrl <- checkParamsObjectFunctionSimplify( theObject
+                                                               , "num_neg_ctrl"
+                                                               , round(nrow( normalised_frozen_peptide_matrix_filt) * percentage_as_neg_ctrl / 100, 0))
+            ruv_qval_cutoff <- checkParamsObjectFunctionSimplify( theObject, "ruv_qval_cutoff", 0.05)
+            ruv_fdr_method <- checkParamsObjectFunctionSimplify( theObject, "ruv_fdr_method", "BH")
+            
+            theObject <- updateParamInObject(theObject, "ruv_grouping_variable")
+            theObject <- updateParamInObject(theObject, "percentage_as_neg_ctrl")
+            theObject <- updateParamInObject(theObject, "num_neg_ctrl")
+            theObject <- updateParamInObject(theObject, "ruv_qval_cutoff")
+            theObject <- updateParamInObject(theObject, "ruv_fdr_method")
+            
+            control_genes_index <- getNegCtrlProtAnovaHelper( normalised_frozen_peptide_matrix_filt[,design_matrix |> dplyr::pull(!!sym(sample_id_column)) ]
+                                                              , design_matrix = design_matrix |>
+                                                                column_to_rownames(sample_id_column) |>
+                                                                dplyr::select( -!!sym(group_id))
+                                                              , grouping_variable = ruv_grouping_variable
+                                                              , percentage_as_neg_ctrl = percentage_as_neg_ctrl
+                                                              , num_neg_ctrl = num_neg_ctrl
+                                                              , ruv_qval_cutoff = ruv_qval_cutoff
+                                                              , ruv_fdr_method = ruv_fdr_method )
+            
+            return(control_genes_index)
+          })
+
+
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#'@export
+setMethod( f = "ruvCancor"
+           , signature="PeptideQuantitativeData"
+           , definition=function( theObject, ctrl= NULL, num_components_to_impute=NULL, ruv_grouping_variable = NULL) {
+             
+             
+             peptide_matrix <- theObject@peptide_matrix
+             protein_id_column <- theObject@protein_id_column
+             design_matrix <- theObject@design_matrix
+             sample_id <- theObject@sample_id
+             
+             ctrl <- checkParamsObjectFunctionSimplify( theObject, "ctrl", NULL)
+             num_components_to_impute <- checkParamsObjectFunctionSimplify( theObject, "num_components_to_impute", 2)
+             ruv_grouping_variable <- checkParamsObjectFunctionSimplify( theObject, "ruv_grouping_variable", NULL)
+             
+             theObject <- updateParamInObject(theObject, "ctrl")
+             theObject <- updateParamInObject(theObject, "num_components_to_impute")
+             theObject <- updateParamInObject(theObject, "ruv_grouping_variable")
+             
+             if(! ruv_grouping_variable %in% colnames(design_matrix)) {
+               stop( paste0("The 'ruv_grouping_variable = "
+                            , ruv_grouping_variable
+                            , "' is not a column in the design matrix.") )
+             }
+             
+             if( is.na(num_components_to_impute) || num_components_to_impute < 1) {
+               stop(paste0("The num_components_to_impute = ", num_components_to_impute, " value is invalid."))
+             }
+             
+             if( length( ctrl) < 5 ) {
+               stop(paste0( "The number of negative control molecules entered is less than 5. Please check the 'ctl' parameter."))
+             }
+
+             # Remove or winsorize extreme values
+             peptide_matrix_clean <- apply(log2(peptide_matrix), 2, function(x) {
+               q <- quantile(x, probs = c(0.01, 0.99), na.rm=TRUE)
+               x[x < q[1]] <- q[1]
+               x[x > q[2]] <- q[2]
+               return(x)
+             })
+             
+             
+             dpcfit <- dpc(peptide_matrix_clean)
+             
+             peptide_matrix_complete <- dpcImpute(peptide_matrix_clean, dpc=dpcfit)$E
+             
+             
+             Y <-  t( peptide_matrix_complete[,design_matrix |> dplyr::pull(!!sym(sample_id))]) 
+
+             print("steps")
+             
+             cancorplot_r2 <- ruv_cancorplot( Y ,
+                                              X = design_matrix |>
+                                                dplyr::pull(!!sym(ruv_grouping_variable)),
+                                              ctl = ctrl)
+             cancorplot_r2
+             
+             
+           })
+
+#'@export
+setMethod( f = "ruvIII_C_Varying"
+           , signature="PeptideQuantitativeData"
+           , definition=function( theObject, ruv_grouping_variable = NULL, ruv_number_k = NULL, ctrl = NULL) {
+             
+             peptide_matrix <- theObject@peptide_matrix
+             protein_id_column <- theObject@protein_id_column
+             design_matrix <- theObject@design_matrix
+             group_id <- theObject@group_id
+             sample_id <- theObject@sample_id
+             replicate_group_column <- theObject@technical_replicate_id
+             
+             
+             ruv_grouping_variable <- checkParamsObjectFunctionSimplify( theObject, "ruv_grouping_variable", NULL)
+             k <- checkParamsObjectFunctionSimplify( theObject, "ruv_number_k", NULL)
+             ctrl <- checkParamsObjectFunctionSimplify( theObject, "ctrl", NULL)
+             
+             theObject <- updateParamInObject(theObject, "ruv_grouping_variable")
+             theObject <- updateParamInObject(theObject, "ruv_number_k")
+             theObject <- updateParamInObject(theObject, "ctrl")
+
+             
+             Y <-  t( peptide_matrix[,design_matrix |> dplyr::pull(!!sym(sample_id))])
+             
+             M <- getRuvIIIReplicateMatrixHelper( design_matrix
+                                                  , !!sym(sample_id)
+                                                  , !!sym(ruv_grouping_variable))
+             
+             cln_mat <- RUVIII_C_Varying( k = ruv_number_k
+                                          , Y = Y
+                                          , M = M
+                                          , toCorrect = colnames(Y)
+                                          , potentialControls = names( ctrl[which(ctrl)] ) )
+             
+             # Remove samples with no values
+             cln_mat_2 <- cln_mat[rowSums(is.na(cln_mat) | is.nan(cln_mat)) != ncol(cln_mat),]
+             
+             # Remove proteins with no values
+             cln_mat_3 <- t(cln_mat_2)
+             cln_mat_4 <- cln_mat_3[rowSums(is.na(cln_mat_3) | is.nan(cln_mat_3)) != ncol(cln_mat_3),]
+             
+             theObject@peptide_matrix <- cln_mat_4
+             
+             theObject <- cleanDesignMatrixPeptideMatrix(theObject)
+             
+             return( theObject )
+           })
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
