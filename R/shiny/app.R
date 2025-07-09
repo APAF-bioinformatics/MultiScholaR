@@ -357,23 +357,16 @@ server <- function(input, output, session) {
   volumes <- NULL
   if (requireNamespace("shinyFiles", quietly = TRUE)) {
     message("   app.R: shinyFiles package is available")
-    volumes <- shinyFiles::getVolumes()
+    volumes <- shinyFiles::getVolumes()()  # Call the function to get the actual volumes list
     message(sprintf("   app.R: Created volumes. Type = %s, class = %s", 
                     typeof(volumes), paste(class(volumes), collapse = ", ")))
     
     # Inspect volumes
     tryCatch({
-      if (is.function(volumes)) {
-        message("   app.R: volumes is a FUNCTION")
-        vol_test <- volumes()
-        message(sprintf("   app.R: Called volumes(). Result type = %s, length = %d", 
-                        typeof(vol_test), length(vol_test)))
-        if (length(vol_test) > 0) {
-          message(sprintf("   app.R: Volume names: %s", 
-                          paste(names(vol_test), collapse = ", ")))
-        }
-      } else {
-        message("   app.R: volumes is NOT a function")
+      message(sprintf("   app.R: volumes length = %d", length(volumes)))
+      if (length(volumes) > 0) {
+        message(sprintf("   app.R: Volume names: %s", 
+                        paste(names(volumes), collapse = ", ")))
       }
     }, error = function(e) {
       message(sprintf("   app.R ERROR inspecting volumes: %s", e$message))

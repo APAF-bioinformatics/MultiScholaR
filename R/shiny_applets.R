@@ -46,10 +46,10 @@ RunApplet <- function(applet_type, omic_type, experiment_label, project_dirs_obj
     stop(paste0("Error: ", sQuote(project_dirs_object_name), " is not a list as expected."))
   }
 
-  # The key in project_dirs is now just the omic type
-  list_key <- omic_type 
+  # The key in project_dirs combines omic_type and experiment_label
+  list_key <- paste(omic_type, experiment_label, sep = "_")
   if (!list_key %in% names(project_dirs)) {
-    stop(paste0("Error: No directory information found for ", sQuote(list_key), " in ", sQuote(project_dirs_object_name), ". Ensure omic_type is correct."))
+    stop(paste0("Error: No directory information found for ", sQuote(list_key), " in ", sQuote(project_dirs_object_name), ". Ensure omic_type and experiment_label are correct."))
   }
   
   # Get the paths for the current omic type
@@ -75,6 +75,26 @@ RunApplet <- function(applet_type, omic_type, experiment_label, project_dirs_obj
   # --- Omic Type Specific Logic ---
   switch(omic_type,
     "proteomics" = {
+      # Load the required module - try multiple possible paths
+      module_paths <- c(
+        file.path("R", "shiny", "modules", "proteomics", "designMatrixBuilderModule.R"),
+        file.path("..", "R", "shiny", "modules", "proteomics", "designMatrixBuilderModule.R"),
+        system.file("R", "shiny", "modules", "proteomics", "designMatrixBuilderModule.R", package = "MultiScholaR")
+      )
+      
+      module_found <- FALSE
+      for (path in module_paths) {
+        if (file.exists(path) && path != "") {
+          source(path)
+          module_found <- TRUE
+          break
+        }
+      }
+      
+      if (!module_found) {
+        stop("Could not find designMatrixBuilderModule.R. Please ensure you're running from the correct directory or the package is properly installed.")
+      }
+      
       if (applet_type == "designMatrix") {
         log_info(paste("Launching Design Matrix applet for PROTEOMICS. Using source_dir:", source_dir))
 

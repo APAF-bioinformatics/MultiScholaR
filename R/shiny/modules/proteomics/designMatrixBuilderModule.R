@@ -114,6 +114,40 @@ designMatrixBuilderUI <- function(id) {
                             shiny::actionButton(ns("assign_metadata"), "Assign")
                         ),
 
+                        # Technical replicates tab
+                        shiny::tabPanel(
+                            "Technical Replicates",
+                            shiny::h4("Assign Technical Replicates"),
+                            shiny::helpText(HTML(
+                                "Select samples that are technical replicates of each other. ",
+                                "These samples will be grouped under the same biological replicate number ",
+                                "and assigned distinct technical replicate numbers.<br><br>",
+                                "<b>Example:</b> If you select samples 3A, 3B, 3C with replicate numbers 3, 4, 5, ",
+                                "they will all be assigned replicate number 3, with tech_reps 1, 2, 3 respectively."
+                            )),
+                            shiny::selectizeInput(ns("tech_rep_samples"), "Select Technical Replicates:",
+                                choices = NULL, # Will be populated by server
+                                multiple = TRUE
+                            ),
+                            shiny::radioButtons(ns("tech_rep_assignment_mode"), "Assignment Mode:",
+                                choices = c(
+                                    "Use lowest replicate number" = "lowest",
+                                    "Use first selected sample's replicate" = "first",
+                                    "Specify replicate number" = "manual"
+                                )
+                            ),
+                            shiny::conditionalPanel(
+                                condition = paste0("input['", ns("tech_rep_assignment_mode"), "'] == 'manual'"),
+                                shiny::numericInput(ns("manual_replicate_number"), "Replicate Number:", 
+                                    value = 1, min = 1)
+                            ),
+                            shiny::actionButton(ns("assign_tech_reps"), "Assign Technical Replicates", 
+                                class = "btn-primary"),
+                            shiny::hr(),
+                            shiny::h5("Current Technical Replicate Assignments"),
+                            shiny::verbatimTextOutput(ns("tech_rep_summary"))
+                        ),
+
                         # Contrast tab
                         shiny::tabPanel(
                             "Contrasts",
@@ -175,6 +209,12 @@ designMatrixBuilderUI <- function(id) {
                         "They are used to group runs for analysis. Define potential factor names in the 'Factors' tab, ",
                         "then assign the appropriate factor levels to your runs using the 'Assign Metadata' tab. ",
                         "A 'group' is automatically created based on the combination of assigned factors (e.g., 'TreatmentA_Timepoint1')."
+                    )),
+                    shiny::helpText(HTML(
+                        "<b>Technical Replicates:</b> These are repeated measurements of the same biological sample ",
+                        "(e.g., multiple injections or runs of the same sample). Use the 'Technical Replicates' tab to group ",
+                        "samples that are technical replicates. They will share the same biological replicate number but have ",
+                        "distinct technical replicate numbers. This information is used downstream for missing value imputation."
                     )),
                     shiny::helpText(HTML(
                         "<b>Contrasts:</b> These define the specific statistical comparisons you want to make ",
@@ -247,7 +287,8 @@ designMatrixBuilderServer <- function(id, data_tbl, config_list) {
                 group = NA_character_,
                 factor1 = NA_character_,
                 factor2 = NA_character_,
-                replicates = NA_integer_
+                replicates = NA_integer_,
+                tech_reps = NA_integer_
             )
 
             list(
@@ -287,6 +328,7 @@ designMatrixBuilderServer <- function(id, data_tbl, config_list) {
             updateSelectizeInput(session, "sample_to_rename", choices = sorted_runs, selected = "")
             updateSelectizeInput(session, "selected_runs", choices = sorted_runs, selected = "")
             updateSelectizeInput(session, "samples_to_transform", choices = sorted_runs, selected = "")
+            updateSelectizeInput(session, "tech_rep_samples", choices = sorted_runs, selected = "")
             updateTextInput(session, "formula_string", value = state$formula)
         })
 
@@ -307,11 +349,13 @@ designMatrixBuilderServer <- function(id, data_tbl, config_list) {
                 selected_rename <- input$sample_to_rename
                 selected_meta <- input$selected_runs
                 selected_transform <- input$samples_to_transform
+                selected_tech <- input$tech_rep_samples
             })
 
             updateSelectizeInput(session, "sample_to_rename", choices = sorted_runs, selected = selected_rename)
             updateSelectizeInput(session, "selected_runs", choices = sorted_runs, selected = selected_meta)
             updateSelectizeInput(session, "samples_to_transform", choices = sorted_runs, selected = selected_transform)
+            updateSelectizeInput(session, "tech_rep_samples", choices = sorted_runs, selected = selected_tech)
         }, ignoreNULL = TRUE, ignoreInit = TRUE)
 
         # Update factor and group dropdowns when they change
@@ -422,6 +466,36 @@ designMatrixBuilderServer <- function(id, data_tbl, config_list) {
             }, error = function(e) {
                 paste("Error:", e$message)
             })
+        })
+        
+        # Render technical replicate summary
+        output$tech_rep_summary <- renderText({
+            dm <- design_matrix()
+            req(dm)
+            
+            # Find samples with technical replicate assignments
+            tech_rep_groups <- dm |>
+                dplyr::filter(!is.na(tech_reps)) |>
+                dplyr::group_by(group, replicates) |>
+                dplyr::summarise(
+                    samples = paste(Run, collapse = ", "),
+                    tech_rep_numbers = paste(tech_reps, collapse = ", "),
+                    .groups = "drop"
+                )
+            
+            if (nrow(tech_rep_groups) == 0) {
+                return("No technical replicates assigned yet.")
+            }
+            
+            # Format the output using vectorized approach
+            output_text <- tech_rep_groups |>
+                dplyr::mutate(
+                    formatted = sprintf("Group: %s, Biological Replicate: %s\n  Samples: %s\n  Technical Replicates: %s",
+                                      group, replicates, samples, tech_rep_numbers)
+                ) |>
+                dplyr::pull(formatted)
+            
+            paste(output_text, collapse = "\n\n")
         })
         
         # Render replicate number input UI
@@ -546,6 +620,80 @@ designMatrixBuilderServer <- function(id, data_tbl, config_list) {
             groups(unique_groups)
         })
 
+        # Handler for assigning technical replicates
+        observeEvent(input$assign_tech_reps, {
+            req(input$tech_rep_samples)
+            current_matrix <- design_matrix()
+
+            if (length(input$tech_rep_samples) < 2) {
+                showNotification("Please select at least two samples to assign as technical replicates.", type = "warning")
+                return()
+            }
+
+            # Get selected sample indices
+            selected_indices <- which(current_matrix$Run %in% input$tech_rep_samples)
+            
+            # Check if all selected samples have the same group assignment
+            selected_groups <- unique(current_matrix$group[selected_indices])
+            if (length(selected_groups) > 1 || any(is.na(selected_groups))) {
+                showNotification("All selected samples must belong to the same group. Please assign metadata first.", type = "warning")
+                return()
+            }
+
+            # Determine the base replicate number
+            if (input$tech_rep_assignment_mode == "lowest") {
+                base_replicate_number <- min(current_matrix$replicates[selected_indices], na.rm = TRUE)
+            } else if (input$tech_rep_assignment_mode == "first") {
+                base_replicate_number <- current_matrix$replicates[current_matrix$Run == input$tech_rep_samples[1]]
+            } else if (input$tech_rep_assignment_mode == "manual") {
+                base_replicate_number <- input$manual_replicate_number
+            }
+
+            # Get the group of the selected samples
+            sample_group <- selected_groups[1]
+            
+            # Find all samples in the same group
+            group_indices <- which(current_matrix$group == sample_group & !is.na(current_matrix$group))
+            
+            # Calculate how many replicate numbers we're consolidating
+            original_replicate_numbers <- unique(current_matrix$replicates[selected_indices])
+            num_replicates_consolidated <- length(original_replicate_numbers) - 1
+            
+            # Get the highest replicate number being consolidated
+            highest_consolidated_replicate <- max(original_replicate_numbers, na.rm = TRUE)
+            
+            # Adjust replicate numbers for samples in the same group that come after the consolidated ones
+            samples_to_adjust <- which(
+                current_matrix$group == sample_group & 
+                !is.na(current_matrix$group) &
+                current_matrix$replicates > highest_consolidated_replicate &
+                !current_matrix$Run %in% input$tech_rep_samples
+            )
+            
+            if (length(samples_to_adjust) > 0) {
+                current_matrix$replicates[samples_to_adjust] <- 
+                    current_matrix$replicates[samples_to_adjust] - num_replicates_consolidated
+            }
+
+            # Assign the same replicate number to all selected samples
+            current_matrix$replicates[selected_indices] <- base_replicate_number
+            
+            # Assign technical replicate numbers (1, 2, 3, ...) using vectorized approach
+            # Create a named vector mapping sample names to their technical replicate numbers
+            tech_rep_mapping <- setNames(seq_along(input$tech_rep_samples), input$tech_rep_samples)
+            
+            # Apply the mapping to assign technical replicate numbers
+            current_matrix$tech_reps[selected_indices] <- tech_rep_mapping[current_matrix$Run[selected_indices]]
+
+            # Update reactive value
+            design_matrix(current_matrix)
+            
+            showNotification(paste("Assigned", length(input$tech_rep_samples), 
+                                 "samples as technical replicates with biological replicate number", 
+                                 base_replicate_number, "and adjusted subsequent replicate numbers"), 
+                           type = "message")
+        })
+
         # Handler for adding a new contrast
         observeEvent(input$add_contrast, {
             req(input$contrast_group1, input$contrast_group2)
@@ -598,6 +746,7 @@ designMatrixBuilderServer <- function(id, data_tbl, config_list) {
                 current_matrix$factor1 <- NA_character_
                 current_matrix$factor2 <- NA_character_
                 current_matrix$group <- NA_character_
+                current_matrix$tech_reps <- NA_integer_
                 design_matrix(current_matrix)
                 groups(state$groups)
             }

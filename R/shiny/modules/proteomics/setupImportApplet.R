@@ -225,27 +225,17 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
       # If volumes not passed in, create them
       if (is.null(volumes)) {
         message("   setupImportServer Step: volumes is NULL, creating new volumes...")
-        volumes <- shinyFiles::getVolumes()
+        volumes <- shinyFiles::getVolumes()()  # Call the function to get the actual volumes list
         message(sprintf("   setupImportServer Step: Created volumes. Type = %s, class = %s", 
                         typeof(volumes), paste(class(volumes), collapse = ", ")))
         
-        # Try to inspect volumes
+        # Inspect volumes
         message("   setupImportServer Step: Attempting to inspect volumes...")
         tryCatch({
-          if (is.function(volumes)) {
-            message("   setupImportServer Step: volumes is a FUNCTION")
-            # Try calling it
-            vol_result <- volumes()
-            message(sprintf("   setupImportServer Step: Called volumes(). Result type = %s, class = %s", 
-                            typeof(vol_result), paste(class(vol_result), collapse = ", ")))
-            message(sprintf("   setupImportServer Step: volumes() result length = %d", length(vol_result)))
-            if (length(vol_result) > 0) {
-              message(sprintf("   setupImportServer Step: First few volume names: %s", 
-                              paste(head(names(vol_result), 3), collapse = ", ")))
-            }
-          } else {
-            message("   setupImportServer Step: volumes is NOT a function")
-            message(sprintf("   setupImportServer Step: volumes length = %d", length(volumes)))
+          message(sprintf("   setupImportServer Step: volumes length = %d", length(volumes)))
+          if (length(volumes) > 0) {
+            message(sprintf("   setupImportServer Step: First few volume names: %s", 
+                            paste(head(names(volumes), 3), collapse = ", ")))
           }
         }, error = function(e) {
           message(sprintf("   setupImportServer ERROR inspecting volumes: %s", e$message))

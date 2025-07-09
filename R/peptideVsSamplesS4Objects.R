@@ -998,9 +998,718 @@ setMethod( f = "ruvIII_C_Varying"
              
              theObject@peptide_matrix <- cln_mat_4
              
-             theObject <- cleanDesignMatrixPeptideMatrix(theObject)
+             theObject <- cleanDesignMatrixPeptide(theObject)
              
              return( theObject )
            })
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#' Find the Best Negative Control Percentage for RUV-III Analysis on Peptide Data
+#'
+#' This function automatically determines the optimal percentage of peptides to use
+#' as negative controls for RUV-III analysis by testing different percentages and
+#' evaluating the separation quality between "All" and "Control" groups in canonical
+#' correlation plots.
+#'
+#' @param peptide_matrix_obj A PeptideQuantitativeData object containing
+#'   the peptide quantification data
+#' @param percentage_range A numeric vector specifying the range of percentages to test.
+#'   Default is seq(1, 20, by = 1) for testing 1% to 20% in 1% increments
+#' @param num_components_to_impute Number of components to use for imputation in ruvCancor.
+#'   Default is 5
+#' @param ruv_grouping_variable The grouping variable to use for RUV analysis.
+#'   Default is "group"
+#' @param ruv_qval_cutoff The FDR threshold for negative control selection.
+#'   Default is 0.05
+#' @param ruv_fdr_method The FDR calculation method. Default is "qvalue"
+#' @param separation_metric The metric to use for evaluating separation quality.
+#'   Options: "max_difference" (default), "mean_difference", "auc", "weighted_difference"
+#' @param k_penalty_weight Weight for penalizing high k values in composite score.
+#'   Default is 0.5. Higher values penalize high k more strongly
+#' @param max_acceptable_k Maximum acceptable k value. k values above this get heavy penalty.
+#'   Default is 3
+#' @param adaptive_k_penalty Whether to automatically adjust max_acceptable_k based on sample size.
+#'   Default is TRUE (recommended). Set to FALSE only if you need exact reproducibility with previous results
+#' @param verbose Whether to print progress messages. Default is TRUE
+#' @param ensure_matrix Whether to ensure peptide matrix is calculated. Default is TRUE
+#'
+#' @return A list containing:
+#'   \itemize{
+#'     \item best_percentage: The optimal percentage as a numeric value
+#'     \item best_k: The optimal k value from findBestK() for the best percentage
+#'     \item best_control_genes_index: The control genes index for the best percentage
+#'     \item best_separation_score: The separation score for the best percentage
+#'     \item best_composite_score: The composite score (separation penalized by k value)
+#'     \item optimization_results: A data frame with all tested percentages and their scores
+#'     \item best_cancor_plot: The canonical correlation plot for the best percentage
+#'     \item separation_metric_used: The separation metric that was used
+#'     \item k_penalty_weight: The k penalty weight that was used
+#'     \item max_acceptable_k: The maximum acceptable k value that was used
+#'   }
+#'
+#' @importFrom logger log_info log_warn
+#' @importFrom purrr imap map_dfr map_dbl
+#' @export
+setGeneric(name="findBestNegCtrlPercentagePeptides"
+           , def=function(theObject,
+                          percentage_range = seq(1, 20, by = 1),
+                          num_components_to_impute = 5,
+                          ruv_grouping_variable = "group",
+                          ruv_qval_cutoff = 0.05,
+                          ruv_fdr_method = "qvalue",
+                          separation_metric = "max_difference",
+                          k_penalty_weight = 0.5,
+                          max_acceptable_k = 3,
+                          adaptive_k_penalty = TRUE,
+                          verbose = TRUE,
+                          ensure_matrix = TRUE) {
+             standardGeneric("findBestNegCtrlPercentagePeptides")
+           }
+           , signature=c("theObject"))
+
+#' @export
+setMethod(f="findBestNegCtrlPercentagePeptides"
+          , signature="PeptideQuantitativeData"
+          , definition=function(theObject,
+                                percentage_range = seq(1, 20, by = 1),
+                                num_components_to_impute = 5,
+                                ruv_grouping_variable = "group",
+                                ruv_qval_cutoff = 0.05,
+                                ruv_fdr_method = "qvalue",
+                                separation_metric = "max_difference",
+                                k_penalty_weight = 0.5,
+                                max_acceptable_k = 3,
+                                adaptive_k_penalty = TRUE,
+                                verbose = TRUE,
+                                ensure_matrix = TRUE) {
+  
+  # Input validation
+  if (!inherits(theObject, "PeptideQuantitativeData")) {
+    stop("theObject must be a PeptideQuantitativeData object")
+  }
+  
+  # Ensure peptide matrix is calculated if requested
+  if (ensure_matrix && (!"peptide_matrix" %in% slotNames(theObject) || is.null(theObject@peptide_matrix) || length(theObject@peptide_matrix) == 0)) {
+    if (verbose) {
+      log_info("Peptide matrix not found. Calculating peptide matrix...")
+    }
+    theObject <- calcPeptideMatrix(theObject)
+  }
+  
+  if (length(percentage_range) == 0 || any(percentage_range <= 0) || any(percentage_range > 100)) {
+    stop("percentage_range must contain values between 0 and 100")
+  }
+  
+  if (!separation_metric %in% c("max_difference", "mean_difference", "auc", "weighted_difference")) {
+    stop("separation_metric must be one of: 'max_difference', 'mean_difference', 'auc', 'weighted_difference'")
+  }
+  
+  if (k_penalty_weight < 0 || k_penalty_weight > 1) {
+    stop("k_penalty_weight must be between 0 and 1")
+  }
+  
+  if (max_acceptable_k < 1 || !is.numeric(max_acceptable_k)) {
+    stop("max_acceptable_k must be a positive number >= 1")
+  }
+  
+  if (adaptive_k_penalty && max_acceptable_k < 3) {
+    stop("max_acceptable_k must be at least 3 when adaptive_k_penalty is TRUE")
+  }
+  
+  # Calculate adaptive max_acceptable_k if requested
+  if (adaptive_k_penalty) {
+    # Get sample size from the peptide matrix
+    sample_size <- ncol(theObject@peptide_matrix)
+    
+    # Calculate adaptive max_acceptable_k based on sample size
+    adaptive_max_k <- .peptide_calculateAdaptiveMaxK(sample_size)
+    
+    if (verbose) {
+      log_info("Adaptive penalty enabled: Sample size = {sample_size}, Adaptive max_acceptable_k = {adaptive_max_k} (original = {max_acceptable_k})")
+    }
+    
+    max_acceptable_k <- adaptive_max_k
+  }
+  
+  # Detect small datasets and warn/adjust percentage range if needed
+  sample_size <- ncol(theObject@peptide_matrix)
+  if (sample_size < 15 && max(percentage_range) < 30) {
+    if (verbose) {
+      log_warn("Small dataset detected (n={sample_size}). Consider testing higher percentages (up to 30-50%) for better negative control identification.")
+      log_warn("Current range: {paste(range(percentage_range), collapse = '-')}%. May need wider range for optimal results.")
+    }
+  }
+  
+  if (verbose) {
+    log_info("Starting optimization of negative control percentage for PEPTIDE data with k value consideration...")
+    log_info("Testing {length(percentage_range)} different percentages: {paste(range(percentage_range), collapse = '-')}%")
+    log_info("K penalty weight: {k_penalty_weight}, Max acceptable k: {max_acceptable_k}")
+    if (adaptive_k_penalty) {
+      log_info("Using adaptive k penalty based on sample size")
+    }
+  }
+  
+  # Process all percentages using functional programming
+  if (verbose) {
+    log_info("Processing {length(percentage_range)} percentages using vectorized operations...")
+  }
+  
+  # Create a function to process a single percentage
+  process_percentage <- function(current_percentage, index) {
+    if (verbose && index %% 5 == 0) {
+      log_info("Testing percentage {index}/{length(percentage_range)}: {current_percentage}%")
+    }
+    
+    tryCatch({
+      # Get negative control peptides for current percentage
+      control_genes_index <- getNegCtrlProtAnovaPeptides(
+        theObject,
+        ruv_grouping_variable = ruv_grouping_variable,
+        percentage_as_neg_ctrl = current_percentage,
+        ruv_qval_cutoff = ruv_qval_cutoff,
+        ruv_fdr_method = ruv_fdr_method
+      )
+      
+      # Check if we have enough control peptides
+      num_controls <- sum(control_genes_index, na.rm = TRUE)
+      if (num_controls < 5) {
+        if (verbose) {
+          log_warn("Percentage {current_percentage}%: Only {num_controls} control peptides found (minimum 5 required). Skipping.")
+        }
+        return(list(
+          percentage = current_percentage,
+          separation_score = NA_real_,
+          best_k = NA_real_,
+          composite_score = NA_real_,
+          num_controls = num_controls,
+          valid_plot = FALSE,
+          control_genes_index = NULL,
+          cancor_plot = NULL
+        ))
+      }
+      
+      # Generate canonical correlation plot
+      cancorplot <- ruvCancor(
+        theObject,
+        ctrl = control_genes_index,
+        num_components_to_impute = num_components_to_impute,
+        ruv_grouping_variable = ruv_grouping_variable
+      )
+      
+      # Calculate separation score
+      separation_score <- .peptide_calculateSeparationScore(cancorplot, separation_metric)
+      
+      # Calculate the best k using the existing findBestK function
+      best_k <- tryCatch({
+        findBestK(cancorplot)
+      }, error = function(e) {
+        if (verbose) {
+          log_warn("Percentage {current_percentage}%: Error calculating best k: {e$message}")
+        }
+        return(NA_real_)
+      })
+      
+      # Calculate composite score that considers both separation and k value
+      composite_score <- .peptide_calculateCompositeScore(
+        separation_score, 
+        best_k, 
+        k_penalty_weight, 
+        max_acceptable_k
+      )
+      
+      return(list(
+        percentage = current_percentage,
+        separation_score = separation_score,
+        best_k = best_k,
+        composite_score = composite_score,
+        num_controls = num_controls,
+        valid_plot = TRUE,
+        control_genes_index = control_genes_index,
+        cancor_plot = cancorplot
+      ))
+      
+    }, error = function(e) {
+      if (verbose) {
+        log_warn("Percentage {current_percentage}%: Error occurred - {e$message}")
+      }
+      return(list(
+        percentage = current_percentage,
+        separation_score = NA_real_,
+        best_k = NA_real_,
+        composite_score = NA_real_,
+        num_controls = NA_integer_,
+        valid_plot = FALSE,
+        control_genes_index = NULL,
+        cancor_plot = NULL
+      ))
+    })
+  }
+  
+  # Use purrr::imap() for functional processing
+  all_results <- percentage_range |>
+    purrr::imap(process_percentage)
+  
+  # Extract results into proper data frame
+  results <- all_results |>
+    purrr::map_dfr(~ data.frame(
+      percentage = .x$percentage,
+      separation_score = .x$separation_score,
+      best_k = .x$best_k,
+      composite_score = .x$composite_score,
+      num_controls = .x$num_controls,
+      valid_plot = .x$valid_plot
+    ))
+  
+  # Find the best result using composite score (considers both separation and k value)
+  valid_results <- all_results[!is.na(purrr::map_dbl(all_results, "composite_score"))]
+  
+  if (length(valid_results) == 0) {
+    stop("No valid percentage found. Please check your data and parameters.")
+  }
+  
+  best_index <- which.max(purrr::map_dbl(valid_results, "composite_score"))
+  best_result <- valid_results[[best_index]]
+  
+  best_percentage <- best_result$percentage
+  best_control_genes_index <- best_result$control_genes_index
+  best_cancor_plot <- best_result$cancor_plot
+  best_separation_score <- best_result$separation_score
+  best_composite_score <- best_result$composite_score
+  best_k <- best_result$best_k
+  
+  # Final validation and logging
+  if (verbose) {
+    log_info("Optimization complete!")
+    log_info("Best percentage: {best_percentage}% (composite score: {round(best_composite_score, 4)})")
+    log_info("  - Separation score: {round(best_separation_score, 4)}")
+    log_info("  - Best k value: {best_k}")
+    log_info("  - Number of control peptides: {sum(best_control_genes_index, na.rm = TRUE)}")
+  }
+  
+  # Return comprehensive results
+  return(list(
+    best_percentage = best_percentage,
+    best_k = best_k,
+    best_control_genes_index = best_control_genes_index,
+    best_separation_score = best_separation_score,
+    best_composite_score = best_composite_score,
+    optimization_results = results,
+    best_cancor_plot = best_cancor_plot,
+    separation_metric_used = separation_metric,
+    k_penalty_weight = k_penalty_weight,
+    max_acceptable_k = max_acceptable_k,
+    adaptive_k_penalty_used = adaptive_k_penalty,
+    sample_size = if(adaptive_k_penalty) ncol(theObject@peptide_matrix) else NA
+  ))
+})
+
+#' Calculate Separation Score for Canonical Correlation Plot (Peptide version)
+#'
+#' Internal helper function to calculate separation quality between "All" and "Control"
+#' groups in a canonical correlation plot.
+#'
+#' @param cancorplot A ggplot object from ruvCancor
+#' @param metric The separation metric to calculate
+#'
+#' @return A numeric separation score (higher is better)
+#'
+#' @keywords internal
+.peptide_calculateSeparationScore <- function(cancorplot, metric = "max_difference") {
+  
+  # Extract data from the plot
+  if (!inherits(cancorplot, "ggplot") || is.null(cancorplot$data)) {
+    return(NA_real_)
+  }
+  
+  plot_data <- cancorplot$data
+  
+  # Check required columns exist
+  if (!all(c("featureset", "cc", "K") %in% colnames(plot_data))) {
+    return(NA_real_)
+  }
+  
+  # Get indices for Control and All groups
+  controls_idx <- which(plot_data$featureset == "Control")
+  all_idx <- which(plot_data$featureset == "All")
+  
+  if (length(controls_idx) == 0 || length(all_idx) == 0) {
+    return(NA_real_)
+  }
+  
+  # Calculate differences between All and Control
+  difference_between_all_ctrl <- plot_data$cc[all_idx] - plot_data$cc[controls_idx]
+  
+  # Remove any NA or infinite values
+  valid_diffs <- difference_between_all_ctrl[is.finite(difference_between_all_ctrl)]
+  
+  if (length(valid_diffs) == 0) {
+    return(NA_real_)
+  }
+  
+  # Calculate score based on specified metric
+  score <- switch(metric,
+    "max_difference" = max(valid_diffs, na.rm = TRUE),
+    "mean_difference" = mean(valid_diffs, na.rm = TRUE),
+    "auc" = {
+      # Area under the curve (trapezoidal rule approximation)
+      k_values <- plot_data$K[all_idx][is.finite(difference_between_all_ctrl)]
+      if (length(k_values) < 2) return(NA_real_)
+      
+      # Sort by K value
+      sorted_idx <- order(k_values)
+      k_sorted <- k_values[sorted_idx]
+      diff_sorted <- valid_diffs[sorted_idx]
+      
+      # Calculate AUC using trapezoidal rule
+      sum(diff(k_sorted) * (head(diff_sorted, -1) + tail(diff_sorted, -1)) / 2)
+    },
+    "weighted_difference" = {
+      # Weight differences by their K value (higher K gets more weight)
+      k_values <- plot_data$K[all_idx][is.finite(difference_between_all_ctrl)]
+      if (length(k_values) == 0) return(NA_real_)
+      
+      weights <- k_values / max(k_values, na.rm = TRUE)
+      sum(valid_diffs * weights, na.rm = TRUE) / sum(weights, na.rm = TRUE)
+    },
+    NA_real_
+  )
+  
+  return(as.numeric(score))
+}
+
+#' Calculate Composite Score for Percentage Optimization (Peptide version)
+#'
+#' Internal helper function to calculate a composite score that considers both
+#' separation quality and the resulting k value from findBestK(). This prevents
+#' over-optimization towards percentages that give good separation but unreasonably
+#' high k values that would remove biological signal.
+#'
+#' @param separation_score The separation score from calculateSeparationScore()
+#' @param best_k The best k value from findBestK()
+#' @param k_penalty_weight Weight for k penalty (0-1). Higher values penalize high k more
+#' @param max_acceptable_k Maximum acceptable k value. k values above this get heavy penalty
+#'
+#' @return A numeric composite score (higher is better)
+#'
+#' @keywords internal
+.peptide_calculateCompositeScore <- function(separation_score, best_k, k_penalty_weight, max_acceptable_k) {
+  
+  # Handle NA cases
+  if (is.na(separation_score) || is.na(best_k)) {
+    return(NA_real_)
+  }
+  
+  # Ensure positive values
+  if (separation_score <= 0) {
+    return(0)
+  }
+  
+  # Calculate k penalty
+  if (best_k <= max_acceptable_k) {
+    # Linear penalty within acceptable range: penalty = 0 at k=1, penalty = k_penalty_weight at k=max_acceptable_k
+    k_penalty <- k_penalty_weight * (best_k - 1) / (max_acceptable_k - 1)
+  } else {
+    # Heavy penalty for k values above max_acceptable_k
+    # Exponential penalty: starts at k_penalty_weight and increases rapidly
+    excess_k <- best_k - max_acceptable_k
+    k_penalty <- k_penalty_weight + (1 - k_penalty_weight) * (1 - exp(-excess_k))
+  }
+  
+  # Ensure k_penalty is between 0 and 1
+  k_penalty <- pmax(0, pmin(1, k_penalty))
+  
+  # Calculate composite score: separation_score * (1 - k_penalty)
+  # This means:
+  # - k=1: no penalty (multiply by 1)
+  # - k=max_acceptable_k: penalty = k_penalty_weight (multiply by 1-k_penalty_weight)
+  # - k>max_acceptable_k: heavy penalty (multiply by value approaching 0)
+  composite_score <- separation_score * (1 - k_penalty)
+  
+  return(as.numeric(composite_score))
+}
+
+#' Calculate Adaptive Maximum Acceptable K Based on Sample Size (Peptide version)
+#'
+#' Internal helper function to determine an appropriate max_acceptable_k value
+#' based on the number of samples in the dataset. This prevents over-correction
+#' in small datasets and allows more flexibility in large datasets.
+#'
+#' @param sample_size Number of samples in the dataset
+#'
+#' @return An integer representing the adaptive max_acceptable_k value
+#'
+#' @details
+#' The adaptive calculation follows these principles:
+#' - Small datasets (n < 15): Conservative approach, max_k = 2
+#' - Medium datasets (n = 15-40): Standard approach, max_k = 3  
+#' - Large datasets (n = 40-80): Moderate approach, max_k = 4
+#' - Very large datasets (n > 80): Permissive approach, max_k = 5
+#' 
+#' The rationale is that with more samples, you have more degrees of freedom
+#' and statistical power, making higher k values less problematic.
+#'
+#' @keywords internal
+.peptide_calculateAdaptiveMaxK <- function(sample_size) {
+  
+  if (sample_size < 15) {
+    # Small datasets: be very conservative
+    # Each k factor consumes significant degrees of freedom
+    return(2L)
+  } else if (sample_size < 40) {
+    # Medium datasets: standard approach
+    # This is the typical proteomics experiment size
+    return(3L)
+  } else if (sample_size < 80) {
+    # Large datasets: can afford one extra k factor
+    # Sufficient statistical power to handle k=4
+    return(4L)
+  } else {
+    # Very large datasets: most permissive
+    # Abundant statistical power allows k=5 if separation justifies it
+    return(5L)
+  }
+}
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#' Peptide Missing Value Imputation using limpa Package
+#'
+#' This function uses the limpa package's detection probability curve (DPC) approach
+#' for sophisticated missing value imputation specifically designed for proteomics data.
+#' This method is more robust than traditional imputation as it models the missing value
+#' mechanism based on detection probabilities.
+#'
+#' @param theObject A PeptideQuantitativeData object
+#' @param imputed_value_column Name for the new column containing imputed values.
+#'   Default is "Peptide.Imputed.Limpa"
+#' @param use_log2_transform Whether to log2 transform the data before imputation.
+#'   Default is TRUE (recommended by limpa)
+#' @param dpc_method Method for DPC estimation. Default is "eb" (empirical Bayes)
+#' @param verbose Whether to print progress messages. Default is TRUE
+#' @param ensure_matrix Whether to ensure peptide matrix is calculated. Default is TRUE
+#'
+#' @details
+#' The limpa package uses a detection probability curve (DPC) to model the relationship
+#' between peptide intensity and the probability of detection. This allows for more
+#' sophisticated imputation that accounts for the intensity-dependent nature of missing
+#' values in proteomics data, rather than assuming they are missing at random.
+#'
+#' The process follows these steps:
+#' 1. Estimate the detection probability curve using dpc()
+#' 2. Perform row-wise imputation using dpcImpute()
+#' 3. Transform results back to original scale if needed
+#'
+#' @return Updated PeptideQuantitativeData object with imputed values
+#'
+#' @importFrom limpa dpc dpcImpute
+#' @export
+setGeneric(name="peptideMissingValueImputationLimpa"
+           , def=function(theObject, 
+                          imputed_value_column = NULL, 
+                          use_log2_transform = TRUE,
+                          dpc_method = "eb",
+                          verbose = TRUE,
+                          ensure_matrix = TRUE) {
+             standardGeneric("peptideMissingValueImputationLimpa")
+           }
+           , signature=c("theObject"))
+
+#' @export
+setMethod(f="peptideMissingValueImputationLimpa"
+          , signature="PeptideQuantitativeData"
+          , definition = function(theObject, 
+                                  imputed_value_column = NULL, 
+                                  use_log2_transform = TRUE,
+                                  dpc_method = "eb",
+                                  verbose = TRUE,
+                                  ensure_matrix = TRUE) {
+            
+            # Load required packages
+            if (!requireNamespace("limpa", quietly = TRUE)) {
+              stop("limpa package is required but not installed. Please install it using: BiocManager::install('limpa')")
+            }
+            
+            # Parameter validation and defaults
+            imputed_value_column <- checkParamsObjectFunctionSimplifyAcceptNull(
+              theObject, "imputed_value_column", "Peptide.Imputed.Limpa"
+            )
+            
+            use_log2_transform <- checkParamsObjectFunctionSimplify(
+              theObject, "use_log2_transform", TRUE
+            )
+            
+            dpc_method <- checkParamsObjectFunctionSimplify(
+              theObject, "dpc_method", "eb"
+            )
+            
+            verbose <- checkParamsObjectFunctionSimplify(
+              theObject, "verbose", TRUE
+            )
+            
+            # Update parameters in object
+            theObject <- updateParamInObject(theObject, "imputed_value_column")
+            theObject <- updateParamInObject(theObject, "use_log2_transform")
+            theObject <- updateParamInObject(theObject, "dpc_method")
+            theObject <- updateParamInObject(theObject, "verbose")
+            
+            # Ensure peptide matrix is calculated if requested
+            if (ensure_matrix && (!"peptide_matrix" %in% slotNames(theObject) || 
+                                  is.null(theObject@peptide_matrix) || 
+                                  length(theObject@peptide_matrix) == 0)) {
+              if (verbose) {
+                log_info("Peptide matrix not found. Calculating peptide matrix...")
+              }
+              theObject <- calcPeptideMatrix(theObject)
+            }
+            
+            # Extract data
+            peptide_data <- theObject@peptide_data
+            peptide_matrix <- theObject@peptide_matrix
+            raw_quantity_column <- theObject@raw_quantity_column
+            sample_id_column <- theObject@sample_id
+            design_matrix <- theObject@design_matrix
+            
+            if (verbose) {
+              log_info("Starting limpa-based missing value imputation...")
+              log_info("Data dimensions: {nrow(peptide_matrix)} peptides x {ncol(peptide_matrix)} samples")
+              log_info("Missing value percentage: {round(100 * mean(is.na(peptide_matrix)), 1)}%")
+            }
+            
+            # Prepare data for limpa (peptides as rows, samples as columns)
+            # limpa expects log2-transformed data
+            y_peptide <- peptide_matrix
+            
+            # Transform to log2 if requested and data is not already log-transformed
+            if (use_log2_transform && !theObject@is_logged_data) {
+              if (verbose) {
+                log_info("Applying log2 transformation...")
+              }
+              # Add small constant to avoid log(0)
+              y_peptide <- log2(y_peptide + 1)
+            } else if (!use_log2_transform && theObject@is_logged_data) {
+              if (verbose) {
+                log_info("Converting from log2 scale...")
+              }
+              y_peptide <- 2^y_peptide - 1
+            }
+            
+            # Check for infinite or NaN values
+            if (any(is.infinite(y_peptide) | is.nan(y_peptide), na.rm = TRUE)) {
+              if (verbose) {
+                log_warn("Infinite or NaN values detected. Replacing with NA...")
+              }
+              y_peptide[is.infinite(y_peptide) | is.nan(y_peptide)] <- NA
+            }
+            
+            # Estimate Detection Probability Curve
+            if (verbose) {
+              log_info("Estimating detection probability curve using method: {dpc_method}")
+            }
+            
+            tryCatch({
+              dpcfit <- limpa::dpc(y_peptide, method = dpc_method)
+              
+              if (verbose) {
+                log_info("DPC parameters estimated:")
+                log_info("  beta0 (intercept): {round(dpcfit$dpc[1], 4)}")
+                log_info("  beta1 (slope): {round(dpcfit$dpc[2], 4)}")
+                
+                # Interpret the slope
+                slope_interpretation <- if (dpcfit$dpc[2] < 0.3) {
+                  "nearly random missing"
+                } else if (dpcfit$dpc[2] < 0.7) {
+                  "moderate intensity-dependent missing"
+                } else if (dpcfit$dpc[2] < 1.2) {
+                  "strong intensity-dependent missing"
+                } else {
+                  "very strong intensity-dependent missing (approaching left-censoring)"
+                }
+                log_info("  Interpretation: {slope_interpretation}")
+              }
+              
+              # Perform row-wise imputation using limpa
+              if (verbose) {
+                log_info("Performing row-wise imputation using DPC model...")
+              }
+              
+              y_imputed <- limpa::dpcImpute(y_peptide, dpc = dpcfit)
+              
+              if (verbose) {
+                log_info("Imputation completed successfully")
+                log_info("No missing values remaining: {!any(is.na(y_imputed$E))}")
+              }
+              
+              # Extract the imputed matrix
+              imputed_matrix <- y_imputed$E
+              
+              # Transform back to original scale if necessary
+              if (use_log2_transform && !theObject@is_logged_data) {
+                if (verbose) {
+                  log_info("Converting back from log2 scale...")
+                }
+                imputed_matrix <- 2^imputed_matrix - 1
+                # Ensure no negative values
+                imputed_matrix[imputed_matrix < 0] <- 0
+              }
+              
+              # Convert back to long format and merge with original data
+              if (verbose) {
+                log_info("Converting imputed data back to original format...")
+              }
+              
+              # Create peptide IDs that match the matrix rownames
+              peptide_ids <- rownames(imputed_matrix)
+              
+              # Convert imputed matrix to long format
+              imputed_long <- imputed_matrix |>
+                as.data.frame() |>
+                tibble::rownames_to_column("peptide_id") |>
+                tidyr::pivot_longer(cols = -peptide_id, 
+                                   names_to = sample_id_column, 
+                                   values_to = imputed_value_column) |>
+                tidyr::separate(peptide_id, 
+                               into = c(theObject@protein_id_column, theObject@peptide_sequence_column), 
+                               sep = "%")
+              
+              # Merge with original peptide data
+              updated_peptide_data <- peptide_data |>
+                dplyr::left_join(imputed_long, 
+                                by = c(theObject@protein_id_column, 
+                                      theObject@peptide_sequence_column,
+                                      sample_id_column))
+              
+              # Update the object
+              theObject@peptide_data <- updated_peptide_data
+              
+              # Store DPC results in the object for future reference
+              if (is.null(theObject@args)) {
+                theObject@args <- list()
+              }
+              theObject@args$limpa_dpc_results <- list(
+                dpc_parameters = dpcfit$dpc,
+                dpc_method = dpc_method,
+                missing_percentage_before = round(100 * mean(is.na(y_peptide)), 1),
+                slope_interpretation = slope_interpretation
+              )
+              
+              # Clean design matrix
+              theObject <- cleanDesignMatrixPeptide(theObject)
+              
+              if (verbose) {
+                log_info("limpa-based imputation completed successfully!")
+                log_info("New imputed column: {imputed_value_column}")
+                log_info("DPC parameters stored in object@args$limpa_dpc_results")
+              }
+              
+              return(theObject)
+              
+            }, error = function(e) {
+              log_error("Error during limpa imputation: {e$message}")
+              stop(paste("limpa imputation failed:", e$message))
+            })
+          })
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------

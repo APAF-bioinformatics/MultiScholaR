@@ -1090,6 +1090,126 @@ enrichmentAnalysisAppletServer <- function(id, workflow_data, experiment_paths, 
             )
           )
           
+          # ✅ CRITICAL FIX: Copy @args from original data object to enrichment results
+          cat("   ENRICHMENT Step: Copying @args from original data object...\n")
+          # Check if original data object has @args
+          data_has_args <- tryCatch({
+            !is.null(enrichment_data$current_s4_object) && !is.null(enrichment_data$current_s4_object@args)
+          }, error = function(e) {
+            FALSE
+          })
+          
+          # Check if enrichment results has @args
+          results_has_args <- tryCatch({
+            !is.null(enrichment_results@args)
+          }, error = function(e) {
+            FALSE
+          })
+          
+          if (data_has_args) {
+            if (results_has_args) {
+              # Copy existing @args from data object
+              enrichment_results@args <- enrichment_data$current_s4_object@args
+              
+              # Add enrichment-specific parameters
+              if (is.null(enrichment_results@args$enrichmentAnalysis)) {
+                enrichment_results@args$enrichmentAnalysis <- list()
+              }
+              
+              enrichment_results@args$enrichmentAnalysis <- list(
+                selected_contrast = input$selected_contrast,
+                analysis_method = method_info$method,
+                organism_supported = method_info$supported,
+                up_cutoff = input$up_cutoff,
+                down_cutoff = input$down_cutoff,
+                q_cutoff = input$q_cutoff,
+                organism_taxid = input$organism_taxid,
+                pathway_dir = pathway_dir
+              )
+              
+              # ✅ NEW: Store enrichment UI parameters in @args for session summary
+              cat("   ENRICHMENT Step: Storing UI parameters in @args\n")
+              if (is.null(enrichment_results@args$enrichmentAnalysisUI)) {
+                enrichment_results@args$enrichmentAnalysisUI <- list()
+              }
+              
+              enrichment_results@args$enrichmentAnalysisUI <- list(
+                up_log2fc_cutoff = input$up_cutoff,
+                down_log2fc_cutoff = input$down_cutoff,
+                q_value_cutoff = input$q_cutoff,
+                organism_taxon_id = input$organism_taxid,
+                analysis_method = method_info$method,
+                organism_name = method_info$species_name,
+                organism_supported = method_info$supported,
+                selected_contrast = input$selected_contrast,
+                timestamp = Sys.time()
+              )
+              
+              cat("   ENRICHMENT Step: Successfully copied and updated @args\n")
+            } else {
+              cat("   ENRICHMENT Step: EnrichmentResults doesn't have @args slot\n")
+            }
+          } else {
+            cat("   ENRICHMENT Step: Original data object doesn't have @args to copy\n")
+          }
+          
+          # ✅ NEW: ALSO store enrichment UI parameters in original data object for session summary
+          data_has_args_2 <- tryCatch({
+            !is.null(enrichment_data$current_s4_object) && !is.null(enrichment_data$current_s4_object@args)
+          }, error = function(e) {
+            FALSE
+          })
+          
+          if (data_has_args_2) {
+            cat("   ENRICHMENT Step: Storing UI parameters in original data object @args\n")
+            if (is.null(enrichment_data$current_s4_object@args$enrichmentAnalysisUI)) {
+              enrichment_data$current_s4_object@args$enrichmentAnalysisUI <- list()
+            }
+            
+            enrichment_data$current_s4_object@args$enrichmentAnalysisUI <- list(
+              up_log2fc_cutoff = input$up_cutoff,
+              down_log2fc_cutoff = input$down_cutoff,
+              q_value_cutoff = input$q_cutoff,
+              organism_taxon_id = input$organism_taxid,
+              analysis_method = method_info$method,
+              organism_name = method_info$species_name,
+              organism_supported = method_info$supported,
+              selected_contrast = input$selected_contrast,
+              timestamp = Sys.time()
+            )
+            
+            # ✅ NEW: Also store UI parameters in workflow_data for sessionSummary
+            workflow_data$enrichment_ui_params <- list(
+              up_log2fc_cutoff = input$up_cutoff,
+              down_log2fc_cutoff = input$down_cutoff,
+              q_value_cutoff = input$q_cutoff,
+              organism_selected = input$organism_taxid,
+              database_source = method_info$method,
+              organism_name = method_info$species_name,
+              organism_supported = method_info$supported,
+              selected_contrast = input$selected_contrast,
+              timestamp = Sys.time()
+            )
+            cat("   ENRICHMENT Step: Stored UI parameters in workflow_data for sessionSummary\n")
+            
+            # ✅ NEW: Update R6 state manager with enrichment UI parameters
+            cat("   ENRICHMENT Step: Updating R6 state with enrichment UI parameters\n")
+            tryCatch({
+              # Find the current data state and update it
+              current_data_states <- c("correlation_filtered", "ruv_corrected", "protein_replicate_filtered")
+              available_states <- workflow_data$state_manager$getHistory()
+              current_data_state <- purrr::detect(current_data_states, ~ .x %in% available_states)
+              
+              if (!is.null(current_data_state)) {
+                # Update the state with the enrichment UI parameters
+                workflow_data$state_manager$updateState(current_data_state, enrichment_data$current_s4_object)
+                cat(sprintf("   ENRICHMENT Step: Updated state '%s' with enrichment UI parameters\n", current_data_state))
+              }
+            }, error = function(e) {
+              cat(sprintf("   ENRICHMENT Step: Warning - could not update state with UI parameters: %s\n", e$message))
+            })
+          }
+          
           # ✅ NEW: Save enrichment results to R6 state manager
           cat("   ENRICHMENT Step: Saving results to R6 state manager...\n")
           tryCatch({
