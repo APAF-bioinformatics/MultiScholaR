@@ -611,10 +611,12 @@ setClass("GridPlotData",
            density_plots = "list",
            rle_plots = "list",
            pearson_plots = "list",
+           cancor_plots = "list",
            pca_titles = "list",
            density_titles = "list",
            rle_titles = "list",
-           pearson_titles = "list"
+           pearson_titles = "list",
+           cancor_titles = "list"
          ))
 
 #' @export
@@ -631,10 +633,12 @@ setMethod("InitialiseGrid",
                 density_plots = list(),
                 rle_plots = list(),
                 pearson_plots = list(),
+                cancor_plots = list(),
                 pca_titles = list(),
                 density_titles = list(),
                 rle_titles = list(),
-                pearson_titles = list())
+                pearson_titles = list(),
+                cancor_titles = list())
           })
 
 
@@ -642,23 +646,23 @@ setMethod("InitialiseGrid",
 #Create a QC composite figure
 
 #' @export
-#' @export
 setGeneric(name = "createGridQC",
-           def = function(theObject, pca_titles, density_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
+           def = function(theObject, pca_titles = NULL, density_titles = NULL, rle_titles = NULL, pearson_titles = NULL, cancor_titles = NULL, ncol = 3, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
              standardGeneric("createGridQC")
            },
-           signature = c("theObject", "pca_titles", "density_titles", "rle_titles", "pearson_titles", "save_path", "file_name"))
+           signature = c("theObject"))
 
 #' @export
 setMethod(f = "createGridQC",
           signature = "GridPlotData",
-          definition = function(theObject, pca_titles = NULL, density_titles = NULL, rle_titles = NULL, pearson_titles = NULL, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
+          definition = function(theObject, pca_titles = NULL, density_titles = NULL, rle_titles = NULL, pearson_titles = NULL, cancor_titles = NULL, ncol = 3, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
             
             # Use stored titles if not provided as parameters
             pca_titles <- if(is.null(pca_titles)) theObject@pca_titles else pca_titles
             density_titles <- if(is.null(density_titles)) theObject@density_titles else density_titles
             rle_titles <- if(is.null(rle_titles)) theObject@rle_titles else rle_titles
             pearson_titles <- if(is.null(pearson_titles)) theObject@pearson_titles else pearson_titles
+            cancor_titles <- if(is.null(cancor_titles)) theObject@cancor_titles else cancor_titles
             
             createLabelPlot <- function(title) {
               # Option 1: Use xlim to expand the plot area and position text at left edge
@@ -713,38 +717,128 @@ setMethod(f = "createGridQC",
                 theme(text = element_text(size = 15))
             }
             
-            # Create plots without titles
-            created_pca_plots <- lapply(theObject@pca_plots, createPcaPlot)
-            created_density_plots <- lapply(theObject@density_plots, createDensityPlot)
-            created_rle_plots <- lapply(theObject@rle_plots, createRlePlot)
-            created_pearson_plots <- lapply(theObject@pearson_plots, createPearsonPlot)
+            createCancorPlot <- function(plot) {
+              plot +
+                theme(text = element_text(size = 15),
+                      panel.grid.major = element_blank(),
+                      panel.grid.minor = element_blank(),
+                      panel.background = element_blank())
+            }
+            
+            # Create plots without titles - FIXED ORDER
+            # Define the correct order: before_cyclic_loess, before_ruvIIIc, after_ruvIIIc
+            plot_order <- c("pca_plot_before_cyclic_loess_group", "pca_plot_before_ruvIIIc_group", "pca_plot_after_ruvIIIc_group")
+            density_order <- c("density_plot_before_cyclic_loess_group", "density_plot_before_ruvIIIc_group", "density_plot_after_ruvIIIc_group")
+            rle_order <- c("rle_plot_before_cyclic_loess_group", "rle_plot_before_ruvIIIc_group", "rle_plot_after_ruvIIIc_group")
+            pearson_order <- c("pearson_correlation_pair_before_cyclic_loess", "pearson_correlation_pair_before_ruvIIIc", "pearson_correlation_pair_after_ruvIIIc_group")
+            cancor_order <- c("cancor_plot_before_cyclic_loess", "cancor_plot_before_ruvIIIc", "cancor_plot_after_ruvIIIc")
+            
+            # Extract plots in the correct order using lapply
+            created_pca_plots <- lapply(plot_order, function(name) {
+              if (!is.null(theObject@pca_plots[[name]])) createPcaPlot(theObject@pca_plots[[name]]) else NULL
+            })
+            created_pca_plots <- created_pca_plots[!sapply(created_pca_plots, is.null)]
+            
+            created_density_plots <- lapply(density_order, function(name) {
+              if (!is.null(theObject@density_plots[[name]])) createDensityPlot(theObject@density_plots[[name]]) else NULL
+            })
+            created_density_plots <- created_density_plots[!sapply(created_density_plots, is.null)]
+            
+            created_rle_plots <- lapply(rle_order, function(name) {
+              if (!is.null(theObject@rle_plots[[name]])) createRlePlot(theObject@rle_plots[[name]]) else NULL
+            })
+            created_rle_plots <- created_rle_plots[!sapply(created_rle_plots, is.null)]
+            
+            created_pearson_plots <- lapply(pearson_order, function(name) {
+              if (!is.null(theObject@pearson_plots[[name]])) createPearsonPlot(theObject@pearson_plots[[name]]) else NULL
+            })
+            created_pearson_plots <- created_pearson_plots[!sapply(created_pearson_plots, is.null)]
+            
+            created_cancor_plots <- lapply(cancor_order, function(name) {
+              if (!is.null(theObject@cancor_plots[[name]])) createCancorPlot(theObject@cancor_plots[[name]]) else NULL
+            })
+            # Don't filter out NULL plots to maintain column alignment
             
             # Create label plots
             pca_labels <- lapply(pca_titles, createLabelPlot)
             density_labels <- lapply(density_titles, createLabelPlot)
             rle_labels <- lapply(rle_titles, createLabelPlot)
             pearson_labels <- lapply(pearson_titles, createLabelPlot)
+            cancor_labels <- lapply(cancor_titles, createLabelPlot)
             
             # Combine with labels above each row - modified to keep legends with their plots
-            combined_plot <- (
-              wrap_plots(pca_labels, ncol = 3) /
-              wrap_plots(created_pca_plots, ncol = 3) /
-              wrap_plots(density_labels, ncol = 3) /
-              wrap_plots(created_density_plots, ncol = 3) /
-              wrap_plots(rle_labels, ncol = 3) /
-              wrap_plots(created_rle_plots, ncol = 3) /
-              wrap_plots(pearson_labels, ncol = 3) /
-              wrap_plots(created_pearson_plots, ncol = 3)
-            ) +
-              plot_layout(heights = c(0.1, 1, 0.1, 1, 0.1, 1, 0.1, 1))
+            plot_sections <- list()
+            height_values <- c()
+            
+            # Add PCA plots if they exist
+            if(length(theObject@pca_plots) > 0) {
+              plot_sections <- append(plot_sections, list(
+                wrap_plots(pca_labels, ncol = ncol),
+                wrap_plots(created_pca_plots, ncol = ncol)
+              ))
+              height_values <- c(height_values, 0.1, 1)
+            }
+            
+            # Add Density plots if they exist
+            if(length(theObject@density_plots) > 0) {
+              plot_sections <- append(plot_sections, list(
+                wrap_plots(density_labels, ncol = ncol),
+                wrap_plots(created_density_plots, ncol = ncol)
+              ))
+              height_values <- c(height_values, 0.1, 1)
+            }
+            
+            # Add RLE plots if they exist
+            if(length(theObject@rle_plots) > 0) {
+              plot_sections <- append(plot_sections, list(
+                wrap_plots(rle_labels, ncol = ncol),
+                wrap_plots(created_rle_plots, ncol = ncol)
+              ))
+              height_values <- c(height_values, 0.1, 1)
+            }
+            
+            # Add Pearson plots if they exist
+            if(length(theObject@pearson_plots) > 0) {
+              plot_sections <- append(plot_sections, list(
+                wrap_plots(pearson_labels, ncol = ncol),
+                wrap_plots(created_pearson_plots, ncol = ncol)
+              ))
+              height_values <- c(height_values, 0.1, 1)
+            }
+            
+            # Add Cancor plots if they exist (check for any non-NULL plots)
+            if(length(theObject@cancor_plots) > 0 && any(!sapply(created_cancor_plots, is.null))) {
+              # Replace NULL plots with empty plots to maintain column alignment
+              cancor_plots_aligned <- lapply(created_cancor_plots, function(plot) {
+                if (is.null(plot)) {
+                  ggplot() + theme_void()  # Empty plot for NULL positions
+                } else {
+                  plot
+                }
+              })
+              
+              plot_sections <- append(plot_sections, list(
+                wrap_plots(cancor_labels, ncol = ncol),
+                wrap_plots(cancor_plots_aligned, ncol = ncol)
+              ))
+              height_values <- c(height_values, 0.1, 1)
+            }
+            
+            # Create combined plot from sections
+            combined_plot <- wrap_plots(plot_sections, ncol = 1) +
+              plot_layout(heights = height_values)
 
             if (!is.null(save_path)) {
+              # Calculate dynamic width based on number of columns
+              plot_width <- 4 + (ncol * 3)  # Base width + 3 units per column
+              plot_height <- 4 + (length(height_values) * 2)  # Base height + 2 units per row
+              
               sapply(c("png", "pdf", "svg"), function(ext) {
                 ggsave(
                   plot = combined_plot,
                   filename = file.path(save_path, paste0(file_name, ".", ext)),
-                  width = 14,
-                  height = 16 # Increased height to accommodate label rows
+                  width = plot_width,
+                  height = plot_height
                 )
               })
               message(paste("Plots saved in", save_path))

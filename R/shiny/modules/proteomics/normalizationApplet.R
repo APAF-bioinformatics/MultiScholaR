@@ -585,7 +585,7 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
         grouping_variable = aesthetics$color_var,
         label_column = "",
         shape_variable = aesthetics$shape_var, 
-        title = "Pre-Normalization PCA",
+                    title = "",
         font_size = 8
       )
       norm_data$qc_plots$post_filtering$pca <- pca_plot
@@ -633,7 +633,7 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
         grouping_variable = aesthetics$color_var,
         label_column = "",
         shape_variable = aesthetics$shape_var,
-        title = "Post-Normalization PCA", 
+                    title = "", 
         font_size = 8
       )
       norm_data$qc_plots$post_normalization$pca <- pca_plot
@@ -676,7 +676,7 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
         grouping_variable = aesthetics$color_var,
         label_column = "",
         shape_variable = aesthetics$shape_var,
-        title = "RUV-Corrected PCA",
+                    title = "",
         font_size = 8
       )
       norm_data$qc_plots$ruv_corrected$pca <- pca_plot
@@ -937,16 +937,31 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
                 message("*** DEBUG: Testing verbose logging override ***")
                 message("*** DEBUG: This should help us see if the function is running at all ***")
                 
-                # Store optimization results for display
-                norm_data$ruv_optimization_result <- optimization_result
-                
-                # Extract optimized parameters
-                percentage_as_neg_ctrl <- optimization_result$best_percentage
-                ruv_k <- optimization_result$best_k
-                control_genes_index <- optimization_result$best_control_genes_index
-                
-                message(sprintf("*** STEP 3a: Automatic optimization completed - Best %%: %.1f, Best k: %d ***", 
-                               percentage_as_neg_ctrl, ruv_k))
+                            # Store optimization results for display
+            norm_data$ruv_optimization_result <- optimization_result
+            
+            # ✅ NEW: Store RUV optimization results in workflow_data for session summary
+            workflow_data$ruv_optimization_result <- optimization_result
+            cat("*** STEP 3a: Stored RUV optimization results in workflow_data ***\n")
+            
+            # ✅ NEW: Save RUV optimization results to file for persistence
+            if (!is.null(experiment_paths$source_dir)) {
+              tryCatch({
+                ruv_file <- file.path(experiment_paths$source_dir, "ruv_optimization_results.RDS")
+                saveRDS(optimization_result, ruv_file)
+                cat(sprintf("*** STEP 3a: Saved RUV optimization results to: %s ***\n", ruv_file))
+              }, error = function(e) {
+                cat(sprintf("*** STEP 3a: Warning - could not save RUV results file: %s ***\n", e$message))
+              })
+            }
+            
+            # Extract optimized parameters
+            percentage_as_neg_ctrl <- optimization_result$best_percentage
+            ruv_k <- optimization_result$best_k
+            control_genes_index <- optimization_result$best_control_genes_index
+            
+            message(sprintf("*** STEP 3a: Automatic optimization completed - Best %%: %.1f, Best k: %d ***", 
+                           percentage_as_neg_ctrl, ruv_k))
               })
               
               # ✅ AUDIT TRAIL: Log automatic RUV parameters to global config_list
@@ -1001,24 +1016,41 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
                   ruv_grouping_variable = getRuvGroupingVariable()
                 )
                 
-                # Store manual results in same format as automatic for consistent display
-                norm_data$ruv_optimization_result <- list(
-                  best_percentage = percentage_as_neg_ctrl,
+                              # Store manual results in same format as automatic for consistent display
+              manual_ruv_result <- list(
+                best_percentage = percentage_as_neg_ctrl,
+                best_k = ruv_k,
+                best_control_genes_index = control_genes_index,
+                best_cancor_plot = cancor_plot,
+                optimization_results = data.frame(
+                  percentage = percentage_as_neg_ctrl,
+                  separation_score = NA,
                   best_k = ruv_k,
-                  best_control_genes_index = control_genes_index,
-                  best_cancor_plot = cancor_plot,
-                  optimization_results = data.frame(
-                    percentage = percentage_as_neg_ctrl,
-                    separation_score = NA,
-                    best_k = ruv_k,
-                    composite_score = NA,
-                    num_controls = sum(control_genes_index, na.rm = TRUE),
-                    valid_plot = TRUE
-                  ),
-                  separation_metric_used = "manual",
-                  k_penalty_weight = NA,
-                  adaptive_k_penalty_used = FALSE
-                )
+                  composite_score = NA,
+                  num_controls = sum(control_genes_index, na.rm = TRUE),
+                  valid_plot = TRUE
+                ),
+                separation_metric_used = "manual",
+                k_penalty_weight = NA,
+                adaptive_k_penalty_used = FALSE
+              )
+              
+              norm_data$ruv_optimization_result <- manual_ruv_result
+              
+              # ✅ NEW: Store manual RUV results in workflow_data for session summary
+              workflow_data$ruv_optimization_result <- manual_ruv_result
+              cat("*** STEP 3a: Stored manual RUV results in workflow_data ***\n")
+              
+              # ✅ NEW: Save manual RUV results to file for persistence
+              if (!is.null(experiment_paths$source_dir)) {
+                tryCatch({
+                  ruv_file <- file.path(experiment_paths$source_dir, "ruv_optimization_results.RDS")
+                  saveRDS(manual_ruv_result, ruv_file)
+                  cat(sprintf("*** STEP 3a: Saved manual RUV results to: %s ***\n", ruv_file))
+                }, error = function(e) {
+                  cat(sprintf("*** STEP 3a: Warning - could not save manual RUV results file: %s ***\n", e$message))
+                })
+              }
               }, error = function(e) {
                 message(paste("Warning: Could not generate canonical correlation plot for manual mode:", e$message))
               })
@@ -1213,6 +1245,14 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
               norm_data$QC_composite_figure@density_plots$density_plot_after_ruvIIIc_group <- norm_data$qc_plots$ruv_corrected$density
               norm_data$QC_composite_figure@pearson_plots$pearson_correlation_pair_after_ruvIIIc_group <- norm_data$qc_plots$ruv_corrected$correlation
             }
+            
+            # Add cancor plots for the three stages
+            if (!is.null(norm_data$ruv_optimization_result) && !is.null(norm_data$ruv_optimization_result$best_cancor_plot)) {
+              # For simplicity, use the same cancor plot for all three stages (or generate different ones if available)
+              norm_data$QC_composite_figure@cancor_plots$cancor_plot_before_cyclic_loess <- NULL  # No cancor before normalization
+              norm_data$QC_composite_figure@cancor_plots$cancor_plot_before_ruvIIIc <- NULL      # No cancor before RUV
+              norm_data$QC_composite_figure@cancor_plots$cancor_plot_after_ruvIIIc <- norm_data$ruv_optimization_result$best_cancor_plot
+            }
           }
           
           tryCatch({
@@ -1225,10 +1265,12 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
             
             pca_ruv_rle_correlation_merged <- createGridQC(
               norm_data$QC_composite_figure,
-              pca_titles = c("a)", "b)", "c)"),
+              pca_titles = c("a) Pre-normalization", "b) Normalized data", "c) RUV-corrected data"),
               density_titles = c("d)", "e)", "f)"),
               rle_titles = c("g)", "h)", "i)"),
               pearson_titles = c("j)", "k)", "l)"),
+              cancor_titles = c("", "", "m)"),  # Empty for first two columns, "m)" for RUV column
+              ncol = 3,
               save_path = experiment_paths$protein_qc_dir,
               file_name = "composite_QC_figure"
             )

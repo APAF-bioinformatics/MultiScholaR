@@ -39,7 +39,7 @@ peptideQCAppletServer <- function(id, workflow_data, experiment_paths, omic_type
         current_s4 <- workflow_data$state_manager$getState("raw_data_s4")
         shiny::req(current_s4)
         
-        logger::log_info("QC Step: Applying Q-value filter with thresholds {input$qvalue_threshold}, {input$global_qvalue_threshold}")
+        logger::log_info(sprintf("QC Step: Applying Q-value filter with thresholds %s, %s", input$qvalue_threshold, input$global_qvalue_threshold))
         
         # ✅ FIXED: Use updateConfigParameter to sync S4 object AND global config_list
         current_s4 <- updateConfigParameter(
@@ -233,7 +233,7 @@ peptideQCAppletServer <- function(id, workflow_data, experiment_paths, omic_type
         current_s4 <- workflow_data$state_manager$getState(current_state)
         shiny::req(current_s4)
         
-        logger::log_info("QC Step: Applying intensity filter with cutoff {input$intensity_cutoff_percentile}%")
+        logger::log_info(sprintf("QC Step: Applying intensity filter with cutoff %s%%", input$intensity_cutoff_percentile))
         
         # ✅ FIXED: Use updateConfigParameter to sync S4 object AND global config_list
         current_s4 <- updateConfigParameter(
@@ -314,7 +314,7 @@ peptideQCAppletServer <- function(id, workflow_data, experiment_paths, omic_type
         reverted_s4 <- workflow_data$state_manager$revertToState(prev_state)
         output$intensity_results <- shiny::renderText(paste("Reverted to", prev_state, "state"))
         
-        logger::log_info("Reverted intensity filter to {prev_state}")
+        logger::log_info(sprintf("Reverted intensity filter to %s", prev_state))
         shiny::showNotification("Reverted successfully", type = "message")
         
       }, error = function(e) {
@@ -336,7 +336,7 @@ peptideQCAppletServer <- function(id, workflow_data, experiment_paths, omic_type
         current_s4 <- workflow_data$state_manager$getState(current_state)
         shiny::req(current_s4)
         
-        logger::log_info("QC Step: Applying protein peptide count filter (min: {input$min_peptides_per_protein})")
+        logger::log_info(sprintf("QC Step: Applying protein peptide count filter (min: %s)", input$min_peptides_per_protein))
         
         # ✅ FIXED: Use updateConfigParameter to sync S4 object AND global config_list
         # Use config.ini parameter names, not function parameter names
@@ -418,7 +418,7 @@ peptideQCAppletServer <- function(id, workflow_data, experiment_paths, omic_type
         reverted_s4 <- workflow_data$state_manager$revertToState(prev_state)
         output$protein_peptide_results <- shiny::renderText(paste("Reverted to", prev_state, "state"))
         
-        logger::log_info("Reverted protein peptide filter to {prev_state}")
+        logger::log_info(sprintf("Reverted protein peptide filter to %s", prev_state))
         shiny::showNotification("Reverted successfully", type = "message")
         
       }, error = function(e) {
@@ -440,7 +440,7 @@ peptideQCAppletServer <- function(id, workflow_data, experiment_paths, omic_type
         current_s4 <- workflow_data$state_manager$getState(current_state)
         shiny::req(current_s4)
         
-        logger::log_info("QC Step: Applying sample quality filter (min: {input$min_peptides_per_sample})")
+        logger::log_info(sprintf("QC Step: Applying sample quality filter (min: %s)", input$min_peptides_per_sample))
         
         # ✅ FIXED: Use updateConfigParameter to sync S4 object AND global config_list
         current_s4 <- updateConfigParameter(
@@ -516,7 +516,7 @@ peptideQCAppletServer <- function(id, workflow_data, experiment_paths, omic_type
         reverted_s4 <- workflow_data$state_manager$revertToState(prev_state)
         output$sample_results <- shiny::renderText(paste("Reverted to", prev_state, "state"))
         
-        logger::log_info("Reverted sample filter to {prev_state}")
+        logger::log_info(sprintf("Reverted sample filter to %s", prev_state))
         shiny::showNotification("Reverted successfully", type = "message")
         
       }, error = function(e) {
@@ -538,7 +538,7 @@ peptideQCAppletServer <- function(id, workflow_data, experiment_paths, omic_type
         current_s4 <- workflow_data$state_manager$getState(current_state)
         shiny::req(current_s4)
         
-        logger::log_info("QC Step: Applying replicate filter (column: {input$replicate_group_column})")
+        logger::log_info(sprintf("QC Step: Applying replicate filter (column: %s)", input$replicate_group_column))
         
         # Apply S4 transformation (EXISTING S4 CODE - UNCHANGED)
         # Note: This function takes the replicate column as a parameter
@@ -606,7 +606,7 @@ peptideQCAppletServer <- function(id, workflow_data, experiment_paths, omic_type
         reverted_s4 <- workflow_data$state_manager$revertToState(prev_state)
         output$replicate_results <- shiny::renderText(paste("Reverted to", prev_state, "state"))
         
-        logger::log_info("Reverted replicate filter to {prev_state}")
+        logger::log_info(sprintf("Reverted replicate filter to %s", prev_state))
         shiny::showNotification("Reverted successfully", type = "message")
         
       }, error = function(e) {
@@ -628,7 +628,7 @@ peptideQCAppletServer <- function(id, workflow_data, experiment_paths, omic_type
         current_s4 <- workflow_data$state_manager$getState(current_state)
         shiny::req(current_s4)
         
-        logger::log_info("QC Step: Applying missing value imputation (proportion: {input$proportion_missing_values})")
+        logger::log_info(sprintf("QC Step: Applying missing value imputation (proportion: %s)", input$proportion_missing_values))
         
         # ✅ FIXED: Use updateConfigParameter to sync S4 object AND global config_list
         current_s4 <- updateConfigParameter(
@@ -701,7 +701,7 @@ peptideQCAppletServer <- function(id, workflow_data, experiment_paths, omic_type
         reverted_s4 <- workflow_data$state_manager$revertToState(prev_state)
         output$imputation_results <- shiny::renderText(paste("Reverted to", prev_state, "state"))
         
-        logger::log_info("Reverted imputation to {prev_state}")
+        logger::log_info(sprintf("Reverted imputation to %s", prev_state))
         shiny::showNotification("Reverted successfully", type = "message")
         
       }, error = function(e) {

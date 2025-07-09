@@ -1101,6 +1101,46 @@ differentialExpressionAppletServer <- function(id, workflow_data, experiment_pat
                 )
               }
               
+              # ✅ NEW: Store UI parameters in @args for session summary
+              cat("   DE ANALYSIS Step: Storing UI parameters in S4 @args\n")
+              if (is.null(de_data$current_s4_object@args$deAnalysisUI)) {
+                de_data$current_s4_object@args$deAnalysisUI <- list()
+              }
+              
+              de_data$current_s4_object@args$deAnalysisUI <- list(
+                q_value_threshold = input$de_q_val_thresh,
+                log_fold_change_cutoff = input$treat_lfc_cutoff,
+                formula_string = input$formula_string,
+                timestamp = Sys.time()
+              )
+              
+              # ✅ NEW: Also store UI parameters in workflow_data for sessionSummary
+              workflow_data$de_ui_params <- list(
+                q_value_threshold = input$de_q_val_thresh,
+                log_fold_change_cutoff = input$treat_lfc_cutoff,
+                treat_enabled = input$treat_lfc_cutoff > 0,
+                formula_string = input$formula_string,
+                timestamp = Sys.time()
+              )
+              cat("   DE ANALYSIS Step: Stored UI parameters in workflow_data for sessionSummary\n")
+              
+              # ✅ NEW: Update R6 state manager with UI parameters
+              cat("   DE ANALYSIS Step: Updating R6 state with DE UI parameters\n")
+              tryCatch({
+                # Find the current data state and update it
+                current_data_states <- c("correlation_filtered", "ruv_corrected", "protein_replicate_filtered")
+                available_states <- workflow_data$state_manager$getHistory()
+                current_data_state <- purrr::detect(current_data_states, ~ .x %in% available_states)
+                
+                if (!is.null(current_data_state)) {
+                  # Update the state with the UI parameters
+                  workflow_data$state_manager$updateState(current_data_state, de_data$current_s4_object)
+                  cat(sprintf("   DE ANALYSIS Step: Updated state '%s' with DE UI parameters\n", current_data_state))
+                }
+              }, error = function(e) {
+                cat(sprintf("   DE ANALYSIS Step: Warning - could not update state with UI parameters: %s\n", e$message))
+              })
+              
               # Also add for the helper function
               if (is.null(de_data$current_s4_object@args$differentialExpressionAnalysisHelper)) {
                 cat("   DE ANALYSIS Step: Adding differentialExpressionAnalysisHelper parameters to S4 @args\n")

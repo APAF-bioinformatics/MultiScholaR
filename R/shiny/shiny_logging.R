@@ -44,6 +44,8 @@ setup_shiny_logger <- function() {
   logger::log_appender(appender_shiny)
   # Use a simple layout that does not include color codes
   logger::log_layout(logger::layout_simple)
+  # Use paste formatter to avoid any interpolation issues
+  logger::log_formatter(logger::formatter_paste)
   # Set the threshold to INFO to avoid overly verbose logs in production
   logger::log_threshold(logger::INFO)
 } 

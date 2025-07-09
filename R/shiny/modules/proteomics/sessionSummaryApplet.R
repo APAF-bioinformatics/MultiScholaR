@@ -128,14 +128,50 @@ sessionSummaryServer <- function(id, project_dirs, omic_type = "proteomics", exp
       }
     })
     
-    # Save workflow arguments - NEW SIMPLE APPROACH
+    # Save workflow arguments - EXTRACT FROM FINAL S4 OBJECT
     observeEvent(input$save_workflow_args, {
       req(input$experiment_label)
       
       cat("SESSION SUMMARY: Starting workflow args save process\n")
       
-      # Simple, direct approach - no S4 objects!
       tryCatch({
+        # Get the DATA S4 object (not enrichment results) from R6 state manager
+        final_s4_object <- NULL
+        if (!is.null(workflow_data$state_manager)) {
+          # Get the data object from correlation_filtered state, NOT the current enrichment state
+          data_states <- c("correlation_filtered", "ruv_corrected", "protein_replicate_filtered", "imputed")
+          
+          # Use functional approach to find first valid state
+          available_states <- workflow_data$state_manager$getHistory()
+          data_state_used <- purrr::detect(data_states, ~ .x %in% available_states)
+          
+          if (!is.null(data_state_used)) {
+            final_s4_object <- workflow_data$state_manager$getState(data_state_used)
+          }
+          
+          if (!is.null(final_s4_object)) {
+            cat(sprintf("SESSION SUMMARY: Retrieved DATA S4 object from state '%s'\n", data_state_used))
+            cat(sprintf("SESSION SUMMARY: S4 object class: %s\n", class(final_s4_object)))
+            
+            # Check if this S4 object has @args slot
+            args_available <- tryCatch({
+              !is.null(final_s4_object@args)
+            }, error = function(e) {
+              FALSE
+            })
+            
+            if (args_available) {
+              cat(sprintf("SESSION SUMMARY: S4 @args contains %d function groups\n", length(final_s4_object@args)))
+            } else {
+              cat("SESSION SUMMARY: S4 @args is NULL or slot doesn't exist\n")
+            }
+          } else {
+            cat("SESSION SUMMARY: No data S4 object found in any valid state\n")
+          }
+        } else {
+          cat("SESSION SUMMARY: No state manager available\n")
+        }
+        
         # Prepare contrasts_tbl if available
         contrasts_tbl <- NULL
         if (!is.null(workflow_data) && !is.null(workflow_data$contrasts_tbl)) {
@@ -143,19 +179,21 @@ sessionSummaryServer <- function(id, project_dirs, omic_type = "proteomics", exp
           cat("SESSION SUMMARY: Using contrasts_tbl from workflow_data\n")
         }
         
-        # Ensure config_list is in global environment
+        # Ensure config_list is in global environment for fallback
         if (!is.null(workflow_data) && !is.null(workflow_data$config_list)) {
           assign("config_list", workflow_data$config_list, envir = .GlobalEnv)
           cat("SESSION SUMMARY: Config list available with", length(workflow_data$config_list), "items\n")
         }
         
-        # Call the new simple function directly
-        cat("SESSION SUMMARY: Creating study_parameters.txt file\n")
-        study_params_file <- createStudyParametersFile(
+        # Call the updated function with S4 object and workflow_data
+        cat("SESSION SUMMARY: Creating study_parameters.txt file with S4 parameters and RUV results\n")
+        study_params_file <- createWorkflowArgsFromConfig(
           workflow_name = input$experiment_label,
           description = input$description,
           source_dir_path = project_dirs[[omic_type]]$source_dir,
-          contrasts_tbl = contrasts_tbl
+          final_s4_object = final_s4_object,
+          contrasts_tbl = contrasts_tbl,
+          workflow_data = workflow_data
         )
         
         cat("SESSION SUMMARY: Successfully created study_parameters.txt at:", study_params_file, "\n")
@@ -168,6 +206,7 @@ sessionSummaryServer <- function(id, project_dirs, omic_type = "proteomics", exp
                 "\nDescription:", input$description,
                 "\nTimestamp:", Sys.time(),
                 "\nFile:", study_params_file,
+                "\nSource: Final S4 object @args + config_list",
                 "\nStatus: Parameters saved ✅")
         })
         
@@ -217,7 +256,7 @@ sessionSummaryServer <- function(id, project_dirs, omic_type = "proteomics", exp
             writeLines(basic_content, basic_params_file)
             values$workflow_args_saved <- TRUE
           }, error = function(e) {
-            logger::log_error(paste("Failed to create basic study_parameters.txt:", e$message))
+            logger::log_error(logger::skip_formatter(paste("Failed to create basic study_parameters.txt:", e$message)))
           })
         }
       }
@@ -298,8 +337,8 @@ sessionSummaryServer <- function(id, project_dirs, omic_type = "proteomics", exp
         }, error = function(e) {
           output$copy_status <- renderText(paste("Error:", e$message))
           showNotification(paste("Copy error:", e$message), type = "error", duration = 10)
-          # ✅ FIX: Use paste() instead of logger interpolation in error handler
-          logger::log_error(paste("Failed to copy files:", e$message))
+          # ✅ FIX: Use skip_formatter to avoid glue interpolation issues
+          logger::log_error(logger::skip_formatter(paste("Failed to copy files:", e$message)))
           cat("   SESSION SUMMARY ERROR:", e$message, "\n")
           # Print traceback for debugging
           cat("   SESSION SUMMARY Traceback:\n")
@@ -322,7 +361,7 @@ sessionSummaryServer <- function(id, project_dirs, omic_type = "proteomics", exp
       
       withProgress(message = "Generating report...", {
         
-        # STEP 1: Ensure template exists (download if needed)
+        # STEP 1: Ensure template exists (download if needed from correct branch)
         report_template_path <- file.path(
           project_dirs[[omic_type]]$base_dir, 
           "scripts", 
@@ -337,14 +376,15 @@ sessionSummaryServer <- function(id, project_dirs, omic_type = "proteomics", exp
           dir.create(dirname(report_template_path), recursive = TRUE, showWarnings = FALSE)
           
           tryCatch({
-            template_url <- "https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/main/Workbooks/proteomics/report/DIANN_report.rmd"
+            # Correct URL pointing to the development branch with the fixes
+            template_url <- "https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/Bucket-Chemist/issue2/Workbooks/proteomics/report/DIANN_report.rmd"
             download.file(template_url, destfile = report_template_path, quiet = TRUE)
             logger::log_info(paste("Template downloaded to:", report_template_path))
             showNotification("Report template downloaded", type = "message")
           }, error = function(e) {
             showNotification(paste("Template download failed:", e$message), 
                             type = "error", duration = 10)
-            logger::log_error(paste("Failed to download template:", e$message))
+            logger::log_error(logger::skip_formatter(paste("Failed to download template:", e$message)))
             return()
           })
         }
@@ -402,9 +442,10 @@ sessionSummaryServer <- function(id, project_dirs, omic_type = "proteomics", exp
           
         }, error = function(e) {
           error_msg <- paste("Report generation failed:", e$message)
-          logger::log_error(paste("Failed to generate report:", e$message))
-          logger::log_error("Error traceback:")
-          logger::log_error(paste(capture.output(traceback()), collapse = "\n"))
+          # Use skip_formatter to avoid glue interpolation issues with error messages
+          logger::log_error(logger::skip_formatter(paste("Failed to generate report:", e$message)))
+          logger::log_error(logger::skip_formatter("Error traceback:"))
+          logger::log_error(logger::skip_formatter(paste(capture.output(traceback()), collapse = "\n")))
           
           showNotification(error_msg, type = "error", duration = 15)
           
@@ -451,7 +492,7 @@ sessionSummaryServer <- function(id, project_dirs, omic_type = "proteomics", exp
         }, error = function(e) {
           showNotification(paste("GitHub push failed:", e$message), 
                           type = "error", duration = 10)
-          logger::log_error(paste("Failed to push to GitHub:", e$message))
+          logger::log_error(logger::skip_formatter(paste("Failed to push to GitHub:", e$message)))
         })
       })
     })
@@ -487,7 +528,7 @@ sessionSummaryServer <- function(id, project_dirs, omic_type = "proteomics", exp
         
       }, error = function(e) {
         showNotification(paste("Export failed:", e$message), type = "error", duration = 10)
-        logger::log_error(paste("Failed to export session state:", e$message))
+        logger::log_error(logger::skip_formatter(paste("Failed to export session state:", e$message)))
       })
     })
     

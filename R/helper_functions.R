@@ -1022,16 +1022,18 @@ formatConfigList <- function(config_list, indent = 0) {
     names_to_process <- names_to_process[names_to_process != "internal_workflow_source_dir"]
     message(sprintf("   DEBUG66: Processing %d items after exclusions", length(names_to_process)))
 
-    for (name in names_to_process) {
+    # FUNCTIONAL APPROACH - NO FOR LOOPS that cause hanging - Works in Shiny AND .rmd
+    output <- if (requireNamespace("purrr", quietly = TRUE)) {
+        purrr::map_chr(names_to_process, function(name) {
         message(sprintf("   DEBUG66: Processing config item '%s'", name))
         value <- config_list[[name]]
         message(sprintf("   DEBUG66: Item '%s' class: %s", name, paste(class(value), collapse=", ")))
         
         # Skip core_utilisation and complex objects from display
         if (name == "core_utilisation" ||
-            any(class(value) %in% c("process", "R6", "multidplyr_cluster", "cluster", "SOCKcluster"))) { # Added "cluster", "SOCKcluster"
+            any(class(value) %in% c("process", "R6", "multidplyr_cluster", "cluster", "SOCKcluster"))) {
             message(sprintf("   DEBUG66: Skipping '%s' due to complex class", name))
-            next
+            return("")  # Return empty string instead of next
         }
 
         # Format the name
@@ -1042,51 +1044,97 @@ formatConfigList <- function(config_list, indent = 0) {
         # Handle different value types
         if (is.list(value)) {
             message(sprintf("   DEBUG66: '%s' is a list with %d elements", name, length(value)))
-            if (length(value) > 0 && !is.null(names(value))) { # Only print header and recurse if list is named and not empty
-                output <- c(output,
-                    paste0(paste(rep(" ", indent), collapse = ""),
-                          name_formatted, ":"))
+            if (length(value) > 0 && !is.null(names(value))) {
+                output_lines <- paste0(paste(rep(" ", indent), collapse = ""), name_formatted, ":")
                 message(sprintf("   DEBUG66: Recursing into list '%s'", name))
-                output <- c(output,
-                    formatConfigList(value, indent + 2)) # Recursive call
-            } else if (length(value) > 0) { # Unnamed list, print elements
+                recursive_result <- formatConfigList(value, indent + 2)
+                return(paste(c(output_lines, recursive_result), collapse = "\n"))
+            } else if (length(value) > 0) { # Unnamed list, process elements functionally
                 message(sprintf("   DEBUG66: '%s' is unnamed list, processing elements", name))
-                 output <- c(output,
-                    paste0(paste(rep(" ", indent), collapse = ""),
-                          name_formatted, ":"))
-                 for(item_idx in seq_along(value)){
-                     item_val <- value[[item_idx]]
-                     message(sprintf("   DEBUG66: Processing unnamed list item %d, class: %s", item_idx, paste(class(item_val), collapse=", ")))
-                     if(is.atomic(item_val) && length(item_val) == 1){
-                        output <- c(output, paste0(paste(rep(" ", indent + 2), collapse=""), "- ", as.character(item_val)))
-                     } else {
-                        output <- c(output, paste0(paste(rep(" ", indent + 2), collapse=""), "- [Complex List Element]"))
-                     }
+                header <- paste0(paste(rep(" ", indent), collapse = ""), name_formatted, ":")
+                
+                                 # FUNCTIONAL processing of list elements - NO FOR LOOP
+                 element_lines <- if (requireNamespace("purrr", quietly = TRUE)) {
+                     purrr::imap_chr(value, function(item_val, item_idx) {
+                         message(sprintf("   DEBUG66: Processing unnamed list item %d, class: %s", item_idx, paste(class(item_val), collapse=", ")))
+                         if (is.atomic(item_val) && length(item_val) == 1) {
+                             paste0(paste(rep(" ", indent + 2), collapse=""), "- ", as.character(item_val))
+                         } else {
+                             paste0(paste(rep(" ", indent + 2), collapse=""), "- [Complex List Element]")
+                         }
+                     })
+                 } else {
+                     # Base R fallback for list processing
+                     sapply(seq_along(value), function(item_idx) {
+                         item_val <- value[[item_idx]]
+                         if (is.atomic(item_val) && length(item_val) == 1) {
+                             paste0(paste(rep(" ", indent + 2), collapse=""), "- ", as.character(item_val))
+                         } else {
+                             paste0(paste(rep(" ", indent + 2), collapse=""), "- [Complex List Element]")
+                         }
+                     })
                  }
+                return(paste(c(header, element_lines), collapse = "\n"))
             } else { # Empty list
                 message(sprintf("   DEBUG66: '%s' is empty list", name))
-                 output <- c(output,
-                    paste0(paste(rep(" ", indent), collapse = ""),
-                          name_formatted, ": [Empty List]"))
+                return(paste0(paste(rep(" ", indent), collapse = ""), name_formatted, ": [Empty List]"))
             }
         } else {
             message(sprintf("   DEBUG66: '%s' is atomic/non-list, attempting conversion", name))
-            # Truncate long character vectors for display
-            if (is.character(value) && length(value) > 5) {
-                value_display <- paste(c(utils::head(value, 5), "..."), collapse = ", ")
-            } else if (is.character(value) && length(value) > 1) {
-                value_display <- paste(value, collapse = ", ")
-            } else {
-                message(sprintf("   DEBUG66: About to convert '%s' to character", name))
-                value_display <- as.character(value) # Ensure it's character
-                message(sprintf("   DEBUG66: Conversion successful for '%s'", name))
-                 if (length(value_display) == 0) value_display <- "[Empty/NULL]"
-            }
-            output <- c(output,
-                paste0(paste(rep(" ", indent), collapse = ""),
-                      name_formatted, ": ", value_display))
-        }
-    }
+            
+            # SAFE value display formatting
+            value_display <- tryCatch({
+                if (is.character(value) && length(value) > 5) {
+                    paste(c(utils::head(value, 5), "..."), collapse = ", ")
+                } else if (is.character(value) && length(value) > 1) {
+                    paste(value, collapse = ", ")
+                } else {
+                    message(sprintf("   DEBUG66: About to convert '%s' to character", name))
+                    result <- as.character(value)
+                    message(sprintf("   DEBUG66: Conversion successful for '%s'", name))
+                    if (length(result) == 0) "[Empty/NULL]" else result
+                }
+            }, error = function(e) {
+                message(sprintf("   DEBUG66: Error converting '%s': %s", name, e$message))
+                "[CONVERSION ERROR]"
+            })
+            
+                         return(paste0(paste(rep(" ", indent), collapse = ""), name_formatted, ": ", value_display))
+         }
+     }) |> 
+     (\(x) x[x != ""])()  # Remove empty strings from skipped items
+     } else {
+         # Fallback using base R lapply if purrr not available
+         result_list <- lapply(names_to_process, function(name) {
+             value <- config_list[[name]]
+             
+             # Skip complex objects
+             if (name == "core_utilisation" ||
+                 any(class(value) %in% c("process", "R6", "multidplyr_cluster", "cluster", "SOCKcluster"))) {
+                 return("")
+             }
+             
+             # Format name
+             name_formatted <- gsub("\\.", " ", name)
+             name_formatted <- gsub("_", " ", name_formatted)
+             name_formatted <- tools::toTitleCase(name_formatted)
+             
+             # Simple formatting for fallback
+             value_display <- tryCatch({
+                 if (is.list(value)) {
+                     "[List Object]"
+                 } else {
+                     as.character(value)[1]  # Take first element only for safety
+                 }
+             }, error = function(e) "[CONVERSION ERROR]")
+             
+             paste0(paste(rep(" ", indent), collapse = ""), name_formatted, ": ", value_display)
+         })
+         unlist(result_list[result_list != ""])
+     }
+     
+     # Flatten the nested strings  
+     output <- unlist(strsplit(output, "\n"))
     message(sprintf("--- DEBUG66: Exiting formatConfigList, returning %d lines ---", length(output)))
     return(output)
 }
@@ -2394,30 +2442,545 @@ createStudyParametersFile <- function(workflow_name,
     })
 }
 
-# Keep the old function name as a wrapper for backward compatibility
+# Updated function to extract parameters from S4 @args slot
 #' @export
+#' @param workflow_name Character string, name of the workflow
+#' @param description Character string, description of the analysis
+#' @param organism_name Character string, organism name (optional)
+#' @param taxon_id Character string or numeric, taxon ID (optional)
+#' @param source_dir_path Character string, path to save the study_parameters.txt file
+#' @param final_s4_object S4 object containing workflow parameters in @args slot (optional)
+#' @param contrasts_tbl Data frame, contrasts table (optional)
+#' @param workflow_data List containing workflow state and optimization results (optional)
 createWorkflowArgsFromConfig <- function(workflow_name, description = "", 
                                         organism_name = NULL, taxon_id = NULL,
-                                        source_dir_path = NULL) {
+                                        source_dir_path = NULL, 
+                                        final_s4_object = NULL,
+                                        contrasts_tbl = NULL,
+                                        workflow_data = NULL) {
     
-    warning("createWorkflowArgsFromConfig is deprecated. Use createStudyParametersFile instead.", 
-            immediate. = TRUE)
-    
-    # If source_dir_path is provided, call the new function
-    if (!is.null(source_dir_path)) {
-        return(createStudyParametersFile(
-            workflow_name = workflow_name,
-            description = description,
-            organism_name = organism_name,
-            taxon_id = taxon_id,
-            source_dir_path = source_dir_path
-        ))
-    } else {
-        # Return a simple list for backward compatibility
-        return(list(
-            workflow_name = workflow_name,
-            description = description,
-            timestamp = format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-        ))
+    # Validate required inputs
+    if (missing(workflow_name) || !is.character(workflow_name) || length(workflow_name) != 1) {
+        stop("workflow_name must be a single character string")
     }
+    
+    if (is.null(source_dir_path) || !is.character(source_dir_path) || length(source_dir_path) != 1) {
+        stop("source_dir_path must be a single character string")
+    }
+    
+    if (!dir.exists(source_dir_path)) {
+        stop("source_dir_path directory does not exist: ", source_dir_path)
+    }
+    
+    cat("WORKFLOW ARGS: Starting parameter extraction\n")
+    
+    # Extract parameters from S4 object @args if provided
+    s4_params <- list()
+         # Check if final_s4_object has @args slot
+     s4_has_args <- tryCatch({
+       !is.null(final_s4_object) && isS4(final_s4_object) && !is.null(final_s4_object@args)
+     }, error = function(e) {
+       FALSE
+     })
+     
+     if (s4_has_args) {
+        cat("WORKFLOW ARGS: Extracting parameters from S4 @args slot\n")
+        
+        tryCatch({
+            s4_params <- final_s4_object@args
+            cat(sprintf("WORKFLOW ARGS: Found %d function groups in S4 @args\n", length(s4_params)))
+            
+            # Log the function groups for debugging
+            for (func_name in names(s4_params)) {
+                param_count <- length(s4_params[[func_name]])
+                cat(sprintf("WORKFLOW ARGS: Function '%s' has %d parameters\n", func_name, param_count))
+            }
+        }, error = function(e) {
+            cat(sprintf("WORKFLOW ARGS: Error extracting S4 params: %s\n", e$message))
+            s4_params <- list()
+        })
+    } else {
+        cat("WORKFLOW ARGS: No S4 object provided or S4 @args is NULL\n")
+    }
+    
+    # Get fallback config_list from global environment
+    config_list <- if (exists("config_list", envir = .GlobalEnv)) {
+        get("config_list", envir = .GlobalEnv)
+    } else {
+        list()
+    }
+    
+         cat(sprintf("WORKFLOW ARGS: Global config_list has %d sections\n", length(config_list)))
+     
+     # Extract RUV optimization results from workflow_data if available
+     ruv_optimization_result <- NULL
+     if (!is.null(workflow_data)) {
+         cat("WORKFLOW ARGS: Checking for RUV optimization results in workflow_data\n")
+         
+         # Check multiple possible locations for RUV optimization results
+         if (!is.null(workflow_data$ruv_optimization_result)) {
+             ruv_optimization_result <- workflow_data$ruv_optimization_result
+             cat("WORKFLOW ARGS: Found RUV optimization results in workflow_data$ruv_optimization_result\n")
+         } else if (!is.null(workflow_data$state_manager)) {
+             # Try to get RUV results from state manager config
+             tryCatch({
+                 current_state_config <- workflow_data$state_manager$getStateConfig(workflow_data$state_manager$current_state)
+                 if (!is.null(current_state_config$ruv_optimization_result)) {
+                     ruv_optimization_result <- current_state_config$ruv_optimization_result
+                     cat("WORKFLOW ARGS: Found RUV optimization results in state manager config\n")
+                 }
+             }, error = function(e) {
+                 cat(sprintf("WORKFLOW ARGS: Could not extract RUV results from state manager: %s\n", e$message))
+             })
+         }
+         
+         # Also check if there's a saved RUV file
+         if (is.null(ruv_optimization_result) && !is.null(source_dir_path)) {
+             ruv_file <- file.path(source_dir_path, "ruv_optimization_results.RDS")
+             if (file.exists(ruv_file)) {
+                 tryCatch({
+                     ruv_optimization_result <- readRDS(ruv_file)
+                     cat(sprintf("WORKFLOW ARGS: Loaded RUV optimization results from file: %s\n", ruv_file))
+                 }, error = function(e) {
+                     cat(sprintf("WORKFLOW ARGS: Could not load RUV file: %s\n", e$message))
+                 })
+             }
+         }
+     }
+     
+     # Merge S4 parameters with config_list (S4 takes precedence)
+     merged_config <- config_list
+     
+     if (length(s4_params) > 0) {
+         cat("WORKFLOW ARGS: Merging S4 parameters with config_list\n")
+         
+         # S4 parameters override config_list parameters
+         for (func_name in names(s4_params)) {
+             if (is.list(s4_params[[func_name]]) && length(s4_params[[func_name]]) > 0) {
+                 merged_config[[func_name]] <- s4_params[[func_name]]
+                 cat(sprintf("WORKFLOW ARGS: Updated '%s' section with %d S4 parameters\n", 
+                            func_name, length(s4_params[[func_name]])))
+             }
+         }
+     }
+    
+    # Get git information
+    git_info <- tryCatch({
+        if (requireNamespace("gh", quietly = TRUE)) {
+            if (nzchar(gh::gh_token())) {
+                branch_info <- gh::gh("/repos/APAF-BIOINFORMATICS/MultiScholaR/branches/main")
+                list(
+                    commit_sha = branch_info$commit$sha,
+                    branch = "main",
+                    repo = "MultiScholaR", 
+                    timestamp = branch_info$commit$commit$author$date
+                )
+            } else {
+                list(commit_sha = NA_character_, branch = NA_character_, repo = NA_character_, timestamp = NA_character_)
+            }
+        } else {
+            list(commit_sha = NA_character_, branch = NA_character_, repo = NA_character_, timestamp = NA_character_)
+        }
+    }, error = function(e) {
+        list(commit_sha = NA_character_, branch = NA_character_, repo = NA_character_, timestamp = NA_character_)
+    })
+    
+    # Get organism information from session if not provided
+    if (is.null(organism_name) && exists("organism_name", envir = .GlobalEnv)) {
+        organism_name <- get("organism_name", envir = .GlobalEnv)
+    }
+    
+    if (is.null(taxon_id) && exists("taxon_id", envir = .GlobalEnv)) {
+        taxon_id <- get("taxon_id", envir = .GlobalEnv)
+    }
+    
+    # Get contrasts_tbl if not provided
+    if (is.null(contrasts_tbl)) {
+        if (exists("contrasts_tbl", envir = parent.frame())) {
+            contrasts_tbl <- get("contrasts_tbl", envir = parent.frame())
+        } else if (exists("contrasts_tbl", envir = .GlobalEnv)) {
+            contrasts_tbl <- get("contrasts_tbl", envir = .GlobalEnv)
+        }
+    }
+    
+    # Build the output content
+    output_lines <- c(
+        "Study Parameters",
+        "================",
+        "",
+        "Basic Information:",
+        "-----------------",
+        paste("Workflow Name:", workflow_name),
+        paste("Description:", if(nzchar(description)) description else "N/A"),
+        paste("Timestamp:", format(Sys.time(), "%Y-%m-%d %H:%M:%S")),
+        ""
+    )
+    
+    # Add git information
+    if (!is.null(git_info) && is.list(git_info)) {
+        git_lines <- c(
+            "Git Information:",
+            "---------------",
+            paste("Repository:", ifelse(!is.null(git_info$repo) && !is.na(git_info$repo), git_info$repo, "N/A")),
+            paste("Branch:", ifelse(!is.null(git_info$branch) && !is.na(git_info$branch), git_info$branch, "N/A")),
+            paste("Commit:", ifelse(!is.null(git_info$commit_sha) && !is.na(git_info$commit_sha), substr(git_info$commit_sha, 1, 7), "N/A")),
+            paste("Git Timestamp:", ifelse(!is.null(git_info$timestamp) && !is.na(git_info$timestamp), git_info$timestamp, "N/A")),
+            ""
+        )
+        output_lines <- c(output_lines, git_lines)
+    }
+    
+         # Add organism information
+     if (!is.null(organism_name) && !is.na(organism_name) && nzchar(organism_name)) {
+         organism_lines <- c(
+             "Organism Information:",
+             "---------------------",
+             paste("Organism Name:", organism_name)
+         )
+         if (!is.null(taxon_id) && !is.na(taxon_id) && nzchar(taxon_id)) {
+             organism_lines <- c(organism_lines, paste("Taxon ID:", taxon_id))
+         }
+         organism_lines <- c(organism_lines, "")
+         output_lines <- c(output_lines, organism_lines)
+     }
+     
+     # Add RUV optimization results if available
+     if (!is.null(ruv_optimization_result) && is.list(ruv_optimization_result)) {
+         cat("WORKFLOW ARGS: Formatting RUV optimization results\n")
+         
+         ruv_lines <- c(
+             "Automatic RUV Optimization Results:",
+             "-----------------------------------"
+         )
+         
+         # Extract and format RUV optimization values
+         tryCatch({
+             best_percentage <- if (!is.null(ruv_optimization_result$best_percentage)) {
+                 sprintf("%.1f%%", ruv_optimization_result$best_percentage)
+             } else { "N/A" }
+             
+             best_k <- if (!is.null(ruv_optimization_result$best_k)) {
+                 as.character(ruv_optimization_result$best_k)
+             } else { "N/A" }
+             
+             separation_score <- if (!is.null(ruv_optimization_result$best_separation_score)) {
+                 sprintf("%.4f", ruv_optimization_result$best_separation_score)
+             } else { "N/A" }
+             
+             composite_score <- if (!is.null(ruv_optimization_result$best_composite_score)) {
+                 sprintf("%.4f", ruv_optimization_result$best_composite_score)
+             } else { "N/A" }
+             
+             control_genes_count <- if (!is.null(ruv_optimization_result$best_control_genes_index)) {
+                 as.character(sum(ruv_optimization_result$best_control_genes_index, na.rm = TRUE))
+             } else { "N/A" }
+             
+             separation_metric <- if (!is.null(ruv_optimization_result$separation_metric_used)) {
+                 as.character(ruv_optimization_result$separation_metric_used)
+             } else { "N/A" }
+             
+             k_penalty_weight <- if (!is.null(ruv_optimization_result$k_penalty_weight)) {
+                 sprintf("%.1f", ruv_optimization_result$k_penalty_weight)
+             } else { "N/A" }
+             
+             adaptive_penalty <- if (!is.null(ruv_optimization_result$adaptive_k_penalty_used)) {
+                 ifelse(ruv_optimization_result$adaptive_k_penalty_used, "TRUE", "FALSE")
+             } else { "N/A" }
+             
+             sample_size <- if (!is.null(ruv_optimization_result$sample_size)) {
+                 as.character(ruv_optimization_result$sample_size)
+             } else { "N/A" }
+             
+             # Also try to get RUV grouping variable from S4 parameters
+             ruv_grouping_variable <- "N/A"
+             if (!is.null(s4_params$ruvIII_C_Varying$ruv_grouping_variable)) {
+                 ruv_grouping_variable <- s4_params$ruvIII_C_Varying$ruv_grouping_variable
+             } else if (!is.null(s4_params$getNegCtrlProtAnova$ruv_grouping_variable)) {
+                 ruv_grouping_variable <- s4_params$getNegCtrlProtAnova$ruv_grouping_variable
+             }
+             
+             ruv_lines <- c(ruv_lines,
+                 paste("• Best percentage:", best_percentage),
+                 paste("• Best k value:", best_k),
+                 paste("• Separation score:", separation_score),
+                 paste("• Composite score:", composite_score),
+                 paste("• Control genes:", control_genes_count),
+                 paste("• RUV grouping variable:", ruv_grouping_variable),
+                 paste("• Separation metric:", separation_metric),
+                 paste("• K penalty weight:", k_penalty_weight),
+                 paste("• Adaptive penalty:", adaptive_penalty),
+                 paste("• Sample size:", sample_size),
+                 ""
+             )
+             
+             cat("WORKFLOW ARGS: Successfully formatted RUV optimization results\n")
+             
+         }, error = function(e) {
+             cat(sprintf("WORKFLOW ARGS: Error formatting RUV results: %s\n", e$message))
+             ruv_lines <- c(ruv_lines,
+                 paste("• [Error formatting RUV optimization results:", e$message, "]"),
+                 ""
+             )
+         })
+         
+         output_lines <- c(output_lines, ruv_lines)
+     } else {
+         cat("WORKFLOW ARGS: No RUV optimization results available\n")
+     }
+     
+     # Add configuration parameters (now includes S4 parameters)
+     config_lines <- c(
+         "Workflow Parameters:",
+         "-------------------",
+         ""
+     )
+    
+    # Clean the merged config (remove problematic objects)
+    clean_config <- merged_config
+    # Remove the internal source dir if it exists
+    if (!is.null(clean_config$internal_workflow_source_dir)) {
+        clean_config$internal_workflow_source_dir <- NULL
+    }
+    
+    # Add special section for S4-derived parameters  
+    if (length(s4_params) > 0) {
+        cat("WORKFLOW ARGS: About to format S4 parameters using functional approach\n")
+        
+        config_lines <- c(config_lines, 
+                         "Parameters from Final S4 Object:",
+                         "--------------------------------")
+        
+        # SAFE parameter formatting function
+        formatParameterValue <- function(param_value) {
+            tryCatch({
+                if (is.null(param_value)) {
+                    "NULL"
+                } else if (is.logical(param_value)) {
+                    if (length(param_value) == 1) {
+                        ifelse(param_value, "TRUE", "FALSE")
+                    } else if (length(param_value) > 50) {
+                        # Handle large logical vectors (like control genes index)
+                        true_count <- sum(param_value, na.rm = TRUE)
+                        total_count <- length(param_value)
+                        sprintf("logical vector [%d TRUE, %d FALSE out of %d total]", 
+                               true_count, total_count - true_count, total_count)
+                    } else {
+                        # Show first few values for smaller vectors
+                        preview <- ifelse(utils::head(param_value, 5), "TRUE", "FALSE")
+                        if (length(param_value) > 5) {
+                            paste0("c(", paste(preview, collapse = ", "), ", ...)")
+                        } else {
+                            paste0("c(", paste(preview, collapse = ", "), ")")
+                        }
+                    }
+                } else if (is.numeric(param_value)) {
+                    if (length(param_value) == 1) {
+                        as.character(param_value)
+                    } else if (length(param_value) > 5) {
+                        sprintf("numeric vector [%d values: %s, ...]", 
+                               length(param_value), 
+                               paste(as.character(utils::head(param_value, 3)), collapse = ", "))
+                    } else {
+                        paste0("c(", paste(as.character(param_value), collapse = ", "), ")")
+                    }
+                } else if (is.character(param_value)) {
+                    if (length(param_value) == 1) {
+                        param_value
+                    } else if (length(param_value) > 5) {
+                        sprintf("character vector [%d values: %s, ...]", 
+                               length(param_value), 
+                               paste(shQuote(utils::head(param_value, 3)), collapse = ", "))
+                    } else {
+                        paste0("c(", paste(shQuote(param_value), collapse = ", "), ")")
+                    }
+                } else {
+                    # SAFE fallback - no dput() which was causing the hang
+                    paste0("[", class(param_value)[1], " object]")
+                }
+            }, error = function(e) {
+                "[SERIALIZATION ERROR]"
+            })
+        }
+        
+         s4_sections <- if (requireNamespace("purrr", quietly = TRUE)) {
+             purrr::imap(s4_params, function(func_params, func_name) {
+                 tryCatch({
+                     if (!is.list(func_params) || length(func_params) == 0) return("")
+                     
+                     cat(sprintf("WORKFLOW ARGS: Processing S4 function group '%s'\n", func_name))
+                     header <- sprintf("[%s]", func_name)
+                     
+                     # Use map instead of imap_chr for safer handling
+                     param_lines <- purrr::imap(func_params, function(param_value, param_name) {
+                         tryCatch({
+                             param_str <- formatParameterValue(param_value)
+                             sprintf("  %s = %s", param_name, param_str)
+                         }, error = function(e) {
+                             cat(sprintf("WORKFLOW ARGS: Error formatting parameter '%s' in '%s': %s\n", param_name, func_name, e$message))
+                             sprintf("  %s = [ERROR: %s]", param_name, e$message)
+                         })
+                     })
+                     
+                     # Convert list to character vector safely
+                     param_lines_char <- unlist(param_lines)
+                     paste(c(header, param_lines_char, ""), collapse = "\n")
+                 }, error = function(e) {
+                     cat(sprintf("WORKFLOW ARGS: Error processing S4 function group '%s': %s\n", func_name, e$message))
+                     sprintf("[%s]\n  [ERROR: %s]\n", func_name, e$message)
+                 })
+             })
+         } else {
+             # Fallback using base R if purrr not available
+             lapply(names(s4_params), function(func_name) {
+                 func_params <- s4_params[[func_name]]
+                 if (!is.list(func_params) || length(func_params) == 0) return("")
+                 
+                 header <- sprintf("[%s]", func_name)
+                 
+                 param_lines <- lapply(names(func_params), function(param_name) {
+                     param_value <- func_params[[param_name]]
+                     param_str <- formatParameterValue(param_value)
+                     sprintf("  %s = %s", param_name, param_str)
+                 })
+                 
+                 paste(c(header, unlist(param_lines), ""), collapse = "\n")
+             })
+         }
+        
+        # Add all S4 sections at once - safely handle list from purrr::imap()
+        s4_sections_char <- tryCatch({
+            if (is.list(s4_sections)) {
+                # Convert list to character vector
+                unlist(s4_sections)
+            } else {
+                s4_sections
+            }
+        }, error = function(e) {
+            cat(sprintf("WORKFLOW ARGS: Error converting S4 sections: %s\n", e$message))
+            "[ERROR: Could not process S4 sections]"
+        })
+        
+        config_lines <- c(config_lines, unlist(strsplit(paste(s4_sections_char, collapse = ""), "\n")))
+        
+        cat("WORKFLOW ARGS: S4 parameters formatted successfully\n")
+    }
+    
+    # Add UI parameters from workflow_data if available (DE and Enrichment UI inputs)
+    if (!is.null(workflow_data)) {
+        cat("WORKFLOW ARGS: Checking for UI parameters in workflow_data\n")
+        ui_sections <- c()
+        
+        # Check for DE UI parameters
+        if (!is.null(workflow_data$de_ui_params)) {
+            cat("WORKFLOW ARGS: Found DE UI parameters in workflow_data\n")
+            de_ui_lines <- c(
+                "[Differential Expression UI Parameters]",
+                sprintf("  q_value_threshold = %s", ifelse(!is.null(workflow_data$de_ui_params$q_value_threshold), workflow_data$de_ui_params$q_value_threshold, "N/A")),
+                sprintf("  log_fold_change_cutoff = %s", ifelse(!is.null(workflow_data$de_ui_params$log_fold_change_cutoff), workflow_data$de_ui_params$log_fold_change_cutoff, "N/A")),
+                sprintf("  treat_enabled = %s", ifelse(!is.null(workflow_data$de_ui_params$treat_enabled), workflow_data$de_ui_params$treat_enabled, "N/A")),
+                ""
+            )
+            ui_sections <- c(ui_sections, de_ui_lines)
+        }
+        
+        # Check for Enrichment UI parameters  
+        if (!is.null(workflow_data$enrichment_ui_params)) {
+            cat("WORKFLOW ARGS: Found Enrichment UI parameters in workflow_data\n")
+            enrichment_ui_lines <- c(
+                "[Enrichment Analysis UI Parameters]",
+                sprintf("  up_log2fc_cutoff = %s", ifelse(!is.null(workflow_data$enrichment_ui_params$up_log2fc_cutoff), workflow_data$enrichment_ui_params$up_log2fc_cutoff, "N/A")),
+                sprintf("  down_log2fc_cutoff = %s", ifelse(!is.null(workflow_data$enrichment_ui_params$down_log2fc_cutoff), workflow_data$enrichment_ui_params$down_log2fc_cutoff, "N/A")),
+                sprintf("  q_value_cutoff = %s", ifelse(!is.null(workflow_data$enrichment_ui_params$q_value_cutoff), workflow_data$enrichment_ui_params$q_value_cutoff, "N/A")),
+                sprintf("  organism_selected = %s", ifelse(!is.null(workflow_data$enrichment_ui_params$organism_selected), workflow_data$enrichment_ui_params$organism_selected, "N/A")),
+                sprintf("  database_source = %s", ifelse(!is.null(workflow_data$enrichment_ui_params$database_source), workflow_data$enrichment_ui_params$database_source, "N/A")),
+                ""
+            )
+            ui_sections <- c(ui_sections, enrichment_ui_lines)
+        }
+        
+        # Add UI sections to config_lines if any were found
+        if (length(ui_sections) > 0) {
+            config_lines <- c(config_lines, 
+                             "User Interface Parameters:",
+                             "-------------------------", 
+                             ui_sections)
+            cat("WORKFLOW ARGS: Added UI parameters to output\n")
+        } else {
+            cat("WORKFLOW ARGS: No UI parameters found in workflow_data\n")
+        }
+    }
+    
+         # Format the remaining config list
+     cat("WORKFLOW ARGS: About to format remaining config list\n")
+     if (length(clean_config) > 0) {
+         config_lines <- c(config_lines, 
+                          "Additional Configuration Parameters:",
+                          "-----------------------------------")
+         
+         cat("WORKFLOW ARGS: Calling formatConfigList...\n")
+         tryCatch({
+           # Check if formatConfigList exists before calling
+           if (exists("formatConfigList", mode = "function")) {
+               config_params <- formatConfigList(clean_config)
+               config_lines <- c(config_lines, config_params)
+               cat("WORKFLOW ARGS: formatConfigList completed successfully\n")
+           } else {
+               cat("WORKFLOW ARGS: formatConfigList function not found, using basic formatting\n")
+               # Basic fallback formatting without for loops
+               basic_config <- unlist(clean_config, recursive = TRUE)
+               config_lines <- c(config_lines, names(basic_config), " = ", as.character(basic_config))
+           }
+         }, error = function(e) {
+           cat(sprintf("WORKFLOW ARGS: formatConfigList failed: %s\n", e$message))
+           config_lines <- c(config_lines, paste("Error formatting config:", e$message))
+         })
+     } else {
+         config_lines <- c(config_lines, "No additional configuration parameters available")
+     }
+    
+         cat("WORKFLOW ARGS: Adding config lines to output\n")
+     output_lines <- c(output_lines, config_lines)
+     
+     # Add contrasts information
+     cat("WORKFLOW ARGS: Processing contrasts information\n")
+     if (!is.null(contrasts_tbl) && (is.data.frame(contrasts_tbl) || tibble::is_tibble(contrasts_tbl)) && nrow(contrasts_tbl) > 0) {
+         cat("WORKFLOW ARGS: Adding contrasts to output\n")
+         contrasts_lines <- c(
+             "",
+             "Contrasts:",
+             "----------"
+         )
+         
+         if ("contrasts" %in% colnames(contrasts_tbl)) {
+             contrasts_info <- tryCatch({
+                 contrasts_col <- contrasts_tbl[["contrasts"]]
+                 paste("  ", as.character(contrasts_col))
+             }, error = function(e) {
+                 paste("  [Error extracting contrasts:", e$message, "]")
+             })
+             contrasts_lines <- c(contrasts_lines, contrasts_info)
+         } else {
+             contrasts_lines <- c(contrasts_lines, "  [Column 'contrasts' not found in contrasts_tbl]")
+         }
+         
+         output_lines <- c(output_lines, contrasts_lines)
+         cat("WORKFLOW ARGS: Contrasts added successfully\n")
+     } else {
+         cat("WORKFLOW ARGS: No contrasts to add\n")
+     }
+     
+     # Write to file
+     cat("WORKFLOW ARGS: About to write file\n")
+     output_file <- file.path(source_dir_path, "study_parameters.txt")
+     cat(sprintf("WORKFLOW ARGS: Target file path: %s\n", output_file))
+     
+     tryCatch({
+         cat("WORKFLOW ARGS: Calling writeLines...\n")
+         writeLines(output_lines, output_file)
+         cat(sprintf("WORKFLOW ARGS: Study parameters saved to: %s\n", output_file))
+         return(output_file)
+     }, error = function(e) {
+         cat(sprintf("WORKFLOW ARGS: Error writing file: %s\n", e$message))
+         stop("Failed to write study parameters file: ", e$message)
+     })
 }
