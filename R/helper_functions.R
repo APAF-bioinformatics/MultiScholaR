@@ -1210,14 +1210,73 @@ copyToResultsSummary <- function(omic_type,
     if(!is.null(current_paths$subfeature_qc_dir)) cat(sprintf("Sub-feature QC Dir: %s\n", current_paths$subfeature_qc_dir))
     cat("\n")
 
-    # Try to get contrasts_tbl and design_matrix from the calling environment if NULL
-    if (is.null(contrasts_tbl) && exists("contrasts_tbl", envir = parent.frame())) {
-        contrasts_tbl <- get("contrasts_tbl", envir = parent.frame())
-        message("Using 'contrasts_tbl' from the calling environment.")
+    # ROBUST: Try to get contrasts_tbl and design_matrix from environment first, then from files
+    cat("Checking for required objects...\n")
+    
+    # Try contrasts_tbl from environment first
+    if (is.null(contrasts_tbl)) {
+        if (exists("contrasts_tbl", envir = parent.frame())) {
+            contrasts_tbl <- get("contrasts_tbl", envir = parent.frame())
+            cat("✓ Using 'contrasts_tbl' from calling environment\n")
+        } else if (exists("contrasts_tbl", envir = .GlobalEnv)) {
+            contrasts_tbl <- get("contrasts_tbl", envir = .GlobalEnv)
+            cat("✓ Using 'contrasts_tbl' from global environment\n")
+        } else {
+            # Fallback: try to load from file
+            contrasts_file_options <- c(
+                file.path(current_paths$source_dir, "contrasts_tbl.tab"),
+                file.path(current_paths$source_dir, "contrast_strings.tab"),
+                file.path(current_paths$source_dir, "contrasts.tab")
+            )
+            
+            contrasts_loaded <- FALSE
+            for (contrasts_file in contrasts_file_options) {
+                if (file.exists(contrasts_file)) {
+                    tryCatch({
+                        contrasts_tbl <- readr::read_tsv(contrasts_file, show_col_types = FALSE)
+                        cat(sprintf("✓ Loaded 'contrasts_tbl' from file: %s\n", basename(contrasts_file)))
+                        contrasts_loaded <- TRUE
+                        break
+                    }, error = function(e) {
+                        cat(sprintf("⚠ Failed to load contrasts from %s: %s\n", basename(contrasts_file), e$message))
+                    })
+                }
+            }
+            
+            if (!contrasts_loaded) {
+                cat("✗ 'contrasts_tbl' not found in environment or files\n")
+            }
+        }
+    } else {
+        cat("✓ Using provided 'contrasts_tbl' parameter\n")
     }
-    if (is.null(design_matrix) && exists("design_matrix", envir = parent.frame())) {
-        design_matrix <- get("design_matrix", envir = parent.frame())
-        message("Using 'design_matrix' from the calling environment.")
+    
+    # Try design_matrix from environment first
+    if (is.null(design_matrix)) {
+        if (exists("design_matrix", envir = parent.frame())) {
+            design_matrix <- get("design_matrix", envir = parent.frame())
+            cat("✓ Using 'design_matrix' from calling environment\n")
+        } else if (exists("design_matrix", envir = .GlobalEnv)) {
+            design_matrix <- get("design_matrix", envir = .GlobalEnv)
+            cat("✓ Using 'design_matrix' from global environment\n")
+        } else {
+            # Fallback: try to load from file
+            design_matrix_file <- file.path(current_paths$source_dir, "design_matrix.tab")
+            
+            if (file.exists(design_matrix_file)) {
+                tryCatch({
+                    design_matrix <- readr::read_tsv(design_matrix_file, show_col_types = FALSE)
+                    cat(sprintf("✓ Loaded 'design_matrix' from file: %s\n", basename(design_matrix_file)))
+                }, error = function(e) {
+                    cat(sprintf("✗ Failed to load design_matrix from %s: %s\n", basename(design_matrix_file), e$message))
+                    design_matrix <- NULL
+                })
+            } else {
+                cat(sprintf("✗ 'design_matrix' not found in environment or at expected file location: %s\n", design_matrix_file))
+            }
+        }
+    } else {
+        cat("✓ Using provided 'design_matrix' parameter\n")
     }
     
     # Handle current Rmd file
@@ -1467,8 +1526,69 @@ copyToResultsSummary <- function(omic_type,
             source_display <- file_spec$source # For display purposes
 
             if (!is.null(file_spec$type) && file_spec$type == "object") {
-                source_exists <- !is.null(get0(file_spec$source, envir = parent.frame())) # Use get0 to avoid error if object doesn't exist
-                if (!source_exists) error_msg <- sprintf("Object '%s' not found in parent/global environment", file_spec$source)
+                # ENHANCED: Use robust object sourcing - check environment first, then file
+                obj <- NULL
+                source_exists <- FALSE
+                
+                # Try to get object from environments first
+                if (!is.null(get0(file_spec$source, envir = parent.frame()))) {
+                    obj <- get(file_spec$source, envir = parent.frame())
+                    source_exists <- TRUE
+                    cat(sprintf("    ✓ Found '%s' in calling environment\n", file_spec$source))
+                } else if (!is.null(get0(file_spec$source, envir = .GlobalEnv))) {
+                    obj <- get(file_spec$source, envir = .GlobalEnv)
+                    source_exists <- TRUE
+                    cat(sprintf("    ✓ Found '%s' in global environment\n", file_spec$source))
+                } else {
+                    # Fallback: try to load from file
+                    if (file_spec$source == "design_matrix") {
+                        design_matrix_file <- file.path(current_paths$source_dir, "design_matrix.tab")
+                        if (file.exists(design_matrix_file)) {
+                            tryCatch({
+                                obj <- readr::read_tsv(design_matrix_file, show_col_types = FALSE)
+                                source_exists <- TRUE
+                                cat(sprintf("    ✓ Loaded '%s' from file: %s\n", file_spec$source, basename(design_matrix_file)))
+                            }, error = function(e) {
+                                error_msg <- sprintf("Failed to load %s from file %s: %s", file_spec$source, basename(design_matrix_file), e$message)
+                                cat(sprintf("    ✗ %s\n", error_msg))
+                            })
+                        } else {
+                            error_msg <- sprintf("Object '%s' not found in environment and file not found: %s", file_spec$source, design_matrix_file)
+                        }
+                    } else if (file_spec$source == "contrasts_tbl") {
+                        contrasts_file_options <- c(
+                            file.path(current_paths$source_dir, "contrasts_tbl.tab"),
+                            file.path(current_paths$source_dir, "contrast_strings.tab"),
+                            file.path(current_paths$source_dir, "contrasts.tab")
+                        )
+                        
+                        for (contrasts_file in contrasts_file_options) {
+                            if (file.exists(contrasts_file)) {
+                                tryCatch({
+                                    obj <- readr::read_tsv(contrasts_file, show_col_types = FALSE)
+                                    source_exists <- TRUE
+                                    cat(sprintf("    ✓ Loaded '%s' from file: %s\n", file_spec$source, basename(contrasts_file)))
+                                    break
+                                }, error = function(e) {
+                                    cat(sprintf("    ⚠ Failed to load contrasts from %s: %s\n", basename(contrasts_file), e$message))
+                                })
+                            }
+                        }
+                        
+                        if (!source_exists) {
+                            error_msg <- sprintf("Object '%s' not found in environment and no readable contrasts files found", file_spec$source)
+                        }
+                    } else {
+                        # For other objects, keep original behavior
+                        error_msg <- sprintf("Object '%s' not found in parent/global environment", file_spec$source)
+                    }
+                }
+                
+                if (!source_exists) {
+                    if (is.null(error_msg)) {
+                        error_msg <- sprintf("Object '%s' not found in environment or files", file_spec$source)
+                    }
+                }
             } else {
                 source_exists <- if (file_spec$is_dir) dir.exists(file_spec$source) else file.exists(file_spec$source)
                 if (!source_exists) error_msg <- sprintf("Source %s not found: %s", if(file_spec$is_dir) "directory" else "file", file_spec$source)
@@ -1478,7 +1598,10 @@ copyToResultsSummary <- function(omic_type,
                 dir.create(dest_dir_final, recursive = TRUE, showWarnings = FALSE)
                 if (!is.null(file_spec$type) && file_spec$type == "object") {
                     tryCatch({
-                        obj <- get(file_spec$source, envir = parent.frame())
+                        # Use the already-loaded object instead of getting from environment again
+                        if (is.null(obj)) {
+                            obj <- get(file_spec$source, envir = parent.frame())  # Fallback for other objects
+                        }
                         dest_path <- file.path(dest_dir_final, file_spec$save_as)
                         write.table(obj, file = dest_path, sep = "\t", row.names = FALSE, quote = FALSE)
                         if (!file.exists(dest_path) || (file.exists(dest_path) && file.size(dest_path) == 0 && nrow(obj) > 0) ) {
