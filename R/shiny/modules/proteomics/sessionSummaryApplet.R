@@ -27,8 +27,6 @@ sessionSummaryUI <- function(id) {
       column(6,
         wellPanel(
           h4("File Management"),
-          checkboxInput(ns("force_copy_publication"), 
-                       "Force Overwrite Publication Files", FALSE),
           br(),
           actionButton(ns("copy_to_publication"), "Copy to Publication Directory", 
                       class = "btn-info", icon = icon("copy")),
@@ -318,7 +316,7 @@ sessionSummaryServer <- function(id, project_dirs, omic_type = "proteomics", exp
             experiment_label = input$experiment_label,
             contrasts_tbl = contrasts_tbl,
             design_matrix = design_matrix,
-            force = input$force_copy_publication
+            force = TRUE  # Always force in Shiny - user can't interact with terminal prompts
           )
           
           values$files_copied <- TRUE

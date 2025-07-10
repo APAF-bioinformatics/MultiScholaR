@@ -62,8 +62,237 @@ if (!dir.exists(report_results_summary_dir)) stop(glue::glue("Report results sum
 `%||%` <- function(a, b) if (!is.null(a)) a else b
 ```
 
+```{r New Hierarchical Parser, echo=FALSE}
+# NEW: Hierarchical parser for the updated study_parameters.txt format
+ReadStudyParamsNew <- function(filepath) {
+  if (!file.exists(filepath)) {
+    stop(glue::glue("Study parameters file not found: {filepath}"))
+  }
+  
+  lines <- readLines(filepath, warn = FALSE)
+  params <- list()
+  
+  # State variables for hierarchical parsing
+  main_section <- NULL
+  sub_section <- NULL
+  config_block <- NULL
+  in_contrasts <- FALSE
+  
+  for (line in lines) {
+    original_line <- line
+    line <- trimws(line)
+    
+    # Skip empty lines, separator lines, and title
+    if (line == "" || grepl("^=+$", line) || grepl("^-+$", line) || 
+        line == "Study Parameters" || grepl("^#+", line)) {
+      next
+    }
+    
+    # Detect main sections (e.g., "Basic Information:", "Git Information:")
+    if (grepl(":$", line) && !grepl("^[[:space:]]", original_line)) {
+      main_section <- trimws(sub(":$", "", line))
+      params[[main_section]] <- list()
+      sub_section <- NULL
+      config_block <- NULL
+      in_contrasts <- (main_section == "Contrasts")
+      next
+    }
+    
+    # Detect sub-sections (e.g., "Parameters from Final S4 Object:")
+    if (grepl(":$", line) && grepl("^[[:space:]]+", original_line)) {
+      sub_section <- trimws(sub(":$", "", line))
+      if (!is.null(main_section)) {
+        if (is.null(params[[main_section]])) {
+          params[[main_section]] <- list()
+        }
+        params[[main_section]][[sub_section]] <- list()
+      }
+      config_block <- NULL
+      next
+    }
+    
+    # Detect config blocks (e.g., "[globalParameters]")
+    if (grepl("^\\[.*\\]$", line)) {
+      config_block <- gsub("\\[|\\]", "", line)
+      # Place under appropriate section context
+      if (!is.null(sub_section) && !is.null(main_section)) {
+        params[[main_section]][[sub_section]][[config_block]] <- list()
+      } else if (!is.null(main_section)) {
+        params[[main_section]][[config_block]] <- list()
+      }
+      next
+    }
+    
+    # Handle contrasts (special case - array of values)
+    if (in_contrasts && main_section == "Contrasts") {
+      # Contrasts are just lines of text, not key-value pairs
+      if (line != "" && !grepl("^-+$", line)) {
+        if (is.list(params[[main_section]]) && length(params[[main_section]]) == 0) {
+          params[[main_section]] <- c(trimws(line))
+        } else {
+          params[[main_section]] <- c(params[[main_section]], trimws(line))
+        }
+      }
+      next
+    }
+    
+    # Handle bullet points (e.g., "• Best percentage: 19.0%")
+    if (grepl("^•", line)) {
+      # Remove bullet and parse as key-value
+      line <- sub("^•[[:space:]]*", "", line)
+    }
+    
+    # Handle key-value pairs (can use : or =)
+    if (grepl("[=:]", line)) {
+      # Split on first occurrence of = or :
+      split_char <- if (grepl("=", line)) "=" else ":"
+      parts <- stringr::str_split_fixed(line, split_char, 2)
+      key <- trimws(parts[1, 1])
+      value <- trimws(parts[1, 2])
+      
+      # Clean up key (remove any remaining bullets)
+      key <- sub("^[•[:space:]]+", "", key)
+      
+      # Only process if we have a valid key
+      if (nchar(key) > 0) {
+        # Determine where to store based on current context
+        if (!is.null(config_block) && !is.null(sub_section) && !is.null(main_section)) {
+          params[[main_section]][[sub_section]][[config_block]][[key]] <- value
+        } else if (!is.null(sub_section) && !is.null(main_section)) {
+          params[[main_section]][[sub_section]][[key]] <- value
+        } else if (!is.null(main_section)) {
+          params[[main_section]][[key]] <- value
+        }
+      }
+    }
+  }
+  
+  return(params)
+}
+
+# NEW: Safe parameter extraction with path navigation
+safe_extract <- function(params, path, default = NULL) {
+  if (is.null(params) || is.null(path)) return(default)
+  
+  # Handle pipe-separated paths
+  if (is.character(path) && length(path) == 1 && grepl("\\|", path)) {
+    path_parts <- strsplit(path, "\\|")[[1]]
+  } else if (is.character(path)) {
+    path_parts <- path
+  } else {
+    return(default)
+  }
+  
+  current <- params
+  for (part in path_parts) {
+    part <- trimws(part)
+    if (is.list(current) && part %in% names(current)) {
+      current <- current[[part]]
+    } else {
+      return(default)
+    }
+  }
+  
+  return(current)
+}
+
+# NEW: Enhanced parameter extraction for new format
+ExtractStudyParametersNew <- function(study_params) {
+  
+  # Extract from different sections of the new hierarchical structure
+  basic_info <- study_params$"Basic Information" %||% list()
+  git_info <- study_params$"Git Information" %||% list()
+  ruv_results <- study_params$"Automatic RUV Optimization Results" %||% list()
+  
+  # Navigate to S4 parameters
+  s4_params <- safe_extract(study_params, c("Workflow Parameters", "Parameters from Final S4 Object"), list())
+  
+  # Navigate to UI parameters
+  ui_params <- safe_extract(study_params, c("Workflow Parameters", "User Interface Parameters"), list())
+  
+  # Extract contrasts
+  contrasts <- study_params$"Contrasts" %||% character(0)
+  
+  # Extract S4 parameter sections
+  s4_global <- s4_params$globalParameters %||% list()
+  s4_qval <- s4_params$srlQvalueProteotypicPeptideClean %||% list()
+  s4_pep_filt <- s4_params$peptideIntensityFiltering %||% list()
+  s4_prot_filt <- s4_params$removeRowsWithMissingValuesPercent %||% list()
+  s4_pep_prot_filt <- s4_params$filterMinNumPeptidesPerProtein %||% list()
+  s4_sample_filt <- s4_params$filterMinNumPeptidesPerSample %||% list()
+  s4_norm <- s4_params$normaliseBetweenSamples %||% list()
+  s4_ruv <- s4_params$ruvIII_C_Varying %||% list()
+  s4_de <- s4_params$deAnalysisParameters %||% list()
+  
+  # Extract UI parameter sections
+  ui_de <- safe_extract(ui_params, "Differential Expression UI Parameters", list())
+  ui_enrich <- safe_extract(ui_params, "Enrichment Analysis UI Parameters", list())
+  
+  # Create flat parameter list for backward compatibility
+  all_params <- list(
+    # Basic Information
+    workflow_name = basic_info$"Workflow Name",
+    description = basic_info$"Description", 
+    timestamp = basic_info$"Timestamp",
+    
+    # Git Information
+    repository = git_info$"Repository",
+    branch = git_info$"Branch",
+    commit = git_info$"Commit",
+    git_timestamp = git_info$"Git Timestamp",
+    
+    # RUV Auto-optimization Results
+    best_percentage = ruv_results$"Best percentage",
+    best_k = ruv_results$"Best k value",
+    separation_score = ruv_results$"Separation score",
+    composite_score = ruv_results$"Composite score", 
+    num_neg_ctrl = ruv_results$"Control genes",
+    ruv_grouping_variable = ruv_results$"RUV grouping variable",
+    
+    # Method Details from S4 parameters
+    qvalue_threshold = as.numeric(s4_qval$qvalue_threshold %||% 0.01),
+    proteotypic_peptide_only = as.logical(as.numeric(s4_qval$choose_only_proteotypic_peptide %||% 1)),
+    intensity_cutoff_percentile = as.numeric(s4_pep_filt$peptides_intensity_cutoff_percentile %||% 1),
+    proportion_samples_below_cutoff = as.numeric(s4_pep_filt$peptides_proportion_of_samples_below_cutoff %||% 0.5),
+    missing_values_cutoff = as.numeric(s4_prot_filt$groupwise_percentage_cutoff %||% 33.333),
+    min_peptidoforms_per_protein = as.numeric(s4_pep_prot_filt$peptidoforms_per_protein_cutoff %||% 2),
+    min_peptides_per_sample = as.numeric(s4_sample_filt$peptides_per_sample_cutoff %||% 500),
+    normalisation_method = s4_norm$method %||% s4_norm$normalisation_method %||% "cyclicloess",
+    
+    # RUV parameters
+    ruv_number_k = as.numeric(s4_ruv$ruv_number_k %||% 2),
+    
+    # DE Analysis S4 parameters
+    s4_de_q_val_thresh = as.numeric(s4_de$de_q_val_thresh %||% 0.05),
+    s4_de_treat_lfc_cutoff = as.numeric(s4_de$treat_lfc_cutoff %||% 0),
+    s4_ebayes_trend = as.logical(s4_de$eBayes_trend %||% TRUE),
+    s4_ebayes_robust = as.logical(s4_de$eBayes_robust %||% TRUE),
+    s4_formula_string = s4_de$formula_string %||% "~ 0 + group",
+    
+    # UI Parameters
+    ui_de_q_value_threshold = as.numeric(ui_de$q_value_threshold %||% 0.05),
+    ui_de_log_fold_change_cutoff = as.numeric(ui_de$log_fold_change_cutoff %||% 0),
+    ui_de_treat_enabled = as.logical(ui_de$treat_enabled %||% FALSE),
+    
+    ui_enrichment_up_lfc = as.numeric(ui_enrich$up_log2fc_cutoff %||% 0),
+    ui_enrichment_down_lfc = as.numeric(ui_enrich$down_log2fc_cutoff %||% 0), 
+    ui_enrichment_q_value_cutoff = as.numeric(ui_enrich$q_value_cutoff %||% 0.05),
+    ui_enrichment_organism_selected = ui_enrich$organism_selected,
+    ui_enrichment_database_source = ui_enrich$database_source %||% "clusterprofiler",
+    
+    # Contrasts
+    contrasts = contrasts
+  )
+  
+  # Convert any NULL values to appropriate defaults
+  all_params[sapply(all_params, is.null)] <- NA
+  
+  return(all_params)
+}
+```
+
 ```{r Format Sample Details, echo=FALSE}
-# UPDATED to include more dynamic sample information
+# UPDATED: Enhanced sample details with new parameter access
 FormatSampleDetails <- function(numbers) {
   # Robust checks for required fields
   tech_reps_val <- numbers$technical_replicates %||% 0
@@ -97,9 +326,9 @@ There are {total_samples_val} samples in total which consists of:
 ```
 
 ```{r Method Section, echo=FALSE}
-# UPDATED to use newly extracted, detailed parameters
+# UPDATED: Method details using new parameter structure
 FormatMethodDetails <- function(numbers) {
-  # Use the safe default operator for all parameters
+  # Use parameters from new extraction
   qvalue_thresh <- numbers$qvalue_threshold %||% 0.01
   proteotypic_pep_only <- numbers$proteotypic_peptide_only %||% TRUE
   prop_samples_cutoff <- numbers$proportion_samples_below_cutoff %||% 0.5
@@ -109,10 +338,10 @@ FormatMethodDetails <- function(numbers) {
   missing_vals_cutoff <- numbers$missing_values_cutoff %||% 33.3
   norm_method <- numbers$normalisation_method %||% "cyclicloess"
   
-  # New RUV parameters from "Automatic RUV Optimization Results"
-  num_neg_ctrl_val <- numbers$num_neg_ctrl %||% "an automatically determined number of"
-  best_k_val <- numbers$best_k %||% "an automatically determined number of"
-  best_pct_val <- numbers$best_percentage %||% "an automatically determined percentage of"
+  # RUV parameters from new structure
+  best_k_val <- numbers$best_k %||% "auto-determined"
+  best_pct_val <- numbers$best_percentage %||% "auto-determined"
+  num_neg_ctrl_val <- numbers$num_neg_ctrl %||% "auto-determined"
   
   proportion_pct_text <- paste0(prop_samples_cutoff * 100, "%")
   proteotypic_text <- if (isTRUE(proteotypic_pep_only)) 'only those that are proteotypic' else 'including non-proteotypic peptides'
@@ -179,8 +408,6 @@ using principal component analysis (PCA) plot, density boxplots, relative
 log-expression (RLE) plots and the distribution of the Pearson correlation between 
 replicate samples within groups.
 
-
-
 • Comments on test specific conditions information (e.g. temperature), where 
   relevant  
 • Comments on deviations, modifications, additions, or exclusions to the method(s) 
@@ -189,17 +416,11 @@ replicate samples within groups.
   past their expiry date including the acceptance from the client to proceed with 
   them  ",
 .trim = FALSE)
-
-  return(text)
 }
 ```
 
 ```{r Result Section, echo=FALSE}
-# Original function code provided by user - UNCHANGED
-# Note: This original function has a 'figures_dir' argument that seems unused
-# and refers to a global 'results_dir' which is no longer set by the new setup.
-# If this function *did* need a path, it would need updating, but based on the
-# content, it seems focused on text generation from correlation_data only.
+# UNCHANGED: Results function - focuses on correlation data
 FormatResults <- function(correlation_data, 
                          figures_dir = file.path(results_dir, "protein_qc")) {
   glue::glue("
@@ -242,7 +463,7 @@ Pearson Correlation
 ```
 
 ```{r Comment Section, echo=FALSE}
-# Original function code provided by user - UNCHANGED
+# UNCHANGED: Comments function
 FormatComments <- function() {
   glue::glue("
 COMMENTS  
@@ -265,7 +486,7 @@ Limitations
 ```
 
 ```{r Opinions/Interpretations Section, echo=FALSE}
-# Original function code provided by user - UNCHANGED
+# UNCHANGED: Opinions function
 FormatOpinions <- function(correlation_data) {
   # Default value
   high_corr_proteins <- "N/A"
@@ -299,19 +520,20 @@ Technical Validation
 ```
 
 ```{r Differential Expression Section, echo=FALSE}
-# UPDATED to use UI parameters for a more accurate description
+# UPDATED: DE details using new UI and S4 parameters
 FormatDEDetails <- function(numbers) {
-  # Get parameters from UI if available, otherwise from S4 args, with defaults
-  treat_lfc_cutoff_val <- numbers$ui_de_treat_lfc_cutoff %||% numbers$s4_de_treat_lfc_cutoff %||% 0
-  de_q_val_thresh_val <- numbers$ui_de_q_value_threshold %||% numbers$s4_de_q_val_thresh %||% 0.05
-  treat_enabled_val <- numbers$ui_de_treat_enabled %||% (treat_lfc_cutoff_val > 0)
+  # Get UI parameters with S4 fallbacks
+  ui_q_val_thresh <- numbers$ui_de_q_value_threshold %||% numbers$s4_de_q_val_thresh %||% 0.05
+  ui_lfc_cutoff <- numbers$ui_de_log_fold_change_cutoff %||% numbers$s4_de_treat_lfc_cutoff %||% 0
+  ui_treat_enabled <- numbers$ui_de_treat_enabled %||% (ui_lfc_cutoff > 0)
   
+  # S4 parameters
   ebayes_trend_val <- numbers$s4_ebayes_trend %||% TRUE
   ebayes_robust_val <- numbers$s4_ebayes_robust %||% TRUE
   formula_string_val <- numbers$s4_formula_string %||% "~ 0 + group"
 
-  treat_desc <- if (isTRUE(treat_enabled_val) && treat_lfc_cutoff_val > 0) {
-    glue::glue("The TREAT method was used to test against a log-fold-change threshold of {treat_lfc_cutoff_val}.")
+  treat_desc <- if (isTRUE(ui_treat_enabled) && ui_lfc_cutoff > 0) {
+    glue::glue("The TREAT method was used to test against a log-fold-change threshold of {ui_lfc_cutoff}.")
   } else {
     "The standard empirical Bayes method was used to test for any deviation from zero log-fold-change."
   }
@@ -337,10 +559,10 @@ of time points was fitted using the formula '{formula_string_val}' with the
 {trend_robust_text} The false discovery rate correction was applied to the 
 moderated p-values by calculating the q-values (Storey, 2002). 
 {treat_desc} Significant differentially expressed proteins were defined as those 
-with q-values less than {de_q_val_thresh_val}.
+with q-values less than {ui_q_val_thresh}.
 
 Volcano plots of differentially expressed proteins across all groups are shown 
-in Figure 2, with a threshold of q-value < {de_q_val_thresh_val} and no log fold-change 
+in Figure 2, with a threshold of q-value < {ui_q_val_thresh} and no log fold-change 
 threshold. Full details of all proteins are provided in the the Supplementary
 results table, DE_proteins_results.xlsx within the Publication_tables folder.",
 .trim = FALSE)
@@ -348,13 +570,13 @@ results table, DE_proteins_results.xlsx within the Publication_tables folder.",
 ```
 
 ```{r GO Enrichment Section, echo=FALSE}
-# UPDATED to use extracted organism info and UI parameters
+# UPDATED: GO enrichment using new organism and UI parameters
 FormatGOEnrichment <- function(numbers) {
-  # Use new safe extraction, providing defaults
-  organism_name_val <- numbers$organism_name %||% "the species under study"
-  taxon_id_val <- numbers$taxon_id %||% NA
+  # Extract organism info (if available in future iterations)
+  organism_name_val <- "the species under study" # Default since not in current format
+  taxon_id_val <- numbers$ui_enrichment_organism_selected %||% NA
   
-  # Get UI params for enrichment
+  # Get UI enrichment parameters
   up_lfc_val <- numbers$ui_enrichment_up_lfc %||% 0
   down_lfc_val <- numbers$ui_enrichment_down_lfc %||% 0
   q_val_cutoff_val <- numbers$ui_enrichment_q_value_cutoff %||% 0.05
@@ -434,97 +656,17 @@ folder.",
 ```
 
 ```{r Sample Analysis Functions, echo=FALSE}
-# --- REWRITTEN ---
-# This entire chunk has been replaced with a robust parser and updated extraction logic.
-
-# Helper function for safely getting nested list values
-safe_get <- function(l, path, default = NULL) {
-  # path is a character vector of keys
-  val <- purrr::reduce(path, function(acc, key) {
-    if (is.list(acc) && key %in% names(acc)) {
-      acc[[key]]
-    } else {
-      NULL # Return NULL if any key is not found
-    }
-  }, .init = l)
-  
-  if (is.null(val)) default else val
-}
-
-# New robust parameter extraction function
-ExtractStudyParameters <- function(study_params) {
-  
-  # --- S4 Workflow Parameters ---
-  s4_params <- safe_get(study_params, c("Workflow Parameters", "Parameters from Final S4 Object"), default = list())
-  
-  s4_de <- s4_params$deAnalysisParameters %||% list()
-  s4_ruv <- s4_params$ruvIII_C_Varying %||% list()
-  s4_norm <- s4_params$normaliseBetweenSamples %||% list()
-  s4_pep_filt <- s4_params$peptideIntensityFiltering %||% list()
-  s4_prot_filt <- s4_params$removeRowsWithMissingValuesPercent %||% list()
-  s4_pep_prot_filt <- s4_params$filterMinNumPeptidesPerProtein %||% list()
-  s4_qval_filt <- s4_params$srlQvalueProteotypicPeptideClean %||% list()
-  s4_sample_filt <- s4_params$filterMinNumPeptidesPerSample %||% list()
-  
-  # --- UI Parameters ---
-  ui_params <- safe_get(study_params, c("Workflow Parameters", "User Interface Parameters"), default = list())
-  ui_de <- ui_params$`Differential Expression UI Parameters` %||% list()
-  ui_enrich <- ui_params$`Enrichment Analysis UI Parameters` %||% list()
-  
-  # --- Automatic RUV Results ---
-  ruv_results <- study_params$`Automatic RUV Optimization Results` %||% list()
-  
-  # --- Organism Info ---
-  org_info <- study_params$`Organism Information` %||% list()
-
-  # Create a flat list of all extracted parameters
-  all_params <- list(
-    # Method Details
-    missing_values_cutoff = as.numeric(s4_prot_filt$groupwise_percentage_cutoff),
-    intensity_cutoff_percentile = as.numeric(s4_pep_filt$peptides_intensity_cutoff_percentile),
-    normalisation_method = s4_norm$method,
-    qvalue_threshold = as.numeric(s4_qval_filt$qvalue_threshold),
-    proteotypic_peptide_only = as.logical(as.numeric(s4_qval_filt$choose_only_proteotypic_peptide)),
-    proportion_samples_below_cutoff = as.numeric(s4_pep_filt$peptides_proportion_of_samples_below_cutoff),
-    min_peptidoforms_per_protein = as.numeric(s4_pep_prot_filt$peptidoforms_per_protein_cutoff),
-    min_peptides_per_sample = as.numeric(s4_sample_filt$peptides_per_sample_cutoff),
-    
-    # RUV Auto-optimization
-    best_percentage = ruv_results$`Best percentage`,
-    best_k = ruv_results$`Best k value`,
-    num_neg_ctrl = ruv_results$`Control genes`,
-    
-    # Organism
-    organism_name = org_info$`Organism Name`,
-    taxon_id = org_info$`Taxon ID`,
-    
-    # DE - S4
-    s4_de_q_val_thresh = as.numeric(s4_de$de_q_val_thresh),
-    s4_de_treat_lfc_cutoff = as.numeric(s4_de$treat_lfc_cutoff),
-    s4_ebayes_trend = as.logical(s4_de$eBayes_trend),
-    s4_ebayes_robust = as.logical(s4_de$eBayes_robust),
-    s4_formula_string = s4_de$formula_string,
-    
-    # DE - UI
-    ui_de_q_value_threshold = as.numeric(ui_de$q_value_threshold),
-    ui_de_log_fold_change_cutoff = as.numeric(ui_de$log_fold_change_cutoff),
-    ui_de_treat_enabled = as.logical(ui_de$treat_enabled),
-    
-    # Enrichment - UI
-    ui_enrichment_up_lfc = as.numeric(ui_enrich$up_log2fc_cutoff),
-    ui_enrichment_down_lfc = as.numeric(ui_enrich$down_log2fc_cutoff),
-    ui_enrichment_q_value_cutoff = as.numeric(ui_enrich$q_value_cutoff),
-    ui_enrichment_database_source = ui_enrich$database_source
-  )
-  
-  return(all_params)
-}
-
+# UPDATED: Sample analysis with enhanced error handling
 CalculateSampleCounts <- function(group_summary) {
-  # This function remains valid
-  total_measurements <- sum(group_summary$total_measurements)
-  biological_samples <- sum(group_summary$n_samples)
+  # Enhanced validation
+  if (is.null(group_summary) || nrow(group_summary) == 0) {
+    return(list(total_samples = 0, biological_samples = 0, technical_replicates = 0))
+  }
+  
+  total_measurements <- sum(group_summary$total_measurements, na.rm = TRUE)
+  biological_samples <- sum(group_summary$n_samples, na.rm = TRUE)
   technical_replicates <- max(0, total_measurements - biological_samples)
+  
   list(
     total_samples = total_measurements, 
     biological_samples = biological_samples, 
@@ -533,7 +675,9 @@ CalculateSampleCounts <- function(group_summary) {
 }
 
 CalculatePatientMetrics <- function(numbers, group_summary) {
-  # This function remains valid
+  # Enhanced error handling
+  if (is.null(numbers) || is.null(group_summary)) return(numbers)
+  
   if (numbers$biological_samples > 0) {
     numbers$avg_tech_reps_per_sample <- numbers$total_samples / numbers$biological_samples
     numbers$samples_per_group <- numbers$biological_samples / n_distinct(group_summary$group)
@@ -545,7 +689,12 @@ CalculatePatientMetrics <- function(numbers, group_summary) {
 }
 
 AnalyzeGroups <- function(design_df) {
-  # This function remains valid
+  # Enhanced validation
+  if (is.null(design_df) || nrow(design_df) == 0 || !"group" %in% names(design_df)) {
+    return(tibble(group = character(0), n_samples = numeric(0), 
+                  total_measurements = numeric(0), avg_replicates = numeric(0)))
+  }
+  
   unique(design_df$group) |>
     purrr::map_dfr(function(g) {
       group_data <- design_df |> 
@@ -558,139 +707,70 @@ AnalyzeGroups <- function(design_df) {
 }
 
 AnalyzeSamples <- function(design_matrix, study_params) {
-  # This function is now safer
-  group_summary <- AnalyzeGroups(design_matrix)
-  numbers <- CalculateSampleCounts(group_summary)
-  numbers <- CalculatePatientMetrics(numbers, group_summary)
-  params_extracted <- ExtractStudyParameters(study_params)
-  # Combine base counts/metrics with extracted params
-  # Make sure to handle potential NULLs from extraction
-  final_numbers <- c(numbers, params_extracted)
-  # Replace any NULLs with NA to prevent errors downstream
-  final_numbers[sapply(final_numbers, is.null)] <- NA
-  
-  list( numbers = final_numbers, table = group_summary )
+  # Enhanced error handling
+  tryCatch({
+    group_summary <- AnalyzeGroups(design_matrix)
+    numbers <- CalculateSampleCounts(group_summary)
+    numbers <- CalculatePatientMetrics(numbers, group_summary)
+    params_extracted <- ExtractStudyParametersNew(study_params)
+    
+    # Combine base counts/metrics with extracted params
+    final_numbers <- c(numbers, params_extracted)
+    
+    # Replace any NULLs with NA to prevent errors downstream
+    final_numbers[sapply(final_numbers, is.null)] <- NA
+    
+    list( numbers = final_numbers, table = group_summary )
+  }, error = function(e) {
+    # Return default structure on error
+    list(numbers = list(), table = data.frame())
+  })
 }
 ```
 
 ```{r Main Execution Function, echo=FALSE, warning=FALSE}
-# --- REWRITTEN ---
-# This chunk contains the new robust parser.
-
-# New robust parser for the new study_parameters.txt format
-ReadStudyParams <- function(filepath) {
-  lines <- readLines(filepath, warn = FALSE)
-  params <- list()
-  
-  # State variables
-  main_section <- NULL
-  sub_section <- NULL
-  sub_sub_section <- NULL
-  
-  for (line in lines) {
-    line <- trimws(line)
-    if (line == "" || grepl("^-+$", line) || grepl("^=+$", line)) {
-      next
-    }
-    
-    # Detect main section (e.g., "Basic Information:") - no leading space
-    if (grepl(":$", line) && !grepl("^[[:space:]]", line)) {
-      main_section <- trimws(sub(":$", "", line))
-      params[[main_section]] <- list()
-      sub_section <- NULL
-      sub_sub_section <- NULL
-      next
-    }
-    
-    # Detect sub-section (e.g., "Parameters from Final S4 Object:") - has leading space
-    if (grepl(":$", line) && grepl("^[[:space:]]+", line)) {
-      sub_section <- trimws(sub(":$", "", line))
-      if (!is.null(main_section)) {
-        params[[main_section]][[sub_section]] <- list()
-      }
-      sub_sub_section <- NULL
-      next
-    }
-    
-    # Detect sub-sub-section (e.g., "[globalParameters]")
-    if (grepl("^\\[.*\\]$", line)) {
-      sub_sub_section <- gsub("\\[|\\]", "", line)
-      # Place it under the current main/sub section context
-      if (!is.null(sub_section)) {
-        params[[main_section]][[sub_section]][[sub_sub_section]] <- list()
-      } else if (!is.null(main_section)) {
-        params[[main_section]][[sub_sub_section]] <- list()
-      }
-      next
-    }
-    
-    # Handle contrasts
-    if (!is.null(main_section) && main_section == "Contrasts") {
-      # Build a character vector of contrasts
-      if (is.list(params[[main_section]]) && length(params[[main_section]]) == 0) {
-          params[[main_section]] <- c(line)
-      } else {
-          params[[main_section]] <- c(params[[main_section]], line)
-      }
-      next
-    }
-
-    # Handle key-value pairs (can be : or =)
-    if (grepl(":", line) || grepl("=", line)) {
-      # Use a more robust split method from stringr
-      kv_mat <- stringr::str_split_fixed(line, "[=:]", 2)
-      key <- trimws(kv_mat[1, 1])
-      value <- trimws(kv_mat[1, 2])
-        
-      # Clean bullet points from keys
-      key <- sub("^[•[:space:]]+", "", key)
-
-      # Assign value to the correct nested level, only if key is valid
-      if(nchar(key) > 0) {
-          if (!is.null(sub_sub_section)) {
-            params[[main_section]][[sub_section]][[sub_sub_section]][[key]] <- value
-          } else if (!is.null(sub_section)) {
-            params[[main_section]][[sub_section]][[key]] <- value
-          } else if (!is.null(main_section)) {
-            params[[main_section]][[key]] <- value
-          }
-      }
-    }
-  }
-  return(params)
-}
-
-
-# Main function definition (original internal logic, adapted pathing)
-Main <- function() { # Removed suffix param
-  # Paths are now globally available from the 'Project Setup' chunk
-  
-  # Read inputs with error checking using NEW path variables
+# UPDATED: Main function using new parser
+Main <- function() {
+  # Use globally available path variables
   params_path <- file.path(report_source_dir, "study_parameters.txt")
   if (!file.exists(params_path)) stop(glue::glue("Study parameters file not found: {params_path}"))
-  study_params_data <- tryCatch({ ReadStudyParams(params_path) }, error = function(e) { stop(glue::glue("Error reading study parameters: {e$message}")) })
+  
+  # Use NEW hierarchical parser
+  study_params_data <- tryCatch({ 
+    ReadStudyParamsNew(params_path) 
+  }, error = function(e) { 
+    stop(glue::glue("Error reading study parameters with new parser: {e$message}")) 
+  })
 
   matrix_path <- file.path(report_source_dir, "design_matrix.tab")
   if (!file.exists(matrix_path)) stop(glue::glue("Design matrix file not found: {matrix_path}"))
-  design_matrix_data <- tryCatch({ readr::read_tsv(matrix_path, show_col_types = FALSE) }, error = function(e) { stop(glue::glue("Error reading design matrix: {e$message}")) })
+  design_matrix_data <- tryCatch({ 
+    readr::read_tsv(matrix_path, show_col_types = FALSE) 
+  }, error = function(e) { 
+    stop(glue::glue("Error reading design matrix: {e$message}")) 
+  })
   
-  # Use NEW path variable for correlation data
+  # Correlation data (unchanged)
   corr_path <- file.path(report_publication_tables_dir, "ruv_normalised_results.RDS")
   correlation_data <- if (file.exists(corr_path)) {
     tryCatch({ readRDS(corr_path) }, error = function(e) { warning(glue::glue("Error reading RDS: {e$message}")); list() })
   } else { warning(glue::glue("File not found: {corr_path}")); list() }
   
-  # Run analysis using REWRITTEN AnalyzeSamples
-  analysis_results <- tryCatch({ AnalyzeSamples(design_matrix_data, study_params_data) }, error = function(e) { stop(glue::glue("Error in AnalyzeSamples: {e$message}")) })
+  # Run analysis using UPDATED AnalyzeSamples with new parser
+  analysis_results <- tryCatch({ 
+    AnalyzeSamples(design_matrix_data, study_params_data) 
+  }, error = function(e) { 
+    stop(glue::glue("Error in AnalyzeSamples: {e$message}")) 
+  })
   
   # Generate text sections using UPDATED Format* functions
   report_content <- list(
     content = list(
       sample_details = FormatSampleDetails(analysis_results$numbers),
       method_details = FormatMethodDetails(analysis_results$numbers),
-      results        = FormatResults(correlation_data), # Pass correlation data
+      results        = FormatResults(correlation_data),
       comments       = FormatComments(),
-      opinions       = FormatOpinions(correlation_data), # Pass correlation data
+      opinions       = FormatOpinions(correlation_data),
       de_details     = FormatDEDetails(analysis_results$numbers),
       go_enrichment  = FormatGOEnrichment(analysis_results$numbers)
     ),
@@ -701,8 +781,18 @@ Main <- function() { # Removed suffix param
 }
 
 # Execute Main to get report data
-results_data <- tryCatch({ Main() }, error = function(e) {
-  list(content = list(sample_details = paste("Error running Main function:", e$message), method_details = "", results = "", comments = "", opinions = "", de_details = "", go_enrichment = ""), table = data.frame(), numbers = list())
+results_data <- tryCatch({ 
+  Main() 
+}, error = function(e) {
+  list(content = list(
+    sample_details = paste("Error running Main function:", e$message), 
+    method_details = "", 
+    results = "", 
+    comments = "", 
+    opinions = "", 
+    de_details = "", 
+    go_enrichment = ""
+  ), table = data.frame(), numbers = list())
 })
 ```
 
@@ -724,7 +814,7 @@ composite_qc_fig_path <- file.path(report_qc_figures_dir, paste0(params$omic_typ
 if(file.exists(composite_qc_fig_path)) {
   knitr::include_graphics(composite_qc_fig_path)
 } else {
-  cat(glue::glue("Warning: Composite QC figure not found at {composite_qc_fig_path}\\n")) # Added newline
+  cat(glue::glue("Warning: Composite QC figure not found at {composite_qc_fig_path}\\n"))
 }
 ```
 
@@ -749,7 +839,6 @@ if(dir.exists(volcano_plots_dir)) {
 ```
 
 ```{r Volcano Plot Caption, echo=FALSE, results='asis'}
-# Original code
 cat("*Figure 2: Volcano plots of differentially expressed proteins in alphabetical order.*\n\n")
 ```
 
@@ -782,8 +871,5 @@ if(dir.exists(enrichment_plots_dir)) {
 ```
 
 ```{r Go Enrichment Caption, echo=FALSE, results='asis'}
-# Original code
 cat("*Figure 3: GO enrichment analysis showing pathways enriched in differentially expressed proteins. Plots are ordered alphabetically by comparison and direction.*\n\n")
-```
-
 ```
