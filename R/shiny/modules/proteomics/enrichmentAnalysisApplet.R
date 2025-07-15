@@ -916,9 +916,6 @@ enrichmentAnalysisAppletServer <- function(id, workflow_data, experiment_paths, 
           method_info <- current_analysis_method()
           cat(sprintf("   ENRICHMENT Step: Using analysis method: %s\n", method_info$method))
           
-          # ✅ WORKAROUND: processEnrichments internally uses protein_p_val_thresh but doesn't have it as parameter
-          protein_p_val_thresh <- input$q_cutoff  # Set in environment so processEnrichments can find it
-          
           enrichment_results <- processEnrichments(
             de_results_for_enrichment,
             taxon_id = as.numeric(input$organism_taxid),
@@ -963,7 +960,8 @@ enrichmentAnalysisAppletServer <- function(id, workflow_data, experiment_paths, 
                 if (!is.null(contrast_enrichment$up) || !is.null(contrast_enrichment$down)) {
                   if (!is.null(contrast_enrichment$up)) {
                     up_results <- contrast_enrichment$up
-                    if (!is.null(up_results$result) && nrow(up_results$result) > 0) {
+                    # ✅ FIXED: Use safe gprofiler2 result checking pattern (matches functional_enrichment.R)
+                    if (!is.null(up_results) && !is.null(up_results$result) && length(up_results$result) > 0 && nrow(up_results$result) > 0) {
                       up_df <- up_results$result
                       up_df$directionality <- "positive"
                       up_df$analysis_method <- "gprofiler2"
@@ -973,7 +971,8 @@ enrichmentAnalysisAppletServer <- function(id, workflow_data, experiment_paths, 
                   
                   if (!is.null(contrast_enrichment$down)) {
                     down_results <- contrast_enrichment$down
-                    if (!is.null(down_results$result) && nrow(down_results$result) > 0) {
+                    # ✅ FIXED: Use safe gprofiler2 result checking pattern (matches functional_enrichment.R)
+                    if (!is.null(down_results) && !is.null(down_results$result) && length(down_results$result) > 0 && nrow(down_results$result) > 0) {
                       down_df <- down_results$result
                       down_df$directionality <- "negative" 
                       down_df$analysis_method <- "gprofiler2"
