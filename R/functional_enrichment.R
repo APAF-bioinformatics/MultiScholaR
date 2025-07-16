@@ -354,9 +354,9 @@ processEnrichments <- function(de_results,
               x
             })
           })) |>
-          filter(fdr_qvalue < protein_p_val_thresh)
+          filter(fdr_qvalue < q_cutoff)
 
-        message(sprintf("Proteins passing protein p-value cutoff (%.3f): %d", protein_p_val_thresh, nrow(subset_sig)))
+        message(sprintf("Proteins passing q-value cutoff (%.3f): %d", q_cutoff, nrow(subset_sig)))
 
         # Apply enrichment q-value filter for final significance
         subset_for_enrichment <- subset_sig |>

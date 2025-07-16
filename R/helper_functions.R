@@ -693,7 +693,7 @@ loadDependencies <- function(verbose = TRUE) {
         "shinydashboard", "shinythemes", "shinycssloaders",
         # Added from Suggests:
         "testthat", "ggplot2", "ggpubr", "svglite",
-        "ggraph", "reticulate", "shinyFiles"
+        "ggraph", "reticulate", "shinyFiles", "arrow"
     )
 
     bioc_packages <- c(

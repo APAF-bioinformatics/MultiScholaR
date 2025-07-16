@@ -375,7 +375,7 @@ sessionSummaryServer <- function(id, project_dirs, omic_type = "proteomics", exp
           
           tryCatch({
             # Correct URL pointing to the development branch with the fixes
-            template_url <- "https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/Bucket-Chemist/issue2/Workbooks/proteomics/report/DIANN_report.rmd"
+            template_url <- "https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/GUI/Workbooks/proteomics/report/DIANN_report.rmd"
             download.file(template_url, destfile = report_template_path, quiet = TRUE)
             logger::log_info(paste("Template downloaded to:", report_template_path))
             showNotification("Report template downloaded", type = "message")
