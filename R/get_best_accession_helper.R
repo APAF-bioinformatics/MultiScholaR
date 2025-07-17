@@ -326,7 +326,7 @@ rankProteinAccessionHelper <- function(input_tbl
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
-processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uniparc_search_results = NULL, fasta_meta_file, organism_name) {
+processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uniparc_search_results = NULL, fasta_meta_file, organism_name, output_dir = NULL) {
   # Properly suppress all vroom messages
   withr::local_options(list(
     vroom.show_col_types = FALSE,
@@ -524,12 +524,27 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uni
     message("Writing results...")
     flush.console()
 
+    # Determine output directory for TSV file
+    if (is.null(output_dir)) {
+      # Default to same directory as fasta_meta_file if no output_dir provided
+      output_dir <- dirname(fasta_meta_file)
+    }
+    
+    # Ensure output directory exists
+    if (!dir.exists(output_dir)) {
+      dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+    }
+    
+    # Write TSV file to proper directory
+    tsv_output_path <- file.path(output_dir, "aa_seq_tbl.tsv")
     vroom::vroom_write(aa_seq_tbl_final,
-                       file = "aa_seq_tbl.tsv",
+                       file = tsv_output_path,
                        delim = "\t",
                        na = "",
                        quote = "none",
                        progress = FALSE)
+    
+    message("TSV file saved to: ", tsv_output_path)
 
     saveRDS(aa_seq_tbl_final, fasta_meta_file)
     return(aa_seq_tbl_final)
