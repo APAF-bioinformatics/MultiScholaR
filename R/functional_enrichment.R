@@ -79,37 +79,90 @@ perform_enrichment <- function(data_subset,
                                exclude_iea = FALSE,
                                max_retries = 5,
                                wait_time = 5,
-                               protein_id_column) {
+                               protein_id_column,
+                               correction_method = "gSCS") {
+  
+  message("--- Entering perform_enrichment ---")
+  message(sprintf("   perform_enrichment Arg: species = %s", species))
+  message(sprintf("   perform_enrichment Arg: threshold = %s", threshold))
+  message(sprintf("   perform_enrichment Arg: sources = %s", paste(sources, collapse = ", ")))
+  message(sprintf("   perform_enrichment Arg: domain_scope = %s", domain_scope))
+  message(sprintf("   perform_enrichment Arg: exclude_iea = %s", exclude_iea))
+  message(sprintf("   perform_enrichment Arg: protein_id_column = %s", protein_id_column))
+  message(sprintf("   perform_enrichment Arg: max_retries = %s", max_retries))
+  
+  message("      Data State (data_subset): Checking input data...")
+  message(sprintf("      Data State (data_subset): Dims = %d rows, %d cols", nrow(data_subset), ncol(data_subset)))
+  message("      Data State (data_subset) Structure:")
+  utils::str(data_subset)
+  message("      Data State (data_subset) Head:")
+  print(head(data_subset))
+  
   if (nrow(data_subset) == 0) {
+    message("   perform_enrichment Step: Data subset is empty, returning NULL")
+    message("--- Exiting perform_enrichment. Returning: NULL ---")
     return(NULL)
   }
 
+  message("   perform_enrichment Step: Extracting protein IDs from data...")
   # Clean data before enrichment
   protein_ids <- data_subset[[protein_id_column]]
+  
+  message(sprintf("      Data State (protein_ids): Length = %d", length(protein_ids)))
+  message(sprintf("      Data State (protein_ids): Class = %s", class(protein_ids)))
+  message(sprintf("      Data State (protein_ids): First 5 values = %s", paste(head(protein_ids, 5), collapse = ", ")))
 
   if (any(is.na(protein_ids))) {
+    na_count <- sum(is.na(protein_ids))
+    message(sprintf("   perform_enrichment Step: Found %d NA values in protein IDs, filtering...", na_count))
     warning(paste("NA values found in", protein_id_column, "column"))
     data_subset <- data_subset |> dplyr::filter(!is.na(.data[[protein_id_column]]))
+    protein_ids <- data_subset[[protein_id_column]]
+    message(sprintf("      Data State (protein_ids after NA filter): Length = %d", length(protein_ids)))
   }
 
+  protein_ids <- unique(protein_ids[!is.na(protein_ids) & protein_ids != ""])
+
+  message("   perform_enrichment Step: Checking custom background...")
+  message(sprintf("      Data State (custom_bg): Length = %d", length(custom_bg)))
+  message(sprintf("      Data State (custom_bg): Class = %s", class(custom_bg)))
+  message(sprintf("      Data State (custom_bg): First 5 values = %s", paste(head(custom_bg, 5), collapse = ", ")))
 
   if (any(is.na(custom_bg))) {
+    na_bg_count <- sum(is.na(custom_bg))
+    message(sprintf("   perform_enrichment Step: Found %d NA values in custom background, filtering...", na_bg_count))
     warning("NA values found in custom background IDs")
     custom_bg <- custom_bg[!is.na(custom_bg)]
+    message(sprintf("      Data State (custom_bg after NA filter): Length = %d", length(custom_bg)))
   }
+
+  custom_bg <- unique(custom_bg)
 
   result <- NULL
   attempt <- 1
 
+  message(sprintf("   perform_enrichment Step: Starting gprofiler2 gost() retry loop (max %d attempts)...", max_retries))
+
   while (is.null(result) && attempt <= max_retries) {
+    message(sprintf("   perform_enrichment Attempt %d: Calling gprofiler2::gost()...", attempt))
+    
     tryCatch({
+      message("   perform_enrichment Step: About to call gprofiler2::gost() with parameters:")
+      message(sprintf("      gost query: %d protein IDs", length(protein_ids)))
+      message(sprintf("      gost organism: %s", species))
+      message(sprintf("      gost sources: %s", paste(sources, collapse = ", ")))
+      message(sprintf("      gost user_threshold: %s", threshold))
+      message(sprintf("      gost domain_scope: %s", domain_scope))
+      message(sprintf("      gost custom_bg: %d background IDs", length(custom_bg)))
+      message(sprintf("      gost exclude_iea: %s", exclude_iea))
+      
       result <- gprofiler2::gost(
         query = protein_ids,
         organism = species,
         ordered_query = FALSE,
         sources = sources,
         user_threshold = threshold,
-        correction_method = "gSCS",
+        correction_method = correction_method,
         exclude_iea = exclude_iea,
         evcodes = TRUE,
         domain_scope = domain_scope,
@@ -117,41 +170,52 @@ perform_enrichment <- function(data_subset,
         significant = TRUE,
         highlight = TRUE
       )
-
-      # If no significant results, return NULL immediately without retrying
-      if (is.null(result$result)) {
-        message("No significant results found. Moving to next analysis.")
-        return(NULL)
-      }
-
-    }, error = function(e) {
-      # Retry only for connection/timeout errors
-      if (grepl("408", e$message) ||
-          grepl("Could not resolve host", e$message) ||
-          grepl("Connection refused", e$message)) {
-        message(paste("Attempt", attempt, "failed with connection error. Retrying in", wait_time, "seconds..."))
-        Sys.sleep(wait_time)
-        result <- NULL  # Ensure the loop continues
-      } else if (grepl("Please make sure that the organism is correct", e$message)) {
-        warning("Organism check failed. Please verify species identifier.")
-        return(NULL)
+      
+      message("   perform_enrichment Step: gprofiler2::gost() completed successfully")
+      message("      Data State (gost result): Checking gost result structure...")
+      
+      if (is.null(result)) {
+        message("      Data State (gost result): Result is NULL")
       } else {
-        warning(paste("Error in enrichment analysis:", e$message))
-        message("Debug info:")
-        message("Number of proteins in query: ", length(protein_ids))
-        message("First few protein IDs: ", paste(head(protein_ids), collapse = ", "))
-        return(NULL)
+        message("      Data State (gost result) Structure:")
+        utils::str(result)
+        
+        if ("result" %in% names(result)) {
+          if (is.null(result$result)) {
+            message("      Data State (gost result$result): Is NULL")
+          } else {
+            message(sprintf("      Data State (gost result$result): Dims = %d rows, %d cols", nrow(result$result), ncol(result$result)))
+            message("      Data State (gost result$result) Column names:")
+            print(names(result$result))
+            if (nrow(result$result) > 0) {
+              message("      Data State (gost result$result) Head:")
+              print(head(result$result))
+            } else {
+              message("      Data State (gost result$result): NO ROWS - Empty results!")
+            }
+          }
+        } else {
+          message("      Data State (gost result): No 'result' component found")
+        }
       }
+      
+    }, error = function(e) {
+      message(sprintf("   perform_enrichment Attempt %d: ERROR in gprofiler2::gost(): %s", attempt, e$message))
+      message(sprintf("   perform_enrichment Attempt %d: Will wait %d seconds before retry...", attempt, wait_time))
+      Sys.sleep(wait_time)
     })
-
+    
     attempt <- attempt + 1
   }
 
-  if (is.null(result) && attempt > max_retries) {
-    message("Failed to get a valid response after ", max_retries, " attempts. Returning NULL.")
+  if (is.null(result)) {
+    message("   perform_enrichment Step: All retry attempts failed, returning NULL")
+    message("--- Exiting perform_enrichment. Returning: NULL ---")
     return(NULL)
   }
 
+  message("   perform_enrichment Step: Successfully obtained gprofiler2 result")
+  message("--- Exiting perform_enrichment. Returning: gost result object ---")
   return(result)
 }
 
@@ -276,6 +340,7 @@ summarize_enrichment <- function(enrichment_result) {
 #' @param exclude_iea Whether to exclude IEA (Inferred Electronic Annotation) terms (default: FALSE)
 #' @param protein_id_column Name of the protein ID column (default: "Protein.IDs")
 #' @param contrast_names Vector of contrast names for output labeling
+#' @param correction_method Method for FDR correction (default: "gSCS")
 #'
 #' @return S4 EnrichmentResults object containing enrichment data, plots, and summaries
 #'
@@ -289,7 +354,8 @@ processEnrichments <- function(de_results,
                                go_annotations = NULL,
                                exclude_iea = FALSE,
                                protein_id_column = "Protein.IDs",
-                               contrast_names = NULL) {
+                               contrast_names = NULL,
+                               correction_method = "gSCS") {
 
   message("--- RUNNING processEnrichments VERSION [Timestamp: ", Sys.time(), "] ---")
 
@@ -335,6 +401,7 @@ processEnrichments <- function(de_results,
     # Process each contrast
     results <- de_results@de_data |>
       purrr::map(function(de_data) {
+        tryCatch({
         if(is.null(de_data)) {
           warning("No DE data found for contrast")
           return(NULL)
@@ -342,9 +409,24 @@ processEnrichments <- function(de_results,
 
         # Split data into up/down regulated
         message(sprintf("Total proteins before filtering: %d", nrow(de_data)))
+        
+        # ✅ DIAGNOSTIC: Check protein_id_column and data structure
+        message(sprintf("DEBUG: protein_id_column = '%s'", protein_id_column))
+        message(sprintf("DEBUG: Available columns in de_data: %s", paste(names(de_data), collapse = ", ")))
+        
+        if (!protein_id_column %in% names(de_data)) {
+          stop(sprintf("ERROR: Column '%s' not found in DE data. Available columns: %s", 
+                      protein_id_column, paste(names(de_data), collapse = ", ")))
+        }
+        
+        # Check if the column has valid data
+        protein_col_data <- de_data[[protein_id_column]]
+        message(sprintf("DEBUG: First 3 values in protein_id_column: %s", 
+                       paste(head(protein_col_data, 3), collapse = ", ")))
+        message(sprintf("DEBUG: Column class: %s", class(protein_col_data)))
 
         subset_sig <- de_data |>
-          dplyr::mutate( {{protein_id_column}} := purrr::map_chr( {{protein_id_column}}, \(x){
+          dplyr::mutate( {{protein_id_column}} := purrr::map_chr( {{protein_id_column}}, function(x){
             tryCatch({
               # Attempt to split and take first element
               stringr::str_split(x, ":")[[1]][1]
@@ -357,20 +439,70 @@ processEnrichments <- function(de_results,
           filter(fdr_qvalue < q_cutoff)
 
         message(sprintf("Proteins passing q-value cutoff (%.3f): %d", q_cutoff, nrow(subset_sig)))
+        
+        # ✅ DEBUG 66: Extensive logging for subset_sig
+        message("      Data State (subset_sig) Structure:")
+        utils::str(subset_sig)
+        if (nrow(subset_sig) > 0) {
+          message("      Data State (subset_sig) Head:")
+          print(head(subset_sig))
+          message("      Data State (subset_sig fdr_qvalue range):")
+          print(range(subset_sig$fdr_qvalue, na.rm = TRUE))
+          message("      Data State (subset_sig log2FC range):")
+          print(range(subset_sig$log2FC, na.rm = TRUE))
+        }
 
         # Apply enrichment q-value filter for final significance
         subset_for_enrichment <- subset_sig |>
           filter(fdr_qvalue < q_cutoff)
         
         message(sprintf("Proteins passing enrichment q-value cutoff (%.3f): %d", q_cutoff, nrow(subset_for_enrichment)))
+        
+        # ✅ DEBUG 66: Check subset_for_enrichment
+        message("      Data State (subset_for_enrichment) Structure:")
+        utils::str(subset_for_enrichment)
+        if (nrow(subset_for_enrichment) > 0) {
+          message("      Data State (subset_for_enrichment) Head:")
+          print(head(subset_for_enrichment))
+        } else {
+          message("      Data State (subset_for_enrichment): NO PROTEINS PASS ENRICHMENT CUTOFF!")
+        }
 
         up_matrix <- subset_for_enrichment |>
           filter(log2FC > up_cutoff)
         message(sprintf("Up-regulated proteins (log2FC > %g): %d", up_cutoff, nrow(up_matrix)))
+        
+        # ✅ DEBUG 66: Check up_matrix details
+        if (nrow(up_matrix) > 0) {
+          message("      Data State (up_matrix) Structure:")
+          utils::str(up_matrix)
+          message("      Data State (up_matrix) Head:")
+          print(head(up_matrix))
+          message("      Data State (up_matrix log2FC values):")
+          print(summary(up_matrix$log2FC))
+        } else {
+          message("      Data State (up_matrix): NO UP-REGULATED PROTEINS FOUND!")
+          message(sprintf("      Debug: up_cutoff = %g, max log2FC in subset_for_enrichment = %g", 
+                         up_cutoff, if(nrow(subset_for_enrichment) > 0) max(subset_for_enrichment$log2FC, na.rm = TRUE) else NA))
+        }
 
         down_matrix <- subset_for_enrichment |>
           filter(log2FC < -down_cutoff)
         message(sprintf("Down-regulated proteins (log2FC < -%g): %d", down_cutoff, nrow(down_matrix)))
+        
+        # ✅ DEBUG 66: Check down_matrix details
+        if (nrow(down_matrix) > 0) {
+          message("      Data State (down_matrix) Structure:")
+          utils::str(down_matrix)
+          message("      Data State (down_matrix) Head:")
+          print(head(down_matrix))
+          message("      Data State (down_matrix log2FC values):")
+          print(summary(down_matrix$log2FC))
+        } else {
+          message("      Data State (down_matrix): NO DOWN-REGULATED PROTEINS FOUND!")
+          message(sprintf("      Debug: down_cutoff = %g, min log2FC in subset_for_enrichment = %g", 
+                         down_cutoff, if(nrow(subset_for_enrichment) > 0) min(subset_for_enrichment$log2FC, na.rm = TRUE) else NA))
+        }
 
         # Get background IDs from the full de_data for this contrast
         custom_bg <- de_data |>
@@ -378,14 +510,27 @@ processEnrichments <- function(de_results,
           unique()
 
         message(sprintf("Using %d unique proteins as background for enrichment analysis", length(custom_bg)))
+        
+        # ✅ DEBUG 66: Check background details
+        message("      Data State (custom_bg): First 5 background proteins:")
+        message(paste(head(custom_bg, 5), collapse = ", "))
 
         # Process up and down regulated genes
         list(
           up = tryCatch({
             if(nrow(up_matrix) > 0) {
+              # ✅ DEBUG 66: Log call to perform_enrichment for up-regulated
+              message("   processEnrichments Step: CALLING perform_enrichment for UP-REGULATED proteins...")
+              message(sprintf("      About to analyze %d up-regulated proteins", nrow(up_matrix)))
+              
               # Convert protein_id_column to string for passing to perform_enrichment
               protein_col <- rlang::as_label(rlang::ensym(protein_id_column))
-              perform_enrichment(
+              message(sprintf("      Using protein_id_column: %s", protein_col))
+              message(sprintf("      Using species: %s", species))
+              message(sprintf("      Using threshold: %s", q_cutoff))
+              message(sprintf("      Using exclude_iea: %s", exclude_iea))
+              
+              up_result <- perform_enrichment(
                 data_subset = up_matrix,
                 species = species,
                 threshold = q_cutoff,
@@ -393,10 +538,38 @@ processEnrichments <- function(de_results,
                 domain_scope = "custom",
                 custom_bg = custom_bg,
                 exclude_iea = exclude_iea,
-                protein_id_column = protein_col
+                protein_id_column = protein_col,
+                correction_method = correction_method
               )
-            } else NULL
+              
+              # ✅ DEBUG 66: Log result from perform_enrichment
+              message("   processEnrichments Step: UP-REGULATED enrichment completed")
+              message("      Data State (up_result): Checking perform_enrichment result...")
+              
+              if (is.null(up_result)) {
+                message("      Data State (up_result): Result is NULL")
+              } else {
+                message("      Data State (up_result) Structure:")
+                utils::str(up_result)
+                
+                if ("result" %in% names(up_result) && !is.null(up_result$result)) {
+                  message(sprintf("      Data State (up_result$result): Found %d enriched terms", nrow(up_result$result)))
+                  if (nrow(up_result$result) > 0) {
+                    message("      Data State (up_result$result) Head:")
+                    print(head(up_result$result))
+                  }
+                } else {
+                  message("      Data State (up_result): No 'result' component or result is NULL")
+                }
+              }
+              
+              up_result
+            } else {
+              message("   processEnrichments Step: SKIPPING UP-REGULATED enrichment (no proteins)")
+              NULL
+            }
           }, error = function(e) {
+            message(sprintf("   processEnrichments Step: ERROR in up-regulated enrichment: %s", e$message))
             warning(sprintf("Error processing up-regulated genes: %s", e$message))
             message("Debug info for up-regulated genes:")
             message("Number of proteins: ", nrow(up_matrix))
@@ -405,9 +578,18 @@ processEnrichments <- function(de_results,
 
           down = tryCatch({
             if(nrow(down_matrix) > 0) {
+              # ✅ DEBUG 66: Log call to perform_enrichment for down-regulated
+              message("   processEnrichments Step: CALLING perform_enrichment for DOWN-REGULATED proteins...")
+              message(sprintf("      About to analyze %d down-regulated proteins", nrow(down_matrix)))
+              
               # Convert protein_id_column to string for passing to perform_enrichment
               protein_col <- rlang::as_label(rlang::ensym(protein_id_column))
-              perform_enrichment(
+              message(sprintf("      Using protein_id_column: %s", protein_col))
+              message(sprintf("      Using species: %s", species))
+              message(sprintf("      Using threshold: %s", q_cutoff))
+              message(sprintf("      Using exclude_iea: %s", exclude_iea))
+              
+              down_result <- perform_enrichment(
                 data_subset = down_matrix,
                 species = species,
                 threshold = q_cutoff,
@@ -415,16 +597,50 @@ processEnrichments <- function(de_results,
                 domain_scope = "custom",
                 custom_bg = custom_bg,
                 exclude_iea = exclude_iea,
-                protein_id_column = protein_col
+                protein_id_column = protein_col,
+                correction_method = correction_method
               )
-            } else NULL
+              
+              # ✅ DEBUG 66: Log result from perform_enrichment
+              message("   processEnrichments Step: DOWN-REGULATED enrichment completed")
+              message("      Data State (down_result): Checking perform_enrichment result...")
+              
+              if (is.null(down_result)) {
+                message("      Data State (down_result): Result is NULL")
+              } else {
+                message("      Data State (down_result) Structure:")
+                utils::str(down_result)
+                
+                if ("result" %in% names(down_result) && !is.null(down_result$result)) {
+                  message(sprintf("      Data State (down_result$result): Found %d enriched terms", nrow(down_result$result)))
+                  if (nrow(down_result$result) > 0) {
+                    message("      Data State (down_result$result) Head:")
+                    print(head(down_result$result))
+                  }
+                } else {
+                  message("      Data State (down_result): No 'result' component or result is NULL")
+                }
+              }
+              
+              down_result
+            } else {
+              message("   processEnrichments Step: SKIPPING DOWN-REGULATED enrichment (no proteins)")
+              NULL
+            }
           }, error = function(e) {
+            message(sprintf("   processEnrichments Step: ERROR in down-regulated enrichment: %s", e$message))
             warning(sprintf("Error processing down-regulated genes: %s", e$message))
             message("Debug info for down-regulated genes:")
             message("Number of proteins: ", nrow(down_matrix))
             NULL
           })
         )
+        }, error = function(e) {
+          message(sprintf("*** ERROR in contrast processing: %s", e$message))
+          message(sprintf("*** ERROR details: %s", class(e)))
+          message(sprintf("*** Call stack: %s", paste(deparse(sys.calls()), collapse = " -> ")))
+          return(NULL)
+        })
       })
 
     # Store enrichment results

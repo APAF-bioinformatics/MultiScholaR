@@ -107,7 +107,7 @@ differentialExpressionAppletUI <- function(id) {
         # Tab 1: Volcano Plot (Interactive with Glimma)
         shiny::tabPanel(
           "Volcano Plot",
-          icon = shiny::icon("chart-scatter"),
+          icon = shiny::icon("chart-area"),
           shiny::br(),
           
           # Contrast selector for volcano plot
