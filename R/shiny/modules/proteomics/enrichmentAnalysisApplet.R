@@ -65,7 +65,7 @@ enrichmentAnalysisAppletUI <- function(id) {
         shiny::textInput(
           ns("organism_taxid"),
           "Organism Taxon ID:",
-          value = "3635",
+          value = 9606,  # Default to human, will be updated by server
           placeholder = "e.g., 9606 for human"
         ),
         shiny::helpText("NCBI taxonomy ID for organism"),
@@ -109,7 +109,22 @@ enrichmentAnalysisAppletUI <- function(id) {
         
         # Status display
         shiny::h5("Analysis Status"),
-        shiny::verbatimTextOutput(ns("enrichment_status"))
+        shiny::verbatimTextOutput(ns("enrichment_status")),
+        
+        shiny::conditionalPanel(
+          condition = sprintf("input['%s'] == 'gprofiler2'", ns("enrichment_method_tabs")),
+          shiny::selectInput(
+            ns("correction_method"),
+            "Correction Method:",
+            choices = list(
+              "g:SCS (Conservative)" = "gSCS",
+              "FDR (Less Conservative)" = "fdr"
+            ),
+            selected = "gSCS"
+          ),
+          shiny::helpText("g:SCS: More conservative, reduces false positives but may miss terms."),
+          shiny::helpText("FDR: Detects more terms but higher false positive risk.")
+        )
       )
     ),
     
@@ -367,6 +382,13 @@ enrichmentAnalysisAppletServer <- function(id, workflow_data, experiment_paths, 
     )
     
     cat("   enrichmentAnalysisAppletServer Step: Reactive values initialized\n")
+    
+    # Update organism taxid input when workflow_data becomes available
+    observeEvent(workflow_data$taxon_id, {
+      if (!is.null(workflow_data$taxon_id)) {
+        updateTextInput(session, "organism_taxid", value = workflow_data$taxon_id)
+      }
+    }, ignoreInit = TRUE, ignoreNULL = TRUE)
     
     # ✅ NEW: Organism support detection
     supported_organisms <- reactive({
@@ -916,6 +938,11 @@ enrichmentAnalysisAppletServer <- function(id, workflow_data, experiment_paths, 
           method_info <- current_analysis_method()
           cat(sprintf("   ENRICHMENT Step: Using analysis method: %s\n", method_info$method))
           
+          id_column <- enrichment_data$current_s4_object@protein_id_column
+          if (method_info$method == "gprofiler2" && "gene_name" %in% names(de_results_for_enrichment@de_data[[1]])) {
+            id_column <- "gene_name"
+          }
+          
           enrichment_results <- processEnrichments(
             de_results_for_enrichment,
             taxon_id = as.numeric(input$organism_taxid),
@@ -925,8 +952,9 @@ enrichmentAnalysisAppletServer <- function(id, workflow_data, experiment_paths, 
             pathway_dir = pathway_dir,
             go_annotations = uniprot_dat_cln,
             exclude_iea = FALSE,
-            protein_id_column = enrichment_data$current_s4_object@protein_id_column,
-            contrast_names = names(enrichment_data$de_results_data)
+            protein_id_column = id_column,
+            contrast_names = names(enrichment_data$de_results_data),
+            correction_method = input$correction_method
           )
           
           cat(sprintf("   ENRICHMENT Step: processEnrichments completed with up_cutoff: %.1f, down_cutoff: %.1f, q_cutoff: %.3f\n", 
