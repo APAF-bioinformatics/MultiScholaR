@@ -4,7 +4,6 @@
 #' @param label Optional label to append to each omic type directory name (e.g., "proteomics_MyLabel").
 #' @param force Logical; if TRUE, skips user confirmation for overwriting existing directories (default: FALSE).
 #' @return A named list where each name is an omic type. Each element is a list containing the relevant directory paths for that omic type.
-#' @importFrom logger log_info log_warn
 #' @importFrom stringr str_split str_trim
 #' @export
 setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, force = FALSE) {
@@ -22,13 +21,11 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
         parsed_omic_types <- stringr::str_trim(omic_types)
         parsed_omic_types <- parsed_omic_types[parsed_omic_types != ""]
     } else {
-        logger::log_error("`omic_types` must be a character vector or a single comma/space-separated string.")
         stop("`omic_types` must be a character vector or a single comma/space-separated string.")
     }
 
     if (length(parsed_omic_types) == 0) {
-        logger::log_error("No valid `omic_types` provided after parsing.")
-        stop("No valid `omic_types` provided.")
+        stop("No valid `omic_types` provided after parsing.")
     }
 
     # Define Omics-Specific Configuration
@@ -40,7 +37,6 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
         err_msg <- sprintf("Invalid omic_type(s) specified: %s. Choose from: %s.",
                            paste(invalid_types, collapse = ", "),
                            paste(valid_omic_types, collapse = ", "))
-        logger::log_error(err_msg)
         stop(err_msg)
     }
 
@@ -50,7 +46,7 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
 
     # --- Loop Through Each Omic Type ---
     for (current_omic_type in parsed_omic_types) {
-        logger::log_info("--- Processing setup for omic type: {current_omic_type} ---")
+        message("--- Processing setup for omic type: ", current_omic_type, " ---")
 
         # Fetch Configuration for the current omic type
         omic_config <- switch(current_omic_type,
@@ -144,7 +140,6 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
             ),
             { # Default case for the switch, though validation should prevent this
                 err_msg <- sprintf("Internal error: Configuration not found for validated omic_type: %s", current_omic_type)
-                logger::log_error(err_msg)
                 stop(err_msg)
             }
         )
@@ -162,17 +157,29 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
 
         # Check Existing Directories and User Confirmation (only if force = FALSE)
         existing_dirs_found <- dir.exists(results_path) || dir.exists(results_summary_path) || dir.exists(scripts_path)
+        
+        # SAFETY: Prevent accidental deletion of template directories (those without labels)
+        template_scripts_path <- file.path(base_dir, "scripts", current_omic_type)
+        if (is.null(label) && scripts_path == template_scripts_path) {
+            message("ERROR: Cannot overwrite template directory: ", template_scripts_path, ". This contains original templates needed for analysis directories.")
+            message("Please use setupDirectories() with a label parameter (e.g., label = 'your_analysis') to create analysis-specific directories.")
+            stop("Attempted to overwrite template directory without a label. Use a label to create analysis directories.")
+        }
 
         if (!force && existing_dirs_found) {
-            logger::log_warn("Key directory(ies) for '{current_omic_type}' (label: '{omic_label_dirname}') already exist:")
-            if (dir.exists(results_path)) logger::log_warn("- {results_path}")
-            if (dir.exists(results_summary_path)) logger::log_warn("- {results_summary_path}")
-            if (dir.exists(scripts_path)) logger::log_warn("- {scripts_path}")
+            message("WARNING: Analysis directories for '", current_omic_type, "' with label '", omic_label_dirname, "' already exist:")
+            if (dir.exists(results_path)) message("- ", results_path)
+            if (dir.exists(results_summary_path)) message("- ", results_summary_path)
+            if (dir.exists(scripts_path)) message("- ", scripts_path)
+            
+            if (!is.null(label)) {
+                message("Note: Template directory ", template_scripts_path, " will be preserved and used as source.")
+            }
 
-            response_overwrite <- readline(prompt = sprintf("Overwrite directories for '%s'? (y/n): ", omic_label_dirname))
+            response_overwrite <- readline(prompt = sprintf("Overwrite ANALYSIS directories for '%s'? (y/n): ", omic_label_dirname))
 
             if (tolower(substr(response_overwrite, 1, 1)) == "y") {
-                logger::log_info("Overwriting existing directories for '{omic_label_dirname}' as requested.")
+                message("Overwriting existing directories for '", omic_label_dirname, "' as requested.")
                 if (dir.exists(results_path)) unlink(results_path, recursive = TRUE, force = TRUE)
                 if (dir.exists(results_summary_path)) unlink(results_summary_path, recursive = TRUE, force = TRUE)
                 if (dir.exists(scripts_path)) unlink(scripts_path, recursive = TRUE, force = TRUE)
@@ -180,15 +187,23 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
             } else {
                 response_reuse <- readline(prompt = sprintf("Use existing directory structure for '%s' this session? (y/n): ", omic_label_dirname))
                 if (tolower(substr(response_reuse, 1, 1)) == "y") {
-                    logger::log_info("Reusing existing directory structure for '{omic_label_dirname}'.")
+                    message("Reusing existing directory structure for '", omic_label_dirname, "'.")
                     reuse_current_omic_dirs <- TRUE
                 } else {
-                    logger::log_info("Setup for '{omic_label_dirname}' cancelled by user. Directory variables will not be set for this omic type.")
+                    message("Setup for '", omic_label_dirname, "' cancelled by user. Directory variables will not be set for this omic type.")
                     process_current_omic <- FALSE
                 }
             }
         } else if (force && existing_dirs_found) {
-            logger::log_info("Force=TRUE: Overwriting existing directories for '{omic_label_dirname}' if they exist.")
+            # Additional safety check for force mode
+            if (is.null(label) && scripts_path == template_scripts_path) {
+                message("ERROR: Force mode cannot overwrite template directory: ", template_scripts_path)
+                stop("Force mode attempted to overwrite template directory without a label.")
+            }
+            message("Force=TRUE: Overwriting existing ANALYSIS directories for '", omic_label_dirname, "'.")
+            if (!is.null(label)) {
+                message("Template directory ", template_scripts_path, " will be preserved.")
+            }
             if (dir.exists(results_path)) unlink(results_path, recursive = TRUE, force = TRUE)
             if (dir.exists(results_summary_path)) unlink(results_summary_path, recursive = TRUE, force = TRUE)
             if (dir.exists(scripts_path)) unlink(scripts_path, recursive = TRUE, force = TRUE)
@@ -209,7 +224,7 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
         # This is different from the previous common_data_dir
         omic_specific_data_dir <- file.path(base_dir, "data", current_omic_type) # Uses current_omic_type, no label
         dir.create(omic_specific_data_dir, recursive = TRUE, showWarnings = FALSE) # Idempotent
-        logger::log_info("Ensured omic-specific data directory exists: {omic_specific_data_dir}")
+        message("Ensured omic-specific data directory exists: ", omic_specific_data_dir)
 
         current_omic_paths_def <- list( # Using a temporary name to avoid confusion with return list
             results_base = results_path,
@@ -227,12 +242,12 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
         # Ensure the timestamped directory for THIS session exists if we are processing this omic.
         # This includes its parent directories like qc_dir and publication_graphs_dir if they are part of the path.
         dir.create(current_omic_paths_def$time_dir, recursive = TRUE, showWarnings = FALSE)
-        logger::log_info("Ensured timestamped directory exists: {current_omic_paths_def$time_dir}")
+        message("Ensured timestamped directory exists: ", current_omic_paths_def$time_dir)
 
 
         # --- Create Directories and Copy Scripts (if not reusing) ---
         if (!reuse_current_omic_dirs) {
-            logger::log_info("Creating directory structure for '{omic_label_dirname}'...")
+            message("Creating directory structure for '", omic_label_dirname, "'...")
 
             # Create results base and defined subdirs
             dir.create(current_omic_paths_def$results_base, recursive = TRUE, showWarnings = FALSE)
@@ -250,33 +265,36 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
             if (dir.exists(current_omic_paths_def$scripts_source_dir)) {
                 dir.create(current_omic_paths_def$scripts_dest_dir, recursive = TRUE, showWarnings = FALSE) # Ensure destination exists
 
+                # Get all files including .Rmd templates but exclude renv files
                 script_files <- list.files(current_omic_paths_def$scripts_source_dir, full.names = TRUE, recursive = TRUE)
-                script_files <- script_files[!grepl("renv/|renv\\.lock|\\.Rmd$", script_files, ignore.case = TRUE)]
+                script_files <- script_files[!grepl("renv/|renv\\.lock$", script_files, ignore.case = TRUE)]
 
                 if (length(script_files) > 0) {
-                    logger::log_info("Copying scripts for {current_omic_type} from {current_omic_paths_def$scripts_source_dir} to {current_omic_paths_def$scripts_dest_dir}...")
+                    message("Copying scripts and templates for ", current_omic_type, " from ", current_omic_paths_def$scripts_source_dir, " to ", current_omic_paths_def$scripts_dest_dir, "...")
                     copied_scripts_ok <- TRUE
                     for (f in script_files) {
                         rel_path <- sub(paste0("^", tools::file_path_as_absolute(current_omic_paths_def$scripts_source_dir), "/?"), "", tools::file_path_as_absolute(f))
                         dest_file <- file.path(current_omic_paths_def$scripts_dest_dir, rel_path)
                         dir.create(dirname(dest_file), recursive = TRUE, showWarnings = FALSE)
                         if (!file.copy(f, dest_file, overwrite = TRUE)) {
-                            logger::log_warn("Failed to copy script: {f} to {dest_file}")
+                            message("WARNING: Failed to copy script: ", f, " to ", dest_file)
                             copied_scripts_ok <- FALSE
                         }
                     }
                     if (!copied_scripts_ok) {
-                        logger::log_warn("Some script files failed to copy for {current_omic_type}.")
+                        message("WARNING: Some script files failed to copy for ", current_omic_type, ".")
+                    } else {
+                        message("Successfully copied ", length(script_files), " files including any report templates for ", current_omic_type, ".")
                     }
                 } else {
-                    logger::log_info("No scripts (excluding Rmd/renv) found in {current_omic_paths_def$scripts_source_dir} to copy.")
+                    message("No scripts found in ", current_omic_paths_def$scripts_source_dir, " to copy for ", current_omic_type, ".")
                 }
             } else {
                 dir.create(current_omic_paths_def$scripts_dest_dir, recursive = TRUE, showWarnings = FALSE) # Still create dest dir
-                logger::log_warn("Source script directory not found for {current_omic_type}: {current_omic_paths_def$scripts_source_dir}. No scripts copied.")
+                message("WARNING: Source script directory not found for ", current_omic_type, ": ", current_omic_paths_def$scripts_source_dir, ". No scripts copied.")
             }
         } else {
-            logger::log_info("Skipping directory creation and script copying for '{omic_label_dirname}' as existing structure is being reused.")
+            message("Skipping directory creation and script copying for '", omic_label_dirname, "' as existing structure is being reused.")
             # Timestamped dir (current_omic_paths_def$time_dir) is already created.
         }
 
@@ -310,7 +328,7 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
         if (current_omic_type == "proteomics") {
             uniprot_annotation_path <- file.path(base_dir, "data", "UniProt")
             dir.create(uniprot_annotation_path, recursive = TRUE, showWarnings = FALSE)
-            logger::log_info("Ensured UniProt annotation directory exists: {uniprot_annotation_path}")
+            message("Ensured UniProt annotation directory exists: ", uniprot_annotation_path)
             omic_specific_paths_list$uniprot_annotation_dir <- uniprot_annotation_path
         }
 
@@ -366,11 +384,11 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
         }
 
         all_created_paths[[omic_label_dirname]] <- omic_specific_paths_list # Use omic_label_dirname as key
-        logger::log_info("Stored paths for {omic_label_dirname}.")
+        message("Stored paths for ", omic_label_dirname, ".")
     } # End loop over omic types
 
     # --- Print Structure ---
-    logger::log_info("--- Directory Structure Setup Complete ---")
+    message("--- Directory Structure Setup Complete ---")
     if (length(all_created_paths) > 0) {
         for (omic_key_name in names(all_created_paths)) {
             cat(sprintf("\nPaths for Omics Label: '%s' (Type: %s)\n", omic_key_name, all_created_paths[[omic_key_name]]$omic_type))
@@ -418,7 +436,7 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
             }
         }
     } else {
-        logger::log_info("No directories were set up for any omic type (e.g., setup cancelled for all).")
+        message("No directories were set up for any omic type (e.g., setup cancelled for all).")
     }
     cat("------------------------------------------\n")
 

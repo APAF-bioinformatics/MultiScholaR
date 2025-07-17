@@ -1863,7 +1863,8 @@ RenderReport <- function(omic_type,
         }
     }
 
-    output_file_path <- file.path(current_paths$results_summary_dir, paste0(output_file_basename, output_ext))
+    # Save report in Study_report subdirectory (created by copyToResultsSummary)
+    output_file_path <- file.path(current_paths$study_report_dir, paste0(output_file_basename, output_ext))
 
     logger::log_info("Attempting to render report:")
     logger::log_info("- Rmd Source (Template): {rmd_input_path}")
