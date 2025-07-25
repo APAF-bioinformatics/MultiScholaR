@@ -450,7 +450,9 @@ plotPcaHelper <- function(data,
     xlab(paste("PC1 (", round(proportion_explained$X[["PC1"]] * 100, 0), "%)", sep = "")) +
     ylab(paste("PC2 (", round(proportion_explained$X[["PC2"]] * 100, 0), "%)", sep = "")) +
     labs(title = title) +
-    theme(legend.title = element_blank())
+    theme(legend.title = element_blank()) +
+    scale_x_continuous(labels = function(x) format(x, scientific = FALSE, digits = 3)) +
+    scale_y_continuous(labels = function(x) format(x, scientific = FALSE, digits = 3))
 
   # Calculate axis limits based on the full range of data
   pc1_range <- range(temp_tbl$PC1, na.rm = TRUE)
