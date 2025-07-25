@@ -119,6 +119,12 @@ setGeneric(name="ruvCancor"
            }
            , signature=c("theObject", "ctrl", "num_components_to_impute", "ruv_grouping_variable"))
 
+setGeneric(name="ruvCancorFast"
+           , def=function( theObject, ctrl= NULL, num_components_to_impute=NULL, ruv_grouping_variable = NULL, simple_imputation_method = "none" ) {
+             standardGeneric("ruvCancorFast")
+           }
+           , signature=c("theObject", "ctrl", "num_components_to_impute", "ruv_grouping_variable"))
+
 setGeneric(name="getRuvIIIReplicateMatrix"
            , def=function( theObject,  ruv_grouping_variable = NULL) {
              standardGeneric("getRuvIIIReplicateMatrix")
