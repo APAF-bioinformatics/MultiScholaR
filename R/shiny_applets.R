@@ -154,6 +154,15 @@ RunApplet <- function(applet_type, omic_type, experiment_label, project_dirs_obj
               assign("contrasts_tbl", results$contrasts_tbl, envir = parent.frame())
             }
 
+            # Also assign results to global environment (for R Markdown compatibility)
+            assign("design_matrix", results$design_matrix, envir = .GlobalEnv)
+            assign("data_cln", results$data_cln, envir = .GlobalEnv)
+            assign("config_list", results$config_list, envir = .GlobalEnv)
+            if (!is.null(results$contrasts_tbl)) {
+              assign("contrasts_tbl", results$contrasts_tbl, envir = .GlobalEnv)
+            }
+            log_info("Results assigned to both parent frame and global environment.")
+
             # Write files to disk
             tryCatch({
               design_matrix_path <- file.path(source_dir, "design_matrix.tab")
