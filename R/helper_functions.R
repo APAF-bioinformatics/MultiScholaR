@@ -2576,6 +2576,196 @@ createStudyParametersFile <- function(workflow_name,
     })
 }
 
+# S4 CLASS DEFINITION FOR RMD WORKFLOW
+#' @import methods
+setClass("WorkflowArgs",
+    slots = c(
+        workflow_name = "character",
+        timestamp = "character",
+        args = "list",
+        description = "character",
+        git_info = "list",
+        organism_info = "list"
+    )
+)
+
+#' @title Format Configuration List
+#' @param config_list List of configuration parameters
+#' @param indent Number of spaces for indentation
+#' @export
+formatConfigList <- function(config_list, indent = 0) {
+    output <- character()
+
+    # Exclude internal_workflow_source_dir from printing
+    names_to_process <- names(config_list)
+    names_to_process <- names_to_process[names_to_process != "internal_workflow_source_dir"]
+
+    for (name in names_to_process) {
+        value <- config_list[[name]]
+        # Skip core_utilisation and complex objects from display
+        if (name == "core_utilisation" ||
+            any(class(value) %in% c("process", "R6", "multidplyr_cluster", "cluster", "SOCKcluster"))) {
+            next
+        }
+
+        # Format the name
+        name_formatted <- gsub("\\.", " ", name)
+        name_formatted <- gsub("_", " ", name_formatted)
+        name_formatted <- tools::toTitleCase(name_formatted)
+
+        # Handle different value types
+        if (is.list(value)) {
+            if (length(value) > 0 && !is.null(names(value))) {
+                output <- c(output,
+                    paste0(paste(rep(" ", indent), collapse = ""),
+                          name_formatted, ":"))
+                output <- c(output,
+                    formatConfigList(value, indent + 2))
+            } else if (length(value) > 0) {
+                 output <- c(output,
+                    paste0(paste(rep(" ", indent), collapse = ""),
+                          name_formatted, ":"))
+                 for(item_idx in seq_along(value)){
+                     item_val <- value[[item_idx]]
+                     if(is.atomic(item_val) && length(item_val) == 1){
+                        output <- c(output, paste0(paste(rep(" ", indent + 2), collapse=""), "- ", as.character(item_val)))
+                     } else {
+                        output <- c(output, paste0(paste(rep(" ", indent + 2), collapse=""), "- [Complex List Element]"))
+                     }
+                 }
+            } else {
+                 output <- c(output,
+                    paste0(paste(rep(" ", indent), collapse = ""),
+                          name_formatted, ": [Empty List]"))
+            }
+        } else {
+            # Truncate long character vectors for display
+            if (is.character(value) && length(value) > 5) {
+                value_display <- paste(c(utils::head(value, 5), "..."), collapse = ", ")
+            } else if (is.character(value) && length(value) > 1) {
+                value_display <- paste(value, collapse = ", ")
+            } else {
+                value_display <- as.character(value)
+                 if (length(value_display) == 0) value_display <- "[Empty/NULL]"
+            }
+            output <- c(output,
+                paste0(paste(rep(" ", indent), collapse = ""),
+                      name_formatted, ": ", value_display))
+        }
+    }
+    return(output)
+}
+
+setMethod("show",
+    "WorkflowArgs",
+    function(object) {
+        # Basic info
+        header <- c(
+            "Study Parameters",
+            "================",
+            "",
+            "Basic Information:",
+            "-----------------",
+            paste("Workflow Name:", object@workflow_name),
+            paste("Description:", if(nzchar(object@description)) object@description else "N/A"),
+            paste("Timestamp:", object@timestamp),
+            ""
+        )
+        
+        git_info_vec <- character()
+        if (!is.null(object@git_info) && is.list(object@git_info)) {
+             gi <- object@git_info
+             git_info_vec <- c(
+                 paste("Repository:",    ifelse(!is.null(gi$repo) && !is.na(gi$repo), gi$repo, "N/A")),
+                 paste("Branch:",         ifelse(!is.null(gi$branch) && !is.na(gi$branch), gi$branch, "N/A")),
+                 paste("Commit:",         ifelse(!is.null(gi$commit_sha) && !is.na(gi$commit_sha), substr(gi$commit_sha,1,7), "N/A")),
+                 paste("Git Timestamp:", ifelse(!is.null(gi$timestamp) && !is.na(gi$timestamp), gi$timestamp, "N/A"))
+             )
+        } else {
+            git_info_vec <- c("Git Information: N/A")
+        }
+        git_section <- c("Git Information:", "---------------", git_info_vec, "")
+        
+        organism_info_vec <- character()
+        if (!is.null(object@organism_info) && is.list(object@organism_info)) {
+            oi <- object@organism_info
+            if (!is.null(oi$organism_name) && !is.na(oi$organism_name) && nzchar(oi$organism_name)) {
+                organism_info_vec <- c(organism_info_vec, paste("Organism Name:", oi$organism_name))
+            }
+            if (!is.null(oi$taxon_id) && !is.na(oi$taxon_id) && nzchar(oi$taxon_id)) {
+                organism_info_vec <- c(organism_info_vec, paste("Taxon ID:", oi$taxon_id))
+            }
+        }
+        
+        organism_section <- character()
+        if (length(organism_info_vec) > 0) {
+            organism_section <- c(
+                "Organism Information:",
+                "---------------------",
+                organism_info_vec,
+                ""
+            )
+        }
+
+        config_header <- c(
+            "Configuration Parameters (from @args slot):",
+            "-----------------------------------------"
+        )
+        
+        args_to_print <- object@args
+        # internal_workflow_source_dir is already excluded by formatConfigList
+
+        params <- formatConfigList(args_to_print) 
+
+        # Add contrasts information if it exists and is a data.frame/tibble
+        contrasts_section <- character()
+        # Check if contrasts_tbl exists and is not NULL and has rows
+        if (!is.null(object@args$contrasts_tbl) && 
+            (is.data.frame(object@args$contrasts_tbl) || tibble::is_tibble(object@args$contrasts_tbl)) && 
+            nrow(object@args$contrasts_tbl) > 0) {
+            
+            contrasts_header <- c(
+                "",
+                "Contrasts (from @args$contrasts_tbl):",
+                "------------------------------------"
+            )
+            # Ensure the 'contrasts' column exists before trying to apply
+            if ("contrasts" %in% colnames(object@args$contrasts_tbl)) {
+                contrasts_info <- apply(object@args$contrasts_tbl, 1, function(row) {
+                    paste("  ", row["contrasts"])
+                })
+                contrasts_section <- c(contrasts_header, contrasts_info)
+            } else {
+                 contrasts_section <- c(contrasts_header, "  [Column 'contrasts' not found in contrasts_tbl]")
+            }
+        }
+
+        output <- c(header, git_section, organism_section, config_header, params, contrasts_section)
+        cat(paste(output, collapse = "\n"), "\n")
+
+        # Save to file if internal_workflow_source_dir is defined in args and is valid
+        workflow_source_dir_to_use <- object@args$internal_workflow_source_dir
+
+        if (!is.null(workflow_source_dir_to_use) && 
+            is.character(workflow_source_dir_to_use) && 
+            length(workflow_source_dir_to_use) == 1 && 
+            nzchar(workflow_source_dir_to_use) && 
+            dir.exists(workflow_source_dir_to_use)) {
+            
+            output_file <- file.path(workflow_source_dir_to_use, "study_parameters.txt")
+            tryCatch({
+                writeLines(output, output_file)
+                cat("\nParameters saved to:", output_file, "\n")
+            }, error = function(e) {
+                warning(paste("Failed to save study parameters to", output_file, ":", e$message), immediate. = TRUE)
+            })
+        } else {
+            cat("\nWarning: `internal_workflow_source_dir` not found, invalid, or directory does not exist in WorkflowArgs @args. Parameters not saved to file.\n")
+            if(!is.null(workflow_source_dir_to_use)) cat("Attempted path:", workflow_source_dir_to_use, "\n")
+        }
+    }
+)
+
 # Updated function to extract parameters from S4 @args slot
 #' @export
 #' @param workflow_name Character string, name of the workflow
@@ -2592,6 +2782,21 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
                                         final_s4_object = NULL,
                                         contrasts_tbl = NULL,
                                         workflow_data = NULL) {
+    
+    # WORKFLOW DETECTION: If workflow_data is NULL, use original RMD logic
+    if (is.null(workflow_data)) {
+        cat("WORKFLOW ARGS: Detected RMD workflow (workflow_data is NULL), using original logic\n")
+        return(.createWorkflowArgsFromConfig_RMD(
+            workflow_name = workflow_name,
+            description = description,
+            organism_name = organism_name,
+            taxon_id = taxon_id,
+            source_dir_path = source_dir_path
+        ))
+    }
+    
+    # SHINY WORKFLOW: Continue with existing Shiny logic (unchanged)
+    cat("WORKFLOW ARGS: Detected Shiny workflow (workflow_data provided), using Shiny logic\n")
     
     # Validate required inputs
     if (missing(workflow_name) || !is.character(workflow_name) || length(workflow_name) != 1) {
@@ -3115,4 +3320,1118 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
          cat(sprintf("WORKFLOW ARGS: Error writing file: %s\n", e$message))
          stop("Failed to write study parameters file: ", e$message)
      })
+}
+
+# ORIGINAL RMD WORKFLOW FUNCTION (SEPARATE TO PRESERVE SHINY LOGIC)
+.createWorkflowArgsFromConfig_RMD <- function(workflow_name, description = "", 
+                                             organism_name = NULL, taxon_id = NULL,
+                                             source_dir_path = NULL) {
+    
+    cat("WORKFLOW ARGS: Using original RMD logic to create WorkflowArgs S4 object\n")
+    
+    # Get git information (original logic with token checking)
+    git_info <- tryCatch({
+        if (requireNamespace("gh", quietly = TRUE)) {
+            # Check if a token is available to avoid interactive prompts if not in an interactive session
+            if (nzchar(gh::gh_token())) {
+                 branch_info <- gh::gh("/repos/APAF-BIOINFORMATICS/MultiScholaR/branches/main")
+                 list(
+                    commit_sha = branch_info$commit$sha,
+                    branch = "main",
+                    repo = "MultiScholaR", 
+                    timestamp = branch_info$commit$commit$author$date
+                )
+            } else {
+                warning("GitHub token not found. Skipping Git information retrieval.", immediate. = TRUE)
+                list(commit_sha = NA_character_, branch = NA_character_, repo = NA_character_, timestamp = NA_character_)
+            }
+        } else {
+            warning("Package 'gh' not available. Skipping Git information retrieval.", immediate. = TRUE)
+            list(commit_sha = NA_character_, branch = NA_character_, repo = NA_character_, timestamp = NA_character_)
+        }
+    }, error = function(e) {
+        warning(paste("Could not retrieve Git information:", e$message), immediate. = TRUE)
+        list(commit_sha = NA_character_, branch = NA_character_, repo = NA_character_, timestamp = NA_character_)
+    })
+    
+    # Get organism information from session if not explicitly provided
+    if (is.null(organism_name) && exists("organism_name", envir = .GlobalEnv)) {
+        organism_name <- get("organism_name", envir = .GlobalEnv)
+    }
+    
+    if (is.null(taxon_id) && exists("taxon_id", envir = .GlobalEnv)) {
+        taxon_id <- get("taxon_id", envir = .GlobalEnv)
+    }
+    
+    # Create organism info list
+    organism_info <- list(
+        organism_name = if(is.null(organism_name) || !is.character(organism_name)) NA_character_ else organism_name,
+        taxon_id = if(is.null(taxon_id) || !(is.character(taxon_id) || is.numeric(taxon_id))) NA_character_ else as.character(taxon_id)
+    )
+
+    # Ensure config_list is available (it's used directly in the new() call)
+    config_list_to_use <- list() # Default to empty list
+    if (exists("config_list", envir = parent.frame()) && is.list(get("config_list", envir = parent.frame()))) {
+        config_list_to_use <- get("config_list", envir = parent.frame())
+    } else if (exists("config_list", envir = .GlobalEnv) && is.list(get("config_list", envir = .GlobalEnv))) {
+        config_list_to_use <- get("config_list", envir = .GlobalEnv)
+    } else {
+        warning("'config_list' not found as a list in parent frame or global environment. WorkflowArgs @args slot will be empty or use prototype.", immediate. = TRUE)
+    }
+
+    new_workflow_args <- new("WorkflowArgs",
+        workflow_name = workflow_name,
+        timestamp = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
+        args = config_list_to_use, 
+        description = description,
+        git_info = git_info,
+        organism_info = organism_info
+    )
+    
+    # Store source_dir_path within the 'args' slot using a specific name
+    if (!is.null(source_dir_path) && is.character(source_dir_path) && length(source_dir_path) == 1 && nzchar(source_dir_path)) {
+        new_workflow_args@args$internal_workflow_source_dir <- tools::file_path_as_absolute(source_dir_path)
+    } else {
+        new_workflow_args@args$internal_workflow_source_dir <- NULL 
+        warning("`source_dir_path` was not provided or invalid for createWorkflowArgsFromConfig. Study parameters might not be saved by show() method.", immediate. = TRUE)
+    }
+    
+    cat("WORKFLOW ARGS: Created WorkflowArgs S4 object for RMD workflow\n")
+    return(new_workflow_args)
+}
+
+
+createWorkflowArgsFromConfig <- function(workflow_name, description = "",
+                                        organism_name = NULL, taxon_id = NULL,
+                                        source_dir_path = NULL, 
+                                        final_s4_object = NULL,
+                                        contrasts_tbl = NULL,
+                                        workflow_data = NULL) {
+    
+    # WORKFLOW DETECTION: If workflow_data is NULL, use original RMD logic
+    if (is.null(workflow_data)) {
+        cat("WORKFLOW ARGS: Detected RMD workflow (workflow_data is NULL), using original logic\n")
+        return(.createWorkflowArgsFromConfig_RMD(
+            workflow_name = workflow_name,
+            description = description,
+            organism_name = organism_name,
+            taxon_id = taxon_id,
+            source_dir_path = source_dir_path
+        ))
+    }
+    
+    # SHINY WORKFLOW: Continue with existing Shiny logic (unchanged)
+    cat("WORKFLOW ARGS: Detected Shiny workflow (workflow_data provided), using Shiny logic\n")
+    
+    # Validate required inputs
+    if (missing(workflow_name) || !is.character(workflow_name) || length(workflow_name) != 1) {
+        stop("workflow_name must be a single character string")
+    }
+    
+    if (is.null(source_dir_path) || !is.character(source_dir_path) || length(source_dir_path) != 1) {
+        stop("source_dir_path must be a single character string")
+    }
+    
+    if (!dir.exists(source_dir_path)) {
+        stop("source_dir_path directory does not exist: ", source_dir_path)
+    }
+    
+    cat("WORKFLOW ARGS: Starting parameter extraction\n")
+    
+    # Extract parameters from S4 object @args if provided
+    s4_params <- list()
+         # Check if final_s4_object has @args slot
+     s4_has_args <- tryCatch({
+       !is.null(final_s4_object) && isS4(final_s4_object) && !is.null(final_s4_object@args)
+     }, error = function(e) {
+       FALSE
+     })
+     
+     if (s4_has_args) {
+        cat("WORKFLOW ARGS: Extracting parameters from S4 @args slot\n")
+        
+        tryCatch({
+            s4_params <- final_s4_object@args
+            cat(sprintf("WORKFLOW ARGS: Found %d function groups in S4 @args\n", length(s4_params)))
+            
+            # Log the function groups for debugging
+            for (func_name in names(s4_params)) {
+                param_count <- length(s4_params[[func_name]])
+                cat(sprintf("WORKFLOW ARGS: Function '%s' has %d parameters\n", func_name, param_count))
+            }
+        }, error = function(e) {
+            cat(sprintf("WORKFLOW ARGS: Error extracting S4 params: %s\n", e$message))
+            s4_params <- list()
+        })
+    } else {
+        cat("WORKFLOW ARGS: No S4 object provided or S4 @args is NULL\n")
+    }
+    
+    # Get fallback config_list from global environment
+    config_list <- if (exists("config_list", envir = .GlobalEnv)) {
+        get("config_list", envir = .GlobalEnv)
+    } else {
+        list()
+    }
+    
+         cat(sprintf("WORKFLOW ARGS: Global config_list has %d sections\n", length(config_list)))
+     
+     # Extract RUV optimization results from workflow_data if available
+     ruv_optimization_result <- NULL
+     if (!is.null(workflow_data)) {
+         cat("WORKFLOW ARGS: Checking for RUV optimization results in workflow_data\n")
+         
+         # Check multiple possible locations for RUV optimization results
+         if (!is.null(workflow_data$ruv_optimization_result)) {
+             ruv_optimization_result <- workflow_data$ruv_optimization_result
+             cat("WORKFLOW ARGS: Found RUV optimization results in workflow_data$ruv_optimization_result\n")
+         } else if (!is.null(workflow_data$state_manager)) {
+             # Try to get RUV results from state manager config
+             tryCatch({
+                 current_state_config <- workflow_data$state_manager$getStateConfig(workflow_data$state_manager$current_state)
+                 if (!is.null(current_state_config$ruv_optimization_result)) {
+                     ruv_optimization_result <- current_state_config$ruv_optimization_result
+                     cat("WORKFLOW ARGS: Found RUV optimization results in state manager config\n")
+                 }
+             }, error = function(e) {
+                 cat(sprintf("WORKFLOW ARGS: Could not extract RUV results from state manager: %s\n", e$message))
+             })
+         }
+         
+         # Also check if there's a saved RUV file
+         if (is.null(ruv_optimization_result) && !is.null(source_dir_path)) {
+             ruv_file <- file.path(source_dir_path, "ruv_optimization_results.RDS")
+             if (file.exists(ruv_file)) {
+                 tryCatch({
+                     ruv_optimization_result <- readRDS(ruv_file)
+                     cat(sprintf("WORKFLOW ARGS: Loaded RUV optimization results from file: %s\n", ruv_file))
+                 }, error = function(e) {
+                     cat(sprintf("WORKFLOW ARGS: Could not load RUV file: %s\n", e$message))
+                 })
+             }
+         }
+     }
+     
+     # Merge S4 parameters with config_list (S4 takes precedence)
+     merged_config <- config_list
+     
+     if (length(s4_params) > 0) {
+         cat("WORKFLOW ARGS: Merging S4 parameters with config_list\n")
+         
+         # S4 parameters override config_list parameters
+         for (func_name in names(s4_params)) {
+             if (is.list(s4_params[[func_name]]) && length(s4_params[[func_name]]) > 0) {
+                 merged_config[[func_name]] <- s4_params[[func_name]]
+                 cat(sprintf("WORKFLOW ARGS: Updated '%s' section with %d S4 parameters\n", 
+                            func_name, length(s4_params[[func_name]])))
+             }
+         }
+     }
+    
+    # Get git information
+    git_info <- tryCatch({
+        if (requireNamespace("gh", quietly = TRUE)) {
+            # Make the API call (works for public repos without token)
+            branch_info <- gh::gh("/repos/APAF-BIOINFORMATICS/MultiScholaR/branches/main")
+            list(
+                commit_sha = branch_info$commit$sha,
+                branch = "main",
+                repo = "MultiScholaR", 
+                timestamp = branch_info$commit$commit$author$date
+            )
+        } else {
+            list(commit_sha = NA_character_, branch = NA_character_, repo = NA_character_, timestamp = NA_character_)
+        }
+    }, error = function(e) {
+        message("Error fetching GitHub info: ", e$message)
+        list(commit_sha = NA_character_, branch = NA_character_, repo = NA_character_, timestamp = NA_character_)
+    })
+    
+    # Get organism information from session if not provided
+    if (is.null(organism_name) && exists("organism_name", envir = .GlobalEnv)) {
+        organism_name <- get("organism_name", envir = .GlobalEnv)
+    }
+    
+    if (is.null(taxon_id) && exists("taxon_id", envir = .GlobalEnv)) {
+        taxon_id <- get("taxon_id", envir = .GlobalEnv)
+    }
+    
+    # Get contrasts_tbl if not provided
+    if (is.null(contrasts_tbl)) {
+        if (exists("contrasts_tbl", envir = parent.frame())) {
+            contrasts_tbl <- get("contrasts_tbl", envir = parent.frame())
+        } else if (exists("contrasts_tbl", envir = .GlobalEnv)) {
+            contrasts_tbl <- get("contrasts_tbl", envir = .GlobalEnv)
+        }
+    }
+    
+    # Build the output content
+    output_lines <- c(
+        "Study Parameters",
+        "================",
+        "",
+        "Basic Information:",
+        "-----------------",
+        paste("Workflow Name:", workflow_name),
+        paste("Description:", if(nzchar(description)) description else "N/A"),
+        paste("Timestamp:", format(Sys.time(), "%Y-%m-%d %H:%M:%S")),
+        ""
+    )
+    
+    # Add git information
+    if (!is.null(git_info) && is.list(git_info)) {
+        git_lines <- c(
+            "Git Information:",
+            "---------------",
+            paste("Repository:", ifelse(!is.null(git_info$repo) && !is.na(git_info$repo), git_info$repo, "N/A")),
+            paste("Branch:", ifelse(!is.null(git_info$branch) && !is.na(git_info$branch), git_info$branch, "N/A")),
+            paste("Commit:", ifelse(!is.null(git_info$commit_sha) && !is.na(git_info$commit_sha), substr(git_info$commit_sha, 1, 7), "N/A")),
+            paste("Git Timestamp:", ifelse(!is.null(git_info$timestamp) && !is.na(git_info$timestamp), git_info$timestamp, "N/A")),
+            ""
+        )
+        output_lines <- c(output_lines, git_lines)
+    }
+    
+         # Add organism information
+     if (!is.null(organism_name) && !is.na(organism_name) && nzchar(organism_name)) {
+         organism_lines <- c(
+             "Organism Information:",
+             "---------------------",
+             paste("Organism Name:", organism_name)
+         )
+         if (!is.null(taxon_id) && !is.na(taxon_id) && nzchar(taxon_id)) {
+             organism_lines <- c(organism_lines, paste("Taxon ID:", taxon_id))
+         }
+         organism_lines <- c(organism_lines, "")
+         output_lines <- c(output_lines, organism_lines)
+     }
+     
+     # Add RUV optimization results if available
+     if (!is.null(ruv_optimization_result) && is.list(ruv_optimization_result)) {
+         cat("WORKFLOW ARGS: Formatting RUV optimization results\n")
+         
+         ruv_lines <- c(
+             "Automatic RUV Optimization Results:",
+             "-----------------------------------"
+         )
+         
+         # Extract and format RUV optimization values
+         tryCatch({
+             best_percentage <- if (!is.null(ruv_optimization_result$best_percentage)) {
+                 sprintf("%.1f%%", ruv_optimization_result$best_percentage)
+             } else { "N/A" }
+             
+             best_k <- if (!is.null(ruv_optimization_result$best_k)) {
+                 as.character(ruv_optimization_result$best_k)
+             } else { "N/A" }
+             
+             separation_score <- if (!is.null(ruv_optimization_result$best_separation_score)) {
+                 sprintf("%.4f", ruv_optimization_result$best_separation_score)
+             } else { "N/A" }
+             
+             composite_score <- if (!is.null(ruv_optimization_result$best_composite_score)) {
+                 sprintf("%.4f", ruv_optimization_result$best_composite_score)
+             } else { "N/A" }
+             
+             control_genes_count <- if (!is.null(ruv_optimization_result$best_control_genes_index)) {
+                 as.character(sum(ruv_optimization_result$best_control_genes_index, na.rm = TRUE))
+             } else { "N/A" }
+             
+             separation_metric <- if (!is.null(ruv_optimization_result$separation_metric_used)) {
+                 as.character(ruv_optimization_result$separation_metric_used)
+             } else { "N/A" }
+             
+             k_penalty_weight <- if (!is.null(ruv_optimization_result$k_penalty_weight)) {
+                 sprintf("%.1f", ruv_optimization_result$k_penalty_weight)
+             } else { "N/A" }
+             
+             adaptive_penalty <- if (!is.null(ruv_optimization_result$adaptive_k_penalty_used)) {
+                 ifelse(ruv_optimization_result$adaptive_k_penalty_used, "TRUE", "FALSE")
+             } else { "N/A" }
+             
+             sample_size <- if (!is.null(ruv_optimization_result$sample_size)) {
+                 as.character(ruv_optimization_result$sample_size)
+             } else { "N/A" }
+             
+             # Also try to get RUV grouping variable from S4 parameters
+             ruv_grouping_variable <- "N/A"
+             if (!is.null(s4_params$ruvIII_C_Varying$ruv_grouping_variable)) {
+                 ruv_grouping_variable <- s4_params$ruvIII_C_Varying$ruv_grouping_variable
+             } else if (!is.null(s4_params$getNegCtrlProtAnova$ruv_grouping_variable)) {
+                 ruv_grouping_variable <- s4_params$getNegCtrlProtAnova$ruv_grouping_variable
+             }
+             
+             ruv_lines <- c(ruv_lines,
+                 paste("• Best percentage:", best_percentage),
+                 paste("• Best k value:", best_k),
+                 paste("• Separation score:", separation_score),
+                 paste("• Composite score:", composite_score),
+                 paste("• Control genes:", control_genes_count),
+                 paste("• RUV grouping variable:", ruv_grouping_variable),
+                 paste("• Separation metric:", separation_metric),
+                 paste("• K penalty weight:", k_penalty_weight),
+                 paste("• Adaptive penalty:", adaptive_penalty),
+                 paste("• Sample size:", sample_size),
+                 ""
+             )
+             
+             cat("WORKFLOW ARGS: Successfully formatted RUV optimization results\n")
+             
+         }, error = function(e) {
+             cat(sprintf("WORKFLOW ARGS: Error formatting RUV results: %s\n", e$message))
+             ruv_lines <- c(ruv_lines,
+                 paste("• [Error formatting RUV optimization results:", e$message, "]"),
+                 ""
+             )
+         })
+         
+         output_lines <- c(output_lines, ruv_lines)
+     } else {
+         cat("WORKFLOW ARGS: No RUV optimization results available\n")
+     }
+     
+     # Add configuration parameters (now includes S4 parameters)
+     config_lines <- c(
+         "Workflow Parameters:",
+         "-------------------",
+         ""
+     )
+    
+    # Clean the merged config (remove problematic objects)
+    clean_config <- merged_config
+    # Remove the internal source dir if it exists
+    if (!is.null(clean_config$internal_workflow_source_dir)) {
+        clean_config$internal_workflow_source_dir <- NULL
+    }
+    
+    # Add special section for S4-derived parameters  
+    if (length(s4_params) > 0) {
+        cat("WORKFLOW ARGS: About to format S4 parameters using functional approach\n")
+        
+        config_lines <- c(config_lines, 
+                         "Parameters from Final S4 Object:",
+                         "--------------------------------")
+        
+        # SAFE parameter formatting function
+        formatParameterValue <- function(param_value) {
+            tryCatch({
+                if (is.null(param_value)) {
+                    "NULL"
+                } else if (is.logical(param_value)) {
+                    if (length(param_value) == 1) {
+                        ifelse(param_value, "TRUE", "FALSE")
+                    } else if (length(param_value) > 50) {
+                        # Handle large logical vectors (like control genes index)
+                        true_count <- sum(param_value, na.rm = TRUE)
+                        total_count <- length(param_value)
+                        sprintf("logical vector [%d TRUE, %d FALSE out of %d total]", 
+                               true_count, total_count - true_count, total_count)
+                    } else {
+                        # Show first few values for smaller vectors
+                        preview <- ifelse(utils::head(param_value, 5), "TRUE", "FALSE")
+                        if (length(param_value) > 5) {
+                            paste0("c(", paste(preview, collapse = ", "), ", ...)")
+                        } else {
+                            paste0("c(", paste(preview, collapse = ", "), ")")
+                        }
+                    }
+                } else if (is.numeric(param_value)) {
+                    if (length(param_value) == 1) {
+                        as.character(param_value)
+                    } else if (length(param_value) > 5) {
+                        sprintf("numeric vector [%d values: %s, ...]", 
+                               length(param_value), 
+                               paste(as.character(utils::head(param_value, 3)), collapse = ", "))
+                    } else {
+                        paste0("c(", paste(as.character(param_value), collapse = ", "), ")")
+                    }
+                } else if (is.character(param_value)) {
+                    if (length(param_value) == 1) {
+                        param_value
+                    } else if (length(param_value) > 5) {
+                        sprintf("character vector [%d values: %s, ...]", 
+                               length(param_value), 
+                               paste(shQuote(utils::head(param_value, 3)), collapse = ", "))
+                    } else {
+                        paste0("c(", paste(shQuote(param_value), collapse = ", "), ")")
+                    }
+                } else {
+                    # SAFE fallback - no dput() which was causing the hang
+                    paste0("[", class(param_value)[1], " object]")
+                }
+            }, error = function(e) {
+                "[SERIALIZATION ERROR]"
+            })
+        }
+        
+         s4_sections <- if (requireNamespace("purrr", quietly = TRUE)) {
+             purrr::imap(s4_params, function(func_params, func_name) {
+                 tryCatch({
+                     if (!is.list(func_params) || length(func_params) == 0) return("")
+                     
+                     cat(sprintf("WORKFLOW ARGS: Processing S4 function group '%s'\n", func_name))
+                     header <- sprintf("[%s]", func_name)
+                     
+                     # Use map instead of imap_chr for safer handling
+                     param_lines <- purrr::imap(func_params, function(param_value, param_name) {
+                         tryCatch({
+                             param_str <- formatParameterValue(param_value)
+                             sprintf("  %s = %s", param_name, param_str)
+                         }, error = function(e) {
+                             cat(sprintf("WORKFLOW ARGS: Error formatting parameter '%s' in '%s': %s\n", param_name, func_name, e$message))
+                             sprintf("  %s = [ERROR: %s]", param_name, e$message)
+                         })
+                     })
+                     
+                     # Convert list to character vector safely
+                     param_lines_char <- unlist(param_lines)
+                     paste(c(header, param_lines_char, ""), collapse = "\n")
+                 }, error = function(e) {
+                     cat(sprintf("WORKFLOW ARGS: Error processing S4 function group '%s': %s\n", func_name, e$message))
+                     sprintf("[%s]\n  [ERROR: %s]\n", func_name, e$message)
+                 })
+             })
+         } else {
+             # Fallback using base R if purrr not available
+             lapply(names(s4_params), function(func_name) {
+                 func_params <- s4_params[[func_name]]
+                 if (!is.list(func_params) || length(func_params) == 0) return("")
+                 
+                 header <- sprintf("[%s]", func_name)
+                 
+                 param_lines <- lapply(names(func_params), function(param_name) {
+                     param_value <- func_params[[param_name]]
+                     param_str <- formatParameterValue(param_value)
+                     sprintf("  %s = %s", param_name, param_str)
+                 })
+                 
+                 paste(c(header, unlist(param_lines), ""), collapse = "\n")
+             })
+         }
+        
+        # Add all S4 sections at once - safely handle list from purrr::imap()
+        s4_sections_char <- tryCatch({
+            if (is.list(s4_sections)) {
+                # Convert list to character vector
+                unlist(s4_sections)
+            } else {
+                s4_sections
+            }
+        }, error = function(e) {
+            cat(sprintf("WORKFLOW ARGS: Error converting S4 sections: %s\n", e$message))
+            "[ERROR: Could not process S4 sections]"
+        })
+        
+        config_lines <- c(config_lines, unlist(strsplit(paste(s4_sections_char, collapse = ""), "\n")))
+        
+        cat("WORKFLOW ARGS: S4 parameters formatted successfully\n")
+    }
+    
+    # Add UI parameters from workflow_data if available (DE and Enrichment UI inputs)
+    if (!is.null(workflow_data)) {
+        cat("WORKFLOW ARGS: Checking for UI parameters in workflow_data\n")
+        ui_sections <- c()
+        
+        # Check for DE UI parameters
+        if (!is.null(workflow_data$de_ui_params)) {
+            cat("WORKFLOW ARGS: Found DE UI parameters in workflow_data\n")
+            de_ui_lines <- c(
+                "[Differential Expression UI Parameters]",
+                sprintf("  q_value_threshold = %s", ifelse(!is.null(workflow_data$de_ui_params$q_value_threshold), workflow_data$de_ui_params$q_value_threshold, "N/A")),
+                sprintf("  log_fold_change_cutoff = %s", ifelse(!is.null(workflow_data$de_ui_params$log_fold_change_cutoff), workflow_data$de_ui_params$log_fold_change_cutoff, "N/A")),
+                sprintf("  treat_enabled = %s", ifelse(!is.null(workflow_data$de_ui_params$treat_enabled), workflow_data$de_ui_params$treat_enabled, "N/A")),
+                ""
+            )
+            ui_sections <- c(ui_sections, de_ui_lines)
+        }
+        
+        # Check for Enrichment UI parameters  
+        if (!is.null(workflow_data$enrichment_ui_params)) {
+            cat("WORKFLOW ARGS: Found Enrichment UI parameters in workflow_data\n")
+            enrichment_ui_lines <- c(
+                "[Enrichment Analysis UI Parameters]",
+                sprintf("  up_log2fc_cutoff = %s", ifelse(!is.null(workflow_data$enrichment_ui_params$up_log2fc_cutoff), workflow_data$enrichment_ui_params$up_log2fc_cutoff, "N/A")),
+                sprintf("  down_log2fc_cutoff = %s", ifelse(!is.null(workflow_data$enrichment_ui_params$down_log2fc_cutoff), workflow_data$enrichment_ui_params$down_log2fc_cutoff, "N/A")),
+                sprintf("  q_value_cutoff = %s", ifelse(!is.null(workflow_data$enrichment_ui_params$q_value_cutoff), workflow_data$enrichment_ui_params$q_value_cutoff, "N/A")),
+                sprintf("  organism_selected = %s", ifelse(!is.null(workflow_data$enrichment_ui_params$organism_selected), workflow_data$enrichment_ui_params$organism_selected, "N/A")),
+                sprintf("  database_source = %s", ifelse(!is.null(workflow_data$enrichment_ui_params$database_source), workflow_data$enrichment_ui_params$database_source, "N/A")),
+                ""
+            )
+            ui_sections <- c(ui_sections, enrichment_ui_lines)
+        }
+        
+        # Add UI sections to config_lines if any were found
+        if (length(ui_sections) > 0) {
+            config_lines <- c(config_lines, 
+                             "User Interface Parameters:",
+                             "-------------------------", 
+                             ui_sections)
+            cat("WORKFLOW ARGS: Added UI parameters to output\n")
+        } else {
+            cat("WORKFLOW ARGS: No UI parameters found in workflow_data\n")
+        }
+    }
+    
+         # Format the remaining config list
+     cat("WORKFLOW ARGS: About to format remaining config list\n")
+     if (length(clean_config) > 0) {
+         config_lines <- c(config_lines, 
+                          "Additional Configuration Parameters:",
+                          "-----------------------------------")
+         
+         cat("WORKFLOW ARGS: Calling formatConfigList...\n")
+         tryCatch({
+           # Check if formatConfigList exists before calling
+           if (exists("formatConfigList", mode = "function")) {
+               config_params <- formatConfigList(clean_config)
+               config_lines <- c(config_lines, config_params)
+               cat("WORKFLOW ARGS: formatConfigList completed successfully\n")
+           } else {
+               cat("WORKFLOW ARGS: formatConfigList function not found, using basic formatting\n")
+               # Basic fallback formatting without for loops
+               basic_config <- unlist(clean_config, recursive = TRUE)
+               config_lines <- c(config_lines, names(basic_config), " = ", as.character(basic_config))
+           }
+         }, error = function(e) {
+           cat(sprintf("WORKFLOW ARGS: formatConfigList failed: %s\n", e$message))
+           config_lines <- c(config_lines, paste("Error formatting config:", e$message))
+         })
+     } else {
+         config_lines <- c(config_lines, "No additional configuration parameters available")
+     }
+    
+         cat("WORKFLOW ARGS: Adding config lines to output\n")
+     output_lines <- c(output_lines, config_lines)
+     
+     # Add contrasts information
+     cat("WORKFLOW ARGS: Processing contrasts information\n")
+     if (!is.null(contrasts_tbl) && (is.data.frame(contrasts_tbl) || tibble::is_tibble(contrasts_tbl)) && nrow(contrasts_tbl) > 0) {
+         cat("WORKFLOW ARGS: Adding contrasts to output\n")
+         contrasts_lines <- c(
+             "",
+             "Contrasts:",
+             "----------"
+         )
+         
+         if ("contrasts" %in% colnames(contrasts_tbl)) {
+             contrasts_info <- tryCatch({
+                 contrasts_col <- contrasts_tbl[["contrasts"]]
+                 paste("  ", as.character(contrasts_col))
+             }, error = function(e) {
+                 paste("  [Error extracting contrasts:", e$message, "]")
+             })
+             contrasts_lines <- c(contrasts_lines, contrasts_info)
+         } else {
+             contrasts_lines <- c(contrasts_lines, "  [Column 'contrasts' not found in contrasts_tbl]")
+         }
+         
+         output_lines <- c(output_lines, contrasts_lines)
+         cat("WORKFLOW ARGS: Contrasts added successfully\n")
+     } else {
+         cat("WORKFLOW ARGS: No contrasts to add\n")
+     }
+     
+     # Write to file
+     cat("WORKFLOW ARGS: About to write file\n")
+     output_file <- file.path(source_dir_path, "study_parameters.txt")
+     cat(sprintf("WORKFLOW ARGS: Target file path: %s\n", output_file))
+     
+     tryCatch({
+         cat("WORKFLOW ARGS: Calling writeLines...\n")
+         writeLines(output_lines, output_file)
+         cat(sprintf("WORKFLOW ARGS: Study parameters saved to: %s\n", output_file))
+         return(output_file)
+     }, error = function(e) {
+         cat(sprintf("WORKFLOW ARGS: Error writing file: %s\n", e$message))
+         stop("Failed to write study parameters file: ", e$message)
+     })
+}
+
+#' Check Missing Value Percentages in Peptide Data
+#' 
+#' @description Calculate and report the percentage of missing values (NAs) in peptide data
+#' at different levels: total dataset, per sample, and per group.
+#' 
+#' @param peptide_obj A PeptideQuantitativeData S4 object
+#' @param verbose Logical, whether to print detailed results (default: TRUE)
+#' 
+#' @return A list containing:
+#' \itemize{
+#'   \item total_na_percent: Overall percentage of NAs in the dataset
+#'   \item per_sample_na: Data frame with NA percentages per sample
+#'   \item per_group_na: Data frame with NA percentages per group
+#'   \item summary_stats: Summary statistics of NA distribution
+#' }
+#' 
+#' @export
+checkPeptideNAPercentages <- function(peptide_obj, verbose = TRUE) {
+  
+  # Validate input
+  if (!is(peptide_obj, "PeptideQuantitativeData")) {
+    stop("Input must be a PeptideQuantitativeData S4 object")
+  }
+  
+  # Extract data from S4 object
+  peptide_matrix <- peptide_obj@peptide_matrix
+  design_matrix <- peptide_obj@design_matrix
+  sample_id_col <- peptide_obj@sample_id
+  group_id_col <- peptide_obj@group_id
+  
+  # Validate that matrix and design matrix are compatible
+  if (ncol(peptide_matrix) != nrow(design_matrix)) {
+    stop("Number of samples in peptide_matrix doesn't match design_matrix rows")
+  }
+  
+  # Calculate total NA percentage
+  total_values <- length(peptide_matrix)
+  total_nas <- sum(is.na(peptide_matrix))
+  total_na_percent <- (total_nas / total_values) * 100
+  
+  # Calculate per-sample NA percentages
+  sample_na_counts <- apply(peptide_matrix, 2, function(x) sum(is.na(x)))
+  sample_na_percentages <- (sample_na_counts / nrow(peptide_matrix)) * 100
+  
+  per_sample_na <- data.frame(
+    sample = colnames(peptide_matrix),
+    na_count = sample_na_counts,
+    na_percentage = sample_na_percentages,
+    stringsAsFactors = FALSE
+  )
+  
+  # Add group information to per-sample results
+  per_sample_na <- merge(per_sample_na, design_matrix, 
+                        by.x = "sample", by.y = sample_id_col, all.x = TRUE)
+  
+  # Calculate per-group NA percentages
+  per_group_na <- per_sample_na %>%
+    group_by(!!sym(group_id_col)) %>%
+    summarise(
+      num_samples = n(),
+      mean_na_percentage = mean(na_percentage, na.rm = TRUE),
+      median_na_percentage = median(na_percentage, na.rm = TRUE),
+      min_na_percentage = min(na_percentage, na.rm = TRUE),
+      max_na_percentage = max(na_percentage, na.rm = TRUE),
+      sd_na_percentage = sd(na_percentage, na.rm = TRUE),
+      .groups = 'drop'
+    ) %>%
+    arrange(mean_na_percentage)
+  
+  # Calculate summary statistics
+  summary_stats <- list(
+    total_peptides = nrow(peptide_matrix),
+    total_samples = ncol(peptide_matrix),
+    total_groups = length(unique(design_matrix[[group_id_col]])),
+    total_values = total_values,
+    total_nas = total_nas,
+    mean_na_per_sample = mean(sample_na_percentages),
+    median_na_per_sample = median(sample_na_percentages),
+    min_na_per_sample = min(sample_na_percentages),
+    max_na_per_sample = max(sample_na_percentages)
+  )
+  
+  # Print results if verbose
+  if (verbose) {
+    cat("\n=== Peptide Data Missing Value Analysis ===\n")
+    cat(sprintf("Dataset dimensions: %d peptides × %d samples\n", 
+                nrow(peptide_matrix), ncol(peptide_matrix)))
+    cat(sprintf("Number of groups: %d\n", summary_stats$total_groups))
+    cat(sprintf("Total missing values: %s out of %s (%.2f%%)\n", 
+                format(total_nas, big.mark = ","),
+                format(total_values, big.mark = ","),
+                total_na_percent))
+    
+    cat("\n--- Per-Sample Missing Value Summary ---\n")
+    cat(sprintf("Mean NA%% per sample: %.2f%%\n", summary_stats$mean_na_per_sample))
+    cat(sprintf("Median NA%% per sample: %.2f%%\n", summary_stats$median_na_per_sample))
+    cat(sprintf("Range: %.2f%% - %.2f%%\n", 
+                summary_stats$min_na_per_sample, summary_stats$max_na_per_sample))
+    
+    cat("\n--- Per-Group Missing Value Summary ---\n")
+    print(per_group_na)
+    
+    cat("\n--- Samples with Highest Missing Values ---\n")
+    top_missing_samples <- per_sample_na %>%
+      arrange(desc(na_percentage)) %>%
+      head(min(5, nrow(per_sample_na)))
+    print(top_missing_samples[, c("sample", group_id_col, "na_percentage")])
+    
+    cat("\n--- Samples with Lowest Missing Values ---\n")
+    bottom_missing_samples <- per_sample_na %>%
+      arrange(na_percentage) %>%
+      head(min(5, nrow(per_sample_na)))
+    print(bottom_missing_samples[, c("sample", group_id_col, "na_percentage")])
+  }
+  
+  # Return results
+  results <- list(
+    total_na_percent = total_na_percent,
+    per_sample_na = per_sample_na,
+    per_group_na = per_group_na,
+    summary_stats = summary_stats
+  )
+  
+  return(invisible(results))
+}
+
+#' Validate Post-Imputation Peptide Data
+#' 
+#' @description A simple wrapper to validate peptide data after imputation,
+#' specifically checking if imputation was successful (should show 0% NAs).
+#' 
+#' @param peptide_obj A PeptideQuantitativeData S4 object (post-imputation)
+#' @param expected_na_percent Expected NA percentage (default: 0 for post-imputation)
+#' @param tolerance Tolerance for expected percentage (default: 0.1%)
+#' 
+#' @return Logical indicating if validation passed, with detailed output
+#' 
+#' @export
+validatePostImputationData <- function(peptide_obj, expected_na_percent = 0, tolerance = 0.1) {
+  
+  cat("\n=== POST-IMPUTATION VALIDATION ===\n")
+  
+  # Run the full NA analysis
+  na_results <- checkPeptideNAPercentages(peptide_obj, verbose = TRUE)
+  
+  # Check if imputation was successful
+  actual_na_percent <- na_results$total_na_percent
+  is_valid <- abs(actual_na_percent - expected_na_percent) <= tolerance
+  
+  cat("\n--- VALIDATION RESULT ---\n")
+  cat(sprintf("Expected NA%%: %.2f%% (± %.2f%%)\n", expected_na_percent, tolerance))
+  cat(sprintf("Actual NA%%: %.2f%%\n", actual_na_percent))
+  
+  if (is_valid) {
+    cat("✓ VALIDATION PASSED: Imputation appears successful!\n")
+  } else {
+    cat("✗ VALIDATION FAILED: Unexpected NA percentage detected!\n")
+    if (actual_na_percent > expected_na_percent + tolerance) {
+      cat("  → Issue: More NAs than expected. Imputation may have failed.\n")
+    } else {
+      cat("  → Issue: Fewer NAs than expected. Check data integrity.\n")
+    }
+  }
+  
+  # Additional warnings for common issues
+  if (actual_na_percent > 10) {
+    cat("⚠ WARNING: High NA percentage suggests imputation problems!\n")
+  }
+  
+  if (na_results$summary_stats$max_na_per_sample > actual_na_percent + 5) {
+    cat("⚠ WARNING: Large variation in NA% between samples detected!\n")
+  }
+  
+  cat("\n")
+  return(invisible(list(
+    is_valid = is_valid,
+    actual_na_percent = actual_na_percent,
+    expected_na_percent = expected_na_percent,
+    full_results = na_results
+  )))
+}
+
+#' Get Recommendations for Handling Protein-Level Missing Values
+#' 
+#' @description Provides specific recommendations for dealing with missing values
+#' in protein data based on the percentage and distribution of NAs.
+#' 
+#' @param protein_obj A ProteinQuantitativeData S4 object
+#' @param include_code Logical, whether to include example R code (default: TRUE)
+#' 
+#' @return Prints recommendations and invisibly returns a list of strategies
+#' 
+#' @export
+getProteinNARecommendations <- function(protein_obj, include_code = TRUE) {
+  
+  # Get NA analysis
+  na_results <- checkProteinNAPercentages(protein_obj, verbose = FALSE)
+  na_percent <- na_results$total_na_percent
+  
+  cat("\n=== PROTEIN NA HANDLING RECOMMENDATIONS ===\n")
+  cat(sprintf("Your data: %.1f%% NAs across %d proteins\n\n", 
+              na_percent, na_results$summary_stats$total_proteins))
+  
+  if (na_percent < 15) {
+    cat("🎯 RECOMMENDATION: Complete Case Analysis\n")
+    cat("• Your data has excellent protein coverage\n")
+    cat("• Can proceed with standard analysis on proteins with complete data\n")
+    if (include_code) {
+      cat("\n📝 Example code:\n")
+      cat("complete_proteins <- protein_obj@protein_quant_table[complete.cases(protein_obj@protein_quant_table), ]\n")
+    }
+    
+  } else if (na_percent >= 15 && na_percent < 40) {
+    cat("🎯 RECOMMENDATION: Consider Protein-Level Imputation\n")
+    cat("• Moderate missing values - imputation could be beneficial\n")
+    cat("• Options: KNN, minimum value, or mixed imputation strategies\n")
+    cat("• Alternative: Filter to proteins detected in ≥X samples per group\n")
+    if (include_code) {
+      cat("\n📝 Example filtering code:\n")
+      cat("# Keep proteins detected in ≥50% of samples per group\n")
+      cat("filtered_proteins <- filterProteinsByGroupDetection(protein_obj, min_detection_rate = 0.5)\n")
+    }
+    
+  } else if (na_percent >= 40 && na_percent < 60) {
+    cat("🎯 RECOMMENDATION: Strict Filtering + Targeted Imputation\n")
+    cat("• High missing values suggest challenging sample/detection conditions\n")
+    cat("• Focus on well-detected proteins (present in majority of samples)\n")
+    cat("• Consider group-wise detection requirements\n")
+    if (include_code) {
+      cat("\n📝 Example approach:\n")
+      cat("# Keep proteins detected in ≥70% of samples in at least one group\n")
+      cat("robust_proteins <- filterProteinsByGroupwise(protein_obj, min_group_detection = 0.7)\n")
+    }
+    
+  } else {
+    cat("⚠️  RECOMMENDATION: Review Data Quality\n")
+    cat("• Very high missing values (>60%) suggest potential issues\n")
+    cat("• Check: sample quality, peptide identification, rollup parameters\n")
+    cat("• Consider more stringent protein identification criteria\n")
+    cat("• May need to focus only on highly abundant/well-detected proteins\n")
+  }
+  
+  cat("\n📚 STRATEGIES SUMMARY:\n")
+  cat("1. Complete Case: Use only proteins with no NAs\n")
+  cat("2. Filtering: Remove proteins with >X% missing values\n")
+  cat("3. Group-wise: Require detection in ≥Y% samples per group\n")
+  cat("4. Imputation: Fill NAs with estimated values (KNN, minimum, etc.)\n")
+  cat("5. Hybrid: Combine filtering + imputation\n")
+  
+  cat("\n💡 TIP: Protein NAs ≠ Data Quality Issues\n")
+  cat("Missing proteins often reflect:\n")
+  cat("• Low abundance proteins below detection limit\n")
+  cat("• Sample-specific biology (some proteins not expressed)\n")
+  cat("• Normal variation in complex proteomes\n\n")
+  
+  strategies <- list(
+    na_percent = na_percent,
+    primary_recommendation = if (na_percent < 15) "complete_case" 
+                            else if (na_percent < 40) "imputation_or_filtering"
+                            else if (na_percent < 60) "strict_filtering"
+                            else "data_quality_review",
+    alternative_strategies = c("complete_case", "group_wise_filtering", "imputation", "hybrid")
+  )
+  
+  return(invisible(strategies))
+}
+
+#' Check Missing Value Percentages in Protein Data
+#' 
+#' @description Calculate and report the percentage of missing values (NAs) in protein data
+#' at different levels: total dataset, per sample, and per group.
+#' 
+#' @param protein_obj A ProteinQuantitativeData S4 object
+#' @param verbose Logical, whether to print detailed results (default: TRUE)
+#' 
+#' @return A list containing:
+#' \itemize{
+#'   \item total_na_percent: Overall percentage of NAs in the dataset
+#'   \item per_sample_na: Data frame with NA percentages per sample
+#'   \item per_group_na: Data frame with NA percentages per group
+#'   \item summary_stats: Summary statistics of NA distribution
+#' }
+#' 
+#' @export
+checkProteinNAPercentages <- function(protein_obj, verbose = TRUE) {
+  
+  # Validate input
+  if (!is(protein_obj, "ProteinQuantitativeData")) {
+    stop("Input must be a ProteinQuantitativeData S4 object")
+  }
+  
+  # Extract data from S4 object
+  protein_quant_table <- protein_obj@protein_quant_table
+  design_matrix <- protein_obj@design_matrix
+  sample_id_col <- protein_obj@sample_id
+  group_id_col <- protein_obj@group_id
+  protein_id_col <- protein_obj@protein_id_column
+  
+  # Identify sample columns (exclude protein ID column)
+  sample_columns <- setdiff(colnames(protein_quant_table), protein_id_col)
+  
+  # Validate that sample columns match design matrix
+  if (length(sample_columns) != nrow(design_matrix)) {
+    stop("Number of sample columns doesn't match design_matrix rows")
+  }
+  
+  # Extract quantitative data matrix (samples only)
+  protein_matrix <- as.matrix(protein_quant_table[, sample_columns])
+  rownames(protein_matrix) <- protein_quant_table[[protein_id_col]]
+  
+  # Calculate total NA percentage
+  total_values <- length(protein_matrix)
+  total_nas <- sum(is.na(protein_matrix))
+  total_na_percent <- (total_nas / total_values) * 100
+  
+  # Calculate per-sample NA percentages
+  sample_na_counts <- apply(protein_matrix, 2, function(x) sum(is.na(x)))
+  sample_na_percentages <- (sample_na_counts / nrow(protein_matrix)) * 100
+  
+  per_sample_na <- data.frame(
+    sample = names(sample_na_counts),
+    na_count = sample_na_counts,
+    na_percentage = sample_na_percentages,
+    stringsAsFactors = FALSE
+  )
+  
+  # Add group information to per-sample results
+  per_sample_na <- merge(per_sample_na, design_matrix, 
+                        by.x = "sample", by.y = sample_id_col, all.x = TRUE)
+  
+  # Calculate per-group NA percentages
+  per_group_na <- per_sample_na %>%
+    group_by(!!sym(group_id_col)) %>%
+    summarise(
+      num_samples = n(),
+      mean_na_percentage = mean(na_percentage, na.rm = TRUE),
+      median_na_percentage = median(na_percentage, na.rm = TRUE),
+      min_na_percentage = min(na_percentage, na.rm = TRUE),
+      max_na_percentage = max(na_percentage, na.rm = TRUE),
+      sd_na_percentage = sd(na_percentage, na.rm = TRUE),
+      .groups = 'drop'
+    ) %>%
+    arrange(mean_na_percentage)
+  
+  # Calculate summary statistics
+  summary_stats <- list(
+    total_proteins = nrow(protein_matrix),
+    total_samples = ncol(protein_matrix),
+    total_groups = length(unique(design_matrix[[group_id_col]])),
+    total_values = total_values,
+    total_nas = total_nas,
+    mean_na_per_sample = mean(sample_na_percentages),
+    median_na_per_sample = median(sample_na_percentages),
+    min_na_per_sample = min(sample_na_percentages),
+    max_na_per_sample = max(sample_na_percentages)
+  )
+  
+  # Print results if verbose
+  if (verbose) {
+    cat("\n=== Protein Data Missing Value Analysis ===\n")
+    cat(sprintf("Dataset dimensions: %d proteins × %d samples\n", 
+                nrow(protein_matrix), ncol(protein_matrix)))
+    cat(sprintf("Number of groups: %d\n", summary_stats$total_groups))
+    cat(sprintf("Total missing values: %s out of %s (%.2f%%)\n", 
+                format(total_nas, big.mark = ","),
+                format(total_values, big.mark = ","),
+                total_na_percent))
+    
+    cat("\n--- Per-Sample Missing Value Summary ---\n")
+    cat(sprintf("Mean NA%% per sample: %.2f%%\n", summary_stats$mean_na_per_sample))
+    cat(sprintf("Median NA%% per sample: %.2f%%\n", summary_stats$median_na_per_sample))
+    cat(sprintf("Range: %.2f%% - %.2f%%\n", 
+                summary_stats$min_na_per_sample, summary_stats$max_na_per_sample))
+    
+    cat("\n--- Per-Group Missing Value Summary ---\n")
+    print(per_group_na)
+    
+    cat("\n--- Samples with Highest Missing Values ---\n")
+    top_missing_samples <- per_sample_na %>%
+      arrange(desc(na_percentage)) %>%
+      head(min(5, nrow(per_sample_na)))
+    print(top_missing_samples[, c("sample", group_id_col, "na_percentage")])
+    
+    cat("\n--- Samples with Lowest Missing Values ---\n")
+    bottom_missing_samples <- per_sample_na %>%
+      arrange(na_percentage) %>%
+      head(min(5, nrow(per_sample_na)))
+    print(bottom_missing_samples[, c("sample", group_id_col, "na_percentage")])
+  }
+  
+  # Return results
+  results <- list(
+    total_na_percent = total_na_percent,
+    per_sample_na = per_sample_na,
+    per_group_na = per_group_na,
+    summary_stats = summary_stats
+  )
+  
+  return(invisible(results))
+}
+
+#' Validate Post-Imputation Protein Data
+#' 
+#' @description A simple wrapper to validate protein data after imputation,
+#' specifically checking if imputation was successful.
+#' 
+#' @param protein_obj A ProteinQuantitativeData S4 object (post-imputation)
+#' @param expected_na_percent Expected NA percentage (default: varies based on protein data)
+#' @param tolerance Tolerance for expected percentage (default: 10%)
+#' 
+#' @return Logical indicating if validation passed, with detailed output
+#' 
+#' @export
+validatePostImputationProteinData <- function(protein_obj, expected_na_percent = NULL, tolerance = 10) {
+  
+  cat("\n=== POST-IMPUTATION PROTEIN DATA VALIDATION ===\n")
+  cat("Note: Protein-level NAs occur even after peptide imputation because:\n")
+  cat("• Proteins need ≥1 detected peptide to get a quantification\n")
+  cat("• Some proteins detected only in subset of samples\n")
+  cat("• This is normal proteomics data behavior!\n\n")
+  
+  # Run the full NA analysis
+  na_results <- checkProteinNAPercentages(protein_obj, verbose = TRUE)
+  
+  # Set expected NA percentage if not provided (proteins often have some NAs)
+  if (is.null(expected_na_percent)) {
+    # For protein data, NAs are very common due to missing peptides/proteins
+    # Typical ranges: 20-50% depending on sample complexity and detection method
+    expected_na_percent <- 35  # Realistic expectation for protein data
+    cat(sprintf("Note: Using default expected NA%% of %.1f%% for protein data\n", expected_na_percent))
+    cat("(Protein-level NAs are normal due to incomplete protein detection across samples)\n")
+  }
+  
+  # Check if validation passes
+  actual_na_percent <- na_results$total_na_percent
+  is_valid <- abs(actual_na_percent - expected_na_percent) <= tolerance
+  
+  cat("\n--- VALIDATION RESULT ---\n")
+  cat(sprintf("Expected NA%%: %.2f%% (± %.2f%%)\n", expected_na_percent, tolerance))
+  cat(sprintf("Actual NA%%: %.2f%%\n", actual_na_percent))
+  
+  if (is_valid) {
+    cat("✓ VALIDATION PASSED: Protein data NA levels are within expected range!\n")
+  } else {
+    cat("✗ VALIDATION FAILED: Unexpected NA percentage detected!\n")
+    if (actual_na_percent > expected_na_percent + tolerance) {
+      cat("  → Issue: More NAs than expected. Check for missing proteins/peptides.\n")
+    } else {
+      cat("  → Issue: Fewer NAs than expected. Possible over-imputation.\n")
+    }
+  }
+  
+  # Additional warnings for common issues
+  if (actual_na_percent > 50) {
+    cat("⚠ WARNING: Very high NA percentage (>50%) suggests data quality issues!\n")
+  }
+  
+  if (actual_na_percent < 10) {
+    cat("ℹ INFO: Very low NA percentage (<10%) - excellent protein coverage!\n")
+  }
+  
+  # Educational information about protein NAs
+  if (actual_na_percent > 20 && actual_na_percent < 50) {
+    cat("ℹ INFO: NA percentage is typical for protein-level data\n")
+    cat("  → This reflects biological reality: not all proteins detected in all samples\n")
+    cat("  → Consider: protein-level imputation OR complete-case analysis\n")
+  }
+  
+  if (na_results$summary_stats$max_na_per_sample > actual_na_percent + 10) {
+    cat("⚠ WARNING: Large variation in NA% between samples detected!\n")
+    cat("  → Some samples may have much lower protein coverage.\n")
+  }
+  
+  # Check for problematic samples (>80% missing)
+  high_missing_samples <- na_results$per_sample_na[na_results$per_sample_na$na_percentage > 80, ]
+  if (nrow(high_missing_samples) > 0) {
+    cat("⚠ WARNING: Samples with >80% missing proteins detected:\n")
+    print(high_missing_samples[, c("sample", "na_percentage")])
+  }
+  
+  cat("\n")
+  return(invisible(list(
+    is_valid = is_valid,
+    actual_na_percent = actual_na_percent,
+    expected_na_percent = expected_na_percent,
+    full_results = na_results
+  )))
 }
