@@ -121,6 +121,18 @@ deAnalysisWrapperFunction <- function( theObject
 
   rownames( theObject@design_matrix ) <- theObject@design_matrix |> dplyr::pull( one_of(theObject@sample_id ))
 
+  # Check if object contains DPC-Quant results and use limpa dpc if available
+  use_dpc_de <- FALSE
+  dpc_quant_results <- NULL
+  
+  if (!is.null(theObject@args$limpa_dpc_quant_results)) {
+    dpc_quant_results <- theObject@args$limpa_dpc_quant_results
+    use_dpc_de <- TRUE
+    cat("   DE ANALYSIS Step: Detected DPC-Quant results - using limpa dpcDE for uncertainty-weighted analysis\n")
+    cat("   DE ANALYSIS Step: DPC parameters used:", paste(dpc_quant_results$dpc_parameters_used, collapse=", "), "\n")
+  } else {
+    cat("   DE ANALYSIS Step: No DPC-Quant results found - using standard limma analysis\n")
+  }
 
   # CRITICAL FIX: Use the correct column for contrast strings
   # The downstream functions expect "comparison=expression" format (from full_format column)
@@ -151,14 +163,51 @@ deAnalysisWrapperFunction <- function( theObject
     print(contrast_strings_to_use)
   }
 
-  contrasts_results <- runTestsContrasts(as.matrix(column_to_rownames(theObject@protein_quant_table, theObject@protein_id_column)),
-                                         contrast_strings = contrast_strings_to_use,
-                                         design_matrix = theObject@design_matrix,
-                                         formula_string = formula_string,
-                                         weights = NA,
-                                         treat_lfc_cutoff = as.double(treat_lfc_cutoff),
-                                         eBayes_trend = as.logical(eBayes_trend),
-                                         eBayes_robust = as.logical(eBayes_robust))
+  # Run differential expression analysis
+  if (use_dpc_de && requireNamespace("limpa", quietly = TRUE)) {
+    cat("   DE ANALYSIS Step: Running limpa dpcDE analysis with uncertainty weights\n")
+    
+    # The EList is now pre-filtered and stored, so we can use it directly
+    y_elist_filtered <- dpc_quant_results$quantified_elist
+    
+    if(is.null(y_elist_filtered)) {
+      stop("FATAL: The quantified_elist is missing from the object's args. It should have been created by proteinMissingValueImputationLimpa.")
+    }
+    
+    # Create design matrix for dpcDE
+    design_matrix_for_dpcde <- model.matrix(as.formula(formula_string), theObject@design_matrix)
+    
+    cat("   DE ANALYSIS Step: Calling limpa::dpcDE\n")
+    cat("   DE ANALYSIS Step: Protein matrix dims:", nrow(y_elist_filtered$E), "x", ncol(y_elist_filtered$E), "\n")
+    cat("   DE ANALYSIS Step: Design matrix dims:", nrow(design_matrix_for_dpcde), "x", ncol(design_matrix_for_dpcde), "\n")
+    
+    # Run dpcDE using the synchronized EList
+    dpc_fit <- limpa::dpcDE(y_elist_filtered, design_matrix_for_dpcde, plot = FALSE)
+    
+    # Convert dpcDE results to format compatible with runTestsContrasts
+    contrasts_results <- convertDpcDEToStandardFormat(
+      dpc_fit = dpc_fit,
+      contrast_strings = contrast_strings_to_use,
+      design_matrix = design_matrix_for_dpcde,
+      eBayes_trend = as.logical(eBayes_trend),
+      eBayes_robust = as.logical(eBayes_robust)
+    )
+    
+    cat("   DE ANALYSIS Step: dpcDE analysis completed successfully\n")
+    
+  } else {
+    # Standard limma analysis (existing code)
+    cat("   DE ANALYSIS Step: Running standard limma analysis\n")
+    
+    contrasts_results <- runTestsContrasts(as.matrix(column_to_rownames(theObject@protein_quant_table, theObject@protein_id_column)),
+                                           contrast_strings = contrast_strings_to_use,
+                                           design_matrix = theObject@design_matrix,
+                                           formula_string = formula_string,
+                                           weights = NA,
+                                           treat_lfc_cutoff = as.double(treat_lfc_cutoff),
+                                           eBayes_trend = as.logical(eBayes_trend),
+                                           eBayes_robust = as.logical(eBayes_robust))
+  }
 
   # Map back to original group names in results if needed
   if(exists("group_mapping")) {
@@ -176,6 +225,34 @@ deAnalysisWrapperFunction <- function( theObject
 
   return_list$contrasts_results <- contrasts_results
   return_list$contrasts_results_table <- contrasts_results_table
+
+  # --- NEW: Generate P-value distribution plots for diagnostics ---
+  raw_pval_hist_list <- purrr::imap(contrasts_results_table, \(de_tbl, contrast_name) {
+    
+    # Check if raw_pvalue column exists
+    if (!"raw_pvalue" %in% colnames(de_tbl)) {
+      warning(paste("raw_pvalue column not found for contrast:", contrast_name))
+      return(NULL)
+    }
+    
+    # Create the histogram
+    p <- ggplot(de_tbl, aes(x = raw_pvalue)) +
+      geom_histogram(aes(y = after_stat(density)), bins = 30, boundary = 0, color = "black", fill = "lightblue") +
+      labs(
+        title = paste("Raw P-value Distribution for:", contrast_name),
+        subtitle = "A uniform distribution (red line) is expected under the null hypothesis.",
+        x = "Raw P-value",
+        y = "Density"
+      ) +
+      theme_bw() +
+      geom_hline(yintercept = 1, linetype = "dashed", color = "red")
+      
+    return(p)
+  })
+  
+  # Remove any NULLs from list if a plot failed and add to the main return list
+  return_list$raw_pval_histograms <- purrr::compact(raw_pval_hist_list)
+  # --- END NEW ---
 
   ## Prepare data for drawing the volcano plots
 
