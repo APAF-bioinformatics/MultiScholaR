@@ -30,6 +30,17 @@ setGeneric(name="removeProteinsWithOnlyOneReplicate"
            }
            , signature=c("theObject", "core_utilisation", "grouping_variable"))
 
+setGeneric(name="proteinMissingValueImputationLimpa"
+           , def=function(theObject, 
+                          dpc_results = NULL,
+                          dpc_slope = 0.8,
+                          quantified_protein_column = NULL,
+                          verbose = TRUE,
+                          chunk = 1000) {
+             standardGeneric("proteinMissingValueImputationLimpa")
+           }
+           , signature=c("theObject"))
+
 setGeneric(name="plotRle"
            , def=function( theObject, grouping_variable, yaxis_limit = c(), sample_label = NULL) {
              standardGeneric("plotRle")
@@ -234,16 +245,10 @@ setGeneric(name="removePeptidesWithMissingValuesPercent"
                          , "peptides_intensity_cutoff_percentile" ))
 
 setGeneric(name="filterMinNumPeptidesPerProtein"
-           , def=function( theObject
-                           , num_peptides_per_protein_thresh = NULL
-                           , num_peptidoforms_per_protein_thresh = NULL
-                           , core_utilisation = NULL ) {
+           , def=function( theObject, ...) {
              standardGeneric("filterMinNumPeptidesPerProtein")
            }
-           , signature=c("theObject"
-                         , "num_peptides_per_protein_thresh"
-                         , "num_peptidoforms_per_protein_thresh"
-                         , "core_utilisation"))
+           , signature=c("theObject"))
 
 setGeneric( name="filterMinNumPeptidesPerSample"
             , def=function( theObject, peptides_per_sample_cutoff = NULL, core_utilisation = NULL, inclusion_list = NULL) {
@@ -311,3 +316,9 @@ setGeneric(name = "getNegCtrlMetabAnova",
              standardGeneric("getNegCtrlMetabAnova")
            },
            signature = c("theObject")) # Primary dispatch on object 
+
+setGeneric(name="chooseBestProteinAccession"
+           , def=function(theObject, delim=NULL, seqinr_obj=NULL, seqinr_accession_column=NULL, replace_zero_with_na = NULL, aggregation_method = NULL) {
+             standardGeneric("chooseBestProteinAccession")
+           }
+           , signature="theObject")

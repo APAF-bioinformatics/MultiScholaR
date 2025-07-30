@@ -1,4 +1,3 @@
-
 #' @title Update and Visualize Filtering Progress
 #' @description Tracks and visualizes the impact of filtering steps on peptide 
 #'   and protein counts. Updates a global `FilteringProgress` object and optionally 
@@ -1809,4 +1808,3 @@ generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
     
     return(plot_list)
 }
-
