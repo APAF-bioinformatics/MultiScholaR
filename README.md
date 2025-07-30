@@ -203,3 +203,6 @@ graph TD
     style YY fill:#FFDAB9,color:#000000
     style ZZ fill:#FFDAB9,color:#00000
 ```
+
+## License
+MultiScholaR is licensed under GNU Lesser General Public License version 3 (LGPL)
