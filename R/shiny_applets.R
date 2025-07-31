@@ -75,25 +75,14 @@ RunApplet <- function(applet_type, omic_type, experiment_label, project_dirs_obj
   # --- Omic Type Specific Logic ---
   switch(omic_type,
     "proteomics" = {
-      # Load the required module - try multiple possible paths
-      module_paths <- c(
-        file.path("R", "shiny", "modules", "proteomics", "designMatrixBuilderModule.R"),
-        file.path("..", "R", "shiny", "modules", "proteomics", "designMatrixBuilderModule.R"),
-        system.file("R", "shiny", "modules", "proteomics", "designMatrixBuilderModule.R", package = "MultiScholaR")
-      )
-      
-      module_found <- FALSE
-      for (path in module_paths) {
-        if (file.exists(path) && path != "") {
-          source(path)
-          module_found <- TRUE
-          break
-        }
+      # Load the required module using a reliable method
+      module_path <- system.file("shiny", "modules", "proteomics", "designMatrixBuilderModule.R", package = "MultiScholaR")
+
+      if (!file.exists(module_path)) {
+        stop("Could not find designMatrixBuilderModule.R. Please ensure the package is properly installed and the file exists in 'inst/shiny/modules/proteomics/'.")
       }
       
-      if (!module_found) {
-        stop("Could not find designMatrixBuilderModule.R. Please ensure you're running from the correct directory or the package is properly installed.")
-      }
+      source(module_path)
       
       if (applet_type == "designMatrix") {
         log_info(paste("Launching Design Matrix applet for PROTEOMICS. Using source_dir:", source_dir))
