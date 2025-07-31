@@ -649,198 +649,156 @@ setMethod("InitialiseGrid",
 
 #' @export
 setGeneric(name = "createGridQC",
-           def = function(theObject, pca_titles = NULL, density_titles = NULL, rle_titles = NULL, pearson_titles = NULL, cancor_titles = NULL, ncol = 3, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
+           def = function(theObject, pca_titles = NULL, density_titles = NULL, rle_titles = NULL, pearson_titles = NULL, cancor_titles = NULL, ncol = 3, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged", ...) {
              standardGeneric("createGridQC")
            },
            signature = c("theObject"))
 
 #' @export
+#' @param workflow_name A character string specifying a predefined workflow layout. 
+#'   Currently, the only supported value is "DIA_limpa". If `NULL` (the default), 
+#'   the function uses a general-purpose layout. When "DIA_limpa" is specified, 
+#'   it arranges the plots with specific column titles ('log2', 'Cyclic Loess', 
+#'   'RUV-III-C', 'Protein_filtered') and assigns sequential capital letters (A, B, C, ...)
+#'   to individual plots for publication-style figures. The Cancor plot gets a unique title
 setMethod(f = "createGridQC",
           signature = "GridPlotData",
-          definition = function(theObject, pca_titles = NULL, density_titles = NULL, rle_titles = NULL, pearson_titles = NULL, cancor_titles = NULL, ncol = 3, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
+          definition = function(theObject, pca_titles = NULL, density_titles = NULL, rle_titles = NULL, pearson_titles = NULL, cancor_titles = NULL, ncol = NULL, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged", workflow_name = NULL) {
             
-            # Use stored titles if not provided as parameters
-            pca_titles <- if(is.null(pca_titles)) theObject@pca_titles else pca_titles
-            density_titles <- if(is.null(density_titles)) theObject@density_titles else density_titles
-            rle_titles <- if(is.null(rle_titles)) theObject@rle_titles else rle_titles
-            pearson_titles <- if(is.null(pearson_titles)) theObject@pearson_titles else pearson_titles
-            cancor_titles <- if(is.null(cancor_titles)) theObject@cancor_titles else cancor_titles
-            
-            createLabelPlot <- function(title) {
-              # Option 1: Use xlim to expand the plot area and position text at left edge
+            # --- Helper Functions ---
+            createLabelPlot <- function(title, size = 5, fontface = "bold") {
               ggplot() + 
-                annotate("text", x = 0, y = 0.5, label = title, size = 5, hjust = 0) +
-                xlim(0, 1) +  # Explicitly set the x limits
-                theme_void() +
-                theme(
-                  plot.margin = margin(5, 5, 5, 5),
-                  panel.background = element_blank()
-                )
+                annotate("text", x = 0.5, y = 0.5, label = title, size = size, hjust = 0.5, fontface = fontface) +
+                theme_void()
             }
             
-            # Create basic plots without titles
-            createPcaPlot <- function(plot) {
-              plot +
-                xlim(-40, 45) + ylim(-30, 25) +
-                theme(text = element_text(size = 15),
-                      panel.grid.major = element_blank(),
-                      panel.grid.minor = element_blank(),
-                      panel.background = element_blank())
+            # Base styling for most plots
+            style_plot <- function(plot) {
+              if (is.null(plot)) return(NULL)
+              plot + theme(text = element_text(size = 15),
+                           panel.grid.major = element_blank(),
+                           panel.grid.minor = element_blank(),
+                           panel.background = element_blank())
             }
             
-            createDensityPlot <- function(plot) {
-              # For all plots, just apply the theme without adding title
-              if (inherits(plot, "patchwork")) {
-                plot & 
-                  theme(
-                    panel.grid.major = element_blank(),
-                    panel.grid.minor = element_blank(),
-                    panel.background = element_blank(),
-                    text = element_text(size = 15)
-                  )
-              } else {
-                plot +
-                  theme(text = element_text(size = 15),
-                        panel.grid.major = element_blank(),
-                        panel.grid.minor = element_blank(),
-                        panel.background = element_blank())
-              }
+            # Special styling for RLE plots
+            style_rle_plot <- function(plot) {
+                if (is.null(plot)) return(NULL)
+                plot + theme(text = element_text(size = 15),
+                             axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
+                             panel.grid.major = element_blank(),
+                             panel.grid.minor = element_blank(),
+                             panel.background = element_blank())
             }
             
-            createRlePlot <- function(plot) {
-              plot +
-                theme(text = element_text(size = 15),
-                      axis.text.x = element_blank(),
-                      axis.ticks.x = element_blank())
+            get_legend <- function(plot) {
+              if (is.null(plot)) return(NULL)
+              tryCatch({
+                g <- ggplot_gtable(ggplot_build(plot))
+                leg <- which(sapply(g$grobs, function(x) x$name) == "guide-box")
+                if (length(leg) > 0) return(g$grobs[[leg]])
+                return(NULL)
+              }, error = function(e) { NULL })
             }
-            
-            createPearsonPlot <- function(plot) {
-              plot +
-                theme(text = element_text(size = 15))
-            }
-            
-            createCancorPlot <- function(plot) {
-              plot +
-                theme(text = element_text(size = 15),
-                      panel.grid.major = element_blank(),
-                      panel.grid.minor = element_blank(),
-                      panel.background = element_blank())
-            }
-            
-            # Create plots without titles - FIXED ORDER
-            # Define the correct order: before_cyclic_loess, before_ruvIIIc, after_ruvIIIc
-            plot_order <- c("pca_plot_before_cyclic_loess_group", "pca_plot_before_ruvIIIc_group", "pca_plot_after_ruvIIIc_group")
-            density_order <- c("density_plot_before_cyclic_loess_group", "density_plot_before_ruvIIIc_group", "density_plot_after_ruvIIIc_group")
-            rle_order <- c("rle_plot_before_cyclic_loess_group", "rle_plot_before_ruvIIIc_group", "rle_plot_after_ruvIIIc_group")
-            pearson_order <- c("pearson_correlation_pair_before_cyclic_loess", "pearson_correlation_pair_before_ruvIIIc", "pearson_correlation_pair_after_ruvIIIc_group")
-            cancor_order <- c("cancor_plot_before_cyclic_loess", "cancor_plot_before_ruvIIIc", "cancor_plot_after_ruvIIIc")
-            
-            # Extract plots in the correct order using lapply
-            created_pca_plots <- lapply(plot_order, function(name) {
-              if (!is.null(theObject@pca_plots[[name]])) createPcaPlot(theObject@pca_plots[[name]]) else NULL
-            })
-            created_pca_plots <- created_pca_plots[!sapply(created_pca_plots, is.null)]
-            
-            created_density_plots <- lapply(density_order, function(name) {
-              if (!is.null(theObject@density_plots[[name]])) createDensityPlot(theObject@density_plots[[name]]) else NULL
-            })
-            created_density_plots <- created_density_plots[!sapply(created_density_plots, is.null)]
-            
-            created_rle_plots <- lapply(rle_order, function(name) {
-              if (!is.null(theObject@rle_plots[[name]])) createRlePlot(theObject@rle_plots[[name]]) else NULL
-            })
-            created_rle_plots <- created_rle_plots[!sapply(created_rle_plots, is.null)]
-            
-            created_pearson_plots <- lapply(pearson_order, function(name) {
-              if (!is.null(theObject@pearson_plots[[name]])) createPearsonPlot(theObject@pearson_plots[[name]]) else NULL
-            })
-            created_pearson_plots <- created_pearson_plots[!sapply(created_pearson_plots, is.null)]
-            
-            created_cancor_plots <- lapply(cancor_order, function(name) {
-              if (!is.null(theObject@cancor_plots[[name]])) createCancorPlot(theObject@cancor_plots[[name]]) else NULL
-            })
-            # Don't filter out NULL plots to maintain column alignment
-            
-            # Create label plots
-            pca_labels <- lapply(pca_titles, createLabelPlot)
-            density_labels <- lapply(density_titles, createLabelPlot)
-            rle_labels <- lapply(rle_titles, createLabelPlot)
-            pearson_labels <- lapply(pearson_titles, createLabelPlot)
-            cancor_labels <- lapply(cancor_titles, createLabelPlot)
-            
-            # Combine with labels above each row - modified to keep legends with their plots
-            plot_sections <- list()
-            height_values <- c()
-            
-            # Add PCA plots if they exist
-            if(length(theObject@pca_plots) > 0) {
-              plot_sections <- append(plot_sections, list(
-                wrap_plots(pca_labels, ncol = ncol),
-                wrap_plots(created_pca_plots, ncol = ncol)
-              ))
-              height_values <- c(height_values, 0.1, 1)
-            }
-            
-            # Add Density plots if they exist
-            if(length(theObject@density_plots) > 0) {
-              plot_sections <- append(plot_sections, list(
-                wrap_plots(density_labels, ncol = ncol),
-                wrap_plots(created_density_plots, ncol = ncol)
-              ))
-              height_values <- c(height_values, 0.1, 1)
-            }
-            
-            # Add RLE plots if they exist
-            if(length(theObject@rle_plots) > 0) {
-              plot_sections <- append(plot_sections, list(
-                wrap_plots(rle_labels, ncol = ncol),
-                wrap_plots(created_rle_plots, ncol = ncol)
-              ))
-              height_values <- c(height_values, 0.1, 1)
-            }
-            
-            # Add Pearson plots if they exist
-            if(length(theObject@pearson_plots) > 0) {
-              plot_sections <- append(plot_sections, list(
-                wrap_plots(pearson_labels, ncol = ncol),
-                wrap_plots(created_pearson_plots, ncol = ncol)
-              ))
-              height_values <- c(height_values, 0.1, 1)
-            }
-            
-            # Add Cancor plots if they exist (check for any non-NULL plots)
-            if(length(theObject@cancor_plots) > 0 && any(!sapply(created_cancor_plots, is.null))) {
-              # Replace NULL plots with empty plots to maintain column alignment
-              cancor_plots_aligned <- lapply(created_cancor_plots, function(plot) {
-                if (is.null(plot)) {
-                  ggplot() + theme_void()  # Empty plot for NULL positions
-                } else {
-                  plot
-                }
-              })
-              
-              plot_sections <- append(plot_sections, list(
-                wrap_plots(cancor_labels, ncol = ncol),
-                wrap_plots(cancor_plots_aligned, ncol = ncol)
-              ))
-              height_values <- c(height_values, 0.1, 1)
-            }
-            
-            # Create combined plot from sections
-            combined_plot <- wrap_plots(plot_sections, ncol = 1) +
-              plot_layout(heights = height_values)
 
+            # --- 1. Process and Style all Plots ---
+            plots <- list(
+              pca = purrr::compact(lapply(theObject@pca_plots, style_plot)),
+              density = purrr::compact(lapply(theObject@density_plots, style_plot)),
+              rle = purrr::compact(lapply(theObject@rle_plots, style_rle_plot)),
+              pearson = purrr::compact(lapply(theObject@pearson_plots, style_plot)),
+              cancor = purrr::compact(lapply(theObject@cancor_plots, style_plot))
+            )
+            
+            # --- 2. Legend Management ---
+            master_legend <- get_legend(plots$pca[[1]])
+            if (is.null(master_legend)) master_legend <- get_legend(plots$rle[[1]])
+            
+            # Remove legend from ALL plots that will go into the main panel
+            plots_no_legend <- lapply(plots, function(plot_list) {
+              lapply(plot_list, function(p) if (!is.null(p)) p + theme(legend.position = "none") else NULL)
+            })
+            
+            # --- 3. Workflow-Specific Formatting ---
+            plot_letter_counter <- 1
+            top_title_row <- NULL
+            
+            if (!is.null(workflow_name) && workflow_name == "DIA_limpa") {
+              column_titles <- c("log2", "Cyclic Loess", "RUV-III-C", "Protein_filtered")
+              num_cols_for_titles <- if (!is.null(ncol)) ncol else length(plots$pca)
+              if (num_cols_for_titles > 0) {
+                 top_title_row <- wrap_plots(lapply(column_titles[1:num_cols_for_titles], createLabelPlot), ncol = num_cols_for_titles)
+              }
+              
+              add_tags <- function(plot_list) {
+                lapply(plot_list, function(p) {
+                  if(is.null(p)) return(NULL)
+                  letter <- LETTERS[plot_letter_counter]
+                  plot_letter_counter <<- plot_letter_counter + 1
+                  p + labs(tag = letter) + theme(plot.tag = element_text(size = 20, face = "bold"))
+                })
+              }
+              # Apply tags to the legend-less versions of the plots
+              plots_no_legend <- lapply(plots_no_legend, add_tags)
+            }
+            
+            # --- 4. Assemble Main Plot Panel (all rows without legends) ---
+            assemble_plot_row <- function(plot_list) {
+                if (length(plot_list) == 0) return(NULL)
+                row_ncol <- if (is.null(ncol)) length(plot_list) else ncol
+                wrap_plots(plot_list, ncol = row_ncol)
+            }
+            
+            pca_row <- assemble_plot_row(plots_no_legend$pca)
+            density_row <- assemble_plot_row(plots_no_legend$density)
+            rle_row <- assemble_plot_row(plots_no_legend$rle)
+            pearson_row <- assemble_plot_row(plots_no_legend$pearson)
+            
+            cancor_title_plot <- NULL
+            if (!is.null(workflow_name) && workflow_name == "DIA_limpa" && length(plots$cancor) > 0) {
+               cancor_title_plot <- createLabelPlot("Peptide RUV Cancor Plot QC", fontface = "plain")
+            }
+            cancor_row <- assemble_plot_row(plots_no_legend$cancor)
+            
+            main_panel_list <- purrr::compact(list(top_title_row, pca_row, density_row, rle_row, pearson_row, cancor_title_plot, cancor_row))
+            
+            if (length(main_panel_list) == 0) {
+              return(ggplot() + theme_void() + labs(title = "No plots available to generate a composite figure."))
+            }
+            
+            # Define heights: 0.5 for titles, 4 for plot rows
+            heights <- sapply(main_panel_list, function(x) {
+                # Check if it's the top title row or cancor title
+                is_title_row <- inherits(x, "patchwork") && inherits(x[[1]], "ggplot") && length(x[[1]]$layers) == 0
+                if(is_title_row) 0.5 else 4
+            })
+            
+            main_panel <- wrap_plots(main_panel_list, ncol = 1, heights = heights)
+            
+            # --- 5. Final Assembly with Legend Column ---
+            # If a legend exists, combine the main panel and the legend
+            if (!is.null(master_legend)) {
+              combined_plot <- wrap_plots(main_panel, master_legend, ncol = 2, widths = c(10, 1.5))
+            } else {
+              combined_plot <- main_panel
+            }
+            
+            # --- 6. Save Plot ---
             if (!is.null(save_path)) {
-              # Calculate dynamic width based on number of columns
-              plot_width <- 4 + (ncol * 3)  # Base width + 3 units per column
-              plot_height <- 4 + (length(height_values) * 2)  # Base height + 2 units per row
+              max_cols <- max(sapply(plots, function(x) if(length(x) > 0) length(x) else 0))
+              final_ncol <- if (is.null(ncol)) max_cols else ncol
+              num_plot_rows <- sum(heights == 4)
+              
+              plot_width <- 4 + (final_ncol * 3.5)
+              plot_height <- 1 + (num_plot_rows * 4) + (length(main_panel_list) - num_plot_rows) * 0.5
               
               sapply(c("png", "pdf", "svg"), function(ext) {
                 ggsave(
                   plot = combined_plot,
                   filename = file.path(save_path, paste0(file_name, ".", ext)),
                   width = plot_width,
-                  height = plot_height
+                  height = plot_height,
+                  limitsize = FALSE
                 )
               })
               message(paste("Plots saved in", save_path))
