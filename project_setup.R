@@ -22,7 +22,7 @@ omic_types <- c("proteomics", "metabolomics", "transcriptomics", "lipidomics", "
 # Options: c("proteomics", "metabolomics", "transcriptomics", ...) 
 
 # The following two options primarily apply when 'proteomics' is in omic_types:
-workflow_type <- "DIA-NN"  # Proteomics-specific: "DIA-NN", "LFQ - FragPipe", "LFQ - MaxQuant", "TMT - MaxQuant", "TMT - FragPipe"
+workflow_type <- "DIANN-impute"  # Proteomics-specific: "DIA-NN", "DIANN-impute", "LFQ - FragPipe", "LFQ - MaxQuant", "TMT - MaxQuant", "TMT - FragPipe"
 user_experience <- "beginner"  # Proteomics-specific: "experienced", "beginner"
 
 # ============================================================================
@@ -57,6 +57,10 @@ getWorkflowUrl <- function(wf_type, usr_exp, omic) {
     if (wf_type == "DIA-NN") {
       # Use specific filenames for DIA-NN based on experience
       filename <- ifelse(usr_exp == "beginner", "DIA_workflow_starter.rmd", "DIA_workflow_experienced.rmd")
+      return(paste0(base_url, "/", subfolder, "/", filename))
+    } else if (wf_type == "DIANN-impute") {
+      # Use specific filenames for DIA-NN based on experience
+      filename <- ifelse(usr_exp == "beginner", "DIA_workflow_limpa_starter.rmd", "DIA_workflow_experienced.rmd")
       return(paste0(base_url, "/", subfolder, "/", filename))
     } else if (wf_type == "TMT - MaxQuant") {
       # Assuming TMT-MQ only has standard/experienced version for now
