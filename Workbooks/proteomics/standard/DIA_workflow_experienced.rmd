@@ -50,14 +50,14 @@ loadDependencies()
 ```
 
 # START HERE if you already have MultiScholaR installed
-When you already have MultiScholaR installed, you can start from this point. The code below loads the package and all its dependencies to prepare your environment for analysis.
+## When you already have MultiScholaR installed, you can start from this point. The code below loads the package and all its dependencies to prepare your environment for analysis.
 ```{r Load MultiScholaR}
 library(MultiScholaR)
 loadDependencies()
 ```
 
 # Set up your environment and project directory
-This section establishes the directory structure for your project. Setting up a consistent directory structure is crucial for managing the various files generated throughout the analysis, including input data, intermediate results, and final outputs. MultiScholaR creates a standardized structure to help organize your work.
+## This section establishes the directory structure for your project. Setting up a consistent directory structure is crucial for managing the various files generated throughout the analysis, including input data, intermediate results, and final outputs. MultiScholaR creates a standardized structure to help organize your work.
 ```{r Project Environment Management}
 # Directory Management
 ## Set up the project directory structure
