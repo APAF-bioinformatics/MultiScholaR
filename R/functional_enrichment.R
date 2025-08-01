@@ -240,21 +240,37 @@ generate_enrichment_plots <- function(enrichment_result, contrast, direction, pa
   
   # Extract result data for custom plotting with labels
   result_data <- enrichment_result$result
-  
-  # Identify top significant terms to label (5 most significant per source)
+
+  # Identify top significant terms to label
   top_terms <- result_data %>%
     dplyr::group_by(source) %>%
     dplyr::arrange(p_value) %>%
-    dplyr::slice_head(n = 3) %>% # Top 3 per category
+    dplyr::slice_head(n = 3) %>%
     dplyr::ungroup()
+
+  # Dynamically get the name of the column mapped to the x-axis
+  x_aes_name <- rlang::as_name(static_plot_base$mapping$x)
+  plot_data_internal <- static_plot_base$data
+  
+  # Defensive check to ensure the column exists in the plot data
+  if (!x_aes_name %in% names(plot_data_internal)) {
+    stop(paste("Could not find the x-axis column '", x_aes_name, "' in the gostplot data.", sep=""))
+  }
+  
+  # Join top_terms with the plot's internal data to get the numeric x-coordinates
+  top_terms_with_pos <- top_terms %>%
+    dplyr::left_join(
+      dplyr::select(plot_data_internal, term_id, dplyr::all_of(x_aes_name)),
+      by = "term_id"
+    )
   
   # Create custom static plot with labels for significant terms
   custom_static_plot <- static_plot_base +
-    # Add labels for significant terms
+    # Add labels for significant terms, using the dynamically found numeric position for x
     ggrepel::geom_text_repel(
-      data = top_terms,
+      data = top_terms_with_pos,
       mapping = ggplot2::aes(
-        x = source, 
+        x = .data[[x_aes_name]],
         y = -log10(p_value),
         label = term_name
       ),
@@ -425,18 +441,34 @@ processEnrichments <- function(de_results,
                        paste(head(protein_col_data, 3), collapse = ", ")))
         message(sprintf("DEBUG: Column class: %s", class(protein_col_data)))
 
-        subset_sig <- de_data |>
-          dplyr::mutate( {{protein_id_column}} := purrr::map_chr( {{protein_id_column}}, function(x){
-            tryCatch({
-              # Attempt to split and take first element
-              stringr::str_split(x, ":")[[1]][1]
-            }, error = function(e) {
-              # If splitting fails, return original value
-              message(sprintf("Warning: Failed to split protein ID '%s', using original value", x))
-              x
-            })
-          })) |>
-          filter(fdr_qvalue < q_cutoff)
+                 message("   processEnrichments Step: About to apply protein ID splitting and FDR filtering...")
+         message(sprintf("      Data State (de_data Before Modify): Dims=%d rows, %d cols. First 5 IDs: %s", nrow(de_data), ncol(de_data), paste(head(de_data[[protein_id_column]], 5), collapse=", ")))
+
+         subset_sig <- de_data |>
+           dplyr::mutate(
+             !!rlang::sym(protein_id_column) := purrr::map_chr(.data[[protein_id_column]], function(x) {
+               if (is.na(x) || x == "") return(x)
+               tryCatch({
+                 # Attempt to split and take first element
+                 stringr::str_split(x, ":")[[1]][1]
+               }, error = function(e) {
+                 # If splitting fails, return original value
+                 message(sprintf("Warning: Failed to split protein ID '%s', using original value", x))
+                 x
+               })
+             })
+           ) |>
+           filter(fdr_qvalue < q_cutoff)
+
+         message("   processEnrichments Step: Protein ID splitting and filtering complete.")
+         message(sprintf("      Data State (subset_sig After Modify): Dims=%d rows, %d cols.", nrow(subset_sig), ncol(subset_sig)))
+         if(nrow(subset_sig) > 0) {
+            message(sprintf("      Data State (subset_sig After Modify): First 5 IDs: %s", paste(head(subset_sig[[protein_id_column]], 5), collapse=", ")))
+            # Also check for the literal "Protein.Ids" to be sure
+            if(any(subset_sig[[protein_id_column]] == "Protein.Ids", na.rm = TRUE)) {
+              message("      WARNING: Literal 'Protein.Ids' found in the protein ID column after modification!")
+            }
+         }
 
         message(sprintf("Proteins passing q-value cutoff (%.3f): %d", q_cutoff, nrow(subset_sig)))
         
@@ -505,8 +537,7 @@ processEnrichments <- function(de_results,
         }
 
         # Get background IDs from the full de_data for this contrast
-        custom_bg <- de_data |>
-          dplyr::pull({{protein_id_column}}) |>
+        custom_bg <- de_data[[protein_id_column]] |>
           unique()
 
         message(sprintf("Using %d unique proteins as background for enrichment analysis", length(custom_bg)))
@@ -523,8 +554,7 @@ processEnrichments <- function(de_results,
               message("   processEnrichments Step: CALLING perform_enrichment for UP-REGULATED proteins...")
               message(sprintf("      About to analyze %d up-regulated proteins", nrow(up_matrix)))
               
-              # Convert protein_id_column to string for passing to perform_enrichment
-              protein_col <- rlang::as_label(rlang::ensym(protein_id_column))
+              protein_col <- protein_id_column
               message(sprintf("      Using protein_id_column: %s", protein_col))
               message(sprintf("      Using species: %s", species))
               message(sprintf("      Using threshold: %s", q_cutoff))
@@ -582,8 +612,7 @@ processEnrichments <- function(de_results,
               message("   processEnrichments Step: CALLING perform_enrichment for DOWN-REGULATED proteins...")
               message(sprintf("      About to analyze %d down-regulated proteins", nrow(down_matrix)))
               
-              # Convert protein_id_column to string for passing to perform_enrichment
-              protein_col <- rlang::as_label(rlang::ensym(protein_id_column))
+              protein_col <- protein_id_column
               message(sprintf("      Using protein_id_column: %s", protein_col))
               message(sprintf("      Using species: %s", species))
               message(sprintf("      Using threshold: %s", q_cutoff))
