@@ -766,11 +766,12 @@ processMultisiteEvidence <- function(fasta_file,
 
 ###--------------------------------------------------------------------------------------------------------------------------------
 
-#' @export
+#' @title Get the ranking of the uniprot_acc within the sites_id
 #' @description Given an input table with sites_id and uniprot_acc columns, work out the ranking of the uniprot_acc within the sites_id
 #' @param input_table, an input table with sites_id and uniprot_acc columns
 #' @param uniprot_acc, name of Uniprot accession column tidyverse style column name input
 #' @param sites_id, name of sites_id column, in tidyverse style column name
+#' @export
 getUniprotAccRankFromSitesId <- function( input_table, uniprot_acc, sites_id) {
   input_table %>%
     dplyr::mutate( uniprot_acc_split = str_split({{uniprot_acc}}, ":" ) %>% purrr::map_chr(1) ) %>%

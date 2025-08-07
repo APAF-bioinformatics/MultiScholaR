@@ -1,3 +1,4 @@
+#' @title Setup directories
 #' @description Creates and manages project directories with version control for multiple omic types.
 #' @param base_dir Base directory path (optional, defaults to here::here())
 #' @param omic_types Character vector or comma/space-separated string indicating the types of omics data (e.g., c("proteomics", "metabolomics"), "proteomics, transcriptomics").

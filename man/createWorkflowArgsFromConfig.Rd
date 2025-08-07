@@ -2,30 +2,36 @@
 % Please edit documentation in R/helper_functions.R
 \name{createWorkflowArgsFromConfig}
 \alias{createWorkflowArgsFromConfig}
-\title{Create Workflow Arguments Container from Config}
+\title{Create workflow arguments from config}
 \usage{
 createWorkflowArgsFromConfig(
   workflow_name,
   description = "",
   organism_name = NULL,
   taxon_id = NULL,
-  source_dir_path = NULL
+  source_dir_path = NULL,
+  final_s4_object = NULL,
+  contrasts_tbl = NULL,
+  workflow_data = NULL
 )
 }
 \arguments{
-\item{workflow_name}{Name of the workflow}
+\item{workflow_name}{Character string, name of the workflow}
 
-\item{description}{Optional description of the workflow}
+\item{description}{Character string, description of the analysis}
 
-\item{organism_name}{Optional organism name (defaults to value from session if available)}
+\item{organism_name}{Character string, organism name (optional)}
 
-\item{taxon_id}{Optional taxon ID (defaults to value from session if available)}
+\item{taxon_id}{Character string or numeric, taxon ID (optional)}
 
-\item{source_dir_path}{Character string, the path to the source directory for this workflow instance.}
-}
-\value{
-WorkflowArgs object
+\item{source_dir_path}{Character string, path to save the study_parameters.txt file}
+
+\item{final_s4_object}{S4 object containing workflow parameters in @args slot (optional)}
+
+\item{contrasts_tbl}{Data frame, contrasts table (optional)}
+
+\item{workflow_data}{List containing workflow state and optimization results (optional)}
 }
 \description{
-Create Workflow Arguments Container from Config
+Create workflow arguments from config
 }

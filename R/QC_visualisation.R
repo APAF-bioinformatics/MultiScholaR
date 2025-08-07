@@ -72,11 +72,11 @@
 #'   global `filtering_progress` object and potentially saves plots to disk if 
 #'   `omic_type` and `experiment_label` are provided and paths are valid.
 #'   
-#' @importFrom ggplot2 ggplot aes geom_bar geom_text labs theme_minimal theme element_text panel_grid_major_x geom_line geom_point scale_color_manual annotate theme_void geom_boxplot coord_cartesian quantile ggsave
-#' @importFrom dplyr bind_rows mutate group_by ungroup mean %>%
+#' @importFrom ggplot2 ggplot aes geom_bar geom_text labs theme_minimal theme element_text element_blank geom_line geom_point scale_color_manual annotate theme_void geom_boxplot coord_cartesian ggsave
+#' @importFrom dplyr bind_rows mutate group_by ungroup %>%
 #' @importFrom forcats fct_reorder
 #' @importFrom gridExtra arrangeGrob grid.arrange
-#' @importFrom methods isS4 slotNames new
+#' @importFrom methods slotNames new is
 #' @importFrom stats quantile
 #' 
 #' @export
@@ -139,7 +139,7 @@ updateProteinFiltering <- function(data, step_name,
     }
     
     # Determine if we\'re working with protein_quant_table
-    is_protein_quant <- if (isS4(data)) {
+    is_protein_quant <- if (methods::is(data, "S4")) {
         "protein_quant_table" %in% slotNames(data)
     } else {
         # For data frames, check if it looks like a protein quant table
@@ -866,8 +866,8 @@ calculateSumIntensityPerSample <- function(assay_data, sample_id_col) {
 #' @return A single numeric value: the total count of unique metabolite IDs
 #'         across all provided assays.
 #'
-#' @importFrom purrr map pull
-#' @importFrom dplyr distinct n
+#' @importFrom purrr map
+#' @importFrom dplyr distinct n pull
 #' @keywords internal
 #' @noRd
 #' @export
@@ -1180,7 +1180,7 @@ getInternalStandardMetrics <- function(assay_data,
 #' @return If `return_grid` is `TRUE`, a `grob` object. Otherwise, an invisible list
 #'         containing individual `ggplot` objects.
 #'
-#' @importFrom methods slotNames isS4
+#' @importFrom methods slotNames is
 #' @importFrom SummarizedExperiment assays colData assayNames
 #' @importFrom gridExtra grid.arrange
 #' @importFrom ggplot2 ggsave
@@ -1202,7 +1202,7 @@ updateMetaboliteFiltering <- function(theObject,
     prog_met <- getFilteringProgressMetabolomics()
 
 
-    if (!isS4(theObject)) {
+    if (!methods::is(theObject, "S4")) {
         stop("`theObject` must be an S4 object.")
     }
     
@@ -1451,8 +1451,8 @@ updateMetaboliteFiltering <- function(theObject,
 #'
 #' @return A list of ggplot objects, one for each visualization type.
 #'
-#' @importFrom ggplot2 ggplot aes geom_bar geom_text labs theme_minimal theme element_text panel_grid_major_x geom_line geom_point scale_color_manual annotate theme_void geom_boxplot coord_cartesian facet_wrap geom_violin
-#' @importFrom dplyr bind_rows mutate group_by ungroup mean
+#' @importFrom ggplot2 ggplot aes geom_bar geom_text labs theme_minimal theme element_text element_blank geom_line geom_point scale_color_manual annotate theme_void geom_boxplot coord_cartesian facet_wrap geom_violin scale_fill_brewer position_dodge
+#' @importFrom dplyr bind_rows mutate group_by ungroup
 #' @importFrom forcats fct_reorder
 #' @importFrom tidyr pivot_longer
 #' @keywords internal
@@ -1809,4 +1809,3 @@ generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
     
     return(plot_list)
 }
-

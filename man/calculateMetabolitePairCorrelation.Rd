@@ -2,7 +2,7 @@
 % Please edit documentation in R/metaboliteVsSamplesS4Objects.R
 \name{calculateMetabolitePairCorrelation}
 \alias{calculateMetabolitePairCorrelation}
-\title{Calculate Pearson correlation for a pair of samples from long-format data}
+\title{Calculate Metabolite Pair Correlation}
 \usage{
 calculateMetabolitePairCorrelation(
   input_pair_table,
@@ -25,6 +25,11 @@ sample ID, and abundance values. Must contain exactly two unique sample IDs.}
 Numeric Pearson correlation value, or NA_real_ on error or insufficient data.
 }
 \description{
+Internal helper to calculate Pearson correlation for a pair of samples.
+}
+\details{
+Calculate Pearson correlation for a pair of samples from long-format data
+
 Internal helper function specifically for metabolomics data structure.
 Assumes input table is already filtered for the two relevant samples.
 }

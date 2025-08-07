@@ -52,6 +52,9 @@ NA/NaN values after correction are removed. The \code{design_matrix} is updated
 via \code{cleanDesignMatrix}.
 }
 \description{
+Apply RUV-III Correction with Varying K
+}
+\details{
 Applies the RUV-III correction method to each assay within a
 \code{MetaboliteAssayData} object. This method accounts for unwanted variation
 using control features and a replicate structure matrix. It allows for

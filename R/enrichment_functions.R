@@ -17,7 +17,7 @@ convertIdToAnnotation <- function( id, id_to_annotation_dictionary) {
 
 }
 
-
+#'@title Run one GO enrichment
 #'@param go_annot: Go annotation table.
 #'@export
 oneGoEnrichment <- function( go_annot
@@ -1249,8 +1249,7 @@ enrichedPathwayBarPlot <- function( input_table, input_go_type = NA, remove_dupl
 
 }
 
-
-
+#'@title Draw list of functional enrichment heatmaps
 #'@description given input table, draw a bar plot representing the GO enrichment results.
 #'The height of each bar represents the negative log (base 10) q-values of the query proteins.
 #'@export
@@ -1291,7 +1290,7 @@ enrichedGoTermBarPlot <- function( input_table, output_dir,
 
 
 }
-
+#'@title Create a word frequency distribution table for Word Cloud generation.
 #'@description Create a word frequency distribution table for Word Cloud generation.
 #'Based on article by Céline Van den Rul, How to Generate Word Clouds in R, Simple Steps on How and When to Use Them,
 #' https://towardsdatascience.com/create-a-word-cloud-with-r-bde3e7422e8a (accessed 7th November 2022)

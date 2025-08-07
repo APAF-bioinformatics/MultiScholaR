@@ -1,6 +1,6 @@
 
-' @title Log2 Transform Assay Data for MetaboliteAssayData
-#'
+ 
+#' @title Log2 Transform Assay Data for MetaboliteAssayData
 #' @description
 #' Applies a log2 transformation (log2(x + offset)) to the numeric sample columns
 #' in all assay tibbles stored within the `metabolite_data` slot of a

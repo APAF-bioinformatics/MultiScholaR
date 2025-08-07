@@ -388,7 +388,7 @@ updateParamInObject <- function(theObject, param_name_string) {
 
 
 ##################################################################################################################
-
+#' @title Summarize QC plots
 #' @description Helper function to neatly print out the figures as they get produced
 #' @export
 
@@ -419,10 +419,12 @@ summarizeQCPlot <- function(qc_figure) {
 }
 
 ##################################################################################################################
-#' @export
+
+#' @title Read the config file and return the list of parameters
 #' @description Read the config file and return the list of parameters
 #' @param file The file path to the config file
 #' @param file_type The type of the file (default: "ini")
+#' @export
 readConfigFile <- function( file=file.path(source_dir, "config.ini")) {
 
   config_list <- read.config(file=file, file.type = "ini" )
@@ -603,12 +605,13 @@ readConfigFile <- function( file=file.path(source_dir, "config.ini")) {
 
 
 
-#' @export
+#' @title Read the config file and specify the section and or parameter to update the object
 #' @description Read the config file and specify the section and or parameter to update the object
 #' @param theObject The object to be updated
 #' @param file The file path to the config file
 #' @param section The section to be updated
 #' @param value The parameter value to be updated
+#' @export
 readConfigFileSection <- function( theObject
                             , file=file.path(source_dir, "config.ini")
                             , function_name
@@ -2566,7 +2569,7 @@ createStudyParametersFile <- function(workflow_name,
 }
 
 # Updated function to extract parameters from S4 @args slot
-#' @export
+#' @title Create workflow arguments from config
 #' @param workflow_name Character string, name of the workflow
 #' @param description Character string, description of the analysis
 #' @param organism_name Character string, organism name (optional)
@@ -2575,6 +2578,7 @@ createStudyParametersFile <- function(workflow_name,
 #' @param final_s4_object S4 object containing workflow parameters in @args slot (optional)
 #' @param contrasts_tbl Data frame, contrasts table (optional)
 #' @param workflow_data List containing workflow state and optimization results (optional)
+#' @export
 createWorkflowArgsFromConfig <- function(workflow_name, description = "", 
                                         organism_name = NULL, taxon_id = NULL,
                                         source_dir_path = NULL, 

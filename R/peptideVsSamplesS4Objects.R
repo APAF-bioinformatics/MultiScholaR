@@ -481,13 +481,14 @@ setGeneric(name="filterMinNumPeptidesPerProtein"
                          , "num_peptidoforms_per_protein_thresh"
                          , "core_utilisation"))
 
-#'@export
-#'@description
-#' Keep the proteins only if they have two or more peptides.
+
+#'@title Filter the proteins based on the number of peptides and peptidoforms
+#'@description Keep the proteins only if they have two or more peptides.
 #'@param theObject Object of class PeptideQuantitativeData
 #'@param num_peptides_per_protein_thresh Minimum number of peptides per protein
 #'@param num_peptidoforms_per_protein_thresh Minimum number of peptidoforms per protein
 #'@param core_utilisation core_utilisation to use for parallel processing
+#'@export
 setMethod( f="filterMinNumPeptidesPerProtein"
            , signature="PeptideQuantitativeData"
            , definition = function( theObject
