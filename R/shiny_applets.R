@@ -1,3 +1,4 @@
+#' @title Run an applet
 #' @param applet_type The type of applet to run (e.g., "designMatrix").
 #' @param omic_type The omics context for the applet (e.g., "proteomics", "metabolomics").
 #' @param experiment_label The label used when setting up directories (e.g., "workshop_data"). This is used to find the correct paths within the project_dirs_object.

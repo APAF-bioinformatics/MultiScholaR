@@ -30,7 +30,7 @@ Updated S4 object with synchronized @args and global config_list
 }
 \description{
 Automatically calculates and updates the missing value filtering parameters in the configuration list
-and S4 object @args based on the experimental design matrix. The function ensures at least a specified 
+and S4 object @args based on the experimental design matrix. The function ensures at least a specified
 number of groups have sufficient quantifiable values for analysis.
 }
 \details{

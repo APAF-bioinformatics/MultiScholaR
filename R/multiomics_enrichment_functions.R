@@ -1064,8 +1064,8 @@ runMetabolomicsEnrichmentAnalysis <- function(weights,
   return(combined_results)
 }
 
-' Run KEGG Pathway Enrichment Analysis for Metabolites
-#'
+  
+#' @title Run KEGG Pathway Enrichment Analysis for Metabolites
 #' @param ranked_list Named numeric vector with ChEBI IDs as names and values as weights
 #' @param mapping_table Metabolite ID mapping table
 #' @param project_dirs Project directories structure

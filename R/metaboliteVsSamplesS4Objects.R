@@ -37,10 +37,13 @@
 #' @slot args A list, typically populated from a configuration file, holding
 #'   parameters used during processing.
 #'
+#' @title MetaboliteAssayData Class
+#' @description An S4 class to store and manage multiple metabolomics quantitative datasets.
 #' @importFrom methods setClass slotNames slot new
 #' @importFrom dplyr pull distinct
 #' @importFrom rlang sym !!
 #' @exportClass MetaboliteAssayData
+#' @export MetaboliteAssayData
 MetaboliteAssayData <- setClass("MetaboliteAssayData",
     slots = c(
         metabolite_data = "list",
@@ -205,7 +208,8 @@ MetaboliteAssayData <- setClass("MetaboliteAssayData",
 #' @param args List of arguments (e.g., from config).
 #'
 #' @return A MetaboliteAssayData object.
-#' @export
+#' @title Create MetaboliteAssayData Object
+#' @export createMetaboliteAssayData
 #' @examples
 #' \dontrun{
 #' # Assuming lcms_pos_df, lcms_neg_df, gcms_df are data frames
@@ -267,6 +271,7 @@ createMetaboliteAssayData <- function(
 ## Plotting Methods for MetaboliteAssayData
 ##-----------------------------------------------------------------------------
 
+#' @title Plot PCA for MetaboliteAssayData
 #' @describeIn plotPca Method for MetaboliteAssayData
 #' @importFrom purrr map set_names
 #' @importFrom tibble column_to_rownames
@@ -406,6 +411,7 @@ setMethod(f = "plotPca",
             return(pca_plots_list)
           })
 
+#' @title Plot RLE for MetaboliteAssayData
 #' @describeIn plotRle Method for MetaboliteAssayData
 #' @importFrom purrr map set_names
 #' @importFrom tibble column_to_rownames
@@ -552,6 +558,7 @@ setMethod(f = "plotRle",
           })
 
 
+#' @title Plot Density for MetaboliteAssayData
 #' @describeIn plotDensity Method for MetaboliteAssayData
 #' @importFrom purrr map set_names
 #' @importFrom tibble column_to_rownames as_tibble
@@ -741,6 +748,8 @@ setMethod(f = "plotDensity",
           })
 
 
+#' @title Plot Density for list of ggplot objects
+#' @title Plot Density for list of ggplot objects
 #' @describeIn plotDensity Method for list of ggplot objects
 #' @importFrom purrr map set_names
 #' @importFrom tibble as_tibble
@@ -855,10 +864,12 @@ setMethod(f = "plotDensity",
           })
 
 
+#' @title Calculate Pearson Correlation for Sample Pairs
+#' @title Calculate Pearson Correlation for Sample Pairs
 #' @describeIn pearsonCorForSamplePairs Method for MetaboliteAssayData
 #' @importFrom purrr map set_names map_df
 #' @importFrom tidyr pivot_longer
-#' @importFrom dplyr left_join select mutate filter distinct arrange group_by summarise ungroup pull if_else case_when row_number n rename add_column relocate
+#' @importFrom dplyr left_join select mutate filter distinct arrange group_by summarise ungroup pull if_else case_when row_number n rename relocate
 #' @importFrom stringr str_detect
 #' @importFrom rlang sym !! :=
 #' @export
@@ -1069,6 +1080,7 @@ setMethod(f = "pearsonCorForSamplePairs",
            })
 
 
+#' @title Plot Pearson Correlation Histogram
 #' @describeIn plotPearson Method for MetaboliteAssayData
 #' @importFrom purrr map set_names
 #' @importFrom ggplot2 ggplot aes geom_histogram scale_y_continuous xlab ylab theme element_blank
@@ -1169,6 +1181,8 @@ setMethod(f = "plotPearson",
 #' @param value_column String name of the column containing abundance values.
 #'
 #' @return Numeric Pearson correlation value, or NA_real_ on error or insufficient data.
+#' @title Calculate Metabolite Pair Correlation
+#' @description Internal helper to calculate Pearson correlation for a pair of samples.
 #' @importFrom tidyr pivot_wider
 #' @importFrom rlang sym !!
 #' @importFrom stats cor
@@ -1237,6 +1251,7 @@ calculateMetabolitePairCorrelation <- function(input_pair_table, feature_id_colu
 
 # ------------------------------------------------------- #
 
+#' @title Normalize Between Samples
 #' @describeIn normaliseBetweenSamples Method for MetaboliteAssayData
 #' @param theObject Object of class MetaboliteAssayData
 #' @param normalisation_method Method to use for normalization. Options are
@@ -1435,6 +1450,7 @@ setMethod(f = "normaliseBetweenSamples",
             return(theObject)
           })
 
+#' @title Clean Design Matrix
 #' @describeIn cleanDesignMatrix Method for MetaboliteAssayData
 #' @importFrom dplyr inner_join select rename filter all_of any_of
 #' @importFrom rlang sym !!
@@ -1552,6 +1568,7 @@ setMethod(f = "cleanDesignMatrix",
 #' @importFrom tibble column_to_rownames as_tibble is_tibble
 #' @importFrom dplyr pull select filter all_of any_of mutate across
 #' @importFrom rlang sym !!
+#' @title Get Negative Control Metabolites by ANOVA
 #' @importFrom logger log_info log_warn
 #' @describeIn getNegCtrlMetabAnova Method for MetaboliteAssayData
 #' @export
@@ -1808,6 +1825,7 @@ setMethod(f = "getNegCtrlMetabAnova",
             return(final_control_list)
           })
 
+#' @title Plot RUV Canonical Correlation
 #' @describeIn ruvCancor Method for MetaboliteAssayData
 #' @importFrom methods slot
 #' @importFrom purrr map set_names map_lgl
@@ -2124,6 +2142,8 @@ setMethod(f = "ruvCancor",
 #' @importFrom rlang sym !! :=
 #' @importFrom logger log_info log_warn log_error
 #' @importFrom mixOmics impute.nipals
+#' @title Apply RUV-III Correction with Varying K
+#' @title Apply RUV-III Correction with Varying K
 #' @importFrom stringr str_split
 #' @describeIn ruvIII_C_Varying Method for MetaboliteAssayData
 #' @export
@@ -2533,4 +2553,3 @@ setMethod(f = "ruvIII_C_Varying",
             log_info("RUV-III correction process finished for {length(final_corrected_list)} assay(s).")
             return(theObject)
           })
-

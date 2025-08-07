@@ -181,7 +181,7 @@ chooseBestPhosphositeAccession <- function(input_tbl, acc_detail_tab, accessions
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+#'@title Choose the best UniProt accession for a protein group
 #'@description From a list of UniProt accessions, choose the best accession to use based on the UniProt score for quality of annotation for the protein entries
 #'@param input_tbl Contain the following columns, 'group_id' which is the Id for each protein group, 'accessions_column' which is the column with the accession of the protein
 #'@param acc_detail_tabl The out table from running the function 'parseFastaFile'
@@ -257,6 +257,7 @@ chooseBestProteinAccessionHelper <- function(input_tbl
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#'@title Rank the UniProt accessions for a protein group
 #'@description From a list of UniProt accessions, rank the accession to use based on the UniProt score for quality of annotation for the protein entries
 #'@param input_tbl Contain the following columns, 'group_id' which is the Id for each protein group, 'accessions_column' which is the column with the accession of the protein
 #'@param acc_detail_tabl The out table from running the function 'parseFastaFile'

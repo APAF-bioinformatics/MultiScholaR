@@ -1860,7 +1860,7 @@ cleanDesignMatrixCleanCategoriesMap <- function( input_table, column ) {
 #------------------------------------------------------------------------------------------------
 
 #' @description
-#' get protein intensity heatmap
+#' @title get protein intensity heatmap
 #'@export
 getProteinsHeatMap <- function( protein_matrix
                                 , metadata_tbl
@@ -2059,7 +2059,7 @@ calculateMissingValuesPerProteinFishersTest <- function( contrasts_table, missin
 
 
 #' @description
-#' ProCan ggplot2 theme. Rectangle box around each plot.
+#' @title ProCan ggplot2 theme. Rectangle box around each plot.
 #' @export
 apafTheme <- function() {
   theme(

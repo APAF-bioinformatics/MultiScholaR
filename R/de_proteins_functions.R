@@ -139,6 +139,7 @@ removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#'@title Remove rows with missing values
 #'@param input_table An input table with a column containing the row ID and the rest of the columns representing abundance values for each sample.
 #'@param cols A tidyselect command to select the columns. This includes the functions starts_with(), ends_with(), contains(), matches(), and num_range()
 #'@param design_matrix A data frame with a column containing the sample ID (as per the sample_id param) and the experimental group (as per the group param). Each row as the sample ID as row name in the data frame.
@@ -564,7 +565,7 @@ plotPcaGgpairs <- function( data_matrix
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
+#'@title Plot RLE
 #'@export
 #'@param Y  Rows = Samples, Columns = Proteins or Peptides
 plotRleHelper <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75,
@@ -627,6 +628,7 @@ plotRleHelper <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75,
 }
 
 
+#'@title Get Max and Min Boxplot
 #' @export
 #' @description Input a ggplot2 boxplot, return the maximum and minimum data point adjusted by the adjust_factor.
 #' @param input_boxplot A ggplot2 boxplot object.
@@ -1002,7 +1004,7 @@ plotOneVolcano <- function( input_data, input_title,
 }
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+#' @title Prepare data for volcano plot
 #' @param input_table The input table with the log fold-change and q-value columns.
 #' @param protein_id_column The name of the column representing the protein ID (tidyverse style).
 #' @param uniprot_table The uniprot table with the imporatnt info on each protein
@@ -2181,7 +2183,7 @@ findBestKForAssayList <- function(cancor_plots_list) {
 }
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+#'@title Average values from replicates
 #'@param design_matrix Contains the sample_id column and the average_replicates_id column
 #'@export
 averageValuesFromReplicates <- function(input_table, design_matrix, group_pattern, row_id, sample_id, average_replicates_id) {
@@ -2363,7 +2365,7 @@ goIdToTerm <- function(go_string, sep = "; ", goterms, gotypes) {
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+#' @title Convert UniProt Accession to GO Term
 #' @param uniprot_dat  a table with uniprot accessions and a column with GO-ID
 #' @param uniprot_id_column The name of the column with the uniprot accession, as a tidyverse header format, not a string
 #' @param go_id_column The name of the column with the GO-ID, as a tidyverse header format, not a string
@@ -2528,13 +2530,13 @@ gg_save_logging <- function( input_plot
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @export
-#'
+#' @title Calculate protein technical replicate correlation
 #' @param design_matrix_tech_rep: design matrix with the technical replicates
 #' @param data_matrix: input data matrix
 #' @param sample_id_column: column name of the sample ID. This is the unique identifier for each sample.
 #' @param tech_rep_column: column name of the technical replicates. Technical replicates of the same sample will have the same value.
 #' @param tech_rep_num_column: column name of the technical replicate number. This is a unique number for each technical replicate for each sample.
+#' @export
 proteinTechRepCorrelationHelper <- function( design_matrix_tech_rep, data_matrix
                                              , protein_id_column = "Protein.Ids"
                                              , sample_id_column="Sample_ID", tech_rep_column = "replicates", tech_rep_num_column = "tech_rep_num", tech_rep_remove_regex = "pool" ) {

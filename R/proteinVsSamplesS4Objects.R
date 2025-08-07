@@ -570,7 +570,7 @@ setMethod( f = "proteinTechRepCorrelation"
 
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-# Plot Pearson Correlation
+#' @title Plot Pearson Correlation
 #' @param theObject is an object of the type ProteinQuantitativeData
 #' @param tech_rep_remove_regex samples containing this string are removed from correlation analysis (e.g. if you have lots of pooled sample and want to remove them)
 #' @param correlation_group is the group where every pair of samples are compared
@@ -848,7 +848,7 @@ setMethod(f = "createGridQC",
           })
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-## normalise between Arrays
+#'@title Normalise between Arrays
 #'@export
 #'@param theObject Object of class ProteinQuantitativeData
 #'@param normalisation_method Method to use for normalisation. Options are cyclicloess, quantile, scale, none
