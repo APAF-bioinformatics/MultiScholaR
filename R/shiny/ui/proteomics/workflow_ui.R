@@ -46,21 +46,63 @@ proteomicsWorkflowUi <- function(id) {
   tryCatch({
     setup_import_content <- setupImportUi(ns("setup_import"))
     message(sprintf("   proteomicsWorkflowUi: setupImportUi returned successfully"))
-    message(sprintf("   proteomicsWorkflowUi: Return type: %s, class: %s", 
-                    typeof(setup_import_content), class(setup_import_content)))
-    message("   proteomicsWorkflowUi: Return structure:")
-    utils::str(setup_import_content, max.level = 2)
   }, error = function(e) {
     message(sprintf("   proteomicsWorkflowUi: ERROR calling setupImportUi: %s", e$message))
-    message("   proteomicsWorkflowUi: Error traceback:")
-    print(traceback())
     stop(e)
   })
   
   # Create design matrix tab
   message("   proteomicsWorkflowUi Step: Calling designMatrixAppletUI...")
-  design_matrix_content <- designMatrixAppletUI(ns("design_matrix"))
+  tryCatch({
+    design_matrix_content <- designMatrixAppletUI(ns("design_matrix"))
+    message(sprintf("   proteomicsWorkflowUi: designMatrixAppletUI returned successfully"))
+  }, error = function(e) {
+    message(sprintf("   proteomicsWorkflowUi: ERROR calling designMatrixAppletUI: %s", e$message))
+    stop(e)
+  })
   
+  # Test other UI functions
+  message("   proteomicsWorkflowUi Step: Testing other UI functions...")
+  tryCatch({
+    qc_content <- qualityControlAppletUI(ns("quality_control"))
+    message(sprintf("   proteomicsWorkflowUi: qualityControlAppletUI returned successfully"))
+  }, error = function(e) {
+    message(sprintf("   proteomicsWorkflowUi: ERROR calling qualityControlAppletUI: %s", e$message))
+    stop(e)
+  })
+  
+  tryCatch({
+    norm_content <- normalizationAppletUI(ns("normalization"))
+    message(sprintf("   proteomicsWorkflowUi: normalizationAppletUI returned successfully"))
+  }, error = function(e) {
+    message(sprintf("   proteomicsWorkflowUi: ERROR calling normalizationAppletUI: %s", e$message))
+    stop(e)
+  })
+  
+  tryCatch({
+    de_content <- differentialExpressionAppletUI(ns("differential_expression"))
+    message(sprintf("   proteomicsWorkflowUi: differentialExpressionAppletUI returned successfully"))
+  }, error = function(e) {
+    message(sprintf("   proteomicsWorkflowUi: ERROR calling differentialExpressionAppletUI: %s", e$message))
+    stop(e)
+  })
+  
+  tryCatch({
+    enrich_content <- enrichmentAnalysisAppletUI(ns("enrichment_analysis"))
+    message(sprintf("   proteomicsWorkflowUi: enrichmentAnalysisAppletUI returned successfully"))
+  }, error = function(e) {
+    message(sprintf("   proteomicsWorkflowUi: ERROR calling enrichmentAnalysisAppletUI: %s", e$message))
+    stop(e)
+  })
+  
+  tryCatch({
+    session_content <- sessionSummaryUI(ns("session_summary"))
+    message(sprintf("   proteomicsWorkflowUi: sessionSummaryUI returned successfully"))
+  }, error = function(e) {
+    message(sprintf("   proteomicsWorkflowUi: ERROR calling sessionSummaryUI: %s", e$message))
+    stop(e)
+  })
+
   # Now build the complete tagList
   message("   proteomicsWorkflowUi Step: Creating tabsetPanel...")
   result <- shiny::tagList(
@@ -96,7 +138,7 @@ proteomicsWorkflowUi <- function(id) {
         value = "qc",
         icon = shiny::icon("chart-line"),
         shiny::br(),
-        qualityControlAppletUI(ns("quality_control"))
+        qc_content
       ),
       
       # Tab 4: Normalization
@@ -105,7 +147,7 @@ proteomicsWorkflowUi <- function(id) {
         value = "normalization",
         icon = shiny::icon("balance-scale"),
         shiny::br(),
-        normalizationAppletUI(ns("normalization"))
+        norm_content
       ),
       
       # Tab 5: Differential Expression
@@ -114,7 +156,7 @@ proteomicsWorkflowUi <- function(id) {
         value = "de",
         icon = shiny::icon("chart-bar"),
         shiny::br(),
-        differentialExpressionAppletUI(ns("differential_expression"))
+        de_content
       ),
       
       # Tab 6: Enrichment Analysis
@@ -123,7 +165,7 @@ proteomicsWorkflowUi <- function(id) {
         value = "enrichment",
         icon = shiny::icon("network-wired"),
         shiny::br(),
-        enrichmentAnalysisAppletUI(ns("enrichment_analysis"))
+        enrich_content
       ),
       
       # Tab 7: Session Summary & Report Generation
@@ -132,7 +174,7 @@ proteomicsWorkflowUi <- function(id) {
         value = "session_summary",
         icon = shiny::icon("file-export"),
         shiny::br(),
-        sessionSummaryUI(ns("session_summary"))
+        session_content
       )
     )
   )
