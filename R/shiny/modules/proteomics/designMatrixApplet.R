@@ -79,7 +79,11 @@ designMatrixAppletUI <- function(id) {
 #' @importFrom vroom vroom
 #' @importFrom shinyFiles shinyDirButton shinyDirChoose parseDirPath getVolumes
 designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volumes = NULL) {
+  message(sprintf("--- Entering designMatrixAppletServer ---"))
+  message(sprintf("   designMatrixAppletServer Arg: id = %s", id))
+  
   shiny::moduleServer(id, function(input, output, session) {
+    message(sprintf("   designMatrixAppletServer Step: Inside moduleServer function"))
     
     # == Setup shinyFiles =======================================================
     # Resolve the volumes object to a static list to avoid reactive context issues.

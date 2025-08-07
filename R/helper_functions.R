@@ -696,7 +696,7 @@ loadDependencies <- function(verbose = TRUE) {
         "shinydashboard", "shinythemes", "shinycssloaders",
         # Added from Suggests:
         "testthat", "ggplot2", "ggpubr", "svglite",
-        "ggraph", "reticulate", "shinyFiles"
+        "ggraph", "reticulate", "shinyFiles", "arrow"
     )
 
     bioc_packages <- c(
@@ -1857,9 +1857,7 @@ RenderReport <- function(omic_type,
     current_omic_key <- paste0(omic_type, "_", experiment_label)
 
     if (!current_omic_key %in% names(project_dirs_global)) {
-        rlang::abort(paste0("Key ", sQuote(current_omic_key), " not found in ", 
-                           sQuote(project_dirs_object_name), 
-                           ". Check omic_type ('", omic_type, "') and experiment_label ('", experiment_label, "')."))
+        rlang::abort(paste0("Key ", sQuote(current_omic_key), " not found in ", sQuote(project_dirs_object_name), ". Check omic_type and experiment_label."))
     }
     current_paths <- project_dirs_global[[current_omic_key]] # This contains base_dir, results_summary_dir etc. for the *labelled* omic
 
@@ -1914,13 +1912,28 @@ RenderReport <- function(omic_type,
     logger::log_info("- Output File: {output_file_path}")
     logger::log_info("- Params: omic_type=\'{omic_type}\', experiment_label=\'{experiment_label}\'")
 
+    # Read study_parameters.txt to extract workflow_name and timestamp
+    params_path <- file.path(current_paths$source_dir, "study_parameters.txt")
+    if (file.exists(params_path)) {
+        lines <- readLines(params_path)
+        workflow_name_line <- grep("Workflow Name:", lines, value = TRUE)
+        timestamp_line <- grep("Timestamp:", lines, value = TRUE)
+        workflow_name <- if (length(workflow_name_line) > 0) trimws(sub("Workflow Name:", "", workflow_name_line[1])) else "Unknown Workflow"
+        timestamp <- if (length(timestamp_line) > 0) trimws(sub("Timestamp:", "", timestamp_line[1])) else format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+    } else {
+        workflow_name <- "Unknown Workflow"
+        timestamp <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+    }
+
     # --- Render the Report ---
     rendered_path <- tryCatch({
         rmarkdown::render(
             input = rmd_input_path,
             params = list(
                 omic_type = omic_type,
-                experiment_label = experiment_label
+                experiment_label = experiment_label,
+                workflow_name = workflow_name,
+                timestamp = timestamp
             ),
             output_file = output_file_path,
             output_format = output_format, # Pass this along; if NULL, Rmd default is used
@@ -2426,21 +2439,19 @@ createStudyParametersFile <- function(workflow_name,
     # Get git information
     git_info <- tryCatch({
         if (requireNamespace("gh", quietly = TRUE)) {
-            if (nzchar(gh::gh_token())) {
-                branch_info <- gh::gh("/repos/APAF-BIOINFORMATICS/MultiScholaR/branches/main")
-                list(
-                    commit_sha = branch_info$commit$sha,
-                    branch = "main",
-                    repo = "MultiScholaR", 
-                    timestamp = branch_info$commit$commit$author$date
-                )
-            } else {
-                list(commit_sha = NA_character_, branch = NA_character_, repo = NA_character_, timestamp = NA_character_)
-            }
+            # Make the API call (works for public repos without token)
+            branch_info <- gh::gh("/repos/APAF-BIOINFORMATICS/MultiScholaR/branches/main")
+            list(
+                commit_sha = branch_info$commit$sha,
+                branch = "main",
+                repo = "MultiScholaR", 
+                timestamp = branch_info$commit$commit$author$date
+            )
         } else {
             list(commit_sha = NA_character_, branch = NA_character_, repo = NA_character_, timestamp = NA_character_)
         }
     }, error = function(e) {
+        message("Error fetching GitHub info: ", e$message)
         list(commit_sha = NA_character_, branch = NA_character_, repo = NA_character_, timestamp = NA_character_)
     })
     
@@ -2694,21 +2705,19 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
     # Get git information
     git_info <- tryCatch({
         if (requireNamespace("gh", quietly = TRUE)) {
-            if (nzchar(gh::gh_token())) {
-                branch_info <- gh::gh("/repos/APAF-BIOINFORMATICS/MultiScholaR/branches/main")
-                list(
-                    commit_sha = branch_info$commit$sha,
-                    branch = "main",
-                    repo = "MultiScholaR", 
-                    timestamp = branch_info$commit$commit$author$date
-                )
-            } else {
-                list(commit_sha = NA_character_, branch = NA_character_, repo = NA_character_, timestamp = NA_character_)
-            }
+            # Make the API call (works for public repos without token)
+            branch_info <- gh::gh("/repos/APAF-BIOINFORMATICS/MultiScholaR/branches/main")
+            list(
+                commit_sha = branch_info$commit$sha,
+                branch = "main",
+                repo = "MultiScholaR", 
+                timestamp = branch_info$commit$commit$author$date
+            )
         } else {
             list(commit_sha = NA_character_, branch = NA_character_, repo = NA_character_, timestamp = NA_character_)
         }
     }, error = function(e) {
+        message("Error fetching GitHub info: ", e$message)
         list(commit_sha = NA_character_, branch = NA_character_, repo = NA_character_, timestamp = NA_character_)
     })
     

@@ -676,18 +676,8 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
             dir.create(uniprot_cache_dir, recursive = TRUE)
           }
           
-          # Detect protein ID column from imported data
-          protein_column <- if("Protein.Group" %in% names(workflow_data$data_tbl)) {
-            "Protein.Group"
-          } else if("Protein.Ids" %in% names(workflow_data$data_tbl)) {
-            "Protein.Ids"  
-          } else if("Proteins" %in% names(workflow_data$data_tbl)) {
-            "Proteins"
-          } else {
-            # Find first column with protein-like content
-            potential_cols <- names(workflow_data$data_tbl)[grepl("protein|Protein|PROTEIN", names(workflow_data$data_tbl))]
-            if (length(potential_cols) > 0) potential_cols[1] else "Protein.Group"
-          }
+          # Use standard protein column name
+          protein_column <- "Protein.Ids"
           
           cat(sprintf("*** UNIPROT LOOKUP: Using protein column: %s ***\n", protein_column))
           cat(sprintf("*** UNIPROT LOOKUP: Processing %d rows of actual data ***\n", nrow(workflow_data$data_tbl)))

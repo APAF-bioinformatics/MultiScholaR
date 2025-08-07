@@ -1,5 +1,5 @@
 ---
-title: "DIANN analysis for xyz - report"
+title: "`r paste('DIANN analysis for', params$workflow_name, '- report - created on', params$timestamp)`"
 author: "Your_fancy_self"
 date: "`r format(Sys.Date(), '%Y-%m-%d')`"
 output:
@@ -8,6 +8,8 @@ output:
 params:
   omic_type: "proteomics" # Use omic_type instead of suffix
   experiment_label: "DEFAULT_LABEL" # Use experiment_label instead of suffix
+  workflow_name: "Unknown Workflow"
+  timestamp: "`r format(Sys.time(), '%Y-%m-%d %H:%M:%S')`"
 mainfont: "Calibri"    
 ---
 
@@ -807,6 +809,13 @@ results_data <- tryCatch({
 # Results
 
 `r results_data$content$results`
+
+# Version Information
+
+Repository: `r results_data$numbers$repository`
+Branch: `r results_data$numbers$branch`
+Commit: `r results_data$numbers$commit`
+Git Timestamp: `r results_data$numbers$git_timestamp`
 
 ```{r QC_metrics, echo=FALSE, warning=FALSE, fig.cap="Figure 1: QC metrics across normalisation stages"}
 # Use NEW path variable
