@@ -1,4 +1,17 @@
 # Define S4 class outside of any function
+#' @title An S4 Class for Storing Differential Expression Results for Enrichment
+#' @description This class is a container for differential expression (DE) results,
+#' designed to be used as input for functional enrichment analysis. It holds the
+#' DE data for multiple contrasts, along with the contrast information and the
+#' experimental design matrix.
+#'
+#' @slot contrasts A tibble containing the contrasts to be analyzed.
+#' @slot de_data A list of data frames, where each data frame contains the DE
+#'   results for a specific contrast.
+#' @slot design_matrix A data frame representing the experimental design.
+#'
+#' @return An object of class `de_results_for_enrichment`.
+#' @export
 setClass("de_results_for_enrichment",
          slots = list(
            contrasts = "tbl_df",
@@ -6,12 +19,18 @@ setClass("de_results_for_enrichment",
            design_matrix = "data.frame"
          ))
 
-#' Create DE Results For Enrichment
+#' @title Create a `de_results_for_enrichment` Object
+#' @description This constructor function reads differential expression (DE) result
+#' files from a specified directory, based on a table of contrasts, and organizes
+#' them into a `de_results_for_enrichment` S4 object.
 #'
-#' @param contrasts_tbl A tibble containing contrast information
-#' @param design_matrix A data frame containing the design matrix
-#' @param de_output_dir Directory containing DE results files
-#' @return An S4 object of class de_results_for_enrichment
+#' @param contrasts_tbl A tibble with a column named "contrasts" that defines the
+#'   contrasts of interest (e.g., "GroupA-GroupB").
+#' @param design_matrix A data frame containing the experimental design matrix.
+#' @param de_output_dir The directory path where the DE results files (in .tsv format)
+#'   are located.
+#'
+#' @return An S4 object of class `de_results_for_enrichment`.
 #' @export
 createDEResultsForEnrichment <- function(contrasts_tbl, design_matrix, de_output_dir) {
   # Helper function to format contrast filename
@@ -49,6 +68,19 @@ createDEResultsForEnrichment <- function(contrasts_tbl, design_matrix, de_output
 }
 
 # S4 class definition
+#' @title An S4 Class for Storing Functional Enrichment Results
+#' @description This class is a container for the results of functional enrichment
+#' analysis (e.g., from g:Profiler or clusterProfiler). It stores the raw enrichment
+#' data, plots, and summary statistics for multiple contrasts.
+#'
+#' @slot contrasts A tibble containing the contrasts that were analyzed.
+#' @slot enrichment_data A list holding the raw enrichment result objects for each contrast.
+#' @slot enrichment_plots A list of static plots (e.g., ggplot objects) for each contrast.
+#' @slot enrichment_plotly A list of interactive plots (e.g., plotly objects) for each contrast.
+#' @slot enrichment_summaries A list of data frames summarizing the enrichment results for each contrast.
+#'
+#' @return An object of class `EnrichmentResults`.
+#' @export
 setClass("EnrichmentResults",
          slots = list(
            contrasts = "tbl_df",
@@ -59,6 +91,14 @@ setClass("EnrichmentResults",
          ))
 
 # Constructor function
+#' @title Create an `EnrichmentResults` Object
+#' @description This constructor function initializes an empty `EnrichmentResults`
+#' object, ready to be populated with data from an enrichment analysis workflow.
+#'
+#' @param contrasts_tbl A tibble with a column named "contrasts" that defines the
+#'   contrasts for which enrichment analysis will be performed.
+#'
+#' @return An empty S4 object of class `EnrichmentResults`.
 #' @export
 createEnrichmentResults <- function(contrasts_tbl) {
   new("EnrichmentResults",
@@ -69,6 +109,23 @@ createEnrichmentResults <- function(contrasts_tbl) {
       enrichment_summaries = list())
 }
 
+#' @title Perform Functional Enrichment Analysis using g:Profiler
+#' @description This function is a wrapper around `gprofiler2::gost` to perform
+#' functional enrichment analysis. It includes retry logic for handling common
+#' network issues.
+#'
+#' @param data_subset A data frame containing the list of genes/proteins to be queried.
+#' @param species The scientific name of the organism (e.g., "hsapiens").
+#' @param threshold The significance threshold for the enrichment analysis.
+#' @param sources A character vector of data sources to query (e.g., "GO:BP", "KEGG").
+#' @param domain_scope The scope of the query, typically "custom" when a background set is provided.
+#' @param custom_bg A character vector of gene/protein IDs to be used as the statistical background.
+#' @param exclude_iea A logical value indicating whether to exclude "Inferred from Electronic Annotation" (IEA) evidence.
+#' @param max_retries The maximum number of times to retry the query in case of network errors.
+#' @param wait_time The time in seconds to wait between retries.
+#' @param protein_id_column The name of the column in `data_subset` that contains the gene/protein IDs.
+#'
+#' @return A `gost` result object from `gprofiler2`, or `NULL` if the analysis fails or yields no significant results.
 #' @export
 perform_enrichment <- function(data_subset,
                                species,
@@ -156,6 +213,17 @@ perform_enrichment <- function(data_subset,
 }
 
 # Plot generation function
+#' @title Generate and Save Enrichment Plots
+#' @description This function takes the result from a g:Profiler analysis, generates
+#' a static plot (`gostplot`) and an interactive plotly version, and saves them
+#' to the specified directory.
+#'
+#' @param enrichment_result A `gost` result object from `gprofiler2`.
+#' @param contrast The name of the contrast being analyzed.
+#' @param direction The direction of regulation ("up" or "down").
+#' @param pathway_dir The directory path to save the plots and results table.
+#'
+#' @return A list containing the static (`ggplot`) and interactive (`plotly`) plot objects.
 #' @export
 generate_enrichment_plots <- function(enrichment_result, contrast, direction, pathway_dir) {
   if (is.null(enrichment_result) || nrow(enrichment_result$result) == 0) {
@@ -239,6 +307,14 @@ generate_enrichment_plots <- function(enrichment_result, contrast, direction, pa
 }
 
 # Summary function
+#' @title Summarize Enrichment Results
+#' @description This function creates a summary data frame from the results of an
+#' enrichment analysis, counting the number of significant terms found in each
+#' data source (e.g., GO:BP, KEGG).
+#'
+#' @param enrichment_result A `gost` result object from `gprofiler2`.
+#'
+#' @return A data frame summarizing the number of significant terms per data source.
 #' @export
 summarize_enrichment <- function(enrichment_result) {
   if (is.null(enrichment_result) || length(enrichment_result$result) == 0) {
@@ -264,6 +340,23 @@ summarize_enrichment <- function(enrichment_result) {
   )
 }
 
+#' @title Process and Perform Enrichment Analysis for Multiple Contrasts
+#' @description This is a high-level wrapper function that orchestrates the entire
+#' enrichment analysis workflow for a set of differential expression results. It
+#' handles both g:Profiler-supported and unsupported organisms (with custom annotations).
+#'
+#' @param de_results An S4 object of class `de_results_for_enrichment`.
+#' @param taxon_id The NCBI taxonomy ID of the organism.
+#' @param up_cutoff The log2 fold-change cutoff for up-regulated genes/proteins.
+#' @param down_cutoff The negative log2 fold-change cutoff for down-regulated genes/proteins.
+#' @param q_cutoff The q-value (FDR) significance threshold.
+#' @param pathway_dir The directory path to save the enrichment results and plots.
+#' @param go_annotations A data frame with custom GO annotations, required for unsupported organisms.
+#' @param exclude_iea A logical value indicating whether to exclude IEA evidence codes.
+#' @param protein_id_column The name of the column containing gene/protein IDs.
+#' @param contrast_names An optional character vector of short names for the contrasts.
+#'
+#' @return An S4 object of class `EnrichmentResults` populated with the analysis results.
 #' @export
 processEnrichments <- function(de_results,
                                taxon_id,
@@ -887,6 +980,15 @@ processEnrichments <- function(de_results,
 }
 
 # Helper function to access results
+#' @title Get Raw Enrichment Result for a Specific Contrast
+#' @description A helper function to safely access the raw enrichment result object
+#' for a specific contrast and direction from an `EnrichmentResults` object.
+#'
+#' @param enrichment_results An S4 object of class `EnrichmentResults`.
+#' @param contrast The name of the contrast to retrieve.
+#' @param direction The direction of regulation ("up" or "down").
+#'
+#' @return The raw enrichment result object (e.g., from `gost` or `enricher`).
 #' @export
 getEnrichmentResult <- function(enrichment_results, contrast, direction) {
   if(!contrast %in% names(enrichment_results@enrichment_data)) {
@@ -899,6 +1001,15 @@ getEnrichmentResult <- function(enrichment_results, contrast, direction) {
 }
 
 # Helper function to access plotly objects
+#' @title Get Interactive Enrichment Plot for a Specific Contrast
+#' @description A helper function to safely access the interactive plotly object
+#' for a specific contrast and direction from an `EnrichmentResults` object.
+#'
+#' @param enrichment_results An S4 object of class `EnrichmentResults`.
+#' @param contrast The name of the contrast to retrieve.
+#' @param direction The direction of regulation ("up" or "down").
+#'
+#' @return A `plotly` object.
 #' @export
 getEnrichmentPlotly <- function(enrichment_results, contrast, direction) {
   if(!contrast %in% names(enrichment_results@enrichment_plotly)) {
@@ -911,6 +1022,13 @@ getEnrichmentPlotly <- function(enrichment_results, contrast, direction) {
 }
 
 # Helper function to get summary
+#' @title Get a Summary of All Enrichment Analyses
+#' @description A helper function to consolidate the enrichment summaries from all
+#' contrasts and directions into a single data frame.
+#'
+#' @param enrichment_results An S4 object of class `EnrichmentResults`.
+#'
+#' @return A data frame summarizing the enrichment results across all contrasts.
 #' @export
 getEnrichmentSummary <- function(enrichment_results) {
   summaries <- purrr::map_df(names(enrichment_results@enrichment_summaries), function(contrast) {

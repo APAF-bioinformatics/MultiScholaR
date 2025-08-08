@@ -1,15 +1,21 @@
-#' Push Standard Project Files to GitHub
+#' @title Push Standard Project Files to a New GitHub Repository
+#' @description This function automates the process of creating a new GitHub repository
+#' and pushing a standard set of project files to it. It handles the creation of a
+#' temporary git repository, adding files, committing, and pushing to a new remote.
 #'
-#' @param base_dir Base directory of the project
-#' @param source_dir Source directory containing workflow files (scripts/proteomics)
-#' @param project_id Project identifier for the new repository and workflow file
-#' @param github_org Your GitHub organization or username
-#' @param github_user_email Email associated with GitHub account
-#' @param github_user_name GitHub username for commits
-#' @param commit_message Commit message (default: "Initial project commit")
-#' @param private Boolean indicating if repository should be private (default: TRUE)
+#' @param base_dir The base directory of the RStudio project.
+#' @param source_dir The source directory containing workflow files to be included
+#'   (e.g., helper scripts).
+#' @param project_id A unique identifier for the project, which will be used as the
+#'   name of the new GitHub repository.
+#' @param github_org The GitHub organization or username under which the repository
+#'   will be created.
+#' @param github_user_email The email address to be associated with the git commits.
+#' @param github_user_name The username to be associated with the git commits.
+#' @param commit_message The commit message for the initial commit.
+#' @param private A logical value indicating whether the new repository should be private.
 #'
-#' @return Invisible TRUE if successful
+#' @return Invisibly returns `TRUE` if the operation is successful.
 #' @importFrom utils menu
 #' @importFrom fs path_rel dir_ls dir_tree
 #' @export
