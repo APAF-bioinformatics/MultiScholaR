@@ -1,5 +1,14 @@
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' @title Clean Isoform Numbers from Protein Accessions
+#' @description A simple string manipulation function that removes isoform suffixes
+#' (e.g., "-1", "-2") from UniProt protein accession numbers.
+#'
+#' @param string A character vector of protein accession numbers.
+#'
+#' @return A character vector with isoform numbers removed.
+#'
+#' @importFrom stringr str_replace
 #' @export
 cleanIsoformNumber <- function(string ) {
   # "Q8K4R4-2"
@@ -12,6 +21,18 @@ cleanIsoformNumber <- function(string ) {
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' @title Extract a Field from a FASTA Header
+#' @description This function extracts the value of a specified field (e.g., "GN" for
+#' gene name) from a UniProt-style FASTA header string.
+#'
+#' @param string The FASTA header string.
+#' @param pattern The two-letter code for the field to extract (e.g., "OS", "OX", "GN", "PE", "SV").
+#'
+#' @return A character string containing the value of the requested field, or `NA_character_`
+#'   if the field is not found.
+#'
+#' @importFrom stringr str_detect str_replace_all
+#' @importFrom dplyr case_when
 #' @export
 getFastaFields <- function(string, pattern) {
 
@@ -35,10 +56,21 @@ getFastaFields <- function(string, pattern) {
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' Parse FASTA object from seqinr
-#' @description parse_fasta_object: Parse FASTA headers
-#' @param aa_seq AAStringSet object, output from running seqinr
-#' @return A table containing the protein evidence, isoform number, uniprot accession without isoform number in the uniprot_acc column, gene name
+#' @title Parse a `seqinr` FASTA Object
+#' @description This function takes a list-like object from `seqinr::read.fasta` and
+#' parses the UniProt headers into a structured data frame. It extracts various
+# ' fields like accession, species, gene name, and protein evidence level.
+#'
+#' @param aa_seq A named list of sequences, where names are the full FASTA headers.
+#'   This is the standard output from `seqinr::read.fasta`.
+#'
+#' @return A data frame (tibble) with one row per FASTA entry, containing parsed
+#'   fields such as `uniprot_acc`, `gene_name`, `protein_evidence`, `status`, etc.
+#'
+#' @importFrom tidyr separate
+#' @importFrom dplyr mutate select rename case_when
+#' @importFrom purrr map_chr map_int
+#' @importFrom stringr str_replace str_detect
 #' @export
 parseFastaObject <- function(aa_seq ) {
 
@@ -82,24 +114,18 @@ parseFastaObject <- function(aa_seq ) {
 
 
 
-#'Parse the headers of a Uniprot FASTA file and extract the headers and sequences into a data frame
-#'Use seqinr object instead as it seems to be a lot faster to run substring
-#' @param path to input faster file with header format described in https://www.uniprot.org/help/fasta-headers
-#' @return A table containing the following columns:
-#' db  sp for Swiss-Prot, tr for TrEMBL
-#' uniprot_acc Uniprot Accession
-#' uniprot_id  Uniprot ID
-#' species     Species
-#' tax_id      Taxonomy ID
-#' gene_name   Gene symbol
-#' protein_evidence 1 to 5, the lower the value, the more evidence that supports the existence of this protein
-#' sequence_version Sequence version
-#' is_isoform  Is it a protein isoform (not the canonical form)
-#' isoform_num     Isoform number.
-#' cleaned_acc Cleaned accession without isoform number.
-#' status  Reviewed or unreviewed.
-#' seq     Amino acid sequence.
-#' seq_length      Sequence length (integer).
+#' @title Parse a UniProt FASTA File
+#' @description Reads a UniProt-formatted FASTA file, parses the headers to extract
+#' metadata, and combines it with the amino acid sequences into a single data frame.
+#'
+#' @param fasta_file The file path to the FASTA file.
+#'
+#' @return A data frame (tibble) with parsed header information and an added `seq`
+#'   column for the amino acid sequence and `seq_length` for its length.
+#'
+#' @importFrom seqinr read.fasta
+#' @importFrom stringr str_match str_length
+#' @importFrom purrr map_chr map_int
 #' @export
 parseFastaFile <- function(fasta_file) {
 
@@ -121,6 +147,29 @@ parseFastaFile <- function(fasta_file) {
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' @title Choose the Best Protein Accession for a Phosphosite
+#' @description For phosphosites that map to multiple proteins, this function selects
+#' the best representative protein accession based on a hierarchy of evidence.
+#'
+#' @details The function ranks potential protein accessions based on:
+#' 1.  Protein evidence level (PE from UniProt).
+#' 2.  Reviewed status (Swiss-Prot vs. TrEMBL).
+#' 3.  Canonical vs. isoform status.
+#' 4.  Sequence length (longer is better).
+#' 5.  Isoform number (lower is better).
+#'
+#' It also ensures that the peptide sequence is actually present in the protein sequence before considering it.
+#'
+#' @param input_tbl A data frame containing phosphosite data, including a column for the phosphosite group ID, a column for protein accessions, and a `cleaned_peptide` column.
+#' @param acc_detail_tab A data frame of parsed FASTA header information from `parseFastaObject`.
+#' @param accessions_column The unquoted column name for the protein accessions.
+#' @param group_id The unquoted column name for the phosphosite group identifier.
+#'
+#' @return A data frame with one row per phosphosite group per unique gene name, containing the best `uniprot_acc` chosen for that combination.
+#'
+#' @importFrom dplyr select mutate left_join filter distinct arrange group_by ungroup
+#' @importFrom tidyr unnest
+#' @importFrom stringr str_split str_detect
 #' @export
 chooseBestPhosphositeAccession <- function(input_tbl, acc_detail_tab, accessions_column, group_id) {
 
@@ -182,18 +231,31 @@ chooseBestPhosphositeAccession <- function(input_tbl, acc_detail_tab, accessions
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#'@description From a list of UniProt accessions, choose the best accession to use based on the UniProt score for quality of annotation for the protein entries
-#'@param input_tbl Contain the following columns, 'group_id' which is the Id for each protein group, 'accessions_column' which is the column with the accession of the protein
-#'@param acc_detail_tabl The out table from running the function 'parseFastaFile'
-#'@param accessions_column The name of the column with the list of protein accessions, separated by ';' semi-colon. No need to quote the name as we are using tidyverse programming quosure.
-#'@param group_id The name of the column with the group ID for each protein group. No need to quote the name as we are using tidyverse programming quosure.
-#' @returns A table with the following columns:
-#'  maxquant_row_id: Row ID
-#'  num_gene_names: Number of gene names associated with this row ID
-#'  gene_names: The gene names
-#'  uniprot_acc: List of uniprot accessions, but with the list ordered by the best one to less useful one to use
-#'  is_unique: Is the protein group assined to a unique UniProt accession or multiple UniProt accessions
-#'@export
+#' @title Choose the Best Protein Accession for a Protein Group
+#' @description For protein groups identified by tools like MaxQuant (which may contain
+#' multiple protein accessions), this function selects the best single representative
+#' accession based on a hierarchy of evidence.
+#'
+#' @details The ranking logic is identical to `chooseBestPhosphositeAccession`. This
+#' function is designed to resolve ambiguity in protein groups by picking the most
+#' credible protein entry (e.g., a reviewed, canonical protein over an unreviewed isoform).
+#'
+#' @param input_tbl A data frame containing protein group data.
+#' @param acc_detail_tab A data frame of parsed FASTA header information.
+#' @param accessions_column The unquoted column name for the protein accessions (often semicolon-separated).
+#' @param row_id_column The unquoted column name for the final chosen accession.
+#' @param group_id The unquoted column name for the protein group identifier.
+#' @param delim The delimiter for the accessions in `accessions_column`.
+#'
+#' @return A data frame summarized by `group_id`, with columns for the number of
+#'   gene names, a concatenated list of gene names, the chosen best `uniprot_acc`,
+#'   and whether the mapping was unique.
+#'
+#' @importFrom dplyr select mutate filter distinct arrange group_by ungroup summarise
+#' @importFrom tidyr unnest
+#' @importFrom stringr str_split str_detect
+#' @importFrom rlang sym
+#' @export
 chooseBestProteinAccessionHelper <- function(input_tbl
                                              , acc_detail_tab
                                              , accessions_column
@@ -257,18 +319,26 @@ chooseBestProteinAccessionHelper <- function(input_tbl
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#'@description From a list of UniProt accessions, rank the accession to use based on the UniProt score for quality of annotation for the protein entries
-#'@param input_tbl Contain the following columns, 'group_id' which is the Id for each protein group, 'accessions_column' which is the column with the accession of the protein
-#'@param acc_detail_tabl The out table from running the function 'parseFastaFile'
-#'@param accessions_column The name of the column with the list of protein accessions, separated by ';' semi-colon. No need to quote the name as we are using tidyverse programming quosure.
-#'@param group_id The name of the column with the group ID for each protein group. No need to quote the name as we are using tidyverse programming quosure.
-#' @returns A table with the following columns:
-#'  maxquant_row_id: Row ID
-#'  num_gene_names: Number of gene names associated with this row ID
-#'  gene_names: The gene names
-#'  uniprot_acc: List of uniprot accessions, but with the list ordered by the best one to less useful one to use
-#'  is_unique: Is the protein group assined to a unique UniProt accession or multiple UniProt accessions
-#'@export
+#' @title Rank All Protein Accessions within a Protein Group
+#' @description Similar to `chooseBestProteinAccessionHelper`, but instead of picking
+#' only the best accession, this function ranks all accessions within a protein
+#' group and returns them as a colon-separated string, from best to worst.
+#'
+#' @param input_tbl A data frame containing protein group data.
+#' @param acc_detail_tab A data frame of parsed FASTA header information.
+#' @param accessions_column The unquoted column name for the protein accessions.
+#' @param row_id_column The unquoted column name for the accession identifiers.
+#' @param group_id The unquoted column name for the protein group identifier.
+#' @param delim The delimiter for the accessions in `accessions_column`.
+#'
+#' @return A data frame summarized by `group_id`, with a column containing the
+#'   ranked and colon-separated list of all valid protein accessions for that group.
+#'
+#' @importFrom dplyr select mutate left_join filter distinct arrange group_by ungroup summarise
+#' @importFrom tidyr unnest
+#' @importFrom stringr str_split
+#' @importFrom rlang sym
+#' @export
 rankProteinAccessionHelper <- function(input_tbl
                                        , acc_detail_tab
                                        , accessions_column
@@ -325,7 +395,28 @@ rankProteinAccessionHelper <- function(input_tbl
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#'@export
+#' @title Process a FASTA File
+#' @description This function serves as a flexible parser for FASTA files. It can
+#' handle both standard UniProt FASTA formats and non-standard formats. For non-standard
+#' files, it can optionally match entries to UniProt and UniParc search results to
+#' enrich the metadata.
+#'
+#' @param fasta_file_path The path to the input FASTA file.
+#' @param uniprot_search_results Optional. A data frame of search results from UniProt.
+#' @param uniparc_search_results Optional. A data frame of search results from UniParc.
+#' @param fasta_meta_file The path to save the parsed metadata RDS file to.
+#' @param organism_name The name of the organism, used for filtering search results.
+#' @param output_dir The directory to save output files.
+#'
+#' @return A data frame containing the parsed and potentially enriched metadata for
+#'   each entry in the FASTA file.
+#'
+#' @importFrom vroom vroom vroom_write
+#' @importFrom seqinr read.fasta
+#' @importFrom dplyr bind_rows mutate select left_join coalesce filter
+#' @importFrom stringr str_extract str_remove str_length
+#' @importFrom purrr map_chr
+#' @export
 processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uniparc_search_results = NULL, fasta_meta_file, organism_name, output_dir = NULL) {
   # Properly suppress all vroom messages
   withr::local_options(list(
@@ -629,8 +720,20 @@ processFastaFile_deprecated <- function(fasta_file_path, uniprot_search_results,
 }
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#'@export
-
+#' @title Update Protein IDs with Database IDs
+#' @description This function updates a protein data table by replacing proprietary
+#' or local protein IDs with standardized database IDs (e.g., from UniProt or UniParc),
+#' where a match can be found.
+#'
+#' @param protein_data The protein data frame to be updated. It must contain a `Protein.Ids` column.
+#' @param aa_seq_tbl_final A data frame of parsed FASTA information, containing mappings
+#'   from local IDs to `database_id` and `ncbi_refseq`.
+#'
+#' @return The `protein_data` data frame with the `Protein.Ids` column updated.
+#'
+#' @importFrom dplyr mutate select left_join coalesce
+#' @importFrom stringr str_extract
+#' @export
 updateProteinIDs <- function(protein_data, aa_seq_tbl_final) {
   # Check if ncbi_refseq column exists in aa_seq_tbl_final
   if (!"ncbi_refseq" %in% colnames(aa_seq_tbl_final)) {
@@ -681,28 +784,43 @@ updateProteinIDs <- function(protein_data, aa_seq_tbl_final) {
 
 
 
-#' Clean MaxQuant Protein Data
+#' @title Clean MaxQuant ProteinGroups Data
+#' @description A comprehensive pipeline function to process and clean a `proteinGroups.txt`
+#' file from MaxQuant. It filters out contaminants and reverse hits, resolves protein
+#' group ambiguities by choosing a representative accession, and prepares the data for
+#' downstream analysis.
 #'
-#' This function processes and cleans protein data from MaxQuant output,
-#' filtering based on peptide counts and removing contaminants.
+#' @param fasta_file Path to the FASTA file used in the MaxQuant search.
+#' @param raw_counts_file Path to the `proteinGroups.txt` file.
+#' @param output_counts_file The filename for the cleaned counts table.
+#' @param accession_record_file The filename for the table mapping protein groups to the chosen accessions.
+#' @param column_pattern A regular expression to identify the intensity columns.
+#' @param group_pattern An optional pattern to identify experimental groups from column names.
+#' @param razor_unique_peptides_group_thresh The minimum number of razor + unique peptides required.
+#' @param unique_peptides_group_thresh The minimum number of unique peptides required.
+#' @param fasta_meta_file The filename for the cached parsed FASTA metadata.
+#' @param output_dir The directory to save results.
+#' @param tmp_dir The directory for temporary/cache files.
+#' @param log_file The name of the log file.
+#' @param debug A logical flag to enable debug-level logging.
+#' @param silent A logical flag to suppress all but error messages.
+#' @param no_backup A logical flag (not currently implemented) intended to control backups.
 #'
-#' @param fasta_file Path to input FASTA file
-#' @param raw_counts_file Path to MaxQuant proteinGroups.txt file
-#' @param output_counts_file Name of cleaned counts table output file
-#' @param accession_record_file Name of cleaned accession to protein group mapping file
-#' @param column_pattern Pattern to match intensity columns (e.g., "Reporter intensity corrected")
-#' @param group_pattern Pattern to identify experimental groups (default: "")
-#' @param razor_unique_peptides_group_thresh Threshold for razor + unique peptides (default: 0)
-#' @param unique_peptides_group_thresh Threshold for unique peptides (default: 1)
-#' @param fasta_meta_file Name of FASTA metadata RDS file (default: "aa_seq_tbl.RDS")
-#' @param output_dir Directory for results (default: "results/proteomics/clean_proteins")
-#' @param tmp_dir Directory for temporary files (default: "cache")
-#' @param log_file Name of log file (default: "output.log")
-#' @param debug Enable debug output (default: FALSE)
-#' @param silent Only print critical information (default: FALSE)
-#' @param no_backup Deactivate backup of previous run (default: FALSE)
-#' @return List containing cleaned data and statistics
-#' @import tidyverse vroom magrittr knitr rlang optparse seqinr janitor tictoc configr logging
+#' @return A list containing the cleaned data (`evidence_tbl_filt`), a summary of
+#'   the number of proteins remaining after each filtering step, and the accession
+#'   mapping table (`accession_gene_name_tbl_record`).
+#'
+#' @import tidyverse
+#' @import vroom
+#' @import magrittr
+#' @import knitr
+#' @import rlang
+#' @import optparse
+#' @import seqinr
+#' @import janitor
+#' @import tictoc
+#' @import configr
+#' @import logging
 #' @export
 #'
 #' Test RStudio GitHub integration
@@ -847,9 +965,11 @@ cleanMaxQuantProteins <- function(
   return(filtered_data)
 }
 
-#' Helper function to process and filter data
+#' @title Process and Filter MaxQuant Data (Internal Helper)
+#' @description An internal helper function for `cleanMaxQuantProteins` that handles
+#' the main data filtering and cleaning steps, including removing contaminants,
+#' filtering by peptide counts, and resolving protein accessions.
 #' @noRd
-#' @export
 processAndFilterData <- function(
     evidence_tbl,
     args,
@@ -972,7 +1092,9 @@ processAndFilterData <- function(
   ))
 }
 
-#' Helper function to save results
+#' @title Save Cleaned Protein Data Results (Internal Helper)
+#' @description An internal helper function for `cleanMaxQuantProteins` that saves
+#' the various output tables (cleaned counts, accession records, etc.) to files.
 #' @noRd
 saveResults <- function(filtered_data, args) {
   # Save cleaned counts
