@@ -1,4 +1,18 @@
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' Add Helper Columns to Evidence Table
+#'
+#' @description
+#' Adds an `evidence_id` and a `cleaned_peptide` column to the evidence table.
+#'
+#' @param evidence_tbl A data frame or tibble, typically the `evidence.txt` output from MaxQuant.
+#' @param phospho_site_prob_col An unquoted column name specifying the column that
+#'   contains phosphopeptide sequences with probability scores (e.g., `phospho_sty_probabilities`).
+#'   This column is used to generate the `cleaned_peptide` by removing probability scores.
+#'
+#' @return The input tibble with two new columns: `evidence_id` (a unique row identifier)
+#'   and `cleaned_peptide` (the peptide sequence with probability scores removed).
+#'
+#' @importFrom dplyr mutate row_number
+#' @importFrom stringr str_replace_all
 #' @export
 addColumnsToEvidenceTbl <- function(evidence_tbl, phospho_site_prob_col = phospho_sty_probabilities) {
   evidence_tbl_cleaned <- evidence_tbl %>%
@@ -12,7 +26,24 @@ addColumnsToEvidenceTbl <- function(evidence_tbl, phospho_site_prob_col = phosph
 
 
 
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' Extract Highest Phosphorylation Site Probabilities
+#'
+#' @description
+#' From a phosphopeptide string containing modification probabilities in parentheses,
+#' this function extracts and returns the highest probability values.
+#'
+#' @param phosphopeptide A character string for a single phosphopeptide, where
+#'   probabilities are enclosed in parentheses, e.g., `_VSDSG(0.99)YSSG(0.01)SLSGR_`.
+#' @param num_sites The number of top probability scores to return. For example, if
+#'   a peptide has three phosphosites but `num_sites` is 2, only the top two
+#'   probabilities will be returned. Default is 1.
+#'
+#' @return A numeric vector containing the top `num_sites` probability scores,
+#'   sorted in the order they appeared in the original peptide string. Returns an
+#'   empty vector if no probabilities are found.
+#'
+#' @importFrom stringr str_match_all
+#' @importFrom purrr keep
 #' @export
 getMaxProb <- function(phosphopeptide, num_sites=1) {
 
@@ -41,6 +72,20 @@ getMaxProb <- function(phosphopeptide, num_sites=1) {
 
 }
 
+#' Map `getMaxProb` over Lists using `furrr`
+#'
+#' @description
+#' A wrapper that applies the `getMaxProb` function over parallel lists of
+#' phosphopeptides and their corresponding number of sites to consider.
+#'
+#' @param phosphopeptide A list or vector of phosphopeptide character strings.
+#' @param num_sites A list or vector of integers specifying the number of top
+#'   sites to extract for each corresponding phosphopeptide.
+#'
+#' @return A list of numeric vectors, where each vector contains the top
+#'   probability scores for the corresponding input phosphopeptide.
+#'
+#' @importFrom furrr future_map2
 #' @export
 getMaxProbFutureMap <- function(phosphopeptide, num_sites=1 ) {
   furrr::future_map2( phosphopeptide, num_sites,
@@ -51,7 +96,28 @@ getMaxProbFutureMap <- function(phosphopeptide, num_sites=1 ) {
 
 
 
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' Get Best Phosphorylation Site Position
+#'
+#' @description
+#' From a phosphopeptide string, this function identifies the positions of the
+#' modification sites corresponding to the highest probability scores.
+#'
+#' @details
+#' The function first identifies all modification sites (marked by parentheses)
+#' and their probabilities. It then determines the highest probabilities using
+#' `getMaxProb` and finds the relative positions of these top sites within the
+#' peptide sequence. The positions are adjusted to account for the characters
+#' removed (the probability scores themselves).
+#'
+#' @param phosphopeptide A character string for a single phosphopeptide, e.g.,
+#'   `_VSDSG(0.99)YSSG(0.01)SLSGR_`.
+#' @param num_sites The number of top sites (and their positions) to return.
+#'   Default is 1.
+#'
+#' @return A numeric vector of the relative positions of the best-scoring
+#'   phosphorylation sites within the peptide.
+#'
+#' @importFrom stringr str_detect str_match_all str_replace_all str_locate_all
 #' @export
 getBestPosition <- function(phosphopeptide, num_sites=1 ) {
 
@@ -86,6 +152,20 @@ pass_thresh <- str_match_all( phosphopeptide,
 
 }
 
+#' Map `getBestPosition` over Lists using `furrr`
+#'
+#' @description
+#' A wrapper that applies the `getBestPosition` function over parallel lists of
+#' phosphopeptides and their corresponding number of sites.
+#'
+#' @param phosphopeptide A list or vector of phosphopeptide character strings.
+#' @param num_sites A list or vector of integers specifying the number of top
+#'   sites for which to find positions.
+#'
+#' @return A list of numeric vectors, where each vector contains the relative
+#'   positions of the best-scoring sites for the corresponding phosphopeptide.
+#'
+#' @importFrom furrr future_map2
 #' @export
 getBestPositionFutureMap <- function(phosphopeptide, num_sites=1  ) {
   furrr::future_map2( phosphopeptide, num_sites,
@@ -95,12 +175,24 @@ getBestPositionFutureMap <- function(phosphopeptide, num_sites=1  ) {
 
 
 
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' Get PTM position string for the modified peptide
-#' @description get_pos_string
-#' @param peptide_start_position: Start position of peptide relative to the entire protein sequence
-#' @param site_relative_position: Position of the modification site relative to the N-terminus of the peptide sequence
-#' @return A string. If the position are limited to one unique peptide in the protein, all the phosphosite on that peptide. If the positions are found in multiple repeated peptides in the protein, the phosphosites in each peptide will be contained in round bracket (e.g. (144,148),(170,174),(183,187) ).
+#' Calculate Absolute PTM Positions in Protein Sequence
+#'
+#' @description
+#' Calculates the absolute positions of modification sites within the full protein
+#' sequence, given the start position(s) of the peptide and the relative positions
+#' of the sites within the peptide.
+#'
+#' @param peptide_start_position A numeric vector of start positions of the peptide
+#'   within the protein. Can contain multiple values if the peptide sequence is repeated.
+#' @param site_relative_position A numeric vector of the positions of modification
+#'   sites relative to the start of the peptide (1-indexed).
+#'
+#' @return A character string of absolute site positions.
+#'   - If the peptide occurs once, positions are semi-colon-separated (e.g., "144;148").
+#'   - If the peptide is repeated, positions for each peptide instance are grouped in
+#'     parentheses and pipe-separated (e.g., "(144;148)|(170;174)").
+#'
+#' @importFrom purrr cross2 map_dbl
 #' @export
 getPosString <-  function(peptide_start_position, site_relative_position) {
 
@@ -137,9 +229,25 @@ getPosString <-  function(peptide_start_position, site_relative_position) {
 
 
 
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' Get X-mer string given the primary sequence and the position of the PTM
-#' @description Given the bioiString object, the uniprot accession, and the position of the phosphorylation site, return the 15mer sequence with the phosphorylation site at the middle.
+#' Extract X-mer Sequence Motif
+#'
+#' @description
+#' Extracts a sequence motif (X-mer) of a specified length centered around a
+#' modification site. If the site is too close to the N or C terminus, the
+#' sequence is padded with underscores.
+#'
+#' @param seq The full protein sequence as a character string.
+#' @param uniprot_acc The UniProt accession of the protein (currently unused but
+#'   kept for signature consistency).
+#' @param position The absolute position of the modification site in the protein.
+#' @param padding_length The number of amino acids to include on each side of the
+#'   central modification site. The total length of the X-mer will be `2 * padding_length + 1`.
+#'   Default is 7 (for a 15-mer).
+#'
+#' @return A character string representing the X-mer sequence, padded with `_`
+#'   if necessary.
+#'
+#' @importFrom stringr str_length str_sub
 #' @export
 getXMerString <- function(seq, uniprot_acc, position, padding_length=7 ) {
 
@@ -178,7 +286,23 @@ getXMerString <- function(seq, uniprot_acc, position, padding_length=7 ) {
 
 
 
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' Get List of X-mer Motifs for a Peptide
+#'
+#' @description
+#' A wrapper function that calculates absolute PTM positions and then extracts
+#' the corresponding X-mer sequence motifs for all modification sites within a peptide.
+#'
+#' @param seq The full protein sequence.
+#' @param uniprot_acc The UniProt accession of the protein.
+#' @param peptide_start_position A numeric vector of peptide start positions.
+#' @param site_relative_position A numeric vector of PTM positions relative to the peptide start.
+#' @param padding_length The padding length to use for the X-mer extraction (see `getXMerString`).
+#'   Default is 7.
+#'
+#' @return A single character string with all X-mer sequences for the peptide,
+#'   separated by semicolons.
+#'
+#' @importFrom purrr cross2 map_dbl map_chr
 #' @export
 getXMersList <-  function(seq, uniprot_acc,
                           peptide_start_position, site_relative_position, padding_length=7 ) {
@@ -209,14 +333,25 @@ getXMersList <-  function(seq, uniprot_acc,
 
 
 
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title formatPhosphositePosition
-#' @param gene_symbol The gene symbol as a string
-#' @param position The positions of the phosphorylation sites as a string, multiple sites are separated by the delimiter (e.g. delim parameter). Multiple positions are in the same corresponding order as the residue parameter.
-#' @param residue The amino acid residue where the phosphorylation is at, multiple residues are separate by the delimiter (e.g. delim paramter). Multiple residues are in the same corresponding order as the position parameter.
-#' @return A string with the gene symbol, followed by a semi-colon, and the amino acid residue and the position, multiple residue and positions separated by commas (e.g. YFG1;S199,T203 )
+#' Format Phosphosite Position String
+#'
+#' @description
+#' Creates a standardized string representing phosphosites, combining the gene
+#' symbol with the residue and position of each site.
+#'
+#' @param gene_symbol The gene symbol as a string.
+#' @param position A character string of site positions, potentially with complex
+#'   formatting (e.g., "(1986)|(1998)"). The function processes the first
+#'   pipe-separated element.
+#' @param residue A character string of modified amino acid residues (e.g., "S;Y"),
+#'   separated by semicolons.
+#' @param delim The delimiter used within the `position` string. Default is ";".
+#'
+#' @return A formatted string, e.g., "YFG1;S199,T203".
+#'
+#' @importFrom stringr str_split str_replace_all
+#' @importFrom purrr map2_chr
 #' @export
-
 formatPhosphositePosition <- function( gene_symbol, position, residue, delim=";") {
   position_cln <- str_split( position, "\\|" )[[1]][1] |>
     str_replace_all( "\\(|\\)", "") |>
@@ -238,7 +373,19 @@ formatPhosphositePosition <- function( gene_symbol, position, residue, delim=";"
 # # formatPhosphositePosition( "MFG1", "(1986)|(1998)|(2010)	", "S")
 # # formatPhosphositePosition( "MFG1", "1082;1087", "S;Y")
 
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' Remove Peptides with No Abundance Across All Samples
+#'
+#' @description
+#' Filters an evidence table to remove rows (peptides) where all abundance
+#' columns (matching a specified pattern) are zero.
+#'
+#' @param evidence_tbl_cleaned The input evidence table, which must have an `evidence_id` column.
+#' @param col_pattern A regex pattern to identify the abundance columns to check.
+#'
+#' @return A filtered tibble containing only rows with at least one non-zero
+#'   abundance value in the specified columns.
+#'
+#' @importFrom dplyr mutate across matches filter if_all select inner_join
 #' @export
 removePeptidesWithoutAbundances <- function(evidence_tbl_cleaned, col_pattern) {
 
@@ -256,7 +403,28 @@ removePeptidesWithoutAbundances <- function(evidence_tbl_cleaned, col_pattern) {
 
 
 
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' Filter and Process Phosphopeptides from Evidence Table
+#'
+#' @description
+#' This function performs initial filtering and processing of phosphopeptide
+#' evidence. It filters for actual phosphopeptides, removes contaminants,
+#' extracts localization probabilities and positions, and joins with gene/protein
+#' annotation information.
+#'
+#' @param evidence_tbl_cleaned The input evidence table.
+#' @param accession_gene_name_tbl A table mapping evidence IDs to UniProt accessions
+#'   and gene names.
+#' @param col_pattern (Currently unused) A regex pattern for columns.
+#' @param accession_col The unquoted column name for protein accessions (e.g., `leading_proteins`).
+#' @param phospho_site_prob_col The unquoted column name for phosphosite probabilities.
+#' @param num_phospho_site_col The unquoted column name for the number of phosphosites.
+#'
+#' @return A tibble with processed and filtered phosphopeptide data, including
+#'   extracted probabilities (`best_phos_prob`) and positions (`best_phos_pos`).
+#'
+#' @importFrom dplyr filter mutate select one_of left_join
+#' @importFrom stringr str_detect
+#' @importFrom purrr map_lgl map2_lgl
 #' @export
 filterPeptideAndExtractProbabilities <- function(evidence_tbl_cleaned, accession_gene_name_tbl,
                                                  col_pattern="corrected",
@@ -308,7 +476,24 @@ filterPeptideAndExtractProbabilities <- function(evidence_tbl_cleaned, accession
 
 
 
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' Add Peptide Start and End Positions
+#'
+#' @description
+#' Maps peptide sequences to their corresponding full protein sequences to find
+#' their start and end locations.
+#'
+#' @param sites_probability_tbl A tibble containing processed phosphopeptide data,
+#'   including `uniprot_acc` and `cleaned_peptide` columns.
+#' @param aa_seq_tbl A tibble containing full protein sequences, with `uniprot_acc`
+#'   and `seq` columns.
+#'
+#' @return The input tibble with new columns: `peptide_location` (a list of
+#'   stringr locate matrices), `pep_start` (character string of start positions),
+#'   and `pep_end` (character string of end positions).
+#'
+#' @importFrom dplyr left_join select mutate
+#' @importFrom stringr str_locate_all
+#' @importFrom purrr map_chr
 #' @export
 addPeptideStartAndEnd <- function(sites_probability_tbl, aa_seq_tbl ) {
   peptide_start_and_end <- sites_probability_tbl %>%
@@ -322,7 +507,19 @@ addPeptideStartAndEnd <- function(sites_probability_tbl, aa_seq_tbl ) {
 }
 
 
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' Add Formatted Phosphosite Position Strings
+#'
+#' @description
+#' Calculates and adds several formatted string columns related to phosphosite
+#' positions and probabilities to the data table.
+#'
+#' @param peptide_start_and_end A tibble from `addPeptideStartAndEnd`.
+#'
+#' @return The input tibble with new columns: `best_phos_pos_string`,
+#'   `protein_site_positions` (absolute positions), and `best_phos_prob_string`.
+#'
+#' @importFrom dplyr mutate
+#' @importFrom purrr map_chr map2 map_dbl cross2
 #' @export
 addPhosphositesPositionsString <- function(peptide_start_and_end ) {
 
@@ -338,7 +535,21 @@ addPhosphositesPositionsString <- function(peptide_start_and_end ) {
 }
 
 
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' Add X-mer Sequence Motif Strings
+#'
+#' @description
+#' For each phosphosite, this function extracts the X-mer sequence motif
+#' (e.g., a 15-mer) centered on the site.
+#'
+#' @param phosphosite_pos_string_tbl A tibble from `addPhosphositesPositionsString`.
+#' @param padding_length The padding length for the X-mer (see `getXMerString`).
+#'   Default is 7 for a 15-mer.
+#'
+#' @return The input tibble with a new column `phos_15mer_seq` containing a
+#'   semicolon-separated string of all X-mer motifs for the peptide.
+#'
+#' @importFrom dplyr mutate distinct
+#' @importFrom furrr future_pmap_chr
 #' @export
 addXMerStrings <- function (phosphosite_pos_string_tbl, padding_length=7) {
 
@@ -377,7 +588,28 @@ temp <- function ( myinput = `lotr`) {
 
 
 
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' Filter Phosphosites by Probability Score and Similarity
+#'
+#' @description
+#' Performs a two-step filtering process to retain high-confidence phosphosites.
+#' First, it identifies all sites on proteins that have at least one high-probability
+#' site. Second, it filters the full peptide list to keep only those peptides where
+#' all identified sites meet a secondary probability threshold and belong to the
+#' set of high-confidence sites.
+#'
+#' @param get_15_mer_tbl The processed phosphosite table.
+#' @param site_prob_threshold The primary probability threshold (e.g., 0.75) to
+#'   define a "high-quality" site.
+#' @param secondary_site_prob_threshold A more lenient threshold (e.g., 0.5) that
+#'   all sites in a kept peptide must pass.
+#' @param num_phospho_site_col An unquoted column name for the number of phosphosites.
+#'
+#' @return A filtered tibble containing only high-confidence phosphopeptide evidence.
+#'
+#' @importFrom dplyr filter select distinct mutate group_by nest ungroup inner_join arrange
+#' @importFrom tidyr unnest
+#' @importFrom purrr map map2_lgl map_chr map_int
+#' @importFrom stringr str_split str_replace_all
 #' @export
 filterByScoreAndGetSimilarPeptides <- function(get_15_mer_tbl, site_prob_threshold, secondary_site_prob_threshold = 0.5, num_phospho_site_col = phospho_sty ) {
 
@@ -433,7 +665,29 @@ filterByScoreAndGetSimilarPeptides <- function(get_15_mer_tbl, site_prob_thresho
 
 
 
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' Pivot Phosphosite Table to Long Format
+#'
+#' @description
+#' Converts a wide-format phosphosite table (with samples as columns) into a
+#' long format, making it suitable for analysis and plotting with tools like ggplot2.
+#'
+#' @param get_15_mer_tbl The wide-format input tibble.
+#' @param additional_cols A character vector of additional columns to preserve
+#'   during pivoting. Default is `c("experiment")`.
+#' @param col_pattern A regex pattern to identify the sample/abundance columns.
+#' @param pattern_suffix A regex pattern for the suffix of sample columns.
+#' @param extract_patt_suffix A regex pattern with a capture group to extract
+#'   the replicate number from the column name.
+#' @param phospho_site_prob_col Unquoted column name for phosphosite probabilities.
+#' @param num_phospho_site_col Unquoted column name for the number of phosphosites.
+#'
+#' @return A long-format tibble with columns `replicate` and `value`.
+#'
+#' @importFrom dplyr select matches mutate
+#' @importFrom tidyr pivot_longer
+#' @importFrom rlang as_name enquo
+#' @importFrom stringr str_replace
+#' @importFrom purrr map_int
 #' @export
 allPhosphositesPivotLonger <- function(get_15_mer_tbl,
                                        additional_cols = c("experiment"),
@@ -476,7 +730,22 @@ allPhosphositesPivotLonger <- function(get_15_mer_tbl,
 }
 
 
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' Group Peptides from Paralogous Proteins
+#'
+#' @description
+#' Collapses rows that represent peptides from paralogous proteins. It groups
+#' by evidence ID and other identifying columns, then pastes together the
+#' differing gene names, UniProt accessions, and site positions.
+#'
+#' @param all_sites_long A long-format phosphosite table.
+#' @param additional_cols Additional columns to include in the grouping.
+#' @param phospho_site_prob_col Unquoted column name for phosphosite probabilities.
+#' @param num_phospho_site_col Unquoted column name for the number of phosphosites.
+#'
+#' @return A tibble where rows from paralogous proteins have been collapsed.
+#'
+#' @importFrom dplyr group_by summarise ungroup select one_of across
+#' @importFrom rlang as_name enquo
 #' @export
 groupParalogPeptides <- function(all_sites_long,
                                  additional_cols = c("experiment"),
@@ -520,7 +789,21 @@ groupParalogPeptides <- function(all_sites_long,
 
 
 
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' Pivot Phosphosite Table to Wide Format
+#'
+#' @description
+#' Converts a long-format phosphosite table back to a wide format, where each
+#' sample/replicate becomes a separate column.
+#'
+#' @param all_phos_sites_long_tbl The long-format input tibble.
+#' @param additional_cols Additional columns to use in creating the new column names.
+#' @param phospho_site_prob_col Unquoted column name for phosphosite probabilities.
+#' @param num_phospho_site_col Unquoted column name for the number of phosphosites.
+#'
+#' @return A wide-format tibble.
+#'
+#' @importFrom dplyr mutate_at pivot_wider arrange all_of
+#' @importFrom rlang as_name enquo
 #' @export
 allPhosphositesPivotWider <- function(all_phos_sites_long_tbl,
                                       additional_cols = c("experiment"),
@@ -552,7 +835,20 @@ allPhosphositesPivotWider <- function(all_phos_sites_long_tbl,
 
 
 
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' Summarize Unique Phosphosites (Long Format)
+#'
+#' @description
+#' Groups the data by unique phosphosites and summarizes the abundance values
+#' (e.g., by mean, median, sum). Returns a list of summarized tibbles in long format.
+#'
+#' @param all_phos_sites_long_tbl A long-format phosphosite table.
+#' @param additional_cols Additional columns to include in the grouping.
+#'
+#' @return A named list of tibbles (`mean`, `median`, `sum`), where each tibble
+#'   contains the summarized abundance values in long format.
+#'
+#' @importFrom dplyr group_by summarise ungroup mutate mutate_at across
+#' @importFrom purrr map
 #' @export
 uniquePhosphositesSummariseLongList <- function(all_phos_sites_long_tbl,
                                                 additional_cols = c("experiment") ) {
@@ -596,7 +892,24 @@ uniquePhosphositesSummariseLongList <- function(all_phos_sites_long_tbl,
 }
 
 
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' Summarize Unique Phosphosites (Wide Format)
+#'
+#' @description
+#' Takes the list of long-format summarized tables and pivots them to wide format.
+#' It also collapses evidence IDs from different experiments into a single identifier.
+#'
+#' @param summarised_long_tbl_list A list of long-format tibbles from
+#'   `uniquePhosphositesSummariseLongList`.
+#' @param additional_cols Additional columns used for pivoting.
+#'
+#' @return A named list of wide-format tibbles (`mean`, `median`, `sum`) with
+#'   unique phosphosites as rows and samples as columns.
+#'
+#' @importFrom dplyr group_by summarise ungroup select left_join relocate mutate mutate_at summarise_all
+#' @importFrom tidyr pivot_wider unite
+#' @importFrom purrr map
+#' @importFrom stringr str_replace_all
+#' @importFrom rlang sym
 #' @export
 uniquePhosphositesSummariseWideList <- function(summarised_long_tbl_list,
                                                 additional_cols=c("experiment")) {
@@ -671,7 +984,30 @@ uniquePhosphositesSummariseWideList <- function(summarised_long_tbl_list,
 
 
 
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#' Process Multi-site Phosphoproteomics Evidence
+#'
+#' @description
+#' A high-level wrapper function that orchestrates the entire phosphoproteomics
+#' data processing workflow, from reading raw files to generating summarized,
+#' wide-format tables of unique phosphosites.
+#'
+#' @param fasta_file Path to the FASTA file containing protein sequences.
+#' @param evidence_tbl The `evidence.txt` data table from MaxQuant.
+#' @param accession_col Unquoted column name for protein accessions.
+#' @param group_id Unquoted column name for the grouping variable.
+#' @param additional_cols Unquoted column name(s) for additional grouping variables.
+#' @param col_pattern Regex pattern for abundance columns.
+#' @param extract_pattern (Currently unused) Regex pattern for extraction.
+#' @param col_to (Currently unused) Column name for extracted values.
+#' @param site_prob_threshold Primary probability threshold for phosphosites.
+#' @param columns_to_use (Currently unused) Specific columns to use.
+#'
+#' @return A list containing four main data structures:
+#'   - `summarised_wide_list`: A list of wide-format tables (mean, median, sum).
+#'   - `summarised_long_list`: A list of long-format tables (mean, median, sum).
+#'   - `all_phos_sites_wide`: A wide table of all filtered phosphosites before summarization.
+#'   - `all_phos_sites_long`: A long table of all filtered phosphosites before summarization.
+#'
 #' @export
 processMultisiteEvidence <- function(fasta_file,
                                      evidence_tbl,
@@ -764,13 +1100,31 @@ processMultisiteEvidence <- function(fasta_file,
 
 }
 
-###--------------------------------------------------------------------------------------------------------------------------------
-
+#' Get UniProt Accession Rank from Site ID
+#'
+#' @description Given an input table with `sites_id` and `uniprot_acc` columns,
+#'   this function determines the rank (position) of a specific UniProt accession
+#'   within the list of accessions contained in the `sites_id`.
+#'
+#' @details The `sites_id` is expected to be a composite identifier where the
+#'   first element (before the "!" separator) is a colon-separated list of
+#'   UniProt accessions. This function finds which position the primary
+#'   `uniprot_acc` for the row occupies in that list.
+#'
+#' @param input_table An input data frame with `sites_id` and `uniprot_acc` columns.
+#' @param uniprot_acc The unquoted column name for the primary UniProt accession of the row.
+#' @param sites_id The unquoted column name for the composite site identifier.
+#'
+#' @return The input table with new columns: `uniprot_acc_split` (the primary accession),
+#'   `uniprot_list` (the list of accessions from `sites_id`), and `gene_list_position`
+#'   (the 1-based index of the primary accession in the list).
+#'
+#' @importFrom dplyr mutate relocate
+#' @importFrom stringr str_split
+#' @importFrom purrr map_chr map2_int
+#' @importFrom lazyeval as_name
+#' @importFrom rlang enquo
 #' @export
-#' @description Given an input table with sites_id and uniprot_acc columns, work out the ranking of the uniprot_acc within the sites_id
-#' @param input_table, an input table with sites_id and uniprot_acc columns
-#' @param uniprot_acc, name of Uniprot accession column tidyverse style column name input
-#' @param sites_id, name of sites_id column, in tidyverse style column name
 getUniprotAccRankFromSitesId <- function( input_table, uniprot_acc, sites_id) {
   input_table %>%
     dplyr::mutate( uniprot_acc_split = str_split({{uniprot_acc}}, ":" ) %>% purrr::map_chr(1) ) %>%
