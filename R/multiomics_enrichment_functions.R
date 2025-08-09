@@ -408,6 +408,34 @@ downloadStringDBResultsFile <- function(download_url) {
 
   if (!is.null(enrichment_df)) {
     message("Enrichment results successfully downloaded and parsed.")
+
+    # Coerce key columns to numeric to prevent type conflicts during unnesting.
+    # The API can sometimes return non-numeric values (e.g., text for empty results)
+    # which readr might interpret as character. This handles multiple possible column names.
+    if ("observed_gene_count" %in% colnames(enrichment_df)) {
+      enrichment_df$observed_gene_count <- as.numeric(enrichment_df$observed_gene_count)
+    }
+    if ("genesMapped" %in% colnames(enrichment_df)) {
+        enrichment_df$genesMapped <- as.numeric(enrichment_df$genesMapped)
+    }
+    if ("false_discovery_rate" %in% colnames(enrichment_df)) {
+        enrichment_df$false_discovery_rate <- as.numeric(enrichment_df$false_discovery_rate)
+    }
+    if ("falseDiscoveryRate" %in% colnames(enrichment_df)) {
+        enrichment_df$falseDiscoveryRate <- as.numeric(enrichment_df$falseDiscoveryRate)
+    }
+    if ("genesInSet" %in% colnames(enrichment_df)) {
+        enrichment_df$genesInSet <- as.numeric(enrichment_df$genesInSet)
+    }
+
+    if ("enrichmentScore" %in% colnames(enrichment_df)) {
+        enrichment_df$enrichmentScore <- as.numeric(enrichment_df$enrichmentScore)
+    }
+
+    if ("proteinRanks" %in% colnames(enrichment_df)) {
+        enrichment_df$proteinRanks <- as.numeric(enrichment_df$proteinRanks)
+    }    
+
     return(enrichment_df)
   } else {
     message("Failed to create data frame from downloaded results.")
@@ -710,7 +738,8 @@ runOneStringDbRankEnrichment <- function( input_table
                                          , ge_fdr = 0.05
                                          , ge_enrichment_rank_direction = -1
                                          , polling_interval_seconds = 10
-                                         , max_polling_attempts = 30) {
+                                         , max_polling_attempts = 30
+                                         , output_dir = here::here() ) {
 
   stringdb_input_table <-  input_table |>
     mutate( score = sign(log2FC) * -log10(fdr_qvalue)) |>
@@ -727,26 +756,29 @@ runOneStringDbRankEnrichment <- function( input_table
                                                api_key = api_key,
                                                species = species,
                                                ge_fdr = ge_fdr,
-                                               ge_enrichment_rank_direction = ge_enrichment_rank_direction)
+                                               ge_enrichment_rank_direction = ge_enrichment_rank_direction )
 
 
   output_tbl <- retrieveStringDBEnrichmentResults( submission_info = parsed_response,
                                                    polling_interval_seconds = polling_interval_seconds,
                                                    max_polling_attempts = max_polling_attempts)
-
+  dir.create( file.path( output_dir), showWarnings = TRUE, recursive = TRUE)
+  
   write_lines(c("page_url", output_tbl$page_url
                 , "download_url" , output_tbl$download_url
                 , "graph_url" , output_tbl$graph_url)
-              , file.path( results_dir, "functional_enrichment_string_db", paste0( result_label, "_string_enrichment_page_url.txt") ))
+              , file.path( output_dir, paste0( result_label, "_string_enrichment_page_url.txt") ))
 
   vroom::vroom_write( output_tbl$enrichment_data
-                      , file = file.path( results_dir
-                                          , "functional_enrichment_string_db"
+                      , file = file.path( output_dir
                                           , paste0( result_label, "_string_enrichment_results.tab") ))
 
-  dir.create( file.path( results_dir, "functional_enrichment_string_db" ), showWarnings = TRUE, recursive = TRUE)
-  writeBin(output_tbl$graph_image_content
-           , file.path( results_dir , "functional_enrichment_string_db", paste0( result_label, "string_enrichment_graph.png") ))
+  if (!is.null(output_tbl$graph_image_content)) {
+    writeBin(output_tbl$graph_image_content
+           , file.path( output_dir, paste0( result_label, "string_enrichment_graph.png") ))
+  } else {
+    message(paste("No graph image content available to save for", result_label))
+  }
 
   return(output_tbl$enrichment_data)
 
@@ -831,6 +863,8 @@ runOneStringDbRankEnrichmentMofa <- function( input_table
                                                    polling_interval_seconds = polling_interval_seconds,
                                                    max_polling_attempts = max_polling_attempts)
   
+  dir.create( file.path( results_dir), showWarnings = TRUE, recursive = TRUE)
+  
   write_lines(c("page_url", output_tbl$page_url
                 , "download_url" , output_tbl$download_url
                 , "graph_url" , output_tbl$graph_url)
@@ -841,10 +875,16 @@ runOneStringDbRankEnrichmentMofa <- function( input_table
                                           
                                           , paste0( result_label, "_string_enrichment_results.tab") ))
   
-  dir.create( file.path( results_dir), showWarnings = TRUE, recursive = TRUE)
-  writeBin(output_tbl$graph_image_content
-           , file.path( results_dir , paste0( result_label, "string_enrichment_graph.png") ))
-  
+  # Save the graph image content to a file
+  if( is.null(output_tbl$graph_image_content ) ) {
+    message("No graph image content available to save.")
+  } else {
+    message("Saving graph image content to file.")
+    writeBin(output_tbl$graph_image_content
+             , file.path( results_dir , paste0( result_label, "string_enrichment_graph.png") ))
+    
+  }
+
   return(output_tbl$enrichment_data)
   
 }
