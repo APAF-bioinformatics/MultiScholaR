@@ -1,33 +1,9 @@
-#' @title Remove Rows with All-Missing Values
-#' @description This function filters a data frame to remove rows where all specified
-#' numeric columns (matching a pattern) contain either `NA` or `0`.
-#'
-#' @details The function identifies columns based on `col_pattern`. For each row, it
-#' checks if all values in these columns are `NA` or `0`. Rows that meet this
-#' condition are removed from the data frame.
-#'
-#' @param input_table A data frame or tibble with columns containing protein/feature abundances.
-#' @param col_pattern A regular expression string that identifies the columns to check
-#'   for missing values (e.g., "Reporter.intensity.corrected").
-#' @param row_id The column name that serves as the unique identifier for each row.
-#'   This should be an unquoted column name (e.g., `Protein.Ids`).
-#'
-#' @return A data frame identical in structure to `input_table` but with rows
-#'   containing only missing or zero values removed.
-#'
-#' @importFrom dplyr mutate if_all inner_join select
-#' @importFrom rlang sym enquo as_string as_name
-#' @export
-#'
-#' @examples
-#' df <- data.frame(
-#'   Protein.ID = c("A", "B", "C", "D"),
-#'   Sample1 = c(10, 0, 5, 0),
-#'   Sample2 = c(20, NA, 8, 0),
-#'   Sample3 = c(30, 0, 0, NA)
-#' )
-#' # Row B and D should be removed
-#' removeEmptyRows(df, col_pattern = "Sample", row_id = Protein.ID)
+#'Remove rows in the table where the columns specified by the column regular expression pattern are all zero or NA value.
+#'@param input_table Input table with columns recording protein abundances for each sample. The name of these columns matches a regular expression pattern, defined by 'col_pattern'. Remove rows with all samples having no protein abundance.
+#'@param col_pattern String representing regular expression pattern that matches the name of columns containing the protein abundance values.
+#'@param row_id The column name with the row_id, tidyverse style name.
+#'@return A data frame with the rows without abundance values removed.
+#'@export
 removeEmptyRows <- function(input_table, col_pattern, row_id) {
 
   temp_col_name <- paste0("temp_", as_string(as_name(enquo(row_id))))
@@ -51,36 +27,10 @@ removeEmptyRows <- function(input_table, col_pattern, row_id) {
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Plot Number of Missing Values per Sample
-#' @description This function takes a data matrix, calculates the number of missing
-#' values (`NA` or non-finite after log2 transformation) for each sample (column),
-#' and generates a bar plot visualizing these counts.
-#'
-#' @details The function first applies a `log2` transformation to the input data.
-#' It then counts values that are not finite (i.e., `NA`, `NaN`, `Inf`, `-Inf`),
-#' which is a common way to define missingness after log transformation.
-#'
-#' @param input_table A data frame or matrix where rows are features (e.g., proteins)
-#'   and columns are samples. The function expects numeric data suitable for
-#'   log2 transformation.
-#'
-#' @return A ggplot2 bar plot object showing the number of missing values for each
-#'   sample. The x-axis represents sample IDs (original column names) and the
-#'   y-axis represents the count of missing values.
-#'
-#' @importFrom ggplot2 ggplot aes geom_bar theme element_text
-#' @importFrom tibble rownames_to_column
-#' @importFrom magrittr %>%
-#' @export
-#'
-#' @examples
-#' data_matrix <- data.frame(
-#'   SampleA = c(10, 20, 0, 40),
-#'   SampleB = c(5, NaN, 15, 25),
-#'   SampleC = c(NA, 10, 30, 50)
-#' )
-#' # After log2, 0 becomes -Inf. So SampleA has 1 missing, SampleB has 1, SampleC has 1.
-#' plotNumMissingValues(data_matrix)
+#' Plot the number of missing values in each sample
+#'@param input_table  Data matrix with each row as a protein and each column a sample.
+#'@return A ggplot2 bar plot showing the number of missing values per column.
+#'@export
 plotNumMissingValues <- function(input_table) {
 
   plot_num_missing_values <- apply(data.matrix(log2(input_table)), 2,
@@ -102,16 +52,10 @@ plotNumMissingValues <- function(input_table) {
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Plot Number of Valid Values per Sample (Log-Transformed)
-#' @description This function counts the number of valid (non-NA) values for each
-#' sample (column) after a log2 transformation and creates a bar plot of these counts.
-#'
-#' @param input_table A data frame or matrix where rows are features and columns are
-#'   samples. Data should be numeric.
-#'
-#' @return A ggplot2 bar plot showing the number of valid data points for each sample
-#'   after log2 transformation.
-#' @export
+#' Plot the number of values in each sample
+#'@param input_table  Data matrix with each row as a protein and each column a sample.
+#'@return A ggplot2 bar plot showing the number of missing values per column.
+#'@export
 plotNumOfValues <- function(input_table) {
 
   plot_num_missing_values <- apply(data.matrix(log2(input_table)), 2,
@@ -129,15 +73,10 @@ plotNumOfValues <- function(input_table) {
 }
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Plot Number of Valid Values per Sample (No Transformation)
-#' @description This function counts the number of valid (non-NA) values for each
-#' sample (column) from the raw input data and creates a bar plot of these counts.
-#'
-#' @param input_table A data frame or matrix where rows are features and columns are
-#'   samples.
-#'
-#' @return A ggplot2 bar plot showing the number of valid data points for each sample.
-#' @export
+#' Plot the number of values in each sample
+#'@param input_table  Data matrix with each row as a protein and each column a sample.
+#'@return A ggplot2 bar plot showing the number of missing values per column.
+#'@export
 plotNumOfValuesNoLog <- function(input_table) {
 
   plot_num_missing_values <- apply(data.matrix(input_table), 2,
@@ -156,31 +95,18 @@ plotNumOfValuesNoLog <- function(input_table) {
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Filter Rows Based on Maximum Missing Values per Group
-#' @description This function filters a data table by removing rows (features) that
-#' have more than a specified number of missing values within any experimental group.
-#'
-#' @details The function first reshapes the data into a long format. It then counts
-#' the number of missing values (defined as `NA` or below an `abundance_threshold`)
-#' for each feature within each experimental group. If any group exceeds the
-#' `max_num_samples_miss_per_group` for a given feature, that feature (row) is
-#' removed from the original table.
-#'
-#' @param input_table A data frame with a feature ID column and abundance columns for samples.
-#' @param cols A tidyselect helper (e.g., `starts_with("Abundance")`) to specify the
-#'   abundance columns.
-#' @param design_matrix A data frame mapping sample IDs to experimental groups.
-#' @param sample_id The unquoted column name in `design_matrix` for sample identifiers.
-#' @param row_id The unquoted column name in `input_table` for feature identifiers.
-#' @param grouping_variable The unquoted column name in `design_matrix` for experimental groups.
-#' @param max_num_samples_miss_per_group An integer. The maximum number of samples
-#'   allowed to have missing values within a single group for a feature to be retained.
-#' @param abundance_threshold A numeric threshold below which values are considered missing.
-#' @param temporary_abundance_column A string for the temporary column name used during
-#'   pivoting. Defaults to "Abundance".
-#'
-#' @return A filtered data frame with the same structure as `input_table`.
-#' @export
+#' For each experimental group, identify proteins that have more than accepted number of missing values per group.
+#'@param input_table An input table with a column containing the row ID and the rest of the columns representing abundance values for each sample.
+#'@param cols A tidyselect command to select the columns. This includes the functions starts_with(), ends_with(), contains(), matches(), and num_range()
+#'@param design_matrix A data frame with a column containing the sample ID (as per the sample_id param) and the experimental group (as per the group param). Each row as the sample ID as row name in the data frame.
+#'@param sample_id The name of the column in design_matrix table that has the sample ID.
+#'@param row_id A unique ID for each row of the 'input_table' variable.
+#'@param grouping_variable The name of the column in design_matrix table that has the experimental group.
+#'@param max_num_samples_miss_per_group An integer representing the maximum number of samples with missing values per group.
+#'@param abundance_threshold Abundance threshold in which the protein in the sample must be above for it to be considered for inclusion into data analysis.
+#'@param temporary_abundance_column The name of a temporary column, as a string, to keep the abundance value you want to filter upon
+#'@return A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values.
+#'@export
 removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample_id, row_id, grouping_variable, max_num_samples_miss_per_group, abundance_threshold
                                         , temporary_abundance_column = "Abundance") {
 
@@ -213,36 +139,18 @@ removeRowsWithMissingValues <- function(input_table, cols, design_matrix, sample
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Advanced Filtering Based on Missing Value Percentages
-#' @description This function provides advanced, two-tiered filtering of features
-#' (rows) based on the percentage of missing values within and across experimental groups.
-#'
-#' @details The function operates in several steps:
-#' 1.  It calculates a dynamic intensity cutoff based on the specified `proteins_intensity_cutoff_percentile` of all observed abundance values. Any value below this is treated as missing.
-#' 2.  For each feature and each experimental group, it calculates the percentage of missing values.
-#' 3.  It checks if this percentage exceeds the `groupwise_percentage_cutoff`.
-#' 4.  It then calculates the percentage of *groups* that failed the check in step 3.
-#' 5.  If this percentage of failing groups exceeds `max_groups_percentage_cutoff`, the entire feature is removed from the dataset.
-#'
-#' This method is useful for removing features that are consistently missing in a significant number of experimental groups.
-#'
-#' @param input_table A data frame with a feature ID column and abundance columns.
-#' @param cols A character vector specifying the abundance column names. This is a key difference from the other helper and requires an explicit vector of names.
-#' @param design_matrix A data frame mapping sample IDs to experimental groups.
-#' @param sample_id The unquoted column name in `design_matrix` for sample identifiers.
-#' @param row_id The unquoted column name in `input_table` for feature identifiers.
-#' @param grouping_variable The unquoted column name in `design_matrix` for experimental groups.
-#' @param groupwise_percentage_cutoff The maximum allowed percentage of missing values within a single group (0-100). Defaults to 1.
-#' @param max_groups_percentage_cutoff The maximum allowed percentage of groups that can fail the `groupwise_percentage_cutoff` (0-100). Defaults to 50.
-#' @param proteins_intensity_cutoff_percentile The percentile (0-100) of all intensities used to set a minimum abundance threshold. Defaults to 1.
-#' @param temporary_abundance_column A string for the temporary column name used during pivoting. Defaults to "Abundance".
-#'
-#' @return A filtered data frame with the same structure as `input_table`.
-#'
-#' @importFrom rlang ensym as_string sym
-#' @importFrom tidyr pivot_longer
-#' @importFrom dplyr mutate case_when left_join filter pull distinct group_by summarise ungroup anti_join
-#' @export
+#'@param input_table An input table with a column containing the row ID and the rest of the columns representing abundance values for each sample.
+#'@param cols A tidyselect command to select the columns. This includes the functions starts_with(), ends_with(), contains(), matches(), and num_range()
+#'@param design_matrix A data frame with a column containing the sample ID (as per the sample_id param) and the experimental group (as per the group param). Each row as the sample ID as row name in the data frame.
+#'@param sample_id The name of the column in design_matrix table that has the sample ID.
+#'@param row_id A unique ID for each row of the 'input_table' variable.
+#'@param grouping_variable The name of the column in design_matrix table that has the experimental group.
+#'@param groupwise_percentage_cutoff The maximum percentage of values below threshold allow in each group for a protein .
+#'@param max_groups_percentage_cutoff The maximum percentage of groups allowed with too many samples with protein abundance values below threshold.
+#'@param temporary_abundance_column The name of a temporary column to keep the abundance value you want to filter upon
+#'@param proteins_intensity_cutoff_percentile The percentile of the protein intensity values to be used as the minimum threshold for protein intensity.
+#'@return A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values.
+#'@export
 removeRowsWithMissingValuesPercentHelper <- function(input_table
                                                      , cols
                                                      , design_matrix
@@ -314,32 +222,17 @@ removeRowsWithMissingValuesPercentHelper <- function(input_table
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Identify Features to Keep Based on Minimum Valid Samples Per Group
-#' @description This function evaluates each feature (row) within each experimental group
-#' to determine if it meets a minimum threshold of valid samples. It returns a list
-#' of features to keep for each group.
-#'
-#' @details A value is considered "valid" if it is not `NA` and is above the specified
-#' `abundance_threshold`. The function is useful for downstream processing where
-#' different sets of features might be used for analyses involving different groups.
-#'
-#' @param input_table A data frame with a feature ID column and abundance columns.
-#' @param cols A tidyselect helper (e.g., `starts_with("Abundance")`) to specify the abundance columns.
-#' @param design_matrix A data frame mapping sample IDs to experimental groups.
-#' @param sample_id The unquoted column name for sample identifiers.
-#' @param row_id The unquoted column name for feature identifiers.
-#' @param grouping_variable The unquoted column name for experimental groups.
-#' @param min_num_samples_per_group An integer specifying the minimum number of valid samples required per group for a feature to be kept for that group.
-#' @param abundance_threshold A numeric threshold below which values are considered missing.
-#'
-#' @return A named list. Each name corresponds to an experimental group, and each
-#'   element is a character vector of feature IDs that passed the filter for that group.
-#'
-#' @importFrom tidyr pivot_longer
-#' @importFrom dplyr left_join mutate group_by summarise ungroup filter select nest
-#' @importFrom purrr map
-#' @importFrom rlang enquo as_name
-#' @export
+#' For each experimental group, identify proteins that does have enough number of samples with abundance values.
+#'@param input_table An input table with a column containing the row ID and the rest of the columns representing abundance values for each sample.
+#'@param cols A tidyselect command to select the columns. This includes the functions starts_with(), ends_with(), contains(), matches(), and num_range()
+#'@param design_matrix A data frame with a column containing the sample ID (as per the sample_id param) and the experimental group (as per the group param). Each row as the sample ID as row name in the data frame.
+#'@param sample_id The name of the column in design_matrix table that has the sample ID.
+#'@param row_id A unique ID for each row of the 'input_table' variable.
+#'@param grouping_variable The name of the column in design_matrix table that has the experimental group.
+#'@param min_num_samples_per_group An integer representing the minimum number of samples per group.
+#'@param abundance_threshold Abundance threshold in which the protein in the sample must be above for it to be considered for inclusion into data analysis.
+#'@return A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values.
+#'@export
 getRowsToKeepList <- function(input_table, cols, design_matrix, sample_id, row_id, grouping_variable, min_num_samples_per_group, abundance_threshold) {
 
   abundance_long <- input_table |>
@@ -374,21 +267,12 @@ getRowsToKeepList <- function(input_table, cols, design_matrix, sample_id, row_i
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Impute Missing Values Using a Down-Shifted Normal Distribution
-#' @description This function imputes missing values (NA or non-finite) in a numeric
-#' vector by drawing random values from a normal distribution. The distribution is
-#' defined relative to the observed data, with a shifted mean and scaled standard deviation.
-#' This method is designed to simulate values that are missing-not-at-random (MNAR),
-#' such as those below the limit of detection.
-#'
-#' @param temp A numeric vector containing values to be imputed.
-#' @param width A numeric factor to scale the standard deviation of the imputed distribution. A smaller value (e.g., 0.3) creates a narrower distribution, implying less uncertainty. Defaults to 0.3.
-#' @param downshift A numeric factor determining how far to shift the mean of the imputed distribution downwards from the observed mean, in units of the observed standard deviation. Defaults to 1.8.
-#'
-#' @return A numeric vector of the same length as the input, with missing values replaced by imputed values.
-#'
-#' @importFrom stats sd rnorm
-#' @export
+#' Data imputation function
+#'@param df Data matrix
+#'@param width Adjustment factor to the observed standard deviation
+#'@param downshift Downshift the mean value by this downshift factor multiplied by the observed standard deviation.
+#'@return Data matrix with the missing values from each column replaced with a value randomly sampled from the normal distribution with adjusted mean and standard deviation. The normal distribution parameters are based on the observed distribution of the same column.
+#'@export
 imputePerCol <- function(temp, width = 0.3, downshift = 1.8) {
 
   temp[!is.finite(temp)] <- NA
@@ -404,24 +288,13 @@ imputePerCol <- function(temp, width = 0.3, downshift = 1.8) {
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Create a Replicate Matrix for RUV-III Analysis
-#' @description This function transforms a standard design matrix into the specific
-#' binary replicate matrix format required by the `RUVIII` function from the `ruv` package.
-#'
-#' @param design_matrix A data frame containing sample and group information.
-#' @param sample_id_column The unquoted column name for unique sample identifiers.
-#' @param grouping_variable The unquoted column name for the experimental groups that define the replicates.
-#' @param temp_column The name of a temporary column used internally. Defaults to `is_replicate_temp`.
-#'
-#' @return A numeric matrix where rows are samples, columns are experimental groups,
-#'   and a `1` indicates that a sample belongs to the group represented by the column.
-#'   This matrix is suitable for the `M` argument of `RUVIII`.
-#'
-#' @importFrom dplyr select mutate
-#' @importFrom tidyr pivot_wider
-#' @importFrom tibble column_to_rownames
-#' @importFrom rlang enquo as_name as_string
-#' @export
+#'Converts a design matrix to a biological replicate matrix for use with ruvIII.
+#'@param design_matrix The design matrix with the sample ID in one column and the experimental group in another column
+#'@param sample_id_column The name of the column with the sample ID, tidyverse style input.
+#'@param grouping_variable The name of the column with the experimental group, tidyverse style input.
+#'@param temp_column The name of the temporary column that indicates which samples are biological replicates of the same experimental group.
+#'@return A numeric matrix with rows as samples, columns as experimental group, and a value of 1 for samples within the same experimental group represented by the same column, and a value of zero otherwise.
+#'@export
 getRuvIIIReplicateMatrixHelper <- function(design_matrix, sample_id_column, grouping_variable, temp_column = is_replicate_temp) {
 
   ruvIII_replicates_matrix <- design_matrix |>
@@ -439,35 +312,7 @@ getRuvIIIReplicateMatrixHelper <- function(design_matrix, sample_id_column, grou
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Helper Function for PCA Plotting
-#' @description A flexible helper function to perform Principal Component Analysis (PCA)
-#' using `mixOmics` and generate a scatter plot using `ggplot2`.
-#'
-#' @details This function calculates principal components, merges them with sample
-#' metadata from the design matrix, and creates a ggplot object. It supports
-#' coloring by one variable, shaping by another, and adding text labels.
-#'
-#' @param data A numeric matrix or data frame where columns are samples and rows are features.
-#' @param design_matrix A data frame containing sample metadata.
-#' @param sample_id_column The column name in `design_matrix` that contains sample IDs,
-#'   matching the column names of `data`. Defaults to "Sample_ID".
-#' @param grouping_variable The column name in `design_matrix` to use for coloring points.
-#'   Defaults to "group".
-#' @param shape_variable Optional. The column name in `design_matrix` to use for point shapes.
-#' @param label_column Optional. The column name in `design_matrix` to use for text labels.
-#' @param title The title for the plot.
-#' @param geom.text.size The font size for labels if `label_column` is provided.
-#' @param ncomp The number of principal components to compute. Defaults to 2.
-#' @param ... Additional arguments (not currently used).
-#'
-#' @return A ggplot object representing the PCA plot.
-#'
-#' @importFrom mixOmics pca
-#' @importFrom ggrepel geom_text_repel
-#' @importFrom ggplot2 ggplot aes geom_point xlab ylab labs theme coord_cartesian
-#' @importFrom tibble rownames_to_column
-#' @importFrom dplyr left_join
-#' @export
+#'@export
 plotPcaHelper <- function(data,
                     design_matrix,
                     sample_id_column = "Sample_ID",
@@ -552,26 +397,7 @@ plotPcaHelper <- function(data,
 
 
 
-#' @title Plot a List of PCA Plots
-#' @description This function takes a dataset and generates a list of PCA plots,
-#' where each plot is colored by a different grouping variable specified in a list.
-#'
-#' @param data A numeric matrix or data frame (features x samples).
-#' @param design_matrix A data frame with sample metadata.
-#' @param sample_id_column The column name for sample IDs.
-#' @param grouping_variables_list A character vector of column names in `design_matrix`
-#'   to use for coloring the points in each respective plot.
-#' @param label_column Optional. The column name for text labels on the plots.
-#' @param title The base title for the plots.
-#' @param geom.text.size The font size for labels.
-#' @param ncomp The number of principal components to compute.
-#' @param ... Additional arguments (not currently used).
-#'
-#' @return A named list of ggplot objects, where each element is a PCA plot colored
-#'   by one of the `grouping_variables_list`.
-#'
-#' @importFrom purrr map
-#' @export
+#'@export
 plotPcaListHelper <- function(data,
                               design_matrix,
                               sample_id_column = "Sample_ID",
@@ -623,25 +449,7 @@ plotPcaListHelper <- function(data,
 
 
 
-#' @title Create a PCA-based GGPAIRS Plot
-#' @description Performs PCA on a data matrix and visualizes the relationships between
-#' the principal components using a `GGally::ggpairs` plot. This creates a matrix
-#' of plots, including scatter plots, density plots, and correlations for the PCs.
-#'
-#' @param data_matrix A numeric matrix or data frame (features x samples).
-#' @param design_matrix A data frame with sample metadata.
-#' @param grouping_variable The unquoted column name in `design_matrix` to use for coloring points.
-#' @param sample_id_column The unquoted column name for sample identifiers.
-#' @param ncomp The number of principal components to compute and plot.
-#'
-#' @return A `ggpairs` object.
-#'
-#' @importFrom mixOmics pca
-#' @importFrom purrr map_chr
-#' @importFrom tibble as.data.frame rownames_to_column
-#' @importFrom dplyr left_join
-#' @importFrom GGally ggpairs
-#' @export
+#'@export
 plotPcaGgpairs <- function( data_matrix
                             , design_matrix
                             , grouping_variable
@@ -682,27 +490,8 @@ plotPcaGgpairs <- function( data_matrix
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-#' @title Plot Relative Log Expression (RLE)
-#' @description Generates a Relative Log Expression (RLE) plot for a data matrix.
-#' RLE plots are useful for visualizing unwanted variation in high-throughput data.
-#'
-#' @details This function calculates the RLE for each sample by subtracting the
-#' median abundance of each feature from all samples. It then creates a boxplot
-#' for each sample, showing the distribution of these relative log expressions.
-#' The `rowinfo` parameter can be used to color the boxplots by experimental group.
-#'
-#' @param Y A numeric matrix where rows are samples and columns are features. Note
-#'   that the input is typically a transposed abundance matrix.
-#' @param rowinfo An optional vector or single-column data frame containing metadata
-#'   (e.g., group assignments) for each sample (row) in `Y`.
-#' @param probs A numeric vector of probabilities for calculating quantiles for the boxplot.
-#' @param yaxis_limit A numeric vector of length 2 specifying the y-axis limits.
-#'
-#' @return A ggplot object representing the RLE plot.
-#'
-#' @import ggplot2
-#' @importFrom dplyr arrange distinct pull mutate
-#' @export
+#'@export
+#'@param Y  Rows = Samples, Columns = Proteins or Peptides
 plotRleHelper <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75,
                                                        0.95), yaxis_limit = c(-0.5, 0.5))
 {
@@ -763,18 +552,10 @@ plotRleHelper <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75,
 }
 
 
-#' @title Get Min/Max Y-Axis Limits from a Boxplot
-#' @description A helper function to extract the minimum and maximum data points
-#' from a ggplot boxplot object and apply an adjustment factor. This is useful for
-#' setting coordinated y-axis limits across multiple plots.
-#'
-#' @param input_boxplot A ggplot object containing a `geom_boxplot` layer where the
-#'   data has `min` and `max` columns (as created by `plotRleHelper`).
-#' @param adjust_factor A numeric value to expand the range by. For example, 0.05
-#'   will expand the range by 5% at both ends.
-#'
-#' @return A numeric vector of length 2 containing the adjusted minimum and maximum values.
 #' @export
+#' @description Input a ggplot2 boxplot, return the maximum and minimum data point adjusted by the adjust_factor.
+#' @param input_boxplot A ggplot2 boxplot object.
+#' @param adjust_factor A numeric value to adjust the maximum and minimum data point.
 getMaxMinBoxplot <- function( input_boxplot, adjust_factor = 0.05) {
 
   df_min <- min( input_boxplot$data$min, na.rm=TRUE)
@@ -800,22 +581,7 @@ getMaxMinBoxplot <- function( input_boxplot, adjust_factor = 0.05) {
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Create a Grid of RLE and PCA Plots
-#' @description This function generates and arranges a series of RLE and PCA plots
-#' for different datasets or analysis steps (e.g., before and after normalization).
-#'
-#' @param list_of_data_matrix A list of data matrices to be plotted.
-#' @param list_of_design_matrix A list of corresponding design matrices.
-#' @param sample_id_column The unquoted column name for sample identifiers.
-#' @param grouping_variable The unquoted column name for the grouping variable used for coloring.
-#' @param list_of_descriptions A character vector of titles for each corresponding plot pair.
-#'
-#' @return A `ggarrange` object containing the grid of plots.
-#'
-#' @importFrom purrr pmap
-#' @importFrom ggpubr ggarrange
-#' @importFrom rlang enquo as_name
-#' @export
+#'@export
 rlePcaPlotList <- function(list_of_data_matrix, list_of_design_matrix,
                            sample_id_column = Sample_ID, grouping_variable = group, list_of_descriptions) {
 
@@ -842,21 +608,15 @@ rlePcaPlotList <- function(list_of_data_matrix, list_of_design_matrix,
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Count Significantly Differentially Expressed Genes/Proteins
-#' @description This function takes a data frame of differential expression results
-#' and counts the number of features that are "Significant and Up", "Significant and Down",
-#' or "Not significant" based on log-fold-change and q-value thresholds.
-#'
-#' @param data A data frame containing differential expression results.
-#' @param lfc_thresh The absolute log-fold-change threshold for significance. Defaults to 0.
-#' @param q_val_thresh The q-value (adjusted p-value) threshold for significance. Defaults to 0.05.
-#' @param log_fc_column The unquoted column name for the log-fold-change values.
-#' @param q_value_column The unquoted column name for the q-values.
-#'
-#' @return A data frame with two columns: `status` and `counts`.
-#'
-#' @importFrom dplyr mutate case_when group_by summarise ungroup left_join
-#' @export
+#' Count the number of statistically significant differentially expressed proteins (according to user-defined threshold)
+#' @param lfc_thresh A numerical value specifying the log fold-change threhold (absolute value) for calling statistically significant proteins.
+#' @param q_val_thresh A numerical value specifying the q-value threshold for statistically significant proteins.
+#' @param log_fc_column The name of the log fold-change column (tidyverse style).
+#' @param q_value_column The name of the q-value column (tidyverse style).
+#' @return A table with the following columns:
+#' status: The status could be Significant and Up, Significant and Down or Not significant
+#' counts: The number of proteins wit this status
+#'@export
 countStatDeGenes <- function(data,
                              lfc_thresh = 0,
                              q_val_thresh = 0.05,
@@ -889,22 +649,6 @@ countStatDeGenes <- function(data,
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Count DE Genes/Proteins for a List of Analyses (Helper)
-#' @description A helper function that applies `countStatDeGenes` to a list of
-#' differential expression result tables. It then combines the counts into a single
-#' data frame, adding columns for the analysis description and comparison details.
-#'
-#' @param de_table A named list of data frames, where each data frame is a DE result table.
-#' @param description A string describing the analysis type (e.g., "RUV-corrected").
-#' @param facet_column The unquoted column name to store the `description`.
-#' @param comparison_column The unquoted column name to store the comparison name.
-#' @param expression_column The unquoted column name to store the expression part of the contrast.
-#'
-#' @return A single data frame summarizing the counts of significant features across all comparisons.
-#'
-#' @importFrom purrr map map2
-#' @importFrom dplyr bind_rows mutate
-#' @importFrom tidyr separate_wider_delim
 #' @export
 countStatDeGenesHelper <- function(de_table
                                    , description
@@ -939,25 +683,14 @@ countStatDeGenesHelper <- function(de_table
 }
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Generate a Bar Plot of DE Gene/Protein Counts
-#' @description This function processes a list of differential expression results from
-#' multiple analysis types (e.g., "raw", "normalized"), counts the number of
-#' significant features for each, and generates a faceted bar plot summarizing these counts.
-#'
-#' @param list_of_de_tables A named list where each element is a list of DE result tables
-#'   (e.g., `list(raw = list_of_raw_de_tables, normalized = ...)`).
-#' @param list_of_descriptions A character vector of descriptions corresponding to `list_of_de_tables`.
-#' @param formula_string A formula string (e.g., `"analysis_type ~ comparison"`) for faceting the plot.
-#' @param facet_column The unquoted column name for the analysis type facet.
-#' @param comparison_column The unquoted column name for the comparison facet.
-#' @param expression_column The unquoted column name for the expression part of the contrast.
-#'
-#' @return A list containing two elements: `plot` (the ggplot object) and `table` (the summary data frame).
-#'
-#' @importFrom purrr map2
-#' @importFrom dplyr bind_rows filter
-#' @importFrom ggplot2 ggplot aes geom_bar geom_text theme element_text facet_grid
-#' @export
+#' Format results table for use in volcano plots, counting number of significant proteins, p-values distribution histogram.
+#' @param list_of_de_tables A list with each element being a results table with log fold-change and q-value per protein.
+#' @param list_of_descriptions  A list of strings describing the parameters used to generate the result table.
+#' @param formula_string The formula string used in the facet_grid command for the ggplot scatter plot.
+#' @param facet_column The name of the column describing the type of analysis or parameters used to generate the result table (tidyverse style). This is related to the \code{list_of_descriptions} parameter above.
+#' @param comparison_column The name of the column describing the contrasts or comparison between groups (tidyverse style).
+#' @param expression_column The name of the column that will contain the formula expressions of the contrasts.
+#'@export
 printCountDeGenesTable <- function(  list_of_de_tables
                                      , list_of_descriptions
                                      , formula_string = "analysis_type ~ comparison"
@@ -998,33 +731,32 @@ printCountDeGenesTable <- function(  list_of_de_tables
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Prepare Data for Volcano Plots
-#' @description This function takes a list of differential expression results, combines
-#' them into a single long-format data frame, and prepares them for plotting with
-#' `plotVolcano`. It calculates -log10(q-value) and assigns a color category
-#' based on significance thresholds.
-#'
-#' @param list_of_de_tables A list of DE result lists.
-#' @param list_of_descriptions A character vector of descriptions for each list in `list_of_de_tables`.
-#' @param row_id The unquoted column name for feature identifiers.
-#' @param p_value_column The unquoted column name for raw p-values.
-#' @param q_value_column The unquoted column name for q-values.
-#' @param fdr_value_column The unquoted column name for another FDR-adjusted p-value column.
-#' @param log_q_value_column The unquoted column name to store the -log10(q-value).
-#' @param log_fc_column The unquoted column name for log-fold-change values.
-#' @param comparison_column The unquoted column name for the comparison.
-#' @param expression_column The unquoted column name for the expression part of the contrast.
-#' @param facet_column The unquoted column name for the analysis type facet.
-#' @param q_val_thresh The q-value threshold for determining significance.
-#'
-#' @return A single data frame ready for volcano plotting, with columns for plotting
-#'   aesthetics (`lqm`, `colour`, etc.).
-#'
-#' @importFrom purrr map map2
-#' @importFrom tibble rownames_to_column
-#' @importFrom dplyr select mutate bind_rows
-#' @importFrom tidyr separate_wider_delim
-#' @importFrom rlang enquo as_name as_string
+#' Format results table for use in volcano plots, counting number of significant proteins, p-values distribution histogram.
+#' @param list_of_de_tables A list with each element being a results table with log fold-change and q-value per protein.
+#' @param list_of_descriptions  A list of strings describing the parameters used to generate the result table.
+#' @param row_id The name of the row ID column (tidyverse style).
+#' @param p_value_column The name of the raw p-value column (tidyverse style).
+#' @param q_value_column The name of the q-value column (tidyverse style).
+#' @param log_q_value_column The name of the log q-value column (tidyverse style).
+#' @param log_fc_column The name of the log fold-change column (tidyverse style).
+#' @param comparison_column The name of the column describing the contrasts or comparison between groups (tidyverse style).
+#' @param expression_column The name of the column that will contain the formula expressions of the contrasts.
+#' @param facet_column The name of the column describing the type of analysis or parameters used to generate the result table (tidyverse style). This is related to the \code{list_of_descriptions} parameter above.
+#' @param q_val_thresh A numerical value specifying the q-value threshold for statistically significant proteins.
+#' @return A table with the following columns:
+#' row_id:  The protein ID, this column is derived from the input to the row_id column.
+#' log_q_value_column: The log (base 10) q-value, this column name is derived from the input to the log_q_value_column.
+#' q_value_column:  The q-value, this column name is derived from the input to the q_value_column.
+#'   p_value_column: The p-value, this column name is derived from the input to p_value_column.
+#'   log_fc_column: The log fold-change, this column name is derived from the input to log_fc_column.
+#'   comparison_column: The comparison, this column name is derived from the input to comparison_column.
+#'   expression_column: The formula expression for the contrasts, this column name is derived from the input to expression_column.
+#'   facet_column: The analysis type, this column name is derived from the input to facet_column.
+#'   colour The colour of the dots used in the volcano plot.
+#'   orange = Absolute Log fold-change >= 1 and q-value >= threshold
+#'   purple = Absolute Log fold-change >= 1 and q-value < threshold
+#'   blue = Absolute Log fold-change < 1 and q-value < threshold
+#'   black = all other values
 #' @export
 getSignificantData <- function( list_of_de_tables
                                 , list_of_descriptions
@@ -1081,21 +813,12 @@ getSignificantData <- function( list_of_de_tables
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Draw a Faceted Volcano Plot
-#' @description Generates a volcano plot from pre-processed differential expression
-#' data. The plot displays -log10(q-value) vs. log-fold-change and can be faceted
-#' to show multiple comparisons or analysis types.
-#'
-#' @param selected_data A data frame prepared by `getSignificantData`, containing
-#'   columns for plotting aesthetics (`log_q_value_column`, `log_fc_column`, `colour`).
-#' @param log_q_value_column The unquoted column name for the -log10(q-value) y-axis.
-#' @param log_fc_column The unquoted column name for the log-fold-change x-axis.
-#' @param q_val_thresh A numeric threshold for q-value significance, used to draw a horizontal line.
-#' @param formula_string A formula string (e.g., `"analysis_type ~ comparison"`) for faceting with `facet_grid`.
-#'
-#' @return A ggplot object representing the volcano plot.
-#'
-#' @importFrom ggplot2 ggplot aes geom_point scale_colour_manual geom_vline geom_hline theme_bw xlab ylab theme facet_grid
+#' Draw the volcano plot.
+#' @param selected_data A table that is generated by running the function \code{\link{get_significant_data}}.
+#' @param log_q_value_column The name of the column representing the log q-value.
+#' @param log_fc_column The name of the column representing the log fold-change.
+#' @param q_val_thresh A numerical value specifying the q-value threshold for statistically significant proteins.
+#' @param formula_string The formula string used in the facet_grid command for the ggplot scatter plot.
 #' @export
 plotVolcano <- function( selected_data
                          , log_q_value_column = lqm
@@ -1134,23 +857,15 @@ plotVolcano <- function( selected_data
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Draw a Single Volcano Plot for Publication
-#' @description Creates a single, publication-quality volcano plot with more control
-#' over aesthetics.
-#'
-#' @param input_data A data frame containing the data for the plot.
-#' @param input_title The title of the plot.
-#' @param log_q_value_column The unquoted column name for the y-axis (-log10 q-value).
-#' @param log_fc_column The unquoted column name for the x-axis (log2 fold-change).
-#' @param points_type_label The unquoted column name containing labels for the color legend.
-#' @param points_color The unquoted column name containing hex codes or color names for points.
-#' @param q_val_thresh The q-value threshold for the significance line.
-#' @param log2FC_thresh The log2-fold-change threshold for vertical lines.
-#'
-#' @return A ggplot object.
-#'
-#' @importFrom ggplot2 ggplot aes geom_point scale_colour_manual geom_hline geom_vline theme_bw xlab ylab labs theme element_text
-#' @importFrom dplyr distinct pull
+#' Draw the volcano plot, used in publication graphs
+#' @param input_data Input data with the `log_q_value_column`, the `log_fc_column`, the `points_type_label` and the `points_color` columns.
+#' @param log_q_value_column The name of the column representing the log q-value.
+#' @param log_fc_column The name of the column representing the log fold-change.
+#' @param points_type_label A column in input table with the type of points based on log fold-change and q-value (e.g. "Not sig., logFC >= 1" = "orange" , "Sig., logFC >= 1" = "purple" , "Sig., logFC < 1" = "blue" , "Not sig." )
+#' @param points_color A column in input table with the colour of the points corresponding to each type of points (e.g. orange, purple, blue black, )
+#' @param q_val_thresh A numerical value specifying the q-value threshold for statistically significant proteins.
+#' @param log2FC_thresh A numerical value specifying the log fold-change threshold to draw a vertical line
+#' @param formula_string The formula string used in the facet_grid command for the ggplot scatter plot.
 #' @export
 plotOneVolcano <- function( input_data, input_title,
                             log_q_value_column = lqm,
@@ -1213,28 +928,23 @@ plotOneVolcano <- function( input_data, input_title,
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Prepare Data for a Labeled Volcano Plot
-#' @description Processes a differential expression results table to prepare it for
-#' creating a volcano plot with labels for the most significant points. It joins
-#' with UniProt data to get gene names and ranks features to select top candidates for labeling.
+#' @param input_table The input table with the log fold-change and q-value columns.
+#' @param protein_id_column The name of the column representing the protein ID (tidyverse style).
+#' @param uniprot_table The uniprot table with the imporatnt info on each protein
+#' @param uniprot_protein_id_column The name of the column representing the protein ID in the uniprot table (tidyverse style).
+#' @param number_of_genes The number of genes to show in the volcano plot.
+#' @param fdr_threshold The FDR threshold for the volcano plot.
+#' @param fdr_column The name of the column representing the FDR value (tidyverse style).
+#' @param log2FC_column The name of the column representing the log fold-change (tidyverse style).
+#' @return A table with the following columns:
+#' label  The label of the significant proteins.
+#' log2FC The log2 fold-change of the significant proteins.
+#' lqm  The -log10 of the q-value.
+#' colour The colour of the significant proteins.
+#' rank_positive: The rank of the positive fold-change values.
+#' rank_negative: The rank of the negative fold-change values.
+#' gene_name_significant  The gene name of the significant proteins.
 #'
-#' @param input_table The DE results data frame.
-#' @param protein_id_column The unquoted column name for protein identifiers.
-#' @param uniprot_table A data frame with UniProt annotations.
-#' @param uniprot_protein_id_column The unquoted column name for protein IDs in `uniprot_table`.
-#' @param gene_name_column The unquoted column name for gene names in `uniprot_table`.
-#' @param number_of_genes The number of top up- and down-regulated genes to label.
-#' @param fdr_threshold The FDR/q-value significance threshold.
-#' @param fdr_column The unquoted column name for FDR/q-values.
-#' @param log2FC_column The unquoted column name for log2 fold changes.
-#'
-#' @return A data frame with added columns (`lqm`, `colour`, `label`, `gene_name_significant`, etc.)
-#'   ready for plotting.
-#'
-#' @importFrom dplyr mutate relocate select left_join case_when arrange
-#' @importFrom purrr map_chr
-#' @importFrom stringr str_split
-#' @importFrom rlang enquo as_name as_string
 #' @export
 prepareDataForVolcanoPlot <- function(input_table
                                       , protein_id_column = uniprot_acc
@@ -1279,22 +989,15 @@ prepareDataForVolcanoPlot <- function(input_table
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Draw a Volcano Plot Without Vertical Fold-Change Lines
-#' @description A variation of `plotOneVolcano` that creates a volcano plot without
-#' the vertical lines indicating a fold-change threshold.
-#'
-#' @param input_data A data frame prepared for plotting.
-#' @param input_title The title for the plot.
-#' @param log_q_value_column The unquoted column name for the y-axis.
-#' @param log_fc_column The unquoted column name for the x-axis.
-#' @param points_type_label The unquoted column name for legend labels.
-#' @param points_color The unquoted column name for point colors.
-#' @param q_val_thresh The q-value threshold for the significance line.
-#'
-#' @return A ggplot object.
-#'
-#' @importFrom ggplot2 ggplot aes geom_point scale_colour_manual geom_hline theme_bw xlab ylab labs theme element_text
-#' @importFrom dplyr distinct pull
+#' Draw the volcano plot, used in publication graphs
+#' @param input_data Input data with the `log_q_value_column`, the `log_fc_column`, the `points_type_label` and the `points_color` columns.
+#' @param log_q_value_column The name of the column representing the log q-value.
+#' @param log_fc_column The name of the column representing the log fold-change.
+#' @param points_type_label A column in input table with the type of points based on log fold-change and q-value (e.g. "Not sig., logFC >= 1" = "orange" , "Sig., logFC >= 1" = "purple" , "Sig., logFC < 1" = "blue" , "Not sig." )
+#' @param points_color A column in input table with the colour of the points corresponding to each type of points (e.g. orange, purple, blue black, )
+#' @param q_val_thresh A numerical value specifying the q-value threshold for statistically significant proteins.
+#' @param gene_name The column representing the gene name
+#' @param formula_string The formula string used in the facet_grid command for the ggplot scatter plot.
 #' @export
 plotOneVolcanoNoVerticalLines <- function( input_data, input_title,
                             log_q_value_column = lqm,
@@ -1350,27 +1053,19 @@ plotOneVolcanoNoVerticalLines <- function( input_data, input_title,
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Create a Labeled Volcano Plot
-#' @description A wrapper function that combines data preparation and plotting to
-#' create a volcano plot where the most significant proteins are labeled with gene names.
-#'
-#' @param input_table The raw DE results table.
-#' @param uniprot_table A data frame with UniProt annotations for mapping gene names.
-#' @param protein_id_column Unquoted column name for protein IDs in `input_table`.
-#' @param uniprot_protein_id_column Unquoted column name for protein IDs in `uniprot_table`.
-#' @param gene_name_column Unquoted column name for gene names in `uniprot_table`.
-#' @param number_of_genes The number of top features to label.
-#' @param fdr_threshold FDR/q-value significance threshold.
-#' @param fdr_column Unquoted column name for FDR/q-values.
-#' @param log2FC_column Unquoted column name for log2 fold changes.
-#' @param input_title The plot title.
-#' @param include_protein_label A logical flag to enable/disable labeling.
-#' @param max.overlaps The `max.overlaps` parameter passed to `ggrepel::geom_text_repel`.
-#'
-#' @return A ggplot object of the labeled volcano plot.
-#'
-#' @importFrom ggrepel geom_text_repel
-#' @export
+#'  This function creates a volcano plot with protein labels
+#' @param input_table The input table to be used for the volcano plot, contains the protein_id_column, fdr_column and log2FC_column
+#' @param uniprot_table The uniprot table to be used for the volcano plot, contains the uniprot_protein_id_column and gene_name_column
+#' @param protein_id_column The column name in the input_table that contains the protein ids (tidyverse format)
+#' @param uniprot_protein_id_column The column name in the uniprot_table that contains the uniprot protein ids (tidyverse format)
+#' @param gene_name_column The column name in the uniprot_table that contains the gene names (tidyverse format)
+#' @param number_of_genes Increasing P-value rank for the number of proteins to display on the volcano plot, default is 100`
+#' @param fdr_threshold The FDR threshold to use for the volcano plot, default is 0.05
+#' @param fdr_column The column name in the input_table that contains the FDR values (tidyverse format)
+#' @param log2FC_column The column name in the input_table that contains the log2FC values (tidyverse format)
+#' @param input_title The title to use for the volcano plot
+#' @param max.overlaps The maximum number of overlaps to allow for the protein labels using ggrepel (default is 20)
+#' @return A ggplot object with the volcano plot and protein labels
 printOneVolcanoPlotWithProteinLabel <- function( input_table
                                                  , uniprot_table
                                                  , protein_id_column = Protein.Ids
@@ -1419,32 +1114,17 @@ printOneVolcanoPlotWithProteinLabel <- function( input_table
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Create an Interactive Glimma Volcano Plot for Proteomics
-#' @description Generates an interactive volcano plot using the `Glimma` package and
-#' saves it as a self-contained HTML file. This plot allows for interactive
-#' exploration of differential expression results.
-#'
-#' @param r_obj A `limma` `MArrayLM` object (the output of `eBayes`).
-#' @param coef An integer specifying which coefficient (contrast) from the fit object to plot.
-#' @param volcano_plot_tab A data frame for annotation, mapping UniProt accessions to gene names.
-#' @param uniprot_column The unquoted column name for UniProt accessions in `volcano_plot_tab`.
-#' @param gene_name_column The unquoted column name for gene names in `volcano_plot_tab`.
-#' @param display_columns A character vector of additional columns from `volcano_plot_tab` to display in the plot.
-#' @param additional_annotations An optional data frame with more annotations to join.
-#' @param additional_annotations_join_column The unquoted column name to join `additional_annotations` by.
-#' @param counts_tbl An optional matrix of expression counts to display alongside the plot.
-#' @param groups A vector specifying the group for each sample in `counts_tbl`.
-#' @param output_dir The directory where the output HTML file will be saved.
-#'
-#' @return This function is called for its side effect of writing an HTML file and does not return a value.
-#'
-#' @importFrom Glimma glimmaVolcano
-#' @importFrom qvalue qvalue
-#' @importFrom htmlwidgets saveWidget
-#' @importFrom dplyr select distinct left_join mutate pull
-#' @importFrom purrr map_chr
-#' @importFrom stringr str_split
+#' getGlimmaVolcanoProteomics
+#' @description Create an interactive plotly volcano plot for Proteomics data
+#' @param r_obj Output from ebFit object of limma package
+#' @param coef An integer specifying the position in the list of coefficients (e.g. name of contrast) for which to print the volcano plot for
+#' @param volcano_plot_tab A table containing the list of uniprot_acc and the matching gene_name.
+#' @param uniprot_column The name of the column in the 'volcano_plot_tab' table that contains the list of uniprot accessions (in tidyverse format).
+#' @param gene_name_column The name of the column in the 'volcano_plot_tab' table that contains the list of gene names (in tidyverse format).
+#' @param counts_tbl A table containing the intensity data for the proteins.
+#' @param output_dir The output directory in which the HTML files containing the interactive plotly volcano plot will be saved.
 #' @export
+
 getGlimmaVolcanoProteomics <- function( r_obj
                                         , coef
                                         , volcano_plot_tab
@@ -1519,25 +1199,6 @@ getGlimmaVolcanoProteomics <- function( r_obj
 }
 
 
-#' @title Create an Interactive Glimma Volcano Plot Widget for Proteomics
-#' @description Generates an interactive volcano plot widget using the `Glimma` package.
-#' Unlike `getGlimmaVolcanoProteomics`, this function returns the widget object directly,
-#' making it suitable for embedding in R Markdown documents or Shiny apps.
-#'
-#' @param r_obj A `limma` `MArrayLM` object.
-#' @param coef An integer specifying which coefficient (contrast) to plot.
-#' @param volcano_plot_tab A data frame for annotation.
-#' @param uniprot_column The unquoted column name for UniProt accessions.
-#' @param gene_name_column The unquoted column name for gene names.
-#' @param display_columns Additional columns to display.
-#' @param additional_annotations Optional additional annotation data frame.
-#' @param additional_annotations_join_column Unquoted column name for joining additional annotations.
-#' @param counts_tbl Optional matrix of expression counts.
-#' @param groups A vector of group assignments for samples.
-#'
-#' @return An `htmlwidget` object.
-#'
-#' @importFrom Glimma glimmaVolcano
 #' @export
 getGlimmaVolcanoProteomicsWidget <- function( r_obj
                                         , coef
@@ -1606,26 +1267,17 @@ getGlimmaVolcanoProteomicsWidget <- function( r_obj
 }
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Create an Interactive Glimma Volcano Plot for Phosphoproteomics
-#' @description Generates an interactive volcano plot using `Glimma` specifically
-#' for phosphoproteomics data, using phosphosite IDs for annotation. Saves the
-#' plot as a self-contained HTML file.
-#'
-#' @param r_obj A `limma` `MArrayLM` object.
-#' @param coef An integer specifying which coefficient (contrast) to plot.
-#' @param volcano_plot_tab A data frame for annotation, mapping site IDs to other information.
-#' @param sites_id_column The unquoted column name for phosphosite identifiers.
-#' @param sites_id_display_column The unquoted column name for the labels to display in the plot.
-#' @param display_columns Additional columns from `volcano_plot_tab` to show.
-#' @param additional_annotations Optional additional annotation data frame.
-#' @param additional_annotations_join_column Unquoted column name for joining additional annotations.
-#' @param counts_tbl Optional matrix of expression counts.
-#' @param output_dir The directory to save the output HTML file.
-#'
-#' @return This function is called for its side effect of writing an HTML file.
-#'
-#' @importFrom Glimma glimmaVolcano
+#' getGlimmaVolcanoPhosphoproteomics
+#' @description Create an interactive plotly volcano plot for Phosphoproteomics data
+#' @param r_obj Output from ebFit object of limma package
+#' @param coef An integer specifying the position in the list of coefficients (e.g. name of contrast) for which to print the volcano plot for
+#' @param volcano_plot_tab A table containing the list of uniprot_acc and the matching gene_name.
+#' @param sites_id_column The name of the column in the 'volcano_plot_tab' table that contains the list of uniprot accessions (in tidyverse format).
+#' @param sites_id_display_column The name of the column in the 'volcano_plot_tab' table that contains the list of gene names (in tidyverse format).
+#' @param display_columns The name of the columns from input `volcano_plot_tab` that will be included in the mouseover tooltips and table
+#' @param output_dir The output directory in which the HTML files containing the interactive plotly volcano plot will be saved.
 #' @export
+
 getGlimmaVolcanoPhosphoproteomics <- function( r_obj
                                         , coef
                                         , volcano_plot_tab
@@ -1684,19 +1336,11 @@ getGlimmaVolcanoPhosphoproteomics <- function( r_obj
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Plot P-Value Distribution
-#' @description Generates a histogram of raw p-values to visualize their distribution.
-#' This is a common diagnostic plot to assess the validity of the statistical model.
-#' A uniform distribution is often expected under the null hypothesis.
-#'
-#' @param selected_data A data frame containing a column of p-values.
-#' @param p_value_column The unquoted column name for the raw p-values.
-#' @param formula_string A formula string (e.g., `"is_ruv_applied ~ comparison"`) for faceting with `facet_grid`.
-#'
-#' @return A ggplot object showing the p-value distribution histogram.
-#'
-#' @importFrom ggplot2 ggplot aes theme xlab geom_histogram facet_grid
-#' @export
+#' Draw the p-values distribution plot.
+#' @param selected_data A table that is generated by running the function \code{\link{get_significant_data}}.
+#' @param log_p_value_column The name of the column representing the p-value.
+#' @param formula_string The formula string used in the facet_grid command for the ggplot scatter plot.
+#'@export
 printPValuesDistribution <- function(selected_data, p_value_column = raw_pvalue, formula_string = "is_ruv_applied ~ comparison") {
 
   breaks <- c(0, 0.001, 0.01, 0.05,
@@ -1728,22 +1372,12 @@ printPValuesDistribution <- function(selected_data, p_value_column = raw_pvalue,
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Fit a Linear Model and Compute Empirical Bayes Statistics
-#' @description A wrapper for the core `limma` workflow. It fits a linear model to
-#' expression data, computes contrasts, and applies Empirical Bayes moderation to
-#' compute moderated t-statistics, p-values, and q-values.
-#'
-#' @param data A numeric matrix or data frame of expression data (features x samples).
-#' @param design A design matrix created by `model.matrix`.
-#' @param contr.matrix A contrast matrix created by `makeContrasts`.
-#'
-#' @return A list containing two elements:
-#'   - `table`: A data frame with detailed statistics for the first contrast, including
-#'     logFC, t-statistics, p-values, and q-values.
-#'   - `fit.eb`: The `MArrayLM` fit object returned by `eBayes`.
-#'
-#' @importFrom limma lmFit contrasts.fit eBayes
-#' @importFrom qvalue qvalue
+#' Run the Empircal Bayes Statistics for Differential Expression in the limma package
+#' @param ID List of protein accessions / row names.
+#' @param design Output from running the function \code{\link{model.matrix}}.
+#' @param contr.matrix Output from the function \code{\link{makeContrasts}}.
+#' @seealso \code{\link{model.matrix}}
+#' @seealso \code{\link{makeContrasts}}
 #' @export
 ebFit <- function(data, design, contr.matrix)
 {
@@ -1773,26 +1407,29 @@ ebFit <- function(data, design, contr.matrix)
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Run a Differential Expression Test for a Single Contrast
-#' @description This function performs a differential expression test for a single
-#' pairwise comparison between two experimental groups using the `limma` package.
-#'
-#' @param ID A vector of feature identifiers (e.g., protein accessions).
-#' @param A A numeric matrix of expression data for group A (features x samples).
-#' @param B A numeric matrix of expression data for group B (features x samples).
-#' @param group_A A string naming group A.
-#' @param group_B A string naming group B.
-#' @param design_matrix A design matrix for the samples in groups A and B.
-#' @param formula_string A formula string for `model.matrix` (e.g., `"~ 0 + group"`).
-#' @param contrast_variable The name of the contrast variable in the design matrix.
-#' @param weights An optional numeric matrix of weights for the linear model fit.
-#'
-#' @return A list containing two elements:
-#'   - `table`: A data frame summarizing the results (logFC, p-values, q-values, etc.).
-#'   - `fit.eb`: The `MArrayLM` fit object from `eBayes`.
-#'
-#' @importFrom limma makeContrasts
-#' @export
+#' Analyse one contrast (e.g. compare a pair of experimental groups) and output the q-values per protein.
+#'@param ID List of protein accessions / row names.
+#'@param A String representing the name of experimental group A for pairwise comparison of B - A.
+#'@param B String representing the name of experimental group B for pairwise comparison of B - A.
+#'@param group_A Names of all the columns / samples that are in experimental group A.
+#'@param group_B Names of all the columns / samples that are in experimental group B.
+#'@param design_matrix A data frame with a column containing the sample ID (as per the sample_id param) and the experimental group (as per the group param). Each row as the sample ID as row name in the data frame.
+#'@param formula_string A formula string representing the experimental design. e.g. ("~ 0 + group")
+#'@param contrast_variable String representing the contrast variable, which is also used in the formula string. (e.g. "group")
+#'@param weights Numeric matrix for adjusting each sample and gene.
+#'@return A data frame with the following columns:
+#' row.names = the protein accessions
+#' comparison A string showing log({group B's name}) minus log({group A's name})
+#' meanA     mean of the normalised log abundance value of the gene across samples from experimental group A
+#' meanB     mean of the normalised log abundance value of the gene across samples from experimental group B
+#' logFC     log fold-change
+#' tstats    t-test statistics
+#' tmod      moderated t-test statistics
+#' pval      t-test p-value
+#' raw_pvalue      moderated t-test p-value
+#' qval      t-test q-value
+#' fdr_qvalue     moderated t-test q-value
+#'@export
 runTest <- function(ID, A, B, group_A, group_B, design_matrix, formula_string,
                     contrast_variable = "group",
                     weights = NA) {
@@ -1843,20 +1480,12 @@ runTest <- function(ID, A, B, group_A, group_B, design_matrix, formula_string,
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Get Grouping Information from Design Matrix
-#' @description This function processes a design matrix to create a named list
-#' where each name is an experimental group and each element is a character vector
-#' of the sample IDs belonging to that group.
-#'
-#' @param design_matrix A data frame containing the experimental design.
-#' @param group_id The unquoted column name for the grouping variable.
-#' @param sample_id The unquoted column name for the sample identifiers.
-#'
-#' @return A named list mapping group names to sample ID vectors.
-#'
-#' @importFrom dplyr select group_by summarise ungroup pull
-#' @importFrom rlang sym
-#' @export
+#'Assign experimental group list
+#'@param design_matrix A data frame representing the design matrix.
+#'@param group_id A string representing the name of the group ID column used in the design matrix.
+#'@param sample_id A string representing the name of the sample ID column used in the design matrix.
+#'@return A list where each element name is the name of a treatment group and each element is a vector containing the sample IDs within the treatment group.
+#'@export
 getTypeOfGrouping <- function(design_matrix, group_id, sample_id) {
   temp_type_of_grouping <- design_matrix |>
     dplyr::select(!!rlang::sym(group_id), !!rlang::sym(sample_id)) |>
@@ -1874,32 +1503,32 @@ getTypeOfGrouping <- function(design_matrix, group_id, sample_id) {
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Run Pairwise Differential Expression Tests for Multiple Comparisons
-#' @description This function iterates through a set of pairwise comparisons defined
-#' in `test_pairs` and runs a differential expression test for each using the `runTest` helper function.
-#'
-#' @details
-#' For each pair of groups to be compared, this function subsets the data and design
-#' matrix. It can also handle pre-filtered feature lists (`sample_rows_list`) to
-#' test only a subset of features relevant to the specific comparison.
-#'
-#' @param ID A vector of all feature identifiers in the `data` matrix.
-#' @param data The full expression data matrix (features x samples).
-#' @param test_pairs A data frame with two columns ("A" and "B") defining the pairwise comparisons.
-#' @param sample_columns A character vector of all sample column names to be included in the analysis.
-#' @param sample_rows_list An optional named list (output of `getRowsToKeepList`) where each
-#'   element contains the feature IDs to be tested for a specific group.
-#' @param type_of_grouping A named list (output of `getTypeOfGrouping`) mapping group names to sample IDs.
-#' @param design_matrix The full design matrix for the experiment.
-#' @param formula_string A formula string for the linear model.
-#' @param contrast_variable The name of the contrast variable in the design matrix.
-#' @param weights An optional numeric matrix of weights for the linear model.
-#'
-#' @return A named list of results. Each element corresponds to a comparison and contains:
-#'   - `results`: A data frame of DE statistics from `runTest`.
-#'   - `counts`: The subset of the data matrix used for the test.
-#'   - `fit.eb`: The `MArrayLM` fit object from `eBayes`.
-#' @export
+#' Compare a pair of experimental groups and output the log fold-change and q-values per protein.
+#'@param ID List of protein accessions / row names.
+#'@param data Data frame containing the log (base 2) protein abundance values where each column represents a sample and each row represents a protein group, and proteins as rows. The data is preferably median-scaled, with missing values imputed, and batch-effects removed.
+#'@param test_pairs Input file with a table listing all the pairs of experimental groups to compare. First column represents group A and second column represents group B. Linear model comparisons (e.g. Contrasts) would be group B minus group A.
+#'@param sample_columns A vector of column names (e.g. strings) representing samples which would be used in the statistical tests. Each column contains protein abundance values.
+#'@param sample_rows_list A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values. It is usually the output from the function \code{get_rows_to_keep_list}.
+#'@param type_of_grouping A list where each element name is the name of a treatment group and each element is a vector containing the sample IDs within the treatment group. It is usually the output from the function \code{get_type_of_grouping}.
+#'@param design_matrix A data frame with a column containing the sample ID (as per the sample_id param) and the experimental group (as per the group param). Each row as the sample ID as row name in the data frame.
+#'@param formula_string A formula string representing the experimental design. e.g. ("~ 0 + group")
+#'@param contrast_variable String representing the contrast variable, which is also used in the formula string. (e.g. "group")
+#'@param weights Numeric matrix for adjusting each sample and gene.
+#'@return A list of data frames, the name of each element represents each pairwise comparison. Each data frame has the following columns:
+#' row.names = the protein accessions
+#' comparison A string showing log({group B's name}) minus log({group A's name})
+#' meanA     mean of the normalised log abundance value of the gene across samples from experimental group A
+#' meanB     mean of the normalised log abundance value of the gene across samples from experimental group B
+#' logFC     log fold-change
+#' tstats    t-test statistics
+#' tmod      moderated t-test statistics
+#' pval      t-test p-value
+#' raw_pvalue      moderated t-test p-value
+#' qval      t-test q-value
+#' fdr_qvalue     moderated t-test q-value
+#' @seealso \code{\link{get_rows_to_keep_list}}
+#' @seealso \code{\link{get_type_of_grouping}}
+#'@export
 runTests <- function(ID, data, test_pairs, sample_columns, sample_rows_list = NA, type_of_grouping, design_matrix, formula_string, contrast_variable = "group", weights = NA) {
   r <- list()
   for (i in 1:nrow(test_pairs)) {
@@ -1961,35 +1590,17 @@ runTests <- function(ID, data, test_pairs, sample_columns, sample_rows_list = NA
 
 ## -----------
 
-#' @title Run Differential Expression Analysis Using `limma` Contrasts
-#' @description A flexible function to perform differential expression analysis for
-#' a set of specified contrasts using the `limma` package. It supports `eBayes`
-#' moderation and the `treat` method for testing against a log-fold-change threshold.
-#'
-#' @param data The expression data matrix (features x samples).
-#' @param contrast_strings A character vector of contrast formulas (e.g., "GroupA-GroupB").
-#' @param design_matrix The full design matrix for the experiment.
-#' @param formula_string A formula string for the linear model (e.g., `"~ 0 + group"`).
-#' @param p_value_column The unquoted column name to store the raw p-values in the output tables.
-#' @param q_value_column The unquoted column name to store q-values (from the `qvalue` package).
-#' @param fdr_value_column The unquoted column name to store BH-adjusted p-values.
-#' @param weights An optional numeric matrix of weights.
-#' @param treat_lfc_cutoff An optional log-fold-change threshold for `limma::treat`.
-#'   If provided, tests if the fold change is significantly greater than this value.
-#' @param eBayes_trend A logical value passed to `limma::eBayes`, indicating whether
-#'   to allow for a trend in the prior variance.
-#' @param eBayes_robust A logical value passed to `limma::eBayes`, indicating whether
-#'   to use robust estimation for the prior variance.
-#'
-#' @return A list containing two elements:
-#'   - `results`: A named list of data frames, where each data frame contains the DE
-#'     results for one of the specified contrasts.
-#'   - `fit.eb`: The final `MArrayLM` fit object from `eBayes` or `treat`.
-#'
-#' @importFrom limma makeContrasts lmFit contrasts.fit eBayes treat topTable topTreat
-#' @importFrom qvalue qvalue
-#' @importFrom purrr map
-#' @export
+#' Run the linear model fitting and statistical tests for a set of contrasts, then adjust with Empirical Bayes function
+#'@param data Data frame containing the log (base 2) protein abundance values where each column represents a sample and each row represents a protein group, and proteins as rows. The data is preferably median-scaled, with missing values imputed, and batch-effects removed.
+#'@param contrast_strings Input file with a table listing all the experimental contrasts to analyse. It will be in the format required for the function \code{makeContrasts} in the limma package.
+#'The contrast string consists of variable that each consist of concatenating the column name (e.g. group) and the string representing the group type (e.g. A) in the design matrix.
+#'@param design_matrix A data frame with a column containing the sample ID (as per the sample_id param) and the experimental group (as per the group param). Each row as the sample ID as row name in the data frame.
+#'@param formula_string A formula string representing the experimental design. e.g. ("~ 0 + group")
+#' @param p_value_column The name of the raw p-value column (tidyverse style).
+#' @param q_value_column The name of the q-value column (tidyverse style).
+#' @param fdr_value_column The name of the fdr-value column (tidyverse style).
+#'@return A list containing two elements. $results returns a list of tables containing logFC and q-values. $fit.eb returns the Empiracle Bayes output object.
+#'@export
 runTestsContrasts <- function(data,
                               contrast_strings,
                               design_matrix,
@@ -2069,16 +1680,7 @@ runTestsContrasts <- function(data,
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Extract RUV-Corrected Results
-#' @description A simple helper function to extract the `results` data frame from
-#' each element of a list returned by `runTests` or a similar function.
-#'
-#' @param results_list A named list where each element is a list containing a `results` data frame.
-#'
-#' @return A named list containing only the `results` data frames.
-#'
-#' @importFrom purrr map
-#' @export
+#'@export
 extractRuvResults <- function(results_list) {
 
   extracted <- purrr::map(results_list, \(x){ x$results })
@@ -2089,17 +1691,7 @@ extractRuvResults <- function(results_list) {
 }
 
 
-#' @title Extract DE Results Tables
-#' @description A simple helper function to extract the `results` data frame from
-#' each element of a list returned by `runTests` or a similar function. It is
-#' functionally identical to `extractRuvResults` but may be used for semantic clarity.
-#'
-#' @param results_list A named list where each element is a list containing a `results` data frame.
-#'
-#' @return A named list containing only the `results` data frames.
-#'
-#' @importFrom purrr map
-#' @export
+#'@export
 extractResults <- function(results_list) {
 
   extracted <- purrr::map(results_list, \(x){ x$results })
@@ -2112,26 +1704,13 @@ extractResults <- function(results_list) {
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Save a List of DE Result Tables to Files
-#' @description Iterates over a named list of differential expression result tables
-#' and saves each table to a separate file.
-#'
-#' @param list_of_de_tables A named list of data frames. The names of the list
-#'   elements are used to construct the output filenames.
-#' @param row_id The unquoted column name to use for the feature identifiers when converting
-#'   rownames to a column before saving.
-#' @param sort_by_column The unquoted column name to sort each table by before saving.
-#' @param results_dir The directory where the files will be saved.
-#' @param file_suffix The suffix (including extension, e.g., "_results.tsv") to
-#'   append to each filename.
-#'
-#' @return This function is called for its side effect of writing files and does not return a value.
-#'
-#' @importFrom vroom vroom_write
-#' @importFrom tibble rownames_to_column
-#' @importFrom dplyr arrange
-#' @importFrom purrr walk2
-#' @export
+#'Save the list of output tables from differential expression analysis of proteins or phosphopeptides into a file and in a specific directory.
+#'@param list_of_de_tables A list, each element is a table of log fold-change and q-values from differential expression analysis of proteins / phosphopeptides. Each element in the list has a name, usually the name of the pairwise comparison.
+#'@param row_id Add row ID to the output table based on the name (protein or phosphopeptid ID) of each row
+#'@param sort_by_column Each table in the list_of_de_tables is sorted in ascending order
+#'@param results_dir The results directory to store the output file
+#'@param file_suffix The file suffix string to aadd to the name of each comparison from the list_of_de_tables.
+#'@export
 saveDeProteinList <- function(list_of_de_tables, row_id, sort_by_column = fdr_qvalue, results_dir, file_suffix) {
 
   purrr::walk2(list_of_de_tables, names(list_of_de_tables),
@@ -2146,36 +1725,15 @@ saveDeProteinList <- function(list_of_de_tables, row_id, sort_by_column = fdr_qv
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Identify Negative Control Proteins Using ANOVA
-#' @description This function identifies a set of negative control features (e.g., proteins)
-#' for use in normalization methods like RUV. It performs an ANOVA test for each
-#' feature across experimental groups and selects features that are least likely
-#' to be differentially expressed (i.e., have the highest p-values/q-values).
-#'
-#' @details
-#' The function calculates p-values using ANOVA (`stats::aov`). It then adjusts
-#' these p-values using the specified `ruv_fdr_method` (`qvalue` or `BH`).
-#' Features with adjusted p-values above `ruv_qval_cutoff` are considered candidates.
-#' The top `num_neg_ctrl` features from this candidate list (those with the highest
-#' adjusted p-values) are selected as negative controls.
-#'
-#' @param data_matrix A numeric matrix of expression data (features x samples).
-#' @param design_matrix A data frame with sample metadata.
-#' @param grouping_variable The column name in `design_matrix` for the experimental groups.
-#' @param percentage_as_neg_ctrl The percentage of total features to select as negative controls.
-#'   This is used to calculate `num_neg_ctrl` if `num_neg_ctrl` is not provided. Defaults to 10.
-#' @param num_neg_ctrl The number of negative control features to select. Overrides `percentage_as_neg_ctrl`.
-#' @param ruv_qval_cutoff The q-value threshold. Only features with a q-value *above*
-#'   this threshold are considered for the control set.
-#' @param ruv_fdr_method The method for FDR calculation ("qvalue" or "BH").
-#'
-#' @return A logical vector with the same length as the number of rows in `data_matrix`.
-#'   `TRUE` indicates that the feature is selected as a negative control. The vector is
-#'   named with the feature IDs from the `data_matrix` rownames.
-#'
-#' @importFrom stats aov
-#' @importFrom qvalue qvalue
-#' @export
+#' Identify negative control proteins for use in removal of unwanted variation, using an ANOVA test.
+#' @param data_matrix A matrix containing the log (base 2) protein abundance values where each column represents a sample and each row represents a protein group, and proteins as rows. The row ID are the protein accessions. The data is preferably median-scaled with missing values imputed.
+#' @param design_matrix A data frame with the design matrix. Matches sample IDs to group IDs.
+#' @param grouping_variable The name of the column with the experimental group, as a string.
+#' @param num_neg_ctrl The number of negative control genes to select. Typically the number of genes with the highest q-value (e.g. least statistically significant). Default is 100
+#' @param ruv_qval_cutoff The FDR threshold. No proteins with q-values lower than this value are included in the list of negative control proteins. This means the number of negative control proteins could be less than the number specified in \code{num_neg_ctrl} when some were excluded by this threshold.
+#' @param ruv_fdr_method The FDR calculation method, default is "qvalue". The other option is "BH"
+#' @return A boolean vector which indicates which row in the input data matrix is a control gene. The row is included if the value is TRUE. The names of each element is the row ID / protein accessions of the input data matrix.
+#'@export
 getNegCtrlProtAnovaHelper <- function(data_matrix
                                 , design_matrix
                                 , grouping_variable = "group"
@@ -2243,20 +1801,7 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Find the Best K for RUV Normalization
-#' @description Analyzes a canonical correlation plot from `ruv::RUV_cancor` to
-#' determine the optimal number of factors of unwanted variation (k).
-#'
-#' @details The function works by finding the value of k that maximizes the
-#' difference between the canonical correlation of all features and the canonical
-#' correlation of control features. This point is assumed to represent the best
-#' trade-off in removing unwanted variation without removing the signal of interest.
-#'
-#' @param cancorplot_r1 A ggplot object produced by `ruv::RUV_cancor`. The plot's
-#'   data layer must contain `featureset`, `cc` (canonical correlation), and `K` columns.
-#'
-#' @return An integer representing the determined optimal value of k.
-#' @export
+#'@export
 findBestK <- function( cancorplot_r1) {
   controls_idx <- which(cancorplot_r1$data$featureset == "Control")
   all_idx <- which( cancorplot_r1$data$featureset == "All")
@@ -2267,19 +1812,22 @@ findBestK <- function( cancorplot_r1) {
   return( best_k)
 }
 
-#' @title Find the Best K Value for RUV Across Multiple Assays
-#' @description This function iterates over a list of canonical correlation plots
-#' (e.g., from a multi-assay experiment) and applies `findBestK` to each to
-#' determine the optimal number of unwanted variation factors (k) for each assay.
+#' Find the Best K Value for RUV from a List of Canonical Correlation Plots
+#'
+#' This function iterates over a list of canonical correlation plots (typically
+#' generated by `ruvCancor` for multi-assay objects like `MetaboliteAssayData`)
+#' and applies the `findBestK` logic to each plot to determine the optimal
+#' number of unwanted variation factors (k) for each assay.
 #'
 #' @param cancor_plots_list A named list where each element is a ggplot object
-#'   returned by `ruv_cancorplot` (the output of `ruvCancor` for a multi-assay object).
+#'   returned by `ruv_cancorplot` (the output of `ruvCancor` for a multi-assay
+#'   object).
 #'
 #' @return A named list where keys are the assay names (from the input list)
 #'   and values are the determined best K for each assay. Returns `NA_integer_`
 #'   for assays where `findBestK` fails or returns an invalid result.
 #'
-#' @importFrom purrr map
+#' @importFrom purrr map set_names
 #' @importFrom logger log_warn
 #' @export
 findBestKForAssayList <- function(cancor_plots_list) {
@@ -2344,25 +1892,8 @@ findBestKForAssayList <- function(cancor_plots_list) {
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Average Values from Technical Replicates
-#' @description This function takes a wide-format data table and averages the values
-#' of technical replicates, returning a new matrix with one column per biological sample.
-#'
-#' @param input_table A data frame or matrix with features in rows and samples in columns.
-#' @param design_matrix A data frame mapping sample IDs to biological replicate IDs.
-#' @param group_pattern A regular expression to identify the sample columns in `input_table`.
-#' @param row_id The unquoted column name for feature identifiers.
-#' @param sample_id The unquoted column name for the sample identifiers (technical replicates).
-#' @param average_replicates_id The unquoted column name in `design_matrix` that identifies
-#'   the biological samples to average over.
-#'
-#' @return A matrix with features in rows and averaged biological samples in columns.
-#'
-#' @importFrom tibble rownames_to_column column_to_rownames
-#' @importFrom tidyr pivot_longer pivot_wider
-#' @importFrom dplyr left_join group_by summarise ungroup
-#' @importFrom rlang sym
-#' @export
+#'@param design_matrix Contains the sample_id column and the average_replicates_id column
+#'@export
 averageValuesFromReplicates <- function(input_table, design_matrix, group_pattern, row_id, sample_id, average_replicates_id) {
 
   output_table <- input_table |>
@@ -2392,16 +1923,7 @@ averageValuesFromReplicates <- function(input_table, design_matrix, group_patter
 # columns(up)
 # test <- batch_query_evidence(subset_tbl, Proteins)
 
-#' @title Clean Isoform Numbers from Protein Accessions
-#' @description A simple string manipulation function that removes isoform suffixes
-#' (e.g., "-1", "-2") from UniProt protein accession numbers.
-#'
-#' @param string A character vector of protein accession numbers.
-#'
-#' @return A character vector with isoform numbers removed.
-#'
-#' @importFrom stringr str_replace
-#' @export
+#'@export
 cleanIsoformNumber <- function(string) {
   # "Q8K4R4-2"
   str_replace(string, "-\\d+$", "")
@@ -2446,23 +1968,8 @@ batchQueryEvidenceHelper <- function(uniprot_acc_tbl, uniprot_acc_column) {
     dplyr::mutate(round = ceiling(row_number() / 100))  ## 100 is the maximum number of queries at one time
 }
 
-#' @title Batch Query UniProt for Protein Evidence
-#' @description This function queries the UniProt database in batches to retrieve
-#' annotation information for a list of protein accessions. It is designed to
-#' handle a large number of queries by splitting them into smaller chunks, respecting
-#' UniProt's API limits.
-#'
-#' @param uniprot_acc_tbl A data frame containing the protein accessions to query.
-#' @param uniprot_acc_column The unquoted column name in `uniprot_acc_tbl` that contains the protein accessions.
-#' @param uniprot_handle An active `UniProt.ws` handle.
-#' @param uniprot_columns A character vector of the UniProt annotation columns to retrieve.
-#' @param uniprot_keytype The keytype to use for the query (e.g., "UniProtKB").
-#'
-#' @return A single data frame containing the combined annotation results from all batches.
-#'
-#' @importFrom purrr map
-#' @importFrom dplyr bind_rows
-#' @export
+## Run evidence collection online, giving a table of keys (uniprot_acc_tbl) and the column name (uniprot_acc_column)
+#'@export
 batchQueryEvidence <- function(uniprot_acc_tbl, uniprot_acc_column, uniprot_handle,
                                uniprot_columns = c("EXISTENCE", "SCORE", "REVIEWED", "GENENAME", "PROTEIN-NAMES", "LENGTH"),
                                uniprot_keytype = "UniProtKB") {
@@ -2503,20 +2010,6 @@ batchQueryEvidenceHelperGeneId <- function(input_tbl, gene_id_column, delim =":"
   return(all_uniprot_acc)
 }
 
-#' @title Batch Query UniProt by Gene ID
-#' @description This function queries the UniProt database in batches using gene
-#' identifiers. It splits a list of gene IDs into manageable chunks for querying.
-#'
-#' @param input_tbl A data frame containing the gene IDs.
-#' @param gene_id_column The unquoted column name for the gene identifiers.
-#' @param uniprot_handle An active `UniProt.ws` handle.
-#' @param uniprot_keytype The keytype for the query.
-#' @param uniprot_columns A character vector of UniProt columns to retrieve.
-#'
-#' @return A single data frame containing the combined annotation results from all batches.
-#'
-#' @importFrom purrr map
-#' @importFrom dplyr bind_rows distinct arrange pull
 #' @export
 batchQueryEvidenceGeneId <- function(input_tbl, gene_id_column, uniprot_handle, uniprot_keytype = "UniProtKB",
                                      uniprot_columns = c("EXISTENCE", "SCORE", "REVIEWED", "GENENAME", "PROTEIN-NAMES", "LENGTH")) {
@@ -2545,31 +2038,15 @@ batchQueryEvidenceGeneId <- function(input_tbl, gene_id_column, uniprot_handle, 
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Convert GO IDs to GO Terms
-#' @description This function takes a string of semicolon-separated Gene Ontology (GO)
-#' IDs, splits them, and maps each ID to its corresponding term name and ontology
-#' (BP, CC, MF). It then reshapes the output into a wide format with one column per ontology.
-#'
-#' @param go_string A single character string containing one or more GO IDs separated by `sep`.
-#' @param sep The separator used in `go_string`. Defaults to "; ".
-#' @param goterms A named vector or list from `AnnotationDbi::Term(GO.db::GOTERM)`.
-#' @param gotypes A named vector or list from `AnnotationDbi::Ontology(GO.db::GOTERM)`.
-#'
-#' @return A tibble with one row and columns for each ontology (`go_biological_process`,
-#'   `go_cellular_compartment`, `go_molecular_function`), containing semicolon-separated
-#'   GO term names. Returns `NA` if the input string is `NA`.
-#'
-#' @importFrom tidyr separate_rows pivot_wider
-#' @importFrom dplyr mutate group_by summarise ungroup case_when
-#' @importFrom purrr map_chr
+#' Convert a list of Gene Ontology IDs to their respective human readable name (e.g. GO term).
+#' @param go_string A string consisting of a list of Gene Ontology ID, separated by a delimiter
+#' @param goterms Output from running \code{goterms <- Term(GOTERM)} from the GO.db library.
+#' @param gotypes Output from running \code{gotypes <- Ontology(GOTERM)} from the GO.db library.
+#' @return A table with three columns. go_biological_process, go_celluar_compartment, and go_molecular_function. Each column is a list of gene ontology terms, separated by '; '.
 #' @export
 #' @examples
-#' \dontrun{
-#' goterms <- AnnotationDbi::Term(GO.db::GOTERM)
-#' gotypes <- AnnotationDbi::Ontology(GO.db::GOTERM)
-#' go_string <- "GO:0016021;GO:0005575"
-#' goIdToTerm(go_string, sep = ";", goterms, gotypes)
-#' }
+#' go_string <- "GO:0016021; GO:0030659; GO:0031410; GO:0035915; GO:0042742; GO:0045087; GO:0045335; GO:0050829; GO:0050830"
+#' go_id_to_term(go_string)
 goIdToTerm <- function(go_string, sep = "; ", goterms, gotypes) {
 
   if (!is.na(go_string)) {
@@ -2597,27 +2074,12 @@ goIdToTerm <- function(go_string, sep = "; ", goterms, gotypes) {
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Annotate UniProt Data with GO Terms
-#' @description This function takes a data frame of UniProt data containing a column of
-#' GO IDs and enriches it with GO term names and IDs, organized by ontology type
-#' (BP, CC, MF) in separate columns.
-#'
-#' @param uniprot_dat A data frame containing UniProt query results.
-#' @param uniprot_id_column The unquoted column name for UniProt accessions.
-#' @param go_id_column The unquoted column name for the GO IDs (often semicolon-separated).
-#' @param sep The separator for the GO IDs.
-#' @param goterms A named vector/list from `AnnotationDbi::Term(GO.db::GOTERM)`.
-#' @param gotypes A named vector/list from `AnnotationDbi::Ontology(GO.db::GOTERM)`.
-#'
-#' @return The input `uniprot_dat` data frame with new columns added for each GO
-#'   ontology, containing the corresponding term names and IDs (e.g., `go_term_go_biological_process`,
-#'   `go_id_go_biological_process`). The original `go_id_column` is removed.
-#'
-#' @importFrom tidyr separate_rows pivot_wider
-#' @importFrom dplyr distinct filter mutate group_by summarise ungroup left_join select
-#' @importFrom purrr map_chr
-#' @importFrom GO.db GOTERM
-#' @importFrom AnnotationDbi Term Ontology
+#' @param uniprot_dat  a table with uniprot accessions and a column with GO-ID
+#' @param uniprot_id_column The name of the column with the uniprot accession, as a tidyverse header format, not a string
+#' @param go_id_column The name of the column with the GO-ID, as a tidyverse header format, not a string
+#' @param goterms Output from running \code{goterms <- Term(GOTERM)} from the GO.db library.
+#' @param gotypes Output from running \code{gotypes <- Ontology(GOTERM)} from the GO.db library.
+#' @return A table with three columns. go_biological_process, go_celluar_compartment, and go_molecular_function. Each column is a list of gene ontology terms, separated by '; '.
 #' @export
 uniprotGoIdToTerm <- function(uniprot_dat, uniprot_id_column = UNIPROTKB
                               , go_id_column = `GO-IDs`,  sep = "; "
@@ -2660,32 +2122,8 @@ uniprotGoIdToTerm <- function(uniprot_dat, uniprot_id_column = UNIPROTKB
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Create a Long-Format Differential Expression Results Table
-#' @description This function combines differential expression statistics with both
-#' normalized and raw abundance data for each replicate, creating a comprehensive,
-#' long-format table.
-#'
-#' @param lfc_qval_tbl A data frame containing DE results (logFC, q-value, etc.).
-#' @param norm_counts_input_tbl A wide data frame or matrix of normalized abundance data.
-#' @param raw_counts_input_tbl A wide data frame or matrix of raw abundance data.
-#' @param row_id The unquoted column name for feature identifiers.
-#' @param sample_id The unquoted column name for sample identifiers.
-#' @param group_id The unquoted column name for group identifiers.
-#' @param group_pattern A regular expression to identify the abundance columns.
-#' @param design_matrix_norm The design matrix corresponding to the normalized data.
-#' @param design_matrix_raw The design matrix corresponding to the raw data.
-#' @param expression_column The unquoted column name for the expression/contrast.
-#' @param protein_id_table A data frame for joining additional protein information.
-#'
-#' @return A long-format data frame combining DE stats with replicate-level abundance data.
-#'
-#' @importFrom tibble rownames_to_column
-#' @importFrom tidyr pivot_longer pivot_wider separate_wider_delim
-#' @importFrom dplyr select mutate left_join group_by arrange ungroup
-#' @importFrom purrr map_chr
-#' @importFrom rlang set_names sym
-#' @importFrom stringr str_replace_all
-#' @export
+# Create the de_protein_long and de_phos_long tables
+#'@export
 createDeResultsLongFormat <- function( lfc_qval_tbl,
                                        norm_counts_input_tbl,
                                        raw_counts_input_tbl,
@@ -2767,21 +2205,6 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
 
 
 
-#' @title Save a ggplot Object with Logging
-#' @description A wrapper for `ggplot2::ggsave` that captures any messages or
-#' warnings generated during the saving process and logs them using `logger::log_debug`.
-#' It can save a plot in multiple formats.
-#'
-#' @param input_plot The ggplot object to save.
-#' @param file_name_part The base path and filename for the output file, without the extension.
-#' @param plots_format A character vector of file extensions to save the plot as (e.g., `c(".png", ".pdf")`).
-#' @param width The width of the plot.
-#' @param height The height of the plot.
-#'
-#' @return This function is called for its side effect of writing files.
-#'
-#' @importFrom ggplot2 ggsave
-#' @importFrom logger log_debug
 #' @export
 gg_save_logging <- function( input_plot
                              , file_name_part
@@ -2805,29 +2228,13 @@ gg_save_logging <- function( input_plot
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Calculate Correlation Between Technical Replicates
-#' @description This function calculates the Pearson and Spearman correlation coefficients
-#' between pairs of technical replicates for each feature.
-#'
-#' @param design_matrix_tech_rep A design matrix that maps technical replicate sample
-#'   IDs to biological sample IDs.
-#' @param data_matrix The abundance data matrix (features x samples).
-#' @param protein_id_column The column name for protein/feature IDs.
-#' @param sample_id_column The column name for sample IDs (technical replicates).
-#' @param tech_rep_column The column name identifying the biological sample.
-#' @param tech_rep_num_column The column name identifying the replicate number (e.g., 1 or 2).
-#' @param tech_rep_remove_regex A regular expression to filter out samples that are not
-#'   part of the replicate analysis (e.g., pools).
-#'
-#' @return A data frame with one row per feature, containing columns for Pearson
-#'   and Spearman correlation coefficients.
-#'
-#' @importFrom tibble rownames_to_column column_to_rownames
-#' @importFrom tidyr pivot_longer pivot_wider nest
-#' @importFrom dplyr left_join filter select mutate
-#' @importFrom purrr map_dbl
-#' @importFrom stats cor
 #' @export
+#'
+#' @param design_matrix_tech_rep: design matrix with the technical replicates
+#' @param data_matrix: input data matrix
+#' @param sample_id_column: column name of the sample ID. This is the unique identifier for each sample.
+#' @param tech_rep_column: column name of the technical replicates. Technical replicates of the same sample will have the same value.
+#' @param tech_rep_num_column: column name of the technical replicate number. This is a unique number for each technical replicate for each sample.
 proteinTechRepCorrelationHelper <- function( design_matrix_tech_rep, data_matrix
                                              , protein_id_column = "Protein.Ids"
                                              , sample_id_column="Sample_ID", tech_rep_column = "replicates", tech_rep_num_column = "tech_rep_num", tech_rep_remove_regex = "pool" ) {
@@ -2856,20 +2263,22 @@ proteinTechRepCorrelationHelper <- function( design_matrix_tech_rep, data_matrix
   frozen_protein_matrix_tech_rep
 }
 
-#' @title Download and Process UniProt Annotations
-#' @description Downloads protein information from UniProt for a list of protein IDs,
+#' Download and Process UniProt Annotations
+#'
+#' @description
+#' Downloads protein information from UniProt for a list of protein IDs,
 #' processes the results including Gene Ontology annotations, and caches
 #' the result for future use.
 #'
-#' @param input_tbl Data frame containing protein IDs in a column named 'Protein.Ids'.
-#' @param cache_dir Directory path for caching the results.
-#' @param taxon_id Taxonomic identifier for the organism (e.g., 9606 for human).
-#' @param force_download Logical; if TRUE, forces new download even if cache exists.
-#' @param batch_size Number of protein IDs to query in each batch.
-#' @param timeout Timeout in seconds for the download operation.
-#' @param api_delay Sleep time in seconds between API calls.
+#' @param input_tbl Data frame containing protein IDs in a column named 'Protein.Ids'
+#' @param cache_dir Directory path for caching the results
+#' @param taxon_id Taxonomic identifier for the organism (e.g., 9606 for human)
+#' @param force_download Logical; if TRUE, forces new download even if cache exists
+#' @param batch_size Number of protein IDs to query in each batch
+#' @param timeout Timeout in seconds for the download operation
+#' @param api_delay Sleep time in seconds between API calls
 #'
-#' @return A data frame containing UniProt annotations and GO terms.
+#' @return A data frame containing UniProt annotations and GO terms
 #'
 #' @export
 getUniprotAnnotations <- function(input_tbl, 
@@ -2931,21 +2340,21 @@ getUniprotAnnotations <- function(input_tbl,
   return(uniprot_dat_cln)
 }
 
-#' @title Download Protein Data Directly from UniProt REST API
-#' @description Downloads protein information from the UniProt REST API for a list of
-#' protein IDs. It processes proteins in batches to avoid overwhelming the API.
+#' Download Protein Data Directly from UniProt REST API
 #'
-#' @param input_tbl Data frame containing protein IDs in a column named 'Protein.Ids'.
-#' @param output_path File path to save the raw results as a TSV file.
-#' @param taxon_id Taxonomic identifier for the organism.
-#' @param batch_size Number of protein IDs to query in each batch.
-#' @param timeout Timeout in seconds for the download operation.
-#' @param api_delay Sleep time in seconds between API calls.
+#' @description
+#' Downloads protein information from UniProt REST API for a list of protein IDs.
+#' Processes proteins in batches to avoid overwhelming the API.
 #'
-#' @return A data frame containing the raw UniProt results, or `NULL` if the download fails.
+#' @param input_tbl Data frame containing protein IDs in a column named 'Protein.Ids'
+#' @param output_path File path to save the raw results
+#' @param taxon_id Taxonomic identifier for the organism
+#' @param batch_size Number of protein IDs to query in each batch
+#' @param timeout Timeout in seconds for the download operation
+#' @param api_delay Sleep time in seconds between API calls
 #'
-#' @importFrom httr GET status_code content timeout
-#' @importFrom purrr imap compact reduce
+#' @return A data frame containing the raw UniProt results
+#'
 #' @export
 directUniprotDownload <- function(input_tbl, 
                                  output_path, 
@@ -3033,14 +2442,15 @@ directUniprotDownload <- function(input_tbl,
   }
 }
 
-#' @title Standardize UniProt Column Names
-#' @description An internal helper to standardize column names from UniProt results
-#' for downstream processing. It handles missing columns gracefully by adding them
-#' with `NA` values.
+#' Standardize UniProt Column Names
 #'
-#' @param df Data frame with UniProt results.
+#' @description
+#' Standardizes column names from UniProt results for downstream processing.
+#' Handles missing columns gracefully.
 #'
-#' @return Data frame with standardized column names.
+#' @param df Data frame with UniProt results
+#'
+#' @return Data frame with standardized column names
 #'
 #' @keywords internal
 standardizeUniprotColumns <- function(df) {
@@ -3069,12 +2479,12 @@ standardizeUniprotColumns <- function(df) {
   return(df)
 }
 
-#' @title Create Empty UniProt Table
-#' @description An internal helper to create an empty tibble with a standard set of
-#' UniProt columns. This is used as a fallback when a UniProt download fails,
-#' ensuring downstream functions receive a valid data frame.
+#' Create Empty UniProt Table
 #'
-#' @return An empty data frame with standard UniProt columns.
+#' @description
+#' Creates an empty table with standard UniProt columns when download fails.
+#'
+#' @return Empty data frame with standard UniProt columns
 #'
 #' @keywords internal
 createEmptyUniprotTable <- function() {

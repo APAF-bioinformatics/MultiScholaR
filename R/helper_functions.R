@@ -1,25 +1,7 @@
 
 ##################################################################################################################
 
-#' @title A Class to Manage Project Directories
-#' @description This S4 class is a container for storing the various directory paths
-#' used in a standard project structure. It is typically populated by functions
-#' like `setupDirectories`.
-#'
-#' @slot base_dir The root directory of the project.
-#' @slot results_dir The main directory for results.
-#' @slot data_dir The directory for input data.
-#' @slot source_dir The directory for scripts.
-#' @slot de_output_dir The directory for differential expression results.
-#' @slot publication_graphs_dir The directory for publication-quality graphs.
-#' @slot timestamp A timestamp string for the analysis run.
-#' @slot qc_dir The base directory for quality control outputs.
-#' @slot time_dir A timestamped subdirectory within `qc_dir` for run-specific outputs.
-#' @slot results_summary_dir The directory for summary reports and figures.
-#' @slot pathway_dir The directory for pathway enrichment analysis results.
-#'
-#' @return An object of class `DirectoryManager`.
-#' @export
+#' @import methods
 setClass("DirectoryManager",
     slots = c(
         base_dir = "character",
@@ -38,14 +20,15 @@ setClass("DirectoryManager",
 
 ##################################################################################################################
 
-#' @title Create a Key-to-Attribute Hash Table
-#' @description Creates a hash table (an R environment) that maps a vector of keys
-#' to a corresponding vector of attributes.
-#'
-#' @param keys A vector of keys.
-#' @param attributes A vector of attributes, which must be the same length as `keys`.
-#'
-#' @return An environment that acts as a hash table for key-attribute mapping.
+### Function: create_id_to_attribute_hash
+### Description: Create a hash function that map keys to attributes.
+
+## Inputs:
+## keys: An array of key values
+## attributes: An array of attribute values
+
+## Output:
+## An environment that act as a hash to convert keys to attributes.
 #' @export
 createIdToAttributeHash <- function(keys, attributes) {
 	keys <- as.character( as.vector(keys))
@@ -66,14 +49,15 @@ createIdToAttributeHash <- function(keys, attributes) {
 
 ##################################################################################################################
 
-#' @title Convert a Key to an Attribute using a Hash Table
-#' @description Uses a pre-built hash table (an R environment) to look up the
-#' attribute corresponding to a given key.
-#'
-#' @param key The key to look up.
-#' @param hash The hash table (environment) to use for the lookup.
-#'
-#' @return The attribute corresponding to the key, or `NA` if the key is not found.
+### Function: create_id_to_attribute_hash
+### Description: Use a predefined hash dictionary to convert any Key to Attribute, return NA if key does not exists
+
+## Inputs:
+## key: A key value
+## hash: The hash dictionary that maps keys to attributes
+
+## Output:
+## A value that correspond to the query key value.
 #' @export
 convertKeyToAttribute <- function(key, hash) {
 
@@ -87,14 +71,6 @@ convertKeyToAttribute <- function(key, hash) {
 
 ##################################################################################################################
 
-#' @title Create a Directory If It Does Not Exist
-#' @description A wrapper around `dir.create()` that recursively creates a directory
-#' if it does not already exist.
-#'
-#' @param file_path The path of the directory to create.
-#' @param mode The file mode to be used for the created directory.
-#'
-#' @return Invisibly returns the file path. Called for its side effect.
 #' @export
 createDirectoryIfNotExists <- function(file_path, mode = "0777") {
 
@@ -104,10 +80,9 @@ createDirectoryIfNotExists <- function(file_path, mode = "0777") {
     dir.create(file_path, showWarnings = TRUE, recursive = TRUE, mode = mode)
 
   }
-  invisible(file_path)
+
 }
 
-#' @rdname createDirectoryIfNotExists
 #' @export
 createDirIfNotExists  <- function(file_path, mode = "0777") {
   createDirectoryIfNotExists(file_path, mode = "0777")
@@ -116,14 +91,8 @@ createDirIfNotExists  <- function(file_path, mode = "0777") {
 
 ##################################################################################################################
 
-#' @title Source an R Markdown File (Simple Version)
-#' @description A simple function to source the R code from an R Markdown file by
-#' first converting it to an R script using `knitr::purl`.
-#'
-#' @param x The path to the R Markdown file.
-#' @param ... Additional arguments passed to `source()`.
-#'
-#' @return The result of the `source()` call.
+## Function to source Rmd files
+# https://stackoverflow.com/questions/10966109/how-to-source-r-markdown-file-like-sourcemyfile-r
 #' @export
 sourceRmdFileSimple <- function(x, ...) {
   source(purl(x, output = tempfile()), ...)
@@ -131,14 +100,13 @@ sourceRmdFileSimple <- function(x, ...) {
 
 ##################################################################################################################
 
-#' @title Source an R Markdown File with Plot Skipping
-#' @description Sources the R code from a knitr file, with an option to skip
-#' the generation of plots by using a null graphics device.
+#' https://gist.github.com/noamross/a549ee50e8a4fd68b8b1
+#' Source the R code from an knitr file, optionally skipping plots
 #'
-#' @param file The knitr file to source.
-#' @param skip_plots A logical value. If `TRUE` (default), plots are not generated.
+#' @param file the knitr file to source
+#' @param skip_plots whether to make plots. If TRUE (default) sets a null graphics device
 #'
-#' @return This function is called for its side effects of sourcing code.
+#' @return This function is called for its side effects
 #' @export
 sourceRmdFile <- function(file, skip_plots = TRUE) {
   temp = tempfile(fileext=".R")
@@ -159,15 +127,6 @@ sourceRmdFile <- function(file, skip_plots = TRUE) {
 
 ##################################################################################################################
 #=====================================================================================================
-#' @title Create an Output Directory
-#' @description Creates an output directory, with an option to back up an existing
-#' directory of the same name.
-#'
-#' @param output_dir The path of the directory to create.
-#' @param no_backup A logical value. If `TRUE`, an existing directory is deleted.
-#'   If `FALSE`, it is renamed with a "_prev" suffix.
-#'
-#' @return This function is called for its side effects.
 #' @export
 createOutputDir <- function(output_dir, no_backup) {
   if (output_dir == "") {
@@ -187,13 +146,6 @@ createOutputDir <- function(output_dir, no_backup) {
 }
 
 
-#' @title Test for Required Files
-#' @description Checks for the existence of a list of files and stops execution if
-#' any are missing.
-#'
-#' @param files A character vector of file paths to check.
-#'
-#' @return This function is called for its side effects and does not return a value.
 #' @export
 testRequiredFiles <- function(files) {
   missing_files <- !file.exists(files)
@@ -203,13 +155,6 @@ testRequiredFiles <- function(files) {
   }))
 }
 
-#' @title Warn About Missing Required Files
-#' @description Checks for the existence of a list of files and issues a warning for
-#' any that are missing.
-#'
-#' @param files A character vector of file paths to check.
-#'
-#' @return This function is called for its side effects and does not return a value.
 #' @export
 testRequiredFilesWarning <- function(files) {
   missing_files <- !file.exists(files)
@@ -218,14 +163,6 @@ testRequiredFilesWarning <- function(files) {
   }))
 }
 
-#' @title Test for Required Arguments
-#' @description Checks if a list of required arguments exists in a given argument list
-#' and stops execution if any are missing.
-#'
-#' @param arg_list The list of arguments to check.
-#' @param parameters A character vector of required argument names.
-#'
-#' @return This function is called for its side effects.
 #' @export
 testRequiredArguments <- function(arg_list, parameters) {
   invisible(sapply(parameters, function(par) {
@@ -236,15 +173,6 @@ testRequiredArguments <- function(arg_list, parameters) {
   }))
 }
 
-#' @title Parse Argument Types
-#' @description A helper function to apply a type conversion function (e.g., `as.numeric`)
-#' to specified elements of an argument list.
-#'
-#' @param arg_list The list of arguments.
-#' @param parameters A character vector of argument names to convert.
-#' @param functType The type conversion function to apply.
-#'
-#' @return The modified argument list.
 #' @export
 parseType<-function (arg_list,parameters,functType){
   invisible(sapply(parameters, function(key) {
@@ -253,13 +181,6 @@ parseType<-function (arg_list,parameters,functType){
   return (arg_list)
 }
 
-#' @title Parse String Arguments
-#' @description Removes quotation marks from specified string arguments in a list.
-#'
-#' @param arg_list The list of arguments.
-#' @param parameters A character vector of argument names to parse.
-#'
-#' @return The modified argument list.
 #' @export
 parseString<-function (arg_list,parameters){
   invisible(sapply(parameters, function(key) {
@@ -270,13 +191,6 @@ parseString<-function (arg_list,parameters){
   return (arg_list)
 }
 
-#' @title Parse List Arguments
-#' @description Converts comma-separated string arguments into lists.
-#'
-#' @param arg_list The list of arguments.
-#' @param parameters A character vector of argument names to parse.
-#'
-#' @return The modified argument list.
 #' @export
 parseList<-function (arg_list,parameters){
   invisible(sapply(parameters, function(key) {
@@ -286,14 +200,6 @@ parseList<-function (arg_list,parameters){
   return (arg_list)
 }
 
-#' @title Check if an Argument is Defined
-#' @description Checks if an argument is defined, not NULL, and not an empty string
-#' in a given argument list.
-#'
-#' @param arg_list The list of arguments.
-#' @param parameter The name of the argument to check.
-#'
-#' @return A logical value indicating if the argument is defined.
 #' @export
 isArgumentDefined<-function(arg_list,parameter){
   return (!is.null(arg_list[parameter]) & (parameter %in% names(arg_list)) & as.character(arg_list[parameter]) != "")
@@ -301,16 +207,6 @@ isArgumentDefined<-function(arg_list,parameter){
 
 
 
-#' @title Set Default Argument Value
-#' @description Sets a default value for an argument if it is not already defined,
-#' with an option to apply type conversion if it is defined.
-#'
-#' @param args The list of arguments.
-#' @param value_name The name of the argument to set.
-#' @param as_func The type conversion function to apply if the argument exists.
-#' @param default_val The default value to set if the argument is not defined.
-#'
-#' @return The modified argument list.
 #' @export
 setArgsDefault <- function(args, value_name, as_func, default_val=NA ) {
 

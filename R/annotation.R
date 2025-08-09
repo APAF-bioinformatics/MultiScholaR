@@ -1,73 +1,7 @@
-#' @title Retrieve Protein Annotations from UniProt
-#' @description This function fetches detailed protein annotations from the UniProt
-#' database for a given list of protein identifiers. It handles protein accessions
-#' that may contain multiple IDs (e.g., from protein grouping), queries UniProt,
-#' processes the results, and caches them locally to an RDS file to speed up
-#' subsequent runs.
-#'
-#' @details
-#' The function performs the following steps:
-#' 1. Extracts and cleans protein accession numbers from the specified column.
-#'    It can handle delimited strings of multiple accessions in a single row.
-#' 2. Checks for a local cache file (`uniprot_dat.rds`) in `output_dir`. If found,
-#'    it loads and returns the cached data.
-#' 3. If no cache is found, it connects to UniProt via `UniProt.ws` using the
-#'    provided taxonomy ID.
-#' 4. It queries UniProt for a predefined set of annotation columns, including
-#'    gene names, protein names, GO IDs, and keywords.
-#' 5. It processes the Gene Ontology (GO) IDs to retrieve the full GO terms.
-#' 6. It aggregates the annotations back to match the original input protein IDs,
-#'    concatenating results with a colon where one ID mapped to multiple entries.
-#' 7. The final annotation table is saved to the cache file for future use.
-#'
-#' @param input_table A data frame or tibble containing the protein identifiers.
-#' @param taxonomy_id A numeric value specifying the NCBI taxonomy ID of the organism.
-#'   Defaults to 9606 (Homo sapiens).
-#' @param protein_id_column A character string naming the column in `input_table`
-#'   that contains the protein identifiers. Defaults to "Protein.Ids".
-#' @param protein_id_delim A character string used as a delimiter for splitting
-#'   entries in `protein_id_column` that contain multiple accessions. Defaults to ":".
-#' @param output_dir A character string specifying the directory path where the
-#'   UniProt annotation data should be cached as "uniprot_dat.rds". Defaults to the
-#'   current working directory (".").
-#'
-#' @return A data frame where each row corresponds to an entry in the original
-#'   `protein_id_column`, and columns contain the fetched and aggregated annotations
-#'   from UniProt.
-#'
-#' @importFrom UniProt.ws UniProt.ws columns keytypes
-#' @importFrom AnnotationDbi select
-#' @importFrom GO.db GOTERM
-#' @importFrom dplyr mutate distinct group_by ungroup left_join arrange summarise rename
-#' @importFrom tidyr separate_rows
-#' @importFrom magrittr %>%
-#' @importFrom rlang !! sym
-#'
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' # Create a dummy data frame with human protein IDs
-#' my_proteins <- data.frame(
-#'   Protein.Ids = c("P04637", "P02768;Q02880"),
-#'   other_data = c(10, 20)
-#' )
-#'
-#' # Create a temporary output directory for caching
-#' temp_dir <- tempdir()
-#'
-#' # Get annotations
-#' annotations <- getUniProtAnnotation(
-#'   input_table = my_proteins,
-#'   taxonomy_id = 9606,
-#'   protein_id_column = "Protein.Ids",
-#'   protein_id_delim = ";",
-#'   output_dir = temp_dir
-#' )
-#'
-#' # View the first few columns of the result
-#' print(head(annotations))
-#' }
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#'@export
+
+#'@export
 getUniProtAnnotation <- function(   input_table, taxonomy_id  =9606, protein_id_column = "Protein.Ids",  protein_id_delim=":", output_dir = "." ) {
 
 

@@ -1,73 +1,9 @@
-#' Launch a Shiny Applet for Interactive Analysis
-#'
-#' @description
-#' This function serves as a centralized launcher for various interactive Shiny
-#' applets used throughout the data analysis workflow. It selects and runs a
-#' specific applet based on the provided `applet_type` and `omic_type`.
-#'
-#' @details
-#' Currently, the primary implemented applet is the "designMatrix" for "proteomics" data.
-#' This specific applet provides a graphical user interface for:
-#' - Renaming sample runs.
-#' - Defining experimental factors (e.g., treatment, timepoint).
-#' - Assigning factor levels and replicate numbers to samples to build a design matrix.
-#' - Defining statistical contrasts for differential analysis.
-#' - Specifying the model formula.
-#'
-#' The function dynamically finds the correct source directory for the experiment
-#' using the `project_dirs_object_name` and the combination of `omic_type` and
-#' `experiment_label`.
-#'
-#' Upon closing the Shiny app, this function can modify objects in the calling
-#' environment (e.g., `design_matrix`, `data_cln`, `config_list`, `contrasts_tbl`)
-#' with the user-defined settings.
-#'
-#' @param applet_type The type of applet to run. Currently, only "designMatrix" is fully supported.
-#' @param omic_type The omics context for the applet. Currently, only "proteomics" is fully supported for the "designMatrix" applet.
-#' @param experiment_label The label for the specific experiment (e.g., "workshop_data"),
-#'   used to look up the correct paths in the project directories object.
-#' @param project_dirs_object_name The name of the list object in the parent (calling)
-#'   frame that holds the directory structures, typically created by `setupDirectories()`.
-#'   Defaults to "project_dirs".
-#' @param force Logical. If `TRUE`, the applet will proceed even if existing output
-#'   files are found, potentially overwriting them. If `FALSE` (default), it will
-#'   stop and prompt the user.
-#'
-#' @return The function returns the results from the Shiny app invisibly, which is
-#'   typically a list containing the modified `design_matrix`, `data_cln`, `config_list`,
-#'   and `contrasts_tbl`. These objects are also assigned to the calling environment.
-#'
-#' @import shiny
-#' @import DT
-#' @import gtools
-#' @import dplyr
-#' @import logger
-#' @importFrom tibble tibble
+#' @param applet_type The type of applet to run (e.g., "designMatrix").
+#' @param omic_type The omics context for the applet (e.g., "proteomics", "metabolomics").
+#' @param experiment_label The label used when setting up directories (e.g., "workshop_data"). This is used to find the correct paths within the project_dirs_object.
+#' @param project_dirs_object_name The name of the list object in the parent frame that holds the directory structures (typically the output of setupDirectories). Defaults to "project_dirs".
+#' @param force Logical; if TRUE, skips user confirmation for overwriting existing files (specific to some applets).
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#' # This is a conceptual example, as it requires a specific environment setup.
-#'
-#' # 1. First, you would set up your project directories and load data:
-#' # project_dirs <- setupDirectories(project_name = "my_proteomics_project")
-#' # data_tbl <- read.csv("path/to/your/data.csv")
-#' # config_list <- loadConfig("path/to/your/config.ini")
-#' # experiment_label <- "exp1"
-#' # omic_type <- "proteomics"
-#'
-#' # 2. Launch the design matrix applet:
-#' # RunApplet(
-#' #   applet_type = "designMatrix",
-#' #   omic_type = "proteomics",
-#' #   experiment_label = "exp1",
-#' #   project_dirs_object_name = "project_dirs"
-#' # )
-#'
-#' # 3. After interacting with the app and clicking "Save and Close",
-#' #    the `design_matrix`, `data_cln`, etc., objects in your R session
-#' #    would be updated.
-#' }
 RunApplet <- function(applet_type, omic_type, experiment_label, project_dirs_object_name = "project_dirs", force = FALSE) {
   # Load required packages
   require(shiny)

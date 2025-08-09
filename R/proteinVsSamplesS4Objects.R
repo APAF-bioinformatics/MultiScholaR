@@ -1,26 +1,7 @@
 
 
-#' An S4 Class for Protein-Level Quantitative Proteomics Data
-#'
-#' @description The `ProteinQuantitativeData` class is a container for protein-level
-#' abundance data, typically derived from peptide-level data after a roll-up
-#' process. It stores the protein quantification table, experimental design, and
-#' related metadata.
-#'
-#' @slot protein_quant_table A data frame or matrix with proteins in rows and samples
-#'   in columns, containing the quantitative abundance data.
-#' @slot protein_id_column The name of the column in `protein_quant_table` that
-#'   contains the protein identifiers.
-#' @slot design_matrix A data frame describing the experimental design.
-#' @slot protein_id_table A data frame mapping chosen protein IDs to all possible IDs
-#'   from the original protein groups.
-#' @slot sample_id The name of the column for unique sample identifiers.
-#' @slot group_id The name of the column for experimental group labels.
-#' @slot technical_replicate_id The name of the column for technical replicate identifiers.
-#' @slot args A list for storing various parameters and settings.
-#'
-#' @return An object of class `ProteinQuantitativeData`.
-#' @export
+## Create S4 class for protomics protein level abundance data
+#'@exportClass ProteinQuantitativeData
 ProteinQuantitativeData <- setClass("ProteinQuantitativeData"
          , slots = c(
                       # Protein vs Sample quantitative data
@@ -88,14 +69,7 @@ ProteinQuantitativeData <- setClass("ProteinQuantitativeData"
 )
 #'@export ProteinQuantitativeData
 
-#' @title Initialize Method for ProteinQuantitativeData
-#' @description This method is called upon creation of a new `ProteinQuantitativeData`
-#' object. It ensures that the sample ID column in the design matrix is of type character.
-#'
-#' @param .Object The object being created.
-#' @param ... Arguments passed to the constructor.
-#'
-#' @return An initialized `ProteinQuantitativeData` object.
+# Initialize method to ensure design_matrix's sample_id column is character
 setMethod("initialize", "ProteinQuantitativeData",
   function(.Object, ...) {
     # Capture all arguments passed to the constructor
@@ -127,16 +101,6 @@ setMethod("initialize", "ProteinQuantitativeData",
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Create a ProteinQuantitativeData Object from a PeptideDataObject
-#' @description A constructor function that creates a `ProteinQuantitativeData` object,
-#' typically after rolling up peptide data to the protein level. It inherits metadata
-#' from a `PeptideQuantitativeData` object.
-#'
-#' @param peptide_object An object of class `PeptideQuantitativeData` from which to
-#'   copy the design matrix and other metadata.
-#' @param protein_quant_table A data frame of protein-level quantification data.
-#'
-#' @return An object of class `ProteinQuantitativeData`.
 #' @export
 getProteinQuantitativeData <- function( peptide_object, protein_quant_table) {
   protein_obj <- ProteinQuantitativeData(
@@ -155,16 +119,7 @@ getProteinQuantitativeData <- function( peptide_object, protein_quant_table) {
 }
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Set Protein Data
-#' @description A method to update the main protein quantification data and the
-#' protein ID column name in a `ProteinQuantitativeData` object.
-#'
-#' @param theObject An object of class `ProteinQuantitativeData`.
-#' @param protein_quant_table A new data frame to replace the `protein_quant_table` slot.
-#' @param protein_id_column The name of the new protein ID column.
-#'
-#' @return The updated `ProteinQuantitativeData` object.
-#' @exportMethod setProteinData
+#'@export
 setGeneric( name ="setProteinData"
             , def=function( theObject, protein_quant_table, protein_id_column) {
                 standardGeneric("setProteinData")
@@ -184,14 +139,7 @@ setMethod( f ="setProteinData"
 # Format the design matrix so that only metadata for samples in the protein data are retained, and also
 # sort the sample IDs in the same order as the data matrix
 
-#' @title Clean the Design Matrix for a ProteinData Object
-#' @description This method filters the design matrix to ensure it only contains
-#' metadata for samples present in the `protein_quant_table`.
-#'
-#' @param theObject An object of class `ProteinQuantitativeData`.
-#'
-#' @return The modified `ProteinQuantitativeData` object.
-#' @exportMethod cleanDesignMatrix
+#'@export
 setMethod( f ="cleanDesignMatrix"
            , signature = "ProteinQuantitativeData"
            , definition=function( theObject ) {
@@ -209,16 +157,7 @@ setMethod( f ="cleanDesignMatrix"
            })
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Filter Proteins by Intensity
-#' @description Filters out proteins that have low abundance across a large proportion of samples.
-#'
-#' @param theObject An object of class `ProteinQuantitativeData`.
-#' @param proteins_intensity_cutoff_percentile The percentile used to calculate the minimum intensity threshold.
-#' @param proteins_proportion_of_samples_below_cutoff The proportion of samples that must be above the threshold.
-#' @param core_utilisation The number of cores for parallel processing.
-#'
-#' @return The modified `ProteinQuantitativeData` object with low-intensity proteins removed.
-#' @exportMethod proteinIntensityFiltering
+#'@export
 setMethod( f="proteinIntensityFiltering"
            , signature="ProteinQuantitativeData"
            , definition = function( theObject
@@ -272,16 +211,7 @@ setMethod( f="proteinIntensityFiltering"
 
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Remove Proteins with Only One Replicate in a Group
-#' @description This method filters out proteins that are only observed in a single
-#' replicate within their experimental group.
-#'
-#' @param theObject An object of class `ProteinQuantitativeData`.
-#' @param core_utilisation The number of cores for parallel processing.
-#' @param grouping_variable The unquoted column name in the design matrix that defines the groups.
-#'
-#' @return The modified `ProteinQuantitativeData` object.
-#' @export
+#'@export
 setGeneric(name="removeProteinsWithOnlyOneReplicate"
            , def=function( theObject, core_utilisation = NULL, grouping_variable = NULL) {
              standardGeneric("removeProteinsWithOnlyOneReplicate")
@@ -343,16 +273,7 @@ setMethod(f="removeProteinsWithOnlyOneReplicate"
 
 
 
-#' @title Plot Relative Log Expression (RLE) for Protein Data
-#' @description Generates an RLE plot for the protein-level data in the object.
-#'
-#' @param theObject An object of class `ProteinQuantitativeData`.
-#' @param grouping_variable The column name in the design matrix to use for coloring the boxplots.
-#' @param yaxis_limit A numeric vector of length 2 for the y-axis limits.
-#' @param sample_label An optional column name in the design matrix to use for sample labels.
-#'
-#' @return A ggplot object representing the RLE plot.
-#' @exportMethod plotRle
+#'@export
 setMethod(f="plotRle"
           , signature="ProteinQuantitativeData"
           , definition=function( theObject, grouping_variable, yaxis_limit = c(), sample_label = NULL) {
@@ -398,16 +319,7 @@ setMethod(f="plotRle"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-#' @title Plot a List of RLE Plots
-#' @description Generates a list of RLE plots, one for each grouping variable
-#' specified in `list_of_columns`.
-#'
-#' @param theObject An object of class `ProteinQuantitativeData`.
-#' @param list_of_columns A character vector of column names from the design matrix to use for coloring each RLE plot.
-#' @param yaxis_limit A numeric vector of length 2 for the y-axis limits, applied to all plots.
-#'
-#' @return A named list of ggplot objects, where each name is a grouping variable.
-#' @exportMethod plotRleList
+#'@export
 setMethod(f="plotRleList"
           , signature="ProteinQuantitativeData"
           , definition=function( theObject, list_of_columns, yaxis_limit = c()) {
@@ -449,16 +361,6 @@ setMethod(f="plotRleList"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Save a List of RLE Plots to Files
-#' @description A convenience function to save a list of ggplot objects (like those
-#' created by `plotRleList`) to files in multiple formats.
-#'
-#' @param input_list A named list of ggplot objects.
-#' @param prefix A string prefix for the output filenames.
-#' @param suffix A character vector of file extensions (e.g., `c("png", "pdf")`).
-#' @param output_dir The directory to save the plots in.
-#'
-#' @return A data frame summarizing the saved files.
 #' @export
 savePlotRleList <- function( input_list, prefix = "RLE", suffix = c("png", "pdf"), output_dir ) {
 
@@ -483,18 +385,7 @@ savePlotRleList <- function( input_list, prefix = "RLE", suffix = c("png", "pdf"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Plot PCA for Protein Data
-#' @description Generates a PCA plot for the protein-level data in the object.
-#'
-#' @param theObject An object of class `ProteinQuantitativeData`.
-#' @param grouping_variable The column name in the design matrix to use for coloring points.
-#' @param shape_variable Optional. The column name for point shapes.
-#' @param label_column Optional. The column name for text labels.
-#' @param title The title for the plot.
-#' @param font_size The font size for labels.
-#'
-#' @return A ggplot object representing the PCA plot.
-#' @exportMethod plotPca
+#'@export
 setMethod(f="plotPca"
           , signature="ProteinQuantitativeData"
           , definition=function( theObject, grouping_variable, shape_variable = NULL, label_column, title, font_size=8) {
@@ -558,18 +449,7 @@ setMethod(f="plotPca"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-#' @title Plot a List of PCA Plots
-#' @description Generates a list of PCA plots, one for each grouping variable
-#' specified in `grouping_variables_list`.
-#'
-#' @param theObject An object of class `ProteinQuantitativeData`.
-#' @param grouping_variables_list A character vector of column names from the design matrix to use for coloring.
-#' @param label_column Optional. The column name for text labels.
-#' @param title The base title for the plots.
-#' @param font_size The font size for labels.
-#'
-#' @return A named list of ggplot objects.
-#' @exportMethod plotPcaList
+#'@export
 setMethod(f="plotPcaList"
           , signature="ProteinQuantitativeData"
           , definition=function( theObject, grouping_variables_list, label_column, title, font_size=8) {
@@ -601,16 +481,6 @@ setMethod(f="plotPcaList"
           })
 
 
-#' @title Save a List of PCA Plots to Files
-#' @description A convenience function to save a list of ggplot objects (like those
-#' created by `plotPcaList`) to files in multiple formats.
-#'
-#' @param input_list A named list of ggplot objects.
-#' @param prefix A string prefix for the output filenames.
-#' @param suffix A character vector of file extensions.
-#' @param output_dir The directory to save the plots in.
-#'
-#' @return A data frame summarizing the saved files.
 #' @export
 savePlotPcaList <- function( input_list, prefix = "PCA", suffix = c("png", "pdf"), output_dir ) {
 
@@ -634,15 +504,7 @@ savePlotPcaList <- function( input_list, prefix = "PCA", suffix = c("png", "pdf"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-#' @title Get PCA Matrix
-#' @description A method to perform PCA and return the matrix of principal components
-#' along with the corresponding sample metadata.
-#'
-#' @param theObject An object of class `ProteinQuantitativeData`.
-#'
-#' @return A data frame containing the principal components (PC1, PC2, etc.) and
-#'   the joined metadata from the design matrix.
-#' @exportMethod getPcaMatrix
+#'@export
 setMethod(f="getPcaMatrix"
           , signature="ProteinQuantitativeData"
           , definition=function( theObject) {
@@ -673,16 +535,7 @@ setMethod(f="getPcaMatrix"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-#' @title Correlate Technical Replicates for Protein Data
-#' @description A method to calculate the correlation between technical replicates
-#' at the protein level.
-#'
-#' @param theObject An object of class `ProteinQuantitativeData`.
-#' @param tech_rep_num_column The column name in the design matrix that identifies the replicate number.
-#' @param tech_rep_remove_regex A regex string to identify samples to exclude (e.g., pools).
-#'
-#' @return A data frame with Pearson and Spearman correlations for each feature.
-#' @exportMethod proteinTechRepCorrelation
+#'@export
 setMethod( f = "proteinTechRepCorrelation"
            , signature="ProteinQuantitativeData"
            , definition=function( theObject,  tech_rep_num_column = NULL, tech_rep_remove_regex = NULL ) {
@@ -718,16 +571,10 @@ setMethod( f = "proteinTechRepCorrelation"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Plot Pearson Correlation
-#' @title Calculate Pearson Correlation for All Sample Pairs
-#' @description This method calculates the Pearson correlation coefficient for all
-#' pairs of samples within each group defined by `correlation_group`.
-#'
-#' @param theObject An object of class `ProteinQuantitativeData`.
-#' @param tech_rep_remove_regex A regex string to identify samples to exclude.
-#' @param correlation_group The column name in the design matrix to use for grouping samples.
-#'
-#' @return A data frame containing the Pearson correlation for each pair of samples.
-#' @exportMethod pearsonCorForSamplePairs
+#' @param theObject is an object of the type ProteinQuantitativeData
+#' @param tech_rep_remove_regex samples containing this string are removed from correlation analysis (e.g. if you have lots of pooled sample and want to remove them)
+#' @param correlation_group is the group where every pair of samples are compared
+#' @export
 setMethod(f="plotPearson",
           signature="ProteinQuantitativeData",
           definition=function(theObject, tech_rep_remove_regex = "pool", correlation_group = NA) {
@@ -757,21 +604,6 @@ setMethod(f="plotPearson",
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Create empty QC Grid
-#' @title A Class to Store Grid Plot Data
-#' @description The `GridPlotData` class is a container for storing various types of
-#' quality control (QC) plots and their corresponding titles, designed to facilitate
-#' the creation of a composite QC figure.
-#'
-#' @slot pca_plots A list of PCA plots (ggplot objects).
-#' @slot density_plots A list of density plots (ggplot objects).
-#' @slot rle_plots A list of RLE plots (ggplot objects).
-#' @slot pearson_plots A list of Pearson correlation plots (ggplot objects).
-#' @slot pca_titles A list of titles for the PCA plots.
-#' @slot density_titles A list of titles for the density plots.
-#' @slot rle_titles A list of titles for the RLE plots.
-#' @slot pearson_titles A list of titles for the Pearson correlation plots.
-#'
-#' @return An object of class `GridPlotData`.
 #' @export
 setClass("GridPlotData",
          slots = list(
@@ -785,19 +617,11 @@ setClass("GridPlotData",
            pearson_titles = "list"
          ))
 
-#' @title Initialize an Empty GridPlotData Object
-#' @description This function creates and initializes an empty `GridPlotData` object,
-#' ready to be populated with QC plots.
-#'
-#' @param dummy A placeholder argument, not used.
-#'
-#' @return An empty object of class `GridPlotData`.
 #' @export
 setGeneric("InitialiseGrid", function(dummy = NULL) {
   standardGeneric("InitialiseGrid")
 })
 
-#' @rdname InitialiseGrid
 #' @export
 setMethod("InitialiseGrid", 
           signature(dummy = "ANY"),
@@ -817,20 +641,7 @@ setMethod("InitialiseGrid",
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #Create a QC composite figure
 
-#' @title Create a Composite Quality Control (QC) Grid Plot
-#' @description This method assembles a grid of various QC plots (PCA, density, RLE,
-#' Pearson correlation) stored in a `GridPlotData` object into a single, composite figure.
-#' It can also save the figure to a file.
-#'
-#' @param theObject An object of class `GridPlotData`.
-#' @param pca_titles A list of titles for the PCA plots. If `NULL`, titles from the object are used.
-#' @param density_titles A list of titles for the density plots. If `NULL`, titles from the object are used.
-#' @param rle_titles A list of titles for the RLE plots. If `NULL`, titles from the object are used.
-#' @param pearson_titles A list of titles for the Pearson correlation plots. If `NULL`, titles from the object are used.
-#' @param save_path Optional. The directory path where the plot should be saved.
-#' @param file_name The base name for the saved file (without extension).
-#'
-#' @return A composite ggplot object (created with `patchwork`).
+#' @export
 #' @export
 setGeneric(name = "createGridQC",
            def = function(theObject, pca_titles, density_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
@@ -838,7 +649,6 @@ setGeneric(name = "createGridQC",
            },
            signature = c("theObject", "pca_titles", "density_titles", "rle_titles", "pearson_titles", "save_path", "file_name"))
 
-#' @rdname createGridQC
 #' @export
 setMethod(f = "createGridQC",
           signature = "GridPlotData",
@@ -945,16 +755,9 @@ setMethod(f = "createGridQC",
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## normalise between Arrays
-#' @title Normalize Protein Abundances Between Samples
-#' @description This method applies a specified normalization technique to the protein
-#' quantification data to correct for systematic variations between samples.
-#'
-#' @param theObject An object of class `ProteinQuantitativeData`.
-#' @param normalisation_method The normalization method to use. Supported options are
-#'   `"cyclicloess"`, `"quantile"`, `"scale"`, and `"none"`.
-#'
-#' @return The `ProteinQuantitativeData` object with normalized protein abundances.
-#' @export
+#'@export
+#'@param theObject Object of class ProteinQuantitativeData
+#'@param normalisation_method Method to use for normalisation. Options are cyclicloess, quantile, scale, none
 setMethod(f="normaliseBetweenSamples"
           , signature="ProteinQuantitativeData"
           , definition=function( theObject,  normalisation_method= NULL) {
@@ -1014,18 +817,10 @@ setMethod(f="normaliseBetweenSamples"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Calculate Pearson Correlation for All Sample Pairs
-#' @description This method calculates the Pearson correlation coefficient for all
-#' pairs of samples. It can group samples before calculating correlations.
-#'
-#' @param theObject An object of class `ProteinQuantitativeData`.
-#' @param tech_rep_remove_regex A regex string to identify samples to exclude from the analysis.
-#' @param correlation_group The column name in the design matrix used to group samples.
-#'   Correlations are calculated for all pairs within each group. If `NA`, the
-#'   technical replicate column is used.
-#'
-#' @return A data frame containing the Pearson correlation for each pair of samples.
-#' @export
+#' @param theObject is an object of the type ProteinQuantitativeData
+#' @param tech_rep_remove_regex samples containing this string are removed from correlation analysis (e.g. if you have lots of pooled sample and want to remove them)
+#' @param correlation_group is the group where every pair of samples are compared
+#'@export
 setMethod(f="pearsonCorForSamplePairs"
           , signature="ProteinQuantitativeData"
           , definition=function( theObject, tech_rep_remove_regex = NULL, correlation_group = NA ) {
@@ -1071,19 +866,7 @@ setMethod(f="pearsonCorForSamplePairs"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Get Negative Control Proteins using ANOVA
-#' @description A method to identify a set of negative control proteins based on an
-#' ANOVA test across experimental groups.
-#'
-#' @param theObject An object of class `ProteinQuantitativeData`.
-#' @param ruv_grouping_variable The column name in the design matrix for the grouping variable.
-#' @param percentage_as_neg_ctrl The percentage of total proteins to select as controls.
-#' @param num_neg_ctrl The absolute number of control proteins to select.
-#' @param ruv_qval_cutoff The q-value cutoff for considering proteins as non-significant.
-#' @param ruv_fdr_method The FDR method to use (`"qvalue"` or `"BH"`).
-#'
-#' @return A logical vector indicating which proteins are selected as controls.
-#' @export
+#'@export
 setGeneric(name="getNegCtrlProtAnova"
            , def=function( theObject
                            , ruv_grouping_variable  = NULL
@@ -1145,16 +928,8 @@ setMethod(f="getNegCtrlProtAnova"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Get Proteins with Low Coefficient of Variation
-#' @description A method to identify a set of negative control proteins by selecting
-#' those with the lowest coefficient of variation (CV) across all samples.
-#'
-#' @param theObject An object of class `ProteinQuantitativeData`.
-#' @param percentage_as_neg_ctrl The percentage of total proteins to select.
-#' @param num_neg_ctrl The absolute number of control proteins to select.
-#'
-#' @return A logical vector indicating which proteins are selected as controls.
-#' @export
+#'@description Sort proteins by their coefficient of variation and take the top N with lowest coefficient of variation
+#'@export
 setGeneric(name="getLowCoefficientOfVariationProteins"
            , def=function( theObject
                            , percentage_as_neg_ctrl = NULL
@@ -1210,20 +985,7 @@ setMethod( f = "getLowCoefficientOfVariationProteins"
 })
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Plot RUV Canonical Correlation Analysis
-#' @description This method performs a canonical correlation analysis as part of the RUV
-#' (Remove Unwanted Variation) workflow and generates a plot of the results. It helps
-#' to visualize the amount of variation explained by the factors of interest.
-#'
-#' @param theObject An object of class `ProteinQuantitativeData`.
-#' @param ctrl A logical vector indicating the negative control proteins.
-#' @param num_components_to_impute The number of principal components to use for NIPALS
-#'   imputation if there are missing values.
-#' @param ruv_grouping_variable The column in the design matrix that defines the groups
-#'   for the RUV analysis.
-#'
-#' @return A ggplot object showing the canonical correlation plot.
-#' @export
+#'@export
 setMethod( f = "ruvCancor"
            , signature="ProteinQuantitativeData"
            , definition=function( theObject, ctrl= NULL, num_components_to_impute=NULL, ruv_grouping_variable = NULL) {
@@ -1278,24 +1040,14 @@ setMethod( f = "ruvCancor"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-#' @title Get RUV-III Replicate Matrix
-#' @description Creates a replicate matrix required for the RUV-III algorithm. This
-#' matrix indicates which samples are technical replicates of each other.
-#'
-#' @param theObject An object of class `ProteinQuantitativeData`.
-#' @param ruv_grouping_variable The column name in the design matrix that identifies
-#'   technical replicates or groups of samples that should be similar.
-#'
-#' @return A matrix suitable for use with the RUV-III algorithm.
-#' @export
+#'@export
 setGeneric(name="getRuvIIIReplicateMatrix"
            , def=function( theObject,  ruv_grouping_variable = NULL) {
              standardGeneric("getRuvIIIReplicateMatrix")
            }
            , signature=c("theObject", "ruv_grouping_variable"))
 
-#' @rdname getRuvIIIReplicateMatrix
-#' @export
+#'@export
 setMethod( f = "getRuvIIIReplicateMatrix"
            , signature="ProteinQuantitativeData"
            , definition=function( theObject, ruv_grouping_variable = NULL) {
@@ -1318,18 +1070,7 @@ setMethod( f = "getRuvIIIReplicateMatrix"
 
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Apply RUV-III Normalization with Varying Controls
-#' @description This method applies the RUV-III normalization algorithm, which is robust
-#' to the choice of negative controls. It uses a replicate matrix to estimate and
-#' remove unwanted variation.
-#'
-#' @param theObject An object of class `ProteinQuantitativeData`.
-#' @param ruv_grouping_variable The column name in the design matrix that identifies replicates.
-#' @param ruv_number_k The number of unwanted factors to estimate and remove (k).
-#' @param ctrl A logical vector indicating the negative control proteins.
-#'
-#' @return A `ProteinQuantitativeData` object with RUV-III normalized data.
-#' @export
+#'@export
 setMethod( f = "ruvIII_C_Varying"
            , signature="ProteinQuantitativeData"
            , definition=function( theObject, ruv_grouping_variable = NULL, ruv_number_k = NULL, ctrl = NULL) {
@@ -1384,22 +1125,7 @@ setMethod( f = "ruvIII_C_Varying"
           })
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Filter Proteins Based on Missing Value Percentage
-#' @description Filters proteins based on the percentage of missing values within groups.
-#' A protein is kept if it has a sufficient number of observations in a sufficient
-#' number of groups.
-#'
-#' @param theObject An object of class `ProteinQuantitativeData`.
-#' @param ruv_grouping_variable The column name in the design matrix for grouping samples.
-#' @param groupwise_percentage_cutoff The minimum percentage of non-missing values required
-#'   within a group for a protein to be considered "present" in that group.
-#' @param max_groups_percentage_cutoff The minimum percentage of groups in which a protein
-#'   must be "present" for it to be kept.
-#' @param proteins_intensity_cutoff_percentile An intensity percentile used to define a
-#'   minimum threshold. Values below this are treated as missing during filtering.
-#'
-#' @return A `ProteinQuantitativeData` object with filtered protein data.
-#' @export
+#'@export
 setGeneric(name="removeRowsWithMissingValuesPercent"
            , def=function( theObject
                            , ruv_grouping_variable = NULL
@@ -1414,8 +1140,7 @@ setGeneric(name="removeRowsWithMissingValuesPercent"
                          , "max_groups_percentage_cutoff"
                          , "proteins_intensity_cutoff_percentile" ))
 
-#' @rdname removeRowsWithMissingValuesPercent
-#' @export
+#'@export
 setMethod( f = "removeRowsWithMissingValuesPercent"
            , signature="ProteinQuantitativeData"
            , definition=function( theObject
@@ -1476,24 +1201,19 @@ setMethod( f = "removeRowsWithMissingValuesPercent"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Average Technical Replicates
-#' @description Averages the abundance values across technical replicates for each protein.
-#' This collapses replicate columns into a single column representing the biological sample.
-#'
-#' @param theObject An object of class `ProteinQuantitativeData`.
-#' @param design_matrix_columns A character vector of additional columns to retain in the
-#'   updated design matrix.
-#'
-#' @return A `ProteinQuantitativeData` object with technical replicates averaged.
-#' @export
+#'@export
 setGeneric(name="averageTechReps"
            , def=function( theObject, design_matrix_columns ) {
              standardGeneric("averageTechReps")
            }
            , signature=c("theObject", "design_matrix_columns" ))
 
-#' @rdname averageTechReps
-#' @export
+#'@export
+#'@param theObject The object to be processed
+#'@param design_matrix_columns The columns to be used in the design matrix
+#'@param protein_id_column The column name of the protein id
+#'@param sample_id The column name of the sample id
+#'@param replicate_group_column The column name of the technical replicate id
 setMethod( f = "averageTechReps"
            , signature="ProteinQuantitativeData"
            , definition=function( theObject, design_matrix_columns=c()  ) {
@@ -1538,43 +1258,21 @@ setMethod( f = "averageTechReps"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-#' @title Preserve NA Values from Peptide Level
-#' @description After protein-level data has been processed (e.g., imputed), this
-#' method re-introduces NA values that were originally present at the peptide level.
-#' If all peptides for a given protein in a given sample were NA, the corresponding
-#' protein value is set to NA.
-#'
-#' @param peptide_obj An object of class `PeptideQuantitativeData` containing the
-#'   original peptide-level data.
-#' @param protein_obj An object of class `ProteinQuantitativeData` containing the
-#'   protein-level data to be modified.
-#'
-#' @return The modified `ProteinQuantitativeData` object.
-#' @export
+#'@export
 setGeneric(name="preservePeptideNaValues"
            , def=function( peptide_obj, protein_obj)  {
              standardGeneric("preservePeptideNaValues")
            }
            , signature=c("peptide_obj", "protein_obj" ))
 
-#' @rdname preservePeptideNaValues
-#' @export
+#'@export
 setMethod( f = "preservePeptideNaValues"
            , signature=c( "PeptideQuantitativeData", "ProteinQuantitativeData" )
            , definition= function( peptide_obj, protein_obj) {
              preservePeptideNaValuesHelper( peptide_obj, protein_obj)
            })
 
-#' @title Helper to Preserve NA Values from Peptide Level
-#' @description This helper function contains the logic for `preservePeptideNaValues`.
-#' It checks where NAs existed at the peptide level and applies them back to the
-#' protein level data.
-#'
-#' @param peptide_obj A `PeptideQuantitativeData` object.
-#' @param protein_obj A `ProteinQuantitativeData` object.
-#'
-#' @return The modified `ProteinQuantitativeData` object.
-#' @keywords internal
+#'@export
 preservePeptideNaValuesHelper <- function( peptide_obj, protein_obj) {
 
   sample_id_column <- peptide_obj@sample_id
@@ -1611,33 +1309,20 @@ preservePeptideNaValuesHelper <- function( peptide_obj, protein_obj) {
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-#' @title Choose the Best Protein Accession from Protein Groups
-#' @description This method resolves protein groups (represented by delimited strings
-#' of accessions) by selecting the best protein accession based on available
-#' annotation, typically from a FASTA file. It then aggregates the quantitative
-#' data for the selected accessions.
-#'
-#' @param theObject An object of class `ProteinQuantitativeData`.
-#' @param delim The delimiter used to split protein accession strings.
-#' @param seqinr_obj A sequence database object (e.g., from `seqinr::read.fasta`)
-#'   containing protein annotations.
-#' @param seqinr_accession_column The column in `seqinr_obj` that contains the
-#'   accession numbers to match against.
-#' @param replace_zero_with_na A boolean indicating whether to replace zero values
-#'   with `NA` after aggregation.
-#' @param aggregation_method The method to use for aggregating data for proteins
-#'   that map to the same chosen accession. One of `"sum"`, `"mean"`, or `"median"`.
-#'
-#' @return A `ProteinQuantitativeData` object with resolved protein accessions.
-#' @export
+#'@export
 setGeneric(name="chooseBestProteinAccession"
            , def=function(theObject, delim=NULL, seqinr_obj=NULL, seqinr_accession_column=NULL, replace_zero_with_na = NULL, aggregation_method = NULL) {
              standardGeneric("chooseBestProteinAccession")
            }
            , signature=c("theObject", "delim", "seqinr_obj", "seqinr_accession_column"))
 
-#' @rdname chooseBestProteinAccession
-#' @export
+#'@export
+#'@param theObject The object of class ProteinQuantitativeData
+#'@param delim The delimiter used to split the protein accessions
+#'@param seqinr_obj The object of class Seqinr::seqinr
+#'@param seqinr_accession_column The column in the seqinr object that contains the protein accessions
+#'@param replace_zero_with_na Replace zero values with NA
+#'@param aggregation_method Method to aggregate protein values: "sum", "mean", or "median" (default: "sum")
 setMethod(f = "chooseBestProteinAccession"
           , signature="ProteinQuantitativeData"
           , definition=function(theObject, delim=NULL, seqinr_obj=NULL
@@ -1750,27 +1435,14 @@ setMethod(f = "chooseBestProteinAccession"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-#' @title Choose Best Protein Accession and Sum Duplicates
-#' @description A simpler method to resolve protein groups. It takes the first
-#' accession from a delimited string and then sums the abundances for any
-#' resulting duplicate protein accessions.
-#'
-#' @param theObject An object of class `ProteinQuantitativeData`.
-#' @param delim The delimiter for splitting protein accession strings.
-#' @param quant_columns_pattern A regex pattern to identify the quantitative (sample) columns.
-#' @param islogged A boolean indicating if the data is log-transformed. If `TRUE`,
-#'   abundances are anti-logged, summed, and then log-transformed back.
-#'
-#' @return A `ProteinQuantitativeData` object with resolved and summed protein data.
-#' @export
+#'@export
 setGeneric(name="chooseBestProteinAccessionSumDuplicates"
            , def=function( theObject, delim, quant_columns_pattern, islogged ) {
              standardGeneric("chooseBestProteinAccessionSumDuplicates")
            }
            , signature=c("theObject", "delim", "quant_columns_pattern", "islogged" ))
 
-#' @rdname chooseBestProteinAccessionSumDuplicates
-#' @export
+#'@export
 setMethod( f = "chooseBestProteinAccessionSumDuplicates"
            , signature="ProteinQuantitativeData"
            , definition=function( theObject, delim=";", quant_columns_pattern = "\\d+", islogged = TRUE ) {
@@ -1800,26 +1472,14 @@ setMethod( f = "chooseBestProteinAccessionSumDuplicates"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Filter Samples by Correlation Threshold
-#' @description This method removes samples that have a low correlation with other
-#' samples, based on a provided correlation matrix and a minimum threshold.
-#'
-#' @param theObject An object of class `ProteinQuantitativeData`.
-#' @param pearson_correlation_per_pair A data frame containing pairwise sample correlations,
-#'   typically from `pearsonCorForSamplePairs`.
-#' @param min_pearson_correlation_threshold The minimum Pearson correlation required for a
-#'   sample to be retained.
-#'
-#' @return A `ProteinQuantitativeData` object with low-quality samples removed.
-#' @export
+#'@export
 setGeneric(name="filterSamplesByProteinCorrelationThreshold"
            , def=function( theObject, pearson_correlation_per_pair = NULL, min_pearson_correlation_threshold = NULL ) {
              standardGeneric("filterSamplesByProteinCorrelationThreshold")
            }
            , signature=c("theObject", "pearson_correlation_per_pair", "min_pearson_correlation_threshold" ))
 
-#' @rdname filterSamplesByProteinCorrelationThreshold
-#' @export
+#'@export
 setMethod( f = "filterSamplesByProteinCorrelationThreshold"
            , signature="ProteinQuantitativeData"
            , definition=function( theObject, pearson_correlation_per_pair = NULL, min_pearson_correlation_threshold = NULL  ) {
@@ -1856,15 +1516,6 @@ setMethod( f = "filterSamplesByProteinCorrelationThreshold"
 # I want to input two protein data objects and compare them,
 # to see how the number of proteins changes and how the number of samples changed
 # Use set diff or set intersect to compare the list of proteins and samples in the two objects
-#' @title Compare Two ProteinData Objects
-#' @description Compares two `ProteinQuantitativeData` objects and reports the differences
-#' in their protein and sample compositions.
-#'
-#' @param object_a The first `ProteinQuantitativeData` object.
-#' @param object_b The second `ProteinQuantitativeData` object.
-#'
-#' @return A tibble summarizing the number of proteins and samples that are unique
-#'   to each object or shared between them.
 #' @export
 compareTwoProteinDataObjects <- function( object_a, object_b) {
 
@@ -1913,15 +1564,7 @@ compareTwoProteinDataObjects <- function( object_a, object_b) {
 
 }
 
-#' @title Summarize a ProteinData Object
-#' @description Provides a simple summary of a `ProteinQuantitativeData` object,
-#' reporting the total number of proteins and samples.
-#'
-#' @param theObject An object of class `ProteinQuantitativeData`.
-#'
-#' @return A list containing the number of proteins (`num_proteins`) and the
-#'   number of samples (`num_samples`).
-#' @export
+#'@export
 summariseProteinObject <- function ( theObject) {
   num_proteins <- theObject@protein_quant_table |>
     distinct(!!sym(theObject@protein_id_column)) |>
@@ -1941,18 +1584,7 @@ summariseProteinObject <- function ( theObject) {
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Plot Density of Principal Components
-#' @description A method to create density plots (as boxplots) for the first two
-#' principal components from a PCA result stored in a ggplot object. This is a
-#' wrapper for objects of class `gg`.
-#'
-#' @param theObject A ggplot object, expected to contain PCA data.
-#' @param grouping_variable The column name in the plot data to use for grouping.
-#' @param title The title for the plot.
-#' @param font_size The font size for plot text.
-#'
-#' @return A combined ggplot object (using `patchwork`) showing boxplots for PC1 and PC2.
-#' @export
+#'@export
 setMethod(f="plotDensity"
           , signature="gg"
           , definition=function(theObject, grouping_variable, title = "", font_size = 8) {
@@ -1964,8 +1596,7 @@ setMethod(f="plotDensity"
             plotDensity(gg_obj, grouping_variable, title, font_size)
           })
 
-#' @rdname plotDensity
-#' @export
+#'@export
 setMethod(f="plotDensity"
           , signature="ggplot"
           , definition=function(theObject, grouping_variable, title = "", font_size = 8) {
@@ -2037,18 +1668,7 @@ setMethod(f="plotDensity"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Plot a List of Density Plots
-#' @description Generates a list of density plots for principal components, creating
-#' one plot for each grouping variable specified.
-#'
-#' @param theObject An object of class `ProteinQuantitativeData`.
-#' @param grouping_variables_list A character vector of column names from the design
-#'   matrix to use for grouping in each plot.
-#' @param title The base title for the plots.
-#' @param font_size The font size for plot text.
-#'
-#' @return A named list of combined ggplot objects (from `plotDensity`).
-#' @export
+#'@export
 setMethod(f="plotDensityList"
           , signature="ProteinQuantitativeData"
           , definition=function(theObject, grouping_variables_list, title = "", font_size = 8) {
@@ -2077,16 +1697,6 @@ setMethod(f="plotDensityList"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Save a List of Density Plots to Files
-#' @description A convenience function to save a list of density plots (as generated
-#' by `plotDensityList`) to files in various formats.
-#'
-#' @param input_list A named list of ggplot objects.
-#' @param prefix A string prefix for the output filenames.
-#' @param suffix A character vector of file extensions (e.g., `c("png", "pdf")`).
-#' @param output_dir The directory where the plots will be saved.
-#'
-#' @return A data frame summarizing the saved files.
 #' @export
 savePlotDensityList <- function(input_list, prefix = "Density", suffix = c("png", "pdf"), output_dir) {
   

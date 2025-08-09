@@ -655,29 +655,33 @@ retrieveStringDBEnrichmentResults <- function(submission_info,
 }
 
 
-#' Run STRING DB Rank Enrichment Analysis for Differential Expression Results
+#' Run STRING DB Rank Enrichment Analysis for MOFA Factors or Similar Data
 #'
 #' @description
-#' This function is a specific wrapper to automate STRING database enrichment for
-#' a standard differential expression results table. It creates a ranked score,
-#' submits the data, polls for results, and saves the output.
+#' This function automates the process of submitting data to the STRING database
+#' for values/ranks enrichment analysis, polling for results, and saving the
+#' output. It is a wrapper around `submitStringDBEnrichment` and
+#' `retrieveStringDBEnrichmentResults`, tailored for analyses where inputs
+#' might come from MOFA factor weights or similar ranked lists.
 #'
-#' @details
-#' This function performs several hardcoded transformations on the input table:
-#' - It calculates a `score` using the formula `sign(log2FC) * -log10(fdr_qvalue)`.
-#' - It extracts a `protein_id` from a `Protein.Ids` column by taking the
-#'   first part of a colon-separated string.
+#' Results, including the enrichment table, a URL list, and a graph image,
+#' are saved to the specified `results_dir`.
 #'
-#' It then uses this prepared table to call `submitStringDBEnrichment` and
-#' `retrieveStringDBEnrichmentResults`. Results are saved to the specified `results_dir`.
-#'
-#' @param input_table A data frame containing differential expression results.
-#'   It must include the columns `log2FC`, `fdr_qvalue`, and `Protein.Ids`.
+#' @param input_table A data frame containing the data to be submitted for enrichment.
+#'   Must include columns specified by `identifier_column_name` and `value_column_name`.
+#' @param identifier_column_name Character string. The name of the column in
+#'   `input_table` containing the identifiers (e.g., protein IDs, gene symbols).
+#'   Default: `"protein_id"`.
+#' @param value_column_name Character string. The name of the column in `input_table`
+#'   containing the numerical values (e.g., scores, weights, logFC) associated
+#'   with each identifier. This column must be numeric. Default: `"score"`.
 #' @param result_label Character string. A label used for naming output files
-#'   (e.g., "GroupA_vs_Control_Proteomics").
+#'   (e.g., "MOFA_Factor1_Proteomics").
 #' @param results_dir Character string. The path to the directory where enrichment
-#'   results will be saved.
+#'   results (table, URL file, graph image) will be saved. The directory will be
+#'   created if it doesn't exist.
 #' @param api_key Character string or NULL. Your personal STRING API key.
+#'   If NULL, the API might work with limitations or require it for full access.
 #'   Default: `NULL`.
 #' @param species Character string. NCBI/STRING species identifier.
 #'   Default: `"9606"` (Homo sapiens).
@@ -685,25 +689,22 @@ retrieveStringDBEnrichmentResults <- function(submission_info,
 #'   Default: `0.05`.
 #' @param ge_enrichment_rank_direction Integer. Direction for enrichment rank
 #'   (-1, 0, or 1). Default: `-1`.
-#' @param polling_interval_seconds Numeric. Seconds to wait between polling attempts.
-#'   Default: `10`.
+#' @param polling_interval_seconds Numeric. Seconds to wait between polling attempts
+#'   for job status. Default: `10`.
 #' @param max_polling_attempts Numeric. Maximum polling attempts before timing out.
 #'   Default: `30`.
 #'
-#' @return A data frame containing the enrichment results from STRING DB.
-#'   Returns `NULL` if the process fails.
+#' @return A data frame containing the enrichment results from STRING DB
+#'   (specifically `output_tbl$enrichment_data` from the retrieval step).
+#'   Returns `NULL` or an empty structure if the process fails.
 #'
 #' @seealso \code{\link{submitStringDBEnrichment}}, \code{\link{retrieveStringDBEnrichmentResults}}
 #'
 #' @importFrom vroom vroom_write
 #' @importFrom readr write_lines
-#' @importFrom dplyr mutate relocate arrange
-#' @importFrom purrr map_chr
-#' @importFrom stringr str_split
 #' @export
 runOneStringDbRankEnrichment <- function( input_table
                                          ,  result_label
-                                         , results_dir
                                          , api_key = NULL
                                          , species = "9606"
                                          , ge_fdr = 0.05
@@ -920,49 +921,18 @@ printStringDbFunctionalEnrichmentBarGraph <- function( input_table){
 }
 
 
-#' Run Full Metabolomics Enrichment Analysis for a Single Assay
+#' Run Metabolomics Enrichment Analysis for MOFA Factors
 #'
-#' @description
-#' This function serves as a pipeline to perform both KEGG and Reactome pathway
-#' enrichment analysis for a single metabolomics assay (e.g., LC-MS or GC-MS)
-#' using ranked feature weights, typically from a MOFA model.
-#'
-#' @details
-#' The pipeline consists of the following steps:
-#' 1.  Filters MOFA weights for the specified `assay_name`.
-#' 2.  Maps the features (metabolites) to ChEBI IDs using the provided
-#'     `metabolomics_obj`.
-#' 3.  Creates a ranked list of ChEBI IDs based on their weights.
-#' 4.  Calls `runKeggEnrichment` to perform KEGG pathway analysis.
-#' 5.  Calls `runReactomeEnrichment` to perform Reactome pathway analysis.
-#' 6.  Combines the results from both analyses into a single data frame.
-#' 7.  Saves the combined results to a file in the specified results directory.
-#'
-#' @param weights A data frame containing MOFA factor weights, expected to have
-#'   `view`, `factor`, `feature`, and `value` columns.
-#' @param metabolomics_obj A `MetaboliteAssayData` S4 object containing the
-#'   metabolite data and annotations, including ChEBI IDs.
-#' @param mapping_table A data frame containing mappings between different
-#'   metabolite identifiers (e.g., ChEBI to KEGG), typically from AnnotationHub.
-#' @param project_dirs A list containing project directory paths, used to locate
-#'   data and save results.
-#' @param omic_type A character string indicating the omics type (e.g., "metabolomics"),
-#'   used for accessing the correct directory path from `project_dirs`.
-#' @param experiment_label A character string for the specific experiment, used for
-#'   accessing the correct directory path.
-#' @param assay_name A character string specifying which assay to process
-#'   (e.g., "metabolome_lc" or "metabolome_gc").
-#' @param kegg_species_code A character string for the KEGG species code
-#'   (e.g., "hsa" for human, "kpn" for Klebsiella pneumoniae). Default: `"kpn"`.
-#' @param reactome_organism A character string specifying the organism name for
-#'   Reactome pathway filtering (e.g., "Homo sapiens"). If `NULL`, no organism
-#'   filtering is applied. Default: `NULL`.
-#'
-#' @return A data frame with the combined KEGG and Reactome enrichment results,
-#'   formatted for visualization. Columns include `termDescription`, `enrichmentScore`,
-#'   `falseDiscoveryRate`, `genesMapped`, `comparison`, and `category`.
-#'
-#' @seealso \code{\link{runKeggEnrichment}}, \code{\link{runReactomeEnrichment}}
+#' @param weights Data frame containing MOFA weights
+#' @param metabolomics_obj Metabolomics S4 object containing ChEBI IDs
+#' @param mapping_table The metabolite ID mapping table from AnnotationHub
+#' @param project_dirs Project directories structure
+#' @param omic_type Omics type for directory access
+#' @param experiment_label Experiment label for directory access
+#' @param assay_name Name of the assay ("metabolome_lc" or "metabolome_gc")
+#' @param kegg_species_code KEGG species code (e.g., "kpn" for Klebsiella pneumoniae)
+#' @param reactome_organism Organism name to use for Reactome filtering (e.g., "Homo sapiens")
+#' @return A data frame with enrichment results formatted for visualization
 #' @export
 runMetabolomicsEnrichmentAnalysis <- function(weights, 
                                              metabolomics_obj,
@@ -1094,42 +1064,16 @@ runMetabolomicsEnrichmentAnalysis <- function(weights,
   return(combined_results)
 }
 
-#' Run KEGG Pathway Enrichment Analysis for Metabolites
+' Run KEGG Pathway Enrichment Analysis for Metabolites
 #'
-#' @description
-#' Performs Gene Set Enrichment Analysis (GSEA) on a ranked list of metabolites
-#' using KEGG pathways. It maps ChEBI identifiers to KEGG compound identifiers
-#' and uses `clusterProfiler::GSEA`.
-#'
-#' @details
-#' The function takes a ranked list of ChEBI IDs, maps them to KEGG compound IDs
-#' using the provided `mapping_table`, and prepares the necessary `TERM2GENE` and
-#' `TERM2NAME` mappings for `clusterProfiler`. To handle ties in the ranked list,
-#' which can be problematic for GSEA, a small amount of random noise is added to
-#' the ranks. If the primary GSEA method fails, it falls back to using
-#' `clusterProfiler::enricher` on the set of positively ranked metabolites.
-#'
-#' @param ranked_list A named numeric vector where names are ChEBI IDs (e.g., "CHEBI:12345")
-#'   and values are the ranks/weights.
-#' @param mapping_table A data frame containing mappings between ChEBI and KEGG identifiers.
-#' @param project_dirs A list containing project directory paths.
-#' @param omic_type A character string for the omics type.
-#' @param experiment_label A character string for the experiment label.
-#' @param assay_name A character string for the assay name, used for labeling results.
-#' @param kegg_species_code A character string for the KEGG species code (e.g., "kpn").
-#'   Default: `"kpn"`.
-#'
-#' @return A data frame with KEGG pathway enrichment results, including columns
-#'   `termDescription`, `enrichmentScore`, `falseDiscoveryRate`, `genesMapped`, `mappedIDs`,
-#'   and `comparison`. Returns an empty tibble if no enrichment is found or an error occurs.
-#'
-#' @importFrom dplyr filter select mutate left_join distinct rename
-#' @importFrom stringr str_extract str_replace
-#' @importFrom purrr map_chr
-#' @importFrom vroom vroom
-#' @importFrom KEGGREST keggList
-#' @importFrom clusterProfiler GSEA enricher
-#' @importFrom BiocParallel SerialParam
+#' @param ranked_list Named numeric vector with ChEBI IDs as names and values as weights
+#' @param mapping_table Metabolite ID mapping table
+#' @param project_dirs Project directories structure
+#' @param omic_type Omics type for directory access
+#' @param experiment_label Experiment label for directory access
+#' @param assay_name Name of the assay
+#' @param kegg_species_code KEGG species code (e.g., "kpn" for Klebsiella pneumoniae)
+#' @return A data frame with KEGG pathway enrichment results
 #' @export
 runKeggEnrichment <- function(ranked_list, 
                              mapping_table, 
@@ -1925,40 +1869,14 @@ runKeggEnrichment <- function(ranked_list,
 
 #' Run Reactome Pathway Enrichment Analysis for Metabolites
 #'
-#' @description
-#' Performs Gene Set Enrichment Analysis (GSEA) on a ranked list of metabolites
-#' using Reactome pathways. It uses a pre-compiled mapping file from ChEBI IDs
-#' to Reactome pathways.
-#'
-#' @details
-#' The function maps the input `ranked_list` of ChEBI IDs to Reactome pathways.
-#' If an `reactome_organism` is specified, it filters the pathways for that organism.
-#' Similar to `runKeggEnrichment`, it adds a small amount of random noise to the
-#' ranks to handle ties before running `clusterProfiler::GSEA`. It also includes a
-#' fallback to `clusterProfiler::enricher` if GSEA fails.
-#'
-#' @param ranked_list A named numeric vector where names are ChEBI IDs and values
-#'   are the ranks/weights.
-#' @param mapping_table A data frame containing mappings between different metabolite IDs.
-#'   (Note: This parameter is currently unused in the function body but kept for signature consistency).
-#' @param project_dirs A list containing project directory paths, used to load the
-#'   `chebi_to_reactome.tab` mapping file.
-#' @param omic_type A character string for the omics type.
-#' @param experiment_label A character string for the experiment label.
-#' @param assay_name A character string for the assay name, used for labeling results.
-#' @param reactome_organism A character string for the Reactome organism name
-#'   (e.g., "Homo sapiens"). If `NULL`, all organisms in the mapping file are used.
-#'   Default: `NULL`.
-#'
-#' @return A data frame with Reactome pathway enrichment results, including columns
-#'   `termDescription`, `enrichmentScore`, `falseDiscoveryRate`, `genesMapped`, `mappedIDs`,
-#'   and `comparison`. Returns an empty tibble if no enrichment is found or an error occurs.
-#'
-#' @importFrom dplyr filter select mutate rename left_join distinct rowwise ungroup
-#' @importFrom stringr str_extract
-#' @importFrom vroom vroom
-#' @importFrom clusterProfiler GSEA enricher
-#' @importFrom BiocParallel SerialParam
+#' @param ranked_list Named numeric vector with ChEBI IDs as names and values as weights
+#' @param mapping_table Metabolite ID mapping table
+#' @param project_dirs Project directories structure
+#' @param omic_type Omics type for directory access
+#' @param experiment_label Experiment label for directory access
+#' @param assay_name Name of the assay
+#' @param reactome_organism Organism to use for Reactome (e.g., "Klebsiella pneumoniae")
+#' @return A data frame with Reactome pathway enrichment results
 #' @export
 runReactomeEnrichment <- function(ranked_list, 
                                  mapping_table, 

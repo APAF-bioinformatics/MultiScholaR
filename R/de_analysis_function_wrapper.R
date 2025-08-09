@@ -1,72 +1,3 @@
-#' @title Wrapper for Differential Expression Analysis
-#' @description A comprehensive wrapper function that orchestrates a full differential
-#' expression (DE) analysis workflow. It handles parameter retrieval, data
-#' preprocessing, QC plot generation (PCA, RLE), limma-based DE analysis,
-#' and generation of results tables and plots.
-#'
-#' @details
-#' This function acts as a high-level pipeline for DE analysis. The workflow is as follows:
-#' 1.  It retrieves analysis parameters (e.g., `contrasts_tbl`, `formula_string`)
-#'     from the input S4 object (`theObject`) or uses function arguments as overrides.
-#' 2.  It preprocesses group names in the design matrix to ensure they are valid R names
-#'     (e.g., by prepending "grp_" to names starting with numbers).
-#' 3.  It generates QC plots: a Relative Log Expression (RLE) plot and Principal
-#'     Component Analysis (PCA) plots (with and without sample labels).
-#' 4.  It performs DE analysis using `limma` by calling `runTestsContrasts` with the
-#'     specified formula and contrasts.
-#' 5.  It processes the results to identify significant DE features and prepares data
-#'     for volcano plots.
-#' 6.  It generates various outputs and stores them in a list, including static
-#'     volcano plots, p-value distribution histograms, and tables of DE feature counts.
-#' 7.  It creates wide and long format data frames of the DE results.
-#'
-#' @param theObject An S4 object containing the quantification data (e.g., in
-#'   `protein_quant_table`), design matrix, and analysis parameters in its slots.
-#' @param contrasts_tbl A data frame or tibble defining the contrasts to be tested.
-#'   If `NULL`, it's retrieved from `theObject`.
-#' @param formula_string A character string representing the formula for the design
-#'   matrix (e.g., "~ 0 + group"). If `NULL`, retrieved from `theObject`.
-#' @param group_id The name of the column in the design matrix that defines the groups.
-#'   If `NULL`, retrieved from `theObject`.
-#' @param de_q_val_thresh The q-value (FDR) threshold for determining significance.
-#'   If `NULL`, retrieved from `theObject`.
-#' @param treat_lfc_cutoff The log-fold change threshold for `limma::treat`.
-#'   A value of 0 implies a standard eBayes test. If `NULL`, retrieved from `theObject`.
-#' @param eBayes_trend Logical. Whether to allow for a mean-variance trend in `limma::eBayes`.
-#'   If `NULL`, retrieved from `theObject`.
-#' @param eBayes_robust Logical. Whether to use robust estimation in `limma::eBayes`.
-#'   If `NULL`, retrieved from `theObject`.
-#' @param args_group_pattern A regex pattern to extract group information from sample names.
-#'   If `NULL`, retrieved from `theObject`.
-#' @param args_row_id The column name for feature/row identifiers (e.g., "uniprot_acc").
-#'   If `NULL`, retrieved from `theObject`.
-#' @param qvalue_column The name of the column containing q-values in the results.
-#'   Defaults to "fdr_qvalue".
-#' @param raw_pvalue_colum The name of the column containing raw p-values.
-#'   Defaults to "raw_pvalue".
-#'
-#' @return A list containing the following elements:
-#' \itemize{
-#'   \item `theObject`: The updated S4 object.
-#'   \item `rle_plot`: A ggplot object for the RLE plot.
-#'   \item `pca_plot`: A ggplot object for the PCA plot without labels.
-#'   \item `pca_plot_with_labels`: A ggplot object for the PCA plot with labels.
-#'   \item `plot_num_of_values`: A plot showing the number of quantified values.
-#'   \item `contrasts_results`: The raw results object from `runTestsContrasts`.
-#'   \item `contrasts_results_table`: A data frame of the DE results.
-#'   \item `significant_rows`: A data frame of significant results, formatted for plotting.
-#'   \item `volplot_plot`: A combined ggplot object of all volcano plots.
-#'   \item `num_sig_de_molecules_first_go`: A table counting significant features.
-#'   \item `pvalhist`: A ggplot object of the p-value distribution histogram.
-#'   \item `norm_counts`: A data frame of the normalized data.
-#'   \item `de_proteins_wide`: A wide-format data frame of DE results.
-#'   \item `de_proteins_long`: A long-format data frame of DE results.
-#'   \item `list_of_volcano_plots`: A list of individual static volcano plots.
-#'   \item `list_of_volcano_plots_with_gene_names`: A list of labeled static volcano plots.
-#'   \item `num_sig_de_molecules`: A summary table of significant feature counts.
-#'   \item `num_sig_de_genes_barplot_only_significant`: A bar plot of significant counts.
-#'   \item `num_sig_de_genes_barplot_with_not_significant`: A bar plot of all feature counts.
-#' }
 #' @export
 deAnalysisWrapperFunction <- function( theObject
                                        , contrasts_tbl = NULL
@@ -405,44 +336,9 @@ deAnalysisWrapperFunction <- function( theObject
 
 
 ## Create proteomics interactive volcano plot
-#' @title Create and Save an Interactive Proteomics Volcano Plot
-#' @description This function generates an interactive volcano plot using the Glimma
-#' package and saves it as an HTML file. It's designed for proteomics data,
-#' integrating differential expression results with UniProt annotations.
-#'
-#' @details The function joins the long-format DE results with a UniProt annotation
-#' table. It then calculates values needed for the volcano plot (`-log10(FDR)`)
-#' and assigns labels and colors based on significance and fold-change. Finally,
-#' it iterates through each contrast (coefficient) in the `limma` fit object and
-#' calls `getGlimmaVolcanoProteomics` to generate and save a self-contained
-#' interactive HTML file for each one.
-#'
-#' @param de_proteins_long A data frame in long format containing DE results. Must
-#'   include columns for log-fold change, FDR/q-value, and feature IDs.
-#' @param uniprot_tbl A data frame with UniProt annotations, including at least
-#'   a protein/uniprot accession column and a gene name column.
-#' @param fit.eb An `MArrayLM` object returned by `limma::eBayes`.
-#' @param publication_graphs_dir The base directory where the output plots will be
-#'   saved, inside a subdirectory named "Interactive_Volcano_Plots".
-#' @param args_row_id The column name in `de_proteins_long` that contains the
-#'   primary feature identifiers to join with `uniprot_tbl`. Defaults to "uniprot_acc".
-#' @param fdr_column The name of the column containing FDR or q-values. Defaults to "fdr_qvalue".
-#' @param raw_p_value_column The name of the column with raw p-values. Defaults to "raw_pvalue".
-#' @param log2fc_column The name of the column with log2 fold changes. Defaults to "log2FC".
-#' @param de_q_val_thresh The significance threshold for FDR/q-value. Defaults to 0.05.
-#' @param counts_tbl A matrix or data frame of normalized counts/intensities, with
-#'   features as rows and samples as columns.
-#' @param groups A vector specifying the group membership for each sample (column) in `counts_tbl`.
-#' @param uniprot_id_column The column name in `uniprot_tbl` containing the UniProt accession
-#'   numbers. Defaults to "Entry".
-#' @param gene_names_column The column name in `uniprot_tbl` containing gene names.
-#'   Defaults to "Gene Names".
-#' @param display_columns A character vector of additional columns from the joined data
-#'   to display in the interactive table. Defaults to "best_uniprot_acc".
-#'
-#' @return This function does not return a value. It is called for its side effect of
-#'   writing HTML files to disk.
 #' @export
+# de_analysis_results_list$contrasts_results$fit.eb
+# No full stops in the nme of columns of interactive table in glimma plot. It won't display column with full stop in the column name.
 writeInteractiveVolcanoPlotProteomics <- function( de_proteins_long
                                                    , uniprot_tbl
                                                    , fit.eb
@@ -510,22 +406,9 @@ writeInteractiveVolcanoPlotProteomics <- function( de_proteins_long
 
 
 
-#' @title Create Interactive Proteomics Volcano Plot as a Widget
-#' @description This function generates an interactive volcano plot using Glimma and
-#' returns it as an HTML widget, suitable for embedding in R Markdown documents or
-#' Shiny applications.
-#'
-#' @details This function is similar to `writeInteractiveVolcanoPlotProteomics` but
-#' instead of writing HTML files to disk, it returns a list of widget objects.
-#' It prepares the data by joining DE results with UniProt annotations and then
-#' calls `getGlimmaVolcanoProteomicsWidget` for each contrast to generate the
-#' interactive plots.
-#'
-#' @inheritParams writeInteractiveVolcanoPlotProteomics
-#'
-#' @return A list of HTML widget objects, where each element is an interactive
-#'   volcano plot for one of the contrasts tested.
 #' @export
+# de_analysis_results_list$contrasts_results$fit.eb
+# No full stops in the nme of columns of interactive table in glimma plot. It won't display column with full stop in the column name.
 writeInteractiveVolcanoPlotProteomicsWidget <- function( de_proteins_long
                                                          , uniprot_tbl
                                                          , fit.eb
@@ -577,41 +460,6 @@ writeInteractiveVolcanoPlotProteomicsWidget <- function( de_proteins_long
   interactive_volcano_plots
 }
 
-#' @title Output and Save All Differential Expression Analysis Results
-#' @description A wrapper function that takes the list of results generated by
-#' `deAnalysisWrapperFunction` and writes all outputs—plots and data tables—to
-#' disk in specified formats.
-#'
-#' @details This function is the primary outputter for the DE analysis pipeline.
-#' It systematically saves:
-#' - QC plots (PCA, RLE)
-#' - `limma::plotSA` diagnostic plot
-#' - The `MArrayLM` fit object from `eBayes`
-#' - DE results in long and wide formats (as both .tsv and .xlsx)
-#' - Annotated versions of the DE results tables
-#' - Static volcano plots for each contrast, including a multi-page PDF
-#' - P-value distribution histograms
-#' - Bar plots summarizing the number of significant DE features
-#' - Interactive volcano plots generated by `writeInteractiveVolcanoPlotProteomics`.
-#'
-#' @param de_analysis_results_list The list object returned by `deAnalysisWrapperFunction`.
-#' @param theObject The main S4 object, used to retrieve file paths and parameters if not
-#'   provided directly.
-#' @param uniprot_tbl A data frame with UniProt annotations for annotating results.
-#' @param de_output_dir Directory to save tabular results.
-#' @param publication_graphs_dir Directory to save plot outputs.
-#' @param file_prefix A prefix for all output filenames.
-#' @param plots_format A character vector of file formats to save plots in (e.g., c("pdf", "png")).
-#' @param args_row_id The column name for feature identifiers.
-#' @param de_q_val_thresh The q-value significance threshold.
-#' @param gene_names_column The column name for gene names in `uniprot_tbl`.
-#' @param fdr_column The column name for FDR/q-values.
-#' @param raw_p_value_column The column name for raw p-values.
-#' @param log2fc_column The column name for log2 fold changes.
-#' @param uniprot_id_column The column name for UniProt accessions in `uniprot_tbl`.
-#' @param display_columns Additional columns to include in interactive plots.
-#'
-#' @return The function is called for its side effects and does not return a value.
 #' @export
 outputDeAnalysisResults <- function(de_analysis_results_list
                                     , theObject
@@ -993,20 +841,6 @@ outputDeAnalysisResults <- function(de_analysis_results_list
 
 
 
-#' @title Main Wrapper to Write Interactive Volcano Plot
-#' @description A convenience wrapper around `writeInteractiveVolcanoPlotProteomics`.
-#' Its primary purpose is to extract all necessary parameters from `theObject` and
-#' the `de_analysis_results_list` before calling the main interactive plotting function.
-#'
-#' @details This function serves as a simplified entry point for generating interactive
-#' volcano plots. It uses `checkParamsObjectFunctionSimplify` to pull most of its
-#' arguments from slots within `theObject`, reducing the number of explicit arguments
-#' needed in the function call. It's particularly useful in a sequential pipeline
-#' where `theObject` has been populated with all necessary parameters.
-#'
-#' @inheritParams outputDeAnalysisResults
-#'
-#' @return The function is called for its side effects and does not return a value.
 #' @export
 writeInteractiveVolcanoPlotProteomicsMain <- function(de_analysis_results_list
                                                       , theObject
