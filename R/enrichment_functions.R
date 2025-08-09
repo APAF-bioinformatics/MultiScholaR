@@ -1,20 +1,5 @@
-#' @title Parse a Delimited String of Numbers
-#' @description This utility function parses a character string containing numbers
-#' separated by common delimiters (`,`, `.`, `;`, `:`) into an integer vector.
-#' If no delimiters are found, it assumes the string is a single number.
-#'
-#' @param input_text A character string containing one or more numbers.
-#'
-#' @return An integer vector of the parsed numbers.
-#'
-#' @importFrom stringr str_detect str_split
-#' @importFrom purrr map_int
-#' @export
-#'
-#' @examples
-#' parseNumList("1,2,3")
-#' parseNumList("10;20;30")
-#' parseNumList("5")
+# Function used for parsing a list of minimum or maximum gene set size from command line
+#'@export
 parseNumList <-  function ( input_text ) {
   if( str_detect( input_text, "[.,;:]")) {
     str_split( input_text, "[.,;:]")[[1]] %>% purrr::map_int( as.integer)
@@ -23,21 +8,7 @@ parseNumList <-  function ( input_text ) {
   }
 }
 
-#' @title Convert an ID to an Annotation using a Dictionary
-#' @description A simple key-value lookup function that retrieves an annotation for a
-#' given ID from a named list or vector (acting as a dictionary).
-#'
-#' @param id The identifier (key) to look up.
-#' @param id_to_annotation_dictionary A named list or vector where names are the
-#'   IDs and values are the annotations.
-#'
-#' @return The corresponding annotation value if the ID is found, otherwise `NA_character_`.
-#' @export
-#'
-#' @examples
-#' my_dict <- c("ID1" = "Annotation A", "ID2" = "Annotation B")
-#' convertIdToAnnotation("ID1", my_dict)
-#' convertIdToAnnotation("ID3", my_dict)
+#'@export
 convertIdToAnnotation <- function( id, id_to_annotation_dictionary) {
 
     return( ifelse( !is.null(id_to_annotation_dictionary[[id]] ),
@@ -47,46 +18,8 @@ convertIdToAnnotation <- function( id, id_to_annotation_dictionary) {
 }
 
 
-#' @title Perform Gene Ontology (GO) Enrichment for a Single Aspect
-#' @description This function runs a GO enrichment analysis for a specific GO aspect
-#' (e.g., Biological Process) using `clusterProfiler::enricher`. It filters the
-#' GO terms by size and ensures that only terms with at least two significant
-#' genes in the query set are considered.
-#'
-#' @details
-#' The workflow is as follows:
-#' 1.  Filters the main GO annotation table for the specified `go_aspect`.
-#' 2.  Filters the GO terms to include only those that fall within the specified
-#'     `min_gene_set_size` and `max_gene_set_size`, based on the background list.
-#' 3.  Removes "singleton" GO terms, which are terms that are associated with only
-#'     one gene in the user's `query_list`. This avoids spurious, single-gene enrichments.
-#' 4.  Performs the enrichment test using `clusterProfiler::enricher`.
-#' 5.  Formats the results into a data frame and adds back the term descriptions.
-#'
-#' @param go_annot A data frame of GO annotations, containing columns for protein IDs,
-#'   GO IDs, GO terms, and GO aspects.
-#' @param background_list A data frame or vector of all background protein IDs used in the experiment.
-#' @param go_aspect A character string specifying the GO aspect to test (e.g., "BP", "CC", "MF").
-#'   If `NA`, no aspect filtering is performed.
-#' @param query_list A character vector of the protein IDs to be tested for enrichment (the "query set").
-#' @param id_to_annotation_dictionary A named list/vector for mapping GO IDs to GO term names.
-#' @param annotation_id The unquoted column name for GO identifiers in `go_annot`.
-#' @param protein_id The unquoted column name for protein identifiers in `go_annot`.
-#' @param aspect_column The unquoted column name for the GO aspect in `go_annot`.
-#' @param p_val_thresh The p-value cutoff for significance.
-#' @param min_gene_set_size The minimum number of genes a GO term must have to be included in the analysis.
-#' @param max_gene_set_size The maximum number of genes a GO term can have to be included.
-#' @param get_cluster_profiler_object Logical. If `TRUE`, returns a list containing both
-#'   the results data frame and the raw `enrichResult` object from clusterProfiler.
-#'   Defaults to `FALSE`.
-#'
-#' @return If `get_cluster_profiler_object` is `FALSE` (default), a data frame of
-#'   the enrichment results. If `TRUE`, a list containing the results data frame
-#'   and the `enrichResult` object. Returns `NA` if no enrichment results are found.
-#'
-#' @importFrom rlang set_names as_name enquo
-#' @importFrom clusterProfiler enricher
-#' @export
+#'@param go_annot: Go annotation table.
+#'@export
 oneGoEnrichment <- function( go_annot
                              , background_list
                              , go_aspect
@@ -211,32 +144,7 @@ oneGoEnrichment <- function( go_annot
 
 
 
-#' @title Run GO Enrichment Analysis
-#' @description A wrapper function to perform Gene Ontology (GO) enrichment analysis
-#' for a set of significant proteins against a background set. It runs the analysis
-#' for all three main GO aspects (Biological Process, Cellular Compartment, Molecular Function).
-#'
-#' @details
-#' The function filters GO terms based on size and the number of significant proteins
-#' they contain. It then uses `clusterProfiler::enricher` to perform a hypergeometric
-#' test for each GO aspect. The results are combined and annotated with gene symbols.
-#'
-#' @param significant_proteins A character vector of significant protein identifiers (e.g., UniProt accessions).
-#' @param background_proteins A character vector of all protein identifiers used as the background/universe.
-#' @param go_annotations A data frame containing GO annotations, mapping protein IDs to GO IDs, terms, and types.
-#' @param uniprot_data A data frame containing UniProt data, used to map protein accessions to gene names.
-#' @param p_val_thresh The p-value cutoff for enrichment significance. Defaults to 0.05.
-#' @param min_gene_set_size The minimum number of genes a GO term must have in the background to be tested. Defaults to 4.
-#' @param max_gene_set_size The maximum number of genes a GO term can have. Defaults to 200.
-#' @param min_sig_gene_set_size The minimum number of significant genes a GO term must have to be included in the results. Defaults to 2.
-#'
-#' @return A data frame of enrichment results for all three GO domains, or `NULL` if no enrichment is found.
-#'
-#' @importFrom clusterProfiler enricher
-#' @importFrom dplyr inner_join group_by summarise ungroup filter select distinct mutate left_join pull case_when
-#' @importFrom purrr map map_chr discard reduce
-#' @importFrom stringr str_split
-#' @export
+#'@export
 runOneGoEnrichmentInOutFunction <- function(significant_proteins,
                                             background_proteins,
                                             go_annotations,
@@ -413,16 +321,7 @@ runOneGoEnrichmentInOutFunction <- function(significant_proteins,
   return(enrichment_results)
 }
 
-#' @title Convert Protein Accessions to a String of Gene Symbols
-#' @description Looks up a list of protein accessions in a dictionary and returns a
-#' single string of the corresponding gene symbols, concatenated with a forward slash.
-#'
-#' @param gene_id_list A character vector of protein accessions to convert.
-#' @param dictionary A named vector or list where names are protein accessions and
-#'   values are gene symbols.
-#'
-#' @return A single character string with gene symbols separated by "/".
-#' @export
+#'@export
 convertProteinAccToGeneSymbol <- function( gene_id_list, dictionary ) {
 
   purrr::map_chr( gene_id_list,
@@ -433,17 +332,7 @@ convertProteinAccToGeneSymbol <- function( gene_id_list, dictionary ) {
 }
 
 
-#' @title Build a Dictionary Mapping Annotation IDs to Names
-#' @description Creates a named vector to serve as a lookup dictionary, mapping
-#' unique annotation identifiers (e.g., GO IDs) to their descriptive names (e.g., GO terms).
-#'
-#' @param input_table A data frame containing at least two columns: one for annotation IDs
-#'   and one for annotation names.
-#' @param annotation_column The unquoted column name for the annotation descriptions/names.
-#' @param annotation_id_column The unquoted column name for the annotation identifiers.
-#'
-#' @return A named character vector where names are the annotation IDs and values are the annotation names.
-#' @export
+#'@export
 buildAnnotationIdToAnnotationNameDictionary <- function(input_table, annotation_column, annotation_id_column) {
 
   id_to_annotation_dictionary <- NA
@@ -464,21 +353,7 @@ buildAnnotationIdToAnnotationNameDictionary <- function(input_table, annotation_
 }
 
 
-#' @title Create a Gene Set List from an Annotation Table
-#' @description Transforms a data frame of protein-to-annotation mappings into a
-#' named list, where each element represents a gene set. This format is required
-#' by many enrichment analysis tools.
-#'
-#' @details The function groups the input table by the annotation ID. For each
-#' annotation ID, it collects all associated protein IDs into a vector.
-#'
-#' @param input_table A data frame containing protein-to-annotation mappings.
-#' @param annotation_id The unquoted column name for the annotation identifier (e.g., pathway ID).
-#' @param protein_id The unquoted column name for the protein identifier.
-#'
-#' @return A named list where names are the annotation IDs and each element is a
-#'   character vector of associated protein IDs.
-#' @export
+#'@export
 buildOneProteinToAnnotationList <- function( input_table, annotation_id, protein_id ) {
 
   temp_table <- input_table %>%
@@ -495,16 +370,7 @@ buildOneProteinToAnnotationList <- function( input_table, annotation_id, protein
   gene_set_list
 }
 
-#' @title Convert a Table to a List of Tables by a Column
-#' @description Splits a data frame into a list of data frames based on the unique
-#' values in a specified column.
-#'
-#' @param input_table The data frame to be split.
-#' @param column_name The unquoted name of the column to group by. The unique values
-#'   in this column will become the names of the list elements.
-#'
-#' @return A named list of data frames.
-#' @export
+#'@export
 listifyTableByColumn  <- function(input_table, column_name) {
 
   nested_table <- input_table %>%
@@ -526,29 +392,7 @@ listifyTableByColumn  <- function(input_table, column_name) {
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Run Gene Set Enrichment Analysis (GSEA)
-#' @description This function performs Gene Set Enrichment Analysis (GSEA) on a
-#' ranked list of genes against a specified collection of gene sets (e.g., from MSigDB).
-#' It filters gene sets by size before running the analysis.
-#'
-#' @param index_name The name of the gene set collection to use from `list_of_gene_sets`.
-#' @param contrast_name The name of the contrast (comparison) to use from `list_of_de_proteins`,
-#'   which contains the ranked gene lists.
-#' @param list_of_de_proteins A named list where each element is a ranked list of genes
-#'   (numeric vector with gene names as names) for a specific contrast.
-#' @param list_of_gene_sets A named list where each element is a `GSEABase` gene set
-#'   collection object.
-#' @param min_set_size The minimum number of genes a gene set must have to be included.
-#' @param max_set_size The maximum number of genes a gene set can have to be included.
-#'
-#' @return A `gseaResult` object from `clusterProfiler::GSEA`.
-#'
-#' @importFrom GSEABase geneIds
-#' @importFrom tibble tibble
-#' @importFrom tidyr unnest
-#' @importFrom dplyr inner_join group_by summarise ungroup filter select mutate
-#' @importFrom clusterProfiler GSEA
-#' @export
+#'@export
 runGsea <- function(index_name, contrast_name, list_of_de_proteins, list_of_gene_sets, min_set_size = 4, max_set_size = 300) {
 
   gene_list <- list_of_de_proteins[[contrast_name]]
@@ -585,29 +429,7 @@ runGsea <- function(index_name, contrast_name, list_of_de_proteins, list_of_gene
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Run Over-Representation Analysis (ORA) with clusterProfiler
-#' @description This function performs an Over-Representation Analysis (ORA) using
-#' `clusterProfiler::enricher` on a list of significant genes against a specified
-#' collection of gene sets. It filters gene sets by size.
-#'
-#' @param index_name The name of the gene set collection to use from `list_of_gene_sets`.
-#' @param contrast_name The name of the contrast to use from `list_of_de_proteins`,
-#'   which contains the list of significant genes.
-#' @param list_of_de_proteins A named list where each element is a character vector
-#'   of significant gene identifiers for a specific contrast.
-#' @param list_of_gene_sets A named list where each element is a `GSEABase` gene set
-#'   collection object.
-#' @param min_set_size The minimum number of genes a gene set must have to be included.
-#' @param max_set_size The maximum number of genes a gene set can have to be included.
-#'
-#' @return An `enrichResult` object from `clusterProfiler::enricher`.
-#'
-#' @importFrom GSEABase geneIds
-#' @importFrom tibble tibble
-#' @importFrom tidyr unnest
-#' @importFrom dplyr inner_join group_by summarise ungroup filter select mutate
-#' @importFrom clusterProfiler enricher
-#' @export
+#'@export
 runEnricher <- function(index_name, contrast_name, list_of_de_proteins, list_of_gene_sets, min_set_size = 4, max_set_size = 300) {
 
   gene_list <- list_of_de_proteins[[contrast_name]]
@@ -643,23 +465,7 @@ runEnricher <- function(index_name, contrast_name, list_of_de_proteins, list_of_
 
 }
 
-#' @title Create a UniProt Accession to Gene Symbol Dictionary
-#' @description This function processes a table of UniProt annotations to create a
-#' named vector that serves as a lookup dictionary from UniProt accessions to gene symbols.
-#' It handles cases where multiple gene symbols are present by taking the first one.
-#'
-#' @param input_table A data frame containing UniProt data.
-#' @param protein_id_lookup_column The unquoted column name for UniProt accessions in `input_table`.
-#' @param gene_symbol_column The unquoted column name for gene symbols in `input_table`.
-#' @param protein_id The desired unquoted name for the protein ID column in the output dictionary (will be the names of the vector).
-#'
-#' @return A named character vector where names are UniProt accessions and values are gene symbols.
-#'
-#' @importFrom dplyr select rename mutate distinct pull
-#' @importFrom stringr str_split
-#' @importFrom purrr map_chr
-#' @importFrom rlang enquo as_name
-#' @export
+#'@export
 getUniprotAccToGeneSymbolDictionary <- function( input_table,
                                                  protein_id_lookup_column,
                                                  gene_symbol_column,
@@ -687,28 +493,8 @@ getUniprotAccToGeneSymbolDictionary <- function( input_table,
 }
 
 #######################################################
-#' @title Query the Revigo Web Service
-#' @description Submits a list of Gene Ontology (GO) terms to the Revigo web service
-#' to summarize and reduce redundancy. It parses the resulting HTML table into a data frame.
-#'
-#' @param input_list A character vector of GO term IDs.
-#' @param cutoff A numeric value between 0.4 and 0.9 representing the similarity
-#'   cutoff for Revigo. Allowed values: 0.9, 0.7, 0.5, 0.4. Defaults to 0.5.
-#' @param speciesTaxon The NCBI taxon ID for the species (e.g., 9606 for Human, 10090 for Mouse).
-#'   Defaults to 10090 (Mouse).
-#' @param temp_file An optional file path to save the intermediate HTML response from Revigo.
-#'   If `NA` or `NULL`, a temporary file is created and deleted automatically.
-#'
-#' @return A data frame (tibble) containing the summarized GO terms from Revigo,
-#'   including columns like `Term ID`, `Name`, `Frequency`, `Plot X`, `Plot Y`,
-#'   `Plot Size`, `Uniqueness`, `Dispensability`, and `Eliminated`.
-#'
-#' @importFrom httr POST content
-#' @importFrom stringi stri_replace_all_fixed
-#' @importFrom rvest read_html html_nodes html_table
-#' @importFrom purrr map discard
-#' @importFrom dplyr bind_rows
-#' @export
+### Query revigo
+#'@export
 queryRevigo <- function( input_list,
                          cutoff=0.5,
                          speciesTaxon = 10090,
@@ -770,39 +556,7 @@ queryRevigo <- function( input_list,
 
 
 
-#' @title Cluster Enriched Pathways
-#' @description This function takes a table of enrichment results, resolves duplicate
-#' entries for the same pathway, calculates a signed score based on p-values and
-#' regulation direction, and performs hierarchical clustering on the pathways.
-#'
-#' @details
-#' The scoring logic is as follows:
-#' - `score = -log10(p.adjust)` for up-regulated or neutral gene sets.
-#' - `score = -1 * -log10(p.adjust)` for down-regulated gene sets.
-#'
-#' Duplicate entries (same pathway enriched in both up- and down-regulated sets for the same comparison)
-#' can be handled by either removing them (`remove_duplicted_entries = "delete"`) or merging them
-#' into a "shared" category (`remove_duplicted_entries = "merge"`).
-#'
-#' The function returns an ordered data frame based on the clustering, which can be
-#' used for creating ordered heatmaps.
-#'
-#' @param input_table A data frame of enrichment results. Must contain columns for
-#'   `comparison`, `annotation_id`, `p.adjust`, `gene_set`, and `term`.
-#' @param added_columns A character vector of additional column names to include in grouping
-#'   when identifying and clustering pathways.
-#' @param remove_duplicted_entries A string indicating how to handle duplicate entries.
-#'   Can be `"delete"` (or `TRUE`), `"merge"`. Defaults to `TRUE`.
-#'
-#' @return A data frame of enrichment results, ordered according to the hierarchical
-#'   clustering of pathways. An `ordering` column is added. Returns a slightly
-#'   different, un-clustered table if there are fewer than 2 rows to cluster.
-#'
-#' @importFrom dplyr mutate case_when group_by summarise ungroup filter anti_join inner_join bind_rows select left_join arrange row_number
-#' @importFrom tidyr pivot_wider
-#' @importFrom tibble column_to_rownames rownames_to_column
-#' @importFrom stats hclust dist cutree
-#' @export
+#'@export
 clusterPathways <- function ( input_table, added_columns, remove_duplicted_entries = TRUE ) {
 
   duplicated_entries <- input_table %>%
@@ -891,33 +645,7 @@ clusterPathways <- function ( input_table, added_columns, remove_duplicted_entri
 
 ########################
 
-#' @title Generate an Enrichment Heatmap
-#' @description Creates a ggplot2 heatmap of functional enrichment results. The heatmap
-#' displays enriched terms on the y-axis and experimental comparisons or other
-#' categories on the x-axis. The size of the points corresponds to the statistical
-#' significance, and the shape/color can represent the direction of regulation.
-#'
-#' @param input_table A data frame of enrichment results, typically the output of
-#'   `clusterPathways` to ensure correct ordering. It must contain columns for the
-#'   term, the x-axis variable, `neg_log_p_value`, and `gene_set`.
-#' @param x_axis The unquoted column name to be used for the x-axis of the heatmap.
-#' @param input_go_type An optional character string to filter the results to a single
-#'   GO type (e.g., "Biological Process"). If `NA`, all types are used.
-#' @param input_plot_title The title for the plot.
-#' @param facet_by_column Optional unquoted column name to facet the plot by.
-#' @param xaxis_levels An optional character vector to specify the order of items
-#'   on the x-axis.
-#' @param scales The `scales` argument passed to `facet_wrap` (e.g., "free", "fixed").
-#'   Defaults to "fixed".
-#'
-#' @return A ggplot object representing the enrichment heatmap.
-#'
-#' @import ggplot2
-#' @importFrom dplyr filter mutate pull
-#' @importFrom purrr map_dbl map_chr
-#' @importFrom stringr str_wrap
-#' @importFrom rlang enquo quo_get_expr as_name
-#' @export
+#'@export
 getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot_title,
                                   facet_by_column = NA, xaxis_levels=NA,
                                   scales="fixed") {
@@ -1042,24 +770,6 @@ getEnrichmentHeatmap <- function( input_table, x_axis, input_go_type, input_plot
 }
 
 
-#' @title Read and Combine Enrichment Result Files
-#' @description Reads multiple enrichment result files (in a tabular format like .tab or .csv)
-#' specified in a manifest data frame, combines them into a single data frame, and
-#' adds metadata columns from the manifest.
-#'
-#' @param table_of_files A data frame where one column contains the file paths to the
-#'   enrichment results, and other columns contain metadata to be joined to the results.
-#' @param file_names_column The unquoted column name in `table_of_files` that holds the
-#'   file paths. Defaults to `file_name`.
-#' @param go_type A character string to assign as the `go_type` if this column is not
-#'   present in the result files. Defaults to "KEGG".
-#'
-#' @return A single data frame containing the combined and annotated enrichment results.
-#'
-#' @importFrom vroom vroom
-#' @importFrom purrr map map_int keep
-#' @importFrom dplyr pull bind_rows rename left_join relocate select mutate
-#' @importFrom rlang enquo as_name
 #' @export
 readEnrichmentResultFiles <- function( table_of_files, file_names_column=file_name, go_type="KEGG") {
 
@@ -1102,28 +812,7 @@ readEnrichmentResultFiles <- function( table_of_files, file_names_column=file_na
 
 # enriched_results_tbl <- readEnrichmentResultFiles( table_of_files, go_type="KEGG")
 
-#' @title Filter Enrichment Results Using Revigo
-#' @description This function takes a table of enrichment results, groups them by
-#' specified columns, sends the GO terms for each group to Revigo for summarization,
-#' and then filters the original table to keep only the non-redundant terms
-#' returned by Revigo.
-#'
-#' @param enriched_results_tbl A data frame of enrichment results.
-#' @param added_columns A character vector of column names to group by before sending
-#'   data to Revigo. `comparison`, `gene_set`, and `go_type` are also used for grouping.
-#' @param is_run_revigo A logical flag. If `TRUE` (default), the Revigo filtering is
-#'   performed. If `FALSE`, the original table is returned unmodified.
-#' @param revigo_cutoff The similarity cutoff for Revigo (e.g., 0.7).
-#' @param species_taxon The NCBI species taxon ID for Revigo (e.g., 9606 for Human).
-#'
-#' @return A data frame of enrichment results filtered to include only the representative
-#'   terms identified by Revigo. If Revigo returns no terms for a group, a warning is
-#'   issued, and the original data for that group may be affected depending on the join.
-#'
-#' @importFrom dplyr group_by nest ungroup mutate select unnest rename left_join filter
-#' @importFrom purrr map
-#' @importFrom rlang set_names
-#' @export
+#'@export
 filterResultsWithRevigo <- function( enriched_results_tbl
                                      , added_columns
                                      , is_run_revigo=TRUE
@@ -1190,25 +879,7 @@ filterResultsWithRevigo <- function( enriched_results_tbl
 
 
 
-#' @title Filter GSEA/ORA Results Using Revigo (clusterProfiler `scholar` specific)
-#' @description A variant of `filterResultsWithRevigo` tailored for results from
-#' `clusterProfiler::GSEA` or `clusterProfiler::enricher` (often used with the `scholar` package).
-#' It groups results, sends term IDs to Revigo, and filters based on the summary.
-#'
-#' @param enriched_results_tbl A data frame of enrichment results, typically from `clusterProfiler`.
-#'   Must contain an `ID` column with term identifiers.
-#' @param added_columns A character vector of column names to group by before sending data to Revigo.
-#'   `go_type` is also used for grouping.
-#' @param is_run_revigo A logical flag. If `TRUE` (default), Revigo filtering is performed.
-#' @param revigo_cutoff The similarity cutoff for Revigo.
-#' @param species_taxon The NCBI species taxon ID for Revigo.
-#'
-#' @return A data frame of enrichment results filtered by Revigo.
-#'
-#' @importFrom dplyr group_by nest ungroup mutate select unnest rename left_join filter
-#' @importFrom purrr map
-#' @importFrom rlang set_names
-#' @export
+#'@export
 filterResultsWithRevigoScholar <- function( enriched_results_tbl
                                             , added_columns
                                             , is_run_revigo=TRUE
@@ -1274,35 +945,7 @@ filterResultsWithRevigoScholar <- function( enriched_results_tbl
 }
 
 
-#' @title Save Filtered Functional Enrichment Table
-#' @description Saves a functional enrichment results table to both .tab (tab-separated)
-#' and .xlsx (Excel) formats. It saves both a filtered version (based on gene set size)
-#' and the complete, unfiltered table.
-#'
-#' @details
-#' The function truncates cell content for specified columns in the Excel file to avoid
-#' exceeding Excel's cell character limit (32,760 characters).
-#'
-#' Four files will be created:
-#' - `[file_name].tab`: Filtered data.
-#' - `[file_name].xlsx`: Filtered data, with long columns truncated.
-#' - `[file_name]_unfiltered.tab`: Complete data.
-#' - `[file_name]_unfiltered.xlsx`: Complete data, with long columns truncated.
-#'
-#' @param enriched_results_tbl The data frame of enrichment results to save.
-#' @param set_size_min The minimum gene set size to filter by for the primary output files.
-#' @param set_size_max The maximum gene set size to filter by for the primary output files.
-#' @param results_dir The directory where the files will be saved.
-#' @param file_name The base name for the output files (without extension).
-#' @param list_of_columns_to_trim A character vector of column names whose content should
-#'   be truncated for the Excel export. Defaults to `c("gene_symbol")`.
-#'
-#' @return This function is called for its side effect of writing files and does not return a value.
-#'
-#' @importFrom vroom vroom_write
-#' @importFrom writexl write_xlsx
-#' @importFrom dplyr filter mutate across one_of
-#' @export
+#'@export
 saveFilteredFunctionalEnrichmentTable <- function( enriched_results_tbl,
                                                    set_size_min,
                                                    set_size_max,
@@ -1337,27 +980,7 @@ saveFilteredFunctionalEnrichmentTable <- function( enriched_results_tbl,
 }
 
 
-#' @title Evaluate Optimal Gene Set Size Parameters
-#' @description Generates a line plot to help evaluate the effect of different
-#' minimum and maximum gene set size parameters on the number of significantly
-#' enriched terms found.
-#'
-#' @details
-#' The plot shows the number of significant pathways (y-axis) found for each
-#' combination of `min_set_size` and `max_set_size` (x-axis). Lines are grouped by
-#' comparison and faceted by gene set type (e.g., "positive_list-BP"). This visualization
-#' helps in choosing size parameters that yield a reasonable number of results.
-#'
-#' @param enrichment_results_tble A data frame of enrichment results, containing data
-#'   from runs with multiple `min_set_size` and `max_set_size` values.
-#' @param added_columns A character vector of additional columns to use for grouping comparisons.
-#'
-#' @return A ggplot object.
-#'
-#' @import ggplot2
-#' @importFrom dplyr group_by summarise ungroup mutate if_else
-#' @importFrom tidyr unite
-#' @export
+#'@export
 evaluateBestMinMaxGeneSetSize <- function(enrichment_results_tble, added_columns) {
 
   plotting_data <- enrichment_results_tble %>%
@@ -1379,33 +1002,7 @@ evaluateBestMinMaxGeneSetSize <- function(enrichment_results_tble, added_columns
 }
 
 
-#' @title Draw a List of Functional Enrichment Heatmaps
-#' @description A wrapper function that processes an enrichment results table, clusters
-#' the pathways, and generates a list of heatmaps, one for each GO type (or other category).
-#'
-#' @details
-#' This function first filters the results by the specified `set_size_min` and
-#' `set_size_max`. It then calls `clusterPathways` to handle duplicates and order the
-#' pathways. Finally, it iterates through each `go_type` and calls `getEnrichmentHeatmap`
-#' to generate a plot for it.
-#'
-#' @param enriched_results_tbl The data frame of enrichment results.
-#' @param added_columns A character vector of column names to be used in clustering and analysis.
-#' @param set_size_min The minimum gene set size to filter the results by.
-#' @param set_size_max The maximum gene set size to filter the results by.
-#' @param x_axis The unquoted column name to use for the x-axis of the heatmaps.
-#' @param analysis_column The unquoted column name to unite comparison columns into.
-#' @param facet_by_column Optional unquoted column name to facet the heatmaps by.
-#' @param remove_duplicted_entries How to handle duplicate pathway entries (passed to `clusterPathways`).
-#' @param xaxis_levels Optional character vector to specify the order of x-axis items.
-#' @param scales The `scales` argument for faceting (e.g., "free", "fixed").
-#'
-#' @return A named list of ggplot objects, where each element is a heatmap for a specific GO type.
-#'
-#' @importFrom dplyr filter group_by arrange mutate ungroup distinct
-#' @importFrom purrr pmap
-#' @importFrom tidyr unite
-#' @export
+#'@export
 drawListOfFunctionalEnrichmentHeatmaps <- function(enriched_results_tbl,
                                                    added_columns,
                                                    set_size_min,
@@ -1468,32 +1065,7 @@ drawListOfFunctionalEnrichmentHeatmaps <- function(enriched_results_tbl,
 
 
 
-#' @title Draw a List of Functional Enrichment Heatmaps (Scholar Version)
-#' @description A wrapper function that processes an enrichment results table from
-#' `clusterProfiler` (often used with `scholar`), clusters the pathways, and generates
-#' a list of heatmaps, one for each GO type or category. This version does not
-#' filter by gene set size, assuming it has been done upstream.
-#'
-#' @details
-#' This function calls `clusterPathways` to handle duplicates and order the
-#' pathways. It then iterates through each `go_type` and calls `getEnrichmentHeatmap`
-#' to generate a plot.
-#'
-#' @param enriched_results_tbl The data frame of enrichment results.
-#' @param added_columns A character vector of column names to be used in clustering and analysis.
-#' @param x_axis The unquoted column name to use for the x-axis of the heatmaps.
-#' @param analysis_column The unquoted column name to unite comparison columns into.
-#' @param facet_by_column Optional unquoted column name to facet the heatmaps by.
-#' @param remove_duplicted_entries How to handle duplicate pathway entries (passed to `clusterPathways`).
-#' @param xaxis_levels Optional character vector to specify the order of x-axis items.
-#' @param scales The `scales` argument for faceting (e.g., "free", "fixed").
-#'
-#' @return A named list of ggplot objects, where each element is a heatmap for a specific GO type.
-#'
-#' @importFrom dplyr group_by arrange mutate ungroup distinct
-#' @importFrom purrr pmap
-#' @importFrom tidyr unite
-#' @export
+#'@export
 drawListOfFunctionalEnrichmentHeatmapsScholar <- function(enriched_results_tbl,
                                                           added_columns,
                                                           x_axis = Analysis_Type,
@@ -1550,23 +1122,7 @@ drawListOfFunctionalEnrichmentHeatmapsScholar <- function(enriched_results_tbl,
 
 
 
-#' @title Save a List of ggplot Heatmaps to Files
-#' @description Iterates through a list of ggplot objects and saves each one to a
-#' file, typically in PNG or PDF format. It allows specifying different dimensions for each plot.
-#'
-#' @param list_of_heatmaps A named list of ggplot objects. The names of the list
-#'   elements are used in the output filenames.
-#' @param results_dir The directory where the plots will be saved.
-#' @param file_name The base name for the output plot files. The final filename will be
-#'   `[file_name]_[plot_name]`.
-#' @param plot_width The width of the plot(s). Can be a single numeric value (applied
-#'   to all plots) or a numeric vector with the same length as `list_of_heatmaps`.
-#' @param plot_height The height of the plot(s). Can be a single value or a vector.
-#'
-#' @return This function is called for its side effect of writing files and does not return a value.
-#'
-#' @importFrom purrr pwalk
-#' @export
+#'@export
 saveListOfFunctionalEnrichmentHeatmaps <- function(list_of_heatmaps,
                                                    results_dir,
                                                    file_name,
@@ -1604,25 +1160,6 @@ saveListOfFunctionalEnrichmentHeatmaps <- function(list_of_heatmaps,
 
 ###------------------------------------------------------------------------------------------------------------------------
 
-#' @title Create a Bar Plot for Enriched Pathways
-#' @description Generates a horizontal bar plot of enriched pathways or GO terms,
-#' with bar length representing significance (`-log10(qvalue)`). It handles
-#' up-regulated, down-regulated, and shared terms, displaying them with different colors.
-#'
-#' @details
-#' This function first resolves duplicate entries (e.g., a pathway found in both
-#' up- and down-regulated lists) based on the `remove_duplicted_entries` parameter.
-#' It then orders the terms by significance and regulation status for a clean visual presentation.
-#'
-#' @param input_table A data frame of enrichment results.
-#' @param input_go_type An optional character string to filter the results to a single GO type.
-#' @param remove_duplicted_entries How to handle duplicates (`"merge"` or `"delete"`).
-#' @param added_columns Additional columns to consider when identifying duplicates.
-#'
-#' @return A ggplot object representing the bar plot.
-#'
-#' @import ggplot2
-#' @importFrom dplyr mutate case_when group_by summarise ungroup filter anti_join inner_join bind_rows distinct pull arrange
 #' @export
 enrichedPathwayBarPlot <- function( input_table, input_go_type = NA, remove_duplicted_entries = "merge", added_columns = "comparison") {
 
@@ -1714,26 +1251,9 @@ enrichedPathwayBarPlot <- function( input_table, input_go_type = NA, remove_dupl
 
 
 
-#' @title Generate and Save GO Term Enrichment Bar Plots
-#' @description A wrapper function that creates and saves bar plots for GO enrichment
-#' results. It generates a separate plot for each GO type (e.g., BP, CC, MF) found
-#' in the input data.
-#'
-#' @param input_table The data frame of filtered and Revigo-summarized enrichment results.
-#' @param output_dir The directory to save the plots in.
-#' @param analysis_type A string used as a prefix in the output filename (e.g., "GO").
-#' @param file_suffix A character vector of file extensions (e.g., `c("png", "pdf")`)
-#'   for saving the plots.
-#' @param width The width of the output plots.
-#' @param height The height of the output plots.
-#'
-#' @return This function is called for its side effect of writing files and does not return a value.
-#'
-#' @importFrom dplyr distinct arrange pull
-#' @importFrom purrr map walk2
-#' @importFrom ggplot2 ggsave
-#' @importFrom rlang partial
-#' @export
+#'@description given input table, draw a bar plot representing the GO enrichment results.
+#'The height of each bar represents the negative log (base 10) q-values of the query proteins.
+#'@export
 enrichedGoTermBarPlot <- function( input_table, output_dir,
                                    analysis_type = "GO", file_suffix, width=10, height = 7) {
 
@@ -1772,22 +1292,11 @@ enrichedGoTermBarPlot <- function( input_table, output_dir,
 
 }
 
-#' @title Create a Word Cloud Data Frame
-#' @description Processes a vector of text (e.g., GO term names) to generate a
-#' data frame of word frequencies, suitable for creating a word cloud.
-#'
-#' @details This function performs standard text mining pre-processing steps:
-#' - Removes numbers and punctuation.
-#' - Converts text to lower case.
-#' - Removes common English stopwords.
-#' The process is based on an article by Céline Van den Rul.
-#'
-#' @param text_list A character vector of text documents (e.g., GO term descriptions).
-#'
-#' @return A data frame with two columns: `word` and `freq` (frequency of the word).
-#'
-#' @importFrom tm Corpus VectorSource tm_map removeNumbers removePunctuation stripWhitespace content_transformer removeWords stopwords TermDocumentMatrix
-#' @export
+#'@description Create a word frequency distribution table for Word Cloud generation.
+#'Based on article by Céline Van den Rul, How to Generate Word Clouds in R, Simple Steps on How and When to Use Them,
+#' https://towardsdatascience.com/create-a-word-cloud-with-r-bde3e7422e8a (accessed 7th November 2022)
+#'@export
+#'@param text_list, a vector of text (e.g. a list of GO terms name)
 createWordCloudDataFrame <- function( text_list) {
 
   docs <- Corpus(VectorSource(text_list))
@@ -1807,22 +1316,7 @@ createWordCloudDataFrame <- function( text_list) {
 
 ########################
 
-#' @title Clean Duplicate Enrichment Results
-#' @description This function resolves duplicate entries in an enrichment result table
-#' where the same pathway/term is enriched in both up- and down-regulated gene sets.
-#' It merges these duplicates into a single "Both" category, keeping the most significant p-value.
-#'
-#' @param input_table The data frame of enrichment results.
-#' @param pathway_column The unquoted column name for the pathway/term description.
-#' @param fdr_column The unquoted column name for the false discovery rate or q-value.
-#' @param gene_set_column The unquoted column name for the gene set (e.g., indicating up/down regulation).
-#'
-#' @return A data frame with duplicates resolved and an added `neg_log_10_fdr` column,
-#'   ordered by significance.
-#'
-#' @importFrom dplyr group_by summarise ungroup filter inner_join mutate anti_join bind_rows distinct pull arrange desc
-#' @importFrom stringr str_detect
-#' @export
+#'@export
 cleanDuplicatesEnrichment <- function( input_table
                                        , pathway_column = term
                                        , fdr_column = qvalue
@@ -1871,28 +1365,7 @@ cleanDuplicatesEnrichment <- function( input_table
    proteomics_go_helper
 }
 
-#' @title Plot Enrichment Bar Plot
-#' @description Creates a horizontal bar plot from enrichment results. The bars represent
-#' enriched terms, their length corresponds to significance (`-log10(FDR)`), and
-#' they are colored by gene set (e.g., up-regulated, down-regulated).
-#'
-#' @details This function first uses `cleanDuplicatesEnrichment` to resolve duplicate
-#' entries. It then creates a ggplot bar plot with pathways ordered by significance.
-#'
-#' @param input_table The data frame of enrichment results.
-#' @param pathway_column The unquoted column name for the pathway/term description.
-#' @param fdr_column The unquoted column name for the false discovery rate or q-value.
-#' @param gene_set_column The unquoted column name for the gene set.
-#' @param xlab_string The label for the x-axis.
-#' @param ylab_string The label for the y-axis.
-#' @param legend_title The title for the fill legend.
-#' @param legend_colours A character vector of colors for the fill aesthetic.
-#'
-#' @return A ggplot object.
-#'
-#' @import ggplot2
-#' @importFrom dplyr pull distinct
-#' @export
+#'@export
 plotEnrichmentBarplot <- function( input_table
                                    , pathway_column = term
                                    , fdr_column = qvalue
@@ -1937,14 +1410,6 @@ plotEnrichmentBarplot <- function( input_table
 
 
 
-#' @title Convert a Named List to a Two-Column Data Frame
-#' @description This internal helper function converts a named list (like a list of
-#' gene sets) into a two-column data frame. The first column holds the names of the
-#' list elements (categories), and the second column holds the unlisted values (genes).
-#'
-#' @param inputList A named list.
-#'
-#' @return A data frame with two columns: `categoryID` and `Gene`.
 #' @export
 list2df <- function(inputList) {
   # ldf <- lapply(1:length(inputList), function(i) {
@@ -1958,16 +1423,6 @@ list2df <- function(inputList) {
 }
 
 
-#' @title Convert a List to an igraph Graph Object
-#' @description This function takes a named list (representing categories and items,
-#' such as pathways and genes) and converts it into an undirected `igraph` graph object.
-#'
-#' @param inputList A named list, which will be converted to a two-column data frame
-#'   by `list2df`.
-#'
-#' @return An `igraph` graph object.
-#'
-#' @importFrom igraph graph.data.frame
 #' @export
 list2graph <- function(inputList) {
   x <- list2df(inputList)
@@ -1976,15 +1431,6 @@ list2graph <- function(inputList) {
 }
 
 
-#' @title Generate a Deprecation Message for a Parameter
-#' @description Creates a standardized warning message for a deprecated parameter,
-#' guiding the user on the new, correct syntax.
-#'
-#' @param parameter The name of the deprecated parameter (string).
-#' @param params_df A data frame mapping old parameter names to their new list-based syntax.
-#'   It must contain columns: `listname`, `present`, `original`.
-#'
-#' @return A character string containing the formatted warning message.
 #' @export
 get_param_change_message <- function(parameter, params_df) {
   paste0("Use '", params_df[parameter, "listname"],
@@ -1994,18 +1440,6 @@ get_param_change_message <- function(parameter, params_df) {
          " parameter will be removed in the next version.")
 }
 
-#' @title Add Alpha/Transparency to Nodes in a ggraph Plot
-#' @description Modifies a `ggraph` plot object to set the alpha (transparency)
-#' of nodes. It can highlight specified categories and genes by giving them a
-#' different alpha value than other nodes.
-#'
-#' @param p A `ggraph` plot object.
-#' @param hilight_category A character vector of category node names to highlight.
-#' @param hilight_gene A character vector of gene node names to highlight.
-#' @param alpha_nohilight The alpha value for non-highlighted nodes.
-#' @param alpha_hilight The alpha value for highlighted nodes.
-#'
-#' @return The modified `ggraph` plot object with an `alpha` column added to its data.
 #' @export
 node_add_alpha <- function(p, hilight_category, hilight_gene, alpha_nohilight, alpha_hilight) {
   alpha_node <- rep(1, nrow(p$data))
@@ -2019,14 +1453,6 @@ node_add_alpha <- function(p, hilight_category, hilight_gene, alpha_nohilight, a
 }
 
 
-#' @title Get Default enrichplot Colors
-#' @description Retrieves the default color palette used in `enrichplot` visualizations.
-#' It returns a two-color vector for gradients or a three-color vector for divergent scales.
-#' Users can override the default by setting the `enrichplot.colours` option.
-#'
-#' @param n The number of colors to return (either 2 or 3).
-#'
-#' @return A character vector of hex color codes.
 #' @export
 get_enrichplot_color <- function(n = 2) {
   colors <- getOption("enrichplot.colours")
@@ -2040,22 +1466,6 @@ get_enrichplot_color <- function(n = 2) {
   if (n == 3) return(c(colors[1], "white", colors[2]))
 }
 
-#' @title Set a Color Scale for enrichplot
-#' @description A flexible helper function to create a ggplot2 color scale (e.g.,
-#' `scale_color_continuous`, `scale_fill_gradientn`) for use in `enrichplot`
-#' visualizations. It can create continuous, 2-point gradient, or n-point gradient scales.
-#'
-#' @param colors A character vector of color hex codes. The number of colors determines
-#'   the type of scale created (2 for continuous, 3 for diverging, >3 for n-color gradient).
-#' @param type The type of scale to create: "color", "colour", or "fill".
-#' @param name The title for the color scale legend.
-#' @param .fun An optional custom scaling function to use instead of the ggplot2 defaults.
-#' @param ... Additional arguments passed to the ggplot2 scaling function.
-#'
-#' @return A ggplot2 scale object.
-#'
-#' @importFrom ggplot2 guide_colorbar
-#' @importFrom utils getFromNamespace
 #' @export
 set_enrichplot_color <- function(colors = get_enrichplot_color(2),
                                  type = "color", name = NULL, .fun = NULL, ...) {
@@ -2099,20 +1509,6 @@ set_enrichplot_color <- function(colors = get_enrichplot_color(2),
   do.call(.fun, params)
 }
 
-#' @title Add Node Labels to a ggraph Plot
-#' @description Adds text labels to nodes in a `ggraph` plot, using `ggrepel` to
-#' prevent overlapping text. It can apply a "shadow" effect by drawing a white
-#' background for the text.
-#'
-#' @param p A `ggraph` plot object.
-#' @param data The data frame containing node information (usually `p$data`).
-#' @param label_size_node The base font size for the labels.
-#' @param cex_label_node A scaling factor for the label size.
-#' @param shadowtext A logical value indicating whether to apply the shadow text effect.
-#'
-#' @return The modified `ggraph` plot object with a `geom_node_text` layer.
-#'
-#' @importFrom ggraph geom_node_text
 #' @export
 add_node_label <- function(p, data, label_size_node, cex_label_node, shadowtext) {
   # If use 'aes_(alpha =~I(alpha))' will put an error for AsIs object.
@@ -2135,60 +1531,11 @@ add_node_label <- function(p, data, label_size_node, cex_label_node, shadowtext)
   return(p)
 }
 
-#' @title Get ggrepel Segment Size Option
-#' @description A helper function to retrieve the global option for `ggrepel.segment.size`,
-#' which controls the thickness of the lines connecting labels to their points.
-#'
-#' @param default The default value to return if the option is not set. Defaults to 0.2.
-#'
-#' @return The value of the `ggrepel.segment.size` option, or the default.
 #' @export
 get_ggrepel_segsize <- function(default = 0.2) {
   getOption("ggrepel.segment.size", default = default)
 }
 
-#' @title Create a Category-Gene Network Plot (Edited)
-#' @description An edited version of `clusterProfiler::cnetplot` for visualizing the
-#' relationships between gene sets (categories) and genes. It creates a network
-#' where nodes are either categories or genes, and an edge connects a gene to a
-#' category it belongs to.
-#'
-#' @details This function is highly customizable, allowing control over layout, colors,
-#' node sizes, and labels. It can also map fold change values to gene node colors.
-#' It handles parameter deprecation gracefully by mapping old parameters to a new,
-#' list-based system (`color.params`, `cex.params`, `hilight.params`).
-#'
-#' @param geneSets A named list of character vectors, where each element is a gene set
-#'   and the name is the category.
-#' @param showCategory The number of categories to display, or a character vector of
-#'   category names to display.
-#' @param foldChange A named numeric vector of fold changes for genes.
-#' @param layout The layout algorithm to use for the network (e.g., "kk", "fr").
-#' @param colorEdge A logical value. If `TRUE`, edges are colored by category.
-#' @param circular A logical value. If `TRUE`, a circular layout is used.
-#' @param node_label Which nodes to label: "all", "gene", "category", or "none".
-#' @param cex_category,cex_gene,cex_label_category,cex_label_gene Deprecated parameters for node and label sizes.
-#' @param color_category,color_gene Deprecated parameters for node colors.
-#' @param shadowtext Which labels to apply a shadow effect to: "all", "gene", "category", or "none".
-#' @param color.params A list controlling color aesthetics:
-#'   - `foldChange`: Named numeric vector for gene colors.
-#'   - `edge`: Logical, whether to color edges by category.
-#'   - `category`: Color for category nodes.
-#'   - `gene`: Default color for gene nodes.
-#' @param cex.params A list controlling size aesthetics:
-#'   - `category_node`, `gene_node`: Scaling factors for node sizes.
-#'   - `category_label`, `gene_label`: Scaling factors for label sizes.
-#' @param hilight.params A list controlling highlighting:
-#'   - `category`: Character vector of categories to highlight.
-#'   - `alpha_hilight`, `alpha_no_hilight`: Alpha values for highlighted and non-highlighted nodes/edges.
-#' @param ... Additional parameters.
-#'
-#' @return A `ggraph` plot object.
-#'
-#' @import ggraph
-#' @importFrom ggplot2 theme_void guides guide_legend
-#' @importFrom ggraph geom_edge_arc geom_edge_link geom_node_point scale_edge_width
-#' @importFrom ggnewscale new_scale_color
 #' @export
 cnetplotEdited <- function(
     geneSets,
@@ -2434,17 +1781,6 @@ cnetplotEdited <- function(
 ##################################S
 
 
-#' @title Make Fold Change Vector Readable
-#' @description A helper function to translate gene identifiers in a fold change vector
-#' to gene symbols if the input enrichment object `x` is in a "readable" format
-#' (i.e., contains a mapping from gene IDs to symbols).
-#'
-#' @param x An enrichment result object (e.g., `enrichResult` or `gseaResult`) which
-#'   may contain a `gene2Symbol` mapping.
-#' @param foldChange A named numeric vector of fold changes, where names are gene IDs.
-#'
-#' @return A named numeric vector of fold changes with names translated to gene symbols,
-#'   if possible. Otherwise, the original vector is returned.
 fc_readable <- function(x, foldChange = NULL) {
   if (is.null(foldChange))
     return(NULL)
@@ -2463,18 +1799,6 @@ fc_readable <- function(x, foldChange = NULL) {
 }
 
 
-#' @title Update `showCategory` Parameter
-#' @description A helper function to process the `showCategory` parameter. If it's a
-#' number, it ensures it's not larger than the total number of categories. If it's a
-#' character vector of category names, it filters them to ensure they exist in the
-#' results.
-#'
-#' @param x An enrichment result object or a list of gene sets.
-#' @param showCategory A numeric value indicating the number of top categories to show,
-#'   or a character vector of category names to show.
-#'
-#' @return An integer or a character vector, representing the validated number or names
-#'   of categories to display.
 #' @export
 update_n <- function(x, showCategory) {
   if (!is.numeric(showCategory)) {
@@ -2500,18 +1824,6 @@ update_n <- function(x, showCategory) {
   return(n)
 }
 
-#' @title Extract Gene Sets from an Enrichment Object
-#' @description Extracts the gene sets (e.g., pathways and their associated genes) from
-#' an enrichment result object or a list. It can select a specific number of top
-#' categories or a specific set of categories by name.
-#'
-#' @param x An enrichment result object (`enrichResult`, `gseaResult`) or a named list of gene sets.
-#' @param n The number of top gene sets to extract, or a character vector of gene set names to extract.
-#'
-#' @return A named list where each element is a character vector of genes, and the
-#'   names are the gene set descriptions.
-#'
-#' @importFrom DOSE geneInCategory
 #' @export
 extract_geneSets <- function(x, n) {
   n <- update_n(x, n)
@@ -2532,40 +1844,36 @@ extract_geneSets <- function(x, n) {
 
 ########
 
-#' @title Protein Pathway Enrichment Analysis Helper
-#' @description This function performs pathway enrichment analysis for a single
-#' differential expression contrast. It identifies significant up- and down-regulated
-#' proteins and runs GO enrichment analysis against a background set.
+#' Helper function to perform protein pathway enrichment analysis for a single contrast
 #'
-#' @details
-#' This is a helper for `enrichProteinsPathways`. Its main steps are:
-#' 1.  Clean and prepare protein IDs.
-#' 2.  Download or load cached UniProt annotation data.
-#' 3.  Identify significant proteins based on specified thresholds.
-#' 4.  Run GO enrichment for positive and negative sets separately using `runOneGoEnrichmentInOutFunction`.
-#' 5.  Combine and return the results.
+#' @description
+#' This function performs pathway enrichment analysis on protein data using GO terms and gene symbols
+#' downloaded from UniProt. The data is cached for future use to improve performance.
 #'
-#' @param de_analysis_results A list object with `de_proteins_wide` and `significant_rows`.
-#' @param organism_taxid NCBI taxonomy ID for the organism (e.g., "9606").
-#' @param min_gene_set_size Minimum number of genes in a gene set.
-#' @param max_gene_set_size Maximum number of genes in a gene set.
-#' @param p_val_thresh P-value threshold for enrichment significance.
-#' @param protein_p_val_thresh FDR/q-value threshold for significant proteins.
-#' @param cache_dir Directory to store cached UniProt data.
-#' @param cache_file Name of the cache file.
-#' @param use_cached Logical, whether to use cached data.
-#' @param protein_id_delimiter Delimiter in the protein ID column.
-#' @param protein_id_column Name of the protein ID column.
+#' @param de_analysis_results Output from deAnalysisWrapperFunction containing differential expression results
+#' @param organism_taxid NCBI taxonomy ID for the organism (e.g., "9606" for human)
+#' @param min_gene_set_size Minimum number of genes in a gene set (default: 4)
+#' @param max_gene_set_size Maximum number of genes in a gene set (default: 200)
+#' @param p_val_thresh P-value threshold for enrichment significance (default: 0.05)
+#' @param protein_p_val_thresh P-value threshold for protein significance (default: 0.05)
+#' @param cache_dir Directory to store cached UniProt data (default: "cache")
+#' @param output_dir Directory for output files (default: "proteins_pathways_enricher")
+#' @param use_cached Whether to use cached data if available (default: TRUE)
+#' @param protein_id_delimiter Delimiter used in protein IDs (default: ":")
+#' @param protein_id_column Name of the protein ID column (default: "Protein.Ids")
 #'
-#' @return A data frame with enrichment results for the contrast, including a `directionality` column.
+#' @return A data frame containing enrichment results
 #'
-#' @importFrom UniProt.ws UniProt.ws
-#' @importFrom GO.db GOTERM
-#' @importFrom AnnotationDbi Term Ontology
-#' @importFrom dplyr select distinct mutate filter pull left_join case_when bind_rows sym
-#' @importFrom tidyr pivot_longer separate_rows
-#' @importFrom purrr map_chr
-#' @importFrom stringr str_split
+#' @import UniProt.ws
+#' @import clusterProfiler
+#' @import GO.db
+#' @import dplyr
+#' @import tidyr
+#' @import ggplot2
+#' @import plotly
+#' @importFrom purrr map map_chr walk
+#' @importFrom stringr str_split str_replace_all
+#'
 #' @export
 enrichProteinsPathwaysHelper <- function(de_analysis_results,
                                   organism_taxid,
@@ -2723,25 +2031,29 @@ enrichProteinsPathwaysHelper <- function(de_analysis_results,
   return(enrichment_results)
 }
 
-#' @title Perform Protein Pathway Enrichment Across Multiple Contrasts
-#' @description Main wrapper to run protein GO pathway enrichment. It iterates over a list
-#' of differential expression results and performs enrichment analysis for each contrast.
+#' Perform protein pathway enrichment analysis across multiple contrasts
 #'
-#' @param de_analysis_results_list A named list of DE results objects.
-#' @param taxon_id NCBI taxonomy ID for the organism.
-#' @param protein_id_delimiter Delimiter in the protein ID column.
-#' @param protein_p_val_thresh FDR/q-value threshold for significant proteins.
-#' @param min_gene_set_size Minimum gene set size.
-#' @param max_gene_set_size Maximum gene set size.
-#' @param p_val_thresh P-value threshold for enrichment.
-#' @param cache_dir Directory for cached data.
-#' @param cache_file Filename for the cache file.
-#' @param use_cached Logical, whether to use cached data.
+#' @description
+#' This function performs pathway enrichment analysis across multiple contrasts in a proteomics dataset.
+#' It processes each contrast separately and combines the results into a single data frame.
 #'
-#' @return A single data frame of combined enrichment results from all contrasts.
+#' @param de_analysis_results_list List of differential expression results for each contrast
+#' @param taxon_id NCBI taxonomy ID for the organism (e.g., "9606" for human)
+#' @param pathway_dir Directory for storing pathway analysis results
+#' @param protein_id_delimiter Delimiter used in protein IDs (default: ":")
+#' @param protein_p_val_thresh P-value threshold for protein significance (default: 0.05)
+#' @param min_gene_set_size Minimum number of genes in a gene set (default: 4)
+#' @param max_gene_set_size Maximum number of genes in a gene set (default: 200)
+#' @param p_val_thresh P-value threshold for enrichment significance (default: 0.05)
+#' @param cache_dir Directory to store cached UniProt data (default: "cache")
+#' @param cache_file Name of the cache file for UniProt annotations (default: "uniprot_annotations.RDS")
+#' @param use_cached Whether to use cached data if available (default: TRUE)
 #'
-#' @importFrom dplyr bind_rows
+#' @return A data frame containing combined enrichment results across all contrasts
+#'
+#' @import dplyr
 #' @importFrom purrr map set_names
+#'
 #' @export
 enrichProteinsPathways <- function(de_analysis_results_list,
                                  taxon_id,
@@ -2785,20 +2097,7 @@ enrichProteinsPathways <- function(de_analysis_results_list,
   return(go_results_table_by_group)
 }
 
-#' @title Download and Cache UniProt Annotation Data
-#' @description Downloads protein annotation from UniProt for a list of protein IDs,
-#' with caching to avoid re-downloads. If a cache exists, it only fetches data for new IDs.
-#'
-#' @param protein_ids A data frame with a `uniprot_acc` column.
-#' @param cache_file Full path to the RDS cache file.
-#' @param uniprot_handle An active `UniProt.ws` handle.
-#' @param protein_id_delimiter Not used directly, for consistency.
-#'
-#' @return A data frame of UniProt annotations, also saved to the cache.
-#'
-#' @importFrom dplyr filter bind_rows rename mutate
-#' @importFrom purrr map_dbl
-#' @export
+#'@export
 download_uniprot_data <- function(protein_ids, cache_file, uniprot_handle, protein_id_delimiter = ":") {
   # Ensure cache directory exists
   cache_dir <- dirname(cache_file)
@@ -2918,25 +2217,13 @@ download_uniprot_data <- function(protein_ids, cache_file, uniprot_handle, prote
   return(NULL)
 }
 
-#' @title Convert UniProt GO IDs to Terms and Types
-#' @description Parses a column of semicolon-separated GO IDs, expands the table to have
-#' one GO ID per row, and annotates it with the corresponding term and type (BP, CC, MF).
-#'
-#' @param uniprot_dat A data frame from a UniProt query.
-#' @param uniprot_id_column Unquoted column name for UniProt accessions.
-#' @param go_id_column Unquoted column name for GO IDs.
-#' @param gene_name_column Unquoted column name for gene names.
-#' @param sep Separator for GO IDs.
-#' @param goterms A GO term dictionary from `AnnotationDbi::Term(GO.db::GOTERM)`.
-#' @param gotypes A GO type dictionary from `AnnotationDbi::Ontology(GO.db::GOTERM)`.
-#'
-#' @return A long-format data frame with columns `uniprot_acc`, `go_id`, `go_term`, `go_type`.
-#'
-#' @importFrom tidyr separate_rows
-#' @importFrom dplyr distinct filter mutate rename
-#' @importFrom purrr map_chr
-#' @importFrom GO.db GOTERM
-#' @importFrom AnnotationDbi Term Ontology
+#' Convert UniProt GO IDs to terms without grouping or pivoting
+#' @param uniprot_dat  a table with uniprot accessions and a column with GO-ID
+#' @param uniprot_id_column The name of the column with the uniprot accession, as a tidyverse header format, not a string
+#' @param go_id_column The name of the column with the GO-ID, as a tidyverse header format, not a string
+#' @param goterms Output from running \code{goterms <- Term(GOTERM)} from the GO.db library.
+#' @param gotypes Output from running \code{gotypes <- Ontology(GOTERM)} from the GO.db library.
+#' @return A table with columns for uniprot_id, go_id, go_term, and go_type
 #' @export
 uniprotGoIdToTermSimple <- function(uniprot_dat
                                    , uniprot_id_column = UNIPROTKB
@@ -2981,16 +2268,9 @@ uniprotGoIdToTermSimple <- function(uniprot_dat
   return(uniprot_acc_to_go_term)
 }
 
-#' @title Clean Protein Identifiers
-#' @description Internal helper to clean protein IDs, typically by removing
-#' isoform suffixes (e.g., "-1") from UniProt accessions.
-#'
-#' @param ids A character vector of protein IDs.
-#'
-#' @return A character vector of cleaned protein IDs.
-#'
-#' @importFrom stringr str_split str_replace_all
-#' @importFrom purrr map_chr
+#' Helper function to clean up protein IDs
+#' @param ids Vector of protein IDs to clean
+#' @return Cleaned protein IDs
 #' @export
 .cleanProteinIds <- function(ids) {
   ids |>

@@ -1,15 +1,4 @@
 #---------------------------------------------------------------------------------------
-#' @title Save Computation Time Record
-#' @description This function records the time elapsed for a specific computation step
-#' into a pre-initialized data frame.
-#'
-#' @param compute_time_record A data frame with columns "step_name" and "time_elapsed"
-#'   to store the records.
-#' @param step_name A character string naming the computation step.
-#' @param toc_output The output from `tictoc::toc()`, which contains the callback message
-#'   with the elapsed time.
-#'
-#' @return The updated `compute_time_record` data frame.
 #' @export
 saveTimeRecord <- function ( compute_time_record, step_name, toc_output ) {
 
@@ -31,13 +20,7 @@ saveTimeRecord <- function ( compute_time_record, step_name, toc_output ) {
 # Peptide intensity filtering helper functions
 
 
-#' @title Count the Number of Samples
-#' @description Counts the number of unique samples in a given data table.
-#'
-#' @param input_table The input data frame.
-#' @param sample_id_column The unquoted column name that contains the sample identifiers.
-#'
-#' @return An integer representing the number of unique samples.
+# Count the number of samples in the input table
 #' @export
 count_num_samples <- function( input_table
                                , sample_id_column = Run) {
@@ -50,13 +33,7 @@ count_num_samples <- function( input_table
 
 
 
-#' @title Count the Number of Proteins
-#' @description Counts the number of unique proteins in a given data table.
-#'
-#' @param input_table The input data frame.
-#' @param protein_id_column The unquoted column name that contains the protein identifiers.
-#'
-#' @return An integer representing the number of unique proteins.
+# Count the number of peptides in the input table
 #' @export
 count_num_proteins <- function( input_table
                                 , protein_id_column = Protein.Ids) {
@@ -68,14 +45,7 @@ count_num_proteins <- function( input_table
 }
 
 
-#' @title Count the Number of Peptides
-#' @description Counts the number of unique peptide-protein combinations in a given data table.
-#'
-#' @param input_table The input data frame.
-#' @param protein_id_column The unquoted column name that contains the protein identifiers.
-#' @param peptide_sequence_column The unquoted column name that contains the peptide sequences.
-#'
-#' @return An integer representing the number of unique peptides.
+# Count the number of peptides in the input table
 #' @export
 count_num_peptides <- function( input_table
                                 , protein_id_column = Protein.Ids
@@ -91,18 +61,8 @@ count_num_peptides <- function( input_table
 
 
 
-#' @title Plot Peptide and Protein Counts Per Sample
-#' @description Generates a plot showing the number of unique proteins and unique
-#' peptides identified in each sample.
-#'
-#' @param input_table The input data frame, typically peptide-level data.
-#' @param intensity_column The unquoted column name for intensity values, used to filter out non-quantified entries.
-#' @param protein_id_column The unquoted column name for protein identifiers.
-#' @param peptide_id_column The unquoted column name for peptide identifiers.
-#' @param sample_id_column The unquoted column name for sample identifiers.
-#' @param peptide_sequence_column The unquoted column name for peptide sequences (legacy, same as peptide_id_column).
-#'
-#' @return A ggplot object showing protein and peptide counts per sample.
+#' plotPeptidesProteinsCountsPerSampleHelper
+#' @description Plot the number of proteins and peptides identified per sample
 #' @export
 plotPeptidesProteinsCountsPerSampleHelper <- function( input_table
                                                  , intensity_column = Peptide.RawQuantity
@@ -152,21 +112,7 @@ plotPeptidesProteinsCountsPerSampleHelper <- function( input_table
 }
 
 
-#' @title Filter Peptides by Q-value and Proteotypic Status
-#' @description This helper function filters a peptide table to keep only high-confidence,
-#' proteotypic peptides based on specified q-value thresholds.
-#'
-#' @param input_table The input data frame of peptide-spectrum matches.
-#' @param qvalue_threshold The maximum q-value for a peptide to be retained.
-#' @param global_qvalue_threshold The maximum global q-value to be retained.
-#' @param choose_only_proteotypic_peptide A flag (typically 1 or TRUE) to select only proteotypic peptides.
-#' @param input_matrix_column_ids A character vector of column names to keep in the output table.
-#' @param protein_id_column The unquoted column name for protein identifiers.
-#' @param q_value_column The unquoted column name for the peptide q-value.
-#' @param global_q_value_column The unquoted column name for the global q-value.
-#' @param proteotypic_peptide_sequence_column The unquoted column name indicating if a peptide is proteotypic.
-#'
-#' @return A data frame containing the filtered peptides.
+#' @description Keep spectrum-peptide matches that is within q-value threshold and are proteotypic
 #' @export
 srlQvalueProteotypicPeptideCleanHelper <- function(input_table
                                              , qvalue_threshold = 0.01
@@ -197,21 +143,7 @@ srlQvalueProteotypicPeptideCleanHelper <- function(input_table
 
 }
 
-#' @title Roll Up Precursor Quantities to Peptide Level
-#' @description This helper function aggregates precursor-level quantities to the
-#' peptide level. It sums the quantities of different precursor charge states and
-#' modifications for each unique peptide sequence.
-#'
-#' @param input_table The input data frame of precursor-level data.
-#' @param sample_id_column The unquoted column name for sample identifiers.
-#' @param protein_id_column The unquoted column name for protein identifiers.
-#' @param peptide_sequence_column The unquoted column name for the (stripped) peptide sequence.
-#' @param modified_peptide_sequence_column The unquoted column name for the modified peptide sequence.
-#' @param precursor_quantity_column The unquoted column name for raw precursor quantity.
-#' @param precursor_normalised_column The unquoted column name for normalized precursor quantity.
-#' @param core_utilisation The number of cores for parallel processing.
-#'
-#' @return A data frame with aggregated peptide-level quantities.
+#' @description  Peptides of with charges and modifications are rolled up (summed) together
 #' @export
 rollUpPrecursorToPeptideHelper <- function( input_table
                                       , sample_id_column = Run
@@ -259,21 +191,8 @@ rollUpPrecursorToPeptideHelper <- function( input_table
   peptide_normalised_tbl
 }
 
-#' @title Filter Peptides by Intensity Threshold
-#' @description This helper filters out peptides that have low abundance across a
-#' large proportion of samples.
-#'
-#' @param input_table The input data frame of peptide-level data.
-#' @param min_peptide_intensity_threshold The minimum intensity for a peptide to be considered "present".
-#' @param peptides_proportion_of_samples_below_cutoff The maximum proportion of samples where a
-#'   peptide can be below the threshold. If a peptide exceeds this, it is removed.
-#' @param protein_id_column The unquoted column name for protein identifiers.
-#' @param peptide_sequence_column The unquoted column name for peptide sequences.
-#' @param peptide_quantity_column The unquoted column name for peptide quantity.
-#' @param core_utilisation The number of cores for parallel processing.
-#'
-#' @return A data frame with low-intensity peptides filtered out.
 #' @export
+#' @description Remove peptide based on the intensity threshold and the proportion of samples below the threshold
 peptideIntensityFilteringHelper <- function(input_table
                                       , min_peptide_intensity_threshold = 15
                                       , peptides_proportion_of_samples_below_cutoff = 1
@@ -321,25 +240,18 @@ peptideIntensityFilteringHelper <- function(input_table
 
 
 
-#' @title Filter Peptides by Percentage of Missing Values in Groups
-#' @description This helper function removes peptides that have a high percentage of
-#' missing values within experimental groups. A peptide is removed if it fails to
-#' meet the `groupwise_percentage_cutoff` in more than `max_groups_percentage_cutoff`
-#' of the groups.
-#'
-#' @param input_table The input data frame of peptide-level data.
-#' @param design_matrix A data frame describing the experimental design.
-#' @param sample_id The unquoted column name for sample identifiers in both tables.
-#' @param protein_id_column The unquoted column name for protein identifiers.
-#' @param peptide_sequence_column The unquoted column name for peptide sequences.
-#' @param grouping_variable The unquoted column name in the design matrix for grouping samples.
-#' @param groupwise_percentage_cutoff The maximum percentage of missing values allowed within a single group.
-#' @param max_groups_percentage_cutoff The maximum percentage of groups that can fail the `groupwise_percentage_cutoff`.
-#' @param abundance_threshold An intensity threshold below which values are considered missing.
-#' @param abundance_column The name of the abundance column as a string.
-#'
-#' @return A data frame with the filtered peptides.
-#' @export
+#'@param input_table An input table with a column containing the row ID and the rest of the columns representing abundance values for each sample.
+#'@param cols A tidyselect command to select the columns. This includes the functions starts_with(), ends_with(), contains(), matches(), and num_range()
+#'@param design_matrix A data frame with a column containing the sample ID (as per the sample_id param) and the experimental group (as per the group param). Each row as the sample ID as row name in the data frame.
+#'@param sample_id The name of the column in design_matrix table that has the sample ID.
+#'@param row_id A unique ID for each row of the 'input_table' variable.
+#'@param group_column The name of the column in design_matrix table that has the experimental group.
+#'@param groupwise_percentage_cutoff The maximum percentage of values below threshold allow in each group for a peptide .
+#'@param max_groups_percentage_cutoff The maximum percentage of groups allowed with too many samples with peptide abundance values below threshold.
+#'@param abundance_threshold Abundance threshold in which the protein in the sample must be above for it to be considered for inclusion into data analysis.
+#'@param temporary_abundance_column The name of a temporary column to keep the abundance value you want to filter upon
+#'@return A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values.
+#'@export
 removePeptidesWithMissingValuesPercentHelper <- function(input_table
                                                , design_matrix
                                                , sample_id
@@ -401,18 +313,13 @@ removePeptidesWithMissingValuesPercentHelper <- function(input_table
 
 }
 
-#' @title Filter Proteins by Minimum Number of Peptides
-#' @description This helper function filters out proteins that are not supported by a
-#' minimum number of unique peptides or peptidoforms.
-#'
-#' @param input_table The input data frame of peptide-level data.
-#' @param num_peptides_per_protein_thresh The minimum number of unique peptides required per protein.
-#' @param num_peptidoforms_per_protein_thresh The minimum number of unique peptidoforms (e.g., modified sequences) required per protein.
-#' @param protein_id_column The unquoted column name for protein identifiers.
-#' @param core_utilisation The number of cores for parallel processing.
-#'
-#' @return A data frame with filtered protein-peptide data.
 #' @export
+#' @description Keep the proteins only if they have two or more peptides.
+#' @param input_table Peptide quantities table in long format
+#' @param num_peptides_per_protein_thresh Minimum number of peptides per protein
+#' @param num_peptidoforms_per_protein_thresh Minimum number of peptidoforms per protein
+#' @param protein_id_column Protein ID column name as string
+#' @param core_utilisation core_utilisation to use for parallel processing
 filterMinNumPeptidesPerProteinHelper <- function( input_table
           , num_peptides_per_protein_thresh = 1
           , num_peptidoforms_per_protein_thresh = 2
@@ -457,18 +364,9 @@ filterMinNumPeptidesPerProteinHelper <- function( input_table
 }
 
 
-#' @title Filter Samples by Minimum Number of Peptides
-#' @description This helper function removes samples that have fewer than a specified
-#' number of identified peptides.
-#'
-#' @param input_table The input data frame of peptide-level data.
-#' @param peptides_per_sample_cutoff The minimum number of peptides required for a sample to be kept.
-#' @param sample_id_column The unquoted column name for sample identifiers.
-#' @param core_utilisation The number of cores for parallel processing.
-#' @param inclusion_list A character vector of sample IDs to keep regardless of their peptide count.
-#'
-#' @return A data frame with low-peptide-count samples removed.
 #' @export
+#' @description Remove sample if it has less than a certain number of peptides identified
+#' @param List of samples to keep regardless of how many peptides it has because it is am important sample
 filterMinNumPeptidesPerSampleHelper <- function ( input_table
                                             , peptides_per_sample_cutoff = 5000
                                             , sample_id_column = Run
@@ -507,15 +405,8 @@ filterMinNumPeptidesPerSampleHelper <- function ( input_table
 
 #--------------------------------------------------------------------------------------------------------------------------
 
-#' @title Log2 Transform with Pseudo-Count
-#' @description This function applies a log2 transformation to a numeric matrix. It adds
-#' a small pseudo-count to non-zero values to avoid issues with zero values before
-#' transformation.
-#'
-#' @param input_matrix A numeric matrix of abundance data.
-#'
-#' @return The log2-transformed matrix.
 #' @export
+#' @description Log 2 transformation with pseudo count
 log2Transformation <- function(input_matrix) {
 
   pseudo_count <- min( input_matrix[input_matrix> 0] , na.rm=TRUE)/100
@@ -528,15 +419,10 @@ log2Transformation <- function(input_matrix) {
 
 #--------------------------------------------------------------------------------------------------------------------------
 
-#' @title Get Pairs of Samples for Comparison
-#' @description Creates a data frame of all unique pairs of samples within the same
-#' technical replicate group, for use in correlation analysis.
-#'
-#' @param input_table A data frame containing sample IDs and their corresponding replicate group.
-#' @param run_id_column The name of the sample ID column as a string.
-#' @param replicate_group_column The name of the replicate group column as a string.
-#'
-#' @return A data frame with three columns: the replicate group, sample ID for the first sample in a pair, and sample ID for the second.
+#'@param input_table A table with two columns, the Run ID column and the technical replicate group column
+#'@param run_id_column A string representing the name of the column with the Run ID (or sample ID)
+#'@param replicate_group_column A string representing the name of the column with the technical replicate group
+#'@return A table with three columns, the technical replicate group column, run ID X column, and run ID Y column
 #' @export
 getPairsOfSamplesTable <- function ( input_table
                                      , run_id_column
@@ -554,19 +440,15 @@ getPairsOfSamplesTable <- function ( input_table
 
 
 
-#' @title Calculate Pearson Correlation Between Two Samples
-#' @description Calculates the Pearson correlation coefficient for peptide abundances
-#' between a specified pair of samples.
-#'
-#' @param ms_filename_x The identifier for the first sample.
-#' @param ms_filename_y The identifier for the second sample.
-#' @param input_table A data frame containing peptide-level data for multiple samples.
-#' @param sample_id_column The unquoted column name for sample identifiers.
-#' @param protein_id_column The unquoted column name for protein identifiers.
-#' @param peptide_sequence_column The unquoted column name for peptide sequences.
-#' @param peptide_normalised_column The name of the normalized abundance column as a string.
-#'
-#' @return The Pearson correlation value, or `NA` if no common peptides are found.
+#'@description Calculate the Pearson correlation of the abundances of peptides between two samples X and Y.
+#'@param ms_filename_x A string representing the sample file name X (for a pair of sample in the same technical replicate group) for correlation score calculation.
+#'@param ms_filename_y A string representing the sample file name Y (for a pair of sample in the same technical replicate group) for correlation score calculation.
+#'@param input_table A data frame with the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalised peptide abundances
+#'@param sample_id_column Sample ID column, tidyverse format (default = Run).
+#'@param protein_id_column Protein accession column, tidyverse format (default = Protein.Ids).
+#'@param peptide_sequence_column Peptide sequence column, tidyverse fromat (default =  Stripped.Sequence).
+#'@param peptide_normalised_column Normalised peptide abundance column name as string (default = "Peptide.Normalised").
+#'@return The pearson correlation value of the abundances of peptides between two samples X and Y.
 #' @export
 calulatePearsonCorrelation <- function( ms_filename_x, ms_filename_y, input_table
                                         , sample_id_column = Run
@@ -603,21 +485,6 @@ calulatePearsonCorrelation <- function( ms_filename_x, ms_filename_y, input_tabl
 }
 
 
-#' @title Calculate Pearson Correlation for All Sample Pairs
-#' @description A helper function that iterates through all pairs of samples within
-#' replicate groups and calculates their Pearson correlation using parallel processing.
-#'
-#' @param samples_id_tbl A data frame with sample IDs and replicate group information.
-#' @param run_id_column The name of the sample ID column in `samples_id_tbl` as a string.
-#' @param replicate_group_column The name of the replicate group column in `samples_id_tbl` as a string.
-#' @param input_table The main data frame with peptide abundance data.
-#' @param num_of_cores The number of cores to use for parallel computation.
-#' @param sample_id_column The unquoted column name for sample IDs in `input_table`.
-#' @param protein_id_column The unquoted column name for protein IDs in `input_table`.
-#' @param peptide_sequence_column The unquoted column name for peptide sequences in `input_table`.
-#' @param peptide_normalised_column The name of the abundance column in `input_table` as a string.
-#'
-#' @return A data frame with the Pearson correlation for each pair of samples.
 #' @export
 calulatePearsonCorrelationForSamplePairsHelper <- function( samples_id_tbl
                                                       , run_id_column = "ms_filename"
@@ -656,19 +523,15 @@ calulatePearsonCorrelationForSamplePairsHelper <- function( samples_id_tbl
 }
 
 
-#' @title Filter Samples by Peptide Correlation Threshold
-#' @description Removes samples that are poorly correlated with their technical replicates,
-#' based on a pre-calculated table of pairwise correlations.
-#'
-#' @param pearson_correlation_per_pair A data frame of pairwise sample correlations.
-#' @param peptide_keep_samples_with_min_num_peptides The main peptide data frame to be filtered.
-#' @param min_pearson_correlation_threshold The minimum correlation for a sample to be kept.
-#' @param filename_column_x The unquoted column name for the first sample in a pair.
-#' @param filename_column_y The unquoted column name for the second sample in a pair.
-#' @param correlation_column The unquoted column name for the correlation value.
-#' @param filename_id_column The name of the sample ID column in the main data frame as a string.
-#'
-#' @return A filtered data frame containing only the high-correlation samples.
+#'@description Remove samples which is correlated with any technical replicate samples
+#'@param pearson_correlation_per_pair A data frame with the following columns: 1. ID of technical replicate group, 2. sample file name X, 3. sample file name Y, 4. Pearson correlation of the abundances of peptides between sample X and Y.
+#'@param peptide_keep_samples_with_min_num_peptides A data frame with the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalised peptide abundances
+#'@param min_pearson_correlation_threshold Minimum pearson correlation for a pair of files to be considered to be consistent and kept for further analysis
+#'@param filename_column_x Name of column containing the sample file name X (for a pair of sample in the same technical replicate group). Tidyverse column header format, not a string.
+#'@param filename_column_y Name of column containing the sample file name Y (for a pair of sample in the same technical replicate group). Tidyverse column header format, not a string.
+#'@param correlation_column Name of column containing the Pearson's correlation score between Sample X and Y. Tidyverse column header format, not a string.
+#'@param filename_id_column A string indicating the name of column that contains the sample ID or Run ID in the data frame `peptide_keep_samples_with_min_num_peptides`.
+#'@return A table without samples that are poorly correlated with the rest of the samples in the technical replicate group. Contains the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalised peptide abundances
 #' @export
 filterSamplesByPeptideCorrelationThreshold <- function(pearson_correlation_per_pair
                                                 , peptide_keep_samples_with_min_num_peptides
@@ -693,19 +556,6 @@ filterSamplesByPeptideCorrelationThreshold <- function(pearson_correlation_per_p
 
 }
 
-#' @title Find Sample Pairs Below Correlation Threshold
-#' @description Identifies pairs of samples that fall below a specified Pearson
-#' correlation threshold.
-#'
-#' @param pearson_correlation_per_pair A data frame of pairwise sample correlations.
-#' @param peptide_keep_samples_with_min_num_peptides The main peptide data frame (used to define the universe of samples).
-#' @param min_pearson_correlation_threshold The correlation threshold.
-#' @param filename_column_x The unquoted column name for the first sample in a pair.
-#' @param filename_column_y The unquoted column name for the second sample in a pair.
-#' @param correlation_column The unquoted column name for the correlation value.
-#' @param filename_id_column The name of the sample ID column in the main data frame as a string.
-#'
-#' @return A data frame listing the sample pairs that are below the correlation threshold.
 #' @export
 findSamplesPairBelowPeptideCorrelationThreshold <- function(pearson_correlation_per_pair
                                                      , peptide_keep_samples_with_min_num_peptides
@@ -736,19 +586,16 @@ findSamplesPairBelowPeptideCorrelationThreshold <- function(pearson_correlation_
 #---------------------------------------------------------------------------------------
 
 
-#' @title Helper to Filter Samples by Protein Correlation
-#' @description A helper function that filters a protein intensity matrix, keeping only
-#' the columns (samples) that meet a certain correlation threshold with their replicates.
-#'
-#' @param pearson_correlation_per_pair A data frame of pairwise sample correlations.
-#' @param protein_intensity_table A wide-format data frame with proteins as rows and samples as columns.
-#' @param min_pearson_correlation_threshold The minimum correlation for a sample to be kept.
-#' @param filename_column_x The unquoted column name for the first sample in a pair.
-#' @param filename_column_y The unquoted column name for the second sample in a pair.
-#' @param protein_id_column The unquoted column name for protein identifiers.
-#' @param correlation_column The unquoted column name for the correlation value.
-#'
-#' @return A filtered protein intensity data frame.
+#'@description Remove samples which is correlated with any technical replicate samples
+#'@param protein_intensity_table A data frame with the following columns: 1. ID of technical replicate group, 2. sample file name X, 3. sample file name Y, 4. Pearson correlation of the abundances of peptides between sample X and Y.
+#'@param peptide_keep_samples_with_min_num_peptides A data frame with the proteins as rows and samples ID as columns.
+#'@param min_pearson_correlation_threshold Minimum pearson correlation for a pair of files to be considered to be consistent and kept for further analysis
+#'@param filename_column_x Name of column containing the sample file name X (for a pair of sample in the same technical replicate group). Tidyverse column header format, not a string.
+#'@param filename_column_y Name of column containing the sample file name Y (for a pair of sample in the same technical replicate group). Tidyverse column header format, not a string.
+#'@param protein_id_column Name of column containing the protein ID. Tidyverse column header format, not a string.
+#'@param correlation_column Name of column containing the Pearson's correlation score between Sample X and Y. Tidyverse column header format, not a string.
+#'@param filename_id_column A string indicating the name of column that contains the sample ID or Run ID in the data frame `peptide_keep_samples_with_min_num_peptides`.
+#'@return A table without samples that are poorly correlated with the rest of the samples in the technical replicate group. Contains the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalised peptide abundances
 #' @export
 filterSamplesByProteinCorrelationThresholdHelper <- function(pearson_correlation_per_pair
                                                        , protein_intensity_table
@@ -788,21 +635,9 @@ filterSamplesByProteinCorrelationThresholdHelper <- function(pearson_correlation
 }
 
 #---------------------------------------------------------------------------------------
-#' @title Remove Peptides with Only One Replicate
-#' @description This helper function removes peptides that are observed in only one
-#' technical replicate within any sample group. This helps to filter out less
-#' reliable identifications.
-#'
-#' @param input_table The input data frame of peptide-level data.
-#' @param samples_id_tbl A data frame with sample IDs and their corresponding replicate groups.
-#' @param input_table_sample_id_column The unquoted column name for sample IDs in `input_table`.
-#' @param sample_id_tbl_sample_id_column The unquoted column name for sample IDs in `samples_id_tbl`.
-#' @param replicate_group_column The unquoted column name for replicate groups in `samples_id_tbl`.
-#' @param protein_id_column The unquoted column name for protein identifiers.
-#' @param peptide_sequence_column The unquoted column name for peptide sequences.
-#' @param core_utilisation The number of cores for parallel processing.
-#'
-#' @return A data frame with the filtered peptides.
+#' @description Remove peptides that only have data for one technical replicate for all sample.
+#' This can be repurposed for removing peptides that only have one biological replicates for all experimental groups.
+#' This function can be repurposed for filtering on proteins as well (we just have to create a dummy variable for peptide_sequence_column)
 #' @export
 removePeptidesWithOnlyOneReplicateHelper <- function(input_table
                                                , samples_id_tbl
@@ -847,19 +682,8 @@ removePeptidesWithOnlyOneReplicateHelper <- function(input_table
 }
 
 #---------------------------------------------------------------------------------------
-#' @title Remove Proteins with Only One Replicate
-#' @description This function removes proteins that are observed in only one technical
-#' replicate within any sample group.
-#'
-#' @param input_table The input data frame of protein-level data.
-#' @param samples_id_tbl A data frame with sample IDs and their corresponding replicate groups.
-#' @param input_table_sample_id_column The unquoted column name for sample IDs in `input_table`.
-#' @param sample_id_tbl_sample_id_column The unquoted column name for sample IDs in `samples_id_tbl`.
-#' @param replicate_group_column The unquoted column name for replicate groups in `samples_id_tbl`.
-#' @param protein_id_column The unquoted column name for protein identifiers.
-#' @param core_utilisation The number of cores for parallel processing.
-#'
-#' @return A data frame with the filtered proteins.
+#' @description Remove proteins that only have data for one technical replicate for all sample.
+#' This can be repurposed for removing proteins that only have one biological replicates for all experimental groups.
 #' @export
 removeProteinWithOnlyOneReplicate <- function(input_table
                                                , samples_id_tbl
@@ -903,27 +727,19 @@ removeProteinWithOnlyOneReplicate <- function(input_table
 
 ##-----------------------------------------------------------------------------------------
 
-#' @title Impute Missing Peptide-Level Values
-#' @description This helper function performs missing value imputation for peptide-level
-#' data. It imputes missing values within a replicate group by using the average
-#' of the observed values, but only if the proportion of missing values is below
-#' a certain threshold.
-#'
-#' @param input_table The input data frame of peptide-level data.
-#' @param metadata_table A data frame with sample metadata, including replicate group information.
-#' @param input_table_sample_id_column The unquoted column name for sample IDs in `input_table`.
-#' @param sample_id_tbl_sample_id_column The unquoted column name for sample IDs in `metadata_table`.
-#' @param replicate_group_column The unquoted column name for replicate groups in `metadata_table`.
-#' @param protein_id_column The unquoted column name for protein identifiers.
-#' @param peptide_sequence_column The unquoted column name for peptide sequences.
-#' @param quantity_to_impute_column The unquoted column name for the abundance values to be imputed.
-#' @param imputed_value_column The unquoted column name for the new column that will hold the imputed values.
-#' @param hek_string A character string to identify control samples (e.g., HEK) to be excluded from imputation.
-#' @param proportion_missing_values The maximum proportion of missing values within a group to allow for imputation.
-#' @param core_utilisation The number of cores for parallel processing.
-#'
-#' @return A data frame with missing values imputed.
-#' @export
+#' peptideMissingValueImputationHelper
+#' @description Perform peptide level missing value imputation
+#'@param input_table A data frame with the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalised peptide abundances
+#'@param metadata_table A data table with the following columns: 1. the sample file name or run name (as per parameter sample_id_tbl_sample_id_column), 2. The replicate group ID (as per parameter replicate_group_column)
+#'@param input_table_sample_id_column The name of the column in the input_table that contained the run information or sample file name as per the input_table parameter (default: Run)
+#'@param sample_id_tbl_sample_id_column The name of the column in the input_table that contained the run information or sample file name as per the metadata_table parameter (default: ms_filename)
+#'@param replicate_group_column (default: general_sample_info)
+#'@param protein_id_column Protein accession column, tidyverse format (default = Protein.Ids).
+#'@param peptide_sequence_column Peptide sequence column, tidyverse fromat (default =  Stripped.Sequence).
+#'@param quantity_to_impute_column Name of column containing the peptide abundance that needs to be normalised in tidyverse format (default: Peptide.RawQuantity)
+#'@param hek_string The string denoting samples that are controls using HEK cells (default: "HEK")
+#'@param proportion_missing_values The proportion of sample replicates in a group that is missing below which the peptide intensity will be imputed (default: 0.50)
+#'@export
 peptideMissingValueImputationHelper <- function( input_table
                                            , metadata_table
                                            , input_table_sample_id_column = Run
@@ -1034,18 +850,8 @@ peptideMissingValueImputationHelper <- function( input_table
 
 #---------------------------------------------------------------------------------------
 
-#' @title Calculate Percent Missing Peptides per Replicate
-#' @description Calculates the percentage of missing peptide identifications for each
-#' sample (replicate) and merges this information with sample metadata.
-#'
-#' @param input_table The input data frame of peptide-level data.
-#' @param metadata_table A data frame with sample metadata.
-#' @param protein_id_column The unquoted column name for protein identifiers.
-#' @param intensity_column The unquoted column name for intensity values.
-#' @param replicate_id_column The unquoted column name for sample/replicate identifiers.
-#' @param peptide_sequence_column The unquoted column name for peptide sequences.
-#'
-#' @return A data frame with metadata and a new `percent_missing` column.
+#' calculatePercentMissingPeptidePerReplicate
+#' @description Calculate percentage of peptides from each sample that is missing and merge with metadata
 #' @export
 calculatePercentMissingPeptidePerReplicate <- function( input_table
                                                         , metadata_table
@@ -1077,17 +883,8 @@ calculatePercentMissingPeptidePerReplicate <- function( input_table
 
 
 
-#' @title Calculate Percent Missing Proteins per Replicate
-#' @description Calculates the percentage of missing protein quantifications for each
-#' sample (replicate) and merges this information with sample metadata.
-#'
-#' @param input_table The input data frame of protein-level data.
-#' @param metadata_table A data frame with sample metadata.
-#' @param protein_id_column The unquoted column name for protein identifiers.
-#' @param intensity_column The unquoted column name for intensity values.
-#' @param replicate_id_column The unquoted column name for sample/replicate identifiers.
-#'
-#' @return A data frame with metadata and a new `percent_missing` column.
+#' calculatePercentMissingProteinPerReplicate
+#' @description Calculate percentage of proteins from each sample that is missing and merge with metadata
 #' @export
 calculatePercentMissingProteinPerReplicate <- function( input_table
                                                         , metadata_table
@@ -1118,14 +915,6 @@ calculatePercentMissingProteinPerReplicate <- function( input_table
 
 
 
-#' @title Plot Histogram of Percent Missing Values
-#' @description Generates a histogram to visualize the distribution of the percentage
-#' of missing values across samples.
-#'
-#' @param percent_missing_table A data frame containing a column with the percentage of missing values.
-#' @param percent_missing_column The unquoted column name for the percent missing values.
-#'
-#' @return A ggplot object representing the histogram.
 #' @export
 plotHistogramOfPercentMissingPerIndvidual <- function( percent_missing_table
                                                        , percent_missing_column = percent_missing) {
@@ -1141,21 +930,6 @@ plotHistogramOfPercentMissingPerIndvidual <- function( percent_missing_table
 
 
 #---------------------------------------------------------------------------------------
-#' @title Remove Peptides Found Only in Control Samples
-#' @description This function filters out peptides that are identified only in control
-#' samples (e.g., HEK293) and not in any of the experimental cohort samples.
-#'
-#' @param input_table The input data frame of peptide-level data.
-#' @param metadata_table A data frame with sample metadata.
-#' @param input_table_sample_id_column The name of the sample ID column in `input_table` as a string.
-#' @param sample_id_tbl_sample_id_column The name of the sample ID column in `metadata_table` as a string.
-#' @param protein_id_column The unquoted column name for protein identifiers.
-#' @param peptide_sequence_column The unquoted column name for peptide sequences.
-#' @param hek_string A character string to identify control samples.
-#' @param general_sample_info The unquoted column name in `metadata_table` that contains the sample group information.
-#' @param core_utilisation The number of cores for parallel processing.
-#'
-#' @return A data frame with control-only peptides removed.
 #' @export
 removePeptidesOnlyInHek293 <- function( input_table
                                         , metadata_table
@@ -1215,13 +989,6 @@ removePeptidesOnlyInHek293 <- function( input_table
 
 #------------------------------------------------------------------------------------------------
 
-#' @title Get Data for a Single RLE Plot
-#' @description Calculates the data required to generate a Relative Log Expression (RLE)
-#' plot from a matrix of abundance data.
-#'
-#' @param input_matrix A numeric matrix with samples as columns and features (proteins/peptides) as rows.
-#'
-#' @return A data frame in long format suitable for plotting with ggplot2.
 #' @export
 getOneRlePlotData <- function( input_matrix ) {
 
@@ -1258,15 +1025,6 @@ getOneRlePlotData <- function( input_matrix ) {
 
 }
 
-#' @title Plot RLE QC Plot
-#' @description Generates a Relative Log Expression (RLE) plot from pre-calculated data.
-#'
-#' @param input_table A data frame in long format, typically from `getOneRlePlotData`.
-#' @param x_value The unquoted column name for the x-axis (sample names).
-#' @param y_value The unquoted column name for the y-axis (deviations).
-#' @param quantiles_column The unquoted column name for the quantile groups.
-#'
-#' @return A ggplot object representing the RLE plot.
 #' @export
 plotRleQc <- function( input_table
                        , x_value = name
@@ -1286,14 +1044,8 @@ plotRleQc <- function( input_table
 }
 
 #------------------------------------------------------------------------------------------------
-#' @title Scale, Center, and Fill Missing Values
-#' @description This function scales and centers a numeric matrix and then fills any
-#' remaining missing values with a value derived from the minimum of the scaled data.
-#'
-#' @param input_matrix A numeric matrix of abundance data.
-#'
-#' @return A numeric matrix that has been scaled, centered, and has missing values filled.
-#' @export
+#'@param input_matrix Samples are columns, rows are proteins or peptides
+#'@export
 scaleCenterAndFillMissing <- function( input_matrix) {
 
   input_matrix_scaled <- scale(input_matrix, center = TRUE, scale = TRUE)
@@ -1309,15 +1061,6 @@ scaleCenterAndFillMissing <- function( input_matrix) {
 }
 
 #------------------------------------------------------------------------------------------------
-#' @title Compare UMAP Components in a Pairs Plot
-#' @description Generates a pairs plot (using `GGally::ggpairs`) to visualize the
-#' relationships between the first few UMAP components, colored by a covariate.
-#'
-#' @param input_table A data frame containing UMAP components (e.g., V1, V2, ...).
-#' @param columns A character vector of the UMAP component columns to plot.
-#' @param covariate The unquoted column name of the covariate to use for coloring.
-#'
-#' @return A `ggpairs` plot object.
 #' @export
 compareUmapComponentsPairs <- function(input_table, columns = c("V1", "V2","V3","V4"), covariate) {
 
@@ -1331,18 +1074,6 @@ compareUmapComponentsPairs <- function(input_table, columns = c("V1", "V2","V3",
 
 
 #------------------------------------------------------------------------------------------------
-#' @title Create a UMAP Factor Plot
-#' @description Generates a scatter plot of two UMAP components, with points colored
-#' by a factor variable using a specified color rule.
-#'
-#' @param input_data A data frame containing UMAP components and the coloring variable.
-#' @param header The unquoted column name of the factor variable to use for coloring.
-#' @param legend_label The label for the plot legend.
-#' @param x The unquoted column name for the x-axis component.
-#' @param y The unquoted column name for the y-axis component.
-#' @param colour_rule A named vector specifying the colors for each level of the factor.
-#'
-#' @return A ggplot object.
 #' @export
 umap_factor_plot <- function(input_data, header, legend_label, x = V1, y = V2, colour_rule) {
 
@@ -1359,14 +1090,6 @@ umap_factor_plot <- function(input_data, header, legend_label, x = V1, y = V2, c
 
 }
 
-#' @title Save a List of Plots to a Single PDF
-#' @description Iterates through a list of plot objects and saves them to a single
-#' multi-page PDF file.
-#'
-#' @param list A list of plot objects that can be printed.
-#' @param filename The path and name of the output PDF file.
-#'
-#' @return Invisibly returns `NULL`. This function is used for its side effect of creating a file.
 #' @export
 saveListOfPdfs <- function(list, filename) {
   #start pdf
@@ -1387,16 +1110,9 @@ saveListOfPdfs <- function(list, filename) {
 #------------------------------------------------------------------------------------------------
 
 
-#' @title Get Sample Correlation Matrix
-#' @description Calculates a Pearson correlation matrix for all non-control samples.
-#'
-#' @param input_table A wide-format data frame with features as rows and samples as columns.
-#' @param metadata_tbl A data frame with sample metadata.
-#' @param is_HEK_column The unquoted column name in `metadata_tbl` indicating control samples.
-#' @param use The `use` argument for the `cor` function (e.g., "pairwise.complete.obs").
-#' @param method The `method` argument for the `cor` function (e.g., "pearson").
-#'
-#' @return A numeric matrix of sample-sample correlations.
+#' getSamplesCorrelationMatrix
+#' @description Calculate the Pearson's correlation score between sample
+#' @param input_table Table with samples as columns and peptides as rows. Contains the log peptide intensity values.
 #' @export
 getSamplesCorrelationMatrix <- function(input_table
                                         , metadata_tbl
@@ -1418,11 +1134,6 @@ getSamplesCorrelationMatrix <- function(input_table
 }
 
 #------------------------------------------------------------------------------------------------
-#' @title Get a Large Categorical Color Palette
-#' @description Combines several `RColorBrewer` palettes to create a large, diverse
-#' color palette for categorical variables with many levels.
-#'
-#' @return A character vector of color hex codes.
 #' @export
 getCategoricalColourPalette <- function() {
   set1_colour <- brewer.pal(9,'Set1')
@@ -1443,16 +1154,7 @@ getCategoricalColourPalette <- function() {
 
 
 
-#' @title Get a Continuous Color Palette
-#' @description Creates a color palette for a continuous variable, mapping colors to
-#' the unique values present in the data.
-#'
-#' @param metadata_tbl The metadata table containing the continuous variable.
-#' @param column_name The name of the continuous variable column as a string.
-#' @param palette_name The name of the `RColorBrewer` palette to use.
-#' @param na_colour The color to use for NA values.
-#'
-#' @return A named character vector of color hex codes.
+#' getOneContinousPalette
 # getOneContinousPalette <- function(metadata_tbl, column_name, palette_name, num_colours=9) {
 #
 #   list_of_values <-  metadata_tbl |>
@@ -1528,17 +1230,7 @@ getOneContinousPalette <- function(metadata_tbl, column_name, palette_name, na_c
   return( list_of_colours )
 }
 
-#' @title Get Color Rules for Multiple Continuous Variables
-#' @description Generates a list of color palettes, one for each specified continuous
-#' variable in the metadata.
-#'
-#' @param metadata_tbl The metadata table.
-#' @param metadata_column_labels A named vector for relabeling columns for display.
-#' @param metadata_column_selected The selected columns to process.
-#' @param continous_scale_columns A character vector of the names of continuous columns.
-#' @param na_colour The color to use for NA values.
-#'
-#' @return A named list of color palettes.
+#' getContinousColourRules
 #' @export
 getContinousColourRules <- function( metadata_tbl
                                      , metadata_column_labels
@@ -1570,21 +1262,9 @@ getContinousColourRules <- function( metadata_tbl
 
 }
 
-#' @title Get Combined Color Rules for Annotations
-#' @description A wrapper function that generates a combined list of color rules for
-#' both categorical and continuous variables, suitable for heatmap annotations.
-#'
-#' @param metadata_tbl The metadata table.
-#' @param metadata_column_labels A named vector for relabeling columns.
-#' @param metadata_column_selected A character vector of the columns to process.
-#' @param categorical_columns A character vector of categorical column names.
-#' @param continous_scale_columns A character vector of continuous column names.
-#' @param ms_machine_column The name of the mass spec machine column (treated specially).
-#' @param sample_id_column The unquoted column name for sample IDs.
-#' @param columns_to_exclude A character vector of columns to exclude from the final rules.
-#' @param na_colour The color to use for NA values.
-#'
-#' @return A named list of color palettes.
+#' getCategoricalAndContinuousColourRules
+#' @param metadata_tbl This is the table containing sample ID and other columns containing clinical variables / metadata
+#' @param metadata_column_labels This is the nice
 #' @export
 getCategoricalAndContinuousColourRules <- function( metadata_tbl
                                                     , metadata_column_labels
@@ -1635,14 +1315,7 @@ getCategoricalAndContinuousColourRules <- function( metadata_tbl
 
 
 
-#' @title Convert a Continuous Variable to Categorical
-#' @description Bins a continuous variable into a specified number of categories.
-#'
-#' @param metadata_tbl The metadata table.
-#' @param column_name The name of the continuous column to convert, as a string.
-#' @param num_colours The number of bins (categories) to create.
-#'
-#' @return A factor representing the binned variable.
+#' getOneContinousPalette
 #' @export
 changeToCategorical <- function(metadata_tbl, column_name, num_colours=9) {
 
@@ -1669,25 +1342,17 @@ changeToCategorical <- function(metadata_tbl, column_name, num_colours=9) {
 
 #------------------------------------------------------------------------------------------------
 
-#' @title Generate a Sample Correlation Heatmap
-#' @description Creates a complex heatmap of sample-sample correlations, with annotations
-#' for sample metadata.
-#'
-#' @param correlation_matrix A sample-sample correlation matrix.
-#' @param metadata_tbl The sample metadata table.
-#' @param is_HEK_column The unquoted column in `metadata_tbl` indicating control samples.
-#' @param metadata_column_labels A named vector for relabeling columns.
-#' @param metadata_column_selected A character vector of columns to use for annotation.
-#' @param colour_rules A named list of color palettes for annotations.
-#' @param columns_to_exclude A character vector of annotation columns to exclude.
-#' @param sample_id_column The unquoted column name for sample IDs.
-#' @param use_raster A boolean indicating whether to render the heatmap as a raster image.
-#' @param raster_device The graphics device for rasterization (e.g., "CairoPDF").
-#' @param heatmap_legend_param A list of parameters for the heatmap legend.
-#' @param heatmap_width The width of the heatmap.
-#' @param heatmap_height The height of the heatmap.
-#'
-#' @return A list containing the `Heatmap` object and a list of `Legend` objects.
+#' getSamplesCorrelationHeatMap
+#' @description get the
+#' @param correlation_matrix Output from the `getSamplesCorrelationMatrix` function
+#' @param metadata_tbl This is the table containing sample ID and other columns containing clinical variables / metadata
+#' @param is_HEK_column A logical column in the metadata table that indicates if the sample is a HEK sample
+#' @param metadata_column_selected A list of column names in string selected from the metadata tbl
+#' @param metadata_column_labels A list of column names in string to rename each of the columns selected in the param `metadata_column_selected`
+#' @param categorical_columns A vector of string with all the names of the categorical data column  present in the `metadata_tbl` table
+#' @param continous_scale_columns  A vector of string with all the names of the continuous data column  present in the `metadata_tbl` table
+#' @param ms_machine_column A string of the column name describing the mass spectrometer machine used to analyze each sample
+#' @param sample_id_column A string describing the column name of the sample ID column
 #' @export
 getSamplesCorrelationHeatMap <- function(correlation_matrix
                                          , metadata_tbl
@@ -1768,14 +1433,6 @@ getSamplesCorrelationHeatMap <- function(correlation_matrix
 }
 
 
-#' @title Calculate Heatmap Size
-#' @description Calculates the final width and height of a `ComplexHeatmap` object
-#' after it has been drawn.
-#'
-#' @param ht A `Heatmap` or `HeatmapList` object.
-#' @param unit The unit for the output dimensions (e.g., "inch").
-#'
-#' @return A numeric vector containing the width and height.
 #' @export
 calcHtSize = function(ht, unit = "inch") {
   pdf(NULL)
@@ -1791,18 +1448,8 @@ calcHtSize = function(ht, unit = "inch") {
 
 #------------------------------------------------------------------------------------------------
 
-#' @title Pivot Peptide Intensity Matrix to Long Format
-#' @description Converts a wide-format peptide intensity matrix (features x samples)
-#' to a long-format data frame.
-#'
-#' @param input_matrix The wide-format numeric matrix.
-#' @param sample_id_column The desired name for the sample ID column in the output table.
-#' @param sequence_column The desired name for the peptide sequence column.
-#' @param protein_id_column The name of the protein ID column (present in rownames).
-#' @param quantity_column The desired name for the abundance column.
-#' @param unlog_data A boolean indicating whether to apply a 2^x transformation to the data.
-#'
-#' @return A long-format data frame.
+#' @description
+#'  Pivot peptide intensity matrix into long format table.
 #' @export
 peptidesIntensityMatrixPivotLonger <- function( input_matrix
                                                 , sample_id_column
@@ -1831,16 +1478,8 @@ peptidesIntensityMatrixPivotLonger <- function( input_matrix
 
 #------------------------------------------------------------------------------------------------
 
-#' @title Pivot Protein Intensity Matrix to Long Format
-#' @description Converts a wide-format protein intensity matrix (proteins x samples)
-#' to a long-format data frame.
-#'
-#' @param input_matrix The wide-format numeric matrix.
-#' @param sample_id_column The desired name for the sample ID column.
-#' @param protein_id_column The name of the protein ID column (present in rownames).
-#' @param quantity_column The desired name for the abundance column.
-#'
-#' @return A long-format data frame.
+#' @description
+#' Pivot protein intensity matrix into long format
 #' @export
 proteinIntensityMatrixPivotLonger <- function( input_matrix
                                                , sample_id_column
@@ -1860,21 +1499,9 @@ proteinIntensityMatrixPivotLonger <- function( input_matrix
 
 #------------------------------------------------------------------------------------------------
 
-#' @title Helper to Remove Proteins with Only One Replicate
-#' @description A helper function that removes proteins observed in only one replicate
-#' across all sample groups. A protein must be seen in >1 replicate in at least
-#' >1 group to be retained.
-#'
-#' @param input_table The input data frame of protein-level data.
-#' @param samples_id_tbl A data frame with sample IDs and replicate group information.
-#' @param input_table_sample_id_column The unquoted column name for sample IDs in `input_table`.
-#' @param sample_id_tbl_sample_id_column The unquoted column name for sample IDs in `samples_id_tbl`.
-#' @param replicate_group_column The unquoted column name for replicate groups.
-#' @param protein_id_column The unquoted column name for protein identifiers.
-#' @param quantity_column The unquoted column name for abundance values.
-#' @param core_utilisation The number of cores for parallel processing.
-#'
-#' @return A data frame with the filtered proteins.
+#' @description
+#' Remove proteins that have been identified in only one replicate across all patients
+#' (e.g. identified no more than one relpicate in any patient)
 #' @export
 removeProteinsWithOnlyOneReplicateHelper <- function(input_table
                                                , samples_id_tbl
@@ -1929,24 +1556,17 @@ removeProteinsWithOnlyOneReplicateHelper <- function(input_table
 
 ##-----------------------------------------------------------------------------------------
 
-#' @title Impute Missing Protein-Level Values
-#' @description Performs missing value imputation for protein-level data. It imputes
-#' missing values within a replicate group using the average of observed values,
-#' but only if more than one replicate has a value.
-#'
-#' @param input_table The input data frame of protein-level data.
-#' @param metadata_table A data frame with sample metadata.
-#' @param input_table_sample_id_column The unquoted column name for sample IDs in `input_table`.
-#' @param sample_id_tbl_sample_id_column The unquoted column name for sample IDs in `metadata_table`.
-#' @param replicate_group_column The unquoted column name for replicate groups.
-#' @param protein_id_column The unquoted column name for protein identifiers.
-#' @param quantity_to_impute_column The unquoted column name for abundance values to impute.
-#' @param imputed_value_column The unquoted column name for the new column with imputed values.
-#' @param hek_string A character string to identify control samples to exclude.
-#' @param core_utilisation The number of cores for parallel processing.
-#'
-#' @return A data frame with missing values imputed.
-#' @export
+#' proteinMissingValueImputation
+#' @description Perform protein level missing value imputation
+#'@param input_table A data frame with the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Normalised protein abundances
+#'@param metadata_table A data table with the following columns: 1. the sample file name or run name (as per parameter sample_id_tbl_sample_id_column), 2. The replicate group ID (as per parameter replicate_group_column)
+#'@param input_table_sample_id_column The name of the column in the input_table that contained the run information or sample file name as per the input_table parameter (default: Run)
+#'@param sample_id_tbl_sample_id_column The name of the column in the input_table that contained the run information or sample file name as per the metadata_table parameter (default: ms_filename)
+#'@param replicate_group_column (default: general_sample_info)
+#'@param protein_id_column Protein accession column, tidyverse format (default = Protein.Ids).
+#'@param quantity_to_impute_column Name of column containing the peptide abundance that needs to be normalised in tidyverse format (default: Peptide.RawQuantity)
+#'@param hek_string The string denoting samples that are controls using HEK cells (default: "HEK")
+#'@export
 proteinMissingValueImputation <- function( input_table
                                            , metadata_table
                                            , input_table_sample_id_column = Run
@@ -2049,21 +1669,9 @@ proteinMissingValueImputation <- function( input_table
 
 #------------------------------------------------------------------------------------------------
 
-#' @title Average Protein Intensity Across Replicates
-#' @description Calculates the average protein intensity across technical replicates
-#' for each protein within each sample group.
-#'
-#' @param input_table The input data frame of protein-level data.
-#' @param metadata_table A data frame with sample metadata.
-#' @param protein_id_column The unquoted column name for protein identifiers.
-#' @param input_table_sample_id_column The unquoted column name for sample IDs in `input_table`.
-#' @param sample_id_tbl_sample_id_column The unquoted column name for sample IDs in `metadata_table`.
-#' @param replicate_group_column The unquoted column name for replicate groups.
-#' @param quantity_column The unquoted column name for abundance values.
-#' @param avg_quantity_column The desired name for the new column with averaged abundances.
-#'
-#' @return A data frame with averaged protein intensities.
-#' @export
+#' @description
+#' Protein average values from replicate samples
+#' #'@export
 avgReplicateProteinIntensity <- function( input_table
                                           , metadata_table
                                           , protein_id_column = protein_id_column
@@ -2085,18 +1693,6 @@ avgReplicateProteinIntensity <- function( input_table
 
 #------------------------------------------------------------------------------------------------
 
-#' @title Plot Density of Protein Intensity
-#' @description Generates a density plot of protein intensities, faceted by whether
-#' proteins were quantified from single or multiple peptides.
-#'
-#' @param protein_intensity_long_tbl A long-format data frame of protein intensities.
-#' @param number_of_peptides_per_protein_per_sample A data frame mapping protein-sample pairs to the number of peptides.
-#' @param protein_id_column The unquoted column name for protein identifiers.
-#' @param sample_id_column The unquoted column name for sample identifiers.
-#' @param num_peptides_column The unquoted column name for the number of peptides.
-#' @param protein_intensity_column The unquoted column name for protein intensity values.
-#'
-#' @return A ggplot object.
 #' @export
 plotDensityOfProteinIntensityPerSample <- function( protein_intensity_long_tbl
                                                     , number_of_peptides_per_protein_per_sample
@@ -2125,18 +1721,6 @@ plotDensityOfProteinIntensityPerSample <- function( protein_intensity_long_tbl
 
 #------------------------------------------------------------------------------------------------
 
-#' @title Plot Protein Quantification Across Samples
-#' @description Creates a bar plot showing the number of proteins quantified in
-#' different percentages of samples, faceted by single vs. multiple peptide evidence.
-#'
-#' @param protein_intensity_long_tbl A long-format data frame of protein intensities.
-#' @param number_of_peptides_per_protein_per_sample A data frame mapping protein-sample pairs to the number of peptides.
-#' @param protein_id_column The unquoted column name for protein identifiers.
-#' @param sample_id_column The unquoted column name for sample identifiers.
-#' @param num_peptides_column The unquoted column name for the number of peptides.
-#' @param protein_intensity_column The unquoted column name for protein intensity values.
-#'
-#' @return A ggplot object.
 #' @export
 plotPercentSamplesVsProteinQuantified <- function ( protein_intensity_long_tbl = frozen_protein_table
                                                     , number_of_peptides_per_protein_per_sample = number_of_peptides_per_protein_per_sample
@@ -2186,15 +1770,6 @@ plotPercentSamplesVsProteinQuantified <- function ( protein_intensity_long_tbl =
 
 #------------------------------------------------------------------------------------------------
 # Codes to format experimental design table for pairwise comparison of groups
-#' @title Create "Each vs. All" Dummy Columns in Design Matrix
-#' @description Modifies a design matrix by adding new dummy-coded columns for each
-#' level of a specified factor, facilitating "each vs. all" comparisons.
-#'
-#' @param input_table The design matrix data frame.
-#' @param id_cols The unquoted column name for the unique sample/row identifiers.
-#' @param column The unquoted column name of the factor to be dummy-coded.
-#'
-#' @return The modified design matrix with new dummy columns.
 #' @export
 cleanDesignMatrixCreateEachVersusAllColumns <- function(input_table, id_cols, column ) {
 
@@ -2223,13 +1798,6 @@ cleanDesignMatrixCreateEachVersusAllColumns <- function(input_table, id_cols, co
 
 }
 
-#' @title Clean Category Names
-#' @description Cleans special characters from category names to make them valid
-#' for use as column names or in formulas.
-#'
-#' @param x A character string to be cleaned.
-#'
-#' @return The cleaned character string.
 #' @export
 cleanDesignMatrixCleanCategories <- function(x ) {
 
@@ -2249,14 +1817,6 @@ cleanDesignMatrixCleanCategories <- function(x ) {
 # clean_categories("> 3")
 # clean_categories(">& /3")
 
-#' @title Map Category Cleaning Function over a Column
-#' @description Applies the `cleanDesignMatrixCleanCategories` function to each element
-#' of a specified column in a data frame.
-#'
-#' @param input_table The data frame.
-#' @param column The unquoted column name to be cleaned.
-#'
-#' @return The data frame with the specified column cleaned.
 #' @export
 cleanDesignMatrixCleanCategoriesMap <- function( input_table, column ) {
   input_table |>
@@ -2266,26 +1826,9 @@ cleanDesignMatrixCleanCategoriesMap <- function( input_table, column ) {
 
 #------------------------------------------------------------------------------------------------
 
-#' @title Generate a Protein Intensity Heatmap
-#' @description Creates a complex heatmap of protein intensities across samples, with
-#' annotations for sample metadata.
-#'
-#' @param protein_matrix A wide-format matrix of protein intensities (proteins x samples).
-#' @param metadata_tbl The sample metadata table.
-#' @param is_HEK_column The unquoted column in `metadata_tbl` indicating control samples.
-#' @param metadata_column_selected A character vector of columns to use for annotation.
-#' @param metadata_column_labels A named vector for relabeling columns.
-#' @param colour_rules A named list of color palettes for annotations.
-#' @param columns_to_exclude A character vector of annotation columns to exclude.
-#' @param core_utilisation_samples A boolean passed to `ComplexHeatmap` for parallelization.
-#' @param sort_by_sample_id A boolean indicating whether to sort samples by ID.
-#' @param sample_id_column The unquoted column name for sample IDs.
-#' @param use_raster A boolean indicating whether to render the heatmap as a raster image.
-#' @param raster_device The graphics device for rasterization.
-#' @param heatmap_legend_param A list of parameters for the heatmap legend.
-#'
-#' @return A list containing the `Heatmap` object and a list of `Legend` objects.
-#' @export
+#' @description
+#' get protein intensity heatmap
+#'@export
 getProteinsHeatMap <- function( protein_matrix
                                 , metadata_tbl
                                 , is_HEK_column = is_HEK
@@ -2374,19 +1917,6 @@ getProteinsHeatMap <- function( protein_matrix
 
 #------------------------------------------------------------------------------------------------
 
-#' @title Calculate Percent Missing Values per Protein Category
-#' @description For each protein, calculates the percentage of missing values for
-#' each level of each categorical variable in the experimental design.
-#'
-#' @param intensity_wide_table A wide-format data frame of protein intensities.
-#' @param protein_id The name of the protein ID column as a string.
-#' @param pattern A tidyselect pattern to select the sample columns.
-#' @param experimental_design_table The experimental design data frame.
-#' @param names_to The desired name for the sample ID column after pivoting.
-#' @param values_to The desired name for the abundance column after pivoting.
-#' @param is_missing_column The unquoted name for the new boolean column indicating missingness.
-#'
-#' @return A data frame summarizing the missing value percentages.
 #' @export
 calculatePercentMissingPerProtein <- function( intensity_wide_table
                                                , protein_id = "uniprot_acc"
@@ -2448,15 +1978,6 @@ calculatePercentMissingPerProtein <- function( intensity_wide_table
   missing_value_per_category
 }
 
-#' @title Perform Fisher's Exact Test for Missing Values
-#' @description For each contrast, performs a Fisher's exact test to determine if the
-#' proportion of missing values for each protein is significantly different
-#' between the two groups in the contrast.
-#'
-#' @param contrasts_table A data frame defining the contrasts to be tested.
-#' @param missing_value_per_category A data frame from `calculatePercentMissingPerProtein`.
-#'
-#' @return A data frame with the results of the Fisher's exact tests, including p-values and FDR.
 #' @export
 calculateMissingValuesPerProteinFishersTest <- function( contrasts_table, missing_value_per_category) {
 
@@ -2504,11 +2025,8 @@ calculateMissingValuesPerProteinFishersTest <- function( contrasts_table, missin
 #------------------------------------------------------------------------------------------------
 
 
-#' @title APAF ggplot2 Theme
-#' @description A custom ggplot2 theme for APAF (Australian Proteome Analysis Facility)
-#' style plots.
-#'
-#' @return A ggplot2 theme object.
+#' @description
+#' ProCan ggplot2 theme. Rectangle box around each plot.
 #' @export
 apafTheme <- function() {
   theme(

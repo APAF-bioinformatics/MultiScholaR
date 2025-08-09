@@ -1,31 +1,8 @@
 
 
 
-#' An S4 Class to Store and Manage Peptide-Level Quantitative Proteomics Data
-#'
-#' @description The `PeptideQuantitativeData` class is designed to hold all necessary
-#' data and metadata for the analysis of peptide-centric proteomics experiments,
-#' particularly from DIA-NN outputs. It encapsulates peptide-level quantification,
-#' experimental design, and various parameters used in the analysis workflow.
-#'
-#' @slot peptide_data A data frame containing the main quantitative data, typically
-#'   with one row per precursor or peptide per sample.
-#' @slot protein_id_column The name of the column identifying the protein accessions.
-#' @slot peptide_sequence_column The name of the column for peptide sequences.
-#' @slot q_value_column The name of the column for peptide-level q-values.
-#' @slot global_q_value_column The name of the column for global q-values.
-#' @slot proteotypic_peptide_sequence_column The name of the column indicating if a peptide is proteotypic.
-#' @slot raw_quantity_column The name of the column for raw precursor or peptide quantity.
-#' @slot norm_quantity_column The name of the column for normalized precursor or peptide quantity.
-#' @slot is_logged_data A logical flag indicating if the abundance data is log-transformed.
-#' @slot design_matrix A data frame describing the experimental design, mapping samples to groups.
-#' @slot sample_id The name of the column in `design_matrix` for unique sample identifiers.
-#' @slot group_id The name of the column in `design_matrix` for experimental group labels.
-#' @slot technical_replicate_id The name of the column in `design_matrix` for technical replicate identifiers.
-#' @slot args A list to store various parameters and settings used throughout the analysis pipeline.
-#'
-#' @return An object of class `PeptideQuantitativeData`.
-#' @export
+## Create S4 class for proteomics protein level abundance data
+#'@exportClass PeptideQuantitativeData
 PeptideQuantitativeData <- setClass("PeptideQuantitativeData"
 
                                      , slots = c(
@@ -152,18 +129,6 @@ PeptideQuantitativeData <- setClass("PeptideQuantitativeData"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Constructor for PeptideQuantitativeData from DIA-NN Output
-#' @description A convenience function to create a `PeptideQuantitativeData` object
-#' from standard DIA-NN output files.
-#'
-#' @param peptide_data A data frame read from a DIA-NN report file.
-#' @param design_matrix A data frame describing the experimental design.
-#' @param sample_id The column name for sample identifiers.
-#' @param group_id The column name for experimental groups.
-#' @param technical_replicate_id The column name for technical replicates.
-#' @param args An optional list of additional parameters to store in the object.
-#'
-#' @return An object of class `PeptideQuantitativeData`.
 #' @export
 PeptideQuantitativeDataDiann <- function( peptide_data
                                           , design_matrix
@@ -207,15 +172,7 @@ PeptideQuantitativeDataDiann <- function( peptide_data
 # sort the sample IDs in the same order as the data matrix
 
 
-#' @title Clean the Design Matrix for a PeptideData Object
-#' @description This method filters the design matrix slot of a `PeptideQuantitativeData`
-#' object to ensure it only contains metadata for samples present in the `peptide_data` slot.
-#' It also sorts the design matrix to match the order of samples in the data.
-#'
-#' @param theObject An object of class `PeptideQuantitativeData`.
-#'
-#' @return The modified `PeptideQuantitativeData` object with a cleaned design matrix.
-#' @exportMethod cleanDesignMatrixPeptide
+#'@exportMethod cleanDesignMatrixPeptide
 setMethod( f ="cleanDesignMatrixPeptide"
            , signature = "PeptideQuantitativeData"
            , definition=function( theObject ) {
@@ -233,18 +190,7 @@ setMethod( f ="cleanDesignMatrixPeptide"
            })
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Filter Peptides by Q-Value and Proteotypic Status
-#' @description This method filters the peptide data based on local and global q-value
-#' thresholds and optionally selects only proteotypic peptides.
-#'
-#' @param theObject An object of class `PeptideQuantitativeData`.
-#' @param qvalue_threshold The maximum allowed local q-value.
-#' @param global_qvalue_threshold The maximum allowed global q-value.
-#' @param choose_only_proteotypic_peptide A logical flag. If `TRUE`, only proteotypic peptides are kept.
-#' @param input_matrix_column_ids A character vector of column names to retain in the output.
-#'
-#' @return The modified `PeptideQuantitativeData` object with filtered peptide data.
-#' @export
+#'@export
 setGeneric(name="srlQvalueProteotypicPeptideClean"
            , def=function( theObject, qvalue_threshold = NULL, global_qvalue_threshold = NULL, choose_only_proteotypic_peptide = NULL, input_matrix_column_ids = NULL) {
              standardGeneric("srlQvalueProteotypicPeptideClean")
@@ -316,15 +262,7 @@ setMethod( f ="srlQvalueProteotypicPeptideClean"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Roll Up Precursor-Level Data to Peptide-Level
-#' @description This method aggregates precursor-level quantities to the peptide level.
-#' The exact aggregation method is determined by the helper function `rollUpPrecursorToPeptideHelper`.
-#'
-#' @param theObject An object of class `PeptideQuantitativeData`.
-#' @param core_utilisation The number of cores to use for parallel processing, if applicable.
-#'
-#' @return The modified `PeptideQuantitativeData` object with peptide-level data.
-#' @export
+#'@export
 setGeneric(name="rollUpPrecursorToPeptide"
            , def=function( theObject, core_utilisation = NULL) {
              standardGeneric("rollUpPrecursorToPeptide")
@@ -372,18 +310,7 @@ setMethod(f="rollUpPrecursorToPeptide"
           })
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Filter Peptides Based on Intensity
-#' @description Filters out peptides that have low abundance across a large proportion
-#' of samples. A peptide is removed if its raw quantity is below a certain percentile-based
-#' threshold in more than a specified proportion of samples.
-#'
-#' @param theObject An object of class `PeptideQuantitativeData`.
-#' @param peptides_intensity_cutoff_percentile The percentile used to calculate the minimum intensity threshold.
-#' @param peptides_proportion_of_samples_below_cutoff The proportion of samples that must be above the threshold for a peptide to be kept.
-#' @param core_utilisation The number of cores for parallel processing.
-#'
-#' @return The modified `PeptideQuantitativeData` object with low-intensity peptides removed.
-#' @export
+#'@export
 setGeneric(name="peptideIntensityFiltering"
            , def=function( theObject, peptides_intensity_cutoff_percentile = NULL, peptides_proportion_of_samples_below_cutoff = NULL, core_utilisation = NULL) {
              standardGeneric("peptideIntensityFiltering")
@@ -428,19 +355,7 @@ setMethod( f="peptideIntensityFiltering"
            })
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' @title Filter Peptides Based on Missing Values Across Groups
-#' @description A method that applies two-tiered filtering based on missing values.
-#' It removes peptides that are missing in a high percentage of samples within a group,
-#' for a high percentage of groups.
-#'
-#' @param theObject An object of class `PeptideQuantitativeData`.
-#' @param grouping_variable The unquoted column name in the design matrix to use for grouping.
-#' @param groupwise_percentage_cutoff The maximum percentage of missing values allowed within a group.
-#' @param max_groups_percentage_cutoff The maximum percentage of groups that can fail the cutoff.
-#' @param peptides_intensity_cutoff_percentile The intensity percentile to define a missing value.
-#'
-#' @return The modified `PeptideQuantitativeData` object.
-#' @export
+#'@export
 setGeneric(name="removePeptidesWithMissingValuesPercent"
            , def=function( theObject
                            , grouping_variable = NULL
@@ -519,17 +434,7 @@ setMethod( f = "removePeptidesWithMissingValuesPercent"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Filter Proteins by Minimum Peptide Count
-#' @description This method filters the data to retain only proteins that are identified
-#' by a minimum number of peptides or peptidoforms.
-#'
-#' @param theObject An object of class `PeptideQuantitativeData`.
-#' @param num_peptides_per_protein_thresh The minimum number of unique peptide sequences required per protein.
-#' @param num_peptidoforms_per_protein_thresh The minimum number of unique peptidoforms (modified peptides) required per protein.
-#' @param core_utilisation The number of cores for parallel processing.
-#'
-#' @return The modified `PeptideQuantitativeData` object.
-#' @export
+#'@export
 setGeneric(name="filterMinNumPeptidesPerProtein"
            , def=function( theObject
                            , num_peptides_per_protein_thresh = NULL
@@ -588,17 +493,7 @@ setMethod( f="filterMinNumPeptidesPerProtein"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Filter Samples by Minimum Peptide Count
-#' @description This method filters out samples that have fewer than a specified
-#' number of identified peptides.
-#'
-#' @param theObject An object of class `PeptideQuantitativeData`.
-#' @param peptides_per_sample_cutoff The minimum number of peptides a sample must have to be retained.
-#' @param core_utilisation The number of cores for parallel processing.
-#' @param inclusion_list An optional character vector of sample IDs to always keep, regardless of the cutoff.
-#'
-#' @return The modified `PeptideQuantitativeData` object.
-#' @export
+#'@export
 setGeneric( name="filterMinNumPeptidesPerSample"
             , def=function( theObject, peptides_per_sample_cutoff = NULL, core_utilisation = NULL, inclusion_list = NULL) {
               standardGeneric("filterMinNumPeptidesPerSample")
@@ -643,16 +538,6 @@ setMethod( f="filterMinNumPeptidesPerSample"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Remove Peptides with Only One Replicate in a Group
-#' @description This method filters out peptides that are only observed in a single
-#' replicate within their experimental group. This is often done to increase the
-#' reliability of quantification.
-#'
-#' @param theObject An object of class `PeptideQuantitativeData`.
-#' @param replicate_group_column The unquoted column name in the design matrix that defines the groups.
-#' @param core_utilisation The number of cores for parallel processing.
-#'
-#' @return The modified `PeptideQuantitativeData` object.
 #' @export
 setGeneric( name="removePeptidesWithOnlyOneReplicate"
             , def=function( theObject, replicate_group_column = NULL, core_utilisation = NULL) {
@@ -696,14 +581,8 @@ setMethod( f="removePeptidesWithOnlyOneReplicate"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Plot Peptide and Protein Counts Per Sample
-#' @description This method generates a bar plot summarizing the number of unique
-#' peptides and proteins identified in each sample.
-#'
-#' @param theObject An object of class `PeptideQuantitativeData`.
-#'
-#' @return A ggplot object.
-#' @export
+#'@export
+
 setGeneric( name="plotPeptidesProteinsCountsPerSample"
             , def=function( theObject ) {
               standardGeneric("plotPeptidesProteinsCountsPerSample")
@@ -728,16 +607,7 @@ setMethod( f="plotPeptidesProteinsCountsPerSample"
            })
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @title Impute Missing Peptide Values
-#' @description This method performs missing value imputation on the peptide abundance data.
-#'
-#' @param theObject An object of class `PeptideQuantitativeData`.
-#' @param imputed_value_column The unquoted column name where imputed values should be stored.
-#' @param proportion_missing_values A threshold for the proportion of missing values.
-#' @param core_utilisation The number of cores for parallel processing.
-#'
-#' @return The modified `PeptideQuantitativeData` object with missing values imputed.
-#' @export
+#'@export
 setGeneric( name="peptideMissingValueImputation"
             , def=function( theObject,  imputed_value_column = NULL, proportion_missing_values = NULL, core_utilisation = NULL) {
               standardGeneric("peptideMissingValueImputation")
@@ -793,16 +663,7 @@ setMethod( f="peptideMissingValueImputation"
 # I want to input two peptide data objects and compare them,
 # to see how the number of proteins and peptides changes and how the number of samples changed
 # Use set diff or set intersect to compare the peptides, proteins, samples in the two objects
-#' @title Compare Two PeptideData Objects
-#' @description Compares two `PeptideQuantitativeData` objects and reports the number
-#' of peptides, proteins, and samples that are unique to each or shared between them.
-#'
-#' @param object_a The first `PeptideQuantitativeData` object.
-#' @param object_b The second `PeptideQuantitativeData` object.
-#'
-#' @return A tibble summarizing the comparison, with rows for peptides, proteins,
-#'   and samples, and columns for items in A but not B, in both, and in B but not A.
-#' @export
+#'@export
 compareTwoPeptideDataObjects <- function( object_a, object_b) {
 
   object_a_peptides <- object_a@peptide_data |>
@@ -863,14 +724,7 @@ compareTwoPeptideDataObjects <- function( object_a, object_b) {
 }
 
 
-#' @title Summarize a PeptideData Object
-#' @description Provides a quick summary of a `PeptideQuantitativeData` object,
-#' counting the total number of unique peptides, proteins, and samples.
-#'
-#' @param theObject An object of class `PeptideQuantitativeData`.
-#'
-#' @return A named list containing the counts of peptides, proteins, and samples.
-#' @export
+#'@export
 summarisePeptideObject <- function(theObject) {
 
   num_peptides <- theObject@peptide_data |>
