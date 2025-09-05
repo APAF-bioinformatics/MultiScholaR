@@ -21,8 +21,9 @@ save_plot(
 
 \item{plot_name}{The name to be used for the saved plot files}
 
-\item{formats}{A vector of file formats to save the plot in (default: c("pdf", "png"))
-#' @param width The width of the plot (default: 7)}
+\item{formats}{A vector of file formats to save the plot in (default: c("pdf", "png"))}
+
+\item{width}{The width of the plot (default: 7)}
 
 \item{height}{The height of the plot (default: 7)}
 
