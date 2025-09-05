@@ -710,7 +710,10 @@ runOneStringDbRankEnrichment <- function( input_table
                                          , ge_fdr = 0.05
                                          , ge_enrichment_rank_direction = -1
                                          , polling_interval_seconds = 10
-                                         , max_polling_attempts = 30) {
+                                         , max_polling_attempts = 30
+                                         , results_dir = ".") {
+  
+  dir.create( file.path( results_dir, "functional_enrichment_string_db" ), showWarnings = TRUE, recursive = TRUE)
 
   stringdb_input_table <-  input_table |>
     mutate( score = sign(log2FC) * -log10(fdr_qvalue)) |>
@@ -737,17 +740,17 @@ runOneStringDbRankEnrichment <- function( input_table
   write_lines(c("page_url", output_tbl$page_url
                 , "download_url" , output_tbl$download_url
                 , "graph_url" , output_tbl$graph_url)
-              , file.path( results_dir, "functional_enrichment_string_db", paste0( result_label, "_string_enrichment_page_url.txt") ))
+              , file.path( results_dir,  paste0( result_label, "_string_enrichment_page_url.txt") ))
 
   vroom::vroom_write( output_tbl$enrichment_data
                       , file = file.path( results_dir
-                                          , "functional_enrichment_string_db"
                                           , paste0( result_label, "_string_enrichment_results.tab") ))
 
   dir.create( file.path( results_dir, "functional_enrichment_string_db" ), showWarnings = TRUE, recursive = TRUE)
-  writeBin(output_tbl$graph_image_content
-           , file.path( results_dir , "functional_enrichment_string_db", paste0( result_label, "string_enrichment_graph.png") ))
+  # writeBin(output_tbl$graph_image_content
+  #          , file.path( results_dir , paste0( result_label, "string_enrichment_graph.png") ))
 
+  
   return(output_tbl$enrichment_data)
 
 }
