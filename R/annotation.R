@@ -1,7 +1,5 @@
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
-
-#'@export
 getUniProtAnnotation <- function(   input_table, taxonomy_id  =9606, protein_id_column = "Protein.Ids",  protein_id_delim=":", output_dir = "." ) {
 
 
