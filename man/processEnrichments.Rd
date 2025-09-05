@@ -14,7 +14,8 @@ processEnrichments(
   go_annotations = NULL,
   exclude_iea = FALSE,
   protein_id_column = "Protein.IDs",
-  contrast_names = NULL
+  contrast_names = NULL,
+  correction_method = "gSCS"
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ processEnrichments(
 \item{protein_id_column}{Name of the protein ID column (default: "Protein.IDs")}
 
 \item{contrast_names}{Vector of contrast names for output labeling}
+
+\item{correction_method}{Method for FDR correction (default: "gSCS")}
 }
 \value{
 S4 EnrichmentResults object containing enrichment data, plots, and summaries
