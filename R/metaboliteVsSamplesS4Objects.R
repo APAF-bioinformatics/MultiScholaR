@@ -43,7 +43,7 @@
 #' @importFrom dplyr pull distinct
 #' @importFrom rlang sym !!
 #' @exportClass MetaboliteAssayData
-#' @export MetaboliteAssayData
+
 MetaboliteAssayData <- setClass("MetaboliteAssayData",
     slots = c(
         metabolite_data = "list",

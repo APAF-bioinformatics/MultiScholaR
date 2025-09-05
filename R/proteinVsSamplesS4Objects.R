@@ -67,7 +67,7 @@ ProteinQuantitativeData <- setClass("ProteinQuantitativeData"
          }
 
 )
-#'@export ProteinQuantitativeData
+
 
 # Initialize method to ensure design_matrix's sample_id column is character
 setMethod("initialize", "ProteinQuantitativeData",
