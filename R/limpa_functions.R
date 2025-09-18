@@ -1289,8 +1289,8 @@ generateLimpaQCPlots <- function(after_object,
   
   if (verbose) cat("✓ limpa QC plot generation completed!\n")
   
-  # Return the composite plot
-  return(composite_plot)
+  # Return the list of individual plots instead of the composite
+  return(plot_list)
 }
 
 

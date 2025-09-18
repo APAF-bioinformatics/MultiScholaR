@@ -222,98 +222,81 @@ perform_enrichment <- function(data_subset,
 # Plot generation function
 #' @export
 generate_enrichment_plots <- function(enrichment_result, contrast, direction, pathway_dir) {
-  if (is.null(enrichment_result) || nrow(enrichment_result$result) == 0) {
-    return(list(
-      static = NULL,
-      interactive = NULL
-    ))
+  # Defensive check for empty or NULL results
+  if (is.null(enrichment_result) || is.null(enrichment_result$result) || nrow(enrichment_result$result) == 0) {
+    return(list(static = NULL, interactive = NULL))
   }
 
-  # First get the default gostplot
-  static_plot_base <- gostplot(
-    enrichment_result,
-    capped = TRUE,
-    interactive = FALSE,
-    pal = c(`GO:MF` = "#dc3912", `GO:BP` = "#ff9900", `GO:CC` = "#109618",
-            KEGG = "#dd4477", REAC = "#3366cc")
-  )
-  
-  # Extract result data for custom plotting with labels
-  result_data <- enrichment_result$result
+  # Prepare data for plotting
+  plot_data <- enrichment_result$result %>%
+    dplyr::mutate(
+      neg_log10_p = -log10(p_value),
+      # Ensure 'source' is a factor with a consistent level order for plotting
+      source = factor(source, levels = c("GO:BP", "GO:CC", "GO:MF", "KEGG", "REAC"))
+    ) %>%
+    # Drop any levels that are not actually present in the data to avoid empty spaces on the plot
+    dplyr::mutate(source = forcats::fct_drop(.data$source))
 
-  # Identify top significant terms to label
-  top_terms <- result_data %>%
-    dplyr::group_by(source) %>%
-    dplyr::arrange(p_value) %>%
+  # Identify the top significant terms to add labels for
+  top_terms <- plot_data %>%
+    dplyr::group_by(.data$source) %>%
+    dplyr::arrange(.data$p_value) %>%
     dplyr::slice_head(n = 3) %>%
     dplyr::ungroup()
 
-  # Dynamically get the name of the column mapped to the x-axis
-  x_aes_name <- rlang::as_name(static_plot_base$mapping$x)
-  plot_data_internal <- static_plot_base$data
-  
-  # Defensive check to ensure the column exists in the plot data
-  if (!x_aes_name %in% names(plot_data_internal)) {
-    stop(paste("Could not find the x-axis column '", x_aes_name, "' in the gostplot data.", sep=""))
-  }
-  
-  # Join top_terms with the plot's internal data to get the numeric x-coordinates
-  top_terms_with_pos <- top_terms %>%
-    dplyr::left_join(
-      dplyr::select(plot_data_internal, term_id, dplyr::all_of(x_aes_name)),
-      by = "term_id"
-    )
-  
-  # Create custom static plot with labels for significant terms
-  custom_static_plot <- static_plot_base +
-    # Add labels for significant terms, using the dynamically found numeric position for x
+  # Create the static ggplot object
+  static_plot <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data$source, y = .data$neg_log10_p, text = paste0(
+    "Term: ", .data$term_name, "\n",
+    "ID: ", .data$term_id, "\n",
+    "P-value: ", signif(.data$p_value, 3), "\n",
+    "Genes: ", .data$intersection_size
+  ))) +
+    ggplot2::geom_jitter(ggplot2::aes(color = .data$source, size = .data$term_size), alpha = 0.7, width = 0.2) +
     ggrepel::geom_text_repel(
-      data = top_terms_with_pos,
-      mapping = ggplot2::aes(
-        x = .data[[x_aes_name]],
-        y = -log10(p_value),
-        label = term_name
-      ),
-      size = 3,
-      max.overlaps = 15,
-      box.padding = 0.5,
-      point.padding = 0.3,
-      force = 5
-    )
+      data = top_terms,
+      ggplot2::aes(label = .data$term_name),
+      size = 3, max.overlaps = 15, box.padding = 0.5, point.padding = 0.3, force = 5
+    ) +
+    ggplot2::scale_color_manual(
+      values = c(`GO:BP` = "#ff9900", `GO:CC` = "#109618", `GO:MF` = "#dc3912", 
+                 KEGG = "#dd4477", REAC = "#3366cc"),
+      name = "Source", drop = FALSE 
+    ) +
+    ggplot2::scale_size_continuous(name = "Term Size", range = c(3, 10)) +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1, size = 10),
+      axis.title = ggplot2::element_text(size = 12),
+      plot.title = ggplot2::element_text(size = 14, face = "bold"),
+      legend.position = "right"
+    ) +
+    ggplot2::labs(
+      title = paste0("Enrichment for ", contrast, " (", direction, "-regulated)"),
+      x = "Annotation Source", y = "-log10(p-value)"
+    ) +
+    ggplot2::guides(color = "none")
 
-  # Convert to plotly (using the custom plot with labels)
-  interactive_plot <- plotly::ggplotly(custom_static_plot)
-
-  # Save interactive plot
-  plot_file <- file.path(pathway_dir,
-                         paste0(contrast, "_", direction, "_enrichment_plot.html"),
-                         fsep = "/")
-  lib_dir <- file.path(pathway_dir,
-                       paste0(contrast, "_", direction, "_libs"),
-                       fsep = "/")
-  dir.create(lib_dir, recursive = TRUE, showWarnings = FALSE)
-
-  tryCatch({
-    htmlwidgets::saveWidget(interactive_plot,
-                            file = plot_file,
-                            selfcontained = FALSE,
-                            libdir = lib_dir)
+  # Convert to an interactive plotly object
+  interactive_plot <- tryCatch({
+      plotly::ggplotly(static_plot, tooltip = "text")
   }, error = function(e) {
-    warning(sprintf("Error saving plot for %s_%s: %s", contrast, direction, e$message))
+      warning(paste("Failed to convert ggplot to plotly for", contrast, direction, ":", e$message))
+      return(NULL)
   })
 
-  # Save results table
-  result_table <- enrichment_result$result
-  result_table$parents <- sapply(result_table$parents, paste, collapse = ", ")
-  write.table(result_table,
-              file = file.path(pathway_dir,
-                               paste0(contrast, "_", direction, "_enrichment_results.tsv")),
-              sep = "\t",
-              row.names = FALSE,
-              quote = FALSE)
-
+  # Save the results data table
+  tryCatch({
+    result_table <- enrichment_result$result
+    result_table$parents <- sapply(result_table$parents, paste, collapse = ", ")
+    readr::write_tsv(result_table,
+      file = file.path(pathway_dir, paste0(contrast, "_", direction, "_enrichment_results.tsv"))
+    )
+  }, error = function(e) {
+    warning(paste("Failed to write enrichment results table for", contrast, direction, ":", e$message))
+  })
+  
   return(list(
-    static = custom_static_plot,
+    static = static_plot,
     interactive = interactive_plot
   ))
 }
@@ -409,8 +392,8 @@ processEnrichments <- function(de_results,
 
     # Convert taxon_id to species
     species <- supported_organisms |>
-      filter(taxid == as.character(taxon_id)) |>
-      dplyr::pull(id)
+      dplyr::filter(.data$taxid == as.character(taxon_id)) |>
+      dplyr::pull(.data$id)
 
     enrichment_results <- createEnrichmentResults(de_results@contrasts)
 
@@ -445,20 +428,10 @@ processEnrichments <- function(de_results,
          message(sprintf("      Data State (de_data Before Modify): Dims=%d rows, %d cols. First 5 IDs: %s", nrow(de_data), ncol(de_data), paste(head(de_data[[protein_id_column]], 5), collapse=", ")))
 
          subset_sig <- de_data |>
-           dplyr::mutate(
-             !!rlang::sym(protein_id_column) := purrr::map_chr(.data[[protein_id_column]], function(x) {
-               if (is.na(x) || x == "") return(x)
-               tryCatch({
-                 # Attempt to split and take first element
-                 stringr::str_split(x, ":")[[1]][1]
-               }, error = function(e) {
-                 # If splitting fails, return original value
-                 message(sprintf("Warning: Failed to split protein ID '%s', using original value", x))
-                 x
-               })
-             })
-           ) |>
-           filter(fdr_qvalue < q_cutoff)
+            dplyr::mutate(
+              !!rlang::sym(protein_id_column) := stringr::str_remove(.data[[protein_id_column]], ":.*")
+            ) |>
+           dplyr::filter(.data$fdr_qvalue < q_cutoff)
 
          message("   processEnrichments Step: Protein ID splitting and filtering complete.")
          message(sprintf("      Data State (subset_sig After Modify): Dims=%d rows, %d cols.", nrow(subset_sig), ncol(subset_sig)))
@@ -484,24 +457,16 @@ processEnrichments <- function(de_results,
           print(range(subset_sig$log2FC, na.rm = TRUE))
         }
 
-        # Apply enrichment q-value filter for final significance
-        subset_for_enrichment <- subset_sig |>
-          filter(fdr_qvalue < q_cutoff)
-        
-        message(sprintf("Proteins passing enrichment q-value cutoff (%.3f): %d", q_cutoff, nrow(subset_for_enrichment)))
+        # No longer need subset_for_enrichment, as subset_sig is already filtered
+        message(sprintf("Proteins available for enrichment: %d", nrow(subset_sig)))
         
         # ✅ DEBUG 66: Check subset_for_enrichment
-        message("      Data State (subset_for_enrichment) Structure:")
-        utils::str(subset_for_enrichment)
-        if (nrow(subset_for_enrichment) > 0) {
-          message("      Data State (subset_for_enrichment) Head:")
-          print(head(subset_for_enrichment))
-        } else {
-          message("      Data State (subset_for_enrichment): NO PROTEINS PASS ENRICHMENT CUTOFF!")
+        if (nrow(subset_sig) == 0) {
+          message("      Data State (subset_sig): NO PROTEINS PASS ENRICHMENT CUTOFF!")
         }
 
-        up_matrix <- subset_for_enrichment |>
-          filter(log2FC > up_cutoff)
+        up_matrix <- subset_sig |>
+          dplyr::filter(.data$log2FC > up_cutoff)
         message(sprintf("Up-regulated proteins (log2FC > %g): %d", up_cutoff, nrow(up_matrix)))
         
         # ✅ DEBUG 66: Check up_matrix details
@@ -514,12 +479,12 @@ processEnrichments <- function(de_results,
           print(summary(up_matrix$log2FC))
         } else {
           message("      Data State (up_matrix): NO UP-REGULATED PROTEINS FOUND!")
-          message(sprintf("      Debug: up_cutoff = %g, max log2FC in subset_for_enrichment = %g", 
-                         up_cutoff, if(nrow(subset_for_enrichment) > 0) max(subset_for_enrichment$log2FC, na.rm = TRUE) else NA))
+          message(sprintf("      Debug: up_cutoff = %g, max log2FC in subset_sig = %g", 
+                         up_cutoff, if(nrow(subset_sig) > 0) max(subset_sig$log2FC, na.rm = TRUE) else NA))
         }
 
-        down_matrix <- subset_for_enrichment |>
-          filter(log2FC < -down_cutoff)
+        down_matrix <- subset_sig |>
+          dplyr::filter(.data$log2FC < -down_cutoff)
         message(sprintf("Down-regulated proteins (log2FC < -%g): %d", down_cutoff, nrow(down_matrix)))
         
         # ✅ DEBUG 66: Check down_matrix details
@@ -532,8 +497,8 @@ processEnrichments <- function(de_results,
           print(summary(down_matrix$log2FC))
         } else {
           message("      Data State (down_matrix): NO DOWN-REGULATED PROTEINS FOUND!")
-          message(sprintf("      Debug: down_cutoff = %g, min log2FC in subset_for_enrichment = %g", 
-                         down_cutoff, if(nrow(subset_for_enrichment) > 0) min(subset_for_enrichment$log2FC, na.rm = TRUE) else NA))
+          message(sprintf("      Debug: down_cutoff = %g, min log2FC in subset_sig = %g", 
+                         down_cutoff, if(nrow(subset_sig) > 0) min(subset_sig$log2FC, na.rm = TRUE) else NA))
         }
 
         # Get background IDs from the full de_data for this contrast
@@ -804,22 +769,22 @@ processEnrichments <- function(de_results,
 
     # Prepare GO term mappings
     bp_terms <- go_annotations |>
-      dplyr::filter(!is.na(go_id_go_biological_process)) |>
-      tidyr::separate_rows(go_id_go_biological_process, sep = "; ") |>
-      dplyr::select(Entry, go_id_go_biological_process) |>
-      dplyr::rename(TERM = go_id_go_biological_process)
+      dplyr::filter(!is.na(.data$go_id_go_biological_process)) |>
+      tidyr::separate_rows(.data$go_id_go_biological_process, sep = "; ") |>
+      dplyr::select(.data$Entry, .data$go_id_go_biological_process) |>
+      dplyr::rename(TERM = .data$go_id_go_biological_process)
 
     mf_terms <- go_annotations |>
-      dplyr::filter(!is.na(go_id_go_molecular_function)) |>
-      tidyr::separate_rows(go_id_go_molecular_function, sep = "; ") |>
-      dplyr::select(Entry, go_id_go_molecular_function) |>
-      dplyr::rename(TERM = go_id_go_molecular_function)
+      dplyr::filter(!is.na(.data$go_id_go_molecular_function)) |>
+      tidyr::separate_rows(.data$go_id_go_molecular_function, sep = "; ") |>
+      dplyr::select(.data$Entry, .data$go_id_go_molecular_function) |>
+      dplyr::rename(TERM = .data$go_id_go_molecular_function)
 
     cc_terms <- go_annotations |>
-      dplyr::filter(!is.na(go_id_go_cellular_compartment)) |>
-      tidyr::separate_rows(go_id_go_cellular_compartment, sep = "; ") |>
-      dplyr::select(Entry, go_id_go_cellular_compartment) |>
-      dplyr::rename(TERM = go_id_go_cellular_compartment)
+      dplyr::filter(!is.na(.data$go_id_go_cellular_compartment)) |>
+      tidyr::separate_rows(.data$go_id_go_cellular_compartment, sep = "; ") |>
+      dplyr::select(.data$Entry, .data$go_id_go_cellular_compartment) |>
+      dplyr::rename(TERM = .data$go_id_go_cellular_compartment)
 
     # Combine all terms
     all_terms <- rbind(
@@ -830,7 +795,7 @@ processEnrichments <- function(de_results,
 
     # Create term mappings with explicit dplyr namespace
     term2gene <- all_terms |>
-      dplyr::select(TERM, Entry) |>
+      dplyr::select(.data$TERM, .data$Entry) |>
       dplyr::distinct()
 
     term2name <- data.frame(
@@ -877,16 +842,16 @@ processEnrichments <- function(de_results,
         message(sprintf("Total proteins before filtering: %d", nrow(de_data)))
 
         subset_sig <- de_data |>
-          filter(fdr_qvalue < q_cutoff)
+          dplyr::filter(.data$fdr_qvalue < q_cutoff)
 
         message(sprintf("Proteins passing FDR cutoff (%g): %d", q_cutoff, nrow(subset_sig)))
 
         up_genes <- subset_sig |>
-          filter(log2FC > up_cutoff) |>
+          dplyr::filter(.data$log2FC > up_cutoff) |>
           dplyr::pull({{protein_id_column}})
 
         down_genes <- subset_sig |>
-          filter(log2FC < -down_cutoff) |>
+          dplyr::filter(.data$log2FC < -down_cutoff) |>
           dplyr::pull({{protein_id_column}})
 
         # Background genes
@@ -944,30 +909,30 @@ processEnrichments <- function(de_results,
     # Create GO term mappings once (moved outside the plotting function)
     go_term_map <- dplyr::bind_rows(
       go_annotations |>
-        tidyr::separate_rows(go_id_go_biological_process, go_term_go_biological_process, sep = "; ") |>
-        dplyr::select(go_id_go_biological_process, go_term_go_biological_process) |>
-        dplyr::rename(ID = go_id_go_biological_process, term = go_term_go_biological_process),
+        tidyr::separate_rows(.data$go_id_go_biological_process, .data$go_term_go_biological_process, sep = "; ") |>
+        dplyr::select(.data$go_id_go_biological_process, .data$go_term_go_biological_process) |>
+        dplyr::rename(ID = .data$go_id_go_biological_process, term = .data$go_term_go_biological_process),
 
       go_annotations |>
-        tidyr::separate_rows(go_id_go_molecular_function, go_term_go_molecular_function, sep = "; ") |>
-        dplyr::select(go_id_go_molecular_function, go_term_go_molecular_function) |>
-        dplyr::rename(ID = go_id_go_molecular_function, term = go_term_go_molecular_function),
+        tidyr::separate_rows(.data$go_id_go_molecular_function, .data$go_term_go_molecular_function, sep = "; ") |>
+        dplyr::select(.data$go_id_go_molecular_function, .data$go_term_go_molecular_function) |>
+        dplyr::rename(ID = .data$go_id_go_molecular_function, term = .data$go_term_go_molecular_function),
 
       go_annotations |>
-        tidyr::separate_rows(go_id_go_cellular_compartment, go_term_go_cellular_compartment, sep = "; ") |>
-        dplyr::select(go_id_go_cellular_compartment, go_term_go_cellular_compartment) |>
-        dplyr::rename(ID = go_id_go_cellular_compartment, term = go_term_go_cellular_compartment)
+        tidyr::separate_rows(.data$go_id_go_cellular_compartment, .data$go_term_go_cellular_compartment, sep = "; ") |>
+        dplyr::select(.data$go_id_go_cellular_compartment, .data$go_term_go_cellular_compartment) |>
+        dplyr::rename(ID = .data$go_id_go_cellular_compartment, term = .data$go_term_go_cellular_compartment)
     ) |>
       dplyr::distinct()
 
     # Create category mapping once
     go_category_map <- all_terms |>
-      dplyr::distinct(TERM, ONTOLOGY) |>
+      dplyr::distinct(.data$TERM, .data$ONTOLOGY) |>
       dplyr::mutate(
         source = dplyr::case_when(
-          ONTOLOGY == "BP" ~ "GO:BP",
-          ONTOLOGY == "CC" ~ "GO:CC",
-          ONTOLOGY == "MF" ~ "GO:MF"
+          .data$ONTOLOGY == "BP" ~ "GO:BP",
+          .data$ONTOLOGY == "CC" ~ "GO:CC",
+          .data$ONTOLOGY == "MF" ~ "GO:MF"
         )
       )
 
@@ -990,14 +955,14 @@ processEnrichments <- function(de_results,
                   dplyr::left_join(go_category_map, by = c("ID" = "TERM")) |>
                   dplyr::left_join(go_term_map, by = "ID") |>
                   dplyr::mutate(
-                    source = dplyr::coalesce(source, "Other"),
-                    source = factor(source, levels = c("GO:BP", "GO:CC", "GO:MF", "Other")),
-                    neg_log10_q = -log10(qvalue),  # Using qvalue directly from clusterProfiler output
-                    gene_count = Count,
-                    significant = qvalue < q_cutoff  # Add significance flag based on q_cutoff
+                    source = dplyr::coalesce(.data$source, "Other"),
+                    source = factor(.data$source, levels = c("GO:BP", "GO:CC", "GO:MF", "Other")),
+                    neg_log10_q = -log10(.data$qvalue),  # Using qvalue directly from clusterProfiler output
+                    gene_count = .data$Count,
+                    significant = .data$qvalue < q_cutoff  # Add significance flag based on q_cutoff
                   ) |>
                   dplyr::mutate(
-                    term = dplyr::coalesce(term, Description)
+                    term = dplyr::coalesce(.data$term, .data$Description)
                   )
 
                 # Save results table
@@ -1010,32 +975,32 @@ processEnrichments <- function(de_results,
                 # Generate static plot with q-value threshold line
                 # First identify top significant terms to label
                 top_terms <- plot_data %>%
-                  dplyr::filter(qvalue < q_cutoff) %>%
-                  dplyr::arrange(qvalue) %>%
+                  dplyr::filter(.data$qvalue < q_cutoff) %>%
+                  dplyr::arrange(.data$qvalue) %>%
                   dplyr::slice_head(n = 5) # Label top 5 most significant terms
                 
                 static <- ggplot2::ggplot(plot_data,
-                                          ggplot2::aes(x = source,
-                                                       y = neg_log10_q,
+                                          ggplot2::aes(x = .data$source,
+                                                       y = .data$neg_log10_q,
                                                        text = paste0(
-                                                         "Term: ", term, "\n",
-                                                         "ID: ", ID, "\n",
-                                                         "Genes: ", Count, "\n",
-                                                         "Gene Ratio: ", GeneRatio, "\n",
-                                                         "Background Ratio: ", BgRatio, "\n",
-                                                         "Q-value: ", signif(qvalue, 3)
+                                                         "Term: ", .data$term, "\n",
+                                                         "ID: ", .data$ID, "\n",
+                                                         "Genes: ", .data$Count, "\n",
+                                                         "Gene Ratio: ", .data$GeneRatio, "\n",
+                                                         "Background Ratio: ", .data$BgRatio, "\n",
+                                                         "Q-value: ", signif(.data$qvalue, 3)
                                                        ))) +
                   ggplot2::geom_hline(yintercept = -log10(q_cutoff),
                                       linetype = "dashed",
                                       color = "darkgrey") +
-                  ggplot2::geom_jitter(ggplot2::aes(size = gene_count,
-                                                    color = -log10(qvalue)),
+                  ggplot2::geom_jitter(ggplot2::aes(size = .data$gene_count,
+                                                    color = -log10(.data$qvalue)),
                                        alpha = 0.7,
                                        width = 0.2) +
                   # Add labels for significant terms
                   ggrepel::geom_text_repel(
                     data = top_terms,
-                    ggplot2::aes(label = term),
+                    ggplot2::aes(label = .data$term),
                     size = 3,
                     max.overlaps = 15,
                     box.padding = 0.5,
