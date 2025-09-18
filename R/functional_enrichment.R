@@ -227,6 +227,9 @@ generate_enrichment_plots <- function(enrichment_result, contrast, direction, pa
     return(list(static = NULL, interactive = NULL))
   }
 
+  # Extract the significance threshold from the result object metadata
+  significance_threshold <- enrichment_result$meta$query_metadata$user_threshold
+
   # Prepare data for plotting
   plot_data <- enrichment_result$result %>%
     dplyr::mutate(
@@ -235,26 +238,28 @@ generate_enrichment_plots <- function(enrichment_result, contrast, direction, pa
       source = factor(source, levels = c("GO:BP", "GO:CC", "GO:MF", "KEGG", "REAC"))
     ) %>%
     # Drop any levels that are not actually present in the data to avoid empty spaces on the plot
-    dplyr::mutate(source = forcats::fct_drop(.data$source))
+    dplyr::mutate(source = forcats::fct_drop(source))
 
   # Identify the top significant terms to add labels for
   top_terms <- plot_data %>%
-    dplyr::group_by(.data$source) %>%
-    dplyr::arrange(.data$p_value) %>%
+    dplyr::group_by(source) %>%
+    dplyr::arrange(p_value) %>%
     dplyr::slice_head(n = 3) %>%
     dplyr::ungroup()
 
   # Create the static ggplot object
-  static_plot <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data$source, y = .data$neg_log10_p, text = paste0(
-    "Term: ", .data$term_name, "\n",
-    "ID: ", .data$term_id, "\n",
-    "P-value: ", signif(.data$p_value, 3), "\n",
-    "Genes: ", .data$intersection_size
+  static_plot <- ggplot2::ggplot(plot_data, ggplot2::aes(x = source, y = neg_log10_p, text = paste0(
+    "Term: ", term_name, "\n",
+    "ID: ", term_id, "\n",
+    "P-value: ", signif(p_value, 3), "\n",
+    "Genes: ", intersection_size
   ))) +
-    ggplot2::geom_jitter(ggplot2::aes(color = .data$source, size = .data$term_size), alpha = 0.7, width = 0.2) +
+    # Add a line for the significance threshold
+    ggplot2::geom_hline(yintercept = -log10(significance_threshold), linetype = "dashed", color = "red") +
+    ggplot2::geom_jitter(ggplot2::aes(color = source, size = term_size), alpha = 0.7, width = 0.2) +
     ggrepel::geom_text_repel(
       data = top_terms,
-      ggplot2::aes(label = .data$term_name),
+      ggplot2::aes(label = term_name),
       size = 3, max.overlaps = 15, box.padding = 0.5, point.padding = 0.3, force = 5
     ) +
     ggplot2::scale_color_manual(
