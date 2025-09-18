@@ -618,7 +618,21 @@ setClass("GridPlotData",
            density_titles = "list",
            rle_titles = "list",
            pearson_titles = "list",
-           cancor_titles = "list"
+           cancor_titles = "list",
+           limpa_plots = "list"
+         ),
+         prototype = list(
+           pca_plots = list(),
+           density_plots = list(),
+           rle_plots = list(),
+           pearson_plots = list(),
+           cancor_plots = list(),
+           pca_titles = list(),
+           density_titles = list(),
+           rle_titles = list(),
+           pearson_titles = list(),
+           cancor_titles = list(),
+           limpa_plots = list()
          ))
 
 #' @export
@@ -640,7 +654,8 @@ setMethod("InitialiseGrid",
                 density_titles = list(),
                 rle_titles = list(),
                 pearson_titles = list(),
-                cancor_titles = list())
+                cancor_titles = list(),
+                limpa_plots = list())
           })
 
 
@@ -724,7 +739,7 @@ setMethod(f = "createGridQC",
             top_title_row <- NULL
             
             if (!is.null(workflow_name) && workflow_name == "DIA_limpa") {
-              column_titles <- c("log2", "Cyclic Loess", "RUV-III-C", "Protein_filtered")
+              column_titles <- c("log2", "Cyclic Loess", "RUV-III-C", "limpa_imputed_rollup", "Protein_filtered")
               num_cols_for_titles <- if (!is.null(ncol)) ncol else length(plots$pca)
               if (num_cols_for_titles > 0) {
                  top_title_row <- wrap_plots(lapply(column_titles[1:num_cols_for_titles], createLabelPlot), ncol = num_cols_for_titles)
@@ -760,7 +775,27 @@ setMethod(f = "createGridQC",
             }
             cancor_row <- assemble_plot_row(plots_no_legend$cancor)
             
-            main_panel_list <- purrr::compact(list(top_title_row, pca_row, density_row, rle_row, pearson_row, cancor_title_plot, cancor_row))
+            # --- New Limpa Plot Row ---
+            limpa_row <- NULL
+            if (!is.null(workflow_name) && workflow_name == "DIA_limpa" && length(theObject@limpa_plots) > 0) {
+              # Style and remove legends from limpa plots
+              limpa_plots_styled <- purrr::compact(lapply(theObject@limpa_plots, style_plot))
+              limpa_plots_no_legend <- lapply(limpa_plots_styled, function(p) {
+                if (!is.null(p)) p + theme(legend.position = "none") else NULL
+              })
+              
+              # Combine cancor plot and limpa plots
+              combined_limpa_cancor_plots <- c(plots_no_legend$cancor, limpa_plots_no_legend)
+              
+              # Assemble the row
+              limpa_row <- assemble_plot_row(combined_limpa_cancor_plots)
+              
+              # Clear cancor plot from its original row to avoid duplication
+              cancor_title_plot <- NULL
+              cancor_row <- NULL
+            }
+            
+            main_panel_list <- purrr::compact(list(top_title_row, pca_row, density_row, rle_row, pearson_row, cancor_title_plot, cancor_row, limpa_row))
             
             if (length(main_panel_list) == 0) {
               return(ggplot() + theme_void() + labs(title = "No plots available to generate a composite figure."))
