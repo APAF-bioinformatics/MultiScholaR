@@ -3,6 +3,8 @@ source("ui/proteomics/qc/peptideQCApplet_ui.R")
 source("server/proteomics/qc/peptideQCApplet_server.R")
 source("ui/proteomics/qc/proteinQCApplet_ui.R")
 source("server/proteomics/qc/proteinQCApplet_server.R")
+source("R/shiny/server/proteomics/qc/protein/create_s4_from_protein_data_server.R")
+source("R/shiny/ui/proteomics/qc/create_s4_from_protein_data_ui.R")
 
 #' @title qualityControlAppletModule
 #'
@@ -17,60 +19,37 @@ NULL
 #' @export
 #' @import shiny
 #' @import shinydashboard
-qualityControlAppletUI <- function(id) {
+qualityControlAppletUI <- function(id, workflow_data) {
   ns <- NS(id)
+  
+  # Get workflow type to conditionally render UI
+  workflow_type <- shiny::isolate(workflow_data$state_manager$workflow_type)
+  
+  # Define UI for LFQ/DIA workflows (peptide + protein tabs)
+  lfq_dia_ui <- shiny::tabsetPanel(
+    id = ns("qc_tabs_lfq"),
+    shiny::tabPanel("Peptide QC", peptideQCAppletUI(ns("peptide_qc"))),
+    shiny::tabPanel("Protein QC", proteinQCAppletUI(ns("protein_qc")))
+  )
+  
+  # Define UI for TMT workflow (S4 creation + protein tabs)
+  tmt_ui <- shiny::tabsetPanel(
+    id = ns("qc_tabs_tmt"),
+    shiny::tabPanel("Initial Protein Processing", create_s4_from_protein_data_ui(ns("create_s4_tmt"))),
+    shiny::tabPanel("Protein QC", proteinQCAppletUI(ns("protein_qc")))
+  )
   
   shiny::fluidRow(
     shiny::column(12,
       shiny::wellPanel(
-        shiny::h3("Quality Control"),
-        shiny::p("This section provides tools for assessing and filtering the data based on quality metrics."),
+        shiny::h3("Quality Control & Filtering"),
         
-        shiny::tabsetPanel(
-          id = ns("qc_tabs"),
-          
-          # == Raw Data QC Sub-Tab (Coordinator-owned) ==================
-          shiny::tabPanel(
-            "Raw Data Overview",
-            icon = shiny::icon("images"),
-            shiny::br(),
-            shiny::fluidRow(
-              shiny::column(3,
-                shiny::wellPanel(
-                  shiny::h4("Raw Data Visualization"),
-                  shiny::p("This generates a plot summarizing the number of proteins identified at various stages of the raw data processing."),
-                  shiny::actionButton(ns("run_raw_data_qc"), "Generate Plot", class = "btn-primary", width = "100%"),
-                  shiny::hr(),
-                  shiny::h5("Session Reset"),
-                  shiny::p("Reset the analysis back to the raw data state. This will clear all filtering steps."),
-                  shiny::actionButton(ns("revert_to_raw"), "Revert to Raw Data", 
-                    class = "btn-warning", width = "100%")
-                )
-              ),
-              shiny::column(9,
-                shinyjqui::jqui_resizable(
-                  shiny::plotOutput(ns("raw_data_plot"), height = "800px", width = "100%")
-                )
-              )
-            )
-          ),
-          
-          # == Peptide Filtering Component ===============================
-          shiny::tabPanel(
-            "Peptide Filtering",
-            icon = shiny::icon("filter"),
-            shiny::br(),
-            peptideQCAppletUI(ns("peptide"))
-          ),
-          
-          # == Protein Filtering Component ===============================
-          shiny::tabPanel(
-            "Protein Filtering",
-            icon = shiny::icon("filter"),
-            shiny::br(),
-            proteinQCAppletUI(ns("protein"))
-          )
-        )
+        # Conditionally render the correct UI based on workflow type
+        if (workflow_type == "TMT") {
+          tmt_ui
+        } else {
+          lfq_dia_ui
+        }
       )
     )
   )
@@ -164,11 +143,32 @@ qualityControlAppletServer <- function(id, workflow_data, experiment_paths, omic
     
     # == Component Server Calls ==========================================
     
-    # Peptide filtering component server
-    peptideQCAppletServer("peptide", workflow_data, experiment_paths, omic_type, experiment_label)
+    # Call the appropriate sub-applet orchestrators based on workflow type
+    workflow_type <- shiny::isolate(workflow_data$state_manager$workflow_type)
+    logger::log_info(paste("Main QC Applet: Routing for workflow type:", workflow_type))
     
-    # Protein filtering component server
-    proteinQCAppletServer("protein", workflow_data, experiment_paths, omic_type, experiment_label)
+    if (workflow_type %in% c("LFQ", "DIA")) {
+      # The peptide applet orchestrator will handle all peptide-level steps
+      peptideQCAppletServer("peptide_qc", workflow_data, experiment_paths, omic_type, experiment_label)
+      
+      # The protein applet orchestrator will handle all protein-level steps
+      proteinQCAppletServer("protein_qc", workflow_data, experiment_paths, omic_type, experiment_label)
+      
+    } else if (workflow_type == "TMT") {
+      # For TMT, we first create the S4 object from the protein data
+      create_s4_from_protein_data_server("create_s4_tmt", workflow_data, omic_type, experiment_label)
+      
+      # Then, we call the protein QC orchestrator, which will run the common steps
+      proteinQCAppletServer("protein_qc", workflow_data, experiment_paths, omic_type, experiment_label)
+    }
+    
+    # Final step: update tab status when the final state is reached
+    observeEvent(workflow_data$state_manager$states$protein_replicate_filtered, {
+      # This observer is triggered when the final protein state is reached.
+      # It can be used to update the UI or perform final actions.
+      # For now, we'll just log it.
+      logger::log_info("Final protein state reached. Quality Control module is ready.")
+    })
     
   })
 } 

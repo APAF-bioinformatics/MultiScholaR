@@ -78,6 +78,8 @@ designMatrixAppletUI <- function(id) {
 #' @importFrom utils write.table
 #' @importFrom vroom vroom
 #' @importFrom shinyFiles shinyDirButton shinyDirChoose parseDirPath getVolumes
+#' @importFrom tidyr pivot_wider
+#' @importFrom rlang sym
 designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volumes = NULL) {
   message(sprintf("--- Entering designMatrixAppletServer ---"))
   message(sprintf("   designMatrixAppletServer Arg: id = %s", id))
@@ -268,32 +270,57 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
           logger::log_info("Saved contrasts_tbl to global environment for DE analysis.")
         }
         
-        # --- Create S4 Object and Save State (same logic as builder) ---
-        logger::log_info("Creating PeptideQuantitativeData S4 object from imported design.")
-        peptide_data_s4 <- new(
-          "PeptideQuantitativeData",
-          peptide_data = workflow_data$data_cln,
-          protein_id_column = "Protein.Ids",
-          peptide_sequence_column = "Stripped.Sequence",
-          q_value_column = "Q.Value",
-          global_q_value_column = "Global.Q.Value",
-          proteotypic_peptide_sequence_column = "Proteotypic",
-          raw_quantity_column = "Precursor.Quantity",
-          norm_quantity_column = "Precursor.Normalised",
-          is_logged_data = FALSE,
-          design_matrix = workflow_data$design_matrix,
-          sample_id = "Run",
-          group_id = "group",
-          technical_replicate_id = "replicates",
-          args = workflow_data$config_list
-        )
+        # --- Create S4 Object and Save State (Conditional Orchestration) ---
+        workflow_type <- shiny::isolate(workflow_data$state_manager$workflow_type)
         
-        logger::log_info("Saving imported S4 object to R6 state manager as 'raw_data_s4'.")
+        if (workflow_type %in% c("DIA", "LFQ")) {
+          # For peptide workflows, the data_cln is already in the correct long format.
+          # Use the existing constructor for peptide-level data.
+          s4_object <- PeptideQuantitativeDataDiann(
+            peptide_data = workflow_data$data_cln,
+            design_matrix = workflow_data$design_matrix,
+            args = workflow_data$config_list
+          )
+          state_name <- "raw_data_s4"
+          description <- "Initial Peptide S4 object created after design matrix."
+
+        } else if (workflow_type == "TMT") {
+          # For protein workflows (TMT), the data_cln is long, but the S4 constructor needs wide.
+          # We must reshape the data first.
+          
+          logger::log_info("TMT workflow: Reshaping protein data from long to wide format for S4 creation.")
+          
+          protein_quant_table_wide <- workflow_data$data_cln |>
+            tidyr::pivot_wider(
+              id_cols = !!sym(workflow_data$column_mapping$protein_col),
+              names_from = !!sym(workflow_data$column_mapping$run_col),
+              values_from = !!sym(workflow_data$column_mapping$quantity_col)
+            )
+
+          # Use the existing constructor for protein-level data with the now wide table.
+          s4_object <- ProteinQuantitativeData(
+            protein_quant_table = protein_quant_table_wide,
+            protein_id_column = workflow_data$column_mapping$protein_col,
+            design_matrix = workflow_data$design_matrix,
+            sample_id = "Run",
+            group_id = "group",
+            technical_replicate_id = "replicates",
+            args = workflow_data$config_list
+          )
+          state_name <- "protein_s4_initial"
+          description <- "Initial Protein S4 object created from TMT data after design matrix."
+
+        } else {
+          stop("Unknown workflow_type in designMatrixAppletServer: ", workflow_type)
+        }
+        
+        # Save the dynamically created S4 object to the state manager
+        logger::log_info(paste("Saving S4 object to R6 state manager as:", state_name))
         workflow_data$state_manager$saveState(
-            state_name = "raw_data_s4",
-            s4_data_object = peptide_data_s4,
+            state_name = state_name,
+            s4_data_object = s4_object,
             config_object = workflow_data$config_list,
-            description = "S4 object created from imported design matrix."
+            description = description
         )
         
         workflow_data$tab_status$design_matrix <- "complete"
@@ -390,32 +417,57 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
               logger::log_info("Saved contrasts_tbl to global environment for DE analysis.")
           }
 
-          # --- Create S4 Object and Save Initial State ---
-          logger::log_info("Creating PeptideQuantitativeData S4 object.")
-          peptide_data_s4 <- new(
-            "PeptideQuantitativeData",
-            peptide_data = workflow_data$data_cln,
-            protein_id_column = "Protein.Ids",
-            peptide_sequence_column = "Stripped.Sequence",
-            q_value_column = "Q.Value",
-            global_q_value_column = "Global.Q.Value",
-            proteotypic_peptide_sequence_column = "Proteotypic",
-            raw_quantity_column = "Precursor.Quantity",
-            norm_quantity_column = "Precursor.Normalised",
-            is_logged_data = FALSE,
-            design_matrix = workflow_data$design_matrix,
-            sample_id = "Run",
-            group_id = "group",
-            technical_replicate_id = "replicates",
-            args = workflow_data$config_list
-          )
+          # --- Create S4 Object and Save State (Conditional Orchestration) ---
+          workflow_type <- shiny::isolate(workflow_data$state_manager$workflow_type)
           
-          logger::log_info("Saving S4 object to R6 state manager as 'raw_data_s4'.")
+          if (workflow_type %in% c("DIA", "LFQ")) {
+            # For peptide workflows, the data_cln is already in the correct long format.
+            # Use the existing constructor for peptide-level data.
+            s4_object <- PeptideQuantitativeDataDiann(
+              peptide_data = workflow_data$data_cln,
+              design_matrix = workflow_data$design_matrix,
+              args = workflow_data$config_list
+            )
+            state_name <- "raw_data_s4"
+            description <- "Initial Peptide S4 object created after design matrix."
+
+          } else if (workflow_type == "TMT") {
+            # For protein workflows (TMT), the data_cln is long, but the S4 constructor needs wide.
+            # We must reshape the data first.
+            
+            logger::log_info("TMT workflow: Reshaping protein data from long to wide format for S4 creation.")
+            
+            protein_quant_table_wide <- workflow_data$data_cln |>
+              tidyr::pivot_wider(
+                id_cols = !!sym(workflow_data$column_mapping$protein_col),
+                names_from = !!sym(workflow_data$column_mapping$run_col),
+                values_from = !!sym(workflow_data$column_mapping$quantity_col)
+              )
+
+            # Use the existing constructor for protein-level data with the now wide table.
+            s4_object <- ProteinQuantitativeData(
+              protein_quant_table = protein_quant_table_wide,
+              protein_id_column = workflow_data$column_mapping$protein_col,
+              design_matrix = workflow_data$design_matrix,
+              sample_id = "Run",
+              group_id = "group",
+              technical_replicate_id = "replicates",
+              args = workflow_data$config_list
+            )
+            state_name <- "protein_s4_initial"
+            description <- "Initial Protein S4 object created from TMT data after design matrix."
+
+          } else {
+            stop("Unknown workflow_type in designMatrixAppletServer: ", workflow_type)
+          }
+          
+          # Save the dynamically created S4 object to the state manager
+          logger::log_info(paste("Saving S4 object to R6 state manager as:", state_name))
           workflow_data$state_manager$saveState(
-              state_name = "raw_data_s4",
-              s4_data_object = peptide_data_s4,
+              state_name = state_name,
+              s4_data_object = s4_object,
               config_object = workflow_data$config_list,
-              description = "Initial S4 object created after design matrix definition."
+              description = description
           )
           
           # 4. Update tab status to 'complete'

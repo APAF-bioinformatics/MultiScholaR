@@ -37,7 +37,7 @@ setupImportUi <- function(id) {
             } else {
               shiny::fileInput(ns("search_results_standard"), 
                        "Select proteomics search results file:",
-                       accept = c(".tsv", ".txt", ".tab", ".csv"))
+                       accept = c(".tsv", ".txt", ".tab", ".csv", ".xlsx"))
             },
             
             # Format detection output
@@ -50,7 +50,8 @@ setupImportUi <- function(id) {
                                   "DIA-NN" = "diann",
                                   "Spectronaut DIA" = "spectronaut",
                                   "FragPipe LFQ" = "fragpipe",
-                                  "MaxQuant LFQ" = "maxquant"),
+                                  "MaxQuant LFQ" = "maxquant",
+                                  "Proteome Discoverer TMT" = "pd_tmt"),
                         selected = "auto",
                         inline = TRUE),
             
@@ -176,6 +177,9 @@ setupImportUi <- function(id) {
 #' @importFrom ini read.ini
 #' @export
 setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NULL) {
+  # Source external helpers
+  source(file.path("..", "..", "..", "tmt_import_helpers.R"), local = TRUE)
+  
   message(sprintf("--- Entering setupImportServer ---"))
   message(sprintf("   setupImportServer Arg: id = %s", id))
   message(sprintf("   setupImportServer Arg: volumes is NULL = %s", is.null(volumes)))
@@ -256,7 +260,7 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
         "search_results", 
         roots = volumes, 
         session = session,
-        filetypes = c("tsv", "txt", "tab", "csv")
+        filetypes = c("tsv", "txt", "tab", "csv", "xlsx")
       )
       
       message("   setupImportServer Step: shinyFileChoose for search_results completed")
@@ -453,6 +457,7 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
         "spectronaut" = "Spectronaut DIA",
         "fragpipe" = "FragPipe LFQ",
         "maxquant" = "MaxQuant LFQ",
+        "pd_tmt" = "Proteome Discoverer TMT",
         "unknown" = "Unknown format"
       )
       
@@ -551,6 +556,9 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
               use_lfq = input$maxquant_use_lfq %||% TRUE,
               filter_contaminants = input$maxquant_filter_contaminants %||% TRUE
             ),
+            "pd_tmt" = importProteomeDiscovererTMTData(
+              filepath = search_results_path
+            ),
             stop("Unsupported format: ", format)
           )
         }, error = function(e) {
@@ -573,6 +581,15 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
         
         # Initialize data_cln as a copy of data_tbl (will be modified by design matrix)
         workflow_data$data_cln <- data_import_result$data
+        
+        # Set workflow type based on detected format
+        if (format == "pd_tmt") {
+          workflow_data$state_manager$setWorkflowType("TMT")
+        } else if (format == "diann") {
+          workflow_data$state_manager$setWorkflowType("DIA")
+        } else {
+          workflow_data$state_manager$setWorkflowType("LFQ")
+        }
         
         # Read FASTA file path (we don't parse it here, just store the path)
         workflow_data$fasta_file_path <- fasta_path
@@ -995,11 +1012,20 @@ detectProteomicsFormat <- function(headers, filename, preview_lines = NULL) {
   maxquant_score <- maxquant_found / length(maxquant_markers)
   if (grepl("proteingroups", filename_lower)) maxquant_score <- maxquant_score + 0.3
   
+  # PD-TMT detection
+  pd_tmt_score <- 0
+  pd_tmt_markers <- c("protein fdr confidence", "master", "accession", "exp. q-value", "sum pep score")
+  pd_tmt_found <- sum(pd_tmt_markers %in% headers_lower)
+  abundance_found <- any(grepl("^abundance:", headers_lower))
+  pd_tmt_score <- (pd_tmt_found / length(pd_tmt_markers))
+  if (abundance_found) pd_tmt_score <- pd_tmt_score + 0.4 # High weight for abundance columns
+  
   # Determine best match
   scores <- c(diann = diann_score, 
               spectronaut = spectronaut_score,
               fragpipe = fragpipe_score,
-              maxquant = maxquant_score)
+              maxquant = maxquant_score,
+              pd_tmt = pd_tmt_score)
   
   best_format <- names(which.max(scores))
   best_score <- max(scores)
