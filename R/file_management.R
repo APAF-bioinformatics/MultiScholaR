@@ -572,3 +572,73 @@ formatDIANNParquet <- function(data_tbl_parquet_filt) {
   
   return(data_tbl_converted)
 }
+
+#' @title Import Proteome Discoverer TMT Data
+#'
+#' @description Imports and processes protein-level TMT data from Proteome Discoverer.
+#' This function handles reading of .xlsx files, reshaping the data from wide to long format,
+#' and returns a standardized list for use in the MultiScholaR workflow.
+#'
+#' @param filepath Path to the Proteome Discoverer exported .xlsx, .csv, or .tsv file.
+#'
+#' @return A list containing three elements:
+#'   \item{data}{A tibble with the processed and reshaped data.}
+#'   \item{data_type}{A character string, hardcoded to "protein".}
+#'   \item{column_mapping}{A list mapping standard column names to the names in the processed data.}
+#'
+#' @importFrom readxl read_excel
+#' @importFrom vroom vroom
+#' @importFrom tidyr pivot_longer
+#' @importFrom dplyr rename select starts_with
+#' @importFrom logger log_info
+#' @export
+importProteomeDiscovererTMTData <- function(filepath) {
+  log_info(paste("Starting Proteome Discoverer TMT import from:", filepath))
+  
+  # Check file extension to use the correct reading function
+  if (endsWith(filepath, ".xlsx")) {
+    if (!requireNamespace("readxl", quietly = TRUE)) {
+      stop("The 'readxl' package is required to read .xlsx files. Please install it.", call. = FALSE)
+    }
+    data <- readxl::read_excel(filepath)
+  } else {
+    data <- vroom::vroom(filepath, show_col_types = FALSE)
+  }
+  
+  log_info(sprintf("Read %d rows and %d columns from TMT data file.", nrow(data), ncol(data)))
+  
+  # Rename the protein accession column for consistency
+  if ("Accession" %in% names(data)) {
+    data <- data |>
+      dplyr::rename(Protein.Ids = "Accession")
+  } else {
+    stop("Required column 'Accession' not found in the Proteome Discoverer file.")
+  }
+  
+  # Reshape data from wide to long format
+  # We select the protein ID column and all columns that start with "Abundance: "
+  long_data <- data |>
+    dplyr::select(Protein.Ids, dplyr::starts_with("Abundance: ")) |>
+    tidyr::pivot_longer(
+      cols = -Protein.Ids,
+      names_to = "Run",
+      values_to = "Abundance"
+    )
+  
+  # Clean up the 'Run' column names
+  long_data$Run <- gsub("Abundance: F[0-9]+: [0-9]+[A-Z]?\"", "Sample", long_data$Run)
+  long_data$Run <- gsub("\"", "", long_data$Run)
+  long_data$Run <- trimws(long_data$Run)
+  
+  log_info(sprintf("Reshaped data to %d rows.", nrow(long_data)))
+  
+  return(list(
+    data = long_data,
+    data_type = "protein",
+    column_mapping = list(
+      protein_col = "Protein.Ids",
+      run_col = "Run",
+      quantity_col = "Abundance"
+    )
+  ))
+}

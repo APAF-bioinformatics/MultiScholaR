@@ -159,38 +159,51 @@ proteomicsWorkflowServer <- function(id, project_dirs, omic_type, experiment_lab
     message("   proteomicsWorkflowServer Step: Calling sessionSummaryServer...")
     sessionSummaryServer("session_summary", project_dirs, omic_type, experiment_label, workflow_data)
     
-    # Enable tabs based on completion status
-    observeEvent(workflow_data$tab_status, {
-      # Enable design matrix tab after setup is complete
-      if (workflow_data$tab_status$setup_import == "complete") {
-        workflow_data$tab_status$design_matrix <- "pending"
-      }
-      
+    observeEvent(workflow_data$tab_status$design_matrix, {
       # Enable QC tab after design matrix is complete
       if (workflow_data$tab_status$design_matrix == "complete") {
-        workflow_data$tab_status$quality_control <- "pending"
+        workflow_type <- shiny::isolate(workflow_data$state_manager$workflow_type)
+        log_info(paste("Workflow server: Design matrix complete. Workflow type:", workflow_type))
+        
+        if (workflow_type == "TMT") {
+          # For TMT, bypass QC and go straight to Normalization
+          log_info("TMT workflow detected, bypassing QC tab.")
+          workflow_data$tab_status$quality_control <- "complete"
+          workflow_data$tab_status$normalization <- "pending"
+        } else {
+          # For LFQ/DIA, proceed to QC tab as normal
+          workflow_data$tab_status$quality_control <- "pending"
+        }
       }
-      
+    }, ignoreNULL = TRUE)
+    
+    observeEvent(workflow_data$tab_status$quality_control, {
       # Enable normalization tab after QC is complete
       if (workflow_data$tab_status$quality_control == "complete") {
         workflow_data$tab_status$normalization <- "pending"
       }
-      
+    }, ignoreNULL = TRUE)
+    
+    observeEvent(workflow_data$tab_status$normalization, {
       # Enable DE tab after normalization is complete
       if (workflow_data$tab_status$normalization == "complete") {
         workflow_data$tab_status$differential_expression <- "pending"
       }
-      
+    }, ignoreNULL = TRUE)
+    
+    observeEvent(workflow_data$tab_status$differential_expression, {
       # Enable enrichment analysis tab after DE is complete
       if (workflow_data$tab_status$differential_expression == "complete") {
         workflow_data$tab_status$enrichment_analysis <- "pending"
       }
-      
+    }, ignoreNULL = TRUE)
+    
+    observeEvent(workflow_data$tab_status$enrichment_analysis, {
       # Enable session summary after enrichment is complete
       if (workflow_data$tab_status$enrichment_analysis == "complete") {
         workflow_data$tab_status$session_summary <- "pending"
       }
-    })
+    }, ignoreNULL = TRUE)
     
     # Return workflow data for potential use by parent module
     message("   proteomicsWorkflowServer Step: Returning workflow_data")
