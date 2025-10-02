@@ -317,6 +317,32 @@ designMatrixBuilderServer <- function(id, data_tbl, config_list) {
         observe({
             state <- initial_state()
             req(state)
+            
+            # --- Auto-assign Batch Factor Logic ---
+            # Check if a "Batch" column exists from the import step
+            if ("Batch" %in% names(state$data_cln)) {
+              logger::log_info("Design Matrix: 'Batch' column detected. Auto-assigning batch factor.")
+              
+              # 1. Add "Batch" as a factor
+              state$factors <- unique(c(state$factors, "Batch"))
+              
+              # 2. Pre-populate the design matrix with batch assignments
+              batch_assignments <- state$data_cln |>
+                dplyr::distinct(Run, Batch)
+              
+              state$design_matrix <- state$design_matrix |>
+                dplyr::left_join(batch_assignments, by = "Run") |>
+                # Assign to factor2, assuming factor1 will be the main experimental variable
+                dplyr::rename(factor2 = "Batch")
+              
+              # Also create initial group names if factor1 is not yet assigned
+              state$design_matrix <- state$design_matrix |>
+                dplyr::mutate(group = dplyr::coalesce(group, factor2))
+              
+              logger::log_info("Design Matrix: Pre-populated 'factor2' with batch assignments.")
+            }
+            # --- End Auto-assign Logic ---
+            
             design_matrix(state$design_matrix)
             data_cln_reactive(state$data_cln)
             groups(state$groups)

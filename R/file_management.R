@@ -591,54 +591,98 @@ formatDIANNParquet <- function(data_tbl_parquet_filt) {
 #' @importFrom tidyr pivot_longer
 #' @importFrom dplyr rename select starts_with
 #' @importFrom logger log_info
+#' @importFrom purrr map_dfr
+#' @importFrom tools file_ext
 #' @export
 importProteomeDiscovererTMTData <- function(filepath) {
   log_info(paste("Starting Proteome Discoverer TMT import from:", filepath))
   
-  # Check file extension to use the correct reading function
-  if (endsWith(filepath, ".xlsx")) {
-    if (!requireNamespace("readxl", quietly = TRUE)) {
-      stop("The 'readxl' package is required to read .xlsx files. Please install it.", call. = FALSE)
+  process_single_file <- function(file_path, batch_name = NULL) {
+    # Check file extension to use the correct reading function
+    if (endsWith(file_path, ".xlsx")) {
+      if (!requireNamespace("readxl", quietly = TRUE)) {
+        stop("The 'readxl' package is required for .xlsx files.", call. = FALSE)
+      }
+      data <- readxl::read_excel(file_path)
+    } else {
+      data <- vroom::vroom(file_path, show_col_types = FALSE)
     }
-    data <- readxl::read_excel(filepath)
-  } else {
-    data <- vroom::vroom(filepath, show_col_types = FALSE)
+    
+    log_info(sprintf("Read %d rows and %d columns from TMT data file.", nrow(data), ncol(data)))
+    
+    # Rename the protein accession column for consistency
+    if ("Accession" %in% names(data)) {
+      data <- data |>
+        dplyr::rename(Protein.Ids = "Accession")
+    } else {
+      stop("Required column 'Accession' not found in file: ", basename(file_path))
+    }
+    
+    # Reshape data from wide to long format
+    # We select the protein ID column and all columns that start with "Abundance: "
+    long_data <- data |>
+      dplyr::select(Protein.Ids, dplyr::starts_with("Abundance: ")) |>
+      tidyr::pivot_longer(
+        cols = -Protein.Ids,
+        names_to = "Run",
+        values_to = "Abundance"
+      )
+    
+    # Clean up the 'Run' column names
+    long_data$Run <- gsub("Abundance: F[0-9]+: [0-9]+[A-Z]?\"", "Sample", long_data$Run)
+    long_data$Run <- gsub("\"", "", long_data$Run)
+    long_data$Run <- trimws(long_data$Run)
+    
+    log_info(sprintf("Reshaped data to %d rows.", nrow(long_data)))
+    
+    if (!is.null(batch_name)) {
+      long_data$Batch <- batch_name
+    }
+    
+    return(long_data)
   }
   
-  log_info(sprintf("Read %d rows and %d columns from TMT data file.", nrow(data), ncol(data)))
-  
-  # Rename the protein accession column for consistency
-  if ("Accession" %in% names(data)) {
-    data <- data |>
-      dplyr::rename(Protein.Ids = "Accession")
+  # Check if the file is a zip archive
+  if (tolower(tools::file_ext(filepath)) == "zip") {
+    log_info("ZIP archive detected. Unzipping and processing batch files.")
+    
+    temp_dir <- tempfile()
+    dir.create(temp_dir)
+    unzip(filepath, exdir = temp_dir)
+    
+    files_to_process <- list.files(temp_dir, pattern = "\\.(xlsx|csv|tsv)$", full.names = TRUE, recursive = TRUE)
+    
+    if (length(files_to_process) == 0) {
+      stop("No data files (.xlsx, .csv, .tsv) found in the ZIP archive.")
+    }
+    
+    # Use purrr::map_dfr to iterate, process, and combine files
+    all_data <- purrr::map_dfr(files_to_process, ~{
+      batch_name <- gsub(".*(b[0-9]+).*", "\\1", basename(.x), ignore.case = TRUE)
+      log_info(paste("Processing file:", basename(.x), "as Batch:", batch_name))
+      process_single_file(.x, batch_name = batch_name)
+    })
+    
+    # Clean up the temporary directory
+    unlink(temp_dir, recursive = TRUE)
+    
+    final_data <- all_data
+    
   } else {
-    stop("Required column 'Accession' not found in the Proteome Discoverer file.")
+    # Process a single non-zip file
+    final_data <- process_single_file(filepath)
   }
   
-  # Reshape data from wide to long format
-  # We select the protein ID column and all columns that start with "Abundance: "
-  long_data <- data |>
-    dplyr::select(Protein.Ids, dplyr::starts_with("Abundance: ")) |>
-    tidyr::pivot_longer(
-      cols = -Protein.Ids,
-      names_to = "Run",
-      values_to = "Abundance"
-    )
-  
-  # Clean up the 'Run' column names
-  long_data$Run <- gsub("Abundance: F[0-9]+: [0-9]+[A-Z]?\"", "Sample", long_data$Run)
-  long_data$Run <- gsub("\"", "", long_data$Run)
-  long_data$Run <- trimws(long_data$Run)
-  
-  log_info(sprintf("Reshaped data to %d rows.", nrow(long_data)))
+  log_info(sprintf("Total reshaped data rows: %d.", nrow(final_data)))
   
   return(list(
-    data = long_data,
+    data = final_data,
     data_type = "protein",
     column_mapping = list(
       protein_col = "Protein.Ids",
       run_col = "Run",
-      quantity_col = "Abundance"
+      quantity_col = "Abundance",
+      batch_col = if("Batch" %in% names(final_data)) "Batch" else NULL
     )
   ))
 }
