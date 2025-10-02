@@ -37,7 +37,7 @@ setupImportUi <- function(id) {
             } else {
               shiny::fileInput(ns("search_results_standard"), 
                        "Select proteomics search results file:",
-                       accept = c(".tsv", ".txt", ".tab", ".csv", ".xlsx"))
+                       accept = c(".tsv", ".txt", ".tab", ".csv", ".xlsx", ".zip"))
             },
             
             # Format detection output
@@ -260,7 +260,7 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
         "search_results", 
         roots = volumes, 
         session = session,
-        filetypes = c("tsv", "txt", "tab", "csv", "xlsx")
+        filetypes = c("tsv", "txt", "tab", "csv", "xlsx", "zip")
       )
       
       message("   setupImportServer Step: shinyFileChoose for search_results completed")
