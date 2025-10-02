@@ -394,10 +394,19 @@ setMethod( f ="differentialExpressionAnalysisHelper"
   # Extract the results table (it's the first element in the nested list)
   de_results_table <- contrasts_results$results[[1]]
   
+  # Get the name of the contrast from the list element name
+  contrast_name <- names(contrasts_results$results)[1]
+  
   # Ensure it's a data frame before proceeding
   if (!is.data.frame(de_results_table)) {
     stop("Error: DE analysis results are not in the expected data frame format.")
   }
+
+  # CRITICAL FIX 3.0: The 'topTreat' table needs a 'comparison' column added to it,
+  # containing the name of the contrast. It also needs the protein IDs from rownames.
+  de_results_table <- de_results_table |>
+    tibble::rownames_to_column(var = args_row_id) |>
+    dplyr::mutate(comparison = contrast_name)
 
   # Map back to original group names in results if needed
   if(exists("group_mapping")) {
