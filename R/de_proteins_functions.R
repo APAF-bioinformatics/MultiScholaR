@@ -849,23 +849,46 @@ getSignificantData <- function( list_of_de_tables
                                , q_val_thresh = 0.05) {
 
   get_row_binded_table <- function(de_table_list, description) {
-    output <- purrr::map(de_table_list,
-                         function(tbl) { tbl |>
-                           rownames_to_column(as_string(as_name(enquo(row_id)))) |>
-                           dplyr::select({ { row_id } },
-                                         { { p_value_column } },
-                                         { { q_value_column } },
-                                         { { fdr_value_column } },
-                                         { { log_fc_column } }) }) |>
-      purrr::map2(names(de_table_list), \(.x, .y){ .x |>
-        mutate({ { comparison_column } } := .y) }) |>
-      bind_rows() |>
-      mutate({ { facet_column } } := description) |>
-      separate_wider_delim({ { comparison_column } },
-               delim = "=",
-               names = c( comparison_column,
-                          expression_column) )
 
+    # This internal helper is now more robust. It checks if the table
+    # already has the row_id as a column. If not, it converts rownames.
+    # This handles both old and new data structures.
+    
+    processed_list <- purrr::map(de_table_list, function(tbl) {
+      row_id_col <- as_string(as_name(enquo(row_id)))
+      
+      if (!row_id_col %in% colnames(tbl)) {
+        # If row_id is not a column, convert rownames
+        tbl <- tbl |> rownames_to_column(var = row_id_col)
+      }
+      
+      return(tbl)
+    })
+
+    output <- processed_list |>
+      purrr::map2(names(processed_list), \(.x, .y){
+        # If the 'comparison' column doesn't already exist, create it from the list name
+        if (!comparison_column %in% colnames(.x)) {
+          .x <- .x |> mutate({ { comparison_column } } := .y)
+        }
+        .x
+        }) |>
+      bind_rows() |>
+      mutate({ { facet_column } } := description)
+
+    # This separator logic assumes a specific format like 'ContrastName=ExpressionType'
+    # in the comparison column. We need to make this conditional as well.
+    # Check if any values in the comparison column contain '=' before trying to separate.
+    if (any(grepl("=", output[[comparison_column]]))) {
+        output <- output |>
+          separate_wider_delim(
+            { { comparison_column } },
+            delim = "=",
+            names = c(comparison_column, expression_column)
+          )
+    }
+
+    return(output)
   }
 
   logfc_tbl_all <- purrr::map2(list_of_de_tables, list_of_descriptions,
