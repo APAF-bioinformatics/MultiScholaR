@@ -382,11 +382,17 @@ setMethod( f ="differentialExpressionAnalysisHelper"
 
   message("   differentialExpressionAnalysisHelper Step: runTestsContrasts completed successfully!")
 
-  # CRITICAL FIX: The result from runTestsContrasts is a list of tables.
-  # When running one contrast, we need to extract the first table from the list.
+  # The result from runTestsContrasts is a LIST with a 'results'
+  # element, which ITSELF is a list of tables. For a single contrast run, we 
+  # need to extract the first table from the nested list.
   
-  # Extract the results table (it's the first element in the list for a single contrast run)
-  de_results_table <- contrasts_results[[1]]
+  # Check if the expected structure exists
+  if (is.null(contrasts_results) || is.null(contrasts_results$results) || length(contrasts_results$results) == 0) {
+      stop("Error: DE analysis function did not return results in the expected format.")
+  }
+  
+  # Extract the results table (it's the first element in the nested list)
+  de_results_table <- contrasts_results$results[[1]]
   
   # Ensure it's a data frame before proceeding
   if (!is.data.frame(de_results_table)) {
