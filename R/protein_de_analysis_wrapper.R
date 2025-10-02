@@ -88,8 +88,9 @@ setMethod( f ="differentialExpressionAnalysis"
                                           , raw_pvalue_column = raw_pvalue_column
                                           )
   }, error = function(e) {
-    message(sprintf("   differentialExpressionAnalysis ERROR in helper function: %s", e$message))
-    message(sprintf("   differentialExpressionAnalysis ERROR call stack: %s", capture.output(traceback())))
+    # CRITICAL FIX: Use paste() for logger calls in error handlers to avoid interpolation bug
+    message(paste("   differentialExpressionAnalysis ERROR in helper function:", e$message))
+    message(paste("   differentialExpressionAnalysis ERROR call stack:", capture.output(traceback())))
     stop(e)
   })
 
@@ -381,9 +382,20 @@ setMethod( f ="differentialExpressionAnalysisHelper"
 
   message("   differentialExpressionAnalysisHelper Step: runTestsContrasts completed successfully!")
 
+  # CRITICAL FIX: The result from runTestsContrasts is a list of tables.
+  # When running one contrast, we need to extract the first table from the list.
+  
+  # Extract the results table (it's the first element in the list for a single contrast run)
+  de_results_table <- contrasts_results[[1]]
+  
+  # Ensure it's a data frame before proceeding
+  if (!is.data.frame(de_results_table)) {
+    stop("Error: DE analysis results are not in the expected data frame format.")
+  }
+
   # Map back to original group names in results if needed
   if(exists("group_mapping")) {
-    contrasts_results_table <- contrasts_results$results |>
+    contrasts_results_table <- de_results_table |>
       dplyr::mutate(comparison = purrr::map_chr(comparison, \(x) {
         result <- x
         for(safe_name in names(group_mapping)) {
@@ -392,7 +404,7 @@ setMethod( f ="differentialExpressionAnalysisHelper"
         result
       }))
   } else {
-    contrasts_results_table <- contrasts_results$results
+    contrasts_results_table <- de_results_table
   }
 
   return_list$contrasts_results <- contrasts_results
