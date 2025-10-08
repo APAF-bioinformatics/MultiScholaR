@@ -138,6 +138,14 @@ proteinQCAppletServer <- function(id, workflow_data, experiment_paths, omic_type
           description = "IQ protein rollup completed and ProteinQuantitativeData S4 object created"
         )
         
+        # CRITICAL FIX: Update state trigger to notify reactive outputs (delimiter detection, etc.)
+        cat("\n========== IQ ROLLUP: UPDATING STATE TRIGGER ==========\n")
+        old_trigger <- workflow_data$state_update_trigger
+        workflow_data$state_update_trigger <- Sys.time()
+        cat(sprintf("   Old trigger: %s\n", old_trigger))
+        cat(sprintf("   New trigger: %s\n", workflow_data$state_update_trigger))
+        cat("========== STATE TRIGGER UPDATED ==========\n\n")
+        
         # Generate summary
         protein_count <- protein_obj@protein_quant_table |>
           dplyr::distinct(Protein.Ids) |>
@@ -204,6 +212,204 @@ proteinQCAppletServer <- function(id, workflow_data, experiment_paths, omic_type
     })
     
     # Step 2: Protein Accession Cleanup (chunk 19)
+    
+    # Helper function to detect delimiters in protein IDs
+    detectProteinIdDelimiters <- function(protein_ids) {
+      cat("=== detectProteinIdDelimiters called ===\n")
+      cat(paste("Number of IDs to check:", length(protein_ids), "\n"))
+      
+      # Common delimiters to check
+      common_delimiters <- c(";", ":", ",", "|", "/", "_")
+      
+      # Count occurrences of each delimiter
+      delimiter_counts <- sapply(common_delimiters, function(delim) {
+        sum(grepl(delim, protein_ids, fixed = TRUE))
+      })
+      
+      cat("Delimiter counts:\n")
+      print(delimiter_counts)
+      
+      # Return delimiters that appear in at least one protein ID
+      found_delimiters <- common_delimiters[delimiter_counts > 0]
+      cat(paste("Found delimiters:", paste(found_delimiters, collapse = ", "), "\n"))
+      
+      # Also count how many IDs contain each delimiter
+      delimiter_info <- sapply(found_delimiters, function(delim) {
+        count <- sum(grepl(delim, protein_ids, fixed = TRUE))
+        paste0(delim, " (", count, " IDs)")
+      })
+      
+      result <- list(
+        delimiters = found_delimiters,
+        info = delimiter_info
+      )
+      
+      cat("Returning result:\n")
+      print(result)
+      cat("=== detectProteinIdDelimiters done ===\n")
+      
+      return(result)
+    }
+    
+    # Reactive to detect delimiters in current data
+    detected_delimiter_info <- shiny::reactive({
+      cat("\n========== DELIMITER DETECTION REACTIVE TRIGGERED ==========\n")
+      
+      # Trigger on state changes
+      workflow_data$state_update_trigger
+      
+      cat("State update trigger checked\n")
+      cat(paste("workflow_data$state_manager is NULL:", is.null(workflow_data$state_manager), "\n"))
+      
+      # Only run if we have the protein S4 object
+      if (!is.null(workflow_data$state_manager)) {
+        cat("State manager exists, checking for states...\n")
+        tryCatch({
+          # Try to get the most recent protein state
+          # Check multiple possible states in order of most recent
+          current_s4 <- NULL
+          possible_states <- c("protein_replicate_filtered", "protein_duplicate_removed", 
+                              "protein_intensity_filtered", "protein_accession_cleaned", 
+                              "protein_s4_created")
+          
+          for (state_name in possible_states) {
+            if (state_name %in% workflow_data$state_manager$getHistory()) {
+              current_s4 <- workflow_data$state_manager$getState(state_name)
+              if (!is.null(current_s4)) {
+                message(paste("DEBUG: Found protein S4 object in state:", state_name))
+                break
+              }
+            }
+          }
+          
+          if (!is.null(current_s4) && !is.null(current_s4@protein_quant_table)) {
+            protein_id_col <- current_s4@protein_id_column
+            message(paste("DEBUG: protein_id_col =", protein_id_col))
+            
+            if (protein_id_col %in% names(current_s4@protein_quant_table)) {
+              protein_ids <- current_s4@protein_quant_table[[protein_id_col]]
+              message(paste("DEBUG: Found", length(protein_ids), "protein IDs"))
+              message(paste("DEBUG: First 3 IDs:", paste(head(protein_ids, 3), collapse = ", ")))
+              
+              delimiter_detection <- detectProteinIdDelimiters(protein_ids)
+              message(paste("DEBUG: Detected delimiters:", paste(delimiter_detection$delimiters, collapse = ", ")))
+              
+              if (length(delimiter_detection$delimiters) > 0) {
+                # Return both the display string and the most common delimiter
+                return(list(
+                  display = paste(delimiter_detection$info, collapse = ", "),
+                  most_common = delimiter_detection$delimiters[1]  # First one is most common
+                ))
+              } else {
+                return(list(
+                  display = "No common delimiters detected (single accessions only)",
+                  most_common = NULL
+                ))
+              }
+            } else {
+              message(paste("DEBUG: protein_id_col not found in columns:", paste(names(current_s4@protein_quant_table), collapse = ", ")))
+            }
+          } else {
+            message("DEBUG: current_s4 is NULL or protein_quant_table is NULL")
+          }
+        }, error = function(e) {
+          message(paste("DEBUG ERROR in delimiter detection:", e$message))
+          return(list(
+            display = paste("Unable to detect delimiters:", e$message),
+            most_common = NULL
+          ))
+        })
+      } else {
+        message("DEBUG: workflow_data$state_manager is NULL")
+      }
+      
+      return(list(
+        display = "Data not loaded yet - complete IQ Rollup first",
+        most_common = NULL
+      ))
+    })
+    
+    # Output detected delimiters
+    output$detected_delimiters <- shiny::renderText({
+      info <- detected_delimiter_info()
+      if (is.list(info)) {
+        info$display
+      } else {
+        info
+      }
+    })
+    
+    # Auto-update delimiter input when data is detected
+    observe({
+      info <- detected_delimiter_info()
+      if (is.list(info) && !is.null(info$most_common)) {
+        # Only update if the current value is the default ";"
+        # This prevents overwriting user's manual changes
+        if (input$delimiter == ";") {
+          shiny::updateTextInput(session, "delimiter", value = info$most_common)
+          logger::log_info(paste("Auto-detected and set delimiter to:", info$most_common))
+        }
+      }
+    })
+    
+    # Display sample protein IDs
+    output$sample_protein_ids <- shiny::renderText({
+      # Trigger on state changes
+      workflow_data$state_update_trigger
+      
+      if (!is.null(workflow_data$state_manager)) {
+        tryCatch({
+          # Try to get the most recent protein state (same logic as delimiter detection)
+          current_s4 <- NULL
+          possible_states <- c("protein_replicate_filtered", "protein_duplicate_removed", 
+                              "protein_intensity_filtered", "protein_accession_cleaned", 
+                              "protein_s4_created")
+          
+          for (state_name in possible_states) {
+            if (state_name %in% workflow_data$state_manager$getHistory()) {
+              current_s4 <- workflow_data$state_manager$getState(state_name)
+              if (!is.null(current_s4)) {
+                break
+              }
+            }
+          }
+          
+          if (!is.null(current_s4) && !is.null(current_s4@protein_quant_table)) {
+            protein_id_col <- current_s4@protein_id_column
+            
+            if (protein_id_col %in% names(current_s4@protein_quant_table)) {
+              protein_ids <- current_s4@protein_quant_table[[protein_id_col]]
+              
+              # Show up to 10 example protein IDs
+              # Prioritize showing ones with delimiters first
+              has_delim <- grepl("[;:,|/_]", protein_ids)
+              
+              if (any(has_delim)) {
+                # Show IDs with delimiters first
+                with_delims <- protein_ids[has_delim]
+                examples <- head(with_delims, 7)
+                
+                # Add a few without delimiters if available
+                without_delims <- protein_ids[!has_delim]
+                if (length(without_delims) > 0) {
+                  examples <- c(examples, head(without_delims, 3))
+                }
+              } else {
+                # No delimiters found, just show first 10
+                examples <- head(protein_ids, 10)
+              }
+              
+              return(paste(examples, collapse = "\n"))
+            }
+          }
+        }, error = function(e) {
+          return(paste("Unable to display sample IDs:", e$message))
+        })
+      }
+      
+      return("Data not loaded yet - complete IQ Rollup first")
+    })
+    
     observeEvent(input$apply_accession_cleanup, {
       shiny::req(workflow_data$state_manager)
       
