@@ -200,8 +200,22 @@ chooseBestProteinAccessionHelper <- function(input_tbl
                                              , row_id_column = "uniprot_acc"
                                              , group_id
                                              , delim= ":") {
+  
+  cat("\n\n╔═══════════════════════════════════════════════════════════════════════════╗\n")
+  cat("║      ENTERING chooseBestProteinAccessionHelper (DEBUG66)              ║\n")
+  cat("╚═══════════════════════════════════════════════════════════════════════════╝\n\n")
+  
+  cat(">>> HELPER STEP 1: INPUTS <<<\n")
+  cat(sprintf("   Input 'delim' parameter: '%s'\n", delim))
+  cat(sprintf("   Input table dimensions: %d rows x %d cols\n", nrow(input_tbl), ncol(input_tbl)))
+  accessions_col_name <- rlang::as_name(rlang::enquo(accessions_column))
+  if (accessions_col_name %in% names(input_tbl)) {
+    cat(sprintf("   First 5 accession values to split: %s\n", paste(head(input_tbl[[accessions_col_name]], 5), collapse = ", ")))
+  }
+  cat(sprintf("   row_id_column: %s\n", row_id_column))
+  cat("\n")
 
-
+  cat(">>> HELPER STEP 2: SPLITTING ACCESSIONS (str_split with delim) <<<\n")
   resolve_acc_temp <- input_tbl |>
     dplyr::select( { { group_id } }, { { accessions_column } }) |>
     mutate(row_id_column_with_isoform = str_split({ { accessions_column } }, delim)) |>
@@ -209,7 +223,14 @@ chooseBestProteinAccessionHelper <- function(input_tbl
     mutate( !!sym(row_id_column) := cleanIsoformNumber( row_id_column_with_isoform)) |>
     dplyr::filter( !str_detect(!!sym(row_id_column), "REV__")) |>
     dplyr::filter( !str_detect(!!sym(row_id_column), "CON__"))
+  
+  cat(sprintf("   After splitting and cleaning: %d rows\n", nrow(resolve_acc_temp)))
+  if (nrow(resolve_acc_temp) > 0) {
+    cat(sprintf("   First 5 split/cleaned accessions: %s\n", paste(head(resolve_acc_temp[[row_id_column]], 5), collapse = ", ")))
+  }
+  cat("\n")
 
+  cat(">>> HELPER STEP 3: JOINING WITH FASTA DETAIL TABLE <<<\n")
   resolve_acc_helper <- resolve_acc_temp |>
     left_join( acc_detail_tab ,
                by = join_by( !!sym(row_id_column) == !!sym(row_id_column) ),
@@ -219,8 +240,11 @@ chooseBestProteinAccessionHelper <- function(input_tbl
                                               "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"))) |>
     distinct() |>
     arrange( { { group_id } }, protein_evidence, status, is_isoform, desc(seq_length), isoform_num)
+  
+  cat(sprintf("   After joining with FASTA data: %d rows\n", nrow(resolve_acc_helper)))
+  cat("\n")
 
-
+  cat(">>> HELPER STEP 4: SCORING AND RANKING ISOFORMS <<<\n")
   score_isoforms <- resolve_acc_helper |>
     mutate(gene_name = ifelse(is.na(gene_name) | gene_name == "", "NA", gene_name)) |>
     group_by({ { group_id } }, gene_name) |>
@@ -228,8 +252,12 @@ chooseBestProteinAccessionHelper <- function(input_tbl
              status, is_isoform, desc(seq_length), isoform_num, cleaned_acc) |>
     mutate( ranking = row_number()) |>
     ungroup()
+  
+  cat(sprintf("   After scoring: %d rows\n", nrow(score_isoforms)))
+  cat("\n")
 
-
+  cat(">>> HELPER STEP 5: SELECTING BEST ACCESSION PER GENE & RECOMBINING <<<\n")
+  cat(sprintf("   ⚠️  CRITICAL: Using 'delim' for recombining: '%s'\n", delim))
   ## For each gene name find the uniprot_acc with the lowest rankinG
   group_gene_names_and_uniprot_accs <- score_isoforms |>
     distinct( { { group_id } }, gene_name, ranking) |>
@@ -243,12 +271,20 @@ chooseBestProteinAccessionHelper <- function(input_tbl
     group_by({ { group_id } }) |>
     arrange( {{group_id}}, protein_evidence) |>
     summarise(num_gene_names = n(),
-              gene_names = paste(gene_name, collapse = ":"),
-              !!sym(row_id_column) := paste(!!sym(row_id_column), collapse = ":")) |>
+              gene_names = paste(gene_name, collapse = delim),
+              !!sym(row_id_column) := paste(!!sym(row_id_column), collapse = delim)) |>
     ungroup() |>
     mutate(is_unique = case_when(num_gene_names == 1 ~ "Unique",
                                  TRUE ~ "Multimapped"))
-
+  
+  cat(sprintf("   Final output: %d rows\n", nrow(group_gene_names_and_uniprot_accs)))
+  if (nrow(group_gene_names_and_uniprot_accs) > 0) {
+    cat(sprintf("   First 5 recombined accessions: %s\n", paste(head(group_gene_names_and_uniprot_accs[[row_id_column]], 5), collapse = ", ")))
+  }
+  cat("\n")
+  cat("╔═══════════════════════════════════════════════════════════════════════════╗\n")
+  cat("║      EXITING chooseBestProteinAccessionHelper (DEBUG66)               ║\n")
+  cat("╚═══════════════════════════════════════════════════════════════════════════╝\n\n")
 
   return(group_gene_names_and_uniprot_accs)
 
@@ -276,7 +312,22 @@ rankProteinAccessionHelper <- function(input_tbl
                                        , row_id_column = "uniprot_acc"
                                        , group_id
                                        , delim= ";") {
+  
+  cat("\n\n╔═══════════════════════════════════════════════════════════════════════════╗\n")
+  cat("║      ENTERING rankProteinAccessionHelper (DEBUG66)                    ║\n")
+  cat("╚═══════════════════════════════════════════════════════════════════════════╝\n\n")
+  
+  cat(">>> RANK HELPER STEP 1: INPUTS <<<\n")
+  cat(sprintf("   Input 'delim' parameter: '%s'\n", delim))
+  cat(sprintf("   Input table dimensions: %d rows x %d cols\n", nrow(input_tbl), ncol(input_tbl)))
+  accessions_col_name <- rlang::as_name(rlang::enquo(accessions_column))
+  if (accessions_col_name %in% names(input_tbl)) {
+    cat(sprintf("   First 5 accession lists to split: %s\n", paste(head(input_tbl[[accessions_col_name]], 5), collapse = " | ")))
+  }
+  cat(sprintf("   row_id_column: %s\n", row_id_column))
+  cat("\n")
 
+  cat(">>> RANK HELPER STEP 2: SPLITTING ACCESSION LISTS (str_split with delim) <<<\n")
   resolve_acc_helper <- input_tbl |>
     dplyr::select( { { group_id } }, { { accessions_column } }) |>
     mutate( !!sym(row_id_column) := str_split({ { accessions_column } }, delim)) |>
@@ -290,8 +341,14 @@ rankProteinAccessionHelper <- function(input_tbl
                                               "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"))) |>
     distinct() |>
     arrange( { { group_id } }, protein_evidence, status, is_isoform, desc(seq_length), isoform_num)
+  
+  cat(sprintf("   After splitting and joining with FASTA: %d rows\n", nrow(resolve_acc_helper)))
+  if (nrow(resolve_acc_helper) > 0) {
+    cat(sprintf("   First 5 split accessions: %s\n", paste(head(resolve_acc_helper[[row_id_column]], 5), collapse = ", ")))
+  }
+  cat("\n")
 
-
+  cat(">>> RANK HELPER STEP 3: SCORING AND RANKING <<<\n")
   score_isoforms <- resolve_acc_helper |>
     mutate(gene_name = ifelse(is.na(gene_name) | gene_name == "", "NA", gene_name)) |>
     group_by({ { group_id } }, gene_name) |>
@@ -299,8 +356,12 @@ rankProteinAccessionHelper <- function(input_tbl
              status, is_isoform, desc(seq_length), isoform_num, cleaned_acc) |>
     mutate( ranking = row_number()) |>
     ungroup()
+  
+  cat(sprintf("   After scoring: %d rows\n", nrow(score_isoforms)))
+  cat("\n")
 
-
+  cat(">>> RANK HELPER STEP 4: SELECTING BEST & RECOMBINING WITH DELIM <<<\n")
+  cat(sprintf("   ⚠️  CRITICAL: Using 'delim' for recombining: '%s'\n", delim))
   ## For each gene name find the uniprot_acc with the lowest rankinG
   group_gene_names_and_uniprot_accs <- score_isoforms |>
     distinct( { { group_id } }, gene_name, ranking) |>
@@ -313,12 +374,20 @@ rankProteinAccessionHelper <- function(input_tbl
     dplyr::select(-ranking) |>
     group_by({ { group_id } }) |>
     summarise(num_gene_names = n(),
-              gene_names = paste(gene_name, collapse = ":"),
-              !!sym(row_id_column) := paste(!!sym(row_id_column), collapse = ":")) |>
+              gene_names = paste(gene_name, collapse = delim),
+              !!sym(row_id_column) := paste(!!sym(row_id_column), collapse = delim)) |>
     ungroup() |>
     mutate(is_unique = case_when(num_gene_names == 1 ~ "Unique",
                                  TRUE ~ "Multimapped"))
-
+  
+  cat(sprintf("   Final output: %d rows\n", nrow(group_gene_names_and_uniprot_accs)))
+  if (nrow(group_gene_names_and_uniprot_accs) > 0) {
+    cat(sprintf("   First 5 recombined accessions: %s\n", paste(head(group_gene_names_and_uniprot_accs[[row_id_column]], 5), collapse = ", ")))
+  }
+  cat("\n")
+  cat("╔═══════════════════════════════════════════════════════════════════════════╗\n")
+  cat("║      EXITING rankProteinAccessionHelper (DEBUG66)                     ║\n")
+  cat("╚═══════════════════════════════════════════════════════════════════════════╝\n\n")
 
   return(group_gene_names_and_uniprot_accs)
 

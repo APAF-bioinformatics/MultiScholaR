@@ -426,9 +426,18 @@ setMethod( f ="differentialExpressionAnalysisHelper"
   return_list$contrasts_results_table <- contrasts_results_table
 
   message("   differentialExpressionAnalysisHelper Step: Preparing data for visualization...")
+  message(paste("   DEBUG66: contrast_name for list naming =", contrast_name))
 
   # Prepare data for volcano plots
-  significant_rows <- getSignificantData(list_of_de_tables = list(contrasts_results_table),
+  # CRITICAL FIX: getSignificantData expects list_of_de_tables to be a list where each element 
+  # is itself a list of data.frames. Since we're processing one contrast at a time, we need to 
+  # wrap the single data.frame in an additional list layer.
+  # CRITICAL FIX 2: The list element name MUST contain "=" delimiter because countStatDeGenesHelper
+  # expects to split on "=" to separate comparison name from expression. Use contrast_name which
+  # contains the full format like "H4_vs_WT=groupH4-groupWT"
+  nested_list <- list(contrasts_results_table)
+  names(nested_list) <- contrast_name  # Use actual contrast name with "=" delimiter
+  significant_rows <- getSignificantData(list_of_de_tables = list(nested_list),
                                          list_of_descriptions = list("RUV applied"),
                                          row_id = !!sym(args_row_id),
                                          p_value_column = !!sym(raw_pvalue_column),
@@ -454,7 +463,10 @@ setMethod( f ="differentialExpressionAnalysisHelper"
   return_list$volplot_plot <- volplot_plot
 
   # Count significant molecules
-  num_sig_de_molecules <- printCountDeGenesTable(list_of_de_tables = list(contrasts_results_table),
+  # CRITICAL FIX: Same as above - wrap in additional list layer and use contrast_name
+  nested_list_for_count <- list(contrasts_results_table)
+  names(nested_list_for_count) <- contrast_name  # Use actual contrast name with "=" delimiter
+  num_sig_de_molecules <- printCountDeGenesTable(list_of_de_tables = list(nested_list_for_count),
                                                  list_of_descriptions = list("RUV applied"),
                                                  formula_string = "analysis_type ~ comparison")
 
