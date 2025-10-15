@@ -387,27 +387,120 @@ getRuvIIIReplicateMatrixHelper <- function(design_matrix, sample_id_column, grou
 
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 #'@export
+#' Plot PCA Helper
+#'
+#' @description
+#' This function performs a Principal Component Analysis (PCA) on the given data and generates a ggplot object for visualization.
+#' It includes filtering steps to select the most variable features before running PCA.
+#'
+#' @param data A matrix or data frame of quantitative data, with features in rows and samples in columns.
+#' @param design_matrix A data frame containing sample metadata.
+#' @param sample_id_column The name of the column in `design_matrix` that identifies samples. Defaults to "Sample_ID".
+#' @param grouping_variable The column in `design_matrix` used for coloring points in the PCA plot. Defaults to "group".
+#' @param shape_variable An optional column in `design_matrix` to be used for the shape aesthetic of points.
+#' @param label_column An optional column in `design_matrix` to be used for labeling points.
+#' @param title The title of the plot.
+#' @param geom.text.size The size of the text labels if `label_column` is provided. Defaults to 11.
+#' @param ncomp The number of principal components to compute. Defaults to 2.
+#' @param ... Additional arguments passed to other methods (not currently used).
+#'
+#' @return A `ggplot` object representing the PCA plot.
+#'
+#' @importFrom mixOmics pca
+#' @importFrom ggplot2 ggplot aes geom_point xlab ylab labs theme element_blank scale_x_continuous scale_y_continuous coord_cartesian
+#' @importFrom ggrepel geom_text_repel
+#' @importFrom tibble rownames_to_column
+#' @importFrom dplyr left_join
+#' @importFrom rlang sym
+#'
+#' @examples
+#' # Create dummy data
+#' data <- matrix(rnorm(1000), nrow = 100, ncol = 10)
+#' colnames(data) <- paste0("Sample", 1:10)
+#' rownames(data) <- paste0("Protein", 1:100)
+#'
+#' # Create dummy design matrix
+#' design_matrix <- data.frame(
+#'   Sample_ID = paste0("Sample", 1:10),
+#'   group = rep(c("A", "B"), each = 5),
+#'   batch = rep(c("X", "Y"), times = 5)
+#' )
+#'
+#' # Generate PCA plot
+#' plotPcaHelper(
+#'   data = data,
+#'   design_matrix = design_matrix,
+#'   title = "PCA of Dummy Data",
+#'   grouping_variable = "group",
+#'   shape_variable = "batch"
+#' )
+#'
+#' @export
 plotPcaHelper <- function(data,
-                    design_matrix,
-                    sample_id_column = "Sample_ID",
-                    grouping_variable = "group",
-                    shape_variable = NULL,
-                    label_column = NULL,
-                    title, geom.text.size = 11, ncomp = 2,
-                    ...) {
-    
+                          design_matrix,
+                          sample_id_column = "Sample_ID",
+                          grouping_variable = "group",
+                          shape_variable = NULL,
+                          label_column = NULL,
+                          title, geom.text.size = 11, ncomp = 2,
+                          ...) {
+  
   # Ensure design_matrix is a data frame
   design_matrix <- as.data.frame(design_matrix)
   
-  pca.res <- mixOmics::pca(t(as.matrix(data)), ncomp = ncomp)
+  # --- START of modification ---
+  if(nrow(data) > 1) {
+    # 1. Filter by presence in samples
+    # Keep features that have values in at least 5% of the samples.
+    num_samples <- ncol(data)
+    min_samples_present <- floor(0.05 * num_samples)
+    data_abundant <- data[rowSums(!is.na(data)) >= min_samples_present, ]
+    
+    # 2. Filter by Coefficient of Variation (CV) on the already filtered data
+    if(nrow(data_abundant) > 1) {
+      cvs <- apply(data_abundant, 1, function(x) {
+        if (all(is.na(x))) return(NA)
+        s <- sd(x, na.rm = TRUE)
+        m <- mean(x, na.rm = TRUE)
+        if (is.na(s) || is.na(m) || abs(m) < 1e-6) return(0)
+        s / m
+      })
+      
+      # Find the CV threshold for the top 10%
+      cv_threshold <- quantile(cvs, 0.90, na.rm = TRUE)
+      
+      if(!is.na(cv_threshold) && cv_threshold > 0) {
+        data_filtered <- data_abundant[which(cvs >= cv_threshold), ]
+        print(nrow(data))
+        print(nrow(data_filtered))
+      } else {
+        data_filtered <- data_abundant
+      }
+    } else {
+      data_filtered <- data_abundant
+    }
+  } else {
+    data_filtered <- data
+  }
+  # --- END of modification ---
+  
+  pca.res <- mixOmics::pca(t(as.matrix(data_filtered)), ncomp = ncomp)
   proportion_explained <- pca.res$prop_expl_var
-
+  
   temp_tbl <- pca.res$variates$X |>
     as.data.frame() |>
     rownames_to_column(var = sample_id_column) |>
     left_join(design_matrix, by = sample_id_column)
-
+  
+  # --- START of fix for shape aesthetic ---
+  # Ensure the shape variable is treated as a discrete factor for plotting
+  if (!is.null(shape_variable) && shape_variable %in% colnames(temp_tbl)) {
+    temp_tbl[[shape_variable]] <- as.factor(temp_tbl[[shape_variable]])
+  }
+  # --- END of fix for shape aesthetic ---
+  
   # More defensive check for grouping variables
   if (!grouping_variable %in% colnames(temp_tbl)) {
     stop(sprintf("Grouping variable '%s' not found in the data", grouping_variable))
@@ -416,7 +509,7 @@ plotPcaHelper <- function(data,
   if (!is.null(shape_variable) && !shape_variable %in% colnames(temp_tbl)) {
     stop(sprintf("Shape variable '%s' not found in the data", shape_variable))
   }
-
+  
   # Create base plot with appropriate aesthetics based on whether shape_variable is NULL
   if (is.null(label_column) || label_column == "") {
     if (is.null(shape_variable)) {
@@ -444,22 +537,22 @@ plotPcaHelper <- function(data,
                    label = !!sym(label_column)))
     }
   }
-
+  
   output <- base_plot +
     geom_point(size = 3) +
-    xlab(paste("PC1 (", round(proportion_explained$X[["PC1"]] * 100, 0), "%)", sep = "")) +
-    ylab(paste("PC2 (", round(proportion_explained$X[["PC2"]] * 100, 0), "%)", sep = "")) +
+    xlab(paste("PC1 (", round(proportion_explained$X[["PC1"]] * 100, 0), "% of top 10% CV)", sep = "")) +
+    ylab(paste("PC2 (", round(proportion_explained$X[["PC2"]] * 100, 0), "% of top 10% CV)", sep = "")) +
     labs(title = title) +
     theme(legend.title = element_blank()) +
     scale_x_continuous(labels = function(x) format(x, scientific = FALSE, digits = 3)) +
     scale_y_continuous(labels = function(x) format(x, scientific = FALSE, digits = 3))
-
+  
   # Calculate axis limits based on the full range of data
   pc1_range <- range(temp_tbl$PC1, na.rm = TRUE)
   pc2_range <- range(temp_tbl$PC2, na.rm = TRUE)
   buffer_pc1 <- (pc1_range[2] - pc1_range[1]) * 0.05 # 5% buffer
   buffer_pc2 <- (pc2_range[2] - pc2_range[1]) * 0.05 # 5% buffer
-
+  
   output <- output + coord_cartesian(
     xlim = c(pc1_range[1] - buffer_pc1, pc1_range[2] + buffer_pc1),
     ylim = c(pc2_range[1] - buffer_pc2, pc2_range[2] + buffer_pc2)
@@ -468,9 +561,12 @@ plotPcaHelper <- function(data,
   if (!is.null(label_column) && label_column != "") {
     output <- output + geom_text_repel(size = geom.text.size, show.legend = FALSE)
   }
-
+  
+  #class(output) <- "ggplot"
   output
 }
+
+
 
 
 
@@ -482,8 +578,46 @@ plotPcaListHelper <- function(data,
                               label_column = NULL,
                               title, geom.text.size = 11, ncomp = 2,
                               ...) {
+  
+  
+  # --- START of modification ---
+  if(nrow(data) > 1) {
+    # 1. Filter by presence in samples
+    # Keep features that have values in at least 5% of the samples.
+    num_samples <- ncol(data)
+    min_samples_present <- floor(0.05 * num_samples)
+    data_abundant <- data[rowSums(!is.na(data)) >= min_samples_present, ]
+    
+    # 2. Filter by Coefficient of Variation (CV) on the already filtered data
+    if(nrow(data_abundant) > 1) {
+      cvs <- apply(data_abundant, 1, function(x) {
+        if (all(is.na(x))) return(NA)
+        s <- sd(x, na.rm = TRUE)
+        m <- mean(x, na.rm = TRUE)
+        if (is.na(s) || is.na(m) || abs(m) < 1e-6) return(0)
+        s / m
+      })
+      
+      # Find the CV threshold for the top 10%
+      cv_threshold <- quantile(cvs, 0.90, na.rm = TRUE)
+      
+      if(!is.na(cv_threshold) && cv_threshold > 0) {
+        data_filtered <- data_abundant[which(cvs >= cv_threshold), ]
+        print(nrow(data))
+        print(nrow(data_filtered))
+      } else {
+        data_filtered <- data_abundant
+      }
+    } else {
+      data_filtered <- data_abundant
+    }
+  } else {
+    data_filtered <- data
+  }
+  # --- END of modification ---
+  
 
-  pca.res <- mixOmics::pca(t(as.matrix(data)), ncomp = ncomp)
+  pca.res <- mixOmics::pca(t(as.matrix(data_filtered)), ncomp = ncomp)
   proportion_explained <- pca.res$prop_expl_var
 
   temp_tbl <- pca.res$variates$X |>
