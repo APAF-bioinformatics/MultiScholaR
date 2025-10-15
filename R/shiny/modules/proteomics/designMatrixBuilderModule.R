@@ -350,10 +350,6 @@ designMatrixBuilderServer <- function(id, data_tbl, config_list, column_mapping)
                 dplyr::mutate(factor2 = dplyr::coalesce(factor2, Batch)) |>
                 dplyr::select(-Batch)
               
-              # Also create initial group names if factor1 is not yet assigned
-              state$design_matrix <- state$design_matrix |>
-                dplyr::mutate(group = dplyr::coalesce(group, factor2))
-              
               logger::log_info("Design Matrix: Pre-populated 'factor2' with batch assignments.")
             }
             # --- End Auto-assign Logic ---
