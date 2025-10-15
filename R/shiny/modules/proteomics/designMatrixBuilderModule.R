@@ -8,6 +8,7 @@
 #' @param data_tbl A reactive expression that returns the data table
 #'   (e.g., from the setup & import tab).
 #' @param config_list A reactive expression that returns the main configuration list.
+#' @param column_mapping A reactive expression that returns the column mapping list.
 #'
 #' @return A reactive expression that returns a list containing the results
 #'   when the "Save" button is clicked. The list includes:
@@ -254,7 +255,7 @@ designMatrixBuilderUI <- function(id) {
 
 #' Design Matrix Builder Server Module
 #' @rdname designMatrixBuilderModule
-designMatrixBuilderServer <- function(id, data_tbl, config_list) {
+designMatrixBuilderServer <- function(id, data_tbl, config_list, column_mapping) {
     moduleServer(id, function(input, output, session) {
 
         # Reactive value to store the final results
@@ -271,11 +272,24 @@ designMatrixBuilderServer <- function(id, data_tbl, config_list) {
 
             df <- data_tbl()
             conf <- config_list()
-
-            # Initialize data_cln with numeric conversions (Proteomics specific)
-            data_cln <- df |>
-                dplyr::mutate(Precursor.Normalised = as.numeric(Precursor.Normalised)) |>
-                dplyr::mutate(Precursor.Quantity = as.numeric(Precursor.Quantity))
+            
+            # Initialize data_cln with dynamic numeric conversions
+            data_cln <- df
+            col_map <- column_mapping()
+            
+            # Dynamically convert quantity columns to numeric
+            if (!is.null(col_map$norm_quantity_col) && col_map$norm_quantity_col %in% names(data_cln)) {
+              data_cln <- data_cln |>
+                dplyr::mutate(!!sym(col_map$norm_quantity_col) := as.numeric(!!sym(col_map$norm_quantity_col)))
+            }
+            if (!is.null(col_map$raw_quantity_col) && col_map$raw_quantity_col %in% names(data_cln)) {
+              data_cln <- data_cln |>
+                dplyr::mutate(!!sym(col_map$raw_quantity_col) := as.numeric(!!sym(col_map$raw_quantity_col)))
+            }
+            if (!is.null(col_map$quantity_col) && col_map$quantity_col %in% names(data_cln)) {
+                data_cln <- data_cln |>
+                dplyr::mutate(!!sym(col_map$quantity_col) := as.numeric(!!sym(col_map$quantity_col)))
+            }
 
             # Initialize design matrix with factor columns
             design_matrix_raw <- tibble::tibble(
@@ -332,8 +346,9 @@ designMatrixBuilderServer <- function(id, data_tbl, config_list) {
               
               state$design_matrix <- state$design_matrix |>
                 dplyr::left_join(batch_assignments, by = "Run") |>
-                # Assign to factor2, assuming factor1 will be the main experimental variable
-                dplyr::rename(factor2 = "Batch")
+                # Mutate the existing factor2 column with values from Batch, then remove Batch
+                dplyr::mutate(factor2 = dplyr::coalesce(factor2, Batch)) |>
+                dplyr::select(-Batch)
               
               # Also create initial group names if factor1 is not yet assigned
               state$design_matrix <- state$design_matrix |>

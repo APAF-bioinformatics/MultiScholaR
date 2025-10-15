@@ -80,7 +80,7 @@ designMatrixAppletUI <- function(id) {
 #' @importFrom shinyFiles shinyDirButton shinyDirChoose parseDirPath getVolumes
 #' @importFrom tidyr pivot_wider
 #' @importFrom rlang sym
-designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volumes = NULL) {
+designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volumes = NULL, qc_trigger = NULL) {
   message(sprintf("--- Entering designMatrixAppletServer ---"))
   message(sprintf("   designMatrixAppletServer Arg: id = %s", id))
   
@@ -323,6 +323,57 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
             description = description
         )
         
+        # --- TRIGGER UNIPROT ANNOTATION ---
+        log_info("Design Matrix complete. Triggering UniProt annotation.")
+        shiny::showNotification("Retrieving UniProt annotations...", id = "uniprot_annotating", duration = NULL)
+        tryCatch({
+          protein_column <- workflow_data$column_mapping$protein_col
+          if (is.null(protein_column)) {
+            stop("Protein column not found in column_mapping. Cannot get annotations.")
+          }
+          
+          cache_dir <- if (!is.null(experiment_paths) && !is.null(experiment_paths$results_dir)) {
+            file.path(experiment_paths$results_dir, "cache")
+          } else {
+            file.path(tempdir(), "proteomics_cache")
+          }
+          
+          uniprot_cache_dir <- file.path(cache_dir, "uniprot_annotations")
+          if (!dir.exists(uniprot_cache_dir)) {
+            dir.create(uniprot_cache_dir, recursive = TRUE)
+          }
+
+          uniprot_dat_cln <- getUniprotAnnotationsFull(
+            data_tbl = workflow_data$data_cln,
+            protein_id_column = protein_column,
+            cache_dir = uniprot_cache_dir,
+            taxon_id = workflow_data$taxon_id
+          )
+          
+          workflow_data$uniprot_dat_cln <- uniprot_dat_cln
+          assign("uniprot_dat_cln", uniprot_dat_cln, envir = .GlobalEnv)
+          
+          if (!is.null(experiment_paths) && !is.null(experiment_paths$source_dir)) {
+            scripts_uniprot_path <- file.path(experiment_paths$source_dir, "uniprot_dat_cln.RDS")
+            saveRDS(uniprot_dat_cln, scripts_uniprot_path)
+            log_info(sprintf("Saved uniprot_dat_cln to scripts directory: %s", scripts_uniprot_path))
+          }
+          log_info(sprintf("UniProt annotations retrieved successfully. Found %d annotations", nrow(uniprot_dat_cln)))
+          shiny::removeNotification("uniprot_annotating")
+          shiny::showNotification("UniProt annotations retrieved successfully.", type = "message")
+          
+        }, error = function(e) {
+          log_warn(paste("Error getting UniProt annotations:", e$message))
+          workflow_data$uniprot_dat_cln <- NULL
+          shiny::removeNotification("uniprot_annotating")
+          shiny::showNotification(paste("Warning: Could not retrieve UniProt annotations:", e$message), type = "warning", duration = 8)
+        })
+        
+        # Set the QC trigger to TRUE to signal that QC modules can now run
+        if (!is.null(qc_trigger)) {
+          qc_trigger(TRUE)
+        }
+        
         workflow_data$tab_status$design_matrix <- "complete"
         
         shiny::removeNotification("importing_design")
@@ -357,7 +408,8 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
     builder_results_rv <- designMatrixBuilderServer(
       "builder",
       data_tbl = shiny::reactive(workflow_data$data_tbl),
-      config_list = shiny::reactive(workflow_data$config_list)
+      config_list = shiny::reactive(workflow_data$config_list),
+      column_mapping = shiny::reactive(workflow_data$column_mapping)
     )
     
     # == Handle Builder Results =================================================
@@ -469,6 +521,52 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
               config_object = workflow_data$config_list,
               description = description
           )
+          
+          # --- TRIGGER UNIPROT ANNOTATION ---
+          log_info("Design Matrix complete. Triggering UniProt annotation.")
+          shiny::showNotification("Retrieving UniProt annotations...", id = "uniprot_annotating", duration = NULL)
+          tryCatch({
+            protein_column <- workflow_data$column_mapping$protein_col
+            if (is.null(protein_column)) {
+              stop("Protein column not found in column_mapping. Cannot get annotations.")
+            }
+            
+            cache_dir <- if (!is.null(experiment_paths) && !is.null(experiment_paths$results_dir)) {
+              file.path(experiment_paths$results_dir, "cache")
+            } else {
+              file.path(tempdir(), "proteomics_cache")
+            }
+            
+            uniprot_cache_dir <- file.path(cache_dir, "uniprot_annotations")
+            if (!dir.exists(uniprot_cache_dir)) {
+              dir.create(uniprot_cache_dir, recursive = TRUE)
+            }
+
+            uniprot_dat_cln <- getUniprotAnnotationsFull(
+              data_tbl = workflow_data$data_cln,
+              protein_id_column = protein_column,
+              cache_dir = uniprot_cache_dir,
+              taxon_id = workflow_data$taxon_id
+            )
+            
+            workflow_data$uniprot_dat_cln <- uniprot_dat_cln
+            assign("uniprot_dat_cln", uniprot_dat_cln, envir = .GlobalEnv)
+            
+            if (!is.null(experiment_paths) && !is.null(experiment_paths$source_dir)) {
+              scripts_uniprot_path <- file.path(experiment_paths$source_dir, "uniprot_dat_cln.RDS")
+              saveRDS(uniprot_dat_cln, scripts_uniprot_path)
+              log_info(sprintf("Saved uniprot_dat_cln to scripts directory: %s", scripts_uniprot_path))
+            }
+            log_info(sprintf("UniProt annotations retrieved successfully. Found %d annotations", nrow(uniprot_dat_cln)))
+            shiny::removeNotification("uniprot_annotating")
+            shiny::showNotification("UniProt annotations retrieved successfully.", type = "message")
+            
+          }, error = function(e) {
+            log_warn(paste("Error getting UniProt annotations:", e$message))
+            workflow_data$uniprot_dat_cln <- NULL
+            shiny::removeNotification("uniprot_annotating")
+            shiny::showNotification(paste("Warning: Could not retrieve UniProt annotations:", e$message), type = "warning", duration = 8)
+          })
           
           # 4. Update tab status to 'complete'
           workflow_data$tab_status$design_matrix <- "complete"

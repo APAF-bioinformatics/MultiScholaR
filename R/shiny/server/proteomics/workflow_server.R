@@ -68,6 +68,10 @@ proteomicsWorkflowServer <- function(id, project_dirs, omic_type, experiment_lab
       # Processing logs
       processing_log = list()
     )
+    
+    # Reactive trigger for initializing QC modules
+    qc_trigger <- reactiveVal(NULL)
+    
     cat("   proteomicsWorkflowServer Step: workflow_data created successfully\n")
     cat(sprintf("   proteomicsWorkflowServer Step: state_update_trigger initialized = %s\n", !is.null(workflow_data$state_update_trigger)))
     cat(sprintf("   proteomicsWorkflowServer Step: state_manager initialized = %s\n", !is.null(workflow_data$state_manager)))
@@ -133,10 +137,10 @@ proteomicsWorkflowServer <- function(id, project_dirs, omic_type, experiment_lab
     
     # Tab 2: Design Matrix
     message("   proteomicsWorkflowServer Step: Calling designMatrixAppletServer...")
-    designMatrixAppletServer("design_matrix", workflow_data, experiment_paths, volumes)
+    designMatrixAppletServer("design_matrix", workflow_data, experiment_paths, volumes, qc_trigger = qc_trigger)
     
     # Tab 3: Quality Control
-    qualityControlAppletServer("quality_control", workflow_data, experiment_paths, omic_type, experiment_label)
+    qualityControlAppletServer("quality_control", workflow_data, experiment_paths, omic_type, experiment_label, qc_trigger = qc_trigger)
     
     # Create reactive for selected tab to pass to normalization module
     selected_tab <- reactive({

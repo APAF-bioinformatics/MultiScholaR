@@ -14,11 +14,11 @@
 #' @importFrom logger log_info
 
 # Source all sub-modules for the protein QC workflow
-source("R/shiny/server/proteomics/qc/protein/protein_rollup_server.R")
-source("R/shiny/server/proteomics/qc/protein/accession_cleanup_server.R")
-source("R/shiny/server/proteomics/qc/protein/protein_intensity_filter_server.R")
-source("R/shiny/server/proteomics/qc/protein/duplicate_removal_server.R")
-source("R/shiny/server/proteomics/qc/protein/protein_replicate_filter_server.R")
+source("server/proteomics/qc/protein/protein_rollup_server.R")
+source("server/proteomics/qc/protein/accession_cleanup_server.R")
+source("server/proteomics/qc/protein/protein_intensity_filter_server.R")
+source("server/proteomics/qc/protein/duplicate_removal_server.R")
+source("server/proteomics/qc/protein/protein_replicate_filter_server.R")
 
 proteinQCAppletServer <- function(id, workflow_data, experiment_paths, omic_type, experiment_label) {
   shiny::moduleServer(id, function(input, output, session) {
