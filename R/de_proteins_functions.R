@@ -848,53 +848,119 @@ getSignificantData <- function( list_of_de_tables
                                , facet_column = analysis_type
                                , q_val_thresh = 0.05) {
 
+  message("--- Entering getSignificantData ---")
+  message(sprintf("   getSignificantData Arg: list_of_de_tables class = %s", class(list_of_de_tables)))
+  message(sprintf("   getSignificantData Arg: list_of_de_tables length = %d", length(list_of_de_tables)))
+  message(sprintf("   getSignificantData Arg: list_of_descriptions = %s", paste(list_of_descriptions, collapse = ", ")))
+  message("   getSignificantData: Inspecting structure of list_of_de_tables...")
+  utils::str(list_of_de_tables)
+
   get_row_binded_table <- function(de_table_list, description) {
 
+    message("   --- Entering get_row_binded_table (internal helper) ---")
+    message(sprintf("      get_row_binded_table Arg: de_table_list class = %s", class(de_table_list)))
+    message(sprintf("      get_row_binded_table Arg: de_table_list type = %s", typeof(de_table_list)))
+    message(sprintf("      get_row_binded_table Arg: description = %s", description))
+    message("      get_row_binded_table: Inspecting structure of de_table_list...")
+    utils::str(de_table_list)
+    
     # This internal helper is now more robust. It checks if the table
     # already has the row_id as a column. If not, it converts rownames.
     # This handles both old and new data structures.
     
+    message("      get_row_binded_table Step: About to call purrr::map on de_table_list...")
+    message(sprintf("      get_row_binded_table: de_table_list is a list? %s", is.list(de_table_list)))
+    message(sprintf("      get_row_binded_table: de_table_list is a data.frame? %s", is.data.frame(de_table_list)))
+    
     processed_list <- purrr::map(de_table_list, function(tbl) {
-      row_id_col <- as_string(as_name(enquo(row_id)))
+      message("         [map iteration] Processing element...")
+      message(sprintf("         [map iteration] tbl class = %s", class(tbl)))
+      message(sprintf("         [map iteration] tbl type = %s", typeof(tbl)))
+      message(sprintf("         [map iteration] is.data.frame(tbl) = %s", is.data.frame(tbl)))
       
-      if (!row_id_col %in% colnames(tbl)) {
-        # If row_id is not a column, convert rownames
-        tbl <- tbl |> rownames_to_column(var = row_id_col)
+      row_id_col <- as_string(as_name(enquo(row_id)))
+      message(sprintf("         [map iteration] row_id_col = %s", row_id_col))
+      
+      if (is.data.frame(tbl)) {
+        message(sprintf("         [map iteration] tbl is a data frame, checking for column '%s'...", row_id_col))
+        message(sprintf("         [map iteration] Column names in tbl: %s", paste(colnames(tbl), collapse = ", ")))
+        message(sprintf("         [map iteration] '%s' in colnames(tbl)? %s", row_id_col, row_id_col %in% colnames(tbl)))
+        
+        if (!row_id_col %in% colnames(tbl)) {
+          message(sprintf("         [map iteration] Column '%s' NOT found, converting rownames...", row_id_col))
+          tbl <- tbl |> rownames_to_column(var = row_id_col)
+          message("         [map iteration] Rownames converted successfully")
+        } else {
+          message(sprintf("         [map iteration] Column '%s' already exists, skipping rownames conversion", row_id_col))
+        }
+      } else {
+        message("         [map iteration] WARNING: tbl is NOT a data frame! This is unexpected.")
+        message("         [map iteration] Attempting to inspect tbl structure:")
+        utils::str(tbl)
       }
       
+      message("         [map iteration] Returning processed element")
       return(tbl)
     })
 
+    message("      get_row_binded_table Step: purrr::map completed")
+    message(sprintf("      get_row_binded_table: processed_list length = %d", length(processed_list)))
+
+    message("      get_row_binded_table Step: About to add comparison column with purrr::map2...")
     output <- processed_list |>
       purrr::map2(names(processed_list), \(.x, .y){
+        message(sprintf("         [map2 iteration] Processing element with name: %s", .y))
         # If the 'comparison' column doesn't already exist, create it from the list name
         if (!comparison_column %in% colnames(.x)) {
+          message(sprintf("         [map2 iteration] Adding comparison column with value: %s", .y))
           .x <- .x |> mutate({ { comparison_column } } := .y)
+        } else {
+          message("         [map2 iteration] Comparison column already exists, skipping")
         }
         .x
         }) |>
       bind_rows() |>
       mutate({ { facet_column } } := description)
 
+    message("      get_row_binded_table Step: Rows bound and facet column added")
+
     # This separator logic assumes a specific format like 'ContrastName=ExpressionType'
     # in the comparison column. We need to make this conditional as well.
     # Check if any values in the comparison column contain '=' before trying to separate.
+    message(sprintf("      get_row_binded_table Step: Checking for '=' delimiter in comparison column..."))
+    message(sprintf("      get_row_binded_table: Sample comparison values: %s", 
+                   paste(head(output[[comparison_column]], 3), collapse = ", ")))
+    
     if (any(grepl("=", output[[comparison_column]]))) {
+        message("      get_row_binded_table Step: '=' found, separating comparison column...")
         output <- output |>
           separate_wider_delim(
             { { comparison_column } },
             delim = "=",
             names = c(comparison_column, expression_column)
           )
+        message("      get_row_binded_table Step: Comparison column separated successfully")
+    } else {
+        message("      get_row_binded_table Step: No '=' found, skipping separation")
     }
 
+    message("   --- Exiting get_row_binded_table ---")
     return(output)
   }
 
+  message("   getSignificantData Step: About to call purrr::map2 on list_of_de_tables...")
   logfc_tbl_all <- purrr::map2(list_of_de_tables, list_of_descriptions,
-                               function(a, b) { get_row_binded_table(de_table_list = a, description = b) }) |>
+                               function(a, b) { 
+                                 message(sprintf("   [map2 outer] Processing DE table with description: %s", b))
+                                 message(sprintf("   [map2 outer] 'a' class = %s", class(a)))
+                                 get_row_binded_table(de_table_list = a, description = b) 
+                               }) |>
     bind_rows()
 
+  message("   getSignificantData Step: All tables processed and bound")
+  message(sprintf("   getSignificantData: logfc_tbl_all dims = %d rows, %d cols", nrow(logfc_tbl_all), ncol(logfc_tbl_all)))
+
+  message("   getSignificantData Step: Adding log_q_value and colour columns...")
   selected_data <- logfc_tbl_all |>
     mutate({ { log_q_value_column } } := -log10(fdr_qvalue)) |>
     dplyr::select({ { row_id } }, { { log_q_value_column } }, { { q_value_column } }, { { p_value_column } }, { { log_fc_column } },
@@ -906,6 +972,9 @@ getSignificantData <- function( list_of_de_tables
                                      TRUE ~ "black")) |>
     dplyr::mutate(colour = factor(colour, levels = c("black", "orange", "blue", "purple")))
 
+  message("--- Exiting getSignificantData ---")
+  message(sprintf("   getSignificantData: Returning selected_data with %d rows, %d cols", nrow(selected_data), ncol(selected_data)))
+  
   selected_data
 
 }
