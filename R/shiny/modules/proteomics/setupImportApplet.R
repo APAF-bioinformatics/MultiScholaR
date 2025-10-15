@@ -177,9 +177,6 @@ setupImportUi <- function(id) {
 #' @importFrom ini read.ini
 #' @export
 setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NULL) {
-  # Source external helpers
-  source(file.path("..", "..", "..", "tmt_import_helpers.R"), local = TRUE)
-  
   message(sprintf("--- Entering setupImportServer ---"))
   message(sprintf("   setupImportServer Arg: id = %s", id))
   message(sprintf("   setupImportServer Arg: volumes is NULL = %s", is.null(volumes)))
@@ -401,9 +398,44 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
       shiny::req(file_path)
       
       tryCatch({
-        # Read first few lines to detect format
-        preview_lines <- readLines(file_path, n = 10)
-        headers <- strsplit(preview_lines[1], "\t|,")[[1]]
+        headers <- NULL
+        
+        # NEW LOGIC: Handle ZIP files differently
+        if (tolower(tools::file_ext(file_path)) == "zip") {
+          # List files inside the zip without extracting all
+          zip_contents <- unzip(file_path, list = TRUE)
+          # Find the first data file (xlsx, tsv, csv)
+          first_data_file <- zip_contents$Name[grep("\\.(xlsx|tsv|csv)$", zip_contents$Name, ignore.case = TRUE)[1]]
+          
+          if (is.na(first_data_file)) {
+            stop("No data files (.xlsx, .tsv, .csv) found inside the ZIP archive.")
+          }
+          
+          # Read just the header row from the first data file within the zip
+          if (tolower(tools::file_ext(first_data_file)) == "xlsx") {
+             if (!requireNamespace("readxl", quietly = TRUE)) stop("Package 'readxl' needed for .xlsx files.")
+             # readxl needs to read the file from a temp extraction
+             temp_dir <- tempfile()
+             dir.create(temp_dir)
+             unzip(file_path, files = first_data_file, exdir = temp_dir, junkpaths = TRUE)
+             unzipped_file_path <- file.path(temp_dir, basename(first_data_file))
+             headers <- names(readxl::read_excel(unzipped_file_path, n_max = 0))
+             unlink(temp_dir, recursive = TRUE)
+          } else {
+            con <- unz(file_path, first_data_file)
+            headers <- strsplit(readLines(con, n = 1), "\t|,")[[1]]
+            close(con)
+          }
+          
+        } else {
+          # Original logic for non-zip files
+          preview_lines <- readLines(file_path, n = 10)
+          headers <- strsplit(preview_lines[1], "\t|,")[[1]]
+        }
+        
+        if (is.null(headers)) {
+            stop("Could not read headers from the provided file.")
+        }
         
         # Get filename for detection
         filename <- if (use_shiny_files) {
@@ -415,8 +447,7 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
         # Detect format based on column headers and filename
         format_info <- detectProteomicsFormat(
           headers = headers,
-          filename = filename,
-          preview_lines = preview_lines
+          filename = filename
         )
         
         local_data$detected_format <- format_info$format
@@ -676,77 +707,6 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
           workflow_data$aa_seq_tbl_final <- NULL
         })
         
-                # ✅ OPTIMIZED: Create efficient UniProt annotation lookup from actual data
-        log_info("Creating optimized UniProt annotation lookup from actual data...")
-        tryCatch({
-          
-          cat("*** UNIPROT LOOKUP: Starting OPTIMIZED annotation lookup from actual data ***\n")
-          
-          # Create cache directory for UniProt annotations
-          uniprot_cache_dir <- if (!is.null(experiment_paths) && !is.null(experiment_paths$results_dir)) {
-            file.path(experiment_paths$results_dir, "cache", "uniprot_annotations")
-          } else {
-            file.path(cache_dir, "uniprot_annotations")
-          }
-          
-          if (!dir.exists(uniprot_cache_dir)) {
-            dir.create(uniprot_cache_dir, recursive = TRUE)
-          }
-          
-          # Use standard protein column name
-          protein_column <- "Protein.Ids"
-          
-          cat(sprintf("*** UNIPROT LOOKUP: Using protein column: %s ***\n", protein_column))
-          cat(sprintf("*** UNIPROT LOOKUP: Processing %d rows of actual data ***\n", nrow(workflow_data$data_tbl)))
-          
-          # Use the optimized annotation function that works with actual data
-          uniprot_dat_cln <- getUniprotAnnotationsFull(
-            data_tbl = workflow_data$data_tbl,
-            protein_id_column = protein_column,
-            cache_dir = uniprot_cache_dir,
-            taxon_id = input$taxon_id
-          )
-          
-          cat(sprintf("*** UNIPROT LOOKUP: Successfully created annotation lookup with %d entries ***\n", nrow(uniprot_dat_cln)))
-          
-          # Store in workflow data and global environment
-          workflow_data$uniprot_dat_cln <- uniprot_dat_cln
-          assign("uniprot_dat_cln", uniprot_dat_cln, envir = .GlobalEnv)
-          
-          # Save to scripts directory for session persistence
-          if (!is.null(experiment_paths) && !is.null(experiment_paths$source_dir)) {
-            scripts_uniprot_path <- file.path(experiment_paths$source_dir, "uniprot_dat_cln.RDS")
-            saveRDS(uniprot_dat_cln, scripts_uniprot_path)
-            log_info(sprintf("Saved uniprot_dat_cln to scripts directory: %s", scripts_uniprot_path))
-          }
-          
-          log_info(sprintf("UniProt annotations retrieved successfully. Found %d annotations", nrow(uniprot_dat_cln)))
-          
-          # Show notification to user
-          shiny::showNotification(
-            sprintf("UniProt annotation lookup created: %d protein annotations available for enrichment analysis", nrow(uniprot_dat_cln)),
-            type = "message",
-            duration = 5
-          )
-          
-        }, error = function(e) {
-          log_warn(paste("Error getting UniProt annotations:", e$message))
-          log_warn("Enrichment analysis may have limited functionality without UniProt annotations")
-          workflow_data$uniprot_dat_cln <- NULL
-          
-          shiny::showNotification(
-            paste("Warning: Could not retrieve UniProt annotations:", e$message, "Enrichment analysis may be limited."),
-            type = "warning",
-            duration = 8
-          )
-        })
-        
-        cat("*** UNIPROT LOOKUP: Annotation process completed ***\n")
-        
-        # Set organism info
-        workflow_data$taxon_id <- input$taxon_id
-        workflow_data$organism_name <- input$organism_name
-        
         # Load configuration
         config_path <- if (use_shiny_files) {
           local_data$config_file_path
@@ -756,40 +716,34 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
         
         if (!is.null(config_path)) {
           log_info(paste("Reading configuration from", config_path))
-          # ✅ FIXED: Use readConfigFile instead of ini::read.ini for proper processing
           config_list <- readConfigFile(file = config_path)
         } else {
           log_info("Using default configuration")
-          # Use readConfigFile with default config.ini if it exists
           default_config_path <- file.path(experiment_paths$source_dir, "config.ini")
           if (file.exists(default_config_path)) {
             config_list <- readConfigFile(file = default_config_path)
           } else {
-            # ✅ FIXED: Download default config.ini like in designMatrixApplet
             log_info("config.ini not found in project. Downloading default config.")
             tryCatch({
               default_config_url <- "https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/main/Workbooks/config.ini"
               download.file(default_config_url, destfile = default_config_path, quiet = TRUE)
               log_info(paste("Default config.ini downloaded to:", default_config_path))
               shiny::showNotification("Downloaded default config.ini to scripts directory.", type = "message")
-              
-              # Now read the downloaded config
               config_list <- readConfigFile(file = default_config_path)
             }, error = function(e_download) {
               msg <- paste("Failed to download default config.ini:", e_download$message)
               log_error(msg)
               shiny::showNotification(msg, type = "warning", duration = 10)
-              # Fall back to minimal default if download fails
               log_info("Using minimal fallback configuration")
               config_list <- getDefaultProteomicsConfig()
             })
           }
         }
         workflow_data$config_list <- config_list
-        
-        # ✅ FIXED: Create global config_list for updateConfigParameter compatibility
+
+        # Create global config_list for compatibility
         assign("config_list", config_list, envir = .GlobalEnv)
-        log_info("Created global config_list for updateConfigParameter compatibility")
+        log_info("Created global config_list for compatibility")
         
         # Read optional mapping files
         uniprot_path <- if (use_shiny_files) {
@@ -798,26 +752,34 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
           if (!is.null(input$uniprot_mapping_standard)) input$uniprot_mapping_standard$datapath else NULL
         }
         
-        if (!is.null(uniprot_path)) {
-          log_info("Reading UniProt mapping file")
-          workflow_data$uniprot_mapping <- vroom::vroom(
-            uniprot_path,
-            show_col_types = FALSE
-          )
-        }
-        
         uniparc_path <- if (use_shiny_files) {
           local_data$uniparc_mapping_file
         } else {
           if (!is.null(input$uniparc_mapping_standard)) input$uniparc_mapping_standard$datapath else NULL
         }
         
+        if (!is.null(uniprot_path)) {
+          log_info(paste("Reading UniProt mapping from", uniprot_path))
+          uniprot_mapping <- tryCatch({
+            vroom::vroom(uniprot_path, show_col_types = FALSE)
+          }, error = function(e) {
+            log_error(paste("Failed to read UniProt mapping file:", e$message))
+            stop("Failed to read UniProt mapping file: ", e$message)
+          })
+          workflow_data$uniprot_mapping <- uniprot_mapping
+          log_info(sprintf("Read %d rows from UniProt mapping file", nrow(uniprot_mapping)))
+        }
+        
         if (!is.null(uniparc_path)) {
-          log_info("Reading UniParc mapping file")
-          workflow_data$uniparc_mapping <- vroom::vroom(
-            uniparc_path,
-            show_col_types = FALSE
-          )
+          log_info(paste("Reading UniParc mapping from", uniparc_path))
+          uniparc_mapping <- tryCatch({
+            vroom::vroom(uniparc_path, show_col_types = FALSE)
+          }, error = function(e) {
+            log_error(paste("Failed to read UniParc mapping file:", e$message))
+            stop("Failed to read UniParc mapping file: ", e$message)
+          })
+          workflow_data$uniparc_mapping <- uniparc_mapping
+          log_info(sprintf("Read %d rows from UniParc mapping file", nrow(uniparc_mapping)))
         }
         
         # Get filename for logging
@@ -1017,8 +979,14 @@ detectProteomicsFormat <- function(headers, filename, preview_lines = NULL) {
   pd_tmt_markers <- c("protein fdr confidence", "master", "accession", "exp. q-value", "sum pep score")
   pd_tmt_found <- sum(pd_tmt_markers %in% headers_lower)
   abundance_found <- any(grepl("^abundance:", headers_lower))
-  pd_tmt_score <- (pd_tmt_found / length(pd_tmt_markers))
-  if (abundance_found) pd_tmt_score <- pd_tmt_score + 0.4 # High weight for abundance columns
+  
+  # Weighted scoring to prevent exceeding 100%
+  # Header markers are worth 60% total (12% each)
+  header_score <- (pd_tmt_found / length(pd_tmt_markers)) * 0.6
+  # Abundance column presence is worth 40%
+  abundance_score <- if (abundance_found) 0.4 else 0
+  
+  pd_tmt_score <- header_score + abundance_score
   
   # Determine best match
   scores <- c(diann = diann_score, 

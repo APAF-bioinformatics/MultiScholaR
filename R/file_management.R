@@ -593,12 +593,13 @@ formatDIANNParquet <- function(data_tbl_parquet_filt) {
 #' @importFrom logger log_info
 #' @importFrom purrr map_dfr
 #' @importFrom tools file_ext
+#' @importFrom dplyr rename_with select mutate everything
+#' @importFrom stringr str_extract
 #' @export
 importProteomeDiscovererTMTData <- function(filepath) {
   log_info(paste("Starting Proteome Discoverer TMT import from:", filepath))
   
   process_single_file <- function(file_path, batch_name = NULL) {
-    # Check file extension to use the correct reading function
     if (endsWith(file_path, ".xlsx")) {
       if (!requireNamespace("readxl", quietly = TRUE)) {
         stop("The 'readxl' package is required for .xlsx files.", call. = FALSE)
@@ -608,32 +609,41 @@ importProteomeDiscovererTMTData <- function(filepath) {
       data <- vroom::vroom(file_path, show_col_types = FALSE)
     }
     
-    log_info(sprintf("Read %d rows and %d columns from TMT data file.", nrow(data), ncol(data)))
-    
-    # Rename the protein accession column for consistency
     if ("Accession" %in% names(data)) {
-      data <- data |>
-        dplyr::rename(Protein.Ids = "Accession")
+      data <- data |> dplyr::rename(Protein.Ids = "Accession")
     } else {
       stop("Required column 'Accession' not found in file: ", basename(file_path))
     }
     
-    # Reshape data from wide to long format
-    # We select the protein ID column and all columns that start with "Abundance: "
+    # NEW LOGIC: Rename columns to be unique BEFORE pivoting
+    # This is the critical fix.
+    if (!is.null(batch_name)) {
+      data <- data |>
+        dplyr::rename_with(
+          ~ paste(
+              batch_name, 
+              gsub("Abundance: F[0-9]+: ([0-9]+[A-Z]?), (.+)", "\\1_\\2", .x), 
+              sep = "_"
+            ),
+          .cols = dplyr::starts_with("Abundance: ")
+        )
+    } else {
+        # Fallback for single file without a batch name
+        data <- data |>
+        dplyr::rename_with(
+          ~ gsub("Abundance: F[0-9]+: ([0-9]+[A-Z]?), (.+)", "\\1_\\2", .x),
+          .cols = dplyr::starts_with("Abundance: ")
+        )
+    }
+
+    # Now, pivot the uniquely named columns
     long_data <- data |>
-      dplyr::select(Protein.Ids, dplyr::starts_with("Abundance: ")) |>
       tidyr::pivot_longer(
-        cols = -Protein.Ids,
+        # Use a more robust selector that finds the renamed columns
+        cols = dplyr::matches("_[0-9]+[A-Z]?_"),
         names_to = "Run",
         values_to = "Abundance"
       )
-    
-    # Clean up the 'Run' column names
-    long_data$Run <- gsub("Abundance: F[0-9]+: [0-9]+[A-Z]?\"", "Sample", long_data$Run)
-    long_data$Run <- gsub("\"", "", long_data$Run)
-    long_data$Run <- trimws(long_data$Run)
-    
-    log_info(sprintf("Reshaped data to %d rows.", nrow(long_data)))
     
     if (!is.null(batch_name)) {
       long_data$Batch <- batch_name
@@ -656,14 +666,15 @@ importProteomeDiscovererTMTData <- function(filepath) {
       stop("No data files (.xlsx, .csv, .tsv) found in the ZIP archive.")
     }
     
-    # Use purrr::map_dfr to iterate, process, and combine files
-    all_data <- purrr::map_dfr(files_to_process, ~{
-      batch_name <- gsub(".*(b[0-9]+).*", "\\1", basename(.x), ignore.case = TRUE)
+    # Use purrr::imap_dfr to iterate, process, and combine files
+    all_data <- purrr::imap_dfr(files_to_process, ~{
+      # Use the index provided by imap to create a guaranteed unique batch name
+      batch_name <- paste0("b", .y) # .y is the index (1, 2, 3...)
+      
       log_info(paste("Processing file:", basename(.x), "as Batch:", batch_name))
       process_single_file(.x, batch_name = batch_name)
     })
     
-    # Clean up the temporary directory
     unlink(temp_dir, recursive = TRUE)
     
     final_data <- all_data

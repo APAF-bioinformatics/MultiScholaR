@@ -14,13 +14,13 @@
 #' @importFrom logger log_info
 
 # Source all sub-modules for the peptide QC workflow
-source("R/shiny/server/proteomics/qc/peptide/qvalue_filter_server.R")
-source("R/shiny/server/proteomics/qc/peptide/precursor_rollup_server.R")
-source("R/shiny/server/proteomics/qc/peptide/intensity_filter_server.R")
-source("R/shiny/server/proteomics/qc/peptide/protein_peptide_filter_server.R")
-source("R/shiny/server/proteomics/qc/peptide/sample_filter_server.R")
-source("R/shiny/server/proteomics/qc/peptide/replicate_filter_server.R")
-source("R/shiny/server/proteomics/qc/peptide/imputation_server.R")
+source("server/proteomics/qc/peptide/qvalue_filter_server.R")
+source("server/proteomics/qc/peptide/precursor_rollup_server.R")
+source("server/proteomics/qc/peptide/intensity_filter_server.R")
+source("server/proteomics/qc/peptide/protein_peptide_filter_server.R")
+source("server/proteomics/qc/peptide/sample_filter_server.R")
+source("server/proteomics/qc/peptide/replicate_filter_server.R")
+source("server/proteomics/qc/peptide/imputation_server.R")
 
 peptideQCAppletServer <- function(id, workflow_data, experiment_paths, omic_type, experiment_label) {
   shiny::moduleServer(id, function(input, output, session) {
