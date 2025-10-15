@@ -111,10 +111,37 @@ perform_enrichment <- function(data_subset,
   message(sprintf("      Data State (protein_ids): Length = %d", length(protein_ids)))
   message(sprintf("      Data State (protein_ids): Class = %s", class(protein_ids)))
   message(sprintf("      Data State (protein_ids): First 5 values = %s", paste(head(protein_ids, 5), collapse = ", ")))
+  
+  # ✅ DEBUG66: Comprehensive NA analysis
+  na_count_initial <- sum(is.na(protein_ids))
+  empty_count_initial <- sum(protein_ids == "", na.rm = TRUE)
+  valid_count_initial <- length(protein_ids) - na_count_initial - empty_count_initial
+  
+  message(sprintf("      ╔══════════════════════════════════════════════════════════════════╗"))
+  message(sprintf("      ║ DEBUG66: PROTEIN ID AVAILABILITY ANALYSIS                       ║"))
+  message(sprintf("      ╠══════════════════════════════════════════════════════════════════╣"))
+  message(sprintf("      ║ Total proteins in data_subset:     %5d (100.0%%)                 ║", length(protein_ids)))
+  message(sprintf("      ║ NA values in %s column:   %5d (%5.1f%%)                 ║", 
+                 protein_id_column, na_count_initial, (na_count_initial/length(protein_ids))*100))
+  message(sprintf("      ║ Empty string values:                %5d (%5.1f%%)                 ║", 
+                 empty_count_initial, (empty_count_initial/length(protein_ids))*100))
+  message(sprintf("      ║ Valid (non-NA, non-empty) values:  %5d (%5.1f%%)                 ║", 
+                 valid_count_initial, (valid_count_initial/length(protein_ids))*100))
+  message(sprintf("      ╚══════════════════════════════════════════════════════════════════╝"))
 
   if (any(is.na(protein_ids))) {
     na_count <- sum(is.na(protein_ids))
-    message(sprintf("   perform_enrichment Step: Found %d NA values in protein IDs, filtering...", na_count))
+    message(sprintf("   ⚠️  WARNING: Filtering out %d proteins with NA %s values!", na_count, protein_id_column))
+    message(sprintf("   ⚠️  %d proteins will be EXCLUDED from enrichment analysis!", na_count))
+    
+    if (na_count > (length(protein_ids) * 0.5)) {
+      message("   ╔═══════════════════════════════════════════════════════════════════════════╗")
+      message("   ║ ⚠️  CRITICAL WARNING: > 50% of proteins have NA gene names!              ║")
+      message("   ║ Consider using 'Protein.Ids' instead of 'gene_name' for enrichment!      ║")
+      message("   ║ OR ensure gene names are properly annotated in your data.                ║")
+      message("   ╚═══════════════════════════════════════════════════════════════════════════╝")
+    }
+    
     warning(paste("NA values found in", protein_id_column, "column"))
     data_subset <- data_subset |> dplyr::filter(!is.na(.data[[protein_id_column]]))
     protein_ids <- data_subset[[protein_id_column]]
@@ -122,6 +149,13 @@ perform_enrichment <- function(data_subset,
   }
 
   protein_ids <- unique(protein_ids[!is.na(protein_ids) & protein_ids != ""])
+  
+  message(sprintf("      DEBUG66: Final protein IDs to submit to gprofiler2: %d unique IDs", length(protein_ids)))
+  if (length(protein_ids) > 0 && length(protein_ids) <= 20) {
+    message(sprintf("      DEBUG66: All protein IDs being submitted: %s", paste(protein_ids, collapse = ", ")))
+  } else if (length(protein_ids) > 20) {
+    message(sprintf("      DEBUG66: First 20 protein IDs being submitted: %s", paste(head(protein_ids, 20), collapse = ", ")))
+  }
 
   message("   perform_enrichment Step: Checking custom background...")
   message(sprintf("      Data State (custom_bg): Length = %d", length(custom_bg)))
@@ -431,12 +465,33 @@ processEnrichments <- function(de_results,
 
                  message("   processEnrichments Step: About to apply protein ID splitting and FDR filtering...")
          message(sprintf("      Data State (de_data Before Modify): Dims=%d rows, %d cols. First 5 IDs: %s", nrow(de_data), ncol(de_data), paste(head(de_data[[protein_id_column]], 5), collapse=", ")))
+         
+         # ✅ DEBUG66: Check NA values BEFORE filtering
+         na_count_before <- sum(is.na(de_data[[protein_id_column]]))
+         message(sprintf("      DEBUG66: NA values in %s column BEFORE filtering: %d out of %d (%.1f%%)", 
+                        protein_id_column, na_count_before, nrow(de_data), (na_count_before/nrow(de_data))*100))
+         
+         # ✅ DEBUG66: Check how many pass q-value filter (before NA filter)
+         passes_q_filter <- de_data |> dplyr::filter(.data$fdr_qvalue < q_cutoff)
+         message(sprintf("      DEBUG66: Proteins passing q-value filter (< %.3f): %d", q_cutoff, nrow(passes_q_filter)))
+         if (nrow(passes_q_filter) > 0) {
+           na_in_sig <- sum(is.na(passes_q_filter[[protein_id_column]]))
+           message(sprintf("      DEBUG66: NA values in %s among q-significant proteins: %d out of %d (%.1f%%)",
+                          protein_id_column, na_in_sig, nrow(passes_q_filter), (na_in_sig/nrow(passes_q_filter))*100))
+           message(sprintf("      DEBUG66: First 10 %s values in q-significant proteins: %s",
+                          protein_id_column, paste(head(passes_q_filter[[protein_id_column]], 10), collapse = ", ")))
+         }
 
          subset_sig <- de_data |>
             dplyr::mutate(
               !!rlang::sym(protein_id_column) := stringr::str_remove(.data[[protein_id_column]], ":.*")
             ) |>
            dplyr::filter(.data$fdr_qvalue < q_cutoff)
+         
+         # ✅ DEBUG66: Check if NAs are being filtered somewhere
+         na_count_after_q <- sum(is.na(subset_sig[[protein_id_column]]))
+         message(sprintf("      DEBUG66: NA values in %s AFTER q-filter (before any NA removal): %d out of %d",
+                        protein_id_column, na_count_after_q, nrow(subset_sig)))
 
          message("   processEnrichments Step: Protein ID splitting and filtering complete.")
          message(sprintf("      Data State (subset_sig After Modify): Dims=%d rows, %d cols.", nrow(subset_sig), ncol(subset_sig)))
@@ -474,6 +529,15 @@ processEnrichments <- function(de_results,
           dplyr::filter(.data$log2FC > up_cutoff)
         message(sprintf("Up-regulated proteins (log2FC > %g): %d", up_cutoff, nrow(up_matrix)))
         
+        # ✅ DEBUG66: Check NA values in up_matrix
+        if (nrow(up_matrix) > 0) {
+          na_in_up <- sum(is.na(up_matrix[[protein_id_column]]))
+          message(sprintf("      DEBUG66: NA values in %s for UP-regulated proteins: %d out of %d (%.1f%%)",
+                         protein_id_column, na_in_up, nrow(up_matrix), (na_in_up/nrow(up_matrix))*100))
+          message(sprintf("      DEBUG66: First 10 UP gene names: %s",
+                         paste(head(up_matrix[[protein_id_column]], 10), collapse = ", ")))
+        }
+        
         # ✅ DEBUG 66: Check up_matrix details
         if (nrow(up_matrix) > 0) {
           message("      Data State (up_matrix) Structure:")
@@ -491,6 +555,15 @@ processEnrichments <- function(de_results,
         down_matrix <- subset_sig |>
           dplyr::filter(.data$log2FC < -down_cutoff)
         message(sprintf("Down-regulated proteins (log2FC < -%g): %d", down_cutoff, nrow(down_matrix)))
+        
+        # ✅ DEBUG66: Check NA values in down_matrix
+        if (nrow(down_matrix) > 0) {
+          na_in_down <- sum(is.na(down_matrix[[protein_id_column]]))
+          message(sprintf("      DEBUG66: NA values in %s for DOWN-regulated proteins: %d out of %d (%.1f%%)",
+                         protein_id_column, na_in_down, nrow(down_matrix), (na_in_down/nrow(down_matrix))*100))
+          message(sprintf("      DEBUG66: First 10 DOWN gene names: %s",
+                         paste(head(down_matrix[[protein_id_column]], 10), collapse = ", ")))
+        }
         
         # ✅ DEBUG 66: Check down_matrix details
         if (nrow(down_matrix) > 0) {
