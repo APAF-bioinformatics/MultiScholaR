@@ -53,7 +53,7 @@ installMultiScholaR <- function(verbose = TRUE) {
 
     devtools::install_github(
         "APAF-BIOINFORMATICS/MultiScholaR",
-        ref = "Bucket-Chemist/issue18", # Main branch
+        ref = "BookChapter", # Main branch
         dependencies = TRUE,
         upgrade = "never",
         force = TRUE
@@ -66,6 +66,7 @@ installMultiScholaR <- function(verbose = TRUE) {
 installMultiScholaR()
 loadDependencies()
 ```
+
 
 # START HERE if you already have MultiScholaR installed
 
@@ -86,6 +87,23 @@ loadDependencies()
 ```{r 1a Load MultiScholaR}
 library(MultiScholaR)
 loadDependencies()
+```
+
+## Deal with conflicted function names
+```{r 1b Deal with conflicted function names}
+conflict_prefer("select", "dplyr")
+conflict_prefer("filter", "dplyr")
+conflict_prefer("rename", "dplyr")
+conflict_prefer("count", "dplyr")
+conflict_prefer("slice", "dplyr")
+conflict_prefer("setdiff", "base")
+conflict_prefer("anyMissing", "Biobase")
+conflict_prefer("expand", "S4Vectors")
+conflicts_prefer(utils::head)
+conflicts_prefer(dplyr::first)
+conflicts_prefer(MultiScholaR::savePlot)
+conflicts_prefer(base::as.data.frame)
+conflicts_prefer(base::as.factor)
 ```
 
 # Set up your environment and project directory
@@ -118,7 +136,7 @@ omic_type <- "proteomics" # Set this to the type of analysis you are doing eg "p
 project_dirs <- setupDirectories(
     #omic_types = "metabolomics"
     # Or: 
-    omic_types = c("proteomics", "metabolomics", "transcriptomics", "lipidomics", "integration"),
+    omic_types = c("proteomics"), # , "metabolomics", "transcriptomics", "lipidomics", "integration"
     label = experiment_label,
     force = FALSE # Set to TRUE to skip prompts if dirs exist
 )
@@ -566,7 +584,7 @@ savePlot(
 )
 
 QC_composite_figure@density_plots$peptide_density_plot_plot_raw <- plotDensity(
-  peptide_log2_obj,
+  QC_composite_figure@pca_plots$peptide_pca_plot_plot_raw,
   grouping_variable = "group"
 )
 savePlot(
@@ -654,7 +672,7 @@ savePlot(
 )
 
 QC_composite_figure@density_plots$peptide_density_plot_plot_cyclicloess <- plotDensity(
-  peptide_normalised_obj,
+  QC_composite_figure@pca_plots$peptide_pca_plot_plot_cyclicloess,
   grouping_variable = "group"
 )
 savePlot(
@@ -759,7 +777,7 @@ QC_composite_figure@pca_plots$peptide_pca_plot_after_ruvIIIc_group <- plotPca(
 )
 
 QC_composite_figure@density_plots$density_plot_after_ruvIIIc_group <- plotDensity(
-  peptide_ruv_normalised_results_temp_obj,
+  QC_composite_figure@pca_plots$peptide_pca_plot_after_ruvIIIc_group,
   grouping_variable = "group"
 )
 
