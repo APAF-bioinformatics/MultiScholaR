@@ -3,7 +3,9 @@
 #' @description Server module for removing duplicate proteins.
 #' Extracted from proteinQCApplet_server.R for modularity.
 #'
-#' @param id Module ID
+#' @param input Shiny input object from parent module
+#' @param output Shiny output object from parent module
+#' @param session Shiny session object from parent module
 #' @param workflow_data A reactive values object to store workflow data.
 #' @param omic_type The omics type (e.g., "proteomics").
 #' @param experiment_label The experiment label.
@@ -11,10 +13,9 @@
 #' @export
 #' @import shiny
 #' @importFrom logger log_info log_error
-duplicate_removal_server <- function(id, workflow_data, omic_type, experiment_label) {
-  shiny::moduleServer(id, function(input, output, session) {
-    
-    duplicate_removal_plot <- reactiveVal(NULL)
+duplicate_removal_server <- function(input, output, session, workflow_data, omic_type, experiment_label) {
+  
+  duplicate_removal_plot <- reactiveVal(NULL)
     
     # Step 4: Duplicate Protein Removal (chunk 22)
     observeEvent(input$apply_duplicate_removal, {
@@ -118,11 +119,9 @@ duplicate_removal_server <- function(id, workflow_data, omic_type, experiment_la
       })
     })
     
-    # Render duplicate removal plot
-    output$duplicate_removal_plot <- shiny::renderPlot({
-      shiny::req(duplicate_removal_plot())
-      grid::grid.draw(duplicate_removal_plot())
-    })
-    
+  # Render duplicate removal plot
+  output$duplicate_removal_plot <- shiny::renderPlot({
+    shiny::req(duplicate_removal_plot())
+    grid::grid.draw(duplicate_removal_plot())
   })
 }

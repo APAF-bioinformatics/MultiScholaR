@@ -38,10 +38,10 @@ proteinQCAppletServer <- function(id, workflow_data, experiment_paths, omic_type
     
     # These modules are common to all workflows (including TMT)
     log_info("Running common protein processing sub-modules.")
-    accession_cleanup_server("accession_cleanup", workflow_data, omic_type, experiment_label)
-    protein_intensity_filter_server("protein_intensity_filter", workflow_data, omic_type, experiment_label)
-    duplicate_removal_server("duplicate_removal", workflow_data, omic_type, experiment_label)
-    protein_replicate_filter_server("protein_replicate_filter", workflow_data, experiment_paths, omic_type, experiment_label)
+    accession_cleanup_server(input, output, session, workflow_data, omic_type, experiment_label)
+    protein_intensity_filter_server(input, output, session, workflow_data, omic_type, experiment_label)
+    duplicate_removal_server(input, output, session, workflow_data, omic_type, experiment_label)
+    protein_replicate_filter_server(input, output, session, workflow_data, experiment_paths, omic_type, experiment_label)
     
   })
 } 

@@ -3,7 +3,9 @@
 #' @description Server module for applying protein intensity and missing value filters.
 #' Extracted from proteinQCApplet_server.R for modularity.
 #'
-#' @param id Module ID
+#' @param input Shiny input object from parent module
+#' @param output Shiny output object from parent module
+#' @param session Shiny session object from parent module
 #' @param workflow_data A reactive values object to store workflow data.
 #' @param omic_type The omics type (e.g., "proteomics").
 #' @param experiment_label The experiment label.
@@ -11,10 +13,9 @@
 #' @export
 #' @import shiny
 #' @importFrom logger log_info log_error
-protein_intensity_filter_server <- function(id, workflow_data, omic_type, experiment_label) {
-  shiny::moduleServer(id, function(input, output, session) {
-    
-    protein_intensity_filter_plot <- reactiveVal(NULL)
+protein_intensity_filter_server <- function(input, output, session, workflow_data, omic_type, experiment_label) {
+  
+  protein_intensity_filter_plot <- reactiveVal(NULL)
     
     # Step 3: Protein Intensity Filter (chunks 20+21 combined)
     observeEvent(input$apply_protein_intensity_filter, {
@@ -125,11 +126,9 @@ protein_intensity_filter_server <- function(id, workflow_data, omic_type, experi
       })
     })
     
-    # Render protein intensity filter plot
-    output$protein_intensity_filter_plot <- shiny::renderPlot({
-      shiny::req(protein_intensity_filter_plot())
-      grid::grid.draw(protein_intensity_filter_plot())
-    })
-    
+  # Render protein intensity filter plot
+  output$protein_intensity_filter_plot <- shiny::renderPlot({
+    shiny::req(protein_intensity_filter_plot())
+    grid::grid.draw(protein_intensity_filter_plot())
   })
 }

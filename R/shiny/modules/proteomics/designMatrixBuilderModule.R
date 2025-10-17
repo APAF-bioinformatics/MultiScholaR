@@ -301,6 +301,7 @@ designMatrixBuilderServer <- function(id, data_tbl, config_list, column_mapping)
                 group = NA_character_,
                 factor1 = NA_character_,
                 factor2 = NA_character_,
+                batch = NA_character_,
                 replicates = NA_integer_,
                 tech_reps = NA_integer_
             )
@@ -333,24 +334,22 @@ designMatrixBuilderServer <- function(id, data_tbl, config_list, column_mapping)
             req(state)
             
             # --- Auto-assign Batch Factor Logic ---
-            # Check if a "Batch" column exists from the import step
+            # Check if a "Batch" column exists from the import step (TMT workflows)
             if ("Batch" %in% names(state$data_cln)) {
-              logger::log_info("Design Matrix: 'Batch' column detected. Auto-assigning batch factor.")
+              logger::log_info("Design Matrix: 'Batch' column detected. Auto-assigning to batch column.")
               
-              # 1. Add "Batch" as a factor
-              state$factors <- unique(c(state$factors, "Batch"))
-              
-              # 2. Pre-populate the design matrix with batch assignments
+              # Pre-populate the design matrix with batch assignments
               batch_assignments <- state$data_cln |>
                 dplyr::distinct(Run, Batch)
               
               state$design_matrix <- state$design_matrix |>
                 dplyr::left_join(batch_assignments, by = "Run") |>
-                # Mutate the existing factor2 column with values from Batch, then remove Batch
-                dplyr::mutate(factor2 = dplyr::coalesce(factor2, Batch)) |>
+                # Mutate the existing batch column with values from Batch, then remove Batch
+                dplyr::mutate(batch = dplyr::coalesce(batch, Batch)) |>
                 dplyr::select(-Batch)
               
-              logger::log_info("Design Matrix: Pre-populated 'factor2' with batch assignments.")
+              logger::log_info("Design Matrix: Pre-populated 'batch' column with batch assignments.")
+              logger::log_info("Note: Batch is kept separate from experimental factors to enable cross-batch comparisons.")
             }
             # --- End Auto-assign Logic ---
             
@@ -642,7 +641,9 @@ designMatrixBuilderServer <- function(id, data_tbl, config_list, column_mapping)
             current_matrix$factor2[selected_indices] <- input$factor2_select
             current_matrix$replicates[selected_indices] <- replicate_numbers
 
-            # Create group names based on factors
+            # Create group names based on experimental factors (factor1 and factor2)
+            # Note: Batch is kept in separate 'batch' column and NOT included in group names
+            # This enables cross-batch comparisons (e.g., Treatment vs Control across batches)
             group_name <- if (input$factor2_select == "") {
                 input$factor1_select
             } else {
@@ -784,6 +785,7 @@ designMatrixBuilderServer <- function(id, data_tbl, config_list, column_mapping)
                 current_matrix$factor2 <- NA_character_
                 current_matrix$group <- NA_character_
                 current_matrix$tech_reps <- NA_integer_
+                # Note: batch column is preserved during reset as it comes from data import
                 design_matrix(current_matrix)
                 groups(state$groups)
             }

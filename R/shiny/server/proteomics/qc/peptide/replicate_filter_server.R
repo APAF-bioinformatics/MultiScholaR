@@ -3,7 +3,9 @@
 #' @description Server module for applying the replicate filter.
 #' Extracted from peptideQCApplet_server.R for modularity.
 #'
-#' @param id Module ID
+#' @param input Shiny input object from parent module
+#' @param output Shiny output object from parent module
+#' @param session Shiny session object from parent module
 #' @param workflow_data A reactive values object to store workflow data.
 #' @param omic_type The omics type (e.g., "proteomics").
 #' @param experiment_label The experiment label.
@@ -11,10 +13,9 @@
 #' @export
 #' @import shiny
 #' @importFrom logger log_info log_error
-replicate_filter_server <- function(id, workflow_data, omic_type, experiment_label) {
-  shiny::moduleServer(id, function(input, output, session) {
-    
-    replicate_plot <- reactiveVal(NULL)
+replicate_filter_server <- function(input, output, session, workflow_data, omic_type, experiment_label) {
+  
+  replicate_plot <- reactiveVal(NULL)
     
     # Step 6: Replicate Filter (chunk 15)
     observeEvent(input$apply_replicate_filter, {
@@ -106,11 +107,9 @@ replicate_filter_server <- function(id, workflow_data, omic_type, experiment_lab
       })
     })
 
-    # Render replicate filter plot
-    output$replicate_plot <- shiny::renderPlot({
-      shiny::req(replicate_plot())
-      grid::grid.draw(replicate_plot())
-    })
-    
+  # Render replicate filter plot
+  output$replicate_plot <- shiny::renderPlot({
+    shiny::req(replicate_plot())
+    grid::grid.draw(replicate_plot())
   })
 }
