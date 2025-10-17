@@ -310,6 +310,10 @@ sessionSummaryServer <- function(id, project_dirs, omic_type = "proteomics", exp
             assign("project_dirs", project_dirs, envir = .GlobalEnv)
           }
           
+          # Debug: Log project_dirs structure
+          cat("   SESSION SUMMARY: project_dirs keys:", paste(names(project_dirs), collapse = ", "), "\n")
+          cat("   SESSION SUMMARY: Using omic_type =", omic_type, "experiment_label =", input$experiment_label, "\n")
+          
           # Call copyToResultsSummary with explicit parameters
           copyToResultsSummary(
             omic_type = omic_type,

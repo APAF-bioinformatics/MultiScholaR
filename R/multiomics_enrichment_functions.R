@@ -949,9 +949,9 @@ runMetabolomicsEnrichmentAnalysis <- function(weights,
   message(sprintf("   runMetabolomicsEnrichmentAnalysis Args: kegg_species_code = %s", kegg_species_code))
   message(sprintf("   runMetabolomicsEnrichmentAnalysis Args: reactome_organism = %s", as.character(reactome_organism)))
   
-  # Use exact directory paths with paste0 construction
-  data_dir <- project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir
-  results_dir <- project_dirs[[paste0(omic_type, "_", experiment_label)]]$integration_enrichment_plots_dir
+  # Use getProjectPaths helper with automatic fallback
+  data_dir <- getProjectPaths(omic_type, experiment_label)$data_dir
+  results_dir <- getProjectPaths(omic_type, experiment_label)$integration_enrichment_plots_dir
   
   # Create directory structure if it doesn't exist
   dir.create(file.path(results_dir, assay_name), recursive = TRUE, showWarnings = FALSE)
@@ -1088,8 +1088,8 @@ runKeggEnrichment <- function(ranked_list,
   message(sprintf("   runKeggEnrichment Args: kegg_species_code = %s", kegg_species_code))
   message(sprintf("   runKeggEnrichment Args: ranked_list length = %d", length(ranked_list)))
   
-  # Use exact directory paths with paste0 construction
-  data_dir <- project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir
+  # Use getProjectPaths helper with automatic fallback
+  data_dir <- getProjectPaths(omic_type, experiment_label)$data_dir
   message(sprintf("   runKeggEnrichment: Using data_dir = %s", data_dir))
   
   # Print some debugging information
@@ -1891,8 +1891,8 @@ runReactomeEnrichment <- function(ranked_list,
   message(sprintf("   runReactomeEnrichment Args: reactome_organism = %s", as.character(reactome_organism)))
   message(sprintf("   runReactomeEnrichment Args: ranked_list length = %d", length(ranked_list)))
   
-  # Use exact directory paths with paste0 construction
-  data_dir <- project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir
+  # Use getProjectPaths helper with automatic fallback
+  data_dir <- getProjectPaths(omic_type, experiment_label)$data_dir
   message(sprintf("   runReactomeEnrichment: Using data_dir = %s", data_dir))
   
   # Load ChEBI to Reactome mapping
@@ -2322,8 +2322,8 @@ runMetabolomicsPathwayEnrichment <- function(weights,
   message(sprintf("   runMetabolomicsPathwayEnrichment Args: kegg_species_code = %s", kegg_species_code))
   message(sprintf("   runMetabolomicsPathwayEnrichment Args: reactome_organism = %s", as.character(reactome_organism)))
   
-  # Use exact directory paths with paste0 construction
-  results_dir <- project_dirs[[paste0(omic_type, "_", experiment_label)]]$integration_enrichment_plots_dir
+  # Use getProjectPaths helper with automatic fallback
+  results_dir <- getProjectPaths(omic_type, experiment_label)$integration_enrichment_plots_dir
   
   # Inspect the structure of input objects
   message("   runMetabolomicsPathwayEnrichment Step: Inspecting metabolomics object structure...")
