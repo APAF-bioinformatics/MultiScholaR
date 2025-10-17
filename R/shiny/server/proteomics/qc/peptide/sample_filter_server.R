@@ -3,7 +3,9 @@
 #' @description Server module for applying the sample quality filter.
 #' Extracted from peptideQCApplet_server.R for modularity.
 #'
-#' @param id Module ID
+#' @param input Shiny input object from parent module
+#' @param output Shiny output object from parent module
+#' @param session Shiny session object from parent module
 #' @param workflow_data A reactive values object to store workflow data.
 #' @param omic_type The omics type (e.g., "proteomics").
 #' @param experiment_label The experiment label.
@@ -11,10 +13,9 @@
 #' @export
 #' @import shiny
 #' @importFrom logger log_info log_error
-sample_filter_server <- function(id, workflow_data, omic_type, experiment_label) {
-  shiny::moduleServer(id, function(input, output, session) {
-    
-    sample_plot <- reactiveVal(NULL)
+sample_filter_server <- function(input, output, session, workflow_data, omic_type, experiment_label) {
+  
+  sample_plot <- reactiveVal(NULL)
     
     # Step 5: Sample Quality Filter (chunk 14)
     observeEvent(input$apply_sample_filter, {
@@ -114,11 +115,9 @@ sample_filter_server <- function(id, workflow_data, omic_type, experiment_label)
       })
     })
 
-    # Render sample filter plot
-    output$sample_plot <- shiny::renderPlot({
-      shiny::req(sample_plot())
-      grid::grid.draw(sample_plot())
-    })
-    
+  # Render sample filter plot
+  output$sample_plot <- shiny::renderPlot({
+    shiny::req(sample_plot())
+    grid::grid.draw(sample_plot())
   })
 }

@@ -3,18 +3,20 @@
 #' @description Server module for applying the protein replicate filter.
 #' Extracted from proteinQCApplet_server.R for modularity.
 #'
-#' @param id Module ID
+#' @param input Shiny input object from parent module
+#' @param output Shiny output object from parent module
+#' @param session Shiny session object from parent module
 #' @param workflow_data A reactive values object to store workflow data.
+#' @param experiment_paths A list of paths for the current experiment.
 #' @param omic_type The omics type (e.g., "proteomics").
 #' @param experiment_label The experiment label.
 #'
 #' @export
 #' @import shiny
 #' @importFrom logger log_info log_error
-protein_replicate_filter_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label) {
-  shiny::moduleServer(id, function(input, output, session) {
-    
-    protein_replicate_filter_plot <- reactiveVal(NULL)
+protein_replicate_filter_server <- function(input, output, session, workflow_data, experiment_paths, omic_type, experiment_label) {
+  
+  protein_replicate_filter_plot <- reactiveVal(NULL)
     
     # Step 5: Protein Replicate Filter (chunk 23)
     observeEvent(input$apply_protein_replicate_filter, {
@@ -118,11 +120,9 @@ protein_replicate_filter_server <- function(id, workflow_data, experiment_paths,
       })
     })
     
-    # Render protein replicate filter plot
-    output$protein_replicate_filter_plot <- shiny::renderPlot({
-      shiny::req(protein_replicate_filter_plot())
-      grid::grid.draw(protein_replicate_filter_plot())
-    })
-    
+  # Render protein replicate filter plot
+  output$protein_replicate_filter_plot <- shiny::renderPlot({
+    shiny::req(protein_replicate_filter_plot())
+    grid::grid.draw(protein_replicate_filter_plot())
   })
 }

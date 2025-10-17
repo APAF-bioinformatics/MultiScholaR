@@ -3,7 +3,9 @@
 #' @description Server module for applying the protein peptide count filter.
 #' Extracted from peptideQCApplet_server.R for modularity.
 #'
-#' @param id Module ID
+#' @param input Shiny input object from parent module
+#' @param output Shiny output object from parent module
+#' @param session Shiny session object from parent module
 #' @param workflow_data A reactive values object to store workflow data.
 #' @param omic_type The omics type (e.g., "proteomics").
 #' @param experiment_label The experiment label.
@@ -11,10 +13,9 @@
 #' @export
 #' @import shiny
 #' @importFrom logger log_info log_error
-protein_peptide_filter_server <- function(id, workflow_data, omic_type, experiment_label) {
-  shiny::moduleServer(id, function(input, output, session) {
-    
-    protein_peptide_plot <- reactiveVal(NULL)
+protein_peptide_filter_server <- function(input, output, session, workflow_data, omic_type, experiment_label) {
+  
+  protein_peptide_plot <- reactiveVal(NULL)
     
     # Step 4: Protein Peptide Count Filter (chunk 13)
     observeEvent(input$apply_protein_peptide_filter, {
@@ -120,11 +121,9 @@ protein_peptide_filter_server <- function(id, workflow_data, omic_type, experime
       })
     })
 
-    # Render protein peptide filter plot
-    output$protein_peptide_plot <- shiny::renderPlot({
-      shiny::req(protein_peptide_plot())
-      grid::grid.draw(protein_peptide_plot())
-    })
-    
+  # Render protein peptide filter plot
+  output$protein_peptide_plot <- shiny::renderPlot({
+    shiny::req(protein_peptide_plot())
+    grid::grid.draw(protein_peptide_plot())
   })
 }

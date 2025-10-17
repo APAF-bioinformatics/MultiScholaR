@@ -35,13 +35,13 @@ peptideQCAppletServer <- function(id, workflow_data, experiment_paths, omic_type
       log_info("Running LFQ/DIA peptide processing sub-modules.")
       
       # Call each of the extracted sub-modules
-      qvalue_filter_server("qvalue_filter", workflow_data, omic_type, experiment_label)
-      precursor_rollup_server("precursor_rollup", workflow_data, omic_type, experiment_label)
-      intensity_filter_server("intensity_filter", workflow_data, omic_type, experiment_label)
-      protein_peptide_filter_server("protein_peptide_filter", workflow_data, omic_type, experiment_label)
-      sample_filter_server("sample_filter", workflow_data, omic_type, experiment_label)
-      replicate_filter_server("replicate_filter", workflow_data, omic_type, experiment_label)
-      imputation_server("imputation", workflow_data, omic_type, experiment_label)
+      qvalue_filter_server(input, output, session, workflow_data, omic_type, experiment_label)
+      precursor_rollup_server(input, output, session, workflow_data, omic_type, experiment_label)
+      intensity_filter_server(input, output, session, workflow_data, omic_type, experiment_label)
+      protein_peptide_filter_server(input, output, session, workflow_data, omic_type, experiment_label)
+      sample_filter_server(input, output, session, workflow_data, omic_type, experiment_label)
+      replicate_filter_server(input, output, session, workflow_data, omic_type, experiment_label)
+      imputation_server(input, output, session, workflow_data, omic_type, experiment_label)
       
         } else {
       log_info(paste("Skipping peptide processing for workflow type:", workflow_type))

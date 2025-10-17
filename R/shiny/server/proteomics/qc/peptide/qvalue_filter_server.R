@@ -3,7 +3,9 @@
 #' @description Server module for applying Q-value and proteotypic peptide filters.
 #' Extracted from peptideQCApplet_server.R for modularity.
 #'
-#' @param id Module ID
+#' @param input Shiny input object from parent module
+#' @param output Shiny output object from parent module
+#' @param session Shiny session object from parent module
 #' @param workflow_data A reactive values object to store workflow data.
 #' @param omic_type The omics type (e.g., "proteomics").
 #' @param experiment_label The experiment label.
@@ -11,10 +13,9 @@
 #' @export
 #' @import shiny
 #' @importFrom logger log_info log_error
-qvalue_filter_server <- function(id, workflow_data, omic_type, experiment_label) {
-  shiny::moduleServer(id, function(input, output, session) {
-    
-    qvalue_plot <- reactiveVal(NULL)
+qvalue_filter_server <- function(input, output, session, workflow_data, omic_type, experiment_label) {
+  
+  qvalue_plot <- reactiveVal(NULL)
     
     # Step 1: Q-Value Filter (chunk 10)
     observeEvent(input$apply_qvalue_filter, {
@@ -128,11 +129,9 @@ qvalue_filter_server <- function(id, workflow_data, omic_type, experiment_label)
       })
     })
     
-    # Render Q-value filter plot
-    output$qvalue_plot <- shiny::renderPlot({
-      shiny::req(qvalue_plot())
-      grid::grid.draw(qvalue_plot())
-    })
-    
+  # Render Q-value filter plot
+  output$qvalue_plot <- shiny::renderPlot({
+    shiny::req(qvalue_plot())
+    grid::grid.draw(qvalue_plot())
   })
 }

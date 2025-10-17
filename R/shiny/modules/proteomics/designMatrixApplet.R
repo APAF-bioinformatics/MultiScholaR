@@ -270,9 +270,57 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
           logger::log_info("Saved contrasts_tbl to global environment for DE analysis.")
         }
         
-        # --- Create S4 Object and Save State (Conditional Orchestration) ---
-        workflow_type <- shiny::isolate(workflow_data$state_manager$workflow_type)
+        # --- Detect or Load workflow_type ---
+        # Try to get workflow_type from config.ini first
+        workflow_type <- NULL
+        if (!is.null(workflow_data$config_list$globalParameters$workflow_type)) {
+          workflow_type <- workflow_data$config_list$globalParameters$workflow_type
+          logger::log_info(paste("Loaded workflow_type from config.ini:", workflow_type))
+        } else {
+          # Fallback: detect from data structure
+          logger::log_warn("workflow_type not found in config.ini. Attempting to detect from data structure.")
+          
+          # Check for peptide-specific columns (DIA/LFQ have these, TMT doesn't)
+          has_precursor_cols <- any(c("Precursor.Id", "Precursor.Charge", "Precursor.Quantity") %in% names(imported_data_cln))
+          has_peptide_cols <- any(c("Stripped.Sequence", "Modified.Sequence") %in% names(imported_data_cln))
+          
+          if (has_precursor_cols && has_peptide_cols) {
+            # Peptide-level data (DIA or LFQ) - default to DIA as it's more common
+            workflow_type <- "DIA"
+            logger::log_info("Detected peptide-level data. Setting workflow_type to DIA.")
+          } else {
+            # Protein-level data (TMT)
+            workflow_type <- "TMT"
+            logger::log_info("Detected protein-level data. Setting workflow_type to TMT.")
+          }
+        }
         
+        # Set workflow_type in state manager
+        workflow_data$state_manager$setWorkflowType(workflow_type)
+        logger::log_info(paste("Workflow type set to:", workflow_type))
+        
+        # Ensure column_mapping is available for pivot operations
+        if (is.null(workflow_data$column_mapping)) {
+          logger::log_warn("column_mapping not found in workflow_data. Inferring from data structure.")
+          
+          # Infer basic column mappings from data
+          if (workflow_type == "TMT") {
+            workflow_data$column_mapping <- list(
+              protein_col = "Protein.Ids",
+              run_col = "Run",
+              quantity_col = "Abundance"
+            )
+          } else {
+            workflow_data$column_mapping <- list(
+              protein_col = "Protein.Ids",
+              run_col = "Run",
+              quantity_col = "Precursor.Quantity"
+            )
+          }
+          logger::log_info("Inferred column_mapping for workflow operations.")
+        }
+        
+        # --- Create S4 Object and Save State (Conditional Orchestration) ---
         if (workflow_type %in% c("DIA", "LFQ")) {
           # For peptide workflows, the data_cln is already in the correct long format.
           # Use the existing constructor for peptide-level data.
@@ -290,12 +338,35 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
           
           logger::log_info("TMT workflow: Reshaping protein data from long to wide format for S4 creation.")
           
+          # Validate column_mapping before pivot
+          if (is.null(workflow_data$column_mapping$protein_col) || 
+              is.null(workflow_data$column_mapping$run_col) ||
+              is.null(workflow_data$column_mapping$quantity_col)) {
+            stop("Missing required column mappings for TMT data reshape. Cannot proceed.")
+          }
+          
+          # Validate columns exist in data
+          required_cols <- c(workflow_data$column_mapping$protein_col, 
+                             workflow_data$column_mapping$run_col,
+                             workflow_data$column_mapping$quantity_col)
+          missing_cols <- required_cols[!required_cols %in% names(workflow_data$data_cln)]
+          if (length(missing_cols) > 0) {
+            stop(paste("Missing required columns in data_cln:", paste(missing_cols, collapse = ", ")))
+          }
+          
           protein_quant_table_wide <- workflow_data$data_cln |>
             tidyr::pivot_wider(
               id_cols = !!sym(workflow_data$column_mapping$protein_col),
               names_from = !!sym(workflow_data$column_mapping$run_col),
               values_from = !!sym(workflow_data$column_mapping$quantity_col)
             )
+          
+          logger::log_info(sprintf("TMT Import: Pivoted data from %d rows (long) to %d rows (wide)", 
+                                   nrow(workflow_data$data_cln), 
+                                   nrow(protein_quant_table_wide)))
+          logger::log_info(sprintf("TMT Import: Wide format has %d protein rows, %d sample columns",
+                                   nrow(protein_quant_table_wide),
+                                   ncol(protein_quant_table_wide) - 1))  # -1 for protein ID column
 
           # Use the existing constructor for protein-level data with the now wide table.
           s4_object <- ProteinQuantitativeData(
@@ -322,6 +393,9 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
             config_object = workflow_data$config_list,
             description = description
         )
+        logger::log_info(sprintf("Import: S4 object saved to R6 state manager as '%s'", state_name))
+        logger::log_info("Import: This state is now ACTIVE - QC modules will read from it")
+        logger::log_info("Import: User can proceed to QC → Accession Cleanup")
         
         # --- TRIGGER UNIPROT ANNOTATION ---
         log_info("Design Matrix complete. Triggering UniProt annotation.")
@@ -468,6 +542,28 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
               assign("contrasts_tbl", results$contrasts_tbl, envir = .GlobalEnv)
               logger::log_info("Saved contrasts_tbl to global environment for DE analysis.")
           }
+          
+          # --- Save config.ini for Import Compatibility ---
+          if (!is.null(workflow_data$config_list)) {
+            # Add workflow_type to config for import detection
+            if (!is.null(workflow_data$state_manager$workflow_type)) {
+              workflow_data$config_list$globalParameters$workflow_type <- workflow_data$state_manager$workflow_type
+              logger::log_info(paste("Added workflow_type to config.ini:", workflow_data$state_manager$workflow_type))
+            }
+            
+            config_path <- file.path(source_dir, "config.ini")
+            logger::log_info(paste("Writing config.ini to:", config_path))
+            tryCatch({
+              # Write config list back to INI format
+              ini::write.ini(workflow_data$config_list, config_path)
+              logger::log_info("Saved config.ini for future import/export.")
+            }, error = function(e) {
+              logger::log_warn(paste("Could not save config.ini:", e$message))
+              logger::log_warn("Import will use default config if this design is imported.")
+            })
+          } else {
+            logger::log_warn("config_list is NULL, cannot save config.ini.")
+          }
 
           # --- Create S4 Object and Save State (Conditional Orchestration) ---
           workflow_type <- shiny::isolate(workflow_data$state_manager$workflow_type)
@@ -568,7 +664,19 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
             shiny::showNotification(paste("Warning: Could not retrieve UniProt annotations:", e$message), type = "warning", duration = 8)
           })
           
-          # 4. Update tab status to 'complete'
+          # 4. Set the QC trigger to TRUE to signal that QC modules can now run
+          message("=== DEBUG66: designMatrixApplet Save Design - About to set qc_trigger ===")
+          message(sprintf("   DEBUG66: qc_trigger is NULL = %s", is.null(qc_trigger)))
+          if (!is.null(qc_trigger)) {
+            message("   DEBUG66: Setting qc_trigger(TRUE)")
+            qc_trigger(TRUE)
+            message(sprintf("   DEBUG66: qc_trigger set. Current value = %s", qc_trigger()))
+          } else {
+            message("   DEBUG66: qc_trigger is NULL, cannot set")
+          }
+          message("=== DEBUG66: designMatrixApplet - qc_trigger setting complete ===")
+          
+          # 5. Update tab status to 'complete'
           workflow_data$tab_status$design_matrix <- "complete"
           
           shiny::showNotification("Design matrix and contrasts saved successfully!", type = "message")

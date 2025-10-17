@@ -3,7 +3,9 @@
 #' @description Server module for applying precursor to peptide rollup.
 #' Extracted from peptideQCApplet_server.R for modularity.
 #'
-#' @param id Module ID
+#' @param input Shiny input object from parent module
+#' @param output Shiny output object from parent module
+#' @param session Shiny session object from parent module
 #' @param workflow_data A reactive values object to store workflow data.
 #' @param omic_type The omics type (e.g., "proteomics").
 #' @param experiment_label The experiment label.
@@ -11,10 +13,9 @@
 #' @export
 #' @import shiny
 #' @importFrom logger log_info log_error
-precursor_rollup_server <- function(id, workflow_data, omic_type, experiment_label) {
-  shiny::moduleServer(id, function(input, output, session) {
-    
-    rollup_plot <- reactiveVal(NULL)
+precursor_rollup_server <- function(input, output, session, workflow_data, omic_type, experiment_label) {
+  
+  rollup_plot <- reactiveVal(NULL)
     
     # Step 2: Precursor Rollup (chunk 11)
     observeEvent(input$apply_rollup, {
@@ -100,11 +101,9 @@ precursor_rollup_server <- function(id, workflow_data, omic_type, experiment_lab
       })
     })
     
-    # Render rollup plot
-    output$rollup_plot <- shiny::renderPlot({
-      shiny::req(rollup_plot())
-      grid::grid.draw(rollup_plot())
-    })
-    
+  # Render rollup plot
+  output$rollup_plot <- shiny::renderPlot({
+    shiny::req(rollup_plot())
+    grid::grid.draw(rollup_plot())
   })
 }

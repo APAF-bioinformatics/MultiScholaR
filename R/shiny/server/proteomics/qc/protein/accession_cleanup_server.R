@@ -3,7 +3,9 @@
 #' @description Server module for performing protein accession cleanup.
 #' This step is common to all workflows. Extracted from proteinQCApplet_server.R for modularity.
 #'
-#' @param id Module ID
+#' @param input Shiny input object from parent module
+#' @param output Shiny output object from parent module
+#' @param session Shiny session object from parent module
 #' @param workflow_data A reactive values object to store workflow data.
 #' @param omic_type The omics type (e.g., "proteomics").
 #' @param experiment_label The experiment label.
@@ -11,10 +13,9 @@
 #' @export
 #' @import shiny
 #' @importFrom logger log_info log_error
-accession_cleanup_server <- function(id, workflow_data, omic_type, experiment_label) {
-  shiny::moduleServer(id, function(input, output, session) {
-    
-    accession_cleanup_plot <- reactiveVal(NULL)
+accession_cleanup_server <- function(input, output, session, workflow_data, omic_type, experiment_label) {
+  
+  accession_cleanup_plot <- reactiveVal(NULL)
     
     # Step 2: Protein Accession Cleanup (chunk 19)
     observeEvent(input$apply_accession_cleanup, {
@@ -135,11 +136,9 @@ accession_cleanup_server <- function(id, workflow_data, omic_type, experiment_la
       })
     })
 
-    # Render accession cleanup plot
-    output$accession_cleanup_plot <- shiny::renderPlot({
-      shiny::req(accession_cleanup_plot())
-      grid::grid.draw(accession_cleanup_plot())
-    })
-    
+  # Render accession cleanup plot
+  output$accession_cleanup_plot <- shiny::renderPlot({
+    shiny::req(accession_cleanup_plot())
+    grid::grid.draw(accession_cleanup_plot())
   })
 }

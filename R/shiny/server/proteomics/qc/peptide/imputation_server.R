@@ -3,7 +3,9 @@
 #' @description Server module for applying missing value imputation.
 #' Extracted from peptideQCApplet_server.R for modularity.
 #'
-#' @param id Module ID
+#' @param input Shiny input object from parent module
+#' @param output Shiny output object from parent module
+#' @param session Shiny session object from parent module
 #' @param workflow_data A reactive values object to store workflow data.
 #' @param omic_type The omics type (e.g., "proteomics").
 #' @param experiment_label The experiment label.
@@ -11,10 +13,9 @@
 #' @export
 #' @import shiny
 #' @importFrom logger log_info log_error
-imputation_server <- function(id, workflow_data, omic_type, experiment_label) {
-  shiny::moduleServer(id, function(input, output, session) {
-    
-    imputation_plot <- reactiveVal(NULL)
+imputation_server <- function(input, output, session, workflow_data, omic_type, experiment_label) {
+  
+  imputation_plot <- reactiveVal(NULL)
     
     # Step 7: Missing Value Imputation (chunk 16)
     observeEvent(input$apply_imputation, {
@@ -111,11 +112,9 @@ imputation_server <- function(id, workflow_data, omic_type, experiment_label) {
       })
     })
 
-    # Render imputation plot
-    output$imputation_plot <- shiny::renderPlot({
-      shiny::req(imputation_plot())
-      grid::grid.draw(imputation_plot())
-    })
-    
+  # Render imputation plot
+  output$imputation_plot <- shiny::renderPlot({
+    shiny::req(imputation_plot())
+    grid::grid.draw(imputation_plot())
   })
 }

@@ -3,7 +3,9 @@
 #' @description Server module for applying peptide intensity filtering.
 #' Extracted from peptideQCApplet_server.R for modularity.
 #'
-#' @param id Module ID
+#' @param input Shiny input object from parent module
+#' @param output Shiny output object from parent module
+#' @param session Shiny session object from parent module
 #' @param workflow_data A reactive values object to store workflow data.
 #' @param omic_type The omics type (e.g., "proteomics").
 #' @param experiment_label The experiment label.
@@ -11,10 +13,9 @@
 #' @export
 #' @import shiny
 #' @importFrom logger log_info log_error
-intensity_filter_server <- function(id, workflow_data, omic_type, experiment_label) {
-  shiny::moduleServer(id, function(input, output, session) {
-    
-    intensity_plot <- reactiveVal(NULL)
+intensity_filter_server <- function(input, output, session, workflow_data, omic_type, experiment_label) {
+  
+  intensity_plot <- reactiveVal(NULL)
     
     # Step 3: Intensity Filter (chunk 12)
     observeEvent(input$apply_intensity_filter, {
@@ -119,11 +120,9 @@ intensity_filter_server <- function(id, workflow_data, omic_type, experiment_lab
       })
     })
 
-    # Render intensity filter plot
-    output$intensity_plot <- shiny::renderPlot({
-      shiny::req(intensity_plot())
-      grid::grid.draw(intensity_plot())
-    })
-    
+  # Render intensity filter plot
+  output$intensity_plot <- shiny::renderPlot({
+    shiny::req(intensity_plot())
+    grid::grid.draw(intensity_plot())
   })
 }
