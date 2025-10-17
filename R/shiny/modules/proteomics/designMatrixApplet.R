@@ -367,11 +367,32 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
           logger::log_info(sprintf("TMT Import: Wide format has %d protein rows, %d sample columns",
                                    nrow(protein_quant_table_wide),
                                    ncol(protein_quant_table_wide) - 1))  # -1 for protein ID column
+          
+          # *** CRITICAL: Apply log2 transformation to TMT abundance values ***
+          # TMT data from Proteome Discoverer is in raw abundance scale, not log2
+          # Limma and normalization require log2-transformed data
+          logger::log_info("TMT Import: Applying log2 transformation to abundance values...")
+          
+          protein_id_col <- workflow_data$column_mapping$protein_col
+          protein_quant_table_wide <- protein_quant_table_wide |>
+            dplyr::mutate(
+              dplyr::across(
+                -!!sym(protein_id_col),  # Transform all columns except protein ID
+                ~ {
+                  # Add pseudo-count to avoid log(0), then log2 transform
+                  # Using 1 as pseudo-count (standard for proteomics)
+                  log2(.x + 1)
+                }
+              )
+            )
+          
+          logger::log_info("TMT Import: Log2 transformation completed")
 
           # Use the existing constructor for protein-level data with the now wide table.
           s4_object <- ProteinQuantitativeData(
             protein_quant_table = protein_quant_table_wide,
             protein_id_column = workflow_data$column_mapping$protein_col,
+            protein_id_table = protein_quant_table_wide |> dplyr::distinct(!!sym(workflow_data$column_mapping$protein_col)),
             design_matrix = workflow_data$design_matrix,
             sample_id = "Run",
             group_id = "group",
@@ -591,11 +612,32 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
                 names_from = !!sym(workflow_data$column_mapping$run_col),
                 values_from = !!sym(workflow_data$column_mapping$quantity_col)
               )
+            
+            # *** CRITICAL: Apply log2 transformation to TMT abundance values ***
+            # TMT data from Proteome Discoverer is in raw abundance scale, not log2
+            # Limma and normalization require log2-transformed data
+            logger::log_info("TMT Save Design: Applying log2 transformation to abundance values...")
+            
+            protein_id_col <- workflow_data$column_mapping$protein_col
+            protein_quant_table_wide <- protein_quant_table_wide |>
+              dplyr::mutate(
+                dplyr::across(
+                  -!!sym(protein_id_col),  # Transform all columns except protein ID
+                  ~ {
+                    # Add pseudo-count to avoid log(0), then log2 transform
+                    # Using 1 as pseudo-count (standard for proteomics)
+                    log2(.x + 1)
+                  }
+                )
+              )
+            
+            logger::log_info("TMT Save Design: Log2 transformation completed")
 
             # Use the existing constructor for protein-level data with the now wide table.
             s4_object <- ProteinQuantitativeData(
               protein_quant_table = protein_quant_table_wide,
               protein_id_column = workflow_data$column_mapping$protein_col,
+              protein_id_table = protein_quant_table_wide |> dplyr::distinct(!!sym(workflow_data$column_mapping$protein_col)),
               design_matrix = workflow_data$design_matrix,
               sample_id = "Run",
               group_id = "group",
