@@ -68,6 +68,24 @@ proteinQCAppletUI <- function(id, workflow_type = NULL) {
             ),
             shiny::helpText("Character separating multiple protein IDs (default: ';')"),
             
+            # Detected delimiters info box
+            shiny::div(
+              style = "background-color: #e7f3ff; padding: 10px; border-left: 4px solid #2196F3; border-radius: 4px; margin-top: 10px;",
+              shiny::icon("info-circle", style = "color: #2196F3;"),
+              shiny::strong(" Detected Delimiters in Your Data:"),
+              shiny::br(),
+              shiny::textOutput(ns("detected_delimiters"), inline = TRUE)
+            ),
+            
+            # Sample protein IDs display
+            shiny::div(
+              style = "background-color: #f5f5f5; padding: 10px; border-left: 4px solid #9E9E9E; border-radius: 4px; margin-top: 10px; font-family: monospace; font-size: 11px;",
+              shiny::icon("list", style = "color: #9E9E9E;"),
+              shiny::strong(" Sample Protein IDs:"),
+              shiny::br(),
+              shiny::verbatimTextOutput(ns("sample_protein_ids"))
+            ),
+            
             shiny::selectInput(ns("aggregation_method"), 
               "Aggregation Method", 
               choices = c("sum", "mean", "median"),

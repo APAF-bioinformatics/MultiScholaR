@@ -88,8 +88,9 @@ setMethod( f ="differentialExpressionAnalysis"
                                           , raw_pvalue_column = raw_pvalue_column
                                           )
   }, error = function(e) {
-    message(sprintf("   differentialExpressionAnalysis ERROR in helper function: %s", e$message))
-    message(sprintf("   differentialExpressionAnalysis ERROR call stack: %s", capture.output(traceback())))
+    # CRITICAL FIX: Use paste() for logger calls in error handlers to avoid interpolation bug
+    message(paste("   differentialExpressionAnalysis ERROR in helper function:", e$message))
+    message(paste("   differentialExpressionAnalysis ERROR call stack:", capture.output(traceback())))
     stop(e)
   })
 
@@ -381,9 +382,35 @@ setMethod( f ="differentialExpressionAnalysisHelper"
 
   message("   differentialExpressionAnalysisHelper Step: runTestsContrasts completed successfully!")
 
+  # The result from runTestsContrasts is a LIST with a 'results'
+  # element, which ITSELF is a list of tables. For a single contrast run, we 
+  # need to extract the first table from the nested list.
+  
+  # Check if the expected structure exists
+  if (is.null(contrasts_results) || is.null(contrasts_results$results) || length(contrasts_results$results) == 0) {
+      stop("Error: DE analysis function did not return results in the expected format.")
+  }
+  
+  # Extract the results table (it's the first element in the nested list)
+  de_results_table <- contrasts_results$results[[1]]
+  
+  # Get the name of the contrast from the list element name
+  contrast_name <- names(contrasts_results$results)[1]
+  
+  # Ensure it's a data frame before proceeding
+  if (!is.data.frame(de_results_table)) {
+    stop("Error: DE analysis results are not in the expected data frame format.")
+  }
+
+  # CRITICAL FIX 3.0: The 'topTreat' table needs a 'comparison' column added to it,
+  # containing the name of the contrast. It also needs the protein IDs from rownames.
+  de_results_table <- de_results_table |>
+    tibble::rownames_to_column(var = args_row_id) |>
+    dplyr::mutate(comparison = contrast_name)
+
   # Map back to original group names in results if needed
   if(exists("group_mapping")) {
-    contrasts_results_table <- contrasts_results$results |>
+    contrasts_results_table <- de_results_table |>
       dplyr::mutate(comparison = purrr::map_chr(comparison, \(x) {
         result <- x
         for(safe_name in names(group_mapping)) {
@@ -392,16 +419,25 @@ setMethod( f ="differentialExpressionAnalysisHelper"
         result
       }))
   } else {
-    contrasts_results_table <- contrasts_results$results
+    contrasts_results_table <- de_results_table
   }
 
   return_list$contrasts_results <- contrasts_results
   return_list$contrasts_results_table <- contrasts_results_table
 
   message("   differentialExpressionAnalysisHelper Step: Preparing data for visualization...")
+  message(paste("   DEBUG66: contrast_name for list naming =", contrast_name))
 
   # Prepare data for volcano plots
-  significant_rows <- getSignificantData(list_of_de_tables = list(contrasts_results_table),
+  # CRITICAL FIX: getSignificantData expects list_of_de_tables to be a list where each element 
+  # is itself a list of data.frames. Since we're processing one contrast at a time, we need to 
+  # wrap the single data.frame in an additional list layer.
+  # CRITICAL FIX 2: The list element name MUST contain "=" delimiter because countStatDeGenesHelper
+  # expects to split on "=" to separate comparison name from expression. Use contrast_name which
+  # contains the full format like "H4_vs_WT=groupH4-groupWT"
+  nested_list <- list(contrasts_results_table)
+  names(nested_list) <- contrast_name  # Use actual contrast name with "=" delimiter
+  significant_rows <- getSignificantData(list_of_de_tables = list(nested_list),
                                          list_of_descriptions = list("RUV applied"),
                                          row_id = !!sym(args_row_id),
                                          p_value_column = !!sym(raw_pvalue_column),
@@ -427,7 +463,10 @@ setMethod( f ="differentialExpressionAnalysisHelper"
   return_list$volplot_plot <- volplot_plot
 
   # Count significant molecules
-  num_sig_de_molecules <- printCountDeGenesTable(list_of_de_tables = list(contrasts_results_table),
+  # CRITICAL FIX: Same as above - wrap in additional list layer and use contrast_name
+  nested_list_for_count <- list(contrasts_results_table)
+  names(nested_list_for_count) <- contrast_name  # Use actual contrast name with "=" delimiter
+  num_sig_de_molecules <- printCountDeGenesTable(list_of_de_tables = list(nested_list_for_count),
                                                  list_of_descriptions = list("RUV applied"),
                                                  formula_string = "analysis_type ~ comparison")
 
