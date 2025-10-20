@@ -445,7 +445,13 @@ getUniprotAnnotationsFull <- function(data_tbl,
                                      protein_id_column,
                                      cache_dir,
                                      taxon_id = 9606,
-                                     chunk_size = 25) {
+                                     chunk_size = 25,
+                                     progress_callback = NULL) {
+  
+  message("=== DEBUG66: Entering getUniprotAnnotationsFull ===")
+  message(sprintf("   Data rows: %d", nrow(data_tbl)))
+  message(sprintf("   Protein column: %s", protein_id_column))
+  message(sprintf("   Taxon ID: %d", taxon_id))
   
   cat("=== Starting getUniprotAnnotationsFull ===\n")
   
@@ -503,6 +509,10 @@ getUniprotAnnotationsFull <- function(data_tbl,
                    length(raw_protein_groups), length(cleaned_proteins)))
   cat(sprintf("First 10 individual proteins: %s\n", paste(head(cleaned_proteins, 10), collapse = ", ")))
   
+  message(sprintf("   DEBUG66: Extracted %d unique proteins", length(cleaned_proteins)))
+  message("   DEBUG66: First 10 proteins:")
+  print(head(cleaned_proteins, 10))
+  
   # Create a temporary data frame for getUniProtAnnotation
   # This function expects protein IDs in a standard format
   temp_protein_table <- data.frame(
@@ -521,12 +531,15 @@ getUniprotAnnotationsFull <- function(data_tbl,
   
   # Call getUniprotAnnotations with our optimized protein list
   cat("Calling getUniprotAnnotations for comprehensive annotation retrieval...\n")
+  message("   DEBUG66: About to call getUniprotAnnotations...")
+  message(sprintf("   DEBUG66: temp_protein_table has %d rows", nrow(temp_protein_table)))
   
   tryCatch({
     uniprot_annotations <- getUniprotAnnotations(
       input_tbl = temp_protein_table,
       cache_dir = cache_dir,
-      taxon_id = taxon_id
+      taxon_id = taxon_id,
+      progress_callback = progress_callback
     )
     
     cat(sprintf("Successfully retrieved UniProt annotations for %d proteins\n", nrow(uniprot_annotations)))
@@ -543,6 +556,11 @@ getUniprotAnnotationsFull <- function(data_tbl,
     return(uniprot_annotations)
     
   }, error = function(e) {
+    cat("=== DEBUG66: ERROR in getUniprotAnnotationsFull ===\n")
+    cat(sprintf("Error message: %s\n", e$message))
+    cat(sprintf("Error class: %s\n", paste(class(e), collapse = ", ")))
+    cat("Full error details:\n")
+    print(str(e))
     cat(sprintf("Error in getUniProtAnnotation: %s\n", e$message))
     
     # Return a minimal data frame if annotation fails

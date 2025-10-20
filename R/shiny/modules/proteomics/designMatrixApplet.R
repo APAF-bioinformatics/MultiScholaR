@@ -19,9 +19,19 @@ NULL
 designMatrixAppletUI <- function(id) {
   ns <- NS(id)
   
-  shiny::fluidRow(
-    shiny::column(12,
-      shiny::wellPanel(
+  shiny::tagList(
+    # JavaScript handler for UniProt progress updates
+    shiny::tags$script(shiny::HTML("
+      Shiny.addCustomMessageHandler('updateUniprotProgress', function(message) {
+        $('#uniprot_progress_bar').css('width', message.percent + '%');
+        $('#uniprot_progress_bar').text(message.percent + '%');
+        $('#uniprot_progress_text').text(message.text);
+      });
+    ")),
+    
+    shiny::fluidRow(
+      shiny::column(12,
+        shiny::wellPanel(
         shiny::fluidRow(
           shiny::column(8,
             shiny::h3("Design Matrix Builder")
@@ -65,6 +75,7 @@ designMatrixAppletUI <- function(id) {
           )
         )
       )
+    )
     )
   )
 }
@@ -367,11 +378,32 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
           logger::log_info(sprintf("TMT Import: Wide format has %d protein rows, %d sample columns",
                                    nrow(protein_quant_table_wide),
                                    ncol(protein_quant_table_wide) - 1))  # -1 for protein ID column
+          
+          # *** CRITICAL: Apply log2 transformation to TMT abundance values ***
+          # TMT data from Proteome Discoverer is in raw abundance scale, not log2
+          # Limma and normalization require log2-transformed data
+          logger::log_info("TMT Import: Applying log2 transformation to abundance values...")
+          
+          protein_id_col <- workflow_data$column_mapping$protein_col
+          protein_quant_table_wide <- protein_quant_table_wide |>
+            dplyr::mutate(
+              dplyr::across(
+                -!!sym(protein_id_col),  # Transform all columns except protein ID
+                ~ {
+                  # Add pseudo-count to avoid log(0), then log2 transform
+                  # Using 1 as pseudo-count (standard for proteomics)
+                  log2(.x + 1)
+                }
+              )
+            )
+          
+          logger::log_info("TMT Import: Log2 transformation completed")
 
           # Use the existing constructor for protein-level data with the now wide table.
           s4_object <- ProteinQuantitativeData(
             protein_quant_table = protein_quant_table_wide,
             protein_id_column = workflow_data$column_mapping$protein_col,
+            protein_id_table = protein_quant_table_wide |> dplyr::distinct(!!sym(workflow_data$column_mapping$protein_col)),
             design_matrix = workflow_data$design_matrix,
             sample_id = "Run",
             group_id = "group",
@@ -399,7 +431,23 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
         
         # --- TRIGGER UNIPROT ANNOTATION ---
         log_info("Design Matrix complete. Triggering UniProt annotation.")
-        shiny::showNotification("Retrieving UniProt annotations...", id = "uniprot_annotating", duration = NULL)
+        
+        # Show modal with progress bar
+        shiny::showModal(shiny::modalDialog(
+          title = "Retrieving UniProt Annotations",
+          shiny::p("Please wait while we retrieve protein annotations from UniProt..."),
+          shiny::div(id = "uniprot_progress_text", "Initializing..."),
+          shiny::tags$div(class = "progress",
+            shiny::tags$div(id = "uniprot_progress_bar", 
+                     class = "progress-bar progress-bar-striped active",
+                     role = "progressbar",
+                     style = "width: 0%",
+                     "0%")
+          ),
+          footer = NULL,
+          easyClose = FALSE
+        ))
+        
         tryCatch({
           protein_column <- workflow_data$column_mapping$protein_col
           if (is.null(protein_column)) {
@@ -416,12 +464,27 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
           if (!dir.exists(uniprot_cache_dir)) {
             dir.create(uniprot_cache_dir, recursive = TRUE)
           }
+          
+          # Create progress callback function with error handling
+          progress_updater <- function(current, total) {
+            tryCatch({
+              percent <- round((current / total) * 100)
+              session$sendCustomMessage("updateUniprotProgress", list(
+                percent = percent,
+                text = sprintf("Processing chunk %d of %d (%d%%)", current, total, percent)
+              ))
+            }, error = function(e) {
+              # Silently catch any errors to prevent disrupting the main process
+              message(paste("Progress update failed:", e$message))
+            })
+          }
 
           uniprot_dat_cln <- getUniprotAnnotationsFull(
             data_tbl = workflow_data$data_cln,
             protein_id_column = protein_column,
             cache_dir = uniprot_cache_dir,
-            taxon_id = workflow_data$taxon_id
+            taxon_id = workflow_data$taxon_id,
+            progress_callback = progress_updater
           )
           
           workflow_data$uniprot_dat_cln <- uniprot_dat_cln
@@ -433,13 +496,13 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
             log_info(sprintf("Saved uniprot_dat_cln to scripts directory: %s", scripts_uniprot_path))
           }
           log_info(sprintf("UniProt annotations retrieved successfully. Found %d annotations", nrow(uniprot_dat_cln)))
-          shiny::removeNotification("uniprot_annotating")
+          shiny::removeModal()
           shiny::showNotification("UniProt annotations retrieved successfully.", type = "message")
           
         }, error = function(e) {
           log_warn(paste("Error getting UniProt annotations:", e$message))
           workflow_data$uniprot_dat_cln <- NULL
-          shiny::removeNotification("uniprot_annotating")
+          shiny::removeModal()
           shiny::showNotification(paste("Warning: Could not retrieve UniProt annotations:", e$message), type = "warning", duration = 8)
         })
         
@@ -591,11 +654,32 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
                 names_from = !!sym(workflow_data$column_mapping$run_col),
                 values_from = !!sym(workflow_data$column_mapping$quantity_col)
               )
+            
+            # *** CRITICAL: Apply log2 transformation to TMT abundance values ***
+            # TMT data from Proteome Discoverer is in raw abundance scale, not log2
+            # Limma and normalization require log2-transformed data
+            logger::log_info("TMT Save Design: Applying log2 transformation to abundance values...")
+            
+            protein_id_col <- workflow_data$column_mapping$protein_col
+            protein_quant_table_wide <- protein_quant_table_wide |>
+              dplyr::mutate(
+                dplyr::across(
+                  -!!sym(protein_id_col),  # Transform all columns except protein ID
+                  ~ {
+                    # Add pseudo-count to avoid log(0), then log2 transform
+                    # Using 1 as pseudo-count (standard for proteomics)
+                    log2(.x + 1)
+                  }
+                )
+              )
+            
+            logger::log_info("TMT Save Design: Log2 transformation completed")
 
             # Use the existing constructor for protein-level data with the now wide table.
             s4_object <- ProteinQuantitativeData(
               protein_quant_table = protein_quant_table_wide,
               protein_id_column = workflow_data$column_mapping$protein_col,
+              protein_id_table = protein_quant_table_wide |> dplyr::distinct(!!sym(workflow_data$column_mapping$protein_col)),
               design_matrix = workflow_data$design_matrix,
               sample_id = "Run",
               group_id = "group",
@@ -620,7 +704,23 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
           
           # --- TRIGGER UNIPROT ANNOTATION ---
           log_info("Design Matrix complete. Triggering UniProt annotation.")
-          shiny::showNotification("Retrieving UniProt annotations...", id = "uniprot_annotating", duration = NULL)
+          
+          # Show modal with progress bar
+          shiny::showModal(shiny::modalDialog(
+            title = "Retrieving UniProt Annotations",
+            shiny::p("Please wait while we retrieve protein annotations from UniProt..."),
+            shiny::div(id = "uniprot_progress_text", "Initializing..."),
+            shiny::tags$div(class = "progress",
+              shiny::tags$div(id = "uniprot_progress_bar", 
+                       class = "progress-bar progress-bar-striped active",
+                       role = "progressbar",
+                       style = "width: 0%",
+                       "0%")
+            ),
+            footer = NULL,
+            easyClose = FALSE
+          ))
+          
           tryCatch({
             protein_column <- workflow_data$column_mapping$protein_col
             if (is.null(protein_column)) {
@@ -637,12 +737,27 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
             if (!dir.exists(uniprot_cache_dir)) {
               dir.create(uniprot_cache_dir, recursive = TRUE)
             }
+            
+            # Create progress callback function with error handling
+            progress_updater <- function(current, total) {
+              tryCatch({
+                percent <- round((current / total) * 100)
+                session$sendCustomMessage("updateUniprotProgress", list(
+                  percent = percent,
+                  text = sprintf("Processing chunk %d of %d (%d%%)", current, total, percent)
+                ))
+              }, error = function(e) {
+                # Silently catch any errors to prevent disrupting the main process
+                message(paste("Progress update failed:", e$message))
+              })
+            }
 
             uniprot_dat_cln <- getUniprotAnnotationsFull(
               data_tbl = workflow_data$data_cln,
               protein_id_column = protein_column,
               cache_dir = uniprot_cache_dir,
-              taxon_id = workflow_data$taxon_id
+              taxon_id = workflow_data$taxon_id,
+              progress_callback = progress_updater
             )
             
             workflow_data$uniprot_dat_cln <- uniprot_dat_cln
@@ -654,13 +769,13 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
               log_info(sprintf("Saved uniprot_dat_cln to scripts directory: %s", scripts_uniprot_path))
             }
             log_info(sprintf("UniProt annotations retrieved successfully. Found %d annotations", nrow(uniprot_dat_cln)))
-            shiny::removeNotification("uniprot_annotating")
+            shiny::removeModal()
             shiny::showNotification("UniProt annotations retrieved successfully.", type = "message")
             
           }, error = function(e) {
             log_warn(paste("Error getting UniProt annotations:", e$message))
             workflow_data$uniprot_dat_cln <- NULL
-            shiny::removeNotification("uniprot_annotating")
+            shiny::removeModal()
             shiny::showNotification(paste("Warning: Could not retrieve UniProt annotations:", e$message), type = "warning", duration = 8)
           })
           

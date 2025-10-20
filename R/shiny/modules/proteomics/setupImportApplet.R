@@ -822,6 +822,10 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
           NA
         }
         
+        # Store taxon_id and organism at top level for use by other modules
+        workflow_data$taxon_id <- input$taxon_id
+        workflow_data$organism_name <- input$organism_name
+        
         workflow_data$processing_log$setup_import <- list(
           timestamp = Sys.time(),
           search_file = search_filename,
