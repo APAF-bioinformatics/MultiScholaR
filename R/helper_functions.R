@@ -100,6 +100,71 @@ getProjectPaths <- function(omic_type,
 
 ##################################################################################################################
 
+#' Get Project Paths with Fallback Logic
+#' 
+#' @description
+#' Safely retrieves project paths from project_dirs with automatic fallback between
+#' different key formats. Handles both Shiny (keys: "proteomics") and RMarkdown 
+#' (keys: "proteomics_MyLabel") workflows.
+#' 
+#' @param omic_type Character string indicating the type of omics data (e.g., "proteomics")
+#' @param experiment_label Character string with experiment label (optional for Shiny, required for RMarkdown)
+#' @param project_dirs_object_name Name of the global project_dirs variable (default: "project_dirs")
+#' @param env Environment where project_dirs resides (default: .GlobalEnv)
+#' 
+#' @return List containing the directory paths for the specified omic type
+#' 
+#' @export
+getProjectPaths <- function(omic_type, 
+                           experiment_label = NULL, 
+                           project_dirs_object_name = "project_dirs",
+                           env = .GlobalEnv) {
+  
+  # Validate project_dirs exists
+  if (!exists(project_dirs_object_name, envir = env)) {
+    rlang::abort(paste0("Global object ", sQuote(project_dirs_object_name), 
+                       " not found. Run setupDirectories() first or ensure project is properly initialized."))
+  }
+  
+  project_dirs_global <- get(project_dirs_object_name, envir = env)
+  
+  # Try multiple key formats in order of preference
+  potential_keys <- c()
+  
+  # 1. RMarkdown format with label: "omic_type_experiment_label"
+  if (!is.null(experiment_label) && nzchar(experiment_label)) {
+    potential_keys <- c(potential_keys, paste0(omic_type, "_", experiment_label))
+  }
+  
+  # 2. Shiny format (no label): "omic_type"
+  potential_keys <- c(potential_keys, omic_type)
+  
+  # 3. Try to find any key that starts with omic_type (most permissive fallback)
+  matching_keys <- names(project_dirs_global)[grepl(paste0("^", omic_type, "(_|$)"), names(project_dirs_global))]
+  if (length(matching_keys) > 0) {
+    potential_keys <- c(potential_keys, matching_keys[1])  # Take first match
+  }
+  
+  # Try each potential key
+  for (key in potential_keys) {
+    if (key %in% names(project_dirs_global)) {
+      logger::log_debug(paste("Found project paths using key:", key))
+      return(project_dirs_global[[key]])
+    }
+  }
+  
+  # If we get here, no valid key was found
+  available_keys <- paste(names(project_dirs_global), collapse = ", ")
+  rlang::abort(paste0(
+    "Could not find project paths for omic_type='", omic_type, "'",
+    if (!is.null(experiment_label)) paste0(", experiment_label='", experiment_label, "'") else "",
+    ".\nAvailable keys in ", sQuote(project_dirs_object_name), ": ", available_keys,
+    "\nEnsure setupDirectories() was called with the correct omic_type and label."
+  ))
+}
+
+##################################################################################################################
+
 ### Function: create_id_to_attribute_hash
 ### Description: Create a hash function that map keys to attributes.
 
@@ -1290,11 +1355,23 @@ copyToResultsSummary <- function(omic_type,
         rlang::abort(paste0("Failed to get project paths: ", e$message))
     })
     
+    # Use the new helper function with automatic fallback
+    current_paths <- tryCatch({
+        getProjectPaths(
+            omic_type = omic_type,
+            experiment_label = experiment_label,
+            project_dirs_object_name = project_dirs_object_name
+        )
+    }, error = function(e) {
+        rlang::abort(paste0("Failed to get project paths: ", e$message))
+    })
+    
     # Validate that current_paths is a list and contains essential directory paths
     required_paths_in_current <- c("results_dir", "results_summary_dir", "publication_graphs_dir", 
                                    "time_dir", "qc_dir", "de_output_dir", "pathway_dir", "source_dir", "feature_qc_dir")
     if (!is.list(current_paths) || !all(required_paths_in_current %in% names(current_paths))) {
         missing_req <- setdiff(required_paths_in_current, names(current_paths))
+        rlang::abort(paste0("Essential paths missing from project_dirs: ", paste(missing_req, collapse=", ")))
         rlang::abort(paste0("Essential paths missing from project_dirs: ", paste(missing_req, collapse=", ")))
     }
     # --- End: Path Derivation and Validation ---
@@ -1306,9 +1383,17 @@ copyToResultsSummary <- function(omic_type,
         omic_type
     }
 
+    # Create descriptive label for logging (optional, for user-friendly messages)
+    omic_label <- if (!is.null(experiment_label) && nzchar(experiment_label)) {
+        paste0(omic_type, "_", experiment_label)
+    } else {
+        omic_type
+    }
+
     # Track failed copies
     failed_copies <- list()
     
+    cat("\nRelevant directory paths:\n")
     cat("\nRelevant directory paths:\n")
     cat(sprintf("Results Dir: %s\n", current_paths$results_dir))
     cat(sprintf("Results Summary Dir: %s\n", current_paths$results_summary_dir))
@@ -1441,9 +1526,12 @@ copyToResultsSummary <- function(omic_type,
     if (length(contents_of_summary_dir) > 0) {
         logger::log_info("Results summary directory for {omic_label} ({current_paths$results_summary_dir}) contains existing files/folders.")
         backup_dirname <- paste0(omic_label, "_backup_", format(Sys.time(), "%Y%m%d_%H%M%S"))
+        logger::log_info("Results summary directory for {omic_label} ({current_paths$results_summary_dir}) contains existing files/folders.")
+        backup_dirname <- paste0(omic_label, "_backup_", format(Sys.time(), "%Y%m%d_%H%M%S"))
         backup_dir <- file.path(dirname(current_paths$results_summary_dir), backup_dirname)
         
         should_proceed_with_backup <- if (!force) {
+            cat(sprintf("\\nResults summary directory for %s contains content:\\n- %s\\n", omic_label, current_paths$results_summary_dir))
             cat(sprintf("\\nResults summary directory for %s contains content:\\n- %s\\n", omic_label, current_paths$results_summary_dir))
             repeat {
                 response <- readline(prompt = "Do you want to backup existing directory and proceed by overwriting? (y/n): ")
@@ -1454,17 +1542,21 @@ copyToResultsSummary <- function(omic_type,
             response == "y"
         } else {
             logger::log_info("Force mode enabled - backing up and proceeding with overwrite for {omic_label}...")
+            logger::log_info("Force mode enabled - backing up and proceeding with overwrite for {omic_label}...")
             TRUE
         }
         
         if (!should_proceed_with_backup) {
             logger::log_info("Overwrite of {current_paths$results_summary_dir} for {omic_label} cancelled by user. No backup made, original files untouched.")
+            logger::log_info("Overwrite of {current_paths$results_summary_dir} for {omic_label} cancelled by user. No backup made, original files untouched.")
             # Return a list indicating cancellation, which can be checked by the caller.
+            return(invisible(list(status="cancelled", omic_key=omic_label, message=paste0("Backup and overwrite for ", omic_label, " cancelled by user."))))
             return(invisible(list(status="cancelled", omic_key=omic_label, message=paste0("Backup and overwrite for ", omic_label, " cancelled by user."))))
         }
         
         # Proceed with backup and clearing
         if (!dir.create(backup_dir, recursive = TRUE, showWarnings = FALSE) && !dir.exists(backup_dir)) {
+             logger::log_warn("Failed to create backup directory: {backup_dir} for {omic_label}. Original directory will not be cleared.")
              logger::log_warn("Failed to create backup directory: {backup_dir} for {omic_label}. Original directory will not be cleared.")
              failed_copies[[length(failed_copies) + 1]] <- list(type = "backup_dir_creation", path = backup_dir, error = "Failed to create backup directory")
              # Do not proceed with unlink if backup dir creation fails
@@ -1484,6 +1576,7 @@ copyToResultsSummary <- function(omic_type,
             
             if (backup_copy_successful && (backup_has_content || length(contents_of_summary_dir) == 0) ) {
                 logger::log_info("Successfully backed up content of {current_paths$results_summary_dir} to: {backup_dir}")
+                backup_info <- data.frame(original_dir = current_paths$results_summary_dir, backup_time = Sys.time(), omic_key = omic_label, stringsAsFactors = FALSE)
                 backup_info <- data.frame(original_dir = current_paths$results_summary_dir, backup_time = Sys.time(), omic_key = omic_label, stringsAsFactors = FALSE)
                 tryCatch(
                     write.table(backup_info, file = file.path(backup_dir, "backup_info.txt"), sep = "\\t", row.names = FALSE, quote = FALSE),
@@ -1515,10 +1608,12 @@ copyToResultsSummary <- function(omic_type,
                 }
             } else {
                 logger::log_warn("Failed to copy all items to backup for {omic_label}, or backup is unexpectedly empty. Original directory {current_paths$results_summary_dir} was NOT cleared.")
+                logger::log_warn("Failed to copy all items to backup for {omic_label}, or backup is unexpectedly empty. Original directory {current_paths$results_summary_dir} was NOT cleared.")
                 failed_copies[[length(failed_copies) + 1]] <- list(type = "backup_content_copy", source = current_paths$results_summary_dir, destination = backup_dir, error = "Failed to copy items to backup or backup empty; original not cleared")
             }
         }
     } else {
+        logger::log_info("Results summary directory for {omic_label} ({current_paths$results_summary_dir}) is empty. No backup needed. Proceeding to create subdirectories.")
         logger::log_info("Results summary directory for {omic_label} ({current_paths$results_summary_dir}) is empty. No backup needed. Proceeding to create subdirectories.")
         # Ensure the main directory exists (it should if we got here and it was empty, or it was just created if missing)
         if (!dir.exists(current_paths$results_summary_dir)) {
@@ -1626,6 +1721,7 @@ copyToResultsSummary <- function(omic_type,
       failed_copies[[length(failed_copies) + 1]] <- list(type = "workbook_save", path = enrichment_excel_path, error = e$message)
     })
 
+    cat("\nCopying individual files/folders to Results Summary for ", omic_label, "...\n")
     cat("\nCopying individual files/folders to Results Summary for ", omic_label, "...\n")
     cat("==============================================================\n\n")
 
@@ -1764,6 +1860,7 @@ copyToResultsSummary <- function(omic_type,
 
     if (length(failed_copies) > 0) {
         cat("\nFailed Copies Summary:\n")
+        cat("\nFailed Copies Summary:\n")
         cat("=====================================\n")
         lapply(failed_copies, function(failure) {
             cat(sprintf("\n%s: %s\n", failure$display_name, failure$error))
@@ -1771,7 +1868,9 @@ copyToResultsSummary <- function(omic_type,
             cat(sprintf("  Destination Attempted: %s\n", failure$destination))
         })
         warning(sprintf("%d files/objects/directories failed to copy correctly", length(failed_copies)))
+        warning(sprintf("%d files/objects/directories failed to copy correctly", length(failed_copies)))
     }
+    cat("--- End of copyToResultsSummary ---\n\n")
     cat("--- End of copyToResultsSummary ---\n\n")
     invisible(failed_copies)
 }
@@ -1997,6 +2096,7 @@ RenderReport <- function(omic_type,
     if (!is.list(current_paths) || 
         is.null(current_paths$base_dir) || # Need base_dir to find the template Rmd
         is.null(current_paths$results_summary_dir)) {
+        rlang::abort(paste0("Essential paths (base_dir, results_summary_dir) missing from project_dirs"))
         rlang::abort(paste0("Essential paths (base_dir, results_summary_dir) missing from project_dirs"))
     }
     
