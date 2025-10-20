@@ -572,3 +572,128 @@ formatDIANNParquet <- function(data_tbl_parquet_filt) {
   
   return(data_tbl_converted)
 }
+
+#' @title Import Proteome Discoverer TMT Data
+#'
+#' @description Imports and processes protein-level TMT data from Proteome Discoverer.
+#' This function handles reading of .xlsx files, reshaping the data from wide to long format,
+#' and returns a standardized list for use in the MultiScholaR workflow.
+#'
+#' @param filepath Path to the Proteome Discoverer exported .xlsx, .csv, or .tsv file.
+#'
+#' @return A list containing three elements:
+#'   \item{data}{A tibble with the processed and reshaped data.}
+#'   \item{data_type}{A character string, hardcoded to "protein".}
+#'   \item{column_mapping}{A list mapping standard column names to the names in the processed data.}
+#'
+#' @importFrom readxl read_excel
+#' @importFrom vroom vroom
+#' @importFrom tidyr pivot_longer
+#' @importFrom dplyr rename select starts_with
+#' @importFrom logger log_info
+#' @importFrom purrr map_dfr
+#' @importFrom tools file_ext
+#' @importFrom dplyr rename_with select mutate everything
+#' @importFrom stringr str_extract
+#' @export
+importProteomeDiscovererTMTData <- function(filepath) {
+  log_info(paste("Starting Proteome Discoverer TMT import from:", filepath))
+  
+  process_single_file <- function(file_path, batch_name = NULL) {
+    if (endsWith(file_path, ".xlsx")) {
+      if (!requireNamespace("readxl", quietly = TRUE)) {
+        stop("The 'readxl' package is required for .xlsx files.", call. = FALSE)
+      }
+      data <- readxl::read_excel(file_path)
+    } else {
+      data <- vroom::vroom(file_path, show_col_types = FALSE)
+    }
+    
+    if ("Accession" %in% names(data)) {
+      data <- data |> dplyr::rename(Protein.Ids = "Accession")
+    } else {
+      stop("Required column 'Accession' not found in file: ", basename(file_path))
+    }
+    
+    # NEW LOGIC: Rename columns to be unique BEFORE pivoting
+    # This is the critical fix.
+    if (!is.null(batch_name)) {
+      data <- data |>
+        dplyr::rename_with(
+          ~ paste(
+              batch_name, 
+              gsub("Abundance: F[0-9]+: ([0-9]+[A-Z]?), (.+)", "\\1_\\2", .x), 
+              sep = "_"
+            ),
+          .cols = dplyr::starts_with("Abundance: ")
+        )
+    } else {
+        # Fallback for single file without a batch name
+        data <- data |>
+        dplyr::rename_with(
+          ~ gsub("Abundance: F[0-9]+: ([0-9]+[A-Z]?), (.+)", "\\1_\\2", .x),
+          .cols = dplyr::starts_with("Abundance: ")
+        )
+    }
+
+    # Now, pivot the uniquely named columns
+    long_data <- data |>
+      tidyr::pivot_longer(
+        # Use a more robust selector that finds the renamed columns
+        cols = dplyr::matches("_[0-9]+[A-Z]?_"),
+        names_to = "Run",
+        values_to = "Abundance"
+      )
+    
+    if (!is.null(batch_name)) {
+      long_data$Batch <- batch_name
+    }
+    
+    return(long_data)
+  }
+  
+  # Check if the file is a zip archive
+  if (tolower(tools::file_ext(filepath)) == "zip") {
+    log_info("ZIP archive detected. Unzipping and processing batch files.")
+    
+    temp_dir <- tempfile()
+    dir.create(temp_dir)
+    unzip(filepath, exdir = temp_dir)
+    
+    files_to_process <- list.files(temp_dir, pattern = "\\.(xlsx|csv|tsv)$", full.names = TRUE, recursive = TRUE)
+    
+    if (length(files_to_process) == 0) {
+      stop("No data files (.xlsx, .csv, .tsv) found in the ZIP archive.")
+    }
+    
+    # Use purrr::imap_dfr to iterate, process, and combine files
+    all_data <- purrr::imap_dfr(files_to_process, ~{
+      # Use the index provided by imap to create a guaranteed unique batch name
+      batch_name <- paste0("b", .y) # .y is the index (1, 2, 3...)
+      
+      log_info(paste("Processing file:", basename(.x), "as Batch:", batch_name))
+      process_single_file(.x, batch_name = batch_name)
+    })
+    
+    unlink(temp_dir, recursive = TRUE)
+    
+    final_data <- all_data
+    
+  } else {
+    # Process a single non-zip file
+    final_data <- process_single_file(filepath)
+  }
+  
+  log_info(sprintf("Total reshaped data rows: %d.", nrow(final_data)))
+  
+  return(list(
+    data = final_data,
+    data_type = "protein",
+    column_mapping = list(
+      protein_col = "Protein.Ids",
+      run_col = "Run",
+      quantity_col = "Abundance",
+      batch_col = if("Batch" %in% names(final_data)) "Batch" else NULL
+    )
+  ))
+}

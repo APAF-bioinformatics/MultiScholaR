@@ -19,9 +19,19 @@ NULL
 designMatrixAppletUI <- function(id) {
   ns <- NS(id)
   
-  shiny::fluidRow(
-    shiny::column(12,
-      shiny::wellPanel(
+  shiny::tagList(
+    # JavaScript handler for UniProt progress updates
+    shiny::tags$script(shiny::HTML("
+      Shiny.addCustomMessageHandler('updateUniprotProgress', function(message) {
+        $('#uniprot_progress_bar').css('width', message.percent + '%');
+        $('#uniprot_progress_bar').text(message.percent + '%');
+        $('#uniprot_progress_text').text(message.text);
+      });
+    ")),
+    
+    shiny::fluidRow(
+      shiny::column(12,
+        shiny::wellPanel(
         shiny::fluidRow(
           shiny::column(8,
             shiny::h3("Design Matrix Builder")
@@ -66,6 +76,7 @@ designMatrixAppletUI <- function(id) {
         )
       )
     )
+    )
   )
 }
 
@@ -78,7 +89,9 @@ designMatrixAppletUI <- function(id) {
 #' @importFrom utils write.table
 #' @importFrom vroom vroom
 #' @importFrom shinyFiles shinyDirButton shinyDirChoose parseDirPath getVolumes
-designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volumes = NULL) {
+#' @importFrom tidyr pivot_wider
+#' @importFrom rlang sym
+designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volumes = NULL, qc_trigger = NULL) {
   message(sprintf("--- Entering designMatrixAppletServer ---"))
   message(sprintf("   designMatrixAppletServer Arg: id = %s", id))
   
@@ -310,33 +323,235 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
           logger::log_info("Saved contrasts_tbl to global environment for DE analysis.")
         }
         
-        # --- Create S4 Object and Save State (same logic as builder) ---
-        logger::log_info("Creating PeptideQuantitativeData S4 object from imported design.")
-        peptide_data_s4 <- new(
-          "PeptideQuantitativeData",
-          peptide_data = workflow_data$data_cln,
-          protein_id_column = "Protein.Ids",
-          peptide_sequence_column = "Stripped.Sequence",
-          q_value_column = "Q.Value",
-          global_q_value_column = "Global.Q.Value",
-          proteotypic_peptide_sequence_column = "Proteotypic",
-          raw_quantity_column = "Precursor.Quantity",
-          norm_quantity_column = "Precursor.Normalised",
-          is_logged_data = FALSE,
-          design_matrix = workflow_data$design_matrix,
-          sample_id = "Run",
-          group_id = "group",
-          technical_replicate_id = "replicates",
-          args = workflow_data$config_list
-        )
+        # --- Detect or Load workflow_type ---
+        # Try to get workflow_type from config.ini first
+        workflow_type <- NULL
+        if (!is.null(workflow_data$config_list$globalParameters$workflow_type)) {
+          workflow_type <- workflow_data$config_list$globalParameters$workflow_type
+          logger::log_info(paste("Loaded workflow_type from config.ini:", workflow_type))
+        } else {
+          # Fallback: detect from data structure
+          logger::log_warn("workflow_type not found in config.ini. Attempting to detect from data structure.")
+          
+          # Check for peptide-specific columns (DIA/LFQ have these, TMT doesn't)
+          has_precursor_cols <- any(c("Precursor.Id", "Precursor.Charge", "Precursor.Quantity") %in% names(imported_data_cln))
+          has_peptide_cols <- any(c("Stripped.Sequence", "Modified.Sequence") %in% names(imported_data_cln))
+          
+          if (has_precursor_cols && has_peptide_cols) {
+            # Peptide-level data (DIA or LFQ) - default to DIA as it's more common
+            workflow_type <- "DIA"
+            logger::log_info("Detected peptide-level data. Setting workflow_type to DIA.")
+          } else {
+            # Protein-level data (TMT)
+            workflow_type <- "TMT"
+            logger::log_info("Detected protein-level data. Setting workflow_type to TMT.")
+          }
+        }
         
-        logger::log_info("Saving imported S4 object to R6 state manager as 'raw_data_s4'.")
+        # Set workflow_type in state manager
+        workflow_data$state_manager$setWorkflowType(workflow_type)
+        logger::log_info(paste("Workflow type set to:", workflow_type))
+        
+        # Ensure column_mapping is available for pivot operations
+        if (is.null(workflow_data$column_mapping)) {
+          logger::log_warn("column_mapping not found in workflow_data. Inferring from data structure.")
+          
+          # Infer basic column mappings from data
+          if (workflow_type == "TMT") {
+            workflow_data$column_mapping <- list(
+              protein_col = "Protein.Ids",
+              run_col = "Run",
+              quantity_col = "Abundance"
+            )
+          } else {
+            workflow_data$column_mapping <- list(
+              protein_col = "Protein.Ids",
+              run_col = "Run",
+              quantity_col = "Precursor.Quantity"
+            )
+          }
+          logger::log_info("Inferred column_mapping for workflow operations.")
+        }
+        
+        # --- Create S4 Object and Save State (Conditional Orchestration) ---
+        if (workflow_type %in% c("DIA", "LFQ")) {
+          # For peptide workflows, the data_cln is already in the correct long format.
+          # Use the existing constructor for peptide-level data.
+          s4_object <- PeptideQuantitativeDataDiann(
+            peptide_data = workflow_data$data_cln,
+            design_matrix = workflow_data$design_matrix,
+            args = workflow_data$config_list
+          )
+          state_name <- "raw_data_s4"
+          description <- "Initial Peptide S4 object created after design matrix."
+
+        } else if (workflow_type == "TMT") {
+          # For protein workflows (TMT), the data_cln is long, but the S4 constructor needs wide.
+          # We must reshape the data first.
+          
+          logger::log_info("TMT workflow: Reshaping protein data from long to wide format for S4 creation.")
+          
+          # Validate column_mapping before pivot
+          if (is.null(workflow_data$column_mapping$protein_col) || 
+              is.null(workflow_data$column_mapping$run_col) ||
+              is.null(workflow_data$column_mapping$quantity_col)) {
+            stop("Missing required column mappings for TMT data reshape. Cannot proceed.")
+          }
+          
+          # Validate columns exist in data
+          required_cols <- c(workflow_data$column_mapping$protein_col, 
+                             workflow_data$column_mapping$run_col,
+                             workflow_data$column_mapping$quantity_col)
+          missing_cols <- required_cols[!required_cols %in% names(workflow_data$data_cln)]
+          if (length(missing_cols) > 0) {
+            stop(paste("Missing required columns in data_cln:", paste(missing_cols, collapse = ", ")))
+          }
+          
+          protein_quant_table_wide <- workflow_data$data_cln |>
+            tidyr::pivot_wider(
+              id_cols = !!sym(workflow_data$column_mapping$protein_col),
+              names_from = !!sym(workflow_data$column_mapping$run_col),
+              values_from = !!sym(workflow_data$column_mapping$quantity_col)
+            )
+          
+          logger::log_info(sprintf("TMT Import: Pivoted data from %d rows (long) to %d rows (wide)", 
+                                   nrow(workflow_data$data_cln), 
+                                   nrow(protein_quant_table_wide)))
+          logger::log_info(sprintf("TMT Import: Wide format has %d protein rows, %d sample columns",
+                                   nrow(protein_quant_table_wide),
+                                   ncol(protein_quant_table_wide) - 1))  # -1 for protein ID column
+          
+          # *** CRITICAL: Apply log2 transformation to TMT abundance values ***
+          # TMT data from Proteome Discoverer is in raw abundance scale, not log2
+          # Limma and normalization require log2-transformed data
+          logger::log_info("TMT Import: Applying log2 transformation to abundance values...")
+          
+          protein_id_col <- workflow_data$column_mapping$protein_col
+          protein_quant_table_wide <- protein_quant_table_wide |>
+            dplyr::mutate(
+              dplyr::across(
+                -!!sym(protein_id_col),  # Transform all columns except protein ID
+                ~ {
+                  # Add pseudo-count to avoid log(0), then log2 transform
+                  # Using 1 as pseudo-count (standard for proteomics)
+                  log2(.x + 1)
+                }
+              )
+            )
+          
+          logger::log_info("TMT Import: Log2 transformation completed")
+
+          # Use the existing constructor for protein-level data with the now wide table.
+          s4_object <- ProteinQuantitativeData(
+            protein_quant_table = protein_quant_table_wide,
+            protein_id_column = workflow_data$column_mapping$protein_col,
+            protein_id_table = protein_quant_table_wide |> dplyr::distinct(!!sym(workflow_data$column_mapping$protein_col)),
+            design_matrix = workflow_data$design_matrix,
+            sample_id = "Run",
+            group_id = "group",
+            technical_replicate_id = "replicates",
+            args = workflow_data$config_list
+          )
+          state_name <- "protein_s4_initial"
+          description <- "Initial Protein S4 object created from TMT data after design matrix."
+
+        } else {
+          stop("Unknown workflow_type in designMatrixAppletServer: ", workflow_type)
+        }
+        
+        # Save the dynamically created S4 object to the state manager
+        logger::log_info(paste("Saving S4 object to R6 state manager as:", state_name))
         workflow_data$state_manager$saveState(
-            state_name = "raw_data_s4",
-            s4_data_object = peptide_data_s4,
+            state_name = state_name,
+            s4_data_object = s4_object,
             config_object = workflow_data$config_list,
-            description = "S4 object created from imported design matrix."
+            description = description
         )
+        logger::log_info(sprintf("Import: S4 object saved to R6 state manager as '%s'", state_name))
+        logger::log_info("Import: This state is now ACTIVE - QC modules will read from it")
+        logger::log_info("Import: User can proceed to QC → Accession Cleanup")
+        
+        # --- TRIGGER UNIPROT ANNOTATION ---
+        log_info("Design Matrix complete. Triggering UniProt annotation.")
+        
+        # Show modal with progress bar
+        shiny::showModal(shiny::modalDialog(
+          title = "Retrieving UniProt Annotations",
+          shiny::p("Please wait while we retrieve protein annotations from UniProt..."),
+          shiny::div(id = "uniprot_progress_text", "Initializing..."),
+          shiny::tags$div(class = "progress",
+            shiny::tags$div(id = "uniprot_progress_bar", 
+                     class = "progress-bar progress-bar-striped active",
+                     role = "progressbar",
+                     style = "width: 0%",
+                     "0%")
+          ),
+          footer = NULL,
+          easyClose = FALSE
+        ))
+        
+        tryCatch({
+          protein_column <- workflow_data$column_mapping$protein_col
+          if (is.null(protein_column)) {
+            stop("Protein column not found in column_mapping. Cannot get annotations.")
+          }
+          
+          cache_dir <- if (!is.null(experiment_paths) && !is.null(experiment_paths$results_dir)) {
+            file.path(experiment_paths$results_dir, "cache")
+          } else {
+            file.path(tempdir(), "proteomics_cache")
+          }
+          
+          uniprot_cache_dir <- file.path(cache_dir, "uniprot_annotations")
+          if (!dir.exists(uniprot_cache_dir)) {
+            dir.create(uniprot_cache_dir, recursive = TRUE)
+          }
+          
+          # Create progress callback function with error handling
+          progress_updater <- function(current, total) {
+            tryCatch({
+              percent <- round((current / total) * 100)
+              session$sendCustomMessage("updateUniprotProgress", list(
+                percent = percent,
+                text = sprintf("Processing chunk %d of %d (%d%%)", current, total, percent)
+              ))
+            }, error = function(e) {
+              # Silently catch any errors to prevent disrupting the main process
+              message(paste("Progress update failed:", e$message))
+            })
+          }
+
+          uniprot_dat_cln <- getUniprotAnnotationsFull(
+            data_tbl = workflow_data$data_cln,
+            protein_id_column = protein_column,
+            cache_dir = uniprot_cache_dir,
+            taxon_id = workflow_data$taxon_id,
+            progress_callback = progress_updater
+          )
+          
+          workflow_data$uniprot_dat_cln <- uniprot_dat_cln
+          assign("uniprot_dat_cln", uniprot_dat_cln, envir = .GlobalEnv)
+          
+          if (!is.null(experiment_paths) && !is.null(experiment_paths$source_dir)) {
+            scripts_uniprot_path <- file.path(experiment_paths$source_dir, "uniprot_dat_cln.RDS")
+            saveRDS(uniprot_dat_cln, scripts_uniprot_path)
+            log_info(sprintf("Saved uniprot_dat_cln to scripts directory: %s", scripts_uniprot_path))
+          }
+          log_info(sprintf("UniProt annotations retrieved successfully. Found %d annotations", nrow(uniprot_dat_cln)))
+          shiny::removeModal()
+          shiny::showNotification("UniProt annotations retrieved successfully.", type = "message")
+          
+        }, error = function(e) {
+          log_warn(paste("Error getting UniProt annotations:", e$message))
+          workflow_data$uniprot_dat_cln <- NULL
+          shiny::removeModal()
+          shiny::showNotification(paste("Warning: Could not retrieve UniProt annotations:", e$message), type = "warning", duration = 8)
+        })
+        
+        # Set the QC trigger to TRUE to signal that QC modules can now run
+        if (!is.null(qc_trigger)) {
+          qc_trigger(TRUE)
+        }
         
         workflow_data$tab_status$design_matrix <- "complete"
         
@@ -372,7 +587,8 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
     builder_results_rv <- designMatrixBuilderServer(
       "builder",
       data_tbl = shiny::reactive(workflow_data$data_tbl),
-      config_list = shiny::reactive(workflow_data$config_list)
+      config_list = shiny::reactive(workflow_data$config_list),
+      column_mapping = shiny::reactive(workflow_data$column_mapping)
     )
     
     # == Handle Builder Results =================================================
@@ -431,36 +647,193 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
               assign("contrasts_tbl", results$contrasts_tbl, envir = .GlobalEnv)
               logger::log_info("Saved contrasts_tbl to global environment for DE analysis.")
           }
+          
+          # --- Save config.ini for Import Compatibility ---
+          if (!is.null(workflow_data$config_list)) {
+            # Add workflow_type to config for import detection
+            if (!is.null(workflow_data$state_manager$workflow_type)) {
+              workflow_data$config_list$globalParameters$workflow_type <- workflow_data$state_manager$workflow_type
+              logger::log_info(paste("Added workflow_type to config.ini:", workflow_data$state_manager$workflow_type))
+            }
+            
+            config_path <- file.path(source_dir, "config.ini")
+            logger::log_info(paste("Writing config.ini to:", config_path))
+            tryCatch({
+              # Write config list back to INI format
+              ini::write.ini(workflow_data$config_list, config_path)
+              logger::log_info("Saved config.ini for future import/export.")
+            }, error = function(e) {
+              logger::log_warn(paste("Could not save config.ini:", e$message))
+              logger::log_warn("Import will use default config if this design is imported.")
+            })
+          } else {
+            logger::log_warn("config_list is NULL, cannot save config.ini.")
+          }
 
-          # --- Create S4 Object and Save Initial State ---
-          logger::log_info("Creating PeptideQuantitativeData S4 object.")
-          peptide_data_s4 <- new(
-            "PeptideQuantitativeData",
-            peptide_data = workflow_data$data_cln,
-            protein_id_column = "Protein.Ids",
-            peptide_sequence_column = "Stripped.Sequence",
-            q_value_column = "Q.Value",
-            global_q_value_column = "Global.Q.Value",
-            proteotypic_peptide_sequence_column = "Proteotypic",
-            raw_quantity_column = "Precursor.Quantity",
-            norm_quantity_column = "Precursor.Normalised",
-            is_logged_data = FALSE,
-            design_matrix = workflow_data$design_matrix,
-            sample_id = "Run",
-            group_id = "group",
-            technical_replicate_id = "replicates",
-            args = workflow_data$config_list
-          )
+          # --- Create S4 Object and Save State (Conditional Orchestration) ---
+          workflow_type <- shiny::isolate(workflow_data$state_manager$workflow_type)
           
-          logger::log_info("Saving S4 object to R6 state manager as 'raw_data_s4'.")
+          if (workflow_type %in% c("DIA", "LFQ")) {
+            # For peptide workflows, the data_cln is already in the correct long format.
+            # Use the existing constructor for peptide-level data.
+            s4_object <- PeptideQuantitativeDataDiann(
+              peptide_data = workflow_data$data_cln,
+              design_matrix = workflow_data$design_matrix,
+              args = workflow_data$config_list
+            )
+            state_name <- "raw_data_s4"
+            description <- "Initial Peptide S4 object created after design matrix."
+
+          } else if (workflow_type == "TMT") {
+            # For protein workflows (TMT), the data_cln is long, but the S4 constructor needs wide.
+            # We must reshape the data first.
+            
+            logger::log_info("TMT workflow: Reshaping protein data from long to wide format for S4 creation.")
+            
+            protein_quant_table_wide <- workflow_data$data_cln |>
+              tidyr::pivot_wider(
+                id_cols = !!sym(workflow_data$column_mapping$protein_col),
+                names_from = !!sym(workflow_data$column_mapping$run_col),
+                values_from = !!sym(workflow_data$column_mapping$quantity_col)
+              )
+            
+            # *** CRITICAL: Apply log2 transformation to TMT abundance values ***
+            # TMT data from Proteome Discoverer is in raw abundance scale, not log2
+            # Limma and normalization require log2-transformed data
+            logger::log_info("TMT Save Design: Applying log2 transformation to abundance values...")
+            
+            protein_id_col <- workflow_data$column_mapping$protein_col
+            protein_quant_table_wide <- protein_quant_table_wide |>
+              dplyr::mutate(
+                dplyr::across(
+                  -!!sym(protein_id_col),  # Transform all columns except protein ID
+                  ~ {
+                    # Add pseudo-count to avoid log(0), then log2 transform
+                    # Using 1 as pseudo-count (standard for proteomics)
+                    log2(.x + 1)
+                  }
+                )
+              )
+            
+            logger::log_info("TMT Save Design: Log2 transformation completed")
+
+            # Use the existing constructor for protein-level data with the now wide table.
+            s4_object <- ProteinQuantitativeData(
+              protein_quant_table = protein_quant_table_wide,
+              protein_id_column = workflow_data$column_mapping$protein_col,
+              protein_id_table = protein_quant_table_wide |> dplyr::distinct(!!sym(workflow_data$column_mapping$protein_col)),
+              design_matrix = workflow_data$design_matrix,
+              sample_id = "Run",
+              group_id = "group",
+              technical_replicate_id = "replicates",
+              args = workflow_data$config_list
+            )
+            state_name <- "protein_s4_initial"
+            description <- "Initial Protein S4 object created from TMT data after design matrix."
+
+          } else {
+            stop("Unknown workflow_type in designMatrixAppletServer: ", workflow_type)
+          }
+          
+          # Save the dynamically created S4 object to the state manager
+          logger::log_info(paste("Saving S4 object to R6 state manager as:", state_name))
           workflow_data$state_manager$saveState(
-              state_name = "raw_data_s4",
-              s4_data_object = peptide_data_s4,
+              state_name = state_name,
+              s4_data_object = s4_object,
               config_object = workflow_data$config_list,
-              description = "Initial S4 object created after design matrix definition."
+              description = description
           )
           
-          # 4. Update tab status to 'complete'
+          # --- TRIGGER UNIPROT ANNOTATION ---
+          log_info("Design Matrix complete. Triggering UniProt annotation.")
+          
+          # Show modal with progress bar
+          shiny::showModal(shiny::modalDialog(
+            title = "Retrieving UniProt Annotations",
+            shiny::p("Please wait while we retrieve protein annotations from UniProt..."),
+            shiny::div(id = "uniprot_progress_text", "Initializing..."),
+            shiny::tags$div(class = "progress",
+              shiny::tags$div(id = "uniprot_progress_bar", 
+                       class = "progress-bar progress-bar-striped active",
+                       role = "progressbar",
+                       style = "width: 0%",
+                       "0%")
+            ),
+            footer = NULL,
+            easyClose = FALSE
+          ))
+          
+          tryCatch({
+            protein_column <- workflow_data$column_mapping$protein_col
+            if (is.null(protein_column)) {
+              stop("Protein column not found in column_mapping. Cannot get annotations.")
+            }
+            
+            cache_dir <- if (!is.null(experiment_paths) && !is.null(experiment_paths$results_dir)) {
+              file.path(experiment_paths$results_dir, "cache")
+            } else {
+              file.path(tempdir(), "proteomics_cache")
+            }
+            
+            uniprot_cache_dir <- file.path(cache_dir, "uniprot_annotations")
+            if (!dir.exists(uniprot_cache_dir)) {
+              dir.create(uniprot_cache_dir, recursive = TRUE)
+            }
+            
+            # Create progress callback function with error handling
+            progress_updater <- function(current, total) {
+              tryCatch({
+                percent <- round((current / total) * 100)
+                session$sendCustomMessage("updateUniprotProgress", list(
+                  percent = percent,
+                  text = sprintf("Processing chunk %d of %d (%d%%)", current, total, percent)
+                ))
+              }, error = function(e) {
+                # Silently catch any errors to prevent disrupting the main process
+                message(paste("Progress update failed:", e$message))
+              })
+            }
+
+            uniprot_dat_cln <- getUniprotAnnotationsFull(
+              data_tbl = workflow_data$data_cln,
+              protein_id_column = protein_column,
+              cache_dir = uniprot_cache_dir,
+              taxon_id = workflow_data$taxon_id,
+              progress_callback = progress_updater
+            )
+            
+            workflow_data$uniprot_dat_cln <- uniprot_dat_cln
+            assign("uniprot_dat_cln", uniprot_dat_cln, envir = .GlobalEnv)
+            
+            if (!is.null(experiment_paths) && !is.null(experiment_paths$source_dir)) {
+              scripts_uniprot_path <- file.path(experiment_paths$source_dir, "uniprot_dat_cln.RDS")
+              saveRDS(uniprot_dat_cln, scripts_uniprot_path)
+              log_info(sprintf("Saved uniprot_dat_cln to scripts directory: %s", scripts_uniprot_path))
+            }
+            log_info(sprintf("UniProt annotations retrieved successfully. Found %d annotations", nrow(uniprot_dat_cln)))
+            shiny::removeModal()
+            shiny::showNotification("UniProt annotations retrieved successfully.", type = "message")
+            
+          }, error = function(e) {
+            log_warn(paste("Error getting UniProt annotations:", e$message))
+            workflow_data$uniprot_dat_cln <- NULL
+            shiny::removeModal()
+            shiny::showNotification(paste("Warning: Could not retrieve UniProt annotations:", e$message), type = "warning", duration = 8)
+          })
+          
+          # 4. Set the QC trigger to TRUE to signal that QC modules can now run
+          message("=== DEBUG66: designMatrixApplet Save Design - About to set qc_trigger ===")
+          message(sprintf("   DEBUG66: qc_trigger is NULL = %s", is.null(qc_trigger)))
+          if (!is.null(qc_trigger)) {
+            message("   DEBUG66: Setting qc_trigger(TRUE)")
+            qc_trigger(TRUE)
+            message(sprintf("   DEBUG66: qc_trigger set. Current value = %s", qc_trigger()))
+          } else {
+            message("   DEBUG66: qc_trigger is NULL, cannot set")
+          }
+          message("=== DEBUG66: designMatrixApplet - qc_trigger setting complete ===")
+          
+          # 5. Update tab status to 'complete'
           workflow_data$tab_status$design_matrix <- "complete"
           
           shiny::showNotification("Design matrix and contrasts saved successfully!", type = "message")

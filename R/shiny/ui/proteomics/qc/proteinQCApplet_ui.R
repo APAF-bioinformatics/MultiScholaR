@@ -5,18 +5,20 @@
 #' This module handles all protein filtering steps after peptide-to-protein rollup.
 #'
 #' @param id Module ID
+#' @param workflow_type Character string indicating workflow type ("TMT", "DIA", "LFQ").
+#'   If NULL or LFQ/DIA, shows IQ Rollup tab. If TMT, skips IQ Rollup tab.
 #' @export
 #' @import shiny
 #' @import shinydashboard
-proteinQCAppletUI <- function(id) {
+proteinQCAppletUI <- function(id, workflow_type = NULL) {
   ns <- NS(id)
   
-  # Nested tabs for each protein processing step (extracted from qualityControlApplet.R)
-  shiny::tabsetPanel(
-    id = ns("protein_filter_tabs"),
-    
-    # Step 1: IQ Protein Rollup (chunk 17)
-    shiny::tabPanel(
+  # Build tab list conditionally based on workflow type
+  tab_list <- list()
+  
+  # Step 1: IQ Protein Rollup (chunk 17) - ONLY for LFQ/DIA workflows
+  if (is.null(workflow_type) || workflow_type %in% c("LFQ", "DIA")) {
+    tab_list[[length(tab_list) + 1]] <- shiny::tabPanel(
       "IQ Protein Rollup",
       shiny::br(),
       shiny::fluidRow(
@@ -43,8 +45,11 @@ proteinQCAppletUI <- function(id) {
           )
         )
       )
-    ),
-    
+    )
+  }
+  
+  # Step 2-5: Common tabs for ALL workflows (including TMT)
+  tab_list <- c(tab_list, list(
     # Step 2: Protein Accession Cleanup (chunk 19)
     shiny::tabPanel(
       "Accession Cleanup",
@@ -254,5 +259,8 @@ proteinQCAppletUI <- function(id) {
         )
       )
     )
-  )
+  ))
+  
+  # Construct tabsetPanel with conditional tab list
+  do.call(shiny::tabsetPanel, c(list(id = ns("protein_filter_tabs")), tab_list))
 } 
