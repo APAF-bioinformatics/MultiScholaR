@@ -1852,12 +1852,23 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
              
              # Additional metadata for verification
              export_timestamp = Sys.time(),
-             normalization_method = input$norm_method,
-             ruv_mode = input$ruv_mode,
-             ruv_k = norm_data$best_k,
-             correlation_threshold = norm_data$correlation_threshold,
-             
-             # Data dimensions for verification
+            normalization_method = input$norm_method,
+            ruv_mode = input$ruv_mode,
+            ruv_k = norm_data$best_k,
+            correlation_threshold = norm_data$correlation_threshold,
+            
+            # NEW: Store workflow type for report template selection
+            workflow_type = if (!is.null(workflow_data$config_list) && 
+                                !is.null(workflow_data$config_list$globalParameters) &&
+                                !is.null(workflow_data$config_list$globalParameters$workflow_type)) {
+              workflow_data$config_list$globalParameters$workflow_type
+            } else if (!is.null(current_s4_object@args$globalParameters$workflow_type)) {
+              current_s4_object@args$globalParameters$workflow_type
+            } else {
+              "DIA"  # Default fallback for backward compatibility
+            },
+            
+            # Data dimensions for verification
              final_protein_count = length(unique(current_s4_object@protein_quant_table$Protein.Ids)),
              final_sample_count = length(setdiff(colnames(current_s4_object@protein_quant_table), current_s4_object@protein_id_column))
            )

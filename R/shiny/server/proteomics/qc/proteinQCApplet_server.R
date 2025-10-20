@@ -33,7 +33,7 @@ proteinQCAppletServer <- function(id, workflow_data, experiment_paths, omic_type
       log_info("Running LFQ/DIA protein processing sub-modules.")
       
       # Call LFQ/DIA-specific rollup module
-      protein_rollup_server("protein_rollup", workflow_data, experiment_paths, omic_type, experiment_label)
+      protein_rollup_server(input, output, session, workflow_data, experiment_paths, omic_type, experiment_label)
     }
     
     # These modules are common to all workflows (including TMT)

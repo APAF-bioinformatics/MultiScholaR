@@ -41,13 +41,27 @@ library(stringr)
 if (!exists("project_dirs", envir = .GlobalEnv) || !is.list(project_dirs)) {
   stop("Global object 'project_dirs' not found or is not a list. Run MultiScholaR::setupDirectories() first.")
 }
-# Construct the key for the current omic type and experiment label
-current_omic_key <- paste0(params$omic_type, "_", params$experiment_label)
-if (!current_omic_key %in% names(project_dirs)) {
-  stop(glue::glue("Key '{current_omic_key}' (from params$omic_type='{params$omic_type}' & params$experiment_label='{params$experiment_label}') not found in global 'project_dirs'. Ensure setupDirectories() was run correctly."))
+# Use the getProjectPaths helper function which handles key fallback
+# This works with both RMarkdown format (omic_type_label) and Shiny format (omic_type)
+if (!exists("getProjectPaths", mode = "function")) {
+  stop("getProjectPaths function not found. Ensure MultiScholaR package is loaded.")
 }
-# Get the list of paths for the current context
-current_project_paths <- project_dirs[[current_omic_key]]
+
+current_project_paths <- tryCatch({
+  getProjectPaths(
+    omic_type = params$omic_type,
+    experiment_label = params$experiment_label,
+    project_dirs_object_name = "project_dirs",
+    env = .GlobalEnv
+  )
+}, error = function(e) {
+  stop(glue::glue("Failed to get project paths for omic_type='{params$omic_type}', experiment_label='{params$experiment_label}': {e$message}"))
+})
+
+# Verify we got valid paths
+if (is.null(current_project_paths) || !is.list(current_project_paths)) {
+  stop("getProjectPaths returned NULL or invalid data. Check project_dirs setup.")
+}
 
 # Define commonly used paths for this report for convenience
 report_source_dir             <- current_project_paths$source_dir
