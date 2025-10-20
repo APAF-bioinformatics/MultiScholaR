@@ -41,7 +41,7 @@ normalizationAppletUI <- function(id) {
         shiny::selectInput(
           ns("color_variable"),
           "Color by:",
-          choices = c("group", "factor1", "factor2"),
+          choices = c("group", "factor1", "factor2", "batch"),
           selected = "group",
           width = "100%"
         ),
@@ -50,7 +50,7 @@ normalizationAppletUI <- function(id) {
         shiny::selectInput(
           ns("shape_variable"),
           "Shape by:",
-          choices = c("group", "factor1", "factor2"),
+          choices = c("group", "factor1", "factor2", "batch"),
           selected = "group",
           width = "100%"
         ),
@@ -75,11 +75,11 @@ normalizationAppletUI <- function(id) {
         shiny::selectInput(
           ns("ruv_grouping_variable"),
           "RUV Grouping Variable:",
-          choices = c("group", "factor1", "factor2"),
+          choices = c("group", "factor1", "factor2", "batch"),
           selected = "group",
           width = "100%"
         ),
-        shiny::helpText("Experimental factor to preserve during batch correction. RUV-III will remove unwanted variation while preserving differences between groups defined by this variable."),
+        shiny::helpText("Experimental factor to preserve during batch correction. RUV-III will remove unwanted variation while preserving differences between groups defined by this variable. For TMT workflows with batches, select 'batch' to remove batch effects."),
         
         shiny::hr(),
         
@@ -502,8 +502,8 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
       if (!is.null(workflow_data$design_matrix)) {
         design_cols <- colnames(workflow_data$design_matrix)
         
-        # Filter to common experimental variables for plot aesthetics
-        plot_available_vars <- intersect(design_cols, c("group", "factor1", "factor2", "technical_replicate_id", "sample_id"))
+        # Filter to common experimental variables for plot aesthetics (include batch)
+        plot_available_vars <- intersect(design_cols, c("group", "factor1", "factor2", "batch", "technical_replicate_id", "sample_id"))
         
         if (length(plot_available_vars) > 0) {
           # Update color variable choices
@@ -519,14 +519,25 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
           )
         }
         
-        # Filter to experimental grouping variables for RUV (exclude technical IDs)
-        ruv_available_vars <- intersect(design_cols, c("group", "factor1", "factor2"))
+        # Filter to experimental grouping variables for RUV (exclude technical IDs, include batch)
+        ruv_available_vars <- intersect(design_cols, c("group", "factor1", "factor2", "batch"))
         
         if (length(ruv_available_vars) > 0) {
+          # If batch exists and has values, suggest it as default for RUV
+          default_ruv <- if("batch" %in% ruv_available_vars && 
+                            any(!is.na(workflow_data$design_matrix$batch))) {
+            message("*** RUV: Batch column detected with values - suggesting 'batch' as RUV grouping variable ***")
+            "batch"
+          } else if("group" %in% ruv_available_vars) {
+            "group"
+          } else {
+            ruv_available_vars[1]
+          }
+          
           # Update RUV grouping variable choices
           shiny::updateSelectInput(session, "ruv_grouping_variable",
             choices = ruv_available_vars,
-            selected = if("group" %in% ruv_available_vars) "group" else ruv_available_vars[1]
+            selected = default_ruv
           )
           
           message(sprintf("*** RUV: Updated grouping variable choices to: %s ***", paste(ruv_available_vars, collapse = ", ")))
@@ -1841,12 +1852,23 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
              
              # Additional metadata for verification
              export_timestamp = Sys.time(),
-             normalization_method = input$norm_method,
-             ruv_mode = input$ruv_mode,
-             ruv_k = norm_data$best_k,
-             correlation_threshold = norm_data$correlation_threshold,
-             
-             # Data dimensions for verification
+            normalization_method = input$norm_method,
+            ruv_mode = input$ruv_mode,
+            ruv_k = norm_data$best_k,
+            correlation_threshold = norm_data$correlation_threshold,
+            
+            # NEW: Store workflow type for report template selection
+            workflow_type = if (!is.null(workflow_data$config_list) && 
+                                !is.null(workflow_data$config_list$globalParameters) &&
+                                !is.null(workflow_data$config_list$globalParameters$workflow_type)) {
+              workflow_data$config_list$globalParameters$workflow_type
+            } else if (!is.null(current_s4_object@args$globalParameters$workflow_type)) {
+              current_s4_object@args$globalParameters$workflow_type
+            } else {
+              "DIA"  # Default fallback for backward compatibility
+            },
+            
+            # Data dimensions for verification
              final_protein_count = length(unique(current_s4_object@protein_quant_table$Protein.Ids)),
              final_sample_count = length(setdiff(colnames(current_s4_object@protein_quant_table), current_s4_object@protein_id_column))
            )

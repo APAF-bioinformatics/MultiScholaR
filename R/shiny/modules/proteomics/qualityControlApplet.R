@@ -3,6 +3,8 @@ source("ui/proteomics/qc/peptideQCApplet_ui.R")
 source("server/proteomics/qc/peptideQCApplet_server.R")
 source("ui/proteomics/qc/proteinQCApplet_ui.R")
 source("server/proteomics/qc/proteinQCApplet_server.R")
+source("server/proteomics/qc/protein/create_s4_from_protein_data_server.R")
+source("ui/proteomics/qc/create_s4_from_protein_data_ui.R")
 
 #' @title qualityControlAppletModule
 #'
@@ -19,58 +21,12 @@ NULL
 #' @import shinydashboard
 qualityControlAppletUI <- function(id) {
   ns <- NS(id)
-  
   shiny::fluidRow(
     shiny::column(12,
       shiny::wellPanel(
-        shiny::h3("Quality Control"),
-        shiny::p("This section provides tools for assessing and filtering the data based on quality metrics."),
-        
-        shiny::tabsetPanel(
-          id = ns("qc_tabs"),
-          
-          # == Raw Data QC Sub-Tab (Coordinator-owned) ==================
-          shiny::tabPanel(
-            "Raw Data Overview",
-            icon = shiny::icon("images"),
-            shiny::br(),
-            shiny::fluidRow(
-              shiny::column(3,
-                shiny::wellPanel(
-                  shiny::h4("Raw Data Visualization"),
-                  shiny::p("This generates a plot summarizing the number of proteins identified at various stages of the raw data processing."),
-                  shiny::actionButton(ns("run_raw_data_qc"), "Generate Plot", class = "btn-primary", width = "100%"),
-                  shiny::hr(),
-                  shiny::h5("Session Reset"),
-                  shiny::p("Reset the analysis back to the raw data state. This will clear all filtering steps."),
-                  shiny::actionButton(ns("revert_to_raw"), "Revert to Raw Data", 
-                    class = "btn-warning", width = "100%")
-                )
-              ),
-              shiny::column(9,
-                shinyjqui::jqui_resizable(
-                  shiny::plotOutput(ns("raw_data_plot"), height = "800px", width = "100%")
-                )
-              )
-            )
-          ),
-          
-          # == Peptide Filtering Component ===============================
-          shiny::tabPanel(
-            "Peptide Filtering",
-            icon = shiny::icon("filter"),
-            shiny::br(),
-            peptideQCAppletUI(ns("peptide"))
-          ),
-          
-          # == Protein Filtering Component ===============================
-          shiny::tabPanel(
-            "Protein Filtering",
-            icon = shiny::icon("filter"),
-            shiny::br(),
-            proteinQCAppletUI(ns("protein"))
-          )
-        )
+        shiny::h3("Quality Control & Filtering"),
+        # Replace the conditional logic with a single UI Output
+        shiny::uiOutput(ns("dynamic_qc_tabs"))
       )
     )
   )
@@ -81,94 +37,128 @@ qualityControlAppletUI <- function(id) {
 #' @import shiny
 #' @importFrom logger log_info log_error
 #' @importFrom grid grid.draw
-qualityControlAppletServer <- function(id, workflow_data, experiment_paths, omic_type, experiment_label) {
+qualityControlAppletServer <- function(id, workflow_data, experiment_paths, omic_type, experiment_label, qc_trigger = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
+    ns <- session$ns
     
-    # Create global project_dirs object that updateProteinFiltering expects
-    # This maps our experiment_paths to the expected global structure
-    if (!exists("project_dirs", envir = .GlobalEnv)) {
-      project_dirs <- list()
-      project_dirs[[paste0(omic_type, "_", experiment_label)]] <- experiment_paths
-      assign("project_dirs", project_dirs, envir = .GlobalEnv)
-      logger::log_info("Created global project_dirs object for updateProteinFiltering compatibility")
-    }
-    
-    # == Coordinator-owned logic: Raw Data QC ===========================
-    
-    # Reactive value to store raw data QC plot
-    raw_qc_plot <- reactiveVal(NULL)
-    
-    observeEvent(input$run_raw_data_qc, {
-      shiny::req(workflow_data$state_manager)
+    output$dynamic_qc_tabs <- shiny::renderUI({
+      message("=== DEBUG66: qualityControlApplet renderUI fired ===")
       
-      # Show a notification while running
-      shiny::showNotification("Generating raw data QC plot...", id = "raw_qc_plot_working", duration = NULL)
+      # This logic will run once workflow_type is available
+      shiny::req(workflow_data$state_manager$workflow_type)
+      workflow_type <- workflow_data$state_manager$workflow_type
+      message(sprintf("   DEBUG66: workflow_type = %s", workflow_type))
       
-      tryCatch({
-        # 1. Retrieve the initial S4 object from the state manager
-        logger::log_info("QC Step: Retrieving 'raw_data_s4' object from state manager.")
-        s4_object <- workflow_data$state_manager$getState("raw_data_s4")
+      if (workflow_type == "TMT") {
+        # Check if S4 object already exists from design matrix step
+        s4_exists <- tryCatch({
+          s4_obj <- workflow_data$state_manager$getState("protein_s4_initial")
+          exists <- !is.null(s4_obj)
+          message(sprintf("   DEBUG66: TMT - Checking for protein_s4_initial: exists = %s", exists))
+          if (exists) {
+            message(sprintf("   DEBUG66: TMT - S4 object class = %s", class(s4_obj)))
+          }
+          exists
+        }, error = function(e) {
+          message(sprintf("   DEBUG66: TMT - Error checking S4: %s", e$message))
+          FALSE
+        })
         
-        shiny::req(s4_object)
+        message(sprintf("   DEBUG66: TMT - s4_exists final = %s", s4_exists))
         
-        # 2. Run the updateProteinFiltering function
-        # This function generates a plot and saves it, but we also want to capture it.
-        logger::log_info("QC Step: Running updateProteinFiltering for '1_Raw Data'.")
-        
-        plot_grid <- updateProteinFiltering(
-          data = s4_object, # Pass the S4 object directly
-          step_name = "1_Raw Data",
-          omic_type = omic_type,
-          experiment_label = experiment_label,
-          return_grid = TRUE,
-          overwrite = TRUE
+        if (s4_exists) {
+          # S4 already created in design matrix step, skip to protein QC
+          logger::log_info("QC UI: S4 object exists from design matrix. Skipping S4 creation UI.")
+          message("   DEBUG66: TMT - Rendering single Protein QC tab")
+          shiny::tabsetPanel(
+            id = ns("qc_tabs_tmt"),
+            shiny::tabPanel("Protein QC", proteinQCAppletUI(ns("protein_qc"), workflow_type = workflow_type))
+          )
+        } else {
+          # Fallback: show S4 creation UI if somehow not created
+          logger::log_info("QC UI: S4 object not found. Showing S4 creation UI.")
+          message("   DEBUG66: TMT - Rendering S4 creation + Protein QC tabs")
+          shiny::tabsetPanel(
+            id = ns("qc_tabs_tmt"),
+            shiny::tabPanel("Initial Protein Processing", create_s4_from_protein_data_ui(ns("create_s4_tmt"))),
+            shiny::tabPanel("Protein QC", proteinQCAppletUI(ns("protein_qc"), workflow_type = workflow_type))
+          )
+        }
+      } else { # LFQ and DIA
+        message(sprintf("   DEBUG66: %s - Rendering Peptide + Protein QC tabs", workflow_type))
+        # Define and return UI for peptide-based workflows
+        shiny::tabsetPanel(
+          id = ns("qc_tabs_lfq"),
+          shiny::tabPanel("Peptide QC", peptideQCAppletUI(ns("peptide_qc"))),
+          shiny::tabPanel("Protein QC", proteinQCAppletUI(ns("protein_qc"), workflow_type = workflow_type))
         )
-        
-        raw_qc_plot(plot_grid)
-        
-        logger::log_info("QC Step: Raw data QC plot generated successfully.")
-        shiny::removeNotification("raw_qc_plot_working")
-        shiny::showNotification("Plot generated.", type = "message")
-        
-      }, error = function(e) {
-        msg <- paste("Error generating raw data QC plot:", e$message)
-        logger::log_error(msg)
-        shiny::showNotification(msg, type = "error", duration = 15)
-        shiny::removeNotification("raw_qc_plot_working")
-      })
-    })
-    
-    # Render the raw data plot
-    output$raw_data_plot <- shiny::renderPlot({
-      shiny::req(raw_qc_plot())
-      # The return object is a grob, so it needs to be drawn
-      grid::grid.draw(raw_qc_plot())
-    })
-    
-    # Revert to Raw Data functionality
-    observeEvent(input$revert_to_raw, {
-      tryCatch({
-        # Revert to raw data state and clear all subsequent states
-        reverted_s4 <- workflow_data$state_manager$revertToState("raw_data_s4")
-        
-        logger::log_info("Session reset to raw data state - all filtering steps cleared")
-        shiny::showNotification("Session reset to raw data state. All filtering steps have been cleared.", 
-          type = "message", duration = 5)
-        
-      }, error = function(e) {
-        msg <- paste("Error resetting session:", e$message)
-        logger::log_error(msg)
-        shiny::showNotification(msg, type = "error")
-      })
+      }
     })
     
     # == Component Server Calls ==========================================
     
-    # Peptide filtering component server
-    peptideQCAppletServer("peptide", workflow_data, experiment_paths, omic_type, experiment_label)
+    # Call the appropriate sub-applet orchestrators based on workflow type
+    # This now waits for the qc_trigger from the design matrix step.
+    observeEvent(qc_trigger(), {
+      message("=== DEBUG66: qualityControlApplet observeEvent(qc_trigger) FIRED ===")
+      message(sprintf("   DEBUG66: qc_trigger() value = %s", qc_trigger()))
+      
+      req(qc_trigger() == TRUE) # Only run when trigger is explicitly set to TRUE
+      message("   DEBUG66: qc_trigger is TRUE, proceeding with module activation")
+      
+      workflow_type <- shiny::isolate(workflow_data$state_manager$workflow_type)
+      logger::log_info(paste("Main QC Applet: Routing for workflow type:", workflow_type))
+      message(sprintf("   DEBUG66: Isolated workflow_type = %s", workflow_type))
+      
+      if (workflow_type %in% c("LFQ", "DIA")) {
+        message(sprintf("   DEBUG66: %s workflow - calling peptide and protein servers", workflow_type))
+        # The peptide applet orchestrator will handle all peptide-level steps
+        peptideQCAppletServer("peptide_qc", workflow_data, experiment_paths, omic_type, experiment_label)
+        message("   DEBUG66: peptideQCAppletServer called")
+        
+        # The protein applet orchestrator will handle all protein-level steps
+        proteinQCAppletServer("protein_qc", workflow_data, experiment_paths, omic_type, experiment_label)
+        message("   DEBUG66: proteinQCAppletServer called")
+        
+      } else if (workflow_type == "TMT") {
+        message("   DEBUG66: TMT workflow - checking S4 existence")
+        # Check if S4 object already exists from design matrix step
+        s4_exists <- tryCatch({
+          s4_obj <- workflow_data$state_manager$getState("protein_s4_initial")
+          exists <- !is.null(s4_obj)
+          message(sprintf("   DEBUG66: TMT observeEvent - S4 exists = %s", exists))
+          exists
+        }, error = function(e) {
+          message(sprintf("   DEBUG66: TMT observeEvent - Error checking S4: %s", e$message))
+          FALSE
+        })
+        
+        if (s4_exists) {
+          # S4 already created in design matrix step, go straight to protein QC
+          logger::log_info("TMT: S4 object exists from design matrix. Skipping S4 creation, starting protein QC.")
+          message("   DEBUG66: TMT - S4 exists, calling proteinQCAppletServer only")
+          proteinQCAppletServer("protein_qc", workflow_data, experiment_paths, omic_type, experiment_label)
+          message("   DEBUG66: TMT - proteinQCAppletServer called")
+        } else {
+          # S4 doesn't exist (shouldn't happen in normal flow), use the creation module
+          logger::log_warn("TMT: S4 object not found. Using S4 creation module.")
+          message("   DEBUG66: TMT - S4 MISSING, calling create_s4 + protein servers")
+          create_s4_from_protein_data_server("create_s4_tmt", workflow_data, omic_type, experiment_label)
+          message("   DEBUG66: TMT - create_s4_from_protein_data_server called")
+          proteinQCAppletServer("protein_qc", workflow_data, experiment_paths, omic_type, experiment_label)
+          message("   DEBUG66: TMT - proteinQCAppletServer called")
+        }
+      }
+      message("=== DEBUG66: qualityControlApplet observeEvent complete ===")
+    }, ignoreNULL = TRUE, once = TRUE) # Run only once when triggered
     
-    # Protein filtering component server
-    proteinQCAppletServer("protein", workflow_data, experiment_paths, omic_type, experiment_label)
+    # Final step: update tab status when the final state is reached
+    observeEvent(workflow_data$state_manager$states$protein_replicate_filtered, {
+      # This observer is triggered when the final protein state is reached.
+      # It can be used to update the UI or perform final actions.
+      # For now, we'll just log it.
+      logger::log_info("Final protein state reached. Quality Control module is ready.")
+    })
     
   })
 } 

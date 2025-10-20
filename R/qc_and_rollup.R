@@ -131,7 +131,41 @@ srlQvalueProteotypicPeptideCleanHelper <- function(input_table
                                              , global_q_value_column = Global.Q.Value
                                              , proteotypic_peptide_sequence_column = Proteotypic) {
 
-
+  # ✅ DIAGNOSTIC + DEFENSIVE: Check output column availability
+  missing_cols <- input_matrix_column_ids[!input_matrix_column_ids %in% names(input_table)]
+  
+  if (length(missing_cols) > 0) {
+    error_msg <- paste0(
+      "Q-value filter error: Required output columns not found in data.\n",
+      "Missing columns: ", paste(missing_cols, collapse = ", "), "\n",
+      "Required columns: ", paste(input_matrix_column_ids, collapse = ", "), "\n",
+      "Available columns: ", paste(names(input_table), collapse = ", "), "\n\n",
+      "This may be caused by:\n",
+      "1. Whitespace in column names from config.ini parsing\n",
+      "2. Column names with special characters or encoding issues\n",
+      "3. Importing data from a different workflow stage"
+    )
+    logger::log_error(error_msg)
+    stop(error_msg)
+  }
+  
+  # ✅ ALSO CHECK: Filter columns exist
+  q_val_name <- rlang::as_name(rlang::ensym(q_value_column))
+  global_q_val_name <- rlang::as_name(rlang::ensym(global_q_value_column))
+  proteotypic_name <- rlang::as_name(rlang::ensym(proteotypic_peptide_sequence_column))
+  
+  filter_cols <- c(q_val_name, global_q_val_name, proteotypic_name)
+  missing_filter_cols <- filter_cols[!filter_cols %in% names(input_table)]
+  
+  if (length(missing_filter_cols) > 0) {
+    error_msg <- paste0(
+      "Q-value filter error: Required filter columns not found in data.\n",
+      "Missing filter columns: ", paste(missing_filter_cols, collapse = ", "), "\n",
+      "Available columns: ", paste(names(input_table), collapse = ", ")
+    )
+    logger::log_error(error_msg)
+    stop(error_msg)
+  }
 
   search_srl_quant_cln <- input_table |>
     dplyr::filter( {{q_value_column}} < qvalue_threshold &

@@ -100,7 +100,7 @@ plotMofaWeights <- function( model, view, factor_level = Factor1) {
   
   savePlot(
     plot = plotMofaWeightsAll,
-    base_path = project_dirs[[paste0(omic_type, "_", experiment_label)]]$mofa_plots_dir,
+    base_path = getProjectPaths(omic_type, experiment_label)$mofa_plots_dir,
     plot_name = paste0(view, "_plot_top_weights_cln"),
     formats = c("png", "pdf")
   )

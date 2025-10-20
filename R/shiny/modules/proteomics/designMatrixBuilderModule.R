@@ -8,6 +8,7 @@
 #' @param data_tbl A reactive expression that returns the data table
 #'   (e.g., from the setup & import tab).
 #' @param config_list A reactive expression that returns the main configuration list.
+#' @param column_mapping A reactive expression that returns the column mapping list.
 #'
 #' @return A reactive expression that returns a list containing the results
 #'   when the "Save" button is clicked. The list includes:
@@ -254,7 +255,7 @@ designMatrixBuilderUI <- function(id) {
 
 #' Design Matrix Builder Server Module
 #' @rdname designMatrixBuilderModule
-designMatrixBuilderServer <- function(id, data_tbl, config_list) {
+designMatrixBuilderServer <- function(id, data_tbl, config_list, column_mapping) {
     moduleServer(id, function(input, output, session) {
 
         # Reactive value to store the final results
@@ -271,11 +272,24 @@ designMatrixBuilderServer <- function(id, data_tbl, config_list) {
 
             df <- data_tbl()
             conf <- config_list()
-
-            # Initialize data_cln with numeric conversions (Proteomics specific)
-            data_cln <- df |>
-                dplyr::mutate(Precursor.Normalised = as.numeric(Precursor.Normalised)) |>
-                dplyr::mutate(Precursor.Quantity = as.numeric(Precursor.Quantity))
+            
+            # Initialize data_cln with dynamic numeric conversions
+            data_cln <- df
+            col_map <- column_mapping()
+            
+            # Dynamically convert quantity columns to numeric
+            if (!is.null(col_map$norm_quantity_col) && col_map$norm_quantity_col %in% names(data_cln)) {
+              data_cln <- data_cln |>
+                dplyr::mutate(!!sym(col_map$norm_quantity_col) := as.numeric(!!sym(col_map$norm_quantity_col)))
+            }
+            if (!is.null(col_map$raw_quantity_col) && col_map$raw_quantity_col %in% names(data_cln)) {
+              data_cln <- data_cln |>
+                dplyr::mutate(!!sym(col_map$raw_quantity_col) := as.numeric(!!sym(col_map$raw_quantity_col)))
+            }
+            if (!is.null(col_map$quantity_col) && col_map$quantity_col %in% names(data_cln)) {
+                data_cln <- data_cln |>
+                dplyr::mutate(!!sym(col_map$quantity_col) := as.numeric(!!sym(col_map$quantity_col)))
+            }
 
             # Initialize design matrix with factor columns
             design_matrix_raw <- tibble::tibble(
@@ -287,6 +301,7 @@ designMatrixBuilderServer <- function(id, data_tbl, config_list) {
                 group = NA_character_,
                 factor1 = NA_character_,
                 factor2 = NA_character_,
+                batch = NA_character_,
                 replicates = NA_integer_,
                 tech_reps = NA_integer_
             )
@@ -317,6 +332,27 @@ designMatrixBuilderServer <- function(id, data_tbl, config_list) {
         observe({
             state <- initial_state()
             req(state)
+            
+            # --- Auto-assign Batch Factor Logic ---
+            # Check if a "Batch" column exists from the import step (TMT workflows)
+            if ("Batch" %in% names(state$data_cln)) {
+              logger::log_info("Design Matrix: 'Batch' column detected. Auto-assigning to batch column.")
+              
+              # Pre-populate the design matrix with batch assignments
+              batch_assignments <- state$data_cln |>
+                dplyr::distinct(Run, Batch)
+              
+              state$design_matrix <- state$design_matrix |>
+                dplyr::left_join(batch_assignments, by = "Run") |>
+                # Mutate the existing batch column with values from Batch, then remove Batch
+                dplyr::mutate(batch = dplyr::coalesce(batch, Batch)) |>
+                dplyr::select(-Batch)
+              
+              logger::log_info("Design Matrix: Pre-populated 'batch' column with batch assignments.")
+              logger::log_info("Note: Batch is kept separate from experimental factors to enable cross-batch comparisons.")
+            }
+            # --- End Auto-assign Logic ---
+            
             design_matrix(state$design_matrix)
             data_cln_reactive(state$data_cln)
             groups(state$groups)
@@ -605,7 +641,9 @@ designMatrixBuilderServer <- function(id, data_tbl, config_list) {
             current_matrix$factor2[selected_indices] <- input$factor2_select
             current_matrix$replicates[selected_indices] <- replicate_numbers
 
-            # Create group names based on factors
+            # Create group names based on experimental factors (factor1 and factor2)
+            # Note: Batch is kept in separate 'batch' column and NOT included in group names
+            # This enables cross-batch comparisons (e.g., Treatment vs Control across batches)
             group_name <- if (input$factor2_select == "") {
                 input$factor1_select
             } else {
@@ -747,6 +785,7 @@ designMatrixBuilderServer <- function(id, data_tbl, config_list) {
                 current_matrix$factor2 <- NA_character_
                 current_matrix$group <- NA_character_
                 current_matrix$tech_reps <- NA_integer_
+                # Note: batch column is preserved during reset as it comes from data import
                 design_matrix(current_matrix)
                 groups(state$groups)
             }

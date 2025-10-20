@@ -112,17 +112,28 @@ sessionSummaryServer <- function(id, project_dirs, omic_type = "proteomics", exp
         return("⚠️ Project directories not available")
       }
       
-      report_path <- file.path(
+      # NEW: Check for both template types and show which is available
+      template_dir <- file.path(
         project_dirs[[omic_type]]$base_dir, 
         "scripts", 
-        omic_type, 
-        "DIANN_report.rmd"
+        omic_type
       )
       
-      if (file.exists(report_path)) {
-        "✅ Report template available"
+      diann_template <- file.path(template_dir, "DIANN_report.rmd")
+      tmt_template <- file.path(template_dir, "TMT_report.rmd")
+      
+      templates_status <- c()
+      if (file.exists(diann_template)) {
+        templates_status <- c(templates_status, "DIA-NN ✅")
+      }
+      if (file.exists(tmt_template)) {
+        templates_status <- c(templates_status, "TMT ✅")
+      }
+      
+      if (length(templates_status) > 0) {
+        paste("Templates:", paste(templates_status, collapse = ", "))
       } else {
-        "⚠️ Report template needs to be downloaded"
+        "⚠️ Report templates will be downloaded when generating report"
       }
     })
     
@@ -310,6 +321,10 @@ sessionSummaryServer <- function(id, project_dirs, omic_type = "proteomics", exp
             assign("project_dirs", project_dirs, envir = .GlobalEnv)
           }
           
+          # Debug: Log project_dirs structure
+          cat("   SESSION SUMMARY: project_dirs keys:", paste(names(project_dirs), collapse = ", "), "\n")
+          cat("   SESSION SUMMARY: Using omic_type =", omic_type, "experiment_label =", input$experiment_label, "\n")
+          
           # Call copyToResultsSummary with explicit parameters
           copyToResultsSummary(
             omic_type = omic_type,
@@ -359,32 +374,85 @@ sessionSummaryServer <- function(id, project_dirs, omic_type = "proteomics", exp
       
       withProgress(message = "Generating report...", {
         
-        # STEP 1: Ensure template exists (download if needed from correct branch)
+        # STEP 1: Detect workflow type and download appropriate template
+        incProgress(0.1, detail = "Detecting workflow type...")
+        
+        # Try to detect workflow type from multiple sources (in order of preference)
+        workflow_type_detected <- NULL
+        
+        # 1. Check workflow_data first (most reliable)
+        if (!is.null(workflow_data) && !is.null(workflow_data$config_list)) {
+          workflow_type_detected <- workflow_data$config_list$globalParameters$workflow_type
+          cat(sprintf("   REPORT: Detected workflow_type from workflow_data: %s\n", workflow_type_detected))
+        }
+        
+        # 2. Fallback: Check S4 object from state manager
+        if (is.null(workflow_type_detected) && !is.null(workflow_data$state_manager)) {
+          current_s4 <- workflow_data$state_manager$getState(workflow_data$state_manager$current_state)
+          if (!is.null(current_s4) && !is.null(current_s4@args$globalParameters$workflow_type)) {
+            workflow_type_detected <- current_s4@args$globalParameters$workflow_type
+            cat(sprintf("   REPORT: Detected workflow_type from S4 object: %s\n", workflow_type_detected))
+          }
+        }
+        
+        # 3. Fallback: Check global environment
+        if (is.null(workflow_type_detected) && exists("config_list", envir = .GlobalEnv)) {
+          config_list <- get("config_list", envir = .GlobalEnv)
+          if (!is.null(config_list$globalParameters$workflow_type)) {
+            workflow_type_detected <- config_list$globalParameters$workflow_type
+            cat(sprintf("   REPORT: Detected workflow_type from global config_list: %s\n", workflow_type_detected))
+          }
+        }
+        
+        # 4. Final fallback: Default to DIA for backward compatibility
+        if (is.null(workflow_type_detected) || !nzchar(workflow_type_detected)) {
+          workflow_type_detected <- "DIA"
+          cat("   REPORT: Using default workflow_type: DIA (no workflow type found)\n")
+        }
+        
+        # Determine template filename based on workflow type
+        template_filename <- if (tolower(workflow_type_detected) == "tmt" || tolower(workflow_type_detected) == "tmt_pd") {
+          "TMT_report.rmd"
+        } else {
+          "DIANN_report.rmd"  # Default for DIA and unknown types
+        }
+        
+        cat(sprintf("   REPORT: Selected template: %s for workflow_type: %s\n", template_filename, workflow_type_detected))
+        
+        # Construct template path
         report_template_path <- file.path(
           project_dirs[[omic_type]]$base_dir, 
           "scripts", 
           omic_type, 
-          "DIANN_report.rmd"
+          template_filename
         )
         
+        # Download template if it doesn't exist
         if (!file.exists(report_template_path)) {
-          incProgress(0.2, detail = "Downloading report template...")
+          incProgress(0.2, detail = paste("Downloading", template_filename, "template..."))
           
           # Create directories if needed
           dir.create(dirname(report_template_path), recursive = TRUE, showWarnings = FALSE)
           
           tryCatch({
-            # Correct URL pointing to the development branch with the fixes
-            template_url <- "https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/GUI/Workbooks/proteomics/report/DIANN_report.rmd"
+            # Construct URL based on template filename
+            template_url <- paste0(
+              "https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/GUI/Workbooks/proteomics/report/",
+              template_filename
+            )
+            
+            cat(sprintf("   REPORT: Downloading template from: %s\n", template_url))
             download.file(template_url, destfile = report_template_path, quiet = TRUE)
-            logger::log_info(paste("Template downloaded to:", report_template_path))
-            showNotification("Report template downloaded", type = "message")
+            logger::log_info("Template downloaded to: {report_template_path}")
+            showNotification(paste(template_filename, "template downloaded"), type = "message")
           }, error = function(e) {
             showNotification(paste("Template download failed:", e$message), 
                             type = "error", duration = 10)
             logger::log_error(logger::skip_formatter(paste("Failed to download template:", e$message)))
             return()
           })
+        } else {
+          cat(sprintf("   REPORT: Template already exists at: %s\n", report_template_path))
         }
         
         # STEP 2: Generate report
@@ -398,15 +466,15 @@ sessionSummaryServer <- function(id, project_dirs, omic_type = "proteomics", exp
             return()
           }
           
-          logger::log_info(paste("Calling RenderReport with omic_type:", omic_type, "experiment_label:", input$experiment_label))
+          logger::log_info("Calling RenderReport with omic_type: {omic_type}, experiment_label: {input$experiment_label}")
           
           rendered_path <- RenderReport(
             omic_type = omic_type,
             experiment_label = input$experiment_label,
-            rmd_filename = "DIANN_report.rmd"
+            rmd_filename = template_filename  # Use detected template filename instead of hardcoded "DIANN_report.rmd"
           )
           
-          logger::log_info(paste("RenderReport returned path:", rendered_path))
+          logger::log_info("RenderReport returned path: {rendered_path}")
           
           if (!is.null(rendered_path) && file.exists(rendered_path)) {
             values$report_generated <- TRUE
@@ -440,16 +508,22 @@ sessionSummaryServer <- function(id, project_dirs, omic_type = "proteomics", exp
           
         }, error = function(e) {
           error_msg <- paste("Report generation failed:", e$message)
-          # Use skip_formatter to avoid glue interpolation issues with error messages
-          logger::log_error(logger::skip_formatter(paste("Failed to generate report:", e$message)))
-          logger::log_error(logger::skip_formatter("Error traceback:"))
-          logger::log_error(logger::skip_formatter(paste(capture.output(traceback()), collapse = "\n")))
+          
+          # Enhanced debug output
+          cat("   DEBUG66: REPORT GENERATION ERROR\n")
+          cat(sprintf("      Error class: %s\n", class(e)[1]))
+          cat(sprintf("      Error message: %s\n", e$message))
+          cat("      Full error object:\n")
+          print(e)
+          
+          logger::log_error("Failed to generate report: {e$message}")
+          logger::log_error("Error class: {class(e)[1]}")
           
           showNotification(error_msg, type = "error", duration = 15)
           
-          # Additional troubleshooting info
+          # Show detailed error in console for user
           showNotification(
-            "Troubleshooting: Check that all workflow steps are complete and data files exist.", 
+            paste("Debug info: Check R console for detailed error trace"), 
             type = "warning", duration = 10
           )
         })

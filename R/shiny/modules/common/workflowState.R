@@ -23,6 +23,9 @@ WorkflowState <- R6::R6Class("WorkflowState",
     #' @field state_history A character vector that logs the sequence of saved states.
     state_history = list(),
 
+    #' @field workflow_type A character string indicating the type of workflow (e.g., "LFQ", "TMT").
+    workflow_type = "LFQ",
+
     #' @description
     #' Initialize the WorkflowState object.
     #' Sets up the initial state.
@@ -92,6 +95,18 @@ WorkflowState <- R6::R6Class("WorkflowState",
     #' @return A character vector of state names.
     getHistory = function() {
       return(unlist(self$state_history))
+    },
+    
+    #' @description
+    #' Set the workflow type for the session.
+    #' @param type A character string for the workflow type (e.g., "LFQ", "TMT").
+    setWorkflowType = function(type) {
+      allowed_types <- c("LFQ", "TMT", "DIA")
+      if (type %in% allowed_types) {
+        self$workflow_type <- type
+      } else {
+        stop(paste("Invalid workflow type. Must be one of:", paste(allowed_types, collapse = ", ")))
+      }
     }
   )
 ) 
