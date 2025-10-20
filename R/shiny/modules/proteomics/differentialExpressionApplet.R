@@ -882,7 +882,7 @@ differentialExpressionAppletServer <- function(id, workflow_data, experiment_pat
               assign("uniprot_dat_cln", uniprot_dat_cln, envir = .GlobalEnv)
               
               cat(sprintf("*** LOAD: Successfully loaded %d UniProt annotations ***\n", nrow(uniprot_dat_cln)))
-              log_info(sprintf("Loaded UniProt annotations from %s", scripts_uniprot_path))
+              log_info(paste("Loaded UniProt annotations from", scripts_uniprot_path))
               
               # Show notification to user
               shiny::showNotification(
@@ -941,9 +941,13 @@ differentialExpressionAppletServer <- function(id, workflow_data, experiment_pat
         cat("=== LOAD FILTERED SESSION COMPLETED SUCCESSFULLY ===\n")
         
       }, error = function(e) {
-        cat(paste("*** ERROR in session load:", e$message, "\n"))
+        # CRITICAL FIX: Use paste() for logger calls in error handlers to avoid interpolation bug
+        error_msg <- paste("Error loading session:", e$message)
+        cat(paste("***", error_msg, "\n"))
+        log_error(error_msg) 
+        
         shiny::showNotification(
-          paste("Error loading session:", e$message),
+          error_msg,
           type = "error",
           duration = 10
         )
@@ -1133,12 +1137,21 @@ differentialExpressionAppletServer <- function(id, workflow_data, experiment_pat
                 current_data_state <- purrr::detect(current_data_states, ~ .x %in% available_states)
                 
                 if (!is.null(current_data_state)) {
-                  # Update the state with the UI parameters
-                  workflow_data$state_manager$updateState(current_data_state, de_data$current_s4_object)
+                  # CRITICAL FIX: Use the correct 'saveState' method instead of non-existent 'updateState'
+                  # Retrieve existing config and description to preserve them
+                  existing_state_info <- workflow_data$state_manager$states[[current_data_state]]
+                  
+                  workflow_data$state_manager$saveState(
+                    state_name = current_data_state,
+                    s4_data_object = de_data$current_s4_object,
+                    config_object = existing_state_info$config,
+                    description = existing_state_info$description
+                  )
                   cat(sprintf("   DE ANALYSIS Step: Updated state '%s' with DE UI parameters\n", current_data_state))
                 }
               }, error = function(e) {
-                cat(sprintf("   DE ANALYSIS Step: Warning - could not update state with UI parameters: %s\n", e$message))
+                # CRITICAL FIX: Use paste() for logger calls in error handlers
+                cat(paste("   DE ANALYSIS Step: Warning - could not update state with UI parameters:", e$message, "\n"))
               })
               
               # Also add for the helper function

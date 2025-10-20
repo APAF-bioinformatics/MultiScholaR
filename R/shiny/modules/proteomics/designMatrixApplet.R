@@ -270,6 +270,48 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
           workflow_data$aa_seq_tbl_final <- NULL
         }
         
+        # ✅ NEW: Load uniprot_dat_cln if it exists (CRITICAL for DE analysis gene names!)
+        uniprot_file_import <- file.path(import_path, "uniprot_dat_cln.RDS")
+        uniprot_file_scripts <- file.path(experiment_paths$source_dir, "uniprot_dat_cln.RDS")
+        
+        if (file.exists(uniprot_file_import)) {
+          logger::log_info("Loading uniprot_dat_cln from import directory.")
+          uniprot_dat_cln <- readRDS(uniprot_file_import)
+          workflow_data$uniprot_dat_cln <- uniprot_dat_cln
+          assign("uniprot_dat_cln", uniprot_dat_cln, envir = .GlobalEnv)
+          
+          # Copy to scripts directory for future use
+          saveRDS(uniprot_dat_cln, uniprot_file_scripts)
+          logger::log_info(sprintf("Copied uniprot_dat_cln to scripts directory (%d annotations).", nrow(uniprot_dat_cln)))
+          
+          shiny::showNotification(
+            sprintf("UniProt annotations loaded: %d protein annotations available", nrow(uniprot_dat_cln)),
+            type = "message",
+            duration = 5
+          )
+          
+        } else if (file.exists(uniprot_file_scripts)) {
+          logger::log_info("Loading existing uniprot_dat_cln from scripts directory.")
+          uniprot_dat_cln <- readRDS(uniprot_file_scripts)
+          workflow_data$uniprot_dat_cln <- uniprot_dat_cln
+          assign("uniprot_dat_cln", uniprot_dat_cln, envir = .GlobalEnv)
+          
+          shiny::showNotification(
+            sprintf("UniProt annotations loaded: %d protein annotations available", nrow(uniprot_dat_cln)),
+            type = "message",
+            duration = 5
+          )
+        } else {
+          logger::log_warn("No uniprot_dat_cln found. DE analysis will use accession IDs as gene names.")
+          workflow_data$uniprot_dat_cln <- NULL
+          
+          shiny::showNotification(
+            "Warning: No UniProt annotations found. Gene names in DE results will be limited.",
+            type = "warning",
+            duration = 8
+          )
+        }
+        
         # --- Update workflow_data with imported data ---
         workflow_data$design_matrix <- imported_design
         workflow_data$data_cln <- imported_data_cln

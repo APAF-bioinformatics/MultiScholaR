@@ -733,7 +733,12 @@ countStatDeGenesHelper <- function(de_table
                                    , comparison_column = "comparison"
                                    , expression_column = "expression") {
 
-  # print(head(de_table))
+  message("--- Entering countStatDeGenesHelper (DEBUG66) ---")
+  message(paste("   countStatDeGenesHelper: de_table class =", class(de_table)))
+  message(paste("   countStatDeGenesHelper: de_table is list =", is.list(de_table)))
+  message(paste("   countStatDeGenesHelper: de_table length =", length(de_table)))
+  message("   countStatDeGenesHelper: de_table names:")
+  print(names(de_table))
 
   de_table_updated <- purrr::map(de_table, \(x){  countStatDeGenes(x,
                                                                    lfc_thresh = 0,
@@ -741,21 +746,51 @@ countStatDeGenesHelper <- function(de_table
                                                                    log_fc_column = logFC,
                                                                    q_value_column = fdr_qvalue)})
 
+  message("   countStatDeGenesHelper: de_table_updated created")
+  message(paste("   countStatDeGenesHelper: de_table_updated length =", length(de_table_updated)))
+  message("   countStatDeGenesHelper: de_table_updated names:")
+  print(names(de_table_updated))
+
   list_of_tables <- purrr::map2(de_table_updated
                                 ,names(de_table_updated)
-                                ,\(.x, .y){ .x |>
-                                    mutate(!!sym(comparison_column) := .y) })
+                                ,\(.x, .y){ 
+                                  message(paste("      [map2] Processing element with name:", .y))
+                                  .x |> mutate(!!sym(comparison_column) := .y) 
+                                })
 
-  # print(head(temp[[1]]))
+  message("   countStatDeGenesHelper: list_of_tables created")
+  message("   countStatDeGenesHelper: About to bind_rows...")
+  
+  bound_tables <- list_of_tables |> bind_rows()
+  message(paste("   countStatDeGenesHelper: bound_tables dims =", nrow(bound_tables), "x", ncol(bound_tables)))
+  
+  faceted_tables <- bound_tables |> mutate({ { facet_column } } := description)
+  message("   countStatDeGenesHelper: facet column added")
+  message("   countStatDeGenesHelper: Checking comparison column values:")
+  print(unique(faceted_tables[[comparison_column]]))
+  
+  message(paste("   countStatDeGenesHelper: About to separate_wider_delim on column:", comparison_column))
+  message(paste("   countStatDeGenesHelper: Looking for delimiter: ="))
+  
+  # Check if any values contain "="
+  has_delimiter <- any(grepl("=", faceted_tables[[comparison_column]]))
+  message(paste("   countStatDeGenesHelper: Any values contain '=' ?", has_delimiter))
+  
+  if (!has_delimiter) {
+    message("   countStatDeGenesHelper: WARNING - No '=' found in comparison column values!")
+    message("   countStatDeGenesHelper: This will cause separate_wider_delim to fail!")
+    message("   countStatDeGenesHelper: Comparison column values are:")
+    print(faceted_tables[[comparison_column]])
+    stop("countStatDeGenesHelper: comparison column values do not contain '=' delimiter. Check list element naming in calling function.")
+  }
 
-  merged_tables <- list_of_tables |>
-    bind_rows() |>
-    mutate({ { facet_column } } := description) |>
+  merged_tables <- faceted_tables |>
     separate_wider_delim( !!sym(comparison_column ),
                           delim = "=",
                           names = c(comparison_column,
                                     expression_column))
 
+  message("--- Exiting countStatDeGenesHelper (DEBUG66) ---")
   merged_tables
 }
 
@@ -848,29 +883,94 @@ getSignificantData <- function( list_of_de_tables
                                , facet_column = analysis_type
                                , q_val_thresh = 0.05) {
 
-  get_row_binded_table <- function(de_table_list, description) {
-    output <- purrr::map(de_table_list,
-                         function(tbl) { tbl |>
-                           rownames_to_column(as_string(as_name(enquo(row_id)))) |>
-                           dplyr::select({ { row_id } },
-                                         { { p_value_column } },
-                                         { { q_value_column } },
-                                         { { fdr_value_column } },
-                                         { { log_fc_column } }) }) |>
-      purrr::map2(names(de_table_list), \(.x, .y){ .x |>
-        mutate({ { comparison_column } } := .y) }) |>
-      bind_rows() |>
-      mutate({ { facet_column } } := description) |>
-      separate_wider_delim({ { comparison_column } },
-               delim = "=",
-               names = c( comparison_column,
-                          expression_column) )
+  message("--- Entering getSignificantData (DEBUG66) ---")
+  message(paste("   getSignificantData: list_of_de_tables class =", class(list_of_de_tables)))
+  message(paste("   getSignificantData: list_of_de_tables length =", length(list_of_de_tables)))
+  message("   getSignificantData: list_of_de_tables structure:")
+  str(list_of_de_tables, max.level = 2)
 
+  get_row_binded_table <- function(de_table_list, description) {
+
+    message("   --- Entering get_row_binded_table (DEBUG66) ---")
+    message(paste("      get_row_binded_table: de_table_list class =", class(de_table_list)))
+    message(paste("      get_row_binded_table: de_table_list length =", length(de_table_list)))
+    message("      get_row_binded_table: de_table_list names:")
+    print(names(de_table_list))
+
+    # This internal helper is now more robust. It checks if the table
+    # already has the row_id as a column. If not, it converts rownames.
+    # This handles both old and new data structures.
+    
+    processed_list <- purrr::map(de_table_list, function(tbl) {
+      row_id_col <- as_string(as_name(enquo(row_id)))
+      message(paste("         [map] Processing table, row_id_col =", row_id_col))
+      message(paste("         [map] Table class =", class(tbl)))
+      message(paste("         [map] Table is data.frame =", is.data.frame(tbl)))
+      
+      if (!row_id_col %in% colnames(tbl)) {
+        # If row_id is not a column, convert rownames
+        message(paste("         [map] row_id not in columns, converting rownames"))
+        tbl <- tbl |> rownames_to_column(var = row_id_col)
+      } else {
+        message(paste("         [map] row_id already in columns"))
+      }
+      
+      return(tbl)
+    })
+    
+    message("      get_row_binded_table: processed_list created")
+    message(paste("      get_row_binded_table: processed_list length =", length(processed_list)))
+
+    output <- processed_list |>
+      purrr::map2(names(processed_list), \(.x, .y){
+        message(paste("         [map2] Processing element with name:", .y))
+        message(paste("         [map2] comparison_column already exists:", comparison_column %in% colnames(.x)))
+        # If the 'comparison' column doesn't already exist, create it from the list name
+        if (!comparison_column %in% colnames(.x)) {
+          message(paste("         [map2] Adding comparison column with value:", .y))
+          .x <- .x |> mutate({ { comparison_column } } := .y)
+        }
+        .x
+        }) |>
+      bind_rows() |>
+      mutate({ { facet_column } } := description)
+
+    message("      get_row_binded_table: output table created")
+    message(paste("      get_row_binded_table: output dims =", nrow(output), "x", ncol(output)))
+    message("      get_row_binded_table: Checking comparison column values:")
+    print(unique(output[[comparison_column]]))
+
+    # This separator logic assumes a specific format like 'ContrastName=ExpressionType'
+    # in the comparison column. We need to make this conditional as well.
+    # Check if any values in the comparison column contain '=' before trying to separate.
+    has_delimiter <- any(grepl("=", output[[comparison_column]]))
+    message(paste("      get_row_binded_table: Any values contain '=' ?", has_delimiter))
+    
+    if (has_delimiter) {
+        message("      get_row_binded_table: Separating on '=' delimiter")
+        output <- output |>
+          separate_wider_delim(
+            { { comparison_column } },
+            delim = "=",
+            names = c(comparison_column, expression_column)
+          )
+        message("      get_row_binded_table: Separation complete")
+    } else {
+        message("      get_row_binded_table: No '=' delimiter found, skipping separation")
+    }
+
+    message("   --- Exiting get_row_binded_table (DEBUG66) ---")
+    return(output)
   }
 
+  message("   getSignificantData: About to call get_row_binded_table for each list element...")
+  
   logfc_tbl_all <- purrr::map2(list_of_de_tables, list_of_descriptions,
                                function(a, b) { get_row_binded_table(de_table_list = a, description = b) }) |>
     bind_rows()
+
+  message("   getSignificantData: All tables bound")
+  message(paste("   getSignificantData: logfc_tbl_all dims =", nrow(logfc_tbl_all), "x", ncol(logfc_tbl_all)))
 
   selected_data <- logfc_tbl_all |>
     mutate({ { log_q_value_column } } := -log10(fdr_qvalue)) |>
@@ -883,6 +983,7 @@ getSignificantData <- function( list_of_de_tables
                                      TRUE ~ "black")) |>
     dplyr::mutate(colour = factor(colour, levels = c("black", "orange", "blue", "purple")))
 
+  message("--- Exiting getSignificantData (DEBUG66) ---")
   selected_data
 
 }
