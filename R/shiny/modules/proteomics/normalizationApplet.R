@@ -526,8 +526,8 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
           # If batch exists and has values, suggest it as default for RUV
           default_ruv <- if("batch" %in% ruv_available_vars && 
                             any(!is.na(workflow_data$design_matrix$batch))) {
-            message("*** RUV: Batch column detected with values - suggesting 'batch' as RUV grouping variable ***")
-            "batch"
+            message("*** RUV: Batch column detected with values - suggesting 'batch' as RUV variable to set to shapes ***")
+            "group"
           } else if("group" %in% ruv_available_vars) {
             "group"
           } else {
