@@ -213,10 +213,10 @@ submitStringDBEnrichment <- function(input_data_frame,
         job_id = NULL,
         api_key = api_key,
         submission_response = list(
-            status = "error",
-            message = paste("STRING API request failed with HTTP status:", httr::status_code(response)),
-            details = response_content_text
-            )
+          status = "error",
+          message = paste("STRING API request failed with HTTP status:", httr::status_code(response)),
+          details = response_content_text
+        )
       )
     )
   }
@@ -229,7 +229,7 @@ submitStringDBEnrichment <- function(input_data_frame,
     if (is.list(temp_parsed) && length(temp_parsed) >= 1 && is.list(temp_parsed[[1]])) {
       temp_parsed[[1]]
     } else if (is.list(temp_parsed) && !is.null(names(temp_parsed))) {
-        temp_parsed
+      temp_parsed
     } else {
       stop("Unexpected JSON structure from API.") # Simpler stop message
     }
@@ -246,10 +246,10 @@ submitStringDBEnrichment <- function(input_data_frame,
         job_id = NULL,
         api_key = api_key,
         submission_response = list(
-            status = "error",
-            message = paste("Failed to parse JSON response:", e$message),
-            details = response_content_text
-            )
+          status = "error",
+          message = paste("Failed to parse JSON response:", e$message),
+          details = response_content_text
+        )
       )
     )
   })
@@ -647,70 +647,70 @@ retrieveStringDBEnrichmentResults <- function(submission_info,
   } else {
     message(paste("Could not retrieve a full results package. Final job status/outcome:", job_final_status))
     if (!is.null(last_successful_status_data)) { # Changed from `exists("status_data")`
-        message("Further details from last status check:")
-        print(last_successful_status_data)
+      message("Further details from last status check:")
+      print(last_successful_status_data)
     }
     return(NULL) # Return NULL if polling failed or critical URLs were missing for "success"
   }
 }
 
 
-#' Run STRING DB Rank Enrichment Analysis for MOFA Factors or Similar Data
+
+#' Run STRING DB Rank Enrichment Analysis
 #'
 #' @description
-#' This function automates the process of submitting data to the STRING database
-#' for values/ranks enrichment analysis, polling for results, and saving the
-#' output. It is a wrapper around `submitStringDBEnrichment` and
-#' `retrieveStringDBEnrichmentResults`, tailored for analyses where inputs
-#' might come from MOFA factor weights or similar ranked lists.
+#' Performs STRING DB enrichment analysis on ranked data. This function processes
+#' differential expression results by calculating a score from log fold change and
+#' FDR values, extracts protein identifiers, and submits them to STRING DB for
+#' functional enrichment analysis. Results are automatically saved to files.
 #'
-#' Results, including the enrichment table, a URL list, and a graph image,
-#' are saved to the specified `results_dir`.
+#' @param input_table A data frame containing differential expression results with
+#'   columns: `log2FC` (log fold change), `fdr_qvalue` (adjusted p-value), and
+#'   `Protein.Ids` (protein identifiers, potentially with isoform information).
+#' @param result_label Character string: A label for the analysis results, used
+#'   in output file names.
+#' @param api_key Character string: Your personal STRING API key.
+#' @param species Numeric: NCBI/STRING species identifier. Default is 9606 (Homo sapiens).
+#' @param ge_fdr Numeric: FDR threshold for gene expression enrichment. Default is 0.05.
+#' @param ge_enrichment_rank_direction Integer: Direction for enrichment rank.
+#'   (-1, 0, or 1). Default is -1.
+#' @param polling_interval_seconds Numeric: Seconds to wait between polling attempts.
+#'   Default is 10.
+#' @param max_polling_attempts Numeric: Maximum number of polling attempts. Default is 30.
 #'
-#' @param input_table A data frame containing the data to be submitted for enrichment.
-#'   Must include columns specified by `identifier_column_name` and `value_column_name`.
-#' @param identifier_column_name Character string. The name of the column in
-#'   `input_table` containing the identifiers (e.g., protein IDs, gene symbols).
-#'   Default: `"protein_id"`.
-#' @param value_column_name Character string. The name of the column in `input_table`
-#'   containing the numerical values (e.g., scores, weights, logFC) associated
-#'   with each identifier. This column must be numeric. Default: `"score"`.
-#' @param result_label Character string. A label used for naming output files
-#'   (e.g., "MOFA_Factor1_Proteomics").
-#' @param results_dir Character string. The path to the directory where enrichment
-#'   results (table, URL file, graph image) will be saved. The directory will be
-#'   created if it doesn't exist.
-#' @param api_key Character string or NULL. Your personal STRING API key.
-#'   If NULL, the API might work with limitations or require it for full access.
-#'   Default: `NULL`.
-#' @param species Character string. NCBI/STRING species identifier.
-#'   Default: `"9606"` (Homo sapiens).
-#' @param ge_fdr Numeric. FDR threshold for gene expression enrichment.
-#'   Default: `0.05`.
-#' @param ge_enrichment_rank_direction Integer. Direction for enrichment rank
-#'   (-1, 0, or 1). Default: `-1`.
-#' @param polling_interval_seconds Numeric. Seconds to wait between polling attempts
-#'   for job status. Default: `10`.
-#' @param max_polling_attempts Numeric. Maximum polling attempts before timing out.
-#'   Default: `30`.
+#' @return A data frame containing the STRING DB enrichment results.
 #'
-#' @return A data frame containing the enrichment results from STRING DB
-#'   (specifically `output_tbl$enrichment_data` from the retrieval step).
-#'   Returns `NULL` or an empty structure if the process fails.
+#' @details
+#' This function creates a results directory structure and saves:
+#' - URLs for STRING DB results page, download, and graph
+#' - Tab-delimited enrichment results file
+#' - PNG image of the enrichment network graph
 #'
-#' @seealso \code{\link{submitStringDBEnrichment}}, \code{\link{retrieveStringDBEnrichmentResults}}
-#'
-#' @importFrom vroom vroom_write
+#' @importFrom dplyr mutate relocate arrange desc
+#' @importFrom stringr str_split
+#' @importFrom purrr map_chr
 #' @importFrom readr write_lines
+#' @importFrom vroom vroom_write
+#'
+#' @examples
+#' \dontrun{
+#' # Assume 'de_results' is a data frame with log2FC, fdr_qvalue, and Protein.Ids columns
+#' enrichment_results <- runOneStringDbRankEnrichment(
+#'   input_table = de_results,
+#'   result_label = "treatment_vs_control",
+#'   api_key = "YOUR_API_KEY"
+#' )
+#' }
+#'
 #' @export
 runOneStringDbRankEnrichment <- function( input_table
-                                         ,  result_label
-                                         , api_key = NULL
-                                         , species = "9606"
-                                         , ge_fdr = 0.05
-                                         , ge_enrichment_rank_direction = -1
-                                         , polling_interval_seconds = 10
-                                         , max_polling_attempts = 30) {
+                                          ,  result_label
+                                          , api_key = NULL
+                                          , species = "9606"
+                                          , ge_fdr = 0.05
+                                          , ge_enrichment_rank_direction = -1
+                                          , polling_interval_seconds = 10
+                                          , max_polling_attempts = 30) {
 
   stringdb_input_table <-  input_table |>
     mutate( score = sign(log2FC) * -log10(fdr_qvalue)) |>
@@ -734,6 +734,8 @@ runOneStringDbRankEnrichment <- function( input_table
                                                    polling_interval_seconds = polling_interval_seconds,
                                                    max_polling_attempts = max_polling_attempts)
 
+  dir.create( file.path( results_dir, "functional_enrichment_string_db" ), showWarnings = TRUE, recursive = TRUE)
+  
   write_lines(c("page_url", output_tbl$page_url
                 , "download_url" , output_tbl$download_url
                 , "graph_url" , output_tbl$graph_url)
@@ -744,7 +746,6 @@ runOneStringDbRankEnrichment <- function( input_table
                                           , "functional_enrichment_string_db"
                                           , paste0( result_label, "_string_enrichment_results.tab") ))
 
-  dir.create( file.path( results_dir, "functional_enrichment_string_db" ), showWarnings = TRUE, recursive = TRUE)
   writeBin(output_tbl$graph_image_content
            , file.path( results_dir , "functional_enrichment_string_db", paste0( result_label, "string_enrichment_graph.png") ))
 
@@ -755,68 +756,76 @@ runOneStringDbRankEnrichment <- function( input_table
 
 
 
-#' Run STRING DB Rank Enrichment Analysis for MOFA Factors or Similar Data
+
+#' Run STRING DB Rank Enrichment Analysis for MOFA
 #'
 #' @description
-#' This function automates the process of submitting data to the STRING database
-#' for values/ranks enrichment analysis, polling for results, and saving the
-#' output. It is a wrapper around `submitStringDBEnrichment` and
-#' `retrieveStringDBEnrichmentResults`, tailored for analyses where inputs
-#' might come from MOFA factor weights or similar ranked lists.
+#' Performs STRING DB enrichment analysis for MOFA (Multi-Omics Factor Analysis)
+#' results. This function takes pre-processed data with identifier and value columns
+#' and submits them to STRING DB for functional enrichment analysis. Results are
+#' automatically saved to the specified results directory.
 #'
-#' Results, including the enrichment table, a URL list, and a graph image,
-#' are saved to the specified `results_dir`.
+#' @param input_table A data frame containing the data to analyze with identifier
+#'   and value columns as specified by the column name parameters.
+#' @param identifier_column_name Character string: The name of the column in
+#'   `input_table` that contains the protein/gene identifiers. Default is "protein_id".
+#' @param value_column_name Character string: The name of the column in `input_table`
+#'   that contains the numerical values (e.g., scores, weights) associated with
+#'   each identifier. Default is "score".
+#' @param result_label Character string: A label for the analysis results, used
+#'   in output file names.
+#' @param results_dir Character string: The directory path where results should be saved.
+#' @param api_key Character string: Your personal STRING API key.
+#' @param species Numeric: NCBI/STRING species identifier. Default is 9606 (Homo sapiens).
+#' @param ge_fdr Numeric: FDR threshold for gene expression enrichment. Default is 0.05.
+#' @param ge_enrichment_rank_direction Integer: Direction for enrichment rank.
+#'   (-1, 0, or 1). Default is -1.
+#' @param polling_interval_seconds Numeric: Seconds to wait between polling attempts.
+#'   Default is 10.
+#' @param max_polling_attempts Numeric: Maximum number of polling attempts. Default is 30.
 #'
-#' @param input_table A data frame containing the data to be submitted for enrichment.
-#'   Must include columns specified by `identifier_column_name` and `value_column_name`.
-#' @param identifier_column_name Character string. The name of the column in
-#'   `input_table` containing the identifiers (e.g., protein IDs, gene symbols).
-#'   Default: `"protein_id"`.
-#' @param value_column_name Character string. The name of the column in `input_table`
-#'   containing the numerical values (e.g., scores, weights, logFC) associated
-#'   with each identifier. This column must be numeric. Default: `"score"`.
-#' @param result_label Character string. A label used for naming output files
-#'   (e.g., "MOFA_Factor1_Proteomics").
-#' @param results_dir Character string. The path to the directory where enrichment
-#'   results (table, URL file, graph image) will be saved. The directory will be
-#'   created if it doesn't exist.
-#' @param api_key Character string or NULL. Your personal STRING API key.
-#'   If NULL, the API might work with limitations or require it for full access.
-#'   Default: `NULL`.
-#' @param species Character string. NCBI/STRING species identifier.
-#'   Default: `"9606"` (Homo sapiens).
-#' @param ge_fdr Numeric. FDR threshold for gene expression enrichment.
-#'   Default: `0.05`.
-#' @param ge_enrichment_rank_direction Integer. Direction for enrichment rank
-#'   (-1, 0, or 1). Default: `-1`.
-#' @param polling_interval_seconds Numeric. Seconds to wait between polling attempts
-#'   for job status. Default: `10`.
-#' @param max_polling_attempts Numeric. Maximum polling attempts before timing out.
-#'   Default: `30`.
+#' @return A data frame containing the STRING DB enrichment results.
 #'
-#' @return A data frame containing the enrichment results from STRING DB
-#'   (specifically `output_tbl$enrichment_data` from the retrieval step).
-#'   Returns `NULL` or an empty structure if the process fails.
+#' @details
+#' This function saves results directly to the specified `results_dir`:
+#' - URLs for STRING DB results page, download, and graph
+#' - Tab-delimited enrichment results file
+#' - PNG image of the enrichment network graph
 #'
-#' @seealso \code{\link{submitStringDBEnrichment}}, \code{\link{retrieveStringDBEnrichmentResults}}
+#' Unlike `runOneStringDbRankEnrichment`, this function expects the input data to
+#' already be properly formatted with identifier and value columns.
 #'
-#' @importFrom vroom vroom_write
 #' @importFrom readr write_lines
+#' @importFrom vroom vroom_write
+#'
+#' @examples
+#' \dontrun{
+#' # Assume 'mofa_results' is a data frame with protein_id and score columns
+#' enrichment_results <- runOneStringDbRankEnrichmentMofa(
+#'   input_table = mofa_results,
+#'   identifier_column_name = "protein_id",
+#'   value_column_name = "score",
+#'   result_label = "MOFA_factor_1",
+#'   results_dir = "/path/to/results",
+#'   api_key = "YOUR_API_KEY"
+#' )
+#' }
+#'
 #' @export
 runOneStringDbRankEnrichmentMofa <- function( input_table
-                                           ,   identifier_column_name = "protein_id"
-                                           ,   value_column_name = "score"
-                                          ,  result_label
-                                          , results_dir                                                                                   
-                                          , api_key = NULL
-                                          , species = "9606"
-                                          , ge_fdr = 0.05
-                                          , ge_enrichment_rank_direction = -1
-                                          , polling_interval_seconds = 10
-                                          , max_polling_attempts = 30) {
-  
-  
-  
+                                              ,   identifier_column_name = "protein_id"
+                                              ,   value_column_name = "score"
+                                              ,  result_label
+                                              , results_dir
+                                              , api_key = NULL
+                                              , species = "9606"
+                                              , ge_fdr = 0.05
+                                              , ge_enrichment_rank_direction = -1
+                                              , polling_interval_seconds = 10
+                                              , max_polling_attempts = 30) {
+
+
+
   parsed_response <- submitStringDBEnrichment (input_data_frame = input_table ,
                                                identifier_column_name = identifier_column_name,
                                                value_column_name = value_column_name,
@@ -825,28 +834,28 @@ runOneStringDbRankEnrichmentMofa <- function( input_table
                                                species = species,
                                                ge_fdr = ge_fdr,
                                                ge_enrichment_rank_direction = ge_enrichment_rank_direction)
-  
-  
+
+
   output_tbl <- retrieveStringDBEnrichmentResults( submission_info = parsed_response,
                                                    polling_interval_seconds = polling_interval_seconds,
                                                    max_polling_attempts = max_polling_attempts)
-  
+
   write_lines(c("page_url", output_tbl$page_url
                 , "download_url" , output_tbl$download_url
                 , "graph_url" , output_tbl$graph_url)
               , file.path( results_dir,  paste0( result_label, "_string_enrichment_page_url.txt") ))
-  
+
   vroom::vroom_write( output_tbl$enrichment_data
                       , file = file.path( results_dir
-                                          
+
                                           , paste0( result_label, "_string_enrichment_results.tab") ))
-  
+
   dir.create( file.path( results_dir), showWarnings = TRUE, recursive = TRUE)
   writeBin(output_tbl$graph_image_content
            , file.path( results_dir , paste0( result_label, "string_enrichment_graph.png") ))
-  
+
   return(output_tbl$enrichment_data)
-  
+
 }
 
 # https://version-12-0.string-db.org/api/json/valuesranks_enrichment_status?api_key=bsjXYSW0kKTt&job_id=brsuCMHhuVNz
@@ -889,36 +898,46 @@ runOneStringDbRankEnrichmentMofa <- function( input_table
 #' # enrichment_plot <- printStringDbFunctionalEnrichmentBarGraph(enrichment_results_df)
 #' # print(enrichment_plot)
 #' }
-#' @export 
-printStringDbFunctionalEnrichmentBarGraph <- function( input_table){
-  
-  
-  max_enrich_score_group_tbl <- input_table  |>
-    group_by(comparison, termDescription) |>
-    summarise(counts = n(), max_enrichment_score = max(enrichmentScore), min_fdr = min(falseDiscoveryRate)) |>
-    ungroup() 
-  
-  output_group_enrichment_table <- input_table  |>
-    inner_join(max_enrich_score_group_tbl
-               , by = join_by(comparison == comparison ,
-                              termDescription == termDescription ,
-                              enrichmentScore == max_enrichment_score,
-                              falseDiscoveryRate == min_fdr)) |>
-    mutate(termDescriptionAbbrev = str_sub(termDescription, 1, 100) ) |>
-    ggplot(aes(x = termDescriptionAbbrev
-               , y = enrichmentScore)) +
-    geom_bar(stat = "identity", width=0.1) +
-    geom_point(aes(x = termDescriptionAbbrev
-                   , y = enrichmentScore
-                   , colour = -log10(falseDiscoveryRate)
-                   , size= (genesMapped)))  +
-    theme(strip.text.y = element_text(angle = 0)) +
-    coord_flip() +
-    facet_grid(  category ~ comparison
-                 , scales = "free_y", space="free")   
-  
+
+
+printStringDbFunctionalEnrichmentBarGraph <- function (input_table, word_limit = 10)
+{
+  plot_data <- input_table |>
+    group_by(comparison, category, termDescription) |>
+    arrange( desc( enrichmentScore), falseDiscoveryRate ) |>
+    #summarise(enrichmentScore = max(enrichmentScore), falseDiscoveryRate =min(falseDiscoveryRate), direction = first(direction), genesMapped = max(genesMapped)) |>
+    dplyr::slice(1) |>
+    ungroup() |>
+    mutate(termDescriptionAbbrev = sapply(strsplit(as.character(termDescription), " "), function(x) {
+      if (length(x) > word_limit) {
+        paste(c(head(x, word_limit), "..."), collapse = " ")
+      } else {
+        paste(x, collapse = " ")
+      }
+    })) |>
+    #mutate(facet_group = interaction(category, comparison)) |>
+    # Ensure 'direction' is a factor with all possible levels
+    mutate(direction = factor(direction, levels = c("top", "bottom", "both ends")))
+
+  output_group_enrichment_table <- ggplot(plot_data,
+                                          aes(y =  reorder_within(  termDescriptionAbbrev, enrichmentScore, list( category )  ) , x = enrichmentScore )) +
+    geom_bar(aes(fill=direction),stat = "identity",  width = 0.1) +
+    scale_fill_manual(
+      name = "Direction",
+      values = c("top" = "red", "bottom" = "blue", "both ends" = "grey"),
+      drop = FALSE
+    ) +
+    geom_point(aes(y = reorder_within( termDescriptionAbbrev, enrichmentScore, list( category  )) ,
+                   x = enrichmentScore, colour = -log10(falseDiscoveryRate),
+                   size = (genesMapped))) + theme(strip.text.y = element_text(angle = 0)) +
+    facet_grid( category ~ comparison, scales = "free_y",
+                               space = "free") +
+    scale_y_reordered() +
+    ylab("Term Description") +
+    xlab("Enrichment Score")
   output_group_enrichment_table
 }
+
 
 
 #' Run Metabolomics Enrichment Analysis for MOFA Factors

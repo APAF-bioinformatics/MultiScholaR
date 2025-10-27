@@ -1880,52 +1880,121 @@ setMethod(f="plotRle"
             return(rle_plot)
           })
 
-#'@export
-setMethod(f="plotPca"
-          , signature="PeptideQuantitativeData"
-          , definition=function(theObject, grouping_variable, shape_variable = NULL, label_column, title, font_size=8) {
-            # Defensive checks
-            if (!is.character(grouping_variable) || length(grouping_variable) != 1) {
-              stop("grouping_variable must be a single character string")
-            }
+plotPca <- function(theObject, grouping_variable, shape_variable = NULL, label_column, title, font_size=8) {
+  # Defensive checks
+  if (!is.character(grouping_variable) || length(grouping_variable) != 1) {
+    stop("grouping_variable must be a single character string")
+  }
+  
+  if (!is.null(shape_variable) && (!is.character(shape_variable) || length(shape_variable) != 1)) {
+    stop("shape_variable must be NULL or a single character string")
+  }
+  
+  if (!grouping_variable %in% colnames(theObject@design_matrix)) {
+    stop(sprintf("grouping_variable '%s' not found in design matrix", grouping_variable))
+  }
+  
+  if (!is.null(shape_variable) && !shape_variable %in% colnames(theObject@design_matrix)) {
+    stop(sprintf("shape_variable '%s' not found in design matrix", shape_variable))
+  }
+  
+  data_matrix <- NULL
+  ## I want to check the class of theObject here
+ if( class(theObject) == "PeptideQuantitativeData") {
+   data_matrix <- theObject@peptide_matrix
+   
+ } else if( class(theObject) == "ProteinQuantitativeData") {
+   data_matrix <- theObject@protein_quant_table |>
+     column_to_rownames(var = "Protein.Ids") |>
+     as.matrix()
+ }
+  
+  design_matrix <- theObject@design_matrix
+  sample_id <- theObject@sample_id
+  
+  # Prepare matrix for PCA (data should already be log2 transformed)
+  data_matrix_pca <- data_matrix
+  data_matrix_pca[!is.finite(data_matrix_pca)] <- NA
+  
+  if(is.na(label_column) || label_column == "") {
+    label_column <- ""
+  }
+  
+  pca_plot <- plotPcaHelper(data_matrix_pca
+                            , design_matrix = design_matrix
+                            , sample_id_column = sample_id
+                            , grouping_variable = grouping_variable
+                            , shape_variable = shape_variable
+                            , label_column = label_column
+                            , title = title
+                            , geom.text.size = font_size)
+  
+  return(pca_plot)
+}
+
+# ##'@export
+# #setMethod(f="plotPca"
+#           , signature="PeptideQuantitativeData"
+#           , definition=function(theObject, grouping_variable, shape_variable = NULL, label_column, title, font_size=8) {
+#             # Defensive checks
+#             if (!is.character(grouping_variable) || length(grouping_variable) != 1) {
+#               stop("grouping_variable must be a single character string")
+#             }
             
-            if (!is.null(shape_variable) && (!is.character(shape_variable) || length(shape_variable) != 1)) {
-              stop("shape_variable must be NULL or a single character string")
-            }
+#             if (!is.null(shape_variable) && (!is.character(shape_variable) || length(shape_variable) != 1)) {
+#               stop("shape_variable must be NULL or a single character string")
+#             }
             
-            if (!grouping_variable %in% colnames(theObject@design_matrix)) {
-              stop(sprintf("grouping_variable '%s' not found in design matrix", grouping_variable))
-            }
+#             if (!grouping_variable %in% colnames(theObject@design_matrix)) {
+#               stop(sprintf("grouping_variable '%s' not found in design matrix", grouping_variable))
+#             }
             
-            if (!is.null(shape_variable) && !shape_variable %in% colnames(theObject@design_matrix)) {
-              stop(sprintf("shape_variable '%s' not found in design matrix", shape_variable))
-            }
+#             if (!is.null(shape_variable) && !shape_variable %in% colnames(theObject@design_matrix)) {
+#               stop(sprintf("shape_variable '%s' not found in design matrix", shape_variable))
+#             }
 
-            peptide_matrix <- theObject@peptide_matrix
-            design_matrix <- theObject@design_matrix
-            sample_id <- theObject@sample_id
+#             peptide_matrix <- theObject@peptide_matrix
+#             design_matrix <- theObject@design_matrix
+#             sample_id <- theObject@sample_id
 
-            # Prepare matrix for PCA (data should already be log2 transformed)
-            peptide_matrix_pca <- peptide_matrix
-            peptide_matrix_pca[!is.finite(peptide_matrix_pca)] <- NA
+#             # Prepare matrix for PCA (data should already be log2 transformed)
+#             peptide_matrix_pca <- peptide_matrix
+#             peptide_matrix_pca[!is.finite(peptide_matrix_pca)] <- NA
 
-            if(is.na(label_column) || label_column == "") {
-              label_column <- ""
-            }
+#             if(is.na(label_column) || label_column == "") {
+#               label_column <- ""
+#             }
 
-            pca_plot <- plotPcaHelper(peptide_matrix_pca
-                                     , design_matrix = design_matrix
-                                     , sample_id_column = sample_id
-                                     , grouping_variable = grouping_variable
-                                     , shape_variable = shape_variable
-                                     , label_column = label_column
-                                     , title = title
-                                     , geom.text.size = font_size)
+#             pca_plot <- plotPcaHelper(peptide_matrix_pca
+#                                      , design_matrix = design_matrix
+#                                      , sample_id_column = sample_id
+#                                      , grouping_variable = grouping_variable
+#                                      , shape_variable = shape_variable
+#                                      , label_column = label_column
+#                                      , title = title
+#                                      , geom.text.size = font_size)
 
-            return(pca_plot)
-          })
+#             return(pca_plot)
+#           })
 
-#'@export
+# Set up S4 class definitions for ggplot objects
+setOldClass(c("gg", "ggplot"))
+setOldClass("ggplot2::ggplot")
+
+#' Create Density Plots from PCA data
+#'
+#' This function takes a ggplot object (presumably a PCA plot) and creates
+#' density plots for the first two principal components.
+#'
+#' @param theObject A ggplot object containing the data.
+#' @param grouping_variable A character string specifying the column to group by.
+#' @param title A title for the plot.
+#' @param font_size The font size for the plot text.
+#' @return A patchwork object containing the two density plots.
+#' @export
+setGeneric("plotDensity", function(theObject, grouping_variable, title = "", font_size = 8) {
+    standardGeneric("plotDensity")
+})
 
 setMethod(f="plotDensity"
           , signature="ggplot2::ggplot"
@@ -1952,35 +2021,29 @@ setMethod(f="plotDensity"
             if (!grouping_variable %in% colnames(pca_data)) {
               stop(sprintf("grouping_variable '%s' not found in the data", grouping_variable))
             }
-            
-            # Create PC1 boxplot
-            pc1_box <- ggplot(pca_data, aes(x = !!sym(grouping_variable), y = PC1, fill = !!sym(grouping_variable))) +
-              geom_boxplot(notch = TRUE) +
+
+            # Create PC1 density plot
+            pc1_density <- ggplot(pca_data, aes(x = PC1, fill = !!sym(grouping_variable), color = !!sym(grouping_variable))) +
+              geom_density(alpha = 0.3) +
               theme_bw() +
               labs(title = title,
-                   x = "",
-                   y = "PC1") +
+                   x = "PC1",
+                   y = "Density") +
               theme(
-                legend.position = "none",
-                axis.text.x = element_blank(),
-                axis.ticks.x = element_blank(),
                 text = element_text(size = font_size),
                 plot.margin = margin(b = 0, t = 5, l = 5, r = 5),
                 panel.grid.major = element_blank(),
                 panel.grid.minor = element_blank(),
                 panel.background = element_blank()
               )
-            
-            # Create PC2 boxplot
-            pc2_box <- ggplot(pca_data, aes(x = !!sym(grouping_variable), y = PC2, fill = !!sym(grouping_variable))) +
-              geom_boxplot(notch = TRUE) +
+
+            # Create PC2 density plot
+            pc2_density <- ggplot(pca_data, aes(x = PC2, fill = !!sym(grouping_variable), color = !!sym(grouping_variable))) +
+              geom_density(alpha = 0.3) +
               theme_bw() +
-              labs(x = "",
-                   y = "PC2") +
+              labs(x = "PC2",
+                   y = "Density") +
               theme(
-                legend.position = "none",
-                axis.text.x = element_blank(),
-                axis.ticks.x = element_blank(),
                 text = element_text(size = font_size),
                 plot.margin = margin(t = 0, b = 5, l = 5, r = 5),
                 panel.grid.major = element_blank(),
@@ -1989,7 +2052,7 @@ setMethod(f="plotDensity"
               )
             
             # Combine plots with minimal spacing
-            combined_plot <- pc1_box / pc2_box + 
+            combined_plot <- pc1_density / pc2_density +
               plot_layout(heights = c(1, 1)) +
               plot_annotation(theme = theme(plot.margin = margin(0, 0, 0, 0)))
             
