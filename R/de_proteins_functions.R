@@ -2828,7 +2828,7 @@ directUniprotDownload <- function(input_tbl,
       query = list(
         query = query,
         format = "tsv",
-        fields = "accession,id,protein_name,gene_names,organism_name,length,go_id,reviewed"
+        fields = "accession,id,protein_name,gene_names,organism_name,length,go_id,reviewed,protein_existence,annotation_score"
       ),
       httr::timeout(30)
     )
