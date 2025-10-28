@@ -740,24 +740,33 @@ setMethod(f = "createGridQC",
             plot_letter_counter <- 1
             top_title_row <- NULL
             
+            # Determine column titles based on workflow or use defaults
             if (!is.null(workflow_name) && workflow_name == "DIA_limpa") {
-              column_titles <- c("log2", "Cyclic Loess", "RUV-III-C", "limpa_imputed_rollup", "Protein_filtered")
-              num_cols_for_titles <- if (!is.null(ncol)) ncol else length(plots$pca)
-              if (num_cols_for_titles > 0) {
-                 top_title_row <- wrap_plots(lapply(column_titles[1:num_cols_for_titles], createLabelPlot), ncol = num_cols_for_titles)
-              }
-              
-              add_tags <- function(plot_list) {
-                lapply(plot_list, function(p) {
-                  if(is.null(p)) return(NULL)
-                  letter <- LETTERS[plot_letter_counter]
-                  plot_letter_counter <<- plot_letter_counter + 1
-                  p + labs(tag = letter) + theme(plot.tag = element_text(size = 20, face = "bold"))
-                })
-              }
-              # Apply tags to the legend-less versions of the plots
-              plots_no_legend <- lapply(plots_no_legend, add_tags)
+              column_titles <- c("log2", "Cyclic Loess", "RUV-III-C", "Limpa Imputation", "Correlation Filtered")
+            } else {
+              # Default titles for standard normalization workflow
+              column_titles <- c("log2", "Cyclic Loess", "RUV-III-C")
             }
+            
+            # Create top title row
+            num_cols_for_titles <- if (!is.null(ncol)) ncol else length(plots$pca)
+            if (num_cols_for_titles > 0) {
+               top_title_row <- wrap_plots(lapply(column_titles[1:num_cols_for_titles], createLabelPlot), ncol = num_cols_for_titles)
+            }
+            
+            # Define add_tags function (always apply letter tags)
+            add_tags <- function(plot_list) {
+              lapply(plot_list, function(p) {
+                if(is.null(p)) return(NULL)
+                letter <- LETTERS[plot_letter_counter]
+                plot_letter_counter <<- plot_letter_counter + 1
+                p + labs(tag = letter) + theme(plot.tag = element_text(size = 20, face = "bold"),
+                                                 plot.tag.position = "topleft")
+              })
+            }
+            
+            # Apply tags to the legend-less versions of the plots
+            plots_no_legend <- lapply(plots_no_legend, add_tags)
             
             # --- 4. Assemble Main Plot Panel (all rows without legends) ---
             assemble_plot_row <- function(plot_list) {
@@ -780,14 +789,17 @@ setMethod(f = "createGridQC",
             # --- New Limpa Plot Row ---
             limpa_row <- NULL
             if (!is.null(workflow_name) && workflow_name == "DIA_limpa" && length(theObject@limpa_plots) > 0) {
-              # Style and remove legends from limpa plots
+              # Style and remove legends and titles from limpa plots
               limpa_plots_styled <- purrr::compact(lapply(theObject@limpa_plots, style_plot))
               limpa_plots_no_legend <- lapply(limpa_plots_styled, function(p) {
-                if (!is.null(p)) p + theme(legend.position = "none") else NULL
+                if (!is.null(p)) p + theme(legend.position = "none") + labs(title = NULL) else NULL
               })
               
+              # Apply tags to limpa plots
+              limpa_plots_tagged <- add_tags(limpa_plots_no_legend)
+              
               # Combine cancor plot and limpa plots
-              combined_limpa_cancor_plots <- c(plots_no_legend$cancor, limpa_plots_no_legend)
+              combined_limpa_cancor_plots <- c(plots_no_legend$cancor, limpa_plots_tagged)
               
               # Assemble the row
               limpa_row <- assemble_plot_row(combined_limpa_cancor_plots)
