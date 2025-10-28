@@ -390,7 +390,7 @@ savePlotRleList <- function( input_list, prefix = "RLE", suffix = c("png", "pdf"
 #'@export
 setMethod(f="plotPca"
           , signature="ProteinQuantitativeData"
-          , definition=function( theObject, grouping_variable, shape_variable = NULL, label_column, title, font_size=8) {
+          , definition=function( theObject, grouping_variable, shape_variable = NULL, label_column, title, font_size=8, cv_percentile = 0.90) {
             # Defensive checks
             if (!is.character(grouping_variable) || length(grouping_variable) != 1) {
               stop("grouping_variable must be a single character string")
@@ -441,7 +441,8 @@ setMethod(f="plotPca"
                                            shape_variable = shape_variable,
                                            label_column = label_column,
                                            title = title,
-                                           geom.text.size = font_size)
+                                           geom.text.size = font_size,
+                                           cv_percentile = cv_percentile)
               return(pca_plot)
             }, error = function(e) {
               stop(sprintf("Error in plotPcaHelper: %s", e$message))
@@ -454,7 +455,7 @@ setMethod(f="plotPca"
 #'@export
 setMethod(f="plotPcaList"
           , signature="ProteinQuantitativeData"
-          , definition=function( theObject, grouping_variables_list, label_column, title, font_size=8) {
+          , definition=function( theObject, grouping_variables_list, label_column, title, font_size=8, cv_percentile = 0.90) {
             protein_quant_table <- theObject@protein_quant_table
             protein_id_column <- theObject@protein_id_column
             design_matrix <- theObject@design_matrix
@@ -477,7 +478,8 @@ setMethod(f="plotPcaList"
                                                  , grouping_variables_list = grouping_variables_list
                                                  , label_column =  label_column
                                                  , title = title
-                                                 , geom.text.size = font_size )
+                                                 , geom.text.size = font_size
+                                                 , cv_percentile = cv_percentile )
 
             return( pca_plots_list)
           })
