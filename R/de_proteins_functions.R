@@ -2264,7 +2264,7 @@ proteinTechRepCorrelationHelper <- function( design_matrix_tech_rep, data_matrix
 }
 
 #' Download and Process UniProt Annotations
-#' 
+#'
 #' @description
 #' Downloads protein information from UniProt for a list of protein IDs,
 #' processes the results including Gene Ontology annotations, and caches
