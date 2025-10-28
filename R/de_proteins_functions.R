@@ -402,6 +402,7 @@ getRuvIIIReplicateMatrixHelper <- function(design_matrix, sample_id_column, grou
 #' @param title The title of the plot.
 #' @param geom.text.size The size of the text labels if `label_column` is provided. Defaults to 11.
 #' @param ncomp The number of principal components to compute. Defaults to 2.
+#' @param cv_percentile The percentile threshold for selecting features based on coefficient of variation. Defaults to 0.90 (top 10% most variable features).
 #' @param ... Additional arguments passed to other methods (not currently used).
 #'
 #' @return A `ggplot` object representing the PCA plot.
@@ -443,6 +444,7 @@ plotPcaHelper <- function(data,
                           shape_variable = NULL,
                           label_column = NULL,
                           title, geom.text.size = 11, ncomp = 2,
+                          cv_percentile = 0.90,
                           ...) {
   
   # Ensure design_matrix is a data frame
@@ -466,8 +468,8 @@ plotPcaHelper <- function(data,
         s / m
       })
       
-      # Find the CV threshold for the top 10%
-      cv_threshold <- quantile(cvs, 0.90, na.rm = TRUE)
+      # Find the CV threshold based on the specified percentile
+      cv_threshold <- quantile(cvs, cv_percentile, na.rm = TRUE)
       
       if(!is.na(cv_threshold) && cv_threshold > 0) {
         data_filtered <- data_abundant[which(cvs >= cv_threshold), ]
@@ -536,10 +538,13 @@ plotPcaHelper <- function(data,
     }
   }
   
+  # Calculate the percentage label for axis (e.g., 0.90 -> "top 10%")
+  cv_percent_label <- paste0("top ", round((1 - cv_percentile) * 100, 0), "%")
+  
   output <- base_plot +
     geom_point(size = 3) +
-    xlab(paste("PC1 (", round(proportion_explained$X[["PC1"]] * 100, 0), "% of top 10% CV)", sep = "")) +
-    ylab(paste("PC2 (", round(proportion_explained$X[["PC2"]] * 100, 0), "% of top 10% CV)", sep = "")) +
+    xlab(paste("PC1 (", round(proportion_explained$X[["PC1"]] * 100, 0), "% of ", cv_percent_label, " CV)", sep = "")) +
+    ylab(paste("PC2 (", round(proportion_explained$X[["PC2"]] * 100, 0), "% of ", cv_percent_label, " CV)", sep = "")) +
     labs(title = title) +
     theme(legend.title = element_blank()) +
     scale_x_continuous(labels = function(x) format(x, scientific = FALSE, digits = 3)) +
@@ -575,6 +580,7 @@ plotPcaListHelper <- function(data,
                               grouping_variables_list = c("group"),
                               label_column = NULL,
                               title, geom.text.size = 11, ncomp = 2,
+                              cv_percentile = 0.90,
                               ...) {
   
   
@@ -596,8 +602,8 @@ plotPcaListHelper <- function(data,
         s / m
       })
       
-      # Find the CV threshold for the top 10%
-      cv_threshold <- quantile(cvs, 0.90, na.rm = TRUE)
+      # Find the CV threshold based on the specified percentile
+      cv_threshold <- quantile(cvs, cv_percentile, na.rm = TRUE)
       
       if(!is.na(cv_threshold) && cv_threshold > 0) {
         data_filtered <- data_abundant[which(cvs >= cv_threshold), ]
