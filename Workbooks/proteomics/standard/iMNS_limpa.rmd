@@ -597,7 +597,8 @@ QC_composite_figure@pca_plots$peptide_pca_plot_plot_raw <- plotPca(
   label_column = "",
   shape_variable = "factor1",
   title = "",
-  font_size = 8
+  font_size = 8,
+  cv_percentile = 0.90
 )
 savePlot( QC_composite_figure@pca_plots$peptide_pca_plot_plot_raw,
   project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir, "peptide_pca_plot_plot_raw")
@@ -684,7 +685,8 @@ QC_composite_figure@pca_plots$peptide_pca_plot_plot_cyclicloess <- plotPca(
   label_column = "",
   shape_variable = "factor1",
   title = "",
-  font_size = 8
+  font_size = 8,
+  cv_percentile = 0.90
 )
 savePlot(
   QC_composite_figure@pca_plots$peptide_pca_plot_plot_cyclicloess,
@@ -794,7 +796,8 @@ QC_composite_figure@pca_plots$peptide_pca_plot_after_ruvIIIc_group <- plotPca(
   label_column = "",
   shape_variable = "factor1",
   title = "",
-  font_size = 8
+  font_size = 8,
+  cv_percentile = 0.90
 )
 
 QC_composite_figure@density_plots$density_plot_after_ruvIIIc_group <- plotDensity(
@@ -841,10 +844,6 @@ updateProteinFiltering(
   return_grid = TRUE,
   overwrite = TRUE
 )
-
-```
-
-```{r}
 
 ```
 
@@ -944,7 +943,8 @@ QC_composite_figure@pca_plots$pca_plot_protein <- plotPca(
   label_column = "",
   shape_variable = "factor1",
   title = "",
-  font_size = 8
+  font_size = 8,
+  cv_percentile = 0.90
 )
 savePlot(
   QC_composite_figure@pca_plots$pca_plot_protein,
@@ -1112,7 +1112,8 @@ QC_composite_figure@pca_plots$pca_plot_protein_filtered <- plotPca(
   label_column = "",
   shape_variable = "factor1",
   title = "",
-  font_size = 8
+  font_size = 8,
+  cv_percentile = 0.90
 )
 savePlot(
   QC_composite_figure@pca_plots$pca_plot_protein_filtered ,
