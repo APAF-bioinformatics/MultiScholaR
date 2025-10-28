@@ -54,16 +54,16 @@ setGeneric(name="plotRleList"
            , signature=c("theObject", "list_of_columns", "yaxis_limit"))
 
 setGeneric(name="plotPca"
-           , def=function( theObject, grouping_variable, shape_variable = NULL, label_column, title, font_size ) {
+           , def=function( theObject, grouping_variable, shape_variable = NULL, label_column, title, font_size, cv_percentile = 0.90 ) {
              standardGeneric("plotPca")
            }
-           , signature=c("theObject", "grouping_variable", "shape_variable", "label_column", "title", "font_size"))
+           , signature=c("theObject", "grouping_variable", "shape_variable", "label_column", "title", "font_size", "cv_percentile"))
 
 setGeneric(name="plotPcaList"
-           , def=function( theObject, grouping_variables_list, label_column, title, font_size ) {
+           , def=function( theObject, grouping_variables_list, label_column, title, font_size, cv_percentile = 0.90 ) {
              standardGeneric("plotPcaList")
            }
-           , signature=c("theObject", "grouping_variables_list", "label_column", "title", "font_size"))
+           , signature=c("theObject", "grouping_variables_list", "label_column", "title", "font_size", "cv_percentile"))
 
 setGeneric(name="getPcaMatrix"
            , def=function( theObject) {
