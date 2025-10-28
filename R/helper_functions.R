@@ -245,11 +245,32 @@ setArgsDefault <- function(args, value_name, as_func, default_val=NA ) {
 #'
 #'
 savePlot <- function(plot, base_path, plot_name, formats = c("pdf", "png"), width=7, height=7, ... ) {
+  # Always save the RDS (works for both single plots and lists)
   saveRDS( plot, file.path(base_path, paste0(plot_name, ".rds")))
-  purrr::walk( formats, \(format){
-    file_path <- file.path(base_path, paste0(plot_name, ".", format))
-    ggsave(filename = file_path, plot = plot, device = format, width=width, height=height, ...)
-  })
+  
+  # Check if plot is a list of plots
+  if (is.list(plot) && !inherits(plot, "gg")) {
+    # It's a list of plots - save each one individually
+    plot_names <- names(plot)
+    if (is.null(plot_names)) {
+      plot_names <- paste0("plot_", seq_along(plot))
+    }
+    
+    purrr::walk2(plot, plot_names, function(p, pname) {
+      if (inherits(p, "gg")) {
+        purrr::walk(formats, function(format) {
+          file_path <- file.path(base_path, paste0(plot_name, "_", pname, ".", format))
+          ggsave(filename = file_path, plot = p, device = format, width=width, height=height, ...)
+        })
+      }
+    })
+  } else {
+    # Single plot - original behavior
+    purrr::walk( formats, \(format){
+      file_path <- file.path(base_path, paste0(plot_name, ".", format))
+      ggsave(filename = file_path, plot = plot, device = format, width=width, height=height, ...)
+    })
+  }
 }
 
 
