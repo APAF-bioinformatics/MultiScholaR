@@ -17,7 +17,7 @@
 #' @param caller_identity Character string: An identifier for your script or application
 #'                        (e.g., "my_research_project_R_script").
 #' @param api_key Character string: Your personal STRING API key.
-#' @param species Numeric: NCBI/STRING species identifier. Default is 9606 (Homo sapiens).
+#' @param species Character or numeric: NCBI/STRING species identifier. Default is 9606 (Homo sapiens).
 #' @param ge_fdr Numeric: FDR threshold for gene expression enrichment. Default is 0.05.
 #' @param ge_enrichment_rank_direction Integer: Direction for enrichment rank.
 #'                                       (-1, 0, or 1). Default is -1.
@@ -121,7 +121,11 @@ submitStringDBEnrichment <- function(input_data_frame,
   checkmate::assertChoice(value_column_name, choices = names(input_data_frame), .var.name = "value_column_name")
   checkmate::assertString(caller_identity, min.chars = 1, .var.name = "caller_identity")
   checkmate::assertString(api_key, min.chars = 1, .var.name = "api_key") # Validate api_key
-  checkmate::assertString(species,  .var.name = "species")
+  # Convert numeric species to string if needed, then validate
+  if (is.numeric(species)) {
+    species <- as.character(species)
+  }
+  checkmate::assertString(species, .var.name = "species")
   checkmate::assertNumber(ge_fdr, lower = 0, upper = 1, .var.name = "ge_fdr")
   checkmate::assertChoice(as.integer(ge_enrichment_rank_direction), c(-1, 0, 1), .var.name = "ge_enrichment_rank_direction")
 
@@ -669,8 +673,10 @@ retrieveStringDBEnrichmentResults <- function(submission_info,
 #'   `Protein.Ids` (protein identifiers, potentially with isoform information).
 #' @param result_label Character string: A label for the analysis results, used
 #'   in output file names.
+#' @param pathway_dir Character string: The pathway directory where results will be saved.
+#'   All outputs are saved to pathway_dir/string_db/ subdirectory.
 #' @param api_key Character string: Your personal STRING API key.
-#' @param species Numeric: NCBI/STRING species identifier. Default is 9606 (Homo sapiens).
+#' @param species Character or numeric: NCBI/STRING species identifier. Default is 9606 (Homo sapiens).
 #' @param ge_fdr Numeric: FDR threshold for gene expression enrichment. Default is 0.05.
 #' @param ge_enrichment_rank_direction Integer: Direction for enrichment rank.
 #'   (-1, 0, or 1). Default is -1.
@@ -681,10 +687,10 @@ retrieveStringDBEnrichmentResults <- function(submission_info,
 #' @return A data frame containing the STRING DB enrichment results.
 #'
 #' @details
-#' This function creates a results directory structure and saves:
-#' - URLs for STRING DB results page, download, and graph
-#' - Tab-delimited enrichment results file
-#' - PNG image of the enrichment network graph
+#' This function saves enrichment results to the specified pathway directory:
+#' - `{pathway_dir}/string_db/{result_label}_string_enrichment_page_url.txt` - URLs for STRING DB results
+#' - `{pathway_dir}/string_db/{result_label}_string_enrichment_results.tab` - Tab-delimited enrichment results
+#' - `{pathway_dir}/string_db/{result_label}_string_enrichment_graph.png` - Network graph image
 #'
 #' @importFrom dplyr mutate relocate arrange desc
 #' @importFrom stringr str_split
@@ -698,6 +704,7 @@ retrieveStringDBEnrichmentResults <- function(submission_info,
 #' enrichment_results <- runOneStringDbRankEnrichment(
 #'   input_table = de_results,
 #'   result_label = "treatment_vs_control",
+#'   pathway_dir = "path/to/pathway_enrichment",
 #'   api_key = "YOUR_API_KEY"
 #' )
 #' }
@@ -705,6 +712,7 @@ retrieveStringDBEnrichmentResults <- function(submission_info,
 #' @export
 runOneStringDbRankEnrichment <- function( input_table
                                           ,  result_label
+                                          , pathway_dir
                                           , api_key = NULL
                                           , species = "9606"
                                           , ge_fdr = 0.05
@@ -734,20 +742,20 @@ runOneStringDbRankEnrichment <- function( input_table
                                                    polling_interval_seconds = polling_interval_seconds,
                                                    max_polling_attempts = max_polling_attempts)
 
-  dir.create( file.path( results_dir, "functional_enrichment_string_db" ), showWarnings = TRUE, recursive = TRUE)
+  enrichment_dir <- file.path(pathway_dir, "string_db")
+  dir.create(enrichment_dir, showWarnings = FALSE, recursive = TRUE)
   
   write_lines(c("page_url", output_tbl$page_url
                 , "download_url" , output_tbl$download_url
                 , "graph_url" , output_tbl$graph_url)
-              , file.path( results_dir, "functional_enrichment_string_db", paste0( result_label, "_string_enrichment_page_url.txt") ))
+              , file.path(enrichment_dir, paste0(result_label, "_string_enrichment_page_url.txt")))
 
   vroom::vroom_write( output_tbl$enrichment_data
-                      , file = file.path( results_dir
-                                          , "functional_enrichment_string_db"
-                                          , paste0( result_label, "_string_enrichment_results.tab") ))
+                      , file = file.path(enrichment_dir
+                                          , paste0(result_label, "_string_enrichment_results.tab")))
 
   writeBin(output_tbl$graph_image_content
-           , file.path( results_dir , "functional_enrichment_string_db", paste0( result_label, "string_enrichment_graph.png") ))
+           , file.path(enrichment_dir, paste0(result_label, "_string_enrichment_graph.png")))
 
   return(output_tbl$enrichment_data)
 
@@ -776,7 +784,7 @@ runOneStringDbRankEnrichment <- function( input_table
 #'   in output file names.
 #' @param results_dir Character string: The directory path where results should be saved.
 #' @param api_key Character string: Your personal STRING API key.
-#' @param species Numeric: NCBI/STRING species identifier. Default is 9606 (Homo sapiens).
+#' @param species Character or numeric: NCBI/STRING species identifier. Default is 9606 (Homo sapiens).
 #' @param ge_fdr Numeric: FDR threshold for gene expression enrichment. Default is 0.05.
 #' @param ge_enrichment_rank_direction Integer: Direction for enrichment rank.
 #'   (-1, 0, or 1). Default is -1.

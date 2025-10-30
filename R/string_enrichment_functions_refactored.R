@@ -13,7 +13,7 @@
 #' @param omic_type Character string: The omics type (e.g., "proteomics", "transcriptomics").
 #' @param experiment_label Character string: The experiment label for directory construction.
 #' @param api_key Character string: Your personal STRING API key. Default is "bjcR4Px5rByQ".
-#' @param species Character string: NCBI/STRING species identifier. Default is "9606" (Homo sapiens).
+#' @param species Character or numeric: NCBI/STRING species identifier. Default is "9606" (Homo sapiens).
 #'   This parameter can be set to the taxon_id variable defined in your environment.
 #' @param ge_fdr Numeric: FDR threshold for gene expression enrichment. Default is 0.05.
 #' @param ge_enrichment_rank_direction Integer: Direction for enrichment rank
@@ -145,6 +145,7 @@ runStringDbEnrichmentAllContrasts <- function(de_analysis_results_list,
       runOneStringDbRankEnrichment(
         input_table = input_table,
         result_label = result_label,
+        pathway_dir = pathway_dir,
         api_key = api_key,
         species = species,
         ge_fdr = ge_fdr,
