@@ -1854,7 +1854,7 @@ updateRuvParameters <- function(config_list, best_k, control_genes_index, percen
 #' @importFrom tools file_path_sans_ext
 RenderReport <- function(omic_type,
                          experiment_label,
-                         rmd_filename = "DIANN_report.rmd",
+                         rmd_filename = NULL,
                          project_dirs_object_name = "project_dirs",
                          output_format = NULL) {
 
@@ -1865,8 +1865,8 @@ RenderReport <- function(omic_type,
     if (missing(experiment_label) || !is.character(experiment_label) || length(experiment_label) != 1 || experiment_label == "") {
         rlang::abort("`experiment_label` must be a single non-empty character string.")
     }
-    if (!is.character(rmd_filename) || length(rmd_filename) != 1 || rmd_filename == "") {
-        rlang::abort("`rmd_filename` must be a single non-empty character string.")
+    if (!is.null(rmd_filename) && (!is.character(rmd_filename) || length(rmd_filename) != 1 || rmd_filename == "")) {
+        rlang::abort("`rmd_filename` must be a single non-empty character string or NULL.")
     }
 
     # --- Retrieve Paths from Global Project Directories Object ---
@@ -1882,32 +1882,43 @@ RenderReport <- function(omic_type,
     }
     current_paths <- project_dirs_global[[current_omic_key]] # This contains base_dir, results_summary_dir etc. for the *labelled* omic
 
-    if (!is.list(current_paths) || 
+    if (!is.list(current_paths) ||
         is.null(current_paths$base_dir) || # Need base_dir to find the template Rmd
         is.null(current_paths$results_summary_dir)) {
-        rlang::abort(paste0("Essential paths (base_dir, results_summary_dir) missing for key ", 
+        rlang::abort(paste0("Essential paths (base_dir, results_summary_dir) missing for key ",
                            sQuote(current_omic_key), " in ", sQuote(project_dirs_object_name), "."))
     }
 
-    # --- Determine the source Rmd template directory (e.g., scripts/proteomics) ---
-    # This logic mirrors part of setupDirectories to find the correct unlabelled script source leaf.
-    omic_script_template_leaf <- switch(omic_type,
-        proteomics = "proteomics",
-        metabolomics = "metabolomics",
-        transcriptomics = "transcriptomics",
-        lipidomics = "lipidomics",
-        integration = "integration",
-        {
-            rlang::abort(paste0("Internal error: Unrecognized omic_type ", sQuote(omic_type), " for Rmd template path construction."))
+    # --- Read study_parameters.txt for workflow determination and render parameters ---
+    params_path <- file.path(current_paths$source_dir, "study_parameters.txt")
+    if (file.exists(params_path)) {
+        lines <- readLines(params_path)
+        workflow_name_line <- grep("Workflow Name:", lines, value = TRUE)
+        timestamp_line <- grep("Timestamp:", lines, value = TRUE)
+        workflow_name <- if (length(workflow_name_line) > 0) trimws(sub("Workflow Name:", "", workflow_name_line[1])) else "Unknown Workflow"
+        timestamp <- if (length(timestamp_line) > 0) trimws(sub("Timestamp:", "", timestamp_line[1])) else format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+    } else {
+        workflow_name <- "Unknown Workflow"
+        timestamp <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+    }
+
+    # --- Determine the Rmd template filename based on workflow ---
+    if (is.null(rmd_filename)) {
+        if (workflow_name == "DIA_limpa") {
+            rmd_filename <- "DIANN_limpa_report.rmd"
+        } else {
+            rmd_filename <- "DIANN_report.rmd"
         }
-    )
-    
-    rmd_template_dir <- file.path(current_paths$base_dir, "scripts", omic_script_template_leaf)
+    }
+
+    # --- Determine the source Rmd template directory ---
+    # Report templates are located in Workbooks/<omic_type>/report/
+    rmd_template_dir <- file.path(current_paths$base_dir, "Workbooks", omic_type, "report")
     rmd_input_path <- file.path(rmd_template_dir, rmd_filename)
     
     if (!file.exists(rmd_input_path)) {
         rlang::abort(paste0("R Markdown template file not found at the expected location: ", sQuote(rmd_input_path),
-                           ". This should be in the general scripts/<omic_type> directory (e.g., scripts/proteomics)."))
+                           ". This should be in the Workbooks/<omic_type>/report/ directory (e.g., Workbooks/proteomics/report/)."))
     }
 
     # --- Construct Output Path (in the labelled results_summary directory) ---
@@ -1933,18 +1944,6 @@ RenderReport <- function(omic_type,
     logger::log_info("- Output File: {output_file_path}")
     logger::log_info("- Params: omic_type=\'{omic_type}\', experiment_label=\'{experiment_label}\'")
 
-    # Read study_parameters.txt to extract workflow_name and timestamp
-    params_path <- file.path(current_paths$source_dir, "study_parameters.txt")
-    if (file.exists(params_path)) {
-        lines <- readLines(params_path)
-        workflow_name_line <- grep("Workflow Name:", lines, value = TRUE)
-        timestamp_line <- grep("Timestamp:", lines, value = TRUE)
-        workflow_name <- if (length(workflow_name_line) > 0) trimws(sub("Workflow Name:", "", workflow_name_line[1])) else "Unknown Workflow"
-        timestamp <- if (length(timestamp_line) > 0) trimws(sub("Timestamp:", "", timestamp_line[1])) else format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-    } else {
-        workflow_name <- "Unknown Workflow"
-        timestamp <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-    }
 
     # --- Render the Report ---
     rendered_path <- tryCatch({
