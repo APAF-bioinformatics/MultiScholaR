@@ -962,10 +962,6 @@ protein_ruv_normalised_imputed_obj <- proteinMissingValueImputationLimpa(
 
 limpa_qc_plots <- generateLimpaQCPlots(protein_ruv_normalised_imputed_obj, verbose = TRUE)
 print(limpa_qc_plots)
-```
-
-
-```{r 14b Limpa imputation and protein rollup}
 
 # Store the individual limpa plots in the QC composite figure
 QC_composite_figure@limpa_plots <- limpa_qc_plots
@@ -1086,11 +1082,11 @@ filtered_protein_count <- removed_proteins_with_insufficient_evidence@protein_qu
   nrow()
 
 # Print a clear summary of the filtering results
-message(paste("Original proteins (all peptide evidence):", original_protein_count))
-message(paste("Proteins remaining after filtering:", filtered_protein_count))
-message(paste("Proteins removed:", original_protein_count - filtered_protein_count))
+print(paste("Original proteins (all peptide evidence):", original_protein_count))
+print(paste("Proteins remaining after filtering:", filtered_protein_count))
+print(paste("Proteins removed:", original_protein_count - filtered_protein_count))
 if (original_protein_count > 0) {
-  message(paste("Retention rate:", round(100 * filtered_protein_count / original_protein_count, 1), "%"))
+  print(paste("Retention rate:", round(100 * filtered_protein_count / original_protein_count, 1), "%"))
 }
 
 # Update tracking for downstream analysis

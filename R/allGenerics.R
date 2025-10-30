@@ -163,10 +163,10 @@ setGeneric(name="removeRowsWithMissingValuesPercent"
                          , "proteins_intensity_cutoff_percentile" ))
 
 setGeneric(name="averageTechReps"
-           , def=function( theObject, design_matrix_columns ) {
+           , def=function( theObject, design_matrix_columns, biological_replicate_column = NULL ) {
              standardGeneric("averageTechReps")
            }
-           , signature=c("theObject", "design_matrix_columns" ))
+           , signature=c("theObject", "design_matrix_columns", "biological_replicate_column" ))
 
 setGeneric(name="preservePeptideNaValues"
            , def=function( peptide_obj, protein_obj)  {

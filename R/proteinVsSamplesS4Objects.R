@@ -1338,20 +1338,21 @@ setMethod( f = "removeRowsWithMissingValuesPercent"
 
 #'@export
 setGeneric(name="averageTechReps"
-           , def=function( theObject, design_matrix_columns ) {
+           , def=function( theObject, design_matrix_columns, biological_replicate_column = NULL ) {
              standardGeneric("averageTechReps")
            }
-           , signature=c("theObject", "design_matrix_columns" ))
+           , signature=c("theObject", "design_matrix_columns", "biological_replicate_column" ))
 
 #'@export
 #'@param theObject The object to be processed
 #'@param design_matrix_columns The columns to be used in the design matrix
+#'@param biological_replicate_column The column name for biological replicate grouping (optional)
 #'@param protein_id_column The column name of the protein id
 #'@param sample_id The column name of the sample id
 #'@param replicate_group_column The column name of the technical replicate id
 setMethod( f = "averageTechReps"
            , signature="ProteinQuantitativeData"
-           , definition=function( theObject, design_matrix_columns=c()  ) {
+           , definition=function( theObject, design_matrix_columns=c(), biological_replicate_column = NULL  ) {
 
              protein_quant_table <- theObject@protein_quant_table
              protein_id_column <- theObject@protein_id_column
@@ -1359,6 +1360,14 @@ setMethod( f = "averageTechReps"
              group_id <- theObject@group_id
              sample_id <- theObject@sample_id
              replicate_group_column <- theObject@technical_replicate_id
+
+             # If biological_replicate_column is provided, use it for grouping
+             if (!is.null(biological_replicate_column)) {
+               grouping_column <- paste0(group_id, "_", biological_replicate_column)
+               design_matrix <- design_matrix %>%
+                 mutate(!!grouping_column := paste(!!sym(group_id), !!sym(biological_replicate_column), sep = "_"))
+               replicate_group_column <- grouping_column
+             }
 
              theObject@protein_quant_table <- protein_quant_table |>
                pivot_longer( cols = !matches( protein_id_column)
@@ -1377,6 +1386,8 @@ setMethod( f = "averageTechReps"
               theObject@design_matrix <- design_matrix |>
                 dplyr::select(-!!sym( sample_id)) |>
                 dplyr::select(all_of( unique( c( replicate_group_column,  group_id,  design_matrix_columns) ))) |>
+                dplyr::filter(!is.na(!!sym(replicate_group_column))) |>
+                dplyr::mutate(!!sym(replicate_group_column) := as.character(!!sym(replicate_group_column))) |>
                 distinct()
 
               theObject@sample_id <- replicate_group_column
