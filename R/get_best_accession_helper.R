@@ -394,7 +394,8 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uni
           protein_evidence = protein_evidence,
           status = status,
           is_isoform = is_isoform,
-          isoform_num = isoform_num
+          isoform_num = isoform_num,
+          annotation_score = NA_real_
         )
       }
 
@@ -433,7 +434,8 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uni
       protein_id = locus_tag,
       protein = protein,
       ncbi_refseq = ncbi_refseq,
-      attributes = attributes
+      attributes = attributes,
+      annotation_score = NA_real_
     )
   }
 

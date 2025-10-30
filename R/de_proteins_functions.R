@@ -2915,7 +2915,18 @@ standardizeUniprotColumns <- function(df) {
   } else {
     df$gene_names <- NA_character_
   }
-  
+
+  # Handle Annotation Score column - ensure it's always present with fallback to 0
+  if ("Annotation.score" %in% colnames(df)) {
+    df <- df |> dplyr::rename(annotation_score = "Annotation.score")
+  } else if (!"annotation_score" %in% colnames(df)) {
+    df$annotation_score <- 0
+  }
+
+  # Ensure annotation_score is numeric and handle any NA values
+  df$annotation_score <- as.numeric(df$annotation_score)
+  df$annotation_score <- ifelse(is.na(df$annotation_score), 0, df$annotation_score)
+
   return(df)
 }
 
@@ -2934,6 +2945,7 @@ createEmptyUniprotTable <- function() {
     "gene_names" = character(0),
     "Protein_existence" = character(0),
     "Protein_names" = character(0),
+    "annotation_score" = numeric(0),
     stringsAsFactors = FALSE
   )
 }
