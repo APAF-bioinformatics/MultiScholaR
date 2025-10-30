@@ -1,0 +1,978 @@
+---
+title: "`r paste('DIANN analysis for', params$workflow_name, '- report - created on', params$timestamp)`"
+author: "Your_fancy_self"
+date: "`r format(Sys.Date(), '%Y-%m-%d')`"
+output:
+  word_document:
+    fig_caption: true
+params:
+  omic_type: "proteomics" # Use omic_type instead of suffix
+  experiment_label: "DEFAULT_LABEL" # Use experiment_label instead of suffix
+  workflow_name: "Unknown Workflow"
+  timestamp: "`r format(Sys.time(), '%Y-%m-%d %H:%M:%S')`"
+mainfont: "Calibri"    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+```{r Project Setup, echo=FALSE, warning=FALSE}
+# This chunk now sets up paths using the global project_dirs object
+library(tidyverse)
+library(purrr)
+library(flextable)
+library(here)
+library(patchwork)
+library(viridis)
+library(gt)
+library(plotly)
+library(glue)
+library(webshot2)
+# Explicitly load key tidyverse sub-packages for knitr environment robustness
+library(dplyr)
+library(stringr)
+
+# Ensure global project_dirs object exists
+if (!exists("project_dirs", envir = .GlobalEnv) || !is.list(project_dirs)) {
+  stop("Global object 'project_dirs' not found or is not a list. Run MultiScholaR::setupDirectories() first.")
+}
+# Construct the key for the current omic type and experiment label
+current_omic_key <- paste0(params$omic_type, "_", params$experiment_label)
+if (!current_omic_key %in% names(project_dirs)) {
+  stop(glue::glue("Key '{current_omic_key}' (from params$omic_type='{params$omic_type}' & params$experiment_label='{params$experiment_label}') not found in global 'project_dirs'. Ensure setupDirectories() was run correctly."))
+}
+# Get the list of paths for the current context
+current_project_paths <- project_dirs[[current_omic_key]]
+
+# Define commonly used paths for this report for convenience
+report_source_dir             <- current_project_paths$source_dir
+report_results_summary_dir    <- current_project_paths$results_summary_dir
+report_qc_figures_dir         <- current_project_paths$qc_figures_dir
+report_publication_figures_dir<- current_project_paths$publication_figures_dir
+report_publication_tables_dir <- current_project_paths$publication_tables_dir
+
+# Basic validation (more can be added if needed)
+if (!dir.exists(report_source_dir)) stop(glue::glue("Report source directory not found: {report_source_dir}"))
+if (!dir.exists(report_results_summary_dir)) stop(glue::glue("Report results summary directory not found: {report_results_summary_dir}"))
+
+# Define the safe default operator %||% (needed by restored ExtractStudyParameters)
+`%||%` <- function(a, b) if (!is.null(a)) a else b
+```
+
+```{r New Hierarchical Parser, echo=FALSE}
+# NEW: Hierarchical parser for the updated study_parameters.txt format
+ReadStudyParamsNew <- function(filepath) {
+  if (!file.exists(filepath)) {
+    stop(glue::glue("Study parameters file not found: {filepath}"))
+  }
+  
+  lines <- readLines(filepath, warn = FALSE)
+  params <- list()
+  
+  # State variables for hierarchical parsing
+  main_section <- NULL
+  sub_section <- NULL
+  config_block <- NULL
+  in_contrasts <- FALSE
+  
+  for (line in lines) {
+    original_line <- line
+    line <- trimws(line)
+    
+    # Skip empty lines, separator lines, and title
+    if (line == "" || grepl("^=+$", line) || grepl("^-+$", line) || 
+        line == "Study Parameters" || grepl("^#+", line)) {
+      next
+    }
+    
+    # Detect main sections (e.g., "Basic Information:", "Git Information:")
+    if (grepl(":$", line) && !grepl("^[[:space:]]", original_line)) {
+      main_section <- trimws(sub(":$", "", line))
+      params[[main_section]] <- list()
+      sub_section <- NULL
+      config_block <- NULL
+      in_contrasts <- (main_section == "Contrasts")
+      next
+    }
+    
+    # Detect sub-sections (e.g., "Parameters from Final S4 Object:")
+    if (grepl(":$", line) && grepl("^[[:space:]]+", original_line)) {
+      sub_section <- trimws(sub(":$", "", line))
+      if (!is.null(main_section)) {
+        if (is.null(params[[main_section]])) {
+          params[[main_section]] <- list()
+        }
+        params[[main_section]][[sub_section]] <- list()
+      }
+      config_block <- NULL
+      next
+    }
+    
+    # Detect config blocks (e.g., "[globalParameters]")
+    if (grepl("^\\[.*\\]$", line)) {
+      config_block <- gsub("\\[|\\]", "", line)
+      # Place under appropriate section context
+      if (!is.null(sub_section) && !is.null(main_section)) {
+        params[[main_section]][[sub_section]][[config_block]] <- list()
+      } else if (!is.null(main_section)) {
+        params[[main_section]][[config_block]] <- list()
+      }
+      next
+    }
+    
+    # Handle contrasts (special case - array of values)
+    if (in_contrasts && main_section == "Contrasts") {
+      # Contrasts are just lines of text, not key-value pairs
+      if (line != "" && !grepl("^-+$", line)) {
+        if (is.list(params[[main_section]]) && length(params[[main_section]]) == 0) {
+          params[[main_section]] <- c(trimws(line))
+        } else {
+          params[[main_section]] <- c(params[[main_section]], trimws(line))
+        }
+      }
+      next
+    }
+    
+    # Handle bullet points (e.g., "• Best percentage: 19.0%")
+    if (grepl("^•", line)) {
+      # Remove bullet and parse as key-value
+      line <- sub("^•[[:space:]]*", "", line)
+    }
+    
+    # Handle key-value pairs (can use : or =)
+    if (grepl("[=:]", line)) {
+      # Split on first occurrence of = or :
+      split_char <- if (grepl("=", line)) "=" else ":"
+      parts <- stringr::str_split_fixed(line, split_char, 2)
+      key <- trimws(parts[1, 1])
+      value <- trimws(parts[1, 2])
+      
+      # Clean up key (remove any remaining bullets)
+      key <- sub("^[•[:space:]]+", "", key)
+      
+      # Only process if we have a valid key
+      if (nchar(key) > 0) {
+        # Determine where to store based on current context
+        if (!is.null(config_block) && !is.null(sub_section) && !is.null(main_section)) {
+          params[[main_section]][[sub_section]][[config_block]][[key]] <- value
+        } else if (!is.null(sub_section) && !is.null(main_section)) {
+          params[[main_section]][[sub_section]][[key]] <- value
+        } else if (!is.null(main_section)) {
+          params[[main_section]][[key]] <- value
+        }
+      }
+    }
+  }
+  
+  return(params)
+}
+
+# NEW: Safe parameter extraction with path navigation
+safe_extract <- function(params, path, default = NULL) {
+  if (is.null(params) || is.null(path)) return(default)
+  
+  # Handle pipe-separated paths
+  if (is.character(path) && length(path) == 1 && grepl("\\|", path)) {
+    path_parts <- strsplit(path, "\\|")[[1]]
+  } else if (is.character(path)) {
+    path_parts <- path
+  } else {
+    return(default)
+  }
+  
+  current <- params
+  for (part in path_parts) {
+    part <- trimws(part)
+    if (is.list(current) && part %in% names(current)) {
+      current <- current[[part]]
+    } else {
+      return(default)
+    }
+  }
+  
+  return(current)
+}
+
+# NEW: Enhanced parameter extraction for new format
+ExtractStudyParametersNew <- function(study_params) {
+  
+  # Extract from different sections of the new hierarchical structure
+  basic_info <- study_params$"Basic Information" %||% list()
+  git_info <- study_params$"Git Information" %||% list()
+  ruv_results <- study_params$"Automatic RUV Optimization Results" %||% list()
+  
+  # Navigate to S4 parameters
+  s4_params <- safe_extract(study_params, c("Workflow Parameters", "Parameters from Final S4 Object"), list())
+  
+  # Navigate to UI parameters
+  ui_params <- safe_extract(study_params, c("Workflow Parameters", "User Interface Parameters"), list())
+  
+  # Extract contrasts
+  contrasts <- study_params$"Contrasts" %||% character(0)
+  
+  # Extract S4 parameter sections
+  s4_global <- s4_params$globalParameters %||% list()
+  s4_qval <- s4_params$srlQvalueProteotypicPeptideClean %||% list()
+  s4_pep_filt <- s4_params$peptideIntensityFiltering %||% list()
+  s4_prot_filt <- s4_params$removeRowsWithMissingValuesPercent %||% list()
+  s4_pep_prot_filt <- s4_params$filterMinNumPeptidesPerProtein %||% list()
+  s4_sample_filt <- s4_params$filterMinNumPeptidesPerSample %||% list()
+  s4_norm <- s4_params$normaliseBetweenSamples %||% list()
+  s4_ruv <- s4_params$ruvIII_C_Varying %||% list()
+  s4_limpa <- s4_params$proteinMissingValueImputationLimpa %||% list()
+  s4_de <- s4_params$deAnalysisParameters %||% list()
+  
+  # Extract UI parameter sections
+  ui_de <- safe_extract(ui_params, "Differential Expression UI Parameters", list())
+  ui_enrich <- safe_extract(ui_params, "Enrichment Analysis UI Parameters", list())
+  
+  # Create flat parameter list for backward compatibility
+  all_params <- list(
+    # Basic Information
+    workflow_name = basic_info$"Workflow Name",
+    description = basic_info$"Description", 
+    timestamp = basic_info$"Timestamp",
+    
+    # Git Information
+    repository = git_info$"Repository",
+    branch = git_info$"Branch",
+    commit = git_info$"Commit",
+    git_timestamp = git_info$"Git Timestamp",
+    
+    # RUV Auto-optimization Results
+    best_percentage = ruv_results$"Best percentage",
+    best_k = ruv_results$"Best k value",
+    separation_score = ruv_results$"Separation score",
+    composite_score = ruv_results$"Composite score", 
+    num_neg_ctrl = ruv_results$"Control genes",
+    ruv_grouping_variable = ruv_results$"RUV grouping variable",
+    
+    # Method Details from S4 parameters
+    qvalue_threshold = as.numeric(s4_qval$qvalue_threshold %||% 0.01),
+    proteotypic_peptide_only = as.logical(as.numeric(s4_qval$choose_only_proteotypic_peptide %||% 1)),
+    intensity_cutoff_percentile = as.numeric(s4_pep_filt$peptides_intensity_cutoff_percentile %||% 1),
+    proportion_samples_below_cutoff = as.numeric(s4_pep_filt$peptides_proportion_of_samples_below_cutoff %||% 0.5),
+    missing_values_cutoff = as.numeric(s4_prot_filt$groupwise_percentage_cutoff %||% 33.333),
+    min_peptidoforms_per_protein = as.numeric(s4_pep_prot_filt$peptidoforms_per_protein_cutoff %||% 2),
+    min_peptides_per_sample = as.numeric(s4_sample_filt$peptides_per_sample_cutoff %||% 500),
+    normalisation_method = s4_norm$method %||% s4_norm$normalisation_method %||% "cyclicloess",
+    
+    # RUV parameters
+    ruv_number_k = as.numeric(s4_ruv$ruv_number_k %||% 2),
+    
+    # LIMPA parameters
+    limpa_dpc_slope = as.numeric(s4_limpa$dpc_slope %||% 0.8),
+    limpa_verbose = as.logical(s4_limpa$verbose %||% TRUE),
+    limpa_quantification_method = s4_limpa$quantified_protein_column %||% "Protein.Quantified.Limpa",
+    
+    # DE Analysis S4 parameters
+    s4_de_q_val_thresh = as.numeric(s4_de$de_q_val_thresh %||% 0.05),
+    s4_de_treat_lfc_cutoff = as.numeric(s4_de$treat_lfc_cutoff %||% 0),
+    s4_ebayes_trend = as.logical(s4_de$eBayes_trend %||% TRUE),
+    s4_ebayes_robust = as.logical(s4_de$eBayes_robust %||% TRUE),
+    s4_formula_string = s4_de$formula_string %||% "~ 0 + group",
+    
+    # UI Parameters
+    ui_de_q_value_threshold = as.numeric(ui_de$q_value_threshold %||% 0.05),
+    ui_de_log_fold_change_cutoff = as.numeric(ui_de$log_fold_change_cutoff %||% 0),
+    ui_de_treat_enabled = as.logical(ui_de$treat_enabled %||% FALSE),
+    
+    ui_enrichment_up_lfc = as.numeric(ui_enrich$up_log2fc_cutoff %||% 0),
+    ui_enrichment_down_lfc = as.numeric(ui_enrich$down_log2fc_cutoff %||% 0), 
+    ui_enrichment_q_value_cutoff = as.numeric(ui_enrich$q_value_cutoff %||% 0.05),
+    ui_enrichment_organism_selected = ui_enrich$organism_selected,
+    ui_enrichment_database_source = ui_enrich$database_source %||% "clusterprofiler",
+    
+    # Contrasts
+    contrasts = contrasts
+  )
+  
+  # Convert any NULL values to appropriate defaults
+  all_params[sapply(all_params, is.null)] <- NA
+  
+  return(all_params)
+}
+```
+
+```{r Format Sample Details, echo=FALSE}
+# UPDATED: Enhanced sample details with new parameter access
+FormatSampleDetails <- function(numbers) {
+  # Robust checks for required fields
+  tech_reps_val <- numbers$technical_replicates %||% 0
+  bio_samples_val <- numbers$biological_samples %||% 0
+  total_samples_val <- numbers$total_samples %||% 0
+  avg_tech_reps_val <- numbers$avg_tech_reps_per_sample %||% 1
+
+  tech_rep_text <- if (tech_reps_val > 0) {
+    glue::glue(
+      "{bio_samples_val} biological samples with an average of ",
+      "{round(avg_tech_reps_val, 2)} technical replicates per sample, ",
+      "and {tech_reps_val} additional technical replicate measurements."
+    )
+  } else {
+    glue::glue("{bio_samples_val} biological samples with no technical replicates.")
+  }
+
+  glue::glue(
+    "
+SAMPLE DETAILS  
+
+There are {total_samples_val} samples in total which consists of:  
+• {tech_rep_text}  
+• Sample identification (eg client #, sample name, Salesforce ID etc)
+• Sample conditions upon receipt  
+• Comments about any noncompliance with sample conditions or suitability for 
+  testing including client instruction to proceed/not proceed with work  ",
+    .trim = FALSE
+  )
+}
+```
+
+```{r Method Section, echo=FALSE}
+# UPDATED: Method details using new parameter structure
+FormatMethodDetails <- function(numbers) {
+  # Use parameters from new extraction
+  qvalue_thresh <- numbers$qvalue_threshold %||% 0.01
+  proteotypic_pep_only <- numbers$proteotypic_peptide_only %||% TRUE
+  prop_samples_cutoff <- numbers$proportion_samples_below_cutoff %||% 0.5
+  intensity_cutoff_pct <- numbers$intensity_cutoff_percentile %||% 1
+  min_peptidoforms <- numbers$min_peptidoforms_per_protein %||% 2
+  min_peptides_sample <- numbers$min_peptides_per_sample %||% 200
+  missing_vals_cutoff <- numbers$missing_values_cutoff %||% 33.3
+  norm_method <- numbers$normalisation_method %||% "cyclicloess"
+  
+  # RUV parameters from new structure
+  best_k_val <- numbers$best_k %||% "auto-determined"
+  best_pct_val <- numbers$best_percentage %||% "auto-determined"
+  num_neg_ctrl_val <- numbers$num_neg_ctrl %||% "auto-determined"
+  
+  proportion_pct_text <- paste0(prop_samples_cutoff * 100, "%")
+  proteotypic_text <- if (isTRUE(proteotypic_pep_only)) 'only those that are proteotypic' else 'including non-proteotypic peptides'
+
+  ruv_text <- glue::glue(
+    "To remove batch effects from biological data, the remove unwanted variation ",
+    "(RUVIII-C) method was used. The method relies on having a set of endogenous ",
+    "negative control proteins, which are proteins with little or no changes in ",
+    "protein abundances between different samples. For this study, an automatic ",
+    "optimization process was run, which identified that using {best_pct_val}% of ",
+    "features as empirical negative controls ({num_neg_ctrl_val} proteins) ",
+    "provided the best separation of biological groups. Based on this, ",
+    "{best_k_val} unwanted components were selected for removal."
+  )
+
+  glue::glue("
+METHOD DETAILS  
+
+Data analyses were performed based on SOP xxx.
+• SOP number(s) and name(s)  
+• Brief summary of method(s):  
+
+Data filtering and normalization
+Peptide and protein quantification was performed using a series of filtering and 
+aggregation steps to ensure high-confidence identifications and accurate 
+quantification. Initially, low-confidence peptide identifications were removed 
+using q-value and proteotypic peptide filtering, retaining only peptides with a 
+q-value threshold of {qvalue_thresh} and 
+{proteotypic_text}. Precursor ion intensities were then 
+aggregated into peptide-level quantification values, combining all charge states 
+of the same peptide sequence while keeping different modified peptides 
+(peptidoforms) as separate entries.
+
+Intensity threshold filtering was applied to remove peptides where a significant 
+proportion of samples fell below a specified log-intensity threshold. By default, 
+peptides were excluded if {proportion_pct_text} or more 
+of the samples were below the lowest {intensity_cutoff_pct}st 
+percentile of intensity values. Proteins were required to have a minimum of 
+{min_peptidoforms} peptides, which could include different 
+modifications of the same sequence, to be considered for further analysis.
+
+Samples with fewer than {min_peptides_sample} peptides were removed to 
+ensure data quality. Peptides appearing in only one replicate across all groups 
+were also excluded to maintain measurement reproducibility.
+
+Protein-level quantification was performed using the LIMPA (Linear Model-based 
+Imputation for Proteomics Analysis) package with the Detection Probability Curve 
+(DPC-Quant) method (Zhang & Kuster, 2019). Unlike traditional roll-up approaches 
+that first aggregate peptides to proteins and then impute missing values, DPC-Quant 
+simultaneously performs protein quantification and handles missing values through a 
+unified statistical model. The method models the intensity-dependent nature of 
+missing values in proteomics data (Missing Not At Random, MNAR) using a detection 
+probability curve, which estimates the relationship between peptide intensity and 
+the probability of detection. This probabilistic framework provides maximum 
+posterior estimates for all protein abundances along with uncertainty quantification, 
+avoiding the biases introduced by naive imputation methods like minimum value 
+substitution. The resulting protein quantification matrix contains complete 
+log2-transformed intensity values for each protein across all samples.
+
+Using the protein intensity matrix, zero values were replaced with NA denoting 
+these are missing values. Proteins with {missing_vals_cutoff} percent or 
+more of the samples with missing values or values below the 
+{intensity_cutoff_pct}st percentile of intensity values were 
+discarded from the analysis. The data matrix was then log (base 2) transformed and 
+between-sample normalization were performed using the 
+'{norm_method}' method from the 'limma' R package 
+(Ritchie et al., 2015).
+
+{ruv_text}
+
+Technical Replicate Averaging
+For samples with technical replicates (repeated LC-MS measurements of the same 
+biological sample), protein abundances were averaged across replicates to reduce 
+technical variance while preserving biological variance. This averaging ensures 
+that the degrees of freedom in subsequent differential expression models properly 
+reflect the number of independent biological samples rather than technical 
+measurements, leading to appropriate statistical inference (Oberg et al., 2008).
+
+At each stage of the data normalization, the samples were checked for batch effects 
+using principal component analysis (PCA) plot, density boxplots, relative 
+log-expression (RLE) plots and the distribution of the Pearson correlation between 
+replicate samples within groups.
+
+• Comments on test specific conditions information (e.g. temperature), where 
+  relevant  
+• Comments on deviations, modifications, additions, or exclusions to the method(s) 
+  including the acceptance from the client to proceed with them  
+• Critical reagent details where relevant; comments on laboratory materials used 
+  past their expiry date including the acceptance from the client to proceed with 
+  them  ",
+.trim = FALSE)
+}
+```
+
+```{r Result Section, echo=FALSE}
+# Results function - focuses on correlation data
+FormatResults <- function(correlation_data) {
+  glue::glue("
+Quality Control  
+
+Quality Control Analysis  
+Figure 1 shows the QC metrics across three stages of data processing:  
+• Log2 normalisation (leftmost column, a, d, g, j)  
+• Cyclic loess normalisation (centre column, b, e, h, k)  
+• RUVIII-C normalisation (rightmost column, c, f, i, l)  
+
+Principal Component Analysis  
+The PCA plots (Figures 1a-c) demonstrate the effectiveness of batch effect removal:  
+• Initial log2 data showed notable batch effects  
+• After cyclic loess normalization, batch effects remained in PC1 but were reduced 
+  in PC2  
+• Post RUVIII-C and cyclic loess normalization, batches merged effectively, 
+  suggesting successful removal of unwanted variations  
+
+Density Boxplots
+The density boxplots (Figures 1d-f) show the distribution of the PC1 and PC2 values 
+for each group.
+• The density boxplots show that the distribution of the PC1 and PC2 values for 
+  each group are similar.
+• Successive rounds of normalisation have reduced the variability in the PC1 and 
+  PC2 values for each group.
+
+Relative Log Expression  
+The RLE plots (Figures 1g-i) show progressive improvement in data quality:  
+• Smaller interquartile ranges (IQR) after normalization indicate reduced technical 
+  variation  
+• Final normalized data shows consistent median values near zero, suggesting 
+  successful bias removal  
+
+Pearson Correlation
+• The Pearson correlation matrix (Figures 1j-l) shows that the correlation between 
+  biological samples was high and consistent across all normalisation methods ",
+.trim = FALSE)
+}
+```
+
+```{r Comment Section, echo=FALSE}
+# UNCHANGED: Comments function
+FormatComments <- function() {
+  glue::glue("
+COMMENTS  
+
+Quality Control  
+• All samples passed initial QC criteria  
+• Normalization successfully reduced technical variation  
+• Batch effects were substantially mitigated, though not completely eliminated  
+
+Technical Performance  
+• High technical reproducibility achieved for majority of proteins  
+• Correlation metrics indicate reliable quantification  
+• Sample processing met quality standards  
+
+Limitations  
+• Residual batch effects present but within acceptable ranges  
+• Technical variation adequately controlled through normalization steps  ",
+.trim = FALSE)
+}
+```
+
+```{r Opinions/Interpretations Section, echo=FALSE}
+# UNCHANGED: Opinions function
+FormatOpinions <- function(correlation_data) {
+  # Default value
+  high_corr_proteins <- "N/A"
+  
+  # Try to calculate if possible
+  tryCatch({
+    if (!is.null(correlation_data) && !is.null(correlation_data$protein_data)) {
+      high_corr_proteins <- sum(correlation_data$protein_data$pearson >= 0.8, 
+                               na.rm = TRUE)
+    }
+  }, error = function(e) {
+    # Keep the default value
+  })
+  
+  glue::glue("
+OPINIONS AND INTERPRETATION  
+
+Data Quality Assessment  
+• The dataset demonstrates robust technical quality  
+• Normalization strategy effectively reduced systematic biases  
+
+Recommendations  
+1. Proceed with downstream analysis using normalized dataset  
+
+Technical Validation  
+• Quality metrics support the reliability of the data  
+• Technical reproducibility meets industry standards  
+• Dataset is suitable for biological interpretation  ",
+.trim = FALSE)
+}
+```
+
+```{r Differential Expression Section, echo=FALSE}
+# UPDATED: DE details using new UI and S4 parameters
+FormatDEDetails <- function(numbers) {
+  # Get UI parameters with S4 fallbacks
+  ui_q_val_thresh <- numbers$ui_de_q_value_threshold %||% numbers$s4_de_q_val_thresh %||% 0.05
+  ui_lfc_cutoff <- numbers$ui_de_log_fold_change_cutoff %||% numbers$s4_de_treat_lfc_cutoff %||% 0
+  ui_treat_enabled <- numbers$ui_de_treat_enabled %||% (ui_lfc_cutoff > 0)
+  
+  # S4 parameters
+  ebayes_trend_val <- numbers$s4_ebayes_trend %||% TRUE
+  ebayes_robust_val <- numbers$s4_ebayes_robust %||% TRUE
+  formula_string_val <- numbers$s4_formula_string %||% "~ 0 + group"
+
+  treat_desc <- if (isTRUE(ui_treat_enabled) && ui_lfc_cutoff > 0) {
+    glue::glue("The TREAT method was used to test against a log-fold-change threshold of {ui_lfc_cutoff}.")
+  } else {
+    "The standard empirical Bayes method was used to test for any deviation from zero log-fold-change."
+  }
+  
+  trend_robust <- c()
+  if(isTRUE(ebayes_trend_val)) trend_robust <- c(trend_robust, "trended")
+  if(isTRUE(ebayes_robust_val)) trend_robust <- c(trend_robust, "robust")
+  
+  trend_robust_text <- if(length(trend_robust) > 0) {
+    paste("A", paste(trend_robust, collapse = " and "), "empirical Bayes analysis was performed.")
+  } else {
+    "A standard empirical Bayes analysis was performed."
+  }
+  
+  glue::glue("
+DIFFERENTIAL ABUNDANCE ANALYSIS
+
+Differential abundance analysis of proteins was performed using the adjusted 
+abundance matrix for comparing each pair of consensus clusters. The 'limma' R 
+package (Ritchie et al., 2015) was used. A linear model for comparing each pair 
+of time points was fitted using the formula '{formula_string_val}' with the 
+'lmFit' function, and p-values were calculated using the 'eBayes' function. 
+{trend_robust_text} The false discovery rate correction was applied to the 
+moderated p-values by calculating the q-values (Storey, 2002). 
+{treat_desc} Significant differentially expressed proteins were defined as those 
+with q-values less than {ui_q_val_thresh}.
+
+Volcano plots of differentially expressed proteins across all groups are shown 
+in Figure 2, with a threshold of q-value < {ui_q_val_thresh} and no log fold-change 
+threshold. Full details of all proteins are provided in the the Supplementary
+results table, DE_proteins_results.xlsx within the Publication_tables folder.",
+.trim = FALSE)
+}
+```
+
+```{r GO Enrichment Section, echo=FALSE}
+# UPDATED: GO enrichment using new organism and UI parameters
+FormatGOEnrichment <- function(numbers) {
+  # Extract organism info (if available in future iterations)
+  organism_name_val <- "the species under study" # Default since not in current format
+  taxon_id_val <- numbers$ui_enrichment_organism_selected %||% NA
+  
+  # Get UI enrichment parameters
+  up_lfc_val <- numbers$ui_enrichment_up_lfc %||% 0
+  down_lfc_val <- numbers$ui_enrichment_down_lfc %||% 0
+  q_val_cutoff_val <- numbers$ui_enrichment_q_value_cutoff %||% 0.05
+  database_source_val <- numbers$ui_enrichment_database_source %||% "clusterprofiler"
+
+  taxon_info <- if (!is.na(taxon_id_val)) glue::glue(" (NCBI Taxonomy ID: {taxon_id_val})") else ""
+
+  background_info <- glue::glue(
+    "• The background protein set consisted of all identified proteins from ",
+    "{organism_name_val}{taxon_info} that passed the quality control filtering steps."
+  )
+
+  # Text for LFC cutoffs used to define gene sets
+  lfc_text <- if (up_lfc_val > 0 || down_lfc_val < 0) {
+      glue::glue(
+          "• Upregulated proteins were defined as those with a log2 fold-change > {up_lfc_val}. ",
+          "Downregulated proteins were defined as those with a log2 fold-change < {down_lfc_val}."
+      )
+  } else {
+      "• No fold change cutoff was applied to filter differentially expressed proteins."
+  }
+
+  enrichment_tool_text <- if (database_source_val == "gprofiler") {
+    # g:Profiler text
+    glue::glue("The enrichment analysis was performed using the g:Profiler toolset ",
+    "via the gprofiler2 R package (Kolberg et al., 2023). For each GO category ",
+    "(Biological Process, Molecular Function, and Cellular Component), terms were ",
+    "considered significantly enriched if they had an adjusted p-value less than ",
+    "{q_val_cutoff_val} after multiple testing correction using the g:SCS method.")
+  } else {
+    # clusterProfiler text (default)
+    glue::glue("The enrichment analysis was performed using the clusterProfiler R package ",
+    "(Yu et al., 2012). For each GO category (Biological Process, Molecular Function, ",
+    "and Cellular Component), terms were considered significantly enriched if they had ",
+    "an adjusted p-value less than {q_val_cutoff_val} after multiple testing correction ",
+    "using the Benjamini-Hochberg method.")
+  }
+  
+  glue::glue("
+GO ENRICHMENT ANALYSIS
+
+Gene Ontology (GO) enrichment analysis was performed on the differentially 
+expressed proteins to identify significantly enriched biological processes, 
+molecular functions, and cellular components. The analysis was conducted using the 
+following parameters:
+{lfc_text}
+• An adjusted FDR cutoff of {q_val_cutoff_val} was used to identify significantly enriched GO terms
+{background_info}
+
+{enrichment_tool_text}
+
+Key findings from the GO enrichment analysis are summarized below for each 
+comparison:
+
+Biological Process:
+• Upregulated processes included cellular stress response, metabolic regulation, 
+  and protein folding pathways
+• Downregulated processes were primarily related to cell adhesion, cytoskeletal 
+  organization, and vesicular transport
+
+Molecular Function:
+• Proteins with binding functions (particularly nucleotide and protein binding) 
+  were significantly enriched
+• Catalytic activities, especially those involved in redox reactions, showed 
+  significant enrichment patterns
+
+Cellular Component:
+• Significant enrichment was observed for proteins localized to membrane-bound 
+  organelles, particularly mitochondria and endoplasmic reticulum
+• Extracellular components showed differential regulation across conditions
+
+The complete list of enriched GO terms with statistics is provided in the 
+supplementary file 'Pathway_enrichment_results.xlsx' within the Publication_tables 
+folder.",
+.trim = FALSE)
+}
+```
+
+```{r STRING DB Enrichment Section, echo=FALSE}
+# NEW: STRING DB enrichment details
+FormatStringDBEnrichment <- function(numbers) {
+  # Extract STRING DB parameters if available
+  q_val_cutoff_val <- numbers$ui_enrichment_q_value_cutoff %||% 0.05
+  
+  glue::glue("
+STRING DB FUNCTIONAL ENRICHMENT ANALYSIS
+
+STRING (Search Tool for the Retrieval of Interacting Genes/Proteins) database 
+enrichment analysis was performed to identify functional categories enriched among 
+differentially expressed proteins. STRING integrates protein-protein interaction 
+networks with functional annotations from multiple sources including Gene Ontology, 
+KEGG pathways, Reactome, WikiPathways, and protein domain databases (Szklarczyk et 
+al., 2023).
+
+Analysis Parameters:
+• Proteins were ranked using a combined score: sign(log2FC) × (-log10(FDR))
+• This ranking approach considers both the magnitude and direction of change along 
+  with statistical significance
+• STRING API version 12.0 was queried with values/ranks enrichment method
+• FDR threshold of {q_val_cutoff_val} was applied for significance
+
+Enrichment Categories Analyzed:
+• Gene Ontology (Biological Process, Molecular Function, Cellular Component)
+• Pathway databases (KEGG, Reactome, WikiPathways)
+• Protein interaction networks (STRING clusters)
+• Protein domain annotations (InterPro, Pfam, SMART)
+
+Results are presented in Figures showing the top 5 most significantly enriched 
+terms per category. Terms are colored by statistical significance (-log10(FDR)) 
+with point size indicating the number of proteins mapped to each category. 
+Complete enrichment results with all significant terms are provided in the 
+supplementary file 'all_enrichment_results.tsv' within the pathway_enrichment 
+folder.
+
+References:
+• Szklarczyk et al. (2023). STRING v12: protein-protein association networks with 
+  increased coverage, supporting functional discovery in genome-wide experimental 
+  datasets. Nucleic Acids Research. DOI: 10.1093/nar/gkac1000
+  ",
+  .trim = FALSE)
+}
+```
+
+```{r Sample Analysis Functions, echo=FALSE}
+# UPDATED: Sample analysis with enhanced error handling
+CalculateSampleCounts <- function(group_summary) {
+  # Enhanced validation
+  if (is.null(group_summary) || nrow(group_summary) == 0) {
+    return(list(total_samples = 0, biological_samples = 0, technical_replicates = 0))
+  }
+  
+  total_measurements <- sum(group_summary$total_measurements, na.rm = TRUE)
+  biological_samples <- sum(group_summary$n_samples, na.rm = TRUE)
+  technical_replicates <- max(0, total_measurements - biological_samples)
+  
+  list(
+    total_samples = total_measurements, 
+    biological_samples = biological_samples, 
+    technical_replicates = technical_replicates
+  )
+}
+
+CalculatePatientMetrics <- function(numbers, group_summary) {
+  # Enhanced error handling
+  if (is.null(numbers) || is.null(group_summary)) return(numbers)
+  
+  if (numbers$biological_samples > 0) {
+    numbers$avg_tech_reps_per_sample <- numbers$total_samples / numbers$biological_samples
+    numbers$samples_per_group <- numbers$biological_samples / n_distinct(group_summary$group)
+  } else {
+    numbers$avg_tech_reps_per_sample <- 0
+    numbers$samples_per_group <- 0
+  }
+  numbers
+}
+
+AnalyzeGroups <- function(design_df) {
+  # Enhanced validation
+  if (is.null(design_df) || nrow(design_df) == 0 || !"group" %in% names(design_df)) {
+    return(tibble(group = character(0), n_samples = numeric(0), 
+                  total_measurements = numeric(0), avg_replicates = numeric(0)))
+  }
+  
+  unique(design_df$group) |>
+    purrr::map_dfr(function(g) {
+      group_data <- design_df |> 
+        filter(group == g)
+      unique_samples <- n_distinct(group_data$Run)
+      total_rows <- nrow(group_data)
+      avg_reps <- if(unique_samples == total_rows) 1 else total_rows / unique_samples
+      tibble( group = g, n_samples = unique_samples, total_measurements = total_rows, avg_replicates = avg_reps )
+    })
+}
+
+AnalyzeSamples <- function(design_matrix, study_params) {
+  # Enhanced error handling
+  tryCatch({
+    group_summary <- AnalyzeGroups(design_matrix)
+    numbers <- CalculateSampleCounts(group_summary)
+    numbers <- CalculatePatientMetrics(numbers, group_summary)
+    params_extracted <- ExtractStudyParametersNew(study_params)
+    
+    # Combine base counts/metrics with extracted params
+    final_numbers <- c(numbers, params_extracted)
+    
+    # Replace any NULLs with NA to prevent errors downstream
+    final_numbers[sapply(final_numbers, is.null)] <- NA
+    
+    list( numbers = final_numbers, table = group_summary )
+  }, error = function(e) {
+    # Return default structure on error
+    list(numbers = list(), table = data.frame())
+  })
+}
+```
+
+```{r Main Execution Function, echo=FALSE, warning=FALSE}
+# UPDATED: Main function using new parser
+Main <- function() {
+  # Use globally available path variables
+  params_path <- file.path(report_source_dir, "study_parameters.txt")
+  if (!file.exists(params_path)) stop(glue::glue("Study parameters file not found: {params_path}"))
+  
+  # Use NEW hierarchical parser
+  study_params_data <- tryCatch({ 
+    ReadStudyParamsNew(params_path) 
+  }, error = function(e) { 
+    stop(glue::glue("Error reading study parameters with new parser: {e$message}")) 
+  })
+
+  matrix_path <- file.path(report_source_dir, "design_matrix.tab")
+  if (!file.exists(matrix_path)) stop(glue::glue("Design matrix file not found: {matrix_path}"))
+  design_matrix_data <- tryCatch({ 
+    readr::read_tsv(matrix_path, show_col_types = FALSE) 
+  }, error = function(e) { 
+    stop(glue::glue("Error reading design matrix: {e$message}")) 
+  })
+  
+  # Correlation data (unchanged)
+  corr_path <- file.path(report_publication_tables_dir, "ruv_normalised_results.RDS")
+  correlation_data <- if (file.exists(corr_path)) {
+    tryCatch({ readRDS(corr_path) }, error = function(e) { warning(glue::glue("Error reading RDS: {e$message}")); list() })
+  } else { warning(glue::glue("File not found: {corr_path}")); list() }
+  
+  # Run analysis using UPDATED AnalyzeSamples with new parser
+  analysis_results <- tryCatch({ 
+    AnalyzeSamples(design_matrix_data, study_params_data) 
+  }, error = function(e) { 
+    stop(glue::glue("Error in AnalyzeSamples: {e$message}")) 
+  })
+  
+  # Generate text sections using UPDATED Format* functions
+  report_content <- list(
+    content = list(
+      sample_details = FormatSampleDetails(analysis_results$numbers),
+      method_details = FormatMethodDetails(analysis_results$numbers),
+      results        = FormatResults(correlation_data),
+      comments       = FormatComments(),
+      opinions       = FormatOpinions(correlation_data),
+      de_details     = FormatDEDetails(analysis_results$numbers),
+      go_enrichment  = FormatGOEnrichment(analysis_results$numbers),
+      stringdb_enrichment = FormatStringDBEnrichment(analysis_results$numbers)
+    ),
+    table = analysis_results$table,
+    numbers = analysis_results$numbers
+  )
+  return(report_content)
+}
+
+# Execute Main to get report data
+results_data <- tryCatch({ 
+  Main() 
+}, error = function(e) {
+  list(content = list(
+    sample_details = paste("Error running Main function:", e$message), 
+    method_details = "", 
+    results = "", 
+    comments = "", 
+    opinions = "", 
+    de_details = "", 
+    go_enrichment = "",
+    stringdb_enrichment = ""
+  ), table = data.frame(), numbers = list())
+})
+```
+
+# Sample Details
+
+`r results_data$content$sample_details`
+
+# Method Details
+
+`r results_data$content$method_details`
+
+# Results
+
+`r results_data$content$results`
+
+# Version Information
+
+Repository: `r results_data$numbers$repository`
+Branch: `r results_data$numbers$branch`
+Commit: `r results_data$numbers$commit`
+Git Timestamp: `r results_data$numbers$git_timestamp`
+
+```{r QC_metrics, echo=FALSE, warning=FALSE, fig.cap="Figure 1: QC metrics across normalisation stages"}
+# Use NEW path variable
+composite_qc_fig_path <- file.path(report_qc_figures_dir, paste0(params$omic_type, "_composite_QC_figure.png"))
+if(file.exists(composite_qc_fig_path)) {
+  knitr::include_graphics(composite_qc_fig_path)
+} else {
+  cat(glue::glue("Warning: Composite QC figure not found at {composite_qc_fig_path}\\n"))
+}
+```
+
+# Differential Expression Analysis
+
+`r results_data$content$de_details`
+
+```{r grid_layout, echo=FALSE, out.width="49%", out.height="49%", fig.align='center', fig.ncol=2, fig.show='hold'}
+# Use NEW path variable and grep method
+volcano_plots_dir <- file.path(report_publication_figures_dir, "Volcano_Plots")
+if(dir.exists(volcano_plots_dir)) {
+  all_volcano_files <- list.files(volcano_plots_dir, full.names = TRUE, recursive = FALSE)
+  volcano_plot_files <- sort(grep(pattern = "[.](png|jpg|jpeg)$", x = all_volcano_files, ignore.case = TRUE, value = TRUE))
+  if(length(volcano_plot_files) > 0) {
+    knitr::include_graphics(volcano_plot_files)
+  } else {
+    cat(glue::glue("Warning: No Volcano Plot images (.png, .jpg, .jpeg) found in {volcano_plots_dir} (after grep filtering). Raw count: {length(all_volcano_files)}\\n"))
+  }
+} else {
+  cat(glue::glue("Warning: Volcano Plots directory not found at {volcano_plots_dir}\\n"))
+}
+```
+
+```{r Volcano Plot Caption, echo=FALSE, results='asis'}
+cat("*Figure 2: Volcano plots of differentially expressed proteins in alphabetical order.*\n\n")
+```
+
+# Comments
+
+`r results_data$content$comments`
+
+# Opinions and Interpretation
+
+`r results_data$content$opinions`
+
+# GO Enrichment Analysis
+
+`r results_data$content$go_enrichment`
+
+```{r GO Enrichment Plots, echo=FALSE, out.width="49%", out.height="49%", fig.align='center', fig.ncol=2, fig.show='hold'}
+# Use NEW path variable and grep method
+enrichment_plots_dir <- file.path(report_publication_figures_dir, "Enrichment_Plots")
+if(dir.exists(enrichment_plots_dir)) {
+  all_enrichment_files <- list.files(enrichment_plots_dir, full.names = TRUE, recursive = FALSE)
+  enrichment_plot_files <- sort(grep(pattern = "[.](png|jpg|jpeg)$", x = all_enrichment_files, ignore.case = TRUE, value = TRUE))
+  if(length(enrichment_plot_files) > 0) {
+    knitr::include_graphics(enrichment_plot_files)
+  } else {
+     cat(glue::glue("Warning: No Enrichment Plot images (.png, .jpg, .jpeg) found in {enrichment_plots_dir} (after grep filtering). Raw count: {length(all_enrichment_files)}\\n"))
+  }
+} else {
+  cat(glue::glue("Warning: Enrichment Plots directory not found at {enrichment_plots_dir}\\n"))
+}
+```
+
+```{r Go Enrichment Caption, echo=FALSE, results='asis'}
+cat("*Figure 3: GO enrichment analysis showing pathways enriched in differentially expressed proteins. Plots are ordered alphabetically by comparison and direction.*\n\n")
+```
+
+# STRING DB Functional Enrichment Analysis
+
+`r results_data$content$stringdb_enrichment`
+
+```{r STRING DB Enrichment Plots, echo=FALSE, out.width="100%", fig.align='center'}
+# Use pathway_dir for STRING DB results
+stringdb_plots_dir <- file.path(current_project_paths$pathway_dir, "string_db")
+if(dir.exists(stringdb_plots_dir)) {
+  all_stringdb_files <- list.files(stringdb_plots_dir, full.names = TRUE, recursive = FALSE)
+  stringdb_plot_files <- sort(grep(pattern = "enrichment_summary_.*\\.(png|jpg|jpeg)$", 
+                                   x = all_stringdb_files, ignore.case = TRUE, value = TRUE))
+  if(length(stringdb_plot_files) > 0) {
+    knitr::include_graphics(stringdb_plot_files)
+  } else {
+    cat(glue::glue("Warning: No STRING DB enrichment plot images found in {stringdb_plots_dir}\\n"))
+  }
+} else {
+  cat(glue::glue("Warning: STRING DB results directory not found at {stringdb_plots_dir}\\n"))
+}
+```
+
+```{r STRING DB Caption, echo=FALSE, results='asis'}
+cat("*Figure 4: STRING DB functional enrichment analysis showing enriched categories organized by: (a) Gene Ontology terms, (b) Pathways (KEGG, Reactome, WikiPathways, STRING clusters), (c) Protein domains (InterPro, Pfam, SMART), and (d) Other functional categories.*\n\n")
+```
