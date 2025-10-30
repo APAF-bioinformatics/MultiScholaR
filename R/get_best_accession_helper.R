@@ -218,7 +218,7 @@ chooseBestProteinAccessionHelper <- function(input_tbl
                copy = TRUE,
                keep = NULL)  |>
     dplyr::select( { { group_id } }, one_of(c(row_id_column, "gene_name", "cleaned_acc",
-                                              "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"))) |>
+                                              "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length", "annotation_score"))) |>
     distinct() |>
     mutate(annotation_score = if_else(is.na(annotation_score), 0, annotation_score)) |>
     arrange( { { group_id } }, desc(annotation_score), protein_evidence, status, is_isoform, desc(seq_length), isoform_num)
@@ -291,7 +291,7 @@ rankProteinAccessionHelper <- function(input_tbl
                copy = TRUE,
                keep = NULL)  |>
     dplyr::select( { { group_id } }, one_of(c(row_id_column, "gene_name", "cleaned_acc",
-                                              "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"))) |>
+                                              "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length", "annotation_score"))) |>
     distinct() |>
     mutate(annotation_score = if_else(is.na(annotation_score), 0, annotation_score)) |>
     arrange( { { group_id } }, desc(annotation_score), protein_evidence, status, is_isoform, desc(seq_length), isoform_num)
