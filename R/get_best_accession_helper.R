@@ -239,7 +239,7 @@ chooseBestProteinAccessionHelper <- function(input_tbl
     distinct( { { group_id } }, gene_name, ranking) |>
     dplyr::filter(ranking == 1) |>
     left_join(score_isoforms |>
-                dplyr::select({ { group_id } }, ranking, gene_name, !!sym(row_id_column), protein_evidence),
+                dplyr::select({ { group_id } }, ranking, gene_name, !!sym(row_id_column), protein_evidence, annotation_score),
               by = join_by( {{ group_id }} == {{ group_id }}
                             , ranking == ranking
                             , gene_name == gene_name)) |>
@@ -311,7 +311,7 @@ rankProteinAccessionHelper <- function(input_tbl
   group_gene_names_and_uniprot_accs <- score_isoforms |>
     distinct( { { group_id } }, gene_name, ranking) |>
     left_join(score_isoforms |>
-                dplyr::select({ { group_id } }, ranking, gene_name, !!sym(row_id_column)),
+                dplyr::select({ { group_id } }, ranking, gene_name, !!sym(row_id_column), annotation_score),
               by = join_by( {{ group_id }} == {{ group_id }}
                             , ranking == ranking
                             , gene_name == gene_name)) |>
