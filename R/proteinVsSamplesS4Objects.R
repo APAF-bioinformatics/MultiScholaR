@@ -1354,6 +1354,10 @@ setMethod( f = "averageTechReps"
            , signature="ProteinQuantitativeData"
            , definition=function( theObject, design_matrix_columns=c(), biological_replicate_column = NULL  ) {
 
+             message("--- Entering averageTechReps ---")
+             message(sprintf("   averageTechReps Arg: design_matrix_columns = %s", capture.output(str(design_matrix_columns))))
+             message(sprintf("   averageTechReps Arg: biological_replicate_column = %s", biological_replicate_column))
+
              protein_quant_table <- theObject@protein_quant_table
              protein_id_column <- theObject@protein_id_column
              design_matrix <- theObject@design_matrix
@@ -1361,41 +1365,137 @@ setMethod( f = "averageTechReps"
              sample_id <- theObject@sample_id
              replicate_group_column <- theObject@technical_replicate_id
 
+             message("   averageTechReps: Extracted object components")
+             message(sprintf("   averageTechReps: protein_id_column = %s", protein_id_column))
+             message(sprintf("   averageTechReps: group_id = %s", group_id))
+             message(sprintf("   averageTechReps: sample_id = %s", sample_id))
+             message(sprintf("   averageTechReps: replicate_group_column = %s", replicate_group_column))
+
+             message("      Data State (protein_quant_table):")
+             message(sprintf("      Data State (protein_quant_table): Dims = %d rows, %d cols", nrow(protein_quant_table), ncol(protein_quant_table)))
+             utils::str(protein_quant_table)
+             message("      Data State (protein_quant_table) Head:")
+             print(head(protein_quant_table))
+
+             message("      Data State (design_matrix):")
+             message(sprintf("      Data State (design_matrix): Dims = %d rows, %d cols", nrow(design_matrix), ncol(design_matrix)))
+             utils::str(design_matrix)
+             message("      Data State (design_matrix) Head:")
+             print(head(design_matrix))
+
              # If biological_replicate_column is provided, use it for grouping
+             message("   averageTechReps Step: Checking biological_replicate_column...")
              if (!is.null(biological_replicate_column)) {
+               message(sprintf("   averageTechReps Condition TRUE: biological_replicate_column provided = %s", biological_replicate_column))
                grouping_column <- paste0(group_id, "_", biological_replicate_column)
+               message(sprintf("   averageTechReps: Created grouping_column = %s", grouping_column))
+
+               message("   averageTechReps Step: Adding grouping column to design_matrix...")
                design_matrix <- design_matrix %>%
-                 mutate(!!grouping_column := paste(!!sym(group_id), !!sym(biological_replicate_column), sep = "_"))
+                 mutate(!!sym(grouping_column) := paste(!!sym(group_id), !!sym(biological_replicate_column), sep = "_"))
+               message("   averageTechReps Step: Grouping column added to design_matrix")
+
                replicate_group_column <- grouping_column
+               message(sprintf("   averageTechReps: Set replicate_group_column to %s", replicate_group_column))
+
+               message("      Data State (design_matrix after grouping column):")
+               message(sprintf("      Data State (design_matrix): Dims = %d rows, %d cols", nrow(design_matrix), ncol(design_matrix)))
+               utils::str(design_matrix)
+               message("      Data State (design_matrix) Head:")
+               print(head(design_matrix))
+             } else {
+               message("   averageTechReps Condition FALSE: biological_replicate_column not provided")
              }
 
-             theObject@protein_quant_table <- protein_quant_table |>
+             message("   averageTechReps Step: Starting data processing pipeline...")
+
+             message("   averageTechReps Step: Pivoting protein_quant_table longer...")
+             pivoted_data <- protein_quant_table |>
                pivot_longer( cols = !matches( protein_id_column)
                              , names_to = sample_id
-                             , values_to = "Log2.Protein.Imputed") |>
+                             , values_to = "Log2.Protein.Imputed")
+             message("   averageTechReps Step: Pivot longer completed")
+
+             message("      Data State (pivoted_data):")
+             message(sprintf("      Data State (pivoted_data): Dims = %d rows, %d cols", nrow(pivoted_data), ncol(pivoted_data)))
+             message("      Data State (pivoted_data) Head:")
+             print(head(pivoted_data))
+
+             message("   averageTechReps Step: Performing left_join with design_matrix...")
+             joined_data <- pivoted_data |>
                left_join( design_matrix
-                          , by = join_by( !!sym(sample_id) == !!sym(sample_id))) |>
-               group_by( !!sym(protein_id_column), !!sym(replicate_group_column) )  |>
-               summarise( Log2.Protein.Imputed = mean( Log2.Protein.Imputed, na.rm = TRUE)) |>
-               ungroup() |>
+                          , by = join_by( !!sym(sample_id) == !!sym(sample_id)))
+             message("   averageTechReps Step: Left join completed")
+
+             message("      Data State (joined_data):")
+             message(sprintf("      Data State (joined_data): Dims = %d rows, %d cols", nrow(joined_data), ncol(joined_data)))
+             message("      Data State (joined_data) Head:")
+             print(head(joined_data))
+
+             message(sprintf("   averageTechReps Step: Grouping by %s and %s...", protein_id_column, replicate_group_column))
+             grouped_data <- joined_data |>
+               group_by( !!sym(protein_id_column), !!sym(replicate_group_column) )
+             message("   averageTechReps Step: Grouping completed")
+
+             message("   averageTechReps Step: Summarising (averaging)...")
+             summarised_data <- grouped_data |>
+               summarise( Log2.Protein.Imputed = mean( Log2.Protein.Imputed, na.rm = TRUE))
+             message("   averageTechReps Step: Summarising completed")
+
+             message("      Data State (summarised_data):")
+             message(sprintf("      Data State (summarised_data): Dims = %d rows, %d cols", nrow(summarised_data), ncol(summarised_data)))
+             message("      Data State (summarised_data) Head:")
+             print(head(summarised_data))
+
+             message("   averageTechReps Step: Ungrouping...")
+             ungrouped_data <- summarised_data |>
+               ungroup()
+             message("   averageTechReps Step: Ungrouping completed")
+
+             message("   averageTechReps Step: Pivoting wider...")
+             final_protein_table <- ungrouped_data |>
                pivot_wider( names_from = !!sym(replicate_group_column)
                             , values_from = Log2.Protein.Imputed)
+             message("   averageTechReps Step: Pivot wider completed")
 
-              theObject@sample_id <- theObject@technical_replicate_id
+             message("      Data State (final_protein_table):")
+             message(sprintf("      Data State (final_protein_table): Dims = %d rows, %d cols", nrow(final_protein_table), ncol(final_protein_table)))
+             message("      Data State (final_protein_table) Head:")
+             print(head(final_protein_table))
 
-              theObject@design_matrix <- design_matrix |>
+             theObject@protein_quant_table <- final_protein_table
+
+             message("   averageTechReps Step: Setting sample_id to technical_replicate_id...")
+             theObject@sample_id <- theObject@technical_replicate_id
+             message(sprintf("   averageTechReps: sample_id set to %s", theObject@sample_id))
+
+             message("   averageTechReps Step: Recreating design_matrix...")
+             new_design_matrix <- design_matrix |>
                 dplyr::select(-!!sym( sample_id)) |>
                 dplyr::select(all_of( unique( c( replicate_group_column,  group_id,  design_matrix_columns) ))) |>
                 dplyr::filter(!is.na(!!sym(replicate_group_column))) |>
                 dplyr::mutate(!!sym(replicate_group_column) := as.character(!!sym(replicate_group_column))) |>
-                distinct()
+                distinct(!!sym(replicate_group_column), .keep_all = TRUE)
+             message("   averageTechReps Step: Design matrix recreated")
 
-              theObject@sample_id <- replicate_group_column
-              theObject@technical_replicate_id <- NA_character_
+             message("      Data State (new_design_matrix):")
+             message(sprintf("      Data State (new_design_matrix): Dims = %d rows, %d cols", nrow(new_design_matrix), ncol(new_design_matrix)))
+             message("      Data State (new_design_matrix) Head:")
+             print(head(new_design_matrix))
 
-              theObject <- cleanDesignMatrix(theObject)
+             theObject@design_matrix <- new_design_matrix
 
-              theObject
+             message("   averageTechReps Step: Setting final sample_id and technical_replicate_id...")
+             theObject@sample_id <- replicate_group_column
+             theObject@technical_replicate_id <- NA_character_
+             message(sprintf("   averageTechReps: Final sample_id = %s", theObject@sample_id))
+
+             message("   averageTechReps Step: Calling cleanDesignMatrix...")
+             theObject <- cleanDesignMatrix(theObject)
+             message("   averageTechReps Step: cleanDesignMatrix completed")
+
+             message("--- Exiting averageTechReps ---")
+             theObject
 
            })
 
