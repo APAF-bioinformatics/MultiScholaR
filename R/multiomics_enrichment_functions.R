@@ -898,7 +898,7 @@ runOneStringDbRankEnrichmentMofa <- function( input_table
 #' # enrichment_plot <- printStringDbFunctionalEnrichmentBarGraph(enrichment_results_df)
 #' # print(enrichment_plot)
 #' }
-
+#' @export
 
 printStringDbFunctionalEnrichmentBarGraph <- function (input_table, word_limit = 10)
 {
