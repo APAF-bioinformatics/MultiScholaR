@@ -585,7 +585,7 @@ These visualizations provide complementary views of data quality and should be e
 # Calculate peptide matrix if not already done
 peptide_matrix_obj <- calcPeptideMatrix(peptide_normalised_tbl)
 
-# Step 2: Log2 transform
+# Log2 transform
 peptide_log2_obj <- log2TransformPeptideMatrix(peptide_matrix_obj)
 
 # Initialize QC composite figure
@@ -612,7 +612,7 @@ QC_composite_figure@pca_plots$peptide_pca_plot_plot_raw <- plotPca(
   shape_variable = "factor1",
   title = "",
   font_size = 8,
-  cv_percentile = 0.8
+  cv_percentile = 0.75
 )
 savePlot( QC_composite_figure@pca_plots$peptide_pca_plot_plot_raw,
   project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir, "peptide_pca_plot_plot_raw")
@@ -672,7 +672,7 @@ This section applies cyclic loess normalization to your peptide data and evaluat
 
 
 ```{r 11 Cyclic loess normalisation}
-# Step 3: Normalization (now operates on log2 data - correct!)
+# Normalization (now operates on log2 data - correct!)
 peptide_normalised_obj <- normaliseBetweenSamples(
   peptide_log2_obj,
   normalisation_method = "cyclicloess"
@@ -700,7 +700,7 @@ QC_composite_figure@pca_plots$peptide_pca_plot_plot_cyclicloess <- plotPca(
   shape_variable = "factor1",
   title = "",
   font_size = 8,
-  cv_percentile = 0.8
+  cv_percentile = 0.75
 )
 savePlot(
   QC_composite_figure@pca_plots$peptide_pca_plot_plot_cyclicloess,
@@ -767,6 +767,8 @@ The canonical correlation plot helps determine the optimal number of factors (k)
 
 ```{r 12 RUV-III-c paramater tuning and normalisation}
 # Find optimal percentage with automatic optimization
+## NB This is the slowest step in the workflow and may take a while to complete. This function systematically tests all possible percentages and k values to find the optimal parameters for your dataset.
+## Great place to grab a coffee!
 optimal_results_peptides <- findBestNegCtrlPercentagePeptides(
   peptide_normalised_obj,
   percentage_range = seq(1, 30, by = 1), 
@@ -811,7 +813,7 @@ QC_composite_figure@pca_plots$peptide_pca_plot_after_ruvIIIc_group <- plotPca(
   shape_variable = "factor1",
   title = "",
   font_size = 8,
-  cv_percentile = 0.8
+  cv_percentile = 0.75
 )
 
 QC_composite_figure@density_plots$density_plot_after_ruvIIIc_group <- plotDensity(
@@ -994,7 +996,7 @@ QC_composite_figure@pca_plots$pca_plot_protein <- plotPca(
   shape_variable = "factor1",
   title = "",
   font_size = 8,
-  cv_percentile = 0.8
+  cv_percentile = 0.75
 )
 savePlot(
   QC_composite_figure@pca_plots$pca_plot_protein,
@@ -1162,7 +1164,7 @@ QC_composite_figure@pca_plots$pca_plot_protein_filtered <- plotPca(
   shape_variable = "factor1",
   title = "",
   font_size = 8,
-  cv_percentile = 0.8
+  cv_percentile = 0.75
 )
 savePlot(
   QC_composite_figure@pca_plots$pca_plot_protein_filtered ,
