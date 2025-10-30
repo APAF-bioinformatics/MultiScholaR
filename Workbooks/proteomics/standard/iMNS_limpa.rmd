@@ -1246,18 +1246,24 @@ This section averages protein abundances across technical replicates to reduce t
 **Important Note**: This averaging is appropriate for technical replicates only. Biological replicates should never be averaged before differential expression analysis, as biological variation is the signal of interest.
 
 ```{r}
-# Grouping by Sample ID minus the rep suffix
-ruv_normalised_filtered_results_obj@technical_replicate_id <- "factor2"  
-
 # Keep relevant metadata columns
 ruv_normalised_for_de_analysis_obj <- averageTechReps(
     ruv_normalised_filtered_results_obj,
-    design_matrix_columns = c("group", "factor2")  
+    design_matrix_columns = c("group", "factor1", "factor2", "tech_reps"),
+    biological_replicate_column = "replicates"  # NEW: averages within (group, replicates) combinations
 )
 
 
-# ruv_normalised_filtered_results_obj@protein_quant_table
-# ruv_normalised_filtered_results_obj@design_matrix
+pca_plot_averaged <- plotPca(
+  ruv_normalised_for_de_analysis_obj,
+  grouping_variable = "factor1",
+  label_column = "factor2",
+  shape_variable = "factor1",
+  title = "",
+  font_size = 3,
+  cv_percentile = 0.75
+)
+pca_plot_averaged
 
 vroom::vroom_write( ruv_normalised_for_de_analysis_obj@protein_quant_table, 
              file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir, "proteomics_ruv_normalised_for_de_analysis_obj.tsv"))
