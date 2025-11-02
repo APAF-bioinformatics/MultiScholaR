@@ -1848,6 +1848,61 @@ updateRuvParameters <- function(config_list, best_k, control_genes_index, percen
   return(config_list)
 }
 
+#' @title Download Report Template from GitHub
+#' @description Downloads a report template from the MultiScholaR GitHub repository
+#'              and caches it locally for future use.
+#' @param omic_type Character string, the omic type (e.g., "proteomics")
+#' @param rmd_filename Character string, the template filename (e.g., "DIANN_limpa_report.rmd")
+#' @return Character string, path to the downloaded/cached template file
+#' @keywords internal
+downloadReportTemplate <- function(omic_type, rmd_filename) {
+    # Create cache directory using tools (base R, no extra dependencies)
+    if (requireNamespace("rappdirs", quietly = TRUE)) {
+        cache_base <- rappdirs::user_cache_dir("MultiScholaR")
+    } else {
+        # Fallback to temp directory if rappdirs not available
+        cache_base <- file.path(tempdir(), "MultiScholaR_cache")
+    }
+    
+    cache_dir <- file.path(cache_base, "report_templates", omic_type, "report")
+    dir.create(cache_dir, recursive = TRUE, showWarnings = FALSE)
+    
+    # Local cache file path
+    cached_file <- file.path(cache_dir, rmd_filename)
+    
+    # If already cached and less than 7 days old, return it
+    if (file.exists(cached_file)) {
+        file_age_days <- as.numeric(difftime(Sys.time(), file.info(cached_file)$mtime, units = "days"))
+        if (file_age_days < 7) {
+            logger::log_info("Using cached template: {cached_file}")
+            return(cached_file)
+        } else {
+            logger::log_info("Cached template is older than 7 days, re-downloading...")
+        }
+    }
+    
+    # GitHub URL (raw content from main branch)
+    github_url <- sprintf(
+        "https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/main/Workbooks/%s/report/%s",
+        omic_type, rmd_filename
+    )
+    
+    logger::log_info("Downloading template from GitHub: {github_url}")
+    
+    # Download
+    tryCatch({
+        download.file(github_url, cached_file, mode = "wb", quiet = TRUE)
+        logger::log_info("Successfully downloaded template to: {cached_file}")
+        return(cached_file)
+    }, error = function(e) {
+        rlang::abort(paste0(
+            "Failed to download template '", rmd_filename, "' from GitHub.\n",
+            "URL: ", github_url, "\n",
+            "Error: ", e$message
+        ))
+    })
+}
+
 ##################################################################################################################
 #' @export
 #' @importFrom rlang abort
@@ -1906,20 +1961,57 @@ RenderReport <- function(omic_type,
     if (is.null(rmd_filename)) {
         if (workflow_name == "DIA_limpa") {
             rmd_filename <- "DIANN_limpa_report.rmd"
+        } else if (workflow_name == "DIA") {
+            # TODO: Create DIA-specific report template if needed
+            rmd_filename <- "DIANN_report.rmd"  # Using standard template for now
+        } else if (workflow_name == "TMT") {
+            # TODO: Create TMT-specific report template if needed
+            rmd_filename <- "TMT_report.rmd"  # Assuming TMT template exists or will be created
         } else {
-            rmd_filename <- "DIANN_report.rmd"
+            rmd_filename <- "DIANN_report.rmd"  # Default template
         }
     }
 
-    # --- Determine the source Rmd template directory ---
-    # Report templates are located in Workbooks/<omic_type>/report/
-    rmd_template_dir <- file.path(current_paths$base_dir, "Workbooks", omic_type, "report")
-    rmd_input_path <- file.path(rmd_template_dir, rmd_filename)
+    # --- Locate the Rmd template file ---
+    # Templates are part of the MultiScholaR package installation
+    # First try package location, then download from GitHub if not found
     
-    if (!file.exists(rmd_input_path)) {
-        rlang::abort(paste0("R Markdown template file not found at the expected location: ", sQuote(rmd_input_path),
-                           ". This should be in the Workbooks/<omic_type>/report/ directory (e.g., Workbooks/proteomics/report/)."))
+    logger::log_info("Looking for template '{rmd_filename}' for omic type '{omic_type}'")
+    
+    # Try package installation location
+    rmd_input_path <- system.file("Workbooks", omic_type, "report", rmd_filename, 
+                                  package = "MultiScholaR")
+    
+    if (file.exists(rmd_input_path) && nzchar(rmd_input_path)) {
+        logger::log_info("Found template in package installation: {rmd_input_path}")
+    } else {
+        # Download from GitHub as fallback
+        logger::log_info("Template not found in package installation, attempting download from GitHub...")
+        rmd_input_path <- downloadReportTemplate(omic_type, rmd_filename)
     }
+    
+    # Final validation
+    if (!file.exists(rmd_input_path) || !nzchar(rmd_input_path)) {
+        rlang::abort(paste0(
+            "Unable to locate or download R Markdown template: ", sQuote(rmd_filename), "\n",
+            "Omic type: ", omic_type, "\n",
+            "Template should exist in package or be downloadable from:\n",
+            "https://github.com/APAF-bioinformatics/MultiScholaR/tree/main/Workbooks/",
+            omic_type, "/report/"
+        ))
+    }
+    
+    # --- Copy template to temporary location in project ---
+    # This ensures knitr creates correct relative paths from project location
+    # instead of from the package directory
+    # Place temp file in BASE directory so relative paths work correctly
+    temp_rmd_dir <- file.path(current_paths$base_dir, ".temp_reports")
+    dir.create(temp_rmd_dir, recursive = TRUE, showWarnings = FALSE)
+    
+    temp_rmd_path <- file.path(temp_rmd_dir, basename(rmd_filename))
+    file.copy(rmd_input_path, temp_rmd_path, overwrite = TRUE)
+    
+    logger::log_info("Copied template to temporary location: {temp_rmd_path}")
 
     # --- Construct Output Path (in the labelled results_summary directory) ---
     output_file_basename <- paste0(tools::file_path_sans_ext(rmd_filename), 
@@ -1941,14 +2033,15 @@ RenderReport <- function(omic_type,
 
     logger::log_info("Attempting to render report:")
     logger::log_info("- Rmd Source (Template): {rmd_input_path}")
+    logger::log_info("- Rmd Temporary Copy: {temp_rmd_path}")
     logger::log_info("- Output File: {output_file_path}")
     logger::log_info("- Params: omic_type=\'{omic_type}\', experiment_label=\'{experiment_label}\'")
 
 
     # --- Render the Report ---
     rendered_path <- tryCatch({
-        rmarkdown::render(
-            input = rmd_input_path,
+        result <- rmarkdown::render(
+            input = temp_rmd_path,  # Use temporary copy in base directory
             params = list(
                 omic_type = omic_type,
                 experiment_label = experiment_label,
@@ -1959,9 +2052,24 @@ RenderReport <- function(omic_type,
             output_format = output_format, # Pass this along; if NULL, Rmd default is used
             envir = new.env(parent = globalenv()) # Render in a clean environment
         )
+        
+        # Clean up temporary file after successful render
+        if (file.exists(temp_rmd_path)) {
+            unlink(temp_rmd_path)
+            logger::log_info("Cleaned up temporary template file")
+        }
+        
+        result
     }, error = function(e) {
+        # Clean up temporary file even on error
+        if (file.exists(temp_rmd_path)) {
+            unlink(temp_rmd_path)
+            logger::log_info("Cleaned up temporary template file after error")
+        }
+        
         logger::log_error("Failed to render R Markdown report: {e$message}")
         logger::log_error("Input path: {rmd_input_path}")
+        logger::log_error("Temporary path: {temp_rmd_path}")
         logger::log_error("Output path: {output_file_path}")
         NULL # Return NULL on failure
     })
@@ -2619,9 +2727,9 @@ setClass("WorkflowArgs",
 formatConfigList <- function(config_list, indent = 0) {
     output <- character()
 
-    # Exclude internal_workflow_source_dir from printing
+    # Exclude internal_workflow_source_dir and optimization_results from printing
     names_to_process <- names(config_list)
-    names_to_process <- names_to_process[names_to_process != "internal_workflow_source_dir"]
+    names_to_process <- names_to_process[!names_to_process %in% c("internal_workflow_source_dir", "optimization_results")]
 
     for (name in names_to_process) {
         value <- config_list[[name]]
@@ -2729,6 +2837,58 @@ setMethod("show",
                 ""
             )
         }
+        
+        # Check for optimization results
+        optimization_section <- character()
+        if (!is.null(object@args$optimization_results) && is.list(object@args$optimization_results)) {
+            opt_res <- object@args$optimization_results
+            
+            opt_lines <- c(
+                "Automatic RUV Optimization Results:",
+                "-----------------------------------"
+            )
+            
+            # Format optimization results
+            tryCatch({
+                if (!is.null(opt_res$best_percentage)) {
+                    opt_lines <- c(opt_lines, paste("• Best percentage:", sprintf("%.1f%%", opt_res$best_percentage)))
+                }
+                if (!is.null(opt_res$best_k)) {
+                    opt_lines <- c(opt_lines, paste("• Best k value:", opt_res$best_k))
+                }
+                if (!is.null(opt_res$best_separation_score)) {
+                    opt_lines <- c(opt_lines, paste("• Separation score:", sprintf("%.4f", opt_res$best_separation_score)))
+                }
+                if (!is.null(opt_res$best_composite_score)) {
+                    opt_lines <- c(opt_lines, paste("• Composite score:", sprintf("%.4f", opt_res$best_composite_score)))
+                }
+                if (!is.null(opt_res$best_control_genes_index)) {
+                    control_count <- sum(opt_res$best_control_genes_index, na.rm = TRUE)
+                    opt_lines <- c(opt_lines, paste("• Control genes:", control_count))
+                }
+                if (!is.null(opt_res$separation_metric_used)) {
+                    opt_lines <- c(opt_lines, paste("• Separation metric:", opt_res$separation_metric_used))
+                }
+                if (!is.null(opt_res$k_penalty_weight)) {
+                    opt_lines <- c(opt_lines, paste("• K penalty weight:", sprintf("%.1f", opt_res$k_penalty_weight)))
+                }
+                if (!is.null(opt_res$adaptive_k_penalty_used)) {
+                    opt_lines <- c(opt_lines, paste("• Adaptive penalty:", ifelse(opt_res$adaptive_k_penalty_used, "TRUE", "FALSE")))
+                }
+                if (!is.null(opt_res$sample_size) && !is.na(opt_res$sample_size)) {
+                    opt_lines <- c(opt_lines, paste("• Sample size:", opt_res$sample_size))
+                }
+                
+                optimization_section <- c(opt_lines, "")
+            }, error = function(e) {
+                optimization_section <- c(
+                    "Automatic RUV Optimization Results:",
+                    "-----------------------------------",
+                    paste("• [Error formatting optimization results:", e$message, "]"),
+                    ""
+                )
+            })
+        }
 
         config_header <- c(
             "Configuration Parameters (from @args slot):",
@@ -2736,7 +2896,11 @@ setMethod("show",
         )
         
         args_to_print <- object@args
-        # internal_workflow_source_dir is already excluded by formatConfigList
+        # internal_workflow_source_dir and optimization_results are excluded
+        # (optimization_results is shown in its own section above)
+        if (!is.null(args_to_print$optimization_results)) {
+            args_to_print$optimization_results <- NULL
+        }
 
         params <- formatConfigList(args_to_print) 
 
@@ -2763,7 +2927,7 @@ setMethod("show",
             }
         }
 
-        output <- c(header, git_section, organism_section, config_header, params, contrasts_section)
+        output <- c(header, git_section, organism_section, optimization_section, config_header, params, contrasts_section)
         cat(paste(output, collapse = "\n"), "\n")
 
         # Save to file if internal_workflow_source_dir is defined in args and is valid
@@ -2908,6 +3072,60 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
                  })
              }
          }
+     }
+     
+     # Check for workflow-specific optimization results in R environment
+     # These take precedence over workflow_data results
+     cat("WORKFLOW ARGS: Checking for workflow-specific optimization results in R environment\n")
+     
+     if (workflow_name == "DIA_limpa") {
+         cat("WORKFLOW ARGS: Workflow is DIA_limpa, checking for optimal_results_peptides\n")
+         
+         # Try to find optimal_results_peptides in R environment
+         optimal_results_found <- FALSE
+         
+         # Check parent frame first, then global environment
+         if (exists("optimal_results_peptides", envir = parent.frame(), inherits = FALSE)) {
+             tryCatch({
+                 ruv_optimization_result <- get("optimal_results_peptides", envir = parent.frame())
+                 optimal_results_found <- TRUE
+                 cat("WORKFLOW ARGS: Found optimal_results_peptides in parent frame\n")
+             }, error = function(e) {
+                 cat(sprintf("WORKFLOW ARGS: Error getting optimal_results_peptides from parent frame: %s\n", e$message))
+             })
+         }
+         
+         if (!optimal_results_found && exists("optimal_results_peptides", envir = .GlobalEnv)) {
+             tryCatch({
+                 ruv_optimization_result <- get("optimal_results_peptides", envir = .GlobalEnv)
+                 optimal_results_found <- TRUE
+                 cat("WORKFLOW ARGS: Found optimal_results_peptides in global environment\n")
+             }, error = function(e) {
+                 cat(sprintf("WORKFLOW ARGS: Error getting optimal_results_peptides from global environment: %s\n", e$message))
+             })
+         }
+         
+         if (!optimal_results_found) {
+             cat("WORKFLOW ARGS: optimal_results_peptides not found in R environment for DIA_limpa workflow\n")
+         }
+         
+     } else if (workflow_name == "DIA") {
+         cat("WORKFLOW ARGS: Workflow is DIA\n")
+         # TODO: Determine object name for DIA workflow optimization results
+         # TODO: Implement logic similar to DIA_limpa once object name is determined
+         # Example structure:
+         # if (exists("optimal_results_OBJECTNAME", envir = .GlobalEnv)) {
+         #     ruv_optimization_result <- get("optimal_results_OBJECTNAME", envir = .GlobalEnv)
+         # }
+         
+     } else if (workflow_name == "TMT") {
+         cat("WORKFLOW ARGS: Workflow is TMT\n")
+         # TODO: Determine object name for TMT workflow optimization results
+         # TODO: Implement logic similar to DIA_limpa once object name is determined
+         # Example structure:
+         # if (exists("optimal_results_OBJECTNAME", envir = .GlobalEnv)) {
+         #     ruv_optimization_result <- get("optimal_results_OBJECTNAME", envir = .GlobalEnv)
+         # }
      }
      
      # Merge S4 parameters with config_list (S4 takes precedence)
@@ -3401,6 +3619,53 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
     } else {
         warning("'config_list' not found as a list in parent frame or global environment. WorkflowArgs @args slot will be empty or use prototype.", immediate. = TRUE)
     }
+    
+    # Check for workflow-specific optimization results in R environment
+    cat("WORKFLOW ARGS: Checking for workflow-specific optimization results in R environment\n")
+    
+    optimization_result <- NULL
+    if (workflow_name == "DIA_limpa") {
+        cat("WORKFLOW ARGS: Workflow is DIA_limpa, checking for optimal_results_peptides\n")
+        
+        # Try to find optimal_results_peptides in R environment
+        if (exists("optimal_results_peptides", envir = parent.frame(), inherits = FALSE)) {
+            tryCatch({
+                optimization_result <- get("optimal_results_peptides", envir = parent.frame())
+                cat("WORKFLOW ARGS: Found optimal_results_peptides in parent frame\n")
+            }, error = function(e) {
+                cat(sprintf("WORKFLOW ARGS: Error getting optimal_results_peptides from parent frame: %s\n", e$message))
+            })
+        }
+        
+        if (is.null(optimization_result) && exists("optimal_results_peptides", envir = .GlobalEnv)) {
+            tryCatch({
+                optimization_result <- get("optimal_results_peptides", envir = .GlobalEnv)
+                cat("WORKFLOW ARGS: Found optimal_results_peptides in global environment\n")
+            }, error = function(e) {
+                cat(sprintf("WORKFLOW ARGS: Error getting optimal_results_peptides from global environment: %s\n", e$message))
+            })
+        }
+        
+        if (is.null(optimization_result)) {
+            cat("WORKFLOW ARGS: optimal_results_peptides not found in R environment for DIA_limpa workflow\n")
+        }
+        
+    } else if (workflow_name == "DIA") {
+        cat("WORKFLOW ARGS: Workflow is DIA\n")
+        # TODO: Determine object name for DIA workflow optimization results
+        # TODO: Implement logic similar to DIA_limpa once object name is determined
+        
+    } else if (workflow_name == "TMT") {
+        cat("WORKFLOW ARGS: Workflow is TMT\n")
+        # TODO: Determine object name for TMT workflow optimization results
+        # TODO: Implement logic similar to DIA_limpa once object name is determined
+    }
+    
+    # Store optimization results in config_list if found
+    if (!is.null(optimization_result)) {
+        config_list_to_use$optimization_results <- optimization_result
+        cat("WORKFLOW ARGS: Stored optimization results in config_list\n")
+    }
 
     new_workflow_args <- new("WorkflowArgs",
         workflow_name = workflow_name,
@@ -3533,6 +3798,60 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
                  })
              }
          }
+     }
+     
+     # Check for workflow-specific optimization results in R environment
+     # These take precedence over workflow_data results
+     cat("WORKFLOW ARGS: Checking for workflow-specific optimization results in R environment\n")
+     
+     if (workflow_name == "DIA_limpa") {
+         cat("WORKFLOW ARGS: Workflow is DIA_limpa, checking for optimal_results_peptides\n")
+         
+         # Try to find optimal_results_peptides in R environment
+         optimal_results_found <- FALSE
+         
+         # Check parent frame first, then global environment
+         if (exists("optimal_results_peptides", envir = parent.frame(), inherits = FALSE)) {
+             tryCatch({
+                 ruv_optimization_result <- get("optimal_results_peptides", envir = parent.frame())
+                 optimal_results_found <- TRUE
+                 cat("WORKFLOW ARGS: Found optimal_results_peptides in parent frame\n")
+             }, error = function(e) {
+                 cat(sprintf("WORKFLOW ARGS: Error getting optimal_results_peptides from parent frame: %s\n", e$message))
+             })
+         }
+         
+         if (!optimal_results_found && exists("optimal_results_peptides", envir = .GlobalEnv)) {
+             tryCatch({
+                 ruv_optimization_result <- get("optimal_results_peptides", envir = .GlobalEnv)
+                 optimal_results_found <- TRUE
+                 cat("WORKFLOW ARGS: Found optimal_results_peptides in global environment\n")
+             }, error = function(e) {
+                 cat(sprintf("WORKFLOW ARGS: Error getting optimal_results_peptides from global environment: %s\n", e$message))
+             })
+         }
+         
+         if (!optimal_results_found) {
+             cat("WORKFLOW ARGS: optimal_results_peptides not found in R environment for DIA_limpa workflow\n")
+         }
+         
+     } else if (workflow_name == "DIA") {
+         cat("WORKFLOW ARGS: Workflow is DIA\n")
+         # TODO: Determine object name for DIA workflow optimization results
+         # TODO: Implement logic similar to DIA_limpa once object name is determined
+         # Example structure:
+         # if (exists("optimal_results_OBJECTNAME", envir = .GlobalEnv)) {
+         #     ruv_optimization_result <- get("optimal_results_OBJECTNAME", envir = .GlobalEnv)
+         # }
+         
+     } else if (workflow_name == "TMT") {
+         cat("WORKFLOW ARGS: Workflow is TMT\n")
+         # TODO: Determine object name for TMT workflow optimization results
+         # TODO: Implement logic similar to DIA_limpa once object name is determined
+         # Example structure:
+         # if (exists("optimal_results_OBJECTNAME", envir = .GlobalEnv)) {
+         #     ruv_optimization_result <- get("optimal_results_OBJECTNAME", envir = .GlobalEnv)
+         # }
      }
      
      # Merge S4 parameters with config_list (S4 takes precedence)

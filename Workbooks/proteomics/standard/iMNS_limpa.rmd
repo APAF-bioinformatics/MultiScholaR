@@ -1703,7 +1703,7 @@ This section saves all the parameters, configurations, and settings used through
 ```{r 22 Save Workflow Arguments and Study SUmmary} 
 # Create workflow args with config and git info
 workflow_args <- createWorkflowArgsFromConfig(
-  workflow_name = experiment_label
+  workflow_name = workflow_name
   , description = "Full protein analysis workflow with config parameters"
   , source_dir_path = file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$source_dir)
 ) 
@@ -1734,35 +1734,12 @@ copyToResultsSummary(
 )
 ```
 
-# Copy all study parameters to a Github repo for audit trail
-
-### Further Reading
-#### Version Control in Research
-- [Git for Data Analysis](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004668) - Using Git for data analysis projects
-
-This final step creates a complete GitHub repository containing all analysis parameters, configuration files, and essential results, establishing a permanent, version-controlled record of your analysis. Using Git for version control provides numerous benefits: it creates an immutable audit trail of your analysis, facilitates collaboration with team members, enables easy tracking of changes over time, and serves as a backup of your work. The repository can be shared with collaborators or cited in publications, allowing others to understand your methods in detail or even reproduce your analysis. This practice aligns with modern standards for computational reproducibility and transparent reporting in scientific research.
-
-
-```{r 24 Copy Output to Github}
-options(
-  github_org = "your org",
-  github_user_email = "your email",
-  github_user_name = "your username"
-)
-
-pushProjectToGithub(
-  base_dir = base_dir,
-  source_dir = source_dir,
-  project_id = "your project"
-)
-```
-
 # Render the report
 ## This will create a report in the report directory
 ### The report contains all the information from the workflow including results, parameters, methods and figures
 
-```{r 25 Render Report}
+```{r 24 Render Report}
 RenderReport(omic_type = omic_type
                          , experiment_label = experiment_label
-                         , rmd_filename = "DIANN_report.rmd")
+                         , rmd_filename = "DIANN_limpa_report.rmd")
 ```
