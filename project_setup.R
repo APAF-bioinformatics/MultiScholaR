@@ -110,11 +110,78 @@ downloadTutorialData <- function(tutorial_name, tutorial_config, base_data_dir) 
       }
       
       message("Download successful! (", round(file_info$size / 1024 / 1024, 2), " MB)")
-      message("Unzipping to: ", target_dir)
       
       # Try to unzip
       unzip_result <- tryCatch({
-        unzip(zip_path, exdir = target_dir)
+        # Create a temporary extraction directory
+        temp_extract_dir <- file.path(target_dir, "temp_extract")
+        if (dir.exists(temp_extract_dir)) {
+          unlink(temp_extract_dir, recursive = TRUE)
+        }
+        dir.create(temp_extract_dir, recursive = TRUE)
+        
+        message("Extracting archive...")
+        unzip(zip_path, exdir = temp_extract_dir)
+        
+        # Find the nested folder (should be IMNS_bookchapter or similar)
+        extracted_contents <- list.files(temp_extract_dir, full.names = TRUE)
+        
+        if (length(extracted_contents) == 1 && dir.exists(extracted_contents[1])) {
+          # We have a single top-level folder
+          nested_folder <- extracted_contents[1]
+          
+          # Move data folder contents
+          nested_data_dir <- file.path(nested_folder, "data")
+          if (dir.exists(nested_data_dir)) {
+            message("Moving tutorial data files...")
+            # Copy data contents to target_dir (which is data/proteomics)
+            data_files <- list.files(nested_data_dir, full.names = TRUE, recursive = FALSE)
+            for (data_file in data_files) {
+              dest_path <- file.path(target_dir, basename(data_file))
+              if (dir.exists(data_file)) {
+                # Copy directory recursively
+                dir.create(dest_path, recursive = TRUE, showWarnings = FALSE)
+                file.copy(from = list.files(data_file, full.names = TRUE, recursive = TRUE, all.files = TRUE),
+                         to = dest_path, recursive = TRUE)
+              } else {
+                # Copy file
+                file.copy(from = data_file, to = dest_path, overwrite = TRUE)
+              }
+            }
+          }
+          
+          # Move scripts folder contents
+          nested_scripts_dir <- file.path(nested_folder, "scripts")
+          if (dir.exists(nested_scripts_dir)) {
+            message("Moving tutorial script files...")
+            # Scripts should go to scripts/proteomics (parallel to data/proteomics)
+            scripts_target_dir <- file.path(dirname(dirname(target_dir)), "scripts", config$omic_type)
+            dir.create(scripts_target_dir, recursive = TRUE, showWarnings = FALSE)
+            
+            script_files <- list.files(nested_scripts_dir, full.names = TRUE, recursive = FALSE)
+            for (script_file in script_files) {
+              dest_path <- file.path(scripts_target_dir, basename(script_file))
+              if (dir.exists(script_file)) {
+                # Copy directory recursively
+                dir.create(dest_path, recursive = TRUE, showWarnings = FALSE)
+                file.copy(from = list.files(script_file, full.names = TRUE, recursive = TRUE, all.files = TRUE),
+                         to = dest_path, recursive = TRUE)
+              } else {
+                # Copy file
+                file.copy(from = script_file, to = dest_path, overwrite = TRUE)
+              }
+            }
+          }
+        } else {
+          # No nested folder, just extract everything to target
+          message("Extracting directly to: ", target_dir)
+          file.copy(from = list.files(temp_extract_dir, full.names = TRUE, recursive = TRUE),
+                   to = target_dir, recursive = TRUE)
+        }
+        
+        # Clean up temp directory
+        unlink(temp_extract_dir, recursive = TRUE)
+        
         TRUE
       }, error = function(e) {
         warning("Failed to unzip file: ", e$message, 
@@ -126,6 +193,7 @@ downloadTutorialData <- function(tutorial_name, tutorial_config, base_data_dir) 
       if (unzip_result) {
         file.remove(zip_path)
         message("Tutorial data ready in: ", target_dir)
+        message("Tutorial scripts (if any) ready in: scripts/", config$omic_type)
         return(TRUE)
       } else {
         message("Zip file retained at: ", zip_path, " for manual inspection")
