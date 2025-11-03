@@ -10,7 +10,8 @@ directUniprotDownload(
   taxon_id,
   batch_size = 25,
   timeout = 600,
-  api_delay = 1
+  api_delay = 1,
+  progress_callback = NULL
 )
 }
 \arguments{

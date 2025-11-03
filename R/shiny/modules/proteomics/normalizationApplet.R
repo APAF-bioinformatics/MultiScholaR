@@ -854,6 +854,19 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
             norm_data$normalized_protein_obj <- normalized_s4
             message("*** STEP 1: Between-samples normalization completed ***")
             
+            # Save post-normalization protein matrix (before RUV)
+            tryCatch({
+              if (!is.null(experiment_paths$protein_qc_dir)) {
+                vroom::vroom_write(
+                  normalized_s4@protein_quant_table,
+                  file.path(experiment_paths$protein_qc_dir, "normalized_protein_matrix_pre_ruv.tsv")
+                )
+                message("*** STEP 1b: Saved post-normalization protein matrix to protein_qc_dir ***")
+              }
+            }, error = function(e) {
+              message(paste("Warning: Could not save post-normalization matrix:", e$message))
+            })
+            
           }, error = function(e) {
             stop(paste("Step 1 (normalization) error:", e$message))
           })

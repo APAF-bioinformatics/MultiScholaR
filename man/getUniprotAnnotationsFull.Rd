@@ -9,7 +9,8 @@ getUniprotAnnotationsFull(
   protein_id_column,
   cache_dir,
   taxon_id = 9606,
-  chunk_size = 25
+  chunk_size = 25,
+  progress_callback = NULL
 )
 }
 \arguments{
@@ -30,12 +31,16 @@ Data frame with comprehensive UniProt annotations for proteins in the dataset
 Creates a comprehensive UniProt annotation lookup table using
 protein IDs from the actual imported data. This function extracts unique protein
 accessions by splitting protein groups and retrieves their annotations efficiently.
+
+Automatically detects and converts Ensembl protein IDs to UniProt IDs using gprofiler2
+before querying the UniProt API.
 }
 \details{
 This function:
 \itemize{
 \item Extracts unique protein groups from actual quantitative data
 \item Splits protein groups by semicolon to get individual protein IDs
+\item Detects if IDs are Ensembl format and converts to UniProt if needed
 \item Creates master list of unique individual proteins
 \item Uses efficient caching and retrieval logic for annotations
 \item Does NOT modify the original quantitative data
@@ -46,6 +51,7 @@ This approach is much more efficient than annotating all FASTA proteins because:
 \item Only annotates proteins actually present in the dataset
 \item Handles protein groups properly (A;B;C → A, B, C)
 \item Significantly reduces API calls and processing time
+\item Supports both UniProt and Ensembl protein IDs
 }
 }
 \examples{

@@ -27,7 +27,7 @@
 #' @importFrom stringr str_replace
 #' @importFrom tibble rownames_to_column
 #' @importFrom ggplot2 ggplot aes geom_bar scale_fill_discrete theme_bw theme element_text xlab ylab coord_flip ggtitle
-#' @importFrom MOFA2 get_weights
+##' @importFrom MOFA2 get_weights
 #' @export
 #'
 #' @examples
