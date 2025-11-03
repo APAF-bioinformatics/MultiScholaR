@@ -38,9 +38,9 @@ By streamlining complex multi-omics analyses, MultiScholaR makes advanced analyt
     <img src="https://img.shields.io/badge/Download-Rtools_(Windows)-276DC3?style=for-the-badge&logo=r" alt="Download Rtools for Windows">
 </a>
 
-### 2. Setup Script
+### 2. Setup Script for the Neurolincs dataset
 
-<a href="https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/main/project_setup.R" download="project_setup.R">
+<a href="https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/BookChapter/project_setup.R" download="project_setup.R">
     <img src="https://img.shields.io/badge/Download-Setup_Script-blue?style=for-the-badge&logo=r" alt="Download Setup Script">
 </a>
 
