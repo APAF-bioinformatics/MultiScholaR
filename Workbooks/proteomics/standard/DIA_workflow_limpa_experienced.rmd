@@ -35,7 +35,7 @@ This function checks for and installs all the required packages for the MultiSch
 ## IF THIS IS YOUR FIRST INSTALL, THIS WILL TAKE SOME TIME AS THERE ARE A NUMBER OF DEPENDENCIES TO INSTALL :)
 ## GOOD POINT TO GRAB A COFFEE!
 ```{r 1 MultiScholaR FIRST INSTALL, message=TRUE, warning=TRUE}
-
+# Setup the parameters to successfully install MultiScholaR and all its' dependencies
 installMultiScholaR <- function(verbose = TRUE) {
     # Install devtools if missing
     if (!requireNamespace("devtools", quietly = TRUE)) {
@@ -50,7 +50,6 @@ installMultiScholaR <- function(verbose = TRUE) {
     # Unload namespace
     try(unloadNamespace("MultiScholaR"), silent = TRUE)
 
-
     devtools::install_github(
         "APAF-BIOINFORMATICS/MultiScholaR",
         ref = "BookChapter", # limpa # "Bucket-Chemist/issue18"
@@ -61,28 +60,34 @@ installMultiScholaR <- function(verbose = TRUE) {
 
     # Load it
     library(MultiScholaR)
+    
+    # Load dependencies
+    loadDependencies()
+    
+    # Resolve package conflicts
+    if (verbose) message("Resolving package conflicts...")
+    conflict_prefer("select", "dplyr")
+    conflict_prefer("filter", "dplyr")
+    conflict_prefer("rename", "dplyr")
+    conflict_prefer("count", "dplyr")
+    conflict_prefer("slice", "dplyr")
+    conflict_prefer("setdiff", "base")
+    conflict_prefer("anyMissing", "Biobase")
+    conflict_prefer("expand", "S4Vectors")
+    conflicts_prefer(utils::head)
+    conflicts_prefer(dplyr::first)
+    conflicts_prefer(httr::content)
+    conflicts_prefer(plotly::config)
+    conflicts_prefer(purrr::flatten)
+    conflicts_prefer(MultiScholaR::savePlot)
+    conflicts_prefer(base::as.data.frame)
+    conflicts_prefer(base::as.factor)
+    
+    if (verbose) message("MultiScholaR setup complete!")
 }
 
+# Execute the install function
 installMultiScholaR()
-loadDependencies()
-
-conflict_prefer("select", "dplyr")
-conflict_prefer("filter", "dplyr")
-conflict_prefer("rename", "dplyr")
-conflict_prefer("count", "dplyr")
-conflict_prefer("slice", "dplyr")
-conflict_prefer("setdiff", "base")
-conflict_prefer("anyMissing", "Biobase")
-conflict_prefer("expand", "S4Vectors")
-conflicts_prefer(utils::head)
-conflicts_prefer(dplyr::first)
-conflicts_prefer(httr::content)
-conflicts_prefer(plotly::config)
-conflicts_prefer(purrr::flatten)
-conflicts_prefer(MultiScholaR::savePlot)
-conflicts_prefer(base::as.data.frame)
-conflicts_prefer(base::as.factor)
-
 ```
 
 # START HERE if you already have MultiScholaR installed
@@ -104,7 +109,6 @@ conflicts_prefer(base::as.factor)
 ```{r 1a Load MultiScholaR}
 library(MultiScholaR)
 loadDependencies()
-#MultiScholaRapp()
 ```
 
 # Set up your environment and project directory
@@ -133,7 +137,7 @@ loadDependencies()
 workflow_name <- "DIA_limpa"
 experiment_label <- "iMNS_bookchapter_analysis"
 omic_type <- "proteomics" # Set this to the type of analysis you are doing eg "proteomics", "metabolomics", "transcriptomics"
-# Setup for the central pillars of molecular biology
+# Setup for the proteomics only for this workflow
 
 project_dirs <- setupDirectories(
     #omic_types = "metabolomics"

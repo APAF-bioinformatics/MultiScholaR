@@ -1183,7 +1183,6 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
           
           # STEP 6 - ALWAYS GENERATE COMPOSITE QC (MOVED OUTSIDE STEP 5 TRY-CATCH)
           # Generate RUV-corrected QC plots
-          message("*** STEP 6: HOLY FUCK WE MADE IT TO STEP 6 ***")
           shiny::incProgress(0.2, detail = "Generating RUV-corrected QC plots...")
           message("*** STEP 6: STARTING RUV-corrected QC plot generation ***")
           
@@ -1210,7 +1209,6 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
           })
           
           # STEP 6B: ALWAYS generate composite QC figure (critical for copyToResultsSummary)
-          message("*** STEP 6B: FUCK IT, WE'RE DOING COMPOSITE QC NO MATTER WHAT ***")
           message(sprintf("*** STEP 6B: norm_data$qc_plots$post_filtering$pca is NULL: %s ***", is.null(norm_data$qc_plots$post_filtering$pca)))
           message(sprintf("*** STEP 6B: norm_data$qc_plots$post_normalization$pca is NULL: %s ***", is.null(norm_data$qc_plots$post_normalization$pca)))
           message(sprintf("*** STEP 6B: norm_data$qc_plots$ruv_corrected$pca is NULL: %s ***", is.null(norm_data$qc_plots$ruv_corrected$pca)))
