@@ -82,6 +82,8 @@ installMultiScholaR <- function(verbose = TRUE) {
     conflicts_prefer(MultiScholaR::savePlot)
     conflicts_prefer(base::as.data.frame)
     conflicts_prefer(base::as.factor)
+    conflicts_prefer(MultiScholaR::savePlot)
+    conflicts_prefer(git2r::as.data.frame)
     
     if (verbose) message("MultiScholaR setup complete!")
 }
@@ -352,9 +354,9 @@ data_cln <- vroom::vroom(
   na = c("", "NA")
 )
 
-setdiff( data_cln$Run, design_matrix$Run )
+base::setdiff( data_cln$Run, design_matrix$Run )
 
-setdiff(  design_matrix$Run, data_cln$Run )
+base::setdiff(  design_matrix$Run, data_cln$Run )
 
 
 contrasts_tbl <- file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$source_dir, "contrast_strings.tab") |>
@@ -389,7 +391,7 @@ contrasts_tbl <- file.path(project_dirs[[paste0(omic_type, "_", experiment_label
 
 This section creates a structured S4 object to hold your peptide data with all the necessary metadata. By organizing your data in this object, ProteomeScholaR can easily access and manipulate the data in subsequent analysis steps, while maintaining the relationship between peptides, proteins, and experimental conditions.
 
-```{r 6 Peptide Data S4 Object Creation & Annotation API Lookup}
+```{r 6 Peptide Data S4 Object Creation}
 peptide_data <- new(
   "PeptideQuantitativeData"
 
