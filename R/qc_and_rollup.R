@@ -567,8 +567,19 @@ calulatePearsonCorrelationForSamplePairsHelper <- function( samples_id_tbl
   pairs_for_comparison <- getPairsOfSamplesTable(samples_id_tbl
                                                  , run_id_column = run_id_column
                                                  , replicate_group_column = replicate_group_column)
+  
+  # Log pair generation
+  num_pairs <- nrow(pairs_for_comparison)
+  message(sprintf("*** PEARSON HELPER: Generated %d sample pairs for correlation analysis ***", num_pairs))
 
   plan(multisession, workers = num_of_cores)
+  
+  # Log parallel processing configuration
+  message(sprintf("*** PEARSON HELPER: Parallel processing configured with %d workers ***", num_of_cores))
+  message("*** PEARSON HELPER: Beginning pairwise correlation calculations (this will take 30-90s)... ***")
+  
+  # Track calculation time
+  calc_start_time <- Sys.time()
 
   pearson_correlation_per_pair <- pairs_for_comparison |>
     mutate( pearson_correlation = furrr::future_map2_dbl( !!rlang::sym( paste0( run_id_column, ".x"))
@@ -584,6 +595,11 @@ calulatePearsonCorrelationForSamplePairsHelper <- function( samples_id_tbl
                                                                                         , protein_id_column = {{protein_id_column}}
                                                                                         , peptide_sequence_column = {{peptide_sequence_column}}
                                                                                         , peptide_normalised_column = {{peptide_normalised_column}}) }))
+  
+  # Log completion with timing statistics
+  calc_elapsed <- as.numeric(difftime(Sys.time(), calc_start_time, units = "secs"))
+  message(sprintf("*** PEARSON HELPER: Completed %d correlations in %.1f seconds (%.2f pairs/second) ***", 
+                  num_pairs, calc_elapsed, num_pairs / calc_elapsed))
 
   pearson_correlation_per_pair
 
