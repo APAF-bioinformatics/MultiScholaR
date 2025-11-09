@@ -388,10 +388,17 @@ sessionSummaryServer <- function(id, project_dirs, omic_type = "proteomics", exp
         
         # 2. Fallback: Check S4 object from state manager
         if (is.null(workflow_type_detected) && !is.null(workflow_data$state_manager)) {
-          current_s4 <- workflow_data$state_manager$getState(workflow_data$state_manager$current_state)
-          if (!is.null(current_s4) && !is.null(current_s4@args$globalParameters$workflow_type)) {
-            workflow_type_detected <- current_s4@args$globalParameters$workflow_type
-            cat(sprintf("   REPORT: Detected workflow_type from S4 object: %s\n", workflow_type_detected))
+          # Get the DATA S4 object (not enrichment results)
+          data_states <- c("correlation_filtered", "ruv_corrected", "protein_replicate_filtered", "imputed")
+          available_states <- workflow_data$state_manager$getHistory()
+          data_state_used <- purrr::detect(data_states, ~ .x %in% available_states)
+          
+          if (!is.null(data_state_used)) {
+            current_s4 <- workflow_data$state_manager$getState(data_state_used)
+            if (!is.null(current_s4) && !is.null(current_s4@args$globalParameters$workflow_type)) {
+              workflow_type_detected <- current_s4@args$globalParameters$workflow_type
+              cat(sprintf("   REPORT: Detected workflow_type from S4 object (state: %s): %s\n", data_state_used, workflow_type_detected))
+            }
           }
         }
         

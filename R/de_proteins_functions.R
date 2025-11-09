@@ -453,6 +453,19 @@ plotPcaHelper <- function(data,
     labs(title = title) +
     theme(legend.title = element_blank())
 
+  # Add explicit color and shape scales to support >6 discrete levels
+  # Get color palette (supports many levels)
+  categorical_colors <- getCategoricalColourPalette()
+  
+  # Add explicit color scale
+  output <- output + scale_color_manual(values = categorical_colors)
+  
+  # Add explicit shape scale (15 distinct shapes - first 6 match ggplot2 defaults)
+  if (!is.null(shape_variable)) {
+    shape_values <- c(16, 17, 15, 3, 7, 8, 0, 1, 2, 4, 5, 6, 9, 10, 11)
+    output <- output + scale_shape_manual(values = shape_values)
+  }
+
   # Calculate axis limits based on the full range of data
   pc1_range <- range(temp_tbl$PC1, na.rm = TRUE)
   pc2_range <- range(temp_tbl$PC2, na.rm = TRUE)

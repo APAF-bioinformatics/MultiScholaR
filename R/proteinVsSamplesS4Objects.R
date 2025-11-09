@@ -939,17 +939,31 @@ setMethod(f="pearsonCorForSamplePairs"
                          , by = join_by( !!sym(sample_id) == !!sym(sample_id))) |>
               mutate( temp = "")
 
+            # Detect available cores and configure parallel processing
+            num_available_cores <- parallel::detectCores()
+            num_workers <- min(max(1, num_available_cores - 1), 8)  # Use n-1 cores, max 8
+            message(sprintf("*** PEARSON: Detected %d CPU cores, using %d workers for parallel processing ***", 
+                            num_available_cores, num_workers))
+            
+            # Calculate expected pair count for user information
+            sample_count <- nrow(design_matrix |> dplyr::select(!!sym(sample_id), !!sym(replicate_group_column)))
+            estimated_pairs <- choose(sample_count, 2)
+            message(sprintf("*** PEARSON: Processing %d samples (~%d pairwise correlations) ***", 
+                            sample_count, estimated_pairs))
+            message("*** PEARSON: Starting pairwise correlation calculations... ***")
 
             correlation_results_before_cyclic_loess <- calulatePearsonCorrelationForSamplePairsHelper( design_matrix |>
                                                                                                          dplyr::select( !!sym(sample_id), !!sym(replicate_group_column) )
                                                                                                        , run_id_column = sample_id
                                                                                                        , replicate_group_column = replicate_group_column
                                                                                                        , frozen_mat_pca_long
-                                                                                                       , num_of_cores = 1
+                                                                                                       , num_of_cores = num_workers
                                                                                                        , sample_id_column = !!sym(sample_id)
                                                                                                        , protein_id_column = !!sym(protein_id_column)
                                                                                                        , peptide_sequence_column = temp
                                                                                                        , peptide_normalised_column = "Protein.normalised")
+            
+            message("*** PEARSON: Correlation calculations complete ***")
 
             correlation_vec_before_cyclic_loess <- correlation_results_before_cyclic_loess |>
               dplyr::filter( !str_detect(!!sym(replicate_group_column), tech_rep_remove_regex )  )
@@ -1825,6 +1839,10 @@ setMethod(f="plotDensity"
                 panel.background = element_blank()
               )
             
+            # Add explicit fill scale to support >6 discrete levels
+            categorical_colors <- getCategoricalColourPalette()
+            pc1_box <- pc1_box + scale_fill_manual(values = categorical_colors)
+            
             # Create PC2 boxplot
             pc2_box <- ggplot(pca_data, aes(x = !!sym(grouping_variable), y = PC2, fill = !!sym(grouping_variable))) +
               geom_boxplot(notch = TRUE) +
@@ -1841,6 +1859,9 @@ setMethod(f="plotDensity"
                 panel.grid.minor = element_blank(),
                 panel.background = element_blank()
               )
+            
+            # Add explicit fill scale to support >6 discrete levels
+            pc2_box <- pc2_box + scale_fill_manual(values = categorical_colors)
             
             # Combine plots with minimal spacing
             combined_plot <- pc1_box / pc2_box + 

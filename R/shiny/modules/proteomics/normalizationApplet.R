@@ -590,7 +590,9 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
       
       # Generate QC plots and store in norm_data$qc_plots$post_filtering
       
-      # PCA plot
+      # PCA plot (Step 1/4)
+      message("*** PRE-NORM QC: Generating PCA plot (Step 1/4) ***")
+      pca_start_time <- Sys.time()
       pca_plot <- plotPca(
         current_s4,
         grouping_variable = aesthetics$color_var,
@@ -600,29 +602,67 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
         font_size = 8
       )
       norm_data$qc_plots$post_filtering$pca <- pca_plot
+      pca_elapsed <- as.numeric(difftime(Sys.time(), pca_start_time, units = "secs"))
+      message(sprintf("*** PRE-NORM QC: PCA plot completed in %.1f seconds ***", pca_elapsed))
       
-      # RLE plot  
+      # RLE plot (Step 2/4)
+      message("*** PRE-NORM QC: Generating RLE plot (Step 2/4) ***")
+      rle_start_time <- Sys.time()
       rle_plot <- plotRle(
         current_s4,
         group = aesthetics$color_var,
         yaxis_limit = c(-6, 6)
       )
       norm_data$qc_plots$post_filtering$rle <- rle_plot
+      rle_elapsed <- as.numeric(difftime(Sys.time(), rle_start_time, units = "secs"))
+      message(sprintf("*** PRE-NORM QC: RLE plot completed in %.1f seconds ***", rle_elapsed))
       
-      # Density plot
+      # Density plot (Step 3/4)
+      message("*** PRE-NORM QC: Generating Density plot (Step 3/4) ***")
+      density_start_time <- Sys.time()
       density_plot <- plotDensity(
         pca_plot,
         grouping_variable = aesthetics$color_var
       )
       norm_data$qc_plots$post_filtering$density <- density_plot
+      density_elapsed <- as.numeric(difftime(Sys.time(), density_start_time, units = "secs"))
+      message(sprintf("*** PRE-NORM QC: Density plot completed in %.1f seconds ***", density_elapsed))
       
-      # Correlation plot
-      correlation_plot <- plotPearson(
-        current_s4,
-        tech_rep_remove_regex = "pool",
-        correlation_group = aesthetics$color_var
-      )
+      # Correlation plot (Step 4/4) - This is the slow one
+      message("*** PRE-NORM QC: Generating Pearson correlation plot (Step 4/4) ***")
+      num_samples <- length(setdiff(colnames(current_s4@protein_quant_table), current_s4@protein_id_column))
+      estimated_pairs <- choose(num_samples, 2)
+      message(sprintf("*** PRE-NORM QC: Sample count = %d, Expected pairs ≈ %d ***", num_samples, estimated_pairs))
+      message("*** PRE-NORM QC: This may take 30-90 seconds for pairwise correlation calculations ***")
+      
+      pearson_start_time <- Sys.time()
+      
+      # Check if we're in a Shiny context and wrap with progress indicator
+      if (shiny::isRunning()) {
+        correlation_plot <- shiny::withProgress(
+          message = "Generating Pearson correlation plot...", 
+          detail = "Calculating pairwise correlations (30-90s)", 
+          value = 0.5, {
+            result <- plotPearson(
+              current_s4,
+              tech_rep_remove_regex = "pool",
+              correlation_group = aesthetics$color_var
+            )
+            shiny::incProgress(0.5)
+            result
+          }
+        )
+      } else {
+        correlation_plot <- plotPearson(
+          current_s4,
+          tech_rep_remove_regex = "pool",
+          correlation_group = aesthetics$color_var
+        )
+      }
+      
       norm_data$qc_plots$post_filtering$correlation <- correlation_plot
+      pearson_elapsed <- as.numeric(difftime(Sys.time(), pearson_start_time, units = "secs"))
+      message(sprintf("*** PRE-NORM QC: Pearson correlation completed in %.1f seconds ***", pearson_elapsed))
       
       # ONLY populate S4 object if it exists (during normalization workflow)
       if (!is.null(norm_data$QC_composite_figure)) {

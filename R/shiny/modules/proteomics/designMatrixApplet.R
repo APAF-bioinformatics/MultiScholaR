@@ -124,16 +124,61 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
     })
 
     shinyFiles::shinyDirChoose(input, "import_dir", roots = resolved_volumes, session = session)
+    
+    # Setup shinyFiles for FASTA file selection in import modal
+    shinyFiles::shinyFileChoose(input, "import_fasta_file", 
+                               roots = resolved_volumes, 
+                               session = session,
+                               filetypes = c("fasta", "fa", "faa"))
+    
+    # Track selected FASTA file path
+    import_fasta_path <- reactiveVal(NULL)
+    
+    observeEvent(input$import_fasta_file, {
+      if (!is.null(input$import_fasta_file) && !is.integer(input$import_fasta_file)) {
+        file_info <- shinyFiles::parseFilePaths(resolved_volumes, input$import_fasta_file)
+        if (nrow(file_info) > 0) {
+          selected_path <- as.character(file_info$datapath[1])
+          import_fasta_path(selected_path)
+          output$import_fasta_file_path <- renderText(selected_path)
+        }
+      }
+    })
 
     # == Modal Logic for Import =================================================
     
     observeEvent(input$show_import_modal, {
+      # Reset FASTA path selection when modal opens
+      import_fasta_path(NULL)
+      
       ns <- session$ns
       showModal(modalDialog(
         title = "Import Existing Design Matrix",
         shiny::p("Select the folder containing 'design_matrix.tab' and 'data_cln.tab' files."),
         shinyFiles::shinyDirButton(ns("import_dir"), "Select Folder", "Choose a directory"),
         verbatimTextOutput(ns("import_dir_path"), placeholder = TRUE),
+        shiny::hr(),
+        
+        # FASTA File Section
+        shiny::h5("FASTA File (Optional)"),
+        shiny::p("Required for protein accession cleanup. Will be auto-detected from import folder if available."),
+        shinyFiles::shinyFilesButton(ns("import_fasta_file"), 
+                                     "Select FASTA file (if not in import folder)",
+                                     "Choose File",
+                                     multiple = FALSE,
+                                     icon = shiny::icon("file")),
+        shiny::br(),
+        shiny::verbatimTextOutput(ns("import_fasta_file_path"), placeholder = TRUE),
+        shiny::textOutput(ns("fasta_detection_status")),
+        shiny::hr(),
+        
+        shiny::h5("Organism Information"),
+        shiny::p("Required for UniProt annotation lookups:"),
+        shiny::numericInput(ns("import_taxon_id"), "Taxonomy ID:", 
+                            value = 9606, min = 1),
+        shiny::helpText("e.g., 9606 for Homo sapiens, 10090 for Mus musculus"),
+        shiny::textInput(ns("import_organism_name"), "Organism Name:", 
+                         value = "Homo sapiens"),
         footer = tagList(
           modalButton("Cancel"),
           actionButton(ns("confirm_import"), "Import", class = "btn-primary")
@@ -146,6 +191,24 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
       req(input$import_dir)
       shinyFiles::parseDirPath(resolved_volumes, input$import_dir)
     })
+    
+    # Display FASTA detection status in modal
+    output$fasta_detection_status <- renderText({
+      req(input$import_dir)
+      import_path <- shinyFiles::parseDirPath(resolved_volumes, input$import_dir)
+      
+      if (length(import_path) > 0 && dir.exists(import_path)) {
+        fasta_files <- list.files(import_path, pattern = "\\.fasta$|\\.fa$|\\.faa$", 
+                                  ignore.case = TRUE)
+        if (length(fasta_files) > 0) {
+          paste("✓ Found FASTA file:", fasta_files[1])
+        } else {
+          "⚠ No FASTA file detected in folder. Upload one above if needed for accession cleanup."
+        }
+      } else {
+        ""
+      }
+    })
 
     # == Handle Import Confirmation =============================================
     
@@ -156,6 +219,24 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
       req(import_path)
       
       removeModal()
+      
+      # FASTA file detection and handling
+      # Look for FASTA files in import directory
+      fasta_files <- list.files(import_path, pattern = "\\.fasta$|\\.fa$|\\.faa$", 
+                                ignore.case = TRUE, full.names = TRUE)
+      
+      fasta_path <- if (!is.null(import_fasta_path()) && file.exists(import_fasta_path())) {
+        # User selected a file via shinyFiles - use that (takes precedence)
+        logger::log_info(sprintf("Using user-selected FASTA file: %s", basename(import_fasta_path())))
+        import_fasta_path()
+      } else if (length(fasta_files) > 0) {
+        # Found FASTA in import directory
+        logger::log_info(sprintf("Auto-detected FASTA file: %s", basename(fasta_files[1])))
+        fasta_files[1]
+      } else {
+        logger::log_info("No FASTA file provided - accession cleanup will be skipped if aa_seq_tbl_final.RDS not found")
+        NULL
+      }
       
       design_file <- file.path(import_path, "design_matrix.tab")
       cln_data_file <- file.path(import_path, "data_cln.tab")
@@ -270,6 +351,63 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
           workflow_data$aa_seq_tbl_final <- NULL
         }
         
+        # Process FASTA file if provided and aa_seq_tbl_final not already available
+        if (is.null(workflow_data$aa_seq_tbl_final) && !is.null(fasta_path)) {
+          logger::log_info("Processing FASTA file for accession cleanup...")
+          
+          tryCatch({
+            # Create cache directory structure
+            cache_dir <- if (!is.null(experiment_paths) && !is.null(experiment_paths$results_dir)) {
+              file.path(experiment_paths$results_dir, "cache")
+            } else {
+              file.path(tempdir(), "proteomics_cache")
+            }
+            
+            if (!dir.exists(cache_dir)) {
+              dir.create(cache_dir, recursive = TRUE)
+            }
+            
+            fasta_meta_file <- file.path(cache_dir, "aa_seq_tbl.RDS")
+            
+            # Process FASTA (similar to setupImportApplet.R lines 682-708)
+            aa_seq_tbl_final <- processFastaFile(
+              fasta_file_path = fasta_path,
+              uniprot_search_results = NULL,  # Not available in import context
+              uniparc_search_results = NULL,   # Not available in import context
+              fasta_meta_file = fasta_meta_file,
+              organism_name = input$import_organism_name
+            )
+            
+            # Store in workflow_data, global env, and scripts directory
+            workflow_data$aa_seq_tbl_final <- aa_seq_tbl_final
+            assign("aa_seq_tbl_final", aa_seq_tbl_final, envir = .GlobalEnv)
+            
+            if (!is.null(experiment_paths) && !is.null(experiment_paths$source_dir)) {
+              scripts_aa_seq_path <- file.path(experiment_paths$source_dir, "aa_seq_tbl_final.RDS")
+              saveRDS(aa_seq_tbl_final, scripts_aa_seq_path)
+              logger::log_info(sprintf("Saved aa_seq_tbl_final to scripts: %s", scripts_aa_seq_path))
+            }
+            
+            logger::log_info(sprintf("FASTA processed successfully: %d sequences", nrow(aa_seq_tbl_final)))
+            shiny::showNotification(
+              sprintf("FASTA file processed: %d protein sequences available for accession cleanup", 
+                      nrow(aa_seq_tbl_final)),
+              type = "message",
+              duration = 5
+            )
+            
+          }, error = function(e) {
+            logger::log_warn(paste("Error processing FASTA file:", e$message))
+            logger::log_warn("Continuing without FASTA - accession cleanup will be skipped")
+            workflow_data$aa_seq_tbl_final <- NULL
+            shiny::showNotification(
+              paste("Warning: Could not process FASTA file:", e$message),
+              type = "warning",
+              duration = 8
+            )
+          })
+        }
+        
         # ✅ NEW: Load uniprot_dat_cln if it exists (CRITICAL for DE analysis gene names!)
         uniprot_file_import <- file.path(import_path, "uniprot_dat_cln.RDS")
         uniprot_file_scripts <- file.path(experiment_paths$source_dir, "uniprot_dat_cln.RDS")
@@ -322,6 +460,12 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
           assign("contrasts_tbl", imported_contrasts, envir = .GlobalEnv)
           logger::log_info("Saved contrasts_tbl to global environment for DE analysis.")
         }
+        
+        # --- Store organism information from import modal ---
+        workflow_data$taxon_id <- input$import_taxon_id
+        workflow_data$organism_name <- input$import_organism_name
+        logger::log_info(sprintf("Set organism info from import modal: %s (taxon: %d)", 
+                                input$import_organism_name, input$import_taxon_id))
         
         # --- Detect or Load workflow_type ---
         # Try to get workflow_type from config.ini first
