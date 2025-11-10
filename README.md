@@ -103,6 +103,10 @@ originally built for batching proteomics and phosphoproteomic analysis, which is
 Significant modifications and new code have been made by APAF-bioinformatics to create this independent library.
 See LICENSE file for details.
 
+As we are firmly in the age of artificial intelligence, it goes without saying that AI assistance has been used **RESPONSIBLY** 
+in the development of this project, with all appropriate checks and balances in place and adhering to industry-lead gold standards
+of best practice usage. This declaration has been mandated by Macquarie University ICT.
+
 ## Development Roadmap
 
 ```mermaid
