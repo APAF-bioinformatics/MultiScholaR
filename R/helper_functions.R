@@ -1198,10 +1198,10 @@ formatConfigList <- function(config_list, indent = 0) {
         value <- config_list[[name]]
         message(sprintf("   DEBUG66: Item '%s' class: %s", name, paste(class(value), collapse=", ")))
         
-        # Skip core_utilisation and complex objects from display
-        if (name == "core_utilisation" ||
-            any(class(value) %in% c("process", "R6", "multidplyr_cluster", "cluster", "SOCKcluster"))) {
-            message(sprintf("   DEBUG66: Skipping '%s' due to complex class", name))
+        # Skip core_utilisation, seqinr_obj, and complex objects from display
+        if (name == "core_utilisation" || name == "seqinr_obj" ||
+            any(class(value) %in% c("process", "R6", "multidplyr_cluster", "cluster", "SOCKcluster", "tbl_df", "tbl", "data.frame"))) {
+            message(sprintf("   DEBUG66: Skipping '%s' due to complex class or large data frame", name))
             return("")  # Return empty string instead of next
         }
 
@@ -3194,6 +3194,10 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             tryCatch({
                 if (is.null(param_value)) {
                     "NULL"
+                } else if (is.data.frame(param_value)) {
+                    # Skip data frames (like seqinr_obj) - too large to serialize
+                    sprintf("[Data frame: %d rows x %d cols - omitted for brevity]", 
+                            nrow(param_value), ncol(param_value))
                 } else if (is.logical(param_value)) {
                     if (length(param_value) == 1) {
                         ifelse(param_value, "TRUE", "FALSE")
