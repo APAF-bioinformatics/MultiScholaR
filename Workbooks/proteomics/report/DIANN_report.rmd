@@ -444,6 +444,20 @@ FormatMethodDetails <- function(numbers) {
   }, error = function(e) {
     ""
   })
+  
+  # Generate protein count text BEFORE glue block
+  qc_count_text <- if(!is.null(numbers$protein_count_qc) && !is.na(numbers$protein_count_qc)) {
+    paste0(" After quality control filtering, ", numbers$protein_count_qc, " proteins remained for normalization.")
+  } else {
+    ""
+  }
+  
+  ruv_count_text <- if(!is.null(numbers$protein_count_ruv) && !is.na(numbers$protein_count_ruv)) {
+    paste0(" Following RUV-III batch correction and subsequent missing value cleanup, ", 
+           numbers$protein_count_ruv, " proteins were retained for differential expression analysis.")
+  } else {
+    ""
+  }
 
   ruv_text <- glue::glue(
     "To remove batch effects from biological data, the remove unwanted variation ",
@@ -494,7 +508,7 @@ protein across all samples.
 FASTA Reference and Protein Accession Cleanup
 {fasta_text}
 
-{accession_cleanup_text} {if(!is.null(numbers$protein_count_qc) && !is.na(numbers$protein_count_qc)) paste0("After quality control filtering, ", numbers$protein_count_qc, " proteins remained for normalization.") else ""}
+{accession_cleanup_text}{qc_count_text}
 
 Using the protein intensity matrix, zero values were replaced with NA denoting 
 these are missing values. Proteins with {missing_vals_cutoff} percent or 
@@ -505,7 +519,7 @@ between-sample normalization were performed using the
 '{norm_method}' method from the 'limma' R package 
 (Ritchie et al., 2015).
 
-{ruv_text} {if(!is.null(numbers$protein_count_ruv) && !is.na(numbers$protein_count_ruv)) paste0("Following RUV-III batch correction and subsequent missing value cleanup, ", numbers$protein_count_ruv, " proteins were retained for differential expression analysis.") else ""}
+{ruv_text}{ruv_count_text}
 
 At each stage of the data normalization, the samples were checked for batch effects 
 using principal component analysis (PCA) plot, density boxplots, relative 
