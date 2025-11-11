@@ -231,11 +231,55 @@ chooseBestProteinAccessionHelper <- function(input_tbl
   cat("\n")
 
   cat(">>> HELPER STEP 3: JOINING WITH FASTA DETAIL TABLE <<<\n")
-  resolve_acc_helper <- resolve_acc_temp |>
+  
+  # Join with FASTA data
+  resolve_acc_joined <- resolve_acc_temp |>
     left_join( acc_detail_tab ,
                by = join_by( !!sym(row_id_column) == !!sym(row_id_column) ),
                copy = TRUE,
-               keep = NULL)  |>
+               keep = NULL)
+  
+  # Detect which columns are available and add missing ones with defaults
+  cat("   Detecting available FASTA metadata columns...\n")
+  available_cols <- colnames(resolve_acc_joined)
+  
+  if (!"gene_name" %in% available_cols) {
+    cat("   WARNING: 'gene_name' column not found in FASTA data. Using NA as default.\n")
+    resolve_acc_joined <- resolve_acc_joined |> mutate(gene_name = NA_character_)
+  }
+  
+  if (!"cleaned_acc" %in% available_cols) {
+    cat("   WARNING: 'cleaned_acc' column not found. Using row_id_column as fallback.\n")
+    resolve_acc_joined <- resolve_acc_joined |> mutate(cleaned_acc = !!sym(row_id_column))
+  }
+  
+  if (!"protein_evidence" %in% available_cols) {
+    cat("   WARNING: 'protein_evidence' column not found. Using neutral value (3) for sorting.\n")
+    resolve_acc_joined <- resolve_acc_joined |> mutate(protein_evidence = 3)
+  }
+  
+  if (!"status" %in% available_cols) {
+    cat("   WARNING: 'status' column not found. Using 'unknown' as default.\n")
+    resolve_acc_joined <- resolve_acc_joined |> mutate(status = "unknown")
+  }
+  
+  if (!"is_isoform" %in% available_cols) {
+    cat("   WARNING: 'is_isoform' column not found. Using 'Canonical' as default.\n")
+    resolve_acc_joined <- resolve_acc_joined |> mutate(is_isoform = "Canonical")
+  }
+  
+  if (!"isoform_num" %in% available_cols) {
+    cat("   WARNING: 'isoform_num' column not found. Using 0 as default.\n")
+    resolve_acc_joined <- resolve_acc_joined |> mutate(isoform_num = 0)
+  }
+  
+  if (!"seq_length" %in% available_cols) {
+    cat("   WARNING: 'seq_length' column not found. Using NA as default.\n")
+    resolve_acc_joined <- resolve_acc_joined |> mutate(seq_length = NA_integer_)
+  }
+  
+  # Now select and arrange using the complete set of columns
+  resolve_acc_helper <- resolve_acc_joined |>
     dplyr::select( { { group_id } }, one_of(c(row_id_column, "gene_name", "cleaned_acc",
                                               "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"))) |>
     distinct() |>
@@ -575,10 +619,28 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uni
     message("Processing standard UniProt FASTA format...")
     flush.console()
     aa_seq_tbl <- parseFastaFileStandard(fasta_file_path)
+    
+    # Create metadata for standard UniProt format
+    fasta_metadata <- list(
+      fasta_format = "standard_uniprot",
+      available_columns = colnames(aa_seq_tbl),
+      has_protein_evidence = "protein_evidence" %in% colnames(aa_seq_tbl),
+      has_gene_names = "gene_name" %in% colnames(aa_seq_tbl),
+      has_isoform_info = "is_isoform" %in% colnames(aa_seq_tbl),
+      has_status_info = "status" %in% colnames(aa_seq_tbl),
+      num_sequences = nrow(aa_seq_tbl),
+      processing_timestamp = Sys.time()
+    )
+    
     message("Saving results...")
     flush.console()
     saveRDS(aa_seq_tbl, fasta_meta_file)
-    return(aa_seq_tbl)
+    
+    # Return list with data and metadata
+    return(list(
+      aa_seq_tbl_final = aa_seq_tbl,
+      fasta_metadata = fasta_metadata
+    ))
   } else {
     message("Processing non-standard FASTA format...")
     flush.console()
@@ -590,6 +652,18 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uni
       aa_seq_tbl_final <- aa_seq_tbl |>
         dplyr::mutate(database_id = NA_character_)
     }
+    
+    # Create metadata for non-standard format
+    fasta_metadata <- list(
+      fasta_format = "non_standard",
+      available_columns = colnames(aa_seq_tbl_final),
+      has_protein_evidence = "protein_evidence" %in% colnames(aa_seq_tbl_final),
+      has_gene_names = "gene_name" %in% colnames(aa_seq_tbl_final),
+      has_isoform_info = "is_isoform" %in% colnames(aa_seq_tbl_final),
+      has_status_info = "status" %in% colnames(aa_seq_tbl_final),
+      num_sequences = nrow(aa_seq_tbl_final),
+      processing_timestamp = Sys.time()
+    )
 
     message("Writing results...")
     flush.console()
@@ -602,7 +676,12 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uni
                        progress = FALSE)
 
     saveRDS(aa_seq_tbl_final, fasta_meta_file)
-    return(aa_seq_tbl_final)
+    
+    # Return list with data and metadata
+    return(list(
+      aa_seq_tbl_final = aa_seq_tbl_final,
+      fasta_metadata = fasta_metadata
+    ))
   }
 }
 

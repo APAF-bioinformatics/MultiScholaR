@@ -330,6 +330,8 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
         # ✅ FIXED: Load aa_seq_tbl_final if it exists in the import directory or scripts
         aa_seq_file_import <- file.path(import_path, "aa_seq_tbl_final.RDS")
         aa_seq_file_scripts <- file.path(experiment_paths$source_dir, "aa_seq_tbl_final.RDS")
+        fasta_metadata_file_import <- file.path(import_path, "fasta_metadata.RDS")
+        fasta_metadata_file_scripts <- file.path(experiment_paths$source_dir, "fasta_metadata.RDS")
         
         if (file.exists(aa_seq_file_import)) {
           logger::log_info("Loading aa_seq_tbl_final from import directory.")
@@ -341,14 +343,28 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
           saveRDS(aa_seq_tbl_final, aa_seq_file_scripts)
           logger::log_info("Copied aa_seq_tbl_final to scripts directory for persistence.")
           
+          # Load metadata if available
+          if (file.exists(fasta_metadata_file_import)) {
+            workflow_data$fasta_metadata <- readRDS(fasta_metadata_file_import)
+            saveRDS(workflow_data$fasta_metadata, fasta_metadata_file_scripts)
+            logger::log_info("Loaded and copied FASTA metadata from import directory.")
+          }
+          
         } else if (file.exists(aa_seq_file_scripts)) {
           logger::log_info("Loading existing aa_seq_tbl_final from scripts directory.")
           aa_seq_tbl_final <- readRDS(aa_seq_file_scripts)
           workflow_data$aa_seq_tbl_final <- aa_seq_tbl_final
           assign("aa_seq_tbl_final", aa_seq_tbl_final, envir = .GlobalEnv)
+          
+          # Load metadata if available
+          if (file.exists(fasta_metadata_file_scripts)) {
+            workflow_data$fasta_metadata <- readRDS(fasta_metadata_file_scripts)
+            logger::log_info("Loaded FASTA metadata from scripts directory.")
+          }
         } else {
           logger::log_warn("No aa_seq_tbl_final found. Protein accession cleanup will be skipped.")
           workflow_data$aa_seq_tbl_final <- NULL
+          workflow_data$fasta_metadata <- NULL
         }
         
         # Process FASTA file if provided and aa_seq_tbl_final not already available
@@ -370,7 +386,7 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
             fasta_meta_file <- file.path(cache_dir, "aa_seq_tbl.RDS")
             
             # Process FASTA (similar to setupImportApplet.R lines 682-708)
-            aa_seq_tbl_final <- processFastaFile(
+            fasta_result <- processFastaFile(
               fasta_file_path = fasta_path,
               uniprot_search_results = NULL,  # Not available in import context
               uniparc_search_results = NULL,   # Not available in import context
@@ -378,20 +394,32 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
               organism_name = input$import_organism_name
             )
             
+            # Extract data and metadata from result
+            aa_seq_tbl_final <- fasta_result$aa_seq_tbl_final
+            fasta_metadata <- fasta_result$fasta_metadata
+            
             # Store in workflow_data, global env, and scripts directory
             workflow_data$aa_seq_tbl_final <- aa_seq_tbl_final
+            workflow_data$fasta_metadata <- fasta_metadata
             assign("aa_seq_tbl_final", aa_seq_tbl_final, envir = .GlobalEnv)
             
             if (!is.null(experiment_paths) && !is.null(experiment_paths$source_dir)) {
               scripts_aa_seq_path <- file.path(experiment_paths$source_dir, "aa_seq_tbl_final.RDS")
               saveRDS(aa_seq_tbl_final, scripts_aa_seq_path)
               logger::log_info(sprintf("Saved aa_seq_tbl_final to scripts: %s", scripts_aa_seq_path))
+              
+              # Save FASTA metadata
+              fasta_metadata_path <- file.path(experiment_paths$source_dir, "fasta_metadata.RDS")
+              saveRDS(fasta_metadata, fasta_metadata_path)
+              logger::log_info(sprintf("Saved FASTA metadata: %s", fasta_metadata_path))
+              logger::log_info(sprintf("FASTA Format: %s, Sequences: %d", 
+                                     fasta_metadata$fasta_format, fasta_metadata$num_sequences))
             }
             
             logger::log_info(sprintf("FASTA processed successfully: %d sequences", nrow(aa_seq_tbl_final)))
             shiny::showNotification(
-              sprintf("FASTA file processed: %d protein sequences available for accession cleanup", 
-                      nrow(aa_seq_tbl_final)),
+              sprintf("FASTA file processed: %d protein sequences available for accession cleanup (Format: %s)", 
+                      nrow(aa_seq_tbl_final), fasta_metadata$fasta_format),
               type = "message",
               duration = 5
             )
@@ -400,6 +428,7 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
             logger::log_warn(paste("Error processing FASTA file:", e$message))
             logger::log_warn("Continuing without FASTA - accession cleanup will be skipped")
             workflow_data$aa_seq_tbl_final <- NULL
+            workflow_data$fasta_metadata <- NULL
             shiny::showNotification(
               paste("Warning: Could not process FASTA file:", e$message),
               type = "warning",

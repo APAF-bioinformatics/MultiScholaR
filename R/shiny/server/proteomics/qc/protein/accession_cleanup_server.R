@@ -30,6 +30,11 @@ accession_cleanup_server <- function(input, output, session, workflow_data, omic
         
         logger::log_info("Protein Processing: Applying accession cleanup with delimiter: {input$delimiter}")
         
+        # Count proteins before cleanup
+        proteins_before <- current_s4@protein_quant_table |>
+          dplyr::distinct(Protein.Ids) |>
+          nrow()
+        
         # Check if aa_seq_tbl_final exists in workflow_data (from FASTA processing)
         if (exists("aa_seq_tbl_final", envir = .GlobalEnv)) {
           aa_seq_tbl_final <- get("aa_seq_tbl_final", envir = .GlobalEnv)
@@ -52,6 +57,30 @@ accession_cleanup_server <- function(input, output, session, workflow_data, omic
           cleaned_s4 <- current_s4
           cleanup_applied <- FALSE
         }
+        
+        # Count proteins after cleanup
+        proteins_after <- cleaned_s4@protein_quant_table |>
+          dplyr::distinct(Protein.Ids) |>
+          nrow()
+        
+        # Track cleanup results in workflow_data
+        workflow_data$accession_cleanup_results <- list(
+          cleanup_applied = cleanup_applied,
+          delimiter_used = input$delimiter,
+          aggregation_method = input$aggregation_method,
+          proteins_before = proteins_before,
+          proteins_after = proteins_after,
+          had_full_metadata = if (!is.null(workflow_data$fasta_metadata)) {
+            workflow_data$fasta_metadata$has_protein_evidence && 
+            workflow_data$fasta_metadata$has_gene_names
+          } else {
+            FALSE
+          },
+          timestamp = Sys.time()
+        )
+        
+        logger::log_info(sprintf("Accession cleanup results tracked: %d -> %d proteins", 
+                                proteins_before, proteins_after))
         
         # Save new state
         workflow_data$state_manager$saveState(

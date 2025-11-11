@@ -3124,17 +3124,55 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
              )
          })
          
-         output_lines <- c(output_lines, ruv_lines)
-     } else {
-         cat("WORKFLOW ARGS: No RUV optimization results available\n")
-     }
-     
-     # Add configuration parameters (now includes S4 parameters)
-     config_lines <- c(
-         "Workflow Parameters:",
-         "-------------------",
-         ""
-     )
+        output_lines <- c(output_lines, ruv_lines)
+    } else {
+        cat("WORKFLOW ARGS: No RUV optimization results available\n")
+    }
+    
+    # Add FASTA Processing Information
+    if (!is.null(workflow_data) && !is.null(workflow_data$fasta_metadata)) {
+        cat("WORKFLOW ARGS: Adding FASTA processing information\n")
+        fasta_lines <- c(
+            "FASTA File Processing:",
+            "---------------------",
+            paste("• Format:", workflow_data$fasta_metadata$fasta_format),
+            paste("• Sequences:", workflow_data$fasta_metadata$num_sequences),
+            paste("• Protein Evidence Available:", workflow_data$fasta_metadata$has_protein_evidence),
+            paste("• Gene Names Available:", workflow_data$fasta_metadata$has_gene_names),
+            paste("• Isoform Information Available:", workflow_data$fasta_metadata$has_isoform_info),
+            paste("• Status Information Available:", workflow_data$fasta_metadata$has_status_info),
+            ""
+        )
+        output_lines <- c(output_lines, fasta_lines)
+    } else {
+        cat("WORKFLOW ARGS: No FASTA metadata available\n")
+    }
+    
+    # Add Accession Cleanup Results
+    if (!is.null(workflow_data) && !is.null(workflow_data$accession_cleanup_results)) {
+        cat("WORKFLOW ARGS: Adding accession cleanup results\n")
+        cleanup_lines <- c(
+            "Protein Accession Cleanup:",
+            "-------------------------",
+            paste("• Cleanup Applied:", workflow_data$accession_cleanup_results$cleanup_applied),
+            paste("• Aggregation Method:", workflow_data$accession_cleanup_results$aggregation_method),
+            paste("• Delimiter Used:", workflow_data$accession_cleanup_results$delimiter_used),
+            paste("• Proteins Before Cleanup:", workflow_data$accession_cleanup_results$proteins_before),
+            paste("• Proteins After Cleanup:", workflow_data$accession_cleanup_results$proteins_after),
+            paste("• Full UniProt Metadata:", workflow_data$accession_cleanup_results$had_full_metadata),
+            ""
+        )
+        output_lines <- c(output_lines, cleanup_lines)
+    } else {
+        cat("WORKFLOW ARGS: No accession cleanup results available\n")
+    }
+    
+    # Add configuration parameters (now includes S4 parameters)
+    config_lines <- c(
+        "Workflow Parameters:",
+        "-------------------",
+        ""
+    )
     
     # Clean the merged config (remove problematic objects)
     clean_config <- merged_config
