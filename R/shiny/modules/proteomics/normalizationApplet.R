@@ -1166,6 +1166,13 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
               nrow()
             message(sprintf("Number of distinct proteins remaining after RUV normalization and filtering: %d", ruvfilt_protein_count))
             
+            # Track protein count after RUV filtering
+            if (is.null(workflow_data$protein_counts)) {
+              workflow_data$protein_counts <- list()
+            }
+            workflow_data$protein_counts$after_ruv_filtering <- ruvfilt_protein_count
+            message(sprintf("*** STEP 5: Tracked protein count after RUV: %d ***", ruvfilt_protein_count))
+            
             # Update protein filtering tracking (matching RMarkdown chunk 27)
             # Wrap in tryCatch to prevent workflow failure
             message("*** STEP 5: About to call updateProteinFiltering ***")
@@ -1496,11 +1503,21 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
         cat(sprintf("   STATE UPDATE Step: differential_expression status = %s\n", workflow_data$tab_status$differential_expression))
         cat("--- Exiting STATE UPDATE TRIGGER setting ---\n")
         
+        # Calculate final protein count
+        final_protein_count <- length(unique(final_s4_for_de@protein_quant_table$Protein.Ids))
+        
+        # Track protein count after correlation filtering (final count for DE)
+        if (is.null(workflow_data$protein_counts)) {
+          workflow_data$protein_counts <- list()
+        }
+        workflow_data$protein_counts$final_for_de <- final_protein_count
+        message(sprintf("*** CORRELATION: Tracked final protein count for DE: %d ***", final_protein_count))
+        
         # Update summary display
         correlation_summary <- sprintf(
           "Correlation filtering completed successfully!\n\nThreshold: %.2f\nProteins remaining: %d\nSamples remaining: %d\n\nReady for differential expression analysis.",
           input$min_pearson_correlation_threshold,
-          length(unique(final_s4_for_de@protein_quant_table$Protein.Ids)),
+          final_protein_count,
           # Fix Issue 2: Use correct column counting for samples 
           # Sample columns are all columns except the protein ID column
           length(setdiff(colnames(final_s4_for_de@protein_quant_table), final_s4_for_de@protein_id_column))
@@ -1932,6 +1949,9 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
             
             # NEW: QC parameters from all QC steps
             qc_params = workflow_data$qc_params,
+            
+            # NEW: Protein counts through workflow stages
+            protein_counts = workflow_data$protein_counts,
             
             # Data dimensions for verification
              final_protein_count = length(unique(current_s4_object@protein_quant_table$Protein.Ids)),

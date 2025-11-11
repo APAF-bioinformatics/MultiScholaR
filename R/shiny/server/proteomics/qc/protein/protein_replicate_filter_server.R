@@ -87,6 +87,13 @@ protein_replicate_filter_server <- function(input, output, session, workflow_dat
           dplyr::distinct(Protein.Ids) |>
           nrow()
         
+        # Track protein count after QC filtering (final QC step before normalization)
+        if (is.null(workflow_data$protein_counts)) {
+          workflow_data$protein_counts <- list()
+        }
+        workflow_data$protein_counts$after_qc_filtering <- protein_count
+        logger::log_info(sprintf("Tracked protein count after QC filtering: %d", protein_count))
+        
         result_text <- paste(
           "Protein Replicate Filter Applied Successfully\n",
           "============================================\n",
