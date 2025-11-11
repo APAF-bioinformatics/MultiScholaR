@@ -679,7 +679,7 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
         
         # Process FASTA file
         tryCatch({
-          aa_seq_tbl_final <- processFastaFile(
+          fasta_result <- processFastaFile(
             fasta_file_path = fasta_path,
             uniprot_search_results = uniprot_mapping,
             uniparc_search_results = uniparc_mapping,
@@ -687,7 +687,12 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
             organism_name = input$organism_name
           )
           
+          # Extract data and metadata from result
+          aa_seq_tbl_final <- fasta_result$aa_seq_tbl_final
+          fasta_metadata <- fasta_result$fasta_metadata
+          
           workflow_data$aa_seq_tbl_final <- aa_seq_tbl_final
+          workflow_data$fasta_metadata <- fasta_metadata
           
           # ✅ FIXED: Store in global environment for chooseBestProteinAccession to find
           assign("aa_seq_tbl_final", aa_seq_tbl_final, envir = .GlobalEnv)
@@ -697,6 +702,12 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
             scripts_aa_seq_path <- file.path(experiment_paths$source_dir, "aa_seq_tbl_final.RDS")
             saveRDS(aa_seq_tbl_final, scripts_aa_seq_path)
             log_info(sprintf("Saved aa_seq_tbl_final to scripts directory: %s", scripts_aa_seq_path))
+            
+            # Save FASTA metadata
+            fasta_metadata_path <- file.path(experiment_paths$source_dir, "fasta_metadata.RDS")
+            saveRDS(fasta_metadata, fasta_metadata_path)
+            log_info(sprintf("Saved FASTA metadata to scripts directory: %s", fasta_metadata_path))
+            log_info(sprintf("FASTA Format: %s, Sequences: %d", fasta_metadata$fasta_format, fasta_metadata$num_sequences))
           }
           
           log_info(sprintf("FASTA file processed successfully. Found %d sequences", nrow(aa_seq_tbl_final)))
@@ -705,6 +716,7 @@ setupImportServer <- function(id, workflow_data, experiment_paths, volumes = NUL
           log_warn(paste("Error processing FASTA file:", e$message))
           log_warn("Continuing without FASTA processing - protein ID conversion will be skipped")
           workflow_data$aa_seq_tbl_final <- NULL
+          workflow_data$fasta_metadata <- NULL
         })
         
         # Load configuration
