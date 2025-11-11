@@ -79,6 +79,26 @@ accession_cleanup_server <- function(input, output, session, workflow_data, omic
           timestamp = Sys.time()
         )
         
+        # Also store in qc_params for consistency
+        if (is.null(workflow_data$qc_params)) {
+          workflow_data$qc_params <- list()
+        }
+        if (is.null(workflow_data$qc_params$protein_qc)) {
+          workflow_data$qc_params$protein_qc <- list()
+        }
+        workflow_data$qc_params$protein_qc$accession_cleanup <- workflow_data$accession_cleanup_results
+        
+        # Save accession cleanup results to file for persistence
+        tryCatch({
+          if (exists("experiment_paths") && !is.null(experiment_paths$source_dir)) {
+            accession_cleanup_file <- file.path(experiment_paths$source_dir, "accession_cleanup_results.RDS")
+            saveRDS(workflow_data$accession_cleanup_results, accession_cleanup_file)
+            logger::log_info(sprintf("Saved accession cleanup results to: %s", accession_cleanup_file))
+          }
+        }, error = function(e) {
+          logger::log_warn(sprintf("Could not save accession cleanup results file: %s", e$message))
+        })
+        
         logger::log_info(sprintf("Accession cleanup results tracked: %d -> %d proteins", 
                                 proteins_before, proteins_after))
         

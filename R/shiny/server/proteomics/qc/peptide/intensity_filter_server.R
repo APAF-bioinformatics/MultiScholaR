@@ -48,6 +48,20 @@ intensity_filter_server <- function(input, output, session, workflow_data, omic_
         # Apply S4 transformation (EXISTING S4 CODE - UNCHANGED)
         filtered_s4 <- peptideIntensityFiltering(theObject = current_s4)
         
+        # Track QC parameters in workflow_data
+        if (is.null(workflow_data$qc_params)) {
+          workflow_data$qc_params <- list()
+        }
+        if (is.null(workflow_data$qc_params$peptide_qc)) {
+          workflow_data$qc_params$peptide_qc <- list()
+        }
+        
+        workflow_data$qc_params$peptide_qc$intensity_filter <- list(
+          intensity_cutoff_percentile = input$intensity_cutoff_percentile,
+          proportion_samples_below_cutoff = input$proportion_samples_below_cutoff,
+          timestamp = Sys.time()
+        )
+        
         # Save new state in R6 manager
         workflow_data$state_manager$saveState(
           state_name = "intensity_filtered",

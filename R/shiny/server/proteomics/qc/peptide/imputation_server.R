@@ -41,6 +41,30 @@ imputation_server <- function(input, output, session, workflow_data, omic_type, 
         # Apply S4 transformation (EXISTING S4 CODE - UNCHANGED)
         imputed_s4 <- peptideMissingValueImputation(theObject = current_s4)
         
+        # Track QC parameters in workflow_data
+        if (is.null(workflow_data$qc_params)) {
+          workflow_data$qc_params <- list()
+        }
+        if (is.null(workflow_data$qc_params$peptide_qc)) {
+          workflow_data$qc_params$peptide_qc <- list()
+        }
+        
+        workflow_data$qc_params$peptide_qc$imputation <- list(
+          proportion_missing_values = input$proportion_missing_values,
+          timestamp = Sys.time()
+        )
+        
+        # Save QC parameters to file for persistence (final peptide QC step)
+        tryCatch({
+          if (exists("experiment_paths") && !is.null(experiment_paths$source_dir)) {
+            qc_params_file <- file.path(experiment_paths$source_dir, "qc_params.RDS")
+            saveRDS(workflow_data$qc_params, qc_params_file)
+            logger::log_info(sprintf("Saved QC parameters to: %s", qc_params_file))
+          }
+        }, error = function(e) {
+          logger::log_warn(sprintf("Could not save QC parameters file: %s", e$message))
+        })
+        
         # Save new state in R6 manager
         workflow_data$state_manager$saveState(
           state_name = "imputed",

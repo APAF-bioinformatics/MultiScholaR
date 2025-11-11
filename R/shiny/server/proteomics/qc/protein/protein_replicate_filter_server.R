@@ -45,6 +45,31 @@ protein_replicate_filter_server <- function(input, output, session, workflow_dat
         output_file <- file.path(experiment_paths$protein_qc_dir, "remove_proteins_with_only_one_rep.tsv")
         vroom::vroom_write(filtered_s4@protein_quant_table, output_file)
         
+        # Track QC parameters in workflow_data
+        if (is.null(workflow_data$qc_params)) {
+          workflow_data$qc_params <- list()
+        }
+        if (is.null(workflow_data$qc_params$protein_qc)) {
+          workflow_data$qc_params$protein_qc <- list()
+        }
+        
+        workflow_data$qc_params$protein_qc$replicate_filter <- list(
+          grouping_variable = input$protein_grouping_variable,
+          parallel_cores = input$parallel_cores,
+          timestamp = Sys.time()
+        )
+        
+        # Save QC parameters to file for persistence
+        tryCatch({
+          if (!is.null(experiment_paths$source_dir)) {
+            qc_params_file <- file.path(experiment_paths$source_dir, "qc_params.RDS")
+            saveRDS(workflow_data$qc_params, qc_params_file)
+            logger::log_info(sprintf("Saved QC parameters to: %s", qc_params_file))
+          }
+        }, error = function(e) {
+          logger::log_warn(sprintf("Could not save QC parameters file: %s", e$message))
+        })
+        
         # Save new state
         workflow_data$state_manager$saveState(
           state_name = "protein_replicate_filtered",

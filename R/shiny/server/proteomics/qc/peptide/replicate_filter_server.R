@@ -37,6 +37,19 @@ replicate_filter_server <- function(input, output, session, workflow_data, omic_
           replicate_group_column = input$replicate_group_column
         )
         
+        # Track QC parameters in workflow_data
+        if (is.null(workflow_data$qc_params)) {
+          workflow_data$qc_params <- list()
+        }
+        if (is.null(workflow_data$qc_params$peptide_qc)) {
+          workflow_data$qc_params$peptide_qc <- list()
+        }
+        
+        workflow_data$qc_params$peptide_qc$replicate_filter <- list(
+          replicate_group_column = input$replicate_group_column,
+          timestamp = Sys.time()
+        )
+        
         # Save new state in R6 manager
         workflow_data$state_manager$saveState(
           state_name = "replicate_filtered",
