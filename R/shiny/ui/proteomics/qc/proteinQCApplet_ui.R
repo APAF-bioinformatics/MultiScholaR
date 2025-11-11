@@ -124,34 +124,54 @@ proteinQCAppletUI <- function(id, workflow_type = NULL) {
             shiny::p("Configure missing value thresholds and filter proteins on intensity and missing values."),
             shiny::hr(),
             
-            # Missing value parameters (chunk 20)
-            shiny::h5("Missing Value Parameters"),
-            shiny::numericInput(ns("min_reps_per_group"), 
-              "Min Replicates per Group", 
-              value = 2, min = 1, max = 10, step = 1,
+            # Strict Mode Toggle
+            shiny::checkboxInput(ns("use_strict_mode"), 
+              "Strict Mode (No Missing Values Allowed)", 
+              value = FALSE,
               width = "100%"
             ),
-            shiny::helpText("Minimum valid measurements required within each group (default: 2)"),
-            
-            shiny::numericInput(ns("min_groups"), 
-              "Min Groups Required", 
-              value = 2, min = 1, max = 10, step = 1,
-              width = "100%"
-            ),
-            shiny::helpText("Minimum groups that must meet the replicate threshold (default: 2)"),
+            shiny::helpText("When enabled, removes any protein with missing values in ANY sample across all groups. Overrides flexible threshold settings below."),
             
             shiny::hr(),
             
-            # Calculated percentages (read-only display)
-            shiny::h5("Calculated Thresholds"),
-            shiny::p(style = "background-color: #f0f0f0; padding: 10px; border-radius: 5px;",
-              shiny::strong("These values are automatically calculated from your replicate settings above:"),
-              shiny::br(),
-              shiny::textOutput(ns("calculated_groupwise_percent"), inline = TRUE),
-              shiny::br(),
-              shiny::textOutput(ns("calculated_max_groups_percent"), inline = TRUE)
+            # Flexible mode parameters (shown when strict mode is OFF)
+            shiny::conditionalPanel(
+              condition = "!input.use_strict_mode",
+              ns = ns,
+              
+              # Missing value parameters (chunk 20)
+              shiny::h5("Missing Value Parameters (Flexible Mode)"),
+              shiny::numericInput(ns("min_reps_per_group"), 
+                "Min Replicates per Group", 
+                value = 2, min = 1, max = 10, step = 1,
+                width = "100%"
+              ),
+              shiny::helpText("Minimum valid measurements required within each group (default: 2)"),
+              
+              shiny::numericInput(ns("min_groups"), 
+                "Min Groups Required", 
+                value = 2, min = 1, max = 10, step = 1,
+                width = "100%"
+              ),
+              shiny::helpText("Minimum groups that must meet the replicate threshold (default: 2)"),
+              
+              shiny::hr(),
+              
+              # Calculated percentages (read-only display)
+              shiny::h5("Calculated Thresholds"),
+              shiny::p(style = "background-color: #f0f0f0; padding: 10px; border-radius: 5px;",
+                shiny::strong("These values are automatically calculated from your replicate settings above:"),
+                shiny::br(),
+                shiny::textOutput(ns("calculated_groupwise_percent"), inline = TRUE),
+                shiny::br(),
+                shiny::textOutput(ns("calculated_max_groups_percent"), inline = TRUE)
+              ),
+              
+              shiny::hr()
             ),
             
+            # Intensity cutoff (always shown)
+            shiny::h5("Intensity Threshold"),
             shiny::numericInput(ns("proteins_intensity_cutoff_percentile"), 
               "Protein Intensity Cutoff Percentile (%)", 
               value = 1, min = 0.1, max = 10, step = 0.1,

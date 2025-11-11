@@ -28,16 +28,42 @@ protein_intensity_filter_server <- function(input, output, session, workflow_dat
         current_s4 <- workflow_data$state_manager$getState()
         shiny::req(current_s4)
         
-        logger::log_info("Protein Processing: Applying missing value parameters and intensity filter")
+        # Check if using strict mode
+        use_strict_mode <- isTRUE(input$use_strict_mode)
         
-        # First: Update missing value parameters (chunk 20) using NEW function signature
-        current_s4 <- updateMissingValueParameters(
-          theObject = current_s4,
-          min_reps_per_group = input$min_reps_per_group,
-          min_groups = input$min_groups
-        )
+        if (use_strict_mode) {
+          # STRICT MODE: Set parameters to enforce zero tolerance
+          logger::log_info("Protein Processing: Using STRICT MODE (no missing values allowed)")
+          
+          # Set groupwise_percentage_cutoff to 0 (no missing allowed in any group)
+          current_s4 <- updateConfigParameter(
+            theObject = current_s4,
+            function_name = "removeRowsWithMissingValuesPercent",
+            parameter_name = "groupwise_percentage_cutoff",
+            new_value = 0
+          )
+          
+          # Set max_groups_percentage_cutoff to 0 (all groups must pass)
+          current_s4 <- updateConfigParameter(
+            theObject = current_s4,
+            function_name = "removeRowsWithMissingValuesPercent",
+            parameter_name = "max_groups_percentage_cutoff",
+            new_value = 0
+          )
+          
+        } else {
+          # FLEXIBLE MODE: Use existing adaptive logic
+          logger::log_info("Protein Processing: Using FLEXIBLE MODE (adaptive thresholds)")
+          
+          # First: Update missing value parameters (chunk 20) using NEW function signature
+          current_s4 <- updateMissingValueParameters(
+            theObject = current_s4,
+            min_reps_per_group = input$min_reps_per_group,
+            min_groups = input$min_groups
+          )
+        }
         
-        # Only update the intensity cutoff percentile since it's not calculated by updateMissingValueParameters
+        # Always update the intensity cutoff percentile
         current_s4 <- updateConfigParameter(
           theObject = current_s4,
           function_name = "removeRowsWithMissingValuesPercent",
@@ -57,8 +83,9 @@ protein_intensity_filter_server <- function(input, output, session, workflow_dat
         }
         
         workflow_data$qc_params$protein_qc$intensity_filter <- list(
-          min_reps_per_group = input$min_reps_per_group,
-          min_groups = input$min_groups,
+          strict_mode = use_strict_mode,
+          min_reps_per_group = if(!use_strict_mode) input$min_reps_per_group else NA,
+          min_groups = if(!use_strict_mode) input$min_groups else NA,
           groupwise_percentage_cutoff = current_s4@args$removeRowsWithMissingValuesPercent$groupwise_percentage_cutoff,
           max_groups_percentage_cutoff = current_s4@args$removeRowsWithMissingValuesPercent$max_groups_percentage_cutoff,
           proteins_intensity_cutoff_percentile = input$proteins_intensity_cutoff_percentile,
@@ -70,13 +97,14 @@ protein_intensity_filter_server <- function(input, output, session, workflow_dat
           state_name = "protein_intensity_filtered",
           s4_data_object = filtered_s4,
           config_object = list(
-            min_reps_per_group = input$min_reps_per_group,
-            min_groups = input$min_groups,
+            strict_mode = use_strict_mode,
+            min_reps_per_group = if(!use_strict_mode) input$min_reps_per_group else NA,
+            min_groups = if(!use_strict_mode) input$min_groups else NA,
             groupwise_percentage_cutoff = current_s4@args$removeRowsWithMissingValuesPercent$groupwise_percentage_cutoff,
             max_groups_percentage_cutoff = current_s4@args$removeRowsWithMissingValuesPercent$max_groups_percentage_cutoff,
             proteins_intensity_cutoff_percentile = input$proteins_intensity_cutoff_percentile
           ),
-          description = "Applied missing value parameters and protein intensity filter"
+          description = if(use_strict_mode) "Applied STRICT protein intensity filter (no missing values)" else "Applied FLEXIBLE protein intensity filter (adaptive thresholds)"
         )
         
         # Generate summary
@@ -84,17 +112,31 @@ protein_intensity_filter_server <- function(input, output, session, workflow_dat
           dplyr::distinct(Protein.Ids) |>
           nrow()
         
-        result_text <- paste(
-          "Protein Intensity Filter Applied Successfully\n",
-          "============================================\n",
-          sprintf("Proteins remaining: %d\n", protein_count),
-          sprintf("Min replicates per group: %d\n", input$min_reps_per_group),
-          sprintf("Min groups required: %d\n", input$min_groups),
-          sprintf("Groupwise %% cutoff: %.3f%% (calculated)\n", current_s4@args$removeRowsWithMissingValuesPercent$groupwise_percentage_cutoff),
-          sprintf("Max groups %% cutoff: %.3f%% (calculated)\n", current_s4@args$removeRowsWithMissingValuesPercent$max_groups_percentage_cutoff),
-          sprintf("Intensity cutoff percentile: %.1f%%\n", input$proteins_intensity_cutoff_percentile),
-          "State saved as: 'protein_intensity_filtered'\n"
-        )
+        result_text <- if (use_strict_mode) {
+          paste(
+            "Protein Intensity Filter Applied Successfully\n",
+            "============================================\n",
+            "Mode: STRICT (No Missing Values)\n",
+            sprintf("Proteins remaining: %d\n", protein_count),
+            "Groupwise % cutoff: 0.000% (strict - no missing allowed)\n",
+            "Max groups % cutoff: 0.000% (strict - all groups must pass)\n",
+            sprintf("Intensity cutoff percentile: %.1f%%\n", input$proteins_intensity_cutoff_percentile),
+            "State saved as: 'protein_intensity_filtered'\n"
+          )
+        } else {
+          paste(
+            "Protein Intensity Filter Applied Successfully\n",
+            "============================================\n",
+            "Mode: FLEXIBLE (Adaptive Thresholds)\n",
+            sprintf("Proteins remaining: %d\n", protein_count),
+            sprintf("Min replicates per group: %d\n", input$min_reps_per_group),
+            sprintf("Min groups required: %d\n", input$min_groups),
+            sprintf("Groupwise %% cutoff: %.3f%% (calculated)\n", current_s4@args$removeRowsWithMissingValuesPercent$groupwise_percentage_cutoff),
+            sprintf("Max groups %% cutoff: %.3f%% (calculated)\n", current_s4@args$removeRowsWithMissingValuesPercent$max_groups_percentage_cutoff),
+            sprintf("Intensity cutoff percentile: %.1f%%\n", input$proteins_intensity_cutoff_percentile),
+            "State saved as: 'protein_intensity_filtered'\n"
+          )
+        }
         
         output$protein_intensity_filter_results <- shiny::renderText(result_text)
         
