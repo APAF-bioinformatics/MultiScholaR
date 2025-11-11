@@ -124,19 +124,53 @@ parseFastaFile <- function(fasta_file) {
 #' @export
 chooseBestPhosphositeAccession <- function(input_tbl, acc_detail_tab, accessions_column, group_id) {
 
-  resolve_acc_helper <- input_tbl %>%
+  # Join with FASTA data
+  resolve_acc_joined <- input_tbl %>%
     dplyr::select( {{group_id}}, {{accessions_column}}, cleaned_peptide) %>%
     mutate( uniprot_acc = str_split( {{accessions_column}}, ";") ) %>%
     unnest( uniprot_acc )   %>%
     mutate( cleaned_acc = cleanIsoformNumber(uniprot_acc)) %>%
     left_join( acc_detail_tab,
                by=c("uniprot_acc" = "uniprot_acc",
-                    "cleaned_acc" = "cleaned_acc") ) %>%
-    ## Just a sanity check that the peptide is actually in the sequence
-    dplyr::filter( str_detect( seq, cleaned_peptide  )) %>%
+                    "cleaned_acc" = "cleaned_acc") )
+  
+  # Detect which columns are available and add missing ones with defaults
+  available_cols <- colnames(resolve_acc_joined)
+  
+  if (!"gene_name" %in% available_cols) {
+    resolve_acc_joined <- resolve_acc_joined %>% mutate(gene_name = NA_character_)
+  }
+  
+  if (!"protein_evidence" %in% available_cols) {
+    resolve_acc_joined <- resolve_acc_joined %>% mutate(protein_evidence = 3)
+  }
+  
+  if (!"status" %in% available_cols) {
+    resolve_acc_joined <- resolve_acc_joined %>% mutate(status = "unknown")
+  }
+  
+  if (!"is_isoform" %in% available_cols) {
+    resolve_acc_joined <- resolve_acc_joined %>% mutate(is_isoform = "Canonical")
+  }
+  
+  if (!"isoform_num" %in% available_cols) {
+    resolve_acc_joined <- resolve_acc_joined %>% mutate(isoform_num = 0)
+  }
+  
+  if (!"seq_length" %in% available_cols) {
+    resolve_acc_joined <- resolve_acc_joined %>% mutate(seq_length = NA_integer_)
+  }
+  
+  if (!"seq" %in% available_cols) {
+    resolve_acc_joined <- resolve_acc_joined %>% mutate(seq = NA_character_)
+  }
+  
+  # Now select, filter, and arrange using the complete set of columns
+  resolve_acc_helper <- resolve_acc_joined %>%
+    ## Just a sanity check that the peptide is actually in the sequence (skip if seq not available)
+    {if ("seq" %in% colnames(.) && all(!is.na(.$seq))) filter(., str_detect( seq, cleaned_peptide  )) else .} %>%
     dplyr::select({{group_id}}, one_of(c( "uniprot_acc", "gene_name", "cleaned_acc",
                                           "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"  ))) %>%
-
     distinct %>%
     arrange( {{group_id}}, protein_evidence, status, is_isoform, desc(seq_length), isoform_num )
 
@@ -372,7 +406,9 @@ rankProteinAccessionHelper <- function(input_tbl
   cat("\n")
 
   cat(">>> RANK HELPER STEP 2: SPLITTING ACCESSION LISTS (str_split with delim) <<<\n")
-  resolve_acc_helper <- input_tbl |>
+  
+  # Split and join with FASTA data
+  resolve_acc_joined <- input_tbl |>
     dplyr::select( { { group_id } }, { { accessions_column } }) |>
     mutate( !!sym(row_id_column) := str_split({ { accessions_column } }, delim)) |>
     unnest( !!sym(row_id_column)) |>
@@ -380,7 +416,44 @@ rankProteinAccessionHelper <- function(input_tbl
     left_join( acc_detail_tab ,
                by = join_by( cleaned_acc == !!sym(row_id_column) ),
                copy = TRUE,
-               keep = NULL)  |>
+               keep = NULL)
+  
+  # Detect which columns are available and add missing ones with defaults
+  cat("   Detecting available FASTA metadata columns...\n")
+  available_cols <- colnames(resolve_acc_joined)
+  
+  if (!"gene_name" %in% available_cols) {
+    cat("   WARNING: 'gene_name' column not found in FASTA data. Using NA as default.\n")
+    resolve_acc_joined <- resolve_acc_joined |> mutate(gene_name = NA_character_)
+  }
+  
+  if (!"protein_evidence" %in% available_cols) {
+    cat("   WARNING: 'protein_evidence' column not found. Using neutral value (3) for sorting.\n")
+    resolve_acc_joined <- resolve_acc_joined |> mutate(protein_evidence = 3)
+  }
+  
+  if (!"status" %in% available_cols) {
+    cat("   WARNING: 'status' column not found. Using 'unknown' as default.\n")
+    resolve_acc_joined <- resolve_acc_joined |> mutate(status = "unknown")
+  }
+  
+  if (!"is_isoform" %in% available_cols) {
+    cat("   WARNING: 'is_isoform' column not found. Using 'Canonical' as default.\n")
+    resolve_acc_joined <- resolve_acc_joined |> mutate(is_isoform = "Canonical")
+  }
+  
+  if (!"isoform_num" %in% available_cols) {
+    cat("   WARNING: 'isoform_num' column not found. Using 0 as default.\n")
+    resolve_acc_joined <- resolve_acc_joined |> mutate(isoform_num = 0)
+  }
+  
+  if (!"seq_length" %in% available_cols) {
+    cat("   WARNING: 'seq_length' column not found. Using NA as default.\n")
+    resolve_acc_joined <- resolve_acc_joined |> mutate(seq_length = NA_integer_)
+  }
+  
+  # Now select and arrange using the complete set of columns
+  resolve_acc_helper <- resolve_acc_joined |>
     dplyr::select( { { group_id } }, one_of(c(row_id_column, "gene_name", "cleaned_acc",
                                               "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"))) |>
     distinct() |>
