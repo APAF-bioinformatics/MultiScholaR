@@ -3167,6 +3167,22 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
         cat("WORKFLOW ARGS: No accession cleanup results available\n")
     }
     
+    # Add Protein Filtering Summary
+    if (!is.null(workflow_data) && !is.null(workflow_data$protein_counts)) {
+        cat("WORKFLOW ARGS: Adding protein filtering summary\n")
+        counts_lines <- c(
+            "Protein Filtering Summary:",
+            "-------------------------",
+            paste("• Proteins after QC filtering:", workflow_data$protein_counts$after_qc_filtering %||% "N/A"),
+            paste("• Proteins after RUV filtering:", workflow_data$protein_counts$after_ruv_filtering %||% "N/A"),
+            paste("• Final proteins for DE analysis:", workflow_data$protein_counts$final_for_de %||% "N/A"),
+            ""
+        )
+        output_lines <- c(output_lines, counts_lines)
+    } else {
+        cat("WORKFLOW ARGS: No protein counts available\n")
+    }
+    
     # Add configuration parameters (now includes S4 parameters)
     config_lines <- c(
         "Workflow Parameters:",

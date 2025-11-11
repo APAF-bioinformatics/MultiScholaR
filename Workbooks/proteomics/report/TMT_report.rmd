@@ -221,6 +221,7 @@ ExtractStudyParametersTMT <- function(study_params) {
   ruv_results <- study_params$"Automatic RUV Optimization Results" %||% list()
   fasta_info <- study_params$"FASTA File Processing" %||% list()
   accession_cleanup <- study_params$"Protein Accession Cleanup" %||% list()
+  protein_counts_info <- study_params$"Protein Filtering Summary" %||% list()
   
   # Navigate to S4 parameters
   s4_params <- safe_extract(study_params, c("Workflow Parameters", "Parameters from Final S4 Object"), list())
@@ -265,10 +266,10 @@ ExtractStudyParametersTMT <- function(study_params) {
     num_neg_ctrl = ruv_results$"Control genes",
     ruv_grouping_variable = ruv_results$"RUV grouping variable",
     
-    # TMT Protein-level filtering parameters
-    groupwise_percentage_cutoff = as.numeric(s4_prot_filt$groupwise_percentage_cutoff %||% 60),
-    max_groups_percentage_cutoff = as.numeric(s4_prot_filt$max_groups_percentage_cutoff %||% 60),
-    proteins_intensity_cutoff_percentile = as.numeric(s4_prot_filt$proteins_intensity_cutoff_percentile %||% 1),
+    # TMT Protein-level filtering parameters (FIXED: explicit NULL check to handle 0 values)
+    groupwise_percentage_cutoff = if(is.null(s4_prot_filt$groupwise_percentage_cutoff) || is.na(s4_prot_filt$groupwise_percentage_cutoff)) 60 else as.numeric(s4_prot_filt$groupwise_percentage_cutoff),
+    max_groups_percentage_cutoff = if(is.null(s4_prot_filt$max_groups_percentage_cutoff) || is.na(s4_prot_filt$max_groups_percentage_cutoff)) 60 else as.numeric(s4_prot_filt$max_groups_percentage_cutoff),
+    proteins_intensity_cutoff_percentile = if(is.null(s4_prot_filt$proteins_intensity_cutoff_percentile) || is.na(s4_prot_filt$proteins_intensity_cutoff_percentile)) 1 else as.numeric(s4_prot_filt$proteins_intensity_cutoff_percentile),
     protein_grouping_variable = s4_prot_rep_filt$grouping_variable %||% "group",
     
     # Protein accession cleanup parameters
@@ -277,24 +278,24 @@ ExtractStudyParametersTMT <- function(study_params) {
     # Normalization method
     normalisation_method = s4_norm$method %||% s4_norm$normalisation_method %||% "cyclicloess",
     
-    # RUV parameters
-    ruv_number_k = as.numeric(s4_ruv$ruv_number_k %||% 2),
+    # RUV parameters (FIXED: explicit NULL check)
+    ruv_number_k = if(is.null(s4_ruv$ruv_number_k) || is.na(s4_ruv$ruv_number_k)) 2 else as.numeric(s4_ruv$ruv_number_k),
     
-    # DE Analysis S4 parameters
-    s4_de_q_val_thresh = as.numeric(s4_de$de_q_val_thresh %||% 0.05),
-    s4_de_treat_lfc_cutoff = as.numeric(s4_de$treat_lfc_cutoff %||% 0),
+    # DE Analysis S4 parameters (FIXED: explicit NULL checks)
+    s4_de_q_val_thresh = if(is.null(s4_de$de_q_val_thresh) || is.na(s4_de$de_q_val_thresh)) 0.05 else as.numeric(s4_de$de_q_val_thresh),
+    s4_de_treat_lfc_cutoff = if(is.null(s4_de$treat_lfc_cutoff) || is.na(s4_de$treat_lfc_cutoff)) 0 else as.numeric(s4_de$treat_lfc_cutoff),
     s4_ebayes_trend = as.logical(s4_de$eBayes_trend %||% TRUE),
     s4_ebayes_robust = as.logical(s4_de$eBayes_robust %||% TRUE),
     s4_formula_string = s4_de$formula_string %||% "~ 0 + group",
     
-    # UI Parameters
-    ui_de_q_value_threshold = as.numeric(ui_de$q_value_threshold %||% 0.05),
-    ui_de_log_fold_change_cutoff = as.numeric(ui_de$log_fold_change_cutoff %||% 0),
+    # UI Parameters (FIXED: explicit NULL checks)
+    ui_de_q_value_threshold = if(is.null(ui_de$q_value_threshold) || is.na(ui_de$q_value_threshold)) 0.05 else as.numeric(ui_de$q_value_threshold),
+    ui_de_log_fold_change_cutoff = if(is.null(ui_de$log_fold_change_cutoff) || is.na(ui_de$log_fold_change_cutoff)) 0 else as.numeric(ui_de$log_fold_change_cutoff),
     ui_de_treat_enabled = as.logical(ui_de$treat_enabled %||% FALSE),
     
-    ui_enrichment_up_lfc = as.numeric(ui_enrich$up_log2fc_cutoff %||% 0),
-    ui_enrichment_down_lfc = as.numeric(ui_enrich$down_log2fc_cutoff %||% 0), 
-    ui_enrichment_q_value_cutoff = as.numeric(ui_enrich$q_value_cutoff %||% 0.05),
+    ui_enrichment_up_lfc = if(is.null(ui_enrich$up_log2fc_cutoff) || is.na(ui_enrich$up_log2fc_cutoff)) 0 else as.numeric(ui_enrich$up_log2fc_cutoff),
+    ui_enrichment_down_lfc = if(is.null(ui_enrich$down_log2fc_cutoff) || is.na(ui_enrich$down_log2fc_cutoff)) 0 else as.numeric(ui_enrich$down_log2fc_cutoff),
+    ui_enrichment_q_value_cutoff = if(is.null(ui_enrich$q_value_cutoff) || is.na(ui_enrich$q_value_cutoff)) 0.05 else as.numeric(ui_enrich$q_value_cutoff),
     ui_enrichment_organism_selected = ui_enrich$organism_selected,
     ui_enrichment_database_source = ui_enrich$database_source %||% "clusterprofiler",
     
@@ -312,6 +313,11 @@ ExtractStudyParametersTMT <- function(study_params) {
     accession_proteins_before = accession_cleanup$"Proteins Before Cleanup" %||% NA,
     accession_proteins_after = accession_cleanup$"Proteins After Cleanup" %||% NA,
     accession_had_full_metadata = accession_cleanup$"Full UniProt Metadata" %||% NA,
+    
+    # Protein Counts (with safe extraction)
+    protein_count_qc = protein_counts_info$"Proteins after QC filtering" %||% NA,
+    protein_count_ruv = protein_counts_info$"Proteins after RUV filtering" %||% NA,
+    protein_count_final = protein_counts_info$"Final proteins for DE analysis" %||% NA,
     
     # Contrasts
     contrasts = contrasts
@@ -361,10 +367,10 @@ There are {total_samples_val} samples in total which consists of:
 ```{r Method Section, echo=FALSE}
 # UPDATED: Method details for TMT workflow - protein-level processing
 FormatMethodDetailsTMT <- function(numbers) {
-  # Use TMT-specific parameters
-  groupwise_cutoff <- numbers$groupwise_percentage_cutoff %||% 60
-  max_groups_cutoff <- numbers$max_groups_percentage_cutoff %||% 60
-  intensity_cutoff_pct <- numbers$proteins_intensity_cutoff_percentile %||% 1
+  # Use TMT-specific parameters (FIXED: explicit NULL check for 0 values)
+  groupwise_cutoff <- if(is.null(numbers$groupwise_percentage_cutoff) || is.na(numbers$groupwise_percentage_cutoff)) 60 else as.numeric(numbers$groupwise_percentage_cutoff)
+  max_groups_cutoff <- if(is.null(numbers$max_groups_percentage_cutoff) || is.na(numbers$max_groups_percentage_cutoff)) 60 else as.numeric(numbers$max_groups_percentage_cutoff)
+  intensity_cutoff_pct <- if(is.null(numbers$proteins_intensity_cutoff_percentile) || is.na(numbers$proteins_intensity_cutoff_percentile)) 1 else as.numeric(numbers$proteins_intensity_cutoff_percentile)
   norm_method <- numbers$normalisation_method %||% "cyclicloess"
   
   # RUV parameters from new structure
@@ -477,7 +483,7 @@ were excluded from further analysis as likely noise or background signal.
 
 Proteins appearing in only one replicate across all groups were also excluded 
 to ensure measurement reproducibility and reliable quantification across biological 
-replicates.
+replicates. {if(!is.null(numbers$protein_count_qc) && !is.na(numbers$protein_count_qc)) paste0("After quality control filtering, ", numbers$protein_count_qc, " proteins remained for normalization.") else ""}
 
 Normalization and Batch Effect Correction
 Using the protein intensity matrix, zero values were replaced with NA to denote 
@@ -486,7 +492,7 @@ normalization was performed using the '{norm_method}' method from the 'limma'
 R package (Ritchie et al., 2015). This normalization approach adjusts for 
 systematic technical variation while preserving biological differences.
 
-{ruv_text}
+{ruv_text} {if(!is.null(numbers$protein_count_ruv) && !is.na(numbers$protein_count_ruv)) paste0("Following RUV-III batch correction and subsequent missing value cleanup, ", numbers$protein_count_ruv, " proteins were retained for differential expression analysis.") else ""}
 
 At each stage of the data normalization, the samples were checked for batch effects 
 using principal component analysis (PCA) plots, density boxplots, relative 
