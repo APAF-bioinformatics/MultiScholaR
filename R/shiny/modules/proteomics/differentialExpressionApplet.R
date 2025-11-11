@@ -913,6 +913,49 @@ differentialExpressionAppletServer <- function(id, workflow_data, experiment_pat
             )
           })
           
+          # ✅ NEW: Restore FASTA metadata for complete audit trail
+          cat("*** LOAD: Restoring FASTA metadata ***\n")
+          if (!is.null(session_data$fasta_metadata)) {
+            workflow_data$fasta_metadata <- session_data$fasta_metadata
+            cat(sprintf("*** LOAD: FASTA metadata restored (format: %s, sequences: %d) ***\n", 
+                       session_data$fasta_metadata$fasta_format,
+                       session_data$fasta_metadata$num_sequences))
+          } else {
+            cat("*** LOAD: No FASTA metadata in session data ***\n")
+          }
+          
+          # ✅ NEW: Restore accession cleanup results
+          cat("*** LOAD: Restoring accession cleanup results ***\n")
+          if (!is.null(session_data$accession_cleanup_results)) {
+            workflow_data$accession_cleanup_results <- session_data$accession_cleanup_results
+            cat(sprintf("*** LOAD: Accession cleanup results restored (applied: %s, method: %s) ***\n",
+                       session_data$accession_cleanup_results$cleanup_applied,
+                       session_data$accession_cleanup_results$aggregation_method))
+          } else {
+            cat("*** LOAD: No accession cleanup results in session data ***\n")
+          }
+          
+          # ✅ NEW: Restore complete RUV optimization results  
+          cat("*** LOAD: Restoring complete RUV optimization results ***\n")
+          if (!is.null(session_data$ruv_optimization_result)) {
+            workflow_data$ruv_optimization_result <- session_data$ruv_optimization_result
+            cat(sprintf("*** LOAD: RUV optimization results restored (k: %d, percentage: %.1f%%) ***\n",
+                       session_data$ruv_optimization_result$best_k,
+                       session_data$ruv_optimization_result$best_percentage))
+          } else {
+            cat("*** LOAD: No complete RUV optimization results in session data ***\n")
+          }
+          
+          # ✅ NEW: Restore QC parameters
+          cat("*** LOAD: Restoring QC parameters ***\n")
+          if (!is.null(session_data$qc_params)) {
+            workflow_data$qc_params <- session_data$qc_params
+            param_count <- length(unlist(session_data$qc_params, recursive = FALSE))
+            cat(sprintf("*** LOAD: QC parameters restored (%d parameter groups) ***\n", param_count))
+          } else {
+            cat("*** LOAD: No QC parameters in session data ***\n")
+          }
+          
           # Update tab status
           workflow_data$tab_status$normalization <- "complete"
           workflow_data$tab_status$differential_expression <- "pending"

@@ -41,6 +41,19 @@ sample_filter_server <- function(input, output, session, workflow_data, omic_typ
         # Apply S4 transformation (EXISTING S4 CODE - UNCHANGED)
         filtered_s4 <- filterMinNumPeptidesPerSample(theObject = current_s4)
         
+        # Track QC parameters in workflow_data
+        if (is.null(workflow_data$qc_params)) {
+          workflow_data$qc_params <- list()
+        }
+        if (is.null(workflow_data$qc_params$peptide_qc)) {
+          workflow_data$qc_params$peptide_qc <- list()
+        }
+        
+        workflow_data$qc_params$peptide_qc$sample_filter <- list(
+          min_peptides_per_sample = input$min_peptides_per_sample,
+          timestamp = Sys.time()
+        )
+        
         # Save new state in R6 manager
         workflow_data$state_manager$saveState(
           state_name = "sample_filtered",

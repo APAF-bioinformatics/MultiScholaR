@@ -74,6 +74,21 @@ qvalue_filter_server <- function(input, output, session, workflow_data, omic_typ
         # Apply S4 transformation (EXISTING S4 CODE - UNCHANGED)
         filtered_s4 <- srlQvalueProteotypicPeptideClean(theObject = current_s4)
         
+        # Track QC parameters in workflow_data
+        if (is.null(workflow_data$qc_params)) {
+          workflow_data$qc_params <- list()
+        }
+        if (is.null(workflow_data$qc_params$peptide_qc)) {
+          workflow_data$qc_params$peptide_qc <- list()
+        }
+        
+        workflow_data$qc_params$peptide_qc$qvalue_filter <- list(
+          qvalue_threshold = input$qvalue_threshold,
+          global_qvalue_threshold = input$global_qvalue_threshold,
+          proteotypic_only = input$proteotypic_only,
+          timestamp = Sys.time()
+        )
+        
         # Save new state in R6 manager
         workflow_data$state_manager$saveState(
           state_name = "qvalue_filtered",

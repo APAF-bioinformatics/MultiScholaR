@@ -49,6 +49,20 @@ protein_peptide_filter_server <- function(input, output, session, workflow_data,
         # Apply S4 transformation (EXISTING S4 CODE - UNCHANGED)
         filtered_s4 <- filterMinNumPeptidesPerProtein(theObject = current_s4)
         
+        # Track QC parameters in workflow_data
+        if (is.null(workflow_data$qc_params)) {
+          workflow_data$qc_params <- list()
+        }
+        if (is.null(workflow_data$qc_params$peptide_qc)) {
+          workflow_data$qc_params$peptide_qc <- list()
+        }
+        
+        workflow_data$qc_params$peptide_qc$protein_peptide_filter <- list(
+          min_peptides_per_protein = input$min_peptides_per_protein,
+          min_peptidoforms_per_protein = input$min_peptidoforms_per_protein,
+          timestamp = Sys.time()
+        )
+        
         # Save new state in R6 manager
         workflow_data$state_manager$saveState(
           state_name = "protein_peptide_filtered",

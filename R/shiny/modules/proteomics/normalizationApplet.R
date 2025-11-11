@@ -1921,6 +1921,18 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
               "DIA"  # Default fallback for backward compatibility
             },
             
+            # NEW: FASTA metadata for complete audit trail
+            fasta_metadata = workflow_data$fasta_metadata,
+            
+            # NEW: Accession cleanup results
+            accession_cleanup_results = workflow_data$accession_cleanup_results,
+            
+            # NEW: Complete RUV optimization results (not just ruv_k)
+            ruv_optimization_result = workflow_data$ruv_optimization_result,
+            
+            # NEW: QC parameters from all QC steps
+            qc_params = workflow_data$qc_params,
+            
             # Data dimensions for verification
              final_protein_count = length(unique(current_s4_object@protein_quant_table$Protein.Ids)),
              final_sample_count = length(setdiff(colnames(current_s4_object@protein_quant_table), current_s4_object@protein_id_column))
@@ -1950,8 +1962,47 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
           saveRDS(session_data, latest_filepath)
           message(sprintf("*** EXPORT: Latest version saved to: %s ***", latest_filepath))
           
+          # Step 3.5: Save individual metadata files for redundancy and easy access
+          shiny::incProgress(0.1, detail = "Saving metadata files...")
+          
+          tryCatch({
+            # Save accession cleanup results
+            if (!is.null(session_data$accession_cleanup_results)) {
+              accession_cleanup_file <- file.path(source_dir, "accession_cleanup_results.RDS")
+              saveRDS(session_data$accession_cleanup_results, accession_cleanup_file)
+              message(sprintf("*** EXPORT: Saved accession_cleanup_results.RDS ***"))
+            }
+            
+            # Save QC parameters
+            if (!is.null(session_data$qc_params)) {
+              qc_params_file <- file.path(source_dir, "qc_params.RDS")
+              saveRDS(session_data$qc_params, qc_params_file)
+              message(sprintf("*** EXPORT: Saved qc_params.RDS ***"))
+            }
+            
+            # RUV optimization and FASTA metadata already saved in earlier steps, but verify/update
+            if (!is.null(session_data$fasta_metadata)) {
+              fasta_metadata_file <- file.path(source_dir, "fasta_metadata.RDS")
+              if (!file.exists(fasta_metadata_file)) {
+                saveRDS(session_data$fasta_metadata, fasta_metadata_file)
+                message(sprintf("*** EXPORT: Saved fasta_metadata.RDS ***"))
+              }
+            }
+            
+            if (!is.null(session_data$ruv_optimization_result)) {
+              ruv_file <- file.path(source_dir, "ruv_optimization_results.RDS")
+              if (!file.exists(ruv_file)) {
+                saveRDS(session_data$ruv_optimization_result, ruv_file)
+                message(sprintf("*** EXPORT: Saved ruv_optimization_results.RDS ***"))
+              }
+            }
+            
+          }, error = function(e) {
+            message(sprintf("*** WARNING: Some metadata files could not be saved: %s ***", e$message))
+          })
+          
           # Step 4: Create a summary file for user reference
-          shiny::incProgress(0.2, detail = "Creating summary...")
+          shiny::incProgress(0.1, detail = "Creating summary...")
           
           summary_content <- sprintf(
             "Filtered Session Data Export Summary\n=====================================\n\nExport Timestamp: %s\nSession File: %s\n\nData Summary:\n- Proteins: %d\n- Samples: %d\n- Contrasts: %d\n- Normalization: %s\n- RUV Mode: %s\n- RUV K: %d\n- Correlation Threshold: %.3f\n\nContrasts:\n%s\n\nThis data is ready for differential expression analysis.\nUse 'Load Filtered Session' in the DE tab to import.\n",

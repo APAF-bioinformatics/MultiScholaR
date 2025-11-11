@@ -48,6 +48,23 @@ protein_intensity_filter_server <- function(input, output, session, workflow_dat
         # Apply S4 transformation (EXISTING S4 CODE - UNCHANGED)
         filtered_s4 <- removeRowsWithMissingValuesPercent(current_s4)
         
+        # Track QC parameters in workflow_data
+        if (is.null(workflow_data$qc_params)) {
+          workflow_data$qc_params <- list()
+        }
+        if (is.null(workflow_data$qc_params$protein_qc)) {
+          workflow_data$qc_params$protein_qc <- list()
+        }
+        
+        workflow_data$qc_params$protein_qc$intensity_filter <- list(
+          min_reps_per_group = input$min_reps_per_group,
+          min_groups = input$min_groups,
+          groupwise_percentage_cutoff = current_s4@args$removeRowsWithMissingValuesPercent$groupwise_percentage_cutoff,
+          max_groups_percentage_cutoff = current_s4@args$removeRowsWithMissingValuesPercent$max_groups_percentage_cutoff,
+          proteins_intensity_cutoff_percentile = input$proteins_intensity_cutoff_percentile,
+          timestamp = Sys.time()
+        )
+        
         # Save new state
         workflow_data$state_manager$saveState(
           state_name = "protein_intensity_filtered",

@@ -33,6 +33,19 @@ precursor_rollup_server <- function(input, output, session, workflow_data, omic_
         # Apply S4 transformation (EXISTING S4 CODE - UNCHANGED)
         rolled_up_s4 <- rollUpPrecursorToPeptide(current_s4)
         
+        # Track QC parameters in workflow_data
+        if (is.null(workflow_data$qc_params)) {
+          workflow_data$qc_params <- list()
+        }
+        if (is.null(workflow_data$qc_params$peptide_qc)) {
+          workflow_data$qc_params$peptide_qc <- list()
+        }
+        
+        workflow_data$qc_params$peptide_qc$precursor_rollup <- list(
+          applied = TRUE,
+          timestamp = Sys.time()
+        )
+        
         # Save new state in R6 manager
         workflow_data$state_manager$saveState(
           state_name = "precursor_rollup",
