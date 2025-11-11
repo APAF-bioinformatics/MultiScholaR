@@ -694,7 +694,7 @@ calulatePearsonCorrelationForSamplePairsHelper <- function( samples_id_tbl
               peptide_normalised_column = peptide_normalised_column,
               calculatePearsonCorrelationOptimized = calculatePearsonCorrelationOptimized
             ),
-            packages = c("dplyr", "rlang"),
+            packages = c("dplyr", "rlang", "stats"),
             seed = TRUE
           )
         )
