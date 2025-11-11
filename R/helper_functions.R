@@ -3202,8 +3202,8 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
         cat("WORKFLOW ARGS: About to format S4 parameters using functional approach\n")
         
         config_lines <- c(config_lines, 
-                         "Parameters from Final S4 Object:",
-                         "--------------------------------")
+                         "  Parameters from Final S4 Object:",
+                         "  --------------------------------")
         
         # SAFE parameter formatting function
         formatParameterValue <- function(param_value) {
@@ -3360,8 +3360,8 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
         # Add UI sections to config_lines if any were found
         if (length(ui_sections) > 0) {
             config_lines <- c(config_lines, 
-                             "User Interface Parameters:",
-                             "-------------------------", 
+                             "  User Interface Parameters:",
+                             "  -------------------------", 
                              ui_sections)
             cat("WORKFLOW ARGS: Added UI parameters to output\n")
         } else {
