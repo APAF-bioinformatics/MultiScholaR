@@ -219,6 +219,9 @@ ExtractStudyParametersNew <- function(study_params) {
   basic_info <- study_params$"Basic Information" %||% list()
   git_info <- study_params$"Git Information" %||% list()
   ruv_results <- study_params$"Automatic RUV Optimization Results" %||% list()
+  fasta_info <- study_params$"FASTA File Processing" %||% list()
+  accession_cleanup <- study_params$"Protein Accession Cleanup" %||% list()
+  protein_counts_info <- study_params$"Protein Filtering Summary" %||% list()
   
   # Navigate to S4 parameters
   s4_params <- safe_extract(study_params, c("Workflow Parameters", "Parameters from Final S4 Object"), list())
@@ -265,36 +268,56 @@ ExtractStudyParametersNew <- function(study_params) {
     num_neg_ctrl = ruv_results$"Control genes",
     ruv_grouping_variable = ruv_results$"RUV grouping variable",
     
-    # Method Details from S4 parameters
-    qvalue_threshold = as.numeric(s4_qval$qvalue_threshold %||% 0.01),
+    # Method Details from S4 parameters (FIXED: explicit NULL check for 0 values)
+    qvalue_threshold = if(is.null(s4_qval$qvalue_threshold) || is.na(s4_qval$qvalue_threshold)) 0.01 else as.numeric(s4_qval$qvalue_threshold),
     proteotypic_peptide_only = as.logical(as.numeric(s4_qval$choose_only_proteotypic_peptide %||% 1)),
-    intensity_cutoff_percentile = as.numeric(s4_pep_filt$peptides_intensity_cutoff_percentile %||% 1),
-    proportion_samples_below_cutoff = as.numeric(s4_pep_filt$peptides_proportion_of_samples_below_cutoff %||% 0.5),
-    missing_values_cutoff = as.numeric(s4_prot_filt$groupwise_percentage_cutoff %||% 33.333),
-    min_peptidoforms_per_protein = as.numeric(s4_pep_prot_filt$peptidoforms_per_protein_cutoff %||% 2),
-    min_peptides_per_sample = as.numeric(s4_sample_filt$peptides_per_sample_cutoff %||% 500),
+    intensity_cutoff_percentile = if(is.null(s4_pep_filt$peptides_intensity_cutoff_percentile) || is.na(s4_pep_filt$peptides_intensity_cutoff_percentile)) 1 else as.numeric(s4_pep_filt$peptides_intensity_cutoff_percentile),
+    proportion_samples_below_cutoff = if(is.null(s4_pep_filt$peptides_proportion_of_samples_below_cutoff) || is.na(s4_pep_filt$peptides_proportion_of_samples_below_cutoff)) 0.5 else as.numeric(s4_pep_filt$peptides_proportion_of_samples_below_cutoff),
+    missing_values_cutoff = if(is.null(s4_prot_filt$groupwise_percentage_cutoff) || is.na(s4_prot_filt$groupwise_percentage_cutoff)) 33.333 else as.numeric(s4_prot_filt$groupwise_percentage_cutoff),
+    min_peptidoforms_per_protein = if(is.null(s4_pep_prot_filt$peptidoforms_per_protein_cutoff) || is.na(s4_pep_prot_filt$peptidoforms_per_protein_cutoff)) 2 else as.numeric(s4_pep_prot_filt$peptidoforms_per_protein_cutoff),
+    min_peptides_per_sample = if(is.null(s4_sample_filt$peptides_per_sample_cutoff) || is.na(s4_sample_filt$peptides_per_sample_cutoff)) 500 else as.numeric(s4_sample_filt$peptides_per_sample_cutoff),
     normalisation_method = s4_norm$method %||% s4_norm$normalisation_method %||% "cyclicloess",
     
-    # RUV parameters
-    ruv_number_k = as.numeric(s4_ruv$ruv_number_k %||% 2),
+    # RUV parameters (FIXED: explicit NULL check)
+    ruv_number_k = if(is.null(s4_ruv$ruv_number_k) || is.na(s4_ruv$ruv_number_k)) 2 else as.numeric(s4_ruv$ruv_number_k),
     
-    # DE Analysis S4 parameters
-    s4_de_q_val_thresh = as.numeric(s4_de$de_q_val_thresh %||% 0.05),
-    s4_de_treat_lfc_cutoff = as.numeric(s4_de$treat_lfc_cutoff %||% 0),
+    # DE Analysis S4 parameters (FIXED: explicit NULL checks)
+    s4_de_q_val_thresh = if(is.null(s4_de$de_q_val_thresh) || is.na(s4_de$de_q_val_thresh)) 0.05 else as.numeric(s4_de$de_q_val_thresh),
+    s4_de_treat_lfc_cutoff = if(is.null(s4_de$treat_lfc_cutoff) || is.na(s4_de$treat_lfc_cutoff)) 0 else as.numeric(s4_de$treat_lfc_cutoff),
     s4_ebayes_trend = as.logical(s4_de$eBayes_trend %||% TRUE),
     s4_ebayes_robust = as.logical(s4_de$eBayes_robust %||% TRUE),
     s4_formula_string = s4_de$formula_string %||% "~ 0 + group",
     
-    # UI Parameters
-    ui_de_q_value_threshold = as.numeric(ui_de$q_value_threshold %||% 0.05),
-    ui_de_log_fold_change_cutoff = as.numeric(ui_de$log_fold_change_cutoff %||% 0),
+    # UI Parameters (FIXED: explicit NULL checks)
+    ui_de_q_value_threshold = if(is.null(ui_de$q_value_threshold) || is.na(ui_de$q_value_threshold)) 0.05 else as.numeric(ui_de$q_value_threshold),
+    ui_de_log_fold_change_cutoff = if(is.null(ui_de$log_fold_change_cutoff) || is.na(ui_de$log_fold_change_cutoff)) 0 else as.numeric(ui_de$log_fold_change_cutoff),
     ui_de_treat_enabled = as.logical(ui_de$treat_enabled %||% FALSE),
     
-    ui_enrichment_up_lfc = as.numeric(ui_enrich$up_log2fc_cutoff %||% 0),
-    ui_enrichment_down_lfc = as.numeric(ui_enrich$down_log2fc_cutoff %||% 0), 
-    ui_enrichment_q_value_cutoff = as.numeric(ui_enrich$q_value_cutoff %||% 0.05),
+    ui_enrichment_up_lfc = if(is.null(ui_enrich$up_log2fc_cutoff) || is.na(ui_enrich$up_log2fc_cutoff)) 0 else as.numeric(ui_enrich$up_log2fc_cutoff),
+    ui_enrichment_down_lfc = if(is.null(ui_enrich$down_log2fc_cutoff) || is.na(ui_enrich$down_log2fc_cutoff)) 0 else as.numeric(ui_enrich$down_log2fc_cutoff),
+    ui_enrichment_q_value_cutoff = if(is.null(ui_enrich$q_value_cutoff) || is.na(ui_enrich$q_value_cutoff)) 0.05 else as.numeric(ui_enrich$q_value_cutoff),
     ui_enrichment_organism_selected = ui_enrich$organism_selected,
     ui_enrichment_database_source = ui_enrich$database_source %||% "clusterprofiler",
+    
+    # FASTA Processing (with safe extraction)
+    fasta_format = fasta_info$"Format" %||% NA,
+    fasta_num_sequences = fasta_info$"Sequences" %||% NA,
+    fasta_has_protein_evidence = fasta_info$"Protein Evidence Available" %||% NA,
+    fasta_has_gene_names = fasta_info$"Gene Names Available" %||% NA,
+    fasta_has_isoform_info = fasta_info$"Isoform Information Available" %||% NA,
+    
+    # Accession Cleanup (with safe extraction)
+    accession_cleanup_applied = accession_cleanup$"Cleanup Applied" %||% NA,
+    accession_aggregation_method = accession_cleanup$"Aggregation Method" %||% NA,
+    accession_delimiter = accession_cleanup$"Delimiter Used" %||% NA,
+    accession_proteins_before = accession_cleanup$"Proteins Before Cleanup" %||% NA,
+    accession_proteins_after = accession_cleanup$"Proteins After Cleanup" %||% NA,
+    accession_had_full_metadata = accession_cleanup$"Full UniProt Metadata" %||% NA,
+    
+    # Protein Counts (with safe extraction)
+    protein_count_qc = protein_counts_info$"Proteins after QC filtering" %||% NA,
+    protein_count_ruv = protein_counts_info$"Proteins after RUV filtering" %||% NA,
+    protein_count_final = protein_counts_info$"Final proteins for DE analysis" %||% NA,
     
     # Contrasts
     contrasts = contrasts
@@ -344,14 +367,14 @@ There are {total_samples_val} samples in total which consists of:
 ```{r Method Section, echo=FALSE}
 # UPDATED: Method details using new parameter structure
 FormatMethodDetails <- function(numbers) {
-  # Use parameters from new extraction
-  qvalue_thresh <- numbers$qvalue_threshold %||% 0.01
+  # Use parameters from new extraction (FIXED: explicit NULL check for 0 values)
+  qvalue_thresh <- if(is.null(numbers$qvalue_threshold) || is.na(numbers$qvalue_threshold)) 0.01 else as.numeric(numbers$qvalue_threshold)
   proteotypic_pep_only <- numbers$proteotypic_peptide_only %||% TRUE
-  prop_samples_cutoff <- numbers$proportion_samples_below_cutoff %||% 0.5
-  intensity_cutoff_pct <- numbers$intensity_cutoff_percentile %||% 1
-  min_peptidoforms <- numbers$min_peptidoforms_per_protein %||% 2
-  min_peptides_sample <- numbers$min_peptides_per_sample %||% 200
-  missing_vals_cutoff <- numbers$missing_values_cutoff %||% 33.3
+  prop_samples_cutoff <- if(is.null(numbers$proportion_samples_below_cutoff) || is.na(numbers$proportion_samples_below_cutoff)) 0.5 else as.numeric(numbers$proportion_samples_below_cutoff)
+  intensity_cutoff_pct <- if(is.null(numbers$intensity_cutoff_percentile) || is.na(numbers$intensity_cutoff_percentile)) 1 else as.numeric(numbers$intensity_cutoff_percentile)
+  min_peptidoforms <- if(is.null(numbers$min_peptidoforms_per_protein) || is.na(numbers$min_peptidoforms_per_protein)) 2 else as.numeric(numbers$min_peptidoforms_per_protein)
+  min_peptides_sample <- if(is.null(numbers$min_peptides_per_sample) || is.na(numbers$min_peptides_per_sample)) 200 else as.numeric(numbers$min_peptides_per_sample)
+  missing_vals_cutoff <- if(is.null(numbers$missing_values_cutoff) || is.na(numbers$missing_values_cutoff)) 33.3 else as.numeric(numbers$missing_values_cutoff)
   norm_method <- numbers$normalisation_method %||% "cyclicloess"
   
   # RUV parameters from new structure
@@ -361,6 +384,66 @@ FormatMethodDetails <- function(numbers) {
   
   proportion_pct_text <- paste0(prop_samples_cutoff * 100, "%")
   proteotypic_text <- if (isTRUE(proteotypic_pep_only)) 'only those that are proteotypic' else 'including non-proteotypic peptides'
+  
+  # Generate FASTA text BEFORE glue block (with robust NULL checks)
+  fasta_text <- tryCatch({
+    if (!is.null(numbers$fasta_format) && !is.na(numbers$fasta_format) && nzchar(numbers$fasta_format)) {
+      if (numbers$fasta_format == "standard_uniprot") {
+        "Protein identifications were validated against a standard UniProt FASTA database, providing comprehensive protein metadata including evidence levels, reviewed status, gene names, and isoform information. This metadata was used to select the highest-quality protein identifications during accession cleanup."
+      } else {
+        paste0("Protein identifications were validated against a ", numbers$fasta_format, 
+               " FASTA database containing ", numbers$fasta_num_sequences %||% "N/A", 
+               " sequences. Note that comprehensive UniProt metadata (protein evidence levels, reviewed status) was not available for this reference database, and accession selection was based primarily on sequence length and alphabetical ordering.")
+      }
+    } else {
+      "Protein identifications were validated against the provided FASTA reference database."
+    }
+  }, error = function(e) {
+    "Protein identifications were validated against the provided FASTA reference database."
+  })
+  
+  # Generate accession cleanup text BEFORE glue block (with robust NULL checks)
+  accession_cleanup_text <- tryCatch({
+    cleanup_applied_val <- numbers$accession_cleanup_applied %||% "FALSE"
+    # Handle character "TRUE"/"FALSE" or logical TRUE/FALSE
+    cleanup_applied <- if (is.character(cleanup_applied_val)) {
+      tolower(cleanup_applied_val) == "true"
+    } else {
+      isTRUE(cleanup_applied_val)
+    }
+    
+    if (cleanup_applied) {
+      # Check metadata availability
+      has_evidence_val <- numbers$fasta_has_protein_evidence %||% "FALSE"
+      has_metadata <- if (is.character(has_evidence_val)) {
+        tolower(has_evidence_val) == "true"
+      } else {
+        isTRUE(has_evidence_val)
+      }
+      
+      metadata_basis <- if (has_metadata) {
+        "protein evidence levels, sequence length, and database annotation quality"
+      } else {
+        "sequence length and alphabetical ordering"
+      }
+      
+      paste0("Protein groups containing multiple accessions (separated by '", 
+             numbers$accession_delimiter %||% ";", 
+             "' delimiters) were resolved by selecting the best representative protein based on ",
+             metadata_basis, 
+             ". Quantitative values for proteins within the same group were aggregated using the '",
+             numbers$accession_aggregation_method %||% "mean",
+             "' method, reducing ",
+             numbers$accession_proteins_before %||% "N/A",
+             " protein groups to ",
+             numbers$accession_proteins_after %||% "N/A",
+             " unique protein identifications.")
+    } else {
+      ""
+    }
+  }, error = function(e) {
+    ""
+  })
 
   ruv_text <- glue::glue(
     "To remove batch effects from biological data, the remove unwanted variation ",
@@ -408,6 +491,11 @@ into protein-level quantification without normalization at this stage, resulting
 a protein quantification matrix with log2-transformed intensity values for each 
 protein across all samples.
 
+FASTA Reference and Protein Accession Cleanup
+{fasta_text}
+
+{accession_cleanup_text} {if(!is.null(numbers$protein_count_qc) && !is.na(numbers$protein_count_qc)) paste0("After quality control filtering, ", numbers$protein_count_qc, " proteins remained for normalization.") else ""}
+
 Using the protein intensity matrix, zero values were replaced with NA denoting 
 these are missing values. Proteins with {missing_vals_cutoff} percent or 
 more of the samples with missing values or values below the 
@@ -417,7 +505,7 @@ between-sample normalization were performed using the
 '{norm_method}' method from the 'limma' R package 
 (Ritchie et al., 2015).
 
-{ruv_text}
+{ruv_text} {if(!is.null(numbers$protein_count_ruv) && !is.na(numbers$protein_count_ruv)) paste0("Following RUV-III batch correction and subsequent missing value cleanup, ", numbers$protein_count_ruv, " proteins were retained for differential expression analysis.") else ""}
 
 At each stage of the data normalization, the samples were checked for batch effects 
 using principal component analysis (PCA) plot, density boxplots, relative 
