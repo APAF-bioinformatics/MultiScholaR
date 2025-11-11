@@ -958,9 +958,9 @@ setMethod(f="pearsonCorForSamplePairs"
                                                                                                        , replicate_group_column = replicate_group_column
                                                                                                        , frozen_mat_pca_long
                                                                                                        , num_of_cores = num_workers
-                                                                                                       , sample_id_column = !!sym(sample_id)
-                                                                                                       , protein_id_column = !!sym(protein_id_column)
-                                                                                                       , peptide_sequence_column = temp
+                                                                                                       , sample_id_column = sample_id
+                                                                                                       , protein_id_column = protein_id_column
+                                                                                                       , peptide_sequence_column = "temp"
                                                                                                        , peptide_normalised_column = "Protein.normalised")
             
             message("*** PEARSON: Correlation calculations complete ***")

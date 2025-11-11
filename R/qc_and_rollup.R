@@ -511,26 +511,26 @@ getPairsOfSamplesTable <- function ( input_table
 #'@param ms_filename_x A string representing the sample file name X (for a pair of sample in the same technical replicate group) for correlation score calculation.
 #'@param ms_filename_y A string representing the sample file name Y (for a pair of sample in the same technical replicate group) for correlation score calculation.
 #'@param input_table A data frame with the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalised peptide abundances
-#'@param sample_id_column Sample ID column, tidyverse format (default = Run).
-#'@param protein_id_column Protein accession column, tidyverse format (default = Protein.Ids).
-#'@param peptide_sequence_column Peptide sequence column, tidyverse fromat (default =  Stripped.Sequence).
+#'@param sample_id_column Sample ID column name as string (default = "Run").
+#'@param protein_id_column Protein accession column name as string (default = "Protein.Ids").
+#'@param peptide_sequence_column Peptide sequence column name as string (default = "Stripped.Sequence").
 #'@param peptide_normalised_column Normalised peptide abundance column name as string (default = "Peptide.Normalised").
 #'@return The pearson correlation value of the abundances of peptides between two samples X and Y.
 #' @export
 calulatePearsonCorrelation <- function( ms_filename_x, ms_filename_y, input_table
-                                        , sample_id_column = Run
-                                        , protein_id_column = Protein.Ids
-                                        , peptide_sequence_column = Stripped.Sequence
+                                        , sample_id_column = "Run"
+                                        , protein_id_column = "Protein.Ids"
+                                        , peptide_sequence_column = "Stripped.Sequence"
                                         , peptide_normalised_column = "Peptide.Normalised")  {
 
   tab_x <- input_table |>
-    dplyr::filter( {{sample_id_column}} == ms_filename_x )
+    dplyr::filter( !!rlang::sym(sample_id_column) == ms_filename_x )
 
   tab_y <- input_table |>
-    dplyr::filter( {{sample_id_column}} == ms_filename_y )
+    dplyr::filter( !!rlang::sym(sample_id_column) == ms_filename_y )
 
   merged_tbl <- tab_x |>
-    inner_join( tab_y, by=join_by( {{protein_id_column}}, {{peptide_sequence_column}}) )
+    inner_join( tab_y, by=join_by( !!rlang::sym(protein_id_column), !!rlang::sym(peptide_sequence_column)) )
 
   # merged_tbl |>
   #   dplyr::filter(!is.na( !!sym(paste0(peptide_normalised_column, ".x")) ) & !is.na( !!sym(paste0(peptide_normalised_column, ".x")))) |>
@@ -552,15 +552,77 @@ calulatePearsonCorrelation <- function( ms_filename_x, ms_filename_y, input_tabl
 }
 
 
+#' @title Calculate Pearson Correlation (Optimized for pre-filtered data)
+#' @description Fast correlation calculation for pre-filtered sample data.
+#' This function is optimized to work with pre-partitioned data and avoids
+#' redundant filtering operations.
+#' @param data_x Pre-filtered data for sample X
+#' @param data_y Pre-filtered data for sample Y  
+#' @param protein_id_column String name of protein ID column
+#' @param peptide_sequence_column String name of peptide sequence column
+#' @param peptide_normalised_column String name of normalized peptide column
+#' @return Numeric Pearson correlation value, or NA_real_ if insufficient data
+#' @export
+calculatePearsonCorrelationOptimized <- function(data_x, data_y, 
+                                                  protein_id_column,
+                                                  peptide_sequence_column, 
+                                                  peptide_normalised_column) {
+  
+  # Quick validation
+  if (is.null(data_x) || is.null(data_y) || nrow(data_x) == 0 || nrow(data_y) == 0) {
+    return(NA_real_)
+  }
+  
+  # Inner join on protein + peptide (already filtered, just need matching)
+  merged_tbl <- data_x |>
+    dplyr::inner_join(
+      data_y,
+      by = c(protein_id_column, peptide_sequence_column),
+      suffix = c(".x", ".y")
+    )
+  
+  if (nrow(merged_tbl) == 0) {
+    return(NA_real_)
+  }
+  
+  # Extract values
+  values_x <- merged_tbl[[paste0(peptide_normalised_column, ".x")]]
+  values_y <- merged_tbl[[paste0(peptide_normalised_column, ".y")]]
+  
+  # Calculate correlation
+  if (length(values_x) > 0 && length(values_y) > 0) {
+    cor(values_x, values_y, use = "pairwise.complete.obs")
+  } else {
+    NA_real_
+  }
+}
+
+
+#' @title Calculate Pearson Correlation for Sample Pairs
+#' @description Helper function to calculate pairwise Pearson correlations between samples
+#' using parallel processing with pre-partitioned data for optimal performance.
+#' @param samples_id_tbl Table of sample IDs
+#' @param run_id_column String name of run ID column (default: "ms_filename")
+#' @param replicate_group_column String name of replicate group column (default: "general_sample_info")
+#' @param input_table Input data table
+#' @param num_of_cores Number of CPU cores to use for parallel processing (default: 1)
+#' @param sample_id_column String name of sample ID column (default: "Run")
+#' @param protein_id_column String name of protein ID column (default: "Protein.Ids")
+#' @param peptide_sequence_column String name of peptide sequence column (default: "Stripped.Sequence")
+#' @param peptide_normalised_column String name of normalized peptide column (default: "Peptide.Normalised")
+#' @return Data frame with pairwise correlations
+#' @importFrom furrr future_map2_dbl furrr_options
+#' @importFrom future plan multisession
+#' @importFrom purrr map2_dbl set_names map_chr
 #' @export
 calulatePearsonCorrelationForSamplePairsHelper <- function( samples_id_tbl
                                                       , run_id_column = "ms_filename"
                                                       , replicate_group_column = "general_sample_info"
                                                       , input_table
                                                       , num_of_cores = 1
-                                                      , sample_id_column = Run
-                                                      , protein_id_column = Protein.Ids
-                                                      , peptide_sequence_column = Stripped.Sequence
+                                                      , sample_id_column = "Run"
+                                                      , protein_id_column = "Protein.Ids"
+                                                      , peptide_sequence_column = "Stripped.Sequence"
                                                       , peptide_normalised_column = "Peptide.Normalised") {
 
 
@@ -572,29 +634,90 @@ calulatePearsonCorrelationForSamplePairsHelper <- function( samples_id_tbl
   num_pairs <- nrow(pairs_for_comparison)
   message(sprintf("*** PEARSON HELPER: Generated %d sample pairs for correlation analysis ***", num_pairs))
 
+  # PERFORMANCE OPTIMIZATION: Pre-partition input_table by sample for O(1) lookup
+  # This eliminates 435+ redundant filter operations (one per pair)
+  message("*** PEARSON HELPER: Pre-partitioning data by sample for efficient lookup ***")
+  partition_start <- Sys.time()
+  
+  sample_data_lookup <- input_table |>
+    dplyr::group_split(!!rlang::sym(sample_id_column)) |>
+    purrr::set_names(
+      purrr::map_chr(., ~unique(.x[[sample_id_column]])[1])
+    )
+  
+  partition_elapsed <- as.numeric(difftime(Sys.time(), partition_start, units = "secs"))
+  message(sprintf("*** PEARSON HELPER: Data partitioning completed in %.2f seconds ***", partition_elapsed))
+  message(sprintf("*** PEARSON HELPER: Created lookup for %d samples ***", length(sample_data_lookup)))
+
+  # Configure parallel processing
   plan(multisession, workers = num_of_cores)
   
   # Log parallel processing configuration
   message(sprintf("*** PEARSON HELPER: Parallel processing configured with %d workers ***", num_of_cores))
-  message("*** PEARSON HELPER: Beginning pairwise correlation calculations (this will take 30-90s)... ***")
+  message("*** PEARSON HELPER: Beginning pairwise correlation calculations (optimized)... ***")
   
   # Track calculation time
   calc_start_time <- Sys.time()
 
-  pearson_correlation_per_pair <- pairs_for_comparison |>
-    mutate( pearson_correlation = furrr::future_map2_dbl( !!rlang::sym( paste0( run_id_column, ".x"))
-                                                          , !!rlang::sym(paste0( run_id_column, ".y"))
-                                                          , \(x,y){
-                                                            input_table_filt <- input_table |>
-                                                              dplyr::filter( {{sample_id_column}} == x | {{sample_id_column}} == y)
-
-                                                            calulatePearsonCorrelation( ms_filename_x = x
-                                                                                        , ms_filename_y = y
-                                                                                        , input_table = input_table_filt
-                                                                                        , sample_id_column = {{sample_id_column}}
-                                                                                        , protein_id_column = {{protein_id_column}}
-                                                                                        , peptide_sequence_column = {{peptide_sequence_column}}
-                                                                                        , peptide_normalised_column = {{peptide_normalised_column}}) }))
+  # Try parallel processing with proper error handling
+  tryCatch({
+    pearson_correlation_per_pair <- pairs_for_comparison |>
+      mutate(
+        pearson_correlation = furrr::future_map2_dbl(
+          !!rlang::sym(paste0(run_id_column, ".x")),
+          !!rlang::sym(paste0(run_id_column, ".y")),
+          \(x, y) {
+            # Direct lookup - no filtering needed!
+            data_x <- sample_data_lookup[[x]]
+            data_y <- sample_data_lookup[[y]]
+            
+            # Fast correlation calculation using pre-filtered data
+            calculatePearsonCorrelationOptimized(
+              data_x = data_x,
+              data_y = data_y,
+              protein_id_column = protein_id_column,
+              peptide_sequence_column = peptide_sequence_column,
+              peptide_normalised_column = peptide_normalised_column
+            )
+          },
+          .options = furrr::furrr_options(
+            globals = list(
+              sample_data_lookup = sample_data_lookup,
+              protein_id_column = protein_id_column,
+              peptide_sequence_column = peptide_sequence_column,
+              peptide_normalised_column = peptide_normalised_column,
+              calculatePearsonCorrelationOptimized = calculatePearsonCorrelationOptimized
+            ),
+            packages = c("dplyr", "rlang"),
+            seed = TRUE
+          )
+        )
+      )
+    
+    message("*** PEARSON HELPER: Parallel correlation calculation succeeded ***")
+    
+  }, error = function(e) {
+    message("*** PEARSON HELPER ERROR: Parallel processing failed ***")
+    message(sprintf("*** Error details: %s ***", e$message))
+    message("*** PEARSON HELPER: Falling back to sequential processing ***")
+    
+    # Sequential fallback
+    pearson_correlation_per_pair <- pairs_for_comparison |>
+      mutate(
+        pearson_correlation = purrr::map2_dbl(
+          !!rlang::sym(paste0(run_id_column, ".x")),
+          !!rlang::sym(paste0(run_id_column, ".y")),
+          \(x, y) {
+            data_x <- sample_data_lookup[[x]]
+            data_y <- sample_data_lookup[[y]]
+            calculatePearsonCorrelationOptimized(
+              data_x, data_y, protein_id_column,
+              peptide_sequence_column, peptide_normalised_column
+            )
+          }
+        )
+      )
+  })
   
   # Log completion with timing statistics
   calc_elapsed <- as.numeric(difftime(Sys.time(), calc_start_time, units = "secs"))
