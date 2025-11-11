@@ -600,20 +600,19 @@ calculatePearsonCorrelationOptimized <- function(data_x, data_y,
 
 #' @title Calculate Pearson Correlation for Sample Pairs
 #' @description Helper function to calculate pairwise Pearson correlations between samples
-#' using parallel processing with pre-partitioned data for optimal performance.
+#' using optimized sequential processing with pre-partitioned data for fast performance.
+#' Data is pre-partitioned by sample ID to eliminate redundant filtering operations.
 #' @param samples_id_tbl Table of sample IDs
 #' @param run_id_column String name of run ID column (default: "ms_filename")
 #' @param replicate_group_column String name of replicate group column (default: "general_sample_info")
 #' @param input_table Input data table
-#' @param num_of_cores Number of CPU cores to use for parallel processing (default: 1)
+#' @param num_of_cores Number of CPU cores (parameter retained for compatibility but not used)
 #' @param sample_id_column String name of sample ID column (default: "Run")
 #' @param protein_id_column String name of protein ID column (default: "Protein.Ids")
 #' @param peptide_sequence_column String name of peptide sequence column (default: "Stripped.Sequence")
 #' @param peptide_normalised_column String name of normalized peptide column (default: "Peptide.Normalised")
 #' @return Data frame with pairwise correlations
-#' @importFrom furrr future_map2_dbl furrr_options
-#' @importFrom future plan multisession
-#' @importFrom purrr map2_dbl set_names map_chr
+#' @importFrom purrr map2_dbl map_chr
 #' @export
 calulatePearsonCorrelationForSamplePairsHelper <- function( samples_id_tbl
                                                       , run_id_column = "ms_filename"
@@ -654,87 +653,40 @@ calulatePearsonCorrelationForSamplePairsHelper <- function( samples_id_tbl
   partition_elapsed <- as.numeric(difftime(Sys.time(), partition_start, units = "secs"))
   message(sprintf("*** PEARSON HELPER: Data partitioning completed in %.2f seconds ***", partition_elapsed))
   message(sprintf("*** PEARSON HELPER: Created lookup for %d samples ***", length(sample_data_lookup)))
-
-  # Configure parallel processing
-  plan(multisession, workers = num_of_cores)
   
-  # Log parallel processing configuration
-  message(sprintf("*** PEARSON HELPER: Parallel processing configured with %d workers ***", num_of_cores))
-  message("*** PEARSON HELPER: Beginning pairwise correlation calculations (optimized)... ***")
+  # Log processing configuration
+  message("*** PEARSON HELPER: Beginning pairwise correlation calculations (optimized, sequential)... ***")
   
   # Track calculation time
   calc_start_time <- Sys.time()
 
-  # Try parallel processing with proper error handling
-  pearson_correlation_per_pair <- tryCatch({
-    # Extract column vectors BEFORE furrr call to avoid tidy eval serialization issues
-    sample_pairs_x <- pairs_for_comparison[[paste0(run_id_column, ".x")]]
-    sample_pairs_y <- pairs_for_comparison[[paste0(run_id_column, ".y")]]
-    
-    # Call furrr with actual vectors (not symbols)
-    correlations <- furrr::future_map2_dbl(
-      sample_pairs_x,
-      sample_pairs_y,
-      \(x, y) {
-        # Direct lookup - no filtering needed!
-        data_x <- sample_data_lookup[[x]]
-        data_y <- sample_data_lookup[[y]]
-        
-        # Fast correlation calculation using pre-filtered data
-        calculatePearsonCorrelationOptimized(
-          data_x = data_x,
-          data_y = data_y,
-          protein_id_column = protein_id_column,
-          peptide_sequence_column = peptide_sequence_column,
-          peptide_normalised_column = peptide_normalised_column
-        )
-      },
-      .options = furrr::furrr_options(
-        globals = list(
-          sample_data_lookup = sample_data_lookup,
-          protein_id_column = protein_id_column,
-          peptide_sequence_column = peptide_sequence_column,
-          peptide_normalised_column = peptide_normalised_column,
-          calculatePearsonCorrelationOptimized = calculatePearsonCorrelationOptimized
-        ),
-        packages = c("dplyr", "rlang", "stats"),
-        seed = TRUE
+  # Extract column vectors for correlation calculation
+  sample_pairs_x <- pairs_for_comparison[[paste0(run_id_column, ".x")]]
+  sample_pairs_y <- pairs_for_comparison[[paste0(run_id_column, ".y")]]
+  
+  # Calculate correlations using optimized sequential processing
+  correlations <- purrr::map2_dbl(
+    sample_pairs_x,
+    sample_pairs_y,
+    \(x, y) {
+      # Direct lookup from pre-partitioned data - no filtering needed!
+      data_x <- sample_data_lookup[[x]]
+      data_y <- sample_data_lookup[[y]]
+      
+      # Fast correlation calculation
+      calculatePearsonCorrelationOptimized(
+        data_x = data_x,
+        data_y = data_y,
+        protein_id_column = protein_id_column,
+        peptide_sequence_column = peptide_sequence_column,
+        peptide_normalised_column = peptide_normalised_column
       )
-    )
-    
-    # Add results back to dataframe
-    result <- pairs_for_comparison |>
-      mutate(pearson_correlation = correlations)
-    
-    message("*** PEARSON HELPER: Parallel correlation calculation succeeded ***")
-    result  # Return the result, not the message
-    
-  }, error = function(e) {
-    message("*** PEARSON HELPER ERROR: Parallel processing failed ***")
-    message(sprintf("*** Error details: %s ***", e$message))
-    message("*** PEARSON HELPER: Falling back to sequential processing ***")
-    
-    # Sequential fallback - extract vectors first here too
-    sample_pairs_x <- pairs_for_comparison[[paste0(run_id_column, ".x")]]
-    sample_pairs_y <- pairs_for_comparison[[paste0(run_id_column, ".y")]]
-    
-    correlations <- purrr::map2_dbl(
-      sample_pairs_x,
-      sample_pairs_y,
-      \(x, y) {
-        data_x <- sample_data_lookup[[x]]
-        data_y <- sample_data_lookup[[y]]
-        calculatePearsonCorrelationOptimized(
-          data_x, data_y, protein_id_column,
-          peptide_sequence_column, peptide_normalised_column
-        )
-      }
-    )
-    
-    # Add results back to dataframe
-    pairs_for_comparison |>
-      mutate(pearson_correlation = correlations)
-  })
+    }
+  )
+  
+  # Add results back to dataframe
+  pearson_correlation_per_pair <- pairs_for_comparison |>
+    mutate(pearson_correlation = correlations)
   
   # Log completion with timing statistics
   calc_elapsed <- as.numeric(difftime(Sys.time(), calc_start_time, units = "secs"))
