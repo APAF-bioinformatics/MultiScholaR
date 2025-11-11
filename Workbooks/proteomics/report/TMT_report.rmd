@@ -298,20 +298,20 @@ ExtractStudyParametersTMT <- function(study_params) {
     ui_enrichment_organism_selected = ui_enrich$organism_selected,
     ui_enrichment_database_source = ui_enrich$database_source %||% "clusterprofiler",
     
-    # FASTA Processing
-    fasta_format = fasta_info$"Format",
-    fasta_num_sequences = fasta_info$"Sequences",
-    fasta_has_protein_evidence = fasta_info$"Protein Evidence Available",
-    fasta_has_gene_names = fasta_info$"Gene Names Available",
-    fasta_has_isoform_info = fasta_info$"Isoform Information Available",
+    # FASTA Processing (with safe extraction)
+    fasta_format = fasta_info$"Format" %||% NA,
+    fasta_num_sequences = fasta_info$"Sequences" %||% NA,
+    fasta_has_protein_evidence = fasta_info$"Protein Evidence Available" %||% NA,
+    fasta_has_gene_names = fasta_info$"Gene Names Available" %||% NA,
+    fasta_has_isoform_info = fasta_info$"Isoform Information Available" %||% NA,
     
-    # Accession Cleanup
-    accession_cleanup_applied = accession_cleanup$"Cleanup Applied",
-    accession_aggregation_method = accession_cleanup$"Aggregation Method",
-    accession_delimiter = accession_cleanup$"Delimiter Used",
-    accession_proteins_before = accession_cleanup$"Proteins Before Cleanup",
-    accession_proteins_after = accession_cleanup$"Proteins After Cleanup",
-    accession_had_full_metadata = accession_cleanup$"Full UniProt Metadata",
+    # Accession Cleanup (with safe extraction)
+    accession_cleanup_applied = accession_cleanup$"Cleanup Applied" %||% NA,
+    accession_aggregation_method = accession_cleanup$"Aggregation Method" %||% NA,
+    accession_delimiter = accession_cleanup$"Delimiter Used" %||% NA,
+    accession_proteins_before = accession_cleanup$"Proteins Before Cleanup" %||% NA,
+    accession_proteins_after = accession_cleanup$"Proteins After Cleanup" %||% NA,
+    accession_had_full_metadata = accession_cleanup$"Full UniProt Metadata" %||% NA,
     
     # Contrasts
     contrasts = contrasts
@@ -372,6 +372,66 @@ FormatMethodDetailsTMT <- function(numbers) {
   best_pct_val <- numbers$best_percentage %||% "auto-determined"
   num_neg_ctrl_val <- numbers$num_neg_ctrl %||% "auto-determined"
   
+  # Generate FASTA text BEFORE glue block (with robust NULL checks)
+  fasta_text <- tryCatch({
+    if (!is.null(numbers$fasta_format) && !is.na(numbers$fasta_format) && nzchar(numbers$fasta_format)) {
+      if (numbers$fasta_format == "standard_uniprot") {
+        "Protein identifications were validated against a standard UniProt FASTA database, providing comprehensive protein metadata including evidence levels, reviewed status, gene names, and isoform information. This metadata was used to select the highest-quality protein identifications during accession cleanup."
+      } else {
+        paste0("Protein identifications were validated against a ", numbers$fasta_format, 
+               " FASTA database containing ", numbers$fasta_num_sequences %||% "N/A", 
+               " sequences. Note that comprehensive UniProt metadata (protein evidence levels, reviewed status) was not available for this reference database, and accession selection was based primarily on sequence length and alphabetical ordering.")
+      }
+    } else {
+      "Protein identifications were validated against the provided FASTA reference database to ensure accurate annotation."
+    }
+  }, error = function(e) {
+    "Protein identifications were validated against the provided FASTA reference database to ensure accurate annotation."
+  })
+  
+  # Generate accession cleanup text BEFORE glue block (with robust NULL checks)
+  accession_cleanup_text <- tryCatch({
+    cleanup_applied_val <- numbers$accession_cleanup_applied %||% "FALSE"
+    # Handle character "TRUE"/"FALSE" or logical TRUE/FALSE
+    cleanup_applied <- if (is.character(cleanup_applied_val)) {
+      tolower(cleanup_applied_val) == "true"
+    } else {
+      isTRUE(cleanup_applied_val)
+    }
+    
+    if (cleanup_applied) {
+      # Check metadata availability
+      has_evidence_val <- numbers$fasta_has_protein_evidence %||% "FALSE"
+      has_metadata <- if (is.character(has_evidence_val)) {
+        tolower(has_evidence_val) == "true"
+      } else {
+        isTRUE(has_evidence_val)
+      }
+      
+      metadata_basis <- if (has_metadata) {
+        "protein evidence levels, sequence length, and database annotation quality"
+      } else {
+        "sequence length and alphabetical ordering"
+      }
+      
+      paste0("Protein groups containing multiple accessions (separated by '", 
+             numbers$accession_delimiter %||% ";", 
+             "' delimiters) were resolved by selecting the best representative protein based on ",
+             metadata_basis, 
+             ". Quantitative values for proteins within the same group were aggregated using the '",
+             numbers$accession_aggregation_method %||% "mean",
+             "' method, reducing ",
+             numbers$accession_proteins_before %||% "N/A",
+             " protein groups to ",
+             numbers$accession_proteins_after %||% "N/A",
+             " unique protein identifications.")
+    } else {
+      "Protein accessions were cleaned and validated to ensure accurate annotation and to select the best representative protein ID when multiple accessions were present."
+    }
+  }, error = function(e) {
+    "Protein accessions were cleaned and validated to ensure accurate annotation and to select the best representative protein ID when multiple accessions were present."
+  })
+  
   ruv_text <- glue::glue(
     "To remove batch effects from biological data, the remove unwanted variation ",
     "(RUVIII-C) method was used. The method relies on having a set of endogenous ",
@@ -403,26 +463,9 @@ Protein identifications were filtered to ensure high-confidence quantification
 and reliable downstream statistical analysis. 
 
 FASTA Reference and Protein Accession Cleanup
-{if (!is.null(numbers$fasta_format) && !is.na(numbers$fasta_format)) {
-  if (numbers$fasta_format == "standard_uniprot") {
-    "Protein identifications were validated against a standard UniProt FASTA database, providing comprehensive protein metadata including evidence levels, reviewed status, gene names, and isoform information. This metadata was used to select the highest-quality protein identifications during accession cleanup."
-  } else {
-    glue::glue("Protein identifications were validated against a {numbers$fasta_format} FASTA database containing {numbers$fasta_num_sequences} sequences. Note that comprehensive UniProt metadata (protein evidence levels, reviewed status) was not available for this reference database, and accession selection was based primarily on sequence length and alphabetical ordering.")
-  }
-} else {
-  "Protein identifications were validated against the provided FASTA reference database to ensure accurate annotation."
-}}
+{fasta_text}
 
-{if (!is.null(numbers$accession_cleanup_applied) && isTRUE(as.logical(numbers$accession_cleanup_applied))) {
-  metadata_basis <- if (!is.null(numbers$fasta_has_protein_evidence) && numbers$fasta_has_protein_evidence == "TRUE") {
-    "protein evidence levels, sequence length, and database annotation quality"
-  } else {
-    "sequence length and alphabetical ordering"
-  }
-  glue::glue("Protein groups containing multiple accessions (separated by '{numbers$accession_delimiter}' delimiters) were resolved by selecting the best representative protein based on {metadata_basis}. Quantitative values for proteins within the same group were aggregated using the '{numbers$accession_aggregation_method}' method, reducing {numbers$accession_proteins_before} protein groups to {numbers$accession_proteins_after} unique protein identifications.")
-} else {
-  "Protein accessions were cleaned and validated to ensure accurate annotation and to select the best representative protein ID when multiple accessions were present."
-}} Duplicate protein entries were removed to prevent redundancy in quantification.
+{accession_cleanup_text} Duplicate protein entries were removed to prevent redundancy in quantification.
 
 Proteins were then filtered based on missing value patterns across experimental 
 groups to retain only those with sufficient coverage for robust statistical 
