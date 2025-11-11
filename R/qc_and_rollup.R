@@ -639,11 +639,17 @@ calulatePearsonCorrelationForSamplePairsHelper <- function( samples_id_tbl
   message("*** PEARSON HELPER: Pre-partitioning data by sample for efficient lookup ***")
   partition_start <- Sys.time()
   
-  sample_data_lookup <- input_table |>
-    dplyr::group_split(!!rlang::sym(sample_id_column)) |>
-    purrr::set_names(
-      purrr::map_chr(., ~unique(.x[[sample_id_column]])[1])
-    )
+  # Split data by sample ID
+  sample_data_list <- input_table |>
+    dplyr::group_split(!!rlang::sym(sample_id_column))
+  
+  # Extract sample names and assign as names
+  names(sample_data_list) <- purrr::map_chr(
+    sample_data_list,
+    ~unique(.x[[sample_id_column]])[1]
+  )
+  
+  sample_data_lookup <- sample_data_list
   
   partition_elapsed <- as.numeric(difftime(Sys.time(), partition_start, units = "secs"))
   message(sprintf("*** PEARSON HELPER: Data partitioning completed in %.2f seconds ***", partition_elapsed))
@@ -660,8 +666,8 @@ calulatePearsonCorrelationForSamplePairsHelper <- function( samples_id_tbl
   calc_start_time <- Sys.time()
 
   # Try parallel processing with proper error handling
-  tryCatch({
-    pearson_correlation_per_pair <- pairs_for_comparison |>
+  pearson_correlation_per_pair <- tryCatch({
+    result <- pairs_for_comparison |>
       mutate(
         pearson_correlation = furrr::future_map2_dbl(
           !!rlang::sym(paste0(run_id_column, ".x")),
@@ -695,14 +701,15 @@ calulatePearsonCorrelationForSamplePairsHelper <- function( samples_id_tbl
       )
     
     message("*** PEARSON HELPER: Parallel correlation calculation succeeded ***")
+    result  # Return the result, not the message
     
   }, error = function(e) {
     message("*** PEARSON HELPER ERROR: Parallel processing failed ***")
     message(sprintf("*** Error details: %s ***", e$message))
     message("*** PEARSON HELPER: Falling back to sequential processing ***")
     
-    # Sequential fallback
-    pearson_correlation_per_pair <- pairs_for_comparison |>
+    # Sequential fallback - return the result
+    pairs_for_comparison |>
       mutate(
         pearson_correlation = purrr::map2_dbl(
           !!rlang::sym(paste0(run_id_column, ".x")),
