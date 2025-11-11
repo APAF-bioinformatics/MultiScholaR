@@ -438,6 +438,20 @@ FormatMethodDetailsTMT <- function(numbers) {
     "Protein accessions were cleaned and validated to ensure accurate annotation and to select the best representative protein ID when multiple accessions were present."
   })
   
+  # Generate protein count text BEFORE glue block
+  qc_count_text <- if(!is.null(numbers$protein_count_qc) && !is.na(numbers$protein_count_qc)) {
+    paste0(" After quality control filtering, ", numbers$protein_count_qc, " proteins remained for normalization.")
+  } else {
+    ""
+  }
+  
+  ruv_count_text <- if(!is.null(numbers$protein_count_ruv) && !is.na(numbers$protein_count_ruv)) {
+    paste0(" Following RUV-III batch correction and subsequent missing value cleanup, ", 
+           numbers$protein_count_ruv, " proteins were retained for differential expression analysis.")
+  } else {
+    ""
+  }
+  
   ruv_text <- glue::glue(
     "To remove batch effects from biological data, the remove unwanted variation ",
     "(RUVIII-C) method was used. The method relies on having a set of endogenous ",
@@ -483,7 +497,7 @@ were excluded from further analysis as likely noise or background signal.
 
 Proteins appearing in only one replicate across all groups were also excluded 
 to ensure measurement reproducibility and reliable quantification across biological 
-replicates. {if(!is.null(numbers$protein_count_qc) && !is.na(numbers$protein_count_qc)) paste0("After quality control filtering, ", numbers$protein_count_qc, " proteins remained for normalization.") else ""}
+replicates.{qc_count_text}
 
 Normalization and Batch Effect Correction
 Using the protein intensity matrix, zero values were replaced with NA to denote 
@@ -492,7 +506,7 @@ normalization was performed using the '{norm_method}' method from the 'limma'
 R package (Ritchie et al., 2015). This normalization approach adjusts for 
 systematic technical variation while preserving biological differences.
 
-{ruv_text} {if(!is.null(numbers$protein_count_ruv) && !is.na(numbers$protein_count_ruv)) paste0("Following RUV-III batch correction and subsequent missing value cleanup, ", numbers$protein_count_ruv, " proteins were retained for differential expression analysis.") else ""}
+{ruv_text}{ruv_count_text}
 
 At each stage of the data normalization, the samples were checked for batch effects 
 using principal component analysis (PCA) plots, density boxplots, relative 
