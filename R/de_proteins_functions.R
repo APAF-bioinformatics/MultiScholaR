@@ -2003,9 +2003,13 @@ runTestsContrasts <- function(data,
     t.fit <- treat(eb.fit, lfc=as.double(treat_lfc_cutoff))
     
     message(sprintf("   runTestsContrasts: Processing %d contrasts with topTreat...", length(contrast_strings)))
+    # Track qvalue failures for user notification
+    qvalue_failures <- list()
+    
     result_tables <- purrr::map(contrast_strings,
                                 function(contrast) {
                                   message(sprintf("      [map] Processing contrast: %s", contrast))
+                                  qvalue_failed <- FALSE
                                   
                                   tryCatch({
                                     message(sprintf("      About to call topTreat with coef = %s", contrast))
@@ -2049,29 +2053,46 @@ runTestsContrasts <- function(data,
                                           q_values_all[valid_p_idx] <- q_values_valid
                                           message("      qvalue() computation successful")
                                         }, error = function(e) {
+                                          qvalue_failed <<- TRUE
                                           message(sprintf("      Warning: qvalue() failed during computation: %s", e$message))
                                           message(sprintf("      Diagnostic: P-value distribution may be problematic for qvalue smoothing algorithm"))
                                           message(sprintf("      Diagnostic: Falling back to p.adjust() method='BH' (Benjamini-Hochberg FDR)"))
                                           # Fallback to p.adjust if qvalue fails
                                           q_values_all[valid_p_idx] <- p.adjust(valid_p_values, method = "BH")
+                                          message(sprintf("      Diagnostic: Assigned %d p.adjust() values to q-value column", length(valid_p_idx)))
                                         })
                                       } else {
                                         # Use p.adjust directly for edge cases
+                                        qvalue_failed <<- TRUE
                                         q_values_all[valid_p_idx] <- p.adjust(valid_p_values, method = "BH")
                                         message("      Using p.adjust() due to edge case detection")
+                                        message(sprintf("      Diagnostic: Assigned %d p.adjust() values to q-value column", length(valid_p_idx)))
                                       }
                                     } else {
                                       # All p-values are invalid, set all q-values to NA
                                       q_values_all <- rep(NA_real_, nrow(de_tbl))
                                       message("      Warning: All p-values are invalid (NA, Inf, or NaN), setting q-values to NA")
                                     }
+                                    
+                                    # Debug: Verify assignment before mutate
+                                    message(sprintf("      Diagnostic: q_values_all has %d non-NA values before assignment", sum(!is.na(q_values_all))))
+                                    
                                     de_tbl <- de_tbl |>
                                       mutate({ { q_value_column } } := q_values_all)
+                                    
+                                    # Debug: Verify assignment after mutate
+                                    assigned_col <- de_tbl[[rlang::as_name(rlang::ensym(q_value_column))]]
+                                    message(sprintf("      Diagnostic: Assigned column has %d non-NA values after mutate", sum(!is.na(assigned_col))))
                                     message("      qvalue column added")
                                     
                                     message("      Adding FDR column...")
+                                    # Use the same safe logic for FDR column - only compute for valid p-values
+                                    fdr_values_all <- rep(NA_real_, nrow(de_tbl))
+                                    if (length(valid_p_idx) > 0) {
+                                      fdr_values_all[valid_p_idx] <- p.adjust(valid_p_values, method = "BH")
+                                    }
                                     de_tbl <- de_tbl |>
-                                      mutate({ { fdr_value_column } } := p.adjust(P.Value, method="BH"))
+                                      mutate({ { fdr_value_column } } := fdr_values_all)
                                     message("      FDR column added")
                                     
                                     message("      Renaming P.Value column...")
@@ -2080,6 +2101,9 @@ runTestsContrasts <- function(data,
                                     message("      P.Value column renamed")
                                     
                                     message(sprintf("   [map] Completed processing contrast: %s", contrast))
+                                    if (qvalue_failed) {
+                                      qvalue_failures[[contrast]] <<- TRUE
+                                    }
                                     return(de_tbl)
                                     
                                   }, error = function(e) {
@@ -2094,9 +2118,13 @@ runTestsContrasts <- function(data,
     t.fit <- eb.fit
     
     message(sprintf("   runTestsContrasts: Processing %d contrasts with topTable...", length(contrast_strings)))
+    # Track qvalue failures for user notification
+    qvalue_failures <- list()
+    
     result_tables <- purrr::map(contrast_strings,
                                 function(contrast) {
                                   message(sprintf("      [map] Processing contrast: %s", contrast))
+                                  qvalue_failed <- FALSE
                                   
                                   tryCatch({
                                     message(sprintf("      About to call topTable with coef = %s", contrast))
@@ -2140,29 +2168,46 @@ runTestsContrasts <- function(data,
                                           q_values_all[valid_p_idx] <- q_values_valid
                                           message("      qvalue() computation successful")
                                         }, error = function(e) {
+                                          qvalue_failed <<- TRUE
                                           message(sprintf("      Warning: qvalue() failed during computation: %s", e$message))
                                           message(sprintf("      Diagnostic: P-value distribution may be problematic for qvalue smoothing algorithm"))
                                           message(sprintf("      Diagnostic: Falling back to p.adjust() method='BH' (Benjamini-Hochberg FDR)"))
                                           # Fallback to p.adjust if qvalue fails
                                           q_values_all[valid_p_idx] <- p.adjust(valid_p_values, method = "BH")
+                                          message(sprintf("      Diagnostic: Assigned %d p.adjust() values to q-value column", length(valid_p_idx)))
                                         })
                                       } else {
                                         # Use p.adjust directly for edge cases
+                                        qvalue_failed <<- TRUE
                                         q_values_all[valid_p_idx] <- p.adjust(valid_p_values, method = "BH")
                                         message("      Using p.adjust() due to edge case detection")
+                                        message(sprintf("      Diagnostic: Assigned %d p.adjust() values to q-value column", length(valid_p_idx)))
                                       }
                                     } else {
                                       # All p-values are invalid, set all q-values to NA
                                       q_values_all <- rep(NA_real_, nrow(de_tbl))
                                       message("      Warning: All p-values are invalid (NA, Inf, or NaN), setting q-values to NA")
                                     }
+                                    
+                                    # Debug: Verify assignment before mutate
+                                    message(sprintf("      Diagnostic: q_values_all has %d non-NA values before assignment", sum(!is.na(q_values_all))))
+                                    
                                     de_tbl <- de_tbl |>
                                       mutate({ { q_value_column } } := q_values_all)
+                                    
+                                    # Debug: Verify assignment after mutate
+                                    assigned_col <- de_tbl[[rlang::as_name(rlang::ensym(q_value_column))]]
+                                    message(sprintf("      Diagnostic: Assigned column has %d non-NA values after mutate", sum(!is.na(assigned_col))))
                                     message("      qvalue column added")
                                     
                                     message("      Adding FDR column...")
+                                    # Use the same safe logic for FDR column - only compute for valid p-values
+                                    fdr_values_all <- rep(NA_real_, nrow(de_tbl))
+                                    if (length(valid_p_idx) > 0) {
+                                      fdr_values_all[valid_p_idx] <- p.adjust(valid_p_values, method = "BH")
+                                    }
                                     de_tbl <- de_tbl |>
-                                      mutate({ { fdr_value_column } } := p.adjust(P.Value, method="BH"))
+                                      mutate({ { fdr_value_column } } := fdr_values_all)
                                     message("      FDR column added")
                                     
                                     message("      Renaming P.Value column...")
@@ -2171,6 +2216,9 @@ runTestsContrasts <- function(data,
                                     message("      P.Value column renamed")
                                     
                                     message(sprintf("   [map] Completed processing contrast: %s", contrast))
+                                    if (qvalue_failed) {
+                                      qvalue_failures[[contrast]] <<- TRUE
+                                    }
                                     return(de_tbl)
                                     
                                   }, error = function(e) {
@@ -2184,7 +2232,7 @@ runTestsContrasts <- function(data,
 
   names(result_tables) <- contrast_strings
   message("--- Exiting runTestsContrasts ---")
-  return(list(results = result_tables, fit.eb = t.fit))
+  return(list(results = result_tables, fit.eb = t.fit, qvalue_warnings = qvalue_failures))
 }
 
 

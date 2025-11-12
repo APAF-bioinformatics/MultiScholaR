@@ -423,6 +423,7 @@ differentialExpressionAppletUI <- function(id) {
 #' @export
 differentialExpressionAppletServer <- function(id, workflow_data, experiment_paths, omic_type, experiment_label, selected_tab = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
+    ns <- session$ns  # Define namespace function for module
     
     cat("--- Entering differentialExpressionAppletServer ---\n")
     cat(sprintf("   differentialExpressionAppletServer Arg: id = %s\n", id))
@@ -1332,6 +1333,84 @@ differentialExpressionAppletServer <- function(id, workflow_data, experiment_pat
           
           de_data$de_results_list <- combined_results
           de_data$analysis_complete <- TRUE
+          
+          # Check for qvalue() failures and show prominent warning notification
+          all_qvalue_warnings <- list()
+          for(contrast_name in names(de_results_list)) {
+            if (!is.null(de_results_list[[contrast_name]]$qvalue_warnings) && 
+                length(de_results_list[[contrast_name]]$qvalue_warnings) > 0) {
+              all_qvalue_warnings <- c(all_qvalue_warnings, de_results_list[[contrast_name]]$qvalue_warnings)
+            }
+          }
+          
+          if (length(all_qvalue_warnings) > 0) {
+            # Map contrast names to friendly names for user-friendly message
+            failed_contrasts <- names(all_qvalue_warnings)
+            friendly_failed_names <- c()
+            if (exists("contrasts_tbl", envir = .GlobalEnv)) {
+              contrasts_tbl <- get("contrasts_tbl", envir = .GlobalEnv)
+              for (failed_contrast in failed_contrasts) {
+                # Extract the part before = if it exists
+                contrast_base <- stringr::str_extract(failed_contrast, "^[^=]+")
+                if (is.na(contrast_base)) contrast_base <- failed_contrast
+                
+                # Try to find matching friendly name
+                if ("friendly_names" %in% names(contrasts_tbl) && "contrasts" %in% names(contrasts_tbl)) {
+                  match_idx <- which(contrasts_tbl$contrasts == contrast_base)
+                  if (length(match_idx) > 0) {
+                    friendly_failed_names <- c(friendly_failed_names, contrasts_tbl$friendly_names[match_idx[1]])
+                  } else {
+                    friendly_failed_names <- c(friendly_failed_names, contrast_base)
+                  }
+                } else {
+                  friendly_failed_names <- c(friendly_failed_names, contrast_base)
+                }
+              }
+            } else {
+              friendly_failed_names <- failed_contrasts
+            }
+            
+            # Create prominent warning modal dialog
+            warning_title <- paste0("⚠️ IMPORTANT: Statistical Analysis Warning")
+            warning_body <- paste0(
+              "<div style='font-size: 14px; line-height: 1.6;'>",
+              "<p><strong>The q-value calculation failed for ", length(all_qvalue_warnings), " contrast(s):</strong></p>",
+              "<p style='margin-left: 20px;'>", paste(friendly_failed_names, collapse = ", "), "</p>",
+              "<p>The analysis used <strong>Benjamini-Hochberg FDR correction (p.adjust)</strong> instead.</p>",
+              "<hr>",
+              "<p><strong>⚠️ INTERPRET RESULTS WITH CAUTION:</strong></p>",
+              "<ul style='margin-left: 20px;'>",
+              "<li>The p-value distribution may be problematic</li>",
+              "<li>Results may be less reliable than normal</li>",
+              "<li>Consider reviewing your experimental design and data quality</li>",
+              "<li>Check diagnostic messages in the console for details</li>",
+              "</ul>",
+              "</div>"
+            )
+            
+            # Show prominent modal dialog
+            shiny::showModal(
+              shiny::modalDialog(
+                title = shiny::tags$div(shiny::tags$strong(warning_title), style = "color: #d9534f; font-size: 18px;"),
+                shiny::HTML(warning_body),
+                size = "l",  # Large modal
+                easyClose = FALSE,  # User must click button to close
+                footer = shiny::tagList(
+                  shiny::actionButton(ns("acknowledge_qvalue_warning"), 
+                                     "I Understand - Continue", 
+                                     class = "btn-warning",
+                                     style = "font-weight: bold;")
+                )
+              )
+            )
+            
+            # Handle acknowledgment button
+            shiny::observeEvent(input$acknowledge_qvalue_warning, {
+              shiny::removeModal()
+            }, once = TRUE)
+            
+            cat(sprintf("   DE ANALYSIS Step: ⚠️ qvalue() failed for %d contrast(s) - user notification shown\n", length(all_qvalue_warnings)))
+          }
           
           # Update workflow data
           workflow_data$de_analysis_results_list <- de_results_list
