@@ -219,6 +219,7 @@ ExtractStudyParametersTMT <- function(study_params) {
   basic_info <- study_params$"Basic Information" %||% list()
   git_info <- study_params$"Git Information" %||% list()
   ruv_results <- study_params$"Automatic RUV Optimization Results" %||% list()
+  ruv_batch_correction <- study_params$"RUV-III Batch Correction" %||% list()
   fasta_info <- study_params$"FASTA File Processing" %||% list()
   accession_cleanup <- study_params$"Protein Accession Cleanup" %||% list()
   protein_counts_info <- study_params$"Protein Filtering Summary" %||% list()
@@ -258,7 +259,15 @@ ExtractStudyParametersTMT <- function(study_params) {
     commit = git_info$"Commit",
     git_timestamp = git_info$"Git Timestamp",
     
-    # RUV Auto-optimization Results
+    # RUV Status (check both sections for backwards compatibility)
+    ruv_applied = if (!is.null(ruv_batch_correction$"Status")) {
+      tolower(trimws(ruv_batch_correction$"Status")) != "not applied"
+    } else {
+      # Default to TRUE for backwards compatibility with old sessions
+      !is.null(ruv_results$"Best k value")
+    },
+    
+    # RUV Auto-optimization Results (only populated when RUV was applied)
     best_percentage = ruv_results$"Best percentage",
     best_k = ruv_results$"Best k value",
     separation_score = ruv_results$"Separation score",
@@ -459,16 +468,23 @@ FormatMethodDetailsTMT <- function(numbers) {
     paste0("Additionally, proteins were excluded if they failed this threshold in more than ", max_groups_cutoff, "% of experimental groups.")
   }
   
-  ruv_text <- glue::glue(
-    "To remove batch effects from biological data, the remove unwanted variation ",
-    "(RUVIII-C) method was used. The method relies on having a set of endogenous ",
-    "negative control proteins, which are proteins with little or no changes in ",
-    "protein abundances between different samples. For this study, an automatic ",
-    "optimization process was run, which identified that using {best_pct_val}% of ",
-    "features as empirical negative controls ({num_neg_ctrl_val} proteins) ",
-    "provided the best separation of biological groups. Based on this, ",
-    "{best_k_val} unwanted components were selected for removal."
-  )
+  # Generate RUV text conditionally based on whether RUV was applied
+  ruv_applied_val <- numbers$ruv_applied %||% TRUE  # Default to TRUE for backwards compatibility
+  
+  ruv_text <- if (isTRUE(ruv_applied_val)) {
+    glue::glue(
+      "To remove batch effects from biological data, the remove unwanted variation ",
+      "(RUVIII-C) method was used. The method relies on having a set of endogenous ",
+      "negative control proteins, which are proteins with little or no changes in ",
+      "protein abundances between different samples. For this study, an automatic ",
+      "optimization process was run, which identified that using {best_pct_val}% of ",
+      "features as empirical negative controls ({num_neg_ctrl_val} proteins) ",
+      "provided the best separation of biological groups. Based on this, ",
+      "{best_k_val} unwanted components were selected for removal."
+    )
+  } else {
+    "RUV-III batch correction was not applied due to dataset constraints. The analysis proceeded directly with normalized data for differential expression analysis."
+  }
 
   glue::glue("
 METHOD DETAILS  
@@ -535,10 +551,14 @@ retained.
 ```
 
 ```{r Result Section, echo=FALSE}
-# UNCHANGED: Results function - focuses on correlation data (same for TMT and DIA)
+# UPDATED: Results function - focuses on correlation data (conditional on RUV status, same for TMT and DIA)
 FormatResults <- function(correlation_data, 
-                         figures_dir = file.path(results_dir, "protein_qc")) {
-  glue::glue("
+                         figures_dir = file.path(results_dir, "protein_qc"),
+                         ruv_applied = TRUE) {
+  
+  if (isTRUE(ruv_applied)) {
+    # 3-column layout when RUV was applied
+    glue::glue("
 Quality Control  
 
 Quality Control Analysis  
@@ -574,6 +594,40 @@ Pearson Correlation
 • The Pearson correlation matrix (Figures 1j-l) shows that the correlation between 
   biological samples was high and consistent across all normalisation methods ",
 .trim = FALSE)
+  } else {
+    # 2-column layout when RUV was skipped
+    glue::glue("
+Quality Control  
+
+Quality Control Analysis  
+Figure 1 shows the QC metrics across two stages of data processing:  
+• Log2 normalisation (leftmost column, a, c, e, g)  
+• Cyclic loess normalisation (rightmost column, b, d, f, h)  
+
+Note: RUV-III batch correction was not applied for this dataset.
+
+Principal Component Analysis  
+The PCA plots (Figures 1a-b) show the data distribution:  
+• Initial log2 data baseline  
+• After cyclic loess normalization, technical variation was reduced  
+
+Density Boxplots
+The density boxplots (Figures 1c-d) show the distribution of the PC1 and PC2 values 
+for each group.
+• The density boxplots show that the distribution of the PC1 and PC2 values for 
+  each group are similar after normalization.
+
+Relative Log Expression  
+The RLE plots (Figures 1e-f) show improvement in data quality after normalization:  
+• Smaller interquartile ranges (IQR) after normalization indicate reduced technical 
+  variation  
+• Normalized data shows more consistent median values near zero  
+
+Pearson Correlation
+• The Pearson correlation matrix (Figures 1g-h) shows that the correlation between 
+  biological samples was high and consistent across normalization methods ",
+.trim = FALSE)
+  }
 }
 ```
 
@@ -883,7 +937,7 @@ Main <- function() {
     content = list(
       sample_details = FormatSampleDetails(analysis_results$numbers),
       method_details = FormatMethodDetailsTMT(analysis_results$numbers),
-      results        = FormatResults(correlation_data),
+      results        = FormatResults(correlation_data, ruv_applied = analysis_results$numbers$ruv_applied %||% TRUE),
       comments       = FormatComments(),
       opinions       = FormatOpinions(correlation_data),
       de_details     = FormatDEDetails(analysis_results$numbers),
