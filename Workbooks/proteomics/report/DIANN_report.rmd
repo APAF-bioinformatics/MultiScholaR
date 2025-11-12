@@ -219,6 +219,7 @@ ExtractStudyParametersNew <- function(study_params) {
   basic_info <- study_params$"Basic Information" %||% list()
   git_info <- study_params$"Git Information" %||% list()
   ruv_results <- study_params$"Automatic RUV Optimization Results" %||% list()
+  ruv_batch_correction <- study_params$"RUV-III Batch Correction" %||% list()
   fasta_info <- study_params$"FASTA File Processing" %||% list()
   accession_cleanup <- study_params$"Protein Accession Cleanup" %||% list()
   protein_counts_info <- study_params$"Protein Filtering Summary" %||% list()
@@ -243,6 +244,12 @@ ExtractStudyParametersNew <- function(study_params) {
   s4_ruv <- s4_params$ruvIII_C_Varying %||% list()
   s4_de <- s4_params$deAnalysisParameters %||% list()
   
+  # Extract sample filtering information
+  samples_removed <- s4_sample_filt$samples_removed %||% character(0)
+  samples_removed_count <- s4_sample_filt$samples_removed_count %||% 0
+  samples_before_count <- s4_sample_filt$samples_before_count %||% NA
+  samples_after_count <- s4_sample_filt$samples_after_count %||% NA
+  
   # Extract UI parameter sections
   ui_de <- safe_extract(ui_params, "Differential Expression UI Parameters", list())
   ui_enrich <- safe_extract(ui_params, "Enrichment Analysis UI Parameters", list())
@@ -260,7 +267,15 @@ ExtractStudyParametersNew <- function(study_params) {
     commit = git_info$"Commit",
     git_timestamp = git_info$"Git Timestamp",
     
-    # RUV Auto-optimization Results
+    # RUV Status (check both sections for backwards compatibility)
+    ruv_applied = if (!is.null(ruv_batch_correction$"Status")) {
+      tolower(trimws(ruv_batch_correction$"Status")) != "not applied"
+    } else {
+      # Default to TRUE for backwards compatibility with old sessions
+      !is.null(ruv_results$"Best k value")
+    },
+    
+    # RUV Auto-optimization Results (only populated when RUV was applied)
     best_percentage = ruv_results$"Best percentage",
     best_k = ruv_results$"Best k value",
     separation_score = ruv_results$"Separation score",
@@ -274,8 +289,13 @@ ExtractStudyParametersNew <- function(study_params) {
     intensity_cutoff_percentile = if(is.null(s4_pep_filt$peptides_intensity_cutoff_percentile) || is.na(s4_pep_filt$peptides_intensity_cutoff_percentile)) 1 else as.numeric(s4_pep_filt$peptides_intensity_cutoff_percentile),
     proportion_samples_below_cutoff = if(is.null(s4_pep_filt$peptides_proportion_of_samples_below_cutoff) || is.na(s4_pep_filt$peptides_proportion_of_samples_below_cutoff)) 0.5 else as.numeric(s4_pep_filt$peptides_proportion_of_samples_below_cutoff),
     missing_values_cutoff = if(is.null(s4_prot_filt$groupwise_percentage_cutoff) || is.na(s4_prot_filt$groupwise_percentage_cutoff)) 33.333 else as.numeric(s4_prot_filt$groupwise_percentage_cutoff),
+    max_groups_percentage_cutoff = if(is.null(s4_prot_filt$max_groups_percentage_cutoff) || is.na(s4_prot_filt$max_groups_percentage_cutoff)) 0 else as.numeric(s4_prot_filt$max_groups_percentage_cutoff),
     min_peptidoforms_per_protein = if(is.null(s4_pep_prot_filt$peptidoforms_per_protein_cutoff) || is.na(s4_pep_prot_filt$peptidoforms_per_protein_cutoff)) 2 else as.numeric(s4_pep_prot_filt$peptidoforms_per_protein_cutoff),
     min_peptides_per_sample = if(is.null(s4_sample_filt$peptides_per_sample_cutoff) || is.na(s4_sample_filt$peptides_per_sample_cutoff)) 500 else as.numeric(s4_sample_filt$peptides_per_sample_cutoff),
+    samples_removed = samples_removed,
+    samples_removed_count = samples_removed_count,
+    samples_before_count = samples_before_count,
+    samples_after_count = samples_after_count,
     normalisation_method = s4_norm$method %||% s4_norm$normalisation_method %||% "cyclicloess",
     
     # RUV parameters (FIXED: explicit NULL check)
@@ -375,6 +395,7 @@ FormatMethodDetails <- function(numbers) {
   min_peptidoforms <- if(is.null(numbers$min_peptidoforms_per_protein) || is.na(numbers$min_peptidoforms_per_protein)) 2 else as.numeric(numbers$min_peptidoforms_per_protein)
   min_peptides_sample <- if(is.null(numbers$min_peptides_per_sample) || is.na(numbers$min_peptides_per_sample)) 200 else as.numeric(numbers$min_peptides_per_sample)
   missing_vals_cutoff <- if(is.null(numbers$missing_values_cutoff) || is.na(numbers$missing_values_cutoff)) 33.3 else as.numeric(numbers$missing_values_cutoff)
+  max_groups_cutoff <- if(is.null(numbers$max_groups_percentage_cutoff) || is.na(numbers$max_groups_percentage_cutoff)) 0 else as.numeric(numbers$max_groups_percentage_cutoff)
   norm_method <- numbers$normalisation_method %||% "cyclicloess"
   
   # RUV parameters from new structure
@@ -458,17 +479,50 @@ FormatMethodDetails <- function(numbers) {
   } else {
     ""
   }
+  
+  # Generate cross-group filtering text BEFORE glue block
+  cross_groups_text <- if(max_groups_cutoff == 0) {
+    "Additionally, proteins were required to pass this threshold in all experimental groups, ensuring comprehensive coverage across all conditions."
+  } else {
+    paste0("Additionally, proteins were excluded if they failed this threshold in more than ", max_groups_cutoff, "% of experimental groups.")
+  }
+  
+  # Generate sample filtering summary text BEFORE glue block
+  sample_filter_summary <- ""
+  if (!is.null(numbers$samples_before_count) && !is.na(numbers$samples_before_count) && 
+      !is.null(numbers$samples_after_count) && !is.na(numbers$samples_after_count)) {
+    sample_filter_summary <- paste0(
+      " Of ", numbers$samples_before_count, " initial samples, ", 
+      numbers$samples_after_count, " samples were retained after filtering."
+    )
+  }
+  
+  # Generate removed samples list text BEFORE glue block
+  removed_samples_text <- ""
+  if (!is.null(numbers$samples_removed) && length(numbers$samples_removed) > 0) {
+    removed_samples_text <- paste0(
+      " The following samples were removed due to insufficient peptide counts: ", 
+      paste(numbers$samples_removed, collapse = ", "), "."
+    )
+  }
 
-  ruv_text <- glue::glue(
-    "To remove batch effects from biological data, the remove unwanted variation ",
-    "(RUVIII-C) method was used. The method relies on having a set of endogenous ",
-    "negative control proteins, which are proteins with little or no changes in ",
-    "protein abundances between different samples. For this study, an automatic ",
-    "optimization process was run, which identified that using {best_pct_val}% of ",
-    "features as empirical negative controls ({num_neg_ctrl_val} proteins) ",
-    "provided the best separation of biological groups. Based on this, ",
-    "{best_k_val} unwanted components were selected for removal."
-  )
+  # Generate RUV text conditionally based on whether RUV was applied
+  ruv_applied_val <- numbers$ruv_applied %||% TRUE  # Default to TRUE for backwards compatibility
+  
+  ruv_text <- if (isTRUE(ruv_applied_val)) {
+    glue::glue(
+      "To remove batch effects from biological data, the remove unwanted variation ",
+      "(RUVIII-C) method was used. The method relies on having a set of endogenous ",
+      "negative control proteins, which are proteins with little or no changes in ",
+      "protein abundances between different samples. For this study, an automatic ",
+      "optimization process was run, which identified that using {best_pct_val}% of ",
+      "features as empirical negative controls ({num_neg_ctrl_val} proteins) ",
+      "provided the best separation of biological groups. Based on this, ",
+      "{best_k_val} unwanted components were selected for removal."
+    )
+  } else {
+    "RUV-III batch correction was not applied due to dataset constraints. The analysis proceeded directly with normalized data for differential expression analysis."
+  }
 
   glue::glue("
 METHOD DETAILS  
@@ -496,14 +550,23 @@ percentile of intensity values. Proteins were required to have a minimum of
 {min_peptidoforms} peptides, which could include different 
 modifications of the same sequence, to be considered for further analysis.
 
-Samples with fewer than {min_peptides_sample} peptides were removed to 
-ensure data quality. Peptides appearing in only one replicate across all groups 
-were also excluded to maintain measurement reproducibility. Protein-level 
-quantification was performed using the IQ algorithm, implementing the maxLFQ 
-algorithm to generate protein abundance values. Peptide intensities were aggregated 
-into protein-level quantification without normalization at this stage, resulting in 
-a protein quantification matrix with log2-transformed intensity values for each 
-protein across all samples.
+Sample Quality Control and Filtering
+Samples with poor performance, indicated by an unusually low number of identified 
+peptides, were identified and removed to ensure data quality and reliable downstream 
+analysis. Such samples may be compromised due to issues in sample preparation, 
+instrument performance, or other technical factors. Including these low-quality samples 
+in downstream analysis could introduce bias and reduce the statistical power to detect 
+true biological differences. Samples with fewer than {min_peptides_sample} peptides 
+were excluded from further analysis. This minimum peptide threshold ensures that all 
+retained samples have sufficient protein coverage for reliable quantification and 
+statistical testing.{sample_filter_summary}{removed_samples_text}
+
+Peptides appearing in only one replicate across all groups were also excluded to 
+maintain measurement reproducibility. Protein-level quantification was performed using 
+the IQ algorithm, implementing the maxLFQ algorithm to generate protein abundance 
+values. Peptide intensities were aggregated into protein-level quantification without 
+normalization at this stage, resulting in a protein quantification matrix with 
+log2-transformed intensity values for each protein across all samples.
 
 FASTA Reference and Protein Accession Cleanup
 {fasta_text}
@@ -511,12 +574,16 @@ FASTA Reference and Protein Accession Cleanup
 {accession_cleanup_text}{qc_count_text}
 
 Using the protein intensity matrix, zero values were replaced with NA denoting 
-these are missing values. Proteins with {missing_vals_cutoff} percent or 
-more of the samples with missing values or values below the 
-{intensity_cutoff_pct}st percentile of intensity values were 
-discarded from the analysis. The data matrix was then log (base 2) transformed and 
-between-sample normalization were performed using the 
-'{norm_method}' method from the 'limma' R package 
+these are missing values. Protein filtering was then applied based on missing 
+value patterns and intensity thresholds to ensure robust statistical analysis. 
+Proteins were excluded if they had {missing_vals_cutoff}% or more missing values 
+or values below the {intensity_cutoff_pct}st percentile of intensity values 
+within any individual experimental group. {cross_groups_text} 
+Additionally, proteins with intensity values below the {intensity_cutoff_pct}st 
+percentile across all samples were excluded from further analysis as likely noise 
+or background signal. 
+The data matrix was then log (base 2) transformed and between-sample normalization 
+were performed using the '{norm_method}' method from the 'limma' R package 
 (Ritchie et al., 2015).
 
 {ruv_text}{ruv_count_text}
@@ -538,10 +605,14 @@ replicate samples within groups.
 ```
 
 ```{r Result Section, echo=FALSE}
-# UNCHANGED: Results function - focuses on correlation data
+# UPDATED: Results function - focuses on correlation data (conditional on RUV status)
 FormatResults <- function(correlation_data, 
-                         figures_dir = file.path(results_dir, "protein_qc")) {
-  glue::glue("
+                         figures_dir = file.path(results_dir, "protein_qc"),
+                         ruv_applied = TRUE) {
+  
+  if (isTRUE(ruv_applied)) {
+    # 3-column layout when RUV was applied
+    glue::glue("
 Quality Control  
 
 Quality Control Analysis  
@@ -577,6 +648,40 @@ Pearson Correlation
 • The Pearson correlation matrix (Figures 1j-l) shows that the correlation between 
   biological samples was high and consistent across all normalisation methods ",
 .trim = FALSE)
+  } else {
+    # 2-column layout when RUV was skipped
+    glue::glue("
+Quality Control  
+
+Quality Control Analysis  
+Figure 1 shows the QC metrics across two stages of data processing:  
+• Log2 normalisation (leftmost column, a, c, e, g)  
+• Cyclic loess normalisation (rightmost column, b, d, f, h)  
+
+Note: RUV-III batch correction was not applied for this dataset.
+
+Principal Component Analysis  
+The PCA plots (Figures 1a-b) show the data distribution:  
+• Initial log2 data baseline  
+• After cyclic loess normalization, technical variation was reduced  
+
+Density Boxplots
+The density boxplots (Figures 1c-d) show the distribution of the PC1 and PC2 values 
+for each group.
+• The density boxplots show that the distribution of the PC1 and PC2 values for 
+  each group are similar after normalization.
+
+Relative Log Expression  
+The RLE plots (Figures 1e-f) show improvement in data quality after normalization:  
+• Smaller interquartile ranges (IQR) after normalization indicate reduced technical 
+  variation  
+• Normalized data shows more consistent median values near zero  
+
+Pearson Correlation
+• The Pearson correlation matrix (Figures 1g-h) shows that the correlation between 
+  biological samples was high and consistent across normalization methods ",
+.trim = FALSE)
+  }
 }
 ```
 
@@ -886,7 +991,7 @@ Main <- function() {
     content = list(
       sample_details = FormatSampleDetails(analysis_results$numbers),
       method_details = FormatMethodDetails(analysis_results$numbers),
-      results        = FormatResults(correlation_data),
+      results        = FormatResults(correlation_data, ruv_applied = analysis_results$numbers$ruv_applied %||% TRUE),
       comments       = FormatComments(),
       opinions       = FormatOpinions(correlation_data),
       de_details     = FormatDEDetails(analysis_results$numbers),
