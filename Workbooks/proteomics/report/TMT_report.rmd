@@ -452,6 +452,13 @@ FormatMethodDetailsTMT <- function(numbers) {
     ""
   }
   
+  # Generate cross-group filtering text BEFORE glue block
+  cross_groups_text <- if(max_groups_cutoff == 0) {
+    "Additionally, proteins were required to pass this threshold in all experimental groups, ensuring comprehensive coverage across all conditions."
+  } else {
+    paste0("Additionally, proteins were excluded if they failed this threshold in more than ", max_groups_cutoff, "% of experimental groups.")
+  }
+  
   ruv_text <- glue::glue(
     "To remove batch effects from biological data, the remove unwanted variation ",
     "(RUVIII-C) method was used. The method relies on having a set of endogenous ",
@@ -489,11 +496,12 @@ FASTA Reference and Protein Accession Cleanup
 
 Proteins were then filtered based on missing value patterns across experimental 
 groups to retain only those with sufficient coverage for robust statistical 
-testing. A protein was excluded if it had {groupwise_cutoff}% or more missing 
-values within individual experimental groups, or if it had {max_groups_cutoff}% 
-or more missing values across the maximum number of groups. Additionally, 
-proteins with intensity values below the {intensity_cutoff_pct}st percentile 
-were excluded from further analysis as likely noise or background signal.
+testing. Proteins were excluded if they had {groupwise_cutoff}% or more missing 
+values or values below the {intensity_cutoff_pct}st percentile of intensity values 
+within any individual experimental group. {cross_groups_text} 
+Additionally, proteins with intensity values below the {intensity_cutoff_pct}st 
+percentile across all samples were excluded from further analysis as likely noise 
+or background signal.
 
 Proteins appearing in only one replicate across all groups were also excluded 
 to ensure measurement reproducibility and reliable quantification across biological 

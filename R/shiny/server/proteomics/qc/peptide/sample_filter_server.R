@@ -38,8 +38,31 @@ sample_filter_server <- function(input, output, session, workflow_data, omic_typ
           new_value = input$min_peptides_per_sample
         )
         
+        # Track samples before filtering
+        samples_before <- current_s4@peptide_data |>
+          dplyr::distinct(!!sym(current_s4@sample_id)) |>
+          dplyr::pull(!!sym(current_s4@sample_id))
+        
         # Apply S4 transformation (EXISTING S4 CODE - UNCHANGED)
         filtered_s4 <- filterMinNumPeptidesPerSample(theObject = current_s4)
+        
+        # Track samples after filtering
+        samples_after <- filtered_s4@peptide_data |>
+          dplyr::distinct(!!sym(filtered_s4@sample_id)) |>
+          dplyr::pull(!!sym(filtered_s4@sample_id))
+        
+        # Identify removed samples
+        samples_removed <- setdiff(samples_before, samples_after)
+        samples_removed_count <- length(samples_removed)
+        
+        # Store removed samples info in S4 object @args for report generation
+        if (is.null(filtered_s4@args$filterMinNumPeptidesPerSample)) {
+          filtered_s4@args$filterMinNumPeptidesPerSample <- list()
+        }
+        filtered_s4@args$filterMinNumPeptidesPerSample$samples_removed <- samples_removed
+        filtered_s4@args$filterMinNumPeptidesPerSample$samples_removed_count <- samples_removed_count
+        filtered_s4@args$filterMinNumPeptidesPerSample$samples_before_count <- length(samples_before)
+        filtered_s4@args$filterMinNumPeptidesPerSample$samples_after_count <- length(samples_after)
         
         # Track QC parameters in workflow_data
         if (is.null(workflow_data$qc_params)) {
@@ -51,6 +74,10 @@ sample_filter_server <- function(input, output, session, workflow_data, omic_typ
         
         workflow_data$qc_params$peptide_qc$sample_filter <- list(
           min_peptides_per_sample = input$min_peptides_per_sample,
+          samples_removed = samples_removed,
+          samples_removed_count = samples_removed_count,
+          samples_before_count = length(samples_before),
+          samples_after_count = length(samples_after),
           timestamp = Sys.time()
         )
         
@@ -59,7 +86,9 @@ sample_filter_server <- function(input, output, session, workflow_data, omic_typ
           state_name = "sample_filtered",
           s4_data_object = filtered_s4,
           config_object = list(
-            min_peptides_per_sample = input$min_peptides_per_sample
+            min_peptides_per_sample = input$min_peptides_per_sample,
+            samples_removed = samples_removed,
+            samples_removed_count = samples_removed_count
           ),
           description = "Applied minimum peptides per sample filter"
         )
@@ -77,9 +106,19 @@ sample_filter_server <- function(input, output, session, workflow_data, omic_typ
           "=========================================\n",
           sprintf("Proteins remaining: %d\n", protein_count),
           sprintf("Samples remaining: %d\n", run_count),
+          sprintf("Samples removed: %d\n", samples_removed_count),
           sprintf("Min peptides per sample: %d\n", input$min_peptides_per_sample),
           "State saved as: 'sample_filtered'\n"
         )
+        
+        # Add removed sample names if any
+        if (samples_removed_count > 0) {
+          result_text <- paste0(
+            result_text,
+            "\nRemoved samples:\n",
+            paste(samples_removed, collapse = ", ")
+          )
+        }
         
         output$sample_results <- shiny::renderText(result_text)
         
