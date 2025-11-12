@@ -464,13 +464,13 @@ differentialExpressionAppletServer <- function(id, workflow_data, experiment_pat
             current_state <- workflow_data$state_manager$current_state
             
             # Define valid states where this tab can be active
-            valid_states_for_de_tab <- c("correlation_filtered")
+            valid_states_for_de_tab <- c("normalized", "ruv_corrected", "correlation_filtered")
             
             cat(sprintf("   DE TAB Step: Current state = '%s'\n", current_state))
             cat(sprintf("   DE TAB Step: Valid states for DE = %s\n", paste(valid_states_for_de_tab, collapse = ", ")))
             
-            # Auto-trigger only fires if we've completed correlation filtering
-            if (current_state == "correlation_filtered") {
+            # Auto-trigger only fires if we've completed correlation filtering or at least normalization
+            if (current_state %in% valid_states_for_de_tab) {
               
               cat("*** AUTO-TRIGGERING DE INITIALIZATION (correlation-filtered state found) ***\n")
               
@@ -607,9 +607,9 @@ differentialExpressionAppletServer <- function(id, workflow_data, experiment_pat
               })
               
             } else {
-              cat(sprintf("*** State '%s' is not valid for DE analysis. User needs to complete normalization and correlation filtering. ***\n", current_state))
+              cat(sprintf("*** State '%s' is not valid for DE analysis. User needs to complete normalization (with or without RUV) and correlation filtering. ***\n", current_state))
               shiny::showNotification(
-                "Please complete the normalization and correlation filtering steps before accessing differential expression analysis.",
+                "Please complete the normalization (with or without RUV) and correlation filtering steps before accessing differential expression analysis.",
                 type = "warning",
                 duration = 5
               )
@@ -638,8 +638,9 @@ differentialExpressionAppletServer <- function(id, workflow_data, experiment_pat
         cat(sprintf("   DE TAB Step: Current state = %s\n", current_state))
         
         # Should be getting the correlation-filtered protein object (final state before DE)
-        if (current_state == "correlation_filtered") {
-          cat("   DE TAB Step: State is valid for DE analysis (correlation-filtered state found)\n")
+        # Also accept normalized or ruv_corrected states
+        if (current_state %in% c("normalized", "ruv_corrected", "correlation_filtered")) {
+          cat(sprintf("   DE TAB Step: State is valid for DE analysis (%s state found)\n", current_state))
           current_s4 <- workflow_data$state_manager$getState(current_state)
           
           if (!is.null(current_s4)) {
@@ -731,7 +732,7 @@ differentialExpressionAppletServer <- function(id, workflow_data, experiment_pat
             cat("   DE TAB Step: S4 object is NULL\n")
           }
         } else {
-          cat(sprintf("   DE TAB Step: State '%s' not valid for DE analysis (expecting: correlation_filtered)\n", current_state))
+          cat(sprintf("   DE TAB Step: State '%s' not valid for DE analysis (expecting: normalized, ruv_corrected, or correlation_filtered)\n", current_state))
         }
       } else {
         cat("   DE TAB Step: workflow_data$state_manager is NULL\n")
@@ -1176,7 +1177,7 @@ differentialExpressionAppletServer <- function(id, workflow_data, experiment_pat
               cat("   DE ANALYSIS Step: Updating R6 state with DE UI parameters\n")
               tryCatch({
                 # Find the current data state and update it
-                current_data_states <- c("correlation_filtered", "ruv_corrected", "protein_replicate_filtered")
+                current_data_states <- c("correlation_filtered", "normalized", "ruv_corrected", "protein_replicate_filtered")
                 available_states <- workflow_data$state_manager$getHistory()
                 current_data_state <- purrr::detect(current_data_states, ~ .x %in% available_states)
                 

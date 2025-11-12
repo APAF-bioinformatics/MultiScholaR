@@ -65,7 +65,8 @@ normalizationAppletUI <- function(id) {
           "RUV Parameter Tuning:",
           choices = list(
             "Automatic (recommended)" = "automatic",
-            "Manual (advanced users)" = "manual"
+            "Manual (advanced users)" = "manual",
+            "Skip RUV (troublesome datasets)" = "skip"
           ),
           selected = "automatic",
           width = "100%"
@@ -177,6 +178,27 @@ normalizationAppletUI <- function(id) {
             width = "100%"
           ),
           shiny::helpText("Will be auto-populated from canonical correlation analysis"),
+          
+          shiny::br()
+        ),
+        
+        # Skip RUV mode information (shown when skip mode selected)
+        shiny::conditionalPanel(
+          condition = "input.ruv_mode == 'skip'",
+          ns = ns,
+          
+          shiny::div(
+            style = "background-color: #fff3cd; border: 1px solid #ffc107; padding: 10px; border-radius: 4px;",
+            shiny::h5("RUV-III Will Be Skipped", style = "color: #856404; margin-top: 0;"),
+            shiny::helpText(
+              "Batch correction will not be applied. Use this option for datasets where RUV-III is problematic or unnecessary.",
+              style = "margin-bottom: 5px;"
+            ),
+            shiny::helpText(
+              "Alternative approach: Consider including batch as a covariate in your differential expression model if batch effects are present.",
+              style = "margin-bottom: 0; font-style: italic;"
+            )
+          ),
           
           shiny::br()
         ),
@@ -776,7 +798,7 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
             current_state <- workflow_data$state_manager$current_state
             
             # Define valid states where this tab can be active
-            valid_states_for_norm_tab <- c("protein_replicate_filtered", "ruv_corrected", "correlation_filtered")
+            valid_states_for_norm_tab <- c("protein_replicate_filtered", "normalized", "ruv_corrected", "correlation_filtered")
             
             message(sprintf("Current state: '%s'", current_state))
             message(sprintf("Target trigger state: 'protein_replicate_filtered'"))
@@ -924,6 +946,52 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
             stop(paste("Step 2 (post-norm QC) error:", e$message))
           })
           
+          # CHECK IF RUV SHOULD BE SKIPPED
+          if (input$ruv_mode == "skip") {
+            message("*** RUV MODE: SKIP - Bypassing RUV-III correction ***")
+            
+            # Use normalized data directly as final object
+            norm_data$ruv_normalized_obj <- normalized_s4
+            norm_data$ruv_complete <- TRUE
+            norm_data$best_k <- NA
+            norm_data$control_genes_index <- NA
+            norm_data$ruv_optimization_result <- list(
+              best_percentage = NA,
+              best_k = NA,
+              best_control_genes_index = NA,
+              best_cancor_plot = NULL,
+              ruv_skipped = TRUE,
+              skip_reason = "User selected skip due to dataset constraints"
+            )
+            
+            message("*** RUV SKIP: Using normalized data directly for correlation filtering ***")
+            
+            # Save state as "normalized" instead of "ruv_corrected"
+            message("*** RUV SKIP: Saving state to R6 state manager ***")
+            tryCatch({
+              workflow_data$state_manager$saveState(
+                state_name = "normalized",
+                s4_data_object = normalized_s4,
+                config_object = list(
+                  norm_method = input$norm_method,
+                  ruv_mode = "skip",
+                  ruv_applied = FALSE,
+                  ruv_k = NA,
+                  percentage_as_neg_ctrl = NA
+                ),
+                description = "Post-normalization complete: RUV-III skipped by user"
+              )
+              message("*** RUV SKIP: State saved successfully ***")
+            }, error = function(e) {
+              message(paste("*** WARNING: Could not save state to R6 manager:", e$message, "***"))
+            })
+            
+            # Skip to Step 6B for composite QC figure (2-column layout)
+            message("*** RUV SKIP: Proceeding to QC figure generation (2-column layout) ***")
+            
+          } else {
+            # Normal RUV workflow - Steps 3-5
+            
           # Step 3: RUV-III correction (chunks 26-27 equivalent)
           shiny::incProgress(0.2, detail = "Determining RUV parameters...")
           message("*** STEP 3: Starting RUV parameter determination ***")
@@ -1252,6 +1320,8 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
             message("*** STEP 5: Continuing to Step 6 despite error ***")
           })
           
+          } # End of else block (normal RUV workflow)
+          
           # STEP 6 - ALWAYS GENERATE COMPOSITE QC (MOVED OUTSIDE STEP 5 TRY-CATCH)
           # Generate RUV-corrected QC plots
           shiny::incProgress(0.2, detail = "Generating RUV-corrected QC plots...")
@@ -1271,13 +1341,18 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
           message(sprintf("*** STEP 6: experiment_paths$protein_qc_dir: %s ***", experiment_paths$protein_qc_dir))
           
           # STEP 6A: Try to generate RUV QC plots (but don't fail if this breaks)
-          tryCatch({
-            generateRuvCorrectedQc(ruv_corrected_s4_clean)
-            message("*** STEP 6A: RUV-corrected QC plots completed ***")
-          }, error = function(e) {
-            message(paste("Warning: generateRuvCorrectedQc failed:", e$message))
-            message("*** STEP 6A: Continuing without RUV QC plots ***")
-          })
+          # Skip this step if RUV was skipped
+          if (input$ruv_mode != "skip") {
+            tryCatch({
+              generateRuvCorrectedQc(ruv_corrected_s4_clean)
+              message("*** STEP 6A: RUV-corrected QC plots completed ***")
+            }, error = function(e) {
+              message(paste("Warning: generateRuvCorrectedQc failed:", e$message))
+              message("*** STEP 6A: Continuing without RUV QC plots ***")
+            })
+          } else {
+            message("*** STEP 6A: Skipping RUV-corrected QC plots (RUV was skipped) ***")
+          }
           
           # STEP 6B: ALWAYS generate composite QC figure (critical for copyToResultsSummary)
           message(sprintf("*** STEP 6B: norm_data$qc_plots$post_filtering$pca is NULL: %s ***", is.null(norm_data$qc_plots$post_filtering$pca)))
@@ -1332,17 +1407,36 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
             # Generate composite QC figure and save to protein_qc_dir
             message("*** STEP 6B: About to call createGridQC ***")
             
-            pca_ruv_rle_correlation_merged <- createGridQC(
-              norm_data$QC_composite_figure,
-              pca_titles = c("a) Pre-normalization", "b) Normalized data", "c) RUV-corrected data"),
-              density_titles = c("d)", "e)", "f)"),
-              rle_titles = c("g)", "h)", "i)"),
-              pearson_titles = c("j)", "k)", "l)"),
-              cancor_titles = c("", "", "m)"),  # Empty for first two columns, "m)" for RUV column
-              ncol = 3,
-              save_path = experiment_paths$protein_qc_dir,
-              file_name = "composite_QC_figure"
-            )
+            # Conditional layout based on RUV mode
+            if (input$ruv_mode == "skip") {
+              # 2-column layout when RUV is skipped
+              message("*** STEP 6B: Creating 2-column QC composite (RUV skipped) ***")
+              pca_ruv_rle_correlation_merged <- createGridQC(
+                norm_data$QC_composite_figure,
+                pca_titles = c("a) Pre-normalization", "b) Normalized data (Final)"),
+                density_titles = c("c)", "d)"),
+                rle_titles = c("e)", "f)"),
+                pearson_titles = c("g)", "h)"),
+                cancor_titles = c("", ""),  # No cancor plots when RUV skipped
+                ncol = 2,
+                save_path = experiment_paths$protein_qc_dir,
+                file_name = "composite_QC_figure"
+              )
+            } else {
+              # 3-column layout when RUV is applied (original behavior)
+              message("*** STEP 6B: Creating 3-column QC composite (RUV applied) ***")
+              pca_ruv_rle_correlation_merged <- createGridQC(
+                norm_data$QC_composite_figure,
+                pca_titles = c("a) Pre-normalization", "b) Normalized data", "c) RUV-corrected data"),
+                density_titles = c("d)", "e)", "f)"),
+                rle_titles = c("g)", "h)", "i)"),
+                pearson_titles = c("j)", "k)", "l)"),
+                cancor_titles = c("", "", "m)"),  # Empty for first two columns, "m)" for RUV column
+                ncol = 3,
+                save_path = experiment_paths$protein_qc_dir,
+                file_name = "composite_QC_figure"
+              )
+            }
             
             message("*** STEP 6B: Composite QC figure saved to protein_qc_dir ***")
             
@@ -1362,8 +1456,15 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
           
         })
         
+        # Update notification based on RUV mode
+        notification_msg <- if (input$ruv_mode == "skip") {
+          "Normalization completed (RUV skipped)! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step."
+        } else {
+          "Normalization and RUV correction completed! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step."
+        }
+        
         shiny::showNotification(
-          "Normalization and RUV correction completed! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step.",
+          notification_msg,
           type = "success",
           duration = 10
         )
@@ -1920,10 +2021,11 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
              # Configuration
              config_list = workflow_data$config_list,
              
-             # Additional metadata for verification
-             export_timestamp = Sys.time(),
+            # Additional metadata for verification
+            export_timestamp = Sys.time(),
             normalization_method = input$norm_method,
             ruv_mode = input$ruv_mode,
+            ruv_applied = (input$ruv_mode != "skip"),
             ruv_k = norm_data$best_k,
             correlation_threshold = norm_data$correlation_threshold,
             
