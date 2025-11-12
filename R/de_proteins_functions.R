@@ -2013,8 +2013,27 @@ runTestsContrasts <- function(data,
                                     message(sprintf("      [map] topTreat success: %d rows", nrow(de_tbl)))
                                     
                                     message("      Adding qvalue column...")
+                                    # Safe qvalue computation: handle invalid p-values (NA, Inf, NaN)
+                                    valid_p_idx <- which(!is.na(de_tbl$P.Value) & is.finite(de_tbl$P.Value))
+                                    if (length(valid_p_idx) > 0) {
+                                      # Compute q-values only for valid p-values
+                                      valid_p_values <- de_tbl$P.Value[valid_p_idx]
+                                      q_values_all <- rep(NA_real_, nrow(de_tbl))
+                                      tryCatch({
+                                        q_values_valid <- qvalue(valid_p_values)$q
+                                        q_values_all[valid_p_idx] <- q_values_valid
+                                      }, error = function(e) {
+                                        message(sprintf("      Warning: qvalue() failed, using p.adjust() as fallback: %s", e$message))
+                                        # Fallback to p.adjust if qvalue fails
+                                        q_values_all[valid_p_idx] <- p.adjust(valid_p_values, method = "BH")
+                                      })
+                                    } else {
+                                      # All p-values are invalid, set all q-values to NA
+                                      q_values_all <- rep(NA_real_, nrow(de_tbl))
+                                      message("      Warning: All p-values are invalid (NA, Inf, or NaN), setting q-values to NA")
+                                    }
                                     de_tbl <- de_tbl |>
-                                      mutate({ { q_value_column } } := qvalue(P.Value)$q)
+                                      mutate({ { q_value_column } } := q_values_all)
                                     message("      qvalue column added")
                                     
                                     message("      Adding FDR column...")
@@ -2052,8 +2071,27 @@ runTestsContrasts <- function(data,
                                     message(sprintf("      [map] topTable success: %d rows", nrow(de_tbl)))
                                     
                                     message("      Adding qvalue column...")
+                                    # Safe qvalue computation: handle invalid p-values (NA, Inf, NaN)
+                                    valid_p_idx <- which(!is.na(de_tbl$P.Value) & is.finite(de_tbl$P.Value))
+                                    if (length(valid_p_idx) > 0) {
+                                      # Compute q-values only for valid p-values
+                                      valid_p_values <- de_tbl$P.Value[valid_p_idx]
+                                      q_values_all <- rep(NA_real_, nrow(de_tbl))
+                                      tryCatch({
+                                        q_values_valid <- qvalue(valid_p_values)$q
+                                        q_values_all[valid_p_idx] <- q_values_valid
+                                      }, error = function(e) {
+                                        message(sprintf("      Warning: qvalue() failed, using p.adjust() as fallback: %s", e$message))
+                                        # Fallback to p.adjust if qvalue fails
+                                        q_values_all[valid_p_idx] <- p.adjust(valid_p_values, method = "BH")
+                                      })
+                                    } else {
+                                      # All p-values are invalid, set all q-values to NA
+                                      q_values_all <- rep(NA_real_, nrow(de_tbl))
+                                      message("      Warning: All p-values are invalid (NA, Inf, or NaN), setting q-values to NA")
+                                    }
                                     de_tbl <- de_tbl |>
-                                      mutate({ { q_value_column } } := qvalue(P.Value)$q)
+                                      mutate({ { q_value_column } } := q_values_all)
                                     message("      qvalue column added")
                                     
                                     message("      Adding FDR column...")
