@@ -2018,15 +2018,48 @@ runTestsContrasts <- function(data,
                                     if (length(valid_p_idx) > 0) {
                                       # Compute q-values only for valid p-values
                                       valid_p_values <- de_tbl$P.Value[valid_p_idx]
+                                      
+                                      # Diagnostic: Log p-value distribution statistics
+                                      message(sprintf("      Diagnostic: Valid p-values: %d of %d total", length(valid_p_idx), nrow(de_tbl)))
+                                      message(sprintf("      Diagnostic: P-value range: [%.6f, %.6f]", min(valid_p_values), max(valid_p_values)))
+                                      message(sprintf("      Diagnostic: P-value mean: %.6f, median: %.6f", mean(valid_p_values), median(valid_p_values)))
+                                      
+                                      # Edge case checks that might cause qvalue() to fail
+                                      all_zeros <- all(valid_p_values == 0)
+                                      all_ones <- all(valid_p_values == 1)
+                                      too_few <- length(valid_p_values) < 3
+                                      
+                                      if (all_zeros) {
+                                        message("      Warning: All p-values are 0 - qvalue() cannot compute, using p.adjust()")
+                                        use_qvalue <- FALSE
+                                      } else if (all_ones) {
+                                        message("      Warning: All p-values are 1 - qvalue() may fail, using p.adjust()")
+                                        use_qvalue <- FALSE
+                                      } else if (too_few) {
+                                        message(sprintf("      Warning: Too few p-values (%d < 3) for qvalue() estimation, using p.adjust()", length(valid_p_values)))
+                                        use_qvalue <- FALSE
+                                      } else {
+                                        use_qvalue <- TRUE
+                                      }
+                                      
                                       q_values_all <- rep(NA_real_, nrow(de_tbl))
-                                      tryCatch({
-                                        q_values_valid <- qvalue(valid_p_values)$q
-                                        q_values_all[valid_p_idx] <- q_values_valid
-                                      }, error = function(e) {
-                                        message(sprintf("      Warning: qvalue() failed, using p.adjust() as fallback: %s", e$message))
-                                        # Fallback to p.adjust if qvalue fails
+                                      if (use_qvalue) {
+                                        tryCatch({
+                                          q_values_valid <- qvalue(valid_p_values)$q
+                                          q_values_all[valid_p_idx] <- q_values_valid
+                                          message("      qvalue() computation successful")
+                                        }, error = function(e) {
+                                          message(sprintf("      Warning: qvalue() failed during computation: %s", e$message))
+                                          message(sprintf("      Diagnostic: P-value distribution may be problematic for qvalue smoothing algorithm"))
+                                          message(sprintf("      Diagnostic: Falling back to p.adjust() method='BH' (Benjamini-Hochberg FDR)"))
+                                          # Fallback to p.adjust if qvalue fails
+                                          q_values_all[valid_p_idx] <- p.adjust(valid_p_values, method = "BH")
+                                        })
+                                      } else {
+                                        # Use p.adjust directly for edge cases
                                         q_values_all[valid_p_idx] <- p.adjust(valid_p_values, method = "BH")
-                                      })
+                                        message("      Using p.adjust() due to edge case detection")
+                                      }
                                     } else {
                                       # All p-values are invalid, set all q-values to NA
                                       q_values_all <- rep(NA_real_, nrow(de_tbl))
@@ -2076,15 +2109,48 @@ runTestsContrasts <- function(data,
                                     if (length(valid_p_idx) > 0) {
                                       # Compute q-values only for valid p-values
                                       valid_p_values <- de_tbl$P.Value[valid_p_idx]
+                                      
+                                      # Diagnostic: Log p-value distribution statistics
+                                      message(sprintf("      Diagnostic: Valid p-values: %d of %d total", length(valid_p_idx), nrow(de_tbl)))
+                                      message(sprintf("      Diagnostic: P-value range: [%.6f, %.6f]", min(valid_p_values), max(valid_p_values)))
+                                      message(sprintf("      Diagnostic: P-value mean: %.6f, median: %.6f", mean(valid_p_values), median(valid_p_values)))
+                                      
+                                      # Edge case checks that might cause qvalue() to fail
+                                      all_zeros <- all(valid_p_values == 0)
+                                      all_ones <- all(valid_p_values == 1)
+                                      too_few <- length(valid_p_values) < 3
+                                      
+                                      if (all_zeros) {
+                                        message("      Warning: All p-values are 0 - qvalue() cannot compute, using p.adjust()")
+                                        use_qvalue <- FALSE
+                                      } else if (all_ones) {
+                                        message("      Warning: All p-values are 1 - qvalue() may fail, using p.adjust()")
+                                        use_qvalue <- FALSE
+                                      } else if (too_few) {
+                                        message(sprintf("      Warning: Too few p-values (%d < 3) for qvalue() estimation, using p.adjust()", length(valid_p_values)))
+                                        use_qvalue <- FALSE
+                                      } else {
+                                        use_qvalue <- TRUE
+                                      }
+                                      
                                       q_values_all <- rep(NA_real_, nrow(de_tbl))
-                                      tryCatch({
-                                        q_values_valid <- qvalue(valid_p_values)$q
-                                        q_values_all[valid_p_idx] <- q_values_valid
-                                      }, error = function(e) {
-                                        message(sprintf("      Warning: qvalue() failed, using p.adjust() as fallback: %s", e$message))
-                                        # Fallback to p.adjust if qvalue fails
+                                      if (use_qvalue) {
+                                        tryCatch({
+                                          q_values_valid <- qvalue(valid_p_values)$q
+                                          q_values_all[valid_p_idx] <- q_values_valid
+                                          message("      qvalue() computation successful")
+                                        }, error = function(e) {
+                                          message(sprintf("      Warning: qvalue() failed during computation: %s", e$message))
+                                          message(sprintf("      Diagnostic: P-value distribution may be problematic for qvalue smoothing algorithm"))
+                                          message(sprintf("      Diagnostic: Falling back to p.adjust() method='BH' (Benjamini-Hochberg FDR)"))
+                                          # Fallback to p.adjust if qvalue fails
+                                          q_values_all[valid_p_idx] <- p.adjust(valid_p_values, method = "BH")
+                                        })
+                                      } else {
+                                        # Use p.adjust directly for edge cases
                                         q_values_all[valid_p_idx] <- p.adjust(valid_p_values, method = "BH")
-                                      })
+                                        message("      Using p.adjust() due to edge case detection")
+                                      }
                                     } else {
                                       # All p-values are invalid, set all q-values to NA
                                       q_values_all <- rep(NA_real_, nrow(de_tbl))
