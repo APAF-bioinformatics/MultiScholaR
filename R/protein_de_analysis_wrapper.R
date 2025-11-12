@@ -424,6 +424,12 @@ setMethod( f ="differentialExpressionAnalysisHelper"
 
   return_list$contrasts_results <- contrasts_results
   return_list$contrasts_results_table <- contrasts_results_table
+  
+  # Extract qvalue warnings if present
+  if (!is.null(contrasts_results$qvalue_warnings) && length(contrasts_results$qvalue_warnings) > 0) {
+    return_list$qvalue_warnings <- contrasts_results$qvalue_warnings
+    message(sprintf("   differentialExpressionAnalysisHelper Step: qvalue() failed for %d contrast(s)", length(contrasts_results$qvalue_warnings)))
+  }
 
   message("   differentialExpressionAnalysisHelper Step: Preparing data for visualization...")
   message(paste("   DEBUG66: contrast_name for list naming =", contrast_name))
