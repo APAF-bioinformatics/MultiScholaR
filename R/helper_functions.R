@@ -3045,14 +3045,29 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
          output_lines <- c(output_lines, organism_lines)
      }
      
-     # Add RUV optimization results if available
-     if (!is.null(ruv_optimization_result) && is.list(ruv_optimization_result)) {
-         cat("WORKFLOW ARGS: Formatting RUV optimization results\n")
-         
-         ruv_lines <- c(
-             "Automatic RUV Optimization Results:",
-             "-----------------------------------"
-         )
+    # Add RUV optimization results if available
+    if (!is.null(ruv_optimization_result) && is.list(ruv_optimization_result)) {
+        
+        # Check if RUV was skipped
+        ruv_was_skipped <- isTRUE(ruv_optimization_result$ruv_skipped)
+        
+        if (ruv_was_skipped) {
+            cat("WORKFLOW ARGS: RUV was skipped - writing skip section\n")
+            ruv_lines <- c(
+                "RUV-III Batch Correction:",
+                "-------------------------",
+                "• Status: Not Applied",
+                "• Reason: User determined RUV was not appropriate due to dataset constraints",
+                ""
+            )
+            output_lines <- c(output_lines, ruv_lines)
+        } else {
+            cat("WORKFLOW ARGS: Formatting RUV optimization results\n")
+            
+            ruv_lines <- c(
+                "Automatic RUV Optimization Results:",
+                "-----------------------------------"
+            )
          
          # Extract and format RUV optimization values
          tryCatch({
@@ -3116,18 +3131,19 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
              
              cat("WORKFLOW ARGS: Successfully formatted RUV optimization results\n")
              
-         }, error = function(e) {
-             cat(sprintf("WORKFLOW ARGS: Error formatting RUV results: %s\n", e$message))
-             ruv_lines <- c(ruv_lines,
-                 paste("• [Error formatting RUV optimization results:", e$message, "]"),
-                 ""
-             )
-         })
-         
+        }, error = function(e) {
+            cat(sprintf("WORKFLOW ARGS: Error formatting RUV results: %s\n", e$message))
+            ruv_lines <- c(ruv_lines,
+                paste("• [Error formatting RUV optimization results:", e$message, "]"),
+                ""
+            )
+        })
+        
         output_lines <- c(output_lines, ruv_lines)
-    } else {
-        cat("WORKFLOW ARGS: No RUV optimization results available\n")
-    }
+        } # End of else block for RUV applied
+   } else {
+       cat("WORKFLOW ARGS: No RUV optimization results available\n")
+   }
     
     # Add FASTA Processing Information
     if (!is.null(workflow_data) && !is.null(workflow_data$fasta_metadata)) {
