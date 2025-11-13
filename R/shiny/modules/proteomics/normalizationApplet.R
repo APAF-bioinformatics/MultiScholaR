@@ -1407,10 +1407,11 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
             # Generate composite QC figure and save to protein_qc_dir
             message("*** STEP 6B: About to call createGridQC ***")
             
-            # Conditional layout based on RUV mode
-            if (input$ruv_mode == "skip") {
-              # 2-column layout when RUV is skipped
-              message("*** STEP 6B: Creating 2-column QC composite (RUV skipped) ***")
+            # Conditional layout based on RUV mode AND whether plots exist
+            # Use 2-column layout if: (1) RUV was skipped OR (2) RUV plots failed to generate
+            if (input$ruv_mode == "skip" || is.null(norm_data$qc_plots$ruv_corrected$pca)) {
+              # 2-column layout when RUV is skipped or plots unavailable
+              message("*** STEP 6B: Creating 2-column QC composite (RUV skipped or plots unavailable) ***")
               pca_ruv_rle_correlation_merged <- createGridQC(
                 norm_data$QC_composite_figure,
                 pca_titles = c("a) Pre-normalization", "b) Normalized data (Final)"),
@@ -1465,7 +1466,7 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
         
         shiny::showNotification(
           notification_msg,
-          type = "success",
+          type = "message",
           duration = 10
         )
         
