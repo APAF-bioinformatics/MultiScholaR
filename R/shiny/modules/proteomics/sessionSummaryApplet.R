@@ -208,7 +208,7 @@ sessionSummaryServer <- function(id, project_dirs, omic_type = "proteomics", exp
         cat("SESSION SUMMARY: Successfully created study_parameters.txt at:", study_params_file, "\n")
         
         values$workflow_args_saved <- TRUE
-        showNotification("Study parameters saved successfully", type = "success")
+        showNotification("Study parameters saved successfully", type = "message")
         
         output$session_summary <- renderText({
           paste("Study parameters created for:", input$experiment_label, 
@@ -337,7 +337,7 @@ sessionSummaryServer <- function(id, project_dirs, omic_type = "proteomics", exp
           values$files_copied <- TRUE
           
           output$copy_status <- renderText("Files copied to publication directory successfully ✅")
-          showNotification("Publication files copied", type = "success")
+          showNotification("Publication files copied", type = "message")
           
           # Update session summary
           output$session_summary <- renderText({
@@ -497,7 +497,7 @@ sessionSummaryServer <- function(id, project_dirs, omic_type = "proteomics", exp
               content = function(file) file.copy(rendered_path, file)
             )
             
-            showNotification("Report generated successfully!", type = "success")
+            showNotification("Report generated successfully!", type = "message")
             
             # Update session summary
             output$session_summary <- renderText({
@@ -558,7 +558,7 @@ sessionSummaryServer <- function(id, project_dirs, omic_type = "proteomics", exp
             project_id = input$project_id
           )
           
-          showNotification("Successfully pushed to GitHub", type = "success")
+          showNotification("Successfully pushed to GitHub", type = "message")
           
           # Update session summary
           output$session_summary <- renderText({
@@ -602,7 +602,7 @@ sessionSummaryServer <- function(id, project_dirs, omic_type = "proteomics", exp
         saveRDS(session_state, session_export_path)
         
         showNotification(paste("Session state exported to:", session_export_path), 
-                        type = "success")
+                        type = "message")
         logger::log_info(paste("Session state exported to:", session_export_path))
         
       }, error = function(e) {

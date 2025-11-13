@@ -1268,7 +1268,7 @@ enrichmentAnalysisAppletServer <- function(id, workflow_data, experiment_paths, 
         
         shiny::showNotification(
           paste("Enrichment analysis completed successfully for contrast:", input$selected_contrast),
-          type = "success",
+          type = "message",
           duration = 5
         )
         

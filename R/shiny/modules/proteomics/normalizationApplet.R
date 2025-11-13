@@ -947,6 +947,9 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
           })
           
           # CHECK IF RUV SHOULD BE SKIPPED
+          message(sprintf("*** DEBUG: input$ruv_mode value = '%s' ***", input$ruv_mode))
+          message(sprintf("*** DEBUG: Checking if '%s' == 'skip': %s ***", input$ruv_mode, input$ruv_mode == "skip"))
+          
           if (input$ruv_mode == "skip") {
             message("*** RUV MODE: SKIP - Bypassing RUV-III correction ***")
             
@@ -963,6 +966,21 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
               ruv_skipped = TRUE,
               skip_reason = "User selected skip due to dataset constraints"
             )
+            
+            # ✅ CRITICAL: Store in workflow_data so session summary can find it
+            workflow_data$ruv_optimization_result <- norm_data$ruv_optimization_result
+            message("*** RUV SKIP: Stored skip result in workflow_data for session summary ***")
+            
+            # ✅ CRITICAL: Save to file to overwrite any old RUV results
+            if (!is.null(experiment_paths$source_dir)) {
+              tryCatch({
+                ruv_file <- file.path(experiment_paths$source_dir, "ruv_optimization_results.RDS")
+                saveRDS(norm_data$ruv_optimization_result, ruv_file)
+                message(sprintf("*** RUV SKIP: Saved skip result to file: %s (overwrites old results) ***", ruv_file))
+              }, error = function(e) {
+                message(sprintf("*** RUV SKIP: Warning - could not save skip result file: %s ***", e$message))
+              })
+            }
             
             message("*** RUV SKIP: Using normalized data directly for correlation filtering ***")
             
@@ -1557,18 +1575,35 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
           message("*** CORRELATION STEP 4: Saving final results ***")
           
           tryCatch({
+            # Determine if RUV was skipped for file naming
+            ruv_was_skipped <- isTRUE(norm_data$ruv_optimization_result$ruv_skipped) || 
+                              isTRUE(workflow_data$ruv_optimization_result$ruv_skipped)
+            
+            # Use conditional file names based on RUV status
+            if (ruv_was_skipped) {
+              tsv_filename <- "normalised_results_cln_with_replicates.tsv"
+              rds_filename <- "normalised_results_cln_with_replicates.RDS"
+              message("*** CORRELATION STEP 4: RUV was skipped - using 'normalised' file names ***")
+            } else {
+              tsv_filename <- "ruv_normalised_results_cln_with_replicates.tsv"
+              rds_filename <- "ruv_normalised_results_cln_with_replicates.RDS"
+              message("*** CORRELATION STEP 4: RUV was applied - using 'ruv_normalised' file names ***")
+            }
+            
             # Save TSV file
             if (!is.null(experiment_paths) && "protein_qc_dir" %in% names(experiment_paths)) {
               vroom::vroom_write(
                 final_s4_for_de@protein_quant_table,
-                file.path(experiment_paths$protein_qc_dir, "ruv_normalised_results_cln_with_replicates.tsv")
+                file.path(experiment_paths$protein_qc_dir, tsv_filename)
               )
               
               # Save RDS file
               saveRDS(
                 final_s4_for_de,
-                file.path(experiment_paths$protein_qc_dir, "ruv_normalised_results_cln_with_replicates.RDS")
+                file.path(experiment_paths$protein_qc_dir, rds_filename)
               )
+              
+              message(sprintf("*** CORRELATION STEP 4: Saved files: %s, %s ***", tsv_filename, rds_filename))
             }
           }, error = function(e) {
             message(paste("Warning: Could not save files:", e$message))
@@ -1630,7 +1665,7 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
         
         shiny::showNotification(
           "Correlation filtering completed! Ready for differential expression analysis.",
-          type = "success",
+          type = "message",
           duration = 5
         )
         
@@ -2148,7 +2183,7 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
         
         shiny::showNotification(
           sprintf("Filtered session data exported successfully!\nSaved as: %s\nSee summary file for details.", session_filename),
-          type = "success",
+          type = "message",
           duration = 10
         )
         

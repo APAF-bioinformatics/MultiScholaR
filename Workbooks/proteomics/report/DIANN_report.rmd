@@ -973,11 +973,22 @@ Main <- function() {
     stop(glue::glue("Error reading design matrix: {e$message}")) 
   })
   
-  # Correlation data (unchanged)
-  corr_path <- file.path(report_publication_tables_dir, "ruv_normalised_results.RDS")
+  # Correlation data - check for both RUV and non-RUV filenames
+  ruv_corr_path <- file.path(report_publication_tables_dir, "ruv_normalised_results.RDS")
+  norm_corr_path <- file.path(report_publication_tables_dir, "normalised_results.RDS")
+  
+  # Try RUV filename first, then fall back to normalized filename
+  corr_path <- if (file.exists(ruv_corr_path)) {
+    ruv_corr_path
+  } else if (file.exists(norm_corr_path)) {
+    norm_corr_path
+  } else {
+    ruv_corr_path  # Default to RUV path for error message
+  }
+  
   correlation_data <- if (file.exists(corr_path)) {
     tryCatch({ readRDS(corr_path) }, error = function(e) { warning(glue::glue("Error reading RDS: {e$message}")); list() })
-  } else { warning(glue::glue("File not found: {corr_path}")); list() }
+  } else { warning(glue::glue("File not found: {corr_path} (also checked: {norm_corr_path})")); list() }
   
   # Run analysis using UPDATED AnalyzeSamples with new parser
   analysis_results <- tryCatch({ 
