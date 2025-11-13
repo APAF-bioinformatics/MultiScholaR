@@ -102,8 +102,10 @@ The data is derived from the publicly available dataset published in [Mu, Klare,
 ## Attributions
 This work is a derivative of the tool <a href="https://bitbucket.org/cmri-bioinformatics/proteomeriver/src/main/" target="_blank">ProteomeRiver</a>,
 originally built for batching proteomics and phosphoproteomic analysis, which is licensed under the GNU Lesser General Public License v3.
-Significant modifications and new code have been made by APAF-bioinformatics to create this independent library.
-See LICENSE file for details.
+Significant modifications and new code have been made by APAF-bioinformatics to create this independent library. See LICENSE file for details.
+
+As we are firmly in the age of artificial intelligence, it goes without saying that AI assistance has been used **RESPONSIBLY** in the development of this project, with all appropriate checks and balances in place and adhering to industry-lead gold standards of best practice usage. This declaration has been mandated by Macquarie University ICT.
+
 
 ## Development Roadmap
 
@@ -206,3 +208,4 @@ graph TD
 
 ## License
 MultiScholaR is licensed under GNU Lesser General Public License version 3 (LGPL)
+
