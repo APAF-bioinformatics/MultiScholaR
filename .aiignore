@@ -1,0 +1,75 @@
+# --- Secrets & Configs ---
+# Block all environment files
+*.env
+**/.env
+.env.*
+
+# Block common credential and secret files
+*.pem
+*.key
+credentials.json
+
+# --- RStudio & R Project Files ---
+# Block RStudio metadata and history
+.Rproj.user/
+.Rhistory
+.RData
+.Rda
+
+# --- R Package Management ---
+# Block renv and packrat libraries
+renv/
+packrat/
+
+# --- Build Artifacts & Data ---
+# Block compiled code and package builds
+src/*.o
+src/*.so
+*.tar.gz
+
+# Block local data folder (if you have one)
+data/
+inst/extdata/
+
+# --- Local Data & Logs ---
+*.log
+*.csv
+*.rds
+
+# --- IDE / OS Files ---
+.vscode/
+.DS_Store
+
+# Directories containing raw, processed, or client data
+data/
+results/
+metadata/
+
+# Credentials and environment configuration
+*.key
+*.pem
+*.token
+*.credential*
+credentials.*
+secrets.*
+*.env*
+.envrc
+
+# Specific bioinformatics file formats that may contain sensitive data
+*.raw
+*.mzML
+*.wiff
+*.fasta
+*.fastq
+*.bam
+*.sam
+*.vcf
+
+# General project and environment files
+.git/
+.idea/
+.vscode/
+venv/
+.venv/
+__pycache__/
+
