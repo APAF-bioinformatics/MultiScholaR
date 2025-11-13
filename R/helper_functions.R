@@ -1649,10 +1649,35 @@ copyToResultsSummary <- function(omic_type,
     )
 
     if (omic_type == "proteomics") {
-        files_to_copy <- c(files_to_copy, list(
-            list(source = file.path(current_paths$feature_qc_dir, "ruv_normalised_results_cln_with_replicates.tsv"), dest = "Publication_tables", is_dir = FALSE, display_name = "RUV Normalized Results TSV", new_name = "RUV_normalised_results.tsv"),
-            list(source = file.path(current_paths$feature_qc_dir, "ruv_normalised_results_cln_with_replicates.RDS"), dest = "Publication_tables", is_dir = FALSE, display_name = "RUV Normalized Results RDS", new_name = "ruv_normalised_results.RDS")
-        ))
+        # Check for both RUV and non-RUV filenames (conditional on whether RUV was applied)
+        ruv_tsv_path <- file.path(current_paths$feature_qc_dir, "ruv_normalised_results_cln_with_replicates.tsv")
+        norm_tsv_path <- file.path(current_paths$feature_qc_dir, "normalised_results_cln_with_replicates.tsv")
+        ruv_rds_path <- file.path(current_paths$feature_qc_dir, "ruv_normalised_results_cln_with_replicates.RDS")
+        norm_rds_path <- file.path(current_paths$feature_qc_dir, "normalised_results_cln_with_replicates.RDS")
+        
+        # Determine which files exist and use appropriate naming
+        if (file.exists(ruv_tsv_path)) {
+            # RUV was applied - use RUV filenames
+            files_to_copy <- c(files_to_copy, list(
+                list(source = ruv_tsv_path, dest = "Publication_tables", is_dir = FALSE, display_name = "RUV Normalized Results TSV", new_name = "RUV_normalised_results.tsv"),
+                list(source = ruv_rds_path, dest = "Publication_tables", is_dir = FALSE, display_name = "RUV Normalized Results RDS", new_name = "ruv_normalised_results.RDS")
+            ))
+            cat("COPY: Using RUV-normalized file names (RUV was applied)\n")
+        } else if (file.exists(norm_tsv_path)) {
+            # RUV was skipped - use normalized filenames
+            files_to_copy <- c(files_to_copy, list(
+                list(source = norm_tsv_path, dest = "Publication_tables", is_dir = FALSE, display_name = "Normalized Results TSV", new_name = "normalised_results.tsv"),
+                list(source = norm_rds_path, dest = "Publication_tables", is_dir = FALSE, display_name = "Normalized Results RDS", new_name = "normalised_results.RDS")
+            ))
+            cat("COPY: Using normalized file names (RUV was skipped)\n")
+        } else {
+            # Neither exists - try RUV path anyway (will fail gracefully)
+            files_to_copy <- c(files_to_copy, list(
+                list(source = ruv_tsv_path, dest = "Publication_tables", is_dir = FALSE, display_name = "Normalized Results TSV", new_name = "normalised_results.tsv"),
+                list(source = ruv_rds_path, dest = "Publication_tables", is_dir = FALSE, display_name = "Normalized Results RDS", new_name = "normalised_results.RDS")
+            ))
+            cat("COPY: Warning - neither RUV nor normalized files found, attempting RUV paths\n")
+        }
     } # Add else if for other omic-specific files if necessary
     
     # Excel files paths
@@ -2942,8 +2967,16 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
              ruv_file <- file.path(source_dir_path, "ruv_optimization_results.RDS")
              if (file.exists(ruv_file)) {
                  tryCatch({
-                     ruv_optimization_result <- readRDS(ruv_file)
-                     cat(sprintf("WORKFLOW ARGS: Loaded RUV optimization results from file: %s\n", ruv_file))
+                     loaded_result <- readRDS(ruv_file)
+                     # Check if loaded result indicates RUV was skipped
+                     if (isTRUE(loaded_result$ruv_skipped)) {
+                         cat(sprintf("WORKFLOW ARGS: Loaded RUV skip result from file: %s\n", ruv_file))
+                         ruv_optimization_result <- loaded_result
+                     } else {
+                         # Only use file if it's NOT a skip result (backwards compatibility)
+                         ruv_optimization_result <- loaded_result
+                         cat(sprintf("WORKFLOW ARGS: Loaded RUV optimization results from file: %s\n", ruv_file))
+                     }
                  }, error = function(e) {
                      cat(sprintf("WORKFLOW ARGS: Could not load RUV file: %s\n", e$message))
                  })

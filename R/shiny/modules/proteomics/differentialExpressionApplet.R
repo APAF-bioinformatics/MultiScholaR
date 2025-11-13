@@ -979,7 +979,7 @@ differentialExpressionAppletServer <- function(id, workflow_data, experiment_pat
         
         shiny::showNotification(
           summary_msg,
-          type = "success",
+          type = "message",
           duration = 10
         )
         
@@ -1492,7 +1492,7 @@ differentialExpressionAppletServer <- function(id, workflow_data, experiment_pat
         
         shiny::showNotification(
           "Differential expression analysis completed successfully!",
-          type = "success",
+          type = "message",
           duration = 5
         )
         
