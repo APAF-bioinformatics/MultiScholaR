@@ -91,11 +91,11 @@ getReportUrl <- function(wf_type, omic) {
   
   if (omic == "proteomics") {
     # Proteomics: Use wf_type to determine report
-    if (wf_type == "DIA-NN") {
+    if (wf_type == "DIA-NN" || tolower(wf_type) == "dia") {
       return(paste0(base_url, "/DIANN_report.rmd"))
-    } else if (wf_type == "TMT - MaxQuant" || wf_type == "TMT - FragPipe") {
+    } else if (wf_type == "TMT - MaxQuant" || wf_type == "TMT - FragPipe" || tolower(wf_type) == "tmt") {
       return(paste0(base_url, "/TMT_report.rmd"))
-    } else if (wf_type == "LFQ - MaxQuant" || wf_type == "LFQ - FragPipe") {
+    } else if (wf_type == "LFQ - MaxQuant" || wf_type == "LFQ - FragPipe" || tolower(wf_type) == "lfq") {
       return(paste0(base_url, "/LFQ_report.rmd"))
     }
     warning("Proteomics report URL not found for: type: ", wf_type)

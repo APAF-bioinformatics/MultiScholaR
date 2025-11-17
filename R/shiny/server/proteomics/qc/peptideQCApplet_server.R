@@ -30,9 +30,10 @@ peptideQCAppletServer <- function(id, workflow_data, experiment_paths, omic_type
     
     log_info(paste("Peptide QC orchestrator: workflow type is", workflow_type))
     
-    # Conditional execution for LFQ/DIA workflows which require peptide processing
-    if (workflow_type %in% c("LFQ", "DIA")) {
-      log_info("Running LFQ/DIA peptide processing sub-modules.")
+    # Conditional execution for DIA workflows which require peptide processing
+    # Note: LFQ is now a protein-level workflow (like TMT) and bypasses peptide QC
+    if (workflow_type == "DIA") {
+      log_info("Running DIA peptide processing sub-modules.")
       
       # Call each of the extracted sub-modules
       qvalue_filter_server(input, output, session, workflow_data, omic_type, experiment_label)
