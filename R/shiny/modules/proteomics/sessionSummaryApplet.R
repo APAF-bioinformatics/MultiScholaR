@@ -420,6 +420,8 @@ sessionSummaryServer <- function(id, project_dirs, omic_type = "proteomics", exp
         # Determine template filename based on workflow type
         template_filename <- if (tolower(workflow_type_detected) == "tmt" || tolower(workflow_type_detected) == "tmt_pd") {
           "TMT_report.rmd"
+        } else if (tolower(workflow_type_detected) == "lfq") {
+          "LFQ_report.rmd"
         } else {
           "DIANN_report.rmd"  # Default for DIA and unknown types
         }

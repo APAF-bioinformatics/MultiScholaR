@@ -975,11 +975,45 @@ detectProteomicsFormat <- function(headers, filename, preview_lines = NULL) {
   
   # FragPipe detection
   fragpipe_score <- 0
-  fragpipe_markers <- c("protein", "peptide", "modified.peptide", "charge",
-                       "gene", "protein.description", "intensity", "spectral.count")
-  fragpipe_found <- sum(fragpipe_markers %in% headers_lower)
-  fragpipe_score <- fragpipe_found / length(fragpipe_markers)
-  if (grepl("fragpipe|msfragger", filename_lower)) fragpipe_score <- fragpipe_score + 0.3
+  
+  # Check for key markers (flexible matching)
+  has_protein_id <- any(grepl("^protein\\s+id$|^protein\\.id$|^protein_id$", headers_lower))
+  has_protein <- "protein" %in% headers_lower
+  has_gene <- "gene" %in% headers_lower
+  has_description <- any(grepl("description", headers_lower))
+  has_spectral_count <- any(grepl("spectral.*count", headers_lower))
+  
+  # Strong indicator: columns ending with "Intensity" (case-insensitive)
+  intensity_cols <- sum(grepl("intensity$", headers_lower))
+  has_intensity_cols <- intensity_cols > 0
+  
+  # Check for MaxLFQ Intensity columns specifically
+  has_maxlfq <- any(grepl("maxlfq.*intensity$", headers_lower))
+  
+  # Count basic markers found
+  basic_markers_found <- sum(c(has_protein_id, has_protein, has_gene, has_description, has_spectral_count))
+  
+  # Weighted scoring similar to TMT detection
+  # Basic markers worth 40% (8% each)
+  basic_score <- (basic_markers_found / 5) * 0.4
+  
+  # Intensity columns presence is worth 40% (strong indicator)
+  intensity_score <- if (has_intensity_cols) {
+    # Bonus if multiple intensity columns (typical of FragPipe)
+    min(0.4, 0.3 + (min(intensity_cols, 10) / 10) * 0.1)
+  } else {
+    0
+  }
+  
+  # MaxLFQ presence is worth 20% (very specific to FragPipe)
+  maxlfq_score <- if (has_maxlfq) 0.2 else 0
+  
+  fragpipe_score <- basic_score + intensity_score + maxlfq_score
+  
+  # Filename bonus (cap at 1.0)
+  if (grepl("fragpipe|msfragger", filename_lower)) {
+    fragpipe_score <- min(1.0, fragpipe_score + 0.1)
+  }
   
   # MaxQuant detection
   maxquant_score <- 0
@@ -1119,29 +1153,120 @@ importSpectronautData <- function(filepath, quantity_type = "pg") {
 #' @return List with data, data_type, and column_mapping
 #' @export
 importFragPipeData <- function(filepath, use_maxlfq = TRUE) {
-  data <- vroom::vroom(filepath, show_col_types = FALSE)
+  log_info(paste("Starting FragPipe LFQ import from:", filepath))
   
-  # Determine if this is protein or peptide level data
-  data_type <- if ("Peptide" %in% names(data)) "peptide" else "protein"
-  
-  # Find intensity columns
-  intensity_cols <- grep("Intensity", names(data), value = TRUE)
-  maxlfq_cols <- grep("MaxLFQ", names(data), value = TRUE)
-  
-  quantity_cols <- if (use_maxlfq && length(maxlfq_cols) > 0) {
-    maxlfq_cols
-  } else {
-    intensity_cols
+  # Check file exists
+  if (!file.exists(filepath)) {
+    stop("File not found: ", filepath)
   }
   
+  # Read data
+  data <- tryCatch({
+    vroom::vroom(filepath, show_col_types = FALSE)
+  }, error = function(e) {
+    stop("Failed to read file: ", e$message)
+  })
+  
+  log_info(sprintf("Read %d rows and %d columns", nrow(data), ncol(data)))
+  
+  # Find Protein ID column (case-insensitive, handle variations)
+  protein_id_candidates <- c("Protein ID", "Protein.ID", "Protein_ID", "Protein", "protein id", "protein.id", "protein_id")
+  protein_id_col <- NULL
+  
+  for (candidate in protein_id_candidates) {
+    if (candidate %in% names(data)) {
+      protein_id_col <- candidate
+      break
+    }
+  }
+  
+  # Case-insensitive search if exact match not found
+  if (is.null(protein_id_col)) {
+    names_lower <- tolower(names(data))
+    for (candidate in tolower(protein_id_candidates)) {
+      idx <- which(names_lower == candidate)
+      if (length(idx) > 0) {
+        protein_id_col <- names(data)[idx[1]]
+        break
+      }
+    }
+  }
+  
+  if (is.null(protein_id_col)) {
+    log_error(paste("Protein ID column not found. Available columns:", paste(head(names(data), 10), collapse = ", ")))
+    stop("Required 'Protein ID' column not found in FragPipe file. Available columns: ", paste(head(names(data), 10), collapse = ", "))
+  }
+  
+  log_info(sprintf("Found Protein ID column: %s", protein_id_col))
+  
+  # Find all columns ending with "Intensity" (case-insensitive)
+  all_intensity_cols <- grep("Intensity$", names(data), value = TRUE, ignore.case = TRUE)
+  
+  if (length(all_intensity_cols) == 0) {
+    log_error("No columns ending with 'Intensity' found in FragPipe file.")
+    stop("No intensity columns found. Expected columns ending with 'Intensity' (e.g., 'WLP530_1 Intensity', 'WLP530_1 MaxLFQ Intensity')")
+  }
+  
+  log_info(sprintf("Found %d columns ending with 'Intensity'", length(all_intensity_cols)))
+  
+  # Separate MaxLFQ and regular Intensity columns
+  maxlfq_cols <- grep("MaxLFQ.*Intensity$", all_intensity_cols, value = TRUE, ignore.case = TRUE)
+  regular_intensity_cols <- setdiff(all_intensity_cols, maxlfq_cols)
+  
+  # Select which intensity columns to use
+  if (use_maxlfq && length(maxlfq_cols) > 0) {
+    intensity_cols <- maxlfq_cols
+    log_info(sprintf("Using MaxLFQ Intensity columns (%d columns)", length(intensity_cols)))
+  } else {
+    intensity_cols <- regular_intensity_cols
+    log_info(sprintf("Using regular Intensity columns (%d columns)", length(intensity_cols)))
+  }
+  
+  if (length(intensity_cols) == 0) {
+    stop("No suitable intensity columns found. Check use_maxlfq parameter and file format.")
+  }
+  
+  # Extract sample names by removing " Intensity" or " MaxLFQ Intensity" suffix
+  sample_names <- gsub("\\s+(MaxLFQ\\s+)?Intensity$", "", intensity_cols, ignore.case = TRUE)
+  
+  # Select only the protein ID column and intensity columns for pivoting
+  cols_to_keep <- c(protein_id_col, intensity_cols)
+  data_subset <- data |> dplyr::select(dplyr::all_of(cols_to_keep))
+  
+  # Convert to long format
+  log_info("Converting data from wide to long format...")
+  long_data <- tryCatch({
+    data_subset |>
+      tidyr::pivot_longer(
+        cols = dplyr::all_of(intensity_cols),
+        names_to = "Run",
+        values_to = "Intensity"
+      ) |>
+      # Clean up Run column names (remove " Intensity" or " MaxLFQ Intensity" suffix)
+      dplyr::mutate(
+        Run = gsub("\\s+(MaxLFQ\\s+)?Intensity$", "", Run, ignore.case = TRUE)
+      ) |>
+      # Ensure Intensity is numeric
+      dplyr::mutate(Intensity = as.numeric(Intensity)) |>
+      # Rename protein ID column to standardized name
+      dplyr::rename(Protein.Ids = !!rlang::sym(protein_id_col))
+  }, error = function(e) {
+    log_error(paste("Error converting to long format:", e$message))
+    stop("Failed to convert data to long format: ", e$message)
+  })
+  
+  log_info(sprintf("Converted to long format: %d rows", nrow(long_data)))
+  log_info(sprintf("Unique proteins: %d, Unique samples: %d", 
+                   length(unique(long_data$Protein.Ids)),
+                   length(unique(long_data$Run))))
+  
   return(list(
-    data = data,
-    data_type = data_type,
+    data = long_data,
+    data_type = "protein",
     column_mapping = list(
-      protein_col = "Protein",
-      peptide_col = if (data_type == "peptide") "Peptide" else NULL,
-      run_col = NULL,  # FragPipe has wide format with sample columns
-      quantity_cols = quantity_cols,  # Multiple columns for wide format
+      protein_col = "Protein.Ids",
+      run_col = "Run",
+      quantity_col = "Intensity",
       qvalue_col = NULL  # FragPipe doesn't typically include q-values
     )
   ))

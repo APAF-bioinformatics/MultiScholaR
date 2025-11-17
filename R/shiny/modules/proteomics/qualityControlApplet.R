@@ -49,27 +49,28 @@ qualityControlAppletServer <- function(id, workflow_data, experiment_paths, omic
       workflow_type <- workflow_data$state_manager$workflow_type
       message(sprintf("   DEBUG66: workflow_type = %s", workflow_type))
       
-      if (workflow_type == "TMT") {
+      if (workflow_type %in% c("TMT", "LFQ")) {
         # Check if S4 object already exists from design matrix step
+        # Both TMT and LFQ are protein-level workflows that use "protein_s4_initial" state
         s4_exists <- tryCatch({
           s4_obj <- workflow_data$state_manager$getState("protein_s4_initial")
           exists <- !is.null(s4_obj)
-          message(sprintf("   DEBUG66: TMT - Checking for protein_s4_initial: exists = %s", exists))
+          message(sprintf("   DEBUG66: %s - Checking for protein_s4_initial: exists = %s", workflow_type, exists))
           if (exists) {
-            message(sprintf("   DEBUG66: TMT - S4 object class = %s", class(s4_obj)))
+            message(sprintf("   DEBUG66: %s - S4 object class = %s", workflow_type, class(s4_obj)))
           }
           exists
         }, error = function(e) {
-          message(sprintf("   DEBUG66: TMT - Error checking S4: %s", e$message))
+          message(sprintf("   DEBUG66: %s - Error checking S4: %s", workflow_type, e$message))
           FALSE
         })
         
-        message(sprintf("   DEBUG66: TMT - s4_exists final = %s", s4_exists))
+        message(sprintf("   DEBUG66: %s - s4_exists final = %s", workflow_type, s4_exists))
         
         if (s4_exists) {
           # S4 already created in design matrix step, skip to protein QC
           logger::log_info("QC UI: S4 object exists from design matrix. Skipping S4 creation UI.")
-          message("   DEBUG66: TMT - Rendering single Protein QC tab")
+          message(sprintf("   DEBUG66: %s - Rendering single Protein QC tab", workflow_type))
           shiny::tabsetPanel(
             id = ns("qc_tabs_tmt"),
             shiny::tabPanel("Protein QC", proteinQCAppletUI(ns("protein_qc"), workflow_type = workflow_type))
@@ -77,14 +78,14 @@ qualityControlAppletServer <- function(id, workflow_data, experiment_paths, omic
         } else {
           # Fallback: show S4 creation UI if somehow not created
           logger::log_info("QC UI: S4 object not found. Showing S4 creation UI.")
-          message("   DEBUG66: TMT - Rendering S4 creation + Protein QC tabs")
+          message(sprintf("   DEBUG66: %s - Rendering S4 creation + Protein QC tabs", workflow_type))
           shiny::tabsetPanel(
             id = ns("qc_tabs_tmt"),
             shiny::tabPanel("Initial Protein Processing", create_s4_from_protein_data_ui(ns("create_s4_tmt"))),
             shiny::tabPanel("Protein QC", proteinQCAppletUI(ns("protein_qc"), workflow_type = workflow_type))
           )
         }
-      } else { # LFQ and DIA
+      } else { # DIA (peptide-level workflow)
         message(sprintf("   DEBUG66: %s - Rendering Peptide + Protein QC tabs", workflow_type))
         # Define and return UI for peptide-based workflows
         shiny::tabsetPanel(
@@ -110,7 +111,7 @@ qualityControlAppletServer <- function(id, workflow_data, experiment_paths, omic
       logger::log_info(paste("Main QC Applet: Routing for workflow type:", workflow_type))
       message(sprintf("   DEBUG66: Isolated workflow_type = %s", workflow_type))
       
-      if (workflow_type %in% c("LFQ", "DIA")) {
+      if (workflow_type == "DIA") {
         message(sprintf("   DEBUG66: %s workflow - calling peptide and protein servers", workflow_type))
         # The peptide applet orchestrator will handle all peptide-level steps
         peptideQCAppletServer("peptide_qc", workflow_data, experiment_paths, omic_type, experiment_label)
@@ -120,33 +121,34 @@ qualityControlAppletServer <- function(id, workflow_data, experiment_paths, omic
         proteinQCAppletServer("protein_qc", workflow_data, experiment_paths, omic_type, experiment_label)
         message("   DEBUG66: proteinQCAppletServer called")
         
-      } else if (workflow_type == "TMT") {
-        message("   DEBUG66: TMT workflow - checking S4 existence")
+      } else if (workflow_type %in% c("TMT", "LFQ")) {
+        message(sprintf("   DEBUG66: %s workflow - checking S4 existence", workflow_type))
         # Check if S4 object already exists from design matrix step
+        # Both TMT and LFQ are protein-level workflows that use "protein_s4_initial" state
         s4_exists <- tryCatch({
           s4_obj <- workflow_data$state_manager$getState("protein_s4_initial")
           exists <- !is.null(s4_obj)
-          message(sprintf("   DEBUG66: TMT observeEvent - S4 exists = %s", exists))
+          message(sprintf("   DEBUG66: %s observeEvent - S4 exists = %s", workflow_type, exists))
           exists
         }, error = function(e) {
-          message(sprintf("   DEBUG66: TMT observeEvent - Error checking S4: %s", e$message))
+          message(sprintf("   DEBUG66: %s observeEvent - Error checking S4: %s", workflow_type, e$message))
           FALSE
         })
         
         if (s4_exists) {
           # S4 already created in design matrix step, go straight to protein QC
-          logger::log_info("TMT: S4 object exists from design matrix. Skipping S4 creation, starting protein QC.")
-          message("   DEBUG66: TMT - S4 exists, calling proteinQCAppletServer only")
+          logger::log_info(sprintf("%s: S4 object exists from design matrix. Skipping S4 creation, starting protein QC.", workflow_type))
+          message(sprintf("   DEBUG66: %s - S4 exists, calling proteinQCAppletServer only", workflow_type))
           proteinQCAppletServer("protein_qc", workflow_data, experiment_paths, omic_type, experiment_label)
-          message("   DEBUG66: TMT - proteinQCAppletServer called")
+          message(sprintf("   DEBUG66: %s - proteinQCAppletServer called", workflow_type))
         } else {
           # S4 doesn't exist (shouldn't happen in normal flow), use the creation module
-          logger::log_warn("TMT: S4 object not found. Using S4 creation module.")
-          message("   DEBUG66: TMT - S4 MISSING, calling create_s4 + protein servers")
+          logger::log_warn(sprintf("%s: S4 object not found. Using S4 creation module.", workflow_type))
+          message(sprintf("   DEBUG66: %s - S4 MISSING, calling create_s4 + protein servers", workflow_type))
           create_s4_from_protein_data_server("create_s4_tmt", workflow_data, omic_type, experiment_label)
-          message("   DEBUG66: TMT - create_s4_from_protein_data_server called")
+          message(sprintf("   DEBUG66: %s - create_s4_from_protein_data_server called", workflow_type))
           proteinQCAppletServer("protein_qc", workflow_data, experiment_paths, omic_type, experiment_label)
-          message("   DEBUG66: TMT - proteinQCAppletServer called")
+          message(sprintf("   DEBUG66: %s - proteinQCAppletServer called", workflow_type))
         }
       }
       message("=== DEBUG66: qualityControlApplet observeEvent complete ===")

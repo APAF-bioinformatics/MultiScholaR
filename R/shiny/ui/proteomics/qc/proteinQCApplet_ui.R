@@ -6,7 +6,7 @@
 #'
 #' @param id Module ID
 #' @param workflow_type Character string indicating workflow type ("TMT", "DIA", "LFQ").
-#'   If NULL or LFQ/DIA, shows IQ Rollup tab. If TMT, skips IQ Rollup tab.
+#'   If NULL or DIA, shows IQ Rollup tab. If TMT or LFQ (protein-level), skips IQ Rollup tab.
 #' @export
 #' @import shiny
 #' @import shinydashboard
@@ -16,8 +16,9 @@ proteinQCAppletUI <- function(id, workflow_type = NULL) {
   # Build tab list conditionally based on workflow type
   tab_list <- list()
   
-  # Step 1: IQ Protein Rollup (chunk 17) - ONLY for LFQ/DIA workflows
-  if (is.null(workflow_type) || workflow_type %in% c("LFQ", "DIA")) {
+  # Step 1: IQ Protein Rollup (chunk 17) - ONLY for DIA workflows (peptide-to-protein)
+  # Note: LFQ is now protein-level (like TMT), so it doesn't need rollup
+  if (is.null(workflow_type) || workflow_type == "DIA") {
     tab_list[[length(tab_list) + 1]] <- shiny::tabPanel(
       "IQ Protein Rollup",
       shiny::br(),

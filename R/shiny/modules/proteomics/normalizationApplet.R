@@ -1932,7 +1932,8 @@ normalizationAppletServer <- function(id, workflow_data, experiment_paths, omic_
           # Use smart revert pattern like QC tabs - find the actual previous state
           history <- workflow_data$state_manager$getHistory()
           # Define possible pre-normalization states in reverse chronological order
-          pre_norm_states <- c("protein_replicate_filtered", "imputed", "replicate_filtered", "sample_filtered", "protein_peptide_filtered", "intensity_filtered", "precursor_rollup", "qvalue_filtered", "raw_data_s4")
+          # Include both peptide-level (raw_data_s4) and protein-level (protein_s4_initial) initial states
+          pre_norm_states <- c("protein_replicate_filtered", "imputed", "replicate_filtered", "sample_filtered", "protein_peptide_filtered", "intensity_filtered", "precursor_rollup", "qvalue_filtered", "raw_data_s4", "protein_s4_initial")
           # Find the most recent state that actually exists
           prev_state <- intersect(rev(history), pre_norm_states)[1]
           

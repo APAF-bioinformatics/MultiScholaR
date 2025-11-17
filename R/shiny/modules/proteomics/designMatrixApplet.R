@@ -506,16 +506,19 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
           # Fallback: detect from data structure
           logger::log_warn("workflow_type not found in config.ini. Attempting to detect from data structure.")
           
-          # Check for peptide-specific columns (DIA/LFQ have these, TMT doesn't)
+          # Check for peptide-specific columns (DIA has these, TMT/LFQ don't)
           has_precursor_cols <- any(c("Precursor.Id", "Precursor.Charge", "Precursor.Quantity") %in% names(imported_data_cln))
           has_peptide_cols <- any(c("Stripped.Sequence", "Modified.Sequence") %in% names(imported_data_cln))
           
           if (has_precursor_cols && has_peptide_cols) {
-            # Peptide-level data (DIA or LFQ) - default to DIA as it's more common
+            # Peptide-level data (DIA)
             workflow_type <- "DIA"
             logger::log_info("Detected peptide-level data. Setting workflow_type to DIA.")
+          } else if (workflow_type == "LFQ" || workflow_type == "TMT") {
+            # Both LFQ and TMT are protein-level workflows - keep as-is
+            logger::log_info(sprintf("Keeping workflow_type as %s (protein-level workflow).", workflow_type))
           } else {
-            # Protein-level data (TMT)
+            # Protein-level data (TMT) - default fallback
             workflow_type <- "TMT"
             logger::log_info("Detected protein-level data. Setting workflow_type to TMT.")
           }
@@ -536,7 +539,14 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
               run_col = "Run",
               quantity_col = "Abundance"
             )
+          } else if (workflow_type == "LFQ") {
+            workflow_data$column_mapping <- list(
+              protein_col = "Protein.Ids",
+              run_col = "Run",
+              quantity_col = "Intensity"
+            )
           } else {
+            # Default to DIA structure (peptide-level)
             workflow_data$column_mapping <- list(
               protein_col = "Protein.Ids",
               run_col = "Run",
@@ -547,8 +557,8 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
         }
         
         # --- Create S4 Object and Save State (Conditional Orchestration) ---
-        if (workflow_type %in% c("DIA", "LFQ")) {
-          # For peptide workflows, the data_cln is already in the correct long format.
+        if (workflow_type == "DIA") {
+          # For peptide workflows (DIA), the data_cln is already in the correct long format.
           # Use the existing constructor for peptide-level data.
           s4_object <- PeptideQuantitativeDataDiann(
             peptide_data = workflow_data$data_cln,
@@ -558,17 +568,17 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
           state_name <- "raw_data_s4"
           description <- "Initial Peptide S4 object created after design matrix."
 
-        } else if (workflow_type == "TMT") {
+        } else if (workflow_type %in% c("TMT", "LFQ")) {
           # For protein workflows (TMT), the data_cln is long, but the S4 constructor needs wide.
           # We must reshape the data first.
           
-          logger::log_info("TMT workflow: Reshaping protein data from long to wide format for S4 creation.")
+          logger::log_info(sprintf("%s workflow: Reshaping protein data from long to wide format for S4 creation.", workflow_type))
           
           # Validate column_mapping before pivot
           if (is.null(workflow_data$column_mapping$protein_col) || 
               is.null(workflow_data$column_mapping$run_col) ||
               is.null(workflow_data$column_mapping$quantity_col)) {
-            stop("Missing required column mappings for TMT data reshape. Cannot proceed.")
+            stop(sprintf("Missing required column mappings for %s data reshape. Cannot proceed.", workflow_type))
           }
           
           # Validate columns exist in data
@@ -587,17 +597,19 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
               values_from = !!sym(workflow_data$column_mapping$quantity_col)
             )
           
-          logger::log_info(sprintf("TMT Import: Pivoted data from %d rows (long) to %d rows (wide)", 
+          logger::log_info(sprintf("%s Import: Pivoted data from %d rows (long) to %d rows (wide)", 
+                                   workflow_type,
                                    nrow(workflow_data$data_cln), 
                                    nrow(protein_quant_table_wide)))
-          logger::log_info(sprintf("TMT Import: Wide format has %d protein rows, %d sample columns",
+          logger::log_info(sprintf("%s Import: Wide format has %d protein rows, %d sample columns",
+                                   workflow_type,
                                    nrow(protein_quant_table_wide),
                                    ncol(protein_quant_table_wide) - 1))  # -1 for protein ID column
           
-          # *** CRITICAL: Apply log2 transformation to TMT abundance values ***
-          # TMT data from Proteome Discoverer is in raw abundance scale, not log2
+          # *** CRITICAL: Apply log2 transformation to protein abundance values ***
+          # TMT data from Proteome Discoverer and LFQ data from FragPipe are in raw abundance scale, not log2
           # Limma and normalization require log2-transformed data
-          logger::log_info("TMT Import: Applying log2 transformation to abundance values...")
+          logger::log_info(sprintf("%s Import: Applying log2 transformation to abundance values...", workflow_type))
           
           protein_id_col <- workflow_data$column_mapping$protein_col
           protein_quant_table_wide <- protein_quant_table_wide |>
@@ -612,7 +624,7 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
               )
             )
           
-          logger::log_info("TMT Import: Log2 transformation completed")
+          logger::log_info(sprintf("%s Import: Log2 transformation completed", workflow_type))
 
           # Use the existing constructor for protein-level data with the now wide table.
           s4_object <- ProteinQuantitativeData(
@@ -626,7 +638,7 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
             args = workflow_data$config_list
           )
           state_name <- "protein_s4_initial"
-          description <- "Initial Protein S4 object created from TMT data after design matrix."
+          description <- sprintf("Initial Protein S4 object created from %s data after design matrix.", workflow_type)
 
         } else {
           stop("Unknown workflow_type in designMatrixAppletServer: ", workflow_type)
@@ -846,8 +858,8 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
           # --- Create S4 Object and Save State (Conditional Orchestration) ---
           workflow_type <- shiny::isolate(workflow_data$state_manager$workflow_type)
           
-          if (workflow_type %in% c("DIA", "LFQ")) {
-            # For peptide workflows, the data_cln is already in the correct long format.
+          if (workflow_type == "DIA") {
+            # For peptide workflows (DIA), the data_cln is already in the correct long format.
             # Use the existing constructor for peptide-level data.
             s4_object <- PeptideQuantitativeDataDiann(
               peptide_data = workflow_data$data_cln,
@@ -857,11 +869,11 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
             state_name <- "raw_data_s4"
             description <- "Initial Peptide S4 object created after design matrix."
 
-          } else if (workflow_type == "TMT") {
-            # For protein workflows (TMT), the data_cln is long, but the S4 constructor needs wide.
+          } else if (workflow_type %in% c("TMT", "LFQ")) {
+            # For protein workflows (TMT/LFQ), the data_cln is long, but the S4 constructor needs wide.
             # We must reshape the data first.
             
-            logger::log_info("TMT workflow: Reshaping protein data from long to wide format for S4 creation.")
+            logger::log_info(sprintf("%s workflow: Reshaping protein data from long to wide format for S4 creation.", workflow_type))
             
             protein_quant_table_wide <- workflow_data$data_cln |>
               tidyr::pivot_wider(
@@ -870,10 +882,10 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
                 values_from = !!sym(workflow_data$column_mapping$quantity_col)
               )
             
-            # *** CRITICAL: Apply log2 transformation to TMT abundance values ***
-            # TMT data from Proteome Discoverer is in raw abundance scale, not log2
+            # *** CRITICAL: Apply log2 transformation to protein abundance values ***
+            # TMT data from Proteome Discoverer and LFQ data from FragPipe are in raw abundance scale, not log2
             # Limma and normalization require log2-transformed data
-            logger::log_info("TMT Save Design: Applying log2 transformation to abundance values...")
+            logger::log_info(sprintf("%s Save Design: Applying log2 transformation to abundance values...", workflow_type))
             
             protein_id_col <- workflow_data$column_mapping$protein_col
             protein_quant_table_wide <- protein_quant_table_wide |>
@@ -888,7 +900,7 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
                 )
               )
             
-            logger::log_info("TMT Save Design: Log2 transformation completed")
+            logger::log_info(sprintf("%s Save Design: Log2 transformation completed", workflow_type))
 
             # Use the existing constructor for protein-level data with the now wide table.
             s4_object <- ProteinQuantitativeData(
@@ -902,7 +914,7 @@ designMatrixAppletServer <- function(id, workflow_data, experiment_paths, volume
               args = workflow_data$config_list
             )
             state_name <- "protein_s4_initial"
-            description <- "Initial Protein S4 object created from TMT data after design matrix."
+            description <- sprintf("Initial Protein S4 object created from %s data after design matrix.", workflow_type)
 
           } else {
             stop("Unknown workflow_type in designMatrixAppletServer: ", workflow_type)
