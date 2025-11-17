@@ -169,13 +169,13 @@ proteomicsWorkflowServer <- function(id, project_dirs, omic_type, experiment_lab
         workflow_type <- shiny::isolate(workflow_data$state_manager$workflow_type)
         log_info(paste("Workflow server: Design matrix complete. Workflow type:", workflow_type))
         
-        if (workflow_type == "TMT") {
-          # For TMT, bypass QC and go straight to Normalization
-          log_info("TMT workflow detected, bypassing QC tab.")
+        if (workflow_type %in% c("TMT", "LFQ")) {
+          # For TMT and LFQ (protein-level workflows), bypass QC and go straight to Normalization
+          log_info(sprintf("%s workflow detected, bypassing QC tab.", workflow_type))
           workflow_data$tab_status$quality_control <- "complete"
           workflow_data$tab_status$normalization <- "pending"
         } else {
-          # For LFQ/DIA, proceed to QC tab as normal
+          # For DIA (peptide-level workflow), proceed to QC tab as normal
           workflow_data$tab_status$quality_control <- "pending"
         }
       }
