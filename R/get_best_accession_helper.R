@@ -912,7 +912,6 @@ updateProteinIDs <- function(protein_data, aa_seq_tbl_final) {
 #' @import tidyverse vroom magrittr knitr rlang optparse seqinr janitor tictoc configr logging
 #' @export
 #'
-#' Test RStudio GitHub integration
 cleanMaxQuantProteins <- function(
     fasta_file,
     raw_counts_file,

@@ -911,6 +911,7 @@ setMethod(f="normaliseBetweenSamples"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+#' @title Pearson Correlation for Sample Pairs
 #' @param theObject is an object of the type ProteinQuantitativeData
 #' @param tech_rep_remove_regex samples containing this string are removed from correlation analysis (e.g. if you have lots of pooled sample and want to remove them)
 #' @param correlation_group is the group where every pair of samples are compared
@@ -1036,6 +1037,7 @@ setMethod(f="getNegCtrlProtAnova"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+#'@title Get Low Coefficient of Variation Proteins
 #'@description Sort proteins by their coefficient of variation and take the top N with lowest coefficient of variation
 #'@export
 setGeneric(name="getLowCoefficientOfVariationProteins"
@@ -1341,6 +1343,7 @@ setMethod( f = "removeRowsWithMissingValuesPercent"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+#'@title Average Technical Replicates
 #'@export
 setGeneric(name="averageTechReps"
            , def=function( theObject, design_matrix_columns ) {
@@ -1348,6 +1351,7 @@ setGeneric(name="averageTechReps"
            }
            , signature=c("theObject", "design_matrix_columns" ))
 
+#'@rdname averageTechReps
 #'@export
 #'@param theObject The object to be processed
 #'@param design_matrix_columns The columns to be used in the design matrix
@@ -1449,6 +1453,7 @@ preservePeptideNaValuesHelper <- function( peptide_obj, protein_obj) {
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+#'@title Choose Best Protein Accession
 #'@export
 setGeneric(name="chooseBestProteinAccession"
            , def=function(theObject, delim=NULL, seqinr_obj=NULL, seqinr_accession_column=NULL, replace_zero_with_na = NULL, aggregation_method = NULL) {
@@ -1456,6 +1461,7 @@ setGeneric(name="chooseBestProteinAccession"
            }
            , signature=c("theObject", "delim", "seqinr_obj", "seqinr_accession_column"))
 
+#'@rdname chooseBestProteinAccession
 #'@export
 #'@param theObject The object of class ProteinQuantitativeData
 #'@param delim The delimiter used to split the protein accessions

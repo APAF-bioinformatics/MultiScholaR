@@ -52,6 +52,7 @@ Imports:
     gh,
     git2r,
     glue,
+    golem,
     gplots,
     gridExtra,
     gtools,

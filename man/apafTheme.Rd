@@ -7,5 +7,5 @@
 apafTheme()
 }
 \description{
-ProCan ggplot2 theme. Rectangle box around each plot.
+Standard ggplot2 theme for ProCan plots
 }

@@ -42,76 +42,6 @@ MultiScholaRapp <- function(launch.browser = TRUE, clean_env = TRUE, ...) {
     }
   }
   
-  # Try to find the app directory
-  app_path <- NULL
-  
-  # First, check if we're in development mode (package loaded with devtools::load_all)
-  # This checks if the package is loaded from source
-  pkg_path <- find.package("MultiScholaR", quiet = TRUE)
-  
-  if (length(pkg_path) > 0) {
-    # Check for development location (R/shiny)
-    dev_app_path <- file.path(pkg_path, "R", "shiny")
-    if (dir.exists(dev_app_path) && file.exists(file.path(dev_app_path, "app.R"))) {
-      app_path <- dev_app_path
-      message(paste("Running app from development location:", app_path))
-      
-      # Source necessary files for development
-      shiny_applets_path <- file.path(pkg_path, "R", "shiny_applets.R")
-      if (file.exists(shiny_applets_path)) {
-        source(shiny_applets_path)
-        message("Loaded shiny_applets.R")
-      }
-      
-      # Make sure other key functions are available
-      helper_functions_path <- file.path(pkg_path, "R", "helper_functions.R")
-      if (file.exists(helper_functions_path) && !exists("loadDependencies")) {
-        source(helper_functions_path)
-        message("Loaded helper_functions.R")
-      }
-      
-      file_management_path <- file.path(pkg_path, "R", "file_management.R")
-      if (file.exists(file_management_path) && !exists("setupDirectories")) {
-        source(file_management_path)
-        message("Loaded file_management.R")
-      }
-    }
-    
-    # If not found in development location, check inst/shiny (for installed package)
-    if (is.null(app_path)) {
-      inst_app_path <- system.file("shiny", package = "MultiScholaR")
-      if (dir.exists(inst_app_path) && file.exists(file.path(inst_app_path, "app.R"))) {
-        app_path <- inst_app_path
-        message(paste("Running app from installed package location:", app_path))
-      }
-    }
-  }
-  
-  # If still not found, error
-  if (is.null(app_path) || !dir.exists(app_path)) {
-    stop("Could not find the MultiScholaR Shiny app. ",
-         "Make sure the package is properly installed or you're in the package directory.")
-  }
-  
-  # Ensure key functions are available in the global environment for the app
-  if (exists("loadDependencies", mode = "function")) {
-    assign("loadDependencies", loadDependencies, envir = .GlobalEnv)
-  } else {
-    warning("loadDependencies function not found")
-  }
-  
-  if (exists("setupDirectories", mode = "function")) {
-    assign("setupDirectories", setupDirectories, envir = .GlobalEnv)
-  } else {
-    warning("setupDirectories function not found")
-  }
-  
-  if (exists("RunApplet", mode = "function")) {
-    assign("RunApplet", RunApplet, envir = .GlobalEnv)
-  } else {
-    warning("RunApplet function not found")
-  }
-  
   # Load dependencies
   if (exists("loadDependencies", mode = "function")) {
     message("Loading dependencies...")
@@ -120,6 +50,8 @@ MultiScholaRapp <- function(launch.browser = TRUE, clean_env = TRUE, ...) {
     }, error = function(e) {
       warning(paste("Some dependencies may not have loaded properly:", e$message))
     })
+  } else {
+    warning("loadDependencies function not found")
   }
   
   # Launch the app
@@ -127,8 +59,8 @@ MultiScholaRapp <- function(launch.browser = TRUE, clean_env = TRUE, ...) {
   
   # Use a separate R process if clean_env is TRUE to avoid all conflicts
   if (clean_env) {
-    shiny::runApp(app_path, launch.browser = launch.browser, ...)
+    shiny::runApp(run_app(), launch.browser = launch.browser, ...)
   } else {
-    shiny::runApp(app_path, launch.browser = launch.browser, ...)
+    shiny::runApp(run_app(), launch.browser = launch.browser, ...)
   }
-} 
+}
