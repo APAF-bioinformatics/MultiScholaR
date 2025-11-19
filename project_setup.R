@@ -49,20 +49,21 @@ if (!is.character(my_project_name) || nchar(my_project_name) == 0) {
 
 # Determine workflow file URL based on omic type, workflow type, and user experience
 getWorkflowUrl <- function(wf_type, usr_exp, omic) {
-  base_url <- paste0("https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/main/Workbooks/", omic)
-  subfolder <- ifelse(usr_exp == "beginner", "starter", "standard")
-
+  # Updated to point to inst/workbooks in main branch
+  base_url <- paste0("https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/main/inst/workbooks/", omic)
+  
   if (omic == "proteomics") {
     # Proteomics-specific logic
     if (wf_type == "DIA-NN") {
       # Use specific filenames for DIA-NN based on experience
       filename <- ifelse(usr_exp == "beginner", "DIA_workflow_starter.rmd", "DIA_workflow_experienced.rmd")
-      return(paste0(base_url, "/", subfolder, "/", filename))
+      # Note: Removed subfolder structure as files are flat in inst/workbooks/proteomics
+      return(paste0(base_url, "/", filename))
     } else if (wf_type == "TMT - MaxQuant") {
       # Assuming TMT-MQ only has standard/experienced version for now
       if (usr_exp == "experienced") {
          # Note: TMT MQ workflow file name includes version 0.1
-        return(paste0(base_url, "/standard/TMT_MQ_workflow0.1.rmd")) 
+        return(paste0(base_url, "/TMT_MQ_workflow0.1.rmd")) 
       } else {
          warning("Beginner TMT-MQ workflow not currently available.")
          return(NULL) # Or point to a default/starter if one exists
@@ -75,19 +76,23 @@ getWorkflowUrl <- function(wf_type, usr_exp, omic) {
 
   } else {
     # General Omics: Construct filename and path using omic type and user experience
+    # Assuming subfolders might still exist for other omics? If flat, remove subfolder
+    subfolder <- ifelse(usr_exp == "beginner", "starter", "standard")
     experience_suffix <- ifelse(usr_exp == "beginner", "starter", "experienced")
     workflow_filename <- paste0(omic, "_workflow_", experience_suffix, ".rmd")
-    workflow_path <- paste0(base_url, "/", subfolder, "/", workflow_filename)
-    
-    # Optional: Add a check here to see if the constructed URL is valid before returning?
-    # For now, we rely on the download step to report errors.
-    return(workflow_path)
+    # Updated to check if subfolder is needed or if flat structure applies generally
+    # For now, assuming flat structure for everything in inst/workbooks if that's the new standard
+    # But strictly following proteomics update for now. 
+    # If other omics are also flat in inst/workbooks, remove subfolder.
+    # Assuming flat for consistency with proteomics based on 'inst/workbooks' query
+    return(paste0(base_url, "/", workflow_filename))
   }
 }
 
 # Get report template URL based on omic type and workflow type
 getReportUrl <- function(wf_type, omic) {
-  base_url <- paste0("https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/main/Workbooks/", omic, "/report")
+  # Updated to point to inst/reports in main branch
+  base_url <- paste0("https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/main/inst/reports/", omic)
   
   if (omic == "proteomics") {
     # Proteomics: Use wf_type to determine report
@@ -174,7 +179,8 @@ setupOmicsProject <- function(root_dir = NULL, overwrite = FALSE, omic_types, wo
   downloaded_files <- list()
   
   # --- Download central config.ini file --- 
-  config_url <- "https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/main/Workbooks/config.ini"
+  # Updated to point to inst/config/config.ini in main branch
+  config_url <- "https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/main/inst/config/config.ini"
   config_dest <- file.path(root_dir, "config.ini")
   message("\nAttempting to download central config.ini...")
   if (!overwrite && file.exists(config_dest)) {

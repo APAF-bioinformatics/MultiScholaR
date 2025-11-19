@@ -21,5 +21,5 @@ getProteinsHeatMap(
 )
 }
 \description{
-get protein intensity heatmap
+Generates a heatmap of protein intensities
 }

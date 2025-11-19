@@ -112,6 +112,7 @@ plotPeptidesProteinsCountsPerSampleHelper <- function( input_table
 }
 
 
+#' @title Filter Peptides by Q-Value and Proteotypic Status
 #' @description Keep spectrum-peptide matches that is within q-value threshold and are proteotypic
 #' @export
 srlQvalueProteotypicPeptideCleanHelper <- function(input_table
@@ -177,6 +178,7 @@ srlQvalueProteotypicPeptideCleanHelper <- function(input_table
 
 }
 
+#' @title Rollup Precursors to Peptides
 #' @description  Peptides of with charges and modifications are rolled up (summed) together
 #' @export
 rollUpPrecursorToPeptideHelper <- function( input_table
@@ -226,6 +228,7 @@ rollUpPrecursorToPeptideHelper <- function( input_table
 }
 
 #' @export
+#' @title Filter Peptides by Intensity and Proportion
 #' @description Remove peptide based on the intensity threshold and the proportion of samples below the threshold
 peptideIntensityFilteringHelper <- function(input_table
                                       , min_peptide_intensity_threshold = 15
@@ -307,6 +310,7 @@ peptideIntensityFilteringHelper <- function(input_table
 
 
 
+#' @title Remove Peptides with Missing Values
 #'@param input_table An input table with a column containing the row ID and the rest of the columns representing abundance values for each sample.
 #'@param cols A tidyselect command to select the columns. This includes the functions starts_with(), ends_with(), contains(), matches(), and num_range()
 #'@param design_matrix A data frame with a column containing the sample ID (as per the sample_id param) and the experimental group (as per the group param). Each row as the sample ID as row name in the data frame.
@@ -381,6 +385,7 @@ removePeptidesWithMissingValuesPercentHelper <- function(input_table
 }
 
 #' @export
+#' @title Filter Proteins by Minimum Number of Peptides
 #' @description Keep the proteins only if they have two or more peptides.
 #' @param input_table Peptide quantities table in long format
 #' @param num_peptides_per_protein_thresh Minimum number of peptides per protein
@@ -432,6 +437,7 @@ filterMinNumPeptidesPerProteinHelper <- function( input_table
 
 
 #' @export
+#' @title Filter Samples by Minimum Number of Peptides
 #' @description Remove sample if it has less than a certain number of peptides identified
 #' @param List of samples to keep regardless of how many peptides it has because it is am important sample
 filterMinNumPeptidesPerSampleHelper <- function ( input_table
@@ -473,6 +479,7 @@ filterMinNumPeptidesPerSampleHelper <- function ( input_table
 #--------------------------------------------------------------------------------------------------------------------------
 
 #' @export
+#' @title Log2 Transformation with Pseudo-count
 #' @description Log 2 transformation with pseudo count
 log2Transformation <- function(input_matrix) {
 
@@ -486,6 +493,7 @@ log2Transformation <- function(input_matrix) {
 
 #--------------------------------------------------------------------------------------------------------------------------
 
+#' @title Get Pairs of Samples for Comparison
 #'@param input_table A table with two columns, the Run ID column and the technical replicate group column
 #'@param run_id_column A string representing the name of the column with the Run ID (or sample ID)
 #'@param replicate_group_column A string representing the name of the column with the technical replicate group
@@ -507,6 +515,7 @@ getPairsOfSamplesTable <- function ( input_table
 
 
 
+#' @title Calculate Pearson Correlation
 #'@description Calculate the Pearson correlation of the abundances of peptides between two samples X and Y.
 #'@param ms_filename_x A string representing the sample file name X (for a pair of sample in the same technical replicate group) for correlation score calculation.
 #'@param ms_filename_y A string representing the sample file name Y (for a pair of sample in the same technical replicate group) for correlation score calculation.
@@ -698,6 +707,7 @@ calulatePearsonCorrelationForSamplePairsHelper <- function( samples_id_tbl
 }
 
 
+#' @title Filter Samples by Peptide Correlation Threshold
 #'@description Remove samples which is correlated with any technical replicate samples
 #'@param pearson_correlation_per_pair A data frame with the following columns: 1. ID of technical replicate group, 2. sample file name X, 3. sample file name Y, 4. Pearson correlation of the abundances of peptides between sample X and Y.
 #'@param peptide_keep_samples_with_min_num_peptides A data frame with the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalised peptide abundances
@@ -761,6 +771,7 @@ findSamplesPairBelowPeptideCorrelationThreshold <- function(pearson_correlation_
 #---------------------------------------------------------------------------------------
 
 
+#' @title Filter Samples by Protein Correlation
 #'@description Remove samples which is correlated with any technical replicate samples
 #'@param protein_intensity_table A data frame with the following columns: 1. ID of technical replicate group, 2. sample file name X, 3. sample file name Y, 4. Pearson correlation of the abundances of peptides between sample X and Y.
 #'@param peptide_keep_samples_with_min_num_peptides A data frame with the proteins as rows and samples ID as columns.
@@ -810,6 +821,7 @@ filterSamplesByProteinCorrelationThresholdHelper <- function(pearson_correlation
 }
 
 #---------------------------------------------------------------------------------------
+#' @title Remove Peptides with Single Replicate
 #' @description Remove peptides that only have data for one technical replicate for all sample.
 #' This can be repurposed for removing peptides that only have one biological replicates for all experimental groups.
 #' This function can be repurposed for filtering on proteins as well (we just have to create a dummy variable for peptide_sequence_column)
@@ -857,6 +869,7 @@ removePeptidesWithOnlyOneReplicateHelper <- function(input_table
 }
 
 #---------------------------------------------------------------------------------------
+#' @title Remove Proteins with Single Replicate
 #' @description Remove proteins that only have data for one technical replicate for all sample.
 #' This can be repurposed for removing proteins that only have one biological replicates for all experimental groups.
 #' @export
@@ -1219,8 +1232,9 @@ plotRleQc <- function( input_table
 }
 
 #------------------------------------------------------------------------------------------------
+#' @export
+#' @title Scale, Center and Fill Missing Values
 #'@param input_matrix Samples are columns, rows are proteins or peptides
-#'@export
 scaleCenterAndFillMissing <- function( input_matrix) {
 
   input_matrix_scaled <- scale(input_matrix, center = TRUE, scale = TRUE)
@@ -1623,6 +1637,7 @@ calcHtSize = function(ht, unit = "inch") {
 
 #------------------------------------------------------------------------------------------------
 
+#' @title Pivot Peptide Matrix Long
 #' @description
 #'  Pivot peptide intensity matrix into long format table.
 #' @export
@@ -1653,6 +1668,7 @@ peptidesIntensityMatrixPivotLonger <- function( input_matrix
 
 #------------------------------------------------------------------------------------------------
 
+#' @title Pivot Protein Matrix Long
 #' @description
 #' Pivot protein intensity matrix into long format
 #' @export
@@ -1674,6 +1690,7 @@ proteinIntensityMatrixPivotLonger <- function( input_matrix
 
 #------------------------------------------------------------------------------------------------
 
+#' @title Remove Proteins with Single Replicate
 #' @description
 #' Remove proteins that have been identified in only one replicate across all patients
 #' (e.g. identified no more than one relpicate in any patient)
@@ -1844,9 +1861,10 @@ proteinMissingValueImputation <- function( input_table
 
 #------------------------------------------------------------------------------------------------
 
+#' @title Average Replicate Protein Intensity
 #' @description
 #' Protein average values from replicate samples
-#' #'@export
+#' @export
 avgReplicateProteinIntensity <- function( input_table
                                           , metadata_table
                                           , protein_id_column = protein_id_column
@@ -2001,8 +2019,8 @@ cleanDesignMatrixCleanCategoriesMap <- function( input_table, column ) {
 
 #------------------------------------------------------------------------------------------------
 
-#' @description
 #' @title get protein intensity heatmap
+#' @description Generates a heatmap of protein intensities
 #'@export
 getProteinsHeatMap <- function( protein_matrix
                                 , metadata_tbl
@@ -2200,8 +2218,8 @@ calculateMissingValuesPerProteinFishersTest <- function( contrasts_table, missin
 #------------------------------------------------------------------------------------------------
 
 
-#' @description
 #' @title ProCan ggplot2 theme. Rectangle box around each plot.
+#' @description Standard ggplot2 theme for ProCan plots
 #' @export
 apafTheme <- function() {
   theme(

@@ -859,7 +859,7 @@ loadDependencies <- function(verbose = TRUE) {
         "htmltools", "rstudioapi", "flextable", "viridis", "here",
         "git2r", "fs", "logger",
         "configr", "webshot2", "shiny", "shinyjs", "shinyWidgets",
-        "shinydashboard", "shinythemes", "shinycssloaders",
+        "shinydashboard", "shinythemes", "shinycssloaders", "golem",
         # Added from Suggests:
         "testthat", "ggplot2", "ggpubr", "svglite",
         "ggraph", "reticulate", "shinyFiles", "arrow"
