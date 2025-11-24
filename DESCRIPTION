@@ -42,6 +42,7 @@ Config/testthat/edition: 3
 Imports: 
     beepr,
     configr,
+    conflicted,
     devtools,
     DT,
     dplyr,

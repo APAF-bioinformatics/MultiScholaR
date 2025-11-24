@@ -278,7 +278,7 @@ createMetaboliteAssayData <- function(
 #' @export
 setMethod(f = "plotPca",
           signature = c("MetaboliteAssayData", "ANY", "ANY", "ANY", "ANY", "ANY"),
-          definition = function(theObject, grouping_variable, shape_variable = NULL, label_column, title, font_size = 8) {
+          definition = function(theObject, grouping_variable, shape_variable = NULL, label_column, title, font_size = 8, cv_percentile = 0.90) {
             # --- Input Validation ---
             if (!is.character(grouping_variable) || length(grouping_variable) != 1) {
               stop("`grouping_variable` must be a single character string.")
@@ -394,7 +394,8 @@ setMethod(f = "plotPca",
                         shape_variable = shape_variable,
                         label_column = label_column,
                         title = assay_title,
-                        geom.text.size = font_size
+                        geom.text.size = font_size,
+                        cv_percentile = cv_percentile
                     )
                 }, error = function(e) {
                     warning(sprintf("Assay '%s': Error during PCA plotting: %s. Skipping.", assay_name, e$message))

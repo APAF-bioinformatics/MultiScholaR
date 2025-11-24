@@ -172,15 +172,17 @@ chooseBestPhosphositeAccession <- function(input_tbl, acc_detail_tab, accessions
     dplyr::select({{group_id}}, one_of(c( "uniprot_acc", "gene_name", "cleaned_acc",
                                           "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"  ))) %>%
     distinct %>%
-    arrange( {{group_id}}, protein_evidence, status, is_isoform, desc(seq_length), isoform_num )
+    mutate(annotation_score = if_else(is.na(annotation_score), 0, annotation_score)) %>%
+    arrange( {{group_id}}, desc(annotation_score), protein_evidence, status, is_isoform, desc(seq_length), isoform_num )
 
   # print( colnames(head(resolve_acc_helper)) )
 
 
   score_isoforms <- resolve_acc_helper %>%
     mutate( gene_name = ifelse( is.na(gene_name) | gene_name == "", "NA", gene_name)) %>%
+    mutate(annotation_score = if_else(is.na(annotation_score), 0, annotation_score)) %>%
     group_by( {{group_id}},  gene_name ) %>%
-    arrange( {{group_id}},  protein_evidence,
+    arrange( {{group_id}},  desc(annotation_score), protein_evidence,
              status, is_isoform, desc(seq_length), isoform_num, cleaned_acc )  %>%
     mutate(ranking = row_number()) %>%
     ungroup
@@ -315,7 +317,7 @@ chooseBestProteinAccessionHelper <- function(input_tbl
   # Now select and arrange using the complete set of columns
   resolve_acc_helper <- resolve_acc_joined |>
     dplyr::select( { { group_id } }, one_of(c(row_id_column, "gene_name", "cleaned_acc",
-                                              "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"))) |>
+                                              "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length", "annotation_score"))) |>
     distinct() |>
     arrange( { { group_id } }, protein_evidence, status, is_isoform, desc(seq_length), isoform_num)
   
@@ -325,8 +327,9 @@ chooseBestProteinAccessionHelper <- function(input_tbl
   cat(">>> HELPER STEP 4: SCORING AND RANKING ISOFORMS <<<\n")
   score_isoforms <- resolve_acc_helper |>
     mutate(gene_name = ifelse(is.na(gene_name) | gene_name == "", "NA", gene_name)) |>
+    mutate(annotation_score = if_else(is.na(annotation_score), 0, annotation_score)) |>
     group_by({ { group_id } }, gene_name) |>
-    arrange( { { group_id } }, protein_evidence,
+    arrange( { { group_id } }, desc(annotation_score), protein_evidence,
              status, is_isoform, desc(seq_length), isoform_num, cleaned_acc) |>
     mutate( ranking = row_number()) |>
     ungroup()
@@ -341,13 +344,14 @@ chooseBestProteinAccessionHelper <- function(input_tbl
     distinct( { { group_id } }, gene_name, ranking) |>
     dplyr::filter(ranking == 1) |>
     left_join(score_isoforms |>
-                dplyr::select({ { group_id } }, ranking, gene_name, !!sym(row_id_column), protein_evidence),
+                dplyr::select({ { group_id } }, ranking, gene_name, !!sym(row_id_column), protein_evidence, annotation_score),
               by = join_by( {{ group_id }} == {{ group_id }}
                             , ranking == ranking
                             , gene_name == gene_name)) |>
     dplyr::select(-ranking) |>
     group_by({ { group_id } }) |>
-    arrange( {{group_id}}, protein_evidence) |>
+    mutate(annotation_score = if_else(is.na(annotation_score), 0, annotation_score)) |>
+    arrange( {{group_id}}, desc(annotation_score), protein_evidence) |>
     summarise(num_gene_names = n(),
               gene_names = paste(gene_name, collapse = delim),
               !!sym(row_id_column) := paste(!!sym(row_id_column), collapse = delim)) |>
@@ -455,7 +459,7 @@ rankProteinAccessionHelper <- function(input_tbl
   # Now select and arrange using the complete set of columns
   resolve_acc_helper <- resolve_acc_joined |>
     dplyr::select( { { group_id } }, one_of(c(row_id_column, "gene_name", "cleaned_acc",
-                                              "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"))) |>
+                                              "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length", "annotation_score"))) |>
     distinct() |>
     arrange( { { group_id } }, protein_evidence, status, is_isoform, desc(seq_length), isoform_num)
   
@@ -468,8 +472,9 @@ rankProteinAccessionHelper <- function(input_tbl
   cat(">>> RANK HELPER STEP 3: SCORING AND RANKING <<<\n")
   score_isoforms <- resolve_acc_helper |>
     mutate(gene_name = ifelse(is.na(gene_name) | gene_name == "", "NA", gene_name)) |>
+    mutate(annotation_score = if_else(is.na(annotation_score), 0, annotation_score)) |>
     group_by({ { group_id } }, gene_name) |>
-    arrange( { { group_id } }, protein_evidence,
+    arrange( { { group_id } }, desc(annotation_score), protein_evidence,
              status, is_isoform, desc(seq_length), isoform_num, cleaned_acc) |>
     mutate( ranking = row_number()) |>
     ungroup()
@@ -483,7 +488,7 @@ rankProteinAccessionHelper <- function(input_tbl
   group_gene_names_and_uniprot_accs <- score_isoforms |>
     distinct( { { group_id } }, gene_name, ranking) |>
     left_join(score_isoforms |>
-                dplyr::select({ { group_id } }, ranking, gene_name, !!sym(row_id_column)),
+                dplyr::select({ { group_id } }, ranking, gene_name, !!sym(row_id_column), annotation_score),
               by = join_by( {{ group_id }} == {{ group_id }}
                             , ranking == ranking
                             , gene_name == gene_name)) |>
@@ -574,7 +579,8 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uni
           protein_evidence = protein_evidence,
           status = status,
           is_isoform = is_isoform,
-          isoform_num = isoform_num
+          isoform_num = isoform_num,
+          annotation_score = NA_real_
         )
       }
 
@@ -613,7 +619,8 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uni
       protein_id = locus_tag,
       protein = protein,
       ncbi_refseq = ncbi_refseq,
-      attributes = attributes
+      attributes = attributes,
+      annotation_score = NA_real_
     )
   }
 

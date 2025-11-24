@@ -1,5 +1,7 @@
 
 
+
+
 ## Create S4 class for protomics protein level abundance data
 #'@exportClass ProteinQuantitativeData
 ProteinQuantitativeData <- setClass("ProteinQuantitativeData"
@@ -388,7 +390,7 @@ savePlotRleList <- function( input_list, prefix = "RLE", suffix = c("png", "pdf"
 #'@export
 setMethod(f="plotPca"
           , signature="ProteinQuantitativeData"
-          , definition=function( theObject, grouping_variable, shape_variable = NULL, label_column, title, font_size=8) {
+          , definition=function( theObject, grouping_variable, shape_variable = NULL, label_column, title, font_size=8, cv_percentile = 0.90) {
             # Defensive checks
             if (!is.character(grouping_variable) || length(grouping_variable) != 1) {
               stop("grouping_variable must be a single character string")
@@ -439,7 +441,8 @@ setMethod(f="plotPca"
                                            shape_variable = shape_variable,
                                            label_column = label_column,
                                            title = title,
-                                           geom.text.size = font_size)
+                                           geom.text.size = font_size,
+                                           cv_percentile = cv_percentile)
               return(pca_plot)
             }, error = function(e) {
               stop(sprintf("Error in plotPcaHelper: %s", e$message))
@@ -452,7 +455,7 @@ setMethod(f="plotPca"
 #'@export
 setMethod(f="plotPcaList"
           , signature="ProteinQuantitativeData"
-          , definition=function( theObject, grouping_variables_list, label_column, title, font_size=8) {
+          , definition=function( theObject, grouping_variables_list, label_column, title, font_size=8, cv_percentile = 0.90) {
             protein_quant_table <- theObject@protein_quant_table
             protein_id_column <- theObject@protein_id_column
             design_matrix <- theObject@design_matrix
@@ -475,7 +478,8 @@ setMethod(f="plotPcaList"
                                                  , grouping_variables_list = grouping_variables_list
                                                  , label_column =  label_column
                                                  , title = title
-                                                 , geom.text.size = font_size )
+                                                 , geom.text.size = font_size
+                                                 , cv_percentile = cv_percentile )
 
             return( pca_plots_list)
           })
@@ -616,7 +620,21 @@ setClass("GridPlotData",
            density_titles = "list",
            rle_titles = "list",
            pearson_titles = "list",
-           cancor_titles = "list"
+           cancor_titles = "list",
+           limpa_plots = "list"
+         ),
+         prototype = list(
+           pca_plots = list(),
+           density_plots = list(),
+           rle_plots = list(),
+           pearson_plots = list(),
+           cancor_plots = list(),
+           pca_titles = list(),
+           density_titles = list(),
+           rle_titles = list(),
+           pearson_titles = list(),
+           cancor_titles = list(),
+           limpa_plots = list()
          ))
 
 #' @export
@@ -638,7 +656,8 @@ setMethod("InitialiseGrid",
                 density_titles = list(),
                 rle_titles = list(),
                 pearson_titles = list(),
-                cancor_titles = list())
+                cancor_titles = list(),
+                limpa_plots = list())
           })
 
 
@@ -647,198 +666,188 @@ setMethod("InitialiseGrid",
 
 #' @export
 setGeneric(name = "createGridQC",
-           def = function(theObject, pca_titles = NULL, density_titles = NULL, rle_titles = NULL, pearson_titles = NULL, cancor_titles = NULL, ncol = 3, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
+           def = function(theObject, pca_titles = NULL, density_titles = NULL, rle_titles = NULL, pearson_titles = NULL, cancor_titles = NULL, ncol = 3, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged", ...) {
              standardGeneric("createGridQC")
            },
            signature = c("theObject"))
 
 #' @export
+#' @param workflow_name A character string specifying a predefined workflow layout. 
+#'   Currently, the only supported value is "DIA_limpa". If `NULL` (the default), 
+#'   the function uses a general-purpose layout. When "DIA_limpa" is specified, 
+#'   it arranges the plots with specific column titles ('log2', 'Cyclic Loess', 
+#'   'RUV-III-C', 'Protein_filtered') and assigns sequential capital letters (A, B, C, ...)
+#'   to individual plots for publication-style figures. The Cancor plot gets a unique title
 setMethod(f = "createGridQC",
           signature = "GridPlotData",
-          definition = function(theObject, pca_titles = NULL, density_titles = NULL, rle_titles = NULL, pearson_titles = NULL, cancor_titles = NULL, ncol = 3, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
+          definition = function(theObject, pca_titles = NULL, density_titles = NULL, rle_titles = NULL, pearson_titles = NULL, cancor_titles = NULL, ncol = NULL, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged", workflow_name = NULL) {
             
-            # Use stored titles if not provided as parameters
-            pca_titles <- if(is.null(pca_titles)) theObject@pca_titles else pca_titles
-            density_titles <- if(is.null(density_titles)) theObject@density_titles else density_titles
-            rle_titles <- if(is.null(rle_titles)) theObject@rle_titles else rle_titles
-            pearson_titles <- if(is.null(pearson_titles)) theObject@pearson_titles else pearson_titles
-            cancor_titles <- if(is.null(cancor_titles)) theObject@cancor_titles else cancor_titles
-            
-            createLabelPlot <- function(title) {
-              # Option 1: Use xlim to expand the plot area and position text at left edge
+            # --- Helper Functions ---
+            createLabelPlot <- function(title, size = 5, fontface = "bold") {
               ggplot() + 
-                annotate("text", x = 0, y = 0.5, label = title, size = 5, hjust = 0) +
-                xlim(0, 1) +  # Explicitly set the x limits
-                theme_void() +
-                theme(
-                  plot.margin = margin(5, 5, 5, 5),
-                  panel.background = element_blank()
-                )
+                annotate("text", x = 0.5, y = 0.5, label = title, size = size, hjust = 0.5, fontface = fontface) +
+                theme_void()
             }
             
-            # Create basic plots without titles
-            createPcaPlot <- function(plot) {
-              plot +
-                xlim(-40, 45) + ylim(-30, 25) +
-                theme(text = element_text(size = 15),
-                      panel.grid.major = element_blank(),
-                      panel.grid.minor = element_blank(),
-                      panel.background = element_blank())
+            # Base styling for most plots
+            style_plot <- function(plot) {
+              if (is.null(plot)) return(NULL)
+              plot + theme(text = element_text(size = 15),
+                           panel.grid.major = element_blank(),
+                           panel.grid.minor = element_blank(),
+                           panel.background = element_blank())
             }
             
-            createDensityPlot <- function(plot) {
-              # For all plots, just apply the theme without adding title
-              if (inherits(plot, "patchwork")) {
-                plot & 
-                  theme(
-                    panel.grid.major = element_blank(),
-                    panel.grid.minor = element_blank(),
-                    panel.background = element_blank(),
-                    text = element_text(size = 15)
-                  )
-              } else {
-                plot +
-                  theme(text = element_text(size = 15),
-                        panel.grid.major = element_blank(),
-                        panel.grid.minor = element_blank(),
-                        panel.background = element_blank())
-              }
+            # Special styling for RLE plots
+            style_rle_plot <- function(plot) {
+                if (is.null(plot)) return(NULL)
+                plot + theme(text = element_text(size = 15),
+                             axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
+                             panel.grid.major = element_blank(),
+                             panel.grid.minor = element_blank(),
+                             panel.background = element_blank())
             }
             
-            createRlePlot <- function(plot) {
-              plot +
-                theme(text = element_text(size = 15),
-                      axis.text.x = element_blank(),
-                      axis.ticks.x = element_blank())
+            get_legend <- function(plot) {
+              if (is.null(plot)) return(NULL)
+              tryCatch({
+                g <- ggplot_gtable(ggplot_build(plot))
+                leg <- which(sapply(g$grobs, function(x) x$name) == "guide-box")
+                if (length(leg) > 0) return(g$grobs[[leg]])
+                return(NULL)
+              }, error = function(e) { NULL })
             }
+
+            # --- 1. Process and Style all Plots ---
+            plots <- list(
+              pca = purrr::compact(lapply(theObject@pca_plots, style_plot)),
+              density = purrr::compact(lapply(theObject@density_plots, style_plot)),
+              rle = purrr::compact(lapply(theObject@rle_plots, style_rle_plot)),
+              pearson = purrr::compact(lapply(theObject@pearson_plots, style_plot)),
+              cancor = purrr::compact(lapply(theObject@cancor_plots, style_plot))
+            )
             
-            createPearsonPlot <- function(plot) {
-              plot +
-                theme(text = element_text(size = 15))
-            }
+            # --- 2. Legend Management ---
+            master_legend <- get_legend(plots$pca[[1]])
+            if (is.null(master_legend)) master_legend <- get_legend(plots$rle[[1]])
             
-            createCancorPlot <- function(plot) {
-              plot +
-                theme(text = element_text(size = 15),
-                      panel.grid.major = element_blank(),
-                      panel.grid.minor = element_blank(),
-                      panel.background = element_blank())
-            }
-            
-            # Create plots without titles - FIXED ORDER
-            # Define the correct order: before_cyclic_loess, before_ruvIIIc, after_ruvIIIc
-            plot_order <- c("pca_plot_before_cyclic_loess_group", "pca_plot_before_ruvIIIc_group", "pca_plot_after_ruvIIIc_group")
-            density_order <- c("density_plot_before_cyclic_loess_group", "density_plot_before_ruvIIIc_group", "density_plot_after_ruvIIIc_group")
-            rle_order <- c("rle_plot_before_cyclic_loess_group", "rle_plot_before_ruvIIIc_group", "rle_plot_after_ruvIIIc_group")
-            pearson_order <- c("pearson_correlation_pair_before_cyclic_loess", "pearson_correlation_pair_before_ruvIIIc", "pearson_correlation_pair_after_ruvIIIc_group")
-            cancor_order <- c("cancor_plot_before_cyclic_loess", "cancor_plot_before_ruvIIIc", "cancor_plot_after_ruvIIIc")
-            
-            # Extract plots in the correct order using lapply
-            created_pca_plots <- lapply(plot_order, function(name) {
-              if (!is.null(theObject@pca_plots[[name]])) createPcaPlot(theObject@pca_plots[[name]]) else NULL
+            # Remove legend from ALL plots that will go into the main panel
+            plots_no_legend <- lapply(plots, function(plot_list) {
+              lapply(plot_list, function(p) if (!is.null(p)) p + theme(legend.position = "none") else NULL)
             })
-            created_pca_plots <- created_pca_plots[!sapply(created_pca_plots, is.null)]
             
-            created_density_plots <- lapply(density_order, function(name) {
-              if (!is.null(theObject@density_plots[[name]])) createDensityPlot(theObject@density_plots[[name]]) else NULL
-            })
-            created_density_plots <- created_density_plots[!sapply(created_density_plots, is.null)]
+            # --- 3. Workflow-Specific Formatting ---
+            plot_letter_counter <- 1
+            top_title_row <- NULL
             
-            created_rle_plots <- lapply(rle_order, function(name) {
-              if (!is.null(theObject@rle_plots[[name]])) createRlePlot(theObject@rle_plots[[name]]) else NULL
-            })
-            created_rle_plots <- created_rle_plots[!sapply(created_rle_plots, is.null)]
-            
-            created_pearson_plots <- lapply(pearson_order, function(name) {
-              if (!is.null(theObject@pearson_plots[[name]])) createPearsonPlot(theObject@pearson_plots[[name]]) else NULL
-            })
-            created_pearson_plots <- created_pearson_plots[!sapply(created_pearson_plots, is.null)]
-            
-            created_cancor_plots <- lapply(cancor_order, function(name) {
-              if (!is.null(theObject@cancor_plots[[name]])) createCancorPlot(theObject@cancor_plots[[name]]) else NULL
-            })
-            # Don't filter out NULL plots to maintain column alignment
-            
-            # Create label plots
-            pca_labels <- lapply(pca_titles, createLabelPlot)
-            density_labels <- lapply(density_titles, createLabelPlot)
-            rle_labels <- lapply(rle_titles, createLabelPlot)
-            pearson_labels <- lapply(pearson_titles, createLabelPlot)
-            cancor_labels <- lapply(cancor_titles, createLabelPlot)
-            
-            # Combine with labels above each row - modified to keep legends with their plots
-            plot_sections <- list()
-            height_values <- c()
-            
-            # Add PCA plots if they exist
-            if(length(theObject@pca_plots) > 0) {
-              plot_sections <- append(plot_sections, list(
-                wrap_plots(pca_labels, ncol = ncol),
-                wrap_plots(created_pca_plots, ncol = ncol)
-              ))
-              height_values <- c(height_values, 0.1, 1)
+            # Determine column titles based on workflow or use defaults
+            if (!is.null(workflow_name) && workflow_name == "DIA_limpa") {
+              column_titles <- c("log2", "Cyclic Loess", "RUV-III-C", "Limpa Imputation", "Correlation Filtered")
+            } else {
+              # Default titles for standard normalization workflow
+              column_titles <- c("log2", "Cyclic Loess", "RUV-III-C")
             }
             
-            # Add Density plots if they exist
-            if(length(theObject@density_plots) > 0) {
-              plot_sections <- append(plot_sections, list(
-                wrap_plots(density_labels, ncol = ncol),
-                wrap_plots(created_density_plots, ncol = ncol)
-              ))
-              height_values <- c(height_values, 0.1, 1)
+            # Create top title row
+            num_cols_for_titles <- if (!is.null(ncol)) ncol else length(plots$pca)
+            if (num_cols_for_titles > 0) {
+               top_title_row <- wrap_plots(lapply(column_titles[1:num_cols_for_titles], createLabelPlot), ncol = num_cols_for_titles)
             }
             
-            # Add RLE plots if they exist
-            if(length(theObject@rle_plots) > 0) {
-              plot_sections <- append(plot_sections, list(
-                wrap_plots(rle_labels, ncol = ncol),
-                wrap_plots(created_rle_plots, ncol = ncol)
-              ))
-              height_values <- c(height_values, 0.1, 1)
+            # Define add_tags function (always apply letter tags)
+            add_tags <- function(plot_list) {
+              lapply(plot_list, function(p) {
+                if(is.null(p)) return(NULL)
+                letter <- LETTERS[plot_letter_counter]
+                plot_letter_counter <<- plot_letter_counter + 1
+                p + labs(tag = letter) + theme(plot.tag = element_text(size = 20, face = "bold"),
+                                                 plot.tag.position = "topleft")
+              })
             }
             
-            # Add Pearson plots if they exist
-            if(length(theObject@pearson_plots) > 0) {
-              plot_sections <- append(plot_sections, list(
-                wrap_plots(pearson_labels, ncol = ncol),
-                wrap_plots(created_pearson_plots, ncol = ncol)
-              ))
-              height_values <- c(height_values, 0.1, 1)
+            # Apply tags to the legend-less versions of the plots
+            plots_no_legend <- lapply(plots_no_legend, add_tags)
+            
+            # --- 4. Assemble Main Plot Panel (all rows without legends) ---
+            assemble_plot_row <- function(plot_list) {
+                if (length(plot_list) == 0) return(NULL)
+                row_ncol <- if (is.null(ncol)) length(plot_list) else ncol
+                wrap_plots(plot_list, ncol = row_ncol)
             }
             
-            # Add Cancor plots if they exist (check for any non-NULL plots)
-            if(length(theObject@cancor_plots) > 0 && any(!sapply(created_cancor_plots, is.null))) {
-              # Replace NULL plots with empty plots to maintain column alignment
-              cancor_plots_aligned <- lapply(created_cancor_plots, function(plot) {
-                if (is.null(plot)) {
-                  ggplot() + theme_void()  # Empty plot for NULL positions
-                } else {
-                  plot
-                }
+            pca_row <- assemble_plot_row(plots_no_legend$pca)
+            density_row <- assemble_plot_row(plots_no_legend$density)
+            rle_row <- assemble_plot_row(plots_no_legend$rle)
+            pearson_row <- assemble_plot_row(plots_no_legend$pearson)
+            
+            cancor_title_plot <- NULL
+            if (!is.null(workflow_name) && workflow_name == "DIA_limpa" && length(plots$cancor) > 0) {
+               cancor_title_plot <- createLabelPlot("Peptide RUV Cancor Plot QC", fontface = "plain")
+            }
+            cancor_row <- assemble_plot_row(plots_no_legend$cancor)
+            
+            # --- New Limpa Plot Row ---
+            limpa_row <- NULL
+            if (!is.null(workflow_name) && workflow_name == "DIA_limpa" && length(theObject@limpa_plots) > 0) {
+              # Style and remove legends and titles from limpa plots
+              limpa_plots_styled <- purrr::compact(lapply(theObject@limpa_plots, style_plot))
+              limpa_plots_no_legend <- lapply(limpa_plots_styled, function(p) {
+                if (!is.null(p)) p + theme(legend.position = "none") + labs(title = NULL) else NULL
               })
               
-              plot_sections <- append(plot_sections, list(
-                wrap_plots(cancor_labels, ncol = ncol),
-                wrap_plots(cancor_plots_aligned, ncol = ncol)
-              ))
-              height_values <- c(height_values, 0.1, 1)
+              # Apply tags to limpa plots
+              limpa_plots_tagged <- add_tags(limpa_plots_no_legend)
+              
+              # Combine cancor plot and limpa plots
+              combined_limpa_cancor_plots <- c(plots_no_legend$cancor, limpa_plots_tagged)
+              
+              # Assemble the row
+              limpa_row <- assemble_plot_row(combined_limpa_cancor_plots)
+              
+              # Clear cancor plot from its original row to avoid duplication
+              cancor_title_plot <- NULL
+              cancor_row <- NULL
             }
             
-            # Create combined plot from sections
-            combined_plot <- wrap_plots(plot_sections, ncol = 1) +
-              plot_layout(heights = height_values)
-
+            main_panel_list <- purrr::compact(list(top_title_row, pca_row, density_row, rle_row, pearson_row, cancor_title_plot, cancor_row, limpa_row))
+            
+            if (length(main_panel_list) == 0) {
+              return(ggplot() + theme_void() + labs(title = "No plots available to generate a composite figure."))
+            }
+            
+            # Define heights: 0.5 for titles, 4 for plot rows
+            heights <- sapply(main_panel_list, function(x) {
+                # Check if it's the top title row or cancor title
+                is_title_row <- inherits(x, "patchwork") && inherits(x[[1]], "ggplot") && length(x[[1]]$layers) == 0
+                if(is_title_row) 0.5 else 4
+            })
+            
+            main_panel <- wrap_plots(main_panel_list, ncol = 1, heights = heights)
+            
+            # --- 5. Final Assembly with Legend Column ---
+            # If a legend exists, combine the main panel and the legend
+            if (!is.null(master_legend)) {
+              combined_plot <- wrap_plots(main_panel, master_legend, ncol = 2, widths = c(10, 1.5))
+            } else {
+              combined_plot <- main_panel
+            }
+            
+            # --- 6. Save Plot ---
             if (!is.null(save_path)) {
-              # Calculate dynamic width based on number of columns
-              plot_width <- 4 + (ncol * 3)  # Base width + 3 units per column
-              plot_height <- 4 + (length(height_values) * 2)  # Base height + 2 units per row
+              max_cols <- max(sapply(plots, function(x) if(length(x) > 0) length(x) else 0))
+              final_ncol <- if (is.null(ncol)) max_cols else ncol
+              num_plot_rows <- sum(heights == 4)
+              
+              plot_width <- 4 + (final_ncol * 3.5)
+              plot_height <- 1 + (num_plot_rows * 4) + (length(main_panel_list) - num_plot_rows) * 0.5
               
               sapply(c("png", "pdf", "svg"), function(ext) {
                 ggsave(
                   plot = combined_plot,
                   filename = file.path(save_path, paste0(file_name, ".", ext)),
                   width = plot_width,
-                  height = plot_height
+                  height = plot_height,
+                  limitsize = FALSE
                 )
               })
               message(paste("Plots saved in", save_path))
@@ -1346,21 +1355,26 @@ setMethod( f = "removeRowsWithMissingValuesPercent"
 #'@title Average Technical Replicates
 #'@export
 setGeneric(name="averageTechReps"
-           , def=function( theObject, design_matrix_columns ) {
+           , def=function( theObject, design_matrix_columns, biological_replicate_column = NULL ) {
              standardGeneric("averageTechReps")
            }
-           , signature=c("theObject", "design_matrix_columns" ))
+           , signature=c("theObject", "design_matrix_columns", "biological_replicate_column" ))
 
 #'@rdname averageTechReps
 #'@export
 #'@param theObject The object to be processed
 #'@param design_matrix_columns The columns to be used in the design matrix
+#'@param biological_replicate_column The column name for biological replicate grouping (optional)
 #'@param protein_id_column The column name of the protein id
 #'@param sample_id The column name of the sample id
 #'@param replicate_group_column The column name of the technical replicate id
 setMethod( f = "averageTechReps"
            , signature="ProteinQuantitativeData"
-           , definition=function( theObject, design_matrix_columns=c()  ) {
+           , definition=function( theObject, design_matrix_columns=c(), biological_replicate_column = NULL  ) {
+
+             message("--- Entering averageTechReps ---")
+             message(sprintf("   averageTechReps Arg: design_matrix_columns = %s", capture.output(str(design_matrix_columns))))
+             message(sprintf("   averageTechReps Arg: biological_replicate_column = %s", biological_replicate_column))
 
              protein_quant_table <- theObject@protein_quant_table
              protein_id_column <- theObject@protein_id_column
@@ -1369,31 +1383,137 @@ setMethod( f = "averageTechReps"
              sample_id <- theObject@sample_id
              replicate_group_column <- theObject@technical_replicate_id
 
-             theObject@protein_quant_table <- protein_quant_table |>
+             message("   averageTechReps: Extracted object components")
+             message(sprintf("   averageTechReps: protein_id_column = %s", protein_id_column))
+             message(sprintf("   averageTechReps: group_id = %s", group_id))
+             message(sprintf("   averageTechReps: sample_id = %s", sample_id))
+             message(sprintf("   averageTechReps: replicate_group_column = %s", replicate_group_column))
+
+             message("      Data State (protein_quant_table):")
+             message(sprintf("      Data State (protein_quant_table): Dims = %d rows, %d cols", nrow(protein_quant_table), ncol(protein_quant_table)))
+             utils::str(protein_quant_table)
+             message("      Data State (protein_quant_table) Head:")
+             print(head(protein_quant_table))
+
+             message("      Data State (design_matrix):")
+             message(sprintf("      Data State (design_matrix): Dims = %d rows, %d cols", nrow(design_matrix), ncol(design_matrix)))
+             utils::str(design_matrix)
+             message("      Data State (design_matrix) Head:")
+             print(head(design_matrix))
+
+             # If biological_replicate_column is provided, use it for grouping
+             message("   averageTechReps Step: Checking biological_replicate_column...")
+             if (!is.null(biological_replicate_column)) {
+               message(sprintf("   averageTechReps Condition TRUE: biological_replicate_column provided = %s", biological_replicate_column))
+               grouping_column <- paste0(group_id, "_", biological_replicate_column)
+               message(sprintf("   averageTechReps: Created grouping_column = %s", grouping_column))
+
+               message("   averageTechReps Step: Adding grouping column to design_matrix...")
+               design_matrix <- design_matrix %>%
+                 mutate(!!sym(grouping_column) := paste(!!sym(group_id), !!sym(biological_replicate_column), sep = "_"))
+               message("   averageTechReps Step: Grouping column added to design_matrix")
+
+               replicate_group_column <- grouping_column
+               message(sprintf("   averageTechReps: Set replicate_group_column to %s", replicate_group_column))
+
+               message("      Data State (design_matrix after grouping column):")
+               message(sprintf("      Data State (design_matrix): Dims = %d rows, %d cols", nrow(design_matrix), ncol(design_matrix)))
+               utils::str(design_matrix)
+               message("      Data State (design_matrix) Head:")
+               print(head(design_matrix))
+             } else {
+               message("   averageTechReps Condition FALSE: biological_replicate_column not provided")
+             }
+
+             message("   averageTechReps Step: Starting data processing pipeline...")
+
+             message("   averageTechReps Step: Pivoting protein_quant_table longer...")
+             pivoted_data <- protein_quant_table |>
                pivot_longer( cols = !matches( protein_id_column)
                              , names_to = sample_id
-                             , values_to = "Log2.Protein.Imputed") |>
+                             , values_to = "Log2.Protein.Imputed")
+             message("   averageTechReps Step: Pivot longer completed")
+
+             message("      Data State (pivoted_data):")
+             message(sprintf("      Data State (pivoted_data): Dims = %d rows, %d cols", nrow(pivoted_data), ncol(pivoted_data)))
+             message("      Data State (pivoted_data) Head:")
+             print(head(pivoted_data))
+
+             message("   averageTechReps Step: Performing left_join with design_matrix...")
+             joined_data <- pivoted_data |>
                left_join( design_matrix
-                          , by = join_by( !!sym(sample_id) == !!sym(sample_id))) |>
-               group_by( !!sym(protein_id_column), !!sym(replicate_group_column) )  |>
-               summarise( Log2.Protein.Imputed = mean( Log2.Protein.Imputed, na.rm = TRUE)) |>
-               ungroup() |>
+                          , by = join_by( !!sym(sample_id) == !!sym(sample_id)))
+             message("   averageTechReps Step: Left join completed")
+
+             message("      Data State (joined_data):")
+             message(sprintf("      Data State (joined_data): Dims = %d rows, %d cols", nrow(joined_data), ncol(joined_data)))
+             message("      Data State (joined_data) Head:")
+             print(head(joined_data))
+
+             message(sprintf("   averageTechReps Step: Grouping by %s and %s...", protein_id_column, replicate_group_column))
+             grouped_data <- joined_data |>
+               group_by( !!sym(protein_id_column), !!sym(replicate_group_column) )
+             message("   averageTechReps Step: Grouping completed")
+
+             message("   averageTechReps Step: Summarising (averaging)...")
+             summarised_data <- grouped_data |>
+               summarise( Log2.Protein.Imputed = mean( Log2.Protein.Imputed, na.rm = TRUE))
+             message("   averageTechReps Step: Summarising completed")
+
+             message("      Data State (summarised_data):")
+             message(sprintf("      Data State (summarised_data): Dims = %d rows, %d cols", nrow(summarised_data), ncol(summarised_data)))
+             message("      Data State (summarised_data) Head:")
+             print(head(summarised_data))
+
+             message("   averageTechReps Step: Ungrouping...")
+             ungrouped_data <- summarised_data |>
+               ungroup()
+             message("   averageTechReps Step: Ungrouping completed")
+
+             message("   averageTechReps Step: Pivoting wider...")
+             final_protein_table <- ungrouped_data |>
                pivot_wider( names_from = !!sym(replicate_group_column)
                             , values_from = Log2.Protein.Imputed)
+             message("   averageTechReps Step: Pivot wider completed")
 
-              theObject@sample_id <- theObject@technical_replicate_id
+             message("      Data State (final_protein_table):")
+             message(sprintf("      Data State (final_protein_table): Dims = %d rows, %d cols", nrow(final_protein_table), ncol(final_protein_table)))
+             message("      Data State (final_protein_table) Head:")
+             print(head(final_protein_table))
 
-              theObject@design_matrix <- design_matrix |>
+             theObject@protein_quant_table <- final_protein_table
+
+             message("   averageTechReps Step: Setting sample_id to technical_replicate_id...")
+             theObject@sample_id <- theObject@technical_replicate_id
+             message(sprintf("   averageTechReps: sample_id set to %s", theObject@sample_id))
+
+             message("   averageTechReps Step: Recreating design_matrix...")
+             new_design_matrix <- design_matrix |>
                 dplyr::select(-!!sym( sample_id)) |>
                 dplyr::select(all_of( unique( c( replicate_group_column,  group_id,  design_matrix_columns) ))) |>
-                distinct()
+                dplyr::filter(!is.na(!!sym(replicate_group_column))) |>
+                dplyr::mutate(!!sym(replicate_group_column) := as.character(!!sym(replicate_group_column))) |>
+                distinct(!!sym(replicate_group_column), .keep_all = TRUE)
+             message("   averageTechReps Step: Design matrix recreated")
 
-              theObject@sample_id <- replicate_group_column
-              theObject@technical_replicate_id <- NA_character_
+             message("      Data State (new_design_matrix):")
+             message(sprintf("      Data State (new_design_matrix): Dims = %d rows, %d cols", nrow(new_design_matrix), ncol(new_design_matrix)))
+             message("      Data State (new_design_matrix) Head:")
+             print(head(new_design_matrix))
 
-              theObject <- cleanDesignMatrix(theObject)
+             theObject@design_matrix <- new_design_matrix
 
-              theObject
+             message("   averageTechReps Step: Setting final sample_id and technical_replicate_id...")
+             theObject@sample_id <- replicate_group_column
+             theObject@technical_replicate_id <- NA_character_
+             message(sprintf("   averageTechReps: Final sample_id = %s", theObject@sample_id))
+
+             message("   averageTechReps Step: Calling cleanDesignMatrix...")
+             theObject <- cleanDesignMatrix(theObject)
+             message("   averageTechReps Step: cleanDesignMatrix completed")
+
+             message("--- Exiting averageTechReps ---")
+             theObject
 
            })
 
@@ -1633,6 +1753,35 @@ setMethod(f = "chooseBestProteinAccession"
             cat("║           EXITING chooseBestProteinAccession (DEBUG66)                ║\n")
             cat("╚═══════════════════════════════════════════════════════════════════════════╝\n\n")
 
+            # --- NEW: Update peptide count summary to use the new protein IDs ---
+            if (!is.null(theObject@args$limpa_dpc_quant_results$peptide_counts_per_protein)) {
+              
+              original_peptide_summary <- theObject@args$limpa_dpc_quant_results$peptide_counts_per_protein
+              
+              # Create a mapping from old protein groups to new best accessions
+              id_mapping <- theObject@protein_id_table |>
+                dplyr::select(!!sym(protein_id_column), !!sym(paste0(protein_id_column, "_list"))) |>
+                tidyr::separate_rows(!!sym(paste0(protein_id_column, "_list")), sep = ";") |>
+                dplyr::rename(original_protein_group = !!sym(paste0(protein_id_column, "_list")))
+              
+              # Join the original summary with the new IDs and aggregate
+              updated_peptide_summary <- original_peptide_summary |>
+                dplyr::inner_join(id_mapping, by = c("Protein.Ids" = "original_protein_group")) |>
+                dplyr::group_by(uniprot_acc) |>
+                # Take the max counts from any of the collapsed groups as the new representative value
+                dplyr::summarise(
+                  peptide_count = max(peptide_count, na.rm = TRUE),
+                  peptidoform_count = max(peptidoform_count, na.rm = TRUE),
+                  .groups = "drop"
+                ) |>
+                dplyr::rename(!!sym(protein_id_column) := uniprot_acc)
+              
+              # Replace the old summary with the new, updated one
+              theObject@args$limpa_dpc_quant_results$peptide_counts_per_protein <- updated_peptide_summary
+              
+            }
+            # --- END NEW ---
+            
             return(theObject)
           })
 
@@ -1789,16 +1938,75 @@ summariseProteinObject <- function ( theObject) {
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #'@export
+
 setMethod(f="plotDensity"
-          , signature="gg"
+          , signature="ggplot2::ggplot"
           , definition=function(theObject, grouping_variable, title = "", font_size = 8) {
-            # For gg class objects, create a copy and change its class to ggplot
-            gg_obj <- theObject
-            class(gg_obj) <- "ggplot"
+            # First try to get data directly from the ggplot object's data element
+            if (!is.null(theObject$data) && is.data.frame(theObject$data)) {
+              pca_data <- as_tibble(theObject$data)
+            } else {
+              # Fall back to other extraction methods
+              pca_data <- as_tibble(ggplot_build(theObject)$data[[1]])
+              
+              # If the data doesn't have PC1/PC2, try to extract from the plot's environment
+              if (!("PC1" %in% colnames(pca_data) && "PC2" %in% colnames(pca_data))) {
+                # Try to get the data from the plot's environment
+                if (exists("data", envir = environment(theObject$mapping$x))) {
+                  pca_data <- as_tibble(get("data", envir = environment(theObject$mapping$x)))
+                } else {
+                  stop("Could not extract PCA data from the ggplot object")
+                }
+              }
+            }
             
-            # Then call the ggplot method
-            plotDensity(gg_obj, grouping_variable, title, font_size)
-          })
+            # Check if grouping variable exists in the data
+            if (!grouping_variable %in% colnames(pca_data)) {
+              stop(sprintf("grouping_variable '%s' not found in the data", grouping_variable))
+            }
+            
+            # Create PC1 boxplot
+            pc1_box <- ggplot(pca_data, aes(x = !!sym(grouping_variable), y = PC1, fill = !!sym(grouping_variable))) +
+              geom_boxplot(notch = TRUE) +
+              theme_bw() +
+              labs(title = title,
+                   x = "",
+                   y = "PC1") +
+              theme(
+                legend.position = "none",
+                axis.text.x = element_blank(),
+                axis.ticks.x = element_blank(),
+                text = element_text(size = font_size),
+                plot.margin = margin(b = 0, t = 5, l = 5, r = 5),
+                panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                panel.background = element_blank()
+              )
+            
+            # Create PC2 boxplot
+            pc2_box <- ggplot(pca_data, aes(x = !!sym(grouping_variable), y = PC2, fill = !!sym(grouping_variable))) +
+              geom_boxplot(notch = TRUE) +
+              theme_bw() +
+              labs(x = "",
+                   y = "PC2") +
+              theme(
+                legend.position = "none",
+                axis.text.x = element_blank(),
+                axis.ticks.x = element_blank(),
+                text = element_text(size = font_size),
+                plot.margin = margin(t = 0, b = 5, l = 5, r = 5),
+                panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                panel.background = element_blank()
+              )
+            
+            # Combine plots with minimal spacing
+            combined_plot <- pc1_box / pc2_box + 
+              plot_layout(heights = c(1, 1)) +
+              plot_annotation(theme = theme(plot.margin = margin(0, 0, 0, 0)))
+            
+            return(combined_plot)
+          }) 
 
 #'@export
 setMethod(f="plotDensity"
@@ -1926,4 +2134,103 @@ savePlotDensityList <- function(input_list, prefix = "Density", suffix = c("png"
   list_of_filenames
 }
 
+
+
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#' Filter Proteins Based on Minimum Peptide and Peptidoform Evidence
+#'
+#' @description
+#' Filters protein-level data based on the minimum number of unique peptides and
+#' total peptidoforms that were used to quantify each protein. This function
+#' relies on a summary table created during the `proteinMissingValueImputationLimpa`
+#' step and stored in the object. It is a critical quality control step to ensure
+#' that retained proteins have sufficient evidence supporting their quantification.
+#'
+#' @param theObject A ProteinQuantitativeData object that has been processed by
+#'   `proteinMissingValueImputationLimpa` from a `PeptideQuantitativeData` object.
+#' @param num_peptides_per_protein_thresh Minimum number of unique peptides
+#'   required per protein (default: 1).
+#' @param num_peptidoforms_per_protein_thresh Minimum number of total peptidoforms
+#'   (i.e., total peptide rows before summarization) required per protein (default: 2).
+#' @param verbose Whether to print progress messages.
+#'
+#' @return A filtered ProteinQuantitativeData object with proteins not meeting
+#'   the thresholds removed.
+#'
+#' @export
+
+#' @export
+setMethod(f="filterMinNumPeptidesPerProtein"
+          , signature="ProteinQuantitativeData"
+          , definition = function(theObject, ...) {
+            
+            # Extract specific parameters from ...
+            args <- list(...)
+            num_peptides_per_protein_thresh <- args$num_peptides_per_protein_thresh
+            num_peptidoforms_per_protein_thresh <- args$num_peptidoforms_per_protein_thresh
+            verbose <- args$verbose
+            
+            # --- Parameter validation and defaults ---
+            num_peptides_per_protein_thresh <- checkParamsObjectFunctionSimplify(theObject,
+                                                                                 "num_peptides_per_protein_thresh",
+                                                                                 1)
+            
+            num_peptidoforms_per_protein_thresh <- checkParamsObjectFunctionSimplify(theObject,
+                                                                                       "num_peptidoforms_per_protein_thresh",
+                                                                                       2)
+            
+            verbose <- checkParamsObjectFunctionSimplify(theObject, "verbose", TRUE)
+            
+            # Update parameters in object
+            theObject <- updateParamInObject(theObject, "num_peptides_per_protein_thresh")
+            theObject <- updateParamInObject(theObject, "num_peptidoforms_per_protein_thresh")
+            theObject <- updateParamInObject(theObject, "verbose")
+            
+            if (verbose) {
+              log_info("Starting protein filtering based on peptide and peptidoform evidence...")
+              log_info("Minimum unique peptides per protein: {num_peptides_per_protein_thresh}")
+              log_info("Minimum total peptidoforms per protein: {num_peptidoforms_per_protein_thresh}")
+            }
+            
+            # Get the peptide summary table (which is now guaranteed to be in sync)
+            peptide_summary <- theObject@args$limpa_dpc_quant_results$peptide_counts_per_protein
+            if (is.null(peptide_summary)) {
+              stop("Could not find the peptide summary table. Please run chooseBestProteinAccession first.")
+            }
+            
+            # --- Perform the filtering ---
+            protein_quant_table <- theObject@protein_quant_table
+            protein_id_column <- theObject@protein_id_column
+            proteins_before <- nrow(protein_quant_table)
+            
+            protein_ids_to_keep <- peptide_summary |>
+              dplyr::filter(peptide_count >= num_peptides_per_protein_thresh & peptidoform_count >= num_peptidoforms_per_protein_thresh) |>
+              dplyr::pull(!!sym(protein_id_column))
+            
+            filtered_protein_table <- protein_quant_table |>
+              dplyr::filter(!!sym(protein_id_column) %in% protein_ids_to_keep)
+            
+            proteins_after <- nrow(filtered_protein_table)
+            
+            if (verbose) {
+              log_info("Proteins before filtering: {proteins_before}")
+              log_info("Proteins after filtering: {proteins_after}")
+              log_info("Proteins removed: {proteins_before - proteins_after}")
+              if (proteins_before > 0) {
+                log_info("Retention rate: {round(100 * proteins_after / proteins_before, 1)}%")
+              }
+            }
+            
+            # Update the main data table
+            theObject@protein_quant_table <- filtered_protein_table
+            
+            # Also filter the EList for consistency
+            if (!is.null(theObject@args$limpa_dpc_quant_results$quantified_elist)) {
+              original_elist <- theObject@args$limpa_dpc_quant_results$quantified_elist
+              indices_to_keep <- which(original_elist$genes$protein.id %in% protein_ids_to_keep)
+              theObject@args$limpa_dpc_quant_results$quantified_elist <- original_elist[indices_to_keep, ]
+            }
+            
+            return(theObject)
+          })

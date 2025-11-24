@@ -8,7 +8,6 @@ peptideMissingValueImputationLimpa(
   theObject,
   imputed_value_column = NULL,
   use_log2_transform = TRUE,
-  dpc_method = "eb",
   verbose = TRUE,
   ensure_matrix = TRUE
 )
@@ -21,8 +20,6 @@ Default is "Peptide.Imputed.Limpa"}
 
 \item{use_log2_transform}{Whether to log2 transform the data before imputation.
 Default is TRUE (recommended by limpa)}
-
-\item{dpc_method}{Method for DPC estimation. Default is "eb" (empirical Bayes)}
 
 \item{verbose}{Whether to print progress messages. Default is TRUE}
 
