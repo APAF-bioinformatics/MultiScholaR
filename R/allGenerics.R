@@ -317,8 +317,91 @@ setGeneric(name = "getNegCtrlMetabAnova",
            },
            signature = c("theObject")) # Primary dispatch on object 
 
-setGeneric(name="chooseBestProteinAccession"
-           , def=function(theObject, delim=NULL, seqinr_obj=NULL, seqinr_accession_column=NULL, replace_zero_with_na = NULL, aggregation_method = NULL) {
-             standardGeneric("chooseBestProteinAccession")
-           }
-           , signature="theObject")
+###### Metabolomics
+
+#' plot number of significant differentially expressed metabolites
+#'@export
+setGeneric(name="plotVolcano",
+           def=function(objectsList,
+                        de_q_val_thresh = 0.05,
+                        qvalue_column = "q_value",
+                        log2fc_column = "logFC") {
+             standardGeneric("plotVolcano")
+           },
+           signature=c("objectsList"))
+
+# Get the differential expression results in wide format
+#'@export
+setGeneric(name="getDeResultsWideFormat"
+           , def=function(objectsList
+                          , qvalue_column = "fdr_qvalue"
+                          , raw_pvalue_column = "raw_pvalue"
+                          , log2fc_column = "logFC") {
+             standardGeneric("getDeResultsWideFormat")
+           },
+           signature=c("objectsList"))
+
+
+# Get the differential expression results in wide format
+#'@export
+setGeneric(name="getDeResultsLongFormat"
+           , def=function(objectsList) {
+             standardGeneric("getDeResultsLongFormat")
+           },
+           signature=c("objectsList"))
+
+
+## Create proteomics interactive volcano plot
+#' @export
+setGeneric(name="plotInteractiveVolcano"
+           , def=function(objectsList, anno_list = NULL) {
+             standardGeneric("plotInteractiveVolcano")
+           },
+           signature=c("objectsList"))
+
+
+#Create a QC composite figure
+#' @export
+setGeneric(name = "createGridQCMetabolomics",
+           def = function(theObject, pca_titles, density_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
+             standardGeneric("createGridQCMetabolomics")
+           },
+           signature = c("theObject"))
+
+#' plot number of significant differentially expressed metabolites
+#'@export
+setGeneric(name="plotNumSigDiffExpBarPlot",
+           def=function(objectsList ) {
+             standardGeneric("plotNumSigDiffExpBarPlot")
+           },
+           signature=c("objectsList"  ))
+
+#'@export
+setGeneric( name ="differentialAbundanceAnalysisHelper"
+            , def=function(theObject
+                           , contrasts_tbl = NULL
+                           , formula_string = NULL
+                           , group_id = NULL
+                           , de_q_val_thresh = NULL
+                           , treat_lfc_cutoff = NULL
+                           , eBayes_trend = NULL
+                           , eBayes_robust = NULL
+                           , args_group_pattern = NULL) {
+              standardGeneric("differentialAbundanceAnalysisHelper")
+            }
+            , signature=c("theObject"))
+
+#'@export
+setGeneric( name ="differentialAbundanceAnalysis"
+            , def=function(objectsList
+                           , contrasts_tbl = NULL
+                           , formula_string = NULL
+                           , group_id = NULL
+                           , de_q_val_thresh = NULL
+                           , treat_lfc_cutoff = NULL
+                           , eBayes_trend = NULL
+                           , eBayes_robust = NULL
+                           , args_group_pattern = NULL) {
+              standardGeneric("differentialAbundanceAnalysis")
+            }
+            , signature=c("objectsList"))

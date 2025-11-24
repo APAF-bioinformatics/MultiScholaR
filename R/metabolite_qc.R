@@ -1,4 +1,3 @@
-#'@title Filter metabolites based on an intensity threshold and the proportion of samples below that threshold in a wide-format table.
 #'@description Filter metabolites based on an intensity threshold and the proportion of samples below that threshold in a wide-format table.
 #'@param assay_table A wide data frame where rows are metabolites and columns include a metabolite identifier and numeric sample intensities.
 #'@param min_metabolite_intensity_threshold The calculated minimum intensity value. Metabolites in samples below this threshold are considered 'below threshold'.
@@ -342,7 +341,7 @@ resolveDuplicateFeaturesByIntensity <- function(assay_tibble, id_col, sample_col
 
 
 
-#' @title Resolve duplicate features in a metabolite assay data object
+
 #' @describeIn resolveDuplicateFeatures Method for MetaboliteAssayData
 #' @export
 setMethod("resolveDuplicateFeatures",

@@ -37,13 +37,10 @@
 #' @slot args A list, typically populated from a configuration file, holding
 #'   parameters used during processing.
 #'
-#' @title MetaboliteAssayData Class
-#' @description An S4 class to store and manage multiple metabolomics quantitative datasets.
 #' @importFrom methods setClass slotNames slot new
 #' @importFrom dplyr pull distinct
 #' @importFrom rlang sym !!
 #' @exportClass MetaboliteAssayData
-
 MetaboliteAssayData <- setClass("MetaboliteAssayData",
     slots = c(
         metabolite_data = "list",
@@ -147,7 +144,7 @@ MetaboliteAssayData <- setClass("MetaboliteAssayData",
                       # Identify actual sample columns in the assay
                       assay_colnames <- colnames(assay_df)
                       actual_sample_cols_in_assay <- intersect(assay_colnames, samples_in_design) |> sort()
-                      
+
                       # Store results for later checks
                       list(
                           errors = assay_errors,
@@ -170,7 +167,7 @@ MetaboliteAssayData <- setClass("MetaboliteAssayData",
                            errors <- c(errors, paste0("Actual sample columns differ between assays. First mismatch found in: ", mismatched_assays[1]))
                       }
                  }
-                 
+
                  # Perform comparison with design matrix if no errors found yet
                  if (length(errors) == 0 && length(assay_check_results) >= 1) {
                      first_assay_samples <- assay_check_results[[1]]$sample_cols # Get samples from first (or only) assay
@@ -208,8 +205,7 @@ MetaboliteAssayData <- setClass("MetaboliteAssayData",
 #' @param args List of arguments (e.g., from config).
 #'
 #' @return A MetaboliteAssayData object.
-#' @title Create MetaboliteAssayData Object
-#' @export createMetaboliteAssayData
+#' @export
 #' @examples
 #' \dontrun{
 #' # Assuming lcms_pos_df, lcms_neg_df, gcms_df are data frames
@@ -271,14 +267,13 @@ createMetaboliteAssayData <- function(
 ## Plotting Methods for MetaboliteAssayData
 ##-----------------------------------------------------------------------------
 
-#' @title Plot PCA for MetaboliteAssayData
 #' @describeIn plotPca Method for MetaboliteAssayData
 #' @importFrom purrr map set_names
 #' @importFrom tibble column_to_rownames
 #' @export
 setMethod(f = "plotPca",
-          signature = c("MetaboliteAssayData", "ANY", "ANY", "ANY", "ANY", "ANY"),
-          definition = function(theObject, grouping_variable, shape_variable = NULL, label_column, title, font_size = 8, cv_percentile = 0.90) {
+          signature = "MetaboliteAssayData",
+          definition = function(theObject, grouping_variable, shape_variable = NULL, label_column, title = NULL, font_size = 8) {
             # --- Input Validation ---
             if (!is.character(grouping_variable) || length(grouping_variable) != 1) {
               stop("`grouping_variable` must be a single character string.")
@@ -296,11 +291,17 @@ setMethod(f = "plotPca",
                 # Allow label_column to be empty/NULL, but if specified, it must exist
                  stop(sprintf("`label_column` '%s' not found in design_matrix.", label_column))
             }
-            
+
             design_matrix <- theObject@design_matrix
             sample_id_col_name <- theObject@sample_id
             metabolite_id_col_name <- theObject@metabolite_id_column
             assay_list <- theObject@metabolite_data
+
+
+            if(!is.list( assay_list)) {
+              assay_list <- list( assay_list)
+            }
+
 
             if (length(assay_list) == 0) {
                 warning("No assays found in `metabolite_data` slot. Returning empty list.")
@@ -361,24 +362,24 @@ setMethod(f = "plotPca",
                    tibble::column_to_rownames(metabolite_id_col_name) |>
                    dplyr::select(all_of(sample_cols)) |> # Ensure correct columns
                    as.matrix()
-                 
+
                  # Replace Inf/-Inf with NA
                  frozen_metabolite_matrix_pca[!is.finite(frozen_metabolite_matrix_pca)] <- NA
-                 
+
                  # Check for sufficient features and samples after NA handling
                  valid_rows <- rowSums(is.finite(frozen_metabolite_matrix_pca)) > 1 # Need at least 2 points per feature for variance
                  valid_cols <- colSums(is.finite(frozen_metabolite_matrix_pca)) > 1 # Need at least 2 points per sample for variance
-                 
+
                  if (sum(valid_rows) < 2 || sum(valid_cols) < 2) {
                     warning(sprintf("Assay '%s': Insufficient finite data points (< 2 features or < 2 samples with data) for PCA. Skipping.", assay_name))
                     return(NULL)
                  }
-                 
+
                  frozen_metabolite_matrix_pca_final <- frozen_metabolite_matrix_pca[valid_rows, valid_cols, drop = FALSE]
                  design_matrix_filtered_final <- design_matrix_filtered[design_matrix_filtered[[sample_id_col_name]] %in% colnames(frozen_metabolite_matrix_pca_final), ]
 
                 # Generate title for this specific assay
-                assay_title <- paste(title, "-", assay_name)
+                assay_title <- if (!is.null(title) && title != "") paste(title, "-", assay_name) else ""
 
                 # --- Ensure consistent type for sample ID column before join ---
                 design_matrix_filtered_final[[sample_id_col_name]] <- as.character(design_matrix_filtered_final[[sample_id_col_name]])
@@ -394,8 +395,7 @@ setMethod(f = "plotPca",
                         shape_variable = shape_variable,
                         label_column = label_column,
                         title = assay_title,
-                        geom.text.size = font_size,
-                        cv_percentile = cv_percentile
+                        geom.text.size = font_size
                     )
                 }, error = function(e) {
                     warning(sprintf("Assay '%s': Error during PCA plotting: %s. Skipping.", assay_name, e$message))
@@ -412,13 +412,13 @@ setMethod(f = "plotPca",
             return(pca_plots_list)
           })
 
-#' @title Plot RLE for MetaboliteAssayData
 #' @describeIn plotRle Method for MetaboliteAssayData
 #' @importFrom purrr map set_names
 #' @importFrom tibble column_to_rownames
 #' @export
+#'
 setMethod(f = "plotRle",
-          signature = c("MetaboliteAssayData", "ANY", "ANY", "ANY"),
+          signature = "MetaboliteAssayData",
           definition = function(theObject, grouping_variable, yaxis_limit = c(), sample_label = NULL) {
             # --- Input Validation ---
             if (!is.character(grouping_variable) || length(grouping_variable) != 1 || is.na(grouping_variable)) {
@@ -439,6 +439,10 @@ setMethod(f = "plotRle",
             metabolite_id_col_name <- theObject@metabolite_id_column
             assay_list <- theObject@metabolite_data
 
+            if(!is.list( assay_list)) {
+              assay_list <- list( assay_list)
+            }
+
             if (length(assay_list) == 0) {
                 warning("No assays found in `metabolite_data` slot. Returning empty list.")
                 return(list())
@@ -449,6 +453,12 @@ setMethod(f = "plotRle",
                 names(assay_list) <- paste0("Assay_", seq_along(assay_list))
                 warning("Assay list was unnamed. Using default names (Assay_1, Assay_2, ...).")
             }
+
+            message("--- Entering plotRle for MetaboliteAssayData ---")
+            message(sprintf("   plotRle: grouping_variable = %s", grouping_variable))
+            message(sprintf("   plotRle: yaxis_limit = %s", paste(yaxis_limit, collapse=", ")))
+            message(sprintf("   plotRle: sample_label = %s", ifelse(is.null(sample_label), "NULL", sample_label)))
+
 
             # --- Plotting Logic per Assay ---
             rle_plots_list <- purrr::map(seq_along(assay_list), function(i) {
@@ -559,7 +569,6 @@ setMethod(f = "plotRle",
           })
 
 
-#' @title Plot Density for MetaboliteAssayData
 #' @describeIn plotDensity Method for MetaboliteAssayData
 #' @importFrom purrr map set_names
 #' @importFrom tibble column_to_rownames as_tibble
@@ -590,6 +599,10 @@ setMethod(f = "plotDensity",
               sample_id_col_name <- theObject@sample_id
               metabolite_id_col_name <- theObject@metabolite_id_column
               assay_list <- theObject@metabolite_data
+
+              if(!is.list( assay_list)) {
+                assay_list <- list( assay_list)
+              }
 
                if (length(assay_list) == 0) {
                   warning("No assays found in `metabolite_data` slot. Returning empty list.")
@@ -688,14 +701,14 @@ setMethod(f = "plotDensity",
 
 
                    # --- Create Density/Box Plots ---
-                   assay_title <- paste(title, "-", assay_name)
+                   # assay_title <- paste0( ifelse( is.null(title) | is.na(title) | title == "", "", paste0(title, " - ")), assay_name)
 
                    tryCatch({
                         # Create PC1 boxplot
                        pc1_box <- ggplot(pca_data_for_plot, aes(x = !!rlang::sym(grouping_variable), y = PC1, fill = !!rlang::sym(grouping_variable))) +
                            geom_boxplot(notch = TRUE) +
                            theme_bw() +
-                           labs(title = assay_title,
+                           labs(title = paste(title, "-", assay_name),
                                 x = "",
                                 y = "PC1") +
                            theme(
@@ -749,8 +762,6 @@ setMethod(f = "plotDensity",
           })
 
 
-#' @title Plot Density for list of ggplot objects
-#' @title Plot Density for list of ggplot objects
 #' @describeIn plotDensity Method for list of ggplot objects
 #' @importFrom purrr map set_names
 #' @importFrom tibble as_tibble
@@ -865,12 +876,10 @@ setMethod(f = "plotDensity",
           })
 
 
-#' @title Calculate Pearson Correlation for Sample Pairs
-#' @title Calculate Pearson Correlation for Sample Pairs
 #' @describeIn pearsonCorForSamplePairs Method for MetaboliteAssayData
 #' @importFrom purrr map set_names map_df
 #' @importFrom tidyr pivot_longer
-#' @importFrom dplyr left_join select mutate filter distinct arrange group_by summarise ungroup pull if_else case_when row_number n rename relocate
+#' @importFrom dplyr left_join select mutate filter distinct arrange group_by summarise ungroup pull if_else case_when row_number n rename add_column relocate
 #' @importFrom stringr str_detect
 #' @importFrom rlang sym !! :=
 #' @export
@@ -1081,7 +1090,6 @@ setMethod(f = "pearsonCorForSamplePairs",
            })
 
 
-#' @title Plot Pearson Correlation Histogram
 #' @describeIn plotPearson Method for MetaboliteAssayData
 #' @importFrom purrr map set_names
 #' @importFrom ggplot2 ggplot aes geom_histogram scale_y_continuous xlab ylab theme element_blank
@@ -1133,7 +1141,6 @@ setMethod(f = "plotPearson",
                  # Note: Protein version uses 0.001 step, using 0.01 here for potentially better visibility first.
                  hist_breaks <- seq(0, 1, 0.01)
 
-
                 # --- Create Plot ---
                 tryCatch({
                     pearson_plot <- correlation_vec |>
@@ -1141,12 +1148,12 @@ setMethod(f = "plotPearson",
                         geom_histogram(breaks = hist_breaks, na.rm = TRUE) +
                         # Set x-axis limits and breaks
                         scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.1), expand = c(0, 0)) +
-                        # Set fixed y-axis scale, similar to protein version
-                        scale_y_continuous(breaks = seq(0, 4, 1), limits = c(0, 4), expand = c(0, 0)) +
+                        # # Set fixed y-axis scale, similar to protein version
+                        # scale_y_continuous(breaks = seq(0, 4, 1), limits = c(0, 4), expand = c(0, 0)) +
                         xlab("Pearson Correlation") +
                         ylab("Counts") +
-                        ggtitle(paste("Pearson Correlation -", assay_name)) +
-                        theme_bw() + 
+                        #ggtitle(paste(assay_name)) +
+                        theme_bw() +
                         theme(
                             panel.grid.major = element_blank(),
                             panel.grid.minor = element_blank()
@@ -1182,8 +1189,6 @@ setMethod(f = "plotPearson",
 #' @param value_column String name of the column containing abundance values.
 #'
 #' @return Numeric Pearson correlation value, or NA_real_ on error or insufficient data.
-#' @title Calculate Metabolite Pair Correlation
-#' @description Internal helper to calculate Pearson correlation for a pair of samples.
 #' @importFrom tidyr pivot_wider
 #' @importFrom rlang sym !!
 #' @importFrom stats cor
@@ -1252,7 +1257,6 @@ calculateMetabolitePairCorrelation <- function(input_pair_table, feature_id_colu
 
 # ------------------------------------------------------- #
 
-#' @title Normalize Between Samples
 #' @describeIn normaliseBetweenSamples Method for MetaboliteAssayData
 #' @param theObject Object of class MetaboliteAssayData
 #' @param normalisation_method Method to use for normalization. Options are
@@ -1451,7 +1455,6 @@ setMethod(f = "normaliseBetweenSamples",
             return(theObject)
           })
 
-#' @title Clean Design Matrix
 #' @describeIn cleanDesignMatrix Method for MetaboliteAssayData
 #' @importFrom dplyr inner_join select rename filter all_of any_of
 #' @importFrom rlang sym !!
@@ -1569,7 +1572,6 @@ setMethod(f = "cleanDesignMatrix",
 #' @importFrom tibble column_to_rownames as_tibble is_tibble
 #' @importFrom dplyr pull select filter all_of any_of mutate across
 #' @importFrom rlang sym !!
-#' @title Get Negative Control Metabolites by ANOVA
 #' @importFrom logger log_info log_warn
 #' @describeIn getNegCtrlMetabAnova Method for MetaboliteAssayData
 #' @export
@@ -1826,7 +1828,6 @@ setMethod(f = "getNegCtrlMetabAnova",
             return(final_control_list)
           })
 
-#' @title Plot RUV Canonical Correlation
 #' @describeIn ruvCancor Method for MetaboliteAssayData
 #' @importFrom methods slot
 #' @importFrom purrr map set_names map_lgl
@@ -2143,8 +2144,6 @@ setMethod(f = "ruvCancor",
 #' @importFrom rlang sym !! :=
 #' @importFrom logger log_info log_warn log_error
 #' @importFrom mixOmics impute.nipals
-#' @title Apply RUV-III Correction with Varying K
-#' @title Apply RUV-III Correction with Varying K
 #' @importFrom stringr str_split
 #' @describeIn ruvIII_C_Varying Method for MetaboliteAssayData
 #' @export
@@ -2222,6 +2221,9 @@ setMethod(f = "ruvIII_C_Varying",
             log_info("  - RUV Number K (k): Type '{class(ruv_number_k_resolved)}' (Value(s) resolved per assay)")
             log_info("  - Control Features (ctrl): Type '{class(ctrl_resolved)}' (Value(s) resolved per assay)")
 
+            if(!is.list( assay_list)) {
+              assay_list <- list( assay_list)
+            }
 
             if (length(assay_list) == 0) {
                 log_warn("No assays found in `metabolite_data` slot. Returning object unchanged.")
@@ -2441,7 +2443,7 @@ setMethod(f = "ruvIII_C_Varying",
                  potential_controls_names <- feature_names_in_assay[ctrl_logical_assay]
 
 
-                # --- Call RUVIII_C_Varying --- 
+                # --- Call RUVIII_C_Varying ---
                 cln_mat <- tryCatch({
                     # Check if RUVIII_C_Varying exists
                     if (!exists("RUVIII_C_Varying", mode = "function")) {
@@ -2490,7 +2492,7 @@ setMethod(f = "ruvIII_C_Varying",
                 original_metadata_tibble <- assay_tibble |>
                     dplyr::filter(!!rlang::sym(metabolite_id_col_name) %in% rownames(corrected_matrix_filt_fs)) |>
                     dplyr::select(dplyr::all_of(c(metabolite_id_col_name, metadata_cols))) # Ensure ID column is selected
-                
+
                 # Ensure metadata IDs are unique before join (should be due to earlier handling, but safe)
                 original_metadata_tibble <- original_metadata_tibble |>
                      dplyr::distinct(!!rlang::sym(metabolite_id_col_name), .keep_all = TRUE)
@@ -2513,7 +2515,7 @@ setMethod(f = "ruvIII_C_Varying",
                     # Ensure original column order (metadata first, then remaining samples)
                     dplyr::relocate(dplyr::all_of(colnames(original_metadata_tibble)), # All metadata cols
                                     dplyr::all_of(colnames(corrected_matrix_filt_fs))) # Remaining sample cols
-                    
+
                      # Check if join resulted in expected columns
                      if(!identical(sort(colnames(final_tibble)), sort(c(colnames(original_metadata_tibble), colnames(corrected_matrix_filt_fs))))) {
                           log_warn("Assay '{assay_name}': Column mismatch after joining corrected data and metadata.", .logr=TRUE)
@@ -2554,3 +2556,455 @@ setMethod(f = "ruvIII_C_Varying",
             log_info("RUV-III correction process finished for {length(final_corrected_list)} assay(s).")
             return(theObject)
           })
+
+#' plot number of significant differentially expressed metabolites
+#' @export
+setMethod(f = "plotNumSigDiffExpBarPlot",
+          signature = "list",
+          definition = function(objectsList) {
+
+           return_object_list <-  purrr::imap( objectsList
+                        , function(object, idx ) {
+
+                          ## Count the number of up or down significant differentially expressed metabolites.
+                          # The contrasts_results_table is already a list of data frames (one per contrast)
+                          # So we don't need to wrap it in another list
+                          num_sig_de_molecules_first_go <- printCountDeGenesTableHelper(
+                            list_of_de_tables = object@contrasts_results_table,
+                            list_of_descriptions = names(object@contrasts_results_table),
+                            input_title = idx
+                          )
+
+
+                          object@num_sig_diff_exp_bar_plot <- num_sig_de_molecules_first_go$plot
+
+                          object@num_sig_diff_table <- num_sig_de_molecules_first_go$table
+
+                          object
+                        })
+
+           return_object_list
+
+ })
+
+
+#' Plot static volcano plot (without gene names)
+#' @export
+setMethod(f = "plotVolcano",
+          signature = "list",
+          definition = function(objectsList
+                                , de_q_val_thresh = 0.05
+                                , qvalue_column = "fdr_qvalue"
+                                , log2fc_column = "logFC") {
+
+
+            return_object_list <-  purrr::imap( objectsList
+                                               , function(object, idx ) {
+
+                                                 volcano_colors <- c(
+                                                   "Significant Up" = "red",
+                                                   "Significant Down" = "blue",
+                                                   "Not significant" = "grey"
+                                                 )
+
+                                                 ## Plot static volcano plot
+                                                 static_volcano_plot_data <- object@contrasts_results_table  |>
+                                                   bind_rows(.id="comparison") |>
+                                                   mutate( lqm = -log10(!!sym(qvalue_column) ) ) |>
+                                                   dplyr::mutate(label = case_when( !!sym(qvalue_column) < de_q_val_thresh  & !!sym(log2fc_column) > 0  ~ "Significant Up",
+                                                                                    !!sym(qvalue_column) < de_q_val_thresh  & !!sym(log2fc_column) < 0  ~ "Significant Down",
+                                                                                    TRUE ~ "Not significant")) |>
+                                                   # This is the key change: ensure the 'label' column is a factor with all possible levels.
+                                                   # This makes the scales identical across all plots, allowing patchwork to merge them.
+                                                   dplyr::mutate(label = factor(label, levels = names(volcano_colors))) |>
+                                                   dplyr::mutate(colour = case_when( !!sym(qvalue_column) < de_q_val_thresh & !!sym(log2fc_column) < 0 ~ "blue",
+                                                                                     !!sym(qvalue_column) < de_q_val_thresh  & !!sym(log2fc_column) > 0 ~ "red",
+                                                                                     TRUE ~ "grey")) |>
+                                                   dplyr::mutate(colour = factor(colour, levels = c("blue", "grey", "red"))) |>
+                                                   dplyr::mutate( title =  str_split_i( comparison, "=", 1))
+
+                                                 list_of_volcano_plots_tbl <- static_volcano_plot_data |>
+                                                   group_by( comparison, title) |>
+                                                   nest() |>
+                                                    mutate( plot = purrr::map2( data, title, \(x,y) { plotOneVolcanoNoVerticalLines(x
+                                                                                                                                    , paste0(idx, " - ", y)
+                                                                                                                                   , log_q_value_column = "lqm"
+                                                                                                                                   , log_fc_column = log2fc_column) +
+                                                        scale_color_manual(
+                                                          values = volcano_colors,
+                                                          name = "Significance",
+                                                          limits = names(volcano_colors)) } ) )
+
+                                                  # THE FIX: Extract the 'plot' column to get a LIST of plots,
+                                                  # and correctly name the list elements.
+                                                  plots_list <- list_of_volcano_plots_tbl$plot
+                                                  names(plots_list) <- list_of_volcano_plots_tbl$comparison
+
+                                                  # Assign the LIST of plots to the slot, not the whole table
+                                                  object@volcano_plot <- plots_list
+                                                  return(object)
+                                               })
+
+            return(return_object_list)
+
+          })
+
+
+# Get the differential expression results in wide format
+
+#'@export
+setMethod(f = "getDeResultsWideFormat"
+          , signature = "list"
+          , definition = function(objectsList
+                                , qvalue_column = "fdr_qvalue"
+                                , raw_pvalue_column = "raw_pvalue"
+                                , log2fc_column = "logFC")  {
+
+
+            return_object_list <-  purrr::map( objectsList, function(object) {
+
+              # Correctly access the metabolite data from the nested 'theObject' slot.
+              # This defensively handles cases where the slot might hold a list of
+              # data frames (correct) or a single data frame (incorrect but handled).
+              counts_data_slot <- object@theObject@metabolite_data
+              counts_table_to_use <- if (is.list(counts_data_slot) && !is.data.frame(counts_data_slot)) {
+                counts_data_slot[[1]]
+              } else {
+                counts_data_slot
+              }
+
+              id_col_name <- object@theObject@metabolite_id_column
+
+              # Bind the list of data frames into a single tidy data frame
+              tidy_results <- object@contrasts_results_table |>
+                dplyr::bind_rows(.id="comparison") |>
+                dplyr::mutate( comparision_short = str_split_i( comparison, "=", 1))
+
+              # Pivot the tidy data frame to a wide format using the correct ID column
+              wide_results <- tidy_results |>
+                tidyr::pivot_wider(id_cols = c(!!sym(id_col_name)),
+                                   names_from = c(comparision_short),
+                                   names_sep = ":",
+                                   values_from = c(!!sym(log2fc_column), !!sym(qvalue_column), !!sym(raw_pvalue_column))) |>
+                # Join with original counts using the correct ID column.
+                dplyr::left_join(counts_table_to_use, by = join_by( !!sym(id_col_name) == !!sym(id_col_name))) |>
+                dplyr::arrange(dplyr::across(matches(qvalue_column))) |>
+                dplyr::distinct()
+
+              # Assign to the correct slot and return the object
+              object@results_table_wide <- wide_results
+              return(object)
+            })
+
+            return(return_object_list)
+          })
+
+
+
+
+# Get the differential expression results in wide format
+#'@export
+setMethod(f = "getDeResultsLongFormat"
+          , signature = "list"
+          , definition = function(objectsList)  {
+
+
+            return_object_list <-  purrr::map( objectsList, function(object) {
+
+              # Correctly access the metabolite data from the nested 'theObject' slot.
+              # This defensively handles cases where the slot might hold a list of
+              # data frames (correct) or a single data frame (incorrect but handled).
+              counts_data_slot <- object@theObject@metabolite_data
+              counts_table_to_use <- if (is.list(counts_data_slot) && !is.data.frame(counts_data_slot)) {
+                counts_data_slot[[1]]
+              } else {
+                counts_data_slot
+              }
+
+              id_col_name <- object@theObject@metabolite_id_column
+
+              # Bind the list of data frames into a single tidy data frame
+              tidy_results <- object@contrasts_results_table |>
+                dplyr::bind_rows(.id="comparison") |>
+                dplyr::mutate( comparision_short = str_split_i( comparison, "=", 1))
+
+              # Pivot the tidy data frame to a wide format using the correct ID column
+              long_results <- tidy_results |>
+                # Join with original counts using the correct ID column.
+                dplyr::left_join(counts_table_to_use, by = join_by( !!sym(id_col_name) == !!sym(id_col_name))) |>
+                dplyr::distinct()
+
+              print(head( long_results))
+
+              # Assign to the correct slot and return the object
+              object@results_table_long <- long_results
+              return(object)
+            })
+
+            return(return_object_list)
+          })
+
+
+
+
+
+## Create proteomics interactive volcano plot
+#'@export
+setMethod(f = "plotInteractiveVolcano"
+          , signature = "list"
+          , definition =
+            function( objectsList, anno_list = NULL ) {
+
+              list_of_objects <- purrr::imap( objectsList,
+                                             \(de_output_object, idx) {
+
+                                               # This helper function now correctly uses its own argument 'r_obj'
+                                               # and includes error handling for the qvalue calculation.
+                                               updateWithQvalue <-function(r_obj) {
+                                                 r_obj_output <- r_obj
+                                                 if (is.null(r_obj$p.value)) return(r_obj_output)
+
+                                                 for(coef in seq_len(ncol(r_obj$p.value))) {
+                                                   p_values <- r_obj$p.value[, coef]
+                                                   if (any(is.na(p_values))) {
+                                                       warning(sprintf("NA p-values found in coefficient %d. These will result in NA q-values.", coef), call. = FALSE)
+                                                   }
+                                                   q_result <- tryCatch({
+                                                       qvalue::qvalue(p_values)$qvalues
+                                                   }, error = function(e) {
+                                                       warning(sprintf("qvalue calculation failed for coefficient %d: %s. Returning original p-values as q-values.", coef, e$message), call. = FALSE)
+                                                       p_values # Fallback to p-values on error
+                                                   })
+                                                   r_obj_output$p.value[,coef] <- q_result
+                                                 }
+                                                 r_obj_output
+                                               }
+
+                                               my_fit_eb <-   updateWithQvalue( de_output_object@fit.eb)
+
+                                               counts_matrix <- de_output_object@theObject@metabolite_data[[1]] |>
+                                                 column_to_rownames( de_output_object@theObject@metabolite_id_column) |>
+                                                 as.matrix()
+
+                                               # Defensive measure: ensure my_fit_eb components have rownames.
+                                               # `MArrayLM` objects don't have a `rownames<-` method, so we edit the components.
+                                               if (!is.null(my_fit_eb$coefficients) && is.null(rownames(my_fit_eb$coefficients))) {
+                                                   if (nrow(my_fit_eb$coefficients) == nrow(counts_matrix)) {
+                                                       warning("`my_fit_eb` components were missing rownames. Assigning them from `counts_matrix`.", call. = FALSE)
+                                                       feature_names <- rownames(counts_matrix)
+                                                       rownames(my_fit_eb$coefficients) <- feature_names
+                                                       rownames(my_fit_eb$p.value) <- feature_names
+                                                       if (!is.null(my_fit_eb$t)) { rownames(my_fit_eb$t) <- feature_names }
+                                                       if (!is.null(my_fit_eb$stdev.unscaled)) { rownames(my_fit_eb$stdev.unscaled) <- feature_names }
+                                                       if (!is.null(my_fit_eb$genes)) { rownames(my_fit_eb$genes) <- feature_names }
+                                                   } else {
+                                                       stop("`my_fit_eb` components are missing rownames, and their row count does not match `counts_matrix`. Cannot proceed.")
+                                                   }
+                                               }
+
+                                               groups <- data.frame( Run = colnames(counts_matrix) ) |>
+                                                 left_join( de_output_object@theObject@design_matrix
+                                                           , by=join_by( !!sym(de_output_object@theObject@sample_id) == !!sym(de_output_object@theObject@sample_id) )) |>
+                                                 dplyr::pull(genotype_group)
+
+
+                                               list_of_glimma_objs <- purrr::map( seq_len( ncol( de_output_object@fit.eb$p.value))
+
+                                                                                  , \(idxb) {
+
+                                                                                    id_col_name <- de_output_object@theObject@metabolite_id_column
+
+                                                                                    # More robust way to create the base annotation table
+                                                                                    base_anno_tbl <- data.frame(id = rownames(my_fit_eb))
+                                                                                    colnames(base_anno_tbl) <- id_col_name
+
+
+                                                                                    # If a user-provided anno_tbl exists, join it.
+                                                                                    anno_tbl_joined <- if (!is.null(anno_list)) {
+                                                                                      print(paste( "idx=", idx))
+                                                                                      anno_tbl <- anno_list[[idx]]
+                                                                                        # Defensive check: ensure anno_tbl is a data.frame and has the join column
+                                                                                        if (!is.data.frame(anno_tbl) || !id_col_name %in% colnames(anno_tbl)) {
+                                                                                            warning(sprintf("Provided 'anno_tbl' is not a data.frame or is missing the join column '%s'. Ignoring 'anno_tbl'.", id_col_name))
+                                                                                            base_anno_tbl
+                                                                                        } else {
+                                                                                            dplyr::left_join(base_anno_tbl |>
+                                                                                                               mutate( !!sym(id_col_name) := purrr::map_chr( !!sym(id_col_name), as.character))
+                                                                                                             , anno_tbl |>
+                                                                                                               mutate( !!sym(id_col_name) := purrr::map_chr( !!sym(id_col_name), as.character)), by = id_col_name)
+                                                                                        }
+                                                                                    } else {
+                                                                                        base_anno_tbl
+                                                                                    }
+
+                                                                                    # Glimma requires a data.frame with rownames set to the feature IDs.
+                                                                                    anno_df_for_glimma <- as.data.frame(anno_tbl_joined)
+                                                                                    rownames(anno_df_for_glimma) <- anno_df_for_glimma[[id_col_name]]
+
+
+                                                                                    Glimma::glimmaVolcano(my_fit_eb
+                                                                                                          , coef=idxb
+                                                                                                          , anno=anno_df_for_glimma
+                                                                                                          , counts = counts_matrix
+                                                                                                          , groups = groups
+                                                                                                          , display.columns = if(!is.null(anno_tbl)) colnames(anno_tbl) else NULL
+                                                                                                          , status=decideTests(my_fit_eb, adjust.method="none")
+                                                                                                          , p.adj.method = "none"
+                                                                                                          , transform.counts='none')
+
+                                                                                  })
+
+                                               names(list_of_glimma_objs) <- colnames(my_fit_eb$coefficients)
+                                               de_output_object@interactive_volcano_plot <- list_of_glimma_objs
+
+                                               de_output_object })
+
+              list_of_objects
+
+            } )
+
+
+
+    # htmlwidgets::saveWidget( widget = theObject@interactive_volcano_plot
+    # , file = file.path( output_dir
+    #                     , paste0(colnames(r_obj$coefficients)[coef], ".html"))  #the path & file name
+    # , selfcontained = TRUE #creates a single html file
+    # )
+
+
+
+##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Create a QC composite figure
+
+#' @export
+setMethod(f = "createGridQCMetabolomics",
+          signature = "GridPlotData",
+          definition = function(theObject, pca_titles = NULL, density_titles = NULL, rle_titles = NULL, pearson_titles = NULL, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
+
+            # --- Defensive check on input titles ---
+            stopifnot("pca_titles must be a character vector or NULL" = is.null(pca_titles) || is.character(pca_titles))
+            stopifnot("density_titles must be a character vector or NULL" = is.null(density_titles) || is.character(density_titles))
+            stopifnot("rle_titles must be a character vector or NULL" = is.null(rle_titles) || is.character(rle_titles))
+            stopifnot("pearson_titles must be a character vector or NULL" = is.null(pearson_titles) || is.character(pearson_titles))
+
+            # --- Identify all unique assay names from the plot lists ---
+            all_plot_lists <- c(theObject@pca_plots, theObject@density_plots, theObject@rle_plots, theObject@pearson_plots)
+            all_plot_lists <- all_plot_lists[sapply(all_plot_lists, function(x) is.list(x) && length(x) > 0)]
+
+            assay_names <- if (length(all_plot_lists) > 0) unique(unlist(lapply(all_plot_lists, names))) else character(0)
+
+            if (length(assay_names) == 0 || all(sapply(assay_names, is.null))) {
+                warning("No assays with named plots found. Cannot generate composite QC plot.", immediate. = TRUE)
+                return(list())
+            }
+
+            # --- Loop over each assay to create a composite plot ---
+            composite_plots_list <- purrr::map(assay_names, function(current_assay_name) {
+                message(sprintf("--- Generating composite QC plot for assay: %s ---", current_assay_name))
+
+                # Helper to extract and prepare plots for the current assay
+                prepare_plot_row <- function(plot_groups_list) {
+                    plots <- purrr::map(plot_groups_list, ~ .x[[current_assay_name]])
+                    # Replace any NULLs with a blank plot to maintain grid alignment
+                    lapply(plots, function(p) if(is.null(p)) ggplot() + theme_void() else p)
+                }
+
+                # Extract and prepare plots for the current assay
+                pca_plots_assay <- prepare_plot_row(theObject@pca_plots)
+                density_plots_assay <- prepare_plot_row(theObject@density_plots)
+                rle_plots_assay <- prepare_plot_row(theObject@rle_plots)
+                pearson_plots_assay <- prepare_plot_row(theObject@pearson_plots)
+
+                # --- Plot creation helper functions ---
+                createLabelPlot <- function(title) {
+                  ggplot() +
+                    annotate("text", x = 0, y = 0.5, label = title, size = 5, hjust = 0) +
+                    xlim(0, 1) +
+                    theme_void() +
+                    theme(plot.margin = margin(5, 5, 5, 5), panel.background = element_blank())
+                }
+                # These functions now only apply theme, as titles are handled by labels
+                applyTheme <- function(plot) {
+                    if (inherits(plot, "ggplot") && !is.null(plot$data)) { # Check if it's not an empty plot
+                         plot <- plot + theme(text = element_text(size = 15),
+                                   panel.grid.major = element_blank(),
+                                   panel.grid.minor = element_blank(),
+                                   panel.background = element_blank())
+                         if("patchwork" %in% class(plot)) { # for density plots
+                             plot <- plot & theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+                         }
+                    }
+                    plot
+                }
+
+
+                # --- Generate and combine plots for the current assay ---
+                plots_to_combine <- list()
+                add_plot_row <- function(plots, titles, create_fn) {
+                    # Only add row if there are titles provided for it
+                    if (!is.null(titles) && length(titles) > 0 && length(plots) > 0) {
+                        # Number of columns is now determined by the number of plots for THIS row
+                        num_cols_row <- length(plots)
+                        # Ensure the number of titles matches the number of plots
+                        if(length(titles) != num_cols_row){
+                             warning(sprintf("Mismatch between number of titles (%d) and number of plots (%d). Adjusting titles to match plots.", length(titles), num_cols_row), immediate. = TRUE)
+                             # Create a character vector of the correct length, filled with blanks
+                             adjusted_titles <- character(num_cols_row)
+                             # Copy the provided titles into the new vector
+                             n_to_copy <- min(length(titles), num_cols_row)
+                             if (n_to_copy > 0) {
+                                adjusted_titles[1:n_to_copy] <- titles[1:n_to_copy]
+                             }
+                             titles <- adjusted_titles
+                        }
+                        list(wrap_plots(lapply(titles, createLabelPlot), ncol = num_cols_row),
+                             wrap_plots(lapply(plots, create_fn), ncol = num_cols_row))
+                    } else {
+                        list()
+                    }
+                }
+
+                plots_to_combine <- c(plots_to_combine, add_plot_row(pca_plots_assay, pca_titles, applyTheme))
+                plots_to_combine <- c(plots_to_combine, add_plot_row(density_plots_assay, density_titles, applyTheme))
+                plots_to_combine <- c(plots_to_combine, add_plot_row(rle_plots_assay, rle_titles, applyTheme))
+                plots_to_combine <- c(plots_to_combine, add_plot_row(pearson_plots_assay, pearson_titles, applyTheme))
+
+                if (length(plots_to_combine) == 0) {
+                    warning(paste("No plots to combine for assay:", current_assay_name))
+                    return(NULL)
+                }
+
+                num_rows <- length(plots_to_combine) / 2
+                layout_heights <- rep(c(0.1, 1), num_rows)
+                
+                # Determine overall width by the row with the maximum number of plots
+                max_cols <- max(
+                    length(pca_plots_assay), 
+                    length(density_plots_assay), 
+                    length(rle_plots_assay), 
+                    length(pearson_plots_assay)
+                )
+
+                combined_plot <- wrap_plots(plots_to_combine, ncol = 1) + plot_layout(heights = layout_heights)
+
+                if (!is.null(save_path)) {
+                  assay_file_name <- paste0(file_name, "_", current_assay_name)
+                  sapply(c("png", "pdf", "svg"), function(ext) {
+                    ggsave(
+                      plot = combined_plot,
+                      filename = file.path(save_path, paste0(assay_file_name, ".", ext)),
+                      width = 3.5 * max_cols,
+                      height = 4 * num_rows
+                    )
+                  })
+                  message(paste("Plots saved for assay '", current_assay_name, "' in", save_path))
+                }
+
+                return(combined_plot)
+            })
+
+            names(composite_plots_list) <- assay_names
+            composite_plots_list[!sapply(composite_plots_list, is.null)]
+          })
+
+
