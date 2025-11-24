@@ -1,50 +1,42 @@
-
+#' MetabolomicsDifferentialAbundanceResults S4 Class
+#'
+#' @description
+#' S4 class to store essential results from metabolomics differential abundance analysis.
+#' This class contains the original data object, fitted model, and results table.
+#'
+#' @slot theObject The original MetaboliteAssayData object used for analysis
+#' @slot fit.eb The fitted eBayes model from limma analysis
+#' @slot contrasts_results_table Data frame with differential abundance statistics
+#'
+#' @export
+setClass("MetabolomicsDifferentialAbundanceResults"
+         , slots = c(
+             theObject = "MetaboliteAssayData"
+           , fit.eb = "MArrayLM"
+           , contrasts_results_table = "list"
+           , num_sig_diff_exp_bar_plot = "list"
+           , num_sig_diff_table = "data.frame"
+           , volcano_plot = "list"
+           , interactive_volcano_plot = "list"
+           , p_value_dist_plot = "list"
+           , results_table_long = "data.frame"
+           , results_table_wide = "data.frame"
+         ),
+         prototype = list(
+             theObject = NULL
+           , fit.eb = NULL
+           , contrasts_results_table = list()
+           , num_sig_diff_exp_bar_plot =  list()
+           , num_sig_diff_table =  data.frame()
+           , volcano_plot =  list()
+           , interactive_volcano_plot = list()
+           , p_value_dist_plot =  list()
+           , results_table_long = data.frame()
+           , results_table_wide = data.frame()
+         )
+)
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#'@export
-setGeneric( name ="differentialAbundanceAnalysis"
-            , def=function(objectsList
-                           , contrasts_tbl = NULL
-                           , formula_string = NULL
-                           , de_q_val_thresh = NULL
-                           , treat_lfc_cutoff = NULL
-                           , eBayes_trend = NULL
-                           , eBayes_robust = NULL
-                           , args_group_pattern = NULL
-                           , args_row_id = NULL) {
-              standardGeneric("differentialAbundanceAnalysis")})
-
-#'@export
-setMethod( f ="differentialAbundanceAnalysis"
-           , signature = "MetaboliteAssayData"
-           , definition=function( objectsList
-                                  , contrasts_tbl = NULL
-                                  , formula_string = NULL
-                                  , de_q_val_thresh = NULL
-                                  , treat_lfc_cutoff = NULL
-                                  , eBayes_trend = NULL
-                                  , eBayes_robust = NULL
-                                  , args_group_pattern = NULL
-                                  , args_row_id = NULL ) {
-
-             # Run DE analysis and explicitly set names
-             results_list <- purrr::map(    objectsList
-                                            , \( obj) {
-                                              differentialAbundanceAnalysisHelper(  obj
-                                                                                    , contrasts_tbl = contrasts_tbl
-                                                                                    , formula_string = formula_string
-                                                                                    , de_q_val_thresh = de_q_val_thresh
-                                                                                    , treat_lfc_cutoff = treat_lfc_cutoff
-                                                                                    , eBayes_trend = eBayes_trend
-                                                                                    , eBayes_robust = eBayes_robust
-                                                                                    , args_group_pattern = args_group_pattern
-                                                                                    , args_row_id = args_row_id
-                                              )
-                                            })
-
-             return(results_list)
-
-           })
 
 #'@export
 setMethod( f ="differentialAbundanceAnalysis"
@@ -52,12 +44,12 @@ setMethod( f ="differentialAbundanceAnalysis"
            , definition=function( objectsList
                                   , contrasts_tbl = NULL
                                   , formula_string = NULL
+                                  , group_id = NULL
                                   , de_q_val_thresh = NULL
                                   , treat_lfc_cutoff = NULL
                                   , eBayes_trend = NULL
                                   , eBayes_robust = NULL
-                                  , args_group_pattern = NULL
-                                  , args_row_id = NULL ) {
+                                  , args_group_pattern = NULL ) {
 
              # Validate that all objects in the list are MetaboliteAssayData
              if (!all(purrr::map_lgl(objectsList, ~inherits(.x, "MetaboliteAssayData")))) {
@@ -70,12 +62,12 @@ setMethod( f ="differentialAbundanceAnalysis"
                                               differentialAbundanceAnalysisHelper(  obj
                                                                                     , contrasts_tbl = contrasts_tbl
                                                                                     , formula_string = formula_string
+                                                                                    , group_id = group_id
                                                                                     , de_q_val_thresh = de_q_val_thresh
                                                                                     , treat_lfc_cutoff = treat_lfc_cutoff
                                                                                     , eBayes_trend = eBayes_trend
                                                                                     , eBayes_robust = eBayes_robust
                                                                                     , args_group_pattern = args_group_pattern
-                                                                                    , args_row_id = args_row_id
                                               )
                                             })
 
@@ -89,19 +81,6 @@ setMethod( f ="differentialAbundanceAnalysis"
            })
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#'@export
-setGeneric( name ="differentialAbundanceAnalysisHelper"
-            , def=function(theObject
-                           , contrasts_tbl = NULL
-                           , formula_string = NULL
-                           , de_q_val_thresh = NULL
-                           , treat_lfc_cutoff = NULL
-                           , eBayes_trend = NULL
-                           , eBayes_robust = NULL
-                           , args_group_pattern = NULL
-                           , args_row_id = NULL) {
-              standardGeneric("differentialAbundanceAnalysisHelper")
-            })
 
 #'@export
 setMethod( f ="differentialAbundanceAnalysisHelper"
@@ -109,12 +88,14 @@ setMethod( f ="differentialAbundanceAnalysisHelper"
            , definition=function( theObject
                                   , contrasts_tbl = NULL
                                   , formula_string = NULL
+                                  , group_id = NULL
                                   , de_q_val_thresh = NULL
                                   , treat_lfc_cutoff = NULL
                                   , eBayes_trend = NULL
                                   , eBayes_robust = NULL
-                                  , args_group_pattern = NULL
-                                  , args_row_id = NULL ) {
+                                  , args_group_pattern = NULL) {
+
+  message("--- Entering differentialAbundanceAnalysisHelper ---")
 
   contrasts_tbl <- checkParamsObjectFunctionSimplify( theObject, "contrasts_tbl", NULL)
   formula_string <- checkParamsObjectFunctionSimplify( theObject, "formula_string", " ~ 0 + group")
@@ -123,13 +104,21 @@ setMethod( f ="differentialAbundanceAnalysisHelper"
   eBayes_trend <- checkParamsObjectFunctionSimplify( theObject, "eBayes_trend", TRUE)
   eBayes_robust <- checkParamsObjectFunctionSimplify( theObject, "eBayes_robust", TRUE)
   args_group_pattern <- checkParamsObjectFunctionSimplify( theObject, "args_group_pattern", "(\\d+)")
-  args_row_id <- checkParamsObjectFunctionSimplify( theObject, "args_row_id", "uniprot_acc")
+
+  if( is.null( group_id ) ) {
+    group_id <- theObject@group_id
+  } else {
+    group_id <- checkParamsObjectFunctionSimplify( theObject, "group_id", "group")
+  }
+
+  #message("   differentialAbundanceAnalysisHelper Arg: contrasts_tbl = ")
+  #print(utils::str(contrasts_tbl))
 
   print(formula_string)
 
   # Add preprocessing for group names that start with numbers
   design_matrix <- theObject@design_matrix
-  group_col <- design_matrix[["group"]]
+  group_col <- design_matrix[[theObject@group_id]]
 
   # Check if any group names start with numbers and create mapping
   starts_with_number <- grepl("^[0-9]", group_col)
@@ -141,7 +130,7 @@ setMethod( f ="differentialAbundanceAnalysisHelper"
     group_mapping <- setNames(original_groups, safe_groups)
 
     # Update design matrix with safe names
-    design_matrix[["group"]] <- purrr::map_chr(group_col, \(x) {
+    design_matrix[[theObject@group_id]] <- purrr::map_chr(group_col, \(x) {
       if(grepl("^[0-9]", x)) paste0("grp_", x) else x
     })
 
@@ -165,7 +154,6 @@ setMethod( f ="differentialAbundanceAnalysisHelper"
   theObject <- updateParamInObject(theObject, "eBayes_trend")
   theObject <- updateParamInObject(theObject, "eBayes_robust")
   theObject <- updateParamInObject(theObject, "args_group_pattern")
-  theObject <- updateParamInObject(theObject, "args_row_id")
 
   return_list <- list()
   return_list$theObject <- theObject
@@ -195,25 +183,18 @@ setMethod( f ="differentialAbundanceAnalysisHelper"
   message(sprintf("   eBayes_trend after conversion: %s (class: %s)", eBayes_trend, class(eBayes_trend)))
   message(sprintf("   eBayes_robust after conversion: %s (class: %s)", eBayes_robust, class(eBayes_robust)))
 
-  ## Count the number of values
-    # Convert metabolite data to matrix format
-    # metabolite_matrix <- as.matrix(theObject@metabolite_data[, -1]) # Exclude Name column
-    # colnames(metabolite_matrix) <- colnames(theObject@metabolite_data)[-1]
-    # rownames(metabolite_matrix) <- theObject@metabolite_data$Name
-    # return_list$plot_num_of_values <- plotNumOfValuesNoLog(metabolite_matrix)
-
-  ## Compare the different experimental groups and obtain lists of differentially expressed proteins.")
+  ## Compare the different experimental groups and obtain lists of differentially expressed metabolites
 
   rownames( theObject@design_matrix ) <- theObject@design_matrix |> dplyr::pull( one_of(theObject@sample_id ))
 
   # Prepare data matrix for DE analysis
   data_matrix <- NA
 
-    matrix_data <- as.matrix(theObject@metabolite_data[, -1]) # Exclude Name column
-    colnames(matrix_data) <- colnames(theObject@metabolite_data)[-1]
-    rownames(matrix_data) <- theObject@metabolite_data$Name
-    data_matrix <- matrix_data
-
+  matrix_data <- as.matrix(theObject@metabolite_data[[1]][, -1]) # Exclude Name column
+  colnames(matrix_data) <- colnames(theObject@metabolite_data[[1]])[-1]
+  rownames(matrix_data) <- theObject@metabolite_data[[1]]$Name
+  data_matrix <- matrix_data
+  message("   differentialAbundanceAnalysisHelper Step: Calling runTestsContrasts...")
   contrasts_results <- runTestsContrasts(
     data_matrix,
     contrast_strings = contrasts_tbl$contrasts,
@@ -223,24 +204,63 @@ setMethod( f ="differentialAbundanceAnalysisHelper"
     eBayes_trend = eBayes_trend,
     eBayes_robust = eBayes_robust
   )
+  message("   differentialAbundanceAnalysisHelper Step: runTestsContrasts completed.")
+
+ #  # Combine all contrast results into a single data frame
+ # # message("   Data State (contrasts_results$results) Structure:")
+ # # utils::str(contrasts_results$results)
+ # # message("   Data State (contrasts_results$results) Head:")
+ # # print(head(contrasts_results$results))
+ #  contrasts_results_table <-  dplyr::bind_rows(contrasts_results$results, .id = "comparison")
 
   # Map back to original group names in results if needed
   if(exists("group_mapping")) {
-    contrasts_results_table <- contrasts_results$results |>
-      dplyr::mutate(comparison = purrr::map_chr(comparison, \(x) {
-        result <- x
-        for(safe_name in names(group_mapping)) {
-          result <- gsub(safe_name, group_mapping[safe_name], result, fixed = TRUE)
-        }
-        result
-      }))
-  } else {
-    contrasts_results_table <- contrasts_results$results
+    contrasts_results$results <- contrasts_results$results |>
+      purrr::map( \(results_table){
+        results_table |>
+          dplyr::mutate(comparison = purrr::map_chr(comparison, \(x) {
+            result <- x
+            for(safe_name in names(group_mapping)) {
+              result <- gsub(safe_name, group_mapping[safe_name], result, fixed = TRUE)
+            }
+            result
+          }))
+
+      })
   }
 
-  return_list$contrasts_results <- contrasts_results
-  return_list$contrasts_results_table <- contrasts_results_table
 
-    return_list
+  return_list$fit.eb <- contrasts_results$fit.eb
+  return_list$contrasts_results_table <- contrasts_results$results |>
+    purrr::map( \(result_table) {
+      result_table |>
+        rownames_to_column(var = theObject@metabolite_id_column)
+    })
 
+  # Create and return the S4 object
+  result_object <- new("MetabolomicsDifferentialAbundanceResults",
+                       theObject = return_list$theObject,
+                       fit.eb = return_list$fit.eb,
+                       contrasts_results_table = return_list$contrasts_results_table
+  )
+  message("--- Exiting differentialAbundanceAnalysisHelper ---")
+  return(result_object)
 })
+
+
+# Helper function to get counts table
+getCountsTable <- function(obj) {
+  if (inherits(obj, "MetaboliteAssayData")) {
+    message(sprintf("   Getting counts table for object of class: %s", class(obj)[1]))
+    message(sprintf("   Returning metabolite_data with dimensions: %d rows, %d cols",
+                    nrow(obj@metabolite_data), ncol(obj@metabolite_data)))
+    obj@metabolite_data
+  } else if (inherits(obj, "ProteinQuantitativeData")) {
+    message(sprintf("   Returning protein_quant_table with dimensions: %d rows, %d cols",
+                    nrow(obj@protein_quant_table), ncol(obj@protein_quant_table)))
+    obj@protein_quant_table
+  } else {
+    message(sprintf("   ERROR: Unsupported object type: %s", class(obj)[1]))
+    stop("Unsupported object type")
+  }
+}

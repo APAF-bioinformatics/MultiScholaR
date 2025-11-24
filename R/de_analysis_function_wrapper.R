@@ -24,8 +24,8 @@ deAnalysisWrapperFunction <- function( theObject
 
   # Add preprocessing for group names that start with numbers
   design_matrix <- theObject@design_matrix
-  group_col <- design_matrix[["group"]]
-  
+  group_col <- design_matrix[[theObject@group_id]]
+
   # Check if any group names start with numbers and create mapping
   starts_with_number <- grepl("^[0-9]", group_col)
   if(any(starts_with_number)) {
@@ -34,12 +34,12 @@ deAnalysisWrapperFunction <- function( theObject
       if(grepl("^[0-9]", x)) paste0("grp_", x) else x
     })
     group_mapping <- setNames(original_groups, safe_groups)
-    
+
     # Update design matrix with safe names
-    design_matrix[["group"]] <- purrr::map_chr(group_col, \(x) {
+    design_matrix[[theObject@group_id]] <- purrr::map_chr(group_col, \(x) {
       if(grepl("^[0-9]", x)) paste0("grp_", x) else x
     })
-    
+
     # Update contrasts table if it exists
     if(!is.null(contrasts_tbl)) {
       contrasts_tbl[[1]] <- purrr::map_chr(contrasts_tbl[[1]], \(x) {
@@ -49,7 +49,7 @@ deAnalysisWrapperFunction <- function( theObject
         x
       })
     }
-    
+
     theObject@design_matrix <- design_matrix
   }
 
@@ -115,7 +115,13 @@ deAnalysisWrapperFunction <- function( theObject
   return_list$pca_plot_with_labels <- pca_plot_with_labels
 
   ## Count the number of values
-  return_list$plot_num_of_values <- plotNumOfValuesNoLog(theObject@protein_quant_table)
+  if (inherits(theObject, "MetaboliteAssayData")) {
+    # Convert metabolite data to matrix format
+    metabolite_matrix <- getDataMatrix(theObject)
+    return_list$plot_num_of_values <- plotNumOfValuesNoLog(metabolite_matrix)
+  } else if(inherits(theObject, "ProteinQuantitativeData") ) {
+    return_list$plot_num_of_values <- plotNumOfValuesNoLog(theObject@protein_quant_table)
+  }
 
   ## Compare the different experimental groups and obtain lists of differentially expressed proteins.")
 
@@ -199,7 +205,9 @@ deAnalysisWrapperFunction <- function( theObject
     # Standard limma analysis (existing code)
     cat("   DE ANALYSIS Step: Running standard limma analysis\n")
     
-    contrasts_results <- runTestsContrasts(as.matrix(column_to_rownames(theObject@protein_quant_table, theObject@protein_id_column)),
+    data_matrix <- getDataMatrix(theObject)
+
+    contrasts_results <- runTestsContrasts(data_matrix,
                                            contrast_strings = contrast_strings_to_use,
                                            design_matrix = theObject@design_matrix,
                                            formula_string = formula_string,
@@ -314,7 +322,10 @@ deAnalysisWrapperFunction <- function( theObject
   ## Create wide format output file
   norm_counts <- NA
 
-  counts_table_to_use <- theObject@protein_quant_table
+  message("--- Checking object type and data access ---")
+  message(sprintf("   Object class: %s", class(theObject)))
+  
+  counts_table_to_use <- getCountsTable(theObject)
 
   norm_counts <- counts_table_to_use |>
     as.data.frame() |>
@@ -326,6 +337,21 @@ deAnalysisWrapperFunction <- function( theObject
 
   return_list$norm_counts <- norm_counts
 
+  # Helper to handle protein ID joining based on object type
+  dealWithProeinIdJoining <- function(df) {
+      if (inherits(theObject, "MetaboliteAssayData")) {
+        # For metabolites, we don't need to join with protein_id_table
+        df
+      } else if (inherits(theObject, "ProteinQuantitativeData")) {
+        # For proteins, join with protein_id_table
+        df |>
+          left_join(theObject@protein_id_table,
+                   by = join_by(!!sym(args_row_id) == !!sym(theObject@protein_id_column)))
+      } else {
+        stop(sprintf("Unsupported object type: %s", class(theObject)))
+      }
+    }
+
   de_proteins_wide <- significant_rows |>
     dplyr::filter(analysis_type == "RUV applied") |>
     dplyr::select(-lqm, -colour, -analysis_type) |>
@@ -333,8 +359,8 @@ deAnalysisWrapperFunction <- function( theObject
                 names_from = c(comparison),
                 names_sep = ":",
                 values_from = c(log2FC, !!sym(qvalue_column), !!sym(raw_pvalue_colum))) |>
-    left_join(counts_table_to_use, by = join_by( !!sym(args_row_id)  == !!sym(theObject@protein_id_column)  )   ) |>
-    left_join(theObject@protein_id_table, by = join_by( !!sym(args_row_id) == !!sym(theObject@protein_id_column) )  ) |>
+    left_join(counts_table_to_use, by = join_by( !!sym(args_row_id)  == !!sym(args_row_id)  )   ) |>
+    dealWithProeinIdJoining() |>
     dplyr::arrange(across(matches("!!sym(qvalue_column)"))) |>
     distinct()
 
@@ -344,18 +370,31 @@ deAnalysisWrapperFunction <- function( theObject
 
   ## Create long format output file
 
+  # Create appropriate ID table based on object type
+  id_table <- if (inherits(theObject, "MetaboliteAssayData")) {
+    message("   Using metabolite data as ID table for MetaboliteAssayData")
+    # For metabolites, create a simple ID table from the metabolite data
+    theObject@metabolite_data |>
+      dplyr::select(!!sym(args_row_id)) |>
+      dplyr::distinct()
+  } else if (inherits(theObject, "ProteinQuantitativeData")) {
+    message("   Using protein_id_table for ProteinQuantitativeData")
+    theObject@protein_id_table
+  } else {
+    stop(sprintf("Unsupported object type: %s", class(theObject)))
+  }
+
   de_proteins_long <- createDeResultsLongFormat( lfc_qval_tbl = significant_rows |>
                                                    dplyr::filter(analysis_type == "RUV applied") ,
-                                                 norm_counts_input_tbl = as.matrix(column_to_rownames(theObject@protein_quant_table, theObject@protein_id_column)),
-                                                 raw_counts_input_tbl = as.matrix(column_to_rownames(theObject@protein_quant_table, theObject@protein_id_column)),
+                                                 norm_counts_input_tbl = getDataMatrix(theObject),
+                                                 raw_counts_input_tbl = getDataMatrix(theObject),
                                                  row_id = args_row_id,
                                                  sample_id = theObject@sample_id,
                                                  group_id = group_id,
                                                  group_pattern = args_group_pattern,
                                                  design_matrix_norm = theObject@design_matrix,
                                                  design_matrix_raw =  theObject@design_matrix,
-                                                 ##POTENTIAL ISSUE
-                                                 protein_id_table = theObject@protein_id_table)
+                                                 protein_id_table = id_table)
 
   return_list$de_proteins_long <- de_proteins_long
 
@@ -416,23 +455,23 @@ deAnalysisWrapperFunction <- function( theObject
       mutate(plot = purrr::map(data, \(x) {
         cat(sprintf("DEBUG_66: Processing plot for data with %d rows\n", nrow(x)))
         
-        # Check uniprot_dat_cln structure
-        cat(sprintf("DEBUG_66: uniprot_dat_cln has %d rows\n", nrow(uniprot_dat_cln)))
-        cat("DEBUG_66: uniprot_dat_cln columns:\n")
-        print(colnames(uniprot_dat_cln))
+        # Check uniprot_tbl structure
+        cat(sprintf("DEBUG_66: uniprot_tbl has %d rows\n", nrow(uniprot_tbl)))
+        cat("DEBUG_66: uniprot_tbl columns:\n")
+        print(colnames(uniprot_tbl))
         
         # Check if gene_names column exists
-        if (!"gene_names" %in% colnames(uniprot_dat_cln)) {
-          cat("DEBUG_66: ERROR - gene_names column not found in uniprot_dat_cln!\n")
-          cat("DEBUG_66: Available columns in uniprot_dat_cln:\n")
-          print(colnames(uniprot_dat_cln))
-          stop("gene_names column missing from uniprot_dat_cln")
+        if (!"gene_names" %in% colnames(uniprot_tbl)) {
+          cat("DEBUG_66: ERROR - gene_names column not found in uniprot_tbl!\n")
+          cat("DEBUG_66: Available columns in uniprot_tbl:\n")
+          print(colnames(uniprot_tbl))
+          stop("gene_names column missing from uniprot_tbl")
         }
         
         # Process gene names with detailed debugging
         cat("DEBUG_66: Processing gene names\n")
         uniprot_with_gene_names <- tryCatch({
-          uniprot_dat_cln |>
+          uniprot_tbl |>
             mutate(gene_name = purrr::map_chr(gene_names, \(x) {
               tryCatch({
                 if(is.na(x) || is.null(x) || x == "") {
@@ -460,14 +499,9 @@ deAnalysisWrapperFunction <- function( theObject
           input_table = x,
           uniprot_table = uniprot_with_gene_names,
           protein_id_column = protein_id_column,
-          x_axis_label = "log2 fold change",
-          title = "",
-          lfc_threshold = treat_lfc_cutoff,
-          q_threshold = de_q_val_thresh,
-          color_up = "darkred",
-          color_down = "darkblue",
-          color_null = "grey",
-          label_top_n = 10
+          input_title = "",
+          fdr_threshold = de_q_val_thresh,
+          number_of_genes = 10
         )
       }))
     
@@ -1189,8 +1223,9 @@ writeInteractiveVolcanoPlotProteomicsMain <- function(de_analysis_results_list
   de_proteins_long <- de_analysis_results_list$de_proteins_long
   contrasts_results <- de_analysis_results_list$contrasts_results
 
-  counts_mat <- (de_analysis_results_list$theObject)@protein_quant_table |>
-    column_to_rownames((de_analysis_results_list$theObject)@protein_id_column  ) |>
+  # Use helper to extract counts table instead of direct slot access
+  counts_mat <- getCountsTable(de_analysis_results_list$theObject) |>
+    column_to_rownames(args_row_id) |>
     as.matrix()
 
   this_design_matrix <- de_analysis_results_list$theObject@design_matrix
@@ -1215,4 +1250,48 @@ writeInteractiveVolcanoPlotProteomicsMain <- function(de_analysis_results_list
                                          , gene_names_column = gene_names_column
                                          , display_columns = display_columns )
 
+}
+
+# Helper function to get data matrix
+getDataMatrix <- function(obj) {
+    if (inherits(obj, "MetaboliteAssayData")) {
+        message(sprintf("   Getting data matrix for object of class: %s", class(obj)[1]))
+        message(sprintf("   Processing MetaboliteAssayData"))
+        message(sprintf("   Metabolite data dimensions: %d rows, %d cols",
+                      nrow(obj@metabolite_data), ncol(obj@metabolite_data)))
+        matrix_data <- as.matrix(obj@metabolite_data[, -1]) # Exclude Name column
+        colnames(matrix_data) <- colnames(obj@metabolite_data)[-1]
+        rownames(matrix_data) <- obj@metabolite_data$Name
+        message(sprintf("   Created matrix with dimensions: %d rows, %d cols",
+                      nrow(matrix_data), ncol(matrix_data)))
+        matrix_data
+    } else if (inherits(obj, "ProteinQuantitativeData")) {
+        message(sprintf("   Processing ProteinQuantitativeData"))
+        message(sprintf("   Protein quant table dimensions: %d rows, %d cols",
+                      nrow(obj@protein_quant_table), ncol(obj@protein_quant_table)))
+        result <- as.matrix(column_to_rownames(obj@protein_quant_table, obj@protein_id_column))
+        message(sprintf("   Created matrix with dimensions: %d rows, %d cols",
+                      nrow(result), ncol(result)))
+        result
+    } else {
+        message(sprintf("   ERROR: Unsupported object type: %s", class(obj)[1]))
+        stop("Unsupported object type")
+    }
+}
+
+# Helper function to get counts table
+getCountsTable <- function(obj) {
+    if (inherits(obj, "MetaboliteAssayData")) {
+        message(sprintf("   Getting counts table for object of class: %s", class(obj)[1]))
+        message(sprintf("   Returning metabolite_data with dimensions: %d rows, %d cols",
+                      nrow(obj@metabolite_data), ncol(obj@metabolite_data)))
+        obj@metabolite_data
+    } else if (inherits(obj, "ProteinQuantitativeData")) {
+        message(sprintf("   Returning protein_quant_table with dimensions: %d rows, %d cols",
+                      nrow(obj@protein_quant_table), ncol(obj@protein_quant_table)))
+        obj@protein_quant_table
+    } else {
+        message(sprintf("   ERROR: Unsupported object type: %s", class(obj)[1]))
+        stop("Unsupported object type")
+    }
 }
