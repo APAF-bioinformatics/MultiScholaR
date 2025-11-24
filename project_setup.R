@@ -18,12 +18,13 @@ my_project_dir <- NULL            # Optional: Set specific directory (leave as N
 # Mac:     my_project_dir <- "~/Projects"
 
 # SET YOUR WORKFLOW OPTIONS HERE:
-omic_types <- c("proteomics", "metabolomics", "transcriptomics", "lipidomics", "integration") 
+omic_types <- c("proteomics")
 # Options: c("proteomics", "metabolomics", "transcriptomics", ...) 
 
 # The following two options primarily apply when 'proteomics' is in omic_types:
-workflow_type <- "DIA-NN"  # Proteomics-specific: "DIA-NN", "LFQ - FragPipe", "LFQ - MaxQuant", "TMT - MaxQuant", "TMT - FragPipe"
+workflow_name <- "DIA_limpa"  # Proteomics-specific: "DIA-NN", "DIA_limpa", "LFQ - FragPipe", "LFQ - MaxQuant", "TMT - MaxQuant", "TMT - FragPipe"
 user_experience <- "beginner"  # Proteomics-specific: "experienced", "beginner"
+tutorial_type <- "Neurolincs_bookchapter"  # Optional: "Neurolincs_bookchapter", NULL for no tutorial data
 
 # ============================================================================
 # DO NOT MODIFY CODE BELOW THIS LINE
@@ -45,21 +46,187 @@ if (!is.character(my_project_name) || nchar(my_project_name) == 0) {
   stop("Please set a valid project name at the top of the script")
 }
 
+# --- Tutorial Dataset Configuration ---
+# Tutorial dataset configuration
+tutorial_datasets <- list(
+  "Neurolincs_bookchapter" = list(
+    gdrive_id = "1a3e82pU5qztbJDzKgfRxki__mf6XcZcD",
+    omic_type = "proteomics",
+    filename = "iMNS_boockhapter.zip",
+    description = "Neurolincs book chapter tutorial dataset"
+  )
+)
+
+# --- Tutorial Data Download Function ---
+downloadTutorialData <- function(tutorial_name, tutorial_config, base_data_dir) {
+  if (!tutorial_name %in% names(tutorial_config)) {
+    warning("Tutorial '", tutorial_name, "' not found in configuration")
+    return(FALSE)
+  }
+  
+  config <- tutorial_config[[tutorial_name]]
+  target_dir <- file.path(base_data_dir, config$omic_type)
+  
+  if (!dir.exists(target_dir)) {
+    dir.create(target_dir, recursive = TRUE)
+  }
+  
+  zip_path <- file.path(target_dir, config$filename)
+  
+  message("\n=== Downloading Tutorial Data ===")
+  message("Tutorial: ", tutorial_name)
+  message("Description: ", config$description)
+  message("Downloading from Google Drive (this may take several minutes for large files)...")
+  
+  tryCatch({
+    # Google Drive direct download - using the most reliable URL pattern
+    # This format bypasses the virus scan warning for large files
+    gdrive_url <- paste0("https://drive.usercontent.google.com/download?id=", 
+                         config$gdrive_id, 
+                         "&export=download&confirm=t")
+    
+    # Attempt download with progress bar
+    final_response <- httr::GET(
+      gdrive_url,
+      httr::write_disk(zip_path, overwrite = TRUE),
+      httr::progress(),
+      httr::timeout(600)  # 10 minute timeout
+    )
+    
+    if (httr::status_code(final_response) == 200) {
+      # Check if we actually got a zip file (not an HTML error page)
+      file_info <- file.info(zip_path)
+      
+      if (is.na(file_info$size) || file_info$size < 10000) {
+        # File is suspiciously small or doesn't exist, probably got an HTML page
+        warning("Downloaded file is too small (", file_info$size, " bytes) or invalid. ",
+                "Google Drive may have returned an error page. ",
+                "Please verify:\n",
+                "  1. File is shared with 'Anyone with the link can view'\n",
+                "  2. File ID is correct: ", config$gdrive_id, "\n",
+                "  3. File hasn't been deleted or moved")
+        if (file.exists(zip_path)) file.remove(zip_path)
+        return(FALSE)
+      }
+      
+      message("Download successful! (", round(file_info$size / 1024 / 1024, 2), " MB)")
+      
+      # Try to unzip
+      unzip_result <- tryCatch({
+        # Create a temporary extraction directory
+        temp_extract_dir <- file.path(target_dir, "temp_extract")
+        if (dir.exists(temp_extract_dir)) {
+          unlink(temp_extract_dir, recursive = TRUE)
+        }
+        dir.create(temp_extract_dir, recursive = TRUE)
+        
+        message("Extracting archive...")
+        unzip(zip_path, exdir = temp_extract_dir)
+        
+        # Find the nested folder (should be IMNS_bookchapter or similar)
+        extracted_contents <- list.files(temp_extract_dir, full.names = TRUE)
+        
+        if (length(extracted_contents) == 1 && dir.exists(extracted_contents[1])) {
+          # We have a single top-level folder
+          nested_folder <- extracted_contents[1]
+          
+          # Move data folder contents
+          nested_data_dir <- file.path(nested_folder, "data")
+          if (dir.exists(nested_data_dir)) {
+            message("Moving tutorial data files...")
+            # Copy data contents to target_dir (which is data/proteomics)
+            data_files <- list.files(nested_data_dir, full.names = TRUE, recursive = FALSE)
+            for (data_file in data_files) {
+              dest_path <- file.path(target_dir, basename(data_file))
+              if (dir.exists(data_file)) {
+                # Copy directory recursively
+                dir.create(dest_path, recursive = TRUE, showWarnings = FALSE)
+                file.copy(from = list.files(data_file, full.names = TRUE, recursive = TRUE, all.files = TRUE),
+                         to = dest_path, recursive = TRUE)
+              } else {
+                # Copy file
+                file.copy(from = data_file, to = dest_path, overwrite = TRUE)
+              }
+            }
+          }
+          
+          # Move scripts folder contents
+          nested_scripts_dir <- file.path(nested_folder, "scripts")
+          if (dir.exists(nested_scripts_dir)) {
+            message("Moving tutorial script files...")
+            # Scripts should go to scripts/proteomics (parallel to data/proteomics)
+            scripts_target_dir <- file.path(dirname(dirname(target_dir)), "scripts", config$omic_type)
+            dir.create(scripts_target_dir, recursive = TRUE, showWarnings = FALSE)
+            
+            script_files <- list.files(nested_scripts_dir, full.names = TRUE, recursive = FALSE)
+            for (script_file in script_files) {
+              dest_path <- file.path(scripts_target_dir, basename(script_file))
+              if (dir.exists(script_file)) {
+                # Copy directory recursively
+                dir.create(dest_path, recursive = TRUE, showWarnings = FALSE)
+                file.copy(from = list.files(script_file, full.names = TRUE, recursive = TRUE, all.files = TRUE),
+                         to = dest_path, recursive = TRUE)
+              } else {
+                # Copy file
+                file.copy(from = script_file, to = dest_path, overwrite = TRUE)
+              }
+            }
+          }
+        } else {
+          # No nested folder, just extract everything to target
+          message("Extracting directly to: ", target_dir)
+          file.copy(from = list.files(temp_extract_dir, full.names = TRUE, recursive = TRUE),
+                   to = target_dir, recursive = TRUE)
+        }
+        
+        # Clean up temp directory
+        unlink(temp_extract_dir, recursive = TRUE)
+        
+        TRUE
+      }, error = function(e) {
+        warning("Failed to unzip file: ", e$message, 
+                "\nThe downloaded file may be corrupted or not a valid zip file. ",
+                "You can find the file at: ", zip_path)
+        return(FALSE)
+      })
+      
+      if (unzip_result) {
+        file.remove(zip_path)
+        message("Tutorial data ready in: ", target_dir)
+        message("Tutorial scripts (if any) ready in: scripts/", config$omic_type)
+        return(TRUE)
+      } else {
+        message("Zip file retained at: ", zip_path, " for manual inspection")
+        return(FALSE)
+      }
+    } else {
+      warning("Download failed with status code: ", httr::status_code(final_response))
+      return(FALSE)
+    }
+  }, error = function(e) {
+    warning("Error downloading tutorial data: ", e$message)
+    return(FALSE)
+  })
+}
+
 # --- Helper Functions for URL Generation ---
 
-# Determine workflow file URL based on omic type, workflow type, and user experience
-getWorkflowUrl <- function(wf_type, usr_exp, omic) {
-  # Updated to point to inst/workbooks in main branch
-  base_url <- paste0("https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/main/inst/workbooks/", omic)
-  
+# Determine workflow file URL based on omic type, workflow name, and user experience
+getWorkflowUrl <- function(wf_name, usr_exp, omic) {
+  base_url <- paste0("https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/main/Workbooks/", omic)
+  subfolder <- ifelse(usr_exp == "beginner", "starter", "standard")
+
   if (omic == "proteomics") {
     # Proteomics-specific logic
-    if (wf_type == "DIA-NN") {
+    if (wf_name == "DIA-NN") {
       # Use specific filenames for DIA-NN based on experience
       filename <- ifelse(usr_exp == "beginner", "DIA_workflow_starter.rmd", "DIA_workflow_experienced.rmd")
-      # Note: Removed subfolder structure as files are flat in inst/workbooks/proteomics
-      return(paste0(base_url, "/", filename))
-    } else if (wf_type == "TMT - MaxQuant") {
+      return(paste0(base_url, "/", subfolder, "/", filename))
+    } else if (wf_name == "DIA_limpa") {
+      # Use specific filenames for DIA_limpa based on experience
+      filename <- ifelse(usr_exp == "beginner", "DIA_workflow_limpa_starter.rmd", "DIA_workflow_limpa_experienced.rmd")
+      return(paste0(base_url, "/", subfolder, "/", filename))
+    } else if (wf_name == "TMT - MaxQuant") {
       # Assuming TMT-MQ only has standard/experienced version for now
       if (usr_exp == "experienced") {
          # Note: TMT MQ workflow file name includes version 0.1
@@ -68,10 +235,10 @@ getWorkflowUrl <- function(wf_type, usr_exp, omic) {
          warning("Beginner TMT-MQ workflow not currently available.")
          return(NULL) # Or point to a default/starter if one exists
       }
-      # Add other proteomics workflow_types here (LFQ etc.) when available
+      # Add other proteomics workflow_names here (LFQ etc.) when available
     }
     # Fallback warning if specific proteomics workflow not found
-    warning("Proteomics workflow URL not found for: type: ", wf_type, ", experience: ", usr_exp)
+    warning("Proteomics workflow URL not found for: name: ", wf_name, ", experience: ", usr_exp)
     return(NULL)
 
   } else {
@@ -89,31 +256,32 @@ getWorkflowUrl <- function(wf_type, usr_exp, omic) {
   }
 }
 
-# Get report template URL based on omic type and workflow type
-getReportUrl <- function(wf_type, omic) {
-  # Updated to point to inst/reports in main branch
-  base_url <- paste0("https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/main/inst/reports/", omic)
+# Get report template URL based on omic type and workflow name
+getReportUrl <- function(wf_name, omic) {
+  base_url <- paste0("https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/main/Workbooks/", omic, "/report")
   
   if (omic == "proteomics") {
-    # Proteomics: Use wf_type to determine report
-    if (wf_type == "DIA-NN" || tolower(wf_type) == "dia") {
+    # Proteomics: Use wf_name to determine report
+    if (wf_name == "DIA_limpa") {
+      return(paste0(base_url, "/DIANN_limpa_report.rmd"))
+    } else if (wf_name == "DIA-NN") {
       return(paste0(base_url, "/DIANN_report.rmd"))
-    } else if (wf_type == "TMT - MaxQuant" || wf_type == "TMT - FragPipe" || tolower(wf_type) == "tmt") {
+    } else if (wf_name == "TMT - MaxQuant" || wf_name == "TMT - FragPipe") {
       return(paste0(base_url, "/TMT_report.rmd"))
-    } else if (wf_type == "LFQ - MaxQuant" || wf_type == "LFQ - FragPipe" || tolower(wf_type) == "lfq") {
+    } else if (wf_name == "LFQ - MaxQuant" || wf_name == "LFQ - FragPipe") {
       return(paste0(base_url, "/LFQ_report.rmd"))
     }
-    warning("Proteomics report URL not found for: type: ", wf_type)
+    warning("Proteomics report URL not found for: name: ", wf_name)
     return(NULL)
   } else {
-    # Other Omics: Assume a standard report name, ignore wf_type
+    # Other Omics: Assume a standard report name, ignore wf_name
     standard_report_path <- paste0(base_url, "/", omic, "_report.rmd")
     return(standard_report_path)
   }
 }
 
 # --- Main Project Setup Function ---
-setupOmicsProject <- function(root_dir = NULL, overwrite = FALSE, omic_types, workflow_type, user_experience) {
+setupOmicsProject <- function(root_dir = NULL, overwrite = FALSE, omic_types, workflow_name, user_experience, tutorial_type = NULL) {
   # Set default root_dir based on OS
   if (is.null(root_dir)) {
     if (.Platform$OS.type == "windows") {
@@ -200,6 +368,11 @@ setupOmicsProject <- function(root_dir = NULL, overwrite = FALSE, omic_types, wo
     }
   }
   
+  # --- Download tutorial data if specified ---
+  if (!is.null(tutorial_type) && tutorial_type != "") {
+    downloadTutorialData(tutorial_type, tutorial_datasets, base_dirs$data)
+  }
+  
   # --- Loop through each specified omic type ---
   for (current_omic_type in omic_types) {
     message(paste0("\n--- Setting up for: ", current_omic_type, " ---"))
@@ -226,10 +399,10 @@ setupOmicsProject <- function(root_dir = NULL, overwrite = FALSE, omic_types, wo
     }
     
     # Get the appropriate workflow URL for the current omic (using global function)
-    workflow_url <- getWorkflowUrl(workflow_type, user_experience, current_omic_type)
+    workflow_url <- getWorkflowUrl(workflow_name, user_experience, current_omic_type)
     
     # Get the appropriate report URL for the current omic (using global function)
-    report_url <- getReportUrl(workflow_type, current_omic_type)
+    report_url <- getReportUrl(workflow_name, current_omic_type)
     
     # Check if workflow URL was found
     if (is.null(workflow_url)) {
@@ -332,7 +505,7 @@ if (!is.null(my_project_dir)) {
 
 # Create and setup the project
 message("Creating project: ", project_path)
-setup_result <- setupOmicsProject(project_path, overwrite = TRUE, omic_types, workflow_type, user_experience)
+setup_result <- setupOmicsProject(project_path, overwrite = TRUE, omic_types, workflow_name, user_experience, tutorial_type)
 
 # Create and open R project
 rproj_content <- c(

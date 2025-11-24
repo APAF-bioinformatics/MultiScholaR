@@ -391,11 +391,32 @@ setArgsDefault <- function(args, value_name, as_func, default_val=NA ) {
 #'
 #'
 savePlot <- function(plot, base_path, plot_name, formats = c("pdf", "png"), width=7, height=7, ... ) {
+  # Always save the RDS (works for both single plots and lists)
   saveRDS( plot, file.path(base_path, paste0(plot_name, ".rds")))
-  purrr::walk( formats, \(format){
-    file_path <- file.path(base_path, paste0(plot_name, ".", format))
-    ggsave(filename = file_path, plot = plot, device = format, width=width, height=height, ...)
-  })
+  
+  # Check if plot is a list of plots
+  if (is.list(plot) && !inherits(plot, "gg")) {
+    # It's a list of plots - save each one individually
+    plot_names <- names(plot)
+    if (is.null(plot_names)) {
+      plot_names <- paste0("plot_", seq_along(plot))
+    }
+    
+    purrr::walk2(plot, plot_names, function(p, pname) {
+      if (inherits(p, "gg")) {
+        purrr::walk(formats, function(format) {
+          file_path <- file.path(base_path, paste0(plot_name, "_", pname, ".", format))
+          ggsave(filename = file_path, plot = p, device = format, width=width, height=height, ...)
+        })
+      }
+    })
+  } else {
+    # Single plot - original behavior
+    purrr::walk( formats, \(format){
+      file_path <- file.path(base_path, paste0(plot_name, ".", format))
+      ggsave(filename = file_path, plot = plot, device = format, width=width, height=height, ...)
+    })
+  }
 }
 
 
@@ -857,9 +878,12 @@ loadDependencies <- function(verbose = TRUE) {
         "shiny", "DT", "gh", "openxlsx", "plotly", "vroom",
         "gplots", "iheatmapr", "UpSetR", "gt", "gprofiler2",
         "htmltools", "rstudioapi", "flextable", "viridis", "here",
-        "git2r", "fs", "logger",
+        "git2r", "fs", "logger", "httr", "jsonlite",
         "configr", "webshot2", "shiny", "shinyjs", "shinyWidgets",
         "shinydashboard", "shinythemes", "shinycssloaders", "golem",
+        
+        # Added for BookChapter
+        "conflicted", "tidytext",
         # Added from Suggests:
         "testthat", "ggplot2", "ggpubr", "svglite",
         "ggraph", "reticulate", "shinyFiles", "arrow"
@@ -2059,6 +2083,61 @@ updateRuvParameters <- function(config_list, best_k, control_genes_index, percen
   return(config_list)
 }
 
+#' @title Download Report Template from GitHub
+#' @description Downloads a report template from the MultiScholaR GitHub repository
+#'              and caches it locally for future use.
+#' @param omic_type Character string, the omic type (e.g., "proteomics")
+#' @param rmd_filename Character string, the template filename (e.g., "DIANN_limpa_report.rmd")
+#' @return Character string, path to the downloaded/cached template file
+#' @keywords internal
+downloadReportTemplate <- function(omic_type, rmd_filename) {
+    # Create cache directory using tools (base R, no extra dependencies)
+    if (requireNamespace("rappdirs", quietly = TRUE)) {
+        cache_base <- rappdirs::user_cache_dir("MultiScholaR")
+    } else {
+        # Fallback to temp directory if rappdirs not available
+        cache_base <- file.path(tempdir(), "MultiScholaR_cache")
+    }
+    
+    cache_dir <- file.path(cache_base, "report_templates", omic_type, "report")
+    dir.create(cache_dir, recursive = TRUE, showWarnings = FALSE)
+    
+    # Local cache file path
+    cached_file <- file.path(cache_dir, rmd_filename)
+    
+    # If already cached and less than 7 days old, return it
+    if (file.exists(cached_file)) {
+        file_age_days <- as.numeric(difftime(Sys.time(), file.info(cached_file)$mtime, units = "days"))
+        if (file_age_days < 7) {
+            logger::log_info("Using cached template: {cached_file}")
+            return(cached_file)
+        } else {
+            logger::log_info("Cached template is older than 7 days, re-downloading...")
+        }
+    }
+    
+    # GitHub URL (raw content from main branch)
+    github_url <- sprintf(
+        "https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/main/Workbooks/%s/report/%s",
+        omic_type, rmd_filename
+    )
+    
+    logger::log_info("Downloading template from GitHub: {github_url}")
+    
+    # Download
+    tryCatch({
+        download.file(github_url, cached_file, mode = "wb", quiet = TRUE)
+        logger::log_info("Successfully downloaded template to: {cached_file}")
+        return(cached_file)
+    }, error = function(e) {
+        rlang::abort(paste0(
+            "Failed to download template '", rmd_filename, "' from GitHub.\n",
+            "URL: ", github_url, "\n",
+            "Error: ", e$message
+        ))
+    })
+}
+
 ##################################################################################################################
 #' @export
 #' @importFrom rlang abort
@@ -2886,7 +2965,6 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
                                         final_s4_object = NULL,
                                         contrasts_tbl = NULL,
                                         workflow_data = NULL) {
-    
     # Validate required inputs
     if (missing(workflow_name) || !is.character(workflow_name) || length(workflow_name) != 1) {
         stop("workflow_name must be a single character string")
@@ -2982,8 +3060,7 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
                  })
              }
          }
-     }
-     
+     } 
      # Merge S4 parameters with config_list (S4 takes precedence)
      merged_config <- config_list
      
@@ -3491,4 +3568,493 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
          cat(sprintf("WORKFLOW ARGS: Error writing file: %s\n", e$message))
          stop("Failed to write study parameters file: ", e$message)
      })
+}
+
+#' Check Missing Value Percentages in Peptide Data
+#' 
+#' @description Calculate and report the percentage of missing values (NAs) in peptide data
+#' at different levels: total dataset, per sample, and per group.
+#' 
+#' @param peptide_obj A PeptideQuantitativeData S4 object
+#' @param verbose Logical, whether to print detailed results (default: TRUE)
+#' 
+#' @return A list containing:
+#' \itemize{
+#'   \item total_na_percent: Overall percentage of NAs in the dataset
+#'   \item per_sample_na: Data frame with NA percentages per sample
+#'   \item per_group_na: Data frame with NA percentages per group
+#'   \item summary_stats: Summary statistics of NA distribution
+#' }
+#' 
+#' @export
+checkPeptideNAPercentages <- function(peptide_obj, verbose = TRUE) {
+  
+  # Validate input
+  if (!is(peptide_obj, "PeptideQuantitativeData")) {
+    stop("Input must be a PeptideQuantitativeData S4 object")
+  }
+  
+  # Extract data from S4 object
+  peptide_matrix <- peptide_obj@peptide_matrix
+  design_matrix <- peptide_obj@design_matrix
+  sample_id_col <- peptide_obj@sample_id
+  group_id_col <- peptide_obj@group_id
+  
+  # Validate that matrix and design matrix are compatible
+  if (ncol(peptide_matrix) != nrow(design_matrix)) {
+    stop("Number of samples in peptide_matrix doesn't match design_matrix rows")
+  }
+  
+  # Calculate total NA percentage
+  total_values <- length(peptide_matrix)
+  total_nas <- sum(is.na(peptide_matrix))
+  total_na_percent <- (total_nas / total_values) * 100
+  
+  # Calculate per-sample NA percentages
+  sample_na_counts <- apply(peptide_matrix, 2, function(x) sum(is.na(x)))
+  sample_na_percentages <- (sample_na_counts / nrow(peptide_matrix)) * 100
+  
+  per_sample_na <- data.frame(
+    sample = colnames(peptide_matrix),
+    na_count = sample_na_counts,
+    na_percentage = sample_na_percentages,
+    stringsAsFactors = FALSE
+  )
+  
+  # Add group information to per-sample results
+  per_sample_na <- merge(per_sample_na, design_matrix, 
+                        by.x = "sample", by.y = sample_id_col, all.x = TRUE)
+  
+  # Calculate per-group NA percentages
+  per_group_na <- per_sample_na %>%
+    group_by(!!sym(group_id_col)) %>%
+    summarise(
+      num_samples = n(),
+      mean_na_percentage = mean(na_percentage, na.rm = TRUE),
+      median_na_percentage = median(na_percentage, na.rm = TRUE),
+      min_na_percentage = min(na_percentage, na.rm = TRUE),
+      max_na_percentage = max(na_percentage, na.rm = TRUE),
+      sd_na_percentage = sd(na_percentage, na.rm = TRUE),
+      .groups = 'drop'
+    ) %>%
+    arrange(mean_na_percentage)
+  
+  # Calculate summary statistics
+  summary_stats <- list(
+    total_peptides = nrow(peptide_matrix),
+    total_samples = ncol(peptide_matrix),
+    total_groups = length(unique(design_matrix[[group_id_col]])),
+    total_values = total_values,
+    total_nas = total_nas,
+    mean_na_per_sample = mean(sample_na_percentages),
+    median_na_per_sample = median(sample_na_percentages),
+    min_na_per_sample = min(sample_na_percentages),
+    max_na_per_sample = max(sample_na_percentages)
+  )
+  
+  # Print results if verbose
+  if (verbose) {
+    cat("\n=== Peptide Data Missing Value Analysis ===\n")
+    cat(sprintf("Dataset dimensions: %d peptides × %d samples\n", 
+                nrow(peptide_matrix), ncol(peptide_matrix)))
+    cat(sprintf("Number of groups: %d\n", summary_stats$total_groups))
+    cat(sprintf("Total missing values: %s out of %s (%.2f%%)\n", 
+                format(total_nas, big.mark = ","),
+                format(total_values, big.mark = ","),
+                total_na_percent))
+    
+    cat("\n--- Per-Sample Missing Value Summary ---\n")
+    cat(sprintf("Mean NA%% per sample: %.2f%%\n", summary_stats$mean_na_per_sample))
+    cat(sprintf("Median NA%% per sample: %.2f%%\n", summary_stats$median_na_per_sample))
+    cat(sprintf("Range: %.2f%% - %.2f%%\n", 
+                summary_stats$min_na_per_sample, summary_stats$max_na_per_sample))
+    
+    cat("\n--- Per-Group Missing Value Summary ---\n")
+    print(per_group_na)
+    
+    cat("\n--- Samples with Highest Missing Values ---\n")
+    top_missing_samples <- per_sample_na %>%
+      arrange(desc(na_percentage)) %>%
+      head(min(5, nrow(per_sample_na)))
+    print(top_missing_samples[, c("sample", group_id_col, "na_percentage")])
+    
+    cat("\n--- Samples with Lowest Missing Values ---\n")
+    bottom_missing_samples <- per_sample_na %>%
+      arrange(na_percentage) %>%
+      head(min(5, nrow(per_sample_na)))
+    print(bottom_missing_samples[, c("sample", group_id_col, "na_percentage")])
+  }
+  
+  # Return results
+  results <- list(
+    total_na_percent = total_na_percent,
+    per_sample_na = per_sample_na,
+    per_group_na = per_group_na,
+    summary_stats = summary_stats
+  )
+  
+  return(invisible(results))
+}
+
+#' Validate Post-Imputation Peptide Data
+#' 
+#' @description A simple wrapper to validate peptide data after imputation,
+#' specifically checking if imputation was successful (should show 0% NAs).
+#' 
+#' @param peptide_obj A PeptideQuantitativeData S4 object (post-imputation)
+#' @param expected_na_percent Expected NA percentage (default: 0 for post-imputation)
+#' @param tolerance Tolerance for expected percentage (default: 0.1%)
+#' 
+#' @return Logical indicating if validation passed, with detailed output
+#' 
+#' @export
+validatePostImputationData <- function(peptide_obj, expected_na_percent = 0, tolerance = 0.1) {
+  
+  cat("\n=== POST-IMPUTATION VALIDATION ===\n")
+  
+  # Run the full NA analysis
+  na_results <- checkPeptideNAPercentages(peptide_obj, verbose = TRUE)
+  
+  # Check if imputation was successful
+  actual_na_percent <- na_results$total_na_percent
+  is_valid <- abs(actual_na_percent - expected_na_percent) <= tolerance
+  
+  cat("\n--- VALIDATION RESULT ---\n")
+  cat(sprintf("Expected NA%%: %.2f%% (± %.2f%%)\n", expected_na_percent, tolerance))
+  cat(sprintf("Actual NA%%: %.2f%%\n", actual_na_percent))
+  
+  if (is_valid) {
+    cat("✓ VALIDATION PASSED: Imputation appears successful!\n")
+  } else {
+    cat("✗ VALIDATION FAILED: Unexpected NA percentage detected!\n")
+    if (actual_na_percent > expected_na_percent + tolerance) {
+      cat("  → Issue: More NAs than expected. Imputation may have failed.\n")
+    } else {
+      cat("  → Issue: Fewer NAs than expected. Check data integrity.\n")
+    }
+  }
+  
+  # Additional warnings for common issues
+  if (actual_na_percent > 10) {
+    cat("⚠ WARNING: High NA percentage suggests imputation problems!\n")
+  }
+  
+  if (na_results$summary_stats$max_na_per_sample > actual_na_percent + 5) {
+    cat("⚠ WARNING: Large variation in NA% between samples detected!\n")
+  }
+  
+  cat("\n")
+  return(invisible(list(
+    is_valid = is_valid,
+    actual_na_percent = actual_na_percent,
+    expected_na_percent = expected_na_percent,
+    full_results = na_results
+  )))
+}
+
+#' Get Recommendations for Handling Protein-Level Missing Values
+#' 
+#' @description Provides specific recommendations for dealing with missing values
+#' in protein data based on the percentage and distribution of NAs.
+#' 
+#' @param protein_obj A ProteinQuantitativeData S4 object
+#' @param include_code Logical, whether to include example R code (default: TRUE)
+#' 
+#' @return Prints recommendations and invisibly returns a list of strategies
+#' 
+#' @export
+getProteinNARecommendations <- function(protein_obj, include_code = TRUE) {
+  
+  # Get NA analysis
+  na_results <- checkProteinNAPercentages(protein_obj, verbose = FALSE)
+  na_percent <- na_results$total_na_percent
+  
+  cat("\n=== PROTEIN NA HANDLING RECOMMENDATIONS ===\n")
+  cat(sprintf("Your data: %.1f%% NAs across %d proteins\n\n", 
+              na_percent, na_results$summary_stats$total_proteins))
+  
+  if (na_percent < 15) {
+    cat("🎯 RECOMMENDATION: Complete Case Analysis\n")
+    cat("• Your data has excellent protein coverage\n")
+    cat("• Can proceed with standard analysis on proteins with complete data\n")
+    if (include_code) {
+      cat("\n📝 Example code:\n")
+      cat("complete_proteins <- protein_obj@protein_quant_table[complete.cases(protein_obj@protein_quant_table), ]\n")
+    }
+    
+  } else if (na_percent >= 15 && na_percent < 40) {
+    cat("🎯 RECOMMENDATION: Consider Protein-Level Imputation\n")
+    cat("• Moderate missing values - imputation could be beneficial\n")
+    cat("• Options: KNN, minimum value, or mixed imputation strategies\n")
+    cat("• Alternative: Filter to proteins detected in ≥X samples per group\n")
+    if (include_code) {
+      cat("\n📝 Example filtering code:\n")
+      cat("# Keep proteins detected in ≥50% of samples per group\n")
+      cat("filtered_proteins <- filterProteinsByGroupDetection(protein_obj, min_detection_rate = 0.5)\n")
+    }
+    
+  } else if (na_percent >= 40 && na_percent < 60) {
+    cat("🎯 RECOMMENDATION: Strict Filtering + Targeted Imputation\n")
+    cat("• High missing values suggest challenging sample/detection conditions\n")
+    cat("• Focus on well-detected proteins (present in majority of samples)\n")
+    cat("• Consider group-wise detection requirements\n")
+    if (include_code) {
+      cat("\n📝 Example approach:\n")
+      cat("# Keep proteins detected in ≥70% of samples in at least one group\n")
+      cat("robust_proteins <- filterProteinsByGroupwise(protein_obj, min_group_detection = 0.7)\n")
+    }
+    
+  } else {
+    cat("⚠️  RECOMMENDATION: Review Data Quality\n")
+    cat("• Very high missing values (>60%) suggest potential issues\n")
+    cat("• Check: sample quality, peptide identification, rollup parameters\n")
+    cat("• Consider more stringent protein identification criteria\n")
+    cat("• May need to focus only on highly abundant/well-detected proteins\n")
+  }
+  
+  cat("\n📚 STRATEGIES SUMMARY:\n")
+  cat("1. Complete Case: Use only proteins with no NAs\n")
+  cat("2. Filtering: Remove proteins with >X% missing values\n")
+  cat("3. Group-wise: Require detection in ≥Y% samples per group\n")
+  cat("4. Imputation: Fill NAs with estimated values (KNN, minimum, etc.)\n")
+  cat("5. Hybrid: Combine filtering + imputation\n")
+  
+  cat("\n💡 TIP: Protein NAs ≠ Data Quality Issues\n")
+  cat("Missing proteins often reflect:\n")
+  cat("• Low abundance proteins below detection limit\n")
+  cat("• Sample-specific biology (some proteins not expressed)\n")
+  cat("• Normal variation in complex proteomes\n\n")
+  
+  strategies <- list(
+    na_percent = na_percent,
+    primary_recommendation = if (na_percent < 15) "complete_case" 
+                            else if (na_percent < 40) "imputation_or_filtering"
+                            else if (na_percent < 60) "strict_filtering"
+                            else "data_quality_review",
+    alternative_strategies = c("complete_case", "group_wise_filtering", "imputation", "hybrid")
+  )
+  
+  return(invisible(strategies))
+}
+
+#' Check Missing Value Percentages in Protein Data
+#' 
+#' @description Calculate and report the percentage of missing values (NAs) in protein data
+#' at different levels: total dataset, per sample, and per group.
+#' 
+#' @param protein_obj A ProteinQuantitativeData S4 object
+#' @param verbose Logical, whether to print detailed results (default: TRUE)
+#' 
+#' @return A list containing:
+#' \itemize{
+#'   \item total_na_percent: Overall percentage of NAs in the dataset
+#'   \item per_sample_na: Data frame with NA percentages per sample
+#'   \item per_group_na: Data frame with NA percentages per group
+#'   \item summary_stats: Summary statistics of NA distribution
+#' }
+#' 
+#' @export
+checkProteinNAPercentages <- function(protein_obj, verbose = TRUE) {
+  
+  # Validate input
+  if (!is(protein_obj, "ProteinQuantitativeData")) {
+    stop("Input must be a ProteinQuantitativeData S4 object")
+  }
+  
+  # Extract data from S4 object
+  protein_quant_table <- protein_obj@protein_quant_table
+  design_matrix <- protein_obj@design_matrix
+  sample_id_col <- protein_obj@sample_id
+  group_id_col <- protein_obj@group_id
+  protein_id_col <- protein_obj@protein_id_column
+  
+  # Identify sample columns (exclude protein ID column)
+  sample_columns <- setdiff(colnames(protein_quant_table), protein_id_col)
+  
+  # Validate that sample columns match design matrix
+  if (length(sample_columns) != nrow(design_matrix)) {
+    stop("Number of sample columns doesn't match design_matrix rows")
+  }
+  
+  # Extract quantitative data matrix (samples only)
+  protein_matrix <- as.matrix(protein_quant_table[, sample_columns])
+  rownames(protein_matrix) <- protein_quant_table[[protein_id_col]]
+  
+  # Calculate total NA percentage
+  total_values <- length(protein_matrix)
+  total_nas <- sum(is.na(protein_matrix))
+  total_na_percent <- (total_nas / total_values) * 100
+  
+  # Calculate per-sample NA percentages
+  sample_na_counts <- apply(protein_matrix, 2, function(x) sum(is.na(x)))
+  sample_na_percentages <- (sample_na_counts / nrow(protein_matrix)) * 100
+  
+  per_sample_na <- data.frame(
+    sample = names(sample_na_counts),
+    na_count = sample_na_counts,
+    na_percentage = sample_na_percentages,
+    stringsAsFactors = FALSE
+  )
+  
+  # Add group information to per-sample results
+  per_sample_na <- merge(per_sample_na, design_matrix, 
+                        by.x = "sample", by.y = sample_id_col, all.x = TRUE)
+  
+  # Calculate per-group NA percentages
+  per_group_na <- per_sample_na %>%
+    group_by(!!sym(group_id_col)) %>%
+    summarise(
+      num_samples = n(),
+      mean_na_percentage = mean(na_percentage, na.rm = TRUE),
+      median_na_percentage = median(na_percentage, na.rm = TRUE),
+      min_na_percentage = min(na_percentage, na.rm = TRUE),
+      max_na_percentage = max(na_percentage, na.rm = TRUE),
+      sd_na_percentage = sd(na_percentage, na.rm = TRUE),
+      .groups = 'drop'
+    ) %>%
+    arrange(mean_na_percentage)
+  
+  # Calculate summary statistics
+  summary_stats <- list(
+    total_proteins = nrow(protein_matrix),
+    total_samples = ncol(protein_matrix),
+    total_groups = length(unique(design_matrix[[group_id_col]])),
+    total_values = total_values,
+    total_nas = total_nas,
+    mean_na_per_sample = mean(sample_na_percentages),
+    median_na_per_sample = median(sample_na_percentages),
+    min_na_per_sample = min(sample_na_percentages),
+    max_na_per_sample = max(sample_na_percentages)
+  )
+  
+  # Print results if verbose
+  if (verbose) {
+    cat("\n=== Protein Data Missing Value Analysis ===\n")
+    cat(sprintf("Dataset dimensions: %d proteins × %d samples\n", 
+                nrow(protein_matrix), ncol(protein_matrix)))
+    cat(sprintf("Number of groups: %d\n", summary_stats$total_groups))
+    cat(sprintf("Total missing values: %s out of %s (%.2f%%)\n", 
+                format(total_nas, big.mark = ","),
+                format(total_values, big.mark = ","),
+                total_na_percent))
+    
+    cat("\n--- Per-Sample Missing Value Summary ---\n")
+    cat(sprintf("Mean NA%% per sample: %.2f%%\n", summary_stats$mean_na_per_sample))
+    cat(sprintf("Median NA%% per sample: %.2f%%\n", summary_stats$median_na_per_sample))
+    cat(sprintf("Range: %.2f%% - %.2f%%\n", 
+                summary_stats$min_na_per_sample, summary_stats$max_na_per_sample))
+    
+    cat("\n--- Per-Group Missing Value Summary ---\n")
+    print(per_group_na)
+    
+    cat("\n--- Samples with Highest Missing Values ---\n")
+    top_missing_samples <- per_sample_na %>%
+      arrange(desc(na_percentage)) %>%
+      head(min(5, nrow(per_sample_na)))
+    print(top_missing_samples[, c("sample", group_id_col, "na_percentage")])
+    
+    cat("\n--- Samples with Lowest Missing Values ---\n")
+    bottom_missing_samples <- per_sample_na %>%
+      arrange(na_percentage) %>%
+      head(min(5, nrow(per_sample_na)))
+    print(bottom_missing_samples[, c("sample", group_id_col, "na_percentage")])
+  }
+  
+  # Return results
+  results <- list(
+    total_na_percent = total_na_percent,
+    per_sample_na = per_sample_na,
+    per_group_na = per_group_na,
+    summary_stats = summary_stats
+  )
+  
+  return(invisible(results))
+}
+
+#' Validate Post-Imputation Protein Data
+#' 
+#' @description A simple wrapper to validate protein data after imputation,
+#' specifically checking if imputation was successful.
+#' 
+#' @param protein_obj A ProteinQuantitativeData S4 object (post-imputation)
+#' @param expected_na_percent Expected NA percentage (default: varies based on protein data)
+#' @param tolerance Tolerance for expected percentage (default: 10%)
+#' 
+#' @return Logical indicating if validation passed, with detailed output
+#' 
+#' @export
+validatePostImputationProteinData <- function(protein_obj, expected_na_percent = NULL, tolerance = 10) {
+  
+  cat("\n=== POST-IMPUTATION PROTEIN DATA VALIDATION ===\n")
+  cat("Note: Protein-level NAs occur even after peptide imputation because:\n")
+  cat("• Proteins need ≥1 detected peptide to get a quantification\n")
+  cat("• Some proteins detected only in subset of samples\n")
+  cat("• This is normal proteomics data behavior!\n\n")
+  
+  # Run the full NA analysis
+  na_results <- checkProteinNAPercentages(protein_obj, verbose = TRUE)
+  
+  # Set expected NA percentage if not provided (proteins often have some NAs)
+  if (is.null(expected_na_percent)) {
+    # For protein data, NAs are very common due to missing peptides/proteins
+    # Typical ranges: 20-50% depending on sample complexity and detection method
+    expected_na_percent <- 35  # Realistic expectation for protein data
+    cat(sprintf("Note: Using default expected NA%% of %.1f%% for protein data\n", expected_na_percent))
+    cat("(Protein-level NAs are normal due to incomplete protein detection across samples)\n")
+  }
+  
+  # Check if validation passes
+  actual_na_percent <- na_results$total_na_percent
+  is_valid <- abs(actual_na_percent - expected_na_percent) <= tolerance
+  
+  cat("\n--- VALIDATION RESULT ---\n")
+  cat(sprintf("Expected NA%%: %.2f%% (± %.2f%%)\n", expected_na_percent, tolerance))
+  cat(sprintf("Actual NA%%: %.2f%%\n", actual_na_percent))
+  
+  if (is_valid) {
+    cat("✓ VALIDATION PASSED: Protein data NA levels are within expected range!\n")
+  } else {
+    cat("✗ VALIDATION FAILED: Unexpected NA percentage detected!\n")
+    if (actual_na_percent > expected_na_percent + tolerance) {
+      cat("  → Issue: More NAs than expected. Check for missing proteins/peptides.\n")
+    } else {
+      cat("  → Issue: Fewer NAs than expected. Possible over-imputation.\n")
+    }
+  }
+  
+  # Additional warnings for common issues
+  if (actual_na_percent > 50) {
+    cat("⚠ WARNING: Very high NA percentage (>50%) suggests data quality issues!\n")
+  }
+  
+  if (actual_na_percent < 10) {
+    cat("ℹ INFO: Very low NA percentage (<10%) - excellent protein coverage!\n")
+  }
+  
+  # Educational information about protein NAs
+  if (actual_na_percent > 20 && actual_na_percent < 50) {
+    cat("ℹ INFO: NA percentage is typical for protein-level data\n")
+    cat("  → This reflects biological reality: not all proteins detected in all samples\n")
+    cat("  → Consider: protein-level imputation OR complete-case analysis\n")
+  }
+  
+  if (na_results$summary_stats$max_na_per_sample > actual_na_percent + 10) {
+    cat("⚠ WARNING: Large variation in NA% between samples detected!\n")
+    cat("  → Some samples may have much lower protein coverage.\n")
+  }
+  
+  # Check for problematic samples (>80% missing)
+  high_missing_samples <- na_results$per_sample_na[na_results$per_sample_na$na_percentage > 80, ]
+  if (nrow(high_missing_samples) > 0) {
+    cat("⚠ WARNING: Samples with >80% missing proteins detected:\n")
+    print(high_missing_samples[, c("sample", "na_percentage")])
+  }
+  
+  cat("\n")
+  return(invisible(list(
+    is_valid = is_valid,
+    actual_na_percent = actual_na_percent,
+    expected_na_percent = expected_na_percent,
+    full_results = na_results
+  )))
 }
