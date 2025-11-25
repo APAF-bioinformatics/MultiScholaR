@@ -2,7 +2,7 @@
 % Please edit documentation in R/metaboliteVsSamplesS4Objects.R
 \name{ruvCancor,MetaboliteAssayData-method}
 \alias{ruvCancor,MetaboliteAssayData-method}
-\title{Plot RUV Canonical Correlation}
+\title{RUV Canonical Correlation for MetaboliteAssayData}
 \usage{
 \S4method{ruvCancor}{MetaboliteAssayData}(
   theObject,
@@ -12,10 +12,5 @@
 )
 }
 \description{
-Plot RUV Canonical Correlation
+RUV Canonical Correlation for MetaboliteAssayData
 }
-\section{Functions}{
-\itemize{
-\item \code{ruvCancor(MetaboliteAssayData)}: Method for MetaboliteAssayData
-
-}}

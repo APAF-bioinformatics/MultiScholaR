@@ -9,15 +9,10 @@
   grouping_variable,
   shape_variable = NULL,
   label_column,
-  title,
+  title = NULL,
   font_size = 8
 )
 }
 \description{
 Plot PCA for MetaboliteAssayData
 }
-\section{Functions}{
-\itemize{
-\item \code{plotPca(MetaboliteAssayData)}: Method for MetaboliteAssayData
-
-}}

@@ -12,8 +12,8 @@
 #' Zeros in the data are handled by adding a small `offset` before transformation.
 #' Non-numeric columns and the metabolite ID column are preserved.
 #'
-#' @describeIn logTransformAssays Method for MetaboliteAssayData
-#'
+#' @title Log Transform Assays for MetaboliteAssayData
+#' @name logTransformAssays,MetaboliteAssayData-method
 #' @param theObject A `MetaboliteAssayData` object.
 #' @param offset A small positive number to add before log transformation (default: 1).
 #' @param ... Currently unused.
@@ -25,7 +25,6 @@
 #' @importFrom purrr map set_names
 #' @importFrom methods slot slot<- is
 #' @importFrom tibble as_tibble is_tibble
-#'
 #' @export
 setMethod(f = "logTransformAssays",
           signature = "MetaboliteAssayData",

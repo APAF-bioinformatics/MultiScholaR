@@ -9,8 +9,3 @@
 \description{
 Plot RLE for MetaboliteAssayData
 }
-\section{Functions}{
-\itemize{
-\item \code{plotRle(MetaboliteAssayData)}: Method for MetaboliteAssayData
-
-}}

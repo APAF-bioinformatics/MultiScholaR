@@ -2,7 +2,7 @@
 % Please edit documentation in R/peptideVsSamplesS4Objects.R
 \name{ruvCancorFast,PeptideQuantitativeData-method}
 \alias{ruvCancorFast,PeptideQuantitativeData-method}
-\title{Fast version of ruvCancor for optimization (skips expensive DPC imputation)}
+\title{Fast version of ruvCancor for optimization}
 \usage{
 \S4method{ruvCancorFast}{PeptideQuantitativeData}(
   theObject,
@@ -13,6 +13,14 @@
 )
 }
 \arguments{
+\item{theObject}{A PeptideQuantitativeData object}
+
+\item{ctrl}{Control features for RUV}
+
+\item{num_components_to_impute}{Number of components to impute}
+
+\item{ruv_grouping_variable}{Grouping variable for RUV}
+
 \item{simple_imputation_method}{Method for simple missing value handling.
 Options: "none" (default), "mean", "median", "min"}
 }

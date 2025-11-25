@@ -2,7 +2,7 @@
 % Please edit documentation in R/metabolite_qc.R
 \name{metaboliteIntensityFilteringHelper}
 \alias{metaboliteIntensityFilteringHelper}
-\title{Filter metabolites based on an intensity threshold and the proportion of samples below that threshold in a wide-format table.}
+\title{Helper function for metabolite intensity filtering}
 \usage{
 metaboliteIntensityFilteringHelper(
   assay_table,

@@ -2,15 +2,10 @@
 % Please edit documentation in R/metabolite_qc.R
 \name{resolveDuplicateFeatures,MetaboliteAssayData-method}
 \alias{resolveDuplicateFeatures,MetaboliteAssayData-method}
-\title{Resolve duplicate features in a metabolite assay data object}
+\title{Resolve Duplicate Features for MetaboliteAssayData}
 \usage{
 \S4method{resolveDuplicateFeatures}{MetaboliteAssayData}(theObject, itsd_pattern_columns = NULL)
 }
 \description{
-Resolve duplicate features in a metabolite assay data object
+Resolve Duplicate Features for MetaboliteAssayData
 }
-\section{Functions}{
-\itemize{
-\item \code{resolveDuplicateFeatures(MetaboliteAssayData)}: Method for MetaboliteAssayData
-
-}}

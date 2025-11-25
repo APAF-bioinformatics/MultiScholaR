@@ -12,11 +12,4 @@
 }
 \description{
 Calculate Pearson Correlation for Sample Pairs
-
-Calculate Pearson Correlation for Sample Pairs
 }
-\section{Functions}{
-\itemize{
-\item \code{pearsonCorForSamplePairs(MetaboliteAssayData)}: Method for MetaboliteAssayData
-
-}}

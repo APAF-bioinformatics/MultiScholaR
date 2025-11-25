@@ -6,17 +6,16 @@
 #' @description A Shiny module for the Session Summary and Report Generation step.
 #'
 #' @name sessionSummaryModule
-#' @export
 NULL
 
 #' @rdname sessionSummaryModule
 #' @export
-#' @import shiny
-#' @import shinydashboard
+#' @importFrom shiny NS tagList fluidPage h3 fluidRow column wellPanel h4 textInput textAreaInput actionButton icon br hr downloadButton verbatimTextOutput
 mod_prot_summary_ui <- function(id) {
   ns <- shiny::NS(id)
   
-  shiny::fluidPage(
+  shiny::tagList(
+    shiny::fluidPage(
     shiny::h3("Session Summary & Report Generation"),
     
     shiny::fluidRow(
@@ -97,11 +96,11 @@ mod_prot_summary_ui <- function(id) {
       )
     )
   )
+  )
 }
 
 #' @rdname sessionSummaryModule
 #' @export
-#' @import shiny
 #' @importFrom shiny moduleServer reactive reactiveValues observeEvent req renderText showNotification downloadHandler withProgress incProgress
 #' @importFrom logger log_info log_error
 #' @importFrom utils write.table

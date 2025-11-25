@@ -12,22 +12,6 @@
 #' 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @export
-setGeneric( name ="differentialExpressionAnalysis"
-            , def=function(theObject
-                           , contrasts_tbl = NULL
-                           , formula_string = NULL
-                           , group_id = NULL
-                           , de_q_val_thresh = NULL
-                           , treat_lfc_cutoff = NULL
-                           , eBayes_trend = NULL
-                           , eBayes_robust = NULL
-                           , args_group_pattern = NULL
-                           , args_row_id = NULL
-                           , qvalue_column = "fdr_qvalue"
-                           , raw_pvalue_column = "raw_pvalue") {
-              standardGeneric("differentialExpressionAnalysis")
-            })
 
 #' @export
 setMethod( f ="differentialExpressionAnalysis"
@@ -101,24 +85,6 @@ setMethod( f ="differentialExpressionAnalysis"
 })
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' Core Differential Expression Analysis Helper
-#' 
-#' @export
-setGeneric( name ="differentialExpressionAnalysisHelper"
-            , def=function(theObject
-                           , contrasts_tbl = NULL
-                           , formula_string = NULL
-                           , group_id = NULL
-                           , de_q_val_thresh = NULL
-                           , treat_lfc_cutoff = NULL
-                           , eBayes_trend = NULL
-                           , eBayes_robust = NULL
-                           , args_group_pattern = NULL
-                           , args_row_id = NULL
-                           , qvalue_column = "fdr_qvalue"
-                           , raw_pvalue_column = "raw_pvalue") {
-              standardGeneric("differentialExpressionAnalysisHelper")
-            })
 
 #' @export
 setMethod( f ="differentialExpressionAnalysisHelper"
@@ -926,24 +892,6 @@ generateDEHeatmap <- function( de_results_list
 }
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' Output DE Analysis Results for All Contrasts
-#' 
-#' Writes DE analysis results to disk for all contrasts simultaneously,
-#' using contrast-specific filenames to avoid overwriting.
-#' 
-#' @export
-setGeneric(name = "outputDeResultsAllContrasts",
-           def = function(theObject,
-                         de_results_list_all_contrasts = NULL,
-                         uniprot_tbl = NULL,
-                         de_output_dir = NULL,
-                         publication_graphs_dir = NULL,
-                         file_prefix = "de_proteins",
-                         args_row_id = NULL,
-                         gene_names_column = "gene_names",
-                         uniprot_id_column = "Entry") {
-             standardGeneric("outputDeResultsAllContrasts")
-           })
 
 #' @export
 setMethod(f = "outputDeResultsAllContrasts",

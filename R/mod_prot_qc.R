@@ -12,16 +12,15 @@
 #' while maintaining backward compatibility.
 #'
 #' @name qualityControlAppletModule
-#' @export
 NULL
 
 #' @rdname qualityControlAppletModule
 #' @export
-#' @import shiny
-#' @import shinydashboard
+#' @importFrom shiny NS tagList fluidRow column wellPanel h3 uiOutput
 mod_prot_qc_ui <- function(id) {
   ns <- shiny::NS(id)
-  shiny::fluidRow(
+  shiny::tagList(
+    shiny::fluidRow(
     shiny::column(12,
       shiny::wellPanel(
         shiny::h3("Quality Control & Filtering"),
@@ -30,11 +29,12 @@ mod_prot_qc_ui <- function(id) {
       )
     )
   )
+  )
 }
 
 #' @rdname qualityControlAppletModule
 #' @export
-#' @import shiny
+#' @importFrom shiny moduleServer reactive observeEvent req renderUI showNotification removeNotification
 #' @importFrom logger log_info log_error
 #' @importFrom grid grid.draw
 mod_prot_qc_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label, qc_trigger = NULL) {

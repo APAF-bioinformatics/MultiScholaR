@@ -5,17 +5,18 @@
 #' using results from differential expression analysis.
 #'
 #' @name enrichmentAnalysisAppletModule
-#' @export
 NULL
 
 #' @rdname enrichmentAnalysisAppletModule
 #' @export
-#' @import shiny
-#' @import shinydashboard
+#' @importFrom shiny NS tagList fluidRow column wellPanel h4 selectInput helpText hr numericInput actionButton icon br tabsetPanel tabPanel verbatimTextOutput plotOutput downloadButton
+#' @importFrom DT DTOutput renderDT
 mod_prot_enrich_ui <- function(id) {
   ns <- shiny::NS(id)
   
-  shiny::fluidRow(
+  shiny::tagList(
+    shiny::wellPanel(
+      shiny::fluidRow(
     shiny::column(3,
       shiny::wellPanel(
         shiny::h4("Enrichment Analysis Settings"),
@@ -348,7 +349,11 @@ mod_prot_enrich_ui <- function(id) {
       )
     )
   )
+  )
+  )
 }
+
+
 
 #' @rdname enrichmentAnalysisAppletModule 
 #' @export

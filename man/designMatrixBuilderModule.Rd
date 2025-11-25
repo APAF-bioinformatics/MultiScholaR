@@ -13,8 +13,7 @@ mod_prot_design_builder_server(id, data_tbl, config_list, column_mapping)
 \arguments{
 \item{id}{Module ID.}
 
-\item{data_tbl}{A reactive expression that returns the data table
-(e.g., from the setup & import tab).}
+\item{data_tbl}{A reactive expression that returns the data table.}
 
 \item{config_list}{A reactive expression that returns the main configuration list.}
 
@@ -30,10 +29,22 @@ when the "Save" button is clicked. The list includes:
 \item \code{config_list}: The updated configuration list with the new formula.
 }
 
-A tagList containing the UI for the design matrix builder.
+A fluidPage containing the UI for the design matrix builder.
 }
 \description{
 A Shiny module to build a design matrix for proteomics experiments.
 This module is a refactored version of the standalone design matrix applet,
 designed to be embedded within the main MultiScholaR Shiny application.
+}
+\note{
+\strong{ARCHITECTURAL EXCEPTION}: This module is designed as a standalone component
+callable from R Markdown workflows, not integrated into the main Shiny app workflow.
+Therefore, it returns \code{fluidPage()} instead of \code{tagList()}, and uses reactive expressions
+instead of \code{workflow_data} for state management. This is an intentional deviation from
+the standard Golem module pattern.
+
+\strong{ARCHITECTURAL EXCEPTION}: This module uses reactive expressions instead of
+\code{workflow_data} because it is designed as a standalone component callable from
+R Markdown workflows. This is an intentional deviation from the standard Golem
+module pattern.
 }

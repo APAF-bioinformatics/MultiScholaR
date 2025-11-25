@@ -3,17 +3,16 @@
 #' @description A Shiny module for applying the protein peptide count filter.
 #'
 #' @name mod_prot_qc_peptide_protein
-#' @export
 NULL
 
 #' @rdname mod_prot_qc_peptide_protein
 #' @export
-#' @import shiny
-#' @import shinydashboard
+#' @importFrom shiny NS tagList tabPanel br fluidRow column wellPanel h4 p hr numericInput helpText div actionButton verbatimTextOutput plotOutput
 mod_prot_qc_peptide_protein_ui <- function(id) {
-  ns <- NS(id)
+  ns <- shiny::NS(id)
   
-  shiny::tabPanel(
+  shiny::tagList(
+    shiny::tabPanel(
     "Protein Peptides",
     shiny::br(),
     shiny::fluidRow(
@@ -55,11 +54,12 @@ mod_prot_qc_peptide_protein_ui <- function(id) {
       )
     )
   )
+  )
 }
 
 #' @rdname mod_prot_qc_peptide_protein
 #' @export
-#' @import shiny
+#' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification removeNotification renderText renderPlot
 #' @importFrom logger log_info log_error
 #' @importFrom grid grid.draw
 mod_prot_qc_peptide_protein_server <- function(id, workflow_data, omic_type, experiment_label) {

@@ -5,17 +5,17 @@
 #' correlation-based sample filtering before preparing data for DE analysis.
 #'
 #' @name normalizationAppletModule
-#' @export
 NULL
 
 #' @rdname normalizationAppletModule
 #' @export
-#' @import shiny
-#' @import shinydashboard
+#' @importFrom shiny NS tagList fluidRow column wellPanel h4 selectInput helpText hr numericInput checkboxInput actionButton icon br sliderInput h5 verbatimTextOutput plotOutput tabsetPanel tabPanel conditionalPanel
 mod_prot_norm_ui <- function(id) {
   ns <- shiny::NS(id)
   
-  shiny::fluidRow(
+  shiny::tagList(
+    shiny::wellPanel(
+      shiny::fluidRow(
     shiny::column(3,
       shiny::wellPanel(
         shiny::h4("Normalization Options"),
@@ -452,6 +452,8 @@ mod_prot_norm_ui <- function(id) {
         )
       )
     )
+  )
+  )
   )
 }
 

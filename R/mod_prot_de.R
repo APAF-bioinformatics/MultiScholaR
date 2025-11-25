@@ -5,17 +5,17 @@
 #' across user-defined contrasts.
 #'
 #' @name differentialExpressionAppletModule
-#' @export
 NULL
 
 #' @rdname differentialExpressionAppletModule
 #' @export
-#' @import shiny
-#' @import shinydashboard
+#' @importFrom shiny NS tagList fluidRow column wellPanel h4 h5 textAreaInput helpText hr numericInput actionButton icon verbatimTextOutput br downloadButton
 mod_prot_de_ui <- function(id) {
   ns <- shiny::NS(id)
   
-  shiny::fluidRow(
+  shiny::tagList(
+    shiny::wellPanel(
+      shiny::fluidRow(
     shiny::column(3,
       shiny::wellPanel(
         shiny::h4("DE Analysis Settings"),
@@ -417,6 +417,8 @@ mod_prot_de_ui <- function(id) {
         )
       )
     )
+    )
+  )
   )
 }
 

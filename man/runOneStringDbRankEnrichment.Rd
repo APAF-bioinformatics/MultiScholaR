@@ -2,11 +2,12 @@
 % Please edit documentation in R/multiomics_enrichment_functions.R
 \name{runOneStringDbRankEnrichment}
 \alias{runOneStringDbRankEnrichment}
-\title{Run STRING DB Rank Enrichment Analysis for MOFA Factors or Similar Data}
+\title{Run STRING DB Rank Enrichment Analysis}
 \usage{
 runOneStringDbRankEnrichment(
   input_table,
   result_label,
+  pathway_dir,
   api_key = NULL,
   species = "9606",
   ge_fdr = 0.05,
@@ -16,58 +17,56 @@ runOneStringDbRankEnrichment(
 )
 }
 \arguments{
-\item{input_table}{A data frame containing the data to be submitted for enrichment.
-Must include columns specified by \code{identifier_column_name} and \code{value_column_name}.}
+\item{input_table}{A data frame containing differential expression results with
+columns: \code{log2FC} (log fold change), \code{fdr_qvalue} (adjusted p-value), and
+\code{Protein.Ids} (protein identifiers, potentially with isoform information).}
 
-\item{result_label}{Character string. A label used for naming output files
-(e.g., "MOFA_Factor1_Proteomics").}
+\item{result_label}{Character string: A label for the analysis results, used
+in output file names.}
 
-\item{api_key}{Character string or NULL. Your personal STRING API key.
-If NULL, the API might work with limitations or require it for full access.
-Default: \code{NULL}.}
+\item{pathway_dir}{Character string: The pathway directory where results will be saved.
+All outputs are saved to pathway_dir/string_db/ subdirectory.}
 
-\item{species}{Character string. NCBI/STRING species identifier.
-Default: \code{"9606"} (Homo sapiens).}
+\item{api_key}{Character string: Your personal STRING API key.}
 
-\item{ge_fdr}{Numeric. FDR threshold for gene expression enrichment.
-Default: \code{0.05}.}
+\item{species}{Character or numeric: NCBI/STRING species identifier. Default is 9606 (Homo sapiens).}
 
-\item{ge_enrichment_rank_direction}{Integer. Direction for enrichment rank
-(-1, 0, or 1). Default: \code{-1}.}
+\item{ge_fdr}{Numeric: FDR threshold for gene expression enrichment. Default is 0.05.}
 
-\item{polling_interval_seconds}{Numeric. Seconds to wait between polling attempts
-for job status. Default: \code{10}.}
+\item{ge_enrichment_rank_direction}{Integer: Direction for enrichment rank.
+(-1, 0, or 1). Default is -1.}
 
-\item{max_polling_attempts}{Numeric. Maximum polling attempts before timing out.
-Default: \code{30}.}
+\item{polling_interval_seconds}{Numeric: Seconds to wait between polling attempts.
+Default is 10.}
 
-\item{identifier_column_name}{Character string. The name of the column in
-\code{input_table} containing the identifiers (e.g., protein IDs, gene symbols).
-Default: \code{"protein_id"}.}
-
-\item{value_column_name}{Character string. The name of the column in \code{input_table}
-containing the numerical values (e.g., scores, weights, logFC) associated
-with each identifier. This column must be numeric. Default: \code{"score"}.}
-
-\item{results_dir}{Character string. The path to the directory where enrichment
-results (table, URL file, graph image) will be saved. The directory will be
-created if it doesn't exist.}
+\item{max_polling_attempts}{Numeric: Maximum number of polling attempts. Default is 30.}
 }
 \value{
-A data frame containing the enrichment results from STRING DB
-(specifically \code{output_tbl$enrichment_data} from the retrieval step).
-Returns \code{NULL} or an empty structure if the process fails.
+A data frame containing the STRING DB enrichment results.
 }
 \description{
-This function automates the process of submitting data to the STRING database
-for values/ranks enrichment analysis, polling for results, and saving the
-output. It is a wrapper around \code{submitStringDBEnrichment} and
-\code{retrieveStringDBEnrichmentResults}, tailored for analyses where inputs
-might come from MOFA factor weights or similar ranked lists.
-
-Results, including the enrichment table, a URL list, and a graph image,
-are saved to the specified \code{results_dir}.
+Performs STRING DB enrichment analysis on ranked data. This function processes
+differential expression results by calculating a score from log fold change and
+FDR values, extracts protein identifiers, and submits them to STRING DB for
+functional enrichment analysis. Results are automatically saved to files.
 }
-\seealso{
-\code{\link{submitStringDBEnrichment}}, \code{\link{retrieveStringDBEnrichmentResults}}
+\details{
+This function saves enrichment results to the specified pathway directory:
+\itemize{
+\item \verb{\{pathway_dir\}/string_db/\{result_label\}_string_enrichment_page_url.txt} - URLs for STRING DB results
+\item \verb{\{pathway_dir\}/string_db/\{result_label\}_string_enrichment_results.tab} - Tab-delimited enrichment results
+\item \verb{\{pathway_dir\}/string_db/\{result_label\}_string_enrichment_graph.png} - Network graph image
+}
+}
+\examples{
+\dontrun{
+# Assume 'de_results' is a data frame with log2FC, fdr_qvalue, and Protein.Ids columns
+enrichment_results <- runOneStringDbRankEnrichment(
+  input_table = de_results,
+  result_label = "treatment_vs_control",
+  pathway_dir = "path/to/pathway_enrichment",
+  api_key = "YOUR_API_KEY"
+)
+}
+
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/multiomics_enrichment_functions.R
 \name{runOneStringDbRankEnrichmentMofa}
 \alias{runOneStringDbRankEnrichmentMofa}
-\title{Run STRING DB Rank Enrichment Analysis for MOFA Factors or Similar Data}
+\title{Run STRING DB Rank Enrichment Analysis for MOFA}
 \usage{
 runOneStringDbRankEnrichmentMofa(
   input_table,
@@ -19,58 +19,66 @@ runOneStringDbRankEnrichmentMofa(
 )
 }
 \arguments{
-\item{input_table}{A data frame containing the data to be submitted for enrichment.
-Must include columns specified by \code{identifier_column_name} and \code{value_column_name}.}
+\item{input_table}{A data frame containing the data to analyze with identifier
+and value columns as specified by the column name parameters.}
 
-\item{identifier_column_name}{Character string. The name of the column in
-\code{input_table} containing the identifiers (e.g., protein IDs, gene symbols).
-Default: \code{"protein_id"}.}
+\item{identifier_column_name}{Character string: The name of the column in
+\code{input_table} that contains the protein/gene identifiers. Default is "protein_id".}
 
-\item{value_column_name}{Character string. The name of the column in \code{input_table}
-containing the numerical values (e.g., scores, weights, logFC) associated
-with each identifier. This column must be numeric. Default: \code{"score"}.}
+\item{value_column_name}{Character string: The name of the column in \code{input_table}
+that contains the numerical values (e.g., scores, weights) associated with
+each identifier. Default is "score".}
 
-\item{result_label}{Character string. A label used for naming output files
-(e.g., "MOFA_Factor1_Proteomics").}
+\item{result_label}{Character string: A label for the analysis results, used
+in output file names.}
 
-\item{results_dir}{Character string. The path to the directory where enrichment
-results (table, URL file, graph image) will be saved. The directory will be
-created if it doesn't exist.}
+\item{results_dir}{Character string: The directory path where results should be saved.}
 
-\item{api_key}{Character string or NULL. Your personal STRING API key.
-If NULL, the API might work with limitations or require it for full access.
-Default: \code{NULL}.}
+\item{api_key}{Character string: Your personal STRING API key.}
 
-\item{species}{Character string. NCBI/STRING species identifier.
-Default: \code{"9606"} (Homo sapiens).}
+\item{species}{Character or numeric: NCBI/STRING species identifier. Default is 9606 (Homo sapiens).}
 
-\item{ge_fdr}{Numeric. FDR threshold for gene expression enrichment.
-Default: \code{0.05}.}
+\item{ge_fdr}{Numeric: FDR threshold for gene expression enrichment. Default is 0.05.}
 
-\item{ge_enrichment_rank_direction}{Integer. Direction for enrichment rank
-(-1, 0, or 1). Default: \code{-1}.}
+\item{ge_enrichment_rank_direction}{Integer: Direction for enrichment rank.
+(-1, 0, or 1). Default is -1.}
 
-\item{polling_interval_seconds}{Numeric. Seconds to wait between polling attempts
-for job status. Default: \code{10}.}
+\item{polling_interval_seconds}{Numeric: Seconds to wait between polling attempts.
+Default is 10.}
 
-\item{max_polling_attempts}{Numeric. Maximum polling attempts before timing out.
-Default: \code{30}.}
+\item{max_polling_attempts}{Numeric: Maximum number of polling attempts. Default is 30.}
 }
 \value{
-A data frame containing the enrichment results from STRING DB
-(specifically \code{output_tbl$enrichment_data} from the retrieval step).
-Returns \code{NULL} or an empty structure if the process fails.
+A data frame containing the STRING DB enrichment results.
 }
 \description{
-This function automates the process of submitting data to the STRING database
-for values/ranks enrichment analysis, polling for results, and saving the
-output. It is a wrapper around \code{submitStringDBEnrichment} and
-\code{retrieveStringDBEnrichmentResults}, tailored for analyses where inputs
-might come from MOFA factor weights or similar ranked lists.
-
-Results, including the enrichment table, a URL list, and a graph image,
-are saved to the specified \code{results_dir}.
+Performs STRING DB enrichment analysis for MOFA (Multi-Omics Factor Analysis)
+results. This function takes pre-processed data with identifier and value columns
+and submits them to STRING DB for functional enrichment analysis. Results are
+automatically saved to the specified results directory.
 }
-\seealso{
-\code{\link{submitStringDBEnrichment}}, \code{\link{retrieveStringDBEnrichmentResults}}
+\details{
+This function saves results directly to the specified \code{results_dir}:
+\itemize{
+\item URLs for STRING DB results page, download, and graph
+\item Tab-delimited enrichment results file
+\item PNG image of the enrichment network graph
+}
+
+Unlike \code{runOneStringDbRankEnrichment}, this function expects the input data to
+already be properly formatted with identifier and value columns.
+}
+\examples{
+\dontrun{
+# Assume 'mofa_results' is a data frame with protein_id and score columns
+enrichment_results <- runOneStringDbRankEnrichmentMofa(
+  input_table = mofa_results,
+  identifier_column_name = "protein_id",
+  value_column_name = "score",
+  result_label = "MOFA_factor_1",
+  results_dir = "/path/to/results",
+  api_key = "YOUR_API_KEY"
+)
+}
+
 }

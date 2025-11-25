@@ -413,7 +413,7 @@ matchAnnotations <- function(de_results_s4,
 #' }
 #'
 #' @details
-#' Ensembl protein IDs follow the pattern: ENS[SPECIES]P[0-9]+
+#' Ensembl protein IDs follow the pattern: `ENS[SPECIES]P[0-9]+`
 #' Examples: ENSP00000123456 (human), ENSOARP00020006936 (sheep), ENSMUSP00000123456 (mouse)
 #'
 #' @export
