@@ -4,12 +4,7 @@
 \alias{filterMinNumPeptidesPerProtein,PeptideQuantitativeData-method}
 \title{Filter the proteins based on the number of peptides and peptidoforms}
 \usage{
-\S4method{filterMinNumPeptidesPerProtein}{PeptideQuantitativeData}(
-  theObject,
-  num_peptides_per_protein_thresh = NULL,
-  num_peptidoforms_per_protein_thresh = NULL,
-  core_utilisation = NULL
-)
+\S4method{filterMinNumPeptidesPerProtein}{PeptideQuantitativeData}(theObject, ...)
 }
 \arguments{
 \item{theObject}{Object of class PeptideQuantitativeData}

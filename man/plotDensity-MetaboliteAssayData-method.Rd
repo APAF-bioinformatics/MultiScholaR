@@ -2,24 +2,10 @@
 % Please edit documentation in R/metaboliteVsSamplesS4Objects.R
 \name{plotDensity,MetaboliteAssayData-method}
 \alias{plotDensity,MetaboliteAssayData-method}
-\alias{plotDensity,list-method}
 \title{Plot Density for MetaboliteAssayData}
 \usage{
 \S4method{plotDensity}{MetaboliteAssayData}(theObject, grouping_variable, title = "", font_size = 8)
-
-\S4method{plotDensity}{list}(theObject, grouping_variable, title = "", font_size = 8)
 }
 \description{
 Plot Density for MetaboliteAssayData
-
-Plot Density for list of ggplot objects
-
-Plot Density for list of ggplot objects
 }
-\section{Functions}{
-\itemize{
-\item \code{plotDensity(MetaboliteAssayData)}: Method for MetaboliteAssayData
-
-\item \code{plotDensity(list)}: Method for list of ggplot objects
-
-}}

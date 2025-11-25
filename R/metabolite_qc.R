@@ -1,9 +1,11 @@
-#'@description Filter metabolites based on an intensity threshold and the proportion of samples below that threshold in a wide-format table.
-#'@param assay_table A wide data frame where rows are metabolites and columns include a metabolite identifier and numeric sample intensities.
-#'@param min_metabolite_intensity_threshold The calculated minimum intensity value. Metabolites in samples below this threshold are considered 'below threshold'.
-#'@param metabolites_proportion_of_samples_below_cutoff The maximum allowed proportion (0 to 1) of samples where a metabolite can be below the threshold. If a metabolite exceeds this proportion, it's removed.
-#'@param metabolite_id_column A string specifying the name of the column containing the unique metabolite identifiers.
-#'@return A filtered wide data frame containing only the metabolites that pass the filter.
+#' @title Helper function for metabolite intensity filtering
+#' @name metaboliteIntensityFilteringHelper
+#' @description Filter metabolites based on an intensity threshold and the proportion of samples below that threshold in a wide-format table.
+#' @param assay_table A wide data frame where rows are metabolites and columns include a metabolite identifier and numeric sample intensities.
+#' @param min_metabolite_intensity_threshold The calculated minimum intensity value. Metabolites in samples below this threshold are considered 'below threshold'.
+#' @param metabolites_proportion_of_samples_below_cutoff The maximum allowed proportion (0 to 1) of samples where a metabolite can be below the threshold. If a metabolite exceeds this proportion, it's removed.
+#' @param metabolite_id_column A string specifying the name of the column containing the unique metabolite identifiers.
+#' @return A filtered wide data frame containing only the metabolites that pass the filter.
 #' @export
 metaboliteIntensityFilteringHelper <- function(assay_table
                                                , min_metabolite_intensity_threshold
@@ -342,7 +344,8 @@ resolveDuplicateFeaturesByIntensity <- function(assay_tibble, id_col, sample_col
 
 
 
-#' @describeIn resolveDuplicateFeatures Method for MetaboliteAssayData
+#' @title Resolve Duplicate Features for MetaboliteAssayData
+#' @name resolveDuplicateFeatures,MetaboliteAssayData-method
 #' @export
 setMethod("resolveDuplicateFeatures",
           signature = "MetaboliteAssayData",

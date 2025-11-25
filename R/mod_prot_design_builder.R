@@ -24,13 +24,19 @@
 #' @import dplyr
 #' @importFrom tibble tibble
 #' @name designMatrixBuilderModule
-#' @export
 NULL
 
 #' Design Matrix Builder UI Module
 #'
 #' @param id Module ID.
-#' @return A tagList containing the UI for the design matrix builder.
+#' @return A fluidPage containing the UI for the design matrix builder.
+#' 
+#' @note **ARCHITECTURAL EXCEPTION**: This module is designed as a standalone component
+#' callable from R Markdown workflows, not integrated into the main Shiny app workflow.
+#' Therefore, it returns `fluidPage()` instead of `tagList()`, and uses reactive expressions
+#' instead of `workflow_data` for state management. This is an intentional deviation from
+#' the standard Golem module pattern.
+#' 
 #' @rdname designMatrixBuilderModule
 #' @export
 mod_prot_design_builder_ui <- function(id) {
@@ -256,6 +262,18 @@ mod_prot_design_builder_ui <- function(id) {
 
 
 #' Design Matrix Builder Server Module
+#' Design Matrix Builder Server Module
+#'
+#' @param id Module ID.
+#' @param data_tbl A reactive expression that returns the data table.
+#' @param config_list A reactive expression that returns the main configuration list.
+#' @param column_mapping A reactive expression that returns the column mapping list.
+#' 
+#' @note **ARCHITECTURAL EXCEPTION**: This module uses reactive expressions instead of
+#' `workflow_data` because it is designed as a standalone component callable from
+#' R Markdown workflows. This is an intentional deviation from the standard Golem
+#' module pattern.
+#' 
 #' @rdname designMatrixBuilderModule
 #' @export
 mod_prot_design_builder_server <- function(id, data_tbl, config_list, column_mapping) {

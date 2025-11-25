@@ -22,6 +22,6 @@ Detects whether a vector of protein IDs contains Ensembl protein IDs
 based on characteristic Ensembl naming patterns (e.g., ENSP, ENSOARP, etc.)
 }
 \details{
-Ensembl protein IDs follow the pattern: ENS\link{SPECIES}P\link{0-9}+
+Ensembl protein IDs follow the pattern: \verb{ENS[SPECIES]P[0-9]+}
 Examples: ENSP00000123456 (human), ENSOARP00020006936 (sheep), ENSMUSP00000123456 (mouse)
 }

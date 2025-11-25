@@ -3,17 +3,16 @@
 #' @description A Shiny module for applying the replicate filter.
 #'
 #' @name mod_prot_qc_peptide_replicate
-#' @export
 NULL
 
 #' @rdname mod_prot_qc_peptide_replicate
 #' @export
-#' @import shiny
-#' @import shinydashboard
+#' @importFrom shiny NS tagList tabPanel br fluidRow column wellPanel h4 p hr textInput helpText div actionButton verbatimTextOutput plotOutput
 mod_prot_qc_peptide_replicate_ui <- function(id) {
-  ns <- NS(id)
+  ns <- shiny::NS(id)
   
-  shiny::tabPanel(
+  shiny::tagList(
+    shiny::tabPanel(
     "Replicate Filter",
     shiny::br(),
     shiny::fluidRow(
@@ -48,11 +47,12 @@ mod_prot_qc_peptide_replicate_ui <- function(id) {
       )
     )
   )
+  )
 }
 
 #' @rdname mod_prot_qc_peptide_replicate
 #' @export
-#' @import shiny
+#' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification removeNotification renderText renderPlot
 #' @importFrom logger log_info log_error
 #' @importFrom grid grid.draw
 mod_prot_qc_peptide_replicate_server <- function(id, workflow_data, omic_type, experiment_label) {

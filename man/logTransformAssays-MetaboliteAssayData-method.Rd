@@ -2,7 +2,7 @@
 % Please edit documentation in R/metabolite_normalization.R
 \name{logTransformAssays,MetaboliteAssayData-method}
 \alias{logTransformAssays,MetaboliteAssayData-method}
-\title{Log2 Transform Assay Data for MetaboliteAssayData}
+\title{Log Transform Assays for MetaboliteAssayData}
 \usage{
 \S4method{logTransformAssays}{MetaboliteAssayData}(theObject, offset = 1, ...)
 }
@@ -27,8 +27,3 @@ in quantitative omics data, especially before visualization or statistical model
 Zeros in the data are handled by adding a small \code{offset} before transformation.
 Non-numeric columns and the metabolite ID column are preserved.
 }
-\section{Functions}{
-\itemize{
-\item \code{logTransformAssays(MetaboliteAssayData)}: Method for MetaboliteAssayData
-
-}}

@@ -204,6 +204,56 @@ setGeneric(name="plotDensityList"
            }
            , signature=c("theObject", "grouping_variables_list", "title", "font_size"))
 
+# --- From protein_de_analysis_wrapper.R ---
+
+setGeneric(name="differentialExpressionAnalysis"
+           , def=function( theObject
+                           , contrasts_tbl = NULL
+                           , formula_string = NULL
+                           , group_id = NULL
+                           , de_q_val_thresh = NULL
+                           , treat_lfc_cutoff = NULL
+                           , eBayes_trend = NULL
+                           , eBayes_robust = NULL
+                           , args_group_pattern = NULL
+                           , args_row_id = NULL
+                           , qvalue_column = "fdr_qvalue"
+                           , raw_pvalue_column = "raw_pvalue" ) {
+             standardGeneric("differentialExpressionAnalysis")
+           }
+           , signature=c("theObject"))
+
+setGeneric(name="differentialExpressionAnalysisHelper"
+           , def=function( theObject
+                           , contrasts_tbl = NULL
+                           , formula_string = NULL
+                           , group_id = NULL
+                           , de_q_val_thresh = NULL
+                           , treat_lfc_cutoff = NULL
+                           , eBayes_trend = NULL
+                           , eBayes_robust = NULL
+                           , args_group_pattern = NULL
+                           , args_row_id = NULL
+                           , qvalue_column = "fdr_qvalue"
+                           , raw_pvalue_column = "raw_pvalue" ) {
+             standardGeneric("differentialExpressionAnalysisHelper")
+           }
+           , signature=c("theObject"))
+
+setGeneric(name="outputDeResultsAllContrasts"
+           , def=function(theObject,
+                          de_results_list_all_contrasts = NULL,
+                          uniprot_tbl = NULL,
+                          de_output_dir = NULL,
+                          publication_graphs_dir = NULL,
+                          file_prefix = "de_proteins",
+                          args_row_id = NULL,
+                          gene_names_column = "gene_names",
+                          uniprot_id_column = "Entry") {
+             standardGeneric("outputDeResultsAllContrasts")
+           }
+           , signature=c("theObject"))
+
 
 # --- From peptideVsSamplesS4Objects.R ---
 
@@ -211,6 +261,13 @@ setGeneric(name ="cleanDesignMatrixPeptide"
            , def=function( theObject) {
              standardGeneric("cleanDesignMatrixPeptide")
            })
+
+setGeneric(name="calcPeptideMatrix",
+           def=function(theObject) {
+             standardGeneric("calcPeptideMatrix")
+           },
+           signature=c("theObject"))
+
 
 setGeneric(name="srlQvalueProteotypicPeptideClean"
            , def=function( theObject, qvalue_threshold = NULL, global_qvalue_threshold = NULL, choose_only_proteotypic_peptide = NULL, input_matrix_column_ids = NULL) {
@@ -274,6 +331,50 @@ setGeneric( name="peptideMissingValueImputation"
             }
             , signature=c("theObject", "imputed_value_column", "proportion_missing_values", "core_utilisation" ))
 
+setGeneric(name="getNegCtrlProtAnovaPeptides"
+           , def=function( theObject
+                           , ruv_grouping_variable = NULL
+                           , percentage_as_neg_ctrl = NULL
+                           , num_neg_ctrl = NULL
+                           , ruv_qval_cutoff = NULL
+                           , ruv_fdr_method = NULL ) {
+             standardGeneric("getNegCtrlProtAnovaPeptides")
+           }
+           , signature=c("theObject", "ruv_grouping_variable", "percentage_as_neg_ctrl", "num_neg_ctrl", "ruv_qval_cutoff", "ruv_fdr_method"))
+
+setGeneric(name="peptideMissingValueImputationLimpa"
+           , def=function(theObject, 
+                          imputed_value_column = NULL, 
+                          use_log2_transform = TRUE,
+                          verbose = TRUE,
+                          ensure_matrix = TRUE) {
+             standardGeneric("peptideMissingValueImputationLimpa")
+           }
+           , signature=c("theObject"))
+
+setGeneric(name="findBestNegCtrlPercentagePeptides"
+           , def=function(theObject,
+                          percentage_range = NULL,
+                          num_components_to_impute = 5,
+                          ruv_grouping_variable = "group",
+                          ruv_qval_cutoff = 0.05,
+                          ruv_fdr_method = "qvalue",
+                          separation_metric = "max_difference",
+                          k_penalty_weight = 0.5,
+                          max_acceptable_k = 3,
+                          adaptive_k_penalty = TRUE,
+                          verbose = TRUE,
+                          ensure_matrix = TRUE) {
+             standardGeneric("findBestNegCtrlPercentagePeptides")
+           }
+           , signature=c("theObject"))
+
+setGeneric(name="log2TransformPeptideMatrix"
+           , def=function(theObject) {
+             standardGeneric("log2TransformPeptideMatrix")
+           }
+           , signature=c("theObject"))
+
 
 # --- From metabolite_qc.R ---
 
@@ -319,8 +420,7 @@ setGeneric(name = "getNegCtrlMetabAnova",
 
 ###### Metabolomics
 
-#' plot number of significant differentially expressed metabolites
-#'@export
+
 setGeneric(name="plotVolcano",
            def=function(objectsList,
                         de_q_val_thresh = 0.05,
@@ -330,8 +430,17 @@ setGeneric(name="plotVolcano",
            },
            signature=c("objectsList"))
 
-# Get the differential expression results in wide format
-#'@export
+
+setGeneric(name="plotVolcanoS4",
+           def=function(objectsList,
+                        de_q_val_thresh = 0.05,
+                        qvalue_column = "fdr_qvalue",
+                        log2fc_column = "logFC") {
+             standardGeneric("plotVolcanoS4")
+           },
+           signature=c("objectsList"))
+
+
 setGeneric(name="getDeResultsWideFormat"
            , def=function(objectsList
                           , qvalue_column = "fdr_qvalue"
@@ -342,8 +451,7 @@ setGeneric(name="getDeResultsWideFormat"
            signature=c("objectsList"))
 
 
-# Get the differential expression results in wide format
-#'@export
+
 setGeneric(name="getDeResultsLongFormat"
            , def=function(objectsList) {
              standardGeneric("getDeResultsLongFormat")
@@ -351,8 +459,7 @@ setGeneric(name="getDeResultsLongFormat"
            signature=c("objectsList"))
 
 
-## Create proteomics interactive volcano plot
-#' @export
+
 setGeneric(name="plotInteractiveVolcano"
            , def=function(objectsList, anno_list = NULL) {
              standardGeneric("plotInteractiveVolcano")
@@ -360,23 +467,21 @@ setGeneric(name="plotInteractiveVolcano"
            signature=c("objectsList"))
 
 
-#Create a QC composite figure
-#' @export
+
 setGeneric(name = "createGridQCMetabolomics",
            def = function(theObject, pca_titles, density_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
              standardGeneric("createGridQCMetabolomics")
            },
            signature = c("theObject"))
 
-#' plot number of significant differentially expressed metabolites
-#'@export
+
 setGeneric(name="plotNumSigDiffExpBarPlot",
            def=function(objectsList ) {
              standardGeneric("plotNumSigDiffExpBarPlot")
            },
            signature=c("objectsList"  ))
 
-#'@export
+
 setGeneric( name ="differentialAbundanceAnalysisHelper"
             , def=function(theObject
                            , contrasts_tbl = NULL
@@ -391,7 +496,7 @@ setGeneric( name ="differentialAbundanceAnalysisHelper"
             }
             , signature=c("theObject"))
 
-#'@export
+
 setGeneric( name ="differentialAbundanceAnalysis"
             , def=function(objectsList
                            , contrasts_tbl = NULL

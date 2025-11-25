@@ -33,7 +33,7 @@ with each identifier. This column must be numeric.}
 
 \item{api_key}{Character string: Your personal STRING API key.}
 
-\item{species}{Numeric: NCBI/STRING species identifier. Default is 9606 (Homo sapiens).}
+\item{species}{Character or numeric: NCBI/STRING species identifier. Default is 9606 (Homo sapiens).}
 
 \item{ge_fdr}{Numeric: FDR threshold for gene expression enrichment. Default is 0.05.}
 

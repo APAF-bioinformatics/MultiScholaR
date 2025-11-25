@@ -1,6 +1,3 @@
-
-
-
 ## Create S4 class for proteomics protein level abundance data
 #'@exportClass PeptideQuantitativeData
 PeptideQuantitativeData <- setClass("PeptideQuantitativeData"
@@ -192,12 +189,6 @@ setMethod( f ="cleanDesignMatrixPeptide"
            })
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#'@export
-setGeneric(name="srlQvalueProteotypicPeptideClean"
-           , def=function( theObject, qvalue_threshold = NULL, global_qvalue_threshold = NULL, choose_only_proteotypic_peptide = NULL, input_matrix_column_ids = NULL) {
-             standardGeneric("srlQvalueProteotypicPeptideClean")
-           }
-           , signature = c("theObject", "qvalue_threshold", "global_qvalue_threshold", "choose_only_proteotypic_peptide", "input_matrix_column_ids") )
 
 
 #'@export
@@ -264,12 +255,6 @@ setMethod( f ="srlQvalueProteotypicPeptideClean"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#'@export
-setGeneric(name="rollUpPrecursorToPeptide"
-           , def=function( theObject, core_utilisation = NULL) {
-             standardGeneric("rollUpPrecursorToPeptide")
-           }
-           , signature=c("theObject", "core_utilisation"))
 
 #'@export
 setMethod(f="rollUpPrecursorToPeptide"
@@ -312,12 +297,6 @@ setMethod(f="rollUpPrecursorToPeptide"
           })
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#'@export
-setGeneric(name="peptideIntensityFiltering"
-           , def=function( theObject, peptides_intensity_cutoff_percentile = NULL, peptides_proportion_of_samples_below_cutoff = NULL, core_utilisation = NULL) {
-             standardGeneric("peptideIntensityFiltering")
-           }
-           , signature=c("theObject", "peptides_intensity_cutoff_percentile", "peptides_proportion_of_samples_below_cutoff", "core_utilisation"))
 
 #'@export
 setMethod( f="peptideIntensityFiltering"
@@ -391,20 +370,6 @@ setMethod( f="peptideIntensityFiltering"
            })
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#'@export
-setGeneric(name="removePeptidesWithMissingValuesPercent"
-           , def=function( theObject
-                           , grouping_variable = NULL
-                           , groupwise_percentage_cutoff = NULL
-                           , max_groups_percentage_cutoff = NULL
-                           , peptides_intensity_cutoff_percentile = NULL) {
-             standardGeneric("removePeptidesWithMissingValuesPercent")
-           }
-           , signature=c("theObject"
-                         , "grouping_variable"
-                         , "groupwise_percentage_cutoff"
-                         , "max_groups_percentage_cutoff"
-                         , "peptides_intensity_cutoff_percentile" ))
 
 #'@export
 setMethod( f = "removePeptidesWithMissingValuesPercent"
@@ -520,12 +485,6 @@ setMethod( f="filterMinNumPeptidesPerProtein"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#'@export
-setGeneric( name="filterMinNumPeptidesPerSample"
-            , def=function( theObject, peptides_per_sample_cutoff = NULL, core_utilisation = NULL, inclusion_list = NULL) {
-              standardGeneric("filterMinNumPeptidesPerSample")
-           }
-           , signature=c("theObject", "peptides_per_sample_cutoff", "core_utilisation", "inclusion_list" ))
 
 #'@export
 setMethod( f="filterMinNumPeptidesPerSample"
@@ -565,12 +524,6 @@ setMethod( f="filterMinNumPeptidesPerSample"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' @export
-setGeneric( name="removePeptidesWithOnlyOneReplicate"
-            , def=function( theObject, replicate_group_column = NULL, core_utilisation = NULL) {
-              standardGeneric("removePeptidesWithOnlyOneReplicate")
-            }
-            , signature=c("theObject", "replicate_group_column", "core_utilisation" ))
 
 #'@export
 setMethod( f="removePeptidesWithOnlyOneReplicate"
@@ -608,13 +561,6 @@ setMethod( f="removePeptidesWithOnlyOneReplicate"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#'@export
-
-setGeneric( name="plotPeptidesProteinsCountsPerSample"
-            , def=function( theObject ) {
-              standardGeneric("plotPeptidesProteinsCountsPerSample")
-            }
-            , signature=c("theObject" ))
 
 
 
@@ -634,12 +580,6 @@ setMethod( f="plotPeptidesProteinsCountsPerSample"
            })
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#'@export
-setGeneric( name="peptideMissingValueImputation"
-            , def=function( theObject,  imputed_value_column = NULL, proportion_missing_values = NULL, core_utilisation = NULL) {
-              standardGeneric("peptideMissingValueImputation")
-            }
-            , signature=c("theObject", "imputed_value_column", "proportion_missing_values", "core_utilisation" ))
 
 #'@export
 setMethod( f="peptideMissingValueImputation"
@@ -777,11 +717,6 @@ summarisePeptideObject <- function(theObject) {
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #'@export
-setGeneric(name="calcPeptideMatrix"
-           , def=function( theObject ) {
-             standardGeneric("calcPeptideMatrix")
-           }
-           , signature=c("theObject"))
 
 #'@export
 setMethod(f="calcPeptideMatrix"
@@ -828,16 +763,6 @@ setMethod(f="calcPeptideMatrix"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #'@export
-setGeneric(name="getNegCtrlProtAnovaPeptides"
-           , def=function( theObject
-                           , ruv_grouping_variable  = NULL
-                           , percentage_as_neg_ctrl  = NULL
-                           , num_neg_ctrl  = NULL
-                           , ruv_qval_cutoff = NULL
-                           , ruv_fdr_method = NULL ) {
-             standardGeneric("getNegCtrlProtAnovaPeptides")
-           }
-           , signature=c("theObject", "ruv_grouping_variable", "num_neg_ctrl", "ruv_qval_cutoff", "ruv_fdr_method"))
 
 #'@export
 setMethod(f="getNegCtrlProtAnovaPeptides"
@@ -890,7 +815,20 @@ setMethod(f="getNegCtrlProtAnovaPeptides"
 
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#'@export
+#' RUV Canonical Correlation Analysis for Peptide Data
+#' 
+#' Performs Remove Unwanted Variation (RUV) using canonical correlation analysis
+#' with DPC imputation for missing values.
+#' 
+#' @param theObject A PeptideQuantitativeData object
+#' @param ctrl Vector of control gene indices for RUV
+#' @param num_components_to_impute Number of principal components for imputation
+#' @param ruv_grouping_variable Column name in design matrix for RUV grouping
+#' 
+#' @export
+#' @title RUV Canonical Correlation for PeptideQuantitativeData
+#' @name ruvCancor,PeptideQuantitativeData-method
+#' @export
 setMethod( f = "ruvCancor"
            , signature="PeptideQuantitativeData"
            , definition=function( theObject, ctrl= NULL, num_components_to_impute=NULL, ruv_grouping_variable = NULL) {
@@ -950,16 +888,17 @@ setMethod( f = "ruvCancor"
              
            })
 
-#' Fast version of ruvCancor for optimization (skips expensive DPC imputation)
-#' 
-#' This function provides a lightweight alternative to ruvCancor that skips
+#' @title Fast version of ruvCancor for optimization
+#' @name ruvCancorFast,PeptideQuantitativeData-method
+#' @description This function provides a lightweight alternative to ruvCancor that skips
 #' the expensive DPC imputation step, making it suitable for use during
 #' optimization loops where speed is critical.
-#' 
-#' @inheritParams ruvCancor
+#' @param theObject A PeptideQuantitativeData object
+#' @param ctrl Control features for RUV
+#' @param num_components_to_impute Number of components to impute
+#' @param ruv_grouping_variable Grouping variable for RUV
 #' @param simple_imputation_method Method for simple missing value handling.
 #'   Options: "none" (default), "mean", "median", "min"
-#' 
 #' @export
 setMethod( f = "ruvCancorFast"
            , signature="PeptideQuantitativeData"
@@ -1169,22 +1108,6 @@ setMethod( f = "ruvIII_C_Varying"
 #' @importFrom logger log_info log_warn
 #' @importFrom purrr imap map_dfr map_dbl
 #' @export
-setGeneric(name="findBestNegCtrlPercentagePeptides"
-           , def=function(theObject,
-                          percentage_range = seq(1, 20, by = 1),
-                          num_components_to_impute = 5,
-                          ruv_grouping_variable = "group",
-                          ruv_qval_cutoff = 0.05,
-                          ruv_fdr_method = "qvalue",
-                          separation_metric = "max_difference",
-                          k_penalty_weight = 0.5,
-                          max_acceptable_k = 3,
-                          adaptive_k_penalty = TRUE,
-                          verbose = TRUE,
-                          ensure_matrix = TRUE) {
-             standardGeneric("findBestNegCtrlPercentagePeptides")
-           }
-           , signature=c("theObject"))
 
 #' @export
 setMethod(f="findBestNegCtrlPercentagePeptides"
@@ -1624,15 +1547,6 @@ setMethod(f="findBestNegCtrlPercentagePeptides"
 #'
 #' @importFrom limpa dpc dpcImpute
 #' @export
-setGeneric(name="peptideMissingValueImputationLimpa"
-           , def=function(theObject, 
-                          imputed_value_column = NULL, 
-                          use_log2_transform = TRUE,
-                          verbose = TRUE,
-                          ensure_matrix = TRUE) {
-             standardGeneric("peptideMissingValueImputationLimpa")
-           }
-           , signature=c("theObject"))
 
 #' @export
 setMethod(f="peptideMissingValueImputationLimpa"
@@ -1987,16 +1901,6 @@ setOldClass("ggplot2::ggplot")
 #'
 #' This function takes a ggplot object (presumably a PCA plot) and creates
 #' density plots for the first two principal components.
-#'
-#' @param theObject A ggplot object containing the data.
-#' @param grouping_variable A character string specifying the column to group by.
-#' @param title A title for the plot.
-#' @param font_size The font size for the plot text.
-#' @return A patchwork object containing the two density plots.
-#' @export
-setGeneric("plotDensity", function(theObject, grouping_variable, title = "", font_size = 8) {
-    standardGeneric("plotDensity")
-})
 
 setMethod(f="plotDensity"
           , signature="ggplot2::ggplot"
@@ -2162,6 +2066,9 @@ calculatePeptidePearsonCorrelation <- function(temp_obj, tech_rep_remove_regex, 
 #'@export
 #'@param theObject Object of class PeptideQuantitativeData
 #'@param normalisation_method Method to use for normalisation. Options are cyclicloess, quantile, scale, none
+#' @title Normalize Between Samples for PeptideQuantitativeData
+#' @name normaliseBetweenSamples,PeptideQuantitativeData-method
+#' @export
 setMethod(f="normaliseBetweenSamples"
           , signature="PeptideQuantitativeData"
           , definition=function(theObject, normalisation_method = NULL) {
@@ -2245,17 +2152,11 @@ setMethod(f="normaliseBetweenSamples"
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#'@export
-setGeneric(name="log2TransformPeptideMatrix"
-           , def=function(theObject) {
-             standardGeneric("log2TransformPeptideMatrix")
-           }
-           , signature=c("theObject"))
-
 #' Log2 Transform Peptide Matrix
 #'
 #' Transforms raw peptide intensity values to log2 scale for downstream normalization and RUV analysis.
 #' This should be called after calcPeptideMatrix() and before normaliseBetweenSamples().
+#' @export
 #'
 #' @param theObject A PeptideQuantitativeData object
 #' @return PeptideQuantitativeData object with log2 transformed data

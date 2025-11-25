@@ -4,7 +4,7 @@
 \alias{printStringDbFunctionalEnrichmentBarGraph}
 \title{Generate a Bar Graph of STRING DB Functional Enrichment Results}
 \usage{
-printStringDbFunctionalEnrichmentBarGraph(input_table)
+printStringDbFunctionalEnrichmentBarGraph(input_table, word_limit = 10)
 }
 \arguments{
 \item{input_table}{A data frame containing functional enrichment results.

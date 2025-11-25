@@ -4,8 +4,8 @@
 #' 
 #' @param id Module ID
 #' 
-#' @importFrom shiny NS fileInput numericInput textInput actionButton uiOutput
-#' @importFrom shiny fluidRow column wellPanel h3 h4 tags hr radioButtons
+#' @importFrom shiny NS tagList fileInput numericInput textInput actionButton uiOutput
+#' @importFrom shiny fluidRow column wellPanel h3 h4 tags hr radioButtons verbatimTextOutput helpText div br
 #' @export
 mod_prot_import_ui <- function(id) {
   ns <- shiny::NS(id)
@@ -13,7 +13,8 @@ mod_prot_import_ui <- function(id) {
   # Check if shinyFiles is available
   use_shiny_files <- requireNamespace("shinyFiles", quietly = TRUE)
   
-  shiny::fluidRow(
+  shiny::tagList(
+    shiny::fluidRow(
     shiny::column(12,
       shiny::wellPanel(
         shiny::h3("Setup & Import Data"),
@@ -159,6 +160,7 @@ mod_prot_import_ui <- function(id) {
         )
       )
     )
+  )
   )
 }
 

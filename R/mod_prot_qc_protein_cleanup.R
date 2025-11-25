@@ -3,17 +3,16 @@
 #' @description A Shiny module for performing protein accession cleanup.
 #'
 #' @name mod_prot_qc_protein_cleanup
-#' @export
 NULL
 
 #' @rdname mod_prot_qc_protein_cleanup
 #' @export
-#' @import shiny
-#' @import shinydashboard
+#' @importFrom shiny NS tagList tabPanel br fluidRow column wellPanel h4 p hr textInput helpText div icon strong textOutput verbatimTextOutput selectInput actionButton plotOutput
 mod_prot_qc_protein_cleanup_ui <- function(id) {
-  ns <- NS(id)
+  ns <- shiny::NS(id)
   
-  shiny::tabPanel(
+  shiny::tagList(
+    shiny::tabPanel(
     "Accession Cleanup",
     shiny::br(),
     shiny::fluidRow(
@@ -74,11 +73,12 @@ mod_prot_qc_protein_cleanup_ui <- function(id) {
       )
     )
   )
+  )
 }
 
 #' @rdname mod_prot_qc_protein_cleanup
 #' @export
-#' @import shiny
+#' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification removeNotification renderText renderPlot textOutput
 #' @importFrom logger log_info log_error
 #' @importFrom grid grid.draw
 mod_prot_qc_protein_cleanup_server <- function(id, workflow_data, omic_type, experiment_label) {

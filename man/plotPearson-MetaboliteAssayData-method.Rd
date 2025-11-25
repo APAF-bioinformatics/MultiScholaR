@@ -2,15 +2,10 @@
 % Please edit documentation in R/metaboliteVsSamplesS4Objects.R
 \name{plotPearson,MetaboliteAssayData-method}
 \alias{plotPearson,MetaboliteAssayData-method}
-\title{Plot Pearson Correlation Histogram}
+\title{Plot Pearson Correlation}
 \usage{
 \S4method{plotPearson}{MetaboliteAssayData}(theObject, tech_rep_remove_regex = "pool", correlation_group = NA)
 }
 \description{
-Plot Pearson Correlation Histogram
+Plot Pearson Correlation
 }
-\section{Functions}{
-\itemize{
-\item \code{plotPearson(MetaboliteAssayData)}: Method for MetaboliteAssayData
-
-}}

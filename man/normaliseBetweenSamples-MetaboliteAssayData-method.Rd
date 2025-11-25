@@ -2,7 +2,7 @@
 % Please edit documentation in R/metaboliteVsSamplesS4Objects.R
 \name{normaliseBetweenSamples,MetaboliteAssayData-method}
 \alias{normaliseBetweenSamples,MetaboliteAssayData-method}
-\title{Normalize Between Samples}
+\title{Normalize Between Samples for MetaboliteAssayData}
 \usage{
 \S4method{normaliseBetweenSamples}{MetaboliteAssayData}(theObject, normalisation_method = NULL)
 }
@@ -14,10 +14,5 @@
 from the object's configuration arguments (looking for "normalisation_method").}
 }
 \description{
-Normalize Between Samples
+Normalize Between Samples for MetaboliteAssayData
 }
-\section{Functions}{
-\itemize{
-\item \code{normaliseBetweenSamples(MetaboliteAssayData)}: Method for MetaboliteAssayData
-
-}}

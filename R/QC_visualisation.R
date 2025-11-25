@@ -1165,7 +1165,7 @@ getInternalStandardMetrics <- function(assay_data,
 #'                              will try to find the corresponding time_dir.
 #' @param omics_type Optional character string specifying the omics type (e.g., "metabolomics").
 #'                  If provided and project_dirs exists in the global environment, will use
-#'                  project_dirs[[omics_type]]$time_dir for plot saving.
+#'                  `project_dirs[[omics_type]]$time_dir` for plot saving.
 #' @param time_dir Optional explicit path to the time directory. If provided, this overrides
 #'                other methods of finding the time directory.
 #' @param overwrite Logical, whether to overwrite existing data for `step_name`.

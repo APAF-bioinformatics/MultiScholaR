@@ -2,7 +2,7 @@
 % Please edit documentation in R/metaboliteVsSamplesS4Objects.R
 \name{getNegCtrlMetabAnova,MetaboliteAssayData-method}
 \alias{getNegCtrlMetabAnova,MetaboliteAssayData-method}
-\title{Get Negative Control Metabolites by ANOVA}
+\title{Get Negative Control Features using ANOVA (Metabolites)}
 \usage{
 \S4method{getNegCtrlMetabAnova}{MetaboliteAssayData}(
   theObject,
@@ -46,13 +46,11 @@ object. Each element contains a logical vector indicating which features
 is named with the feature IDs.
 }
 \description{
-Get Negative Control Features using ANOVA (Metabolites)
-}
-\details{
 Identifies potential negative control features (metabolites) for RUV correction
 based on ANOVA across a specified grouping variable. Features with the least
 significant variation across the groups are selected.
-
+}
+\details{
 This method iterates through each assay in the \code{MetaboliteAssayData} object.
 }
 \section{Functions}{

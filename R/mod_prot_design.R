@@ -15,8 +15,7 @@ NULL
 
 #' @rdname designMatrixAppletModule
 #' @export
-#' @import shiny
-#' @importFrom shiny NS wellPanel h3 p conditionalPanel div icon
+#' @importFrom shiny NS tagList wellPanel h3 p conditionalPanel div icon tags HTML
 #' @importFrom DT DTOutput renderDT
 mod_prot_design_ui <- function(id) {
   ns <- shiny::NS(id)
@@ -89,9 +88,7 @@ mod_prot_design_ui <- function(id) {
 
 #' @rdname designMatrixAppletModule
 #' @export
-#' @import shiny
-#' @importFrom shiny moduleServer reactive observeEvent req
-#' @importFrom shiny showNotification outputOptions
+#' @importFrom shiny moduleServer reactive observeEvent req renderUI showNotification removeNotification outputOptions
 #' @importFrom logger log_info log_error
 #' @importFrom utils write.table
 #' @importFrom vroom vroom

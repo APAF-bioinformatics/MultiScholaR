@@ -5,16 +5,16 @@
 #' the process for workflows like TMT.
 #'
 #' @name mod_prot_qc_protein_s4
-#' @export
 NULL
 
 #' @rdname mod_prot_qc_protein_s4
 #' @export
-#' @import shiny
+#' @importFrom shiny NS tagList fluidPage wellPanel h4 p actionButton hr h5 verbatimTextOutput
 mod_prot_qc_protein_s4_ui <- function(id) {
-  ns <- NS(id)
+  ns <- shiny::NS(id)
   
-  shiny::fluidPage(
+  shiny::tagList(
+    shiny::fluidPage(
     shiny::wellPanel(
       shiny::h4("Finalise Protein Data"),
       shiny::p("This workflow starts with protein-level data. Click the button below to format the data into an S4 object for downstream analysis."),
@@ -24,11 +24,12 @@ mod_prot_qc_protein_s4_ui <- function(id) {
       shiny::verbatimTextOutput(ns("s4_creation_results"))
     )
   )
+  )
 }
 
 #' @rdname mod_prot_qc_protein_s4
 #' @export
-#' @import shiny
+#' @importFrom shiny moduleServer observeEvent req showNotification removeNotification renderText
 #' @importFrom logger log_info log_error
 mod_prot_qc_protein_s4_server <- function(id, workflow_data, omic_type, experiment_label) {
   shiny::moduleServer(id, function(input, output, session) {

@@ -5,15 +5,13 @@
 #' appropriate sub-modules for the given workflow (e.g., LFQ/DIA).
 #'
 #' @name mod_prot_qc_peptide
-#' @export
 NULL
 
 #' @rdname mod_prot_qc_peptide
 #' @export
-#' @import shiny
-#' @import shinydashboard
+#' @importFrom shiny NS tagList tabsetPanel tabPanel
 mod_prot_qc_peptide_ui <- function(id) {
-  ns <- NS(id)
+  ns <- shiny::NS(id)
   
   # Nested tabs for each peptide filtering step
   shiny::tabsetPanel(
@@ -75,7 +73,7 @@ mod_prot_qc_peptide_ui <- function(id) {
 
 #' @rdname mod_prot_qc_peptide
 #' @export
-#' @import shiny
+#' @importFrom shiny moduleServer isolate
 #' @importFrom logger log_info
 mod_prot_qc_peptide_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label) {
   shiny::moduleServer(id, function(input, output, session) {

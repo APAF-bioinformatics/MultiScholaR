@@ -31,7 +31,7 @@ will try to find the corresponding time_dir.}
 
 \item{omics_type}{Optional character string specifying the omics type (e.g., "metabolomics").
 If provided and project_dirs exists in the global environment, will use
-project_dirs[\link{omics_type}]$time_dir for plot saving.}
+\code{project_dirs[[omics_type]]$time_dir} for plot saving.}
 
 \item{time_dir}{Optional explicit path to the time directory. If provided, this overrides
 other methods of finding the time directory.}

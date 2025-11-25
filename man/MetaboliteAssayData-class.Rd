@@ -4,13 +4,8 @@
 \name{MetaboliteAssayData-class}
 \alias{MetaboliteAssayData-class}
 \alias{MetaboliteAssayData}
-\title{MetaboliteAssayData Class}
+\title{Metabolite Assay Data S4 Class}
 \description{
-An S4 class to store and manage multiple metabolomics quantitative datasets.
-}
-\details{
-Metabolite Assay Data S4 Class
-
 An S4 class to store and manage multiple metabolomics quantitative datasets
 derived from different platforms or ionization modes, along with associated
 experimental design and metadata.

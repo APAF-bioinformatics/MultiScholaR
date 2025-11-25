@@ -12,7 +12,7 @@
 #' @importFrom DT DTOutput
 #' @export
 mod_proteomics_ui <- function(id) {
-  ns <- NS(id)
+  ns <- shiny::NS(id)
   
   # Create workflow progress section
   workflow_progress_section <- shiny::fluidRow(
@@ -170,7 +170,7 @@ mod_proteomics_ui <- function(id) {
 #' @importFrom logger log_info log_error
 #' @export
 mod_proteomics_server <- function(id, project_dirs, omic_type, experiment_label, volumes = NULL) {
-  moduleServer(id, function(input, output, session) {
+  shiny::moduleServer(id, function(input, output, session) {
     
     # Initialize reactive values to share data between tabs
     workflow_data <- reactiveValues(

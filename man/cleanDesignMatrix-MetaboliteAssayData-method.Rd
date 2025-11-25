@@ -2,15 +2,10 @@
 % Please edit documentation in R/metaboliteVsSamplesS4Objects.R
 \name{cleanDesignMatrix,MetaboliteAssayData-method}
 \alias{cleanDesignMatrix,MetaboliteAssayData-method}
-\title{Clean Design Matrix}
+\title{Clean Design Matrix for MetaboliteAssayData}
 \usage{
 \S4method{cleanDesignMatrix}{MetaboliteAssayData}(theObject)
 }
 \description{
-Clean Design Matrix
+Clean Design Matrix for MetaboliteAssayData
 }
-\section{Functions}{
-\itemize{
-\item \code{cleanDesignMatrix(MetaboliteAssayData)}: Method for MetaboliteAssayData
-
-}}

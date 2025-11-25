@@ -5,8 +5,6 @@
 \title{Format Configuration List}
 \usage{
 formatConfigList(config_list, indent = 0)
-
-formatConfigList(config_list, indent = 0)
 }
 \arguments{
 \item{config_list}{List of configuration parameters}
@@ -14,7 +12,5 @@ formatConfigList(config_list, indent = 0)
 \item{indent}{Number of spaces for indentation}
 }
 \description{
-Format Configuration List
-
 Format Configuration List
 }

@@ -5,15 +5,13 @@
 #' appropriate sub-modules for the given workflow.
 #'
 #' @name mod_prot_qc_protein
-#' @export
 NULL
 
 #' @rdname mod_prot_qc_protein
 #' @export
-#' @import shiny
-#' @import shinydashboard
+#' @importFrom shiny NS tagList tabsetPanel tabPanel
 mod_prot_qc_protein_ui <- function(id, workflow_type = NULL) {
-  ns <- NS(id)
+  ns <- shiny::NS(id)
   
   # Build tab list conditionally based on workflow type
   tab_list <- list()
@@ -59,7 +57,7 @@ mod_prot_qc_protein_ui <- function(id, workflow_type = NULL) {
 
 #' @rdname mod_prot_qc_protein
 #' @export
-#' @import shiny
+#' @importFrom shiny moduleServer isolate
 #' @importFrom logger log_info
 mod_prot_qc_protein_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label) {
   shiny::moduleServer(id, function(input, output, session) {

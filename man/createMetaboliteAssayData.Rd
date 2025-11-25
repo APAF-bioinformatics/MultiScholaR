@@ -42,9 +42,6 @@ createMetaboliteAssayData(
 A MetaboliteAssayData object.
 }
 \description{
-Create MetaboliteAssayData Object
-}
-\details{
 Constructor function for the MetaboliteAssayData class.
 }
 \examples{

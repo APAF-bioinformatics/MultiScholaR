@@ -27,7 +27,6 @@
 #' @importFrom stringr str_replace
 #' @importFrom tibble rownames_to_column
 #' @importFrom ggplot2 ggplot aes geom_bar scale_fill_discrete theme_bw theme element_text xlab ylab coord_flip ggtitle
-##' @importFrom MOFA2 get_weights
 #' @export
 #'
 #' @examples
@@ -69,7 +68,7 @@
 #' }
 plotMofaWeights <- function( model, view, factor_level = Factor1) {
   
-  input_table <- get_weights(model)[[view]] 
+  input_table <- MOFA2::get_weights(model)[[view]] 
   
   view_weights_helper <- input_table |>
     as.data.frame () |>
