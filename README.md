@@ -16,6 +16,49 @@ Structured on modular, object-oriented components, MultiScholaR's architecture f
 
 By streamlining complex multi-omics analyses, MultiScholaR makes advanced analytical techniques accessible to researchers across all levels of programming expertise.
 
+## Using MultiScholaR
+
+MultiScholaR offers two primary ways to analyze your data:
+
+### Option 1: GUI Workflow (Recommended for Most Users)
+
+For a **code-free, interactive experience** using the end-to-end Multiomics GUI:
+
+1. **Download the Launcher**: Visit [MultiScholaR Launcher](https://github.com/APAF-bioinformatics/MultiScholaR-launcher) and download the appropriate launcher for your platform:
+   - **Windows**: `Launch_MultiScholaR.bat`
+   - **macOS**: `Launch_MultiScholaR.command`
+2. **First Launch**: Double-click the launcher - it will automatically:
+   - Detect your R installation
+   - Install/update MultiScholaR from the GUI branch
+   - Launch the interactive application
+3. **Use the GUI**: Follow the guided workflow through the interface:
+   - Import your data (DIA-NN, TMT-PD, or LFQ-Fragpipe)
+   - Define experimental design and contrasts
+   - Run quality control and normalization
+   - Perform differential expression analysis
+   - Generate enrichment results
+   - Create publication-ready reports
+
+**Prerequisites for GUI**: R (4.4.3+), Git, Pandoc, and Rtools (Windows only). See the [launcher repository](https://github.com/APAF-bioinformatics/MultiScholaR-launcher) for detailed setup instructions.
+
+### Option 2: R Markdown Workflows (For Advanced Users)
+
+For **programmatic, reproducible analyses** using R Markdown templates:
+
+1. **Use the Setup Script**: Download and run `project_setup.R` (see Setup Script section above)
+2. **Choose Your Workflow**:
+   - **DIA-NN with limpa imputation**: Use `DIA_workflow_limpa_starter.rmd` or `DIA_workflow_limpa_experienced.rmd` for advanced missing value imputation using the limpa package
+   - **Standard DIA-NN**: Use `DIA_workflow_starter.rmd` or `DIA_workflow_experienced.rmd` for standard DIA-NN analysis
+   - **Metabolomics**: Use `metabolomics_workflow_starter.rmd` or `metabolomics_workflow_experienced.rmd` for metabolomics analysis
+3. **Follow the Workflow**: 
+   - Copy your data files to the appropriate directories
+   - Run chunks sequentially
+   - Generate reports using the provided R Markdown templates
+
+**When to Use Each**:
+- **GUI**: Best for interactive analysis, learning, and users who prefer point-and-click interfaces
+- **R Markdown**: Best for batch processing, custom analyses, reproducibility, and integration into larger pipelines
+
 ## End-to-End Multiomics GUI
 
 MultiScholaR v0.3.5 introduces a comprehensive, production-grade graphical user interface built using the `{golem}` framework, following modern Shiny best practices. The GUI implements the "app-as-a-package" philosophy, ensuring maintainability, scalability, and professional deployment capabilities.
@@ -270,48 +313,6 @@ MultiScholaR follows the `{golem}` framework for the GUI application:
 
 This modular architecture ensures maintainability, scalability, and easy extension to new omics types.
 
-## Using MultiScholaR
-
-MultiScholaR offers two primary ways to analyze your data:
-
-### Option 1: GUI Workflow (Recommended for Most Users)
-
-For a **code-free, interactive experience** using the end-to-end Multiomics GUI:
-
-1. **Download the Launcher**: Visit [MultiScholaR Launcher](https://github.com/APAF-bioinformatics/MultiScholaR-launcher) and download the appropriate launcher for your platform:
-   - **Windows**: `Launch_MultiScholaR.bat`
-   - **macOS**: `Launch_MultiScholaR.command`
-2. **First Launch**: Double-click the launcher - it will automatically:
-   - Detect your R installation
-   - Install/update MultiScholaR from the GUI branch
-   - Launch the interactive application
-3. **Use the GUI**: Follow the guided workflow through the interface:
-   - Import your data (DIA-NN, TMT-PD, or LFQ-Fragpipe)
-   - Define experimental design and contrasts
-   - Run quality control and normalization
-   - Perform differential expression analysis
-   - Generate enrichment results
-   - Create publication-ready reports
-
-**Prerequisites for GUI**: R (4.4.3+), Git, Pandoc, and Rtools (Windows only). See the [launcher repository](https://github.com/APAF-bioinformatics/MultiScholaR-launcher) for detailed setup instructions.
-
-### Option 2: R Markdown Workflows (For Advanced Users)
-
-For **programmatic, reproducible analyses** using R Markdown templates:
-
-1. **Use the Setup Script**: Download and run `project_setup.R` (see Setup Script section above)
-2. **Choose Your Workflow**:
-   - **DIA-NN with limpa imputation**: Use `DIA_workflow_limpa_starter.rmd` or `DIA_workflow_limpa_experienced.rmd` for advanced missing value imputation using the limpa package
-   - **Standard DIA-NN**: Use `DIA_workflow_starter.rmd` or `DIA_workflow_experienced.rmd` for standard DIA-NN analysis
-   - **Metabolomics**: Use `metabolomics_workflow_starter.rmd` or `metabolomics_workflow_experienced.rmd` for metabolomics analysis
-3. **Follow the Workflow**: 
-   - Copy your data files to the appropriate directories
-   - Run chunks sequentially
-   - Generate reports using the provided R Markdown templates
-
-**When to Use Each**:
-- **GUI**: Best for interactive analysis, learning, and users who prefer point-and-click interfaces
-- **R Markdown**: Best for batch processing, custom analyses, reproducibility, and integration into larger pipelines
 
 ## Contributors 
 * Ignatius Pang (ignatius.pang@mq.edu.au) 
