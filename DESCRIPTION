@@ -1,6 +1,6 @@
 Package: MultiScholaR
-Title: Tools for analysis of multi-omics data.
-Version: 0.10
+Title: Interactive Multi-Omics Analysis with Best Modular, Reproducible Workflows
+Version: 0.3.5
 Authors@R: c(
     person(given = "Ignatius",
            family = "Pang",
@@ -13,7 +13,14 @@ Authors@R: c(
            email = "william.klare@mq.edu.au",
            comment = c(ORCID = "0000-0002-1490-9704"))
     )
-Description: Tools for analysis of multi-omics data.
+Description: A comprehensive R package providing an end-to-end graphical user interface 
+    and reproducible R Markdown workflows for multi-omics data analysis. MultiScholaR 
+    supports proteomics, metabolomics, lipidomics, and integrative 
+    multi-omics analyses with automated parameter optimization, quality control, 
+    differential expression analysis, and pathway enrichment. The package emphasizes 
+    transparency and education, providing well-documented workflows that enable 
+    researchers to understand and adapt analytical methods while ensuring reproducibility 
+    through standardized, citable workflows.
 License: LGPL (>= 3)
 Encoding: UTF-8
 LazyData: true
