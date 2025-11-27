@@ -13,6 +13,9 @@
 # Example code in package build process
 *-Ex.R
 
+# Dev files
+/dev/
+
 # Output files from R CMD build
 /*.tar.gz
 
