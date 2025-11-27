@@ -1,0 +1,18 @@
+=== MULTISCHOLAR APP DEPENDENCY VALIDATION REPORT ===
+Generated: 2025-11-27 16:12:00 
+
+=== SUMMARY ===
+Functions in func_*.R: 317 
+Functions in mod_*.R: 54 
+Functions in utils_*.R: 2 
+Functions in app infrastructure: 5 
+Functions in S4 files (keeping): 18 
+Functions in source files (to delete): 296 
+
+=== FUNCTIONS THAT WOULD BE LOST ===
+processFastaFile_deprecated 
+temp 
+
+=== CRITICAL DEPENDENCIES (called by mods, only in source) ===
+
+=== PER-MODULE DEPENDENCIES ===

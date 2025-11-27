@@ -5,11 +5,10 @@
 \title{Draw the volcano plot.}
 \usage{
 plotVolcano(
-  selected_data,
-  log_q_value_column = lqm,
-  log_fc_column = logFC,
-  q_val_thresh = 0.05,
-  formula_string = "analysis_type ~ comparison"
+  objectsList,
+  de_q_val_thresh = 0.05,
+  qvalue_column = "q_value",
+  log2fc_column = "logFC"
 )
 }
 \arguments{
