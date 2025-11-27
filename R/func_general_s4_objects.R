@@ -120,3 +120,143 @@ get_color_palette <- function(n, base_color) {
   colorRampPalette(c(base_color, "black"))(n)
 }
 
+# ==========================================
+# DirectoryManager Class (from helper_functions.R)
+# ==========================================
+
+#' DirectoryManager S4 Class
+#' 
+#' @description
+#' An S4 class to manage project directory paths for MultiScholaR analyses.
+#' This class stores paths to various output directories used during analysis.
+#' 
+#' @slot base_dir Character string for base project directory
+#' @slot results_dir Character string for results directory
+#' @slot data_dir Character string for data directory
+#' @slot source_dir Character string for source files directory
+#' @slot de_output_dir Character string for differential expression output
+#' @slot publication_graphs_dir Character string for publication-ready graphs
+#' @slot timestamp Character string for timestamp used in file naming
+#' @slot qc_dir Character string for QC output directory
+#' @slot time_dir Character string for time-stamped directory
+#' @slot results_summary_dir Character string for results summary directory
+#' @slot pathway_dir Character string for pathway analysis output
+#' 
+#' @export
+setClass("DirectoryManager",
+    slots = c(
+        base_dir = "character",
+        results_dir = "character",
+        data_dir = "character",
+        source_dir = "character",
+        de_output_dir = "character",
+        publication_graphs_dir = "character",
+        timestamp = "character",
+        qc_dir = "character",
+        time_dir = "character",
+        results_summary_dir = "character",
+        pathway_dir = "character"
+    )
+)
+
+# ==========================================
+# Enrichment S4 Classes (from functional_enrichment.R)
+# ==========================================
+
+#' de_results_for_enrichment S4 Class
+#' 
+#' @description
+#' An S4 class to store differential expression results formatted for
+#' enrichment analysis. Contains contrast definitions, DE data, and
+#' experimental design information.
+#' 
+#' @slot contrasts A tibble containing contrast information
+#' @slot de_data A list of DE results data frames
+#' @slot design_matrix A data frame containing the design matrix
+#' 
+#' @export
+setClass("de_results_for_enrichment",
+         slots = list(
+           contrasts = "tbl_df",
+           de_data = "list",
+           design_matrix = "data.frame"
+         ))
+
+#' Create DE Results For Enrichment
+#'
+#' @param contrasts_tbl A tibble containing contrast information
+#' @param design_matrix A data frame containing the design matrix
+#' @param de_output_dir Directory containing DE results files
+#' @return An S4 object of class de_results_for_enrichment
+#' @export
+createDEResultsForEnrichment <- function(contrasts_tbl, design_matrix, de_output_dir) {
+  # Helper function to format contrast filename
+  format_contrast_filename <- function(contrast_string) {
+    contrast_name <- stringr::str_split(contrast_string, "=")[[1]][1] |>
+      stringr::str_replace_all("\\.", "_")
+
+    paste0("de_proteins_", contrast_name, "_long_annot.tsv")
+  }
+
+  # Create new S4 object
+  de_results <- new("de_results_for_enrichment")
+
+  # Convert contrasts_tbl to tibble if it isn't already
+  contrasts_tbl <- tibble::as_tibble(contrasts_tbl)
+
+  # Fill slots
+  de_results@contrasts <- contrasts_tbl
+  de_results@design_matrix <- design_matrix
+  de_results@de_data <- contrasts_tbl$contrasts |>
+    purrr::set_names() |>
+    purrr::map(function(contrast) {
+      filename <- format_contrast_filename(contrast)
+      filepath <- file.path(de_output_dir, filename)
+
+      if (!file.exists(filepath)) {
+        warning("File not found: ", filepath)
+        return(NULL)
+      }
+
+      readr::read_tsv(filepath, show_col_types = FALSE)
+    })
+
+  return(de_results)
+}
+
+#' EnrichmentResults S4 Class
+#' 
+#' @description
+#' An S4 class to store enrichment analysis results including
+#' enrichment data, plots, and summaries.
+#' 
+#' @slot contrasts A tibble containing contrast information
+#' @slot enrichment_data A list of enrichment results
+#' @slot enrichment_plots A list of gostplot objects
+#' @slot enrichment_plotly A list of interactive plotly objects
+#' @slot enrichment_summaries A list of summary data
+#' 
+#' @export
+setClass("EnrichmentResults",
+         slots = list(
+           contrasts = "tbl_df",
+           enrichment_data = "list",
+           enrichment_plots = "list",
+           enrichment_plotly = "list",
+           enrichment_summaries = "list"
+         ))
+
+#' Create EnrichmentResults Object
+#' 
+#' @param contrasts_tbl A tibble containing contrast information
+#' @return An S4 object of class EnrichmentResults
+#' @export
+createEnrichmentResults <- function(contrasts_tbl) {
+  new("EnrichmentResults",
+      contrasts = contrasts_tbl,
+      enrichment_data = list(),
+      enrichment_plots = list(),
+      enrichment_plotly = list(),
+      enrichment_summaries = list())
+}
+

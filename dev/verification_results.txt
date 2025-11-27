@@ -1,54 +1,11 @@
 === PHASE 3 VERIFICATION RESULTS ===
-Generated: 2025-11-27 15:59:50 
+Generated: 2025-11-27 16:36:14 
 
-TOTAL FUNCTIONS IN func_*.R + mod_*.R: 366 
+TOTAL FUNCTIONS IN func_*.R + mod_*.R: 383 
 
 === MISSING FUNCTIONS BY FILE ===
 
-de_proteins_functions.R :
-  - plotVolcano 
-
-qc_and_rollup.R :
-  - calcHtSize 
-
-QC_visualisation.R :
-  - updateProteinFiltering 
-  - generateMetaboliteFilteringPlots 
-
-string_enrichment_functions_refactored.R :
-  - plotStringDbEnrichmentResults 
-
-de_analysis_function_wrapper.R :
-  - writeInteractiveVolcanoPlotProteomics 
-  - writeInteractiveVolcanoPlotProteomicsWidget 
-  - writeInteractiveVolcanoPlotProteomicsMain 
-  - getDataMatrix 
-
-multiomics_enrichment_functions.R :
-  - runKeggEnrichment 
-  - runReactomeEnrichment 
-
-shiny_applets.R :
-  - RunApplet 
-
-get_best_accession_helper.R :
-  - processFastaFile_deprecated 
-
-phosphoproteomics_helper.R :
-  - temp 
-
-peptideVsSamplesS4Objects.R :
-  - PeptideQuantitativeDataDiann 
-  - compareTwoPeptideDataObjects 
-  - summarisePeptideObject 
-  - plotPca 
-  - calculatePeptidePearsonCorrelation 
-
 === FILES READY FOR DELETION ===
-annotation.R 
-enrichment_functions.R 
-file_management.R 
-multiomics_functions_MOFA.R 
 
 === FILES WITH S4 CONTENT ===
 helper_functions.R 
