@@ -28,17 +28,29 @@ devtools::document()
 
 ---
 
-## Session Summary: 2025-11-27 (Session 3 - Phase 2)
+## Session Summary: 2025-11-27 (Session 4 - Phase 3)
 
-**Phase 2 Accomplishments:**
+**Phase 3 Accomplishments:**
+- **Verified all standalone functions** extracted to func_*.R or mod_*.R files
+- **Extracted 25+ additional functions** missed in earlier phases:
+  - `calcHtSize`, `updateProteinFiltering`, `generateMetaboliteFilteringPlots`
+  - `plotStringDbEnrichmentResults`, `runKeggEnrichment`, `runReactomeEnrichment`
+  - `writeInteractiveVolcanoPlotProteomics*`, `getDataMatrix`, `plotPca`
+  - `PeptideQuantitativeDataDiann`, `compareTwoPeptideDataObjects`, etc.
+- **Fixed extraction tool** comment detection bug (was falsely matching commented code)
+- **Moved RunApplet** to `launch_app.R` (consolidated app launchers)
+- **DELETED 11 redundant source files** (all functions extracted, no S4 content):
+  - `annotation.R`, `enrichment_functions.R`, `file_management.R`
+  - `multiomics_functions_MOFA.R`, `de_proteins_functions.R`
+  - `string_enrichment_functions_refactored.R`, `de_analysis_function_wrapper.R`
+  - `multiomics_enrichment_functions.R`, `shiny_applets.R`
+  - `get_best_accession_helper.R`, `phosphoproteomics_helper.R`
+- **Package builds successfully** with `devtools::document()`
+- **Total functions extracted: 340+**
+
+**Previous Session (2025-11-27 - Session 3 - Phase 2):**
 - Created 3 new func_*.R files: `func_phospho_annotation.R`, `func_prot_limpa.R`, `func_pept_limpa.R`
-- Extracted **44 additional functions** from 4 overlooked source files:
-  - 11 from `get_best_accession_helper.R` → `func_prot_annotation.R`
-  - 22 from `phosphoproteomics_helper.R` → `func_phospho_annotation.R`
-  - 9 from `functional_enrichment.R` → `func_general_enrichment.R`
-  - 2 from `limpa_functions.R` → `func_prot_limpa.R`
-- Package builds successfully with `devtools::document()`
-- **Total functions extracted to date: 312+**
+- Extracted **44 additional functions** from 4 overlooked source files
 
 **Previous Session (2025-11-27 - Session 2):**
 - Deleted 7 redundant/empty placeholder files
@@ -53,44 +65,65 @@ devtools::document()
 
 ## Current File Structure Summary
 
-**Populated func_*.R files:** 22 files, 312+ functions
+**Populated func_*.R files:** 22 files, 340+ functions
 **S4 Generics:** 63 setGeneric() definitions in `func_general_s4_generics.R`
-**New files created in Phase 2:** `func_phospho_annotation.R`, `func_prot_limpa.R`, `func_pept_limpa.R`
-**Remaining placeholders:** 4 S4-related files (for future class extraction)
+**Deleted source files:** 11 (all standalone functions extracted)
+**Remaining S4 source files:** 13 (contain S4 classes/methods that must stay)
+
+### Files Deleted in Phase 3
+
+These files contained only standalone functions (now in func_*.R):
+- `annotation.R`, `enrichment_functions.R`, `file_management.R`
+- `multiomics_functions_MOFA.R`, `de_proteins_functions.R`
+- `string_enrichment_functions_refactored.R`, `de_analysis_function_wrapper.R`
+- `multiomics_enrichment_functions.R`, `shiny_applets.R`
+- `get_best_accession_helper.R`, `phosphoproteomics_helper.R`
+
+### Files Kept (S4 Content)
+
+These files contain S4 classes or methods and must be preserved:
+- `peptideVsSamplesS4Objects.R` - PeptideQuantitativeData class + 23 methods
+- `proteinVsSamplesS4Objects.R` - ProteinQuantitativeData methods
+- `metaboliteVsSamplesS4Objects.R` - MetaboliteAssayData class + 16 methods
+- `functional_enrichment.R` - EnrichmentResults classes + methods
+- `limpa_functions.R` - S4 methods for limpa imputation
+- `allGenerics.R` - setGeneric() definitions (needed for load order)
+- `helper_functions.R`, `qc_and_rollup.R`, `QC_visualisation.R` - FilteringProgress classes
+- `metabolite_*.R` files - S4 methods for metabolomics
+- `protein_de_analysis_wrapper.R` - S4 methods for DE analysis
 
 ---
 
-## Monolithic Source Files (Ordered by Size)
+## Source Files Status (After Phase 3)
 
-These are the files that contain functions to be extracted:
-
-| File | Lines | Status | Notes |
-|------|-------|--------|-------|
-| `helper_functions.R` | 3,827 | [x] FULLY AUDITED | 40+ functions extracted |
-| `de_proteins_functions.R` | 3,341 | [x] FULLY AUDITED | 50+ functions extracted |
-| `multiomics_enrichment_functions.R` | 2,904 | [x] DONE | StringDB functions extracted |
-| `metaboliteVsSamplesS4Objects.R` | 2,603 | [x] PARTIALLY DONE | Some S4 methods extracted |
-| `qc_and_rollup.R` | 2,117 | [x] FULLY AUDITED | 50+ functions extracted |
-| `peptideVsSamplesS4Objects.R` | 2,055 | [x] PARTIALLY DONE | Some S4 methods extracted |
-| `enrichment_functions.R` | 1,861 | [x] FULLY CONFIGURED | 43 functions extracted |
-| `QC_visualisation.R` | 1,736 | [x] PARTIALLY DONE | Metabolite QC functions extracted |
-| `limpa_functions.R` | 1,422 | [x] DONE | 2 standalone funcs extracted to func_prot_limpa.R |
-| `functional_enrichment.R` | 1,255 | [x] DONE | 9 functions extracted to func_general_enrichment.R |
-| `de_analysis_function_wrapper.R` | 1,095 | [x] DONE | DE wrapper extracted |
-| `protein_de_analysis_wrapper.R` | 1,043 | [x] DONE | Functions extracted |
-| `get_best_accession_helper.R` | 1,219 | [x] DONE | 11 functions extracted to func_prot_annotation.R |
-| `annotation.R` | 952 | [x] FULLY CONFIGURED | 6 functions extracted |
-| `file_management.R` | 910 | [x] DONE | Import functions extracted |
-| `phosphoproteomics_helper.R` | 786 | [x] DONE | 22 functions extracted to func_phospho_annotation.R |
-| `metabolite_qc.R` | 500 | [x] DONE | Metabolite QC extracted |
-| `string_enrichment_functions_refactored.R` | 482 | [x] DONE | StringDB extracted |
-| `allGenerics.R` | 513 | [x] DONE | 63 setGeneric() extracted to func_general_s4_generics.R |
-| `metabolite_normalization.R` | 409 | [x] DONE | Metabolite norm extracted |
-| `github_managment.R` | 353 | [ ] NOT APPLICABLE | Git utilities (keep as-is) |
-| `metabolites_de_analysis_wrapper.R` | 228 | [x] DONE | Extracted |
-| `metabolite_de_analysis_wrapper.R` | 228 | [x] DONE | Extracted |
-| `proteinVsSamplesS4Objects.R` | 214 | [x] PARTIALLY DONE | Some methods extracted |
-| `multiomics_functions_MOFA.R` | 108 | [x] DONE | MOFA functions extracted |
+| File | Status | Notes |
+|------|--------|-------|
+| `helper_functions.R` | KEEP (S4) | Contains DirectoryManager setClass |
+| `de_proteins_functions.R` | **DELETED** | All functions extracted |
+| `multiomics_enrichment_functions.R` | **DELETED** | All functions extracted |
+| `metaboliteVsSamplesS4Objects.R` | KEEP (S4) | MetaboliteAssayData class + 16 methods |
+| `qc_and_rollup.R` | KEEP (S4) | Contains FilteringProgress setClass |
+| `peptideVsSamplesS4Objects.R` | KEEP (S4) | PeptideQuantitativeData class + 23 methods |
+| `enrichment_functions.R` | **DELETED** | All functions extracted |
+| `QC_visualisation.R` | KEEP (S4) | Contains FilteringProgressMetabolomics setClass |
+| `limpa_functions.R` | KEEP (S4) | S4 methods for limpa imputation |
+| `functional_enrichment.R` | KEEP (S4) | EnrichmentResults classes + methods |
+| `de_analysis_function_wrapper.R` | **DELETED** | All functions extracted |
+| `protein_de_analysis_wrapper.R` | KEEP (S4) | Contains S4 methods |
+| `get_best_accession_helper.R` | **DELETED** | All functions extracted |
+| `annotation.R` | **DELETED** | All functions extracted |
+| `file_management.R` | **DELETED** | All functions extracted |
+| `phosphoproteomics_helper.R` | **DELETED** | All functions extracted |
+| `metabolite_qc.R` | KEEP (S4) | S4 methods for metabolite QC |
+| `string_enrichment_functions_refactored.R` | **DELETED** | All functions extracted |
+| `allGenerics.R` | KEEP (S4) | setGeneric() definitions (load order) |
+| `metabolite_normalization.R` | KEEP (S4) | S4 methods for normalization |
+| `github_managment.R` | NOT APPLICABLE | Git utilities (keep as-is) |
+| `metabolites_de_analysis_wrapper.R` | KEEP (S4) | S4 class + methods |
+| `metabolite_de_analysis_wrapper.R` | KEEP (S4) | S4 class + methods |
+| `proteinVsSamplesS4Objects.R` | KEEP (S4) | S4 method for protein imputation |
+| `multiomics_functions_MOFA.R` | **DELETED** | All functions extracted |
+| `shiny_applets.R` | **DELETED** | RunApplet moved to launch_app.R |
 
 ---
 
