@@ -11,8 +11,7 @@ NULL
 mod_prot_qc_peptide_sample_ui <- function(id) {
   ns <- shiny::NS(id)
   
-  shiny::tagList(
-    shiny::tabPanel(
+  shiny::tabPanel(
     "Sample Quality",
     shiny::br(),
     shiny::fluidRow(
@@ -46,7 +45,6 @@ mod_prot_qc_peptide_sample_ui <- function(id) {
         )
       )
     )
-  )
   )
 }
 

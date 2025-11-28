@@ -11,8 +11,7 @@ NULL
 mod_prot_qc_protein_replicate_ui <- function(id) {
   ns <- shiny::NS(id)
   
-  shiny::tagList(
-    shiny::tabPanel(
+  shiny::tabPanel(
     "Protein Replicate Filter",
     shiny::br(),
     shiny::fluidRow(
@@ -53,7 +52,6 @@ mod_prot_qc_protein_replicate_ui <- function(id) {
         )
       )
     )
-  )
   )
 }
 

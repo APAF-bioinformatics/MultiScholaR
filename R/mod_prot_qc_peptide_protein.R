@@ -11,8 +11,7 @@ NULL
 mod_prot_qc_peptide_protein_ui <- function(id) {
   ns <- shiny::NS(id)
   
-  shiny::tagList(
-    shiny::tabPanel(
+  shiny::tabPanel(
     "Protein Peptides",
     shiny::br(),
     shiny::fluidRow(
@@ -53,7 +52,6 @@ mod_prot_qc_peptide_protein_ui <- function(id) {
         )
       )
     )
-  )
   )
 }
 

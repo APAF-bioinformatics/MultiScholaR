@@ -11,8 +11,7 @@ NULL
 mod_prot_qc_peptide_qvalue_ui <- function(id) {
   ns <- shiny::NS(id)
   
-  shiny::tagList(
-    shiny::tabPanel(
+  shiny::tabPanel(
     "Q-Value Filter",
     shiny::br(),
     shiny::fluidRow(
@@ -59,7 +58,6 @@ mod_prot_qc_peptide_qvalue_ui <- function(id) {
         )
       )
     )
-  )
   )
 }
 
