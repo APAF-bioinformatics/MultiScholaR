@@ -1268,7 +1268,10 @@ loadDependencies <- function(verbose = TRUE) {
         "shinydashboard", "shinythemes", "shinycssloaders", "golem",
         
         # Added for BookChapter
-        "conflicted", "tidytext",
+        # Note: "conflicted" removed from auto-loading - it causes hard errors on namespace
+        # conflicts during pacman::p_load(), creating an install loop. Users can still
+        # use conflicted manually in RMarkdown workflows with explicit conflict_prefer() calls.
+        "tidytext",
         # Added from Suggests:
         "testthat", "ggplot2", "ggpubr", "svglite",
         "ggraph", "reticulate", "shinyFiles", "arrow"
