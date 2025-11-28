@@ -11,8 +11,7 @@ NULL
 mod_prot_qc_peptide_impute_ui <- function(id) {
   ns <- shiny::NS(id)
   
-  shiny::tagList(
-    shiny::tabPanel(
+  shiny::tabPanel(
     "Imputation",
     shiny::br(),
     shiny::fluidRow(
@@ -46,7 +45,6 @@ mod_prot_qc_peptide_impute_ui <- function(id) {
         )
       )
     )
-  )
   )
 }
 

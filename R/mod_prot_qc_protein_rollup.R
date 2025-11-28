@@ -11,8 +11,7 @@ NULL
 mod_prot_qc_protein_rollup_ui <- function(id) {
   ns <- shiny::NS(id)
   
-  shiny::tagList(
-    shiny::tabPanel(
+  shiny::tabPanel(
     "IQ Protein Rollup",
     shiny::br(),
     shiny::fluidRow(
@@ -39,7 +38,6 @@ mod_prot_qc_protein_rollup_ui <- function(id) {
         )
       )
     )
-  )
   )
 }
 

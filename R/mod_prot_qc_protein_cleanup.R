@@ -11,8 +11,7 @@ NULL
 mod_prot_qc_protein_cleanup_ui <- function(id) {
   ns <- shiny::NS(id)
   
-  shiny::tagList(
-    shiny::tabPanel(
+  shiny::tabPanel(
     "Accession Cleanup",
     shiny::br(),
     shiny::fluidRow(
@@ -72,7 +71,6 @@ mod_prot_qc_protein_cleanup_ui <- function(id) {
         )
       )
     )
-  )
   )
 }
 
