@@ -1,5 +1,4 @@
-
-# ==========================================
+# =========================================-
 # Content from peptideVsSamplesS4Objects.R
 # ==========================================
 ## Create S4 class for proteomics protein level abundance data
