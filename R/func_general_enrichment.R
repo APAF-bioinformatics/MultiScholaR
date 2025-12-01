@@ -2320,9 +2320,6 @@ extract_geneSets <- function(x, n) {
 #'
 #' @return A data frame containing enrichment results
 #'
-#' @import UniProt.ws
-#' @import clusterProfiler
-#' @import GO.db
 #' @import dplyr
 #' @import tidyr
 #' @import ggplot2
