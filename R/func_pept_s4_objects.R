@@ -1797,7 +1797,8 @@ setMethod(f="plotRle"
             return(rle_plot)
           })
 
-plotPca <- function(theObject, grouping_variable, shape_variable = NULL, label_column, title, font_size=8, cv_percentile = 0.90) {
+# Renamed from plotPca to avoid S4 generic conflict
+plotPcaDispatch <- function(theObject, grouping_variable, shape_variable = NULL, label_column, title, font_size=8, cv_percentile = 0.90) {
   # Defensive checks
   if (!is.character(grouping_variable) || length(grouping_variable) != 1) {
     stop("grouping_variable must be a single character string")
