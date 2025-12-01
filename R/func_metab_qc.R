@@ -414,7 +414,6 @@ resolveDuplicateFeaturesByIntensity <- function(assay_tibble, id_col, sample_col
 #'         containing individual `ggplot` objects.
 #'
 #' @importFrom methods slotNames is
-#' @importFrom SummarizedExperiment assays colData assayNames
 #' @importFrom gridExtra grid.arrange
 #' @importFrom ggplot2 ggsave
 #' @importFrom purrr map map_dfr imap imap_dfr walk iwalk

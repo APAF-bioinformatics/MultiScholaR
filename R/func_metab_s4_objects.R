@@ -600,7 +600,6 @@ setMethod(f = "plotRle",
 #' @importFrom tibble column_to_rownames as_tibble
 #' @importFrom ggplot2 ggplot aes geom_boxplot theme_bw labs theme element_blank element_text margin
 #' @importFrom patchwork plot_layout plot_annotation
-#' @importFrom mixOmics pca
 #' @importFrom dplyr left_join select all_of
 #' @importFrom rlang sym !!
 #' @export
@@ -1295,7 +1294,6 @@ calculateMetabolitePairCorrelation <- function(input_pair_table, feature_id_colu
 #'   "cyclicloess", "quantile", "scale", "none". If NULL, the value is retrieved
 #'   from the object's configuration arguments (looking for "normalisation_method").
 #'
-#' @importFrom limma normalizeCyclicLoess normalizeQuantiles normalizeMedianAbsValues
 #' @importFrom purrr map set_names
 #' @importFrom tibble column_to_rownames rownames_to_column as_tibble
 #' @importFrom dplyr select all_of left_join relocate any_of mutate across
@@ -1869,7 +1867,6 @@ setMethod(f = "getNegCtrlMetabAnova",
 #' @importFrom dplyr pull select filter all_of any_of mutate across
 #' @importFrom rlang sym !!
 #' @importFrom logger log_info log_warn log_error
-#' @importFrom mixOmics impute.nipals
 #' @export
 #' @export
 setMethod(f = "ruvCancor",
@@ -2178,7 +2175,6 @@ setMethod(f = "ruvCancor",
 #' @importFrom dplyr pull select filter all_of any_of mutate across left_join relocate distinct
 #' @importFrom rlang sym !! :=
 #' @importFrom logger log_info log_warn log_error
-#' @importFrom mixOmics impute.nipals
 #' @importFrom stringr str_split
 #' @describeIn ruvIII_C_Varying Method for MetaboliteAssayData
 #' @export

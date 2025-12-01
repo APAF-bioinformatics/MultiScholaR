@@ -1548,7 +1548,6 @@ setMethod(f="findBestNegCtrlPercentagePeptides"
 #'
 #' @return Updated PeptideQuantitativeData object with imputed values
 #'
-#' @importFrom limpa dpc dpcImpute
 #' @export
 
 #' @export

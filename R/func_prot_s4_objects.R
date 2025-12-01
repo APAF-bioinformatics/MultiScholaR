@@ -252,7 +252,6 @@ setMethod("initialize", "ProteinQuantitativeData",
 #'
 #' @return Updated ProteinQuantitativeData object with imputed protein values
 #'
-#' @importFrom limpa dpc dpcImpute
 #' @export
 setMethod(f="proteinMissingValueImputationLimpa"
           , signature="ProteinQuantitativeData"
