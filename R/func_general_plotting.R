@@ -1282,7 +1282,6 @@ plotNumOfValuesNoLog <- function(input_table) {
 #'
 #' @return A `ggplot` object representing the PCA plot.
 #'
-#' @importFrom mixOmics pca
 #' @importFrom ggplot2 ggplot aes geom_point xlab ylab labs theme element_blank scale_x_continuous scale_y_continuous coord_cartesian
 #' @importFrom ggrepel geom_text_repel
 #' @importFrom tibble rownames_to_column

@@ -884,7 +884,6 @@ convertDpcDEToStandardFormat <- function(dpc_fit,
 #'
 #' @return Updated ProteinQuantitativeData object with imputed protein values
 #'
-#' @importFrom limpa dpc dpcImpute
 #' @export
 setMethod(f="proteinMissingValueImputationLimpa"
           , signature="ProteinQuantitativeData"
@@ -1116,7 +1115,6 @@ setMethod(f="proteinMissingValueImputationLimpa"
 #'
 #' @return ProteinQuantitativeData object with quantified protein values and metadata
 #'
-#' @importFrom limpa dpcQuant
 #' @export
 setMethod(f="proteinMissingValueImputationLimpa"
           , signature="PeptideQuantitativeData"
