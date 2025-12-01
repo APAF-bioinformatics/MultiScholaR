@@ -388,6 +388,18 @@ cleanIsoformNumber <- function(string) {
 
 }
 
+# ----------------------------------------------------------------------------
+# .cleanProteinIds
+# ----------------------------------------------------------------------------
+#' Clean Protein IDs
+#' @description Remove isoform numbers from protein IDs (wrapper for cleanIsoformNumber)
+#' @param string Character vector of protein IDs
+#' @return Cleaned protein IDs with isoform numbers removed
+#' @export
+.cleanProteinIds <- function(string) {
+  cleanIsoformNumber(string)
+}
+
 
 # ----------------------------------------------------------------------------
 # subsetQuery
