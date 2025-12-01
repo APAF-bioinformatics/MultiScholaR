@@ -3051,14 +3051,14 @@ setMethod(f = "plotInteractiveVolcano"
 #' This class contains the original data object, fitted model, and results table.
 #'
 #' @slot theObject The original MetaboliteAssayData object used for analysis
-#' @slot fit.eb The fitted eBayes model from limma analysis
+#' @slot fit.eb The fitted eBayes model from limma analysis (ANY type to allow limma MArrayLM when available)
 #' @slot contrasts_results_table Data frame with differential abundance statistics
 #'
 #' @export
 setClass("MetabolomicsDifferentialAbundanceResults"
          , slots = c(
              theObject = "MetaboliteAssayData"
-           , fit.eb = "MArrayLM"
+           , fit.eb = "ANY"
            , contrasts_results_table = "list"
            , num_sig_diff_exp_bar_plot = "list"
            , num_sig_diff_table = "data.frame"
