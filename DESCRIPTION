@@ -83,6 +83,7 @@ Collate:
     'mod_prot_qc_protein_s4.R'
     'mod_prot_summary.R'
     'mod_proteomics.R'
+    'func_applets.R'
     'run_app.R'
     'utils_shiny_logging.R'
     'utils_workflow_state.R'
