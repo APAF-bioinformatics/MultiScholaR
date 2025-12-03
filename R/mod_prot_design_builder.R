@@ -119,6 +119,7 @@ mod_prot_design_builder_ui <- function(id) {
                             ),
                             shiny::selectInput(ns("factor1_select"), "Select Factor 1:", choices = c("")),
                             shiny::selectInput(ns("factor2_select"), "Select Factor 2:", choices = c("")),
+                            shiny::selectInput(ns("factor3_select"), "Select Factor 3:", choices = c("")),
                             shiny::uiOutput(ns("replicate_inputs")),
                             shiny::actionButton(ns("assign_metadata"), "Assign")
                         ),
@@ -217,7 +218,8 @@ mod_prot_design_builder_ui <- function(id) {
                         "that distinguish your samples (e.g., Treatment, Timepoint, Genotype, Condition). ",
                         "They are used to group runs for analysis. Define potential factor names in the 'Factors' tab, ",
                         "then assign the appropriate factor levels to your runs using the 'Assign Metadata' tab. ",
-                        "A 'group' is automatically created based on the combination of assigned factors (e.g., 'TreatmentA_Timepoint1')."
+                        "A 'group' is automatically created based on the combination of assigned factors (e.g., 'TreatmentA_Timepoint1_ConditionX'). ",
+                        "You can assign up to three factors (Factor 1, Factor 2, and Factor 3), and groups will be created from their combinations."
                     )),
                     shiny::helpText(shiny::HTML(
                         "<b>Technical Replicates:</b> These are repeated measurements of the same biological sample ",
@@ -322,6 +324,7 @@ mod_prot_design_builder_server <- function(id, data_tbl, config_list, column_map
                 group = NA_character_,
                 factor1 = NA_character_,
                 factor2 = NA_character_,
+                factor3 = NA_character_,
                 batch = NA_character_,
                 replicates = NA_integer_,
                 tech_reps = NA_integer_
@@ -424,6 +427,7 @@ mod_prot_design_builder_server <- function(id, data_tbl, config_list, column_map
             shiny::isolate({
                 f1 <- input$factor1_select
                 f2 <- input$factor2_select
+                f3 <- input$factor3_select
                 g1 <- input$contrast_group1
                 g2 <- input$contrast_group2
             })
@@ -433,6 +437,7 @@ mod_prot_design_builder_server <- function(id, data_tbl, config_list, column_map
 
             shiny::updateSelectInput(session, "factor1_select", choices = c("", current_factors), selected = f1)
             shiny::updateSelectInput(session, "factor2_select", choices = c("", current_factors), selected = f2)
+            shiny::updateSelectInput(session, "factor3_select", choices = c("", current_factors), selected = f3)
             shiny::updateSelectInput(session, "contrast_group1", choices = c("", current_groups), selected = g1)
             shiny::updateSelectInput(session, "contrast_group2", choices = c("", current_groups), selected = g2)
         })
@@ -660,15 +665,32 @@ mod_prot_design_builder_server <- function(id, data_tbl, config_list, column_map
             selected_indices <- which(current_matrix$Run %in% input$selected_runs)
             current_matrix$factor1[selected_indices] <- input$factor1_select
             current_matrix$factor2[selected_indices] <- input$factor2_select
+            current_matrix$factor3[selected_indices] <- if (!is.null(input$factor3_select) && input$factor3_select != "") {
+                input$factor3_select
+            } else {
+                NA_character_
+            }
             current_matrix$replicates[selected_indices] <- replicate_numbers
 
-            # Create group names based on experimental factors (factor1 and factor2)
+            # Create group names based on experimental factors (factor1, factor2, and optionally factor3)
             # Note: Batch is kept in separate 'batch' column and NOT included in group names
             # This enables cross-batch comparisons (e.g., Treatment vs Control across batches)
-            group_name <- if (input$factor2_select == "") {
-                input$factor1_select
+            # Handle cases: factor1 only, factor1+factor2, or factor1+factor2+factor3
+            factor_parts <- c()
+            if (!is.null(input$factor1_select) && input$factor1_select != "") {
+                factor_parts <- c(factor_parts, input$factor1_select)
+            }
+            if (!is.null(input$factor2_select) && input$factor2_select != "") {
+                factor_parts <- c(factor_parts, input$factor2_select)
+            }
+            if (!is.null(input$factor3_select) && input$factor3_select != "") {
+                factor_parts <- c(factor_parts, input$factor3_select)
+            }
+            
+            group_name <- if (length(factor_parts) > 0) {
+                paste(factor_parts, collapse = "_")
             } else {
-                paste(input$factor1_select, input$factor2_select, sep = "_")
+                NA_character_
             }
             current_matrix$group[selected_indices] <- group_name
 
@@ -804,6 +826,7 @@ mod_prot_design_builder_server <- function(id, data_tbl, config_list, column_map
                 current_matrix <- design_matrix()
                 current_matrix$factor1 <- NA_character_
                 current_matrix$factor2 <- NA_character_
+                current_matrix$factor3 <- NA_character_
                 current_matrix$group <- NA_character_
                 current_matrix$tech_reps <- NA_integer_
                 # Note: batch column is preserved during reset as it comes from data import

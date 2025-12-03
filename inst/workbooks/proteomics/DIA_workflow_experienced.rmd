@@ -706,7 +706,7 @@ QC_composite_figure@pca_plots$pca_plot_before_cyclic_loess_group <- plotPca(
   font_size = 8
 )
 
-QC_composite_figure@density_plots$density_plot_before_cyclic_loess_group <- plotDensity(
+QC_composite_figure@density_plots$density_plot_before_cyclic_loess_group <- plotPcaBox(
   QC_composite_figure@pca_plots$pca_plot_before_cyclic_loess_group,
   grouping_variable = "group"
 )
@@ -782,7 +782,7 @@ QC_composite_figure@pca_plots$pca_plot_before_ruvIIIc_group <- plotPca(
   font_size = 8
 )
 
-QC_composite_figure@density_plots$density_plot_before_ruvIIIc_group <- plotDensity(
+QC_composite_figure@density_plots$density_plot_before_ruvIIIc_group <- plotPcaBox(
   QC_composite_figure@pca_plots$pca_plot_before_ruvIIIc_group,
   grouping_variable = "group"
 )
@@ -914,7 +914,7 @@ QC_composite_figure@pca_plots$pca_plot_after_ruvIIIc_group <- plotPca(
   font_size = 8
 )
 
-QC_composite_figure@density_plots$density_plot_after_ruvIIIc_group <- plotDensity(
+QC_composite_figure@density_plots$density_plot_after_ruvIIIc_group <- plotPcaBox(
   QC_composite_figure@pca_plots$pca_plot_after_ruvIIIc_group,
   grouping_variable = "group"
 )

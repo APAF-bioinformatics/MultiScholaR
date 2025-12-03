@@ -1006,7 +1006,7 @@ savePlot(
   "pca_plot_protein"
 )
 
-QC_composite_figure@density_plots$density_plot_protein <- plotDensity(
+QC_composite_figure@density_plots$density_plot_protein <- plotPcaBox(
   QC_composite_figure@pca_plots$pca_plot_protein,
   grouping_variable = "factor1"
 )
@@ -1174,7 +1174,7 @@ savePlot(
   "pca_plot_protein_filtered"
 )
 
-QC_composite_figure@density_plots$density_plot_protein_filtered <- plotDensity(
+QC_composite_figure@density_plots$density_plot_protein_filtered <- plotPcaBox(
   QC_composite_figure@pca_plots$pca_plot_protein,
   grouping_variable = "factor1"
 )
