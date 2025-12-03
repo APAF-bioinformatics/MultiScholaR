@@ -462,6 +462,10 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
         }
 
 
+        # Create Integration Directory (Shared across all omics)
+        integration_dir <- file.path(base_dir, "integration")
+        dir.create(integration_dir, recursive = TRUE, showWarnings = FALSE)
+
         # --- Build and Store Path Variables for the current omic type ---
         # Start with common/generic names relative to the current omic's paths
         omic_specific_paths_list <- list(
@@ -472,6 +476,7 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
             data_dir = current_omic_paths_def$data_dir,
             source_dir = current_omic_paths_def$scripts_dest_dir,
             timestamp = timestamp,
+            integration_dir = integration_dir,
             # qc_dir and publication_graphs_dir might not be primary for all (e.g. integration)
             # but time_dir uses them in its path, so they are defined.
             # Their direct relevance as top-level named paths depends on the omic type.
@@ -1537,8 +1542,13 @@ setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force
     # qc_dir now refers to the timestamped directory base
     qc_dir <- paths$special$qc_base 
     
+    # Create integration directory
+    integration_dir <- file.path(base_dir, "integration")
+    dir.create(integration_dir, recursive = TRUE, showWarnings = FALSE)
+
     dir_paths <- list(
         base_dir = base_dir,
+        integration_dir = integration_dir,
         results_dir = paths$results$base,
         data_dir = paths$special$data,
         source_dir = paths$special$scripts, # This is the *project-specific* scripts dir
