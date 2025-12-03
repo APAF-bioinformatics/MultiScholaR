@@ -3176,7 +3176,7 @@ preservePeptideNaValuesHelper <- function( peptide_obj, protein_obj) {
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #'@export
-setMethod(f="plotDensity"
+setMethod(f="plotPcaBox"
           , signature="gg"
           , definition=function(theObject, grouping_variable, title = "", font_size = 8) {
             # For gg class objects, create a copy and change its class to ggplot
@@ -3184,11 +3184,11 @@ setMethod(f="plotDensity"
             class(gg_obj) <- "ggplot"
             
             # Then call the ggplot method
-            plotDensity(gg_obj, grouping_variable, title, font_size)
+            plotPcaBox(gg_obj, grouping_variable, title, font_size)
           })
 
 #'@export
-setMethod(f="plotDensity"
+setMethod(f="plotPcaBox"
           , signature="ggplot"
           , definition=function(theObject, grouping_variable, title = "", font_size = 8) {
             # First try to get data directly from the ggplot object's data element

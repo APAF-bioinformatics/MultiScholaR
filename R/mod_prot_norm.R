@@ -645,7 +645,7 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
       # Density plot (Step 3/4)
       message("*** PRE-NORM QC: Generating Density plot (Step 3/4) ***")
       density_start_time <- Sys.time()
-      density_plot <- plotDensity(
+      density_plot <- plotPcaBox(
         pca_plot,
         grouping_variable = aesthetics$color_var
       )
@@ -721,7 +721,7 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
       )
       norm_data$qc_plots$post_normalization$rle <- rle_plot
       
-      density_plot <- plotDensity(
+      density_plot <- plotPcaBox(
         pca_plot,
         grouping_variable = aesthetics$color_var
       )
@@ -764,7 +764,7 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
       )
       norm_data$qc_plots$ruv_corrected$rle <- rle_plot
       
-      density_plot <- plotDensity(
+      density_plot <- plotPcaBox(
         pca_plot,
         grouping_variable = aesthetics$color_var
       )
