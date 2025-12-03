@@ -224,6 +224,26 @@ mod_prot_summary_server <- function(id, project_dirs, omic_type = "proteomics", 
         
         cat("SESSION SUMMARY: Successfully created study_parameters.txt at:", study_params_file, "\n")
         
+        # --- SAVE INTEGRATION OBJECT ---
+        cat("SESSION SUMMARY: Saving Integration S4 Object...\n")
+        integration_dir <- project_dirs[[omic_type]]$integration_dir
+        # Fallback if integration_dir not defined in project_dirs (legacy check)
+        if (is.null(integration_dir)) {
+             integration_dir <- file.path(project_dirs[[omic_type]]$base_dir, "integration")
+        }
+        
+        if (!dir.exists(integration_dir)) {
+             dir.create(integration_dir, recursive = TRUE, showWarnings = FALSE)
+        }
+        
+        # Use standardized naming: [OmicType]_[ExperimentLabel]_final_s4.RDS
+        s4_filename <- sprintf("%s_%s_final_s4.RDS", omic_type, input$experiment_label)
+        s4_filepath <- file.path(integration_dir, s4_filename)
+        
+        saveRDS(final_s4_object, s4_filepath)
+        cat(sprintf("SESSION SUMMARY: Saved Integration S4 object to: %s\n", s4_filepath))
+        shiny::showNotification("Saved Integration S4 Object", type = "message")
+
         values$workflow_args_saved <- TRUE
         shiny::showNotification("Study parameters saved successfully", type = "message")
         
@@ -233,6 +253,7 @@ mod_prot_summary_server <- function(id, project_dirs, omic_type = "proteomics", 
                 "\nTimestamp:", Sys.time(),
                 "\nFile:", study_params_file,
                 "\nSource: Final S4 object @args + config_list",
+                "\nIntegration Object:", s4_filename,
                 "\nStatus: Parameters saved ✅")
         })
         

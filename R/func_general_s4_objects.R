@@ -155,7 +155,8 @@ setClass("DirectoryManager",
         qc_dir = "character",
         time_dir = "character",
         results_summary_dir = "character",
-        pathway_dir = "character"
+        pathway_dir = "character",
+        integration_dir = "character"
     )
 )
 
