@@ -3175,11 +3175,28 @@ preservePeptideNaValuesHelper <- function( peptide_obj, protein_obj) {
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+# Set up S4 class definitions for ggplot objects
+setOldClass(c("gg", "ggplot"))
+setOldClass("ggplot2::ggplot")
+
 #'@export
 setMethod(f="plotPcaBox"
           , signature="gg"
           , definition=function(theObject, grouping_variable, title = "", font_size = 8) {
             # For gg class objects, create a copy and change its class to ggplot
+            gg_obj <- theObject
+            class(gg_obj) <- "ggplot"
+            
+            # Then call the ggplot method
+            plotPcaBox(gg_obj, grouping_variable, title, font_size)
+          })
+
+#'@export
+setMethod(f="plotPcaBox"
+          , signature="ggplot2::ggplot"
+          , definition=function(theObject, grouping_variable, title = "", font_size = 8) {
+            # For ggplot2::ggplot class objects, delegate to the ggplot method
+            # Convert to standard ggplot class for method dispatch
             gg_obj <- theObject
             class(gg_obj) <- "ggplot"
             
