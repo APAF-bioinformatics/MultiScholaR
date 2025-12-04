@@ -1,5 +1,36 @@
 # MultiScholaR NEWS
 
+## Version 0.3.6 (Development)
+
+### Data Import Enhancements
+
+#### Mixed Species FASTA Support
+- Added **mixed species FASTA analysis** for non-specific search databases
+- When enabled, automatically analyzes organism distribution from FASTA headers (OS/OX fields)
+- **Interactive organism selection**: Modal dialog displays organism distribution table with protein counts and percentages
+- **Smart organism detection**: Automatically identifies the most abundant organism based on protein matches
+- **Optional data filtering**: Users can choose to filter data to keep only proteins from the selected primary organism
+- **UI improvements**: Organism information inputs (Step 3) are automatically disabled when mixed species mode is enabled
+- **Processing feedback**: Enhanced processing modal with spinner and status updates during data import
+- **Debug output**: Comprehensive terminal logging for troubleshooting import issues
+
+### Design Matrix Builder Improvements
+
+#### New "Remove Samples" Tab
+- Added ability to **exclude samples from analysis** directly in the Design Matrix Builder
+- Select multiple samples for removal with a single action
+- Removed samples are excluded from the design matrix display and all downstream analysis
+- **Reversible**: Restore removed samples via Settings tab → Reset Scope → "Removed Samples Only"
+- Follows the same reset pattern as other builder operations for consistency
+
+#### Improved Save Design UX
+- Added **immediate visual feedback** when clicking "Save Design" button
+- Spinning icon with "Saving design matrix and preparing data..." message appears instantly
+- Eliminates confusion from perceived UI freeze during file writing and S4 object creation
+- Modal transitions smoothly to UniProt annotation progress bar
+
+---
+
 ## Version 0.3.5 (Current Release)
 
 ### Major Release: End-to-End GUI Implementation

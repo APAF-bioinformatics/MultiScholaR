@@ -1,4 +1,4 @@
-# MultiScholaR <img src="https://img.shields.io/badge/Version-0.3.5-orange?style=for-the-badge" alt="Version 0.3.5">
+# MultiScholaR <img src="https://img.shields.io/badge/Version-0.3.6-orange?style=for-the-badge" alt="Version 0.3.6">
 
 ![Banner](inst/shiny/www/MultiScholaR.png "MultiScholaR Banner")
 
@@ -61,7 +61,7 @@ For **programmatic, reproducible analyses** using R Markdown templates:
 
 ## End-to-End Multiomics GUI
 
-MultiScholaR v0.3.5 introduces a comprehensive, production-grade graphical user interface built using the `{golem}` framework, following modern Shiny best practices. The GUI implements the "app-as-a-package" philosophy, ensuring maintainability, scalability, and professional deployment capabilities.
+MultiScholaR v0.3.6 introduces a comprehensive, production-grade graphical user interface built using the `{golem}` framework, following modern Shiny best practices. The GUI implements the "app-as-a-package" philosophy, ensuring maintainability, scalability, and professional deployment capabilities.
 
 ### Architecture
 
@@ -88,7 +88,7 @@ Each stage is implemented as a self-contained module, allowing for easy maintena
 
 ### Proteomics Workflows
 
-MultiScholaR v0.3.5 provides complete GUI implementations for three major proteomics workflows:
+MultiScholaR v0.3.6 provides complete GUI implementations for three major proteomics workflows:
 
 #### DIA-NN Workflow
 - **Full GUI implementation** for Data-Independent Acquisition (DIA) proteomics data processed with DIA-NN
@@ -96,6 +96,7 @@ MultiScholaR v0.3.5 provides complete GUI implementations for three major proteo
 - **Comprehensive QC pipeline** with peptide-level and protein-level filtering
 - **Automated normalization** with RUV-IIIc parameter optimization
 - **Modular implementation**: Import, QC, normalization, DE analysis, and enrichment modules
+- **Mixed species FASTA support**: Analyze organism distribution and select primary organism for non-specific search databases
 
 #### TMT-PD Workflow
 - **GUI implementation** for Tandem Mass Tag (TMT) data processed with Proteome Discoverer
@@ -110,6 +111,32 @@ MultiScholaR v0.3.5 provides complete GUI implementations for three major proteo
 - **Modular implementation**: Shared modular architecture with workflow-specific import and QC steps
 
 All three workflows share the same analysis pipeline after data import and initial QC, ensuring consistency across different proteomics platforms.
+
+#### Mixed Species FASTA Analysis
+
+MultiScholaR v0.3.6 introduces support for **mixed species FASTA databases**, commonly used in non-specific search strategies or when analyzing samples with spiked-in standards or contaminants.
+
+**Key Features:**
+- **Automatic organism detection**: Parses FASTA headers to extract organism information (OS/OX fields)
+- **Distribution analysis**: Counts protein matches per organism and calculates percentages
+- **Interactive selection**: Modal dialog displays organism distribution with protein counts and percentages
+- **Smart defaults**: Pre-selects the most abundant organism based on protein frequency
+- **Optional filtering**: Users can choose to filter data to keep only proteins from the selected organism
+- **Seamless integration**: Organism selection automatically updates taxonomy ID and organism name for downstream analysis
+
+**How It Works:**
+1. Check "Mixed species FASTA" checkbox during data import
+2. System processes FASTA file and analyzes organism distribution
+3. Modal dialog appears showing organism breakdown (e.g., "Mus musculus: 85%, Homo sapiens: 12%, Other: 3%")
+4. Select primary organism from the list (pre-selected to highest frequency)
+5. Optionally enable filtering to remove proteins from other organisms
+6. Confirm selection to proceed with analysis
+
+This feature is particularly useful for:
+- Non-specific search databases containing multiple species
+- Samples with spiked-in protein standards
+- Contaminant analysis and filtering
+- Cross-species comparison studies
 
 ### Automated RUV-IIIc Parameter Optimization
 
@@ -193,6 +220,11 @@ MultiScholaR provides comprehensive differential expression analysis through the
 - **Statistical frameworks**: Integration with `edgeR` and `limma` for robust linear modeling
 - **Flexible experimental designs**: Support for complex designs with multiple factors and contrasts
 - **Interactive design matrix builder**: GUI-based tool for defining experimental groups and contrasts
+  - Sample renaming with bulk transformation options
+  - Factor assignment for up to 3 experimental variables
+  - Technical replicate grouping
+  - **Remove Samples tab**: Exclude unwanted samples from analysis with easy restoration
+  - Contrast definition with formula-aware group naming
 - **Multiple testing correction**: Automatic FDR adjustment using Benjamini-Hochberg or other methods
 - **Visualization**: Volcano plots, MA plots, and other publication-quality visualizations
 
@@ -335,8 +367,9 @@ of best practice usage. This declaration has been mandated by Macquarie Universi
 graph TD
     A[**v0.1: Foundation & Proteomics Core**] --> B[**v0.2: Multiomics Functionality**];
     B --> C[**v0.3: End-to-End GUI & Proteomics**];
-    C --> D[**v0.3.5: Current Release**];
-    D --> E[**v0.4: Metabolomics GUI**];
+    C --> D[**v0.3.5: GUI Foundation**];
+    D --> D2[**v0.3.6: Current Release**];
+    D2 --> E[**v0.4: Metabolomics GUI**];
     E --> F[**v0.4.1: Lipidomics GUI**];
     F --> G[**v0.4.2: limpa Integration**];
     G --> H[**v0.5: Full Multiomics GUI Suite**];
@@ -364,16 +397,25 @@ graph TD
         C3(✓ State Management System)
     end
     
-    subgraph "**v0.3.5: Current Release**"
+    subgraph "**v0.3.5: GUI Foundation**"
         D
         D1(✓ End-to-End Proteomics GUI)
-        D2(✓ DIA-NN Workflow)
-        D3(✓ TMT-PD Workflow)
-        D4(✓ LFQ-Fragpipe Workflow)
-        D5(✓ Automated RUV-IIIc Optimization)
-        D6(✓ Publication-Ready Reports)
-        D7(✓ Metabolomics R Markdown Workflow)
-        D8(✓ DIA-NN with limpa R Markdown)
+        D3(✓ DIA-NN Workflow)
+        D4(✓ TMT-PD Workflow)
+        D5(✓ LFQ-Fragpipe Workflow)
+        D6(✓ Automated RUV-IIIc Optimization)
+        D7(✓ Publication-Ready Reports)
+        D8(✓ Metabolomics R Markdown Workflow)
+        D9(✓ DIA-NN with limpa R Markdown)
+    end
+    
+    subgraph "**v0.3.6: Current Release**"
+        D2
+        D2a(✓ Remove Samples from Design Matrix)
+        D2b(✓ Improved Save Design UX)
+        D2c(✓ FASTA Format Auto-Detection)
+        D2d(✓ Mixed Species FASTA Analysis)
+        D2e(✓ Enhanced Import Processing UI)
     end
     
     subgraph "**v0.4: Metabolomics GUI**"
