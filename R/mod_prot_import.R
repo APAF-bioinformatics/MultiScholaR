@@ -5,7 +5,8 @@
 #' @param id Module ID
 #' 
 #' @importFrom shiny NS tagList fileInput numericInput textInput actionButton uiOutput
-#' @importFrom shiny fluidRow column wellPanel h3 h4 tags hr radioButtons verbatimTextOutput helpText div br
+#' @importFrom shiny fluidRow column wellPanel h3 h4 tags hr radioButtons verbatimTextOutput helpText div br conditionalPanel icon
+#' @importFrom shinyjs useShinyjs disable enable
 #' @export
 mod_prot_import_ui <- function(id) {
   ns <- shiny::NS(id)
@@ -14,6 +15,7 @@ mod_prot_import_ui <- function(id) {
   use_shiny_files <- requireNamespace("shinyFiles", quietly = TRUE)
   
   shiny::tagList(
+    shinyjs::useShinyjs(),  # Enable shinyjs for dynamic UI control
     shiny::fluidRow(
     shiny::column(12,
       shiny::wellPanel(
@@ -75,14 +77,32 @@ mod_prot_import_ui <- function(id) {
                        accept = c(".fasta", ".fa", ".faa"))
             },
             
+            # Mixed species FASTA option
+            shiny::checkboxInput(ns("mixed_species_fasta"),
+                         "Mixed species FASTA (analyze organism distribution)",
+                         value = FALSE),
+            shiny::helpText("Check this if your FASTA contains proteins from multiple species (e.g., spiked-in standards, contaminants)"),
+            
             shiny::h4("Step 3: Organism Information"),
-            shiny::numericInput(ns("taxon_id"), 
-                        "Taxonomy ID:", 
-                        value = 9606,  # Human default
-                        min = 1),
-            shiny::textInput(ns("organism_name"), 
-                     "Organism Name:", 
-                     value = "Homo sapiens")
+            shiny::div(
+              id = ns("organism_inputs_container"),
+              shiny::numericInput(ns("taxon_id"), 
+                          "Taxonomy ID:", 
+                          value = 9606,  # Human default
+                          min = 1),
+              shiny::textInput(ns("organism_name"), 
+                       "Organism Name:", 
+                       value = "Homo sapiens")
+            ),
+            # Help text shown when mixed species is checked
+            shiny::conditionalPanel(
+              condition = paste0("input['", ns("mixed_species_fasta"), "'] == true"),
+              shiny::helpText(
+                shiny::icon("info-circle"),
+                " Organism will be selected from the analysis popup after processing."
+              ),
+              style = "color: #666; font-style: italic;"
+            )
           ),
           
           shiny::column(6,
@@ -173,7 +193,8 @@ mod_prot_import_ui <- function(id) {
 #' @param experiment_paths List of paths for this experiment
 #' 
 #' @importFrom shiny moduleServer reactive reactiveValues observeEvent req
-#' @importFrom shiny renderUI showNotification removeNotification
+#' @importFrom shiny renderUI showNotification removeNotification showModal modalDialog removeModal updateNumericInput updateTextInput
+#' @importFrom shinyjs html
 #' @importFrom logger log_info log_error log_warn
 #' @importFrom vroom vroom
 #' @importFrom ini read.ini
@@ -195,7 +216,12 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
       fasta_file_path = NULL,
       uniprot_mapping_file = NULL,
       uniparc_mapping_file = NULL,
-      config_file_path = NULL
+      config_file_path = NULL,
+      # Mixed species FASTA analysis
+      organism_distribution = NULL,
+      organism_mapping = NULL,
+      pending_import_completion = FALSE,
+      waiting_for_organism_selection = FALSE
     )
     
     # Check if shinyFiles is available
@@ -297,6 +323,21 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
         }
       })
     }
+    
+    # --- Observer: Toggle Step 3 inputs when mixed species is checked ---
+    shiny::observeEvent(input$mixed_species_fasta, {
+      if (isTRUE(input$mixed_species_fasta)) {
+        # Disable the organism inputs when mixed species is checked
+        shinyjs::disable("taxon_id")
+        shinyjs::disable("organism_name")
+        message("[mod_prot_import] Mixed species FASTA enabled - organism inputs disabled")
+      } else {
+        # Re-enable the organism inputs when unchecked
+        shinyjs::enable("taxon_id")
+        shinyjs::enable("organism_name")
+        message("[mod_prot_import] Mixed species FASTA disabled - organism inputs enabled")
+      }
+    }, ignoreInit = FALSE)
     
     # Get the search results file path (works for both shinyFiles and standard)
     get_search_results_path <- reactive({
@@ -479,6 +520,12 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
       )
     })
     
+    # Helper function to update processing modal status
+    update_processing_status <- function(status_text) {
+      message(sprintf("[mod_prot_import] %s", status_text))
+      shinyjs::html("processing_status_text", status_text)
+    }
+    
     # Process imported data
     shiny::observeEvent(input$process_data, {
       # Get file paths
@@ -491,12 +538,45 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
       local_data$processing <- TRUE
       format <- active_format()
       
-      shiny::showNotification("Processing imported data...", 
-                      id = "processing_notification",
-                      duration = NULL)
+      ns <- session$ns
+      
+      message("========================================")
+      message("[mod_prot_import] Starting data import process")
+      message("========================================")
+      message(sprintf("[mod_prot_import] Search results: %s", search_results_path))
+      message(sprintf("[mod_prot_import] FASTA file: %s", fasta_path))
+      message(sprintf("[mod_prot_import] Detected format: %s", format))
+      
+      # Show processing modal with spinner
+      shiny::showModal(shiny::modalDialog(
+        title = shiny::tagList(
+          shiny::icon("cog", class = "fa-spin")
+          , " Processing Data"
+        )
+        , shiny::tags$div(
+            style = "text-align: center; padding: 20px;"
+            , shiny::tags$div(
+                style = "font-size: 48px; color: #3c8dbc; margin-bottom: 20px;"
+                , shiny::icon("spinner", class = "fa-spin fa-pulse")
+              )
+            , shiny::tags$div(
+                id = ns("processing_status_text")
+                , style = "font-size: 16px; color: #333;"
+                , "Initializing..."
+              )
+            , shiny::tags$div(
+                style = "margin-top: 15px; font-size: 12px; color: #999;"
+                , "Please wait while your data is being processed."
+              )
+          )
+        , footer = NULL
+        , size = "s"
+        , easyClose = FALSE
+      ))
       
       tryCatch({
         # Read data based on format
+        update_processing_status(sprintf("Reading %s data...", toupper(format)))
         log_info(sprintf("Reading %s data from %s", format, search_results_path))
         
         # Import data with error handling
@@ -535,6 +615,9 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
         }
         
         log_info(sprintf("Data imported successfully. Rows: %d", nrow(data_import_result$data)))
+        message(sprintf("[mod_prot_import] Data imported: %d rows", nrow(data_import_result$data)))
+        
+        update_processing_status("Storing imported data...")
         
         # Store in workflow data
         workflow_data$data_tbl <- data_import_result$data
@@ -558,6 +641,7 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
         workflow_data$fasta_file_path <- fasta_path
         
         # Process FASTA file to create aa_seq_tbl_final
+        update_processing_status("Processing FASTA file...")
         log_info("Processing FASTA file...")
         
         # Get mapping files if provided
@@ -635,7 +719,109 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
           workflow_data$fasta_metadata <- NULL
         })
         
+        # --- Mixed Species FASTA Analysis ---
+        # If user checked mixed species option, analyze organism distribution
+        if (isTRUE(input$mixed_species_fasta) && !is.null(workflow_data$aa_seq_tbl_final)) {
+          tryCatch({
+            update_processing_status("Analyzing organism distribution...")
+            message("[mod_prot_import] Mixed species FASTA - analyzing organism distribution")
+            log_info("Mixed species FASTA detected - analyzing organism distribution...")
+            
+            # Extract organism info from FASTA
+            organism_mapping <- extractOrganismsFromFasta(fasta_path)
+            local_data$organism_mapping <- organism_mapping
+            
+            # Get protein IDs from imported data
+            protein_col <- data_import_result$column_mapping$protein_col
+            if (!is.null(protein_col) && protein_col %in% names(data_import_result$data)) {
+              protein_ids <- unique(data_import_result$data[[protein_col]])
+              
+              # Analyze distribution
+              organism_dist <- analyzeOrganismDistribution(protein_ids, organism_mapping)
+              local_data$organism_distribution <- organism_dist
+              workflow_data$organism_distribution <- organism_dist
+              
+              log_info(sprintf("Found %d organisms in data", nrow(organism_dist)))
+              
+              # Show modal for organism selection
+              ns <- session$ns
+              
+              # Build radio button choices from distribution
+              # Format: "Organism Name (Taxon: XXXXX) - XX.X%"
+              valid_organisms <- organism_dist |>
+                dplyr::filter(!is.na(taxon_id) & organism_name != "[Unmatched/Unknown]")
+              
+              if (nrow(valid_organisms) > 0) {
+                # Set flag to indicate we're waiting for organism selection
+                local_data$waiting_for_organism_selection <- TRUE
+                
+                choices <- stats::setNames(
+                  as.character(valid_organisms$taxon_id)
+                  , paste0(
+                      valid_organisms$organism_name
+                      , " (Taxon: ", valid_organisms$taxon_id, ") - "
+                      , valid_organisms$protein_count, " proteins ("
+                      , valid_organisms$percentage, "%)"
+                    )
+                )
+                
+                # Pre-select the organism with highest count
+                selected_taxon <- as.character(valid_organisms$taxon_id[1])
+                
+                shiny::showModal(shiny::modalDialog(
+                  title = "Select Primary Organism"
+                  , size = "l"
+                  , shiny::tags$div(
+                      shiny::tags$p(
+                        shiny::tags$strong("Multiple organisms detected in your FASTA database.")
+                        , " The distribution of matched proteins is shown below."
+                        , " Please select the primary organism for this analysis."
+                      )
+                      , shiny::tags$hr()
+                      , shiny::tags$h5("Organism Distribution")
+                      , DT::DTOutput(ns("organism_dist_table"))
+                      , shiny::tags$hr()
+                      , shiny::radioButtons(
+                          ns("selected_organism")
+                          , "Select primary organism:"
+                          , choices = choices
+                          , selected = selected_taxon
+                        )
+                      , shiny::checkboxInput(
+                          ns("filter_to_organism")
+                          , "Filter data to keep only proteins from selected organism"
+                          , value = FALSE
+                        )
+                      , shiny::helpText(
+                          "If checked, proteins from other organisms will be removed from the analysis."
+                        )
+                    )
+                  , footer = shiny::tagList(
+                      shiny::modalButton("Cancel")
+                      , shiny::actionButton(ns("confirm_organism"), "Confirm Selection", class = "btn-primary")
+                    )
+                ))
+              } else {
+                log_warn("No valid organisms with taxon IDs found in FASTA")
+                shiny::showNotification(
+                  "Could not extract organism information from FASTA headers. Using default organism settings."
+                  , type = "warning"
+                )
+              }
+            }
+          }, error = function(e) {
+            log_warn(paste("Error analyzing organism distribution:", e$message))
+            shiny::showNotification(
+              paste("Could not analyze organism distribution:", e$message)
+              , type = "warning"
+            )
+          })
+        }
+        
         # Load configuration
+        update_processing_status("Loading configuration...")
+        message("[mod_prot_import] Loading configuration")
+        
         config_path <- if (use_shiny_files) {
           local_data$config_file_path
         } else {
@@ -783,18 +969,37 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
         
         log_info("Processing log created successfully")
         
+        update_processing_status("Finalizing import...")
+        message("[mod_prot_import] Finalizing import")
+        
         # Mark this tab as complete
         workflow_data$tab_status$setup_import <- "complete"
         
-        shiny::removeNotification("processing_notification")
-        shiny::showNotification("Data import successful!", type = "message")
+        message("========================================")
+        message("[mod_prot_import] Data import completed successfully!")
+        message(sprintf("[mod_prot_import] Rows: %d, Proteins: %s, Format: %s", 
+                       nrow(data_import_result$data), n_proteins, format))
+        message("========================================")
+        
+        # Only close modal and show success if we're NOT waiting for organism selection
+        # (The organism selection modal replaces the processing modal)
+        if (!isTRUE(local_data$waiting_for_organism_selection)) {
+          shiny::removeModal()
+          shiny::showNotification("Data import successful!", type = "message")
+        } else {
+          message("[mod_prot_import] Waiting for organism selection from user...")
+        }
         
         local_data$processing <- FALSE
         
       }, error = function(e) {
+        message("========================================")
+        message(sprintf("[mod_prot_import] ERROR: %s", e$message))
+        message("========================================")
+        
         log_error(paste("Error during data import:", e$message))
-        shiny::removeNotification("processing_notification")
-        shiny::showNotification(paste("Error:", e$message), type = "error")
+        shiny::removeModal()
+        shiny::showNotification(paste("Error:", e$message), type = "error", duration = 10)
         local_data$processing <- FALSE
         
         # Clean up workflow_data on error to prevent inconsistent state
@@ -809,6 +1014,162 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
         workflow_data$processing_log$setup_import <- NULL
         workflow_data$tab_status$setup_import <- "incomplete"
       })
+    })
+    
+    # --- Organism Distribution Table Output ---
+    output$organism_dist_table <- DT::renderDT({
+      shiny::req(local_data$organism_distribution)
+      
+      dist_data <- local_data$organism_distribution |>
+        dplyr::select(
+          `Organism` = organism_name
+          , `Taxon ID` = taxon_id
+          , `Proteins` = protein_count
+          , `%` = percentage
+        )
+      
+      DT::datatable(
+        dist_data
+        , options = list(
+            pageLength = 10
+            , searching = FALSE
+            , lengthChange = FALSE
+            , ordering = FALSE
+            , info = FALSE
+          )
+        , rownames = FALSE
+        , class = "compact stripe"
+      ) |>
+        DT::formatStyle(
+          columns = c("Organism", "Taxon ID", "Proteins", "%")
+          , fontSize = "12px"
+        )
+    })
+    
+    # --- Observer for Organism Selection Confirmation ---
+    shiny::observeEvent(input$confirm_organism, {
+      shiny::req(input$selected_organism)
+      shiny::req(local_data$organism_distribution)
+      
+      selected_taxon <- as.integer(input$selected_organism)
+      
+      # Find the selected organism info
+      selected_org <- local_data$organism_distribution |>
+        dplyr::filter(taxon_id == selected_taxon)
+      
+      if (nrow(selected_org) > 0) {
+        new_organism_name <- selected_org$organism_name[1]
+        new_taxon_id <- selected_org$taxon_id[1]
+        
+        log_info(sprintf(
+          "User selected organism: %s (Taxon: %d)"
+          , new_organism_name
+          , new_taxon_id
+        ))
+        
+        # Update workflow_data with selected organism
+        workflow_data$taxon_id <- new_taxon_id
+        workflow_data$organism_name <- new_organism_name
+        
+        # Update the input fields to reflect selection
+        shiny::updateNumericInput(session, "taxon_id", value = new_taxon_id)
+        shiny::updateTextInput(session, "organism_name", value = new_organism_name)
+        
+        # Update processing log if it exists
+        if (!is.null(workflow_data$processing_log$setup_import)) {
+          workflow_data$processing_log$setup_import$taxon_id <- new_taxon_id
+          workflow_data$processing_log$setup_import$organism <- new_organism_name
+          workflow_data$processing_log$setup_import$mixed_species_selection <- list(
+            selected_organism = new_organism_name
+            , selected_taxon_id = new_taxon_id
+            , filter_applied = input$filter_to_organism
+            , organism_distribution = local_data$organism_distribution
+          )
+        }
+        
+        # Filter data if requested
+        if (isTRUE(input$filter_to_organism)) {
+          log_info("Filtering data to selected organism only...")
+          
+          # Get protein accessions for the selected organism from FASTA
+          organism_proteins <- local_data$organism_mapping |>
+            dplyr::filter(taxon_id == selected_taxon) |>
+            dplyr::pull(uniprot_acc)
+          
+          # Clean accessions for matching (remove isoform numbers)
+          clean_acc <- function(acc) sub("-\\d+$", "", acc)
+          organism_proteins_clean <- unique(clean_acc(organism_proteins))
+          
+          # Filter the data tables
+          protein_col <- workflow_data$column_mapping$protein_col
+          
+          if (!is.null(protein_col) && !is.null(workflow_data$data_tbl)) {
+            original_count <- nrow(workflow_data$data_tbl)
+            
+            # Filter function that checks if any protein in a group matches
+            filter_by_organism <- function(protein_ids) {
+              # Split protein groups
+              ids <- unlist(strsplit(as.character(protein_ids), ";"))
+              ids_clean <- clean_acc(trimws(ids))
+              any(ids_clean %in% organism_proteins_clean)
+            }
+            
+            # Apply filter to data_tbl
+            keep_rows <- sapply(
+              workflow_data$data_tbl[[protein_col]]
+              , filter_by_organism
+            )
+            workflow_data$data_tbl <- workflow_data$data_tbl[keep_rows, ]
+            
+            # Apply filter to data_cln if it exists
+            if (!is.null(workflow_data$data_cln)) {
+              keep_rows_cln <- sapply(
+                workflow_data$data_cln[[protein_col]]
+                , filter_by_organism
+              )
+              workflow_data$data_cln <- workflow_data$data_cln[keep_rows_cln, ]
+            }
+            
+            filtered_count <- nrow(workflow_data$data_tbl)
+            removed_count <- original_count - filtered_count
+            
+            log_info(sprintf(
+              "Filtered data: kept %d rows, removed %d rows (%.1f%%)"
+              , filtered_count
+              , removed_count
+              , (removed_count / original_count) * 100
+            ))
+            
+            shiny::showNotification(
+              sprintf(
+                "Filtered to %s: kept %d rows, removed %d rows"
+                , new_organism_name
+                , filtered_count
+                , removed_count
+              )
+              , type = "message"
+              , duration = 5
+            )
+          }
+        }
+        
+        # Reset the waiting flag
+        local_data$waiting_for_organism_selection <- FALSE
+        
+        # Close the modal
+        shiny::removeModal()
+        
+        shiny::showNotification(
+          sprintf("Primary organism set to: %s (Taxon: %d)", new_organism_name, new_taxon_id)
+          , type = "message"
+        )
+        
+        # Show the import success notification that was deferred
+        shiny::showNotification("Data import successful!", type = "message")
+        
+      } else {
+        shiny::showNotification("Could not find selected organism", type = "error")
+      }
     })
     
     # Render import status

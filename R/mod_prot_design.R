@@ -804,6 +804,21 @@ mod_prot_design_server <- function(id, workflow_data, experiment_paths, volumes 
       results <- builder_results_rv()
       shiny::req(results)
       
+      # Show processing modal immediately for better UX
+      shiny::showModal(shiny::modalDialog(
+        title = "Processing Design Matrix",
+        shiny::div(
+          style = "text-align: center; padding: 20px;",
+          shiny::icon("spinner", class = "fa-spin fa-3x"),
+          shiny::br(),
+          shiny::br(),
+          shiny::p("Saving design matrix and preparing data..."),
+          shiny::p(shiny::tags$small("This may take a moment for large datasets."))
+        ),
+        footer = NULL,
+        easyClose = FALSE
+      ))
+      
       logger::log_info("Received results from design matrix builder module. Now saving to workflow and disk.")
       
       # 1. Update the main workflow_data object

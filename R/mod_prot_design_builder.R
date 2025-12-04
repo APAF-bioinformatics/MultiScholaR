@@ -101,6 +101,28 @@ mod_prot_design_builder_ui <- function(id) {
                             shiny::actionButton(ns("bulk_rename"), "Apply Transformation")
                         ),
 
+                        # Remove samples tab
+                        shiny::tabPanel(
+                            "Remove Samples",
+                            shiny::h4("Remove Samples from Analysis"),
+                            shiny::helpText(shiny::HTML(
+                                "Select samples you want to exclude from the analysis. ",
+                                "Removed samples will not appear in the design matrix or be included in downstream analysis. ",
+                                "You can restore removed samples using the 'Settings' tab reset functionality."
+                            )),
+                            shiny::selectizeInput(ns("samples_to_remove"), "Select Samples to Remove:",
+                                choices = NULL, # Will be populated by server
+                                multiple = TRUE
+                            ),
+                            shiny::actionButton(ns("remove_samples"), "Remove Selected Samples",
+                                class = "btn-danger",
+                                icon = shiny::icon("trash")
+                            ),
+                            shiny::hr(),
+                            shiny::h5("Currently Removed Samples"),
+                            shiny::verbatimTextOutput(ns("removed_samples_display"))
+                        ),
+
                         # Factor management tab
                         shiny::tabPanel(
                             "Factors",
@@ -188,6 +210,7 @@ mod_prot_design_builder_ui <- function(id) {
                                     choices = c(
                                         "All Changes" = "all",
                                         "Sample Names Only" = "sample_names",
+                                        "Removed Samples Only" = "removed_samples",
                                         "Factors Only" = "factors",
                                         "Contrasts Only" = "contrasts",
                                         "Formula Only" = "formula"
@@ -351,6 +374,7 @@ mod_prot_design_builder_server <- function(id, data_tbl, config_list, column_map
         groups <- shiny::reactiveVal()
         factors <- shiny::reactiveVal()
         contrasts <- shiny::reactiveVal()
+        removed_samples <- shiny::reactiveVal(character(0))
 
         # Observer to initialize/reset the reactive values from the initial state
         shiny::observe({
@@ -382,6 +406,7 @@ mod_prot_design_builder_server <- function(id, data_tbl, config_list, column_map
             groups(state$groups)
             factors(state$factors)
             contrasts(state$contrasts)
+            removed_samples(character(0))  # Initialize with no removed samples
             
             # Update UI elements that depend on the initial state
             sorted_runs <- state$design_matrix$Run
@@ -389,6 +414,7 @@ mod_prot_design_builder_server <- function(id, data_tbl, config_list, column_map
             shiny::updateSelectizeInput(session, "selected_runs", choices = sorted_runs, selected = "")
             shiny::updateSelectizeInput(session, "samples_to_transform", choices = sorted_runs, selected = "")
             shiny::updateSelectizeInput(session, "tech_rep_samples", choices = sorted_runs, selected = "")
+            shiny::updateSelectizeInput(session, "samples_to_remove", choices = sorted_runs, selected = "")
             shiny::updateTextInput(session, "formula_string", value = state$formula)
         })
 
@@ -397,26 +423,39 @@ mod_prot_design_builder_server <- function(id, data_tbl, config_list, column_map
 
         # == UI Rendering and Updates =============================================
 
-        # Update sample selection inputs when names change
-        shiny::observeEvent(design_matrix(), {
+        # Update sample selection inputs when names change or samples are removed
+        shiny::observe({
             # This observer updates all sample dropdowns if the run names in the
-            # design matrix change (e.g., through renaming).
+            # design matrix change (e.g., through renaming) or samples are removed.
             shiny::req(design_matrix())
-            sorted_runs <- gtools::mixedsort(design_matrix()$Run)
+            all_runs <- gtools::mixedsort(design_matrix()$Run)
             
-            # Preserve existing selections if possible
+            # Get currently removed samples and exclude them from available choices
+            currently_removed <- removed_samples()
+            available_runs <- all_runs[!all_runs %in% currently_removed]
+            
+            # Preserve existing selections if possible (only if they're still available)
             shiny::isolate({
                 selected_rename <- input$sample_to_rename
                 selected_meta <- input$selected_runs
                 selected_transform <- input$samples_to_transform
                 selected_tech <- input$tech_rep_samples
+                selected_remove <- input$samples_to_remove
+                
+                # Filter selections to only include still-available runs
+                selected_rename <- if (!is.null(selected_rename) && selected_rename %in% available_runs) selected_rename else ""
+                selected_meta <- selected_meta[selected_meta %in% available_runs]
+                selected_transform <- selected_transform[selected_transform %in% available_runs]
+                selected_tech <- selected_tech[selected_tech %in% available_runs]
+                selected_remove <- selected_remove[selected_remove %in% available_runs]
             })
 
-            shiny::updateSelectizeInput(session, "sample_to_rename", choices = sorted_runs, selected = selected_rename)
-            shiny::updateSelectizeInput(session, "selected_runs", choices = sorted_runs, selected = selected_meta)
-            shiny::updateSelectizeInput(session, "samples_to_transform", choices = sorted_runs, selected = selected_transform)
-            shiny::updateSelectizeInput(session, "tech_rep_samples", choices = sorted_runs, selected = selected_tech)
-        }, ignoreNULL = TRUE, ignoreInit = TRUE)
+            shiny::updateSelectizeInput(session, "sample_to_rename", choices = available_runs, selected = selected_rename)
+            shiny::updateSelectizeInput(session, "selected_runs", choices = available_runs, selected = selected_meta)
+            shiny::updateSelectizeInput(session, "samples_to_transform", choices = available_runs, selected = selected_transform)
+            shiny::updateSelectizeInput(session, "tech_rep_samples", choices = available_runs, selected = selected_tech)
+            shiny::updateSelectizeInput(session, "samples_to_remove", choices = available_runs, selected = selected_remove)
+        })
 
         # Update factor and group dropdowns when they change
         shiny::observe({
@@ -443,19 +482,27 @@ mod_prot_design_builder_server <- function(id, data_tbl, config_list, column_map
         })
 
 
-        # Render the main data table
+        # Render the main data table (excluding removed samples)
         output$data_table <- DT::renderDT({
                 shiny::req(design_matrix())
-                design_matrix()
+                dm <- design_matrix()
+                currently_removed <- removed_samples()
+                # Filter out removed samples from display
+                dm |> dplyr::filter(!Run %in% currently_removed)
             },
             selection = "none",
             options = list(pageLength = 10, scrollX = TRUE, server = FALSE)
         )
 
         # Use a proxy to update the table data without redrawing the whole thing
-        shiny::observeEvent(design_matrix(), {
+        shiny::observe({
             shiny::req(proxy_data_table)
-            DT::replaceData(proxy_data_table, design_matrix(), resetPaging = FALSE)
+            shiny::req(design_matrix())
+            dm <- design_matrix()
+            currently_removed <- removed_samples()
+            # Filter out removed samples when updating proxy
+            filtered_dm <- dm |> dplyr::filter(!Run %in% currently_removed)
+            DT::replaceData(proxy_data_table, filtered_dm, resetPaging = FALSE)
         })
 
         # Render UI for Available Factors Display
@@ -558,6 +605,18 @@ mod_prot_design_builder_server <- function(id, data_tbl, config_list, column_map
                 dplyr::pull(formatted)
             
             paste(output_text, collapse = "\n\n")
+        })
+        
+        # Render removed samples display
+        output$removed_samples_display <- shiny::renderText({
+            currently_removed <- removed_samples()
+            if (length(currently_removed) == 0) {
+                return("No samples have been removed.")
+            }
+            paste0(
+                "Removed ", length(currently_removed), " sample(s):\n",
+                paste(gtools::mixedsort(currently_removed), collapse = "\n")
+            )
         })
         
         # Render replicate number input UI
@@ -797,6 +856,26 @@ mod_prot_design_builder_server <- function(id, data_tbl, config_list, column_map
             }
         })
 
+        # Handler for removing samples
+        shiny::observeEvent(input$remove_samples, {
+            shiny::req(input$samples_to_remove)
+            
+            samples_to_remove <- input$samples_to_remove
+            currently_removed <- removed_samples()
+            
+            # Add newly selected samples to the removed list (avoid duplicates)
+            new_removed <- unique(c(currently_removed, samples_to_remove))
+            removed_samples(new_removed)
+            
+            # Clear the selection input
+            shiny::updateSelectizeInput(session, "samples_to_remove", selected = "")
+            
+            shiny::showNotification(
+                paste("Removed", length(samples_to_remove), "sample(s) from analysis."),
+                type = "message"
+            )
+        })
+
         # Handler for resetting state
         shiny::observeEvent(input$reset_changes, {
             # Show confirmation modal
@@ -819,6 +898,10 @@ mod_prot_design_builder_server <- function(id, data_tbl, config_list, column_map
             if (scope == "all" || scope == "sample_names") {
                 design_matrix(state$design_matrix)
                 data_cln_reactive(state$data_cln)
+            }
+            if (scope == "all" || scope == "removed_samples") {
+                # Restore all removed samples by clearing the removed_samples list
+                removed_samples(character(0))
             }
             if (scope == "all" || scope == "factors") {
                 factors(state$factors)
@@ -850,16 +933,18 @@ mod_prot_design_builder_server <- function(id, data_tbl, config_list, column_map
             # This is the main action of the module. It prepares the final
             # data objects and returns them in a list via a reactive value.
 
-            # 1. Filter design matrix to only include assigned runs
+            # 1. Filter design matrix to only include assigned runs AND exclude removed samples
+            currently_removed <- removed_samples()
             design_matrix_final <- design_matrix() |>
-                dplyr::filter(!is.na(group) & group != "")
+                dplyr::filter(!is.na(group) & group != "") |>
+                dplyr::filter(!Run %in% currently_removed)
             
             if(nrow(design_matrix_final) == 0) {
                 shiny::showNotification("No samples have been assigned to groups. Please assign metadata before saving.", type="warning")
                 return()
             }
 
-            # 2. Filter main data to match the assigned runs
+            # 2. Filter main data to match the assigned runs (removed samples already excluded)
             assigned_runs <- design_matrix_final$Run
             data_cln_final <- data_cln_reactive() |>
                 dplyr::filter(Run %in% assigned_runs)
