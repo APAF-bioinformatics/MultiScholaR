@@ -4,8 +4,9 @@
 
 ### Data Import Enhancements
 
-#### Mixed Species FASTA Support
+#### Mixed Species FASTA Support (All Workflows)
 - Added **mixed species FASTA analysis** for non-specific search databases
+- **Available for all proteomics workflows**: DIA-NN, TMT-PD, LFQ-Fragpipe, MaxQuant, and Spectronaut
 - When enabled, automatically analyzes organism distribution from FASTA headers (OS/OX fields)
 - **Interactive organism selection**: Modal dialog displays organism distribution table with protein counts and percentages
 - **Smart organism detection**: Automatically identifies the most abundant organism based on protein matches
