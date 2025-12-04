@@ -96,7 +96,6 @@ MultiScholaR v0.3.6 provides complete GUI implementations for three major proteo
 - **Comprehensive QC pipeline** with peptide-level and protein-level filtering
 - **Automated normalization** with RUV-IIIc parameter optimization
 - **Modular implementation**: Import, QC, normalization, DE analysis, and enrichment modules
-- **Mixed species FASTA support**: Analyze organism distribution and select primary organism for non-specific search databases
 
 #### TMT-PD Workflow
 - **GUI implementation** for Tandem Mass Tag (TMT) data processed with Proteome Discoverer
@@ -112,9 +111,9 @@ MultiScholaR v0.3.6 provides complete GUI implementations for three major proteo
 
 All three workflows share the same analysis pipeline after data import and initial QC, ensuring consistency across different proteomics platforms.
 
-#### Mixed Species FASTA Analysis
+### Mixed Species FASTA Analysis
 
-MultiScholaR v0.3.6 introduces support for **mixed species FASTA databases**, commonly used in non-specific search strategies or when analyzing samples with spiked-in standards or contaminants.
+MultiScholaR v0.3.6 introduces support for **mixed species FASTA databases** across **all proteomics workflows** (DIA-NN, TMT-PD, LFQ-Fragpipe, MaxQuant, Spectronaut). This feature is commonly used in non-specific search strategies or when analyzing samples with spiked-in standards or contaminants.
 
 **Key Features:**
 - **Automatic organism detection**: Parses FASTA headers to extract organism information (OS/OX fields)
