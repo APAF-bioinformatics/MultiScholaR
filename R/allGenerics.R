@@ -202,7 +202,7 @@ setGeneric(name="plotPcaBox"
            , def=function( theObject, grouping_variable, title = "", font_size = 8) {
              standardGeneric("plotPcaBox")
            }
-           , signature=c("theObject", "grouping_variable", "title", "font_size")) # For protein workflows: creates notched box plots from PCA data
+           , signature=c("theObject")) # Dispatch only on theObject to avoid S4 coercion issues
 
 setGeneric(name="plotDensityList"
            , def=function( theObject, grouping_variables_list, title = "", font_size = 8) {
