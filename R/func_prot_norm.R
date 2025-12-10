@@ -186,6 +186,7 @@ getRuvIIIReplicateMatrixHelper <- function(design_matrix, sample_id_column, grou
 #' @param num_neg_ctrl The number of negative control genes to select. Typically the number of genes with the highest q-value (e.g. least statistically significant). Default is 100
 #' @param ruv_qval_cutoff The FDR threshold. No proteins with q-values lower than this value are included in the list of negative control proteins. This means the number of negative control proteins could be less than the number specified in \code{num_neg_ctrl} when some were excluded by this threshold.
 #' @param ruv_fdr_method The FDR calculation method, default is "qvalue". The other option is "BH"
+#' @param exclude_pool_samples Logical. If TRUE (default), automatically exclude samples from groups containing "Pool" in their name from ANOVA calculation. Pool/QC samples are excluded from negative control selection but remain in RUV-III correction.
 #' @return A boolean vector which indicates which row in the input data matrix is a control gene. The row is included if the value is TRUE. The names of each element is the row ID / protein accessions of the input data matrix.
 #'@export
 getNegCtrlProtAnovaHelper <- function(data_matrix
@@ -194,7 +195,8 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
                                 , percentage_as_neg_ctrl = 10
                                 , num_neg_ctrl = round( nrow(data_matrix)*percentage_as_neg_ctrl/100, 0)
                                 , ruv_qval_cutoff = 0.05
-                                , ruv_fdr_method = "qvalue") {
+                                , ruv_fdr_method = "qvalue"
+                                , exclude_pool_samples = TRUE) {
 
   ## Both percentage_as_neg_ctrl and num_neg_ctrl is missing, and number of proteins >= 50 use only 10 percent of the proteins as negative control by default
   if((is.null(percentage_as_neg_ctrl) ||
@@ -214,11 +216,69 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
     stop(paste0( getFunctionName(), ": Please provide either percentage_as_neg_ctrl or num_neg_ctrl.\n"))
   }
 
+  # --- Pool/QC Sample Handling ---
+  # Pool/QC samples should not influence negative control selection but can help
+  # estimate unwanted variation patterns in RUV-III correction
+  data_matrix_for_anova <- data_matrix
+  design_matrix_for_anova <- design_matrix
+  
+  if (exclude_pool_samples) {
+    # Detect Pool/QC groups (case-insensitive detection)
+    all_groups <- unique(design_matrix[[grouping_variable]])
+    is_pool_group <- grepl("pool", all_groups, ignore.case = TRUE)
+    pool_group_names <- all_groups[is_pool_group]
+    
+    if (length(pool_group_names) > 0) {
+      # Identify samples that belong to Pool groups
+      samples_in_design <- rownames(design_matrix)
+      pool_samples <- samples_in_design[design_matrix[[grouping_variable]] %in% pool_group_names]
+      
+      # Filter to samples present in both design matrix and data matrix columns
+      pool_samples_in_data <- intersect(pool_samples, colnames(data_matrix))
+      
+      if (length(pool_samples_in_data) > 0) {
+        # Log Pool/QC exclusion details
+        message(sprintf("*** NEG CTRL ANOVA: Detected %d Pool/QC group(s): %s ***", 
+                       length(pool_group_names), paste(pool_group_names, collapse = ", ")))
+        message(sprintf("*** NEG CTRL ANOVA: Excluding %d Pool samples from ANOVA ***", 
+                       length(pool_samples_in_data)))
+        
+        # Create filtered matrices excluding Pool samples
+        non_pool_samples <- setdiff(colnames(data_matrix), pool_samples_in_data)
+        data_matrix_for_anova <- data_matrix[, non_pool_samples, drop = FALSE]
+        design_matrix_for_anova <- design_matrix[non_pool_samples, , drop = FALSE]
+        
+        message(sprintf("*** NEG CTRL ANOVA: Using %d non-Pool samples for negative control selection ***", 
+                       ncol(data_matrix_for_anova)))
+        
+        # Validate sufficient samples remain for ANOVA
+        remaining_groups <- unique(design_matrix_for_anova[[grouping_variable]])
+        if (length(remaining_groups) < 2) {
+          stop(paste("*** NEG CTRL ANOVA ERROR: After excluding Pool samples, only", 
+                    length(remaining_groups), 
+                    "group(s) remain. Need at least 2 groups for ANOVA. ***"))
+        }
+        
+        # Check samples per group
+        samples_per_group <- table(design_matrix_for_anova[[grouping_variable]])
+        groups_with_single_sample <- sum(samples_per_group < 2)
+        if (groups_with_single_sample > 0) {
+          message(sprintf("*** NEG CTRL ANOVA WARNING: %d group(s) have only 1 sample after Pool exclusion ***", 
+                         groups_with_single_sample))
+        }
+      } else {
+        message("*** NEG CTRL ANOVA: Pool groups detected but no Pool samples found in data matrix ***")
+      }
+    } else {
+      message("*** NEG CTRL ANOVA: No Pool/QC groups detected - using all samples for ANOVA ***")
+    }
+  }
+
   ## Inspired by matANOVA function from PhosR package: http://www.bioconductor.org/packages/release/bioc/html/PhosR.html
 
-  grps <- design_matrix[colnames(data_matrix), grouping_variable]
+  grps <- design_matrix_for_anova[colnames(data_matrix_for_anova), grouping_variable]
 
-  ps <- apply(data_matrix, 1, function(x) {
+  ps <- apply(data_matrix_for_anova, 1, function(x) {
        if( length( unique( grps[!is.na(x)] )  ) > 1 ) {
          summary(stats::aov(as.numeric(x) ~ grps))[[1]][["Pr(>F)"]][1]
        } else {

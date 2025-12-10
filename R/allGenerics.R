@@ -78,10 +78,10 @@ setGeneric(name="proteinTechRepCorrelation"
            , signature=c("theObject", "tech_rep_num_column", "tech_rep_remove_regex"))
 
 setGeneric(name="plotPearson",
-           def=function(theObject, tech_rep_remove_regex, correlation_group = NA  ) {
+           def=function(theObject, tech_rep_remove_regex = NULL, correlation_group = NA, exclude_pool_samples = TRUE) {
              standardGeneric("plotPearson")
            },
-           signature=c("theObject", "tech_rep_remove_regex", "correlation_group" ))
+           signature=c("theObject", "tech_rep_remove_regex", "correlation_group", "exclude_pool_samples"))
 
 setGeneric("InitialiseGrid", function(dummy = NULL) {
   standardGeneric("InitialiseGrid")
@@ -100,10 +100,10 @@ setGeneric(name="normaliseBetweenSamples"
            , signature=c("theObject", "normalisation_method"))
 
 setGeneric(name="pearsonCorForSamplePairs"
-           , def=function( theObject,   tech_rep_remove_regex = NULL, correlation_group = NA ) {
+           , def=function( theObject, tech_rep_remove_regex = NULL, correlation_group = NA, exclude_pool_samples = TRUE) {
              standardGeneric("pearsonCorForSamplePairs")
            }
-           , signature=c("theObject", "tech_rep_remove_regex", "correlation_group"))
+           , signature=c("theObject", "tech_rep_remove_regex", "correlation_group", "exclude_pool_samples"))
 
 setGeneric(name="getNegCtrlProtAnova"
            , def=function( theObject
@@ -199,7 +199,7 @@ setGeneric(name="plotDensity"
            , signature=c("theObject", "grouping_variable", "title", "font_size")) # Base signature might need refinement based on methods
 
 setGeneric(name="plotPcaBox"
-           , def=function( theObject, grouping_variable, title = "", font_size = 8) {
+           , def=function( theObject, grouping_variable, title = "", font_size = 8, show_legend = FALSE) {
              standardGeneric("plotPcaBox")
            }
            , signature=c("theObject")) # Dispatch only on theObject to avoid S4 coercion issues

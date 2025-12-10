@@ -72,6 +72,16 @@ mod_prot_enrich_ui <- function(id) {
         ),
         shiny::helpText("NCBI taxonomy ID for organism"),
         
+        # ✅ NEW: Mixed species filtering checkbox
+        shiny::hr(),
+        shiny::h5("Multi-Species Filtering"),
+        shiny::checkboxInput(
+          ns("enable_organism_filter"),
+          "Filter to target organism only",
+          value = FALSE
+        ),
+        shiny::helpText("Enable if using mixed-species FASTA (e.g., with contaminants). Filters DE results to target organism before enrichment analysis."),
+        
         # ✅ NEW: Analysis method display
         shiny::h5("Analysis Method"),
         shiny::verbatimTextOutput(ns("analysis_method_display")),
@@ -396,6 +406,23 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
       }
     }, ignoreInit = TRUE, ignoreNULL = TRUE)
     
+    # ✅ NEW: Auto-set organism filter checkbox if mixed species analysis was enabled at import
+    shiny::observeEvent(workflow_data$mixed_species_analysis, {
+      if (!is.null(workflow_data$mixed_species_analysis) && 
+          isTRUE(workflow_data$mixed_species_analysis$enabled)) {
+        # Auto-enable filtering if mixed species was detected at import
+        shiny::updateCheckboxInput(session, "enable_organism_filter", value = TRUE)
+        cat("*** ENRICHMENT: Auto-enabled organism filter (mixed species FASTA detected at import) ***\n")
+        
+        shiny::showNotification(
+          sprintf("Multi-species FASTA detected. Filtering to %s enabled.", 
+                  workflow_data$mixed_species_analysis$selected_organism)
+          , type = "message"
+          , duration = 5
+        )
+      }
+    }, ignoreInit = TRUE, ignoreNULL = TRUE)
+    
     # ✅ NEW: Organism support detection
     supported_organisms <- shiny::reactive({
       tibble::tribble(
@@ -552,22 +579,47 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
           if (!is.null(workflow_data$state_manager)) {
             current_state <- workflow_data$state_manager$current_state
             
-            # Check if we have completed DE analysis
-            valid_states_for_enrichment <- c("correlation_filtered")  # Same as DE for now
+            # Check if we have completed DE analysis - accept multiple valid states
+            valid_states_for_enrichment <- c("correlation_filtered", "normalized", "ruv_corrected", "protein_replicate_filtered")
             
             cat(sprintf("   ENRICHMENT TAB Step: Current state = '%s'\n", current_state))
             cat(sprintf("   ENRICHMENT TAB Step: Valid states for enrichment = %s\n", paste(valid_states_for_enrichment, collapse = ", ")))
+            cat(sprintf("   ENRICHMENT TAB Step: DE results available = %s\n", !is.null(workflow_data$de_analysis_results_list)))
             
-            # Also check if DE analysis has been completed
-            if (current_state == "correlation_filtered" && !is.null(workflow_data$de_analysis_results_list)) {
+            # ✅ FIXED: Check if DE results exist (main requirement) and state is valid
+            # DE analysis completion is the key requirement, not just the state name
+            if (current_state %in% valid_states_for_enrichment && !is.null(workflow_data$de_analysis_results_list)) {
               
               cat("*** AUTO-TRIGGERING ENRICHMENT INITIALIZATION (DE results found) ***\n")
               
               tryCatch({
                 # Get S4 object and DE results
                 cat("   ENRICHMENT TAB Step: Getting S4 object and DE results from workflow_data...\n")
+                
+                # Try multiple sources for S4 object
+                current_s4 <- NULL
+                
+                # Source 1: State manager
                 current_s4 <- workflow_data$state_manager$getState(current_state)
+                if (!is.null(current_s4)) {
+                  cat(sprintf("   ENRICHMENT TAB Step: Got S4 from state manager (class: %s)\n", class(current_s4)))
+                }
+                
+                # Source 2: From DE results (individual contrasts have theObject)
                 de_results_list <- workflow_data$de_analysis_results_list
+                if (is.null(current_s4) && !is.null(de_results_list) && length(de_results_list) > 0) {
+                  first_result <- de_results_list[[1]]
+                  if (!is.null(first_result$theObject)) {
+                    current_s4 <- first_result$theObject
+                    cat(sprintf("   ENRICHMENT TAB Step: Got S4 from DE results theObject (class: %s)\n", class(current_s4)))
+                  }
+                }
+                
+                # Source 3: From combined DE results structure
+                if (is.null(current_s4) && !is.null(de_results_list$theObject)) {
+                  current_s4 <- de_results_list$theObject
+                  cat(sprintf("   ENRICHMENT TAB Step: Got S4 from DE results$theObject (class: %s)\n", class(current_s4)))
+                }
                 
                 if (!is.null(current_s4) && !is.null(de_results_list)) {
                   cat(sprintf("   ENRICHMENT TAB Step: S4 object retrieved, class = %s\n", class(current_s4)))
@@ -647,6 +699,82 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
     } else {
       cat("   mod_prot_enrich_server Step: No selected_tab parameter provided - tab selection observer NOT set up\n")
     }
+    
+    # ✅ NEW: Backup observer - triggers when DE results become available
+    # This ensures contrasts are populated even if user is already on enrichment tab
+    shiny::observeEvent(workflow_data$de_analysis_results_list, {
+      cat("*** ENRICHMENT: DE results detected - updating contrasts ***\n")
+      
+      de_results_list <- workflow_data$de_analysis_results_list
+      
+      if (!is.null(de_results_list) && length(de_results_list) > 0) {
+        # Try multiple sources for S4 object
+        current_s4 <- NULL
+        
+        # Source 1: State manager
+        if (!is.null(workflow_data$state_manager)) {
+          current_state <- workflow_data$state_manager$current_state
+          current_s4 <- workflow_data$state_manager$getState(current_state)
+          if (!is.null(current_s4)) {
+            cat(sprintf("   ENRICHMENT DE Observer: Got S4 from state manager (class: %s)\n", class(current_s4)))
+          }
+        }
+        
+        # Source 2: From DE results (individual contrasts have theObject)
+        if (is.null(current_s4) && length(de_results_list) > 0) {
+          first_result <- de_results_list[[1]]
+          if (!is.null(first_result$theObject)) {
+            current_s4 <- first_result$theObject
+            cat(sprintf("   ENRICHMENT DE Observer: Got S4 from DE results theObject (class: %s)\n", class(current_s4)))
+          }
+        }
+        
+        # Source 3: From combined DE results structure
+        if (is.null(current_s4) && !is.null(de_results_list$theObject)) {
+          current_s4 <- de_results_list$theObject
+          cat(sprintf("   ENRICHMENT DE Observer: Got S4 from DE results$theObject (class: %s)\n", class(current_s4)))
+        }
+        
+        if (!is.null(current_s4)) {
+          enrichment_data$current_s4_object <- current_s4
+          cat("   ENRICHMENT DE Observer: S4 object stored successfully\n")
+        } else {
+          cat("   ENRICHMENT DE Observer: WARNING - Could not retrieve S4 object from any source\n")
+        }
+        
+        enrichment_data$de_results_data <- de_results_list
+        
+        # Set up contrast choices from DE results
+        contrast_names <- names(de_results_list)
+        cat(sprintf("   ENRICHMENT DE Observer: Available contrast names: %s\n", paste(contrast_names, collapse = ", ")))
+        
+        # Map to friendly names if contrasts_tbl exists
+        if (exists("contrasts_tbl", envir = .GlobalEnv)) {
+          contrasts_tbl <- get("contrasts_tbl", envir = .GlobalEnv)
+          if ("friendly_names" %in% names(contrasts_tbl)) {
+            friendly_names <- contrasts_tbl$friendly_names
+            contrast_choices <- setNames(friendly_names, friendly_names)
+            enrichment_data$contrasts_available <- friendly_names
+            cat(sprintf("   ENRICHMENT DE Observer: Using friendly names: %s\n", paste(friendly_names, collapse = ", ")))
+          } else {
+            enrichment_data$contrasts_available <- contrast_names
+            contrast_choices <- setNames(contrast_names, contrast_names)
+          }
+        } else {
+          enrichment_data$contrasts_available <- contrast_names
+          contrast_choices <- setNames(contrast_names, contrast_names)
+        }
+        
+        # Update contrast selector
+        shiny::updateSelectInput(
+          session,
+          "selected_contrast",
+          choices = contrast_choices
+        )
+        
+        cat(sprintf("*** ENRICHMENT: Updated contrasts dropdown with %d contrasts ***\n", length(contrast_choices)))
+      }
+    }, ignoreInit = TRUE, ignoreNULL = TRUE)
     
     # Display available contrasts
     output$contrasts_display <- shiny::renderText({
@@ -799,13 +927,49 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
             cat("   ENRICHMENT Step: Found contrasts_tbl in global environment\n")
           }
           
-          if (!is.null(enrichment_data$current_s4_object@design_matrix)) {
-            design_matrix <- enrichment_data$current_s4_object@design_matrix
-            cat("   ENRICHMENT Step: Found design_matrix in S4 object\n")
+          # ✅ FIXED: Safely get S4 object if not already set
+          if (is.null(enrichment_data$current_s4_object)) {
+            cat("   ENRICHMENT Step: S4 object is NULL, trying to retrieve it...\n")
+            
+            # Try from DE results
+            if (!is.null(enrichment_data$de_results_data) && length(enrichment_data$de_results_data) > 0) {
+              first_result <- enrichment_data$de_results_data[[1]]
+              if (!is.null(first_result$theObject)) {
+                enrichment_data$current_s4_object <- first_result$theObject
+                cat(sprintf("   ENRICHMENT Step: Got S4 from DE results theObject (class: %s)\n", class(first_result$theObject)))
+              }
+            }
+            
+            # Try from state manager
+            if (is.null(enrichment_data$current_s4_object) && !is.null(workflow_data$state_manager)) {
+              current_state <- workflow_data$state_manager$current_state
+              enrichment_data$current_s4_object <- workflow_data$state_manager$getState(current_state)
+              if (!is.null(enrichment_data$current_s4_object)) {
+                cat(sprintf("   ENRICHMENT Step: Got S4 from state manager (class: %s)\n", class(enrichment_data$current_s4_object)))
+              }
+            }
+          }
+          
+          # ✅ FIXED: Safely check for design_matrix with NULL guard
+          if (!is.null(enrichment_data$current_s4_object)) {
+            tryCatch({
+              if (!is.null(enrichment_data$current_s4_object@design_matrix)) {
+                design_matrix <- enrichment_data$current_s4_object@design_matrix
+                cat("   ENRICHMENT Step: Found design_matrix in S4 object\n")
+              }
+            }, error = function(e) {
+              cat(sprintf("   ENRICHMENT Step: Could not access design_matrix slot: %s\n", e$message))
+            })
+          }
+          
+          # Try global environment as fallback
+          if (is.null(design_matrix) && exists("design_matrix", envir = .GlobalEnv)) {
+            design_matrix <- get("design_matrix", envir = .GlobalEnv)
+            cat("   ENRICHMENT Step: Found design_matrix in global environment\n")
           }
           
           if (is.null(contrasts_tbl) || is.null(design_matrix)) {
-            stop("Missing contrasts_tbl or design_matrix required for enrichment analysis")
+            stop("Missing contrasts_tbl or design_matrix required for enrichment analysis. Please ensure DE analysis was completed successfully.")
           }
           
           # ✅ FIXED: Use correct pathway directory from experiment_paths
@@ -897,7 +1061,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
               }
               
               # Get current S4 object protein table for annotation
-              if (!is.null(enrichment_data$current_s4_object@protein_quant_table)) {
+              if (!is.null(enrichment_data$current_s4_object) && !is.null(enrichment_data$current_s4_object@protein_quant_table)) {
                 uniprot_dat_cln <- getUniprotAnnotations(
                   input_tbl = enrichment_data$current_s4_object@protein_quant_table,
                   cache_dir = uniprot_cache_dir,
@@ -917,13 +1081,14 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
           }
           
           # ✅ OPTIONAL: Try annotation matching (but don't let it block analysis)
-          if (!is.null(uniprot_dat_cln) && !is.null(de_results_for_enrichment)) {
+          if (!is.null(uniprot_dat_cln) && !is.null(de_results_for_enrichment) && !is.null(enrichment_data$current_s4_object)) {
             cat("   ENRICHMENT Step: Attempting UniProt annotation matching\n")
             tryCatch({
+              protein_id_col <- tryCatch(enrichment_data$current_s4_object@protein_id_column, error = function(e) "uniprot_acc")
               annotation_match_results <- matchAnnotations(
                 de_results_s4 = de_results_for_enrichment,
                 uniprot_annotations = uniprot_dat_cln,
-                protein_id_column = enrichment_data$current_s4_object@protein_id_column,
+                protein_id_column = protein_id_col,
                 uniprot_id_column = "Entry",
                 gene_names_column = "gene_names"
               )
@@ -940,12 +1105,243 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
             })
           }
           
+          # ✅ NEW: Filter DE results to target organism if multi-species filtering is enabled
+          organism_filter_applied <- FALSE
+          filter_stats <- list(proteins_before = 0, proteins_after = 0, proteins_removed = 0)
+          
+          if (isTRUE(input$enable_organism_filter)) {
+            cat("*** ENRICHMENT Step: Multi-species filtering ENABLED ***\n")
+            
+            target_taxon <- as.character(input$organism_taxid)
+            organism_mapping <- NULL
+            
+            # Try to get organism mapping from workflow_data (set at import)
+            if (!is.null(workflow_data$mixed_species_analysis) && 
+                !is.null(workflow_data$mixed_species_analysis$organism_mapping)) {
+              organism_mapping <- workflow_data$mixed_species_analysis$organism_mapping
+              cat("   ENRICHMENT Step: Using organism_mapping from import module\n")
+            }
+            
+            # Try to get from UniProt annotations as fallback
+            if (is.null(organism_mapping) && !is.null(uniprot_dat_cln)) {
+              cat(sprintf("   ENRICHMENT Step: Checking uniprot_dat_cln columns: %s\n", paste(names(uniprot_dat_cln), collapse = ", ")))
+              
+              # Common organism name to taxon ID mapping
+              organism_name_to_taxid <- list(
+                "Homo sapiens" = "9606", "Human" = "9606",
+                "Mus musculus" = "10090", "Mouse" = "10090",
+                "Rattus norvegicus" = "10116", "Rat" = "10116",
+                "Drosophila melanogaster" = "7227", "Fruit fly" = "7227",
+                "Caenorhabditis elegans" = "6239",
+                "Saccharomyces cerevisiae" = "4932", "Yeast" = "4932",
+                "Arabidopsis thaliana" = "3702",
+                "Danio rerio" = "7955", "Zebrafish" = "7955",
+                "Gallus gallus" = "9031", "Chicken" = "9031",
+                "Sus scrofa" = "9823", "Pig" = "9823",
+                "Bos taurus" = "9913", "Bovine" = "9913", "Cow" = "9913"
+              )
+              
+              # Check for Entry column variations  
+              possible_acc_cols <- c("Entry", "entry", "UniProt_Acc", "uniprot_acc", "Accession", "accession", "protein_id")
+              acc_col <- NULL
+              for (col in possible_acc_cols) {
+                if (col %in% names(uniprot_dat_cln)) {
+                  acc_col <- col
+                  break
+                }
+              }
+              
+              # Check for Organism column (has names like "Mus musculus (Mouse)")
+              if ("Organism" %in% names(uniprot_dat_cln) && !is.null(acc_col)) {
+                cat("   ENRICHMENT Step: Found 'Organism' column with organism names - mapping to taxon IDs\n")
+                
+                # Helper function to extract taxon ID from organism name
+                map_organism_to_taxid <- function(org_name) {
+                  if (is.na(org_name) || org_name == "") return(NA_character_)
+                  
+                  # Try direct match first
+                  for (name in names(organism_name_to_taxid)) {
+                    if (grepl(name, org_name, ignore.case = TRUE)) {
+                      return(organism_name_to_taxid[[name]])
+                    }
+                  }
+                  return(NA_character_)
+                }
+                
+                organism_mapping <- tryCatch({
+                  uniprot_dat_cln |>
+                    dplyr::select(uniprot_acc = dplyr::all_of(acc_col), organism_name = Organism) |>
+                    dplyr::mutate(taxon_id = sapply(organism_name, map_organism_to_taxid)) |>
+                    dplyr::select(uniprot_acc, taxon_id)
+                }, error = function(e) {
+                  cat(sprintf("   ENRICHMENT Step: Error creating organism_mapping from names: %s\n", e$message))
+                  NULL
+                })
+                
+                if (!is.null(organism_mapping)) {
+                  unique_taxids <- unique(organism_mapping$taxon_id)
+                  cat(sprintf("   ENRICHMENT Step: Created organism_mapping from organism names (%d entries)\n", nrow(organism_mapping)))
+                  cat(sprintf("   ENRICHMENT Step: Unique taxon IDs mapped: %s\n", paste(unique_taxids[!is.na(unique_taxids)], collapse = ", ")))
+                  
+                  # Check if target taxon is in the mapping
+                  if (target_taxon %in% unique_taxids) {
+                    target_count <- sum(organism_mapping$taxon_id == target_taxon, na.rm = TRUE)
+                    cat(sprintf("   ENRICHMENT Step: Found %d proteins matching target taxon %s\n", target_count, target_taxon))
+                  } else {
+                    cat(sprintf("   ENRICHMENT Step: WARNING - Target taxon %s not found in mapped taxon IDs!\n", target_taxon))
+                    cat(sprintf("   ENRICHMENT Step: Available taxon IDs: %s\n", paste(unique_taxids[!is.na(unique_taxids)], collapse = ", ")))
+                  }
+                }
+              } else {
+                # Check multiple possible column name variations for numeric taxon IDs
+                possible_taxon_cols <- c(
+                  "Organism (ID)", "organism_id", "Organism_ID", "taxon_id", "Taxon_ID", 
+                  "Taxonomy ID", "taxonomy_id", "NCBI_TaxID", "ncbi_taxid", "OX"
+                )
+                taxon_col <- NULL
+                for (col in possible_taxon_cols) {
+                  if (col %in% names(uniprot_dat_cln)) {
+                    taxon_col <- col
+                    cat(sprintf("   ENRICHMENT Step: Found taxon column: %s\n", taxon_col))
+                    break
+                  }
+                }
+                
+                if (!is.null(taxon_col) && !is.null(acc_col)) {
+                  # Create organism mapping from numeric taxon column
+                  organism_mapping <- tryCatch({
+                    uniprot_dat_cln |>
+                      dplyr::select(uniprot_acc = dplyr::all_of(acc_col), taxon_raw = dplyr::all_of(taxon_col)) |>
+                      dplyr::mutate(
+                        taxon_id = dplyr::case_when(
+                          grepl("ID=", taxon_raw) ~ stringr::str_extract(taxon_raw, "(?<=ID=)\\d+"),
+                          grepl("^\\d+$", as.character(taxon_raw)) ~ as.character(taxon_raw),
+                          TRUE ~ as.character(taxon_raw)
+                        )
+                      ) |>
+                      dplyr::select(uniprot_acc, taxon_id)
+                  }, error = function(e) {
+                    cat(sprintf("   ENRICHMENT Step: Error creating organism_mapping: %s\n", e$message))
+                    NULL
+                  })
+                  
+                  if (!is.null(organism_mapping)) {
+                    cat(sprintf("   ENRICHMENT Step: Created organism_mapping from taxon column (%d entries)\n", nrow(organism_mapping)))
+                  }
+                } else if (!is.null(acc_col)) {
+                  # Fallback: No organism info - create mapping assuming all are target organism
+                  cat("   ENRICHMENT Step: No organism column found - creating single-species mapping\n")
+                  organism_mapping <- uniprot_dat_cln |>
+                    dplyr::select(uniprot_acc = dplyr::all_of(acc_col)) |>
+                    dplyr::mutate(taxon_id = target_taxon)
+                  cat(sprintf("   ENRICHMENT Step: Created single-species organism_mapping (%d entries, all assigned to taxon %s)\n", 
+                             nrow(organism_mapping), target_taxon))
+                }
+              }
+            }
+            
+            # Apply filtering if we have organism mapping
+            if (!is.null(organism_mapping) && nrow(organism_mapping) > 0) {
+              # Get protein IDs belonging to target organism
+              target_proteins <- organism_mapping |>
+                dplyr::filter(taxon_id == target_taxon) |>
+                dplyr::pull(uniprot_acc) |>
+                unique()
+              
+              # Also get clean versions (without isoform numbers)
+              clean_acc <- function(acc) sub("-\\d+$", "", acc)
+              target_proteins_clean <- unique(clean_acc(target_proteins))
+              
+              cat(sprintf("   ENRICHMENT Step: Found %d proteins for target taxon %s\n", 
+                         length(target_proteins), target_taxon))
+              
+              # Filter the DE results S4 object
+              if (!is.null(de_results_for_enrichment@de_data) && length(de_results_for_enrichment@de_data) > 0) {
+                # ✅ FIXED: Safe access to protein_id_column with fallback
+                protein_id_col <- tryCatch({
+                  if (!is.null(enrichment_data$current_s4_object)) {
+                    enrichment_data$current_s4_object@protein_id_column
+                  } else {
+                    "uniprot_acc"  # Default fallback
+                  }
+                }, error = function(e) "uniprot_acc")
+                
+                # Filter each contrast's DE data
+                filtered_de_data <- lapply(names(de_results_for_enrichment@de_data), function(contrast_name) {
+                  contrast_data <- de_results_for_enrichment@de_data[[contrast_name]]
+                  
+                  if (!is.null(contrast_data) && protein_id_col %in% names(contrast_data)) {
+                    original_count <- nrow(contrast_data)
+                    
+                    # Check if any protein in group matches target organism
+                    keep_rows <- sapply(contrast_data[[protein_id_col]], function(protein_ids) {
+                      ids <- unlist(strsplit(as.character(protein_ids), ";"))
+                      ids_clean <- clean_acc(trimws(ids))
+                      any(ids_clean %in% target_proteins_clean) || any(ids %in% target_proteins)
+                    })
+                    
+                    filtered_data <- contrast_data[keep_rows, ]
+                    filtered_count <- nrow(filtered_data)
+                    
+                    cat(sprintf("   ENRICHMENT Step: Contrast '%s': %d -> %d proteins (removed %d non-target organism)\n",
+                               contrast_name, original_count, filtered_count, original_count - filtered_count))
+                    
+                    # Update stats
+                    filter_stats$proteins_before <<- filter_stats$proteins_before + original_count
+                    filter_stats$proteins_after <<- filter_stats$proteins_after + filtered_count
+                    filter_stats$proteins_removed <<- filter_stats$proteins_removed + (original_count - filtered_count)
+                    
+                    return(filtered_data)
+                  }
+                  return(contrast_data)
+                })
+                names(filtered_de_data) <- names(de_results_for_enrichment@de_data)
+                
+                # Update the S4 object with filtered data
+                de_results_for_enrichment@de_data <- filtered_de_data
+                organism_filter_applied <- TRUE
+                
+                cat(sprintf("*** ENRICHMENT Step: Organism filtering complete - kept %d/%d proteins (%.1f%%) ***\n",
+                           filter_stats$proteins_after, filter_stats$proteins_before,
+                           (filter_stats$proteins_after / max(filter_stats$proteins_before, 1)) * 100))
+              }
+            } else {
+              cat("   ENRICHMENT Step: WARNING - No organism mapping available, filtering skipped\n")
+              shiny::showNotification(
+                "Multi-species filtering enabled but no organism mapping available. Proceeding without filtering."
+                , type = "warning"
+                , duration = 8
+              )
+            }
+          } else {
+            cat("   ENRICHMENT Step: Multi-species filtering DISABLED\n")
+          }
+          
+          # Store organism filtering metadata for reporting
+          workflow_data$enrichment_organism_filter <- list(
+            enabled = isTRUE(input$enable_organism_filter)
+            , filter_applied = organism_filter_applied
+            , target_taxon_id = input$organism_taxid
+            , proteins_before = filter_stats$proteins_before
+            , proteins_after = filter_stats$proteins_after
+            , proteins_removed = filter_stats$proteins_removed
+            , timestamp = Sys.time()
+          )
+          
           # ✅ MAIN ENRICHMENT ANALYSIS: Route to appropriate method
           method_info <- current_analysis_method()
           cat(sprintf("   ENRICHMENT Step: Using analysis method: %s\n", method_info$method))
           
-          id_column <- enrichment_data$current_s4_object@protein_id_column
-          if (method_info$method == "gprofiler2" && "gene_name" %in% names(de_results_for_enrichment@de_data[[1]])) {
+          # ✅ FIXED: Safe access to protein_id_column with fallback
+          id_column <- tryCatch({
+            if (!is.null(enrichment_data$current_s4_object)) {
+              enrichment_data$current_s4_object@protein_id_column
+            } else {
+              "uniprot_acc"
+            }
+          }, error = function(e) "uniprot_acc")
+          
+          if (method_info$method == "gprofiler2" && !is.null(de_results_for_enrichment@de_data[[1]]) && "gene_name" %in% names(de_results_for_enrichment@de_data[[1]])) {
             id_column <- "gene_name"
           }
           

@@ -2257,10 +2257,73 @@ createDeResultsLongFormat <- function( lfc_qval_tbl,
     left_join(raw_counts, by = left_join_columns) |>
     left_join(raw_counts, by = right_join_columns,
               suffix = c(".left", ".right")) |>
-  left_join( protein_id_table
+    left_join( protein_id_table
                , by = join_by( !!sym(row_id) == !!sym( colnames( protein_id_table)[1]))) |>
     arrange( comparison, fdr_qvalue, log2FC) |>
     distinct()
+
+  # --- NEW: Rename columns to use sample IDs if single contrast ---
+  # Only perform this renaming if we have a single comparison, to ensure unique mapping
+  if (length(unique(de_proteins_long$comparison)) == 1) {
+
+    # Get the groups involved
+    this_left_group <- unique(de_proteins_long$left_group)
+    this_right_group <- unique(de_proteins_long$right_group)
+
+    # Ensure we have exactly one left and one right group
+    if (length(this_left_group) == 1 && length(this_right_group) == 1) {
+
+      message(sprintf("   createDeResultsLongFormat: Renaming columns for contrast %s vs %s", this_left_group, this_right_group))
+
+      # Helper to get sorted sample IDs for a group
+      get_samples_for_group <- function(dm, grp) {
+        dm |>
+          dplyr::filter(!!sym(group_id) == grp) |>
+          dplyr::arrange(!!sym(sample_id)) |>
+          dplyr::pull(!!sym(sample_id))
+      }
+
+      left_samples <- get_samples_for_group(design_matrix_norm, this_left_group)
+      right_samples <- get_samples_for_group(design_matrix_norm, this_right_group)
+
+      # Helper to generate rename mapping using vectorized operations
+      # Returns: named vector c(new_name = old_name) for dplyr::rename
+      generate_rename_map <- function(df, prefix, suffix, samples, group_name) {
+        indices <- seq_along(samples)
+        old_cols <- paste0(prefix, ".", indices, suffix)
+        new_cols <- paste0(prefix, ".", samples, ".", group_name)
+        
+        # Only include columns that exist in the dataframe
+        valid_idx <- old_cols %in% colnames(df)
+        
+        if (any(valid_idx)) {
+          return(setNames(old_cols[valid_idx], new_cols[valid_idx]))
+        } else {
+          return(character(0))
+        }
+      }
+      
+      # Generate mappings for all 4 sets of columns
+      map1 <- generate_rename_map(de_proteins_long, "log2norm", ".left", left_samples, this_left_group)
+      map2 <- generate_rename_map(de_proteins_long, "raw", ".left", left_samples, this_left_group)
+      map3 <- generate_rename_map(de_proteins_long, "log2norm", ".right", right_samples, this_right_group)
+      map4 <- generate_rename_map(de_proteins_long, "raw", ".right", right_samples, this_right_group)
+      
+      # Combine all mappings
+      all_mappings <- c(map1, map2, map3, map4)
+      
+      # Apply renaming in a single vectorized step
+      if (length(all_mappings) > 0) {
+        de_proteins_long <- de_proteins_long |> dplyr::rename(!!!all_mappings)
+        message(sprintf("   createDeResultsLongFormat: Renamed %d columns", length(all_mappings)))
+      }
+    }
+  }
+  # --- END NEW ---
+
+  # Rename group columns to numerator/denominator for clarity
+  de_proteins_long <- de_proteins_long |>
+    dplyr::rename(numerator = left_group, denominator = right_group)
 
   de_proteins_long
 }
@@ -3455,6 +3518,21 @@ setMethod(f = "outputDeResultsAllContrasts",
   gene_names_column <- checkParamsObjectFunctionSimplify(theObject, "gene_names_column", gene_names_column)
   uniprot_id_column <- checkParamsObjectFunctionSimplify(theObject, "uniprot_id_column", uniprot_id_column)
   
+  # CRITICAL FIX: Normalize paths for Windows (fixes C:// double slash issue)
+  # Only normalize if the path is not NULL and doesn't already exist
+  if (!is.null(de_output_dir)) {
+    # Use normalizePath with mustWork=FALSE to handle non-existent dirs
+    de_output_dir <- gsub("//+", "/", de_output_dir)  # Remove double slashes first
+    de_output_dir <- normalizePath(de_output_dir, winslash = "/", mustWork = FALSE)
+    message(sprintf("   outputDeResultsAllContrasts: Normalized de_output_dir = %s", de_output_dir))
+  }
+  
+  if (!is.null(publication_graphs_dir)) {
+    publication_graphs_dir <- gsub("//+", "/", publication_graphs_dir)  # Remove double slashes first
+    publication_graphs_dir <- normalizePath(publication_graphs_dir, winslash = "/", mustWork = FALSE)
+    message(sprintf("   outputDeResultsAllContrasts: Normalized publication_graphs_dir = %s", publication_graphs_dir))
+  }
+  
   # Ensure output directory exists (CRITICAL FIX!)
   if (!dir.exists(de_output_dir)) {
     dir.create(de_output_dir, recursive = TRUE, showWarnings = FALSE)
@@ -3679,6 +3757,105 @@ setMethod(f = "outputDeResultsAllContrasts",
     
   }, error = function(e) {
     message(sprintf("   outputDeResultsAllContrasts: ERROR creating combined PDF: %s", e$message))
+  })
+  
+  # ============================================================================
+  # NEW: Aggregate and save Num Sig DE Molecules from all contrasts
+  # ============================================================================
+  message("   outputDeResultsAllContrasts: Processing NumSigDeMolecules figures...")
+  
+  tryCatch({
+    # Create NumSigDeMolecules directory
+    numsigde_dir <- file.path(publication_graphs_dir, "NumSigDeMolecules")
+    if (!dir.exists(numsigde_dir)) {
+      dir.create(numsigde_dir, recursive = TRUE, showWarnings = TRUE)
+      if (!dir.exists(numsigde_dir)) {
+        stop("Failed to create NumSigDeMolecules directory: ", numsigde_dir)
+      }
+      message(sprintf("   outputDeResultsAllContrasts: Created NumSigDeMolecules directory: %s", numsigde_dir))
+    }
+    
+    # Collect num_sig_de_molecules tables from all contrasts
+    all_numsig_tables <- list()
+    
+    for (contrast_name in names(de_results_list_all_contrasts)) {
+      contrast_result <- de_results_list_all_contrasts[[contrast_name]]
+      
+      # Check for num_sig_de_molecules_first_go in the result
+      if (!is.null(contrast_result$num_sig_de_molecules_first_go)) {
+        numsig_data <- contrast_result$num_sig_de_molecules_first_go
+        
+        # Extract the table component
+        if (!is.null(numsig_data$table)) {
+          all_numsig_tables[[contrast_name]] <- numsig_data$table
+          message(sprintf("   outputDeResultsAllContrasts: Found NumSigDE table for contrast: %s", contrast_name))
+        }
+      }
+    }
+    
+    # If we have any tables, aggregate and save them
+    if (length(all_numsig_tables) > 0) {
+      # Combine all tables
+      combined_numsig_table <- dplyr::bind_rows(all_numsig_tables)
+      
+      # Write the combined table
+      table_path <- file.path(numsigde_dir, paste0(file_prefix, "_num_sig_de_molecules.tab"))
+      vroom::vroom_write(combined_numsig_table, table_path)
+      message(sprintf("   outputDeResultsAllContrasts: Wrote NumSigDE table: %s", basename(table_path)))
+      
+      # Also write as Excel
+      excel_path <- file.path(numsigde_dir, paste0(file_prefix, "_num_sig_de_molecules.xlsx"))
+      writexl::write_xlsx(combined_numsig_table, excel_path)
+      message(sprintf("   outputDeResultsAllContrasts: Wrote NumSigDE Excel: %s", basename(excel_path)))
+      
+      # Generate combined barplot from the aggregated data
+      # Filter to only significant results
+      sig_only <- combined_numsig_table |>
+        dplyr::filter(status != "Not significant")
+      
+      if (nrow(sig_only) > 0) {
+        num_sig_de_barplot <- sig_only |>
+          ggplot2::ggplot(ggplot2::aes(x = status, y = counts)) +
+          ggplot2::geom_bar(stat = "identity", fill = "steelblue") +
+          ggplot2::geom_text(stat = 'identity', ggplot2::aes(label = counts), vjust = -0.5) +
+          ggplot2::theme_bw() +
+          ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1)) +
+          ggplot2::labs(
+            title = "Number of Significant DE Molecules",
+            x = "Direction",
+            y = "Count"
+          )
+        
+        # Add faceting if we have comparison column
+        if ("comparison" %in% names(sig_only)) {
+          num_sig_de_barplot <- num_sig_de_barplot +
+            ggplot2::facet_wrap(~ comparison, scales = "free_x")
+        }
+        
+        # Calculate appropriate width based on number of comparisons
+        num_comparisons <- length(unique(sig_only$comparison))
+        plot_width <- max(7, (num_comparisons + 2) * 7/6)
+        
+        # Save as PNG
+        png_path <- file.path(numsigde_dir, paste0(file_prefix, "_num_sig_de_molecules.png"))
+        ggplot2::ggsave(png_path, num_sig_de_barplot, width = plot_width, height = 6, dpi = 300)
+        message(sprintf("   outputDeResultsAllContrasts: Saved NumSigDE barplot PNG: %s", basename(png_path)))
+        
+        # Save as PDF
+        pdf_path <- file.path(numsigde_dir, paste0(file_prefix, "_num_sig_de_molecules.pdf"))
+        ggplot2::ggsave(pdf_path, num_sig_de_barplot, width = plot_width, height = 6)
+        message(sprintf("   outputDeResultsAllContrasts: Saved NumSigDE barplot PDF: %s", basename(pdf_path)))
+        
+      } else {
+        message("   outputDeResultsAllContrasts: No significant DE molecules found - skipping barplot")
+      }
+      
+    } else {
+      message("   outputDeResultsAllContrasts: No NumSigDE data found in contrast results - skipping")
+    }
+    
+  }, error = function(e) {
+    message(sprintf("   outputDeResultsAllContrasts: ERROR processing NumSigDeMolecules: %s", e$message))
   })
   
   message("--- Exiting outputDeResultsAllContrasts ---")

@@ -961,6 +961,29 @@ mod_prot_de_server <- function(id, workflow_data, experiment_paths, omic_type, e
             cat("*** LOAD: No QC parameters in session data ***\n")
           }
           
+          # ✅ NEW: Restore mixed species FASTA analysis metadata for enrichment filtering
+          cat("*** LOAD: Restoring mixed species analysis metadata ***\n")
+          if (!is.null(session_data$mixed_species_analysis)) {
+            workflow_data$mixed_species_analysis <- session_data$mixed_species_analysis
+            
+            if (isTRUE(session_data$mixed_species_analysis$enabled)) {
+              cat(sprintf("*** LOAD: Mixed species analysis restored (enabled: TRUE, organism: %s, taxon: %s) ***\n",
+                         session_data$mixed_species_analysis$selected_organism,
+                         session_data$mixed_species_analysis$selected_taxon_id))
+              
+              shiny::showNotification(
+                sprintf("Mixed species FASTA detected: %s. Enrichment filtering will be auto-enabled.",
+                       session_data$mixed_species_analysis$selected_organism),
+                type = "message",
+                duration = 5
+              )
+            } else {
+              cat("*** LOAD: Mixed species analysis restored (enabled: FALSE) ***\n")
+            }
+          } else {
+            cat("*** LOAD: No mixed species analysis metadata in session data ***\n")
+          }
+          
           # Update tab status
           workflow_data$tab_status$normalization <- "complete"
           workflow_data$tab_status$differential_expression <- "pending"

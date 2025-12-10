@@ -1714,6 +1714,34 @@ convertEnsemblToUniprot <- function(ensembl_ids, organism_code) {
 #' }
 #'
 #' @export
+.extractProteinIdFromHeader <- function(id_string) {
+  # 1. Try to match standard UniProt/SwissProt header: sp|ACCESSION|...
+  # or tr|ACCESSION|...
+  if (grepl("^(?:sp|tr)\\|[^|]+\\|", id_string)) {
+    return(sub("^(?:sp|tr)\\|([^|]+)\\|.*", "\\1", id_string))
+  }
+  
+  # 2. Try to match generic pipe format: generic|ACCESSION|...
+  if (grepl("^[^|]+\\|[^|]+\\|", id_string)) {
+    return(sub("^[^|]+\\|([^|]+)\\|.*", "\\1", id_string))
+  }
+  
+  # 3. Take the first whitespace-separated token
+  first_token <- strsplit(id_string, "\\s+")[[1]][1]
+  
+  # 4. Handle Colon-separated prefixes (e.g. TREMBL:A2A5Y0, ENSEMBL:ENSP00000...)
+  # Only if the token contains a colon
+  if (grepl(":", first_token)) {
+    # Split by colon and take the last part
+    # Use tail(..., 1) to get the last element
+    parts <- strsplit(first_token, ":")[[1]]
+    return(tail(parts, 1))
+  }
+  
+  return(first_token)
+}
+
+#' @export
 getUniprotAnnotationsFull <- function(data_tbl,
                                      protein_id_column,
                                      cache_dir,
@@ -1775,8 +1803,11 @@ getUniprotAnnotationsFull <- function(data_tbl,
   # Get unique individual proteins
   unique_proteins <- unique(all_individual_proteins)
   
+  # Clean up IDs (extract from FASTA headers if present)
+  cleaned_ids <- vapply(unique_proteins, .extractProteinIdFromHeader, FUN.VALUE = character(1), USE.NAMES = FALSE)
+
   # Remove potential isoform suffixes for broader matching
-  cleaned_proteins <- unique(gsub("-\\d+$", "", unique_proteins))
+  cleaned_proteins <- unique(gsub("-\\d+$", "", cleaned_ids))
   
   cat(sprintf("Expanded %d protein groups into %d unique individual proteins\n", 
                    length(raw_protein_groups), length(cleaned_proteins)))

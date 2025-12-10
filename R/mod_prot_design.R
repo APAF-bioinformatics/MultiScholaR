@@ -573,12 +573,22 @@ mod_prot_design_server <- function(id, workflow_data, experiment_paths, volumes 
         }
         
         # --- Create S4 Object and Save State (Conditional Orchestration) ---
+        
+        # Create unique tech rep group identifier for imputation grouping
+        # group + replicates uniquely identifies a biological sample
+        # When there ARE tech reps: samples share same tech_rep_group (correct grouping)
+        # When there are NO tech reps: each sample has unique tech_rep_group (no cross-sample imputation)
+        workflow_data$design_matrix <- workflow_data$design_matrix |>
+          dplyr::mutate(tech_rep_group = paste(group, replicates, sep = "_"))
+        logger::log_info("Created tech_rep_group column for proper technical replicate identification")
+        
         if (workflow_type == "DIA") {
           # For peptide workflows (DIA), the data_cln is already in the correct long format.
           # Use the existing constructor for peptide-level data.
           s4_object <- PeptideQuantitativeDataDiann(
             peptide_data = workflow_data$data_cln,
             design_matrix = workflow_data$design_matrix,
+            technical_replicate_id = "tech_rep_group",
             args = workflow_data$config_list
           )
           state_name <- "raw_data_s4"
@@ -650,7 +660,7 @@ mod_prot_design_server <- function(id, workflow_data, experiment_paths, volumes 
             design_matrix = workflow_data$design_matrix,
             sample_id = "Run",
             group_id = "group",
-            technical_replicate_id = "replicates",
+            technical_replicate_id = "tech_rep_group",
             args = workflow_data$config_list
           )
           state_name <- "protein_s4_initial"
@@ -894,12 +904,21 @@ mod_prot_design_server <- function(id, workflow_data, experiment_paths, volumes 
           # --- Create S4 Object and Save State (Conditional Orchestration) ---
           workflow_type <- shiny::isolate(workflow_data$state_manager$workflow_type)
           
+          # Create unique tech rep group identifier for imputation grouping
+          # group + replicates uniquely identifies a biological sample
+          # When there ARE tech reps: samples share same tech_rep_group (correct grouping)
+          # When there are NO tech reps: each sample has unique tech_rep_group (no cross-sample imputation)
+          workflow_data$design_matrix <- workflow_data$design_matrix |>
+            dplyr::mutate(tech_rep_group = paste(group, replicates, sep = "_"))
+          logger::log_info("Created tech_rep_group column for proper technical replicate identification")
+          
           if (workflow_type == "DIA") {
             # For peptide workflows (DIA), the data_cln is already in the correct long format.
             # Use the existing constructor for peptide-level data.
             s4_object <- PeptideQuantitativeDataDiann(
               peptide_data = workflow_data$data_cln,
               design_matrix = workflow_data$design_matrix,
+              technical_replicate_id = "tech_rep_group",
               args = workflow_data$config_list
             )
             state_name <- "raw_data_s4"
@@ -946,7 +965,7 @@ mod_prot_design_server <- function(id, workflow_data, experiment_paths, volumes 
               design_matrix = workflow_data$design_matrix,
               sample_id = "Run",
               group_id = "group",
-              technical_replicate_id = "replicates",
+              technical_replicate_id = "tech_rep_group",
               args = workflow_data$config_list
             )
             state_name <- "protein_s4_initial"

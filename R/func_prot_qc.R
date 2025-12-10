@@ -300,135 +300,107 @@ removeRowsWithMissingValuesPercentHelper <- function(input_table
                                                      , proteins_intensity_cutoff_percentile = 1
                                                      , temporary_abundance_column = "Abundance") {
 
-  print(">>> Entering removeRowsWithMissingValuesPercentHelper <<<")
+  message("╔═══════════════════════════════════════════════════════════════════════════╗")
+  message("║  DEBUG66: Entering removeRowsWithMissingValuesPercentHelper (OPTIMIZED)   ║")
+  message("╚═══════════════════════════════════════════════════════════════════════════╝")
   
-  print(paste("      removeRowsWithMissingValuesPercentHelper Arg: cols =", deparse(cols)))
-  print(sprintf("      removeRowsWithMissingValuesPercentHelper Arg: groupwise_percentage_cutoff = %g", groupwise_percentage_cutoff))
-  print(sprintf("      removeRowsWithMissingValuesPercentHelper Arg: max_groups_percentage_cutoff = %g", max_groups_percentage_cutoff))
-  print(sprintf("      removeRowsWithMissingValuesPercentHelper Arg: proteins_intensity_cutoff_percentile = %g", proteins_intensity_cutoff_percentile))
-  print(sprintf("      removeRowsWithMissingValuesPercentHelper Arg: temporary_abundance_column = %s", temporary_abundance_column))
+  # 1. Setup strings and symbols
+  sample_id_str <- rlang::as_string(rlang::ensym(sample_id))
+  row_id_str <- rlang::as_string(rlang::ensym(row_id))
+  group_var_str <- rlang::as_string(rlang::ensym(grouping_variable))
   
-  print(sprintf("      Data State (input_table): Dims = %d rows, %d cols", nrow(input_table), ncol(input_table)))
-  print("      Data State (input_table) Structure:")
-  utils::str(input_table)
-  print("      Data State (input_table) Head:")
-  print(head(input_table))
+  message(sprintf("   DEBUG66: Pivoting %d rows x %d cols. Memory: %.1f MB", 
+                  nrow(input_table), ncol(input_table), sum(gc()[,2])))
   
-  print(sprintf("      Data State (design_matrix): Dims = %d rows, %d cols", nrow(design_matrix), ncol(design_matrix)))
-  print("      Data State (design_matrix) Structure:")
-  utils::str(design_matrix)
-  print("      Data State (design_matrix) Head:")
-  print(head(design_matrix))
-
-  # Ensure the sample ID column name is a string for robust use
-  sample_id_col_name_string <- rlang::as_string(rlang::ensym(sample_id))
-  print(sprintf("      removeRowsWithMissingValuesPercentHelper: sample_id_col_name_string = %s", sample_id_col_name_string))
-
-  print("      removeRowsWithMissingValuesPercentHelper Step: Pivoting data to long format...")
+  # 2. Prepare minimal design matrix (Select only needed columns to save memory in join)
+  design_matrix_minimal <- design_matrix |>
+    dplyr::select(!!rlang::ensym(sample_id), !!rlang::ensym(grouping_variable)) |>
+    dplyr::mutate(!!rlang::sym(sample_id_str) := as.character(!!rlang::sym(sample_id_str)))
+  
+  # 3. Pivot and Join in one pipeline to reduce intermediate copies
+  # Use .data[[]] for robust column access within dplyr
   abundance_long <- input_table |>
-    tidyr::pivot_longer(cols = !all_of(cols) # Use !all_of() with the cols string directly
-                 , names_to = sample_id_col_name_string # Use the explicit string name
-                 , values_to = temporary_abundance_column  ) |>
-    # Convert the newly created sample ID column to character, using its string name
-    dplyr::mutate( !!rlang::sym(sample_id_col_name_string) := as.character(!!rlang::sym(sample_id_col_name_string)) ) |>
-    dplyr::mutate( !!sym(temporary_abundance_column) := dplyr::case_when (is.nan(!!sym(temporary_abundance_column)) ~ NA_real_
-                                                            , TRUE ~ !!sym(temporary_abundance_column) ) ) |>
-    dplyr::left_join(design_matrix |>
-                # Convert the sample ID column in design_matrix to character
-                # {{sample_id}} correctly refers to the column (e.g., 'Run') in design_matrix here
-                dplyr::mutate( {{sample_id}} := as.character( {{sample_id}} ) )
-              , by = sample_id_col_name_string ) # Join using the explicit string name
-  
-  print("      removeRowsWithMissingValuesPercentHelper Step: Long format data created.")
-  print(sprintf("      Data State (abundance_long): Dims = %d rows, %d cols", nrow(abundance_long), ncol(abundance_long)))
-  print("      Data State (abundance_long) Structure:")
-  utils::str(abundance_long)
-  print("      Data State (abundance_long) Head:")
-  print(head(abundance_long))
+    tidyr::pivot_longer(
+      cols = !all_of(cols),
+      names_to = sample_id_str,
+      values_to = temporary_abundance_column
+    ) |>
+    dplyr::mutate(
+      !!rlang::sym(sample_id_str) := as.character(!!rlang::sym(sample_id_str)),
+      !!rlang::sym(temporary_abundance_column) := dplyr::if_else(
+        is.nan(!!rlang::sym(temporary_abundance_column)), 
+        NA_real_, 
+        !!rlang::sym(temporary_abundance_column)
+      )
+    ) |>
+    dplyr::left_join(design_matrix_minimal, by = sample_id_str)
 
-  print("      removeRowsWithMissingValuesPercentHelper Step: Calculating intensity threshold...")
-  # Get non-missing values for threshold calculation
-  valid_values <- abundance_long |>
-    dplyr::filter( !is.nan(!!sym(temporary_abundance_column)) & !is.infinite(!!sym(temporary_abundance_column))) |>
-    dplyr::pull(!!sym(temporary_abundance_column))
+  message(sprintf("   DEBUG66: Pivot/Join complete. Long table: %d rows. Memory: %.1f MB", 
+                  nrow(abundance_long), sum(gc()[,2])))
   
-  print(sprintf("      removeRowsWithMissingValuesPercentHelper: Found %d valid (non-NaN, non-Inf) abundance values", length(valid_values)))
-  print(sprintf("      removeRowsWithMissingValuesPercentHelper: Valid values range: %g to %g", min(valid_values, na.rm=TRUE), max(valid_values, na.rm=TRUE)))
-  
-  min_protein_intensity_threshold <- ceiling( quantile( valid_values
-                                                        , na.rm=TRUE
-                                                        , probs = c(proteins_intensity_cutoff_percentile/100) ))[1]
-  
-  print(sprintf("      removeRowsWithMissingValuesPercentHelper: Calculated min_protein_intensity_threshold = %g (percentile %g%%)", 
-                 min_protein_intensity_threshold, proteins_intensity_cutoff_percentile))
+  # Force garbage collection after big join
+  gc()
 
-  print("      removeRowsWithMissingValuesPercentHelper Step: Counting values per group...")
+  # 4. Calculate Threshold
+  # Extract vector directly to avoid data.frame overhead for simple stats
+  valid_values <- abundance_long[[temporary_abundance_column]]
+  valid_values <- valid_values[!is.na(valid_values) & !is.nan(valid_values) & !is.infinite(valid_values)]
+  
+  min_protein_intensity_threshold <- if(length(valid_values) > 0) {
+    ceiling(quantile(valid_values, probs = proteins_intensity_cutoff_percentile/100, na.rm = TRUE))[1]
+  } else {
+    0
+  }
+  message(sprintf("   DEBUG66: Threshold calculated: %g", min_protein_intensity_threshold))
+
+  # 5. Count samples per group
   count_values_per_group <- abundance_long |>
-    distinct( {{ sample_id }}, {{ grouping_variable }} ) |>
-    group_by(  {{ grouping_variable }} ) |>
-    summarise(  num_per_group = n()) |>
-    ungroup()
-  
-  print("      Data State (count_values_per_group):")
-  print(count_values_per_group)
+    dplyr::distinct(!!rlang::sym(sample_id_str), !!rlang::sym(group_var_str)) |>
+    dplyr::count(!!rlang::sym(group_var_str), name = "num_per_group")
 
-  print("      removeRowsWithMissingValuesPercentHelper Step: Calculating missing values per group...")
-  print("      removeRowsWithMissingValuesPercentHelper: Missing logic = is.na(value) OR value <= threshold")
-  count_values_missing_per_group <- abundance_long |>
-    mutate(is_missing = ifelse( !is.na( !!sym(temporary_abundance_column))
-                                & !!sym(temporary_abundance_column) > min_protein_intensity_threshold
-                                , 0, 1)) |>
-    group_by( {{ row_id }}, {{ grouping_variable }} ) |>
-    summarise( num_missing_per_group = sum(is_missing)) |>
-    ungroup()
-  
-  print(sprintf("      Data State (count_values_missing_per_group): Dims = %d rows, %d cols", nrow(count_values_missing_per_group), ncol(count_values_missing_per_group)))
-  print("      Data State (count_values_missing_per_group) Head:")
-  print(head(count_values_missing_per_group, 10))
+  # 6. Calculate missing stats
+  # Perform aggregation directly
+  count_percent_missing_per_group <- abundance_long |>
+    dplyr::mutate(is_missing = dplyr::if_else(
+      !is.na(!!rlang::sym(temporary_abundance_column)) & 
+      !!rlang::sym(temporary_abundance_column) > min_protein_intensity_threshold, 
+      0, 1
+    )) |>
+    dplyr::group_by(!!rlang::sym(row_id_str), !!rlang::sym(group_var_str)) |>
+    dplyr::summarise(num_missing_per_group = sum(is_missing), .groups = "drop") |>
+    dplyr::left_join(count_values_per_group, by = group_var_str) |>
+    dplyr::mutate(perc_missing_per_group = num_missing_per_group / num_per_group * 100)
 
-  print("      removeRowsWithMissingValuesPercentHelper Step: Calculating percentage missing per group...")
-  count_percent_missing_per_group <- count_values_missing_per_group |>
-    full_join( count_values_per_group,
-               by = join_by( {{ grouping_variable }} )) |>
-    mutate(  perc_missing_per_group = num_missing_per_group / num_per_group * 100 )
+  # 7. Identify proteins to remove
+  total_num_of_groups <- nrow(count_values_per_group)
   
-  print(sprintf("      Data State (count_percent_missing_per_group): Dims = %d rows, %d cols", nrow(count_percent_missing_per_group), ncol(count_percent_missing_per_group)))
-  print("      Data State (count_percent_missing_per_group) Head:")
-  print(head(count_percent_missing_per_group, 10))
+  proteins_to_remove <- count_percent_missing_per_group |>
+    dplyr::filter(perc_missing_per_group > groupwise_percentage_cutoff) |>
+    dplyr::group_by(!!rlang::sym(row_id_str)) |>
+    dplyr::summarise(percent_groups_failed = n() / total_num_of_groups * 100, .groups = "drop") |>
+    dplyr::filter(percent_groups_failed > max_groups_percentage_cutoff)
+    
+  num_removed <- nrow(proteins_to_remove)
+  message(sprintf("   DEBUG66: Proteins to remove: %d", num_removed))
 
-  total_num_of_groups <- count_values_per_group |> nrow()
-  print(sprintf("      removeRowsWithMissingValuesPercentHelper: total_num_of_groups = %d", total_num_of_groups))
+  # 8. Filter original table
+  if (num_removed > 0) {
+    filtered_tbl <- input_table |>
+      dplyr::anti_join(proteins_to_remove, by = row_id_str)
+  } else {
+    filtered_tbl <- input_table
+  }
 
-  print("      removeRowsWithMissingValuesPercentHelper Step: Identifying proteins to remove...")
-  print(sprintf("      removeRowsWithMissingValuesPercentHelper: Filtering for perc_missing_per_group > %g%%", groupwise_percentage_cutoff))
+  message(sprintf("   DEBUG66: Final table: %d rows. Memory: %.1f MB", 
+                  nrow(filtered_tbl), sum(gc()[,2])))
   
-  # Show some examples of proteins failing the groupwise threshold
-  failing_groupwise <- count_percent_missing_per_group |>
-    dplyr::filter(groupwise_percentage_cutoff <  perc_missing_per_group)
+  # Final GC
+  gc()
   
-  print("      removeRowsWithMissingValuesPercentHelper: Examples of proteins failing groupwise threshold:")
-  print(head(failing_groupwise, 15))
+  message("╔═══════════════════════════════════════════════════════════════════════════╗")
+  message("║  DEBUG66: Exiting removeRowsWithMissingValuesPercentHelper                ║")
+  message("╚═══════════════════════════════════════════════════════════════════════════╝")
   
-  remove_rows_temp <- failing_groupwise |>
-    group_by( { { row_id } }) |>
-    summarise( percent  = n()/total_num_of_groups*100 ) |>
-    ungroup() |>
-    dplyr::filter(percent > max_groups_percentage_cutoff)
-  
-  print(sprintf("      Data State (remove_rows_temp): Dims = %d rows, %d cols", nrow(remove_rows_temp), ncol(remove_rows_temp)))
-  print(sprintf("      removeRowsWithMissingValuesPercentHelper: %d proteins will be REMOVED (failing in >%g%% of groups)", nrow(remove_rows_temp), max_groups_percentage_cutoff))
-  print("      Data State (remove_rows_temp) - Proteins to remove:")
-  print(remove_rows_temp)
-
-  print("      removeRowsWithMissingValuesPercentHelper Step: Applying anti_join to remove proteins...")
-  filtered_tbl <- input_table |>
-    dplyr::anti_join(remove_rows_temp, by = join_by({{row_id}}))
-
-  print(sprintf("      removeRowsWithMissingValuesPercentHelper: Original table had %d proteins", nrow(input_table)))
-  print(sprintf("      removeRowsWithMissingValuesPercentHelper: Filtered table has %d proteins", nrow(filtered_tbl)))
-  print(sprintf("      removeRowsWithMissingValuesPercentHelper: ACTUALLY REMOVED: %d proteins", nrow(input_table) - nrow(filtered_tbl)))
-
-  print("<<< Exiting removeRowsWithMissingValuesPercentHelper <<<")
   return(filtered_tbl)
 
 }
@@ -827,6 +799,57 @@ calulatePearsonCorrelation <- function( ms_filename_x, ms_filename_y, input_tabl
 
 
 # ----------------------------------------------------------------------------
+# calculatePearsonCorrelationMatrix
+# ----------------------------------------------------------------------------
+#' @title Calculate Pearson Correlation Matrix (Optimized)
+#' @description Computes all pairwise sample correlations using a single matrix operation.
+#' Much faster than iterative approach for large datasets. Pivots data to wide format
+#' (proteins x samples) and computes the full correlation matrix in one vectorized call.
+#' @param input_table Long-format data table with sample, protein, and value columns
+#' @param sample_id_column String name of sample ID column
+#' @param protein_id_column String name of protein ID column
+#' @param peptide_normalised_column String name of normalized value column
+#' @return Correlation matrix (samples x samples)
+#' @importFrom tidyr pivot_wider
+#' @export
+calculatePearsonCorrelationMatrix <- function(input_table, 
+                                               sample_id_column,
+                                               protein_id_column,
+                                               peptide_normalised_column) {
+  
+  message("*** PEARSON MATRIX: Pivoting data to wide format... ***")
+  pivot_start <- Sys.time()
+  
+
+  # Pivot to wide: rows = proteins, columns = samples
+  wide_matrix <- input_table |>
+    tidyr::pivot_wider(
+      id_cols = dplyr::all_of(protein_id_column),
+      names_from = dplyr::all_of(sample_id_column),
+      values_from = dplyr::all_of(peptide_normalised_column),
+      values_fn = mean  # Handle any duplicates
+    ) |>
+    dplyr::select(-dplyr::all_of(protein_id_column)) |>
+    as.matrix()
+  
+  pivot_elapsed <- as.numeric(difftime(Sys.time(), pivot_start, units = "secs"))
+  message(sprintf("*** PEARSON MATRIX: Pivot completed in %.2f seconds (%d proteins x %d samples) ***", 
+                  pivot_elapsed, nrow(wide_matrix), ncol(wide_matrix)))
+  
+  message("*** PEARSON MATRIX: Computing correlation matrix... ***")
+  cor_start <- Sys.time()
+  
+  # Single cor() call computes ALL pairwise correlations
+  cor_matrix <- cor(wide_matrix, use = "pairwise.complete.obs")
+  
+  cor_elapsed <- as.numeric(difftime(Sys.time(), cor_start, units = "secs"))
+  message(sprintf("*** PEARSON MATRIX: Correlation matrix computed in %.2f seconds ***", cor_elapsed))
+  
+  cor_matrix
+}
+
+
+# ----------------------------------------------------------------------------
 # calculatePearsonCorrelationOptimized
 # ----------------------------------------------------------------------------
 #' @title Calculate Pearson Correlation (Optimized for pre-filtered data)
@@ -913,65 +936,62 @@ calulatePearsonCorrelationForSamplePairsHelper <- function( samples_id_tbl
   num_pairs <- nrow(pairs_for_comparison)
   message(sprintf("*** PEARSON HELPER: Generated %d sample pairs for correlation analysis ***", num_pairs))
 
-  # PERFORMANCE OPTIMIZATION: Pre-partition input_table by sample for O(1) lookup
-  # This eliminates 435+ redundant filter operations (one per pair)
-  message("*** PEARSON HELPER: Pre-partitioning data by sample for efficient lookup ***")
-  partition_start <- Sys.time()
-  
-  # Split data by sample ID
-  sample_data_list <- input_table |>
-    dplyr::group_split(!!rlang::sym(sample_id_column))
-  
-  # Extract sample names and assign as names
-  names(sample_data_list) <- purrr::map_chr(
-    sample_data_list,
-    ~unique(.x[[sample_id_column]])[1]
-  )
-  
-  sample_data_lookup <- sample_data_list
-  
-  partition_elapsed <- as.numeric(difftime(Sys.time(), partition_start, units = "secs"))
-  message(sprintf("*** PEARSON HELPER: Data partitioning completed in %.2f seconds ***", partition_elapsed))
-  message(sprintf("*** PEARSON HELPER: Created lookup for %d samples ***", length(sample_data_lookup)))
-  
-  # Log processing configuration
-  message("*** PEARSON HELPER: Beginning pairwise correlation calculations (optimized, sequential)... ***")
-  
-  # Track calculation time
-  calc_start_time <- Sys.time()
+  message(sprintf("--- DEBUG66 [calulatePearsonCorrelationForSamplePairsHelper]: Processing %d pairs ---", num_pairs))
 
-  # Extract column vectors for correlation calculation
+  # Track total calculation time
+  total_start_time <- Sys.time()
+  
+  # MATRIX-BASED OPTIMIZATION: Compute all correlations in one vectorized operation
+  # This replaces the slow group_split + iterative approach
+  message("*** PEARSON HELPER: Using matrix-based correlation (fast vectorized approach) ***")
+  
+  # Compute full correlation matrix in one call
+  message(sprintf("   [calulatePearsonCorrelationForSamplePairsHelper] Step: Computing correlation matrix..."))
+  mat_start <- Sys.time()
+  cor_matrix <- calculatePearsonCorrelationMatrix(
+    input_table = input_table,
+    sample_id_column = sample_id_column,
+    protein_id_column = protein_id_column,
+    peptide_normalised_column = peptide_normalised_column
+  )
+  mat_end <- Sys.time()
+  message(sprintf("   [calulatePearsonCorrelationForSamplePairsHelper] Matrix computed. Dim: %d x %d. Duration: %.2f secs", 
+                  nrow(cor_matrix), ncol(cor_matrix), as.numeric(difftime(mat_end, mat_start, units = "secs"))))
+  
+  # Extract correlations for the specific pairs we need
+  message("*** PEARSON HELPER: Extracting correlations for specified pairs... ***")
+  extract_start <- Sys.time()
+  
   sample_pairs_x <- pairs_for_comparison[[paste0(run_id_column, ".x")]]
   sample_pairs_y <- pairs_for_comparison[[paste0(run_id_column, ".y")]]
   
-  # Calculate correlations using optimized sequential processing
+  message(sprintf("   [calulatePearsonCorrelationForSamplePairsHelper] Extracting %d values from matrix...", length(sample_pairs_x)))
+
+  # Vectorized extraction from correlation matrix
   correlations <- purrr::map2_dbl(
     sample_pairs_x,
     sample_pairs_y,
     \(x, y) {
-      # Direct lookup from pre-partitioned data - no filtering needed!
-      data_x <- sample_data_lookup[[x]]
-      data_y <- sample_data_lookup[[y]]
-      
-      # Fast correlation calculation
-      calculatePearsonCorrelationOptimized(
-        data_x = data_x,
-        data_y = data_y,
-        protein_id_column = protein_id_column,
-        peptide_sequence_column = peptide_sequence_column,
-        peptide_normalised_column = peptide_normalised_column
-      )
+      # Direct lookup from correlation matrix - O(1) per pair
+      if (x %in% colnames(cor_matrix) && y %in% colnames(cor_matrix)) {
+        cor_matrix[x, y]
+      } else {
+        NA_real_
+      }
     }
   )
+  
+  extract_elapsed <- as.numeric(difftime(Sys.time(), extract_start, units = "secs"))
+  message(sprintf("*** PEARSON HELPER: Pair extraction completed in %.2f seconds ***", extract_elapsed))
   
   # Add results back to dataframe
   pearson_correlation_per_pair <- pairs_for_comparison |>
     mutate(pearson_correlation = correlations)
   
   # Log completion with timing statistics
-  calc_elapsed <- as.numeric(difftime(Sys.time(), calc_start_time, units = "secs"))
-  message(sprintf("*** PEARSON HELPER: Completed %d correlations in %.1f seconds (%.2f pairs/second) ***", 
-                  num_pairs, calc_elapsed, num_pairs / calc_elapsed))
+  total_elapsed <- as.numeric(difftime(Sys.time(), total_start_time, units = "secs"))
+  message(sprintf("*** PEARSON HELPER: Completed %d correlations in %.1f seconds (matrix approach) ***", 
+                  num_pairs, total_elapsed))
 
   pearson_correlation_per_pair
 
@@ -1069,11 +1089,18 @@ filterSamplesByProteinCorrelationThresholdHelper <- function(pearson_correlation
                                                        , protein_id_column = Protein.Ids
                                                        , correlation_column = pearson_correlation ) {
 
+  message("--- DEBUG66 [filterSamplesByProteinCorrelationThresholdHelper]: Entry ---")
+  message(sprintf("   [filterSamplesByProteinCorrelationThresholdHelper] protein_intensity_table dims: %d x %d", 
+                  nrow(protein_intensity_table), ncol(protein_intensity_table)))
+  message(sprintf("   [filterSamplesByProteinCorrelationThresholdHelper] Threshold: %.2f", min_pearson_correlation_threshold))
+
   # All Samples
   all_samples <-  pearson_correlation_per_pair |>
     pivot_longer( cols =c({{filename_column_x}}, {{filename_column_y}})
                   , values_to = "temp_column" ) |>
     dplyr::distinct( temp_column )
+  
+  message(sprintf("   [filterSamplesByProteinCorrelationThresholdHelper] Total unique samples in pairs: %d", nrow(all_samples)))
 
   # Samples to keep include all those pairs of samples with correlation score passing threshold
   samples_to_keep <-  pearson_correlation_per_pair |>
@@ -1081,20 +1108,44 @@ filterSamplesByProteinCorrelationThresholdHelper <- function(pearson_correlation
     pivot_longer( cols =c({{filename_column_x}}, {{filename_column_y}})
                   , values_to = "temp_column" ) |>
     dplyr::distinct( temp_column )
+  
+  message(sprintf("   [filterSamplesByProteinCorrelationThresholdHelper] Samples passing correlation threshold: %d", nrow(samples_to_keep)))
 
   # Samples to keep anyway
-  samples_to_keep_anyway <-setdiff( setdiff(colnames(protein_intensity_table), (all_samples |> dplyr::pull( temp_column )))
-                                    ,  as_string({{protein_id_column}})  )
-
-  print( samples_to_keep_anyway)
+  # Use robust method to get protein ID column name as string to prevent bad_alloc on setdiff
+  pid_col_name <- tryCatch({
+    if (is.character(protein_id_column)) protein_id_column else rlang::as_string(rlang::ensym(protein_id_column))
+  }, error = function(e) rlang::as_string(rlang::ensym(protein_id_column)))
+  
+  message(sprintf("   [filterSamplesByProteinCorrelationThresholdHelper] Protein ID Column Name resolved to: '%s'", pid_col_name))
+  
+  # DEBUG: Trace setdiff inputs
+  all_cols <- colnames(protein_intensity_table)
+  pair_samples <- all_samples |> dplyr::pull(temp_column)
+  
+  message(sprintf("   [filterSamplesByProteinCorrelationThresholdHelper] Calculating 'samples_to_keep_anyway'..."))
+  message(sprintf("      - Total columns: %d", length(all_cols)))
+  message(sprintf("      - Pair samples: %d", length(pair_samples)))
+  
+  cols_not_in_pairs <- setdiff(all_cols, pair_samples)
+  message(sprintf("      - Cols NOT in pairs: %d", length(cols_not_in_pairs)))
+  
+  samples_to_keep_anyway <- setdiff(cols_not_in_pairs, pid_col_name)
+  message(sprintf("      - Final 'samples_to_keep_anyway' (excluding ID col): %d", length(samples_to_keep_anyway)))
+  
+  print(samples_to_keep_anyway)
 
   # Samples in the table to keep
   samples_to_keep_subset <- colnames(protein_intensity_table)[colnames(protein_intensity_table) %in% (samples_to_keep |> dplyr::pull( temp_column ))]
+  message(sprintf("   [filterSamplesByProteinCorrelationThresholdHelper] Samples from pairs to keep: %d", length(samples_to_keep_subset)))
 
-  samples_above_correlation_theshold <- protein_intensity_table |>
+  samples_above_correlation_threshold <- protein_intensity_table |>
     dplyr::select( {{protein_id_column}}, all_of( c(samples_to_keep_anyway, samples_to_keep_subset)))
+  
+  message(sprintf("   [filterSamplesByProteinCorrelationThresholdHelper] Result dims: %d x %d", 
+                  nrow(samples_above_correlation_threshold), ncol(samples_above_correlation_threshold)))
 
-  samples_above_correlation_theshold
+  samples_above_correlation_threshold
 
 }
 
@@ -1596,6 +1647,12 @@ updateProteinFiltering <- function(data, step_name,
     
     # Get the current filtering_progress object
     filtering_progress <- get("filtering_progress", envir = .GlobalEnv)
+
+    # DEBUG66: Memory check
+    message("--- DEBUG66 [updateProteinFiltering]: Entry ---")
+    message(sprintf("   [updateProteinFiltering] Step Name: %s", step_name))
+    message(sprintf("   [updateProteinFiltering] filtering_progress size: %s", format(object.size(filtering_progress), units = "auto")))
+    gc()
     
     # Path derivation and save_plots logic
     derived_time_dir <- NULL
@@ -1739,6 +1796,7 @@ updateProteinFiltering <- function(data, step_name,
     assign("filtering_progress", filtering_progress, envir = .GlobalEnv)
     
     # Create base protein count plot (always shown)
+    message("   [updateProteinFiltering] Generating P1 (Protein Count Bar)...")
     p1 <- ggplot(data.frame(
         step = factor(filtering_progress@steps, levels = filtering_progress@steps),
         proteins = filtering_progress@proteins
@@ -1759,6 +1817,7 @@ updateProteinFiltering <- function(data, step_name,
         )
     
     # Create proteins per run plot (always shown)
+    message("   [updateProteinFiltering] Generating P4 (Proteins Per Run Line)...")
     # First ensure all data frames in the list have consistent column types
     proteins_per_run_list <- lapply(filtering_progress@proteins_per_run, function(df) {
         df$Run <- as.character(df$Run)
@@ -1766,7 +1825,11 @@ updateProteinFiltering <- function(data, step_name,
         return(df)
     })
     
-    p4 <- bind_rows(proteins_per_run_list, .id = "step") |>
+    message(sprintf("      [P4] Binding %d data frames...", length(proteins_per_run_list)))
+    p4_data <- bind_rows(proteins_per_run_list, .id = "step") 
+    message(sprintf("      [P4] Combined data rows: %d", nrow(p4_data)))
+    
+    p4 <- p4_data |>
         mutate(step = filtering_progress@steps[as.numeric(step)]) |>
         group_by(Run) |>
         mutate(avg_proteins = mean(n_proteins)) |>
@@ -1790,6 +1853,8 @@ updateProteinFiltering <- function(data, step_name,
             panel.grid.major.x = element_blank()
         ) +
         scale_color_manual(values = get_color_palette(length(filtering_progress@steps), "steelblue"))
+    
+    message("   [updateProteinFiltering] P4 Generated.")
     
     # Initialize peptide plots
     if (is_protein_quant) {
@@ -1985,56 +2050,77 @@ updateProteinFiltering <- function(data, step_name,
     
     # Save plots if derived_time_dir is valid and save_plots is TRUE
     if (save_plots) {
+        message(sprintf("   [updateProteinFiltering] Saving individual plots to %s...", derived_time_dir))
         for (plot_name in names(plot_list)) {
             filename <- file.path(derived_time_dir,
                                 sprintf("%s_%s.png", step_name, plot_name))
-            ggsave(filename, 
-                   plot = plot_list[[plot_name]], 
-                   width = 10, 
-                   height = 8, 
-                   dpi = 300)
+            message(sprintf("      Saving %s...", plot_name))
+            tryCatch({
+                ggsave(filename, 
+                       plot = plot_list[[plot_name]], 
+                       width = 10, 
+                       height = 8, 
+                       dpi = 300)
+            }, error = function(e) message(sprintf("Warning: Failed to save %s: %s", plot_name, e$message)))
         }
     }
     
     # Return/display plots based on return_grid parameter
     if(return_grid) {
-        if (!is_protein_quant || !all(is.na(filtering_progress@total_peptides))) {
-            # Create full grid with all plots if peptide data exists
-            grid1 <- gridExtra::arrangeGrob(p1, p2, p3, ncol = 3)
-            grid2 <- gridExtra::arrangeGrob(p4, ncol = 1)
-            grid3 <- gridExtra::arrangeGrob(p5, ncol = 1)
+        message("   [updateProteinFiltering] Generating final grid...")
+        message(sprintf("      Memory before grid: %s", format(sum(gc()[,2]), units="auto")))
+        
+        tryCatch({
+            if (!is_protein_quant || !all(is.na(filtering_progress@total_peptides))) {
+                # Create full grid with all plots if peptide data exists
+                message("      Combining all 5 plots...")
+                grid1 <- gridExtra::arrangeGrob(p1, p2, p3, ncol = 3)
+                grid2 <- gridExtra::arrangeGrob(p4, ncol = 1)
+                grid3 <- gridExtra::arrangeGrob(p5, ncol = 1)
+                
+                # Use arrangeGrob to prevent immediate drawing, which might double-render
+                grid_plot <- gridExtra::arrangeGrob(
+                    grid1,
+                    grid2,
+                    grid3,
+                    heights = c(1, 1, 1)
+                )
+            } else {
+                # For protein_quant_table without peptide data, only show protein plots
+                message("      Combining protein plots (p1, p4)...")
+                grid_plot <- gridExtra::arrangeGrob(
+                    p1,
+                    p4,
+                    ncol = 1,
+                    heights = c(1, 1)
+                )
+            }
             
-            grid_plot <- gridExtra::grid.arrange(
-                grid1,
-                grid2,
-                grid3,
-                heights = c(1, 1, 1)
-            )
-        } else {
-            # For protein_quant_table without peptide data, only show protein plots
-            grid_plot <- gridExtra::grid.arrange(
-                p1,
-                p4,
-                ncol = 1,
-                heights = c(1, 1)
-            )
-        }
+            message(sprintf("      Memory after grid creation: %s", format(sum(gc()[,2]), units="auto")))
+            
+            # Save the grid if derived_time_dir is valid and save_plots is TRUE
+            if (save_plots) {
+                message("      Saving combined grid plot...")
+                filename <- file.path(derived_time_dir,
+                                    sprintf("%s_combined_plots.png", step_name))
+                ggsave(filename, 
+                       plot = grid_plot, 
+                       width = 15, 
+                       height = if (!is_protein_quant || !all(is.na(filtering_progress@total_peptides))) 18 else 12,
+                       dpi = 300)
+            }
+            
+            return(grid_plot)
+            
+        }, error = function(e) {
+            message(sprintf("ERROR in grid generation: %s", e$message))
+            return(NULL)
+        })
         
-        # Save the grid if derived_time_dir is valid and save_plots is TRUE
-        if (save_plots) {
-            filename <- file.path(derived_time_dir,
-                                sprintf("%s_combined_plots.png", step_name))
-            ggsave(filename, 
-                   plot = grid_plot, 
-                   width = 15, 
-                   height = if (!is_protein_quant || !all(is.na(filtering_progress@total_peptides))) 18 else 12,
-                   dpi = 300)
-        }
-        
-        return(grid_plot)
     } else {
         # Print each plot individually
-        for(plot_obj in plot_list) { # Changed loop variable to avoid conflict with base::plot
+        message("   [updateProteinFiltering] Printing individual plots...")
+        for(plot_obj in plot_list) { 
             print(plot_obj)
         }
         # Return the list invisibly
