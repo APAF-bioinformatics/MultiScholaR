@@ -1791,61 +1791,222 @@ setMethod( f = "removeRowsWithMissingValuesPercent"
                                   , max_groups_percentage_cutoff = NULL
                                   , proteins_intensity_cutoff_percentile = NULL) {
 
-             print("--- Entering removeRowsWithMissingValuesPercent S4 Method ---")
+             message("╔═══════════════════════════════════════════════════════════════════════════╗")
+             message("║  DEBUG66: Entering removeRowsWithMissingValuesPercent S4 Method          ║")
+             message("╚═══════════════════════════════════════════════════════════════════════════╝")
+             flush.console()
              
+             # Memory tracking - Entry checkpoint
+             entry_mem <- checkMemoryBoth("Entry", context = "removeRowsWithMissingValuesPercent")
+             
+             message("   DEBUG66 STEP 1: Extracting slots from S4 object...")
+             flush.console()
+             
+             message("      DEBUG66: Extracting protein_quant_table...")
+             flush.console()
              protein_quant_table <- theObject@protein_quant_table
+             message(sprintf("      DEBUG66: protein_quant_table extracted. Class: %s", class(protein_quant_table)[1]))
+             flush.console()
+             
+             message("      DEBUG66: Extracting protein_id_column...")
+             flush.console()
              protein_id_column <- theObject@protein_id_column
+             message(sprintf("      DEBUG66: protein_id_column = %s", protein_id_column))
+             flush.console()
+             
+             message("      DEBUG66: Extracting design_matrix...")
+             flush.console()
              design_matrix <- theObject@design_matrix
+             message(sprintf("      DEBUG66: design_matrix extracted. Class: %s", class(design_matrix)[1]))
+             flush.console()
+             
+             message("      DEBUG66: Extracting group_id...")
+             flush.console()
              group_id <- theObject@group_id
+             message(sprintf("      DEBUG66: group_id = %s", group_id))
+             flush.console()
+             
+             message("      DEBUG66: Extracting sample_id...")
+             flush.console()
              sample_id <- theObject@sample_id
+             message(sprintf("      DEBUG66: sample_id = %s", sample_id))
+             flush.console()
+             
+             message("      DEBUG66: Extracting technical_replicate_id...")
+             flush.console()
              replicate_group_column <- theObject@technical_replicate_id
+             message(sprintf("      DEBUG66: replicate_group_column = %s", ifelse(is.null(replicate_group_column), "NULL", replicate_group_column)))
+             flush.console()
 
-             print("   removeRowsWithMissingValuesPercent: Extracting input arguments...")
-             print(sprintf("      Arg: protein_id_column = %s", protein_id_column))
-             print(sprintf("      Arg: sample_id = %s", sample_id))
-             print(sprintf("      Arg: group_id = %s", group_id))
-             print(sprintf("      Data State (protein_quant_table): Dims = %d rows, %d cols", nrow(protein_quant_table), ncol(protein_quant_table)))
-             print(sprintf("      Data State (design_matrix): Dims = %d rows, %d cols", nrow(design_matrix), ncol(design_matrix)))
-             print(head(design_matrix))
+             message("   DEBUG66 STEP 2: Logging data dimensions...")
+             flush.console()
+             message(sprintf("      Data State (protein_quant_table): Dims = %d rows, %d cols", nrow(protein_quant_table), ncol(protein_quant_table)))
+             flush.console()
+             message(sprintf("      Data State (design_matrix): Dims = %d rows, %d cols", nrow(design_matrix), ncol(design_matrix)))
+             flush.console()
+             message("      DEBUG66: design_matrix columns:")
+             message(paste("        ", paste(names(design_matrix), collapse = ", ")))
+             flush.console()
+             message("      DEBUG66: About to call head(design_matrix)...")
+             flush.console()
+             dm_head <- head(design_matrix)
+             message("      DEBUG66: head() completed successfully")
+             flush.console()
+             message("      DEBUG66: Skipping print() - known to cause hangs in Shiny context")
+             flush.console()
+             # Use message instead of print to avoid Shiny reactive context issues
+             message("      DEBUG66: First row sample_id: ", dm_head[[1]][1])
+             flush.console()
+             
+             # Check for any issues with the protein_quant_table data
+             message("      DEBUG66: Checking protein_quant_table for NaN/Inf values...")
+             flush.console()
+             pqt_matrix <- protein_quant_table[, -1]  # Exclude protein ID column
+             nan_count <- sum(is.nan(as.matrix(pqt_matrix)), na.rm = TRUE)
+             inf_count <- sum(is.infinite(as.matrix(pqt_matrix)), na.rm = TRUE)
+             na_count <- sum(is.na(as.matrix(pqt_matrix)))
+             message(sprintf("      DEBUG66: protein_quant_table has %d NaN, %d Inf, %d NA values", nan_count, inf_count, na_count))
+             flush.console()
 
-             # print(groupwise_percentage_cutoff)
-             # print(min_protein_intensity_threshold )
-
-             print("   removeRowsWithMissingValuesPercent: Resolving parameters with checkParamsObjectFunctionSimplify...")
+             message("   DEBUG66 STEP 3: Resolving ruv_grouping_variable...")
+             flush.console()
+             
+             # DEBUG66: Quick check of @args (simplified to avoid potential issues)
+             message("      DEBUG66: Checking theObject@args...")
+             flush.console()
+             if (!is.null(theObject@args)) {
+               args_names <- names(theObject@args)
+               message(sprintf("      DEBUG66: theObject@args has %d entries", length(args_names)))
+               flush.console()
+               
+               # Only check specific known function args, don't iterate all
+               ruv_var_found <- NULL
+               if ("ruvIII_C_Varying" %in% args_names && 
+                   !is.null(theObject@args$ruvIII_C_Varying$ruv_grouping_variable)) {
+                 ruv_var_found <- theObject@args$ruvIII_C_Varying$ruv_grouping_variable
+                 message(sprintf("      DEBUG66: Found ruv_grouping_variable in ruvIII_C_Varying: '%s'", ruv_var_found))
+                 flush.console()
+               }
+               if ("getNegCtrlProtAnova" %in% args_names && 
+                   !is.null(theObject@args$getNegCtrlProtAnova$ruv_grouping_variable)) {
+                 ruv_var_found <- theObject@args$getNegCtrlProtAnova$ruv_grouping_variable
+                 message(sprintf("      DEBUG66: Found ruv_grouping_variable in getNegCtrlProtAnova: '%s'", ruv_var_found))
+                 flush.console()
+               }
+             } else {
+               message("      DEBUG66 WARNING: theObject@args is NULL!")
+               flush.console()
+             }
+             
+             message("      DEBUG66: About to call checkParamsObjectFunctionSimplify for ruv_grouping_variable...")
+             flush.console()
              ruv_grouping_variable <- checkParamsObjectFunctionSimplify(theObject
                                                                         , "ruv_grouping_variable"
                                                                         , NULL)
-             print(sprintf("      Resolved ruv_grouping_variable = %s", ifelse(is.null(ruv_grouping_variable), "NULL", ruv_grouping_variable)))
+             message(sprintf("      DEBUG66: ruv_grouping_variable resolved = %s", ifelse(is.null(ruv_grouping_variable), "NULL *** POTENTIAL PROBLEM ***", ruv_grouping_variable)))
+             flush.console()
              
+             # CRITICAL CHECK: If ruv_grouping_variable is NULL, we need to get it from another source
+             if (is.null(ruv_grouping_variable)) {
+               message("      DEBUG66 WARNING: ruv_grouping_variable is NULL!")
+               message("      DEBUG66: Attempting to find it from ruvIII_C_Varying or getNegCtrlProtAnova args...")
+               flush.console()
+               
+               # Try to get from ruvIII_C_Varying first
+               if (!is.null(theObject@args$ruvIII_C_Varying$ruv_grouping_variable)) {
+                 ruv_grouping_variable <- theObject@args$ruvIII_C_Varying$ruv_grouping_variable
+                 message(sprintf("      DEBUG66: Found in @args$ruvIII_C_Varying: '%s'", ruv_grouping_variable))
+                 flush.console()
+               } else if (!is.null(theObject@args$getNegCtrlProtAnova$ruv_grouping_variable)) {
+                 ruv_grouping_variable <- theObject@args$getNegCtrlProtAnova$ruv_grouping_variable
+                 message(sprintf("      DEBUG66: Found in @args$getNegCtrlProtAnova: '%s'", ruv_grouping_variable))
+                 flush.console()
+               } else {
+                 # Fallback to group_id from the S4 object
+                 ruv_grouping_variable <- theObject@group_id
+                 message(sprintf("      DEBUG66: FALLBACK to theObject@group_id: '%s'", ruv_grouping_variable))
+                 flush.console()
+               }
+             }
+             
+             # Validate that the column exists in design_matrix
+             if (!ruv_grouping_variable %in% names(design_matrix)) {
+               message(sprintf("      DEBUG66 CRITICAL ERROR: ruv_grouping_variable '%s' NOT FOUND in design_matrix!", ruv_grouping_variable))
+               message(sprintf("      DEBUG66: design_matrix columns are: %s", paste(names(design_matrix), collapse = ", ")))
+               flush.console()
+               stop(sprintf("ruv_grouping_variable '%s' not found in design_matrix columns: %s", 
+                           ruv_grouping_variable, paste(names(design_matrix), collapse = ", ")))
+             }
+             message(sprintf("      DEBUG66: Confirmed '%s' exists in design_matrix", ruv_grouping_variable))
+             flush.console()
+             
+             message("   DEBUG66 STEP 4: Resolving groupwise_percentage_cutoff...")
+             flush.console()
              groupwise_percentage_cutoff <- checkParamsObjectFunctionSimplify(theObject
                                                                               , "groupwise_percentage_cutoff"
                                                                               , 50)
-             print(sprintf("      Resolved groupwise_percentage_cutoff = %g", groupwise_percentage_cutoff))
+             message(sprintf("      DEBUG66: groupwise_percentage_cutoff resolved = %g", groupwise_percentage_cutoff))
+             flush.console()
              
+             message("   DEBUG66 STEP 5: Resolving max_groups_percentage_cutoff...")
+             flush.console()
              max_groups_percentage_cutoff <- checkParamsObjectFunctionSimplify(theObject
                                                                                , "max_groups_percentage_cutoff"
                                                                                , 50)
-             print(sprintf("      Resolved max_groups_percentage_cutoff = %g", max_groups_percentage_cutoff))
+             message(sprintf("      DEBUG66: max_groups_percentage_cutoff resolved = %g", max_groups_percentage_cutoff))
+             flush.console()
              
+             message("   DEBUG66 STEP 6: Resolving proteins_intensity_cutoff_percentile...")
+             flush.console()
              proteins_intensity_cutoff_percentile <- checkParamsObjectFunctionSimplify(theObject
                                                                                    , "proteins_intensity_cutoff_percentile"
                                                                                    , 1)
-             print(sprintf("      Resolved proteins_intensity_cutoff_percentile = %g", proteins_intensity_cutoff_percentile))
+             message(sprintf("      DEBUG66: proteins_intensity_cutoff_percentile resolved = %g", proteins_intensity_cutoff_percentile))
+             flush.console()
 
-             print("   removeRowsWithMissingValuesPercent: Updating parameters in S4 object...")
+             message("   DEBUG66 STEP 7: Updating parameters in S4 object...")
+             flush.console()
+             
+             message("      DEBUG66: Updating ruv_grouping_variable...")
+             flush.console()
              theObject <- updateParamInObject(theObject, "ruv_grouping_variable")
+             message("      DEBUG66: ruv_grouping_variable updated")
+             flush.console()
+             
+             message("      DEBUG66: Updating groupwise_percentage_cutoff...")
+             flush.console()
              theObject <- updateParamInObject(theObject, "groupwise_percentage_cutoff")
+             message("      DEBUG66: groupwise_percentage_cutoff updated")
+             flush.console()
+             
+             message("      DEBUG66: Updating max_groups_percentage_cutoff...")
+             flush.console()
              theObject <- updateParamInObject(theObject, "max_groups_percentage_cutoff")
+             message("      DEBUG66: max_groups_percentage_cutoff updated")
+             flush.console()
+             
+             message("      DEBUG66: Updating proteins_intensity_cutoff_percentile...")
+             flush.console()
              theObject <- updateParamInObject(theObject, "proteins_intensity_cutoff_percentile")
+             message("      DEBUG66: proteins_intensity_cutoff_percentile updated")
+             flush.console()
 
-             print("   removeRowsWithMissingValuesPercent: About to call helper function...")
-             print(sprintf("      Helper Args: cols = %s", protein_id_column))
-             print(sprintf("      Helper Args: sample_id = %s", sample_id))
-             print(sprintf("      Helper Args: row_id = %s", protein_id_column))
-             print(sprintf("      Helper Args: grouping_variable = %s", ruv_grouping_variable))
-             print(sprintf("      Helper Args: groupwise_percentage_cutoff = %g", groupwise_percentage_cutoff))
-             print(sprintf("      Helper Args: max_groups_percentage_cutoff = %g", max_groups_percentage_cutoff))
-             print(sprintf("      Helper Args: proteins_intensity_cutoff_percentile = %g", proteins_intensity_cutoff_percentile))
+             message("   DEBUG66 STEP 8: Preparing to call helper function...")
+             flush.console()
+             message(sprintf("      Helper Args: cols = %s", protein_id_column))
+             message(sprintf("      Helper Args: sample_id = %s", sample_id))
+             message(sprintf("      Helper Args: row_id = %s", protein_id_column))
+             message(sprintf("      Helper Args: grouping_variable = %s", ruv_grouping_variable))
+             message(sprintf("      Helper Args: groupwise_percentage_cutoff = %g", groupwise_percentage_cutoff))
+             message(sprintf("      Helper Args: max_groups_percentage_cutoff = %g", max_groups_percentage_cutoff))
+             message(sprintf("      Helper Args: proteins_intensity_cutoff_percentile = %g", proteins_intensity_cutoff_percentile))
+             flush.console()
+             
+             message("   DEBUG66 STEP 9: CALLING removeRowsWithMissingValuesPercentHelper NOW...")
+             flush.console()
+             
+             # Memory tracking - Before helper
+             pre_helper_mem <- checkMemoryBoth("Before helper", context = "removeRowsWithMissingValuesPercent")
 
              theObject@protein_quant_table <- removeRowsWithMissingValuesPercentHelper( protein_quant_table
                                                                            , cols= protein_id_column
@@ -1858,13 +2019,36 @@ setMethod( f = "removeRowsWithMissingValuesPercent"
                                                                            , proteins_intensity_cutoff_percentile = proteins_intensity_cutoff_percentile
                                                                            , temporary_abundance_column = "Log_Abundance")
 
-             print(sprintf("   removeRowsWithMissingValuesPercent: Helper function returned. New dims = %d rows, %d cols", 
+             message("   DEBUG66 STEP 10: Helper function returned successfully!")
+             flush.console()
+             message(sprintf("      DEBUG66: New protein_quant_table dims = %d rows, %d cols", 
                            nrow(theObject@protein_quant_table), ncol(theObject@protein_quant_table)))
+             flush.console()
+             
+             # Memory tracking - After helper
+             reportMemoryDelta(pre_helper_mem, "helper function", context = "removeRowsWithMissingValuesPercent")
 
-             print("   removeRowsWithMissingValuesPercent: Cleaning design matrix...")
+             message("   DEBUG66 STEP 11: Cleaning design matrix...")
+             flush.console()
+             
+             # Memory tracking - Before cleanDesignMatrix
+             pre_clean_mem <- checkMemoryBoth("Before cleanDesignMatrix", context = "removeRowsWithMissingValuesPercent")
+             
              theObject <- cleanDesignMatrix(theObject)
+             
+             # Memory tracking - After cleanDesignMatrix (THE SUSPECTED CULPRIT)
+             reportMemoryDelta(pre_clean_mem, "cleanDesignMatrix", context = "removeRowsWithMissingValuesPercent")
+             
+             message("   DEBUG66: cleanDesignMatrix completed")
+             flush.console()
 
-             print("--- Exiting removeRowsWithMissingValuesPercent S4 Method ---")
+             # Memory tracking - Exit checkpoint
+             reportMemoryDelta(entry_mem, "TOTAL removeRowsWithMissingValuesPercent", context = "removeRowsWithMissingValuesPercent")
+             
+             message("╔═══════════════════════════════════════════════════════════════════════════╗")
+             message("║  DEBUG66: Exiting removeRowsWithMissingValuesPercent S4 Method           ║")
+             message("╚═══════════════════════════════════════════════════════════════════════════╝")
+             flush.console()
              return(theObject)
 
            })
@@ -2104,6 +2288,13 @@ setMethod( f = "filterSamplesByProteinCorrelationThreshold"
            , signature="ProteinQuantitativeData"
            , definition=function( theObject, pearson_correlation_per_pair = NULL, min_pearson_correlation_threshold = NULL  ) {
 
+             message("╔═══════════════════════════════════════════════════════════════════════════╗")
+             message("║  DEBUG66: Entering filterSamplesByProteinCorrelationThreshold             ║")
+             message("╚═══════════════════════════════════════════════════════════════════════════╝")
+             
+             # Memory tracking - Entry
+             entry_mem <- checkMemoryBoth("Entry", context = "filterSamplesByProteinCorrelationThreshold")
+
              pearson_correlation_per_pair <- checkParamsObjectFunctionSimplify( theObject
                                                                            , "pearson_correlation_per_pair"
                                                                            , default_value = NULL)
@@ -2114,6 +2305,9 @@ setMethod( f = "filterSamplesByProteinCorrelationThreshold"
              theObject <- updateParamInObject(theObject, "pearson_correlation_per_pair")
              theObject <- updateParamInObject(theObject, "min_pearson_correlation_threshold")
 
+             # Memory tracking - Before helper
+             pre_helper_mem <- checkMemoryBoth("Before helper", context = "filterSamplesByProteinCorrelationThreshold")
+             
              filtered_table <- filterSamplesByProteinCorrelationThresholdHelper (
                pearson_correlation_per_pair
                , protein_intensity_table = theObject@protein_quant_table
@@ -2123,9 +2317,25 @@ setMethod( f = "filterSamplesByProteinCorrelationThreshold"
                , protein_id_column = theObject@protein_id_column
                , correlation_column = pearson_correlation )
 
+             # Memory tracking - After helper
+             reportMemoryDelta(pre_helper_mem, "helper function", context = "filterSamplesByProteinCorrelationThreshold")
+             
              theObject@protein_quant_table <- filtered_table
 
+             # Memory tracking - Before cleanDesignMatrix
+             pre_clean_mem <- checkMemoryBoth("Before cleanDesignMatrix", context = "filterSamplesByProteinCorrelationThreshold")
+             
              theObject <- cleanDesignMatrix(theObject)
+             
+             # Memory tracking - After cleanDesignMatrix
+             reportMemoryDelta(pre_clean_mem, "cleanDesignMatrix", context = "filterSamplesByProteinCorrelationThreshold")
+             
+             # Memory tracking - Exit
+             reportMemoryDelta(entry_mem, "TOTAL filterSamplesByProteinCorrelationThreshold", context = "filterSamplesByProteinCorrelationThreshold")
+             
+             message("╔═══════════════════════════════════════════════════════════════════════════╗")
+             message("║  DEBUG66: Exiting filterSamplesByProteinCorrelationThreshold              ║")
+             message("╚═══════════════════════════════════════════════════════════════════════════╝")
 
              theObject
              })
@@ -2137,17 +2347,79 @@ setMethod( f = "filterSamplesByProteinCorrelationThreshold"
 setMethod( f ="cleanDesignMatrix"
            , signature = "ProteinQuantitativeData"
            , definition=function( theObject ) {
+            # --- MEMORY OPTIMIZED: Using base R to avoid tidyverse environment capture ---
+            
+            # Memory tracking - Entry
+            entry_mem <- checkMemoryBoth("Entry", context = "cleanDesignMatrix")
+            
+            # Get sample IDs from protein_quant_table columns (excluding the protein ID column)
+            samples_id_vector <- setdiff(colnames(theObject@protein_quant_table), theObject@protein_id_column)
 
-            samples_id_vector <- setdiff(colnames(theObject@protein_quant_table), theObject@sample_id )
+            # --- Validate Design Matrix --- #
+            design_samples <- tryCatch(
+                as.character(theObject@design_matrix[[theObject@sample_id]])
+                , error = function(e) { character(0) }
+            )
+            if (length(design_samples) == 0) {
+                warning(sprintf("cleanDesignMatrix: Could not extract valid sample IDs from design matrix column '%s'. Returning object unchanged.", theObject@sample_id), immediate. = TRUE)
+                return(theObject)
+            }
+            
+            # Find samples that exist in both protein_quant_table and design_matrix
+            # This handles cases where pool samples might be in protein_quant_table but not in design_matrix
+            sample_cols_in_design <- intersect(samples_id_vector, design_samples)
+            if (length(sample_cols_in_design) == 0) {
+                warning("cleanDesignMatrix: No sample columns identified in protein_quant_table matching design matrix sample IDs. Returning object unchanged.")
+                return(theObject)
+            }
+            
+            # Ensure columns are treated as character for matching consistency
+            samples_id_vector_char <- as.character(sample_cols_in_design)
 
-             theObject@design_matrix <- data.frame( temp_sample_id = samples_id_vector )  |>
-               inner_join( theObject@design_matrix
-                          , by = join_by ( temp_sample_id == !!sym(theObject@sample_id)) ) |>
-               dplyr::rename( !!sym(theObject@sample_id) := "temp_sample_id" ) |>
-               dplyr::filter( !!sym( theObject@sample_id) %in% samples_id_vector )
+            # --- Filter and Reorder Design Matrix (Base R) --- #
+            # Create a working copy of design matrix to avoid modifying original
+            design_matrix_copy <- theObject@design_matrix
+            
+            # Ensure the sample ID column is character for matching
+            design_matrix_copy[[theObject@sample_id]] <- as.character(design_matrix_copy[[theObject@sample_id]])
+            
+            # Find matching rows in the order of samples_id_vector_char
+            matched_rows <- match(samples_id_vector_char, design_matrix_copy[[theObject@sample_id]])
+            
+            # Filter out NA matches (samples in data but not in design matrix)
+            valid_matches <- matched_rows[!is.na(matched_rows)]
+            
+            if (length(valid_matches) == 0) {
+                warning("cleanDesignMatrix: No matching samples found after filtering. Returning object unchanged.")
+                return(theObject)
+            }
+            
+            # Memory tracking - Before subsetting
+            checkMemoryBoth("Before subset", context = "cleanDesignMatrix")
+            
+            # Subset and reorder design matrix using base R indexing
+            cleaned_design_matrix <- design_matrix_copy[valid_matches, , drop = FALSE]
+            
+            # Reset row names to avoid confusion
+            rownames(cleaned_design_matrix) <- NULL
+            
+            # Memory tracking - Before slot assignment (CRITICAL - This can trigger S4 copy)
+            pre_assign_mem <- checkMemoryBoth("Before slot assignment", context = "cleanDesignMatrix")
+            
+            # Assign back to object
+            theObject@design_matrix <- as.data.frame(cleaned_design_matrix)
+            
+            # Memory tracking - After slot assignment
+            reportMemoryDelta(pre_assign_mem, "slot assignment (S4 copy trigger)", context = "cleanDesignMatrix")
+            
+            # Clean up intermediate objects to free memory
+            rm(design_matrix_copy, matched_rows, valid_matches, cleaned_design_matrix)
+            gc()
+            
+            # Memory tracking - Exit
+            reportMemoryDelta(entry_mem, "TOTAL cleanDesignMatrix", context = "cleanDesignMatrix")
 
-
-             return(theObject)
+            return(theObject)
            })
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -2518,12 +2790,13 @@ setMethod( f = "proteinTechRepCorrelation"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' @title Plot Pearson Correlation
 #' @param theObject is an object of the type ProteinQuantitativeData
-#' @param tech_rep_remove_regex samples containing this string are removed from correlation analysis (e.g. if you have lots of pooled sample and want to remove them)
+#' @param tech_rep_remove_regex DEPRECATED - use exclude_pool_samples instead
 #' @param correlation_group is the group where every pair of samples are compared
+#' @param exclude_pool_samples Logical. If TRUE (default), automatically exclude samples from groups containing "Pool" or "QC" in their name from correlation analysis.
 #' @export
 setMethod(f="plotPearson",
           signature="ProteinQuantitativeData",
-          definition=function(theObject, tech_rep_remove_regex = "pool", correlation_group = NA) {
+          definition=function(theObject, tech_rep_remove_regex = NULL, correlation_group = NA, exclude_pool_samples = TRUE) {
 
             correlation_group_to_use <- correlation_group
 
@@ -2531,9 +2804,15 @@ setMethod(f="plotPearson",
               correlation_group_to_use <- theObject@technical_replicate_id
             }
 
+            # Handle deprecated parameter (backward compatibility)
+            if (!is.null(tech_rep_remove_regex)) {
+              message("*** plotPearson: WARNING - tech_rep_remove_regex is deprecated, use exclude_pool_samples instead ***")
+            }
+
             correlation_vec <- pearsonCorForSamplePairs(theObject
-                                                        , tech_rep_remove_regex
-                                                        , correlation_group = correlation_group_to_use)
+                                                        , tech_rep_remove_regex = tech_rep_remove_regex
+                                                        , correlation_group = correlation_group_to_use
+                                                        , exclude_pool_samples = exclude_pool_samples)
 
             pearson_plot <- correlation_vec |>
               ggplot(aes(pearson_correlation)) +
@@ -2602,6 +2881,11 @@ setGeneric(name = "createGridQC",
 setMethod(f = "createGridQC",
           signature = "GridPlotData",
           definition = function(theObject, pca_titles = NULL, density_titles = NULL, rle_titles = NULL, pearson_titles = NULL, cancor_titles = NULL, ncol = 3, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
+            
+            # MEMORY OPTIMIZED: Added gc() calls and single-format save
+            message("--- [createGridQC]: Entry ---")
+            mem_before <- sum(gc()[,2])
+            message(sprintf("   [createGridQC] Memory Usage at entry: %.1f MB", mem_before))
             
             # Use stored titles if not provided as parameters
             pca_titles <- if(is.null(pca_titles)) theObject@pca_titles else pca_titles
@@ -2680,30 +2964,41 @@ setMethod(f = "createGridQC",
             cancor_order <- c("cancor_plot_before_cyclic_loess", "cancor_plot_before_ruvIIIc", "cancor_plot_after_ruvIIIc")
             
             # Extract plots in the correct order using lapply
+            # MEMORY OPTIMIZATION: Process each plot type and run gc() between sections
+            message("   [createGridQC] Processing PCA plots...")
             created_pca_plots <- lapply(plot_order, function(name) {
               if (!is.null(theObject@pca_plots[[name]])) createPcaPlot(theObject@pca_plots[[name]]) else NULL
             })
             created_pca_plots <- created_pca_plots[!sapply(created_pca_plots, is.null)]
+            gc()
             
+            message("   [createGridQC] Processing Density plots...")
             created_density_plots <- lapply(density_order, function(name) {
               if (!is.null(theObject@density_plots[[name]])) createDensityPlot(theObject@density_plots[[name]]) else NULL
             })
             created_density_plots <- created_density_plots[!sapply(created_density_plots, is.null)]
+            gc()
             
+            message("   [createGridQC] Processing RLE plots...")
             created_rle_plots <- lapply(rle_order, function(name) {
               if (!is.null(theObject@rle_plots[[name]])) createRlePlot(theObject@rle_plots[[name]]) else NULL
             })
             created_rle_plots <- created_rle_plots[!sapply(created_rle_plots, is.null)]
+            gc()
             
+            message("   [createGridQC] Processing Pearson plots...")
             created_pearson_plots <- lapply(pearson_order, function(name) {
               if (!is.null(theObject@pearson_plots[[name]])) createPearsonPlot(theObject@pearson_plots[[name]]) else NULL
             })
             created_pearson_plots <- created_pearson_plots[!sapply(created_pearson_plots, is.null)]
+            gc()
             
+            message("   [createGridQC] Processing Cancor plots...")
             created_cancor_plots <- lapply(cancor_order, function(name) {
               if (!is.null(theObject@cancor_plots[[name]])) createCancorPlot(theObject@cancor_plots[[name]]) else NULL
             })
             # Don't filter out NULL plots to maintain column alignment
+            gc()
             
             # Create label plots
             pca_labels <- lapply(pca_titles, createLabelPlot)
@@ -2770,25 +3065,40 @@ setMethod(f = "createGridQC",
               height_values <- c(height_values, 0.1, 1)
             }
             
+            # MEMORY CLEANUP before combining plots
+            message("   [createGridQC] Combining plot sections...")
+            gc()
+            
             # Create combined plot from sections
             combined_plot <- wrap_plots(plot_sections, ncol = 1) +
               plot_layout(heights = height_values)
+            
+            # Clear intermediate objects
+            rm(created_pca_plots, created_density_plots, created_rle_plots, created_pearson_plots, created_cancor_plots)
+            rm(pca_labels, density_labels, rle_labels, pearson_labels, cancor_labels)
+            rm(plot_sections)
+            gc()
 
             if (!is.null(save_path)) {
               # Calculate dynamic width based on number of columns
               plot_width <- 4 + (ncol * 3)  # Base width + 3 units per column
               plot_height <- 4 + (length(height_values) * 2)  # Base height + 2 units per row
               
-              sapply(c("png", "pdf", "svg"), function(ext) {
+              # MEMORY OPTIMIZATION: Save only PNG (removed PDF/SVG triple-save to reduce memory)
+              message("   [createGridQC] Saving PNG only (memory optimization)...")
                 ggsave(
                   plot = combined_plot,
-                  filename = file.path(save_path, paste0(file_name, ".", ext)),
+                filename = file.path(save_path, paste0(file_name, ".png")),
                   width = plot_width,
-                  height = plot_height
+                height = plot_height,
+                dpi = 150  # Reduced DPI for memory efficiency
                 )
-              })
-              message(paste("Plots saved in", save_path))
+              message(paste("   [createGridQC] Plot saved to:", save_path))
             }
+            
+            # Final memory cleanup
+            mem_after <- sum(gc()[,2])
+            message(sprintf("   [createGridQC] Memory Usage at exit: %.1f MB (delta: %.1f MB)", mem_after, mem_after - mem_before))
             
             return(combined_plot)
           })
@@ -2859,12 +3169,21 @@ setMethod(f="normaliseBetweenSamples"
 
 #' @title Pearson Correlation for Sample Pairs
 #' @param theObject is an object of the type ProteinQuantitativeData
-#' @param tech_rep_remove_regex samples containing this string are removed from correlation analysis (e.g. if you have lots of pooled sample and want to remove them)
+#' @param tech_rep_remove_regex DEPRECATED - use exclude_pool_samples instead
 #' @param correlation_group is the group where every pair of samples are compared
+#' @param exclude_pool_samples Logical. If TRUE (default), automatically exclude samples from groups containing "Pool" or "QC" in their name from correlation analysis. Pool/QC samples are excluded from within-group correlation calculations but remain in RUV-III correction.
 #'@export
 setMethod(f="pearsonCorForSamplePairs"
           , signature="ProteinQuantitativeData"
-          , definition=function( theObject, tech_rep_remove_regex = NULL, correlation_group = NA ) {
+          , definition=function( theObject, tech_rep_remove_regex = NULL, correlation_group = NA, exclude_pool_samples = TRUE ) {
+            
+            message("╔═══════════════════════════════════════════════════════════════════════════╗")
+            message("║  DEBUG66: Entering pearsonCorForSamplePairs                               ║")
+            message("╚═══════════════════════════════════════════════════════════════════════════╝")
+            
+            # Memory tracking - Entry
+            entry_mem <- checkMemoryBoth("Entry", context = "pearsonCorForSamplePairs")
+            
             protein_quant_table <- theObject@protein_quant_table
             protein_id_column <- theObject@protein_id_column
             design_matrix <- theObject@design_matrix
@@ -2875,47 +3194,118 @@ setMethod(f="pearsonCorForSamplePairs"
               replicate_group_column <- correlation_group
             }
 
-            tech_rep_remove_regex <- checkParamsObjectFunctionSimplifyAcceptNull(theObject, "tech_rep_remove_regex", "pool")
-            theObject <- updateParamInObject(theObject, "tech_rep_remove_regex")
-
-            frozen_mat_pca_long <- protein_quant_table |>
-              pivot_longer( cols=!matches(protein_id_column)
-                            , values_to = "Protein.normalised"
-                            , names_to = sample_id) |>
-              left_join( design_matrix
-                         , by = join_by( !!sym(sample_id) == !!sym(sample_id))) |>
-              mutate( temp = "")
-
-            # Detect available cores and configure parallel processing
-            num_available_cores <- parallel::detectCores()
-            num_workers <- min(max(1, num_available_cores - 1), 8)  # Use n-1 cores, max 8
-            message(sprintf("*** PEARSON: Detected %d CPU cores, using %d workers for parallel processing ***", 
-                            num_available_cores, num_workers))
+            # Handle deprecated parameter (backward compatibility)
+            if (!is.null(tech_rep_remove_regex)) {
+              message("*** PEARSON: WARNING - tech_rep_remove_regex is deprecated, use exclude_pool_samples instead ***")
+            }
             
-            # Calculate expected pair count for user information
-            sample_count <- nrow(design_matrix |> dplyr::select(!!sym(sample_id), !!sym(replicate_group_column)))
-            estimated_pairs <- choose(sample_count, 2)
-            message(sprintf("*** PEARSON: Processing %d samples (~%d pairwise correlations) ***", 
-                            sample_count, estimated_pairs))
-            message("*** PEARSON: Starting pairwise correlation calculations... ***")
+            exclude_pool_samples <- checkParamsObjectFunctionSimplifyAcceptNull(theObject, "exclude_pool_samples", TRUE)
+            theObject <- updateParamInObject(theObject, "exclude_pool_samples")
 
-            correlation_results_before_cyclic_loess <- calulatePearsonCorrelationForSamplePairsHelper( design_matrix |>
-                                                                                                         dplyr::select( !!sym(sample_id), !!sym(replicate_group_column) )
-                                                                                                       , run_id_column = sample_id
-                                                                                                       , replicate_group_column = replicate_group_column
-                                                                                                       , frozen_mat_pca_long
-                                                                                                       , num_of_cores = num_workers
-                                                                                                       , sample_id_column = sample_id
-                                                                                                       , protein_id_column = protein_id_column
-                                                                                                       , peptide_sequence_column = "temp"
-                                                                                                       , peptide_normalised_column = "Protein.normalised")
+            # --- OPTIMIZED MATRIX APPROACH ---
+            message("--- DEBUG66 [pearsonCorForSamplePairs]: Using optimized matrix correlation ---")
             
-            message("*** PEARSON: Correlation calculations complete ***")
-
-            correlation_vec_before_cyclic_loess <- correlation_results_before_cyclic_loess |>
-              dplyr::filter( !str_detect(!!sym(replicate_group_column), tech_rep_remove_regex )  )
-
-           return( correlation_vec_before_cyclic_loess)
+            # 1. Extract numeric matrix
+            # Get sample columns (exclude ID)
+            sample_cols <- setdiff(colnames(protein_quant_table), protein_id_column)
+            
+            # Ensure they match design matrix samples
+            # Note: protein_quant_table might contain pools/controls not in design if not cleaned, but usually they should align.
+            valid_samples <- intersect(sample_cols, design_matrix[[sample_id]])
+            
+            if(length(valid_samples) == 0) {
+               stop("No matching samples found between protein data and design matrix")
+            }
+            
+            # Subset and convert to matrix
+            mat <- as.matrix(protein_quant_table[, valid_samples, drop=FALSE])
+            
+            message(sprintf("   [pearsonCorForSamplePairs] Matrix dimensions: %d proteins x %d samples", nrow(mat), ncol(mat)))
+            
+            # 2. Calculate Correlation Matrix
+            # fast vectorized correlation
+            start_time <- Sys.time()
+            cor_mat <- cor(mat, method = "pearson", use = "pairwise.complete.obs")
+            end_time <- Sys.time()
+            message(sprintf("   [pearsonCorForSamplePairs] Correlation matrix computed in %.2f seconds", as.numeric(difftime(end_time, start_time, units="secs"))))
+            
+            # 3. Convert to Long Format (Pairwise) and Filter
+            
+            # Map samples to groups using design matrix
+            # Create a named vector for fast lookup
+            sample_to_group <- setNames(as.character(design_matrix[[replicate_group_column]]), as.character(design_matrix[[sample_id]]))
+            
+            # Get upper triangle indices to avoid duplicates and self-correlation
+            upper_tri_indices <- which(upper.tri(cor_mat), arr.ind = TRUE)
+            
+            # Extract names and values
+            samples1 <- rownames(cor_mat)[upper_tri_indices[, 1]]
+            samples2 <- colnames(cor_mat)[upper_tri_indices[, 2]]
+            cor_values <- cor_mat[upper_tri_indices]
+            
+            # Define column names expected by filterSamplesByProteinCorrelationThreshold
+            col_x <- paste0(sample_id, ".x")
+            col_y <- paste0(sample_id, ".y")
+            
+            # Create dataframe
+            # Pre-allocate list for speed then convert
+            result_list <- list()
+            result_list[[col_x]] <- samples1
+            result_list[[col_y]] <- samples2
+            result_list[["pearson_correlation"]] <- cor_values
+            
+            result_df <- as.data.frame(result_list, stringsAsFactors = FALSE)
+            
+            # Add groups
+            result_df$Group_1 <- sample_to_group[result_df[[col_x]]]
+            result_df$Group_2 <- sample_to_group[result_df[[col_y]]]
+            
+            # Filter for within-group correlations only (Group_1 == Group_2)
+            # Handle NA groups just in case
+            result_df <- result_df[!is.na(result_df$Group_1) & !is.na(result_df$Group_2) & result_df$Group_1 == result_df$Group_2, ]
+            
+            # Add the group column required by the S4 object / downstream logic
+            # The helper seems to expect the group info might be joined or passed, but let's see.
+            # The return value is just the correlation table.
+            # However, for `exclude_pool_samples`, we need the group.
+            
+            result_df[[replicate_group_column]] <- result_df$Group_1
+            
+            # Clean up temporary group columns
+            result_df$Group_1 <- NULL
+            result_df$Group_2 <- NULL
+            
+            # 4. Exclude Pool Samples Logic
+            if (exclude_pool_samples) {
+              # Detect Pool/QC groups (case-insensitive detection for "pool" or "qc")
+              is_pool_qc_group <- grepl("pool|qc", result_df[[replicate_group_column]], ignore.case = TRUE)
+              pool_qc_count <- sum(is_pool_qc_group)
+              
+              if (pool_qc_count > 0) {
+                 message(sprintf("*** PEARSON: Excluded %d sample pairs from Pool/QC groups ***", pool_qc_count))
+                 result_df <- result_df[!is_pool_qc_group, ]
+              } else {
+                 message("*** PEARSON: No Pool/QC groups detected to exclude ***")
+              }
+            }
+            
+            message(sprintf("   [pearsonCorForSamplePairs] Final pair count: %d", nrow(result_df)))
+            
+            # Memory tracking - Exit
+            reportMemoryDelta(entry_mem, "TOTAL pearsonCorForSamplePairs", context = "pearsonCorForSamplePairs")
+            
+            message("╔═══════════════════════════════════════════════════════════════════════════╗")
+            message("║  DEBUG66: Exiting pearsonCorForSamplePairs                                ║")
+            message("╚═══════════════════════════════════════════════════════════════════════════╝")
+            
+            # Ensure the returned dataframe has the expected columns for the next step
+            # filterSamplesByProteinCorrelationThreshold expects:
+            # - {sample_id}.x
+            # - {sample_id}.y
+            # - pearson_correlation
+            # And it might carry over replicate_group_column (it was in the original helper output)
+            
+            return(result_df)
           })
 
 
@@ -2928,7 +3318,8 @@ setGeneric(name="getNegCtrlProtAnova"
                            , percentage_as_neg_ctrl  = NULL
                            , num_neg_ctrl  = NULL
                            , ruv_qval_cutoff = NULL
-                           , ruv_fdr_method = NULL ) {
+                           , ruv_fdr_method = NULL
+                           , exclude_pool_samples = TRUE ) {
              standardGeneric("getNegCtrlProtAnova")
            }
            , signature=c("theObject", "ruv_grouping_variable", "num_neg_ctrl", "ruv_qval_cutoff", "ruv_fdr_method"))
@@ -2941,7 +3332,8 @@ setMethod(f="getNegCtrlProtAnova"
                                  , percentage_as_neg_ctrl = NULL
                                  , num_neg_ctrl = NULL
                                  , ruv_qval_cutoff = NULL
-                                 , ruv_fdr_method = NULL ) {
+                                 , ruv_fdr_method = NULL
+                                 , exclude_pool_samples = TRUE ) {
 
             protein_quant_table <- theObject@protein_quant_table
             protein_id_column <- theObject@protein_id_column
@@ -2960,22 +3352,29 @@ setMethod(f="getNegCtrlProtAnova"
                                                                , round(nrow( theObject@protein_quant_table) * percentage_as_neg_ctrl / 100, 0))
             ruv_qval_cutoff <- checkParamsObjectFunctionSimplify( theObject, "ruv_qval_cutoff", 0.05)
             ruv_fdr_method <- checkParamsObjectFunctionSimplify( theObject, "ruv_fdr_method", "BH")
+            exclude_pool_samples <- checkParamsObjectFunctionSimplify( theObject, "exclude_pool_samples", TRUE)
 
             theObject <- updateParamInObject(theObject, "ruv_grouping_variable")
             theObject <- updateParamInObject(theObject, "percentage_as_neg_ctrl")
             theObject <- updateParamInObject(theObject, "num_neg_ctrl")
             theObject <- updateParamInObject(theObject, "ruv_qval_cutoff")
             theObject <- updateParamInObject(theObject, "ruv_fdr_method")
+            theObject <- updateParamInObject(theObject, "exclude_pool_samples")
 
+            # Prepare design matrix: keep only ruv_grouping_variable column, set sample IDs as rownames
+            # This ensures we have the grouping information needed for Pool/QC detection
+            design_matrix_for_anova <- design_matrix |>
+              column_to_rownames(sample_id) |>
+              dplyr::select(!!sym(ruv_grouping_variable))
+            
             control_genes_index <- getNegCtrlProtAnovaHelper( normalised_frozen_protein_matrix_filt[,design_matrix |> dplyr::pull(!!sym(sample_id)) ]
-                                                        , design_matrix = design_matrix |>
-                                                          column_to_rownames(sample_id) |>
-                                                          dplyr::select( -!!sym(group_id))
+                                                        , design_matrix = design_matrix_for_anova
                                                         , grouping_variable = ruv_grouping_variable
                                                         , percentage_as_neg_ctrl = percentage_as_neg_ctrl
                                                         , num_neg_ctrl = num_neg_ctrl
                                                         , ruv_qval_cutoff = ruv_qval_cutoff
-                                                        , ruv_fdr_method = ruv_fdr_method )
+                                                        , ruv_fdr_method = ruv_fdr_method
+                                                        , exclude_pool_samples = exclude_pool_samples )
 
             return(control_genes_index)
           })
@@ -3190,7 +3589,7 @@ preservePeptideNaValuesHelper <- function( peptide_obj, protein_obj) {
 #' @export
 setMethod(f="plotPcaBox"
           , signature="ANY"
-          , definition=function(theObject, grouping_variable, title = "", font_size = 8) {
+          , definition=function(theObject, grouping_variable, title = "", font_size = 8, show_legend = FALSE) {
   # Validate input is a ggplot-like object (works with both S3 and S7 ggplot)
   if (!inherits(theObject, c("gg", "ggplot"))) {
     stop("theObject must be a ggplot object. Got class: ", paste(class(theObject), collapse = ", "))
@@ -3219,6 +3618,9 @@ setMethod(f="plotPcaBox"
     stop(sprintf("grouping_variable '%s' not found in the data", grouping_variable))
   }
   
+  # Determine legend position
+  legend_pos <- if(show_legend) "right" else "none"
+  
   # Create PC1 boxplot
   pc1_box <- ggplot(pca_data, aes(x = !!sym(grouping_variable), y = PC1, fill = !!sym(grouping_variable))) +
     geom_boxplot(notch = TRUE) +
@@ -3227,7 +3629,7 @@ setMethod(f="plotPcaBox"
          x = "",
          y = "PC1") +
     theme(
-      legend.position = "none",
+      legend.position = legend_pos,
       axis.text.x = element_blank(),
       axis.ticks.x = element_blank(),
       text = element_text(size = font_size),
@@ -3248,7 +3650,7 @@ setMethod(f="plotPcaBox"
     labs(x = "",
          y = "PC2") +
     theme(
-      legend.position = "none",
+      legend.position = legend_pos,
       axis.text.x = element_blank(),
       axis.ticks.x = element_blank(),
       text = element_text(size = font_size),
@@ -3262,8 +3664,10 @@ setMethod(f="plotPcaBox"
   pc2_box <- pc2_box + scale_fill_manual(values = categorical_colors)
   
   # Combine plots with minimal spacing
+  # If legend is enabled, we might want to collect guides to avoid duplication
+  # but for now let's keep it simple as patchwork/cowplot handles it
   combined_plot <- pc1_box / pc2_box + 
-    plot_layout(heights = c(1, 1)) +
+    plot_layout(heights = c(1, 1), guides = if(show_legend) "collect" else NULL) +
     plot_annotation(theme = theme(plot.margin = margin(0, 0, 0, 0)))
   
   return(combined_plot)

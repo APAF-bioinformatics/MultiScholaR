@@ -746,6 +746,11 @@ mod_prot_design_builder_server <- function(id, data_tbl, config_list, column_map
                 factor_parts <- c(factor_parts, input$factor3_select)
             }
             
+            # Create group name from factor parts
+            # Pool/QC samples will get their own group (e.g., "Pool") and will be:
+            # - Included in QC visualizations
+            # - Automatically excluded from RUV/DE analysis by NA group filtering (if user sets group to NA)
+            # - Or included in analysis if user assigns them a valid group like "Pool"
             group_name <- if (length(factor_parts) > 0) {
                 paste(factor_parts, collapse = "_")
             } else {
@@ -937,7 +942,12 @@ mod_prot_design_builder_server <- function(id, data_tbl, config_list, column_map
             currently_removed <- removed_samples()
             design_matrix_final <- design_matrix() |>
                 dplyr::filter(!is.na(group) & group != "") |>
-                dplyr::filter(!Run %in% currently_removed)
+                dplyr::filter(!Run %in% currently_removed) |>
+                # Create unique tech rep group identifier for imputation grouping
+                # group + replicates uniquely identifies a biological sample
+                # When there ARE tech reps: samples share same tech_rep_group (correct grouping)
+                # When there are NO tech reps: each sample has unique tech_rep_group (no cross-sample imputation)
+                dplyr::mutate(tech_rep_group = paste(group, replicates, sep = "_"))
             
             if(nrow(design_matrix_final) == 0) {
                 shiny::showNotification("No samples have been assigned to groups. Please assign metadata before saving.", type="warning")

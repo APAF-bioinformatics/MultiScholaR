@@ -953,6 +953,20 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
         workflow_data$taxon_id <- input$taxon_id
         workflow_data$organism_name <- input$organism_name
         
+        # ✅ NEW: Initialize mixed_species_analysis as disabled when NOT using mixed species FASTA
+        # This ensures downstream modules can reliably check this flag
+        if (!isTRUE(input$mixed_species_fasta)) {
+          workflow_data$mixed_species_analysis <- list(
+            enabled = FALSE
+            , selected_taxon_id = input$taxon_id
+            , selected_organism = input$organism_name
+            , organism_distribution = NULL
+            , organism_mapping = NULL
+            , filter_applied_at_import = FALSE
+            , timestamp = Sys.time()
+          )
+        }
+        
         workflow_data$processing_log$setup_import <- list(
           timestamp = Sys.time(),
           search_file = search_filename,
@@ -1086,6 +1100,25 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
             , organism_distribution = local_data$organism_distribution
           )
         }
+        
+        # ✅ NEW: Store mixed species analysis metadata at top-level for downstream modules
+        # This is used by enrichment analysis module to filter proteins to target organism
+        workflow_data$mixed_species_analysis <- list(
+          enabled = TRUE
+          , selected_taxon_id = new_taxon_id
+          , selected_organism = new_organism_name
+          , organism_distribution = local_data$organism_distribution
+          , organism_mapping = local_data$organism_mapping
+          , filter_applied_at_import = input$filter_to_organism
+          , timestamp = Sys.time()
+        )
+        
+        log_info(sprintf(
+          "Stored mixed species analysis metadata: taxon=%d, organism=%s, filter_at_import=%s"
+          , new_taxon_id
+          , new_organism_name
+          , input$filter_to_organism
+        ))
         
         # Filter data if requested
         if (isTRUE(input$filter_to_organism)) {

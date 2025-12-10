@@ -437,6 +437,18 @@ mod_prot_norm_ui <- function(id) {
                 shiny::br(),
                 shiny::br(),
                 
+                shiny::actionButton(
+                  ns("skip_correlation_filter"),
+                  "Skip Filtering & Proceed to DE",
+                  class = "btn-info",
+                  width = "100%",
+                  icon = shiny::icon("forward")
+                ),
+                shiny::helpText("Use this option to bypass sample filtering and proceed directly to Differential Expression with the RUV-corrected data."),
+                
+                shiny::br(),
+                shiny::br(),
+                
                 shiny::h5("Filter Results"),
                 shiny::verbatimTextOutput(ns("correlation_filter_summary"))
               )
@@ -467,6 +479,23 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
     message(sprintf("workflow_data is NULL: %s", is.null(workflow_data)))
     if (!is.null(workflow_data$state_manager)) {
       message(sprintf("Current state at module start: %s", workflow_data$state_manager$current_state))
+    }
+    
+    # MEMORY MONITORING: Helper function to check memory usage and warn if high
+    checkMemoryUsage <- function(threshold_gb = 8, context = "") {
+      mem_info <- gc()
+      mem_used_mb <- sum(mem_info[,2])  # Used memory in MB
+      mem_used_gb <- mem_used_mb / 1024
+      
+      if (mem_used_gb > threshold_gb) {
+        warning(sprintf("*** HIGH MEMORY WARNING [%s]: %.1f GB used (threshold: %.1f GB) ***", 
+                       context, mem_used_gb, threshold_gb))
+        message(sprintf("*** HIGH MEMORY WARNING [%s]: %.1f GB used ***", context, mem_used_gb))
+      } else {
+        message(sprintf("*** MEMORY CHECK [%s]: %.1f GB used ***", context, mem_used_gb))
+      }
+      
+      invisible(mem_used_gb)
     }
     
     # Initialize reactive values for normalization state
@@ -587,10 +616,192 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
       }
     }
     
+    # Helper function to generate composite QC figure from saved images
+    # TRUE TO SOURCE: Mirrors createGridQC structure with row labels and patchwork layout
+    generateCompositeFromFiles <- function(plot_files, output_path, ncol = 3, row_labels = NULL, column_labels = NULL) {
+      message(sprintf("   [generateCompositeFromFiles] Generating composite from %d files...", length(plot_files)))
+      
+      if (!requireNamespace("patchwork", quietly = TRUE)) {
+        warning("patchwork package required for composite generation")
+        return(NULL)
+      }
+      if (!requireNamespace("ggplot2", quietly = TRUE)) {
+        warning("ggplot2 package required for composite generation")
+        return(NULL)
+      }
+      if (!requireNamespace("png", quietly = TRUE)) {
+        warning("png package required for composite generation")
+        return(NULL)
+      }
+      
+      # --- Helper: Create label plot (true to createGridQC source) ---
+      createLabelPlot <- function(title) {
+        ggplot2::ggplot() + 
+          ggplot2::annotate("text", x = 0, y = 0.5, label = title, size = 5, hjust = 0) +
+          ggplot2::xlim(0, 1) +
+          ggplot2::theme_void() +
+          ggplot2::theme(
+            plot.margin = ggplot2::margin(5, 5, 5, 5)
+            , panel.background = ggplot2::element_blank()
+          )
+      }
+
+      # --- Helper: Create column title plot ---
+      createTitlePlot <- function(title) {
+        ggplot2::ggplot() + 
+          ggplot2::annotate("text", x = 0.5, y = 0.5, label = title, size = 6, fontface = "bold", hjust = 0.5) +
+          ggplot2::xlim(0, 1) +
+          ggplot2::theme_void() +
+          ggplot2::theme(
+            plot.margin = ggplot2::margin(5, 5, 10, 5) # Extra bottom margin
+            , panel.background = ggplot2::element_blank()
+          )
+      }
+      
+      # --- Helper: Load image as ggplot ---
+      loadImageAsPlot <- function(file_path) {
+        if (is.na(file_path) || !file.exists(file_path)) {
+          # Return empty plot for missing files (maintains grid alignment)
+          return(ggplot2::ggplot() + ggplot2::theme_void())
+        }
+        tryCatch({
+          img <- png::readPNG(file_path)
+          g <- grid::rasterGrob(img, interpolate = TRUE)
+          ggplot2::ggplot() +
+            ggplot2::annotation_custom(g, xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf) +
+            ggplot2::theme_void()
+        }, error = function(e) {
+          message(sprintf("   [generateCompositeFromFiles] Could not load image: %s", file_path))
+          ggplot2::ggplot() + ggplot2::theme_void()
+        })
+      }
+      
+      tryCatch({
+        # Determine number of plot types (rows) based on file count
+        n_files <- length(plot_files)
+        n_plot_types <- n_files / ncol
+        
+        # Default row labels if not provided
+        if (is.null(row_labels)) {
+          # Generate default labels: a), b), c), ...
+          all_labels <- letters[1:n_files]
+          row_labels <- split(paste0(all_labels, ")"), rep(1:n_plot_types, each = ncol))
+          names(row_labels) <- paste0("row", seq_len(n_plot_types))
+        }
+        
+        # Build plot sections (labels row + images row for each plot type)
+        plot_sections <- list()
+        height_values <- c()
+
+        # Add Column Titles if provided
+        if (!is.null(column_labels)) {
+           if (length(column_labels) != ncol) {
+             warning("Number of column labels does not match ncol")
+           } else {
+             # Create a blank plot for the row label column (top-left corner)
+             blank_plot <- ggplot2::ggplot() + ggplot2::theme_void()
+             
+             # Create title plots
+             title_plots <- lapply(column_labels, createTitlePlot)
+             
+             # Prepend the blank plot to align with the grid (labels column + data columns)
+             # Wait, the structure is:
+             # Row 1: [Label a] [Plot 1] [Label b] [Plot 2] ... 
+             # No, structure is:
+             # Row Labels: [a] [b] [c]
+             # Plots:      [P1] [P2] [P3]
+             
+             # So for column titles, we just need a row of titles matching the columns.
+             # But the labels (a, b, c) are also in columns.
+             # So it should be: [Title 1] [Title 2] [Title 3]
+             
+             plot_sections <- append(plot_sections, list(
+               patchwork::wrap_plots(title_plots, ncol = ncol)
+             ))
+             height_values <- c(height_values, 0.2) # Height for title row
+             message("   [generateCompositeFromFiles] Added column titles")
+           }
+        }
+        
+        row_names <- names(row_labels)
+        
+        for (i in seq_along(row_names)) {
+          row_name <- row_names[i]
+          labels <- row_labels[[row_name]]
+          
+          # Get file indices for this row
+          start_idx <- (i - 1) * ncol + 1
+          end_idx <- min(i * ncol, n_files)
+          row_files <- plot_files[start_idx:end_idx]
+          
+          # Check if any non-NA files exist for this row
+          has_files <- any(!is.na(row_files) & sapply(row_files, function(f) !is.na(f) && file.exists(f)))
+          
+          if (has_files || row_name == "cancor") {
+            # Create label plots for this row
+            label_plots <- lapply(labels, createLabelPlot)
+            
+            # Load image plots for this row
+            image_plots <- lapply(row_files, loadImageAsPlot)
+            
+            # Add label row and image row to sections
+            plot_sections <- append(plot_sections, list(
+              patchwork::wrap_plots(label_plots, ncol = ncol)
+              , patchwork::wrap_plots(image_plots, ncol = ncol)
+            ))
+            height_values <- c(height_values, 0.1, 1)
+            
+            message(sprintf("   [generateCompositeFromFiles] Added row: %s", row_name))
+          } else {
+            message(sprintf("   [generateCompositeFromFiles] Skipping empty row: %s", row_name))
+          }
+        }
+        
+        if (length(plot_sections) == 0) {
+          warning("No valid plot sections to combine")
+          return(NULL)
+        }
+        
+        # Combine all sections vertically (true to createGridQC source)
+        message("   [generateCompositeFromFiles] Combining plot sections...")
+        combined_plot <- patchwork::wrap_plots(plot_sections, ncol = 1) +
+          patchwork::plot_layout(heights = height_values)
+        
+        # Calculate dimensions based on content
+        plot_width <- 4 + (ncol * 3)  # Base width + 3 units per column
+        plot_height <- 4 + (length(height_values) * 2)  # Base height + 2 units per row
+        
+        # Save composite
+        ggplot2::ggsave(
+          output_path
+          , combined_plot
+          , width = plot_width
+          , height = plot_height
+          , dpi = 150
+          , limitsize = FALSE
+        )
+        
+        # Clear memory
+        rm(plot_sections, combined_plot)
+        gc()
+        
+        message(sprintf("   [generateCompositeFromFiles] Composite saved to %s", output_path))
+        return(output_path)
+        
+      }, error = function(e) {
+        message(paste("   [generateCompositeFromFiles] Error:", e$message))
+        return(NULL)
+      })
+    }
+
     # Helper function to generate pre-normalization QC plots
+    # MEMORY OPTIMIZED: Save to disk immediately, clear from memory
     generatePreNormalizationQc <- function() {
       message("=== GENERATING PRE-NORMALIZATION QC PLOTS ===")
       message("Step 1: Getting current S4 object...")
+      
+      # Get QC directory for saving plots
+      qc_dir <- experiment_paths$protein_qc_dir
       
       # Get current S4 object using CORRECT R6 methods
       shiny::req(workflow_data$state_manager)
@@ -613,7 +824,16 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
       # Get current plot aesthetics
       aesthetics <- getPlotAesthetics()
       
-      # Generate QC plots and store in norm_data$qc_plots$post_filtering
+      # Initialize plot paths storage if needed
+      if (is.null(norm_data$qc_plot_paths)) {
+        norm_data$qc_plot_paths <- list(
+          post_filtering = list(),
+          post_normalization = list(),
+          ruv_corrected = list()
+        )
+      }
+      
+      # Generate QC plots - SAVE TO DISK IMMEDIATELY, clear memory
       
       # PCA plot (Step 1/4)
       message("*** PRE-NORM QC: Generating PCA plot (Step 1/4) ***")
@@ -626,7 +846,17 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
                     title = "",
         font_size = 8
       )
-      norm_data$qc_plots$post_filtering$pca <- pca_plot
+      
+      if (!is.null(qc_dir)) {
+        pca_path <- file.path(qc_dir, "pre_norm_pca.png")
+        ggplot2::ggsave(pca_path, pca_plot, width = 8, height = 6, dpi = 150)
+        norm_data$qc_plot_paths$post_filtering$pca <- pca_path
+      }
+      
+      # CLEAR MEMORY
+      rm(pca_plot)
+      gc()
+      
       pca_elapsed <- as.numeric(difftime(Sys.time(), pca_start_time, units = "secs"))
       message(sprintf("*** PRE-NORM QC: PCA plot completed in %.1f seconds ***", pca_elapsed))
       
@@ -638,27 +868,64 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
         group = aesthetics$color_var,
         yaxis_limit = c(-6, 6)
       )
-      norm_data$qc_plots$post_filtering$rle <- rle_plot
+      
+      if (!is.null(qc_dir)) {
+        rle_path <- file.path(qc_dir, "pre_norm_rle.png")
+        ggplot2::ggsave(rle_path, rle_plot, width = 10, height = 6, dpi = 150)
+        norm_data$qc_plot_paths$post_filtering$rle <- rle_path
+      }
+      
+      # CLEAR MEMORY
+      rm(rle_plot)
+      gc()
+      
       rle_elapsed <- as.numeric(difftime(Sys.time(), rle_start_time, units = "secs"))
       message(sprintf("*** PRE-NORM QC: RLE plot completed in %.1f seconds ***", rle_elapsed))
       
       # Density plot (Step 3/4)
       message("*** PRE-NORM QC: Generating Density plot (Step 3/4) ***")
+      # Need PCA plot again for density plot input? 
+      # plotPcaBox takes the PCA plot object. 
+      # Since we deleted it, we need to regenerate it or redesign plotPcaBox to take data.
+      # plotPcaBox in func_general_plotting.R takes a ggplot object.
+      # We have to regenerate PCA plot briefly.
+      
       density_start_time <- Sys.time()
-      density_plot <- plotPcaBox(
-        pca_plot,
-        grouping_variable = aesthetics$color_var
+      
+      # REGENERATE minimal PCA for density plot (unfortunate but saves long-term memory)
+      pca_plot_temp <- plotPca(
+        current_s4,
+        grouping_variable = aesthetics$color_var,
+        label_column = "",
+        shape_variable = aesthetics$shape_var, 
+        title = "",
+        font_size = 8
       )
-      norm_data$qc_plots$post_filtering$density <- density_plot
+      
+      density_plot <- plotPcaBox(
+        pca_plot_temp,
+        grouping_variable = aesthetics$color_var,
+        show_legend = TRUE
+      )
+      
+      if (!is.null(qc_dir)) {
+        density_path <- file.path(qc_dir, "pre_norm_density.png")
+        ggplot2::ggsave(density_path, density_plot, width = 8, height = 6, dpi = 150)
+        norm_data$qc_plot_paths$post_filtering$density <- density_path
+      }
+      
+      # CLEAR MEMORY
+      rm(pca_plot_temp, density_plot)
+      gc()
+      
       density_elapsed <- as.numeric(difftime(Sys.time(), density_start_time, units = "secs"))
       message(sprintf("*** PRE-NORM QC: Density plot completed in %.1f seconds ***", density_elapsed))
       
-      # Correlation plot (Step 4/4) - This is the slow one
+      # Correlation plot (Step 4/4)
       message("*** PRE-NORM QC: Generating Pearson correlation plot (Step 4/4) ***")
       num_samples <- length(setdiff(colnames(current_s4@protein_quant_table), current_s4@protein_id_column))
       estimated_pairs <- choose(num_samples, 2)
       message(sprintf("*** PRE-NORM QC: Sample count = %d, Expected pairs ≈ %d ***", num_samples, estimated_pairs))
-      message("*** PRE-NORM QC: This may take 30-90 seconds for pairwise correlation calculations ***")
       
       pearson_start_time <- Sys.time()
       
@@ -666,12 +933,12 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
       if (shiny::isRunning()) {
         correlation_plot <- shiny::withProgress(
           message = "Generating Pearson correlation plot...", 
-          detail = "Calculating pairwise correlations (30-90s)", 
+          detail = "Calculating pairwise correlations...", 
           value = 0.5, {
             result <- plotPearson(
               current_s4,
-              tech_rep_remove_regex = "pool",
-              correlation_group = aesthetics$color_var
+              correlation_group = aesthetics$color_var,
+              exclude_pool_samples = TRUE
             )
             shiny::incProgress(0.5)
             result
@@ -680,30 +947,54 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
       } else {
         correlation_plot <- plotPearson(
           current_s4,
-          tech_rep_remove_regex = "pool",
-          correlation_group = aesthetics$color_var
+          correlation_group = aesthetics$color_var,
+          exclude_pool_samples = TRUE
         )
       }
       
-      norm_data$qc_plots$post_filtering$correlation <- correlation_plot
+      if (!is.null(qc_dir)) {
+        corr_path <- file.path(qc_dir, "pre_norm_correlation.png")
+        ggplot2::ggsave(corr_path, correlation_plot, width = 10, height = 8, dpi = 150)
+        norm_data$qc_plot_paths$post_filtering$correlation <- corr_path
+      }
+      
+      # CLEAR MEMORY
+      rm(correlation_plot)
+      gc()
+      
       pearson_elapsed <- as.numeric(difftime(Sys.time(), pearson_start_time, units = "secs"))
       message(sprintf("*** PRE-NORM QC: Pearson correlation completed in %.1f seconds ***", pearson_elapsed))
       
-      # ONLY populate S4 object if it exists (during normalization workflow)
-      if (!is.null(norm_data$QC_composite_figure)) {
-        norm_data$QC_composite_figure@pca_plots$pca_plot_before_cyclic_loess_group <- pca_plot
-        norm_data$QC_composite_figure@rle_plots$rle_plot_before_cyclic_loess_group <- rle_plot
-        norm_data$QC_composite_figure@density_plots$density_plot_before_cyclic_loess_group <- density_plot
-        norm_data$QC_composite_figure@pearson_plots$pearson_correlation_pair_before_cyclic_loess <- correlation_plot
-      }
+      # NO S4 POPULATION - We are dropping QC_composite_figure logic
+      
+      # MEMORY CLEANUP
+      message("*** PRE-NORM QC: Running garbage collection ***")
+      gc()
       
       message("Pre-normalization QC plots generated successfully")
     }
     
     # Helper function to generate post-normalization QC plots
+    # MEMORY OPTIMIZED: Save to disk immediately, clear from memory
     generatePostNormalizationQc <- function(normalized_s4) {
+      message("=== GENERATING POST-NORMALIZATION QC PLOTS ===")
+      
+      # Get QC directory for saving plots
+      qc_dir <- experiment_paths$protein_qc_dir
+      
       aesthetics <- getPlotAesthetics()
       
+      # Initialize plot paths storage if needed
+      if (is.null(norm_data$qc_plot_paths)) {
+        norm_data$qc_plot_paths <- list(
+          post_filtering = list(),
+          post_normalization = list(),
+          ruv_corrected = list()
+        )
+      }
+      
+      # PCA plot
+      message("*** POST-NORM QC: Generating PCA plot ***")
       pca_plot <- plotPca(
         normalized_s4,
         grouping_variable = aesthetics$color_var,
@@ -712,41 +1003,112 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
                     title = "", 
         font_size = 8
       )
-      norm_data$qc_plots$post_normalization$pca <- pca_plot
       
+      if (!is.null(qc_dir)) {
+        pca_path <- file.path(qc_dir, "post_norm_pca.png")
+        ggplot2::ggsave(pca_path, pca_plot, width = 8, height = 6, dpi = 150)
+        norm_data$qc_plot_paths$post_normalization$pca <- pca_path
+      }
+      
+      # CLEAR MEMORY
+      rm(pca_plot)
+      gc()
+      
+      # RLE plot
+      message("*** POST-NORM QC: Generating RLE plot ***")
       rle_plot <- plotRle(
         normalized_s4,
         group = aesthetics$color_var,
         yaxis_limit = c(-6, 6)
       )
-      norm_data$qc_plots$post_normalization$rle <- rle_plot
+      
+      if (!is.null(qc_dir)) {
+        rle_path <- file.path(qc_dir, "post_norm_rle.png")
+        ggplot2::ggsave(rle_path, rle_plot, width = 10, height = 6, dpi = 150)
+        norm_data$qc_plot_paths$post_normalization$rle <- rle_path
+      }
+      
+      # CLEAR MEMORY
+      rm(rle_plot)
+      gc()
+      
+      # Density plot
+      message("*** POST-NORM QC: Generating Density plot ***")
+      
+      # Regenerate minimal PCA for density plot
+      pca_plot_temp <- plotPca(
+        normalized_s4,
+        grouping_variable = aesthetics$color_var,
+        label_column = "",
+        shape_variable = aesthetics$shape_var,
+        title = "", 
+        font_size = 8
+      )
       
       density_plot <- plotPcaBox(
-        pca_plot,
-        grouping_variable = aesthetics$color_var
+        pca_plot_temp,
+        grouping_variable = aesthetics$color_var,
+        show_legend = TRUE
       )
-      norm_data$qc_plots$post_normalization$density <- density_plot
       
+      if (!is.null(qc_dir)) {
+        density_path <- file.path(qc_dir, "post_norm_density.png")
+        ggplot2::ggsave(density_path, density_plot, width = 8, height = 6, dpi = 150)
+        norm_data$qc_plot_paths$post_normalization$density <- density_path
+      }
+      
+      # CLEAR MEMORY
+      rm(pca_plot_temp, density_plot)
+      gc()
+      
+      # Correlation plot - memory intensive
+      message("*** POST-NORM QC: Generating Pearson correlation plot ***")
       correlation_plot <- plotPearson(
         normalized_s4,
-        tech_rep_remove_regex = "pool",
-        correlation_group = aesthetics$color_var
+        correlation_group = aesthetics$color_var,
+        exclude_pool_samples = TRUE
       )
-      norm_data$qc_plots$post_normalization$correlation <- correlation_plot
       
-      # Populate S4 object (should exist during normalization workflow)
-      if (!is.null(norm_data$QC_composite_figure)) {
-        norm_data$QC_composite_figure@pca_plots$pca_plot_before_ruvIIIc_group <- pca_plot
-        norm_data$QC_composite_figure@rle_plots$rle_plot_before_ruvIIIc_group <- rle_plot
-        norm_data$QC_composite_figure@density_plots$density_plot_before_ruvIIIc_group <- density_plot
-        norm_data$QC_composite_figure@pearson_plots$pearson_correlation_pair_before_ruvIIIc <- correlation_plot
+      if (!is.null(qc_dir)) {
+        corr_path <- file.path(qc_dir, "post_norm_correlation.png")
+        ggplot2::ggsave(corr_path, correlation_plot, width = 10, height = 8, dpi = 150)
+        norm_data$qc_plot_paths$post_normalization$correlation <- corr_path
       }
+      
+      # CLEAR MEMORY
+      rm(correlation_plot)
+      gc()
+      
+      # NO S4 POPULATION
+      
+      # MEMORY CLEANUP
+      message("*** POST-NORM QC: Running garbage collection ***")
+      gc()
+      
+      message("Post-normalization QC plots generated successfully")
     }
     
     # Helper function to generate RUV-corrected QC plots
+    # MEMORY OPTIMIZED: Save to disk immediately, clear from memory
     generateRuvCorrectedQc <- function(ruv_corrected_s4) {
+      message("=== GENERATING RUV-CORRECTED QC PLOTS ===")
+      
+      # Get QC directory for saving plots
+      qc_dir <- experiment_paths$protein_qc_dir
+      
       aesthetics <- getPlotAesthetics()
       
+      # Initialize plot paths storage if needed
+      if (is.null(norm_data$qc_plot_paths)) {
+        norm_data$qc_plot_paths <- list(
+          post_filtering = list(),
+          post_normalization = list(),
+          ruv_corrected = list()
+        )
+      }
+      
+      # PCA plot
+      message("*** RUV QC: Generating PCA plot ***")
       pca_plot <- plotPca(
         ruv_corrected_s4,
         grouping_variable = aesthetics$color_var,
@@ -755,35 +1117,89 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
                     title = "",
         font_size = 8
       )
-      norm_data$qc_plots$ruv_corrected$pca <- pca_plot
       
+      if (!is.null(qc_dir)) {
+        pca_path <- file.path(qc_dir, "ruv_corrected_pca.png")
+        ggplot2::ggsave(pca_path, pca_plot, width = 8, height = 6, dpi = 150)
+        norm_data$qc_plot_paths$ruv_corrected$pca <- pca_path
+      }
+      
+      # CLEAR MEMORY
+      rm(pca_plot)
+      gc()
+      
+      # RLE plot
+      message("*** RUV QC: Generating RLE plot ***")
       rle_plot <- plotRle(
         ruv_corrected_s4,
         group = aesthetics$color_var, 
         yaxis_limit = c(-6, 6)
       )
-      norm_data$qc_plots$ruv_corrected$rle <- rle_plot
+      
+      if (!is.null(qc_dir)) {
+        rle_path <- file.path(qc_dir, "ruv_corrected_rle.png")
+        ggplot2::ggsave(rle_path, rle_plot, width = 10, height = 6, dpi = 150)
+        norm_data$qc_plot_paths$ruv_corrected$rle <- rle_path
+      }
+      
+      # CLEAR MEMORY
+      rm(rle_plot)
+      gc()
+      
+      # Density plot
+      message("*** RUV QC: Generating Density plot ***")
+      
+      # Regenerate minimal PCA
+      pca_plot_temp <- plotPca(
+        ruv_corrected_s4,
+        grouping_variable = aesthetics$color_var,
+        label_column = "",
+        shape_variable = aesthetics$shape_var,
+        title = "",
+        font_size = 8
+      )
       
       density_plot <- plotPcaBox(
-        pca_plot,
-        grouping_variable = aesthetics$color_var
+        pca_plot_temp,
+        grouping_variable = aesthetics$color_var,
+        show_legend = TRUE
       )
-      norm_data$qc_plots$ruv_corrected$density <- density_plot
       
+      if (!is.null(qc_dir)) {
+        density_path <- file.path(qc_dir, "ruv_corrected_density.png")
+        ggplot2::ggsave(density_path, density_plot, width = 8, height = 6, dpi = 150)
+        norm_data$qc_plot_paths$ruv_corrected$density <- density_path
+      }
+      
+      # CLEAR MEMORY
+      rm(pca_plot_temp, density_plot)
+      gc()
+      
+      # Correlation plot - memory intensive
+      message("*** RUV QC: Generating Pearson correlation plot ***")
       correlation_plot <- plotPearson(
         ruv_corrected_s4,
-        tech_rep_remove_regex = "pool",
-        correlation_group = aesthetics$color_var
+        correlation_group = aesthetics$color_var,
+        exclude_pool_samples = TRUE
       )
-      norm_data$qc_plots$ruv_corrected$correlation <- correlation_plot
       
-      # Populate S4 object (should exist during normalization workflow)
-      if (!is.null(norm_data$QC_composite_figure)) {
-        norm_data$QC_composite_figure@pca_plots$pca_plot_after_ruvIIIc_group <- pca_plot
-        norm_data$QC_composite_figure@rle_plots$rle_plot_after_ruvIIIc_group <- rle_plot
-        norm_data$QC_composite_figure@density_plots$density_plot_after_ruvIIIc_group <- density_plot
-        norm_data$QC_composite_figure@pearson_plots$pearson_correlation_pair_after_ruvIIIc_group <- correlation_plot
+      if (!is.null(qc_dir)) {
+        corr_path <- file.path(qc_dir, "ruv_corrected_correlation.png")
+        ggplot2::ggsave(corr_path, correlation_plot, width = 10, height = 8, dpi = 150)
+        norm_data$qc_plot_paths$ruv_corrected$correlation <- corr_path
       }
+      
+      # CLEAR MEMORY
+      rm(correlation_plot)
+      gc()
+      
+      # NO S4 POPULATION
+      
+      # MEMORY CLEANUP
+      message("*** RUV QC: Running garbage collection ***")
+      gc()
+      
+      message("RUV-corrected QC plots generated successfully")
     }
     
     # Auto-trigger pre-normalization QC when normalization tab is clicked
@@ -886,6 +1302,9 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
     shiny::observeEvent(input$run_normalization, {
       message("=== NORMALIZATION BUTTON CLICKED ===")
       message("Starting normalization workflow...")
+      
+      # MEMORY MONITORING: Check memory at start of workflow
+      checkMemoryUsage(threshold_gb = 8, context = "Normalization Start")
       
       tryCatch({
         # Get current S4 object using CORRECT R6 methods
@@ -1371,101 +1790,113 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
               message(paste("Warning: generateRuvCorrectedQc failed:", e$message))
               message("*** STEP 6A: Continuing without RUV QC plots ***")
             })
+            
+            # Save cancor plot to disk if available
+            tryCatch({
+              if (!is.null(norm_data$ruv_optimization_result$best_cancor_plot)) {
+                qc_dir <- experiment_paths$protein_qc_dir
+                if (!is.null(qc_dir)) {
+                  cancor_path <- file.path(qc_dir, "ruv_corrected_cancor.png")
+                  ggplot2::ggsave(
+                    cancor_path
+                    , norm_data$ruv_optimization_result$best_cancor_plot
+                    , width = 8
+                    , height = 6
+                    , dpi = 150
+                  )
+                  norm_data$qc_plot_paths$ruv_corrected$cancor <- cancor_path
+                  message("*** STEP 6A: Cancor plot saved to disk ***")
+                }
+              } else {
+                message("*** STEP 6A: No cancor plot available to save ***")
+              }
+            }, error = function(e) {
+              message(paste("Warning: Could not save cancor plot:", e$message))
+            })
           } else {
             message("*** STEP 6A: Skipping RUV-corrected QC plots (RUV was skipped) ***")
           }
           
-          # STEP 6B: ALWAYS generate composite QC figure (critical for copyToResultsSummary)
-          message(sprintf("*** STEP 6B: norm_data$qc_plots$post_filtering$pca is NULL: %s ***", is.null(norm_data$qc_plots$post_filtering$pca)))
-          message(sprintf("*** STEP 6B: norm_data$qc_plots$post_normalization$pca is NULL: %s ***", is.null(norm_data$qc_plots$post_normalization$pca)))
-          message(sprintf("*** STEP 6B: norm_data$qc_plots$ruv_corrected$pca is NULL: %s ***", is.null(norm_data$qc_plots$ruv_corrected$pca)))
+          # STEP 6B: Generate composite QC figure from saved images
+          message("*** STEP 6B: Generating composite QC figure from saved images ***")
           
-          # ENSURE S4 object has all plots populated before calling createGridQC
-          if (!is.null(norm_data$QC_composite_figure)) {
-            message("*** STEP 6B: Ensuring S4 object has all plots populated ***")
-            
-            # Populate pre-norm plots if missing
-            if (is.null(norm_data$QC_composite_figure@pca_plots$pca_plot_before_cyclic_loess_group) && 
-                !is.null(norm_data$qc_plots$post_filtering$pca)) {
-              norm_data$QC_composite_figure@pca_plots$pca_plot_before_cyclic_loess_group <- norm_data$qc_plots$post_filtering$pca
-              norm_data$QC_composite_figure@rle_plots$rle_plot_before_cyclic_loess_group <- norm_data$qc_plots$post_filtering$rle
-              norm_data$QC_composite_figure@density_plots$density_plot_before_cyclic_loess_group <- norm_data$qc_plots$post_filtering$density
-              norm_data$QC_composite_figure@pearson_plots$pearson_correlation_pair_before_cyclic_loess <- norm_data$qc_plots$post_filtering$correlation
-            }
-            
-            # Populate post-norm plots if missing
-            if (is.null(norm_data$QC_composite_figure@pca_plots$pca_plot_before_ruvIIIc_group) && 
-                !is.null(norm_data$qc_plots$post_normalization$pca)) {
-              norm_data$QC_composite_figure@pca_plots$pca_plot_before_ruvIIIc_group <- norm_data$qc_plots$post_normalization$pca
-              norm_data$QC_composite_figure@rle_plots$rle_plot_before_ruvIIIc_group <- norm_data$qc_plots$post_normalization$rle
-              norm_data$QC_composite_figure@density_plots$density_plot_before_ruvIIIc_group <- norm_data$qc_plots$post_normalization$density
-              norm_data$QC_composite_figure@pearson_plots$pearson_correlation_pair_before_ruvIIIc <- norm_data$qc_plots$post_normalization$correlation
-            }
-            
-            # Populate RUV plots if missing
-            if (is.null(norm_data$QC_composite_figure@pca_plots$pca_plot_after_ruvIIIc_group) && 
-                !is.null(norm_data$qc_plots$ruv_corrected$pca)) {
-              norm_data$QC_composite_figure@pca_plots$pca_plot_after_ruvIIIc_group <- norm_data$qc_plots$ruv_corrected$pca
-              norm_data$QC_composite_figure@rle_plots$rle_plot_after_ruvIIIc_group <- norm_data$qc_plots$ruv_corrected$rle
-              norm_data$QC_composite_figure@density_plots$density_plot_after_ruvIIIc_group <- norm_data$qc_plots$ruv_corrected$density
-              norm_data$QC_composite_figure@pearson_plots$pearson_correlation_pair_after_ruvIIIc_group <- norm_data$qc_plots$ruv_corrected$correlation
-            }
-            
-            # Add cancor plots for the three stages
-            if (!is.null(norm_data$ruv_optimization_result) && !is.null(norm_data$ruv_optimization_result$best_cancor_plot)) {
-              # For simplicity, use the same cancor plot for all three stages (or generate different ones if available)
-              norm_data$QC_composite_figure@cancor_plots$cancor_plot_before_cyclic_loess <- NULL  # No cancor before normalization
-              norm_data$QC_composite_figure@cancor_plots$cancor_plot_before_ruvIIIc <- NULL      # No cancor before RUV
-              norm_data$QC_composite_figure@cancor_plots$cancor_plot_after_ruvIIIc <- norm_data$ruv_optimization_result$best_cancor_plot
-            }
+          qc_dir <- experiment_paths$protein_qc_dir
+          
+          # Define file lists based on RUV mode
+          # Structure: files grouped by plot type (row) then by stage (column)
+          if (input$ruv_mode == "skip") {
+             ncol_composite <- 2
+             # 2 columns: Pre-Norm, Post-Norm
+             # Order by row: PCA, Density, RLE, Correlation (no Cancor for skip mode)
+             file_names <- c(
+               "pre_norm_pca.png", "post_norm_pca.png"
+               , "pre_norm_density.png", "post_norm_density.png"
+               , "pre_norm_rle.png", "post_norm_rle.png"
+               , "pre_norm_correlation.png", "post_norm_correlation.png"
+             )
+             # Row labels for 2-column mode
+             row_labels <- list(
+               pca = c("a)", "b)")
+               , density = c("c)", "d)")
+               , rle = c("e)", "f)")
+               , correlation = c("g)", "h)")
+             )
+             column_labels <- c("Pre-Normalisation", "Post-Normalisation")
+          } else {
+             ncol_composite <- 3
+             # 3 columns: Pre, Post, RUV
+             # Order by row: PCA, Density, RLE, Correlation, Cancor
+             file_names <- c(
+               "pre_norm_pca.png", "post_norm_pca.png", "ruv_corrected_pca.png"
+               , "pre_norm_density.png", "post_norm_density.png", "ruv_corrected_density.png"
+               , "pre_norm_rle.png", "post_norm_rle.png", "ruv_corrected_rle.png"
+               , "pre_norm_correlation.png", "post_norm_correlation.png", "ruv_corrected_correlation.png"
+               , NA, NA, "ruv_corrected_cancor.png"  # Cancor only exists for RUV column
+             )
+             # Row labels for 3-column mode
+             row_labels <- list(
+               pca = c("a)", "b)", "c)")
+               , density = c("d)", "e)", "f)")
+               , rle = c("g)", "h)", "i)")
+               , correlation = c("j)", "k)", "l)")
+               , cancor = c("", "", "m)")  # Only RUV column has cancor
+             )
+             column_labels <- c("Pre-Normalisation", "Post-Normalisation", "RUV-Corrected")
           }
           
-          tryCatch({
-            # Use the S4 QC_composite_figure object that we've been populating
-            message("*** STEP 6B: Using S4 QC_composite_figure object ***")
-            message(sprintf("*** STEP 6B: QC_composite_figure class: %s ***", class(norm_data$QC_composite_figure)))
+          # Full paths
+          if (!is.null(qc_dir)) {
+            # Build full paths, handling NA placeholders for empty slots
+            plot_files <- sapply(file_names, function(fn) {
+              if (is.na(fn)) NA else file.path(qc_dir, fn)
+            })
             
-            # Generate composite QC figure and save to protein_qc_dir
-            message("*** STEP 6B: About to call createGridQC ***")
+            # Output path
+            composite_path <- file.path(qc_dir, "composite_QC_figure.png")
             
-            # Conditional layout based on RUV mode AND whether plots exist
-            # Use 2-column layout if: (1) RUV was skipped OR (2) RUV plots failed to generate
-            if (input$ruv_mode == "skip" || is.null(norm_data$qc_plots$ruv_corrected$pca)) {
-              # 2-column layout when RUV is skipped or plots unavailable
-              message("*** STEP 6B: Creating 2-column QC composite (RUV skipped or plots unavailable) ***")
-              pca_ruv_rle_correlation_merged <- createGridQC(
-                norm_data$QC_composite_figure,
-                pca_titles = c("a) Pre-normalization", "b) Normalized data (Final)"),
-                density_titles = c("c)", "d)"),
-                rle_titles = c("e)", "f)"),
-                pearson_titles = c("g)", "h)"),
-                cancor_titles = c("", ""),  # No cancor plots when RUV skipped
-                ncol = 2,
-                save_path = experiment_paths$protein_qc_dir,
-                file_name = "composite_QC_figure"
+            # Generate composite with titles
+            tryCatch({
+              generateCompositeFromFiles(
+                plot_files
+                , composite_path
+                , ncol = ncol_composite
+                , row_labels = row_labels
+                , column_labels = column_labels
               )
-            } else {
-              # 3-column layout when RUV is applied (original behavior)
-              message("*** STEP 6B: Creating 3-column QC composite (RUV applied) ***")
-              pca_ruv_rle_correlation_merged <- createGridQC(
-                norm_data$QC_composite_figure,
-                pca_titles = c("a) Pre-normalization", "b) Normalized data", "c) RUV-corrected data"),
-                density_titles = c("d)", "e)", "f)"),
-                rle_titles = c("g)", "h)", "i)"),
-                pearson_titles = c("j)", "k)", "l)"),
-                cancor_titles = c("", "", "m)"),  # Empty for first two columns, "m)" for RUV column
-                ncol = 3,
-                save_path = experiment_paths$protein_qc_dir,
-                file_name = "composite_QC_figure"
-              )
-            }
-            
-            message("*** STEP 6B: Composite QC figure saved to protein_qc_dir ***")
-            
-          }, error = function(e) {
-            message(paste("Warning: Could not generate composite QC figure:", e$message))
-            message("*** STEP 6B: This may cause issues with session summary file copying ***")
-          })
+              message("*** STEP 6B: Composite QC figure saved to protein_qc_dir ***")
+            }, error = function(e) {
+              message(paste("Warning: Could not generate composite QC figure:", e$message))
+            })
+          }
+          
+          # Clear QC_composite_figure if it exists (legacy cleanup)
+          norm_data$QC_composite_figure <- NULL
+          
+          # MEMORY OPTIMIZATION: Clear individual QC plots from memory since they're saved to disk
+          # Keep only what's needed for UI display (the plots are also saved as individual PNGs)
+          message("*** STEP 6: Clearing redundant plot objects from memory ***")
+          # Note: We keep norm_data$qc_plots for UI rendering, but clear the S4 composite
+          gc()
           
           # Mark normalization as complete regardless of QC plot generation
           norm_data$ruv_complete <- TRUE
@@ -1505,7 +1936,10 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
     
     # NEW: Correlation Filtering Button Logic (Chunk 28)
     shiny::observeEvent(input$apply_correlation_filter, {
-      message("=== CORRELATION FILTERING BUTTON CLICKED ===")
+      message("=== CORRELATION FILTERING BUTTON CLICKED (DEBUG66 ACTIVE) ===")
+      
+      # MEMORY MONITORING: Check memory at start of correlation filtering
+      checkMemoryUsage(threshold_gb = 8, context = "Correlation Filtering Start")
       
       tryCatch({
         # Get RUV-corrected object (should exist after normalization)
@@ -1514,17 +1948,29 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
           stop("RUV correction must be completed before correlation filtering")
         }
         
+        message(sprintf("--- DEBUG66 [mod_prot_norm]: Starting Correlation Filter Flow ---"))
+        message(sprintf("   [mod_prot_norm] Input Object (ruv_s4) Dimensions: %d proteins x %d samples", 
+                        nrow(ruv_s4@protein_quant_table), 
+                        ncol(ruv_s4@protein_quant_table) - 1)) # Approx
+        
         shiny::withProgress(message = "Applying correlation filter...", value = 0, {
           
           # Step 1: Calculate correlation vector (chunk 28)
           shiny::incProgress(0.3, detail = "Calculating sample correlations...")
           message("*** CORRELATION STEP 1: Calculating sample correlations ***")
           
+          message("   [mod_prot_norm] Calling pearsonCorForSamplePairs...")
+          start_time_step1 <- Sys.time()
           correlation_vec <- pearsonCorForSamplePairs(
             ruv_s4,
             tech_rep_remove_regex = "pool",
             correlation_group = getRuvGroupingVariable()
           )
+          end_time_step1 <- Sys.time()
+          message(sprintf("   [mod_prot_norm] pearsonCorForSamplePairs returned. Duration: %.2f secs", 
+                          as.numeric(difftime(end_time_step1, start_time_step1, units = "secs"))))
+          message(sprintf("   [mod_prot_norm] Correlation Vector Size: %d rows", nrow(correlation_vec)))
+          
           norm_data$correlation_vector <- correlation_vec
           norm_data$correlation_threshold <- input$min_pearson_correlation_threshold
           message("*** CORRELATION STEP 1: Sample correlations calculated ***")
@@ -1533,29 +1979,49 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
           shiny::incProgress(0.4, detail = "Filtering low-correlation samples...")
           message("*** CORRELATION STEP 2: Applying correlation threshold filter ***")
           
+          message("   [mod_prot_norm] Calling filterSamplesByProteinCorrelationThreshold...")
+          start_time_step2 <- Sys.time()
           final_s4_for_de <- filterSamplesByProteinCorrelationThreshold(
             ruv_s4,
             pearson_correlation_per_pair = correlation_vec,
             min_pearson_correlation_threshold = input$min_pearson_correlation_threshold
           )
+          end_time_step2 <- Sys.time()
+          message(sprintf("   [mod_prot_norm] filterSamplesByProteinCorrelationThreshold returned. Duration: %.2f secs", 
+                          as.numeric(difftime(end_time_step2, start_time_step2, units = "secs"))))
+          
           norm_data$correlation_filtered_obj <- final_s4_for_de
           message("*** CORRELATION STEP 2: Correlation filtering applied ***")
+          
+          # MEMORY CLEANUP: Force garbage collection after filtering
+          message("*** CORRELATION STEP 2: Running garbage collection ***")
+          gc()
           
           # Step 3: Update protein filtering tracking (chunk 28)
           shiny::incProgress(0.2, detail = "Updating tracking...")
           message("*** CORRELATION STEP 3: Updating protein filtering tracking ***")
           
           # Fix Issue 3: Capture the filtering plot for final QC display
-          final_filtering_plot <- updateProteinFiltering(
-            data = final_s4_for_de@protein_quant_table,
-            step_name = "12_correlation_filtered",
-            omic_type = omic_type,
-            experiment_label = experiment_label,
-            return_grid = TRUE,
-            overwrite = TRUE
-          )
+          # Wrap in tryCatch to prevent hangs and allow workflow to continue
+          final_filtering_plot <- tryCatch({
+            message("   [mod_prot_norm] Calling updateProteinFiltering...")
+            result <- updateProteinFiltering(
+              data = final_s4_for_de@protein_quant_table,
+              step_name = "12_correlation_filtered",
+              omic_type = omic_type,
+              experiment_label = experiment_label,
+              return_grid = TRUE,
+              overwrite = TRUE
+            )
+            message("   [mod_prot_norm] updateProteinFiltering returned.")
+            result
+          }, error = function(e) {
+            message(paste("*** WARNING: updateProteinFiltering failed:", e$message, "***"))
+            message("*** CORRELATION STEP 3: Continuing without filtering plot update ***")
+            return(NULL)
+          })
           
-          # Store the complete filtering progression for final QC display
+          # Store the complete filtering progression for final QC display (if available)
           norm_data$final_filtering_plot <- final_filtering_plot
           
           # Generate final QC plot
@@ -1577,6 +2043,10 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
           shiny::incProgress(0.1, detail = "Saving results...")
           message("*** CORRELATION STEP 4: Saving final results ***")
           
+          # MEMORY CLEANUP: Force garbage collection before file saves
+          message("*** CORRELATION STEP 4: Running garbage collection before saves ***")
+          gc()
+          
           tryCatch({
             # Determine if RUV was skipped for file naming
             ruv_was_skipped <- isTRUE(norm_data$ruv_optimization_result$ruv_skipped) || 
@@ -1595,7 +2065,8 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
             
             # Save TSV file
             if (!is.null(experiment_paths) && "protein_qc_dir" %in% names(experiment_paths)) {
-              vroom::vroom_write(
+              # Use readr::write_tsv instead of vroom::vroom_write to avoid potential crashes with large datasets on Windows
+              readr::write_tsv(
                 final_s4_for_de@protein_quant_table,
                 file.path(experiment_paths$protein_qc_dir, tsv_filename)
               )
@@ -1684,116 +2155,237 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
       })
     })
     
+    # NEW: Skip Correlation Filtering Button Logic
+    shiny::observeEvent(input$skip_correlation_filter, {
+      message("=== SKIP CORRELATION FILTERING BUTTON CLICKED (DEBUG66 ACTIVE) ===")
+      
+      # MEMORY MONITORING
+      checkMemoryUsage(threshold_gb = 8, context = "Skip Correlation Filtering Start")
+      
+      tryCatch({
+        # Get RUV-corrected object (should exist after normalization)
+        ruv_s4 <- norm_data$ruv_normalized_obj
+        if (is.null(ruv_s4)) {
+          stop("RUV correction must be completed before proceeding")
+        }
+        
+        message(sprintf("--- DEBUG66 [mod_prot_norm]: Skipping Correlation Filter Flow ---"))
+        message(sprintf("   [mod_prot_norm] Input Object (ruv_s4) Dimensions: %d proteins x %d samples", 
+                        nrow(ruv_s4@protein_quant_table), 
+                        ncol(ruv_s4@protein_quant_table) - 1))
+        
+        shiny::withProgress(message = "Skipping filter and saving...", value = 0, {
+          
+          # Step 1: Bypass filtering
+          shiny::incProgress(0.3, detail = "Bypassing filter...")
+          message("*** SKIP CORRELATION: Bypassing sample filtering ***")
+          
+          # Use the RUV object directly as the final object
+          final_s4_for_de <- ruv_s4
+          
+          # No correlation vector needed when skipping
+          norm_data$correlation_vector <- NULL
+          norm_data$correlation_threshold <- NULL
+          norm_data$correlation_filtered_obj <- final_s4_for_de
+          
+          message("*** SKIP CORRELATION: Object passed through without filtering ***")
+          
+          # MEMORY CLEANUP
+          gc()
+          
+          # Step 2: Update protein filtering tracking
+          shiny::incProgress(0.2, detail = "Updating tracking...")
+          message("*** SKIP CORRELATION: Updating protein filtering tracking ***")
+          
+          # Capture the filtering plot for final QC display
+          final_filtering_plot <- tryCatch({
+            message("   [mod_prot_norm] Calling updateProteinFiltering (skip mode)...")
+            result <- updateProteinFiltering(
+              data = final_s4_for_de@protein_quant_table,
+              step_name = "12_correlation_filtered",
+              omic_type = omic_type,
+              experiment_label = experiment_label,
+              return_grid = TRUE,
+              overwrite = TRUE
+            )
+            message("   [mod_prot_norm] updateProteinFiltering returned.")
+            result
+          }, error = function(e) {
+            message(paste("*** WARNING: updateProteinFiltering failed:", e$message, "***"))
+            return(NULL)
+          })
+          
+          # Store the complete filtering progression
+          norm_data$final_filtering_plot <- final_filtering_plot
+          
+          # Generate final QC plot (same as standard flow)
+          tryCatch({
+            aesthetics <- getPlotAesthetics()
+            norm_data$final_qc_plot <- plotPca(
+              final_s4_for_de,
+              grouping_variable = aesthetics$color_var,
+              label_column = "",
+              shape_variable = aesthetics$shape_var,
+              title = "Final Data (Correlation Filter Skipped)",
+              font_size = 8
+            )
+          }, error = function(e) {
+            message(paste("Error generating final QC plot:", e$message))
+          })
+          
+          # Step 3: Save final results as TSV and RDS (Same as Apply button)
+          shiny::incProgress(0.2, detail = "Saving results...")
+          message("*** SKIP CORRELATION: Saving final results ***")
+          
+          # MEMORY CLEANUP
+          gc()
+          
+          tryCatch({
+            # Determine if RUV was skipped for file naming
+            ruv_was_skipped <- isTRUE(norm_data$ruv_optimization_result$ruv_skipped) || 
+                              isTRUE(workflow_data$ruv_optimization_result$ruv_skipped)
+            
+            # Use conditional file names based on RUV status
+            if (ruv_was_skipped) {
+              tsv_filename <- "normalised_results_cln_with_replicates.tsv"
+              rds_filename <- "normalised_results_cln_with_replicates.RDS"
+              message("*** SKIP CORRELATION: RUV was skipped - using 'normalised' file names ***")
+            } else {
+              tsv_filename <- "ruv_normalised_results_cln_with_replicates.tsv"
+              rds_filename <- "ruv_normalised_results_cln_with_replicates.RDS"
+              message("*** SKIP CORRELATION: RUV was applied - using 'ruv_normalised' file names ***")
+            }
+            
+            # Save TSV file
+            if (!is.null(experiment_paths) && "protein_qc_dir" %in% names(experiment_paths)) {
+              # Use readr::write_tsv instead of vroom::vroom_write
+              readr::write_tsv(
+                final_s4_for_de@protein_quant_table,
+                file.path(experiment_paths$protein_qc_dir, tsv_filename)
+              )
+              
+              # Save RDS file
+              saveRDS(
+                final_s4_for_de,
+                file.path(experiment_paths$protein_qc_dir, rds_filename)
+              )
+              
+              message(sprintf("*** SKIP CORRELATION: Saved files: %s, %s ***", tsv_filename, rds_filename))
+            }
+          }, error = function(e) {
+            message(paste("Warning: Could not save files:", e$message))
+          })
+          
+        })
+        
+        # CRITICAL: THIS is where the final object becomes ready for DE
+        workflow_data$ruv_normalised_for_de_analysis_obj <- final_s4_for_de
+        
+        # Save to R6 state manager with new state
+        workflow_data$state_manager$saveState(
+          state_name = "correlation_filtered",
+          s4_data_object = final_s4_for_de,
+          config_object = list(min_pearson_correlation_threshold = 0, skipped = TRUE),
+          description = "Skipped final sample correlation filter"
+        )
+        
+        # DEBUG66: CRITICAL STATE UPDATE TRIGGER
+        cat("--- Entering STATE UPDATE TRIGGER setting (SKIP MODE) ---\n")
+        cat("   STATE UPDATE Step: Setting workflow_data$state_update_trigger...\n")
+        old_trigger_value <- workflow_data$state_update_trigger
+        new_trigger_value <- Sys.time()
+        workflow_data$state_update_trigger <- new_trigger_value
+        cat("   STATE UPDATE Step: state_update_trigger SET SUCCESSFULLY\n")
+        
+        # NOW enable differential expression tab
+        cat("   STATE UPDATE Step: Setting tab status...\n")
+        workflow_data$tab_status$normalization <- "complete"
+        workflow_data$tab_status$differential_expression <- "pending"
+        cat(sprintf("   STATE UPDATE Step: normalization status = %s\n", workflow_data$tab_status$normalization))
+        cat("--- Exiting STATE UPDATE TRIGGER setting (SKIP MODE) ---\n")
+        
+        # Calculate final protein count
+        final_protein_count <- length(unique(final_s4_for_de@protein_quant_table$Protein.Ids))
+        
+        # Track protein count
+        if (is.null(workflow_data$protein_counts)) {
+          workflow_data$protein_counts <- list()
+        }
+        workflow_data$protein_counts$final_for_de <- final_protein_count
+        message(sprintf("*** SKIP CORRELATION: Tracked final protein count for DE: %d ***", final_protein_count))
+        
+        # Update summary display
+        correlation_summary <- sprintf(
+          "Correlation filtering SKIPPED.\n\nAll samples retained.\nProteins remaining: %d\nSamples remaining: %d\n\nReady for differential expression analysis.",
+          final_protein_count,
+          length(setdiff(colnames(final_s4_for_de@protein_quant_table), final_s4_for_de@protein_id_column))
+        )
+        output$correlation_filter_summary <- shiny::renderText(correlation_summary)
+        
+        norm_data$correlation_filtering_complete <- TRUE
+        
+        shiny::showNotification(
+          "Correlation filtering skipped! Ready for differential expression analysis.",
+          type = "message",
+          duration = 5
+        )
+        
+        message("=== SKIP CORRELATION FILTERING COMPLETED SUCCESSFULLY ===")
+        
+      }, error = function(e) {
+        message(paste("Error in skipping correlation filtering:", e$message))
+        shiny::showNotification(
+          paste("Error in skipping correlation filtering:", e$message),
+          type = "error",
+          duration = 10
+        )
+      })
+    })
+    
     # Render QC plots - Post-filtering column
-    output$pca_post_filtering <- shiny::renderPlot({
-      if (!is.null(norm_data$qc_plots$post_filtering$pca)) {
-        norm_data$qc_plots$post_filtering$pca
-      } else {
-        plot.new()
-        text(0.5, 0.5, "Pre-normalization QC not yet generated", cex = 1.2)
-      }
-    })
+    # MEMORY OPTIMIZATION: Use renderImage to load saved PNGs instead of keeping ggplot objects in memory
     
-    output$density_post_filtering <- shiny::renderPlot({
-      if (!is.null(norm_data$qc_plots$post_filtering$density)) {
-        norm_data$qc_plots$post_filtering$density
-      } else {
-        plot.new()
-        text(0.5, 0.5, "Pre-normalization QC not yet generated", cex = 1.2)
-      }
-    })
+    # Define a helper to render images safely
+    render_qc_image <- function(filename, alt_text) {
+      shiny::renderImage({
+        # Define path
+        if (!is.null(experiment_paths$protein_qc_dir)) {
+           img_path <- file.path(experiment_paths$protein_qc_dir, filename)
+        } else {
+           img_path <- ""
+        }
+        
+        # Check if file exists
+        if (img_path != "" && file.exists(img_path)) {
+          list(src = img_path,
+               contentType = 'image/png',
+               width = "100%",
+               height = "auto",
+               alt = alt_text)
+        } else {
+          # Return a transparent 1x1 pixel or a placeholder if file doesn't exist
+          # For now, we return a list that will result in a broken image icon or we can use a placeholder
+          # Better: Return a list with a flag to let the UI know, or use a default placeholder
+          list(src = "", alt = "Plot not generated yet")
+        }
+      }, deleteFile = FALSE)
+    }
+
+    output$pca_post_filtering <- render_qc_image("pre_norm_pca.png", "PCA Post-Filtering")
+    output$density_post_filtering <- render_qc_image("pre_norm_density.png", "Density Post-Filtering")
+    output$rle_post_filtering <- render_qc_image("pre_norm_rle.png", "RLE Post-Filtering")
+    output$correlation_post_filtering <- render_qc_image("pre_norm_correlation.png", "Correlation Post-Filtering")
     
-    output$rle_post_filtering <- shiny::renderPlot({
-      if (!is.null(norm_data$qc_plots$post_filtering$rle)) {
-        norm_data$qc_plots$post_filtering$rle
-      } else {
-        plot.new()
-        text(0.5, 0.5, "Pre-normalization QC not yet generated", cex = 1.2)
-      }
-    })
-    
-    output$correlation_post_filtering <- shiny::renderPlot({
-      if (!is.null(norm_data$qc_plots$post_filtering$correlation)) {
-        norm_data$qc_plots$post_filtering$correlation
-      } else {
-        plot.new()
-        text(0.5, 0.5, "Pre-normalization QC not yet generated", cex = 1.2)
-      }
-    })
-    
-    # Render QC plots - Post-normalization column
-    output$pca_post_normalization <- shiny::renderPlot({
-      if (!is.null(norm_data$qc_plots$post_normalization$pca)) {
-        norm_data$qc_plots$post_normalization$pca
-      } else {
-        plot.new()
-        text(0.5, 0.5, "Run normalization to generate plots", cex = 1.2)
-      }
-    })
-    
-    output$density_post_normalization <- shiny::renderPlot({
-      if (!is.null(norm_data$qc_plots$post_normalization$density)) {
-        norm_data$qc_plots$post_normalization$density
-      } else {
-        plot.new()
-        text(0.5, 0.5, "Run normalization to generate plots", cex = 1.2)
-      }
-    })
-    
-    output$rle_post_normalization <- shiny::renderPlot({
-      if (!is.null(norm_data$qc_plots$post_normalization$rle)) {
-        norm_data$qc_plots$post_normalization$rle
-      } else {
-        plot.new()
-        text(0.5, 0.5, "Run normalization to generate plots", cex = 1.2)
-      }
-    })
-    
-    output$correlation_post_normalization <- shiny::renderPlot({
-      if (!is.null(norm_data$qc_plots$post_normalization$correlation)) {
-        norm_data$qc_plots$post_normalization$correlation
-      } else {
-        plot.new()
-        text(0.5, 0.5, "Run normalization to generate plots", cex = 1.2)
-      }
-    })
-    
-    # Render QC plots - RUV-corrected column
-    output$pca_ruv_corrected <- shiny::renderPlot({
-      if (!is.null(norm_data$qc_plots$ruv_corrected$pca)) {
-        norm_data$qc_plots$ruv_corrected$pca
-      } else {
-        plot.new()
-        text(0.5, 0.5, "Run RUV correction to generate plots", cex = 1.2)
-      }
-    })
-    
-    output$density_ruv_corrected <- shiny::renderPlot({
-      if (!is.null(norm_data$qc_plots$ruv_corrected$density)) {
-        norm_data$qc_plots$ruv_corrected$density
-      } else {
-        plot.new()
-        text(0.5, 0.5, "Run RUV correction to generate plots", cex = 1.2)
-      }
-    })
-    
-    output$rle_ruv_corrected <- shiny::renderPlot({
-      if (!is.null(norm_data$qc_plots$ruv_corrected$rle)) {
-        norm_data$qc_plots$ruv_corrected$rle
-      } else {
-        plot.new()
-        text(0.5, 0.5, "Run RUV correction to generate plots", cex = 1.2)
-      }
-    })
-    
-    output$correlation_ruv_corrected <- shiny::renderPlot({
-      if (!is.null(norm_data$qc_plots$ruv_corrected$correlation)) {
-        norm_data$qc_plots$ruv_corrected$correlation
-      } else {
-        plot.new()
-        text(0.5, 0.5, "Run RUV correction to generate plots", cex = 1.2)
-      }
-    })
+    output$pca_post_normalization <- render_qc_image("post_norm_pca.png", "PCA Post-Normalization")
+    output$density_post_normalization <- render_qc_image("post_norm_density.png", "Density Post-Normalization")
+    output$rle_post_normalization <- render_qc_image("post_norm_rle.png", "RLE Post-Normalization")
+    output$correlation_post_normalization <- render_qc_image("post_norm_correlation.png", "Correlation Post-Normalization")
+
+    output$pca_ruv_corrected <- render_qc_image("ruv_corrected_pca.png", "PCA RUV Corrected")
+    output$density_ruv_corrected <- render_qc_image("ruv_corrected_density.png", "Density RUV Corrected")
+    output$rle_ruv_corrected <- render_qc_image("ruv_corrected_rle.png", "RLE RUV Corrected")
+    output$correlation_ruv_corrected <- render_qc_image("ruv_corrected_correlation.png", "Correlation RUV Corrected")
+
     
     # NEW: Render post-normalisation filtering summary plot
     output$post_norm_filtering_summary <- shiny::renderPlot({
@@ -1817,8 +2409,12 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
     
     # NEW: Render final QC plot after correlation filtering
     output$final_qc_plot <- shiny::renderPlot({
+      message("--- DEBUG66 [final_qc_plot]: Rendering ---")
+      
       # Fix Issue 3: Show both PCA and complete filtering progression
       if (!is.null(norm_data$final_qc_plot) && !is.null(norm_data$final_filtering_plot)) {
+        message("   [final_qc_plot] Drawing PCA + Filtering Progression...")
+        
         # Create a combined layout: PCA on top, filtering progression below
         grid::grid.newpage()
         grid::pushViewport(grid::viewport(layout = grid::grid.layout(2, 1, heights = c(0.4, 0.6))))
@@ -1830,16 +2426,26 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
         
         # Bottom: Complete filtering progression 
         grid::pushViewport(grid::viewport(layout.pos.row = 2))
+        
+        # CAREFUL: norm_data$final_filtering_plot might be a grid already (from arrangeGrob)
+        # or a ggplot object. grid::grid.draw handles both, but let's be explicit.
         grid::grid.draw(norm_data$final_filtering_plot)
         grid::popViewport()
         
         grid::popViewport()
+        message("   [final_qc_plot] Render complete.")
+        
       } else if (!is.null(norm_data$final_filtering_plot)) {
         # Show just filtering progression if PCA failed
+        message("   [final_qc_plot] Drawing Filtering Progression ONLY...")
         grid::grid.draw(norm_data$final_filtering_plot)
+        message("   [final_qc_plot] Render complete.")
+        
       } else if (!is.null(norm_data$final_qc_plot)) {
         # Show just PCA if filtering progression failed
+        message("   [final_qc_plot] Drawing PCA ONLY...")
         norm_data$final_qc_plot
+        
       } else {
         plot.new()
         text(0.5, 0.5, "Apply correlation filter to generate final QC plot", cex = 1.2)
@@ -2032,19 +2638,18 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
           # Step 1: Gather all essential data for DE analysis
           shiny::incProgress(0.2, detail = "Gathering data...")
           
-                     # Get the current R6 state manager state and complete state info
+          # Get the current R6 state manager state and complete state info
            current_state_name <- workflow_data$state_manager$current_state
            current_s4_object <- workflow_data$state_manager$getState(current_state_name)
            
-           # Export the complete R6 states structure for proper restoration
-           r6_complete_states <- workflow_data$state_manager$states
-           r6_state_history <- workflow_data$state_manager$state_history
+           # MEMORY FIX: Do NOT export the full R6 history or complete states list
+           # These objects contain copies of every previous step's S4 object (10GB+ each)
+           # Instead, we only save what is strictly needed to restore the CURRENT state
            
            session_data <- list(
-             # Complete R6 State Manager Information for proper restoration
+             # Minimal R6 State Info for restoration
              r6_current_state_name = current_state_name,
-             r6_complete_states = r6_complete_states,
-             r6_state_history = r6_state_history,
+             # We do NOT save r6_complete_states or r6_state_history to prevent 50GB+ files
              
              # Current S4 object from R6 state manager (for quick access)
              current_s4_object = current_s4_object,
@@ -2094,6 +2699,9 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
             
             # NEW: Protein counts through workflow stages
             protein_counts = workflow_data$protein_counts,
+            
+            # ✅ NEW: Mixed species FASTA analysis metadata for enrichment filtering
+            mixed_species_analysis = workflow_data$mixed_species_analysis,
             
             # Data dimensions for verification
              final_protein_count = length(unique(current_s4_object@protein_quant_table$Protein.Ids)),
@@ -2157,6 +2765,14 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
                 saveRDS(session_data$ruv_optimization_result, ruv_file)
                 message(sprintf("*** EXPORT: Saved ruv_optimization_results.RDS ***"))
               }
+            }
+            
+            # ✅ NEW: Save mixed species analysis metadata for enrichment filtering
+            if (!is.null(session_data$mixed_species_analysis)) {
+              mixed_species_file <- file.path(source_dir, "mixed_species_analysis.RDS")
+              saveRDS(session_data$mixed_species_analysis, mixed_species_file)
+              message(sprintf("*** EXPORT: Saved mixed_species_analysis.RDS (enabled: %s) ***", 
+                             isTRUE(session_data$mixed_species_analysis$enabled)))
             }
             
           }, error = function(e) {

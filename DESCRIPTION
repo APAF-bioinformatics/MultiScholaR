@@ -171,7 +171,8 @@ Imports:
     viridis,
     vroom,
     writexl,
-    xml2
+    xml2,
+    magick
 Remotes:
     cran/RUVIIIC,
     APAF-bioinformatics/GlimmaV2

@@ -437,8 +437,12 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
                 if (length(script_files) > 0) {
                     logger::log_info("Copying scripts for {current_omic_type} from {current_omic_paths_def$scripts_source_dir} to {current_omic_paths_def$scripts_dest_dir}...")
                     copied_scripts_ok <- TRUE
+                    # Normalize source path to forward slashes for Windows regex compatibility
+                    source_abs_normalized <- gsub("\\\\", "/", tools::file_path_as_absolute(current_omic_paths_def$scripts_source_dir))
                     for (f in script_files) {
-                        rel_path <- sub(paste0("^", tools::file_path_as_absolute(current_omic_paths_def$scripts_source_dir), "/?"), "", tools::file_path_as_absolute(f))
+                        # Normalize file path to forward slashes for consistent regex matching on Windows
+                        f_abs_normalized <- gsub("\\\\", "/", tools::file_path_as_absolute(f))
+                        rel_path <- sub(paste0("^", source_abs_normalized, "/?"), "", f_abs_normalized)
                         dest_file <- file.path(current_omic_paths_def$scripts_dest_dir, rel_path)
                         dir.create(dirname(dest_file), recursive = TRUE, showWarnings = FALSE)
                         if (!file.copy(f, dest_file, overwrite = TRUE)) {
@@ -1517,9 +1521,13 @@ setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force
             script_files <- script_files[!grepl("\\.[rR][mM][dD]$", script_files)] # Filter out .Rmd
         
         if (length(script_files) > 0) {
+            # Normalize source path to forward slashes for Windows regex compatibility
+            source_abs_normalized <- gsub("\\\\", "/", tools::file_path_as_absolute(scripts_template_source))
             sapply(script_files, function(f) {
                     # Calculate relative path within the source template
-                    rel_path <- sub(paste0("^", tools::file_path_as_absolute(scripts_template_source), "/?"), "", tools::file_path_as_absolute(f))
+                    # Normalize file path to forward slashes for consistent regex matching on Windows
+                    f_abs_normalized <- gsub("\\\\", "/", tools::file_path_as_absolute(f))
+                    rel_path <- sub(paste0("^", source_abs_normalized, "/?"), "", f_abs_normalized)
                     dest_file <- file.path(paths$special$scripts, rel_path) # Destination in project scripts dir
                 dir.create(dirname(dest_file), recursive = TRUE, showWarnings = FALSE)
                 file.copy(f, dest_file, overwrite = TRUE)
@@ -2070,6 +2078,19 @@ copyToResultsSummary <- function(omic_type,
         list(source = file.path(current_paths$source_dir, "study_parameters.txt"), dest = "Study_report", is_dir = FALSE, display_name = "Study Parameters")
     )
 
+    # Logic to find and copy the num_sig_de_molecules tab file to Publication_tables
+    num_sig_dir <- file.path(current_paths$publication_graphs_dir, "NumSigDeMolecules")
+    if (dir.exists(num_sig_dir)) {
+        # Look for the tab file
+        sig_files <- list.files(num_sig_dir, pattern = "_num_sig_de_molecules\\.tab$", full.names = TRUE)
+        if (length(sig_files) > 0) {
+            # Use the first match
+            files_to_copy <- c(files_to_copy, list(
+                list(source = sig_files[1], dest = "Publication_tables", is_dir = FALSE, display_name = "Num Sig DE Molecules Tab", new_name = paste0("de_", omic_type, "_num_sig_de_molecules.tab"))
+            ))
+        }
+    }
+
     if (omic_type == "proteomics") {
         # Check for both RUV and non-RUV filenames (conditional on whether RUV was applied)
         ruv_tsv_path <- file.path(current_paths$feature_qc_dir, "ruv_normalised_results_cln_with_replicates.tsv")
@@ -2174,10 +2195,12 @@ copyToResultsSummary <- function(omic_type,
 
     files_to_copy |>
         lapply(\(file_spec) {
-            dest_dir_final <- file.path(current_paths$results_summary_dir, file_spec$dest)
+            dest_dir_final <- gsub("//", "/", file.path(current_paths$results_summary_dir, file_spec$dest))
+            file_spec$source <- gsub("//", "/", file_spec$source)
+            source_display <- file_spec$source # For display purposes
+
             copy_success <- TRUE
             error_msg <- NULL
-            source_display <- file_spec$source # For display purposes
 
             if (!is.null(file_spec$type) && file_spec$type == "object") {
                 # ENHANCED: Use robust object sourcing - check environment first, then file
@@ -2264,23 +2287,37 @@ copyToResultsSummary <- function(omic_type,
                         }
                     }, error = function(e) { copy_success <<- FALSE; error_msg <<- sprintf("Error writing object: %s", e$message) })
                 } else if (file_spec$is_dir) {
-                    # For directories, copy contents. Destination is dest_dir_final itself if not nested, or specific if dest includes subdirs.
-                    # The file_spec$dest might be "Publication_figures/Enrichment_Plots"
-                    # In this case dest_dir_final is already .../results_summary_dir/Publication_figures/Enrichment_Plots
-                    all_source_files <- list.files(file_spec$source, full.names = TRUE, recursive = TRUE)
-                    if (length(all_source_files) > 0) {
-                        copy_results <- sapply(all_source_files, function(f) {
-                            rel_path_from_source_base <- sub(paste0("^", tools::file_path_as_absolute(file_spec$source), "/?"), "", tools::file_path_as_absolute(f))
-                            dest_file_abs <- file.path(dest_dir_final, rel_path_from_source_base)
-                            dir.create(dirname(dest_file_abs), showWarnings = FALSE, recursive = TRUE)
-                            file.copy(f, dest_file_abs, overwrite = TRUE)
+                    # REWRITTEN: Robust directory copy logic using relative paths
+                    all_source_files_rel <- list.files(file_spec$source, recursive = TRUE, full.names = FALSE)
+                    
+                    if (length(all_source_files_rel) > 0) {
+                        failed_in_dir <- 0
+                        
+                        copy_results <- sapply(all_source_files_rel, function(rel_path) {
+                            src_file <- file.path(file_spec$source, rel_path)
+                            dest_file <- file.path(dest_dir_final, rel_path)
+                            
+                            # Ensure destination directory exists
+                            dir.create(dirname(dest_file), recursive = TRUE, showWarnings = FALSE)
+                            
+                            # Copy the file
+                            success <- file.copy(src_file, dest_file, overwrite = TRUE)
+                            if (!success) failed_in_dir <<- failed_in_dir + 1
+                            return(success)
                         })
+                        
                         if (!all(copy_results)) {
                             copy_success <- FALSE
-                            error_msg <- sprintf("Failed to copy some files from %s", file_spec$source)
+                            error_msg <- sprintf("Failed to copy %d/%d files from %s", failed_in_dir, length(all_source_files_rel), file_spec$source)
+                        } else {
+                            # Verify counts match roughly
+                             dest_files_count <- length(list.files(dest_dir_final, recursive = TRUE))
+                             if (dest_files_count < length(all_source_files_rel)) {
+                                 # This might happen if overwrite failed silently or something odd, but file.copy returned true?
+                                 # We rely on file.copy return value mostly.
+                             }
                         }
                     } else {
-                        # Source directory might be empty, which is not an error for the copy operation itself
                         message(sprintf("Source directory %s is empty. Nothing to copy.", file_spec$source))
                     }
                 } else {
@@ -3670,6 +3707,83 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
         output_lines <- c(output_lines, fasta_lines)
     } else {
         cat("WORKFLOW ARGS: No FASTA metadata available\n")
+    }
+    
+    # ✅ NEW: Add Mixed Species FASTA Analysis section
+    if (!is.null(workflow_data) && !is.null(workflow_data$mixed_species_analysis)) {
+        cat("WORKFLOW ARGS: Adding mixed species analysis information\n")
+        mixed_species_info <- workflow_data$mixed_species_analysis
+        
+        mixed_species_lines <- c(
+            "Mixed Species FASTA Analysis:",
+            "-----------------------------",
+            paste("• Multi-Species FASTA Used:", ifelse(isTRUE(mixed_species_info$enabled), "Yes", "No"))
+        )
+        
+        if (isTRUE(mixed_species_info$enabled)) {
+            mixed_species_lines <- c(mixed_species_lines,
+                paste("• Selected Primary Organism:", mixed_species_info$selected_organism %||% "N/A"),
+                paste("• Selected Taxon ID:", mixed_species_info$selected_taxon_id %||% "N/A"),
+                paste("• Filtered at Import:", ifelse(isTRUE(mixed_species_info$filter_applied_at_import), "Yes", "No"))
+            )
+            
+            # Add organism distribution summary if available
+            if (!is.null(mixed_species_info$organism_distribution) && 
+                is.data.frame(mixed_species_info$organism_distribution) &&
+                nrow(mixed_species_info$organism_distribution) > 0) {
+                mixed_species_lines <- c(mixed_species_lines, 
+                    "",
+                    "  Organism Distribution in FASTA:"
+                )
+                
+                # Add top organisms (limit to top 5)
+                top_orgs <- utils::head(mixed_species_info$organism_distribution, 5)
+                for (i in seq_len(nrow(top_orgs))) {
+                    org_line <- sprintf("    - %s (Taxon %s): %d proteins (%.1f%%)",
+                        top_orgs$organism_name[i] %||% "Unknown",
+                        top_orgs$taxon_id[i] %||% "N/A",
+                        top_orgs$protein_count[i] %||% 0,
+                        top_orgs$percentage[i] %||% 0
+                    )
+                    mixed_species_lines <- c(mixed_species_lines, org_line)
+                }
+            }
+        }
+        
+        mixed_species_lines <- c(mixed_species_lines, "")
+        output_lines <- c(output_lines, mixed_species_lines)
+    }
+    
+    # ✅ NEW: Add Enrichment Organism Filtering section
+    if (!is.null(workflow_data) && !is.null(workflow_data$enrichment_organism_filter)) {
+        cat("WORKFLOW ARGS: Adding enrichment organism filtering information\n")
+        filter_info <- workflow_data$enrichment_organism_filter
+        
+        filter_lines <- c(
+            "Enrichment Analysis - Organism Filtering:",
+            "-----------------------------------------",
+            paste("• Organism Filter Enabled:", ifelse(isTRUE(filter_info$enabled), "Yes", "No"))
+        )
+        
+        if (isTRUE(filter_info$filter_applied)) {
+            filter_lines <- c(filter_lines,
+                paste("• Filter Applied:", "Yes"),
+                paste("• Target Taxon ID:", filter_info$target_taxon_id %||% "N/A"),
+                paste("• Proteins Before Filtering:", filter_info$proteins_before %||% "N/A"),
+                paste("• Proteins After Filtering:", filter_info$proteins_after %||% "N/A"),
+                paste("• Proteins Removed:", filter_info$proteins_removed %||% "N/A")
+            )
+            
+            if (!is.null(filter_info$proteins_before) && filter_info$proteins_before > 0) {
+                retention_pct <- round((filter_info$proteins_after / filter_info$proteins_before) * 100, 1)
+                filter_lines <- c(filter_lines, 
+                    paste("• Retention Rate:", paste0(retention_pct, "%"))
+                )
+            }
+        }
+        
+        filter_lines <- c(filter_lines, "")
+        output_lines <- c(output_lines, filter_lines)
     }
     
     # Add Accession Cleanup Results

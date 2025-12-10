@@ -596,6 +596,8 @@ plotPeptidesProteinsCountsPerSampleHelper <- function( input_table
                                     , "Protein" = 2) ) +
     labs( shape = "Category")
 
+  # Strip captured environment to prevent memory bloat
+  output_plot$plot_env <- rlang::base_env()
   output_plot
 }
 
@@ -675,6 +677,8 @@ plotRleQc <- function( input_table
     ylab("Relative log expression") +
     labs(col = "Boxplot features")
 
+  # Strip captured environment to prevent memory bloat
+  rle_results$plot_env <- rlang::base_env()
   rle_results
 }
 
@@ -1205,6 +1209,8 @@ plotNumMissingValues <- function(input_table) {
     geom_bar(stat = "identity") +
     theme(axis.text.x = element_text(angle = 90))
 
+  # Strip captured environment to prevent memory bloat
+  plot_num_missing_values$plot_env <- rlang::base_env()
   plot_num_missing_values
 }
 
@@ -1229,6 +1235,8 @@ plotNumOfValues <- function(input_table) {
     geom_bar(stat = "identity") +
     theme(axis.text.x = element_text(angle = 90))
 
+  # Strip captured environment to prevent memory bloat
+  plot_num_missing_values$plot_env <- rlang::base_env()
   plot_num_missing_values
 }
 
@@ -1254,6 +1262,8 @@ plotNumOfValuesNoLog <- function(input_table) {
     geom_bar(stat = "identity") +
     theme(axis.text.x = element_text(angle = 90))
 
+  # Strip captured environment to prevent memory bloat
+  plot_num_missing_values$plot_env <- rlang::base_env()
   plot_num_missing_values
 }
 
@@ -1321,6 +1331,21 @@ plotPcaHelper <- function(data,
                           cv_percentile = 0.90,
                           ...) {
   
+  # DEBUG66: Memory helper using BOTH R heap AND process memory (Task Manager view)
+  checkMem <- function(step) {
+    checkMemoryBoth(step, context = "plotPcaHelper")
+  }
+  
+  message("╔═══════════════════════════════════════════════════════════════════════════╗")
+  message("║  DEBUG66: Entering plotPcaHelper                                          ║")
+  message("╚═══════════════════════════════════════════════════════════════════════════╝")
+  entry_mem <- checkMem("Entry")
+  message(sprintf("   DEBUG66 [plotPcaHelper] Arg: nrow(data) = %d, ncol(data) = %d", nrow(data), ncol(data)))
+  message(sprintf("   DEBUG66 [plotPcaHelper] Arg: nrow(design_matrix) = %d", nrow(design_matrix)))
+  message(sprintf("   DEBUG66 [plotPcaHelper] Arg: grouping_variable = '%s'", grouping_variable))
+  message(sprintf("   DEBUG66 [plotPcaHelper] Arg: shape_variable = '%s'", ifelse(is.null(shape_variable), "NULL", shape_variable)))
+  message(sprintf("   DEBUG66 [plotPcaHelper] Arg: cv_percentile = %.2f", cv_percentile))
+  
   # Ensure design_matrix is a data frame
   design_matrix <- as.data.frame(design_matrix)
   
@@ -1347,8 +1372,7 @@ plotPcaHelper <- function(data,
       
       if(!is.na(cv_threshold) && cv_threshold > 0) {
         data_filtered <- data_abundant[which(cvs >= cv_threshold), ]
-        print(nrow(data))
-        print(nrow(data_filtered))
+        message(sprintf("   [plotPcaHelper] Filtering by CV. Rows before: %d, Rows after: %d", nrow(data), nrow(data_filtered)))
       } else {
         data_filtered <- data_abundant
       }
@@ -1360,13 +1384,24 @@ plotPcaHelper <- function(data,
   }
   # --- END of modification ---
   
+  checkMem("After CV filtering")
+  message(sprintf("   DEBUG66 [plotPcaHelper] data_filtered dims: %d x %d", nrow(data_filtered), ncol(data_filtered)))
+  
+  checkMem("Before mixOmics::pca")
+  message("   DEBUG66 [plotPcaHelper] Step: Calling mixOmics::pca()...")
   pca.res <- mixOmics::pca(t(as.matrix(data_filtered)), ncomp = ncomp)
+  checkMem("After mixOmics::pca")
+  message(sprintf("   DEBUG66 [plotPcaHelper] pca.res class: %s", class(pca.res)[1]))
   proportion_explained <- pca.res$prop_expl_var
   
+  checkMem("Before temp_tbl creation")
+  message("   DEBUG66 [plotPcaHelper] Step: Creating temp_tbl with left_join...")
   temp_tbl <- pca.res$variates$X |>
     as.data.frame() |>
     rownames_to_column(var = sample_id_column) |>
     left_join(design_matrix, by = sample_id_column)
+  checkMem("After temp_tbl creation")
+  message(sprintf("   DEBUG66 [plotPcaHelper] temp_tbl dims: %d x %d", nrow(temp_tbl), ncol(temp_tbl)))
   
   # --- START of fix for shape aesthetic ---
   # Ensure the shape variable is treated as a discrete factor for plotting
@@ -1383,6 +1418,9 @@ plotPcaHelper <- function(data,
   if (!is.null(shape_variable) && !shape_variable %in% colnames(temp_tbl)) {
     stop(sprintf("Shape variable '%s' not found in the data", shape_variable))
   }
+  
+  checkMem("Before ggplot creation")
+  message("   DEBUG66 [plotPcaHelper] Step: Building ggplot object...")
   
   # Create base plot with appropriate aesthetics based on whether shape_variable is NULL
   if (is.null(label_column) || label_column == "") {
@@ -1452,6 +1490,17 @@ plotPcaHelper <- function(data,
     output <- output + geom_text_repel(size = geom.text.size, show.legend = FALSE)
   }
   
+  checkMem("After ggplot creation")
+  message(sprintf("   DEBUG66 [plotPcaHelper] output object size: %s", format(object.size(output), units = "auto")))
+  
+  checkMem("Exit")
+  message("╔═══════════════════════════════════════════════════════════════════════════╗")
+  message("║  DEBUG66: Exiting plotPcaHelper                                           ║")
+  message("╚═══════════════════════════════════════════════════════════════════════════╝")
+  
+  # Strip captured environment to prevent memory bloat
+  output$plot_env <- rlang::base_env()
+  
   #class(output) <- "ggplot"
   output
 }
@@ -1494,8 +1543,7 @@ plotPcaListHelper <- function(data,
       
       if(!is.na(cv_threshold) && cv_threshold > 0) {
         data_filtered <- data_abundant[which(cvs >= cv_threshold), ]
-        print(nrow(data))
-        print(nrow(data_filtered))
+        message(sprintf("   [plotPcaHelper] Filtering by CV. Rows before: %d, Rows after: %d", nrow(data), nrow(data_filtered)))
       } else {
         data_filtered <- data_abundant
       }
@@ -1539,6 +1587,8 @@ plotPcaListHelper <- function(data,
         theme(legend.title = element_blank())
     }
 
+    # Strip captured environment to prevent memory bloat
+    output$plot_env <- rlang::base_env()
     return(output)
   }
 
@@ -1650,6 +1700,8 @@ plotRleHelper <- function(Y, rowinfo = NULL, probs = c(0.05, 0.25, 0.5, 0.75,
     }
   }
 
+  # Strip captured environment to prevent memory bloat
+  rleplot$plot_env <- rlang::base_env()
   return(rleplot)
   # }
   # else return(FALSE)
@@ -2079,13 +2131,56 @@ getGlimmaVolcanoProteomicsWidget <- function( r_obj
 
     message("   getGlimmaVolcanoProteomicsWidget Step: Creating annotation table...")
     
+    # CRITICAL FIX: For mixed FASTA support, create base accession without isoform suffix
+    # This helps match P12345-2 to P12345 in the annotation table
+    best_uniprot_acc_base <- gsub("-\\d+$", "", best_uniprot_acc)
+    
     anno_tbl <- data.frame( uniprot_acc = rownames(r_obj@.Data[[1]]) # This uniprot_acc does not matter, only shows in glimma Volcano table
-                            , temp_column = best_uniprot_acc ) |>
-      dplyr::rename( {{uniprot_column}} := temp_column) |>
+                            , temp_column = best_uniprot_acc
+                            , temp_column_base = best_uniprot_acc_base ) |>
+      dplyr::rename( {{uniprot_column}} := temp_column)
+    
+    # First try exact match
+    anno_tbl <- anno_tbl |>
       left_join( volcano_plot_tab_cln
-                 , by = join_by({{uniprot_column}} == {{uniprot_column}}) )  |>
-      mutate( gene_name = case_when( is.na( gene_name) ~ {{uniprot_column}},
-                                     TRUE ~ gene_name) )
+                 , by = join_by({{uniprot_column}} == {{uniprot_column}}) )
+    
+    # CRITICAL FIX: For entries with no gene_name (NA or empty string), try base accession match
+    # This handles mixed FASTA with isoform-specific protein IDs
+    missing_gene_mask <- is.na(anno_tbl$gene_name) | anno_tbl$gene_name == ""
+    
+    if (any(missing_gene_mask)) {
+      message(sprintf("   getGlimmaVolcanoProteomicsWidget: %d proteins missing gene names, trying base accession match...", sum(missing_gene_mask)))
+      
+      # Try to match using base accession (without isoform suffix)
+      base_match_tbl <- data.frame(temp_column_base = anno_tbl$temp_column_base[missing_gene_mask]) |>
+        left_join(
+          volcano_plot_tab_cln |> 
+            dplyr::mutate(temp_base = gsub("-\\d+$", "", {{uniprot_column}})) |>
+            dplyr::select(temp_base, gene_name_alt = {{gene_name_column}}) |>
+            dplyr::distinct(temp_base, .keep_all = TRUE),
+          by = join_by(temp_column_base == temp_base)
+        )
+      
+      # Update gene_name where we found a match
+      found_alt <- !is.na(base_match_tbl$gene_name_alt) & base_match_tbl$gene_name_alt != ""
+      if (any(found_alt)) {
+        message(sprintf("   getGlimmaVolcanoProteomicsWidget: Found %d gene names via base accession match", sum(found_alt)))
+        which_missing <- which(missing_gene_mask)
+        anno_tbl$gene_name[which_missing[found_alt]] <- base_match_tbl$gene_name_alt[found_alt]
+      }
+    }
+    
+    # Remove temporary base column
+    anno_tbl <- anno_tbl |> dplyr::select(-temp_column_base)
+    
+    # CRITICAL FIX: Fallback - use accession as gene name if still NA or empty
+    # Also handles empty strings, not just NA
+    anno_tbl <- anno_tbl |>
+      mutate( gene_name = case_when( 
+        is.na(gene_name) | gene_name == "" ~ {{uniprot_column}},
+        TRUE ~ gene_name
+      ))
                                      
     message("   getGlimmaVolcanoProteomicsWidget Step: Annotation table creation completed.")
     message(sprintf("      Data State: anno_tbl dims = %d rows, %d cols", nrow(anno_tbl), ncol(anno_tbl)))

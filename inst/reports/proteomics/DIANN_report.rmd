@@ -224,6 +224,10 @@ ExtractStudyParametersNew <- function(study_params) {
   accession_cleanup <- study_params$"Protein Accession Cleanup" %||% list()
   protein_counts_info <- study_params$"Protein Filtering Summary" %||% list()
   
+  # NEW: Extract mixed species FASTA analysis info
+  mixed_species_info <- study_params$"Mixed Species FASTA Analysis" %||% list()
+  enrichment_filter_info <- study_params$"Enrichment Analysis - Organism Filtering" %||% list()
+  
   # Navigate to S4 parameters
   s4_params <- safe_extract(study_params, c("Workflow Parameters", "Parameters from Final S4 Object"), list())
   
@@ -338,6 +342,17 @@ ExtractStudyParametersNew <- function(study_params) {
     protein_count_qc = protein_counts_info$"Proteins after QC filtering" %||% NA,
     protein_count_ruv = protein_counts_info$"Proteins after RUV filtering" %||% NA,
     protein_count_final = protein_counts_info$"Final proteins for DE analysis" %||% NA,
+    
+    # NEW: Mixed Species FASTA Analysis
+    mixed_species_enabled = mixed_species_info$"Multi-Species FASTA Used" %||% "No",
+    mixed_species_primary_organism = mixed_species_info$"Selected Primary Organism" %||% NA,
+    mixed_species_taxon_id = mixed_species_info$"Selected Taxon ID" %||% NA,
+    mixed_species_filtered_at_import = mixed_species_info$"Filtered at Import" %||% "No",
+    
+    # NEW: Enrichment Organism Filtering
+    enrichment_filter_enabled = enrichment_filter_info$"Filter Applied" %||% "No",
+    enrichment_filter_proteins_before = enrichment_filter_info$"Proteins Before" %||% NA,
+    enrichment_filter_proteins_after = enrichment_filter_info$"Proteins After" %||% NA,
     
     # Contrasts
     contrasts = contrasts
@@ -523,6 +538,34 @@ FormatMethodDetails <- function(numbers) {
   } else {
     "RUV-III batch correction was not applied due to dataset constraints. The analysis proceeded directly with normalized data for differential expression analysis."
   }
+  
+  # NEW: Generate mixed species FASTA text BEFORE glue block
+  mixed_species_text <- ""
+  if (!is.null(numbers$mixed_species_enabled) && 
+      tolower(numbers$mixed_species_enabled) == "yes") {
+    mixed_species_text <- paste0(
+      "\n\nMixed-Species FASTA Database\n",
+      "The analysis used a mixed-species FASTA database containing proteins from ",
+      "multiple organisms. The primary organism was identified as ",
+      numbers$mixed_species_primary_organism %||% "unknown",
+      " (NCBI Taxonomy ID: ", numbers$mixed_species_taxon_id %||% "N/A", ")."
+    )
+    
+    if (tolower(numbers$mixed_species_filtered_at_import %||% "no") == "yes") {
+      mixed_species_text <- paste0(mixed_species_text,
+        " Proteins from non-target organisms were filtered at the import stage."
+      )
+    }
+    
+    if (tolower(numbers$enrichment_filter_enabled %||% "no") == "yes" &&
+        !is.na(numbers$enrichment_filter_proteins_before)) {
+      mixed_species_text <- paste0(mixed_species_text,
+        " For enrichment analysis, additional organism filtering was applied, ",
+        "reducing the protein set from ", numbers$enrichment_filter_proteins_before,
+        " to ", numbers$enrichment_filter_proteins_after, " proteins."
+      )
+    }
+  }
 
   glue::glue("
 METHOD DETAILS  
@@ -571,7 +614,7 @@ log2-transformed intensity values for each protein across all samples.
 FASTA Reference and Protein Accession Cleanup
 {fasta_text}
 
-{accession_cleanup_text}{qc_count_text}
+{accession_cleanup_text}{mixed_species_text}{qc_count_text}
 
 Using the protein intensity matrix, zero values were replaced with NA denoting 
 these are missing values. Protein filtering was then applied based on missing 
@@ -785,7 +828,7 @@ moderated p-values by calculating the q-values (Storey, 2002).
 with q-values less than {ui_q_val_thresh}.
 
 Volcano plots of differentially expressed proteins across all groups are shown 
-in Figure 2, with a threshold of q-value < {ui_q_val_thresh} and no log fold-change 
+in Figure 3, with a threshold of q-value < {ui_q_val_thresh} and no log fold-change 
 threshold. Full details of all proteins are provided in the the Supplementary
 results table, DE_proteins_results.xlsx within the Publication_tables folder.",
 .trim = FALSE)
@@ -855,21 +898,13 @@ Key findings from the GO enrichment analysis are summarized below for each
 comparison:
 
 Biological Process:
-• Upregulated processes included cellular stress response, metabolic regulation, 
-  and protein folding pathways
-• Downregulated processes were primarily related to cell adhesion, cytoskeletal 
-  organization, and vesicular transport
+
 
 Molecular Function:
-• Proteins with binding functions (particularly nucleotide and protein binding) 
-  were significantly enriched
-• Catalytic activities, especially those involved in redox reactions, showed 
-  significant enrichment patterns
+
 
 Cellular Component:
-• Significant enrichment was observed for proteins localized to membrane-bound 
-  organelles, particularly mitochondria and endoplasmic reticulum
-• Extracellular components showed differential regulation across conditions
+
 
 The complete list of enriched GO terms with statistics is provided in the 
 supplementary file 'Pathway_enrichment_results.xlsx' within the Publication_tables 
@@ -949,6 +984,38 @@ AnalyzeSamples <- function(design_matrix, study_params) {
     list(numbers = list(), table = data.frame())
   })
 }
+
+# NEW: Format DE Summary Table
+FormatDESummaryTable <- function(filepath) {
+  if (!file.exists(filepath)) return("")
+  
+  tryCatch({
+    data <- readr::read_tsv(filepath, show_col_types = FALSE)
+    
+    # Filter for significant
+    sig_data <- data %>% 
+      dplyr::filter(status %in% c("Significant and Up", "Significant and Down"))
+    
+    if (nrow(sig_data) == 0) return("No significant differentially expressed proteins were found.")
+    
+    summary_text <- sig_data %>%
+      dplyr::group_by(comparison) %>%
+      dplyr::summarise(
+        up = sum(counts[status == "Significant and Up"]),
+        down = sum(counts[status == "Significant and Down"]),
+        .groups = "drop"
+      ) %>%
+      dplyr::mutate(
+        text = glue::glue("For the comparison {comparison}, there were {up} upregulated and {down} downregulated proteins.")
+      ) %>%
+      dplyr::pull(text) %>%
+      paste(collapse = " ")
+      
+    return(paste("The number of significant differentially expressed proteins is summarized in Figure 2.", summary_text))
+  }, error = function(e) {
+    return(paste("Error reading DE summary table:", e$message))
+  })
+}
 ```
 
 ```{r Main Execution Function, echo=FALSE, warning=FALSE}
@@ -997,6 +1064,10 @@ Main <- function() {
     stop(glue::glue("Error in AnalyzeSamples: {e$message}")) 
   })
   
+  # NEW: Get DE summary text
+  de_summary_path <- file.path(report_publication_tables_dir, paste0("de_", params$omic_type, "_num_sig_de_molecules.tab"))
+  de_summary_text <- FormatDESummaryTable(de_summary_path)
+  
   # Generate text sections using UPDATED Format* functions
   report_content <- list(
     content = list(
@@ -1006,6 +1077,7 @@ Main <- function() {
       comments       = FormatComments(),
       opinions       = FormatOpinions(correlation_data),
       de_details     = FormatDEDetails(analysis_results$numbers),
+      de_summary     = de_summary_text,
       go_enrichment  = FormatGOEnrichment(analysis_results$numbers)
     ),
     table = analysis_results$table,
@@ -1025,6 +1097,7 @@ results_data <- tryCatch({
     comments = "", 
     opinions = "", 
     de_details = "", 
+    de_summary = "",
     go_enrichment = ""
   ), table = data.frame(), numbers = list())
 })
@@ -1063,6 +1136,32 @@ if(file.exists(composite_qc_fig_path)) {
 
 `r results_data$content$de_details`
 
+`r results_data$content$de_summary`
+
+```{r NumSigDE_Plot, echo=FALSE, out.width="100%", fig.align='center'}
+num_sig_dir <- file.path(report_publication_figures_dir, "NumSigDeMolecules")
+if(dir.exists(num_sig_dir)) {
+  all_sig_files <- list.files(num_sig_dir, pattern = "\\.png$", full.names = TRUE)
+  # Prefer the "with_not_significant" version if it exists
+  sig_plot_file <- grep("with_not_significant", all_sig_files, value = TRUE)
+  if (length(sig_plot_file) == 0) {
+     sig_plot_file <- all_sig_files
+  }
+  
+  if(length(sig_plot_file) > 0) {
+    knitr::include_graphics(sig_plot_file[1])
+  } else {
+    cat(glue::glue("Warning: No NumSigDE Plot images found in {num_sig_dir}\n"))
+  }
+} else {
+  cat(glue::glue("Warning: NumSigDeMolecules directory not found at {num_sig_dir}\n"))
+}
+```
+
+```{r NumSigDE Caption, echo=FALSE, results='asis'}
+cat("*Figure 2: Number of significant differentially expressed proteins for each comparison.*\n\n")
+```
+
 ```{r grid_layout, echo=FALSE, out.width="49%", out.height="49%", fig.align='center', fig.ncol=2, fig.show='hold'}
 # Use NEW path variable and grep method
 volcano_plots_dir <- file.path(report_publication_figures_dir, "Volcano_Plots")
@@ -1080,7 +1179,7 @@ if(dir.exists(volcano_plots_dir)) {
 ```
 
 ```{r Volcano Plot Caption, echo=FALSE, results='asis'}
-cat("*Figure 2: Volcano plots of differentially expressed proteins in alphabetical order.*\n\n")
+cat("*Figure 3: Volcano plots of differentially expressed proteins in alphabetical order.*\n\n")
 ```
 
 # Comments
@@ -1112,5 +1211,5 @@ if(dir.exists(enrichment_plots_dir)) {
 ```
 
 ```{r Go Enrichment Caption, echo=FALSE, results='asis'}
-cat("*Figure 3: GO enrichment analysis showing pathways enriched in differentially expressed proteins. Plots are ordered alphabetically by comparison and direction.*\n\n")
+cat("*Figure 4: GO enrichment analysis showing pathways enriched in differentially expressed proteins. Plots are ordered alphabetically by comparison and direction.*\n\n")
 ```
