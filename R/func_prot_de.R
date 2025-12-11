@@ -151,6 +151,16 @@
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' Generate Interactive Volcano Plot using Glimma
 #' 
+#' @importFrom purrr map map2 walk walk2 compact imap
+#' @importFrom stringr str_extract str_detect
+#' @importFrom dplyr filter select mutate bind_rows arrange distinct relocate
+#' @importFrom tibble rownames_to_column
+#' @importFrom ggplot2 ggplot aes geom_bar geom_text theme_bw element_text labs facet_wrap ggsave
+#' @importFrom viridis viridis plasma inferno
+#' @importFrom writexl write_xlsx
+#' @importFrom vroom vroom_write
+#' @importFrom limma lmFit plotSA treat topTreat topTable eBayes contrasts.fit makeContrasts decideTests normalizeCyclicLoess normalizeQuantiles
+#' @importFrom qvalue qvalue
 #' @export
 generateVolcanoPlotGlimma <- function( de_results_list
                                        , selected_contrast = NULL

@@ -36,6 +36,20 @@
 #' @slot technical_replicate_id Character string naming the replicate column
 #' @slot args A list of additional arguments
 #'
+#' @importFrom purrr map map2 walk walk2 map_chr
+#' @importFrom stringr str_extract str_detect
+#' @importFrom dplyr filter select mutate distinct left_join arrange pull rename
+#' @importFrom tidyr pivot_longer
+#' @importFrom tibble rownames_to_column column_to_rownames
+#' @importFrom viridis viridis plasma inferno
+#' @importFrom ruv ruv_cancorplot
+#' @importFrom patchwork wrap_plots
+#' @importFrom vroom vroom_write
+#' @importFrom writexl write_xlsx
+#' @importFrom logger log_debug log_warn
+#' @importFrom limma normalizeCyclicLoess normalizeQuantiles normalizeMedianAbsValues
+#' @importFrom mixOmics impute.nipals
+#' @importFrom RUVIIIC RUVIII_C_Varying
 #' @exportClass ProteinQuantitativeData
 ProteinQuantitativeData <- setClass("ProteinQuantitativeData"
 
@@ -2053,15 +2067,11 @@ setMethod( f = "removeRowsWithMissingValuesPercent"
 
            })
 
-#'@title Choose Best Protein Accession
-#'@export
-setGeneric(name="chooseBestProteinAccession"
-           , def=function(theObject, delim=NULL, seqinr_obj=NULL, seqinr_accession_column=NULL, replace_zero_with_na = NULL, aggregation_method = NULL) {
-             standardGeneric("chooseBestProteinAccession")
-           }
-           , signature=c("theObject", "delim", "seqinr_obj", "seqinr_accession_column"))
+# NOTE: setGeneric for chooseBestProteinAccession is defined in allGenerics.R
+# Do NOT redefine it here as it invalidates methods defined in func_pept_s4_objects.R
 
-#'@rdname chooseBestProteinAccession
+#'@title Choose Best Protein Accession for ProteinQuantitativeData
+#'@name chooseBestProteinAccession,ProteinQuantitativeData-method
 #'@export
 #'@param theObject The object of class ProteinQuantitativeData
 #'@param delim The delimiter used to split the protein accessions
@@ -2240,12 +2250,11 @@ setMethod(f = "chooseBestProteinAccession"
 
 
 #'@export
-setGeneric(name="chooseBestProteinAccessionSumDuplicates"
-           , def=function( theObject, delim, quant_columns_pattern, islogged ) {
-             standardGeneric("chooseBestProteinAccessionSumDuplicates")
-           }
-           , signature=c("theObject", "delim", "quant_columns_pattern", "islogged" ))
+# NOTE: setGeneric for chooseBestProteinAccessionSumDuplicates is defined in allGenerics.R
+# The signature in allGenerics.R needs to match this method's parameters
 
+#'@title Choose Best Protein Accession Sum Duplicates
+#'@name chooseBestProteinAccessionSumDuplicates,ProteinQuantitativeData-method
 #'@export
 setMethod( f = "chooseBestProteinAccessionSumDuplicates"
            , signature="ProteinQuantitativeData"

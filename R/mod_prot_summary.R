@@ -104,6 +104,8 @@ mod_prot_summary_ui <- function(id) {
 #' @importFrom shiny moduleServer reactive reactiveValues observeEvent req renderText showNotification downloadHandler withProgress incProgress
 #' @importFrom logger log_info log_error
 #' @importFrom utils write.table
+#' @importFrom purrr detect
+#' @importFrom readr read_tsv
 mod_prot_summary_server <- function(id, project_dirs, omic_type = "proteomics", experiment_label = NULL, workflow_data = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     

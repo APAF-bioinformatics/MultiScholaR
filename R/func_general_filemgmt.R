@@ -181,9 +181,24 @@
 #' @param force Logical; if TRUE, skips user confirmation for overwriting existing directories (default: FALSE).
 #' @param reuse_existing Logical; if TRUE, uses an existing directory structure without prompting or overwriting (default: FALSE). For non-interactive use.
 #' @return A named list where each name is an omic type. Each element is a list containing the relevant directory paths for that omic type.
-#' @importFrom logger log_info log_warn
-#' @importFrom stringr str_split str_trim
+#' @importFrom logger log_info log_warn log_error log_debug
+#' @importFrom stringr str_split str_trim str_detect str_remove str_replace str_ends
 #' @importFrom here here
+#' @importFrom purrr map map_chr map_dbl imap imap_chr iwalk walk walk2
+#' @importFrom dplyr filter select mutate pull first distinct summarise group_by arrange
+#' @importFrom readr read_tsv write_tsv write_lines
+#' @importFrom vroom vroom vroom_write
+#' @importFrom tools file_path_as_absolute file_path_sans_ext toTitleCase
+#' @importFrom rlang abort
+#' @importFrom tibble is_tibble
+#' @importFrom knitr purl
+#' @importFrom rmarkdown render
+#' @importFrom openxlsx createWorkbook addWorksheet read.xlsx writeData setColWidths addStyle createStyle writeDataTable saveWorkbook
+#' @importFrom gh gh
+#' @importFrom rstudioapi isAvailable getActiveDocumentContext documentSave
+#' @importFrom methods slotNames
+#' @importFrom utils head
+#' @importFrom rappdirs user_cache_dir
 #' @export
 setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, force = FALSE, reuse_existing = FALSE) {
     # --- Input Parsing and Validation ---

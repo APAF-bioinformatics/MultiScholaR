@@ -180,11 +180,11 @@ setGeneric(name="chooseBestProteinAccession"
            }
            , signature=c("theObject", "delim", "seqinr_obj", "seqinr_accession_column"))
 
-setGeneric(name="chooseBestProteinAccessionSumDuplicates" # Note: This might be redundant or specific, verify usage
-           , def=function(theObject, delim=NULL, seqinr_obj=NULL, seqinr_accession_column=NULL, replace_zero_with_na = NULL, aggregation_method = NULL) {
+setGeneric(name="chooseBestProteinAccessionSumDuplicates"
+           , def=function(theObject, delim=";", quant_columns_pattern = "\\d+", islogged = TRUE) {
              standardGeneric("chooseBestProteinAccessionSumDuplicates")
            }
-           , signature=c("theObject", "delim", "seqinr_obj", "seqinr_accession_column"))
+           , signature=c("theObject", "delim", "quant_columns_pattern", "islogged"))
 
 setGeneric(name="filterSamplesByProteinCorrelationThreshold"
            , def=function( theObject, threshold = NULL, correlation_group = NULL, tech_rep_remove_regex = NULL) {

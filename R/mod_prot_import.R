@@ -198,6 +198,8 @@ mod_prot_import_ui <- function(id) {
 #' @importFrom logger log_info log_error log_warn
 #' @importFrom vroom vroom
 #' @importFrom ini read.ini
+#' @importFrom stats setNames
+#' @importFrom DT renderDT datatable formatStyle
 #' @export
 mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes = NULL) {
   message(sprintf("--- Entering mod_prot_import_server ---"))
