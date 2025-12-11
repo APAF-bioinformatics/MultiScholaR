@@ -547,6 +547,9 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
       post_norm_filtering_plot = NULL,
       filtering_summary_text = NULL,
       
+      # Reactive trigger to force plot refresh when files are saved to disk
+      plot_refresh_trigger = 0,
+      
       # RUV optimization results
       ruv_optimization_result = NULL
     )
@@ -1085,6 +1088,9 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
       message("*** POST-NORM QC: Running garbage collection ***")
       gc()
       
+      # Trigger UI refresh to display newly saved plots
+      norm_data$plot_refresh_trigger <- norm_data$plot_refresh_trigger + 1
+      
       message("Post-normalization QC plots generated successfully")
     }
     
@@ -1198,6 +1204,9 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
       # MEMORY CLEANUP
       message("*** RUV QC: Running garbage collection ***")
       gc()
+      
+      # Trigger UI refresh to display newly saved plots
+      norm_data$plot_refresh_trigger <- norm_data$plot_refresh_trigger + 1
       
       message("RUV-corrected QC plots generated successfully")
     }
@@ -2348,6 +2357,9 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
     # Define a helper to render images safely
     render_qc_image <- function(filename, alt_text) {
       shiny::renderImage({
+        # Take dependency on refresh trigger to force re-render when plots are saved
+        norm_data$plot_refresh_trigger
+        
         # Define path
         if (!is.null(experiment_paths$protein_qc_dir)) {
            img_path <- file.path(experiment_paths$protein_qc_dir, filename)

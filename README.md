@@ -1,4 +1,4 @@
-# MultiScholaR <img src="https://img.shields.io/badge/Version-0.3.6-orange?style=for-the-badge" alt="Version 0.3.6">
+# MultiScholaR <img src="https://img.shields.io/badge/Version-0.3.6-orange?style=for-the-badge" alt="Version 0.3.6.3">
 
 ![Banner](inst/shiny/www/MultiScholaR.png "MultiScholaR Banner")
 
