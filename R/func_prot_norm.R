@@ -198,6 +198,14 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
                                 , ruv_fdr_method = "qvalue"
                                 , exclude_pool_samples = TRUE) {
 
+  message("--- DEBUG66: Entering getNegCtrlProtAnovaHelper ---")
+  message(sprintf("   DEBUG66 Arg: grouping_variable = %s", grouping_variable))
+  message(sprintf("   DEBUG66 Arg: percentage_as_neg_ctrl = %s", ifelse(is.null(percentage_as_neg_ctrl), "NULL", percentage_as_neg_ctrl)))
+  message(sprintf("   DEBUG66 Arg: num_neg_ctrl = %s", ifelse(is.null(num_neg_ctrl), "NULL", num_neg_ctrl)))
+  message(sprintf("   DEBUG66 Arg: exclude_pool_samples = %s", exclude_pool_samples))
+  message(sprintf("   DEBUG66 Data State: data_matrix dims = %d x %d", nrow(data_matrix), ncol(data_matrix)))
+  message(sprintf("   DEBUG66 Data State: design_matrix dims = %d x %d", nrow(design_matrix), ncol(design_matrix)))
+
   ## Both percentage_as_neg_ctrl and num_neg_ctrl is missing, and number of proteins >= 50 use only 10 percent of the proteins as negative control by default
   if((is.null(percentage_as_neg_ctrl) ||
      is.na(percentage_as_neg_ctrl) ) &&
@@ -206,6 +214,7 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
      nrow(data_matrix) >= 50 ) {
     num_neg_ctrl <- round( nrow(data_matrix)*10/100, 0)
     warnings( paste0( getFunctionName(), ": Using 10% of proteins from the input matrix as negative controls by default.\n"))
+    message("   DEBUG66: Defaulting to 10% negative controls")
   } else if (!is.null(percentage_as_neg_ctrl) &
              !is.na(percentage_as_neg_ctrl)) {
     num_neg_ctrl <- round( nrow(data_matrix)*percentage_as_neg_ctrl/100, 0)
@@ -215,6 +224,8 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
   } else {
     stop(paste0( getFunctionName(), ": Please provide either percentage_as_neg_ctrl or num_neg_ctrl.\n"))
   }
+  
+  message(sprintf("   DEBUG66: Target num_neg_ctrl = %d", num_neg_ctrl))
 
   # --- Pool/QC Sample Handling ---
   # Pool/QC samples should not influence negative control selection but can help
@@ -223,12 +234,14 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
   design_matrix_for_anova <- design_matrix
   
   if (exclude_pool_samples) {
+    message("   DEBUG66: Checking for Pool/QC samples to exclude...")
     # Detect Pool/QC groups (case-insensitive detection)
     all_groups <- unique(design_matrix[[grouping_variable]])
     is_pool_group <- grepl("pool", all_groups, ignore.case = TRUE)
     pool_group_names <- all_groups[is_pool_group]
     
     if (length(pool_group_names) > 0) {
+      message(sprintf("   DEBUG66: Found pool groups: %s", paste(pool_group_names, collapse=", ")))
       # Identify samples that belong to Pool groups
       samples_in_design <- rownames(design_matrix)
       pool_samples <- samples_in_design[design_matrix[[grouping_variable]] %in% pool_group_names]
@@ -242,6 +255,7 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
                        length(pool_group_names), paste(pool_group_names, collapse = ", ")))
         message(sprintf("*** NEG CTRL ANOVA: Excluding %d Pool samples from ANOVA ***", 
                        length(pool_samples_in_data)))
+        message(sprintf("   DEBUG66: Pool samples: %s", paste(pool_samples_in_data, collapse=", ")))
         
         # Create filtered matrices excluding Pool samples
         non_pool_samples <- setdiff(colnames(data_matrix), pool_samples_in_data)
@@ -276,7 +290,9 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
 
   ## Inspired by matANOVA function from PhosR package: http://www.bioconductor.org/packages/release/bioc/html/PhosR.html
 
+  message("   DEBUG66: Preparing for ANOVA...")
   grps <- design_matrix_for_anova[colnames(data_matrix_for_anova), grouping_variable]
+  message(sprintf("   DEBUG66: ANOVA groups vector length: %d", length(grps)))
 
   ps <- apply(data_matrix_for_anova, 1, function(x) {
        if( length( unique( grps[!is.na(x)] )  ) > 1 ) {
@@ -286,27 +302,37 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
        }
     })
 
+  message(sprintf("   DEBUG66: ANOVA p-values calculated. NA count: %d", sum(is.na(ps))))
   ps[is.na(ps)] <- 1
 
   aov <- c()
 
   if ( ruv_fdr_method == "qvalue") {
+    message("   DEBUG66: Calculating q-values...")
     aov <- qvalue(unlist(ps))$qvalues
   } else if ( ruv_fdr_method == "BH") {
+    message("   DEBUG66: Calculating BH adjusted p-values...")
     aov <- qvalue(unlist(ps), pi0=1)$qvalues
   } else {
     error( paste( "Input FDR method", ruv_fdr_method, "not valid") )
   }
 
+  message(sprintf("   DEBUG66: q-values calculated. Range: %.4f - %.4f", min(aov, na.rm=TRUE), max(aov, na.rm=TRUE)))
+
   filtered_list <- aov[aov > ruv_qval_cutoff]
+  message(sprintf("   DEBUG66: Proteins with q > %.4f: %d", ruv_qval_cutoff, length(filtered_list)))
 
   list_size <- ifelse(num_neg_ctrl > length(filtered_list), length(filtered_list), num_neg_ctrl)
+  message(sprintf("   DEBUG66: Selecting top %d proteins", list_size))
 
   control_genes <- names(sort(filtered_list, decreasing = TRUE)[1:list_size])
 
   #nrow(data_matrix) - length(control_genes)
   control_genes_index <- rownames(data_matrix) %in% control_genes
   names(control_genes_index) <- rownames(data_matrix)
+
+  message(sprintf("   DEBUG66: Final control genes selected: %d", sum(control_genes_index)))
+  message("--- DEBUG66: Exiting getNegCtrlProtAnovaHelper ---")
 
   return(control_genes_index)
 
@@ -319,12 +345,15 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
 findBestK <- function( cancorplot_r1) {
+  message("--- DEBUG66: Entering findBestK ---")
   controls_idx <- which(cancorplot_r1$data$featureset == "Control")
   all_idx <- which( cancorplot_r1$data$featureset == "All")
   difference_between_all_ctrl <- cancorplot_r1$data$cc[all_idx] - cancorplot_r1$data$cc[controls_idx]
   max_difference <- max(difference_between_all_ctrl, na.rm=TRUE)
+  message(sprintf("   DEBUG66: max_difference = %.4f", max_difference))
   best_idx <- which( difference_between_all_ctrl == max_difference)
   best_k <- (cancorplot_r1$data$K[controls_idx] )[best_idx]
+  message(sprintf("   DEBUG66: best_k (internal) = %s", as.character(best_k)))
   return( best_k)
 }
 
@@ -471,6 +500,11 @@ findBestNegCtrlPercentage <- function(normalised_protein_matrix_obj,
                                       adaptive_k_penalty = TRUE,
                                       verbose = TRUE) {
   
+  message("--- DEBUG66: Entering findBestNegCtrlPercentage ---")
+  message(sprintf("   DEBUG66: percentage_range: %s", paste(range(percentage_range), collapse="-")))
+  message(sprintf("   DEBUG66: adaptive_k_penalty: %s", adaptive_k_penalty))
+  message(sprintf("   DEBUG66: separation_metric: %s", separation_metric))
+  
   # Input validation
   if (!inherits(normalised_protein_matrix_obj, "ProteinQuantitativeData")) {
     stop("normalised_protein_matrix_obj must be a ProteinQuantitativeData object")
@@ -537,6 +571,7 @@ findBestNegCtrlPercentage <- function(normalised_protein_matrix_obj,
   
   # Create a function to process a single percentage
   process_percentage <- function(current_percentage, index) {
+    message(sprintf("   DEBUG66 Loop: Processing percentage %d%%", current_percentage))
     if (verbose && index %% 5 == 0) {
       log_info("Testing percentage {index}/{length(percentage_range)}: {current_percentage}%")
     }
@@ -553,6 +588,7 @@ findBestNegCtrlPercentage <- function(normalised_protein_matrix_obj,
       
       # Check if we have enough control genes
       num_controls <- sum(control_genes_index, na.rm = TRUE)
+      message(sprintf("      DEBUG66: num_controls = %d", num_controls))
       if (num_controls < 5) {
         if (verbose) {
           log_warn("Percentage {current_percentage}%: Only {num_controls} control genes found (minimum 5 required). Skipping.")
@@ -579,6 +615,7 @@ findBestNegCtrlPercentage <- function(normalised_protein_matrix_obj,
       
       # Calculate separation score
       separation_score <- calculateSeparationScore(cancorplot, separation_metric)
+      message(sprintf("      DEBUG66: separation_score = %.4f", separation_score))
       
       # Calculate the best k using the existing findBestK function
       best_k <- tryCatch({
@@ -589,6 +626,7 @@ findBestNegCtrlPercentage <- function(normalised_protein_matrix_obj,
         }
         return(NA_real_)
       })
+      message(sprintf("      DEBUG66: best_k = %s", as.character(best_k)))
       
       # Calculate composite score that considers both separation and k value
       composite_score <- calculateCompositeScore(
@@ -597,6 +635,7 @@ findBestNegCtrlPercentage <- function(normalised_protein_matrix_obj,
         k_penalty_weight, 
         max_acceptable_k
       )
+      message(sprintf("      DEBUG66: composite_score = %.4f", composite_score))
       
       return(list(
         percentage = current_percentage,
@@ -613,6 +652,7 @@ findBestNegCtrlPercentage <- function(normalised_protein_matrix_obj,
       if (verbose) {
         log_warn("Percentage {current_percentage}%: Error occurred - {e$message}")
       }
+      message(sprintf("      DEBUG66 ERROR in process_percentage: %s", e$message))
       return(list(
         percentage = current_percentage,
         separation_score = NA_real_,
@@ -668,6 +708,8 @@ findBestNegCtrlPercentage <- function(normalised_protein_matrix_obj,
     log_info("  - Number of control genes: {sum(best_control_genes_index, na.rm = TRUE)}")
   }
   
+  message("--- DEBUG66: Exiting findBestNegCtrlPercentage ---")
+
   # Return comprehensive results
   return(list(
     best_percentage = best_percentage,
@@ -738,9 +780,11 @@ scaleCenterAndFillMissing <- function( input_matrix) {
 #'
 #' @keywords internal
 calculateSeparationScore <- function(cancorplot, metric = "max_difference") {
+  message(sprintf("--- DEBUG66: Entering calculateSeparationScore (metric=%s) ---", metric))
   
   # Extract data from the plot
   if (!inherits(cancorplot, "ggplot") || is.null(cancorplot$data)) {
+    message("   DEBUG66: Invalid cancorplot")
     return(NA_real_)
   }
   
@@ -748,6 +792,7 @@ calculateSeparationScore <- function(cancorplot, metric = "max_difference") {
   
   # Check required columns exist
   if (!all(c("featureset", "cc", "K") %in% colnames(plot_data))) {
+    message("   DEBUG66: Missing columns in plot_data")
     return(NA_real_)
   }
   
@@ -756,6 +801,7 @@ calculateSeparationScore <- function(cancorplot, metric = "max_difference") {
   all_idx <- which(plot_data$featureset == "All")
   
   if (length(controls_idx) == 0 || length(all_idx) == 0) {
+    message("   DEBUG66: No Control or All groups found")
     return(NA_real_)
   }
   
@@ -797,6 +843,7 @@ calculateSeparationScore <- function(cancorplot, metric = "max_difference") {
     NA_real_
   )
   
+  message(sprintf("   DEBUG66: Calculated score = %.4f", score))
   return(as.numeric(score))
 }
 
@@ -820,6 +867,7 @@ calculateSeparationScore <- function(cancorplot, metric = "max_difference") {
 #'
 #' @keywords internal
 calculateCompositeScore <- function(separation_score, best_k, k_penalty_weight, max_acceptable_k) {
+  message(sprintf("--- DEBUG66: Entering calculateCompositeScore (sep=%.4f, k=%s) ---", separation_score, as.character(best_k)))
   
   # Handle NA cases
   if (is.na(separation_score) || is.na(best_k)) {
@@ -844,6 +892,7 @@ calculateCompositeScore <- function(separation_score, best_k, k_penalty_weight, 
   
   # Ensure k_penalty is between 0 and 1
   k_penalty <- pmax(0, pmin(1, k_penalty))
+  message(sprintf("   DEBUG66: k_penalty = %.4f", k_penalty))
   
   # Calculate composite score: separation_score * (1 - k_penalty)
   # This means:
@@ -851,6 +900,7 @@ calculateCompositeScore <- function(separation_score, best_k, k_penalty_weight, 
   # - k=max_acceptable_k: penalty = k_penalty_weight (multiply by 1-k_penalty_weight)
   # - k>max_acceptable_k: heavy penalty (multiply by value approaching 0)
   composite_score <- separation_score * (1 - k_penalty)
+  message(sprintf("   DEBUG66: composite_score = %.4f", composite_score))
   
   return(as.numeric(composite_score))
 }
