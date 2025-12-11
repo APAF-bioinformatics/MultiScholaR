@@ -3335,6 +3335,8 @@ setMethod(f="getNegCtrlProtAnova"
                                  , ruv_fdr_method = NULL
                                  , exclude_pool_samples = TRUE ) {
 
+            message("--- DEBUG66: Entering getNegCtrlProtAnova (S4) ---")
+            
             protein_quant_table <- theObject@protein_quant_table
             protein_id_column <- theObject@protein_id_column
             design_matrix <- theObject@design_matrix
@@ -3354,6 +3356,11 @@ setMethod(f="getNegCtrlProtAnova"
             ruv_fdr_method <- checkParamsObjectFunctionSimplify( theObject, "ruv_fdr_method", "BH")
             exclude_pool_samples <- checkParamsObjectFunctionSimplify( theObject, "exclude_pool_samples", TRUE)
 
+            message(sprintf("   DEBUG66 S4 Param: ruv_grouping_variable = %s", ruv_grouping_variable))
+            message(sprintf("   DEBUG66 S4 Param: percentage_as_neg_ctrl = %s", percentage_as_neg_ctrl))
+            message(sprintf("   DEBUG66 S4 Param: num_neg_ctrl = %s", num_neg_ctrl))
+            message(sprintf("   DEBUG66 S4 Param: exclude_pool_samples = %s", exclude_pool_samples))
+
             theObject <- updateParamInObject(theObject, "ruv_grouping_variable")
             theObject <- updateParamInObject(theObject, "percentage_as_neg_ctrl")
             theObject <- updateParamInObject(theObject, "num_neg_ctrl")
@@ -3367,6 +3374,7 @@ setMethod(f="getNegCtrlProtAnova"
               column_to_rownames(sample_id) |>
               dplyr::select(!!sym(ruv_grouping_variable))
             
+            message("   DEBUG66 S4: Calling getNegCtrlProtAnovaHelper...")
             control_genes_index <- getNegCtrlProtAnovaHelper( normalised_frozen_protein_matrix_filt[,design_matrix |> dplyr::pull(!!sym(sample_id)) ]
                                                         , design_matrix = design_matrix_for_anova
                                                         , grouping_variable = ruv_grouping_variable
@@ -3376,6 +3384,7 @@ setMethod(f="getNegCtrlProtAnova"
                                                         , ruv_fdr_method = ruv_fdr_method
                                                         , exclude_pool_samples = exclude_pool_samples )
 
+            message(sprintf("   DEBUG66 S4: Helper returned %d control genes", sum(control_genes_index)))
             return(control_genes_index)
           })
 
@@ -3386,6 +3395,9 @@ setMethod(f="getNegCtrlProtAnova"
 setMethod( f = "ruvCancor"
            , signature="ProteinQuantitativeData"
            , definition=function( theObject, ctrl= NULL, num_components_to_impute=NULL, ruv_grouping_variable = NULL) {
+             
+             message("--- DEBUG66: Entering ruvCancor (S4) ---")
+             
              protein_quant_table <- theObject@protein_quant_table
              protein_id_column <- theObject@protein_id_column
              design_matrix <- theObject@design_matrix
@@ -3395,6 +3407,10 @@ setMethod( f = "ruvCancor"
              ctrl <- checkParamsObjectFunctionSimplify( theObject, "ctrl", NULL)
              num_components_to_impute <- checkParamsObjectFunctionSimplify( theObject, "num_components_to_impute", 2)
              ruv_grouping_variable <- checkParamsObjectFunctionSimplify( theObject, "ruv_grouping_variable", NULL)
+             
+             message(sprintf("   DEBUG66 S4 Param: num_components_to_impute = %d", num_components_to_impute))
+             message(sprintf("   DEBUG66 S4 Param: ruv_grouping_variable = %s", ruv_grouping_variable))
+             message(sprintf("   DEBUG66 S4 Param: ctrl length = %d (TRUE count: %d)", length(ctrl), sum(ctrl, na.rm=TRUE)))
 
              theObject <- updateParamInObject(theObject, "ctrl")
              theObject <- updateParamInObject(theObject, "num_components_to_impute")
@@ -3420,14 +3436,17 @@ setMethod( f = "ruvCancor"
 
              Y <-  t( normalised_frozen_protein_matrix_filt[,design_matrix |> dplyr::pull(!!sym(sample_id))])
              if( length(which( is.na(normalised_frozen_protein_matrix_filt) )) > 0 ) {
+               message("   DEBUG66 S4: Performing imputation (NIPALS)...")
                Y <- impute.nipals( t( normalised_frozen_protein_matrix_filt[,design_matrix |> dplyr::pull(!!sym(sample_id))])
                                    , ncomp=num_components_to_impute)
              }
 
+             message("   DEBUG66 S4: Calling ruv_cancorplot...")
              cancorplot_r2 <- ruv_cancorplot( Y ,
                                               X = design_matrix |>
                                                 dplyr::pull(!!sym(ruv_grouping_variable)),
                                               ctl = ctrl)
+             message("   DEBUG66 S4: ruv_cancorplot returned.")
              cancorplot_r2
 
 
