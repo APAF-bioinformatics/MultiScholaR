@@ -424,6 +424,11 @@ mod_prot_de_ui <- function(id) {
 
 #' @rdname differentialExpressionAppletModule 
 #' @export
+#' @importFrom shiny moduleServer reactive reactiveValues observeEvent req showNotification renderPlot renderText withProgress incProgress
+#' @importFrom purrr detect map set_names
+#' @importFrom dplyr filter select mutate bind_rows slice
+#' @importFrom stringr str_detect str_extract
+#' @importFrom DT renderDT datatable formatRound
 mod_prot_de_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label, selected_tab = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns  # Define namespace function for module

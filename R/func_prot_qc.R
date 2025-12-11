@@ -1058,7 +1058,7 @@ findSamplesPairBelowPeptideCorrelationThreshold <- function(pearson_correlation_
     pivot_longer( cols =c({{filename_column_x}}, {{filename_column_y}})
                   , values_to = filename_id_column ) |>
     dplyr::distinct( !!rlang::sym(filename_id_column ) ) |>
-    innner_join( samples_to_keep
+    dplyr::inner_join( samples_to_keep
                , by= join_by( !!rlang::sym(filename_id_column ) == !!rlang::sym(filename_id_column ) ) )
 
   samples_below_correlation_theshold
@@ -1633,6 +1633,8 @@ proteinTechRepCorrelationHelper <- function( design_matrix_tech_rep, data_matrix
 #' @importFrom gridExtra arrangeGrob grid.arrange
 #' @importFrom methods slotNames new is
 #' @importFrom stats quantile
+#' @importFrom multidplyr partition new_cluster cluster_library
+#' @importFrom future plan
 #' 
 #' @export
 updateProteinFiltering <- function(data, step_name, 

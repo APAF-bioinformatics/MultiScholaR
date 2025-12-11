@@ -551,6 +551,24 @@
 # ----------------------------------------------------------------------------
 #' plotPeptidesProteinsCountsPerSampleHelper
 #' @description Plot the number of proteins and peptides identified per sample
+#' @importFrom purrr map map2 map_chr pmap
+#' @importFrom dplyr filter select mutate pull rename distinct
+#' @importFrom ggplot2 ggplot aes
+#' @importFrom ggrepel geom_text_repel
+#' @importFrom RColorBrewer brewer.pal
+#' @importFrom mixOmics pca impute.nipals
+#' @importFrom grid grid.draw convertX convertY gpar unit
+#' @importFrom gridExtra arrangeGrob
+#' @importFrom graphics boxplot
+#' @importFrom Biobase rowMedians
+#' @importFrom rlang base_env
+#' @importFrom utils str
+#' @importFrom htmlwidgets saveWidget
+#' @importFrom ComplexHeatmap Heatmap HeatmapAnnotation rowAnnotation Legend draw
+#' @importFrom GGally ggpairs
+#' @importFrom ggpubr ggarrange
+#' @importFrom Glimma glimmaVolcano
+#' @importFrom limma decideTests
 #' @export
 plotPeptidesProteinsCountsPerSampleHelper <- function( input_table
                                                  , intensity_column = Peptide.RawQuantity

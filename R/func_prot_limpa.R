@@ -55,6 +55,20 @@
 #'   before_object = peptide_obj
 #' )
 #' 
+#' @importFrom limpa dpc dpcDE plotDPC dpcImpute dpcQuant
+#' @importFrom limma makeContrasts contrasts.fit eBayes topTable
+#' @importFrom qvalue qvalue
+#' @importFrom ggplotify as.ggplot
+#' @importFrom cowplot ggdraw draw_grob
+#' @importFrom png readPNG
+#' @importFrom magick image_read
+#' @importFrom grid grid.grabExpr
+#' @importFrom patchwork plot_annotation
+#' @importFrom ggplot2 ggplot aes annotate theme_void theme margin element_blank annotation_raster scale_x_continuous scale_y_continuous ggtitle geom_col scale_fill_manual geom_density theme_bw element_text labs ggsave
+#' @importFrom stringr str_to_title
+#' @importFrom tibble rownames_to_column column_to_rownames
+#' @importFrom dplyr filter select mutate distinct left_join rename summarise group_by n n_distinct
+#' @importFrom tidyr pivot_longer
 #' @export
 generateLimpaQCPlots <- function(after_object,
                                 before_object = NULL,

@@ -367,6 +367,11 @@ mod_prot_enrich_ui <- function(id) {
 
 #' @rdname enrichmentAnalysisAppletModule 
 #' @export
+#' @importFrom shiny moduleServer reactive reactiveValues observeEvent req showNotification
+#' @importFrom purrr detect
+#' @importFrom readr write_tsv
+#' @importFrom dplyr filter select mutate case_when slice_head all_of pull
+#' @importFrom stringr str_split str_detect str_extract
 mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label, selected_tab = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     

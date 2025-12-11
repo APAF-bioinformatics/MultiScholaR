@@ -568,6 +568,13 @@
 # saveTimeRecord
 # ----------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
+#' @title Save Time Record
+#' @description Save timing information for compute steps
+#' @param compute_time_record Data frame to store timing records
+#' @param step_name Name of the step being timed
+#' @param toc_output Output from tictoc::toc()
+#' @importFrom ComplexHeatmap width height draw
+#' @importFrom grid convertX convertY unit
 #' @export
 saveTimeRecord <- function ( compute_time_record, step_name, toc_output ) {
 
