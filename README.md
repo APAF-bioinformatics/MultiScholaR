@@ -267,6 +267,8 @@ MultiScholaR includes a **fully functional metabolomics analysis workflow** avai
 
 ## Quick Start & Setup
 
+## For a FULL AND DETAILED guide, please visit the Data to Discovery: A Multiomics Masterclass resource here https://zenodo.org/records/15573343 for detailed instructions.
+
 ### 1. Required Software
 
 #### (4/25) R VERSION 4.4.3 CURRENTLY LATEST SUPPORTED VERSION DUE TO DEPENDENCY MIGRATION LAG to R 4.5.0
