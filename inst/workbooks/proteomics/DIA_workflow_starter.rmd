@@ -46,10 +46,28 @@ installMultiScholaR <- function(verbose = TRUE) {
         try(detach("package:MultiScholaR", unload = TRUE, force = TRUE), silent = TRUE)
     }
 
+    # Install BiocManager if not available
+    if (!require("BiocManager", quietly = TRUE)) {
+        install.packages("BiocManager")
+    }
+    
+    # Install required Bioconductor packages
+    BiocManager::install(c(
+        "UniProt.ws",
+        "mixOmics", 
+        "limma",
+        "qvalue",
+        "clusterProfiler",
+        "GO.db",
+        "EDASeq",
+        "RUVSeq",
+        "basilisk"
+    ))
+    
     # Unload namespace
     try(unloadNamespace("MultiScholaR"), silent = TRUE)
 
-
+    # Install MultiScholaR from GitHub
     devtools::install_github(
         "APAF-BIOINFORMATICS/MultiScholaR",
         ref = "main", # Main branch
@@ -58,7 +76,7 @@ installMultiScholaR <- function(verbose = TRUE) {
         force = TRUE
     )
 
-    # Load it
+    # Load the package
     library(MultiScholaR)
 }
 
