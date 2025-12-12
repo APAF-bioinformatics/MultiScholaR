@@ -1,6 +1,6 @@
 Package: MultiScholaR
-Title: Tools for analysis of multi-omics data.
-Version: 0.10
+Title: Interactive Multi-Omics Analysis with Best Modular, Reproducible Workflows
+Version: 0.3.6.3
 Authors@R: c(
     person(given = "Ignatius",
            family = "Pang",
@@ -13,77 +13,166 @@ Authors@R: c(
            email = "william.klare@mq.edu.au",
            comment = c(ORCID = "0000-0002-1490-9704"))
     )
-Description: Tools for analysis of multi-omics data.
+Description: A comprehensive R package providing an end-to-end graphical user interface 
+    and reproducible R Markdown workflows for multi-omics data analysis. MultiScholaR 
+    supports proteomics, metabolomics, lipidomics, and integrative 
+    multi-omics analyses with automated parameter optimization, quality control, 
+    differential expression analysis, and pathway enrichment. The package emphasizes 
+    transparency and education, providing well-documented workflows that enable 
+    researchers to understand and adapt analytical methods while ensuring reproducibility 
+    through standardized, citable workflows.
 License: LGPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
+Collate: 
+    'allGenerics.R'
+    'func_general_s4_objects.R'
+    'func_pept_s4_objects.R'
+    'func_prot_s4_objects.R'
+    'func_metab_s4_objects.R'
+    'func_general_design.R'
+    'func_general_enrichment.R'
+    'func_general_filemgmt.R'
+    'func_general_helpers.R'
+    'func_general_plotting.R'
+    'func_github_management.R'
+    'func_metab_de.R'
+    'func_metab_import.R'
+    'func_metab_norm.R'
+    'func_metab_qc.R'
+    'func_multiomics_enrich.R'
+    'func_multiomics_mofa.R'
+    'func_pept_limpa.R'
+    'func_pept_norm.R'
+    'func_peptide_qc_imputation.R'
+    'func_phospho_annotation.R'
+    'func_prot_annotation.R'
+    'func_prot_de.R'
+    'func_prot_import.R'
+    'func_prot_limpa.R'
+    'func_prot_norm.R'
+    'func_prot_qc.R'
+    'func_prot_qc_peptide.R'
+    'func_prot_rollup.R'
+    'app_server.R'
+    'app_ui.R'
+    'launch_app.R'
+    'mod_prot_de.R'
+    'mod_prot_design.R'
+    'mod_prot_design_builder.R'
+    'mod_prot_enrich.R'
+    'mod_prot_import.R'
+    'mod_prot_norm.R'
+    'mod_prot_qc.R'
+    'mod_prot_qc_peptide.R'
+    'mod_prot_qc_peptide_impute.R'
+    'mod_prot_qc_peptide_intensity.R'
+    'mod_prot_qc_peptide_protein.R'
+    'mod_prot_qc_peptide_qvalue.R'
+    'mod_prot_qc_peptide_replicate.R'
+    'mod_prot_qc_peptide_rollup.R'
+    'mod_prot_qc_peptide_sample.R'
+    'mod_prot_qc_protein.R'
+    'mod_prot_qc_protein_cleanup.R'
+    'mod_prot_qc_protein_dedup.R'
+    'mod_prot_qc_protein_intensity.R'
+    'mod_prot_qc_protein_replicate.R'
+    'mod_prot_qc_protein_rollup.R'
+    'mod_prot_qc_protein_s4.R'
+    'mod_prot_summary.R'
+    'mod_proteomics.R'
+    'func_applets.R'
+    'run_app.R'
+    'utils_shiny_logging.R'
+    'utils_workflow_state.R'
+    'zzz.R'
 Suggests: 
     testthat (>= 3.0.0),
-    clusterProfiler, 
     GlimmaV2,
-    ggplot2,
-    plotly,
-    seqinr,
     UpSetR,
     tidyverse,
     GGally,
-    logger,
-    ggpubr,
-    ggrepel,
-    patchwork,
     svglite,
     iheatmapr,
-    shiny,
+    reticulate,
     gprofiler2,
-    webshot2
+    webshot2,
+    seqinr,
+    ggpubr
 Config/testthat/edition: 3
 Imports: 
     beepr,
     configr,
+    cowplot,
     devtools,
     DT,
     dplyr,
     flextable,
+    forcats,
     furrr,
+    future,
     future.apply,
     fs,
+    GGally,
+    ggplot2,
+    ggplotify,
+    ggpubr,
+    ggraph,
+    ggrepel,
     gh,
     git2r,
     glue,
+    golem,
     gplots,
+    grid,
     gridExtra,
     gtools,
     gt,
     here,
     htmltools,
+    htmlwidgets,
     httr,
     igraph,
+    ini,
     iq,
     janitor,
-    logger,
     knitr,
     lazyeval,
+    logger,
     logging,
     magrittr,
     multidplyr,
     openxlsx,
     optparse,
     pacman,
+    patchwork,
+    plotly,
+    png,
     progress,
     purrr,
+    R6,
+    rappdirs,
     Rcpp,
     RcppEigen,
     RColorBrewer,
+    readr,
     readxl,
     rlang,
+    rmarkdown,
     RSpectra,
     rstudioapi,
     ruv,
     rvest,
+    shiny,
+    shinydashboard,
+    shinyFiles,
+    shinyjqui,
+    shinyjs,
     statmod,
     stringi,
+    stringr,
     tibble,
     tictoc,
     tidyr,
@@ -92,8 +181,7 @@ Imports:
     vroom,
     writexl,
     xml2,
-    ggraph,
-    reticulate
+    magick
 Remotes:
     cran/RUVIIIC,
     APAF-bioinformatics/GlimmaV2
