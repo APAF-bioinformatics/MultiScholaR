@@ -13,6 +13,9 @@
 # Example code in package build process
 *-Ex.R
 
+# Dev files
+/dev/
+
 # Output files from R CMD build
 /*.tar.gz
 
@@ -35,7 +38,6 @@ vignettes/*.pdf
 
 # Testing files
 *test_checklist
-*handover.md
 
 # Temporary files created by R markdown
 *.utf8.md
