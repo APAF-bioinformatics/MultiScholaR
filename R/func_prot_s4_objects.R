@@ -47,9 +47,6 @@
 #' @importFrom vroom vroom_write
 #' @importFrom writexl write_xlsx
 #' @importFrom logger log_debug log_warn
-#' @importFrom limma normalizeCyclicLoess normalizeQuantiles normalizeMedianAbsValues
-#' @importFrom mixOmics impute.nipals
-#' @importFrom RUVIIIC RUVIII_C_Varying
 #' @exportClass ProteinQuantitativeData
 ProteinQuantitativeData <- setClass("ProteinQuantitativeData"
 

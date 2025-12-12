@@ -55,9 +55,6 @@
 #'   before_object = peptide_obj
 #' )
 #' 
-#' @importFrom limpa dpc dpcDE plotDPC dpcImpute dpcQuant
-#' @importFrom limma makeContrasts contrasts.fit eBayes topTable
-#' @importFrom qvalue qvalue
 #' @importFrom ggplotify as.ggplot
 #' @importFrom cowplot ggdraw draw_grob
 #' @importFrom png readPNG

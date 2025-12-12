@@ -1304,7 +1304,7 @@ loadDependencies <- function(verbose = TRUE) {
     bioc_packages <- c(
         "UniProt.ws", "mixOmics", "limma", "qvalue",
         "clusterProfiler", "GO.db", # GO.db is often a dependency, ensure it's listed
-        "basilisk", "limpa"
+        "basilisk", "limpa", "ComplexHeatmap"
     )
 
     github_packages <- list(

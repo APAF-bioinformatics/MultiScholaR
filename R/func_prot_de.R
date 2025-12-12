@@ -159,8 +159,6 @@
 #' @importFrom viridis viridis plasma inferno
 #' @importFrom writexl write_xlsx
 #' @importFrom vroom vroom_write
-#' @importFrom limma lmFit plotSA treat topTreat topTable eBayes contrasts.fit makeContrasts decideTests normalizeCyclicLoess normalizeQuantiles
-#' @importFrom qvalue qvalue
 #' @export
 generateVolcanoPlotGlimma <- function( de_results_list
                                        , selected_contrast = NULL
