@@ -99,9 +99,20 @@ WorkflowState <- R6::R6Class("WorkflowState",
     
     #' @description
     #' Set the workflow type for the session.
-    #' @param type A character string for the workflow type (e.g., "LFQ", "TMT").
+    #' Workflow type determines which set of modules to load.
+    #' @param type A character string for the workflow type.
+    #'   Proteomics: "LFQ", "TMT", "DIA"
+    #'   Metabolomics: "metabolomics_standard"
+    #'   Lipidomics: "lipidomics_standard"
     setWorkflowType = function(type) {
-      allowed_types <- c("LFQ", "TMT", "DIA")
+      allowed_types <- c(
+        # Proteomics workflows
+        "LFQ", "TMT", "DIA"
+        # Metabolomics workflows
+        , "metabolomics_standard"
+        # Lipidomics workflows
+        , "lipidomics_standard"
+      )
       if (type %in% allowed_types) {
         self$workflow_type <- type
       } else {
