@@ -176,6 +176,7 @@ Imports:
     rstudioapi,
     ruv,
     rvest,
+    seqinr,
     shiny,
     shinydashboard,
     shinyFiles,
