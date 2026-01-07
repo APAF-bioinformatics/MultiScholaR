@@ -403,13 +403,16 @@ mod_metab_import_server <- function(id, workflow_data, experiment_paths, volumes
                     con <- file(local_data$assay1_file, "r")
                     first_line <- readLines(con, n = 1)
                     close(con)
-                    
+
                     # Detect delimiter
-                    if (grepl(",", first_line)) {
+                    raw_headers <- if (grepl(",", first_line)) {
                         strsplit(first_line, ",")[[1]]
                     } else {
                         strsplit(first_line, "\t")[[1]]
                     }
+
+                    # Strip surrounding quotes from headers (CSV quoting)
+                    gsub('^"|"$', '', raw_headers)
                 }, error = function(e) {
                     character(0)
                 })

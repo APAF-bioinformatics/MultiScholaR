@@ -1,141 +1,95 @@
 # ============================================================================
 # mod_metab_design.R
 # ============================================================================
-# Purpose: Metabolomics design matrix builder Shiny module
+# Purpose: Metabolomics design matrix host module - 1:1 with proteomics
 #
-# This module handles the experimental design setup for metabolomics data,
-# including sample metadata assignment and contrast specification.
+# This module embeds mod_metab_design_builder.R and handles orchestration,
+# including Import Existing Design, S4 object creation, and state management.
 # ============================================================================
 
-#' @title Metabolomics Design Matrix Module
-#' @description A Shiny module for building and validating the experimental design
-#'              matrix for metabolomics workflows.
-#' @name mod_metab_design
+#' @title Metabolomics Design Matrix Applet Module
+#'
+#' @description A Shiny module that serves as the main host for the design
+#' matrix creation workflow step. Embeds mod_metab_design_builder_ui/server
+#' and handles Import Existing Design, S4 object creation, and state saving.
+#' Architecture is 1:1 with mod_prot_design.R.
+#'
+#' @param id Module ID
+#' @param workflow_data A reactive values object to store workflow data.
+#' @param experiment_paths A list of paths for the current experiment.
+#' @param volumes A list of volumes for shinyFiles (optional).
+#' @param qc_trigger A reactive trigger for QC execution (optional).
+#'
+#' @name metabolomicsDesignMatrixAppletModule
 NULL
 
-#' @rdname mod_metab_design
+#' @rdname metabolomicsDesignMatrixAppletModule
 #' @export
-#' @importFrom shiny NS tagList fluidRow column wellPanel h3 h4 h5 p hr br radioButtons selectInput textInput actionButton uiOutput verbatimTextOutput icon tags fileInput numericInput checkboxInput
-#' @importFrom DT DTOutput
+#' @importFrom shiny NS tagList wellPanel h3 h4 p conditionalPanel div icon tags HTML fluidRow column actionButton
+#' @importFrom DT DTOutput renderDT
 mod_metab_design_ui <- function(id) {
     ns <- shiny::NS(id)
-    
+
     shiny::tagList(
         shiny::fluidRow(
             shiny::column(12
                 , shiny::wellPanel(
-                    shiny::h3("Experimental Design Setup")
-                    
-                    , shiny::fluidRow(
-                        # Left column: Design matrix input
-                        shiny::column(6
-                            , shiny::h4("Step 1: Import Design Matrix")
-                            , shiny::radioButtons(
-                                ns("design_source")
-                                , "Design matrix source:"
-                                , choices = c(
-                                    "Upload file" = "upload"
-                                    , "Generate from sample names" = "generate"
-                                )
-                                , selected = "upload"
-                            )
-                            
-                            , shiny::conditionalPanel(
-                                condition = paste0("input['", ns("design_source"), "'] == 'upload'")
-                                , shiny::fileInput(
-                                    ns("design_file")
-                                    , "Upload Design Matrix"
-                                    , accept = c(".csv", ".tsv", ".txt", ".xlsx")
-                                )
-                            )
-                            
-                            , shiny::conditionalPanel(
-                                condition = paste0("input['", ns("design_source"), "'] == 'generate'")
-                                , shiny::textInput(
-                                    ns("group_pattern")
-                                    , "Group extraction pattern (regex)"
-                                    , value = ""
-                                    , placeholder = "e.g., ^([A-Za-z]+)_ to extract prefix"
-                                )
-                                , shiny::actionButton(
-                                    ns("generate_design")
-                                    , "Generate Design"
-                                    , class = "btn-info"
-                                )
-                            )
-                            
-                            , shiny::hr()
-                            
-                            , shiny::h4("Step 2: Column Mapping")
-                            , shiny::selectInput(
-                                ns("sample_id_col")
-                                , "Sample ID Column"
-                                , choices = NULL
-                            )
-                            , shiny::selectInput(
-                                ns("group_col")
-                                , "Group Column"
-                                , choices = NULL
-                            )
-                            , shiny::selectInput(
-                                ns("replicate_col")
-                                , "Technical Replicate Column (optional)"
-                                , choices = NULL
-                            )
-                            
-                            , shiny::hr()
-                            
-                            , shiny::h4("Step 3: Contrast Specification")
-                            , shiny::p("Define comparisons for differential analysis.")
-                            , shiny::textInput(
-                                ns("contrast_formula")
-                                , "Contrast Formula"
-                                , value = ""
-                                , placeholder = "e.g., Treatment-Control"
-                            )
-                            , shiny::helpText("Use group names separated by minus sign. Multiple contrasts: comma-separated.")
-                            , shiny::actionButton(
-                                ns("add_contrast")
-                                , "Add Contrast"
-                                , class = "btn-secondary"
-                            )
-                            , shiny::br()
-                            , shiny::br()
-                            , shiny::uiOutput(ns("contrast_list"))
+                    shiny::fluidRow(
+                        shiny::column(8
+                            , shiny::h3("Design Matrix Builder")
                         )
-                        
-                        # Right column: Preview and validation
-                        , shiny::column(6
-                            , shiny::h4("Design Matrix Preview")
-                            , DT::DTOutput(ns("design_preview"))
-                            
-                            , shiny::hr()
-                            
-                            , shiny::h4("Validation Summary")
-                            , shiny::uiOutput(ns("validation_summary"))
-                            
-                            , shiny::hr()
-                            
-                            , shiny::h4("Sample-Assay Matching")
-                            , shiny::verbatimTextOutput(ns("sample_match_summary"))
+                        , shiny::column(4
+                            , shiny::actionButton(ns("show_import_modal"), "Import Existing Design"
+                                , icon = shiny::icon("folder-open"), class = "btn-info pull-right")
                         )
                     )
-                    
-                    , shiny::hr()
-                    
-                    # Create S4 object button
-                    , shiny::fluidRow(
-                        shiny::column(12
-                            , shiny::actionButton(
-                                ns("create_s4")
-                                , "Create MetaboliteAssayData Object"
-                                , class = "btn-success"
-                                , width = "100%"
-                                , icon = shiny::icon("database")
+                    , shiny::p("Use the tools below to define your experimental groups and contrasts for differential analysis. All assays (Pos/Neg modes) share the same design matrix.")
+
+                    # Multi-assay info banner
+                    , shiny::div(
+                        class = "alert alert-info"
+                        , style = "margin-top: 10px;"
+                        , shiny::icon("info-circle")
+                        , shiny::tags$strong(" Multi-Assay Workflow: ")
+                        , "Design applies uniformly across all assay modes (LCMS_Pos, LCMS_Neg, GCMS, etc.). "
+                        , "Sample assignments and contrasts are shared."
+                    )
+
+                    # Conditional panel: show builder when data is available
+                    , shiny::conditionalPanel(
+                        condition = paste0("output['", ns("data_available"), "']")
+                        , if (exists("mod_metab_design_builder_ui")) {
+                            mod_metab_design_builder_ui(ns("builder"))
+                        } else {
+                            shiny::div("Design builder module not loaded")
+                        }
+
+                        # Saved results preview
+                        , shiny::hr()
+                        , shiny::h3("Saved Results Preview")
+                        , shiny::p("This section shows the design matrix and contrasts saved to the workflow.")
+                        , shiny::conditionalPanel(
+                            condition = paste0("output['", ns("design_matrix_exists"), "']")
+                            , shiny::wellPanel(
+                                shiny::h4("Current Design Matrix")
+                                , DT::DTOutput(ns("design_matrix_preview"))
+                                , shiny::br()
+                                , shiny::h4("Defined Contrasts")
+                                , DT::DTOutput(ns("contrasts_preview"))
+                                , shiny::br()
+                                , shiny::h4("Assays Included")
+                                , shiny::verbatimTextOutput(ns("assays_preview"))
                             )
-                            , shiny::br()
-                            , shiny::br()
-                            , shiny::uiOutput(ns("s4_status"))
+                        )
+                    )
+
+                    # Conditional panel: message if no data
+                    , shiny::conditionalPanel(
+                        condition = paste0("!output['", ns("data_available"), "']")
+                        , shiny::div(
+                            class = "alert alert-info"
+                            , shiny::icon("info-circle")
+                            , " Please complete the 'Import' step first. The builder will appear once data is available."
                         )
                     )
                 )
@@ -144,391 +98,514 @@ mod_metab_design_ui <- function(id) {
     )
 }
 
-#' @rdname mod_metab_design
+#' @rdname metabolomicsDesignMatrixAppletModule
 #' @export
-#' @importFrom shiny moduleServer reactiveValues reactive observeEvent req renderUI renderText showNotification removeNotification updateSelectInput
-#' @importFrom DT renderDT datatable
+#' @importFrom shiny moduleServer reactive observeEvent req renderUI showNotification removeNotification outputOptions renderText
 #' @importFrom logger log_info log_error log_warn
-mod_metab_design_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label) {
+#' @importFrom utils write.table
+#' @importFrom vroom vroom
+#' @importFrom shinyFiles shinyDirButton shinyDirChoose parseDirPath getVolumes
+#' @importFrom jsonlite write_json read_json
+mod_metab_design_server <- function(id, workflow_data, experiment_paths, volumes = NULL, qc_trigger = NULL) {
+    message(sprintf("--- Entering mod_metab_design_server ---"))
+    message(sprintf("   mod_metab_design_server Arg: id = %s", id))
+
     shiny::moduleServer(id, function(input, output, session) {
-        ns <- session$ns
-        
-        # Local reactive values
-        local_data <- shiny::reactiveValues(
-            design_matrix = NULL
-            , contrasts = list()
-            , sample_match_info = NULL
-        )
-        
-        # Handle design file upload
-        shiny::observeEvent(input$design_file, {
-            shiny::req(input$design_file)
-            
+        message(sprintf("   mod_metab_design_server Step: Inside moduleServer function"))
+
+        # == Setup shinyFiles =======================================================
+        resolved_volumes <- shiny::isolate({
+            base_volumes <- if (is.function(volumes)) {
+                volumes()
+            } else if (is.null(volumes)) {
+                shinyFiles::getVolumes()()
+            } else {
+                volumes
+            }
+
+            if (!is.null(experiment_paths) && !is.null(experiment_paths$base_dir) &&
+                dir.exists(experiment_paths$base_dir)) {
+                enhanced_volumes <- c("Project Base Dir" = experiment_paths$base_dir, base_volumes)
+                logger::log_info(paste("Added base_dir to volumes:", experiment_paths$base_dir))
+                enhanced_volumes
+            } else {
+                base_volumes
+            }
+        })
+
+        shinyFiles::shinyDirChoose(input, "import_dir", roots = resolved_volumes, session = session)
+
+        # == Modal Logic for Import =================================================
+
+        shiny::observeEvent(input$show_import_modal, {
+            ns <- session$ns
+            shiny::showModal(shiny::modalDialog(
+                title = "Import Existing Design Matrix"
+                , shiny::p("Select the folder containing 'design_matrix.tab', assay data files, and optionally 'contrast_strings.tab'.")
+                , shiny::helpText("Required files: design_matrix.tab, assay_manifest.txt, data_cln_*.tab files")
+                , shinyFiles::shinyDirButton(ns("import_dir"), "Select Folder", "Choose a directory")
+                , shiny::verbatimTextOutput(ns("import_dir_path"), placeholder = TRUE)
+                , footer = shiny::tagList(
+                    shiny::modalButton("Cancel")
+                    , shiny::actionButton(ns("confirm_import"), "Import", class = "btn-primary")
+                )
+            ))
+        })
+
+        # Display selected directory path in modal
+        output$import_dir_path <- shiny::renderText({
+            shiny::req(input$import_dir)
+            shinyFiles::parseDirPath(resolved_volumes, input$import_dir)
+        })
+
+        # == Handle Import Confirmation =============================================
+
+        shiny::observeEvent(input$confirm_import, {
+            shiny::req(input$import_dir)
+
+            import_path <- shinyFiles::parseDirPath(resolved_volumes, input$import_dir)
+            shiny::req(import_path)
+
+            shiny::removeModal()
+
+            # Define file paths
+            design_file <- file.path(import_path, "design_matrix.tab")
+            contrast_file <- file.path(import_path, "contrast_strings.tab")
+            manifest_file <- file.path(import_path, "assay_manifest.txt")
+            col_map_file <- file.path(import_path, "column_mapping.json")
+            config_file <- file.path(import_path, "config.ini")
+
+            # Validate required files exist
+            if (!file.exists(design_file)) {
+                msg <- "Import failed: 'design_matrix.tab' not found in the selected directory."
+                logger::log_error(msg)
+                shiny::showNotification(msg, type = "error", duration = 10)
+                return()
+            }
+
+            if (!file.exists(manifest_file)) {
+                msg <- "Import failed: 'assay_manifest.txt' not found. Cannot determine which assay files to load."
+                logger::log_error(msg)
+                shiny::showNotification(msg, type = "error", duration = 10)
+                return()
+            }
+
+            shiny::showNotification("Importing design files...", id = "importing_design", duration = NULL)
+
             tryCatch({
-                file_path <- input$design_file$datapath
-                file_name <- input$design_file$name
-                
-                # Determine format and read
-                if (grepl("\\.xlsx$", file_name, ignore.case = TRUE)) {
-                    design_df <- readxl::read_excel(file_path)
-                } else if (grepl("\\.csv$", file_name, ignore.case = TRUE)) {
-                    design_df <- vroom::vroom(file_path, delim = ",", show_col_types = FALSE)
+                # --- 1. Load config.ini ---
+                if (file.exists(config_file)) {
+                    logger::log_info("Loading config.ini from import directory.")
+                    workflow_data$config_list <- readConfigFile(file = config_file)
+                    assign("config_list", workflow_data$config_list, envir = .GlobalEnv)
+                    logger::log_info("Loaded config.ini and assigned to global environment.")
                 } else {
-                    design_df <- vroom::vroom(file_path, delim = "\t", show_col_types = FALSE)
-                }
-                
-                design_df <- as.data.frame(design_df)
-                local_data$design_matrix <- design_df
-                
-                # Update column dropdowns
-                col_names <- names(design_df)
-                
-                shiny::updateSelectInput(
-                    session
-                    , "sample_id_col"
-                    , choices = col_names
-                    , selected = findMatchingColumn(col_names, c("Sample", "SampleID", "Sample_ID", "sample_id", "sample"))
-                )
-                
-                shiny::updateSelectInput(
-                    session
-                    , "group_col"
-                    , choices = col_names
-                    , selected = findMatchingColumn(col_names, c("Group", "group", "Condition", "condition", "Treatment", "treatment"))
-                )
-                
-                shiny::updateSelectInput(
-                    session
-                    , "replicate_col"
-                    , choices = c("(None)" = "", col_names)
-                    , selected = ""
-                )
-                
-                logger::log_info(sprintf("Design matrix loaded: %d samples, %d columns", nrow(design_df), ncol(design_df)))
-                
-            }, error = function(e) {
-                logger::log_error(paste("Error reading design file:", e$message))
-                shiny::showNotification(paste("Error reading design file:", e$message), type = "error")
-            })
-        })
-        
-        # Generate design from sample names
-        shiny::observeEvent(input$generate_design, {
-            shiny::req(workflow_data$column_mapping)
-            
-            tryCatch({
-                sample_cols <- workflow_data$column_mapping$sample_columns
-                
-                if (length(sample_cols) == 0) {
-                    stop("No sample columns available. Import data first.")
-                }
-                
-                # Create basic design
-                design_df <- data.frame(
-                    Sample_ID = sample_cols
-                    , stringsAsFactors = FALSE
-                )
-                
-                # Try to extract group from pattern
-                if (nzchar(input$group_pattern)) {
-                    matches <- regmatches(sample_cols, regexpr(input$group_pattern, sample_cols, perl = TRUE))
-                    design_df$Group <- ifelse(nchar(matches) > 0, matches, "Unknown")
-                } else {
-                    # Default: assign all to one group
-                    design_df$Group <- "Sample"
-                }
-                
-                local_data$design_matrix <- design_df
-                
-                # Update dropdowns
-                shiny::updateSelectInput(session, "sample_id_col", choices = names(design_df), selected = "Sample_ID")
-                shiny::updateSelectInput(session, "group_col", choices = names(design_df), selected = "Group")
-                shiny::updateSelectInput(session, "replicate_col", choices = c("(None)" = "", names(design_df)), selected = "")
-                
-                logger::log_info(sprintf("Generated design matrix for %d samples", nrow(design_df)))
-                shiny::showNotification("Design matrix generated", type = "message")
-                
-            }, error = function(e) {
-                logger::log_error(paste("Error generating design:", e$message))
-                shiny::showNotification(paste("Error:", e$message), type = "error")
-            })
-        })
-        
-        # Render design preview
-        output$design_preview <- DT::renderDT({
-            shiny::req(local_data$design_matrix)
-            
-            DT::datatable(
-                local_data$design_matrix
-                , options = list(
-                    pageLength = 10
-                    , scrollX = TRUE
-                    , dom = 'frtip'
-                )
-                , rownames = FALSE
-                , class = "compact stripe"
-            )
-        })
-        
-        # Add contrast
-        shiny::observeEvent(input$add_contrast, {
-            shiny::req(input$contrast_formula)
-            
-            # Parse contrast formula
-            contrast_str <- trimws(input$contrast_formula)
-            if (nzchar(contrast_str)) {
-                # Split on comma for multiple contrasts
-                new_contrasts <- strsplit(contrast_str, ",")[[1]]
-                new_contrasts <- trimws(new_contrasts)
-                
-                # Add to list
-                for (contrast in new_contrasts) {
-                    if (nzchar(contrast) && !contrast %in% local_data$contrasts) {
-                        local_data$contrasts <- c(local_data$contrasts, contrast)
+                    # Try to load from experiment_paths or use default
+                    default_config <- file.path(experiment_paths$source_dir, "config.ini")
+                    if (file.exists(default_config)) {
+                        workflow_data$config_list <- readConfigFile(file = default_config)
+                        assign("config_list", workflow_data$config_list, envir = .GlobalEnv)
+                        logger::log_info("Loaded config.ini from source_dir.")
+                    } else {
+                        logger::log_warn("No config.ini found. Using empty config.")
+                        workflow_data$config_list <- list()
                     }
                 }
-                
-                # Clear input
-                shiny::updateTextInput(session, "contrast_formula", value = "")
-            }
-        })
-        
-        # Render contrast list
-        output$contrast_list <- shiny::renderUI({
-            contrasts <- local_data$contrasts
-            
-            if (length(contrasts) == 0) {
-                return(shiny::p(shiny::icon("info-circle"), " No contrasts defined yet.", style = "color: #666;"))
-            }
-            
-            contrast_items <- lapply(seq_along(contrasts), function(i) {
-                shiny::tags$div(
-                    style = "margin-bottom: 5px;"
-                    , shiny::tags$span(
-                        class = "badge badge-primary"
-                        , style = "margin-right: 5px;"
-                        , contrasts[[i]]
+
+                # --- 2. Load design matrix ---
+                logger::log_info("Loading design_matrix.tab")
+                imported_design <- vroom::vroom(design_file, show_col_types = FALSE)
+
+                # --- 3. Load assay manifest and assay data files ---
+                logger::log_info("Loading assay_manifest.txt")
+                assay_names <- readLines(manifest_file)
+                assay_names <- assay_names[nzchar(assay_names)]  # Remove empty lines
+
+                if (length(assay_names) == 0) {
+                    stop("assay_manifest.txt is empty. No assays to load.")
+                }
+
+                logger::log_info(sprintf("Found %d assays in manifest: %s", length(assay_names), paste(assay_names, collapse = ", ")))
+
+                # Load each assay data file
+                assay_list <- list()
+                for (assay_name in assay_names) {
+                    assay_file <- file.path(import_path, paste0("data_cln_", assay_name, ".tab"))
+                    if (!file.exists(assay_file)) {
+                        stop(sprintf("Assay data file not found: %s", assay_file))
+                    }
+                    logger::log_info(sprintf("Loading assay: %s", assay_name))
+                    assay_list[[assay_name]] <- vroom::vroom(assay_file, show_col_types = FALSE)
+                }
+
+                # --- 4. Load column mapping ---
+                if (file.exists(col_map_file)) {
+                    logger::log_info("Loading column_mapping.json")
+                    col_map <- jsonlite::read_json(col_map_file, simplifyVector = TRUE)
+                    workflow_data$column_mapping <- col_map
+                } else {
+                    # Infer column mapping from data structure
+                    logger::log_warn("column_mapping.json not found. Inferring from data structure.")
+                    first_assay <- assay_list[[1]]
+                    all_cols <- names(first_assay)
+
+                    # Try to detect metabolite ID column
+                    id_candidates <- c("Peak ID", "Alignment ID", "Alignment.ID", "peak id", "alignment id")
+                    metabolite_id_col <- NULL
+                    for (candidate in id_candidates) {
+                        if (candidate %in% all_cols) {
+                            metabolite_id_col <- candidate
+                            break
+                        }
+                    }
+                    if (is.null(metabolite_id_col)) {
+                        metabolite_id_col <- all_cols[1]  # Fallback to first column
+                    }
+
+                    # Try to detect annotation column
+                    annot_candidates <- c("Metabolite name", "Metabolite.name", "Name", "name")
+                    annotation_col <- NULL
+                    for (candidate in annot_candidates) {
+                        if (candidate %in% all_cols) {
+                            annotation_col <- candidate
+                            break
+                        }
+                    }
+
+                    # Sample columns are those matching design matrix Run values
+                    sample_cols <- intersect(imported_design$Run, all_cols)
+
+                    col_map <- list(
+                        metabolite_id_col = metabolite_id_col
+                        , annotation_col = annotation_col
+                        , sample_columns = sample_cols
+                        , is_pattern = NA_character_
                     )
-                    , shiny::actionLink(
-                        ns(paste0("remove_contrast_", i))
-                        , shiny::icon("times")
-                        , style = "color: red;"
-                    )
-                )
-            })
-            
-            shiny::tagList(
-                shiny::h5("Defined Contrasts:")
-                , contrast_items
-            )
-        })
-        
-        # Validation summary
-        output$validation_summary <- shiny::renderUI({
-            shiny::req(local_data$design_matrix, input$sample_id_col, input$group_col)
-            
-            dm <- local_data$design_matrix
-            errors <- character(0)
-            warnings <- character(0)
-            info <- character(0)
-            
-            # Check sample ID column
-            if (!input$sample_id_col %in% names(dm)) {
-                errors <- c(errors, "Sample ID column not found")
-            } else {
-                n_samples <- nrow(dm)
-                n_unique <- length(unique(dm[[input$sample_id_col]]))
-                info <- c(info, sprintf("Samples: %d", n_samples))
-                
-                if (n_unique != n_samples) {
-                    warnings <- c(warnings, sprintf("Duplicate sample IDs: %d duplicates", n_samples - n_unique))
+                    workflow_data$column_mapping <- col_map
+                    logger::log_info(sprintf("Inferred column mapping: metabolite_id=%s, annotation=%s, %d samples",
+                        metabolite_id_col, annotation_col, length(sample_cols)))
                 }
-            }
-            
-            # Check group column
-            if (!input$group_col %in% names(dm)) {
-                errors <- c(errors, "Group column not found")
-            } else {
-                groups <- unique(dm[[input$group_col]])
-                info <- c(info, sprintf("Groups: %s", paste(groups, collapse = ", ")))
-                
-                # Check group sizes
-                group_sizes <- table(dm[[input$group_col]])
-                min_size <- min(group_sizes)
-                if (min_size < 3) {
-                    warnings <- c(warnings, sprintf("Small group(s) detected: min size = %d", min_size))
+
+                # --- 5. Load contrasts ---
+                imported_contrasts <- if (file.exists(contrast_file)) {
+                    contrast_strings <- readLines(contrast_file)
+
+                    if (length(contrast_strings) > 0) {
+                        contrast_info <- lapply(contrast_strings, function(contrast_string) {
+                            clean_string <- gsub("^group", "", contrast_string)
+                            clean_string <- gsub("-group", "-", clean_string)
+                            friendly_name <- gsub("-", "_vs_", clean_string)
+                            full_format <- paste0(friendly_name, "=", contrast_string)
+
+                            list(
+                                contrast_string = contrast_string
+                                , friendly_name = friendly_name
+                                , full_format = full_format
+                            )
+                        })
+
+                        data.frame(
+                            contrasts = sapply(contrast_info, function(x) x$contrast_string)
+                            , friendly_names = sapply(contrast_info, function(x) x$friendly_name)
+                            , full_format = sapply(contrast_info, function(x) x$full_format)
+                            , stringsAsFactors = FALSE
+                        )
+                    } else {
+                        NULL
+                    }
+                } else {
+                    logger::log_info("No contrast_strings.tab found.")
+                    NULL
                 }
-            }
-            
-            # Check sample matching with data
-            if (!is.null(workflow_data$column_mapping)) {
-                data_samples <- workflow_data$column_mapping$sample_columns
-                design_samples <- dm[[input$sample_id_col]]
-                
-                matched <- sum(design_samples %in% data_samples)
-                unmatched_design <- sum(!design_samples %in% data_samples)
-                unmatched_data <- sum(!data_samples %in% design_samples)
-                
-                info <- c(info, sprintf("Matched samples: %d/%d", matched, length(data_samples)))
-                
-                if (unmatched_design > 0) {
-                    warnings <- c(warnings, sprintf("%d design samples not in data", unmatched_design))
+
+                # --- 6. Update workflow_data ---
+                workflow_data$design_matrix <- imported_design
+                workflow_data$contrasts_tbl <- imported_contrasts
+                workflow_data$data_tbl <- assay_list
+                workflow_data$data_cln <- assay_list
+
+                if (!is.null(imported_contrasts)) {
+                    assign("contrasts_tbl", imported_contrasts, envir = .GlobalEnv)
+                    logger::log_info("Saved contrasts_tbl to global environment.")
                 }
-                if (unmatched_data > 0) {
-                    warnings <- c(warnings, sprintf("%d data samples not in design", unmatched_data))
-                }
-                
-                local_data$sample_match_info <- list(
-                    matched = matched
-                    , unmatched_design = unmatched_design
-                    , unmatched_data = unmatched_data
-                    , total_data = length(data_samples)
-                )
-            }
-            
-            # Build output
-            if (length(errors) > 0) {
-                return(shiny::tags$div(
-                    class = "alert alert-danger"
-                    , shiny::icon("times-circle")
-                    , shiny::tags$strong(" Errors:")
-                    , shiny::tags$ul(lapply(errors, shiny::tags$li))
-                ))
-            }
-            
-            shiny::tagList(
-                if (length(warnings) > 0) {
-                    shiny::tags$div(
-                        class = "alert alert-warning"
-                        , shiny::icon("exclamation-triangle")
-                        , " Warnings:"
-                        , shiny::tags$ul(lapply(warnings, shiny::tags$li))
-                    )
-                }
-                , shiny::tags$div(
-                    class = "alert alert-success"
-                    , shiny::icon("check-circle")
-                    , shiny::tags$strong(" Design Valid")
-                    , shiny::tags$ul(lapply(info, shiny::tags$li))
-                )
-            )
-        })
-        
-        # Sample match summary
-        output$sample_match_summary <- shiny::renderText({
-            match_info <- local_data$sample_match_info
-            
-            if (is.null(match_info)) {
-                return("Import data first to check sample matching.")
-            }
-            
-            paste(
-                sprintf("Matched: %d / %d samples", match_info$matched, match_info$total_data)
-                , sprintf("Design-only: %d", match_info$unmatched_design)
-                , sprintf("Data-only: %d", match_info$unmatched_data)
-                , sep = "\n"
-            )
-        })
-        
-        # Create S4 object
-        shiny::observeEvent(input$create_s4, {
-            shiny::req(
-                local_data$design_matrix
-                , input$sample_id_col
-                , input$group_col
-                , workflow_data$data_tbl
-                , workflow_data$column_mapping
-            )
-            
-            shiny::showNotification(
-                "Creating MetaboliteAssayData object..."
-                , id = "metab_s4_working"
-                , duration = NULL
-            )
-            
-            tryCatch({
-                dm <- local_data$design_matrix
+
+                # Create tech_rep_group column
+                workflow_data$design_matrix <- workflow_data$design_matrix |>
+                    dplyr::mutate(tech_rep_group = paste(group, replicates, sep = "_"))
+
+                # --- 7. Create S4 Object ---
                 col_map <- workflow_data$column_mapping
-                assay_list <- workflow_data$data_tbl
-                
-                # Create S4 object
+
+                logger::log_info("Creating MetaboliteAssayData S4 object from imported data")
+
                 s4_obj <- createMetaboliteAssayData(
                     metabolite_data = assay_list
-                    , design_matrix = dm
+                    , design_matrix = workflow_data$design_matrix
                     , metabolite_id_column = col_map$metabolite_id_col
-                    , annotation_id_column = if (!is.null(col_map$annotation_col) && nzchar(col_map$annotation_col)) {
+                    , annotation_id_column = if (!is.null(col_map$annotation_col) && !is.na(col_map$annotation_col) && nzchar(col_map$annotation_col)) {
                         col_map$annotation_col
                     } else {
                         NA_character_
                     }
-                    , sample_id = input$sample_id_col
-                    , group_id = input$group_col
-                    , technical_replicate_id = if (nzchar(input$replicate_col)) input$replicate_col else NA_character_
+                    , sample_id = "Run"
+                    , group_id = "group"
+                    , technical_replicate_id = "tech_rep_group"
                     , database_identifier_type = "Unknown"
-                    , internal_standard_regex = col_map$is_pattern
+                    , internal_standard_regex = if (!is.null(col_map$is_pattern) && !is.na(col_map$is_pattern)) {
+                        col_map$is_pattern
+                    } else {
+                        NA_character_
+                    }
                     , args = workflow_data$config_list
                 )
-                
-                # Initialize state manager if needed
+
+                # --- 8. Initialize state manager and save ---
                 if (is.null(workflow_data$state_manager)) {
                     workflow_data$state_manager <- WorkflowState$new("metabolomics")
                 }
-                
-                # Save initial state
+
                 workflow_data$state_manager$saveState(
                     state_name = "metab_raw_data_s4"
                     , s4_data_object = s4_obj
                     , config_object = workflow_data$config_list
-                    , description = "Initial MetaboliteAssayData object created"
+                    , description = "MetaboliteAssayData S4 object created from imported design"
                 )
-                
-                # Store contrasts
-                workflow_data$contrasts <- local_data$contrasts
-                
-                # Update tab status
+
+                # Initialize QC progress tracking with raw data baseline
+                tryCatch({
+                    updateMetaboliteFiltering(
+                        theObject = s4_obj
+                        , step_name = "1_Raw_Data"
+                        , omics_type = omic_type
+                        , return_grid = FALSE
+                        , overwrite = TRUE
+                    )
+                    logger::log_info("Initialized QC progress tracking with raw data baseline")
+                }, error = function(e) {
+                    logger::log_warn(paste("Could not initialize QC progress:", e$message))
+                })
+
+                logger::log_info("S4 object saved to state manager as 'metab_raw_data_s4'")
+                logger::log_info("Import complete - user can proceed to QC")
+
+                # --- 9. Trigger QC ---
+                if (!is.null(qc_trigger)) {
+                    qc_trigger(TRUE)
+                }
+
                 workflow_data$tab_status$design_matrix <- "complete"
-                
-                # Update processing log
-                workflow_data$processing_log$design_matrix <- list(
-                    timestamp = Sys.time()
-                    , n_samples = nrow(dm)
-                    , n_groups = length(unique(dm[[input$group_col]]))
-                    , groups = unique(dm[[input$group_col]])
-                    , n_contrasts = length(local_data$contrasts)
-                    , contrasts = local_data$contrasts
-                )
-                
-                logger::log_info("MetaboliteAssayData S4 object created successfully")
-                
-                shiny::removeNotification("metab_s4_working")
+
+                shiny::removeNotification("importing_design")
                 shiny::showNotification(
-                    "MetaboliteAssayData object created! Proceed to QC."
+                    sprintf("Design imported successfully! Loaded %d assays with %d samples.",
+                        length(assay_list), nrow(imported_design))
                     , type = "message"
                 )
-                
+
             }, error = function(e) {
-                logger::log_error(paste("Error creating S4 object:", e$message))
-                shiny::removeNotification("metab_s4_working")
-                shiny::showNotification(paste("Error:", e$message), type = "error", duration = 10)
+                msg <- paste("Error during import:", e$message)
+                logger::log_error(msg)
+                shiny::showNotification(msg, type = "error", duration = 15)
+                shiny::removeNotification("importing_design")
             })
         })
-        
-        # S4 status display
-        output$s4_status <- shiny::renderUI({
-            if (!is.null(workflow_data$tab_status$design_matrix) && 
-                workflow_data$tab_status$design_matrix == "complete") {
-                
-                shiny::tags$div(
-                    class = "alert alert-success"
-                    , shiny::icon("check-circle")
-                    , shiny::tags$strong(" MetaboliteAssayData Object Created")
-                    , shiny::tags$br()
-                    , "You can now proceed to the Quality Control tab."
+
+        # == Reactivity Checks ======================================================
+
+        output$data_available <- shiny::reactive({
+            !is.null(workflow_data$data_tbl) && !is.null(workflow_data$config_list)
+        })
+        shiny::outputOptions(output, "data_available", suspendWhenHidden = FALSE)
+
+        output$design_matrix_exists <- shiny::reactive({
+            !is.null(workflow_data$design_matrix)
+        })
+        shiny::outputOptions(output, "design_matrix_exists", suspendWhenHidden = FALSE)
+
+        # == Module Integration =====================================================
+
+        if (exists("mod_metab_design_builder_server")) {
+            builder_results_rv <- mod_metab_design_builder_server(
+                "builder"
+                , data_tbl = shiny::reactive(workflow_data$data_tbl)
+                , config_list = shiny::reactive(workflow_data$config_list)
+                , column_mapping = shiny::reactive(workflow_data$column_mapping)
+            )
+        } else {
+            builder_results_rv <- shiny::reactiveVal(NULL)
+        }
+
+        # == Handle Builder Results =================================================
+
+        shiny::observeEvent(builder_results_rv(), {
+            results <- builder_results_rv()
+            shiny::req(results)
+
+            shiny::showModal(shiny::modalDialog(
+                title = "Processing Design Matrix"
+                , shiny::div(
+                    style = "text-align: center; padding: 20px;"
+                    , shiny::icon("spinner", class = "fa-spin fa-3x")
+                    , shiny::br()
+                    , shiny::br()
+                    , shiny::p("Saving design matrix and preparing data...")
                 )
-            } else {
-                NULL
+                , footer = NULL
+                , easyClose = FALSE
+            ))
+
+            logger::log_info("Received results from metabolomics design builder. Saving to workflow and disk.")
+
+            # 1. Update workflow_data
+            workflow_data$design_matrix <- results$design_matrix
+            workflow_data$data_cln <- results$data_cln
+            workflow_data$contrasts_tbl <- results$contrasts_tbl
+            workflow_data$config_list <- results$config_list
+
+            if (!is.null(results$contrasts_tbl)) {
+                assign("contrasts_tbl", results$contrasts_tbl, envir = .GlobalEnv)
+                logger::log_info("Updated contrasts_tbl in global environment.")
             }
+
+            assign("config_list", workflow_data$config_list, envir = .GlobalEnv)
+            logger::log_info("Updated global config_list.")
+
+            # 2. Get source directory for saving files
+            source_dir <- experiment_paths$source_dir
+            if (is.null(source_dir) || !dir.exists(source_dir)) {
+                msg <- "Could not find source directory to save files."
+                logger::log_error(msg)
+                shiny::showNotification(msg, type = "error", duration = 15)
+                shiny::removeModal()
+                return()
+            }
+
+            # 3. Save files
+            tryCatch({
+                # --- Save Design Matrix ---
+                design_matrix_path <- file.path(source_dir, "design_matrix.tab")
+                logger::log_info(paste("Writing design matrix to:", design_matrix_path))
+                utils::write.table(results$design_matrix, file = design_matrix_path
+                    , sep = "\t", row.names = FALSE, quote = FALSE)
+
+                # --- Save Contrasts ---
+                if (!is.null(results$contrasts_tbl) && nrow(results$contrasts_tbl) > 0) {
+                    contrast_path <- file.path(source_dir, "contrast_strings.tab")
+                    logger::log_info(paste("Writing contrasts to:", contrast_path))
+                    writeLines(results$contrasts_tbl$contrasts, contrast_path)
+                }
+
+                # --- Save each assay's cleaned data (CRITICAL for import to work) ---
+                assay_names <- names(results$data_cln)
+                for (assay_name in assay_names) {
+                    assay_path <- file.path(source_dir, paste0("data_cln_", assay_name, ".tab"))
+                    logger::log_info(paste("Writing assay data to:", assay_path))
+                    utils::write.table(results$data_cln[[assay_name]], file = assay_path
+                        , sep = "\t", row.names = FALSE, quote = FALSE)
+                }
+
+                # --- Save assay manifest ---
+                manifest_path <- file.path(source_dir, "assay_manifest.txt")
+                writeLines(assay_names, manifest_path)
+                logger::log_info(sprintf("Saved assay manifest with %d assays: %s",
+                    length(assay_names), paste(assay_names, collapse = ", ")))
+
+                # --- Save column mapping as JSON ---
+                col_map <- workflow_data$column_mapping
+                if (!is.null(col_map)) {
+                    col_map_path <- file.path(source_dir, "column_mapping.json")
+                    jsonlite::write_json(col_map, col_map_path, auto_unbox = TRUE)
+                    logger::log_info("Saved column_mapping.json")
+                }
+
+                # --- Save config.ini ---
+                if (!is.null(workflow_data$config_list)) {
+                    config_path <- file.path(source_dir, "config.ini")
+                    logger::log_info(paste("Writing config.ini to:", config_path))
+                    tryCatch({
+                        ini::write.ini(workflow_data$config_list, config_path)
+                        logger::log_info("Saved config.ini.")
+                    }, error = function(e) {
+                        logger::log_warn(paste("Could not save config.ini:", e$message))
+                    })
+                }
+
+                # --- 4. Create S4 Object ---
+                s4_obj <- createMetaboliteAssayData(
+                    metabolite_data = results$data_cln
+                    , design_matrix = results$design_matrix
+                    , metabolite_id_column = col_map$metabolite_id_col
+                    , annotation_id_column = if (!is.null(col_map$annotation_col) && !is.na(col_map$annotation_col) && nzchar(col_map$annotation_col)) {
+                        col_map$annotation_col
+                    } else {
+                        NA_character_
+                    }
+                    , sample_id = "Run"
+                    , group_id = "group"
+                    , technical_replicate_id = "tech_rep_group"
+                    , database_identifier_type = "Unknown"
+                    , internal_standard_regex = if (!is.null(col_map$is_pattern) && !is.na(col_map$is_pattern)) {
+                        col_map$is_pattern
+                    } else {
+                        NA_character_
+                    }
+                    , args = results$config_list
+                )
+
+                # Initialize state manager if needed
+                if (is.null(workflow_data$state_manager)) {
+                    workflow_data$state_manager <- WorkflowState$new("metabolomics")
+                }
+
+                logger::log_info("Saving MetaboliteAssayData S4 object to state manager as 'metab_raw_data_s4'")
+                workflow_data$state_manager$saveState(
+                    state_name = "metab_raw_data_s4"
+                    , s4_data_object = s4_obj
+                    , config_object = results$config_list
+                    , description = "Initial MetaboliteAssayData S4 object created after design matrix"
+                )
+
+                # --- 5. Trigger QC ---
+                if (!is.null(qc_trigger)) {
+                    qc_trigger(TRUE)
+                    logger::log_info("QC trigger set to TRUE")
+                }
+
+                # --- 6. Update tab status ---
+                workflow_data$tab_status$design_matrix <- "complete"
+
+                shiny::removeModal()
+                shiny::showNotification("Design matrix and contrasts saved successfully!", type = "message")
+
+                logger::log_info(sprintf("Design save complete. Files saved to: %s", source_dir))
+                logger::log_info(sprintf("Saved: design_matrix.tab, %d assay files, assay_manifest.txt, column_mapping.json, config.ini",
+                    length(assay_names)))
+
+            }, error = function(e) {
+                msg <- paste("Error saving design matrix results:", e$message)
+                logger::log_error(msg)
+                shiny::removeModal()
+                shiny::showNotification(msg, type = "error", duration = 15)
+            })
+
+        }, ignoreNULL = TRUE)
+
+        # == Previews of Saved Data =================================================
+
+        output$design_matrix_preview <- DT::renderDT({
+            shiny::req(workflow_data$design_matrix)
+            workflow_data$design_matrix
+        }, options = list(pageLength = 5, scrollX = TRUE))
+
+        output$contrasts_preview <- DT::renderDT({
+            shiny::req(workflow_data$contrasts_tbl)
+            workflow_data$contrasts_tbl
+        }, options = list(pageLength = 5, scrollX = TRUE))
+
+        output$assays_preview <- shiny::renderText({
+            shiny::req(workflow_data$data_tbl)
+            assay_names <- names(workflow_data$data_tbl)
+            paste("Included assays:", paste(assay_names, collapse = ", "))
         })
     })
 }
-

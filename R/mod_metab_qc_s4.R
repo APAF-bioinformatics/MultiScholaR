@@ -15,8 +15,9 @@ NULL
 
 #' @rdname mod_metab_qc_s4
 #' @export
-#' @importFrom shiny NS tagList tabPanel br fluidRow column wellPanel h4 h5 p hr div actionButton verbatimTextOutput uiOutput icon tags
+#' @importFrom shiny NS tagList tabPanel br fluidRow column wellPanel h4 h5 p hr div actionButton verbatimTextOutput uiOutput icon tags plotOutput
 #' @importFrom DT DTOutput
+#' @importFrom shinyjqui jqui_resizable
 mod_metab_qc_s4_ui <- function(id) {
     ns <- shiny::NS(id)
     
@@ -62,6 +63,11 @@ mod_metab_qc_s4_ui <- function(id) {
         , shiny::fluidRow(
             shiny::column(12
                 , shiny::verbatimTextOutput(ns("finalize_results"))
+                , shiny::br()
+                # QC Progress Grid
+                , shinyjqui::jqui_resizable(
+                    shiny::plotOutput(ns("filter_plot"), height = "600px", width = "100%")
+                )
             )
         )
     )
@@ -69,13 +75,16 @@ mod_metab_qc_s4_ui <- function(id) {
 
 #' @rdname mod_metab_qc_s4
 #' @export
-#' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification renderText renderUI observe tags
+#' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification renderText renderUI observe tags renderPlot
 #' @importFrom DT renderDT datatable
 #' @importFrom logger log_info log_error
+#' @importFrom grid grid.draw
 mod_metab_qc_s4_server <- function(id, workflow_data, omic_type, experiment_label) {
     shiny::moduleServer(id, function(input, output, session) {
         ns <- session$ns
-        
+
+        filter_plot <- shiny::reactiveVal(NULL)
+
         # Render state history
         output$state_history <- shiny::renderUI({
             shiny::req(workflow_data$state_manager)
@@ -272,7 +281,38 @@ mod_metab_qc_s4_server <- function(id, workflow_data, omic_type, experiment_labe
                     , config_object = workflow_data$config_list
                     , description = "QC processing complete - ready for normalization"
                 )
-                
+
+                # Update QC tracking visualization
+                logger::log_info("[DEBUG66] Starting updateMetaboliteFiltering call")
+                logger::log_info(paste("[DEBUG66] omic_type:", omic_type))
+
+                qc_plot <- tryCatch({
+                    result <- updateMetaboliteFiltering(
+                        theObject = current_s4
+                        , step_name = "4_QC_Complete"
+                        , omics_type = omic_type
+                        , return_grid = TRUE
+                        , overwrite = TRUE
+                    )
+                    logger::log_info(paste("[DEBUG66] updateMetaboliteFiltering returned:", class(result)))
+                    logger::log_info(paste("[DEBUG66] result is NULL:", is.null(result)))
+                    if (!is.null(result)) {
+                        logger::log_info(paste("[DEBUG66] result inherits grob:", inherits(result, "grob")))
+                        logger::log_info(paste("[DEBUG66] result inherits gtable:", inherits(result, "gtable")))
+                        logger::log_info(paste("[DEBUG66] result inherits ggplot:", inherits(result, "ggplot")))
+                    }
+                    result
+                }, error = function(e) {
+                    logger::log_error(paste("[DEBUG66] ERROR in updateMetaboliteFiltering:", e$message))
+                    logger::log_error(paste("[DEBUG66] Full error:", conditionMessage(e)))
+                    NULL
+                })
+
+                logger::log_info(paste("[DEBUG66] qc_plot class after tryCatch:", class(qc_plot)))
+                logger::log_info(paste("[DEBUG66] Setting filter_plot reactiveVal"))
+                filter_plot(qc_plot)
+                logger::log_info(paste("[DEBUG66] filter_plot reactiveVal set, value is NULL:", is.null(filter_plot())))
+
                 # Update tab status
                 workflow_data$tab_status$quality_control <- "complete"
                 
@@ -320,6 +360,28 @@ mod_metab_qc_s4_server <- function(id, workflow_data, omic_type, experiment_labe
                 logger::log_error(msg)
                 shiny::showNotification(msg, type = "error")
             })
+        })
+
+        # Render QC progress plot
+        output$filter_plot <- shiny::renderPlot({
+            logger::log_info("[DEBUG66] renderPlot triggered")
+            logger::log_info(paste("[DEBUG66] filter_plot() is NULL:", is.null(filter_plot())))
+
+            shiny::req(filter_plot())
+
+            logger::log_info(paste("[DEBUG66] filter_plot() class:", class(filter_plot())))
+            logger::log_info(paste("[DEBUG66] filter_plot() inherits grob:", inherits(filter_plot(), "grob")))
+            logger::log_info(paste("[DEBUG66] filter_plot() inherits gtable:", inherits(filter_plot(), "gtable")))
+
+            if (inherits(filter_plot(), "grob") || inherits(filter_plot(), "gtable")) {
+                logger::log_info("[DEBUG66] Drawing with grid::grid.draw()")
+                grid::grid.draw(filter_plot())
+            } else if (inherits(filter_plot(), "ggplot")) {
+                logger::log_info("[DEBUG66] Printing as ggplot")
+                print(filter_plot())
+            } else {
+                logger::log_warn(paste("[DEBUG66] Unknown plot type:", class(filter_plot())))
+            }
         })
     })
 }

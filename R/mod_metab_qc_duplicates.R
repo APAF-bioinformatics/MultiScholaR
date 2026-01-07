@@ -15,11 +15,12 @@ NULL
 
 #' @rdname mod_metab_qc_duplicates
 #' @export
-#' @importFrom shiny NS tagList tabPanel br fluidRow column wellPanel h4 p hr div actionButton verbatimTextOutput uiOutput
+#' @importFrom shiny NS tagList tabPanel br fluidRow column wellPanel h4 p hr div actionButton verbatimTextOutput uiOutput plotOutput
 #' @importFrom DT DTOutput
+#' @importFrom shinyjqui jqui_resizable
 mod_metab_qc_duplicates_ui <- function(id) {
     ns <- shiny::NS(id)
-    
+
     shiny::tabPanel(
         "Duplicate Resolution"
         , shiny::br()
@@ -29,11 +30,11 @@ mod_metab_qc_duplicates_ui <- function(id) {
                     shiny::h4("Duplicate Feature Resolution")
                     , shiny::p("Identify and resolve duplicate metabolite IDs within each assay. Duplicates are resolved by keeping the feature with the highest average intensity across samples.")
                     , shiny::hr()
-                    
+
                     # Detection summary
                     , shiny::h5("Detection Summary")
                     , shiny::uiOutput(ns("duplicate_summary"))
-                    
+
                     , shiny::hr()
                     , shiny::div(
                         shiny::actionButton(
@@ -66,6 +67,11 @@ mod_metab_qc_duplicates_ui <- function(id) {
                 , shiny::br()
                 # Per-assay duplicate tables
                 , shiny::uiOutput(ns("duplicate_tables"))
+                , shiny::br()
+                # QC Progress Grid
+                , shinyjqui::jqui_resizable(
+                    shiny::plotOutput(ns("filter_plot"), height = "600px", width = "100%")
+                )
             )
         )
     )
@@ -73,15 +79,17 @@ mod_metab_qc_duplicates_ui <- function(id) {
 
 #' @rdname mod_metab_qc_duplicates
 #' @export
-#' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification removeNotification renderText renderUI tabsetPanel tabPanel tags
+#' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification removeNotification renderText renderUI tabsetPanel tabPanel tags renderPlot
 #' @importFrom DT renderDT datatable
 #' @importFrom logger log_info log_error log_warn
+#' @importFrom grid grid.draw
 mod_metab_qc_duplicates_server <- function(id, workflow_data, omic_type, experiment_label) {
     shiny::moduleServer(id, function(input, output, session) {
         ns <- session$ns
-        
+
         duplicate_info <- shiny::reactiveVal(NULL)
         resolution_stats <- shiny::reactiveVal(NULL)
+        filter_plot <- shiny::reactiveVal(NULL)
         
         # Detect duplicates
         shiny::observeEvent(input$detect_duplicates, {
@@ -279,7 +287,22 @@ mod_metab_qc_duplicates_server <- function(id, workflow_data, omic_type, experim
                     , config_object = workflow_data$config_list
                     , description = "Resolved duplicate metabolite features by keeping highest intensity"
                 )
-                
+
+                # Update QC tracking visualization
+                qc_plot <- tryCatch({
+                    updateMetaboliteFiltering(
+                        theObject = current_s4
+                        , step_name = "3_Duplicates_Resolved"
+                        , omics_type = omic_type
+                        , return_grid = TRUE
+                        , overwrite = TRUE
+                    )
+                }, error = function(e) {
+                    logger::log_warn(paste("Could not generate QC plot:", e$message))
+                    NULL
+                })
+                filter_plot(qc_plot)
+
                 # Generate summary text
                 total_removed <- sum(sapply(stats_list, function(x) x$removed))
                 
@@ -334,6 +357,7 @@ mod_metab_qc_duplicates_server <- function(id, workflow_data, omic_type, experim
                     )
                     resolution_stats(NULL)
                     duplicate_info(NULL)
+                    filter_plot(NULL)
                     logger::log_info(paste("Reverted duplicate resolution to", prev_state_name))
                     shiny::showNotification("Reverted successfully", type = "message")
                 } else {
@@ -344,6 +368,16 @@ mod_metab_qc_duplicates_server <- function(id, workflow_data, omic_type, experim
                 logger::log_error(msg)
                 shiny::showNotification(msg, type = "error")
             })
+        })
+
+        # Render QC progress plot
+        output$filter_plot <- shiny::renderPlot({
+            shiny::req(filter_plot())
+            if (inherits(filter_plot(), "grob") || inherits(filter_plot(), "gtable")) {
+                grid::grid.draw(filter_plot())
+            } else if (inherits(filter_plot(), "ggplot")) {
+                print(filter_plot())
+            }
         })
     })
 }

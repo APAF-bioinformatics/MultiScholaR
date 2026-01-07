@@ -8,7 +8,21 @@
 #' @noRd
 app_ui <- function(request) {
   dashboardPage(
-    dashboardHeader(title = "MultiScholaR"),
+    dashboardHeader(
+      title = "MultiScholaR",
+      # Dark mode toggle in header
+      tags$li(
+        class = "dropdown",
+        tags$a(
+          id = "dark_mode_toggle",
+          href = "#",
+          onclick = "toggleDarkMode(); return false;",
+          style = "padding: 10px 15px;",
+          icon("moon"),
+          title = "Toggle Dark Mode"
+        )
+      )
+    ),
     
     dashboardSidebar(
       shiny::div(
@@ -30,6 +44,153 @@ app_ui <- function(request) {
       # CSS for better styling - use shiny:: prefix
       shiny::tags$head(
         shiny::tags$style(shiny::HTML("
+        /* ========== DARK MODE STYLES ========== */
+        body.dark-mode {
+          background-color: #1a1a2e !important;
+        }
+        body.dark-mode .wrapper,
+        body.dark-mode .content-wrapper,
+        body.dark-mode .right-side {
+          background-color: #1a1a2e !important;
+        }
+        body.dark-mode .main-header .navbar,
+        body.dark-mode .main-header .logo {
+          background-color: #16213e !important;
+        }
+        body.dark-mode .main-sidebar,
+        body.dark-mode .left-side {
+          background-color: #0f3460 !important;
+        }
+        body.dark-mode .sidebar-menu > li > a {
+          color: #e4e4e4 !important;
+        }
+        body.dark-mode .sidebar-menu > li.active > a,
+        body.dark-mode .sidebar-menu > li:hover > a {
+          background-color: #1a1a2e !important;
+          color: #fff !important;
+        }
+        body.dark-mode .box,
+        body.dark-mode .well,
+        body.dark-mode .nav-tabs-custom,
+        body.dark-mode .omic-selection-box {
+          background-color: #16213e !important;
+          border-color: #0f3460 !important;
+          color: #e4e4e4 !important;
+        }
+        body.dark-mode .omic-selection-box:hover {
+          box-shadow: 0 4px 8px rgba(0,0,0,0.4) !important;
+        }
+        body.dark-mode .omic-selection-box.selected {
+          background-color: #1a4a6e !important;
+          border-color: #3498db !important;
+        }
+        body.dark-mode h1, body.dark-mode h2, body.dark-mode h3,
+        body.dark-mode h4, body.dark-mode h5, body.dark-mode p,
+        body.dark-mode label, body.dark-mode .box-title {
+          color: #e4e4e4 !important;
+        }
+        body.dark-mode .form-control {
+          background-color: #1a1a2e !important;
+          border-color: #0f3460 !important;
+          color: #e4e4e4 !important;
+        }
+        body.dark-mode .nav-tabs > li > a {
+          color: #e4e4e4 !important;
+        }
+        body.dark-mode .nav-tabs > li.active > a {
+          background-color: #16213e !important;
+          border-color: #0f3460 !important;
+        }
+        body.dark-mode .dataTables_wrapper {
+          color: #e4e4e4 !important;
+        }
+        body.dark-mode table.dataTable {
+          background-color: #16213e !important;
+          color: #e4e4e4 !important;
+        }
+        body.dark-mode table.dataTable thead th {
+          background-color: #0f3460 !important;
+          color: #e4e4e4 !important;
+        }
+        body.dark-mode table.dataTable tbody tr {
+          background-color: #16213e !important;
+        }
+        body.dark-mode table.dataTable tbody tr:hover {
+          background-color: #1a4a6e !important;
+        }
+        /* Modals */
+        body.dark-mode .modal-content {
+          background-color: #16213e !important;
+          border-color: #0f3460 !important;
+          color: #e4e4e4 !important;
+        }
+        body.dark-mode .modal-header {
+          background-color: #0f3460 !important;
+          border-bottom-color: #1a4a6e !important;
+          color: #e4e4e4 !important;
+        }
+        body.dark-mode .modal-header .close {
+          color: #e4e4e4 !important;
+          opacity: 0.8;
+        }
+        body.dark-mode .modal-title {
+          color: #e4e4e4 !important;
+        }
+        body.dark-mode .modal-body {
+          background-color: #16213e !important;
+          color: #e4e4e4 !important;
+        }
+        body.dark-mode .modal-footer {
+          background-color: #16213e !important;
+          border-top-color: #0f3460 !important;
+        }
+        body.dark-mode .modal-body .form-control,
+        body.dark-mode .modal-body input,
+        body.dark-mode .modal-body select,
+        body.dark-mode .modal-body textarea {
+          background-color: #1a1a2e !important;
+          border-color: #0f3460 !important;
+          color: #e4e4e4 !important;
+        }
+        body.dark-mode .modal-body .form-control::placeholder {
+          color: #888 !important;
+        }
+        body.dark-mode .modal-body label {
+          color: #e4e4e4 !important;
+        }
+        body.dark-mode .modal-body .help-block,
+        body.dark-mode .modal-body .shiny-input-container .control-label {
+          color: #b0b0b0 !important;
+        }
+        /* Selectize/select2 dropdowns in modals */
+        body.dark-mode .selectize-input,
+        body.dark-mode .selectize-dropdown {
+          background-color: #1a1a2e !important;
+          border-color: #0f3460 !important;
+          color: #e4e4e4 !important;
+        }
+        body.dark-mode .selectize-dropdown-content .option {
+          color: #e4e4e4 !important;
+        }
+        body.dark-mode .selectize-dropdown-content .option:hover,
+        body.dark-mode .selectize-dropdown-content .option.active {
+          background-color: #1a4a6e !important;
+        }
+        /* Smooth transition */
+        body, .wrapper, .content-wrapper, .main-header, .main-sidebar,
+        .box, .well, .form-control, .nav-tabs-custom, .omic-selection-box {
+          transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        /* Toggle icon styling */
+        #dark_mode_toggle {
+          color: #fff;
+          font-size: 18px;
+        }
+        body.dark-mode #dark_mode_toggle .fa-moon::before {
+          content: '\\f185'; /* sun icon */
+        }
+
+        /* ========== LIGHT MODE (DEFAULT) ========== */
         /* Keep main content at normal position */
         .content-wrapper, .right-side {
           background-color: #f4f4f4;
@@ -192,6 +353,31 @@ app_ui <- function(request) {
       
       # JavaScript for handling omics selection - use shiny:: prefix
       shiny::tags$script(shiny::HTML("
+      // ========== DARK MODE TOGGLE ==========
+      function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+        var isDark = document.body.classList.contains('dark-mode');
+        localStorage.setItem('darkMode', isDark ? 'true' : 'false');
+        // Update icon
+        var icon = document.querySelector('#dark_mode_toggle i');
+        if (icon) {
+          icon.className = isDark ? 'fa fa-sun' : 'fa fa-moon';
+        }
+      }
+
+      // Apply saved preference on page load
+      document.addEventListener('DOMContentLoaded', function() {
+        var savedMode = localStorage.getItem('darkMode');
+        // Default to dark mode if no preference saved (user prefers dark)
+        if (savedMode === 'true' || savedMode === null) {
+          document.body.classList.add('dark-mode');
+          var icon = document.querySelector('#dark_mode_toggle i');
+          if (icon) icon.className = 'fa fa-sun';
+          if (savedMode === null) localStorage.setItem('darkMode', 'true');
+        }
+      });
+
+      // ========== OMICS SELECTION ==========
       var selectedOmics = [];
       
       function toggleOmicSelection(omic) {
