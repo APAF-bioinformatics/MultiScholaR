@@ -166,7 +166,7 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
                 qc_plot <- tryCatch({
                     updateMetaboliteFiltering(
                         theObject = filtered_s4
-                        , step_name = "intensity_filtered"
+                        , step_name = "2_Intensity_Filtered"
                         , omics_type = omic_type
                         , return_grid = TRUE
                         , overwrite = TRUE
@@ -175,6 +175,7 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
                     logger::log_warn(paste("Could not generate QC plot:", e$message))
                     NULL
                 })
+                filter_plot(qc_plot)
                 
                 # Save state
                 workflow_data$state_manager$saveState(

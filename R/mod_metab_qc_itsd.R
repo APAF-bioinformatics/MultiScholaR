@@ -106,44 +106,71 @@ mod_metab_qc_itsd_server <- function(id, workflow_data, omic_type, experiment_la
                 }
                 
                 logger::log_info(paste("Analyzing internal standards with pattern:", is_pattern))
-                
+
                 metabolite_id_col <- current_s4@metabolite_id_column
+                annotation_id_col <- current_s4@annotation_id_column
                 sample_id_col <- current_s4@sample_id
                 assay_list <- current_s4@metabolite_data
                 assay_names <- names(assay_list)
-                
+
+                # Determine which column(s) to search for IS patterns
+                # Try metabolite_id_col first, then annotation_id_col, then common MS-DIAL columns
+                cols_to_try <- unique(c(
+                    metabolite_id_col
+                    , annotation_id_col
+                    , "Metabolite name"  # MS-DIAL
+                    , "Name"             # MS-DIAL alternate
+                    , "metabolite"       # Generic
+                ))
+
                 # Calculate IS metrics per assay
                 metrics_list <- list()
                 long_data_list <- list()
-                
+
                 for (i in seq_along(assay_list)) {
                     assay_data <- assay_list[[i]]
                     assay_name <- if (!is.null(assay_names)) assay_names[i] else paste0("Assay_", i)
-                    
-                    # Get IS metrics using existing function
-                    is_met <- getInternalStandardMetrics(
-                        assay_data = assay_data
-                        , is_pattern = is_pattern
-                        , metabolite_id_col = metabolite_id_col
-                        , sample_id_col = sample_id_col
-                    )
+
+                    # Try each column until we find IS matches
+                    is_met <- data.frame(is_id = character(), mean_intensity = numeric(), cv = numeric())
+                    used_col <- NULL
+
+                    for (col in cols_to_try) {
+                        if (!is.null(col) && col %in% colnames(assay_data)) {
+                            is_met <- getInternalStandardMetrics(
+                                assay_data = assay_data
+                                , is_pattern = is_pattern
+                                , metabolite_id_col = col
+                                , sample_id_col = sample_id_col
+                            )
+                            if (nrow(is_met) > 0) {
+                                used_col <- col
+                                logger::log_info(paste("Found IS in column:", col))
+                                break
+                            }
+                        }
+                    }
+
+                    # If still no matches, the function's fallback patterns will have been tried
                     
                     if (nrow(is_met) > 0) {
                         is_met$assay <- assay_name
                         metrics_list[[assay_name]] <- is_met
-                        
+
                         # Also extract long-format IS data for intensity plots
+                        # Use the column where we found matches (used_col)
+                        id_col_for_filter <- if (!is.null(used_col)) used_col else metabolite_id_col
                         quant_info <- getMetaboliteQuantData(assay_data)
                         sample_cols <- quant_info$sample_names
-                        
-                        if (length(sample_cols) > 0) {
+
+                        if (length(sample_cols) > 0 && id_col_for_filter %in% colnames(assay_data)) {
                             # Filter to IS rows
                             is_ids <- is_met$is_id
-                            is_rows <- assay_data[[metabolite_id_col]] %in% is_ids
-                            
+                            is_rows <- assay_data[[id_col_for_filter]] %in% is_ids
+
                             if (any(is_rows)) {
-                                is_data <- assay_data[is_rows, c(metabolite_id_col, sample_cols), drop = FALSE]
-                                
+                                is_data <- assay_data[is_rows, c(id_col_for_filter, sample_cols), drop = FALSE]
+
                                 # Pivot to long format
                                 is_long <- tidyr::pivot_longer(
                                     is_data
@@ -158,9 +185,15 @@ mod_metab_qc_itsd_server <- function(id, workflow_data, omic_type, experiment_la
                         }
                     }
                 }
-                
+
                 if (length(metrics_list) == 0) {
-                    stop(paste("No internal standards found matching pattern:", is_pattern))
+                    # Provide helpful error with columns searched
+                    cols_searched <- cols_to_try[cols_to_try %in% colnames(assay_list[[1]])]
+                    stop(paste0(
+                        "No internal standards found. Pattern: ", is_pattern,
+                        "\nColumns searched: ", paste(cols_searched, collapse = ", "),
+                        "\nTip: Check if your data has a column with metabolite names (e.g., 'Metabolite name')"
+                    ))
                 }
                 
                 # Combine results
@@ -286,27 +319,50 @@ mod_metab_qc_itsd_server <- function(id, workflow_data, omic_type, experiment_la
             do.call(shiny::tabsetPanel, c(list(id = ns("is_viz_tabset")), tab_list))
         })
         
-        # Render CV distribution plot
+        # Render CV distribution plot - lollipop chart
         output$cv_plot <- shiny::renderPlot({
             metrics <- is_metrics()
             shiny::req(metrics)
-            
-            ggplot2::ggplot(metrics, ggplot2::aes(x = is_id, y = cv, fill = assay)) +
-                ggplot2::geom_bar(stat = "identity", position = "dodge") +
-                ggplot2::geom_hline(yintercept = 15, linetype = "dashed", color = "green", linewidth = 1) +
-                ggplot2::geom_hline(yintercept = 30, linetype = "dashed", color = "orange", linewidth = 1) +
+
+            # Reorder by CV for better visualization
+            metrics$is_id <- stats::reorder(metrics$is_id, metrics$cv)
+
+            # Color based on CV thresholds
+            metrics$cv_status <- dplyr::case_when(
+                metrics$cv <= 15 ~ "Good (<15%)"
+                , metrics$cv <= 30 ~ "Acceptable (15-30%)"
+                , TRUE ~ "Review (>30%)"
+            )
+            metrics$cv_status <- factor(metrics$cv_status,
+                levels = c("Good (<15%)", "Acceptable (15-30%)", "Review (>30%)"))
+
+            ggplot2::ggplot(metrics, ggplot2::aes(x = is_id, y = cv)) +
+                # Reference lines first (behind points)
+                ggplot2::geom_hline(yintercept = 15, linetype = "dashed", color = "#2ecc71", linewidth = 0.8, alpha = 0.7) +
+                ggplot2::geom_hline(yintercept = 30, linetype = "dashed", color = "#e67e22", linewidth = 0.8, alpha = 0.7) +
+                # Lollipop stem
+                ggplot2::geom_segment(ggplot2::aes(xend = is_id, yend = 0), color = "grey60", linewidth = 0.8) +
+                # Lollipop head - colored by status
+                ggplot2::geom_point(ggplot2::aes(color = cv_status), size = 4) +
+                # Facet by assay if multiple
+                ggplot2::facet_wrap(~assay, scales = "free_y") +
+                ggplot2::scale_color_manual(
+                    values = c("Good (<15%)" = "#2ecc71", "Acceptable (15-30%)" = "#e67e22", "Review (>30%)" = "#e74c3c")
+                    , name = "CV Status"
+                ) +
                 ggplot2::labs(
-                    title = "Internal Standard CV Distribution"
-                    , x = "Internal Standard ID"
-                    , y = "Coefficient of Variation (%)"
-                    , fill = "Assay"
+                    title = "Internal Standard CV"
+                    , subtitle = "Dashed lines: 15% (green) and 30% (orange) thresholds"
+                    , x = NULL
+                    , y = "CV (%)"
                 ) +
-                ggplot2::theme_minimal() +
+                ggplot2::theme_minimal(base_size = 12) +
                 ggplot2::theme(
-                    axis.text.x = ggplot2::element_text(angle = 45, hjust = 1, size = 8)
+                    axis.text.x = ggplot2::element_text(angle = 45, hjust = 1, size = 9)
                     , legend.position = "bottom"
+                    , panel.grid.major.x = ggplot2::element_blank()
+                    , strip.text = ggplot2::element_text(face = "bold")
                 ) +
-                ggplot2::scale_fill_brewer(palette = "Set1") +
                 ggplot2::coord_flip()
         })
         

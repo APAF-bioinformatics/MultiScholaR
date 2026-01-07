@@ -186,8 +186,8 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
             "design"
             , workflow_data
             , experiment_paths
-            , omic_type
-            , experiment_label
+            , volumes = volumes
+            , qc_trigger = qc_trigger
         )
         
         # QC module

@@ -1104,13 +1104,72 @@ getInternalStandardMetrics <- function(assay_data,
         return(data.frame(is_id = character(), mean_intensity = numeric(), cv = numeric()))
     }
 
-    # Ensure metabolite IDs are present
+    # Ensure metabolite_id_col is in annotation_data (may be classified as numeric if integer IDs)
+    if (!metabolite_id_col %in% colnames(annotation_data)) {
+        if (metabolite_id_col %in% colnames(assay_data)) {
+            annotation_data[[metabolite_id_col]] <- as.character(assay_data[[metabolite_id_col]])
+        } else {
+            warning("Metabolite ID column '", metabolite_id_col, "' not found in annotation data for IS metrics.")
+            return(data.frame(is_id = character(), mean_intensity = numeric(), cv = numeric()))
+        }
+    }
+
+    # Ensure metabolite IDs are present in quant_data for downstream filtering
     quant_data[[metabolite_id_col]] <- annotation_data[[metabolite_id_col]]
 
     # --- Identify and Filter IS --- #
-    is_rows <- annotation_data |>
-        dplyr::filter(stringr::str_detect(.data[[metabolite_id_col]], {{ is_pattern }})) |>
-        dplyr::pull({{ metabolite_id_col }})
+    # Convert ID column to character for reliable regex matching
+    id_values <- as.character(annotation_data[[metabolite_id_col]])
+
+    # Try user-provided pattern first, then fallback to common ITSD patterns
+    is_rows <- character(0)
+
+    if (!is.null(is_pattern) && nzchar(is_pattern)) {
+        # User-provided pattern
+        tryCatch({
+            matches <- stringr::str_detect(id_values, is_pattern)
+            is_rows <- id_values[matches]
+        }, error = function(e) {
+            warning("Invalid regex pattern '", is_pattern, "': ", e$message)
+        })
+    }
+
+    # Fallback: try common ITSD naming conventions if no matches found
+    if (length(is_rows) == 0) {
+        common_is_patterns <- c(
+            "^IS[_-]"              # IS_ or IS- prefix (e.g., IS_Caffeine, IS-Leucine)
+            , "^ITSD[_-]"          # ITSD_ prefix (e.g., ITSD_A, ITSD_001)
+            , "ISTD"               # ISTD anywhere (e.g., Caffeine-ISTD, ISTD_001)
+            , "ITSD"               # ITSD anywhere (alternate spelling)
+            , "[_-]d\\d+$"         # Deuterated suffix (e.g., Caffeine_d3, Leucine-d10)
+            , "[_-]d\\d+[_-]"      # Deuterated mid-name (e.g., Caffeine_d3_IS)
+            , "\\(d\\d+\\)"        # Deuterated in parens (e.g., Caffeine(d3))
+            , "(?i)internal.?standard"  # "Internal Standard" / "Internal_Standard"
+            , "(?i)^is\\d+$"       # IS followed by numbers (e.g., IS1, IS23)
+            , "13C[_-]?labeled"    # 13C labeled (e.g., 13C-labeled_reference)
+            , "15N[_-]?labeled"    # 15N labeled
+            , "-13C\\d*-"          # 13C in middle (e.g., Glucose-13C6-IS)
+            , "-15N\\d*-"          # 15N in middle
+        )
+        combined_pattern <- paste(common_is_patterns, collapse = "|")
+
+        tryCatch({
+            matches <- stringr::str_detect(id_values, combined_pattern)
+            is_rows <- id_values[matches]
+            if (length(is_rows) > 0) {
+                message("No IS found with user pattern. Using fallback patterns, found ", length(is_rows), " candidates.")
+            } else {
+                # Debug: show what we're actually searching
+                sample_ids <- head(id_values, 5)
+                message("ITSD detection: No matches found in column '", metabolite_id_col,
+                        "'. Sample values: ", paste(sample_ids, collapse = ", "))
+            }
+        }, error = function(e) {
+            warning("Fallback IS pattern matching failed: ", e$message)
+        })
+    }
+
+    is_rows <- annotation_data[[metabolite_id_col]][annotation_data[[metabolite_id_col]] %in% is_rows]
 
     if (length(is_rows) == 0) {
         # message("No internal standards found matching pattern: ", is_pattern)
@@ -1143,7 +1202,7 @@ getInternalStandardMetrics <- function(assay_data,
             )
         ) |>
         dplyr::select(dplyr::all_of(c(metabolite_id_col, "mean_intensity", "cv"))) |>
-        dplyr::rename(is_id = {{ metabolite_id_col }})
+        dplyr::rename(is_id = dplyr::all_of(metabolite_id_col))
 
     return(is_metrics)
 }

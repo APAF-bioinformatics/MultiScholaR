@@ -1,4 +1,4 @@
-﻿# ============================================================================
+# ============================================================================
 # func_metab_s4_objects.R
 # ============================================================================
 # Purpose: Metabolomics S4 class definitions and methods
@@ -3500,9 +3500,13 @@ setMethod(f = "logTransformAssays",
 #'
 #' @param theObject A `MetaboliteAssayData` object.
 #' @param method Must be "ITSD" for this method.
+#' @param itsd_feature_ids Optional named list of feature ID vectors for manual ITSD
+#'   selection per assay. Names must match assay names. When provided, overrides
+#'   regex-based ITSD detection. Example: `list(LCMS_Pos = c("ITSD_1", "ITSD_2"), LCMS_Neg = c("ITSD_3"))`.
 #' @param itsd_pattern_columns A character vector specifying the column names within
 #'   each assay tibble where the ITSD pattern should be searched. If `NULL` (default),
 #'   it uses the column name stored in the `annotation_id_column` slot of the object.
+#'   Ignored if `itsd_feature_ids` is provided.
 #' @param itsd_aggregation The method used to aggregate intensities of multiple ITSDs
 #'   within each sample. Options are "sum" (default),
 #'   "mean", or "median".
@@ -3526,6 +3530,7 @@ setMethod(f = "normaliseUntransformedData",
           signature = signature(theObject = "MetaboliteAssayData", method = "character"),
           definition = function(theObject,
                                 method = "ITSD",
+                                itsd_feature_ids = NULL,
                                 itsd_pattern_columns = NULL, # Default set later
                                 itsd_aggregation = "sum",
                                 remove_itsd_after_norm = TRUE,
@@ -3543,7 +3548,14 @@ setMethod(f = "normaliseUntransformedData",
                                             "sum" = sum,
                                             "mean" = mean,
                                             "median" = stats::median)
-            message(sprintf("Applying Internal Standard (ITSD) normalization using '%s' aggregation and scaling to average ITSD response.", tolower(itsd_aggregation)))
+
+            # Determine ITSD selection mode
+            use_manual_itsd <- !is.null(itsd_feature_ids) && is.list(itsd_feature_ids) && length(itsd_feature_ids) > 0
+            if (use_manual_itsd) {
+                message(sprintf("Applying Internal Standard (ITSD) normalization using MANUAL feature selection and '%s' aggregation.", tolower(itsd_aggregation)))
+            } else {
+                message(sprintf("Applying Internal Standard (ITSD) normalization using REGEX pattern and '%s' aggregation.", tolower(itsd_aggregation)))
+            }
 
             # --- Get Object Slots ---
             assay_list <- methods::slot(theObject, "metabolite_data")
@@ -3553,21 +3565,25 @@ setMethod(f = "normaliseUntransformedData",
             itsd_regex <- methods::slot(theObject, "internal_standard_regex")
             annotation_col <- methods::slot(theObject, "annotation_id_column") # Default ITSD column
 
-            # Set default for itsd_pattern_columns if NULL
-            if (is.null(itsd_pattern_columns)) {
-                itsd_pattern_columns <- annotation_col
-                message(sprintf("Using default annotation column '%s' to identify ITSDs.", annotation_col))
-            } else {
-                 message(sprintf("Using column(s) '%s' to identify ITSDs.", paste(itsd_pattern_columns, collapse="', '")))
+            # Set default for itsd_pattern_columns if NULL (only relevant for regex mode)
+            if (!use_manual_itsd) {
+                if (is.null(itsd_pattern_columns)) {
+                    itsd_pattern_columns <- annotation_col
+                    message(sprintf("Using default annotation column '%s' to identify ITSDs.", annotation_col))
+                } else {
+                    message(sprintf("Using column(s) '%s' to identify ITSDs.", paste(itsd_pattern_columns, collapse="', '")))
+                }
+
+                # Validate regex is available for regex mode
+                if (is.null(itsd_regex) || itsd_regex == "") {
+                    stop("The `internal_standard_regex` slot is empty and no manual itsd_feature_ids provided. Cannot identify ITSDs.")
+                }
             }
 
             if (length(assay_list) == 0) {
               warning("MetaboliteAssayData object has no assays in 'metabolite_data' slot. No normalization performed.")
               return(theObject)
             }
-             if (is.null(itsd_regex) || itsd_regex == "") {
-                 stop("The `internal_standard_regex` slot is empty. Cannot identify ITSDs.")
-             }
 
 
             # Ensure list is named
@@ -3617,18 +3633,23 @@ setMethod(f = "normaliseUntransformedData",
                     warning(sprintf("Assay '%s': Metabolite ID column '%s' not found. Skipping normalization.", assay_index_name, metabolite_id_col), immediate. = TRUE)
                     return(assay_tibble)
                 }
-                 # Check if *any* of the itsd_pattern_columns exist
-                 if (!any(itsd_pattern_columns %in% colnames(assay_tibble))) {
-                    warning(sprintf("Assay '%s': None of the specified ITSD pattern columns ('%s') found. Cannot identify ITSDs. Skipping normalization.",
-                                    assay_index_name, paste(itsd_pattern_columns, collapse="', '")), immediate. = TRUE)
-                    return(assay_tibble)
+                 # --- Validate ITSD Identification Prerequisites ---
+                 # Only check pattern columns if using regex mode
+                 actual_itsd_cols <- NULL
+                 if (!use_manual_itsd) {
+                     # Check if *any* of the itsd_pattern_columns exist
+                     if (!any(itsd_pattern_columns %in% colnames(assay_tibble))) {
+                        warning(sprintf("Assay '%s': None of the specified ITSD pattern columns ('%s') found. Cannot identify ITSDs. Skipping normalization.",
+                                        assay_index_name, paste(itsd_pattern_columns, collapse="', '")), immediate. = TRUE)
+                        return(assay_tibble)
+                     }
+                     # Filter itsd_pattern_columns to only those present in the current assay
+                     actual_itsd_cols <- intersect(itsd_pattern_columns, colnames(assay_tibble))
+                     if (length(actual_itsd_cols) == 0) { # Should be caught above, but double check
+                         warning(sprintf("Assay '%s': No ITSD identification columns found after checking existence. Skipping normalization.", assay_index_name), immediate. = TRUE)
+                         return(assay_tibble)
+                     }
                  }
-                 # Filter itsd_pattern_columns to only those present in the current assay
-                 actual_itsd_cols <- intersect(itsd_pattern_columns, colnames(assay_tibble))
-                  if (length(actual_itsd_cols) == 0) { # Should be caught above, but double check
-                      warning(sprintf("Assay '%s': No ITSD identification columns found after checking existence. Skipping normalization.", assay_index_name), immediate. = TRUE)
-                      return(assay_tibble)
-                  }
 
 
                 # --- Identify Sample Columns in this Assay ---
@@ -3648,21 +3669,43 @@ setMethod(f = "normaliseUntransformedData",
                  }
 
                  # --- Identify ITSD Rows ---
-                 itsd_rows_logical <- assay_tibble |>
-                    dplyr::select(dplyr::all_of(actual_itsd_cols)) |>
-                    dplyr::mutate(dplyr::across(dplyr::everything(), ~ stringr::str_detect(as.character(.), itsd_regex))) |>
-                    # Row is ITSD if pattern matches in *any* of the specified columns
-                    purrr::reduce(`|`)
+                 if (use_manual_itsd) {
+                     # Manual mode: use provided feature IDs for this assay
+                     assay_itsd_ids <- itsd_feature_ids[[assay_index_name]]
+                     if (is.null(assay_itsd_ids) || length(assay_itsd_ids) == 0) {
+                         warning(sprintf("Assay '%s': No manual ITSD features provided in itsd_feature_ids. Skipping normalization.", assay_index_name), immediate. = TRUE)
+                         return(assay_tibble)
+                     }
+                     # Match feature IDs against metabolite_id_col
+                     feature_ids <- as.character(assay_tibble[[metabolite_id_col]])
+                     itsd_rows_logical <- feature_ids %in% as.character(assay_itsd_ids)
 
-                 if (!any(itsd_rows_logical, na.rm = TRUE)) {
-                     warning(sprintf("Assay '%s': No ITSD features identified using regex '%s' in columns '%s'. Skipping normalization.",
-                                     assay_index_name, itsd_regex, paste(actual_itsd_cols, collapse="', '")), immediate. = TRUE)
-                     return(assay_tibble)
+                     if (!any(itsd_rows_logical, na.rm = TRUE)) {
+                         warning(sprintf("Assay '%s': None of the %d manual ITSD feature IDs matched rows in the data. Skipping normalization.",
+                                         assay_index_name, length(assay_itsd_ids)), immediate. = TRUE)
+                         return(assay_tibble)
+                     }
+                     message(sprintf("   Using %d manually selected ITSD features.", sum(itsd_rows_logical)))
+                 } else {
+                     # Regex mode: identify ITSDs by pattern matching
+                     itsd_rows_logical <- assay_tibble |>
+                        dplyr::select(dplyr::all_of(actual_itsd_cols)) |>
+                        dplyr::mutate(dplyr::across(dplyr::everything(), ~ stringr::str_detect(as.character(.), itsd_regex))) |>
+                        # Row is ITSD if pattern matches in *any* of the specified columns
+                        purrr::reduce(`|`)
+
+                     if (!any(itsd_rows_logical, na.rm = TRUE)) {
+                         warning(sprintf("Assay '%s': No ITSD features identified using regex '%s' in columns '%s'. Skipping normalization.",
+                                         assay_index_name, itsd_regex, paste(actual_itsd_cols, collapse="', '")), immediate. = TRUE)
+                         return(assay_tibble)
+                     }
+                     message(sprintf("   Identified %d ITSD features via regex.", sum(itsd_rows_logical)))
                  }
+
                  itsd_data <- assay_tibble |> dplyr::filter(itsd_rows_logical)
                  non_itsd_data <- assay_tibble |> dplyr::filter(!itsd_rows_logical)
                  n_itsd <- nrow(itsd_data)
-                 message(sprintf("   Identified %d ITSD features.", n_itsd))
+                 message(sprintf("   Using %d ITSD features for normalization.", n_itsd))
 
                 # --- Calculate Normalization Factors ---
                 # Step 1: Calculate aggregate ITSD per sample
