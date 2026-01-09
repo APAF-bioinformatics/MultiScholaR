@@ -717,7 +717,7 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
         # Helper Functions
         # ================================================================
 
-        #' Add message to normalization log
+        # Add message to normalization log
         add_log <- function(message) {
             timestamp <- format(Sys.time(), "%H:%M:%S")
             norm_data$normalization_log <- c(
@@ -726,7 +726,7 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
             )
         }
 
-        #' Get current plot aesthetics from input
+        # Get current plot aesthetics from input
         getPlotAesthetics <- function() {
             list(
                 color_var = if (is.null(input$color_variable) || input$color_variable == "") {
@@ -742,14 +742,14 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
             )
         }
 
-        #' Generate composite QC figure from saved images
-        #' Mirrors createGridQC structure with row labels and patchwork layout
-        #' @param plot_files Vector of file paths to individual QC plot images
-        #' @param output_path Path where the composite figure will be saved
-        #' @param ncol Number of columns in the composite (default: 3)
-        #' @param row_labels Named list of row labels (e.g., list(pca = c("a)", "b)", "c)")))
-        #' @param column_labels Vector of column titles (e.g., c("Pre-Norm", "Post-Norm", "RUV"))
-        #' @return Path to saved composite or NULL on error
+        # Generate composite QC figure from saved images
+        # Mirrors createGridQC structure with row labels and patchwork layout
+        # @param plot_files Vector of file paths to individual QC plot images
+        # @param output_path Path where the composite figure will be saved
+        # @param ncol Number of columns in the composite (default: 3)
+        # @param row_labels Named list of row labels (e.g., list(pca = c("a)", "b)", "c)")))
+        # @param column_labels Vector of column titles (e.g., c("Pre-Norm", "Post-Norm", "RUV"))
+        # @return Path to saved composite or NULL on error
         generateCompositeFromFiles <- function(plot_files, output_path, ncol = 3, row_labels = NULL, column_labels = NULL) {
             logger::log_info(sprintf("[generateCompositeFromFiles] Generating composite from %d files...", length(plot_files)))
 
@@ -894,7 +894,7 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
             })
         }
 
-        #' Helper function to generate pre-normalization QC plots
+        # Helper function to generate pre-normalization QC plots
         generatePreNormalizationQc <- function() {
             logger::log_info("=== GENERATING PRE-NORMALIZATION QC PLOTS ===")
             
@@ -940,11 +940,11 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
             })
         }
 
-        #' Render QC image from disk for a specific assay slot
-        #' Uses reactive filename resolution based on assay position (1 or 2)
-        #' @param assay_slot Integer (1 or 2) indicating which assay row
-        #' @param plot_type Character: "pca", "density", "rle", or "correlation"
-        #' @param stage_prefix Character: "pre_norm", "post_norm", or "ruv_corrected"
+        # Render QC image from disk for a specific assay slot
+        # Uses reactive filename resolution based on assay position (1 or 2)
+        # @param assay_slot Integer (1 or 2) indicating which assay row
+        # @param plot_type Character: "pca", "density", "rle", or "correlation"
+        # @param stage_prefix Character: "pre_norm", "post_norm", or "ruv_corrected"
         render_qc_image_for_assay <- function(assay_slot, plot_type, stage_prefix) {
             shiny::renderImage({
                 # Take dependency on refresh trigger AND assay names
