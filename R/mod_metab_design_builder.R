@@ -183,8 +183,9 @@ mod_metab_design_builder_ui <- function(id) {
                             "Formula"
                             , shiny::h4("Model Formula")
                             , shiny::textInput(ns("formula_string"), "Formula:"
-                                , value = ""
+                                , value = "~ 0 + group"
                             )
+                            , shiny::helpText("Default: '~ 0 + group' creates groupX-groupY contrast format for limma.")
                         )
 
                         # Settings tab for global operations
