@@ -764,7 +764,10 @@ mod_prot_design_server <- function(id, workflow_data, experiment_paths, volumes 
           qc_trigger(TRUE)
         }
         
-        workflow_data$tab_status$design_matrix <- "complete"
+        # Must replace entire list to trigger reactivity
+        updated_status <- workflow_data$tab_status
+        updated_status$design_matrix <- "complete"
+        workflow_data$tab_status <- updated_status
         
         shiny::removeNotification("importing_design")
         shiny::showNotification("Design imported successfully!", type = "message")
@@ -1073,8 +1076,10 @@ mod_prot_design_server <- function(id, workflow_data, experiment_paths, volumes 
           }
           message("=== DEBUG66: designMatrixApplet - qc_trigger setting complete ===")
           
-          # 5. Update tab status to 'complete'
-          workflow_data$tab_status$design_matrix <- "complete"
+          # 5. Update tab status to 'complete' - must replace entire list to trigger reactivity
+          updated_status <- workflow_data$tab_status
+          updated_status$design_matrix <- "complete"
+          workflow_data$tab_status <- updated_status
           
           shiny::showNotification("Design matrix and contrasts saved successfully!", type = "message")
           

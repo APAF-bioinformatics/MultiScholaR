@@ -303,6 +303,13 @@ mod_proteomics_server <- function(id, project_dirs, omic_type, experiment_label,
       render_workflow_stepper(steps, workflow_data$tab_status)
     })
     
+    # Helper to properly update tab_status (nested list assignment doesn't trigger reactivity)
+    update_tab_status <- function(key, value) {
+      updated <- workflow_data$tab_status
+      updated[[key]] <- value
+      workflow_data$tab_status <- updated
+    }
+    
     observeEvent(workflow_data$tab_status$design_matrix, {
       # Enable QC tab after design matrix is complete
       if (workflow_data$tab_status$design_matrix == "complete") {
@@ -312,11 +319,13 @@ mod_proteomics_server <- function(id, project_dirs, omic_type, experiment_label,
         if (workflow_type %in% c("TMT", "LFQ")) {
           # For TMT and LFQ (protein-level workflows), bypass QC and go straight to Normalization
           log_info(sprintf("%s workflow detected, bypassing QC tab.", workflow_type))
-          workflow_data$tab_status$quality_control <- "complete"
-          workflow_data$tab_status$normalization <- "pending"
+          updated <- workflow_data$tab_status
+          updated$quality_control <- "complete"
+          updated$normalization <- "pending"
+          workflow_data$tab_status <- updated
         } else {
           # For DIA (peptide-level workflow), proceed to QC tab as normal
-          workflow_data$tab_status$quality_control <- "pending"
+          update_tab_status("quality_control", "pending")
         }
       }
     }, ignoreNULL = TRUE)
@@ -324,28 +333,28 @@ mod_proteomics_server <- function(id, project_dirs, omic_type, experiment_label,
     observeEvent(workflow_data$tab_status$quality_control, {
       # Enable normalization tab after QC is complete
       if (workflow_data$tab_status$quality_control == "complete") {
-        workflow_data$tab_status$normalization <- "pending"
+        update_tab_status("normalization", "pending")
       }
     }, ignoreNULL = TRUE)
     
     observeEvent(workflow_data$tab_status$normalization, {
       # Enable DE tab after normalization is complete
       if (workflow_data$tab_status$normalization == "complete") {
-        workflow_data$tab_status$differential_expression <- "pending"
+        update_tab_status("differential_expression", "pending")
       }
     }, ignoreNULL = TRUE)
     
     observeEvent(workflow_data$tab_status$differential_expression, {
       # Enable enrichment analysis tab after DE is complete
       if (workflow_data$tab_status$differential_expression == "complete") {
-        workflow_data$tab_status$enrichment_analysis <- "pending"
+        update_tab_status("enrichment_analysis", "pending")
       }
     }, ignoreNULL = TRUE)
     
     observeEvent(workflow_data$tab_status$enrichment_analysis, {
       # Enable session summary after enrichment is complete
       if (workflow_data$tab_status$enrichment_analysis == "complete") {
-        workflow_data$tab_status$session_summary <- "pending"
+        update_tab_status("session_summary", "pending")
       }
     }, ignoreNULL = TRUE)
     

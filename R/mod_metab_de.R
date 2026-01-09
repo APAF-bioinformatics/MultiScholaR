@@ -759,8 +759,10 @@ mod_metab_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
                 de_data$de_results_list <- results
                 de_data$analysis_complete <- TRUE
 
-                # Update tab status
-                workflow_data$tab_status$differential_analysis <- "complete"
+                # Update tab status - must replace entire list to trigger reactivity
+                updated_status <- workflow_data$tab_status
+                updated_status$differential_analysis <- "complete"
+                workflow_data$tab_status <- updated_status
 
                 shiny::removeNotification("de_running")
                 shiny::showNotification(
@@ -770,6 +772,82 @@ mod_metab_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
                 )
 
                 logger::log_info("   DE analysis completed successfully")
+
+                # =============================================================
+                # UPDATE UI DROPDOWNS WITH RESULTS
+                # =============================================================
+                if (!is.null(results$de_metabolites_long)) {
+                    contrast_choices <- unique(results$de_metabolites_long$friendly_name)
+                    if (length(contrast_choices) == 0) {
+                        contrast_choices <- unique(results$de_metabolites_long$comparison)
+                    }
+
+                    shiny::updateSelectInput(session, "volcano_contrast"
+                        , choices = contrast_choices, selected = contrast_choices[1])
+                    shiny::updateSelectInput(session, "heatmap_contrast"
+                        , choices = contrast_choices, selected = contrast_choices[1])
+                    shiny::updateSelectInput(session, "table_contrast"
+                        , choices = contrast_choices, selected = contrast_choices[1])
+
+                    # Update assay dropdowns
+                    assay_choices <- c("Combined", unique(results$de_metabolites_long$assay))
+                    shiny::updateSelectInput(session, "volcano_assay"
+                        , choices = assay_choices, selected = "Combined")
+                    shiny::updateSelectInput(session, "heatmap_assay"
+                        , choices = assay_choices, selected = "Combined")
+
+                    table_assay_choices <- c("All", unique(results$de_metabolites_long$assay))
+                    shiny::updateSelectInput(session, "table_assay"
+                        , choices = table_assay_choices, selected = "All")
+
+                    logger::log_info(sprintf("   Updated dropdowns: %d contrasts, %d assays"
+                        , length(contrast_choices), length(assay_choices) - 1))
+                }
+
+                # =============================================================
+                # WRITE DE RESULTS TO DISK
+                # =============================================================
+                logger::log_info("   Writing DE results to disk...")
+
+                tryCatch({
+                    de_output_dir <- experiment_paths$de_output_dir
+                    publication_graphs_dir <- experiment_paths$publication_graphs_dir
+
+                    logger::log_info(sprintf("   de_output_dir = %s", de_output_dir))
+                    logger::log_info(sprintf("   publication_graphs_dir = %s", publication_graphs_dir))
+
+                    if (is.null(de_output_dir) || is.null(publication_graphs_dir)) {
+                        logger::log_warn("   Output directories not configured, skipping file output")
+                    } else {
+                        success <- outputMetabDeResultsAllContrasts(
+                            de_results_list = results
+                            , de_output_dir = de_output_dir
+                            , publication_graphs_dir = publication_graphs_dir
+                            , de_q_val_thresh = input$de_q_val_thresh
+                            , lfc_threshold = input$treat_lfc_cutoff
+                            , heatmap_top_n = 50
+                            , heatmap_clustering = "both"
+                            , heatmap_color_scheme = "RdBu"
+                        )
+
+                        if (success) {
+                            logger::log_info("   All DE results written to disk successfully")
+                            shiny::showNotification(
+                                "DE results saved to disk (tables, volcano plots, heatmaps)"
+                                , type = "message"
+                                , duration = 5
+                            )
+                        }
+                    }
+
+                }, error = function(e) {
+                    logger::log_warn(paste("   Could not write DE results to disk:", e$message))
+                    shiny::showNotification(
+                        paste("Warning: Could not save results to disk:", e$message)
+                        , type = "warning"
+                        , duration = 8
+                    )
+                })
 
             }, error = function(e) {
                 logger::log_error(sprintf("   DE analysis error: %s", e$message))

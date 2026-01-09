@@ -802,8 +802,10 @@ mod_metab_import_server <- function(id, workflow_data, experiment_paths, volumes
                     , n_samples = length(sample_cols)
                 )
                 
-                # Mark tab as complete
-                workflow_data$tab_status$setup_import <- "complete"
+                # Mark tab as complete - must replace entire list to trigger reactivity
+                updated_status <- workflow_data$tab_status
+                updated_status$setup_import <- "complete"
+                workflow_data$tab_status <- updated_status
                 
                 logger::log_info(sprintf(
                     "Metabolomics import complete: %d assays, %d total metabolites"

@@ -989,9 +989,11 @@ mod_prot_de_server <- function(id, workflow_data, experiment_paths, omic_type, e
             cat("*** LOAD: No mixed species analysis metadata in session data ***\n")
           }
           
-          # Update tab status
-          workflow_data$tab_status$normalization <- "complete"
-          workflow_data$tab_status$differential_expression <- "pending"
+          # Update tab status - must replace entire list to trigger reactivity
+          updated_status <- workflow_data$tab_status
+          updated_status$normalization <- "complete"
+          updated_status$differential_expression <- "pending"
+          workflow_data$tab_status <- updated_status
           
           # Trigger state update for other modules
           workflow_data$state_update_trigger <- Sys.time()
@@ -1446,8 +1448,11 @@ mod_prot_de_server <- function(id, workflow_data, experiment_paths, omic_type, e
           
           # Update workflow data
           workflow_data$de_analysis_results_list <- de_results_list
-          workflow_data$tab_status$differential_expression <- "complete"
-          workflow_data$tab_status$enrichment_analysis <- "pending"
+          # Must replace entire list to trigger reactivity
+          updated_status <- workflow_data$tab_status
+          updated_status$differential_expression <- "complete"
+          updated_status$enrichment_analysis <- "pending"
+          workflow_data$tab_status <- updated_status
           
           # ✅ FIXED: Write DE results to disk using new S4 method
           shiny::incProgress(0.9, detail = "Writing results to disk...")

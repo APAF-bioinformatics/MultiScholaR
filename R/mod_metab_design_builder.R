@@ -274,10 +274,17 @@ mod_metab_design_builder_ui <- function(id) {
 #' @param data_tbl A reactive expression that returns the data table LIST.
 #' @param config_list A reactive expression that returns the main configuration list.
 #' @param column_mapping A reactive expression that returns the column mapping list.
+#' @param existing_design_matrix Optional reactive expression that returns an existing
+#'   design matrix (e.g., from "Import Existing Design"). If provided and has valid
+#'   group assignments, will be used instead of creating a fresh matrix.
+#' @param existing_contrasts Optional reactive expression that returns an existing
+#'   contrasts table (e.g., from "Import Existing Design").
 #'
 #' @rdname metabolomicsDesignMatrixBuilderModule
 #' @export
-mod_metab_design_builder_server <- function(id, data_tbl, config_list, column_mapping) {
+mod_metab_design_builder_server <- function(id, data_tbl, config_list, column_mapping
+                                            , existing_design_matrix = NULL
+                                            , existing_contrasts = NULL) {
     shiny::moduleServer(id, function(input, output, session) {
 
         # Reactive value to store the final results
@@ -287,20 +294,45 @@ mod_metab_design_builder_server <- function(id, data_tbl, config_list, column_ma
         # Metabolomics data is a LIST of assays where samples are COLUMN NAMES
         # All assays share the same samples (per multiomics principle)
         get_sample_columns <- function(assay_list, col_map) {
+            # DEBUG66: Defensive checks
+            message("DEBUG66: get_sample_columns() called")
+            message(sprintf("DEBUG66: assay_list is NULL: %s, length: %d", 
+                is.null(assay_list), if(is.null(assay_list)) 0 else length(assay_list)))
+            message(sprintf("DEBUG66: col_map is NULL: %s", is.null(col_map)))
+            
             if (is.null(assay_list) || length(assay_list) == 0) {
+                message("DEBUG66: Returning empty character(0) - assay_list is NULL or empty")
+                return(character(0))
+            }
+            
+            # Defensive check: ensure first element is a data frame
+            first_assay <- assay_list[[1]]
+            if (!is.data.frame(first_assay)) {
+                message(sprintf("DEBUG66: WARNING - first_assay is not a data frame, class: %s", 
+                    class(first_assay)[1]))
                 return(character(0))
             }
 
             # Get the first assay to extract sample columns
-            first_assay <- assay_list[[1]]
             all_cols <- names(first_assay)
+            message(sprintf("DEBUG66: first_assay has %d columns", length(all_cols)))
 
+            # Defensive check: handle NULL col_map
+            if (is.null(col_map)) {
+                message("DEBUG66: col_map is NULL, using all columns as sample candidates")
+                # Fallback: try to detect numeric columns as samples
+                numeric_cols <- names(first_assay)[sapply(first_assay, is.numeric)]
+                message(sprintf("DEBUG66: Found %d numeric columns", length(numeric_cols)))
+                return(numeric_cols)
+            }
+            
             # Exclude metabolite ID and annotation columns
             exclude_cols <- c(
                 col_map$metabolite_id_col
                 , col_map$annotation_col
             )
             exclude_cols <- exclude_cols[!is.na(exclude_cols) & nzchar(exclude_cols)]
+            message(sprintf("DEBUG66: Excluding columns: %s", paste(exclude_cols, collapse = ", ")))
 
             # Sample columns are the remaining columns
             sample_cols <- setdiff(all_cols, exclude_cols)
@@ -345,8 +377,11 @@ mod_metab_design_builder_server <- function(id, data_tbl, config_list, column_ma
             # Also use the column_mapping sample_columns if available
             if (!is.null(col_map$sample_columns) && length(col_map$sample_columns) > 0) {
                 sample_cols <- col_map$sample_columns
+                message(sprintf("DEBUG66: Using sample_columns from col_map: %d columns", 
+                    length(sample_cols)))
             }
-
+            
+            message(sprintf("DEBUG66: Returning %d sample columns", length(sample_cols)))
             return(sample_cols)
         }
 
@@ -366,7 +401,100 @@ mod_metab_design_builder_server <- function(id, data_tbl, config_list, column_ma
                 logger::log_error("No sample columns detected in metabolomics data")
                 return(NULL)
             }
+            
+            # --- Check for existing design matrix from "Import Existing Design" ---
+            # If an existing design matrix is provided with valid group assignments,
+            # use it instead of creating a fresh one with NA values
+            use_existing <- FALSE
+            existing_dm <- NULL
+            existing_ctr <- NULL
+            
+            if (!is.null(existing_design_matrix)) {
+                existing_dm <- tryCatch(existing_design_matrix(), error = function(e) NULL)
+                if (!is.null(existing_dm) && is.data.frame(existing_dm) && nrow(existing_dm) > 0) {
+                    # Check if the existing design has any group assignments
+                    if ("group" %in% names(existing_dm)) {
+                        non_na_groups <- existing_dm$group[!is.na(existing_dm$group) & existing_dm$group != ""]
+                        if (length(non_na_groups) > 0) {
+                            use_existing <- TRUE
+                            message(sprintf("DEBUG66: Using existing design matrix with %d assigned samples", 
+                                length(non_na_groups)))
+                        }
+                    }
+                }
+            }
+            
+            if (!is.null(existing_contrasts)) {
+                existing_ctr <- tryCatch(existing_contrasts(), error = function(e) NULL)
+            }
+            
+            if (use_existing && !is.null(existing_dm)) {
+                # Use the imported design matrix
+                message("DEBUG66: initial_state using IMPORTED design matrix")
+                
+                # Extract groups and factors from the existing design
+                groups_from_dm <- unique(existing_dm$group[!is.na(existing_dm$group) & existing_dm$group != ""])
+                factors_from_dm <- character(0)
+                if ("factor1" %in% names(existing_dm)) {
+                    f1_vals <- unique(existing_dm$factor1[!is.na(existing_dm$factor1) & existing_dm$factor1 != ""])
+                    factors_from_dm <- c(factors_from_dm, f1_vals)
+                }
+                if ("factor2" %in% names(existing_dm)) {
+                    f2_vals <- unique(existing_dm$factor2[!is.na(existing_dm$factor2) & existing_dm$factor2 != ""])
+                    factors_from_dm <- c(factors_from_dm, f2_vals)
+                }
+                factors_from_dm <- unique(factors_from_dm)
+                
+                # Convert existing contrasts to internal format
+                contrasts_df <- if (!is.null(existing_ctr) && is.data.frame(existing_ctr) && nrow(existing_ctr) > 0) {
+                    # Parse the contrast strings to extract numerator/denominator
+                    parsed <- lapply(existing_ctr$contrasts, function(cs) {
+                        # Expected format: "groupTreatment-groupControl"
+                        parts <- strsplit(gsub("^group", "", cs), "-group")[[1]]
+                        if (length(parts) == 2) {
+                            list(
+                                contrast_name = paste0(parts[1], ".vs.", parts[2])
+                                , numerator = parts[1]
+                                , denominator = parts[2]
+                            )
+                        } else {
+                            # Fallback
+                            list(
+                                contrast_name = cs
+                                , numerator = cs
+                                , denominator = ""
+                            )
+                        }
+                    })
+                    data.frame(
+                        contrast_name = sapply(parsed, function(x) x$contrast_name)
+                        , numerator = sapply(parsed, function(x) x$numerator)
+                        , denominator = sapply(parsed, function(x) x$denominator)
+                        , stringsAsFactors = FALSE
+                    )
+                } else {
+                    data.frame(
+                        contrast_name = character()
+                        , numerator = character()
+                        , denominator = character()
+                        , stringsAsFactors = FALSE
+                    )
+                }
+                
+                return(list(
+                    design_matrix = existing_dm
+                    , data_cln = assay_list
+                    , sample_names = sample_names
+                    , groups = groups_from_dm
+                    , factors = factors_from_dm
+                    , formula = conf[["deAnalysisParameters"]][["formula_string"]]
+                    , contrasts = contrasts_df
+                ))
+            }
 
+            # --- Create fresh design matrix (standard case) ---
+            message("DEBUG66: initial_state creating FRESH design matrix")
+            
             # Initialize design matrix with factor columns
             # Use "Run" to match proteomics structure (sample identifier)
             design_matrix_raw <- tibble::tibble(

@@ -988,8 +988,10 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
         update_processing_status("Finalizing import...")
         message("[mod_prot_import] Finalizing import")
         
-        # Mark this tab as complete
-        workflow_data$tab_status$setup_import <- "complete"
+        # Mark this tab as complete - must replace entire list to trigger reactivity
+        updated_status <- workflow_data$tab_status
+        updated_status$setup_import <- "complete"
+        workflow_data$tab_status <- updated_status
         
         message("========================================")
         message("[mod_prot_import] Data import completed successfully!")
@@ -1028,7 +1030,10 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
         workflow_data$aa_seq_tbl_final <- NULL
         workflow_data$config_list <- NULL
         workflow_data$processing_log$setup_import <- NULL
-        workflow_data$tab_status$setup_import <- "incomplete"
+        # Must replace entire list to trigger reactivity
+        updated_status <- workflow_data$tab_status
+        updated_status$setup_import <- "incomplete"
+        workflow_data$tab_status <- updated_status
       })
     })
     

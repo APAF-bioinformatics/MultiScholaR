@@ -193,11 +193,24 @@ mod_metab_design_server <- function(id, workflow_data, experiment_paths, volumes
             shiny::showNotification("Importing design files...", id = "importing_design", duration = NULL)
 
             tryCatch({
+                # DEBUG66: Entry point
+                message("DEBUG66: ========================================")
+                message("DEBUG66: STARTING IMPORT EXISTING DESIGN")
+                message(sprintf("DEBUG66: import_path = %s", import_path))
+                message(sprintf("DEBUG66: config_file exists = %s", file.exists(config_file)))
+                message(sprintf("DEBUG66: design_file exists = %s", file.exists(design_file)))
+                message(sprintf("DEBUG66: manifest_file exists = %s", file.exists(manifest_file)))
+                message("DEBUG66: ========================================")
+                
                 # --- 1. Load config.ini ---
                 if (file.exists(config_file)) {
                     logger::log_info("Loading config.ini from import directory.")
+                    message("DEBUG66: About to call readConfigFile()...")
                     workflow_data$config_list <- readConfigFile(file = config_file)
+                    message("DEBUG66: readConfigFile() completed successfully")
+                    message(sprintf("DEBUG66: config_list names: %s", paste(names(workflow_data$config_list), collapse = ", ")))
                     assign("config_list", workflow_data$config_list, envir = .GlobalEnv)
+                    message("DEBUG66: config assigned to global env")
                     logger::log_info("Loaded config.ini and assigned to global environment.")
                 } else {
                     # Try to load from experiment_paths or use default
@@ -215,6 +228,15 @@ mod_metab_design_server <- function(id, workflow_data, experiment_paths, volumes
                 # --- 2. Load design matrix ---
                 logger::log_info("Loading design_matrix.tab")
                 imported_design <- vroom::vroom(design_file, show_col_types = FALSE)
+                
+                # DEBUG66: Log design matrix details
+                message(sprintf("DEBUG66: Loaded design_matrix with %d rows, %d cols", 
+                    nrow(imported_design), ncol(imported_design)))
+                message(sprintf("DEBUG66: design_matrix columns: %s", 
+                    paste(names(imported_design), collapse = ", ")))
+                message(sprintf("DEBUG66: design_matrix$Run values: %s%s", 
+                    paste(head(imported_design$Run, 5), collapse = ", "), 
+                    if(nrow(imported_design) > 5) "..." else ""))
 
                 # --- 3. Load assay manifest and assay data files ---
                 logger::log_info("Loading assay_manifest.txt")
@@ -237,12 +259,28 @@ mod_metab_design_server <- function(id, workflow_data, experiment_paths, volumes
                     logger::log_info(sprintf("Loading assay: %s", assay_name))
                     assay_list[[assay_name]] <- vroom::vroom(assay_file, show_col_types = FALSE)
                 }
+                
+                # DEBUG66: Log assay list details
+                message(sprintf("DEBUG66: Loaded %d assays: %s", 
+                    length(assay_list), paste(names(assay_list), collapse = ", ")))
+                for (a_name in names(assay_list)) {
+                    message(sprintf("DEBUG66: Assay '%s': %d rows, %d cols, cols: %s", 
+                        a_name, nrow(assay_list[[a_name]]), ncol(assay_list[[a_name]]),
+                        paste(head(names(assay_list[[a_name]]), 5), collapse = ", ")))
+                }
 
                 # --- 4. Load column mapping ---
                 if (file.exists(col_map_file)) {
                     logger::log_info("Loading column_mapping.json")
                     col_map <- jsonlite::read_json(col_map_file, simplifyVector = TRUE)
                     workflow_data$column_mapping <- col_map
+                    
+                    # DEBUG66: Log column mapping from file
+                    message(sprintf("DEBUG66: Loaded column_mapping from JSON"))
+                    message(sprintf("DEBUG66: metabolite_id_col = '%s'", col_map$metabolite_id_col))
+                    message(sprintf("DEBUG66: annotation_col = '%s'", col_map$annotation_col))
+                    message(sprintf("DEBUG66: sample_columns count = %d", length(col_map$sample_columns)))
+                    message(sprintf("DEBUG66: is_pattern = '%s'", col_map$is_pattern))
                 } else {
                     # Infer column mapping from data structure
                     logger::log_warn("column_mapping.json not found. Inferring from data structure.")
@@ -317,6 +355,15 @@ mod_metab_design_server <- function(id, workflow_data, experiment_paths, volumes
                     logger::log_info("No contrast_strings.tab found.")
                     NULL
                 }
+                
+                # DEBUG66: Log contrasts
+                if (!is.null(imported_contrasts)) {
+                    message(sprintf("DEBUG66: Loaded %d contrasts", nrow(imported_contrasts)))
+                    message(sprintf("DEBUG66: Contrast strings: %s", 
+                        paste(imported_contrasts$contrasts, collapse = ", ")))
+                } else {
+                    message("DEBUG66: No contrasts loaded (imported_contrasts is NULL)")
+                }
 
                 # --- 6. Update workflow_data ---
                 workflow_data$design_matrix <- imported_design
@@ -337,6 +384,20 @@ mod_metab_design_server <- function(id, workflow_data, experiment_paths, volumes
                 col_map <- workflow_data$column_mapping
 
                 logger::log_info("Creating MetaboliteAssayData S4 object from imported data")
+                
+                # DEBUG66: Log S4 creation parameters
+                message("DEBUG66: === S4 Object Creation Parameters ===")
+                message(sprintf("DEBUG66: assay_list names: %s", paste(names(assay_list), collapse = ", ")))
+                message(sprintf("DEBUG66: design_matrix dims: %d x %d", 
+                    nrow(workflow_data$design_matrix), ncol(workflow_data$design_matrix)))
+                message(sprintf("DEBUG66: design_matrix$Run: %s", 
+                    paste(head(workflow_data$design_matrix$Run, 5), collapse = ", ")))
+                message(sprintf("DEBUG66: col_map is NULL: %s", is.null(col_map)))
+                if (!is.null(col_map)) {
+                    message(sprintf("DEBUG66: col_map$metabolite_id_col: '%s'", col_map$metabolite_id_col))
+                    message(sprintf("DEBUG66: col_map$annotation_col: '%s'", col_map$annotation_col))
+                }
+                message("DEBUG66: Calling createMetaboliteAssayData()...")
 
                 s4_obj <- createMetaboliteAssayData(
                     metabolite_data = assay_list
@@ -358,25 +419,35 @@ mod_metab_design_server <- function(id, workflow_data, experiment_paths, volumes
                     }
                     , args = workflow_data$config_list
                 )
+                
+                # DEBUG66: S4 creation successful
+                message("DEBUG66: createMetaboliteAssayData() completed successfully")
+                message(sprintf("DEBUG66: S4 object class: %s", class(s4_obj)[1]))
 
                 # --- 8. Initialize state manager and save ---
+                message("DEBUG66: Initializing state manager...")
                 if (is.null(workflow_data$state_manager)) {
                     workflow_data$state_manager <- WorkflowState$new("metabolomics")
+                    message("DEBUG66: Created new WorkflowState")
+                } else {
+                    message("DEBUG66: Using existing WorkflowState")
                 }
 
+                message("DEBUG66: Saving state to state_manager...")
                 workflow_data$state_manager$saveState(
                     state_name = "metab_raw_data_s4"
                     , s4_data_object = s4_obj
                     , config_object = workflow_data$config_list
                     , description = "MetaboliteAssayData S4 object created from imported design"
                 )
+                message("DEBUG66: State saved successfully")
 
                 # Initialize QC progress tracking with raw data baseline
                 tryCatch({
                     updateMetaboliteFiltering(
                         theObject = s4_obj
                         , step_name = "1_Raw_Data"
-                        , omics_type = omic_type
+                        , omics_type = "metabolomics"
                         , return_grid = FALSE
                         , overwrite = TRUE
                     )
@@ -393,7 +464,10 @@ mod_metab_design_server <- function(id, workflow_data, experiment_paths, volumes
                     qc_trigger(TRUE)
                 }
 
-                workflow_data$tab_status$design_matrix <- "complete"
+                # Must replace entire list to trigger reactivity
+                updated_status <- workflow_data$tab_status
+                updated_status$design_matrix <- "complete"
+                workflow_data$tab_status <- updated_status
 
                 shiny::removeNotification("importing_design")
                 shiny::showNotification(
@@ -430,6 +504,8 @@ mod_metab_design_server <- function(id, workflow_data, experiment_paths, volumes
                 , data_tbl = shiny::reactive(workflow_data$data_tbl)
                 , config_list = shiny::reactive(workflow_data$config_list)
                 , column_mapping = shiny::reactive(workflow_data$column_mapping)
+                , existing_design_matrix = shiny::reactive(workflow_data$design_matrix)
+                , existing_contrasts = shiny::reactive(workflow_data$contrasts_tbl)
             )
         } else {
             builder_results_rv <- shiny::reactiveVal(NULL)
@@ -572,7 +648,10 @@ mod_metab_design_server <- function(id, workflow_data, experiment_paths, volumes
                 }
 
                 # --- 6. Update tab status ---
-                workflow_data$tab_status$design_matrix <- "complete"
+                # Must replace entire list to trigger reactivity
+                updated_status <- workflow_data$tab_status
+                updated_status$design_matrix <- "complete"
+                workflow_data$tab_status <- updated_status
 
                 shiny::removeModal()
                 shiny::showNotification("Design matrix and contrasts saved successfully!", type = "message")
