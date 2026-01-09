@@ -252,6 +252,130 @@ app_ui <- function(request) {
           word-break: break-all;
           display: block;
         }
+
+        /* ========== WORKFLOW STEPPER ========== */
+        .workflow-stepper {
+          display: flex;
+          align-items: flex-start;
+          justify-content: center;
+          padding: 24px 16px;
+          margin-bottom: 20px;
+          background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+          border-radius: 12px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+          overflow-x: auto;
+        }
+        .stepper-step {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          position: relative;
+          flex: 1;
+          min-width: 80px;
+          max-width: 140px;
+        }
+        .stepper-step:not(:last-child)::after {
+          content: '';
+          position: absolute;
+          top: 20px;
+          left: calc(50% + 24px);
+          width: calc(100% - 48px);
+          height: 3px;
+          background-color: #dee2e6;
+          z-index: 0;
+          transition: background-color 0.4s ease;
+        }
+        .stepper-step.step-completed:not(:last-child)::after {
+          background: linear-gradient(90deg, #27ae60 0%, #2ecc71 100%);
+        }
+        .stepper-step.step-current:not(:last-child)::after {
+          background: linear-gradient(90deg, #3498db 0%, #dee2e6 100%);
+        }
+        .stepper-circle {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 14px;
+          font-weight: 600;
+          z-index: 1;
+          transition: all 0.3s ease;
+          border: 3px solid transparent;
+        }
+        .stepper-circle.completed {
+          background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+          color: white;
+          box-shadow: 0 3px 10px rgba(39, 174, 96, 0.35);
+        }
+        .stepper-circle.current {
+          background: linear-gradient(135deg, #3498db 0%, #5dade2 100%);
+          color: white;
+          box-shadow: 0 3px 12px rgba(52, 152, 219, 0.45);
+          animation: pulse-current 2s infinite;
+        }
+        .stepper-circle.pending {
+          background-color: #fff;
+          color: #adb5bd;
+          border-color: #dee2e6;
+        }
+        @keyframes pulse-current {
+          0%, 100% { box-shadow: 0 3px 12px rgba(52, 152, 219, 0.45); }
+          50% { box-shadow: 0 3px 20px rgba(52, 152, 219, 0.7); }
+        }
+        .stepper-label {
+          margin-top: 10px;
+          font-size: 0.8em;
+          font-weight: 500;
+          color: #495057;
+          text-align: center;
+          white-space: nowrap;
+          transition: color 0.3s ease;
+        }
+        .stepper-step.step-completed .stepper-label {
+          color: #27ae60;
+          font-weight: 600;
+        }
+        .stepper-step.step-current .stepper-label {
+          color: #3498db;
+          font-weight: 600;
+        }
+        .stepper-step.step-pending .stepper-label {
+          color: #adb5bd;
+        }
+
+        /* Dark mode stepper */
+        body.dark-mode .workflow-stepper {
+          background: linear-gradient(135deg, #16213e 0%, #1a1a2e 100%);
+          box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+        }
+        body.dark-mode .stepper-step:not(:last-child)::after {
+          background-color: #3d4f6f;
+        }
+        body.dark-mode .stepper-step.step-completed:not(:last-child)::after {
+          background: linear-gradient(90deg, #2ecc71 0%, #27ae60 100%);
+        }
+        body.dark-mode .stepper-step.step-current:not(:last-child)::after {
+          background: linear-gradient(90deg, #5dade2 0%, #3d4f6f 100%);
+        }
+        body.dark-mode .stepper-circle.pending {
+          background-color: #1a1a2e;
+          color: #6c7a89;
+          border-color: #3d4f6f;
+        }
+        body.dark-mode .stepper-label {
+          color: #b0b0b0;
+        }
+        body.dark-mode .stepper-step.step-completed .stepper-label {
+          color: #2ecc71;
+        }
+        body.dark-mode .stepper-step.step-current .stepper-label {
+          color: #5dade2;
+        }
+        body.dark-mode .stepper-step.step-pending .stepper-label {
+          color: #6c7a89;
+        }
       "))
       ),
       

@@ -14,13 +14,10 @@
 mod_proteomics_ui <- function(id) {
   ns <- shiny::NS(id)
   
-  # Create workflow progress section
+  # Create workflow progress section (stepper component has its own styling)
   workflow_progress_section <- shiny::fluidRow(
     shiny::column(12,
-      shiny::wellPanel(
-        shiny::h4("Workflow Progress"),
-        shiny::uiOutput(ns("workflow_progress"))
-      )
+      shiny::uiOutput(ns("workflow_progress"))
     )
   )
   
@@ -289,6 +286,22 @@ mod_proteomics_server <- function(id, project_dirs, omic_type, experiment_label,
     if (exists("mod_prot_summary_server")) {
       mod_prot_summary_server("session_summary", project_dirs, omic_type, experiment_label, workflow_data)
     }
+    
+    # Workflow progress indicator using shared stepper component
+    output$workflow_progress <- shiny::renderUI({
+      # Define proteomics workflow steps (7 steps)
+      steps <- list(
+        list(name = "Import", key = "setup_import", icon = "upload")
+        , list(name = "Design", key = "design_matrix", icon = "table")
+        , list(name = "QC", key = "quality_control", icon = "chart-line")
+        , list(name = "Normalize", key = "normalization", icon = "balance-scale")
+        , list(name = "DE", key = "differential_expression", icon = "chart-bar")
+        , list(name = "Enrich", key = "enrichment_analysis", icon = "network-wired")
+        , list(name = "Summary", key = "session_summary", icon = "file-export")
+      )
+      
+      render_workflow_stepper(steps, workflow_data$tab_status)
+    })
     
     observeEvent(workflow_data$tab_status$design_matrix, {
       # Enable QC tab after design matrix is complete

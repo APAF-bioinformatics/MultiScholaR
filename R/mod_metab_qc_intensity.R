@@ -163,18 +163,21 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
                 filter_stats(stats_df)
                 
                 # Update QC tracking visualization
+                
                 qc_plot <- tryCatch({
-                    updateMetaboliteFiltering(
+                    result <- updateMetaboliteFiltering(
                         theObject = filtered_s4
                         , step_name = "2_Intensity_Filtered"
                         , omics_type = omic_type
                         , return_grid = TRUE
                         , overwrite = TRUE
                     )
+                    result
                 }, error = function(e) {
                     logger::log_warn(paste("Could not generate QC plot:", e$message))
                     NULL
                 })
+                
                 filter_plot(qc_plot)
                 
                 # Save state
@@ -189,7 +192,7 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
                     )
                 )
                 
-                filter_plot(qc_plot)
+                # REMOVED duplicate filter_plot(qc_plot) - was causing potential issues
                 
                 # Generate summary text
                 total_original <- sum(stats_df$Original)
@@ -307,11 +310,13 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
         
         # Render filter plot
         output$filter_plot <- shiny::renderPlot({
-            shiny::req(filter_plot())
-            if (inherits(filter_plot(), "grob") || inherits(filter_plot(), "gtable")) {
-                grid::grid.draw(filter_plot())
-            } else if (inherits(filter_plot(), "ggplot")) {
-                print(filter_plot())
+            plot_obj <- filter_plot()
+            shiny::req(plot_obj)
+            if (inherits(plot_obj, "grob") || inherits(plot_obj, "gtable")) {
+                grid::grid.draw(plot_obj)
+            } else if (inherits(plot_obj, "ggplot")) {
+                print(plot_obj)
+            } else {
             }
         })
     })

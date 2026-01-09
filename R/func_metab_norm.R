@@ -385,7 +385,12 @@ runPerAssayRuvOptimization <- function(
     , params = list()
     , experiment_paths = NULL
 ) {
+    message("╔═══════════════════════════════════════════════════════════════════════════╗")
+    message("║  DEBUG66: Entering runPerAssayRuvOptimization                             ║")
+    message("╚═══════════════════════════════════════════════════════════════════════════╝")
+    
     ruv_mode <- match.arg(ruv_mode)
+    message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] ruv_mode = '%s'", ruv_mode))
 
     stopifnot(inherits(theObject, "MetaboliteAssayData"))
 
@@ -399,61 +404,85 @@ runPerAssayRuvOptimization <- function(
     manual_k <- params$manual_k %||% 2
     manual_percentage <- params$manual_percentage %||% 10
 
+    message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] percentage_min = %s, percentage_max = %s", percentage_min, percentage_max))
+    message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] ruv_grouping_variable = '%s'", ifelse(is.null(ruv_grouping_variable), "NULL", ruv_grouping_variable)))
+    message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] manual_k = %s, manual_percentage = %s", manual_k, manual_percentage))
+
     # --- Validate grouping variable ---
     if (is.null(ruv_grouping_variable) || !ruv_grouping_variable %in% colnames(theObject@design_matrix)) {
+        message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] ruv_grouping_variable fallback to group_id: '%s'", theObject@group_id))
         ruv_grouping_variable <- theObject@group_id
     }
 
     # --- Get assay names ---
     assay_list <- theObject@metabolite_data
     assay_names <- names(assay_list)
+    message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] Found %d assays: %s", length(assay_names), paste(assay_names, collapse = ", ")))
 
     logger::log_info(paste("Running RUV optimization for", length(assay_names), "assays in", ruv_mode, "mode"))
 
     # --- Run optimization per assay ---
     results <- purrr::imap(assay_list, \(assay_data, assay_name) {
+        message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] === Processing assay: %s ===", assay_name))
         logger::log_info(paste("Processing assay:", assay_name))
 
         tryCatch({
             if (ruv_mode == "automatic") {
+                message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] Assay '%s': AUTOMATIC mode", assay_name))
                 # --- Automatic mode: test range of percentages ---
                 percentage_range <- seq(percentage_min, percentage_max, by = 1)
 
                 # Get negative control features
-                ctrl_result <- getNegCtrlProtAnova(
+                message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] Assay '%s': Calling getNegCtrlMetabAnova with percentage = %s", assay_name, percentage_max))
+                ctrl_result <- getNegCtrlMetabAnova(
                     theObject
                     , ruv_grouping_variable = ruv_grouping_variable
                     , percentage_as_neg_ctrl = percentage_max
                 )
+                message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] Assay '%s': getNegCtrlMetabAnova returned type = '%s', is.null = %s", 
+                               assay_name, class(ctrl_result)[1], is.null(ctrl_result)))
 
                 # Extract control indices for this assay
                 ctrl_indices <- if (is.list(ctrl_result) && assay_name %in% names(ctrl_result)) {
+                    message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] Assay '%s': Extracting ctrl_indices from named list", assay_name))
                     ctrl_result[[assay_name]]
                 } else {
+                    message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] Assay '%s': Using ctrl_result directly", assay_name))
                     ctrl_result
                 }
+                message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] Assay '%s': ctrl_indices is.null = %s, length = %s, sum(TRUE) = %s", 
+                               assay_name, is.null(ctrl_indices), length(ctrl_indices), sum(ctrl_indices, na.rm = TRUE)))
 
                 # Generate canonical correlation plot
+                message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] Assay '%s': Calling ruvCancor", assay_name))
                 cancor_result <- ruvCancor(
                     theObject
                     , ctrl = ctrl_indices
                     , ruv_grouping_variable = ruv_grouping_variable
                 )
+                message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] Assay '%s': ruvCancor returned type = '%s'", assay_name, class(cancor_result)[1]))
 
                 cancor_plot <- if (is.list(cancor_result) && assay_name %in% names(cancor_result)) {
                     cancor_result[[assay_name]]
                 } else {
                     cancor_result
                 }
+                message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] Assay '%s': cancor_plot is.null = %s, class = '%s'", 
+                               assay_name, is.null(cancor_plot), class(cancor_plot)[1]))
 
                 # Find best k from cancor plot
+                message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] Assay '%s': Calling findBestK", assay_name))
                 best_k <- findBestK(cancor_plot)
+                message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] Assay '%s': findBestK returned = %s", assay_name, best_k))
 
                 # Calculate separation score
                 separation_score <- calculateSeparationScore(
                     cancor_plot
                     , metric = separation_metric
                 )
+                message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] Assay '%s': separation_score = %s", assay_name, separation_score))
+                message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] Assay '%s': AUTOMATIC mode SUCCESS - best_k = %s, num_controls = %s", 
+                               assay_name, best_k, sum(ctrl_indices, na.rm = TRUE)))
 
                 list(
                     success = TRUE
@@ -472,30 +501,40 @@ runPerAssayRuvOptimization <- function(
                 )
 
             } else {
+                message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] Assay '%s': MANUAL mode", assay_name))
                 # --- Manual mode: use specified parameters ---
-                ctrl_result <- getNegCtrlProtAnova(
+                message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] Assay '%s': Calling getNegCtrlMetabAnova with percentage = %s", assay_name, manual_percentage))
+                ctrl_result <- getNegCtrlMetabAnova(
                     theObject
                     , ruv_grouping_variable = ruv_grouping_variable
                     , percentage_as_neg_ctrl = manual_percentage
                 )
+                message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] Assay '%s': getNegCtrlMetabAnova returned type = '%s', is.null = %s", 
+                               assay_name, class(ctrl_result)[1], is.null(ctrl_result)))
 
                 ctrl_indices <- if (is.list(ctrl_result) && assay_name %in% names(ctrl_result)) {
                     ctrl_result[[assay_name]]
                 } else {
                     ctrl_result
                 }
+                message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] Assay '%s': ctrl_indices is.null = %s, length = %s, sum(TRUE) = %s", 
+                               assay_name, is.null(ctrl_indices), length(ctrl_indices), sum(ctrl_indices, na.rm = TRUE)))
 
+                message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] Assay '%s': Calling ruvCancor", assay_name))
                 cancor_result <- ruvCancor(
                     theObject
                     , ctrl = ctrl_indices
                     , ruv_grouping_variable = ruv_grouping_variable
                 )
+                message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] Assay '%s': ruvCancor returned type = '%s'", assay_name, class(cancor_result)[1]))
 
                 cancor_plot <- if (is.list(cancor_result) && assay_name %in% names(cancor_result)) {
                     cancor_result[[assay_name]]
                 } else {
                     cancor_result
                 }
+                message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] Assay '%s': MANUAL mode SUCCESS - best_k = %s, num_controls = %s", 
+                               assay_name, manual_k, sum(ctrl_indices, na.rm = TRUE)))
 
                 list(
                     success = TRUE
@@ -510,6 +549,7 @@ runPerAssayRuvOptimization <- function(
             }
 
         }, error = function(e) {
+            message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] Assay '%s': ERROR CAUGHT - %s", assay_name, e$message))
             logger::log_warn(paste("RUV optimization failed for", assay_name, ":", e$message))
             list(
                 success = FALSE
@@ -525,6 +565,10 @@ runPerAssayRuvOptimization <- function(
     })
 
     names(results) <- assay_names
+    message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] Completed all assays. Returning %d results.", length(results)))
+    message("╔═══════════════════════════════════════════════════════════════════════════╗")
+    message("║  DEBUG66: Exiting runPerAssayRuvOptimization                              ║")
+    message("╚═══════════════════════════════════════════════════════════════════════════╝")
     return(results)
 }
 
