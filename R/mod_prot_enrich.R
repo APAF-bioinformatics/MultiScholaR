@@ -1672,7 +1672,10 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
             cat(sprintf("   ENRICHMENT Step: Warning saving to R6 state manager: %s\n", e$message))
           })
           
-          workflow_data$tab_status$enrichment_analysis <- "complete"
+          # Must replace entire list to trigger reactivity
+          updated_status <- workflow_data$tab_status
+          updated_status$enrichment_analysis <- "complete"
+          workflow_data$tab_status <- updated_status
           
           shiny::incProgress(1.0, detail = "Complete!")
         })

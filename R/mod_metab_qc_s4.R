@@ -301,8 +301,10 @@ mod_metab_qc_s4_server <- function(id, workflow_data, omic_type, experiment_labe
 
                 filter_plot(qc_plot)
 
-                # Update tab status
-                workflow_data$tab_status$quality_control <- "complete"
+                # Update tab status - must replace entire list to trigger reactivity
+                updated_status <- workflow_data$tab_status
+                updated_status$quality_control <- "complete"
+                workflow_data$tab_status <- updated_status
                 
                 # Generate summary
                 assay_list <- current_s4@metabolite_data

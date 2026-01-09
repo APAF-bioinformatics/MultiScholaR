@@ -222,10 +222,10 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
         # Summary module
         mod_metab_summary_server(
             "summary"
-            , workflow_data
-            , experiment_paths
+            , project_dirs
             , omic_type
             , experiment_label
+            , workflow_data
         )
         
         logger::log_info("Metabolomics workflow modules initialized")
@@ -246,11 +246,18 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
         })
         
         # --- Workflow State Observers ---
+        # Helper to properly update tab_status (nested list assignment doesn't trigger reactivity)
+        update_tab_status <- function(key, value) {
+            updated <- workflow_data$tab_status
+            updated[[key]] <- value
+            workflow_data$tab_status <- updated
+        }
+        
         # Enable QC tab after design matrix is complete
         shiny::observeEvent(workflow_data$tab_status$design_matrix, {
             if (workflow_data$tab_status$design_matrix == "complete") {
                 logger::log_info("Metabolomics: Design matrix complete, enabling QC tab")
-                workflow_data$tab_status$quality_control <- "pending"
+                update_tab_status("quality_control", "pending")
             }
         }, ignoreNULL = TRUE)
         
@@ -258,7 +265,7 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
         shiny::observeEvent(workflow_data$tab_status$quality_control, {
             if (workflow_data$tab_status$quality_control == "complete") {
                 logger::log_info("Metabolomics: QC complete, enabling Normalization tab")
-                workflow_data$tab_status$normalization <- "pending"
+                update_tab_status("normalization", "pending")
             }
         }, ignoreNULL = TRUE)
         
@@ -266,7 +273,7 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
         shiny::observeEvent(workflow_data$tab_status$normalization, {
             if (workflow_data$tab_status$normalization == "complete") {
                 logger::log_info("Metabolomics: Normalization complete, enabling DE tab")
-                workflow_data$tab_status$differential_analysis <- "pending"
+                update_tab_status("differential_analysis", "pending")
             }
         }, ignoreNULL = TRUE)
         
@@ -274,7 +281,7 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
         shiny::observeEvent(workflow_data$tab_status$differential_analysis, {
             if (workflow_data$tab_status$differential_analysis == "complete") {
                 logger::log_info("Metabolomics: DE complete, enabling Summary tab")
-                workflow_data$tab_status$session_summary <- "pending"
+                update_tab_status("session_summary", "pending")
             }
         }, ignoreNULL = TRUE)
         

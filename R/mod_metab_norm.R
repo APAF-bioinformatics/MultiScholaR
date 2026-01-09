@@ -742,6 +742,158 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
             )
         }
 
+        #' Generate composite QC figure from saved images
+        #' Mirrors createGridQC structure with row labels and patchwork layout
+        #' @param plot_files Vector of file paths to individual QC plot images
+        #' @param output_path Path where the composite figure will be saved
+        #' @param ncol Number of columns in the composite (default: 3)
+        #' @param row_labels Named list of row labels (e.g., list(pca = c("a)", "b)", "c)")))
+        #' @param column_labels Vector of column titles (e.g., c("Pre-Norm", "Post-Norm", "RUV"))
+        #' @return Path to saved composite or NULL on error
+        generateCompositeFromFiles <- function(plot_files, output_path, ncol = 3, row_labels = NULL, column_labels = NULL) {
+            logger::log_info(sprintf("[generateCompositeFromFiles] Generating composite from %d files...", length(plot_files)))
+
+            if (!requireNamespace("patchwork", quietly = TRUE)) {
+                warning("patchwork package required for composite generation")
+                return(NULL)
+            }
+            if (!requireNamespace("ggplot2", quietly = TRUE)) {
+                warning("ggplot2 package required for composite generation")
+                return(NULL)
+            }
+            if (!requireNamespace("png", quietly = TRUE)) {
+                warning("png package required for composite generation")
+                return(NULL)
+            }
+
+            # --- Helper: Create label plot ---
+            createLabelPlot <- function(title) {
+                ggplot2::ggplot() +
+                    ggplot2::annotate("text", x = 0, y = 0.5, label = title, size = 5, hjust = 0) +
+                    ggplot2::xlim(0, 1) +
+                    ggplot2::theme_void() +
+                    ggplot2::theme(
+                        plot.margin = ggplot2::margin(5, 5, 5, 5)
+                        , panel.background = ggplot2::element_blank()
+                    )
+            }
+
+            # --- Helper: Create column title plot ---
+            createTitlePlot <- function(title) {
+                ggplot2::ggplot() +
+                    ggplot2::annotate("text", x = 0.5, y = 0.5, label = title, size = 6, fontface = "bold", hjust = 0.5) +
+                    ggplot2::xlim(0, 1) +
+                    ggplot2::theme_void() +
+                    ggplot2::theme(
+                        plot.margin = ggplot2::margin(5, 5, 10, 5)
+                        , panel.background = ggplot2::element_blank()
+                    )
+            }
+
+            # --- Helper: Load image as ggplot ---
+            loadImageAsPlot <- function(file_path) {
+                if (is.na(file_path) || !file.exists(file_path)) {
+                    return(ggplot2::ggplot() + ggplot2::theme_void())
+                }
+                tryCatch({
+                    img <- png::readPNG(file_path)
+                    g <- grid::rasterGrob(img, interpolate = TRUE)
+                    ggplot2::ggplot() +
+                        ggplot2::annotation_custom(g, xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf) +
+                        ggplot2::theme_void()
+                }, error = function(e) {
+                    logger::log_warn(sprintf("[generateCompositeFromFiles] Could not load image: %s", file_path))
+                    ggplot2::ggplot() + ggplot2::theme_void()
+                })
+            }
+
+            tryCatch({
+                n_files <- length(plot_files)
+                n_plot_types <- n_files / ncol
+
+                # Default row labels if not provided
+                if (is.null(row_labels)) {
+                    all_labels <- letters[1:n_files]
+                    row_labels <- split(paste0(all_labels, ")"), rep(1:n_plot_types, each = ncol))
+                    names(row_labels) <- paste0("row", seq_len(n_plot_types))
+                }
+
+                plot_sections <- list()
+                height_values <- c()
+
+                # Add Column Titles if provided
+                if (!is.null(column_labels)) {
+                    if (length(column_labels) == ncol) {
+                        title_plots <- lapply(column_labels, createTitlePlot)
+                        plot_sections <- append(plot_sections, list(
+                            patchwork::wrap_plots(title_plots, ncol = ncol)
+                        ))
+                        height_values <- c(height_values, 0.2)
+                        logger::log_info("[generateCompositeFromFiles] Added column titles")
+                    }
+                }
+
+                row_names <- names(row_labels)
+
+                for (i in seq_along(row_names)) {
+                    row_name <- row_names[i]
+                    labels <- row_labels[[row_name]]
+
+                    start_idx <- (i - 1) * ncol + 1
+                    end_idx <- min(i * ncol, n_files)
+                    row_files <- plot_files[start_idx:end_idx]
+
+                    has_files <- any(!is.na(row_files) & sapply(row_files, function(f) !is.na(f) && file.exists(f)))
+
+                    if (has_files) {
+                        label_plots <- lapply(labels, createLabelPlot)
+                        image_plots <- lapply(row_files, loadImageAsPlot)
+
+                        plot_sections <- append(plot_sections, list(
+                            patchwork::wrap_plots(label_plots, ncol = ncol)
+                            , patchwork::wrap_plots(image_plots, ncol = ncol)
+                        ))
+                        height_values <- c(height_values, 0.1, 1)
+
+                        logger::log_info(sprintf("[generateCompositeFromFiles] Added row: %s", row_name))
+                    } else {
+                        logger::log_info(sprintf("[generateCompositeFromFiles] Skipping empty row: %s", row_name))
+                    }
+                }
+
+                if (length(plot_sections) == 0) {
+                    warning("No valid plot sections to combine")
+                    return(NULL)
+                }
+
+                logger::log_info("[generateCompositeFromFiles] Combining plot sections...")
+                combined_plot <- patchwork::wrap_plots(plot_sections, ncol = 1) +
+                    patchwork::plot_layout(heights = height_values)
+
+                plot_width <- 4 + (ncol * 3)
+                plot_height <- 4 + (length(height_values) * 2)
+
+                ggplot2::ggsave(
+                    output_path
+                    , combined_plot
+                    , width = plot_width
+                    , height = plot_height
+                    , dpi = 150
+                    , limitsize = FALSE
+                )
+
+                rm(plot_sections, combined_plot)
+                gc()
+
+                logger::log_info(sprintf("[generateCompositeFromFiles] Composite saved to %s", output_path))
+                return(output_path)
+
+            }, error = function(e) {
+                logger::log_error(paste("[generateCompositeFromFiles] Error:", e$message))
+                return(NULL)
+            })
+        }
+
         #' Helper function to generate pre-normalization QC plots
         generatePreNormalizationQc <- function() {
             logger::log_info("=== GENERATING PRE-NORMALIZATION QC PLOTS ===")
@@ -1335,6 +1487,81 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
                             norm_data$ruv_complete <- TRUE
                         }
 
+                        # --- Generate Composite QC Figure ---
+                        add_log("Generating composite QC figure...")
+                        tryCatch({
+                            qc_dir <- experiment_paths$metabolite_qc_dir
+                            if (!is.null(qc_dir) && dir.exists(qc_dir) && !is.null(norm_data$assay_names)) {
+
+                                # Determine columns based on RUV mode
+                                ncol_composite <- if (input$ruv_mode == "skip") 2 else 3
+                                column_labels <- if (input$ruv_mode == "skip") {
+                                    c("Pre-Normalisation", "Post-Normalisation")
+                                } else {
+                                    c("Pre-Normalisation", "Post-Normalisation", "RUV-Corrected")
+                                }
+
+                                # Build file list and row labels for all assays combined
+                                all_plot_files <- c()
+                                all_row_labels <- list()
+                                label_counter <- 1
+
+                                for (assay_name in norm_data$assay_names) {
+                                    safe_name <- gsub("[^A-Za-z0-9]", "_", tolower(assay_name))
+
+                                    # Plot types to include
+                                    plot_types <- c("pca", "density", "rle", "correlation")
+
+                                    for (plot_type in plot_types) {
+                                        if (input$ruv_mode == "skip") {
+                                            # 2 columns: Pre-Norm, Post-Norm
+                                            files <- c(
+                                                file.path(qc_dir, sprintf("%s_pre_norm_%s.png", safe_name, plot_type))
+                                                , file.path(qc_dir, sprintf("%s_post_norm_%s.png", safe_name, plot_type))
+                                            )
+                                            labels <- c(
+                                                sprintf("%s)", letters[label_counter])
+                                                , sprintf("%s)", letters[label_counter + 1])
+                                            )
+                                            label_counter <- label_counter + 2
+                                        } else {
+                                            # 3 columns: Pre-Norm, Post-Norm, RUV-Corrected
+                                            files <- c(
+                                                file.path(qc_dir, sprintf("%s_pre_norm_%s.png", safe_name, plot_type))
+                                                , file.path(qc_dir, sprintf("%s_post_norm_%s.png", safe_name, plot_type))
+                                                , file.path(qc_dir, sprintf("%s_ruv_corrected_%s.png", safe_name, plot_type))
+                                            )
+                                            labels <- c(
+                                                sprintf("%s)", letters[label_counter])
+                                                , sprintf("%s)", letters[label_counter + 1])
+                                                , sprintf("%s)", letters[label_counter + 2])
+                                            )
+                                            label_counter <- label_counter + 3
+                                        }
+
+                                        all_plot_files <- c(all_plot_files, files)
+                                        row_key <- sprintf("%s_%s", safe_name, plot_type)
+                                        all_row_labels[[row_key]] <- labels
+                                    }
+                                }
+
+                                # Generate combined composite
+                                composite_path <- file.path(qc_dir, "composite_QC_figure.png")
+                                generateCompositeFromFiles(
+                                    plot_files = all_plot_files
+                                    , output_path = composite_path
+                                    , ncol = ncol_composite
+                                    , row_labels = all_row_labels
+                                    , column_labels = column_labels
+                                )
+                                add_log(sprintf("Composite QC figure saved to: %s", composite_path))
+
+                            }
+                        }, error = function(e) {
+                            add_log(paste("Warning: Could not generate composite QC figure:", e$message))
+                            logger::log_warn(paste("Composite QC generation failed:", e$message))
+                        })
+
                         # --- Trigger plot refresh ---
                         norm_data$plot_refresh_trigger <- norm_data$plot_refresh_trigger + 1
 
@@ -1486,8 +1713,11 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
                 )
 
                 # Ensure QC is marked complete when normalization completes
-                workflow_data$tab_status$quality_control <- "complete"
-                workflow_data$tab_status$normalization <- "complete"
+                # Must replace entire list to trigger reactivity
+                updated_status <- workflow_data$tab_status
+                updated_status$quality_control <- "complete"
+                updated_status$normalization <- "complete"
+                workflow_data$tab_status <- updated_status
 
                 add_log("Correlation filtering complete")
                 shiny::removeNotification("corr_working")
@@ -1523,8 +1753,11 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
                 )
 
                 # Ensure QC is marked complete when normalization completes
-                workflow_data$tab_status$quality_control <- "complete"
-                workflow_data$tab_status$normalization <- "complete"
+                # Must replace entire list to trigger reactivity
+                updated_status <- workflow_data$tab_status
+                updated_status$quality_control <- "complete"
+                updated_status$normalization <- "complete"
+                workflow_data$tab_status <- updated_status
 
                 add_log("Correlation filtering skipped - ready for DE analysis")
                 shiny::showNotification("Normalization complete! Proceeding to DE analysis.", type = "message")

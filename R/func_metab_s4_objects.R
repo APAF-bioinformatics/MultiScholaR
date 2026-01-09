@@ -3844,6 +3844,11 @@ setMethod(f = "normaliseUntransformedData",
                  stop("No sample IDs found in the design matrix.")
             }
 
+            # --- Initialize ITSD Feature Collector ---
+            # Use environment for side-effect collection during lapply
+            itsd_collector <- new.env(parent = emptyenv())
+            itsd_collector$features_per_assay <- list()
+            itsd_collector$counts_per_assay <- list()
 
             # --- Process Each Assay ---
             normalized_assay_list <- lapply(seq_along(assay_list), function(i) {
@@ -3938,6 +3943,11 @@ setMethod(f = "normaliseUntransformedData",
                  n_itsd <- nrow(itsd_data)
                  message(sprintf("   Using %d ITSD features for normalization.", n_itsd))
 
+                 # --- Capture ITSD feature names for reporting ---
+                 itsd_feature_names <- as.character(itsd_data[[metabolite_id_col]])
+                 itsd_collector$features_per_assay[[assay_index_name]] <- itsd_feature_names
+                 itsd_collector$counts_per_assay[[assay_index_name]] <- n_itsd
+
                 # --- Calculate Normalization Factors ---
                 # Step 1: Calculate aggregate ITSD per sample
                 norm_factors_long <- tryCatch({
@@ -4026,7 +4036,7 @@ setMethod(f = "normaliseUntransformedData",
             } else {
                  # Ensure the specific list exists
                 if (!"ITSDNormalization" %in% names(theObject@args)) {
-                    theObject@args$ITSDNormalization <- list()
+                   theObject@args$ITSDNormalization <- list()
                 }
                 theObject@args$ITSDNormalization$applied <- TRUE
                 theObject@args$ITSDNormalization$method_type <- "average_centered"
@@ -4034,6 +4044,13 @@ setMethod(f = "normaliseUntransformedData",
                 theObject@args$ITSDNormalization$itsd_pattern_columns <- itsd_pattern_columns # Record actual columns used (potentially default)
                 theObject@args$ITSDNormalization$removed_itsd <- remove_itsd_after_norm
                 theObject@args$ITSDNormalization$timestamp <- Sys.time()
+
+                # Store per-assay ITSD feature information for reporting
+                if (length(itsd_collector$features_per_assay) > 0) {
+                    theObject@args$ITSDNormalization$itsd_features_per_assay <- as.list(itsd_collector$features_per_assay)
+                    theObject@args$ITSDNormalization$itsd_counts_per_assay <- as.list(itsd_collector$counts_per_assay)
+                    message(sprintf("   Stored ITSD feature names for %d assays", length(itsd_collector$features_per_assay)))
+                }
             }
 
             message("ITSD normalization process complete for all applicable assays.")
