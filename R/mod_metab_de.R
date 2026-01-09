@@ -125,15 +125,37 @@ mod_metab_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
         
         # Update contrast dropdown when contrasts are available
         shiny::observe({
-            contrasts <- workflow_data$contrasts
+            # Get contrasts from contrasts_tbl (the standard storage location)
+            contrasts_tbl <- workflow_data$contrasts_tbl
+            
+            contrasts <- NULL
+            if (!is.null(contrasts_tbl) && nrow(contrasts_tbl) > 0) {
+                # Extract contrast strings from the 'contrasts' column
+                if ("contrasts" %in% colnames(contrasts_tbl)) {
+                    contrasts <- as.character(contrasts_tbl$contrasts)
+                } else if ("contrast_string" %in% colnames(contrasts_tbl)) {
+                    contrasts <- as.character(contrasts_tbl$contrast_string)
+                } else if ("friendly_name" %in% colnames(contrasts_tbl)) {
+                    # Fallback to friendly names if no contrast strings
+                    contrasts <- as.character(contrasts_tbl$friendly_name)
+                }
+            }
+            
+            # Also check legacy workflow_data$contrasts (for backwards compatibility)
+            if (is.null(contrasts) || length(contrasts) == 0) {
+                contrasts <- workflow_data$contrasts
+            }
             
             if (!is.null(contrasts) && length(contrasts) > 0) {
+                message(sprintf("   DEBUG66 [mod_metab_de] Updating contrast dropdown with %d contrasts: %s", length(contrasts), paste(contrasts, collapse = ", ")))
                 shiny::updateSelectInput(
                     session
                     , "contrast_select"
                     , choices = contrasts
                     , selected = contrasts[1]
                 )
+            } else {
+                message("   DEBUG66 [mod_metab_de] No contrasts available to populate dropdown")
             }
         })
         

@@ -5,6 +5,100 @@
 # They are separate from the main MultiScholaR GUI (run_app).
 # ----------------------------------------------------------------------------
 
+
+# ============================================================================
+# Workflow Stepper UI Component
+# ============================================================================
+
+#' @title Render Workflow Stepper UI
+#' @description Creates a modern, professional workflow progress stepper component
+#'              that displays step completion status with visual indicators.
+#' @param steps List of step definitions. Each step should have:
+#'   \itemize{
+#'     \item \code{name}: Display name for the step
+#'     \item \code{key}: Key matching the tab_status list entry
+#'     \item \code{icon}: FontAwesome icon name (without "fa-" prefix)
+#'   }
+#' @param tab_status Named list of step statuses. Values should be one of:
+#'   "complete", "pending", or "disabled".
+#' @return A \code{shiny::tags$div} containing the stepper HTML
+#' @examples
+#' \dontrun{
+#' steps <- list(
+#'   list(name = "Import", key = "setup_import", icon = "file-import"),
+#'   list(name = "Design", key = "design_matrix", icon = "th")
+#' )
+#' tab_status <- list(setup_import = "complete", design_matrix = "pending")
+#' render_workflow_stepper(steps, tab_status)
+#' }
+#' @export
+#' @importFrom shiny tags icon
+render_workflow_stepper <- function(steps, tab_status) {
+    # Determine status for each step
+    step_states <- vapply(steps, function(step) {
+        status <- tab_status[[step$key]]
+        if (is.null(status) || status == "disabled") {
+            return("pending")
+        } else if (status == "complete") {
+            return("completed")
+        } else {
+            return("current")
+        }
+    }, character(1))
+    
+    # Find the first non-completed step to mark as current
+    # Only one step should be "current" - the first pending/active one
+    found_current <- FALSE
+    for (i in seq_along(step_states)) {
+        if (step_states[i] == "current" && !found_current) {
+            found_current <- TRUE
+        } else if (step_states[i] == "current" && found_current) {
+            step_states[i] <- "pending"
+        } else if (step_states[i] == "pending" && !found_current) {
+            step_states[i] <- "current"
+            found_current <- TRUE
+        }
+    }
+    
+    # If no current step found (all complete), leave as is
+    # If no steps are pending/current, all are complete
+    
+    # Build stepper elements
+    step_elements <- lapply(seq_along(steps), function(i) {
+        step <- steps[[i]]
+        state <- step_states[i]
+        
+        # Determine step class based on state
+        step_class <- paste0("stepper-step step-", state)
+        circle_class <- paste0("stepper-circle ", state)
+        
+        # Circle content: checkmark for completed, icon for current/pending
+        circle_content <- if (state == "completed") {
+            shiny::icon("check")
+        } else {
+            shiny::icon(step$icon)
+        }
+        
+        shiny::tags$div(
+            class = step_class
+            , shiny::tags$div(
+                class = circle_class
+                , circle_content
+            )
+            , shiny::tags$div(
+                class = "stepper-label"
+                , step$name
+            )
+        )
+    })
+    
+    # Wrap in container
+    shiny::tags$div(
+        class = "workflow-stepper"
+        , step_elements
+    )
+}
+
 #' @title Run an applet
 #' @description Launch a standalone Shiny applet from R Markdown workflows.
 #' Currently supports the design matrix builder applet.

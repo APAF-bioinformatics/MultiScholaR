@@ -121,33 +121,48 @@ createMetaboliteAssayData <- function(
 #'
 #' @param assay_data A tibble/data.frame representing one metabolomics assay,
 #'                   with metabolite annotations and sample intensity columns.
-#' @param sample_id_col The name of the column in the design matrix that contains
-#'                      the sample identifiers (which match column names in assay_data).
-#'                      ***Note: This argument is currently unused but kept for consistency.
-#'                      The function infers sample columns based on numeric type.***
+#' @param sample_columns Optional character vector of explicit sample column names.
+#'                       When provided, these columns are used directly instead of
+#'                       guessing based on numeric type. This is the preferred method
+#'                       as MS-DIAL data contains many numeric annotation columns
+#'                       (scores, m/z, RT) that are NOT sample data.
 #'
 #' @return A list containing:
-#'         - `quant_data`: A data frame with only the quantitative (numeric) columns.
+#'         - `quant_data`: A data frame with only the quantitative (sample) columns.
 #'         - `sample_names`: A character vector of the sample column names.
-#'         - `annotation_data`: A data frame with the non-numeric annotation columns.
+#'         - `annotation_data`: A data frame with the non-sample annotation columns.
 #'
 #' @importFrom dplyr select where
 #' @keywords internal
 #' @noRd
 #' @export 
-getMetaboliteQuantData <- function(assay_data) {
-    # Identify quantitative (numeric) columns - assumes sample columns are numeric
-    quant_cols <- sapply(assay_data, is.numeric)
-    quant_data <- assay_data[, quant_cols, drop = FALSE]
-    sample_names <- colnames(quant_data)
+getMetaboliteQuantData <- function(assay_data, sample_columns = NULL) {
+    if (!is.null(sample_columns) && length(sample_columns) > 0) {
+        # Use explicit sample columns (preferred - avoids including numeric annotation cols)
+        valid_cols <- intersect(sample_columns, colnames(assay_data))
+        if (length(valid_cols) == 0) {
+            warning("None of the provided sample_columns exist in assay_data. Falling back to numeric detection.")
+            quant_cols <- sapply(assay_data, is.numeric)
+            quant_data <- assay_data[, quant_cols, drop = FALSE]
+            sample_names <- colnames(quant_data)
+        } else {
+            quant_data <- assay_data[, valid_cols, drop = FALSE]
+            sample_names <- valid_cols
+        }
+    } else {
+        # Fallback: guess by numeric type (unreliable for MS-DIAL data with numeric scores)
+        quant_cols <- sapply(assay_data, is.numeric)
+        quant_data <- assay_data[, quant_cols, drop = FALSE]
+        sample_names <- colnames(quant_data)
+    }
 
-    # Identify annotation (non-numeric) columns
-    annotation_data <- assay_data[, !quant_cols, drop = FALSE]
+    # Identify annotation columns (everything NOT in sample_names)
+    annotation_data <- assay_data[, setdiff(colnames(assay_data), sample_names), drop = FALSE]
 
     return(list(
-        quant_data = as.data.frame(quant_data), # Convert tibble to df if needed downstream
-        sample_names = sample_names,
-        annotation_data = as.data.frame(annotation_data)
+        quant_data = as.data.frame(quant_data)
+        , sample_names = sample_names
+        , annotation_data = as.data.frame(annotation_data)
     ))
 }
 

@@ -76,17 +76,17 @@ mod_metab_norm_ui <- function(id) {
                             condition = "input.apply_itsd == true"
                             , ns = ns
                             , shiny::selectInput(
-                                ns("itsd_method")
-                                , "ITSD Method:"
+                                ns("itsd_aggregation")
+                                , "ITSD Aggregation:"
                                 , choices = c(
-                                    "Median of IS" = "median"
-                                    , "Mean of IS" = "mean"
-                                    , "Single IS" = "single"
+                                    "Median (recommended)" = "median"
+                                    , "Mean" = "mean"
+                                    , "Sum" = "sum"
                                 )
                                 , selected = "median"
                                 , width = "100%"
                             )
-                            , shiny::helpText("See ITSD Selection tab to choose standards per assay")
+                            , shiny::helpText("Method to combine multiple internal standards per sample. Select standards in ITSD Selection tab.")
                         )
 
                         # --- Log2 Transform ---
@@ -329,43 +329,251 @@ mod_metab_norm_ui <- function(id) {
                         )
 
                         # --------------------------------------------------------
-                        # Tab 3: PCA (per-assay 2-row × 3-column grid)
+                        # Tab 3: PCA (STATIC 2-row × 3-column grid)
                         # --------------------------------------------------------
                         , shiny::tabPanel(
                             "PCA"
                             , icon = shiny::icon("project-diagram")
                             , shiny::br()
-                            , shiny::uiOutput(ns("pca_plots_ui"))
+                            # --- Row 1: Assay 1 ---
+                            , shiny::fluidRow(
+                                shiny::column(12
+                                    , shiny::h5(shiny::textOutput(ns("assay1_label_pca")), style = "margin-bottom: 5px;")
+                                )
+                            )
+                            , shiny::fluidRow(
+                                shiny::column(4
+                                    , shiny::tags$small("Post-Filtering", style = "display: block; text-align: center;")
+                                    , shinyjqui::jqui_resizable(
+                                        shiny::imageOutput(ns("pca_post_filter_assay1"), height = "300px")
+                                    )
+                                )
+                                , shiny::column(4
+                                    , shiny::tags$small("Post-Normalization", style = "display: block; text-align: center;")
+                                    , shinyjqui::jqui_resizable(
+                                        shiny::imageOutput(ns("pca_post_norm_assay1"), height = "300px")
+                                    )
+                                )
+                                , shiny::column(4
+                                    , shiny::tags$small("RUV-Corrected", style = "display: block; text-align: center;")
+                                    , shinyjqui::jqui_resizable(
+                                        shiny::imageOutput(ns("pca_ruv_corrected_assay1"), height = "300px")
+                                    )
+                                )
+                            )
+                            , shiny::hr()
+                            # --- Row 2: Assay 2 ---
+                            , shiny::fluidRow(
+                                shiny::column(12
+                                    , shiny::h5(shiny::textOutput(ns("assay2_label_pca")), style = "margin-bottom: 5px;")
+                                )
+                            )
+                            , shiny::fluidRow(
+                                shiny::column(4
+                                    , shiny::tags$small("Post-Filtering", style = "display: block; text-align: center;")
+                                    , shinyjqui::jqui_resizable(
+                                        shiny::imageOutput(ns("pca_post_filter_assay2"), height = "300px")
+                                    )
+                                )
+                                , shiny::column(4
+                                    , shiny::tags$small("Post-Normalization", style = "display: block; text-align: center;")
+                                    , shinyjqui::jqui_resizable(
+                                        shiny::imageOutput(ns("pca_post_norm_assay2"), height = "300px")
+                                    )
+                                )
+                                , shiny::column(4
+                                    , shiny::tags$small("RUV-Corrected", style = "display: block; text-align: center;")
+                                    , shinyjqui::jqui_resizable(
+                                        shiny::imageOutput(ns("pca_ruv_corrected_assay2"), height = "300px")
+                                    )
+                                )
+                            )
                         )
 
                         # --------------------------------------------------------
-                        # Tab 4: Density (per-assay 2-row × 3-column grid)
+                        # Tab 4: Density (STATIC 2-row × 3-column grid)
                         # --------------------------------------------------------
                         , shiny::tabPanel(
                             "Density"
                             , icon = shiny::icon("chart-area")
                             , shiny::br()
-                            , shiny::uiOutput(ns("density_plots_ui"))
+                            # --- Row 1: Assay 1 ---
+                            , shiny::fluidRow(
+                                shiny::column(12
+                                    , shiny::h5(shiny::textOutput(ns("assay1_label_density")), style = "margin-bottom: 5px;")
+                                )
+                            )
+                            , shiny::fluidRow(
+                                shiny::column(4
+                                    , shiny::tags$small("Post-Filtering", style = "display: block; text-align: center;")
+                                    , shinyjqui::jqui_resizable(
+                                        shiny::imageOutput(ns("density_post_filter_assay1"), height = "300px")
+                                    )
+                                )
+                                , shiny::column(4
+                                    , shiny::tags$small("Post-Normalization", style = "display: block; text-align: center;")
+                                    , shinyjqui::jqui_resizable(
+                                        shiny::imageOutput(ns("density_post_norm_assay1"), height = "300px")
+                                    )
+                                )
+                                , shiny::column(4
+                                    , shiny::tags$small("RUV-Corrected", style = "display: block; text-align: center;")
+                                    , shinyjqui::jqui_resizable(
+                                        shiny::imageOutput(ns("density_ruv_corrected_assay1"), height = "300px")
+                                    )
+                                )
+                            )
+                            , shiny::hr()
+                            # --- Row 2: Assay 2 ---
+                            , shiny::fluidRow(
+                                shiny::column(12
+                                    , shiny::h5(shiny::textOutput(ns("assay2_label_density")), style = "margin-bottom: 5px;")
+                                )
+                            )
+                            , shiny::fluidRow(
+                                shiny::column(4
+                                    , shiny::tags$small("Post-Filtering", style = "display: block; text-align: center;")
+                                    , shinyjqui::jqui_resizable(
+                                        shiny::imageOutput(ns("density_post_filter_assay2"), height = "300px")
+                                    )
+                                )
+                                , shiny::column(4
+                                    , shiny::tags$small("Post-Normalization", style = "display: block; text-align: center;")
+                                    , shinyjqui::jqui_resizable(
+                                        shiny::imageOutput(ns("density_post_norm_assay2"), height = "300px")
+                                    )
+                                )
+                                , shiny::column(4
+                                    , shiny::tags$small("RUV-Corrected", style = "display: block; text-align: center;")
+                                    , shinyjqui::jqui_resizable(
+                                        shiny::imageOutput(ns("density_ruv_corrected_assay2"), height = "300px")
+                                    )
+                                )
+                            )
                         )
 
                         # --------------------------------------------------------
-                        # Tab 5: RLE (per-assay 2-row × 3-column grid)
+                        # Tab 5: RLE (STATIC 2-row × 3-column grid)
                         # --------------------------------------------------------
                         , shiny::tabPanel(
                             "RLE"
                             , icon = shiny::icon("chart-bar")
                             , shiny::br()
-                            , shiny::uiOutput(ns("rle_plots_ui"))
+                            # --- Row 1: Assay 1 ---
+                            , shiny::fluidRow(
+                                shiny::column(12
+                                    , shiny::h5(shiny::textOutput(ns("assay1_label_rle")), style = "margin-bottom: 5px;")
+                                )
+                            )
+                            , shiny::fluidRow(
+                                shiny::column(4
+                                    , shiny::tags$small("Post-Filtering", style = "display: block; text-align: center;")
+                                    , shinyjqui::jqui_resizable(
+                                        shiny::imageOutput(ns("rle_post_filter_assay1"), height = "300px")
+                                    )
+                                )
+                                , shiny::column(4
+                                    , shiny::tags$small("Post-Normalization", style = "display: block; text-align: center;")
+                                    , shinyjqui::jqui_resizable(
+                                        shiny::imageOutput(ns("rle_post_norm_assay1"), height = "300px")
+                                    )
+                                )
+                                , shiny::column(4
+                                    , shiny::tags$small("RUV-Corrected", style = "display: block; text-align: center;")
+                                    , shinyjqui::jqui_resizable(
+                                        shiny::imageOutput(ns("rle_ruv_corrected_assay1"), height = "300px")
+                                    )
+                                )
+                            )
+                            , shiny::hr()
+                            # --- Row 2: Assay 2 ---
+                            , shiny::fluidRow(
+                                shiny::column(12
+                                    , shiny::h5(shiny::textOutput(ns("assay2_label_rle")), style = "margin-bottom: 5px;")
+                                )
+                            )
+                            , shiny::fluidRow(
+                                shiny::column(4
+                                    , shiny::tags$small("Post-Filtering", style = "display: block; text-align: center;")
+                                    , shinyjqui::jqui_resizable(
+                                        shiny::imageOutput(ns("rle_post_filter_assay2"), height = "300px")
+                                    )
+                                )
+                                , shiny::column(4
+                                    , shiny::tags$small("Post-Normalization", style = "display: block; text-align: center;")
+                                    , shinyjqui::jqui_resizable(
+                                        shiny::imageOutput(ns("rle_post_norm_assay2"), height = "300px")
+                                    )
+                                )
+                                , shiny::column(4
+                                    , shiny::tags$small("RUV-Corrected", style = "display: block; text-align: center;")
+                                    , shinyjqui::jqui_resizable(
+                                        shiny::imageOutput(ns("rle_ruv_corrected_assay2"), height = "300px")
+                                    )
+                                )
+                            )
                         )
 
                         # --------------------------------------------------------
-                        # Tab 6: Correlation Heatmap (per-assay 2-row × 3-column grid)
+                        # Tab 6: Correlation Heatmap (STATIC 2-row × 3-column grid)
                         # --------------------------------------------------------
                         , shiny::tabPanel(
                             "Correlation"
                             , icon = shiny::icon("th")
                             , shiny::br()
-                            , shiny::uiOutput(ns("correlation_plots_ui"))
+                            # --- Row 1: Assay 1 ---
+                            , shiny::fluidRow(
+                                shiny::column(12
+                                    , shiny::h5(shiny::textOutput(ns("assay1_label_correlation")), style = "margin-bottom: 5px;")
+                                )
+                            )
+                            , shiny::fluidRow(
+                                shiny::column(4
+                                    , shiny::tags$small("Post-Filtering", style = "display: block; text-align: center;")
+                                    , shinyjqui::jqui_resizable(
+                                        shiny::imageOutput(ns("correlation_post_filter_assay1"), height = "300px")
+                                    )
+                                )
+                                , shiny::column(4
+                                    , shiny::tags$small("Post-Normalization", style = "display: block; text-align: center;")
+                                    , shinyjqui::jqui_resizable(
+                                        shiny::imageOutput(ns("correlation_post_norm_assay1"), height = "300px")
+                                    )
+                                )
+                                , shiny::column(4
+                                    , shiny::tags$small("RUV-Corrected", style = "display: block; text-align: center;")
+                                    , shinyjqui::jqui_resizable(
+                                        shiny::imageOutput(ns("correlation_ruv_corrected_assay1"), height = "300px")
+                                    )
+                                )
+                            )
+                            , shiny::hr()
+                            # --- Row 2: Assay 2 ---
+                            , shiny::fluidRow(
+                                shiny::column(12
+                                    , shiny::h5(shiny::textOutput(ns("assay2_label_correlation")), style = "margin-bottom: 5px;")
+                                )
+                            )
+                            , shiny::fluidRow(
+                                shiny::column(4
+                                    , shiny::tags$small("Post-Filtering", style = "display: block; text-align: center;")
+                                    , shinyjqui::jqui_resizable(
+                                        shiny::imageOutput(ns("correlation_post_filter_assay2"), height = "300px")
+                                    )
+                                )
+                                , shiny::column(4
+                                    , shiny::tags$small("Post-Normalization", style = "display: block; text-align: center;")
+                                    , shinyjqui::jqui_resizable(
+                                        shiny::imageOutput(ns("correlation_post_norm_assay2"), height = "300px")
+                                    )
+                                )
+                                , shiny::column(4
+                                    , shiny::tags$small("RUV-Corrected", style = "display: block; text-align: center;")
+                                    , shinyjqui::jqui_resizable(
+                                        shiny::imageOutput(ns("correlation_ruv_corrected_assay2"), height = "300px")
+                                    )
+                                )
+                            )
                         )
 
                         # --------------------------------------------------------
@@ -460,7 +668,7 @@ mod_metab_norm_ui <- function(id) {
 #' @importFrom logger log_info log_error log_warn
 #' @importFrom purrr imap map walk set_names
 #' @importFrom DT renderDataTable datatable formatStyle styleEqual
-mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label) {
+mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label, selected_tab = NULL) {
     shiny::moduleServer(id, function(input, output, session) {
         ns <- session$ns
 
@@ -534,68 +742,91 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
             )
         }
 
-        #' Render QC image from disk (memory-efficient)
-        render_qc_image <- function(filename, alt_text = "QC Plot") {
+        #' Helper function to generate pre-normalization QC plots
+        generatePreNormalizationQc <- function() {
+            logger::log_info("=== GENERATING PRE-NORMALIZATION QC PLOTS ===")
+            
+            # Get current S4 object
+            shiny::req(workflow_data$state_manager)
+            current_s4 <- workflow_data$state_manager$getState()
+            
+            if (is.null(current_s4)) {
+                logger::log_warn("No S4 object available for QC plot generation")
+                return()
+            }
+            
+            # Ensure assay names are populated for renderImage functions
+            if (inherits(current_s4, "MetaboliteAssayData")) {
+                detected_assays <- names(current_s4@metabolite_data)
+                if (length(detected_assays) > 0 && is.null(norm_data$assay_names)) {
+                    norm_data$assay_names <- detected_assays
+                    logger::log_info(paste("Set assay names:", paste(detected_assays, collapse = ", ")))
+                }
+            }
+            
+            # Get aesthetics
+            aesthetics <- getPlotAesthetics()
+            
+            # Generate plots
+            tryCatch({
+                generateMetabQcPlots(
+                    theObject = current_s4
+                    , experiment_paths = experiment_paths
+                    , stage = "post_filter"
+                    , grouping_variable = aesthetics$color_var
+                    , shape_variable = aesthetics$shape_var
+                )
+                
+                # Trigger plot refresh
+                norm_data$plot_refresh_trigger <- norm_data$plot_refresh_trigger + 1
+                norm_data$pre_norm_qc_generated <- TRUE
+                logger::log_info("Pre-normalization QC plots generated successfully")
+                
+            }, error = function(e) {
+                logger::log_error(paste("Error generating pre-normalization QC:", e$message))
+                add_log(paste("Error generating Pre-QC:", e$message))
+            })
+        }
+
+        #' Render QC image from disk for a specific assay slot
+        #' Uses reactive filename resolution based on assay position (1 or 2)
+        #' @param assay_slot Integer (1 or 2) indicating which assay row
+        #' @param plot_type Character: "pca", "density", "rle", or "correlation"
+        #' @param stage_prefix Character: "pre_norm", "post_norm", or "ruv_corrected"
+        render_qc_image_for_assay <- function(assay_slot, plot_type, stage_prefix) {
             shiny::renderImage({
+                # Take dependency on refresh trigger AND assay names
                 norm_data$plot_refresh_trigger
-                img_path <- file.path(experiment_paths$metabolite_qc_dir, filename)
+                assay_names <- norm_data$assay_names
+                
+                # Resolve actual assay name from slot
+                if (is.null(assay_names) || length(assay_names) < assay_slot) {
+                    return(list(src = "", alt = "Assay not detected yet"))
+                }
+                
+                assay_name <- assay_names[[assay_slot]]
+                safe_name <- gsub("[^A-Za-z0-9]", "_", tolower(assay_name))
+                filename <- paste0(safe_name, "_", stage_prefix, "_", plot_type, ".png")
+                
+                qc_dir <- experiment_paths$metabolite_qc_dir
+                if (is.null(qc_dir)) {
+                    return(list(src = "", alt = "QC directory not configured"))
+                }
+                
+                img_path <- file.path(qc_dir, filename)
+                
                 if (file.exists(img_path)) {
                     list(
                         src = img_path
                         , contentType = "image/png"
                         , width = "100%"
                         , height = "auto"
-                        , alt = alt_text
+                        , alt = paste(plot_type, "-", assay_name)
                     )
                 } else {
-                    list(
-                        src = ""
-                        , alt = "Plot not generated yet"
-                    )
+                    list(src = "", alt = paste("Plot not generated yet:", filename))
                 }
             }, deleteFile = FALSE)
-        }
-
-        #' Generate 3-column QC row for a single assay
-        generate_qc_row_ui <- function(assay_name, plot_type, ns) {
-            safe_name <- gsub("[^A-Za-z0-9]", "_", tolower(assay_name))
-            shiny::tagList(
-                shiny::fluidRow(
-                    shiny::column(12
-                        , shiny::h5(assay_name, style = "margin-bottom: 5px;")
-                    )
-                )
-                , shiny::fluidRow(
-                    shiny::column(4
-                        , shiny::tags$small("Post-Filtering", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(
-                                ns(paste0(plot_type, "_post_filter_", safe_name))
-                                , height = "300px"
-                            )
-                        )
-                    )
-                    , shiny::column(4
-                        , shiny::tags$small("Post-Normalization", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(
-                                ns(paste0(plot_type, "_post_norm_", safe_name))
-                                , height = "300px"
-                            )
-                        )
-                    )
-                    , shiny::column(4
-                        , shiny::tags$small("RUV-Corrected", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(
-                                ns(paste0(plot_type, "_ruv_corrected_", safe_name))
-                                , height = "300px"
-                            )
-                        )
-                    )
-                )
-                , shiny::hr()
-            )
         }
 
         # ================================================================
@@ -606,12 +837,11 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
 
             tryCatch({
                 current_s4 <- workflow_data$state_manager$getState()
+                
                 if (inherits(current_s4, "MetaboliteAssayData")) {
-                    norm_data$assay_names <- names(current_s4@metabolite_data)
-                    logger::log_info(paste(
-                        "Detected assays:"
-                        , paste(norm_data$assay_names, collapse = ", ")
-                    ))
+                    detected_assays <- names(current_s4@metabolite_data)
+                    norm_data$assay_names <- detected_assays
+                    logger::log_info(paste("Detected assays:", paste(detected_assays, collapse = ", ")))
 
                     # Initialize ITSD selections for each assay
                     for (assay_name in norm_data$assay_names) {
@@ -624,6 +854,37 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
                 logger::log_warn(paste("Could not detect assay names:", e$message))
             })
         })
+
+        # ================================================================
+        # Auto-trigger Pre-Normalization QC when tab is selected
+        # ================================================================
+        if (!is.null(selected_tab)) {
+            shiny::observeEvent(selected_tab(), {
+                # Only trigger if normalization tab is selected ("norm" in mod_metabolomics.R)
+                if (!is.null(selected_tab()) && selected_tab() == "norm") {
+                    logger::log_info("Normalization tab selected - checking if pre-QC needed")
+                    
+                    # Only trigger if we haven't run pre-norm QC yet and have valid data
+                    if (!norm_data$pre_norm_qc_generated) {
+                        shiny::req(workflow_data$state_manager)
+                        current_s4 <- tryCatch(workflow_data$state_manager$getState(), error = function(e) NULL)
+                        
+                        if (!is.null(current_s4) && inherits(current_s4, "MetaboliteAssayData")) {
+                            logger::log_info("Auto-triggering pre-normalization QC plots")
+                            
+                            shiny::withProgress(
+                                message = "Generating Pre-Normalization QC..."
+                                , value = 0.5
+                                , {
+                                    generatePreNormalizationQc()
+                                }
+                            )
+                            norm_data$pre_norm_qc_generated <- TRUE
+                        }
+                    }
+                }
+            }, ignoreInit = FALSE)
+        }
 
         # ================================================================
         # Update Plot Aesthetic Choices from Design Matrix
@@ -727,56 +988,72 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
         })
 
         # ================================================================
-        # Dynamic UI: PCA Plots (per-assay 3-column grid)
+        # STATIC Output Bindings: QC Plot Images (24 total)
+        # Bound at server startup - no race condition
         # ================================================================
-        output$pca_plots_ui <- shiny::renderUI({
-            shiny::req(norm_data$assay_names)
-
-            shiny::tagList(
-                purrr::map(norm_data$assay_names, \(assay_name) {
-                    generate_qc_row_ui(assay_name, "pca", ns)
-                })
-            )
-        })
-
+        
+        # --- PCA outputs (6) ---
+        output$pca_post_filter_assay1 <- render_qc_image_for_assay(1, "pca", "pre_norm")
+        output$pca_post_norm_assay1 <- render_qc_image_for_assay(1, "pca", "post_norm")
+        output$pca_ruv_corrected_assay1 <- render_qc_image_for_assay(1, "pca", "ruv_corrected")
+        output$pca_post_filter_assay2 <- render_qc_image_for_assay(2, "pca", "pre_norm")
+        output$pca_post_norm_assay2 <- render_qc_image_for_assay(2, "pca", "post_norm")
+        output$pca_ruv_corrected_assay2 <- render_qc_image_for_assay(2, "pca", "ruv_corrected")
+        
+        # --- Density outputs (6) ---
+        output$density_post_filter_assay1 <- render_qc_image_for_assay(1, "density", "pre_norm")
+        output$density_post_norm_assay1 <- render_qc_image_for_assay(1, "density", "post_norm")
+        output$density_ruv_corrected_assay1 <- render_qc_image_for_assay(1, "density", "ruv_corrected")
+        output$density_post_filter_assay2 <- render_qc_image_for_assay(2, "density", "pre_norm")
+        output$density_post_norm_assay2 <- render_qc_image_for_assay(2, "density", "post_norm")
+        output$density_ruv_corrected_assay2 <- render_qc_image_for_assay(2, "density", "ruv_corrected")
+        
+        # --- RLE outputs (6) ---
+        output$rle_post_filter_assay1 <- render_qc_image_for_assay(1, "rle", "pre_norm")
+        output$rle_post_norm_assay1 <- render_qc_image_for_assay(1, "rle", "post_norm")
+        output$rle_ruv_corrected_assay1 <- render_qc_image_for_assay(1, "rle", "ruv_corrected")
+        output$rle_post_filter_assay2 <- render_qc_image_for_assay(2, "rle", "pre_norm")
+        output$rle_post_norm_assay2 <- render_qc_image_for_assay(2, "rle", "post_norm")
+        output$rle_ruv_corrected_assay2 <- render_qc_image_for_assay(2, "rle", "ruv_corrected")
+        
+        # --- Correlation outputs (6) ---
+        output$correlation_post_filter_assay1 <- render_qc_image_for_assay(1, "correlation", "pre_norm")
+        output$correlation_post_norm_assay1 <- render_qc_image_for_assay(1, "correlation", "post_norm")
+        output$correlation_ruv_corrected_assay1 <- render_qc_image_for_assay(1, "correlation", "ruv_corrected")
+        output$correlation_post_filter_assay2 <- render_qc_image_for_assay(2, "correlation", "pre_norm")
+        output$correlation_post_norm_assay2 <- render_qc_image_for_assay(2, "correlation", "post_norm")
+        output$correlation_ruv_corrected_assay2 <- render_qc_image_for_assay(2, "correlation", "ruv_corrected")
+        
         # ================================================================
-        # Dynamic UI: Density Plots (per-assay 3-column grid)
+        # STATIC Output Bindings: Assay Labels (8 total)
         # ================================================================
-        output$density_plots_ui <- shiny::renderUI({
-            shiny::req(norm_data$assay_names)
-
-            shiny::tagList(
-                purrr::map(norm_data$assay_names, \(assay_name) {
-                    generate_qc_row_ui(assay_name, "density", ns)
-                })
-            )
-        })
-
-        # ================================================================
-        # Dynamic UI: RLE Plots (per-assay 3-column grid)
-        # ================================================================
-        output$rle_plots_ui <- shiny::renderUI({
-            shiny::req(norm_data$assay_names)
-
-            shiny::tagList(
-                purrr::map(norm_data$assay_names, \(assay_name) {
-                    generate_qc_row_ui(assay_name, "rle", ns)
-                })
-            )
-        })
-
-        # ================================================================
-        # Dynamic UI: Correlation Plots (per-assay 3-column grid)
-        # ================================================================
-        output$correlation_plots_ui <- shiny::renderUI({
-            shiny::req(norm_data$assay_names)
-
-            shiny::tagList(
-                purrr::map(norm_data$assay_names, \(assay_name) {
-                    generate_qc_row_ui(assay_name, "correlation", ns)
-                })
-            )
-        })
+        
+        # Helper for assay label rendering
+        render_assay_label <- function(assay_slot) {
+            shiny::renderText({
+                if (!is.null(norm_data$assay_names) && length(norm_data$assay_names) >= assay_slot) {
+                    paste("Assay:", norm_data$assay_names[[assay_slot]])
+                } else {
+                    paste0("Assay ", assay_slot, ": (detecting...)")
+                }
+            })
+        }
+        
+        # PCA tab labels
+        output$assay1_label_pca <- render_assay_label(1)
+        output$assay2_label_pca <- render_assay_label(2)
+        
+        # Density tab labels
+        output$assay1_label_density <- render_assay_label(1)
+        output$assay2_label_density <- render_assay_label(2)
+        
+        # RLE tab labels
+        output$assay1_label_rle <- render_assay_label(1)
+        output$assay2_label_rle <- render_assay_label(2)
+        
+        # Correlation tab labels
+        output$assay1_label_correlation <- render_assay_label(1)
+        output$assay2_label_correlation <- render_assay_label(2)
 
         # ================================================================
         # Render ITSD Selection Tables (per-assay)
@@ -801,11 +1078,13 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
                     assay_data <- current_s4@metabolite_data[[assay_name]]
                     if (is.null(assay_data)) return(NULL)
 
-                    metabolite_id_col <- current_s4@metabolite_id
+                    metabolite_id_col <- current_s4@metabolite_id_column
+                    annotation_col <- current_s4@annotation_id_column
 
                     selection_table <- buildItsdSelectionTable(
                         assay_data = assay_data
                         , metabolite_id_col = metabolite_id_col
+                        , annotation_cols = annotation_col
                     )
 
                     # Pre-select candidates
@@ -888,7 +1167,7 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
                         # --- Step 1: ITSD Normalization ---
                         shiny::incProgress(1/total_steps, detail = "Applying ITSD normalization...")
                         if (isTRUE(input$apply_itsd)) {
-                            add_log(paste("Applying ITSD normalization (method:", input$itsd_method, ")"))
+                            add_log(paste("Applying ITSD normalization (aggregation:", input$itsd_aggregation, ")"))
 
                             # Convert DT row selections to feature IDs per assay
                             itsd_feature_ids <- NULL
@@ -896,6 +1175,7 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
 
                             if (has_manual_selections) {
                                 metabolite_id_col <- current_s4@metabolite_id_column
+                                annotation_col <- current_s4@annotation_id_column
                                 itsd_feature_ids <- purrr::imap(norm_data$itsd_selections, \(row_indices, assay_name) {
                                     if (is.null(row_indices) || length(row_indices) == 0) {
                                         return(NULL)  # No manual selection for this assay
@@ -907,6 +1187,7 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
                                     selection_table <- buildItsdSelectionTable(
                                         assay_data = assay_data
                                         , metabolite_id_col = metabolite_id_col
+                                        , annotation_cols = annotation_col
                                     )
 
                                     # Extract feature IDs for selected rows
@@ -921,7 +1202,8 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
 
                             current_s4 <- normaliseUntransformedData(
                                 theObject = current_s4
-                                , method = input$itsd_method
+                                , method = "ITSD"
+                                , itsd_aggregation = input$itsd_aggregation
                                 , itsd_feature_ids = itsd_feature_ids
                             )
                             norm_data$post_itsd_obj <- current_s4
@@ -930,7 +1212,7 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
                                 state_name = "metab_itsd_norm"
                                 , s4_data_object = current_s4
                                 , config_object = workflow_data$config_list
-                                , description = paste("ITSD normalization (method:", input$itsd_method, ")")
+                                , description = paste("ITSD normalization (aggregation:", input$itsd_aggregation, ")")
                             )
                             add_log("ITSD normalization complete")
                         } else {
@@ -962,7 +1244,7 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
 
                             current_s4 <- normaliseBetweenSamples(
                                 theObject = current_s4
-                                , method = input$norm_method
+                                , normalisation_method = input$norm_method
                             )
                         }
                         norm_data$post_norm_obj <- current_s4
@@ -1021,7 +1303,8 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
                             # Apply RUV-III-C with per-assay parameters
                             current_s4 <- ruvIII_C_Varying(
                                 theObject = current_s4
-                                , k = best_k_list
+                                , ruv_grouping_variable = input$ruv_grouping_variable
+                                , ruv_number_k = best_k_list
                                 , ctrl = ctrl_list
                             )
                             norm_data$ruv_corrected_obj <- current_s4
@@ -1158,37 +1441,14 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
         })
 
         # ================================================================
-        # Render QC Image Outputs (per-assay, per-stage)
-        # ================================================================
-        shiny::observe({
-            shiny::req(norm_data$assay_names)
-
-            plot_types <- c("pca", "density", "rle", "correlation")
-            stages <- c("post_filter" = "pre_norm", "post_norm" = "post_norm", "ruv_corrected" = "ruv_corrected")
-
-            purrr::walk(norm_data$assay_names, \(assay_name) {
-                safe_name <- gsub("[^A-Za-z0-9]", "_", tolower(assay_name))
-
-                purrr::walk(plot_types, \(plot_type) {
-                    purrr::walk(names(stages), \(stage_key) {
-                        stage_prefix <- stages[[stage_key]]
-                        output_id <- paste0(plot_type, "_", stage_key, "_", safe_name)
-                        filename <- paste0(safe_name, "_", stage_prefix, "_", plot_type, ".png")
-
-                        output[[output_id]] <- render_qc_image(filename, paste(plot_type, "-", assay_name))
-                    })
-                })
-            })
-        })
-
-        # ================================================================
         # Correlation Filtering
         # ================================================================
         shiny::observeEvent(input$apply_correlation_filter, {
             shiny::req(workflow_data$state_manager)
             shiny::req(norm_data$ruv_complete || norm_data$normalization_complete)
 
-            add_log(paste("Applying correlation filter (threshold:", input$min_pearson_correlation_threshold, ")"))
+            threshold <- input$min_pearson_correlation_threshold
+            add_log(paste("Applying correlation filter (threshold:", threshold, ")"))
             shiny::showNotification("Applying correlation filter...", id = "corr_working", duration = NULL)
 
             tryCatch({
@@ -1200,6 +1460,7 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
                 shiny::req(current_s4)
 
                 # Calculate correlations per assay
+                logger::log_info("Calculating Pearson correlations per sample pair...")
                 corr_results <- pearsonCorForSamplePairs(
                     theObject = current_s4
                     , correlation_group = input$ruv_grouping_variable
@@ -1207,15 +1468,21 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
 
                 norm_data$correlation_results <- corr_results
 
-                # TODO: Apply filtering based on threshold
-                norm_data$correlation_filtered_obj <- current_s4
+                # Apply filtering using the new S4 method
+                filtered_s4 <- filterSamplesByMetaboliteCorrelationThreshold(
+                    theObject = current_s4
+                    , pearson_correlation_per_pair = corr_results
+                    , min_pearson_correlation_threshold = threshold
+                )
+
+                norm_data$correlation_filtered_obj <- filtered_s4
                 norm_data$correlation_filtering_complete <- TRUE
 
                 workflow_data$state_manager$saveState(
                     state_name = "metab_correlation_filtered"
-                    , s4_data_object = current_s4
+                    , s4_data_object = filtered_s4
                     , config_object = workflow_data$config_list
-                    , description = paste("Correlation filtering (threshold:", input$min_pearson_correlation_threshold, ")")
+                    , description = paste("Correlation filtering (threshold:", threshold, ")")
                 )
 
                 workflow_data$tab_status$normalization <- "complete"
@@ -1268,8 +1535,50 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
                 return("Apply correlation filter to see results...")
             }
 
-            # TODO: Generate summary from correlation_results
-            "Correlation filtering results will appear here..."
+            # Generate summary from correlation_results
+            corr_results <- norm_data$correlation_results
+            filtered_obj <- norm_data$correlation_filtered_obj
+            original_obj <- if (!is.null(norm_data$ruv_corrected_obj)) {
+                norm_data$ruv_corrected_obj
+            } else {
+                norm_data$post_norm_obj
+            }
+            
+            if (is.null(corr_results) || length(corr_results) == 0) {
+                return("No correlation results available.")
+            }
+            
+            # Build summary text
+            summary_lines <- c("=== Correlation Filtering Summary ===\n")
+            
+            for (assay_name in names(corr_results)) {
+                assay_corr <- corr_results[[assay_name]]
+                if (!is.null(assay_corr) && nrow(assay_corr) > 0) {
+                    n_pairs <- nrow(assay_corr)
+                    mean_corr <- round(mean(assay_corr$pearson_correlation, na.rm = TRUE), 3)
+                    min_corr <- round(min(assay_corr$pearson_correlation, na.rm = TRUE), 3)
+                    max_corr <- round(max(assay_corr$pearson_correlation, na.rm = TRUE), 3)
+                    
+                    summary_lines <- c(summary_lines, sprintf(
+                        "\n[%s]\n  Sample pairs: %d\n  Correlation: mean=%.3f, min=%.3f, max=%.3f",
+                        assay_name, n_pairs, mean_corr, min_corr, max_corr
+                    ))
+                }
+            }
+            
+            # Add sample count comparison if objects are available
+            if (!is.null(original_obj) && !is.null(filtered_obj)) {
+                original_samples <- nrow(original_obj@design_matrix)
+                filtered_samples <- nrow(filtered_obj@design_matrix)
+                removed <- original_samples - filtered_samples
+                
+                summary_lines <- c(summary_lines, sprintf(
+                    "\n\n[Sample Filtering]\n  Original: %d samples\n  After filtering: %d samples\n  Removed: %d samples",
+                    original_samples, filtered_samples, removed
+                ))
+            }
+            
+            paste(summary_lines, collapse = "")
         })
 
         # ================================================================

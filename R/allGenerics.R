@@ -424,6 +424,12 @@ setGeneric(name = "getNegCtrlMetabAnova",
            },
            signature = c("theObject")) # Primary dispatch on object 
 
+setGeneric(name = "filterSamplesByMetaboliteCorrelationThreshold",
+           def = function(theObject, pearson_correlation_per_pair_list = NULL, min_pearson_correlation_threshold = NULL) {
+             standardGeneric("filterSamplesByMetaboliteCorrelationThreshold")
+           },
+           signature = c("theObject", "pearson_correlation_per_pair_list", "min_pearson_correlation_threshold"))
+
 ###### Metabolomics
 
 
@@ -516,3 +522,20 @@ setGeneric( name ="differentialAbundanceAnalysis"
               standardGeneric("differentialAbundanceAnalysis")
             }
             , signature=c("objectsList"))
+
+
+# --- Metabolomics Correlation Filtering ---
+
+#' @title Filter Samples by Metabolite Correlation Threshold
+#' @description Filters samples from a MetaboliteAssayData object based on 
+#'              pairwise Pearson correlation results. Samples with correlation
+#'              below the threshold are removed.
+#' @name filterSamplesByMetaboliteCorrelationThreshold
+#' @export
+setGeneric(name = "filterSamplesByMetaboliteCorrelationThreshold"
+           , def = function(theObject
+                            , pearson_correlation_per_pair = NULL
+                            , min_pearson_correlation_threshold = 0.5) {
+               standardGeneric("filterSamplesByMetaboliteCorrelationThreshold")
+           }
+           , signature = c("theObject"))

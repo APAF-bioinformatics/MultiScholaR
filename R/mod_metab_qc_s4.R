@@ -283,8 +283,6 @@ mod_metab_qc_s4_server <- function(id, workflow_data, omic_type, experiment_labe
                 )
 
                 # Update QC tracking visualization
-                logger::log_info("[DEBUG66] Starting updateMetaboliteFiltering call")
-                logger::log_info(paste("[DEBUG66] omic_type:", omic_type))
 
                 qc_plot <- tryCatch({
                     result <- updateMetaboliteFiltering(
@@ -294,24 +292,14 @@ mod_metab_qc_s4_server <- function(id, workflow_data, omic_type, experiment_labe
                         , return_grid = TRUE
                         , overwrite = TRUE
                     )
-                    logger::log_info(paste("[DEBUG66] updateMetaboliteFiltering returned:", class(result)))
-                    logger::log_info(paste("[DEBUG66] result is NULL:", is.null(result)))
                     if (!is.null(result)) {
-                        logger::log_info(paste("[DEBUG66] result inherits grob:", inherits(result, "grob")))
-                        logger::log_info(paste("[DEBUG66] result inherits gtable:", inherits(result, "gtable")))
-                        logger::log_info(paste("[DEBUG66] result inherits ggplot:", inherits(result, "ggplot")))
                     }
                     result
                 }, error = function(e) {
-                    logger::log_error(paste("[DEBUG66] ERROR in updateMetaboliteFiltering:", e$message))
-                    logger::log_error(paste("[DEBUG66] Full error:", conditionMessage(e)))
                     NULL
                 })
 
-                logger::log_info(paste("[DEBUG66] qc_plot class after tryCatch:", class(qc_plot)))
-                logger::log_info(paste("[DEBUG66] Setting filter_plot reactiveVal"))
                 filter_plot(qc_plot)
-                logger::log_info(paste("[DEBUG66] filter_plot reactiveVal set, value is NULL:", is.null(filter_plot())))
 
                 # Update tab status
                 workflow_data$tab_status$quality_control <- "complete"
@@ -364,23 +352,15 @@ mod_metab_qc_s4_server <- function(id, workflow_data, omic_type, experiment_labe
 
         # Render QC progress plot
         output$filter_plot <- shiny::renderPlot({
-            logger::log_info("[DEBUG66] renderPlot triggered")
-            logger::log_info(paste("[DEBUG66] filter_plot() is NULL:", is.null(filter_plot())))
 
             shiny::req(filter_plot())
 
-            logger::log_info(paste("[DEBUG66] filter_plot() class:", class(filter_plot())))
-            logger::log_info(paste("[DEBUG66] filter_plot() inherits grob:", inherits(filter_plot(), "grob")))
-            logger::log_info(paste("[DEBUG66] filter_plot() inherits gtable:", inherits(filter_plot(), "gtable")))
 
             if (inherits(filter_plot(), "grob") || inherits(filter_plot(), "gtable")) {
-                logger::log_info("[DEBUG66] Drawing with grid::grid.draw()")
                 grid::grid.draw(filter_plot())
             } else if (inherits(filter_plot(), "ggplot")) {
-                logger::log_info("[DEBUG66] Printing as ggplot")
                 print(filter_plot())
             } else {
-                logger::log_warn(paste("[DEBUG66] Unknown plot type:", class(filter_plot())))
             }
         })
     })

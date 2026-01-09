@@ -207,6 +207,7 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
             , experiment_paths
             , omic_type
             , experiment_label
+            , selected_tab = shiny::reactive(input$metabolomics_tabs)
         )
         
         # DE module
@@ -229,53 +230,19 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
         
         logger::log_info("Metabolomics workflow modules initialized")
         
-        # Workflow progress indicator
+        # Workflow progress indicator using shared stepper component
         output$workflow_progress <- shiny::renderUI({
+            # Define metabolomics workflow steps (6 steps)
             steps <- list(
                 list(name = "Import", key = "setup_import", icon = "file-import")
                 , list(name = "Design", key = "design_matrix", icon = "th")
                 , list(name = "QC", key = "quality_control", icon = "check-double")
                 , list(name = "Normalize", key = "normalization", icon = "balance-scale")
                 , list(name = "DE", key = "differential_analysis", icon = "chart-line")
+                , list(name = "Summary", key = "session_summary", icon = "download")
             )
             
-            step_elements <- lapply(seq_along(steps), function(i) {
-                step <- steps[[i]]
-                status <- workflow_data$tab_status[[step$key]]
-                is_complete <- !is.null(status) && status == "complete"
-                
-                bg_color <- if (is_complete) "#27ae60" else "#bdc3c7"
-                
-                shiny::tags$div(
-                    style = paste(
-                        "display: inline-block; text-align: center; margin-right: 10px;"
-                        , if (i < length(steps)) "padding-right: 20px;" else ""
-                    )
-                    , shiny::tags$div(
-                        style = sprintf(
-                            "background-color: %s; color: white; border-radius: 50%%; width: 40px; height: 40px; line-height: 40px; margin: 0 auto;"
-                            , bg_color
-                        )
-                        , shiny::icon(step$icon)
-                    )
-                    , shiny::tags$div(
-                        style = "font-size: 0.85em; margin-top: 5px;"
-                        , step$name
-                    )
-                    # Arrow between steps
-                    , if (i < length(steps)) {
-                        shiny::tags$span(
-                            style = "position: absolute; margin-left: 5px; margin-top: -20px; color: #7f8c8d;"
-                            , shiny::icon("arrow-right")
-                        )
-                    }
-                )
-            })
-            
-            shiny::tags$div(
-                style = "text-align: center; margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 5px;"
-                , step_elements
-            )
+            render_workflow_stepper(steps, workflow_data$tab_status)
         })
         
         # Return workflow_data for external access if needed
