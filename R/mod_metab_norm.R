@@ -1485,6 +1485,8 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
                     , description = paste("Correlation filtering (threshold:", threshold, ")")
                 )
 
+                # Ensure QC is marked complete when normalization completes
+                workflow_data$tab_status$quality_control <- "complete"
                 workflow_data$tab_status$normalization <- "complete"
 
                 add_log("Correlation filtering complete")
@@ -1520,6 +1522,8 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
                     , description = "Normalization complete (correlation filtering skipped)"
                 )
 
+                # Ensure QC is marked complete when normalization completes
+                workflow_data$tab_status$quality_control <- "complete"
                 workflow_data$tab_status$normalization <- "complete"
 
                 add_log("Correlation filtering skipped - ready for DE analysis")
@@ -1626,32 +1630,227 @@ mod_metab_norm_server <- function(id, workflow_data, experiment_paths, omic_type
         })
 
         # ================================================================
-        # Export Session
+        # Export Session (Comprehensive - matches proteomics pattern)
         # ================================================================
         shiny::observeEvent(input$export_session, {
+            logger::log_info("=== EXPORT NORMALIZED SESSION BUTTON CLICKED ===")
             shiny::req(workflow_data$state_manager)
 
+            # Check if normalization is complete
+            if (!norm_data$normalization_complete) {
+                shiny::showNotification(
+                    "Please complete normalization before exporting session data."
+                    , type = "warning"
+                    , duration = 5
+                )
+                return()
+            }
+
             tryCatch({
-                current_s4 <- workflow_data$state_manager$getState()
-
-                if (!is.null(current_s4)) {
-                    export_path <- file.path(
-                        experiment_paths$export_dir
-                        , paste0(experiment_label, "_normalized_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".rds")
-                    )
-
-                    if (!dir.exists(experiment_paths$export_dir)) {
-                        dir.create(experiment_paths$export_dir, recursive = TRUE)
+                # Get the source directory for saving (consistent with proteomics)
+                source_dir <- experiment_paths$source_dir
+                if (is.null(source_dir) || !dir.exists(source_dir)) {
+                    # Fallback to export_dir if source_dir not available
+                    source_dir <- experiment_paths$export_dir
+                    if (is.null(source_dir)) {
+                        stop("Could not find a valid directory to save session data.")
                     }
-
-                    saveRDS(current_s4, export_path)
-                    add_log(paste("Exported to:", export_path))
-                    shiny::showNotification(paste("Data exported to:", export_path), type = "message")
+                    if (!dir.exists(source_dir)) {
+                        dir.create(source_dir, recursive = TRUE)
+                    }
                 }
 
+                shiny::withProgress(message = "Exporting normalized session data...", value = 0, {
+
+                    # Step 1: Gather all essential data for DE analysis
+                    shiny::incProgress(0.2, detail = "Gathering data...")
+
+                    # Get current state from R6 manager
+                    current_state_name <- workflow_data$state_manager$current_state
+                    current_s4 <- workflow_data$state_manager$getState(current_state_name)
+
+                    # Calculate feature counts per assay
+                    feature_counts_per_assay <- NULL
+                    if (!is.null(current_s4) && inherits(current_s4, "MetaboliteAssayData")) {
+                        feature_counts_per_assay <- purrr::map(names(current_s4@metabolite_data), \(assay_name) {
+                            assay_data <- current_s4@metabolite_data[[assay_name]]
+                            if (!is.null(assay_data)) {
+                                n_features <- length(unique(assay_data[[current_s4@metabolite_id_column]]))
+                                n_samples <- ncol(assay_data) - length(c(current_s4@metabolite_id_column, current_s4@annotation_id_column))
+                                list(features = n_features, samples = n_samples)
+                            } else {
+                                list(features = 0, samples = 0)
+                            }
+                        }) |> purrr::set_names(names(current_s4@metabolite_data))
+                    }
+
+                    # Build comprehensive session data
+                    session_data <- list(
+                        # --- R6 State Info ---
+                        r6_current_state_name = current_state_name
+                        , current_s4_object = current_s4
+
+                        # --- Workflow artifacts ---
+                        , contrasts_tbl = workflow_data$contrasts_tbl
+                        , design_matrix = workflow_data$design_matrix
+                        , config_list = workflow_data$config_list
+
+                        # --- Metabolomics-specific ---
+                        , itsd_selections = norm_data$itsd_selections
+                        , ruv_optimization_results = norm_data$ruv_optimization_results
+                        , correlation_results = norm_data$correlation_results
+                        , assay_names = norm_data$assay_names
+
+                        # --- Export metadata ---
+                        , export_timestamp = Sys.time()
+                        , omic_type = "metabolomics"
+                        , experiment_label = experiment_label
+
+                        # --- Normalization parameters ---
+                        , normalization_method = input$norm_method
+                        , ruv_mode = input$ruv_mode
+                        , itsd_applied = input$apply_itsd
+                        , itsd_aggregation = if (isTRUE(input$apply_itsd)) input$itsd_aggregation else NA
+                        , log_offset = input$log_offset
+                        , correlation_threshold = input$min_pearson_correlation_threshold
+                        , ruv_grouping_variable = input$ruv_grouping_variable
+
+                        # --- Feature counts per assay ---
+                        , feature_counts = feature_counts_per_assay
+                        , metabolite_counts = workflow_data$metabolite_counts
+
+                        # --- QC parameters ---
+                        , qc_params = workflow_data$qc_params
+
+                        # --- Processing flags ---
+                        , normalization_complete = norm_data$normalization_complete
+                        , ruv_complete = norm_data$ruv_complete
+                        , correlation_filtering_complete = norm_data$correlation_filtering_complete
+                    )
+
+                    logger::log_info("*** EXPORT: Gathered session data successfully ***")
+                    logger::log_info(sprintf("*** EXPORT: Assays: %s ***", paste(norm_data$assay_names, collapse = ", ")))
+                    logger::log_info(sprintf("*** EXPORT: Contrasts available: %d ***", 
+                                            ifelse(is.null(session_data$contrasts_tbl), 0, nrow(session_data$contrasts_tbl))))
+
+                    # Step 2: Save to RDS file with timestamp
+                    shiny::incProgress(0.3, detail = "Saving to file...")
+
+                    timestamp_str <- format(Sys.time(), "%Y%m%d_%H%M%S")
+                    session_filename <- sprintf("metab_filtered_session_data_%s.rds", timestamp_str)
+                    session_filepath <- file.path(source_dir, session_filename)
+
+                    saveRDS(session_data, session_filepath)
+                    logger::log_info(sprintf("*** EXPORT: Session data saved to: %s ***", session_filepath))
+
+                    # Step 3: Save "latest" version for easy access
+                    shiny::incProgress(0.1, detail = "Creating latest version...")
+
+                    latest_filename <- "metab_filtered_session_data_latest.rds"
+                    latest_filepath <- file.path(source_dir, latest_filename)
+
+                    saveRDS(session_data, latest_filepath)
+                    logger::log_info(sprintf("*** EXPORT: Latest version saved to: %s ***", latest_filepath))
+
+                    # Step 4: Save individual metadata files for redundancy
+                    shiny::incProgress(0.1, detail = "Saving metadata files...")
+
+                    tryCatch({
+                        # Save RUV optimization results (per-assay)
+                        if (!is.null(session_data$ruv_optimization_results) && length(session_data$ruv_optimization_results) > 0) {
+                            ruv_file <- file.path(source_dir, "metab_ruv_optimization_results.RDS")
+                            saveRDS(session_data$ruv_optimization_results, ruv_file)
+                            logger::log_info("*** EXPORT: Saved metab_ruv_optimization_results.RDS ***")
+                        }
+
+                        # Save ITSD selections
+                        if (!is.null(session_data$itsd_selections) && length(session_data$itsd_selections) > 0) {
+                            itsd_file <- file.path(source_dir, "metab_itsd_selections.RDS")
+                            saveRDS(session_data$itsd_selections, itsd_file)
+                            logger::log_info("*** EXPORT: Saved metab_itsd_selections.RDS ***")
+                        }
+
+                        # Save QC parameters
+                        if (!is.null(session_data$qc_params)) {
+                            qc_params_file <- file.path(source_dir, "metab_qc_params.RDS")
+                            saveRDS(session_data$qc_params, qc_params_file)
+                            logger::log_info("*** EXPORT: Saved metab_qc_params.RDS ***")
+                        }
+
+                    }, error = function(e) {
+                        logger::log_warn(sprintf("*** WARNING: Some metadata files could not be saved: %s ***", e$message))
+                    })
+
+                    # Step 5: Create human-readable summary file
+                    shiny::incProgress(0.2, detail = "Creating summary...")
+
+                    # Build RUV summary per assay
+                    ruv_summary_lines <- ""
+                    if (!is.null(session_data$ruv_optimization_results)) {
+                        for (assay_name in names(session_data$ruv_optimization_results)) {
+                            result <- session_data$ruv_optimization_results[[assay_name]]
+                            if (!is.null(result) && isTRUE(result$success)) {
+                                ruv_summary_lines <- paste0(ruv_summary_lines, sprintf(
+                                    "\n  %s: k=%d, %%=%.1f, controls=%d"
+                                    , assay_name
+                                    , result$best_k
+                                    , result$best_percentage
+                                    , sum(result$control_genes_index, na.rm = TRUE)
+                                ))
+                            }
+                        }
+                    }
+                    if (ruv_summary_lines == "") ruv_summary_lines <- "\n  (RUV skipped or not applied)"
+
+                    # Build feature counts summary
+                    feature_summary_lines <- ""
+                    if (!is.null(feature_counts_per_assay)) {
+                        for (assay_name in names(feature_counts_per_assay)) {
+                            counts <- feature_counts_per_assay[[assay_name]]
+                            feature_summary_lines <- paste0(feature_summary_lines, sprintf(
+                                "\n  %s: %d features, %d samples"
+                                , assay_name
+                                , counts$features
+                                , counts$samples
+                            ))
+                        }
+                    }
+
+                    summary_content <- sprintf(
+                        "Metabolomics Normalized Session Data Export Summary\n===================================================\n\nExport Timestamp: %s\nSession File: %s\n\nData Summary:%s\n\nNormalization Parameters:\n- Method: %s\n- ITSD applied: %s\n- ITSD aggregation: %s\n- Log2 offset: %s\n- RUV mode: %s\n- RUV grouping variable: %s\n- Correlation threshold: %s\n\nRUV Optimization Results (per-assay):%s\n\nContrasts:\n%s\n\nThis data is ready for differential expression analysis.\nUse 'Load Filtered Session' in the DE tab to import.\n"
+                        , format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+                        , session_filename
+                        , feature_summary_lines
+                        , session_data$normalization_method
+                        , ifelse(isTRUE(session_data$itsd_applied), "Yes", "No")
+                        , ifelse(is.na(session_data$itsd_aggregation), "N/A", session_data$itsd_aggregation)
+                        , session_data$log_offset
+                        , session_data$ruv_mode
+                        , session_data$ruv_grouping_variable
+                        , ifelse(is.null(session_data$correlation_threshold), "N/A", session_data$correlation_threshold)
+                        , ruv_summary_lines
+                        , if (!is.null(session_data$contrasts_tbl)) paste(session_data$contrasts_tbl$friendly_names, collapse = "\n") else "None defined"
+                    )
+
+                    summary_filepath <- file.path(source_dir, "metab_filtered_session_summary.txt")
+                    writeLines(summary_content, summary_filepath)
+                    logger::log_info(sprintf("*** EXPORT: Summary saved to: %s ***", summary_filepath))
+
+                })
+
+                add_log(paste("Exported comprehensive session data to:", session_filepath))
+                shiny::showNotification(
+                    sprintf("Session data exported successfully!\nSaved as: %s\nSee summary file for details.", session_filename)
+                    , type = "message"
+                    , duration = 10
+                )
+
+                logger::log_info("=== EXPORT NORMALIZED SESSION COMPLETED SUCCESSFULLY ===")
+
             }, error = function(e) {
+                logger::log_error(paste("*** ERROR in session export:", e$message, "***"))
                 add_log(paste("Export error:", e$message))
-                shiny::showNotification(paste("Export error:", e$message), type = "error")
+                shiny::showNotification(paste("Export error:", e$message), type = "error", duration = 10)
             })
         })
     })

@@ -296,6 +296,9 @@ mod_metab_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
                     , significant_counts = sig_counts
                 )
                 
+                # Ensure all prior steps are marked complete when DE completes
+                workflow_data$tab_status$quality_control <- "complete"
+                workflow_data$tab_status$normalization <- "complete"
                 workflow_data$tab_status$differential_analysis <- "complete"
                 
                 logger::log_info(sprintf(
