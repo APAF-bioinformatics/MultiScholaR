@@ -317,183 +317,217 @@ generateVolcanoPlotGlimma <- function( de_results_list
 # ----------------------------------------------------------------------------
 # generateDEHeatmap
 # ----------------------------------------------------------------------------
-##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' Generate DE Results Heatmap with Advanced Clustering
-#' 
+#'
+#' @description Creates a heatmap of top differentially expressed proteins
+#'   with customizable clustering and scaling options. Uses ComplexHeatmap
+#'   for professional-quality visualization with group annotations.
+#'
+#' @param de_results_list Results list from `differentialExpressionAnalysis()`.
+#' @param selected_contrast Contrast to display.
+#' @param top_n_genes Number of top proteins to include (by |log2FC|).
+#' @param clustering_method Hierarchical clustering method.
+#' @param distance_method Distance metric for clustering.
+#' @param cluster_rows Logical, cluster rows.
+#' @param cluster_cols Logical, cluster columns.
+#' @param scale_data Scaling option: "row", "column", "both", or "none".
+#' @param color_scheme Color palette name.
+#' @param show_gene_names Logical, show gene name labels.
+#' @param de_q_val_thresh Q-value threshold for significance.
+#' @param qvalue_column Column name for q-values.
+#' @param log2fc_column Column name for log2 fold changes.
+#'
+#' @return A ComplexHeatmap object, or NULL if no data.
+#'
+#' @importFrom ComplexHeatmap Heatmap HeatmapAnnotation
+#' @importFrom circlize colorRamp2
+#' @importFrom stats hclust dist cor setNames
+#' @importFrom dplyr filter arrange desc slice_head pull
+#' @importFrom logger log_info log_error log_warn
 #' @export
-generateDEHeatmap <- function( de_results_list
-                              , selected_contrast = NULL
-                              , top_n_genes = 50
-                              , clustering_method = "ward.D2"
-                              , distance_method = "euclidean"
-                              , cluster_rows = TRUE
-                              , cluster_cols = TRUE
-                              , scale_data = "row"
-                              , color_scheme = "RdBu"
-                              , show_gene_names = FALSE
-                              , de_q_val_thresh = 0.05
-                              , qvalue_column = "fdr_qvalue"
-                              , log2fc_column = "log2FC") {
+generateDEHeatmap <- function(
+    de_results_list
+    , selected_contrast = NULL
+    , top_n_genes = 50
+    , clustering_method = "ward.D2"
+    , distance_method = "euclidean"
+    , cluster_rows = TRUE
+    , cluster_cols = TRUE
+    , scale_data = "row"
+    , color_scheme = "RdBu"
+    , show_gene_names = FALSE
+    , de_q_val_thresh = 0.05
+    , qvalue_column = "fdr_qvalue"
+    , log2fc_column = "log2FC"
+) {
+    logger::log_info("--- Entering generateDEHeatmap ---")
+    logger::log_info(sprintf("   selected_contrast = %s, top_n_genes = %d", selected_contrast, top_n_genes))
 
-  message("--- Entering generateDEHeatmap ---")
-  message(sprintf("   generateDEHeatmap Arg: selected_contrast = %s", selected_contrast))
-  message(sprintf("   generateDEHeatmap Arg: top_n_genes = %d", top_n_genes))
+    if (is.null(de_results_list) || is.null(de_results_list$de_proteins_long)) {
+        logger::log_warn("   No DE results available")
+        return(NULL)
+    }
 
-  if (is.null(de_results_list) || is.null(de_results_list$de_proteins_long)) {
-    message("   generateDEHeatmap: No DE results available")
-    return(NULL)
-  }
+    if (is.null(selected_contrast)) {
+        logger::log_warn("   No contrast selected")
+        return(NULL)
+    }
 
-  if (is.null(selected_contrast)) {
-    message("   generateDEHeatmap: No contrast selected")
-    return(NULL)
-  }
+    # Get the contrast-specific results
+    de_proteins_long <- de_results_list$de_proteins_long
 
-  message("   generateDEHeatmap Step: Filtering data for selected contrast...")
+    # Extract comparison name (handle both full_format and friendly name)
+    comparison_to_search <- stringr::str_extract(selected_contrast, "^[^=]+")
+    if (is.na(comparison_to_search)) {
+        comparison_to_search <- selected_contrast
+    }
 
-  # Get the contrast-specific results
-  de_proteins_long <- de_results_list$de_proteins_long
-  
-  # Filter for selected contrast and significant results
-  contrast_data <- de_proteins_long |>
-    dplyr::filter(comparison == selected_contrast) |>
-    dplyr::filter(!!sym(qvalue_column) < de_q_val_thresh)
+    # Filter for significant results in selected contrast
+    contrast_data <- de_proteins_long |>
+        dplyr::filter(comparison == comparison_to_search | comparison == selected_contrast) |>
+        dplyr::filter(!!rlang::sym(qvalue_column) < de_q_val_thresh)
 
-  if (nrow(contrast_data) == 0) {
-    message(sprintf("   generateDEHeatmap: No significant genes found for contrast %s", selected_contrast))
-    return(NULL)
-  }
+    if (nrow(contrast_data) == 0) {
+        logger::log_warn(sprintf("   No significant proteins found for contrast: %s", selected_contrast))
+        return(NULL)
+    }
 
-  message(sprintf("   generateDEHeatmap Step: Found %d significant genes", nrow(contrast_data)))
+    logger::log_info(sprintf("   Found %d significant proteins", nrow(contrast_data)))
 
-  # Order by absolute fold change and take top N
-  top_genes_data <- contrast_data |>
-    dplyr::arrange(desc(abs(!!sym(log2fc_column)))) |>
-    head(top_n_genes)
+    # Get top N by absolute log2FC
+    top_proteins <- contrast_data |>
+        dplyr::arrange(dplyr::desc(abs(!!rlang::sym(log2fc_column)))) |>
+        dplyr::slice_head(n = top_n_genes)
 
-  message(sprintf("   generateDEHeatmap Step: Selected top %d genes for heatmap", nrow(top_genes_data)))
+    logger::log_info(sprintf("   Selected top %d proteins for heatmap", nrow(top_proteins)))
 
-  # Extract expression matrix for these genes
-  protein_ids <- top_genes_data |> dplyr::pull(!!sym(names(top_genes_data)[1])) # First column should be protein ID
+    # Get the S4 object
+    theObject <- de_results_list$theObject
+    protein_id_col <- theObject@protein_id_column
 
-  # Get expression data from the S4 object
-  expr_matrix <- de_results_list$theObject@protein_quant_table |>
-    dplyr::filter(!!sym(de_results_list$theObject@protein_id_column) %in% protein_ids) |>
-    column_to_rownames(de_results_list$theObject@protein_id_column) |>
-    as.matrix()
+    # Extract protein IDs
+    protein_ids <- top_proteins |> dplyr::pull(!!rlang::sym(protein_id_col))
 
-  if (nrow(expr_matrix) == 0) {
-    message("   generateDEHeatmap: No expression data found for selected genes")
-    return(NULL)
-  }
+    # Get expression data from the S4 object
+    quant_table <- theObject@protein_quant_table
 
-  message(sprintf("   generateDEHeatmap Step: Expression matrix dims = %d rows, %d cols", nrow(expr_matrix), ncol(expr_matrix)))
+    # Filter to selected proteins
+    rows_to_keep <- quant_table[[protein_id_col]] %in% protein_ids
+    quant_subset <- quant_table[rows_to_keep, , drop = FALSE]
 
-  # Apply scaling
-  if (scale_data == "row") {
-    message("   generateDEHeatmap Step: Applying row scaling...")
-    expr_matrix <- t(scale(t(expr_matrix)))
-  } else if (scale_data == "column") {
-    message("   generateDEHeatmap Step: Applying column scaling...")
-    expr_matrix <- scale(expr_matrix)
-  } else if (scale_data == "both") {
-    message("   generateDEHeatmap Step: Applying both row and column scaling...")
-    expr_matrix <- scale(t(scale(t(expr_matrix))))
-  } else {
-    message("   generateDEHeatmap Step: No scaling applied")
-  }
+    if (nrow(quant_subset) == 0) {
+        logger::log_warn("   No expression data found for selected proteins")
+        return(NULL)
+    }
 
-  message("   generateDEHeatmap Step: Setting up clustering parameters...")
+    # Get sample columns (intersection with design matrix samples)
+    sample_cols <- intersect(colnames(quant_subset), theObject@design_matrix[[theObject@sample_id_column]])
 
-  # Set up clustering
-  row_clust <- NULL
-  col_clust <- NULL
+    # Build expression matrix
+    expr_matrix <- as.matrix(quant_subset[, sample_cols, drop = FALSE])
+    rownames(expr_matrix) <- quant_subset[[protein_id_col]]
 
-  if (cluster_rows || cluster_cols) {
-    # Calculate distance matrices
-    if (distance_method %in% c("pearson", "spearman")) {
-      if (cluster_rows) {
-        if (distance_method == "pearson") {
-          row_dist <- as.dist(1 - cor(t(expr_matrix), method = "pearson", use = "complete.obs"))
+    logger::log_info(sprintf("   Expression matrix: %d x %d", nrow(expr_matrix), ncol(expr_matrix)))
+
+    # Apply scaling
+    if (scale_data == "row") {
+        expr_matrix <- t(scale(t(expr_matrix)))
+    } else if (scale_data == "column") {
+        expr_matrix <- scale(expr_matrix)
+    } else if (scale_data == "both") {
+        expr_matrix <- t(scale(t(expr_matrix)))
+        expr_matrix <- scale(expr_matrix)
+    }
+
+    # Handle NA/Inf from scaling
+    expr_matrix[is.na(expr_matrix)] <- 0
+    expr_matrix[is.infinite(expr_matrix)] <- 0
+
+    # Build row labels (gene names if requested)
+    if (show_gene_names) {
+        # Try to map protein IDs to gene names from DE results
+        if ("gene_names" %in% names(top_proteins)) {
+            id_to_name <- stats::setNames(top_proteins$gene_names, top_proteins[[protein_id_col]])
+            row_labels <- id_to_name[rownames(expr_matrix)]
+            row_labels[is.na(row_labels)] <- rownames(expr_matrix)[is.na(row_labels)]
         } else {
-          row_dist <- as.dist(1 - cor(t(expr_matrix), method = "spearman", use = "complete.obs"))
+            row_labels <- rownames(expr_matrix)
         }
-        row_clust <- hclust(row_dist, method = clustering_method)
-      }
-      
-      if (cluster_cols) {
-        if (distance_method == "pearson") {
-          col_dist <- as.dist(1 - cor(expr_matrix, method = "pearson", use = "complete.obs"))
-        } else {
-          col_dist <- as.dist(1 - cor(expr_matrix, method = "spearman", use = "complete.obs"))
-        }
-        col_clust <- hclust(col_dist, method = clustering_method)
-      }
     } else {
-      # Standard distance metrics
-      if (cluster_rows) {
-        row_dist <- dist(expr_matrix, method = distance_method)
-        row_clust <- hclust(row_dist, method = clustering_method)
-      }
-      
-      if (cluster_cols) {
-        col_dist <- dist(t(expr_matrix), method = distance_method)
-        col_clust <- hclust(col_dist, method = clustering_method)
-      }
+        row_labels <- rownames(expr_matrix)
     }
-  }
 
-  message("   generateDEHeatmap Step: Setting up color scheme...")
+    # Calculate clustering
+    row_clust <- NULL
+    col_clust <- NULL
 
-  # Choose color palette
-  colors <- switch(color_scheme,
-    "RdBu" = colorRampPalette(c("red", "white", "blue"))(100),
-    "RdYlBu" = colorRampPalette(c("red", "yellow", "blue"))(100),
-    "coolwarm" = colorRampPalette(c("blue", "white", "red"))(100),
-    "viridis" = viridis::viridis(100),
-    "plasma" = viridis::plasma(100),
-    "inferno" = viridis::inferno(100),
-    colorRampPalette(c("red", "white", "blue"))(100)
-  )
+    if (cluster_rows && nrow(expr_matrix) > 1) {
+        if (distance_method %in% c("pearson", "spearman")) {
+            row_dist <- stats::as.dist(1 - stats::cor(t(expr_matrix), method = distance_method, use = "pairwise.complete.obs"))
+        } else {
+            row_dist <- stats::dist(expr_matrix, method = distance_method)
+        }
+        row_clust <- stats::hclust(row_dist, method = clustering_method)
+    }
 
-  message("   generateDEHeatmap Step: Generating heatmap...")
+    if (cluster_cols && ncol(expr_matrix) > 1) {
+        if (distance_method %in% c("pearson", "spearman")) {
+            col_dist <- stats::as.dist(1 - stats::cor(expr_matrix, method = distance_method, use = "pairwise.complete.obs"))
+        } else {
+            col_dist <- stats::dist(t(expr_matrix), method = distance_method)
+        }
+        col_clust <- stats::hclust(col_dist, method = clustering_method)
+    }
 
-  # Generate the heatmap
-  if (requireNamespace("ComplexHeatmap", quietly = TRUE)) {
-    message("   generateDEHeatmap: Using ComplexHeatmap for advanced visualization")
-    
-    heatmap_plot <- ComplexHeatmap::Heatmap(
-      expr_matrix,
-      name = "Expression",
-      col = colors,
-      cluster_rows = if (cluster_rows) row_clust else FALSE,
-      cluster_columns = if (cluster_cols) col_clust else FALSE,
-      show_row_names = show_gene_names,
-      show_column_names = TRUE,
-      show_row_dend = cluster_rows,
-      show_column_dend = cluster_cols,
-      column_title = paste("Heatmap - Top", nrow(expr_matrix), "genes\nContrast:", selected_contrast),
-      heatmap_legend_param = list(title = "Scaled\nExpression")
+    # Color palette using circlize for proper scaling
+    color_fn <- switch(color_scheme
+        , "RdBu" = circlize::colorRamp2(c(-2, 0, 2), c("blue", "white", "red"))
+        , "RdYlBu" = circlize::colorRamp2(c(-2, 0, 2), c("blue", "yellow", "red"))
+        , "coolwarm" = circlize::colorRamp2(c(-2, 0, 2), c("#3B4CC0", "white", "#B40426"))
+        , "viridis" = circlize::colorRamp2(seq(-2, 2, length.out = 256), viridisLite::viridis(256))
+        , "plasma" = circlize::colorRamp2(seq(-2, 2, length.out = 256), viridisLite::plasma(256))
+        , "inferno" = circlize::colorRamp2(seq(-2, 2, length.out = 256), viridisLite::inferno(256))
+        , circlize::colorRamp2(c(-2, 0, 2), c("blue", "white", "red"))
     )
-  } else {
-    message("   generateDEHeatmap: Using base R heatmap")
-    
-    # Create a plot function that returns the heatmap
-    heatmap_plot <- function() {
-      heatmap(
-        expr_matrix,
-        main = paste("Heatmap - Top", nrow(expr_matrix), "genes\nContrast:", selected_contrast),
-        col = colors,
-        Rowv = if (cluster_rows) as.dendrogram(row_clust) else NA,
-        Colv = if (cluster_cols) as.dendrogram(col_clust) else NA,
-        labRow = if (show_gene_names) rownames(expr_matrix) else rep("", nrow(expr_matrix)),
-        cexRow = if (show_gene_names) 0.8 else 0.1
-      )
-    }
-  }
 
-  message("--- Exiting generateDEHeatmap ---")
-  return(heatmap_plot)
+    # Get column annotations (groups)
+    dm <- theObject@design_matrix
+    rownames(dm) <- dm[[theObject@sample_id_column]]
+    col_groups <- dm[colnames(expr_matrix), theObject@group_id]
+
+    # Generate dynamic group colors
+    unique_groups <- unique(col_groups)
+    group_colors <- stats::setNames(
+        grDevices::hcl.colors(length(unique_groups), "Set2")
+        , unique_groups
+    )
+
+    # Create heatmap with tryCatch for graceful error handling
+    tryCatch({
+        hm <- ComplexHeatmap::Heatmap(
+            expr_matrix
+            , name = "Z-score"
+            , col = color_fn
+            , cluster_rows = if (is.null(row_clust)) cluster_rows else row_clust
+            , cluster_columns = if (is.null(col_clust)) cluster_cols else col_clust
+            , show_row_names = show_gene_names
+            , row_labels = row_labels
+            , show_column_names = TRUE
+            , column_title = paste("Top", nrow(expr_matrix), "DE Proteins:", selected_contrast)
+            , row_title = "Proteins"
+            , top_annotation = ComplexHeatmap::HeatmapAnnotation(
+                Group = col_groups
+                , col = list(Group = group_colors)
+            )
+        )
+
+        logger::log_info("--- Exiting generateDEHeatmap (success) ---")
+        return(hm)
+
+    }, error = function(e) {
+        logger::log_error(sprintf("   Heatmap generation failed: %s", e$message))
+        return(NULL)
+    })
 }
 
 

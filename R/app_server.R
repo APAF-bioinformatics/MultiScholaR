@@ -246,15 +246,22 @@ app_server <- function(input, output, session) {
         logger::log_info("Creating new project directories...")
         # Pre-stage script templates
         for (omic in values$selected_omics) {
-          source_template_dir <- file.path(system.file("workbooks", omic, "starter", package = "MultiScholaR"))
+          # Try installed package path first (inst/workbooks/{omic}/)
+          source_template_dir <- system.file("workbooks", omic, package = "MultiScholaR")
+          
           # Fallback if package not installed or path differs (dev mode)
           if (source_template_dir == "" || !dir.exists(source_template_dir)) {
-              source_template_dir <- file.path("inst", "workbooks", omic, "starter")
+              source_template_dir <- file.path("inst", "workbooks", omic)
           }
           
           dest_template_dir <- file.path(experiment_dir, "scripts", omic)
+          
           if (dir.exists(source_template_dir)) {
+            # Copy all files from the workbooks folder to scripts destination
             fs::dir_copy(source_template_dir, dest_template_dir, overwrite = TRUE)
+            logger::log_info(paste("Copied workbook templates for", omic, "to", dest_template_dir))
+          } else {
+            logger::log_warn(paste("No workbook templates found for", omic, "at", source_template_dir))
           }
         }
         

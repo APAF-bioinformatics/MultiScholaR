@@ -8,7 +8,7 @@
   theObject,
   grouping_variable,
   shape_variable = NULL,
-  label_column,
+  label_column = NULL,
   title = NULL,
   font_size = 8
 )
