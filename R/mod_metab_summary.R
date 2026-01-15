@@ -164,7 +164,8 @@ mod_metab_summary_server <- function(id, project_dirs, omic_type = "metabolomics
                 if (!is.null(workflow_data$state_manager)) {
                     # Get the data object from latest valid state
                     data_states <- c("metab_correlation_filtered", "metab_norm_complete",
-                                   "metab_ruv_corrected", "metab_normalized")
+                                   "metab_ruv_corrected", "metab_normalized",
+                                   "loaded_for_de", "metab_qc_complete")
 
                     # Use functional approach to find first valid state
                     available_states <- workflow_data$state_manager$getHistory()
