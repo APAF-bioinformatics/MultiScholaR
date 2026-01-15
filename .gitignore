@@ -9,6 +9,8 @@
 .Ruserdata
 /debug/
 
+# Obsidian vault
+/.obsidian/
 
 # Example code in package build process
 *-Ex.R
