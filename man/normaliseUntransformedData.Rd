@@ -7,6 +7,7 @@
 \S4method{normaliseUntransformedData}{MetaboliteAssayData,character}(
   theObject,
   method = "ITSD",
+  itsd_feature_ids = NULL,
   itsd_pattern_columns = NULL,
   itsd_aggregation = "sum",
   remove_itsd_after_norm = TRUE,
@@ -18,9 +19,14 @@
 
 \item{method}{Must be "ITSD" for this method.}
 
+\item{itsd_feature_ids}{Optional named list of feature ID vectors for manual ITSD
+selection per assay. Names must match assay names. When provided, overrides
+regex-based ITSD detection. Example: \code{list(LCMS_Pos = c("ITSD_1", "ITSD_2"), LCMS_Neg = c("ITSD_3"))}.}
+
 \item{itsd_pattern_columns}{A character vector specifying the column names within
 each assay tibble where the ITSD pattern should be searched. If \code{NULL} (default),
-it uses the column name stored in the \code{annotation_id_column} slot of the object.}
+it uses the column name stored in the \code{annotation_id_column} slot of the object.
+Ignored if \code{itsd_feature_ids} is provided.}
 
 \item{itsd_aggregation}{The method used to aggregate intensities of multiple ITSDs
 within each sample. Options are "sum" (default),

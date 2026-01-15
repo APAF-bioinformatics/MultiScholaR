@@ -7,8 +7,10 @@
 
 # User-specific files
 .Ruserdata
-/mem/
 /debug/
+
+# Obsidian vault
+/.obsidian/
 
 # Example code in package build process
 *-Ex.R
@@ -39,10 +41,14 @@ vignettes/*.pdf
 # Testing files
 *test_checklist
 
+# Simulated test data (can be regenerated from data-raw/simulate_metabolomics_testdata.R)
+tests/testthat/fixtures/simdata/
+data-raw/*.R
+data-raw/*.csv
+
 # Temporary files created by R markdown
 *.utf8.md
 *.knit.md
-*.mdc
 
 # R Environment Variables
 .Renviron

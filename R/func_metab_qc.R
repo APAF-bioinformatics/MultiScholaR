@@ -414,7 +414,7 @@ resolveDuplicateFeaturesByIntensity <- function(assay_tibble, id_col, sample_col
 #'         containing individual `ggplot` objects.
 #'
 #' @importFrom methods slotNames is
-#' @importFrom gridExtra grid.arrange
+#' @importFrom gridExtra arrangeGrob
 #' @importFrom ggplot2 ggsave
 #' @importFrom purrr map map_dfr imap imap_dfr walk iwalk
 #' @export
@@ -434,7 +434,7 @@ updateMetaboliteFiltering <- function(theObject,
     prog_met <- getFilteringProgressMetabolomics()
 
 
-    if (!methods::is(theObject, "S4")) {
+    if (!isS4(theObject)) {
         stop("`theObject` must be an S4 object.")
     }
     
@@ -496,10 +496,15 @@ updateMetaboliteFiltering <- function(theObject,
     
     design_matrix <- as.data.frame(design_matrix) # Ensure it's a data frame
 
+    # Extract actual sample column names from design matrix
+    # This is CRITICAL - sample_columns are the values in the sample_id_col (e.g., Run column)
+    # which correspond to column names in the assay data
+    sample_columns <- as.character(design_matrix[[sample_id_col]])
 
     metrics_list_this_step <- list()
     if(length(assay_list) > 0) {
         metrics_list_this_step <- purrr::imap(assay_list, function(current_assay_data, current_assay_name) {
+            
             # Ensure current_assay_data is a data frame/tibble
             if (!is.data.frame(current_assay_data)) {
                 warning("Assay ", current_assay_name, " is not a data frame. Skipping metrics calculation.")
@@ -514,13 +519,50 @@ updateMetaboliteFiltering <- function(theObject,
                 ))
             }
 
+            n_met <- tryCatch({
+                countUniqueMetabolites(current_assay_data, metabolite_id_col)
+            }, error = function(e) {
+                stop(e)
+            })
+            
+            det_per_sample <- tryCatch({
+                countMetabolitesPerSample(current_assay_data, sample_id_col, metabolite_id_col, sample_columns = sample_columns)
+            }, error = function(e) {
+                stop(e)
+            })
+            
+            miss <- tryCatch({
+                calculateMissingness(current_assay_data, sample_id_col, sample_columns = sample_columns)
+            }, error = function(e) {
+                stop(e)
+            })
+            
+            sum_int <- tryCatch({
+                calculateSumIntensityPerSample(current_assay_data, sample_id_col, sample_columns = sample_columns)
+            }, error = function(e) {
+                stop(e)
+            })
+            
+            cv_dist <- tryCatch({
+                calculateMetaboliteCVs(current_assay_data, design_matrix, group_id_col, NULL, sample_id_col, metabolite_id_col, sample_columns = sample_columns)
+            }, error = function(e) {
+                stop(e)
+            })
+            
+            is_met <- tryCatch({
+                getInternalStandardMetrics(current_assay_data, is_pattern, metabolite_id_col, sample_id_col, sample_columns = sample_columns)
+            }, error = function(e) {
+                stop(e)
+            })
+            
+            
             list(
-                n_metabolites = countUniqueMetabolites(current_assay_data, metabolite_id_col),
-                detected_per_sample = countMetabolitesPerSample(current_assay_data, sample_id_col, metabolite_id_col),
-                missingness = calculateMissingness(current_assay_data, sample_id_col),
-                sum_intensity_per_sample = calculateSumIntensityPerSample(current_assay_data, sample_id_col),
-                cv_distribution = calculateMetaboliteCVs(current_assay_data, design_matrix, group_id_col, NULL, sample_id_col, metabolite_id_col), # replicate_id_col unused for now
-                is_metrics = getInternalStandardMetrics(current_assay_data, is_pattern, metabolite_id_col, sample_id_col)
+                n_metabolites = n_met,
+                detected_per_sample = det_per_sample,
+                missingness = miss,
+                sum_intensity_per_sample = sum_int,
+                cv_distribution = cv_dist,
+                is_metrics = is_met
             )
         })
     } else {
@@ -530,13 +572,23 @@ updateMetaboliteFiltering <- function(theObject,
     }
 
 
-    total_metabolites <- calculateTotalUniqueMetabolitesAcrossAssays(assay_list, metabolite_id_col)
+    total_metabolites <- tryCatch({
+        calculateTotalUniqueMetabolitesAcrossAssays(assay_list, metabolite_id_col)
+    }, error = function(e) {
+        stop(e)
+    })
 
+    tryCatch({
+        updateFilteringProgressMetabolomics(prog_met, step_name, assay_names, metrics_list_this_step, total_metabolites, overwrite)
+    }, error = function(e) {
+        stop(e)
+    })
 
-    updateFilteringProgressMetabolomics(prog_met, step_name, assay_names, metrics_list_this_step, total_metabolites, overwrite)
-
-
-    plot_list <- generateMetaboliteFilteringPlots(getFilteringProgressMetabolomics()) # Pass updated global object
+    plot_list <- tryCatch({
+        generateMetaboliteFilteringPlots(getFilteringProgressMetabolomics())
+    }, error = function(e) {
+        stop(e)
+    })
 
     # --- 9. Directory handling and plot saving --- #
     actual_save_dir <- NULL # Will hold the final directory path for saving
@@ -615,7 +667,11 @@ updateMetaboliteFiltering <- function(theObject,
 
         # Save combined grid if return_grid is TRUE and plots exist
         if (return_grid && length(plot_list) > 0 && !is.null(plot_list[[1]]) && inherits(plot_list[[1]], "ggplot")) {
-             grid_plot_obj <- do.call(gridExtra::grid.arrange, c(plot_list, ncol = 2)) 
+             # Use arrangeGrob (not grid.arrange) to create grob without drawing
+             # Wrap in pdf(NULL)/dev.off() to prevent Rplots.pdf error
+             pdf(NULL)
+             grid_plot_obj <- do.call(gridExtra::arrangeGrob, c(plot_list, ncol = 2)) 
+             invisible(dev.off())
              filename_grid <- file.path(actual_save_dir, sprintf("%s_combined_plots.png", step_name))
              message(sprintf("Saving combined grid plot: %s", filename_grid))
              ggsave(filename_grid, plot = grid_plot_obj, width = 15, height = 15, dpi = 300)
@@ -632,14 +688,44 @@ updateMetaboliteFiltering <- function(theObject,
     }
     message("--- End of Plot Saving Diagnostics ---")
 
+    
+    if (length(plot_list) > 0) {
+        if (!is.null(plot_list[[1]])) {
+        }
+    }
+
     if (return_grid) {
-        # Combine plots into a grid
-        if (length(plot_list) > 0 && !is.null(plot_list[[1]]) && inherits(plot_list[[1]], "ggplot")) {
-            message("Attempting to arrange plots into a grid.")
-            grid_plot_obj <- do.call(gridExtra::grid.arrange, c(plot_list, ncol = 2))
+        
+        # Check conditions one by one
+        cond1 <- length(plot_list) > 0
+        cond2 <- !is.null(plot_list[[1]])
+        cond3 <- if(cond2) inherits(plot_list[[1]], "ggplot") else FALSE
+        
+        
+        if (cond1 && cond2 && cond3) {
+            
+            # Use arrangeGrob (not grid.arrange) to create grob without drawing
+            # This allows the grob to be stored in a reactiveVal and rendered later by Shiny
+            # CRITICAL: Wrap in pdf(NULL)/dev.off() to prevent "cannot open file 'Rplots.pdf'" error
+            # in Shiny's sandboxed environment where arrangeGrob tries to create a temp PDF device
+            grid_plot_obj <- tryCatch({
+                pdf(NULL)
+                result <- do.call(gridExtra::arrangeGrob, c(plot_list, ncol = 2))
+                invisible(dev.off())
+                result
+            }, error = function(e) {
+                # Make sure to close device even on error
+                tryCatch(invisible(dev.off()), error = function(e2) NULL)
+                NULL
+            })
+            
+            
+            if (is.null(grid_plot_obj)) {
+                return(NULL)
+            }
+            
             return(grid_plot_obj)
         } else {
-            message("No valid plots to arrange into a grid, or plot_list is empty. Returning NULL for the grid.")
             return(NULL)
         }
     } else {
@@ -770,8 +856,8 @@ countUniqueMetabolites <- function(assay_data, metabolite_id_col) {
         return(0)
     }
     
-    # Count unique non-NA metabolite IDs - avoid using pipe operators
-    metabolite_ids <- dplyr::pull(assay_data, .data[[metabolite_id_col]])
+    # Count unique non-NA metabolite IDs - use base R subsetting (dplyr::pull doesn't support .data[[var]])
+    metabolite_ids <- assay_data[[metabolite_id_col]]
     metabolite_ids <- stats::na.omit(metabolite_ids)
     unique_ids <- dplyr::distinct(data.frame(id = metabolite_ids))
     return(nrow(unique_ids))
@@ -786,8 +872,9 @@ countUniqueMetabolites <- function(assay_data, metabolite_id_col) {
 #'              counts the number of non-missing, non-zero intensity values.
 #'
 #' @param assay_data A tibble/data.frame for one assay.
-#' @param sample_id_col ***Currently unused. Sample columns inferred by numeric type.***
+#' @param sample_id_col ***Currently unused.***
 #' @param metabolite_id_col ***Currently unused.***
+#' @param sample_columns Character vector of explicit sample column names from design matrix.
 #'
 #' @return A data frame with columns 'Run' (sample name) and 'n_detected'.
 #'
@@ -796,8 +883,8 @@ countUniqueMetabolites <- function(assay_data, metabolite_id_col) {
 #' @keywords internal
 #' @noRd
 #' @export
-countMetabolitesPerSample <- function(assay_data, sample_id_col, metabolite_id_col) {
-    quant_info <- getMetaboliteQuantData(assay_data)
+countMetabolitesPerSample <- function(assay_data, sample_id_col, metabolite_id_col, sample_columns = NULL) {
+    quant_info <- getMetaboliteQuantData(assay_data, sample_columns = sample_columns)
     quant_data <- quant_info$quant_data
     sample_names <- quant_info$sample_names
 
@@ -811,9 +898,9 @@ countMetabolitesPerSample <- function(assay_data, sample_id_col, metabolite_id_c
 
     quant_data |>
         tidyr::pivot_longer(
-            cols = all_of(sample_names),
-            names_to = "Run",
-            values_to = "Intensity"
+            cols = dplyr::all_of(sample_names)
+            , names_to = "Run"
+            , values_to = "Intensity"
         ) |>
         # Define 'detected' as non-NA and greater than 0 (adjust if needed)
         dplyr::filter(!is.na(.data$Intensity) & .data$Intensity > 0) |>
@@ -830,16 +917,17 @@ countMetabolitesPerSample <- function(assay_data, sample_id_col, metabolite_id_c
 #'              in the quantitative portion of an assay tibble.
 #'
 #' @param assay_data A tibble/data.frame for one assay.
-#' @param sample_id_col ***Currently unused. Sample columns inferred by numeric type.***
+#' @param sample_id_col ***Currently unused.***
+#' @param sample_columns Character vector of explicit sample column names from design matrix.
 #'
 #' @return A single numeric value: the percentage of missing data points.
 #'
 #' @keywords internal
 #' @noRd
 #' @export
-calculateMissingness <- function(assay_data, sample_id_col) {
+calculateMissingness <- function(assay_data, sample_id_col, sample_columns = NULL) {
     # Get only the quantitative columns (sample columns)
-    quant_info <- getMetaboliteQuantData(assay_data)
+    quant_info <- getMetaboliteQuantData(assay_data, sample_columns = sample_columns)
     quant_data <- quant_info$quant_data
     sample_names <- quant_info$sample_names
 
@@ -866,8 +954,8 @@ calculateMissingness <- function(assay_data, sample_id_col) {
     missing_pct <- (missing_values / total_cells) * 100
     
     # Debug output to verify calculation
-    message("DEBUG: Missing values: ", missing_values, ", Total cells: ", total_cells, 
-            ", Percentage: ", missing_pct, "%")
+    message("DEBUG: Missing values: ", missing_values, ", Total cells: ", total_cells
+            , ", Percentage: ", missing_pct, "%")
     
     return(missing_pct)
 }
@@ -881,7 +969,8 @@ calculateMissingness <- function(assay_data, sample_id_col) {
 #'              in the quantitative portion of an assay tibble.
 #'
 #' @param assay_data A tibble/data.frame for one assay.
-#' @param sample_id_col ***Currently unused. Sample columns inferred by numeric type.***
+#' @param sample_id_col ***Currently unused.***
+#' @param sample_columns Character vector of explicit sample column names from design matrix.
 #'
 #' @return A data frame with columns 'Run' (sample name) and 'sum_intensity'.
 #'
@@ -890,8 +979,8 @@ calculateMissingness <- function(assay_data, sample_id_col) {
 #' @keywords internal
 #' @noRd
 #' @export
-calculateSumIntensityPerSample <- function(assay_data, sample_id_col) {
-    quant_info <- getMetaboliteQuantData(assay_data)
+calculateSumIntensityPerSample <- function(assay_data, sample_id_col, sample_columns = NULL) {
+    quant_info <- getMetaboliteQuantData(assay_data, sample_columns = sample_columns)
     quant_data <- quant_info$quant_data
     sample_names <- quant_info$sample_names
 
@@ -904,9 +993,9 @@ calculateSumIntensityPerSample <- function(assay_data, sample_id_col) {
 
     quant_data |>
         tidyr::pivot_longer(
-            cols = all_of(sample_names),
-            names_to = "Run",
-            values_to = "Intensity"
+            cols = dplyr::all_of(sample_names)
+            , names_to = "Run"
+            , values_to = "Intensity"
         ) |>
         dplyr::group_by(.data$Run) |>
         # Sum intensities, replacing NA with 0 for the sum
@@ -930,12 +1019,14 @@ calculateSumIntensityPerSample <- function(assay_data, sample_id_col) {
 #' @param sample_id_col Character string, the name of the sample ID column in design_matrix
 #'                      (matching column names in assay_data).
 #' @param metabolite_id_col Character string, the name of the metabolite ID column in assay_data.
+#' @param sample_columns Character vector of explicit sample column names from design matrix.
 #'
 #' @return A data frame with columns 'metabolite_id', 'group', and 'cv'.
 #'         Returns an empty data frame if inputs are invalid or calculations fail.
 #'
 #' @importFrom tidyr pivot_longer
 #' @importFrom dplyr left_join group_by summarise filter select rename all_of
+#' @importFrom rlang sym
 #' @importFrom stats sd na.omit
 #' @keywords internal
 #' @noRd
@@ -943,9 +1034,10 @@ calculateSumIntensityPerSample <- function(assay_data, sample_id_col) {
 calculateMetaboliteCVs <- function(assay_data,
                                    design_matrix,
                                    group_id_col,
-                                   replicate_id_col, # Keep for consistency, maybe use later
+                                   replicate_id_col,
                                    sample_id_col,
-                                   metabolite_id_col) {
+                                   metabolite_id_col,
+                                   sample_columns = NULL) {
 
     # --- Input Validation --- #
     required_design_cols <- c(sample_id_col, group_id_col)
@@ -959,7 +1051,7 @@ calculateMetaboliteCVs <- function(assay_data,
     }
 
     # --- Data Preparation --- #
-    quant_info <- getMetaboliteQuantData(assay_data)
+    quant_info <- getMetaboliteQuantData(assay_data, sample_columns = sample_columns)
     quant_data <- quant_info$quant_data
     sample_names <- quant_info$sample_names
     annotation_data <- quant_info$annotation_data
@@ -973,9 +1065,10 @@ calculateMetaboliteCVs <- function(assay_data,
     quant_data[[metabolite_id_col]] <- annotation_data[[metabolite_id_col]]
 
     # Select relevant columns from design matrix and ensure consistent types
+    # Use !!rlang::sym() for string column names - {{ }} is for defused symbols only
     design_subset <- design_matrix |>
         dplyr::select(dplyr::all_of(required_design_cols)) |>
-        dplyr::rename(Run = {{ sample_id_col }}, group = {{ group_id_col }}) |>
+        dplyr::rename(Run = !!rlang::sym(sample_id_col), group = !!rlang::sym(group_id_col)) |>
         dplyr::mutate(Run = as.character(Run)) # Convert Run to character to match pivoted data
 
     # --- Debug output to check groups --- #
@@ -990,7 +1083,7 @@ calculateMetaboliteCVs <- function(assay_data,
     # First pivot the data to long format
     long_data <- quant_data |>
         tidyr::pivot_longer(
-            cols = all_of(sample_names),
+            cols = dplyr::all_of(sample_names),
             names_to = "Run",
             values_to = "Intensity"
         ) |>
@@ -1032,8 +1125,9 @@ calculateMetaboliteCVs <- function(assay_data,
             cv = pmin(cv, 200) # Cap at 200% to avoid extreme outliers affecting visualization
         ) |>
         # Keep only relevant columns and rename metabolite ID column back
+        # Use !!rlang::sym() for string column names - {{ }} is for defused symbols only
         dplyr::select(dplyr::all_of(c(metabolite_id_col, "group", "cv", "n_samples"))) |>
-        dplyr::rename(metabolite_id = {{ metabolite_id_col }})
+        dplyr::rename(metabolite_id = !!rlang::sym(metabolite_id_col))
     
     # Summary statistics for debugging
     message("CV calculation complete")
@@ -1067,7 +1161,8 @@ calculateMetaboliteCVs <- function(assay_data,
 #' @param is_pattern Character string, regex pattern to identify IS in the metabolite_id_col.
 #'                  If NULL, NA, or empty, the function returns an empty data frame.
 #' @param metabolite_id_col Character string, the name of the metabolite ID column.
-#' @param sample_id_col ***Currently unused. Sample columns inferred by numeric type.***
+#' @param sample_id_col ***Currently unused.***
+#' @param sample_columns Character vector of explicit sample column names from design matrix.
 #'
 #' @return A data frame with columns 'is_id', 'mean_intensity', 'cv'.
 #'         Returns an empty data frame if no IS are found or pattern is invalid.
@@ -1082,7 +1177,8 @@ calculateMetaboliteCVs <- function(assay_data,
 getInternalStandardMetrics <- function(assay_data,
                                        is_pattern,
                                        metabolite_id_col,
-                                       sample_id_col) {
+                                       sample_id_col,
+                                       sample_columns = NULL) {
 
     # --- Input Validation --- #
     if (is.null(is_pattern) || is.na(is_pattern) || is_pattern == "") {
@@ -1095,7 +1191,7 @@ getInternalStandardMetrics <- function(assay_data,
     }
 
     # --- Data Preparation --- #
-    quant_info <- getMetaboliteQuantData(assay_data)
+    quant_info <- getMetaboliteQuantData(assay_data, sample_columns = sample_columns)
     quant_data <- quant_info$quant_data
     sample_names <- quant_info$sample_names
     annotation_data <- quant_info$annotation_data
@@ -1104,13 +1200,72 @@ getInternalStandardMetrics <- function(assay_data,
         return(data.frame(is_id = character(), mean_intensity = numeric(), cv = numeric()))
     }
 
-    # Ensure metabolite IDs are present
+    # Ensure metabolite_id_col is in annotation_data (may be classified as numeric if integer IDs)
+    if (!metabolite_id_col %in% colnames(annotation_data)) {
+        if (metabolite_id_col %in% colnames(assay_data)) {
+            annotation_data[[metabolite_id_col]] <- as.character(assay_data[[metabolite_id_col]])
+        } else {
+            warning("Metabolite ID column '", metabolite_id_col, "' not found in annotation data for IS metrics.")
+            return(data.frame(is_id = character(), mean_intensity = numeric(), cv = numeric()))
+        }
+    }
+
+    # Ensure metabolite IDs are present in quant_data for downstream filtering
     quant_data[[metabolite_id_col]] <- annotation_data[[metabolite_id_col]]
 
     # --- Identify and Filter IS --- #
-    is_rows <- annotation_data |>
-        dplyr::filter(stringr::str_detect(.data[[metabolite_id_col]], {{ is_pattern }})) |>
-        dplyr::pull({{ metabolite_id_col }})
+    # Convert ID column to character for reliable regex matching
+    id_values <- as.character(annotation_data[[metabolite_id_col]])
+
+    # Try user-provided pattern first, then fallback to common ITSD patterns
+    is_rows <- character(0)
+
+    if (!is.null(is_pattern) && nzchar(is_pattern)) {
+        # User-provided pattern
+        tryCatch({
+            matches <- stringr::str_detect(id_values, is_pattern)
+            is_rows <- id_values[matches]
+        }, error = function(e) {
+            warning("Invalid regex pattern '", is_pattern, "': ", e$message)
+        })
+    }
+
+    # Fallback: try common ITSD naming conventions if no matches found
+    if (length(is_rows) == 0) {
+        common_is_patterns <- c(
+            "^IS[_-]"              # IS_ or IS- prefix (e.g., IS_Caffeine, IS-Leucine)
+            , "^ITSD[_-]"          # ITSD_ prefix (e.g., ITSD_A, ITSD_001)
+            , "ISTD"               # ISTD anywhere (e.g., Caffeine-ISTD, ISTD_001)
+            , "ITSD"               # ITSD anywhere (alternate spelling)
+            , "[_-]d\\d+$"         # Deuterated suffix (e.g., Caffeine_d3, Leucine-d10)
+            , "[_-]d\\d+[_-]"      # Deuterated mid-name (e.g., Caffeine_d3_IS)
+            , "\\(d\\d+\\)"        # Deuterated in parens (e.g., Caffeine(d3))
+            , "(?i)internal.?standard"  # "Internal Standard" / "Internal_Standard"
+            , "(?i)^is\\d+$"       # IS followed by numbers (e.g., IS1, IS23)
+            , "13C[_-]?labeled"    # 13C labeled (e.g., 13C-labeled_reference)
+            , "15N[_-]?labeled"    # 15N labeled
+            , "-13C\\d*-"          # 13C in middle (e.g., Glucose-13C6-IS)
+            , "-15N\\d*-"          # 15N in middle
+        )
+        combined_pattern <- paste(common_is_patterns, collapse = "|")
+
+        tryCatch({
+            matches <- stringr::str_detect(id_values, combined_pattern)
+            is_rows <- id_values[matches]
+            if (length(is_rows) > 0) {
+                message("No IS found with user pattern. Using fallback patterns, found ", length(is_rows), " candidates.")
+            } else {
+                # Debug: show what we're actually searching
+                sample_ids <- head(id_values, 5)
+                message("ITSD detection: No matches found in column '", metabolite_id_col,
+                        "'. Sample values: ", paste(sample_ids, collapse = ", "))
+            }
+        }, error = function(e) {
+            warning("Fallback IS pattern matching failed: ", e$message)
+        })
+    }
+
+    is_rows <- annotation_data[[metabolite_id_col]][annotation_data[[metabolite_id_col]] %in% is_rows]
 
     if (length(is_rows) == 0) {
         # message("No internal standards found matching pattern: ", is_pattern)
@@ -1143,7 +1298,7 @@ getInternalStandardMetrics <- function(assay_data,
             )
         ) |>
         dplyr::select(dplyr::all_of(c(metabolite_id_col, "mean_intensity", "cv"))) |>
-        dplyr::rename(is_id = {{ metabolite_id_col }})
+        dplyr::rename(is_id = dplyr::all_of(metabolite_id_col))
 
     return(is_metrics)
 }
@@ -1173,9 +1328,10 @@ calculateTotalUniqueMetabolitesAcrossAssays <- function(assay_list, metabolite_i
     }
 
     # Extract the metabolite ID column from each assay, handling missing columns
+    # Use base R subsetting - dplyr::pull doesn't support {{ var }} for string column names
     all_ids <- purrr::map(assay_list, ~{
             if (metabolite_id_col %in% colnames(.x)) {
-                dplyr::pull(.x, {{ metabolite_id_col }})
+                .x[[metabolite_id_col]]
             } else {
                 NULL # Return NULL if column is missing
             }
@@ -1312,10 +1468,12 @@ calculateMetabolitePairCorrelation <- function(input_pair_table, feature_id_colu
 #' @noRd
 #' @export
 generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
+    
     # Get the global object if not provided
     if (is.null(prog_met)) {
         prog_met <- getFilteringProgressMetabolomics()
     }
+    
     
     # Return empty list if no steps have been tracked
     if (length(prog_met@steps) == 0) {
@@ -1326,24 +1484,28 @@ generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
     plot_list <- list()
     
     # --- 1. Total Metabolites Plot (All Assays Combined) --- #
-    plot_list$total_metabolites <- ggplot(data.frame(
-        step = factor(prog_met@steps, levels = prog_met@steps),
-        total_metabolites = prog_met@n_metabolites_total
-    ), aes(x = step, y = total_metabolites)) +
-        geom_bar(stat = "identity", fill = "steelblue", width = 0.7) +
-        geom_text(aes(label = total_metabolites), 
-                  vjust = -0.5, 
-                  size = 4) +
-        labs(
-            title = "Total Unique Metabolites (All Assays)",
-            x = "Filtering Step",
-            y = "Unique Metabolites"
-        ) +
-        theme_minimal() +
-        theme(
-            axis.text.x = element_text(angle = 45, hjust = 1),
-            panel.grid.major.x = element_blank()
-        )
+    plot_list$total_metabolites <- tryCatch({
+        ggplot(data.frame(
+            step = factor(prog_met@steps, levels = prog_met@steps),
+            total_metabolites = prog_met@n_metabolites_total
+        ), aes(x = step, y = total_metabolites)) +
+            geom_bar(stat = "identity", fill = "steelblue", width = 0.7) +
+            geom_text(aes(label = total_metabolites), 
+                      vjust = -0.5, 
+                      size = 4) +
+            labs(
+                title = "Total Unique Metabolites (All Assays)",
+                x = "Filtering Step",
+                y = "Unique Metabolites"
+            ) +
+            theme_minimal() +
+            theme(
+                axis.text.x = element_text(angle = 45, hjust = 1),
+                panel.grid.major.x = element_blank()
+            )
+    }, error = function(e) {
+        NULL
+    })
     
     # --- 2. Metabolites Per Assay Plot --- #
     # First create a data frame with metabolites per assay per step - use purrr
@@ -1385,6 +1547,7 @@ generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
             ) +
             scale_fill_brewer(palette = "Set1")
     }
+    
     
     # --- 3. Detected Metabolites Per Sample Plot --- #
     # Create a data frame with detected metabolites per sample per step - use purrr
@@ -1439,6 +1602,7 @@ generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
             scale_color_brewer(palette = "Set2")
     }
     
+    
     # --- 4. Missingness Percentage Per Assay Plot --- #
     # Create a data frame with missingness percentage per assay per step - use purrr
     missingness_df <- purrr::map_dfr(seq_along(prog_met@steps), function(step_idx) {
@@ -1484,6 +1648,7 @@ generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
             ) +
             scale_fill_brewer(palette = "Set1")
     }
+    
     
     # --- 5. Sum Intensity Per Sample Plot --- #
     # Create a data frame with sum intensity per sample per step - use purrr
@@ -1541,6 +1706,7 @@ generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
             ) +
             scale_color_brewer(palette = "Set2")
     }
+    
     
     # --- 6. CV Distribution Plot --- #
     # Create a data frame with CV distribution per step - use purrr
@@ -1659,6 +1825,7 @@ generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
             ) +
             scale_fill_brewer(palette = "Set1")
     }
+    
     
     return(plot_list)
 }

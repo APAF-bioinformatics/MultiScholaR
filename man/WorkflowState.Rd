@@ -133,6 +133,7 @@ A character vector of state names.
 \if{latex}{\out{\hypertarget{method-WorkflowState-setWorkflowType}{}}}
 \subsection{Method \code{setWorkflowType()}}{
 Set the workflow type for the session.
+Workflow type determines which set of modules to load.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{WorkflowState$setWorkflowType(type)}\if{html}{\out{</div>}}
 }
@@ -140,7 +141,10 @@ Set the workflow type for the session.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{type}}{A character string for the workflow type (e.g., "LFQ", "TMT").}
+\item{\code{type}}{A character string for the workflow type.
+Proteomics: "LFQ", "TMT", "DIA"
+Metabolomics: "metabolomics_standard"
+Lipidomics: "lipidomics_standard"}
 }
 \if{html}{\out{</div>}}
 }

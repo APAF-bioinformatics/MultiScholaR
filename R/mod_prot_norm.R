@@ -2122,10 +2122,12 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
         cat(sprintf("   STATE UPDATE Step: New trigger value = %s\n", new_trigger_value))
         cat("   STATE UPDATE Step: state_update_trigger SET SUCCESSFULLY\n")
         
-        # NOW enable differential expression tab
+        # NOW enable differential expression tab - must replace entire list to trigger reactivity
         cat("   STATE UPDATE Step: Setting tab status...\n")
-        workflow_data$tab_status$normalization <- "complete"
-        workflow_data$tab_status$differential_expression <- "pending"
+        updated_status <- workflow_data$tab_status
+        updated_status$normalization <- "complete"
+        updated_status$differential_expression <- "pending"
+        workflow_data$tab_status <- updated_status
         cat(sprintf("   STATE UPDATE Step: normalization status = %s\n", workflow_data$tab_status$normalization))
         cat(sprintf("   STATE UPDATE Step: differential_expression status = %s\n", workflow_data$tab_status$differential_expression))
         cat("--- Exiting STATE UPDATE TRIGGER setting ---\n")
@@ -2313,10 +2315,12 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
         workflow_data$state_update_trigger <- new_trigger_value
         cat("   STATE UPDATE Step: state_update_trigger SET SUCCESSFULLY\n")
         
-        # NOW enable differential expression tab
+        # NOW enable differential expression tab - must replace entire list to trigger reactivity
         cat("   STATE UPDATE Step: Setting tab status...\n")
-        workflow_data$tab_status$normalization <- "complete"
-        workflow_data$tab_status$differential_expression <- "pending"
+        updated_status <- workflow_data$tab_status
+        updated_status$normalization <- "complete"
+        updated_status$differential_expression <- "pending"
+        workflow_data$tab_status <- updated_status
         cat(sprintf("   STATE UPDATE Step: normalization status = %s\n", workflow_data$tab_status$normalization))
         cat("--- Exiting STATE UPDATE TRIGGER setting (SKIP MODE) ---\n")
         
@@ -2598,8 +2602,11 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
         
         # Reset workflow data
         workflow_data$ruv_normalised_for_de_analysis_obj <- NULL
-        workflow_data$tab_status$normalization <- "pending"
-        workflow_data$tab_status$differential_expression <- "disabled"
+        # Must replace entire list to trigger reactivity
+        updated_status <- workflow_data$tab_status
+        updated_status$normalization <- "pending"
+        updated_status$differential_expression <- "disabled"
+        workflow_data$tab_status <- updated_status
         
         # Clear correlation filter summary and filtering summary
         output$correlation_filter_summary <- shiny::renderText("No correlation filtering applied yet")

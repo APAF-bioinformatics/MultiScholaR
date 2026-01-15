@@ -54,13 +54,13 @@ setGeneric(name="plotRleList"
            , signature=c("theObject", "list_of_columns", "yaxis_limit"))
 
 setGeneric(name="plotPca"
-           , def=function( theObject, grouping_variable, shape_variable = NULL, label_column, title, font_size, cv_percentile = 0.90 ) {
+           , def=function( theObject, grouping_variable, shape_variable = NULL, label_column = NULL, title = NULL, font_size = 8, cv_percentile = 0.90 ) {
              standardGeneric("plotPca")
            }
            , signature=c("theObject", "grouping_variable", "shape_variable", "label_column", "title", "font_size", "cv_percentile"))
 
 setGeneric(name="plotPcaList"
-           , def=function( theObject, grouping_variables_list, label_column, title, font_size, cv_percentile = 0.90 ) {
+           , def=function( theObject, grouping_variables_list, label_column = NULL, title = NULL, font_size = 8, cv_percentile = 0.90 ) {
              standardGeneric("plotPcaList")
            }
            , signature=c("theObject", "grouping_variables_list", "label_column", "title", "font_size", "cv_percentile"))
@@ -424,6 +424,12 @@ setGeneric(name = "getNegCtrlMetabAnova",
            },
            signature = c("theObject")) # Primary dispatch on object 
 
+setGeneric(name = "filterSamplesByMetaboliteCorrelationThreshold",
+           def = function(theObject, pearson_correlation_per_pair_list = NULL, min_pearson_correlation_threshold = NULL) {
+             standardGeneric("filterSamplesByMetaboliteCorrelationThreshold")
+           },
+           signature = c("theObject", "pearson_correlation_per_pair_list", "min_pearson_correlation_threshold"))
+
 ###### Metabolomics
 
 
@@ -516,3 +522,20 @@ setGeneric( name ="differentialAbundanceAnalysis"
               standardGeneric("differentialAbundanceAnalysis")
             }
             , signature=c("objectsList"))
+
+
+# --- Metabolomics Correlation Filtering ---
+
+#' @title Filter Samples by Metabolite Correlation Threshold
+#' @description Filters samples from a MetaboliteAssayData object based on 
+#'              pairwise Pearson correlation results. Samples with correlation
+#'              below the threshold are removed.
+#' @name filterSamplesByMetaboliteCorrelationThreshold
+#' @export
+setGeneric(name = "filterSamplesByMetaboliteCorrelationThreshold"
+           , def = function(theObject
+                            , pearson_correlation_per_pair = NULL
+                            , min_pearson_correlation_threshold = 0.5) {
+               standardGeneric("filterSamplesByMetaboliteCorrelationThreshold")
+           }
+           , signature = c("theObject"))

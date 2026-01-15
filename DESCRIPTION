@@ -59,6 +59,18 @@ Collate:
     'app_server.R'
     'app_ui.R'
     'launch_app.R'
+    'mod_metab_de.R'
+    'mod_metab_design_builder.R'
+    'mod_metab_design.R'
+    'mod_metab_import.R'
+    'mod_metab_norm.R'
+    'mod_metab_qc.R'
+    'mod_metab_qc_duplicates.R'
+    'mod_metab_qc_intensity.R'
+    'mod_metab_qc_itsd.R'
+    'mod_metab_qc_s4.R'
+    'mod_metab_summary.R'
+    'mod_metabolomics.R'
     'mod_prot_de.R'
     'mod_prot_design.R'
     'mod_prot_design_builder.R'
@@ -88,7 +100,7 @@ Collate:
     'utils_shiny_logging.R'
     'utils_workflow_state.R'
     'zzz.R'
-Suggests: 
+Suggests:
     testthat (>= 3.0.0),
     GlimmaV2,
     UpSetR,
@@ -165,6 +177,7 @@ Imports:
     rstudioapi,
     ruv,
     rvest,
+    seqinr,
     shiny,
     shinydashboard,
     shinyFiles,
