@@ -1,12 +1,137 @@
-# MultiScholaR <img src="https://img.shields.io/badge/Version-0.3.6-orange?style=for-the-badge" alt="Version 0.3.6.3">
+# MultiScholaR <img src="https://img.shields.io/badge/Version-0.4.1-orange?style=for-the-badge" alt="Version 0.4.1">
 
 ![Banner](inst/shiny/www/MultiScholaR.png "MultiScholaR Banner")
 
->**⚠️ Disclaimer:** `MultiScholaR` is currently under active development. The **end-to-end Multiomics GUI** is now functional with complete proteomics workflows (DIA-NN, TMT-PD, LFQ-Fragpipe) including automated parameter optimization, differential expression analysis, enrichment, and publication-ready reports. Metabolomics workflows are available as R Markdown templates and will be integrated into the GUI in upcoming releases. Functionality described in the roadmap is planned for future releases.
+> **⚠️ Disclaimer:** `MultiScholaR` is currently under active development. The **end-to-end Multiomics GUI** now supports Proteomics, Metabolomics, and Lipidomics workflows, including automated parameter optimization, differential expression analysis, enrichment, and publication-ready reports.
 
 ## Overview
 
-Modern multi-omics datasets present a significant challenge: they require substantial programming expertise and practical knowledge, creating a skills gap that makes it difficult for many researchers to apply modern statistical best practices. MultiScholaR addresses this by embracing the philosophy of "teaching you *how* to fish". While many tools offer quick analytical results, they often function as "black boxes," obscuring the crucial *how* and *why* behind the analyses. This limits deep understanding, adaptability, and the potential for innovation.
+MultiScholaR bridges the gap between complex multi-omics data and accessible, reproducible analysis. By providing transparent, well-documented templates and a production-grade GUI, it empowers researchers to not only generate results but understand the _how_ and _why_ behind their analyses.
+
+**Key Features:**
+
+- **Modular Architecture**: Object-oriented design facilitating easy integration of new tools.
+- **Reproducibility**: Standardized workflows with publication-ready reporting.
+- **Quality Control**: Stringent QC measures including FDR thresholds, missing value filtering, and batch effect correction (RUV-IIIc/cyclic-loess).
+- **Multi-Omics Integration**: Tools for integrating Proteomics, Metabolomics, and Lipidomics data.
+
+## Using MultiScholaR
+
+### Option 1: GUI Workflow (Recommended)
+
+For a **code-free, interactive experience**:
+
+1.  **Download the Launcher**: [MultiScholaR Launcher](https://github.com/APAF-bioinformatics/MultiScholaR-launcher)
+2.  **Launch**: Double-click to install/update and run.
+3.  **Analyze**: Follow the guided workflow for Import, QC, Normalization, DE, and Reporting.
+
+### Option 2: R Markdown Workflows (Advanced)
+
+For **programmatic, reproducible analyses**, use the provided R Markdown templates located in `inst/workbooks/`.
+
+## End-to-End Multiomics GUI
+
+MultiScholaR v0.4.1 features a comprehensive GUI built on the `{golem}` framework.
+
+### Supported Workflows
+
+#### 1. Proteomics
+
+- **DIA-NN**: Peptide-to-protein rollup (IQ), automated RUV-IIIc normalization.
+- **TMT-PD**: Protein-level analysis for Tandem Mass Tag data.
+- **LFQ-Fragpipe**: Label-free quantification workflow.
+- **Mixed Species**: Automatic organism detection and filtering for mixed-species samples.
+
+#### 2. Metabolomics & Lipidomics (New in v0.4.1)
+
+- **Full GUI Integration**: Complete Import -> QC -> Normalization -> DE -> Report pipeline.
+- **Vendor Support**: MS-Dial (Metabolomics), MS-Dial + LipidSearch (Lipidomics), and flexible custom annotation mapping.
+- **S4 Class Infrastructure**: Robust `MetabolomicsAssayData` and `LipidomicsAssayData` objects.
+
+### Workflow Architecture
+
+All workflows follow a consistent 6-stage pipeline:
+
+1.  **Import**: Load and validate data (e.g., `.txt`, `.csv`, `.tsv`).
+2.  **Quality Control**: Interactive filtering (e.g., missing values, intensity cutoffs).
+3.  **Normalization**: Automated optimization (RUV-IIIc, cyclic-loess).
+4.  **Differential Expression**: Robust statistical analysis (`edgeR`/`limma`).
+5.  **Enrichment**: Pathway analysis (`clusterProfiler`, `gProfiler2`).
+6.  **Reporting**: Automated HTML/Word reports.
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '16px'}}}%%
+graph TD
+    Start([Start Analysis]) --> Select{Select Omics Type}
+
+    Select -->|Proteomics| Prot[Proteomics Workflows]
+    Select -->|Metabolomics| Metab[Metabolomics Workflow]
+    Select -->|Lipidomics| Lipid[Lipidomics Workflow]
+    Select -->|Integration| Int[Multi-Omics Integration]
+
+    Prot --> QC[Quality Control]
+    Metab --> QC
+    Lipid --> QC
+
+    QC --> Norm[Normalization]
+    Norm --> DE[Differential Expression]
+    DE --> Enrich[Enrichment Analysis]
+    Enrich --> Reports[Publication-Ready Reports]
+
+    Reports --> End([Analysis Complete])
+
+    Int --> MOFA[MOFA2 Integration]
+    MOFA --> IntEnrich[Multi-Omics Enrichment]
+    IntEnrich --> End
+
+    style Start fill:#E8F4F8
+    style End fill:#D4F8D4
+    style Norm fill:#FFE4B5
+    style DE fill:#E6E6FA
+    style Enrich fill:#F0E68C
+    style Reports fill:#FFDAB9
+```
+
+## Quick Start
+
+For a full guide, visit: [Data to Discovery: A Multiomics Masterclass](https://zenodo.org/records/15573343).
+
+**Prerequisites**: R (4.4.3+), RStudio, Rtools (Windows).
+
+## Contributors
+
+- Ignatius Pang (ignatius.pang@mq.edu.au)
+- Will Klare (william.klare@mq.edu.au)
+
+## Development Roadmap
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
+graph TD
+    v03[v0.3.6: Proteomics GUI] --> v04[v0.4.1: Current Release];
+    v04 --> v05[v0.5: Full Multiomics Suite];
+
+    subgraph "**v0.4.1: Current Release**"
+        v04
+        F1(Lipidomics GUI)
+        F2(Metabolomics GUI)
+        F3(Component Integration)
+    end
+
+    subgraph "**v0.5: Full Multiomics Suite**"
+        v05
+        H1(MOFA2 GUI Integration)
+        H2(Unified Reporting)
+    end
+
+    style v04 fill:#FFDAB9
+```
+
+> **⚠️ Disclaimer:** `MultiScholaR` is currently under active development. The **end-to-end Multiomics GUI** is now functional with complete proteomics workflows (DIA-NN, TMT-PD, LFQ-Fragpipe) including automated parameter optimization, differential expression analysis, enrichment, and publication-ready reports. Metabolomics workflows are available as R Markdown templates and will be integrated into the GUI in upcoming releases. Functionality described in the roadmap is planned for future releases.
+
+## Overview
+
+Modern multi-omics datasets present a significant challenge: they require substantial programming expertise and practical knowledge, creating a skills gap that makes it difficult for many researchers to apply modern statistical best practices. MultiScholaR addresses this by embracing the philosophy of "teaching you _how_ to fish". While many tools offer quick analytical results, they often function as "black boxes," obscuring the crucial _how_ and _why_ behind the analyses. This limits deep understanding, adaptability, and the potential for innovation.
 
 MultiScholaR is designed to bridge this gap by providing a comprehensive R package with transparent, well-documented workflow templates for single-omic analyses (e.g., transcriptomics, proteomics, metabolomics and others TBA), paired with integrative multi-omics approaches. These templates serve as powerful worked examples, allowing researchers to deconstruct complete analyses—examining functions, parameters, data flow, and logic within a real bioinformatics context. This "reverse engineering" approach accelerates meaningful learning, focusing on transferable skills (R, tidyverse, Bioconductor) and building the confidence to adapt methods to unique research questions. Our goal is not just to enable complex analyses but to empower researchers with the understanding and critical evaluation skills needed to tackle the analytical challenges of modern biology, enhance reproducibility through standardized and citable methods, and foster a more computationally fluent research community.
 
@@ -50,12 +175,13 @@ For **programmatic, reproducible analyses** using R Markdown templates:
    - **DIA-NN with limpa imputation**: Use `DIA_workflow_limpa_starter.rmd` or `DIA_workflow_limpa_experienced.rmd` for advanced missing value imputation using the limpa package
    - **Standard DIA-NN**: Use `DIA_workflow_starter.rmd` or `DIA_workflow_experienced.rmd` for standard DIA-NN analysis
    - **Metabolomics**: Use `metabolomics_workflow_starter.rmd` or `metabolomics_workflow_experienced.rmd` for metabolomics analysis
-3. **Follow the Workflow**: 
+3. **Follow the Workflow**:
    - Copy your data files to the appropriate directories
    - Run chunks sequentially
    - Generate reports using the provided R Markdown templates
 
 **When to Use Each**:
+
 - **GUI**: Best for interactive analysis, learning, and users who prefer point-and-click interfaces
 - **R Markdown**: Best for batch processing, custom analyses, reproducibility, and integration into larger pipelines
 
@@ -91,6 +217,7 @@ Each stage is implemented as a self-contained module, allowing for easy maintena
 MultiScholaR v0.3.6 provides complete GUI implementations for three major proteomics workflows:
 
 #### DIA-NN Workflow
+
 - **Full GUI implementation** for Data-Independent Acquisition (DIA) proteomics data processed with DIA-NN
 - **Peptide-to-protein rollup** using the IQ tool for quantitative data summarization
 - **Comprehensive QC pipeline** with peptide-level and protein-level filtering
@@ -98,12 +225,14 @@ MultiScholaR v0.3.6 provides complete GUI implementations for three major proteo
 - **Modular implementation**: Import, QC, normalization, DE analysis, and enrichment modules
 
 #### TMT-PD Workflow
+
 - **GUI implementation** for Tandem Mass Tag (TMT) data processed with Proteome Discoverer
 - **Protein-level analysis** from the start (no peptide rollup required)
 - **TMT-specific QC** and normalization procedures
 - **Modular implementation**: Same modular structure as DIA-NN, with workflow-specific adaptations
 
 #### LFQ-Fragpipe Workflow
+
 - **GUI implementation** for Label-Free Quantification (LFQ) data processed with FragPipe
 - **Protein-level quantification** with FragPipe-specific data handling
 - **Optimized for label-free** experimental designs
@@ -116,6 +245,7 @@ All three workflows share the same analysis pipeline after data import and initi
 MultiScholaR v0.3.6 introduces support for **mixed species FASTA databases** across **all proteomics workflows** (DIA-NN, TMT-PD, LFQ-Fragpipe, MaxQuant, Spectronaut). This feature is commonly used in non-specific search strategies or when analyzing samples with spiked-in standards or contaminants.
 
 **Key Features:**
+
 - **Automatic organism detection**: Parses FASTA headers to extract organism information (OS/OX fields)
 - **Distribution analysis**: Counts protein matches per organism and calculates percentages
 - **Interactive selection**: Modal dialog displays organism distribution with protein counts and percentages
@@ -124,6 +254,7 @@ MultiScholaR v0.3.6 introduces support for **mixed species FASTA databases** acr
 - **Seamless integration**: Organism selection automatically updates taxonomy ID and organism name for downstream analysis
 
 **How It Works:**
+
 1. Check "Mixed species FASTA" checkbox during data import
 2. System processes FASTA file and analyzes organism distribution
 3. Modal dialog appears showing organism breakdown (e.g., "Mus musculus: 85%, Homo sapiens: 12%, Other: 3%")
@@ -132,6 +263,7 @@ MultiScholaR v0.3.6 introduces support for **mixed species FASTA databases** acr
 6. Confirm selection to proceed with analysis
 
 This feature is particularly useful for:
+
 - Non-specific search databases containing multiple species
 - Samples with spiked-in protein standards
 - Contaminant analysis and filtering
@@ -168,38 +300,38 @@ The following diagram illustrates the complete analysis pipeline available in Mu
 %%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '16px'}}}%%
 graph TD
     Start([Start Analysis]) --> Select{Select Omics Type}
-    
+
     Select -->|Proteomics| ProtWorkflow{Select Workflow}
     Select -->|Metabolomics| MetWorkflow[Metabolomics R Markdown]
     Select -->|Integration| IntWorkflow[Multi-Omics Integration]
-    
+
     ProtWorkflow -->|DIA-NN| DIA[Import DIA-NN Data]
     ProtWorkflow -->|TMT-PD| TMT[Import TMT Data]
     ProtWorkflow -->|LFQ-Fragpipe| LFQ[Import LFQ Data]
-    
+
     DIA --> QC1[Quality Control]
     TMT --> QC1
     LFQ --> QC1
-    
+
     QC1 --> Norm[Normalization<br/>+ Automated RUV-IIIc Optimization]
-    
+
     Norm --> DE[Differential Expression<br/>edgeR / limma]
-    
+
     DE --> Enrich[Enrichment Analysis<br/>clusterProfiler / gProfiler2]
-    
+
     Enrich --> Reports[Publication-Ready Reports<br/>HTML & Word]
-    
+
     Reports --> End([Analysis Complete])
-    
+
     MetWorkflow --> MetQC[Metabolomics QC & Normalization]
     MetQC --> MetDE[Metabolomics DE Analysis]
     MetDE --> MetEnrich[Metabolomics Enrichment]
     MetEnrich --> End
-    
+
     IntWorkflow --> MOFA[MOFA2 Integration]
     MOFA --> IntEnrich[Multi-Omics Enrichment]
     IntEnrich --> End
-    
+
     style Start fill:#E8F4F8
     style End fill:#D4F8D4
     style Norm fill:#FFE4B5
@@ -231,7 +363,7 @@ MultiScholaR provides comprehensive differential expression analysis through the
 
 Pathway and functional enrichment analysis is seamlessly integrated:
 
-- **Multiple annotation sources**: 
+- **Multiple annotation sources**:
   - User-supplied annotations via `clusterProfiler`
   - Automated annotation retrieval via `gProfiler2`
 - **Enrichment methods**: Gene Ontology (GO), KEGG, Reactome, and custom pathway databases
@@ -242,7 +374,7 @@ Pathway and functional enrichment analysis is seamlessly integrated:
 
 Automated report generation ensures reproducible, publication-quality outputs:
 
-- **Report templates**: 
+- **Report templates**:
   - `DIANN_report.rmd`: Comprehensive DIA-NN analysis reports
   - `TMT_report.rmd`: TMT proteomics reports
   - `LFQ_report.rmd`: Label-free quantification reports
@@ -259,7 +391,7 @@ MultiScholaR includes a **fully functional metabolomics analysis workflow** avai
 - **Normalization**: Multiple normalization methods including RUVIIIc
 - **Differential Analysis**: Statistical analysis tailored for metabolomics data
 - **Enrichment**: Metabolite pathway enrichment analysis
-- **Workflow Templates**: 
+- **Workflow Templates**:
   - `metabolomics_workflow_starter.rmd`: Beginner-friendly with detailed explanations
   - `metabolomics_workflow_experienced.rmd`: Streamlined for experienced users
 
@@ -285,6 +417,7 @@ MultiScholaR includes a **fully functional metabolomics analysis workflow** avai
 </a>
 
 #### Windows Users Only:
+
 <a href="https://cran.r-project.org/bin/windows/Rtools/" target="_blank">
     <img src="https://img.shields.io/badge/Download-Rtools_(Windows)-276DC3?style=for-the-badge&logo=r" alt="Download Rtools for Windows">
 </a>
@@ -301,7 +434,8 @@ MultiScholaR includes a **fully functional metabolomics analysis workflow** avai
     <img src="https://img.shields.io/badge/Download-Tutorial_Data-orange?style=for-the-badge&logo=google-drive" alt="Download Tutorial Data">
 </a>
 
-This tutorial dataset contains example data from *Klebsiella variicola*, including:
+This tutorial dataset contains example data from _Klebsiella variicola_, including:
+
 - Example DIA-NN search results
 - Example organism FASTA file
 - NCBI annotation protein data searched against UniProt and UniParc databases
@@ -346,18 +480,19 @@ MultiScholaR follows the `{golem}` framework for the GUI application:
 
 This modular architecture ensures maintainability, scalability, and easy extension to new omics types.
 
+## Contributors
 
-## Contributors 
-* Ignatius Pang (ignatius.pang@mq.edu.au) 
-* Will Klare (william.klare@mq.edu.au) 
+- Ignatius Pang (ignatius.pang@mq.edu.au)
+- Will Klare (william.klare@mq.edu.au)
 
 ## Attributions
+
 This work is a derivative of the tool <a href="https://bitbucket.org/cmri-bioinformatics/proteomeriver/src/main/" target="_blank">ProteomeRiver</a>,
 originally built for batching proteomics and phosphoproteomic analysis, which is licensed under the GNU Lesser General Public License v3.
 Significant modifications and new code have been made by APAF-bioinformatics to create this independent library.
 See LICENSE file for details.
 
-As we are firmly in the age of artificial intelligence, it goes without saying that AI assistance has been used **RESPONSIBLY** 
+As we are firmly in the age of artificial intelligence, it goes without saying that AI assistance has been used **RESPONSIBLY**
 in the development of this project, with all appropriate checks and balances in place and adhering to industry-lead gold standards
 of best practice usage. This declaration has been mandated by Macquarie University ICT.
 
@@ -382,7 +517,7 @@ graph TD
         A2(✓ Solidify DIA Workflow)
         A3(✓ Establish S4 Structure)
     end
-    
+
     subgraph "**Completed: Multiomics Core**"
         B
         B4(✓ Cross-Omics Data Linking)
@@ -390,14 +525,14 @@ graph TD
         B6(✓ Pathway/StringDB Integration)
         B8(✓ Multiomic Pathway Visualisations)
     end
-    
+
     subgraph "**Completed: GUI Infrastructure**"
         C
         C1(✓ Golem-based Architecture)
         C2(✓ Modular Shiny Framework)
         C3(✓ State Management System)
     end
-    
+
     subgraph "**v0.3.5: GUI Foundation**"
         D
         D1(✓ End-to-End Proteomics GUI)
@@ -409,7 +544,7 @@ graph TD
         D8(✓ Metabolomics R Markdown Workflow)
         D9(✓ DIA-NN with limpa R Markdown)
     end
-    
+
     subgraph "**v0.3.6: Current Release**"
         D2
         D2a(✓ Remove Samples from Design Matrix)
@@ -418,7 +553,7 @@ graph TD
         D2d(✓ Mixed Species FASTA Analysis)
         D2e(✓ Enhanced Import Processing UI)
     end
-    
+
     subgraph "**v0.4: Metabolomics GUI**"
         E
         E1(Metabolomics GUI Integration)
@@ -426,7 +561,7 @@ graph TD
         E3(Metabolomics QC & Normalization)
         E4(Metabolomics DE & Enrichment)
     end
-    
+
     subgraph "**v0.4.1: Lipidomics GUI**"
         F
         F1(Lipidomics GUI Integration)
@@ -434,14 +569,14 @@ graph TD
         F3(Lipidomics QC & Normalization)
         F4(Lipidomics Analysis)
     end
-    
+
     subgraph "**v0.4.2: limpa Integration**"
         G
         G1(limpa Imputation in GUI)
         G2(Advanced Missing Value Handling)
         G3(limpa Workflow Integration)
     end
-    
+
     subgraph "**v0.5: Full Multiomics Suite**"
         H
         H1(MOFA2 GUI Integration)
@@ -449,7 +584,7 @@ graph TD
         H3(Cross-Omics Comparison Tools)
         H4(Unified Multiomics Reporting)
     end
-    
+
     subgraph "**Future Development**"
         I
         I1(Community Consultation)
@@ -467,4 +602,3 @@ graph TD
     style H fill:#DDA0DD,color:#000000
     style I fill:#F0E68C,color:#000000
 ```
-
