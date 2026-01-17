@@ -1,23 +1,23 @@
 # ============================================================================
-# mod_metabolomics.R
+# mod_lipidomics.R
 # ============================================================================
-# Purpose: Top-level metabolomics workflow orchestrator Shiny module
+# Purpose: Top-level lipidomics workflow orchestrator Shiny module
 #
-# This module coordinates all metabolomics sub-modules in a tabbed interface,
+# This module coordinates all lipidomics sub-modules in a tabbed interface,
 # managing the complete workflow from import to export.
 # ============================================================================
 
-#' @title Metabolomics Workflow Orchestrator Module
-#' @description Top-level Shiny module that coordinates the complete metabolomics
+#' @title Lipidomics Workflow Orchestrator Module
+#' @description Top-level Shiny module that coordinates the complete lipidomics
 #'              workflow including import, design, QC, normalization, differential
 #'              analysis, and summary/export.
-#' @name mod_metabolomics
+#' @name mod_lipidomics
 NULL
 
-#' @rdname mod_metabolomics
+#' @rdname mod_lipidomics
 #' @export
 #' @importFrom shiny NS tagList fluidRow column h2 tabsetPanel tabPanel uiOutput icon
-mod_metabolomics_ui <- function(id) {
+mod_lipidomics_ui <- function(id) {
     ns <- shiny::NS(id)
 
     shiny::tagList(
@@ -26,7 +26,7 @@ mod_metabolomics_ui <- function(id) {
                 12,
                 shiny::h2(
                     shiny::icon("flask"),
-                    " Metabolomics Workflow",
+                    " Lipidomics Workflow",
                     style = "margin-bottom: 20px;"
                 )
 
@@ -35,7 +35,7 @@ mod_metabolomics_ui <- function(id) {
 
                 # Main workflow tabs
                 , shiny::tabsetPanel(
-                    id = ns("metabolomics_tabs"),
+                    id = ns("lipidomics_tabs"),
                     type = "pills"
 
                     # Tab 1: Setup & Import
@@ -45,7 +45,7 @@ mod_metabolomics_ui <- function(id) {
                             " Setup & Import"
                         ),
                         value = "import",
-                        mod_metab_import_ui(ns("import"))
+                        mod_lipid_import_ui(ns("import"))
                     )
 
                     # Tab 2: Design Matrix
@@ -55,7 +55,7 @@ mod_metabolomics_ui <- function(id) {
                             " Design Matrix"
                         ),
                         value = "design",
-                        mod_metab_design_ui(ns("design"))
+                        mod_lipid_design_ui(ns("design"))
                     )
 
                     # Tab 3: Quality Control
@@ -65,7 +65,7 @@ mod_metabolomics_ui <- function(id) {
                             " Quality Control"
                         ),
                         value = "qc",
-                        mod_metab_qc_ui(ns("qc"))
+                        mod_lipid_qc_ui(ns("qc"))
                     )
 
                     # Tab 4: Normalization
@@ -75,7 +75,7 @@ mod_metabolomics_ui <- function(id) {
                             " Normalization"
                         ),
                         value = "norm",
-                        mod_metab_norm_ui(ns("norm"))
+                        mod_lipid_norm_ui(ns("norm"))
                     )
 
                     # Tab 5: Differential Analysis
@@ -85,7 +85,7 @@ mod_metabolomics_ui <- function(id) {
                             " Differential Analysis"
                         ),
                         value = "de",
-                        mod_metab_de_ui(ns("de"))
+                        mod_lipid_de_ui(ns("de"))
                     )
 
                     # Tab 6: Summary & Export
@@ -95,7 +95,7 @@ mod_metabolomics_ui <- function(id) {
                             " Summary & Export"
                         ),
                         value = "summary",
-                        mod_metab_summary_ui(ns("summary"))
+                        mod_lipid_summary_ui(ns("summary"))
                     )
                 )
             )
@@ -103,16 +103,16 @@ mod_metabolomics_ui <- function(id) {
     )
 }
 
-#' @rdname mod_metabolomics
+#' @rdname mod_lipidomics
 #' @param id Module ID
 #' @param project_dirs List of project directories from setup
-#' @param omic_type The omics type (should be "metabolomics")
+#' @param omic_type The omics type (should be "lipidomics")
 #' @param experiment_label The experiment label for this analysis
 #' @param volumes Volumes for shinyFiles file browser
 #' @export
 #' @importFrom shiny moduleServer reactiveValues reactive observeEvent renderUI req tags reactiveVal
 #' @importFrom logger log_info log_error log_warn
-mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_label, volumes = NULL) {
+mod_lipidomics_server <- function(id, project_dirs, omic_type, experiment_label, volumes = NULL) {
     shiny::moduleServer(id, function(input, output, session) {
         ns <- session$ns
 
@@ -121,7 +121,7 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
             # Data storage
             data_tbl = NULL,
             data_format = NULL,
-            data_type = "metabolite"
+            data_type = "lipid"
 
             # Column mapping from import
             , column_mapping = NULL
@@ -132,8 +132,8 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
             # R6 state manager for S4 objects
             , state_manager = WorkflowState$new()
 
-            # S4 objects for metabolomics
-            , metabolite_assay_data = NULL
+            # S4 objects for lipidomics
+            , lipid_assay_data = NULL
 
             # Contrasts for DE
             , contrasts = list(),
@@ -156,7 +156,7 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
             , processing_log = list()
         )
 
-        # Get paths for this metabolomics experiment
+        # Get paths for this lipidomics experiment
         paths_key <- omic_type
 
         if (!paths_key %in% names(project_dirs)) {
@@ -166,16 +166,16 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
 
         experiment_paths <- project_dirs[[paths_key]]
 
-        logger::log_info(sprintf("Metabolomics module initialized with paths for: %s", paths_key))
+        logger::log_info(sprintf("Lipidomics module initialized with paths for: %s", paths_key))
 
         # Reactive trigger for initializing QC modules (like proteomics pattern)
         qc_trigger <- shiny::reactiveVal(NULL)
 
         # Initialize all sub-module servers
-        logger::log_info("Initializing metabolomics workflow modules")
+        logger::log_info("Initializing lipidomics workflow modules")
 
         # Import module
-        mod_metab_import_server(
+        mod_lipid_import_server(
             "import",
             workflow_data,
             experiment_paths,
@@ -183,7 +183,7 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
         )
 
         # Design module
-        mod_metab_design_server(
+        mod_lipid_design_server(
             "design",
             workflow_data,
             experiment_paths,
@@ -192,7 +192,7 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
         )
 
         # QC module
-        mod_metab_qc_server(
+        mod_lipid_qc_server(
             "qc",
             workflow_data,
             experiment_paths,
@@ -202,17 +202,17 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
         )
 
         # Normalization module
-        mod_metab_norm_server(
+        mod_lipid_norm_server(
             "norm",
             workflow_data,
             experiment_paths,
             omic_type,
             experiment_label,
-            selected_tab = shiny::reactive(input$metabolomics_tabs)
+            selected_tab = shiny::reactive(input$lipidomics_tabs)
         )
 
         # DE module
-        mod_metab_de_server(
+        mod_lipid_de_server(
             "de",
             workflow_data,
             experiment_paths,
@@ -221,7 +221,7 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
         )
 
         # Summary module
-        mod_metab_summary_server(
+        mod_lipid_summary_server(
             "summary",
             project_dirs,
             omic_type,
@@ -229,11 +229,11 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
             workflow_data
         )
 
-        logger::log_info("Metabolomics workflow modules initialized")
+        logger::log_info("Lipidomics workflow modules initialized")
 
         # Workflow progress indicator using shared stepper component
         output$workflow_progress <- shiny::renderUI({
-            # Define metabolomics workflow steps (6 steps)
+            # Define lipidomics workflow steps (6 steps)
             steps <- list(
                 list(name = "Import", key = "setup_import", icon = "file-import"),
                 list(name = "Design", key = "design_matrix", icon = "th"),
@@ -258,7 +258,7 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
         shiny::observeEvent(workflow_data$tab_status$design_matrix,
             {
                 if (workflow_data$tab_status$design_matrix == "complete") {
-                    logger::log_info("Metabolomics: Design matrix complete, enabling QC tab")
+                    logger::log_info("Lipidomics: Design matrix complete, enabling QC tab")
                     update_tab_status("quality_control", "pending")
                 }
             },
@@ -269,7 +269,7 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
         shiny::observeEvent(workflow_data$tab_status$quality_control,
             {
                 if (workflow_data$tab_status$quality_control == "complete") {
-                    logger::log_info("Metabolomics: QC complete, enabling Normalization tab")
+                    logger::log_info("Lipidomics: QC complete, enabling Normalization tab")
                     update_tab_status("normalization", "pending")
                 }
             },
@@ -280,7 +280,7 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
         shiny::observeEvent(workflow_data$tab_status$normalization,
             {
                 if (workflow_data$tab_status$normalization == "complete") {
-                    logger::log_info("Metabolomics: Normalization complete, enabling DE tab")
+                    logger::log_info("Lipidomics: Normalization complete, enabling DE tab")
                     update_tab_status("differential_analysis", "pending")
                 }
             },
@@ -291,7 +291,7 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
         shiny::observeEvent(workflow_data$tab_status$differential_analysis,
             {
                 if (workflow_data$tab_status$differential_analysis == "complete") {
-                    logger::log_info("Metabolomics: DE complete, enabling Summary tab")
+                    logger::log_info("Lipidomics: DE complete, enabling Summary tab")
                     update_tab_status("session_summary", "pending")
                 }
             },
@@ -308,8 +308,8 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
 # Standalone app launcher for testing
 # ============================================================================
 
-#' @title Launch Metabolomics Workflow App
-#' @description Launches a standalone Shiny app for the metabolomics workflow.
+#' @title Launch Lipidomics Workflow App
+#' @description Launches a standalone Shiny app for the lipidomics workflow.
 #'              Useful for testing and development.
 #'
 #' @param base_dir Base directory for the project. Defaults to a temp directory.
@@ -320,12 +320,12 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
 #'
 #' @examples
 #' \dontrun{
-#' run_metabolomics_app()
+#' run_lipidomics_app()
 #' }
-run_metabolomics_app <- function(base_dir = NULL, ...) {
+run_lipidomics_app <- function(base_dir = NULL, ...) {
     # Set up default base directory
     if (is.null(base_dir)) {
-        base_dir <- file.path(tempdir(), "metabolomics_test")
+        base_dir <- file.path(tempdir(), "lipidomics_test")
         if (!dir.exists(base_dir)) {
             dir.create(base_dir, recursive = TRUE)
         }
@@ -333,7 +333,7 @@ run_metabolomics_app <- function(base_dir = NULL, ...) {
 
     # Create mock project_dirs structure matching what app_server.R creates
     project_dirs <- list(
-        metabolomics = list(
+        lipidomics = list(
             base_dir = base_dir,
             data_dir = file.path(base_dir, "data"),
             results_dir = file.path(base_dir, "results"),
@@ -342,7 +342,7 @@ run_metabolomics_app <- function(base_dir = NULL, ...) {
     )
 
     # Create directories if they don't exist
-    lapply(project_dirs$metabolomics, function(d) {
+    lapply(project_dirs$lipidomics, function(d) {
         if (!dir.exists(d)) dir.create(d, recursive = TRUE)
     })
 
@@ -354,7 +354,7 @@ run_metabolomics_app <- function(base_dir = NULL, ...) {
                 .badge { padding: 8px 12px; }
             "))
         ),
-        mod_metabolomics_ui("metabolomics_app")
+        mod_lipidomics_ui("lipidomics_app")
     )
 
     server <- function(input, output, session) {
@@ -364,11 +364,11 @@ run_metabolomics_app <- function(base_dir = NULL, ...) {
             volumes <- shinyFiles::getVolumes()()
         }
 
-        mod_metabolomics_server(
-            id = "metabolomics_app",
+        mod_lipidomics_server(
+            id = "lipidomics_app",
             project_dirs = project_dirs,
-            omic_type = "metabolomics",
-            experiment_label = "Metabolomics Test",
+            omic_type = "lipidomics",
+            experiment_label = "Lipidomics Test",
             volumes = volumes
         )
     }

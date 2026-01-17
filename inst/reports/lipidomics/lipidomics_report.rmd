@@ -1,0 +1,1271 @@
+---
+title: "`r paste('Lipidomics analysis for', params$workflow_name, '- report - created on', params$timestamp)`"
+author: "Your_fancy_self"
+date: "`r format(Sys.Date(), '%Y-%m-%d')`"
+output:
+  word_document:
+    fig_caption: true
+params:
+  omic_type: "lipidomics"
+  experiment_label: "DEFAULT_LABEL"
+  workflow_name: "Unknown Workflow"
+  timestamp: "`r format(Sys.time(), '%Y-%m-%d %H:%M:%S')`"
+mainfont: "Calibri"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+```{r Project Setup, echo=FALSE, warning=FALSE}
+# This chunk sets up paths using the global project_dirs object
+library(tidyverse)
+library(purrr)
+library(flextable)
+library(here)
+library(patchwork)
+library(viridis)
+library(gt)
+library(plotly)
+library(glue)
+library(webshot2)
+# Explicitly load key tidyverse sub-packages for knitr environment robustness
+library(dplyr)
+library(stringr)
+
+# Ensure global project_dirs object exists
+if (!exists("project_dirs", envir = .GlobalEnv) || !is.list(project_dirs)) {
+  stop("Global object 'project_dirs' not found or is not a list. Run MultiScholaR::setupDirectories() first.")
+}
+
+# Use the getProjectPaths helper function which handles key fallback
+if (!exists("getProjectPaths", mode = "function")) {
+  stop("getProjectPaths function not found. Ensure MultiScholaR package is loaded.")
+}
+
+current_project_paths <- tryCatch(
+  {
+    getProjectPaths(
+      omic_type = params$omic_type,
+      experiment_label = params$experiment_label,
+      project_dirs_object_name = "project_dirs",
+      env = .GlobalEnv
+    )
+  },
+  error = function(e) {
+    stop(glue::glue("Failed to get project paths for omic_type='{params$omic_type}', experiment_label='{params$experiment_label}': {e$message}"))
+  }
+)
+
+# Verify we got valid paths
+if (is.null(current_project_paths) || !is.list(current_project_paths)) {
+  stop("getProjectPaths returned NULL or invalid data. Check project_dirs setup.")
+}
+
+# Define commonly used paths for this report
+report_source_dir <- current_project_paths$source_dir
+report_results_summary_dir <- current_project_paths$results_summary_dir
+report_qc_figures_dir <- current_project_paths$qc_figures_dir
+report_publication_figures_dir <- current_project_paths$publication_figures_dir
+report_publication_tables_dir <- current_project_paths$publication_tables_dir
+
+# Basic validation
+if (!dir.exists(report_source_dir)) stop(glue::glue("Report source directory not found: {report_source_dir}"))
+if (!dir.exists(report_results_summary_dir)) stop(glue::glue("Report results summary directory not found: {report_results_summary_dir}"))
+
+# Define the safe default operator %||%
+`%||%` <- function(a, b) if (!is.null(a)) a else b
+
+# D66 Debug log file
+d66_log_file <- file.path(report_source_dir, "D66_debug.log")
+d66_log <- function(...) {
+  msg <- paste0(Sys.time(), " | ", paste(..., collapse = " "), "\n")
+  cat(msg, file = d66_log_file, append = TRUE)
+}
+# Initialize log file
+cat("=== D66 DEBUG LOG ===\n", file = d66_log_file)
+d66_log("Log initialized")
+```
+
+```{r Hierarchical Parser, echo=FALSE}
+# Hierarchical parser for study_parameters.txt format
+ReadStudyParamsNew <- function(filepath) {
+  if (!file.exists(filepath)) {
+    stop(glue::glue("Study parameters file not found: {filepath}"))
+  }
+
+  lines <- readLines(filepath, warn = FALSE)
+  params <- list()
+
+  # State variables for hierarchical parsing
+  main_section <- NULL
+  sub_section <- NULL
+  config_block <- NULL
+  in_contrasts <- FALSE
+
+  for (line in lines) {
+    original_line <- line
+    line <- trimws(line)
+
+    # Skip empty lines, separator lines, and title
+    if (line == "" || grepl("^=+$", line) || grepl("^-+$", line) ||
+      line == "Study Parameters" || grepl("^#+", line)) {
+      next
+    }
+
+    # Detect main sections
+    if (grepl(":$", line) && !grepl("^[[:space:]]", original_line)) {
+      # Strip bullet prefix and trailing colon from section name
+      main_section <- trimws(sub("^[-•][[:space:]]*", "", sub(":$", "", line)))
+      d66_log("[D66] MAIN SECTION detected:", main_section, "\n")
+      params[[main_section]] <- list()
+      sub_section <- NULL
+      config_block <- NULL
+      in_contrasts <- (main_section == "Contrasts")
+      next
+    }
+
+    # Detect sub-sections
+    if (grepl(":$", line) && grepl("^[[:space:]]+", original_line)) {
+      # Strip bullet prefix and trailing colon from sub-section name
+      sub_section <- trimws(sub("^[-•][[:space:]]*", "", sub(":$", "", line)))
+      d66_log("[D66] SUB-SECTION detected:", sub_section, "under main:", main_section, "\n")
+      if (!is.null(main_section)) {
+        if (is.null(params[[main_section]])) {
+          params[[main_section]] <- list()
+        }
+        params[[main_section]][[sub_section]] <- list()
+      }
+      config_block <- NULL
+      next
+    }
+
+    # Detect config blocks
+    if (grepl("^\\[.*\\]$", line)) {
+      config_block <- gsub("\\[|\\]", "", line)
+      if (!is.null(sub_section) && !is.null(main_section)) {
+        params[[main_section]][[sub_section]][[config_block]] <- list()
+      } else if (!is.null(main_section)) {
+        params[[main_section]][[config_block]] <- list()
+      }
+      next
+    }
+
+    # Handle contrasts
+    if (in_contrasts && main_section == "Contrasts") {
+      if (line != "" && !grepl("^-+$", line)) {
+        if (is.list(params[[main_section]]) && length(params[[main_section]]) == 0) {
+          params[[main_section]] <- c(trimws(line))
+        } else {
+          params[[main_section]] <- c(params[[main_section]], trimws(line))
+        }
+      }
+      next
+    }
+
+    # Handle bullet points and dash-prefixed lines (e.g., "• Item" or "- Item")
+    # Note: "-" must be at start or end of character class to be literal
+    if (grepl("^[•-]", line)) {
+      line <- sub("^[-•][[:space:]]*", "", line)
+    }
+
+    # Handle key-value pairs
+    if (grepl("[=:]", line)) {
+      # Split on the FIRST occurring delimiter to handle cases like "LCMS_Pos: k=2, controls=19"
+      colon_pos <- regexpr(":", line)[1]
+      equals_pos <- regexpr("=", line)[1]
+      # Use colon if it comes first (or if no equals), otherwise use equals
+      split_char <- if (colon_pos > 0 && (equals_pos < 0 || colon_pos < equals_pos)) ":" else "="
+      parts <- stringr::str_split_fixed(line, split_char, 2)
+      key <- trimws(parts[1, 1])
+      value <- trimws(parts[1, 2])
+
+      key <- sub("^[•[:space:]-]+", "", key)
+
+      if (nchar(key) > 0) {
+        if (!is.null(config_block) && !is.null(sub_section) && !is.null(main_section)) {
+          d66_log("[D66] KEY-VALUE in config:", main_section, "/", sub_section, "/", config_block, ":", key, "=", value, "\n")
+          params[[main_section]][[sub_section]][[config_block]][[key]] <- value
+        } else if (!is.null(sub_section) && !is.null(main_section)) {
+          d66_log("[D66] KEY-VALUE in sub-section:", main_section, "/", sub_section, ":", key, "=", value, "\n")
+          params[[main_section]][[sub_section]][[key]] <- value
+        } else if (!is.null(main_section)) {
+          d66_log("[D66] KEY-VALUE in main:", main_section, ":", key, "=", value, "\n")
+          params[[main_section]][[key]] <- value
+        }
+      }
+    }
+  }
+
+  d66_log("[D66] ReadStudyParamsNew finished. Top-level sections:", paste(names(params), collapse = ", "), "\n")
+  if (!is.null(params$"RUV-III Batch Correction")) {
+    d66_log("[D66] RUV-III section keys:", paste(names(params$"RUV-III Batch Correction"), collapse = ", "), "\n")
+    if (!is.null(params$"RUV-III Batch Correction"$"Per-Assay Parameters")) {
+      d66_log("[D66] Per-Assay Parameters keys:", paste(names(params$"RUV-III Batch Correction"$"Per-Assay Parameters"), collapse = ", "), "\n")
+    }
+  }
+  return(params)
+}
+
+# Safe parameter extraction
+safe_extract <- function(params, path, default = NULL) {
+  if (is.null(params) || is.null(path)) {
+    return(default)
+  }
+
+  if (is.character(path) && length(path) == 1 && grepl("\\|", path)) {
+    path_parts <- strsplit(path, "\\|")[[1]]
+  } else if (is.character(path)) {
+    path_parts <- path
+  } else {
+    return(default)
+  }
+
+  current <- params
+  for (part in path_parts) {
+    part <- trimws(part)
+    if (is.list(current) && part %in% names(current)) {
+      current <- current[[part]]
+    } else {
+      return(default)
+    }
+  }
+
+  return(current)
+}
+
+# Convert "Yes"/"No" strings to logical values
+# Handles various string representations of booleans
+parse_yes_no <- function(value, default = FALSE) {
+  if (is.null(value) || length(value) == 0) {
+    return(default)
+  }
+  if (is.na(value)) {
+    return(default)
+  }
+  if (is.logical(value)) {
+    return(value)
+  }
+  if (is.character(value)) {
+    return(tolower(trimws(value)) %in% c("yes", "true", "1", "applied"))
+  }
+  return(as.logical(value))
+}
+
+# Parse per-assay RUV parameters from "RUV-III Batch Correction" section
+# Handles format like: "LCMS_Pos: k=2, controls=19"
+# Returns structured data for per-assay formatting
+parse_per_assay_ruv <- function(ruv_section) {
+  result <- list(
+    total_k = NA,
+    total_controls = NA,
+    per_assay_text = NA,
+    grouping_variable = NA,
+    assay_list = list() # Structured per-assay data
+  )
+
+  d66_log("[D66] parse_per_assay_ruv called\n")
+  d66_log("[D66] ruv_section is NULL:", is.null(ruv_section), "\n")
+  d66_log("[D66] ruv_section length:", length(ruv_section), "\n")
+  d66_log("[D66] ruv_section names:", paste(names(ruv_section), collapse = ", "), "\n")
+
+  if (is.null(ruv_section) || length(ruv_section) == 0) {
+    return(result)
+  }
+
+  # Extract grouping variable
+  result$grouping_variable <- ruv_section$"Grouping Variable" %||% NA
+  d66_log("[D66] grouping_variable:", result$grouping_variable, "\n")
+
+  # Look for per-assay parameters in various formats
+  # Format 1: Named elements like "LCMS_Pos" with value "k=2, controls=19"
+  # Format 2: "Per-Assay Parameters" sub-section
+  per_assay_sub <- ruv_section$"Per-Assay Parameters"
+  d66_log("[D66] Per-Assay Parameters sub-section is NULL:", is.null(per_assay_sub), "\n")
+  if (!is.null(per_assay_sub)) {
+    d66_log("[D66] Per-Assay Parameters names:", paste(names(per_assay_sub), collapse = ", "), "\n")
+  }
+  per_assay <- per_assay_sub %||% ruv_section
+  d66_log("[D66] per_assay names:", paste(names(per_assay), collapse = ", "), "\n")
+
+  # Find assay entries (keys that look like assay names, not metadata keys)
+  metadata_keys <- c("Status", "Grouping Variable", "Per-Assay Parameters")
+  assay_keys <- setdiff(names(per_assay), metadata_keys)
+  d66_log("[D66] assay_keys after setdiff:", paste(assay_keys, collapse = ", "), "\n")
+
+  if (length(assay_keys) > 0) {
+    d66_log("[D66] Processing", length(assay_keys), "assay keys\n")
+    total_k <- 0
+    total_controls <- 0
+    assay_details <- c()
+    assay_list <- list()
+
+    for (assay_name in assay_keys) {
+      val <- per_assay[[assay_name]]
+      d66_log("[D66] Assay:", assay_name, "| val class:", class(val), "| val:", as.character(val)[1], "\n")
+      if (is.character(val)) {
+        # Parse "k=2, controls=19" format
+        k_match <- regmatches(val, regexpr("k=([0-9]+)", val))
+        ctrl_match <- regmatches(val, regexpr("controls=([0-9]+)", val))
+
+        k_val <- if (length(k_match) > 0) as.numeric(sub("k=", "", k_match)) else NA
+        ctrl_val <- if (length(ctrl_match) > 0) as.numeric(sub("controls=", "", ctrl_match)) else NA
+        d66_log("[D66]   k_val:", k_val, "| ctrl_val:", ctrl_val, "\n")
+
+        if (!is.na(k_val)) total_k <- max(total_k, k_val, na.rm = TRUE)
+        if (!is.na(ctrl_val)) total_controls <- total_controls + ctrl_val
+
+        assay_details <- c(assay_details, paste0(assay_name, ": ", val))
+
+        # Store structured per-assay data
+        assay_list[[assay_name]] <- list(k = k_val, controls = ctrl_val)
+      }
+    }
+
+    result$total_k <- if (total_k > 0) total_k else NA
+    result$total_controls <- if (total_controls > 0) total_controls else NA
+    result$per_assay_text <- paste(assay_details, collapse = "; ")
+    result$assay_list <- assay_list
+    d66_log("[D66] Final assay_list names:", paste(names(assay_list), collapse = ", "), "\n")
+    d66_log("[D66] Final assay_list length:", length(assay_list), "\n")
+  } else {
+    d66_log("[D66] No assay keys found!\n")
+  }
+
+  return(result)
+}
+
+# Enhanced parameter extraction for lipidomics
+ExtractLipidStudyParameters <- function(study_params) {
+  # Extract from different sections
+  basic_info <- study_params$"Basic Information" %||% list()
+
+  # Version info - try new name first, fall back to old name for backwards compatibility
+  version_info <- study_params$"Version Information" %||%
+    study_params$"Git Information" %||% list()
+
+  # RUV sections - try new format first, fall back to old format
+  ruv_batch_correction <- study_params$"RUV-III Batch Correction" %||% list()
+  ruv_results <- study_params$"Automatic RUV Optimization Results" %||% list()
+
+  # Metabolomics-specific sections
+  assay_info <- study_params$"Assay Information" %||% list()
+  itsd_info <- study_params$"ITSD Normalization" %||% list()
+  log_transform_info <- study_params$"Log Transformation" %||% list()
+  norm_info <- study_params$"Between-Sample Normalization" %||% list()
+  lipid_metadata <- study_params$"Lipidomics Metadata" %||% list()
+
+  # Navigate to S4 parameters
+  s4_params <- safe_extract(study_params, c("Workflow Parameters", "Parameters from Final S4 Object"), list())
+
+  # Navigate to UI parameters
+  ui_params <- safe_extract(study_params, c("Workflow Parameters", "User Interface Parameters"), list())
+
+  # Extract contrasts
+  contrasts <- study_params$"Contrasts" %||% character(0)
+
+  # Extract S4 parameter sections
+  s4_global <- s4_params$globalParameters %||% list()
+  s4_itsd <- s4_params$ITSDNormalization %||% list()
+  s4_norm <- s4_params$normaliseBetweenSamples %||% list()
+  s4_ruv <- s4_params$ruvIII_C_Varying %||% list()
+  s4_de <- s4_params$deAnalysisParameters %||% list()
+
+  # Also check for per-assay RUV params stored directly in S4
+  s4_ruv_k <- s4_params$ruv_number_k %||% list()
+  s4_ruv_ctrl <- s4_params$ctrl %||% list()
+
+  # Extract UI parameter sections
+  ui_de <- safe_extract(ui_params, "Differential Expression UI Parameters", list())
+  ui_enrich <- safe_extract(ui_params, "Enrichment Analysis UI Parameters", list())
+
+  # Parse per-assay RUV parameters from the new format
+  # Note: Due to txt file formatting, "Per-Assay Parameters" may be parsed as
+  # a separate top-level section instead of a sub-section of RUV-III Batch Correction
+  per_assay_section <- study_params$"Per-Assay Parameters" %||%
+    ruv_batch_correction$"Per-Assay Parameters" %||%
+    list()
+  d66_log("[D66] ExtractStudyParametersNew: per_assay_section names:", paste(names(per_assay_section), collapse = ", "))
+
+  # Merge per_assay_section into ruv_batch_correction for parsing
+  ruv_with_per_assay <- ruv_batch_correction
+  if (length(per_assay_section) > 0) {
+    ruv_with_per_assay$"Per-Assay Parameters" <- per_assay_section
+  }
+
+  parsed_ruv <- parse_per_assay_ruv(ruv_with_per_assay)
+
+  # Create flat parameter list
+  all_params <- list(
+    # Basic Information
+    workflow_name = basic_info$"Workflow Name",
+    description = basic_info$"Description",
+    timestamp = basic_info$"Timestamp",
+
+    # Version/Git Information - try new keys first, fall back to old keys
+    repository = version_info$"Repository",
+    branch = version_info$"Branch",
+    commit = version_info$"Commit",
+    git_timestamp = version_info$"Commit Timestamp" %||% version_info$"Git Timestamp",
+
+    # Assay Information
+    num_assays = assay_info$"Number of Assays" %||% NA,
+    assay_names = assay_info$"Assay Names" %||% NA,
+    total_metabolites = assay_info$"Total Unique Metabolites" %||% NA,
+
+    # ITSD Normalization (use parse_yes_no for boolean conversion)
+    itsd_applied = parse_yes_no(itsd_info$"Applied", FALSE),
+    itsd_method_type = itsd_info$"Method Type" %||% NA,
+    itsd_aggregation = itsd_info$"Aggregation" %||% NA,
+    itsd_removed = parse_yes_no(itsd_info$"ITSD Removed After Normalization", FALSE),
+    itsd_features_per_assay = itsd_info$"ITSD Features Per Assay" %||% NA,
+
+    # Log Transformation
+    log_transform_applied = parse_yes_no(log_transform_info$"Applied", TRUE),
+    log_transform_offset = log_transform_info$"Offset" %||% 1,
+
+    # Between-Sample Normalization
+    normalisation_method = norm_info$"Method" %||% s4_norm$method %||% "cyclicloess",
+
+    # RUV Status - check multiple possible sources
+    ruv_applied = if (!is.null(ruv_batch_correction$"Status")) {
+      parse_yes_no(ruv_batch_correction$"Status", FALSE)
+    } else if (!is.null(ruv_results$"Best k value")) {
+      TRUE
+    } else if (!is.na(parsed_ruv$total_k)) {
+      TRUE
+    } else if (length(s4_ruv_k) > 0 && !all(sapply(s4_ruv_k, is.null))) {
+      TRUE
+    } else {
+      FALSE
+    },
+
+    # RUV Results - try new per-assay format first, fall back to old format
+    best_percentage = ruv_results$"Best percentage" %||% NA,
+    best_k = parsed_ruv$total_k %||% ruv_results$"Best k value" %||% NA,
+    separation_score = ruv_results$"Separation score" %||% NA,
+    composite_score = ruv_results$"Composite score" %||% NA,
+    num_neg_ctrl = parsed_ruv$total_controls %||% ruv_results$"Control features" %||% NA,
+    ruv_grouping_variable = parsed_ruv$grouping_variable %||% ruv_results$"RUV grouping variable" %||% NA,
+    ruv_per_assay_details = parsed_ruv$per_assay_text %||% NA,
+    ruv_assay_list = parsed_ruv$assay_list, # Structured per-assay data for formatting
+    ruv_number_k = if (!is.na(parsed_ruv$total_k)) {
+      parsed_ruv$total_k
+    } else if (!is.null(s4_ruv$ruv_number_k) && !is.na(s4_ruv$ruv_number_k)) {
+      as.numeric(s4_ruv$ruv_number_k)
+    } else {
+      2
+    },
+
+    # DE Analysis S4 parameters
+    s4_de_q_val_thresh = if (is.null(s4_de$de_q_val_thresh) || is.na(s4_de$de_q_val_thresh)) 0.05 else as.numeric(s4_de$de_q_val_thresh),
+    s4_de_treat_lfc_cutoff = if (is.null(s4_de$treat_lfc_cutoff) || is.na(s4_de$treat_lfc_cutoff)) 0 else as.numeric(s4_de$treat_lfc_cutoff),
+    s4_ebayes_trend = as.logical(s4_de$eBayes_trend %||% TRUE),
+    s4_ebayes_robust = as.logical(s4_de$eBayes_robust %||% TRUE),
+    s4_formula_string = s4_de$formula_string %||% "~ 0 + group",
+
+    # UI Parameters
+    ui_de_q_value_threshold = if (is.null(ui_de$q_value_threshold) || is.na(ui_de$q_value_threshold)) 0.05 else as.numeric(ui_de$q_value_threshold),
+    ui_de_log_fold_change_cutoff = if (is.null(ui_de$log_fold_change_cutoff) || is.na(ui_de$log_fold_change_cutoff)) 0 else as.numeric(ui_de$log_fold_change_cutoff),
+    ui_de_treat_enabled = as.logical(ui_de$treat_enabled %||% FALSE),
+    ui_enrichment_up_lfc = if (is.null(ui_enrich$up_log2fc_cutoff) || is.na(ui_enrich$up_log2fc_cutoff)) 0 else as.numeric(ui_enrich$up_log2fc_cutoff),
+    ui_enrichment_down_lfc = if (is.null(ui_enrich$down_log2fc_cutoff) || is.na(ui_enrich$down_log2fc_cutoff)) 0 else as.numeric(ui_enrich$down_log2fc_cutoff),
+    ui_enrichment_q_value_cutoff = if (is.null(ui_enrich$q_value_cutoff) || is.na(ui_enrich$q_value_cutoff)) 0.05 else as.numeric(ui_enrich$q_value_cutoff),
+    ui_enrichment_database_source = ui_enrich$database_source %||% "KEGG",
+
+    # Contrasts
+    contrasts = contrasts
+  )
+
+  # Convert any NULL values to NA
+  all_params[sapply(all_params, is.null)] <- NA
+
+  return(all_params)
+}
+```
+
+```{r Format Sample Details, echo=FALSE}
+FormatSampleDetails <- function(numbers) {
+  # Robust checks
+  tech_reps_val <- numbers$technical_replicates %||% 0
+  bio_samples_val <- numbers$biological_samples %||% 0
+  total_samples_val <- numbers$total_samples %||% 0
+  avg_tech_reps_val <- numbers$avg_tech_reps_per_sample %||% 1
+
+  tech_rep_text <- if (tech_reps_val > 0) {
+    glue::glue(
+      "{bio_samples_val} biological samples with an average of ",
+      "{round(avg_tech_reps_val, 2)} technical replicates per sample, ",
+      "and {tech_reps_val} additional technical replicate measurements."
+    )
+  } else {
+    glue::glue("{bio_samples_val} biological samples with no technical replicates.")
+  }
+
+  glue::glue(
+    "
+SAMPLE DETAILS
+
+There are {total_samples_val} samples in total which consists of:
+• {tech_rep_text}
+• Sample identification (eg client #, sample name, Salesforce ID etc)
+• Sample conditions upon receipt
+• Comments about any noncompliance with sample conditions or suitability for
+  testing including client instruction to proceed/not proceed with work  ",
+    .trim = FALSE
+  )
+}
+```
+
+```{r Method Section, echo=FALSE}
+FormatMethodDetails <- function(numbers) {
+  # Extract parameters
+  num_assays <- numbers$num_assays %||% 1
+  assay_names <- numbers$assay_names %||% "Unknown"
+  norm_method <- numbers$normalisation_method %||% "cyclicloess"
+
+  # ITSD normalization text
+  itsd_text <- if (isTRUE(numbers$itsd_applied)) {
+    itsd_method <- numbers$itsd_method_type %||% "average_centered"
+    itsd_agg <- numbers$itsd_aggregation %||% "mean"
+    itsd_removed_val <- numbers$itsd_removed %||% FALSE
+    removal_text <- if (isTRUE(itsd_removed_val)) {
+      "Internal standard features were removed after normalization."
+    } else {
+      "Internal standard features were retained in the dataset."
+    }
+
+    # Check for per-assay ITSD feature information
+    itsd_feature_details <- ""
+    if (!is.null(numbers$itsd_features_per_assay) && !is.na(numbers$itsd_features_per_assay)) {
+      itsd_feature_details <- paste0(
+        " The ITSD features used per assay were: ",
+        numbers$itsd_features_per_assay,
+        "."
+      )
+    }
+
+    glue::glue(
+      "Internal standard (ITSD) normalization was applied using the ",
+      "{itsd_method} method with {itsd_agg} aggregation across ITSD features. ",
+      "{removal_text}{itsd_feature_details}"
+    )
+  } else {
+    "Internal standard normalization was not applied."
+  }
+
+  # Multi-assay text
+  assay_text <- if (num_assays > 1) {
+    glue::glue(
+      "The dataset contains {num_assays} assays: {assay_names}. ",
+      "Each assay was processed independently through quality control and ",
+      "normalization steps before integration for differential abundance analysis."
+    )
+  } else {
+    glue::glue("The dataset contains a single assay: {assay_names}.")
+  }
+
+  # Log transformation text
+  log_text <- if (isTRUE(numbers$log_transform_applied)) {
+    offset_val <- numbers$log_transform_offset %||% 1
+    glue::glue("Lipid intensities were log2-transformed with an offset of {offset_val} to stabilize variance.")
+  } else {
+    "Data were analyzed on the original intensity scale without log transformation."
+  }
+
+  # RUV parameters - handle both old and new formats
+  best_k_val <- numbers$best_k %||% numbers$ruv_number_k %||% NA
+  best_pct_val <- numbers$best_percentage %||% NA
+  num_neg_ctrl_val <- numbers$num_neg_ctrl %||% NA
+  ruv_per_assay <- numbers$ruv_per_assay_details %||% NA
+  ruv_grouping_var <- numbers$ruv_grouping_variable %||% "group"
+  ruv_assay_list <- numbers$ruv_assay_list # Structured per-assay data
+
+  d66_log("[D66] FormatMethodDetails RUV params:\n")
+  d66_log("[D66]   ruv_applied:", numbers$ruv_applied, "\n")
+  d66_log("[D66]   ruv_assay_list is NULL:", is.null(ruv_assay_list), "\n")
+  d66_log("[D66]   ruv_assay_list length:", length(ruv_assay_list), "\n")
+  d66_log("[D66]   ruv_assay_list names:", paste(names(ruv_assay_list), collapse = ", "), "\n")
+  d66_log("[D66]   best_k_val:", best_k_val, "\n")
+  d66_log("[D66]   best_pct_val:", best_pct_val, "\n")
+  d66_log("[D66]   num_neg_ctrl_val:", num_neg_ctrl_val, "\n")
+
+  # RUV text - adapt based on available information
+  # Following proteomics pattern: describe each assay separately
+
+  ruv_text <- if (isTRUE(numbers$ruv_applied)) {
+    d66_log("[D66] RUV applied is TRUE, checking ruv_assay_list\n")
+    # Check if we have structured per-assay data (new format)
+    if (!is.null(ruv_assay_list) && length(ruv_assay_list) > 0) {
+      d66_log("[D66] Using per-assay format with", length(ruv_assay_list), "assays\n")
+      # Build per-assay sentences like proteomics report
+      per_assay_sentences <- sapply(names(ruv_assay_list), function(assay_name) {
+        assay_data <- ruv_assay_list[[assay_name]]
+        k_val <- assay_data$k
+        ctrl_val <- assay_data$controls
+        if (!is.na(k_val) && !is.na(ctrl_val)) {
+          paste0(
+            "For ", assay_name, ", ", k_val, " unwanted components were removed using ",
+            ctrl_val, " empirical negative control lipids."
+          )
+        } else if (!is.na(k_val)) {
+          paste0("For ", assay_name, ", ", k_val, " unwanted components were removed.")
+        } else {
+          NULL
+        }
+      })
+      per_assay_sentences <- per_assay_sentences[!sapply(per_assay_sentences, is.null)]
+      per_assay_text <- paste(per_assay_sentences, collapse = " ")
+
+      glue::glue(
+        "To remove batch effects from biological data, the remove unwanted variation ",
+        "(RUVIII-C) method was used. The method relies on having a set of endogenous ",
+        "negative control lipids, which are features with little or no changes in ",
+        "abundance between different samples. RUV correction was applied independently ",
+        "to each assay using the '{ruv_grouping_var}' variable to preserve biological ",
+        "signal. {per_assay_text}"
+      )
+    } else if (!is.na(best_pct_val)) {
+      # Old format with percentage (single-assay or legacy)
+      glue::glue(
+        "To remove batch effects from biological data, the remove unwanted variation ",
+        "(RUVIII-C) method was used. The method relies on having a set of endogenous ",
+        "negative control lipids, which are features with little or no changes in ",
+        "abundance between different samples. For this study, an automatic ",
+        "optimization process identified that using {best_pct_val}% of ",
+        "features as empirical negative controls ({num_neg_ctrl_val} lipids) ",
+        "provided the best separation of biological groups. Based on this, ",
+        "{best_k_val} unwanted components were selected for removal."
+      )
+    } else {
+      # Minimal info available - try to use what we have
+      k_text <- if (!is.na(best_k_val)) paste0(best_k_val, " unwanted components were removed") else "unwanted variation was removed"
+      ctrl_text <- if (!is.na(num_neg_ctrl_val)) paste0("using ", num_neg_ctrl_val, " empirical negative control lipids") else "using empirical negative controls"
+      glue::glue(
+        "To remove batch effects from biological data, the remove unwanted variation ",
+        "(RUVIII-C) method was used. The method relies on having a set of endogenous ",
+        "negative control lipids, which are features with little or no changes in ",
+        "abundance between different samples. For this study, {k_text} {ctrl_text}."
+      )
+    }
+  } else {
+    "RUV-III batch correction was not applied due to dataset constraints. The analysis proceeded directly with normalized data for differential abundance analysis."
+  }
+
+  glue::glue("
+METHOD DETAILS
+
+Data analyses were performed based on SOP xxx.
+• SOP number(s) and name(s)
+• Brief summary of method(s):
+
+Multi-Assay Data Structure
+{assay_text}
+
+Data Preprocessing and Normalization
+{log_text} Missing values (zeros or non-detects) were coded as NA to distinguish
+true absence from missing measurements.
+
+ITSD Normalization
+{itsd_text}
+
+Between-sample normalization was performed using the '{norm_method}' method from
+the 'limma' R package (Ritchie et al., 2015) to account for systematic technical
+variation across samples.
+
+Batch Effect Correction
+{ruv_text}
+
+Quality Control
+At each stage of data normalization, samples were checked for batch effects using:
+• Principal component analysis (PCA) to visualize sample clustering
+• Density boxplots to assess distribution consistency
+• Relative log-expression (RLE) plots to detect systematic biases
+• Pearson correlation matrices to evaluate replicate consistency
+
+Per-Assay Quality Metrics
+Quality control metrics were evaluated separately for each assay to ensure data
+quality before integration. Each assay underwent independent QC assessment
+following the same protocol, with cross-assay consistency verified in the
+combined analysis.
+
+• Comments on test specific conditions information (e.g. temperature), where
+  relevant
+• Comments on deviations, modifications, additions, or exclusions to the method(s)
+  including the acceptance from the client to proceed with them
+• Critical reagent details where relevant  ",
+    .trim = FALSE
+  )
+}
+```
+
+```{r Result Section, echo=FALSE}
+FormatResults <- function(correlation_data,
+                          figures_dir = file.path(results_dir, "lipid_qc"),
+                          ruv_applied = TRUE) {
+  if (isTRUE(ruv_applied)) {
+    # 3-column layout when RUV was applied
+    glue::glue("
+Quality Control
+
+Quality Control Analysis
+Figure 1 shows the QC metrics across three stages of data processing:
+• Log2 normalization (leftmost column, a, d, g, j)
+• Cyclic loess normalization (centre column, b, e, h, k)
+• RUVIII-C normalization (rightmost column, c, f, i, l)
+
+Principal Component Analysis
+The PCA plots (Figures 1a-c) demonstrate the effectiveness of batch effect removal:
+• Initial log2 data showed notable batch effects
+• After cyclic loess normalization, batch effects remained in PC1 but were reduced
+  in PC2
+• Post RUVIII-C and cyclic loess normalization, batches merged effectively,
+  suggesting successful removal of unwanted variations
+
+Density Boxplots
+The density boxplots (Figures 1d-f) show the distribution of the PC1 and PC2 values
+for each group.
+• The density boxplots show that the distribution of the PC1 and PC2 values for
+  each group are similar.
+• Successive rounds of normalization have reduced the variability in the PC1 and
+  PC2 values for each group.
+
+Relative Log Expression
+The RLE plots (Figures 1g-i) show progressive improvement in data quality:
+• Smaller interquartile ranges (IQR) after normalization indicate reduced technical
+  variation
+• Final normalized data shows consistent median values near zero, suggesting
+  successful bias removal
+
+Pearson Correlation
+• The Pearson correlation matrix (Figures 1j-l) shows that the correlation between
+  biological samples was high and consistent across all normalization methods ",
+      .trim = FALSE
+    )
+  } else {
+    # 2-column layout when RUV was skipped
+    glue::glue("
+Quality Control
+
+Quality Control Analysis
+Figure 1 shows the QC metrics across two stages of data processing:
+• Log2 normalization (leftmost column, a, c, e, g)
+• Cyclic loess normalization (rightmost column, b, d, f, h)
+
+Note: RUV-III batch correction was not applied for this dataset.
+
+Principal Component Analysis
+The PCA plots (Figures 1a-b) show the data distribution:
+• Initial log2 data baseline
+• After cyclic loess normalization, technical variation was reduced
+
+Density Boxplots
+The density boxplots (Figures 1c-d) show the distribution of the PC1 and PC2 values
+for each group.
+• The density boxplots show that the distribution of the PC1 and PC2 values for
+  each group are similar after normalization.
+
+Relative Log Expression
+The RLE plots (Figures 1e-f) show improvement in data quality after normalization:
+• Smaller interquartile ranges (IQR) after normalization indicate reduced technical
+  variation
+• Normalized data shows more consistent median values near zero
+
+Pearson Correlation
+• The Pearson correlation matrix (Figures 1g-h) shows that the correlation between
+  biological samples was high and consistent across normalization methods ",
+      .trim = FALSE
+    )
+  }
+}
+```
+
+```{r Comment Section, echo=FALSE}
+FormatComments <- function() {
+  glue::glue("
+COMMENTS
+
+Quality Control
+• All samples passed initial QC criteria
+• Normalization successfully reduced technical variation
+• Batch effects were substantially mitigated, though not completely eliminated
+
+Technical Performance
+• High technical reproducibility achieved for majority of lipids
+• Correlation metrics indicate reliable quantification
+• Sample processing met quality standards
+
+Limitations
+• Residual batch effects present but within acceptable ranges
+• Technical variation adequately controlled through normalization steps  ",
+    .trim = FALSE
+  )
+}
+```
+
+```{r Opinions Section, echo=FALSE}
+FormatOpinions <- function(correlation_data) {
+  # Default value
+  high_corr_metabolites <- "N/A" # Variable name kept for internal consistency, but content updated if needed
+
+  # Try to calculate if possible
+  tryCatch(
+    {
+      if (!is.null(correlation_data) && !is.null(correlation_data$metabolite_data)) {
+        high_corr_metabolites <- sum(correlation_data$metabolite_data$pearson >= 0.8,
+          na.rm = TRUE
+        )
+      }
+    },
+    error = function(e) {
+      # Keep default
+    }
+  )
+
+  glue::glue("
+OPINIONS
+
+The lipidomics data quality is sufficient for differential analysis. The normalization
+strategies employed have effectively reduced technical noise while preserving
+biological signal.
+
+Recommendations:
+• Proceed with differential abundance analysis using the fully normalized dataset
+• Consider RUV-adjusted data for downstream multivariate analyses
+• Validate top significant lipids using targeted assays if possible
+  ",
+    .trim = FALSE
+  )
+}
+```
+
+```{r Differential Abundance Section, echo=FALSE}
+FormatDEDetails <- function(numbers) {
+  # Get UI parameters with S4 fallbacks
+  ui_q_val_thresh <- numbers$ui_de_q_value_threshold %||% numbers$s4_de_q_val_thresh %||% 0.05
+  ui_lfc_cutoff <- numbers$ui_de_log_fold_change_cutoff %||% numbers$s4_de_treat_lfc_cutoff %||% 0
+  ui_treat_enabled <- numbers$ui_de_treat_enabled %||% (ui_lfc_cutoff > 0)
+
+  # S4 parameters
+  ebayes_trend_val <- numbers$s4_ebayes_trend %||% TRUE
+  ebayes_robust_val <- numbers$s4_ebayes_robust %||% TRUE
+  formula_string_val <- numbers$s4_formula_string %||% "~ 0 + group"
+
+  treat_desc <- if (isTRUE(ui_treat_enabled) && ui_lfc_cutoff > 0) {
+    glue::glue("The TREAT method was used to test against a log-fold-change threshold of {ui_lfc_cutoff}.")
+  } else {
+    "The standard empirical Bayes method was used to test for any deviation from zero log-fold-change."
+  }
+
+  trend_robust <- c()
+  if (isTRUE(ebayes_trend_val)) trend_robust <- c(trend_robust, "trended")
+  if (isTRUE(ebayes_robust_val)) trend_robust <- c(trend_robust, "robust")
+
+  trend_robust_text <- if (length(trend_robust) > 0) {
+    paste("A", paste(trend_robust, collapse = " and "), "empirical Bayes analysis was performed.")
+  } else {
+    "A standard empirical Bayes analysis was performed."
+  }
+
+  glue::glue("
+DIFFERENTIAL ABUNDANCE ANALYSIS
+
+Differential abundance analysis of lipids was performed using the adjusted
+abundance matrix for comparing each pair of experimental groups. The 'limma' R
+package (Ritchie et al., 2015) was used. A linear model for comparing each pair
+of conditions was fitted using the formula '{formula_string_val}' with the
+'lmFit' function, and p-values were calculated using the 'eBayes' function.
+{trend_robust_text} The false discovery rate correction was applied to the
+moderated p-values by calculating the q-values (Storey, 2002).
+{treat_desc} Significant differentially abundant lipids were defined as those
+with q-values less than {ui_q_val_thresh}.
+
+Volcano plots of differentially abundant lipids across all groups are shown
+in Figure 3, with a threshold of q-value < {ui_q_val_thresh}. Full details of all
+lipids are provided in the Supplementary results table, DE_lipids_results.xlsx
+within the Publication_tables folder.",
+    .trim = FALSE
+  )
+}
+```
+
+```{r Pathway Enrichment Section, echo=FALSE}
+FormatPathwayEnrichment <- function(numbers) {
+  # Get UI enrichment parameters
+  up_lfc_val <- numbers$ui_enrichment_up_lfc %||% 0
+  down_lfc_val <- numbers$ui_enrichment_down_lfc %||% 0
+  q_val_cutoff_val <- numbers$ui_enrichment_q_value_cutoff %||% 0.05
+  database_source_val <- numbers$ui_enrichment_database_source %||% "KEGG"
+
+  # Text for LFC cutoffs
+  lfc_text <- if (up_lfc_val > 0 || down_lfc_val < 0) {
+    glue::glue(
+      "• Upregulated metabolites were defined as those with a log2 fold-change > {up_lfc_val}. ",
+      "Downregulated metabolites were defined as those with a log2 fold-change < {down_lfc_val}."
+    )
+  } else {
+    "• No fold change cutoff was applied to filter differentially abundant metabolites."
+  }
+
+  enrichment_tool_text <- glue::glue(
+    "The enrichment analysis was performed using {database_source_val} pathway databases. ",
+    "Pathways were considered significantly enriched if they had an adjusted p-value ",
+    "less than {q_val_cutoff_val} after multiple testing correction using the ",
+    "Benjamini-Hochberg method."
+  )
+
+  glue::glue("
+PATHWAY ENRICHMENT ANALYSIS
+
+Pathway enrichment analysis was performed on the differentially abundant
+lipids to identify significantly enriched metabolic pathways and biological
+processes. The analysis was conducted using the following parameters:
+{lfc_text}
+• An adjusted FDR cutoff of {q_val_cutoff_val} was used to identify significantly enriched pathways
+• The background lipid set consisted of all identified lipids that
+  passed quality control filtering steps
+
+{enrichment_tool_text}
+
+Key findings from the pathway enrichment analysis are summarized below for each
+comparison:
+
+
+
+The complete list of enriched pathways with statistics is provided in the
+supplementary file 'Pathway_enrichment_results_lipidomics.xlsx' within the
+Publication_tables folder.",
+    .trim = FALSE
+  )
+}
+```
+
+```{r Sample Analysis Functions, echo=FALSE}
+CalculateSampleCounts <- function(group_summary) {
+  if (is.null(group_summary) || nrow(group_summary) == 0) {
+    return(list(total_samples = 0, biological_samples = 0, technical_replicates = 0))
+  }
+
+  total_measurements <- sum(group_summary$total_measurements, na.rm = TRUE)
+  biological_samples <- sum(group_summary$n_samples, na.rm = TRUE)
+  technical_replicates <- max(0, total_measurements - biological_samples)
+
+  list(
+    total_samples = total_measurements,
+    biological_samples = biological_samples,
+    technical_replicates = technical_replicates
+  )
+}
+
+CalculatePatientMetrics <- function(numbers, group_summary) {
+  if (is.null(numbers) || is.null(group_summary)) {
+    return(numbers)
+  }
+
+  if (numbers$biological_samples > 0) {
+    numbers$avg_tech_reps_per_sample <- numbers$total_samples / numbers$biological_samples
+    numbers$samples_per_group <- numbers$biological_samples / n_distinct(group_summary$group)
+  } else {
+    numbers$avg_tech_reps_per_sample <- 0
+    numbers$samples_per_group <- 0
+  }
+  numbers
+}
+
+AnalyzeGroups <- function(design_df) {
+  if (is.null(design_df) || nrow(design_df) == 0 || !"group" %in% names(design_df)) {
+    return(tibble(
+      group = character(0), n_samples = numeric(0),
+      total_measurements = numeric(0), avg_replicates = numeric(0)
+    ))
+  }
+
+  unique(design_df$group) |>
+    purrr::map_dfr(function(g) {
+      group_data <- design_df |>
+        filter(group == g)
+      unique_samples <- n_distinct(group_data$Run)
+      total_rows <- nrow(group_data)
+      avg_reps <- if (unique_samples == total_rows) 1 else total_rows / unique_samples
+      tibble(group = g, n_samples = unique_samples, total_measurements = total_rows, avg_replicates = avg_reps)
+    })
+}
+
+AnalyzeSamples <- function(design_matrix, study_params) {
+  tryCatch(
+    {
+      group_summary <- AnalyzeGroups(design_matrix)
+      numbers <- CalculateSampleCounts(group_summary)
+      numbers <- CalculatePatientMetrics(numbers, group_summary)
+      params_extracted <- ExtractLipidStudyParameters(study_params)
+
+      # Combine counts with extracted params
+      final_numbers <- c(numbers, params_extracted)
+
+      # Replace NULLs with NA
+      final_numbers[sapply(final_numbers, is.null)] <- NA
+
+      list(numbers = final_numbers, table = group_summary)
+    },
+    error = function(e) {
+      list(numbers = list(), table = data.frame())
+    }
+  )
+}
+
+# Format DE Summary Table
+FormatDESummaryTable <- function(filepath) {
+  if (!file.exists(filepath)) {
+    return("")
+  }
+
+  tryCatch(
+    {
+      data <- readr::read_tsv(filepath, show_col_types = FALSE)
+
+      sig_data <- data %>%
+        dplyr::filter(status %in% c("Significant and Up", "Significant and Down"))
+
+      if (nrow(sig_data) == 0) {
+        return("No significant differentially abundant lipids were found.")
+      }
+
+      summary_text <- sig_data %>%
+        dplyr::group_by(comparison) %>%
+        dplyr::summarise(
+          up = sum(counts[status == "Significant and Up"]),
+          down = sum(counts[status == "Significant and Down"]),
+          .groups = "drop"
+        ) %>%
+        dplyr::mutate(
+          text = glue::glue("For the comparison {comparison}, there were {up} upregulated and {down} downregulated lipids.")
+        ) %>%
+        dplyr::pull(text) %>%
+        paste(collapse = " ")
+
+      return(paste("The number of significant differentially abundant lipids is summarized in Figure 2.", summary_text))
+    },
+    error = function(e) {
+      return(paste("Error reading DE summary table:", e$message))
+    }
+  )
+}
+```
+
+```{r Main Execution Function, echo=FALSE, warning=FALSE}
+Main <- function() {
+  # Use globally available path variables
+  params_path <- file.path(report_source_dir, "study_parameters.txt")
+  if (!file.exists(params_path)) stop(glue::glue("Study parameters file not found: {params_path}"))
+
+  # Use hierarchical parser
+  study_params_data <- tryCatch(
+    {
+      ReadStudyParamsNew(params_path)
+    },
+    error = function(e) {
+      stop(glue::glue("Error reading study parameters: {e$message}"))
+    }
+  )
+
+  matrix_path <- file.path(report_source_dir, "design_matrix.tab")
+  if (!file.exists(matrix_path)) stop(glue::glue("Design matrix file not found: {matrix_path}"))
+  design_matrix_data <- tryCatch(
+    {
+      readr::read_tsv(matrix_path, show_col_types = FALSE)
+    },
+    error = function(e) {
+      stop(glue::glue("Error reading design matrix: {e$message}"))
+    }
+  )
+
+  # Correlation data - check for both RUV and non-RUV filenames
+  ruv_corr_path <- file.path(report_publication_tables_dir, "ruv_normalised_results.RDS")
+  norm_corr_path <- file.path(report_publication_tables_dir, "normalised_results.RDS")
+
+  # Try RUV filename first, then fall back
+  corr_path <- if (file.exists(ruv_corr_path)) {
+    ruv_corr_path
+  } else if (file.exists(norm_corr_path)) {
+    norm_corr_path
+  } else {
+    ruv_corr_path
+  }
+
+  correlation_data <- if (file.exists(corr_path)) {
+    tryCatch(
+      {
+        readRDS(corr_path)
+      },
+      error = function(e) {
+        warning(glue::glue("Error reading RDS: {e$message}"))
+        list()
+      }
+    )
+  } else {
+    warning(glue::glue("File not found: {corr_path}"))
+    list()
+  }
+
+  # Run analysis
+  analysis_results <- tryCatch(
+    {
+      AnalyzeSamples(design_matrix_data, study_params_data)
+    },
+    error = function(e) {
+      stop(glue::glue("Error in AnalyzeSamples: {e$message}"))
+    }
+  )
+
+  # Get DE summary
+  de_summary_path <- file.path(report_publication_tables_dir, paste0("de_", params$omic_type, "_num_sig_de_molecules.tab"))
+  de_summary_text <- FormatDESummaryTable(de_summary_path)
+
+  # Generate sections
+  report_content <- list(
+    content = list(
+      sample_details = FormatSampleDetails(analysis_results$numbers),
+      method_details = FormatMethodDetails(analysis_results$numbers),
+      results = FormatResults(correlation_data, ruv_applied = analysis_results$numbers$ruv_applied %||% TRUE),
+      comments = FormatComments(),
+      opinions = FormatOpinions(correlation_data),
+      de_details = FormatDEDetails(analysis_results$numbers),
+      de_summary = de_summary_text,
+      pathway_enrichment = FormatPathwayEnrichment(analysis_results$numbers)
+    ),
+    table = analysis_results$table,
+    numbers = analysis_results$numbers
+  )
+  return(report_content)
+}
+
+# Execute Main
+results_data <- tryCatch(
+  {
+    Main()
+  },
+  error = function(e) {
+    list(content = list(
+      sample_details = paste("Error running Main function:", e$message),
+      method_details = "",
+      results = "",
+      comments = "",
+      opinions = "",
+      de_details = "",
+      de_summary = "",
+      pathway_enrichment = ""
+    ), table = data.frame(), numbers = list())
+  }
+)
+```
+
+# Sample Details
+
+`r results_data$content$sample_details`
+
+# Method Details
+
+`r results_data$content$method_details`
+
+# Results
+
+`r results_data$content$results`
+
+# Version Information
+
+Repository: `r results_data$numbers$repository`
+Branch: `r results_data$numbers$branch`
+Commit: `r results_data$numbers$commit`
+Git Timestamp: `r results_data$numbers$git_timestamp`
+
+```{r QC_metrics, echo=FALSE, warning=FALSE, fig.cap="Figure 1: QC metrics across normalization stages"}
+composite_qc_fig_path <- file.path(report_qc_figures_dir, paste0(params$omic_type, "_composite_QC_figure.png"))
+if (file.exists(composite_qc_fig_path)) {
+  knitr::include_graphics(composite_qc_fig_path)
+} else {
+  cat(glue::glue("Warning: Composite QC figure not found at {composite_qc_fig_path}\n"))
+}
+```
+
+# Differential Abundance Analysis
+
+`r results_data$content$de_details`
+
+`r results_data$content$de_summary`
+
+```{r NumSigDE_Plot, echo=FALSE, out.width="100%", fig.align='center'}
+num_sig_dir <- file.path(report_publication_figures_dir, "NumSigDeMolecules")
+if (dir.exists(num_sig_dir)) {
+  all_sig_files <- list.files(num_sig_dir, pattern = "\\.png$", full.names = TRUE)
+  sig_plot_file <- grep("with_not_significant", all_sig_files, value = TRUE)
+  if (length(sig_plot_file) == 0) {
+    sig_plot_file <- all_sig_files
+  }
+
+  if (length(sig_plot_file) > 0) {
+    knitr::include_graphics(sig_plot_file[1])
+  } else {
+    cat(glue::glue("Warning: No NumSigDE Plot images found in {num_sig_dir}\n"))
+  }
+} else {
+  cat(glue::glue("Warning: NumSigDeMolecules directory not found at {num_sig_dir}\n"))
+}
+```
+
+```{r NumSigDE Caption, echo=FALSE, results='asis'}
+cat("*Figure 2: Number of significant differentially abundant lipids for each comparison.*\n\n")
+```
+
+```{r grid_layout, echo=FALSE, out.width="49%", out.height="49%", fig.align='center', fig.ncol=2, fig.show='hold'}
+volcano_plots_dir <- file.path(report_publication_figures_dir, "Volcano_Plots")
+if (dir.exists(volcano_plots_dir)) {
+  all_volcano_files <- list.files(volcano_plots_dir, full.names = TRUE, recursive = FALSE)
+  volcano_plot_files <- sort(grep(pattern = "[.](png|jpg|jpeg)$", x = all_volcano_files, ignore.case = TRUE, value = TRUE))
+  if (length(volcano_plot_files) > 0) {
+    knitr::include_graphics(volcano_plot_files)
+  } else {
+    cat(glue::glue("Warning: No Volcano Plot images found in {volcano_plots_dir}\n"))
+  }
+} else {
+  cat(glue::glue("Warning: Volcano Plots directory not found at {volcano_plots_dir}\n"))
+}
+```
+
+```{r Volcano Plot Caption, echo=FALSE, results='asis'}
+cat("*Figure 3: Volcano plots of differentially abundant lipids in alphabetical order.*\n\n")
+```
+
+# Comments
+
+`r results_data$content$comments`
+
+# Opinions and Interpretation
+
+`r results_data$content$opinions`
+
+# Pathway Enrichment Analysis
+
+`r results_data$content$pathway_enrichment`
+
+```{r Enrichment Plots, echo=FALSE, out.width="49%", out.height="49%", fig.align='center', fig.ncol=2, fig.show='hold'}
+enrichment_plots_dir <- file.path(report_publication_figures_dir, "Enrichment_Plots")
+if (dir.exists(enrichment_plots_dir)) {
+  all_enrichment_files <- list.files(enrichment_plots_dir, full.names = TRUE, recursive = FALSE)
+  enrichment_plot_files <- sort(grep(pattern = "[.](png|jpg|jpeg)$", x = all_enrichment_files, ignore.case = TRUE, value = TRUE))
+  if (length(enrichment_plot_files) > 0) {
+    knitr::include_graphics(enrichment_plot_files)
+  } else {
+    cat(glue::glue("Warning: No Enrichment Plot images found in {enrichment_plots_dir}\n"))
+  }
+} else {
+  cat(glue::glue("Warning: Enrichment Plots directory not found at {enrichment_plots_dir}\n"))
+}
+```
+
+```{r Enrichment Caption, echo=FALSE, results='asis'}
+cat("*Figure 4: Pathway enrichment analysis showing pathways enriched in differentially abundant lipids. Plots are ordered alphabetically by comparison and direction.*\n\n")
+```
