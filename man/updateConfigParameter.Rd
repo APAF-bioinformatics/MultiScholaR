@@ -67,10 +67,10 @@ and also updates the corresponding value in a global list named
 
 # Update the parameter to 0.7
 myPeptideData <- updateConfigParameter(
-  theObject = myPeptideData,
-  function_name = "peptideIntensityFiltering",
-  parameter_name = "peptides_proportion_of_samples_below_cutoff",
-  new_value = 0.7
+    theObject = myPeptideData,
+    function_name = "peptideIntensityFiltering",
+    parameter_name = "peptides_proportion_of_samples_below_cutoff",
+    new_value = 0.7
 )
 
 # Verify changes (example)

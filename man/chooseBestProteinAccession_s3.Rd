@@ -90,10 +90,10 @@ The selection of "best" protein is based on:
 \examples{
 \dontrun{
 cleaned_data <- chooseBestProteinAccession_s3(
-  data_tbl = protein_data,
-  protein_id_column = "Protein.Group",
-  seqinr_obj = aa_seq_tbl_final,
-  seqinr_accession_column = "uniprot_acc"
+    data_tbl = protein_data,
+    protein_id_column = "Protein.Group",
+    seqinr_obj = aa_seq_tbl_final,
+    seqinr_accession_column = "uniprot_acc"
 )
 }
 

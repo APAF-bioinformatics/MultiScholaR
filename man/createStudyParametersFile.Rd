@@ -42,9 +42,9 @@ This replaces the overly complex createWorkflowArgsFromConfig + WorkflowArgs sho
 \examples{
 \dontrun{
 file_path <- createStudyParametersFile(
-  workflow_name = "proteomics_analysis",
-  description = "DIA proteomics analysis",
-  source_dir_path = "/path/to/scripts"
+    workflow_name = "proteomics_analysis",
+    description = "DIA proteomics analysis",
+    source_dir_path = "/path/to/scripts"
 )
 }
 
