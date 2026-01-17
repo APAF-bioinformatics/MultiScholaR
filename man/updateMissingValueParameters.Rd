@@ -68,9 +68,9 @@ Both the S4 object's @args slot and the global config_list are updated to mainta
 \examples{
 \dontrun{
 protein_log2_quant_cln <- updateMissingValueParameters(
-  theObject = protein_log2_quant_cln, 
-  min_reps_per_group = 2, 
-  min_groups = 2
+    theObject = protein_log2_quant_cln,
+    min_reps_per_group = 2,
+    min_groups = 2
 )
 }
 

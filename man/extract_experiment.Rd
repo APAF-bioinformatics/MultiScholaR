@@ -39,13 +39,13 @@ range (between positions), start (first element), or end (last element).
 }
 \examples{
 x <- "20140602_ffs_expt1_r1_junk"
-extract_experiment(x, mode = "range", start = 1, end = 3)  # "20140602_ffs_expt1"
-extract_experiment(x, mode = "start")  # "20140602"
-extract_experiment(x, mode = "end")    # "junk"
+extract_experiment(x, mode = "range", start = 1, end = 3) # "20140602_ffs_expt1"
+extract_experiment(x, mode = "start") # "20140602"
+extract_experiment(x, mode = "end") # "junk"
 
 # Multiple strings
 x <- c("20140602_ffs_expt1_r1_junk", "20140603_ffs_expt2_r2_test")
-extract_experiment(x, mode = "range", start = 2, end = 3)  # c("ffs_expt1", "ffs_expt2")
+extract_experiment(x, mode = "range", start = 2, end = 3) # c("ffs_expt1", "ffs_expt2")
 
 x <- "20140602_ffs_expt1_r1_junk"
 extract_experiment(x, mode = "range", start = 1, end = 3)  # "20140602_ffs_expt1"
