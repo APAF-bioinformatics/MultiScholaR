@@ -17,7 +17,11 @@ generateDEHeatmap(
   show_gene_names = FALSE,
   de_q_val_thresh = 0.05,
   qvalue_column = "fdr_qvalue",
-  log2fc_column = "log2FC"
+  log2fc_column = "log2FC",
+  tree_cut_method = "none",
+  n_clusters = 4,
+  cut_height = 0.5,
+  min_cluster_size = 3
 )
 }
 \arguments{
@@ -39,16 +43,19 @@ generateDEHeatmap(
 
 \item{color_scheme}{Color palette name.}
 
-\item{show_gene_names}{Logical, show gene name labels.}
+\item{tree_cut_method}{Method for tree cutting: "k_clusters", "height_cutoff", "dynamic", or "none".}
 
-\item{de_q_val_thresh}{Q-value threshold for significance.}
+\item{n_clusters}{Number of clusters for k_clusters method.}
 
-\item{qvalue_column}{Column name for q-values.}
+\item{cut_height}{Height for heigh_cutoff method.}
 
-\item{log2fc_column}{Column name for log2 fold changes.}
+\item{min_cluster_size}{Minimum cluster size for dynamic method.}
 }
 \value{
-A ComplexHeatmap object, or NULL if no data.
+A list containing:
+\item{plot}{A ComplexHeatmap object, or NULL if no data.}
+\item{row_clusters}{Named vector of row cluster assignments.}
+\item{col_clusters}{Named vector of column cluster assignments.}
 }
 \description{
 Creates a heatmap of top differentially expressed proteins
