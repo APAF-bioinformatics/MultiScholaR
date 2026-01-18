@@ -1,6 +1,6 @@
 Package: MultiScholaR
 Title: Interactive Multi-Omics Analysis with Best Modular, Reproducible Workflows
-Version: 0.4.1
+Version: 0.4.1.2
 Authors@R: c(
     person(given = "Ignatius",
            family = "Pang",

@@ -2,7 +2,7 @@
 # func_lipid_de.R
 # ============================================================================
 # Purpose: Lipidomics differential abundance analysis functions
-# 
+#
 # This file contains functions for lipidomics differential abundance
 # analysis, including limma-based analysis and result formatting. Functions
 # in this file are used by lipidomics DE modules and related workflows.
@@ -52,12 +52,16 @@
 getCountsTable <- function(obj) {
     if (inherits(obj, "LipidomicsAssayData")) {
         message(sprintf("   Getting counts table for object of class: %s", class(obj)[1]))
-        message(sprintf("   Returning lipid_data with dimensions: %d rows, %d cols"
-            , nrow(obj@lipid_data), ncol(obj@lipid_data)))
+        message(sprintf(
+            "   Returning lipid_data with dimensions: %d rows, %d cols",
+            nrow(obj@lipid_data), ncol(obj@lipid_data)
+        ))
         obj@lipid_data
     } else if (inherits(obj, "ProteinQuantitativeData")) {
-        message(sprintf("   Returning protein_quant_table with dimensions: %d rows, %d cols"
-            , nrow(obj@protein_quant_table), ncol(obj@protein_quant_table)))
+        message(sprintf(
+            "   Returning protein_quant_table with dimensions: %d rows, %d cols",
+            nrow(obj@protein_quant_table), ncol(obj@protein_quant_table)
+        ))
         obj@protein_quant_table
     } else {
         message(sprintf("   ERROR: Unsupported object type: %s", class(obj)[1]))
@@ -110,18 +114,20 @@ getCountsTable <- function(obj) {
 #' @importFrom purrr map
 #' @export
 runTestsContrastsMetab <- function(
-    data
-    , contrast_strings
-    , design_matrix
-    , formula_string
-    , sample_id_col = "Run"
-    , treat_lfc_cutoff = NA
-    , eBayes_trend = TRUE
-    , eBayes_robust = TRUE
+  data,
+  contrast_strings,
+  design_matrix,
+  formula_string,
+  sample_id_col = "Run",
+  treat_lfc_cutoff = NA,
+  eBayes_trend = TRUE,
+  eBayes_robust = TRUE
 ) {
     logger::log_info("--- Entering runTestsContrastsMetab ---")
-    logger::log_info(sprintf("   data dims = %d x %d, %d contrasts"
-        , nrow(data), ncol(data), length(contrast_strings)))
+    logger::log_info(sprintf(
+        "   data dims = %d x %d, %d contrasts",
+        nrow(data), ncol(data), length(contrast_strings)
+    ))
     logger::log_info(sprintf("   contrasts = %s", paste(contrast_strings, collapse = ", ")))
 
     # Prepare design matrix with sample IDs as rownames
@@ -168,21 +174,21 @@ runTestsContrastsMetab <- function(
         # Extract terms from contrast string (split on - or +)
         terms <- unlist(strsplit(cs, "[-+]"))
         terms <- trimws(terms)
-        terms <- terms[nzchar(terms)]  # Remove empty strings
+        terms <- terms[nzchar(terms)] # Remove empty strings
 
         missing_terms <- setdiff(terms, available_levels)
         if (length(missing_terms) > 0) {
             error_msg <- sprintf(
                 paste0(
-                    "Contrast '%s' references undefined levels: [%s].\n"
-                    , "Available levels from model matrix: [%s].\n\n"
-                    , "This usually means the contrast was saved with a different formula than currently used.\n"
-                    , "If using formula '~ 0 + group', contrasts must be in format 'groupX-groupY'.\n"
-                    , "Check that the design builder formula matches the DE module formula."
-                )
-                , cs
-                , paste(missing_terms, collapse = ", ")
-                , paste(available_levels, collapse = ", ")
+                    "Contrast '%s' references undefined levels: [%s].\n",
+                    "Available levels from model matrix: [%s].\n\n",
+                    "This usually means the contrast was saved with a different formula than currently used.\n",
+                    "If using formula '~ 0 + group', contrasts must be in format 'groupX-groupY'.\n",
+                    "Check that the design builder formula matches the DE module formula."
+                ),
+                cs,
+                paste(missing_terms, collapse = ", "),
+                paste(available_levels, collapse = ", ")
             )
             d66_log("  VALIDATION FAILED: ", error_msg)
             stop(error_msg)
@@ -193,8 +199,8 @@ runTestsContrastsMetab <- function(
     # Create contrast matrix
     logger::log_info("   Creating contrast matrix...")
     contr.matrix <- limma::makeContrasts(
-        contrasts = contrast_strings
-        , levels = colnames(design_m)
+        contrasts = contrast_strings,
+        levels = colnames(design_m)
     )
 
     # Run limma analysis
@@ -225,68 +231,73 @@ runTestsContrastsMetab <- function(
         logger::log_info(sprintf("      Processing contrast: %s", contrast))
         qvalue_failed <- FALSE
 
-        tryCatch({
-            de_tbl <- extract_fn(t.fit, contrast)
-            logger::log_info(sprintf("      Extracted %d rows", nrow(de_tbl)))
+        tryCatch(
+            {
+                de_tbl <- extract_fn(t.fit, contrast)
+                logger::log_info(sprintf("      Extracted %d rows", nrow(de_tbl)))
 
-            # Safe qvalue computation
-            valid_p_idx <- which(!is.na(de_tbl$P.Value) & is.finite(de_tbl$P.Value))
-            q_values_all <- rep(NA_real_, nrow(de_tbl))
-            fdr_values_all <- rep(NA_real_, nrow(de_tbl))
+                # Safe qvalue computation
+                valid_p_idx <- which(!is.na(de_tbl$P.Value) & is.finite(de_tbl$P.Value))
+                q_values_all <- rep(NA_real_, nrow(de_tbl))
+                fdr_values_all <- rep(NA_real_, nrow(de_tbl))
 
-            if (length(valid_p_idx) > 0) {
-                valid_p_values <- de_tbl$P.Value[valid_p_idx]
+                if (length(valid_p_idx) > 0) {
+                    valid_p_values <- de_tbl$P.Value[valid_p_idx]
 
-                # Edge case checks
-                all_zeros <- all(valid_p_values == 0)
-                all_ones <- all(valid_p_values == 1)
-                too_few <- length(valid_p_values) < 3
+                    # Edge case checks
+                    all_zeros <- all(valid_p_values == 0)
+                    all_ones <- all(valid_p_values == 1)
+                    too_few <- length(valid_p_values) < 3
 
-                use_qvalue <- !all_zeros && !all_ones && !too_few
+                    use_qvalue <- !all_zeros && !all_ones && !too_few
 
-                if (use_qvalue) {
-                    tryCatch({
-                        q_values_all[valid_p_idx] <- qvalue::qvalue(valid_p_values)$qvalues
-                        logger::log_info("      qvalue() computation successful")
-                    }, error = function(e) {
-                        qvalue_failed <<- TRUE
-                        logger::log_warn(sprintf("      qvalue() failed: %s, using BH", e$message))
-                        q_values_all[valid_p_idx] <<- stats::p.adjust(valid_p_values, method = "BH")
-                    })
-                } else {
-                    qvalue_failed <- TRUE
-                    q_values_all[valid_p_idx] <- stats::p.adjust(valid_p_values, method = "BH")
-                    logger::log_info("      Using p.adjust() due to edge case")
+                    if (use_qvalue) {
+                        tryCatch(
+                            {
+                                q_values_all[valid_p_idx] <- qvalue::qvalue(valid_p_values)$qvalues
+                                logger::log_info("      qvalue() computation successful")
+                            },
+                            error = function(e) {
+                                qvalue_failed <<- TRUE
+                                logger::log_warn(sprintf("      qvalue() failed: %s, using BH", e$message))
+                                q_values_all[valid_p_idx] <<- stats::p.adjust(valid_p_values, method = "BH")
+                            }
+                        )
+                    } else {
+                        qvalue_failed <- TRUE
+                        q_values_all[valid_p_idx] <- stats::p.adjust(valid_p_values, method = "BH")
+                        logger::log_info("      Using p.adjust() due to edge case")
+                    }
+
+                    # Always compute BH-adjusted FDR
+                    fdr_values_all[valid_p_idx] <- stats::p.adjust(valid_p_values, method = "BH")
                 }
 
-                # Always compute BH-adjusted FDR
-                fdr_values_all[valid_p_idx] <- stats::p.adjust(valid_p_values, method = "BH")
+                # Add columns to results
+                de_tbl$fdr_qvalue <- q_values_all
+                de_tbl$fdr_value_bh <- fdr_values_all
+                de_tbl$raw_pvalue <- de_tbl$P.Value
+
+                if (qvalue_failed) {
+                    qvalue_failures[[contrast]] <<- TRUE
+                }
+
+                return(de_tbl)
+            },
+            error = function(e) {
+                logger::log_error(sprintf("      ERROR in contrast %s: %s", contrast, e$message))
+                stop(e)
             }
-
-            # Add columns to results
-            de_tbl$fdr_qvalue <- q_values_all
-            de_tbl$fdr_value_bh <- fdr_values_all
-            de_tbl$raw_pvalue <- de_tbl$P.Value
-
-            if (qvalue_failed) {
-                qvalue_failures[[contrast]] <<- TRUE
-            }
-
-            return(de_tbl)
-
-        }, error = function(e) {
-            logger::log_error(sprintf("      ERROR in contrast %s: %s", contrast, e$message))
-            stop(e)
-        })
+        )
     })
 
     names(result_tables) <- contrast_strings
     logger::log_info("--- Exiting runTestsContrastsMetab ---")
 
     return(list(
-        results = result_tables
-        , fit.eb = t.fit
-        , qvalue_warnings = qvalue_failures
+        results = result_tables,
+        fit.eb = t.fit,
+        qvalue_warnings = qvalue_failures
     ))
 }
 
@@ -323,13 +334,13 @@ runTestsContrastsMetab <- function(
 #' @importFrom logger log_info log_error log_warn
 #' @export
 runLipidsDE <- function(
-    theObject
-    , contrasts_tbl
-    , formula_string = "~ 0 + group"
-    , de_q_val_thresh = 0.05
-    , treat_lfc_cutoff = 0
-    , eBayes_trend = TRUE
-    , eBayes_robust = TRUE
+  theObject,
+  contrasts_tbl,
+  formula_string = "~ 0 + group",
+  de_q_val_thresh = 0.05,
+  treat_lfc_cutoff = 0,
+  eBayes_trend = TRUE,
+  eBayes_robust = TRUE
 ) {
     # [D66:START] ─────────────────────────
     d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
@@ -385,8 +396,10 @@ runLipidsDE <- function(
     # [D66:END] ───────────────────────────
 
     assay_names <- names(assay_list)
-    logger::log_info(sprintf("   Processing %d assays: %s"
-        , length(assay_names), paste(assay_names, collapse = ", ")))
+    logger::log_info(sprintf(
+        "   Processing %d assays: %s",
+        length(assay_names), paste(assay_names, collapse = ", ")
+    ))
     logger::log_info(sprintf("   Contrasts: %s", paste(contrast_strings, collapse = ", ")))
 
     # Initialize results storage
@@ -415,92 +428,98 @@ runLipidsDE <- function(
 
         # Get annotation info for later joining
         annotation_info <- data.frame(
-            lipid_id = assay_data[[lipid_id_col]]
-            , lipid_name = assay_data[[annotation_col]]
-            , stringsAsFactors = FALSE
+            lipid_id = assay_data[[lipid_id_col]],
+            lipid_name = assay_data[[annotation_col]],
+            stringsAsFactors = FALSE
         )
 
-        logger::log_info(sprintf("   Expression matrix: %d lipids x %d samples"
-            , nrow(expr_matrix), ncol(expr_matrix)))
+        logger::log_info(sprintf(
+            "   Expression matrix: %d lipids x %d samples",
+            nrow(expr_matrix), ncol(expr_matrix)
+        ))
 
         # Run limma DE
-        tryCatch({
-            limma_results <- runTestsContrastsMetab(
-                data = expr_matrix
-                , contrast_strings = contrast_strings
-                , design_matrix = design_matrix
-                , formula_string = formula_string
-                , sample_id_col = sample_id_col
-                , treat_lfc_cutoff = if (treat_lfc_cutoff > 0) treat_lfc_cutoff else NA
-                , eBayes_trend = eBayes_trend
-                , eBayes_robust = eBayes_robust
-            )
+        tryCatch(
+            {
+                limma_results <- runTestsContrastsMetab(
+                    data = expr_matrix,
+                    contrast_strings = contrast_strings,
+                    design_matrix = design_matrix,
+                    formula_string = formula_string,
+                    sample_id_col = sample_id_col,
+                    treat_lfc_cutoff = if (treat_lfc_cutoff > 0) treat_lfc_cutoff else NA,
+                    eBayes_trend = eBayes_trend,
+                    eBayes_robust = eBayes_robust
+                )
 
-            # Store fit object for Glimma
-            contrasts_results[[assay_name]] <- limma_results
+                # Store fit object for Glimma
+                contrasts_results[[assay_name]] <- limma_results
 
-            # Collect qvalue warnings
-            if (length(limma_results$qvalue_warnings) > 0) {
-                all_qvalue_warnings[[assay_name]] <- limma_results$qvalue_warnings
-            }
-
-            # Process results for each contrast
-            assay_results_list <- purrr::map2(
-                limma_results$results
-                , names(limma_results$results)
-                , function(de_tbl, contrast_name) {
-                    # Add lipid_id from rownames
-                    de_tbl <- tibble::rownames_to_column(de_tbl, "lipid_id")
-
-                    # Add metadata columns
-                    de_tbl$assay <- assay_name
-                    de_tbl$comparison <- contrast_name
-
-                    # Add friendly name
-                    idx <- match(contrast_name, contrast_strings)
-                    de_tbl$friendly_name <- if (!is.na(idx)) friendly_names[idx] else contrast_name
-
-                    # Join annotation info
-                    de_tbl <- dplyr::left_join(
-                        de_tbl
-                        , annotation_info
-                        , by = "lipid_id"
-                    )
-
-                    # Classify significance
-                    de_tbl$significant <- ifelse(
-                        de_tbl$fdr_qvalue < de_q_val_thresh & abs(de_tbl$logFC) >= treat_lfc_cutoff
-                        , ifelse(de_tbl$logFC > 0, "Up", "Down")
-                        , "NS"
-                    )
-
-                    # Add sample intensity columns using createMetabDeResultsLongFormat
-                    cat(sprintf("[D66] Calling createMetabDeResultsLongFormat for contrast: %s\n", contrast_name))
-                    de_tbl <- createMetabDeResultsLongFormat(
-                        lfc_qval_tbl = de_tbl
-                        , expr_matrix = expr_matrix
-                        , design_matrix = design_matrix
-                        , sample_id_col = sample_id_col
-                        , group_id_col = group_col
-                        , lipid_id_col = "lipid_id"
-                    )
-
-                    return(de_tbl)
+                # Collect qvalue warnings
+                if (length(limma_results$qvalue_warnings) > 0) {
+                    all_qvalue_warnings[[assay_name]] <- limma_results$qvalue_warnings
                 }
-            )
 
-            # Combine all contrasts for this assay
-            assay_combined <- dplyr::bind_rows(assay_results_list)
-            per_assay_results[[assay_name]] <- assay_combined
+                # Process results for each contrast
+                assay_results_list <- purrr::map2(
+                    limma_results$results,
+                    names(limma_results$results),
+                    function(de_tbl, contrast_name) {
+                        # Add lipid_id from rownames
+                        de_tbl <- tibble::rownames_to_column(de_tbl, "lipid_id")
 
-            logger::log_info(sprintf("   Completed assay %s: %d total results"
-                , assay_name, nrow(assay_combined)))
+                        # Add metadata columns
+                        de_tbl$assay <- assay_name
+                        de_tbl$comparison <- contrast_name
 
-        }, error = function(e) {
-            cat(sprintf("[ERROR] Processing assay %s: %s\n", assay_name, e$message))
-            logger::log_error(sprintf("   ERROR processing assay %s: %s", assay_name, e$message))
-            per_assay_results[[assay_name]] <<- NULL
-        })
+                        # Add friendly name
+                        idx <- match(contrast_name, contrast_strings)
+                        de_tbl$friendly_name <- if (!is.na(idx)) friendly_names[idx] else contrast_name
+
+                        # Join annotation info
+                        de_tbl <- dplyr::left_join(
+                            de_tbl,
+                            annotation_info,
+                            by = "lipid_id"
+                        )
+
+                        # Classify significance
+                        de_tbl$significant <- ifelse(
+                            de_tbl$fdr_qvalue < de_q_val_thresh & abs(de_tbl$logFC) >= treat_lfc_cutoff,
+                            ifelse(de_tbl$logFC > 0, "Up", "Down"),
+                            "NS"
+                        )
+
+                        # Add sample intensity columns using createMetabDeResultsLongFormat
+                        cat(sprintf("[D66] Calling createMetabDeResultsLongFormat for contrast: %s\n", contrast_name))
+                        de_tbl <- createMetabDeResultsLongFormat(
+                            lfc_qval_tbl = de_tbl,
+                            expr_matrix = expr_matrix,
+                            design_matrix = design_matrix,
+                            sample_id_col = sample_id_col,
+                            group_id_col = group_col,
+                            lipid_id_col = "lipid_id"
+                        )
+
+                        return(de_tbl)
+                    }
+                )
+
+                # Combine all contrasts for this assay
+                assay_combined <- dplyr::bind_rows(assay_results_list)
+                per_assay_results[[assay_name]] <- assay_combined
+
+                logger::log_info(sprintf(
+                    "   Completed assay %s: %d total results",
+                    assay_name, nrow(assay_combined)
+                ))
+            },
+            error = function(e) {
+                cat(sprintf("[ERROR] Processing assay %s: %s\n", assay_name, e$message))
+                logger::log_error(sprintf("   ERROR processing assay %s: %s", assay_name, e$message))
+                per_assay_results[[assay_name]] <<- NULL
+            }
+        )
     }
 
     # Combine all assay results
@@ -513,23 +532,23 @@ runLipidsDE <- function(
             return(list(up = 0, down = 0, ns = 0))
         }
         list(
-            up = sum(df$significant == "Up", na.rm = TRUE)
-            , down = sum(df$significant == "Down", na.rm = TRUE)
-            , ns = sum(df$significant == "NS", na.rm = TRUE)
+            up = sum(df$significant == "Up", na.rm = TRUE),
+            down = sum(df$significant == "Down", na.rm = TRUE),
+            ns = sum(df$significant == "NS", na.rm = TRUE)
         )
     }) |> purrr::set_names(names(per_assay_results))
 
     logger::log_info("=== Completed runLipidsDE ===")
 
     return(list(
-        theObject = theObject
-        , contrasts_results = contrasts_results
-        , de_lipids_long = de_lipids_long
-        , per_assay_results = per_assay_results
-        , significant_counts = significant_counts
-        , qvalue_warnings = all_qvalue_warnings
-        , de_q_val_thresh = de_q_val_thresh
-        , treat_lfc_cutoff = treat_lfc_cutoff
+        theObject = theObject,
+        contrasts_results = contrasts_results,
+        de_lipids_long = de_lipids_long,
+        per_assay_results = per_assay_results,
+        significant_counts = significant_counts,
+        qvalue_warnings = all_qvalue_warnings,
+        de_q_val_thresh = de_q_val_thresh,
+        treat_lfc_cutoff = treat_lfc_cutoff
     ))
 }
 
@@ -563,26 +582,28 @@ runLipidsDE <- function(
 #' @importFrom stringr str_replace_all
 #' @export
 createMetabDeResultsLongFormat <- function(
-    lfc_qval_tbl
-    , expr_matrix
-    , design_matrix
-    , sample_id_col = "sample_id"
-    , group_id_col = "group"
-    , lipid_id_col = "lipid_id"
+  lfc_qval_tbl,
+  expr_matrix,
+  design_matrix,
+  sample_id_col = "sample_id",
+  group_id_col = "group",
+  lipid_id_col = "lipid_id"
 ) {
     logger::log_info("--- Entering createMetabDeResultsLongFormat ---")
     logger::log_info(sprintf("   lfc_qval_tbl: %d rows", nrow(lfc_qval_tbl)))
-    logger::log_info(sprintf("   expr_matrix: %d lipids x %d samples"
-        , nrow(expr_matrix), ncol(expr_matrix)))
+    logger::log_info(sprintf(
+        "   expr_matrix: %d lipids x %d samples",
+        nrow(expr_matrix), ncol(expr_matrix)
+    ))
 
     # Convert expression matrix to long format with intensity values
     intensity_long <- expr_matrix |>
         as.data.frame() |>
         tibble::rownames_to_column(lipid_id_col) |>
         tidyr::pivot_longer(
-            cols = -!!rlang::sym(lipid_id_col)
-            , names_to = sample_id_col
-            , values_to = "intensity"
+            cols = -!!rlang::sym(lipid_id_col),
+            names_to = sample_id_col,
+            values_to = "intensity"
         ) |>
         dplyr::left_join(design_matrix, by = sample_id_col)
 
@@ -596,21 +617,25 @@ createMetabDeResultsLongFormat <- function(
         ) |>
         dplyr::select(!!rlang::sym(lipid_id_col), col_name, intensity) |>
         tidyr::pivot_wider(
-            id_cols = !!rlang::sym(lipid_id_col)
-            , names_from = col_name
-            , values_from = intensity
+            id_cols = !!rlang::sym(lipid_id_col),
+            names_from = col_name,
+            values_from = intensity
         )
 
-    logger::log_info(sprintf("   intensity_wide: %d lipids x %d columns"
-        , nrow(intensity_wide), ncol(intensity_wide)))
+    logger::log_info(sprintf(
+        "   intensity_wide: %d lipids x %d columns",
+        nrow(intensity_wide), ncol(intensity_wide)
+    ))
 
     # Parse contrast to get numerator/denominator groups
     # Contrast format is "groupA-groupB" where groupA is numerator, groupB is denominator
     if ("comparison" %in% colnames(lfc_qval_tbl)) {
         # Extract unique comparisons
         contrasts <- unique(lfc_qval_tbl$comparison)
-        logger::log_info(sprintf("   Processing %d contrasts: %s"
-            , length(contrasts), paste(contrasts, collapse = ", ")))
+        logger::log_info(sprintf(
+            "   Processing %d contrasts: %s",
+            length(contrasts), paste(contrasts, collapse = ", ")
+        ))
 
         # Parse first contrast to get group prefix pattern
         # Assumes format like "groupTreatment-groupControl"
@@ -623,19 +648,22 @@ createMetabDeResultsLongFormat <- function(
             right_part <- parts[2]
 
             # Add numerator/denominator columns by parsing comparison
-            tryCatch({
-                lfc_qval_tbl <- lfc_qval_tbl |>
-                    tidyr::separate_wider_delim(
-                        comparison
-                        , delim = "-"
-                        , names = c("numerator", "denominator")
-                        , cols_remove = FALSE
-                    )
-            }, error = function(e) {
-                cat(sprintf("[WARN] Could not parse contrast groups: %s\n", e$message))
-                lfc_qval_tbl$numerator <<- NA_character_
-                lfc_qval_tbl$denominator <<- NA_character_
-            })
+            tryCatch(
+                {
+                    lfc_qval_tbl <- lfc_qval_tbl |>
+                        tidyr::separate_wider_delim(
+                            comparison,
+                            delim = "-",
+                            names = c("numerator", "denominator"),
+                            cols_remove = FALSE
+                        )
+                },
+                error = function(e) {
+                    cat(sprintf("[WARN] Could not parse contrast groups: %s\n", e$message))
+                    lfc_qval_tbl$numerator <<- NA_character_
+                    lfc_qval_tbl$denominator <<- NA_character_
+                }
+            )
         }
     }
 
@@ -645,8 +673,10 @@ createMetabDeResultsLongFormat <- function(
         dplyr::arrange(comparison, fdr_qvalue, logFC) |>
         dplyr::distinct()
 
-    logger::log_info(sprintf("   Final de_results_long: %d rows x %d columns"
-        , nrow(de_results_long), ncol(de_results_long)))
+    logger::log_info(sprintf(
+        "   Final de_results_long: %d rows x %d columns",
+        nrow(de_results_long), ncol(de_results_long)
+    ))
 
     logger::log_info("--- Exiting createMetabDeResultsLongFormat ---")
 
@@ -674,10 +704,10 @@ createMetabDeResultsLongFormat <- function(
 #'
 #' @export
 getLipidQuantData <- function(
-    assay_df
-    , lipid_id_col = "Alignment ID"
-    , annotation_col = "Lipid name"
-    , additional_meta_cols = NULL
+  assay_df,
+  lipid_id_col = "Alignment ID",
+  annotation_col = "Lipid name",
+  additional_meta_cols = NULL
 ) {
     # Identify metadata columns to exclude
     meta_cols <- c(lipid_id_col, annotation_col)
@@ -693,9 +723,9 @@ getLipidQuantData <- function(
     sample_cols <- sample_cols[sapply(assay_df[, sample_cols, drop = FALSE], is.numeric)]
 
     list(
-        quant_data = assay_df[, sample_cols, drop = FALSE]
-        , meta_data = assay_df[, intersect(meta_cols, all_cols), drop = FALSE]
-        , sample_cols = sample_cols
+        quant_data = assay_df[, sample_cols, drop = FALSE],
+        meta_data = assay_df[, intersect(meta_cols, all_cols), drop = FALSE],
+        sample_cols = sample_cols
     )
 }
 
@@ -725,18 +755,18 @@ getLipidQuantData <- function(
 #' @importFrom logger log_info log_error log_warn
 #' @export
 generateMetabVolcanoPlotGlimma <- function(
-    de_results_list
-    , selected_contrast = NULL
-    , selected_assay = NULL
-    , de_q_val_thresh = 0.05
-    , lipid_id_column = "lipid_id"
-    , annotation_column = "lipid_name"
+  de_results_list,
+  selected_contrast = NULL,
+  selected_assay = NULL,
+  de_q_val_thresh = 0.05,
+  lipid_id_column = "lipid_id",
+  annotation_column = "lipid_name"
 ) {
     # [D66:START] ─────────────────────────
     d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
     d66_log("=== ENTER generateMetabVolcanoPlotGlimma ===")
-    d66_log("  selected_contrast = ", if(is.null(selected_contrast)) "NULL" else selected_contrast)
-    d66_log("  selected_assay = ", if(is.null(selected_assay)) "NULL" else selected_assay)
+    d66_log("  selected_contrast = ", if (is.null(selected_contrast)) "NULL" else selected_contrast)
+    d66_log("  selected_assay = ", if (is.null(selected_assay)) "NULL" else selected_assay)
     # [D66:END] ───────────────────────────
 
     logger::log_info("--- Entering generateMetabVolcanoPlotGlimma ---")
@@ -884,30 +914,30 @@ generateMetabVolcanoPlotGlimma <- function(
     # Prepare volcano plot annotation table
     volcano_tab <- contrast_data |>
         dplyr::mutate(
-            lqm = -log10(fdr_qvalue)
-            , label = dplyr::case_when(
-                abs(logFC) >= 1 & fdr_qvalue >= de_q_val_thresh ~ "Not sig., |logFC| >= 1"
-                , abs(logFC) >= 1 & fdr_qvalue < de_q_val_thresh ~ "Sig., |logFC| >= 1"
-                , abs(logFC) < 1 & fdr_qvalue < de_q_val_thresh ~ "Sig., |logFC| < 1"
-                , TRUE ~ "Not sig."
-            )
-            , display_name = ifelse(
-                !is.na(lipid_name) & lipid_name != ""
-                , lipid_name
-                , lipid_id
+            lqm = -log10(fdr_qvalue),
+            label = dplyr::case_when(
+                abs(logFC) >= 1 & fdr_qvalue >= de_q_val_thresh ~ "Not sig., |logFC| >= 1",
+                abs(logFC) >= 1 & fdr_qvalue < de_q_val_thresh ~ "Sig., |logFC| >= 1",
+                abs(logFC) < 1 & fdr_qvalue < de_q_val_thresh ~ "Sig., |logFC| < 1",
+                TRUE ~ "Not sig."
+            ),
+            display_name = ifelse(
+                !is.na(lipid_name) & lipid_name != "",
+                lipid_name,
+                lipid_id
             )
         ) |>
         dplyr::select(
-            lipid_id
-            , lipid_name
-            , display_name
-            , assay
-            , logFC
-            , raw_pvalue
-            , fdr_qvalue
-            , lqm
-            , label
-            , significant
+            lipid_id,
+            lipid_name,
+            display_name,
+            assay,
+            logFC,
+            raw_pvalue,
+            fdr_qvalue,
+            lqm,
+            label,
+            significant
         )
 
     # Get counts matrix for the selected assay
@@ -934,50 +964,53 @@ generateMetabVolcanoPlotGlimma <- function(
     # [D66:END] ───────────────────────────
 
     # Generate Glimma widget
-    tryCatch({
-        logger::log_info("   Generating Glimma widget...")
+    tryCatch(
+        {
+            logger::log_info("   Generating Glimma widget...")
 
-        # [D66:START]
-        d66_log("  Calling Glimma::glimmaVolcano...")
-        # [D66:END]
+            # [D66:START]
+            d66_log("  Calling Glimma::glimmaVolcano...")
+            # [D66:END]
 
-        # Use Glimma's glimmaVolcano function directly
-        # NOTE: transform.counts = "none" because lipidomics data is already
-        # log-transformed and contains negative values. Glimma's default is to
-        # apply cpm(log=TRUE) which fails on negative values.
-        glimma_widget <- Glimma::glimmaVolcano(
-            x = fit_obj
-            , coef = coef_index
-            , counts = counts_mat
-            , groups = groups
-            , anno = data.frame(
-                ID = volcano_tab$lipid_id
-                , Name = volcano_tab$display_name
-                , Assay = volcano_tab$assay
+            # Use Glimma's glimmaVolcano function directly
+            # NOTE: transform.counts = "none" because lipidomics data is already
+            # log-transformed and contains negative values. Glimma's default is to
+            # apply cpm(log=TRUE) which fails on negative values.
+            glimma_widget <- Glimma::glimmaVolcano(
+                x = fit_obj,
+                coef = coef_index,
+                counts = counts_mat,
+                groups = groups,
+                anno = data.frame(
+                    ID = volcano_tab$lipid_id,
+                    Name = volcano_tab$display_name,
+                    Assay = volcano_tab$assay
+                ),
+                status = ifelse(volcano_tab$significant == "Up", 1,
+                    ifelse(volcano_tab$significant == "Down", -1, 0)
+                ),
+                main = paste("Volcano Plot:", selected_contrast),
+                transform.counts = "none",
+                html = NULL
             )
-            , status = ifelse(volcano_tab$significant == "Up", 1
-                , ifelse(volcano_tab$significant == "Down", -1, 0))
-            , main = paste("Volcano Plot:", selected_contrast)
-            , transform.counts = "none"
-            , html = NULL
-        )
 
-        # [D66:START]
-        d66_log("  Glimma widget created successfully!")
-        d66_log("    widget class = ", class(glimma_widget)[1])
-        # [D66:END]
+            # [D66:START]
+            d66_log("  Glimma widget created successfully!")
+            d66_log("    widget class = ", class(glimma_widget)[1])
+            # [D66:END]
 
-        logger::log_info("--- Exiting generateMetabVolcanoPlotGlimma (success) ---")
-        return(glimma_widget)
-
-    }, error = function(e) {
-        # [D66:START]
-        d66_log("  ERROR in Glimma::glimmaVolcano: ", e$message)
-        d66_log("  Error call: ", deparse(e$call))
-        # [D66:END]
-        logger::log_error(sprintf("   Glimma widget generation failed: %s", e$message))
-        return(NULL)
-    })
+            logger::log_info("--- Exiting generateMetabVolcanoPlotGlimma (success) ---")
+            return(glimma_widget)
+        },
+        error = function(e) {
+            # [D66:START]
+            d66_log("  ERROR in Glimma::glimmaVolcano: ", e$message)
+            d66_log("  Error call: ", deparse(e$call))
+            # [D66:END]
+            logger::log_error(sprintf("   Glimma widget generation failed: %s", e$message))
+            return(NULL)
+        }
+    )
 }
 
 
@@ -1002,29 +1035,38 @@ generateMetabVolcanoPlotGlimma <- function(
 #' @param show_lipid_names Logical, show lipid name labels.
 #' @param de_q_val_thresh Q-value threshold for significance.
 #'
-#' @return A ggplot2 or ComplexHeatmap object, or NULL.
+#' @param tree_cut_method Method for cutting the row tree: "none", "k_clusters", "height_cutoff", "dynamic".
+#' @param n_clusters Number of clusters (for k_clusters).
+#' @param cut_height Height cutoff (for height_cutoff).
+#' @param min_cluster_size Minimum cluster size (for dynamic).
+#'
+#' @return A list containing the Heatmap object and cluster assignments, or NULL.
 #'
 #' @importFrom ComplexHeatmap Heatmap
 #' @importFrom circlize colorRamp2
-#' @importFrom stats hclust dist cor
+#' @importFrom stats hclust dist cor cutree
 #' @importFrom dplyr filter arrange desc slice_head
 #' @importFrom logger log_info log_error log_warn
 #' @export
-generateMetabDEHeatmap <- function(
-    de_results_list
-    , selected_contrast = NULL
-    , selected_assay = NULL
-    , top_n = 50
-    , clustering_method = "ward.D2"
-    , distance_method = "euclidean"
-    , cluster_rows = TRUE
-    , cluster_cols = TRUE
-    , scale_data = "row"
-    , color_scheme = "RdBu"
-    , show_lipid_names = FALSE
-    , de_q_val_thresh = 0.05
+generateLipidDEHeatmap <- function(
+  de_results_list,
+  selected_contrast = NULL,
+  selected_assay = NULL,
+  top_n = 50,
+  clustering_method = "ward.D2",
+  distance_method = "euclidean",
+  cluster_rows = TRUE,
+  cluster_cols = TRUE,
+  scale_data = "row",
+  color_scheme = "RdBu",
+  show_lipid_names = FALSE,
+  de_q_val_thresh = 0.05,
+  tree_cut_method = "none",
+  n_clusters = 4,
+  cut_height = 10,
+  min_cluster_size = 5
 ) {
-    logger::log_info("--- Entering generateMetabDEHeatmap ---")
+    logger::log_info("--- Entering generateLipidDEHeatmap ---")
     logger::log_info(sprintf("   selected_contrast = %s, top_n = %d", selected_contrast, top_n))
 
     if (is.null(de_results_list) || is.null(de_results_list$de_lipids_long)) {
@@ -1082,14 +1124,18 @@ generateMetabDEHeatmap <- function(
     # Build expression matrix from relevant assays
     expr_list <- lapply(assays_to_use, function(assay_name) {
         assay_data <- theObject@lipid_data[[assay_name]]
-        if (is.null(assay_data)) return(NULL)
+        if (is.null(assay_data)) {
+            return(NULL)
+        }
 
         # Get lipid IDs for this assay
         assay_lipid_ids <- top_lipids |>
             dplyr::filter(assay == assay_name) |>
             dplyr::pull(lipid_id)
 
-        if (length(assay_lipid_ids) == 0) return(NULL)
+        if (length(assay_lipid_ids) == 0) {
+            return(NULL)
+        }
 
         # Filter to selected lipids
         rows_to_keep <- assay_data[[theObject@lipid_id_column]] %in% assay_lipid_ids
@@ -1161,15 +1207,49 @@ generateMetabDEHeatmap <- function(
         col_clust <- stats::hclust(col_dist, method = clustering_method)
     }
 
+    # Tree Cutting Logic
+    row_clusters <- NULL
+    if (cluster_rows && !is.null(row_clust) && tree_cut_method != "none") {
+        logger::log_info(sprintf("   Applying tree cutting method: %s", tree_cut_method))
+
+        if (tree_cut_method == "k_clusters") {
+            if (n_clusters > 1 && n_clusters <= nrow(expr_matrix)) {
+                row_clusters <- stats::cutree(row_clust, k = n_clusters)
+            } else {
+                logger::log_warn("   Invalid n_clusters for k_clusters method")
+            }
+        } else if (tree_cut_method == "height_cutoff") {
+            row_clusters <- stats::cutree(row_clust, h = cut_height)
+        } else if (tree_cut_method == "dynamic") {
+            if (requireNamespace("dynamicTreeCut", quietly = TRUE)) {
+                # dynamicTreeCut requires a dissimilarity matrix, not just the tree
+                # We need to recalculate dist if it wasn't preserved, but we have row_dist
+                if (exists("row_dist")) {
+                    row_clusters <- dynamicTreeCut::cutreeDynamic(
+                        dendro = row_clust,
+                        distM = as.matrix(row_dist),
+                        deepSplit = 2,
+                        pamRespectsDendro = FALSE,
+                        minClusterSize = min_cluster_size,
+                        verbose = 0
+                    )
+                    names(row_clusters) <- row_clust$labels
+                }
+            } else {
+                logger::log_warn("   dynamicTreeCut package not installed, skipping dynamic cutting")
+            }
+        }
+    }
+
     # Color palette
-    color_fn <- switch(color_scheme
-        , "RdBu" = circlize::colorRamp2(c(-2, 0, 2), c("blue", "white", "red"))
-        , "RdYlBu" = circlize::colorRamp2(c(-2, 0, 2), c("blue", "yellow", "red"))
-        , "coolwarm" = circlize::colorRamp2(c(-2, 0, 2), c("#3B4CC0", "white", "#B40426"))
-        , "viridis" = circlize::colorRamp2(seq(-2, 2, length.out = 256), viridisLite::viridis(256))
-        , "plasma" = circlize::colorRamp2(seq(-2, 2, length.out = 256), viridisLite::plasma(256))
-        , "inferno" = circlize::colorRamp2(seq(-2, 2, length.out = 256), viridisLite::inferno(256))
-        , circlize::colorRamp2(c(-2, 0, 2), c("blue", "white", "red"))
+    color_fn <- switch(color_scheme,
+        "RdBu" = circlize::colorRamp2(c(-2, 0, 2), c("blue", "white", "red")),
+        "RdYlBu" = circlize::colorRamp2(c(-2, 0, 2), c("blue", "yellow", "red")),
+        "coolwarm" = circlize::colorRamp2(c(-2, 0, 2), c("#3B4CC0", "white", "#B40426")),
+        "viridis" = circlize::colorRamp2(seq(-2, 2, length.out = 256), viridisLite::viridis(256)),
+        "plasma" = circlize::colorRamp2(seq(-2, 2, length.out = 256), viridisLite::plasma(256)),
+        "inferno" = circlize::colorRamp2(seq(-2, 2, length.out = 256), viridisLite::inferno(256)),
+        circlize::colorRamp2(c(-2, 0, 2), c("blue", "white", "red"))
     )
 
     # Get column annotations (groups)
@@ -1177,32 +1257,58 @@ generateMetabDEHeatmap <- function(
     rownames(dm) <- dm[[theObject@sample_id]]
     col_groups <- dm[colnames(expr_matrix), theObject@group_id]
 
-    # Create heatmap
-    tryCatch({
-        hm <- ComplexHeatmap::Heatmap(
-            expr_matrix
-            , name = "Z-score"
-            , col = color_fn
-            , cluster_rows = if (is.null(row_clust)) cluster_rows else row_clust
-            , cluster_columns = if (is.null(col_clust)) cluster_cols else col_clust
-            , show_row_names = show_lipid_names
-            , row_labels = row_labels
-            , show_column_names = TRUE
-            , column_title = paste("Top", nrow(expr_matrix), "DE Lipids:", selected_contrast)
-            , row_title = "Lipids"
-            , top_annotation = ComplexHeatmap::HeatmapAnnotation(
-                Group = col_groups
-                , col = list(Group = c("Control" = "#4DBBD5", "Treatment" = "#E64B35"))
-            )
+    # Add cluster annotation if available
+    left_annotation <- NULL
+    if (!is.null(row_clusters)) {
+        # Create a safe color palette for clusters
+        n_clust <- length(unique(row_clusters))
+        if (n_clust <= 8) {
+            clust_colors <- RColorBrewer::brewer.pal(max(3, n_clust), "Dark2")[1:n_clust]
+        } else {
+            clust_colors <- grDevices::rainbow(n_clust)
+        }
+        names(clust_colors) <- unique(row_clusters)
+
+        left_annotation <- ComplexHeatmap::HeatmapAnnotation(
+            Cluster = as.character(row_clusters),
+            col = list(Cluster = clust_colors),
+            which = "row"
         )
+    }
 
-        logger::log_info("--- Exiting generateMetabDEHeatmap (success) ---")
-        return(hm)
+    # Create heatmap
+    tryCatch(
+        {
+            hm <- ComplexHeatmap::Heatmap(
+                expr_matrix,
+                name = "Z-score",
+                col = color_fn,
+                cluster_rows = if (is.null(row_clust)) cluster_rows else row_clust,
+                cluster_columns = if (is.null(col_clust)) cluster_cols else col_clust,
+                show_row_names = show_lipid_names,
+                row_labels = row_labels,
+                show_column_names = TRUE,
+                column_title = paste("Top", nrow(expr_matrix), "DE Lipids:", selected_contrast),
+                row_title = "Lipids",
+                top_annotation = ComplexHeatmap::HeatmapAnnotation(
+                    Group = col_groups,
+                    col = list(Group = c("Control" = "#4DBBD5", "Treatment" = "#E64B35"))
+                ),
+                left_annotation = left_annotation
+            )
 
-    }, error = function(e) {
-        logger::log_error(sprintf("   Heatmap generation failed: %s", e$message))
-        return(NULL)
-    })
+            logger::log_info("--- Exiting generateLipidDEHeatmap (success) ---")
+            return(list(
+                plot = hm,
+                row_clusters = row_clusters,
+                col_clusters = col_clust
+            ))
+        },
+        error = function(e) {
+            logger::log_error(sprintf("   Heatmap generation failed: %s", e$message))
+            return(NULL)
+        }
+    )
 }
 
 
@@ -1229,13 +1335,13 @@ generateMetabDEHeatmap <- function(
 #' @importFrom dplyr filter arrange slice_head
 #' @export
 generateMetabVolcanoStatic <- function(
-    de_results_list
-    , selected_contrast = NULL
-    , selected_assay = NULL
-    , de_q_val_thresh = 0.05
-    , lfc_threshold = 1
-    , show_labels = TRUE
-    , n_labels = 10
+  de_results_list,
+  selected_contrast = NULL,
+  selected_assay = NULL,
+  de_q_val_thresh = 0.05,
+  lfc_threshold = 1,
+  show_labels = TRUE,
+  n_labels = 10
 ) {
     if (is.null(de_results_list) || is.null(de_results_list$de_lipids_long)) {
         return(NULL)
@@ -1270,9 +1376,10 @@ generateMetabVolcanoStatic <- function(
     # Add plot columns
     plot_data <- plot_data |>
         dplyr::mutate(
-            neg_log10_q = -log10(fdr_qvalue)
-            , display_name = ifelse(!is.na(lipid_name) & lipid_name != ""
-                , lipid_name, lipid_id)
+            neg_log10_q = -log10(fdr_qvalue),
+            display_name = ifelse(!is.na(lipid_name) & lipid_name != "",
+                lipid_name, lipid_id
+            )
         )
 
     # Get top lipids for labeling
@@ -1285,29 +1392,29 @@ generateMetabVolcanoStatic <- function(
 
     # Build plot
     p <- ggplot2::ggplot(plot_data, ggplot2::aes(
-        x = logFC
-        , y = neg_log10_q
-        , color = significant
+        x = logFC,
+        y = neg_log10_q,
+        color = significant
     )) +
         ggplot2::geom_point(alpha = 0.6, size = 2) +
         ggplot2::geom_hline(
-            yintercept = -log10(de_q_val_thresh)
-            , linetype = "dashed"
-            , color = "gray50"
+            yintercept = -log10(de_q_val_thresh),
+            linetype = "dashed",
+            color = "gray50"
         ) +
         ggplot2::geom_vline(
-            xintercept = c(-lfc_threshold, lfc_threshold)
-            , linetype = "dashed"
-            , color = "gray50"
+            xintercept = c(-lfc_threshold, lfc_threshold),
+            linetype = "dashed",
+            color = "gray50"
         ) +
         ggplot2::scale_color_manual(
-            values = c("Up" = "#E64B35", "Down" = "#4DBBD5", "NS" = "gray70")
-            , name = "Significance"
+            values = c("Up" = "#E64B35", "Down" = "#4DBBD5", "NS" = "gray70"),
+            name = "Significance"
         ) +
         ggplot2::labs(
-            title = paste("Volcano Plot:", selected_contrast)
-            , x = "Log2 Fold Change"
-            , y = "-log10(Q-value)"
+            title = paste("Volcano Plot:", selected_contrast),
+            x = "Log2 Fold Change",
+            y = "-log10(Q-value)"
         ) +
         ggplot2::theme_minimal() +
         ggplot2::theme(legend.position = "bottom")
@@ -1315,10 +1422,10 @@ generateMetabVolcanoStatic <- function(
     # Add labels
     if (show_labels && nrow(top_to_label) > 0) {
         p <- p + ggrepel::geom_text_repel(
-            data = top_to_label
-            , ggplot2::aes(label = display_name)
-            , size = 3
-            , max.overlaps = 20
+            data = top_to_label,
+            ggplot2::aes(label = display_name),
+            size = 3,
+            max.overlaps = 20
         )
     }
 
@@ -1366,14 +1473,14 @@ generateMetabVolcanoStatic <- function(
 #' @importFrom logger log_info log_error log_warn
 #' @export
 outputMetabDeResultsAllContrasts <- function(
-    de_results_list
-    , de_output_dir
-    , publication_graphs_dir
-    , de_q_val_thresh = 0.05
-    , lfc_threshold = 1
-    , heatmap_top_n = 50
-    , heatmap_clustering = "both"
-    , heatmap_color_scheme = "RdBu"
+  de_results_list,
+  de_output_dir,
+  publication_graphs_dir,
+  de_q_val_thresh = 0.05,
+  lfc_threshold = 1,
+  heatmap_top_n = 50,
+  heatmap_clustering = "both",
+  heatmap_color_scheme = "RdBu"
 ) {
     logger::log_info("--- Entering outputMetabDeResultsAllContrasts ---")
     logger::log_info(sprintf("   de_output_dir = %s", de_output_dir))
@@ -1469,168 +1576,189 @@ outputMetabDeResultsAllContrasts <- function(
             # 1. Write DE results tables (TSV and Excel)
             # Filename format: de_{mode}_lipids_{contrast}_long_annot.xlsx
             # =====================================================================
-            tryCatch({
-                # Reorder columns: ID, name first, then stats, then intensity columns
-                priority_cols <- c("lipid_id", "lipid_name"
-                    , "logFC", "raw_pvalue", "fdr_qvalue", "significant"
-                    , "comparison", "friendly_name", "numerator", "denominator")
-                priority_cols <- intersect(priority_cols, colnames(assay_contrast_data))
+            tryCatch(
+                {
+                    # Reorder columns: ID, name first, then stats, then intensity columns
+                    priority_cols <- c(
+                        "lipid_id", "lipid_name",
+                        "logFC", "raw_pvalue", "fdr_qvalue", "significant",
+                        "comparison", "friendly_name", "numerator", "denominator"
+                    )
+                    priority_cols <- intersect(priority_cols, colnames(assay_contrast_data))
 
-                # Get sample intensity columns
-                intensity_cols <- grep("^intensity\\.", colnames(assay_contrast_data), value = TRUE)
+                    # Get sample intensity columns
+                    intensity_cols <- grep("^intensity\\.", colnames(assay_contrast_data), value = TRUE)
 
-                # Get any remaining columns (exclude assay since we're splitting by it)
-                other_cols <- setdiff(
-                    colnames(assay_contrast_data)
-                    , c(priority_cols, intensity_cols, "assay")
-                )
+                    # Get any remaining columns (exclude assay since we're splitting by it)
+                    other_cols <- setdiff(
+                        colnames(assay_contrast_data),
+                        c(priority_cols, intensity_cols, "assay")
+                    )
 
-                # Final column order
-                final_col_order <- c(priority_cols, other_cols, sort(intensity_cols))
-                output_data <- assay_contrast_data[, final_col_order, drop = FALSE]
+                    # Final column order
+                    final_col_order <- c(priority_cols, other_cols, sort(intensity_cols))
+                    output_data <- assay_contrast_data[, final_col_order, drop = FALSE]
 
-                # Build filename: de_{mode}_lipids_{contrast}_long_annot
-                file_base <- paste0("de_", mode_prefix, "_lipids_", contrast_name, "_long_annot")
+                    # Build filename: de_{mode}_lipids_{contrast}_long_annot
+                    file_base <- paste0("de_", mode_prefix, "_lipids_", contrast_name, "_long_annot")
 
-                # Write TSV
-                tsv_path <- file.path(de_output_dir, paste0(file_base, ".tsv"))
-                vroom::vroom_write(output_data, tsv_path)
-                logger::log_info(sprintf("      Wrote TSV: %s (%d rows, %d cols)"
-                    , basename(tsv_path), nrow(output_data), ncol(output_data)))
+                    # Write TSV
+                    tsv_path <- file.path(de_output_dir, paste0(file_base, ".tsv"))
+                    vroom::vroom_write(output_data, tsv_path)
+                    logger::log_info(sprintf(
+                        "      Wrote TSV: %s (%d rows, %d cols)",
+                        basename(tsv_path), nrow(output_data), ncol(output_data)
+                    ))
 
-                # Write Excel
-                xlsx_path <- file.path(de_output_dir, paste0(file_base, ".xlsx"))
-                writexl::write_xlsx(output_data, xlsx_path)
-                logger::log_info(sprintf("      Wrote Excel: %s", basename(xlsx_path)))
-
-            }, error = function(e) {
-                logger::log_error(sprintf("      Error writing tables for %s / %s: %s"
-                    , assay_name, contrast_name, e$message))
-            })
+                    # Write Excel
+                    xlsx_path <- file.path(de_output_dir, paste0(file_base, ".xlsx"))
+                    writexl::write_xlsx(output_data, xlsx_path)
+                    logger::log_info(sprintf("      Wrote Excel: %s", basename(xlsx_path)))
+                },
+                error = function(e) {
+                    logger::log_error(sprintf(
+                        "      Error writing tables for %s / %s: %s",
+                        assay_name, contrast_name, e$message
+                    ))
+                }
+            )
 
             # =================================================================
             # 2. Generate and save volcano plots (per assay, per contrast)
             # =================================================================
-            tryCatch({
-                # Build a filtered results list for just this assay
-                assay_filtered_results <- de_results_list
-                assay_filtered_results$de_lipids_long <- assay_contrast_data
+            tryCatch(
+                {
+                    # Build a filtered results list for just this assay
+                    assay_filtered_results <- de_results_list
+                    assay_filtered_results$de_lipids_long <- assay_contrast_data
 
-                volcano_plot <- generateMetabVolcanoStatic(
-                    de_results_list = assay_filtered_results
-                    , selected_contrast = contrast_name
-                    , selected_assay = assay_name
-                    , de_q_val_thresh = de_q_val_thresh
-                    , lfc_threshold = lfc_threshold
-                    , show_labels = TRUE
-                    , n_labels = 15
-                )
+                    volcano_plot <- generateMetabVolcanoStatic(
+                        de_results_list = assay_filtered_results,
+                        selected_contrast = contrast_name,
+                        selected_assay = assay_name,
+                        de_q_val_thresh = de_q_val_thresh,
+                        lfc_threshold = lfc_threshold,
+                        show_labels = TRUE,
+                        n_labels = 15
+                    )
 
-                if (!is.null(volcano_plot)) {
-                    # Unique key for combined PDF
-                    plot_key <- paste0(mode_prefix, "_", contrast_name)
-                    all_volcano_plots[[plot_key]] <- volcano_plot
+                    if (!is.null(volcano_plot)) {
+                        # Unique key for combined PDF
+                        plot_key <- paste0(mode_prefix, "_", contrast_name)
+                        all_volcano_plots[[plot_key]] <- volcano_plot
 
-                    # Filename: {mode}_{contrast}_volcano
-                    volcano_base <- paste0(mode_prefix, "_", contrast_name)
+                        # Filename: {mode}_{contrast}_volcano
+                        volcano_base <- paste0(mode_prefix, "_", contrast_name)
 
-                    # Save PNG
-                    volcano_png <- file.path(volcano_dir, paste0(volcano_base, ".png"))
-                    ggplot2::ggsave(volcano_png, volcano_plot, width = 8, height = 7, dpi = 300)
-                    logger::log_info(sprintf("      Saved volcano PNG: %s", basename(volcano_png)))
+                        # Save PNG
+                        volcano_png <- file.path(volcano_dir, paste0(volcano_base, ".png"))
+                        ggplot2::ggsave(volcano_png, volcano_plot, width = 8, height = 7, dpi = 300)
+                        logger::log_info(sprintf("      Saved volcano PNG: %s", basename(volcano_png)))
 
-                    # Save PDF
-                    volcano_pdf <- file.path(volcano_dir, paste0(volcano_base, ".pdf"))
-                    ggplot2::ggsave(volcano_pdf, volcano_plot, width = 8, height = 7)
-                    logger::log_info(sprintf("      Saved volcano PDF: %s", basename(volcano_pdf)))
+                        # Save PDF
+                        volcano_pdf <- file.path(volcano_dir, paste0(volcano_base, ".pdf"))
+                        ggplot2::ggsave(volcano_pdf, volcano_plot, width = 8, height = 7)
+                        logger::log_info(sprintf("      Saved volcano PDF: %s", basename(volcano_pdf)))
+                    }
+                },
+                error = function(e) {
+                    logger::log_error(sprintf(
+                        "      Error generating volcano for %s / %s: %s",
+                        assay_name, contrast_name, e$message
+                    ))
                 }
-
-            }, error = function(e) {
-                logger::log_error(sprintf("      Error generating volcano for %s / %s: %s"
-                    , assay_name, contrast_name, e$message))
-            })
+            )
 
             # =================================================================
             # 3. Generate and save heatmaps (per assay, per contrast)
             # =================================================================
-            tryCatch({
-                # Build a filtered results list for just this assay
-                assay_filtered_results <- de_results_list
-                assay_filtered_results$de_lipids_long <- assay_contrast_data
+            tryCatch(
+                {
+                    # Build a filtered results list for just this assay
+                    assay_filtered_results <- de_results_list
+                    assay_filtered_results$de_lipids_long <- assay_contrast_data
 
-                heatmap_obj <- generateMetabDEHeatmap(
-                    de_results_list = assay_filtered_results
-                    , selected_contrast = contrast_name
-                    , selected_assay = assay_name
-                    , top_n = heatmap_top_n
-                    , clustering_method = "ward.D2"
-                    , distance_method = "euclidean"
-                    , cluster_rows = heatmap_clustering %in% c("both", "row")
-                    , cluster_cols = heatmap_clustering %in% c("both", "column")
-                    , scale_data = "row"
-                    , color_scheme = heatmap_color_scheme
-                    , show_lipid_names = FALSE
-                    , de_q_val_thresh = de_q_val_thresh
-                )
+                    heatmap_obj <- generateMetabDEHeatmap(
+                        de_results_list = assay_filtered_results,
+                        selected_contrast = contrast_name,
+                        selected_assay = assay_name,
+                        top_n = heatmap_top_n,
+                        clustering_method = "ward.D2",
+                        distance_method = "euclidean",
+                        cluster_rows = heatmap_clustering %in% c("both", "row"),
+                        cluster_cols = heatmap_clustering %in% c("both", "column"),
+                        scale_data = "row",
+                        color_scheme = heatmap_color_scheme,
+                        show_lipid_names = FALSE,
+                        de_q_val_thresh = de_q_val_thresh
+                    )
 
-                if (!is.null(heatmap_obj)) {
-                    # Unique key for combined PDF
-                    plot_key <- paste0(mode_prefix, "_", contrast_name)
-                    all_heatmap_plots[[plot_key]] <- heatmap_obj
+                    if (!is.null(heatmap_obj)) {
+                        # Unique key for combined PDF
+                        plot_key <- paste0(mode_prefix, "_", contrast_name)
+                        all_heatmap_plots[[plot_key]] <- heatmap_obj
 
-                    # Filename: {mode}_{contrast}_heatmap
-                    heatmap_base <- paste0(mode_prefix, "_", contrast_name)
+                        # Filename: {mode}_{contrast}_heatmap
+                        heatmap_base <- paste0(mode_prefix, "_", contrast_name)
 
-                    # Save PNG
-                    heatmap_png <- file.path(heatmap_dir, paste0(heatmap_base, "_heatmap.png"))
-                    grDevices::png(heatmap_png, width = 10, height = 8, units = "in", res = 300)
-                    ComplexHeatmap::draw(heatmap_obj)
-                    grDevices::dev.off()
-                    logger::log_info(sprintf("      Saved heatmap PNG: %s", basename(heatmap_png)))
+                        # Save PNG
+                        heatmap_png <- file.path(heatmap_dir, paste0(heatmap_base, "_heatmap.png"))
+                        grDevices::png(heatmap_png, width = 10, height = 8, units = "in", res = 300)
+                        ComplexHeatmap::draw(heatmap_obj)
+                        grDevices::dev.off()
+                        logger::log_info(sprintf("      Saved heatmap PNG: %s", basename(heatmap_png)))
 
-                    # Save PDF
-                    heatmap_pdf <- file.path(heatmap_dir, paste0(heatmap_base, "_heatmap.pdf"))
-                    grDevices::pdf(heatmap_pdf, width = 10, height = 8)
-                    ComplexHeatmap::draw(heatmap_obj)
-                    grDevices::dev.off()
-                    logger::log_info(sprintf("      Saved heatmap PDF: %s", basename(heatmap_pdf)))
-                } else {
-                    logger::log_warn(sprintf("      No significant lipids for heatmap: %s / %s"
-                        , assay_name, contrast_name))
+                        # Save PDF
+                        heatmap_pdf <- file.path(heatmap_dir, paste0(heatmap_base, "_heatmap.pdf"))
+                        grDevices::pdf(heatmap_pdf, width = 10, height = 8)
+                        ComplexHeatmap::draw(heatmap_obj)
+                        grDevices::dev.off()
+                        logger::log_info(sprintf("      Saved heatmap PDF: %s", basename(heatmap_pdf)))
+                    } else {
+                        logger::log_warn(sprintf(
+                            "      No significant lipids for heatmap: %s / %s",
+                            assay_name, contrast_name
+                        ))
+                    }
+                },
+                error = function(e) {
+                    logger::log_error(sprintf(
+                        "      Error generating heatmap for %s / %s: %s",
+                        assay_name, contrast_name, e$message
+                    ))
                 }
-
-            }, error = function(e) {
-                logger::log_error(sprintf("      Error generating heatmap for %s / %s: %s"
-                    , assay_name, contrast_name, e$message))
-            })
+            )
 
             # =================================================================
             # 4. Calculate NumSigDeMolecules for this assay/contrast
             # =================================================================
-            tryCatch({
-                sig_summary <- assay_contrast_data |>
-                    dplyr::summarise(
-                        total = dplyr::n()
-                        , significant = sum(significant != "NS", na.rm = TRUE)
-                        , up_regulated = sum(significant == "Up", na.rm = TRUE)
-                        , down_regulated = sum(significant == "Down", na.rm = TRUE)
-                        , .groups = "drop"
-                    ) |>
-                    dplyr::mutate(
-                        assay = assay_name
-                        , mode = mode_prefix
-                        , contrast = contrast_name
-                        , q_threshold = de_q_val_thresh
-                    )
+            tryCatch(
+                {
+                    sig_summary <- assay_contrast_data |>
+                        dplyr::summarise(
+                            total = dplyr::n(),
+                            significant = sum(significant != "NS", na.rm = TRUE),
+                            up_regulated = sum(significant == "Up", na.rm = TRUE),
+                            down_regulated = sum(significant == "Down", na.rm = TRUE),
+                            .groups = "drop"
+                        ) |>
+                        dplyr::mutate(
+                            assay = assay_name,
+                            mode = mode_prefix,
+                            contrast = contrast_name,
+                            q_threshold = de_q_val_thresh
+                        )
 
-                table_key <- paste0(mode_prefix, "_", contrast_name)
-                all_numsig_tables[[table_key]] <- sig_summary
-
-            }, error = function(e) {
-                logger::log_error(sprintf("      Error calculating NumSigDE for %s / %s: %s"
-                    , assay_name, contrast_name, e$message))
-            })
-
+                    table_key <- paste0(mode_prefix, "_", contrast_name)
+                    all_numsig_tables[[table_key]] <- sig_summary
+                },
+                error = function(e) {
+                    logger::log_error(sprintf(
+                        "      Error calculating NumSigDE for %s / %s: %s",
+                        assay_name, contrast_name, e$message
+                    ))
+                }
+            )
         } # End contrast loop
     } # End assay loop
 
@@ -1638,79 +1766,92 @@ outputMetabDeResultsAllContrasts <- function(
     # 5. Create combined volcano plots PDF
     # =========================================================================
     if (length(all_volcano_plots) > 0) {
-        tryCatch({
-            combined_volcano_pdf <- file.path(volcano_dir, "all_volcano_plots_combined.pdf")
-            grDevices::pdf(combined_volcano_pdf, width = 8, height = 7, onefile = TRUE)
-            purrr::walk(all_volcano_plots, print)
-            grDevices::dev.off()
-            logger::log_info(sprintf("   Created combined volcano PDF: %d plots"
-                , length(all_volcano_plots)))
-        }, error = function(e) {
-            logger::log_error(sprintf("   Error creating combined volcano PDF: %s", e$message))
-        })
+        tryCatch(
+            {
+                combined_volcano_pdf <- file.path(volcano_dir, "all_volcano_plots_combined.pdf")
+                grDevices::pdf(combined_volcano_pdf, width = 8, height = 7, onefile = TRUE)
+                purrr::walk(all_volcano_plots, print)
+                grDevices::dev.off()
+                logger::log_info(sprintf(
+                    "   Created combined volcano PDF: %d plots",
+                    length(all_volcano_plots)
+                ))
+            },
+            error = function(e) {
+                logger::log_error(sprintf("   Error creating combined volcano PDF: %s", e$message))
+            }
+        )
     }
 
     # =========================================================================
     # 6. Create combined heatmaps PDF
     # =========================================================================
     if (length(all_heatmap_plots) > 0) {
-        tryCatch({
-            combined_heatmap_pdf <- file.path(heatmap_dir, "all_heatmaps_combined.pdf")
-            grDevices::pdf(combined_heatmap_pdf, width = 10, height = 8, onefile = TRUE)
-            purrr::walk(all_heatmap_plots, function(hm) {
-                ComplexHeatmap::draw(hm)
-            })
-            grDevices::dev.off()
-            logger::log_info(sprintf("   Created combined heatmap PDF: %d plots"
-                , length(all_heatmap_plots)))
-        }, error = function(e) {
-            logger::log_error(sprintf("   Error creating combined heatmap PDF: %s", e$message))
-        })
+        tryCatch(
+            {
+                combined_heatmap_pdf <- file.path(heatmap_dir, "all_heatmaps_combined.pdf")
+                grDevices::pdf(combined_heatmap_pdf, width = 10, height = 8, onefile = TRUE)
+                purrr::walk(all_heatmap_plots, function(hm) {
+                    ComplexHeatmap::draw(hm)
+                })
+                grDevices::dev.off()
+                logger::log_info(sprintf(
+                    "   Created combined heatmap PDF: %d plots",
+                    length(all_heatmap_plots)
+                ))
+            },
+            error = function(e) {
+                logger::log_error(sprintf("   Error creating combined heatmap PDF: %s", e$message))
+            }
+        )
     }
 
     # =========================================================================
     # 7. Write NumSigDeMolecules summary table
     # =========================================================================
     if (length(all_numsig_tables) > 0) {
-        tryCatch({
-            combined_numsig <- dplyr::bind_rows(all_numsig_tables)
+        tryCatch(
+            {
+                combined_numsig <- dplyr::bind_rows(all_numsig_tables)
 
-            # Write TSV
-            numsig_tsv <- file.path(numsigde_dir, "lipids_num_sig_de_molecules.tab")
-            vroom::vroom_write(combined_numsig, numsig_tsv)
-            logger::log_info(sprintf("   Wrote NumSigDE table: %s", basename(numsig_tsv)))
+                # Write TSV
+                numsig_tsv <- file.path(numsigde_dir, "lipids_num_sig_de_molecules.tab")
+                vroom::vroom_write(combined_numsig, numsig_tsv)
+                logger::log_info(sprintf("   Wrote NumSigDE table: %s", basename(numsig_tsv)))
 
-            # Write Excel
-            numsig_xlsx <- file.path(numsigde_dir, "lipids_num_sig_de_molecules.xlsx")
-            writexl::write_xlsx(combined_numsig, numsig_xlsx)
-            logger::log_info(sprintf("   Wrote NumSigDE Excel: %s", basename(numsig_xlsx)))
+                # Write Excel
+                numsig_xlsx <- file.path(numsigde_dir, "lipids_num_sig_de_molecules.xlsx")
+                writexl::write_xlsx(combined_numsig, numsig_xlsx)
+                logger::log_info(sprintf("   Wrote NumSigDE Excel: %s", basename(numsig_xlsx)))
 
-            # Create bar plot
-            numsig_plot <- ggplot2::ggplot(combined_numsig
-                , ggplot2::aes(x = contrast, y = significant, fill = mode)) +
-                ggplot2::geom_bar(stat = "identity", position = "dodge") +
-                ggplot2::labs(
-                    title = "Number of Significant DE Lipids"
-                    , x = "Contrast"
-                    , y = "Number of Significant Lipids"
-                    , fill = "Assay"
+                # Create bar plot
+                numsig_plot <- ggplot2::ggplot(
+                    combined_numsig,
+                    ggplot2::aes(x = contrast, y = significant, fill = mode)
                 ) +
-                ggplot2::theme_minimal() +
-                ggplot2::theme(
-                    axis.text.x = ggplot2::element_text(angle = 45, hjust = 1)
-                )
+                    ggplot2::geom_bar(stat = "identity", position = "dodge") +
+                    ggplot2::labs(
+                        title = "Number of Significant DE Lipids",
+                        x = "Contrast",
+                        y = "Number of Significant Lipids",
+                        fill = "Assay"
+                    ) +
+                    ggplot2::theme_minimal() +
+                    ggplot2::theme(
+                        axis.text.x = ggplot2::element_text(angle = 45, hjust = 1)
+                    )
 
-            # Save bar plot
-            numsig_png <- file.path(numsigde_dir, "lipids_num_sig_barplot.png")
-            ggplot2::ggsave(numsig_png, numsig_plot, width = 10, height = 6, dpi = 300)
-            logger::log_info(sprintf("   Saved NumSigDE barplot: %s", basename(numsig_png)))
-
-        }, error = function(e) {
-            logger::log_error(sprintf("   Error writing NumSigDE summary: %s", e$message))
-        })
+                # Save bar plot
+                numsig_png <- file.path(numsigde_dir, "lipids_num_sig_barplot.png")
+                ggplot2::ggsave(numsig_png, numsig_plot, width = 10, height = 6, dpi = 300)
+                logger::log_info(sprintf("   Saved NumSigDE barplot: %s", basename(numsig_png)))
+            },
+            error = function(e) {
+                logger::log_error(sprintf("   Error writing NumSigDE summary: %s", e$message))
+            }
+        )
     }
 
     logger::log_info("--- Exiting outputMetabDeResultsAllContrasts ---")
     return(TRUE)
 }
-

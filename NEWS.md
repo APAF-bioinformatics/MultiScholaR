@@ -1,5 +1,30 @@
 # MultiScholaR NEWS
 
+## Version 0.4.1.1
+
+### Heatmap Visualization Improvements
+
+#### Standardized Heatmap Saving
+
+- **Manual Save Requirement**: Heatmaps are now saved manually via a new "Save Heatmap" button in the Heatmap tab, rather than automatically during DE analysis. This allows users to fine-tune clustering and aesthetics before exporting.
+- **Warning Banner**: Added an informative banner to the results tab in all omics modules (Proteomics, Metabolomics, Lipidomics) to remind users that heatmaps must be saved manually.
+- **Reproducibility Artifacts**: The save function now generates:
+  - High-resolution `.png` and `.pdf` images.
+  - A `_heatmap_methods.md` file documenting the exact parameters used (clustering method, distance metric, etc.).
+  - A `_clusters.csv` file containing the cluster membership for every molecule in the heatmap.
+
+#### Enhanced Clustering Options
+
+- **Tree Cutting**: Added explicit "Tree Cutting" controls to the heatmap UI, allowing users to define clusters by:
+  - **K Clusters**: Arbitrary number of clusters.
+  - **Height Cutoff**: Dendrogram height.
+  - **Dynamic**: Dynamic tree cutting (if available).
+- **Cluster Summary**: Added a "Cluster Information" panel that displays the size and members of each cluster interactively.
+
+#### Summary Report Integration
+
+- **Automated Copying**: Updated `copyToResultsSummary` path management to ensure that manually saved heatmaps in `publication_graphs/Heatmap` are automatically included in the final "Publication Figures" export directory.
+
 ## Version 0.4.1 (Current Release)
 
 ### Major Feature: Lipidomics & Metabolomics GUI Integration
