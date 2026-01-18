@@ -16,7 +16,11 @@ generateMetabDEHeatmap(
   scale_data = "row",
   color_scheme = "RdBu",
   show_metabolite_names = FALSE,
-  de_q_val_thresh = 0.05
+  de_q_val_thresh = 0.05,
+  tree_cut_method = "none",
+  n_clusters = 4,
+  cut_height = 10,
+  min_cluster_size = 5
 )
 }
 \arguments{

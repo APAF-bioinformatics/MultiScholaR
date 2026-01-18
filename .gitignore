@@ -16,7 +16,7 @@
 *-Ex.R
 
 # Dev files
-/dev/
+/dev
 
 # Output files from R CMD build
 /*.tar.gz
@@ -55,4 +55,3 @@ data-raw/*.csv
 .Rproj.user
 .Rdata
 .DS_Store
-

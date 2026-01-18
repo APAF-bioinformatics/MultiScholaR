@@ -539,3 +539,36 @@ setGeneric(name = "filterSamplesByMetaboliteCorrelationThreshold"
                standardGeneric("filterSamplesByMetaboliteCorrelationThreshold")
            }
            , signature = c("theObject"))
+
+# --- Lipidomics Generics ---
+
+setGeneric(name="lipidIntensityFiltering"
+           , def=function( theObject, lipids_intensity_cutoff_percentile = NULL, lipids_proportion_of_samples_below_cutoff = NULL) {
+             standardGeneric("lipidIntensityFiltering")
+           }
+           , signature=c("theObject"))
+
+setGeneric(name = "getNegCtrlLipidAnova",
+           def = function(theObject,
+                          ruv_grouping_variable = NULL,
+                          percentage_as_neg_ctrl = NULL, 
+                          num_neg_ctrl = NULL,
+                          ruv_qval_cutoff = NULL,
+                          ruv_fdr_method = NULL) {
+             standardGeneric("getNegCtrlLipidAnova")
+           },
+           signature = c("theObject"))
+
+setGeneric(name = "filterSamplesByLipidCorrelationThreshold"
+           , def = function(theObject
+                            , pearson_correlation_per_pair = NULL
+                            , min_pearson_correlation_threshold = 0.5) {
+               standardGeneric("filterSamplesByLipidCorrelationThreshold")
+           }
+           , signature = c("theObject"))
+
+setGeneric(name = "createGridQCLipidomics",
+           def = function(theObject, pca_titles, density_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
+             standardGeneric("createGridQCLipidomics")
+           },
+           signature = c("theObject"))
