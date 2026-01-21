@@ -1,22 +1,22 @@
 #' @title Update and Visualize Filtering Progress
-#' @description Tracks and visualizes the impact of filtering steps on peptide 
-#'   and protein counts. Updates a global `FilteringProgress` object and optionally 
-#'   saves plots summarizing the changes. Handles both peptide-level and 
+#' @description Tracks and visualizes the impact of filtering steps on peptide
+#'   and protein counts. Updates a global `FilteringProgress` object and optionally
+#'   saves plots summarizing the changes. Handles both peptide-level and
 #'   protein-level data inputs.
-#' 
-#' @details 
-#' This function acts as a central hub for monitoring data reduction throughout 
+#'
+#' @details
+#' This function acts as a central hub for monitoring data reduction throughout
 #' a filtering workflow. It performs the following actions:
 #' \itemize{
-#'   \item Initializes or retrieves a global S4 object named `filtering_progress` 
+#'   \item Initializes or retrieves a global S4 object named `filtering_progress`
 #'     of class `FilteringProgress`.
-#'   \item Calculates key metrics (total unique proteins, proteins per run, 
-#'     total unique peptides, peptides per protein distribution, peptides per run) 
-#'     based on the input `data`. Peptide metrics are only calculated or updated 
-#'     if `data` is identified as peptide-level data. For protein-level data, 
-#'     peptide metrics from the last peptide step (if any) are carried forward or 
+#'   \item Calculates key metrics (total unique proteins, proteins per run,
+#'     total unique peptides, peptides per protein distribution, peptides per run)
+#'     based on the input `data`. Peptide metrics are only calculated or updated
+#'     if `data` is identified as peptide-level data. For protein-level data,
+#'     peptide metrics from the last peptide step (if any) are carried forward or
 #'     initialized as empty/NA.
-#'   \item Adds or updates these metrics in the `filtering_progress` object 
+#'   \item Adds or updates these metrics in the `filtering_progress` object
 #'     under the specified `step_name`.
 #'   \item Generates summary plots using `ggplot2`:
 #'     \itemize{
@@ -26,72 +26,74 @@
 #'       \item Line plot of proteins per run across steps.
 #'       \item Line plot of peptides per run across steps (or placeholder).
 #'     }
-#'   \item If `omic_type` and `experiment_label` are provided and valid paths can be 
-#'     derived from the global `project_dirs` object, the generated plots are saved 
-#'     as PNG files into the derived `time_dir`. Warnings are issued if paths cannot be 
+#'   \item If `omic_type` and `experiment_label` are provided and valid paths can be
+#'     derived from the global `project_dirs` object, the generated plots are saved
+#'     as PNG files into the derived `time_dir`. Warnings are issued if paths cannot be
 #'     derived or if `project_dirs` is not found.
-#'   \item If `return_grid` is `TRUE`, arranges the plots into a single grid using 
-#'     `gridExtra` and returns the grid object (grob). Also saves this combined grid 
+#'   \item If `return_grid` is `TRUE`, arranges the plots into a single grid using
+#'     `gridExtra` and returns the grid object (grob). Also saves this combined grid
 #'     if plot saving is enabled.
-#'   \item If `return_grid` is `FALSE` (default), prints each plot individually 
+#'   \item If `return_grid` is `FALSE` (default), prints each plot individually
 #'     and returns the list of plot objects invisibly.
 #' }
-#' 
-#' **Important:** This function relies on and modifies a global variable named 
-#' `filtering_progress`. For saving plots, it depends on the global `project_dirs` 
-#' object (expected to be populated by `setupDirectories()`) and the successful 
+#'
+#' **Important:** This function relies on and modifies a global variable named
+#' `filtering_progress`. For saving plots, it depends on the global `project_dirs`
+#' object (expected to be populated by `setupDirectories()`) and the successful
 #' derivation of `time_dir` from it using `omic_type` and `experiment_label`.
-#' 
-#' @param data The input data object. Can be a data frame (expected to conform 
-#'   to typical peptide or protein quantification structures) or an S4 object 
-#'   containing relevant slots (e.g., inheriting from `SummarizedExperiment`). 
+#'
+#' @param data The input data object. Can be a data frame (expected to conform
+#'   to typical peptide or protein quantification structures) or an S4 object
+#'   containing relevant slots (e.g., inheriting from `SummarizedExperiment`).
 #'   The function attempts to automatically detect if it\'s peptide or protein data.
-#' @param step_name A character string uniquely identifying the current filtering 
-#'   step (e.g., "InitialData", "FilteredByQuality", "Normalized"). This name is 
+#' @param step_name A character string uniquely identifying the current filtering
+#'   step (e.g., "InitialData", "FilteredByQuality", "Normalized"). This name is
 #'   used for tracking in the `filtering_progress` object and plot labels.
-#' @param omic_type Optional character string. The type of omics data 
-#'   (e.g., "proteomics", "metabolomics"). Used with `experiment_label` to 
-#'   derive save paths from the global `project_dirs` object. If `NULL` (default) 
+#' @param omic_type Optional character string. The type of omics data
+#'   (e.g., "proteomics", "metabolomics"). Used with `experiment_label` to
+#'   derive save paths from the global `project_dirs` object. If `NULL` (default)
 #'   or `experiment_label` is `NULL`, plots are not saved.
-#' @param experiment_label Optional character string. The specific experiment 
-#'   label (e.g., "workshop_data"). Used with `omic_type` to derive save paths 
-#'   from the global `project_dirs` object. If `NULL` (default) or `omic_type` 
+#' @param experiment_label Optional character string. The specific experiment
+#'   label (e.g., "workshop_data"). Used with `omic_type` to derive save paths
+#'   from the global `project_dirs` object. If `NULL` (default) or `omic_type`
 #'   is `NULL`, plots are not saved.
-#' @param overwrite Logical. If `TRUE`, allows overwriting an existing entry for 
-#'   `step_name` in the `filtering_progress` object. If `FALSE` (default) and 
+#' @param overwrite Logical. If `TRUE`, allows overwriting an existing entry for
+#'   `step_name` in the `filtering_progress` object. If `FALSE` (default) and
 #'   `step_name` already exists, the function will stop with an error.
-#' @param return_grid Logical. If `TRUE`, returns a single combined plot grid 
-#'   object created with `gridExtra::grid.arrange()`. If `FALSE` (default), prints 
+#' @param return_grid Logical. If `TRUE`, returns a single combined plot grid
+#'   object created with `gridExtra::grid.arrange()`. If `FALSE` (default), prints
 #'   individual plots and returns an invisible list of the ggplot objects.
-#' 
-#' @return If `return_grid` is `TRUE`, returns a `grob` object (a grid graphical object). 
-#'   If `return_grid` is `FALSE`, returns an invisible list containing the individual 
-#'   `ggplot` objects (`proteins_total`, `proteins_per_run`, `peptides_total`, 
-#'   `peptides_per_protein`, `peptides_per_run`). Has side effects: modifies the 
-#'   global `filtering_progress` object and potentially saves plots to disk if 
+#' @param formats A character vector specifying the file formats to save plots in.
+#'   Default is `c("png", "pdf", "jpg")`. Valid options depend on `ggsave` support.
+#'
+#' @return If `return_grid` is `TRUE`, returns a `grob` object (a grid graphical object).
+#'   If `return_grid` is `FALSE`, returns an invisible list containing the individual
+#'   `ggplot` objects (`proteins_total`, `proteins_per_run`, `peptides_total`,
+#'   `peptides_per_protein`, `peptides_per_run`). Has side effects: modifies the
+#'   global `filtering_progress` object and potentially saves plots to disk if
 #'   `omic_type` and `experiment_label` are provided and paths are valid.
-#'   
+#'
 #' @importFrom ggplot2 ggplot aes geom_bar geom_text labs theme_minimal theme element_text panel_grid_major_x geom_line geom_point scale_color_manual annotate theme_void geom_boxplot coord_cartesian quantile ggsave
 #' @importFrom dplyr bind_rows mutate group_by ungroup mean %>%
 #' @importFrom forcats fct_reorder
 #' @importFrom gridExtra arrangeGrob grid.arrange
 #' @importFrom methods isS4 slotNames new
 #' @importFrom stats quantile
-#' 
+#'
 #' @export
-updateProteinFiltering <- function(data, step_name, 
-                                 omic_type = NULL, experiment_label = NULL,
-                                 overwrite = FALSE, return_grid = FALSE) {
-    
+updateProteinFiltering <- function(data, step_name,
+                                   omic_type = NULL, experiment_label = NULL,
+                                   overwrite = FALSE, return_grid = FALSE,
+                                   formats = c("png", "pdf", "jpg")) {
     # Initialize filtering_progress if it doesn\'t exist
     if (!exists("filtering_progress", envir = .GlobalEnv)) {
         filtering_progress <- new("FilteringProgress")
         assign("filtering_progress", filtering_progress, envir = .GlobalEnv)
     }
-    
+
     # Get the current filtering_progress object
     filtering_progress <- get("filtering_progress", envir = .GlobalEnv)
-    
+
     # Path derivation and save_plots logic
     derived_time_dir <- NULL
     save_plots <- FALSE
@@ -115,12 +117,16 @@ updateProteinFiltering <- function(data, step_name,
 
                     if (is.null(temp_time_dir) || !is.character(temp_time_dir) || length(temp_time_dir) != 1 ||
                         is.null(derived_publication_graphs_dir) || !is.character(derived_publication_graphs_dir) || length(derived_publication_graphs_dir) != 1) {
-                        warning(paste0("\'time_dir\' or \'publication_graphs_dir\' is missing, not a character string, or not a single path for \'", omic_project_key,
-                                       "\' in global \'project_dirs\'. Plots will not be saved."))
+                        warning(paste0(
+                            "\'time_dir\' or \'publication_graphs_dir\' is missing, not a character string, or not a single path for \'", omic_project_key,
+                            "\' in global \'project_dirs\'. Plots will not be saved."
+                        ))
                     } else {
                         if (!dir.exists(temp_time_dir)) {
-                            warning(paste0("The derived \'time_dir\' (", temp_time_dir, ") for \'", omic_project_key,
-                                           "\' does not exist. Plots will not be saved. Ensure directories are created via setupDirectories()."))
+                            warning(paste0(
+                                "The derived \'time_dir\' (", temp_time_dir, ") for \'", omic_project_key,
+                                "\' does not exist. Plots will not be saved. Ensure directories are created via setupDirectories()."
+                            ))
                         } else {
                             derived_time_dir <- temp_time_dir
                             save_plots <- TRUE
@@ -133,10 +139,10 @@ updateProteinFiltering <- function(data, step_name,
     } else {
         # Message if omic_type/label are missing and saving might have been expected
         if (return_grid && (is.null(omic_type) || is.null(experiment_label))) {
-             message("omic_type and/or experiment_label not provided. Plots will not be saved.")
+            message("omic_type and/or experiment_label not provided. Plots will not be saved.")
         }
     }
-    
+
     # Determine if we\'re working with protein_quant_table
     is_protein_quant <- if (isS4(data)) {
         "protein_quant_table" %in% slotNames(data)
@@ -148,100 +154,123 @@ updateProteinFiltering <- function(data, step_name,
             FALSE
         }
     }
-    
+
     # Calculate protein metrics (always done)
     protein_count <- countUniqueProteins(data)
     proteins_per_run <- countProteinsPerRun(data)
-    
+
     # Ensure consistent data types in proteins_per_run
     proteins_per_run$Run <- as.character(proteins_per_run$Run)
     proteins_per_run$n_proteins <- as.numeric(proteins_per_run$n_proteins)
-    
+
     # Update filtering progress based on data type
     if (step_name %in% filtering_progress@steps) {
         if (!overwrite) {
             stop("Step name \'", step_name, "\' already exists. Use overwrite = TRUE to replace it.")
         }
         idx <- which(filtering_progress@steps == step_name)
-        
+
         # Always update protein metrics
         filtering_progress@proteins[idx] <- protein_count
         filtering_progress@proteins_per_run[[idx]] <- proteins_per_run
-        
+
         if (!is_protein_quant) {
             # Update peptide metrics only for peptide data
             filtering_progress@total_peptides[idx] <- calcTotalPeptides(data)
             peptides_per_protein <- calcPeptidesPerProtein(data)
             peptides_per_run <- countPeptidesPerRun(data)
-            
+
             # Ensure consistent data types
             peptides_per_protein$Protein.Ids <- as.character(peptides_per_protein$Protein.Ids)
             peptides_per_protein$n_peptides <- as.numeric(peptides_per_protein$n_peptides)
-            
+
             peptides_per_run$Run <- as.character(peptides_per_run$Run)
             peptides_per_run$n_peptides <- as.numeric(peptides_per_run$n_peptides)
-            
+
             filtering_progress@peptides_per_protein[[idx]] <- peptides_per_protein
             filtering_progress@peptides_per_run[[idx]] <- peptides_per_run
         }
     } else {
         filtering_progress@steps <- c(filtering_progress@steps, step_name)
         filtering_progress@proteins <- c(filtering_progress@proteins, protein_count)
-        filtering_progress@proteins_per_run <- c(filtering_progress@proteins_per_run, 
-                                               list(proteins_per_run))
-        
+        filtering_progress@proteins_per_run <- c(
+            filtering_progress@proteins_per_run,
+            list(proteins_per_run)
+        )
+
         if (!is_protein_quant) {
             # Add peptide metrics only for peptide data
-            filtering_progress@total_peptides <- c(filtering_progress@total_peptides, 
-                                                 calcTotalPeptides(data))
-            
+            filtering_progress@total_peptides <- c(
+                filtering_progress@total_peptides,
+                calcTotalPeptides(data)
+            )
+
             peptides_per_protein <- calcPeptidesPerProtein(data)
             peptides_per_run <- countPeptidesPerRun(data)
-            
+
             # Ensure consistent data types
             peptides_per_protein$Protein.Ids <- as.character(peptides_per_protein$Protein.Ids)
             peptides_per_protein$n_peptides <- as.numeric(peptides_per_protein$n_peptides)
-            
+
             peptides_per_run$Run <- as.character(peptides_per_run$Run)
             peptides_per_run$n_peptides <- as.numeric(peptides_per_run$n_peptides)
-            
-            filtering_progress@peptides_per_protein <- c(filtering_progress@peptides_per_protein, 
-                                                       list(peptides_per_protein))
-            filtering_progress@peptides_per_run <- c(filtering_progress@peptides_per_run, 
-                                                   list(peptides_per_run))
+
+            filtering_progress@peptides_per_protein <- c(
+                filtering_progress@peptides_per_protein,
+                list(peptides_per_protein)
+            )
+            filtering_progress@peptides_per_run <- c(
+                filtering_progress@peptides_per_run,
+                list(peptides_per_run)
+            )
         } else {
             # For protein data, maintain existing peptide metrics or add NA/empty entries
             if (length(filtering_progress@total_peptides) > 0) {
-                filtering_progress@total_peptides <- c(filtering_progress@total_peptides, 
-                                                     filtering_progress@total_peptides[length(filtering_progress@total_peptides)])
-                filtering_progress@peptides_per_protein <- c(filtering_progress@peptides_per_protein, 
-                                                           filtering_progress@peptides_per_protein[length(filtering_progress@peptides_per_protein)])
-                filtering_progress@peptides_per_run <- c(filtering_progress@peptides_per_run, 
-                                                       filtering_progress@peptides_per_run[length(filtering_progress@peptides_per_run)])
+                filtering_progress@total_peptides <- c(
+                    filtering_progress@total_peptides,
+                    filtering_progress@total_peptides[length(filtering_progress@total_peptides)]
+                )
+                filtering_progress@peptides_per_protein <- c(
+                    filtering_progress@peptides_per_protein,
+                    filtering_progress@peptides_per_protein[length(filtering_progress@peptides_per_protein)]
+                )
+                filtering_progress@peptides_per_run <- c(
+                    filtering_progress@peptides_per_run,
+                    filtering_progress@peptides_per_run[length(filtering_progress@peptides_per_run)]
+                )
             } else {
                 filtering_progress@total_peptides <- c(filtering_progress@total_peptides, NA_integer_)
-                filtering_progress@peptides_per_protein <- c(filtering_progress@peptides_per_protein, 
-                                                           list(data.frame(Protein.Ids = character(), 
-                                                                         n_peptides = integer())))
-                filtering_progress@peptides_per_run <- c(filtering_progress@peptides_per_run, 
-                                                       list(data.frame(Run = character(), 
-                                                                     n_peptides = integer())))
+                filtering_progress@peptides_per_protein <- c(
+                    filtering_progress@peptides_per_protein,
+                    list(data.frame(
+                        Protein.Ids = character(),
+                        n_peptides = integer()
+                    ))
+                )
+                filtering_progress@peptides_per_run <- c(
+                    filtering_progress@peptides_per_run,
+                    list(data.frame(
+                        Run = character(),
+                        n_peptides = integer()
+                    ))
+                )
             }
         }
     }
-    
+
     # Update the global filtering_progress object
     assign("filtering_progress", filtering_progress, envir = .GlobalEnv)
-    
+
     # Create base protein count plot (always shown)
     p1 <- ggplot(data.frame(
         step = factor(filtering_progress@steps, levels = filtering_progress@steps),
         proteins = filtering_progress@proteins
     ), aes(x = step, y = proteins)) +
         geom_bar(stat = "identity", fill = "steelblue", width = 0.7) +
-        geom_text(aes(label = proteins), 
-                  vjust = -0.5, 
-                  size = 4) +
+        geom_text(aes(label = proteins),
+            vjust = -0.5,
+            size = 4
+        ) +
         labs(
             title = "Number of Proteins",
             x = "Filtering Step",
@@ -252,7 +281,7 @@ updateProteinFiltering <- function(data, step_name,
             axis.text.x = element_text(angle = 45, hjust = 1),
             panel.grid.major.x = element_blank()
         )
-    
+
     # Create proteins per run plot (always shown)
     # First ensure all data frames in the list have consistent column types
     proteins_per_run_list <- lapply(filtering_progress@proteins_per_run, function(df) {
@@ -260,7 +289,7 @@ updateProteinFiltering <- function(data, step_name,
         df$n_proteins <- as.numeric(df$n_proteins)
         return(df)
     })
-    
+
     p4 <- bind_rows(proteins_per_run_list, .id = "step") |>
         mutate(step = filtering_progress@steps[as.numeric(step)]) |>
         group_by(Run) |>
@@ -268,9 +297,11 @@ updateProteinFiltering <- function(data, step_name,
         ungroup() |>
         # Run is already character from our preprocessing
         mutate(Run = fct_reorder(Run, avg_proteins)) |>
-        ggplot(aes(x = Run, y = n_proteins, 
-                  group = step, 
-                  color = factor(step, levels = filtering_progress@steps))) +
+        ggplot(aes(
+            x = Run, y = n_proteins,
+            group = step,
+            color = factor(step, levels = filtering_progress@steps)
+        )) +
         geom_line() +
         geom_point() +
         labs(
@@ -285,14 +316,16 @@ updateProteinFiltering <- function(data, step_name,
             panel.grid.major.x = element_blank()
         ) +
         scale_color_manual(values = get_color_palette(length(filtering_progress@steps), "steelblue"))
-    
+
     # Initialize peptide plots
     if (is_protein_quant) {
         # For protein data, create empty placeholder plots if no peptide data exists
         if (all(is.na(filtering_progress@total_peptides))) {
-            p2 <- p3 <- p5 <- ggplot() + 
-                annotate("text", x = 0.5, y = 0.5, 
-                        label = "No peptide data available for protein quantification data") +
+            p2 <- p3 <- p5 <- ggplot() +
+                annotate("text",
+                    x = 0.5, y = 0.5,
+                    label = "No peptide data available for protein quantification data"
+                ) +
                 theme_void()
         } else {
             # If peptide data exists from previous steps, create plots with existing data
@@ -301,9 +334,10 @@ updateProteinFiltering <- function(data, step_name,
                 total_peptides = filtering_progress@total_peptides
             ), aes(x = step, y = total_peptides)) +
                 geom_bar(stat = "identity", fill = "forestgreen", width = 0.7) +
-                geom_text(aes(label = total_peptides), 
-                          vjust = -0.5, 
-                          size = 4) +
+                geom_text(aes(label = total_peptides),
+                    vjust = -0.5,
+                    size = 4
+                ) +
                 labs(
                     title = "Total Unique Peptides (from last peptide data)",
                     x = "Filtering Step",
@@ -314,7 +348,7 @@ updateProteinFiltering <- function(data, step_name,
                     axis.text.x = element_text(angle = 45, hjust = 1),
                     panel.grid.major.x = element_blank()
                 )
-            
+
             # Ensure consistent data types in peptides_per_protein list
             peptides_per_protein_list <- lapply(filtering_progress@peptides_per_protein, function(df) {
                 if (nrow(df) > 0) {
@@ -323,15 +357,19 @@ updateProteinFiltering <- function(data, step_name,
                 }
                 return(df)
             })
-            
+
             p3 <- ggplot() +
-                geom_boxplot(data = bind_rows(peptides_per_protein_list, .id = "step") |>
-                             mutate(step = filtering_progress@steps[as.numeric(step)]),
-                           aes(x = factor(step, levels = filtering_progress@steps), 
-                               y = n_peptides),
-                           fill = "darkred",
-                           alpha = 0.5,
-                           outlier.shape = NA) +
+                geom_boxplot(
+                    data = bind_rows(peptides_per_protein_list, .id = "step") |>
+                        mutate(step = filtering_progress@steps[as.numeric(step)]),
+                    aes(
+                        x = factor(step, levels = filtering_progress@steps),
+                        y = n_peptides
+                    ),
+                    fill = "darkred",
+                    alpha = 0.5,
+                    outlier.shape = NA
+                ) +
                 labs(
                     title = "Peptides per Protein Distribution (from last peptide data)",
                     x = "Filtering Step",
@@ -343,10 +381,12 @@ updateProteinFiltering <- function(data, step_name,
                     panel.grid.major.x = element_blank()
                 ) +
                 coord_cartesian(
-                    ylim = c(0, 
-                             quantile(bind_rows(peptides_per_protein_list)$n_peptides, 0.95))
+                    ylim = c(
+                        0,
+                        quantile(bind_rows(peptides_per_protein_list)$n_peptides, 0.95)
+                    )
                 )
-            
+
             # Ensure consistent data types in peptides_per_run list
             peptides_per_run_list <- lapply(filtering_progress@peptides_per_run, function(df) {
                 if (nrow(df) > 0) {
@@ -355,7 +395,7 @@ updateProteinFiltering <- function(data, step_name,
                 }
                 return(df)
             })
-            
+
             p5 <- bind_rows(peptides_per_run_list, .id = "step") |>
                 mutate(step = filtering_progress@steps[as.numeric(step)]) |>
                 group_by(Run) |>
@@ -363,9 +403,11 @@ updateProteinFiltering <- function(data, step_name,
                 ungroup() |>
                 # Run is already character from our preprocessing
                 mutate(Run = fct_reorder(Run, avg_peptides)) |>
-                ggplot(aes(x = Run, y = n_peptides, 
-                          group = step, 
-                          color = factor(step, levels = filtering_progress@steps))) +
+                ggplot(aes(
+                    x = Run, y = n_peptides,
+                    group = step,
+                    color = factor(step, levels = filtering_progress@steps)
+                )) +
                 geom_line() +
                 geom_point() +
                 labs(
@@ -388,9 +430,10 @@ updateProteinFiltering <- function(data, step_name,
             total_peptides = filtering_progress@total_peptides
         ), aes(x = step, y = total_peptides)) +
             geom_bar(stat = "identity", fill = "forestgreen", width = 0.7) +
-            geom_text(aes(label = total_peptides), 
-                      vjust = -0.5, 
-                      size = 4) +
+            geom_text(aes(label = total_peptides),
+                vjust = -0.5,
+                size = 4
+            ) +
             labs(
                 title = "Total Unique Peptides",
                 x = "Filtering Step",
@@ -401,7 +444,7 @@ updateProteinFiltering <- function(data, step_name,
                 axis.text.x = element_text(angle = 45, hjust = 1),
                 panel.grid.major.x = element_blank()
             )
-        
+
         # Ensure consistent data types in peptides_per_protein list
         peptides_per_protein_list <- lapply(filtering_progress@peptides_per_protein, function(df) {
             if (nrow(df) > 0) {
@@ -410,15 +453,19 @@ updateProteinFiltering <- function(data, step_name,
             }
             return(df)
         })
-        
+
         p3 <- ggplot() +
-            geom_boxplot(data = bind_rows(peptides_per_protein_list, .id = "step") |>
-                         mutate(step = filtering_progress@steps[as.numeric(step)]),
-                       aes(x = factor(step, levels = filtering_progress@steps), 
-                           y = n_peptides),
-                       fill = "darkred",
-                       alpha = 0.5,
-                       outlier.shape = NA) +
+            geom_boxplot(
+                data = bind_rows(peptides_per_protein_list, .id = "step") |>
+                    mutate(step = filtering_progress@steps[as.numeric(step)]),
+                aes(
+                    x = factor(step, levels = filtering_progress@steps),
+                    y = n_peptides
+                ),
+                fill = "darkred",
+                alpha = 0.5,
+                outlier.shape = NA
+            ) +
             labs(
                 title = "Peptides per Protein Distribution",
                 x = "Filtering Step",
@@ -430,10 +477,12 @@ updateProteinFiltering <- function(data, step_name,
                 panel.grid.major.x = element_blank()
             ) +
             coord_cartesian(
-                ylim = c(0, 
-                         quantile(bind_rows(peptides_per_protein_list)$n_peptides, 0.95))
+                ylim = c(
+                    0,
+                    quantile(bind_rows(peptides_per_protein_list)$n_peptides, 0.95)
+                )
             )
-        
+
         # Ensure consistent data types in peptides_per_run list
         peptides_per_run_list <- lapply(filtering_progress@peptides_per_run, function(df) {
             if (nrow(df) > 0) {
@@ -442,7 +491,7 @@ updateProteinFiltering <- function(data, step_name,
             }
             return(df)
         })
-        
+
         p5 <- bind_rows(peptides_per_run_list, .id = "step") |>
             mutate(step = filtering_progress@steps[as.numeric(step)]) |>
             group_by(Run) |>
@@ -450,9 +499,11 @@ updateProteinFiltering <- function(data, step_name,
             ungroup() |>
             # Run is already character from our preprocessing
             mutate(Run = fct_reorder(Run, avg_peptides)) |>
-            ggplot(aes(x = Run, y = n_peptides, 
-                      group = step, 
-                      color = factor(step, levels = filtering_progress@steps))) +
+            ggplot(aes(
+                x = Run, y = n_peptides,
+                group = step,
+                color = factor(step, levels = filtering_progress@steps)
+            )) +
             geom_line() +
             geom_point() +
             labs(
@@ -468,7 +519,7 @@ updateProteinFiltering <- function(data, step_name,
             ) +
             scale_color_manual(values = get_color_palette(length(filtering_progress@steps), "forestgreen"))
     }
-    
+
     # Create plot list based on data type
     plot_list <- list(
         proteins_total = p1,
@@ -477,28 +528,33 @@ updateProteinFiltering <- function(data, step_name,
         peptides_per_protein = p3,
         peptides_per_run = p5
     )
-    
+
     # Save plots if derived_time_dir is valid and save_plots is TRUE
     if (save_plots) {
         for (plot_name in names(plot_list)) {
-            filename <- file.path(derived_time_dir,
-                                sprintf("%s_%s.png", step_name, plot_name))
-            ggsave(filename, 
-                   plot = plot_list[[plot_name]], 
-                   width = 10, 
-                   height = 8, 
-                   dpi = 300)
+            for (fmt in formats) {
+                filename <- file.path(
+                    derived_time_dir,
+                    sprintf("%s_%s.%s", step_name, plot_name, fmt)
+                )
+                ggsave(filename,
+                    plot = plot_list[[plot_name]],
+                    width = 10,
+                    height = 8,
+                    dpi = 300
+                )
+            }
         }
     }
-    
+
     # Return/display plots based on return_grid parameter
-    if(return_grid) {
+    if (return_grid) {
         if (!is_protein_quant || !all(is.na(filtering_progress@total_peptides))) {
             # Create full grid with all plots if peptide data exists
             grid1 <- gridExtra::arrangeGrob(p1, p2, p3, ncol = 3)
             grid2 <- gridExtra::arrangeGrob(p4, ncol = 1)
             grid3 <- gridExtra::arrangeGrob(p5, ncol = 1)
-            
+
             grid_plot <- gridExtra::grid.arrange(
                 grid1,
                 grid2,
@@ -514,22 +570,27 @@ updateProteinFiltering <- function(data, step_name,
                 heights = c(1, 1)
             )
         }
-        
+
         # Save the grid if derived_time_dir is valid and save_plots is TRUE
         if (save_plots) {
-            filename <- file.path(derived_time_dir,
-                                sprintf("%s_combined_plots.png", step_name))
-            ggsave(filename, 
-                   plot = grid_plot, 
-                   width = 15, 
-                   height = if (!is_protein_quant || !all(is.na(filtering_progress@total_peptides))) 18 else 12,
-                   dpi = 300)
+            for (fmt in formats) {
+                filename <- file.path(
+                    derived_time_dir,
+                    sprintf("%s_combined_plots.%s", step_name, fmt)
+                )
+                ggsave(filename,
+                    plot = grid_plot,
+                    width = 15,
+                    height = if (!is_protein_quant || !all(is.na(filtering_progress@total_peptides))) 18 else 12,
+                    dpi = 300
+                )
+            }
         }
-        
+
         return(grid_plot)
     } else {
         # Print each plot individually
-        for(plot_obj in plot_list) { # Changed loop variable to avoid conflict with base::plot
+        for (plot_obj in plot_list) { # Changed loop variable to avoid conflict with base::plot
             print(plot_obj)
         }
         # Return the list invisibly
@@ -624,12 +685,11 @@ getFilteringProgressMetabolomics <- function() {
 #' @noRd
 #' @export
 updateFilteringProgressMetabolomics <- function(prog_met,
-                                                  step_name,
-                                                  current_assay_names,
-                                                  metrics_list,
-                                                  total_metabolites,
-                                                  overwrite = FALSE) {
-
+                                                step_name,
+                                                current_assay_names,
+                                                metrics_list,
+                                                total_metabolites,
+                                                overwrite = FALSE) {
     if (step_name %in% prog_met@steps) {
         if (!overwrite) {
             stop("Step name '", step_name, "' already exists in filtering_progress_metabolomics. Use overwrite = TRUE to replace it.")
@@ -645,7 +705,6 @@ updateFilteringProgressMetabolomics <- function(prog_met,
         prog_met@sum_intensity_per_sample[[idx]] <- lapply(metrics_list, `[[`, "sum_intensity_per_sample")
         prog_met@cv_distribution_per_assay[[idx]] <- lapply(metrics_list, `[[`, "cv_distribution")
         prog_met@is_metrics_per_assay[[idx]] <- lapply(metrics_list, `[[`, "is_metrics")
-
     } else {
         # Append new data
         prog_met@steps <- c(prog_met@steps, step_name)
@@ -685,7 +744,7 @@ updateFilteringProgressMetabolomics <- function(prog_met,
 #' @importFrom dplyr select where
 #' @keywords internal
 #' @noRd
-#' @export 
+#' @export
 getMetaboliteQuantData <- function(assay_data) {
     # Identify quantitative (numeric) columns - assumes sample columns are numeric
     quant_cols <- sapply(assay_data, is.numeric)
@@ -717,13 +776,13 @@ getMetaboliteQuantData <- function(assay_data) {
 #' @importFrom dplyr pull distinct n
 #' @keywords internal
 #' @noRd
-#' @export 
+#' @export
 countUniqueMetabolites <- function(assay_data, metabolite_id_col) {
     if (!metabolite_id_col %in% colnames(assay_data)) {
         warning("Metabolite ID column '", metabolite_id_col, "' not found in assay data.")
         return(0)
     }
-    
+
     # Count unique non-NA metabolite IDs - avoid using pipe operators
     metabolite_ids <- dplyr::pull(assay_data, .data[[metabolite_id_col]])
     metabolite_ids <- stats::na.omit(metabolite_ids)
@@ -799,22 +858,24 @@ calculateMissingness <- function(assay_data, sample_id_col) {
     if ("..temp_row_id.." %in% colnames(quant_data)) {
         quant_data <- quant_data[, setdiff(colnames(quant_data), "..temp_row_id.."), drop = FALSE]
     }
-    
+
     # Count missing (NA or zero) values in all sample columns
     total_cells <- nrow(quant_data) * length(sample_names)
     missing_values <- 0
-    
+
     for (col in sample_names) {
         missing_values <- missing_values + sum(is.na(quant_data[[col]]) | quant_data[[col]] == 0)
     }
-    
+
     # Calculate percentage
     missing_pct <- (missing_values / total_cells) * 100
-    
+
     # Debug output to verify calculation
-    message("DEBUG: Missing values: ", missing_values, ", Total cells: ", total_cells, 
-            ", Percentage: ", missing_pct, "%")
-    
+    message(
+        "DEBUG: Missing values: ", missing_values, ", Total cells: ", total_cells,
+        ", Percentage: ", missing_pct, "%"
+    )
+
     return(missing_pct)
 }
 
@@ -876,23 +937,23 @@ calculateTotalUniqueMetabolitesAcrossAssays <- function(assay_list, metabolite_i
     }
 
     # Extract the metabolite ID column from each assay, handling missing columns
-    all_ids <- purrr::map(assay_list, ~{
-            if (metabolite_id_col %in% colnames(.x)) {
-                dplyr::pull(.x, {{ metabolite_id_col }})
-            } else {
-                NULL # Return NULL if column is missing
-            }
-        }) |>
+    all_ids <- purrr::map(assay_list, ~ {
+        if (metabolite_id_col %in% colnames(.x)) {
+            dplyr::pull(.x, {{ metabolite_id_col }})
+        } else {
+            NULL # Return NULL if column is missing
+        }
+    }) |>
         unlist() # Combine all IDs into a single vector
-    
+
     # Remove NAs
     all_ids <- stats::na.omit(all_ids)
-    
+
     # If no valid IDs found, return 0
     if (length(all_ids) == 0) {
         return(0)
     }
-    
+
     # Count unique IDs using a more explicit approach
     unique_ids <- dplyr::distinct(data.frame(id = all_ids))
     return(nrow(unique_ids))
@@ -927,11 +988,10 @@ calculateMetaboliteCVs <- function(assay_data,
                                    replicate_id_col, # Keep for consistency, maybe use later
                                    sample_id_col,
                                    metabolite_id_col) {
-
     # --- Input Validation --- #
     required_design_cols <- c(sample_id_col, group_id_col)
     if (!all(required_design_cols %in% colnames(design_matrix))) {
-        warning("Design matrix missing required columns: ", paste(setdiff(required_design_cols, colnames(design_matrix)), collapse=", "))
+        warning("Design matrix missing required columns: ", paste(setdiff(required_design_cols, colnames(design_matrix)), collapse = ", "))
         return(data.frame(metabolite_id = character(), group = character(), cv = numeric()))
     }
     if (!metabolite_id_col %in% colnames(assay_data)) {
@@ -977,28 +1037,28 @@ calculateMetaboliteCVs <- function(assay_data,
         ) |>
         # Ensure Run column is character for joining
         dplyr::mutate(Run = as.character(.data$Run))
-    
-        # Join with design info
+
+    # Join with design info
     long_data_with_groups <- dplyr::left_join(long_data, design_subset, by = "Run")
-    
+
     # Check if joining worked correctly
     if (sum(is.na(long_data_with_groups$group)) > 0) {
         message("Warning: Some samples couldn't be matched to groups. Check sample IDs in design matrix.")
         message("Unmatched samples: ", paste(unique(long_data_with_groups$Run[is.na(long_data_with_groups$group)]), collapse = ", "))
     }
-    
+
     # Remove rows where joining failed or Intensity is NA or 0
     filtered_data <- stats::na.omit(long_data_with_groups) |>
         dplyr::filter(.data$Intensity > 0) # Filter out zero values which can inflate CV
-    
-        # Group by metabolite and experimental group
+
+    # Group by metabolite and experimental group
     cv_data <- filtered_data |>
         dplyr::group_by(dplyr::across(dplyr::all_of(c(metabolite_id_col, "group")))) |>
         # Calculate SD and Mean, requiring at least 2 data points for SD
         dplyr::summarise(
             n_samples = dplyr::n(),
             mean_intensity = mean(.data$Intensity, na.rm = TRUE),
-            sd_intensity = if(dplyr::n() >= 2) stats::sd(.data$Intensity, na.rm = TRUE) else NA_real_,
+            sd_intensity = if (dplyr::n() >= 2) stats::sd(.data$Intensity, na.rm = TRUE) else NA_real_,
             .groups = "drop"
         ) |>
         # Calculate CV, handle mean close to zero or NA sd
@@ -1015,7 +1075,7 @@ calculateMetaboliteCVs <- function(assay_data,
         # Keep only relevant columns and rename metabolite ID column back
         dplyr::select(dplyr::all_of(c(metabolite_id_col, "group", "cv", "n_samples"))) |>
         dplyr::rename(metabolite_id = {{ metabolite_id_col }})
-    
+
     # Summary statistics for debugging
     message("CV calculation complete")
     message("CV summary statistics per group:")
@@ -1024,9 +1084,11 @@ calculateMetaboliteCVs <- function(assay_data,
         if (length(group_cvs) > 0) {
             group_stats <- summary(group_cvs)
             message("  - Group ", g, ":")
-            message("    Min: ", round(group_stats[1], 1), "%, 1st Qu: ", round(group_stats[2], 1), 
-                   "%, Median: ", round(group_stats[3], 1), "%, Mean: ", round(group_stats[4], 1), 
-                   "%, 3rd Qu: ", round(group_stats[5], 1), "%, Max: ", round(group_stats[6], 1), "%")
+            message(
+                "    Min: ", round(group_stats[1], 1), "%, 1st Qu: ", round(group_stats[2], 1),
+                "%, Median: ", round(group_stats[3], 1), "%, Mean: ", round(group_stats[4], 1),
+                "%, 3rd Qu: ", round(group_stats[5], 1), "%, Max: ", round(group_stats[6], 1), "%"
+            )
             message("    Number of metabolites with CV: ", length(group_cvs))
         } else {
             message("  - Group ", g, ": No valid CV values")
@@ -1054,13 +1116,12 @@ calculateMetaboliteCVs <- function(assay_data,
 #' @importFrom stringr str_detect
 #' @importFrom stats sd na.omit
 #' @keywords internal
-#' @noRd   
+#' @noRd
 #' @export
 getInternalStandardMetrics <- function(assay_data,
                                        is_pattern,
                                        metabolite_id_col,
                                        sample_id_col) {
-
     # --- Input Validation --- #
     if (is.null(is_pattern) || is.na(is_pattern) || is_pattern == "") {
         # message("Internal standard pattern is missing or invalid. Skipping IS metrics.")
@@ -1108,15 +1169,15 @@ getInternalStandardMetrics <- function(assay_data,
         dplyr::group_by(dplyr::across(dplyr::all_of(metabolite_id_col))) |>
         dplyr::summarise(
             mean_intensity = mean(.data$Intensity, na.rm = TRUE),
-            sd_intensity = if(dplyr::n() >= 2) stats::sd(.data$Intensity, na.rm = TRUE) else NA_real_,
+            sd_intensity = if (dplyr::n() >= 2) stats::sd(.data$Intensity, na.rm = TRUE) else NA_real_,
             n_samples = dplyr::n(), # Keep track of how many samples contributed
             .groups = "drop"
         ) |>
         dplyr::mutate(
             cv = dplyr::case_when(
-                 is.na(.data$sd_intensity) ~ NA_real_,
-                 abs(.data$mean_intensity) < .Machine$double.eps ~ NA_real_,
-                 TRUE ~ (.data$sd_intensity / .data$mean_intensity) * 100
+                is.na(.data$sd_intensity) ~ NA_real_,
+                abs(.data$mean_intensity) < .Machine$double.eps ~ NA_real_,
+                TRUE ~ (.data$sd_intensity / .data$mean_intensity) * 100
             )
         ) |>
         dplyr::select(dplyr::all_of(c(metabolite_id_col, "mean_intensity", "cv"))) |>
@@ -1196,41 +1257,39 @@ updateMetaboliteFiltering <- function(theObject,
                                       sample_id_col = NULL,
                                       metabolite_id_col = NULL,
                                       is_pattern = NULL) {
-
-
     prog_met <- getFilteringProgressMetabolomics()
 
 
     if (!isS4(theObject)) {
         stop("`theObject` must be an S4 object.")
     }
-    
+
     # Check for specific class before checking generic slots
     if (inherits(theObject, "MetaboliteAssayData")) {
         # Specific handling for MetaboliteAssayData
         design_matrix <- theObject@design_matrix
-        assay_list    <- theObject@metabolite_data # Directly access the slot
-        assay_names   <- names(assay_list)
-        if(is.null(assay_names)) assay_names <- paste0("Assay_", seq_along(assay_list))
+        assay_list <- theObject@metabolite_data # Directly access the slot
+        assay_names <- names(assay_list)
+        if (is.null(assay_names)) assay_names <- paste0("Assay_", seq_along(assay_list))
         names(assay_list) <- assay_names
     } else {
         # Basic checks for required methods/slots for non-MetaboliteAssayData objects
-    if (!requireNamespace("SummarizedExperiment", quietly = TRUE)) {
-       stop("Package 'SummarizedExperiment' needed for this function to work.")
-    }
-    if (!("assays" %in% methods::slotNames(theObject) || canCoerce(theObject, "SummarizedExperiment"))) {
-        stop("`theObject` must have an accessible `assays` method or slot.")
-    }
-     if (!("colData" %in% methods::slotNames(theObject) || canCoerce(theObject, "SummarizedExperiment"))) {
-        stop("`theObject` must have an accessible `colData` method or slot.")
+        if (!requireNamespace("SummarizedExperiment", quietly = TRUE)) {
+            stop("Package 'SummarizedExperiment' needed for this function to work.")
         }
-        
+        if (!("assays" %in% methods::slotNames(theObject) || canCoerce(theObject, "SummarizedExperiment"))) {
+            stop("`theObject` must have an accessible `assays` method or slot.")
+        }
+        if (!("colData" %in% methods::slotNames(theObject) || canCoerce(theObject, "SummarizedExperiment"))) {
+            stop("`theObject` must have an accessible `colData` method or slot.")
+        }
+
         # Use SE accessors if available
         design_matrix <- SummarizedExperiment::colData(theObject)
         assay_list <- SummarizedExperiment::assays(theObject)
         # Ensure assay_list elements are data frames/tibbles if needed by helpers
         assay_list <- lapply(assay_list, as.data.frame)
-        if(is.null(names(assay_list))) assay_names <- paste0("Assay_", seq_along(assay_list)) else assay_names <- names(assay_list)
+        if (is.null(names(assay_list))) assay_names <- paste0("Assay_", seq_along(assay_list)) else assay_names <- names(assay_list)
         names(assay_list) <- assay_names
     }
 
@@ -1248,24 +1307,24 @@ updateMetaboliteFiltering <- function(theObject,
     # Convert design matrix rownames to column if needed
     if (!sample_id_col %in% colnames(design_matrix)) {
         # If not, check if the rownames seem to match the sample IDs
-        if(identical(rownames(design_matrix), as.character(design_matrix[[sample_id_col]]))){
-             # This case is unlikely if sample_id_col isn't a column name
-             warning("Sample ID column '", sample_id_col, "' not found, but rownames might match? Check object structure.")
+        if (identical(rownames(design_matrix), as.character(design_matrix[[sample_id_col]]))) {
+            # This case is unlikely if sample_id_col isn't a column name
+            warning("Sample ID column '", sample_id_col, "' not found, but rownames might match? Check object structure.")
         } else if (!is.null(rownames(design_matrix)) && sample_id_col == "Run") { # Heuristic: If rownames exist and user expects 'Run'
             message("Moving rownames of design matrix to column: ", sample_id_col)
             design_matrix <- as.data.frame(design_matrix)
             design_matrix[[sample_id_col]] <- rownames(design_matrix)
             rownames(design_matrix) <- NULL # Remove rownames after moving
         } else {
-             warning("Sample ID column '", sample_id_col, "' not found in design matrix and rownames don't seem to match or weren't checked.")
+            warning("Sample ID column '", sample_id_col, "' not found in design matrix and rownames don't seem to match or weren't checked.")
         }
     }
-    
+
     design_matrix <- as.data.frame(design_matrix) # Ensure it's a data frame
 
 
     metrics_list_this_step <- list()
-    if(length(assay_list) > 0) {
+    if (length(assay_list) > 0) {
         metrics_list_this_step <- purrr::imap(assay_list, function(current_assay_data, current_assay_name) {
             # Ensure current_assay_data is a data frame/tibble
             if (!is.data.frame(current_assay_data)) {
@@ -1316,28 +1375,26 @@ updateMetaboliteFiltering <- function(theObject,
     message(sprintf("Value of time_dir argument in function call: %s", ifelse(is.null(time_dir), "NULL", time_dir)))
 
     message("Attempting to determine save directory using global project_dirs, omic_type, and experiment_label...")
-    
+
     if (exists("project_dirs", envir = .GlobalEnv) &&
         exists("omic_type", envir = .GlobalEnv) &&
         exists("experiment_label", envir = .GlobalEnv)) {
-        
         message("Global variables project_dirs, omic_type, and experiment_label found.")
         local_project_dirs <- get("project_dirs", envir = .GlobalEnv)
         local_omic_type <- get("omic_type", envir = .GlobalEnv)
         local_experiment_label <- get("experiment_label", envir = .GlobalEnv)
         message(sprintf("Global omic_type value: '%s', Global experiment_label value: '%s'", local_omic_type, local_experiment_label))
-        
+
         omics_key <- paste0(local_omic_type, "_", local_experiment_label)
         message(sprintf("Constructed omics_key for project_dirs: '%s'", omics_key))
-        
+
         if (omics_key %in% names(local_project_dirs) &&
-            !is.null(local_project_dirs[[omics_key]]) && 
+            !is.null(local_project_dirs[[omics_key]]) &&
             "time_dir" %in% names(local_project_dirs[[omics_key]])) {
-            
             message(sprintf("omics_key '%s' found in project_dirs and has a 'time_dir' entry.", omics_key))
             retrieved_time_dir <- local_project_dirs[[omics_key]]$time_dir
             message(sprintf("Retrieved time_dir from project_dirs: %s", ifelse(is.null(retrieved_time_dir), "NULL", retrieved_time_dir)))
-            
+
             if (is.null(retrieved_time_dir) || !is.character(retrieved_time_dir) || !nzchar(retrieved_time_dir)) {
                 warning(sprintf("project_dirs[['%s']]$time_dir is NULL, not a character string, or empty. Plots will not be saved.", omics_key))
                 message("Reason: retrieved_time_dir is invalid.")
@@ -1347,18 +1404,22 @@ updateMetaboliteFiltering <- function(theObject,
             }
         } else {
             warning(sprintf("Could not find omics_key '%s' in project_dirs, or it lacks a 'time_dir' entry. Plots will not be saved.", omics_key))
-            message(sprintf("Details: omics_key '%s' in names(project_dirs): %s. project_dirs[['%s']] is NULL: %s. 'time_dir' in names(project_dirs[['%s']]): %s.", 
-                          omics_key, omics_key %in% names(local_project_dirs), 
-                          omics_key, is.null(local_project_dirs[[omics_key]]), 
-                          omics_key, if (omics_key %in% names(local_project_dirs) && !is.null(local_project_dirs[[omics_key]])) "time_dir" %in% names(local_project_dirs[[omics_key]]) else NA))
-            message("Available keys in project_dirs: ", paste(names(local_project_dirs), collapse=", "))
+            message(sprintf(
+                "Details: omics_key '%s' in names(project_dirs): %s. project_dirs[['%s']] is NULL: %s. 'time_dir' in names(project_dirs[['%s']]): %s.",
+                omics_key, omics_key %in% names(local_project_dirs),
+                omics_key, is.null(local_project_dirs[[omics_key]]),
+                omics_key, if (omics_key %in% names(local_project_dirs) && !is.null(local_project_dirs[[omics_key]])) "time_dir" %in% names(local_project_dirs[[omics_key]]) else NA
+            ))
+            message("Available keys in project_dirs: ", paste(names(local_project_dirs), collapse = ", "))
         }
     } else {
         warning("One or more global variables ('project_dirs', 'omic_type', 'experiment_label') not found. Plots will not be saved.")
-        message(sprintf("Exists project_dirs: %s, Exists omic_type: %s, Exists experiment_label: %s", 
-                      exists("project_dirs", envir = .GlobalEnv),
-                      exists("omic_type", envir = .GlobalEnv),
-                      exists("experiment_label", envir = .GlobalEnv)))
+        message(sprintf(
+            "Exists project_dirs: %s, Exists omic_type: %s, Exists experiment_label: %s",
+            exists("project_dirs", envir = .GlobalEnv),
+            exists("omic_type", envir = .GlobalEnv),
+            exists("experiment_label", envir = .GlobalEnv)
+        ))
     }
 
     # Proceed with saving ONLY if actual_save_dir was successfully determined from global project_dirs
@@ -1373,27 +1434,28 @@ updateMetaboliteFiltering <- function(theObject,
         purrr::iwalk(plot_list, function(plot, plot_name) {
             filename <- file.path(actual_save_dir, sprintf("%s_%s.png", step_name, plot_name))
             message(sprintf("Saving plot: %s", filename))
-            ggsave(filename, 
-                   plot = plot, 
-                   width = 10, 
-                   height = 8, 
-                   dpi = 300)
+            ggsave(filename,
+                plot = plot,
+                width = 10,
+                height = 8,
+                dpi = 300
+            )
         })
 
         # Save combined grid if return_grid is TRUE and plots exist
         if (return_grid && length(plot_list) > 0 && !is.null(plot_list[[1]]) && inherits(plot_list[[1]], "ggplot")) {
-             grid_plot_obj <- do.call(gridExtra::grid.arrange, c(plot_list, ncol = 2)) 
-             filename_grid <- file.path(actual_save_dir, sprintf("%s_combined_plots.png", step_name))
-             message(sprintf("Saving combined grid plot: %s", filename_grid))
-             ggsave(filename_grid, plot = grid_plot_obj, width = 15, height = 15, dpi = 300)
+            grid_plot_obj <- do.call(gridExtra::grid.arrange, c(plot_list, ncol = 2))
+            filename_grid <- file.path(actual_save_dir, sprintf("%s_combined_plots.png", step_name))
+            message(sprintf("Saving combined grid plot: %s", filename_grid))
+            ggsave(filename_grid, plot = grid_plot_obj, width = 15, height = 15, dpi = 300)
         }
         message("Metabolomics QC plots saved to: ", actual_save_dir)
     } else {
-        # This block means actual_save_dir is still NULL. 
+        # This block means actual_save_dir is still NULL.
         # This implies either globals were missing or project_dirs structure was invalid for deriving time_dir.
         message("No valid save directory determined from global project_dirs. Plots will not be saved.")
         # If publication_graphs_dir was provided in the call, and we still ended up here, it means the global lookup failed.
-        if(!is.null(publication_graphs_dir)){
+        if (!is.null(publication_graphs_dir)) {
             warning("Function was called with a publication_graphs_dir path, but plot saving still failed because a valid time_dir could not be derived from global project_dirs.")
         }
     }
@@ -1462,24 +1524,25 @@ generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
     if (is.null(prog_met)) {
         prog_met <- getFilteringProgressMetabolomics()
     }
-    
+
     # Return empty list if no steps have been tracked
     if (length(prog_met@steps) == 0) {
         message("No metabolomics filtering steps have been tracked yet.")
         return(list())
     }
-    
+
     plot_list <- list()
-    
+
     # --- 1. Total Metabolites Plot (All Assays Combined) --- #
     plot_list$total_metabolites <- ggplot(data.frame(
         step = factor(prog_met@steps, levels = prog_met@steps),
         total_metabolites = prog_met@n_metabolites_total
     ), aes(x = step, y = total_metabolites)) +
         geom_bar(stat = "identity", fill = "steelblue", width = 0.7) +
-        geom_text(aes(label = total_metabolites), 
-                  vjust = -0.5, 
-                  size = 4) +
+        geom_text(aes(label = total_metabolites),
+            vjust = -0.5,
+            size = 4
+        ) +
         labs(
             title = "Total Unique Metabolites (All Assays)",
             x = "Filtering Step",
@@ -1490,14 +1553,14 @@ generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
             axis.text.x = element_text(angle = 45, hjust = 1),
             panel.grid.major.x = element_blank()
         )
-    
+
     # --- 2. Metabolites Per Assay Plot --- #
     # First create a data frame with metabolites per assay per step - use purrr
     metabolites_per_assay_df <- purrr::map_dfr(seq_along(prog_met@steps), function(step_idx) {
         step <- prog_met@steps[step_idx]
         assay_names <- prog_met@assay_names[[step_idx]]
         metabolite_counts <- unlist(prog_met@n_metabolites_per_assay[[step_idx]])
-        
+
         if (length(metabolite_counts) > 0) {
             return(data.frame(
                 step = step,
@@ -1505,19 +1568,24 @@ generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
                 n_metabolites = as.numeric(metabolite_counts)
             ))
         }
-        return(NULL)  # Return NULL if no metabolite counts (will be filtered by map_dfr)
+        return(NULL) # Return NULL if no metabolite counts (will be filtered by map_dfr)
     })
-    
+
     if (nrow(metabolites_per_assay_df) > 0) {
-        plot_list$metabolites_per_assay <- ggplot(metabolites_per_assay_df, 
-                                                 aes(x = factor(step, levels = prog_met@steps), 
-                                                     y = n_metabolites,
-                                                     fill = assay)) +
+        plot_list$metabolites_per_assay <- ggplot(
+            metabolites_per_assay_df,
+            aes(
+                x = factor(step, levels = prog_met@steps),
+                y = n_metabolites,
+                fill = assay
+            )
+        ) +
             geom_bar(stat = "identity", position = "dodge", width = 0.7) +
-            geom_text(aes(label = n_metabolites), 
-                      position = position_dodge(width = 0.7),
-                      vjust = -0.5, 
-                      size = 3) +
+            geom_text(aes(label = n_metabolites),
+                position = position_dodge(width = 0.7),
+                vjust = -0.5,
+                size = 3
+            ) +
             labs(
                 title = "Metabolites per Assay",
                 x = "Filtering Step",
@@ -1531,13 +1599,13 @@ generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
             ) +
             scale_fill_brewer(palette = "Set1")
     }
-    
+
     # --- 3. Detected Metabolites Per Sample Plot --- #
     # Create a data frame with detected metabolites per sample per step - use purrr
     detected_per_sample_df <- purrr::map_dfr(seq_along(prog_met@steps), function(step_idx) {
         step <- prog_met@steps[step_idx]
         assay_names <- prog_met@assay_names[[step_idx]]
-        
+
         # Use purrr::map_dfr to combine results from all assays
         purrr::map_dfr(assay_names, function(assay_name) {
             if (assay_name %in% names(prog_met@detected_per_sample[[step_idx]])) {
@@ -1548,26 +1616,29 @@ generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
                     return(detected_df)
                 }
             }
-            return(NULL)  # Return NULL if no data (will be filtered by map_dfr)
+            return(NULL) # Return NULL if no data (will be filtered by map_dfr)
         })
     })
-    
+
     if (nrow(detected_per_sample_df) > 0) {
         # Ensure consistent data types
         detected_per_sample_df$Run <- as.character(detected_per_sample_df$Run)
         detected_per_sample_df$n_detected <- as.numeric(detected_per_sample_df$n_detected)
-        detected_per_sample_df$step <- factor(detected_per_sample_df$step, 
-                                             levels = prog_met@steps)
-        
+        detected_per_sample_df$step <- factor(detected_per_sample_df$step,
+            levels = prog_met@steps
+        )
+
         plot_list$detected_per_sample <- detected_per_sample_df |>
             group_by(Run, assay) |>
             mutate(avg_detected = mean(n_detected)) |>
             ungroup() |>
             mutate(Run = fct_reorder(Run, avg_detected)) |>
-            ggplot(aes(x = Run, y = n_detected, 
-                       group = interaction(step, assay), 
-                       color = step,
-                       linetype = assay)) +
+            ggplot(aes(
+                x = Run, y = n_detected,
+                group = interaction(step, assay),
+                color = step,
+                linetype = assay
+            )) +
             geom_line() +
             geom_point() +
             labs(
@@ -1584,13 +1655,13 @@ generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
             ) +
             scale_color_brewer(palette = "Set2")
     }
-    
+
     # --- 4. Missingness Percentage Per Assay Plot --- #
     # Create a data frame with missingness percentage per assay per step - use purrr
     missingness_df <- purrr::map_dfr(seq_along(prog_met@steps), function(step_idx) {
         step <- prog_met@steps[step_idx]
         assay_names <- prog_met@assay_names[[step_idx]]
-        
+
         # Use purrr::map_dfr to combine results from all assays
         purrr::map_dfr(assay_names, function(assay_name) {
             if (assay_name %in% names(prog_met@missingness_per_assay[[step_idx]])) {
@@ -1603,20 +1674,25 @@ generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
                     ))
                 }
             }
-            return(NULL)  # Return NULL if no data (will be filtered by map_dfr)
+            return(NULL) # Return NULL if no data (will be filtered by map_dfr)
         })
     })
-    
+
     if (nrow(missingness_df) > 0) {
-        plot_list$missingness <- ggplot(missingness_df, 
-                                       aes(x = factor(step, levels = prog_met@steps), 
-                                           y = missingness,
-                                           fill = assay)) +
+        plot_list$missingness <- ggplot(
+            missingness_df,
+            aes(
+                x = factor(step, levels = prog_met@steps),
+                y = missingness,
+                fill = assay
+            )
+        ) +
             geom_bar(stat = "identity", position = "dodge", width = 0.7) +
-            geom_text(aes(label = sprintf("%.1f%%", missingness)), 
-                      position = position_dodge(width = 0.7),
-                      vjust = -0.5, 
-                      size = 3) +
+            geom_text(aes(label = sprintf("%.1f%%", missingness)),
+                position = position_dodge(width = 0.7),
+                vjust = -0.5,
+                size = 3
+            ) +
             labs(
                 title = "Missing Values Percentage per Assay",
                 x = "Filtering Step",
@@ -1630,13 +1706,13 @@ generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
             ) +
             scale_fill_brewer(palette = "Set1")
     }
-    
+
     # --- 5. Sum Intensity Per Sample Plot --- #
     # Create a data frame with sum intensity per sample per step - use purrr
     sum_intensity_df <- purrr::map_dfr(seq_along(prog_met@steps), function(step_idx) {
         step <- prog_met@steps[step_idx]
         assay_names <- prog_met@assay_names[[step_idx]]
-        
+
         # Use purrr::map_dfr to combine results from all assays
         purrr::map_dfr(assay_names, function(assay_name) {
             if (assay_name %in% names(prog_met@sum_intensity_per_sample[[step_idx]])) {
@@ -1647,17 +1723,18 @@ generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
                     return(intensity_df)
                 }
             }
-            return(NULL)  # Return NULL if no data (will be filtered by map_dfr)
+            return(NULL) # Return NULL if no data (will be filtered by map_dfr)
         })
     })
-    
+
     if (nrow(sum_intensity_df) > 0) {
         # Ensure consistent data types
         sum_intensity_df$Run <- as.character(sum_intensity_df$Run)
         sum_intensity_df$sum_intensity <- as.numeric(sum_intensity_df$sum_intensity)
-        sum_intensity_df$step <- factor(sum_intensity_df$step, 
-                                       levels = prog_met@steps)
-        
+        sum_intensity_df$step <- factor(sum_intensity_df$step,
+            levels = prog_met@steps
+        )
+
         plot_list$sum_intensity <- sum_intensity_df |>
             group_by(Run, assay) |>
             mutate(avg_intensity = mean(sum_intensity)) |>
@@ -1667,10 +1744,12 @@ generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
                 # Apply log2 transformation directly to the values
                 log2_intensity = log2(pmax(sum_intensity, 1)) # Avoid log(0) with pmax
             ) |>
-            ggplot(aes(x = Run, y = log2_intensity, # Plot the transformed values
-                      group = interaction(step, assay), 
-                      color = step,
-                      linetype = assay)) +
+            ggplot(aes(
+                x = Run, y = log2_intensity, # Plot the transformed values
+                group = interaction(step, assay),
+                color = step,
+                linetype = assay
+            )) +
             geom_line() +
             geom_point() +
             labs(
@@ -1687,13 +1766,13 @@ generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
             ) +
             scale_color_brewer(palette = "Set2")
     }
-    
+
     # --- 6. CV Distribution Plot --- #
     # Create a data frame with CV distribution per step - use purrr
     cv_df <- purrr::map_dfr(seq_along(prog_met@steps), function(step_idx) {
         step <- prog_met@steps[step_idx]
         assay_names <- prog_met@assay_names[[step_idx]]
-        
+
         # Use purrr::map_dfr to combine results from all assays
         purrr::map_dfr(assay_names, function(assay_name) {
             if (assay_name %in% names(prog_met@cv_distribution_per_assay[[step_idx]])) {
@@ -1704,22 +1783,26 @@ generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
                     return(step_cv_df)
                 }
             }
-            return(NULL)  # Return NULL if no data (will be filtered by map_dfr)
+            return(NULL) # Return NULL if no data (will be filtered by map_dfr)
         })
     })
-    
+
     if (nrow(cv_df) > 0) {
         # Ensure consistent data types and remove outliers
         cv_df$cv <- as.numeric(cv_df$cv)
         cv_df$step <- factor(cv_df$step, levels = prog_met@steps)
-        
+
         # Calculate 95th percentile for y-axis limit
         q95 <- quantile(cv_df$cv, 0.95, na.rm = TRUE)
-        
-        plot_list$cv_distribution <- ggplot(cv_df, 
-                                           aes(x = step, 
-                                               y = cv,
-                                               fill = assay)) +
+
+        plot_list$cv_distribution <- ggplot(
+            cv_df,
+            aes(
+                x = step,
+                y = cv,
+                fill = assay
+            )
+        ) +
             geom_boxplot(alpha = 0.7, outlier.shape = NA) +
             labs(
                 title = "CV Distribution by Group",
@@ -1736,13 +1819,13 @@ generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
             scale_fill_brewer(palette = "Set1") +
             facet_wrap(~group, scales = "free_y")
     }
-    
+
     # --- 7. Internal Standards Metrics Plot --- #
     # Create a data frame with internal standard metrics per step - use purrr
     is_df <- purrr::map_dfr(seq_along(prog_met@steps), function(step_idx) {
         step <- prog_met@steps[step_idx]
         assay_names <- prog_met@assay_names[[step_idx]]
-        
+
         # Use purrr::map_dfr to combine results from all assays
         purrr::map_dfr(assay_names, function(assay_name) {
             if (assay_name %in% names(prog_met@is_metrics_per_assay[[step_idx]])) {
@@ -1753,21 +1836,25 @@ generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
                     return(step_is_df)
                 }
             }
-            return(NULL)  # Return NULL if no data (will be filtered by map_dfr)
+            return(NULL) # Return NULL if no data (will be filtered by map_dfr)
         })
     })
-    
+
     if (nrow(is_df) > 0) {
         # Ensure consistent data types
         is_df$cv <- as.numeric(is_df$cv)
         is_df$mean_intensity <- as.numeric(is_df$mean_intensity)
         is_df$step <- factor(is_df$step, levels = prog_met@steps)
-        
+
         # Create CV plot for internal standards
-        plot_list$is_cv <- ggplot(is_df, 
-                                 aes(x = step, 
-                                     y = cv,
-                                     fill = assay)) +
+        plot_list$is_cv <- ggplot(
+            is_df,
+            aes(
+                x = step,
+                y = cv,
+                fill = assay
+            )
+        ) +
             geom_violin(alpha = 0.7, trim = FALSE, scale = "width") +
             geom_boxplot(width = 0.1, fill = "white", alpha = 0.7) +
             labs(
@@ -1782,14 +1869,16 @@ generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
                 panel.grid.major.x = element_blank()
             ) +
             scale_fill_brewer(palette = "Set1")
-        
+
         # Create mean intensity plot for internal standards
         plot_list$is_intensity <- is_df |>
             # Apply log2 transformation directly to the data
             mutate(log2_intensity = log2(pmax(mean_intensity, 1))) |> # Avoid log(0) with pmax
-            ggplot(aes(x = step, 
-                       y = log2_intensity, # Plot transformed values
-                       fill = assay)) +
+            ggplot(aes(
+                x = step,
+                y = log2_intensity, # Plot transformed values
+                fill = assay
+            )) +
             geom_violin(alpha = 0.7, trim = FALSE, scale = "width") +
             geom_boxplot(width = 0.1, fill = "white", alpha = 0.7) +
             labs(
@@ -1805,6 +1894,6 @@ generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
             ) +
             scale_fill_brewer(palette = "Set1")
     }
-    
+
     return(plot_list)
 }
