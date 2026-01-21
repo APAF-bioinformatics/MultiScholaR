@@ -116,4 +116,4 @@ For **programmatic, reproducible analyses**, typically for advanced users or bat
 ## Attributions
 
 Derived from [ProteomeRiver](https://bitbucket.org/cmri-bioinformatics/proteomeriver/src/main/) (LGPLv3). Significant modifications by APAF-bioinformatics.
-AI assistance used responsibly in development.
+AI assistance was used to best-in-class standards during development of this framework.
