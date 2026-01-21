@@ -1,8 +1,15 @@
 # MultiScholaR <img src="https://img.shields.io/badge/Version-0.4.1-orange?style=for-the-badge" alt="Version 0.4.1">
 
-![Banner](inst/shiny/www/MultiScholaR.png "MultiScholaR Banner")
-
-> **⚠️ Disclaimer:** `MultiScholaR` is under active development. The **end-to-end Multiomics GUI** currently supports Proteomics, Metabolomics, and Lipidomics workflows.
+<table>
+<tr>
+<td width="30%" valign="top" style="vertical-align: top; padding-right: 20px;">
+  <img src="inst/shiny/www/MultiScholaR_v2.png" alt="MultiScholaR Banner" width="100%" style="max-height: 250px; object-fit: contain;">
+  <br><br>
+  <blockquote>
+    <b>⚠️ Disclaimer:</b> <code>MultiScholaR</code> is under active development. The <b>end-to-end Multiomics GUI</b> currently supports Proteomics, Metabolomics, and Lipidomics workflows.
+  </blockquote>
+</td>
+<td width="70%" valign="middle" style="vertical-align: middle;">
 
 ## Overview
 
@@ -14,6 +21,10 @@
 - **Reproducibility:** Standardized workflows with automated, publication-ready reporting.
 - **Advanced Quality Control:** Stringent measures including FDR thresholds, intensity filtering, and automated batch effect correction (RUV-IIIc).
 - **Multi-Omics Integration:** Seamlessly integrate Proteomics, Metabolomics, and Lipidomics data.
+
+</td>
+</tr>
+</table>
 
 ## Analysis Workflow
 
