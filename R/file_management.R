@@ -39,9 +39,11 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
     # Validate all provided types
     invalid_types <- setdiff(parsed_omic_types, valid_omic_types)
     if (length(invalid_types) > 0) {
-        err_msg <- sprintf("Invalid omic_type(s) specified: %s. Choose from: %s.",
-                           paste(invalid_types, collapse = ", "),
-                           paste(valid_omic_types, collapse = ", "))
+        err_msg <- sprintf(
+            "Invalid omic_type(s) specified: %s. Choose from: %s.",
+            paste(invalid_types, collapse = ", "),
+            paste(valid_omic_types, collapse = ", ")
+        )
         logger::log_error(err_msg)
         stop(err_msg)
     }
@@ -228,7 +230,7 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
             qc_dir = qc_dir_base, # Base for timestamped, may not exist for all omics
             time_dir = file.path(qc_dir_base, timestamp) # Timestamped dir, ensures parent qc_dir and pub_graphs exists if used
         )
-        
+
         # Ensure the timestamped directory for THIS session exists if we are processing this omic.
         # This includes its parent directories like qc_dir and publication_graphs_dir if they are part of the path.
         dir.create(current_omic_paths_def$time_dir, recursive = TRUE, showWarnings = FALSE)
@@ -248,7 +250,7 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
             dir.create(current_omic_paths_def$results_summary_base, recursive = TRUE, showWarnings = FALSE)
             qualified_results_summary_subdirs <- file.path(current_omic_paths_def$results_summary_base, omic_config$results_summary_subdirs)
             invisible(sapply(qualified_results_summary_subdirs, dir.create, recursive = TRUE, showWarnings = FALSE))
-            
+
             # Note: common_data_dir and time_dir (and its parents) are already created by this point.
 
             # --- Handle Scripts Directory Copying ---
@@ -303,7 +305,7 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
             qc_dir = current_omic_paths_def$qc_dir, # Base of timestamped outputs
             time_dir = current_omic_paths_def$time_dir, # Session-specific output dir
             results_summary_dir = current_omic_paths_def$results_summary_base,
-            
+
             # Standard summary subdirectories, created if results_summary_subdirs is not empty
             qc_figures_dir = file.path(current_omic_paths_def$results_summary_base, "QC_figures"),
             publication_figures_dir = file.path(current_omic_paths_def$results_summary_base, "Publication_figures"),
@@ -334,24 +336,24 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
                 }
             }
         }
-        
+
         # Add specific variable names that might map to the more generic ones, for convenience or legacy.
         # This part also ensures specific directories (like transcriptomics count_data_dir) are explicitly listed if defined in results_subdirs.
         specific_mapped_names <- list()
         if (current_omic_type == "proteomics") {
-            if(!is.null(omic_specific_paths_list$feature_qc_dir)) specific_mapped_names$protein_qc_dir = omic_specific_paths_list$feature_qc_dir
-            if(!is.null(omic_specific_paths_list$subfeature_qc_dir)) specific_mapped_names$peptide_qc_dir = omic_specific_paths_list$subfeature_qc_dir
-            if(!is.null(omic_specific_paths_list$clean_features_dir)) specific_mapped_names$clean_proteins_dir = omic_specific_paths_list$clean_features_dir
+            if (!is.null(omic_specific_paths_list$feature_qc_dir)) specific_mapped_names$protein_qc_dir <- omic_specific_paths_list$feature_qc_dir
+            if (!is.null(omic_specific_paths_list$subfeature_qc_dir)) specific_mapped_names$peptide_qc_dir <- omic_specific_paths_list$subfeature_qc_dir
+            if (!is.null(omic_specific_paths_list$clean_features_dir)) specific_mapped_names$clean_proteins_dir <- omic_specific_paths_list$clean_features_dir
         } else if (current_omic_type == "metabolomics") {
-            if(!is.null(omic_specific_paths_list$feature_qc_dir)) specific_mapped_names$metabolite_qc_dir = omic_specific_paths_list$feature_qc_dir
-            if(!is.null(omic_specific_paths_list$clean_features_dir)) specific_mapped_names$clean_metabolites_dir = omic_specific_paths_list$clean_features_dir
+            if (!is.null(omic_specific_paths_list$feature_qc_dir)) specific_mapped_names$metabolite_qc_dir <- omic_specific_paths_list$feature_qc_dir
+            if (!is.null(omic_specific_paths_list$clean_features_dir)) specific_mapped_names$clean_metabolites_dir <- omic_specific_paths_list$clean_features_dir
         } else if (current_omic_type == "transcriptomics") {
-            if(!is.null(omic_specific_paths_list$feature_qc_dir)) specific_mapped_names$gene_qc_dir = omic_specific_paths_list$feature_qc_dir
+            if (!is.null(omic_specific_paths_list$feature_qc_dir)) specific_mapped_names$gene_qc_dir <- omic_specific_paths_list$feature_qc_dir
             # raw_counts_dir is already added from global_vars if raw_counts_leaf is defined
-            if(!is.null(omic_specific_paths_list$clean_features_dir)) specific_mapped_names$normalized_counts_dir = omic_specific_paths_list$clean_features_dir
+            if (!is.null(omic_specific_paths_list$clean_features_dir)) specific_mapped_names$normalized_counts_dir <- omic_specific_paths_list$clean_features_dir
         } else if (current_omic_type == "lipidomics") {
-            if(!is.null(omic_specific_paths_list$feature_qc_dir)) specific_mapped_names$lipid_qc_dir = omic_specific_paths_list$feature_qc_dir
-            if(!is.null(omic_specific_paths_list$clean_features_dir)) specific_mapped_names$clean_lipids_dir = omic_specific_paths_list$clean_features_dir
+            if (!is.null(omic_specific_paths_list$feature_qc_dir)) specific_mapped_names$lipid_qc_dir <- omic_specific_paths_list$feature_qc_dir
+            if (!is.null(omic_specific_paths_list$clean_features_dir)) specific_mapped_names$clean_lipids_dir <- omic_specific_paths_list$clean_features_dir
         }
         # For 'integration', specific paths like mofa_inputs_dir, etc., are already directly added from global_vars.
 
@@ -359,11 +361,11 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
 
         # Ensure all defined directories exist (belt-and-suspenders, esp. for reused structures or complex paths)
         # This primarily targets directories that are values in omic_specific_paths_list
-        for(path_entry in omic_specific_paths_list) {
-            if(is.character(path_entry) && (endsWith(path_entry, "_dir") || endsWith(path_entry, "_base") || grepl("mofa|mixomics|integration_enrichment", path_entry))) {
-                 # Avoid trying to create dir for base_dir, timestamp, omic_type, omic_label etc.
-                 # A bit heuristic here; might need refinement if path names are ambiguous.
-                 # Check if it's likely a directory path constructed within the project.
+        for (path_entry in omic_specific_paths_list) {
+            if (is.character(path_entry) && (endsWith(path_entry, "_dir") || endsWith(path_entry, "_base") || grepl("mofa|mixomics|integration_enrichment", path_entry))) {
+                # Avoid trying to create dir for base_dir, timestamp, omic_type, omic_label etc.
+                # A bit heuristic here; might need refinement if path names are ambiguous.
+                # Check if it's likely a directory path constructed within the project.
                 if (startsWith(path_entry, base_dir) && path_entry != base_dir && !is.null(path_entry) && path_entry != "") {
                     suppressWarnings(dir.create(path_entry, recursive = TRUE, showWarnings = FALSE))
                 }
@@ -380,7 +382,7 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
         for (omic_key_name in names(all_created_paths)) {
             cat(sprintf("\nPaths for Omics Label: '%s' (Type: %s)\n", omic_key_name, all_created_paths[[omic_key_name]]$omic_type))
             current_paths_to_print <- all_created_paths[[omic_key_name]]
-            
+
             # Remove non-path-like informational fields for printing
             current_paths_to_print$omic_type <- NULL
             current_paths_to_print$omic_label <- NULL
@@ -389,7 +391,7 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
             remaining_names <- setdiff(names(current_paths_to_print), print_order)
             sorted_remaining_names <- sort(remaining_names)
             final_print_order <- c(print_order, sorted_remaining_names)
-            
+
             # Filter out any names that might not be in current_paths_to_print (e.g. if an optional path was NULL)
             final_print_order <- final_print_order[final_print_order %in% names(current_paths_to_print)]
 
@@ -400,8 +402,8 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
 
                 if (is.character(p_val) && p_val != "") {
                     # Heuristic to decide if it's a directory to count items in
-                    is_dir_to_count <-endsWith(path_name, "_dir") || endsWith(path_name, "_base") || path_name %in% c("qc_dir", "time_dir")
-                    
+                    is_dir_to_count <- endsWith(path_name, "_dir") || endsWith(path_name, "_base") || path_name %in% c("qc_dir", "time_dir")
+
                     if (is_dir_to_count && dir.exists(p_val)) {
                         tryCatch(
                             {
@@ -414,7 +416,7 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
                             }
                         )
                     } else if (is_dir_to_count && !dir.exists(p_val)) {
-                         cat(sprintf("  %-30s : %s (Directory not found/created!)\n", path_name, p_val))
+                        cat(sprintf("  %-30s : %s (Directory not found/created!)\n", path_name, p_val))
                     } else {
                         # For non-directory strings like timestamp
                         cat(sprintf("  %-30s : %s\n", path_name, p_val))
@@ -459,102 +461,112 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
 #' @export
 
 formatDIANN <- function(data_tbl_parquet_filt) {
-  
-  # Extract intensity matrix and gene annotations
-  intensity_matrix <- data_tbl_parquet_filt$E
-  gene_info <- data_tbl_parquet_filt$genes
-  
-  # Convert intensity matrix to data frame with precursor IDs
-  intensity_df <- as.data.frame(intensity_matrix) |>
-    rownames_to_column(var = "Precursor.Id")
-  
-  # Convert to long format
-  intensity_long <- intensity_df |>
-    pivot_longer(
-      cols = -Precursor.Id,
-      names_to = "Run",
-      values_to = "Log2Intensity"
-    ) |>
-    filter(!is.na(Log2Intensity))  # Remove missing values
-  
-  # Join with gene information
-  data_tbl_converted <- intensity_long |>
-    left_join(gene_info, by = "Precursor.Id") |>
-    mutate(
-      # Basic required columns
-      File.Name = paste0(Run, ".raw"),
-      Protein.Ids = Protein.Group,  # Use Protein.Group as Protein.Ids
-      
-      # Extract sequence and charge from Precursor.Id
-      Stripped.Sequence = gsub("\\d+$", "", Precursor.Id),  # Remove charge number
-      Modified.Sequence = Stripped.Sequence,  # Assume no modifications shown
-      Precursor.Charge = as.numeric(gsub(".*?(\\d+)$", "\\1", Precursor.Id)),  # Extract charge
-      
-      # Convert log2 intensities back to linear scale
-      Precursor.Quantity = 2^Log2Intensity,
-      Precursor.Normalised = 2^Log2Intensity,
-      
-      # Set reasonable defaults for quality metrics (since data was pre-filtered)
-      Q.Value = 0.001,
-      PEP = 0.001,
-      Global.Q.Value = 0.001,
-      Protein.Q.Value = 0.01,
-      PG.Q.Value = 0.001,
-      Global.PG.Q.Value = 0.001,
-      GG.Q.Value = 0.001,
-      Translated.Q.Value = 0,
-      Lib.Q.Value = 0.001,
-      Lib.PG.Q.Value = 0.001,
-      
-      # Protein-level quantities (same as precursor for now)
-      PG.Quantity = Precursor.Quantity,
-      PG.Normalised = Precursor.Normalised,
-      PG.MaxLFQ = Precursor.Normalised,
-      Genes.Quantity = Precursor.Quantity,
-      Genes.Normalised = Precursor.Normalised,
-      Genes.MaxLFQ = Precursor.Normalised,
-      Genes.MaxLFQ.Unique = Precursor.Normalised,
-      
-      # Quality and technical columns (set defaults)
-      Quantity.Quality = 1.0,
-      RT = NA_real_,
-      RT.Start = NA_real_,
-      RT.Stop = NA_real_,
-      iRT = NA_real_,
-      Predicted.RT = NA_real_,
-      Predicted.iRT = NA_real_,
-      First.Protein.Description = "",
-      Ms1.Profile.Corr = NA_real_,
-      Ms1.Area = NA_real_,
-      Ms1.Normalised = NA_real_,
-      Normalisation.Factor = 1.0,
-      Evidence = 1.0,
-      Spectrum.Similarity = NA_real_,
-      Averagine = NA_real_,
-      Mass.Evidence = NA_real_,
-      CScore = 1.0,
-      Fragment.Quant.Raw = "",
-      Fragment.Correlations = "",
-      MS2.Scan = NA_real_,
-      IM = 0,
-      iIM = 0,
-      Predicted.IM = 0,
-      Predicted.iIM = 0
-    ) |>
-    # Select columns in typical DIA-NN order
-    dplyr::select(File.Name, Run, Protein.Group, Protein.Ids, Protein.Names, Genes,
-           PG.Quantity, PG.Normalised, PG.MaxLFQ,
-           Genes.Quantity, Genes.Normalised, Genes.MaxLFQ, Genes.MaxLFQ.Unique,
-           Modified.Sequence, Stripped.Sequence, Precursor.Id, Precursor.Charge,
-           Q.Value, PEP, Global.Q.Value, Protein.Q.Value, PG.Q.Value,
-           Global.PG.Q.Value, GG.Q.Value, Translated.Q.Value, Proteotypic,
-           Precursor.Quantity, Precursor.Normalised, Quantity.Quality,
-           RT, RT.Start, RT.Stop, iRT, Predicted.RT, Predicted.iRT,
-           First.Protein.Description, Lib.Q.Value, Lib.PG.Q.Value,
-           Ms1.Profile.Corr, Ms1.Area, Ms1.Normalised, Normalisation.Factor,
-           Evidence, Spectrum.Similarity, Averagine, Mass.Evidence, CScore,
-           Fragment.Quant.Raw, Fragment.Correlations, MS2.Scan,
-           IM, iIM, Predicted.IM, Predicted.iIM)
-  
-  return(data_tbl_converted)
+    # Extract intensity matrix and gene annotations
+    intensity_matrix <- data_tbl_parquet_filt$E
+    gene_info <- data_tbl_parquet_filt$genes
+
+    # Convert intensity matrix to data frame with precursor IDs
+    intensity_df <- as.data.frame(intensity_matrix) |>
+        rownames_to_column(var = "Precursor.Id")
+
+    # Ensure Precursor.Id is present in gene_info (needed for join)
+    if (!"Precursor.Id" %in% names(gene_info)) {
+        # If genes info matches intensity matrix dimensions, use intensity matrix rownames
+        # which we know correspond to Precursor.Id (see above)
+        if (nrow(gene_info) == nrow(intensity_matrix)) {
+            gene_info$Precursor.Id <- rownames(intensity_matrix)
+        }
+    }
+
+    # Convert to long format
+    intensity_long <- intensity_df |>
+        pivot_longer(
+            cols = -Precursor.Id,
+            names_to = "Run",
+            values_to = "Log2Intensity"
+        ) |>
+        filter(!is.na(Log2Intensity)) # Remove missing values
+
+    # Join with gene information
+    data_tbl_converted <- intensity_long |>
+        left_join(gene_info, by = "Precursor.Id") |>
+        mutate(
+            # Basic required columns
+            File.Name = paste0(Run, ".raw"),
+            Protein.Ids = Protein.Group, # Use Protein.Group as Protein.Ids
+
+            # Extract sequence and charge from Precursor.Id
+            Stripped.Sequence = gsub("\\d+$", "", Precursor.Id), # Remove charge number
+            Modified.Sequence = Stripped.Sequence, # Assume no modifications shown
+            Precursor.Charge = as.numeric(gsub(".*?(\\d+)$", "\\1", Precursor.Id)), # Extract charge
+
+            # Convert log2 intensities back to linear scale
+            Precursor.Quantity = 2^Log2Intensity,
+            Precursor.Normalised = 2^Log2Intensity,
+
+            # Set reasonable defaults for quality metrics (since data was pre-filtered)
+            Q.Value = 0.001,
+            PEP = 0.001,
+            Global.Q.Value = 0.001,
+            Protein.Q.Value = 0.01,
+            PG.Q.Value = 0.001,
+            Global.PG.Q.Value = 0.001,
+            GG.Q.Value = 0.001,
+            Translated.Q.Value = 0,
+            Lib.Q.Value = 0.001,
+            Lib.PG.Q.Value = 0.001,
+
+            # Protein-level quantities (same as precursor for now)
+            PG.Quantity = Precursor.Quantity,
+            PG.Normalised = Precursor.Normalised,
+            PG.MaxLFQ = Precursor.Normalised,
+            Genes.Quantity = Precursor.Quantity,
+            Genes.Normalised = Precursor.Normalised,
+            Genes.MaxLFQ = Precursor.Normalised,
+            Genes.MaxLFQ.Unique = Precursor.Normalised,
+
+            # Quality and technical columns (set defaults)
+            Quantity.Quality = 1.0,
+            RT = NA_real_,
+            RT.Start = NA_real_,
+            RT.Stop = NA_real_,
+            iRT = NA_real_,
+            Predicted.RT = NA_real_,
+            Predicted.iRT = NA_real_,
+            First.Protein.Description = "",
+            Ms1.Profile.Corr = NA_real_,
+            Ms1.Area = NA_real_,
+            Ms1.Normalised = NA_real_,
+            Normalisation.Factor = 1.0,
+            Evidence = 1.0,
+            Spectrum.Similarity = NA_real_,
+            Averagine = NA_real_,
+            Mass.Evidence = NA_real_,
+            CScore = 1.0,
+            Fragment.Quant.Raw = "",
+            Fragment.Correlations = "",
+            MS2.Scan = NA_real_,
+            IM = 0,
+            iIM = 0,
+            Predicted.IM = 0,
+            Predicted.iIM = 0
+        ) |>
+        # Select columns in typical DIA-NN order
+        dplyr::select(
+            File.Name, Run, Protein.Group, Protein.Ids, Protein.Names, Genes,
+            PG.Quantity, PG.Normalised, PG.MaxLFQ,
+            Genes.Quantity, Genes.Normalised, Genes.MaxLFQ, Genes.MaxLFQ.Unique,
+            Modified.Sequence, Stripped.Sequence, Precursor.Id, Precursor.Charge,
+            Q.Value, PEP, Global.Q.Value, Protein.Q.Value, PG.Q.Value,
+            Global.PG.Q.Value, GG.Q.Value, Translated.Q.Value, Proteotypic,
+            Precursor.Quantity, Precursor.Normalised, Quantity.Quality,
+            RT, RT.Start, RT.Stop, iRT, Predicted.RT, Predicted.iRT,
+            First.Protein.Description, Lib.Q.Value, Lib.PG.Q.Value,
+            Ms1.Profile.Corr, Ms1.Area, Ms1.Normalised, Normalisation.Factor,
+            Evidence, Spectrum.Similarity, Averagine, Mass.Evidence, CScore,
+            Fragment.Quant.Raw, Fragment.Correlations, MS2.Scan,
+            IM, iIM, Predicted.IM, Predicted.iIM
+        )
+
+    return(data_tbl_converted)
 }
