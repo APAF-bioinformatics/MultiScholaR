@@ -189,7 +189,7 @@ deAnalysisWrapperFunction <- function(
 
 
     subject_blocks <- theObject@design_matrix |>
-      mutate(blocks = gropu, !!rlang::syms(technical_replicate_id)) |>
+      mutate(blocks = group, !!rlang::syms(technical_replicate_id)) |>
       dplyr::pull(blocks)
 
     # Synchronize EList with design matrix - Fix for lmFit dimension mismatch
