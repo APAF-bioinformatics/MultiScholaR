@@ -1,4 +1,4 @@
-# MultiScholaR <img src="https://img.shields.io/badge/Version-0.4.1-orange?style=for-the-badge" alt="Version 0.4.1">
+# MultiScholaR <img src="https://img.shields.io/badge/Version-0.4.1-orange?style=for-the-badge" alt="Version 0.4.1.2">
 
 <table>
 <tr>
