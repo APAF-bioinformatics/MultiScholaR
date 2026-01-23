@@ -1512,7 +1512,7 @@ generateLimpaQCPlots <- function(after_object,
         message(sprintf("      Saving composite plot: %s", composite_filename))
         ggplot2::ggsave(composite_filename, composite_plot, width = 12, height = 10, dpi = 300)
 
-        savePlot(composite_plot, save_dir, paste0(plot_prefix, "_composite"))
+        MultiScholaR::savePlot(composite_plot, save_dir, paste0(plot_prefix, "_composite"))
         message(sprintf("      Composite plot saved: %s", file.exists(composite_filename)))
 
         if (verbose) cat("✓ Plots saved to:", save_dir, "\n")
