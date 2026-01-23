@@ -1949,7 +1949,7 @@ downloadReportTemplate <- function(omic_type, rmd_filename) {
 
     # GitHub URL (raw content from main branch)
     github_url <- sprintf(
-        "https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/tree/BookChapter/Workbooks/%s/report/%s",
+        "https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/refs/heads/BookChapter/Workbooks/%s/report/%s",
         omic_type, rmd_filename
     )
 
