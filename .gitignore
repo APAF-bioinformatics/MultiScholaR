@@ -46,4 +46,4 @@ vignettes/*.pdf
 .Rproj.user
 .Rdata
 .DS_Store
-
+AGENTS.md

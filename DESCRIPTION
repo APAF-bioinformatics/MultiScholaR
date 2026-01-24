@@ -98,3 +98,14 @@ Imports:
 Remotes:
     cran/RUVIIIC,
     APAF-bioinformatics/GlimmaV2
+Collate: helper_functions.R peptideVsSamplesS4Objects.R
+    proteinVsSamplesS4Objects.R metaboliteVsSamplesS4Objects.R
+    limpa_functions.R QC_visualisation.R annotation.R
+    de_analysis_function_wrapper.R de_proteins_functions.R
+    enrichment_functions.R file_management.R functional_enrichment.R
+    get_best_accession_helper.R github_managment.R launch_app.R
+    metabolite_de_analysis_wrapper.R metabolite_normalization.R
+    metabolite_qc.R multiomics_enrichment_functions.R
+    multiomics_functions_MOFA.R phosphoproteomics_helper.R
+    protein_de_analysis_wrapper.R qc_and_rollup.R repro_limpa_qc.R
+    shiny_applets.R string_enrichment_functions_refactored.R zzz.R
