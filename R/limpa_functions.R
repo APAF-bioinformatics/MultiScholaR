@@ -1420,8 +1420,12 @@ generateLimpaQCPlots <- function(after_object,
         "nearly random missing", dpc_results$slope_interpretation
       )
 
+      # Wrap long slope text to avoid cutoff
+      if (nchar(slope_text) > 30) {
+        slope_text <- paste0("\n  ", stringr::str_wrap(slope_text, width = 30))
+      }
+
       summary_text <- paste(
-        "limpa DPC Analysis Summary\n",
         "Type:", stringr::str_to_title(gsub("_", " ", analysis_type)), "\n",
         "Method:", ifelse(is.null(dpc_results$dpc_method), "limpa_dpc", dpc_results$dpc_method), "\n",
         "DPC Slope (β1):", round(as.numeric(dpc_params[2]), 3), "\n",
@@ -1437,9 +1441,9 @@ generateLimpaQCPlots <- function(after_object,
 
       summary_plot <- ggplot2::ggplot() +
         ggplot2::annotate("text",
-          x = 0.5, y = 0.5,
+          x = 0.05, y = 0.8, # Left aligned, near top (allowing space for title)
           label = summary_text,
-          size = 4, hjust = 0.5, vjust = 0.5
+          size = 3.5, hjust = 0, vjust = 1
         ) +
         ggplot2::theme_void() +
         ggplot2::ggtitle("limpa Analysis Summary") +
