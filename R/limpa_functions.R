@@ -1441,7 +1441,7 @@ generateLimpaQCPlots <- function(after_object,
         ggplot2::annotate("text",
           x = 0.01, y = 0.9, # Left aligned, start from top
           label = summary_text,
-          size = 3.8, hjust = 0, vjust = 1
+          size = 4.2, hjust = 0, vjust = 1
         ) +
         ggplot2::scale_x_continuous(limits = c(0, 1), expand = c(0, 0)) +
         ggplot2::scale_y_continuous(limits = c(0, 1), expand = c(0, 0)) +
