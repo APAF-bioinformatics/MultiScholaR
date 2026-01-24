@@ -1420,17 +1420,15 @@ generateLimpaQCPlots <- function(after_object,
         "nearly random missing", dpc_results$slope_interpretation
       )
 
-      # Wrap long slope text to avoid cutoff
-      if (nchar(slope_text) > 30) {
-        slope_text <- paste0("\n  ", stringr::str_wrap(slope_text, width = 30))
-      }
+      # Always wrap slope text at 25 chars to ensure it fits locally
+      slope_text_wrapped <- stringr::str_wrap(slope_text, width = 25)
 
       summary_text <- paste(
         "Type:", stringr::str_to_title(gsub("_", " ", analysis_type)), "\n",
         "Method:", ifelse(is.null(dpc_results$dpc_method), "limpa_dpc", dpc_results$dpc_method), "\n",
         "DPC Slope (β1):", round(as.numeric(dpc_params[2]), 3), "\n",
         "DPC Intercept (β0):", round(as.numeric(dpc_params[1]), 3), "\n",
-        "Missing Mechanism:", slope_text, "\n",
+        "Missing Mechanism:\n", slope_text_wrapped, "\n",
         if (!is.null(dpc_results$missing_percentage_before)) {
           paste("Missing % Before:", dpc_results$missing_percentage_before, "%\n")
         } else {
@@ -1441,10 +1439,12 @@ generateLimpaQCPlots <- function(after_object,
 
       summary_plot <- ggplot2::ggplot() +
         ggplot2::annotate("text",
-          x = 0.05, y = 0.8, # Left aligned, near top (allowing space for title)
+          x = 0.01, y = 0.9, # Left aligned, start from top
           label = summary_text,
-          size = 3.5, hjust = 0, vjust = 1
+          size = 3.8, hjust = 0, vjust = 1
         ) +
+        ggplot2::scale_x_continuous(limits = c(0, 1), expand = c(0, 0)) +
+        ggplot2::scale_y_continuous(limits = c(0, 1), expand = c(0, 0)) +
         ggplot2::theme_void() +
         ggplot2::ggtitle("limpa Analysis Summary") +
         ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5, size = 14, face = "bold"))
