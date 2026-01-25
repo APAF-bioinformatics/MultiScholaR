@@ -872,7 +872,7 @@ setMethod(
 
     # --- New Limpa Plot Row ---
     limpa_row <- NULL
-    if (!is.null(workflow_name) && workflow_name == "DIA_limpa" && length(theObject@limpa_plots) > 0) {
+    if (length(theObject@limpa_plots) > 0) {
       # Style and remove legends and titles from limpa plots
       limpa_plots_styled <- purrr::compact(lapply(theObject@limpa_plots, style_plot))
       limpa_plots_no_legend <- lapply(limpa_plots_styled, function(p) {
