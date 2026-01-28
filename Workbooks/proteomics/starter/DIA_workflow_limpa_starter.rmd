@@ -99,6 +99,8 @@ conflict_prefer("slice", "dplyr")
 conflict_prefer("setdiff", "base")
 conflict_prefer("anyMissing", "Biobase")
 conflict_prefer("expand", "S4Vectors")
+conflicts_prefer(vroom::cols)
+conflicts_prefer(vroom::col_guess)
 conflicts_prefer(utils::head)
 conflicts_prefer(dplyr::first)
 conflicts_prefer(MultiScholaR::savePlot)
@@ -168,7 +170,7 @@ project_dirs <- setupDirectories(
 #### UniProt ID Mapping
 - [UniProt ID Mapping](https://www.uniprot.org/id-mapping) - UniProt ID mapping service
 
-```{r 3 Data Management}
+```{r 3 Load configuration file}
 ## Input Parameters for Quality Control
 ## Parameters in this section are experiment-specific. Their default parameters
 ## are intended as a guide only - every source of variance is different just as
@@ -176,11 +178,15 @@ project_dirs <- setupDirectories(
 ## One size does not fit all and you *will* most likely need to fine tune these
 ## to get the most out of your data.
 config_list <- readConfigFile(file = file.path(project_dirs$proteomics$base_dir, "config.ini"))
+```
 
-# Convert your EList to DIA-NN format
+```{r 4 Import DIA-NN Data}
+# Convert your EList object to DIA-NN format
 data_tbl_parquet_filt <- limpa::readDIANN(file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir, "report.parquet"), format="parquet", q.columns = c("Q.Value","Lib.Q.Value","Lib.PG.Q.Value"), q.cutoffs = 0.01)
 data_tbl <- formatDIANN(data_tbl_parquet_filt)
+```
 
+```{r 5 Process FASTA and Annotate Proteins}
 # Annotation Management
 ## Please download the organism fasta file from UniProt. If UniProt is not
 ## available, the program will extract the relevant identifiers from the fasta
@@ -248,7 +254,7 @@ This section converts protein identifiers in your dataset to standardized UniPro
 
 This section also retrieves and integrates up-to-date protein annotation data from UniProt, the leading universal protein resource database. The annotation process uses the UniProt.ws Bioconductor package to query the UniProt database for comprehensive information about each protein identified in your dataset. This information includes metadata like protein existence evidence, annotation score, review status, gene names, protein names, sequence length, cross-references to Ensembl, Gene Ontology (GO) terms, and keywords. By caching the results in an RDS file, the workflow avoids redundant queries in subsequent runs, significantly speeding up the process while still ensuring data freshness. This annotation step is crucial for biological interpretation of your results, as it provides the functional context needed to understand the biological significance of differentially expressed proteins.
 
-```{r 4 Protein ID Conversion and Uniprot Lookup}
+```{r 6 Protein ID Conversion and Uniprot Lookup}
 fasta_meta_file <- "parsed_fasta_data.rds"
 aa_seq_tbl_final <- processFastaFile(
   fasta_file_path,
@@ -294,7 +300,7 @@ if (file.exists(uniprot_cache_file)) {
 - [Batch Effects in Omics Data](https://www.nature.com/articles/nrg2825) - Understanding and addressing batch effects
 
 
-```{r 5 Design Matrix Setup} 
+```{r 7 Design Matrix Setup} 
 if (exists("design_matrix", envir = .GlobalEnv)) {
   print("Design matrix already set :) No need to run app again!")
 } else {
@@ -328,13 +334,14 @@ if (exists("design_matrix", envir = .GlobalEnv)) {
 
 This optional section allows you to read in a previously created design matrix / cleaned data matrix rather than creating one from scratch. This is useful if you're re-running the analysis or if you've prepared your design matrix in a different way.
 
-```{r 5a Design Matrix Output Read In - optional}
+```{r 8 Design Matrix Output Read In - optional}
 design_matrix <- read.table(
   file = file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$source_dir, "design_matrix.tab"),
   sep = "\t",
   header = TRUE,
   stringsAsFactors = FALSE
-)
+) |>
+  mutate( Run = trimws(Run))
 
 data_cln <- vroom::vroom(
   file = file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$source_dir, "data_cln.tab"),
@@ -376,7 +383,7 @@ contrasts_tbl <- file.path(project_dirs[[paste0(omic_type, "_", experiment_label
 This section creates a structured S4 object to hold your peptide data with all the necessary metadata. By organizing your data in this object, ProteomeScholaR can easily access and manipulate the data in subsequent analysis steps, while maintaining the relationship between peptides, proteins, and experimental conditions.
 
 
-```{r 6 Peptide Data S4 Object Creation & Annotation API Lookup}
+```{r 9 Peptide Data S4 Object Creation & Annotation API Lookup}
 peptide_data <- new(
   "PeptideQuantitativeData"
 
@@ -399,6 +406,7 @@ peptide_data <- new(
   technical_replicate_id = "replicates",
   args = config_list
 )
+
 ```
 
 # Raw Data QC
@@ -422,7 +430,7 @@ peptide_data <- new(
 
 This section begins the quality control process by examining your raw data and establishes a baseline for subsequent filtering steps. Each `updateProteinFiltering()` call throughout the workflow creates a checkpoint that allows you to track the effects of each filtering step on your dataset. This systematic approach lets you monitor how many peptides and proteins remain after each filter, helping you understand the impact of quality thresholds and optimize your data processing strategy. The visualization tools create plots showing the effect of each filtering step, providing documentation for your methods section and helping identify potential issues in your analysis pipeline.
 
-```{r 7 Raw Data QC}
+```{r 10 Raw Data QC}
 updateProteinFiltering( # Please note that these images don't render properly in RStudio, please see the publication_graphs_dir for the images
   data = data_cln,
   step_name = "1_Raw Data",
@@ -449,7 +457,7 @@ updateProteinFiltering( # Please note that these images don't render properly in
 
 This step filters your dataset based on the statistical confidence of peptide identifications (q-value) and ensures that only peptides uniquely mapping to a specific protein (proteotypic) are retained. This is crucial for reliable protein quantification, as it reduces false positives and ambiguous peptide assignments that could lead to inaccurate protein abundance estimates. The `updateProteinFiltering()` function at the end visualizes the effect of this filtering step compared to the raw data.
 
-```{r 8 Filter Peptides on q Value and Proteotypic Peptide Match}
+```{r 11 Filter Peptides on q Value and Proteotypic Peptide Match}
 search_srl_quant_cln <- srlQvalueProteotypicPeptideClean(theObject = peptide_data)
 qval_protein_count <- search_srl_quant_cln@peptide_data |>
   distinct(Protein.Ids) |>
@@ -504,7 +512,7 @@ updateProteinFiltering(
 
 This step aggregates intensity measurements from multiple precursor ions (different charge states, isotopes, and/or modified forms) to the peptide level. This roll-up process is critical for accurate quantification as it combines the signal from all observed forms of the same peptide sequence, providing a more robust measurement of peptide abundance. The function applies statistical methods to appropriately combine these measurements while minimizing the effect of outliers or noisy precursors. The subsequent `updateProteinFiltering()` call tracks how this roll-up affects the number of unique proteins identified in your dataset.
 
-```{r 9 Roll-up Precursor to Peptide}
+```{r 12 Roll-up Precursor to Peptide}
 peptide_normalised_tbl <- rollUpPrecursorToPeptide(search_srl_quant_cln)
 rollup_protein_count <- peptide_normalised_tbl@peptide_data |>
   distinct(Protein.Ids) |>
@@ -544,7 +552,7 @@ updateProteinFiltering(
 - [RLE for Normalization Assessment]( https://biocellgen-public.svi.edu.au/mig_2019_scrnaseq-workshop/normalization-confounders-and-batch-correction.html) - Using RLE to evaluate normalization
 
 
-```{r 10 QC of peptide matrix}
+```{r 13 QC of peptide matrix}
 
 # Calculate peptide matrix if not already done
 peptide_matrix_obj <- calcPeptideMatrix(peptide_normalised_tbl)
@@ -637,7 +645,7 @@ QC_composite_figure
 This section applies cyclic loess normalization to your peptide data and evaluates its effectiveness through various quality control visualizations. Cyclic loess is a non-linear normalization method that adjusts for intensity-dependent biases in the data by iteratively applying local regression to pairwise sample comparisons. This approach is particularly effective for proteomics data, where global scaling methods may be insufficient due to complex biases. The QC visualizations following normalization (RLE plots, PCA, density plots, and correlation analysis) help evaluate whether the normalization successfully reduced technical variation while preserving biological differences. The comparison with pre-normalization plots allows you to assess the improvement in data quality and identify any remaining batch effects or outliers that might need further attention.
 
 
-```{r 11 Cyclic loess normalisation}
+```{r 14 Cyclic loess normalisation}
 # Step 3: Normalization (now operates on log2 data - correct!)
 peptide_normalised_obj <- normaliseBetweenSamples(
   peptide_log2_obj,
@@ -728,7 +736,7 @@ This section implements the RUV-III (Remove Unwanted Variation) method with cano
 The canonical correlation plot helps determine the optimal number of factors (k) to remove - too few factors may leave unwanted variation, while too many might remove biological signal. The plot shows correlations between canonical variables derived from the data and the experimental design, with the inflection point or "elbow" in the plot suggesting the optimal k value. This data-driven approach to selecting both the percentage of negative controls and k ensures that normalization is appropriately tuned to your specific dataset.
 
 
-```{r 12 RUV-III-c paramater tuning and normalisation}
+```{r 15 RUV-III-c paramater tuning and normalisation}
 # Step 2: Find optimal percentage with automatic optimization (NOW FAST!)
 optimal_results_peptides <- findBestNegCtrlPercentagePeptides(
   peptide_normalised_obj,
@@ -788,6 +796,12 @@ QC_composite_figure@pearson_plots$pearson_correlation_pair_after_ruvIIIc_group <
 )
 
 # Save individual plots
+savePlot( 
+  QC_composite_figure@cancor_plots$cancor_plot_peptides_ruvIIIc_group,
+  project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir,
+  "peptide_cancor_plot_ruvIIIc_by_group"
+)
+
 savePlot(
   QC_composite_figure@rle_plots$peptide_rle_plot_after_ruvIIIc_group,
   project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir,
@@ -841,7 +855,7 @@ updateProteinFiltering(
 This step ensures that protein accessions are standardized and prioritized according to relevant biological criteria. In many cases, peptides may map to multiple protein accessions, and this function helps choose the most informative or canonical accession to represent each protein. The priority is typically given to reviewed UniProt entries (Swiss-Prot), conserved entries, or entries with more complete annotation. This standardization is essential for downstream analyses like pathway analysis and functional annotation. The `updateProteinFiltering()` function shows how many proteins remain after this cleanup step.
 
 
-```{r 13 Annotation Rollup}
+```{r 16 Annotation Rollup}
 # Choose the best protein accession for each peptide
 # This simplifies protein groups (e.g., "P12345;Q67890") to a single representative
 # protein ID based on evidence from the FASTA file. This must be done BEFORE
@@ -897,7 +911,7 @@ The `generateLimpaQCPlots` function then produces a set of diagnostic plots to a
 -   **Self-supervised Deep Learning for Imputation:** [Imputation of label-free quantitative mass spectrometry-based proteomics data using self-supervised deep learning](https://www.nature.com/articles/s41467-024-48711-5) - A recent paper on advanced machine learning methods for imputation, providing context on state-of-the-art approaches.
 
 
-```{r 14 Limpa imputation and protein rollup}
+```{r 17 Limpa imputation and protein rollup}
 
 # Limpa DPC Imputation
 protein_ruv_normalised_imputed_obj <- proteinMissingValueImputationLimpa(
@@ -909,6 +923,8 @@ print(limpa_qc_plots)
 savePlot(limpa_qc_plots,
   project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir,
   "limpa_qc_plots")
+
+QC_composite_figure@limpa_plots <- limpa_qc_plots
 
 QC_composite_figure@rle_plots$rle_plot_protein <- plotRle(
   protein_ruv_normalised_imputed_obj,
@@ -962,20 +978,6 @@ savePlot(
 
 summarizeQCPlot(QC_composite_figure)
 
-
-frozen_protein_matrix_tech_rep <- proteinTechRepCorrelation(
-  protein_ruv_normalised_imputed_obj,
-  tech_rep_num_column = "group",
-  tech_rep_remove_regex = "pool"
-)
-
-## change if you wish to filter on pearson or spearman
-frozen_protein_matrix_tech_rep |>
-  dplyr::filter(pearson > 0.8) |>
-  nrow()
-# frozen_protein_matrix_tech_rep |>
-#  dplyr::filter(spearman > 0.8) |>
-#  nrow()
 ```
 
 ## Keep the proteins only if they have two or more peptides mapping
@@ -993,7 +995,7 @@ frozen_protein_matrix_tech_rep |>
 This step filters proteins based on the number of unique peptides identified for each protein, keeping only those with at least two peptides. This "two-peptide rule" is a widely accepted standard in proteomics that greatly increases confidence in protein identifications and quantification reliability. While this filter may remove some true protein identifications (especially for small proteins or those with low sequence coverage), it significantly reduces false positive identifications. As the comment suggests, you may consider changing this threshold if you have specific interest in proteins that might only be identified by a single peptide, but be aware of the increased uncertainty associated with such identifications.
 
 
-```{r 15 Filter Proteins on Peptide Number}
+```{r 18 Filter Proteins on Peptide Number}
 # Filter proteins based on minimum peptide evidence.
 # This step ensures that the proteins carried forward for statistical analysis
 # are supported by a reliable number of peptide identifications.
@@ -1053,7 +1055,7 @@ updateProteinFiltering(
 This section filters samples based on their Pearson correlation with other samples in the same experimental group. Low correlation between samples that should be similar (e.g., biological replicates) often indicates technical issues or sample quality problems. By implementing a correlation threshold (here set at 0.5), this step removes samples that don't correlate well with their group, ensuring that only high-quality, consistent samples are used for downstream statistical analysis. The `updateProteinFiltering()` function tracks the effect of this filtering step on the number of proteins in the dataset. The final data is saved in both TSV and RDS formats for transparency and to facilitate downstream analysis. This correlation-based filtering is the final quality control step before differential expression analysis, ensuring that the data used for biological interpretation is of the highest quality.
 
 
-```{r 16 Sample Pearson Correlation Filtering}
+```{r 19 Sample Pearson Correlation Filtering}
 
 ruv_correlation_vec <- pearsonCorForSamplePairs(
   removed_proteins_with_insufficient_evidence,
@@ -1061,7 +1063,7 @@ ruv_correlation_vec <- pearsonCorForSamplePairs(
   correlation_group = "group"
 )
 
-ruv_normalised_filtered_results_obj <- filterSamplesByProteinCorrelationThreshold(
+ruv_normalised_for_de_analysis_obj <- filterSamplesByProteinCorrelationThreshold(
   removed_proteins_with_insufficient_evidence,
   pearson_correlation_per_pair = ruv_correlation_vec,
   min_pearson_correlation_threshold = 0.5
@@ -1069,7 +1071,7 @@ ruv_normalised_filtered_results_obj <- filterSamplesByProteinCorrelationThreshol
 
 # Update tracking for downstream analysis
 updateProteinFiltering(
-  data = ruv_normalised_filtered_results_obj@protein_quant_table,
+  data = ruv_normalised_for_de_analysis_obj@protein_quant_table,
   step_name = "9_samplecorr_filter",
   omic_type = omic_type, 
   experiment_label = experiment_label,
@@ -1079,7 +1081,7 @@ updateProteinFiltering(
 
 
 QC_composite_figure@rle_plots$rle_plot_protein_filtered <- plotRle(
-  ruv_normalised_filtered_results_obj,
+  ruv_normalised_for_de_analysis_obj,
   "group",
   yaxis_limit = c(-6, 6)
 )
@@ -1090,7 +1092,7 @@ savePlot(
 )
 
 QC_composite_figure@pca_plots$pca_plot_protein_filtered <- plotPca(
-  ruv_normalised_filtered_results_obj,
+  ruv_normalised_for_de_analysis_obj,
   grouping_variable = "group",
   label_column = "",
   shape_variable = "group",
@@ -1113,11 +1115,11 @@ savePlot(
   "density_plot_protein_filtered"
 )
 
-pca_mixomics_protein <- getPcaMatrix(ruv_normalised_filtered_results_obj)
+pca_mixomics_protein <- getPcaMatrix(ruv_normalised_for_de_analysis_obj)
 
 QC_composite_figure@pearson_plots$pearson_correlation_pair_protein_filtered <-
   plotPearson(
-    ruv_normalised_filtered_results_obj,
+    ruv_normalised_for_de_analysis_obj,
     tech_rep_remove_regex = "pool",
     correlation_group = "group"
   )
@@ -1130,22 +1132,9 @@ savePlot(
 summarizeQCPlot(QC_composite_figure)
 
 
-frozen_protein_matrix_tech_rep <- proteinTechRepCorrelation(
-  ruv_normalised_filtered_results_obj,
-  tech_rep_num_column = "group",
-  tech_rep_remove_regex = "pool"
-)
-
-## change if you wish to filter on pearson or spearman
-frozen_protein_matrix_tech_rep |>
-  dplyr::filter(pearson > 0.8) |>
-  nrow()
-# frozen_protein_matrix_tech_rep |>
-#  dplyr::filter(spearman > 0.8) |>
-#  nrow()
-
 
 ```
+
 
 # Output Files For Audit Trail
 
@@ -1162,9 +1151,12 @@ frozen_protein_matrix_tech_rep |>
 This section creates multiple output files from the final normalized dataset to ensure data accessibility and facilitate different downstream analysis needs. The code transforms the normalized protein data from its internal S4 object structure into standard formats (TSV files) in both original and log2-transformed versions, making it easily accessible for other analysis tools and researchers. The wide-format data tables (proteins as rows, samples as columns) are created for traditional statistical analyses, while design information is separately exported to document the experimental design. Both text-based formats (TSV) and binary formats (RDS) are provided - the former for human readability and software compatibility, the latter for preserving exact R objects with their metadata. These diverse output formats create a comprehensive audit trail that supports research reproducibility and facilitates data sharing.
 
 
-```{r 17 Output Files For Audit Trail}
+```{r 20 Output Files For Audit Trail}
+ruv_normalised_for_de_analysis_obj <- ruv_normalised_for_de_analysis_obj
+
+
 vroom::vroom_write(
-  ruv_normalised_filtered_results_obj@protein_quant_table,
+  ruv_normalised_for_de_analysis_obj@protein_quant_table,
   file.path(
     project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir,
     "ruv_normalised_results_cln_with_replicates.tsv"
@@ -1172,22 +1164,24 @@ vroom::vroom_write(
 )
 
 saveRDS(
-  ruv_normalised_filtered_results_obj,
+  ruv_normalised_for_de_analysis_obj,
   file.path(
     project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir,
     "ruv_normalised_results_cln_with_replicates.RDS"
   )
 )
 
-saveRDS(
-  ruv_normalised_filtered_results_obj, 
-  file.path(
-    project_dirs[[paste0("integration_", experiment_label)]]$multiomic_inputs_dir, 
-    "ruv_normalised_results_cln_with_replicates.RDS" 
-  )
-)
 
-ruv_normalised_for_de_analysis_obj <- ruv_normalised_filtered_results_obj
+if(!is.null( project_dirs[[paste0("integration_", experiment_label)]]$multiomic_inputs_dir)) {
+  saveRDS(
+    ruv_normalised_for_de_analysis_obj, 
+    file.path(
+      project_dirs[[paste0("integration_", experiment_label)]]$multiomic_inputs_dir, 
+      "ruv_normalised_results_cln_with_replicates.RDS" 
+    )
+  )
+}
+
 
 ruv_normalised_for_de_analysis <-
   ruv_normalised_for_de_analysis_obj@protein_quant_table |>
@@ -1248,7 +1242,7 @@ ruv_normalised_for_de_analysis_mat <- ruv_normalised_for_de_analysis |>
 
 This section creates a comprehensive multi-panel quality control figure that combines all the QC visualizations generated throughout the workflow into a single publication-ready composite image. This composite figure provides a holistic view of the data quality at different stages of processing, allowing for easy comparison between pre- and post-normalization states. The function organizes PCA plots, density plots, RLE plots, correlation plots and RUV QC plots into a structured grid with consistent formatting and appropriate labels (a, b, c, etc.) for easy reference in publications. This single visualization serves as a powerful summary of the entire quality control process, making it easier to present and interpret the extensive QC work performed. The saved high-resolution figure can be directly included in publications or presentations to demonstrate the thoroughness of the data quality assessment.
 
-```{r 18 Composite QC Figure Generation}
+```{r 21 Composite QC Figure Generation}
 
 pca_ruv_rle_correlation_merged <- createGridQC(
   QC_composite_figure,
@@ -1277,7 +1271,7 @@ pca_ruv_rle_correlation_merged
 This section performs differential expression analysis to identify proteins with statistically significant abundance differences between experimental conditions. The analysis uses limma, a well-established statistical framework that applies linear models and empirical Bayes methods to improve statistical power - particularly beneficial for proteomics data where sample sizes are often limited. For each contrast defined in the previous step, the code runs a complete differential expression analysis, including moderated t-tests with robust estimation and trend-based variance modeling. The TREAT method can optionally be applied to test for minimum fold-change thresholds in addition to statistical significance. The results are stored in a named list where each element contains the complete differential expression statistics for one contrast, ready for downstream visualization and biological interpretation.
 
 
-```{r 19 DE Analysis Generation}
+```{r 22 DE Analysis Generation}
 # Debug - if regex readin from config doesnt work
 # NB here temporarily until config readin logic fixed for this pattern
 config_list$deAnalysisParameters$args_group_pattern <- "(\\d+)"
@@ -1287,6 +1281,7 @@ contrast_names <- contrasts_tbl |>
   dplyr::pull(contrasts) |>
   stringr::str_extract("^[^=]+") |> # Extract everything before the = sign
   stringr::str_replace_all("\\.", "_") # Replace dots with underscores
+
 
 # Run DE analysis and explicitly set names
 de_analysis_results_list <- seq_len(nrow(contrasts_tbl)) |>
@@ -1326,7 +1321,7 @@ print(names(de_analysis_results_list))
 
 This section outputs the differential expression analysis results in various formats for interpretation and publication. For each contrast, the code generates comprehensive result tables and visualizations, including volcano plots that highlight significantly changing proteins. The function takes advantage of the annotations retrieved from UniProt to enrich the results with biological context, including gene names and protein descriptions. Error handling with tryCatch ensures that the workflow continues even if individual contrasts encounter issues. Multiple output files are generated for each contrast, including TSV files for downstream analysis in other tools and publication-quality figures in various formats. These outputs provide both the raw statistical results and their biological interpretation, facilitating the transition from statistical significance to biological insight.
 
-```{r 20 Output DE Analysis Results}
+```{r 23 Output DE Analysis Results}
 
 names(de_analysis_results_list) |>
   purrr::walk(\(contrast_name) {
@@ -1363,6 +1358,73 @@ names(de_analysis_results_list) |>
 
 ```
 
+# STRING DB Functional Enrichment Analysis
+#
+# This section performs functional enrichment analysis using the STRING database
+# to identify biological processes, pathways, and protein domains enriched in
+# your differentially expressed proteins. 
+
+# The analysis is cached - results are saved to avoid redundant API calls on 
+# subsequent runs. Delete the cache file to force re-analysis with fresh data.
+
+# For each contrast, the function:
+# 1. Calculates a combined score: sign(log2FC) * -log10(fdr_qvalue)
+# 2. Submits ranked protein list to STRING DB API
+# 3. Retrieves enrichment results for multiple annotation categories
+
+# Cache location: {pathway_dir}/string_db/all_enrichment_results.rds
+
+```{r 24 STRING DB Functional Enrichment Analysis}
+
+
+all_enrichment_results <- runStringDbEnrichmentAllContrasts(
+  de_analysis_results_list = de_analysis_results_list,
+  project_dirs = project_dirs,
+  omic_type = omic_type,
+  experiment_label = experiment_label,
+  api_key = "bjcR4Px5rByQ",  # Replace with your STRING API key if needed
+  species = taxon_id,         # Using organism taxon ID defined earlier
+  force_refresh = FALSE       # Set to TRUE to ignore cache and re-run analysis
+)
+
+```
+
+# Visualize STRING DB Enrichment Results
+
+# This section creates publication-quality plots of enrichment results organized
+# by functional category. The plots show:
+# - Enrichment scores (bar length)
+# - Statistical significance (point color: -log10(FDR))
+# - Number of proteins mapped (point size)
+
+# Only the top 5 most enriched terms per category are shown for clarity.
+# Results are split into four plot types:
+# 1. GO Terms (Biological Process, Molecular Function, Cellular Component)
+# 2. Pathways (KEGG, Reactome, WikiPathways, STRING clusters)
+# 3. Protein Domains (InterPro, Pfam, SMART)
+# 4. Other Categories (all remaining)
+
+# Plots are saved as both PNG (for presentations) and PDF (for publications).
+
+```{r 25 Plot the StringDB Results}
+enrichment_plot_results <- plotStringDbEnrichmentResults(
+  project_dirs = project_dirs,
+  omic_type = omic_type,
+  experiment_label = experiment_label,
+  top_n_terms = 5,      # Number of top terms to show per category
+  word_limit = 7,       # Max words in term descriptions before truncation
+  plot_width = 16,      # Plot width in inches
+  plot_height = 8      # Plot height in inches
+)
+
+# The plots are automatically saved and can also be accessed individually:
+# enrichment_plot_results$plots$go_terms
+# enrichment_plot_results$plots$pathways
+# enrichment_plot_results$plots$protein_domains
+# enrichment_plot_results$plots$others
+
+```
+
 ## Enrichment Analysis
 ## This section performs enrichment analysis on the DE results
 ## If your taxon id is on the list supported by gprofiler, that will be used to perform the enrichment analysis
@@ -1385,7 +1447,7 @@ names(de_analysis_results_list) |>
 This section performs functional enrichment analysis to identify biological processes, molecular functions, and cellular components overrepresented in your differentially expressed proteins. The workflow is flexible, first attempting to use g:Profiler for enrichment if your organism's taxonomy ID is supported, then falling back to clusterProfiler with GO annotations from UniProt if needed. The analysis is performed separately for upregulated and downregulated protein sets from each contrast, providing a comprehensive view of the biological processes affected in different conditions. The enrichment results include statistical measures like p-values and enrichment ratios, along with visualizations like enrichment maps and GO term networks. This step transforms your list of differential proteins into meaningful biological insights, helping you understand the functional implications of the observed protein abundance changes.
 
 
-```{r 21 Enrichment Analysis}
+```{r 26 Threshold-Based Enrichment Analysis, verbose = FALSE}
 # Create S4 object of the DE results for enrichment analysis
 de_results_for_enrichment <- createDEResultsForEnrichment(
   contrasts_tbl = contrasts_tbl,
@@ -1421,7 +1483,7 @@ enrichment_results <- processEnrichments(
 This section saves all the parameters, configurations, and settings used throughout the workflow, creating a comprehensive record that enables reproduction of the analysis. The `createWorkflowArgsFromConfig()` function captures all the configuration parameters used in the analysis, including normalization settings, filtering thresholds, and statistical parameters. This approach to parameter tracking is essential for reproducible research, as it allows future users (including your future self) to understand exactly how the analysis was performed and to replicate the results if needed. This record serves as both documentation and a practical tool for reproducing or modifying the analysis in the future.
 
 
-```{r 22 Save Workflow Arguments and Study SUmmary} 
+```{r 27 Save Workflow Arguments and Study SUmmary} 
 # Create workflow args with config and git info
 workflow_args <- createWorkflowArgsFromConfig(
   workflow_name = experiment_label
@@ -1447,7 +1509,7 @@ workflow_args
 This section copies key result files to a designated publication directory, creating a clean, organized set of outputs that can be easily shared with collaborators or included in publications. By centralizing the most important results and visualizations, this step simplifies the process of finding and using the outputs that matter most for interpretation and communication. The publication directory serves as a curated collection of the analysis results, containing only the final, polished outputs rather than intermediate files or raw data. This organization strategy aligns with best practices for research data management and makes it easier to prepare your results for sharing or publication.
 
 
-```{r 23 Copy Files to Publication Directory}
+```{r 28 Copy Files to Publication Directory}
 copyToResultsSummary(
   omic_type = omic_type, # or "metabolomics", etc.
   experiment_label = experiment_label, # Your specific label
@@ -1464,7 +1526,7 @@ copyToResultsSummary(
 This final step creates a complete GitHub repository containing all analysis parameters, configuration files, and essential results, establishing a permanent, version-controlled record of your analysis. Using Git for version control provides numerous benefits: it creates an immutable audit trail of your analysis, facilitates collaboration with team members, enables easy tracking of changes over time, and serves as a backup of your work. The repository can be shared with collaborators or cited in publications, allowing others to understand your methods in detail or even reproduce your analysis. This practice aligns with modern standards for computational reproducibility and transparent reporting in scientific research.
 
 
-```{r 24 Copy Output to Github}
+```{r 29 Copy Output to Github}
 options(
   github_org = "your org",
   github_user_email = "your email",
@@ -1482,7 +1544,7 @@ pushProjectToGithub(
 ## This will create a report in the report directory
 ### The report contains all the information from the workflow including results, parameters, methods and figures
 
-```{r 25 Render Report}
+```{r 30 Render Report}
 RenderReport(omic_type = omic_type
                          , experiment_label = experiment_label
                          , rmd_filename = "DIANN_report.rmd")
