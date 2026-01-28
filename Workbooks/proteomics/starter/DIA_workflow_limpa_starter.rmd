@@ -304,10 +304,10 @@ if (file.exists(uniprot_cache_file)) {
 if (exists("design_matrix", envir = .GlobalEnv)) {
   print("Design matrix already set :) No need to run app again!")
 } else {
-      RunApplet(applet_type = "designMatrix"
-                , omic_type = omic_type
-                , experiment_label = experiment_label
-                , force = TRUE)
+      # RunApplet(applet_type = "designMatrix"
+      #           , omic_type = omic_type
+      #           , experiment_label = experiment_label
+      #           , force = TRUE)
 }
 # Comment in if you wish to run manually
 # RunApplet(applet_type = "designMatrix"
