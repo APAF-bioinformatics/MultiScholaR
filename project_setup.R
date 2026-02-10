@@ -50,7 +50,7 @@ if (!is.character(my_project_name) || nchar(my_project_name) == 0) {
 # Tutorial dataset configuration
 tutorial_datasets <- list(
   "Neurolincs_bookchapter" = list(
-    gdrive_id = "1a3e82pU5qztbJDzKgfRxki__mf6XcZcD",
+    gdrive_id = "13BPaxkE1mcTZK6K-lZ9qPtahxzrcyjlT",
     omic_type = "proteomics",
     filename = "iMNS_boockhapter.zip",
     description = "Neurolincs book chapter tutorial dataset"
