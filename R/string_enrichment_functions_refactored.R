@@ -344,7 +344,7 @@ plotStringDbEnrichmentResults <- function(project_dirs,
   
   sorted_enrichment_results <- all_enrichment_results |>
     dplyr::group_by(comparison, category) |>
-    dplyr::arrange(comparison, category, desc(enrichmentScore), falseDiscoveryRate) |>
+    dplyr::arrange(comparison, category, falseDiscoveryRate, desc(enrichmentScore)) |>
     dplyr::mutate(rank = dplyr::row_number()) |>
     dplyr::ungroup()
   
@@ -354,7 +354,7 @@ plotStringDbEnrichmentResults <- function(project_dirs,
   
   filtered_enrichment_results <- sorted_enrichment_results |>
     dplyr::inner_join(included_functional_category_and_term, by = c("category", "termID")) |>
-    dplyr::arrange(comparison, category, desc(enrichmentScore), falseDiscoveryRate)
+    dplyr::arrange(comparison, category, falseDiscoveryRate, desc(enrichmentScore))
   
   message("Filtered results contain ", nrow(filtered_enrichment_results), " rows.")
   
