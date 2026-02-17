@@ -2,7 +2,7 @@
 # func_lipid_s4_objects.R
 # ============================================================================
 # Purpose: Lipidomics S4 class definitions and methods
-# 
+#
 # This file contains S4 class definitions and methods specific to lipidomics,
 # including LipidomicsAssayData, LipidomicsDifferentialAbundanceResults classes,
 # and all lipidomics-specific S4 methods.
@@ -135,76 +135,79 @@ LipidomicsAssayData <- setClass("LipidomicsAssayData",
         # --- Content Checks ---
         # Check design matrix first
         if (!is.data.frame(design_matrix)) {
-             # Error already added by basic checks, but prevent further processing
+            # Error already added by basic checks, but prevent further processing
         } else if (!sample_id_col %in% colnames(design_matrix)) {
-             errors <- c(errors, paste0("`sample_id` column ('", sample_id_col, "') not found in `design_matrix`."))
+            errors <- c(errors, paste0("`sample_id` column ('", sample_id_col, "') not found in `design_matrix`."))
         } else {
-             # Get unique, sorted sample IDs from design matrix (ensure character)
-             samples_in_design <- tryCatch(
-                 design_matrix[[sample_id_col]] |> as.character() |> unique() |> sort(),
-                 error = function(e) { errors <- c(errors, "Error extracting sample IDs from design matrix."); character(0) }
-             )
+            # Get unique, sorted sample IDs from design matrix (ensure character)
+            samples_in_design <- tryCatch(
+                design_matrix[[sample_id_col]] |> as.character() |> unique() |> sort(),
+                error = function(e) {
+                    errors <- c(errors, "Error extracting sample IDs from design matrix.")
+                    character(0)
+                }
+            )
 
-             if (length(samples_in_design) == 0 && length(errors) == 0) {
-                 errors <- c(errors, "No valid sample IDs found in design matrix.")
-             }
+            if (length(samples_in_design) == 0 && length(errors) == 0) {
+                errors <- c(errors, "No valid sample IDs found in design matrix.")
+            }
 
-             # Proceed with assay checks only if design matrix looks okay so far
-             if(length(lipid_data) > 0 && length(errors) == 0) {
-                 assay_names_vec <- names(lipid_data)
-                 if (is.null(assay_names_vec)) assay_names_vec <- paste0("Assay_", seq_along(lipid_data))
-                 names(lipid_data) <- assay_names_vec # Ensure the list is named for lapply output
+            # Proceed with assay checks only if design matrix looks okay so far
+            if (length(lipid_data) > 0 && length(errors) == 0) {
+                assay_names_vec <- names(lipid_data)
+                if (is.null(assay_names_vec)) assay_names_vec <- paste0("Assay_", seq_along(lipid_data))
+                names(lipid_data) <- assay_names_vec # Ensure the list is named for lapply output
 
-                 # Use lapply to check each assay and collect results/errors
-                 assay_check_results <- lapply(assay_names_vec, function(assay_name) {
-                      assay_df <- lipid_data[[assay_name]]
-                      assay_errors <- character()
+                # Use lapply to check each assay and collect results/errors
+                assay_check_results <- lapply(assay_names_vec, function(assay_name) {
+                    assay_df <- lipid_data[[assay_name]]
+                    assay_errors <- character()
 
-                      # Check lipid ID column exists
-                      if (!lipid_id_col %in% colnames(assay_df)) {
-                           assay_errors <- c(assay_errors, paste0("Assay '", assay_name,"': `lipid_id_column` ('", lipid_id_col, "') not found."))
-                      }
+                    # Check lipid ID column exists
+                    if (!lipid_id_col %in% colnames(assay_df)) {
+                        assay_errors <- c(assay_errors, paste0("Assay '", assay_name, "': `lipid_id_column` ('", lipid_id_col, "') not found."))
+                    }
 
-                      # Identify actual sample columns in the assay
-                      assay_colnames <- colnames(assay_df)
-                      actual_sample_cols_in_assay <- intersect(assay_colnames, samples_in_design) |> sort()
+                    # Identify actual sample columns in the assay
+                    assay_colnames <- colnames(assay_df)
+                    actual_sample_cols_in_assay <- intersect(assay_colnames, samples_in_design) |> sort()
 
-                      # Store results for later checks
-                      list(
-                          errors = assay_errors,
-                          sample_cols = actual_sample_cols_in_assay
-                      )
-                 })
+                    # Store results for later checks
+                    list(
+                        errors = assay_errors,
+                        sample_cols = actual_sample_cols_in_assay
+                    )
+                })
 
-                 # Aggregate errors from individual assay checks
-                 all_assay_errors <- unlist(lapply(assay_check_results, `[[`, "errors"))
-                 errors <- c(errors, all_assay_errors)
+                # Aggregate errors from individual assay checks
+                all_assay_errors <- unlist(lapply(assay_check_results, `[[`, "errors"))
+                errors <- c(errors, all_assay_errors)
 
-                 # Perform cross-assay consistency checks if no individual errors found yet
-                 if (length(errors) == 0 && length(assay_check_results) > 1) {
-                      first_assay_samples <- assay_check_results[[1]]$sample_cols
-                      consistency_check <- sapply(assay_check_results[-1], function(res) {
-                           identical(res$sample_cols, first_assay_samples)
-                      })
-                      if (!all(consistency_check)) {
-                           mismatched_assays <- assay_names_vec[c(FALSE, !consistency_check)] # Get names of inconsistent assays
-                           errors <- c(errors, paste0("Actual sample columns differ between assays. First mismatch found in: ", mismatched_assays[1]))
-                      }
-                 }
+                # Perform cross-assay consistency checks if no individual errors found yet
+                if (length(errors) == 0 && length(assay_check_results) > 1) {
+                    first_assay_samples <- assay_check_results[[1]]$sample_cols
+                    consistency_check <- sapply(assay_check_results[-1], function(res) {
+                        identical(res$sample_cols, first_assay_samples)
+                    })
+                    if (!all(consistency_check)) {
+                        mismatched_assays <- assay_names_vec[c(FALSE, !consistency_check)] # Get names of inconsistent assays
+                        errors <- c(errors, paste0("Actual sample columns differ between assays. First mismatch found in: ", mismatched_assays[1]))
+                    }
+                }
 
-                 # Perform comparison with design matrix if no errors found yet
-                 if (length(errors) == 0 && length(assay_check_results) >= 1) {
-                     first_assay_samples <- assay_check_results[[1]]$sample_cols # Get samples from first (or only) assay
-                     if (!identical(first_assay_samples, samples_in_design)) {
-                          errors <- c(errors, paste0("Sample columns in assays do not exactly match unique sample IDs ('", sample_id_col, "') in `design_matrix`."))
-                          # Add more detail:
-                          missing_in_assay <- setdiff(samples_in_design, first_assay_samples)
-                          extra_in_assay <- setdiff(first_assay_samples, samples_in_design)
-                          if(length(missing_in_assay) > 0) errors <- c(errors, paste0("   Samples in design_matrix missing from assay columns: ", paste(utils::head(missing_in_assay, 10), collapse=", "), ifelse(length(missing_in_assay)>10,"...","")))
-                          if(length(extra_in_assay) > 0) errors <- c(errors, paste0("   Sample columns in assay not found in design_matrix: ", paste(utils::head(extra_in_assay, 10), collapse=", "), ifelse(length(extra_in_assay)>10,"...","")))
-                     }
-                 }
-             }
+                # Perform comparison with design matrix if no errors found yet
+                if (length(errors) == 0 && length(assay_check_results) >= 1) {
+                    first_assay_samples <- assay_check_results[[1]]$sample_cols # Get samples from first (or only) assay
+                    if (!identical(first_assay_samples, samples_in_design)) {
+                        errors <- c(errors, paste0("Sample columns in assays do not exactly match unique sample IDs ('", sample_id_col, "') in `design_matrix`."))
+                        # Add more detail:
+                        missing_in_assay <- setdiff(samples_in_design, first_assay_samples)
+                        extra_in_assay <- setdiff(first_assay_samples, samples_in_design)
+                        if (length(missing_in_assay) > 0) errors <- c(errors, paste0("   Samples in design_matrix missing from assay columns: ", paste(utils::head(missing_in_assay, 10), collapse = ", "), ifelse(length(missing_in_assay) > 10, "...", "")))
+                        if (length(extra_in_assay) > 0) errors <- c(errors, paste0("   Sample columns in assay not found in design_matrix: ", paste(utils::head(extra_in_assay, 10), collapse = ", "), ifelse(length(extra_in_assay) > 10, "...", "")))
+                    }
+                }
+            }
         }
 
         # --- Final Check ---
@@ -255,16 +258,17 @@ LipidomicsAssayData <- setClass("LipidomicsAssayData",
 #' )
 #' }
 createLipidomicsAssayData <- function(
-    lipid_data,
-    design_matrix,
-    lipid_id_column = "database_identifier",
-    annotation_id_column = "lipid_identification",
-    sample_id = "Sample_ID",
-    group_id = "group",
-    technical_replicate_id = NA_character_,
-    database_identifier_type = "Unknown",
-    internal_standard_regex = NA_character_,
-    args = list()) {
+  lipid_data,
+  design_matrix,
+  lipid_id_column = "database_identifier",
+  annotation_id_column = "lipid_identification",
+  sample_id = "Sample_ID",
+  group_id = "group",
+  technical_replicate_id = NA_character_,
+  database_identifier_type = "Unknown",
+  internal_standard_regex = NA_character_,
+  args = list()
+) {
     # Perform basic checks before creating the object
     stopifnot(is.list(lipid_data))
     stopifnot(all(sapply(lipid_data, is.data.frame)))
@@ -287,131 +291,133 @@ createLipidomicsAssayData <- function(
     return(obj)
 }
 
-##-----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ## Plotting Methods for LipidomicsAssayData
-##-----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 
 #' @title Plot PCA for LipidomicsAssayData
 #' @name plotPca,LipidomicsAssayData-method
 #' @importFrom purrr map set_names
 #' @importFrom tibble column_to_rownames
 #' @export
-setMethod(f = "plotPca",
-          signature = "LipidomicsAssayData",
-          definition = function(theObject, grouping_variable, shape_variable = NULL, label_column = NULL, title = NULL, font_size = 8) {
-            # --- Input Validation ---
-            if (!is.character(grouping_variable) || length(grouping_variable) != 1) {
-              stop("`grouping_variable` must be a single character string.")
+setMethod(
+    f = "plotPca",
+    signature = "LipidomicsAssayData",
+    definition = function(theObject, grouping_variable, shape_variable = NULL, label_column = NULL, title = NULL, font_size = 8) {
+        # --- Input Validation ---
+        if (!is.character(grouping_variable) || length(grouping_variable) != 1) {
+            stop("`grouping_variable` must be a single character string.")
+        }
+        if (!is.null(shape_variable) && (!is.character(shape_variable) || length(shape_variable) != 1)) {
+            stop("`shape_variable` must be NULL or a single character string.")
+        }
+        if (!grouping_variable %in% colnames(theObject@design_matrix)) {
+            stop(sprintf("`grouping_variable` '%s' not found in design_matrix.", grouping_variable))
+        }
+        if (!is.null(shape_variable) && !shape_variable %in% colnames(theObject@design_matrix)) {
+            stop(sprintf("`shape_variable` '%s' not found in design_matrix.", shape_variable))
+        }
+        if (!is.null(label_column) && label_column != "" && !label_column %in% colnames(theObject@design_matrix)) {
+            # Allow label_column to be empty/NULL, but if specified, it must exist
+            stop(sprintf("`label_column` '%s' not found in design_matrix.", label_column))
+        }
+
+        design_matrix <- theObject@design_matrix
+        sample_id_col_name <- theObject@sample_id
+        lipid_id_col_name <- theObject@lipid_id_column
+        assay_list <- theObject@lipid_data
+
+
+        if (!is.list(assay_list)) {
+            assay_list <- list(assay_list)
+        }
+
+
+        if (length(assay_list) == 0) {
+            warning("No assays found in `lipid_data` slot. Returning empty list.")
+            return(list())
+        }
+
+        # Ensure list is named, provide default names if not
+        if (is.null(names(assay_list))) {
+            names(assay_list) <- paste0("Assay_", seq_along(assay_list))
+            warning("Assay list was unnamed. Using default names (Assay_1, Assay_2, ...).")
+        }
+
+
+        # --- Plotting Logic per Assay ---
+        pca_plots_list <- purrr::map(seq_along(assay_list), function(i) {
+            assay_name <- names(assay_list)[i]
+            current_assay_data <- assay_list[[i]]
+
+            # --- Correctly identify sample columns based on design matrix ---
+            design_samples <- as.character(design_matrix[[sample_id_col_name]]) # Get sample IDs from design matrix
+            all_assay_cols <- colnames(current_assay_data)
+            sample_cols <- intersect(all_assay_cols, design_samples) # Find which design samples are columns in the assay
+            metadata_cols <- setdiff(all_assay_cols, sample_cols) # All other columns are metadata/ID
+
+            # Ensure the primary lipid ID column is considered metadata if it's not a sample ID itself
+            if (lipid_id_col_name %in% sample_cols) {
+                warning(sprintf("Assay '%s': Lipid ID column '%s' is also listed as a sample ID. Check configuration.", assay_name, lipid_id_col_name))
             }
-            if (!is.null(shape_variable) && (!is.character(shape_variable) || length(shape_variable) != 1)) {
-              stop("`shape_variable` must be NULL or a single character string.")
-            }
-            if (!grouping_variable %in% colnames(theObject@design_matrix)) {
-              stop(sprintf("`grouping_variable` '%s' not found in design_matrix.", grouping_variable))
-            }
-            if (!is.null(shape_variable) && !shape_variable %in% colnames(theObject@design_matrix)) {
-              stop(sprintf("`shape_variable` '%s' not found in design_matrix.", shape_variable))
-            }
-            if (!is.null(label_column) && label_column != "" && !label_column %in% colnames(theObject@design_matrix)) {
-                # Allow label_column to be empty/NULL, but if specified, it must exist
-                 stop(sprintf("`label_column` '%s' not found in design_matrix.", label_column))
-            }
+            metadata_cols <- union(metadata_cols, lipid_id_col_name) # Ensure lipid ID is not treated as a sample column
+            sample_cols <- setdiff(all_assay_cols, metadata_cols) # Final list of sample columns
 
-            design_matrix <- theObject@design_matrix
-            sample_id_col_name <- theObject@sample_id
-            lipid_id_col_name <- theObject@lipid_id_column
-            assay_list <- theObject@lipid_data
+            if (length(sample_cols) == 0) {
+                warning(sprintf("Assay '%s': No sample columns found in assay matching sample IDs in '%s' column of design matrix. Skipping PCA.", assay_name, sample_id_col_name))
+                return(NULL) # Skip this assay
+            }
+            # --- End Correction ---
 
 
-            if(!is.list( assay_list)) {
-              assay_list <- list( assay_list)
+            # Check if all identified sample columns exist in the design matrix (redundant check now, but safe)
+            design_samples_check <- design_matrix[[sample_id_col_name]] # Use original type for check
+            missing_samples_in_design <- setdiff(sample_cols, as.character(design_samples_check)) # Compare character versions
+            if (length(missing_samples_in_design) > 0) {
+                warning(sprintf("Assay '%s': Identified sample columns missing in design_matrix (check for type mismatches?): %s. Skipping PCA.", assay_name, paste(missing_samples_in_design, collapse = ", ")))
+                return(NULL)
             }
 
+            # Filter design matrix to match assay samples
+            design_matrix_filtered <- design_matrix[design_matrix[[sample_id_col_name]] %in% sample_cols, ]
 
-            if (length(assay_list) == 0) {
-                warning("No assays found in `lipid_data` slot. Returning empty list.")
-                return(list())
+            # Ensure lipid ID column exists
+            if (!lipid_id_col_name %in% colnames(current_assay_data)) {
+                warning(sprintf("Assay '%s': Lipid ID column '%s' not found. Skipping PCA.", assay_name, lipid_id_col_name))
+                return(NULL)
             }
 
-            # Ensure list is named, provide default names if not
-            if (is.null(names(assay_list))) {
-                names(assay_list) <- paste0("Assay_", seq_along(assay_list))
-                warning("Assay list was unnamed. Using default names (Assay_1, Assay_2, ...).")
+            # Check for sufficient features after removing non-finite values
+            frozen_lipid_matrix_pca <- current_assay_data |>
+                tibble::column_to_rownames(lipid_id_col_name) |>
+                dplyr::select(all_of(sample_cols)) |> # Ensure correct columns
+                as.matrix()
+
+            # Replace Inf/-Inf with NA
+            frozen_lipid_matrix_pca[!is.finite(frozen_lipid_matrix_pca)] <- NA
+
+            # Check for sufficient features and samples after NA handling
+            valid_rows <- rowSums(is.finite(frozen_lipid_matrix_pca)) > 1 # Need at least 2 points per feature for variance
+            valid_cols <- colSums(is.finite(frozen_lipid_matrix_pca)) > 1 # Need at least 2 points per sample for variance
+
+            if (sum(valid_rows) < 2 || sum(valid_cols) < 2) {
+                warning(sprintf("Assay '%s': Insufficient finite data points (< 2 features or < 2 samples with data) for PCA. Skipping.", assay_name))
+                return(NULL)
             }
 
+            frozen_lipid_matrix_pca_final <- frozen_lipid_matrix_pca[valid_rows, valid_cols, drop = FALSE]
+            design_matrix_filtered_final <- design_matrix_filtered[design_matrix_filtered[[sample_id_col_name]] %in% colnames(frozen_lipid_matrix_pca_final), ]
 
-            # --- Plotting Logic per Assay ---
-            pca_plots_list <- purrr::map(seq_along(assay_list), function(i) {
-                assay_name <- names(assay_list)[i]
-                current_assay_data <- assay_list[[i]]
+            # Generate title for this specific assay
+            assay_title <- if (!is.null(title) && title != "") paste(title, "-", assay_name) else ""
 
-                # --- Correctly identify sample columns based on design matrix ---
-                design_samples <- as.character(design_matrix[[sample_id_col_name]]) # Get sample IDs from design matrix
-                all_assay_cols <- colnames(current_assay_data)
-                sample_cols <- intersect(all_assay_cols, design_samples) # Find which design samples are columns in the assay
-                metadata_cols <- setdiff(all_assay_cols, sample_cols) # All other columns are metadata/ID
+            # --- Ensure consistent type for sample ID column before join ---
+            design_matrix_filtered_final[[sample_id_col_name]] <- as.character(design_matrix_filtered_final[[sample_id_col_name]])
+            # --- End type consistency fix ---
 
-                # Ensure the primary lipid ID column is considered metadata if it's not a sample ID itself
-                if (lipid_id_col_name %in% sample_cols) {
-                     warning(sprintf("Assay '%s': Lipid ID column '%s' is also listed as a sample ID. Check configuration.", assay_name, lipid_id_col_name))
-                }
-                metadata_cols <- union(metadata_cols, lipid_id_col_name) # Ensure lipid ID is not treated as a sample column
-                sample_cols <- setdiff(all_assay_cols, metadata_cols) # Final list of sample columns
-
-                if (length(sample_cols) == 0) {
-                    warning(sprintf("Assay '%s': No sample columns found in assay matching sample IDs in '%s' column of design matrix. Skipping PCA.", assay_name, sample_id_col_name))
-                    return(NULL) # Skip this assay
-                }
-                # --- End Correction ---
-
-
-                # Check if all identified sample columns exist in the design matrix (redundant check now, but safe)
-                design_samples_check <- design_matrix[[sample_id_col_name]] # Use original type for check
-                missing_samples_in_design <- setdiff(sample_cols, as.character(design_samples_check)) # Compare character versions
-                if(length(missing_samples_in_design) > 0) {
-                     warning(sprintf("Assay '%s': Identified sample columns missing in design_matrix (check for type mismatches?): %s. Skipping PCA.", assay_name, paste(missing_samples_in_design, collapse=", ")))
-                     return(NULL)
-                }
-
-                # Filter design matrix to match assay samples
-                design_matrix_filtered <- design_matrix[design_matrix[[sample_id_col_name]] %in% sample_cols, ]
-
-                # Ensure lipid ID column exists
-                 if (!lipid_id_col_name %in% colnames(current_assay_data)) {
-                     warning(sprintf("Assay '%s': Lipid ID column '%s' not found. Skipping PCA.", assay_name, lipid_id_col_name))
-                     return(NULL)
-                 }
-
-                # Check for sufficient features after removing non-finite values
-                 frozen_lipid_matrix_pca <- current_assay_data |>
-                   tibble::column_to_rownames(lipid_id_col_name) |>
-                   dplyr::select(all_of(sample_cols)) |> # Ensure correct columns
-                   as.matrix()
-
-                 # Replace Inf/-Inf with NA
-                 frozen_lipid_matrix_pca[!is.finite(frozen_lipid_matrix_pca)] <- NA
-
-                 # Check for sufficient features and samples after NA handling
-                 valid_rows <- rowSums(is.finite(frozen_lipid_matrix_pca)) > 1 # Need at least 2 points per feature for variance
-                 valid_cols <- colSums(is.finite(frozen_lipid_matrix_pca)) > 1 # Need at least 2 points per sample for variance
-
-                 if (sum(valid_rows) < 2 || sum(valid_cols) < 2) {
-                    warning(sprintf("Assay '%s': Insufficient finite data points (< 2 features or < 2 samples with data) for PCA. Skipping.", assay_name))
-                    return(NULL)
-                 }
-
-                 frozen_lipid_matrix_pca_final <- frozen_lipid_matrix_pca[valid_rows, valid_cols, drop = FALSE]
-                 design_matrix_filtered_final <- design_matrix_filtered[design_matrix_filtered[[sample_id_col_name]] %in% colnames(frozen_lipid_matrix_pca_final), ]
-
-                # Generate title for this specific assay
-                assay_title <- if (!is.null(title) && title != "") paste(title, "-", assay_name) else ""
-
-                # --- Ensure consistent type for sample ID column before join ---
-                design_matrix_filtered_final[[sample_id_col_name]] <- as.character(design_matrix_filtered_final[[sample_id_col_name]])
-                # --- End type consistency fix ---
-
-                # Call the helper function
-                tryCatch({
+            # Call the helper function
+            tryCatch(
+                {
                     plotPcaHelper(
                         data = frozen_lipid_matrix_pca_final,
                         design_matrix = design_matrix_filtered_final,
@@ -422,176 +428,183 @@ setMethod(f = "plotPca",
                         title = assay_title,
                         geom.text.size = font_size
                     )
-                }, error = function(e) {
+                },
+                error = function(e) {
                     warning(sprintf("Assay '%s': Error during PCA plotting: %s. Skipping.", assay_name, e$message))
                     return(NULL) # Skip on error
-                })
-            })
+                }
+            )
+        })
 
-            # Set names for the list of plots
-            names(pca_plots_list) <- names(assay_list)
+        # Set names for the list of plots
+        names(pca_plots_list) <- names(assay_list)
 
-            # Remove NULL elements (skipped assays)
-            pca_plots_list <- pca_plots_list[!sapply(pca_plots_list, is.null)]
+        # Remove NULL elements (skipped assays)
+        pca_plots_list <- pca_plots_list[!sapply(pca_plots_list, is.null)]
 
-            return(pca_plots_list)
-          })
+        return(pca_plots_list)
+    }
+)
 
 #' @title Plot RLE for LipidomicsAssayData
 #' @name plotRle,LipidomicsAssayData-method
 #' @importFrom purrr map set_names
 #' @importFrom tibble column_to_rownames
 #' @export
-setMethod(f = "plotRle",
-          signature = "LipidomicsAssayData",
-          definition = function(theObject, grouping_variable, yaxis_limit = c(), sample_label = NULL) {
-            # --- Input Validation ---
-            if (!is.character(grouping_variable) || length(grouping_variable) != 1 || is.na(grouping_variable)) {
-              stop("`grouping_variable` must be a single non-NA character string.")
+setMethod(
+    f = "plotRle",
+    signature = "LipidomicsAssayData",
+    definition = function(theObject, grouping_variable, yaxis_limit = c(), sample_label = NULL) {
+        # --- Input Validation ---
+        if (!is.character(grouping_variable) || length(grouping_variable) != 1 || is.na(grouping_variable)) {
+            stop("`grouping_variable` must be a single non-NA character string.")
+        }
+        if (!grouping_variable %in% colnames(theObject@design_matrix)) {
+            stop(sprintf("`grouping_variable` '%s' not found in design_matrix.", grouping_variable))
+        }
+        if (!is.null(sample_label) && (!is.character(sample_label) || length(sample_label) != 1 || sample_label == "")) {
+            stop("`sample_label` must be NULL or a single non-empty character string.")
+        }
+        if (!is.null(sample_label) && !sample_label %in% colnames(theObject@design_matrix)) {
+            stop(sprintf("`sample_label` '%s' not found in design_matrix.", sample_label))
+        }
+
+        design_matrix_df <- as.data.frame(theObject@design_matrix) # Ensure it's a data.frame for rownames
+        sample_id_col_name <- theObject@sample_id
+        lipid_id_col_name <- theObject@lipid_id_column
+        assay_list <- theObject@lipid_data
+
+        if (!is.list(assay_list)) {
+            assay_list <- list(assay_list)
+        }
+
+        if (length(assay_list) == 0) {
+            warning("No assays found in `lipid_data` slot. Returning empty list.")
+            return(list())
+        }
+
+        # Ensure list is named
+        if (is.null(names(assay_list))) {
+            names(assay_list) <- paste0("Assay_", seq_along(assay_list))
+            warning("Assay list was unnamed. Using default names (Assay_1, Assay_2, ...).")
+        }
+
+        message("--- Entering plotRle for LipidomicsAssayData ---")
+        message(sprintf("   plotRle: grouping_variable = %s", grouping_variable))
+        message(sprintf("   plotRle: yaxis_limit = %s", paste(yaxis_limit, collapse = ", ")))
+        message(sprintf("   plotRle: sample_label = %s", ifelse(is.null(sample_label), "NULL", sample_label)))
+
+
+        # --- Plotting Logic per Assay ---
+        rle_plots_list <- purrr::map(seq_along(assay_list), function(i) {
+            assay_name <- names(assay_list)[i]
+            current_assay_data <- assay_list[[i]]
+
+            # --- Correctly identify sample columns based on design matrix ---
+            design_samples <- as.character(design_matrix_df[[sample_id_col_name]]) # Get sample IDs from design matrix
+            all_assay_cols <- colnames(current_assay_data)
+            sample_cols <- intersect(all_assay_cols, design_samples) # Find which design samples are columns in the assay
+            metadata_cols <- setdiff(all_assay_cols, sample_cols) # All other columns are metadata/ID
+
+            # Ensure the primary lipid ID column is considered metadata
+            if (lipid_id_col_name %in% sample_cols) {
+                warning(sprintf("Assay '%s': Lipid ID column '%s' is also listed as a sample ID. Check configuration.", assay_name, lipid_id_col_name))
             }
-            if (!grouping_variable %in% colnames(theObject@design_matrix)) {
-              stop(sprintf("`grouping_variable` '%s' not found in design_matrix.", grouping_variable))
+            metadata_cols <- union(metadata_cols, lipid_id_col_name) # Ensure lipid ID is not treated as a sample column
+            sample_cols <- setdiff(all_assay_cols, metadata_cols) # Final list of sample columns
+
+
+            if (length(sample_cols) == 0) {
+                warning(sprintf("Assay '%s': No sample columns found in assay matching sample IDs in '%s' column of design matrix. Skipping RLE.", assay_name, sample_id_col_name))
+                return(NULL)
             }
-             if (!is.null(sample_label) && (!is.character(sample_label) || length(sample_label) != 1 || sample_label == "" )) {
-                stop("`sample_label` must be NULL or a single non-empty character string.")
-             }
-             if (!is.null(sample_label) && !sample_label %in% colnames(theObject@design_matrix)) {
-                stop(sprintf("`sample_label` '%s' not found in design_matrix.", sample_label))
-             }
+            # --- End Correction ---
 
-            design_matrix_df <- as.data.frame(theObject@design_matrix) # Ensure it's a data.frame for rownames
-            sample_id_col_name <- theObject@sample_id
-            lipid_id_col_name <- theObject@lipid_id_column
-            assay_list <- theObject@lipid_data
 
-            if(!is.list( assay_list)) {
-              assay_list <- list( assay_list)
-            }
-
-            if (length(assay_list) == 0) {
-                warning("No assays found in `lipid_data` slot. Returning empty list.")
-                return(list())
+            # Check sample consistency (now based on correctly identified sample_cols)
+            design_samples_check <- design_matrix_df[[sample_id_col_name]] # Use original type for check
+            missing_samples_in_design <- setdiff(sample_cols, as.character(design_samples_check)) # Compare character versions
+            if (length(missing_samples_in_design) > 0) {
+                # This condition should theoretically not be met if sample_cols were derived from design_samples,
+                # but keeping as a safeguard against type issues or unexpected data.
+                warning(sprintf("Assay '%s': Identified sample columns missing in design_matrix (check for type mismatches?): %s. Skipping RLE.", assay_name, paste(missing_samples_in_design, collapse = ", ")))
+                return(NULL)
             }
 
-            # Ensure list is named
-            if (is.null(names(assay_list))) {
-                names(assay_list) <- paste0("Assay_", seq_along(assay_list))
-                warning("Assay list was unnamed. Using default names (Assay_1, Assay_2, ...).")
+
+            # Filter design matrix to match assay samples
+            design_matrix_filtered <- design_matrix_df[design_matrix_df[[sample_id_col_name]] %in% sample_cols, ]
+
+            # Ensure lipid ID column exists
+            if (!lipid_id_col_name %in% colnames(current_assay_data)) {
+                warning(sprintf("Assay '%s': Lipid ID column '%s' not found. Skipping RLE.", assay_name, lipid_id_col_name))
+                return(NULL)
             }
 
-            message("--- Entering plotRle for LipidomicsAssayData ---")
-            message(sprintf("   plotRle: grouping_variable = %s", grouping_variable))
-            message(sprintf("   plotRle: yaxis_limit = %s", paste(yaxis_limit, collapse=", ")))
-            message(sprintf("   plotRle: sample_label = %s", ifelse(is.null(sample_label), "NULL", sample_label)))
+            # Convert to matrix, ensuring correct sample columns
+            frozen_lipid_matrix <- current_assay_data |>
+                tibble::column_to_rownames(lipid_id_col_name) |>
+                dplyr::select(all_of(sample_cols)) |> # Select only relevant sample columns
+                as.matrix()
+
+            # Check for sufficient data
+            if (nrow(frozen_lipid_matrix) < 1 || ncol(frozen_lipid_matrix) < 1) {
+                warning(sprintf("Assay '%s': Matrix has zero rows or columns after preparation. Skipping RLE.", assay_name))
+                return(NULL)
+            }
+
+            # Handle sample labels
+            rownames(design_matrix_filtered) <- design_matrix_filtered[[sample_id_col_name]] # Set rownames for indexing
+            temp_matrix_colnames <- colnames(frozen_lipid_matrix) # Store original colnames
+
+            if (!is.null(sample_label)) {
+                if (sample_label %in% colnames(design_matrix_filtered)) {
+                    # Create a mapping from original sample ID to new label
+                    label_map <- setNames(design_matrix_filtered[[sample_label]], design_matrix_filtered[[sample_id_col_name]])
+                    # Apply the mapping to the matrix column names
+                    colnames(frozen_lipid_matrix) <- label_map[temp_matrix_colnames]
+                    # Update the rownames of the filtered design matrix to match the new labels for lookup
+                    rownames(design_matrix_filtered) <- design_matrix_filtered[[sample_label]]
+                } # else: sample_label not found, already checked, but defensive
+            }
 
 
-            # --- Plotting Logic per Assay ---
-            rle_plots_list <- purrr::map(seq_along(assay_list), function(i) {
-                assay_name <- names(assay_list)[i]
-                current_assay_data <- assay_list[[i]]
-
-                # --- Correctly identify sample columns based on design matrix ---
-                design_samples <- as.character(design_matrix_df[[sample_id_col_name]]) # Get sample IDs from design matrix
-                all_assay_cols <- colnames(current_assay_data)
-                sample_cols <- intersect(all_assay_cols, design_samples) # Find which design samples are columns in the assay
-                metadata_cols <- setdiff(all_assay_cols, sample_cols) # All other columns are metadata/ID
-
-                # Ensure the primary lipid ID column is considered metadata
-                if (lipid_id_col_name %in% sample_cols) {
-                     warning(sprintf("Assay '%s': Lipid ID column '%s' is also listed as a sample ID. Check configuration.", assay_name, lipid_id_col_name))
-                }
-                metadata_cols <- union(metadata_cols, lipid_id_col_name) # Ensure lipid ID is not treated as a sample column
-                sample_cols <- setdiff(all_assay_cols, metadata_cols) # Final list of sample columns
+            # Prepare rowinfo vector using the potentially updated colnames/rownames
+            rowinfo_vector <- NA
+            current_colnames <- colnames(frozen_lipid_matrix)
+            if (all(current_colnames %in% rownames(design_matrix_filtered))) {
+                rowinfo_vector <- design_matrix_filtered[current_colnames, grouping_variable]
+            } else {
+                warning(sprintf("Assay '%s': Not all matrix column names ('%s') found in design matrix rownames after label application. Check sample_label consistency. Proceeding without fill.", assay_name, paste(head(current_colnames), collapse = ", ")))
+                # Proceeding without rowinfo fill color if lookup fails
+            }
 
 
-                if (length(sample_cols) == 0) {
-                    warning(sprintf("Assay '%s': No sample columns found in assay matching sample IDs in '%s' column of design matrix. Skipping RLE.", assay_name, sample_id_col_name))
-                    return(NULL)
-                }
-                # --- End Correction ---
-
-
-                # Check sample consistency (now based on correctly identified sample_cols)
-                design_samples_check <- design_matrix_df[[sample_id_col_name]] # Use original type for check
-                missing_samples_in_design <- setdiff(sample_cols, as.character(design_samples_check)) # Compare character versions
-                if(length(missing_samples_in_design) > 0) {
-                     # This condition should theoretically not be met if sample_cols were derived from design_samples,
-                     # but keeping as a safeguard against type issues or unexpected data.
-                     warning(sprintf("Assay '%s': Identified sample columns missing in design_matrix (check for type mismatches?): %s. Skipping RLE.", assay_name, paste(missing_samples_in_design, collapse=", ")))
-                     return(NULL)
-                }
-
-
-                # Filter design matrix to match assay samples
-                design_matrix_filtered <- design_matrix_df[design_matrix_df[[sample_id_col_name]] %in% sample_cols, ]
-
-                # Ensure lipid ID column exists
-                 if (!lipid_id_col_name %in% colnames(current_assay_data)) {
-                     warning(sprintf("Assay '%s': Lipid ID column '%s' not found. Skipping RLE.", assay_name, lipid_id_col_name))
-                     return(NULL)
-                 }
-
-                # Convert to matrix, ensuring correct sample columns
-                frozen_lipid_matrix <- current_assay_data |>
-                    tibble::column_to_rownames(lipid_id_col_name) |>
-                    dplyr::select(all_of(sample_cols)) |> # Select only relevant sample columns
-                    as.matrix()
-
-                # Check for sufficient data
-                 if (nrow(frozen_lipid_matrix) < 1 || ncol(frozen_lipid_matrix) < 1) {
-                     warning(sprintf("Assay '%s': Matrix has zero rows or columns after preparation. Skipping RLE.", assay_name))
-                     return(NULL)
-                 }
-
-                 # Handle sample labels
-                 rownames(design_matrix_filtered) <- design_matrix_filtered[[sample_id_col_name]] # Set rownames for indexing
-                 temp_matrix_colnames <- colnames(frozen_lipid_matrix) # Store original colnames
-
-                 if(!is.null(sample_label)) {
-                     if (sample_label %in% colnames(design_matrix_filtered)) {
-                        # Create a mapping from original sample ID to new label
-                        label_map <- setNames(design_matrix_filtered[[sample_label]], design_matrix_filtered[[sample_id_col_name]])
-                        # Apply the mapping to the matrix column names
-                        colnames(frozen_lipid_matrix) <- label_map[temp_matrix_colnames]
-                        # Update the rownames of the filtered design matrix to match the new labels for lookup
-                        rownames(design_matrix_filtered) <- design_matrix_filtered[[sample_label]]
-
-                     } # else: sample_label not found, already checked, but defensive
-                 }
-
-
-                # Prepare rowinfo vector using the potentially updated colnames/rownames
-                rowinfo_vector <- NA
-                current_colnames <- colnames(frozen_lipid_matrix)
-                if (all(current_colnames %in% rownames(design_matrix_filtered))) {
-                   rowinfo_vector <- design_matrix_filtered[current_colnames, grouping_variable]
-                } else {
-                   warning(sprintf("Assay '%s': Not all matrix column names ('%s') found in design matrix rownames after label application. Check sample_label consistency. Proceeding without fill.", assay_name, paste(head(current_colnames), collapse=", ")))
-                   # Proceeding without rowinfo fill color if lookup fails
-                }
-
-
-                # Call the helper function
-                tryCatch({
+            # Call the helper function
+            tryCatch(
+                {
                     plotRleHelper(
                         Y = t(frozen_lipid_matrix), # Helper expects samples in rows
                         rowinfo = rowinfo_vector,
                         yaxis_limit = yaxis_limit
                     )
-                }, error = function(e) {
+                },
+                error = function(e) {
                     warning(sprintf("Assay '%s': Error during RLE plotting: %s. Skipping.", assay_name, e$message))
                     return(NULL) # Skip on error
-                })
-            })
+                }
+            )
+        })
 
-            # Set names for the list of plots
-            names(rle_plots_list) <- names(assay_list)
+        # Set names for the list of plots
+        names(rle_plots_list) <- names(assay_list)
 
-            # Remove NULL elements (skipped assays)
-            rle_plots_list <- rle_plots_list[!sapply(rle_plots_list, is.null)]
+        # Remove NULL elements (skipped assays)
+        rle_plots_list <- rle_plots_list[!sapply(rle_plots_list, is.null)]
 
-            return(rle_plots_list)
-          })
+        return(rle_plots_list)
+    }
+)
 
 
 #' @title Plot Density for LipidomicsAssayData
@@ -603,188 +616,199 @@ setMethod(f = "plotRle",
 #' @importFrom dplyr left_join select all_of
 #' @importFrom rlang sym !!
 #' @export
-setMethod(f = "plotDensity",
-          signature = "LipidomicsAssayData",
-          definition = function(theObject, grouping_variable, title = "", font_size = 8) {
-              # --- Input is LipidomicsAssayData: Original logic (Calculate PCA) ---
+setMethod(
+    f = "plotDensity",
+    signature = "LipidomicsAssayData",
+    definition = function(theObject, grouping_variable, title = "", font_size = 8) {
+        # --- Input is LipidomicsAssayData: Original logic (Calculate PCA) ---
 
-              # --- Input Validation ---
-              if (!is.character(grouping_variable) || length(grouping_variable) != 1 || is.na(grouping_variable)) {
-                stop("`grouping_variable` must be a single non-NA character string.")
-              }
-              # Ensure design matrix exists and has the grouping variable
-              if (is.null(slot(theObject, "design_matrix")) || nrow(slot(theObject, "design_matrix")) == 0) {
-                  stop("`design_matrix` slot is missing or empty in the LipidomicsAssayData object.")
-              }
-              if (!grouping_variable %in% colnames(theObject@design_matrix)) {
-                stop(sprintf("`grouping_variable` '%s' not found in design_matrix.", grouping_variable))
-              }
+        # --- Input Validation ---
+        if (!is.character(grouping_variable) || length(grouping_variable) != 1 || is.na(grouping_variable)) {
+            stop("`grouping_variable` must be a single non-NA character string.")
+        }
+        # Ensure design matrix exists and has the grouping variable
+        if (is.null(slot(theObject, "design_matrix")) || nrow(slot(theObject, "design_matrix")) == 0) {
+            stop("`design_matrix` slot is missing or empty in the LipidomicsAssayData object.")
+        }
+        if (!grouping_variable %in% colnames(theObject@design_matrix)) {
+            stop(sprintf("`grouping_variable` '%s' not found in design_matrix.", grouping_variable))
+        }
 
-              design_matrix <- theObject@design_matrix
-              sample_id_col_name <- theObject@sample_id
-              lipid_id_col_name <- theObject@lipid_id_column
-              assay_list <- theObject@lipid_data
+        design_matrix <- theObject@design_matrix
+        sample_id_col_name <- theObject@sample_id
+        lipid_id_col_name <- theObject@lipid_id_column
+        assay_list <- theObject@lipid_data
 
-              if(!is.list( assay_list)) {
-                assay_list <- list( assay_list)
-              }
+        if (!is.list(assay_list)) {
+            assay_list <- list(assay_list)
+        }
 
-               if (length(assay_list) == 0) {
-                  warning("No assays found in `lipid_data` slot. Returning empty list.")
-                  return(list())
-              }
+        if (length(assay_list) == 0) {
+            warning("No assays found in `lipid_data` slot. Returning empty list.")
+            return(list())
+        }
 
-              # Ensure list is named
-              if (is.null(names(assay_list))) {
-                  names(assay_list) <- paste0("Assay_", seq_along(assay_list))
-                  warning("Assay list was unnamed. Using default names (Assay_1, Assay_2, ...).")
-              }
+        # Ensure list is named
+        if (is.null(names(assay_list))) {
+            names(assay_list) <- paste0("Assay_", seq_along(assay_list))
+            warning("Assay list was unnamed. Using default names (Assay_1, Assay_2, ...).")
+        }
 
-              # --- Plotting Logic per Assay ---
-              density_plots_list <- purrr::map(seq_along(assay_list), function(i) {
-                   assay_name <- names(assay_list)[i]
-                   current_assay_data <- assay_list[[i]]
+        # --- Plotting Logic per Assay ---
+        density_plots_list <- purrr::map(seq_along(assay_list), function(i) {
+            assay_name <- names(assay_list)[i]
+            current_assay_data <- assay_list[[i]]
 
-                   # --- Correctly identify sample columns based on design matrix ---
-                   design_samples <- as.character(design_matrix[[sample_id_col_name]]) # Get sample IDs from design matrix
-                   all_assay_cols <- colnames(current_assay_data)
-                   sample_cols <- intersect(all_assay_cols, design_samples) # Find which design samples are columns in the assay
-                   metadata_cols <- setdiff(all_assay_cols, sample_cols) # All other columns are metadata/ID
+            # --- Correctly identify sample columns based on design matrix ---
+            design_samples <- as.character(design_matrix[[sample_id_col_name]]) # Get sample IDs from design matrix
+            all_assay_cols <- colnames(current_assay_data)
+            sample_cols <- intersect(all_assay_cols, design_samples) # Find which design samples are columns in the assay
+            metadata_cols <- setdiff(all_assay_cols, sample_cols) # All other columns are metadata/ID
 
-                   # Ensure the primary lipid ID column is considered metadata
-                   if (lipid_id_col_name %in% sample_cols) {
-                        warning(sprintf("Assay '%s': Lipid ID column '%s' is also listed as a sample ID. Check configuration.", assay_name, lipid_id_col_name))
-                   }
-                   metadata_cols <- union(metadata_cols, lipid_id_col_name) # Ensure lipid ID is not treated as a sample column
-                   sample_cols <- setdiff(all_assay_cols, metadata_cols) # Final list of sample columns
-
-
-                   if (length(sample_cols) == 0) {
-                       warning(sprintf("Assay '%s': No sample columns found in assay matching sample IDs in '%s' column of design matrix. Skipping Density plot.", assay_name, sample_id_col_name))
-                       return(NULL)
-                   }
-                   # --- End Correction ---
+            # Ensure the primary lipid ID column is considered metadata
+            if (lipid_id_col_name %in% sample_cols) {
+                warning(sprintf("Assay '%s': Lipid ID column '%s' is also listed as a sample ID. Check configuration.", assay_name, lipid_id_col_name))
+            }
+            metadata_cols <- union(metadata_cols, lipid_id_col_name) # Ensure lipid ID is not treated as a sample column
+            sample_cols <- setdiff(all_assay_cols, metadata_cols) # Final list of sample columns
 
 
-                   # Check sample consistency
-                   design_samples_check <- design_matrix[[sample_id_col_name]] # Use original type for check
-                   missing_samples_in_design <- setdiff(sample_cols, as.character(design_samples_check)) # Compare character versions
-                   if(length(missing_samples_in_design) > 0) {
-                        warning(sprintf("Assay '%s': Identified sample columns missing in design_matrix (check for type mismatches?): %s. Skipping Density plot.", assay_name, paste(missing_samples_in_design, collapse=", ")))
-                        return(NULL)
-                   }
-
-                   # Filter design matrix
-                   design_matrix_filtered <- design_matrix[as.character(design_matrix[[sample_id_col_name]]) %in% sample_cols, ]
-
-                   # Ensure lipid ID column exists
-                   if (!lipid_id_col_name %in% colnames(current_assay_data)) {
-                       warning(sprintf("Assay '%s': Lipid ID column '%s' not found. Skipping Density plot.", assay_name, lipid_id_col_name))
-                       return(NULL)
-                   }
-
-                   # Convert to matrix, handle non-finite, check dimensions (similar to plotPca)
-                   frozen_lipid_matrix_pca <- current_assay_data |>
-                       tibble::column_to_rownames(lipid_id_col_name) |>
-                       dplyr::select(all_of(sample_cols)) |>
-                       as.matrix()
-                   frozen_lipid_matrix_pca[!is.finite(frozen_lipid_matrix_pca)] <- NA
-
-                   valid_rows <- rowSums(is.finite(frozen_lipid_matrix_pca)) > 1
-                   valid_cols <- colSums(is.finite(frozen_lipid_matrix_pca)) > 1
-                   if (sum(valid_rows) < 2 || sum(valid_cols) < 2) {
-                       warning(sprintf("Assay '%s': Insufficient finite data points for PCA. Skipping Density plot.", assay_name))
-                       return(NULL)
-                   }
-                   frozen_lipid_matrix_pca_final <- frozen_lipid_matrix_pca[valid_rows, valid_cols, drop = FALSE]
-                   design_matrix_filtered_final <- design_matrix_filtered[as.character(design_matrix_filtered[[sample_id_col_name]]) %in% colnames(frozen_lipid_matrix_pca_final), ]
-                   # Ensure consistent type for sample ID column before join
-                    design_matrix_filtered_final[[sample_id_col_name]] <- as.character(design_matrix_filtered_final[[sample_id_col_name]])
+            if (length(sample_cols) == 0) {
+                warning(sprintf("Assay '%s': No sample columns found in assay matching sample IDs in '%s' column of design matrix. Skipping Density plot.", assay_name, sample_id_col_name))
+                return(NULL)
+            }
+            # --- End Correction ---
 
 
-                   # --- Perform PCA ---
-                   pca_data_for_plot <- tryCatch({
-                       pca.res <- mixOmics::pca(t(as.matrix(frozen_lipid_matrix_pca_final)), ncomp = 2) # Ensure ncomp=2 for PC1/PC2
-                       pca.res$variates$X |>
-                           as.data.frame() |>
-                           tibble::rownames_to_column(var = sample_id_col_name) |>
-                           dplyr::left_join(design_matrix_filtered_final, by = sample_id_col_name) |>
-                           tibble::as_tibble() # Ensure it's a tibble
-                   }, error = function(e) {
-                       warning(sprintf("Assay '%s': Error during PCA calculation for density plot: %s. Skipping.", assay_name, e$message))
-                       return(NULL) # Skip this assay if PCA fails
-                   })
+            # Check sample consistency
+            design_samples_check <- design_matrix[[sample_id_col_name]] # Use original type for check
+            missing_samples_in_design <- setdiff(sample_cols, as.character(design_samples_check)) # Compare character versions
+            if (length(missing_samples_in_design) > 0) {
+                warning(sprintf("Assay '%s': Identified sample columns missing in design_matrix (check for type mismatches?): %s. Skipping Density plot.", assay_name, paste(missing_samples_in_design, collapse = ", ")))
+                return(NULL)
+            }
 
-                   if (is.null(pca_data_for_plot) || !("PC1" %in% colnames(pca_data_for_plot)) || !("PC2" %in% colnames(pca_data_for_plot))) {
-                      warning(sprintf("Assay '%s': PCA result is invalid or missing PC1/PC2. Skipping Density plot.", assay_name))
-                      return(NULL)
-                   }
-                   if (!grouping_variable %in% colnames(pca_data_for_plot)) {
-                        warning(sprintf("Assay '%s': Grouping variable '%s' not found in PCA data after join. Skipping Density plot.", assay_name, grouping_variable))
-                        return(NULL)
-                   }
+            # Filter design matrix
+            design_matrix_filtered <- design_matrix[as.character(design_matrix[[sample_id_col_name]]) %in% sample_cols, ]
+
+            # Ensure lipid ID column exists
+            if (!lipid_id_col_name %in% colnames(current_assay_data)) {
+                warning(sprintf("Assay '%s': Lipid ID column '%s' not found. Skipping Density plot.", assay_name, lipid_id_col_name))
+                return(NULL)
+            }
+
+            # Convert to matrix, handle non-finite, check dimensions (similar to plotPca)
+            frozen_lipid_matrix_pca <- current_assay_data |>
+                tibble::column_to_rownames(lipid_id_col_name) |>
+                dplyr::select(all_of(sample_cols)) |>
+                as.matrix()
+            frozen_lipid_matrix_pca[!is.finite(frozen_lipid_matrix_pca)] <- NA
+
+            valid_rows <- rowSums(is.finite(frozen_lipid_matrix_pca)) > 1
+            valid_cols <- colSums(is.finite(frozen_lipid_matrix_pca)) > 1
+            if (sum(valid_rows) < 2 || sum(valid_cols) < 2) {
+                warning(sprintf("Assay '%s': Insufficient finite data points for PCA. Skipping Density plot.", assay_name))
+                return(NULL)
+            }
+            frozen_lipid_matrix_pca_final <- frozen_lipid_matrix_pca[valid_rows, valid_cols, drop = FALSE]
+            design_matrix_filtered_final <- design_matrix_filtered[as.character(design_matrix_filtered[[sample_id_col_name]]) %in% colnames(frozen_lipid_matrix_pca_final), ]
+            # Ensure consistent type for sample ID column before join
+            design_matrix_filtered_final[[sample_id_col_name]] <- as.character(design_matrix_filtered_final[[sample_id_col_name]])
 
 
-                   # --- Create Density/Box Plots ---
-                   # assay_title <- paste0( ifelse( is.null(title) | is.na(title) | title == "", "", paste0(title, " - ")), assay_name)
+            # --- Perform PCA ---
+            pca_data_for_plot <- tryCatch(
+                {
+                    pca.res <- mixOmics::pca(t(as.matrix(frozen_lipid_matrix_pca_final)), ncomp = 2) # Ensure ncomp=2 for PC1/PC2
+                    pca.res$variates$X |>
+                        as.data.frame() |>
+                        tibble::rownames_to_column(var = sample_id_col_name) |>
+                        dplyr::left_join(design_matrix_filtered_final, by = sample_id_col_name) |>
+                        tibble::as_tibble() # Ensure it's a tibble
+                },
+                error = function(e) {
+                    warning(sprintf("Assay '%s': Error during PCA calculation for density plot: %s. Skipping.", assay_name, e$message))
+                    return(NULL) # Skip this assay if PCA fails
+                }
+            )
 
-                   tryCatch({
-                        # Create PC1 boxplot
-                       pc1_box <- ggplot(pca_data_for_plot, aes(x = !!rlang::sym(grouping_variable), y = PC1, fill = !!rlang::sym(grouping_variable))) +
-                           geom_boxplot(notch = TRUE) +
-                           theme_bw() +
-                           labs(title = paste(title, "-", assay_name),
-                                x = "",
-                                y = "PC1") +
-                           theme(
-                               legend.position = "none",
-                               axis.text.x = element_blank(),
-                               axis.ticks.x = element_blank(),
-                               text = element_text(size = font_size),
-                               plot.margin = margin(b = 0, t = 5, l = 5, r = 5),
-                               panel.grid.major = element_blank(),
-                               panel.grid.minor = element_blank(),
-                               panel.background = element_blank()
-                           )
+            if (is.null(pca_data_for_plot) || !("PC1" %in% colnames(pca_data_for_plot)) || !("PC2" %in% colnames(pca_data_for_plot))) {
+                warning(sprintf("Assay '%s': PCA result is invalid or missing PC1/PC2. Skipping Density plot.", assay_name))
+                return(NULL)
+            }
+            if (!grouping_variable %in% colnames(pca_data_for_plot)) {
+                warning(sprintf("Assay '%s': Grouping variable '%s' not found in PCA data after join. Skipping Density plot.", assay_name, grouping_variable))
+                return(NULL)
+            }
 
-                       # Create PC2 boxplot
-                       pc2_box <- ggplot(pca_data_for_plot, aes(x = !!rlang::sym(grouping_variable), y = PC2, fill = !!rlang::sym(grouping_variable))) +
-                           geom_boxplot(notch = TRUE) +
-                           theme_bw() +
-                           labs(x = "",
-                                y = "PC2") +
-                           theme(
-                               legend.position = "none",
-                               axis.text.x = element_blank(),
-                               axis.ticks.x = element_blank(),
-                               text = element_text(size = font_size),
-                               plot.margin = margin(t = 0, b = 5, l = 5, r = 5),
-                               panel.grid.major = element_blank(),
-                               panel.grid.minor = element_blank(),
-                               panel.background = element_blank()
-                           )
 
-                       # Combine plots with minimal spacing
-                       combined_plot <- pc1_box / pc2_box +
-                           patchwork::plot_layout(heights = c(1, 1)) +
-                           patchwork::plot_annotation(theme = theme(plot.margin = margin(0, 0, 0, 0)))
+            # --- Create Density/Box Plots ---
+            # assay_title <- paste0( ifelse( is.null(title) | is.na(title) | title == "", "", paste0(title, " - ")), assay_name)
 
-                       return(combined_plot)
+            tryCatch(
+                {
+                    # Create PC1 boxplot
+                    pc1_box <- ggplot(pca_data_for_plot, aes(x = !!rlang::sym(grouping_variable), y = PC1, fill = !!rlang::sym(grouping_variable))) +
+                        geom_boxplot(notch = TRUE) +
+                        theme_bw() +
+                        labs(
+                            title = paste(title, "-", assay_name),
+                            x = "",
+                            y = "PC1"
+                        ) +
+                        theme(
+                            legend.position = "none",
+                            axis.text.x = element_blank(),
+                            axis.ticks.x = element_blank(),
+                            text = element_text(size = font_size),
+                            plot.margin = margin(b = 0, t = 5, l = 5, r = 5),
+                            panel.grid.major = element_blank(),
+                            panel.grid.minor = element_blank(),
+                            panel.background = element_blank()
+                        )
 
-                   }, error = function(e) {
-                       warning(sprintf("Assay '%s': Error creating density boxplots: %s. Skipping.", assay_name, e$message))
-                       return(NULL)
-                   })
-              })
+                    # Create PC2 boxplot
+                    pc2_box <- ggplot(pca_data_for_plot, aes(x = !!rlang::sym(grouping_variable), y = PC2, fill = !!rlang::sym(grouping_variable))) +
+                        geom_boxplot(notch = TRUE) +
+                        theme_bw() +
+                        labs(
+                            x = "",
+                            y = "PC2"
+                        ) +
+                        theme(
+                            legend.position = "none",
+                            axis.text.x = element_blank(),
+                            axis.ticks.x = element_blank(),
+                            text = element_text(size = font_size),
+                            plot.margin = margin(t = 0, b = 5, l = 5, r = 5),
+                            panel.grid.major = element_blank(),
+                            panel.grid.minor = element_blank(),
+                            panel.background = element_blank()
+                        )
 
-              # Set names for the list of plots
-              names(density_plots_list) <- names(assay_list)
+                    # Combine plots with minimal spacing
+                    combined_plot <- pc1_box / pc2_box +
+                        patchwork::plot_layout(heights = c(1, 1)) +
+                        patchwork::plot_annotation(theme = theme(plot.margin = margin(0, 0, 0, 0)))
 
-              # Remove NULL elements (skipped assays)
-              density_plots_list <- density_plots_list[!sapply(density_plots_list, is.null)]
+                    return(combined_plot)
+                },
+                error = function(e) {
+                    warning(sprintf("Assay '%s': Error creating density boxplots: %s. Skipping.", assay_name, e$message))
+                    return(NULL)
+                }
+            )
+        })
 
-              return(density_plots_list)
-          })
+        # Set names for the list of plots
+        names(density_plots_list) <- names(assay_list)
+
+        # Remove NULL elements (skipped assays)
+        density_plots_list <- density_plots_list[!sapply(density_plots_list, is.null)]
+
+        return(density_plots_list)
+    }
+)
 
 
 #' @title Plot Density for list of ggplot objects
@@ -795,111 +819,119 @@ setMethod(f = "plotDensity",
 #' @importFrom patchwork plot_layout plot_annotation
 #' @importFrom rlang sym !!
 #' @export
-setMethod(f = "plotDensity",
-          signature = c(theObject = "list"), # Explicitly define signature argument
-          definition = function(theObject, grouping_variable, title = "", font_size = 8) {
-               # --- Input is a list: Assume list of ggplot objects (Use existing PCA data) ---
+setMethod(
+    f = "plotDensity",
+    signature = c(theObject = "list"), # Explicitly define signature argument
+    definition = function(theObject, grouping_variable, title = "", font_size = 8) {
+        # --- Input is a list: Assume list of ggplot objects (Use existing PCA data) ---
 
-               # Basic validation
-               if (!all(sapply(theObject, function(x) inherits(x, "ggplot")))) {
-                  stop("If 'theObject' is a list, all its elements must be ggplot objects.")
-               }
-               if (!is.character(grouping_variable) || length(grouping_variable) != 1 || is.na(grouping_variable)) {
-                 stop("`grouping_variable` must be a single non-NA character string.")
-               }
+        # Basic validation
+        if (!all(sapply(theObject, function(x) inherits(x, "ggplot")))) {
+            stop("If 'theObject' is a list, all its elements must be ggplot objects.")
+        }
+        if (!is.character(grouping_variable) || length(grouping_variable) != 1 || is.na(grouping_variable)) {
+            stop("`grouping_variable` must be a single non-NA character string.")
+        }
 
-               pca_plots_list <- theObject # Rename for clarity
+        pca_plots_list <- theObject # Rename for clarity
 
-               if (length(pca_plots_list) == 0) {
-                   warning("Input list of ggplot objects is empty. Returning empty list.")
-                   return(list())
-               }
+        if (length(pca_plots_list) == 0) {
+            warning("Input list of ggplot objects is empty. Returning empty list.")
+            return(list())
+        }
 
-               # Ensure list is named, provide default names if not
-               if (is.null(names(pca_plots_list))) {
-                   names(pca_plots_list) <- paste0("Plot_", seq_along(pca_plots_list))
-                   warning("Input ggplot list was unnamed. Using default names (Plot_1, Plot_2, ...).")
-               }
+        # Ensure list is named, provide default names if not
+        if (is.null(names(pca_plots_list))) {
+            names(pca_plots_list) <- paste0("Plot_", seq_along(pca_plots_list))
+            warning("Input ggplot list was unnamed. Using default names (Plot_1, Plot_2, ...).")
+        }
 
-               # --- Plotting Logic per Input ggplot ---
-               density_plots_list <- purrr::map(seq_along(pca_plots_list), function(i) {
-                   pca_plot <- pca_plots_list[[i]]
-                   plot_name <- names(pca_plots_list)[i]
-                   # Use title override if provided, otherwise use original plot title or name
-                   plot_title_final <- if (!is.null(title) && title != "") paste(title, "-", plot_name) else tryCatch(pca_plot$labels$title, error = function(e) plot_name)
+        # --- Plotting Logic per Input ggplot ---
+        density_plots_list <- purrr::map(seq_along(pca_plots_list), function(i) {
+            pca_plot <- pca_plots_list[[i]]
+            plot_name <- names(pca_plots_list)[i]
+            # Use title override if provided, otherwise use original plot title or name
+            plot_title_final <- if (!is.null(title) && title != "") paste(title, "-", plot_name) else tryCatch(pca_plot$labels$title, error = function(e) plot_name)
 
-                   # --- Extract PCA data from the ggplot object ---
-                   pca_data_for_plot <- NULL
-                   if (!is.null(pca_plot$data) && is.data.frame(pca_plot$data) && all(c("PC1", "PC2", grouping_variable) %in% colnames(pca_plot$data))) {
-                       pca_data_for_plot <- tibble::as_tibble(pca_plot$data)
-                   } else {
-                       warning(sprintf("Plot '%s': Could not reliably extract required data (PC1, PC2, %s) from the ggplot object's internal structure. Skipping density plot generation.", plot_name, grouping_variable))
-                       return(NULL)
-                   }
+            # --- Extract PCA data from the ggplot object ---
+            pca_data_for_plot <- NULL
+            if (!is.null(pca_plot$data) && is.data.frame(pca_plot$data) && all(c("PC1", "PC2", grouping_variable) %in% colnames(pca_plot$data))) {
+                pca_data_for_plot <- tibble::as_tibble(pca_plot$data)
+            } else {
+                warning(sprintf("Plot '%s': Could not reliably extract required data (PC1, PC2, %s) from the ggplot object's internal structure. Skipping density plot generation.", plot_name, grouping_variable))
+                return(NULL)
+            }
 
-                   if (!grouping_variable %in% colnames(pca_data_for_plot)) {
-                       warning(sprintf("Plot '%s': Grouping variable '%s' not found in extracted data. Skipping.", plot_name, grouping_variable))
-                       return(NULL)
-                   }
+            if (!grouping_variable %in% colnames(pca_data_for_plot)) {
+                warning(sprintf("Plot '%s': Grouping variable '%s' not found in extracted data. Skipping.", plot_name, grouping_variable))
+                return(NULL)
+            }
 
-                   # --- Create Density/Box Plots (using extracted data) ---
-                   tryCatch({
-                      # Create PC1 boxplot
-                     pc1_box <- ggplot(pca_data_for_plot, aes(x = !!rlang::sym(grouping_variable), y = PC1, fill = !!rlang::sym(grouping_variable))) +
-                         geom_boxplot(notch = FALSE) +
-                         theme_bw() +
-                         labs(title = plot_title_final, # Use final title
-                              x = "",
-                              y = "PC1") +
-                         theme(
-                             legend.position = "none",
-                             axis.text.x = element_blank(),
-                             axis.ticks.x = element_blank(),
-                             text = element_text(size = font_size),
-                             plot.margin = margin(b = 0, t = 5, l = 5, r = 5),
-                             panel.grid.major = element_blank(),
-                             panel.grid.minor = element_blank(),
-                             panel.background = element_blank()
-                         )
+            # --- Create Density/Box Plots (using extracted data) ---
+            tryCatch(
+                {
+                    # Create PC1 boxplot
+                    pc1_box <- ggplot(pca_data_for_plot, aes(x = !!rlang::sym(grouping_variable), y = PC1, fill = !!rlang::sym(grouping_variable))) +
+                        geom_boxplot(notch = FALSE) +
+                        theme_bw() +
+                        labs(
+                            title = plot_title_final, # Use final title
+                            x = "",
+                            y = "PC1"
+                        ) +
+                        theme(
+                            legend.position = "none",
+                            axis.text.x = element_blank(),
+                            axis.ticks.x = element_blank(),
+                            text = element_text(size = font_size),
+                            plot.margin = margin(b = 0, t = 5, l = 5, r = 5),
+                            panel.grid.major = element_blank(),
+                            panel.grid.minor = element_blank(),
+                            panel.background = element_blank()
+                        )
 
-                     # Create PC2 boxplot
-                     pc2_box <- ggplot(pca_data_for_plot, aes(x = !!rlang::sym(grouping_variable), y = PC2, fill = !!rlang::sym(grouping_variable))) +
-                         geom_boxplot(notch = FALSE) +
-                         theme_bw() +
-                         labs(x = "",
-                              y = "PC2") +
-                         theme(
-                             legend.position = "none",
-                             axis.text.x = element_blank(),
-                             axis.ticks.x = element_blank(),
-                             text = element_text(size = font_size),
-                             plot.margin = margin(t = 0, b = 5, l = 5, r = 5),
-                             panel.grid.major = element_blank(),
-                             panel.grid.minor = element_blank(),
-                             panel.background = element_blank()
-                         )
+                    # Create PC2 boxplot
+                    pc2_box <- ggplot(pca_data_for_plot, aes(x = !!rlang::sym(grouping_variable), y = PC2, fill = !!rlang::sym(grouping_variable))) +
+                        geom_boxplot(notch = FALSE) +
+                        theme_bw() +
+                        labs(
+                            x = "",
+                            y = "PC2"
+                        ) +
+                        theme(
+                            legend.position = "none",
+                            axis.text.x = element_blank(),
+                            axis.ticks.x = element_blank(),
+                            text = element_text(size = font_size),
+                            plot.margin = margin(t = 0, b = 5, l = 5, r = 5),
+                            panel.grid.major = element_blank(),
+                            panel.grid.minor = element_blank(),
+                            panel.background = element_blank()
+                        )
 
-                     # Combine plots with minimal spacing
-                     combined_plot <- pc1_box / pc2_box +
-                         patchwork::plot_layout(heights = c(1, 1)) +
-                         patchwork::plot_annotation(theme = theme(plot.margin = margin(0, 0, 0, 0)))
+                    # Combine plots with minimal spacing
+                    combined_plot <- pc1_box / pc2_box +
+                        patchwork::plot_layout(heights = c(1, 1)) +
+                        patchwork::plot_annotation(theme = theme(plot.margin = margin(0, 0, 0, 0)))
 
-                     return(combined_plot)
+                    return(combined_plot)
+                },
+                error = function(e) {
+                    warning(sprintf("Plot '%s': Error creating density boxplots from ggplot input: %s. Skipping.", plot_name, e$message))
+                    return(NULL)
+                }
+            )
+        })
 
-                   }, error = function(e) {
-                       warning(sprintf("Plot '%s': Error creating density boxplots from ggplot input: %s. Skipping.", plot_name, e$message))
-                       return(NULL)
-                   })
-               })
+        # Set names for the list of plots
+        names(density_plots_list) <- names(pca_plots_list)
 
-               # Set names for the list of plots
-               names(density_plots_list) <- names(pca_plots_list)
+        # Remove NULL elements (skipped plots)
+        density_plots_list <- density_plots_list[!sapply(density_plots_list, is.null)]
 
-               # Remove NULL elements (skipped plots)
-               density_plots_list <- density_plots_list[!sapply(density_plots_list, is.null)]
-
-               return(density_plots_list)
-          })
+        return(density_plots_list)
+    }
+)
 
 
 #' @title Calculate Pearson Correlation for Sample Pairs
@@ -912,252 +944,261 @@ setMethod(f = "plotDensity",
 #' @importFrom rlang sym !! :=
 #' @export
 #' @export
-setMethod(f = "pearsonCorForSamplePairs",
-          signature = "LipidomicsAssayData",
-          definition = function(theObject, tech_rep_remove_regex = NULL, correlation_group = NA) {
-            message("╔═══════════════════════════════════════════════════════════════════════════╗")
-            message("║  DEBUG66: Entering pearsonCorForSamplePairs (LipidomicsAssayData)        ║")
-            message("╚═══════════════════════════════════════════════════════════════════════════╝")
-            
-            # --- Input Validation ---
-            # tech_rep_remove_regex can be NULL, checked inside helper/later use
-            # correlation_group can be NA, checked below
+setMethod(
+    f = "pearsonCorForSamplePairs",
+    signature = "LipidomicsAssayData",
+    definition = function(theObject, tech_rep_remove_regex = NULL, correlation_group = NA) {
+        message("╔═══════════════════════════════════════════════════════════════════════════╗")
+        message("║  DEBUG66: Entering pearsonCorForSamplePairs (LipidomicsAssayData)        ║")
+        message("╚═══════════════════════════════════════════════════════════════════════════╝")
 
-            design_matrix <- theObject@design_matrix
-            sample_id_col_name <- theObject@sample_id
-            lipid_id_col_name <- theObject@lipid_id_column
-            tech_rep_col_name <- theObject@technical_replicate_id # Default grouping if correlation_group is NA
-            assay_list <- theObject@lipid_data
+        # --- Input Validation ---
+        # tech_rep_remove_regex can be NULL, checked inside helper/later use
+        # correlation_group can be NA, checked below
 
-            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] sample_id_col = '%s', lipid_id_col = '%s'", sample_id_col_name, lipid_id_col_name))
-            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] tech_rep_col_name = '%s', correlation_group = '%s'", tech_rep_col_name, correlation_group))
-            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Number of assays: %d", length(assay_list)))
+        design_matrix <- theObject@design_matrix
+        sample_id_col_name <- theObject@sample_id
+        lipid_id_col_name <- theObject@lipid_id_column
+        tech_rep_col_name <- theObject@technical_replicate_id # Default grouping if correlation_group is NA
+        assay_list <- theObject@lipid_data
 
-            if (length(assay_list) == 0) {
-                warning("No assays found in `lipid_data` slot. Returning empty list.")
-                return(list())
+        message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] sample_id_col = '%s', lipid_id_col = '%s'", sample_id_col_name, lipid_id_col_name))
+        message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] tech_rep_col_name = '%s', correlation_group = '%s'", tech_rep_col_name, correlation_group))
+        message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Number of assays: %d", length(assay_list)))
+
+        if (length(assay_list) == 0) {
+            warning("No assays found in `lipid_data` slot. Returning empty list.")
+            return(list())
+        }
+
+        # Ensure list is named
+        if (is.null(names(assay_list))) {
+            names(assay_list) <- paste0("Assay_", seq_along(assay_list))
+            warning("Assay list was unnamed. Using default names (Assay_1, Assay_2, ...).")
+        }
+        message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay names: %s", paste(names(assay_list), collapse = ", ")))
+
+        # Determine the actual grouping column to use for pairing samples
+        replicate_group_column_name <- correlation_group
+        if (is.na(correlation_group)) {
+            message("   DEBUG66 [pearsonCorForSamplePairs] correlation_group is NA, falling back to tech_rep_col")
+            if (is.na(tech_rep_col_name) || !tech_rep_col_name %in% colnames(design_matrix)) {
+                message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] FAIL - tech_rep_col '%s' not valid", tech_rep_col_name))
+                stop("`correlation_group` is NA and `technical_replicate_id` ('", tech_rep_col_name, "') is NA or not found in design_matrix. Cannot determine sample pairing.")
+            }
+            replicate_group_column_name <- tech_rep_col_name
+        } else {
+            if (!correlation_group %in% colnames(design_matrix)) {
+                message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] FAIL - correlation_group '%s' not in design_matrix", correlation_group))
+                stop(sprintf("Specified `correlation_group` ('%s') not found in design_matrix.", correlation_group))
+            }
+        }
+        message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Using replicate_group_column_name = '%s'", replicate_group_column_name))
+
+        # Resolve tech_rep_remove_regex from config if needed (or use default)
+        # Assuming the helper function or subsequent filtering handles NULL regex gracefully (meaning no filtering)
+        tech_rep_remove_regex_final <- checkParamsObjectFunctionSimplifyAcceptNull(theObject, "tech_rep_remove_regex", tech_rep_remove_regex) # Allow override
+        # theObject <- updateParamInObject(theObject, "tech_rep_remove_regex") # Update object if needed
+
+
+        # --- Correlation Logic per Assay ---
+        correlation_results_list <- purrr::map(seq_along(assay_list), function(i) {
+            assay_name <- names(assay_list)[i]
+            current_assay_data <- assay_list[[i]]
+            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] === Processing assay: %s ===", assay_name))
+
+            # --- Correctly identify sample columns based on design matrix ---
+            design_samples <- as.character(design_matrix[[sample_id_col_name]]) # Get sample IDs from design matrix
+            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': design_samples count = %d", assay_name, length(design_samples)))
+            all_assay_cols <- colnames(current_assay_data)
+            sample_cols <- intersect(all_assay_cols, design_samples) # Find which design samples are columns in the assay
+            metadata_cols <- setdiff(all_assay_cols, sample_cols) # All other columns are metadata/ID
+            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': sample_cols count = %d, metadata_cols count = %d", assay_name, length(sample_cols), length(metadata_cols)))
+
+            # Ensure the primary lipid ID column is considered metadata
+            if (lipid_id_col_name %in% sample_cols) {
+                warning(sprintf("Assay '%s': Lipid ID column '%s' is also listed as a sample ID. Check configuration.", assay_name, lipid_id_col_name))
+            }
+            metadata_cols <- union(metadata_cols, lipid_id_col_name) # Ensure lipid ID is not treated as a sample column
+            sample_cols <- setdiff(all_assay_cols, metadata_cols) # Final list of sample columns
+            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': final sample_cols count = %d", assay_name, length(sample_cols)))
+
+            if (length(sample_cols) < 2) { # Need at least 2 samples for correlation
+                warning(sprintf("Assay '%s': Fewer than 2 sample columns found matching design matrix sample IDs. Skipping Pearson correlation.", assay_name))
+                return(NULL)
+            }
+            # --- End Correction ---
+
+
+            # Check sample consistency (now based on correctly identified sample_cols)
+            design_samples_check <- design_matrix[[sample_id_col_name]] # Use original type for check
+            missing_samples_in_design <- setdiff(sample_cols, as.character(design_samples_check)) # Compare character versions
+            if (length(missing_samples_in_design) > 0) {
+                # This condition should theoretically not be met if sample_cols were derived from design_samples,
+                # but keeping as a safeguard against type issues or unexpected data.
+                warning(sprintf("Assay '%s': Identified sample columns missing in design_matrix (check for type mismatches?): %s. Skipping Pearson correlation.", assay_name, paste(missing_samples_in_design, collapse = ", ")))
+                return(NULL)
             }
 
-             # Ensure list is named
-             if (is.null(names(assay_list))) {
-                 names(assay_list) <- paste0("Assay_", seq_along(assay_list))
-                 warning("Assay list was unnamed. Using default names (Assay_1, Assay_2, ...).")
-             }
-             message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay names: %s", paste(names(assay_list), collapse = ", ")))
 
-             # Determine the actual grouping column to use for pairing samples
-             replicate_group_column_name <- correlation_group
-             if (is.na(correlation_group)) {
-                 message("   DEBUG66 [pearsonCorForSamplePairs] correlation_group is NA, falling back to tech_rep_col")
-                 if (is.na(tech_rep_col_name) || !tech_rep_col_name %in% colnames(design_matrix)) {
-                     message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] FAIL - tech_rep_col '%s' not valid", tech_rep_col_name))
-                     stop("`correlation_group` is NA and `technical_replicate_id` ('", tech_rep_col_name, "') is NA or not found in design_matrix. Cannot determine sample pairing.")
-                 }
-                 replicate_group_column_name <- tech_rep_col_name
-             } else {
-                 if (!correlation_group %in% colnames(design_matrix)) {
-                     message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] FAIL - correlation_group '%s' not in design_matrix", correlation_group))
-                     stop(sprintf("Specified `correlation_group` ('%s') not found in design_matrix.", correlation_group))
-                 }
-             }
-             message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Using replicate_group_column_name = '%s'", replicate_group_column_name))
+            # Filter design matrix to match assay samples
+            design_matrix_filtered <- design_matrix[design_matrix[[sample_id_col_name]] %in% sample_cols, ]
+            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': design_matrix_filtered rows = %d", assay_name, nrow(design_matrix_filtered)))
 
-            # Resolve tech_rep_remove_regex from config if needed (or use default)
-            # Assuming the helper function or subsequent filtering handles NULL regex gracefully (meaning no filtering)
-            tech_rep_remove_regex_final <- checkParamsObjectFunctionSimplifyAcceptNull(theObject, "tech_rep_remove_regex", tech_rep_remove_regex) # Allow override
-            # theObject <- updateParamInObject(theObject, "tech_rep_remove_regex") # Update object if needed
+            # Ensure lipid ID column exists
+            if (!lipid_id_col_name %in% colnames(current_assay_data)) {
+                warning(sprintf("Assay '%s': Lipid ID column '%s' not found. Skipping Pearson correlation.", assay_name, lipid_id_col_name))
+                return(NULL)
+            }
 
 
-            # --- Correlation Logic per Assay ---
-            correlation_results_list <- purrr::map(seq_along(assay_list), function(i) {
-                 assay_name <- names(assay_list)[i]
-                 current_assay_data <- assay_list[[i]]
-                 message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] === Processing assay: %s ===", assay_name))
-
-                 # --- Correctly identify sample columns based on design matrix ---
-                 design_samples <- as.character(design_matrix[[sample_id_col_name]]) # Get sample IDs from design matrix
-                 message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': design_samples count = %d", assay_name, length(design_samples)))
-                 all_assay_cols <- colnames(current_assay_data)
-                 sample_cols <- intersect(all_assay_cols, design_samples) # Find which design samples are columns in the assay
-                 metadata_cols <- setdiff(all_assay_cols, sample_cols) # All other columns are metadata/ID
-                 message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': sample_cols count = %d, metadata_cols count = %d", assay_name, length(sample_cols), length(metadata_cols)))
-
-                 # Ensure the primary lipid ID column is considered metadata
-                 if (lipid_id_col_name %in% sample_cols) {
-                      warning(sprintf("Assay '%s': Lipid ID column '%s' is also listed as a sample ID. Check configuration.", assay_name, lipid_id_col_name))
-                 }
-                 metadata_cols <- union(metadata_cols, lipid_id_col_name) # Ensure lipid ID is not treated as a sample column
-                 sample_cols <- setdiff(all_assay_cols, metadata_cols) # Final list of sample columns
-                 message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': final sample_cols count = %d", assay_name, length(sample_cols)))
-
-                 if (length(sample_cols) < 2) { # Need at least 2 samples for correlation
-                     warning(sprintf("Assay '%s': Fewer than 2 sample columns found matching design matrix sample IDs. Skipping Pearson correlation.", assay_name))
-                     return(NULL)
-                 }
-                 # --- End Correction ---
+            # Prepare long data for helper
+            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': Pivoting to long format...", assay_name))
+            assay_long <- current_assay_data |>
+                tidyr::pivot_longer(
+                    cols = all_of(sample_cols),
+                    names_to = sample_id_col_name,
+                    values_to = "abundance"
+                )
+            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': assay_long rows = %d", assay_name, nrow(assay_long)))
 
 
-                 # Check sample consistency (now based on correctly identified sample_cols)
-                 design_samples_check <- design_matrix[[sample_id_col_name]] # Use original type for check
-                 missing_samples_in_design <- setdiff(sample_cols, as.character(design_samples_check)) # Compare character versions
-                 if(length(missing_samples_in_design) > 0) {
-                      # This condition should theoretically not be met if sample_cols were derived from design_samples,
-                      # but keeping as a safeguard against type issues or unexpected data.
-                      warning(sprintf("Assay '%s': Identified sample columns missing in design_matrix (check for type mismatches?): %s. Skipping Pearson correlation.", assay_name, paste(missing_samples_in_design, collapse=", ")))
-                      return(NULL)
-                 }
+            # Prepare the design matrix subset for the helper
+            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': Creating design_subset with cols '%s' and '%s'", assay_name, sample_id_col_name, replicate_group_column_name))
+            design_subset <- design_matrix_filtered |>
+                dplyr::select(!!rlang::sym(sample_id_col_name), !!rlang::sym(replicate_group_column_name))
+            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': design_subset rows = %d, cols = %s", assay_name, nrow(design_subset), paste(colnames(design_subset), collapse = ", ")))
 
 
-                 # Filter design matrix to match assay samples
-                 design_matrix_filtered <- design_matrix[design_matrix[[sample_id_col_name]] %in% sample_cols, ]
-                 message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': design_matrix_filtered rows = %d", assay_name, nrow(design_matrix_filtered)))
+            # --- Ensure consistent Sample ID type (character) --- #
+            # Convert the sample ID column in the design subset to character
+            # to match the type expected from pivot_longer names_to
+            design_subset <- design_subset |>
+                dplyr::mutate(!!rlang::sym(sample_id_col_name) := as.character(!!rlang::sym(sample_id_col_name)))
 
-                 # Ensure lipid ID column exists
-                  if (!lipid_id_col_name %in% colnames(current_assay_data)) {
-                      warning(sprintf("Assay '%s': Lipid ID column '%s' not found. Skipping Pearson correlation.", assay_name, lipid_id_col_name))
-                      return(NULL)
-                  }
-
-
-                 # Prepare long data for helper
-                 message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': Pivoting to long format...", assay_name))
-                 assay_long <- current_assay_data |>
-                     tidyr::pivot_longer(
-                         cols = all_of(sample_cols),
-                         names_to = sample_id_col_name,
-                         values_to = "abundance"
-                     )
-                 message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': assay_long rows = %d", assay_name, nrow(assay_long)))
+            # Also ensure the assay_long sample ID column is character (pivot_longer usually does this)
+            assay_long <- assay_long |>
+                dplyr::mutate(!!rlang::sym(sample_id_col_name) := as.character(!!rlang::sym(sample_id_col_name)))
+            # ---------------------------------------------------- #
 
 
-                 # Prepare the design matrix subset for the helper
-                 message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': Creating design_subset with cols '%s' and '%s'", assay_name, sample_id_col_name, replicate_group_column_name))
-                 design_subset <- design_matrix_filtered |>
-                     dplyr::select(!!rlang::sym(sample_id_col_name), !!rlang::sym(replicate_group_column_name))
-                 message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': design_subset rows = %d, cols = %s", assay_name, nrow(design_subset), paste(colnames(design_subset), collapse = ", ")))
+            # --- Calculate Correlations Directly --- #
 
+            # 1. Get pairs of samples to compare based on the replicate grouping column
+            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': Calling getPairsOfSamplesTable...", assay_name))
+            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': design_subset unique groups = %s", assay_name, paste(unique(design_subset[[replicate_group_column_name]]), collapse = ", ")))
+            pairs_for_comparison <- tryCatch(
+                {
+                    getPairsOfSamplesTable(design_subset, # Contains sample_id and replicate_group_column
+                        run_id_column = sample_id_col_name,
+                        replicate_group_column = replicate_group_column_name
+                    )
+                },
+                error = function(e) {
+                    message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': ERROR in getPairsOfSamplesTable: %s", assay_name, e$message))
+                    warning(sprintf("Assay '%s': Error getting sample pairs: %s. Skipping correlation.", assay_name, e$message))
+                    return(NULL)
+                }
+            )
 
-                 # --- Ensure consistent Sample ID type (character) --- #
-                 # Convert the sample ID column in the design subset to character
-                 # to match the type expected from pivot_longer names_to
-                 design_subset <- design_subset |>
-                     dplyr::mutate(!!rlang::sym(sample_id_col_name) := as.character(!!rlang::sym(sample_id_col_name)))
+            if (is.null(pairs_for_comparison) || nrow(pairs_for_comparison) == 0) {
+                message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': No valid sample pairs found. Skipping.", assay_name))
+                warning(sprintf("Assay '%s': No valid sample pairs found for correlation. Skipping.", assay_name))
+                return(NULL)
+            }
+            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': pairs_for_comparison rows = %d", assay_name, nrow(pairs_for_comparison)))
 
-                 # Also ensure the assay_long sample ID column is character (pivot_longer usually does this)
-                 assay_long <- assay_long |>
-                     dplyr::mutate(!!rlang::sym(sample_id_col_name) := as.character(!!rlang::sym(sample_id_col_name)))
-                 # ---------------------------------------------------- #
+            # Get the names of the columns containing paired sample IDs (e.g., "Run.x", "Run.y")
+            run_id_col_x <- paste0(sample_id_col_name, ".x")
+            run_id_col_y <- paste0(sample_id_col_name, ".y")
 
+            # Check if these columns exist in the pairs table
+            if (!all(c(run_id_col_x, run_id_col_y) %in% colnames(pairs_for_comparison))) {
+                message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': Missing expected columns. pairs_for_comparison cols = %s", assay_name, paste(colnames(pairs_for_comparison), collapse = ", ")))
+                warning(sprintf("Assay '%s': Expected paired sample columns ('%s', '%s') not found in pairs table. Skipping correlation.", assay_name, run_id_col_x, run_id_col_y))
+                return(NULL)
+            }
 
-                  # --- Calculate Correlations Directly --- #
+            # Calculate correlations as a separate vector first
+            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': Calculating correlations for %d pairs...", assay_name, nrow(pairs_for_comparison)))
+            calculated_correlations <- tryCatch(
+                {
+                    purrr::map2_dbl(
+                        .x = pairs_for_comparison[[run_id_col_x]], # Directly access columns
+                        .y = pairs_for_comparison[[run_id_col_y]], # Directly access columns
+                        .f = ~ {
+                            # Filter the long assay data for the current pair
+                            assay_pair_filtered <- assay_long |>
+                                dplyr::filter(!!rlang::sym(sample_id_col_name) %in% c(.x, .y))
 
-                  # 1. Get pairs of samples to compare based on the replicate grouping column
-                  message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': Calling getPairsOfSamplesTable...", assay_name))
-                  message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': design_subset unique groups = %s", assay_name, paste(unique(design_subset[[replicate_group_column_name]]), collapse = ", ")))
-                  pairs_for_comparison <- tryCatch({
-                      getPairsOfSamplesTable(design_subset, # Contains sample_id and replicate_group_column
-                                            run_id_column = sample_id_col_name,
-                                            replicate_group_column = replicate_group_column_name)
-                  }, error = function(e) {
-                       message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': ERROR in getPairsOfSamplesTable: %s", assay_name, e$message))
-                       warning(sprintf("Assay '%s': Error getting sample pairs: %s. Skipping correlation.", assay_name, e$message))
-                       return(NULL)
-                  })
-
-                  if(is.null(pairs_for_comparison) || nrow(pairs_for_comparison) == 0) {
-                      message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': No valid sample pairs found. Skipping.", assay_name))
-                      warning(sprintf("Assay '%s': No valid sample pairs found for correlation. Skipping.", assay_name))
-                      return(NULL)
-                  }
-                  message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': pairs_for_comparison rows = %d", assay_name, nrow(pairs_for_comparison)))
-
-                  # Get the names of the columns containing paired sample IDs (e.g., "Run.x", "Run.y")
-                  run_id_col_x <- paste0(sample_id_col_name, ".x")
-                  run_id_col_y <- paste0(sample_id_col_name, ".y")
-
-                  # Check if these columns exist in the pairs table
-                  if (!all(c(run_id_col_x, run_id_col_y) %in% colnames(pairs_for_comparison))) {
-                      message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': Missing expected columns. pairs_for_comparison cols = %s", assay_name, paste(colnames(pairs_for_comparison), collapse = ", ")))
-                      warning(sprintf("Assay '%s': Expected paired sample columns ('%s', '%s') not found in pairs table. Skipping correlation.", assay_name, run_id_col_x, run_id_col_y))
-                      return(NULL)
-                  }
-
-                  # Calculate correlations as a separate vector first
-                  message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': Calculating correlations for %d pairs...", assay_name, nrow(pairs_for_comparison)))
-                  calculated_correlations <- tryCatch({
-                      purrr::map2_dbl(
-                          .x = pairs_for_comparison[[run_id_col_x]], # Directly access columns
-                          .y = pairs_for_comparison[[run_id_col_y]], # Directly access columns
-                          .f = ~ {
-                              # Filter the long assay data for the current pair
-                              assay_pair_filtered <- assay_long |>
-                                  dplyr::filter(!!rlang::sym(sample_id_col_name) %in% c(.x, .y))
-
-                              # Call the new lipid-specific helper
-                              correlation_val <- calculateLipidPairCorrelation(
-                                  input_pair_table = assay_pair_filtered,
-                                  feature_id_column = lipid_id_col_name,
-                                  sample_id_column = sample_id_col_name,
-                                  value_column = "abundance"
-                              )
-                              return(correlation_val) # Explicit return
-                          }
-                      )
-                  }, error = function(e) {
-                      message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': ERROR in map2_dbl: %s", assay_name, e$message))
-                      warning(sprintf("Assay '%s': Error during map2_dbl correlation calculation: %s. Returning NULL results.", assay_name, e$message))
-                      return(NULL) # Return NULL if map2_dbl fails
-                  })
-
-                  # Check if calculation succeeded and add the column
-                  if (is.null(calculated_correlations)) {
-                      correlation_results_raw <- NULL # Propagate failure
-                  } else if (length(calculated_correlations) != nrow(pairs_for_comparison)) {
-                       warning(sprintf("Assay '%s': Number of calculated correlations (%d) does not match number of pairs (%d). Skipping.", assay_name, length(calculated_correlations), nrow(pairs_for_comparison)))
-                       correlation_results_raw <- NULL
-                  } else {
-                       message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': Successfully calculated %d correlations", assay_name, length(calculated_correlations)))
-                       correlation_results_raw <- pairs_for_comparison |>
-                           dplyr::mutate(pearson_correlation = calculated_correlations)
-                  }
-                  # ---------------------------------------------------------- #
-
-                  # Initialize correlation_results_filtered with raw results (will be filtered if regex provided)
-                  correlation_results_filtered <- correlation_results_raw
-                  
-                  if (is.null(correlation_results_raw)) {
-                      # If calculation failed earlier, correlation_results_raw is NULL
-                      return(NULL)
-                  } else if (!is.null(tech_rep_remove_regex_final) && tech_rep_remove_regex_final != "") {
-                        # Ensure the replicate group column exists in the result before filtering
-                        if (replicate_group_column_name %in% colnames(correlation_results_raw)) {
-                            correlation_results_filtered <- correlation_results_raw |>
-                                dplyr::filter(!stringr::str_detect(!!rlang::sym(replicate_group_column_name), tech_rep_remove_regex_final))
-                        } else {
-                             warning(sprintf("Assay '%s': Replicate group column '%s' not found in correlation results. Cannot apply `tech_rep_remove_regex`. Returning unfiltered results.", assay_name, replicate_group_column_name))
-                             correlation_results_filtered <- correlation_results_raw
+                            # Call the new lipid-specific helper
+                            correlation_val <- calculateLipidPairCorrelation(
+                                input_pair_table = assay_pair_filtered,
+                                feature_id_column = lipid_id_col_name,
+                                sample_id_column = sample_id_col_name,
+                                value_column = "abundance"
+                            )
+                            return(correlation_val) # Explicit return
                         }
-                   }
-                   # If no regex, correlation_results_filtered already holds correlation_results_raw
+                    )
+                },
+                error = function(e) {
+                    message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': ERROR in map2_dbl: %s", assay_name, e$message))
+                    warning(sprintf("Assay '%s': Error during map2_dbl correlation calculation: %s. Returning NULL results.", assay_name, e$message))
+                    return(NULL) # Return NULL if map2_dbl fails
+                }
+            )
 
-                   message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': Returning %d correlation results", assay_name, nrow(correlation_results_filtered)))
-                   return(correlation_results_filtered)
-             })
+            # Check if calculation succeeded and add the column
+            if (is.null(calculated_correlations)) {
+                correlation_results_raw <- NULL # Propagate failure
+            } else if (length(calculated_correlations) != nrow(pairs_for_comparison)) {
+                warning(sprintf("Assay '%s': Number of calculated correlations (%d) does not match number of pairs (%d). Skipping.", assay_name, length(calculated_correlations), nrow(pairs_for_comparison)))
+                correlation_results_raw <- NULL
+            } else {
+                message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': Successfully calculated %d correlations", assay_name, length(calculated_correlations)))
+                correlation_results_raw <- pairs_for_comparison |>
+                    dplyr::mutate(pearson_correlation = calculated_correlations)
+            }
+            # ---------------------------------------------------------- #
 
-            # Set names for the list of results
-            names(correlation_results_list) <- names(assay_list)
+            # Initialize correlation_results_filtered with raw results (will be filtered if regex provided)
+            correlation_results_filtered <- correlation_results_raw
 
-            # Remove NULL elements (skipped assays)
-            non_null_count_before <- sum(!sapply(correlation_results_list, is.null))
-            correlation_results_list <- correlation_results_list[!sapply(correlation_results_list, is.null)]
-            
-            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Finished. Returning %d assay results (removed %d NULL)", length(correlation_results_list), length(assay_list) - non_null_count_before))
-            message("╔═══════════════════════════════════════════════════════════════════════════╗")
-            message("║  DEBUG66: Exiting pearsonCorForSamplePairs                               ║")
-            message("╚═══════════════════════════════════════════════════════════════════════════╝")
+            if (is.null(correlation_results_raw)) {
+                # If calculation failed earlier, correlation_results_raw is NULL
+                return(NULL)
+            } else if (!is.null(tech_rep_remove_regex_final) && tech_rep_remove_regex_final != "") {
+                # Ensure the replicate group column exists in the result before filtering
+                if (replicate_group_column_name %in% colnames(correlation_results_raw)) {
+                    correlation_results_filtered <- correlation_results_raw |>
+                        dplyr::filter(!stringr::str_detect(!!rlang::sym(replicate_group_column_name), tech_rep_remove_regex_final))
+                } else {
+                    warning(sprintf("Assay '%s': Replicate group column '%s' not found in correlation results. Cannot apply `tech_rep_remove_regex`. Returning unfiltered results.", assay_name, replicate_group_column_name))
+                    correlation_results_filtered <- correlation_results_raw
+                }
+            }
+            # If no regex, correlation_results_filtered already holds correlation_results_raw
 
-            return(correlation_results_list)
-           })
+            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': Returning %d correlation results", assay_name, nrow(correlation_results_filtered)))
+            return(correlation_results_filtered)
+        })
+
+        # Set names for the list of results
+        names(correlation_results_list) <- names(assay_list)
+
+        # Remove NULL elements (skipped assays)
+        non_null_count_before <- sum(!sapply(correlation_results_list, is.null))
+        correlation_results_list <- correlation_results_list[!sapply(correlation_results_list, is.null)]
+
+        message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Finished. Returning %d assay results (removed %d NULL)", length(correlation_results_list), length(assay_list) - non_null_count_before))
+        message("╔═══════════════════════════════════════════════════════════════════════════╗")
+        message("║  DEBUG66: Exiting pearsonCorForSamplePairs                               ║")
+        message("╚═══════════════════════════════════════════════════════════════════════════╝")
+
+        return(correlation_results_list)
+    }
+)
 
 
 #' @title Plot Pearson Correlation
@@ -1165,55 +1206,57 @@ setMethod(f = "pearsonCorForSamplePairs",
 #' @importFrom purrr map set_names
 #' @importFrom ggplot2 ggplot aes geom_histogram scale_y_continuous xlab ylab theme element_blank
 #' @export
-setMethod(f = "plotPearson",
-          signature = "LipidomicsAssayData",
-          definition = function(theObject, tech_rep_remove_regex = "pool", correlation_group = NA) {
+setMethod(
+    f = "plotPearson",
+    signature = "LipidomicsAssayData",
+    definition = function(theObject, tech_rep_remove_regex = "pool", correlation_group = NA) {
+        # Get the list of correlation tibbles (one per assay)
+        # tech_rep_remove_regex and correlation_group are passed down
+        correlation_list <- pearsonCorForSamplePairs(theObject,
+            tech_rep_remove_regex = tech_rep_remove_regex,
+            correlation_group = correlation_group
+        )
 
-            # Get the list of correlation tibbles (one per assay)
-            # tech_rep_remove_regex and correlation_group are passed down
-            correlation_list <- pearsonCorForSamplePairs(theObject,
-                                                        tech_rep_remove_regex = tech_rep_remove_regex,
-                                                        correlation_group = correlation_group)
+        if (length(correlation_list) == 0) {
+            warning("No correlation results generated (likely no valid assays). Returning empty list.")
+            return(list())
+        }
 
-            if (length(correlation_list) == 0) {
-                warning("No correlation results generated (likely no valid assays). Returning empty list.")
-                return(list())
+        # Ensure list is named (pearsonCorForSamplePairs should have handled this, but double-check)
+        if (is.null(names(correlation_list))) {
+            names(correlation_list) <- paste0("Assay_", seq_along(correlation_list))
+        }
+
+
+        # --- Plotting Logic per Assay's Correlation Results ---
+        pearson_plots_list <- purrr::map(seq_along(correlation_list), function(i) {
+            assay_name <- names(correlation_list)[i]
+            correlation_vec <- correlation_list[[i]]
+
+            # Check if the correlation data is valid
+            if (is.null(correlation_vec) || nrow(correlation_vec) == 0 || !"pearson_correlation" %in% colnames(correlation_vec)) {
+                warning(sprintf("Assay '%s': Invalid or empty correlation data provided. Skipping Pearson plot.", assay_name))
+                return(NULL)
             }
 
-            # Ensure list is named (pearsonCorForSamplePairs should have handled this, but double-check)
-            if (is.null(names(correlation_list))) {
-                 names(correlation_list) <- paste0("Assay_", seq_along(correlation_list))
+            # Check for all NA values
+            if (all(is.na(correlation_vec$pearson_correlation))) {
+                warning(sprintf("Assay '%s': All Pearson correlation values are NA. Skipping plot.", assay_name))
+                return(NULL)
             }
 
+            # Calculate breaks carefully, handling potential NAs and edge cases
+            min_cor <- min(correlation_vec$pearson_correlation, na.rm = TRUE)
+            # Ensure min_cor is finite; default if not
+            if (!is.finite(min_cor)) min_cor <- 0
 
-            # --- Plotting Logic per Assay's Correlation Results ---
-            pearson_plots_list <- purrr::map(seq_along(correlation_list), function(i) {
-                assay_name <- names(correlation_list)[i]
-                correlation_vec <- correlation_list[[i]]
+            # Use finer breaks, similar to protein version, clamped to [0, 1]
+            # Note: Protein version uses 0.001 step, using 0.01 here for potentially better visibility first.
+            hist_breaks <- seq(0, 1, 0.01)
 
-                # Check if the correlation data is valid
-                if (is.null(correlation_vec) || nrow(correlation_vec) == 0 || !"pearson_correlation" %in% colnames(correlation_vec)) {
-                    warning(sprintf("Assay '%s': Invalid or empty correlation data provided. Skipping Pearson plot.", assay_name))
-                    return(NULL)
-                }
-
-                # Check for all NA values
-                if (all(is.na(correlation_vec$pearson_correlation))) {
-                    warning(sprintf("Assay '%s': All Pearson correlation values are NA. Skipping plot.", assay_name))
-                    return(NULL)
-                }
-
-                # Calculate breaks carefully, handling potential NAs and edge cases
-                 min_cor <- min(correlation_vec$pearson_correlation, na.rm = TRUE)
-                 # Ensure min_cor is finite; default if not
-                 if (!is.finite(min_cor)) min_cor <- 0
-
-                 # Use finer breaks, similar to protein version, clamped to [0, 1]
-                 # Note: Protein version uses 0.001 step, using 0.01 here for potentially better visibility first.
-                 hist_breaks <- seq(0, 1, 0.01)
-
-                # --- Create Plot ---
-                tryCatch({
+            # --- Create Plot ---
+            tryCatch(
+                {
                     pearson_plot <- correlation_vec |>
                         ggplot(aes(pearson_correlation)) +
                         geom_histogram(breaks = hist_breaks, na.rm = TRUE) +
@@ -1223,28 +1266,31 @@ setMethod(f = "plotPearson",
                         # scale_y_continuous(breaks = seq(0, 4, 1), limits = c(0, 4), expand = c(0, 0)) +
                         xlab("Pearson Correlation") +
                         ylab("Counts") +
-                        #ggtitle(paste(assay_name)) +
+                        # ggtitle(paste(assay_name)) +
                         theme_bw() +
                         theme(
                             panel.grid.major = element_blank(),
                             panel.grid.minor = element_blank()
-                           )
+                        )
 
                     return(pearson_plot)
-                }, error = function(e) {
-                     warning(sprintf("Assay '%s': Error creating Pearson histogram: %s. Skipping.", assay_name, e$message))
-                     return(NULL)
-                })
-            })
+                },
+                error = function(e) {
+                    warning(sprintf("Assay '%s': Error creating Pearson histogram: %s. Skipping.", assay_name, e$message))
+                    return(NULL)
+                }
+            )
+        })
 
-            # Set names for the list of plots
-            names(pearson_plots_list) <- names(correlation_list)
+        # Set names for the list of plots
+        names(pearson_plots_list) <- names(correlation_list)
 
-             # Remove NULL elements (skipped assays)
-            pearson_plots_list <- pearson_plots_list[!sapply(pearson_plots_list, is.null)]
+        # Remove NULL elements (skipped assays)
+        pearson_plots_list <- pearson_plots_list[!sapply(pearson_plots_list, is.null)]
 
-            return(pearson_plots_list)
-          })
+        return(pearson_plots_list)
+    }
+)
 
 
 # --- Internal Helper for Lipid Pair Correlation --- #
@@ -1266,7 +1312,6 @@ setMethod(f = "plotPearson",
 #' @keywords internal
 #' @export
 calculateLipidPairCorrelation <- function(input_pair_table, feature_id_column, sample_id_column, value_column) {
-
     # Get the two unique sample IDs from the input table
     sample_ids <- unique(input_pair_table[[sample_id_column]])
     if (length(sample_ids) != 2) {
@@ -1277,17 +1322,20 @@ calculateLipidPairCorrelation <- function(input_pair_table, feature_id_column, s
     sample_y_id <- sample_ids[2]
 
     # Pivot wider to get features as rows and the two samples as columns
-    wide_pair_table <- tryCatch({
-        input_pair_table |>
-            dplyr::select(!!rlang::sym(feature_id_column), !!rlang::sym(sample_id_column), !!rlang::sym(value_column)) |>
-            tidyr::pivot_wider(
-                names_from = !!rlang::sym(sample_id_column),
-                values_from = !!rlang::sym(value_column)
-            )
-    }, error = function(e) {
-        warning(sprintf("Error pivoting data wider for correlation between %s and %s: %s", sample_x_id, sample_y_id, e$message))
-        return(NULL)
-    })
+    wide_pair_table <- tryCatch(
+        {
+            input_pair_table |>
+                dplyr::select(!!rlang::sym(feature_id_column), !!rlang::sym(sample_id_column), !!rlang::sym(value_column)) |>
+                tidyr::pivot_wider(
+                    names_from = !!rlang::sym(sample_id_column),
+                    values_from = !!rlang::sym(value_column)
+                )
+        },
+        error = function(e) {
+            warning(sprintf("Error pivoting data wider for correlation between %s and %s: %s", sample_x_id, sample_y_id, e$message))
+            return(NULL)
+        }
+    )
 
     if (is.null(wide_pair_table) || nrow(wide_pair_table) < 2) {
         # Need at least 2 features for correlation
@@ -1309,12 +1357,15 @@ calculateLipidPairCorrelation <- function(input_pair_table, feature_id_column, s
     values_y <- wide_pair_table[[expected_colnames[2]]] # Use verified name
 
     # Calculate correlation
-    cor_result <- tryCatch({
-        stats::cor(values_x, values_y, use = "pairwise.complete.obs")
-    }, error = function(e) {
-        warning(sprintf("calculateLipidPairCorrelation: Error in stats::cor for samples %s and %s: %s", sample_x_id, sample_y_id, e$message))
-        return(NA_real_) # Returns NA_real_ on cor error
-    })
+    cor_result <- tryCatch(
+        {
+            stats::cor(values_x, values_y, use = "pairwise.complete.obs")
+        },
+        error = function(e) {
+            warning(sprintf("calculateLipidPairCorrelation: Error in stats::cor for samples %s and %s: %s", sample_x_id, sample_y_id, e$message))
+            return(NA_real_) # Returns NA_real_ on cor error
+        }
+    )
 
     # --- Modified Check ---
     # Ensure the result is a single, finite numeric value
@@ -1342,115 +1393,125 @@ calculateLipidPairCorrelation <- function(input_pair_table, feature_id_column, s
 #' @importFrom methods slot slot<- is
 #' @importFrom logger log_info
 #' @export
-setMethod(f = "normaliseBetweenSamples",
-          signature = "LipidomicsAssayData",
-          definition = function(theObject, normalisation_method = NULL) {
+setMethod(
+    f = "normaliseBetweenSamples",
+    signature = "LipidomicsAssayData",
+    definition = function(theObject, normalisation_method = NULL) {
+        assay_list <- methods::slot(theObject, "lipid_data")
+        lipid_id_col_name <- methods::slot(theObject, "lipid_id_column")
+        design_matrix <- methods::slot(theObject, "design_matrix")
+        sample_id_col_name <- methods::slot(theObject, "sample_id")
 
-            assay_list <- methods::slot(theObject, "lipid_data")
-            lipid_id_col_name <- methods::slot(theObject, "lipid_id_column")
-            design_matrix <- methods::slot(theObject, "design_matrix")
-            sample_id_col_name <- methods::slot(theObject, "sample_id")
-
-            # --- Get Normalization Method ---
-            # Use the general parameter name as in protein version for consistency
-            normalisation_method_final <- checkParamsObjectFunctionSimplify(
-                theObject,
-                "normalisation_method",
-                default = "cyclicloess" # Default if not found in args or user override
-            )
-            # Store the *actually used* method back into args
-            theObject@args$normalisation_method <- normalisation_method_final
-            log_info("Applying between-sample normalization method: {normalisation_method_final}")
+        # --- Get Normalization Method ---
+        # Use the general parameter name as in protein version for consistency
+        normalisation_method_final <- checkParamsObjectFunctionSimplify(
+            theObject,
+            "normalisation_method",
+            default = "cyclicloess" # Default if not found in args or user override
+        )
+        # Store the *actually used* method back into args
+        theObject@args$normalisation_method <- normalisation_method_final
+        log_info("Applying between-sample normalization method: {normalisation_method_final}")
 
 
-            if (length(assay_list) == 0) {
-                warning("No assays found in `lipid_data` slot. Skipping normalization.")
-                return(theObject)
+        if (length(assay_list) == 0) {
+            warning("No assays found in `lipid_data` slot. Skipping normalization.")
+            return(theObject)
+        }
+        # Ensure list is named
+        original_assay_names <- names(assay_list)
+        if (is.null(original_assay_names)) {
+            names(assay_list) <- paste0("Assay_", seq_along(assay_list))
+            warning("Assay list was unnamed. Using default names (Assay_1, Assay_2, ...).", immediate. = TRUE)
+        } else if (any(original_assay_names == "")) {
+            needs_name <- which(original_assay_names == "")
+            original_assay_names[needs_name] <- paste0("Assay_", needs_name)
+            names(assay_list) <- original_assay_names
+            warning("Some assays were unnamed. Using default names for them.", immediate. = TRUE)
+        }
+        assay_names <- names(assay_list) # Use potentially corrected names
+
+
+        # --- Process Each Assay ---
+        normalized_assay_list <- lapply(seq_along(assay_list), function(i) {
+            assay_name <- assay_names[i]
+            assay_tibble <- assay_list[[i]]
+            message(sprintf("-- Processing assay for normalization: %s", assay_name))
+
+            # --- Basic Checks ---
+            if (!tibble::is_tibble(assay_tibble)) {
+                warning(sprintf("Assay '%s' is not a tibble. Attempting coercion.", assay_name), immediate. = TRUE)
+                assay_tibble <- tryCatch(tibble::as_tibble(assay_tibble), error = function(e) {
+                    warning(sprintf("Failed to coerce assay '%s' to tibble: %s. Skipping normalization.", assay_name, e$message), immediate. = TRUE)
+                    return(NULL) # Signal to skip
+                })
+                if (is.null(assay_tibble)) {
+                    return(assay_list[[i]])
+                } # Return original if coercion failed
             }
-             # Ensure list is named
-             original_assay_names <- names(assay_list)
-             if (is.null(original_assay_names)) {
-                 names(assay_list) <- paste0("Assay_", seq_along(assay_list))
-                 warning("Assay list was unnamed. Using default names (Assay_1, Assay_2, ...).", immediate. = TRUE)
-             } else if (any(original_assay_names == "")) {
-                  needs_name <- which(original_assay_names == "")
-                  original_assay_names[needs_name] <- paste0("Assay_", needs_name)
-                  names(assay_list) <- original_assay_names
-                  warning("Some assays were unnamed. Using default names for them.", immediate. = TRUE)
-             }
-             assay_names <- names(assay_list) # Use potentially corrected names
+            if (!lipid_id_col_name %in% colnames(assay_tibble)) {
+                warning(sprintf("Assay '%s': Lipid ID column '%s' not found. Skipping normalization.", assay_name, lipid_id_col_name), immediate. = TRUE)
+                return(assay_tibble)
+            }
 
+            # --- Identify Sample Columns ---
+            design_samples <- tryCatch(as.character(design_matrix[[sample_id_col_name]]), error = function(e) {
+                character(0)
+            })
+            if (length(design_samples) == 0) {
+                warning(sprintf("Assay '%s': Could not extract valid sample IDs from design matrix column '%s'. Skipping normalization.", assay_name, sample_id_col_name), immediate. = TRUE)
+                return(assay_tibble)
+            }
+            all_assay_cols <- colnames(assay_tibble)
+            sample_cols <- intersect(all_assay_cols, design_samples)
+            if (length(sample_cols) == 0) {
+                warning(sprintf("Assay '%s': No sample columns identified matching design matrix sample IDs. Skipping normalization.", assay_name), immediate. = TRUE)
+                return(assay_tibble)
+            }
+            # Ensure sample columns are numeric
+            non_numeric_samples <- sample_cols[!sapply(assay_tibble[sample_cols], is.numeric)]
+            if (length(non_numeric_samples) > 0) {
+                warning(sprintf("Assay '%s': Non-numeric sample columns found: %s. Attempting coercion, but this may indicate upstream issues.", assay_name, paste(non_numeric_samples, collapse = ", ")), immediate. = TRUE)
+                assay_tibble <- assay_tibble |>
+                    dplyr::mutate(dplyr::across(dplyr::all_of(non_numeric_samples), as.numeric))
+            }
 
-            # --- Process Each Assay ---
-            normalized_assay_list <- lapply(seq_along(assay_list), function(i) {
-                assay_name <- assay_names[i]
-                assay_tibble <- assay_list[[i]]
-                message(sprintf("-- Processing assay for normalization: %s", assay_name))
-
-                # --- Basic Checks ---
-                if (!tibble::is_tibble(assay_tibble)) {
-                    warning(sprintf("Assay '%s' is not a tibble. Attempting coercion.", assay_name), immediate. = TRUE)
-                    assay_tibble <- tryCatch(tibble::as_tibble(assay_tibble), error = function(e) {
-                        warning(sprintf("Failed to coerce assay '%s' to tibble: %s. Skipping normalization.", assay_name, e$message), immediate. = TRUE)
-                        return(NULL) # Signal to skip
-                    })
-                    if (is.null(assay_tibble)) return(assay_list[[i]]) # Return original if coercion failed
-                }
-                 if (!lipid_id_col_name %in% colnames(assay_tibble)) {
-                     warning(sprintf("Assay '%s': Lipid ID column '%s' not found. Skipping normalization.", assay_name, lipid_id_col_name), immediate. = TRUE)
-                     return(assay_tibble)
-                 }
-
-                 # --- Identify Sample Columns ---
-                 design_samples <- tryCatch(as.character(design_matrix[[sample_id_col_name]]), error = function(e) { character(0) })
-                 if (length(design_samples) == 0) {
-                      warning(sprintf("Assay '%s': Could not extract valid sample IDs from design matrix column '%s'. Skipping normalization.", assay_name, sample_id_col_name), immediate. = TRUE)
-                      return(assay_tibble)
-                 }
-                 all_assay_cols <- colnames(assay_tibble)
-                 sample_cols <- intersect(all_assay_cols, design_samples)
-                 if (length(sample_cols) == 0) {
-                     warning(sprintf("Assay '%s': No sample columns identified matching design matrix sample IDs. Skipping normalization.", assay_name), immediate. = TRUE)
-                     return(assay_tibble)
-                 }
-                 # Ensure sample columns are numeric
-                 non_numeric_samples <- sample_cols[!sapply(assay_tibble[sample_cols], is.numeric)]
-                 if (length(non_numeric_samples) > 0) {
-                    warning(sprintf("Assay '%s': Non-numeric sample columns found: %s. Attempting coercion, but this may indicate upstream issues.", assay_name, paste(non_numeric_samples, collapse=", ")), immediate. = TRUE)
-                    assay_tibble <- assay_tibble |>
-                        dplyr::mutate(dplyr::across(dplyr::all_of(non_numeric_samples), as.numeric))
-                 }
-
-                 # --- Prepare Matrix for Normalization ---
-                 assay_matrix <- tryCatch({
+            # --- Prepare Matrix for Normalization ---
+            assay_matrix <- tryCatch(
+                {
                     assay_tibble |>
-                       dplyr::select(dplyr::all_of(c(lipid_id_col_name, sample_cols))) |> # Select ID + Samples
-                       tibble::column_to_rownames(var = lipid_id_col_name) |>
-                       as.matrix()
-                 }, error = function(e) {
-                     warning(sprintf("Assay '%s': Error converting tibble to matrix: %s. Skipping normalization.", assay_name, e$message), immediate. = TRUE)
-                     return(NULL)
-                 })
-                 if (is.null(assay_matrix)) return(assay_tibble) # Return original if matrix conversion failed
+                        dplyr::select(dplyr::all_of(c(lipid_id_col_name, sample_cols))) |> # Select ID + Samples
+                        tibble::column_to_rownames(var = lipid_id_col_name) |>
+                        as.matrix()
+                },
+                error = function(e) {
+                    warning(sprintf("Assay '%s': Error converting tibble to matrix: %s. Skipping normalization.", assay_name, e$message), immediate. = TRUE)
+                    return(NULL)
+                }
+            )
+            if (is.null(assay_matrix)) {
+                return(assay_tibble)
+            } # Return original if matrix conversion failed
 
-                 assay_matrix[!is.finite(assay_matrix)] <- NA # Handle Inf/-Inf
+            assay_matrix[!is.finite(assay_matrix)] <- NA # Handle Inf/-Inf
 
-                 # Check if matrix is valid for normalization
-                 if (nrow(assay_matrix) < 1 || ncol(assay_matrix) < 1) {
-                     warning(sprintf("Assay '%s': Matrix is empty after preparation. Skipping normalization.", assay_name), immediate. = TRUE)
-                     return(assay_tibble)
-                 }
-                 # Check if all values are NA in any column (causes issues for some methods)
-                 if (any(colSums(!is.na(assay_matrix)) == 0)) {
-                     warning(sprintf("Assay '%s': At least one sample column contains only NA values. Skipping normalization.", assay_name), immediate. = TRUE)
-                     return(assay_tibble)
-                 }
+            # Check if matrix is valid for normalization
+            if (nrow(assay_matrix) < 1 || ncol(assay_matrix) < 1) {
+                warning(sprintf("Assay '%s': Matrix is empty after preparation. Skipping normalization.", assay_name), immediate. = TRUE)
+                return(assay_tibble)
+            }
+            # Check if all values are NA in any column (causes issues for some methods)
+            if (any(colSums(!is.na(assay_matrix)) == 0)) {
+                warning(sprintf("Assay '%s': At least one sample column contains only NA values. Skipping normalization.", assay_name), immediate. = TRUE)
+                return(assay_tibble)
+            }
 
-                # --- Apply Normalization Method ---
-                normalized_matrix <- assay_matrix # Default to original if method is 'none' or fails
+            # --- Apply Normalization Method ---
+            normalized_matrix <- assay_matrix # Default to original if method is 'none' or fails
 
-                if (normalisation_method_final != "none") {
-                    normalized_matrix <- tryCatch({
+            if (normalisation_method_final != "none") {
+                normalized_matrix <- tryCatch(
+                    {
                         switch(normalisation_method_final,
                             cyclicloess = {
                                 message("   Applying cyclic loess normalization...")
@@ -1469,68 +1530,76 @@ setMethod(f = "normaliseBetweenSamples",
                                 assay_matrix # Return original matrix
                             }
                         )
-                    }, error = function(e) {
+                    },
+                    error = function(e) {
                         warning(sprintf("Assay '%s': Error during '%s' normalization: %s. Returning unnormalized data for this assay.", assay_name, normalisation_method_final, e$message), immediate. = TRUE)
                         return(assay_matrix) # Return original matrix on error
-                    })
-                } else {
-                     message("   Normalization method is 'none'. Skipping application.")
-                }
+                    }
+                )
+            } else {
+                message("   Normalization method is 'none'. Skipping application.")
+            }
 
-                normalized_matrix[!is.finite(normalized_matrix)] <- NA # Ensure NAs remain NAs
+            normalized_matrix[!is.finite(normalized_matrix)] <- NA # Ensure NAs remain NAs
 
-                # --- Reconstruct Tibble ---
-                 # Get original metadata columns
-                 metadata_cols <- setdiff(colnames(assay_tibble), sample_cols)
+            # --- Reconstruct Tibble ---
+            # Get original metadata columns
+            metadata_cols <- setdiff(colnames(assay_tibble), sample_cols)
 
-                 reconstructed_tibble <- tryCatch({
-                     normalized_data_tibble <- normalized_matrix |>
+            reconstructed_tibble <- tryCatch(
+                {
+                    normalized_data_tibble <- normalized_matrix |>
                         as.data.frame() |> # Convert matrix to data frame
                         tibble::rownames_to_column(var = lipid_id_col_name) |>
                         tibble::as_tibble()
 
-                     original_metadata_tibble <- assay_tibble |>
+                    original_metadata_tibble <- assay_tibble |>
                         dplyr::select(dplyr::any_of(metadata_cols)) # Use any_of in case some metadata cols were dynamic
 
-                     # Ensure join column types match (rownames_to_column creates character)
-                     original_metadata_tibble_char <- original_metadata_tibble |>
+                    # Ensure join column types match (rownames_to_column creates character)
+                    original_metadata_tibble_char <- original_metadata_tibble |>
                         dplyr::mutate(!!rlang::sym(lipid_id_col_name) := as.character(!!rlang::sym(lipid_id_col_name)))
-                     normalized_data_tibble_char <- normalized_data_tibble |>
+                    normalized_data_tibble_char <- normalized_data_tibble |>
                         dplyr::mutate(!!rlang::sym(lipid_id_col_name) := as.character(!!rlang::sym(lipid_id_col_name)))
 
-                     # Join normalized data with original metadata
-                     dplyr::left_join(original_metadata_tibble_char, normalized_data_tibble_char, by = lipid_id_col_name) |>
-                     # Ensure original column order (metadata first, then samples in original order)
-                     dplyr::relocate(dplyr::all_of(metadata_cols), dplyr::all_of(sample_cols))
+                    # Join normalized data with original metadata
+                    dplyr::left_join(original_metadata_tibble_char, normalized_data_tibble_char, by = lipid_id_col_name) |>
+                        # Ensure original column order (metadata first, then samples in original order)
+                        dplyr::relocate(dplyr::all_of(metadata_cols), dplyr::all_of(sample_cols))
+                },
+                error = function(e) {
+                    warning(sprintf("Assay '%s': Error reconstructing tibble after normalization: %s. Returning original data.", assay_name, e$message), immediate. = TRUE)
+                    return(assay_tibble) # Return original on error
+                }
+            )
 
-                 }, error = function(e) {
-                      warning(sprintf("Assay '%s': Error reconstructing tibble after normalization: %s. Returning original data.", assay_name, e$message), immediate. = TRUE)
-                      return(assay_tibble) # Return original on error
-                 })
+            message(sprintf("   Assay '%s' normalization complete.", assay_name))
+            return(reconstructed_tibble)
+        })
 
-                 message(sprintf("   Assay '%s' normalization complete.", assay_name))
-                 return(reconstructed_tibble)
-            })
+        # Restore original names
+        names(normalized_assay_list) <- assay_names
 
-            # Restore original names
-            names(normalized_assay_list) <- assay_names
+        # Update the slot in the object
+        methods::slot(theObject, "lipid_data") <- normalized_assay_list
 
-            # Update the slot in the object
-            methods::slot(theObject, "lipid_data") <- normalized_assay_list
-
-            # --- Clean Design Matrix (as done in protein version) ---
-            # Ensure the cleanDesignMatrix method exists for LipidomicsAssayData
-            # (From handover.md, this should exist)
-            theObject <- tryCatch({
+        # --- Clean Design Matrix (as done in protein version) ---
+        # Ensure the cleanDesignMatrix method exists for LipidomicsAssayData
+        # (From handover.md, this should exist)
+        theObject <- tryCatch(
+            {
                 cleanDesignMatrix(theObject)
-            }, error = function(e) {
-                 warning(sprintf("Error running cleanDesignMatrix after normalization: %s. Design matrix might not be fully synchronized.", e$message))
-                 return(theObject) # Return object even if cleaning fails
-            })
+            },
+            error = function(e) {
+                warning(sprintf("Error running cleanDesignMatrix after normalization: %s. Design matrix might not be fully synchronized.", e$message))
+                return(theObject) # Return object even if cleaning fails
+            }
+        )
 
-            log_info("Between-sample normalization process finished for all assays.")
-            return(theObject)
-          })
+        log_info("Between-sample normalization process finished for all assays.")
+        return(theObject)
+    }
+)
 
 #' @title Clean Design Matrix for LipidomicsAssayData
 #' @name cleanDesignMatrix,LipidomicsAssayData-method
@@ -1539,78 +1608,85 @@ setMethod(f = "normaliseBetweenSamples",
 #' @importFrom methods slot
 #' @importFrom tibble tibble
 #' @export
-setMethod(f = "cleanDesignMatrix",
-          signature = "LipidomicsAssayData",
-          definition = function(theObject) {
+setMethod(
+    f = "cleanDesignMatrix",
+    signature = "LipidomicsAssayData",
+    definition = function(theObject) {
+        assay_list <- methods::slot(theObject, "lipid_data")
+        design_matrix <- methods::slot(theObject, "design_matrix")
+        sample_id_col_name <- methods::slot(theObject, "sample_id")
+        lipid_id_col_name <- methods::slot(theObject, "lipid_id_column") # Needed to exclude from sample cols
 
-            assay_list <- methods::slot(theObject, "lipid_data")
-            design_matrix <- methods::slot(theObject, "design_matrix")
-            sample_id_col_name <- methods::slot(theObject, "sample_id")
-            lipid_id_col_name <- methods::slot(theObject, "lipid_id_column") # Needed to exclude from sample cols
-
-            if (length(assay_list) == 0) {
-                warning("cleanDesignMatrix: No assays found in `lipid_data`. Returning object unchanged.")
-                return(theObject)
-            }
-
-            # Assume sample columns are consistent across assays (enforced by validity)
-            # Get sample columns from the first assay
-            first_assay <- assay_list[[1]]
-
-            # --- Identify Sample Columns in the Assay --- #
-            design_samples <- tryCatch(as.character(design_matrix[[sample_id_col_name]]), error = function(e) { character(0) })
-            if (length(design_samples) == 0) {
-                 warning(sprintf("cleanDesignMatrix: Could not extract valid sample IDs from design matrix column '%s'. Returning object unchanged.", sample_id_col_name), immediate. = TRUE)
-                 return(theObject)
-            }
-            all_assay_cols <- colnames(first_assay)
-            sample_cols_in_assay <- intersect(all_assay_cols, design_samples)
-            if (length(sample_cols_in_assay) == 0) {
-                warning("cleanDesignMatrix: No sample columns identified in the first assay matching design matrix sample IDs. Returning object unchanged.")
-                return(theObject)
-            }
-            # Ensure columns are treated as character for join consistency
-            sample_cols_vector <- as.character(sample_cols_in_assay)
-
-            # --- Filter and Reorder Design Matrix --- #
-            # Ensure the sample ID column in the original design matrix is character for join
-            design_matrix_char_id <- design_matrix |>
-                 dplyr::mutate(!!rlang::sym(sample_id_col_name) := as.character(!!rlang::sym(sample_id_col_name)))
-
-            cleaned_design_matrix <- tryCatch({
-                 # Create a tibble with just the sample IDs in the order they appear in the data
-                 sample_order_tibble <- tibble::tibble(temp_sample_id = sample_cols_vector)
-
-                 # Join with the design matrix to filter and reorder
-                 sample_order_tibble |>
-                     dplyr::inner_join(design_matrix_char_id,
-                                      by = c("temp_sample_id" = sample_id_col_name))
-             }, error = function(e) {
-                 warning(sprintf("cleanDesignMatrix: Error during inner_join: %s. Returning object unchanged.", e$message))
-                 return(NULL) # Signal error
-             })
-
-             if(is.null(cleaned_design_matrix)) {
-                 return(theObject) # Return original if join failed
-             }
-
-            # Rename the temporary column back to the original sample ID column name
-            cleaned_design_matrix <- cleaned_design_matrix |>
-                dplyr::rename(!!rlang::sym(sample_id_col_name) := "temp_sample_id")
-
-            # Final check to ensure only expected samples remain (redundant but safe)
-             final_cleaned_design <- cleaned_design_matrix |>
-                 dplyr::filter(!!rlang::sym(sample_id_col_name) %in% sample_cols_vector)
-
-            theObject@design_matrix <- as.data.frame(final_cleaned_design) # Ensure it's stored as data.frame
-
+        if (length(assay_list) == 0) {
+            warning("cleanDesignMatrix: No assays found in `lipid_data`. Returning object unchanged.")
             return(theObject)
-          })
+        }
+
+        # Assume sample columns are consistent across assays (enforced by validity)
+        # Get sample columns from the first assay
+        first_assay <- assay_list[[1]]
+
+        # --- Identify Sample Columns in the Assay --- #
+        design_samples <- tryCatch(as.character(design_matrix[[sample_id_col_name]]), error = function(e) {
+            character(0)
+        })
+        if (length(design_samples) == 0) {
+            warning(sprintf("cleanDesignMatrix: Could not extract valid sample IDs from design matrix column '%s'. Returning object unchanged.", sample_id_col_name), immediate. = TRUE)
+            return(theObject)
+        }
+        all_assay_cols <- colnames(first_assay)
+        sample_cols_in_assay <- intersect(all_assay_cols, design_samples)
+        if (length(sample_cols_in_assay) == 0) {
+            warning("cleanDesignMatrix: No sample columns identified in the first assay matching design matrix sample IDs. Returning object unchanged.")
+            return(theObject)
+        }
+        # Ensure columns are treated as character for join consistency
+        sample_cols_vector <- as.character(sample_cols_in_assay)
+
+        # --- Filter and Reorder Design Matrix --- #
+        # Ensure the sample ID column in the original design matrix is character for join
+        design_matrix_char_id <- design_matrix |>
+            dplyr::mutate(!!rlang::sym(sample_id_col_name) := as.character(!!rlang::sym(sample_id_col_name)))
+
+        cleaned_design_matrix <- tryCatch(
+            {
+                # Create a tibble with just the sample IDs in the order they appear in the data
+                sample_order_tibble <- tibble::tibble(temp_sample_id = sample_cols_vector)
+
+                # Join with the design matrix to filter and reorder
+                sample_order_tibble |>
+                    dplyr::inner_join(design_matrix_char_id,
+                        by = c("temp_sample_id" = sample_id_col_name)
+                    )
+            },
+            error = function(e) {
+                warning(sprintf("cleanDesignMatrix: Error during inner_join: %s. Returning object unchanged.", e$message))
+                return(NULL) # Signal error
+            }
+        )
+
+        if (is.null(cleaned_design_matrix)) {
+            return(theObject) # Return original if join failed
+        }
+
+        # Rename the temporary column back to the original sample ID column name
+        cleaned_design_matrix <- cleaned_design_matrix |>
+            dplyr::rename(!!rlang::sym(sample_id_col_name) := "temp_sample_id")
+
+        # Final check to ensure only expected samples remain (redundant but safe)
+        final_cleaned_design <- cleaned_design_matrix |>
+            dplyr::filter(!!rlang::sym(sample_id_col_name) %in% sample_cols_vector)
+
+        theObject@design_matrix <- as.data.frame(final_cleaned_design) # Ensure it's stored as data.frame
+
+        return(theObject)
+    }
+)
 
 
-##-----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ## Negative Control Selection Methods for LipidomicsAssayData
-##-----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 
 #' Get Negative Control Features using ANOVA (Lipids)
 #'
@@ -1653,278 +1729,298 @@ setMethod(f = "cleanDesignMatrix",
 #' @importFrom logger log_info log_warn
 #' @describeIn getNegCtrlMetabAnova Method for LipidomicsAssayData
 #' @export
-setMethod(f = "getNegCtrlMetabAnova",
-          signature = "LipidomicsAssayData",
-          definition = function(theObject,
-                                ruv_grouping_variable = NULL, # These args are now effectively ignored for default resolution
-                                percentage_as_neg_ctrl = NULL,
-                                num_neg_ctrl = NULL,
-                                ruv_qval_cutoff = NULL,
-                                ruv_fdr_method = NULL) {
+setMethod(
+    f = "getNegCtrlMetabAnova",
+    signature = "LipidomicsAssayData",
+    definition = function(theObject,
+                          ruv_grouping_variable = NULL, # These args are now effectively ignored for default resolution
+                          percentage_as_neg_ctrl = NULL,
+                          num_neg_ctrl = NULL,
+                          ruv_qval_cutoff = NULL,
+                          ruv_fdr_method = NULL) {
+        message("╔═══════════════════════════════════════════════════════════════════════════╗")
+        message("║  DEBUG66: Entering getNegCtrlMetabAnova (LipidomicsAssayData)             ║")
+        message("╚═══════════════════════════════════════════════════════════════════════════╝")
 
-            message("╔═══════════════════════════════════════════════════════════════════════════╗")
-            message("║  DEBUG66: Entering getNegCtrlMetabAnova (LipidomicsAssayData)             ║")
-            message("╚═══════════════════════════════════════════════════════════════════════════╝")
+        assay_list <- methods::slot(theObject, "lipid_data")
+        lipid_id_col_name <- methods::slot(theObject, "lipid_id_column")
+        design_matrix <- methods::slot(theObject, "design_matrix")
+        group_id <- methods::slot(theObject, "group_id") # Needed for helper
+        sample_id <- methods::slot(theObject, "sample_id")
 
-            assay_list <- methods::slot(theObject, "lipid_data")
-            lipid_id_col_name <- methods::slot(theObject, "lipid_id_column")
-            design_matrix <- methods::slot(theObject, "design_matrix")
-            group_id <- methods::slot(theObject, "group_id") # Needed for helper
-            sample_id <- methods::slot(theObject, "sample_id")
+        message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] lipid_id_col = '%s', group_id = '%s', sample_id = '%s'", lipid_id_col_name, group_id, sample_id))
+        message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Number of assays: %d, design_matrix rows: %d", length(assay_list), nrow(design_matrix)))
+        message(sprintf(
+            "   DEBUG66 [getNegCtrlMetabAnova] Function args: ruv_grouping_variable = %s, percentage_as_neg_ctrl = %s",
+            ifelse(is.null(ruv_grouping_variable), "NULL", ruv_grouping_variable),
+            ifelse(is.null(percentage_as_neg_ctrl), "NULL", as.character(percentage_as_neg_ctrl))
+        ))
 
-            message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] lipid_id_col = '%s', group_id = '%s', sample_id = '%s'", lipid_id_col_name, group_id, sample_id))
-            message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Number of assays: %d, design_matrix rows: %d", length(assay_list), nrow(design_matrix)))
-            message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Function args: ruv_grouping_variable = %s, percentage_as_neg_ctrl = %s", 
-                           ifelse(is.null(ruv_grouping_variable), "NULL", ruv_grouping_variable),
-                           ifelse(is.null(percentage_as_neg_ctrl), "NULL", as.character(percentage_as_neg_ctrl))))
+        # --- Resolve Global Parameters (Mimicking Protein version exactly) ---
+        # Get values from object args slot, falling back to hardcoded defaults.
+        ruv_grouping_variable_final <- checkParamsObjectFunctionSimplify(theObject, "ruv_grouping_variable", default_value = "group") # Hardcoded default
+        ruv_qval_cutoff_final <- checkParamsObjectFunctionSimplify(theObject, "ruv_qval_cutoff", default_value = 0.05) # Hardcoded default
+        ruv_fdr_method_final <- checkParamsObjectFunctionSimplify(theObject, "ruv_fdr_method", default_value = "BH") # Hardcoded default
 
-            # --- Resolve Global Parameters (Mimicking Protein version exactly) ---
-            # Get values from object args slot, falling back to hardcoded defaults.
-            ruv_grouping_variable_final <- checkParamsObjectFunctionSimplify(theObject, "ruv_grouping_variable", default_value = "group") # Hardcoded default
-            ruv_qval_cutoff_final <- checkParamsObjectFunctionSimplify(theObject, "ruv_qval_cutoff", default_value = 0.05)       # Hardcoded default
-            ruv_fdr_method_final <- checkParamsObjectFunctionSimplify(theObject, "ruv_fdr_method", default_value = "BH")         # Hardcoded default
+        message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Resolved: ruv_grouping_variable_final = '%s'", ruv_grouping_variable_final))
+        message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Resolved: ruv_qval_cutoff_final = %s, ruv_fdr_method_final = '%s'", ruv_qval_cutoff_final, ruv_fdr_method_final))
 
-            message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Resolved: ruv_grouping_variable_final = '%s'", ruv_grouping_variable_final))
-            message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Resolved: ruv_qval_cutoff_final = %s, ruv_fdr_method_final = '%s'", ruv_qval_cutoff_final, ruv_fdr_method_final))
+        # Update object args with resolved values (Mimicking Protein version)
+        theObject <- updateParamInObject(theObject, "ruv_grouping_variable") # Correct: Only 2 args
+        theObject <- updateParamInObject(theObject, "ruv_qval_cutoff") # Correct: Only 2 args
+        theObject <- updateParamInObject(theObject, "ruv_fdr_method") # Correct: Only 2 args
 
-            # Update object args with resolved values (Mimicking Protein version)
-            theObject <- updateParamInObject(theObject, "ruv_grouping_variable") # Correct: Only 2 args
-            theObject <- updateParamInObject(theObject, "ruv_qval_cutoff")       # Correct: Only 2 args
-            theObject <- updateParamInObject(theObject, "ruv_fdr_method")        # Correct: Only 2 args
+        log_info("Starting Negative Control selection using ANOVA for lipids.")
+        log_info("Parameters (Resolved):")
+        log_info("  - RUV Grouping Variable: {ruv_grouping_variable_final}")
+        log_info("  - RUV Q-value Cutoff: {ruv_qval_cutoff_final}")
+        log_info("  - RUV FDR Method: {ruv_fdr_method_final}")
+        # Percentage/Num are resolved per assay
 
-            log_info("Starting Negative Control selection using ANOVA for lipids.")
-            log_info("Parameters (Resolved):")
-            log_info("  - RUV Grouping Variable: {ruv_grouping_variable_final}")
-            log_info("  - RUV Q-value Cutoff: {ruv_qval_cutoff_final}")
-            log_info("  - RUV FDR Method: {ruv_fdr_method_final}")
-            # Percentage/Num are resolved per assay
+        if (length(assay_list) == 0) {
+            message("   DEBUG66 [getNegCtrlMetabAnova] WARNING: No assays found! Returning empty list.")
+            log_warn("No assays found in `lipid_data` slot. Returning empty list.")
+            return(list())
+        }
+        # Ensure list is named
+        assay_names <- names(assay_list)
+        if (is.null(assay_names)) {
+            assay_names <- paste0("Assay_", seq_along(assay_list))
+            message("   DEBUG66 [getNegCtrlMetabAnova] Assay list was unnamed. Using default names.")
+            log_warn("Assay list was unnamed. Using default names.")
+        }
+        message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay names: %s", paste(assay_names, collapse = ", ")))
 
-            if (length(assay_list) == 0) {
-                message("   DEBUG66 [getNegCtrlMetabAnova] WARNING: No assays found! Returning empty list.")
-                log_warn("No assays found in `lipid_data` slot. Returning empty list.")
-                return(list())
+        # --- Process Each Assay ---
+        control_features_list <- lapply(seq_along(assay_list), function(i) {
+            assay_name <- assay_names[i]
+            assay_tibble <- assay_list[[i]]
+            message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] === Processing assay: %s ===", assay_name))
+            message(sprintf("-- Processing assay for NegCtrl ANOVA: %s", assay_name))
+
+            # --- Basic Checks ---
+            message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': tibble rows = %d, cols = %d", assay_name, nrow(assay_tibble), ncol(assay_tibble)))
+            if (!tibble::is_tibble(assay_tibble)) {
+                message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Not a tibble, attempting coercion", assay_name))
+                log_warn("Assay '{assay_name}' is not a tibble. Attempting coercion.", .logr = TRUE)
+                assay_tibble <- tryCatch(tibble::as_tibble(assay_tibble), error = function(e) {
+                    message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Coercion FAILED - %s", assay_name, e$message))
+                    log_warn("Failed to coerce assay '{assay_name}' to tibble: {e$message}. Skipping.", .logr = TRUE)
+                    return(NULL)
+                })
+                if (is.null(assay_tibble)) {
+                    return(NULL)
+                } # Skip assay
             }
-            # Ensure list is named
-            assay_names <- names(assay_list)
-            if (is.null(assay_names)) {
-                 assay_names <- paste0("Assay_", seq_along(assay_list))
-                 message("   DEBUG66 [getNegCtrlMetabAnova] Assay list was unnamed. Using default names.")
-                 log_warn("Assay list was unnamed. Using default names.")
+            if (!lipid_id_col_name %in% colnames(assay_tibble)) {
+                message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': FAIL - lipid ID column '%s' not found", assay_name, lipid_id_col_name))
+                log_warn("Assay '{assay_name}': Lipid ID column '{lipid_id_col_name}' not found. Skipping.", .logr = TRUE)
+                return(NULL)
             }
-            message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay names: %s", paste(assay_names, collapse = ", ")))
+            if (nrow(assay_tibble) == 0) {
+                message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': FAIL - zero rows", assay_name))
+                log_warn("Assay '{assay_name}': Contains zero rows (features). Skipping.", .logr = TRUE)
+                return(NULL)
+            }
 
-            # --- Process Each Assay ---
-            control_features_list <- lapply(seq_along(assay_list), function(i) {
-                assay_name <- assay_names[i]
-                assay_tibble <- assay_list[[i]]
-                message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] === Processing assay: %s ===", assay_name))
-                message(sprintf("-- Processing assay for NegCtrl ANOVA: %s", assay_name))
+            # --- Identify Sample Columns ---
+            design_samples <- tryCatch(as.character(design_matrix[[sample_id]]), error = function(e) {
+                character(0)
+            })
+            message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': design_samples count = %d", assay_name, length(design_samples)))
+            if (length(design_samples) == 0) {
+                message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': FAIL - no design samples found", assay_name))
+                log_warn("Assay '{assay_name}': Could not extract valid sample IDs from design matrix column '{sample_id}'. Skipping.", .logr = TRUE)
+                return(NULL)
+            }
+            all_assay_cols <- colnames(assay_tibble)
+            sample_cols <- intersect(all_assay_cols, design_samples)
+            message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': sample_cols count = %d (matched)", assay_name, length(sample_cols)))
+            if (length(sample_cols) < 2) { # Need at least 2 samples for ANOVA
+                message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': FAIL - fewer than 2 sample columns", assay_name))
+                log_warn("Assay '{assay_name}': Fewer than 2 sample columns identified matching design matrix. Skipping ANOVA.", .logr = TRUE)
+                return(NULL)
+            }
+            # Ensure sample columns are numeric
+            non_numeric_samples <- sample_cols[!purrr::map_lgl(assay_tibble[sample_cols], is.numeric)]
+            if (length(non_numeric_samples) > 0) {
+                message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Coercing %d non-numeric sample columns", assay_name, length(non_numeric_samples)))
+                log_warn("Assay '{assay_name}': Non-numeric sample columns found: {paste(non_numeric_samples, collapse=', ')}. Attempting coercion.", .logr = TRUE)
+                assay_tibble <- assay_tibble |>
+                    dplyr::mutate(dplyr::across(dplyr::all_of(non_numeric_samples), as.numeric))
+            }
 
-                # --- Basic Checks ---
-                message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': tibble rows = %d, cols = %d", assay_name, nrow(assay_tibble), ncol(assay_tibble)))
-                if (!tibble::is_tibble(assay_tibble)) {
-                    message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Not a tibble, attempting coercion", assay_name))
-                    log_warn("Assay '{assay_name}' is not a tibble. Attempting coercion.", .logr = TRUE)
-                    assay_tibble <- tryCatch(tibble::as_tibble(assay_tibble), error = function(e) {
-                        message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Coercion FAILED - %s", assay_name, e$message))
-                        log_warn("Failed to coerce assay '{assay_name}' to tibble: {e$message}. Skipping.", .logr = TRUE)
-                        return(NULL)
-                    })
-                    if (is.null(assay_tibble)) return(NULL) # Skip assay
-                }
-                 if (!lipid_id_col_name %in% colnames(assay_tibble)) {
-                     message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': FAIL - lipid ID column '%s' not found", assay_name, lipid_id_col_name))
-                     log_warn("Assay '{assay_name}': Lipid ID column '{lipid_id_col_name}' not found. Skipping.", .logr = TRUE)
-                     return(NULL)
-                 }
-                 if (nrow(assay_tibble) == 0) {
-                     message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': FAIL - zero rows", assay_name))
-                     log_warn("Assay '{assay_name}': Contains zero rows (features). Skipping.", .logr = TRUE)
-                     return(NULL)
-                 }
-
-                 # --- Identify Sample Columns ---
-                 design_samples <- tryCatch(as.character(design_matrix[[sample_id]]), error = function(e) { character(0) })
-                 message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': design_samples count = %d", assay_name, length(design_samples)))
-                 if (length(design_samples) == 0) {
-                      message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': FAIL - no design samples found", assay_name))
-                      log_warn("Assay '{assay_name}': Could not extract valid sample IDs from design matrix column '{sample_id}'. Skipping.", .logr = TRUE)
-                      return(NULL)
-                 }
-                 all_assay_cols <- colnames(assay_tibble)
-                 sample_cols <- intersect(all_assay_cols, design_samples)
-                 message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': sample_cols count = %d (matched)", assay_name, length(sample_cols)))
-                 if (length(sample_cols) < 2) { # Need at least 2 samples for ANOVA
-                     message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': FAIL - fewer than 2 sample columns", assay_name))
-                     log_warn("Assay '{assay_name}': Fewer than 2 sample columns identified matching design matrix. Skipping ANOVA.", .logr = TRUE)
-                     return(NULL)
-                 }
-                 # Ensure sample columns are numeric
-                 non_numeric_samples <- sample_cols[!purrr::map_lgl(assay_tibble[sample_cols], is.numeric)]
-                 if (length(non_numeric_samples) > 0) {
-                    message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Coercing %d non-numeric sample columns", assay_name, length(non_numeric_samples)))
-                    log_warn("Assay '{assay_name}': Non-numeric sample columns found: {paste(non_numeric_samples, collapse=', ')}. Attempting coercion.", .logr = TRUE)
-                    assay_tibble <- assay_tibble |>
-                        dplyr::mutate(dplyr::across(dplyr::all_of(non_numeric_samples), as.numeric))
-                 }
-
-                # --- Prepare Matrix for Helper ---
-                message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Converting to matrix...", assay_name))
-                assay_matrix <- tryCatch({
+            # --- Prepare Matrix for Helper ---
+            message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Converting to matrix...", assay_name))
+            assay_matrix <- tryCatch(
+                {
                     assay_tibble |>
-                       dplyr::select(dplyr::all_of(c(lipid_id_col_name, sample_cols))) |>
-                       tibble::column_to_rownames(var = lipid_id_col_name) |>
-                       as.matrix()
-                 }, error = function(e) {
-                     message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Matrix conversion FAILED - %s", assay_name, e$message))
-                     log_warn("Assay '{assay_name}': Error converting tibble to matrix: {e$message}. Skipping.", .logr = TRUE)
-                     return(NULL)
-                 })
-                 if (is.null(assay_matrix)) return(NULL)
-
-                 message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Matrix dims = %d x %d", assay_name, nrow(assay_matrix), ncol(assay_matrix)))
-                 assay_matrix[!is.finite(assay_matrix)] <- NA
-
-                 # Check for sufficient valid data
-                 valid_rows <- rowSums(!is.na(assay_matrix)) > 1
-                 valid_cols <- colSums(!is.na(assay_matrix)) > 1
-                 message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': valid_rows = %d, valid_cols = %d", assay_name, sum(valid_rows), sum(valid_cols)))
-                 if (sum(valid_rows) < 2 || sum(valid_cols) < 2) {
-                      message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': FAIL - insufficient non-NA data", assay_name))
-                      log_warn("Assay '{assay_name}': Insufficient non-NA data points (<2 features or <2 samples with data) for ANOVA. Skipping.", .logr = TRUE)
-                      return(NULL)
-                 }
-                 assay_matrix_filt <- assay_matrix[valid_rows, valid_cols, drop = FALSE]
-                 message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Filtered matrix dims = %d x %d", assay_name, nrow(assay_matrix_filt), ncol(assay_matrix_filt)))
-
-                 # Filter design matrix to match valid columns in assay_matrix_filt
-                 design_matrix_filtered <- design_matrix |>
-                    dplyr::filter(!!rlang::sym(sample_id) %in% colnames(assay_matrix_filt)) |>
-                    as.data.frame() # Helper might expect data.frame
-                 message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Filtered design_matrix rows = %d", assay_name, nrow(design_matrix_filtered)))
-
-                 # Check if grouping variable has enough levels/samples after filtering
-                 if (!ruv_grouping_variable_final %in% colnames(design_matrix_filtered)) {
-                     message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': FAIL - grouping variable '%s' not found in design matrix", assay_name, ruv_grouping_variable_final))
-                     log_warn("Assay '{assay_name}': Grouping variable '{ruv_grouping_variable_final}' not found in filtered design matrix. Skipping ANOVA.", .logr = TRUE)
-                     return(NULL)
-                 }
-                  group_counts <- table(design_matrix_filtered[[ruv_grouping_variable_final]])
-                  message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Group counts: %s", assay_name, paste(names(group_counts), "=", group_counts, collapse = ", ")))
-                  if (length(group_counts) < 2 || any(group_counts < 2)) {
-                       message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': FAIL - insufficient groups (%d) or samples per group", assay_name, length(group_counts)))
-                       log_warn("Assay '{assay_name}': Insufficient groups ({length(group_counts)}) or samples per group (<2) for ANOVA based on '{ruv_grouping_variable_final}' after filtering. Skipping.", .logr = TRUE)
-                       return(NULL)
-                  }
-
-
-                # --- Resolve Assay-Specific Parameters (Revised for flexible percentage) ---
-
-                # Determine the percentage for *this specific assay*
-                percentage_to_use_for_assay <- NULL
-
-                # Check 1: Explicit function argument provided?
-                if (!is.null(percentage_as_neg_ctrl)) {
-                    if ((is.list(percentage_as_neg_ctrl) || is.vector(percentage_as_neg_ctrl)) && !is.null(names(percentage_as_neg_ctrl))) {
-                        # Check 1a: Named list/vector provided - try to match name
-                        if (assay_name %in% names(percentage_as_neg_ctrl)) {
-                            percentage_to_use_for_assay <- percentage_as_neg_ctrl[[assay_name]]
-                            log_info("   Assay '{assay_name}': Using percentage from named argument: {percentage_to_use_for_assay}", .logr = TRUE)
-                        }
-                    } else if (is.vector(percentage_as_neg_ctrl) && is.null(names(percentage_as_neg_ctrl)) && length(percentage_as_neg_ctrl) == length(assay_list)) {
-                        # Check 1b: Unnamed vector of correct length provided - use position
-                        percentage_to_use_for_assay <- percentage_as_neg_ctrl[[i]]
-                        log_info("   Assay '{assay_name}': Using percentage from positional argument: {percentage_to_use_for_assay}", .logr = TRUE)
-                    } else if (is.numeric(percentage_as_neg_ctrl) && length(percentage_as_neg_ctrl) == 1) {
-                         # Check 1c: Single numeric value provided
-                         percentage_to_use_for_assay <- percentage_as_neg_ctrl
-                         log_info("   Assay '{assay_name}': Using single percentage value from argument: {percentage_to_use_for_assay}", .logr = TRUE)
-                    }
-                }
-
-                # Check 2: Fallback to config/default if not found in explicit args
-                if (is.null(percentage_to_use_for_assay)) {
-                    percentage_to_use_for_assay <- checkParamsObjectFunctionSimplify(
-                        theObject, "percentage_as_neg_ctrl", default_value = 10) # Generic key, hardcoded default 10
-                    log_info("   Assay '{assay_name}': Using percentage from config/default: {percentage_to_use_for_assay}", .logr = TRUE)
-                    # Update object args only if we resolved from config/default
-                    # Avoid overwriting if a specific value was passed via function arg
-                     if(is.null(percentage_as_neg_ctrl)){ # Only update args if function call arg was NULL
-                        theObject <- updateParamInObject(theObject, "percentage_as_neg_ctrl")
-                     }
-
-                }
-
-                # Validate the resolved percentage
-                message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': percentage_to_use_for_assay = %s", assay_name, ifelse(is.null(percentage_to_use_for_assay), "NULL", percentage_to_use_for_assay)))
-                if (!is.numeric(percentage_to_use_for_assay) || length(percentage_to_use_for_assay) != 1 || is.na(percentage_to_use_for_assay) || percentage_to_use_for_assay < 0 || percentage_to_use_for_assay > 100) {
-                    message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': FAIL - Invalid percentage", assay_name))
-                    log_warn("   Assay '{assay_name}': Invalid percentage resolved ({percentage_to_use_for_assay}). Must be numeric between 0 and 100. Skipping assay.", .logr=TRUE)
+                        dplyr::select(dplyr::all_of(c(lipid_id_col_name, sample_cols))) |>
+                        tibble::column_to_rownames(var = lipid_id_col_name) |>
+                        as.matrix()
+                },
+                error = function(e) {
+                    message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Matrix conversion FAILED - %s", assay_name, e$message))
+                    log_warn("Assay '{assay_name}': Error converting tibble to matrix: {e$message}. Skipping.", .logr = TRUE)
                     return(NULL)
                 }
+            )
+            if (is.null(assay_matrix)) {
+                return(NULL)
+            }
 
-                # Calculate default num_neg_ctrl based on resolved percentage and *filtered* matrix
-                # We use the *resolved* percentage for this assay now
-                default_num_neg_ctrl <- round(nrow(assay_matrix_filt) * percentage_to_use_for_assay / 100, 0)
-                message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': default_num_neg_ctrl = %d (from %d features * %.1f%%)", assay_name, default_num_neg_ctrl, nrow(assay_matrix_filt), percentage_to_use_for_assay))
+            message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Matrix dims = %d x %d", assay_name, nrow(assay_matrix), ncol(assay_matrix)))
+            assay_matrix[!is.finite(assay_matrix)] <- NA
 
-                # Resolve num_neg_ctrl (prioritize function arg, then config, then calculated default)
-                num_neg_ctrl_assay <- NULL
-                if(!is.null(num_neg_ctrl)){ # Check explicit function arg first
-                    # Add similar logic here if you want num_neg_ctrl to also be per-assay via list/vector
-                    # For now, assume num_neg_ctrl function arg is single value if provided
-                    if(is.numeric(num_neg_ctrl) && length(num_neg_ctrl) == 1 && !is.na(num_neg_ctrl) && num_neg_ctrl >= 0){
-                        num_neg_ctrl_assay <- num_neg_ctrl
-                        message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Using num_neg_ctrl from argument = %d", assay_name, num_neg_ctrl_assay))
-                         log_info("   Assay '{assay_name}': Using num_neg_ctrl from argument: {num_neg_ctrl_assay}", .logr = TRUE)
-                    } else {
-                        message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Invalid num_neg_ctrl argument, ignoring", assay_name))
-                        log_warn("   Assay '{assay_name}': Invalid num_neg_ctrl argument provided. Ignoring.", .logr=TRUE)
+            # Check for sufficient valid data
+            valid_rows <- rowSums(!is.na(assay_matrix)) > 1
+            valid_cols <- colSums(!is.na(assay_matrix)) > 1
+            message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': valid_rows = %d, valid_cols = %d", assay_name, sum(valid_rows), sum(valid_cols)))
+            if (sum(valid_rows) < 2 || sum(valid_cols) < 2) {
+                message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': FAIL - insufficient non-NA data", assay_name))
+                log_warn("Assay '{assay_name}': Insufficient non-NA data points (<2 features or <2 samples with data) for ANOVA. Skipping.", .logr = TRUE)
+                return(NULL)
+            }
+            assay_matrix_filt <- assay_matrix[valid_rows, valid_cols, drop = FALSE]
+            message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Filtered matrix dims = %d x %d", assay_name, nrow(assay_matrix_filt), ncol(assay_matrix_filt)))
+
+            # Filter design matrix to match valid columns in assay_matrix_filt
+            design_matrix_filtered <- design_matrix |>
+                dplyr::filter(!!rlang::sym(sample_id) %in% colnames(assay_matrix_filt)) |>
+                as.data.frame() # Helper might expect data.frame
+            message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Filtered design_matrix rows = %d", assay_name, nrow(design_matrix_filtered)))
+
+            # Check if grouping variable has enough levels/samples after filtering
+            if (!ruv_grouping_variable_final %in% colnames(design_matrix_filtered)) {
+                message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': FAIL - grouping variable '%s' not found in design matrix", assay_name, ruv_grouping_variable_final))
+                log_warn("Assay '{assay_name}': Grouping variable '{ruv_grouping_variable_final}' not found in filtered design matrix. Skipping ANOVA.", .logr = TRUE)
+                return(NULL)
+            }
+            group_counts <- table(design_matrix_filtered[[ruv_grouping_variable_final]])
+            message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Group counts: %s", assay_name, paste(names(group_counts), "=", group_counts, collapse = ", ")))
+            if (length(group_counts) < 2 || any(group_counts < 2)) {
+                message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': FAIL - insufficient groups (%d) or samples per group", assay_name, length(group_counts)))
+                log_warn("Assay '{assay_name}': Insufficient groups ({length(group_counts)}) or samples per group (<2) for ANOVA based on '{ruv_grouping_variable_final}' after filtering. Skipping.", .logr = TRUE)
+                return(NULL)
+            }
+
+
+            # --- Resolve Assay-Specific Parameters (Revised for flexible percentage) ---
+
+            # Determine the percentage for *this specific assay*
+            percentage_to_use_for_assay <- NULL
+
+            # Check 1: Explicit function argument provided?
+            if (!is.null(percentage_as_neg_ctrl)) {
+                if ((is.list(percentage_as_neg_ctrl) || is.vector(percentage_as_neg_ctrl)) && !is.null(names(percentage_as_neg_ctrl))) {
+                    # Check 1a: Named list/vector provided - try to match name
+                    if (assay_name %in% names(percentage_as_neg_ctrl)) {
+                        percentage_to_use_for_assay <- percentage_as_neg_ctrl[[assay_name]]
+                        log_info("   Assay '{assay_name}': Using percentage from named argument: {percentage_to_use_for_assay}", .logr = TRUE)
                     }
+                } else if (is.vector(percentage_as_neg_ctrl) && is.null(names(percentage_as_neg_ctrl)) && length(percentage_as_neg_ctrl) == length(assay_list)) {
+                    # Check 1b: Unnamed vector of correct length provided - use position
+                    percentage_to_use_for_assay <- percentage_as_neg_ctrl[[i]]
+                    log_info("   Assay '{assay_name}': Using percentage from positional argument: {percentage_to_use_for_assay}", .logr = TRUE)
+                } else if (is.numeric(percentage_as_neg_ctrl) && length(percentage_as_neg_ctrl) == 1) {
+                    # Check 1c: Single numeric value provided
+                    percentage_to_use_for_assay <- percentage_as_neg_ctrl
+                    log_info("   Assay '{assay_name}': Using single percentage value from argument: {percentage_to_use_for_assay}", .logr = TRUE)
                 }
-                if(is.null(num_neg_ctrl_assay)) { # If not provided or invalid in args, check config/default
-                    num_neg_ctrl_assay <- checkParamsObjectFunctionSimplify(
-                        theObject, "num_neg_ctrl", default_value = default_num_neg_ctrl) # Generic key
-                    message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Using num_neg_ctrl from config/default = %d", assay_name, num_neg_ctrl_assay))
-                     log_info("   Assay '{assay_name}': Using num_neg_ctrl from config/calculated default: {num_neg_ctrl_assay}", .logr = TRUE)
-                     # Update object args only if resolved from config/default and function arg was NULL/invalid
-                      if(is.null(num_neg_ctrl) || !(is.numeric(num_neg_ctrl) && length(num_neg_ctrl) == 1 && !is.na(num_neg_ctrl) && num_neg_ctrl >= 0)){
-                         theObject <- updateParamInObject(theObject, "num_neg_ctrl")
-                      }
+            }
+
+            # Check 2: Fallback to config/default if not found in explicit args
+            if (is.null(percentage_to_use_for_assay)) {
+                percentage_to_use_for_assay <- checkParamsObjectFunctionSimplify(
+                    theObject, "percentage_as_neg_ctrl",
+                    default_value = 10
+                ) # Generic key, hardcoded default 10
+                log_info("   Assay '{assay_name}': Using percentage from config/default: {percentage_to_use_for_assay}", .logr = TRUE)
+                # Update object args only if we resolved from config/default
+                # Avoid overwriting if a specific value was passed via function arg
+                if (is.null(percentage_as_neg_ctrl)) { # Only update args if function call arg was NULL
+                    theObject <- updateParamInObject(theObject, "percentage_as_neg_ctrl")
                 }
-                 # Validate the resolved num_neg_ctrl
-                 if (!is.numeric(num_neg_ctrl_assay) || length(num_neg_ctrl_assay) != 1 || is.na(num_neg_ctrl_assay) || num_neg_ctrl_assay < 0) {
-                     message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': FAIL - Invalid num_neg_ctrl = %s", assay_name, num_neg_ctrl_assay))
-                     log_warn("   Assay '{assay_name}': Invalid num_neg_ctrl resolved ({num_neg_ctrl_assay}). Must be non-negative integer. Skipping assay.", .logr=TRUE)
-                     return(NULL)
-                 }
-                 # Ensure integer
-                 num_neg_ctrl_assay <- as.integer(num_neg_ctrl_assay)
+            }
 
-                message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Final num_neg_ctrl = %d", assay_name, num_neg_ctrl_assay))
-                log_info("  Assay '{assay_name}': Final Neg Ctrl Count: {num_neg_ctrl_assay} (based on percentage: {percentage_to_use_for_assay}%)", .logr = TRUE)
+            # Validate the resolved percentage
+            message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': percentage_to_use_for_assay = %s", assay_name, ifelse(is.null(percentage_to_use_for_assay), "NULL", percentage_to_use_for_assay)))
+            if (!is.numeric(percentage_to_use_for_assay) || length(percentage_to_use_for_assay) != 1 || is.na(percentage_to_use_for_assay) || percentage_to_use_for_assay < 0 || percentage_to_use_for_assay > 100) {
+                message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': FAIL - Invalid percentage", assay_name))
+                log_warn("   Assay '{assay_name}': Invalid percentage resolved ({percentage_to_use_for_assay}). Must be numeric between 0 and 100. Skipping assay.", .logr = TRUE)
+                return(NULL)
+            }
+
+            # Calculate default num_neg_ctrl based on resolved percentage and *filtered* matrix
+            # We use the *resolved* percentage for this assay now
+            default_num_neg_ctrl <- round(nrow(assay_matrix_filt) * percentage_to_use_for_assay / 100, 0)
+            message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': default_num_neg_ctrl = %d (from %d features * %.1f%%)", assay_name, default_num_neg_ctrl, nrow(assay_matrix_filt), percentage_to_use_for_assay))
+
+            # Resolve num_neg_ctrl (prioritize function arg, then config, then calculated default)
+            num_neg_ctrl_assay <- NULL
+            if (!is.null(num_neg_ctrl)) { # Check explicit function arg first
+                # Add similar logic here if you want num_neg_ctrl to also be per-assay via list/vector
+                # For now, assume num_neg_ctrl function arg is single value if provided
+                if (is.numeric(num_neg_ctrl) && length(num_neg_ctrl) == 1 && !is.na(num_neg_ctrl) && num_neg_ctrl >= 0) {
+                    num_neg_ctrl_assay <- num_neg_ctrl
+                    message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Using num_neg_ctrl from argument = %d", assay_name, num_neg_ctrl_assay))
+                    log_info("   Assay '{assay_name}': Using num_neg_ctrl from argument: {num_neg_ctrl_assay}", .logr = TRUE)
+                } else {
+                    message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Invalid num_neg_ctrl argument, ignoring", assay_name))
+                    log_warn("   Assay '{assay_name}': Invalid num_neg_ctrl argument provided. Ignoring.", .logr = TRUE)
+                }
+            }
+            if (is.null(num_neg_ctrl_assay)) { # If not provided or invalid in args, check config/default
+                num_neg_ctrl_assay <- checkParamsObjectFunctionSimplify(
+                    theObject, "num_neg_ctrl",
+                    default_value = default_num_neg_ctrl
+                ) # Generic key
+                message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Using num_neg_ctrl from config/default = %d", assay_name, num_neg_ctrl_assay))
+                log_info("   Assay '{assay_name}': Using num_neg_ctrl from config/calculated default: {num_neg_ctrl_assay}", .logr = TRUE)
+                # Update object args only if resolved from config/default and function arg was NULL/invalid
+                if (is.null(num_neg_ctrl) || !(is.numeric(num_neg_ctrl) && length(num_neg_ctrl) == 1 && !is.na(num_neg_ctrl) && num_neg_ctrl >= 0)) {
+                    theObject <- updateParamInObject(theObject, "num_neg_ctrl")
+                }
+            }
+            # Validate the resolved num_neg_ctrl
+            if (!is.numeric(num_neg_ctrl_assay) || length(num_neg_ctrl_assay) != 1 || is.na(num_neg_ctrl_assay) || num_neg_ctrl_assay < 0) {
+                message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': FAIL - Invalid num_neg_ctrl = %s", assay_name, num_neg_ctrl_assay))
+                log_warn("   Assay '{assay_name}': Invalid num_neg_ctrl resolved ({num_neg_ctrl_assay}). Must be non-negative integer. Skipping assay.", .logr = TRUE)
+                return(NULL)
+            }
+            # Ensure integer
+            num_neg_ctrl_assay <- as.integer(num_neg_ctrl_assay)
+
+            message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Final num_neg_ctrl = %d", assay_name, num_neg_ctrl_assay))
+            log_info("  Assay '{assay_name}': Final Neg Ctrl Count: {num_neg_ctrl_assay} (based on percentage: {percentage_to_use_for_assay}%)", .logr = TRUE)
 
 
-                # --- Prepare Design Matrix for Helper ---
-                # Helper expects rownames = sample IDs, and group_id column removed
-                message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Preparing design_matrix_for_helper...", assay_name))
-                design_matrix_for_helper <- tryCatch({
+            # --- Prepare Design Matrix for Helper ---
+            # Helper expects rownames = sample IDs, and group_id column removed
+            message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Preparing design_matrix_for_helper...", assay_name))
+            design_matrix_for_helper <- tryCatch(
+                {
                     design_matrix_filtered |>
                         tibble::column_to_rownames(var = sample_id) |>
                         dplyr::select(-dplyr::any_of(group_id)) # Remove group_id if it exists
-                }, error = function(e) {
+                },
+                error = function(e) {
                     message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': FAIL - design_matrix_for_helper error: %s", assay_name, e$message))
                     log_warn("Assay '{assay_name}': Error preparing design matrix for helper: {e$message}. Skipping.", .logr = TRUE)
                     return(NULL)
-                })
-                if (is.null(design_matrix_for_helper)) return(NULL)
-                message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': design_matrix_for_helper ready, dims = %d x %d", assay_name, nrow(design_matrix_for_helper), ncol(design_matrix_for_helper)))
+                }
+            )
+            if (is.null(design_matrix_for_helper)) {
+                return(NULL)
+            }
+            message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': design_matrix_for_helper ready, dims = %d x %d", assay_name, nrow(design_matrix_for_helper), ncol(design_matrix_for_helper)))
 
 
-                # --- Call Helper ---
-                # **ASSUMPTION**: getNegCtrlProtAnovaHelper can handle the data
-                message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Calling getNegCtrlProtAnovaHelper...", assay_name))
-                control_indices_assay <- tryCatch({
+            # --- Call Helper ---
+            # **ASSUMPTION**: getNegCtrlProtAnovaHelper can handle the data
+            message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': Calling getNegCtrlProtAnovaHelper...", assay_name))
+            control_indices_assay <- tryCatch(
+                {
                     getNegCtrlProtAnovaHelper(
                         assay_matrix_filt, # Matrix with features as rows, samples as cols
                         design_matrix = design_matrix_for_helper,
@@ -1935,31 +2031,34 @@ setMethod(f = "getNegCtrlMetabAnova",
                         ruv_qval_cutoff = ruv_qval_cutoff_final,
                         ruv_fdr_method = ruv_fdr_method_final
                     )
-                }, error = function(e) {
-                     message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': FAIL - getNegCtrlProtAnovaHelper error: %s", assay_name, e$message))
-                     log_warn("Assay '{assay_name}': Error calling getNegCtrlProtAnovaHelper: {e$message}. Skipping.", .logr = TRUE)
-                     return(NULL) # Return NULL for this assay on error
-                })
+                },
+                error = function(e) {
+                    message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': FAIL - getNegCtrlProtAnovaHelper error: %s", assay_name, e$message))
+                    log_warn("Assay '{assay_name}': Error calling getNegCtrlProtAnovaHelper: {e$message}. Skipping.", .logr = TRUE)
+                    return(NULL) # Return NULL for this assay on error
+                }
+            )
 
-                num_ctrl_selected <- sum(control_indices_assay, na.rm = TRUE)
-                message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': SUCCESS - Selected %d control features", assay_name, num_ctrl_selected))
-                log_info("  Assay '{assay_name}': Selected {sum(control_indices_assay, na.rm = TRUE)} control features.", .logr = TRUE)
-                return(control_indices_assay)
-            })
+            num_ctrl_selected <- sum(control_indices_assay, na.rm = TRUE)
+            message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Assay '%s': SUCCESS - Selected %d control features", assay_name, num_ctrl_selected))
+            log_info("  Assay '{assay_name}': Selected {sum(control_indices_assay, na.rm = TRUE)} control features.", .logr = TRUE)
+            return(control_indices_assay)
+        })
 
-            # Set names for the list of results
-            names(control_features_list) <- assay_names
+        # Set names for the list of results
+        names(control_features_list) <- assay_names
 
-            # Remove NULL elements (skipped assays)
-            final_control_list <- control_features_list[!sapply(control_features_list, is.null)]
-            
-            message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Finished. Returning %d assay results.", length(final_control_list)))
-            message("╔═══════════════════════════════════════════════════════════════════════════╗")
-            message("║  DEBUG66: Exiting getNegCtrlMetabAnova                                    ║")
-            message("╚═══════════════════════════════════════════════════════════════════════════╝")
-            log_info("Finished Negative Control selection for {length(final_control_list)} assay(s).")
-            return(final_control_list)
-          })
+        # Remove NULL elements (skipped assays)
+        final_control_list <- control_features_list[!sapply(control_features_list, is.null)]
+
+        message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Finished. Returning %d assay results.", length(final_control_list)))
+        message("╔═══════════════════════════════════════════════════════════════════════════╗")
+        message("║  DEBUG66: Exiting getNegCtrlMetabAnova                                    ║")
+        message("╚═══════════════════════════════════════════════════════════════════════════╝")
+        log_info("Finished Negative Control selection for {length(final_control_list)} assay(s).")
+        return(final_control_list)
+    }
+)
 
 #' @title RUV Canonical Correlation for LipidomicsAssayData
 #' @name ruvCancor,LipidomicsAssayData-method
@@ -1971,327 +2070,349 @@ setMethod(f = "getNegCtrlMetabAnova",
 #' @importFrom logger log_info log_warn log_error
 #' @export
 #' @export
-setMethod(f = "ruvCancor",
-          signature = "LipidomicsAssayData",
-          definition = function(theObject, ctrl = NULL, num_components_to_impute = NULL, ruv_grouping_variable = NULL) {
+setMethod(
+    f = "ruvCancor",
+    signature = "LipidomicsAssayData",
+    definition = function(theObject, ctrl = NULL, num_components_to_impute = NULL, ruv_grouping_variable = NULL) {
+        message("╔═══════════════════════════════════════════════════════════════════════════╗")
+        message("║  DEBUG66: Entering ruvCancor (LipidomicsAssayData)                        ║")
+        message("╚═══════════════════════════════════════════════════════════════════════════╝")
 
-            message("╔═══════════════════════════════════════════════════════════════════════════╗")
-            message("║  DEBUG66: Entering ruvCancor (LipidomicsAssayData)                        ║")
-            message("╚═══════════════════════════════════════════════════════════════════════════╝")
+        assay_list <- methods::slot(theObject, "lipid_data")
+        lipid_id_col_name <- methods::slot(theObject, "lipid_id_column")
+        design_matrix <- methods::slot(theObject, "design_matrix")
+        sample_id <- methods::slot(theObject, "sample_id")
+        # group_id is not directly used here but good practice to extract if needed later
 
-            assay_list <- methods::slot(theObject, "lipid_data")
-            lipid_id_col_name <- methods::slot(theObject, "lipid_id_column")
-            design_matrix <- methods::slot(theObject, "design_matrix")
-            sample_id <- methods::slot(theObject, "sample_id")
-            # group_id is not directly used here but good practice to extract if needed later
+        message(sprintf("   DEBUG66 [ruvCancor] Function args: ctrl is.null = %s, ruv_grouping_variable = %s", is.null(ctrl), ifelse(is.null(ruv_grouping_variable), "NULL", ruv_grouping_variable)))
+        message(sprintf("   DEBUG66 [ruvCancor] Number of assays: %d", length(assay_list)))
 
-            message(sprintf("   DEBUG66 [ruvCancor] Function args: ctrl is.null = %s, ruv_grouping_variable = %s", is.null(ctrl), ifelse(is.null(ruv_grouping_variable), "NULL", ruv_grouping_variable)))
-            message(sprintf("   DEBUG66 [ruvCancor] Number of assays: %d", length(assay_list)))
+        # --- Resolve Global Parameters ---
+        # Use generic keys as per handover doc
+        # Default ctrl=NULL means it MUST be provided in args or function call
+        ctrl_final <- checkParamsObjectFunctionSimplify(theObject, "ctrl", default_value = NULL)
+        num_components_to_impute_final <- checkParamsObjectFunctionSimplify(theObject, "num_components_to_impute", default_value = 2)
+        # Default ruv_grouping_variable = NULL, MUST be provided
+        ruv_grouping_variable_final <- checkParamsObjectFunctionSimplify(theObject, "ruv_grouping_variable", default_value = NULL)
 
-            # --- Resolve Global Parameters ---
-            # Use generic keys as per handover doc
-            # Default ctrl=NULL means it MUST be provided in args or function call
-            ctrl_final <- checkParamsObjectFunctionSimplify(theObject, "ctrl", default_value = NULL)
-            num_components_to_impute_final <- checkParamsObjectFunctionSimplify(theObject, "num_components_to_impute", default_value = 2)
-            # Default ruv_grouping_variable = NULL, MUST be provided
-            ruv_grouping_variable_final <- checkParamsObjectFunctionSimplify(theObject, "ruv_grouping_variable", default_value = NULL)
+        message(sprintf(
+            "   DEBUG66 [ruvCancor] Resolved ctrl_final is.null = %s, is.list = %s, class = '%s'",
+            is.null(ctrl_final), is.list(ctrl_final), class(ctrl_final)[1]
+        ))
+        if (is.list(ctrl_final)) {
+            message(sprintf("   DEBUG66 [ruvCancor] ctrl_final names: %s", paste(names(ctrl_final), collapse = ", ")))
+        }
+        message(sprintf("   DEBUG66 [ruvCancor] Resolved ruv_grouping_variable_final = '%s'", ifelse(is.null(ruv_grouping_variable_final), "NULL", ruv_grouping_variable_final)))
+        message(sprintf("   DEBUG66 [ruvCancor] Resolved num_components_to_impute_final = %s", num_components_to_impute_final))
 
-            message(sprintf("   DEBUG66 [ruvCancor] Resolved ctrl_final is.null = %s, is.list = %s, class = '%s'", 
-                           is.null(ctrl_final), is.list(ctrl_final), class(ctrl_final)[1]))
-            if (is.list(ctrl_final)) {
-                message(sprintf("   DEBUG66 [ruvCancor] ctrl_final names: %s", paste(names(ctrl_final), collapse = ", ")))
+        # Update object args (using generic keys)
+        theObject <- updateParamInObject(theObject, "ctrl")
+        theObject <- updateParamInObject(theObject, "num_components_to_impute")
+        theObject <- updateParamInObject(theObject, "ruv_grouping_variable")
+
+        log_info("Starting RUV Canonical Correlation plot generation for lipids.")
+        log_info("Parameters (Resolved):")
+        log_info("  - Control Features Key: 'ctrl' (Value type depends on input/config)")
+        log_info("  - Num Imputation Components: {num_components_to_impute_final}")
+        log_info("  - RUV Grouping Variable: {ruv_grouping_variable_final}")
+
+        # --- Input Validation ---
+        if (is.null(ctrl_final)) {
+            message("   DEBUG66 [ruvCancor] FAIL - ctrl_final is NULL, stopping!")
+            log_error("Negative control features ('ctrl') must be provided either via function argument or object configuration ('args$ctrl').")
+            stop("Missing required 'ctrl' parameter for ruvCancor.")
+        }
+        if (is.null(ruv_grouping_variable_final)) {
+            message("   DEBUG66 [ruvCancor] FAIL - ruv_grouping_variable_final is NULL, stopping!")
+            log_error("RUV grouping variable ('ruv_grouping_variable') must be provided either via function argument or object configuration.")
+            stop("Missing required 'ruv_grouping_variable' parameter for ruvCancor.")
+        }
+        if (!ruv_grouping_variable_final %in% colnames(design_matrix)) {
+            message(sprintf("   DEBUG66 [ruvCancor] FAIL - ruv_grouping_variable '%s' not in design_matrix columns!", ruv_grouping_variable_final))
+            log_error("The 'ruv_grouping_variable' ('{ruv_grouping_variable_final}') is not a column in the design matrix.")
+            stop(paste0("The 'ruv_grouping_variable = ", ruv_grouping_variable_final, "' is not a column in the design matrix."))
+        }
+        if (!is.numeric(num_components_to_impute_final) || is.na(num_components_to_impute_final) || num_components_to_impute_final < 1) {
+            message(sprintf("   DEBUG66 [ruvCancor] FAIL - invalid num_components_to_impute = %s", num_components_to_impute_final))
+            log_error("Invalid 'num_components_to_impute': {num_components_to_impute_final}. Must be a positive integer.")
+            stop(paste0("The num_components_to_impute = ", num_components_to_impute_final, " value is invalid."))
+        }
+
+
+        if (length(assay_list) == 0) {
+            message("   DEBUG66 [ruvCancor] WARNING - no assays found, returning empty list")
+            log_warn("No assays found in `lipid_data` slot. Returning empty list.")
+            return(list())
+        }
+        # Ensure list is named
+        assay_names <- names(assay_list)
+        if (is.null(assay_names)) {
+            assay_names <- paste0("Assay_", seq_along(assay_list))
+            message("   DEBUG66 [ruvCancor] Assay list was unnamed. Using default names.")
+            log_warn("Assay list was unnamed. Using default names.")
+        }
+        message(sprintf("   DEBUG66 [ruvCancor] Assay names: %s", paste(assay_names, collapse = ", ")))
+
+        # --- Process Each Assay ---
+        cancor_plots_list <- lapply(seq_along(assay_list), function(i) {
+            assay_name <- assay_names[i]
+            assay_tibble <- assay_list[[i]]
+            message(sprintf("   DEBUG66 [ruvCancor] === Processing assay: %s ===", assay_name))
+            message(sprintf("-- Processing assay for RUV Cancor Plot: %s", assay_name))
+
+            # --- Basic Checks ---
+            message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': tibble rows = %d, cols = %d", assay_name, nrow(assay_tibble), ncol(assay_tibble)))
+            if (!tibble::is_tibble(assay_tibble)) {
+                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Not a tibble, attempting coercion", assay_name))
+                log_warn("Assay '{assay_name}' is not a tibble. Attempting coercion.", .logr = TRUE)
+                assay_tibble <- tryCatch(tibble::as_tibble(assay_tibble), error = function(e) {
+                    message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Coercion FAILED - %s", assay_name, e$message))
+                    log_warn("Failed to coerce assay '{assay_name}' to tibble: {e$message}. Skipping.", .logr = TRUE)
+                    return(NULL)
+                })
+                if (is.null(assay_tibble)) {
+                    return(NULL)
+                } # Skip assay
             }
-            message(sprintf("   DEBUG66 [ruvCancor] Resolved ruv_grouping_variable_final = '%s'", ifelse(is.null(ruv_grouping_variable_final), "NULL", ruv_grouping_variable_final)))
-            message(sprintf("   DEBUG66 [ruvCancor] Resolved num_components_to_impute_final = %s", num_components_to_impute_final))
-
-            # Update object args (using generic keys)
-            theObject <- updateParamInObject(theObject, "ctrl")
-            theObject <- updateParamInObject(theObject, "num_components_to_impute")
-            theObject <- updateParamInObject(theObject, "ruv_grouping_variable")
-
-            log_info("Starting RUV Canonical Correlation plot generation for lipids.")
-            log_info("Parameters (Resolved):")
-            log_info("  - Control Features Key: 'ctrl' (Value type depends on input/config)")
-            log_info("  - Num Imputation Components: {num_components_to_impute_final}")
-            log_info("  - RUV Grouping Variable: {ruv_grouping_variable_final}")
-
-            # --- Input Validation ---
-            if (is.null(ctrl_final)) {
-                message("   DEBUG66 [ruvCancor] FAIL - ctrl_final is NULL, stopping!")
-                log_error("Negative control features ('ctrl') must be provided either via function argument or object configuration ('args$ctrl').")
-                stop("Missing required 'ctrl' parameter for ruvCancor.")
+            if (!lipid_id_col_name %in% colnames(assay_tibble)) {
+                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - lipid ID column not found", assay_name))
+                log_warn("Assay '{assay_name}': Lipid ID column '{lipid_id_col_name}' not found. Skipping.", .logr = TRUE)
+                return(NULL)
             }
-            if (is.null(ruv_grouping_variable_final)) {
-                message("   DEBUG66 [ruvCancor] FAIL - ruv_grouping_variable_final is NULL, stopping!")
-                log_error("RUV grouping variable ('ruv_grouping_variable') must be provided either via function argument or object configuration.")
-                stop("Missing required 'ruv_grouping_variable' parameter for ruvCancor.")
-            }
-            if (!ruv_grouping_variable_final %in% colnames(design_matrix)) {
-                message(sprintf("   DEBUG66 [ruvCancor] FAIL - ruv_grouping_variable '%s' not in design_matrix columns!", ruv_grouping_variable_final))
-                log_error("The 'ruv_grouping_variable' ('{ruv_grouping_variable_final}') is not a column in the design matrix.")
-                stop(paste0("The 'ruv_grouping_variable = ", ruv_grouping_variable_final, "' is not a column in the design matrix."))
-            }
-            if (!is.numeric(num_components_to_impute_final) || is.na(num_components_to_impute_final) || num_components_to_impute_final < 1) {
-                message(sprintf("   DEBUG66 [ruvCancor] FAIL - invalid num_components_to_impute = %s", num_components_to_impute_final))
-                log_error("Invalid 'num_components_to_impute': {num_components_to_impute_final}. Must be a positive integer.")
-                stop(paste0("The num_components_to_impute = ", num_components_to_impute_final, " value is invalid."))
+            if (nrow(assay_tibble) == 0) {
+                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - zero rows", assay_name))
+                log_warn("Assay '{assay_name}': Contains zero rows (features). Skipping.", .logr = TRUE)
+                return(NULL)
             }
 
-
-            if (length(assay_list) == 0) {
-                message("   DEBUG66 [ruvCancor] WARNING - no assays found, returning empty list")
-                log_warn("No assays found in `lipid_data` slot. Returning empty list.")
-                return(list())
+            # --- Identify Sample Columns ---
+            design_samples <- tryCatch(as.character(design_matrix[[sample_id]]), error = function(e) {
+                character(0)
+            })
+            message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': design_samples count = %d", assay_name, length(design_samples)))
+            if (length(design_samples) == 0) {
+                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - no design samples found", assay_name))
+                log_warn("Assay '{assay_name}': Could not extract valid sample IDs from design matrix column '{sample_id}'. Skipping.", .logr = TRUE)
+                return(NULL)
             }
-            # Ensure list is named
-            assay_names <- names(assay_list)
-            if (is.null(assay_names)) {
-                 assay_names <- paste0("Assay_", seq_along(assay_list))
-                 message("   DEBUG66 [ruvCancor] Assay list was unnamed. Using default names.")
-                 log_warn("Assay list was unnamed. Using default names.")
+            all_assay_cols <- colnames(assay_tibble)
+            sample_cols <- intersect(all_assay_cols, design_samples)
+            message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': sample_cols count = %d", assay_name, length(sample_cols)))
+            if (length(sample_cols) < 2) {
+                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - fewer than 2 sample columns", assay_name))
+                log_warn("Assay '{assay_name}': Fewer than 2 sample columns identified matching design matrix. Skipping RUV cancor plot.", .logr = TRUE)
+                return(NULL)
             }
-            message(sprintf("   DEBUG66 [ruvCancor] Assay names: %s", paste(assay_names, collapse = ", ")))
+            # Ensure sample columns are numeric
+            non_numeric_samples <- sample_cols[!purrr::map_lgl(assay_tibble[sample_cols], is.numeric)]
+            if (length(non_numeric_samples) > 0) {
+                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Coercing %d non-numeric sample columns", assay_name, length(non_numeric_samples)))
+                log_warn("Assay '{assay_name}': Non-numeric sample columns found: {paste(non_numeric_samples, collapse=', ')}. Attempting coercion.", .logr = TRUE)
+                assay_tibble <- assay_tibble |>
+                    dplyr::mutate(dplyr::across(dplyr::all_of(non_numeric_samples), as.numeric))
+            }
 
-            # --- Process Each Assay ---
-            cancor_plots_list <- lapply(seq_along(assay_list), function(i) {
-                 assay_name <- assay_names[i]
-                 assay_tibble <- assay_list[[i]]
-                 message(sprintf("   DEBUG66 [ruvCancor] === Processing assay: %s ===", assay_name))
-                 message(sprintf("-- Processing assay for RUV Cancor Plot: %s", assay_name))
-
-                 # --- Basic Checks ---
-                 message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': tibble rows = %d, cols = %d", assay_name, nrow(assay_tibble), ncol(assay_tibble)))
-                 if (!tibble::is_tibble(assay_tibble)) {
-                     message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Not a tibble, attempting coercion", assay_name))
-                     log_warn("Assay '{assay_name}' is not a tibble. Attempting coercion.", .logr = TRUE)
-                     assay_tibble <- tryCatch(tibble::as_tibble(assay_tibble), error = function(e) {
-                         message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Coercion FAILED - %s", assay_name, e$message))
-                         log_warn("Failed to coerce assay '{assay_name}' to tibble: {e$message}. Skipping.", .logr = TRUE)
-                         return(NULL)
-                     })
-                     if (is.null(assay_tibble)) return(NULL) # Skip assay
-                 }
-                  if (!lipid_id_col_name %in% colnames(assay_tibble)) {
-                      message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - lipid ID column not found", assay_name))
-                      log_warn("Assay '{assay_name}': Lipid ID column '{lipid_id_col_name}' not found. Skipping.", .logr = TRUE)
-                      return(NULL)
-                  }
-                  if (nrow(assay_tibble) == 0) {
-                      message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - zero rows", assay_name))
-                      log_warn("Assay '{assay_name}': Contains zero rows (features). Skipping.", .logr = TRUE)
-                      return(NULL)
-                  }
-
-                 # --- Identify Sample Columns ---
-                 design_samples <- tryCatch(as.character(design_matrix[[sample_id]]), error = function(e) { character(0) })
-                 message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': design_samples count = %d", assay_name, length(design_samples)))
-                 if (length(design_samples) == 0) {
-                      message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - no design samples found", assay_name))
-                      log_warn("Assay '{assay_name}': Could not extract valid sample IDs from design matrix column '{sample_id}'. Skipping.", .logr = TRUE)
-                      return(NULL)
-                 }
-                 all_assay_cols <- colnames(assay_tibble)
-                 sample_cols <- intersect(all_assay_cols, design_samples)
-                 message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': sample_cols count = %d", assay_name, length(sample_cols)))
-                 if (length(sample_cols) < 2) {
-                     message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - fewer than 2 sample columns", assay_name))
-                     log_warn("Assay '{assay_name}': Fewer than 2 sample columns identified matching design matrix. Skipping RUV cancor plot.", .logr = TRUE)
-                     return(NULL)
-                 }
-                 # Ensure sample columns are numeric
-                 non_numeric_samples <- sample_cols[!purrr::map_lgl(assay_tibble[sample_cols], is.numeric)]
-                 if (length(non_numeric_samples) > 0) {
-                    message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Coercing %d non-numeric sample columns", assay_name, length(non_numeric_samples)))
-                    log_warn("Assay '{assay_name}': Non-numeric sample columns found: {paste(non_numeric_samples, collapse=', ')}. Attempting coercion.", .logr = TRUE)
-                    assay_tibble <- assay_tibble |>
-                        dplyr::mutate(dplyr::across(dplyr::all_of(non_numeric_samples), as.numeric))
-                 }
-
-                 # --- Prepare Matrix (Features x Samples) ---
-                 message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Converting to matrix...", assay_name))
-                 assay_matrix <- tryCatch({
-                     assay_tibble |>
+            # --- Prepare Matrix (Features x Samples) ---
+            message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Converting to matrix...", assay_name))
+            assay_matrix <- tryCatch(
+                {
+                    assay_tibble |>
                         dplyr::select(dplyr::all_of(c(lipid_id_col_name, sample_cols))) |>
                         tibble::column_to_rownames(var = lipid_id_col_name) |>
                         as.matrix()
-                 }, error = function(e) {
-                      message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Matrix conversion FAILED - %s", assay_name, e$message))
-                      log_warn("Assay '{assay_name}': Error converting tibble to matrix: {e$message}. Skipping.", .logr = TRUE)
-                      return(NULL)
-                 })
-                 if (is.null(assay_matrix)) return(NULL)
+                },
+                error = function(e) {
+                    message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Matrix conversion FAILED - %s", assay_name, e$message))
+                    log_warn("Assay '{assay_name}': Error converting tibble to matrix: {e$message}. Skipping.", .logr = TRUE)
+                    return(NULL)
+                }
+            )
+            if (is.null(assay_matrix)) {
+                return(NULL)
+            }
 
-                 message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Matrix dims = %d x %d", assay_name, nrow(assay_matrix), ncol(assay_matrix)))
-                 assay_matrix[!is.finite(assay_matrix)] <- NA # Handle Inf/-Inf first
+            message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Matrix dims = %d x %d", assay_name, nrow(assay_matrix), ncol(assay_matrix)))
+            assay_matrix[!is.finite(assay_matrix)] <- NA # Handle Inf/-Inf first
 
-                 # --- Filter Design Matrix ---
-                 # Ensure design matrix matches the actual columns used in the assay_matrix
-                 design_matrix_filtered <- design_matrix |>
-                    dplyr::filter(!!rlang::sym(sample_id) %in% colnames(assay_matrix)) |>
-                    as.data.frame() # Ensure it's a data.frame if needed
-                 message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Filtered design_matrix rows = %d", assay_name, nrow(design_matrix_filtered)))
+            # --- Filter Design Matrix ---
+            # Ensure design matrix matches the actual columns used in the assay_matrix
+            design_matrix_filtered <- design_matrix |>
+                dplyr::filter(!!rlang::sym(sample_id) %in% colnames(assay_matrix)) |>
+                as.data.frame() # Ensure it's a data.frame if needed
+            message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Filtered design_matrix rows = %d", assay_name, nrow(design_matrix_filtered)))
 
-                 # --- Prepare Y (Samples x Features) ---
-                 Y_matrix <- t(assay_matrix[, as.character(design_matrix_filtered[[sample_id]]), drop = FALSE]) # Ensure column order matches filtered design
-                 message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Y_matrix dims = %d x %d (samples x features)", assay_name, nrow(Y_matrix), ncol(Y_matrix)))
+            # --- Prepare Y (Samples x Features) ---
+            Y_matrix <- t(assay_matrix[, as.character(design_matrix_filtered[[sample_id]]), drop = FALSE]) # Ensure column order matches filtered design
+            message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Y_matrix dims = %d x %d (samples x features)", assay_name, nrow(Y_matrix), ncol(Y_matrix)))
 
-                 # --- Imputation (using mixOmics::impute.nipals) ---
-                 if (anyNA(Y_matrix)) {
-                      message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': NAs detected, performing NIPALS imputation", assay_name))
-                      log_info("   Assay '{assay_name}': Missing values detected. Performing NIPALS imputation with {num_components_to_impute_final} components.", .logr = TRUE)
-                      Y_imputed <- tryCatch({
-                          mixOmics::impute.nipals(Y_matrix, ncomp = num_components_to_impute_final)
-                      }, error = function(e) {
-                           message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': NIPALS imputation FAILED - %s", assay_name, e$message))
-                           log_warn("Assay '{assay_name}': Error during NIPALS imputation: {e$message}. Skipping.", .logr = TRUE)
-                           return(NULL)
-                      })
-                      if (is.null(Y_imputed)) return(NULL)
-                      Y_final <- Y_imputed
-                 } else {
-                     message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': No NAs in Y_matrix, skipping imputation", assay_name))
-                     Y_final <- Y_matrix
-                 }
-
-                 # --- Prepare X (Grouping Variable) ---
-                 if (!ruv_grouping_variable_final %in% colnames(design_matrix_filtered)) {
-                      # This check should be redundant due to the initial check, but safe
-                      message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - grouping variable lost after filtering", assay_name))
-                      log_error("Assay '{assay_name}': Grouping variable '{ruv_grouping_variable_final}' lost after filtering design matrix. This shouldn't happen.", .logr = TRUE)
-                      return(NULL)
-                 }
-                 X_vector <- design_matrix_filtered[[ruv_grouping_variable_final]]
-                 message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': X_vector length = %d, unique values = %d", assay_name, length(X_vector), length(unique(X_vector))))
-
-                 # --- Prepare ctl (Control Features Indices/Logical) ---
-                 # Resolve control features specific to this assay
-                 ctrl_assay <- NULL
-                 message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Resolving ctrl_assay, ctrl_final is.list = %s", assay_name, is.list(ctrl_final)))
-                 if (is.list(ctrl_final)) {
-                    message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Checking if '%s' in names(ctrl_final) = %s", assay_name, assay_name, assay_name %in% names(ctrl_final)))
-                    if (assay_name %in% names(ctrl_final)) {
-                        ctrl_assay <- ctrl_final[[assay_name]]
-                        message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Found assay-specific controls, class = '%s'", assay_name, class(ctrl_assay)[1]))
-                        log_info("   Assay '{assay_name}': Found assay-specific controls in 'ctrl' list.", .logr = TRUE)
-                    } else {
-                        message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - assay not in ctrl_final names", assay_name))
-                        log_warn("Assay '{assay_name}': 'ctrl' is a list, but does not contain an element named '{assay_name}'. Skipping.", .logr = TRUE)
+            # --- Imputation (using mixOmics::impute.nipals) ---
+            if (anyNA(Y_matrix)) {
+                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': NAs detected, performing NIPALS imputation", assay_name))
+                log_info("   Assay '{assay_name}': Missing values detected. Performing NIPALS imputation with {num_components_to_impute_final} components.", .logr = TRUE)
+                Y_imputed <- tryCatch(
+                    {
+                        mixOmics::impute.nipals(Y_matrix, ncomp = num_components_to_impute_final)
+                    },
+                    error = function(e) {
+                        message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': NIPALS imputation FAILED - %s", assay_name, e$message))
+                        log_warn("Assay '{assay_name}': Error during NIPALS imputation: {e$message}. Skipping.", .logr = TRUE)
                         return(NULL)
                     }
-                 } else {
-                    # If ctrl_final is not a list, assume it's a global vector (numeric, logical, character)
-                    # This maintains backwards compatibility if a global ctrl vector is provided
-                    ctrl_assay <- ctrl_final
-                    message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Using globally provided ctrl, class = '%s'", assay_name, class(ctrl_assay)[1]))
-                    log_info("   Assay '{assay_name}': Using the globally provided 'ctrl' vector.", .logr = TRUE)
-                 }
+                )
+                if (is.null(Y_imputed)) {
+                    return(NULL)
+                }
+                Y_final <- Y_imputed
+            } else {
+                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': No NAs in Y_matrix, skipping imputation", assay_name))
+                Y_final <- Y_matrix
+            }
 
-                 if (is.null(ctrl_assay)) {
-                    # This case should ideally be caught by the list check above, but as a safeguard:
-                     message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - ctrl_assay is NULL", assay_name))
-                     log_warn("Assay '{assay_name}': Failed to resolve control features for this assay. Skipping.", .logr = TRUE)
-                     return(NULL)
-                 }
+            # --- Prepare X (Grouping Variable) ---
+            if (!ruv_grouping_variable_final %in% colnames(design_matrix_filtered)) {
+                # This check should be redundant due to the initial check, but safe
+                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - grouping variable lost after filtering", assay_name))
+                log_error("Assay '{assay_name}': Grouping variable '{ruv_grouping_variable_final}' lost after filtering design matrix. This shouldn't happen.", .logr = TRUE)
+                return(NULL)
+            }
+            X_vector <- design_matrix_filtered[[ruv_grouping_variable_final]]
+            message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': X_vector length = %d, unique values = %d", assay_name, length(X_vector), length(unique(X_vector))))
 
-                 # `ruv_cancorplot` expects `ctl` relative to the *columns* of Y_final (features)
-                 feature_names_in_assay <- colnames(Y_final)
-                 control_indices_assay <- NULL # Initialize
+            # --- Prepare ctl (Control Features Indices/Logical) ---
+            # Resolve control features specific to this assay
+            ctrl_assay <- NULL
+            message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Resolving ctrl_assay, ctrl_final is.list = %s", assay_name, is.list(ctrl_final)))
+            if (is.list(ctrl_final)) {
+                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Checking if '%s' in names(ctrl_final) = %s", assay_name, assay_name, assay_name %in% names(ctrl_final)))
+                if (assay_name %in% names(ctrl_final)) {
+                    ctrl_assay <- ctrl_final[[assay_name]]
+                    message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Found assay-specific controls, class = '%s'", assay_name, class(ctrl_assay)[1]))
+                    log_info("   Assay '{assay_name}': Found assay-specific controls in 'ctrl' list.", .logr = TRUE)
+                } else {
+                    message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - assay not in ctrl_final names", assay_name))
+                    log_warn("Assay '{assay_name}': 'ctrl' is a list, but does not contain an element named '{assay_name}'. Skipping.", .logr = TRUE)
+                    return(NULL)
+                }
+            } else {
+                # If ctrl_final is not a list, assume it's a global vector (numeric, logical, character)
+                # This maintains backwards compatibility if a global ctrl vector is provided
+                ctrl_assay <- ctrl_final
+                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Using globally provided ctrl, class = '%s'", assay_name, class(ctrl_assay)[1]))
+                log_info("   Assay '{assay_name}': Using the globally provided 'ctrl' vector.", .logr = TRUE)
+            }
 
-                 if (is.numeric(ctrl_assay)) {
-                     # If numeric indices are provided, check bounds
-                     if (any(ctrl_assay < 1) || any(ctrl_assay > length(feature_names_in_assay))) {
-                         log_warn("Assay '{assay_name}': Numeric 'ctrl' indices are out of bounds for the features in this assay ({length(feature_names_in_assay)}). Skipping.", .logr = TRUE)
-                         return(NULL)
-                     }
-                     control_indices_assay <- ctrl_assay
-                 } else if (is.logical(ctrl_assay)) {
-                      # If logical, check length relative to the features *in this specific assay*
-                     if (length(ctrl_assay) != length(feature_names_in_assay)) {
-                          # We need to align the logical vector with the current assay's features if names are present
-                          if (!is.null(names(ctrl_assay))) {
-                               feature_match <- match(feature_names_in_assay, names(ctrl_assay))
-                               if (anyNA(feature_match)) {
-                                    log_warn("Assay '{assay_name}': Some assay features not found in named logical 'ctrl' vector. Skipping.", .logr=TRUE)
-                                    return(NULL)
-                               }
-                               control_indices_assay <- ctrl_assay[feature_match]
-                               if (length(control_indices_assay) != length(feature_names_in_assay)){
-                                    log_warn("Assay '{assay_name}': Length mismatch after aligning named logical 'ctrl' vector ({length(control_indices_assay)}) with assay features ({length(feature_names_in_assay)}). Skipping.", .logr = TRUE)
-                                    return(NULL)
-                               }
-                               log_info("   Assay '{assay_name}': Aligned named logical 'ctrl' vector to assay features.", .logr = TRUE)
-                          } else {
-                               log_warn("Assay '{assay_name}': Unnamed logical 'ctrl' vector length ({length(ctrl_assay)}) does not match number of features ({length(feature_names_in_assay)}). Skipping.", .logr = TRUE)
-                               return(NULL)
-                          }
-                     } else {
-                         # Length matches, assume order is correct
-                         control_indices_assay <- ctrl_assay
-                     }
-                 } else if (is.character(ctrl_assay)) {
-                      # If character IDs, find which ones are in the current assay
-                      control_indices_assay <- feature_names_in_assay %in% ctrl_assay
-                      if (sum(control_indices_assay) == 0) {
-                          log_warn("Assay '{assay_name}': None of the provided character 'ctrl' IDs were found in the features of this assay. Skipping.", .logr = TRUE)
-                          return(NULL)
-                      }
-                      # ruv_cancorplot expects logical or numeric indices, convert the logical vector derived from character IDs
-                      # control_indices_assay remains logical here, which is valid for ruv_cancorplot ctl
-                 } else {
-                      log_warn("Assay '{assay_name}': Invalid type for resolved 'ctrl_assay' parameter. Expected numeric, logical, or character. Skipping.", .logr = TRUE)
-                      return(NULL)
-                 }
+            if (is.null(ctrl_assay)) {
+                # This case should ideally be caught by the list check above, but as a safeguard:
+                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - ctrl_assay is NULL", assay_name))
+                log_warn("Assay '{assay_name}': Failed to resolve control features for this assay. Skipping.", .logr = TRUE)
+                return(NULL)
+            }
 
-                 # Final check on number of controls (use sum for logical, length for numeric)
-                 # Need to ensure control_indices_assay is not NULL before checking
-                 if (is.null(control_indices_assay)) {
-                      message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - control_indices_assay is NULL", assay_name))
-                      log_warn("Assay '{assay_name}': Control indices could not be determined. Skipping.", .logr=TRUE)
-                      return(NULL)
-                 }
-                 num_controls_found <- if (is.logical(control_indices_assay)) sum(control_indices_assay, na.rm=TRUE) else length(control_indices_assay)
-                 message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': num_controls_found = %d", assay_name, num_controls_found))
-                 if (num_controls_found < 5) {
-                     message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - fewer than 5 controls (%d)", assay_name, num_controls_found))
-                     log_warn("Assay '{assay_name}': Fewer than 5 negative control features found/specified for this assay ({num_controls_found}). RUV results may be unreliable. Skipping cancor plot.", .logr = TRUE)
-                     # Proceeding might still work but is discouraged by the original protein code's check
-                     return(NULL) # Skip plot generation as per original check
-                 }
-                  log_info("   Assay '{assay_name}': Using {num_controls_found} control features for cancor plot.", .logr = TRUE)
+            # `ruv_cancorplot` expects `ctl` relative to the *columns* of Y_final (features)
+            feature_names_in_assay <- colnames(Y_final)
+            control_indices_assay <- NULL # Initialize
 
-                 # --- Call ruv_cancorplot ---
-                 message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Calling ruv_cancorplot...", assay_name))
-                 cancor_plot_assay <- tryCatch({
-                      # Ensure ruv_cancorplot is loaded/available in the environment
-                      # Requires Y = samples x features matrix
-                      # Requires X = grouping vector (same length as nrow(Y))
-                      # Requires ctl = logical/numeric vector identifying control columns in Y
-                      ruv_cancorplot(Y = Y_final,
-                                     X = X_vector,
-                                     ctl = control_indices_assay)
-                 }, error = function(e) {
-                      message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': ruv_cancorplot FAILED - %s", assay_name, e$message))
-                      log_warn("Assay '{assay_name}': Error calling ruv_cancorplot: {e$message}. Check if the function exists and is loaded correctly. Skipping.", .logr = TRUE)
-                      return(NULL) # Return NULL for this assay on error
-                 })
+            if (is.numeric(ctrl_assay)) {
+                # If numeric indices are provided, check bounds
+                if (any(ctrl_assay < 1) || any(ctrl_assay > length(feature_names_in_assay))) {
+                    log_warn("Assay '{assay_name}': Numeric 'ctrl' indices are out of bounds for the features in this assay ({length(feature_names_in_assay)}). Skipping.", .logr = TRUE)
+                    return(NULL)
+                }
+                control_indices_assay <- ctrl_assay
+            } else if (is.logical(ctrl_assay)) {
+                # If logical, check length relative to the features *in this specific assay*
+                if (length(ctrl_assay) != length(feature_names_in_assay)) {
+                    # We need to align the logical vector with the current assay's features if names are present
+                    if (!is.null(names(ctrl_assay))) {
+                        feature_match <- match(feature_names_in_assay, names(ctrl_assay))
+                        if (anyNA(feature_match)) {
+                            log_warn("Assay '{assay_name}': Some assay features not found in named logical 'ctrl' vector. Skipping.", .logr = TRUE)
+                            return(NULL)
+                        }
+                        control_indices_assay <- ctrl_assay[feature_match]
+                        if (length(control_indices_assay) != length(feature_names_in_assay)) {
+                            log_warn("Assay '{assay_name}': Length mismatch after aligning named logical 'ctrl' vector ({length(control_indices_assay)}) with assay features ({length(feature_names_in_assay)}). Skipping.", .logr = TRUE)
+                            return(NULL)
+                        }
+                        log_info("   Assay '{assay_name}': Aligned named logical 'ctrl' vector to assay features.", .logr = TRUE)
+                    } else {
+                        log_warn("Assay '{assay_name}': Unnamed logical 'ctrl' vector length ({length(ctrl_assay)}) does not match number of features ({length(feature_names_in_assay)}). Skipping.", .logr = TRUE)
+                        return(NULL)
+                    }
+                } else {
+                    # Length matches, assume order is correct
+                    control_indices_assay <- ctrl_assay
+                }
+            } else if (is.character(ctrl_assay)) {
+                # If character IDs, find which ones are in the current assay
+                control_indices_assay <- feature_names_in_assay %in% ctrl_assay
+                if (sum(control_indices_assay) == 0) {
+                    log_warn("Assay '{assay_name}': None of the provided character 'ctrl' IDs were found in the features of this assay. Skipping.", .logr = TRUE)
+                    return(NULL)
+                }
+                # ruv_cancorplot expects logical or numeric indices, convert the logical vector derived from character IDs
+                # control_indices_assay remains logical here, which is valid for ruv_cancorplot ctl
+            } else {
+                log_warn("Assay '{assay_name}': Invalid type for resolved 'ctrl_assay' parameter. Expected numeric, logical, or character. Skipping.", .logr = TRUE)
+                return(NULL)
+            }
 
-                 message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': SUCCESS - cancor_plot created", assay_name))
-                 return(cancor_plot_assay)
-            })
+            # Final check on number of controls (use sum for logical, length for numeric)
+            # Need to ensure control_indices_assay is not NULL before checking
+            if (is.null(control_indices_assay)) {
+                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - control_indices_assay is NULL", assay_name))
+                log_warn("Assay '{assay_name}': Control indices could not be determined. Skipping.", .logr = TRUE)
+                return(NULL)
+            }
+            num_controls_found <- if (is.logical(control_indices_assay)) sum(control_indices_assay, na.rm = TRUE) else length(control_indices_assay)
+            message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': num_controls_found = %d", assay_name, num_controls_found))
+            if (num_controls_found < 5) {
+                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - fewer than 5 controls (%d)", assay_name, num_controls_found))
+                log_warn("Assay '{assay_name}': Fewer than 5 negative control features found/specified for this assay ({num_controls_found}). RUV results may be unreliable. Skipping cancor plot.", .logr = TRUE)
+                # Proceeding might still work but is discouraged by the original protein code's check
+                return(NULL) # Skip plot generation as per original check
+            }
+            log_info("   Assay '{assay_name}': Using {num_controls_found} control features for cancor plot.", .logr = TRUE)
 
-            # Set names for the list of plots
-            names(cancor_plots_list) <- assay_names
+            # --- Call ruv_cancorplot ---
+            message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Calling ruv_cancorplot...", assay_name))
+            cancor_plot_assay <- tryCatch(
+                {
+                    # Ensure ruv_cancorplot is loaded/available in the environment
+                    # Requires Y = samples x features matrix
+                    # Requires X = grouping vector (same length as nrow(Y))
+                    # Requires ctl = logical/numeric vector identifying control columns in Y
+                    ruv_cancorplot(
+                        Y = Y_final,
+                        X = X_vector,
+                        ctl = control_indices_assay
+                    )
+                },
+                error = function(e) {
+                    message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': ruv_cancorplot FAILED - %s", assay_name, e$message))
+                    log_warn("Assay '{assay_name}': Error calling ruv_cancorplot: {e$message}. Check if the function exists and is loaded correctly. Skipping.", .logr = TRUE)
+                    return(NULL) # Return NULL for this assay on error
+                }
+            )
 
-            # Remove NULL elements (skipped assays)
-            final_plots_list <- cancor_plots_list[!sapply(cancor_plots_list, is.null)]
+            message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': SUCCESS - cancor_plot created", assay_name))
+            return(cancor_plot_assay)
+        })
 
-            message(sprintf("   DEBUG66 [ruvCancor] Finished. Returning %d assay plots.", length(final_plots_list)))
-            message("╔═══════════════════════════════════════════════════════════════════════════╗")
-            message("║  DEBUG66: Exiting ruvCancor                                               ║")
-            message("╚═══════════════════════════════════════════════════════════════════════════╝")
-            log_info("Finished RUV Canonical Correlation plot generation for {length(final_plots_list)} assay(s).")
-            return(final_plots_list)
-          })
+        # Set names for the list of plots
+        names(cancor_plots_list) <- assay_names
+
+        # Remove NULL elements (skipped assays)
+        final_plots_list <- cancor_plots_list[!sapply(cancor_plots_list, is.null)]
+
+        message(sprintf("   DEBUG66 [ruvCancor] Finished. Returning %d assay plots.", length(final_plots_list)))
+        message("╔═══════════════════════════════════════════════════════════════════════════╗")
+        message("║  DEBUG66: Exiting ruvCancor                                               ║")
+        message("╚═══════════════════════════════════════════════════════════════════════════╝")
+        log_info("Finished RUV Canonical Correlation plot generation for {length(final_plots_list)} assay(s).")
+        return(final_plots_list)
+    }
+)
 
 #' Apply RUV-III Correction with Varying K
 #'
@@ -2339,230 +2460,248 @@ setMethod(f = "ruvCancor",
 #' @importFrom stringr str_split
 #' @describeIn ruvIII_C_Varying Method for LipidomicsAssayData
 #' @export
-setMethod(f = "ruvIII_C_Varying",
-          signature = "LipidomicsAssayData",
-          definition = function(theObject,
-                                ruv_grouping_variable = NULL,
-                                ruv_number_k = NULL,
-                                ctrl = NULL) {
+setMethod(
+    f = "ruvIII_C_Varying",
+    signature = "LipidomicsAssayData",
+    definition = function(theObject,
+                          ruv_grouping_variable = NULL,
+                          ruv_number_k = NULL,
+                          ctrl = NULL) {
+        message("╔═══════════════════════════════════════════════════════════════════════════╗")
+        message("║  DEBUG66: Entering ruvIII_C_Varying (LipidomicsAssayData)                 ║")
+        message("╚═══════════════════════════════════════════════════════════════════════════╝")
 
-            message("╔═══════════════════════════════════════════════════════════════════════════╗")
-            message("║  DEBUG66: Entering ruvIII_C_Varying (LipidomicsAssayData)                 ║")
-            message("╚═══════════════════════════════════════════════════════════════════════════╝")
+        assay_list <- methods::slot(theObject, "lipid_data")
+        lipid_id_col_name <- methods::slot(theObject, "lipid_id_column")
+        design_matrix <- methods::slot(theObject, "design_matrix")
+        sample_id <- methods::slot(theObject, "sample_id")
+        group_id <- methods::slot(theObject, "group_id") # Extract for context, though not directly used below
+        technical_replicate_id <- methods::slot(theObject, "technical_replicate_id") # Extract for context
 
-            assay_list <- methods::slot(theObject, "lipid_data")
-            lipid_id_col_name <- methods::slot(theObject, "lipid_id_column")
-            design_matrix <- methods::slot(theObject, "design_matrix")
-            sample_id <- methods::slot(theObject, "sample_id")
-            group_id <- methods::slot(theObject, "group_id") # Extract for context, though not directly used below
-            technical_replicate_id <- methods::slot(theObject, "technical_replicate_id") # Extract for context
+        message(sprintf(
+            "   DEBUG66 [ruvIII_C_Varying] Function args: ruv_grouping_variable = %s, ruv_number_k is.null = %s, ctrl is.null = %s",
+            ifelse(is.null(ruv_grouping_variable), "NULL", ruv_grouping_variable), is.null(ruv_number_k), is.null(ctrl)
+        ))
+        message(sprintf("   DEBUG66 [ruvIII_C_Varying] Number of assays: %d", length(assay_list)))
 
-            message(sprintf("   DEBUG66 [ruvIII_C_Varying] Function args: ruv_grouping_variable = %s, ruv_number_k is.null = %s, ctrl is.null = %s", 
-                           ifelse(is.null(ruv_grouping_variable), "NULL", ruv_grouping_variable), is.null(ruv_number_k), is.null(ctrl)))
-            message(sprintf("   DEBUG66 [ruvIII_C_Varying] Number of assays: %d", length(assay_list)))
+        # --- Resolve Parameters (Prioritize function args, then object args) ---
 
-            # --- Resolve Parameters (Prioritize function args, then object args) ---
+        # 1. RUV Grouping Variable
+        if (!is.null(ruv_grouping_variable)) {
+            ruv_grouping_variable_final <- ruv_grouping_variable
+            message(sprintf("   DEBUG66 [ruvIII_C_Varying] Using ruv_grouping_variable from function arg: '%s'", ruv_grouping_variable_final))
+            log_info("Using 'ruv_grouping_variable' from function argument: {ruv_grouping_variable_final}")
+        } else {
+            ruv_grouping_variable_final <- checkParamsObjectFunctionSimplify(theObject, "ruv_grouping_variable", default_value = NULL)
+            message(sprintf("   DEBUG66 [ruvIII_C_Varying] Using ruv_grouping_variable from object/default: '%s'", ifelse(is.null(ruv_grouping_variable_final), "NULL", ruv_grouping_variable_final)))
+            log_info("Using 'ruv_grouping_variable' from object args or default: {ruv_grouping_variable_final}")
+        }
 
-            # 1. RUV Grouping Variable
-            if (!is.null(ruv_grouping_variable)) {
-                ruv_grouping_variable_final <- ruv_grouping_variable
-                message(sprintf("   DEBUG66 [ruvIII_C_Varying] Using ruv_grouping_variable from function arg: '%s'", ruv_grouping_variable_final))
-                log_info("Using 'ruv_grouping_variable' from function argument: {ruv_grouping_variable_final}")
-            } else {
-                ruv_grouping_variable_final <- checkParamsObjectFunctionSimplify(theObject, "ruv_grouping_variable", default_value = NULL)
-                message(sprintf("   DEBUG66 [ruvIII_C_Varying] Using ruv_grouping_variable from object/default: '%s'", ifelse(is.null(ruv_grouping_variable_final), "NULL", ruv_grouping_variable_final)))
-                log_info("Using 'ruv_grouping_variable' from object args or default: {ruv_grouping_variable_final}")
+        # 2. RUV Number K (k)
+        if (!is.null(ruv_number_k)) {
+            ruv_number_k_resolved <- ruv_number_k
+            message(sprintf("   DEBUG66 [ruvIII_C_Varying] Using ruv_number_k from function arg, class = '%s'", class(ruv_number_k_resolved)[1]))
+            log_info("Using 'ruv_number_k' from function argument.")
+        } else {
+            ruv_number_k_resolved <- checkParamsObjectFunctionSimplify(theObject, "ruv_number_k", default_value = NULL)
+            message(sprintf(
+                "   DEBUG66 [ruvIII_C_Varying] Using ruv_number_k from object/default: is.null = %s, class = '%s'",
+                is.null(ruv_number_k_resolved), class(ruv_number_k_resolved)[1]
+            ))
+            log_info("Using 'ruv_number_k' from object args or default.")
+        }
+
+        # 3. Control Features (ctrl)
+        if (!is.null(ctrl)) {
+            ctrl_resolved <- ctrl
+            message(sprintf("   DEBUG66 [ruvIII_C_Varying] Using ctrl from function arg, class = '%s', is.list = %s", class(ctrl_resolved)[1], is.list(ctrl_resolved)))
+            log_info("Using 'ctrl' from function argument.")
+        } else {
+            ctrl_resolved <- checkParamsObjectFunctionSimplify(theObject, "ctrl", default_value = NULL)
+            message(sprintf(
+                "   DEBUG66 [ruvIII_C_Varying] Using ctrl from object/default: is.null = %s, class = '%s', is.list = %s",
+                is.null(ctrl_resolved), class(ctrl_resolved)[1], is.list(ctrl_resolved)
+            ))
+            log_info("Using 'ctrl' from object args or default.")
+        }
+
+        # Debug detailed ctrl info
+        if (is.list(ctrl_resolved) && !is.null(ctrl_resolved)) {
+            message(sprintf("   DEBUG66 [ruvIII_C_Varying] ctrl_resolved is a list with names: %s", paste(names(ctrl_resolved), collapse = ", ")))
+            for (nm in names(ctrl_resolved)) {
+                ctrl_item <- ctrl_resolved[[nm]]
+                num_ctrl <- if (is.logical(ctrl_item)) sum(ctrl_item, na.rm = TRUE) else length(ctrl_item)
+                message(sprintf("   DEBUG66 [ruvIII_C_Varying] ctrl_resolved[['%s']]: class = '%s', num_ctrl = %d", nm, class(ctrl_item)[1], num_ctrl))
+            }
+        }
+        # Debug detailed k info
+        if (is.list(ruv_number_k_resolved) && !is.null(ruv_number_k_resolved)) {
+            message(sprintf("   DEBUG66 [ruvIII_C_Varying] ruv_number_k_resolved is a list with names: %s", paste(names(ruv_number_k_resolved), collapse = ", ")))
+            for (nm in names(ruv_number_k_resolved)) {
+                message(sprintf("   DEBUG66 [ruvIII_C_Varying] ruv_number_k_resolved[['%s']] = %s", nm, ruv_number_k_resolved[[nm]]))
+            }
+        } else if (!is.null(ruv_number_k_resolved)) {
+            message(sprintf("   DEBUG66 [ruvIII_C_Varying] ruv_number_k_resolved = %s (single value)", ruv_number_k_resolved))
+        }
+
+        # --- Update Object Args (Store the resolved values) ---
+        # We store the *final* value used, regardless of source
+        # Using direct slot assignment as updateParamInObject seemed problematic
+        theObject@args$ruv_grouping_variable <- ruv_grouping_variable_final
+        theObject@args$ruv_number_k <- ruv_number_k_resolved
+        theObject@args$ctrl <- ctrl_resolved
+
+        # --- Validation (Using the final resolved values) ---
+        if (is.null(ruv_grouping_variable_final)) {
+            message("   DEBUG66 [ruvIII_C_Varying] FAIL - ruv_grouping_variable_final is NULL!")
+            log_error("Missing required parameter 'ruv_grouping_variable'. Must be provided in function call or object args.")
+            stop("Missing required 'ruv_grouping_variable'")
+        }
+        if (!ruv_grouping_variable_final %in% colnames(design_matrix)) {
+            message(sprintf("   DEBUG66 [ruvIII_C_Varying] FAIL - ruv_grouping_variable '%s' not in design_matrix!", ruv_grouping_variable_final))
+            log_error("Resolved 'ruv_grouping_variable' ('{ruv_grouping_variable_final}') not found as a column in the design matrix.", .logr = TRUE)
+            stop("'ruv_grouping_variable' not in design matrix")
+        }
+        if (is.null(ruv_number_k_resolved)) {
+            message("   DEBUG66 [ruvIII_C_Varying] FAIL - ruv_number_k_resolved is NULL!")
+            log_error("Missing required parameter 'ruv_number_k' (K value). Must be provided in function call or object args.")
+            stop("Missing required 'ruv_number_k'")
+        }
+        if (is.null(ctrl_resolved)) {
+            message("   DEBUG66 [ruvIII_C_Varying] FAIL - ctrl_resolved is NULL!")
+            log_error("Missing required parameter 'ctrl' (control features). Must be provided in function call or object args.")
+            stop("Missing required 'ctrl'")
+        }
+
+        log_info("Starting RUV-III C Varying correction for lipids.")
+        log_info("Parameters (Resolved):")
+        log_info("  - RUV Grouping Variable: {ruv_grouping_variable_final}")
+        log_info("  - RUV Number K (k): Type '{class(ruv_number_k_resolved)}' (Value(s) resolved per assay)")
+        log_info("  - Control Features (ctrl): Type '{class(ctrl_resolved)}' (Value(s) resolved per assay)")
+
+        if (!is.list(assay_list)) {
+            assay_list <- list(assay_list)
+        }
+
+        if (length(assay_list) == 0) {
+            message("   DEBUG66 [ruvIII_C_Varying] WARNING - no assays found, returning object unchanged")
+            log_warn("No assays found in `lipid_data` slot. Returning object unchanged.")
+            return(theObject)
+        }
+        # Ensure list is named
+        assay_names <- names(assay_list)
+        if (is.null(assay_names) || any(assay_names == "")) {
+            needs_name <- which(is.null(assay_names) | assay_names == "")
+            new_names <- paste0("Assay_", seq_along(assay_list))
+            assay_names[needs_name] <- new_names[needs_name]
+            names(assay_list) <- assay_names
+            message("   DEBUG66 [ruvIII_C_Varying] Assay list had unnamed elements, using defaults")
+            log_warn("Assay list contained unnamed or empty elements. Using default names (Assay_...).", immediate. = TRUE)
+        }
+        message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay names: %s", paste(assay_names, collapse = ", ")))
+
+        # --- Validate structure of k and ctrl if they are lists ---
+        is_k_list <- is.list(ruv_number_k_resolved)
+        # Check if ctrl is a list, but NOT a data.frame (which could be passed accidentally)
+        is_ctrl_list <- is.list(ctrl_resolved) && !is.data.frame(ctrl_resolved)
+        message(sprintf("   DEBUG66 [ruvIII_C_Varying] is_k_list = %s, is_ctrl_list = %s", is_k_list, is_ctrl_list))
+
+        # Validate names if k is a list
+        if (is_k_list && !all(assay_names %in% names(ruv_number_k_resolved))) {
+            missing_k <- setdiff(assay_names, names(ruv_number_k_resolved))
+            message(sprintf("   DEBUG66 [ruvIII_C_Varying] FAIL - k list missing assays: %s", paste(missing_k, collapse = ", ")))
+            log_error("If 'ruv_number_k' is a list, its names must match assay names. Missing K for: {paste(missing_k, collapse=', ')}", .logr = TRUE)
+            stop("Names in 'ruv_number_k' list do not match assay names.")
+        }
+        # Validate names if ctrl is a list
+        if (is_ctrl_list && !all(assay_names %in% names(ctrl_resolved))) {
+            missing_ctrl <- setdiff(assay_names, names(ctrl_resolved))
+            message(sprintf("   DEBUG66 [ruvIII_C_Varying] FAIL - ctrl list missing assays: %s", paste(missing_ctrl, collapse = ", ")))
+            log_error("If 'ctrl' is a list, its names must match assay names. Missing ctrl for: {paste(missing_ctrl, collapse=', ')}", .logr = TRUE)
+            stop("Names in 'ctrl' list do not match assay names.")
+        }
+        # Validate type if k is NOT a list (must be single numeric for multiple assays)
+        if (!is_k_list && length(assay_list) > 1 && !(is.numeric(ruv_number_k_resolved) && length(ruv_number_k_resolved) == 1 && !is.na(ruv_number_k_resolved))) {
+            message(sprintf("   DEBUG66 [ruvIII_C_Varying] FAIL - k not a list but multiple assays, invalid format"))
+            log_error("If multiple assays exist, 'ruv_number_k' must be a single non-NA numeric value or a named list.", .logr = TRUE)
+            stop("Invalid format for 'ruv_number_k' for multiple assays.")
+        }
+        # Validate type if ctrl is NOT a list (must be vector for multiple assays)
+        if (!is_ctrl_list && length(assay_list) > 1 && !(is.logical(ctrl_resolved) || is.numeric(ctrl_resolved) || is.character(ctrl_resolved))) {
+            message(sprintf("   DEBUG66 [ruvIII_C_Varying] FAIL - ctrl not a list but multiple assays, invalid format"))
+            log_error("If multiple assays exist and 'ctrl' is not a list, it must be a logical, numeric, or character vector (applied globally).", .logr = TRUE)
+            stop("Invalid format for 'ctrl' for multiple assays.")
+        }
+
+
+        # --- Process Each Assay ---
+        corrected_assay_list <- lapply(seq_along(assay_list), function(i) {
+            assay_name <- assay_names[i]
+            assay_tibble <- assay_list[[i]]
+            message(sprintf("   DEBUG66 [ruvIII_C_Varying] === Processing assay: %s ===", assay_name))
+            message(sprintf("-- Processing assay for RUVIII: %s", assay_name))
+
+            # --- Get Assay-Specific k and ctrl ---
+            k_assay <- if (is_k_list) ruv_number_k_resolved[[assay_name]] else ruv_number_k_resolved
+            ctrl_assay_input <- if (is_ctrl_list) ctrl_resolved[[assay_name]] else ctrl_resolved
+            message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': k_assay = %s, ctrl_assay_input class = '%s'", assay_name, k_assay, class(ctrl_assay_input)[1]))
+            if (is.logical(ctrl_assay_input)) {
+                message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': ctrl_assay_input sum(TRUE) = %d", assay_name, sum(ctrl_assay_input, na.rm = TRUE)))
             }
 
-            # 2. RUV Number K (k)
-            if (!is.null(ruv_number_k)) {
-                ruv_number_k_resolved <- ruv_number_k
-                message(sprintf("   DEBUG66 [ruvIII_C_Varying] Using ruv_number_k from function arg, class = '%s'", class(ruv_number_k_resolved)[1]))
-                log_info("Using 'ruv_number_k' from function argument.")
-            } else {
-                ruv_number_k_resolved <- checkParamsObjectFunctionSimplify(theObject, "ruv_number_k", default_value = NULL)
-                message(sprintf("   DEBUG66 [ruvIII_C_Varying] Using ruv_number_k from object/default: is.null = %s, class = '%s'", 
-                               is.null(ruv_number_k_resolved), class(ruv_number_k_resolved)[1]))
-                log_info("Using 'ruv_number_k' from object args or default.")
+            # Validate k_assay
+            if (!is.numeric(k_assay) || length(k_assay) != 1 || is.na(k_assay) || k_assay < 0) {
+                message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': FAIL - Invalid k_assay = %s", assay_name, k_assay))
+                log_warn("Assay '{assay_name}': Invalid K value resolved ({k_assay}). Must be a non-negative integer. Skipping.", .logr = TRUE)
+                return(NULL)
+            }
+            k_assay <- as.integer(k_assay) # Ensure integer
+
+            # --- Basic Checks & Data Prep ---
+            if (!tibble::is_tibble(assay_tibble)) {
+                log_warn("Assay '{assay_name}' is not a tibble. Skipping.", .logr = TRUE)
+                return(NULL)
+            }
+            if (!lipid_id_col_name %in% colnames(assay_tibble)) {
+                log_warn("Assay '{assay_name}': ID column '{lipid_id_col_name}' not found. Skipping.", .logr = TRUE)
+                return(NULL)
+            }
+            if (nrow(assay_tibble) < 1) {
+                log_warn("Assay '{assay_name}' has no features. Skipping.", .logr = TRUE)
+                return(NULL)
             }
 
-            # 3. Control Features (ctrl)
-            if (!is.null(ctrl)) {
-                ctrl_resolved <- ctrl
-                message(sprintf("   DEBUG66 [ruvIII_C_Varying] Using ctrl from function arg, class = '%s', is.list = %s", class(ctrl_resolved)[1], is.list(ctrl_resolved)))
-                log_info("Using 'ctrl' from function argument.")
-            } else {
-                ctrl_resolved <- checkParamsObjectFunctionSimplify(theObject, "ctrl", default_value = NULL)
-                message(sprintf("   DEBUG66 [ruvIII_C_Varying] Using ctrl from object/default: is.null = %s, class = '%s', is.list = %s", 
-                               is.null(ctrl_resolved), class(ctrl_resolved)[1], is.list(ctrl_resolved)))
-                 log_info("Using 'ctrl' from object args or default.")
+            # Identify sample columns based on design matrix
+            design_samples <- tryCatch(as.character(design_matrix[[sample_id]]), error = function(e) {
+                character(0)
+            })
+            if (length(design_samples) == 0) {
+                log_warn("Assay '{assay_name}': No valid sample IDs in design matrix. Skipping.", .logr = TRUE)
+                return(NULL)
+            }
+            all_assay_cols <- colnames(assay_tibble)
+            sample_cols <- intersect(all_assay_cols, design_samples)
+            if (length(sample_cols) < 2) {
+                log_warn("Assay '{assay_name}': Fewer than 2 sample columns found. Skipping.", .logr = TRUE)
+                return(NULL)
             }
 
-            # Debug detailed ctrl info
-            if (is.list(ctrl_resolved) && !is.null(ctrl_resolved)) {
-                message(sprintf("   DEBUG66 [ruvIII_C_Varying] ctrl_resolved is a list with names: %s", paste(names(ctrl_resolved), collapse = ", ")))
-                for (nm in names(ctrl_resolved)) {
-                    ctrl_item <- ctrl_resolved[[nm]]
-                    num_ctrl <- if (is.logical(ctrl_item)) sum(ctrl_item, na.rm = TRUE) else length(ctrl_item)
-                    message(sprintf("   DEBUG66 [ruvIII_C_Varying] ctrl_resolved[['%s']]: class = '%s', num_ctrl = %d", nm, class(ctrl_item)[1], num_ctrl))
-                }
-            }
-            # Debug detailed k info
-            if (is.list(ruv_number_k_resolved) && !is.null(ruv_number_k_resolved)) {
-                message(sprintf("   DEBUG66 [ruvIII_C_Varying] ruv_number_k_resolved is a list with names: %s", paste(names(ruv_number_k_resolved), collapse = ", ")))
-                for (nm in names(ruv_number_k_resolved)) {
-                    message(sprintf("   DEBUG66 [ruvIII_C_Varying] ruv_number_k_resolved[['%s']] = %s", nm, ruv_number_k_resolved[[nm]]))
-                }
-            } else if (!is.null(ruv_number_k_resolved)) {
-                message(sprintf("   DEBUG66 [ruvIII_C_Varying] ruv_number_k_resolved = %s (single value)", ruv_number_k_resolved))
+            # Ensure sample columns are numeric
+            non_numeric_samples <- sample_cols[!purrr::map_lgl(assay_tibble[sample_cols], is.numeric)]
+            if (length(non_numeric_samples) > 0) {
+                log_warn("Assay '{assay_name}': Coercing non-numeric sample columns to numeric: {paste(non_numeric_samples, collapse=', ')}", .logr = TRUE)
+                assay_tibble <- assay_tibble |> dplyr::mutate(dplyr::across(dplyr::all_of(non_numeric_samples), as.numeric))
             }
 
-            # --- Update Object Args (Store the resolved values) ---
-            # We store the *final* value used, regardless of source
-            # Using direct slot assignment as updateParamInObject seemed problematic
-            theObject@args$ruv_grouping_variable <- ruv_grouping_variable_final
-            theObject@args$ruv_number_k <- ruv_number_k_resolved
-            theObject@args$ctrl <- ctrl_resolved
-
-            # --- Validation (Using the final resolved values) ---
-            if (is.null(ruv_grouping_variable_final)) {
-                message("   DEBUG66 [ruvIII_C_Varying] FAIL - ruv_grouping_variable_final is NULL!")
-                log_error("Missing required parameter 'ruv_grouping_variable'. Must be provided in function call or object args.")
-                stop("Missing required 'ruv_grouping_variable'")
-            }
-            if (!ruv_grouping_variable_final %in% colnames(design_matrix)) {
-                 message(sprintf("   DEBUG66 [ruvIII_C_Varying] FAIL - ruv_grouping_variable '%s' not in design_matrix!", ruv_grouping_variable_final))
-                 log_error("Resolved 'ruv_grouping_variable' ('{ruv_grouping_variable_final}') not found as a column in the design matrix.", .logr = TRUE)
-                 stop("'ruv_grouping_variable' not in design matrix")
-            }
-            if (is.null(ruv_number_k_resolved)) {
-                 message("   DEBUG66 [ruvIII_C_Varying] FAIL - ruv_number_k_resolved is NULL!")
-                 log_error("Missing required parameter 'ruv_number_k' (K value). Must be provided in function call or object args.")
-                 stop("Missing required 'ruv_number_k'")
-            }
-            if (is.null(ctrl_resolved)) {
-                 message("   DEBUG66 [ruvIII_C_Varying] FAIL - ctrl_resolved is NULL!")
-                 log_error("Missing required parameter 'ctrl' (control features). Must be provided in function call or object args.")
-                 stop("Missing required 'ctrl'")
-            }
-
-            log_info("Starting RUV-III C Varying correction for lipids.")
-            log_info("Parameters (Resolved):")
-            log_info("  - RUV Grouping Variable: {ruv_grouping_variable_final}")
-            log_info("  - RUV Number K (k): Type '{class(ruv_number_k_resolved)}' (Value(s) resolved per assay)")
-            log_info("  - Control Features (ctrl): Type '{class(ctrl_resolved)}' (Value(s) resolved per assay)")
-
-            if(!is.list( assay_list)) {
-              assay_list <- list( assay_list)
-            }
-
-            if (length(assay_list) == 0) {
-                message("   DEBUG66 [ruvIII_C_Varying] WARNING - no assays found, returning object unchanged")
-                log_warn("No assays found in `lipid_data` slot. Returning object unchanged.")
-                return(theObject)
-            }
-            # Ensure list is named
-            assay_names <- names(assay_list)
-            if (is.null(assay_names) || any(assay_names == "")) {
-                needs_name <- which(is.null(assay_names) | assay_names == "")
-                new_names <- paste0("Assay_", seq_along(assay_list))
-                assay_names[needs_name] <- new_names[needs_name]
-                names(assay_list) <- assay_names
-                message("   DEBUG66 [ruvIII_C_Varying] Assay list had unnamed elements, using defaults")
-                log_warn("Assay list contained unnamed or empty elements. Using default names (Assay_...).", immediate. = TRUE)
-            }
-            message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay names: %s", paste(assay_names, collapse = ", ")))
-
-            # --- Validate structure of k and ctrl if they are lists ---
-             is_k_list <- is.list(ruv_number_k_resolved)
-             # Check if ctrl is a list, but NOT a data.frame (which could be passed accidentally)
-             is_ctrl_list <- is.list(ctrl_resolved) && !is.data.frame(ctrl_resolved)
-             message(sprintf("   DEBUG66 [ruvIII_C_Varying] is_k_list = %s, is_ctrl_list = %s", is_k_list, is_ctrl_list))
-
-             # Validate names if k is a list
-             if (is_k_list && !all(assay_names %in% names(ruv_number_k_resolved))) {
-                 missing_k <- setdiff(assay_names, names(ruv_number_k_resolved))
-                 message(sprintf("   DEBUG66 [ruvIII_C_Varying] FAIL - k list missing assays: %s", paste(missing_k, collapse = ", ")))
-                 log_error("If 'ruv_number_k' is a list, its names must match assay names. Missing K for: {paste(missing_k, collapse=', ')}", .logr = TRUE)
-                 stop("Names in 'ruv_number_k' list do not match assay names.")
-             }
-             # Validate names if ctrl is a list
-             if (is_ctrl_list && !all(assay_names %in% names(ctrl_resolved))) {
-                  missing_ctrl <- setdiff(assay_names, names(ctrl_resolved))
-                  message(sprintf("   DEBUG66 [ruvIII_C_Varying] FAIL - ctrl list missing assays: %s", paste(missing_ctrl, collapse = ", ")))
-                  log_error("If 'ctrl' is a list, its names must match assay names. Missing ctrl for: {paste(missing_ctrl, collapse=', ')}", .logr = TRUE)
-                  stop("Names in 'ctrl' list do not match assay names.")
-             }
-             # Validate type if k is NOT a list (must be single numeric for multiple assays)
-             if (!is_k_list && length(assay_list) > 1 && !(is.numeric(ruv_number_k_resolved) && length(ruv_number_k_resolved) == 1 && !is.na(ruv_number_k_resolved))) {
-                  message(sprintf("   DEBUG66 [ruvIII_C_Varying] FAIL - k not a list but multiple assays, invalid format"))
-                  log_error("If multiple assays exist, 'ruv_number_k' must be a single non-NA numeric value or a named list.", .logr = TRUE)
-                  stop("Invalid format for 'ruv_number_k' for multiple assays.")
-             }
-             # Validate type if ctrl is NOT a list (must be vector for multiple assays)
-             if (!is_ctrl_list && length(assay_list) > 1 && !(is.logical(ctrl_resolved) || is.numeric(ctrl_resolved) || is.character(ctrl_resolved))) {
-                  message(sprintf("   DEBUG66 [ruvIII_C_Varying] FAIL - ctrl not a list but multiple assays, invalid format"))
-                  log_error("If multiple assays exist and 'ctrl' is not a list, it must be a logical, numeric, or character vector (applied globally).", .logr = TRUE)
-                  stop("Invalid format for 'ctrl' for multiple assays.")
-             }
-
-
-            # --- Process Each Assay ---
-            corrected_assay_list <- lapply(seq_along(assay_list), function(i) {
-                assay_name <- assay_names[i]
-                assay_tibble <- assay_list[[i]]
-                message(sprintf("   DEBUG66 [ruvIII_C_Varying] === Processing assay: %s ===", assay_name))
-                message(sprintf("-- Processing assay for RUVIII: %s", assay_name))
-
-                # --- Get Assay-Specific k and ctrl ---
-                k_assay <- if (is_k_list) ruv_number_k_resolved[[assay_name]] else ruv_number_k_resolved
-                ctrl_assay_input <- if (is_ctrl_list) ctrl_resolved[[assay_name]] else ctrl_resolved
-                message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': k_assay = %s, ctrl_assay_input class = '%s'", assay_name, k_assay, class(ctrl_assay_input)[1]))
-                if (is.logical(ctrl_assay_input)) {
-                    message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': ctrl_assay_input sum(TRUE) = %d", assay_name, sum(ctrl_assay_input, na.rm = TRUE)))
-                }
-
-                # Validate k_assay
-                if (!is.numeric(k_assay) || length(k_assay) != 1 || is.na(k_assay) || k_assay < 0) {
-                    message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': FAIL - Invalid k_assay = %s", assay_name, k_assay))
-                    log_warn("Assay '{assay_name}': Invalid K value resolved ({k_assay}). Must be a non-negative integer. Skipping.", .logr = TRUE)
-                    return(NULL)
-                }
-                k_assay <- as.integer(k_assay) # Ensure integer
-
-                # --- Basic Checks & Data Prep ---
-                if (!tibble::is_tibble(assay_tibble)) {
-                    log_warn("Assay '{assay_name}' is not a tibble. Skipping.", .logr=TRUE); return(NULL)
-                }
-                if (!lipid_id_col_name %in% colnames(assay_tibble)) {
-                     log_warn("Assay '{assay_name}': ID column '{lipid_id_col_name}' not found. Skipping.", .logr=TRUE); return(NULL)
-                }
-                if (nrow(assay_tibble) < 1) {
-                    log_warn("Assay '{assay_name}' has no features. Skipping.", .logr=TRUE); return(NULL)
-                }
-
-                # Identify sample columns based on design matrix
-                design_samples <- tryCatch(as.character(design_matrix[[sample_id]]), error = function(e) { character(0) })
-                if (length(design_samples) == 0) { log_warn("Assay '{assay_name}': No valid sample IDs in design matrix. Skipping.", .logr=TRUE); return(NULL) }
-                all_assay_cols <- colnames(assay_tibble)
-                sample_cols <- intersect(all_assay_cols, design_samples)
-                if (length(sample_cols) < 2) { log_warn("Assay '{assay_name}': Fewer than 2 sample columns found. Skipping.", .logr=TRUE); return(NULL) }
-
-                # Ensure sample columns are numeric
-                non_numeric_samples <- sample_cols[!purrr::map_lgl(assay_tibble[sample_cols], is.numeric)]
-                if (length(non_numeric_samples) > 0) {
-                   log_warn("Assay '{assay_name}': Coercing non-numeric sample columns to numeric: {paste(non_numeric_samples, collapse=', ')}", .logr = TRUE)
-                   assay_tibble <- assay_tibble |> dplyr::mutate(dplyr::across(dplyr::all_of(non_numeric_samples), as.numeric))
-                }
-
-                # Convert to matrix (features x samples)
-                # Handle potential duplicate feature IDs before converting to rownames
-                assay_matrix <- tryCatch({
+            # Convert to matrix (features x samples)
+            # Handle potential duplicate feature IDs before converting to rownames
+            assay_matrix <- tryCatch(
+                {
                     n_initial <- nrow(assay_tibble)
                     assay_tibble_unique <- assay_tibble |>
-                         dplyr::group_by(!!rlang::sym(lipid_id_col_name)) |>
-                         dplyr::filter(dplyr::row_number() == 1) |> # Keep only first instance
-                         dplyr::ungroup()
+                        dplyr::group_by(!!rlang::sym(lipid_id_col_name)) |>
+                        dplyr::filter(dplyr::row_number() == 1) |> # Keep only first instance
+                        dplyr::ungroup()
                     n_final <- nrow(assay_tibble_unique)
                     if (n_final < n_initial) {
                         log_warn("Assay '{assay_name}': Duplicate feature IDs detected in '{lipid_id_col_name}'. Keeping first instance only ({n_final}/{n_initial} features).", .logr = TRUE)
@@ -2571,613 +2710,670 @@ setMethod(f = "ruvIII_C_Varying",
                         tibble::column_to_rownames(var = lipid_id_col_name) |>
                         dplyr::select(dplyr::all_of(sample_cols)) |> # Select only sample columns
                         as.matrix()
-                }, error = function(e) {
-                    log_warn("Assay '{assay_name}': Error converting to matrix: {e$message}. Skipping.", .logr=TRUE); return(NULL)
-                })
-                 if (is.null(assay_matrix)) return(NULL)
-                 assay_matrix[!is.finite(assay_matrix)] <- NA # Handle Inf/-Inf AFTER conversion
-
-                 # Filter design matrix to match actual samples in matrix
-                 design_matrix_filtered <- design_matrix |>
-                     dplyr::filter(!!rlang::sym(sample_id) %in% colnames(assay_matrix)) |>
-                     as.data.frame() # Ensure data.frame
-
-                 if (nrow(design_matrix_filtered) < 2) { log_warn("Assay '{assay_name}': Fewer than 2 samples remain after filtering design matrix. Skipping.", .logr=TRUE); return(NULL) }
-                 if (nrow(assay_matrix) < 1) { log_warn("Assay '{assay_name}': Fewer than 1 feature remains. Skipping.", .logr=TRUE); return(NULL) }
-
-
-                # --- Prepare Y (Samples x Features) --- NO IMPUTATION ---
-                # Ensure column order matches filtered design matrix sample order
-                Y_final <- t(assay_matrix[, as.character(design_matrix_filtered[[sample_id]]), drop = FALSE])
-
-                 # Check for NAs *before* RUV-III, as the helper might not handle them
-                 if (anyNA(Y_final)) {
-                    log_warn("   Assay '{assay_name}': Missing values (NA) detected in data matrix Y *before* RUV. RUVIII_C_Varying might fail or produce unexpected results if it doesn't handle NAs internally. Consider imputation *before* calling ruvIII_C_Varying if needed.", .logr = TRUE)
-                 }
-
-                # Check dimensions after transpose
-                if(nrow(Y_final) < 2 || ncol(Y_final) < 1) {
-                    log_warn("Assay '{assay_name}': Insufficient dimensions after preparing Y matrix. Skipping.", .logr=TRUE); return(NULL)
+                },
+                error = function(e) {
+                    log_warn("Assay '{assay_name}': Error converting to matrix: {e$message}. Skipping.", .logr = TRUE)
+                    return(NULL)
                 }
+            )
+            if (is.null(assay_matrix)) {
+                return(NULL)
+            }
+            assay_matrix[!is.finite(assay_matrix)] <- NA # Handle Inf/-Inf AFTER conversion
+
+            # Filter design matrix to match actual samples in matrix
+            design_matrix_filtered <- design_matrix |>
+                dplyr::filter(!!rlang::sym(sample_id) %in% colnames(assay_matrix)) |>
+                as.data.frame() # Ensure data.frame
+
+            if (nrow(design_matrix_filtered) < 2) {
+                log_warn("Assay '{assay_name}': Fewer than 2 samples remain after filtering design matrix. Skipping.", .logr = TRUE)
+                return(NULL)
+            }
+            if (nrow(assay_matrix) < 1) {
+                log_warn("Assay '{assay_name}': Fewer than 1 feature remains. Skipping.", .logr = TRUE)
+                return(NULL)
+            }
 
 
-                # --- Prepare M Matrix (using filtered design matrix) ---
-                 M <- tryCatch({
-                     getRuvIIIReplicateMatrixHelper(design_matrix_filtered,
-                                                  !!rlang::sym(sample_id),
-                                                  !!rlang::sym(ruv_grouping_variable_final))
-                 }, error = function(e){
-                      log_warn("Assay '{assay_name}': Error getting RUV III Replicate Matrix: {e$message}. Skipping.", .logr = TRUE)
-                      return(NULL)
-                 })
-                 if(is.null(M)) return(NULL) # Skip if M fails
+            # --- Prepare Y (Samples x Features) --- NO IMPUTATION ---
+            # Ensure column order matches filtered design matrix sample order
+            Y_final <- t(assay_matrix[, as.character(design_matrix_filtered[[sample_id]]), drop = FALSE])
 
-                 # Ensure M matrix dimensions match Y_final rows (samples)
-                 if(nrow(M) != nrow(Y_final) || !identical(rownames(M), rownames(Y_final))) {
-                      log_warn("Assay '{assay_name}': M matrix rownames do not match Y matrix rownames after filtering. Attempting to reorder.", .logr = TRUE)
-                      # Attempt to reorder M based on Y_final rownames if possible
-                      matched_m_rows <- match(rownames(Y_final), rownames(M))
-                      if (anyNA(matched_m_rows)) {
-                         log_error("   Cannot reorder M matrix - rownames mismatch. Skipping.")
-                         return(NULL)
-                      }
-                      M <- M[matched_m_rows, , drop=FALSE]
-                      log_info("   Reordered M matrix rows to match Y matrix.")
-                      if(nrow(M) != nrow(Y_final)) { # Double check after reorder
-                          log_error("   M matrix row count still mismatch after reorder. Skipping.")
-                          return(NULL)
-                      }
-                 }
+            # Check for NAs *before* RUV-III, as the helper might not handle them
+            if (anyNA(Y_final)) {
+                log_warn("   Assay '{assay_name}': Missing values (NA) detected in data matrix Y *before* RUV. RUVIII_C_Varying might fail or produce unexpected results if it doesn't handle NAs internally. Consider imputation *before* calling ruvIII_C_Varying if needed.", .logr = TRUE)
+            }
+
+            # Check dimensions after transpose
+            if (nrow(Y_final) < 2 || ncol(Y_final) < 1) {
+                log_warn("Assay '{assay_name}': Insufficient dimensions after preparing Y matrix. Skipping.", .logr = TRUE)
+                return(NULL)
+            }
 
 
-                 # --- Prepare potentialControls for RUVIII_C_Varying ---
-                 feature_names_in_assay <- colnames(Y_final) # Features present in Y_final
+            # --- Prepare M Matrix (using filtered design matrix) ---
+            M <- tryCatch(
+                {
+                    getRuvIIIReplicateMatrixHelper(
+                        design_matrix_filtered,
+                        !!rlang::sym(sample_id),
+                        !!rlang::sym(ruv_grouping_variable_final)
+                    )
+                },
+                error = function(e) {
+                    log_warn("Assay '{assay_name}': Error getting RUV III Replicate Matrix: {e$message}. Skipping.", .logr = TRUE)
+                    return(NULL)
+                }
+            )
+            if (is.null(M)) {
+                return(NULL)
+            } # Skip if M fails
 
-                 # Resolve ctrl_assay_input into a logical vector aligned with feature_names_in_assay
-                  ctrl_logical_assay <- NULL
-                  if (is.null(ctrl_assay_input)) {
-                      log_warn("Assay '{assay_name}': Resolved control features ('ctrl') is NULL. Skipping.", .logr = TRUE)
-                      return(NULL)
-                  } else if (is.numeric(ctrl_assay_input)) {
-                     if (any(ctrl_assay_input < 1) || any(ctrl_assay_input > length(feature_names_in_assay))) {
-                         log_warn("Assay '{assay_name}': Numeric 'ctrl' indices are out of bounds ({length(feature_names_in_assay)} features). Skipping.", .logr = TRUE)
-                         return(NULL)
-                     }
-                     ctrl_logical_assay <- seq_along(feature_names_in_assay) %in% ctrl_assay_input
-                  } else if (is.logical(ctrl_assay_input)) {
-                     if (length(ctrl_assay_input) != length(feature_names_in_assay)) {
-                         if (!is.null(names(ctrl_assay_input))) {
-                             # Try to align based on names
-                             feature_match <- match(feature_names_in_assay, names(ctrl_assay_input))
-                             if (anyNA(feature_match)) {
-                                 log_warn("Assay '{assay_name}': Some assay features not found in named logical 'ctrl' vector. Skipping.", .logr = TRUE)
-                                 return(NULL)
-                             }
-                             ctrl_logical_assay <- ctrl_assay_input[feature_match]
-                             if (length(ctrl_logical_assay) != length(feature_names_in_assay)) {
-                                 log_warn("Assay '{assay_name}': Length mismatch after aligning named logical 'ctrl' vector. Skipping.", .logr = TRUE)
-                                 return(NULL)
-                             }
-                             log_info("   Assay '{assay_name}': Aligned named logical 'ctrl' vector to assay features.", .logr = TRUE)
-                         } else {
-                             log_warn("Assay '{assay_name}': Unnamed logical 'ctrl' vector length ({length(ctrl_assay_input)}) does not match features ({length(feature_names_in_assay)}). Skipping.", .logr = TRUE)
-                             return(NULL)
-                         }
-                     } else {
-                         ctrl_logical_assay <- ctrl_assay_input # Assume correct order
-                     }
-                  } else if (is.character(ctrl_assay_input)) {
-                     ctrl_logical_assay <- feature_names_in_assay %in% ctrl_assay_input
-                  } else {
-                     log_warn("Assay '{assay_name}': Invalid type for resolved 'ctrl' parameter. Expected numeric, logical, or character. Skipping.", .logr = TRUE)
-                     return(NULL)
-                  }
-
-                  if (is.null(ctrl_logical_assay)) {
-                       log_warn("Assay '{assay_name}': Failed to resolve control features to logical vector. Skipping.", .logr = TRUE)
-                       return(NULL)
-                  }
-                  num_controls_found <- sum(ctrl_logical_assay, na.rm = TRUE)
-                  message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': num_controls_found = %d", assay_name, num_controls_found))
-                  if (num_controls_found < 1) {
-                      message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': FAIL - no control features", assay_name))
-                      log_warn("Assay '{assay_name}': No control features identified after resolution. Skipping.", .logr = TRUE)
-                       return(NULL)
-                  }
-                  log_info("   Assay '{assay_name}': Using {num_controls_found} control features.", .logr = TRUE)
-
-                 # Get the names of the control features
-                 potential_controls_names <- feature_names_in_assay[ctrl_logical_assay]
-                 message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': potential_controls_names count = %d", assay_name, length(potential_controls_names)))
+            # Ensure M matrix dimensions match Y_final rows (samples)
+            if (nrow(M) != nrow(Y_final) || !identical(rownames(M), rownames(Y_final))) {
+                log_warn("Assay '{assay_name}': M matrix rownames do not match Y matrix rownames after filtering. Attempting to reorder.", .logr = TRUE)
+                # Attempt to reorder M based on Y_final rownames if possible
+                matched_m_rows <- match(rownames(Y_final), rownames(M))
+                if (anyNA(matched_m_rows)) {
+                    log_error("   Cannot reorder M matrix - rownames mismatch. Skipping.")
+                    return(NULL)
+                }
+                M <- M[matched_m_rows, , drop = FALSE]
+                log_info("   Reordered M matrix rows to match Y matrix.")
+                if (nrow(M) != nrow(Y_final)) { # Double check after reorder
+                    log_error("   M matrix row count still mismatch after reorder. Skipping.")
+                    return(NULL)
+                }
+            }
 
 
-                # --- Call RUVIII_C_Varying ---
-                message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': Calling RUVIII_C_Varying with k = %d, Y dims = %dx%d, M dims = %dx%d", 
-                               assay_name, k_assay, nrow(Y_final), ncol(Y_final), nrow(M), ncol(M)))
-                cln_mat <- tryCatch({
+            # --- Prepare potentialControls for RUVIII_C_Varying ---
+            feature_names_in_assay <- colnames(Y_final) # Features present in Y_final
+
+            # Resolve ctrl_assay_input into a logical vector aligned with feature_names_in_assay
+            ctrl_logical_assay <- NULL
+            if (is.null(ctrl_assay_input)) {
+                log_warn("Assay '{assay_name}': Resolved control features ('ctrl') is NULL. Skipping.", .logr = TRUE)
+                return(NULL)
+            } else if (is.numeric(ctrl_assay_input)) {
+                if (any(ctrl_assay_input < 1) || any(ctrl_assay_input > length(feature_names_in_assay))) {
+                    log_warn("Assay '{assay_name}': Numeric 'ctrl' indices are out of bounds ({length(feature_names_in_assay)} features). Skipping.", .logr = TRUE)
+                    return(NULL)
+                }
+                ctrl_logical_assay <- seq_along(feature_names_in_assay) %in% ctrl_assay_input
+            } else if (is.logical(ctrl_assay_input)) {
+                if (length(ctrl_assay_input) != length(feature_names_in_assay)) {
+                    if (!is.null(names(ctrl_assay_input))) {
+                        # Try to align based on names
+                        feature_match <- match(feature_names_in_assay, names(ctrl_assay_input))
+                        if (anyNA(feature_match)) {
+                            log_warn("Assay '{assay_name}': Some assay features not found in named logical 'ctrl' vector. Skipping.", .logr = TRUE)
+                            return(NULL)
+                        }
+                        ctrl_logical_assay <- ctrl_assay_input[feature_match]
+                        if (length(ctrl_logical_assay) != length(feature_names_in_assay)) {
+                            log_warn("Assay '{assay_name}': Length mismatch after aligning named logical 'ctrl' vector. Skipping.", .logr = TRUE)
+                            return(NULL)
+                        }
+                        log_info("   Assay '{assay_name}': Aligned named logical 'ctrl' vector to assay features.", .logr = TRUE)
+                    } else {
+                        log_warn("Assay '{assay_name}': Unnamed logical 'ctrl' vector length ({length(ctrl_assay_input)}) does not match features ({length(feature_names_in_assay)}). Skipping.", .logr = TRUE)
+                        return(NULL)
+                    }
+                } else {
+                    ctrl_logical_assay <- ctrl_assay_input # Assume correct order
+                }
+            } else if (is.character(ctrl_assay_input)) {
+                ctrl_logical_assay <- feature_names_in_assay %in% ctrl_assay_input
+            } else {
+                log_warn("Assay '{assay_name}': Invalid type for resolved 'ctrl' parameter. Expected numeric, logical, or character. Skipping.", .logr = TRUE)
+                return(NULL)
+            }
+
+            if (is.null(ctrl_logical_assay)) {
+                log_warn("Assay '{assay_name}': Failed to resolve control features to logical vector. Skipping.", .logr = TRUE)
+                return(NULL)
+            }
+            num_controls_found <- sum(ctrl_logical_assay, na.rm = TRUE)
+            message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': num_controls_found = %d", assay_name, num_controls_found))
+            if (num_controls_found < 1) {
+                message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': FAIL - no control features", assay_name))
+                log_warn("Assay '{assay_name}': No control features identified after resolution. Skipping.", .logr = TRUE)
+                return(NULL)
+            }
+            log_info("   Assay '{assay_name}': Using {num_controls_found} control features.", .logr = TRUE)
+
+            # Get the names of the control features
+            potential_controls_names <- feature_names_in_assay[ctrl_logical_assay]
+            message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': potential_controls_names count = %d", assay_name, length(potential_controls_names)))
+
+
+            # --- Call RUVIII_C_Varying ---
+            message(sprintf(
+                "   DEBUG66 [ruvIII_C_Varying] Assay '%s': Calling RUVIII_C_Varying with k = %d, Y dims = %dx%d, M dims = %dx%d",
+                assay_name, k_assay, nrow(Y_final), ncol(Y_final), nrow(M), ncol(M)
+            ))
+            cln_mat <- tryCatch(
+                {
                     # Check if RUVIII_C_Varying exists
                     if (!exists("RUVIII_C_Varying", mode = "function")) {
-                         message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': FAIL - RUVIII_C_Varying function not found!", assay_name))
-                         stop("Function 'RUVIII_C_Varying' not found. Ensure it is loaded from its package or source file.")
+                        message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': FAIL - RUVIII_C_Varying function not found!", assay_name))
+                        stop("Function 'RUVIII_C_Varying' not found. Ensure it is loaded from its package or source file.")
                     }
-                    RUVIII_C_Varying(k = k_assay,
-                                   Y = Y_final, # Use data potentially containing NAs
-                                   M = M,
-                                   toCorrect = colnames(Y_final), # Correct all features
-                                   potentialControls = potential_controls_names)
-                }, error = function(e) {
+                    RUVIII_C_Varying(
+                        k = k_assay,
+                        Y = Y_final, # Use data potentially containing NAs
+                        M = M,
+                        toCorrect = colnames(Y_final), # Correct all features
+                        potentialControls = potential_controls_names
+                    )
+                },
+                error = function(e) {
                     message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': RUVIII_C_Varying FAILED - %s", assay_name, e$message))
                     log_warn("Assay '{assay_name}': Error calling RUVIII_C_Varying: {e$message}. Skipping.", .logr = TRUE)
                     return(NULL)
-                })
-                if (is.null(cln_mat) || !is.matrix(cln_mat)) {
-                    message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': FAIL - RUVIII_C_Varying returned NULL or non-matrix", assay_name))
-                    log_warn("Assay '{assay_name}': RUVIII_C_Varying did not return a valid matrix. Skipping.", .logr = TRUE)
-                    return(NULL) # Skip assay if RUV fails
                 }
-                message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': RUVIII_C_Varying SUCCESS - returned matrix dims = %dx%d", assay_name, nrow(cln_mat), ncol(cln_mat)))
+            )
+            if (is.null(cln_mat) || !is.matrix(cln_mat)) {
+                message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': FAIL - RUVIII_C_Varying returned NULL or non-matrix", assay_name))
+                log_warn("Assay '{assay_name}': RUVIII_C_Varying did not return a valid matrix. Skipping.", .logr = TRUE)
+                return(NULL) # Skip assay if RUV fails
+            }
+            message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': RUVIII_C_Varying SUCCESS - returned matrix dims = %dx%d", assay_name, nrow(cln_mat), ncol(cln_mat)))
 
-                # --- Clean Corrected Matrix ---
-                # Transpose result back to Features x Samples for cleaning
-                corrected_matrix <- t(cln_mat)
+            # --- Clean Corrected Matrix ---
+            # Transpose result back to Features x Samples for cleaning
+            corrected_matrix <- t(cln_mat)
 
-                # Remove features (rows) with no finite values
-                valid_features <- rowSums(is.finite(corrected_matrix), na.rm = TRUE) > 0
-                corrected_matrix_filt_f <- corrected_matrix[valid_features, , drop = FALSE]
-                 if(nrow(corrected_matrix_filt_f) == 0) {
-                     log_warn("Assay '{assay_name}': No features remained after removing non-finite rows post-RUV. Skipping.", .logr = TRUE)
-                     return(NULL)
-                 }
+            # Remove features (rows) with no finite values
+            valid_features <- rowSums(is.finite(corrected_matrix), na.rm = TRUE) > 0
+            corrected_matrix_filt_f <- corrected_matrix[valid_features, , drop = FALSE]
+            if (nrow(corrected_matrix_filt_f) == 0) {
+                log_warn("Assay '{assay_name}': No features remained after removing non-finite rows post-RUV. Skipping.", .logr = TRUE)
+                return(NULL)
+            }
 
-                # Remove samples (columns) with no finite values
-                valid_samples <- colSums(is.finite(corrected_matrix_filt_f), na.rm = TRUE) > 0
-                corrected_matrix_filt_fs <- corrected_matrix_filt_f[, valid_samples, drop = FALSE]
-                if(ncol(corrected_matrix_filt_fs) == 0) {
-                     log_warn("Assay '{assay_name}': No samples remained after removing non-finite columns post-RUV. Skipping.", .logr = TRUE)
-                     return(NULL)
-                 }
+            # Remove samples (columns) with no finite values
+            valid_samples <- colSums(is.finite(corrected_matrix_filt_f), na.rm = TRUE) > 0
+            corrected_matrix_filt_fs <- corrected_matrix_filt_f[, valid_samples, drop = FALSE]
+            if (ncol(corrected_matrix_filt_fs) == 0) {
+                log_warn("Assay '{assay_name}': No samples remained after removing non-finite columns post-RUV. Skipping.", .logr = TRUE)
+                return(NULL)
+            }
 
-                log_info("   Assay '{assay_name}': RUV correction applied. Dimensions before cleaning: {nrow(corrected_matrix)}x{ncol(corrected_matrix)}, After: {nrow(corrected_matrix_filt_fs)}x{ncol(corrected_matrix_filt_fs)}", .logr=TRUE)
+            log_info("   Assay '{assay_name}': RUV correction applied. Dimensions before cleaning: {nrow(corrected_matrix)}x{ncol(corrected_matrix)}, After: {nrow(corrected_matrix_filt_fs)}x{ncol(corrected_matrix_filt_fs)}", .logr = TRUE)
 
-                # --- Reconstruct Tibble ---
-                # Get original metadata columns relevant to the remaining features
-                metadata_cols <- setdiff(colnames(assay_tibble), sample_cols) # All original non-sample columns
-                # Filter the *original* tibble to get metadata for rows that remain
-                original_metadata_tibble <- assay_tibble |>
-                    dplyr::filter(!!rlang::sym(lipid_id_col_name) %in% rownames(corrected_matrix_filt_fs)) |>
-                    dplyr::select(dplyr::all_of(c(lipid_id_col_name, metadata_cols))) # Ensure ID column is selected
+            # --- Reconstruct Tibble ---
+            # Get original metadata columns relevant to the remaining features
+            metadata_cols <- setdiff(colnames(assay_tibble), sample_cols) # All original non-sample columns
+            # Filter the *original* tibble to get metadata for rows that remain
+            original_metadata_tibble <- assay_tibble |>
+                dplyr::filter(!!rlang::sym(lipid_id_col_name) %in% rownames(corrected_matrix_filt_fs)) |>
+                dplyr::select(dplyr::all_of(c(lipid_id_col_name, metadata_cols))) # Ensure ID column is selected
 
-                # Ensure metadata IDs are unique before join (should be due to earlier handling, but safe)
-                original_metadata_tibble <- original_metadata_tibble |>
-                     dplyr::distinct(!!rlang::sym(lipid_id_col_name), .keep_all = TRUE)
+            # Ensure metadata IDs are unique before join (should be due to earlier handling, but safe)
+            original_metadata_tibble <- original_metadata_tibble |>
+                dplyr::distinct(!!rlang::sym(lipid_id_col_name), .keep_all = TRUE)
 
 
-                reconstructed_tibble <- tryCatch({
+            reconstructed_tibble <- tryCatch(
+                {
                     corrected_data_tibble <- corrected_matrix_filt_fs |>
-                       as.data.frame() |>
-                       tibble::rownames_to_column(var = lipid_id_col_name) |>
-                       tibble::as_tibble()
+                        as.data.frame() |>
+                        tibble::rownames_to_column(var = lipid_id_col_name) |>
+                        tibble::as_tibble()
 
                     # Join corrected data with filtered original metadata
                     # Ensure join column types match (rownames_to_column is character)
-                     original_metadata_tibble_char <- original_metadata_tibble |>
+                    original_metadata_tibble_char <- original_metadata_tibble |>
                         dplyr::mutate(!!rlang::sym(lipid_id_col_name) := as.character(!!rlang::sym(lipid_id_col_name)))
-                     corrected_data_tibble_char <- corrected_data_tibble |>
-                         dplyr::mutate(!!rlang::sym(lipid_id_col_name) := as.character(!!rlang::sym(lipid_id_col_name)))
+                    corrected_data_tibble_char <- corrected_data_tibble |>
+                        dplyr::mutate(!!rlang::sym(lipid_id_col_name) := as.character(!!rlang::sym(lipid_id_col_name)))
 
                     final_tibble <- dplyr::left_join(original_metadata_tibble_char, corrected_data_tibble_char, by = lipid_id_col_name) |>
-                    # Ensure original column order (metadata first, then remaining samples)
-                    dplyr::relocate(dplyr::all_of(colnames(original_metadata_tibble)), # All metadata cols
-                                    dplyr::all_of(colnames(corrected_matrix_filt_fs))) # Remaining sample cols
+                        # Ensure original column order (metadata first, then remaining samples)
+                        dplyr::relocate(
+                            dplyr::all_of(colnames(original_metadata_tibble)), # All metadata cols
+                            dplyr::all_of(colnames(corrected_matrix_filt_fs))
+                        ) # Remaining sample cols
 
-                     # Check if join resulted in expected columns
-                     if(!identical(sort(colnames(final_tibble)), sort(c(colnames(original_metadata_tibble), colnames(corrected_matrix_filt_fs))))) {
-                          log_warn("Assay '{assay_name}': Column mismatch after joining corrected data and metadata.", .logr=TRUE)
-                          # Potentially return NULL or the corrected_data_tibble only
-                     }
-                     final_tibble
+                    # Check if join resulted in expected columns
+                    if (!identical(sort(colnames(final_tibble)), sort(c(colnames(original_metadata_tibble), colnames(corrected_matrix_filt_fs))))) {
+                        log_warn("Assay '{assay_name}': Column mismatch after joining corrected data and metadata.", .logr = TRUE)
+                        # Potentially return NULL or the corrected_data_tibble only
+                    }
+                    final_tibble
+                },
+                error = function(e) {
+                    log_warn("Assay '{assay_name}': Error reconstructing tibble after RUV correction: {e$message}. Skipping.", .logr = TRUE)
+                    return(NULL) # Return NULL on error
+                }
+            )
 
-                }, error = function(e) {
-                     log_warn("Assay '{assay_name}': Error reconstructing tibble after RUV correction: {e$message}. Skipping.", .logr = TRUE)
-                     return(NULL) # Return NULL on error
-                })
+            message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': RUV-III correction complete.", assay_name))
+            message(sprintf("   Assay '%s' RUV-III correction complete.", assay_name))
+            return(reconstructed_tibble)
+        })
 
-                message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': RUV-III correction complete.", assay_name))
-                message(sprintf("   Assay '%s' RUV-III correction complete.", assay_name))
-                return(reconstructed_tibble)
-            })
+        # Set names and remove NULLs
+        names(corrected_assay_list) <- assay_names
+        final_corrected_list <- corrected_assay_list[!sapply(corrected_assay_list, is.null)]
+        message(sprintf("   DEBUG66 [ruvIII_C_Varying] final_corrected_list length = %d", length(final_corrected_list)))
 
-            # Set names and remove NULLs
-            names(corrected_assay_list) <- assay_names
-            final_corrected_list <- corrected_assay_list[!sapply(corrected_assay_list, is.null)]
-            message(sprintf("   DEBUG66 [ruvIII_C_Varying] final_corrected_list length = %d", length(final_corrected_list)))
+        if (length(final_corrected_list) == 0) {
+            message("   DEBUG66 [ruvIII_C_Varying] WARNING - no assays successfully processed, returning original object")
+            log_warn("No assays were successfully processed by RUV-III. Returning original object.")
+            return(theObject)
+        }
 
-            if(length(final_corrected_list) == 0) {
-                message("   DEBUG66 [ruvIII_C_Varying] WARNING - no assays successfully processed, returning original object")
-                log_warn("No assays were successfully processed by RUV-III. Returning original object.")
-                return(theObject)
-            }
+        # Update the slot in the object
+        methods::slot(theObject, "lipid_data") <- final_corrected_list
 
-            # Update the slot in the object
-            methods::slot(theObject, "lipid_data") <- final_corrected_list
-
-            # --- Clean Design Matrix ---
-            theObject <- tryCatch({
+        # --- Clean Design Matrix ---
+        theObject <- tryCatch(
+            {
                 log_info("Cleaning design matrix to match remaining samples after RUV...")
                 cleanDesignMatrix(theObject)
-            }, error = function(e) {
-                 message(sprintf("   DEBUG66 [ruvIII_C_Varying] cleanDesignMatrix FAILED - %s", e$message))
-                 log_warn("Error running cleanDesignMatrix after RUV correction: {e$message}. Design matrix might not be fully synchronized.", .logr=TRUE)
-                 return(theObject)
-            })
+            },
+            error = function(e) {
+                message(sprintf("   DEBUG66 [ruvIII_C_Varying] cleanDesignMatrix FAILED - %s", e$message))
+                log_warn("Error running cleanDesignMatrix after RUV correction: {e$message}. Design matrix might not be fully synchronized.", .logr = TRUE)
+                return(theObject)
+            }
+        )
 
-            message(sprintf("   DEBUG66 [ruvIII_C_Varying] RUV-III correction finished for %d assay(s).", length(final_corrected_list)))
-            message("╔═══════════════════════════════════════════════════════════════════════════╗")
-            message("║  DEBUG66: Exiting ruvIII_C_Varying                                        ║")
-            message("╚═══════════════════════════════════════════════════════════════════════════╝")
-            log_info("RUV-III correction process finished for {length(final_corrected_list)} assay(s).")
-            return(theObject)
-          })
+        message(sprintf("   DEBUG66 [ruvIII_C_Varying] RUV-III correction finished for %d assay(s).", length(final_corrected_list)))
+        message("╔═══════════════════════════════════════════════════════════════════════════╗")
+        message("║  DEBUG66: Exiting ruvIII_C_Varying                                        ║")
+        message("╚═══════════════════════════════════════════════════════════════════════════╝")
+        log_info("RUV-III correction process finished for {length(final_corrected_list)} assay(s).")
+        return(theObject)
+    }
+)
 
 #' plot number of significant differentially expressed lipids
 #' @export
-setMethod(f = "plotNumSigDiffExpBarPlot",
-          signature = "list",
-          definition = function(objectsList) {
+setMethod(
+    f = "plotNumSigDiffExpBarPlot",
+    signature = "list",
+    definition = function(objectsList) {
+        return_object_list <- purrr::imap(
+            objectsList,
+            function(object, idx) {
+                ## Count the number of up or down significant differentially expressed lipids.
+                # The contrasts_results_table is already a list of data frames (one per contrast)
+                # So we don't need to wrap it in another list
+                num_sig_de_molecules_first_go <- printCountDeGenesTableHelper(
+                    list_of_de_tables = object@contrasts_results_table,
+                    list_of_descriptions = names(object@contrasts_results_table),
+                    input_title = idx
+                )
 
-           return_object_list <-  purrr::imap( objectsList
-                        , function(object, idx ) {
 
-                          ## Count the number of up or down significant differentially expressed lipids.
-                          # The contrasts_results_table is already a list of data frames (one per contrast)
-                          # So we don't need to wrap it in another list
-                          num_sig_de_molecules_first_go <- printCountDeGenesTableHelper(
-                            list_of_de_tables = object@contrasts_results_table,
-                            list_of_descriptions = names(object@contrasts_results_table),
-                            input_title = idx
-                          )
+                object@num_sig_diff_exp_bar_plot <- num_sig_de_molecules_first_go$plot
 
+                object@num_sig_diff_table <- num_sig_de_molecules_first_go$table
 
-                          object@num_sig_diff_exp_bar_plot <- num_sig_de_molecules_first_go$plot
+                object
+            }
+        )
 
-                          object@num_sig_diff_table <- num_sig_de_molecules_first_go$table
-
-                          object
-                        })
-
-           return_object_list
-
- })
+        return_object_list
+    }
+)
 
 
 #' Plot static volcano plot (without gene names)
 #' @export
-setMethod(f = "plotVolcanoS4",
-          signature = "list",
-          definition = function(objectsList
-                                , de_q_val_thresh = 0.05
-                                , qvalue_column = "fdr_qvalue"
-                                , log2fc_column = "logFC") {
+setMethod(
+    f = "plotVolcanoS4",
+    signature = "list",
+    definition = function(
+      objectsList,
+      de_q_val_thresh = 0.05,
+      qvalue_column = "fdr_qvalue",
+      log2fc_column = "logFC"
+    ) {
+        return_object_list <- purrr::imap(
+            objectsList,
+            function(object, idx) {
+                volcano_colors <- c(
+                    "Significant Up" = "red",
+                    "Significant Down" = "blue",
+                    "Not significant" = "grey"
+                )
 
+                ## Plot static volcano plot
+                static_volcano_plot_data <- object@contrasts_results_table |>
+                    bind_rows(.id = "comparison") |>
+                    mutate(lqm = -log10(!!sym(qvalue_column))) |>
+                    dplyr::mutate(label = case_when(
+                        !!sym(qvalue_column) < de_q_val_thresh & !!sym(log2fc_column) > 0 ~ "Significant Up",
+                        !!sym(qvalue_column) < de_q_val_thresh & !!sym(log2fc_column) < 0 ~ "Significant Down",
+                        TRUE ~ "Not significant"
+                    )) |>
+                    # This is the key change: ensure the 'label' column is a factor with all possible levels.
+                    # This makes the scales identical across all plots, allowing patchwork to merge them.
+                    dplyr::mutate(label = factor(label, levels = names(volcano_colors))) |>
+                    dplyr::mutate(colour = case_when(
+                        !!sym(qvalue_column) < de_q_val_thresh & !!sym(log2fc_column) < 0 ~ "blue",
+                        !!sym(qvalue_column) < de_q_val_thresh & !!sym(log2fc_column) > 0 ~ "red",
+                        TRUE ~ "grey"
+                    )) |>
+                    dplyr::mutate(colour = factor(colour, levels = c("blue", "grey", "red"))) |>
+                    dplyr::mutate(title = str_split_i(comparison, "=", 1))
 
-            return_object_list <-  purrr::imap( objectsList
-                                               , function(object, idx ) {
+                list_of_volcano_plots_tbl <- static_volcano_plot_data |>
+                    group_by(comparison, title) |>
+                    nest() |>
+                    mutate(plot = purrr::map2(data, title, \(x, y) {
+                        plotOneVolcanoNoVerticalLines(x,
+                            paste0(idx, " - ", y),
+                            log_q_value_column = "lqm",
+                            log_fc_column = log2fc_column
+                        ) +
+                            scale_color_manual(
+                                values = volcano_colors,
+                                name = "Significance",
+                                limits = names(volcano_colors)
+                            )
+                    }))
 
-                                                 volcano_colors <- c(
-                                                   "Significant Up" = "red",
-                                                   "Significant Down" = "blue",
-                                                   "Not significant" = "grey"
-                                                 )
+                # THE FIX: Extract the 'plot' column to get a LIST of plots,
+                # and correctly name the list elements.
+                plots_list <- list_of_volcano_plots_tbl$plot
+                names(plots_list) <- list_of_volcano_plots_tbl$comparison
 
-                                                 ## Plot static volcano plot
-                                                 static_volcano_plot_data <- object@contrasts_results_table  |>
-                                                   bind_rows(.id="comparison") |>
-                                                   mutate( lqm = -log10(!!sym(qvalue_column) ) ) |>
-                                                   dplyr::mutate(label = case_when( !!sym(qvalue_column) < de_q_val_thresh  & !!sym(log2fc_column) > 0  ~ "Significant Up",
-                                                                                    !!sym(qvalue_column) < de_q_val_thresh  & !!sym(log2fc_column) < 0  ~ "Significant Down",
-                                                                                    TRUE ~ "Not significant")) |>
-                                                   # This is the key change: ensure the 'label' column is a factor with all possible levels.
-                                                   # This makes the scales identical across all plots, allowing patchwork to merge them.
-                                                   dplyr::mutate(label = factor(label, levels = names(volcano_colors))) |>
-                                                   dplyr::mutate(colour = case_when( !!sym(qvalue_column) < de_q_val_thresh & !!sym(log2fc_column) < 0 ~ "blue",
-                                                                                     !!sym(qvalue_column) < de_q_val_thresh  & !!sym(log2fc_column) > 0 ~ "red",
-                                                                                     TRUE ~ "grey")) |>
-                                                   dplyr::mutate(colour = factor(colour, levels = c("blue", "grey", "red"))) |>
-                                                   dplyr::mutate( title =  str_split_i( comparison, "=", 1))
+                # Assign the LIST of plots to the slot, not the whole table
+                object@volcano_plot <- plots_list
+                return(object)
+            }
+        )
 
-                                                 list_of_volcano_plots_tbl <- static_volcano_plot_data |>
-                                                   group_by( comparison, title) |>
-                                                   nest() |>
-                                                    mutate( plot = purrr::map2( data, title, \(x,y) { plotOneVolcanoNoVerticalLines(x
-                                                                                                                                    , paste0(idx, " - ", y)
-                                                                                                                                   , log_q_value_column = "lqm"
-                                                                                                                                   , log_fc_column = log2fc_column) +
-                                                        scale_color_manual(
-                                                          values = volcano_colors,
-                                                          name = "Significance",
-                                                          limits = names(volcano_colors)) } ) )
-
-                                                  # THE FIX: Extract the 'plot' column to get a LIST of plots,
-                                                  # and correctly name the list elements.
-                                                  plots_list <- list_of_volcano_plots_tbl$plot
-                                                  names(plots_list) <- list_of_volcano_plots_tbl$comparison
-
-                                                  # Assign the LIST of plots to the slot, not the whole table
-                                                  object@volcano_plot <- plots_list
-                                                  return(object)
-                                               })
-
-            return(return_object_list)
-
-          })
+        return(return_object_list)
+    }
+)
 
 
 # Get the differential expression results in wide format
 
-#'@export
-setMethod(f = "getDeResultsWideFormat"
-          , signature = "list"
-          , definition = function(objectsList
-                                , qvalue_column = "fdr_qvalue"
-                                , raw_pvalue_column = "raw_pvalue"
-                                , log2fc_column = "logFC")  {
-
-
-            return_object_list <-  purrr::map( objectsList, function(object) {
-
-              # Correctly access the lipid data from the nested 'theObject' slot.
-              # This defensively handles cases where the slot might hold a list of
-              # data frames (correct) or a single data frame (incorrect but handled).
-              counts_data_slot <- object@theObject@lipid_data
-              counts_table_to_use <- if (is.list(counts_data_slot) && !is.data.frame(counts_data_slot)) {
+#' @export
+setMethod(
+    f = "getDeResultsWideFormat",
+    signature = "list",
+    definition = function(
+      objectsList,
+      qvalue_column = "fdr_qvalue",
+      raw_pvalue_column = "raw_pvalue",
+      log2fc_column = "logFC"
+    ) {
+        return_object_list <- purrr::map(objectsList, function(object) {
+            # Correctly access the lipid data from the nested 'theObject' slot.
+            # This defensively handles cases where the slot might hold a list of
+            # data frames (correct) or a single data frame (incorrect but handled).
+            counts_data_slot <- object@theObject@lipid_data
+            counts_table_to_use <- if (is.list(counts_data_slot) && !is.data.frame(counts_data_slot)) {
                 counts_data_slot[[1]]
-              } else {
+            } else {
                 counts_data_slot
-              }
+            }
 
-              id_col_name <- object@theObject@lipid_id_column
+            id_col_name <- object@theObject@lipid_id_column
 
-              # Bind the list of data frames into a single tidy data frame
-              tidy_results <- object@contrasts_results_table |>
-                dplyr::bind_rows(.id="comparison") |>
-                dplyr::mutate( comparision_short = str_split_i( comparison, "=", 1))
+            # Bind the list of data frames into a single tidy data frame
+            tidy_results <- object@contrasts_results_table |>
+                dplyr::bind_rows(.id = "comparison") |>
+                dplyr::mutate(comparision_short = str_split_i(comparison, "=", 1))
 
-              # Pivot the tidy data frame to a wide format using the correct ID column
-              wide_results <- tidy_results |>
-                tidyr::pivot_wider(id_cols = c(!!sym(id_col_name)),
-                                   names_from = c(comparision_short),
-                                   names_sep = ":",
-                                   values_from = c(!!sym(log2fc_column), !!sym(qvalue_column), !!sym(raw_pvalue_column))) |>
+            # Pivot the tidy data frame to a wide format using the correct ID column
+            wide_results <- tidy_results |>
+                tidyr::pivot_wider(
+                    id_cols = c(!!sym(id_col_name)),
+                    names_from = c(comparision_short),
+                    names_sep = ":",
+                    values_from = c(!!sym(log2fc_column), !!sym(qvalue_column), !!sym(raw_pvalue_column))
+                ) |>
                 # Join with original counts using the correct ID column.
-                dplyr::left_join(counts_table_to_use, by = join_by( !!sym(id_col_name) == !!sym(id_col_name))) |>
+                dplyr::left_join(counts_table_to_use, by = join_by(!!sym(id_col_name) == !!sym(id_col_name))) |>
                 dplyr::arrange(dplyr::across(matches(qvalue_column))) |>
                 dplyr::distinct()
 
-              # Assign to the correct slot and return the object
-              object@results_table_wide <- wide_results
-              return(object)
-            })
+            # Assign to the correct slot and return the object
+            object@results_table_wide <- wide_results
+            return(object)
+        })
 
-            return(return_object_list)
-          })
-
-
+        return(return_object_list)
+    }
+)
 
 
 # Get the differential expression results in wide format
-#'@export
-setMethod(f = "getDeResultsLongFormat"
-          , signature = "list"
-          , definition = function(objectsList)  {
-
-
-            return_object_list <-  purrr::map( objectsList, function(object) {
-
-              # Correctly access the lipid data from the nested 'theObject' slot.
-              # This defensively handles cases where the slot might hold a list of
-              # data frames (correct) or a single data frame (incorrect but handled).
-              counts_data_slot <- object@theObject@lipid_data
-              counts_table_to_use <- if (is.list(counts_data_slot) && !is.data.frame(counts_data_slot)) {
+#' @export
+setMethod(
+    f = "getDeResultsLongFormat",
+    signature = "list",
+    definition = function(objectsList) {
+        return_object_list <- purrr::map(objectsList, function(object) {
+            # Correctly access the lipid data from the nested 'theObject' slot.
+            # This defensively handles cases where the slot might hold a list of
+            # data frames (correct) or a single data frame (incorrect but handled).
+            counts_data_slot <- object@theObject@lipid_data
+            counts_table_to_use <- if (is.list(counts_data_slot) && !is.data.frame(counts_data_slot)) {
                 counts_data_slot[[1]]
-              } else {
+            } else {
                 counts_data_slot
-              }
+            }
 
-              id_col_name <- object@theObject@lipid_id_column
+            id_col_name <- object@theObject@lipid_id_column
 
-              # Bind the list of data frames into a single tidy data frame
-              tidy_results <- object@contrasts_results_table |>
-                dplyr::bind_rows(.id="comparison") |>
-                dplyr::mutate( comparision_short = str_split_i( comparison, "=", 1))
+            # Bind the list of data frames into a single tidy data frame
+            tidy_results <- object@contrasts_results_table |>
+                dplyr::bind_rows(.id = "comparison") |>
+                dplyr::mutate(comparision_short = str_split_i(comparison, "=", 1))
 
-              # Pivot the tidy data frame to a wide format using the correct ID column
-              long_results <- tidy_results |>
+            # Pivot the tidy data frame to a wide format using the correct ID column
+            long_results <- tidy_results |>
                 # Join with original counts using the correct ID column.
-                dplyr::left_join(counts_table_to_use, by = join_by( !!sym(id_col_name) == !!sym(id_col_name))) |>
+                dplyr::left_join(counts_table_to_use, by = join_by(!!sym(id_col_name) == !!sym(id_col_name))) |>
                 dplyr::distinct()
 
-              print(head( long_results))
+            print(head(long_results))
 
-              # Assign to the correct slot and return the object
-              object@results_table_long <- long_results
-              return(object)
-            })
+            # Assign to the correct slot and return the object
+            object@results_table_long <- long_results
+            return(object)
+        })
 
-            return(return_object_list)
-          })
-
-
-
+        return(return_object_list)
+    }
+)
 
 
 ## Create proteomics interactive volcano plot
-#'@export
-setMethod(f = "plotInteractiveVolcano"
-          , signature = "list"
-          , definition =
-            function( objectsList, anno_list = NULL ) {
+#' @export
+setMethod(
+    f = "plotInteractiveVolcano",
+    signature = "list",
+    definition =
+        function(objectsList, anno_list = NULL) {
+            list_of_objects <- purrr::imap(
+                objectsList,
+                \(de_output_object, idx) {
+                    # This helper function now correctly uses its own argument 'r_obj'
+                    # and includes error handling for the qvalue calculation.
+                    updateWithQvalue <- function(r_obj) {
+                        r_obj_output <- r_obj
+                        if (is.null(r_obj$p.value)) {
+                            return(r_obj_output)
+                        }
 
-              list_of_objects <- purrr::imap( objectsList,
-                                             \(de_output_object, idx) {
+                        for (coef in seq_len(ncol(r_obj$p.value))) {
+                            p_values <- r_obj$p.value[, coef]
+                            if (any(is.na(p_values))) {
+                                warning(sprintf("NA p-values found in coefficient %d. These will result in NA q-values.", coef), call. = FALSE)
+                            }
+                            q_result <- tryCatch(
+                                {
+                                    qvalue::qvalue(p_values)$qvalues
+                                },
+                                error = function(e) {
+                                    warning(sprintf("qvalue calculation failed for coefficient %d: %s. Returning original p-values as q-values.", coef, e$message), call. = FALSE)
+                                    p_values # Fallback to p-values on error
+                                }
+                            )
+                            r_obj_output$p.value[, coef] <- q_result
+                        }
+                        r_obj_output
+                    }
 
-                                               # This helper function now correctly uses its own argument 'r_obj'
-                                               # and includes error handling for the qvalue calculation.
-                                               updateWithQvalue <-function(r_obj) {
-                                                 r_obj_output <- r_obj
-                                                 if (is.null(r_obj$p.value)) return(r_obj_output)
+                    my_fit_eb <- updateWithQvalue(de_output_object@fit.eb)
 
-                                                 for(coef in seq_len(ncol(r_obj$p.value))) {
-                                                   p_values <- r_obj$p.value[, coef]
-                                                   if (any(is.na(p_values))) {
-                                                       warning(sprintf("NA p-values found in coefficient %d. These will result in NA q-values.", coef), call. = FALSE)
-                                                   }
-                                                   q_result <- tryCatch({
-                                                       qvalue::qvalue(p_values)$qvalues
-                                                   }, error = function(e) {
-                                                       warning(sprintf("qvalue calculation failed for coefficient %d: %s. Returning original p-values as q-values.", coef, e$message), call. = FALSE)
-                                                       p_values # Fallback to p-values on error
-                                                   })
-                                                   r_obj_output$p.value[,coef] <- q_result
-                                                 }
-                                                 r_obj_output
-                                               }
+                    counts_matrix <- de_output_object@theObject@lipid_data[[1]] |>
+                        column_to_rownames(de_output_object@theObject@lipid_id_column) |>
+                        as.matrix()
 
-                                               my_fit_eb <-   updateWithQvalue( de_output_object@fit.eb)
+                    # Defensive measure: ensure my_fit_eb components have rownames.
+                    # `MArrayLM` objects don't have a `rownames<-` method, so we edit the components.
+                    if (!is.null(my_fit_eb$coefficients) && is.null(rownames(my_fit_eb$coefficients))) {
+                        if (nrow(my_fit_eb$coefficients) == nrow(counts_matrix)) {
+                            warning("`my_fit_eb` components were missing rownames. Assigning them from `counts_matrix`.", call. = FALSE)
+                            feature_names <- rownames(counts_matrix)
+                            rownames(my_fit_eb$coefficients) <- feature_names
+                            rownames(my_fit_eb$p.value) <- feature_names
+                            if (!is.null(my_fit_eb$t)) {
+                                rownames(my_fit_eb$t) <- feature_names
+                            }
+                            if (!is.null(my_fit_eb$stdev.unscaled)) {
+                                rownames(my_fit_eb$stdev.unscaled) <- feature_names
+                            }
+                            if (!is.null(my_fit_eb$genes)) {
+                                rownames(my_fit_eb$genes) <- feature_names
+                            }
+                        } else {
+                            stop("`my_fit_eb` components are missing rownames, and their row count does not match `counts_matrix`. Cannot proceed.")
+                        }
+                    }
 
-                                               counts_matrix <- de_output_object@theObject@lipid_data[[1]] |>
-                                                 column_to_rownames( de_output_object@theObject@lipid_id_column) |>
-                                                 as.matrix()
-
-                                               # Defensive measure: ensure my_fit_eb components have rownames.
-                                               # `MArrayLM` objects don't have a `rownames<-` method, so we edit the components.
-                                               if (!is.null(my_fit_eb$coefficients) && is.null(rownames(my_fit_eb$coefficients))) {
-                                                   if (nrow(my_fit_eb$coefficients) == nrow(counts_matrix)) {
-                                                       warning("`my_fit_eb` components were missing rownames. Assigning them from `counts_matrix`.", call. = FALSE)
-                                                       feature_names <- rownames(counts_matrix)
-                                                       rownames(my_fit_eb$coefficients) <- feature_names
-                                                       rownames(my_fit_eb$p.value) <- feature_names
-                                                       if (!is.null(my_fit_eb$t)) { rownames(my_fit_eb$t) <- feature_names }
-                                                       if (!is.null(my_fit_eb$stdev.unscaled)) { rownames(my_fit_eb$stdev.unscaled) <- feature_names }
-                                                       if (!is.null(my_fit_eb$genes)) { rownames(my_fit_eb$genes) <- feature_names }
-                                                   } else {
-                                                       stop("`my_fit_eb` components are missing rownames, and their row count does not match `counts_matrix`. Cannot proceed.")
-                                                   }
-                                               }
-
-                                               groups <- data.frame( Run = colnames(counts_matrix) ) |>
-                                                 left_join( de_output_object@theObject@design_matrix
-                                                           , by=join_by( !!sym(de_output_object@theObject@sample_id) == !!sym(de_output_object@theObject@sample_id) )) |>
-                                                 dplyr::pull(genotype_group)
-
-
-                                               list_of_glimma_objs <- purrr::map( seq_len( ncol( de_output_object@fit.eb$p.value))
-
-                                                                                  , \(idxb) {
-
-                                                                                    id_col_name <- de_output_object@theObject@lipid_id_column
-
-                                                                                    # More robust way to create the base annotation table
-                                                                                    base_anno_tbl <- data.frame(id = rownames(my_fit_eb))
-                                                                                    colnames(base_anno_tbl) <- id_col_name
-
-
-                                                                                    # If a user-provided anno_tbl exists, join it.
-                                                                                    anno_tbl_joined <- if (!is.null(anno_list)) {
-                                                                                      print(paste( "idx=", idx))
-                                                                                      anno_tbl <- anno_list[[idx]]
-                                                                                        # Defensive check: ensure anno_tbl is a data.frame and has the join column
-                                                                                        if (!is.data.frame(anno_tbl) || !id_col_name %in% colnames(anno_tbl)) {
-                                                                                            warning(sprintf("Provided 'anno_tbl' is not a data.frame or is missing the join column '%s'. Ignoring 'anno_tbl'.", id_col_name))
-                                                                                            base_anno_tbl
-                                                                                        } else {
-                                                                                            dplyr::left_join(base_anno_tbl |>
-                                                                                                               mutate( !!sym(id_col_name) := purrr::map_chr( !!sym(id_col_name), as.character))
-                                                                                                             , anno_tbl |>
-                                                                                                               mutate( !!sym(id_col_name) := purrr::map_chr( !!sym(id_col_name), as.character)), by = id_col_name)
-                                                                                        }
-                                                                                    } else {
-                                                                                        base_anno_tbl
-                                                                                    }
-
-                                                                                    # Glimma requires a data.frame with rownames set to the feature IDs.
-                                                                                    anno_df_for_glimma <- as.data.frame(anno_tbl_joined)
-                                                                                    rownames(anno_df_for_glimma) <- anno_df_for_glimma[[id_col_name]]
+                    groups <- data.frame(Run = colnames(counts_matrix)) |>
+                        left_join(de_output_object@theObject@design_matrix,
+                            by = join_by(!!sym(de_output_object@theObject@sample_id) == !!sym(de_output_object@theObject@sample_id))
+                        ) |>
+                        dplyr::pull(genotype_group)
 
 
-                                                                                    Glimma::glimmaVolcano(my_fit_eb
-                                                                                                          , coef=idxb
-                                                                                                          , anno=anno_df_for_glimma
-                                                                                                          , counts = counts_matrix
-                                                                                                          , groups = groups
-                                                                                                          , display.columns = if(!is.null(anno_tbl)) colnames(anno_tbl) else NULL
-                                                                                                          , status=decideTests(my_fit_eb, adjust.method="none")
-                                                                                                          , p.adj.method = "none"
-                                                                                                          , transform.counts='none')
+                    list_of_glimma_objs <- purrr::map(
+                        seq_len(ncol(de_output_object@fit.eb$p.value)),
+                        \(idxb) {
+                            id_col_name <- de_output_object@theObject@lipid_id_column
 
-                                                                                  })
-
-                                               names(list_of_glimma_objs) <- colnames(my_fit_eb$coefficients)
-                                               de_output_object@interactive_volcano_plot <- list_of_glimma_objs
-
-                                               de_output_object })
-
-              list_of_objects
-
-            } )
+                            # More robust way to create the base annotation table
+                            base_anno_tbl <- data.frame(id = rownames(my_fit_eb))
+                            colnames(base_anno_tbl) <- id_col_name
 
 
+                            # If a user-provided anno_tbl exists, join it.
+                            anno_tbl_joined <- if (!is.null(anno_list)) {
+                                print(paste("idx=", idx))
+                                anno_tbl <- anno_list[[idx]]
+                                # Defensive check: ensure anno_tbl is a data.frame and has the join column
+                                if (!is.data.frame(anno_tbl) || !id_col_name %in% colnames(anno_tbl)) {
+                                    warning(sprintf("Provided 'anno_tbl' is not a data.frame or is missing the join column '%s'. Ignoring 'anno_tbl'.", id_col_name))
+                                    base_anno_tbl
+                                } else {
+                                    dplyr::left_join(
+                                        base_anno_tbl |>
+                                            mutate(!!sym(id_col_name) := purrr::map_chr(!!sym(id_col_name), as.character)),
+                                        anno_tbl |>
+                                            mutate(!!sym(id_col_name) := purrr::map_chr(!!sym(id_col_name), as.character)),
+                                        by = id_col_name
+                                    )
+                                }
+                            } else {
+                                base_anno_tbl
+                            }
 
-    # htmlwidgets::saveWidget( widget = theObject@interactive_volcano_plot
-    # , file = file.path( output_dir
-    #                     , paste0(colnames(r_obj$coefficients)[coef], ".html"))  #the path & file name
-    # , selfcontained = TRUE #creates a single html file
-    # )
+                            # Glimma requires a data.frame with rownames set to the feature IDs.
+                            anno_df_for_glimma <- as.data.frame(anno_tbl_joined)
+                            rownames(anno_df_for_glimma) <- anno_df_for_glimma[[id_col_name]]
 
 
+                            Glimma::glimmaVolcano(my_fit_eb,
+                                coef = idxb,
+                                anno = anno_df_for_glimma,
+                                counts = counts_matrix,
+                                groups = groups,
+                                display.columns = if (!is.null(anno_tbl)) colnames(anno_tbl) else NULL,
+                                status = decideTests(my_fit_eb, adjust.method = "none"),
+                                p.adj.method = "none",
+                                transform.counts = "none"
+                            )
+                        }
+                    )
 
-##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#Create a QC composite figure
+                    names(list_of_glimma_objs) <- colnames(my_fit_eb$coefficients)
+                    de_output_object@interactive_volcano_plot <- list_of_glimma_objs
+
+                    de_output_object
+                }
+            )
+
+            list_of_objects
+        }
+)
+
+
+# htmlwidgets::saveWidget( widget = theObject@interactive_volcano_plot
+# , file = file.path( output_dir
+#                     , paste0(colnames(r_obj$coefficients)[coef], ".html"))  #the path & file name
+# , selfcontained = TRUE #creates a single html file
+# )
+
+
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Create a QC composite figure
 # COMMENTED OUT: GridPlotData class does not exist, method not in use
-# 
+#
 # #' @export
 # setMethod(f = "createGridQCLipidomics",
 #           signature = "GridPlotData",
 #           definition = function(theObject, pca_titles = NULL, density_titles = NULL, rle_titles = NULL, pearson_titles = NULL, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
-# 
+#
 #             # --- Defensive check on input titles ---
 #             stopifnot("pca_titles must be a character vector or NULL" = is.null(pca_titles) || is.character(pca_titles))
 #             stopifnot("density_titles must be a character vector or NULL" = is.null(density_titles) || is.character(density_titles))
 #             stopifnot("rle_titles must be a character vector or NULL" = is.null(rle_titles) || is.character(rle_titles))
 #             stopifnot("pearson_titles must be a character vector or NULL" = is.null(pearson_titles) || is.character(pearson_titles))
-# 
+#
 #             # --- Identify all unique assay names from the plot lists ---
 #             all_plot_lists <- c(theObject@pca_plots, theObject@density_plots, theObject@rle_plots, theObject@pearson_plots)
 #             all_plot_lists <- all_plot_lists[sapply(all_plot_lists, function(x) is.list(x) && length(x) > 0)]
-# 
+#
 #             assay_names <- if (length(all_plot_lists) > 0) unique(unlist(lapply(all_plot_lists, names))) else character(0)
-# 
+#
 #             if (length(assay_names) == 0 || all(sapply(assay_names, is.null))) {
 #                 warning("No assays with named plots found. Cannot generate composite QC plot.", immediate. = TRUE)
 #                 return(list())
 #             }
-# 
+#
 #             # --- Loop over each assay to create a composite plot ---
 #             composite_plots_list <- purrr::map(assay_names, function(current_assay_name) {
 #                 message(sprintf("--- Generating composite QC plot for assay: %s ---", current_assay_name))
-# 
+#
 #                 # Helper to extract and prepare plots for the current assay
 #                 prepare_plot_row <- function(plot_groups_list) {
 #                     plots <- purrr::map(plot_groups_list, ~ .x[[current_assay_name]])
 #                     # Replace any NULLs with a blank plot to maintain grid alignment
 #                     lapply(plots, function(p) if(is.null(p)) ggplot() + theme_void() else p)
 #                 }
-# 
+#
 #                 # Extract and prepare plots for the current assay
 #                 pca_plots_assay <- prepare_plot_row(theObject@pca_plots)
 #                 density_plots_assay <- prepare_plot_row(theObject@density_plots)
 #                 rle_plots_assay <- prepare_plot_row(theObject@rle_plots)
 #                 pearson_plots_assay <- prepare_plot_row(theObject@pearson_plots)
-# 
+#
 #                 # --- Plot creation helper functions ---
 #                 createLabelPlot <- function(title) {
 #                   ggplot() +
@@ -3199,8 +3395,8 @@ setMethod(f = "plotInteractiveVolcano"
 #                     }
 #                     plot
 #                 }
-# 
-# 
+#
+#
 #                 # --- Generate and combine plots for the current assay ---
 #                 plots_to_combine <- list()
 #                 add_plot_row <- function(plots, titles, create_fn) {
@@ -3226,30 +3422,30 @@ setMethod(f = "plotInteractiveVolcano"
 #                         list()
 #                     }
 #                 }
-# 
+#
 #                 plots_to_combine <- c(plots_to_combine, add_plot_row(pca_plots_assay, pca_titles, applyTheme))
 #                 plots_to_combine <- c(plots_to_combine, add_plot_row(density_plots_assay, density_titles, applyTheme))
 #                 plots_to_combine <- c(plots_to_combine, add_plot_row(rle_plots_assay, rle_titles, applyTheme))
 #                 plots_to_combine <- c(plots_to_combine, add_plot_row(pearson_plots_assay, pearson_titles, applyTheme))
-# 
+#
 #                 if (length(plots_to_combine) == 0) {
 #                     warning(paste("No plots to combine for assay:", current_assay_name))
 #                     return(NULL)
 #                 }
-# 
+#
 #                 num_rows <- length(plots_to_combine) / 2
 #                 layout_heights <- rep(c(0.1, 1), num_rows)
-#                 
+#
 #                 # Determine overall width by the row with the maximum number of plots
 #                 max_cols <- max(
-#                     length(pca_plots_assay), 
-#                     length(density_plots_assay), 
-#                     length(rle_plots_assay), 
+#                     length(pca_plots_assay),
+#                     length(density_plots_assay),
+#                     length(rle_plots_assay),
 #                     length(pearson_plots_assay)
 #                 )
-# 
+#
 #                 combined_plot <- wrap_plots(plots_to_combine, ncol = 1) + plot_layout(heights = layout_heights)
-# 
+#
 #                 if (!is.null(save_path)) {
 #                   assay_file_name <- paste0(file_name, "_", current_assay_name)
 #                   sapply(c("png", "pdf", "svg"), function(ext) {
@@ -3262,14 +3458,13 @@ setMethod(f = "plotInteractiveVolcano"
 #                   })
 #                   message(paste("Plots saved for assay '", current_assay_name, "' in", save_path))
 #                 }
-# 
+#
 #                 return(combined_plot)
 #             })
-# 
+#
 #             names(composite_plots_list) <- assay_names
 #             composite_plots_list[!sapply(composite_plots_list, is.null)]
 #           })
-
 
 
 # ==========================================
@@ -3286,268 +3481,278 @@ setMethod(f = "plotInteractiveVolcano"
 #' @slot contrasts_results_table Data frame with differential abundance statistics
 #'
 #' @export
-setClass("LipidomicsDifferentialAbundanceResults"
-         , slots = c(
-             theObject = "LipidomicsAssayData"
-           , fit.eb = "ANY"
-           , contrasts_results_table = "list"
-           , num_sig_diff_exp_bar_plot = "list"
-           , num_sig_diff_table = "data.frame"
-           , volcano_plot = "list"
-           , interactive_volcano_plot = "list"
-           , p_value_dist_plot = "list"
-           , results_table_long = "data.frame"
-           , results_table_wide = "data.frame"
-         ),
-         prototype = list(
-             theObject = NULL
-           , fit.eb = NULL
-           , contrasts_results_table = list()
-           , num_sig_diff_exp_bar_plot =  list()
-           , num_sig_diff_table =  data.frame()
-           , volcano_plot =  list()
-           , interactive_volcano_plot = list()
-           , p_value_dist_plot =  list()
-           , results_table_long = data.frame()
-           , results_table_wide = data.frame()
-         )
+setClass("LipidomicsDifferentialAbundanceResults",
+    slots = c(
+        theObject = "LipidomicsAssayData",
+        fit.eb = "ANY",
+        contrasts_results_table = "list",
+        num_sig_diff_exp_bar_plot = "list",
+        num_sig_diff_table = "data.frame",
+        volcano_plot = "list",
+        interactive_volcano_plot = "list",
+        p_value_dist_plot = "list",
+        results_table_long = "data.frame",
+        results_table_wide = "data.frame"
+    ),
+    prototype = list(
+        theObject = NULL,
+        fit.eb = NULL,
+        contrasts_results_table = list(),
+        num_sig_diff_exp_bar_plot = list(),
+        num_sig_diff_table = data.frame(),
+        volcano_plot = list(),
+        interactive_volcano_plot = list(),
+        p_value_dist_plot = list(),
+        results_table_long = data.frame(),
+        results_table_wide = data.frame()
+    )
 )
 
-##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#'@export
-setMethod( f ="differentialAbundanceAnalysis"
-           , signature = "list"
-           , definition=function( objectsList
-                                  , contrasts_tbl = NULL
-                                  , formula_string = NULL
-                                  , group_id = NULL
-                                  , de_q_val_thresh = NULL
-                                  , treat_lfc_cutoff = NULL
-                                  , eBayes_trend = NULL
-                                  , eBayes_robust = NULL
-                                  , args_group_pattern = NULL ) {
-
-             # Validate that all objects in the list are LipidomicsAssayData
-             if (!all(purrr::map_lgl(objectsList, ~inherits(.x, "LipidomicsAssayData")))) {
-               stop("All objects in objectsList must be of class LipidomicsAssayData")
-             }
-
-             # Run DE analysis and explicitly set names
-             results_list <- purrr::map(    objectsList
-                                            , \( obj) {
-                                              differentialAbundanceAnalysisHelper(  obj
-                                                                                    , contrasts_tbl = contrasts_tbl
-                                                                                    , formula_string = formula_string
-                                                                                    , group_id = group_id
-                                                                                    , de_q_val_thresh = de_q_val_thresh
-                                                                                    , treat_lfc_cutoff = treat_lfc_cutoff
-                                                                                    , eBayes_trend = eBayes_trend
-                                                                                    , eBayes_robust = eBayes_robust
-                                                                                    , args_group_pattern = args_group_pattern
-                                              )
-                                            })
-
-             # Set names if the input list had names
-             if (!is.null(names(objectsList))) {
-               names(results_list) <- names(objectsList)
-             }
-
-             return(results_list)
-
-           })
-
-##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-#'@export
-setMethod( f ="differentialAbundanceAnalysisHelper"
-           , signature = "LipidomicsAssayData"
-           , definition=function( theObject
-                                  , contrasts_tbl = NULL
-                                  , formula_string = NULL
-                                  , group_id = NULL
-                                  , de_q_val_thresh = NULL
-                                  , treat_lfc_cutoff = NULL
-                                  , eBayes_trend = NULL
-                                  , eBayes_robust = NULL
-                                  , args_group_pattern = NULL) {
-
-  message("--- Entering differentialAbundanceAnalysisHelper ---")
-
-  contrasts_tbl <- checkParamsObjectFunctionSimplify( theObject, "contrasts_tbl", NULL)
-  formula_string <- checkParamsObjectFunctionSimplify( theObject, "formula_string", " ~ 0 + group")
-  de_q_val_thresh <- checkParamsObjectFunctionSimplify( theObject, "de_q_val_thresh", 0.05)
-  treat_lfc_cutoff <- checkParamsObjectFunctionSimplify( theObject, "treat_lfc_cutoff", 0)
-  eBayes_trend <- checkParamsObjectFunctionSimplify( theObject, "eBayes_trend", TRUE)
-  eBayes_robust <- checkParamsObjectFunctionSimplify( theObject, "eBayes_robust", TRUE)
-  args_group_pattern <- checkParamsObjectFunctionSimplify( theObject, "args_group_pattern", "(\\d+)")
-
-  if( is.null( group_id ) ) {
-    group_id <- theObject@group_id
-  } else {
-    group_id <- checkParamsObjectFunctionSimplify( theObject, "group_id", "group")
-  }
-
-  #message("   differentialAbundanceAnalysisHelper Arg: contrasts_tbl = ")
-  #print(utils::str(contrasts_tbl))
-
-  print(formula_string)
-
-  # Add preprocessing for group names that start with numbers
-  design_matrix <- theObject@design_matrix
-  group_col <- design_matrix[[theObject@group_id]]
-
-  # Check if any group names start with numbers and create mapping
-  starts_with_number <- grepl("^[0-9]", group_col)
-  if(any(starts_with_number)) {
-    original_groups <- unique(group_col)
-    safe_groups <- purrr::map_chr(original_groups, \(x) {
-      if(grepl("^[0-9]", x)) paste0("grp_", x) else x
-    })
-    group_mapping <- setNames(original_groups, safe_groups)
-
-    # Update design matrix with safe names
-    design_matrix[[theObject@group_id]] <- purrr::map_chr(group_col, \(x) {
-      if(grepl("^[0-9]", x)) paste0("grp_", x) else x
-    })
-
-    # Update contrasts table if it exists
-    if(!is.null(contrasts_tbl)) {
-      contrasts_tbl[[1]] <- purrr::map_chr(contrasts_tbl[[1]], \(x) {
-        for(orig in names(group_mapping)) {
-          x <- gsub(group_mapping[orig], orig, x, fixed = TRUE)
+#' @export
+setMethod(
+    f = "differentialAbundanceAnalysis",
+    signature = "list",
+    definition = function(
+      objectsList,
+      contrasts_tbl = NULL,
+      formula_string = NULL,
+      group_id = NULL,
+      de_q_val_thresh = NULL,
+      treat_lfc_cutoff = NULL,
+      eBayes_trend = NULL,
+      eBayes_robust = NULL,
+      args_group_pattern = NULL
+    ) {
+        # Validate that all objects in the list are LipidomicsAssayData or MetaboliteAssayData
+        if (!all(purrr::map_lgl(objectsList, ~ inherits(.x, "LipidomicsAssayData") || inherits(.x, "MetaboliteAssayData")))) {
+            stop("All objects in objectsList must be of class LipidomicsAssayData or MetaboliteAssayData")
         }
-        x
-      })
-    }
 
-    theObject@design_matrix <- design_matrix
-  }
-
-  theObject <- updateParamInObject(theObject, "contrasts_tbl")
-  theObject <- updateParamInObject(theObject, "formula_string")
-  theObject <- updateParamInObject(theObject, "de_q_val_thresh")
-  theObject <- updateParamInObject(theObject, "treat_lfc_cutoff")
-  theObject <- updateParamInObject(theObject, "eBayes_trend")
-  theObject <- updateParamInObject(theObject, "eBayes_robust")
-  theObject <- updateParamInObject(theObject, "args_group_pattern")
-
-  return_list <- list()
-  return_list$theObject <- theObject
-
-  message("--- Entering differentialAbundanceAnalysis ---")
-  message(sprintf("   differentialAbundanceAnalysis: theObject class = %s", class(theObject)))
-
-  # Debug: Print parameter values before conversion
-  message(sprintf("   eBayes_trend value: %s (class: %s)", eBayes_trend, class(eBayes_trend)))
-  message(sprintf("   eBayes_robust value: %s (class: %s)", eBayes_robust, class(eBayes_robust)))
-
-  # Ensure logical values - handle character strings that might represent logical values
-  if (is.character(eBayes_trend)) {
-    eBayes_trend <- as.logical(toupper(eBayes_trend) %in% c("TRUE", "T", "1", "YES"))
-    message(sprintf("   eBayes_trend converted from character '%s' to logical: %s", eBayes_trend, eBayes_trend))
-  } else {
-    eBayes_trend <- as.logical(eBayes_trend)
-  }
-
-  if (is.character(eBayes_robust)) {
-    eBayes_robust <- as.logical(toupper(eBayes_robust) %in% c("TRUE", "T", "1", "YES"))
-    message(sprintf("   eBayes_robust converted from character '%s' to logical: %s", eBayes_robust, eBayes_robust))
-  } else {
-    eBayes_robust <- as.logical(eBayes_robust)
-  }
-
-  message(sprintf("   eBayes_trend after conversion: %s (class: %s)", eBayes_trend, class(eBayes_trend)))
-  message(sprintf("   eBayes_robust after conversion: %s (class: %s)", eBayes_robust, class(eBayes_robust)))
-
-  ## Compare the different experimental groups and obtain lists of differentially expressed lipids
-
-  rownames( theObject@design_matrix ) <- theObject@design_matrix |> dplyr::pull( one_of(theObject@sample_id ))
-
-  # Prepare data matrix for DE analysis
-  data_matrix <- NA
-
-  matrix_data <- as.matrix(theObject@lipid_data[[1]][, -1]) # Exclude Name column
-  colnames(matrix_data) <- colnames(theObject@lipid_data[[1]])[-1]
-  rownames(matrix_data) <- theObject@lipid_data[[1]]$Name
-  data_matrix <- matrix_data
-  message("   differentialAbundanceAnalysisHelper Step: Calling runTestsContrasts...")
-  contrasts_results <- runTestsContrasts(
-    data_matrix,
-    contrast_strings = contrasts_tbl$contrasts,
-    design_matrix = theObject@design_matrix,
-    formula_string = formula_string,
-    treat_lfc_cutoff = treat_lfc_cutoff,
-    eBayes_trend = eBayes_trend,
-    eBayes_robust = eBayes_robust
-  )
-  message("   differentialAbundanceAnalysisHelper Step: runTestsContrasts completed.")
-
- #  # Combine all contrast results into a single data frame
- # # message("   Data State (contrasts_results$results) Structure:")
- # # utils::str(contrasts_results$results)
- # # message("   Data State (contrasts_results$results) Head:")
- # # print(head(contrasts_results$results))
- #  contrasts_results_table <-  dplyr::bind_rows(contrasts_results$results, .id = "comparison")
-
-  # Map back to original group names in results if needed
-  if(exists("group_mapping")) {
-    contrasts_results$results <- contrasts_results$results |>
-      purrr::map( \(results_table){
-        results_table |>
-          dplyr::mutate(comparison = purrr::map_chr(comparison, \(x) {
-            result <- x
-            for(safe_name in names(group_mapping)) {
-              result <- gsub(safe_name, group_mapping[safe_name], result, fixed = TRUE)
+        # Run DE analysis and explicitly set names
+        results_list <- purrr::map(
+            objectsList,
+            \(obj) {
+                differentialAbundanceAnalysisHelper(obj,
+                    contrasts_tbl = contrasts_tbl,
+                    formula_string = formula_string,
+                    group_id = group_id,
+                    de_q_val_thresh = de_q_val_thresh,
+                    treat_lfc_cutoff = treat_lfc_cutoff,
+                    eBayes_trend = eBayes_trend,
+                    eBayes_robust = eBayes_robust,
+                    args_group_pattern = args_group_pattern
+                )
             }
-            result
-          }))
+        )
 
-      })
-  }
+        # Set names if the input list had names
+        if (!is.null(names(objectsList))) {
+            names(results_list) <- names(objectsList)
+        }
+
+        return(results_list)
+    }
+)
+
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#' @export
+setMethod(
+    f = "differentialAbundanceAnalysisHelper",
+    signature = "LipidomicsAssayData",
+    definition = function(
+      theObject,
+      contrasts_tbl = NULL,
+      formula_string = NULL,
+      group_id = NULL,
+      de_q_val_thresh = NULL,
+      treat_lfc_cutoff = NULL,
+      eBayes_trend = NULL,
+      eBayes_robust = NULL,
+      args_group_pattern = NULL
+    ) {
+        message("--- Entering differentialAbundanceAnalysisHelper ---")
+
+        contrasts_tbl <- checkParamsObjectFunctionSimplify(theObject, "contrasts_tbl", NULL)
+        formula_string <- checkParamsObjectFunctionSimplify(theObject, "formula_string", " ~ 0 + group")
+        de_q_val_thresh <- checkParamsObjectFunctionSimplify(theObject, "de_q_val_thresh", 0.05)
+        treat_lfc_cutoff <- checkParamsObjectFunctionSimplify(theObject, "treat_lfc_cutoff", 0)
+        eBayes_trend <- checkParamsObjectFunctionSimplify(theObject, "eBayes_trend", TRUE)
+        eBayes_robust <- checkParamsObjectFunctionSimplify(theObject, "eBayes_robust", TRUE)
+        args_group_pattern <- checkParamsObjectFunctionSimplify(theObject, "args_group_pattern", "(\\d+)")
+
+        if (is.null(group_id)) {
+            group_id <- theObject@group_id
+        } else {
+            group_id <- checkParamsObjectFunctionSimplify(theObject, "group_id", "group")
+        }
+
+        # message("   differentialAbundanceAnalysisHelper Arg: contrasts_tbl = ")
+        # print(utils::str(contrasts_tbl))
+
+        print(formula_string)
+
+        # Add preprocessing for group names that start with numbers
+        design_matrix <- theObject@design_matrix
+        group_col <- design_matrix[[theObject@group_id]]
+
+        # Check if any group names start with numbers and create mapping
+        starts_with_number <- grepl("^[0-9]", group_col)
+        if (any(starts_with_number)) {
+            original_groups <- unique(group_col)
+            safe_groups <- purrr::map_chr(original_groups, \(x) {
+                if (grepl("^[0-9]", x)) paste0("grp_", x) else x
+            })
+            group_mapping <- setNames(original_groups, safe_groups)
+
+            # Update design matrix with safe names
+            design_matrix[[theObject@group_id]] <- purrr::map_chr(group_col, \(x) {
+                if (grepl("^[0-9]", x)) paste0("grp_", x) else x
+            })
+
+            # Update contrasts table if it exists
+            if (!is.null(contrasts_tbl)) {
+                contrasts_tbl[[1]] <- purrr::map_chr(contrasts_tbl[[1]], \(x) {
+                    for (orig in names(group_mapping)) {
+                        x <- gsub(group_mapping[orig], orig, x, fixed = TRUE)
+                    }
+                    x
+                })
+            }
+
+            theObject@design_matrix <- design_matrix
+        }
+
+        theObject <- updateParamInObject(theObject, "contrasts_tbl")
+        theObject <- updateParamInObject(theObject, "formula_string")
+        theObject <- updateParamInObject(theObject, "de_q_val_thresh")
+        theObject <- updateParamInObject(theObject, "treat_lfc_cutoff")
+        theObject <- updateParamInObject(theObject, "eBayes_trend")
+        theObject <- updateParamInObject(theObject, "eBayes_robust")
+        theObject <- updateParamInObject(theObject, "args_group_pattern")
+
+        return_list <- list()
+        return_list$theObject <- theObject
+
+        message("--- Entering differentialAbundanceAnalysis ---")
+        message(sprintf("   differentialAbundanceAnalysis: theObject class = %s", class(theObject)))
+
+        # Debug: Print parameter values before conversion
+        message(sprintf("   eBayes_trend value: %s (class: %s)", eBayes_trend, class(eBayes_trend)))
+        message(sprintf("   eBayes_robust value: %s (class: %s)", eBayes_robust, class(eBayes_robust)))
+
+        # Ensure logical values - handle character strings that might represent logical values
+        if (is.character(eBayes_trend)) {
+            eBayes_trend <- as.logical(toupper(eBayes_trend) %in% c("TRUE", "T", "1", "YES"))
+            message(sprintf("   eBayes_trend converted from character '%s' to logical: %s", eBayes_trend, eBayes_trend))
+        } else {
+            eBayes_trend <- as.logical(eBayes_trend)
+        }
+
+        if (is.character(eBayes_robust)) {
+            eBayes_robust <- as.logical(toupper(eBayes_robust) %in% c("TRUE", "T", "1", "YES"))
+            message(sprintf("   eBayes_robust converted from character '%s' to logical: %s", eBayes_robust, eBayes_robust))
+        } else {
+            eBayes_robust <- as.logical(eBayes_robust)
+        }
+
+        message(sprintf("   eBayes_trend after conversion: %s (class: %s)", eBayes_trend, class(eBayes_trend)))
+        message(sprintf("   eBayes_robust after conversion: %s (class: %s)", eBayes_robust, class(eBayes_robust)))
+
+        ## Compare the different experimental groups and obtain lists of differentially expressed lipids
+
+        rownames(theObject@design_matrix) <- theObject@design_matrix |> dplyr::pull(one_of(theObject@sample_id))
+
+        # Prepare data matrix for DE analysis
+        data_matrix <- NA
+
+        matrix_data <- as.matrix(theObject@lipid_data[[1]][, -1]) # Exclude Name column
+        colnames(matrix_data) <- colnames(theObject@lipid_data[[1]])[-1]
+        rownames(matrix_data) <- theObject@lipid_data[[1]]$Name
+        data_matrix <- matrix_data
+        message("   differentialAbundanceAnalysisHelper Step: Calling runTestsContrasts...")
+        contrasts_results <- runTestsContrasts(
+            data_matrix,
+            contrast_strings = contrasts_tbl$contrasts,
+            design_matrix = theObject@design_matrix,
+            formula_string = formula_string,
+            treat_lfc_cutoff = treat_lfc_cutoff,
+            eBayes_trend = eBayes_trend,
+            eBayes_robust = eBayes_robust
+        )
+        message("   differentialAbundanceAnalysisHelper Step: runTestsContrasts completed.")
+
+        #  # Combine all contrast results into a single data frame
+        # # message("   Data State (contrasts_results$results) Structure:")
+        # # utils::str(contrasts_results$results)
+        # # message("   Data State (contrasts_results$results) Head:")
+        # # print(head(contrasts_results$results))
+        #  contrasts_results_table <-  dplyr::bind_rows(contrasts_results$results, .id = "comparison")
+
+        # Map back to original group names in results if needed
+        if (exists("group_mapping")) {
+            contrasts_results$results <- contrasts_results$results |>
+                purrr::map(\(results_table){
+                    results_table |>
+                        dplyr::mutate(comparison = purrr::map_chr(comparison, \(x) {
+                            result <- x
+                            for (safe_name in names(group_mapping)) {
+                                result <- gsub(safe_name, group_mapping[safe_name], result, fixed = TRUE)
+                            }
+                            result
+                        }))
+                })
+        }
 
 
-  return_list$fit.eb <- contrasts_results$fit.eb
-  return_list$contrasts_results_table <- contrasts_results$results |>
-    purrr::map( \(result_table) {
-      result_table |>
-        rownames_to_column(var = theObject@lipid_id_column)
-    })
+        return_list$fit.eb <- contrasts_results$fit.eb
+        return_list$contrasts_results_table <- contrasts_results$results |>
+            purrr::map(\(result_table) {
+                result_table |>
+                    rownames_to_column(var = theObject@lipid_id_column)
+            })
 
-  # Create and return the S4 object
-  result_object <- new("LipidomicsDifferentialAbundanceResults",
-                       theObject = return_list$theObject,
-                       fit.eb = return_list$fit.eb,
-                       contrasts_results_table = return_list$contrasts_results_table
-  )
-  message("--- Exiting differentialAbundanceAnalysisHelper ---")
-  return(result_object)
-})
+        # Create and return the S4 object
+        result_object <- new("LipidomicsDifferentialAbundanceResults",
+            theObject = return_list$theObject,
+            fit.eb = return_list$fit.eb,
+            contrasts_results_table = return_list$contrasts_results_table
+        )
+        message("--- Exiting differentialAbundanceAnalysisHelper ---")
+        return(result_object)
+    }
+)
 
 
 # Helper function to get counts table
 getCountsTable <- function(obj) {
-  if (inherits(obj, "LipidomicsAssayData")) {
-    message(sprintf("   Getting counts table for object of class: %s", class(obj)[1]))
-    message(sprintf("   Returning lipid_data with dimensions: %d rows, %d cols",
-                    nrow(obj@lipid_data), ncol(obj@lipid_data)))
-    obj@lipid_data
-  } else if (inherits(obj, "ProteinQuantitativeData")) {
-    message(sprintf("   Returning protein_quant_table with dimensions: %d rows, %d cols",
-                    nrow(obj@protein_quant_table), ncol(obj@protein_quant_table)))
-    obj@protein_quant_table
-  } else {
-    message(sprintf("   ERROR: Unsupported object type: %s", class(obj)[1]))
-    stop("Unsupported object type")
-  }
+    if (inherits(obj, "LipidomicsAssayData")) {
+        message(sprintf("   Getting counts table for object of class: %s", class(obj)[1]))
+        message(sprintf(
+            "   Returning lipid_data with dimensions: %d rows, %d cols",
+            nrow(obj@lipid_data), ncol(obj@lipid_data)
+        ))
+        obj@lipid_data
+    } else if (inherits(obj, "ProteinQuantitativeData")) {
+        message(sprintf(
+            "   Returning protein_quant_table with dimensions: %d rows, %d cols",
+            nrow(obj@protein_quant_table), ncol(obj@protein_quant_table)
+        ))
+        obj@protein_quant_table
+    } else {
+        message(sprintf("   ERROR: Unsupported object type: %s", class(obj)[1]))
+        stop("Unsupported object type")
+    }
 }
 
 # ==========================================
 # Content from lipid_normalization.R
 # ==========================================
 
-' @title Log2 Transform Assay Data for LipidomicsAssayData
-#'
+" @title Log2 Transform Assay Data for LipidomicsAssayData
+#"
 #' @description
 #' Applies a log2 transformation (log2(x + offset)) to the numeric sample columns
 #' in all assay tibbles stored within the `lipid_data` slot of a
@@ -3573,127 +3778,132 @@ getCountsTable <- function(obj) {
 #' @importFrom methods slot slot<- is
 #' @importFrom tibble as_tibble is_tibble
 #' @export
-setMethod(f = "logTransformAssays",
-          signature = "LipidomicsAssayData",
-          definition = function(theObject, offset = 1, ...) {
+setMethod(
+    f = "logTransformAssays",
+    signature = "LipidomicsAssayData",
+    definition = function(theObject, offset = 1, ...) {
+        # --- Input Validation ---
+        if (!is.numeric(offset) || length(offset) != 1 || offset <= 0) {
+            stop("`offset` must be a single positive numeric value.")
+        }
+        message(sprintf("Applying log2(x + %s) transformation to assays.", as.character(offset)))
 
-            # --- Input Validation ---
-            if (!is.numeric(offset) || length(offset) != 1 || offset <= 0) {
-              stop("`offset` must be a single positive numeric value.")
-            }
-            message(sprintf("Applying log2(x + %s) transformation to assays.", as.character(offset)))
+        # --- Get Object Slots ---
+        assay_list <- methods::slot(theObject, "lipid_data")
+        lipid_id_col_name <- methods::slot(theObject, "lipid_id_column")
+        design_matrix <- methods::slot(theObject, "design_matrix")
+        sample_id_col_name <- methods::slot(theObject, "sample_id")
 
-            # --- Get Object Slots ---
-            assay_list <- methods::slot(theObject, "lipid_data")
-            lipid_id_col_name <- methods::slot(theObject, "lipid_id_column")
-            design_matrix <- methods::slot(theObject, "design_matrix")
-            sample_id_col_name <- methods::slot(theObject, "sample_id")
-
-            if (length(assay_list) == 0) {
-              warning("LipidomicsAssayData object has no assays in 'lipid_data' slot. No transformation performed.")
-              return(theObject)
-            }
-
-            # Ensure list is named
-            original_assay_names <- names(assay_list)
-             if (is.null(original_assay_names)) {
-                 names(assay_list) <- paste0("Assay_", seq_along(assay_list))
-                 warning("Assay list was unnamed. Using default names (Assay_1, Assay_2, ...).", immediate. = TRUE)
-             } else if (any(original_assay_names == "")) {
-                 needs_name <- which(original_assay_names == "")
-                 original_assay_names[needs_name] <- paste0("Assay_", needs_name)
-                 names(assay_list) <- original_assay_names
-                 warning("Some assays were unnamed. Using default names for them.", immediate. = TRUE)
-             }
-             assay_names <- names(assay_list) # Use the potentially corrected names
-
-
-            # --- Process Each Assay ---
-            transformed_assay_list <- lapply(seq_along(assay_list), function(i) {
-                assay_index_name <- assay_names[i] # Use the name from the corrected list
-                assay_tibble <- assay_list[[i]]
-                 message(sprintf("-- Processing assay: %s", assay_index_name))
-
-                 if (!tibble::is_tibble(assay_tibble)) {
-                     warning(sprintf("Assay '%s' is not a tibble. Attempting to coerce.", assay_index_name), immediate. = TRUE)
-                     assay_tibble <- tryCatch(tibble::as_tibble(assay_tibble), error = function(e) {
-                         warning(sprintf("Failed to coerce assay '%s' to tibble: %s. Skipping transformation.", assay_index_name, e$message), immediate. = TRUE)
-                         return(NULL)
-                     })
-                     if (is.null(assay_tibble)) return(assay_list[[i]]) # Return original if coercion failed
-                 }
-
-                 # Check for lipid ID column
-                 if (!lipid_id_col_name %in% colnames(assay_tibble)) {
-                     warning(sprintf("Assay '%s': Lipid ID column '%s' not found. Skipping transformation.", assay_index_name, lipid_id_col_name), immediate. = TRUE)
-                     return(assay_tibble) # Return original
-                 }
-
-                 # --- Identify Sample Columns ---
-                 if (!methods::is(design_matrix, "data.frame")) {
-                    stop("Slot 'design_matrix' is not a data.frame.")
-                 }
-                 if (!sample_id_col_name %in% colnames(design_matrix)) {
-                     stop(sprintf("Sample ID column '%s' not found in design_matrix. Cannot identify sample columns for transformation.", sample_id_col_name))
-                 }
-                 design_samples <- tryCatch(as.character(design_matrix[[sample_id_col_name]]), error = function(e){
-                     stop(sprintf("Could not extract sample IDs from design_matrix column '%s': %s", sample_id_col_name, e$message))
-                 })
-                 all_assay_cols <- colnames(assay_tibble)
-                 sample_cols <- intersect(all_assay_cols, design_samples)
-                 metadata_cols <- setdiff(all_assay_cols, sample_cols)
-                 # Ensure lipid ID is not treated as a sample column
-                 metadata_cols <- union(metadata_cols, lipid_id_col_name)
-                 sample_cols <- setdiff(all_assay_cols, metadata_cols)
-                 # ----------------------------- #
-
-                 if (length(sample_cols) == 0) {
-                     warning(sprintf("Assay '%s': No numeric sample columns identified matching design matrix sample IDs. Skipping transformation.", assay_index_name), immediate. = TRUE)
-                     return(assay_tibble) # Return original
-                 }
-
-                 # --- Apply Log2 Transformation ---
-                 transformed_tibble <- tryCatch({
-                     assay_tibble %>%
-                         # Replace negative values with 0 before log transformation
-                         dplyr::mutate(dplyr::across(dplyr::all_of(sample_cols), ~ ifelse(!is.na(.x) & .x < 0, 0, .x))) %>%
-                         # Ensure target columns are numeric before transformation
-                         dplyr::mutate(dplyr::across(dplyr::all_of(sample_cols), as.numeric)) %>%
-                         dplyr::mutate(dplyr::across(dplyr::all_of(sample_cols), ~ log2(.x + offset)))
-                 }, error = function(e) {
-                      warning(sprintf("Assay '%s': Error during log2 transformation: %s. Returning original assay data.", assay_index_name, e$message), immediate. = TRUE)
-                      return(assay_tibble) # Return original on error
-                 })
-
-                 # Check if transformation actually happened (e.g., if error occurred)
-                 if (identical(transformed_tibble, assay_tibble)) {
-                    message(sprintf("Assay '%s': Transformation skipped or failed.", assay_index_name))
-                 } else {
-                    message(sprintf("Assay '%s': Successfully applied log2 transformation to %d sample column(s).", assay_index_name, length(sample_cols)))
-                 }
-
-                 return(transformed_tibble)
-            })
-
-            # Restore original names if they existed
-            names(transformed_assay_list) <- assay_names
-
-            # Assign the list of transformed assays back to the object
-            methods::slot(theObject, "lipid_data") <- transformed_assay_list
-
-            # Optional: Add log transformation status to args (consider structure)
-            # Ensure args is a list
-            if (!is.list(theObject@args)) {
-                warning("Slot 'args' is not a list. Cannot record log transformation status.", immediate. = TRUE)
-            } else {
-                theObject@args$log_transformed <- TRUE
-                theObject@args$log_transform_offset <- offset
-            }
-
-
-            message("Log2 transformation complete for all assays.")
+        if (length(assay_list) == 0) {
+            warning("LipidomicsAssayData object has no assays in 'lipid_data' slot. No transformation performed.")
             return(theObject)
-          }
+        }
+
+        # Ensure list is named
+        original_assay_names <- names(assay_list)
+        if (is.null(original_assay_names)) {
+            names(assay_list) <- paste0("Assay_", seq_along(assay_list))
+            warning("Assay list was unnamed. Using default names (Assay_1, Assay_2, ...).", immediate. = TRUE)
+        } else if (any(original_assay_names == "")) {
+            needs_name <- which(original_assay_names == "")
+            original_assay_names[needs_name] <- paste0("Assay_", needs_name)
+            names(assay_list) <- original_assay_names
+            warning("Some assays were unnamed. Using default names for them.", immediate. = TRUE)
+        }
+        assay_names <- names(assay_list) # Use the potentially corrected names
+
+
+        # --- Process Each Assay ---
+        transformed_assay_list <- lapply(seq_along(assay_list), function(i) {
+            assay_index_name <- assay_names[i] # Use the name from the corrected list
+            assay_tibble <- assay_list[[i]]
+            message(sprintf("-- Processing assay: %s", assay_index_name))
+
+            if (!tibble::is_tibble(assay_tibble)) {
+                warning(sprintf("Assay '%s' is not a tibble. Attempting to coerce.", assay_index_name), immediate. = TRUE)
+                assay_tibble <- tryCatch(tibble::as_tibble(assay_tibble), error = function(e) {
+                    warning(sprintf("Failed to coerce assay '%s' to tibble: %s. Skipping transformation.", assay_index_name, e$message), immediate. = TRUE)
+                    return(NULL)
+                })
+                if (is.null(assay_tibble)) {
+                    return(assay_list[[i]])
+                } # Return original if coercion failed
+            }
+
+            # Check for lipid ID column
+            if (!lipid_id_col_name %in% colnames(assay_tibble)) {
+                warning(sprintf("Assay '%s': Lipid ID column '%s' not found. Skipping transformation.", assay_index_name, lipid_id_col_name), immediate. = TRUE)
+                return(assay_tibble) # Return original
+            }
+
+            # --- Identify Sample Columns ---
+            if (!methods::is(design_matrix, "data.frame")) {
+                stop("Slot 'design_matrix' is not a data.frame.")
+            }
+            if (!sample_id_col_name %in% colnames(design_matrix)) {
+                stop(sprintf("Sample ID column '%s' not found in design_matrix. Cannot identify sample columns for transformation.", sample_id_col_name))
+            }
+            design_samples <- tryCatch(as.character(design_matrix[[sample_id_col_name]]), error = function(e) {
+                stop(sprintf("Could not extract sample IDs from design_matrix column '%s': %s", sample_id_col_name, e$message))
+            })
+            all_assay_cols <- colnames(assay_tibble)
+            sample_cols <- intersect(all_assay_cols, design_samples)
+            metadata_cols <- setdiff(all_assay_cols, sample_cols)
+            # Ensure lipid ID is not treated as a sample column
+            metadata_cols <- union(metadata_cols, lipid_id_col_name)
+            sample_cols <- setdiff(all_assay_cols, metadata_cols)
+            # ----------------------------- #
+
+            if (length(sample_cols) == 0) {
+                warning(sprintf("Assay '%s': No numeric sample columns identified matching design matrix sample IDs. Skipping transformation.", assay_index_name), immediate. = TRUE)
+                return(assay_tibble) # Return original
+            }
+
+            # --- Apply Log2 Transformation ---
+            transformed_tibble <- tryCatch(
+                {
+                    assay_tibble %>%
+                        # Replace negative values with 0 before log transformation
+                        dplyr::mutate(dplyr::across(dplyr::all_of(sample_cols), ~ ifelse(!is.na(.x) & .x < 0, 0, .x))) %>%
+                        # Ensure target columns are numeric before transformation
+                        dplyr::mutate(dplyr::across(dplyr::all_of(sample_cols), as.numeric)) %>%
+                        dplyr::mutate(dplyr::across(dplyr::all_of(sample_cols), ~ log2(.x + offset)))
+                },
+                error = function(e) {
+                    warning(sprintf("Assay '%s': Error during log2 transformation: %s. Returning original assay data.", assay_index_name, e$message), immediate. = TRUE)
+                    return(assay_tibble) # Return original on error
+                }
+            )
+
+            # Check if transformation actually happened (e.g., if error occurred)
+            if (identical(transformed_tibble, assay_tibble)) {
+                message(sprintf("Assay '%s': Transformation skipped or failed.", assay_index_name))
+            } else {
+                message(sprintf("Assay '%s': Successfully applied log2 transformation to %d sample column(s).", assay_index_name, length(sample_cols)))
+            }
+
+            return(transformed_tibble)
+        })
+
+        # Restore original names if they existed
+        names(transformed_assay_list) <- assay_names
+
+        # Assign the list of transformed assays back to the object
+        methods::slot(theObject, "lipid_data") <- transformed_assay_list
+
+        # Optional: Add log transformation status to args (consider structure)
+        # Ensure args is a list
+        if (!is.list(theObject@args)) {
+            warning("Slot 'args' is not a list. Cannot record log transformation status.", immediate. = TRUE)
+        } else {
+            theObject@args$log_transformed <- TRUE
+            theObject@args$log_transform_offset <- offset
+        }
+
+
+        message("Log2 transformation complete for all assays.")
+        return(theObject)
+    }
 )
 
 
@@ -3757,200 +3967,212 @@ setMethod(f = "logTransformAssays",
 #' @importFrom stringr str_detect
 #'
 #' @export
-setMethod(f = "normaliseUntransformedData",
-          signature = signature(theObject = "LipidomicsAssayData", method = "character"),
-          definition = function(theObject,
-                                method = "ITSD",
-                                itsd_feature_ids = NULL,
-                                itsd_pattern_columns = NULL, # Default set later
-                                itsd_aggregation = "sum",
-                                remove_itsd_after_norm = TRUE,
-                                ...) {
+setMethod(
+    f = "normaliseUntransformedData",
+    signature = signature(theObject = "LipidomicsAssayData", method = "character"),
+    definition = function(theObject,
+                          method = "ITSD",
+                          itsd_feature_ids = NULL,
+                          itsd_pattern_columns = NULL, # Default set later
+                          itsd_aggregation = "sum",
+                          remove_itsd_after_norm = TRUE,
+                          ...) {
+        # --- Input Validation ---
+        if (tolower(method) != "itsd") {
+            stop("This method currently only supports method = 'ITSD'.")
+        }
+        valid_aggregations <- c("sum", "mean", "median")
+        if (!tolower(itsd_aggregation) %in% valid_aggregations) {
+            stop(sprintf("`itsd_aggregation` must be one of: %s", paste(valid_aggregations, collapse = ", ")))
+        }
+        itsd_aggregation_func <- switch(tolower(itsd_aggregation),
+            "sum" = sum,
+            "mean" = mean,
+            "median" = stats::median
+        )
 
-            # --- Input Validation ---
-            if (tolower(method) != "itsd") {
-                stop("This method currently only supports method = 'ITSD'.")
-            }
-            valid_aggregations <- c("sum", "mean", "median")
-            if (!tolower(itsd_aggregation) %in% valid_aggregations) {
-                stop(sprintf("`itsd_aggregation` must be one of: %s", paste(valid_aggregations, collapse = ", ")))
-            }
-            itsd_aggregation_func <- switch(tolower(itsd_aggregation),
-                                            "sum" = sum,
-                                            "mean" = mean,
-                                            "median" = stats::median)
+        # Determine ITSD selection mode
+        use_manual_itsd <- !is.null(itsd_feature_ids) && is.list(itsd_feature_ids) && length(itsd_feature_ids) > 0
+        if (use_manual_itsd) {
+            message(sprintf("Applying Internal Standard (ITSD) normalization using MANUAL feature selection and '%s' aggregation.", tolower(itsd_aggregation)))
+        } else {
+            message(sprintf("Applying Internal Standard (ITSD) normalization using REGEX pattern and '%s' aggregation.", tolower(itsd_aggregation)))
+        }
 
-            # Determine ITSD selection mode
-            use_manual_itsd <- !is.null(itsd_feature_ids) && is.list(itsd_feature_ids) && length(itsd_feature_ids) > 0
-            if (use_manual_itsd) {
-                message(sprintf("Applying Internal Standard (ITSD) normalization using MANUAL feature selection and '%s' aggregation.", tolower(itsd_aggregation)))
+        # --- Get Object Slots ---
+        assay_list <- methods::slot(theObject, "lipid_data")
+        lipid_id_col <- methods::slot(theObject, "lipid_id_column")
+        design_matrix <- methods::slot(theObject, "design_matrix")
+        sample_id_col <- methods::slot(theObject, "sample_id")
+        itsd_regex <- methods::slot(theObject, "internal_standard_regex")
+        annotation_col <- methods::slot(theObject, "annotation_id_column") # Default ITSD column
+
+        # Set default for itsd_pattern_columns if NULL (only relevant for regex mode)
+        if (!use_manual_itsd) {
+            if (is.null(itsd_pattern_columns)) {
+                itsd_pattern_columns <- annotation_col
+                message(sprintf("Using default annotation column '%s' to identify ITSDs.", annotation_col))
             } else {
-                message(sprintf("Applying Internal Standard (ITSD) normalization using REGEX pattern and '%s' aggregation.", tolower(itsd_aggregation)))
+                message(sprintf("Using column(s) '%s' to identify ITSDs.", paste(itsd_pattern_columns, collapse = "', '")))
             }
 
-            # --- Get Object Slots ---
-            assay_list <- methods::slot(theObject, "lipid_data")
-            lipid_id_col <- methods::slot(theObject, "lipid_id_column")
-            design_matrix <- methods::slot(theObject, "design_matrix")
-            sample_id_col <- methods::slot(theObject, "sample_id")
-            itsd_regex <- methods::slot(theObject, "internal_standard_regex")
-            annotation_col <- methods::slot(theObject, "annotation_id_column") # Default ITSD column
+            # Validate regex is available for regex mode
+            if (is.null(itsd_regex) || itsd_regex == "") {
+                stop("The `internal_standard_regex` slot is empty and no manual itsd_feature_ids provided. Cannot identify ITSDs.")
+            }
+        }
 
-            # Set default for itsd_pattern_columns if NULL (only relevant for regex mode)
+        if (length(assay_list) == 0) {
+            warning("LipidomicsAssayData object has no assays in 'lipid_data' slot. No normalization performed.")
+            return(theObject)
+        }
+
+
+        # Ensure list is named
+        original_assay_names <- names(assay_list)
+        if (is.null(original_assay_names)) {
+            names(assay_list) <- paste0("Assay_", seq_along(assay_list))
+            warning("Assay list was unnamed. Using default names (Assay_1, Assay_2, ...).", immediate. = TRUE)
+        } else if (any(original_assay_names == "")) {
+            needs_name <- which(original_assay_names == "")
+            original_assay_names[needs_name] <- paste0("Assay_", needs_name)
+            names(assay_list) <- original_assay_names
+            warning("Some assays were unnamed. Using default names for them.", immediate. = TRUE)
+        }
+        assay_names <- names(assay_list) # Use the potentially corrected names
+
+        # --- Identify Sample Columns ---
+        if (!methods::is(design_matrix, "data.frame")) {
+            stop("Slot 'design_matrix' is not a data.frame.")
+        }
+        if (!sample_id_col %in% colnames(design_matrix)) {
+            stop(sprintf("Sample ID column '%s' not found in design_matrix. Cannot identify sample columns for normalization.", sample_id_col))
+        }
+        design_samples <- tryCatch(as.character(design_matrix[[sample_id_col]]), error = function(e) {
+            stop(sprintf("Could not extract sample IDs from design_matrix column '%s': %s", sample_id_col, e$message))
+        })
+        if (length(design_samples) == 0) {
+            stop("No sample IDs found in the design matrix.")
+        }
+
+        # --- Initialize ITSD Feature Collector ---
+        # Use environment for side-effect collection during lapply
+        itsd_collector <- new.env(parent = emptyenv())
+        itsd_collector$features_per_assay <- list()
+        itsd_collector$counts_per_assay <- list()
+
+        # --- Process Each Assay ---
+        normalized_assay_list <- lapply(seq_along(assay_list), function(i) {
+            assay_index_name <- assay_names[i] # Use the name from the corrected list
+            assay_tibble <- assay_list[[i]]
+            message(sprintf("-- Processing assay: %s", assay_index_name))
+
+            # --- Basic Checks ---
+            if (!tibble::is_tibble(assay_tibble)) {
+                warning(sprintf("Assay '%s' is not a tibble. Attempting to coerce.", assay_index_name), immediate. = TRUE)
+                assay_tibble <- tryCatch(tibble::as_tibble(assay_tibble), error = function(e) {
+                    warning(sprintf("Failed to coerce assay '%s' to tibble: %s. Skipping normalization.", assay_index_name, e$message), immediate. = TRUE)
+                    return(NULL) # Signal to skip this assay
+                })
+                if (is.null(assay_tibble)) {
+                    return(assay_list[[i]])
+                } # Return original if coercion failed
+            }
+            if (!lipid_id_col %in% colnames(assay_tibble)) {
+                warning(sprintf("Assay '%s': Lipid ID column '%s' not found. Skipping normalization.", assay_index_name, lipid_id_col), immediate. = TRUE)
+                return(assay_tibble)
+            }
+            # --- Validate ITSD Identification Prerequisites ---
+            # Only check pattern columns if using regex mode
+            actual_itsd_cols <- NULL
             if (!use_manual_itsd) {
-                if (is.null(itsd_pattern_columns)) {
-                    itsd_pattern_columns <- annotation_col
-                    message(sprintf("Using default annotation column '%s' to identify ITSDs.", annotation_col))
-                } else {
-                    message(sprintf("Using column(s) '%s' to identify ITSDs.", paste(itsd_pattern_columns, collapse="', '")))
-                }
-
-                # Validate regex is available for regex mode
-                if (is.null(itsd_regex) || itsd_regex == "") {
-                    stop("The `internal_standard_regex` slot is empty and no manual itsd_feature_ids provided. Cannot identify ITSDs.")
-                }
-            }
-
-            if (length(assay_list) == 0) {
-              warning("LipidomicsAssayData object has no assays in 'lipid_data' slot. No normalization performed.")
-              return(theObject)
-            }
-
-
-            # Ensure list is named
-            original_assay_names <- names(assay_list)
-             if (is.null(original_assay_names)) {
-                 names(assay_list) <- paste0("Assay_", seq_along(assay_list))
-                 warning("Assay list was unnamed. Using default names (Assay_1, Assay_2, ...).", immediate. = TRUE)
-             } else if (any(original_assay_names == "")) {
-                 needs_name <- which(original_assay_names == "")
-                 original_assay_names[needs_name] <- paste0("Assay_", needs_name)
-                 names(assay_list) <- original_assay_names
-                 warning("Some assays were unnamed. Using default names for them.", immediate. = TRUE)
-             }
-             assay_names <- names(assay_list) # Use the potentially corrected names
-
-            # --- Identify Sample Columns ---
-            if (!methods::is(design_matrix, "data.frame")) {
-              stop("Slot 'design_matrix' is not a data.frame.")
-            }
-            if (!sample_id_col %in% colnames(design_matrix)) {
-               stop(sprintf("Sample ID column '%s' not found in design_matrix. Cannot identify sample columns for normalization.", sample_id_col))
-            }
-            design_samples <- tryCatch(as.character(design_matrix[[sample_id_col]]), error = function(e){
-               stop(sprintf("Could not extract sample IDs from design_matrix column '%s': %s", sample_id_col, e$message))
-            })
-            if (length(design_samples) == 0) {
-                 stop("No sample IDs found in the design matrix.")
-            }
-
-            # --- Initialize ITSD Feature Collector ---
-            # Use environment for side-effect collection during lapply
-            itsd_collector <- new.env(parent = emptyenv())
-            itsd_collector$features_per_assay <- list()
-            itsd_collector$counts_per_assay <- list()
-
-            # --- Process Each Assay ---
-            normalized_assay_list <- lapply(seq_along(assay_list), function(i) {
-                assay_index_name <- assay_names[i] # Use the name from the corrected list
-                assay_tibble <- assay_list[[i]]
-                 message(sprintf("-- Processing assay: %s", assay_index_name))
-
-                 # --- Basic Checks ---
-                 if (!tibble::is_tibble(assay_tibble)) {
-                     warning(sprintf("Assay '%s' is not a tibble. Attempting to coerce.", assay_index_name), immediate. = TRUE)
-                     assay_tibble <- tryCatch(tibble::as_tibble(assay_tibble), error = function(e) {
-                         warning(sprintf("Failed to coerce assay '%s' to tibble: %s. Skipping normalization.", assay_index_name, e$message), immediate. = TRUE)
-                         return(NULL) # Signal to skip this assay
-                     })
-                     if (is.null(assay_tibble)) return(assay_list[[i]]) # Return original if coercion failed
-                 }
-                if (!lipid_id_col %in% colnames(assay_tibble)) {
-                    warning(sprintf("Assay '%s': Lipid ID column '%s' not found. Skipping normalization.", assay_index_name, lipid_id_col), immediate. = TRUE)
+                # Check if *any* of the itsd_pattern_columns exist
+                if (!any(itsd_pattern_columns %in% colnames(assay_tibble))) {
+                    warning(sprintf(
+                        "Assay '%s': None of the specified ITSD pattern columns ('%s') found. Cannot identify ITSDs. Skipping normalization.",
+                        assay_index_name, paste(itsd_pattern_columns, collapse = "', '")
+                    ), immediate. = TRUE)
                     return(assay_tibble)
                 }
-                 # --- Validate ITSD Identification Prerequisites ---
-                 # Only check pattern columns if using regex mode
-                 actual_itsd_cols <- NULL
-                 if (!use_manual_itsd) {
-                     # Check if *any* of the itsd_pattern_columns exist
-                     if (!any(itsd_pattern_columns %in% colnames(assay_tibble))) {
-                        warning(sprintf("Assay '%s': None of the specified ITSD pattern columns ('%s') found. Cannot identify ITSDs. Skipping normalization.",
-                                        assay_index_name, paste(itsd_pattern_columns, collapse="', '")), immediate. = TRUE)
-                        return(assay_tibble)
-                     }
-                     # Filter itsd_pattern_columns to only those present in the current assay
-                     actual_itsd_cols <- intersect(itsd_pattern_columns, colnames(assay_tibble))
-                     if (length(actual_itsd_cols) == 0) { # Should be caught above, but double check
-                         warning(sprintf("Assay '%s': No ITSD identification columns found after checking existence. Skipping normalization.", assay_index_name), immediate. = TRUE)
-                         return(assay_tibble)
-                     }
-                 }
+                # Filter itsd_pattern_columns to only those present in the current assay
+                actual_itsd_cols <- intersect(itsd_pattern_columns, colnames(assay_tibble))
+                if (length(actual_itsd_cols) == 0) { # Should be caught above, but double check
+                    warning(sprintf("Assay '%s': No ITSD identification columns found after checking existence. Skipping normalization.", assay_index_name), immediate. = TRUE)
+                    return(assay_tibble)
+                }
+            }
 
 
-                # --- Identify Sample Columns in this Assay ---
-                 all_assay_cols <- colnames(assay_tibble)
-                 sample_cols <- intersect(all_assay_cols, design_samples)
-                 if (length(sample_cols) == 0) {
-                     warning(sprintf("Assay '%s': No sample columns identified matching design matrix sample IDs. Skipping normalization.", assay_index_name), immediate. = TRUE)
-                     return(assay_tibble)
-                 }
-                 # Ensure sample columns are numeric
-                 non_numeric_samples <- sample_cols[!sapply(assay_tibble[sample_cols], is.numeric)]
-                 if (length(non_numeric_samples) > 0) {
-                    warning(sprintf("Assay '%s': Non-numeric sample columns found: %s. Attempting coercion, but this may indicate upstream issues.",
-                                    assay_index_name, paste(non_numeric_samples, collapse=", ")), immediate. = TRUE)
-                    assay_tibble <- assay_tibble |>
-                        dplyr::mutate(dplyr::across(dplyr::all_of(non_numeric_samples), as.numeric))
-                 }
+            # --- Identify Sample Columns in this Assay ---
+            all_assay_cols <- colnames(assay_tibble)
+            sample_cols <- intersect(all_assay_cols, design_samples)
+            if (length(sample_cols) == 0) {
+                warning(sprintf("Assay '%s': No sample columns identified matching design matrix sample IDs. Skipping normalization.", assay_index_name), immediate. = TRUE)
+                return(assay_tibble)
+            }
+            # Ensure sample columns are numeric
+            non_numeric_samples <- sample_cols[!sapply(assay_tibble[sample_cols], is.numeric)]
+            if (length(non_numeric_samples) > 0) {
+                warning(sprintf(
+                    "Assay '%s': Non-numeric sample columns found: %s. Attempting coercion, but this may indicate upstream issues.",
+                    assay_index_name, paste(non_numeric_samples, collapse = ", ")
+                ), immediate. = TRUE)
+                assay_tibble <- assay_tibble |>
+                    dplyr::mutate(dplyr::across(dplyr::all_of(non_numeric_samples), as.numeric))
+            }
 
-                 # --- Identify ITSD Rows ---
-                 if (use_manual_itsd) {
-                     # Manual mode: use provided feature IDs for this assay
-                     assay_itsd_ids <- itsd_feature_ids[[assay_index_name]]
-                     if (is.null(assay_itsd_ids) || length(assay_itsd_ids) == 0) {
-                         warning(sprintf("Assay '%s': No manual ITSD features provided in itsd_feature_ids. Skipping normalization.", assay_index_name), immediate. = TRUE)
-                         return(assay_tibble)
-                     }
-                     # Match feature IDs against lipid_id_col
-                     feature_ids <- as.character(assay_tibble[[lipid_id_col]])
-                     itsd_rows_logical <- feature_ids %in% as.character(assay_itsd_ids)
+            # --- Identify ITSD Rows ---
+            if (use_manual_itsd) {
+                # Manual mode: use provided feature IDs for this assay
+                assay_itsd_ids <- itsd_feature_ids[[assay_index_name]]
+                if (is.null(assay_itsd_ids) || length(assay_itsd_ids) == 0) {
+                    warning(sprintf("Assay '%s': No manual ITSD features provided in itsd_feature_ids. Skipping normalization.", assay_index_name), immediate. = TRUE)
+                    return(assay_tibble)
+                }
+                # Match feature IDs against lipid_id_col
+                feature_ids <- as.character(assay_tibble[[lipid_id_col]])
+                itsd_rows_logical <- feature_ids %in% as.character(assay_itsd_ids)
 
-                     if (!any(itsd_rows_logical, na.rm = TRUE)) {
-                         warning(sprintf("Assay '%s': None of the %d manual ITSD feature IDs matched rows in the data. Skipping normalization.",
-                                         assay_index_name, length(assay_itsd_ids)), immediate. = TRUE)
-                         return(assay_tibble)
-                     }
-                     message(sprintf("   Using %d manually selected ITSD features.", sum(itsd_rows_logical)))
-                 } else {
-                     # Regex mode: identify ITSDs by pattern matching
-                     itsd_rows_logical <- assay_tibble |>
-                        dplyr::select(dplyr::all_of(actual_itsd_cols)) |>
-                        dplyr::mutate(dplyr::across(dplyr::everything(), ~ stringr::str_detect(as.character(.), itsd_regex))) |>
-                        # Row is ITSD if pattern matches in *any* of the specified columns
-                        purrr::reduce(`|`)
+                if (!any(itsd_rows_logical, na.rm = TRUE)) {
+                    warning(sprintf(
+                        "Assay '%s': None of the %d manual ITSD feature IDs matched rows in the data. Skipping normalization.",
+                        assay_index_name, length(assay_itsd_ids)
+                    ), immediate. = TRUE)
+                    return(assay_tibble)
+                }
+                message(sprintf("   Using %d manually selected ITSD features.", sum(itsd_rows_logical)))
+            } else {
+                # Regex mode: identify ITSDs by pattern matching
+                itsd_rows_logical <- assay_tibble |>
+                    dplyr::select(dplyr::all_of(actual_itsd_cols)) |>
+                    dplyr::mutate(dplyr::across(dplyr::everything(), ~ stringr::str_detect(as.character(.), itsd_regex))) |>
+                    # Row is ITSD if pattern matches in *any* of the specified columns
+                    purrr::reduce(`|`)
 
-                     if (!any(itsd_rows_logical, na.rm = TRUE)) {
-                         warning(sprintf("Assay '%s': No ITSD features identified using regex '%s' in columns '%s'. Skipping normalization.",
-                                         assay_index_name, itsd_regex, paste(actual_itsd_cols, collapse="', '")), immediate. = TRUE)
-                         return(assay_tibble)
-                     }
-                     message(sprintf("   Identified %d ITSD features via regex.", sum(itsd_rows_logical)))
-                 }
+                if (!any(itsd_rows_logical, na.rm = TRUE)) {
+                    warning(sprintf(
+                        "Assay '%s': No ITSD features identified using regex '%s' in columns '%s'. Skipping normalization.",
+                        assay_index_name, itsd_regex, paste(actual_itsd_cols, collapse = "', '")
+                    ), immediate. = TRUE)
+                    return(assay_tibble)
+                }
+                message(sprintf("   Identified %d ITSD features via regex.", sum(itsd_rows_logical)))
+            }
 
-                 itsd_data <- assay_tibble |> dplyr::filter(itsd_rows_logical)
-                 non_itsd_data <- assay_tibble |> dplyr::filter(!itsd_rows_logical)
-                 n_itsd <- nrow(itsd_data)
-                 message(sprintf("   Using %d ITSD features for normalization.", n_itsd))
+            itsd_data <- assay_tibble |> dplyr::filter(itsd_rows_logical)
+            non_itsd_data <- assay_tibble |> dplyr::filter(!itsd_rows_logical)
+            n_itsd <- nrow(itsd_data)
+            message(sprintf("   Using %d ITSD features for normalization.", n_itsd))
 
-                 # --- Capture ITSD feature names for reporting ---
-                 itsd_feature_names <- as.character(itsd_data[[lipid_id_col]])
-                 itsd_collector$features_per_assay[[assay_index_name]] <- itsd_feature_names
-                 itsd_collector$counts_per_assay[[assay_index_name]] <- n_itsd
+            # --- Capture ITSD feature names for reporting ---
+            itsd_feature_names <- as.character(itsd_data[[lipid_id_col]])
+            itsd_collector$features_per_assay[[assay_index_name]] <- itsd_feature_names
+            itsd_collector$counts_per_assay[[assay_index_name]] <- n_itsd
 
-                # --- Calculate Normalization Factors ---
-                # Step 1: Calculate aggregate ITSD per sample
-                norm_factors_long <- tryCatch({
+            # --- Calculate Normalization Factors ---
+            # Step 1: Calculate aggregate ITSD per sample
+            norm_factors_long <- tryCatch(
+                {
                     itsd_data |>
                         dplyr::select(dplyr::all_of(c(lipid_id_col, sample_cols))) |>
                         tidyr::pivot_longer(cols = dplyr::all_of(sample_cols), names_to = "Sample", values_to = "Intensity") |>
@@ -3958,111 +4180,122 @@ setMethod(f = "normaliseUntransformedData",
                         # Aggregate ITSD intensities per sample
                         # Use SampleNormFactor to be clear about the value's meaning
                         dplyr::summarise(SampleNormFactor = itsd_aggregation_func(.data$Intensity, na.rm = TRUE), .groups = "drop")
-                }, error = function(e) {
-                     warning(sprintf("Assay '%s': Error calculating normalization factors: %s. Skipping normalization.", assay_index_name, e$message), immediate. = TRUE)
-                     return(NULL)
-                 })
-                if (is.null(norm_factors_long)) return(assay_tibble) # Return original on error
-
-                # Check for zero or NA factors
-                problematic_factors <- norm_factors_long |>
-                    dplyr::filter(is.na(.data$SampleNormFactor) | .data$SampleNormFactor == 0)
-                if (nrow(problematic_factors) > 0) {
-                    warning(sprintf("Assay '%s': Aggregate ITSD signal (SampleNormFactor) is NA or zero for samples: %s. Normalized values will be NA for these samples.",
-                                    assay_index_name, paste(problematic_factors$Sample, collapse=", ")), immediate. = TRUE)
-                    # Set factor to NA to ensure division results in NA
-                    norm_factors_long <- norm_factors_long |>
-                        dplyr::mutate(SampleNormFactor = dplyr::if_else(is.na(.data$SampleNormFactor) | .data$SampleNormFactor == 0, NA_real_, .data$SampleNormFactor))
+                },
+                error = function(e) {
+                    warning(sprintf("Assay '%s': Error calculating normalization factors: %s. Skipping normalization.", assay_index_name, e$message), immediate. = TRUE)
+                    return(NULL)
                 }
+            )
+            if (is.null(norm_factors_long)) {
+                return(assay_tibble)
+            } # Return original on error
 
-                # Step 2: Calculate the average aggregate ITSD signal across all samples
-                average_norm_factor <- mean(norm_factors_long$SampleNormFactor, na.rm = TRUE)
-                 if (is.na(average_norm_factor) || average_norm_factor == 0) {
-                     warning(sprintf("Assay '%s': Average aggregate ITSD signal is NA or zero. Cannot perform average-centered normalization. Skipping.", assay_index_name), immediate. = TRUE)
-                     return(assay_tibble)
-                 }
-
-                # Create a named vector for easy lookup (Sample -> NormFactor)
-                sample_norm_factors_vec <- stats::setNames(norm_factors_long$SampleNormFactor, norm_factors_long$Sample)
-
-                # --- Apply Normalization ---
-                 message(sprintf("   Applying normalization to %d non-ITSD features...", nrow(non_itsd_data)))
-                 normalized_non_itsd_data <- tryCatch({
-                    non_itsd_data |>
-                        dplyr::mutate(dplyr::across(dplyr::all_of(sample_cols),
-                                             # Multiply intensity by (Average Factor / Sample Factor)
-                                             ~ .x * (average_norm_factor / sample_norm_factors_vec[dplyr::cur_column()])))
-                 }, error = function(e) {
-                     warning(sprintf("Assay '%s': Error applying normalization factors: %s. Returning unnormalized data for non-ITSD features.", assay_index_name, e$message), immediate. = TRUE)
-                     return(non_itsd_data) # Return unnormalized if error
-                 })
-
-                # --- Reconstruct Assay Tibble ---
-                if (remove_itsd_after_norm) {
-                    final_assay_tibble <- normalized_non_itsd_data
-                    message(sprintf("   Removed %d ITSD features after normalization.", n_itsd))
-                } else {
-                    # If keeping ITSDs, they remain unnormalized (or could be normalized like others)
-                    # Here, we keep them unnormalized as their purpose was the factor calculation.
-                    final_assay_tibble <- dplyr::bind_rows(normalized_non_itsd_data, itsd_data) |>
-                        # Optional: arrange back by original ID or similar if needed
-                         dplyr::arrange(!!rlang::sym(lipid_id_col))
-                    message(sprintf("   Kept %d ITSD features (unnormalized) in the output.", n_itsd))
-                }
-
-                 message(sprintf("   Assay '%s' normalization complete.", assay_index_name))
-                 return(final_assay_tibble)
-            }) # End lapply
-
-            # Filter out any assays that failed (returned NULL - though currently returning original)
-            # This check might be redundant if errors return original, but good practice.
-            successful_assays <- !sapply(normalized_assay_list, is.null)
-             if (!all(successful_assays)) {
-                 warning("Normalization failed or was skipped for some assays.", immediate. = TRUE)
-                 # Keep original data for failed assays
-                 normalized_assay_list[!successful_assays] <- assay_list[!successful_assays]
-             }
-
-
-            # Restore original names if they existed
-            names(normalized_assay_list) <- assay_names
-
-            # Assign the list of normalized assays back to the object
-            methods::slot(theObject, "lipid_data") <- normalized_assay_list
-
-            # --- Update Args Slot ---
-            if (!is.list(theObject@args)) {
-                warning("Slot 'args' is not a list. Cannot record ITSD normalization status.", immediate. = TRUE)
-            } else {
-                 # Ensure the specific list exists
-                if (!"ITSDNormalization" %in% names(theObject@args)) {
-                   theObject@args$ITSDNormalization <- list()
-                }
-                theObject@args$ITSDNormalization$applied <- TRUE
-                theObject@args$ITSDNormalization$method_type <- "average_centered"
-                theObject@args$ITSDNormalization$itsd_aggregation <- tolower(itsd_aggregation)
-                theObject@args$ITSDNormalization$itsd_pattern_columns <- itsd_pattern_columns # Record actual columns used (potentially default)
-                theObject@args$ITSDNormalization$removed_itsd <- remove_itsd_after_norm
-                theObject@args$ITSDNormalization$timestamp <- Sys.time()
-
-                # Store per-assay ITSD feature information for reporting
-                if (length(itsd_collector$features_per_assay) > 0) {
-                    theObject@args$ITSDNormalization$itsd_features_per_assay <- as.list(itsd_collector$features_per_assay)
-                    theObject@args$ITSDNormalization$itsd_counts_per_assay <- as.list(itsd_collector$counts_per_assay)
-                    message(sprintf("   Stored ITSD feature names for %d assays", length(itsd_collector$features_per_assay)))
-                }
+            # Check for zero or NA factors
+            problematic_factors <- norm_factors_long |>
+                dplyr::filter(is.na(.data$SampleNormFactor) | .data$SampleNormFactor == 0)
+            if (nrow(problematic_factors) > 0) {
+                warning(sprintf(
+                    "Assay '%s': Aggregate ITSD signal (SampleNormFactor) is NA or zero for samples: %s. Normalized values will be NA for these samples.",
+                    assay_index_name, paste(problematic_factors$Sample, collapse = ", ")
+                ), immediate. = TRUE)
+                # Set factor to NA to ensure division results in NA
+                norm_factors_long <- norm_factors_long |>
+                    dplyr::mutate(SampleNormFactor = dplyr::if_else(is.na(.data$SampleNormFactor) | .data$SampleNormFactor == 0, NA_real_, .data$SampleNormFactor))
             }
 
-            message("ITSD normalization process complete for all applicable assays.")
-            return(theObject)
-          }
+            # Step 2: Calculate the average aggregate ITSD signal across all samples
+            average_norm_factor <- mean(norm_factors_long$SampleNormFactor, na.rm = TRUE)
+            if (is.na(average_norm_factor) || average_norm_factor == 0) {
+                warning(sprintf("Assay '%s': Average aggregate ITSD signal is NA or zero. Cannot perform average-centered normalization. Skipping.", assay_index_name), immediate. = TRUE)
+                return(assay_tibble)
+            }
+
+            # Create a named vector for easy lookup (Sample -> NormFactor)
+            sample_norm_factors_vec <- stats::setNames(norm_factors_long$SampleNormFactor, norm_factors_long$Sample)
+
+            # --- Apply Normalization ---
+            message(sprintf("   Applying normalization to %d non-ITSD features...", nrow(non_itsd_data)))
+            normalized_non_itsd_data <- tryCatch(
+                {
+                    non_itsd_data |>
+                        dplyr::mutate(dplyr::across(
+                            dplyr::all_of(sample_cols),
+                            # Multiply intensity by (Average Factor / Sample Factor)
+                            ~ .x * (average_norm_factor / sample_norm_factors_vec[dplyr::cur_column()])
+                        ))
+                },
+                error = function(e) {
+                    warning(sprintf("Assay '%s': Error applying normalization factors: %s. Returning unnormalized data for non-ITSD features.", assay_index_name, e$message), immediate. = TRUE)
+                    return(non_itsd_data) # Return unnormalized if error
+                }
+            )
+
+            # --- Reconstruct Assay Tibble ---
+            if (remove_itsd_after_norm) {
+                final_assay_tibble <- normalized_non_itsd_data
+                message(sprintf("   Removed %d ITSD features after normalization.", n_itsd))
+            } else {
+                # If keeping ITSDs, they remain unnormalized (or could be normalized like others)
+                # Here, we keep them unnormalized as their purpose was the factor calculation.
+                final_assay_tibble <- dplyr::bind_rows(normalized_non_itsd_data, itsd_data) |>
+                    # Optional: arrange back by original ID or similar if needed
+                    dplyr::arrange(!!rlang::sym(lipid_id_col))
+                message(sprintf("   Kept %d ITSD features (unnormalized) in the output.", n_itsd))
+            }
+
+            message(sprintf("   Assay '%s' normalization complete.", assay_index_name))
+            return(final_assay_tibble)
+        }) # End lapply
+
+        # Filter out any assays that failed (returned NULL - though currently returning original)
+        # This check might be redundant if errors return original, but good practice.
+        successful_assays <- !sapply(normalized_assay_list, is.null)
+        if (!all(successful_assays)) {
+            warning("Normalization failed or was skipped for some assays.", immediate. = TRUE)
+            # Keep original data for failed assays
+            normalized_assay_list[!successful_assays] <- assay_list[!successful_assays]
+        }
+
+
+        # Restore original names if they existed
+        names(normalized_assay_list) <- assay_names
+
+        # Assign the list of normalized assays back to the object
+        methods::slot(theObject, "lipid_data") <- normalized_assay_list
+
+        # --- Update Args Slot ---
+        if (!is.list(theObject@args)) {
+            warning("Slot 'args' is not a list. Cannot record ITSD normalization status.", immediate. = TRUE)
+        } else {
+            # Ensure the specific list exists
+            if (!"ITSDNormalization" %in% names(theObject@args)) {
+                theObject@args$ITSDNormalization <- list()
+            }
+            theObject@args$ITSDNormalization$applied <- TRUE
+            theObject@args$ITSDNormalization$method_type <- "average_centered"
+            theObject@args$ITSDNormalization$itsd_aggregation <- tolower(itsd_aggregation)
+            theObject@args$ITSDNormalization$itsd_pattern_columns <- itsd_pattern_columns # Record actual columns used (potentially default)
+            theObject@args$ITSDNormalization$removed_itsd <- remove_itsd_after_norm
+            theObject@args$ITSDNormalization$timestamp <- Sys.time()
+
+            # Store per-assay ITSD feature information for reporting
+            if (length(itsd_collector$features_per_assay) > 0) {
+                theObject@args$ITSDNormalization$itsd_features_per_assay <- as.list(itsd_collector$features_per_assay)
+                theObject@args$ITSDNormalization$itsd_counts_per_assay <- as.list(itsd_collector$counts_per_assay)
+                message(sprintf("   Stored ITSD feature names for %d assays", length(itsd_collector$features_per_assay)))
+            }
+        }
+
+        message("ITSD normalization process complete for all applicable assays.")
+        return(theObject)
+    }
 )
 
 # Optional: Add other normalization methods (e.g., PQN, Median) here later
 # setMethod(f = "normaliseUntransformedData",
 #           signature = signature(theObject = "LipidomicsAssayData", method = "character"),
 #           definition = function(theObject, method = "PQN", ...) { ... }
-# ) 
+# )
 # ==========================================
 # Content from lipid_qc.R
 # ==========================================
@@ -4075,38 +4308,39 @@ setMethod(f = "normaliseUntransformedData",
 #' @param lipid_id_column A string specifying the name of the column containing the unique lipid identifiers.
 #' @return A filtered wide data frame containing only the lipids that pass the filter.
 #' @export
-lipidIntensityFilteringHelper <- function(assay_table
-                                               , min_lipid_intensity_threshold
-                                               , lipids_proportion_of_samples_below_cutoff
-                                               , lipid_id_column) {
+lipidIntensityFilteringHelper <- function(
+  assay_table,
+  min_lipid_intensity_threshold,
+  lipids_proportion_of_samples_below_cutoff,
+  lipid_id_column
+) {
+    # Identify numeric columns representing sample intensities
+    sample_cols <- names(assay_table)[sapply(assay_table, is.numeric)]
+    num_samples <- length(sample_cols)
 
-  # Identify numeric columns representing sample intensities
-  sample_cols <- names(assay_table)[sapply(assay_table, is.numeric)]
-  num_samples <- length(sample_cols)
+    if (num_samples == 0) {
+        warning("No numeric sample columns found in the assay table. Returning original table.")
+        return(assay_table)
+    }
 
-  if (num_samples == 0) {
-    warning("No numeric sample columns found in the assay table. Returning original table.")
-    return(assay_table)
-  }
+    # Calculate the number of samples below threshold for each lipid
+    lipids_below_threshold <- assay_table |>
+        # Ensure id column is character for safe rowwise operations if needed
+        # mutate({{lipid_id_column}} := as.character({{lipid_id_column}})) |>
+        rowwise() |>
+        mutate(
+            num_below_threshold = sum(c_across(all_of(sample_cols)) < min_lipid_intensity_threshold, na.rm = TRUE),
+            proportion_below_threshold = num_below_threshold / num_samples
+        ) |>
+        ungroup()
 
-  # Calculate the number of samples below threshold for each lipid
-  lipids_below_threshold <- assay_table |>
-    # Ensure id column is character for safe rowwise operations if needed
-    # mutate({{lipid_id_column}} := as.character({{lipid_id_column}})) |>
-    rowwise() |>
-    mutate(
-      num_below_threshold = sum(c_across(all_of(sample_cols)) < min_lipid_intensity_threshold, na.rm = TRUE)
-      , proportion_below_threshold = num_below_threshold / num_samples
-    ) |>
-    ungroup()
+    # Filter lipids based on the proportion cutoff
+    filtered_assay_table <- lipids_below_threshold |>
+        dplyr::filter(proportion_below_threshold < lipids_proportion_of_samples_below_cutoff) |>
+        # Remove the temporary calculation columns
+        dplyr::select(-num_below_threshold, -proportion_below_threshold)
 
-  # Filter lipids based on the proportion cutoff
-  filtered_assay_table <- lipids_below_threshold |>
-    dplyr::filter(proportion_below_threshold < lipids_proportion_of_samples_below_cutoff) |>
-    # Remove the temporary calculation columns
-    dplyr::select(-num_below_threshold, -proportion_below_threshold)
-
-  return(filtered_assay_table)
+    return(filtered_assay_table)
 }
 
 #-------------------------------------------------------------------------------
@@ -4131,115 +4365,122 @@ lipidIntensityFilteringHelper <- function(assay_table
 #'
 #' @return An updated LipidomicsAssayData object.
 #' @export
-setMethod( f="lipidIntensityFiltering"
-           , signature="LipidomicsAssayData"
-           , definition = function( theObject, lipids_intensity_cutoff_percentile = NULL, lipids_proportion_of_samples_below_cutoff = NULL) {
+setMethod(
+    f = "lipidIntensityFiltering",
+    signature = "LipidomicsAssayData",
+    definition = function(theObject, lipids_intensity_cutoff_percentile = NULL, lipids_proportion_of_samples_below_cutoff = NULL) {
+        # --- Parameter Resolution (Done once) ---
+        config_intensity_percentile <- "lipids_intensity_cutoff_percentile"
+        raw_intensity_percentile <- checkParamsObjectFunctionSimplify(
+            theObject,
+            config_intensity_percentile,
+            lipids_intensity_cutoff_percentile
+        )
+        message("Raw intensity percentile from config/param: ", raw_intensity_percentile)
+        cleaned_intensity_percentile <- trimws(sub("#.*$", "", raw_intensity_percentile))
+        intensity_cutoff_percentile_final <- as.numeric(cleaned_intensity_percentile)
 
-             # --- Parameter Resolution (Done once) ---
-             config_intensity_percentile <- "lipids_intensity_cutoff_percentile"
-             raw_intensity_percentile <- checkParamsObjectFunctionSimplify( theObject
-                                                                           , config_intensity_percentile
-                                                                           , lipids_intensity_cutoff_percentile)
-             message("Raw intensity percentile from config/param: ", raw_intensity_percentile)
-             cleaned_intensity_percentile <- trimws(sub("#.*$", "", raw_intensity_percentile))
-             intensity_cutoff_percentile_final <- as.numeric(cleaned_intensity_percentile)
+        config_proportion_cutoff <- "lipids_proportion_of_samples_below_cutoff"
+        raw_proportion_cutoff <- checkParamsObjectFunctionSimplify(
+            theObject,
+            config_proportion_cutoff,
+            lipids_proportion_of_samples_below_cutoff
+        )
+        message("Raw proportion cutoff from config/param: ", raw_proportion_cutoff)
+        cleaned_proportion_cutoff <- trimws(sub("#.*$", "", raw_proportion_cutoff))
+        proportion_of_samples_below_cutoff_final <- as.numeric(cleaned_proportion_cutoff)
 
-             config_proportion_cutoff <- "lipids_proportion_of_samples_below_cutoff"
-             raw_proportion_cutoff <- checkParamsObjectFunctionSimplify( theObject
-                                                                        , config_proportion_cutoff
-                                                                        , lipids_proportion_of_samples_below_cutoff)
-             message("Raw proportion cutoff from config/param: ", raw_proportion_cutoff)
-             cleaned_proportion_cutoff <- trimws(sub("#.*$", "", raw_proportion_cutoff))
-             proportion_of_samples_below_cutoff_final <- as.numeric(cleaned_proportion_cutoff)
+        if (is.na(intensity_cutoff_percentile_final)) {
+            stop("Failed to convert cleaned lipids_intensity_cutoff_percentile ('", cleaned_intensity_percentile, "' from raw '", raw_intensity_percentile, "') to numeric. Check config.ini or parameter value.")
+        }
+        if (is.na(proportion_of_samples_below_cutoff_final)) {
+            stop("Failed to convert cleaned lipids_proportion_of_samples_below_cutoff ('", cleaned_proportion_cutoff, "' from raw '", raw_proportion_cutoff, "') to numeric. Check config.ini or parameter value.")
+        }
 
-             if (is.na(intensity_cutoff_percentile_final)) {
-                 stop("Failed to convert cleaned lipids_intensity_cutoff_percentile ('", cleaned_intensity_percentile, "' from raw '", raw_intensity_percentile, "') to numeric. Check config.ini or parameter value.")
-             }
-             if (is.na(proportion_of_samples_below_cutoff_final)) {
-                 stop("Failed to convert cleaned lipids_proportion_of_samples_below_cutoff ('", cleaned_proportion_cutoff, "' from raw '", raw_proportion_cutoff, "') to numeric. Check config.ini or parameter value.")
-             }
+        # --- Update Object Parameters (Done once) ---
+        theObject <- updateParamInObject(theObject, config_intensity_percentile)
+        theObject <- updateParamInObject(theObject, config_proportion_cutoff)
 
-             # --- Update Object Parameters (Done once) ---
-             theObject <- updateParamInObject(theObject, config_intensity_percentile)
-             theObject <- updateParamInObject(theObject, config_proportion_cutoff)
+        # --- Process Each Assay in the List ---
+        lipid_id_col <- theObject@lipid_id_column
+        original_assay_list <- theObject@lipid_data
+        original_assay_names <- names(original_assay_list)
 
-             # --- Process Each Assay in the List ---
-             lipid_id_col <- theObject@lipid_id_column
-             original_assay_list <- theObject@lipid_data
-             original_assay_names <- names(original_assay_list)
+        if (length(original_assay_list) == 0) {
+            warning("LipidomicsAssayData object has no assays in 'lipid_data' slot. No filtering performed.")
+            return(theObject)
+        }
 
-             if (length(original_assay_list) == 0) {
-               warning("LipidomicsAssayData object has no assays in 'lipid_data' slot. No filtering performed.")
-               return(theObject)
-             }
+        # Iterate using indices
+        filtered_assay_list <- lapply(seq_along(original_assay_list), function(i) {
+            assay_table <- original_assay_list[[i]]
+            # Determine assay name for messages (use index if no name)
+            assay_name_for_msg <- if (!is.null(original_assay_names) && nzchar(original_assay_names[i])) {
+                original_assay_names[i]
+            } else {
+                as.character(i) # Use index as fallback name
+            }
+            message("\nProcessing assay: ", assay_name_for_msg)
 
-             # Iterate using indices
-             filtered_assay_list <- lapply(seq_along(original_assay_list), function(i) {
-                 assay_table <- original_assay_list[[i]]
-                 # Determine assay name for messages (use index if no name)
-                 assay_name_for_msg <- if (!is.null(original_assay_names) && nzchar(original_assay_names[i])) {
-                                         original_assay_names[i]
-                                       } else {
-                                         as.character(i) # Use index as fallback name
-                                       }
-                 message("\nProcessing assay: ", assay_name_for_msg)
+            if (!(lipid_id_col %in% names(assay_table))) {
+                warning("Lipid ID column '", lipid_id_col, "' not found in assay '", assay_name_for_msg, "'. Skipping this assay.")
+                return(assay_table) # Return the original table if ID is missing
+            }
 
-                 if (!(lipid_id_col %in% names(assay_table))) {
-                   warning("Lipid ID column '", lipid_id_col, "' not found in assay '", assay_name_for_msg, "'. Skipping this assay.")
-                   return(assay_table) # Return the original table if ID is missing
-                 }
+            # Identify numeric sample columns for this assay
+            sample_cols <- names(assay_table)[sapply(assay_table, is.numeric)]
 
-                 # Identify numeric sample columns for this assay
-                 sample_cols <- names(assay_table)[sapply(assay_table, is.numeric)]
+            if (length(sample_cols) == 0) {
+                warning("No numeric sample columns found in assay '", assay_name_for_msg, "'. Skipping filtering for this assay.")
+                return(assay_table)
+            }
 
-                 if (length(sample_cols) == 0) {
-                   warning("No numeric sample columns found in assay '", assay_name_for_msg, "'. Skipping filtering for this assay.")
-                   return(assay_table)
-                 }
+            # Extract intensity values for this assay
+            all_intensity_values <- assay_table |>
+                dplyr::select(all_of(sample_cols)) |>
+                unlist()
 
-                 # Extract intensity values for this assay
-                 all_intensity_values <- assay_table |>
-                     dplyr::select(all_of(sample_cols)) |>
-                     unlist()
+            if (length(all_intensity_values) == 0 || all(is.na(all_intensity_values))) {
+                warning("No valid intensity values found in assay '", assay_name_for_msg, "' to calculate threshold. Skipping filtering for this assay.")
+                return(assay_table)
+            }
 
-                 if (length(all_intensity_values) == 0 || all(is.na(all_intensity_values))) {
-                    warning("No valid intensity values found in assay '", assay_name_for_msg, "' to calculate threshold. Skipping filtering for this assay.")
-                    return(assay_table)
-                 }
+            # Calculate threshold specifically for this assay
+            min_lipid_intensity_threshold <- ceiling(quantile(all_intensity_values,
+                na.rm = TRUE,
+                probs = c(intensity_cutoff_percentile_final / 100)
+            ))[1]
 
-                 # Calculate threshold specifically for this assay
-                 min_lipid_intensity_threshold <- ceiling( quantile( all_intensity_values
-                                                                          , na.rm=TRUE
-                                                                          , probs = c(intensity_cutoff_percentile_final/100) ))[1]
+            message("Calculated minimum intensity threshold for assay '", assay_name_for_msg, "': ", min_lipid_intensity_threshold)
 
-                 message("Calculated minimum intensity threshold for assay '", assay_name_for_msg, "': ", min_lipid_intensity_threshold)
+            # Filter using Helper
+            filtered_assay <- lipidIntensityFilteringHelper(
+                assay_table = assay_table,
+                min_lipid_intensity_threshold = min_lipid_intensity_threshold,
+                lipids_proportion_of_samples_below_cutoff = proportion_of_samples_below_cutoff_final,
+                lipid_id_column = lipid_id_col
+            )
 
-                 # Filter using Helper
-                 filtered_assay <- lipidIntensityFilteringHelper(assay_table = assay_table
-                                                                      , min_lipid_intensity_threshold = min_lipid_intensity_threshold
-                                                                      , lipids_proportion_of_samples_below_cutoff = proportion_of_samples_below_cutoff_final
-                                                                      , lipid_id_column = lipid_id_col
-                                                                      )
+            message("Filtered assay '", assay_name_for_msg, "'. Original rows: ", nrow(assay_table), ", Filtered rows: ", nrow(filtered_assay))
+            return(filtered_assay)
+        })
 
-                 message("Filtered assay '", assay_name_for_msg, "'. Original rows: ", nrow(assay_table), ", Filtered rows: ", nrow(filtered_assay))
-                 return(filtered_assay)
-             })
+        # Restore original names if they existed
+        if (!is.null(original_assay_names)) {
+            names(filtered_assay_list) <- original_assay_names
+        }
 
-             # Restore original names if they existed
-             if (!is.null(original_assay_names)) {
-               names(filtered_assay_list) <- original_assay_names
-             }
+        # Assign the list of filtered assays back to the object
+        theObject@lipid_data <- filtered_assay_list
 
-             # Assign the list of filtered assays back to the object
-             theObject@lipid_data <- filtered_assay_list
+        # Optional: Call a generic cleanup/design matrix function if applicable
+        # theObject <- cleanDesignMatrix(theObject) # If a generic method exists
 
-             # Optional: Call a generic cleanup/design matrix function if applicable
-             # theObject <- cleanDesignMatrix(theObject) # If a generic method exists
+        return(theObject)
+    }
+)
 
-             return(theObject)
-           }) 
-
-           #' Find Duplicate Feature IDs in LipidomicsAssayData Assays
+#' Find Duplicate Feature IDs in LipidomicsAssayData Assays
 #'
 #' Iterates through each assay tibble in a LipidomicsAssayData object
 #' and identifies any duplicated values in the specified feature ID column.
@@ -4267,76 +4508,77 @@ setMethod( f="lipidIntensityFiltering"
 #' }
 #' @export
 findDuplicateFeatureIDs <- function(theObject) {
-  if (!inherits(theObject, "LipidomicsAssayData")) {
-    stop("Input must be a LipidomicsAssayData object.")
-  }
-
-  assay_list <- methods::slot(theObject, "lipid_data")
-  feature_id_col <- methods::slot(theObject, "lipid_id_column")
-
-  if (length(assay_list) == 0) {
-    warning("No assays found in `lipid_data` slot.")
-    return(list())
-  }
-
-  # Ensure list is named
-  assay_names <- names(assay_list)
-  if (is.null(assay_names)) {
-    assay_names <- paste0("Assay_", seq_along(assay_list))
-    names(assay_list) <- assay_names
-    warning("Assay list was unnamed. Using default names (Assay_1, Assay_2, ...).")
-  } else if (any(assay_names == "")) {
-     needs_name <- which(assay_names == "")
-     assay_names[needs_name] <- paste0("Assay_", needs_name)
-     names(assay_list) <- assay_names
-     warning("Some assays were unnamed. Using default names for them.")
-  }
-
-
-  duplicate_list <- purrr::map(assay_names, function(assay_name) {
-    current_assay_data <- assay_list[[assay_name]]
-
-    # Check if the feature ID column exists
-    if (!feature_id_col %in% colnames(current_assay_data)) {
-      warning(sprintf("Assay '%s': Feature ID column '%s' not found. Skipping duplicate check.",
-                      assay_name, feature_id_col))
-      return(NULL)
+    if (!inherits(theObject, "LipidomicsAssayData")) {
+        stop("Input must be a LipidomicsAssayData object.")
     }
 
-    # Find duplicates
-    id_counts <- current_assay_data %>%
-      dplyr::count(!!rlang::sym(feature_id_col), name = "count")
+    assay_list <- methods::slot(theObject, "lipid_data")
+    feature_id_col <- methods::slot(theObject, "lipid_id_column")
 
-    duplicates_found <- id_counts %>%
-      dplyr::filter(.data$count > 1)
-
-    if (nrow(duplicates_found) > 0) {
-      message(sprintf("Duplicates found in Assay: '%s' (Column: '%s')", assay_name, feature_id_col))
-      return(duplicates_found)
-    } else {
-      # message(sprintf("No duplicates found in Assay: '%s' (Column: '%s')", assay_name, feature_id_col))
-      return(NULL) # Return NULL if no duplicates
+    if (length(assay_list) == 0) {
+        warning("No assays found in `lipid_data` slot.")
+        return(list())
     }
-  }) %>%
-  purrr::set_names(assay_names) # Set names for the final list
 
-  # Filter out assays with no duplicates for a cleaner output,
-  # or keep them as NULL to indicate they were checked.
-  # For clarity, let's keep the NULLs
-  # duplicate_list <- duplicate_list[!sapply(duplicate_list, is.null)]
+    # Ensure list is named
+    assay_names <- names(assay_list)
+    if (is.null(assay_names)) {
+        assay_names <- paste0("Assay_", seq_along(assay_list))
+        names(assay_list) <- assay_names
+        warning("Assay list was unnamed. Using default names (Assay_1, Assay_2, ...).")
+    } else if (any(assay_names == "")) {
+        needs_name <- which(assay_names == "")
+        assay_names[needs_name] <- paste0("Assay_", needs_name)
+        names(assay_list) <- assay_names
+        warning("Some assays were unnamed. Using default names for them.")
+    }
 
-  if(all(sapply(duplicate_list, is.null))) {
-      message("No duplicate feature IDs found in any assay.")
-  }
 
-  return(duplicate_list)
+    duplicate_list <- purrr::map(assay_names, function(assay_name) {
+        current_assay_data <- assay_list[[assay_name]]
+
+        # Check if the feature ID column exists
+        if (!feature_id_col %in% colnames(current_assay_data)) {
+            warning(sprintf(
+                "Assay '%s': Feature ID column '%s' not found. Skipping duplicate check.",
+                assay_name, feature_id_col
+            ))
+            return(NULL)
+        }
+
+        # Find duplicates
+        id_counts <- current_assay_data %>%
+            dplyr::count(!!rlang::sym(feature_id_col), name = "count")
+
+        duplicates_found <- id_counts %>%
+            dplyr::filter(.data$count > 1)
+
+        if (nrow(duplicates_found) > 0) {
+            message(sprintf("Duplicates found in Assay: '%s' (Column: '%s')", assay_name, feature_id_col))
+            return(duplicates_found)
+        } else {
+            # message(sprintf("No duplicates found in Assay: '%s' (Column: '%s')", assay_name, feature_id_col))
+            return(NULL) # Return NULL if no duplicates
+        }
+    }) %>%
+        purrr::set_names(assay_names) # Set names for the final list
+
+    # Filter out assays with no duplicates for a cleaner output,
+    # or keep them as NULL to indicate they were checked.
+    # For clarity, let's keep the NULLs
+    # duplicate_list <- duplicate_list[!sapply(duplicate_list, is.null)]
+
+    if (all(sapply(duplicate_list, is.null))) {
+        message("No duplicate feature IDs found in any assay.")
+    }
+
+    return(duplicate_list)
 }
 
 
-
-##-----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ## Helper Function to Resolve Duplicate Features by Intensity
-##-----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 
 #' Resolve Duplicate Features by Keeping Highest Average Intensity
 #'
@@ -4355,7 +4597,6 @@ findDuplicateFeatureIDs <- function(theObject) {
 #' @importFrom tibble column_to_rownames rownames_to_column
 #' @export
 resolveDuplicateFeaturesByIntensity <- function(assay_tibble, id_col, sample_cols) {
-
     if (!id_col %in% colnames(assay_tibble)) {
         warning(sprintf("ID column '%s' not found in assay tibble. Returning original tibble.", id_col))
         return(assay_tibble)
@@ -4379,7 +4620,7 @@ resolveDuplicateFeaturesByIntensity <- function(assay_tibble, id_col, sample_col
 
     # Ensure sample columns are numeric for mean calculation
     assay_tibble_numeric <- assay_tibble %>%
-      dplyr::mutate(dplyr::across(dplyr::any_of(sample_cols), as.numeric))
+        dplyr::mutate(dplyr::across(dplyr::any_of(sample_cols), as.numeric))
 
     # Calculate average intensity (handle NAs)
     # Using rowwise is more robust to non-numeric columns than converting to matrix first
@@ -4409,252 +4650,253 @@ resolveDuplicateFeaturesByIntensity <- function(assay_tibble, id_col, sample_col
 }
 
 
-
-
-
 #' @title Resolve Duplicate Features for LipidomicsAssayData
 #' @name resolveDuplicateFeatures,LipidomicsAssayData-method
 #' @export
 setMethod("resolveDuplicateFeatures",
-          signature = "LipidomicsAssayData",
-          definition = function(theObject, itsd_pattern_columns = NULL) {
+    signature = "LipidomicsAssayData",
+    definition = function(theObject, itsd_pattern_columns = NULL) {
+        assay_list <- methods::slot(theObject, "lipid_data")
+        id_col <- methods::slot(theObject, "lipid_id_column") # e.g., database_identifier
+        annot_col_slot_name <- methods::slot(theObject, "annotation_id_column") # Name stored in slot
+        specific_name_col <- "lipid" # *** Still assuming this holds the descriptive name ***
+        itsd_regex <- methods::slot(theObject, "internal_standard_regex")
+        sample_id_col <- methods::slot(theObject, "sample_id")
+        design_matrix <- methods::slot(theObject, "design_matrix")
 
-            assay_list <- methods::slot(theObject, "lipid_data")
-            id_col <- methods::slot(theObject, "lipid_id_column") # e.g., database_identifier
-            annot_col_slot_name <- methods::slot(theObject, "annotation_id_column") # Name stored in slot
-            specific_name_col <- "lipid" # *** Still assuming this holds the descriptive name ***
-            itsd_regex <- methods::slot(theObject, "internal_standard_regex")
-            sample_id_col <- methods::slot(theObject, "sample_id")
-            design_matrix <- methods::slot(theObject, "design_matrix")
-
-            # --- Determine which columns to check for ITSD pattern --- #
-            columns_to_check_for_itsd <- itsd_pattern_columns
-            if (is.null(columns_to_check_for_itsd)) {
-                columns_to_check_for_itsd <- annot_col_slot_name
-                message(sprintf("Parameter `itsd_pattern_columns` is NULL. Defaulting to check column specified in slot `annotation_id_column`: '%s'", annot_col_slot_name))
-            } else {
-                 if (!is.character(columns_to_check_for_itsd)) {
-                     stop("`itsd_pattern_columns` must be NULL or a character vector.")
-                 }
-                 message(sprintf("Checking for ITSD regex in user-specified columns: %s", paste(columns_to_check_for_itsd, collapse=", ")))
+        # --- Determine which columns to check for ITSD pattern --- #
+        columns_to_check_for_itsd <- itsd_pattern_columns
+        if (is.null(columns_to_check_for_itsd)) {
+            columns_to_check_for_itsd <- annot_col_slot_name
+            message(sprintf("Parameter `itsd_pattern_columns` is NULL. Defaulting to check column specified in slot `annotation_id_column`: '%s'", annot_col_slot_name))
+        } else {
+            if (!is.character(columns_to_check_for_itsd)) {
+                stop("`itsd_pattern_columns` must be NULL or a character vector.")
             }
-            # ---------------------------------------------------- #
+            message(sprintf("Checking for ITSD regex in user-specified columns: %s", paste(columns_to_check_for_itsd, collapse = ", ")))
+        }
+        # ---------------------------------------------------- #
 
-            if (length(assay_list) == 0) {
-                warning("No assays found in `lipid_data` slot. Returning object unchanged.")
-                return(theObject)
-            }
-            if (is.na(itsd_regex) || itsd_regex == "") {
-                 message("No internal standard regex provided. No special handling for ITSDs will occur.")
-            }
+        if (length(assay_list) == 0) {
+            warning("No assays found in `lipid_data` slot. Returning object unchanged.")
+            return(theObject)
+        }
+        if (is.na(itsd_regex) || itsd_regex == "") {
+            message("No internal standard regex provided. No special handling for ITSDs will occur.")
+        }
 
-            # Ensure list is named
-            assay_names <- names(assay_list)
-            if (is.null(assay_names)) {
-                assay_names <- paste0("Assay_", seq_along(assay_list))
-                names(assay_list) <- assay_names
-                warning("Assay list was unnamed. Using default names...", immediate. = TRUE)
-            } else if (any(assay_names == "")) {
-                needs_name <- which(assay_names == "")
-                assay_names[needs_name] <- paste0("Assay_", needs_name)
-                names(assay_list) <- assay_names
-                warning("Some assays were unnamed. Using default names...", immediate. = TRUE)
-            }
+        # Ensure list is named
+        assay_names <- names(assay_list)
+        if (is.null(assay_names)) {
+            assay_names <- paste0("Assay_", seq_along(assay_list))
+            names(assay_list) <- assay_names
+            warning("Assay list was unnamed. Using default names...", immediate. = TRUE)
+        } else if (any(assay_names == "")) {
+            needs_name <- which(assay_names == "")
+            assay_names[needs_name] <- paste0("Assay_", needs_name)
+            names(assay_list) <- assay_names
+            warning("Some assays were unnamed. Using default names...", immediate. = TRUE)
+        }
 
-            resolved_assay_list <- purrr::map(assay_names, function(assay_name) {
-                message(sprintf("-- Processing Assay: %s --", assay_name))
-                assay_tibble <- assay_list[[assay_name]]
+        resolved_assay_list <- purrr::map(assay_names, function(assay_name) {
+            message(sprintf("-- Processing Assay: %s --", assay_name))
+            assay_tibble <- assay_list[[assay_name]]
 
-                # --- Check required columns (primary ID and specific name col are always needed) ---
-                required_cols <- c(id_col, specific_name_col)
-                # Also check if the columns targeted for ITSD pattern matching exist
-                itsd_check_cols_exist <- columns_to_check_for_itsd %in% colnames(assay_tibble)
-                missing_itsd_check_cols <- columns_to_check_for_itsd[!itsd_check_cols_exist]
+            # --- Check required columns (primary ID and specific name col are always needed) ---
+            required_cols <- c(id_col, specific_name_col)
+            # Also check if the columns targeted for ITSD pattern matching exist
+            itsd_check_cols_exist <- columns_to_check_for_itsd %in% colnames(assay_tibble)
+            missing_itsd_check_cols <- columns_to_check_for_itsd[!itsd_check_cols_exist]
 
-                if (length(missing_itsd_check_cols) > 0) {
-                      warning(sprintf("Specified ITSD pattern column(s) missing from assay '%s': %s. Cannot check these columns for ITSDs.",
-                                      assay_name, paste(missing_itsd_check_cols, collapse=", ")), immediate. = TRUE)
-                      # Adjust columns to check to only those that exist
-                      columns_to_check_for_itsd <- columns_to_check_for_itsd[itsd_check_cols_exist]
-                      if(length(columns_to_check_for_itsd) == 0) {
-                          message("No valid columns remain for ITSD pattern checking.")
-                      }
-                 }
-
-                missing_req_cols <- required_cols[!required_cols %in% colnames(assay_tibble)]
-                if(length(missing_req_cols) > 0) {
-                     warning(sprintf("Required column(s) missing from assay '%s': %s. Skipping assay.",
-                                     assay_name, paste(missing_req_cols, collapse=", ")), immediate. = TRUE)
-                     return(assay_tibble)
-                 }
-                # -------------------------------------------------------------------------------------- #
-
-                # --- Identify Sample Columns --- #
-                design_samples <- as.character(design_matrix[[sample_id_col]])
-                all_assay_cols <- colnames(assay_tibble)
-                sample_cols <- intersect(all_assay_cols, design_samples)
-                if (length(sample_cols) == 0) {
-                    warning(sprintf("No sample columns found matching design matrix. Skipping assay."), immediate. = TRUE)
-                    return(assay_tibble)
+            if (length(missing_itsd_check_cols) > 0) {
+                warning(sprintf(
+                    "Specified ITSD pattern column(s) missing from assay '%s': %s. Cannot check these columns for ITSDs.",
+                    assay_name, paste(missing_itsd_check_cols, collapse = ", ")
+                ), immediate. = TRUE)
+                # Adjust columns to check to only those that exist
+                columns_to_check_for_itsd <- columns_to_check_for_itsd[itsd_check_cols_exist]
+                if (length(columns_to_check_for_itsd) == 0) {
+                    message("No valid columns remain for ITSD pattern checking.")
                 }
-                # -------------------------------- #
+            }
 
-                # --- Ensure sample columns are numeric --- #
-                assay_tibble_numeric <- assay_tibble %>%
-                   dplyr::mutate(dplyr::across(dplyr::any_of(sample_cols), as.numeric))
-                # --------------------------------------- #
+            missing_req_cols <- required_cols[!required_cols %in% colnames(assay_tibble)]
+            if (length(missing_req_cols) > 0) {
+                warning(sprintf(
+                    "Required column(s) missing from assay '%s': %s. Skipping assay.",
+                    assay_name, paste(missing_req_cols, collapse = ", ")
+                ), immediate. = TRUE)
+                return(assay_tibble)
+            }
+            # -------------------------------------------------------------------------------------- #
 
-                 # --- Add unique row identifier before splitting --- #
-                 assay_tibble_numeric <- assay_tibble_numeric %>%
-                    dplyr::mutate(.original_row_id = dplyr::row_number())
-                 # --------------------------------------------- #
+            # --- Identify Sample Columns --- #
+            design_samples <- as.character(design_matrix[[sample_id_col]])
+            all_assay_cols <- colnames(assay_tibble)
+            sample_cols <- intersect(all_assay_cols, design_samples)
+            if (length(sample_cols) == 0) {
+                warning(sprintf("No sample columns found matching design matrix. Skipping assay."), immediate. = TRUE)
+                return(assay_tibble)
+            }
+            # -------------------------------- #
 
-                # --- Separate ITSDs --- #
-                is_itsd_present <- FALSE
-                itsd_rows <- NULL
-                non_itsd_rows <- assay_tibble_numeric # Start assuming all are non-ITSD
+            # --- Ensure sample columns are numeric --- #
+            assay_tibble_numeric <- assay_tibble %>%
+                dplyr::mutate(dplyr::across(dplyr::any_of(sample_cols), as.numeric))
+            # --------------------------------------- #
 
-                if (!is.na(itsd_regex) && itsd_regex != "" && length(columns_to_check_for_itsd) > 0) {
-                    # Apply regex to each specified column and combine results
-                    list_of_matches <- purrr::map(columns_to_check_for_itsd, function(col_name) {
-                        values <- assay_tibble_numeric[[col_name]]
-                        # Handle potential non-character columns gracefully
-                        if (!is.character(values)) {
-                             warning(sprintf("Column '%s' used for ITSD check is not character. Coercing.", col_name), immediate. = TRUE)
-                             values <- as.character(values)
-                         }
-                         matches <- stringr::str_detect(values, itsd_regex)
-                         matches[is.na(matches)] <- FALSE # Treat NA as no match
-                         return(matches)
-                    })
+            # --- Add unique row identifier before splitting --- #
+            assay_tibble_numeric <- assay_tibble_numeric %>%
+                dplyr::mutate(.original_row_id = dplyr::row_number())
+            # --------------------------------------------- #
 
-                    # Combine matches with OR logic: TRUE if it matches in *any* column
-                    itsd_indices <- purrr::reduce(list_of_matches, `|`)
+            # --- Separate ITSDs --- #
+            is_itsd_present <- FALSE
+            itsd_rows <- NULL
+            non_itsd_rows <- assay_tibble_numeric # Start assuming all are non-ITSD
 
-                    if (any(itsd_indices)) {
-                         message(sprintf("Identified ITSDs using regex '%s' on column(s): %s.", itsd_regex, paste(columns_to_check_for_itsd, collapse=", ")))
-                         is_itsd_present <- TRUE
-                         itsd_rows <- assay_tibble_numeric %>% dplyr::filter(itsd_indices)
-                         non_itsd_rows <- assay_tibble_numeric %>% dplyr::filter(!itsd_indices)
-                         message(sprintf("Separated %d ITSD row(s) and %d non-ITSD row(s).", nrow(itsd_rows), nrow(non_itsd_rows)))
-                    } else {
-                         message(sprintf("No ITSDs found using regex '%s' on column(s): %s.", itsd_regex, paste(columns_to_check_for_itsd, collapse=", ")))
+            if (!is.na(itsd_regex) && itsd_regex != "" && length(columns_to_check_for_itsd) > 0) {
+                # Apply regex to each specified column and combine results
+                list_of_matches <- purrr::map(columns_to_check_for_itsd, function(col_name) {
+                    values <- assay_tibble_numeric[[col_name]]
+                    # Handle potential non-character columns gracefully
+                    if (!is.character(values)) {
+                        warning(sprintf("Column '%s' used for ITSD check is not character. Coercing.", col_name), immediate. = TRUE)
+                        values <- as.character(values)
                     }
-                }
-                # ---------------------- #
+                    matches <- stringr::str_detect(values, itsd_regex)
+                    matches[is.na(matches)] <- FALSE # Treat NA as no match
+                    return(matches)
+                })
 
-                # --- Process ITSDs (if separated) --- #
-                processed_itsd_rows <- NULL
-                if (is_itsd_present && !is.null(itsd_rows) && nrow(itsd_rows) > 0) {
-                    message("Processing ITSD rows...")
-                    # Calculate average intensity first
-                    itsd_rows_intensity <- itsd_rows %>%
+                # Combine matches with OR logic: TRUE if it matches in *any* column
+                itsd_indices <- purrr::reduce(list_of_matches, `|`)
+
+                if (any(itsd_indices)) {
+                    message(sprintf("Identified ITSDs using regex '%s' on column(s): %s.", itsd_regex, paste(columns_to_check_for_itsd, collapse = ", ")))
+                    is_itsd_present <- TRUE
+                    itsd_rows <- assay_tibble_numeric %>% dplyr::filter(itsd_indices)
+                    non_itsd_rows <- assay_tibble_numeric %>% dplyr::filter(!itsd_indices)
+                    message(sprintf("Separated %d ITSD row(s) and %d non-ITSD row(s).", nrow(itsd_rows), nrow(non_itsd_rows)))
+                } else {
+                    message(sprintf("No ITSDs found using regex '%s' on column(s): %s.", itsd_regex, paste(columns_to_check_for_itsd, collapse = ", ")))
+                }
+            }
+            # ---------------------- #
+
+            # --- Process ITSDs (if separated) --- #
+            processed_itsd_rows <- NULL
+            if (is_itsd_present && !is.null(itsd_rows) && nrow(itsd_rows) > 0) {
+                message("Processing ITSD rows...")
+                # Calculate average intensity first
+                itsd_rows_intensity <- itsd_rows %>%
+                    dplyr::rowwise() %>%
+                    dplyr::mutate(
+                        avg_intensity = mean(dplyr::c_across(dplyr::any_of(sample_cols)), na.rm = TRUE)
+                    ) %>%
+                    dplyr::ungroup() %>%
+                    dplyr::mutate(avg_intensity = ifelse(is.nan(.data$avg_intensity), -Inf, .data$avg_intensity))
+
+                # Use the specific_name_col (e.g., 'lipid') as the basis for checking duplicates among ITSDs
+                itsd_specific_name_counts <- itsd_rows_intensity %>% dplyr::count(!!rlang::sym(specific_name_col), name = "itsd_specific_count")
+                duplicate_itsd_specific_names <- itsd_specific_name_counts %>%
+                    dplyr::filter(.data$itsd_specific_count > 1) %>%
+                    dplyr::pull(!!rlang::sym(specific_name_col))
+
+                if (length(duplicate_itsd_specific_names) > 0) {
+                    message(sprintf(
+                        "Found %d duplicated descriptive ITSD name(s) in column '%s': %s",
+                        length(duplicate_itsd_specific_names), specific_name_col, paste(duplicate_itsd_specific_names, collapse = ", ")
+                    ))
+                    message("Appending intensity rank suffix (_1, _2, ...) to descriptive name before updating ID column.")
+
+                    # Process duplicates: Rank within each descriptive name group and create suffixed name
+                    duplicates_to_rename <- itsd_rows_intensity %>%
+                        dplyr::filter(!!rlang::sym(specific_name_col) %in% duplicate_itsd_specific_names) %>%
+                        dplyr::group_by(!!rlang::sym(specific_name_col)) %>%
+                        dplyr::arrange(dplyr::desc(.data$avg_intensity), .by_group = TRUE) %>%
+                        dplyr::mutate(
+                            rank_suffix = paste0("_", dplyr::row_number()),
+                            # Create the new, unique ID based on the specific name + suffix
+                            .new_itsd_id = paste0(!!rlang::sym(specific_name_col), .data$rank_suffix)
+                        ) %>%
+                        dplyr::ungroup()
+
+                    # Get non-duplicates
+                    non_duplicates_itsd <- itsd_rows_intensity %>%
+                        dplyr::filter(!(!!rlang::sym(specific_name_col) %in% duplicate_itsd_specific_names)) %>% # Should not have .new_itsd_id yet
+                        dplyr::mutate(.new_itsd_id = !!rlang::sym(specific_name_col)) # Use specific name directly as new ID
+
+                    # Combine and overwrite the main ID column (id_col)
+                    processed_itsd_rows_temp <- dplyr::bind_rows(non_duplicates_itsd, duplicates_to_rename) %>%
+                        dplyr::mutate(!!rlang::sym(id_col) := .data$.new_itsd_id) %>% # Overwrite id_col (e.g. database_identifier)
+                        dplyr::select(-.data$.new_itsd_id, -.data$rank_suffix, -.data$avg_intensity) # Clean up temp columns
+                } else {
+                    message("No duplicate descriptive ITSD names found.")
+                    # Just overwrite id_col with the specific name if no duplicates
+                    processed_itsd_rows_temp <- itsd_rows_intensity %>% # Use the one with intensity calculated
+                        dplyr::mutate(!!rlang::sym(id_col) := !!rlang::sym(specific_name_col)) %>% # Overwrite id_col
+                        dplyr::select(-.data$avg_intensity) # Clean up temp col
+                }
+
+                # Final assignment after processing ITSDs
+                processed_itsd_rows <- processed_itsd_rows_temp
+                message(sprintf("Finished processing ITSD rows. Resulting ITSD rows: %d", nrow(processed_itsd_rows)))
+            }
+            # --------------------------------- #
+
+            # --- Process Non-ITSDs --- #
+            processed_non_itsd_rows <- NULL
+            rows_removed_non_itsd <- 0
+            if (!is.null(non_itsd_rows) && nrow(non_itsd_rows) > 0) {
+                message("Processing non-ITSD rows...")
+                # *** Use the correct ID column (id_col) for non-ITSD duplicate checks ***
+                non_itsd_id_counts <- non_itsd_rows %>% dplyr::count(!!rlang::sym(id_col), name = "feature_count")
+                duplicates_exist_non_itsd <- any(non_itsd_id_counts$feature_count > 1)
+
+                if (!duplicates_exist_non_itsd) {
+                    # *** Refer to the correct ID column in the message ***
+                    message(sprintf("No duplicates found in non-ITSD ID column '%s'.", id_col))
+                    processed_non_itsd_rows <- non_itsd_rows # Already has .original_row_id
+                } else {
+                    # *** Refer to the correct ID column in the message ***
+                    message(sprintf("Resolving duplicates in non-ITSD ID column '%s' by keeping highest average intensity feature...", id_col))
+                    # Resolve duplicates using the original intensity logic based on id_col
+                    processed_non_itsd_rows <- non_itsd_rows %>%
                         dplyr::rowwise() %>%
                         dplyr::mutate(
                             avg_intensity = mean(dplyr::c_across(dplyr::any_of(sample_cols)), na.rm = TRUE)
                         ) %>%
                         dplyr::ungroup() %>%
-                        dplyr::mutate(avg_intensity = ifelse(is.nan(.data$avg_intensity), -Inf, .data$avg_intensity))
+                        dplyr::mutate(avg_intensity = ifelse(is.nan(.data$avg_intensity), -Inf, .data$avg_intensity)) %>%
+                        # *** Group by the correct ID column ***
+                        dplyr::group_by(!!rlang::sym(id_col)) %>%
+                        dplyr::slice_max(order_by = .data$avg_intensity, n = 1, with_ties = FALSE) %>%
+                        dplyr::ungroup() %>%
+                        dplyr::select(-.data$avg_intensity)
 
-                    # Use the specific_name_col (e.g., 'lipid') as the basis for checking duplicates among ITSDs
-                    itsd_specific_name_counts <- itsd_rows_intensity %>% dplyr::count(!!rlang::sym(specific_name_col), name = "itsd_specific_count")
-                    duplicate_itsd_specific_names <- itsd_specific_name_counts %>% dplyr::filter(.data$itsd_specific_count > 1) %>% dplyr::pull(!!rlang::sym(specific_name_col))
-
-                    if (length(duplicate_itsd_specific_names) > 0) {
-                        message(sprintf("Found %d duplicated descriptive ITSD name(s) in column '%s': %s",
-                                        length(duplicate_itsd_specific_names), specific_name_col, paste(duplicate_itsd_specific_names, collapse=", ")))
-                        message("Appending intensity rank suffix (_1, _2, ...) to descriptive name before updating ID column.")
-
-                        # Process duplicates: Rank within each descriptive name group and create suffixed name
-                        duplicates_to_rename <- itsd_rows_intensity %>% 
-                            dplyr::filter(!!rlang::sym(specific_name_col) %in% duplicate_itsd_specific_names) %>% 
-                            dplyr::group_by(!!rlang::sym(specific_name_col)) %>% 
-                            dplyr::arrange(dplyr::desc(.data$avg_intensity), .by_group = TRUE) %>% 
-                            dplyr::mutate(
-                                rank_suffix = paste0("_", dplyr::row_number()),
-                                # Create the new, unique ID based on the specific name + suffix
-                                .new_itsd_id = paste0(!!rlang::sym(specific_name_col), .data$rank_suffix)
-                             ) %>% 
-                            dplyr::ungroup()
-
-                        # Get non-duplicates
-                        non_duplicates_itsd <- itsd_rows_intensity %>% 
-                             dplyr::filter(!(!!rlang::sym(specific_name_col) %in% duplicate_itsd_specific_names)) %>% # Should not have .new_itsd_id yet
-                             dplyr::mutate(.new_itsd_id = !!rlang::sym(specific_name_col)) # Use specific name directly as new ID
-
-                        # Combine and overwrite the main ID column (id_col)
-                        processed_itsd_rows_temp <- dplyr::bind_rows(non_duplicates_itsd, duplicates_to_rename) %>% 
-                             dplyr::mutate(!!rlang::sym(id_col) := .data$.new_itsd_id) %>% # Overwrite id_col (e.g. database_identifier)
-                             dplyr::select(-.data$.new_itsd_id, -.data$rank_suffix, -.data$avg_intensity) # Clean up temp columns
-
-                    } else {
-                         message("No duplicate descriptive ITSD names found.")
-                         # Just overwrite id_col with the specific name if no duplicates
-                         processed_itsd_rows_temp <- itsd_rows_intensity %>% # Use the one with intensity calculated
-                             dplyr::mutate(!!rlang::sym(id_col) := !!rlang::sym(specific_name_col)) %>% # Overwrite id_col
-                             dplyr::select(-.data$avg_intensity) # Clean up temp col
+                    rows_removed_non_itsd <- nrow(non_itsd_rows) - nrow(processed_non_itsd_rows)
+                    if (rows_removed_non_itsd > 0) {
+                        message(sprintf("Removed %d lower-intensity duplicate non-ITSD feature row(s).", rows_removed_non_itsd))
                     }
-
-                    # Final assignment after processing ITSDs
-                    processed_itsd_rows <- processed_itsd_rows_temp
-                    message(sprintf("Finished processing ITSD rows. Resulting ITSD rows: %d", nrow(processed_itsd_rows)))
-
-
                 }
-                # --------------------------------- #
+                message(sprintf("Finished processing non-ITSD rows. Resulting non-ITSD rows: %d", nrow(processed_non_itsd_rows)))
+            }
+            # -------------------------- #
 
-                # --- Process Non-ITSDs --- #
-                processed_non_itsd_rows <- NULL
-                rows_removed_non_itsd <- 0
-                if (!is.null(non_itsd_rows) && nrow(non_itsd_rows) > 0) {
-                    message("Processing non-ITSD rows...")
-                    # *** Use the correct ID column (id_col) for non-ITSD duplicate checks ***
-                    non_itsd_id_counts <- non_itsd_rows %>% dplyr::count(!!rlang::sym(id_col), name = "feature_count")
-                    duplicates_exist_non_itsd <- any(non_itsd_id_counts$feature_count > 1)
+            # --- Combine Results and remove helper column --- #
+            final_resolved_tibble <- dplyr::bind_rows(processed_itsd_rows, processed_non_itsd_rows) %>%
+                dplyr::select(-.original_row_id)
+            message(sprintf("Total rows after combining ITSD and non-ITSD: %d", nrow(final_resolved_tibble)))
+            message("-----------------------------")
+            return(final_resolved_tibble)
+        }) %>% purrr::set_names(assay_names)
 
-                    if (!duplicates_exist_non_itsd) {
-                        # *** Refer to the correct ID column in the message ***
-                        message(sprintf("No duplicates found in non-ITSD ID column '%s'.", id_col))
-                        processed_non_itsd_rows <- non_itsd_rows # Already has .original_row_id
-                    } else {
-                         # *** Refer to the correct ID column in the message ***
-                        message(sprintf("Resolving duplicates in non-ITSD ID column '%s' by keeping highest average intensity feature...", id_col))
-                        # Resolve duplicates using the original intensity logic based on id_col
-                        processed_non_itsd_rows <- non_itsd_rows %>% 
-                            dplyr::rowwise() %>% 
-                            dplyr::mutate(
-                                avg_intensity = mean(dplyr::c_across(dplyr::any_of(sample_cols)), na.rm = TRUE)
-                            ) %>% 
-                            dplyr::ungroup() %>% 
-                            dplyr::mutate(avg_intensity = ifelse(is.nan(.data$avg_intensity), -Inf, .data$avg_intensity)) %>% 
-                             # *** Group by the correct ID column ***
-                            dplyr::group_by(!!rlang::sym(id_col)) %>% 
-                            dplyr::slice_max(order_by = .data$avg_intensity, n = 1, with_ties = FALSE) %>% 
-                            dplyr::ungroup() %>% 
-                            dplyr::select(-.data$avg_intensity)
+        # Update the slot in the object
+        methods::slot(theObject, "lipid_data") <- resolved_assay_list
 
-                        rows_removed_non_itsd <- nrow(non_itsd_rows) - nrow(processed_non_itsd_rows)
-                        if (rows_removed_non_itsd > 0) {
-                            message(sprintf("Removed %d lower-intensity duplicate non-ITSD feature row(s).", rows_removed_non_itsd))
-                        }
-                    }
-                     message(sprintf("Finished processing non-ITSD rows. Resulting non-ITSD rows: %d", nrow(processed_non_itsd_rows)))
-                }
-                 # -------------------------- #
-
-                # --- Combine Results and remove helper column --- #
-                final_resolved_tibble <- dplyr::bind_rows(processed_itsd_rows, processed_non_itsd_rows) %>% 
-                    dplyr::select(-.original_row_id)
-                message(sprintf("Total rows after combining ITSD and non-ITSD: %d", nrow(final_resolved_tibble)))
-                message("-----------------------------")
-                return(final_resolved_tibble)
-            }) %>% purrr::set_names(assay_names)
-
-            # Update the slot in the object
-            methods::slot(theObject, "lipid_data") <- resolved_assay_list
-
-            return(theObject)
-          }
+        return(theObject)
+    }
 )
 
 
@@ -4683,7 +4925,8 @@ setClass("FilteringProgressLipidomics",
 )
 
 #' @title Initialize or Retrieve Global Lipidomics Filtering Progress Object
-#' @description Checks for a global object named iltering_progress_lipidomics
+#' @description Checks for a global object named
+iltering_progress_lipidomics
 #'              of class FilteringProgressLipidomics. If it doesn't exist,
 #'              it creates and assigns a new one to the global environment.
 #'
@@ -4707,101 +4950,102 @@ getFilteringProgressLipidomics <- function() {
 
 #' @title Filter Samples by Lipid Correlation Threshold
 #' @name filterSamplesByLipidCorrelationThreshold,LipidomicsAssayData-method
-#' @description Removes samples from a LipidomicsAssayData object based on 
+#' @description Removes samples from a LipidomicsAssayData object based on
 #'   Pearson correlation thresholds. Samples that do not have at least one
 #'   replicate pair with correlation above the threshold are removed.
 #' @param theObject A LipidomicsAssayData object
-#' @param pearson_correlation_per_pair A list of data frames (one per assay) 
+#' @param pearson_correlation_per_pair A list of data frames (one per assay)
 #'   containing pair-wise correlation results from \code{pearsonCorForSamplePairs}.
-#' @param min_pearson_correlation_threshold A numeric value (0-1). Samples with 
+#' @param min_pearson_correlation_threshold A numeric value (0-1). Samples with
 #'   correlation below this threshold in their replicate group are removed.
 #' @return An updated LipidomicsAssayData object with poorly correlated samples removed.
 #' @importFrom dplyr filter select distinct pull
 #' @importFrom tidyr pivot_longer
 #' @importFrom rlang sym
 #' @export
-setMethod(f = "filterSamplesByLipidCorrelationThreshold",
-          signature = "LipidomicsAssayData",
-          definition = function(theObject, pearson_correlation_per_pair = NULL, min_pearson_correlation_threshold = 0.5) {
-            
-            message("╔═══════════════════════════════════════════════════════════════════════════╗")
-            message("║        Lipid Sample Filtering by Correlation Threshold (S4)          ║")
-            message("╚═══════════════════════════════════════════════════════════════════════════╝")
-            
-            if (is.null(pearson_correlation_per_pair) || !is.list(pearson_correlation_per_pair)) {
-              stop("`pearson_correlation_per_pair` must be a list of correlation data frames (one per assay).")
-            }
-            
-            if (is.null(min_pearson_correlation_threshold) || !is.numeric(min_pearson_correlation_threshold)) {
-              stop("`min_pearson_correlation_threshold` must be a numeric value.")
-            }
-            
-            design_matrix <- theObject@design_matrix
-            sample_id_col_name <- theObject@sample_id
-            assay_list <- theObject@lipid_data
-            
-            if (length(assay_list) == 0) {
-              warning("No assays found in LipidomicsAssayData object.")
-              return(theObject)
-            }
-            
-            samples_to_remove_total <- character()
-            
-            filtered_assay_list <- purrr::map2(assay_list, pearson_correlation_per_pair, function(current_assay_data, correlation_results) {
-              
-              if (is.null(correlation_results) || nrow(correlation_results) == 0) {
+setMethod(
+    f = "filterSamplesByLipidCorrelationThreshold",
+    signature = "LipidomicsAssayData",
+    definition = function(theObject, pearson_correlation_per_pair = NULL, min_pearson_correlation_threshold = 0.5) {
+        message("╔═══════════════════════════════════════════════════════════════════════════╗")
+        message("║        Lipid Sample Filtering by Correlation Threshold (S4)          ║")
+        message("╚═══════════════════════════════════════════════════════════════════════════╝")
+
+        if (is.null(pearson_correlation_per_pair) || !is.list(pearson_correlation_per_pair)) {
+            stop("`pearson_correlation_per_pair` must be a list of correlation data frames (one per assay).")
+        }
+
+        if (is.null(min_pearson_correlation_threshold) || !is.numeric(min_pearson_correlation_threshold)) {
+            stop("`min_pearson_correlation_threshold` must be a numeric value.")
+        }
+
+        design_matrix <- theObject@design_matrix
+        sample_id_col_name <- theObject@sample_id
+        assay_list <- theObject@lipid_data
+
+        if (length(assay_list) == 0) {
+            warning("No assays found in LipidomicsAssayData object.")
+            return(theObject)
+        }
+
+        samples_to_remove_total <- character()
+
+        filtered_assay_list <- purrr::map2(assay_list, pearson_correlation_per_pair, function(current_assay_data, correlation_results) {
+            if (is.null(correlation_results) || nrow(correlation_results) == 0) {
                 warning("No correlation results provided for assay. Skipping filtering.")
                 return(current_assay_data)
-              }
-              
-              run_id_col_x <- paste0(sample_id_col_name, ".x")
-              run_id_col_y <- paste0(sample_id_col_name, ".y")
-              
-              if (!all(c(run_id_col_x, run_id_col_y, "pearson_correlation") %in% colnames(correlation_results))) {
+            }
+
+            run_id_col_x <- paste0(sample_id_col_name, ".x")
+            run_id_col_y <- paste0(sample_id_col_name, ".y")
+
+            if (!all(c(run_id_col_x, run_id_col_y, "pearson_correlation") %in% colnames(correlation_results))) {
                 warning("Correlation results table missing expected columns. Skipping filtering.")
                 return(current_assay_data)
-              }
-              
-              all_samples_in_analysis <- correlation_results |>
+            }
+
+            all_samples_in_analysis <- correlation_results |>
                 tidyr::pivot_longer(cols = c(!!rlang::sym(run_id_col_x), !!rlang::sym(run_id_col_y)), values_to = "sample_id") |>
                 dplyr::distinct(sample_id) |>
                 dplyr::pull(sample_id)
-              
-              passing_pairs <- correlation_results |>
+
+            passing_pairs <- correlation_results |>
                 dplyr::filter(pearson_correlation >= min_pearson_correlation_threshold)
-              
-              samples_to_keep <- passing_pairs |>
+
+            samples_to_keep <- passing_pairs |>
                 tidyr::pivot_longer(cols = c(!!rlang::sym(run_id_col_x), !!rlang::sym(run_id_col_y)), values_to = "sample_id") |>
                 dplyr::distinct(sample_id) |>
                 dplyr::pull(sample_id)
-              
-              samples_to_remove <- setdiff(all_samples_in_analysis, samples_to_keep)
-              samples_to_remove_total <<- c(samples_to_remove_total, samples_to_remove)
-              
-              if (length(samples_to_remove) > 0) {
-                message(sprintf("  Removing %d samples below correlation threshold: %s", 
-                                length(samples_to_remove), paste(samples_to_remove, collapse = ", ")))
+
+            samples_to_remove <- setdiff(all_samples_in_analysis, samples_to_keep)
+            samples_to_remove_total <<- c(samples_to_remove_total, samples_to_remove)
+
+            if (length(samples_to_remove) > 0) {
+                message(sprintf(
+                    "  Removing %d samples below correlation threshold: %s",
+                    length(samples_to_remove), paste(samples_to_remove, collapse = ", ")
+                ))
                 cols_to_keep <- setdiff(colnames(current_assay_data), samples_to_remove)
                 current_assay_data <- current_assay_data[, cols_to_keep, drop = FALSE]
-              } else {
+            } else {
                 message("  No samples below correlation threshold.")
-              }
-              
-              return(current_assay_data)
-            })
-            
-            names(filtered_assay_list) <- names(assay_list)
-            theObject@lipid_data <- filtered_assay_list
-            
-            if (length(samples_to_remove_total) > 0) {
-              samples_to_remove_unique <- unique(samples_to_remove_total)
-              theObject@design_matrix <- design_matrix |>
-                dplyr::filter(!(!!rlang::sym(sample_id_col_name) %in% samples_to_remove_unique))
-              message(sprintf("Total samples removed across all assays: %d", length(samples_to_remove_unique)))
             }
-            
-            message("╚═══════════════════════════════════════════════════════════════════════════╝")
-            
-            return(theObject)
-          })
 
+            return(current_assay_data)
+        })
+
+        names(filtered_assay_list) <- names(assay_list)
+        theObject@lipid_data <- filtered_assay_list
+
+        if (length(samples_to_remove_total) > 0) {
+            samples_to_remove_unique <- unique(samples_to_remove_total)
+            theObject@design_matrix <- design_matrix |>
+                dplyr::filter(!(!!rlang::sym(sample_id_col_name) %in% samples_to_remove_unique))
+            message(sprintf("Total samples removed across all assays: %d", length(samples_to_remove_unique)))
+        }
+
+        message("╚═══════════════════════════════════════════════════════════════════════════╝")
+
+        return(theObject)
+    }
+)
