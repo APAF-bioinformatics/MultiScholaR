@@ -2,7 +2,7 @@
 # func_lipid_qc.R
 # ============================================================================
 # Purpose: Lipidomics quality control and filtering functions
-# 
+#
 # This file contains functions for lipidomics QC filtering, including
 # intensity filtering, missing value analysis, CV calculations, and
 # internal standard metrics. Functions in this file are used by lipidomics
@@ -162,123 +162,39 @@
 #' @param lipid_id_column A string specifying the name of the column containing the unique lipid identifiers.
 #' @return A filtered wide data frame containing only the lipids that pass the filter.
 #' @export
-lipidIntensityFilteringHelper <- function(assay_table
-                                               , min_lipid_intensity_threshold
-                                               , lipids_proportion_of_samples_below_cutoff
-                                               , lipid_id_column) {
+lipidIntensityFilteringHelper <- function(
+  assay_table,
+  min_lipid_intensity_threshold,
+  lipids_proportion_of_samples_below_cutoff,
+  lipid_id_column
+) {
+    # Identify numeric columns representing sample intensities
+    sample_cols <- names(assay_table)[sapply(assay_table, is.numeric)]
+    num_samples <- length(sample_cols)
 
-  # Identify numeric columns representing sample intensities
-  sample_cols <- names(assay_table)[sapply(assay_table, is.numeric)]
-  num_samples <- length(sample_cols)
-
-  if (num_samples == 0) {
-    warning("No numeric sample columns found in the assay table. Returning original table.")
-    return(assay_table)
-  }
-
-  # Calculate the number of samples below threshold for each lipid
-  lipids_below_threshold <- assay_table |>
-    # Ensure id column is character for safe rowwise operations if needed
-    # mutate({{lipid_id_column}} := as.character({{lipid_id_column}})) |>
-    rowwise() |>
-    mutate(
-      num_below_threshold = sum(c_across(all_of(sample_cols)) < min_lipid_intensity_threshold, na.rm = TRUE)
-      , proportion_below_threshold = num_below_threshold / num_samples
-    ) |>
-    ungroup()
-
-  # Filter lipids based on the proportion cutoff
-  filtered_assay_table <- lipids_below_threshold |>
-    dplyr::filter(proportion_below_threshold < lipids_proportion_of_samples_below_cutoff) |>
-    # Remove the temporary calculation columns
-    dplyr::select(-num_below_threshold, -proportion_below_threshold)
-
-  return(filtered_assay_table)
-}
-
-
-# ----------------------------------------------------------------------------
-# findDuplicateFeatureIDs
-# ----------------------------------------------------------------------------
-#' @importFrom dplyr count filter pull %>%
-#' @importFrom purrr map set_names
-#' @importFrom methods slot
-#'
-#' @examples
-#' \dontrun{
-#' # Assuming 'met_assay_obj' is your LipidomicsAssayData object
-#' duplicate_ids_list <- findDuplicateFeatureIDs(met_assay_obj)
-#' print(duplicate_ids_list)
-#'
-#' # To get duplicates from the first assay (if any)
-#' duplicates_assay1 <- duplicate_ids_list[[1]]
-#' print(duplicates_assay1)
-#' }
-#' @export
-findDuplicateFeatureIDs <- function(theObject) {
-  if (!inherits(theObject, "LipidomicsAssayData")) {
-    stop("Input must be a LipidomicsAssayData object.")
-  }
-
-  assay_list <- methods::slot(theObject, "lipid_data")
-  feature_id_col <- methods::slot(theObject, "lipid_id_column")
-
-  if (length(assay_list) == 0) {
-    warning("No assays found in `lipid_data` slot.")
-    return(list())
-  }
-
-  # Ensure list is named
-  assay_names <- names(assay_list)
-  if (is.null(assay_names)) {
-    assay_names <- paste0("Assay_", seq_along(assay_list))
-    names(assay_list) <- assay_names
-    warning("Assay list was unnamed. Using default names (Assay_1, Assay_2, ...).")
-  } else if (any(assay_names == "")) {
-     needs_name <- which(assay_names == "")
-     assay_names[needs_name] <- paste0("Assay_", needs_name)
-     names(assay_list) <- assay_names
-     warning("Some assays were unnamed. Using default names for them.")
-  }
-
-
-  duplicate_list <- purrr::map(assay_names, function(assay_name) {
-    current_assay_data <- assay_list[[assay_name]]
-
-    # Check if the feature ID column exists
-    if (!feature_id_col %in% colnames(current_assay_data)) {
-      warning(sprintf("Assay '%s': Feature ID column '%s' not found. Skipping duplicate check.",
-                      assay_name, feature_id_col))
-      return(NULL)
+    if (num_samples == 0) {
+        warning("No numeric sample columns found in the assay table. Returning original table.")
+        return(assay_table)
     }
 
-    # Find duplicates
-    id_counts <- current_assay_data %>%
-      dplyr::count(!!rlang::sym(feature_id_col), name = "count")
+    # Calculate the number of samples below threshold for each lipid
+    lipids_below_threshold <- assay_table |>
+        # Ensure id column is character for safe rowwise operations if needed
+        # mutate({{lipid_id_column}} := as.character({{lipid_id_column}})) |>
+        rowwise() |>
+        mutate(
+            num_below_threshold = sum(c_across(all_of(sample_cols)) < min_lipid_intensity_threshold, na.rm = TRUE),
+            proportion_below_threshold = num_below_threshold / num_samples
+        ) |>
+        ungroup()
 
-    duplicates_found <- id_counts %>%
-      dplyr::filter(.data$count > 1)
+    # Filter lipids based on the proportion cutoff
+    filtered_assay_table <- lipids_below_threshold |>
+        dplyr::filter(proportion_below_threshold < lipids_proportion_of_samples_below_cutoff) |>
+        # Remove the temporary calculation columns
+        dplyr::select(-num_below_threshold, -proportion_below_threshold)
 
-    if (nrow(duplicates_found) > 0) {
-      message(sprintf("Duplicates found in Assay: '%s' (Column: '%s')", assay_name, feature_id_col))
-      return(duplicates_found)
-    } else {
-      # message(sprintf("No duplicates found in Assay: '%s' (Column: '%s')", assay_name, feature_id_col))
-      return(NULL) # Return NULL if no duplicates
-    }
-  }) %>%
-  purrr::set_names(assay_names) # Set names for the final list
-
-  # Filter out assays with no duplicates for a cleaner output,
-  # or keep them as NULL to indicate they were checked.
-  # For clarity, let's keep the NULLs
-  # duplicate_list <- duplicate_list[!sapply(duplicate_list, is.null)]
-
-  if(all(sapply(duplicate_list, is.null))) {
-      message("No duplicate feature IDs found in any assay.")
-  }
-
-  return(duplicate_list)
+    return(filtered_assay_table)
 }
 
 
@@ -302,7 +218,6 @@ findDuplicateFeatureIDs <- function(theObject) {
 #' @importFrom tibble column_to_rownames rownames_to_column
 #' @export
 resolveDuplicateFeaturesByIntensity <- function(assay_tibble, id_col, sample_cols) {
-
     if (!id_col %in% colnames(assay_tibble)) {
         warning(sprintf("ID column '%s' not found in assay tibble. Returning original tibble.", id_col))
         return(assay_tibble)
@@ -326,7 +241,7 @@ resolveDuplicateFeaturesByIntensity <- function(assay_tibble, id_col, sample_col
 
     # Ensure sample columns are numeric for mean calculation
     assay_tibble_numeric <- assay_tibble %>%
-      dplyr::mutate(dplyr::across(dplyr::any_of(sample_cols), as.numeric))
+        dplyr::mutate(dplyr::across(dplyr::any_of(sample_cols), as.numeric))
 
     # Calculate average intensity (handle NAs)
     # Using rowwise is more robust to non-numeric columns than converting to matrix first
@@ -419,51 +334,49 @@ resolveDuplicateFeaturesByIntensity <- function(assay_tibble, id_col, sample_col
 #' @importFrom purrr map map_dfr imap imap_dfr walk iwalk
 #' @export
 updateLipidFiltering <- function(theObject,
-                                      step_name,
-                                      publication_graphs_dir = NULL,
-                                      omics_type = NULL,
-                                      time_dir = NULL,
-                                      overwrite = FALSE,
-                                      return_grid = FALSE,
-                                      group_id_col = NULL,
-                                      sample_id_col = NULL,
-                                      lipid_id_col = NULL,
-                                      is_pattern = NULL) {
-
-
+                                 step_name,
+                                 publication_graphs_dir = NULL,
+                                 omics_type = NULL,
+                                 time_dir = NULL,
+                                 overwrite = FALSE,
+                                 return_grid = FALSE,
+                                 group_id_col = NULL,
+                                 sample_id_col = NULL,
+                                 lipid_id_col = NULL,
+                                 is_pattern = NULL) {
     prog_met <- getFilteringProgressLipidomics()
 
 
     if (!isS4(theObject)) {
         stop("`theObject` must be an S4 object.")
     }
-    
+
     # Check for specific class before checking generic slots
     if (inherits(theObject, "LipidomicsAssayData")) {
         # Specific handling for LipidomicsAssayData
         design_matrix <- theObject@design_matrix
-        assay_list    <- theObject@lipid_data # Directly access the slot
-        assay_names   <- names(assay_list)
-        if(is.null(assay_names)) assay_names <- paste0("Assay_", seq_along(assay_list))
+        assay_list <- theObject@lipid_data # Directly access the slot
+        assay_names <- names(assay_list)
+        if (is.null(assay_names)) assay_names <- paste0("Assay_", seq_along(assay_list))
         names(assay_list) <- assay_names
     } else {
         # Basic checks for required methods/slots for non-LipidomicsAssayData objects
-    if (!requireNamespace("SummarizedExperiment", quietly = TRUE)) {
-       stop("Package 'SummarizedExperiment' needed for this function to work.")
-    }
-    if (!("assays" %in% methods::slotNames(theObject) || canCoerce(theObject, "SummarizedExperiment"))) {
-        stop("`theObject` must have an accessible `assays` method or slot.")
-    }
-     if (!("colData" %in% methods::slotNames(theObject) || canCoerce(theObject, "SummarizedExperiment"))) {
-        stop("`theObject` must have an accessible `colData` method or slot.")
+        if (!requireNamespace("SummarizedExperiment", quietly = TRUE)) {
+            stop("Package 'SummarizedExperiment' needed for this function to work.")
         }
-        
+        if (!("assays" %in% methods::slotNames(theObject) || canCoerce(theObject, "SummarizedExperiment"))) {
+            stop("`theObject` must have an accessible `assays` method or slot.")
+        }
+        if (!("colData" %in% methods::slotNames(theObject) || canCoerce(theObject, "SummarizedExperiment"))) {
+            stop("`theObject` must have an accessible `colData` method or slot.")
+        }
+
         # Use SE accessors if available
         design_matrix <- SummarizedExperiment::colData(theObject)
         assay_list <- SummarizedExperiment::assays(theObject)
         # Ensure assay_list elements are data frames/tibbles if needed by helpers
         assay_list <- lapply(assay_list, as.data.frame)
-        if(is.null(names(assay_list))) assay_names <- paste0("Assay_", seq_along(assay_list)) else assay_names <- names(assay_list)
+        if (is.null(names(assay_list))) assay_names <- paste0("Assay_", seq_along(assay_list)) else assay_names <- names(assay_list)
         names(assay_list) <- assay_names
     }
 
@@ -481,19 +394,19 @@ updateLipidFiltering <- function(theObject,
     # Convert design matrix rownames to column if needed
     if (!sample_id_col %in% colnames(design_matrix)) {
         # If not, check if the rownames seem to match the sample IDs
-        if(identical(rownames(design_matrix), as.character(design_matrix[[sample_id_col]]))){
-             # This case is unlikely if sample_id_col isn't a column name
-             warning("Sample ID column '", sample_id_col, "' not found, but rownames might match? Check object structure.")
+        if (identical(rownames(design_matrix), as.character(design_matrix[[sample_id_col]]))) {
+            # This case is unlikely if sample_id_col isn't a column name
+            warning("Sample ID column '", sample_id_col, "' not found, but rownames might match? Check object structure.")
         } else if (!is.null(rownames(design_matrix)) && sample_id_col == "Run") { # Heuristic: If rownames exist and user expects 'Run'
             message("Moving rownames of design matrix to column: ", sample_id_col)
             design_matrix <- as.data.frame(design_matrix)
             design_matrix[[sample_id_col]] <- rownames(design_matrix)
             rownames(design_matrix) <- NULL # Remove rownames after moving
         } else {
-             warning("Sample ID column '", sample_id_col, "' not found in design matrix and rownames don't seem to match or weren't checked.")
+            warning("Sample ID column '", sample_id_col, "' not found in design matrix and rownames don't seem to match or weren't checked.")
         }
     }
-    
+
     design_matrix <- as.data.frame(design_matrix) # Ensure it's a data frame
 
     # Extract actual sample column names from design matrix
@@ -502,9 +415,8 @@ updateLipidFiltering <- function(theObject,
     sample_columns <- as.character(design_matrix[[sample_id_col]])
 
     metrics_list_this_step <- list()
-    if(length(assay_list) > 0) {
+    if (length(assay_list) > 0) {
         metrics_list_this_step <- purrr::imap(assay_list, function(current_assay_data, current_assay_name) {
-            
             # Ensure current_assay_data is a data frame/tibble
             if (!is.data.frame(current_assay_data)) {
                 warning("Assay ", current_assay_name, " is not a data frame. Skipping metrics calculation.")
@@ -519,43 +431,61 @@ updateLipidFiltering <- function(theObject,
                 ))
             }
 
-            n_met <- tryCatch({
-                countUniqueLipids(current_assay_data, lipid_id_col)
-            }, error = function(e) {
-                stop(e)
-            })
-            
-            det_per_sample <- tryCatch({
-                countLipidsPerSample(current_assay_data, sample_id_col, lipid_id_col, sample_columns = sample_columns)
-            }, error = function(e) {
-                stop(e)
-            })
-            
-            miss <- tryCatch({
-                calculateMissingness(current_assay_data, sample_id_col, sample_columns = sample_columns)
-            }, error = function(e) {
-                stop(e)
-            })
-            
-            sum_int <- tryCatch({
-                calculateSumIntensityPerSample(current_assay_data, sample_id_col, sample_columns = sample_columns)
-            }, error = function(e) {
-                stop(e)
-            })
-            
-            cv_dist <- tryCatch({
-                calculateLipidCVs(current_assay_data, design_matrix, group_id_col, NULL, sample_id_col, lipid_id_col, sample_columns = sample_columns)
-            }, error = function(e) {
-                stop(e)
-            })
-            
-            is_met <- tryCatch({
-                getInternalStandardMetrics(current_assay_data, is_pattern, lipid_id_col, sample_id_col, sample_columns = sample_columns)
-            }, error = function(e) {
-                stop(e)
-            })
-            
-            
+            n_met <- tryCatch(
+                {
+                    countUniqueLipids(current_assay_data, lipid_id_col)
+                },
+                error = function(e) {
+                    stop(e)
+                }
+            )
+
+            det_per_sample <- tryCatch(
+                {
+                    countLipidsPerSample(current_assay_data, sample_id_col, lipid_id_col, sample_columns = sample_columns)
+                },
+                error = function(e) {
+                    stop(e)
+                }
+            )
+
+            miss <- tryCatch(
+                {
+                    calculateMissingness(current_assay_data, sample_id_col, sample_columns = sample_columns)
+                },
+                error = function(e) {
+                    stop(e)
+                }
+            )
+
+            sum_int <- tryCatch(
+                {
+                    calculateSumIntensityPerSample(current_assay_data, sample_id_col, sample_columns = sample_columns)
+                },
+                error = function(e) {
+                    stop(e)
+                }
+            )
+
+            cv_dist <- tryCatch(
+                {
+                    calculateLipidCVs(current_assay_data, design_matrix, group_id_col, NULL, sample_id_col, lipid_id_col, sample_columns = sample_columns)
+                },
+                error = function(e) {
+                    stop(e)
+                }
+            )
+
+            is_met <- tryCatch(
+                {
+                    getInternalStandardMetrics(current_assay_data, is_pattern, lipid_id_col, sample_id_col, sample_columns = sample_columns)
+                },
+                error = function(e) {
+                    stop(e)
+                }
+            )
+
+
             list(
                 n_lipids = n_met,
                 detected_per_sample = det_per_sample,
@@ -572,23 +502,32 @@ updateLipidFiltering <- function(theObject,
     }
 
 
-    total_lipids <- tryCatch({
-        calculateTotalUniqueLipidsAcrossAssays(assay_list, lipid_id_col)
-    }, error = function(e) {
-        stop(e)
-    })
+    total_lipids <- tryCatch(
+        {
+            calculateTotalUniqueLipidsAcrossAssays(assay_list, lipid_id_col)
+        },
+        error = function(e) {
+            stop(e)
+        }
+    )
 
-    tryCatch({
-        updateFilteringProgressLipidomics(prog_met, step_name, assay_names, metrics_list_this_step, total_lipids, overwrite)
-    }, error = function(e) {
-        stop(e)
-    })
+    tryCatch(
+        {
+            updateFilteringProgressLipidomics(prog_met, step_name, assay_names, metrics_list_this_step, total_lipids, overwrite)
+        },
+        error = function(e) {
+            stop(e)
+        }
+    )
 
-    plot_list <- tryCatch({
-        generateLipidFilteringPlots(getFilteringProgressLipidomics())
-    }, error = function(e) {
-        stop(e)
-    })
+    plot_list <- tryCatch(
+        {
+            generateLipidFilteringPlots(getFilteringProgressLipidomics())
+        },
+        error = function(e) {
+            stop(e)
+        }
+    )
 
     # --- 9. Directory handling and plot saving --- #
     actual_save_dir <- NULL # Will hold the final directory path for saving
@@ -601,28 +540,26 @@ updateLipidFiltering <- function(theObject,
     message(sprintf("Value of time_dir argument in function call: %s", ifelse(is.null(time_dir), "NULL", time_dir)))
 
     message("Attempting to determine save directory using global project_dirs, omic_type, and experiment_label...")
-    
+
     if (exists("project_dirs", envir = .GlobalEnv) &&
         exists("omic_type", envir = .GlobalEnv) &&
         exists("experiment_label", envir = .GlobalEnv)) {
-        
         message("Global variables project_dirs, omic_type, and experiment_label found.")
         local_project_dirs <- get("project_dirs", envir = .GlobalEnv)
         local_omic_type <- get("omic_type", envir = .GlobalEnv)
         local_experiment_label <- get("experiment_label", envir = .GlobalEnv)
         message(sprintf("Global omic_type value: '%s', Global experiment_label value: '%s'", local_omic_type, local_experiment_label))
-        
+
         omics_key <- paste0(local_omic_type, "_", local_experiment_label)
         message(sprintf("Constructed omics_key for project_dirs: '%s'", omics_key))
-        
+
         if (omics_key %in% names(local_project_dirs) &&
-            !is.null(local_project_dirs[[omics_key]]) && 
+            !is.null(local_project_dirs[[omics_key]]) &&
             "time_dir" %in% names(local_project_dirs[[omics_key]])) {
-            
             message(sprintf("omics_key '%s' found in project_dirs and has a 'time_dir' entry.", omics_key))
             retrieved_time_dir <- local_project_dirs[[omics_key]]$time_dir
             message(sprintf("Retrieved time_dir from project_dirs: %s", ifelse(is.null(retrieved_time_dir), "NULL", retrieved_time_dir)))
-            
+
             if (is.null(retrieved_time_dir) || !is.character(retrieved_time_dir) || !nzchar(retrieved_time_dir)) {
                 warning(sprintf("project_dirs[['%s']]$time_dir is NULL, not a character string, or empty. Plots will not be saved.", omics_key))
                 message("Reason: retrieved_time_dir is invalid.")
@@ -632,18 +569,22 @@ updateLipidFiltering <- function(theObject,
             }
         } else {
             warning(sprintf("Could not find omics_key '%s' in project_dirs, or it lacks a 'time_dir' entry. Plots will not be saved.", omics_key))
-            message(sprintf("Details: omics_key '%s' in names(project_dirs): %s. project_dirs[['%s']] is NULL: %s. 'time_dir' in names(project_dirs[['%s']]): %s.", 
-                          omics_key, omics_key %in% names(local_project_dirs), 
-                          omics_key, is.null(local_project_dirs[[omics_key]]), 
-                          omics_key, if (omics_key %in% names(local_project_dirs) && !is.null(local_project_dirs[[omics_key]])) "time_dir" %in% names(local_project_dirs[[omics_key]]) else NA))
-            message("Available keys in project_dirs: ", paste(names(local_project_dirs), collapse=", "))
+            message(sprintf(
+                "Details: omics_key '%s' in names(project_dirs): %s. project_dirs[['%s']] is NULL: %s. 'time_dir' in names(project_dirs[['%s']]): %s.",
+                omics_key, omics_key %in% names(local_project_dirs),
+                omics_key, is.null(local_project_dirs[[omics_key]]),
+                omics_key, if (omics_key %in% names(local_project_dirs) && !is.null(local_project_dirs[[omics_key]])) "time_dir" %in% names(local_project_dirs[[omics_key]]) else NA
+            ))
+            message("Available keys in project_dirs: ", paste(names(local_project_dirs), collapse = ", "))
         }
     } else {
         warning("One or more global variables ('project_dirs', 'omic_type', 'experiment_label') not found. Plots will not be saved.")
-        message(sprintf("Exists project_dirs: %s, Exists omic_type: %s, Exists experiment_label: %s", 
-                      exists("project_dirs", envir = .GlobalEnv),
-                      exists("omic_type", envir = .GlobalEnv),
-                      exists("experiment_label", envir = .GlobalEnv)))
+        message(sprintf(
+            "Exists project_dirs: %s, Exists omic_type: %s, Exists experiment_label: %s",
+            exists("project_dirs", envir = .GlobalEnv),
+            exists("omic_type", envir = .GlobalEnv),
+            exists("experiment_label", envir = .GlobalEnv)
+        ))
     }
 
     # Proceed with saving ONLY if actual_save_dir was successfully determined from global project_dirs
@@ -658,72 +599,73 @@ updateLipidFiltering <- function(theObject,
         purrr::iwalk(plot_list, function(plot, plot_name) {
             filename <- file.path(actual_save_dir, sprintf("%s_%s.png", step_name, plot_name))
             message(sprintf("Saving plot: %s", filename))
-            ggsave(filename, 
-                   plot = plot, 
-                   width = 10, 
-                   height = 8, 
-                   dpi = 300)
+            ggsave(filename,
+                plot = plot,
+                width = 10,
+                height = 8,
+                dpi = 300
+            )
         })
 
         # Save combined grid if return_grid is TRUE and plots exist
         if (return_grid && length(plot_list) > 0 && !is.null(plot_list[[1]]) && inherits(plot_list[[1]], "ggplot")) {
-             # Use arrangeGrob (not grid.arrange) to create grob without drawing
-             # Wrap in pdf(NULL)/dev.off() to prevent Rplots.pdf error
-             pdf(NULL)
-             grid_plot_obj <- do.call(gridExtra::arrangeGrob, c(plot_list, ncol = 2)) 
-             invisible(dev.off())
-             filename_grid <- file.path(actual_save_dir, sprintf("%s_combined_plots.png", step_name))
-             message(sprintf("Saving combined grid plot: %s", filename_grid))
-             ggsave(filename_grid, plot = grid_plot_obj, width = 15, height = 15, dpi = 300)
+            # Use arrangeGrob (not grid.arrange) to create grob without drawing
+            # Wrap in pdf(NULL)/dev.off() to prevent Rplots.pdf error
+            pdf(NULL)
+            grid_plot_obj <- do.call(gridExtra::arrangeGrob, c(plot_list, ncol = 2))
+            invisible(dev.off())
+            filename_grid <- file.path(actual_save_dir, sprintf("%s_combined_plots.png", step_name))
+            message(sprintf("Saving combined grid plot: %s", filename_grid))
+            ggsave(filename_grid, plot = grid_plot_obj, width = 15, height = 15, dpi = 300)
         }
         message("Lipidomics QC plots saved to: ", actual_save_dir)
     } else {
-        # This block means actual_save_dir is still NULL. 
+        # This block means actual_save_dir is still NULL.
         # This implies either globals were missing or project_dirs structure was invalid for deriving time_dir.
         message("No valid save directory determined from global project_dirs. Plots will not be saved.")
         # If publication_graphs_dir was provided in the call, and we still ended up here, it means the global lookup failed.
-        if(!is.null(publication_graphs_dir)){
+        if (!is.null(publication_graphs_dir)) {
             warning("Function was called with a publication_graphs_dir path, but plot saving still failed because a valid time_dir could not be derived from global project_dirs.")
         }
     }
     message("--- End of Plot Saving Diagnostics ---")
 
-    
+
     if (length(plot_list) > 0) {
-        if (!is.null(plot_list[[1]])) {
-        }
+        if (!is.null(plot_list[[1]])) {}
     }
 
     if (return_grid) {
-        
         # Check conditions one by one
         cond1 <- length(plot_list) > 0
         cond2 <- !is.null(plot_list[[1]])
-        cond3 <- if(cond2) inherits(plot_list[[1]], "ggplot") else FALSE
-        
-        
+        cond3 <- if (cond2) inherits(plot_list[[1]], "ggplot") else FALSE
+
+
         if (cond1 && cond2 && cond3) {
-            
             # Use arrangeGrob (not grid.arrange) to create grob without drawing
             # This allows the grob to be stored in a reactiveVal and rendered later by Shiny
             # CRITICAL: Wrap in pdf(NULL)/dev.off() to prevent "cannot open file 'Rplots.pdf'" error
             # in Shiny's sandboxed environment where arrangeGrob tries to create a temp PDF device
-            grid_plot_obj <- tryCatch({
-                pdf(NULL)
-                result <- do.call(gridExtra::arrangeGrob, c(plot_list, ncol = 2))
-                invisible(dev.off())
-                result
-            }, error = function(e) {
-                # Make sure to close device even on error
-                tryCatch(invisible(dev.off()), error = function(e2) NULL)
-                NULL
-            })
-            
-            
+            grid_plot_obj <- tryCatch(
+                {
+                    pdf(NULL)
+                    result <- do.call(gridExtra::arrangeGrob, c(plot_list, ncol = 2))
+                    invisible(dev.off())
+                    result
+                },
+                error = function(e) {
+                    # Make sure to close device even on error
+                    tryCatch(invisible(dev.off()), error = function(e2) NULL)
+                    NULL
+                }
+            )
+
+
             if (is.null(grid_plot_obj)) {
                 return(NULL)
             }
-            
+
             return(grid_plot_obj)
         } else {
             return(NULL)
@@ -791,12 +733,11 @@ getFilteringProgressLipidomics <- function() {
 #' @noRd
 #' @export
 updateFilteringProgressLipidomics <- function(prog_met,
-                                                  step_name,
-                                                  current_assay_names,
-                                                  metrics_list,
-                                                  total_lipids,
-                                                  overwrite = FALSE) {
-
+                                              step_name,
+                                              current_assay_names,
+                                              metrics_list,
+                                              total_lipids,
+                                              overwrite = FALSE) {
     if (step_name %in% prog_met@steps) {
         if (!overwrite) {
             stop("Step name '", step_name, "' already exists in filtering_progress_lipidomics. Use overwrite = TRUE to replace it.")
@@ -812,7 +753,6 @@ updateFilteringProgressLipidomics <- function(prog_met,
         prog_met@sum_intensity_per_sample[[idx]] <- lapply(metrics_list, `[[`, "sum_intensity_per_sample")
         prog_met@cv_distribution_per_assay[[idx]] <- lapply(metrics_list, `[[`, "cv_distribution")
         prog_met@is_metrics_per_assay[[idx]] <- lapply(metrics_list, `[[`, "is_metrics")
-
     } else {
         # Append new data
         prog_met@steps <- c(prog_met@steps, step_name)
@@ -849,13 +789,13 @@ updateFilteringProgressLipidomics <- function(prog_met,
 #' @importFrom dplyr pull distinct n
 #' @keywords internal
 #' @noRd
-#' @export 
+#' @export
 countUniqueLipids <- function(assay_data, lipid_id_col) {
     if (!lipid_id_col %in% colnames(assay_data)) {
         warning("Lipid ID column '", lipid_id_col, "' not found in assay data.")
         return(0)
     }
-    
+
     # Count unique non-NA lipid IDs - use base R subsetting (dplyr::pull doesn't support .data[[var]])
     lipid_ids <- assay_data[[lipid_id_col]]
     lipid_ids <- stats::na.omit(lipid_ids)
@@ -898,9 +838,9 @@ countLipidsPerSample <- function(assay_data, sample_id_col, lipid_id_col, sample
 
     quant_data |>
         tidyr::pivot_longer(
-            cols = dplyr::all_of(sample_names)
-            , names_to = "Run"
-            , values_to = "Intensity"
+            cols = dplyr::all_of(sample_names),
+            names_to = "Run",
+            values_to = "Intensity"
         ) |>
         # Define 'detected' as non-NA and greater than 0 (adjust if needed)
         dplyr::filter(!is.na(.data$Intensity) & .data$Intensity > 0) |>
@@ -941,22 +881,24 @@ calculateMissingness <- function(assay_data, sample_id_col, sample_columns = NUL
     if ("..temp_row_id.." %in% colnames(quant_data)) {
         quant_data <- quant_data[, setdiff(colnames(quant_data), "..temp_row_id.."), drop = FALSE]
     }
-    
+
     # Count missing (NA or zero) values in all sample columns
     total_cells <- nrow(quant_data) * length(sample_names)
     missing_values <- 0
-    
+
     for (col in sample_names) {
         missing_values <- missing_values + sum(is.na(quant_data[[col]]) | quant_data[[col]] == 0)
     }
-    
+
     # Calculate percentage
     missing_pct <- (missing_values / total_cells) * 100
-    
+
     # Debug output to verify calculation
-    message("DEBUG: Missing values: ", missing_values, ", Total cells: ", total_cells
-            , ", Percentage: ", missing_pct, "%")
-    
+    message(
+        "DEBUG: Missing values: ", missing_values, ", Total cells: ", total_cells,
+        ", Percentage: ", missing_pct, "%"
+    )
+
     return(missing_pct)
 }
 
@@ -993,9 +935,9 @@ calculateSumIntensityPerSample <- function(assay_data, sample_id_col, sample_col
 
     quant_data |>
         tidyr::pivot_longer(
-            cols = dplyr::all_of(sample_names)
-            , names_to = "Run"
-            , values_to = "Intensity"
+            cols = dplyr::all_of(sample_names),
+            names_to = "Run",
+            values_to = "Intensity"
         ) |>
         dplyr::group_by(.data$Run) |>
         # Sum intensities, replacing NA with 0 for the sum
@@ -1032,17 +974,16 @@ calculateSumIntensityPerSample <- function(assay_data, sample_id_col, sample_col
 #' @noRd
 #' @export
 calculateLipidCVs <- function(assay_data,
-                                   design_matrix,
-                                   group_id_col,
-                                   replicate_id_col,
-                                   sample_id_col,
-                                   lipid_id_col,
-                                   sample_columns = NULL) {
-
+                              design_matrix,
+                              group_id_col,
+                              replicate_id_col,
+                              sample_id_col,
+                              lipid_id_col,
+                              sample_columns = NULL) {
     # --- Input Validation --- #
     required_design_cols <- c(sample_id_col, group_id_col)
     if (!all(required_design_cols %in% colnames(design_matrix))) {
-        warning("Design matrix missing required columns: ", paste(setdiff(required_design_cols, colnames(design_matrix)), collapse=", "))
+        warning("Design matrix missing required columns: ", paste(setdiff(required_design_cols, colnames(design_matrix)), collapse = ", "))
         return(data.frame(lipid_id = character(), group = character(), cv = numeric()))
     }
     if (!lipid_id_col %in% colnames(assay_data)) {
@@ -1089,28 +1030,28 @@ calculateLipidCVs <- function(assay_data,
         ) |>
         # Ensure Run column is character for joining
         dplyr::mutate(Run = as.character(.data$Run))
-    
-        # Join with design info
+
+    # Join with design info
     long_data_with_groups <- dplyr::left_join(long_data, design_subset, by = "Run")
-    
+
     # Check if joining worked correctly
     if (sum(is.na(long_data_with_groups$group)) > 0) {
         message("Warning: Some samples couldn't be matched to groups. Check sample IDs in design matrix.")
         message("Unmatched samples: ", paste(unique(long_data_with_groups$Run[is.na(long_data_with_groups$group)]), collapse = ", "))
     }
-    
+
     # Remove rows where joining failed or Intensity is NA or 0
     filtered_data <- stats::na.omit(long_data_with_groups) |>
         dplyr::filter(.data$Intensity > 0) # Filter out zero values which can inflate CV
-    
-        # Group by lipid and experimental group
+
+    # Group by lipid and experimental group
     cv_data <- filtered_data |>
         dplyr::group_by(dplyr::across(dplyr::all_of(c(lipid_id_col, "group")))) |>
         # Calculate SD and Mean, requiring at least 2 data points for SD
         dplyr::summarise(
             n_samples = dplyr::n(),
             mean_intensity = mean(.data$Intensity, na.rm = TRUE),
-            sd_intensity = if(dplyr::n() >= 2) stats::sd(.data$Intensity, na.rm = TRUE) else NA_real_,
+            sd_intensity = if (dplyr::n() >= 2) stats::sd(.data$Intensity, na.rm = TRUE) else NA_real_,
             .groups = "drop"
         ) |>
         # Calculate CV, handle mean close to zero or NA sd
@@ -1128,7 +1069,7 @@ calculateLipidCVs <- function(assay_data,
         # Use !!rlang::sym() for string column names - {{ }} is for defused symbols only
         dplyr::select(dplyr::all_of(c(lipid_id_col, "group", "cv", "n_samples"))) |>
         dplyr::rename(lipid_id = !!rlang::sym(lipid_id_col))
-    
+
     # Summary statistics for debugging
     message("CV calculation complete")
     message("CV summary statistics per group:")
@@ -1137,9 +1078,11 @@ calculateLipidCVs <- function(assay_data,
         if (length(group_cvs) > 0) {
             group_stats <- summary(group_cvs)
             message("  - Group ", g, ":")
-            message("    Min: ", round(group_stats[1], 1), "%, 1st Qu: ", round(group_stats[2], 1), 
-                   "%, Median: ", round(group_stats[3], 1), "%, Mean: ", round(group_stats[4], 1), 
-                   "%, 3rd Qu: ", round(group_stats[5], 1), "%, Max: ", round(group_stats[6], 1), "%")
+            message(
+                "    Min: ", round(group_stats[1], 1), "%, 1st Qu: ", round(group_stats[2], 1),
+                "%, Median: ", round(group_stats[3], 1), "%, Mean: ", round(group_stats[4], 1),
+                "%, 3rd Qu: ", round(group_stats[5], 1), "%, Max: ", round(group_stats[6], 1), "%"
+            )
             message("    Number of lipids with CV: ", length(group_cvs))
         } else {
             message("  - Group ", g, ": No valid CV values")
@@ -1172,14 +1115,13 @@ calculateLipidCVs <- function(assay_data,
 #' @importFrom stringr str_detect
 #' @importFrom stats sd na.omit
 #' @keywords internal
-#' @noRd   
+#' @noRd
 #' @export
 getInternalStandardMetrics <- function(assay_data,
                                        is_pattern,
                                        lipid_id_col,
                                        sample_id_col,
                                        sample_columns = NULL) {
-
     # --- Input Validation --- #
     if (is.null(is_pattern) || is.na(is_pattern) || is_pattern == "") {
         # message("Internal standard pattern is missing or invalid. Skipping IS metrics.")
@@ -1222,47 +1164,55 @@ getInternalStandardMetrics <- function(assay_data,
 
     if (!is.null(is_pattern) && nzchar(is_pattern)) {
         # User-provided pattern
-        tryCatch({
-            matches <- stringr::str_detect(id_values, is_pattern)
-            is_rows <- id_values[matches]
-        }, error = function(e) {
-            warning("Invalid regex pattern '", is_pattern, "': ", e$message)
-        })
+        tryCatch(
+            {
+                matches <- stringr::str_detect(id_values, is_pattern)
+                is_rows <- id_values[matches]
+            },
+            error = function(e) {
+                warning("Invalid regex pattern '", is_pattern, "': ", e$message)
+            }
+        )
     }
 
     # Fallback: try common ITSD naming conventions if no matches found
     if (length(is_rows) == 0) {
         common_is_patterns <- c(
-            "^IS[_-]"              # IS_ or IS- prefix (e.g., IS_Caffeine, IS-Leucine)
-            , "^ITSD[_-]"          # ITSD_ prefix (e.g., ITSD_A, ITSD_001)
-            , "ISTD"               # ISTD anywhere (e.g., Caffeine-ISTD, ISTD_001)
-            , "ITSD"               # ITSD anywhere (alternate spelling)
-            , "[_-]d\\d+$"         # Deuterated suffix (e.g., Caffeine_d3, Leucine-d10)
-            , "[_-]d\\d+[_-]"      # Deuterated mid-name (e.g., Caffeine_d3_IS)
-            , "\\(d\\d+\\)"        # Deuterated in parens (e.g., Caffeine(d3))
-            , "(?i)internal.?standard"  # "Internal Standard" / "Internal_Standard"
-            , "(?i)^is\\d+$"       # IS followed by numbers (e.g., IS1, IS23)
-            , "13C[_-]?labeled"    # 13C labeled (e.g., 13C-labeled_reference)
-            , "15N[_-]?labeled"    # 15N labeled
-            , "-13C\\d*-"          # 13C in middle (e.g., Glucose-13C6-IS)
-            , "-15N\\d*-"          # 15N in middle
+            "^IS[_-]" # IS_ or IS- prefix (e.g., IS_Caffeine, IS-Leucine)
+            , "^ITSD[_-]" # ITSD_ prefix (e.g., ITSD_A, ITSD_001)
+            , "ISTD" # ISTD anywhere (e.g., Caffeine-ISTD, ISTD_001)
+            , "ITSD" # ITSD anywhere (alternate spelling)
+            , "[_-]d\\d+$" # Deuterated suffix (e.g., Caffeine_d3, Leucine-d10)
+            , "[_-]d\\d+[_-]" # Deuterated mid-name (e.g., Caffeine_d3_IS)
+            , "\\(d\\d+\\)" # Deuterated in parens (e.g., Caffeine(d3))
+            , "(?i)internal.?standard" # "Internal Standard" / "Internal_Standard"
+            , "(?i)^is\\d+$" # IS followed by numbers (e.g., IS1, IS23)
+            , "13C[_-]?labeled" # 13C labeled (e.g., 13C-labeled_reference)
+            , "15N[_-]?labeled" # 15N labeled
+            , "-13C\\d*-" # 13C in middle (e.g., Glucose-13C6-IS)
+            , "-15N\\d*-" # 15N in middle
         )
         combined_pattern <- paste(common_is_patterns, collapse = "|")
 
-        tryCatch({
-            matches <- stringr::str_detect(id_values, combined_pattern)
-            is_rows <- id_values[matches]
-            if (length(is_rows) > 0) {
-                message("No IS found with user pattern. Using fallback patterns, found ", length(is_rows), " candidates.")
-            } else {
-                # Debug: show what we're actually searching
-                sample_ids <- head(id_values, 5)
-                message("ITSD detection: No matches found in column '", lipid_id_col,
-                        "'. Sample values: ", paste(sample_ids, collapse = ", "))
+        tryCatch(
+            {
+                matches <- stringr::str_detect(id_values, combined_pattern)
+                is_rows <- id_values[matches]
+                if (length(is_rows) > 0) {
+                    message("No IS found with user pattern. Using fallback patterns, found ", length(is_rows), " candidates.")
+                } else {
+                    # Debug: show what we're actually searching
+                    sample_ids <- head(id_values, 5)
+                    message(
+                        "ITSD detection: No matches found in column '", lipid_id_col,
+                        "'. Sample values: ", paste(sample_ids, collapse = ", ")
+                    )
+                }
+            },
+            error = function(e) {
+                warning("Fallback IS pattern matching failed: ", e$message)
             }
-        }, error = function(e) {
-            warning("Fallback IS pattern matching failed: ", e$message)
-        })
+        )
     }
 
     is_rows <- annotation_data[[lipid_id_col]][annotation_data[[lipid_id_col]] %in% is_rows]
@@ -1286,15 +1236,15 @@ getInternalStandardMetrics <- function(assay_data,
         dplyr::group_by(dplyr::across(dplyr::all_of(lipid_id_col))) |>
         dplyr::summarise(
             mean_intensity = mean(.data$Intensity, na.rm = TRUE),
-            sd_intensity = if(dplyr::n() >= 2) stats::sd(.data$Intensity, na.rm = TRUE) else NA_real_,
+            sd_intensity = if (dplyr::n() >= 2) stats::sd(.data$Intensity, na.rm = TRUE) else NA_real_,
             n_samples = dplyr::n(), # Keep track of how many samples contributed
             .groups = "drop"
         ) |>
         dplyr::mutate(
             cv = dplyr::case_when(
-                 is.na(.data$sd_intensity) ~ NA_real_,
-                 abs(.data$mean_intensity) < .Machine$double.eps ~ NA_real_,
-                 TRUE ~ (.data$sd_intensity / .data$mean_intensity) * 100
+                is.na(.data$sd_intensity) ~ NA_real_,
+                abs(.data$mean_intensity) < .Machine$double.eps ~ NA_real_,
+                TRUE ~ (.data$sd_intensity / .data$mean_intensity) * 100
             )
         ) |>
         dplyr::select(dplyr::all_of(c(lipid_id_col, "mean_intensity", "cv"))) |>
@@ -1329,23 +1279,23 @@ calculateTotalUniqueLipidsAcrossAssays <- function(assay_list, lipid_id_col) {
 
     # Extract the lipid ID column from each assay, handling missing columns
     # Use base R subsetting - dplyr::pull doesn't support {{ var }} for string column names
-    all_ids <- purrr::map(assay_list, ~{
-            if (lipid_id_col %in% colnames(.x)) {
-                .x[[lipid_id_col]]
-            } else {
-                NULL # Return NULL if column is missing
-            }
-        }) |>
+    all_ids <- purrr::map(assay_list, ~ {
+        if (lipid_id_col %in% colnames(.x)) {
+            .x[[lipid_id_col]]
+        } else {
+            NULL # Return NULL if column is missing
+        }
+    }) |>
         unlist() # Combine all IDs into a single vector
-    
+
     # Remove NAs
     all_ids <- stats::na.omit(all_ids)
-    
+
     # If no valid IDs found, return 0
     if (length(all_ids) == 0) {
         return(0)
     }
-    
+
     # Count unique IDs using a more explicit approach
     unique_ids <- dplyr::distinct(data.frame(id = all_ids))
     return(nrow(unique_ids))
@@ -1374,7 +1324,6 @@ calculateTotalUniqueLipidsAcrossAssays <- function(assay_list, lipid_id_col) {
 #' @keywords internal
 #' @export
 calculateLipidPairCorrelation <- function(input_pair_table, feature_id_column, sample_id_column, value_column) {
-
     # Get the two unique sample IDs from the input table
     sample_ids <- unique(input_pair_table[[sample_id_column]])
     if (length(sample_ids) != 2) {
@@ -1385,17 +1334,20 @@ calculateLipidPairCorrelation <- function(input_pair_table, feature_id_column, s
     sample_y_id <- sample_ids[2]
 
     # Pivot wider to get features as rows and the two samples as columns
-    wide_pair_table <- tryCatch({
-        input_pair_table |>
-            dplyr::select(!!rlang::sym(feature_id_column), !!rlang::sym(sample_id_column), !!rlang::sym(value_column)) |>
-            tidyr::pivot_wider(
-                names_from = !!rlang::sym(sample_id_column),
-                values_from = !!rlang::sym(value_column)
-            )
-    }, error = function(e) {
-        warning(sprintf("Error pivoting data wider for correlation between %s and %s: %s", sample_x_id, sample_y_id, e$message))
-        return(NULL)
-    })
+    wide_pair_table <- tryCatch(
+        {
+            input_pair_table |>
+                dplyr::select(!!rlang::sym(feature_id_column), !!rlang::sym(sample_id_column), !!rlang::sym(value_column)) |>
+                tidyr::pivot_wider(
+                    names_from = !!rlang::sym(sample_id_column),
+                    values_from = !!rlang::sym(value_column)
+                )
+        },
+        error = function(e) {
+            warning(sprintf("Error pivoting data wider for correlation between %s and %s: %s", sample_x_id, sample_y_id, e$message))
+            return(NULL)
+        }
+    )
 
     if (is.null(wide_pair_table) || nrow(wide_pair_table) < 2) {
         # Need at least 2 features for correlation
@@ -1417,12 +1369,15 @@ calculateLipidPairCorrelation <- function(input_pair_table, feature_id_column, s
     values_y <- wide_pair_table[[expected_colnames[2]]] # Use verified name
 
     # Calculate correlation
-    cor_result <- tryCatch({
-        stats::cor(values_x, values_y, use = "pairwise.complete.obs")
-    }, error = function(e) {
-        warning(sprintf("calculateLipidPairCorrelation: Error in stats::cor for samples %s and %s: %s", sample_x_id, sample_y_id, e$message))
-        return(NA_real_) # Returns NA_real_ on cor error
-    })
+    cor_result <- tryCatch(
+        {
+            stats::cor(values_x, values_y, use = "pairwise.complete.obs")
+        },
+        error = function(e) {
+            warning(sprintf("calculateLipidPairCorrelation: Error in stats::cor for samples %s and %s: %s", sample_x_id, sample_y_id, e$message))
+            return(NA_real_) # Returns NA_real_ on cor error
+        }
+    )
 
     # --- Modified Check ---
     # Ensure the result is a single, finite numeric value
@@ -1468,52 +1423,55 @@ calculateLipidPairCorrelation <- function(input_pair_table, feature_id_column, s
 #' @noRd
 #' @export
 generateLipidFilteringPlots <- function(prog_met = NULL) {
-    
     # Get the global object if not provided
     if (is.null(prog_met)) {
         prog_met <- getFilteringProgressLipidomics()
     }
-    
-    
+
+
     # Return empty list if no steps have been tracked
     if (length(prog_met@steps) == 0) {
         message("No lipidomics filtering steps have been tracked yet.")
         return(list())
     }
-    
+
     plot_list <- list()
-    
+
     # --- 1. Total Lipids Plot (All Assays Combined) --- #
-    plot_list$total_lipids <- tryCatch({
-        ggplot(data.frame(
-            step = factor(prog_met@steps, levels = prog_met@steps),
-            total_lipids = prog_met@n_lipids_total
-        ), aes(x = step, y = total_lipids)) +
-            geom_bar(stat = "identity", fill = "steelblue", width = 0.7) +
-            geom_text(aes(label = total_lipids), 
-                      vjust = -0.5, 
-                      size = 4) +
-            labs(
-                title = "Total Unique Lipids (All Assays)",
-                x = "Filtering Step",
-                y = "Unique Lipids"
-            ) +
-            theme_minimal() +
-            theme(
-                axis.text.x = element_text(angle = 45, hjust = 1),
-                panel.grid.major.x = element_blank()
-            )
-    }, error = function(e) {
-        NULL
-    })
-    
+    plot_list$total_lipids <- tryCatch(
+        {
+            ggplot(data.frame(
+                step = factor(prog_met@steps, levels = prog_met@steps),
+                total_lipids = prog_met@n_lipids_total
+            ), aes(x = step, y = total_lipids)) +
+                geom_bar(stat = "identity", fill = "steelblue", width = 0.7) +
+                geom_text(aes(label = total_lipids),
+                    vjust = -0.5,
+                    size = 4
+                ) +
+                labs(
+                    title = "Total Unique Lipids (All Assays)",
+                    x = "Filtering Step",
+                    y = "Unique Lipids"
+                ) +
+                theme_minimal() +
+                theme(
+                    axis.text.x = element_text(angle = 45, hjust = 1),
+                    panel.grid.major.x = element_blank()
+                )
+        },
+        error = function(e) {
+            NULL
+        }
+    )
+
     # --- 2. Lipids Per Assay Plot --- #
     # First create a data frame with lipids per assay per step - use purrr
     lipids_per_assay_df <- purrr::map_dfr(seq_along(prog_met@steps), function(step_idx) {
         step <- prog_met@steps[step_idx]
         assay_names <- prog_met@assay_names[[step_idx]]
         lipid_counts <- unlist(prog_met@n_lipids_per_assay[[step_idx]])
-        
+
         if (length(lipid_counts) > 0) {
             return(data.frame(
                 step = step,
@@ -1521,19 +1479,24 @@ generateLipidFilteringPlots <- function(prog_met = NULL) {
                 n_lipids = as.numeric(lipid_counts)
             ))
         }
-        return(NULL)  # Return NULL if no lipid counts (will be filtered by map_dfr)
+        return(NULL) # Return NULL if no lipid counts (will be filtered by map_dfr)
     })
-    
+
     if (nrow(lipids_per_assay_df) > 0) {
-        plot_list$lipids_per_assay <- ggplot(lipids_per_assay_df, 
-                                                 aes(x = factor(step, levels = prog_met@steps), 
-                                                     y = n_lipids,
-                                                     fill = assay)) +
+        plot_list$lipids_per_assay <- ggplot(
+            lipids_per_assay_df,
+            aes(
+                x = factor(step, levels = prog_met@steps),
+                y = n_lipids,
+                fill = assay
+            )
+        ) +
             geom_bar(stat = "identity", position = "dodge", width = 0.7) +
-            geom_text(aes(label = n_lipids), 
-                      position = position_dodge(width = 0.7),
-                      vjust = -0.5, 
-                      size = 3) +
+            geom_text(aes(label = n_lipids),
+                position = position_dodge(width = 0.7),
+                vjust = -0.5,
+                size = 3
+            ) +
             labs(
                 title = "Lipids per Assay",
                 x = "Filtering Step",
@@ -1547,14 +1510,14 @@ generateLipidFilteringPlots <- function(prog_met = NULL) {
             ) +
             scale_fill_brewer(palette = "Set1")
     }
-    
-    
+
+
     # --- 3. Detected Lipids Per Sample Plot --- #
     # Create a data frame with detected lipids per sample per step - use purrr
     detected_per_sample_df <- purrr::map_dfr(seq_along(prog_met@steps), function(step_idx) {
         step <- prog_met@steps[step_idx]
         assay_names <- prog_met@assay_names[[step_idx]]
-        
+
         # Use purrr::map_dfr to combine results from all assays
         purrr::map_dfr(assay_names, function(assay_name) {
             if (assay_name %in% names(prog_met@detected_per_sample[[step_idx]])) {
@@ -1565,26 +1528,29 @@ generateLipidFilteringPlots <- function(prog_met = NULL) {
                     return(detected_df)
                 }
             }
-            return(NULL)  # Return NULL if no data (will be filtered by map_dfr)
+            return(NULL) # Return NULL if no data (will be filtered by map_dfr)
         })
     })
-    
+
     if (nrow(detected_per_sample_df) > 0) {
         # Ensure consistent data types
         detected_per_sample_df$Run <- as.character(detected_per_sample_df$Run)
         detected_per_sample_df$n_detected <- as.numeric(detected_per_sample_df$n_detected)
-        detected_per_sample_df$step <- factor(detected_per_sample_df$step, 
-                                             levels = prog_met@steps)
-        
+        detected_per_sample_df$step <- factor(detected_per_sample_df$step,
+            levels = prog_met@steps
+        )
+
         plot_list$detected_per_sample <- detected_per_sample_df |>
             group_by(Run, assay) |>
             mutate(avg_detected = mean(n_detected)) |>
             ungroup() |>
             mutate(Run = fct_reorder(Run, avg_detected)) |>
-            ggplot(aes(x = Run, y = n_detected, 
-                       group = interaction(step, assay), 
-                       color = step,
-                       linetype = assay)) +
+            ggplot(aes(
+                x = Run, y = n_detected,
+                group = interaction(step, assay),
+                color = step,
+                linetype = assay
+            )) +
             geom_line() +
             geom_point() +
             labs(
@@ -1601,14 +1567,14 @@ generateLipidFilteringPlots <- function(prog_met = NULL) {
             ) +
             scale_color_brewer(palette = "Set2")
     }
-    
-    
+
+
     # --- 4. Missingness Percentage Per Assay Plot --- #
     # Create a data frame with missingness percentage per assay per step - use purrr
     missingness_df <- purrr::map_dfr(seq_along(prog_met@steps), function(step_idx) {
         step <- prog_met@steps[step_idx]
         assay_names <- prog_met@assay_names[[step_idx]]
-        
+
         # Use purrr::map_dfr to combine results from all assays
         purrr::map_dfr(assay_names, function(assay_name) {
             if (assay_name %in% names(prog_met@missingness_per_assay[[step_idx]])) {
@@ -1621,20 +1587,25 @@ generateLipidFilteringPlots <- function(prog_met = NULL) {
                     ))
                 }
             }
-            return(NULL)  # Return NULL if no data (will be filtered by map_dfr)
+            return(NULL) # Return NULL if no data (will be filtered by map_dfr)
         })
     })
-    
+
     if (nrow(missingness_df) > 0) {
-        plot_list$missingness <- ggplot(missingness_df, 
-                                       aes(x = factor(step, levels = prog_met@steps), 
-                                           y = missingness,
-                                           fill = assay)) +
+        plot_list$missingness <- ggplot(
+            missingness_df,
+            aes(
+                x = factor(step, levels = prog_met@steps),
+                y = missingness,
+                fill = assay
+            )
+        ) +
             geom_bar(stat = "identity", position = "dodge", width = 0.7) +
-            geom_text(aes(label = sprintf("%.1f%%", missingness)), 
-                      position = position_dodge(width = 0.7),
-                      vjust = -0.5, 
-                      size = 3) +
+            geom_text(aes(label = sprintf("%.1f%%", missingness)),
+                position = position_dodge(width = 0.7),
+                vjust = -0.5,
+                size = 3
+            ) +
             labs(
                 title = "Missing Values Percentage per Assay",
                 x = "Filtering Step",
@@ -1648,14 +1619,14 @@ generateLipidFilteringPlots <- function(prog_met = NULL) {
             ) +
             scale_fill_brewer(palette = "Set1")
     }
-    
-    
+
+
     # --- 5. Sum Intensity Per Sample Plot --- #
     # Create a data frame with sum intensity per sample per step - use purrr
     sum_intensity_df <- purrr::map_dfr(seq_along(prog_met@steps), function(step_idx) {
         step <- prog_met@steps[step_idx]
         assay_names <- prog_met@assay_names[[step_idx]]
-        
+
         # Use purrr::map_dfr to combine results from all assays
         purrr::map_dfr(assay_names, function(assay_name) {
             if (assay_name %in% names(prog_met@sum_intensity_per_sample[[step_idx]])) {
@@ -1666,17 +1637,18 @@ generateLipidFilteringPlots <- function(prog_met = NULL) {
                     return(intensity_df)
                 }
             }
-            return(NULL)  # Return NULL if no data (will be filtered by map_dfr)
+            return(NULL) # Return NULL if no data (will be filtered by map_dfr)
         })
     })
-    
+
     if (nrow(sum_intensity_df) > 0) {
         # Ensure consistent data types
         sum_intensity_df$Run <- as.character(sum_intensity_df$Run)
         sum_intensity_df$sum_intensity <- as.numeric(sum_intensity_df$sum_intensity)
-        sum_intensity_df$step <- factor(sum_intensity_df$step, 
-                                       levels = prog_met@steps)
-        
+        sum_intensity_df$step <- factor(sum_intensity_df$step,
+            levels = prog_met@steps
+        )
+
         plot_list$sum_intensity <- sum_intensity_df |>
             group_by(Run, assay) |>
             mutate(avg_intensity = mean(sum_intensity)) |>
@@ -1686,10 +1658,12 @@ generateLipidFilteringPlots <- function(prog_met = NULL) {
                 # Apply log2 transformation directly to the values
                 log2_intensity = log2(pmax(sum_intensity, 1)) # Avoid log(0) with pmax
             ) |>
-            ggplot(aes(x = Run, y = log2_intensity, # Plot the transformed values
-                      group = interaction(step, assay), 
-                      color = step,
-                      linetype = assay)) +
+            ggplot(aes(
+                x = Run, y = log2_intensity, # Plot the transformed values
+                group = interaction(step, assay),
+                color = step,
+                linetype = assay
+            )) +
             geom_line() +
             geom_point() +
             labs(
@@ -1706,14 +1680,14 @@ generateLipidFilteringPlots <- function(prog_met = NULL) {
             ) +
             scale_color_brewer(palette = "Set2")
     }
-    
-    
+
+
     # --- 6. CV Distribution Plot --- #
     # Create a data frame with CV distribution per step - use purrr
     cv_df <- purrr::map_dfr(seq_along(prog_met@steps), function(step_idx) {
         step <- prog_met@steps[step_idx]
         assay_names <- prog_met@assay_names[[step_idx]]
-        
+
         # Use purrr::map_dfr to combine results from all assays
         purrr::map_dfr(assay_names, function(assay_name) {
             if (assay_name %in% names(prog_met@cv_distribution_per_assay[[step_idx]])) {
@@ -1724,22 +1698,26 @@ generateLipidFilteringPlots <- function(prog_met = NULL) {
                     return(step_cv_df)
                 }
             }
-            return(NULL)  # Return NULL if no data (will be filtered by map_dfr)
+            return(NULL) # Return NULL if no data (will be filtered by map_dfr)
         })
     })
-    
+
     if (nrow(cv_df) > 0) {
         # Ensure consistent data types and remove outliers
         cv_df$cv <- as.numeric(cv_df$cv)
         cv_df$step <- factor(cv_df$step, levels = prog_met@steps)
-        
+
         # Calculate 95th percentile for y-axis limit
         q95 <- quantile(cv_df$cv, 0.95, na.rm = TRUE)
-        
-        plot_list$cv_distribution <- ggplot(cv_df, 
-                                           aes(x = step, 
-                                               y = cv,
-                                               fill = assay)) +
+
+        plot_list$cv_distribution <- ggplot(
+            cv_df,
+            aes(
+                x = step,
+                y = cv,
+                fill = assay
+            )
+        ) +
             geom_boxplot(alpha = 0.7, outlier.shape = NA) +
             labs(
                 title = "CV Distribution by Group",
@@ -1756,13 +1734,13 @@ generateLipidFilteringPlots <- function(prog_met = NULL) {
             scale_fill_brewer(palette = "Set1") +
             facet_wrap(~group, scales = "free_y")
     }
-    
+
     # --- 7. Internal Standards Metrics Plot --- #
     # Create a data frame with internal standard metrics per step - use purrr
     is_df <- purrr::map_dfr(seq_along(prog_met@steps), function(step_idx) {
         step <- prog_met@steps[step_idx]
         assay_names <- prog_met@assay_names[[step_idx]]
-        
+
         # Use purrr::map_dfr to combine results from all assays
         purrr::map_dfr(assay_names, function(assay_name) {
             if (assay_name %in% names(prog_met@is_metrics_per_assay[[step_idx]])) {
@@ -1773,21 +1751,25 @@ generateLipidFilteringPlots <- function(prog_met = NULL) {
                     return(step_is_df)
                 }
             }
-            return(NULL)  # Return NULL if no data (will be filtered by map_dfr)
+            return(NULL) # Return NULL if no data (will be filtered by map_dfr)
         })
     })
-    
+
     if (nrow(is_df) > 0) {
         # Ensure consistent data types
         is_df$cv <- as.numeric(is_df$cv)
         is_df$mean_intensity <- as.numeric(is_df$mean_intensity)
         is_df$step <- factor(is_df$step, levels = prog_met@steps)
-        
+
         # Create CV plot for internal standards
-        plot_list$is_cv <- ggplot(is_df, 
-                                 aes(x = step, 
-                                     y = cv,
-                                     fill = assay)) +
+        plot_list$is_cv <- ggplot(
+            is_df,
+            aes(
+                x = step,
+                y = cv,
+                fill = assay
+            )
+        ) +
             geom_violin(alpha = 0.7, trim = FALSE, scale = "width") +
             geom_boxplot(width = 0.1, fill = "white", alpha = 0.7) +
             labs(
@@ -1802,14 +1784,16 @@ generateLipidFilteringPlots <- function(prog_met = NULL) {
                 panel.grid.major.x = element_blank()
             ) +
             scale_fill_brewer(palette = "Set1")
-        
+
         # Create mean intensity plot for internal standards
         plot_list$is_intensity <- is_df |>
             # Apply log2 transformation directly to the data
             mutate(log2_intensity = log2(pmax(mean_intensity, 1))) |> # Avoid log(0) with pmax
-            ggplot(aes(x = step, 
-                       y = log2_intensity, # Plot transformed values
-                       fill = assay)) +
+            ggplot(aes(
+                x = step,
+                y = log2_intensity, # Plot transformed values
+                fill = assay
+            )) +
             geom_violin(alpha = 0.7, trim = FALSE, scale = "width") +
             geom_boxplot(width = 0.1, fill = "white", alpha = 0.7) +
             labs(
@@ -1825,8 +1809,8 @@ generateLipidFilteringPlots <- function(prog_met = NULL) {
             ) +
             scale_fill_brewer(palette = "Set1")
     }
-    
-    
+
+
     return(plot_list)
 }
 
@@ -1854,111 +1838,117 @@ generateLipidFilteringPlots <- function(prog_met = NULL) {
 #'
 #' @return An updated LipidomicsAssayData object.
 #' @export
-setMethod( f="lipidIntensityFiltering"
-           , signature="LipidomicsAssayData"
-           , definition = function( theObject, lipids_intensity_cutoff_percentile = NULL, lipids_proportion_of_samples_below_cutoff = NULL) {
+setMethod(
+    f = "lipidIntensityFiltering",
+    signature = "LipidomicsAssayData",
+    definition = function(theObject, lipids_intensity_cutoff_percentile = NULL, lipids_proportion_of_samples_below_cutoff = NULL) {
+        # --- Parameter Resolution (Done once) ---
+        config_intensity_percentile <- "lipids_intensity_cutoff_percentile"
+        raw_intensity_percentile <- checkParamsObjectFunctionSimplify(
+            theObject,
+            config_intensity_percentile,
+            lipids_intensity_cutoff_percentile
+        )
+        message("Raw intensity percentile from config/param: ", raw_intensity_percentile)
+        cleaned_intensity_percentile <- trimws(sub("#.*$", "", raw_intensity_percentile))
+        intensity_cutoff_percentile_final <- as.numeric(cleaned_intensity_percentile)
 
-             # --- Parameter Resolution (Done once) ---
-             config_intensity_percentile <- "lipids_intensity_cutoff_percentile"
-             raw_intensity_percentile <- checkParamsObjectFunctionSimplify( theObject
-                                                                           , config_intensity_percentile
-                                                                           , lipids_intensity_cutoff_percentile)
-             message("Raw intensity percentile from config/param: ", raw_intensity_percentile)
-             cleaned_intensity_percentile <- trimws(sub("#.*$", "", raw_intensity_percentile))
-             intensity_cutoff_percentile_final <- as.numeric(cleaned_intensity_percentile)
+        config_proportion_cutoff <- "lipids_proportion_of_samples_below_cutoff"
+        raw_proportion_cutoff <- checkParamsObjectFunctionSimplify(
+            theObject,
+            config_proportion_cutoff,
+            lipids_proportion_of_samples_below_cutoff
+        )
+        message("Raw proportion cutoff from config/param: ", raw_proportion_cutoff)
+        cleaned_proportion_cutoff <- trimws(sub("#.*$", "", raw_proportion_cutoff))
+        proportion_of_samples_below_cutoff_final <- as.numeric(cleaned_proportion_cutoff)
 
-             config_proportion_cutoff <- "lipids_proportion_of_samples_below_cutoff"
-             raw_proportion_cutoff <- checkParamsObjectFunctionSimplify( theObject
-                                                                        , config_proportion_cutoff
-                                                                        , lipids_proportion_of_samples_below_cutoff)
-             message("Raw proportion cutoff from config/param: ", raw_proportion_cutoff)
-             cleaned_proportion_cutoff <- trimws(sub("#.*$", "", raw_proportion_cutoff))
-             proportion_of_samples_below_cutoff_final <- as.numeric(cleaned_proportion_cutoff)
+        if (is.na(intensity_cutoff_percentile_final)) {
+            stop("Failed to convert cleaned lipids_intensity_cutoff_percentile ('", cleaned_intensity_percentile, "' from raw '", raw_intensity_percentile, "') to numeric. Check config.ini or parameter value.")
+        }
+        if (is.na(proportion_of_samples_below_cutoff_final)) {
+            stop("Failed to convert cleaned lipids_proportion_of_samples_below_cutoff ('", cleaned_proportion_cutoff, "' from raw '", raw_proportion_cutoff, "') to numeric. Check config.ini or parameter value.")
+        }
 
-             if (is.na(intensity_cutoff_percentile_final)) {
-                 stop("Failed to convert cleaned lipids_intensity_cutoff_percentile ('", cleaned_intensity_percentile, "' from raw '", raw_intensity_percentile, "') to numeric. Check config.ini or parameter value.")
-             }
-             if (is.na(proportion_of_samples_below_cutoff_final)) {
-                 stop("Failed to convert cleaned lipids_proportion_of_samples_below_cutoff ('", cleaned_proportion_cutoff, "' from raw '", raw_proportion_cutoff, "') to numeric. Check config.ini or parameter value.")
-             }
+        # --- Update Object Parameters (Done once) ---
+        theObject <- updateParamInObject(theObject, config_intensity_percentile)
+        theObject <- updateParamInObject(theObject, config_proportion_cutoff)
 
-             # --- Update Object Parameters (Done once) ---
-             theObject <- updateParamInObject(theObject, config_intensity_percentile)
-             theObject <- updateParamInObject(theObject, config_proportion_cutoff)
+        # --- Process Each Assay in the List ---
+        lipid_id_col <- theObject@lipid_id_column
+        original_assay_list <- theObject@lipid_data
+        original_assay_names <- names(original_assay_list)
 
-             # --- Process Each Assay in the List ---
-             lipid_id_col <- theObject@lipid_id_column
-             original_assay_list <- theObject@lipid_data
-             original_assay_names <- names(original_assay_list)
+        if (length(original_assay_list) == 0) {
+            warning("LipidomicsAssayData object has no assays in 'lipid_data' slot. No filtering performed.")
+            return(theObject)
+        }
 
-             if (length(original_assay_list) == 0) {
-               warning("LipidomicsAssayData object has no assays in 'lipid_data' slot. No filtering performed.")
-               return(theObject)
-             }
+        # Iterate using indices
+        filtered_assay_list <- lapply(seq_along(original_assay_list), function(i) {
+            assay_table <- original_assay_list[[i]]
+            # Determine assay name for messages (use index if no name)
+            assay_name_for_msg <- if (!is.null(original_assay_names) && nzchar(original_assay_names[i])) {
+                original_assay_names[i]
+            } else {
+                as.character(i) # Use index as fallback name
+            }
+            message("\nProcessing assay: ", assay_name_for_msg)
 
-             # Iterate using indices
-             filtered_assay_list <- lapply(seq_along(original_assay_list), function(i) {
-                 assay_table <- original_assay_list[[i]]
-                 # Determine assay name for messages (use index if no name)
-                 assay_name_for_msg <- if (!is.null(original_assay_names) && nzchar(original_assay_names[i])) {
-                                         original_assay_names[i]
-                                       } else {
-                                         as.character(i) # Use index as fallback name
-                                       }
-                 message("\nProcessing assay: ", assay_name_for_msg)
+            if (!(lipid_id_col %in% names(assay_table))) {
+                warning("Lipid ID column '", lipid_id_col, "' not found in assay '", assay_name_for_msg, "'. Skipping this assay.")
+                return(assay_table) # Return the original table if ID is missing
+            }
 
-                 if (!(lipid_id_col %in% names(assay_table))) {
-                   warning("Lipid ID column '", lipid_id_col, "' not found in assay '", assay_name_for_msg, "'. Skipping this assay.")
-                   return(assay_table) # Return the original table if ID is missing
-                 }
+            # Identify numeric sample columns for this assay
+            sample_cols <- names(assay_table)[sapply(assay_table, is.numeric)]
 
-                 # Identify numeric sample columns for this assay
-                 sample_cols <- names(assay_table)[sapply(assay_table, is.numeric)]
+            if (length(sample_cols) == 0) {
+                warning("No numeric sample columns found in assay '", assay_name_for_msg, "'. Skipping filtering for this assay.")
+                return(assay_table)
+            }
 
-                 if (length(sample_cols) == 0) {
-                   warning("No numeric sample columns found in assay '", assay_name_for_msg, "'. Skipping filtering for this assay.")
-                   return(assay_table)
-                 }
+            # Extract intensity values for this assay
+            all_intensity_values <- assay_table |>
+                dplyr::select(all_of(sample_cols)) |>
+                unlist()
 
-                 # Extract intensity values for this assay
-                 all_intensity_values <- assay_table |>
-                     dplyr::select(all_of(sample_cols)) |>
-                     unlist()
+            if (length(all_intensity_values) == 0 || all(is.na(all_intensity_values))) {
+                warning("No valid intensity values found in assay '", assay_name_for_msg, "' to calculate threshold. Skipping filtering for this assay.")
+                return(assay_table)
+            }
 
-                 if (length(all_intensity_values) == 0 || all(is.na(all_intensity_values))) {
-                    warning("No valid intensity values found in assay '", assay_name_for_msg, "' to calculate threshold. Skipping filtering for this assay.")
-                    return(assay_table)
-                 }
+            # Calculate threshold specifically for this assay
+            min_lipid_intensity_threshold <- ceiling(quantile(all_intensity_values,
+                na.rm = TRUE,
+                probs = c(intensity_cutoff_percentile_final / 100)
+            ))[1]
 
-                 # Calculate threshold specifically for this assay
-                 min_lipid_intensity_threshold <- ceiling( quantile( all_intensity_values
-                                                                          , na.rm=TRUE
-                                                                          , probs = c(intensity_cutoff_percentile_final/100) ))[1]
+            message("Calculated minimum intensity threshold for assay '", assay_name_for_msg, "': ", min_lipid_intensity_threshold)
 
-                 message("Calculated minimum intensity threshold for assay '", assay_name_for_msg, "': ", min_lipid_intensity_threshold)
+            # Filter using Helper
+            filtered_assay <- lipidIntensityFilteringHelper(
+                assay_table = assay_table,
+                min_lipid_intensity_threshold = min_lipid_intensity_threshold,
+                lipids_proportion_of_samples_below_cutoff = proportion_of_samples_below_cutoff_final,
+                lipid_id_column = lipid_id_col
+            )
 
-                 # Filter using Helper
-                 filtered_assay <- lipidIntensityFilteringHelper(assay_table = assay_table
-                                                                      , min_lipid_intensity_threshold = min_lipid_intensity_threshold
-                                                                      , lipids_proportion_of_samples_below_cutoff = proportion_of_samples_below_cutoff_final
-                                                                      , lipid_id_column = lipid_id_col
-                                                                      )
+            message("Filtered assay '", assay_name_for_msg, "'. Original rows: ", nrow(assay_table), ", Filtered rows: ", nrow(filtered_assay))
+            return(filtered_assay)
+        })
 
-                 message("Filtered assay '", assay_name_for_msg, "'. Original rows: ", nrow(assay_table), ", Filtered rows: ", nrow(filtered_assay))
-                 return(filtered_assay)
-             })
+        # Restore original names if they existed
+        if (!is.null(original_assay_names)) {
+            names(filtered_assay_list) <- original_assay_names
+        }
 
-             # Restore original names if they existed
-             if (!is.null(original_assay_names)) {
-               names(filtered_assay_list) <- original_assay_names
-             }
+        # Assign the list of filtered assays back to the object
+        theObject@lipid_data <- filtered_assay_list
 
-             # Assign the list of filtered assays back to the object
-             theObject@lipid_data <- filtered_assay_list
+        # Optional: Call a generic cleanup/design matrix function if applicable
+        # theObject <- cleanDesignMatrix(theObject) # If a generic method exists
 
-             # Optional: Call a generic cleanup/design matrix function if applicable
-             # theObject <- cleanDesignMatrix(theObject) # If a generic method exists
-
-             return(theObject)
-           }) 
-
+        return(theObject)
+    }
+)
