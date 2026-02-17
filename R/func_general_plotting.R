@@ -2569,6 +2569,7 @@ gg_save_logging <- function(
 # ----------------------------------------------------------------------------
 # summarizeQCPlot
 # ----------------------------------------------------------------------------
+#' @export
 summarizeQCPlot <- function(qc_figure) {
   cat("RLE Plots:\n")
   for (plot_name in names(qc_figure@rle_plots)) {

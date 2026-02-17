@@ -29,7 +29,7 @@
 #'
 #' @importFrom dplyr count filter pull %>%
 #' @importFrom purrr map set_names
-#' @importFrom methods slot inherits
+#' @importFrom methods slot
 #' @importFrom rlang sym !!
 #'
 #' @examples
