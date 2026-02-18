@@ -54,7 +54,7 @@
 #'   omic_type = "proteomics",
 #'   experiment_label = "standard",
 #'   api_key = "YOUR_API_KEY",
-#'   species = taxon_id  # Use taxon_id from your environment
+#'   species = taxon_id # Use taxon_id from your environment
 #' )
 #'
 #' # Force refresh of cached results
@@ -71,18 +71,17 @@
 #'
 #' @export
 runStringDbEnrichmentAllContrasts <- function(de_analysis_results_list,
-                                             project_dirs,
-                                             omic_type,
-                                             experiment_label,
-                                             api_key = "bjcR4Px5rByQ",
-                                             species = "9606",
-                                             ge_fdr = 0.05,
-                                             ge_enrichment_rank_direction = -1,
-                                             polling_interval_seconds = 10,
-                                             max_polling_attempts = 30,
-                                             force_refresh = FALSE,
-                                             comparison_name_transform = NULL) {
-  
+                                              project_dirs,
+                                              omic_type,
+                                              experiment_label,
+                                              api_key = "bjcR4Px5rByQ",
+                                              species = "9606",
+                                              ge_fdr = 0.05,
+                                              ge_enrichment_rank_direction = -1,
+                                              polling_interval_seconds = 10,
+                                              max_polling_attempts = 30,
+                                              force_refresh = FALSE,
+                                              comparison_name_transform = NULL) {
   # Load required packages
   if (!requireNamespace("dplyr", quietly = TRUE)) {
     stop("Package 'dplyr' is required but not installed.")
@@ -96,7 +95,7 @@ runStringDbEnrichmentAllContrasts <- function(de_analysis_results_list,
   if (!requireNamespace("vroom", quietly = TRUE)) {
     stop("Package 'vroom' is required but not installed.")
   }
-  
+
   # Validate inputs
   if (!is.list(de_analysis_results_list) || length(de_analysis_results_list) == 0) {
     stop("de_analysis_results_list must be a non-empty list")
@@ -107,19 +106,19 @@ runStringDbEnrichmentAllContrasts <- function(de_analysis_results_list,
   if (is.null(api_key) || api_key == "") {
     stop("api_key is required for STRING DB enrichment")
   }
-  
+
   # Construct directory paths
   dir_key <- paste0(omic_type, "_", experiment_label)
   if (!dir_key %in% names(project_dirs)) {
     stop(paste("project_dirs does not contain element:", dir_key))
   }
-  
+
   # Use the pathway directory defined in project structure
   pathway_dir <- project_dirs[[dir_key]]$pathway_dir
   enrichment_dir <- file.path(pathway_dir, "string_db")
   enrichment_cache_file <- file.path(enrichment_dir, "all_enrichment_results.rds")
   enrichment_tsv_file <- file.path(enrichment_dir, "all_enrichment_results.tsv")
-  
+
   # Check if cache exists and should be used
   if (file.exists(enrichment_cache_file) && !force_refresh) {
     message("Loading cached enrichment results from: ", enrichment_cache_file)
@@ -127,38 +126,41 @@ runStringDbEnrichmentAllContrasts <- function(de_analysis_results_list,
     message("Loaded ", nrow(all_enrichment_results), " rows from cached enrichment results.")
     return(all_enrichment_results)
   }
-  
+
   # Run enrichment for all contrasts
   message("Running STRING DB enrichment for all contrasts...")
   message("Number of contrasts to process: ", length(de_analysis_results_list))
-  
+
   list_of_contrasts <- names(de_analysis_results_list)
-  
+
   output_group_tables_list <- purrr::map(list_of_contrasts, function(contrast_name) {
     message("Processing contrast: ", contrast_name)
-    
+
     input_table <- de_analysis_results_list[[contrast_name]]$de_proteins_long
     result_label <- stringr::str_split_i(contrast_name, "=", 1)
-    
+
     # Run enrichment for this contrast
-    tryCatch({
-      runOneStringDbRankEnrichment(
-        input_table = input_table,
-        result_label = result_label,
-        pathway_dir = pathway_dir,
-        api_key = api_key,
-        species = species,
-        ge_fdr = ge_fdr,
-        ge_enrichment_rank_direction = ge_enrichment_rank_direction,
-        polling_interval_seconds = polling_interval_seconds,
-        max_polling_attempts = max_polling_attempts
-      )
-    }, error = function(e) {
-      message("Error processing contrast ", contrast_name, ": ", e$message)
-      return(NULL)
-    })
+    tryCatch(
+      {
+        runOneStringDbRankEnrichment(
+          input_table = input_table,
+          result_label = result_label,
+          pathway_dir = pathway_dir,
+          api_key = api_key,
+          species = species,
+          ge_fdr = ge_fdr,
+          ge_enrichment_rank_direction = ge_enrichment_rank_direction,
+          polling_interval_seconds = polling_interval_seconds,
+          max_polling_attempts = max_polling_attempts
+        )
+      },
+      error = function(e) {
+        message("Error processing contrast ", contrast_name, ": ", e$message)
+        return(NULL)
+      }
+    )
   })
-  
+
   # Name the list elements
   if (is.null(comparison_name_transform)) {
     # Default transformation: extract first part before underscore and add "(M-C)"
@@ -168,20 +170,20 @@ runStringDbEnrichmentAllContrasts <- function(de_analysis_results_list,
   } else {
     names(output_group_tables_list) <- purrr::map_chr(list_of_contrasts, comparison_name_transform)
   }
-  
+
   # Combine all results
   output_group_main_table <- dplyr::bind_rows(output_group_tables_list, .id = "comparison")
-  
+
   # Create directory if it doesn't exist
   dir.create(enrichment_dir, showWarnings = FALSE, recursive = TRUE)
-  
+
   # Save results
   message("Saving enrichment results to: ", enrichment_cache_file)
   saveRDS(output_group_main_table, file = enrichment_cache_file)
   vroom::vroom_write(output_group_main_table, enrichment_tsv_file)
-  
+
   message("Enrichment analysis complete. Processed ", nrow(output_group_main_table), " total results.")
-  
+
   return(output_group_main_table)
 }
 
@@ -278,19 +280,18 @@ runStringDbEnrichmentAllContrasts <- function(de_analysis_results_list,
 #'
 #' @export
 plotStringDbEnrichmentResults <- function(project_dirs,
-                                         omic_type,
-                                         experiment_label,
-                                         enrichment_results = NULL,
-                                         top_n_terms = 5,
-                                         word_limit = 7,
-                                         plot_width = 16,
-                                         plot_height = 12,
-                                         plot_dpi = 300,
-                                         fdr_threshold = 0.05,
-                                         save_plots = TRUE,
-                                         return_plots = TRUE,
-                                         print_plots = TRUE) {
-  
+                                          omic_type,
+                                          experiment_label,
+                                          enrichment_results = NULL,
+                                          top_n_terms = 5,
+                                          word_limit = 7,
+                                          plot_width = 16,
+                                          plot_height = 12,
+                                          plot_dpi = 300,
+                                          fdr_threshold = 0.05,
+                                          save_plots = TRUE,
+                                          return_plots = TRUE,
+                                          print_plots = TRUE) {
   # Load required packages
   if (!requireNamespace("dplyr", quietly = TRUE)) {
     stop("Package 'dplyr' is required but not installed.")
@@ -307,23 +308,23 @@ plotStringDbEnrichmentResults <- function(project_dirs,
   if (!requireNamespace("purrr", quietly = TRUE)) {
     stop("Package 'purrr' is required but not installed.")
   }
-  
+
   # Validate inputs
   if (!is.list(project_dirs)) {
     stop("project_dirs must be a list")
   }
-  
+
   # Construct directory paths
   dir_key <- paste0(omic_type, "_", experiment_label)
   if (!dir_key %in% names(project_dirs)) {
     stop(paste("project_dirs does not contain element:", dir_key))
   }
-  
+
   # Use the pathway directory defined in project structure
   pathway_dir <- project_dirs[[dir_key]]$pathway_dir
   enrichment_dir <- file.path(pathway_dir, "string_db")
   enrichment_cache_file <- file.path(enrichment_dir, "all_enrichment_results.rds")
-  
+
   # Load enrichment results if not provided
   if (is.null(enrichment_results)) {
     if (!file.exists(enrichment_cache_file)) {
@@ -331,7 +332,7 @@ plotStringDbEnrichmentResults <- function(project_dirs,
       message("Please run runStringDbEnrichmentAllContrasts() first.")
       return(NULL)
     }
-    
+
     message("Loading enrichment results from: ", enrichment_cache_file)
     all_enrichment_results <- readRDS(enrichment_cache_file)
     message("Loaded ", nrow(all_enrichment_results), " rows from cached enrichment results.")
@@ -339,74 +340,91 @@ plotStringDbEnrichmentResults <- function(project_dirs,
     all_enrichment_results <- enrichment_results
     message("Using provided enrichment results with ", nrow(all_enrichment_results), " rows.")
   }
-  
+
+  # Check for empty results
+  cat(sprintf("DEBUG_STR: Checking results. Rows: %d, Cols: %d\n", nrow(all_enrichment_results), ncol(all_enrichment_results)))
+  cat(sprintf("DEBUG_STR: Columns: %s\n", paste(colnames(all_enrichment_results), collapse = ", ")))
+
+  if (nrow(all_enrichment_results) == 0) {
+    message("No enrichment results found (0 rows). Skipping plotting.")
+    return(NULL)
+  }
+
+  # Check for required columns
+  required_cols <- c("comparison", "category", "enrichmentScore", "falseDiscoveryRate", "termID")
+  missing_cols <- setdiff(required_cols, colnames(all_enrichment_results))
+  if (length(missing_cols) > 0) {
+    warning("Enrichment results missing required columns: ", paste(missing_cols, collapse = ", "))
+    return(NULL)
+  }
+
   # Filter to top N terms per category and comparison
   message("Filtering to top ", top_n_terms, " terms per category and comparison...")
-  
+
   sorted_enrichment_results <- all_enrichment_results |>
     dplyr::group_by(comparison, category) |>
     dplyr::arrange(comparison, category, desc(enrichmentScore), falseDiscoveryRate) |>
     dplyr::mutate(rank = dplyr::row_number()) |>
     dplyr::ungroup()
-  
+
   included_functional_category_and_term <- sorted_enrichment_results |>
     dplyr::filter(rank <= top_n_terms & falseDiscoveryRate < fdr_threshold) |>
     dplyr::distinct(category, termID)
-  
+
   filtered_enrichment_results <- sorted_enrichment_results |>
     dplyr::inner_join(included_functional_category_and_term, by = c("category", "termID")) |>
     dplyr::arrange(comparison, category, desc(enrichmentScore), falseDiscoveryRate)
-  
+
   message("Filtered results contain ", nrow(filtered_enrichment_results), " rows.")
-  
+
   # Save filtered results
   filtered_results_file <- file.path(enrichment_dir, "filtered_enrichment_results.tsv")
   message("Saving filtered results to: ", filtered_results_file)
   vroom::vroom_write(filtered_enrichment_results, filtered_results_file)
-  
+
   # Define category groups for splitting plots
   fig1_pattern <- "GO Component|GO Function|GO Process|Gene Ontology"
   fig2_categories <- c("STRING clusters", "Reactome", "KEGG", "WikiPathways")
   fig3_categories <- c("InterPro", "Pfam", "SMART")
-  
+
   # Filter data for each figure
   message("Organizing results by category groups...")
-  
+
   results_fig1 <- filtered_enrichment_results |>
     dplyr::filter(stringr::str_detect(category, fig1_pattern))
-  
+
   results_fig2 <- filtered_enrichment_results |>
     dplyr::filter(category %in% fig2_categories)
-  
+
   results_fig3 <- filtered_enrichment_results |>
     dplyr::filter(category %in% fig3_categories)
-  
+
   results_fig4 <- filtered_enrichment_results |>
     dplyr::filter(!stringr::str_detect(category, fig1_pattern) &
-                    !category %in% fig2_categories &
-                    !category %in% fig3_categories)
-  
+      !category %in% fig2_categories &
+      !category %in% fig3_categories)
+
   message("Category distribution:")
   message("  GO terms: ", nrow(results_fig1), " rows")
   message("  Pathways: ", nrow(results_fig2), " rows")
   message("  Protein domains: ", nrow(results_fig3), " rows")
   message("  Others: ", nrow(results_fig4), " rows")
-  
+
   # Helper function to generate, save, and optionally print each plot
   plotAndSave <- function(data, filename_suffix, word_limit_val, width, height, dpi) {
     if (nrow(data) == 0) {
       message("No enrichment results to plot for ", filename_suffix)
       return(NULL)
     }
-    
+
     message("Generating enrichment plot for ", filename_suffix, "...")
-    
+
     enrichment_plot <- printStringDbFunctionalEnrichmentBarGraph(data, word_limit = word_limit_val)
-    
+
     if (save_plots) {
       output_filename <- file.path(enrichment_dir, paste0("enrichment_summary_", filename_suffix))
       message("Saving plot to: ", output_filename, ".{png,pdf}")
-      
+
       purrr::walk(c(".png", ".pdf"), function(ext) {
         ggplot2::ggsave(
           plot = enrichment_plot,
@@ -417,17 +435,17 @@ plotStringDbEnrichmentResults <- function(project_dirs,
         )
       })
     }
-    
+
     if (print_plots) {
       print(enrichment_plot)
     }
-    
+
     return(enrichment_plot)
   }
-  
+
   # Generate all plots
   message("\n=== Generating Plots ===")
-  
+
   plot_go_terms <- plotAndSave(
     data = results_fig1,
     filename_suffix = "go_terms",
@@ -436,7 +454,7 @@ plotStringDbEnrichmentResults <- function(project_dirs,
     height = plot_height,
     dpi = plot_dpi
   )
-  
+
   plot_pathways <- plotAndSave(
     data = results_fig2,
     filename_suffix = "pathways",
@@ -445,7 +463,7 @@ plotStringDbEnrichmentResults <- function(project_dirs,
     height = plot_height,
     dpi = plot_dpi
   )
-  
+
   plot_protein_domains <- plotAndSave(
     data = results_fig3,
     filename_suffix = "protein_domains",
@@ -454,7 +472,7 @@ plotStringDbEnrichmentResults <- function(project_dirs,
     height = plot_height,
     dpi = plot_dpi
   )
-  
+
   plot_others <- plotAndSave(
     data = results_fig4,
     filename_suffix = "others",
@@ -463,14 +481,14 @@ plotStringDbEnrichmentResults <- function(project_dirs,
     height = plot_height,
     dpi = plot_dpi
   )
-  
+
   message("\n=== Plotting Complete ===")
-  
+
   # Prepare return list
   result_list <- list(
     filtered_results = filtered_enrichment_results
   )
-  
+
   if (return_plots) {
     result_list$plots <- list(
       go_terms = plot_go_terms,
@@ -479,7 +497,6 @@ plotStringDbEnrichmentResults <- function(project_dirs,
       others = plot_others
     )
   }
-  
+
   return(result_list)
 }
-

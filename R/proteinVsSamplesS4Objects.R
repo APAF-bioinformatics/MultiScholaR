@@ -204,7 +204,7 @@ setMethod(
 
     peptide_normalised_pif_cln <- peptideIntensityFilteringHelper(data_long_cln,
       min_peptide_intensity_threshold = min_peptide_intensity_threshold,
-      proteins_proportion_of_samples_below_cutoff = proteins_proportion_of_samples_below_cutoff,
+      peptides_proportion_of_samples_below_cutoff = proteins_proportion_of_samples_below_cutoff,
       protein_id_column = !!sym(theObject@protein_id_column),
       peptide_sequence_column = temp,
       peptide_quantity_column = log_values,

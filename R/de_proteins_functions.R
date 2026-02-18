@@ -1339,7 +1339,11 @@ plotOneVolcanoNoVerticalLines <- function(input_data, input_title,
                                           log_fc_column = logFC,
                                           points_type_label = label,
                                           points_color = colour,
-                                          q_val_thresh = 0.05) {
+                                          q_val_thresh = 0.05,
+                                          x_axis_label = expression(Log[2](`fold-change`)),
+                                          color_up = NULL,
+                                          color_down = NULL,
+                                          color_null = NULL) {
   colour_tbl <- input_data |>
     distinct({{ points_type_label }}, {{ points_color }})
 
@@ -1364,13 +1368,41 @@ plotOneVolcanoNoVerticalLines <- function(input_data, input_title,
     )) +
     geom_point()
 
+  # Override colors if provided
+  if (!is.null(color_up) || !is.null(color_down) || !is.null(color_null)) {
+    # Create a custom color map based on label content
+    # This assumes labels contain "Significant" and potentially direction or just "Significant"
+    # Current implementation in prepareDataForVolcanoPlot/other functions creates "Significant" vs "Not sig"
+    # or "Significant and Up", "Significant and Down", etc.
+
+    # We'll try to map common label patterns to the provided colors
+
+    # Default fallback
+    custom_colors <- avail_colours
+
+    # Helper to safely set color
+    set_color <- function(pattern, color_val) {
+      matches <- grep(pattern, names(avail_colours), value = TRUE)
+      if (length(matches) > 0 && !is.null(color_val)) {
+        for (m in matches) custom_colors[m] <<- color_val
+      }
+    }
+
+    set_color("Not sig", color_null)
+    set_color("Significant", color_up) # Default for generic significant
+    set_color("Up", color_up)
+    set_color("Down", color_down)
+
+    avail_colours <- custom_colors
+  }
+
   volcano_plot <- volcano_plot +
     scale_colour_manual(values = avail_colours) +
     # geom_vline(xintercept = 1, colour = "black", size = 0.2) +
     # geom_vline(xintercept = -1, colour = "black", size = 0.2) +
     geom_hline(yintercept = -log10(q_val_thresh)) +
     theme_bw() +
-    xlab(expression(Log[2](`fold-change`))) +
+    xlab(x_axis_label) +
     ylab(expression(-log[10](FDR))) +
     labs(title = input_title) + # Remove legend title
     theme(legend.title = element_blank()) +
@@ -1413,15 +1445,23 @@ printOneVolcanoPlotWithProteinLabel <- function(
   fdr_column = fdr_qvalue,
   log2FC_column = log2FC,
   input_title = "Proteomics",
+  x_axis_label = "log2 fold change",
   include_protein_label = TRUE,
-  max.overlaps = 20
+  label_top_n = NULL,
+  max.overlaps = 20,
+  color_up = "purple",
+  color_down = "purple",
+  color_null = "black"
 ) {
+  # If label_top_n is provided, use it instead of number_of_genes
+  genes_to_label <- if (!is.null(label_top_n)) label_top_n else number_of_genes
+
   proteomics_volcano_tbl <- prepareDataForVolcanoPlot(input_table,
     protein_id_column = {{ protein_id_column }},
     uniprot_table = uniprot_table,
     uniprot_protein_id_column = {{ uniprot_protein_id_column }},
     gene_name_column = {{ gene_name_column }},
-    number_of_genes = number_of_genes,
+    number_of_genes = genes_to_label,
     fdr_threshold = fdr_threshold,
     fdr_column = {{ fdr_column }},
     log2FC_column = {{ log2FC_column }}
@@ -1429,11 +1469,15 @@ printOneVolcanoPlotWithProteinLabel <- function(
 
   proteomics_volcano_plot <- plotOneVolcanoNoVerticalLines(proteomics_volcano_tbl,
     input_title = input_title,
+    x_axis_label = x_axis_label,
     log_q_value_column = lqm,
     log_fc_column = log2FC,
     points_type_label = label,
     points_color = colour,
-    q_val_thresh = fdr_threshold
+    q_val_thresh = fdr_threshold,
+    color_up = color_up,
+    color_down = color_down,
+    color_null = color_null
   )
 
   proteomics_volcano_plot_with_proteins_label <- proteomics_volcano_plot
