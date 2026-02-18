@@ -153,6 +153,9 @@ deAnalysisWrapperFunction <- function(
 
     # Generate friendly names and full format
     full_format_strings <- sapply(raw_contrasts, function(contrast_string) {
+      if (grepl("=", contrast_string)) {
+        return(contrast_string)
+      }
       # Remove "group" prefixes if present for friendly name
       clean_string <- gsub("^group", "", contrast_string)
       clean_string <- gsub("-group", "-", clean_string)

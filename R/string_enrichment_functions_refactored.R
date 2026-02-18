@@ -286,6 +286,7 @@ plotStringDbEnrichmentResults <- function(project_dirs,
                                          plot_width = 16,
                                          plot_height = 12,
                                          plot_dpi = 300,
+                                         fdr_threshold = 0.05,
                                          save_plots = TRUE,
                                          return_plots = TRUE,
                                          print_plots = TRUE) {
@@ -344,17 +345,17 @@ plotStringDbEnrichmentResults <- function(project_dirs,
   
   sorted_enrichment_results <- all_enrichment_results |>
     dplyr::group_by(comparison, category) |>
-    dplyr::arrange(comparison, category, falseDiscoveryRate, desc(enrichmentScore)) |>
+    dplyr::arrange(comparison, category, desc(enrichmentScore), falseDiscoveryRate) |>
     dplyr::mutate(rank = dplyr::row_number()) |>
     dplyr::ungroup()
   
   included_functional_category_and_term <- sorted_enrichment_results |>
-    dplyr::filter(rank <= top_n_terms) |>
+    dplyr::filter(rank <= top_n_terms & falseDiscoveryRate < fdr_threshold) |>
     dplyr::distinct(category, termID)
   
   filtered_enrichment_results <- sorted_enrichment_results |>
     dplyr::inner_join(included_functional_category_and_term, by = c("category", "termID")) |>
-    dplyr::arrange(comparison, category, falseDiscoveryRate, desc(enrichmentScore))
+    dplyr::arrange(comparison, category, desc(enrichmentScore), falseDiscoveryRate)
   
   message("Filtered results contain ", nrow(filtered_enrichment_results), " rows.")
   
