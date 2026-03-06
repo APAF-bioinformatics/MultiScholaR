@@ -1303,7 +1303,7 @@ setMethod(f = "outputDeResultsAllContrasts",
       
       message(sprintf("   outputDeResultsAllContrasts: Also wrote Excel: %s", excel_filename))
       
-      # âœ… NEW: Generate volcano plot for this contrast
+      # ??? NEW: Generate volcano plot for this contrast
       message(sprintf("   outputDeResultsAllContrasts: Generating volcano plot for contrast: %s", contrast_name))
       
       # Extract parameters - try direct access first, then use checkParams
@@ -1371,7 +1371,7 @@ setMethod(f = "outputDeResultsAllContrasts",
     }
   }
   
-  # âœ… NEW: Generate combined multi-page PDF with all volcano plots
+  # ??? NEW: Generate combined multi-page PDF with all volcano plots
   message("   outputDeResultsAllContrasts: Creating combined volcano plots PDF...")
   
   volcano_dir <- file.path(publication_graphs_dir, "Volcano_Plots")
@@ -1633,9 +1633,9 @@ setMethod( f = "removeRowsWithMissingValuesPercent"
                                   , max_groups_percentage_cutoff = NULL
                                   , proteins_intensity_cutoff_percentile = NULL) {
 
-             message("╔═══════════════════════════════════════════════════════════════════════════╗")
-             message("║  DEBUG66: Entering removeRowsWithMissingValuesPercent S4 Method          ║")
-             message("╚═══════════════════════════════════════════════════════════════════════════╝")
+             message("+===========================================================================+")
+             message("|  DEBUG66: Entering removeRowsWithMissingValuesPercent S4 Method          |")
+             message("+===========================================================================+")
              flush.console()
              
              # Memory tracking - Entry checkpoint
@@ -1887,9 +1887,9 @@ setMethod( f = "removeRowsWithMissingValuesPercent"
              # Memory tracking - Exit checkpoint
              reportMemoryDelta(entry_mem, "TOTAL removeRowsWithMissingValuesPercent", context = "removeRowsWithMissingValuesPercent")
              
-             message("╔═══════════════════════════════════════════════════════════════════════════╗")
-             message("║  DEBUG66: Exiting removeRowsWithMissingValuesPercent S4 Method           ║")
-             message("╚═══════════════════════════════════════════════════════════════════════════╝")
+             message("+===========================================================================+")
+             message("|  DEBUG66: Exiting removeRowsWithMissingValuesPercent S4 Method           |")
+             message("+===========================================================================+")
              flush.console()
              return(theObject)
 
@@ -1914,9 +1914,9 @@ setMethod(f = "chooseBestProteinAccession"
                               , replace_zero_with_na = NULL
                               , aggregation_method = NULL) {
             
-            cat("\n\n╔═══════════════════════════════════════════════════════════════════════════╗\n")
-            cat("║           ENTERING chooseBestProteinAccession (DEBUG66)               ║\n")
-            cat("╚═══════════════════════════════════════════════════════════════════════════╝\n\n")
+            cat("\n\n+===========================================================================+\n")
+            cat("|           ENTERING chooseBestProteinAccession (DEBUG66)               |\n")
+            cat("+===========================================================================+\n\n")
 
             protein_quant_table <- theObject@protein_quant_table
             protein_id_column <- theObject@protein_id_column
@@ -2067,9 +2067,9 @@ setMethod(f = "chooseBestProteinAccession"
             cat(sprintf("   Final protein_id_table dimensions: %d rows x %d cols\n", nrow(theObject@protein_id_table), ncol(theObject@protein_id_table)))
             cat(sprintf("   First 5 final Protein IDs: %s\n", paste(head(theObject@protein_quant_table[[protein_id_column]], 5), collapse = ", ")))
             cat("\n")
-            cat("╔═══════════════════════════════════════════════════════════════════════════╗\n")
-            cat("║           EXITING chooseBestProteinAccession (DEBUG66)                ║\n")
-            cat("╚═══════════════════════════════════════════════════════════════════════════╝\n\n")
+            cat("+===========================================================================+\n")
+            cat("|           EXITING chooseBestProteinAccession (DEBUG66)                |\n")
+            cat("+===========================================================================+\n\n")
 
             return(theObject)
           })
@@ -2125,9 +2125,9 @@ setMethod( f = "filterSamplesByProteinCorrelationThreshold"
            , signature="ProteinQuantitativeData"
            , definition=function( theObject, pearson_correlation_per_pair = NULL, min_pearson_correlation_threshold = NULL  ) {
 
-             message("╔═══════════════════════════════════════════════════════════════════════════╗")
-             message("║  DEBUG66: Entering filterSamplesByProteinCorrelationThreshold             ║")
-             message("╚═══════════════════════════════════════════════════════════════════════════╝")
+             message("+===========================================================================+")
+             message("|  DEBUG66: Entering filterSamplesByProteinCorrelationThreshold             |")
+             message("+===========================================================================+")
              
              # Memory tracking - Entry
              entry_mem <- checkMemoryBoth("Entry", context = "filterSamplesByProteinCorrelationThreshold")
@@ -2170,9 +2170,9 @@ setMethod( f = "filterSamplesByProteinCorrelationThreshold"
              # Memory tracking - Exit
              reportMemoryDelta(entry_mem, "TOTAL filterSamplesByProteinCorrelationThreshold", context = "filterSamplesByProteinCorrelationThreshold")
              
-             message("╔═══════════════════════════════════════════════════════════════════════════╗")
-             message("║  DEBUG66: Exiting filterSamplesByProteinCorrelationThreshold              ║")
-             message("╚═══════════════════════════════════════════════════════════════════════════╝")
+             message("+===========================================================================+")
+             message("|  DEBUG66: Exiting filterSamplesByProteinCorrelationThreshold              |")
+             message("+===========================================================================+")
 
              theObject
              })
@@ -3014,9 +3014,9 @@ setMethod(f="pearsonCorForSamplePairs"
           , signature="ProteinQuantitativeData"
           , definition=function( theObject, tech_rep_remove_regex = NULL, correlation_group = NA, exclude_pool_samples = TRUE ) {
             
-            message("╔═══════════════════════════════════════════════════════════════════════════╗")
-            message("║  DEBUG66: Entering pearsonCorForSamplePairs                               ║")
-            message("╚═══════════════════════════════════════════════════════════════════════════╝")
+            message("+===========================================================================+")
+            message("|  DEBUG66: Entering pearsonCorForSamplePairs                               |")
+            message("+===========================================================================+")
             
             # Memory tracking - Entry
             entry_mem <- checkMemoryBoth("Entry", context = "pearsonCorForSamplePairs")
@@ -3131,9 +3131,9 @@ setMethod(f="pearsonCorForSamplePairs"
             # Memory tracking - Exit
             reportMemoryDelta(entry_mem, "TOTAL pearsonCorForSamplePairs", context = "pearsonCorForSamplePairs")
             
-            message("╔═══════════════════════════════════════════════════════════════════════════╗")
-            message("║  DEBUG66: Exiting pearsonCorForSamplePairs                                ║")
-            message("╚═══════════════════════════════════════════════════════════════════════════╝")
+            message("+===========================================================================+")
+            message("|  DEBUG66: Exiting pearsonCorForSamplePairs                                |")
+            message("+===========================================================================+")
             
             # Ensure the returned dataframe has the expected columns for the next step
             # filterSamplesByProteinCorrelationThreshold expects:

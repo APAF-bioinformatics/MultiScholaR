@@ -798,12 +798,12 @@ mod_prot_de_server <- function(id, workflow_data, experiment_paths, omic_type, e
     output$de_status <- shiny::renderText({
       if (de_data$analysis_complete) {
         paste(
-          "✅ Analysis Complete\n",
+          "[OK] Analysis Complete\n",
           sprintf("Contrasts analyzed: %d\n", length(de_data$contrasts_available)),
           "Results available in all tabs"
         )
       } else {
-        "⏳ Waiting for analysis...\nClick 'Run DE Analysis' to start"
+        "[WAITING] Waiting for analysis...\nClick 'Run DE Analysis' to start"
       }
     })
 
@@ -897,7 +897,7 @@ mod_prot_de_server <- function(id, workflow_data, experiment_paths, omic_type, e
               }
             }
 
-            # ✅ NEW: Load UniProt annotations if available
+            # [OK] NEW: Load UniProt annotations if available
             shiny::incProgress(0.05, detail = "Loading UniProt annotations...")
 
             cat("*** LOAD: Checking for UniProt annotations ***\n")
@@ -947,7 +947,7 @@ mod_prot_de_server <- function(id, workflow_data, experiment_paths, omic_type, e
               }
             )
 
-            # ✅ NEW: Restore FASTA metadata for complete audit trail
+            # [OK] NEW: Restore FASTA metadata for complete audit trail
             cat("*** LOAD: Restoring FASTA metadata ***\n")
             if (!is.null(session_data$fasta_metadata)) {
               workflow_data$fasta_metadata <- session_data$fasta_metadata
@@ -960,7 +960,7 @@ mod_prot_de_server <- function(id, workflow_data, experiment_paths, omic_type, e
               cat("*** LOAD: No FASTA metadata in session data ***\n")
             }
 
-            # ✅ NEW: Restore accession cleanup results
+            # [OK] NEW: Restore accession cleanup results
             cat("*** LOAD: Restoring accession cleanup results ***\n")
             if (!is.null(session_data$accession_cleanup_results)) {
               workflow_data$accession_cleanup_results <- session_data$accession_cleanup_results
@@ -973,7 +973,7 @@ mod_prot_de_server <- function(id, workflow_data, experiment_paths, omic_type, e
               cat("*** LOAD: No accession cleanup results in session data ***\n")
             }
 
-            # ✅ NEW: Restore complete RUV optimization results
+            # [OK] NEW: Restore complete RUV optimization results
             cat("*** LOAD: Restoring complete RUV optimization results ***\n")
             if (!is.null(session_data$ruv_optimization_result)) {
               workflow_data$ruv_optimization_result <- session_data$ruv_optimization_result
@@ -986,7 +986,7 @@ mod_prot_de_server <- function(id, workflow_data, experiment_paths, omic_type, e
               cat("*** LOAD: No complete RUV optimization results in session data ***\n")
             }
 
-            # ✅ NEW: Restore QC parameters
+            # [OK] NEW: Restore QC parameters
             cat("*** LOAD: Restoring QC parameters ***\n")
             if (!is.null(session_data$qc_params)) {
               workflow_data$qc_params <- session_data$qc_params
@@ -996,7 +996,7 @@ mod_prot_de_server <- function(id, workflow_data, experiment_paths, omic_type, e
               cat("*** LOAD: No QC parameters in session data ***\n")
             }
 
-            # ✅ NEW: Restore mixed species FASTA analysis metadata for enrichment filtering
+            # [OK] NEW: Restore mixed species FASTA analysis metadata for enrichment filtering
             cat("*** LOAD: Restoring mixed species analysis metadata ***\n")
             if (!is.null(session_data$mixed_species_analysis)) {
               workflow_data$mixed_species_analysis <- session_data$mixed_species_analysis
@@ -1217,7 +1217,7 @@ mod_prot_de_server <- function(id, workflow_data, experiment_paths, omic_type, e
                   )
                 }
 
-                # ✅ NEW: Store UI parameters in @args for session summary
+                # [OK] NEW: Store UI parameters in @args for session summary
                 cat("   DE ANALYSIS Step: Storing UI parameters in S4 @args\n")
                 if (is.null(de_data$current_s4_object@args$deAnalysisUI)) {
                   de_data$current_s4_object@args$deAnalysisUI <- list()
@@ -1230,7 +1230,7 @@ mod_prot_de_server <- function(id, workflow_data, experiment_paths, omic_type, e
                   timestamp = Sys.time()
                 )
 
-                # ✅ NEW: Also store UI parameters in workflow_data for sessionSummary
+                # [OK] NEW: Also store UI parameters in workflow_data for sessionSummary
                 workflow_data$de_ui_params <- list(
                   q_value_threshold = input$de_q_val_thresh,
                   log_fold_change_cutoff = input$treat_lfc_cutoff,
@@ -1240,7 +1240,7 @@ mod_prot_de_server <- function(id, workflow_data, experiment_paths, omic_type, e
                 )
                 cat("   DE ANALYSIS Step: Stored UI parameters in workflow_data for sessionSummary\n")
 
-                # ✅ NEW: Update R6 state manager with UI parameters
+                # [OK] NEW: Update R6 state manager with UI parameters
                 cat("   DE ANALYSIS Step: Updating R6 state with DE UI parameters\n")
                 tryCatch(
                   {
@@ -1445,14 +1445,14 @@ mod_prot_de_server <- function(id, workflow_data, experiment_paths, omic_type, e
               }
 
               # Create prominent warning modal dialog
-              warning_title <- paste0("⚠️ IMPORTANT: Statistical Analysis Warning")
+              warning_title <- paste0("[WARNING] IMPORTANT: Statistical Analysis Warning")
               warning_body <- paste0(
                 "<div style='font-size: 14px; line-height: 1.6;'>",
                 "<p><strong>The q-value calculation failed for ", length(all_qvalue_warnings), " contrast(s):</strong></p>",
                 "<p style='margin-left: 20px;'>", paste(friendly_failed_names, collapse = ", "), "</p>",
                 "<p>The analysis used <strong>Benjamini-Hochberg FDR correction (p.adjust)</strong> instead.</p>",
                 "<hr>",
-                "<p><strong>⚠️ INTERPRET RESULTS WITH CAUTION:</strong></p>",
+                "<p><strong>[WARNING] INTERPRET RESULTS WITH CAUTION:</strong></p>",
                 "<ul style='margin-left: 20px;'>",
                 "<li>The p-value distribution may be problematic</li>",
                 "<li>Results may be less reliable than normal</li>",
@@ -1487,7 +1487,7 @@ mod_prot_de_server <- function(id, workflow_data, experiment_paths, omic_type, e
                 once = TRUE
               )
 
-              cat(sprintf("   DE ANALYSIS Step: ⚠️ qvalue() failed for %d contrast(s) - user notification shown\n", length(all_qvalue_warnings)))
+              cat(sprintf("   DE ANALYSIS Step: [WARNING] qvalue() failed for %d contrast(s) - user notification shown\n", length(all_qvalue_warnings)))
             }
 
             # Update workflow data
@@ -1498,7 +1498,7 @@ mod_prot_de_server <- function(id, workflow_data, experiment_paths, omic_type, e
             updated_status$enrichment_analysis <- "pending"
             workflow_data$tab_status <- updated_status
 
-            # ✅ FIXED: Write DE results to disk using new S4 method
+            # [OK] FIXED: Write DE results to disk using new S4 method
             shiny::incProgress(0.9, detail = "Writing results to disk...")
 
             cat("   DE ANALYSIS Step: Writing DE results to disk for enrichment analysis...\n")
@@ -1557,7 +1557,7 @@ mod_prot_de_server <- function(id, workflow_data, experiment_paths, omic_type, e
                   cat("   DE ANALYSIS Step: ERROR - outputDeResultsAllContrasts returned FALSE\n")
                 }
 
-                # ✅ REMOVED: Per-contrast outputDeAnalysisResults calls - not needed!
+                # [OK] REMOVED: Per-contrast outputDeAnalysisResults calls - not needed!
                 # outputDeResultsAllContrasts already handles everything including volcano plots
                 cat("   DE ANALYSIS Step: All output handled by outputDeResultsAllContrasts\n")
               },

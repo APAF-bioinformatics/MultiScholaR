@@ -314,7 +314,7 @@ mod_metab_qc_duplicates_server <- function(id, workflow_data, omic_type, experim
                     , "Per-Assay Results:"
                     , paste(sapply(names(stats_list), function(name) {
                         s <- stats_list[[name]]
-                        sprintf("  %s: %d → %d rows (removed %d duplicates)"
+                        sprintf("  %s: %d -> %d rows (removed %d duplicates)"
                             , name, s$original, s$resolved, s$removed)
                     }), collapse = "\n")
                     , ""

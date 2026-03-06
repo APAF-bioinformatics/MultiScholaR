@@ -915,9 +915,9 @@ setMethod(f = "plotDensity",
 setMethod(f = "pearsonCorForSamplePairs",
           signature = "MetaboliteAssayData",
           definition = function(theObject, tech_rep_remove_regex = NULL, correlation_group = NA) {
-            message("╔═══════════════════════════════════════════════════════════════════════════╗")
-            message("║  DEBUG66: Entering pearsonCorForSamplePairs (MetaboliteAssayData)        ║")
-            message("╚═══════════════════════════════════════════════════════════════════════════╝")
+            message("+===========================================================================+")
+            message("|  DEBUG66: Entering pearsonCorForSamplePairs (MetaboliteAssayData)        |")
+            message("+===========================================================================+")
             
             # --- Input Validation ---
             # tech_rep_remove_regex can be NULL, checked inside helper/later use
@@ -1152,9 +1152,9 @@ setMethod(f = "pearsonCorForSamplePairs",
             correlation_results_list <- correlation_results_list[!sapply(correlation_results_list, is.null)]
             
             message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Finished. Returning %d assay results (removed %d NULL)", length(correlation_results_list), length(assay_list) - non_null_count_before))
-            message("╔═══════════════════════════════════════════════════════════════════════════╗")
-            message("║  DEBUG66: Exiting pearsonCorForSamplePairs                               ║")
-            message("╚═══════════════════════════════════════════════════════════════════════════╝")
+            message("+===========================================================================+")
+            message("|  DEBUG66: Exiting pearsonCorForSamplePairs                               |")
+            message("+===========================================================================+")
 
             return(correlation_results_list)
            })
@@ -1662,9 +1662,9 @@ setMethod(f = "getNegCtrlMetabAnova",
                                 ruv_qval_cutoff = NULL,
                                 ruv_fdr_method = NULL) {
 
-            message("╔═══════════════════════════════════════════════════════════════════════════╗")
-            message("║  DEBUG66: Entering getNegCtrlMetabAnova (MetaboliteAssayData)             ║")
-            message("╚═══════════════════════════════════════════════════════════════════════════╝")
+            message("+===========================================================================+")
+            message("|  DEBUG66: Entering getNegCtrlMetabAnova (MetaboliteAssayData)             |")
+            message("+===========================================================================+")
 
             assay_list <- methods::slot(theObject, "metabolite_data")
             metabolite_id_col_name <- methods::slot(theObject, "metabolite_id_column")
@@ -1954,9 +1954,9 @@ setMethod(f = "getNegCtrlMetabAnova",
             final_control_list <- control_features_list[!sapply(control_features_list, is.null)]
             
             message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Finished. Returning %d assay results.", length(final_control_list)))
-            message("╔═══════════════════════════════════════════════════════════════════════════╗")
-            message("║  DEBUG66: Exiting getNegCtrlMetabAnova                                    ║")
-            message("╚═══════════════════════════════════════════════════════════════════════════╝")
+            message("+===========================================================================+")
+            message("|  DEBUG66: Exiting getNegCtrlMetabAnova                                    |")
+            message("+===========================================================================+")
             log_info("Finished Negative Control selection for {length(final_control_list)} assay(s).")
             return(final_control_list)
           })
@@ -1975,9 +1975,9 @@ setMethod(f = "ruvCancor",
           signature = "MetaboliteAssayData",
           definition = function(theObject, ctrl = NULL, num_components_to_impute = NULL, ruv_grouping_variable = NULL) {
 
-            message("╔═══════════════════════════════════════════════════════════════════════════╗")
-            message("║  DEBUG66: Entering ruvCancor (MetaboliteAssayData)                        ║")
-            message("╚═══════════════════════════════════════════════════════════════════════════╝")
+            message("+===========================================================================+")
+            message("|  DEBUG66: Entering ruvCancor (MetaboliteAssayData)                        |")
+            message("+===========================================================================+")
 
             assay_list <- methods::slot(theObject, "metabolite_data")
             metabolite_id_col_name <- methods::slot(theObject, "metabolite_id_column")
@@ -2286,9 +2286,9 @@ setMethod(f = "ruvCancor",
             final_plots_list <- cancor_plots_list[!sapply(cancor_plots_list, is.null)]
 
             message(sprintf("   DEBUG66 [ruvCancor] Finished. Returning %d assay plots.", length(final_plots_list)))
-            message("╔═══════════════════════════════════════════════════════════════════════════╗")
-            message("║  DEBUG66: Exiting ruvCancor                                               ║")
-            message("╚═══════════════════════════════════════════════════════════════════════════╝")
+            message("+===========================================================================+")
+            message("|  DEBUG66: Exiting ruvCancor                                               |")
+            message("+===========================================================================+")
             log_info("Finished RUV Canonical Correlation plot generation for {length(final_plots_list)} assay(s).")
             return(final_plots_list)
           })
@@ -2346,9 +2346,9 @@ setMethod(f = "ruvIII_C_Varying",
                                 ruv_number_k = NULL,
                                 ctrl = NULL) {
 
-            message("╔═══════════════════════════════════════════════════════════════════════════╗")
-            message("║  DEBUG66: Entering ruvIII_C_Varying (MetaboliteAssayData)                 ║")
-            message("╚═══════════════════════════════════════════════════════════════════════════╝")
+            message("+===========================================================================+")
+            message("|  DEBUG66: Entering ruvIII_C_Varying (MetaboliteAssayData)                 |")
+            message("+===========================================================================+")
 
             assay_list <- methods::slot(theObject, "metabolite_data")
             metabolite_id_col_name <- methods::slot(theObject, "metabolite_id_column")
@@ -2812,9 +2812,9 @@ setMethod(f = "ruvIII_C_Varying",
             })
 
             message(sprintf("   DEBUG66 [ruvIII_C_Varying] RUV-III correction finished for %d assay(s).", length(final_corrected_list)))
-            message("╔═══════════════════════════════════════════════════════════════════════════╗")
-            message("║  DEBUG66: Exiting ruvIII_C_Varying                                        ║")
-            message("╚═══════════════════════════════════════════════════════════════════════════╝")
+            message("+===========================================================================+")
+            message("|  DEBUG66: Exiting ruvIII_C_Varying                                        |")
+            message("+===========================================================================+")
             log_info("RUV-III correction process finished for {length(final_corrected_list)} assay(s).")
             return(theObject)
           })
@@ -4724,9 +4724,9 @@ setMethod(f = "filterSamplesByMetaboliteCorrelationThreshold",
           signature = "MetaboliteAssayData",
           definition = function(theObject, pearson_correlation_per_pair = NULL, min_pearson_correlation_threshold = 0.5) {
             
-            message("╔═══════════════════════════════════════════════════════════════════════════╗")
-            message("║        Metabolite Sample Filtering by Correlation Threshold (S4)          ║")
-            message("╚═══════════════════════════════════════════════════════════════════════════╝")
+            message("+===========================================================================+")
+            message("|        Metabolite Sample Filtering by Correlation Threshold (S4)          |")
+            message("+===========================================================================+")
             
             if (is.null(pearson_correlation_per_pair) || !is.list(pearson_correlation_per_pair)) {
               stop("`pearson_correlation_per_pair` must be a list of correlation data frames (one per assay).")
@@ -4800,7 +4800,7 @@ setMethod(f = "filterSamplesByMetaboliteCorrelationThreshold",
               message(sprintf("Total samples removed across all assays: %d", length(samples_to_remove_unique)))
             }
             
-            message("╚═══════════════════════════════════════════════════════════════════════════╝")
+            message("+===========================================================================+")
             
             return(theObject)
           })

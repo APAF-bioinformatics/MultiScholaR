@@ -500,7 +500,7 @@ srlQvalueProteotypicPeptideCleanHelper <- function(input_table
                                              , global_q_value_column = Global.Q.Value
                                              , proteotypic_peptide_sequence_column = Proteotypic) {
 
-  # ✅ DIAGNOSTIC + DEFENSIVE: Check output column availability
+  # [OK] DIAGNOSTIC + DEFENSIVE: Check output column availability
   missing_cols <- input_matrix_column_ids[!input_matrix_column_ids %in% names(input_table)]
   
   if (length(missing_cols) > 0) {
@@ -518,7 +518,7 @@ srlQvalueProteotypicPeptideCleanHelper <- function(input_table
     stop(error_msg)
   }
   
-  # ✅ ALSO CHECK: Filter columns exist
+  # [OK] ALSO CHECK: Filter columns exist
   q_val_name <- rlang::as_name(rlang::ensym(q_value_column))
   global_q_val_name <- rlang::as_name(rlang::ensym(global_q_value_column))
   proteotypic_name <- rlang::as_name(rlang::ensym(proteotypic_peptide_sequence_column))
@@ -635,7 +635,7 @@ checkPeptideNAPercentages <- function(peptide_obj, verbose = TRUE) {
   # Print results if verbose
   if (verbose) {
     cat("\n=== Peptide Data Missing Value Analysis ===\n")
-    cat(sprintf("Dataset dimensions: %d peptides × %d samples\n", 
+    cat(sprintf("Dataset dimensions: %d peptides x %d samples\n", 
                 nrow(peptide_matrix), ncol(peptide_matrix)))
     cat(sprintf("Number of groups: %d\n", summary_stats$total_groups))
     cat(sprintf("Total missing values: %s out of %s (%.2f%%)\n", 

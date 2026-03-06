@@ -696,10 +696,10 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
           workflow_data$aa_seq_tbl_final <- aa_seq_tbl_final
           workflow_data$fasta_metadata <- fasta_metadata
           
-          # ✅ FIXED: Store in global environment for chooseBestProteinAccession to find
+          # [OK] FIXED: Store in global environment for chooseBestProteinAccession to find
           assign("aa_seq_tbl_final", aa_seq_tbl_final, envir = .GlobalEnv)
           
-          # ✅ FIXED: Save to /scripts directory for session persistence
+          # [OK] FIXED: Save to /scripts directory for session persistence
           if (!is.null(experiment_paths) && !is.null(experiment_paths$source_dir)) {
             scripts_aa_seq_path <- file.path(experiment_paths$source_dir, "aa_seq_tbl_final.RDS")
             saveRDS(aa_seq_tbl_final, scripts_aa_seq_path)
@@ -955,7 +955,7 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
         workflow_data$taxon_id <- input$taxon_id
         workflow_data$organism_name <- input$organism_name
         
-        # ✅ NEW: Initialize mixed_species_analysis as disabled when NOT using mixed species FASTA
+        # [OK] NEW: Initialize mixed_species_analysis as disabled when NOT using mixed species FASTA
         # This ensures downstream modules can reliably check this flag
         if (!isTRUE(input$mixed_species_fasta)) {
           workflow_data$mixed_species_analysis <- list(
@@ -1108,7 +1108,7 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
           )
         }
         
-        # ✅ NEW: Store mixed species analysis metadata at top-level for downstream modules
+        # [OK] NEW: Store mixed species analysis metadata at top-level for downstream modules
         # This is used by enrichment analysis module to filter proteins to target organism
         workflow_data$mixed_species_analysis <- list(
           enabled = TRUE
@@ -1225,7 +1225,7 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
       if (!is.null(workflow_data$data_tbl)) {
         return(shiny::tags$div(
           class = "alert alert-success",
-          shiny::tags$strong("✓ Data imported successfully!"),
+          shiny::tags$strong("[OK] Data imported successfully!"),
           shiny::tags$br(),
           paste("Format:", workflow_data$data_format, "| Type:", workflow_data$data_type)
         ))

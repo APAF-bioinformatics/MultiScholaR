@@ -72,7 +72,7 @@ mod_prot_enrich_ui <- function(id) {
         ),
         shiny::helpText("NCBI taxonomy ID for organism"),
         
-        # ✅ NEW: Mixed species filtering checkbox
+        # [OK] NEW: Mixed species filtering checkbox
         shiny::hr(),
         shiny::h5("Multi-Species Filtering"),
         shiny::checkboxInput(
@@ -82,7 +82,7 @@ mod_prot_enrich_ui <- function(id) {
         ),
         shiny::helpText("Enable if using mixed-species FASTA (e.g., with contaminants). Filters DE results to target organism before enrichment analysis."),
         
-        # ✅ NEW: Analysis method display
+        # [OK] NEW: Analysis method display
         shiny::h5("Analysis Method"),
         shiny::verbatimTextOutput(ns("analysis_method_display")),
         shiny::helpText("Automatically determined based on organism support"),
@@ -140,12 +140,12 @@ mod_prot_enrich_ui <- function(id) {
       )
     ),
     
-    # ✅ FIXED: Split tab structure with plot displays added
+    # [OK] FIXED: Split tab structure with plot displays added
     shiny::column(9,
       shiny::tabsetPanel(
         id = ns("enrichment_method_tabs"),
         
-        # ✅ Tab 1: gprofiler2 for supported organisms
+        # [OK] Tab 1: gprofiler2 for supported organisms
         shiny::tabPanel(
           "gprofiler2 Analysis",
           value = "gprofiler2",
@@ -188,7 +188,7 @@ mod_prot_enrich_ui <- function(id) {
             
             shiny::hr(),
             
-            # ✅ NEW: Add plot display for gprofiler2
+            # [OK] NEW: Add plot display for gprofiler2
             shiny::fluidRow(
               shiny::column(12,
                 shiny::h5("Enrichment Plot"),
@@ -212,7 +212,7 @@ mod_prot_enrich_ui <- function(id) {
           )
         ),
         
-        # ✅ Tab 2: clusterProfileR for unsupported organisms  
+        # [OK] Tab 2: clusterProfileR for unsupported organisms  
         shiny::tabPanel(
           "clusterProfileR Analysis",
           value = "clusterprofiler",
@@ -255,7 +255,7 @@ mod_prot_enrich_ui <- function(id) {
             
             shiny::hr(),
             
-            # ✅ NEW: Add plot display for clusterProfileR
+            # [OK] NEW: Add plot display for clusterProfileR
             shiny::fluidRow(
               shiny::column(12,
                 shiny::h5("Enrichment Plot"),
@@ -279,7 +279,7 @@ mod_prot_enrich_ui <- function(id) {
           )
         ),
         
-        # ✅ Tab 3: STRING-DB for protein-protein interaction networks
+        # [OK] Tab 3: STRING-DB for protein-protein interaction networks
         shiny::tabPanel(
           "STRING-DB Networks",
           value = "stringdb",
@@ -333,7 +333,7 @@ mod_prot_enrich_ui <- function(id) {
             
             shiny::hr(),
             
-            # ✅ NEW: Add plot display for STRING-DB
+            # [OK] NEW: Add plot display for STRING-DB
             shiny::fluidRow(
               shiny::column(12,
                 shiny::h5("Network Plot"),
@@ -390,13 +390,13 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
       analysis_complete = FALSE,
       current_s4_object = NULL,
       de_results_data = NULL,
-      # ✅ NEW: Separate results for each analysis method
+      # [OK] NEW: Separate results for each analysis method
       gprofiler_results = NULL,
       clusterprofiler_results = NULL,
       stringdb_results = NULL,
       analysis_method = NULL,
       organism_supported = NULL,
-      # ✅ NEW: Store results for ALL contrasts (not just selected one)
+      # [OK] NEW: Store results for ALL contrasts (not just selected one)
       all_enrichment_results = list(),
       current_contrast_results = list(),
       enrichment_plots = list()
@@ -411,7 +411,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
       }
     }, ignoreInit = TRUE, ignoreNULL = TRUE)
     
-    # ✅ NEW: Auto-set organism filter checkbox if mixed species analysis was enabled at import
+    # [OK] NEW: Auto-set organism filter checkbox if mixed species analysis was enabled at import
     shiny::observeEvent(workflow_data$mixed_species_analysis, {
       if (!is.null(workflow_data$mixed_species_analysis) && 
           isTRUE(workflow_data$mixed_species_analysis$enabled)) {
@@ -428,7 +428,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
       }
     }, ignoreInit = TRUE, ignoreNULL = TRUE)
     
-    # ✅ NEW: Organism support detection
+    # [OK] NEW: Organism support detection
     supported_organisms <- shiny::reactive({
       tibble::tribble(
         ~taxid,     ~id,            ~name,
@@ -448,7 +448,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
       )
     })
     
-    # ✅ NEW: Determine analysis method based on organism
+    # [OK] NEW: Determine analysis method based on organism
     current_analysis_method <- shiny::reactive({
       shiny::req(input$organism_taxid)
       
@@ -482,20 +482,20 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
       return(method_info)
     })
     
-    # ✅ NEW: Display analysis method
+    # [OK] NEW: Display analysis method
     output$analysis_method_display <- shiny::renderText({
       method_info <- current_analysis_method()
       
       if (method_info$supported) {
         paste(
-          "✅ SUPPORTED ORGANISM\n",
+          "[OK] SUPPORTED ORGANISM\n",
           sprintf("Method: %s\n", method_info$method),
           sprintf("Species: %s\n", method_info$species_name),
           "All enrichment methods available"
         )
       } else {
         paste(
-          "⚠️ CUSTOM ORGANISM\n",
+          "[WARNING] CUSTOM ORGANISM\n",
           sprintf("Method: %s\n", method_info$method),
           sprintf("Organism: %s\n", method_info$species_name),
           "Using UniProt GO annotations"
@@ -503,7 +503,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
       }
     })
     
-    # ✅ FIXED: Only run contrast observer when enrichment analysis is complete
+    # [OK] FIXED: Only run contrast observer when enrichment analysis is complete
     shiny::observe({
       shiny::req(input$selected_contrast)
       shiny::req(enrichment_data$analysis_complete)
@@ -591,7 +591,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
             cat(sprintf("   ENRICHMENT TAB Step: Valid states for enrichment = %s\n", paste(valid_states_for_enrichment, collapse = ", ")))
             cat(sprintf("   ENRICHMENT TAB Step: DE results available = %s\n", !is.null(workflow_data$de_analysis_results_list)))
             
-            # ✅ FIXED: Check if DE results exist (main requirement) and state is valid
+            # [OK] FIXED: Check if DE results exist (main requirement) and state is valid
             # DE analysis completion is the key requirement, not just the state name
             if (current_state %in% valid_states_for_enrichment && !is.null(workflow_data$de_analysis_results_list)) {
               
@@ -705,7 +705,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
       cat("   mod_prot_enrich_server Step: No selected_tab parameter provided - tab selection observer NOT set up\n")
     }
     
-    # ✅ NEW: Backup observer - triggers when DE results become available
+    # [OK] NEW: Backup observer - triggers when DE results become available
     # This ensures contrasts are populated even if user is already on enrichment tab
     shiny::observeEvent(workflow_data$de_analysis_results_list, {
       cat("*** ENRICHMENT: DE results detected - updating contrasts ***\n")
@@ -801,7 +801,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
         stringdb_count <- if (!is.null(enrichment_data$stringdb_results)) nrow(enrichment_data$stringdb_results) else 0
         
         paste(
-          "✅ Analysis Complete\n",
+          "[OK] Analysis Complete\n",
           sprintf("Method: %s\n", method_info$method),
           sprintf("Contrast: %s\n", input$selected_contrast),
           sprintf("Up log2FC cutoff: %.1f\n", input$up_cutoff),
@@ -810,16 +810,16 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
           sprintf("Organism: %s\n", method_info$species_name),
           "",
           "Results Available:",
-          sprintf("• gprofiler2: %d terms", gprofiler_count),
-          sprintf("• clusterProfileR: %d terms", clusterprofiler_count),
-          sprintf("• STRING-DB: %d networks", stringdb_count),
+          sprintf("* gprofiler2: %d terms", gprofiler_count),
+          sprintf("* clusterProfileR: %d terms", clusterprofiler_count),
+          sprintf("* STRING-DB: %d networks", stringdb_count),
           "",
-          "✓ Results saved to workflow state",
+          "[OK] Results saved to workflow state",
           sep = "\n"
         )
       } else {
         paste(
-          "⏳ Ready for analysis\n",
+          "[WAITING] Ready for analysis\n",
           "",
           "Steps:",
           "1. Select contrast from DE results",
@@ -850,7 +850,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
           cat(sprintf("   ENRICHMENT Step: Selected contrast (friendly name) = %s\n", input$selected_contrast))
           cat(sprintf("   ENRICHMENT Step: Available DE results: %s\n", paste(names(enrichment_data$de_results_data), collapse = ", ")))
           
-          # ✅ IMPROVED: Find matching DE results with better error handling
+          # [OK] IMPROVED: Find matching DE results with better error handling
           selected_de_results <- NULL
           raw_contrast_name <- NULL
           
@@ -932,7 +932,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
             cat("   ENRICHMENT Step: Found contrasts_tbl in global environment\n")
           }
           
-          # ✅ FIXED: Safely get S4 object if not already set
+          # [OK] FIXED: Safely get S4 object if not already set
           if (is.null(enrichment_data$current_s4_object)) {
             cat("   ENRICHMENT Step: S4 object is NULL, trying to retrieve it...\n")
             
@@ -955,7 +955,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
             }
           }
           
-          # ✅ FIXED: Safely check for design_matrix with NULL guard
+          # [OK] FIXED: Safely check for design_matrix with NULL guard
           if (!is.null(enrichment_data$current_s4_object)) {
             tryCatch({
               if (!is.null(enrichment_data$current_s4_object@design_matrix)) {
@@ -977,7 +977,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
             stop("Missing contrasts_tbl or design_matrix required for enrichment analysis. Please ensure DE analysis was completed successfully.")
           }
           
-          # ✅ FIXED: Use correct pathway directory from experiment_paths
+          # [OK] FIXED: Use correct pathway directory from experiment_paths
           de_output_dir_new <- file.path(experiment_paths$results_dir, "de_proteins")
           de_output_dir_old <- file.path(experiment_paths$source_dir, "de_output")
           
@@ -993,7 +993,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
             de_output_dir_new
           }
           
-          # ✅ FIXED: Use proper pathway directory structure
+          # [OK] FIXED: Use proper pathway directory structure
           pathway_dir <- if (!is.null(experiment_paths$pathway_dir) && dir.exists(experiment_paths$pathway_dir)) {
             cat(sprintf("   ENRICHMENT Step: Using pathway_dir from experiment_paths: %s\n", experiment_paths$pathway_dir))
             experiment_paths$pathway_dir
@@ -1021,7 +1021,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
           
           cat("   ENRICHMENT Step: Running processEnrichments\n")
           
-          # ✅ IMPROVED: Get or create UniProt annotations
+          # [OK] IMPROVED: Get or create UniProt annotations
           uniprot_dat_cln <- NULL
           if (exists("uniprot_dat_cln", envir = .GlobalEnv)) {
             uniprot_dat_cln <- get("uniprot_dat_cln", envir = .GlobalEnv)
@@ -1034,7 +1034,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
           } else {
             cat("   ENRICHMENT Step: No uniprot_dat_cln found - checking source directory\n")
             
-            # ✅ NEW: Try to load from source directory first (common location when loading from design)
+            # [OK] NEW: Try to load from source directory first (common location when loading from design)
             scripts_uniprot_path <- file.path(experiment_paths$source_dir, "uniprot_dat_cln.RDS")
             if (file.exists(scripts_uniprot_path)) {
               cat(sprintf("   ENRICHMENT Step: Found uniprot_dat_cln.RDS at %s\n", scripts_uniprot_path))
@@ -1085,7 +1085,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
             })
           }
           
-          # ✅ OPTIONAL: Try annotation matching (but don't let it block analysis)
+          # [OK] OPTIONAL: Try annotation matching (but don't let it block analysis)
           if (!is.null(uniprot_dat_cln) && !is.null(de_results_for_enrichment) && !is.null(enrichment_data$current_s4_object)) {
             cat("   ENRICHMENT Step: Attempting UniProt annotation matching\n")
             tryCatch({
@@ -1110,7 +1110,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
             })
           }
           
-          # ✅ NEW: Filter DE results to target organism if multi-species filtering is enabled
+          # [OK] NEW: Filter DE results to target organism if multi-species filtering is enabled
           organism_filter_applied <- FALSE
           filter_stats <- list(proteins_before = 0, proteins_after = 0, proteins_removed = 0)
           
@@ -1262,7 +1262,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
               
               # Filter the DE results S4 object
               if (!is.null(de_results_for_enrichment@de_data) && length(de_results_for_enrichment@de_data) > 0) {
-                # ✅ FIXED: Safe access to protein_id_column with fallback
+                # [OK] FIXED: Safe access to protein_id_column with fallback
                 protein_id_col <- tryCatch({
                   if (!is.null(enrichment_data$current_s4_object)) {
                     enrichment_data$current_s4_object@protein_id_column
@@ -1333,11 +1333,11 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
             , timestamp = Sys.time()
           )
           
-          # ✅ MAIN ENRICHMENT ANALYSIS: Route to appropriate method
+          # [OK] MAIN ENRICHMENT ANALYSIS: Route to appropriate method
           method_info <- current_analysis_method()
           cat(sprintf("   ENRICHMENT Step: Using analysis method: %s\n", method_info$method))
           
-          # ✅ FIXED: Safe access to protein_id_column with fallback
+          # [OK] FIXED: Safe access to protein_id_column with fallback
           id_column <- tryCatch({
             if (!is.null(enrichment_data$current_s4_object)) {
               enrichment_data$current_s4_object@protein_id_column
@@ -1367,7 +1367,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
           cat(sprintf("   ENRICHMENT Step: processEnrichments completed with up_cutoff: %.1f, down_cutoff: %.1f, q_cutoff: %.3f\n", 
                      input$up_cutoff, input$down_cutoff, input$q_cutoff))
           
-          # ✅ FIXED: Process and store results for ALL contrasts (not just selected one)
+          # [OK] FIXED: Process and store results for ALL contrasts (not just selected one)
           if (!is.null(enrichment_results) && !is.null(enrichment_results@enrichment_data)) {
             
             cat("   ENRICHMENT Step: Processing results for ALL contrasts\n")
@@ -1387,7 +1387,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
                 stringdb_results = NULL
               )
               
-              # ✅ ROUTE TO APPROPRIATE TAB BASED ON METHOD
+              # [OK] ROUTE TO APPROPRIATE TAB BASED ON METHOD
               if (method_info$method == "gprofiler2") {
                 # Process gprofiler2 results
                 gprofiler_results <- data.frame()
@@ -1395,7 +1395,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
                 if (!is.null(contrast_enrichment$up) || !is.null(contrast_enrichment$down)) {
                   if (!is.null(contrast_enrichment$up)) {
                     up_results <- contrast_enrichment$up
-                    # ✅ FIXED: Use safe gprofiler2 result checking pattern (matches functional_enrichment.R)
+                    # [OK] FIXED: Use safe gprofiler2 result checking pattern (matches functional_enrichment.R)
                     if (!is.null(up_results) && !is.null(up_results$result) && length(up_results$result) > 0 && nrow(up_results$result) > 0) {
                       up_df <- up_results$result
                       up_df$directionality <- "positive"
@@ -1406,7 +1406,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
                   
                   if (!is.null(contrast_enrichment$down)) {
                     down_results <- contrast_enrichment$down
-                    # ✅ FIXED: Use safe gprofiler2 result checking pattern (matches functional_enrichment.R)
+                    # [OK] FIXED: Use safe gprofiler2 result checking pattern (matches functional_enrichment.R)
                     if (!is.null(down_results) && !is.null(down_results$result) && length(down_results$result) > 0 && nrow(down_results$result) > 0) {
                       down_df <- down_results$result
                       down_df$directionality <- "negative" 
@@ -1471,7 +1471,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
               all_contrast_results[[raw_contrast_name]] <- contrast_results
             }
             
-            # ✅ STORE ALL CONTRAST RESULTS for UI cycling
+            # [OK] STORE ALL CONTRAST RESULTS for UI cycling
             enrichment_data$all_enrichment_results <- all_contrast_results
             
             # Set current results to the selected contrast
@@ -1524,7 +1524,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
             )
           )
           
-          # ✅ CRITICAL FIX: Copy @args from original data object to enrichment results
+          # [OK] CRITICAL FIX: Copy @args from original data object to enrichment results
           cat("   ENRICHMENT Step: Copying @args from original data object...\n")
           # Check if original data object has @args
           data_has_args <- tryCatch({
@@ -1561,7 +1561,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
                 pathway_dir = pathway_dir
               )
               
-              # ✅ NEW: Store enrichment UI parameters in @args for session summary
+              # [OK] NEW: Store enrichment UI parameters in @args for session summary
               cat("   ENRICHMENT Step: Storing UI parameters in @args\n")
               if (is.null(enrichment_results@args$enrichmentAnalysisUI)) {
                 enrichment_results@args$enrichmentAnalysisUI <- list()
@@ -1587,7 +1587,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
             cat("   ENRICHMENT Step: Original data object doesn't have @args to copy\n")
           }
           
-          # ✅ NEW: ALSO store enrichment UI parameters in original data object for session summary
+          # [OK] NEW: ALSO store enrichment UI parameters in original data object for session summary
           data_has_args_2 <- tryCatch({
             !is.null(enrichment_data$current_s4_object) && !is.null(enrichment_data$current_s4_object@args)
           }, error = function(e) {
@@ -1612,7 +1612,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
               timestamp = Sys.time()
             )
             
-            # ✅ NEW: Also store UI parameters in workflow_data for sessionSummary
+            # [OK] NEW: Also store UI parameters in workflow_data for sessionSummary
             workflow_data$enrichment_ui_params <- list(
               up_log2fc_cutoff = input$up_cutoff,
               down_log2fc_cutoff = input$down_cutoff,
@@ -1626,7 +1626,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
             )
             cat("   ENRICHMENT Step: Stored UI parameters in workflow_data for sessionSummary\n")
             
-            # ✅ NEW: Update R6 state manager with enrichment UI parameters
+            # [OK] NEW: Update R6 state manager with enrichment UI parameters
             cat("   ENRICHMENT Step: Updating R6 state with enrichment UI parameters\n")
             tryCatch({
               # Find the current data state and update it
@@ -1648,7 +1648,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
             })
           }
           
-          # ✅ NEW: Save enrichment results to R6 state manager
+          # [OK] NEW: Save enrichment results to R6 state manager
           cat("   ENRICHMENT Step: Saving results to R6 state manager...\n")
           tryCatch({
             workflow_data$state_manager$saveState(
@@ -1689,7 +1689,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
         cat("=== ENRICHMENT ANALYSIS COMPLETED ===\n")
         
       }, error = function(e) {
-        # ✅ FIXED: Use safe message() instead of logger in error context
+        # [OK] FIXED: Use safe message() instead of logger in error context
         message(sprintf("*** ERROR in enrichment analysis: %s", e$message))
         cat(sprintf("*** ERROR in enrichment analysis: %s ***\n", e$message))
         shiny::showNotification(
@@ -1702,7 +1702,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
       shiny::removeNotification("enrichment_working")
     })
     
-    # ✅ FILTERED: gprofiler2 Results Table with direction filtering
+    # [OK] FILTERED: gprofiler2 Results Table with direction filtering
     output$gprofiler_results_table <- DT::renderDT({
       if (is.null(enrichment_data$gprofiler_results) || nrow(enrichment_data$gprofiler_results) == 0) {
         return(DT::datatable(data.frame(Message = "No gprofiler2 results available. Run analysis first.")))
@@ -1736,7 +1736,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
       })
     })
     
-    # ✅ FILTERED: gprofiler2 Summary Statistics with direction awareness
+    # [OK] FILTERED: gprofiler2 Summary Statistics with direction awareness
     output$gprofiler_summary_stats <- shiny::renderText({
       if (is.null(enrichment_data$gprofiler_results) || nrow(enrichment_data$gprofiler_results) == 0) {
         return("No gprofiler2 results available.")
@@ -1782,7 +1782,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
       })
     })
     
-    # ✅ FILTERED: clusterProfileR Results Table with direction filtering  
+    # [OK] FILTERED: clusterProfileR Results Table with direction filtering  
     output$clusterprofiler_results_table <- DT::renderDT({
       if (is.null(enrichment_data$clusterprofiler_results) || nrow(enrichment_data$clusterprofiler_results) == 0) {
         return(DT::datatable(data.frame(Message = "No clusterProfileR results available. Run analysis first.")))
@@ -1815,7 +1815,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
       })
     })
     
-    # ✅ FILTERED: clusterProfileR Summary Statistics with direction awareness
+    # [OK] FILTERED: clusterProfileR Summary Statistics with direction awareness
     output$clusterprofiler_summary_stats <- shiny::renderText({
       if (is.null(enrichment_data$clusterprofiler_results) || nrow(enrichment_data$clusterprofiler_results) == 0) {
         return("No clusterProfileR results available.")
@@ -1860,7 +1860,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
       })
     })
     
-    # ✅ STRING-DB Results Table Rendering
+    # [OK] STRING-DB Results Table Rendering
     output$stringdb_results_table <- DT::renderDT({
       if (is.null(enrichment_data$stringdb_results) || nrow(enrichment_data$stringdb_results) == 0) {
         return(DT::datatable(data.frame(
@@ -1902,7 +1902,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
       })
     })
     
-    # ✅ STRING-DB Summary Statistics
+    # [OK] STRING-DB Summary Statistics
     output$stringdb_summary_stats <- shiny::renderText({
       if (is.null(enrichment_data$stringdb_results) || nrow(enrichment_data$stringdb_results) == 0) {
         return("STRING-DB analysis not yet implemented.\nThis will show network enrichment statistics.")
@@ -1914,15 +1914,15 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
         "Status: Implementation pending",
         "",
         "Features planned:",
-        "• Protein-protein interaction networks",
-        "• Functional cluster identification", 
-        "• Network topology analysis",
-        "• Interactive network visualization",
+        "* Protein-protein interaction networks",
+        "* Functional cluster identification", 
+        "* Network topology analysis",
+        "* Interactive network visualization",
         sep = "\n"
       )
     })
     
-    # ✅ FIXED: Safe plot rendering with proper NULL checks
+    # [OK] FIXED: Safe plot rendering with proper NULL checks
     
     # Get the raw contrast name for current selection
     get_raw_contrast_name <- shiny::reactive({
@@ -2045,28 +2045,28 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
         tryCatch({
           files_to_zip <- character()
           
-          # ✅ Export gprofiler2 results if available
+          # [OK] Export gprofiler2 results if available
           if (!is.null(enrichment_data$gprofiler_results) && nrow(enrichment_data$gprofiler_results) > 0) {
             gprofiler_file <- file.path(temp_dir, "gprofiler2_results.tsv")
             readr::write_tsv(enrichment_data$gprofiler_results, gprofiler_file)
             files_to_zip <- c(files_to_zip, gprofiler_file)
           }
           
-          # ✅ Export clusterProfileR results if available
+          # [OK] Export clusterProfileR results if available
           if (!is.null(enrichment_data$clusterprofiler_results) && nrow(enrichment_data$clusterprofiler_results) > 0) {
             clusterprofiler_file <- file.path(temp_dir, "clusterProfileR_results.tsv")
             readr::write_tsv(enrichment_data$clusterprofiler_results, clusterprofiler_file)
             files_to_zip <- c(files_to_zip, clusterprofiler_file)
           }
           
-          # ✅ Export STRING-DB results if available
+          # [OK] Export STRING-DB results if available
           if (!is.null(enrichment_data$stringdb_results) && nrow(enrichment_data$stringdb_results) > 0) {
             stringdb_file <- file.path(temp_dir, "stringdb_results.tsv")
             readr::write_tsv(enrichment_data$stringdb_results, stringdb_file)
             files_to_zip <- c(files_to_zip, stringdb_file)
           }
           
-          # ✅ Export analysis parameters and summary
+          # [OK] Export analysis parameters and summary
           summary_file <- file.path(temp_dir, "enrichment_analysis_summary.txt")
           method_info <- current_analysis_method()
           
@@ -2089,7 +2089,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
             paste("STRING-DB networks:", if (!is.null(enrichment_data$stringdb_results)) nrow(enrichment_data$stringdb_results) else 0),
             "",
             "## Files Included:",
-            if (length(files_to_zip) > 0) paste("•", basename(files_to_zip), collapse = "\n") else "• No result files (analysis may have failed)",
+            if (length(files_to_zip) > 0) paste("*", basename(files_to_zip), collapse = "\n") else "* No result files (analysis may have failed)",
             "",
             "Generated by MultiScholaR Enrichment Analysis Module",
             sep = "\n"
@@ -2098,7 +2098,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
           writeLines(summary_content, summary_file)
           files_to_zip <- c(files_to_zip, summary_file)
           
-          # ✅ Create zip file
+          # [OK] Create zip file
           if (length(files_to_zip) > 0) {
             utils::zip(zipfile = file, files = files_to_zip, flags = "-j")
           } else {

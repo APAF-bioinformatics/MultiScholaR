@@ -78,7 +78,7 @@ mod_prot_qc_peptide_intensity_server <- function(id, workflow_data, omic_type, e
         
         logger::log_info(sprintf("QC Step: Applying intensity filter with cutoff %s%%", input$intensity_cutoff_percentile))
         
-        # ✅ FIXED: Use updateConfigParameter to sync S4 object AND global config_list
+        # [OK] FIXED: Use updateConfigParameter to sync S4 object AND global config_list
         current_s4 <- updateConfigParameter(
           theObject = current_s4,
           function_name = "peptideIntensityFiltering",

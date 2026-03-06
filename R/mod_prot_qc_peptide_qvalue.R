@@ -82,12 +82,12 @@ mod_prot_qc_peptide_qvalue_server <- function(id, workflow_data, omic_type, expe
         current_s4 <- workflow_data$state_manager$getState()
         shiny::req(current_s4)
         
-        # ✅ DIAGNOSTIC: Check config and columns
+        # [OK] DIAGNOSTIC: Check config and columns
         logger::log_info(sprintf("Q-value filter: S4 class = %s", class(current_s4)[1]))
         logger::log_info(sprintf("Q-value filter: S4 @peptide_data has %d rows, %d columns", 
                                  nrow(current_s4@peptide_data), ncol(current_s4@peptide_data)))
         
-        # ✅ DIAGNOSTIC: Check input_matrix_column_ids from config
+        # [OK] DIAGNOSTIC: Check input_matrix_column_ids from config
         if (!is.null(current_s4@args$srlQvalueProteotypicPeptideClean$input_matrix_column_ids)) {
           ids_vector <- current_s4@args$srlQvalueProteotypicPeptideClean$input_matrix_column_ids
           logger::log_info(sprintf("Q-value filter: input_matrix_column_ids length = %d", length(ids_vector)))
@@ -103,7 +103,7 @@ mod_prot_qc_peptide_qvalue_server <- function(id, workflow_data, omic_type, expe
         
         logger::log_info(sprintf("QC Step: Applying Q-value filter with thresholds %s, %s", input$qvalue_threshold, input$global_qvalue_threshold))
         
-        # ✅ FIXED: Use updateConfigParameter to sync S4 object AND global config_list
+        # [OK] FIXED: Use updateConfigParameter to sync S4 object AND global config_list
         current_s4 <- updateConfigParameter(
           theObject = current_s4,
           function_name = "srlQvalueProteotypicPeptideClean",

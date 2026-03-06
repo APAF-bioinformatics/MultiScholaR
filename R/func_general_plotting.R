@@ -1402,9 +1402,9 @@ plotPcaHelper <- function(data,
     checkMemoryBoth(step, context = "plotPcaHelper")
   }
 
-  message("╔═══════════════════════════════════════════════════════════════════════════╗")
-  message("║  DEBUG66: Entering plotPcaHelper                                          ║")
-  message("╚═══════════════════════════════════════════════════════════════════════════╝")
+  message("+===========================================================================+")
+  message("|  DEBUG66: Entering plotPcaHelper                                          |")
+  message("+===========================================================================+")
   entry_mem <- checkMem("Entry")
   message(sprintf("   DEBUG66 [plotPcaHelper] Arg: nrow(data) = %d, ncol(data) = %d", nrow(data), ncol(data)))
   message(sprintf("   DEBUG66 [plotPcaHelper] Arg: nrow(design_matrix) = %d", nrow(design_matrix)))
@@ -1566,9 +1566,9 @@ plotPcaHelper <- function(data,
   message(sprintf("   DEBUG66 [plotPcaHelper] output object size: %s", format(object.size(output), units = "auto")))
 
   checkMem("Exit")
-  message("╔═══════════════════════════════════════════════════════════════════════════╗")
-  message("║  DEBUG66: Exiting plotPcaHelper                                           ║")
-  message("╚═══════════════════════════════════════════════════════════════════════════╝")
+  message("+===========================================================================+")
+  message("|  DEBUG66: Exiting plotPcaHelper                                           |")
+  message("+===========================================================================+")
 
   # Strip captured environment to prevent memory bloat
   output$plot_env <- rlang::base_env()
@@ -2569,6 +2569,7 @@ gg_save_logging <- function(
 # ----------------------------------------------------------------------------
 # summarizeQCPlot
 # ----------------------------------------------------------------------------
+#' @export
 summarizeQCPlot <- function(qc_figure) {
   cat("RLE Plots:\n")
   for (plot_name in names(qc_figure@rle_plots)) {

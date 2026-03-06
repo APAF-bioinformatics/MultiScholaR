@@ -128,7 +128,7 @@ mod_prot_summary_server <- function(id, project_dirs, omic_type = "proteomics", 
       
       # Use just omic_type as key (not omic_type_experiment_label)
       if (!omic_type %in% names(project_dirs)) {
-        return("⚠️ Project directories not available")
+        return("[WARNING] Project directories not available")
       }
       
       # NEW: Check for both template types and show which is available
@@ -143,16 +143,16 @@ mod_prot_summary_server <- function(id, project_dirs, omic_type = "proteomics", 
       
       templates_status <- c()
       if (file.exists(diann_template)) {
-        templates_status <- c(templates_status, "DIA-NN ✅")
+        templates_status <- c(templates_status, "DIA-NN [OK]")
       }
       if (file.exists(tmt_template)) {
-        templates_status <- c(templates_status, "TMT ✅")
+        templates_status <- c(templates_status, "TMT [OK]")
       }
       
       if (length(templates_status) > 0) {
         paste("Templates:", paste(templates_status, collapse = ", "))
       } else {
-        "⚠️ Report templates will be downloaded when generating report"
+        "[WARNING] Report templates will be downloaded when generating report"
       }
     })
     
@@ -256,7 +256,7 @@ mod_prot_summary_server <- function(id, project_dirs, omic_type = "proteomics", 
                 "\nFile:", study_params_file,
                 "\nSource: Final S4 object @args + config_list",
                 "\nIntegration Object:", s4_filename,
-                "\nStatus: Parameters saved ✅")
+                "\nStatus: Parameters saved [OK]")
         })
         
       }, error = function(e) {
@@ -285,7 +285,7 @@ mod_prot_summary_server <- function(id, project_dirs, omic_type = "proteomics", 
     # Copy files to publication directory
     shiny::observeEvent(input$copy_to_publication, {
       shiny::req(input$experiment_label)
-      # ✅ FIX: Make the requirement more flexible - allow copy even if workflow args had issues
+      # [OK] FIX: Make the requirement more flexible - allow copy even if workflow args had issues
       if (!values$workflow_args_saved) {
         # Try to create a basic study_parameters.txt file if it doesn't exist
         basic_params_file <- file.path(project_dirs[[omic_type]]$source_dir, "study_parameters.txt")
@@ -316,7 +316,7 @@ mod_prot_summary_server <- function(id, project_dirs, omic_type = "proteomics", 
       
       shiny::withProgress(message = "Copying files to publication directory...", {
         tryCatch({
-          # ✅ FIX: Get contrasts_tbl and design_matrix from workflow_data or files
+          # [OK] FIX: Get contrasts_tbl and design_matrix from workflow_data or files
           contrasts_tbl <- NULL
           design_matrix <- NULL
           
@@ -355,7 +355,7 @@ mod_prot_summary_server <- function(id, project_dirs, omic_type = "proteomics", 
           cat("   SESSION SUMMARY: contrasts_tbl is", ifelse(is.null(contrasts_tbl), "NULL", "available"), "\n")
           cat("   SESSION SUMMARY: design_matrix is", ifelse(is.null(design_matrix), "NULL", "available"), "\n")
           
-          # ✅ FIX: Ensure project_dirs is in global environment for copyToResultsSummary
+          # [OK] FIX: Ensure project_dirs is in global environment for copyToResultsSummary
           if (!exists("project_dirs", envir = .GlobalEnv)) {
             cat("   SESSION SUMMARY: Setting project_dirs in global environment\n")
             assign("project_dirs", project_dirs, envir = .GlobalEnv)
@@ -376,7 +376,7 @@ mod_prot_summary_server <- function(id, project_dirs, omic_type = "proteomics", 
           
           values$files_copied <- TRUE
           
-          output$copy_status <- shiny::renderText("Files copied to publication directory successfully ✅")
+          output$copy_status <- shiny::renderText("Files copied to publication directory successfully [OK]")
           shiny::showNotification("Publication files copied", type = "message")
           
           # Update session summary
@@ -384,13 +384,13 @@ mod_prot_summary_server <- function(id, project_dirs, omic_type = "proteomics", 
             paste("Workflow args created for:", input$experiment_label,
                   "\nDescription:", input$description,
                   "\nTimestamp:", Sys.time(),
-                  "\nStatus: Arguments saved ✅, Files copied ✅")
+                  "\nStatus: Arguments saved [OK], Files copied [OK]")
           })
           
         }, error = function(e) {
           output$copy_status <- shiny::renderText(paste("Error:", e$message))
           shiny::showNotification(paste("Copy error:", e$message), type = "error", duration = 10)
-          # ✅ FIX: Use skip_formatter to avoid glue interpolation issues
+          # [OK] FIX: Use skip_formatter to avoid glue interpolation issues
           logger::log_error(logger::skip_formatter(paste("Failed to copy files:", e$message)))
           cat("   SESSION SUMMARY ERROR:", e$message, "\n")
           # Print traceback for debugging
@@ -398,7 +398,7 @@ mod_prot_summary_server <- function(id, project_dirs, omic_type = "proteomics", 
           traceback()
         })
       })
-    }, ignoreInit = TRUE)  # ✅ FIX: Add ignoreInit to prevent triggering on module load
+    }, ignoreInit = TRUE)  # [OK] FIX: Add ignoreInit to prevent triggering on module load
     
     # Generate report with template download logic
     shiny::observeEvent(input$generate_report, {
@@ -559,7 +559,7 @@ mod_prot_summary_server <- function(id, project_dirs, omic_type = "proteomics", 
               paste("Workflow args created for:", input$experiment_label,
                     "\nDescription:", input$description,
                     "\nTimestamp:", Sys.time(),
-                    "\nStatus: Arguments saved ✅, Files copied ✅, Report generated ✅",
+                    "\nStatus: Arguments saved [OK], Files copied [OK], Report generated [OK]",
                     "\nReport location:", rendered_path)
             })
             
@@ -620,7 +620,7 @@ mod_prot_summary_server <- function(id, project_dirs, omic_type = "proteomics", 
             paste("Workflow args created for:", input$experiment_label,
                   "\nDescription:", input$description,
                   "\nTimestamp:", Sys.time(),
-                  "\nStatus: Arguments saved ✅, Files copied ✅, Report generated ✅, GitHub pushed ✅")
+                  "\nStatus: Arguments saved [OK], Files copied [OK], Report generated [OK], GitHub pushed [OK]")
           })
           
         }, error = function(e) {

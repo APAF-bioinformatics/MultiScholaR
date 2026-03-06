@@ -571,7 +571,7 @@ mod_prot_design_builder_server <- function(id, data_tbl, config_list, column_map
                     start = input$range_start, 
                     end = input$range_end
                 )
-                paste0("\"", first_sample, "\" → \"", preview_result, "\"")
+                paste0("\"", first_sample, "\" -> \"", preview_result, "\"")
             }, error = function(e) {
                 paste("Error:", e$message)
             })

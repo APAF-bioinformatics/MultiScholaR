@@ -300,9 +300,9 @@ removeRowsWithMissingValuesPercentHelper <- function(input_table
                                                      , proteins_intensity_cutoff_percentile = 1
                                                      , temporary_abundance_column = "Abundance") {
 
-  message("╔═══════════════════════════════════════════════════════════════════════════╗")
-  message("║  DEBUG66: Entering removeRowsWithMissingValuesPercentHelper (OPTIMIZED)   ║")
-  message("╚═══════════════════════════════════════════════════════════════════════════╝")
+  message("+===========================================================================+")
+  message("|  DEBUG66: Entering removeRowsWithMissingValuesPercentHelper (OPTIMIZED)   |")
+  message("+===========================================================================+")
   
   # 1. Setup strings and symbols
   sample_id_str <- rlang::as_string(rlang::ensym(sample_id))
@@ -397,9 +397,9 @@ removeRowsWithMissingValuesPercentHelper <- function(input_table
   # Final GC
   gc()
   
-  message("╔═══════════════════════════════════════════════════════════════════════════╗")
-  message("║  DEBUG66: Exiting removeRowsWithMissingValuesPercentHelper                ║")
-  message("╚═══════════════════════════════════════════════════════════════════════════╝")
+  message("+===========================================================================+")
+  message("|  DEBUG66: Exiting removeRowsWithMissingValuesPercentHelper                |")
+  message("+===========================================================================+")
   
   return(filtered_tbl)
 
@@ -502,7 +502,7 @@ checkProteinNAPercentages <- function(protein_obj, verbose = TRUE) {
   # Print results if verbose
   if (verbose) {
     cat("\n=== Protein Data Missing Value Analysis ===\n")
-    cat(sprintf("Dataset dimensions: %d proteins × %d samples\n", 
+    cat(sprintf("Dataset dimensions: %d proteins x %d samples\n", 
                 nrow(protein_matrix), ncol(protein_matrix)))
     cat(sprintf("Number of groups: %d\n", summary_stats$total_groups))
     cat(sprintf("Total missing values: %s out of %s (%.2f%%)\n", 
@@ -569,56 +569,56 @@ getProteinNARecommendations <- function(protein_obj, include_code = TRUE) {
               na_percent, na_results$summary_stats$total_proteins))
   
   if (na_percent < 15) {
-    cat("🎯 RECOMMENDATION: Complete Case Analysis\n")
-    cat("• Your data has excellent protein coverage\n")
-    cat("• Can proceed with standard analysis on proteins with complete data\n")
+    cat("[RECOMMENDATION] RECOMMENDATION: Complete Case Analysis\n")
+    cat("* Your data has excellent protein coverage\n")
+    cat("* Can proceed with standard analysis on proteins with complete data\n")
     if (include_code) {
-      cat("\n📝 Example code:\n")
+      cat("\n[NOTE] Example code:\n")
       cat("complete_proteins <- protein_obj@protein_quant_table[complete.cases(protein_obj@protein_quant_table), ]\n")
     }
     
   } else if (na_percent >= 15 && na_percent < 40) {
-    cat("🎯 RECOMMENDATION: Consider Protein-Level Imputation\n")
-    cat("• Moderate missing values - imputation could be beneficial\n")
-    cat("• Options: KNN, minimum value, or mixed imputation strategies\n")
-    cat("• Alternative: Filter to proteins detected in ≥X samples per group\n")
+    cat("[RECOMMENDATION] RECOMMENDATION: Consider Protein-Level Imputation\n")
+    cat("* Moderate missing values - imputation could be beneficial\n")
+    cat("* Options: KNN, minimum value, or mixed imputation strategies\n")
+    cat("* Alternative: Filter to proteins detected in >=X samples per group\n")
     if (include_code) {
-      cat("\n📝 Example filtering code:\n")
-      cat("# Keep proteins detected in ≥50% of samples per group\n")
+      cat("\n[NOTE] Example filtering code:\n")
+      cat("# Keep proteins detected in >=50% of samples per group\n")
       cat("filtered_proteins <- filterProteinsByGroupDetection(protein_obj, min_detection_rate = 0.5)\n")
     }
     
   } else if (na_percent >= 40 && na_percent < 60) {
-    cat("🎯 RECOMMENDATION: Strict Filtering + Targeted Imputation\n")
-    cat("• High missing values suggest challenging sample/detection conditions\n")
-    cat("• Focus on well-detected proteins (present in majority of samples)\n")
-    cat("• Consider group-wise detection requirements\n")
+    cat("[RECOMMENDATION] RECOMMENDATION: Strict Filtering + Targeted Imputation\n")
+    cat("* High missing values suggest challenging sample/detection conditions\n")
+    cat("* Focus on well-detected proteins (present in majority of samples)\n")
+    cat("* Consider group-wise detection requirements\n")
     if (include_code) {
-      cat("\n📝 Example approach:\n")
-      cat("# Keep proteins detected in ≥70% of samples in at least one group\n")
+      cat("\n[NOTE] Example approach:\n")
+      cat("# Keep proteins detected in >=70% of samples in at least one group\n")
       cat("robust_proteins <- filterProteinsByGroupwise(protein_obj, min_group_detection = 0.7)\n")
     }
     
   } else {
-    cat("⚠️  RECOMMENDATION: Review Data Quality\n")
-    cat("• Very high missing values (>60%) suggest potential issues\n")
-    cat("• Check: sample quality, peptide identification, rollup parameters\n")
-    cat("• Consider more stringent protein identification criteria\n")
-    cat("• May need to focus only on highly abundant/well-detected proteins\n")
+    cat("[WARNING]  RECOMMENDATION: Review Data Quality\n")
+    cat("* Very high missing values (>60%) suggest potential issues\n")
+    cat("* Check: sample quality, peptide identification, rollup parameters\n")
+    cat("* Consider more stringent protein identification criteria\n")
+    cat("* May need to focus only on highly abundant/well-detected proteins\n")
   }
   
-  cat("\n📚 STRATEGIES SUMMARY:\n")
+  cat("\n[REFERENCE] STRATEGIES SUMMARY:\n")
   cat("1. Complete Case: Use only proteins with no NAs\n")
   cat("2. Filtering: Remove proteins with >X% missing values\n")
-  cat("3. Group-wise: Require detection in ≥Y% samples per group\n")
+  cat("3. Group-wise: Require detection in >=Y% samples per group\n")
   cat("4. Imputation: Fill NAs with estimated values (KNN, minimum, etc.)\n")
   cat("5. Hybrid: Combine filtering + imputation\n")
   
-  cat("\n💡 TIP: Protein NAs ≠ Data Quality Issues\n")
+  cat("\n[TIP] TIP: Protein NAs != Data Quality Issues\n")
   cat("Missing proteins often reflect:\n")
-  cat("• Low abundance proteins below detection limit\n")
-  cat("• Sample-specific biology (some proteins not expressed)\n")
-  cat("• Normal variation in complex proteomes\n\n")
+  cat("* Low abundance proteins below detection limit\n")
+  cat("* Sample-specific biology (some proteins not expressed)\n")
+  cat("* Normal variation in complex proteomes\n\n")
   
   strategies <- list(
     na_percent = na_percent,
@@ -652,9 +652,9 @@ validatePostImputationProteinData <- function(protein_obj, expected_na_percent =
   
   cat("\n=== POST-IMPUTATION PROTEIN DATA VALIDATION ===\n")
   cat("Note: Protein-level NAs occur even after peptide imputation because:\n")
-  cat("• Proteins need ≥1 detected peptide to get a quantification\n")
-  cat("• Some proteins detected only in subset of samples\n")
-  cat("• This is normal proteomics data behavior!\n\n")
+  cat("* Proteins need >=1 detected peptide to get a quantification\n")
+  cat("* Some proteins detected only in subset of samples\n")
+  cat("* This is normal proteomics data behavior!\n\n")
   
   # Run the full NA analysis
   na_results <- checkProteinNAPercentages(protein_obj, verbose = TRUE)
@@ -673,45 +673,45 @@ validatePostImputationProteinData <- function(protein_obj, expected_na_percent =
   is_valid <- abs(actual_na_percent - expected_na_percent) <= tolerance
   
   cat("\n--- VALIDATION RESULT ---\n")
-  cat(sprintf("Expected NA%%: %.2f%% (± %.2f%%)\n", expected_na_percent, tolerance))
+  cat(sprintf("Expected NA%%: %.2f%% (+/- %.2f%%)\n", expected_na_percent, tolerance))
   cat(sprintf("Actual NA%%: %.2f%%\n", actual_na_percent))
   
   if (is_valid) {
-    cat("✓ VALIDATION PASSED: Protein data NA levels are within expected range!\n")
+    cat("[OK] VALIDATION PASSED: Protein data NA levels are within expected range!\n")
   } else {
-    cat("✗ VALIDATION FAILED: Unexpected NA percentage detected!\n")
+    cat("[FAIL] VALIDATION FAILED: Unexpected NA percentage detected!\n")
     if (actual_na_percent > expected_na_percent + tolerance) {
-      cat("  → Issue: More NAs than expected. Check for missing proteins/peptides.\n")
+      cat("  -> Issue: More NAs than expected. Check for missing proteins/peptides.\n")
     } else {
-      cat("  → Issue: Fewer NAs than expected. Possible over-imputation.\n")
+      cat("  -> Issue: Fewer NAs than expected. Possible over-imputation.\n")
     }
   }
   
   # Additional warnings for common issues
   if (actual_na_percent > 50) {
-    cat("⚠ WARNING: Very high NA percentage (>50%) suggests data quality issues!\n")
+    cat("[WARNING] WARNING: Very high NA percentage (>50%) suggests data quality issues!\n")
   }
   
   if (actual_na_percent < 10) {
-    cat("ℹ INFO: Very low NA percentage (<10%) - excellent protein coverage!\n")
+    cat("[INFO] INFO: Very low NA percentage (<10%) - excellent protein coverage!\n")
   }
   
   # Educational information about protein NAs
   if (actual_na_percent > 20 && actual_na_percent < 50) {
-    cat("ℹ INFO: NA percentage is typical for protein-level data\n")
-    cat("  → This reflects biological reality: not all proteins detected in all samples\n")
-    cat("  → Consider: protein-level imputation OR complete-case analysis\n")
+    cat("[INFO] INFO: NA percentage is typical for protein-level data\n")
+    cat("  -> This reflects biological reality: not all proteins detected in all samples\n")
+    cat("  -> Consider: protein-level imputation OR complete-case analysis\n")
   }
   
   if (na_results$summary_stats$max_na_per_sample > actual_na_percent + 10) {
-    cat("⚠ WARNING: Large variation in NA% between samples detected!\n")
-    cat("  → Some samples may have much lower protein coverage.\n")
+    cat("[WARNING] WARNING: Large variation in NA% between samples detected!\n")
+    cat("  -> Some samples may have much lower protein coverage.\n")
   }
   
   # Check for problematic samples (>80% missing)
   high_missing_samples <- na_results$per_sample_na[na_results$per_sample_na$na_percentage > 80, ]
   if (nrow(high_missing_samples) > 0) {
-    cat("⚠ WARNING: Samples with >80% missing proteins detected:\n")
+    cat("[WARNING] WARNING: Samples with >80% missing proteins detected:\n")
     print(high_missing_samples[, c("sample", "na_percentage")])
   }
   
