@@ -37,6 +37,7 @@ Collate:
     'func_general_enrichment.R'
     'func_general_filemgmt.R'
     'func_general_helpers.R'
+    'func_omics_qc_shared.R'
     'func_general_plotting.R'
     'func_github_management.R'
     'func_metab_de.R'
