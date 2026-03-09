@@ -948,9 +948,9 @@ setMethod(
     f = "pearsonCorForSamplePairs",
     signature = "LipidomicsAssayData",
     definition = function(theObject, tech_rep_remove_regex = NULL, correlation_group = NA) {
-        message("+===========================================================================+")
+        message("+---------------------------------------------------------------------------+")
         message("|  DEBUG66: Entering pearsonCorForSamplePairs (LipidomicsAssayData)        |")
-        message("+===========================================================================+")
+        message("+---------------------------------------------------------------------------+")
 
         # --- Input Validation ---
         # tech_rep_remove_regex can be NULL, checked inside helper/later use
@@ -1192,9 +1192,9 @@ setMethod(
         correlation_results_list <- correlation_results_list[!sapply(correlation_results_list, is.null)]
 
         message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Finished. Returning %d assay results (removed %d NULL)", length(correlation_results_list), length(assay_list) - non_null_count_before))
-        message("+===========================================================================+")
+        message("+---------------------------------------------------------------------------+")
         message("|  DEBUG66: Exiting pearsonCorForSamplePairs                               |")
-        message("+===========================================================================+")
+        message("+---------------------------------------------------------------------------+")
 
         return(correlation_results_list)
     }
@@ -1738,9 +1738,9 @@ setMethod(
                           num_neg_ctrl = NULL,
                           ruv_qval_cutoff = NULL,
                           ruv_fdr_method = NULL) {
-        message("+===========================================================================+")
+        message("+---------------------------------------------------------------------------+")
         message("|  DEBUG66: Entering getNegCtrlMetabAnova (LipidomicsAssayData)             |")
-        message("+===========================================================================+")
+        message("+---------------------------------------------------------------------------+")
 
         assay_list <- methods::slot(theObject, "lipid_data")
         lipid_id_col_name <- methods::slot(theObject, "lipid_id_column")
@@ -2052,9 +2052,9 @@ setMethod(
         final_control_list <- control_features_list[!sapply(control_features_list, is.null)]
 
         message(sprintf("   DEBUG66 [getNegCtrlMetabAnova] Finished. Returning %d assay results.", length(final_control_list)))
-        message("+===========================================================================+")
+        message("+---------------------------------------------------------------------------+")
         message("|  DEBUG66: Exiting getNegCtrlMetabAnova                                    |")
-        message("+===========================================================================+")
+        message("+---------------------------------------------------------------------------+")
         log_info("Finished Negative Control selection for {length(final_control_list)} assay(s).")
         return(final_control_list)
     }
@@ -2074,9 +2074,9 @@ setMethod(
     f = "ruvCancor",
     signature = "LipidomicsAssayData",
     definition = function(theObject, ctrl = NULL, num_components_to_impute = NULL, ruv_grouping_variable = NULL) {
-        message("+===========================================================================+")
+        message("+---------------------------------------------------------------------------+")
         message("|  DEBUG66: Entering ruvCancor (LipidomicsAssayData)                        |")
-        message("+===========================================================================+")
+        message("+---------------------------------------------------------------------------+")
 
         assay_list <- methods::slot(theObject, "lipid_data")
         lipid_id_col_name <- methods::slot(theObject, "lipid_id_column")
@@ -2406,9 +2406,9 @@ setMethod(
         final_plots_list <- cancor_plots_list[!sapply(cancor_plots_list, is.null)]
 
         message(sprintf("   DEBUG66 [ruvCancor] Finished. Returning %d assay plots.", length(final_plots_list)))
-        message("+===========================================================================+")
+        message("+---------------------------------------------------------------------------+")
         message("|  DEBUG66: Exiting ruvCancor                                               |")
-        message("+===========================================================================+")
+        message("+---------------------------------------------------------------------------+")
         log_info("Finished RUV Canonical Correlation plot generation for {length(final_plots_list)} assay(s).")
         return(final_plots_list)
     }
@@ -2467,9 +2467,9 @@ setMethod(
                           ruv_grouping_variable = NULL,
                           ruv_number_k = NULL,
                           ctrl = NULL) {
-        message("+===========================================================================+")
+        message("+---------------------------------------------------------------------------+")
         message("|  DEBUG66: Entering ruvIII_C_Varying (LipidomicsAssayData)                 |")
-        message("+===========================================================================+")
+        message("+---------------------------------------------------------------------------+")
 
         assay_list <- methods::slot(theObject, "lipid_data")
         lipid_id_col_name <- methods::slot(theObject, "lipid_id_column")
@@ -2984,9 +2984,9 @@ setMethod(
         )
 
         message(sprintf("   DEBUG66 [ruvIII_C_Varying] RUV-III correction finished for %d assay(s).", length(final_corrected_list)))
-        message("+===========================================================================+")
+        message("+---------------------------------------------------------------------------+")
         message("|  DEBUG66: Exiting ruvIII_C_Varying                                        |")
-        message("+===========================================================================+")
+        message("+---------------------------------------------------------------------------+")
         log_info("RUV-III correction process finished for {length(final_corrected_list)} assay(s).")
         return(theObject)
     }
@@ -3029,12 +3029,10 @@ setMethod(
 setMethod(
     f = "plotVolcanoS4",
     signature = "list",
-    definition = function(
-      objectsList,
-      de_q_val_thresh = 0.05,
-      qvalue_column = "fdr_qvalue",
-      log2fc_column = "logFC"
-    ) {
+    definition = function(objectsList,
+                          de_q_val_thresh = 0.05,
+                          qvalue_column = "fdr_qvalue",
+                          log2fc_column = "logFC") {
         return_object_list <- purrr::imap(
             objectsList,
             function(object, idx) {
@@ -3102,12 +3100,10 @@ setMethod(
 setMethod(
     f = "getDeResultsWideFormat",
     signature = "list",
-    definition = function(
-      objectsList,
-      qvalue_column = "fdr_qvalue",
-      raw_pvalue_column = "raw_pvalue",
-      log2fc_column = "logFC"
-    ) {
+    definition = function(objectsList,
+                          qvalue_column = "fdr_qvalue",
+                          raw_pvalue_column = "raw_pvalue",
+                          log2fc_column = "logFC") {
         return_object_list <- purrr::map(objectsList, function(object) {
             # Correctly access the lipid data from the nested 'theObject' slot.
             # This defensively handles cases where the slot might hold a list of
@@ -3514,17 +3510,15 @@ setClass("LipidomicsDifferentialAbundanceResults",
 setMethod(
     f = "differentialAbundanceAnalysis",
     signature = "list",
-    definition = function(
-      objectsList,
-      contrasts_tbl = NULL,
-      formula_string = NULL,
-      group_id = NULL,
-      de_q_val_thresh = NULL,
-      treat_lfc_cutoff = NULL,
-      eBayes_trend = NULL,
-      eBayes_robust = NULL,
-      args_group_pattern = NULL
-    ) {
+    definition = function(objectsList,
+                          contrasts_tbl = NULL,
+                          formula_string = NULL,
+                          group_id = NULL,
+                          de_q_val_thresh = NULL,
+                          treat_lfc_cutoff = NULL,
+                          eBayes_trend = NULL,
+                          eBayes_robust = NULL,
+                          args_group_pattern = NULL) {
         # Validate that all objects in the list are LipidomicsAssayData or MetaboliteAssayData
         if (!all(purrr::map_lgl(objectsList, ~ inherits(.x, "LipidomicsAssayData") || inherits(.x, "MetaboliteAssayData")))) {
             stop("All objects in objectsList must be of class LipidomicsAssayData or MetaboliteAssayData")
@@ -3562,17 +3556,15 @@ setMethod(
 setMethod(
     f = "differentialAbundanceAnalysisHelper",
     signature = "LipidomicsAssayData",
-    definition = function(
-      theObject,
-      contrasts_tbl = NULL,
-      formula_string = NULL,
-      group_id = NULL,
-      de_q_val_thresh = NULL,
-      treat_lfc_cutoff = NULL,
-      eBayes_trend = NULL,
-      eBayes_robust = NULL,
-      args_group_pattern = NULL
-    ) {
+    definition = function(theObject,
+                          contrasts_tbl = NULL,
+                          formula_string = NULL,
+                          group_id = NULL,
+                          de_q_val_thresh = NULL,
+                          treat_lfc_cutoff = NULL,
+                          eBayes_trend = NULL,
+                          eBayes_robust = NULL,
+                          args_group_pattern = NULL) {
         message("--- Entering differentialAbundanceAnalysisHelper ---")
 
         contrasts_tbl <- checkParamsObjectFunctionSimplify(theObject, "contrasts_tbl", NULL)
@@ -4967,9 +4959,9 @@ setMethod(
     f = "filterSamplesByLipidCorrelationThreshold",
     signature = "LipidomicsAssayData",
     definition = function(theObject, pearson_correlation_per_pair = NULL, min_pearson_correlation_threshold = 0.5) {
-        message("+===========================================================================+")
+        message("+---------------------------------------------------------------------------+")
         message("|        Lipid Sample Filtering by Correlation Threshold (S4)          |")
-        message("+===========================================================================+")
+        message("+---------------------------------------------------------------------------+")
 
         if (is.null(pearson_correlation_per_pair) || !is.list(pearson_correlation_per_pair)) {
             stop("`pearson_correlation_per_pair` must be a list of correlation data frames (one per assay).")
@@ -5044,8 +5036,7 @@ setMethod(
             message(sprintf("Total samples removed across all assays: %d", length(samples_to_remove_unique)))
         }
 
-        message("+===========================================================================+")
-
+        message("+---------------------------------------------------------------------------+")
         return(theObject)
     }
 )
