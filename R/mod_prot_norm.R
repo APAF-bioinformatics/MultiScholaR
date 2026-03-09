@@ -935,7 +935,7 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
       message("*** PRE-NORM QC: Generating Pearson correlation plot (Step 4/4) ***")
       num_samples <- length(setdiff(colnames(current_s4@protein_quant_table), current_s4@protein_id_column))
       estimated_pairs <- choose(num_samples, 2)
-      message(sprintf("*** PRE-NORM QC: Sample count = %d, Expected pairs ≈ %d ***", num_samples, estimated_pairs))
+      message(sprintf("*** PRE-NORM QC: Sample count = %d, Expected pairs ~= %d ***", num_samples, estimated_pairs))
       
       pearson_start_time <- Sys.time()
       
@@ -1405,11 +1405,11 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
               skip_reason = "User selected skip due to dataset constraints"
             )
             
-            # ✅ CRITICAL: Store in workflow_data so session summary can find it
+            # [OK] CRITICAL: Store in workflow_data so session summary can find it
             workflow_data$ruv_optimization_result <- norm_data$ruv_optimization_result
             message("*** RUV SKIP: Stored skip result in workflow_data for session summary ***")
             
-            # ✅ CRITICAL: Save to file to overwrite any old RUV results
+            # [OK] CRITICAL: Save to file to overwrite any old RUV results
             if (!is.null(experiment_paths$source_dir)) {
               tryCatch({
                 ruv_file <- file.path(experiment_paths$source_dir, "ruv_optimization_results.RDS")
@@ -1470,7 +1470,7 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
               # Run findBestNegCtrlPercentage optimization
               shiny::withProgress(message = "Optimizing RUV parameters...", detail = "Testing percentage range...", value = 0.5, {
                 
-                # 🔧 DEBUG: Log all parameters before calling optimization
+                # [DEBUG] DEBUG: Log all parameters before calling optimization
                 message("=== AUTOMATIC RUV OPTIMIZATION DEBUG ===")
                 message(sprintf("*** DEBUG: percentage_range = %s ***", paste(percentage_range, collapse = ", ")))
                 message(sprintf("*** DEBUG: separation_metric = %s ***", input$separation_metric))
@@ -1490,7 +1490,7 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
                   verbose = TRUE
                 )
                 
-                # 🔧 DEBUG: Log optimization results
+                # [DEBUG] DEBUG: Log optimization results
                 message("*** DEBUG: Optimization completed ***")
                 message(sprintf("*** DEBUG: optimization_result class = %s ***", class(optimization_result)))
                 message(sprintf("*** DEBUG: best_percentage = %.1f ***", optimization_result$best_percentage))
@@ -1504,7 +1504,7 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
                   message("*** DEBUG: optimization_results is NULL! ***")
                 }
                 
-                # 🔧 DETAILED DEBUG: Check optimization_results structure
+                # [DEBUG] DETAILED DEBUG: Check optimization_results structure
                 message("*** DEBUG: Checking optimization_results structure ***")
                 message(sprintf("*** DEBUG: optimization_results class = %s ***", class(optimization_result$optimization_results)))
                 if (is.data.frame(optimization_result$optimization_results)) {
@@ -1521,18 +1521,18 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
                   message("*** DEBUG: optimization_results is not a data.frame ***")
                 }
                 
-                # 🔧 DEBUG: Test if verbose is working by calling with message override
+                # [DEBUG] DEBUG: Test if verbose is working by calling with message override
                 message("*** DEBUG: Testing verbose logging override ***")
                 message("*** DEBUG: This should help us see if the function is running at all ***")
                 
                             # Store optimization results for display
             norm_data$ruv_optimization_result <- optimization_result
             
-            # ✅ NEW: Store RUV optimization results in workflow_data for session summary
+            # [OK] NEW: Store RUV optimization results in workflow_data for session summary
             workflow_data$ruv_optimization_result <- optimization_result
             cat("*** STEP 3a: Stored RUV optimization results in workflow_data ***\n")
             
-            # ✅ NEW: Save RUV optimization results to file for persistence
+            # [OK] NEW: Save RUV optimization results to file for persistence
             if (!is.null(experiment_paths$source_dir)) {
               tryCatch({
                 ruv_file <- file.path(experiment_paths$source_dir, "ruv_optimization_results.RDS")
@@ -1552,7 +1552,7 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
                            percentage_as_neg_ctrl, ruv_k))
               })
               
-              # ✅ AUDIT TRAIL: Log automatic RUV parameters to global config_list
+              # [OK] AUDIT TRAIL: Log automatic RUV parameters to global config_list
               tryCatch({
                 if (exists("config_list", envir = .GlobalEnv)) {
                   config_list <- get("config_list", envir = .GlobalEnv)
@@ -1581,7 +1581,7 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
                 ruv_fdr_method = "BH"
               )
               
-              # ✅ AUDIT TRAIL: Log manual RUV parameters to global config_list
+              # [OK] AUDIT TRAIL: Log manual RUV parameters to global config_list
               tryCatch({
                 if (exists("config_list", envir = .GlobalEnv)) {
                   config_list <- get("config_list", envir = .GlobalEnv)
@@ -1625,11 +1625,11 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
               
               norm_data$ruv_optimization_result <- manual_ruv_result
               
-              # ✅ NEW: Store manual RUV results in workflow_data for session summary
+              # [OK] NEW: Store manual RUV results in workflow_data for session summary
               workflow_data$ruv_optimization_result <- manual_ruv_result
               cat("*** STEP 3a: Stored manual RUV results in workflow_data ***\n")
               
-              # ✅ NEW: Save manual RUV results to file for persistence
+              # [OK] NEW: Save manual RUV results to file for persistence
               if (!is.null(experiment_paths$source_dir)) {
                 tryCatch({
                   ruv_file <- file.path(experiment_paths$source_dir, "ruv_optimization_results.RDS")
@@ -1739,7 +1739,7 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
             
             # Generate filtering summary text
             norm_data$filtering_summary_text <- sprintf(
-              "Filtering Summary through Normalization & RUV:\n\n• Pre-normalization proteins: [Previous step]\n• Post-RUV filtering: %d proteins\n• Proteins removed by RUV: [Calculated from difference]\n\nRUV Parameters:\n• Normalization method: %s\n• RUV mode: %s\n• RUV k value: %d\n• Negative control %%: %.1f",
+              "Filtering Summary through Normalization & RUV:\n\n* Pre-normalization proteins: [Previous step]\n* Post-RUV filtering: %d proteins\n* Proteins removed by RUV: [Calculated from difference]\n\nRUV Parameters:\n* Normalization method: %s\n* RUV mode: %s\n* RUV k value: %d\n* Negative control %%: %.1f",
               ruvfilt_protein_count,
               input$norm_method,
               input$ruv_mode,
@@ -2491,7 +2491,7 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
         
         if (input$ruv_mode == "automatic") {
           sprintf(
-            "Automatic RUV Optimization Results:\n\n• Best percentage: %.1f%%\n• Best k value: %d\n• Separation score: %.4f\n• Composite score: %.4f\n• Control genes: %d\n• RUV grouping variable: %s\n• Separation metric: %s\n• K penalty weight: %.1f\n• Adaptive penalty: %s\n• Sample size: %s",
+            "Automatic RUV Optimization Results:\n\n* Best percentage: %.1f%%\n* Best k value: %d\n* Separation score: %.4f\n* Composite score: %.4f\n* Control genes: %d\n* RUV grouping variable: %s\n* Separation metric: %s\n* K penalty weight: %.1f\n* Adaptive penalty: %s\n* Sample size: %s",
             result$best_percentage,
             result$best_k,
             ifelse(is.null(result$best_separation_score), 0, result$best_separation_score),
@@ -2505,7 +2505,7 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
           )
         } else {
           sprintf(
-            "Manual RUV Parameters:\n\n• Selected percentage: %.1f%%\n• Selected k value: %d\n• Control genes: %d\n• RUV grouping variable: %s\n• Mode: Manual selection",
+            "Manual RUV Parameters:\n\n* Selected percentage: %.1f%%\n* Selected k value: %d\n* Control genes: %d\n* RUV grouping variable: %s\n* Mode: Manual selection",
             result$best_percentage,
             result$best_k,
             sum(result$best_control_genes_index, na.rm = TRUE),
@@ -2559,7 +2559,7 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
       message("Resetting normalization...")
       
       tryCatch({
-        # ✅ CRITICAL FIX: Revert R6 state manager to pre-normalization state
+        # [OK] CRITICAL FIX: Revert R6 state manager to pre-normalization state
         if (!is.null(workflow_data$state_manager)) {
           # Use smart revert pattern like QC tabs - find the actual previous state
           history <- workflow_data$state_manager$getHistory()
@@ -2726,7 +2726,7 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
             # NEW: Protein counts through workflow stages
             protein_counts = workflow_data$protein_counts,
             
-            # ✅ NEW: Mixed species FASTA analysis metadata for enrichment filtering
+            # [OK] NEW: Mixed species FASTA analysis metadata for enrichment filtering
             mixed_species_analysis = workflow_data$mixed_species_analysis,
             
             # Data dimensions for verification
@@ -2793,7 +2793,7 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
               }
             }
             
-            # ✅ NEW: Save mixed species analysis metadata for enrichment filtering
+            # [OK] NEW: Save mixed species analysis metadata for enrichment filtering
             if (!is.null(session_data$mixed_species_analysis)) {
               mixed_species_file <- file.path(source_dir, "mixed_species_analysis.RDS")
               saveRDS(session_data$mixed_species_analysis, mixed_species_file)

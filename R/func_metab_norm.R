@@ -385,9 +385,9 @@ runPerAssayRuvOptimization <- function(
     , params = list()
     , experiment_paths = NULL
 ) {
-    message("╔═══════════════════════════════════════════════════════════════════════════╗")
-    message("║  DEBUG66: Entering runPerAssayRuvOptimization                             ║")
-    message("╚═══════════════════════════════════════════════════════════════════════════╝")
+    message("+===========================================================================+")
+    message("|  DEBUG66: Entering runPerAssayRuvOptimization                             |")
+    message("+===========================================================================+")
     
     ruv_mode <- match.arg(ruv_mode)
     message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] ruv_mode = '%s'", ruv_mode))
@@ -566,9 +566,9 @@ runPerAssayRuvOptimization <- function(
 
     names(results) <- assay_names
     message(sprintf("   DEBUG66 [runPerAssayRuvOptimization] Completed all assays. Returning %d results.", length(results)))
-    message("╔═══════════════════════════════════════════════════════════════════════════╗")
-    message("║  DEBUG66: Exiting runPerAssayRuvOptimization                              ║")
-    message("╚═══════════════════════════════════════════════════════════════════════════╝")
+    message("+===========================================================================+")
+    message("|  DEBUG66: Exiting runPerAssayRuvOptimization                              |")
+    message("+===========================================================================+")
     return(results)
 }
 

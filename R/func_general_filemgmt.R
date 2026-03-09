@@ -1966,10 +1966,10 @@ copyToResultsSummary <- function(omic_type,
     if (is.null(contrasts_tbl)) {
         if (exists("contrasts_tbl", envir = parent.frame())) {
             contrasts_tbl <- get("contrasts_tbl", envir = parent.frame())
-            cat("✓ Using 'contrasts_tbl' from calling environment\n")
+            cat("[OK] Using 'contrasts_tbl' from calling environment\n")
         } else if (exists("contrasts_tbl", envir = .GlobalEnv)) {
             contrasts_tbl <- get("contrasts_tbl", envir = .GlobalEnv)
-            cat("✓ Using 'contrasts_tbl' from global environment\n")
+            cat("[OK] Using 'contrasts_tbl' from global environment\n")
         } else {
             # Fallback: try to load from file
             contrasts_file_options <- c(
@@ -1984,33 +1984,33 @@ copyToResultsSummary <- function(omic_type,
                     tryCatch(
                         {
                             contrasts_tbl <- readr::read_tsv(contrasts_file, show_col_types = FALSE)
-                            cat(sprintf("✓ Loaded 'contrasts_tbl' from file: %s\n", basename(contrasts_file)))
+                            cat(sprintf("[OK] Loaded 'contrasts_tbl' from file: %s\n", basename(contrasts_file)))
                             contrasts_loaded <- TRUE
                             break
                         },
                         error = function(e) {
-                            cat(sprintf("⚠ Failed to load contrasts from %s: %s\n", basename(contrasts_file), e$message))
+                            cat(sprintf("[WARNING] Failed to load contrasts from %s: %s\n", basename(contrasts_file), e$message))
                         }
                     )
                 }
             }
 
             if (!contrasts_loaded) {
-                cat("✗ 'contrasts_tbl' not found in environment or files\n")
+                cat("[FAIL] 'contrasts_tbl' not found in environment or files\n")
             }
         }
     } else {
-        cat("✓ Using provided 'contrasts_tbl' parameter\n")
+        cat("[OK] Using provided 'contrasts_tbl' parameter\n")
     }
 
     # Try design_matrix from environment first
     if (is.null(design_matrix)) {
         if (exists("design_matrix", envir = parent.frame())) {
             design_matrix <- get("design_matrix", envir = parent.frame())
-            cat("✓ Using 'design_matrix' from calling environment\n")
+            cat("[OK] Using 'design_matrix' from calling environment\n")
         } else if (exists("design_matrix", envir = .GlobalEnv)) {
             design_matrix <- get("design_matrix", envir = .GlobalEnv)
-            cat("✓ Using 'design_matrix' from global environment\n")
+            cat("[OK] Using 'design_matrix' from global environment\n")
         } else {
             # Fallback: try to load from file
             design_matrix_file <- file.path(current_paths$source_dir, "design_matrix.tab")
@@ -2019,19 +2019,19 @@ copyToResultsSummary <- function(omic_type,
                 tryCatch(
                     {
                         design_matrix <- readr::read_tsv(design_matrix_file, show_col_types = FALSE)
-                        cat(sprintf("✓ Loaded 'design_matrix' from file: %s\n", basename(design_matrix_file)))
+                        cat(sprintf("[OK] Loaded 'design_matrix' from file: %s\n", basename(design_matrix_file)))
                     },
                     error = function(e) {
-                        cat(sprintf("✗ Failed to load design_matrix from %s: %s\n", basename(design_matrix_file), e$message))
+                        cat(sprintf("[FAIL] Failed to load design_matrix from %s: %s\n", basename(design_matrix_file), e$message))
                         design_matrix <- NULL
                     }
                 )
             } else {
-                cat(sprintf("✗ 'design_matrix' not found in environment or at expected file location: %s\n", design_matrix_file))
+                cat(sprintf("[FAIL] 'design_matrix' not found in environment or at expected file location: %s\n", design_matrix_file))
             }
         }
     } else {
-        cat("✓ Using provided 'design_matrix' parameter\n")
+        cat("[OK] Using provided 'design_matrix' parameter\n")
     }
 
     # Handle current Rmd file
@@ -2442,11 +2442,11 @@ copyToResultsSummary <- function(omic_type,
                 if (!is.null(get0(file_spec$source, envir = parent.frame()))) {
                     obj <- get(file_spec$source, envir = parent.frame())
                     source_exists <- TRUE
-                    cat(sprintf("    ✓ Found '%s' in calling environment\n", file_spec$source))
+                    cat(sprintf("    [OK] Found '%s' in calling environment\n", file_spec$source))
                 } else if (!is.null(get0(file_spec$source, envir = .GlobalEnv))) {
                     obj <- get(file_spec$source, envir = .GlobalEnv)
                     source_exists <- TRUE
-                    cat(sprintf("    ✓ Found '%s' in global environment\n", file_spec$source))
+                    cat(sprintf("    [OK] Found '%s' in global environment\n", file_spec$source))
                 } else {
                     # Fallback: try to load from file
                     if (file_spec$source == "design_matrix") {
@@ -2456,11 +2456,11 @@ copyToResultsSummary <- function(omic_type,
                                 {
                                     obj <- readr::read_tsv(design_matrix_file, show_col_types = FALSE)
                                     source_exists <- TRUE
-                                    cat(sprintf("    ✓ Loaded '%s' from file: %s\n", file_spec$source, basename(design_matrix_file)))
+                                    cat(sprintf("    [OK] Loaded '%s' from file: %s\n", file_spec$source, basename(design_matrix_file)))
                                 },
                                 error = function(e) {
                                     error_msg <- sprintf("Failed to load %s from file %s: %s", file_spec$source, basename(design_matrix_file), e$message)
-                                    cat(sprintf("    ✗ %s\n", error_msg))
+                                    cat(sprintf("    [FAIL] %s\n", error_msg))
                                 }
                             )
                         } else {
@@ -2479,11 +2479,11 @@ copyToResultsSummary <- function(omic_type,
                                     {
                                         obj <- readr::read_tsv(contrasts_file, show_col_types = FALSE)
                                         source_exists <- TRUE
-                                        cat(sprintf("    ✓ Loaded '%s' from file: %s\n", file_spec$source, basename(contrasts_file)))
+                                        cat(sprintf("    [OK] Loaded '%s' from file: %s\n", file_spec$source, basename(contrasts_file)))
                                         break
                                     },
                                     error = function(e) {
-                                        cat(sprintf("    ⚠ Failed to load contrasts from %s: %s\n", basename(contrasts_file), e$message))
+                                        cat(sprintf("    [WARNING] Failed to load contrasts from %s: %s\n", basename(contrasts_file), e$message))
                                     }
                                 )
                             }
@@ -2578,11 +2578,11 @@ copyToResultsSummary <- function(omic_type,
             if (!source_exists || !copy_success) {
                 failed_copies[[length(failed_copies) + 1]] <- list(type = if (!is.null(file_spec$type) && file_spec$type == "object") "object" else if (file_spec$is_dir) "directory" else "file", source = source_display, destination = dest_dir_final, display_name = file_spec$display_name, error = error_msg)
             }
-            cat(sprintf("%-35s [%s -> %s] %s\n", file_spec$display_name, if (source_exists) "✓" else "✗", if (copy_success && source_exists) "✓" else "✗", if (!is.null(file_spec$type) && file_spec$type == "object") "Object" else if (file_spec$is_dir) "Directory" else "File"))
+            cat(sprintf("%-35s [%s -> %s] %s\n", file_spec$display_name, if (source_exists) "[OK]" else "[FAIL]", if (copy_success && source_exists) "[OK]" else "[FAIL]", if (!is.null(file_spec$type) && file_spec$type == "object") "Object" else if (file_spec$is_dir) "Directory" else "File"))
             if (!is.null(error_msg)) cat(sprintf("%35s Error: %s\n", "", error_msg))
         })
 
-    cat("\nLegend: ✓ = exists/success, ✗ = missing/failed\n")
+    cat("\nLegend: [OK] = exists/success, [FAIL] = missing/failed\n")
     cat("Arrow (->) shows source -> destination status\n")
 
     if (length(failed_copies) > 0) {
@@ -2743,7 +2743,7 @@ updateMissingValueParameters <- function(theObject,
 
     # Print the message
     message(paste(basic_msg, "\n\nGroup details:", group_details, sep = "\n"))
-    message("✅ S4 object @args and global config_list are now synchronized")
+    message("[OK] S4 object @args and global config_list are now synchronized")
 
     return(theObject)
 }
@@ -3722,7 +3722,7 @@ extractMetabS4Params <- function(metab_s4) {
 
     result <- list()
 
-    # ── Assay Information ──
+    # -- Assay Information --
     tryCatch(
         {
             assay_data <- metab_s4@metabolite_data
@@ -3757,7 +3757,7 @@ extractMetabS4Params <- function(metab_s4) {
         }
     )
 
-    # ── Extract @args parameters ──
+    # -- Extract @args parameters --
     s4_args <- tryCatch(
         {
             if (!is.null(metab_s4@args)) metab_s4@args else list()
@@ -3767,7 +3767,7 @@ extractMetabS4Params <- function(metab_s4) {
         }
     )
 
-    # ── ITSD Normalization ──
+    # -- ITSD Normalization --
     tryCatch(
         {
             if (!is.null(s4_args$ITSDNormalization)) {
@@ -3808,7 +3808,7 @@ extractMetabS4Params <- function(metab_s4) {
         }
     )
 
-    # ── Log Transformation ──
+    # -- Log Transformation --
     tryCatch(
         {
             result$log_transformation <- list(
@@ -3825,7 +3825,7 @@ extractMetabS4Params <- function(metab_s4) {
         }
     )
 
-    # ── Between-Sample Normalization ──
+    # -- Between-Sample Normalization --
     tryCatch(
         {
             result$normalisation_method <- s4_args$normalisation_method %||% NA_character_
@@ -3839,7 +3839,7 @@ extractMetabS4Params <- function(metab_s4) {
         }
     )
 
-    # ── RUV-III Parameters ──
+    # -- RUV-III Parameters --
     tryCatch(
         {
             if (!is.null(s4_args$ruv_number_k) || !is.null(s4_args$ruv_grouping_variable)) {
@@ -3885,7 +3885,7 @@ extractMetabS4Params <- function(metab_s4) {
         }
     )
 
-    # ── Slot Metadata ──
+    # -- Slot Metadata --
     tryCatch(
         {
             result$metadata <- list(
@@ -3916,7 +3916,7 @@ extractMetabS4Params <- function(metab_s4) {
         }
     )
 
-    # ── Pass through any other @args sections ──
+    # -- Pass through any other @args sections --
     result$raw_args <- s4_args
 
     cat("METAB PARAMS: Extraction complete. Found %d parameter groups\n", length(result))
@@ -3955,7 +3955,7 @@ extractLipidS4Params <- function(lipid_s4) {
 
     result <- list()
 
-    # ── Assay Information ──
+    # -- Assay Information --
     tryCatch(
         {
             assay_data <- lipid_s4@lipid_data
@@ -3990,7 +3990,7 @@ extractLipidS4Params <- function(lipid_s4) {
         }
     )
 
-    # ── Extract @args parameters ──
+    # -- Extract @args parameters --
     s4_args <- tryCatch(
         {
             if (!is.null(lipid_s4@args)) lipid_s4@args else list()
@@ -4000,7 +4000,7 @@ extractLipidS4Params <- function(lipid_s4) {
         }
     )
 
-    # ── ITSD Normalization ──
+    # -- ITSD Normalization --
     tryCatch(
         {
             if (!is.null(s4_args$ITSDNormalization)) {
@@ -4041,7 +4041,7 @@ extractLipidS4Params <- function(lipid_s4) {
         }
     )
 
-    # ── Log Transformation ──
+    # -- Log Transformation --
     tryCatch(
         {
             result$log_transformation <- list(
@@ -4058,7 +4058,7 @@ extractLipidS4Params <- function(lipid_s4) {
         }
     )
 
-    # ── Between-Sample Normalization ──
+    # -- Between-Sample Normalization --
     tryCatch(
         {
             result$normalisation_method <- s4_args$normalisation_method %||% NA_character_
@@ -4072,7 +4072,7 @@ extractLipidS4Params <- function(lipid_s4) {
         }
     )
 
-    # ── RUV-III Parameters ──
+    # -- RUV-III Parameters --
     tryCatch(
         {
             if (!is.null(s4_args$ruv_number_k) || !is.null(s4_args$ruv_grouping_variable)) {
@@ -4118,7 +4118,7 @@ extractLipidS4Params <- function(lipid_s4) {
         }
     )
 
-    # ── Slot Metadata ──
+    # -- Slot Metadata --
     tryCatch(
         {
             result$metadata <- list(
@@ -4149,7 +4149,7 @@ extractLipidS4Params <- function(lipid_s4) {
         }
     )
 
-    # ── Pass through any other @args sections ──
+    # -- Pass through any other @args sections --
     result$raw_args <- s4_args
 
     cat(sprintf("LIPID PARAMS: Extraction complete. Found %d parameter groups\n", length(result)))
@@ -4498,7 +4498,7 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
         output_lines <- c(output_lines, organism_lines)
     }
 
-    # ── Metabolomics-Specific Sections ──
+    # -- Metabolomics-Specific Sections --
     metab_params <- NULL
     if (!is.null(final_s4_object) && inherits(final_s4_object, "MetaboliteAssayData")) {
         cat("WORKFLOW ARGS: Detected MetaboliteAssayData - extracting metabolomics parameters\n")
@@ -4510,14 +4510,14 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             assay_lines <- c(
                 "Assay Information:",
                 "-------------------",
-                paste("• Number of Assays:", assay_info$num_assays %||% "N/A"),
-                paste("• Assay Names:", assay_info$assay_names %||% "N/A"),
-                paste("• Total Metabolites:", assay_info$total_metabolites %||% "N/A")
+                paste("* Number of Assays:", assay_info$num_assays %||% "N/A"),
+                paste("* Assay Names:", assay_info$assay_names %||% "N/A"),
+                paste("* Total Metabolites:", assay_info$total_metabolites %||% "N/A")
             )
 
             # Add per-assay metabolite counts
             if (!is.null(assay_info$metabolites_per_assay) && length(assay_info$metabolites_per_assay) > 0) {
-                assay_lines <- c(assay_lines, "• Metabolites per Assay:")
+                assay_lines <- c(assay_lines, "* Metabolites per Assay:")
                 for (assay_name in names(assay_info$metabolites_per_assay)) {
                     count <- assay_info$metabolites_per_assay[[assay_name]]
                     assay_lines <- c(assay_lines, sprintf("    - %s: %s", assay_name, count))
@@ -4535,24 +4535,24 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             itsd_lines <- c(
                 "ITSD Normalization:",
                 "-------------------",
-                paste("• Applied:", ifelse(isTRUE(itsd$applied), "Yes", "No"))
+                paste("* Applied:", ifelse(isTRUE(itsd$applied), "Yes", "No"))
             )
 
             if (isTRUE(itsd$applied)) {
                 itsd_lines <- c(
                     itsd_lines,
-                    paste("• Method Type:", itsd$method_type %||% "N/A"),
-                    paste("• Aggregation:", itsd$aggregation %||% "N/A"),
-                    paste("• Pattern Columns:", itsd$pattern_columns %||% "N/A"),
-                    paste("• ITSD Removed After Normalization:", ifelse(isTRUE(itsd$removed_after_norm), "Yes", "No"))
+                    paste("* Method Type:", itsd$method_type %||% "N/A"),
+                    paste("* Aggregation:", itsd$aggregation %||% "N/A"),
+                    paste("* Pattern Columns:", itsd$pattern_columns %||% "N/A"),
+                    paste("* ITSD Removed After Normalization:", ifelse(isTRUE(itsd$removed_after_norm), "Yes", "No"))
                 )
                 if (!is.null(itsd$timestamp) && !is.na(itsd$timestamp)) {
-                    itsd_lines <- c(itsd_lines, paste("• Timestamp:", itsd$timestamp))
+                    itsd_lines <- c(itsd_lines, paste("* Timestamp:", itsd$timestamp))
                 }
 
                 # Add per-assay ITSD feature names
                 if (!is.null(itsd$features_per_assay) && is.list(itsd$features_per_assay) && length(itsd$features_per_assay) > 0) {
-                    itsd_lines <- c(itsd_lines, "• ITSD Features Per Assay:")
+                    itsd_lines <- c(itsd_lines, "* ITSD Features Per Assay:")
                     for (assay_name in names(itsd$features_per_assay)) {
                         features <- itsd$features_per_assay[[assay_name]]
                         count <- length(features)
@@ -4579,13 +4579,13 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             log_lines <- c(
                 "Log Transformation:",
                 "------------------",
-                paste("• Applied:", ifelse(isTRUE(log_trans$applied), "Yes", "No"))
+                paste("* Applied:", ifelse(isTRUE(log_trans$applied), "Yes", "No"))
             )
 
             if (isTRUE(log_trans$applied)) {
                 log_lines <- c(
                     log_lines,
-                    paste("• Offset:", log_trans$offset %||% "N/A")
+                    paste("* Offset:", log_trans$offset %||% "N/A")
                 )
             }
 
@@ -4599,7 +4599,7 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             norm_lines <- c(
                 "Between-Sample Normalization:",
                 "-----------------------------",
-                paste("• Method:", metab_params$normalisation_method),
+                paste("* Method:", metab_params$normalisation_method),
                 ""
             )
             output_lines <- c(output_lines, norm_lines)
@@ -4612,26 +4612,26 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             meta_lines <- c(
                 "Metabolomics Metadata:",
                 "----------------------",
-                paste("• Metabolite ID Column:", meta$metabolite_id_column %||% "N/A"),
-                paste("• Annotation ID Column:", meta$annotation_id_column %||% "N/A"),
-                paste("• Database Identifier Type:", meta$database_identifier_type %||% "N/A"),
-                paste("• Sample ID Column:", meta$sample_id %||% "N/A"),
-                paste("• Group ID Column:", meta$group_id %||% "N/A")
+                paste("* Metabolite ID Column:", meta$metabolite_id_column %||% "N/A"),
+                paste("* Annotation ID Column:", meta$annotation_id_column %||% "N/A"),
+                paste("* Database Identifier Type:", meta$database_identifier_type %||% "N/A"),
+                paste("* Sample ID Column:", meta$sample_id %||% "N/A"),
+                paste("* Group ID Column:", meta$group_id %||% "N/A")
             )
 
             if (!is.null(meta$n_samples)) {
                 meta_lines <- c(
                     meta_lines,
-                    paste("• Number of Samples:", meta$n_samples),
-                    paste("• Number of Groups:", meta$n_groups %||% "N/A"),
-                    paste("• Group Names:", meta$group_names %||% "N/A")
+                    paste("* Number of Samples:", meta$n_samples),
+                    paste("* Number of Groups:", meta$n_groups %||% "N/A"),
+                    paste("* Group Names:", meta$group_names %||% "N/A")
                 )
             }
 
             if (!is.null(meta$internal_standard_regex) && !is.na(meta$internal_standard_regex)) {
                 meta_lines <- c(
                     meta_lines,
-                    paste("• Internal Standard Regex:", meta$internal_standard_regex)
+                    paste("* Internal Standard Regex:", meta$internal_standard_regex)
                 )
             }
 
@@ -4645,15 +4645,15 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             ruv_section <- c(
                 "RUV-III Batch Correction:",
                 "-------------------------",
-                "• Status: Applied"
+                "* Status: Applied"
             )
 
             if (isTRUE(metab_params$ruv_params$per_assay)) {
                 # Per-assay RUV parameters
                 ruv_section <- c(
                     ruv_section,
-                    paste("• Grouping Variable:", metab_params$ruv_params$grouping_variable %||% "N/A"),
-                    "• Per-Assay Parameters:"
+                    paste("* Grouping Variable:", metab_params$ruv_params$grouping_variable %||% "N/A"),
+                    "* Per-Assay Parameters:"
                 )
                 for (assay_name in names(metab_params$ruv_params$k_per_assay)) {
                     k_val <- metab_params$ruv_params$k_per_assay[[assay_name]]
@@ -4672,9 +4672,9 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
                 # Single RUV value
                 ruv_section <- c(
                     ruv_section,
-                    paste("• Grouping Variable:", metab_params$ruv_params$grouping_variable %||% "N/A"),
-                    paste("• k value:", metab_params$ruv_params$number_k %||% "N/A"),
-                    paste("• Control features:", metab_params$ruv_params$ctrl_count %||% "N/A")
+                    paste("* Grouping Variable:", metab_params$ruv_params$grouping_variable %||% "N/A"),
+                    paste("* k value:", metab_params$ruv_params$number_k %||% "N/A"),
+                    paste("* Control features:", metab_params$ruv_params$ctrl_count %||% "N/A")
                 )
                 cat("WORKFLOW ARGS: Added single RUV-III section\n")
             }
@@ -4686,7 +4686,7 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             ruv_section <- c(
                 "RUV-III Batch Correction:",
                 "-------------------------",
-                "• Status: Not Applied",
+                "* Status: Not Applied",
                 ""
             )
             output_lines <- c(output_lines, ruv_section)
@@ -4694,7 +4694,7 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
         }
     }
 
-    # ── Lipidomics-Specific Sections ──
+    # -- Lipidomics-Specific Sections --
     lipid_params <- NULL
     if (!is.null(final_s4_object) && inherits(final_s4_object, "LipidomicsAssayData")) {
         cat("WORKFLOW ARGS: Detected LipidomicsAssayData - extracting lipidomics parameters\n")
@@ -4706,14 +4706,14 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             assay_lines <- c(
                 "Assay Information:",
                 "-------------------",
-                paste("• Number of Assays:", assay_info$num_assays %||% "N/A"),
-                paste("• Assay Names:", assay_info$assay_names %||% "N/A"),
-                paste("• Total Lipids:", assay_info$total_lipids %||% "N/A")
+                paste("* Number of Assays:", assay_info$num_assays %||% "N/A"),
+                paste("* Assay Names:", assay_info$assay_names %||% "N/A"),
+                paste("* Total Lipids:", assay_info$total_lipids %||% "N/A")
             )
 
             # Add per-assay lipid counts
             if (!is.null(assay_info$lipids_per_assay) && length(assay_info$lipids_per_assay) > 0) {
-                assay_lines <- c(assay_lines, "• Lipids per Assay:")
+                assay_lines <- c(assay_lines, "* Lipids per Assay:")
                 for (assay_name in names(assay_info$lipids_per_assay)) {
                     count <- assay_info$lipids_per_assay[[assay_name]]
                     assay_lines <- c(assay_lines, sprintf("    - %s: %s", assay_name, count))
@@ -4731,24 +4731,24 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             itsd_lines <- c(
                 "ITSD Normalization:",
                 "-------------------",
-                paste("• Applied:", ifelse(isTRUE(itsd$applied), "Yes", "No"))
+                paste("* Applied:", ifelse(isTRUE(itsd$applied), "Yes", "No"))
             )
 
             if (isTRUE(itsd$applied)) {
                 itsd_lines <- c(
                     itsd_lines,
-                    paste("• Method Type:", itsd$method_type %||% "N/A"),
-                    paste("• Aggregation:", itsd$aggregation %||% "N/A"),
-                    paste("• Pattern Columns:", itsd$pattern_columns %||% "N/A"),
-                    paste("• ITSD Removed After Normalization:", ifelse(isTRUE(itsd$removed_after_norm), "Yes", "No"))
+                    paste("* Method Type:", itsd$method_type %||% "N/A"),
+                    paste("* Aggregation:", itsd$aggregation %||% "N/A"),
+                    paste("* Pattern Columns:", itsd$pattern_columns %||% "N/A"),
+                    paste("* ITSD Removed After Normalization:", ifelse(isTRUE(itsd$removed_after_norm), "Yes", "No"))
                 )
                 if (!is.null(itsd$timestamp) && !is.na(itsd$timestamp)) {
-                    itsd_lines <- c(itsd_lines, paste("• Timestamp:", itsd$timestamp))
+                    itsd_lines <- c(itsd_lines, paste("* Timestamp:", itsd$timestamp))
                 }
 
                 # Add per-assay ITSD feature names
                 if (!is.null(itsd$features_per_assay) && is.list(itsd$features_per_assay) && length(itsd$features_per_assay) > 0) {
-                    itsd_lines <- c(itsd_lines, "• ITSD Features Per Assay:")
+                    itsd_lines <- c(itsd_lines, "* ITSD Features Per Assay:")
                     for (assay_name in names(itsd$features_per_assay)) {
                         features <- itsd$features_per_assay[[assay_name]]
                         count <- length(features)
@@ -4775,13 +4775,13 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             log_lines <- c(
                 "Log Transformation:",
                 "------------------",
-                paste("• Applied:", ifelse(isTRUE(log_trans$applied), "Yes", "No"))
+                paste("* Applied:", ifelse(isTRUE(log_trans$applied), "Yes", "No"))
             )
 
             if (isTRUE(log_trans$applied)) {
                 log_lines <- c(
                     log_lines,
-                    paste("• Offset:", log_trans$offset %||% "N/A")
+                    paste("* Offset:", log_trans$offset %||% "N/A")
                 )
             }
 
@@ -4795,7 +4795,7 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             norm_lines <- c(
                 "Between-Sample Normalization:",
                 "-----------------------------",
-                paste("• Method:", lipid_params$normalisation_method),
+                paste("* Method:", lipid_params$normalisation_method),
                 ""
             )
             output_lines <- c(output_lines, norm_lines)
@@ -4808,26 +4808,26 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             meta_lines <- c(
                 "Lipidomics Metadata:",
                 "----------------------",
-                paste("• Lipid ID Column:", meta$lipid_id_column %||% "N/A"),
-                paste("• Annotation ID Column:", meta$annotation_id_column %||% "N/A"),
-                paste("• Database Identifier Type:", meta$database_identifier_type %||% "N/A"),
-                paste("• Sample ID Column:", meta$sample_id %||% "N/A"),
-                paste("• Group ID Column:", meta$group_id %||% "N/A")
+                paste("* Lipid ID Column:", meta$lipid_id_column %||% "N/A"),
+                paste("* Annotation ID Column:", meta$annotation_id_column %||% "N/A"),
+                paste("* Database Identifier Type:", meta$database_identifier_type %||% "N/A"),
+                paste("* Sample ID Column:", meta$sample_id %||% "N/A"),
+                paste("* Group ID Column:", meta$group_id %||% "N/A")
             )
 
             if (!is.null(meta$n_samples)) {
                 meta_lines <- c(
                     meta_lines,
-                    paste("• Number of Samples:", meta$n_samples),
-                    paste("• Number of Groups:", meta$n_groups %||% "N/A"),
-                    paste("• Group Names:", meta$group_names %||% "N/A")
+                    paste("* Number of Samples:", meta$n_samples),
+                    paste("* Number of Groups:", meta$n_groups %||% "N/A"),
+                    paste("* Group Names:", meta$group_names %||% "N/A")
                 )
             }
 
             if (!is.null(meta$internal_standard_regex) && !is.na(meta$internal_standard_regex)) {
                 meta_lines <- c(
                     meta_lines,
-                    paste("• Internal Standard Regex:", meta$internal_standard_regex)
+                    paste("* Internal Standard Regex:", meta$internal_standard_regex)
                 )
             }
 
@@ -4841,15 +4841,15 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             ruv_section <- c(
                 "RUV-III Batch Correction:",
                 "-------------------------",
-                "• Status: Applied"
+                "* Status: Applied"
             )
 
             if (isTRUE(lipid_params$ruv_params$per_assay)) {
                 # Per-assay RUV parameters
                 ruv_section <- c(
                     ruv_section,
-                    paste("• Grouping Variable:", lipid_params$ruv_params$grouping_variable %||% "N/A"),
-                    "• Per-Assay Parameters:"
+                    paste("* Grouping Variable:", lipid_params$ruv_params$grouping_variable %||% "N/A"),
+                    "* Per-Assay Parameters:"
                 )
                 for (assay_name in names(lipid_params$ruv_params$k_per_assay)) {
                     k_val <- lipid_params$ruv_params$k_per_assay[[assay_name]]
@@ -4868,9 +4868,9 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
                 # Single RUV value
                 ruv_section <- c(
                     ruv_section,
-                    paste("• Grouping Variable:", lipid_params$ruv_params$grouping_variable %||% "N/A"),
-                    paste("• k value:", lipid_params$ruv_params$number_k %||% "N/A"),
-                    paste("• Control features:", lipid_params$ruv_params$ctrl_count %||% "N/A")
+                    paste("* Grouping Variable:", lipid_params$ruv_params$grouping_variable %||% "N/A"),
+                    paste("* k value:", lipid_params$ruv_params$number_k %||% "N/A"),
+                    paste("* Control features:", lipid_params$ruv_params$ctrl_count %||% "N/A")
                 )
                 cat("WORKFLOW ARGS: Added single RUV-III section\n")
             }
@@ -4882,7 +4882,7 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             ruv_section <- c(
                 "RUV-III Batch Correction:",
                 "-------------------------",
-                "• Status: Not Applied",
+                "* Status: Not Applied",
                 ""
             )
             output_lines <- c(output_lines, ruv_section)
@@ -4900,8 +4900,8 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             ruv_lines <- c(
                 "RUV-III Batch Correction:",
                 "-------------------------",
-                "• Status: Not Applied",
-                "• Reason: User determined RUV was not appropriate due to dataset constraints",
+                "* Status: Not Applied",
+                "* Reason: User determined RUV was not appropriate due to dataset constraints",
                 ""
             )
             output_lines <- c(output_lines, ruv_lines)
@@ -4980,16 +4980,16 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
 
                     ruv_lines <- c(
                         ruv_lines,
-                        paste("• Best percentage:", best_percentage),
-                        paste("• Best k value:", best_k),
-                        paste("• Separation score:", separation_score),
-                        paste("• Composite score:", composite_score),
-                        paste("• Control genes:", control_genes_count),
-                        paste("• RUV grouping variable:", ruv_grouping_variable),
-                        paste("• Separation metric:", separation_metric),
-                        paste("• K penalty weight:", k_penalty_weight),
-                        paste("• Adaptive penalty:", adaptive_penalty),
-                        paste("• Sample size:", sample_size),
+                        paste("* Best percentage:", best_percentage),
+                        paste("* Best k value:", best_k),
+                        paste("* Separation score:", separation_score),
+                        paste("* Composite score:", composite_score),
+                        paste("* Control genes:", control_genes_count),
+                        paste("* RUV grouping variable:", ruv_grouping_variable),
+                        paste("* Separation metric:", separation_metric),
+                        paste("* K penalty weight:", k_penalty_weight),
+                        paste("* Adaptive penalty:", adaptive_penalty),
+                        paste("* Sample size:", sample_size),
                         ""
                     )
 
@@ -4999,7 +4999,7 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
                     cat(sprintf("WORKFLOW ARGS: Error formatting RUV results: %s\n", e$message))
                     ruv_lines <- c(
                         ruv_lines,
-                        paste("• [Error formatting RUV optimization results:", e$message, "]"),
+                        paste("* [Error formatting RUV optimization results:", e$message, "]"),
                         ""
                     )
                 }
@@ -5017,12 +5017,12 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
         fasta_lines <- c(
             "FASTA File Processing:",
             "---------------------",
-            paste("• Format:", workflow_data$fasta_metadata$fasta_format),
-            paste("• Sequences:", workflow_data$fasta_metadata$num_sequences),
-            paste("• Protein Evidence Available:", workflow_data$fasta_metadata$has_protein_evidence),
-            paste("• Gene Names Available:", workflow_data$fasta_metadata$has_gene_names),
-            paste("• Isoform Information Available:", workflow_data$fasta_metadata$has_isoform_info),
-            paste("• Status Information Available:", workflow_data$fasta_metadata$has_status_info),
+            paste("* Format:", workflow_data$fasta_metadata$fasta_format),
+            paste("* Sequences:", workflow_data$fasta_metadata$num_sequences),
+            paste("* Protein Evidence Available:", workflow_data$fasta_metadata$has_protein_evidence),
+            paste("* Gene Names Available:", workflow_data$fasta_metadata$has_gene_names),
+            paste("* Isoform Information Available:", workflow_data$fasta_metadata$has_isoform_info),
+            paste("* Status Information Available:", workflow_data$fasta_metadata$has_status_info),
             ""
         )
         output_lines <- c(output_lines, fasta_lines)
@@ -5030,7 +5030,7 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
         cat("WORKFLOW ARGS: No FASTA metadata available\n")
     }
 
-    # ✅ NEW: Add Mixed Species FASTA Analysis section
+    # [OK] NEW: Add Mixed Species FASTA Analysis section
     if (!is.null(workflow_data) && !is.null(workflow_data$mixed_species_analysis)) {
         cat("WORKFLOW ARGS: Adding mixed species analysis information\n")
         mixed_species_info <- workflow_data$mixed_species_analysis
@@ -5038,15 +5038,15 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
         mixed_species_lines <- c(
             "Mixed Species FASTA Analysis:",
             "-----------------------------",
-            paste("• Multi-Species FASTA Used:", ifelse(isTRUE(mixed_species_info$enabled), "Yes", "No"))
+            paste("* Multi-Species FASTA Used:", ifelse(isTRUE(mixed_species_info$enabled), "Yes", "No"))
         )
 
         if (isTRUE(mixed_species_info$enabled)) {
             mixed_species_lines <- c(
                 mixed_species_lines,
-                paste("• Selected Primary Organism:", mixed_species_info$selected_organism %||% "N/A"),
-                paste("• Selected Taxon ID:", mixed_species_info$selected_taxon_id %||% "N/A"),
-                paste("• Filtered at Import:", ifelse(isTRUE(mixed_species_info$filter_applied_at_import), "Yes", "No"))
+                paste("* Selected Primary Organism:", mixed_species_info$selected_organism %||% "N/A"),
+                paste("* Selected Taxon ID:", mixed_species_info$selected_taxon_id %||% "N/A"),
+                paste("* Filtered at Import:", ifelse(isTRUE(mixed_species_info$filter_applied_at_import), "Yes", "No"))
             )
 
             # Add organism distribution summary if available
@@ -5078,7 +5078,7 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
         output_lines <- c(output_lines, mixed_species_lines)
     }
 
-    # ✅ NEW: Add Enrichment Organism Filtering section
+    # [OK] NEW: Add Enrichment Organism Filtering section
     if (!is.null(workflow_data) && !is.null(workflow_data$enrichment_organism_filter)) {
         cat("WORKFLOW ARGS: Adding enrichment organism filtering information\n")
         filter_info <- workflow_data$enrichment_organism_filter
@@ -5086,24 +5086,24 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
         filter_lines <- c(
             "Enrichment Analysis - Organism Filtering:",
             "-----------------------------------------",
-            paste("• Organism Filter Enabled:", ifelse(isTRUE(filter_info$enabled), "Yes", "No"))
+            paste("* Organism Filter Enabled:", ifelse(isTRUE(filter_info$enabled), "Yes", "No"))
         )
 
         if (isTRUE(filter_info$filter_applied)) {
             filter_lines <- c(
                 filter_lines,
-                paste("• Filter Applied:", "Yes"),
-                paste("• Target Taxon ID:", filter_info$target_taxon_id %||% "N/A"),
-                paste("• Proteins Before Filtering:", filter_info$proteins_before %||% "N/A"),
-                paste("• Proteins After Filtering:", filter_info$proteins_after %||% "N/A"),
-                paste("• Proteins Removed:", filter_info$proteins_removed %||% "N/A")
+                paste("* Filter Applied:", "Yes"),
+                paste("* Target Taxon ID:", filter_info$target_taxon_id %||% "N/A"),
+                paste("* Proteins Before Filtering:", filter_info$proteins_before %||% "N/A"),
+                paste("* Proteins After Filtering:", filter_info$proteins_after %||% "N/A"),
+                paste("* Proteins Removed:", filter_info$proteins_removed %||% "N/A")
             )
 
             if (!is.null(filter_info$proteins_before) && filter_info$proteins_before > 0) {
                 retention_pct <- round((filter_info$proteins_after / filter_info$proteins_before) * 100, 1)
                 filter_lines <- c(
                     filter_lines,
-                    paste("• Retention Rate:", paste0(retention_pct, "%"))
+                    paste("* Retention Rate:", paste0(retention_pct, "%"))
                 )
             }
         }
@@ -5118,12 +5118,12 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
         cleanup_lines <- c(
             "Protein Accession Cleanup:",
             "-------------------------",
-            paste("• Cleanup Applied:", workflow_data$accession_cleanup_results$cleanup_applied),
-            paste("• Aggregation Method:", workflow_data$accession_cleanup_results$aggregation_method),
-            paste("• Delimiter Used:", workflow_data$accession_cleanup_results$delimiter_used),
-            paste("• Proteins Before Cleanup:", workflow_data$accession_cleanup_results$proteins_before),
-            paste("• Proteins After Cleanup:", workflow_data$accession_cleanup_results$proteins_after),
-            paste("• Full UniProt Metadata:", workflow_data$accession_cleanup_results$had_full_metadata),
+            paste("* Cleanup Applied:", workflow_data$accession_cleanup_results$cleanup_applied),
+            paste("* Aggregation Method:", workflow_data$accession_cleanup_results$aggregation_method),
+            paste("* Delimiter Used:", workflow_data$accession_cleanup_results$delimiter_used),
+            paste("* Proteins Before Cleanup:", workflow_data$accession_cleanup_results$proteins_before),
+            paste("* Proteins After Cleanup:", workflow_data$accession_cleanup_results$proteins_after),
+            paste("* Full UniProt Metadata:", workflow_data$accession_cleanup_results$had_full_metadata),
             ""
         )
         output_lines <- c(output_lines, cleanup_lines)
@@ -5137,9 +5137,9 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
         counts_lines <- c(
             "Protein Filtering Summary:",
             "-------------------------",
-            paste("• Proteins after QC filtering:", workflow_data$protein_counts$after_qc_filtering %||% "N/A"),
-            paste("• Proteins after RUV filtering:", workflow_data$protein_counts$after_ruv_filtering %||% "N/A"),
-            paste("• Final proteins for DE analysis:", workflow_data$protein_counts$final_for_de %||% "N/A"),
+            paste("* Proteins after QC filtering:", workflow_data$protein_counts$after_qc_filtering %||% "N/A"),
+            paste("* Proteins after RUV filtering:", workflow_data$protein_counts$after_ruv_filtering %||% "N/A"),
+            paste("* Final proteins for DE analysis:", workflow_data$protein_counts$final_for_de %||% "N/A"),
             ""
         )
         output_lines <- c(output_lines, counts_lines)
@@ -5533,7 +5533,7 @@ checkPeptideNAPercentages <- function(peptide_obj, verbose = TRUE) {
     if (verbose) {
         cat("\n=== Peptide Data Missing Value Analysis ===\n")
         cat(sprintf(
-            "Dataset dimensions: %d peptides × %d samples\n",
+            "Dataset dimensions: %d peptides x %d samples\n",
             nrow(peptide_matrix), ncol(peptide_matrix)
         ))
         cat(sprintf("Number of groups: %d\n", summary_stats$total_groups))
@@ -5602,27 +5602,27 @@ validatePostImputationData <- function(peptide_obj, expected_na_percent = 0, tol
     is_valid <- abs(actual_na_percent - expected_na_percent) <= tolerance
 
     cat("\n--- VALIDATION RESULT ---\n")
-    cat(sprintf("Expected NA%%: %.2f%% (± %.2f%%)\n", expected_na_percent, tolerance))
+    cat(sprintf("Expected NA%%: %.2f%% (+/- %.2f%%)\n", expected_na_percent, tolerance))
     cat(sprintf("Actual NA%%: %.2f%%\n", actual_na_percent))
 
     if (is_valid) {
-        cat("✓ VALIDATION PASSED: Imputation appears successful!\n")
+        cat("[OK] VALIDATION PASSED: Imputation appears successful!\n")
     } else {
-        cat("✗ VALIDATION FAILED: Unexpected NA percentage detected!\n")
+        cat("[FAIL] VALIDATION FAILED: Unexpected NA percentage detected!\n")
         if (actual_na_percent > expected_na_percent + tolerance) {
-            cat("  → Issue: More NAs than expected. Imputation may have failed.\n")
+            cat("  -> Issue: More NAs than expected. Imputation may have failed.\n")
         } else {
-            cat("  → Issue: Fewer NAs than expected. Check data integrity.\n")
+            cat("  -> Issue: Fewer NAs than expected. Check data integrity.\n")
         }
     }
 
     # Additional warnings for common issues
     if (actual_na_percent > 10) {
-        cat("⚠ WARNING: High NA percentage suggests imputation problems!\n")
+        cat("[WARNING] WARNING: High NA percentage suggests imputation problems!\n")
     }
 
     if (na_results$summary_stats$max_na_per_sample > actual_na_percent + 5) {
-        cat("⚠ WARNING: Large variation in NA% between samples detected!\n")
+        cat("[WARNING] WARNING: Large variation in NA% between samples detected!\n")
     }
 
     cat("\n")
@@ -5657,53 +5657,53 @@ getProteinNARecommendations <- function(protein_obj, include_code = TRUE) {
     ))
 
     if (na_percent < 15) {
-        cat("🎯 RECOMMENDATION: Complete Case Analysis\n")
-        cat("• Your data has excellent protein coverage\n")
-        cat("• Can proceed with standard analysis on proteins with complete data\n")
+        cat("[RECOMMENDATION] RECOMMENDATION: Complete Case Analysis\n")
+        cat("* Your data has excellent protein coverage\n")
+        cat("* Can proceed with standard analysis on proteins with complete data\n")
         if (include_code) {
-            cat("\n📝 Example code:\n")
+            cat("\n[NOTE] Example code:\n")
             cat("complete_proteins <- protein_obj@protein_quant_table[complete.cases(protein_obj@protein_quant_table), ]\n")
         }
     } else if (na_percent >= 15 && na_percent < 40) {
-        cat("🎯 RECOMMENDATION: Consider Protein-Level Imputation\n")
-        cat("• Moderate missing values - imputation could be beneficial\n")
-        cat("• Options: KNN, minimum value, or mixed imputation strategies\n")
-        cat("• Alternative: Filter to proteins detected in ≥X samples per group\n")
+        cat("[RECOMMENDATION] RECOMMENDATION: Consider Protein-Level Imputation\n")
+        cat("* Moderate missing values - imputation could be beneficial\n")
+        cat("* Options: KNN, minimum value, or mixed imputation strategies\n")
+        cat("* Alternative: Filter to proteins detected in >=X samples per group\n")
         if (include_code) {
-            cat("\n📝 Example filtering code:\n")
-            cat("# Keep proteins detected in ≥50% of samples per group\n")
+            cat("\n[NOTE] Example filtering code:\n")
+            cat("# Keep proteins detected in >=50% of samples per group\n")
             cat("filtered_proteins <- filterProteinsByGroupDetection(protein_obj, min_detection_rate = 0.5)\n")
         }
     } else if (na_percent >= 40 && na_percent < 60) {
-        cat("🎯 RECOMMENDATION: Strict Filtering + Targeted Imputation\n")
-        cat("• High missing values suggest challenging sample/detection conditions\n")
-        cat("• Focus on well-detected proteins (present in majority of samples)\n")
-        cat("• Consider group-wise detection requirements\n")
+        cat("[RECOMMENDATION] RECOMMENDATION: Strict Filtering + Targeted Imputation\n")
+        cat("* High missing values suggest challenging sample/detection conditions\n")
+        cat("* Focus on well-detected proteins (present in majority of samples)\n")
+        cat("* Consider group-wise detection requirements\n")
         if (include_code) {
-            cat("\n📝 Example approach:\n")
-            cat("# Keep proteins detected in ≥70% of samples in at least one group\n")
+            cat("\n[NOTE] Example approach:\n")
+            cat("# Keep proteins detected in >=70% of samples in at least one group\n")
             cat("robust_proteins <- filterProteinsByGroupwise(protein_obj, min_group_detection = 0.7)\n")
         }
     } else {
-        cat("⚠️  RECOMMENDATION: Review Data Quality\n")
-        cat("• Very high missing values (>60%) suggest potential issues\n")
-        cat("• Check: sample quality, peptide identification, rollup parameters\n")
-        cat("• Consider more stringent protein identification criteria\n")
-        cat("• May need to focus only on highly abundant/well-detected proteins\n")
+        cat("[WARNING]  RECOMMENDATION: Review Data Quality\n")
+        cat("* Very high missing values (>60%) suggest potential issues\n")
+        cat("* Check: sample quality, peptide identification, rollup parameters\n")
+        cat("* Consider more stringent protein identification criteria\n")
+        cat("* May need to focus only on highly abundant/well-detected proteins\n")
     }
 
-    cat("\n📚 STRATEGIES SUMMARY:\n")
+    cat("\n[REFERENCE] STRATEGIES SUMMARY:\n")
     cat("1. Complete Case: Use only proteins with no NAs\n")
     cat("2. Filtering: Remove proteins with >X% missing values\n")
-    cat("3. Group-wise: Require detection in ≥Y% samples per group\n")
+    cat("3. Group-wise: Require detection in >=Y% samples per group\n")
     cat("4. Imputation: Fill NAs with estimated values (KNN, minimum, etc.)\n")
     cat("5. Hybrid: Combine filtering + imputation\n")
 
-    cat("\n💡 TIP: Protein NAs ≠ Data Quality Issues\n")
+    cat("\n[TIP] TIP: Protein NAs != Data Quality Issues\n")
     cat("Missing proteins often reflect:\n")
-    cat("• Low abundance proteins below detection limit\n")
-    cat("• Sample-specific biology (some proteins not expressed)\n")
-    cat("• Normal variation in complex proteomes\n\n")
+    cat("* Low abundance proteins below detection limit\n")
+    cat("* Sample-specific biology (some proteins not expressed)\n")
+    cat("* Normal variation in complex proteomes\n\n")
 
     strategies <- list(
         na_percent = na_percent,
@@ -5816,7 +5816,7 @@ checkProteinNAPercentages <- function(protein_obj, verbose = TRUE) {
     if (verbose) {
         cat("\n=== Protein Data Missing Value Analysis ===\n")
         cat(sprintf(
-            "Dataset dimensions: %d proteins × %d samples\n",
+            "Dataset dimensions: %d proteins x %d samples\n",
             nrow(protein_matrix), ncol(protein_matrix)
         ))
         cat(sprintf("Number of groups: %d\n", summary_stats$total_groups))
@@ -5877,9 +5877,9 @@ checkProteinNAPercentages <- function(protein_obj, verbose = TRUE) {
 validatePostImputationProteinData <- function(protein_obj, expected_na_percent = NULL, tolerance = 10) {
     cat("\n=== POST-IMPUTATION PROTEIN DATA VALIDATION ===\n")
     cat("Note: Protein-level NAs occur even after peptide imputation because:\n")
-    cat("• Proteins need ≥1 detected peptide to get a quantification\n")
-    cat("• Some proteins detected only in subset of samples\n")
-    cat("• This is normal proteomics data behavior!\n\n")
+    cat("* Proteins need >=1 detected peptide to get a quantification\n")
+    cat("* Some proteins detected only in subset of samples\n")
+    cat("* This is normal proteomics data behavior!\n\n")
 
     # Run the full NA analysis
     na_results <- checkProteinNAPercentages(protein_obj, verbose = TRUE)
@@ -5898,45 +5898,45 @@ validatePostImputationProteinData <- function(protein_obj, expected_na_percent =
     is_valid <- abs(actual_na_percent - expected_na_percent) <= tolerance
 
     cat("\n--- VALIDATION RESULT ---\n")
-    cat(sprintf("Expected NA%%: %.2f%% (± %.2f%%)\n", expected_na_percent, tolerance))
+    cat(sprintf("Expected NA%%: %.2f%% (+/- %.2f%%)\n", expected_na_percent, tolerance))
     cat(sprintf("Actual NA%%: %.2f%%\n", actual_na_percent))
 
     if (is_valid) {
-        cat("✓ VALIDATION PASSED: Protein data NA levels are within expected range!\n")
+        cat("[OK] VALIDATION PASSED: Protein data NA levels are within expected range!\n")
     } else {
-        cat("✗ VALIDATION FAILED: Unexpected NA percentage detected!\n")
+        cat("[FAIL] VALIDATION FAILED: Unexpected NA percentage detected!\n")
         if (actual_na_percent > expected_na_percent + tolerance) {
-            cat("  → Issue: More NAs than expected. Check for missing proteins/peptides.\n")
+            cat("  -> Issue: More NAs than expected. Check for missing proteins/peptides.\n")
         } else {
-            cat("  → Issue: Fewer NAs than expected. Possible over-imputation.\n")
+            cat("  -> Issue: Fewer NAs than expected. Possible over-imputation.\n")
         }
     }
 
     # Additional warnings for common issues
     if (actual_na_percent > 50) {
-        cat("⚠ WARNING: Very high NA percentage (>50%) suggests data quality issues!\n")
+        cat("[WARNING] WARNING: Very high NA percentage (>50%) suggests data quality issues!\n")
     }
 
     if (actual_na_percent < 10) {
-        cat("ℹ INFO: Very low NA percentage (<10%) - excellent protein coverage!\n")
+        cat("[INFO] INFO: Very low NA percentage (<10%) - excellent protein coverage!\n")
     }
 
     # Educational information about protein NAs
     if (actual_na_percent > 20 && actual_na_percent < 50) {
-        cat("ℹ INFO: NA percentage is typical for protein-level data\n")
-        cat("  → This reflects biological reality: not all proteins detected in all samples\n")
-        cat("  → Consider: protein-level imputation OR complete-case analysis\n")
+        cat("[INFO] INFO: NA percentage is typical for protein-level data\n")
+        cat("  -> This reflects biological reality: not all proteins detected in all samples\n")
+        cat("  -> Consider: protein-level imputation OR complete-case analysis\n")
     }
 
     if (na_results$summary_stats$max_na_per_sample > actual_na_percent + 10) {
-        cat("⚠ WARNING: Large variation in NA% between samples detected!\n")
-        cat("  → Some samples may have much lower protein coverage.\n")
+        cat("[WARNING] WARNING: Large variation in NA% between samples detected!\n")
+        cat("  -> Some samples may have much lower protein coverage.\n")
     }
 
     # Check for problematic samples (>80% missing)
     high_missing_samples <- na_results$per_sample_na[na_results$per_sample_na$na_percentage > 80, ]
     if (nrow(high_missing_samples) > 0) {
-        cat("⚠ WARNING: Samples with >80% missing proteins detected:\n")
+        cat("[WARNING] WARNING: Samples with >80% missing proteins detected:\n")
         print(high_missing_samples[, c("sample", "na_percentage")])
     }
 

@@ -71,7 +71,7 @@ mod_prot_qc_peptide_sample_server <- function(id, workflow_data, omic_type, expe
         
         logger::log_info(sprintf("QC Step: Applying sample quality filter (min: %s)", input$min_peptides_per_sample))
         
-        # ✅ FIXED: Use updateConfigParameter to sync S4 object AND global config_list
+        # [OK] FIXED: Use updateConfigParameter to sync S4 object AND global config_list
         current_s4 <- updateConfigParameter(
           theObject = current_s4,
           function_name = "filterMinNumPeptidesPerSample",

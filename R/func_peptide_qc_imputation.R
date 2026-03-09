@@ -136,27 +136,27 @@ validatePostImputationData <- function(peptide_obj, expected_na_percent = 0, tol
   is_valid <- abs(actual_na_percent - expected_na_percent) <= tolerance
   
   cat("\n--- VALIDATION RESULT ---\n")
-  cat(sprintf("Expected NA%%: %.2f%% (± %.2f%%)\n", expected_na_percent, tolerance))
+  cat(sprintf("Expected NA%%: %.2f%% (+/- %.2f%%)\n", expected_na_percent, tolerance))
   cat(sprintf("Actual NA%%: %.2f%%\n", actual_na_percent))
   
   if (is_valid) {
-    cat("✓ VALIDATION PASSED: Imputation appears successful!\n")
+    cat("[OK] VALIDATION PASSED: Imputation appears successful!\n")
   } else {
-    cat("✗ VALIDATION FAILED: Unexpected NA percentage detected!\n")
+    cat("[FAIL] VALIDATION FAILED: Unexpected NA percentage detected!\n")
     if (actual_na_percent > expected_na_percent + tolerance) {
-      cat("  → Issue: More NAs than expected. Imputation may have failed.\n")
+      cat("  -> Issue: More NAs than expected. Imputation may have failed.\n")
     } else {
-      cat("  → Issue: Fewer NAs than expected. Check data integrity.\n")
+      cat("  -> Issue: Fewer NAs than expected. Check data integrity.\n")
     }
   }
   
   # Additional warnings for common issues
   if (actual_na_percent > 10) {
-    cat("⚠ WARNING: High NA percentage suggests imputation problems!\n")
+    cat("[WARNING] WARNING: High NA percentage suggests imputation problems!\n")
   }
   
   if (na_results$summary_stats$max_na_per_sample > actual_na_percent + 5) {
-    cat("⚠ WARNING: Large variation in NA% between samples detected!\n")
+    cat("[WARNING] WARNING: Large variation in NA% between samples detected!\n")
   }
   
   cat("\n")

@@ -1291,7 +1291,7 @@ updateMissingValueParameters <- function(theObject,
     
     # Print the message
     message(paste(basic_msg, "\n\nGroup details:", group_details, sep = "\n"))
-    message("✅ S4 object @args and global config_list are now synchronized")
+    message("[OK] S4 object @args and global config_list are now synchronized")
     
     return(theObject)
 }

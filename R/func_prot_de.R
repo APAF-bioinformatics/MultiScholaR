@@ -3982,7 +3982,7 @@ setMethod(
 
         message(sprintf("   outputDeResultsAllContrasts: Also wrote Excel: %s", excel_filename))
 
-        # ✅ NEW: Generate volcano plot for this contrast
+        # [OK] NEW: Generate volcano plot for this contrast
         message(sprintf("   outputDeResultsAllContrasts: Generating volcano plot for contrast: %s", contrast_name))
 
         # Extract parameters - try direct access first, then use checkParams
@@ -4060,7 +4060,7 @@ setMethod(
       }
     }
 
-    # ✅ NEW: Generate combined multi-page PDF with all volcano plots
+    # [OK] NEW: Generate combined multi-page PDF with all volcano plots
     message("   outputDeResultsAllContrasts: Creating combined volcano plots PDF...")
 
     volcano_dir <- file.path(publication_graphs_dir, "Volcano_Plots")
