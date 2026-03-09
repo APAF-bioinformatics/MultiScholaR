@@ -4918,7 +4918,7 @@ setClass("FilteringProgressLipidomics",
 
 #' @title Initialize or Retrieve Global Lipidomics Filtering Progress Object
 #' @description Checks for a global object named
-iltering_progress_lipidomics
+#' filtering_progress_lipidomics
 #'              of class FilteringProgressLipidomics. If it doesn't exist,
 #'              it creates and assigns a new one to the global environment.
 #'
