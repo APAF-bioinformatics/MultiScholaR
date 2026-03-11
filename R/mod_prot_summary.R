@@ -588,7 +588,7 @@ mod_prot_summary_server <- function(id, project_dirs, omic_type = "proteomics", 
           error_msg <- paste("Report generation failed:", e$message)
           
           # Enhanced debug output
-          cat("   DEBUG66: REPORT GENERATION ERROR\n")
+          cat("   DABUG66: REPORT GENERATION ERROR\n")
           cat(sprintf("      Error class: %s\n", class(e)[1]))
           cat(sprintf("      Error message: %s\n", e$message))
           cat("      Full error object:\n")

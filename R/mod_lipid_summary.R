@@ -47,7 +47,7 @@ mod_lipid_summary_ui <- function(id) {
                         shiny::textInput(ns("experiment_label"), "Experiment Label:",
                                         value = "", placeholder = "e.g., my_lipidomics_analysis"),
                         shiny::textAreaInput(ns("description"), "Description:",
-                                            value = "Full lipidomics analysis workflow with normalization and DE",
+                                            value = "Full lipidomics analysis workflow with normalization and DA",
                                             rows = 3, resize = "vertical"),
                         shiny::br(),
                         shiny::actionButton(ns("save_workflow_args"), "Save Workflow Arguments",

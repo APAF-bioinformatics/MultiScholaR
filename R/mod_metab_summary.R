@@ -47,7 +47,7 @@ mod_metab_summary_ui <- function(id) {
                         shiny::textInput(ns("experiment_label"), "Experiment Label:",
                                         value = "", placeholder = "e.g., my_metabolomics_analysis"),
                         shiny::textAreaInput(ns("description"), "Description:",
-                                            value = "Full metabolomics analysis workflow with normalization and DE",
+                                            value = "Full metabolomics analysis workflow with normalization and DA",
                                             rows = 3, resize = "vertical"),
                         shiny::br(),
                         shiny::actionButton(ns("save_workflow_args"), "Save Workflow Arguments",
