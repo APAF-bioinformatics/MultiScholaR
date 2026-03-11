@@ -131,7 +131,7 @@ generateLimpaQCPlots <- function(after_object,
           for (experiment_name in names(project_dirs)) {
             if (!is.null(project_dirs[[experiment_name]]$peptide_qc_dir)) {
               save_dir <- project_dirs[[experiment_name]]$peptide_qc_dir
-              if (verbose) cat("[i] Using peptide_qc_dir from global project_dirs:", save_dir, "\n")
+              if (verbose) cat("[info] Using peptide_qc_dir from global project_dirs:", save_dir, "\n")
               break
             }
           }

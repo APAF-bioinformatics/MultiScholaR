@@ -668,7 +668,6 @@ createMetabDeResultsLongFormat <- function(
 
     # Parse contrast to get numerator/denominator groups
     if ("comparison" %in% colnames(lfc_qval_tbl)) {
-        contrasts <- unique(lfc_qval_tbl$comparison)
         
         # Try to parse numerator/denominator
         tryCatch({
@@ -700,16 +699,6 @@ createMetabDeResultsLongFormat <- function(
     })
 
     cat("[D66] --- Completed createMetabDeResultsLongFormat ---\n")
-    return(de_results_long)
-}
-
-    logger::log_info(sprintf(
-        "   Final de_results_long: %d rows x %d columns",
-        nrow(de_results_long), ncol(de_results_long)
-    ))
-
-    logger::log_info("--- Exiting createMetabDeResultsLongFormat ---")
-
     return(de_results_long)
 }
 
