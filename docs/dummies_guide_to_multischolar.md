@@ -1,9 +1,9 @@
 # MultiScholaR Technical Documentation: Enhanced System Guide
 
 **Target Audience:** Technical R expert with NO prior Shiny/Golem/R6 knowledge  
-**Document Version:** 2.0 (Enhanced)  
-**Last Updated:** January 2026  
-**Repository:** [APAF-bioinformatics/MultiScholaR](https://github.com/APAF-bioinformatics/MultiScholaR)
+- Created: 2026-03-11T01:18:27Z
+- Last Updated: March 2026
+- Repository: [APAF-bioinformatics/MultiScholaR](https://github.com/APAF-bioinformatics/MultiScholaR)
 
 ---
 
@@ -42,6 +42,7 @@ MultiScholaR implements a novel "app-as-a-package" philosophy, treating the enti
 - **PART III: Domain Workflows** (~10 pages)
   - Proteomics Workflow: End-to-End
   - Metabolomics Workflow: End-to-End
+  - Lipidomics Workflow: Parallel with Metabolomics
 
 - **PART IV: Cross-Cutting Infrastructure** (~7 pages)
   - Plotting Infrastructure
@@ -5230,6 +5231,15 @@ importMetabolomicsData <- function(file_list, design_matrix) {
 }
 ```
 
+#### Systematic Prefixing for Namespace Safety
+
+As MultiScholaR supports multiple parallel omics workflows, it is critical to use systematic prefixing for all domain-specific functions. This prevents "Lipidomics assay data" or "unused argument" errors caused by function collisions in the global namespace.
+
+*   **Metabolomics Prefix**: `Metab` (e.g., `importMetabMSDIALData`, `validateMetabColumnMapping`)
+*   **Lipidomics Prefix**: `Lipid` (e.g., `importLipidMSDIALData`, `validateLipidColumnMapping`)
+
+Always ensure that any function copy-pasted between modules is immediately renamed to its corresponding domain prefix.
+
 ### 10.2 Internal Standards (ITSD) Analysis
 
 Internal standards are spiked-in compounds used to assess technical reproducibility.
@@ -5462,9 +5472,9 @@ flowchart TD
 #' @param contrasts Character vector. Contrasts to test
 #' @return data.frame. Combined DE results with assay column
 #' @export
-differentialExpressionMetabolomics <- function(metab_object,
-                                               design_formula,
-                                               contrasts) {
+runMetabolitesDE <- function(metab_object,
+                             design_formula,
+                             contrasts) {
   
   library(limma)
   
@@ -5709,6 +5719,33 @@ observeEvent(input$run_de_analysis, {
 - **Publication-ready reports** with assay-specific and integrated visualizations
 
 This multi-assay approach ensures each platform's unique metabolite coverage is properly analyzed while enabling integrated biological interpretation.
+
+## Section 10.5: Lipidomics Workflow (Parallel Analysis)
+
+Lipidomics follows the same **Multi-Assay Pattern** as metabolomics but uses a dedicated set of functions with the `Lipid` prefix. This architectural choice prevents namespace collisions when both modules are active.
+
+### 10.5.1 Key Lipidomics Functions
+
+| Feature | Metabolomics | Lipidomics |
+|---------|--------------|------------|
+| Core DE Runner | `runMetabolitesDE()` | `runLipidsDE()` |
+| Results Formatting | `createMetabDeResultsLongFormat()` | `createLipidDeResultsLongFormat()` |
+| Interactive Volcano | `generateMetabVolcanoPlotGlimma()` | `generateLipidVolcanoPlotGlimma()` |
+| Integrated Heatmap | `generateMetabDEHeatmap()` | `generateLipidDEHeatmap()` |
+| Static Volcano | `generateMetabVolcanoStatic()` | `generateLipidVolcanoStatic()` |
+| Excel Export | `outputMetabDeResultsAllContrasts()` | `outputLipidDeResultsAllContrasts()` |
+| Import Parser | `importMetabMSDIALData()` | `importLipidMSDIALData()` |
+| Column Validator | `validateMetabColumnMapping()` | `validateLipidColumnMapping()` |
+| Duplicate Finder | `findMetabDuplicateFeatureIDs()` | `findLipidDuplicateFeatureIDs()` |
+
+### 10.5.2 Why the Separate Prefix?
+
+During the v2.1 update, a critical bug was identified where lipidomics functions were unintentionally overwriting metabolomics functions because they shared the same names in different files. By systematically using the `Lipid` prefix, MultiScholaR ensures:
+1. **Namespace Isolation**: No risk of one module's logic affecting another.
+2. **Clear Intent**: Developers and users immediately know which omics type a function belongs to.
+3. **Registry Compatibility**: Simplifies the registration of S4 methods and Shiny observers.
+
+---
 
 ---
 
@@ -6029,6 +6066,30 @@ plotVolcanoHelper <- function(de_results,
   return(p)
 }
 ```
+
+---
+
+### 11.3 Robust Parameter Handling in Shiny
+
+When building visualizations driven by Shiny inputs, it is critical to handle `NULL` or `NA` values robustly to avoid `missing value where TRUE/FALSE needed` errors.
+
+#### Best Practice: explicit validation and defaults
+
+```r
+# Bad: Directly using input in condition
+if (input$cluster_rows) { ... }  # Error if input$cluster_rows is NULL
+
+# Good: Using isTRUE() or explicit check
+if (isTRUE(input$cluster_rows)) { ... }
+
+# Better: Robust parameter extraction with defaults
+params <- list(
+    cluster_rows = if (!is.null(input$cluster_rows)) input$cluster_rows else FALSE,
+    top_n = if (!is.na(as.numeric(input$top_n))) as.numeric(input$top_n) else 50
+)
+```
+
+Additionally, ensure interactive plots (like Glimma) have annotation data reordered to match the statistical model's row order. This prevents misaligned colors and status labels.
 
 ---
 
@@ -6372,6 +6433,33 @@ output$log_display <- renderText({
   paste(logs(), collapse = "\n")
 })
 ```
+
+### 15.2 Granular Tracing ([D66] Pattern)
+
+For complex multi-step data transformations (e.g., `pivot_longer` followed by `left_join` and `pivot_wider`), MultiScholaR uses a granular tracing pattern prefixed with `[D66]`. This allows developers to pinpoint exactly which step fails when processing heterogeneous omics data.
+
+#### Pattern: Nested tryCatch with Granular Logging
+
+```r
+tryCatch({
+    # Step 1: Trace dimensions
+    cat("[D66] Input dim:", dim(data), "\n")
+    
+    # Step 2: Perform transformation with inner catch
+    result <- tryCatch({
+        data %>% pivot_longer(...)
+    }, error = function(e) {
+        cat("[ERROR] Pivot failed:", e$message, "\n")
+        stop(e)
+    })
+    
+    cat("[D66] Success. Final dim:", dim(result), "\n")
+}, error = function(e) {
+    message("Transformation pipeline aborted.")
+})
+```
+
+This pattern is particularly useful for debugging the "In index: 1." error often seen in `purrr::map2` or complex `dplyr` pipelines where the default error message is uninformative.
 
 ---
 
