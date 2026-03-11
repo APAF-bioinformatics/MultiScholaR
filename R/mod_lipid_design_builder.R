@@ -864,7 +864,7 @@ mod_lipid_design_builder_server <- function(id, data_tbl, config_list, column_ma
 
             current_matrix <- design_matrix()
 
-            replicate_numbers <- if (!is.null(input$replicate_start)) {
+            replicate_numbers <- if (!is.null(input$replicate_start) && !is.na(input$replicate_start)) {
                 seq(input$replicate_start, length.out = length(input$selected_runs))
             } else {
                 NA_integer_
