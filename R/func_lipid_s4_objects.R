@@ -3098,7 +3098,7 @@ setMethod(
 
 #' @export
 setMethod(
-    f = "getDeResultsWideFormat",
+    f = "getDaResultsWideFormat",
     signature = "list",
     definition = function(objectsList,
                           qvalue_column = "fdr_qvalue",
@@ -3148,7 +3148,7 @@ setMethod(
 # Get the differential expression results in wide format
 #' @export
 setMethod(
-    f = "getDeResultsLongFormat",
+    f = "getDaResultsLongFormat",
     signature = "list",
     definition = function(objectsList) {
         return_object_list <- purrr::map(objectsList, function(object) {
@@ -3510,7 +3510,7 @@ setClass("LipidomicsDifferentialAbundanceResults",
 setMethod(
     f = "differentialAbundanceAnalysis",
     signature = "list",
-    definition = function(objectsList,
+    definition = function(theObject,
                           contrasts_tbl = NULL,
                           formula_string = NULL,
                           group_id = NULL,
@@ -3518,7 +3518,10 @@ setMethod(
                           treat_lfc_cutoff = NULL,
                           eBayes_trend = NULL,
                           eBayes_robust = NULL,
-                          args_group_pattern = NULL) {
+                          args_group_pattern = NULL,
+                          args_row_id = NULL,
+                          qvalue_column = NULL,
+                          raw_pvalue_column = NULL) {
         # Validate that all objects in the list are LipidomicsAssayData or MetaboliteAssayData
         objectsList <- theObject;
             if (!all(purrr::map_lgl(objectsList, ~ inherits(.x, "LipidomicsAssayData") || inherits(.x, "MetaboliteAssayData")))) {

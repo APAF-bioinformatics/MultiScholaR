@@ -3100,7 +3100,7 @@ setMethod(
 
 #' @export
 setMethod(
-    f = "getDeResultsWideFormat",
+    f = "getDaResultsWideFormat",
     signature = "list",
     definition = function(
       objectsList,
@@ -3152,7 +3152,7 @@ setMethod(
 # Get the differential expression results in wide format
 #' @export
 setMethod(
-    f = "getDeResultsLongFormat",
+    f = "getDaResultsLongFormat",
     signature = "list",
     definition = function(objectsList) {
         return_object_list <- purrr::map(objectsList, function(object) {
@@ -3515,7 +3515,7 @@ setMethod(
     f = "differentialAbundanceAnalysis",
     signature = "list",
     definition = function(
-      objectsList,
+      theObject,
       contrasts_tbl = NULL,
       formula_string = NULL,
       group_id = NULL,
@@ -3523,7 +3523,10 @@ setMethod(
       treat_lfc_cutoff = NULL,
       eBayes_trend = NULL,
       eBayes_robust = NULL,
-      args_group_pattern = NULL
+      args_group_pattern = NULL,
+      args_row_id = NULL,
+      qvalue_column = NULL,
+      raw_pvalue_column = NULL
     ) {
         # Validate that all objects in the list are MetaboliteAssayData
         objectsList <- theObject;
