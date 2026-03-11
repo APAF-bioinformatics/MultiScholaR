@@ -1,3 +1,19 @@
+# MultiScholaR: Interactive Multi-Omics Analysis
+# Copyright (C) 2024-2026 Ignatius Pang, William Klare, and APAF-bioinformatics
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 # ============================================================================
 # func_general_filemgmt.R
 # ============================================================================
@@ -554,8 +570,8 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
                 if (!is.null(leaf_path)) {
                     # Construct the full path relative to the results_dir for this omic type
                     full_path <- file.path(current_omic_paths_def$results_base, leaf_path)
-                    # The actual variable name will be like 'de_output_dir', 'feature_qc_dir'
-                    # If var_name_suffix is "de_output_leaf", actual name is "de_output_dir"
+                    # The actual variable name will be like 'da_output_dir', 'feature_qc_dir'
+                    # If var_name_suffix is "de_output_leaf", actual name is "da_output_dir"
                     actual_var_name <- sub("_leaf$", "_dir", var_name_suffix)
                     omic_specific_paths_list[[actual_var_name]] <- full_path
                 }
@@ -1258,11 +1274,11 @@ readConfigFile <- function(file = file.path(source_dir, "config.ini")) {
         }
 
         # Convert numeric parameters (only if they exist)
-        if ("de_q_val_thresh" %in% names(config_list[["deAnalysisParameters"]])) {
+        if ("da_q_val_thresh" %in% names(config_list[["deAnalysisParameters"]])) {
             config_list <- setConfigValueAsNumeric(
                 config_list,
                 "deAnalysisParameters",
-                "de_q_val_thresh"
+                "da_q_val_thresh"
             )
         }
 
@@ -1670,7 +1686,7 @@ setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force
         results_dir = paths$results$base,
         data_dir = paths$special$data,
         source_dir = paths$special$scripts, # This is the *project-specific* scripts dir
-        de_output_dir = file.path(paths$results$base, "de_proteins"),
+        da_output_dir = file.path(paths$results$base, "de_proteins"),
         publication_graphs_dir = publication_graphs_dir,
         timestamp = timestamp,
         qc_dir = qc_dir, # Base QC dir
@@ -1920,7 +1936,7 @@ copyToResultsSummary <- function(omic_type,
     # Validate that current_paths is a list and contains essential directory paths
     required_paths_in_current <- c(
         "results_dir", "results_summary_dir", "publication_graphs_dir",
-        "time_dir", "qc_dir", "de_output_dir", "pathway_dir", "source_dir", "feature_qc_dir"
+        "time_dir", "qc_dir", "da_output_dir", "pathway_dir", "source_dir", "feature_qc_dir"
     )
     if (!is.list(current_paths) || !all(required_paths_in_current %in% names(current_paths))) {
         missing_req <- setdiff(required_paths_in_current, names(current_paths))
@@ -1952,7 +1968,7 @@ copyToResultsSummary <- function(omic_type,
     cat(sprintf("Results Summary Dir: %s\n", current_paths$results_summary_dir))
     cat(sprintf("Publication Graphs Dir: %s\n", current_paths$publication_graphs_dir))
     cat(sprintf("Time Dir (current run): %s\n", current_paths$time_dir))
-    cat(sprintf("DE Output Dir: %s\n", current_paths$de_output_dir))
+    cat(sprintf("DE Output Dir: %s\n", current_paths$da_output_dir))
     cat(sprintf("Pathway Dir: %s\n", current_paths$pathway_dir))
     cat(sprintf("Source (Scripts) Dir: %s\n", current_paths$source_dir))
     cat(sprintf("Feature QC Dir: %s\n", current_paths$feature_qc_dir))
@@ -2347,14 +2363,14 @@ copyToResultsSummary <- function(omic_type,
     }
 
     # Excel files paths
-    de_results_excel_path <- file.path(pub_tables_dir, paste0("DE_results_", omic_type, ".xlsx"))
+    da_results_excel_path <- file.path(pub_tables_dir, paste0("DE_results_", omic_type, ".xlsx"))
     enrichment_excel_path <- file.path(pub_tables_dir, paste0("Pathway_enrichment_results_", omic_type, ".xlsx"))
 
     # Create combined DE workbook
     de_wb <- openxlsx::createWorkbook()
     openxlsx::addWorksheet(de_wb, "DE_Results_Index")
     de_index_data <- data.frame(Sheet = character(), Description = character(), stringsAsFactors = FALSE)
-    de_files <- list.files(path = current_paths$de_output_dir, pattern = paste0("de_.+_long_annot\\.xlsx$"), full.names = TRUE) # Changed from \\w+ to .+ to allow hyphens
+    de_files <- list.files(path = current_paths$da_output_dir, pattern = paste0("de_.+_long_annot\\.xlsx$"), full.names = TRUE) # Changed from \\w+ to .+ to allow hyphens
 
     purrr::imap(de_files, \(file, idx) {
         sheet_name <- sprintf("DE_Sheet%d", idx)
@@ -2402,11 +2418,11 @@ copyToResultsSummary <- function(omic_type,
     dir.create(pub_tables_dir, recursive = TRUE, showWarnings = FALSE)
     tryCatch(
         {
-            openxlsx::saveWorkbook(de_wb, de_results_excel_path, overwrite = TRUE)
-            cat(paste("Successfully saved DE results to:", de_results_excel_path, "\n"))
+            openxlsx::saveWorkbook(de_wb, da_results_excel_path, overwrite = TRUE)
+            cat(paste("Successfully saved DE results to:", da_results_excel_path, "\n"))
         },
         error = function(e) {
-            failed_copies[[length(failed_copies) + 1]] <- list(type = "workbook_save", path = de_results_excel_path, error = e$message)
+            failed_copies[[length(failed_copies) + 1]] <- list(type = "workbook_save", path = da_results_excel_path, error = e$message)
         }
     )
 

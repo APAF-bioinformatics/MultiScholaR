@@ -1,17 +1,33 @@
-# ============================================================================
-# func_lipid_de.R
-# ============================================================================
-# Purpose: Lipidomics differential abundance analysis functions
+# MultiScholaR: Interactive Multi-Omics Analysis
+# Copyright (C) 2024-2026 Ignatius Pang, William Klare, and APAF-bioinformatics
 #
-# This file contains functions for lipidomics differential abundance
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# ============================================================================
+# func_metab_da.R
+# ============================================================================
+# Purpose: Metabolomics differential abundance analysis functions
+#
+# This file contains functions for metabolomics differential abundance
 # analysis, including limma-based analysis and result formatting. Functions
-# in this file are used by lipidomics DE modules and related workflows.
+# in this file are used by metabolomics DA modules and related workflows.
 #
 # Functions to extract here:
-# - differentialAbundanceAnalysis(): S4 method for DE analysis (lipid)
-# - differentialAbundanceAnalysisHelper(): Helper for DE analysis
+# - differentialAbundanceAnalysis(): S4 method for DA analysis (metabolite)
+# - differentialAbundanceAnalysisHelper(): Helper for DA analysis
 # - getCountsTable(): Gets counts table from object
-# - Additional lipidomics DE helper functions
+# - Additional metabolomics DE helper functions
 #
 # Dependencies:
 # - limma, edgeR
@@ -21,27 +37,27 @@
 
 # TODO: Extract the following functions from their current locations:
 
-# Function 1: differentialAbundanceAnalysis() (lipid method)
-# Current location: R/lipidVsSamplesS4Objects.R
+# Function 1: differentialAbundanceAnalysis() (metabolite method)
+# Current location: R/metaboliteVsSamplesS4Objects.R
 # Type: S4 method (exportMethods)
-# Description: Performs differential abundance analysis on lipids
-# setMethod(f = "differentialAbundanceAnalysis", signature = "LipidomicsAssayData", ...) {
-#   # Extract from R/lipidVsSamplesS4Objects.R
+# Description: Performs differential abundance analysis on metabolites
+# setMethod(f = "differentialAbundanceAnalysis", signature = "MetaboliteAssayData", ...) {
+#   # Extract from R/metaboliteVsSamplesS4Objects.R
 # }
 
 # Function 2: differentialAbundanceAnalysisHelper()
-# Current location: R/lipidVsSamplesS4Objects.R
+# Current location: R/metaboliteVsSamplesS4Objects.R
 # Type: S4 method (exportMethods)
-# Description: Helper function for lipid DE analysis
+# Description: Helper function for metabolite DA analysis
 # setMethod(f = "differentialAbundanceAnalysisHelper", ...) {
-#   # Extract from R/lipidVsSamplesS4Objects.R
+#   # Extract from R/metaboliteVsSamplesS4Objects.R
 # }
 
 # Function 3: getCountsTable()
-# Current location: R/lipid_de_analysis_wrapper.R, R/lipids_de_analysis_wrapper.R
+# Current location: R/metabolite_de_analysis_wrapper.R, R/metabolites_de_analysis_wrapper.R
 # Description: Gets counts table from object
 # getCountsTable <- function(obj) {
-#   # Extract from R/lipid_de_analysis_wrapper.R or R/lipids_de_analysis_wrapper.R
+#   # Extract from R/metabolite_de_analysis_wrapper.R or R/metabolites_de_analysis_wrapper.R
 # }
 
 
@@ -50,13 +66,13 @@
 # ----------------------------------------------------------------------------
 # Helper function to get counts table
 getCountsTable <- function(obj) {
-    if (inherits(obj, "LipidomicsAssayData")) {
+    if (inherits(obj, "MetaboliteAssayData")) {
         message(sprintf("   Getting counts table for object of class: %s", class(obj)[1]))
         message(sprintf(
-            "   Returning lipid_data with dimensions: %d rows, %d cols",
-            nrow(obj@lipid_data), ncol(obj@lipid_data)
+            "   Returning metabolite_data with dimensions: %d rows, %d cols",
+            nrow(obj@metabolite_data), ncol(obj@metabolite_data)
         ))
-        obj@lipid_data
+        obj@metabolite_data
     } else if (inherits(obj, "ProteinQuantitativeData")) {
         message(sprintf(
             "   Returning protein_quant_table with dimensions: %d rows, %d cols",
@@ -71,24 +87,25 @@ getCountsTable <- function(obj) {
 
 
 # ============================================================================
-# METABOLOMICS DIFFERENTIAL EXPRESSION ANALYSIS FUNCTIONS
+# METABOLOMICS DIFFERENTIAL ABUNDANCE ANALYSIS FUNCTIONS
 # ============================================================================
-# These functions provide differential expression analysis for lipidomics
+# These functions provide differential abundance analysis for metabolomics
 # data stored as multiple assays (e.g., LCMS_Pos, LCMS_Neg) in the
-# LipidomicsAssayData S4 object.
+# MetaboliteAssayData S4 object.
 # ============================================================================
 
 
 # ----------------------------------------------------------------------------
-# runTestsContrastsLipid
+# runTestsContrastsMetabDA
 # ----------------------------------------------------------------------------
 #' Run limma differential abundance analysis for a single assay
 #'
 #' @description Performs limma-based differential abundance analysis on a
-#'   single lipidomics assay matrix.
+#'   single metabolomics assay matrix. This is the core DA engine adapted from
+#'   the proteomics `runTestsContrastsDA()` function.
 #'
-#' @param data Numeric matrix with lipids as rows and samples as columns.
-#'   Rownames should be lipid IDs.
+#' @param data Numeric matrix with metabolites as rows and samples as columns.
+#'   Rownames should be metabolite IDs.
 #' @param contrast_strings Character vector of contrast specifications
 #'   (e.g., "Treatment-Control").
 #' @param design_matrix Data frame containing sample metadata with sample IDs
@@ -112,7 +129,7 @@ getCountsTable <- function(obj) {
 #' @importFrom rlang ensym as_name
 #' @importFrom purrr map
 #' @export
-runTestsContrastsLipid <- function(
+runTestsContrastsMetabDA <- function(
   data,
   contrast_strings,
   design_matrix,
@@ -143,7 +160,7 @@ runTestsContrastsLipid <- function(
 
     # [D66:START] -------------------------
     d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
-    d66_log("  runTestsContrastsLipid - Model matrix created:")
+    d66_log("  runTestsContrastsMetab - Model matrix created:")
     d66_log("    design_m levels (colnames) = ", paste(colnames(design_m), collapse = ", "))
     d66_log("    contrast_strings = ", paste(contrast_strings, collapse = ", "))
     # [D66:END] ---------------------------
@@ -183,7 +200,7 @@ runTestsContrastsLipid <- function(
                     "Available levels from model matrix: [%s].\n\n",
                     "This usually means the contrast was saved with a different formula than currently used.\n",
                     "If using formula '~ 0 + group', contrasts must be in format 'groupX-groupY'.\n",
-                    "Check that the design builder formula matches the DE module formula."
+                    "Check that the design builder formula matches the DA module formula."
                 ),
                 cs,
                 paste(missing_terms, collapse = ", "),
@@ -232,16 +249,16 @@ runTestsContrastsLipid <- function(
 
         tryCatch(
             {
-                de_tbl <- extract_fn(t.fit, contrast)
-                logger::log_info(sprintf("      Extracted %d rows", nrow(de_tbl)))
+                da_tbl <- extract_fn(t.fit, contrast)
+                logger::log_info(sprintf("      Extracted %d rows", nrow(da_tbl)))
 
                 # Safe qvalue computation
-                valid_p_idx <- which(!is.na(de_tbl$P.Value) & is.finite(de_tbl$P.Value))
-                q_values_all <- rep(NA_real_, nrow(de_tbl))
-                fdr_values_all <- rep(NA_real_, nrow(de_tbl))
+                valid_p_idx <- which(!is.na(da_tbl$P.Value) & is.finite(da_tbl$P.Value))
+                q_values_all <- rep(NA_real_, nrow(da_tbl))
+                fdr_values_all <- rep(NA_real_, nrow(da_tbl))
 
                 if (length(valid_p_idx) > 0) {
-                    valid_p_values <- de_tbl$P.Value[valid_p_idx]
+                    valid_p_values <- da_tbl$P.Value[valid_p_idx]
 
                     # Edge case checks
                     all_zeros <- all(valid_p_values == 0)
@@ -273,15 +290,15 @@ runTestsContrastsLipid <- function(
                 }
 
                 # Add columns to results
-                de_tbl$fdr_qvalue <- q_values_all
-                de_tbl$fdr_value_bh <- fdr_values_all
-                de_tbl$raw_pvalue <- de_tbl$P.Value
+                da_tbl$fdr_qvalue <- q_values_all
+                da_tbl$fdr_value_bh <- fdr_values_all
+                da_tbl$raw_pvalue <- da_tbl$P.Value
 
                 if (qvalue_failed) {
                     qvalue_failures[[contrast]] <<- TRUE
                 }
 
-                return(de_tbl)
+                return(da_tbl)
             },
             error = function(e) {
                 logger::log_error(sprintf("      ERROR in contrast %s: %s", contrast, e$message))
@@ -291,7 +308,7 @@ runTestsContrastsLipid <- function(
     })
 
     names(result_tables) <- contrast_strings
-    logger::log_info("--- Exiting runTestsContrastsLipid ---")
+    logger::log_info("--- Exiting runTestsContrastsMetab ---")
 
     return(list(
         results = result_tables,
@@ -302,19 +319,19 @@ runTestsContrastsLipid <- function(
 
 
 # ----------------------------------------------------------------------------
-# runLipidsDE
+# runMetabolitesDA
 # ----------------------------------------------------------------------------
-#' Run differential expression analysis on all assays in a LipidomicsAssayData object
+#' Run differential abundance analysis on all assays in a MetaboliteAssayData object
 #'
-#' @description Main entry point for lipidomics differential expression analysis.
-#'   Loops over all assays in the LipidomicsAssayData object, runs limma DE on each,
+#' @description Main entry point for metabolomics differential abundance analysis.
+#'   Loops over all assays in the MetaboliteAssayData object, runs limma DA on each,
 #'   and aggregates results with an assay identifier column.
 #'
-#' @param theObject LipidomicsAssayData S4 object containing lipid data.
+#' @param theObject MetaboliteAssayData S4 object containing metabolite data.
 #' @param contrasts_tbl Data frame with contrast definitions. Must have a column
 #'   named "contrasts" or "contrast_string" containing the contrast formulas.
 #' @param formula_string Model formula (default "~ 0 + group").
-#' @param de_q_val_thresh Q-value threshold for significance (default 0.05).
+#' @param da_q_val_thresh Q-value threshold for significance (default 0.05).
 #' @param treat_lfc_cutoff Log fold-change cutoff for TREAT (default 0, standard analysis).
 #' @param eBayes_trend Logical, use trend in eBayes (default TRUE).
 #' @param eBayes_robust Logical, use robust eBayes (default TRUE).
@@ -322,9 +339,9 @@ runTestsContrastsLipid <- function(
 #' @return A list containing:
 #'   - theObject: The input S4 object (unchanged)
 #'   - contrasts_results: Per-assay limma fit objects
-#'   - de_lipids_long: Combined long-format results with assay column
+#'   - da_metabolites_long: Combined long-format results with assay column
 #'   - per_assay_results: List of per-assay result tables
-#'   - significant_counts: Summary of significant lipids per assay
+#'   - significant_counts: Summary of significant metabolites per assay
 #'   - qvalue_warnings: Any qvalue computation warnings
 #'
 #' @importFrom tibble rownames_to_column
@@ -332,36 +349,36 @@ runTestsContrastsLipid <- function(
 #' @importFrom purrr map map2 set_names
 #' @importFrom logger log_info log_error log_warn
 #' @export
-runLipidsDE <- function(
+runMetabolitesDA <- function(
   theObject,
   contrasts_tbl,
   formula_string = "~ 0 + group",
-  de_q_val_thresh = 0.05,
+  da_q_val_thresh = 0.05,
   treat_lfc_cutoff = 0,
   eBayes_trend = TRUE,
   eBayes_robust = TRUE
 ) {
     # [D66:START] -------------------------
     d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
-    d66_log("=== ENTER runLipidsDE ===")
+    cat("[D66] === ENTER runMetabolitesDA [AG-v3] ===\n")
     d66_log("  formula_string = ", formula_string)
     d66_log("  contrasts_tbl columns = ", paste(colnames(contrasts_tbl), collapse = ", "))
     d66_log("  contrasts_tbl$contrasts = ", paste(contrasts_tbl$contrasts, collapse = ", "))
     # [D66:END] ---------------------------
 
-    logger::log_info("=== Starting runLipidsDE ===")
+    logger::log_info("=== Starting runMetabolitesDA ===")
 
     # Validate input
-    if (!inherits(theObject, "LipidomicsAssayData")) {
-        stop("theObject must be a LipidomicsAssayData S4 object")
+    if (!inherits(theObject, "MetaboliteAssayData")) {
+        stop("theObject must be a MetaboliteAssayData S4 object")
     }
 
     # Extract object slots
-    assay_list <- theObject@lipid_data
+    assay_list <- theObject@metabolite_data
     design_matrix <- theObject@design_matrix
     sample_id_col <- theObject@sample_id
     group_col <- theObject@group_id
-    lipid_id_col <- theObject@lipid_id_column
+    metabolite_id_col <- theObject@metabolite_id_column
     annotation_col <- theObject@annotation_id_column
 
     # [D66:START] -------------------------
@@ -412,7 +429,7 @@ runLipidsDE <- function(
 
         assay_data <- assay_list[[assay_name]]
 
-        # Build expression matrix (lipids as rows, samples as columns)
+        # Build expression matrix (metabolites as rows, samples as columns)
         # First, identify sample columns (those that match design matrix)
         sample_cols <- intersect(colnames(assay_data), design_matrix[[sample_id_col]])
 
@@ -421,26 +438,26 @@ runLipidsDE <- function(
             next
         }
 
-        # Extract numeric data and set rownames to lipid IDs
+        # Extract numeric data and set rownames to metabolite IDs
         expr_matrix <- as.matrix(assay_data[, sample_cols, drop = FALSE])
-        rownames(expr_matrix) <- assay_data[[lipid_id_col]]
+        rownames(expr_matrix) <- assay_data[[metabolite_id_col]]
 
         # Get annotation info for later joining
         annotation_info <- data.frame(
-            lipid_id = assay_data[[lipid_id_col]],
-            lipid_name = assay_data[[annotation_col]],
+            metabolite_id = assay_data[[metabolite_id_col]],
+            metabolite_name = assay_data[[annotation_col]],
             stringsAsFactors = FALSE
         )
 
         logger::log_info(sprintf(
-            "   Expression matrix: %d lipids x %d samples",
+            "   Expression matrix: %d metabolites x %d samples",
             nrow(expr_matrix), ncol(expr_matrix)
         ))
 
-        # Run limma DE
+        # Run limma DA
         tryCatch(
             {
-                limma_results <- runTestsContrastsLipid(
+                limma_results <- runTestsContrastsMetabDA(
                     data = expr_matrix,
                     contrast_strings = contrast_strings,
                     design_matrix = design_matrix,
@@ -459,48 +476,67 @@ runLipidsDE <- function(
                     all_qvalue_warnings[[assay_name]] <- limma_results$qvalue_warnings
                 }
 
+                cat(sprintf("[D66] Assay %s: limma_results$results length = %d\n", assay_name, length(limma_results$results)))
+                cat(sprintf("[D66] Assay %s: names(limma_results$results) = [%s]\n", assay_name, paste(names(limma_results$results), collapse = ", ")))
+
                 # Process results for each contrast
                 assay_results_list <- purrr::map2(
                     limma_results$results,
                     names(limma_results$results),
-                    function(de_tbl, contrast_name) {
-                        # Add lipid_id from rownames
-                        de_tbl <- tibble::rownames_to_column(de_tbl, "lipid_id")
+                    function(da_tbl, contrast_name) {
+                        tryCatch({
+                            cat(sprintf("[D66] Processing contrast: %s (assay: %s)\n", contrast_name, assay_name))
+                            
+                            # Validate da_tbl
+                            if (!is.data.frame(da_tbl)) {
+                                stop(sprintf("da_tbl is not a data frame, it is a %s", class(da_tbl)[1]))
+                            }
+                            
+                            # Add metabolite_id from rownames
+                            cat("[D66]   Step: rownames_to_column\n")
+                            da_tbl <- tibble::rownames_to_column(da_tbl, "metabolite_id")
 
-                        # Add metadata columns
-                        de_tbl$assay <- assay_name
-                        de_tbl$comparison <- contrast_name
+                            # Add metadata columns
+                            cat("[D66]   Step: adding assay/comparison/friendly_name\n")
+                            da_tbl$assay <- assay_name
+                            da_tbl$comparison <- contrast_name
 
-                        # Add friendly name
-                        idx <- match(contrast_name, contrast_strings)
-                        de_tbl$friendly_name <- if (!is.na(idx)) friendly_names[idx] else contrast_name
+                            # Add friendly name
+                            idx <- match(contrast_name, contrast_strings)
+                            da_tbl$friendly_name <- if (!is.na(idx)) friendly_names[idx] else contrast_name
 
-                        # Join annotation info
-                        de_tbl <- dplyr::left_join(
-                            de_tbl,
-                            annotation_info,
-                            by = "lipid_id"
-                        )
+                            # Join annotation info
+                            cat("[D66]   Step: left_join annotation\n")
+                            da_tbl <- dplyr::left_join(
+                                da_tbl,
+                                annotation_info,
+                                by = "metabolite_id"
+                            )
 
-                        # Classify significance
-                        de_tbl$significant <- ifelse(
-                            de_tbl$fdr_qvalue < de_q_val_thresh & abs(de_tbl$logFC) >= treat_lfc_cutoff,
-                            ifelse(de_tbl$logFC > 0, "Up", "Down"),
-                            "NS"
-                        )
+                            # Classify significance
+                            cat("[D66]   Step: classifying significance\n")
+                            da_tbl$significant <- ifelse(
+                                da_tbl$fdr_qvalue < da_q_val_thresh & abs(da_tbl$logFC) >= treat_lfc_cutoff,
+                                ifelse(da_tbl$logFC > 0, "Up", "Down"),
+                                "NS"
+                            )
 
-                        # Add sample intensity columns using createLipidDeResultsLongFormat
-                        cat(sprintf("[D66] Calling createLipidDeResultsLongFormat for contrast: %s\n", contrast_name))
-                        de_tbl <- createLipidDeResultsLongFormat(
-                            lfc_qval_tbl = de_tbl,
-                            expr_matrix = expr_matrix,
-                            design_matrix = design_matrix,
-                            sample_id_col = sample_id_col,
-                            group_id_col = group_col,
-                            lipid_id_col = "lipid_id"
-                        )
+                            # Add sample intensity columns using createMetabDaResultsLongFormat
+                            cat(sprintf("[D66]   Calling createMetabDaResultsLongFormat for contrast: %s\n", contrast_name))
+                            da_tbl <- createMetabDaResultsLongFormat(
+                                lfc_qval_tbl = da_tbl,
+                                expr_matrix = expr_matrix,
+                                design_matrix = design_matrix,
+                                sample_id_col = sample_id_col,
+                                group_id_col = group_col,
+                                metabolite_id_col = "metabolite_id"
+                            )
 
-                        return(de_tbl)
+                            return(da_tbl)
+                        }, error = function(inner_e) {
+                            cat(sprintf("[ERROR] Inner loop failure for contrast %s: %s\n", contrast_name, inner_e$message))
+                            stop(inner_e)
+                        })
                     }
                 )
 
@@ -522,8 +558,8 @@ runLipidsDE <- function(
     }
 
     # Combine all assay results
-    de_lipids_long <- dplyr::bind_rows(per_assay_results)
-    logger::log_info(sprintf("   Combined results: %d total rows", nrow(de_lipids_long)))
+    da_metabolites_long <- dplyr::bind_rows(per_assay_results)
+    logger::log_info(sprintf("   Combined results: %d total rows", nrow(da_metabolites_long)))
 
     # Calculate significant counts per assay
     significant_counts <- purrr::map(per_assay_results, function(df) {
@@ -537,42 +573,42 @@ runLipidsDE <- function(
         )
     }) |> purrr::set_names(names(per_assay_results))
 
-    logger::log_info("=== Completed runLipidsDE ===")
+    logger::log_info("=== Completed runMetabolitesDA ===")
 
     return(list(
         theObject = theObject,
         contrasts_results = contrasts_results,
-        de_lipids_long = de_lipids_long,
+        da_metabolites_long = da_metabolites_long,
         per_assay_results = per_assay_results,
         significant_counts = significant_counts,
         qvalue_warnings = all_qvalue_warnings,
-        de_q_val_thresh = de_q_val_thresh,
+        da_q_val_thresh = da_q_val_thresh,
         treat_lfc_cutoff = treat_lfc_cutoff
     ))
 }
 
 
 # ----------------------------------------------------------------------------
-# createLipidDeResultsLongFormat
+# createMetabDaResultsLongFormat
 # ----------------------------------------------------------------------------
-#' Create lipidomics DE results in long format with sample intensity columns
+#' Create metabolomics DA results in long format with sample intensity columns
 #'
-#' @description Creates a long-format DE results table that includes individual
-#'   sample intensity values, mirroring the proteomics `createDeResultsLongFormat()`.
+#' @description Creates a long-format DA results table that includes individual
+#'   sample intensity values, mirroring the proteomics `createDaResultsLongFormat()`.
 #'   The output includes columns for each sample's intensity value, named as
 #'   `intensity.{sample_id}.{group}`.
 #'
-#' @param lfc_qval_tbl Data frame with DE statistics (logFC, pvalue, fdr_qvalue).
-#'   Must have a lipid_id column and a comparison column containing the
+#' @param lfc_qval_tbl Data frame with DA statistics (logFC, pvalue, fdr_qvalue).
+#'   Must have a metabolite_id column and a comparison column containing the
 #'   contrast string in format "groupA-groupB".
-#' @param expr_matrix Expression matrix with lipids as rows, samples as columns.
-#'   Rownames must match lipid_id column in lfc_qval_tbl.
+#' @param expr_matrix Expression matrix with metabolites as rows, samples as columns.
+#'   Rownames must match metabolite_id column in lfc_qval_tbl.
 #' @param design_matrix Design matrix with sample and group assignments.
 #' @param sample_id_col Name of sample ID column in design_matrix.
 #' @param group_id_col Name of group ID column in design_matrix.
-#' @param lipid_id_col Name of lipid ID column.
+#' @param metabolite_id_col Name of metabolite ID column.
 #'
-#' @return Data frame with DE results plus intensity columns for each sample.
+#' @return Data frame with DA results plus intensity columns for each sample.
 #'
 #' @importFrom dplyr left_join mutate select rename arrange distinct filter pull
 #' @importFrom tidyr pivot_longer pivot_wider separate_wider_delim
@@ -580,119 +616,119 @@ runLipidsDE <- function(
 #' @importFrom rlang sym set_names
 #' @importFrom stringr str_replace_all
 #' @export
-createLipidDeResultsLongFormat <- function(
+createMetabDaResultsLongFormat <- function(
   lfc_qval_tbl,
   expr_matrix,
   design_matrix,
   sample_id_col = "sample_id",
   group_id_col = "group",
-  lipid_id_col = "lipid_id"
+  metabolite_id_col = "metabolite_id"
 ) {
-    logger::log_info("--- Entering createMetabDeResultsLongFormat ---")
+    # [D66:START] -------------------------
+    d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
+    cat("[D66] --- Entering createMetabDaResultsLongFormat [AG-v4] ---\n")
+    d66_log("    lfc_qval_tbl columns: ", paste(colnames(lfc_qval_tbl), collapse = ", "))
+    d66_log("    lfc_qval_tbl nrow: ", nrow(lfc_qval_tbl))
+    d66_log("    expr_matrix dim: ", paste(dim(expr_matrix), collapse = "x"))
+    d66_log("    design_matrix columns: ", paste(colnames(design_matrix), collapse = ", "))
+    d66_log("    sample_id_col = ", sample_id_col)
+    d66_log("    group_id_col = ", group_id_col)
+    d66_log("    metabolite_id_col = ", metabolite_id_col)
+    # [D66:END] ---------------------------
+    
     logger::log_info(sprintf("   lfc_qval_tbl: %d rows", nrow(lfc_qval_tbl)))
     logger::log_info(sprintf(
-        "   expr_matrix: %d lipids x %d samples",
+        "   expr_matrix: %d metabolites x %d samples",
         nrow(expr_matrix), ncol(expr_matrix)
     ))
 
     # Convert expression matrix to long format with intensity values
-    intensity_long <- expr_matrix |>
-        as.data.frame() |>
-        tibble::rownames_to_column(lipid_id_col) |>
-        tidyr::pivot_longer(
-            cols = -!!rlang::sym(lipid_id_col),
-            names_to = sample_id_col,
-            values_to = "intensity"
-        ) |>
-        dplyr::left_join(design_matrix, by = sample_id_col)
-
-    logger::log_info(sprintf("   intensity_long: %d rows", nrow(intensity_long)))
+    intensity_long <- tryCatch({
+        cat("[D66]   Step: pivot_longer and join design\n")
+        expr_matrix |>
+            as.data.frame() |>
+            tibble::rownames_to_column(metabolite_id_col) |>
+            tidyr::pivot_longer(
+                cols = -!!rlang::sym(metabolite_id_col),
+                names_to = sample_id_col,
+                values_to = "intensity"
+            ) |>
+            dplyr::left_join(design_matrix, by = sample_id_col)
+    }, error = function(e) {
+        cat(sprintf("[ERROR] pivot_longer/left_join failed: %s\n", e$message))
+        stop(e)
+    })
+    
+    cat(sprintf("[D66]   intensity_long dim: %s\n", paste(dim(intensity_long), collapse = "x")))
 
     # Create intensity columns per group
     # Format: intensity.{sample_id}.{group}
-    intensity_wide <- intensity_long |>
-        dplyr::mutate(
-            col_name = paste0("intensity.", !!rlang::sym(sample_id_col), ".", !!rlang::sym(group_id_col))
-        ) |>
-        dplyr::select(!!rlang::sym(lipid_id_col), col_name, intensity) |>
-        tidyr::pivot_wider(
-            id_cols = !!rlang::sym(lipid_id_col),
-            names_from = col_name,
-            values_from = intensity
-        )
+    intensity_wide <- tryCatch({
+        cat("[D66]   Step: pivot_wider preparation\n")
+        intensity_long |>
+            dplyr::mutate(
+                col_name = paste0("intensity.", !!rlang::sym(sample_id_col), ".", !!rlang::sym(group_id_col))
+            ) |>
+            dplyr::select(!!rlang::sym(metabolite_id_col), col_name, intensity) |>
+            tidyr::pivot_wider(
+                id_cols = !!rlang::sym(metabolite_id_col),
+                names_from = col_name,
+                values_from = intensity
+            )
+    }, error = function(e) {
+        cat(sprintf("[ERROR] pivot_wider failed: %s\n", e$message))
+        stop(e)
+    })
 
-    logger::log_info(sprintf(
-        "   intensity_wide: %d lipids x %d columns",
-        nrow(intensity_wide), ncol(intensity_wide)
-    ))
+    cat(sprintf("[D66]   intensity_wide dim: %d metabolites x %d columns\n", nrow(intensity_wide), ncol(intensity_wide)))
 
     # Parse contrast to get numerator/denominator groups
-    # Contrast format is "groupA-groupB" where groupA is numerator, groupB is denominator
     if ("comparison" %in% colnames(lfc_qval_tbl)) {
-        # Extract unique comparisons
-        contrasts <- unique(lfc_qval_tbl$comparison)
-        logger::log_info(sprintf(
-            "   Processing %d contrasts: %s",
-            length(contrasts), paste(contrasts, collapse = ", ")
-        ))
-
-        # Parse first contrast to get group prefix pattern
-        # Assumes format like "groupTreatment-groupControl"
-        first_contrast <- contrasts[1]
-        parts <- strsplit(first_contrast, "-")[[1]]
-
-        if (length(parts) == 2) {
-            # Try to detect group prefix (e.g., "group" from "groupTreatment")
-            left_part <- parts[1]
-            right_part <- parts[2]
-
-            # Add numerator/denominator columns by parsing comparison
-            tryCatch(
-                {
-                    lfc_qval_tbl <- lfc_qval_tbl |>
-                        tidyr::separate_wider_delim(
-                            comparison,
-                            delim = "-",
-                            names = c("numerator", "denominator"),
-                            cols_remove = FALSE
-                        )
-                },
-                error = function(e) {
-                    cat(sprintf("[WARN] Could not parse contrast groups: %s\n", e$message))
-                    lfc_qval_tbl$numerator <<- NA_character_
-                    lfc_qval_tbl$denominator <<- NA_character_
-                }
-            )
-        }
+        
+        # Try to parse numerator/denominator
+        tryCatch({
+            cat("[D66]   Step: Parsing contrasts\n")
+            lfc_qval_tbl <- lfc_qval_tbl |>
+                tidyr::separate_wider_delim(
+                    comparison,
+                    delim = "-",
+                    names = c("numerator", "denominator"),
+                    cols_remove = FALSE
+                )
+        }, error = function(e) {
+            cat(sprintf("[WARN] Could not parse contrast groups: %s\n", e$message))
+            lfc_qval_tbl$numerator <- NA_character_
+            lfc_qval_tbl$denominator <- NA_character_
+        })
     }
 
     # Join DE results with intensity values
-    de_results_long <- lfc_qval_tbl |>
-        dplyr::left_join(intensity_wide, by = lipid_id_col) |>
-        dplyr::arrange(comparison, fdr_qvalue, logFC) |>
-        dplyr::distinct()
+    da_results_long <- tryCatch({
+        cat("[D66]   Step: final join\n")
+        lfc_qval_tbl |>
+            dplyr::left_join(intensity_wide, by = metabolite_id_col) |>
+            dplyr::arrange(comparison, fdr_qvalue, logFC) |>
+            dplyr::distinct()
+    }, error = function(e) {
+        cat(sprintf("[ERROR] final join failed: %s\n", e$message))
+        stop(e)
+    })
 
-    logger::log_info(sprintf(
-        "   Final de_results_long: %d rows x %d columns",
-        nrow(de_results_long), ncol(de_results_long)
-    ))
-
-    logger::log_info("--- Exiting createLipidDeResultsLongFormat ---")
-
-    return(de_results_long)
+    cat("[D66] --- Completed createMetabDaResultsLongFormat ---\n")
+    return(da_results_long)
 }
 
 
 # ----------------------------------------------------------------------------
-# getLipidQuantData
+# getMetaboliteQuantData
 # ----------------------------------------------------------------------------
 #' Extract quantitative data columns from an assay data frame
 #'
-#' @description Helper function to separate lipid quantitative data
+#' @description Helper function to separate metabolite quantitative data
 #'   (sample columns) from metadata columns (ID, annotation, etc.).
 #'
-#' @param assay_df Data frame containing lipid data for one assay.
-#' @param lipid_id_col Name of the lipid ID column.
+#' @param assay_df Data frame containing metabolite data for one assay.
+#' @param metabolite_id_col Name of the metabolite ID column.
 #' @param annotation_col Name of the annotation column.
 #' @param additional_meta_cols Additional columns to exclude from quant data.
 #'
@@ -702,14 +738,14 @@ createLipidDeResultsLongFormat <- function(
 #'   - sample_cols: Names of sample columns
 #'
 #' @export
-getLipidQuantData <- function(
+getMetaboliteQuantData <- function(
   assay_df,
-  lipid_id_col = "Alignment ID",
-  annotation_col = "Lipid name",
+  metabolite_id_col = "Alignment ID",
+  annotation_col = "Metabolite name",
   additional_meta_cols = NULL
 ) {
     # Identify metadata columns to exclude
-    meta_cols <- c(lipid_id_col, annotation_col)
+    meta_cols <- c(metabolite_id_col, annotation_col)
     if (!is.null(additional_meta_cols)) {
         meta_cols <- c(meta_cols, additional_meta_cols)
     }
@@ -730,20 +766,20 @@ getLipidQuantData <- function(
 
 
 # ----------------------------------------------------------------------------
-# generateLipidVolcanoPlotGlimma
+# generateMetabVolcanoPlotGlimma
 # ----------------------------------------------------------------------------
-#' Generate interactive Glimma volcano plot for lipidomics DE results
+#' Generate interactive Glimma volcano plot for metabolomics DE results
 #'
 #' @description Creates an interactive volcano plot using the Glimma package
-#'   for lipidomics differential abundance results. Supports per-assay
+#'   for metabolomics differential expression results. Supports per-assay
 #'   or combined viewing.
 #'
-#' @param de_results_list Results list from `runLipidsDE()`.
+#' @param da_results_list Results list from `runMetabolitesDA()`.
 #' @param selected_contrast Contrast to display (from friendly_name or comparison).
 #' @param selected_assay Optional assay to filter (NULL for combined view).
-#' @param de_q_val_thresh Q-value threshold for significance marking.
-#' @param lipid_id_column Column name for lipid IDs.
-#' @param annotation_column Column name for lipid annotations (for labels).
+#' @param da_q_val_thresh Q-value threshold for significance marking.
+#' @param metabolite_id_column Column name for metabolite IDs.
+#' @param annotation_column Column name for metabolite annotations (for labels).
 #'
 #' @return A Glimma HTML widget or NULL if generation fails.
 #'
@@ -753,32 +789,32 @@ getLipidQuantData <- function(
 #' @importFrom stringr str_extract
 #' @importFrom logger log_info log_error log_warn
 #' @export
-generateLipidVolcanoPlotGlimma <- function(
-  de_results_list,
+generateMetabDAVolcanoPlotGlimma <- function(
+  da_results_list,
   selected_contrast = NULL,
   selected_assay = NULL,
-  de_q_val_thresh = 0.05,
-  lipid_id_column = "lipid_id",
-  annotation_column = "lipid_name"
+  da_q_val_thresh = 0.05,
+  metabolite_id_column = "metabolite_id",
+  annotation_column = "metabolite_name"
 ) {
     # [D66:START] -------------------------
     d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
-    d66_log("=== ENTER generateLipidVolcanoPlotGlimma ===")
+    d66_log("=== ENTER generateMetabVolcanoPlotGlimma ===")
     d66_log("  selected_contrast = ", if (is.null(selected_contrast)) "NULL" else selected_contrast)
     d66_log("  selected_assay = ", if (is.null(selected_assay)) "NULL" else selected_assay)
     # [D66:END] ---------------------------
 
-    logger::log_info("--- Entering generateLipidVolcanoPlotGlimma ---")
+    logger::log_info("--- Entering generateMetabVolcanoPlotGlimma ---")
     logger::log_info(sprintf("   selected_contrast = %s", selected_contrast))
     logger::log_info(sprintf("   selected_assay = %s", ifelse(is.null(selected_assay), "NULL (combined)", selected_assay)))
 
-    if (is.null(de_results_list) || is.null(de_results_list$de_lipids_long)) {
+    if (is.null(da_results_list) || is.null(da_results_list$da_metabolites_long)) {
         # [D66:START]
-        d66_log("  ERROR: de_results_list or de_lipids_long is NULL")
-        d66_log("    de_results_list is NULL = ", is.null(de_results_list))
-        if (!is.null(de_results_list)) {
-            d66_log("    de_results_list names = ", paste(names(de_results_list), collapse = ", "))
-            d66_log("    de_lipids_long is NULL = ", is.null(de_results_list$de_lipids_long))
+        d66_log("  ERROR: da_results_list or da_metabolites_long is NULL")
+        d66_log("    da_results_list is NULL = ", is.null(da_results_list))
+        if (!is.null(da_results_list)) {
+            d66_log("    da_results_list names = ", paste(names(da_results_list), collapse = ", "))
+            d66_log("    da_metabolites_long is NULL = ", is.null(da_results_list$da_metabolites_long))
         }
         # [D66:END]
         logger::log_warn("   No DE results available")
@@ -791,17 +827,17 @@ generateLipidVolcanoPlotGlimma <- function(
     }
 
     # Get data
-    de_lipids_long <- de_results_list$de_lipids_long
-    contrasts_results <- de_results_list$contrasts_results
+    da_metabolites_long <- da_results_list$da_metabolites_long
+    contrasts_results <- da_results_list$contrasts_results
 
     # [D66:START] -------------------------
-    d66_log("  de_lipids_long dims = ", nrow(de_lipids_long), " x ", ncol(de_lipids_long))
-    d66_log("  de_lipids_long columns = ", paste(colnames(de_lipids_long), collapse = ", "))
-    if (nrow(de_lipids_long) > 0 && "comparison" %in% colnames(de_lipids_long)) {
-        d66_log("  unique comparisons = ", paste(unique(de_lipids_long$comparison), collapse = ", "))
+    d66_log("  da_metabolites_long dims = ", nrow(da_metabolites_long), " x ", ncol(da_metabolites_long))
+    d66_log("  da_metabolites_long columns = ", paste(colnames(da_metabolites_long), collapse = ", "))
+    if (nrow(da_metabolites_long) > 0 && "comparison" %in% colnames(da_metabolites_long)) {
+        d66_log("  unique comparisons = ", paste(unique(da_metabolites_long$comparison), collapse = ", "))
     }
-    if (nrow(de_lipids_long) > 0 && "friendly_name" %in% colnames(de_lipids_long)) {
-        d66_log("  unique friendly_names = ", paste(unique(de_lipids_long$friendly_name), collapse = ", "))
+    if (nrow(da_metabolites_long) > 0 && "friendly_name" %in% colnames(da_metabolites_long)) {
+        d66_log("  unique friendly_names = ", paste(unique(da_metabolites_long$friendly_name), collapse = ", "))
     }
     # [D66:END] ---------------------------
 
@@ -826,7 +862,7 @@ generateLipidVolcanoPlotGlimma <- function(
     }
 
     # Filter for selected contrast
-    contrast_data <- de_lipids_long |>
+    contrast_data <- da_metabolites_long |>
         dplyr::filter(comparison == comparison_to_search | friendly_name == comparison_to_search)
 
     # Filter by selected assay (required for Glimma)
@@ -915,20 +951,20 @@ generateLipidVolcanoPlotGlimma <- function(
         dplyr::mutate(
             lqm = -log10(fdr_qvalue),
             label = dplyr::case_when(
-                abs(logFC) >= 1 & fdr_qvalue >= de_q_val_thresh ~ "Not sig., |logFC| >= 1",
-                abs(logFC) >= 1 & fdr_qvalue < de_q_val_thresh ~ "Sig., |logFC| >= 1",
-                abs(logFC) < 1 & fdr_qvalue < de_q_val_thresh ~ "Sig., |logFC| < 1",
+                abs(logFC) >= 1 & fdr_qvalue >= da_q_val_thresh ~ "Not sig., |logFC| >= 1",
+                abs(logFC) >= 1 & fdr_qvalue < da_q_val_thresh ~ "Sig., |logFC| >= 1",
+                abs(logFC) < 1 & fdr_qvalue < da_q_val_thresh ~ "Sig., |logFC| < 1",
                 TRUE ~ "Not sig."
             ),
             display_name = ifelse(
-                !is.na(lipid_name) & lipid_name != "",
-                lipid_name,
-                lipid_id
+                !is.na(metabolite_name) & metabolite_name != "",
+                metabolite_name,
+                metabolite_id
             )
         ) |>
         dplyr::select(
-            lipid_id,
-            lipid_name,
+            metabolite_id,
+            metabolite_name,
             display_name,
             assay,
             logFC,
@@ -940,12 +976,12 @@ generateLipidVolcanoPlotGlimma <- function(
         )
 
     # Get counts matrix for the selected assay
-    theObject <- de_results_list$theObject
-    assay_data <- theObject@lipid_data[[fit_assay]]
+    theObject <- da_results_list$theObject
+    assay_data <- theObject@metabolite_data[[fit_assay]]
     sample_cols <- intersect(colnames(assay_data), theObject@design_matrix[[theObject@sample_id]])
 
     counts_mat <- as.matrix(assay_data[, sample_cols, drop = FALSE])
-    rownames(counts_mat) <- assay_data[[theObject@lipid_id_column]]
+    rownames(counts_mat) <- assay_data[[theObject@metabolite_id_column]]
 
     # Get groups
     dm <- theObject@design_matrix
@@ -967,12 +1003,12 @@ generateLipidVolcanoPlotGlimma <- function(
     # scrambled.
     # =====================================================================
     fit_feature_ids <- rownames(fit_obj$coefficients)
-    volcano_tab <- volcano_tab[match(fit_feature_ids, volcano_tab$lipid_id), , drop = FALSE]
+    volcano_tab <- volcano_tab[match(fit_feature_ids, volcano_tab$metabolite_id), , drop = FALSE]
 
     # Handle any potential mismatches (though match IDs should exist)
-    if (any(is.na(volcano_tab$lipid_id))) {
+    if (any(is.na(volcano_tab$metabolite_id))) {
         logger::log_warn("   Some features in fit object not found in volcano_tab. Removing NAs.")
-        volcano_tab <- volcano_tab[!is.na(volcano_tab$lipid_id), ]
+        volcano_tab <- volcano_tab[!is.na(volcano_tab$metabolite_id), ]
         # Also subset other inputs if necessary, but usually fit_obj is the reference
     }
 
@@ -986,7 +1022,7 @@ generateLipidVolcanoPlotGlimma <- function(
             # [D66:END]
 
             # Use Glimma's glimmaVolcano function directly
-            # NOTE: transform.counts = "none" because lipidomics data is already
+            # NOTE: transform.counts = "none" because metabolomics data is already
             # log-transformed and contains negative values. Glimma's default is to
             # apply cpm(log=TRUE) which fails on negative values.
             glimma_widget <- Glimma::glimmaVolcano(
@@ -995,7 +1031,7 @@ generateLipidVolcanoPlotGlimma <- function(
                 counts = counts_mat,
                 groups = groups,
                 anno = data.frame(
-                    ID = volcano_tab$lipid_id,
+                    ID = volcano_tab$metabolite_id,
                     Name = volcano_tab$display_name,
                     Assay = volcano_tab$assay
                 ),
@@ -1012,7 +1048,7 @@ generateLipidVolcanoPlotGlimma <- function(
             d66_log("    widget class = ", class(glimma_widget)[1])
             # [D66:END]
 
-            logger::log_info("--- Exiting generateLipidVolcanoPlotGlimma (success) ---")
+            logger::log_info("--- Exiting generateMetabVolcanoPlotGlimma (success) ---")
             return(glimma_widget)
         },
         error = function(e) {
@@ -1028,41 +1064,36 @@ generateLipidVolcanoPlotGlimma <- function(
 
 
 # ----------------------------------------------------------------------------
-# generateLipidDEHeatmap
+# generateMetabDAHeatmap
 # ----------------------------------------------------------------------------
-#' Generate heatmap for lipidomics DE results
+#' Generate heatmap for metabolomics DA results
 #'
-#' @description Creates a heatmap of top differentially expressed lipids
+#' @description Creates a heatmap of top differentially expressed metabolites
 #'   with customizable clustering and scaling options.
 #'
-#' @param de_results_list Results list from `runLipidsDE()`.
+#' @param da_results_list Results list from `runMetabolitesDA()`.
 #' @param selected_contrast Contrast to display.
 #' @param selected_assay Optional assay filter (NULL for combined).
-#' @param top_n Number of top lipids to include (by |logFC|).
+#' @param top_n Number of top metabolites to include (by |logFC|).
 #' @param clustering_method Hierarchical clustering method.
 #' @param distance_method Distance metric for clustering.
 #' @param cluster_rows Logical, cluster rows.
 #' @param cluster_cols Logical, cluster columns.
 #' @param scale_data Scaling option: "row", "column", "both", or "none".
 #' @param color_scheme Color palette name.
-#' @param show_lipid_names Logical, show lipid name labels.
-#' @param de_q_val_thresh Q-value threshold for significance.
+#' @param show_metabolite_names Logical, show metabolite name labels.
+#' @param da_q_val_thresh Q-value threshold for significance.
 #'
-#' @param tree_cut_method Method for cutting the row tree: "none", "k_clusters", "height_cutoff", "dynamic".
-#' @param n_clusters Number of clusters (for k_clusters).
-#' @param cut_height Height cutoff (for height_cutoff).
-#' @param min_cluster_size Minimum cluster size (for dynamic).
-#'
-#' @return A list containing the Heatmap object and cluster assignments, or NULL.
+#' @return A ggplot2 or ComplexHeatmap object, or NULL.
 #'
 #' @importFrom ComplexHeatmap Heatmap
 #' @importFrom circlize colorRamp2
-#' @importFrom stats hclust dist cor cutree
+#' @importFrom stats hclust dist cor
 #' @importFrom dplyr filter arrange desc slice_head
 #' @importFrom logger log_info log_error log_warn
 #' @export
-generateLipidDEHeatmap <- function(
-  de_results_list,
+generateMetabDAHeatmap <- function(
+  da_results_list,
   selected_contrast = NULL,
   selected_assay = NULL,
   top_n = 50,
@@ -1072,14 +1103,14 @@ generateLipidDEHeatmap <- function(
   cluster_cols = TRUE,
   scale_data = "row",
   color_scheme = "RdBu",
-  show_lipid_names = FALSE,
-  de_q_val_thresh = 0.05,
+  show_metabolite_names = FALSE,
+  da_q_val_thresh = 0.05,
   tree_cut_method = "none",
   n_clusters = 4,
   cut_height = 10,
   min_cluster_size = 5
 ) {
-    logger::log_info("--- Entering generateLipidDEHeatmap ---")
+    logger::log_info("--- Entering generateMetabDAHeatmap ---")
 
     # Handle potential NA/NULL parameters from Shiny
     cluster_rows <- if (is.null(cluster_rows) || is.na(cluster_rows)) TRUE else cluster_rows
@@ -1088,7 +1119,7 @@ generateLipidDEHeatmap <- function(
     top_n <- if (is.null(top_n) || is.na(top_n)) 50 else top_n
     logger::log_info(sprintf("   selected_contrast = %s, top_n = %d", selected_contrast, top_n))
 
-    if (is.null(de_results_list) || is.null(de_results_list$de_lipids_long)) {
+    if (is.null(da_results_list) || is.null(da_results_list$da_metabolites_long)) {
         logger::log_warn("   No DE results available")
         return(NULL)
     }
@@ -1099,7 +1130,7 @@ generateLipidDEHeatmap <- function(
     }
 
     # Get data
-    de_lipids_long <- de_results_list$de_lipids_long
+    da_metabolites_long <- da_results_list$da_metabolites_long
 
     # Extract comparison name
     comparison_to_search <- stringr::str_extract(selected_contrast, "^[^=]+")
@@ -1108,9 +1139,9 @@ generateLipidDEHeatmap <- function(
     }
 
     # Filter for significant results in selected contrast
-    contrast_data <- de_lipids_long |>
+    contrast_data <- da_metabolites_long |>
         dplyr::filter(comparison == comparison_to_search | friendly_name == comparison_to_search) |>
-        dplyr::filter(fdr_qvalue < de_q_val_thresh)
+        dplyr::filter(fdr_qvalue < da_q_val_thresh)
 
     # Optionally filter by assay
     if (!is.null(selected_assay) && !is.na(selected_assay) && selected_assay != "Combined") {
@@ -1119,45 +1150,45 @@ generateLipidDEHeatmap <- function(
     }
 
     if (nrow(contrast_data) == 0) {
-        logger::log_warn("   No significant lipids found")
+        logger::log_warn("   No significant metabolites found")
         return(NULL)
     }
 
     # Get top N by absolute logFC
-    top_lipids <- contrast_data |>
+    top_metabolites <- contrast_data |>
         dplyr::arrange(dplyr::desc(abs(logFC))) |>
         dplyr::slice_head(n = top_n)
 
-    logger::log_info(sprintf("   Selected %d top lipids", nrow(top_lipids)))
+    logger::log_info(sprintf("   Selected %d top metabolites", nrow(top_metabolites)))
 
     # Get expression matrix
-    theObject <- de_results_list$theObject
+    theObject <- da_results_list$theObject
 
     # Determine which assay(s) to use
     if (!is.null(selected_assay) && !is.na(selected_assay) && selected_assay != "Combined") {
         assays_to_use <- selected_assay
     } else {
-        assays_to_use <- unique(top_lipids$assay)
+        assays_to_use <- unique(top_metabolites$assay)
     }
 
     # Build expression matrix from relevant assays
     expr_list <- lapply(assays_to_use, function(assay_name) {
-        assay_data <- theObject@lipid_data[[assay_name]]
+        assay_data <- theObject@metabolite_data[[assay_name]]
         if (is.null(assay_data)) {
             return(NULL)
         }
 
-        # Get lipid IDs for this assay
-        assay_lipid_ids <- top_lipids |>
+        # Get metabolite IDs for this assay
+        assay_metab_ids <- top_metabolites |>
             dplyr::filter(assay == assay_name) |>
-            dplyr::pull(lipid_id)
+            dplyr::pull(metabolite_id)
 
-        if (length(assay_lipid_ids) == 0) {
+        if (length(assay_metab_ids) == 0) {
             return(NULL)
         }
 
-        # Filter to selected lipids
-        rows_to_keep <- assay_data[[theObject@lipid_id_column]] %in% assay_lipid_ids
+        # Filter to selected metabolites
+        rows_to_keep <- assay_data[[theObject@metabolite_id_column]] %in% assay_metab_ids
         assay_subset <- assay_data[rows_to_keep, , drop = FALSE]
 
         # Get sample columns
@@ -1165,7 +1196,7 @@ generateLipidDEHeatmap <- function(
 
         # Build matrix
         mat <- as.matrix(assay_subset[, sample_cols, drop = FALSE])
-        rownames(mat) <- assay_subset[[theObject@lipid_id_column]]
+        rownames(mat) <- assay_subset[[theObject@metabolite_id_column]]
 
         return(mat)
     })
@@ -1194,10 +1225,10 @@ generateLipidDEHeatmap <- function(
     expr_matrix[is.na(expr_matrix)] <- 0
     expr_matrix[is.infinite(expr_matrix)] <- 0
 
-    # Build row labels (lipid names if requested)
-    if (show_lipid_names) {
+    # Build row labels (metabolite names if requested)
+    if (show_metabolite_names) {
         # Map IDs to names
-        id_to_name <- stats::setNames(top_lipids$lipid_name, top_lipids$lipid_id)
+        id_to_name <- stats::setNames(top_metabolites$metabolite_name, top_metabolites$metabolite_id)
         row_labels <- id_to_name[rownames(expr_matrix)]
         row_labels[is.na(row_labels)] <- rownames(expr_matrix)[is.na(row_labels)]
     } else {
@@ -1243,8 +1274,6 @@ generateLipidDEHeatmap <- function(
             }
         } else if (tree_cut_method == "dynamic") {
             if (requireNamespace("dynamicTreeCut", quietly = TRUE)) {
-                # dynamicTreeCut requires a dissimilarity matrix, not just the tree
-                # We need to recalculate dist if it wasn't preserved, but we have row_dist
                 if (exists("row_dist")) {
                     row_clusters <- dynamicTreeCut::cutreeDynamic(
                         dendro = row_clust,
@@ -1315,11 +1344,11 @@ generateLipidDEHeatmap <- function(
                 col = color_fn,
                 cluster_rows = if (is.null(row_clust)) cluster_rows else row_clust,
                 cluster_columns = if (is.null(col_clust)) cluster_cols else col_clust,
-                show_row_names = show_lipid_names,
+                show_row_names = show_metabolite_names,
                 row_labels = row_labels,
                 show_column_names = TRUE,
-                column_title = paste("Top", nrow(expr_matrix), "DE Lipids:", selected_contrast),
-                row_title = "Lipids",
+                column_title = paste("Top", nrow(expr_matrix), "DE Metabolites:", selected_contrast),
+                row_title = "Metabolites",
                 top_annotation = ComplexHeatmap::HeatmapAnnotation(
                     Group = col_groups,
                     col = list(Group = group_colors)
@@ -1327,7 +1356,7 @@ generateLipidDEHeatmap <- function(
                 left_annotation = left_annotation
             )
 
-            logger::log_info("--- Exiting generateLipidDEHeatmap (success) ---")
+            logger::log_info("--- Exiting generateMetabDEHeatmap (success) ---")
             return(list(
                 plot = hm,
                 row_clusters = row_clusters,
@@ -1343,20 +1372,20 @@ generateLipidDEHeatmap <- function(
 
 
 # ----------------------------------------------------------------------------
-# generateLipidVolcanoStatic
+# generateMetabDAVolcanoStatic
 # ----------------------------------------------------------------------------
-#' Generate static ggplot2 volcano plot for lipidomics DE results
+#' Generate static ggplot2 volcano plot for metabolomics DE results
 #'
 #' @description Creates a static volcano plot using ggplot2 as a fallback
 #'   when Glimma is not available or for export purposes.
 #'
-#' @param de_results_list Results list from `runLipidsDE()`.
+#' @param da_results_list Results list from `runMetabolitesDA()`.
 #' @param selected_contrast Contrast to display.
 #' @param selected_assay Optional assay filter (NULL for combined/faceted).
-#' @param de_q_val_thresh Q-value threshold for significance.
+#' @param da_q_val_thresh Q-value threshold for significance.
 #' @param lfc_threshold Log fold-change threshold for significance lines.
-#' @param show_labels Logical, label top significant lipids.
-#' @param n_labels Number of top lipids to label.
+#' @param show_labels Logical, label top significant metabolites.
+#' @param n_labels Number of top metabolites to label.
 #'
 #' @return A ggplot2 object.
 #'
@@ -1364,16 +1393,16 @@ generateLipidDEHeatmap <- function(
 #' @importFrom ggrepel geom_text_repel
 #' @importFrom dplyr filter arrange slice_head
 #' @export
-generateLipidVolcanoStatic <- function(
-  de_results_list,
+generateMetabDAVolcanoStatic <- function(
+  da_results_list,
   selected_contrast = NULL,
   selected_assay = NULL,
-  de_q_val_thresh = 0.05,
+  da_q_val_thresh = 0.05,
   lfc_threshold = 1,
   show_labels = TRUE,
   n_labels = 10
 ) {
-    if (is.null(de_results_list) || is.null(de_results_list$de_lipids_long)) {
+    if (is.null(da_results_list) || is.null(da_results_list$da_metabolites_long)) {
         return(NULL)
     }
 
@@ -1382,7 +1411,7 @@ generateLipidVolcanoStatic <- function(
     }
 
     # Get data
-    de_lipids_long <- de_results_list$de_lipids_long
+    da_metabolites_long <- da_results_list$da_metabolites_long
 
     # Extract comparison name
     comparison_to_search <- stringr::str_extract(selected_contrast, "^[^=]+")
@@ -1391,7 +1420,7 @@ generateLipidVolcanoStatic <- function(
     }
 
     # Filter
-    plot_data <- de_lipids_long |>
+    plot_data <- da_metabolites_long |>
         dplyr::filter(comparison == comparison_to_search | friendly_name == comparison_to_search)
 
     if (!is.null(selected_assay) && selected_assay != "Combined") {
@@ -1407,12 +1436,12 @@ generateLipidVolcanoStatic <- function(
     plot_data <- plot_data |>
         dplyr::mutate(
             neg_log10_q = -log10(fdr_qvalue),
-            display_name = ifelse(!is.na(lipid_name) & lipid_name != "",
-                lipid_name, lipid_id
+            display_name = ifelse(!is.na(metabolite_name) & metabolite_name != "",
+                metabolite_name, metabolite_id
             )
         )
 
-    # Get top lipids for labeling
+    # Get top metabolites for labeling
     if (show_labels) {
         top_to_label <- plot_data |>
             dplyr::filter(significant != "NS") |>
@@ -1428,7 +1457,7 @@ generateLipidVolcanoStatic <- function(
     )) +
         ggplot2::geom_point(alpha = 0.6, size = 2) +
         ggplot2::geom_hline(
-            yintercept = -log10(de_q_val_thresh),
+            yintercept = -log10(da_q_val_thresh),
             linetype = "dashed",
             color = "gray50"
         ) +
@@ -1471,23 +1500,24 @@ generateLipidVolcanoStatic <- function(
 
 
 # ----------------------------------------------------------------------------
-# outputLipidDeResultsAllContrasts
+# outputMetabDaResultsAllContrasts
 # ----------------------------------------------------------------------------
-#' Output all lipidomics DE results to disk
+#' Output all metabolomics DE results to disk
 #'
 #' @description Writes DE results tables, volcano plots, and heatmaps to disk
-#'   for all contrasts in a lipidomics DE analysis.
+#'   for all contrasts in a metabolomics DA analysis. Outputs are split by
+#'   assay mode (posmode/negmode) and contrast, matching the proteomics workflow.
 #'
 #' @details Output filenames follow the pattern:
-#'   - `de_posmode_lipids_{contrast}_long_annot.xlsx`
-#'   - `de_negmode_lipids_{contrast}_long_annot.xlsx`
+#'   - `de_posmoda_metabolites_{contrast}_long_annot.xlsx`
+#'   - `de_negmoda_metabolites_{contrast}_long_annot.xlsx`
 #'
-#' @param de_results_list Results list from `runLipidsDE()`.
-#' @param de_output_dir Directory for DE result tables.
+#' @param da_results_list Results list from `runMetabolitesDA()`.
+#' @param da_output_dir Directory for DE result tables.
 #' @param publication_graphs_dir Directory for publication-quality figures.
-#' @param de_q_val_thresh Q-value threshold for significance (default 0.05).
+#' @param da_q_val_thresh Q-value threshold for significance (default 0.05).
 #' @param lfc_threshold Log fold-change threshold for volcano plot lines.
-#' @param heatmap_top_n Number of top lipids for heatmap (default 50).
+#' @param heatmap_top_n Number of top metabolites for heatmap (default 50).
 #' @param heatmap_clustering Clustering option: "both", "row", "column", "none".
 #' @param heatmap_color_scheme Color scheme for heatmap.
 #'
@@ -1501,30 +1531,30 @@ generateLipidVolcanoStatic <- function(
 #' @importFrom purrr walk map
 #' @importFrom logger log_info log_error log_warn
 #' @export
-outputLipidDeResultsAllContrasts <- function(
-  de_results_list,
-  de_output_dir,
+outputMetabDaResultsAllContrasts <- function(
+  da_results_list,
+  da_output_dir,
   publication_graphs_dir,
-  de_q_val_thresh = 0.05,
+  da_q_val_thresh = 0.05,
   lfc_threshold = 1,
   heatmap_top_n = 50,
   heatmap_clustering = "both",
   heatmap_color_scheme = "RdBu"
 ) {
-    logger::log_info("--- Entering outputLipidDeResultsAllContrasts ---")
-    logger::log_info(sprintf("   de_output_dir = %s", de_output_dir))
+    logger::log_info("--- Entering outputMetabDaResultsAllContrasts ---")
+    logger::log_info(sprintf("   da_output_dir = %s", da_output_dir))
     logger::log_info(sprintf("   publication_graphs_dir = %s", publication_graphs_dir))
 
     # Validate inputs
-    if (is.null(de_results_list) || is.null(de_results_list$de_lipids_long)) {
+    if (is.null(da_results_list) || is.null(da_results_list$da_metabolites_long)) {
         logger::log_error("   No DE results available")
         return(FALSE)
     }
 
     # Normalize paths
-    if (!is.null(de_output_dir)) {
-        de_output_dir <- gsub("//+", "/", de_output_dir)
-        de_output_dir <- normalizePath(de_output_dir, winslash = "/", mustWork = FALSE)
+    if (!is.null(da_output_dir)) {
+        da_output_dir <- gsub("//+", "/", da_output_dir)
+        da_output_dir <- normalizePath(da_output_dir, winslash = "/", mustWork = FALSE)
     }
 
     if (!is.null(publication_graphs_dir)) {
@@ -1533,9 +1563,9 @@ outputLipidDeResultsAllContrasts <- function(
     }
 
     # Create output directories
-    if (!dir.exists(de_output_dir)) {
-        dir.create(de_output_dir, recursive = TRUE, showWarnings = FALSE)
-        logger::log_info(sprintf("   Created de_output_dir: %s", de_output_dir))
+    if (!dir.exists(da_output_dir)) {
+        dir.create(da_output_dir, recursive = TRUE, showWarnings = FALSE)
+        logger::log_info(sprintf("   Created da_output_dir: %s", da_output_dir))
     }
 
     volcano_dir <- file.path(publication_graphs_dir, "Volcano_Plots")
@@ -1556,12 +1586,12 @@ outputLipidDeResultsAllContrasts <- function(
         logger::log_info(sprintf("   Created NumSigDeMolecules directory: %s", numsigde_dir))
     }
 
-    # Get DE results with sample intensity columns (already included from runLipidsDE)
-    de_lipids_long <- de_results_list$de_lipids_long
+    # Get DE results with sample intensity columns (already included from runMetabolitesDA)
+    da_metabolites_long <- da_results_list$da_metabolites_long
 
     # Get unique assays and contrasts
-    assays <- unique(de_lipids_long$assay)
-    contrasts <- unique(de_lipids_long$comparison)
+    assays <- unique(da_metabolites_long$assay)
+    contrasts <- unique(da_metabolites_long$comparison)
 
     logger::log_info(sprintf("   Found %d assays: %s", length(assays), paste(assays, collapse = ", ")))
     logger::log_info(sprintf("   Found %d contrasts: %s", length(contrasts), paste(contrasts, collapse = ", ")))
@@ -1593,7 +1623,7 @@ outputLipidDeResultsAllContrasts <- function(
             logger::log_info(sprintf("      Processing contrast: %s", contrast_name))
 
             # Filter data for this assay + contrast
-            assay_contrast_data <- de_lipids_long |>
+            assay_contrast_data <- da_metabolites_long |>
                 dplyr::filter(assay == assay_name & comparison == contrast_name)
 
             if (nrow(assay_contrast_data) == 0) {
@@ -1603,13 +1633,13 @@ outputLipidDeResultsAllContrasts <- function(
 
             # =====================================================================
             # 1. Write DE results tables (TSV and Excel)
-            # Filename format: de_{mode}_lipids_{contrast}_long_annot.xlsx
+            # Filename format: de_{mode}_metabolites_{contrast}_long_annot.xlsx
             # =====================================================================
             tryCatch(
                 {
                     # Reorder columns: ID, name first, then stats, then intensity columns
                     priority_cols <- c(
-                        "lipid_id", "lipid_name",
+                        "metabolite_id", "metabolite_name",
                         "logFC", "raw_pvalue", "fdr_qvalue", "significant",
                         "comparison", "friendly_name", "numerator", "denominator"
                     )
@@ -1628,11 +1658,11 @@ outputLipidDeResultsAllContrasts <- function(
                     final_col_order <- c(priority_cols, other_cols, sort(intensity_cols))
                     output_data <- assay_contrast_data[, final_col_order, drop = FALSE]
 
-                    # Build filename: de_{mode}_lipids_{contrast}_long_annot
-                    file_base <- paste0("de_", mode_prefix, "_lipids_", contrast_name, "_long_annot")
+                    # Build filename: de_{mode}_metabolites_{contrast}_long_annot
+                    file_base <- paste0("de_", mode_prefix, "_metabolites_", contrast_name, "_long_annot")
 
                     # Write TSV
-                    tsv_path <- file.path(de_output_dir, paste0(file_base, ".tsv"))
+                    tsv_path <- file.path(da_output_dir, paste0(file_base, ".tsv"))
                     vroom::vroom_write(output_data, tsv_path)
                     logger::log_info(sprintf(
                         "      Wrote TSV: %s (%d rows, %d cols)",
@@ -1640,7 +1670,7 @@ outputLipidDeResultsAllContrasts <- function(
                     ))
 
                     # Write Excel
-                    xlsx_path <- file.path(de_output_dir, paste0(file_base, ".xlsx"))
+                    xlsx_path <- file.path(da_output_dir, paste0(file_base, ".xlsx"))
                     writexl::write_xlsx(output_data, xlsx_path)
                     logger::log_info(sprintf("      Wrote Excel: %s", basename(xlsx_path)))
                 },
@@ -1658,14 +1688,14 @@ outputLipidDeResultsAllContrasts <- function(
             tryCatch(
                 {
                     # Build a filtered results list for just this assay
-                    assay_filtered_results <- de_results_list
-                    assay_filtered_results$de_lipids_long <- assay_contrast_data
+                    assay_filtered_results <- da_results_list
+                    assay_filtered_results$da_metabolites_long <- assay_contrast_data
 
-                    volcano_plot <- generateLipidVolcanoStatic(
-                        de_results_list = assay_filtered_results,
+                    volcano_plot <- generateMetabVolcanoStatic(
+                        da_results_list = assay_filtered_results,
                         selected_contrast = contrast_name,
                         selected_assay = assay_name,
-                        de_q_val_thresh = de_q_val_thresh,
+                        da_q_val_thresh = da_q_val_thresh,
                         lfc_threshold = lfc_threshold,
                         show_labels = TRUE,
                         n_labels = 15
@@ -1704,11 +1734,11 @@ outputLipidDeResultsAllContrasts <- function(
             tryCatch(
                 {
                     # Build a filtered results list for just this assay
-                    assay_filtered_results <- de_results_list
-                    assay_filtered_results$de_lipids_long <- assay_contrast_data
+                    assay_filtered_results <- da_results_list
+                    assay_filtered_results$da_metabolites_long <- assay_contrast_data
 
                     heatmap_obj <- generateMetabDEHeatmap(
-                        de_results_list = assay_filtered_results,
+                        da_results_list = assay_filtered_results,
                         selected_contrast = contrast_name,
                         selected_assay = assay_name,
                         top_n = heatmap_top_n,
@@ -1718,8 +1748,8 @@ outputLipidDeResultsAllContrasts <- function(
                         cluster_cols = heatmap_clustering %in% c("both", "column"),
                         scale_data = "row",
                         color_scheme = heatmap_color_scheme,
-                        show_lipid_names = FALSE,
-                        de_q_val_thresh = de_q_val_thresh
+                        show_metabolite_names = FALSE,
+                        da_q_val_thresh = da_q_val_thresh
                     )
 
                     if (!is.null(heatmap_obj)) {
@@ -1745,7 +1775,7 @@ outputLipidDeResultsAllContrasts <- function(
                         logger::log_info(sprintf("      Saved heatmap PDF: %s", basename(heatmap_pdf)))
                     } else {
                         logger::log_warn(sprintf(
-                            "      No significant lipids for heatmap: %s / %s",
+                            "      No significant metabolites for heatmap: %s / %s",
                             assay_name, contrast_name
                         ))
                     }
@@ -1775,7 +1805,7 @@ outputLipidDeResultsAllContrasts <- function(
                             assay = assay_name,
                             mode = mode_prefix,
                             contrast = contrast_name,
-                            q_threshold = de_q_val_thresh
+                            q_threshold = da_q_val_thresh
                         )
 
                     table_key <- paste0(mode_prefix, "_", contrast_name)
@@ -1844,12 +1874,12 @@ outputLipidDeResultsAllContrasts <- function(
                 combined_numsig <- dplyr::bind_rows(all_numsig_tables)
 
                 # Write TSV
-                numsig_tsv <- file.path(numsigde_dir, "lipids_num_sig_de_molecules.tab")
+                numsig_tsv <- file.path(numsigde_dir, "metabolites_num_sig_de_molecules.tab")
                 vroom::vroom_write(combined_numsig, numsig_tsv)
                 logger::log_info(sprintf("   Wrote NumSigDE table: %s", basename(numsig_tsv)))
 
                 # Write Excel
-                numsig_xlsx <- file.path(numsigde_dir, "lipids_num_sig_de_molecules.xlsx")
+                numsig_xlsx <- file.path(numsigde_dir, "metabolites_num_sig_de_molecules.xlsx")
                 writexl::write_xlsx(combined_numsig, numsig_xlsx)
                 logger::log_info(sprintf("   Wrote NumSigDE Excel: %s", basename(numsig_xlsx)))
 
@@ -1860,9 +1890,9 @@ outputLipidDeResultsAllContrasts <- function(
                 ) +
                     ggplot2::geom_bar(stat = "identity", position = "dodge") +
                     ggplot2::labs(
-                        title = "Number of Significant DE Lipids",
+                        title = "Number of Significant DE Metabolites",
                         x = "Contrast",
-                        y = "Number of Significant Lipids",
+                        y = "Number of Significant Metabolites",
                         fill = "Assay"
                     ) +
                     ggplot2::theme_minimal() +
@@ -1871,7 +1901,7 @@ outputLipidDeResultsAllContrasts <- function(
                     )
 
                 # Save bar plot
-                numsig_png <- file.path(numsigde_dir, "lipids_num_sig_barplot.png")
+                numsig_png <- file.path(numsigde_dir, "metabolites_num_sig_barplot.png")
                 ggplot2::ggsave(numsig_png, numsig_plot, width = 10, height = 6, dpi = 300)
                 logger::log_info(sprintf("   Saved NumSigDE barplot: %s", basename(numsig_png)))
             },
@@ -1881,6 +1911,6 @@ outputLipidDeResultsAllContrasts <- function(
         )
     }
 
-    logger::log_info("--- Exiting outputMetabDeResultsAllContrasts ---")
+    logger::log_info("--- Exiting outputMetabDaResultsAllContrasts ---")
     return(TRUE)
 }

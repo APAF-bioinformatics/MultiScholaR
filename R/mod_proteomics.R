@@ -1,3 +1,19 @@
+# MultiScholaR: Interactive Multi-Omics Analysis
+# Copyright (C) 2024-2026 Ignatius Pang, William Klare, and APAF-bioinformatics
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 #' Proteomics Workflow UI Module
 #'
 #' @description Main UI for the proteomics workflow interface
@@ -55,9 +71,9 @@ mod_proteomics_ui <- function(id) {
   }
 
   # Create DE tab
-  # Using mod_prot_de_ui
-  if (exists("mod_prot_de_ui")) {
-    de_content <- mod_prot_de_ui(ns("differential_expression"))
+  # Using mod_prot_da_ui
+  if (exists("mod_prot_da_ui")) {
+    de_content <- mod_prot_da_ui(ns("differential_expression"))
   } else {
     de_content <- shiny::div("DE module not loaded")
   }
@@ -273,9 +289,9 @@ mod_proteomics_server <- function(id, project_dirs, omic_type, experiment_label,
     }
 
     # Tab 5: Differential Expression
-    # Using mod_prot_de_server
-    if (exists("mod_prot_de_server")) {
-      mod_prot_de_server("differential_expression", workflow_data, experiment_paths, omic_type, experiment_label, selected_tab)
+    # Using mod_prot_da_server
+    if (exists("mod_prot_da_server")) {
+      mod_prot_da_server("differential_expression", workflow_data, experiment_paths, omic_type, experiment_label, selected_tab)
     }
 
     # Tab 6: Enrichment Analysis

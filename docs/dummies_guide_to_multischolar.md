@@ -640,7 +640,7 @@ classDiagram
         -list args
         +normaliseBetweenSamples()
         +removeRowsWithMissingValuesPercent()
-        +differentialExpressionAnalysis()
+        +differentialAbundanceAnalysis()
     }
     
     class PeptideQuantitativeData {
@@ -1368,7 +1368,7 @@ mod_proteomics_server <- function(id, project_dirs) {
     mod_prot_import_server("import", workflow_data, project_dirs)
     mod_prot_qc_server("qc", workflow_data)
     mod_prot_norm_server("norm", workflow_data)
-    mod_prot_de_server("de", workflow_data)
+    mod_prot_da_server("de", workflow_data)
     
     # Parent can monitor state changes
     observe({
@@ -1642,7 +1642,7 @@ MultiScholaR/
 │   ├── mod_prot_import.R      # Proteomics import submodule
 │   ├── mod_prot_qc.R          # Proteomics QC submodule
 │   ├── mod_prot_norm.R        # Proteomics normalization submodule
-│   ├── mod_prot_de.R          # Proteomics DE submodule
+│   ├── mod_prot_da.R          # Proteomics DE submodule
 │   │
 │   ├── func_proteomics.R      # Proteomics domain functions
 │   ├── func_metabolomics.R    # Metabolomics domain functions
@@ -1909,7 +1909,7 @@ flowchart TD
         IMPORT[mod_prot_import<br/>Data Import]
         QC[mod_prot_qc<br/>Quality Control]
         NORM[mod_prot_norm<br/>Normalization]
-        DE[mod_prot_de<br/>Diff. Expression]
+        DE[mod_prot_da<br/>Diff. Expression]
     end
     
     subgraph "Level 4: Specialized Workers"
@@ -1996,7 +1996,7 @@ mod_proteomics_ui <- function(id) {
       ),
       tabPanel("Differential Expression",
         icon = icon("flask"),
-        mod_prot_de_ui(ns("de"))
+        mod_prot_da_ui(ns("de"))
       )
     )
   )
@@ -2029,7 +2029,7 @@ mod_proteomics_server <- function(id, project_dirs) {
     mod_prot_import_server("import", workflow_data, project_dirs)
     mod_prot_qc_server("qc", workflow_data)
     mod_prot_norm_server("norm", workflow_data)
-    mod_prot_de_server("de", workflow_data)
+    mod_prot_da_server("de", workflow_data)
     
     # PARENT MONITORS STATE FOR TAB ENABLING
     observe({
@@ -2971,7 +2971,7 @@ session_info:
 ```r
 # Export results table
 write.xlsx(
-  de_results,
+  da_results,
   file = file.path(project_dirs$proteomics_de, "differential_expression.xlsx"),
   sheetName = "DE Results",
   rowNames = FALSE
@@ -3424,7 +3424,7 @@ flowchart TD
     ProtPath --> ProtQC
     
     ProtQC --> Norm[mod_prot_norm<br/>Normalization]
-    Norm --> DE[mod_prot_de<br/>Differential Expression]
+    Norm --> DE[mod_prot_da<br/>Differential Expression]
     
     style CheckType fill:#FFE4B5
     style PeptPath fill:#E6E6FA
@@ -3472,9 +3472,9 @@ mod_proteomics_server <- function(id, project_dirs) {
         mod_prot_qc_protein_server("protein_qc", workflow_data)
       }
       
-      # Normalization and DE modules (always initialized)
+      # Normalization and DA modules (always initialized)
       mod_prot_norm_server("norm", workflow_data)
-      mod_prot_de_server("de", workflow_data)
+      mod_prot_da_server("de", workflow_data)
     })
   })
 }
@@ -5068,12 +5068,12 @@ ruvIII_C_Varying <- function(object,
 }
 ```
 
-### 9.4 Differential Expression Analysis
+### 9.4 Differential Abundance Analysis
 
 After normalization, statistical testing identifies differentially expressed proteins.
 
 ```r
-#' Differential Expression Analysis using limma
+#' Differential Abundance Analysis using limma
 #'
 #' Performs statistical testing for differential protein expression.
 #'
@@ -5082,11 +5082,11 @@ After normalization, statistical testing identifies differentially expressed pro
 #' @param contrasts Character vector. Contrasts to test (e.g., "TreatmentVsControl")
 #' @return data.frame. Results table with statistics
 #' @export
-differentialExpressionAnalysis <- function(object, 
+differentialAbundanceAnalysis <- function(object, 
                                           design_formula = "~Group",
                                           contrasts = NULL) {
   
-  message("Performing differential expression analysis")
+  message("Performing differential abundance analysis")
   message("  Design formula: ", design_formula)
   
   # Extract data
@@ -5407,7 +5407,7 @@ plotITSDLollipop <- function(is_metrics) {
 
 ---
 
-## Section 10.4: Differential Expression Analysis for Metabolomics
+## Section 10.4: Differential Abundance Analysis for Metabolomics
 
 ### 10.4.1 The Multi-Assay Challenge
 
@@ -5463,7 +5463,7 @@ flowchart TD
 ```r
 # File: R/func_metabolomics.R
 
-#' Differential Expression Analysis for Multi-Assay Metabolomics
+#' Differential Abundance Analysis for Multi-Assay Metabolomics
 #'
 #' Analyzes each assay independently using limma, then combines results.
 #'
@@ -5472,13 +5472,13 @@ flowchart TD
 #' @param contrasts Character vector. Contrasts to test
 #' @return data.frame. Combined DE results with assay column
 #' @export
-runMetabolitesDE <- function(metab_object,
+runMetabolitesDA <- function(metab_object,
                              design_formula,
                              contrasts) {
   
   library(limma)
   
-  message("Performing differential expression analysis")
+  message("Performing differential abundance analysis")
   message("  Design formula: ", design_formula)
   message("  Contrasts: ", paste(contrasts, collapse = ", "))
   message("  Assays: ", length(metab_object@metabolite_data))
@@ -5491,7 +5491,7 @@ runMetabolitesDE <- function(metab_object,
   contrast_mat <- makeContrasts(contrasts = contrasts, levels = design_mat)
   
   # Analyze each assay independently
-  de_results_list <- lapply(names(metab_object@metabolite_data), function(assay_name) {
+  da_results_list <- lapply(names(metab_object@metabolite_data), function(assay_name) {
     
     message("  Analyzing assay: ", assay_name)
     
@@ -5532,7 +5532,7 @@ runMetabolitesDE <- function(metab_object,
   })
   
   # Combine results across all assays
-  combined_results <- do.call(rbind, de_results_list)
+  combined_results <- do.call(rbind, da_results_list)
   
   # Merge metabolite annotations
   combined_results <- mergeMetaboliteAnnotations(combined_results, metab_object)
@@ -5554,7 +5554,7 @@ runMetabolitesDE <- function(metab_object,
 
 ### 10.4.4 Assay-Specific Considerations
 
-**Independent Normalization**: Each assay is normalized separately (Section 10.2) before DE analysis, accounting for platform-specific technical variation.
+**Independent Normalization**: Each assay is normalized separately (Section 10.2) before DA analysis, accounting for platform-specific technical variation.
 
 **FDR Adjustment Strategy**: Two options available:
 ```r
@@ -5587,22 +5587,22 @@ table(combined_results$assay[combined_results$adj.P.Val < 0.05])
 **Per-Assay Volcano Plots**
 ```r
 # Create separate volcano plot for each assay
-plotVolcanoMetabolomics <- function(de_results, fc_threshold = 1, pval_threshold = 0.05) {
+plotVolcanoMetabolomics <- function(da_results, fc_threshold = 1, pval_threshold = 0.05) {
   
   library(ggplot2)
   
   # Calculate -log10(p-value)
-  de_results$neg_log10_pval <- -log10(de_results$P.Value)
+  da_results$neg_log10_pval <- -log10(da_results$P.Value)
   
   # Classify significance
-  de_results$significance <- ifelse(
-    abs(de_results$logFC) > fc_threshold & de_results$adj.P.Val < pval_threshold,
-    ifelse(de_results$logFC > 0, "Upregulated", "Downregulated"),
+  da_results$significance <- ifelse(
+    abs(da_results$logFC) > fc_threshold & da_results$adj.P.Val < pval_threshold,
+    ifelse(da_results$logFC > 0, "Upregulated", "Downregulated"),
     "Not Significant"
   )
   
   # Create faceted volcano plot (one panel per assay)
-  ggplot(de_results, aes(x = logFC, y = neg_log10_pval, color = significance)) +
+  ggplot(da_results, aes(x = logFC, y = neg_log10_pval, color = significance)) +
     geom_point(alpha = 0.6, size = 2) +
     facet_wrap(~assay, ncol = 3) +
     geom_vline(xintercept = c(-fc_threshold, fc_threshold), 
@@ -5628,10 +5628,10 @@ plotVolcanoMetabolomics <- function(de_results, fc_threshold = 1, pval_threshold
 **Integrated Heatmap**
 ```r
 # Show top significant metabolites across all assays
-plotMetabolomicsHeatmap <- function(metab_object, de_results, top_n = 50) {
+plotMetabolomicsHeatmap <- function(metab_object, da_results, top_n = 50) {
   
   # Select top N metabolites by significance
-  top_metabolites <- de_results %>%
+  top_metabolites <- da_results %>%
     group_by(assay) %>%
     arrange(adj.P.Val) %>%
     slice_head(n = top_n) %>%
@@ -5646,9 +5646,9 @@ plotMetabolomicsHeatmap <- function(metab_object, de_results, top_n = 50) {
 **Cross-Assay Bar Chart**
 ```r
 # Visualize number of significant metabolites per assay
-plotSignificantMetaboliteCounts <- function(de_results) {
+plotSignificantMetaboliteCounts <- function(da_results) {
   
-  sig_counts <- de_results %>%
+  sig_counts <- da_results %>%
     filter(adj.P.Val < 0.05) %>%
     group_by(assay) %>%
     summarize(
@@ -5667,7 +5667,7 @@ plotSignificantMetaboliteCounts <- function(de_results) {
 ### 10.4.6 Integration in Metabolomics Module
 
 ```r
-# File: R/mod_metab_de.R
+# File: R/mod_metab_da.R
 
 observeEvent(input$run_de_analysis, {
   
@@ -5677,28 +5677,28 @@ observeEvent(input$run_de_analysis, {
   
   withProgress(message = "Running differential expression...", {
     
-    # Perform multi-assay DE analysis
-    de_results <- differentialExpressionMetabolomics(
+    # Perform multi-assay DA analysis
+    da_results <- differentialAbundanceMetabolomics(
       metab_object = workflow_data$data_tbl,
       design_formula = workflow_data$current_config$design_formula,
       contrasts = workflow_data$current_config$contrasts
     )
     
     # Store results
-    workflow_data$de_results <- de_results
+    workflow_data$da_results <- da_results
     
     # Generate visualizations
-    workflow_data$de_plots$volcano <- plotVolcanoMetabolomics(de_results)
+    workflow_data$de_plots$volcano <- plotVolcanoMetabolomics(da_results)
     workflow_data$de_plots$heatmap <- plotMetabolomicsHeatmap(
       workflow_data$data_tbl, 
-      de_results
+      da_results
     )
-    workflow_data$de_plots$sig_counts <- plotSignificantMetaboliteCounts(de_results)
+    workflow_data$de_plots$sig_counts <- plotSignificantMetaboliteCounts(da_results)
     
     # Export results
     write.xlsx(
-      de_results,
-      file = file.path(project_dirs$metabolomics_de, "de_results.xlsx")
+      da_results,
+      file = file.path(project_dirs$metabolomics_de, "da_results.xlsx")
     )
     
     # Update status
@@ -5706,8 +5706,8 @@ observeEvent(input$run_de_analysis, {
   })
   
   showNotification(
-    sprintf("DE analysis complete: %d significant metabolites (FDR < 0.05)",
-            sum(workflow_data$de_results$adj.P.Val < 0.05)),
+    sprintf("DA analysis complete: %d significant metabolites (FDR < 0.05)",
+            sum(workflow_data$da_results$adj.P.Val < 0.05)),
     type = "message"
   )
 })
@@ -5728,7 +5728,7 @@ Lipidomics follows the same **Multi-Assay Pattern** as metabolomics but uses a d
 
 | Feature | Metabolomics | Lipidomics |
 |---------|--------------|------------|
-| Core DE Runner | `runMetabolitesDE()` | `runLipidsDE()` |
+| Core DE Runner | `runMetabolitesDA()` | `runLipidsDA()` |
 | Results Formatting | `createMetabDeResultsLongFormat()` | `createLipidDeResultsLongFormat()` |
 | Interactive Volcano | `generateMetabVolcanoPlotGlimma()` | `generateLipidVolcanoPlotGlimma()` |
 | Integrated Heatmap | `generateMetabDEHeatmap()` | `generateLipidDEHeatmap()` |
@@ -6005,40 +6005,40 @@ plotRleHelper <- function(data_matrix, title = "RLE Plot") {
 
 #' Volcano Plot Helper
 #'
-#' Creates volcano plot for differential expression results.
+#' Creates volcano plot for differential abundance results.
 #'
-#' @param de_results data.frame. Results from limma with logFC, P.Value, adj.P.Val
+#' @param da_results data.frame. Results from limma with logFC, P.Value, adj.P.Val
 #' @param fc_threshold Numeric. Fold-change threshold for coloring
 #' @param pval_threshold Numeric. P-value threshold for coloring
 #' @param title Character. Plot title
 #' @return ggplot object
 #' @export
-plotVolcanoHelper <- function(de_results,
+plotVolcanoHelper <- function(da_results,
                              fc_threshold = 1,
                              pval_threshold = 0.05,
                              title = "Volcano Plot") {
   library(ggplot2)
   
   # Calculate -log10(p-value)
-  de_results$neg_log10_pval <- -log10(de_results$P.Value)
+  da_results$neg_log10_pval <- -log10(da_results$P.Value)
   
   # Classify significance
-  de_results$significance <- "Not Significant"
-  de_results$significance[abs(de_results$logFC) > fc_threshold &
-                          de_results$adj.P.Val < pval_threshold] <- "Significant"
-  de_results$significance[abs(de_results$logFC) > fc_threshold &
-                          de_results$adj.P.Val < pval_threshold &
-                          de_results$logFC > 0] <- "Upregulated"
-  de_results$significance[abs(de_results$logFC) > fc_threshold &
-                          de_results$adj.P.Val < pval_threshold &
-                          de_results$logFC < 0] <- "Downregulated"
+  da_results$significance <- "Not Significant"
+  da_results$significance[abs(da_results$logFC) > fc_threshold &
+                          da_results$adj.P.Val < pval_threshold] <- "Significant"
+  da_results$significance[abs(da_results$logFC) > fc_threshold &
+                          da_results$adj.P.Val < pval_threshold &
+                          da_results$logFC > 0] <- "Upregulated"
+  da_results$significance[abs(da_results$logFC) > fc_threshold &
+                          da_results$adj.P.Val < pval_threshold &
+                          da_results$logFC < 0] <- "Downregulated"
   
   # Count significant proteins
-  n_up <- sum(de_results$significance == "Upregulated")
-  n_down <- sum(de_results$significance == "Downregulated")
+  n_up <- sum(da_results$significance == "Upregulated")
+  n_down <- sum(da_results$significance == "Downregulated")
   
   # Create plot
-  p <- ggplot(de_results, aes(x = logFC, y = neg_log10_pval, color = significance)) +
+  p <- ggplot(da_results, aes(x = logFC, y = neg_log10_pval, color = significance)) +
     geom_point(alpha = 0.6) +
     # Significance thresholds
     geom_vline(xintercept = c(-fc_threshold, fc_threshold), 
@@ -6118,7 +6118,7 @@ my_project/
 │   │   │   ├── rle_after.png
 │   │   │   └── normalization_params.yaml
 │   │   ├── differential_expression/  # DE results
-│   │   │   ├── de_results_full.xlsx
+│   │   │   ├── da_results_full.xlsx
 │   │   │   ├── volcano_plot.png
 │   │   │   └── ma_plot.png
 │   │   ├── enrichment/           # Pathway analysis

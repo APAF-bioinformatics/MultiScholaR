@@ -954,7 +954,7 @@ summarizeQCPlot(QC_composite_figure)
 ```
 
 ## Sample Pearson Correlation Filtering
-This section filters samples based on their Pearson correlation with other samples in the same experimental group. Low correlation between samples that should be similar (e.g., biological replicates) often indicates technical issues or sample quality problems. By implementing a correlation threshold (here set at 0.5), this step removes samples that don't correlate well with their group, ensuring that only high-quality, consistent samples are used for downstream statistical analysis. The `updateProteinFiltering()` function tracks the effect of this filtering step on the number of proteins in the dataset. The final data is saved in both TSV and RDS formats for transparency and to facilitate downstream analysis. This correlation-based filtering is the final quality control step before differential expression analysis, ensuring that the data used for biological interpretation is of the highest quality.
+This section filters samples based on their Pearson correlation with other samples in the same experimental group. Low correlation between samples that should be similar (e.g., biological replicates) often indicates technical issues or sample quality problems. By implementing a correlation threshold (here set at 0.5), this step removes samples that don't correlate well with their group, ensuring that only high-quality, consistent samples are used for downstream statistical analysis. The `updateProteinFiltering()` function tracks the effect of this filtering step on the number of proteins in the dataset. The final data is saved in both TSV and RDS formats for transparency and to facilitate downstream analysis. This correlation-based filtering is the final quality control step before differential abundance analysis, ensuring that the data used for biological interpretation is of the highest quality.
 
 ```{r Sample Pearson Correlation Filtering}
 ruv_correlation_vec <- pearsonCorForSamplePairs(
@@ -1076,7 +1076,7 @@ uniprot_dat_cln <- getUniprotAnnotations(
 ```
 
 ## Read in Previously Assigned Contrasts (optional)
-This section reads in predefined contrast specifications from a file, allowing for consistent and reproducible differential expression analysis. Contrasts define the comparisons between experimental groups (e.g., treatment vs. control) that will be tested for protein abundance differences. By defining these contrasts in a separate file, the workflow becomes more flexible and allows for complex experimental designs. This approach also makes it easy to update the analysis with new comparisons without changing the main workflow code. The contrast strings follow a specific format that will be interpreted by the differential expression analysis function to create the appropriate statistical tests.
+This section reads in predefined contrast specifications from a file, allowing for consistent and reproducible differential abundance analysis. Contrasts define the comparisons between experimental groups (e.g., treatment vs. control) that will be tested for protein abundance differences. By defining these contrasts in a separate file, the workflow becomes more flexible and allows for complex experimental designs. This approach also makes it easy to update the analysis with new comparisons without changing the main workflow code. The contrast strings follow a specific format that will be interpreted by the differential abundance analysis function to create the appropriate statistical tests.
 
 ```{r Read in Previousl Assigned Contrasts (optional)}
 contrasts_tbl <- file.path(source_dir, "contrast_strings.tab") |>
@@ -1089,7 +1089,7 @@ contrasts_tbl <- file.path(source_dir, "contrast_strings.tab") |>
 ```
 
 ## DE Analysis Generation
-This section performs differential expression analysis to identify proteins with statistically significant abundance differences between experimental conditions. The analysis uses limma, a well-established statistical framework that applies linear models and empirical Bayes methods to improve statistical power - particularly beneficial for proteomics data where sample sizes are often limited. For each contrast defined in the previous step, the code runs a complete differential expression analysis, including moderated t-tests with robust estimation and trend-based variance modeling. The TREAT method can optionally be applied to test for minimum fold-change thresholds in addition to statistical significance. The results are stored in a named list where each element contains the complete differential expression statistics for one contrast, ready for downstream visualization and biological interpretation.
+This section performs differential abundance analysis to identify proteins with statistically significant abundance differences between experimental conditions. The analysis uses limma, a well-established statistical framework that applies linear models and empirical Bayes methods to improve statistical power - particularly beneficial for proteomics data where sample sizes are often limited. For each contrast defined in the previous step, the code runs a complete differential abundance analysis, including moderated t-tests with robust estimation and trend-based variance modeling. The TREAT method can optionally be applied to test for minimum fold-change thresholds in addition to statistical significance. The results are stored in a named list where each element contains the complete differential abundance statistics for one contrast, ready for downstream visualization and biological interpretation.
 
 ```{r DE Analysis Generation}
 # Debug - if regex readin from config doesnt work
@@ -1102,7 +1102,7 @@ contrast_names <- contrasts_tbl |>
   stringr::str_extract("^[^=]+") |> # Extract everything before the = sign
   stringr::str_replace_all("\\.", "_") # Replace dots with underscores
 
-# Run DE analysis and explicitly set names
+# Run DA analysis and explicitly set names
 de_analysis_results_list <- seq_len(nrow(contrasts_tbl)) |>
   purrr::set_names(contrast_names) |> # This ensures the list will be named
   purrr::map(\(contrast_idx) {
@@ -1124,8 +1124,8 @@ print(names(de_analysis_results_list))
 ```
 
 
-## Output the results of the DE analysis
-This section outputs the differential expression analysis results in various formats for interpretation and publication. For each contrast, the code generates comprehensive result tables and visualizations, including volcano plots that highlight significantly changing proteins. The function takes advantage of the annotations retrieved from UniProt to enrich the results with biological context, including gene names and protein descriptions. Error handling with tryCatch ensures that the workflow continues even if individual contrasts encounter issues. Multiple output files are generated for each contrast, including TSV files for downstream analysis in other tools and publication-quality figures in various formats. These outputs provide both the raw statistical results and their biological interpretation, facilitating the transition from statistical significance to biological insight.
+## Output the results of the DA analysis
+This section outputs the differential abundance analysis results in various formats for interpretation and publication. For each contrast, the code generates comprehensive result tables and visualizations, including volcano plots that highlight significantly changing proteins. The function takes advantage of the annotations retrieved from UniProt to enrich the results with biological context, including gene names and protein descriptions. Error handling with tryCatch ensures that the workflow continues even if individual contrasts encounter issues. Multiple output files are generated for each contrast, including TSV files for downstream analysis in other tools and publication-quality figures in various formats. These outputs provide both the raw statistical results and their biological interpretation, facilitating the transition from statistical significance to biological insight.
 
 ```{r Output DE Analysis Results}
 # Modified output approach with error handling
@@ -1164,13 +1164,13 @@ names(de_analysis_results_list) |>
 ```
 
 ## Enrichment Analysis
-## This section performs enrichment analysis on the DE results
+## This section performs enrichment analysis on the DA results
 ## If your taxon id is on the list supported by gprofiler, that will be used to perform the enrichment analysis
 ## Otherwise, the enrichment analysis will be performed using the GO annotations provided by UniProt in clusterProfiler
 This section performs functional enrichment analysis to identify biological processes, molecular functions, and cellular components overrepresented in your differentially expressed proteins. The workflow is flexible, first attempting to use g:Profiler for enrichment if your organism's taxonomy ID is supported, then falling back to clusterProfiler with GO annotations from UniProt if needed. The analysis is performed separately for upregulated and downregulated protein sets from each contrast, providing a comprehensive view of the biological processes affected in different conditions. The enrichment results include statistical measures like p-values and enrichment ratios, along with visualizations like enrichment maps and GO term networks. This step transforms your list of differential proteins into meaningful biological insights, helping you understand the functional implications of the observed protein abundance changes.
 
 ```{r Enrichment Analysis}
-# Create S4 object of the DE results for enrichment analysis
+# Create S4 object of the DA results for enrichment analysis
 de_results_for_enrichment <- createDEResultsForEnrichment(
   contrasts_tbl = contrasts_tbl,
   design_matrix = design_matrix,
@@ -1179,7 +1179,7 @@ de_results_for_enrichment <- createDEResultsForEnrichment(
 
 # Run enrichment analysis
 enrichment_results <- processEnrichments(
-  de_results_for_enrichment # Your S4 object with DE results
+  de_results_for_enrichment # Your S4 object with DA results
   ,
   taxon_id = taxon_id # your organism
   , up_cutoff = 0 # FC filtering

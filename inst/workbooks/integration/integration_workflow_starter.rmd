@@ -2481,8 +2481,8 @@ savePlot(
 This example shows how to use the new `runStringDbEnrichmentFromDEResults` function with a `de_results_for_enrichment` S4 object, which provides more flexibility in ranking methods.
 
 ```{r}
-# Example: Create a de_results_for_enrichment object from existing DE analysis results
-# (This assumes you have run differential expression analysis previously)
+# Example: Create a de_results_for_enrichment object from existing DA analysis results
+# (This assumes you have run differential abundance analysis previously)
 
 # Option 1: Using combined score ranking (recommended for most cases)
 # This uses sign(log2FC) * (-log10(fdr_qvalue)) for ranking

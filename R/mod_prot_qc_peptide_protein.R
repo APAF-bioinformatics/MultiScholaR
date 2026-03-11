@@ -1,3 +1,19 @@
+# MultiScholaR: Interactive Multi-Omics Analysis
+# Copyright (C) 2024-2026 Ignatius Pang, William Klare, and APAF-bioinformatics
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 #' @title Protein Peptide Count Filter Module
 #'
 #' @description A Shiny module for applying the protein peptide count filter.
@@ -45,7 +61,7 @@ mod_prot_qc_peptide_protein_ui <- function(id) {
         )
       ),
       shiny::column(8,
-        shiny::verbatimTextOutput(ns("protein_peptide_results")),
+        shiny::verbatimTextOutput(ns("protein_peptida_results")),
         shiny::br(),
         shinyjqui::jqui_resizable(
           shiny::plotOutput(ns("protein_peptide_plot"), height = "800px", width = "100%")
@@ -136,7 +152,7 @@ mod_prot_qc_peptide_protein_server <- function(id, workflow_data, omic_type, exp
           "State saved as: 'protein_peptide_filtered'\n"
         )
         
-        output$protein_peptide_results <- shiny::renderText(result_text)
+        output$protein_peptida_results <- shiny::renderText(result_text)
         
         # Update filtering visualization and capture plot
         plot_grid <- updateProteinFiltering(
@@ -169,7 +185,7 @@ mod_prot_qc_peptide_protein_server <- function(id, workflow_data, omic_type, exp
         if (length(history) > 1) {
           prev_state_name <- history[length(history) - 1]
           reverted_s4 <- workflow_data$state_manager$revertToState(prev_state_name)
-          output$protein_peptide_results <- shiny::renderText(paste("Reverted to previous state:", prev_state_name))
+          output$protein_peptida_results <- shiny::renderText(paste("Reverted to previous state:", prev_state_name))
           logger::log_info(paste("Reverted protein peptide filter to", prev_state_name))
           shiny::showNotification("Reverted successfully", type = "message")
         } else {

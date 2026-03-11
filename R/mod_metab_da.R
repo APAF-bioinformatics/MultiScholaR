@@ -1,25 +1,41 @@
+# MultiScholaR: Interactive Multi-Omics Analysis
+# Copyright (C) 2024-2026 Ignatius Pang, William Klare, and APAF-bioinformatics
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 # ============================================================================
-# mod_lipid_de.R
+# mod_metab_da.R
 # ============================================================================
-# Purpose: Lipidomics differential abundance analysis Shiny module
+# Purpose: Metabolomics differential abundance analysis Shiny module
 #
 # This module provides per-assay differential abundance analysis using limma,
 # with interactive volcano plots (Glimma), heatmaps, and result tables.
-# UI and functionality matches the proteomics DE module (mod_prot_de.R).
+# UI and functionality matches the proteomics DA module (mod_prot_da.R).
 # ============================================================================
 
-#' @title Lipidomics Differential Analysis Module
+#' @title Metabolomics Differential Analysis Module
 #' @description A Shiny module for performing per-assay differential abundance
-#'              analysis on lipidomics data using limma.
-#' @name mod_lipid_de
+#'              analysis on metabolomics data using limma.
+#' @name mod_metab_da
 NULL
 
-#' @rdname mod_lipid_de
+#' @rdname mod_metab_da
 #' @export
 #' @importFrom shiny NS tagList fluidRow column wellPanel h3 h4 h5 p hr br selectInput numericInput actionButton uiOutput verbatimTextOutput plotOutput tags downloadButton checkboxInput textAreaInput tabsetPanel tabPanel conditionalPanel helpText
 #' @importFrom DT DTOutput
 #' @importFrom shinyjqui jqui_resizable
-mod_lipid_de_ui <- function(id) {
+mod_metab_da_ui <- function(id) {
     ns <- shiny::NS(id)
 
     shiny::tagList(
@@ -30,7 +46,7 @@ mod_lipid_de_ui <- function(id) {
             shiny::column(
                 3,
                 shiny::wellPanel(
-                    shiny::h4("Differential Expression Analysis")
+                    shiny::h4("Differential Abundance Analysis")
 
                     # Formula input
                     , shiny::textAreaInput(
@@ -45,7 +61,7 @@ mod_lipid_de_ui <- function(id) {
                     # Analysis Parameters
                     , shiny::h5("Analysis Parameters"),
                     shiny::numericInput(
-                        ns("de_q_val_thresh"),
+                        ns("da_q_val_thresh"),
                         "Q-value Threshold:",
                         value = 0.05,
                         min = 0.001,
@@ -76,14 +92,14 @@ mod_lipid_de_ui <- function(id) {
                         width = "100%",
                         icon = shiny::icon("upload")
                     ),
-                    shiny::helpText("Load previously exported filtered data for DE analysis"),
+                    shiny::helpText("Load previously exported filtered data for DA analysis"),
                     shiny::br(),
                     shiny::br()
 
-                    # Run DE Analysis
+                    # Run DA Analysis
                     , shiny::actionButton(
-                        ns("run_de_analysis"),
-                        "Run DE Analysis",
+                        ns("run_da_analysis"),
+                        "Run DA Analysis",
                         class = "btn-primary",
                         width = "100%",
                         icon = shiny::icon("play")
@@ -93,7 +109,7 @@ mod_lipid_de_ui <- function(id) {
 
                     # Download Results
                     , shiny::downloadButton(
-                        ns("download_de_results"),
+                        ns("download_da_results"),
                         "Download All Results",
                         class = "btn-success",
                         style = "width: 100%;"
@@ -102,7 +118,7 @@ mod_lipid_de_ui <- function(id) {
 
                     # Status display
                     , shiny::h5("Analysis Status"),
-                    shiny::verbatimTextOutput(ns("de_status"))
+                    shiny::verbatimTextOutput(ns("da_status"))
                 )
             )
 
@@ -113,7 +129,7 @@ mod_lipid_de_ui <- function(id) {
                 9,
                 shiny::uiOutput(ns("heatmap_manual_save_warning")),
                 shiny::tabsetPanel(
-                    id = ns("de_results_tabs")
+                    id = ns("da_results_tabs")
 
                     # ----------------------------------------------------------
                     # TAB 1: VOLCANO PLOT
@@ -193,7 +209,7 @@ mod_lipid_de_ui <- function(id) {
                                 3,
                                 shiny::numericInput(
                                     ns("heatmap_top_n"),
-                                    "Top N Lipids:",
+                                    "Top N Metabolites:",
                                     value = 50,
                                     min = 10,
                                     max = 500,
@@ -220,7 +236,7 @@ mod_lipid_de_ui <- function(id) {
                                     ns("heatmap_scaling"),
                                     "Data Scaling:",
                                     choices = list(
-                                        "Row (lipid) scaling" = "row",
+                                        "Row (metabolite) scaling" = "row",
                                         "Column (sample) scaling" = "column",
                                         "Both" = "both",
                                         "None" = "none"
@@ -299,37 +315,8 @@ mod_lipid_de_ui <- function(id) {
                                         4,
                                         shiny::checkboxInput(
                                             ns("heatmap_show_labels"),
-                                            "Show Lipid Labels",
+                                            "Show Metabolite Labels",
                                             value = FALSE
-                                        )
-                                    )
-                                ),
-                                shiny::fluidRow(
-                                    shiny::column(
-                                        3,
-                                        shiny::selectInput(
-                                            ns("heatmap_tree_cut_method"),
-                                            "Tree Cutting:",
-                                            choices = c("None" = "none", "K Clusters" = "k_clusters", "Height Cutoff" = "height_cutoff", "Dynamic" = "dynamic"),
-                                            selected = "none"
-                                        )
-                                    ),
-                                    shiny::column(
-                                        3,
-                                        shiny::conditionalPanel(
-                                            condition = "input.heatmap_tree_cut_method == 'k_clusters'",
-                                            ns = ns,
-                                            shiny::numericInput(ns("heatmap_n_clusters"), "Number of Clusters:", value = 4, min = 2, max = 20, step = 1)
-                                        ),
-                                        shiny::conditionalPanel(
-                                            condition = "input.heatmap_tree_cut_method == 'height_cutoff'",
-                                            ns = ns,
-                                            shiny::numericInput(ns("heatmap_cut_height"), "Cut Height:", value = 10, min = 1, max = 100, step = 1)
-                                        ),
-                                        shiny::conditionalPanel(
-                                            condition = "input.heatmap_tree_cut_method == 'dynamic'",
-                                            ns = ns,
-                                            shiny::numericInput(ns("heatmap_min_cluster_size"), "Min Cluster Size:", value = 5, min = 2, max = 20, step = 1)
                                         )
                                     )
                                 )
@@ -368,10 +355,10 @@ mod_lipid_de_ui <- function(id) {
                     )
 
                     # ----------------------------------------------------------
-                    # TAB 3: DE RESULTS TABLE
+                    # TAB 3: DA RESULTS TABLE
                     # ----------------------------------------------------------
                     , shiny::tabPanel(
-                        "DE Results Table",
+                        "DA Results Table",
                         shiny::br()
 
                         # Controls
@@ -427,13 +414,13 @@ mod_lipid_de_ui <- function(id) {
                                 12,
                                 shiny::wellPanel(
                                     shiny::h5("Summary Statistics"),
-                                    shiny::verbatimTextOutput(ns("de_summary_stats"))
+                                    shiny::verbatimTextOutput(ns("da_summary_stats"))
                                 )
                             )
                         )
 
                         # Results table
-                        , DT::DTOutput(ns("de_results_table"))
+                        , DT::DTOutput(ns("da_results_table"))
                     )
                 )
             )
@@ -441,20 +428,20 @@ mod_lipid_de_ui <- function(id) {
     )
 }
 
-#' @rdname mod_lipid_de
+#' @rdname mod_metab_da
 #' @export
 #' @importFrom shiny moduleServer reactiveValues reactive observeEvent req renderUI renderPlot renderText showNotification removeNotification updateSelectInput downloadHandler observe renderPrint
 #' @importFrom DT renderDT datatable formatRound formatStyle styleEqual
 #' @importFrom logger log_info log_error log_warn
-mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label) {
+mod_metab_da_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label) {
     shiny::moduleServer(id, function(input, output, session) {
         ns <- session$ns
 
         # ================================================================
         # LOCAL REACTIVE VALUES
         # ================================================================
-        de_data <- shiny::reactiveValues(
-            de_results_list = NULL,
+        da_data <- shiny::reactiveValues(
+            da_results_list = NULL,
             contrasts_available = NULL,
             assays_available = NULL,
             analysis_complete = FALSE,
@@ -487,9 +474,9 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
         # ================================================================
         # STATUS DISPLAY
         # ================================================================
-        output$de_status <- shiny::renderPrint({
-            if (de_data$analysis_complete) {
-                results <- de_data$de_results_list
+        output$da_status <- shiny::renderPrint({
+            if (da_data$analysis_complete) {
+                results <- da_data$da_results_list
                 if (!is.null(results$significant_counts)) {
                     cat("Analysis Complete\n\n")
                     for (assay_name in names(results$significant_counts)) {
@@ -502,7 +489,7 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
                 } else {
                     cat("Analysis complete.")
                 }
-            } else if (!is.null(de_data$current_s4_object)) {
+            } else if (!is.null(da_data$current_s4_object)) {
                 cat("Data loaded. Ready to run analysis.")
             } else {
                 cat("Waiting for data.\nClick 'Load Filtered Session' to begin.")
@@ -556,7 +543,7 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
                 return()
             }
 
-            session_file <- file.path(source_dir, "lipid_filtered_session_data_latest.rds")
+            session_file <- file.path(source_dir, "metab_filtered_session_data_latest.rds")
             # [D66:START]
             d66_log("  STEP 4: session_file = ", session_file)
             d66_log("  STEP 4: file.exists = ", file.exists(session_file))
@@ -599,9 +586,9 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
                     if (!is.null(session_data$current_s4_object)) {
                         # [D66:START]
                         d66_log("  STEP 6a: S4 object class: ", class(session_data$current_s4_object)[1])
-                        d66_log("  STEP 6b: Assigning to de_data$current_s4_object...")
+                        d66_log("  STEP 6b: Assigning to da_data$current_s4_object...")
                         # [D66:END]
-                        de_data$current_s4_object <- session_data$current_s4_object
+                        da_data$current_s4_object <- session_data$current_s4_object
 
                         # [D66:START]
                         d66_log("  STEP 6c: Getting state_name...")
@@ -632,7 +619,7 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
                             state_name = state_name,
                             s4_data_object = session_data$current_s4_object,
                             config_object = list(loaded_from = session_file),
-                            description = "Loaded from filtered session for DE analysis"
+                            description = "Loaded from filtered session for DA analysis"
                         )
                         # [D66:START]
                         d66_log("  STEP 6f: saveState completed")
@@ -655,7 +642,7 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
                         d66_log("  STEP 7a: Assigning contrasts to workflow_data...")
                         # [D66:END]
                         workflow_data$contrasts_tbl <- session_data$contrasts_tbl
-                        de_data$contrasts_available <- session_data$contrasts_tbl
+                        da_data$contrasts_available <- session_data$contrasts_tbl
 
                         # [D66:START]
                         d66_log("  STEP 7b: Getting contrast_choices...")
@@ -703,7 +690,7 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
 
                     # Get assay names
                     if (!is.null(session_data$assay_names)) {
-                        de_data$assays_available <- session_data$assay_names
+                        da_data$assays_available <- session_data$assay_names
                         assay_choices <- c("Combined", session_data$assay_names)
                         # [D66:START]
                         d66_log("  STEP 8a: Updating volcano_assay dropdown...")
@@ -727,7 +714,7 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
                         {
                             # [D66:START]
                             d66_log("  STEP 9a: Checking S4 @args slot...")
-                            d66_log("    hasSlot 'args': ", methods::hasMethod("@", "LipidomicsAssayData"))
+                            d66_log("    hasSlot 'args': ", methods::hasMethod("@", "MetaboliteAssayData"))
                             # [D66:END]
                             s4_args <- session_data$current_s4_object@args
                             # [D66:START]
@@ -737,10 +724,10 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
                                 d66_log("    names(s4_args): ", paste(names(s4_args), collapse = ", "))
                             }
                             # [D66:END]
-                            if (!is.null(s4_args) && !is.null(s4_args$deAnalysisParameters)) {
-                                formula_val <- s4_args$deAnalysisParameters$formula_string
+                            if (!is.null(s4_args) && !is.null(s4_args$daAnalysisParameters)) {
+                                formula_val <- s4_args$daAnalysisParameters$formula_string
                                 if (!is.null(formula_val) && nzchar(formula_val)) {
-                                    de_data$formula_from_s4 <- formula_val
+                                    da_data$formula_from_s4 <- formula_val
                                     shiny::updateTextAreaInput(session, "formula_string",
                                         value = formula_val
                                     )
@@ -786,20 +773,20 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
         })
 
         # ================================================================
-        # RUN DE ANALYSIS
+        # RUN DA ANALYSIS
         # ================================================================
-        shiny::observeEvent(input$run_de_analysis, {
-            logger::log_info("=== RUN DE ANALYSIS BUTTON CLICKED ===")
+        shiny::observeEvent(input$run_da_analysis, {
+            logger::log_info("=== RUN DA ANALYSIS BUTTON CLICKED ===")
 
             # Validate inputs
-            current_s4 <- de_data$current_s4_object
+            current_s4 <- da_data$current_s4_object
             if (is.null(current_s4)) {
                 current_s4 <- workflow_data$state_manager$getState()
             }
 
-            if (is.null(current_s4) || !inherits(current_s4, "LipidomicsAssayData")) {
+            if (is.null(current_s4) || !inherits(current_s4, "MetaboliteAssayData")) {
                 shiny::showNotification(
-                    "No lipidomics data loaded. Please load a filtered session first.",
+                    "No metabolomics data loaded. Please load a filtered session first.",
                     type = "error",
                     duration = 5
                 )
@@ -818,47 +805,47 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
 
             shiny::showNotification(
                 "Running differential expression analysis...",
-                id = "de_running",
+                id = "da_running",
                 duration = NULL
             )
 
             tryCatch(
                 {
-                    # Run DE analysis
-                    results <- runLipidsDE(
+                    # Run DA analysis
+                    results <- runMetabolitesDA(
                         theObject = current_s4,
                         contrasts_tbl = contrasts_tbl,
                         formula_string = input$formula_string,
-                        de_q_val_thresh = input$de_q_val_thresh,
+                        da_q_val_thresh = input$da_q_val_thresh,
                         treat_lfc_cutoff = input$treat_lfc_cutoff,
                         eBayes_trend = TRUE,
                         eBayes_robust = TRUE
                     )
 
-                    de_data$de_results_list <- results
-                    de_data$analysis_complete <- TRUE
+                    da_data$da_results_list <- results
+                    da_data$analysis_complete <- TRUE
 
                     # Update tab status - must replace entire list to trigger reactivity
                     updated_status <- workflow_data$tab_status
                     updated_status$differential_analysis <- "complete"
                     workflow_data$tab_status <- updated_status
 
-                    shiny::removeNotification("de_running")
+                    shiny::removeNotification("da_running")
                     shiny::showNotification(
                         "Differential expression analysis complete!",
                         type = "message",
                         duration = 5
                     )
 
-                    logger::log_info("   DE analysis completed successfully")
+                    logger::log_info("   DA analysis completed successfully")
 
                     # =============================================================
                     # UPDATE UI DROPDOWNS WITH RESULTS
                     # =============================================================
-                    if (!is.null(results$de_lipids_long)) {
-                        contrast_choices <- unique(results$de_lipids_long$friendly_name)
+                    if (!is.null(results$da_metabolites_long)) {
+                        contrast_choices <- unique(results$da_metabolites_long$friendly_name)
                         if (length(contrast_choices) == 0) {
-                            contrast_choices <- unique(results$de_lipids_long$comparison)
+                            contrast_choices <- unique(results$da_metabolites_long$comparison)
                         }
 
                         shiny::updateSelectInput(session, "volcano_contrast",
@@ -872,7 +859,7 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
                         )
 
                         # Update assay dropdowns
-                        assay_choices <- c("Combined", unique(results$de_lipids_long$assay))
+                        assay_choices <- c("Combined", unique(results$da_metabolites_long$assay))
                         shiny::updateSelectInput(session, "volcano_assay",
                             choices = assay_choices, selected = "Combined"
                         )
@@ -880,7 +867,7 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
                             choices = assay_choices, selected = "Combined"
                         )
 
-                        table_assay_choices <- c("All", unique(results$de_lipids_long$assay))
+                        table_assay_choices <- c("All", unique(results$da_metabolites_long$assay))
                         shiny::updateSelectInput(session, "table_assay",
                             choices = table_assay_choices, selected = "All"
                         )
@@ -892,26 +879,26 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
                     }
 
                     # =============================================================
-                    # WRITE DE RESULTS TO DISK
+                    # WRITE DA RESULTS TO DISK
                     # =============================================================
-                    logger::log_info("   Writing DE results to disk...")
+                    logger::log_info("   Writing DA results to disk...")
 
                     tryCatch(
                         {
-                            de_output_dir <- experiment_paths$de_output_dir
+                            da_output_dir <- experiment_paths$da_output_dir
                             publication_graphs_dir <- experiment_paths$publication_graphs_dir
 
-                            logger::log_info(sprintf("   de_output_dir = %s", de_output_dir))
+                            logger::log_info(sprintf("   da_output_dir = %s", da_output_dir))
                             logger::log_info(sprintf("   publication_graphs_dir = %s", publication_graphs_dir))
 
-                            if (is.null(de_output_dir) || is.null(publication_graphs_dir)) {
+                            if (is.null(da_output_dir) || is.null(publication_graphs_dir)) {
                                 logger::log_warn("   Output directories not configured, skipping file output")
                             } else {
-                                success <- outputMetabDeResultsAllContrasts(
-                                    de_results_list = results,
-                                    de_output_dir = de_output_dir,
+                                success <- outputMetabDaResultsAllContrasts(
+                                    da_results_list = results,
+                                    da_output_dir = da_output_dir,
                                     publication_graphs_dir = publication_graphs_dir,
-                                    de_q_val_thresh = input$de_q_val_thresh,
+                                    da_q_val_thresh = input$da_q_val_thresh,
                                     lfc_threshold = input$treat_lfc_cutoff,
                                     heatmap_top_n = 50,
                                     heatmap_clustering = "both",
@@ -919,9 +906,9 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
                                 )
 
                                 if (success) {
-                                    logger::log_info("   All DE results written to disk successfully")
+                                    logger::log_info("   All DA results written to disk successfully")
                                     shiny::showNotification(
-                                        "DE results saved to disk (tables, volcano plots, heatmaps)",
+                                        "DA results saved to disk (tables, volcano plots, heatmaps)",
                                         type = "message",
                                         duration = 5
                                     )
@@ -929,7 +916,7 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
                             }
                         },
                         error = function(e) {
-                            logger::log_warn(paste("   Could not write DE results to disk:", e$message))
+                            logger::log_warn(paste("   Could not write DA results to disk:", e$message))
                             shiny::showNotification(
                                 paste("Warning: Could not save results to disk:", e$message),
                                 type = "warning",
@@ -939,8 +926,8 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
                     )
                 },
                 error = function(e) {
-                    logger::log_error(sprintf("   DE analysis error: %s", e$message))
-                    shiny::removeNotification("de_running")
+                    logger::log_error(sprintf("   DA analysis error: %s", e$message))
+                    shiny::removeNotification("da_running")
                     shiny::showNotification(
                         sprintf("Analysis error: %s", e$message),
                         type = "error",
@@ -957,7 +944,7 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
         # WARNING BANNER
         # ================================================================
         output$heatmap_manual_save_warning <- shiny::renderUI({
-            if (isTRUE(de_data$analysis_complete)) {
+            if (isTRUE(da_data$analysis_complete)) {
                 shiny::div(
                     class = "alert alert-info",
                     style = "margin-bottom: 15px; padding: 10px; border-left: 5px solid #17a2b8;",
@@ -975,7 +962,7 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
         })
 
         output$volcano_glimma <- shiny::renderUI({
-            shiny::req(de_data$de_results_list, input$volcano_contrast)
+            shiny::req(da_data$da_results_list, input$volcano_contrast)
 
             # Show informative message for Combined view
             if (is.null(input$volcano_assay) || input$volcano_assay == "Combined") {
@@ -992,10 +979,10 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
             tryCatch(
                 {
                     widget <- generateMetabVolcanoPlotGlimma(
-                        de_results_list = de_data$de_results_list,
+                        da_results_list = da_data$da_results_list,
                         selected_contrast = input$volcano_contrast,
                         selected_assay = input$volcano_assay,
-                        de_q_val_thresh = input$de_q_val_thresh
+                        da_q_val_thresh = input$da_q_val_thresh
                     )
 
                     if (is.null(widget)) {
@@ -1021,13 +1008,13 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
         # VOLCANO PLOT - STATIC
         # ================================================================
         output$volcano_static <- shiny::renderPlot({
-            shiny::req(de_data$de_results_list, input$volcano_contrast)
+            shiny::req(da_data$da_results_list, input$volcano_contrast)
 
             generateMetabVolcanoStatic(
-                de_results_list = de_data$de_results_list,
+                da_results_list = da_data$da_results_list,
                 selected_contrast = input$volcano_contrast,
                 selected_assay = input$volcano_assay,
-                de_q_val_thresh = input$de_q_val_thresh,
+                da_q_val_thresh = input$da_q_val_thresh,
                 lfc_threshold = input$treat_lfc_cutoff,
                 show_labels = TRUE,
                 n_labels = 15
@@ -1038,10 +1025,10 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
         # HEATMAP
         # ================================================================
         output$heatmap_plot <- shiny::renderPlot({
-            shiny::req(de_data$de_results_list, input$heatmap_contrast)
+            shiny::req(da_data$da_results_list, input$heatmap_contrast)
 
-            hm <- generateLipidDEHeatmap(
-                de_results_list = de_data$de_results_list,
+            hm <- generateMetabDEHeatmap(
+                da_results_list = da_data$da_results_list,
                 selected_contrast = input$heatmap_contrast,
                 selected_assay = input$heatmap_assay,
                 top_n = input$heatmap_top_n,
@@ -1051,8 +1038,8 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
                 cluster_cols = input$heatmap_clustering %in% c("both", "column"),
                 scale_data = input$heatmap_scaling,
                 color_scheme = input$heatmap_color_scheme,
-                show_lipid_names = input$heatmap_show_labels,
-                de_q_val_thresh = input$de_q_val_thresh,
+                show_metabolite_names = input$heatmap_show_labels,
+                da_q_val_thresh = input$da_q_val_thresh,
                 tree_cut_method = input$heatmap_tree_cut_method,
                 n_clusters = input$heatmap_n_clusters,
                 cut_height = input$heatmap_cut_height,
@@ -1062,9 +1049,9 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
             if (!is.null(hm)) {
                 # Store cluster info and plot
                 if (is.list(hm) && "plot" %in% names(hm)) {
-                    de_data$current_row_clusters <- hm$row_clusters
-                    de_data$current_col_clusters <- hm$col_clusters
-                    de_data$current_heatmap_plot <- hm$plot
+                    da_data$current_row_clusters <- hm$row_clusters
+                    da_data$current_col_clusters <- hm$col_clusters
+                    da_data$current_heatmap_plot <- hm$plot
                     hm$plot
                 } else {
                     hm
@@ -1078,12 +1065,12 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
         output$cluster_summary <- shiny::renderPrint({
             shiny::req(input$heatmap_tree_cut_method != "none")
 
-            if (is.null(de_data$current_row_clusters)) {
+            if (is.null(da_data$current_row_clusters)) {
                 cat("No clusters defined. Enable clustering and tree cutting on the heatmap.")
                 return()
             }
 
-            clusters <- de_data$current_row_clusters
+            clusters <- da_data$current_row_clusters
             n_clusters <- length(unique(clusters))
 
             cat(sprintf("Total Clusters: %d\n", n_clusters))
@@ -1091,7 +1078,7 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
 
             for (i in sort(unique(clusters))) {
                 members <- names(clusters)[clusters == i]
-                cat(sprintf("\nCluster %d (%d lipids):\n", i, length(members)))
+                cat(sprintf("\nCluster %d (%d metabolites):\n", i, length(members)))
                 cat(paste(head(members, 20), collapse = ", "))
                 if (length(members) > 20) {
                     cat(sprintf(", ... and %d more", length(members) - 20))
@@ -1102,7 +1089,7 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
 
         # Save Heatmap Observer
         shiny::observeEvent(input$save_heatmap, {
-            shiny::req(de_data$current_heatmap_plot, experiment_paths$publication_graphs_dir)
+            shiny::req(da_data$current_heatmap_plot, experiment_paths$publication_graphs_dir)
 
             logger::log_info("Save Heatmap button clicked")
 
@@ -1123,14 +1110,14 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
             )
 
             # File prefix
-            prefix <- paste0("lipid_", input$heatmap_contrast)
+            prefix <- paste0("metab_", input$heatmap_contrast)
             # Sanitize prefix (keep alphanumeric and underscores)
             prefix <- gsub("[^A-Za-z0-9_]", "_", prefix)
 
             # Call helper function
             save_heatmap_products(
-                heatmap_obj = de_data$current_heatmap_plot,
-                row_clusters = de_data$current_row_clusters,
+                heatmap_obj = da_data$current_heatmap_plot,
+                row_clusters = da_data$current_row_clusters,
                 params_list = params,
                 output_dir = experiment_paths$publication_graphs_dir,
                 file_prefix = prefix
@@ -1144,12 +1131,12 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
         })
 
         # ================================================================
-        # DE RESULTS TABLE
+        # DA RESULTS TABLE
         # ================================================================
-        output$de_summary_stats <- shiny::renderPrint({
-            shiny::req(de_data$de_results_list)
+        output$da_summary_stats <- shiny::renderPrint({
+            shiny::req(da_data$da_results_list)
 
-            results <- de_data$de_results_list$de_lipids_long
+            results <- da_data$da_results_list$da_metabolites_long
             if (is.null(results) || nrow(results) == 0) {
                 cat("No results available.")
                 return()
@@ -1171,19 +1158,19 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
             up <- sum(results$significant == "Up", na.rm = TRUE)
             down <- sum(results$significant == "Down", na.rm = TRUE)
 
-            cat(sprintf("Total lipids: %d\n", total))
+            cat(sprintf("Total metabolites: %d\n", total))
             cat(sprintf(
                 "Significant (Q < %.3f): %d (%.1f%%)\n",
-                input$de_q_val_thresh, sig, 100 * sig / max(total, 1)
+                input$da_q_val_thresh, sig, 100 * sig / max(total, 1)
             ))
             cat(sprintf("  Up-regulated: %d\n", up))
             cat(sprintf("  Down-regulated: %d\n", down))
         })
 
-        output$de_results_table <- DT::renderDT({
-            shiny::req(de_data$de_results_list)
+        output$da_results_table <- DT::renderDT({
+            shiny::req(da_data$da_results_list)
 
-            results <- de_data$de_results_list$de_lipids_long
+            results <- da_data$da_results_list$da_metabolites_long
             if (is.null(results) || nrow(results) == 0) {
                 return(NULL)
             }
@@ -1201,12 +1188,12 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
 
             # Filter by significance
             if (input$table_significance == "significant") {
-                results <- results[results$fdr_qvalue < input$de_q_val_thresh, ]
+                results <- results[results$fdr_qvalue < input$da_q_val_thresh, ]
             } else if (input$table_significance == "up") {
-                results <- results[results$fdr_qvalue < input$de_q_val_thresh &
+                results <- results[results$fdr_qvalue < input$da_q_val_thresh &
                     results$logFC > input$treat_lfc_cutoff, ]
             } else if (input$table_significance == "down") {
-                results <- results[results$fdr_qvalue < input$de_q_val_thresh &
+                results <- results[results$fdr_qvalue < input$da_q_val_thresh &
                     results$logFC < -input$treat_lfc_cutoff, ]
             }
 
@@ -1217,7 +1204,7 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
 
             # Select display columns
             display_cols <- c(
-                "lipid_id", "lipid_name", "assay", "logFC",
+                "metabolite_id", "metabolite_name", "assay", "logFC",
                 "raw_pvalue", "fdr_qvalue", "significant"
             )
             display_cols <- intersect(display_cols, colnames(results))
@@ -1249,12 +1236,12 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
         # ================================================================
         # DOWNLOAD HANDLER
         # ================================================================
-        output$download_de_results <- shiny::downloadHandler(
+        output$download_da_results <- shiny::downloadHandler(
             filename = function() {
-                paste0("lipidomics_de_results_", Sys.Date(), ".csv")
+                paste0("metabolomics_da_results_", Sys.Date(), ".csv")
             },
             content = function(file) {
-                results <- de_data$de_results_list$de_lipids_long
+                results <- da_data$da_results_list$da_metabolites_long
                 shiny::req(results)
                 write.csv(results, file, row.names = FALSE)
             }

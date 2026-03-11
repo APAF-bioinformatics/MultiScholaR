@@ -1,0 +1,40 @@
+ℹ Loading MultiScholaR
+<error/rlang_error>
+Error in `load_all()`:
+! Failed to load 'R/func_metab_s4_objects.R'
+Caused by error in `rematchDefinition()`:
+! methods can add arguments to the generic ‘plotVolcanoS4’ only if '...' is an argument to the generic
+---
+Backtrace:
+     ▆
+  1. ├─base::tryCatch(...)
+  2. │ └─base (local) tryCatchList(expr, classes, parentenv, handlers)
+  3. │   └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]])
+  4. │     └─base (local) doTryCatch(return(expr), name, parentenv, handler)
+  5. └─devtools::load_all(".")
+  6.   └─pkgload::load_all(...)
+  7.     └─pkgload::load_code(path, quiet = quiet)
+  8.       └─(function() {...
+  9.         └─pkgload:::source_many(paths, encoding, env)
+ 10.           ├─rlang::try_fetch(...)
+ 11.           │ ├─base::tryCatch(...)
+ 12.           │ │ └─base (local) tryCatchList(expr, classes, parentenv, handlers)
+ 13.           │ │   └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]])
+ 14.           │ │     └─base (local) doTryCatch(return(expr), name, parentenv, handler)
+ 15.           │ └─base::withCallingHandlers(...)
+ 16.           └─pkgload:::source_one(file, encoding, envir = envir)
+ 17.             └─base::eval(expr, envir)
+ 18.               └─base::eval(expr, envir)
+ 19.                 └─methods::setMethod(...)
+ 20.                   └─methods::rematchDefinition(...)
+ 21.                     └─base::stop(...)
+Warning messages:
+1: replacing previous import ‘ggplot2::last_plot’ by ‘plotly::last_plot’ when loading ‘MultiScholaR’ 
+2: replacing previous import ‘magrittr::set_names’ by ‘rlang::set_names’ when loading ‘MultiScholaR’ 
+3: replacing previous import ‘gtools::chr’ by ‘rlang::chr’ when loading ‘MultiScholaR’ 
+4: replacing previous import ‘DT::dataTableOutput’ by ‘shiny::dataTableOutput’ when loading ‘MultiScholaR’ 
+5: replacing previous import ‘DT::renderDataTable’ by ‘shiny::renderDataTable’ when loading ‘MultiScholaR’ 
+6: replacing previous import ‘shiny::runExample’ by ‘shinyjs::runExample’ when loading ‘MultiScholaR’ 
+7: replacing previous import ‘magrittr::extract’ by ‘tidyr::extract’ when loading ‘MultiScholaR’ 
+8: replacing previous import ‘shiny::dataTableOutput’ by ‘DT::dataTableOutput’ when loading ‘MultiScholaR’ 
+9: replacing previous import ‘shiny::renderDataTable’ by ‘DT::renderDataTable’ when loading ‘MultiScholaR’ 

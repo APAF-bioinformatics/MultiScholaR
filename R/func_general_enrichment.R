@@ -1,3 +1,19 @@
+# MultiScholaR: Interactive Multi-Omics Analysis
+# Copyright (C) 2024-2026 Ignatius Pang, William Klare, and APAF-bioinformatics
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 # ============================================================================
 # func_general_enrichment.R
 # ============================================================================
@@ -2530,11 +2546,11 @@ enrichProteinsPathways <- function(de_analysis_results_list,
       message(paste("Processing enrichment for contrast:", contrast_name))
 
       # Get the DE results for this contrast
-      de_results <- de_analysis_results_list[[contrast_name]]
+      da_results <- de_analysis_results_list[[contrast_name]]
 
       # Run enrichment analysis
       enrichment_result <- enrichProteinsPathwaysHelper(
-        de_analysis_results = de_results,
+        de_analysis_results = da_results,
         organism_taxid = as.character(taxon_id),
         protein_p_val_thresh = protein_p_val_thresh,
         min_gene_set_size = min_gene_set_size,
@@ -2741,10 +2757,10 @@ uniprotGoIdToTermSimple <- function(uniprot_dat
 #'
 #' @param contrasts_tbl A tibble containing contrast information
 #' @param design_matrix A data frame containing the design matrix
-#' @param de_output_dir Directory containing DE results files
-#' @return An S4 object of class de_results_for_enrichment
+#' @param da_output_dir Directory containing DE results files
+#' @return An S4 object of class da_results_for_enrichment
 #' @export
-createDEResultsForEnrichment <- function(contrasts_tbl, design_matrix, de_output_dir) {
+createDEResultsForEnrichment <- function(contrasts_tbl, design_matrix, da_output_dir) {
   # Helper function to format contrast filename
   format_contrast_filename <- function(contrast_string) {
     contrast_name <- stringr::str_split(contrast_string, "=")[[1]][1] |>
@@ -2754,19 +2770,19 @@ createDEResultsForEnrichment <- function(contrasts_tbl, design_matrix, de_output
   }
 
   # Create new S4 object
-  de_results <- new("de_results_for_enrichment")
+  da_results <- new("da_results_for_enrichment")
 
   # Convert contrasts_tbl to tibble if it isn't already
   contrasts_tbl <- tibble::as_tibble(contrasts_tbl)
 
   # Fill slots
-  de_results@contrasts <- contrasts_tbl
-  de_results@design_matrix <- design_matrix
-  de_results@de_data <- contrasts_tbl$contrasts |>
+  da_results@contrasts <- contrasts_tbl
+  da_results@design_matrix <- design_matrix
+  da_results@de_data <- contrasts_tbl$contrasts |>
     purrr::set_names() |>
     purrr::map(function(contrast) {
       filename <- format_contrast_filename(contrast)
-      filepath <- file.path(de_output_dir, filename)
+      filepath <- file.path(da_output_dir, filename)
 
       if (!file.exists(filepath)) {
         warning("File not found: ", filepath)
@@ -2776,7 +2792,7 @@ createDEResultsForEnrichment <- function(contrasts_tbl, design_matrix, de_output
       readr::read_tsv(filepath, show_col_types = FALSE)
     })
 
-  return(de_results)
+  return(da_results)
 }
 
 
@@ -3109,7 +3125,7 @@ summarize_enrichment <- function(enrichment_result) {
 # ----------------------------------------------------------------------------
 #' Process Enrichments
 #'
-#' @param de_results S4 object containing differential expression results
+#' @param da_results S4 object containing differential expression results
 #' @param taxon_id NCBI taxonomy ID for the organism
 #' @param up_cutoff Log2 fold change cutoff for up-regulated proteins (default: 0)
 #' @param down_cutoff Log2 fold change cutoff for down-regulated proteins (default: 0)
@@ -3124,7 +3140,7 @@ summarize_enrichment <- function(enrichment_result) {
 #' @return S4 EnrichmentResults object containing enrichment data, plots, and summaries
 #'
 #' @export
-processEnrichments <- function(de_results,
+processEnrichments <- function(da_results,
                                taxon_id,
                                up_cutoff = 0,
                                down_cutoff = 0,
@@ -3175,10 +3191,10 @@ processEnrichments <- function(de_results,
       dplyr::filter(.data$taxid == as.character(taxon_id)) |>
       dplyr::pull(.data$id)
 
-    enrichment_results <- createEnrichmentResults(de_results@contrasts)
+    enrichment_results <- createEnrichmentResults(da_results@contrasts)
 
     # Process each contrast
-    results <- de_results@de_data |>
+    results <- da_results@de_data |>
       purrr::map(function(de_data) {
         tryCatch({
         if(is.null(de_data)) {
@@ -3625,15 +3641,15 @@ processEnrichments <- function(de_results,
     )
 
     # Get the internal long names (only used initially if short names aren't provided or needed for mapping)
-    internal_contrast_names <- names(de_results@de_data)
+    internal_contrast_names <- names(da_results@de_data)
 
     # Determine which names to use (Prefer explicitly passed short names)
     if (is.null(contrast_names)) {
-      warning("Explicit contrast_names not provided, using internal names from de_results@de_data which might be long or contain invalid characters.")
+      warning("Explicit contrast_names not provided, using internal names from da_results@de_data which might be long or contain invalid characters.")
       contrast_names_to_use <- internal_contrast_names
     } else {
       if(length(contrast_names) != length(internal_contrast_names)) {
-        stop("Length of provided 'contrast_names' does not match the number of contrasts in 'de_results@de_data'.")
+        stop("Length of provided 'contrast_names' does not match the number of contrasts in 'da_results@de_data'.")
       }
       contrast_names_to_use <- contrast_names # Use the short names
     }
@@ -3642,14 +3658,14 @@ processEnrichments <- function(de_results,
 
     # Initialize lists
     results_list_long_names <- list() # Temporary list to hold results with original names
-    enrichment_results <- createEnrichmentResults(de_results@contrasts)
+    enrichment_results <- createEnrichmentResults(da_results@contrasts)
 
     # --- Step 1: Process enrichment using internal loop mapped to short names ---
     message("--- Starting Enrichment Processing Loop ---")
     results_list_long_names <- purrr::map2(contrast_names_to_use, internal_contrast_names, function(short_name, long_name) {
         message(paste("Processing contrast:", short_name, "(original:", long_name, ")"))
 
-        de_data <- de_results@de_data[[long_name]] # Access input data using long name
+        de_data <- da_results@de_data[[long_name]] # Access input data using long name
 
         if(is.null(de_data)) {
           warning(paste("No DE data found for internal contrast:", long_name))
