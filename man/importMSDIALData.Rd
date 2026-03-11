@@ -2,56 +2,30 @@
 % Please edit documentation in R/func_metab_import.R, R/func_lipid_import.R
 \name{importMSDIALData}
 \alias{importMSDIALData}
-\title{Import MS-DIAL Data}
+\title{Find Matching Column in Headers (Case-Insensitive)}
 \usage{
-importMSDIALData(
-  filepath,
-  lipid_id_column = NULL,
-  annotation_column = NULL,
-  skip_rows = 0
-)
+importMSDIALData(...)
 
-importMSDIALData(
-  filepath,
-  lipid_id_column = NULL,
-  annotation_column = NULL,
-  skip_rows = 0
-)
+importMSDIALData(...)
 }
 \arguments{
-\item{filepath}{Path to the MS-DIAL export file (TSV or CSV).}
+\item{headers}{Character vector of column headers from the data file.}
 
-\item{lipid_id_column}{Column to use as lipid ID (default: auto-detect).}
-
-\item{annotation_column}{Column containing lipid annotations (default: auto-detect).}
-
-\item{skip_rows}{Number of header rows to skip (default: 0).}
-
-\item{metabolite_id_column}{Column to use as metabolite ID (default: auto-detect).}
+\item{candidates}{Character vector of candidate column names to search for.}
 }
 \value{
-A list containing:
-\itemize{
-\item \code{data}: The imported data frame
-\item \code{headers}: Column headers
-\item \code{detected_columns}: List of auto-detected column assignments
-\item \code{sample_columns}: Character vector of sample column names
-\item \code{annotation_columns}: Character vector of annotation column names
-}
+The first matching header name (preserving original case), or NULL if no match.
 
-A list containing:
-\itemize{
-\item \code{data}: The imported data frame
-\item \code{headers}: Column headers
-\item \code{detected_columns}: List of auto-detected column assignments
-\item \code{sample_columns}: Character vector of sample column names
-\item \code{annotation_columns}: Character vector of annotation column names
-}
+The first matching header name (preserving original case), or NULL if no match.
 }
 \description{
-Parses MS-DIAL exported data files (height or area matrix).
-Handles the wide format with metabolite annotations and sample columns.
+Searches for a column name in headers using case-insensitive matching.
+Used for auto-populating column mapping inputs.
 
-Parses MS-DIAL exported data files (height or area matrix).
-Handles the wide format with lipid annotations and sample columns.
+Alias for importMetabMSDIALData for backward compatibility.
+
+Searches for a column name in headers using case-insensitive matching.
+Used for auto-populating column mapping inputs.
+
+Alias for importLipidMSDIALData for backward compatibility.
 }

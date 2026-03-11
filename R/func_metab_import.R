@@ -321,10 +321,25 @@ detectMetabolomicsFormat <- function(headers, filename = NULL) {
     }
     
     return(list(
-        format = best_format
-        , confidence = best_score
-        , all_scores = scores
+        format = best_format,
+        confidence = best_score,
+        all_scores = scores
     ))
+}
+
+
+# ----------------------------------------------------------------------------
+# findMatchingColumn (Alias)
+# ----------------------------------------------------------------------------
+#' @title Find Matching Column (Alias)
+#' @description Alias for findMatchingColumn for backward compatibility.
+#' @export
+findMetabMatchingColumn <- function(headers, candidates) {
+    if (!requireNamespace("MultiScholaR", quietly = TRUE)) {
+        # Fallback if package not fully loaded
+        return(findMatchingColumn(headers, candidates))
+    }
+    MultiScholaR::findMatchingColumn(headers, candidates)
 }
 
 
@@ -420,27 +435,25 @@ getMetabolomicsColumnDefaults <- function(format) {
 #' @return The first matching header name (preserving original case), or NULL if no match.
 #'
 #' @export
-findMetabMatchingColumn <- function(headers, candidates) {
-    if (is.null(candidates) || length(candidates) == 0) {
-        return(NULL)
-    }
-    
-    headers_lower <- tolower(headers)
-    candidates_lower <- tolower(candidates)
-    
-    for (cand in candidates_lower) {
-        match_idx <- which(headers_lower == cand)
-        if (length(match_idx) > 0) {
-            return(headers[match_idx[1]])
-        }
-    }
-    
-    return(NULL)
-}
+# findMetabMatchingColumn <- function(headers, candidates) {
+#     # Deprecated in favor of shared findMatchingColumn
+#     findMatchingColumn(headers, candidates)
+# }
 
 
 # ----------------------------------------------------------------------------
 # importMSDIALData
+# ----------------------------------------------------------------------------
+#' @title Import MS-DIAL Data (Alias)
+#' @description Alias for importMetabMSDIALData for backward compatibility.
+#' @export
+importMSDIALData <- function(...) {
+    importMetabMSDIALData(...)
+}
+
+
+# ----------------------------------------------------------------------------
+# importMSDIALData (Implementation)
 # ----------------------------------------------------------------------------
 #' @title Import MS-DIAL Data
 #' @description Parses MS-DIAL exported data files (height or area matrix).
@@ -569,6 +582,17 @@ importMetabMSDIALData <- function(
         , format = "msdial"
         , is_pattern = defaults$is_pattern
     ))
+}
+
+
+# ----------------------------------------------------------------------------
+# validateColumnMapping (Alias)
+# ----------------------------------------------------------------------------
+#' @title Validate Column Mapping (Alias)
+#' @description Alias for validateMetabColumnMapping for backward compatibility.
+#' @export
+validateColumnMapping <- function(data, metabolite_id_column, sample_columns) {
+    validateMetabColumnMapping(data, metabolite_id_column, sample_columns)
 }
 
 

@@ -67,9 +67,9 @@ It performs the following:
 and design matrix) as input for the current processing step.
 \item Extracts the list of assay data frames/tibbles and the design matrix.
 \item For each assay, calls helper functions (\code{countUniqueLipids},
-\code{countLipidsPerSample}, \code{calculateMissingness},
-\code{calculateSumIntensityPerSample}, \code{calculateLipidCVs},
-\code{getInternalStandardMetrics}) to calculate QC metrics.
+\code{countLipidsPerSample}, \code{calculateLipidMissingness},
+\code{calculateLipidSumIntensityPerSample}, \code{calculateLipidCVs},
+\code{getLipidInternalStandardMetrics}) to calculate QC metrics.
 \item Calls \code{calculateTotalUniqueLipidsAcrossAssays} for an overall count.
 \item Updates the global \code{FilteringProgressLipidomics} object with the
 calculated metrics for the given \code{step_name}.

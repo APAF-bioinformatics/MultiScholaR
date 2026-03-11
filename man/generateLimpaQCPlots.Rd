@@ -43,7 +43,7 @@ limpa_qc_fig <- generateLimpaQCPlots(
   before_object = peptide_ruv_normalised_results_temp_obj
 )
 
-# For protein-level DPC quantification  
+# For protein-level DPC quantification
 limpa_qc_fig <- generateLimpaQCPlots(
   after_object = protein_dpc_quant_obj,
   before_object = peptide_obj

@@ -82,6 +82,37 @@
 #   # Extract from R/helper_functions.R
 # }
 
+# ----------------------------------------------------------------------------
+# findMatchingColumn
+# ----------------------------------------------------------------------------
+#' @title Find Matching Column in Headers (Case-Insensitive)
+#' @description Searches for a column name in headers using case-insensitive matching.
+#'              Used for auto-populating column mapping inputs.
+#'
+#' @param headers Character vector of column headers from the data file.
+#' @param candidates Character vector of candidate column names to search for.
+#'
+#' @return The first matching header name (preserving original case), or NULL if no match.
+#'
+#' @export
+findMatchingColumn <- function(headers, candidates) {
+    if (is.null(candidates) || length(candidates) == 0) {
+        return(NULL)
+    }
+
+    headers_lower <- tolower(headers)
+    candidates_lower <- tolower(candidates)
+
+    for (cand in candidates_lower) {
+        match_idx <- which(headers_lower == cand)
+        if (length(match_idx) > 0) {
+            return(headers[match_idx[1]])
+        }
+    }
+
+    return(NULL)
+}
+
 # === Parsing Functions ===
 
 # Function 9: parseList()

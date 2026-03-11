@@ -357,6 +357,21 @@ detectLipidomicsFormat <- function(headers, filename = NULL) {
 
 
 # ----------------------------------------------------------------------------
+# findMatchingColumn (Alias)
+# ----------------------------------------------------------------------------
+#' @title Find Matching Column (Alias)
+#' @description Alias for findMatchingColumn for backward compatibility.
+#' @export
+findLipidMatchingColumn <- function(headers, candidates) {
+    if (!requireNamespace("MultiScholaR", quietly = TRUE)) {
+        # Fallback if package not fully loaded
+        return(findMatchingColumn(headers, candidates))
+    }
+    MultiScholaR::findMatchingColumn(headers, candidates)
+}
+
+
+# ----------------------------------------------------------------------------
 # getLipidomicsColumnDefaults
 # ----------------------------------------------------------------------------
 #' @title Get Default Column Mappings for Lipidomics Formats
@@ -456,27 +471,25 @@ getLipidomicsColumnDefaults <- function(format) {
 #' @return The first matching header name (preserving original case), or NULL if no match.
 #'
 #' @export
-findLipidMatchingColumn <- function(headers, candidates) {
-    if (is.null(candidates) || length(candidates) == 0) {
-        return(NULL)
-    }
-
-    headers_lower <- tolower(headers)
-    candidates_lower <- tolower(candidates)
-
-    for (cand in candidates_lower) {
-        match_idx <- which(headers_lower == cand)
-        if (length(match_idx) > 0) {
-            return(headers[match_idx[1]])
-        }
-    }
-
-    return(NULL)
-}
+# findLipidMatchingColumn <- function(headers, candidates) {
+#     # Deprecated in favor of shared findMatchingColumn
+#     findMatchingColumn(headers, candidates)
+# }
 
 
 # ----------------------------------------------------------------------------
 # importMSDIALData
+# ----------------------------------------------------------------------------
+#' @title Import MS-DIAL Data (Alias)
+#' @description Alias for importLipidMSDIALData for backward compatibility.
+#' @export
+importMSDIALData <- function(...) {
+    importLipidMSDIALData(...)
+}
+
+
+# ----------------------------------------------------------------------------
+# importMSDIALData (Implementation)
 # ----------------------------------------------------------------------------
 #' @title Import MS-DIAL Data
 #' @description Parses MS-DIAL exported data files (height or area matrix).
@@ -724,6 +737,17 @@ importLipidSearchData <- function(
         format = "lipidsearch",
         is_pattern = defaults$is_pattern
     ))
+}
+
+
+# ----------------------------------------------------------------------------
+# validateColumnMapping (Alias)
+# ----------------------------------------------------------------------------
+#' @title Validate Column Mapping (Alias)
+#' @description Alias for validateLipidColumnMapping for backward compatibility.
+#' @export
+validateColumnMapping <- function(data, lipid_id_column, sample_columns) {
+    validateLipidColumnMapping(data, lipid_id_column, sample_columns)
 }
 
 

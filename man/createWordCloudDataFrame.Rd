@@ -11,6 +11,6 @@ createWordCloudDataFrame(text_list)
 }
 \description{
 Create a word frequency distribution table for Word Cloud generation.
-Based on article by Céline Van den Rul, How to Generate Word Clouds in R, Simple Steps on How and When to Use Them,
+Based on article by Celine Van den Rul, How to Generate Word Clouds in R, Simple Steps on How and When to Use Them,
 https://towardsdatascience.com/create-a-word-cloud-with-r-bde3e7422e8a (accessed 7th November 2022)
 }

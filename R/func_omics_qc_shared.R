@@ -41,8 +41,39 @@
 #' duplicates_metab <- findDuplicateFeatureIDs(metab_assay_obj)
 #' }
 #' @export
-# findDuplicateFeatureIDs <- function(theObject) {
-#     # Deprecated in favor of findMetabDuplicateFeatureIDs and findLipidDuplicateFeatureIDs
-#     # to resolve namespace collisions in the Shiny apps.
-#     stop("findDuplicateFeatureIDs is deprecated. Use findMetabDuplicateFeatureIDs or findLipidDuplicateFeatureIDs.")
-# }
+findDuplicateFeatureIDs <- function(theObject) {
+    if (inherits(theObject, "LipidomicsAssayData")) {
+        return(findLipidDuplicateFeatureIDs(theObject))
+    } else if (inherits(theObject, "MetaboliteAssayData")) {
+        return(findMetabDuplicateFeatureIDs(theObject))
+    } else {
+        stop("findDuplicateFeatureIDs: Unsupported object type: ", class(theObject))
+    }
+}
+
+
+# ----------------------------------------------------------------------------
+# validateColumnMapping (Unified)
+# ----------------------------------------------------------------------------
+#' @title Validate Column Mapping for Omics Data
+#' @description Checks that required columns exist in the data and returns validation status.
+#'              Supports both lipidomics and metabolomics validation.
+#'
+#' @param data Data frame to validate.
+#' @param id_column Name of the primary feature ID column (e.g., lipid_id or metabolite_id).
+#' @param sample_columns Character vector of sample column names.
+#' @param omics_type Character specifying "lipidomics" or "metabolomics". 
+#'                   If NULL, attempts to guess based on context.
+#'
+#' @return A list containing validation status and summary statistics.
+#' @export
+validateColumnMapping <- function(data, id_column, sample_columns, omics_type = NULL) {
+    # If omics_type is not provided, we check which function to call.
+    # We default to metabolomics if unknown, but prefer explicit type.
+    if (!is.null(omics_type) && tolower(omics_type) == "lipidomics") {
+        return(validateLipidColumnMapping(data, id_column, sample_columns))
+    } else {
+        # Default or explicit metabolomics
+        return(validateMetabColumnMapping(data, id_column, sample_columns))
+    }
+}
