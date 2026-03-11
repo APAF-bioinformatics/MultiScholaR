@@ -309,7 +309,6 @@ runTestsContrastsMetabDA <- function(
 
     names(result_tables) <- contrast_strings
     logger::log_info("--- Exiting runTestsContrastsMetab ---")
-
     return(list(
         results = result_tables,
         fit.eb = t.fit,
@@ -484,59 +483,62 @@ runMetabolitesDA <- function(
                     limma_results$results,
                     names(limma_results$results),
                     function(da_tbl, contrast_name) {
-                        tryCatch({
-                            cat(sprintf("[D66] Processing contrast: %s (assay: %s)\n", contrast_name, assay_name))
-                            
-                            # Validate da_tbl
-                            if (!is.data.frame(da_tbl)) {
-                                stop(sprintf("da_tbl is not a data frame, it is a %s", class(da_tbl)[1]))
+                        tryCatch(
+                            {
+                                cat(sprintf("[D66] Processing contrast: %s (assay: %s)\n", contrast_name, assay_name))
+
+                                # Validate da_tbl
+                                if (!is.data.frame(da_tbl)) {
+                                    stop(sprintf("da_tbl is not a data frame, it is a %s", class(da_tbl)[1]))
+                                }
+
+                                # Add metabolite_id from rownames
+                                cat("[D66]   Step: rownames_to_column\n")
+                                da_tbl <- tibble::rownames_to_column(da_tbl, "metabolite_id")
+
+                                # Add metadata columns
+                                cat("[D66]   Step: adding assay/comparison/friendly_name\n")
+                                da_tbl$assay <- assay_name
+                                da_tbl$comparison <- contrast_name
+
+                                # Add friendly name
+                                idx <- match(contrast_name, contrast_strings)
+                                da_tbl$friendly_name <- if (!is.na(idx)) friendly_names[idx] else contrast_name
+
+                                # Join annotation info
+                                cat("[D66]   Step: left_join annotation\n")
+                                da_tbl <- dplyr::left_join(
+                                    da_tbl,
+                                    annotation_info,
+                                    by = "metabolite_id"
+                                )
+
+                                # Classify significance
+                                cat("[D66]   Step: classifying significance\n")
+                                da_tbl$significant <- ifelse(
+                                    da_tbl$fdr_qvalue < da_q_val_thresh & abs(da_tbl$logFC) >= treat_lfc_cutoff,
+                                    ifelse(da_tbl$logFC > 0, "Up", "Down"),
+                                    "NS"
+                                )
+
+                                # Add sample intensity columns using createMetabDaResultsLongFormat
+                                cat(sprintf("[D66]   Calling createMetabDaResultsLongFormat for contrast: %s\n", contrast_name))
+                                da_tbl <- createMetabDaResultsLongFormat(
+                                    lfc_qval_tbl = da_tbl,
+                                    expr_matrix = expr_matrix,
+                                    design_matrix = design_matrix,
+                                    sample_id_col = sample_id_col,
+                                    group_id_col = group_col,
+                                    metabolite_id_col = "metabolite_id"
+                                )
+
+                                return(da_tbl)
+                            },
+                            error = function(inner_e) {
+                                cat(sprintf("[ERROR] Inner loop failure for contrast %s: %s\n", contrast_name, inner_e$message))
+                                stop(inner_e)
                             }
-                            
-                            # Add metabolite_id from rownames
-                            cat("[D66]   Step: rownames_to_column\n")
-                            da_tbl <- tibble::rownames_to_column(da_tbl, "metabolite_id")
-
-                            # Add metadata columns
-                            cat("[D66]   Step: adding assay/comparison/friendly_name\n")
-                            da_tbl$assay <- assay_name
-                            da_tbl$comparison <- contrast_name
-
-                            # Add friendly name
-                            idx <- match(contrast_name, contrast_strings)
-                            da_tbl$friendly_name <- if (!is.na(idx)) friendly_names[idx] else contrast_name
-
-                            # Join annotation info
-                            cat("[D66]   Step: left_join annotation\n")
-                            da_tbl <- dplyr::left_join(
-                                da_tbl,
-                                annotation_info,
-                                by = "metabolite_id"
-                            )
-
-                            # Classify significance
-                            cat("[D66]   Step: classifying significance\n")
-                            da_tbl$significant <- ifelse(
-                                da_tbl$fdr_qvalue < da_q_val_thresh & abs(da_tbl$logFC) >= treat_lfc_cutoff,
-                                ifelse(da_tbl$logFC > 0, "Up", "Down"),
-                                "NS"
-                            )
-
-                            # Add sample intensity columns using createMetabDaResultsLongFormat
-                            cat(sprintf("[D66]   Calling createMetabDaResultsLongFormat for contrast: %s\n", contrast_name))
-                            da_tbl <- createMetabDaResultsLongFormat(
-                                lfc_qval_tbl = da_tbl,
-                                expr_matrix = expr_matrix,
-                                design_matrix = design_matrix,
-                                sample_id_col = sample_id_col,
-                                group_id_col = group_col,
-                                metabolite_id_col = "metabolite_id"
-                            )
-
-                            return(da_tbl)
-                        }, error = function(inner_e) {
-                            cat(sprintf("[ERROR] Inner loop failure for contrast %s: %s\n", contrast_name, inner_e$message))
-                            stop(inner_e)
-                        })
+                        )
                     }
                 )
 
@@ -635,7 +637,7 @@ createMetabDaResultsLongFormat <- function(
     d66_log("    group_id_col = ", group_id_col)
     d66_log("    metabolite_id_col = ", metabolite_id_col)
     # [D66:END] ---------------------------
-    
+
     logger::log_info(sprintf("   lfc_qval_tbl: %d rows", nrow(lfc_qval_tbl)))
     logger::log_info(sprintf(
         "   expr_matrix: %d metabolites x %d samples",
@@ -643,76 +645,87 @@ createMetabDaResultsLongFormat <- function(
     ))
 
     # Convert expression matrix to long format with intensity values
-    intensity_long <- tryCatch({
-        cat("[D66]   Step: pivot_longer and join design\n")
-        expr_matrix |>
-            as.data.frame() |>
-            tibble::rownames_to_column(metabolite_id_col) |>
-            tidyr::pivot_longer(
-                cols = -!!rlang::sym(metabolite_id_col),
-                names_to = sample_id_col,
-                values_to = "intensity"
-            ) |>
-            dplyr::left_join(design_matrix, by = sample_id_col)
-    }, error = function(e) {
-        cat(sprintf("[ERROR] pivot_longer/left_join failed: %s\n", e$message))
-        stop(e)
-    })
-    
+    intensity_long <- tryCatch(
+        {
+            cat("[D66]   Step: pivot_longer and join design\n")
+            expr_matrix |>
+                as.data.frame() |>
+                tibble::rownames_to_column(metabolite_id_col) |>
+                tidyr::pivot_longer(
+                    cols = -!!rlang::sym(metabolite_id_col),
+                    names_to = sample_id_col,
+                    values_to = "intensity"
+                ) |>
+                dplyr::left_join(design_matrix, by = sample_id_col)
+        },
+        error = function(e) {
+            cat(sprintf("[ERROR] pivot_longer/left_join failed: %s\n", e$message))
+            stop(e)
+        }
+    )
+
     cat(sprintf("[D66]   intensity_long dim: %s\n", paste(dim(intensity_long), collapse = "x")))
 
     # Create intensity columns per group
     # Format: intensity.{sample_id}.{group}
-    intensity_wide <- tryCatch({
-        cat("[D66]   Step: pivot_wider preparation\n")
-        intensity_long |>
-            dplyr::mutate(
-                col_name = paste0("intensity.", !!rlang::sym(sample_id_col), ".", !!rlang::sym(group_id_col))
-            ) |>
-            dplyr::select(!!rlang::sym(metabolite_id_col), col_name, intensity) |>
-            tidyr::pivot_wider(
-                id_cols = !!rlang::sym(metabolite_id_col),
-                names_from = col_name,
-                values_from = intensity
-            )
-    }, error = function(e) {
-        cat(sprintf("[ERROR] pivot_wider failed: %s\n", e$message))
-        stop(e)
-    })
+    intensity_wide <- tryCatch(
+        {
+            cat("[D66]   Step: pivot_wider preparation\n")
+            intensity_long |>
+                dplyr::mutate(
+                    col_name = paste0("intensity.", !!rlang::sym(sample_id_col), ".", !!rlang::sym(group_id_col))
+                ) |>
+                dplyr::select(!!rlang::sym(metabolite_id_col), col_name, intensity) |>
+                tidyr::pivot_wider(
+                    id_cols = !!rlang::sym(metabolite_id_col),
+                    names_from = col_name,
+                    values_from = intensity
+                )
+        },
+        error = function(e) {
+            cat(sprintf("[ERROR] pivot_wider failed: %s\n", e$message))
+            stop(e)
+        }
+    )
 
     cat(sprintf("[D66]   intensity_wide dim: %d metabolites x %d columns\n", nrow(intensity_wide), ncol(intensity_wide)))
 
     # Parse contrast to get numerator/denominator groups
     if ("comparison" %in% colnames(lfc_qval_tbl)) {
-        
         # Try to parse numerator/denominator
-        tryCatch({
-            cat("[D66]   Step: Parsing contrasts\n")
-            lfc_qval_tbl <- lfc_qval_tbl |>
-                tidyr::separate_wider_delim(
-                    comparison,
-                    delim = "-",
-                    names = c("numerator", "denominator"),
-                    cols_remove = FALSE
-                )
-        }, error = function(e) {
-            cat(sprintf("[WARN] Could not parse contrast groups: %s\n", e$message))
-            lfc_qval_tbl$numerator <- NA_character_
-            lfc_qval_tbl$denominator <- NA_character_
-        })
+        tryCatch(
+            {
+                cat("[D66]   Step: Parsing contrasts\n")
+                lfc_qval_tbl <- lfc_qval_tbl |>
+                    tidyr::separate_wider_delim(
+                        comparison,
+                        delim = "-",
+                        names = c("numerator", "denominator"),
+                        cols_remove = FALSE
+                    )
+            },
+            error = function(e) {
+                cat(sprintf("[WARN] Could not parse contrast groups: %s\n", e$message))
+                lfc_qval_tbl$numerator <- NA_character_
+                lfc_qval_tbl$denominator <- NA_character_
+            }
+        )
     }
 
     # Join DE results with intensity values
-    da_results_long <- tryCatch({
-        cat("[D66]   Step: final join\n")
-        lfc_qval_tbl |>
-            dplyr::left_join(intensity_wide, by = metabolite_id_col) |>
-            dplyr::arrange(comparison, fdr_qvalue, logFC) |>
-            dplyr::distinct()
-    }, error = function(e) {
-        cat(sprintf("[ERROR] final join failed: %s\n", e$message))
-        stop(e)
-    })
+    da_results_long <- tryCatch(
+        {
+            cat("[D66]   Step: final join\n")
+            lfc_qval_tbl |>
+                dplyr::left_join(intensity_wide, by = metabolite_id_col) |>
+                dplyr::arrange(comparison, fdr_qvalue, logFC) |>
+                dplyr::distinct()
+        },
+        error = function(e) {
+            cat(sprintf("[ERROR] final join failed: %s\n", e$message))
+            stop(e)
+        }
+    )
 
     cat("[D66] --- Completed createMetabDaResultsLongFormat ---\n")
     return(da_results_long)
