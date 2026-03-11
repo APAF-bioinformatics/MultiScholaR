@@ -759,7 +759,7 @@ prot_data@args$batch_correction <- list(
   timestamp = Sys.time()
 )
 
-# Step 4: Differential Expression
+# Step 4: Differential Abundance
 prot_data@args$de <- list(
   method = "limma",
   design_formula = "~Group",
@@ -788,9 +788,9 @@ str(prot_data@args, max.level = 2)
 #   ..$ k                           : num 3
 #   ..$ negative_control_percentage : num 0.1
 #   ..$ timestamp                   : POSIXct[1:1], format: "2026-01-13 10:45:00"
-#  $ de              :List of 5
+#  $ da              :List of 5
 #   ..$ method        : chr "limma"
-#   ..$ design_formula: chr "~Group"
+#   ..$ dasign_formula: chr "~Group"
 #   ..$ contrasts     : chr "TreatmentVsControl"
 #   ..$ adjust_method : chr "BH"
 #   ..$ timestamp     : POSIXct[1:1], format: "2026-01-13 11:00:00"
@@ -865,7 +865,7 @@ batch_correction:
   negative_control_percentage: 0.1
   timestamp: 2026-01-13 10:45:00 UTC
 
-de:
+da:
   method: limma
   design_formula: ~Group
   contrasts: TreatmentVsControl
@@ -1354,7 +1354,7 @@ mod_proteomics_server <- function(id, project_dirs) {
         import = NULL,
         qc = NULL,
         norm = NULL,
-        de = NULL
+        da = NULL
       ),
       
       # State manager (R6 object holding S4 snapshots)
@@ -1621,9 +1621,9 @@ Traditional Shiny apps are often developed as loose collections of R scripts. Th
 
 **Golem solves these problems** by treating your Shiny app as a formal R package. This provides:
 
-- **Dependency management**: DESCRIPTION file tracks all dependencies
+- **Dependency management**: DASCRIPTION file tracks all dependencies
 - **Testing infrastructure**: Standard `tests/` directory with testthat
-- **Version control**: Semantic versioning via DESCRIPTION
+- **Version control**: Semantic versioning via DASCRIPTION
 - **Documentation**: Roxygen2 comments generate help files
 - **Reproducibility**: Exact package versions locked in
 - **Professional deployment**: Standard R package installation
@@ -1642,7 +1642,7 @@ MultiScholaR/
 │   ├── mod_prot_import.R      # Proteomics import submodule
 │   ├── mod_prot_qc.R          # Proteomics QC submodule
 │   ├── mod_prot_norm.R        # Proteomics normalization submodule
-│   ├── mod_prot_da.R          # Proteomics DE submodule
+│   ├── mod_prot_da.R          # Proteomics DA submodule
 │   │
 │   ├── func_proteomics.R      # Proteomics domain functions
 │   ├── func_metabolomics.R    # Metabolomics domain functions
@@ -1684,7 +1684,7 @@ MultiScholaR/
 │   │   └── test-utils_data.R
 │   └── testthat.R
 │
-├── DESCRIPTION                 # Package metadata and dependencies
+├── DASCRIPTION                 # Package metadata and dependencies
 ├── NAMESPACE                   # Exported functions (auto-generated)
 ├── LICENSE.md                  # License information
 ├── README.md                   # Project documentation
@@ -1909,7 +1909,7 @@ flowchart TD
         IMPORT[mod_prot_import<br/>Data Import]
         QC[mod_prot_qc<br/>Quality Control]
         NORM[mod_prot_norm<br/>Normalization]
-        DE[mod_prot_da<br/>Diff. Expression]
+        DA[mod_prot_da<br/>Diff. Abundance]
     end
     
     subgraph "Level 4: Specialized Workers"
@@ -1924,7 +1924,7 @@ flowchart TD
     PROT --> IMPORT
     PROT --> QC
     PROT --> NORM
-    PROT --> DE
+    PROT --> DA
     
     QC --> QC_PEP
     QC --> QC_PROT
@@ -1935,7 +1935,7 @@ flowchart TD
     style IMPORT fill:#D4F8D4
     style QC fill:#D4F8D4
     style NORM fill:#D4F8D4
-    style DE fill:#D4F8D4
+    style DA fill:#D4F8D4
     style QC_PEP fill:#F0E68C
     style QC_PROT fill:#F0E68C
 ```
@@ -1994,7 +1994,7 @@ mod_proteomics_ui <- function(id) {
         icon = icon("chart-line"),
         mod_prot_norm_ui(ns("norm"))
       ),
-      tabPanel("Differential Expression",
+      tabPanel("Differential Abundance",
         icon = icon("flask"),
         mod_prot_da_ui(ns("de"))
       )
@@ -2015,7 +2015,7 @@ mod_proteomics_server <- function(id, project_dirs) {
         import = NULL,
         qc = NULL,
         norm = NULL,
-        de = NULL
+        da = NULL
       ),
       
       # State manager (R6)
@@ -2049,9 +2049,9 @@ mod_proteomics_server <- function(id, project_dirs) {
     })
     
     observe({
-      # Enable DE tab only after normalization complete
+      # Enable DA tab only after normalization complete
       shinyjs::toggleState(
-        selector = paste0("#", session$ns("main_tabs"), " a[data-value='Differential Expression']"),
+        selector = paste0("#", session$ns("main_tabs"), " a[data-value='Differential Abundance']"),
         condition = workflow_data$tab_status$norm == "complete"
       )
     })
@@ -2600,7 +2600,7 @@ setupDirectories <- function(project_root = getwd()) {
     proteomics = file.path(project_root, "results", "proteomics"),
     proteomics_qc = file.path(project_root, "results", "proteomics", "qc"),
     proteomics_norm = file.path(project_root, "results", "proteomics", "normalization"),
-    proteomics_de = file.path(project_root, "results", "proteomics", "differential_expression"),
+    proteomics_da = file.path(project_root, "results", "proteomics", "differential_abundance"),
     proteomics_enrichment = file.path(project_root, "results", "proteomics", "enrichment"),
     proteomics_graphs = file.path(project_root, "results", "proteomics", "publication_graphs"),
     
@@ -2608,7 +2608,7 @@ setupDirectories <- function(project_root = getwd()) {
     metabolomics = file.path(project_root, "results", "metabolomics"),
     metabolomics_qc = file.path(project_root, "results", "metabolomics", "qc"),
     metabolomics_norm = file.path(project_root, "results", "metabolomics", "normalization"),
-    metabolomics_de = file.path(project_root, "results", "metabolomics", "differential_expression"),
+    metabolomics_de = file.path(project_root, "results", "metabolomics", "differential_abundance"),
     metabolomics_enrichment = file.path(project_root, "results", "metabolomics", "enrichment"),
     metabolomics_graphs = file.path(project_root, "results", "metabolomics", "publication_graphs"),
     
@@ -2650,14 +2650,14 @@ my_project/
 │   ├── proteomics/
 │   │   ├── qc/                   # QC plots and metrics
 │   │   ├── normalization/        # Normalization diagnostics
-│   │   ├── differential_expression/  # DE results tables
+│   │   ├── differential_abundance/  # DA results tables
 │   │   ├── enrichment/           # Pathway enrichment results
 │   │   └── publication_graphs/   # Final plots for manuscripts
 │   │
 │   ├── metabolomics/
 │   │   ├── qc/
 │   │   ├── normalization/
-│   │   ├── differential_expression/
+│   │   ├── differential_abundance/
 │   │   ├── enrichment/
 │   │   └── publication_graphs/
 │   │
@@ -2738,7 +2738,7 @@ workflow_data <- reactiveValues(
     import = NULL,       # NULL | "complete" | "error"
     qc = NULL,
     norm = NULL,
-    de = NULL,
+    da = NULL,
     enrichment = NULL
   ),
   
@@ -2939,7 +2939,7 @@ batch_correction:
   negative_control_percentage: 0.1
   timestamp: 2026-01-13 10:45:00 UTC
   
-differential_expression:
+differential_abundance:
   method: limma
   design_formula: ~Group + Batch
   contrasts:
@@ -2972,8 +2972,8 @@ session_info:
 # Export results table
 write.xlsx(
   da_results,
-  file = file.path(project_dirs$proteomics_de, "differential_expression.xlsx"),
-  sheetName = "DE Results",
+  file = file.path(project_dirs$proteomics_da, "differential_abundance.xlsx"),
+  sheetName = "DA Results",
   rowNames = FALSE
 )
 
@@ -3424,7 +3424,7 @@ flowchart TD
     ProtPath --> ProtQC
     
     ProtQC --> Norm[mod_prot_norm<br/>Normalization]
-    Norm --> DE[mod_prot_da<br/>Differential Expression]
+    Norm --> DA[mod_prot_da<br/>Differential Abundance]
     
     style CheckType fill:#FFE4B5
     style PeptPath fill:#E6E6FA
@@ -3549,7 +3549,7 @@ observe({
 })
 ```
 
-**Key Insight:** This routing architecture ensures that despite different entry points, all workflows converge at the protein-level QC stage, allowing shared normalization, DE, and enrichment modules downstream.
+**Key Insight:** This routing architecture ensures that despite different entry points, all workflows converge at the protein-level QC stage, allowing shared normalization, DA, and enrichment modules downstream.
 
 ---
 
@@ -4290,7 +4290,7 @@ The selected organism and taxonomy ID are used for:
 
 ---
 
-# SECTION 9.1.4: DESIGN MATRIX BUILDER WITH ANNOTATION RETRIEVAL
+# SECTION 9.1.4: DASIGN MATRIX BUILDER WITH ANNOTATION RETRIEVAL
 *Insert after Section 9.1.3 (page ~37)*
 
 ---
@@ -4528,7 +4528,7 @@ observeEvent(input$finalize_design, {
 
 **Downstream Use:**
 - **Section 9.2**: QC module displays gene symbols instead of accessions
-- **Section 9.4**: DE results tables include gene symbol column
+- **Section 9.4**: DA results tables include gene symbol column
 - **Section 13**: Enrichment analysis uses pre-fetched GO terms/KEGG pathways
 - **Reports**: Gene-centric results more interpretable for biologists
 
@@ -4566,7 +4566,7 @@ MultiScholaR implements a **two-tier QC architecture** that adapts to the data l
 - **DIA workflows**: Require **both** peptide-level QC (9.2.1) and protein-level QC (9.2.2)
 - **TMT/LFQ workflows**: Skip directly to **protein-level QC only** (9.2.2)
 
-This architecture ensures appropriate quality filtering while allowing shared downstream modules (normalization, DE) across all workflows.
+This architecture ensures appropriate quality filtering while allowing shared downstream modules (normalization, DA) across all workflows.
 
 ```mermaid
 flowchart TD
@@ -5141,7 +5141,7 @@ differentialAbundanceAnalysis <- function(object,
   results_combined <- do.call(rbind, results_list)
   
   # Record parameters
-  object@args$differential_expression <- list(
+  object@args$differential_abundance <- list(
     design_formula = design_formula,
     contrasts = contrasts,
     timestamp = Sys.time(),
@@ -5403,7 +5403,7 @@ plotITSDLollipop <- function(is_metrics) {
   return(p)
 }
 ```
-# SECTION 10.4: DIFFERENTIAL EXPRESSION FOR METABOLOMICS
+# SECTION 10.4: DIFFERENTIAL ABUNDANCE FOR METABOLOMICS
 
 ---
 
@@ -5425,7 +5425,7 @@ Each assay requires **independent statistical analysis** due to:
 
 MultiScholaR implements a **parallel analysis strategy** that analyzes each assay independently, then aggregates results for integrated interpretation.
 
-### 10.4.2 Multi-Assay DE Architecture
+### 10.4.2 Multi-Assay DA Architecture
 
 ```mermaid
 flowchart TD
@@ -5435,13 +5435,13 @@ flowchart TD
     Split --> LCMS_Neg[LC-MS Negative<br/>400 features]
     Split --> GCMS[GC-MS<br/>200 features]
     
-    LCMS_Pos --> DE1[limma Analysis<br/>Design matrix + Contrasts]
-    LCMS_Neg --> DE2[limma Analysis<br/>Same design matrix]
-    GCMS --> DE3[limma Analysis<br/>Same design matrix]
+    LCMS_Pos --> DA1[limma Analysis<br/>Design matrix + Contrasts]
+    LCMS_Neg --> DA2[limma Analysis<br/>Same design matrix]
+    GCMS --> DA3[limma Analysis<br/>Same design matrix]
     
-    DE1 --> Results1[DE Results<br/>assay = LCMS_Pos]
-    DE2 --> Results2[DE Results<br/>assay = LCMS_Neg]
-    DE3 --> Results3[DE Results<br/>assay = GCMS]
+    DA1 --> Results1[DA Results<br/>assay = LCMS_Pos]
+    DA2 --> Results2[DA Results<br/>assay = LCMS_Neg]
+    DA3 --> Results3[DA Results<br/>assay = GCMS]
     
     Results1 --> Combine[Aggregate Results<br/>rbind with assay column]
     Results2 --> Combine
@@ -5451,9 +5451,9 @@ flowchart TD
     
     style Input fill:#E8F4F8
     style Split fill:#FFE4B5
-    style DE1 fill:#D4F8D4
-    style DE2 fill:#D4F8D4
-    style DE3 fill:#D4F8D4
+    style DA1 fill:#D4F8D4
+    style DA2 fill:#D4F8D4
+    style DA3 fill:#D4F8D4
     style Combine fill:#DDA0DD
     style Output fill:#90EE90
 ```
@@ -5470,7 +5470,7 @@ flowchart TD
 #' @param metab_object MetaboliteAssayData. Normalized multi-assay object
 #' @param design_formula Character. R formula for design (e.g., "~Group + Batch")
 #' @param contrasts Character vector. Contrasts to test
-#' @return data.frame. Combined DE results with assay column
+#' @return data.frame. Combined DA results with assay column
 #' @export
 runMetabolitesDA <- function(metab_object,
                              design_formula,
@@ -5538,7 +5538,7 @@ runMetabolitesDA <- function(metab_object,
   combined_results <- mergeMetaboliteAnnotations(combined_results, metab_object)
   
   # Record parameters
-  metab_object@args$differential_expression <- list(
+  metab_object@args$differential_abundance <- list(
     design_formula = design_formula,
     contrasts = contrasts,
     timestamp = Sys.time(),
@@ -5582,7 +5582,7 @@ table(combined_results$assay[combined_results$adj.P.Val < 0.05])
 #      45        32     18
 ```
 
-### 10.4.5 Metabolomics DE Visualizations
+### 10.4.5 Metabolomics DA Visualizations
 
 **Per-Assay Volcano Plots**
 ```r
@@ -5675,7 +5675,7 @@ observeEvent(input$run_de_analysis, {
   req(workflow_data$current_config$design_formula)
   req(workflow_data$current_config$contrasts)
   
-  withProgress(message = "Running differential expression...", {
+  withProgress(message = "Running differential abundance...", {
     
     # Perform multi-assay DA analysis
     da_results <- differentialAbundanceMetabolomics(
@@ -5698,7 +5698,7 @@ observeEvent(input$run_de_analysis, {
     # Export results
     write.xlsx(
       da_results,
-      file = file.path(project_dirs$metabolomics_de, "da_results.xlsx")
+      file = file.path(project_dirs$metabolomics_da, "da_results.xlsx")
     )
     
     # Update status
@@ -5713,7 +5713,7 @@ observeEvent(input$run_de_analysis, {
 })
 ```
 
-**Downstream Usage**: The combined DE results table flows into:
+**Downstream Usage**: The combined DA results table flows into:
 - **Metabolite enrichment** (pathway analysis per assay or combined)
 - **Multi-omics integration** (MOFA, linking significant metabolites with proteins/transcripts)
 - **Publication-ready reports** with assay-specific and integrated visualizations
@@ -5728,7 +5728,7 @@ Lipidomics follows the same **Multi-Assay Pattern** as metabolomics but uses a d
 
 | Feature | Metabolomics | Lipidomics |
 |---------|--------------|------------|
-| Core DE Runner | `runMetabolitesDA()` | `runLipidsDA()` |
+| Core DA Runner | `runMetabolitesDA()` | `runLipidsDA()` |
 | Results Formatting | `createMetabDaResultsLongFormat()` | `createLipidDaResultsLongFormat()` |
 | Interactive Volcano | `generateMetabDAVolcanoPlotGlimma()` | `generateLipidDAVolcanoPlotGlimma()` |
 | Integrated Heatmap | `generateMetabDAHeatmap()` | `generateLipidDAHeatmap()` |
@@ -6117,7 +6117,7 @@ my_project/
 │   │   │   ├── rle_before.png
 │   │   │   ├── rle_after.png
 │   │   │   └── normalization_params.yaml
-│   │   ├── differential_expression/  # DE results
+│   │   ├── differential_abundance/  # DA results
 │   │   │   ├── da_results_full.xlsx
 │   │   │   ├── volcano_plot.png
 │   │   │   └── ma_plot.png
@@ -6671,7 +6671,7 @@ workflow_data$tab_status$<stage> <- "complete"
 When extending S4 classes:
 
 ```r
-# ALWAYS include:
+# ALWAYS includa:
 # 1. Comprehensive validity function
 # 2. @args slot for parameter tracking
 # 3. Design matrix for experimental context
@@ -6755,7 +6755,7 @@ MultiScholaR/
 │
 ├── man/                 # Generated documentation
 ├── tests/               # Unit tests
-├── DESCRIPTION          # Package metadata
+├── DASCRIPTION          # Package metadata
 └── NAMESPACE            # Exported functions
 ```
 
@@ -6808,7 +6808,7 @@ workflow_data$data_tbl <- workflow_data$state_manager$getState("post_qc")
 
 ### Related Packages
 - `limma`: Differential expression analysis
-- `edgeR`: Alternative DE method
+- `edgeR`: Alternative DA method
 - `clusterProfiler`: Enrichment analysis
 - `MOFA2`: Multi-omics factor analysis
 - `mixOmics`: Multi-omics integration
