@@ -955,12 +955,26 @@ generateLipidVolcanoPlotGlimma <- function(
     # [D66:START] -------------------------
     d66_log("  Preparing Glimma inputs:")
     d66_log("    counts_mat dims = ", nrow(counts_mat), " x ", ncol(counts_mat))
-    d66_log("    counts_mat rownames (first 5) = ", paste(head(rownames(counts_mat), 5), collapse = ", "))
     d66_log("    groups = ", paste(groups, collapse = ", "))
-    d66_log("    volcano_tab nrow = ", nrow(volcano_tab))
     d66_log("    fit_obj nrow = ", nrow(fit_obj$coefficients))
     d66_log("    coef_index = ", coef_index)
     # [D66:END] ---------------------------
+
+    # =====================================================================
+    # CRITICAL: Reorder volcano_tab to match fit_obj row order
+    # Glimma maps 'status' and 'anno' vectors by index. If volcano_tab is
+    # sorted differently than the fit object, colors and tooltips will be
+    # scrambled.
+    # =====================================================================
+    fit_feature_ids <- rownames(fit_obj$coefficients)
+    volcano_tab <- volcano_tab[match(fit_feature_ids, volcano_tab$lipid_id), , drop = FALSE]
+
+    # Handle any potential mismatches (though match IDs should exist)
+    if (any(is.na(volcano_tab$lipid_id))) {
+        logger::log_warn("   Some features in fit object not found in volcano_tab. Removing NAs.")
+        volcano_tab <- volcano_tab[!is.na(volcano_tab$lipid_id), ]
+        # Also subset other inputs if necessary, but usually fit_obj is the reference
+    }
 
     # Generate Glimma widget
     tryCatch(
@@ -1066,6 +1080,12 @@ generateLipidDEHeatmap <- function(
   min_cluster_size = 5
 ) {
     logger::log_info("--- Entering generateLipidDEHeatmap ---")
+
+    # Handle potential NA/NULL parameters from Shiny
+    cluster_rows <- if (is.null(cluster_rows) || is.na(cluster_rows)) TRUE else cluster_rows
+    cluster_cols <- if (is.null(cluster_cols) || is.na(cluster_cols)) TRUE else cluster_cols
+    tree_cut_method <- if (is.null(tree_cut_method) || is.na(tree_cut_method)) "none" else tree_cut_method
+    top_n <- if (is.null(top_n) || is.na(top_n)) 50 else top_n
     logger::log_info(sprintf("   selected_contrast = %s, top_n = %d", selected_contrast, top_n))
 
     if (is.null(de_results_list) || is.null(de_results_list$de_lipids_long)) {
@@ -1093,7 +1113,7 @@ generateLipidDEHeatmap <- function(
         dplyr::filter(fdr_qvalue < de_q_val_thresh)
 
     # Optionally filter by assay
-    if (!is.null(selected_assay) && selected_assay != "Combined") {
+    if (!is.null(selected_assay) && !is.na(selected_assay) && selected_assay != "Combined") {
         contrast_data <- contrast_data |>
             dplyr::filter(assay == selected_assay)
     }
@@ -1114,7 +1134,7 @@ generateLipidDEHeatmap <- function(
     theObject <- de_results_list$theObject
 
     # Determine which assay(s) to use
-    if (!is.null(selected_assay) && selected_assay != "Combined") {
+    if (!is.null(selected_assay) && !is.na(selected_assay) && selected_assay != "Combined") {
         assays_to_use <- selected_assay
     } else {
         assays_to_use <- unique(top_lipids$assay)
@@ -1208,17 +1228,19 @@ generateLipidDEHeatmap <- function(
 
     # Tree Cutting Logic
     row_clusters <- NULL
-    if (cluster_rows && !is.null(row_clust) && tree_cut_method != "none") {
+    if (isTRUE(cluster_rows) && !is.null(row_clust) && !is.na(tree_cut_method) && tree_cut_method != "none") {
         logger::log_info(sprintf("   Applying tree cutting method: %s", tree_cut_method))
 
         if (tree_cut_method == "k_clusters") {
-            if (n_clusters > 1 && n_clusters <= nrow(expr_matrix)) {
+            if (!is.na(n_clusters) && n_clusters > 1 && n_clusters <= nrow(expr_matrix)) {
                 row_clusters <- stats::cutree(row_clust, k = n_clusters)
             } else {
                 logger::log_warn("   Invalid n_clusters for k_clusters method")
             }
         } else if (tree_cut_method == "height_cutoff") {
-            row_clusters <- stats::cutree(row_clust, h = cut_height)
+            if (!is.na(cut_height)) {
+                row_clusters <- stats::cutree(row_clust, h = cut_height)
+            }
         } else if (tree_cut_method == "dynamic") {
             if (requireNamespace("dynamicTreeCut", quietly = TRUE)) {
                 # dynamicTreeCut requires a dissimilarity matrix, not just the tree
@@ -1256,6 +1278,15 @@ generateLipidDEHeatmap <- function(
     rownames(dm) <- dm[[theObject@sample_id]]
     col_groups <- dm[colnames(expr_matrix), theObject@group_id]
 
+    # Dynamic group color mapping
+    unique_groups <- sort(unique(col_groups))
+    group_colors <- if (length(unique_groups) <= 9) {
+        RColorBrewer::brewer.pal(max(3, length(unique_groups)), "Set1")[1:length(unique_groups)]
+    } else {
+        grDevices::rainbow(length(unique_groups))
+    }
+    names(group_colors) <- unique_groups
+
     # Add cluster annotation if available
     left_annotation <- NULL
     if (!is.null(row_clusters)) {
@@ -1291,7 +1322,7 @@ generateLipidDEHeatmap <- function(
                 row_title = "Lipids",
                 top_annotation = ComplexHeatmap::HeatmapAnnotation(
                     Group = col_groups,
-                    col = list(Group = c("Control" = "#4DBBD5", "Treatment" = "#E64B35"))
+                    col = list(Group = group_colors)
                 ),
                 left_annotation = left_annotation
             )
