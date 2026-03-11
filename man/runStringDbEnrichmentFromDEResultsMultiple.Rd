@@ -5,14 +5,14 @@
 \title{Run STRING DB Enrichment Analysis for Multiple Contrasts from DE Results}
 \usage{
 runStringDbEnrichmentFromDEResultsMultiple(
-  de_results_for_enrichment,
+  da_results_for_enrichment,
   contrast_names = NULL,
   ranking_method = "combined_score",
   ...
 )
 }
 \arguments{
-\item{de_results_for_enrichment}{An S4 object of class de_results_for_enrichment.}
+\item{da_results_for_enrichment}{An S4 object of class da_results_for_enrichment.}
 
 \item{contrast_names}{Character vector. Names of contrasts to analyze.
 If NULL, analyzes all available contrasts. Default: NULL.}
@@ -27,5 +27,5 @@ A named list of enrichment results, one for each contrast.
 }
 \description{
 This function runs STRING DB enrichment analysis for all or selected contrasts
-from a de_results_for_enrichment S4 object.
+from a da_results_for_enrichment S4 object.
 }

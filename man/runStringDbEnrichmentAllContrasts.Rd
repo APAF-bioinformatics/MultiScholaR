@@ -80,7 +80,7 @@ The directory structure is automatically created if it doesn't exist.
 \dontrun{
 # Run enrichment for all contrasts
 all_enrichment_results <- runStringDbEnrichmentAllContrasts(
-  de_analysis_results_list = my_de_results,
+  de_analysis_results_list = my_da_results,
   project_dirs = project_dirs,
   omic_type = "proteomics",
   experiment_label = "standard",
@@ -90,7 +90,7 @@ all_enrichment_results <- runStringDbEnrichmentAllContrasts(
 
 # Force refresh of cached results
 refreshed_results <- runStringDbEnrichmentAllContrasts(
-  de_analysis_results_list = my_de_results,
+  de_analysis_results_list = my_da_results,
   project_dirs = project_dirs,
   omic_type = "proteomics",
   experiment_label = "standard",

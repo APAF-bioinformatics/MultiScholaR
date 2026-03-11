@@ -5,7 +5,7 @@
 \title{Process Enrichments}
 \usage{
 processEnrichments(
-  de_results,
+  da_results,
   taxon_id,
   up_cutoff = 0,
   down_cutoff = 0,
@@ -19,7 +19,7 @@ processEnrichments(
 )
 }
 \arguments{
-\item{de_results}{S4 object containing differential expression results}
+\item{da_results}{S4 object containing differential expression results}
 
 \item{taxon_id}{NCBI taxonomy ID for the organism}
 

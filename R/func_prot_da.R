@@ -1235,10 +1235,10 @@ daAnalysisWrapperFunction <- function(
 
 
 # ----------------------------------------------------------------------------
-# outputDeAnalysisResults
+# outputDaAnalysisResults
 # ----------------------------------------------------------------------------
 #' @export
-outputDeAnalysisResults <- function(
+outputDaAnalysisResults <- function(
   de_analysis_results_list,
   theObject,
   uniprot_tbl,
@@ -1255,7 +1255,7 @@ outputDeAnalysisResults <- function(
   uniprot_id_column = NULL,
   display_columns = NULL
 ) {
-  cat("*** ENTERING outputDeAnalysisResults ***\n")
+  cat("*** ENTERING outputDaAnalysisResults ***\n")
   cat("DEBUG: file_prefix =", file_prefix, "\n")
   cat("DEBUG: da_output_dir =", da_output_dir, "\n")
   cat("DEBUG: uniprot_tbl is null:", is.null(uniprot_tbl), "\n")
@@ -2398,19 +2398,19 @@ runTestsContrasts <- function(data,
 
 
 # ----------------------------------------------------------------------------
-# saveDeProteinList
+# saveDaProteinList
 # ----------------------------------------------------------------------------
 #' Save the list of output tables from differential expression analysis of proteins or phosphopeptides into a file and in a specific directory.
-#' @param list_of_de_tables A list, each element is a table of log fold-change and q-values from differential expression analysis of proteins / phosphopeptides. Each element in the list has a name, usually the name of the pairwise comparison.
+#' @param list_of_da_tables A list, each element is a table of log fold-change and q-values from differential expression analysis of proteins / phosphopeptides. Each element in the list has a name, usually the name of the pairwise comparison.
 #' @param row_id Add row ID to the output table based on the name (protein or phosphopeptid ID) of each row
-#' @param sort_by_column Each table in the list_of_de_tables is sorted in ascending order
+#' @param sort_by_column Each table in the list_of_da_tables is sorted in ascending order
 #' @param results_dir The results directory to store the output file
-#' @param file_suffix The file suffix string to aadd to the name of each comparison from the list_of_de_tables.
+#' @param file_suffix The file suffix string to aadd to the name of each comparison from the list_of_da_tables.
 #' @export
-saveDeProteinList <- function(list_of_de_tables, row_id, sort_by_column = fdr_qvalue, results_dir, file_suffix) {
+saveDaProteinList <- function(list_of_da_tables, row_id, sort_by_column = fdr_qvalue, results_dir, file_suffix) {
   purrr::walk2(
-    list_of_de_tables, names(list_of_de_tables),
-    \(.x) {
+    list_of_da_tables, names(list_of_da_tables),
+    \(.x, .y) {
       vroom::vroom_write(
         .x |>
           rownames_to_column(row_id) |>
@@ -2595,9 +2595,9 @@ createDaResultsLongFormat <- function(lfc_qval_tbl,
 
 
 # ----------------------------------------------------------------------------
-# countStatDeGenes
+# countStatDaGenes
 # ----------------------------------------------------------------------------
-#' Count the number of statistically significant differentially expressed proteins (according to user-defined threshold)
+#' Count the number of statistically significant differentially abundant proteins (according to user-defined threshold)
 #' @param lfc_thresh A numerical value specifying the log fold-change threhold (absolute value) for calling statistically significant proteins.
 #' @param q_val_thresh A numerical value specifying the q-value threshold for statistically significant proteins.
 #' @param log_fc_column The name of the log fold-change column (tidyverse style).
@@ -2606,7 +2606,7 @@ createDaResultsLongFormat <- function(lfc_qval_tbl,
 #' status: The status could be Significant and Up, Significant and Down or Not significant
 #' counts: The number of proteins wit this status
 #' @export
-countStatDeGenes <- function(data,
+countStatDaGenes <- function(data,
                              lfc_thresh = 0,
                              q_val_thresh = 0.05,
                              log_fc_column = log2FC,
@@ -2639,71 +2639,89 @@ countStatDeGenes <- function(data,
 
 
 # ----------------------------------------------------------------------------
-# countStatDeGenesHelper
+# countStatDaGenesHelper
 # ----------------------------------------------------------------------------
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' @export
-countStatDeGenesHelper <- function(
-  de_table,
+countStatDaGenesHelper <- function(
+  da_table,
   description,
   facet_column = analysis_type,
   comparison_column = "comparison",
-  expression_column = "expression"
+  expression_column = "expression",
+  lfc_thresh = 0,
+  q_val_thresh = 0.05,
+  log_fc_column = logFC,
+  q_value_column = fdr_qvalue
 ) {
-  message("--- Entering countStatDeGenesHelper (DEBUG66) ---")
-  message(paste("   countStatDeGenesHelper: de_table class =", class(de_table)))
-  message(paste("   countStatDeGenesHelper: de_table is list =", is.list(de_table)))
-  message(paste("   countStatDeGenesHelper: de_table length =", length(de_table)))
-  message("   countStatDeGenesHelper: de_table names:")
-  print(names(de_table))
+  message("--- Entering countStatDaGenesHelper (DEBUG66) ---")
+  message(paste("   countStatDaGenesHelper: da_table class =", class(da_table)))
+  message(paste("   countStatDaGenesHelper: da_table is list =", is.list(da_table)))
+  message(paste("   countStatDaGenesHelper: da_table length =", length(da_table)))
+  message("   countStatDaGenesHelper: da_table names:")
+  print(names(da_table))
 
-  de_table_updated <- purrr::map(de_table, \(x){
-    countStatDeGenes(x,
-      lfc_thresh = 0,
-      q_val_thresh = 0.05,
-      log_fc_column = logFC,
-      q_value_column = fdr_qvalue
-    )
-  })
+  # CRITICAL FIX 1: If da_table is a list of tables from limma, we need to process each one
+  da_table_updated <- if (is.list(da_table) && !is.data.frame(da_table)) {
+    purrr::imap(da_table, \(x, n) {
+      if (is.data.frame(x)) {
+        # Ensure comparison column is set if missing
+        if (!"comparison" %in% colnames(x)) {
+          x <- x |> dplyr::mutate(comparison = n)
+        }
+      }
+      countStatDaGenes(x,
+                       lfc_thresh = lfc_thresh,
+                       q_val_thresh = q_val_thresh,
+                       log_fc_column = {{ log_fc_column }},
+                       q_value_column = {{ q_value_column }})
+    })
+  } else {
+    list(countStatDaGenes(da_table,
+                          lfc_thresh = lfc_thresh,
+                       q_val_thresh = q_val_thresh,
+                       log_fc_column = {{ log_fc_column }},
+                       q_value_column = {{ q_value_column }}))
+  }
 
-  message("   countStatDeGenesHelper: de_table_updated created")
-  message(paste("   countStatDeGenesHelper: de_table_updated length =", length(de_table_updated)))
-  message("   countStatDeGenesHelper: de_table_updated names:")
-  print(names(de_table_updated))
+  message("   countStatDaGenesHelper: da_table_updated created")
+  message(paste("   countStatDaGenesHelper: da_table_updated length =", length(da_table_updated)))
+  message("   countStatDaGenesHelper: da_table_updated names:")
+  print(names(da_table_updated))
 
   list_of_tables <- purrr::map2(
-    de_table_updated,
-    names(de_table_updated),
+    da_table_updated,
+    names(da_table_updated),
     \(.x, .y){
       message(paste("      [map2] Processing element with name:", .y))
       .x |> mutate(!!sym(comparison_column) := .y)
     }
   )
 
-  message("   countStatDeGenesHelper: list_of_tables created")
-  message("   countStatDeGenesHelper: About to bind_rows...")
+  message("   countStatDaGenesHelper: list_of_tables created")
+  message("   countStatDaGenesHelper: About to bind_rows...")
 
   bound_tables <- list_of_tables |> bind_rows()
-  message(paste("   countStatDeGenesHelper: bound_tables dims =", nrow(bound_tables), "x", ncol(bound_tables)))
+  message(paste("   countStatDaGenesHelper: bound_tables dims =", nrow(bound_tables), "x", ncol(bound_tables)))
 
   faceted_tables <- bound_tables |> mutate({{ facet_column }} := description)
-  message("   countStatDeGenesHelper: facet column added")
-  message("   countStatDeGenesHelper: Checking comparison column values:")
+  message("   countStatDaGenesHelper: facet column added")
+  message("   countStatDaGenesHelper: Checking comparison column values:")
   print(unique(faceted_tables[[comparison_column]]))
 
-  message(paste("   countStatDeGenesHelper: About to separate_wider_delim on column:", comparison_column))
-  message(paste("   countStatDeGenesHelper: Looking for delimiter: ="))
+  message(paste("   countStatDaGenesHelper: About to separate_wider_delim on column:", comparison_column))
+  message(paste("   countStatDaGenesHelper: Looking for delimiter: ="))
 
   # Check if any values contain "="
   has_delimiter <- any(grepl("=", faceted_tables[[comparison_column]]))
-  message(paste("   countStatDeGenesHelper: Any values contain '=' ?", has_delimiter))
+  message(paste("   countStatDaGenesHelper: Any values contain '=' ?", has_delimiter))
 
   if (!has_delimiter) {
-    message("   countStatDeGenesHelper: WARNING - No '=' found in comparison column values!")
-    message("   countStatDeGenesHelper: This will cause separate_wider_delim to fail!")
-    message("   countStatDeGenesHelper: Comparison column values are:")
+    message("   countStatDaGenesHelper: WARNING - No '=' found in comparison column values!")
+    message("   countStatDaGenesHelper: This will cause separate_wider_delim to fail!")
+    message("   countStatDaGenesHelper: Comparison column values are:")
     print(faceted_tables[[comparison_column]])
-    stop("countStatDeGenesHelper: comparison column values do not contain '=' delimiter. Check list element naming in calling function.")
+    stop("countStatDaGenesHelper: comparison column values do not contain '=' delimiter. Check list element naming in calling function.")
   }
 
   merged_tables <- faceted_tables |>
@@ -2715,13 +2733,13 @@ countStatDeGenesHelper <- function(
       )
     )
 
-  message("--- Exiting countStatDeGenesHelper (DEBUG66) ---")
+  message("--- Exiting countStatDaGenesHelper (DEBUG66) ---")
   merged_tables
 }
 
 
 # ----------------------------------------------------------------------------
-# printCountDeGenesTable
+# printCountDaGenesTable
 # ----------------------------------------------------------------------------
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' Format results table for use in volcano plots, counting number of significant proteins, p-values distribution histogram.
@@ -2732,7 +2750,7 @@ countStatDeGenesHelper <- function(
 #' @param comparison_column The name of the column describing the contrasts or comparison between groups (tidyverse style).
 #' @param expression_column The name of the column that will contain the formula expressions of the contrasts.
 #' @export
-printCountDeGenesTable <- function(
+printCountDaGenesTable <- function(
   list_of_de_tables,
   list_of_descriptions,
   formula_string = "analysis_type ~ comparison",
@@ -2744,8 +2762,8 @@ printCountDeGenesTable <- function(
     list_of_de_tables,
     list_of_descriptions,
     function(a, b) {
-      countStatDeGenesHelper(
-        de_table = a,
+      countStatDaGenesHelper(
+        da_table = a,
         description = b,
         facet_column = {{ facet_column }},
         comparison_column = comparison_column,

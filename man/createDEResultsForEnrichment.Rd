@@ -5,21 +5,21 @@
 \alias{createDEResultsForEnrichment}
 \title{Create DE Results For Enrichment}
 \usage{
-createDEResultsForEnrichment(contrasts_tbl, design_matrix, de_output_dir)
+createDEResultsForEnrichment(contrasts_tbl, design_matrix, da_output_dir)
 
-createDEResultsForEnrichment(contrasts_tbl, design_matrix, de_output_dir)
+createDEResultsForEnrichment(contrasts_tbl, design_matrix, da_output_dir)
 }
 \arguments{
 \item{contrasts_tbl}{A tibble containing contrast information}
 
 \item{design_matrix}{A data frame containing the design matrix}
 
-\item{de_output_dir}{Directory containing DE results files}
+\item{da_output_dir}{Directory containing DE results files}
 }
 \value{
-An S4 object of class de_results_for_enrichment
+An S4 object of class da_results_for_enrichment
 
-An S4 object of class de_results_for_enrichment
+An S4 object of class da_results_for_enrichment
 }
 \description{
 Create DE Results For Enrichment

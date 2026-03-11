@@ -5,7 +5,7 @@
 \title{Match Protein Annotations to DE Results}
 \usage{
 matchAnnotations(
-  de_results_s4,
+  da_results_s4,
   uniprot_annotations,
   protein_id_column = NULL,
   uniprot_id_column = "Entry",
@@ -13,7 +13,7 @@ matchAnnotations(
 )
 }
 \arguments{
-\item{de_results_s4}{S4 object containing DE results from differential expression analysis}
+\item{da_results_s4}{S4 object containing DE results from differential expression analysis}
 
 \item{uniprot_annotations}{Data frame with UniProt annotations (typically uniprot_dat_cln)}
 
@@ -26,7 +26,7 @@ matchAnnotations(
 \value{
 List containing:
 \itemize{
-\item annotated_de_results: DE results enriched with UniProt annotations
+\item annotated_da_results: DE results enriched with UniProt annotations
 \item match_statistics: Summary of matching success rates
 \item unmatched_proteins: Proteins that could not be matched
 }
@@ -52,7 +52,7 @@ by removing isoform suffixes and taking the first protein ID from groups.
 \dontrun{
 # Match DE results with UniProt annotations
 matched_results <- matchAnnotations(
-  de_results_s4 = de_results_obj,
+  da_results_s4 = da_results_obj,
   uniprot_annotations = uniprot_dat_cln,
   protein_id_column = "uniprot_acc"
 )

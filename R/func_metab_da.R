@@ -139,7 +139,7 @@ runTestsContrastsMetabDA <- function(
   eBayes_trend = TRUE,
   eBayes_robust = TRUE
 ) {
-    logger::log_info("--- Entering runTestsContrastsMetab ---")
+    logger::log_info("--- Entering runTestsContrastsMetabDA ---")
     logger::log_info(sprintf(
         "   data dims = %d x %d, %d contrasts",
         nrow(data), ncol(data), length(contrast_strings)
@@ -160,7 +160,7 @@ runTestsContrastsMetabDA <- function(
 
     # [D66:START] -------------------------
     d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
-    d66_log("  runTestsContrastsMetab - Model matrix created:")
+    d66_log("  runTestsContrastsMetabDA - Model matrix created:")
     d66_log("    design_m levels (colnames) = ", paste(colnames(design_m), collapse = ", "))
     d66_log("    contrast_strings = ", paste(contrast_strings, collapse = ", "))
     # [D66:END] ---------------------------
@@ -308,7 +308,7 @@ runTestsContrastsMetabDA <- function(
     })
 
     names(result_tables) <- contrast_strings
-    logger::log_info("--- Exiting runTestsContrastsMetab ---")
+    logger::log_info("--- Exiting runTestsContrastsMetabDA ---")
     return(list(
         results = result_tables,
         fit.eb = t.fit,
@@ -779,12 +779,12 @@ getMetaboliteQuantData <- function(
 
 
 # ----------------------------------------------------------------------------
-# generateMetabVolcanoPlotGlimma
+# generateMetabDAVolcanoPlotGlimma
 # ----------------------------------------------------------------------------
-#' Generate interactive Glimma volcano plot for metabolomics DE results
+#' Generate interactive Glimma volcano plot for metabolomics DA results
 #'
 #' @description Creates an interactive volcano plot using the Glimma package
-#'   for metabolomics differential expression results. Supports per-assay
+#'   for metabolomics differential abundance results. Supports per-assay
 #'   or combined viewing.
 #'
 #' @param da_results_list Results list from `runMetabolitesDA()`.
@@ -812,12 +812,12 @@ generateMetabDAVolcanoPlotGlimma <- function(
 ) {
     # [D66:START] -------------------------
     d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
-    d66_log("=== ENTER generateMetabVolcanoPlotGlimma ===")
+    d66_log("=== ENTER generateMetabDAVolcanoPlotGlimma ===")
     d66_log("  selected_contrast = ", if (is.null(selected_contrast)) "NULL" else selected_contrast)
     d66_log("  selected_assay = ", if (is.null(selected_assay)) "NULL" else selected_assay)
     # [D66:END] ---------------------------
 
-    logger::log_info("--- Entering generateMetabVolcanoPlotGlimma ---")
+    logger::log_info("--- Entering generateMetabDAVolcanoPlotGlimma ---")
     logger::log_info(sprintf("   selected_contrast = %s", selected_contrast))
     logger::log_info(sprintf("   selected_assay = %s", ifelse(is.null(selected_assay), "NULL (combined)", selected_assay)))
 
@@ -1061,7 +1061,7 @@ generateMetabDAVolcanoPlotGlimma <- function(
             d66_log("    widget class = ", class(glimma_widget)[1])
             # [D66:END]
 
-            logger::log_info("--- Exiting generateMetabVolcanoPlotGlimma (success) ---")
+            logger::log_info("--- Exiting generateMetabDAVolcanoPlotGlimma (success) ---")
             return(glimma_widget)
         },
         error = function(e) {
@@ -1704,7 +1704,7 @@ outputMetabDaResultsAllContrasts <- function(
                     assay_filtered_results <- da_results_list
                     assay_filtered_results$da_metabolites_long <- assay_contrast_data
 
-                    volcano_plot <- generateMetabVolcanoStatic(
+                    volcano_plot <- generateMetabDAVolcanoStatic(
                         da_results_list = assay_filtered_results,
                         selected_contrast = contrast_name,
                         selected_assay = assay_name,

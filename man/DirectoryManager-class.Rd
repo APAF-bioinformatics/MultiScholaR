@@ -19,7 +19,7 @@ This class stores paths to various output directories used during analysis.
 
 \item{\code{source_dir}}{Character string for source files directory}
 
-\item{\code{de_output_dir}}{Character string for differential expression output}
+\item{\code{da_output_dir}}{Character string for differential expression output}
 
 \item{\code{publication_graphs_dir}}{Character string for publication-ready graphs}
 

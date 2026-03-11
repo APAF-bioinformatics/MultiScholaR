@@ -60,9 +60,9 @@ This function saves enrichment results to the specified pathway directory:
 }
 \examples{
 \dontrun{
-# Assume 'de_results' is a data frame with log2FC, fdr_qvalue, and Protein.Ids columns
+# Assume 'da_results' is a data frame with log2FC, fdr_qvalue, and Protein.Ids columns
 enrichment_results <- runOneStringDbRankEnrichment(
-  input_table = de_results,
+  input_table = da_results,
   result_label = "treatment_vs_control",
   pathway_dir = "path/to/pathway_enrichment",
   api_key = "YOUR_API_KEY"

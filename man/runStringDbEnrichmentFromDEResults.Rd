@@ -5,7 +5,7 @@
 \title{Run STRING DB Enrichment Analysis from DE Results S4 Object}
 \usage{
 runStringDbEnrichmentFromDEResults(
-  de_results_for_enrichment,
+  da_results_for_enrichment,
   contrast_name = NULL,
   ranking_method = "combined_score",
   identifier_column = "Protein.Ids",
@@ -22,11 +22,11 @@ runStringDbEnrichmentFromDEResults(
 )
 }
 \arguments{
-\item{de_results_for_enrichment}{An S4 object of class de_results_for_enrichment containing
+\item{da_results_for_enrichment}{An S4 object of class da_results_for_enrichment containing
 differential expression results across multiple contrasts.}
 
 \item{contrast_name}{Character string. Name of the specific contrast to analyze.
-Must match one of the names in de_results_for_enrichment@de_data.
+Must match one of the names in da_results_for_enrichment@de_data.
 If NULL, will use the first contrast. Default: NULL.}
 
 \item{ranking_method}{Character string. Method for ranking proteins. Options:
@@ -76,15 +76,15 @@ A data frame containing the enrichment results from STRING DB.
 Returns NULL if the process fails.
 }
 \description{
-This function extracts differential expression data from a de_results_for_enrichment S4 object,
+This function extracts differential expression data from a da_results_for_enrichment S4 object,
 applies the specified ranking method, and performs STRING DB enrichment analysis using the
 existing runOneStringDbRankEnrichmentMofa function.
 }
 \examples{
 \dontrun{
-# Assuming you have a de_results_for_enrichment object
+# Assuming you have a da_results_for_enrichment object
 enrichment_results <- runStringDbEnrichmentFromDEResults(
-  de_results_for_enrichment = my_de_results,
+  da_results_for_enrichment = my_da_results,
   contrast_name = "T2.minus.MSO=groupT2-groupMSO",
   ranking_method = "combined_score",
   filter_significant = FALSE,

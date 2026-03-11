@@ -1028,7 +1028,7 @@ generateLipidDAVolcanoPlotGlimma <- function(
             d66_log("    widget class = ", class(glimma_widget)[1])
             # [D66:END]
 
-            logger::log_info("--- Exiting generateLipidVolcanoPlotGlimma (success) ---")
+            logger::log_info("--- Exiting generateLipidDAVolcanoPlotGlimma (success) ---")
             return(glimma_widget)
         },
         error = function(e) {
@@ -1677,7 +1677,7 @@ outputLipidDaResultsAllContrasts <- function(
                     assay_filtered_results <- da_results_list
                     assay_filtered_results$da_lipids_long <- assay_contrast_data
 
-                    volcano_plot <- generateLipidVolcanoStatic(
+                    volcano_plot <- generateLipidDAVolcanoStatic(
                         da_results_list = assay_filtered_results,
                         selected_contrast = contrast_name,
                         selected_assay = assay_name,
