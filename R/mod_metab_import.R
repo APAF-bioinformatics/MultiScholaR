@@ -434,8 +434,8 @@ mod_metab_import_server <- function(id, workflow_data, experiment_paths, volumes
                 
                 # Import data based on format
                 import_result <- switch(format_info$format
-                    , "msdial" = importMSDIALData(local_data$assay1_file)
-                    , importMSDIALData(local_data$assay1_file)  # Default to MS-DIAL parser
+                    , "msdial" = importMetabMSDIALData(local_data$assay1_file)
+                    , importMetabMSDIALData(local_data$assay1_file)  # Default to MS-DIAL parser
                 )
                 
                 local_data$assay1_import_result <- import_result
@@ -699,7 +699,7 @@ mod_metab_import_server <- function(id, workflow_data, experiment_paths, volumes
             
             shiny::req(metabolite_col)
             
-            validation <- validateColumnMapping(
+            validation <- validateMetabColumnMapping(
                 data = local_data$assay1_data
                 , metabolite_id_column = metabolite_col
                 , sample_columns = sample_cols
@@ -763,7 +763,7 @@ mod_metab_import_server <- function(id, workflow_data, experiment_paths, volumes
                 
                 # Add second assay if provided
                 if (!is.null(local_data$assay2_file) && nzchar(input$assay2_name)) {
-                    assay2_import <- importMSDIALData(local_data$assay2_file)
+                    assay2_import <- importMetabMSDIALData(local_data$assay2_file)
                     assay_list[[input$assay2_name]] <- assay2_import$data
                 }
                 

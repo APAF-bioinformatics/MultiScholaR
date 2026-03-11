@@ -420,7 +420,7 @@ getMetabolomicsColumnDefaults <- function(format) {
 #' @return The first matching header name (preserving original case), or NULL if no match.
 #'
 #' @export
-findMatchingColumn <- function(headers, candidates) {
+findMetabMatchingColumn <- function(headers, candidates) {
     if (is.null(candidates) || length(candidates) == 0) {
         return(NULL)
     }
@@ -461,7 +461,7 @@ findMatchingColumn <- function(headers, candidates) {
 #' @importFrom vroom vroom
 #' @importFrom logger log_info log_error
 #' @export
-importMSDIALData <- function(
+importMetabMSDIALData <- function(
     filepath
     , metabolite_id_column = NULL
     , annotation_column = NULL
@@ -500,16 +500,16 @@ importMSDIALData <- function(
         metabolite_id = if (!is.null(metabolite_id_column)) {
             metabolite_id_column
         } else {
-            findMatchingColumn(headers, defaults$metabolite_id)
+            findMetabMatchingColumn(headers, defaults$metabolite_id)
         }
         , annotation = if (!is.null(annotation_column)) {
             annotation_column
         } else {
-            findMatchingColumn(headers, defaults$annotation)
+            findMetabMatchingColumn(headers, defaults$annotation)
         }
-        , rt = findMatchingColumn(headers, defaults$rt)
-        , mz = findMatchingColumn(headers, defaults$mz)
-        , adduct = findMatchingColumn(headers, defaults$adduct)
+        , rt = findMetabMatchingColumn(headers, defaults$rt)
+        , mz = findMetabMatchingColumn(headers, defaults$mz)
+        , adduct = findMetabMatchingColumn(headers, defaults$adduct)
     )
     
     # Identify sample columns (numeric columns not in known annotation columns)
@@ -589,7 +589,7 @@ importMSDIALData <- function(
 #'   - `summary`: Summary statistics
 #'
 #' @export
-validateColumnMapping <- function(data, metabolite_id_column, sample_columns) {
+validateMetabColumnMapping <- function(data, metabolite_id_column, sample_columns) {
     errors <- character(0)
     warnings <- character(0)
     

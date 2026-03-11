@@ -103,8 +103,8 @@ mod_lipid_qc_duplicates_server <- function(id, workflow_data, omic_type, experim
                     stop("Current state is not a LipidomicsAssayData object")
                 }
                 
-                # Use the findDuplicateFeatureIDs function
-                duplicates_list <- findDuplicateFeatureIDs(current_s4)
+                # Use the findLipidDuplicateFeatureIDs function
+                duplicates_list <- findLipidDuplicateFeatureIDs(current_s4)
                 duplicate_info(duplicates_list)
                 
                 # Count total duplicates

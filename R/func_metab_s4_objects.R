@@ -4507,7 +4507,7 @@ setMethod(
 #' print(duplicates_assay1)
 #' }
 #' @export
-findDuplicateFeatureIDs <- function(theObject) {
+findMetabDuplicateFeatureIDs <- function(theObject) {
     if (!inherits(theObject, "MetaboliteAssayData")) {
         stop("Input must be a MetaboliteAssayData object.")
     }

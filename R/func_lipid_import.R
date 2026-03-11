@@ -456,7 +456,7 @@ getLipidomicsColumnDefaults <- function(format) {
 #' @return The first matching header name (preserving original case), or NULL if no match.
 #'
 #' @export
-findMatchingColumn <- function(headers, candidates) {
+findLipidMatchingColumn <- function(headers, candidates) {
     if (is.null(candidates) || length(candidates) == 0) {
         return(NULL)
     }
@@ -497,7 +497,7 @@ findMatchingColumn <- function(headers, candidates) {
 #' @importFrom vroom vroom
 #' @importFrom logger log_info log_error
 #' @export
-importMSDIALData <- function(
+importLipidMSDIALData <- function(
   filepath,
   lipid_id_column = NULL,
   annotation_column = NULL,
@@ -539,16 +539,16 @@ importMSDIALData <- function(
         lipid_id = if (!is.null(lipid_id_column)) {
             lipid_id_column
         } else {
-            findMatchingColumn(headers, defaults$lipid_id)
+            findLipidMatchingColumn(headers, defaults$lipid_id)
         },
         annotation = if (!is.null(annotation_column)) {
             annotation_column
         } else {
-            findMatchingColumn(headers, defaults$annotation)
+            findLipidMatchingColumn(headers, defaults$annotation)
         },
-        rt = findMatchingColumn(headers, defaults$rt),
-        mz = findMatchingColumn(headers, defaults$mz),
-        adduct = findMatchingColumn(headers, defaults$adduct)
+        rt = findLipidMatchingColumn(headers, defaults$rt),
+        mz = findLipidMatchingColumn(headers, defaults$mz),
+        adduct = findLipidMatchingColumn(headers, defaults$adduct)
     )
 
     # Identify sample columns (numeric columns not in known annotation columns)
@@ -744,7 +744,7 @@ importLipidSearchData <- function(
 #'   - `summary`: Summary statistics
 #'
 #' @export
-validateColumnMapping <- function(data, lipid_id_column, sample_columns) {
+validateLipidColumnMapping <- function(data, lipid_id_column, sample_columns) {
     errors <- character(0)
     warnings <- character(0)
 

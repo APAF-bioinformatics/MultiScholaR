@@ -466,9 +466,9 @@ mod_lipid_import_server <- function(id, workflow_data, experiment_paths, volumes
 
                     # Import data based on format
                     import_result <- switch(format_info$format,
-                        "msdial" = importMSDIALData(local_data$assay1_file),
+                        "msdial" = importLipidMSDIALData(local_data$assay1_file),
                         "lipidsearch" = importLipidSearchData(local_data$assay1_file),
-                        importMSDIALData(local_data$assay1_file) # Default to MS-DIAL parser
+                        importLipidMSDIALData(local_data$assay1_file) # Default to MS-DIAL parser
                     )
 
                     local_data$assay1_import_result <- import_result
@@ -754,7 +754,7 @@ mod_lipid_import_server <- function(id, workflow_data, experiment_paths, volumes
 
             shiny::req(lipid_col)
 
-            validation <- validateColumnMapping(
+            validation <- validateLipidColumnMapping(
                 data = local_data$assay1_data,
                 lipid_id_column = lipid_col,
                 sample_columns = sample_cols
@@ -819,7 +819,7 @@ mod_lipid_import_server <- function(id, workflow_data, experiment_paths, volumes
 
                     # Add second assay if provided
                     if (!is.null(local_data$assay2_file) && nzchar(input$assay2_name)) {
-                        assay2_import <- importMSDIALData(local_data$assay2_file)
+                        assay2_import <- importLipidMSDIALData(local_data$assay2_file)
                         assay_list[[input$assay2_name]] <- assay2_import$data
                     }
 

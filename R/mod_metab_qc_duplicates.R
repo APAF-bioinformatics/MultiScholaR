@@ -103,8 +103,8 @@ mod_metab_qc_duplicates_server <- function(id, workflow_data, omic_type, experim
                     stop("Current state is not a MetaboliteAssayData object")
                 }
                 
-                # Use the findDuplicateFeatureIDs function
-                duplicates_list <- findDuplicateFeatureIDs(current_s4)
+                # Use the findMetabDuplicateFeatureIDs function
+                duplicates_list <- findMetabDuplicateFeatureIDs(current_s4)
                 duplicate_info(duplicates_list)
                 
                 # Count total duplicates

@@ -4499,7 +4499,7 @@ setMethod(
 #' print(duplicates_assay1)
 #' }
 #' @export
-findDuplicateFeatureIDs <- function(theObject) {
+findLipidDuplicateFeatureIDs <- function(theObject) {
     if (!inherits(theObject, "LipidomicsAssayData")) {
         stop("Input must be a LipidomicsAssayData object.")
     }
