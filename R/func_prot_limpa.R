@@ -819,7 +819,7 @@ generateLimpaQCPlots <- function(after_object,
 
 
 # ----------------------------------------------------------------------------
-# convertDpcDEToStandardFormat
+# convertDpcDAToStandardFormat
 # ----------------------------------------------------------------------------
 #' Convert limpa dpcDE Results to Standard Format
 #'
@@ -834,17 +834,17 @@ generateLimpaQCPlots <- function(after_object,
 #'
 #' @return List with same structure as runTestsContrasts output
 #' @export
-convertDpcDEToStandardFormat <- function(dpc_fit,
+convertDpcDAToStandardFormat <- function(dpc_fit,
                                          contrast_strings,
                                          design_matrix,
                                          eBayes_trend = TRUE,
                                          eBayes_robust = TRUE) {
   if (!requireNamespace("limma", quietly = TRUE)) {
-    stop("limma package is required for convertDpcDEToStandardFormat")
+    stop("limma package is required for convertDpcDAToStandardFormat")
   }
 
-  cat("   convertDpcDEToStandardFormat: Converting dpcDE results to standard format\n")
-  cat("   convertDpcDEToStandardFormat: Processing", length(contrast_strings), "contrasts\n")
+  cat("   convertDpcDAToStandardFormat: Converting dpcDE results to standard format\n")
+  cat("   convertDpcDAToStandardFormat: Processing", length(contrast_strings), "contrasts\n")
 
   # Create contrast matrix from contrast strings
   # Extract just the contrast expressions (after the "=" sign)
@@ -863,7 +863,7 @@ convertDpcDEToStandardFormat <- function(dpc_fit,
     levels = colnames(design_matrix)
   )
 
-  cat("   convertDpcDEToStandardFormat: Contrast matrix dims:", nrow(contrast_matrix), "x", ncol(contrast_matrix), "\n")
+  cat("   convertDpcDAToStandardFormat: Contrast matrix dims:", nrow(contrast_matrix), "x", ncol(contrast_matrix), "\n")
 
   # Apply contrasts to the dpcDE fit
   contrast_fit <- limma::contrasts.fit(dpc_fit, contrast_matrix)
@@ -932,7 +932,7 @@ convertDpcDEToStandardFormat <- function(dpc_fit,
     full_contrast_string <- contrast_strings[i]
     results_list[[full_contrast_string]] <- contrast_results
 
-    cat("   convertDpcDEToStandardFormat: Processed contrast", contrast_name, "with", nrow(contrast_results), "proteins\n")
+    cat("   convertDpcDAToStandardFormat: Processed contrast", contrast_name, "with", nrow(contrast_results), "proteins\n")
   }
 
   # Return in same format as runTestsContrasts, which is a list of tables
@@ -942,7 +942,7 @@ convertDpcDEToStandardFormat <- function(dpc_fit,
     dpc_method_used = TRUE
   )
 
-  cat("   convertDpcDEToStandardFormat: Conversion completed successfully\n")
+  cat("   convertDpcDAToStandardFormat: Conversion completed successfully\n")
 
   return(return_object)
 }

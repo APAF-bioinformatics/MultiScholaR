@@ -54,10 +54,10 @@
 # }
 
 # Function 3: getCountsTable()
-# Current location: R/lipid_de_analysis_wrapper.R, R/lipids_de_analysis_wrapper.R
+# Current location: R/lipid_da_analysis_wrapper.R, R/lipids_da_analysis_wrapper.R
 # Description: Gets counts table from object
 # getCountsTable <- function(obj) {
-#   # Extract from R/lipid_de_analysis_wrapper.R or R/lipids_de_analysis_wrapper.R
+#   # Extract from R/lipid_da_analysis_wrapper.R or R/lipids_da_analysis_wrapper.R
 # }
 
 

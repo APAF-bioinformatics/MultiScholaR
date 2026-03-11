@@ -137,24 +137,24 @@
 # }
 
 # Function 13: checkPeptideNAPercentages()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Checks peptide NA percentages
 # checkPeptideNAPercentages <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 14: removePeptidesOnlyInHek293()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Removes peptides only found in HEK293 cells
 # removePeptidesOnlyInHek293 <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 15: removePeptidesWithoutAbundances()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Removes peptides without abundance values
 # removePeptidesWithoutAbundances <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 16: filterByScoreAndGetSimilarPeptides()

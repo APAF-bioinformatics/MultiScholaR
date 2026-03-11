@@ -5,7 +5,7 @@
 \title{Format results table for use in volcano plots, counting number of significant proteins, p-values distribution histogram.}
 \usage{
 printCountDaGenesTable(
-  list_of_de_tables,
+  list_of_da_tables,
   list_of_descriptions,
   formula_string = "analysis_type ~ comparison",
   facet_column = analysis_type,
@@ -14,7 +14,7 @@ printCountDaGenesTable(
 )
 }
 \arguments{
-\item{list_of_de_tables}{A list with each element being a results table with log fold-change and q-value per protein.}
+\item{list_of_da_tables}{A list with each element being a results table with log fold-change and q-value per protein.}
 
 \item{list_of_descriptions}{A list of strings describing the parameters used to generate the result table.}
 

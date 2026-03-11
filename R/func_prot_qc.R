@@ -67,10 +67,10 @@
 # }
 
 # Function 4: removeProteinWithOnlyOneReplicate()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Removes proteins with only one replicate (non-S4 version)
 # removeProteinWithOnlyOneReplicate <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 5: removeProteinsWithOnlyOneReplicateHelper()
@@ -96,10 +96,10 @@
 # }
 
 # Function 8: removeEmptyRows()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Removes rows where all sample columns are zero or NA
 # removeEmptyRows <- function(input_table, col_pattern, row_id) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 9: removeRowsWithMissingValues()
@@ -110,45 +110,45 @@
 # }
 
 # Function 10: calculatePercentMissingPerProtein()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Calculates percentage of missing values per protein
 # calculatePercentMissingPerProtein <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 11: calculatePercentMissingProteinPerReplicate()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Calculates percentage of missing values per replicate
 # calculatePercentMissingProteinPerReplicate <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 12: calculatePercentMissingPeptidePerReplicate()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Calculates percentage of missing peptides per replicate
 # calculatePercentMissingPeptidePerReplicate <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 13: calculateMissingValuesPerProteinFishersTest()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Performs Fisher's test on missing values per protein
 # calculateMissingValuesPerProteinFishersTest <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 14: checkProteinNAPercentages()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Checks protein NA percentages
 # checkProteinNAPercentages <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 15: getProteinNARecommendations()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Gets recommendations for protein NA filtering
 # getProteinNARecommendations <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 

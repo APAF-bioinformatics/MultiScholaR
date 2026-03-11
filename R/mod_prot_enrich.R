@@ -605,11 +605,11 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
             
             cat(sprintf("   ENRICHMENT TAB Step: Current state = '%s'\n", current_state))
             cat(sprintf("   ENRICHMENT TAB Step: Valid states for enrichment = %s\n", paste(valid_states_for_enrichment, collapse = ", ")))
-            cat(sprintf("   ENRICHMENT TAB Step: DE results available = %s\n", !is.null(workflow_data$de_analysis_results_list)))
+            cat(sprintf("   ENRICHMENT TAB Step: DE results available = %s\n", !is.null(workflow_data$da_analysis_results_list)))
             
             # [OK] FIXED: Check if DE results exist (main requirement) and state is valid
             # DE analysis completion is the key requirement, not just the state name
-            if (current_state %in% valid_states_for_enrichment && !is.null(workflow_data$de_analysis_results_list)) {
+            if (current_state %in% valid_states_for_enrichment && !is.null(workflow_data$da_analysis_results_list)) {
               
               cat("*** AUTO-TRIGGERING ENRICHMENT INITIALIZATION (DE results found) ***\n")
               
@@ -627,7 +627,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
                 }
                 
                 # Source 2: From DE results (individual contrasts have theObject)
-                da_results_list <- workflow_data$de_analysis_results_list
+                da_results_list <- workflow_data$da_analysis_results_list
                 if (is.null(current_s4) && !is.null(da_results_list) && length(da_results_list) > 0) {
                   first_result <- da_results_list[[1]]
                   if (!is.null(first_result$theObject)) {
@@ -639,7 +639,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
                 # Source 3: From combined DE results structure
                 if (is.null(current_s4) && !is.null(da_results_list$theObject)) {
                   current_s4 <- da_results_list$theObject
-                  cat(sprintf("   ENRICHMENT TAB Step: Got S4 from DE results$theObject (class: %s)\n", class(current_s4)))
+                  cat(sprintf("   ENRICHMENT TAB Step: Got S4 from DA results$theObject (class: %s)\n", class(current_s4)))
                 }
                 
                 if (!is.null(current_s4) && !is.null(da_results_list)) {
@@ -693,7 +693,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
                 )
               })
               
-            } else if (is.null(workflow_data$de_analysis_results_list)) {
+            } else if (is.null(workflow_data$da_analysis_results_list)) {
               cat("*** No DE analysis results found. User needs to complete differential expression analysis first. ***\n")
               shiny::showNotification(
                 "Please complete the differential expression analysis before accessing enrichment analysis.",
@@ -723,10 +723,10 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
     
     # [OK] NEW: Backup observer - triggers when DE results become available
     # This ensures contrasts are populated even if user is already on enrichment tab
-    shiny::observeEvent(workflow_data$de_analysis_results_list, {
+    shiny::observeEvent(workflow_data$da_analysis_results_list, {
       cat("*** ENRICHMENT: DE results detected - updating contrasts ***\n")
       
-      da_results_list <- workflow_data$de_analysis_results_list
+      da_results_list <- workflow_data$da_analysis_results_list
       
       if (!is.null(da_results_list) && length(da_results_list) > 0) {
         # Try multiple sources for S4 object
@@ -937,7 +937,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
           # Step 2: Create S4 object for enrichment analysis (following .rmd pattern)
           shiny::incProgress(0.3, detail = "Creating DE results S4 object...")
           
-          cat("   ENRICHMENT Step: Creating DE results S4 object using createDEResultsForEnrichment\n")
+          cat("   ENRICHMENT Step: Creating DA results S4 object using createDAResultsForEnrichment\n")
           
           # Get contrasts_tbl and design_matrix from workflow data
           contrasts_tbl <- NULL
@@ -994,19 +994,15 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
           }
           
           # [OK] FIXED: Use correct pathway directory from experiment_paths
-          da_output_dir_new <- file.path(experiment_paths$results_dir, "de_proteins")
-          da_output_dir_old <- file.path(experiment_paths$source_dir, "de_output")
-          
-          # Try the new path first, fall back to old path
-          da_output_dir <- if (dir.exists(da_output_dir_new)) {
-            cat(sprintf("   ENRICHMENT Step: Using new DE output directory: %s\n", da_output_dir_new))
-            da_output_dir_new
-          } else if (dir.exists(da_output_dir_old)) {
-            cat(sprintf("   ENRICHMENT Step: Using legacy DE output directory: %s\n", da_output_dir_old))
-            da_output_dir_old
+          da_output_dir <- if (!is.null(experiment_paths$da_output_dir) && dir.exists(experiment_paths$da_output_dir)) {
+            cat(sprintf("   ENRICHMENT Step: Using da_output_dir from experiment_paths: %s\n", experiment_paths$da_output_dir))
+            experiment_paths$da_output_dir
           } else {
-            cat("   ENRICHMENT Step: No DE output directory found, using new path\n")
-            da_output_dir_new
+            # Fallback
+            fallback_dir <- file.path(experiment_paths$results_dir, "da_proteins")
+            cat(sprintf("   ENRICHMENT Step: Falling back to da_proteins folder: %s\n", fallback_dir))
+            if (!dir.exists(fallback_dir)) dir.create(fallback_dir, recursive = TRUE)
+            fallback_dir
           }
           
           # [OK] FIXED: Use proper pathway directory structure
@@ -1024,7 +1020,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
           }
           
           # Create S4 object for enrichment analysis
-          da_results_for_enrichment <- createDEResultsForEnrichment(
+          da_results_for_enrichment <- createDAResultsForEnrichment(
             contrasts_tbl = contrasts_tbl,
             design_matrix = design_matrix,
             da_output_dir = da_output_dir
@@ -1277,7 +1273,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
                          length(target_proteins), target_taxon))
               
               # Filter the DE results S4 object
-              if (!is.null(da_results_for_enrichment@de_data) && length(da_results_for_enrichment@de_data) > 0) {
+              if (!is.null(da_results_for_enrichment@da_data) && length(da_results_for_enrichment@da_data) > 0) {
                 # [OK] FIXED: Safe access to protein_id_column with fallback
                 protein_id_col <- tryCatch({
                   if (!is.null(enrichment_data$current_s4_object)) {
@@ -1288,8 +1284,8 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
                 }, error = function(e) "uniprot_acc")
                 
                 # Filter each contrast's DE data
-                filtered_de_data <- lapply(names(da_results_for_enrichment@de_data), function(contrast_name) {
-                  contrast_data <- da_results_for_enrichment@de_data[[contrast_name]]
+                filtered_de_data <- lapply(names(da_results_for_enrichment@da_data), function(contrast_name) {
+                  contrast_data <- da_results_for_enrichment@da_data[[contrast_name]]
                   
                   if (!is.null(contrast_data) && protein_id_col %in% names(contrast_data)) {
                     original_count <- nrow(contrast_data)
@@ -1316,10 +1312,10 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
                   }
                   return(contrast_data)
                 })
-                names(filtered_de_data) <- names(da_results_for_enrichment@de_data)
+                names(filtered_de_data) <- names(da_results_for_enrichment@da_data)
                 
                 # Update the S4 object with filtered data
-                da_results_for_enrichment@de_data <- filtered_de_data
+                da_results_for_enrichment@da_data <- filtered_de_data
                 organism_filter_applied <- TRUE
                 
                 cat(sprintf("*** ENRICHMENT Step: Organism filtering complete - kept %d/%d proteins (%.1f%%) ***\n",
@@ -1362,7 +1358,7 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
             }
           }, error = function(e) "uniprot_acc")
           
-          if (method_info$method == "gprofiler2" && !is.null(da_results_for_enrichment@de_data[[1]]) && "gene_name" %in% names(da_results_for_enrichment@de_data[[1]])) {
+          if (method_info$method == "gprofiler2" && !is.null(da_results_for_enrichment@da_data[[1]]) && "gene_name" %in% names(da_results_for_enrichment@da_data[[1]])) {
             id_column <- "gene_name"
           }
           

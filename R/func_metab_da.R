@@ -54,10 +54,10 @@
 # }
 
 # Function 3: getCountsTable()
-# Current location: R/metabolite_de_analysis_wrapper.R, R/metabolites_de_analysis_wrapper.R
+# Current location: R/metabolite_da_analysis_wrapper.R, R/metabolites_da_analysis_wrapper.R
 # Description: Gets counts table from object
 # getCountsTable <- function(obj) {
-#   # Extract from R/metabolite_de_analysis_wrapper.R or R/metabolites_de_analysis_wrapper.R
+#   # Extract from R/metabolite_da_analysis_wrapper.R or R/metabolites_da_analysis_wrapper.R
 # }
 
 

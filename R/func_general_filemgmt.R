@@ -274,7 +274,7 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
                 results_summary_subdirs = c("QC_figures", "Publication_figures", "Publication_tables", "Study_report"),
                 scripts_source_leaf = "proteomics",
                 global_vars = list(
-                    de_output_leaf = "de_proteins",
+                    da_output_leaf = "da_proteins",
                     pathway_leaf = "pathway_enrichment",
                     feature_qc_leaf = "protein_qc",
                     subfeature_qc_leaf = "peptide_qc",
@@ -290,7 +290,7 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
                 results_summary_subdirs = c("QC_figures", "Publication_figures", "Publication_tables", "Study_report"),
                 scripts_source_leaf = "metabolomics",
                 global_vars = list(
-                    de_output_leaf = "de_metabolites",
+                    da_output_leaf = "da_metabolites",
                     pathway_leaf = "pathway_enrichment",
                     feature_qc_leaf = "metabolite_qc",
                     subfeature_qc_leaf = NULL, # No peptide equivalent for metabolomics typically
@@ -306,7 +306,7 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
                 results_summary_subdirs = c("QC_figures", "Publication_figures", "Publication_tables", "Study_report"),
                 scripts_source_leaf = "transcriptomics",
                 global_vars = list(
-                    de_output_leaf = "de_genes",
+                    da_output_leaf = "da_genes",
                     pathway_leaf = "pathway_enrichment",
                     feature_qc_leaf = "gene_qc",
                     subfeature_qc_leaf = NULL,
@@ -323,7 +323,7 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
                 results_summary_subdirs = c("QC_figures", "Publication_figures", "Publication_tables", "Study_report"),
                 scripts_source_leaf = "lipidomics",
                 global_vars = list(
-                    de_output_leaf = "de_lipids",
+                    da_output_leaf = "da_lipids",
                     pathway_leaf = "pathway_enrichment",
                     feature_qc_leaf = "lipid_qc",
                     subfeature_qc_leaf = NULL,
@@ -1919,20 +1919,6 @@ copyToResultsSummary <- function(omic_type,
         }
     )
 
-    # Use the new helper function with automatic fallback
-    current_paths <- tryCatch(
-        {
-            getProjectPaths(
-                omic_type = omic_type,
-                experiment_label = experiment_label,
-                project_dirs_object_name = project_dirs_object_name
-            )
-        },
-        error = function(e) {
-            rlang::abort(paste0("Failed to get project paths: ", e$message))
-        }
-    )
-
     # Validate that current_paths is a list and contains essential directory paths
     required_paths_in_current <- c(
         "results_dir", "results_summary_dir", "publication_graphs_dir",
@@ -1952,13 +1938,6 @@ copyToResultsSummary <- function(omic_type,
         omic_type
     }
 
-    # Create descriptive label for logging (optional, for user-friendly messages)
-    omic_label <- if (!is.null(experiment_label) && nzchar(experiment_label)) {
-        paste0(omic_type, "_", experiment_label)
-    } else {
-        omic_type
-    }
-
     # Track failed copies
     failed_copies <- list()
 
@@ -1968,7 +1947,7 @@ copyToResultsSummary <- function(omic_type,
     cat(sprintf("Results Summary Dir: %s\n", current_paths$results_summary_dir))
     cat(sprintf("Publication Graphs Dir: %s\n", current_paths$publication_graphs_dir))
     cat(sprintf("Time Dir (current run): %s\n", current_paths$time_dir))
-    cat(sprintf("DE Output Dir: %s\n", current_paths$da_output_dir))
+    cat(sprintf("DA Output Dir: %s\n", current_paths$da_output_dir))
     cat(sprintf("Pathway Dir: %s\n", current_paths$pathway_dir))
     cat(sprintf("Source (Scripts) Dir: %s\n", current_paths$source_dir))
     cat(sprintf("Feature QC Dir: %s\n", current_paths$feature_qc_dir))
@@ -2370,7 +2349,7 @@ copyToResultsSummary <- function(omic_type,
     de_wb <- openxlsx::createWorkbook()
     openxlsx::addWorksheet(de_wb, "DE_Results_Index")
     de_index_data <- data.frame(Sheet = character(), Description = character(), stringsAsFactors = FALSE)
-    de_files <- list.files(path = current_paths$da_output_dir, pattern = paste0("de_.+_long_annot\\.xlsx$"), full.names = TRUE) # Changed from \\w+ to .+ to allow hyphens
+    da_files <- list.files(path = current_paths$da_output_dir, pattern = paste0("(da|de)_.+_long_annot\\.xlsx$"), full.names = TRUE)
 
     purrr::imap(de_files, \(file, idx) {
         sheet_name <- sprintf("DE_Sheet%d", idx)

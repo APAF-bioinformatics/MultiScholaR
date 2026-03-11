@@ -9,7 +9,7 @@
 #
 # Consolidated from:
 # - lipidVsSamplesS4Objects.R (LipidomicsAssayData class + 16 methods)
-# - lipid_de_analysis_wrapper.R (LipidomicsDifferentialAbundanceResults class + 2 methods)
+# - lipid_da_analysis_wrapper.R (LipidomicsDifferentialAbundanceResults class + 2 methods)
 # - lipid_normalization.R (logTransformAssays, normaliseUntransformedData)
 # - lipid_qc.R (lipidIntensityFiltering)
 # - QC_visualisation.R (FilteringProgressLipidomics class)
@@ -3464,7 +3464,7 @@ setMethod(
 
 
 # ==========================================
-# Content from lipid_de_analysis_wrapper.R
+# Content from lipid_da_analysis_wrapper.R
 # ==========================================
 #' LipidomicsDifferentialAbundanceResults S4 Class
 #'

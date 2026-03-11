@@ -2478,7 +2478,7 @@ savePlot(
 
 ## Alternative STRING DB Enrichment Using DE Results Object
 
-This example shows how to use the new `runStringDbEnrichmentFromDEResults` function with a `de_results_for_enrichment` S4 object, which provides more flexibility in ranking methods.
+This example shows how to use the new `runStringDbEnrichmentFromDAResults` function with a `de_results_for_enrichment` S4 object, which provides more flexibility in ranking methods.
 
 ```{r}
 # Example: Create a de_results_for_enrichment object from existing DA analysis results
@@ -2486,7 +2486,7 @@ This example shows how to use the new `runStringDbEnrichmentFromDEResults` funct
 
 # Option 1: Using combined score ranking (recommended for most cases)
 # This uses sign(log2FC) * (-log10(fdr_qvalue)) for ranking
-enrichment_combined_score <- runStringDbEnrichmentFromDEResults(
+enrichment_combined_score <- runStringDbEnrichmentFromDAResults(
   de_results_for_enrichment = de_results_for_enrichment_object,  # Your S4 object
   contrast_name = "T2.minus.MSO=groupT2-groupMSO",  # Specify which contrast
   ranking_method = "combined_score",  # Combines direction and significance
@@ -2502,7 +2502,7 @@ enrichment_combined_score <- runStringDbEnrichmentFromDEResults(
 )
 
 # Option 2: Using FDR-based ranking (focuses on significance only)
-enrichment_fdr_ranking <- runStringDbEnrichmentFromDEResults(
+enrichment_fdr_ranking <- runStringDbEnrichmentFromDAResults(
   de_results_for_enrichment = de_results_for_enrichment_object,
   contrast_name = "T3.minus.MSO=groupT3-groupMSO",
   ranking_method = "fdr_qvalue",  # Rank by significance only
@@ -2515,7 +2515,7 @@ enrichment_fdr_ranking <- runStringDbEnrichmentFromDEResults(
 )
 
 # Option 3: Using log2FC-based ranking (focuses on effect size)
-enrichment_fc_ranking <- runStringDbEnrichmentFromDEResults(
+enrichment_fc_ranking <- runStringDbEnrichmentFromDAResults(
   de_results_for_enrichment = de_results_for_enrichment_object,
   contrast_name = "T3.minus.T2=groupT3-groupT2",
   ranking_method = "log2fc",  # Rank by fold change magnitude
@@ -2527,7 +2527,7 @@ enrichment_fc_ranking <- runStringDbEnrichmentFromDEResults(
 )
 
 # Option 4: Run enrichment for ALL contrasts at once
-all_contrast_enrichment <- runStringDbEnrichmentFromDEResultsMultiple(
+all_contrast_enrichment <- runStringDbEnrichmentFromDAResultsMultiple(
   de_results_for_enrichment = de_results_for_enrichment_object,
   contrast_names = NULL,  # NULL means analyze all contrasts
   ranking_method = "combined_score",
@@ -2559,7 +2559,7 @@ if (!is.null(enrichment_combined_score)) {
 }
 
 # Print summary of available ranking methods
-cat("Available ranking methods for runStringDbEnrichmentFromDEResults:\n")
+cat("Available ranking methods for runStringDbEnrichmentFromDAResults:\n")
 cat("1. 'combined_score': sign(log2FC) * (-log10(fdr_qvalue)) - Best for most analyses\n")
 cat("2. 'fdr_qvalue': Rank by significance (ascending, most significant first)\n")
 cat("3. 'log2fc': Rank by fold change magnitude (descending, highest FC first)\n") 

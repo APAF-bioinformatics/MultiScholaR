@@ -9,7 +9,7 @@
 #
 # Consolidated from:
 # - metaboliteVsSamplesS4Objects.R (MetaboliteAssayData class + 16 methods)
-# - metabolite_de_analysis_wrapper.R (MetabolomicsDifferentialAbundanceResults class + 2 methods)
+# - metabolite_da_analysis_wrapper.R (MetabolomicsDifferentialAbundanceResults class + 2 methods)
 # - metabolite_normalization.R (logTransformAssays, normaliseUntransformedData)
 # - metabolite_qc.R (metaboliteIntensityFiltering)
 # - QC_visualisation.R (FilteringProgressMetabolomics class)
@@ -3468,7 +3468,7 @@ setMethod(
 
 
 # ==========================================
-# Content from metabolite_de_analysis_wrapper.R
+# Content from metabolite_da_analysis_wrapper.R
 # ==========================================
 #' MetabolomicsDifferentialAbundanceResults S4 Class
 #'

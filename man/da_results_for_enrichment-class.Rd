@@ -14,7 +14,7 @@ experimental design information.
 \describe{
 \item{\code{contrasts}}{A tibble containing contrast information}
 
-\item{\code{de_data}}{A list of DE results data frames}
+\item{\code{da_data}}{A list of DA results data frames}
 
 \item{\code{design_matrix}}{A data frame containing the design matrix}
 }}

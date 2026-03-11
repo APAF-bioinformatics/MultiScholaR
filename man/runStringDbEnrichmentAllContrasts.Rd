@@ -5,7 +5,7 @@
 \title{Run STRING DB Enrichment for All Contrasts}
 \usage{
 runStringDbEnrichmentAllContrasts(
-  de_analysis_results_list,
+  da_analysis_results_list,
   project_dirs,
   omic_type,
   experiment_label,
@@ -20,8 +20,8 @@ runStringDbEnrichmentAllContrasts(
 )
 }
 \arguments{
-\item{de_analysis_results_list}{A named list containing differential expression results.
-Each element should contain a \code{de_proteins_long} data frame with columns:
+\item{da_analysis_results_list}{A named list containing differential expression results.
+Each element should contain a \code{da_proteins_long} data frame with columns:
 \code{log2FC}, \code{fdr_qvalue}, and \code{Protein.Ids}.}
 
 \item{project_dirs}{A list containing project directory structure. Must include
@@ -80,7 +80,7 @@ The directory structure is automatically created if it doesn't exist.
 \dontrun{
 # Run enrichment for all contrasts
 all_enrichment_results <- runStringDbEnrichmentAllContrasts(
-  de_analysis_results_list = my_da_results,
+  da_analysis_results_list = my_da_results,
   project_dirs = project_dirs,
   omic_type = "proteomics",
   experiment_label = "standard",
@@ -90,7 +90,7 @@ all_enrichment_results <- runStringDbEnrichmentAllContrasts(
 
 # Force refresh of cached results
 refreshed_results <- runStringDbEnrichmentAllContrasts(
-  de_analysis_results_list = my_da_results,
+  da_analysis_results_list = my_da_results,
   project_dirs = project_dirs,
   omic_type = "proteomics",
   experiment_label = "standard",

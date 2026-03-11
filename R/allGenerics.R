@@ -226,7 +226,7 @@ setGeneric(name="plotDensityList"
            }
            , signature=c("theObject", "grouping_variables_list", "title", "font_size"))
 
-# --- From protein_de_analysis_wrapper.R ---
+# --- From protein_da_analysis_wrapper.R ---
 
 setGeneric(name="differentialAbundanceAnalysis"
            , def=function( theObject

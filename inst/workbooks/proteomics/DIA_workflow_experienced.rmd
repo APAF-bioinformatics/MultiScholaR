@@ -999,15 +999,15 @@ saveRDS(
   )
 )
 
-ruv_normalised_for_de_analysis_obj <- ruv_normalised_filtered_results_obj
+ruv_normalised_for_da_analysis_obj <- ruv_normalised_filtered_results_obj
 ```
 
 # Output Files For Audit Trail
 This section creates multiple output files from the final normalized dataset to ensure data accessibility and facilitate different downstream analysis needs. The code transforms the normalized protein data from its internal S4 object structure into standard formats (TSV files) in both original and log2-transformed versions, making it easily accessible for other analysis tools and researchers. The wide-format data tables (proteins as rows, samples as columns) are created for traditional statistical analyses, while design information is separately exported to document the experimental design. Both text-based formats (TSV) and binary formats (RDS) are provided - the former for human readability and software compatibility, the latter for preserving exact R objects with their metadata. These diverse output formats create a comprehensive audit trail that supports research reproducibility and facilitates data sharing.
 
 ```{r Output Files For Audit Trail}
-ruv_normalised_for_de_analysis <-
-  ruv_normalised_for_de_analysis_obj@protein_quant_table |>
+ruv_normalised_for_da_analysis <-
+  ruv_normalised_for_da_analysis_obj@protein_quant_table |>
   pivot_longer(
     cols = !matches("Protein.Ids"),
     names_to = "replicates",
@@ -1024,12 +1024,12 @@ ruv_normalised_for_de_analysis <-
   dplyr::rename(uniprot_acc = "Protein.Ids")
 
 vroom::vroom_write(
-  ruv_normalised_for_de_analysis,
+  ruv_normalised_for_da_analysis,
   file.path(results_dir, "protein_qc", "ruv_normalised_results.tsv")
 )
 
 vroom::vroom_write(
-  ruv_normalised_for_de_analysis |>
+  ruv_normalised_for_da_analysis |>
     dplyr::mutate(across(!matches("uniprot_acc"), log2)),
   file.path(results_dir, "protein_qc", "ruv_normalised_results_log.tsv")
 )
@@ -1041,7 +1041,7 @@ vroom::vroom_write(
   file.path(results_dir, "protein_qc", "design_matrix_avrg.tsv")
 )
 
-ruv_normalised_for_de_analysis_mat <- ruv_normalised_for_de_analysis |>
+ruv_normalised_for_da_analysis_mat <- ruv_normalised_for_da_analysis |>
   column_to_rownames("uniprot_acc") |>
   as.matrix()
 ```
@@ -1069,7 +1069,7 @@ This section retrieves and integrates up-to-date protein annotation data from Un
 
 ```{r Uniprot Data Annotation}
 uniprot_dat_cln <- getUniprotAnnotations(
-  input_tbl = ruv_normalised_for_de_analysis_obj@protein_quant_table,
+  input_tbl = ruv_normalised_for_da_analysis_obj@protein_quant_table,
   cache_dir = file.path(results_dir, "tmp_folder"),
   taxon_id = taxon_id
 )
@@ -1103,11 +1103,11 @@ contrast_names <- contrasts_tbl |>
   stringr::str_replace_all("\\.", "_") # Replace dots with underscores
 
 # Run DA analysis and explicitly set names
-de_analysis_results_list <- seq_len(nrow(contrasts_tbl)) |>
+da_analysis_results_list <- seq_len(nrow(contrasts_tbl)) |>
   purrr::set_names(contrast_names) |> # This ensures the list will be named
   purrr::map(\(contrast_idx) {
     deAnalysisWrapperFunction(
-      ruv_normalised_for_de_analysis_obj,
+      ruv_normalised_for_da_analysis_obj,
       contrasts_tbl |> dplyr::slice(contrast_idx),
       formula_string = config_list$deAnalysisParameters$formula_string,
       de_q_val_thresh = config_list$deAnalysisParameters$de_q_val_thresh,
@@ -1115,12 +1115,12 @@ de_analysis_results_list <- seq_len(nrow(contrasts_tbl)) |>
       eBayes_trend = config_list$deAnalysisParameters$eBayes_trend,
       eBayes_robust = config_list$deAnalysisParameters$eBayes_robust,
       args_group_pattern = config_list$deAnalysisParameters$args_group_pattern,
-      args_row_id = ruv_normalised_for_de_analysis_obj@protein_id_column
+      args_row_id = ruv_normalised_for_da_analysis_obj@protein_id_column
     )
   })
 
 # Verify we have names
-print(names(de_analysis_results_list))
+print(names(da_analysis_results_list))
 ```
 
 
@@ -1129,14 +1129,14 @@ This section outputs the differential abundance analysis results in various form
 
 ```{r Output DE Analysis Results}
 # Modified output approach with error handling
-names(de_analysis_results_list) |>
+names(da_analysis_results_list) |>
   purrr::walk(\(contrast_name) {
     tryCatch(
       {
         message(paste("Processing contrast:", contrast_name))
 
         # Check if the result exists and has content
-        result <- de_analysis_results_list[[contrast_name]]
+        result <- da_analysis_results_list[[contrast_name]]
         if (is.null(result) || length(result) == 0) {
           message(paste("Skipping empty result for:", contrast_name))
           return(NULL)
@@ -1144,13 +1144,13 @@ names(de_analysis_results_list) |>
 
         outputDeAnalysisResults(
           result,
-          ruv_normalised_for_de_analysis_obj,
+          ruv_normalised_for_da_analysis_obj,
           uniprot_dat_cln,
           de_output_dir,
           publication_graphs_dir,
-          file_prefix = paste0("de_proteins_", contrast_name),
+          file_prefix = paste0("da_proteins_", contrast_name),
           plots_format = config_list$deAnalysisParameters$plots_format,
-          args_row_id = ruv_normalised_for_de_analysis_obj@protein_id_column,
+          args_row_id = ruv_normalised_for_da_analysis_obj@protein_id_column,
           de_q_val_thresh = 0.05,
           gene_names_column = "gene_names"
         )
@@ -1171,7 +1171,7 @@ This section performs functional enrichment analysis to identify biological proc
 
 ```{r Enrichment Analysis}
 # Create S4 object of the DA results for enrichment analysis
-de_results_for_enrichment <- createDEResultsForEnrichment(
+de_results_for_enrichment <- createDAResultsForEnrichment(
   contrasts_tbl = contrasts_tbl,
   design_matrix = design_matrix,
   de_output_dir = de_output_dir
@@ -1188,8 +1188,8 @@ enrichment_results <- processEnrichments(
   , pathway_dir = pathway_dir # Output directory
   , go_annotations = uniprot_dat_cln # Annotation data
   , exclude_iea = FALSE,
-  protein_id_column = ruv_normalised_for_de_analysis_obj@protein_id_column,
-  contrast_names = (names(de_analysis_results_list))
+  protein_id_column = ruv_normalised_for_da_analysis_obj@protein_id_column,
+  contrast_names = (names(da_analysis_results_list))
 )
 ```
 

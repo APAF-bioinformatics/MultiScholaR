@@ -26,7 +26,7 @@
 # Consolidated from:
 # - peptideVsSamplesS4Objects.R (PeptideQuantitativeData class + 23 methods)
 # - proteinVsSamplesS4Objects.R (ProteinQuantitativeData method)
-# - protein_de_analysis_wrapper.R (DE analysis methods)
+# - protein_da_analysis_wrapper.R (DE analysis methods)
 #
 # Dependencies:
 # - methods package
@@ -416,7 +416,7 @@ setMethod(
 )
 
 # ==========================================
-# Content from protein_de_analysis_wrapper.R
+# Content from protein_da_analysis_wrapper.R
 # ==========================================
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' Differential Expression Analysis for Proteomics
@@ -427,7 +427,7 @@ setMethod(
 #' Functions:
 #' - differentialAbundanceAnalysis: Main S4 generic for DE analysis
 #' - differentialAbundanceAnalysisHelper: Core limma-based analysis
-#' - generateVolcanoPlotGlimma: Interactive volcano plot generation
+#' - generateProtDAVolcanoPlotGlimma: Interactive volcano plot generation
 #' - generateDEHeatmap: Heatmap visualization with clustering
 #'
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -915,7 +915,7 @@ setMethod(
 
     return_list$norm_counts <- norm_counts
 
-    de_proteins_wide <- significant_rows |>
+    da_proteins_wide <- significant_rows |>
       dplyr::filter(analysis_type == "RUV applied") |>
       dplyr::select(-lqm, -colour, -analysis_type) |>
       pivot_wider(
@@ -929,10 +929,10 @@ setMethod(
       dplyr::arrange(across(matches(paste0("!!sym(", qvalue_column, ")")))) |>
       distinct()
 
-    return_list$de_proteins_wide <- de_proteins_wide
+    return_list$da_proteins_wide <- da_proteins_wide
 
     # Create long format output
-    de_proteins_long <- createDaResultsLongFormat(
+    da_proteins_long <- createDaResultsLongFormat(
       lfc_qval_tbl = significant_rows |>
         dplyr::filter(analysis_type == "RUV applied"),
       norm_counts_input_tbl = as.matrix(column_to_rownames(theObject@protein_quant_table, theObject@protein_id_column)),
@@ -946,10 +946,10 @@ setMethod(
       protein_id_table = theObject@protein_id_table
     )
 
-    return_list$de_proteins_long <- de_proteins_long
+    return_list$da_proteins_long <- da_proteins_long
 
     # Static volcano plots with gene names
-    static_volcano_plot_data <- de_proteins_long |>
+    static_volcano_plot_data <- da_proteins_long |>
       mutate(lqm = -log10(!!sym(qvalue_column))) |>
       dplyr::mutate(label = case_when(
         !!sym(qvalue_column) < da_q_val_thresh ~ "Significant",
@@ -993,7 +993,7 @@ setMethod(
     if (num_sig_de_molecules %>%
       dplyr::filter(status != "Not significant") |>
       nrow() > 0) {
-      num_sig_de_genes_barplot_only_significant <- num_sig_de_molecules %>%
+      num_sig_da_genes_barplot_only_significant <- num_sig_de_molecules %>%
         dplyr::filter(status != "Not significant") %>%
         ggplot(aes(x = status, y = counts)) +
         geom_bar(stat = "identity") +
@@ -1001,16 +1001,16 @@ setMethod(
         theme(axis.text.x = element_text(angle = 90)) +
         facet_wrap(~comparison)
 
-      return_list$num_sig_de_genes_barplot_only_significant <- num_sig_de_genes_barplot_only_significant
+      return_list$num_sig_da_genes_barplot_only_significant <- num_sig_da_genes_barplot_only_significant
 
-      num_sig_de_genes_barplot_with_not_significant <- num_sig_de_molecules %>%
+      num_sig_da_genes_barplot_with_not_significant <- num_sig_de_molecules %>%
         ggplot(aes(x = status, y = counts)) +
         geom_bar(stat = "identity") +
         geom_text(stat = "identity", aes(label = counts), vjust = -0.5) +
         theme(axis.text.x = element_text(angle = 90)) +
         facet_wrap(~comparison)
 
-      return_list$num_sig_de_genes_barplot_with_not_significant <- num_sig_de_genes_barplot_with_not_significant
+      return_list$num_sig_da_genes_barplot_with_not_significant <- num_sig_da_genes_barplot_with_not_significant
     }
 
     message("--- Exiting differentialAbundanceAnalysisHelper ---")
@@ -1019,174 +1019,7 @@ setMethod(
 )
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' Generate Interactive Volcano Plot using Glimma
-#'
-#' @export
-generateVolcanoPlotGlimma <- function(
-  da_results_list,
-  selected_contrast = NULL,
-  uniprot_tbl = NULL,
-  args_row_id = "uniprot_acc",
-  fdr_column = "fdr_qvalue",
-  raw_p_value_column = "raw_pvalue",
-  log2fc_column = "log2FC",
-  da_q_val_thresh = 0.05,
-  uniprot_id_column = "Entry",
-  gene_names_column = "gene_names",
-  display_columns = c("best_uniprot_acc")
-) {
-  message("--- Entering generateVolcanoPlotGlimma ---")
-  message(paste("   generateVolcanoPlotGlimma Arg: selected_contrast =", selected_contrast))
-
-  if (is.null(da_results_list) || is.null(da_results_list$de_proteins_long)) {
-    message("   generateVolcanoPlotGlimma: No DE results available")
-    return(NULL)
-  }
-
-  if (is.null(selected_contrast)) {
-    message("   generateVolcanoPlotGlimma: No contrast selected")
-    return(NULL)
-  }
-
-  # Get the contrast-specific results
-  de_proteins_long <- da_results_list$de_proteins_long
-  contrasts_results <- da_results_list$contrasts_results
-
-  # CRITICAL FIX: Extract comparison name from selected_contrast if it contains "="
-  # The selected_contrast might be the full name like "GA_Elevated.minus.GA_Control=groupGA_Elevated-groupGA_Control"
-  # But the comparison column in de_proteins_long contains only "GA_Elevated.minus.GA_Control"
-  comparison_to_search <- stringr::str_extract(selected_contrast, "^[^=]+")
-  message(paste("   generateVolcanoPlotGlimma: Searching for comparison =", comparison_to_search))
-  message(paste("   generateVolcanoPlotGlimma: Original selected_contrast =", selected_contrast))
-
-  # Filter for selected contrast using the extracted comparison name
-  contrast_data <- de_proteins_long |>
-    dplyr::filter(comparison == comparison_to_search)
-
-  if (nrow(contrast_data) == 0) {
-    message(paste("   generateVolcanoPlotGlimma: No data found for contrast", comparison_to_search))
-    # DEBUG: Show what comparisons are actually available
-    available_comparisons <- unique(de_proteins_long$comparison)
-    message(paste("   generateVolcanoPlotGlimma: Available comparisons:", paste(available_comparisons, collapse = ", ")))
-    return(NULL)
-  }
-
-  message(paste("   generateVolcanoPlotGlimma: Found", nrow(contrast_data), "rows for contrast", comparison_to_search))
-  message("   generateVolcanoPlotGlimma Step: Preparing volcano plot data...")
-
-  # Prepare volcano plot table
-  volcano_plot_tab <- contrast_data |>
-    dplyr::mutate(best_uniprot_acc = str_split(!!sym(args_row_id), ":") |> purrr::map_chr(1))
-
-  # Add UniProt annotations if available
-  if (!is.null(uniprot_tbl)) {
-    volcano_plot_tab <- volcano_plot_tab |>
-      left_join(uniprot_tbl, by = join_by(best_uniprot_acc == !!sym(uniprot_id_column))) |>
-      dplyr::rename(UNIPROT_GENENAME = !!sym(gene_names_column)) |>
-      mutate(UNIPROT_GENENAME = purrr::map_chr(UNIPROT_GENENAME, \(x){
-        tryCatch(
-          {
-            if (is.na(x) || is.null(x) || x == "") {
-              ""
-            } else {
-              split_result <- str_split(x, " |:")[[1]]
-              if (length(split_result) > 0) split_result[1] else ""
-            }
-          },
-          error = function(e) ""
-        )
-      })) |>
-      dplyr::mutate(gene_name = UNIPROT_GENENAME)
-  } else {
-    volcano_plot_tab <- volcano_plot_tab |>
-      dplyr::mutate(gene_name = best_uniprot_acc)
-  }
-
-  # Add visualization columns
-  volcano_plot_tab <- volcano_plot_tab |>
-    mutate(lqm = -log10(!!sym(fdr_column))) |>
-    dplyr::mutate(label = case_when(
-      abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) >= da_q_val_thresh ~ "Not sig., logFC >= 1",
-      abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) < da_q_val_thresh ~ "Sig., logFC >= 1",
-      abs(!!sym(log2fc_column)) < 1 & !!sym(fdr_column) < da_q_val_thresh ~ "Sig., logFC < 1",
-      TRUE ~ "Not sig."
-    )) |>
-    dplyr::mutate(colour = case_when(
-      abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) >= da_q_val_thresh ~ "orange",
-      abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) < da_q_val_thresh ~ "purple",
-      abs(!!sym(log2fc_column)) < 1 & !!sym(fdr_column) < da_q_val_thresh ~ "blue",
-      TRUE ~ "black"
-    )) |>
-    dplyr::mutate(analysis_type = comparison) |>
-    dplyr::select(
-      best_uniprot_acc, lqm, !!sym(fdr_column), !!sym(raw_p_value_column), !!sym(log2fc_column), comparison, label, colour, gene_name,
-      any_of(display_columns)
-    ) |>
-    dplyr::mutate(my_alpha = case_when(
-      gene_name != "" ~ 1,
-      TRUE ~ 0.5
-    ))
-
-  message("   generateVolcanoPlotGlimma Step: Generating interactive plot widget...")
-
-  # Find the coefficient index for this contrast
-  # CRITICAL FIX: Use grep for reliable pattern matching instead of stringr
-  coef_names <- colnames(contrasts_results$fit.eb$coefficients)
-  message(paste("   generateVolcanoPlotGlimma: Available coefficient names:", paste(coef_names, collapse = ", ")))
-  message(paste("   generateVolcanoPlotGlimma: Looking for pattern:", paste0("^", comparison_to_search, "=")))
-
-  # Use grep to find coefficient that starts with friendly name followed by "="
-  coef_index <- grep(paste0("^", comparison_to_search, "="), coef_names)
-  message(paste("   generateVolcanoPlotGlimma: Pattern match found indices:", paste(coef_index, collapse = ", ")))
-
-  # Fallback: try exact match with the friendly name (for backwards compatibility)
-  if (length(coef_index) == 0) {
-    message("   generateVolcanoPlotGlimma: Pattern match failed, trying exact match with friendly name")
-    coef_index <- which(coef_names == comparison_to_search)
-  }
-
-  # Last resort: try exact match with selected_contrast
-  if (length(coef_index) == 0) {
-    message("   generateVolcanoPlotGlimma: Exact friendly name match failed, trying selected_contrast")
-    coef_index <- which(coef_names == selected_contrast)
-  }
-
-  if (length(coef_index) == 0) {
-    message(paste("   generateVolcanoPlotGlimma: FINAL FAILURE - No coefficient found for:", selected_contrast))
-    message(paste("   generateVolcanoPlotGlimma: Also tried:", comparison_to_search))
-    message("   generateVolcanoPlotGlimma: Available coefficient patterns:")
-    for (i in seq_along(coef_names)) {
-      message(sprintf("     [%d] %s", i, coef_names[i]))
-    }
-    message(paste("   generateVolcanoPlotGlimma: Pattern attempted:", paste0("^", comparison_to_search, "=")))
-    return(NULL)
-  }
-
-  message(paste("   generateVolcanoPlotGlimma: Using coefficient index", coef_index, "for contrast", coef_names[coef_index]))
-
-  # Prepare counts matrix and groups
-  counts_mat <- da_results_list$theObject@protein_quant_table |>
-    column_to_rownames(da_results_list$theObject@protein_id_column) |>
-    as.matrix()
-
-  this_design_matrix <- da_results_list$theObject@design_matrix
-  rownames(this_design_matrix) <- this_design_matrix[, da_results_list$theObject@sample_id]
-  this_groups <- this_design_matrix[colnames(counts_mat), "group"]
-
-  # Generate the Glimma widget
-  glimma_widget <- getGlimmaVolcanoProteomicsWidget(contrasts_results$fit.eb,
-    coef = coef_index,
-    volcano_plot_tab = volcano_plot_tab,
-    uniprot_column = best_uniprot_acc,
-    gene_name_column = gene_name,
-    display_columns = display_columns,
-    counts_tbl = counts_mat,
-    groups = this_groups
-  )
-
-  message("--- Exiting generateVolcanoPlotGlimma ---")
-  return(glimma_widget)
-}
+# Note: generateProtDAVolcanoPlotGlimma has been moved to R/func_prot_da.R
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # NOTE: generateDEHeatmap is defined in func_prot_da.R
@@ -1239,28 +1072,28 @@ setMethod(
 
       contrast_result <- da_results_list_all_contrasts[[contrast_name]]
 
-      if (!is.null(contrast_result$de_proteins_long)) {
+      if (!is.null(contrast_result$da_proteins_long)) {
         # Clean contrast name for safe filename
         safe_contrast_name <- gsub("[^A-Za-z0-9_-]", "_", contrast_name)
 
         # Create annotated version (FIXED: proper conditional logic)
-        de_proteins_long_annot <- contrast_result$de_proteins_long |>
+        da_proteins_long_annot <- contrast_result$da_proteins_long |>
           mutate(uniprot_acc_cleaned = str_split(!!sym(args_row_id), "-") |>
             purrr::map_chr(1))
 
         # Add UniProt annotations if available
         if (!is.null(uniprot_tbl) && nrow(uniprot_tbl) > 0) {
-          de_proteins_long_annot <- de_proteins_long_annot |>
+          da_proteins_long_annot <- da_proteins_long_annot |>
             left_join(uniprot_tbl, by = join_by(uniprot_acc_cleaned == !!sym(uniprot_id_column))) |>
             dplyr::select(-uniprot_acc_cleaned)
         } else {
-          de_proteins_long_annot <- de_proteins_long_annot |>
+          da_proteins_long_annot <- da_proteins_long_annot |>
             dplyr::select(-uniprot_acc_cleaned)
         }
 
         # Add gene_name column with proper conditional logic
-        if ("gene_names" %in% names(de_proteins_long_annot)) {
-          de_proteins_long_annot <- de_proteins_long_annot |>
+        if ("gene_names" %in% names(da_proteins_long_annot)) {
+          da_proteins_long_annot <- da_proteins_long_annot |>
             mutate(gene_name = purrr::map_chr(gene_names, \(x){
               tryCatch(
                 {
@@ -1274,8 +1107,8 @@ setMethod(
                 error = function(e) ""
               )
             }))
-        } else if (gene_names_column %in% names(de_proteins_long_annot)) {
-          de_proteins_long_annot <- de_proteins_long_annot |>
+        } else if (gene_names_column %in% names(da_proteins_long_annot)) {
+          da_proteins_long_annot <- da_proteins_long_annot |>
             mutate(gene_name = purrr::map_chr(.data[[gene_names_column]], \(x){
               tryCatch(
                 {
@@ -1290,12 +1123,12 @@ setMethod(
               )
             }))
         } else {
-          de_proteins_long_annot <- de_proteins_long_annot |>
+          da_proteins_long_annot <- da_proteins_long_annot |>
             mutate(gene_name = "")
         }
 
         # Relocate gene_name column
-        de_proteins_long_annot <- de_proteins_long_annot |>
+        da_proteins_long_annot <- da_proteins_long_annot |>
           relocate(gene_name, .after = !!sym(args_row_id))
 
         # CRITICAL FIX: Use contrast-specific filename!
@@ -1305,7 +1138,7 @@ setMethod(
         message(sprintf("   outputDaResultsAllContrasts: Writing %s", output_path))
 
         # Write the file
-        vroom::vroom_write(de_proteins_long_annot, output_path)
+        vroom::vroom_write(da_proteins_long_annot, output_path)
 
         # Verify file was written
         if (file.exists(output_path)) {
@@ -1321,7 +1154,7 @@ setMethod(
         # Also write Excel version
         excel_filename <- paste0(file_prefix, "_", safe_contrast_name, "_long_annot.xlsx")
         excel_path <- file.path(da_output_dir, excel_filename)
-        writexl::write_xlsx(de_proteins_long_annot, excel_path)
+        writexl::write_xlsx(da_proteins_long_annot, excel_path)
 
         message(sprintf("   outputDaResultsAllContrasts: Also wrote Excel: %s", excel_filename))
 
@@ -1348,7 +1181,7 @@ setMethod(
         }
 
         # Prepare data for volcano plot (same logic as in differentialAbundanceAnalysisHelper)
-        volcano_data <- contrast_result$de_proteins_long |>
+        volcano_data <- contrast_result$da_proteins_long |>
           mutate(lqm = -log10(!!sym(fdr_column))) |>
           dplyr::mutate(label = case_when(
             !!sym(fdr_column) < da_q_val_thresh ~ "Significant",
@@ -1436,9 +1269,9 @@ setMethod(
         for (contrast_name in names(da_results_list_all_contrasts)) {
           contrast_result <- da_results_list_all_contrasts[[contrast_name]]
 
-          if (!is.null(contrast_result$de_proteins_long)) {
+          if (!is.null(contrast_result$da_proteins_long)) {
             # Recreate the volcano plot
-            volcano_data <- contrast_result$de_proteins_long |>
+            volcano_data <- contrast_result$da_proteins_long |>
               mutate(lqm = -log10(!!sym(fdr_column))) |>
               dplyr::mutate(label = case_when(
                 !!sym(fdr_column) < da_q_val_thresh ~ "Significant",

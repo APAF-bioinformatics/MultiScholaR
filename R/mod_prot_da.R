@@ -509,8 +509,8 @@ mod_prot_da_server <- function(id, workflow_data, experiment_paths, omic_type, e
               # Define valid states where this tab can be active
               valid_states_for_de_tab <- c("normalized", "ruv_corrected", "correlation_filtered")
 
-              cat(sprintf("   DE TAB Step: Current state = '%s'\n", current_state))
-              cat(sprintf("   DE TAB Step: Valid states for DE = %s\n", paste(valid_states_for_de_tab, collapse = ", ")))
+              cat(sprintf("   DA TAB Step: Current state = '%s'\n", current_state))
+              cat(sprintf("   DA TAB Step: Valid states for DE = %s\n", paste(valid_states_for_de_tab, collapse = ", ")))
 
               # Auto-trigger only fires if we've completed correlation filtering or at least normalization
               if (current_state %in% valid_states_for_de_tab) {
@@ -519,7 +519,7 @@ mod_prot_da_server <- function(id, workflow_data, experiment_paths, omic_type, e
                 tryCatch(
                   {
                     # Initialize DE analysis setup
-                    cat("   DE TAB Step: Getting S4 object from state manager...\n")
+                    cat("   DA TAB Step: Getting S4 object from state manager...\n")
                     current_s4 <- workflow_data$state_manager$getState(current_state)
 
                     if (!is.null(current_s4)) {
@@ -527,14 +527,14 @@ mod_prot_da_server <- function(id, workflow_data, experiment_paths, omic_type, e
                       da_data$current_s4_object <- current_s4
 
                       # Check for contrasts_tbl in global environment FIRST
-                      cat("   DE TAB Step: Checking for contrasts_tbl in global environment...\n")
-                      cat(sprintf("   DE TAB Step: contrasts_tbl exists in global env: %s\n", exists("contrasts_tbl", envir = .GlobalEnv)))
+                      cat("   DA TAB Step: Checking for contrasts_tbl in global environment...\n")
+                      cat(sprintf("   DA TAB Step: contrasts_tbl exists in global env: %s\n", exists("contrasts_tbl", envir = .GlobalEnv)))
                       if (exists("contrasts_tbl", envir = .GlobalEnv)) {
                         contrasts_tbl <- get("contrasts_tbl", envir = .GlobalEnv)
-                        cat("   DE TAB Step: Found contrasts_tbl in global environment\n")
-                        cat("   DE TAB Step: contrasts_tbl structure:\n")
+                        cat("   DA TAB Step: Found contrasts_tbl in global environment\n")
+                        cat("   DA TAB Step: contrasts_tbl structure:\n")
                         str(contrasts_tbl)
-                        cat("   DE TAB Step: contrasts_tbl content:\n")
+                        cat("   DA TAB Step: contrasts_tbl content:\n")
                         print(contrasts_tbl)
 
                         # Validate contrasts_tbl has content
@@ -543,31 +543,31 @@ mod_prot_da_server <- function(id, workflow_data, experiment_paths, omic_type, e
                           da_data$contrasts_available <- NULL
                         } else if ("comparison" %in% names(contrasts_tbl)) {
                           da_data$contrasts_available <- contrasts_tbl$comparison
-                          cat(sprintf("   DE TAB Step: Set contrasts from comparison column: %s\n", paste(de_data$contrasts_available, collapse = ", ")))
+                          cat(sprintf("   DA TAB Step: Set contrasts from comparison column: %s\n", paste(da_data$contrasts_available, collapse = ", ")))
                         } else if ("contrasts" %in% names(contrasts_tbl)) {
                           da_data$contrasts_available <- contrasts_tbl$contrasts
-                          cat(sprintf("   DE TAB Step: Set contrasts from contrasts column: %s\n", paste(de_data$contrasts_available, collapse = ", ")))
+                          cat(sprintf("   DA TAB Step: Set contrasts from contrasts column: %s\n", paste(da_data$contrasts_available, collapse = ", ")))
                         } else {
-                          cat("   DE TAB Step: contrasts_tbl found but no recognized column names\n")
-                          cat("   DE TAB Step: Available column names:\n")
+                          cat("   DA TAB Step: contrasts_tbl found but no recognized column names\n")
+                          cat("   DA TAB Step: Available column names:\n")
                           print(names(contrasts_tbl))
                           # Try first column if it has content
                           if (ncol(contrasts_tbl) > 0) {
-                            de_data$contrasts_available <- contrasts_tbl[[1]]
-                            cat(sprintf("   DE TAB Step: Using first column: %s\n", paste(de_data$contrasts_available, collapse = ", ")))
+                            da_data$contrasts_available <- contrasts_tbl[[1]]
+                            cat(sprintf("   DA TAB Step: Using first column: %s\n", paste(da_data$contrasts_available, collapse = ", ")))
                           } else {
-                            cat("   DE TAB Step: contrasts_tbl has no usable content\n")
-                            de_data$contrasts_available <- NULL
+                            cat("   DA TAB Step: contrasts_tbl has no usable content\n")
+                            da_data$contrasts_available <- NULL
                           }
                         }
                       } else {
-                        cat("   DE TAB Step: No contrasts_tbl in global environment. Will attempt auto-generation.\n")
-                        de_data$contrasts_available <- NULL
+                        cat("   DA TAB Step: No contrasts_tbl in global environment. Will attempt auto-generation.\n")
+                        da_data$contrasts_available <- NULL
                       }
 
                       # Only auto-generate contrasts if user-specified ones weren't found or were empty
-                      if (is.null(de_data$contrasts_available) || length(de_data$contrasts_available) == 0) {
-                        cat("   DE TAB Step: No valid user-specified contrasts found, creating basic contrasts\n")
+                      if (is.null(da_data$contrasts_available) || length(da_data$contrasts_available) == 0) {
+                        cat("   DA TAB Step: No valid user-specified contrasts found, creating basic contrasts\n")
                         shiny::showNotification("No user-specified contrasts found. Auto-generating all possible contrasts.", type = "warning", duration = 5)
 
                         if (!is.null(current_s4@design_matrix)) {
@@ -575,19 +575,19 @@ mod_prot_da_server <- function(id, workflow_data, experiment_paths, omic_type, e
                           if (length(groups) >= 2) {
                             group_prefixed <- paste0("group", groups)
                             basic_contrasts <- combn(group_prefixed, 2, function(x) paste0(x[1], "-", x[2]), simplify = TRUE)
-                            de_data$contrasts_available <- basic_contrasts
-                            cat(sprintf("   DE TAB Step: Created basic contrasts: %s\n", paste(basic_contrasts, collapse = ", ")))
+                            da_data$contrasts_available <- basic_contrasts
+                            cat(sprintf("   DA TAB Step: Created basic contrasts: %s\n", paste(basic_contrasts, collapse = ", ")))
                           }
                         }
                       }
 
                       # Extract formula from S4 @args
-                      cat("   DE TAB Step: Checking for formula in S4 @args...\n")
+                      cat("   DA TAB Step: Checking for formula in S4 @args...\n")
                       if ("deAnalysisParameters" %in% names(current_s4@args)) {
                         if ("formula_string" %in% names(current_s4@args$deAnalysisParameters)) {
                           formula_from_s4 <- current_s4@args$deAnalysisParameters$formula_string
-                          de_data$formula_from_s4 <- formula_from_s4
-                          cat(sprintf("   DE TAB Step: Formula from S4 = %s\n", formula_from_s4))
+                          da_data$formula_from_s4 <- formula_from_s4
+                          cat(sprintf("   DA TAB Step: Formula from S4 = %s\n", formula_from_s4))
 
                           # Update UI with formula from S4
                           shiny::updateTextAreaInput(
@@ -596,45 +596,45 @@ mod_prot_da_server <- function(id, workflow_data, experiment_paths, omic_type, e
                             value = formula_from_s4
                           )
                         } else {
-                          cat("   DE TAB Step: No formula_string in deAnalysisParameters\n")
+                          cat("   DA TAB Step: No formula_string in deAnalysisParameters\n")
                         }
                       } else {
-                        cat("   DE TAB Step: No deAnalysisParameters in S4 @args\n")
+                        cat("   DA TAB Step: No deAnalysisParameters in S4 @args\n")
                       }
 
                       # CRITICAL FIX: Validate and fix contrast format to match design matrix columns
-                      if (!is.null(de_data$contrasts_available) && !is.null(current_s4@design_matrix)) {
-                        cat("   DE TAB Step: Validating contrast format against design matrix...\n")
+                      if (!is.null(da_data$contrasts_available) && !is.null(current_s4@design_matrix)) {
+                        cat("   DA TAB Step: Validating contrast format against design matrix...\n")
                         groups <- unique(current_s4@design_matrix$group)
-                        cat(sprintf("   DE TAB Step: Available groups: %s\n", paste(groups, collapse = ", ")))
+                        cat(sprintf("   DA TAB Step: Available groups: %s\n", paste(groups, collapse = ", ")))
 
                         # Check if contrasts need "group" prefix (for formula ~ 0 + group)
-                        current_contrasts <- de_data$contrasts_available
-                        cat(sprintf("   DE TAB Step: Current contrasts before validation: %s\n", paste(current_contrasts, collapse = ", ")))
+                        current_contrasts <- da_data$contrasts_available
+                        cat(sprintf("   DA TAB Step: Current contrasts before validation: %s\n", paste(current_contrasts, collapse = ", ")))
 
                         # If contrasts don't start with "group" but should (based on formula), fix them
                         if (any(grepl("~ 0 \\+ group", input$formula_string))) {
-                          cat("   DE TAB Step: Formula uses '~ 0 + group', checking if contrasts need group prefix...\n")
+                          cat("   DA TAB Step: Formula uses '~ 0 + group', checking if contrasts need group prefix...\n")
 
                           # Check if any contrast references raw group names without prefix
                           needs_prefix <- any(sapply(groups, function(g) any(grepl(paste0("\\b", g, "\\b"), current_contrasts))))
 
                           if (needs_prefix) {
-                            cat("   DE TAB Step: Contrasts need group prefix, fixing...\n")
+                            cat("   DA TAB Step: Contrasts need group prefix, fixing...\n")
                             fixed_contrasts <- current_contrasts
                             for (group in groups) {
                               # Replace "GA_Control" with "groupGA_Control" etc.
                               fixed_contrasts <- gsub(paste0("\\b", group, "\\b"), paste0("group", group), fixed_contrasts)
                             }
-                            de_data$contrasts_available <- fixed_contrasts
-                            cat(sprintf("   DE TAB Step: Fixed contrasts: %s\n", paste(fixed_contrasts, collapse = ", ")))
+                            da_data$contrasts_available <- fixed_contrasts
+                            cat(sprintf("   DA TAB Step: Fixed contrasts: %s\n", paste(fixed_contrasts, collapse = ", ")))
                           } else {
-                            cat("   DE TAB Step: Contrasts already have correct format\n")
+                            cat("   DA TAB Step: Contrasts already have correct format\n")
                           }
                         }
                       }
                     } else {
-                      cat("   DE TAB Step: S4 object is NULL\n")
+                      cat("   DA TAB Step: S4 object is NULL\n")
                     }
 
                     cat("*** DE INITIALIZATION COMPLETED SUCCESSFULLY ***\n")
@@ -651,7 +651,7 @@ mod_prot_da_server <- function(id, workflow_data, experiment_paths, omic_type, e
               } else {
                 cat(sprintf("*** State '%s' is not valid for DE analysis. User needs to complete normalization (with or without RUV) and correlation filtering. ***\n", current_state))
                 shiny::showNotification(
-                  "Please complete the normalization (with or without RUV) and correlation filtering steps before accessing differential expression analysis.",
+                  "Please complete the normalization (with or without RUV) and correlation filtering steps before accessing differential abundance analysis.",
                   type = "warning",
                   duration = 5
                 )
@@ -675,29 +675,29 @@ mod_prot_da_server <- function(id, workflow_data, experiment_paths, omic_type, e
     shiny::observeEvent(workflow_data$state_update_trigger,
       {
         cat("--- Entering state update trigger observer ---\n")
-        cat("\n\n=== DE TAB TRIGGERED VIA STATE UPDATE: Checking for S4 object and contrasts ===\n")
+        cat("\n\n=== DA TAB TRIGGERED VIA STATE UPDATE: Checking for S4 object and contrasts ===\n")
 
         # Get current S4 object from state manager
         if (!is.null(workflow_data$state_manager)) {
           current_state <- workflow_data$state_manager$current_state
-          cat(sprintf("   DE TAB Step: Current state = %s\n", current_state))
+          cat(sprintf("   DA TAB Step: Current state = %s\n", current_state))
 
           # Should be getting the correlation-filtered protein object (final state before DE)
           # Also accept normalized or ruv_corrected states
           if (current_state %in% c("normalized", "ruv_corrected", "correlation_filtered")) {
-            cat(sprintf("   DE TAB Step: State is valid for DE analysis (%s state found)\n", current_state))
+            cat(sprintf("   DA TAB Step: State is valid for DE analysis (%s state found)\n", current_state))
             current_s4 <- workflow_data$state_manager$getState(current_state)
 
             if (!is.null(current_s4)) {
-              cat(sprintf("   DE TAB Step: S4 object retrieved, class = %s\n", class(current_s4)))
-              de_data$current_s4_object <- current_s4
+              cat(sprintf("   DA TAB Step: S4 object retrieved, class = %s\n", class(current_s4)))
+              da_data$current_s4_object <- current_s4
 
               # Extract formula from S4 @args
               if ("deAnalysisParameters" %in% names(current_s4@args)) {
                 if ("formula_string" %in% names(current_s4@args$deAnalysisParameters)) {
                   formula_from_s4 <- current_s4@args$deAnalysisParameters$formula_string
-                  de_data$formula_from_s4 <- formula_from_s4
-                  cat(sprintf("   DE TAB Step: Formula from S4 = %s\n", formula_from_s4))
+                  da_data$formula_from_s4 <- formula_from_s4
+                  cat(sprintf("   DA TAB Step: Formula from S4 = %s\n", formula_from_s4))
 
                   # Update UI with formula from S4
                   shiny::updateTextAreaInput(
@@ -706,25 +706,25 @@ mod_prot_da_server <- function(id, workflow_data, experiment_paths, omic_type, e
                     value = formula_from_s4
                   )
                 } else {
-                  cat("   DE TAB Step: No formula_string in deAnalysisParameters\n")
+                  cat("   DA TAB Step: No formula_string in deAnalysisParameters\n")
                 }
               } else {
-                cat("   DE TAB Step: No deAnalysisParameters in S4 @args\n")
+                cat("   DA TAB Step: No deAnalysisParameters in S4 @args\n")
               }
 
               # Get contrasts from design matrix or S4 args
               if (!is.null(current_s4@design_matrix)) {
-                cat("   DE TAB Step: Design matrix found in S4 object\n")
-                cat(sprintf("   DE TAB Step: Design matrix dims = %d rows, %d cols\n", nrow(current_s4@design_matrix), ncol(current_s4@design_matrix)))
+                cat("   DA TAB Step: Design matrix found in S4 object\n")
+                cat(sprintf("   DA TAB Step: Design matrix dims = %d rows, %d cols\n", nrow(current_s4@design_matrix), ncol(current_s4@design_matrix)))
 
                 # Check for contrasts_tbl in global environment
-                cat(sprintf("   DE TAB Step: contrasts_tbl exists in global env: %s\n", exists("contrasts_tbl", envir = .GlobalEnv)))
+                cat(sprintf("   DA TAB Step: contrasts_tbl exists in global env: %s\n", exists("contrasts_tbl", envir = .GlobalEnv)))
                 if (exists("contrasts_tbl", envir = .GlobalEnv)) {
                   contrasts_tbl <- get("contrasts_tbl", envir = .GlobalEnv)
-                  cat("   DE TAB Step: Found contrasts_tbl in global environment\n")
-                  cat("   DE TAB Step: contrasts_tbl structure:\n")
+                  cat("   DA TAB Step: Found contrasts_tbl in global environment\n")
+                  cat("   DA TAB Step: contrasts_tbl structure:\n")
                   str(contrasts_tbl)
-                  cat("   DE TAB Step: contrasts_tbl content:\n")
+                  cat("   DA TAB Step: contrasts_tbl content:\n")
                   print(contrasts_tbl)
 
                   # Validate contrasts_tbl has content
@@ -771,16 +771,16 @@ mod_prot_da_server <- function(id, workflow_data, experiment_paths, omic_type, e
                   }
                 }
               } else {
-                cat("   DE TAB Step: No design matrix found in S4 object\n")
+                cat("   DA TAB Step: No design matrix found in S4 object\n")
               }
             } else {
-              cat("   DE TAB Step: S4 object is NULL\n")
+              cat("   DA TAB Step: S4 object is NULL\n")
             }
           } else {
             cat(sprintf("   DA TAB Step: State '%s' not valid for DA analysis (expecting: normalized, ruv_corrected, or correlation_filtered)\n", current_state))
           }
         } else {
-          cat("   DE TAB Step: workflow_data$state_manager is NULL\n")
+          cat("   DA TAB Step: workflow_data$state_manager is NULL\n")
         }
 
         cat("=== DA TAB: Contrast detection complete ===\n")
@@ -1051,7 +1051,7 @@ mod_prot_da_server <- function(id, workflow_data, experiment_paths, omic_type, e
 
           # Create summary message
           summary_msg <- sprintf(
-            "Session loaded successfully!\n\nData Summary:\n- Proteins: %d\n- Samples: %d\n- Contrasts: %d\n- State: %s\n- Export time: %s\n\nReady for differential expression analysis.",
+            "Session loaded successfully!\n\nData Summary:\n- Proteins: %d\n- Samples: %d\n- Contrasts: %d\n- State: %s\n- Export time: %s\n\nReady for differential abundance analysis.",
             session_data$final_protein_count,
             session_data$final_sample_count,
             ifelse(is.null(session_data$contrasts_tbl), 0, nrow(session_data$contrasts_tbl)),
@@ -1083,12 +1083,12 @@ mod_prot_da_server <- function(id, workflow_data, experiment_paths, omic_type, e
     })
 
     # Main DE Analysis Button Logic
-    shiny::observeEvent(input$run_de_analysis, {
+    shiny::observeEvent(input$run_da_analysis, {
       cat("=== STARTING DIFFERENTIAL EXPRESSION ANALYSIS ===\n")
 
-      shiny::req(de_data$current_s4_object, de_data$contrasts_available)
+      shiny::req(da_data$current_s4_object, da_data$contrasts_available)
 
-      shiny::showNotification("Running differential expression analysis...", id = "de_working", duration = NULL)
+      shiny::showNotification("Running differential abundance analysis...", id = "da_working", duration = NULL)
 
       tryCatch(
         {
@@ -1100,18 +1100,18 @@ mod_prot_da_server <- function(id, workflow_data, experiment_paths, omic_type, e
             contrasts_tbl <- NULL
             if (exists("contrasts_tbl", envir = .GlobalEnv)) {
               contrasts_tbl <- get("contrasts_tbl", envir = .GlobalEnv)
-              cat("   DE ANALYSIS Step: Using existing contrasts_tbl from global environment\n")
-              cat("   DE ANALYSIS Step: contrasts_tbl structure:\n")
+              cat("   DA ANALYSIS Step: Using existing contrasts_tbl from global environment\n")
+              cat("   DA ANALYSIS Step: contrasts_tbl structure:\n")
               str(contrasts_tbl)
             } else {
               # Create contrasts table that matches the original format
               # The original expects a data frame with contrasts in the first column
-              cat("   DE ANALYSIS Step: Creating contrasts_tbl from de_data$contrasts_available\n")
-              cat("   DE ANALYSIS Step: Available contrasts:\n")
-              print(de_data$contrasts_available)
+              cat("   DA ANALYSIS Step: Creating contrasts_tbl from da_data$contrasts_available\n")
+              cat("   DA ANALYSIS Step: Available contrasts:\n")
+              print(da_data$contrasts_available)
 
               contrasts_tbl <- data.frame(
-                contrasts = de_data$contrasts_available,
+                contrasts = da_data$contrasts_available,
                 stringsAsFactors = FALSE
               )
               cat("   DA ANALYSIS Step: Created contrasts_tbl:\n")
@@ -1281,7 +1281,7 @@ mod_prot_da_server <- function(id, workflow_data, experiment_paths, omic_type, e
                   },
                   error = function(e) {
                     # CRITICAL FIX: Use paste() for logger calls in error handlers
-                    cat(paste("   DE ANALYSIS Step: Warning - could not update state with UI parameters:", e$message, "\n"))
+                    cat(paste("   DA ANALYSIS Step: Warning - could not update state with UI parameters:", e$message, "\n"))
                   }
                 )
 
@@ -1369,7 +1369,7 @@ mod_prot_da_server <- function(id, workflow_data, experiment_paths, omic_type, e
             # Update UI dropdowns to use friendly names that match the data's comparison column
             cat("   DA ANALYSIS Step: Updating UI dropdowns to match data comparison column...\n")
 
-            # Use friendly names from contrasts_tbl since they match de_proteins_long$comparison
+            # Use friendly names from contrasts_tbl since they match da_proteins_long$comparison
             if ("friendly_names" %in% names(contrasts_tbl)) {
               friendly_names <- contrasts_tbl$friendly_names
               contrast_choices <- setNames(friendly_names, friendly_names)
@@ -1698,22 +1698,25 @@ mod_prot_da_server <- function(id, workflow_data, experiment_paths, omic_type, e
             protein_id_column <- da_data$da_results_list$theObject@protein_id_column
             cat(sprintf("   VOLCANO: Using protein ID column = %s\n", protein_id_column))
 
-            # CRITICAL FIX: Pass the friendly name to generateDAVolcanoPlotGlimma since that's what the data contains
-            glimma_widget <- tryCatch(
-              {
-                generateDAVolcanoPlotGlimma(
-                  da_results_list = plot_data_structure,
-                  selected_contrast = input$volcano_contrast, # Use friendly name that matches da_proteins_long$comparison
-                  uniprot_tbl = uniprot_tbl,
-                  da_q_val_thresh = input$da_q_val_thresh,
-                  args_row_id = protein_id_column # Pass the correct column name
-                )
-              },
-              error = function(e) {
-                cat(sprintf("   VOLCANO: Error in generateDAVolcanoPlotGlimma: %s\n", e$message))
+            # CRITICAL FIX: Pass the friendly name to generateProtDAVolcanoPlotGlimma since that's what the data contains
+            withProgress(message = "Generating interactive volcano plot (Glimma)...", value = 0.5, {
+              glimma_res <- tryCatch(
+                {
+                  generateProtDAVolcanoPlotGlimma(
+                    da_results_list = da_data$da_results_list,
+                    selected_contrast = input$volcano_contrast,
+                    uniprot_tbl = da_data$uniprot_tbl,
+                    args_row_id = da_data$da_results_list$theObject@protein_id_column,
+                    display_columns = c("best_uniprot_acc")
+                  )
+                },
+                error = function(e) {
+                  cat(sprintf("   VOLCANO: Error in generateProtDAVolcanoPlotGlimma: %s\n", e$message))
                 NULL
               }
             )
+            glimma_widget <- glimma_res
+            })
 
             cat(sprintf("   VOLCANO: glimma_widget created successfully: %s\n", !is.null(glimma_widget)))
           }
@@ -1743,10 +1746,12 @@ mod_prot_da_server <- function(id, workflow_data, experiment_paths, omic_type, e
     output$volcano_static <- shiny::renderPlot({
       shiny::req(input$volcano_contrast, da_data$da_results_list)
 
-      # Placeholder for static volcano plot
-      plot(1:10, 1:10,
-        main = paste("Static Volcano Plot -", input$volcano_contrast),
-        xlab = "Log2 Fold Change", ylab = "-Log10 P-value"
+      # Generate static volcano plot using new function
+      generateProtDAVolcanoStatic(
+        da_results_list = da_data$da_results_list,
+        selected_contrast = input$volcano_contrast,
+        da_q_val_thresh = 0.05,
+        lfc_threshold = 1
       )
     })
 
@@ -1766,7 +1771,7 @@ mod_prot_da_server <- function(id, workflow_data, experiment_paths, omic_type, e
           # The heatmap contrast input should now match the comparison column in da_proteins_long
           cat(sprintf("   HEATMAP: Looking for contrast = %s\n", input$heatmap_contrast))
 
-          heatmap_result <- generateDAHeatmap(
+          heatmap_result <- generateProtDAHeatmap(
             da_results_list = plot_data_structure,
             selected_contrast = input$heatmap_contrast,
             top_n_genes = input$heatmap_top_n,
@@ -1928,14 +1933,14 @@ mod_prot_da_server <- function(id, workflow_data, experiment_paths, omic_type, e
               }
 
               # Select relevant columns for display - use the correct protein ID column
-              if (!is.null(de_data$da_results_list$theObject)) {
-                protein_id_column <- de_data$da_results_list$theObject@protein_id_column
-                cat(sprintf("   DE TABLE: Using protein ID column = %s\n", protein_id_column))
+              if (!is.null(da_data$da_results_list$theObject)) {
+                protein_id_column <- da_data$da_results_list$theObject@protein_id_column
+                cat(sprintf("   DA TABLE: Using protein ID column = %s\n", protein_id_column))
               } else {
                 # Fallback: try to find protein ID column in the data
                 possible_protein_cols <- c("Protein.Ids", "uniprot_acc", "protein_id", "Protein_ID")
                 protein_id_column <- intersect(possible_protein_cols, names(current_results))[1]
-                cat(sprintf("   DE TABLE: Using fallback protein ID column = %s\n", protein_id_column))
+                cat(sprintf("   DA TABLE: Using fallback protein ID column = %s\n", protein_id_column))
               }
 
               display_columns <- c(protein_id_column, "log2FC", "raw_pvalue", "fdr_qvalue")
@@ -1958,26 +1963,26 @@ mod_prot_da_server <- function(id, workflow_data, experiment_paths, omic_type, e
               DT::datatable(data.frame(Message = "No results available for selected contrast"))
             }
           } else {
-            # No DE results available
+            # No DA results available
             DT::datatable(data.frame(Message = "No DE analysis results available"))
           }
         },
         error = function(e) {
-          cat(paste("*** ERROR in DE results table:", e$message, "\n"))
+          cat(paste("*** ERROR in DA results table:", e$message, "\n"))
           DT::datatable(data.frame(Message = paste("Error:", e$message)))
         }
       )
     })
 
     # Summary statistics
-    output$de_summary_stats <- shiny::renderText({
-      shiny::req(input$table_contrast, de_data$da_results_list)
+    output$da_summary_stats <- shiny::renderText({
+      shiny::req(input$table_contrast, da_data$da_results_list)
 
       tryCatch(
         {
-          if (!is.null(de_data$da_results_list$de_proteins_long)) {
+          if (!is.null(da_data$da_results_list$da_proteins_long)) {
             # Filter for selected contrast
-            current_results <- de_data$da_results_list$de_proteins_long |>
+            current_results <- da_data$da_results_list$da_proteins_long |>
               dplyr::filter(comparison == input$table_contrast)
 
             if (nrow(current_results) > 0) {
@@ -2012,7 +2017,7 @@ mod_prot_da_server <- function(id, workflow_data, experiment_paths, omic_type, e
     # Download handler for results
     output$download_da_results <- shiny::downloadHandler(
       filename = function() {
-        paste0("DE_results_", Sys.Date(), ".zip")
+        paste0("DA_results_", Sys.Date(), ".zip")
       },
       content = function(file) {
         # Placeholder for creating downloadable zip file
@@ -2021,6 +2026,6 @@ mod_prot_da_server <- function(id, workflow_data, experiment_paths, omic_type, e
     )
 
     # Return DE data for potential use by parent module
-    return(de_data)
+    return(da_data)
   })
 }

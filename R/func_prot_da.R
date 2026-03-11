@@ -28,8 +28,8 @@
 # - differentialAbundanceAnalysisHelper(): Helper for DA analysis
 # - daAnalysisWrapperFunction(): Wrapper function for DA analysis
 # - outputDaResultsAllContrasts(): S4 method for outputting DA results
-# - generateDAVolcanoPlotGlimma(): Generate interactive volcano plots
-# - generateDAHeatmap(): Generate DA heatmaps
+# - generateProtDAVolcanoPlotGlimma(): Generate interactive volcano plots
+# - generateProtDAHeatmap(): Generate DA heatmaps
 # - createDaResultsLongFormat(): Create long format DA results
 # - getDaResultsLongFormat(): S4 method to get long format results
 # - getDaResultsWideFormat(): S4 method to get wide format results
@@ -44,62 +44,62 @@
 # TODO: Extract the following functions from their current locations:
 
 # Function 1: differentialAbundanceAnalysis() (protein method)
-# Current location: R/protein_de_analysis_wrapper.R
+# Current location: R/protein_da_analysis_wrapper.R
 # Type: S4 method (exportMethods)
 # Description: Performs differential expression analysis on proteins
 # setMethod(f = "differentialAbundanceAnalysis", signature = "ProteinQuantitativeData", ...) {
-#   # Extract from R/protein_de_analysis_wrapper.R
+#   # Extract from R/protein_da_analysis_wrapper.R
 # }
 
 # Function 2: differentialAbundanceAnalysisHelper()
-# Current location: R/protein_de_analysis_wrapper.R
+# Current location: R/protein_da_analysis_wrapper.R
 # Type: S4 method (exportMethods)
 # Description: Helper function for DE analysis
 # setMethod(f = "differentialAbundanceAnalysisHelper", ...) {
-#   # Extract from R/protein_de_analysis_wrapper.R
+#   # Extract from R/protein_da_analysis_wrapper.R
 # }
 
 # Function 3: deAnalysisWrapperFunction()
-# Current location: R/de_analysis_function_wrapper.R
+# Current location: R/da_analysis_function_wrapper.R
 # Description: Wrapper function for DE analysis
 # deAnalysisWrapperFunction <- function(...) {
-#   # Extract from R/de_analysis_function_wrapper.R
+#   # Extract from R/da_analysis_function_wrapper.R
 # }
 
 # Function 4: outputDaResultsAllContrasts()
-# Current location: R/protein_de_analysis_wrapper.R
+# Current location: R/protein_da_analysis_wrapper.R
 # Type: S4 method (exportMethods)
 # Description: Outputs DE results for all contrasts
 # setMethod(f = "outputDaResultsAllContrasts", ...) {
-#   # Extract from R/protein_de_analysis_wrapper.R
+#   # Extract from R/protein_da_analysis_wrapper.R
 # }
 
 # Function 5: outputDeAnalysisResults()
-# Current location: R/de_analysis_function_wrapper.R
+# Current location: R/da_analysis_function_wrapper.R
 # Description: Outputs DE analysis results
 # outputDeAnalysisResults <- function(...) {
-#   # Extract from R/de_analysis_function_wrapper.R
+#   # Extract from R/da_analysis_function_wrapper.R
 # }
 
-# Function 6: generateVolcanoPlotGlimma()
-# Current location: R/protein_de_analysis_wrapper.R
+# Function 6: generateProtDAVolcanoPlotGlimma()
+# Current location: R/protein_da_analysis_wrapper.R
 # Description: Generates interactive volcano plots using Glimma
-# generateVolcanoPlotGlimma <- function(...) {
-#   # Extract from R/protein_de_analysis_wrapper.R
+# generateProtDAVolcanoPlotGlimma <- function(...) {
+#   # Extract from R/protein_da_analysis_wrapper.R
 # }
 
 # Function 7: generateDEHeatmap()
-# Current location: R/protein_de_analysis_wrapper.R
+# Current location: R/protein_da_analysis_wrapper.R
 # Description: Generates heatmaps for DE results
 # generateDEHeatmap <- function(...) {
-#   # Extract from R/protein_de_analysis_wrapper.R
+#   # Extract from R/protein_da_analysis_wrapper.R
 # }
 
 # Function 8: createDaResultsLongFormat()
-# Current location: R/de_analysis_function_wrapper.R
+# Current location: R/da_analysis_function_wrapper.R
 # Description: Creates long format DE results
 # createDaResultsLongFormat <- function(...) {
-#   # Extract from R/de_analysis_function_wrapper.R
+#   # Extract from R/da_analysis_function_wrapper.R
 # }
 
 # Function 9: getDaResultsLongFormat()
@@ -119,50 +119,50 @@
 # }
 
 # Function 11: prepareDataForVolcanoPlot()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Prepares data for volcano plot visualization
 # prepareDataForVolcanoPlot <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 12: ebFit()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Empirical Bayes fitting for DE analysis
 # ebFit <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 13: runTest()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Runs statistical test for DE
 # runTest <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 14: runTests()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Runs multiple statistical tests
 # runTests <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 15: runTestsContrasts()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Runs tests for multiple contrasts
 # runTestsContrasts <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 16: saveDeProteinList()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Saves list of DE proteins
 # saveDeProteinList <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 
 # ----------------------------------------------------------------------------
-# generateDAVolcanoPlotGlimma
+# generateProtDAVolcanoPlotGlimma
 # ----------------------------------------------------------------------------
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' Generate Interactive Volcano Plot using Glimma
@@ -176,7 +176,7 @@
 #' @importFrom writexl write_xlsx
 #' @importFrom vroom vroom_write
 #' @export
-generateDAVolcanoPlotGlimma <- function(
+generateProtDAVolcanoPlotGlimma <- function(
   da_results_list,
   selected_contrast = NULL,
   uniprot_tbl = NULL,
@@ -189,16 +189,16 @@ generateDAVolcanoPlotGlimma <- function(
   gene_names_column = "gene_names",
   display_columns = c("best_uniprot_acc")
 ) {
-  message("--- Entering generateDAVolcanoPlotGlimma ---")
-  message(paste("   generateDAVolcanoPlotGlimma Arg: selected_contrast =", selected_contrast))
+  message("--- Entering generateProtDAVolcanoPlotGlimma ---")
+  message(paste("   generateProtDAVolcanoPlotGlimma Arg: selected_contrast =", selected_contrast))
 
   if (is.null(da_results_list) || is.null(da_results_list$da_proteins_long)) {
-    message("   generateDAVolcanoPlotGlimma: No DA results available")
+    message("   generateProtDAVolcanoPlotGlimma: No DA results available")
     return(NULL)
   }
 
   if (is.null(selected_contrast)) {
-    message("   generateVolcanoPlotGlimma: No contrast selected")
+    message("   generateProtDAVolcanoPlotGlimma: No contrast selected")
     return(NULL)
   }
 
@@ -210,23 +210,23 @@ generateDAVolcanoPlotGlimma <- function(
   # The selected_contrast might be the full name like "GA_Elevated.minus.GA_Control=groupGA_Elevated-groupGA_Control"
   # But the comparison column in da_proteins_long contains only "GA_Elevated.minus.GA_Control"
   comparison_to_search <- stringr::str_extract(selected_contrast, "^[^=]+")
-  message(paste("   generateVolcanoPlotGlimma: Searching for comparison =", comparison_to_search))
-  message(paste("   generateVolcanoPlotGlimma: Original selected_contrast =", selected_contrast))
+  message(paste("   generateProtDAVolcanoPlotGlimma: Searching for comparison =", comparison_to_search))
+  message(paste("   generateProtDAVolcanoPlotGlimma: Original selected_contrast =", selected_contrast))
 
   # Filter for selected contrast using the extracted comparison name
   contrast_data <- da_proteins_long |>
     dplyr::filter(comparison == comparison_to_search)
 
   if (nrow(contrast_data) == 0) {
-    message(paste("   generateVolcanoPlotGlimma: No data found for contrast", comparison_to_search))
+    message(paste("   generateProtDAVolcanoPlotGlimma: No data found for contrast", comparison_to_search))
     # DEBUG: Show what comparisons are actually available
     available_comparisons <- unique(da_proteins_long$comparison)
-    message(paste("   generateDAVolcanoPlotGlimma: Available comparisons:", paste(available_comparisons, collapse = ", ")))
+    message(paste("   generateProtDAVolcanoPlotGlimma: Available comparisons:", paste(available_comparisons, collapse = ", ")))
     return(NULL)
   }
 
-  message(paste("   generateVolcanoPlotGlimma: Found", nrow(contrast_data), "rows for contrast", comparison_to_search))
-  message("   generateVolcanoPlotGlimma Step: Preparing volcano plot data...")
+  message(paste("   generateProtDAVolcanoPlotGlimma: Found", nrow(contrast_data), "rows for contrast", comparison_to_search))
+  message("   generateProtDAVolcanoPlotGlimma Step: Preparing volcano plot data...")
 
   # Prepare volcano plot table
   volcano_plot_tab <- contrast_data |>
@@ -281,42 +281,42 @@ generateDAVolcanoPlotGlimma <- function(
       TRUE ~ 0.5
     ))
 
-  message("   generateVolcanoPlotGlimma Step: Generating interactive plot widget...")
+  message("   generateProtDAVolcanoPlotGlimma Step: Generating interactive plot widget...")
 
   # Find the coefficient index for this contrast
   # CRITICAL FIX: Use grep for reliable pattern matching instead of stringr
   coef_names <- colnames(contrasts_results$fit.eb$coefficients)
-  message(paste("   generateVolcanoPlotGlimma: Available coefficient names:", paste(coef_names, collapse = ", ")))
-  message(paste("   generateVolcanoPlotGlimma: Looking for pattern:", paste0("^", comparison_to_search, "=")))
+  message(paste("   generateProtDAVolcanoPlotGlimma: Available coefficient names:", paste(coef_names, collapse = ", ")))
+  message(paste("   generateProtDAVolcanoPlotGlimma: Looking for pattern:", paste0("^", comparison_to_search, "=")))
 
   # Use grep to find coefficient that starts with friendly name followed by "="
   coef_index <- grep(paste0("^", comparison_to_search, "="), coef_names)
-  message(paste("   generateVolcanoPlotGlimma: Pattern match found indices:", paste(coef_index, collapse = ", ")))
+  message(paste("   generateProtDAVolcanoPlotGlimma: Pattern match found indices:", paste(coef_index, collapse = ", ")))
 
   # Fallback: try exact match with the friendly name (for backwards compatibility)
   if (length(coef_index) == 0) {
-    message("   generateVolcanoPlotGlimma: Pattern match failed, trying exact match with friendly name")
+    message("   generateProtDAVolcanoPlotGlimma: Pattern match failed, trying exact match with friendly name")
     coef_index <- which(coef_names == comparison_to_search)
   }
 
   # Last resort: try exact match with selected_contrast
   if (length(coef_index) == 0) {
-    message("   generateVolcanoPlotGlimma: Exact friendly name match failed, trying selected_contrast")
+    message("   generateProtDAVolcanoPlotGlimma: Exact friendly name match failed, trying selected_contrast")
     coef_index <- which(coef_names == selected_contrast)
   }
 
   if (length(coef_index) == 0) {
-    message(paste("   generateDAVolcanoPlotGlimma: FINAL FAILURE - No coefficient found for:", selected_contrast))
-    message(paste("   generateDAVolcanoPlotGlimma: Also tried:", comparison_to_search))
-    message("   generateDAVolcanoPlotGlimma: Available coefficient patterns:")
+    message(paste("   generateProtDAVolcanoPlotGlimma: FINAL FAILURE - No coefficient found for:", selected_contrast))
+    message(paste("   generateProtDAVolcanoPlotGlimma: Also tried:", comparison_to_search))
+    message("   generateProtDAVolcanoPlotGlimma: Available coefficient patterns:")
     for (i in seq_along(coef_names)) {
       message(sprintf("     [%d] %s", i, coef_names[i]))
     }
-    message(paste("   generateDAVolcanoPlotGlimma: Pattern attempted:", paste0("^", comparison_to_search, "=")))
+    message(paste("   generateProtDAVolcanoPlotGlimma: Pattern attempted:", paste0("^", comparison_to_search, "=")))
     return(NULL)
   }
 
-  message(paste("   generateVolcanoPlotGlimma: Using coefficient index", coef_index, "for contrast", coef_names[coef_index]))
+  message(paste("   generateProtDAVolcanoPlotGlimma: Using coefficient index", coef_index, "for contrast", coef_names[coef_index]))
 
   # Prepare counts matrix and groups
   counts_mat <- da_results_list$theObject@protein_quant_table |>
@@ -338,13 +338,134 @@ generateDAVolcanoPlotGlimma <- function(
     groups = this_groups
   )
 
-  message("--- Exiting generateDAVolcanoPlotGlimma ---")
+  message("--- Exiting generateProtDAVolcanoPlotGlimma ---")
   return(glimma_widget)
 }
 
 
 # ----------------------------------------------------------------------------
-# generateDAHeatmap
+# generateProtDAVolcanoStatic
+# ----------------------------------------------------------------------------
+#' Generate Static Volcano Plot for Proteomics DA Results
+#'
+#' @description Creates a static volcano plot using ggplot2 and ggrepel.
+#'
+#' @param da_results_list A list containing DA results (da_proteins_long, etc.)
+#' @param selected_contrast Character string of the contrast to plot.
+#' @param da_q_val_thresh Numeric threshold for q-value significance (default: 0.05).
+#' @param lfc_threshold Numeric threshold for log2 fold-change (default: 1).
+#' @param show_labels Logical, whether to label top significant proteins.
+#' @param n_labels Number of top proteins to label (default: 10).
+#'
+#' @return A ggplot2 object.
+#'
+#' @importFrom ggplot2 ggplot aes geom_point geom_hline geom_vline labs theme_minimal scale_color_manual
+#' @importFrom ggrepel geom_text_repel
+#' @importFrom dplyr filter arrange slice_head
+#' @export
+generateProtDAVolcanoStatic <- function(
+  da_results_list,
+  selected_contrast = NULL,
+  da_q_val_thresh = 0.05,
+  lfc_threshold = 1,
+  show_labels = TRUE,
+  n_labels = 10
+) {
+  if (is.null(da_results_list) || is.null(da_results_list$da_proteins_long)) {
+    return(NULL)
+  }
+
+  if (is.null(selected_contrast)) {
+    return(NULL)
+  }
+
+  # Extract comparison name
+  comparison_to_search <- stringr::str_extract(selected_contrast, "^[^=]+")
+  if (is.na(comparison_to_search)) {
+    comparison_to_search <- selected_contrast
+  }
+
+  # Filter data for selected contrast
+  plot_data <- da_results_list$da_proteins_long |>
+    dplyr::filter(comparison == comparison_to_search)
+
+  if (nrow(plot_data) == 0) {
+    # Try fuzzy match if exact match fails
+    available_comparisons <- unique(da_results_list$da_proteins_long$comparison)
+    matching_key <- which(stringr::str_detect(available_comparisons, fixed(comparison_to_search)))
+    if (length(matching_key) > 0) {
+      comparison_to_search <- available_comparisons[matching_key[1]]
+      plot_data <- da_results_list$da_proteins_long |>
+        dplyr::filter(comparison == comparison_to_search)
+    }
+  }
+
+  if (nrow(plot_data) == 0) {
+    return(NULL)
+  }
+
+  # Add plotting columns
+  plot_data <- plot_data |>
+    dplyr::mutate(
+      neg_log10_q = -log10(fdr_qvalue),
+      display_name = if ("gene_name" %in% names(plot_data)) {
+        ifelse(!is.na(gene_name) & gene_name != "", gene_name, uniprot_acc)
+      } else {
+        uniprot_acc
+      },
+      significant_label = case_when(
+        fdr_qvalue < da_q_val_thresh & log2FC >= lfc_threshold ~ "Up",
+        fdr_qvalue < da_q_val_thresh & log2FC <= -lfc_threshold ~ "Down",
+        TRUE ~ "NS"
+      )
+    )
+
+  # Define colors
+  volcano_colors <- c("Up" = "#d9534f", "Down" = "#5bc0de", "NS" = "grey70")
+
+  # Create base plot
+  p <- ggplot2::ggplot(plot_data, aes(x = log2FC, y = neg_log10_q, color = significant_label)) +
+    ggplot2::geom_point(alpha = 0.6, size = 1.5) +
+    ggplot2::geom_hline(yintercept = -log10(da_q_val_thresh), linetype = "dashed", color = "grey50") +
+    ggplot2::geom_vline(xintercept = c(-lfc_threshold, lfc_threshold), linetype = "dashed", color = "grey50") +
+    ggplot2::scale_color_manual(values = volcano_colors) +
+    ggplot2::labs(
+      title = paste("Volcano Plot:", comparison_to_search),
+      x = "Log2 Fold Change",
+      y = "-Log10 Q-value",
+      color = "Status"
+    ) +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(
+      legend.position = "bottom",
+      plot.title = element_text(hjust = 0.5, face = "bold")
+    )
+
+  # Add labels for top proteins
+  if (show_labels) {
+    top_to_label <- plot_data |>
+      dplyr::filter(significant_label != "NS") |>
+      dplyr::arrange(fdr_qvalue) |>
+      dplyr::slice_head(n = n_labels)
+
+    if (nrow(top_to_label) > 0) {
+      p <- p + ggrepel::geom_text_repel(
+        data = top_to_label,
+        aes(label = display_name),
+        size = 3,
+        box.padding = 0.5,
+        max.overlaps = 15,
+        show.legend = FALSE
+      )
+    }
+  }
+
+  return(p)
+}
+
+
+# ----------------------------------------------------------------------------
+# generateProtDAHeatmap
 # ----------------------------------------------------------------------------
 #' Generate DA Results Heatmap with Advanced Clustering
 #'
@@ -377,7 +498,7 @@ generateDAVolcanoPlotGlimma <- function(
 #' @importFrom dplyr filter arrange desc slice_head pull
 #' @importFrom logger log_info log_error log_warn
 #' @export
-generateDAHeatmap <- function(
+generateProtDAHeatmap <- function(
   da_results_list,
   selected_contrast = NULL,
   top_n_genes = 50,
@@ -396,7 +517,7 @@ generateDAHeatmap <- function(
   cut_height = 0.5,
   min_cluster_size = 3
 ) {
-  logger::log_info("--- Entering generateDAHeatmap ---")
+  logger::log_info("--- Entering generateProtDAHeatmap ---")
   logger::log_info(sprintf("   selected_contrast = %s, top_n_genes = %d", selected_contrast, top_n_genes))
 
   if (is.null(da_results_list) || is.null(da_results_list$da_proteins_long)) {
@@ -607,7 +728,7 @@ generateDAHeatmap <- function(
         left_annotation = left_annotation
       )
 
-      logger::log_info("--- Exiting generateDAHeatmap (success) ---")
+      logger::log_info("--- Exiting generateProtDAHeatmap (success) ---")
 
       # Return list with plot and clusters
       return(list(
@@ -797,13 +918,13 @@ daAnalysisWrapperFunction <- function(
     })
 
     contrast_strings_to_use <- full_format_strings
-    cat("   DE ANALYSIS Step: Auto-generated full_format strings:\n")
+    cat("   DA ANALYSIS Step: Auto-generated full_format strings:\n")
     print(contrast_strings_to_use)
   }
 
   # Run differential expression analysis
   if (use_dpc_de && requireNamespace("limpa", quietly = TRUE)) {
-    cat("   DE ANALYSIS Step: Running limpa dpcDE analysis with uncertainty weights\n")
+    cat("   DA ANALYSIS Step: Running limpa dpcDE analysis with uncertainty weights\n")
 
     # The EList is now pre-filtered and stored, so we can use it directly
     y_elist_filtered <- dpc_quant_results$quantified_elist
@@ -815,15 +936,15 @@ daAnalysisWrapperFunction <- function(
     # Create design matrix for dpcDA
     design_matrix_for_dpcda <- model.matrix(as.formula(formula_string), theObject@design_matrix)
 
-    cat("   DE ANALYSIS Step: Calling limpa::dpcDE\n")
-    cat("   DE ANALYSIS Step: Protein matrix dims:", nrow(y_elist_filtered$E), "x", ncol(y_elist_filtered$E), "\n")
-    cat("   DE ANALYSIS Step: Design matrix dims:", nrow(design_matrix_for_dpcde), "x", ncol(design_matrix_for_dpcde), "\n")
+    cat("   DA ANALYSIS Step: Calling limpa::dpcDE\n")
+    cat("   DA ANALYSIS Step: Protein matrix dims:", nrow(y_elist_filtered$E), "x", ncol(y_elist_filtered$E), "\n")
+    cat("   DA ANALYSIS Step: Design matrix dims:", nrow(design_matrix_for_dpcde), "x", ncol(design_matrix_for_dpcde), "\n")
 
     # Run dpcDE using the synchronized EList
     dpc_fit <- limpa::dpcDE(y_elist_filtered, design_matrix_for_dpcde, plot = FALSE)
 
     # Convert dpcDE results to format compatible with runTestsContrasts
-    contrasts_results <- convertDpcDEToStandardFormat(
+    contrasts_results <- convertDpcDAToStandardFormat(
       dpc_fit = dpc_fit,
       contrast_strings = contrast_strings_to_use,
       design_matrix = design_matrix_for_dpcde,
@@ -831,10 +952,10 @@ daAnalysisWrapperFunction <- function(
       eBayes_robust = as.logical(eBayes_robust)
     )
 
-    cat("   DE ANALYSIS Step: dpcDE analysis completed successfully\n")
+    cat("   DA ANALYSIS Step: dpcDE analysis completed successfully\n")
   } else {
     # Standard limma analysis (existing code)
-    cat("   DE ANALYSIS Step: Running standard limma analysis\n")
+    cat("   DA ANALYSIS Step: Running standard limma analysis\n")
 
     data_matrix <- getDataMatrix(theObject)
 
@@ -871,15 +992,15 @@ daAnalysisWrapperFunction <- function(
   return_list$contrasts_results_table <- contrasts_results_table
 
   # --- NEW: Generate P-value distribution plots for diagnostics ---
-  raw_pval_hist_list <- purrr::imap(contrasts_results_table, \(de_tbl, contrast_name) {
+  raw_pval_hist_list <- purrr::imap(contrasts_results_table, \(da_tbl, contrast_name) {
     # Check if raw_pvalue column exists
-    if (!"raw_pvalue" %in% colnames(de_tbl)) {
+    if (!"raw_pvalue" %in% colnames(da_tbl)) {
       warning(paste("raw_pvalue column not found for contrast:", contrast_name))
       return(NULL)
     }
 
     # Create the histogram
-    p <- ggplot(de_tbl, aes(x = raw_pvalue)) +
+    p <- ggplot(da_tbl, aes(x = raw_pvalue)) +
       geom_histogram(aes(y = after_stat(density)), bins = 30, boundary = 0, color = "black", fill = "lightblue") +
       labs(
         title = paste("Raw P-value Distribution for:", contrast_name),
@@ -899,16 +1020,16 @@ daAnalysisWrapperFunction <- function(
 
   ## Prepare data for drawing the volcano plots
 
-  # CRITICAL FIX: getSignificantData expects list_of_de_tables to be a list where each element
+  # CRITICAL FIX: getSignificantData expects list_of_da_tables to be a list where each element
   # is itself a list of data.frames. Since we're processing one contrast at a time, we need to
   # wrap the single data.frame in an additional list layer.
-  # CRITICAL FIX 2: The list element name MUST contain "=" delimiter because countStatDeGenesHelper
+  # CRITICAL FIX 2: The list element name MUST contain "=" delimiter because countStatDaGenesHelper
   # expects to split on "=" to separate comparison name from expression. Use contrast_name which
   # contains the full format like "H4_vs_WT=groupH4-groupWT"
   nested_list <- list(contrasts_results_table)
   names(nested_list) <- contrast_name # Use actual contrast name with "=" delimiter
   significant_rows <- getSignificantData(
-    list_of_de_tables = list(nested_list),
+    list_of_da_tables = list(nested_list),
     list_of_descriptions = list("RUV applied"),
     row_id = !!sym(args_row_id),
     p_value_column = !!sym(raw_pvalue_colum),
@@ -940,13 +1061,13 @@ daAnalysisWrapperFunction <- function(
   # CRITICAL FIX: Same as above - wrap in additional list layer and use contrast_name
   nested_list_for_count <- list(contrasts_results_table)
   names(nested_list_for_count) <- contrast_name # Use actual contrast name with "=" delimiter
-  num_sig_de_molecules_first_go <- printCountDeGenesTable(
-    list_of_de_tables = list(nested_list_for_count),
+  num_sig_da_molecules_first_go <- printCountDaGenesTable(
+    list_of_da_tables = list(nested_list_for_count),
     list_of_descriptions = list("RUV applied"),
     formula_string = "analysis_type ~ comparison"
   )
 
-  return_list$num_sig_de_molecules_first_go <- num_sig_de_molecules_first_go
+  return_list$num_sig_da_molecules_first_go <- num_sig_da_molecules_first_go
 
   ## Print p-values distribution figure
   pvalhist <- printPValuesDistribution(significant_rows,
@@ -990,7 +1111,7 @@ daAnalysisWrapperFunction <- function(
     }
   }
 
-  de_proteins_wide <- significant_rows |>
+  da_proteins_wide <- significant_rows |>
     dplyr::filter(analysis_type == "RUV applied") |>
     dplyr::select(-lqm, -colour, -analysis_type) |>
     pivot_wider(
@@ -1005,7 +1126,7 @@ daAnalysisWrapperFunction <- function(
     distinct()
 
 
-  return_list$de_proteins_wide <- de_proteins_wide
+  return_list$da_proteins_wide <- da_proteins_wide
 
 
   ## Create long format output file
@@ -1178,7 +1299,7 @@ daAnalysisWrapperFunction <- function(
 
 
   ## Return the number of significant molecules
-  num_sig_de_molecules <- significant_rows %>%
+  num_sig_da_molecules <- significant_rows %>%
     dplyr::mutate(status = case_when(
       !!sym(qvalue_column) >= da_q_val_thresh ~ "Not significant",
       log2FC >= 0 & !!sym(qvalue_column) < da_q_val_thresh ~ "Significant and Up",
@@ -1191,12 +1312,12 @@ daAnalysisWrapperFunction <- function(
 
   formula_string <- ". ~ comparison"
 
-  return_list$num_sig_de_molecules <- num_sig_de_molecules
+  return_list$num_sig_da_molecules <- num_sig_da_molecules
 
-  if (num_sig_de_molecules %>%
+  if (num_sig_da_molecules %>%
     dplyr::filter(status != "Not significant") |>
     nrow() > 0) {
-    num_sig_de_genes_barplot_only_significant <- num_sig_de_molecules %>%
+    num_sig_da_genes_barplot_only_significant <- num_sig_da_molecules %>%
       dplyr::filter(status != "Not significant") %>%
       ggplot(aes(x = status, y = counts)) +
       geom_bar(stat = "identity") +
@@ -1204,29 +1325,29 @@ daAnalysisWrapperFunction <- function(
       theme(axis.text.x = element_text(angle = 90)) +
       facet_wrap(as.formula(formula_string))
 
-    num_of_comparison_only_significant <- num_sig_de_molecules |>
+    num_of_comparison_only_significant <- num_sig_da_molecules |>
       distinct(comparison) |>
       nrow()
 
-    return_list$num_sig_de_genes_barplot_only_significant <- num_sig_de_genes_barplot_only_significant
+    return_list$num_sig_da_genes_barplot_only_significant <- num_sig_da_genes_barplot_only_significant
     return_list$num_of_comparison_only_significant <- num_of_comparison_only_significant
   }
 
-  if (num_sig_de_molecules %>%
+  if (num_sig_da_molecules %>%
     dplyr::filter(status != "Not significant") |>
     nrow() > 0) {
-    num_sig_de_genes_barplot_with_not_significant <- num_sig_de_molecules %>%
+    num_sig_da_genes_barplot_with_not_significant <- num_sig_da_molecules %>%
       ggplot(aes(x = status, y = counts)) +
       geom_bar(stat = "identity") +
       geom_text(stat = "identity", aes(label = counts), vjust = -0.5) +
       theme(axis.text.x = element_text(angle = 90)) +
       facet_wrap(as.formula(formula_string))
 
-    num_of_comparison_with_not_significant <- num_sig_de_molecules |>
+    num_of_comparison_with_not_significant <- num_sig_da_molecules |>
       distinct(comparison) |>
       nrow()
 
-    return_list$num_sig_de_genes_barplot_with_not_significant <- num_sig_de_genes_barplot_with_not_significant
+    return_list$num_sig_da_genes_barplot_with_not_significant <- num_sig_da_genes_barplot_with_not_significant
     return_list$num_of_comparison_with_not_significant <- num_of_comparison_with_not_significant
   }
 
@@ -1239,7 +1360,7 @@ daAnalysisWrapperFunction <- function(
 # ----------------------------------------------------------------------------
 #' @export
 outputDaAnalysisResults <- function(
-  de_analysis_results_list,
+  da_analysis_results_list,
   theObject,
   uniprot_tbl,
   da_output_dir = NULL,
@@ -1259,13 +1380,13 @@ outputDaAnalysisResults <- function(
   cat("DEBUG: file_prefix =", file_prefix, "\n")
   cat("DEBUG: da_output_dir =", da_output_dir, "\n")
   cat("DEBUG: uniprot_tbl is null:", is.null(uniprot_tbl), "\n")
-  cat("DEBUG: de_analysis_results_list names:", paste(names(de_analysis_results_list), collapse = ", "), "\n")
+  cat("DEBUG: da_analysis_results_list names:", paste(names(da_analysis_results_list), collapse = ", "), "\n")
 
 
   uniprot_tbl <- checkParamsObjectFunctionSimplify(theObject, "uniprot_tbl", NULL)
   da_output_dir <- checkParamsObjectFunctionSimplify(theObject, "da_output_dir", NULL)
   publication_graphs_dir <- checkParamsObjectFunctionSimplify(theObject, "publication_graphs_dir", NULL)
-  file_prefix <- checkParamsObjectFunctionSimplify(theObject, "file_prefix", "de_proteins")
+  file_prefix <- checkParamsObjectFunctionSimplify(theObject, "file_prefix", "da_proteins")
   plots_format <- checkParamsObjectFunctionSimplify(theObject, "plots_format", c("pdf", "png"))
   args_row_id <- checkParamsObjectFunctionSimplify(theObject, "args_row_id", "uniprot_acc")
   da_q_val_thresh <- checkParamsObjectFunctionSimplify(theObject, "da_q_val_thresh", 0.05)
@@ -1294,7 +1415,7 @@ outputDaAnalysisResults <- function(
 
   ## PCA plot
   cat("DEBUG: Starting PCA plot section\n")
-  plot_pca_plot <- de_analysis_results_list$pca_plot
+  plot_pca_plot <- da_analysis_results_list$pca_plot
 
   dir.create(file.path(publication_graphs_dir, "PCA"),
     recursive = TRUE,
@@ -1307,14 +1428,14 @@ outputDaAnalysisResults <- function(
     ggsave(filename = file_name, plot = plot_pca_plot, limitsize = FALSE)
   }
 
-  plot_pca_plot_with_labels <- de_analysis_results_list$pca_plot_with_labels
+  plot_pca_plot_with_labels <- da_analysis_results_list$pca_plot_with_labels
   for (format_ext in plots_format) {
     file_name <- file.path(publication_graphs_dir, "PCA", paste0("PCA_plot_with_sample_ids.", format_ext))
     ggsave(filename = file_name, plot = plot_pca_plot_with_labels, limitsize = FALSE)
   }
 
   ## RLE plot
-  plot_rle_plot <- de_analysis_results_list$rle_plot
+  plot_rle_plot <- da_analysis_results_list$rle_plot
 
   dir.create(file.path(publication_graphs_dir, "RLE"),
     recursive = TRUE,
@@ -1327,7 +1448,7 @@ outputDaAnalysisResults <- function(
   }
 
   ## Save the number of values graph
-  plot_num_of_values <- de_analysis_results_list$plot_num_of_values
+  plot_num_of_values <- da_analysis_results_list$plot_num_of_values
 
   for (format_ext in plots_format) {
     file_name <- file.path(da_output_dir, paste0("num_of_values.", format_ext))
@@ -1337,22 +1458,22 @@ outputDaAnalysisResults <- function(
   ## Contrasts results
   ## This plot is used to check the mean-variance relationship of the expression data, after fitting a linear model.
   pdf(file.path(da_output_dir, "plotSA_after_ruvIII.pdf"))
-  plotSA(de_analysis_results_list$contrasts_results$fit.eb)
+  plotSA(da_analysis_results_list$contrasts_results$fit.eb)
   dev.off()
 
   png(file.path(da_output_dir, "plotSA_after_ruvIII.png"))
-  plotSA(de_analysis_results_list$contrasts_results$fit.eb)
+  plotSA(da_analysis_results_list$contrasts_results$fit.eb)
   dev.off()
 
   saveRDS(
-    de_analysis_results_list$contrasts_results$fit.eb,
+    da_analysis_results_list$contrasts_results$fit.eb,
     file.path(da_output_dir, "fit.eb.RDS")
   )
 
   ## Values for volcano plts
 
   ## Write all the results in one single table
-  significant_rows <- de_analysis_results_list$significant_rows
+  significant_rows <- da_analysis_results_list$significant_rows
 
   significant_rows |>
     dplyr::select(-colour, -lqm) |>
@@ -1363,7 +1484,7 @@ outputDaAnalysisResults <- function(
     writexl::write_xlsx(file.path(da_output_dir, "lfc_qval_long.xlsx"))
 
   ## Print Volcano plot
-  volplot_plot <- de_analysis_results_list$volplot_plot
+  volplot_plot <- da_analysis_results_list$volplot_plot
 
   for (format_ext in plots_format) {
     file_name <- file.path(da_output_dir, paste0("volplot_gg_all.", format_ext))
@@ -1372,7 +1493,7 @@ outputDaAnalysisResults <- function(
 
 
   ## Number of values graph
-  plot_num_of_values <- de_analysis_results_list$plot_num_of_values
+  plot_num_of_values <- da_analysis_results_list$plot_num_of_values
 
   for (format_ext in plots_format) {
     file_name <- file.path(da_output_dir, paste0("num_of_values.", format_ext))
@@ -1381,7 +1502,7 @@ outputDaAnalysisResults <- function(
 
   ## Contrasts results
   ## This plot is used to check the mean-variance relationship of the expression data, after fitting a linear model.
-  contrasts_results <- de_analysis_results_list$contrasts_results
+  contrasts_results <- da_analysis_results_list$contrasts_results
   for (format_ext in plots_format) {
     file_name <- file.path(da_output_dir, paste0("plotSA_after_ruvIII", format_ext))
 
@@ -1403,7 +1524,7 @@ outputDaAnalysisResults <- function(
   ## Values for volcano plts
 
   ## Write all the results in one single table
-  significant_rows <- de_analysis_results_list$significant_rows
+  significant_rows <- da_analysis_results_list$significant_rows
   significant_rows |>
     dplyr::select(-colour, -lqm) |>
     vroom::vroom_write(file.path(da_output_dir, "lfc_qval_long.tsv"))
@@ -1414,11 +1535,11 @@ outputDaAnalysisResults <- function(
 
 
   ## Count the number of up or down significnat differentially expressed proteins.
-  if (!is.null(de_analysis_results_list$num_sig_de_genes_barplot_only_significant)) {
-    num_sig_de_genes_barplot_only_significant <- de_analysis_results_list$num_sig_de_genes_barplot_only_significant
-    num_of_comparison_only_significant <- de_analysis_results_list$num_of_comparison_only_significant
+  if (!is.null(da_analysis_results_list$num_sig_da_genes_barplot_only_significant)) {
+    num_sig_da_genes_barplot_only_significant <- da_analysis_results_list$num_sig_da_genes_barplot_only_significant
+    num_of_comparison_only_significant <- da_analysis_results_list$num_of_comparison_only_significant
 
-    savePlot(num_sig_de_genes_barplot_only_significant,
+    savePlot(num_sig_da_genes_barplot_only_significant,
       base_path = da_output_dir,
       plot_name = paste0(file_prefix, "_num_sda_entities_barplot_only_significant"),
       formats = c("pdf", "png", "svg"),
@@ -1429,9 +1550,9 @@ outputDaAnalysisResults <- function(
 
 
   ## Count the number of up or down significnat differentially expressed proteins.
-  num_sig_de_molecules_first_go <- de_analysis_results_list$num_sig_de_molecules_first_go
+  num_sig_da_molecules_first_go <- da_analysis_results_list$num_sig_da_molecules_first_go
   vroom::vroom_write(
-    num_sig_de_molecules_first_go$table,
+    num_sig_da_molecules_first_go$table,
     file.path(
       da_output_dir,
       paste0(file_prefix, "_num_significant_differentially_abundant_all.tab")
@@ -1439,7 +1560,7 @@ outputDaAnalysisResults <- function(
   )
 
   writexl::write_xlsx(
-    num_sig_de_molecules_first_go$table,
+    num_sig_da_molecules_first_go$table,
     file.path(
       da_output_dir,
       paste0(file_prefix, "_num_significant_differentially_abundant_all.xlsx")
@@ -1448,7 +1569,7 @@ outputDaAnalysisResults <- function(
 
 
   ## Print p-values distribution figure
-  pvalhist <- de_analysis_results_list$pvalhist
+  pvalhist <- da_analysis_results_list$pvalhist
   for (format_ext in plots_format) {
     file_name <- file.path(da_output_dir, paste0(file_prefix, "_p_values_distn.", format_ext))
     ggsave(
@@ -1462,11 +1583,11 @@ outputDaAnalysisResults <- function(
 
   ## Create wide format output file
   cat("DEBUG: Starting wide format output section\n")
-  de_proteins_wide <- de_analysis_results_list$de_proteins_wide
-  cat("DEBUG: de_proteins_wide extracted successfully\n")
+  da_proteins_wide <- da_analysis_results_list$da_proteins_wide
+  cat("DEBUG: da_proteins_wide extracted successfully\n")
 
   vroom::vroom_write(
-    de_proteins_wide,
+    da_proteins_wide,
     file.path(
       da_output_dir,
       paste0(file_prefix, "_wide.tsv")
@@ -1474,7 +1595,7 @@ outputDaAnalysisResults <- function(
   )
 
   writexl::write_xlsx(
-    de_proteins_wide,
+    da_proteins_wide,
     file.path(
       da_output_dir,
       paste0(file_prefix, "_wide.xlsx")
@@ -1486,7 +1607,7 @@ outputDaAnalysisResults <- function(
 
   tryCatch(
     {
-      de_proteins_wide_annot <- de_proteins_wide |>
+      da_proteins_wide_annot <- da_proteins_wide |>
         mutate(uniprot_acc_cleaned = str_split(!!sym(args_row_id), "-") |>
           purrr::map_chr(1)) |>
         left_join(uniprot_tbl, by = join_by(uniprot_acc_cleaned == Entry)) |>
@@ -1509,14 +1630,14 @@ outputDaAnalysisResults <- function(
     error = function(e) {
       cat("DEBUG: ERROR in wide_annot creation:", e$message, "\n")
       # Create a fallback version without annotations
-      de_proteins_wide_annot <- de_proteins_wide |>
+      da_proteins_wide_annot <- da_proteins_wide |>
         mutate(gene_name = "")
       cat("DEBUG: Created fallback wide_annot without annotations\n")
     }
   )
 
   vroom::vroom_write(
-    de_proteins_wide_annot,
+    da_proteins_wide_annot,
     file.path(
       da_output_dir,
       paste0(file_prefix, "_wide_annot.tsv")
@@ -1524,7 +1645,7 @@ outputDaAnalysisResults <- function(
   )
 
   writexl::write_xlsx(
-    de_proteins_wide_annot,
+    da_proteins_wide_annot,
     file.path(
       da_output_dir,
       paste0(file_prefix, "_wide_annot.xlsx")
@@ -1534,7 +1655,7 @@ outputDaAnalysisResults <- function(
   cat("DEBUG: Wide_annot files written, proceeding to long format\n")
 
   ## Create long format output file
-  da_proteins_long <- de_analysis_results_list$da_proteins_long
+  da_proteins_long <- da_analysis_results_list$da_proteins_long
 
   cat("DEBUG: da_proteins_long exists:", !is.null(da_proteins_long), "\n")
   if (!is.null(da_proteins_long)) {
@@ -1615,7 +1736,7 @@ outputDaAnalysisResults <- function(
     showWarnings = FALSE
   )
 
-  list_of_volcano_plots <- de_analysis_results_list$list_of_volcano_plots
+  list_of_volcano_plots <- da_analysis_results_list$list_of_volcano_plots
 
   # Print diagnostic info about the volcano plots
   message(sprintf("Number of volcano plots: %d", nrow(list_of_volcano_plots)))
@@ -1646,7 +1767,7 @@ outputDaAnalysisResults <- function(
   # Verify the PDF was created with the right number of pages
   message(sprintf("Created multi-page PDF at %s", pdf_file))
 
-  list_of_volcano_plots_with_gene_names <- de_analysis_results_list$list_of_volcano_plots_with_gene_names
+  list_of_volcano_plots_with_gene_names <- da_analysis_results_list$list_of_volcano_plots_with_gene_names
 
   # Print diagnostic info about the labeled volcano plots
   message(sprintf("Number of labeled volcano plots: %d", nrow(list_of_volcano_plots_with_gene_names)))
@@ -1676,20 +1797,20 @@ outputDaAnalysisResults <- function(
   message(sprintf("Created multi-page labeled PDF at %s", pdf_file_with_genes))
 
   ## Number of significant molecules
-  createDirIfNotExists(file.path(publication_graphs_dir, "NumSigDeMolecules"))
+  createDirIfNotExists(file.path(publication_graphs_dir, "NumSigDaMolecules"))
   vroom::vroom_write(
-    de_analysis_results_list$num_sig_de_molecules,
-    file.path(publication_graphs_dir, "NumSigDeMolecules", paste0(file_prefix, "_num_sig_de_molecules.tab"))
+    da_analysis_results_list$num_sig_da_molecules,
+    file.path(publication_graphs_dir, "NumSigDaMolecules", paste0(file_prefix, "_num_sig_da_molecules.tab"))
   )
 
 
-  if (!is.null(de_analysis_results_list$num_sig_de_genes_barplot_only_significant)) {
-    num_sig_de_genes_barplot_only_significant <- de_analysis_results_list$num_sig_de_genes_barplot_only_significant
-    num_of_comparison_only_significant <- de_analysis_results_list$num_of_comparison_only_significant
+  if (!is.null(da_analysis_results_list$num_sig_da_genes_barplot_only_significant)) {
+    num_sig_da_genes_barplot_only_significant <- da_analysis_results_list$num_sig_da_genes_barplot_only_significant
+    num_of_comparison_only_significant <- da_analysis_results_list$num_of_comparison_only_significant
 
-    savePlot(num_sig_de_genes_barplot_only_significant,
-      base_path = file.path(publication_graphs_dir, "NumSigDeMolecules"),
-      plot_name = paste0(file_prefix, "_num_sig_de_molecules."),
+    savePlot(num_sig_da_genes_barplot_only_significant,
+      base_path = file.path(publication_graphs_dir, "NumSigDaMolecules"),
+      plot_name = paste0(file_prefix, "_num_sig_da_molecules."),
       formats = plots_format,
       width = (num_of_comparison_only_significant + 2) * 7 / 6,
       height = 6
@@ -1697,15 +1818,15 @@ outputDaAnalysisResults <- function(
   }
 
 
-  if (!is.null(de_analysis_results_list$num_sig_de_genes_barplot_with_not_significant)) {
-    num_sig_de_genes_barplot_with_not_significant <- de_analysis_results_list$num_sig_de_genes_barplot_with_not_significant
-    num_of_comparison_with_not_significant <- de_analysis_results_list$num_of_comparison_with_not_significant
+  if (!is.null(da_analysis_results_list$num_sig_da_genes_barplot_with_not_significant)) {
+    num_sig_da_genes_barplot_with_not_significant <- da_analysis_results_list$num_sig_da_genes_barplot_with_not_significant
+    num_of_comparison_with_not_significant <- da_analysis_results_list$num_of_comparison_with_not_significant
 
     print("print bar plot")
 
-    savePlot(num_sig_de_genes_barplot_with_not_significant,
-      base_path = file.path(publication_graphs_dir, "NumSigDeMolecules"),
-      plot_name = paste0(file_prefix, "_num_sig_de_molecules_with_not_significant"),
+    savePlot(num_sig_da_genes_barplot_with_not_significant,
+      base_path = file.path(publication_graphs_dir, "NumSigDaMolecules"),
+      plot_name = paste0(file_prefix, "_num_sig_da_molecules_with_not_significant"),
       formats = plots_format,
       width = (num_of_comparison_with_not_significant + 2) * 7 / 6,
       height = 6
@@ -1713,13 +1834,13 @@ outputDaAnalysisResults <- function(
   }
 
   ## Write interactive volcano plot
-  counts_mat <- (de_analysis_results_list$theObject)@protein_quant_table |>
-    column_to_rownames((de_analysis_results_list$theObject)@protein_id_column) |>
+  counts_mat <- (da_analysis_results_list$theObject)@protein_quant_table |>
+    column_to_rownames((da_analysis_results_list$theObject)@protein_id_column) |>
     as.matrix()
 
-  this_design_matrix <- de_analysis_results_list$theObject@design_matrix
+  this_design_matrix <- da_analysis_results_list$theObject@design_matrix
 
-  rownames(this_design_matrix) <- this_design_matrix[, de_analysis_results_list$theObject@sample_id]
+  rownames(this_design_matrix) <- this_design_matrix[, da_analysis_results_list$theObject@sample_id]
 
   this_groups <- this_design_matrix[colnames(counts_mat), "group"]
 
@@ -2164,18 +2285,18 @@ runTestsContrasts <- function(data,
         tryCatch(
           {
             message(sprintf("      About to call topTreat with coef = %s", contrast))
-            de_tbl <- topTreat(t.fit, coef = contrast, n = Inf)
-            message(sprintf("      [map] topTreat success: %d rows", nrow(de_tbl)))
+            da_tbl <- topTreat(t.fit, coef = contrast, n = Inf)
+            message(sprintf("      [map] topTreat success: %d rows", nrow(da_tbl)))
 
             message("      Adding qvalue column...")
             # Safe qvalue computation: handle invalid p-values (NA, Inf, NaN)
-            valid_p_idx <- which(!is.na(de_tbl$P.Value) & is.finite(de_tbl$P.Value))
+            valid_p_idx <- which(!is.na(da_tbl$P.Value) & is.finite(da_tbl$P.Value))
             if (length(valid_p_idx) > 0) {
               # Compute q-values only for valid p-values
-              valid_p_values <- de_tbl$P.Value[valid_p_idx]
+              valid_p_values <- da_tbl$P.Value[valid_p_idx]
 
               # Diagnostic: Log p-value distribution statistics
-              message(sprintf("      Diagnostic: Valid p-values: %d of %d total", length(valid_p_idx), nrow(de_tbl)))
+              message(sprintf("      Diagnostic: Valid p-values: %d of %d total", length(valid_p_idx), nrow(da_tbl)))
               message(sprintf("      Diagnostic: P-value range: [%.6f, %.6f]", min(valid_p_values), max(valid_p_values)))
               message(sprintf("      Diagnostic: P-value mean: %.6f, median: %.6f", mean(valid_p_values), median(valid_p_values)))
 
@@ -2197,7 +2318,7 @@ runTestsContrasts <- function(data,
                 use_qvalue <- TRUE
               }
 
-              q_values_all <- rep(NA_real_, nrow(de_tbl))
+              q_values_all <- rep(NA_real_, nrow(da_tbl))
               if (use_qvalue) {
                 tryCatch(
                   {
@@ -2224,33 +2345,33 @@ runTestsContrasts <- function(data,
               }
             } else {
               # All p-values are invalid, set all q-values to NA
-              q_values_all <- rep(NA_real_, nrow(de_tbl))
+              q_values_all <- rep(NA_real_, nrow(da_tbl))
               message("      Warning: All p-values are invalid (NA, Inf, or NaN), setting q-values to NA")
             }
 
             # Debug: Verify assignment before mutate
             message(sprintf("      Diagnostic: q_values_all has %d non-NA values before assignment", sum(!is.na(q_values_all))))
 
-            de_tbl <- de_tbl |>
+            da_tbl <- da_tbl |>
               mutate({{ q_value_column }} := q_values_all)
 
             # Debug: Verify assignment after mutate
-            assigned_col <- de_tbl[[rlang::as_name(rlang::ensym(q_value_column))]]
+            assigned_col <- da_tbl[[rlang::as_name(rlang::ensym(q_value_column))]]
             message(sprintf("      Diagnostic: Assigned column has %d non-NA values after mutate", sum(!is.na(assigned_col))))
             message("      qvalue column added")
 
             message("      Adding FDR column...")
             # Use the same safe logic for FDR column - only compute for valid p-values
-            fdr_values_all <- rep(NA_real_, nrow(de_tbl))
+            fdr_values_all <- rep(NA_real_, nrow(da_tbl))
             if (length(valid_p_idx) > 0) {
               fdr_values_all[valid_p_idx] <- p.adjust(valid_p_values, method = "BH")
             }
-            de_tbl <- de_tbl |>
+            da_tbl <- da_tbl |>
               mutate({{ fdr_value_column }} := fdr_values_all)
             message("      FDR column added")
 
             message("      Renaming P.Value column...")
-            de_tbl <- de_tbl |>
+            da_tbl <- da_tbl |>
               dplyr::rename({{ p_value_column }} := P.Value)
             message("      P.Value column renamed")
 
@@ -2258,7 +2379,7 @@ runTestsContrasts <- function(data,
             if (qvalue_failed) {
               qvalue_failures[[contrast]] <<- TRUE
             }
-            return(de_tbl)
+            return(da_tbl)
           },
           error = function(e) {
             message(sprintf("      [map] ERROR in contrast %s: %s", contrast, e$message))
@@ -2285,18 +2406,18 @@ runTestsContrasts <- function(data,
         tryCatch(
           {
             message(sprintf("      About to call topTable with coef = %s", contrast))
-            de_tbl <- topTable(t.fit, coef = contrast, n = Inf)
-            message(sprintf("      [map] topTable success: %d rows", nrow(de_tbl)))
+            da_tbl <- topTable(t.fit, coef = contrast, n = Inf)
+            message(sprintf("      [map] topTable success: %d rows", nrow(da_tbl)))
 
             message("      Adding qvalue column...")
             # Safe qvalue computation: handle invalid p-values (NA, Inf, NaN)
-            valid_p_idx <- which(!is.na(de_tbl$P.Value) & is.finite(de_tbl$P.Value))
+            valid_p_idx <- which(!is.na(da_tbl$P.Value) & is.finite(da_tbl$P.Value))
             if (length(valid_p_idx) > 0) {
               # Compute q-values only for valid p-values
-              valid_p_values <- de_tbl$P.Value[valid_p_idx]
+              valid_p_values <- da_tbl$P.Value[valid_p_idx]
 
               # Diagnostic: Log p-value distribution statistics
-              message(sprintf("      Diagnostic: Valid p-values: %d of %d total", length(valid_p_idx), nrow(de_tbl)))
+              message(sprintf("      Diagnostic: Valid p-values: %d of %d total", length(valid_p_idx), nrow(da_tbl)))
               message(sprintf("      Diagnostic: P-value range: [%.6f, %.6f]", min(valid_p_values), max(valid_p_values)))
               message(sprintf("      Diagnostic: P-value mean: %.6f, median: %.6f", mean(valid_p_values), median(valid_p_values)))
 
@@ -2318,7 +2439,7 @@ runTestsContrasts <- function(data,
                 use_qvalue <- TRUE
               }
 
-              q_values_all <- rep(NA_real_, nrow(de_tbl))
+              q_values_all <- rep(NA_real_, nrow(da_tbl))
               if (use_qvalue) {
                 tryCatch(
                   {
@@ -2345,33 +2466,33 @@ runTestsContrasts <- function(data,
               }
             } else {
               # All p-values are invalid, set all q-values to NA
-              q_values_all <- rep(NA_real_, nrow(de_tbl))
+              q_values_all <- rep(NA_real_, nrow(da_tbl))
               message("      Warning: All p-values are invalid (NA, Inf, or NaN), setting q-values to NA")
             }
 
             # Debug: Verify assignment before mutate
             message(sprintf("      Diagnostic: q_values_all has %d non-NA values before assignment", sum(!is.na(q_values_all))))
 
-            de_tbl <- de_tbl |>
+            da_tbl <- da_tbl |>
               mutate({{ q_value_column }} := q_values_all)
 
             # Debug: Verify assignment after mutate
-            assigned_col <- de_tbl[[rlang::as_name(rlang::ensym(q_value_column))]]
+            assigned_col <- da_tbl[[rlang::as_name(rlang::ensym(q_value_column))]]
             message(sprintf("      Diagnostic: Assigned column has %d non-NA values after mutate", sum(!is.na(assigned_col))))
             message("      qvalue column added")
 
             message("      Adding FDR column...")
             # Use the same safe logic for FDR column - only compute for valid p-values
-            fdr_values_all <- rep(NA_real_, nrow(de_tbl))
+            fdr_values_all <- rep(NA_real_, nrow(da_tbl))
             if (length(valid_p_idx) > 0) {
               fdr_values_all[valid_p_idx] <- p.adjust(valid_p_values, method = "BH")
             }
-            de_tbl <- de_tbl |>
+            da_tbl <- da_tbl |>
               mutate({{ fdr_value_column }} := fdr_values_all)
             message("      FDR column added")
 
             message("      Renaming P.Value column...")
-            de_tbl <- de_tbl |>
+            da_tbl <- da_tbl |>
               dplyr::rename({{ p_value_column }} := P.Value)
             message("      P.Value column renamed")
 
@@ -2379,7 +2500,7 @@ runTestsContrasts <- function(data,
             if (qvalue_failed) {
               qvalue_failures[[contrast]] <<- TRUE
             }
-            return(de_tbl)
+            return(da_tbl)
           },
           error = function(e) {
             message(sprintf("      [map] ERROR in contrast %s: %s", contrast, e$message))
@@ -2743,7 +2864,7 @@ countStatDaGenesHelper <- function(
 # ----------------------------------------------------------------------------
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' Format results table for use in volcano plots, counting number of significant proteins, p-values distribution histogram.
-#' @param list_of_de_tables A list with each element being a results table with log fold-change and q-value per protein.
+#' @param list_of_da_tables A list with each element being a results table with log fold-change and q-value per protein.
 #' @param list_of_descriptions  A list of strings describing the parameters used to generate the result table.
 #' @param formula_string The formula string used in the facet_grid command for the ggplot scatter plot.
 #' @param facet_column The name of the column describing the type of analysis or parameters used to generate the result table (tidyverse style). This is related to the \code{list_of_descriptions} parameter above.
@@ -2751,15 +2872,15 @@ countStatDaGenesHelper <- function(
 #' @param expression_column The name of the column that will contain the formula expressions of the contrasts.
 #' @export
 printCountDaGenesTable <- function(
-  list_of_de_tables,
+  list_of_da_tables,
   list_of_descriptions,
   formula_string = "analysis_type ~ comparison",
   facet_column = analysis_type,
   comparison_column = "comparison",
   expression_column = "expression"
 ) {
-  num_significant_de_genes_all <- purrr::map2(
-    list_of_de_tables,
+  num_significant_da_genes_all <- purrr::map2(
+    list_of_da_tables,
     list_of_descriptions,
     function(a, b) {
       countStatDaGenesHelper(
@@ -2773,22 +2894,22 @@ printCountDaGenesTable <- function(
   ) |>
     bind_rows()
 
-  num_sig_de_genes_barplot <- num_significant_de_genes_all |>
+  num_sig_da_genes_barplot <- num_significant_da_genes_all |>
     dplyr::filter(status != "Not significant") |>
     ggplot(aes(x = status, y = counts)) +
     geom_bar(stat = "identity") +
     geom_text(stat = "identity", aes(label = counts), vjust = -0.5) +
     theme(axis.text.x = element_text(angle = 90))
 
-  # print(head(num_sig_de_genes_barplot))
+  # print(head(num_sig_da_genes_barplot))
 
   if (!is.na(formula_string)) {
-    num_sig_de_genes_barplot <- num_sig_de_genes_barplot +
+    num_sig_da_genes_barplot <- num_sig_da_genes_barplot +
       facet_grid(as.formula(formula_string))
   }
 
 
-  return(list(plot = num_sig_de_genes_barplot, table = num_significant_de_genes_all))
+  return(list(plot = num_sig_da_genes_barplot, table = num_significant_da_genes_all))
 }
 
 
@@ -2797,7 +2918,7 @@ printCountDaGenesTable <- function(
 # ----------------------------------------------------------------------------
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' Format results table for use in volcano plots, counting number of significant proteins, p-values distribution histogram.
-#' @param list_of_de_tables A list with each element being a results table with log fold-change and q-value per protein.
+#' @param list_of_da_tables A list with each element being a results table with log fold-change and q-value per protein.
 #' @param list_of_descriptions  A list of strings describing the parameters used to generate the result table.
 #' @param row_id The name of the row ID column (tidyverse style).
 #' @param p_value_column The name of the raw p-value column (tidyverse style).
@@ -2824,7 +2945,7 @@ printCountDaGenesTable <- function(
 #'   black = all other values
 #' @export
 getSignificantData <- function(
-  list_of_de_tables,
+  list_of_da_tables,
   list_of_descriptions,
   row_id = uniprot_acc,
   p_value_column = raw_pvalue,
@@ -2838,10 +2959,10 @@ getSignificantData <- function(
   q_val_thresh = 0.05
 ) {
   message("--- Entering getSignificantData (DEBUG66) ---")
-  message(paste("   getSignificantData: list_of_de_tables class =", class(list_of_de_tables)))
-  message(paste("   getSignificantData: list_of_de_tables length =", length(list_of_de_tables)))
-  message("   getSignificantData: list_of_de_tables structure:")
-  str(list_of_de_tables, max.level = 2)
+  message(paste("   getSignificantData: list_of_da_tables class =", class(list_of_da_tables)))
+  message(paste("   getSignificantData: list_of_da_tables length =", length(list_of_da_tables)))
+  message("   getSignificantData: list_of_da_tables structure:")
+  str(list_of_da_tables, max.level = 2)
 
   get_row_binded_table <- function(de_table_list, description) {
     message("   --- Entering get_row_binded_table (DEBUG66) ---")
@@ -2919,7 +3040,7 @@ getSignificantData <- function(
   message("   getSignificantData: About to call get_row_binded_table for each list element...")
 
   logfc_tbl_all <- purrr::map2(
-    list_of_de_tables, list_of_descriptions,
+    list_of_da_tables, list_of_descriptions,
     function(a, b) {
       get_row_binded_table(de_table_list = a, description = b)
     }
@@ -2992,7 +3113,7 @@ extractResults <- function(results_list) {
 # ----------------------------------------------------------------------------
 ## Create proteomics interactive volcano plot
 #' @export
-# de_analysis_results_list$contrasts_results$fit.eb
+# da_analysis_results_list$contrasts_results$fit.eb
 # No full stops in the nme of columns of interactive table in glimma plot. It won't display column with full stop in the column name.
 writeInteractiveVolcanoPlotProteomics <- function(
   da_proteins_long,
@@ -3088,7 +3209,7 @@ writeInteractiveVolcanoPlotProteomics <- function(
 # writeInteractiveVolcanoPlotProteomicsWidget
 # ----------------------------------------------------------------------------
 #' @export
-# de_analysis_results_list$contrasts_results$fit.eb
+# da_analysis_results_list$contrasts_results$fit.eb
 # No full stops in the nme of columns of interactive table in glimma plot. It won't display column with full stop in the column name.
 writeInteractiveVolcanoPlotProteomicsWidget <- function(
   da_proteins_long,
@@ -3171,7 +3292,7 @@ writeInteractiveVolcanoPlotProteomicsWidget <- function(
 # ----------------------------------------------------------------------------
 #' @export
 writeInteractiveVolcanoPlotProteomicsMain <- function(
-  de_analysis_results_list,
+  da_analysis_results_list,
   theObject,
   uniprot_tbl,
   publication_graphs_dir = NULL,
@@ -3211,17 +3332,17 @@ writeInteractiveVolcanoPlotProteomicsMain <- function(
 
   ## Write interactive volcano plot
 
-  da_proteins_long <- de_analysis_results_list$da_proteins_long
-  contrasts_results <- de_analysis_results_list$contrasts_results
+  da_proteins_long <- da_analysis_results_list$da_proteins_long
+  contrasts_results <- da_analysis_results_list$contrasts_results
 
   # Use helper to extract counts table instead of direct slot access
-  counts_mat <- getCountsTable(de_analysis_results_list$theObject) |>
+  counts_mat <- getCountsTable(da_analysis_results_list$theObject) |>
     column_to_rownames(args_row_id) |>
     as.matrix()
 
-  this_design_matrix <- de_analysis_results_list$theObject@design_matrix
+  this_design_matrix <- da_analysis_results_list$theObject@design_matrix
 
-  rownames(this_design_matrix) <- this_design_matrix[, de_analysis_results_list$theObject@sample_id]
+  rownames(this_design_matrix) <- this_design_matrix[, da_analysis_results_list$theObject@sample_id]
 
   this_groups <- this_design_matrix[colnames(counts_mat), "group"]
 
@@ -3700,16 +3821,16 @@ setMethod(
     message(paste("   DEBUG66: contrast_name for list naming =", contrast_name))
 
     # Prepare data for volcano plots
-    # CRITICAL FIX: getSignificantData expects list_of_de_tables to be a list where each element
+    # CRITICAL FIX: getSignificantData expects list_of_da_tables to be a list where each element
     # is itself a list of data.frames. Since we're processing one contrast at a time, we need to
     # wrap the single data.frame in an additional list layer.
-    # CRITICAL FIX 2: The list element name MUST contain "=" delimiter because countStatDeGenesHelper
+    # CRITICAL FIX 2: The list element name MUST contain "=" delimiter because countStatDaGenesHelper
     # expects to split on "=" to separate comparison name from expression. Use contrast_name which
     # contains the full format like "H4_vs_WT=groupH4-groupWT"
     nested_list <- list(contrasts_results_table)
     names(nested_list) <- contrast_name # Use actual contrast name with "=" delimiter
     significant_rows <- getSignificantData(
-      list_of_de_tables = list(nested_list),
+      list_of_da_tables = list(nested_list),
       list_of_descriptions = list("RUV applied"),
       row_id = !!sym(args_row_id),
       p_value_column = !!sym(raw_pvalue_column),
@@ -3740,13 +3861,13 @@ setMethod(
     # CRITICAL FIX: Same as above - wrap in additional list layer and use contrast_name
     nested_list_for_count <- list(contrasts_results_table)
     names(nested_list_for_count) <- contrast_name # Use actual contrast name with "=" delimiter
-    num_sig_de_molecules <- printCountDeGenesTable(
-      list_of_de_tables = list(nested_list_for_count),
+    num_sig_da_molecules <- printCountDaGenesTable(
+      list_of_da_tables = list(nested_list_for_count),
       list_of_descriptions = list("RUV applied"),
       formula_string = "analysis_type ~ comparison"
     )
 
-    return_list$num_sig_de_molecules_first_go <- num_sig_de_molecules
+    return_list$num_sig_da_molecules_first_go <- num_sig_da_molecules
 
     # P-values distribution plot
     pvalhist <- printPValuesDistribution(significant_rows,
@@ -3769,7 +3890,7 @@ setMethod(
 
     return_list$norm_counts <- norm_counts
 
-    de_proteins_wide <- significant_rows |>
+    da_proteins_wide <- significant_rows |>
       dplyr::filter(analysis_type == "RUV applied") |>
       dplyr::select(-lqm, -colour, -analysis_type) |>
       pivot_wider(
@@ -3783,7 +3904,7 @@ setMethod(
       dplyr::arrange(across(matches(paste0("!!sym(", qvalue_column, ")")))) |>
       distinct()
 
-    return_list$de_proteins_wide <- de_proteins_wide
+    return_list$da_proteins_wide <- da_proteins_wide
 
     # Create long format output
     da_proteins_long <- createDaResultsLongFormat(
@@ -3830,7 +3951,7 @@ setMethod(
     return_list$list_of_volcano_plots <- list_of_volcano_plots
 
     # Additional summary statistics
-    num_sig_de_molecules <- significant_rows %>%
+    num_sig_da_molecules <- significant_rows %>%
       dplyr::mutate(status = case_when(
         !!sym(qvalue_column) >= da_q_val_thresh ~ "Not significant",
         log2FC >= 0 & !!sym(qvalue_column) < da_q_val_thresh ~ "Significant and Up",
@@ -3841,13 +3962,13 @@ setMethod(
       summarise(counts = n()) %>%
       ungroup()
 
-    return_list$num_sig_de_molecules <- num_sig_de_molecules
+    return_list$num_sig_da_molecules <- num_sig_da_molecules
 
     # Create barplots if significant results exist
-    if (num_sig_de_molecules %>%
+    if (num_sig_da_molecules %>%
       dplyr::filter(status != "Not significant") |>
       nrow() > 0) {
-      num_sig_de_genes_barplot_only_significant <- num_sig_de_molecules %>%
+      num_sig_da_genes_barplot_only_significant <- num_sig_da_molecules %>%
         dplyr::filter(status != "Not significant") %>%
         ggplot(aes(x = status, y = counts)) +
         geom_bar(stat = "identity") +
@@ -3855,16 +3976,16 @@ setMethod(
         theme(axis.text.x = element_text(angle = 90)) +
         facet_wrap(~comparison)
 
-      return_list$num_sig_de_genes_barplot_only_significant <- num_sig_de_genes_barplot_only_significant
+      return_list$num_sig_da_genes_barplot_only_significant <- num_sig_da_genes_barplot_only_significant
 
-      num_sig_de_genes_barplot_with_not_significant <- num_sig_de_molecules %>%
+      num_sig_da_genes_barplot_with_not_significant <- num_sig_da_molecules %>%
         ggplot(aes(x = status, y = counts)) +
         geom_bar(stat = "identity") +
         geom_text(stat = "identity", aes(label = counts), vjust = -0.5) +
         theme(axis.text.x = element_text(angle = 90)) +
         facet_wrap(~comparison)
 
-      return_list$num_sig_de_genes_barplot_with_not_significant <- num_sig_de_genes_barplot_with_not_significant
+      return_list$num_sig_da_genes_barplot_with_not_significant <- num_sig_da_genes_barplot_with_not_significant
     }
 
     message("--- Exiting differentialAbundanceAnalysisHelper ---")
@@ -4171,29 +4292,29 @@ setMethod(
     # ============================================================================
     # NEW: Aggregate and save Num Sig DE Molecules from all contrasts
     # ============================================================================
-    message("   outputDaResultsAllContrasts: Processing NumSigDeMolecules figures...")
+    message("   outputDaResultsAllContrasts: Processing NumSigDaMolecules figures...")
 
     tryCatch(
       {
-        # Create NumSigDeMolecules directory
-        numsigde_dir <- file.path(publication_graphs_dir, "NumSigDeMolecules")
+        # Create NumSigDaMolecules directory
+        numsigde_dir <- file.path(publication_graphs_dir, "NumSigDaMolecules")
         if (!dir.exists(numsigde_dir)) {
           dir.create(numsigde_dir, recursive = TRUE, showWarnings = TRUE)
           if (!dir.exists(numsigde_dir)) {
-            stop("Failed to create NumSigDeMolecules directory: ", numsigde_dir)
+            stop("Failed to create NumSigDaMolecules directory: ", numsigde_dir)
           }
-          message(sprintf("   outputDaResultsAllContrasts: Created NumSigDeMolecules directory: %s", numsigde_dir))
+          message(sprintf("   outputDaResultsAllContrasts: Created NumSigDaMolecules directory: %s", numsigde_dir))
         }
 
-        # Collect num_sig_de_molecules tables from all contrasts
+        # Collect num_sig_da_molecules tables from all contrasts
         all_numsig_tables <- list()
 
         for (contrast_name in names(da_results_list_all_contrasts)) {
           contrast_result <- da_results_list_all_contrasts[[contrast_name]]
 
-          # Check for num_sig_de_molecules_first_go in the result
-          if (!is.null(contrast_result$num_sig_de_molecules_first_go)) {
-            numsig_data <- contrast_result$num_sig_de_molecules_first_go
+          # Check for num_sig_da_molecules_first_go in the result
+          if (!is.null(contrast_result$num_sig_da_molecules_first_go)) {
+            numsig_data <- contrast_result$num_sig_da_molecules_first_go
 
             # Extract the table component
             if (!is.null(numsig_data$table)) {
@@ -4209,12 +4330,12 @@ setMethod(
           combined_numsig_table <- dplyr::bind_rows(all_numsig_tables)
 
           # Write the combined table
-          table_path <- file.path(numsigde_dir, paste0(file_prefix, "_num_sig_de_molecules.tab"))
+          table_path <- file.path(numsigde_dir, paste0(file_prefix, "_num_sig_da_molecules.tab"))
           vroom::vroom_write(combined_numsig_table, table_path)
           message(sprintf("   outputDaResultsAllContrasts: Wrote NumSigDE table: %s", basename(table_path)))
 
           # Also write as Excel
-          excel_path <- file.path(numsigde_dir, paste0(file_prefix, "_num_sig_de_molecules.xlsx"))
+          excel_path <- file.path(numsigde_dir, paste0(file_prefix, "_num_sig_da_molecules.xlsx"))
           writexl::write_xlsx(combined_numsig_table, excel_path)
           message(sprintf("   outputDaResultsAllContrasts: Wrote NumSigDE Excel: %s", basename(excel_path)))
 
@@ -4247,12 +4368,12 @@ setMethod(
             plot_width <- max(7, (num_comparisons + 2) * 7 / 6)
 
             # Save as PNG
-            png_path <- file.path(numsigde_dir, paste0(file_prefix, "_num_sig_de_molecules.png"))
+            png_path <- file.path(numsigde_dir, paste0(file_prefix, "_num_sig_da_molecules.png"))
             ggplot2::ggsave(png_path, num_sig_de_barplot, width = plot_width, height = 6, dpi = 300)
             message(sprintf("   outputDaResultsAllContrasts: Saved NumSigDE barplot PNG: %s", basename(png_path)))
 
             # Save as PDF
-            pdf_path <- file.path(numsigde_dir, paste0(file_prefix, "_num_sig_de_molecules.pdf"))
+            pdf_path <- file.path(numsigde_dir, paste0(file_prefix, "_num_sig_da_molecules.pdf"))
             ggplot2::ggsave(pdf_path, num_sig_de_barplot, width = plot_width, height = 6)
             message(sprintf("   outputDaResultsAllContrasts: Saved NumSigDE barplot PDF: %s", basename(pdf_path)))
           } else {
@@ -4263,7 +4384,7 @@ setMethod(
         }
       },
       error = function(e) {
-        message(sprintf("   outputDaResultsAllContrasts: ERROR processing NumSigDeMolecules: %s", e$message))
+        message(sprintf("   outputDaResultsAllContrasts: ERROR processing NumSigDaMolecules: %s", e$message))
       }
     )
 

@@ -1253,7 +1253,7 @@ This section averages protein abundances across technical replicates to reduce t
 
 ```{r}
 # Keep relevant metadata columns
-ruv_normalised_for_de_analysis_obj <- averageTechReps(
+ruv_normalised_for_da_analysis_obj <- averageTechReps(
     ruv_normalised_filtered_results_obj,
     design_matrix_columns = c("group", "factor1", "factor2", "tech_reps"),
     biological_replicate_column = "replicates"  # NEW: averages within (group, replicates) combinations
@@ -1261,7 +1261,7 @@ ruv_normalised_for_de_analysis_obj <- averageTechReps(
 
 
 pca_plot_averaged <- plotPca(
-  ruv_normalised_for_de_analysis_obj,
+  ruv_normalised_for_da_analysis_obj,
   grouping_variable = "factor1",
   label_column = "factor2",
   shape_variable = "factor1",
@@ -1271,8 +1271,8 @@ pca_plot_averaged <- plotPca(
 )
 pca_plot_averaged
 
-vroom::vroom_write( ruv_normalised_for_de_analysis_obj@protein_quant_table, 
-             file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir, "proteomics_ruv_normalised_for_de_analysis_obj.tsv"))
+vroom::vroom_write( ruv_normalised_for_da_analysis_obj@protein_quant_table, 
+             file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir, "proteomics_ruv_normalised_for_da_analysis_obj.tsv"))
 ```
 
 # Output Files For Audit Trail
@@ -1315,10 +1315,10 @@ saveRDS(
 #   )
 # )
 
-ruv_normalised_for_de_analysis_obj <- ruv_normalised_filtered_results_obj
+ruv_normalised_for_da_analysis_obj <- ruv_normalised_filtered_results_obj
 
-ruv_normalised_for_de_analysis <-
-  ruv_normalised_for_de_analysis_obj@protein_quant_table |>
+ruv_normalised_for_da_analysis <-
+  ruv_normalised_for_da_analysis_obj@protein_quant_table |>
   pivot_longer(
     cols = !matches("Protein.Ids"),
     names_to = "replicates",
@@ -1335,12 +1335,12 @@ ruv_normalised_for_de_analysis <-
   dplyr::rename(uniprot_acc = "Protein.Ids")
 
 vroom::vroom_write(
-  ruv_normalised_for_de_analysis,
+  ruv_normalised_for_da_analysis,
   file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir, "ruv_normalised_results.tsv")
 )
 
 vroom::vroom_write(
-  ruv_normalised_for_de_analysis |>
+  ruv_normalised_for_da_analysis |>
     dplyr::mutate(across(!matches("uniprot_acc"), log2)),
   file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir, "ruv_normalised_results_log.tsv")
 )
@@ -1352,7 +1352,7 @@ vroom::vroom_write(
   file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir, "design_matrix_avrg.tsv")
 )
 
-ruv_normalised_for_de_analysis_mat <- ruv_normalised_for_de_analysis |>
+ruv_normalised_for_da_analysis_mat <- ruv_normalised_for_da_analysis |>
   column_to_rownames("uniprot_acc") |>
   as.matrix()
 ```
@@ -1411,7 +1411,7 @@ This section performs differential abundance analysis to identify proteins with 
 config_list$deAnalysisParameters$args_group_pattern <- "(\\d+)"
 
 # Swap out factor1 with grouping label
-ruv_normalised_for_de_analysis_obj@design_matrix <- ruv_normalised_for_de_analysis_obj@design_matrix |>
+ruv_normalised_for_da_analysis_obj@design_matrix <- ruv_normalised_for_da_analysis_obj@design_matrix |>
   mutate(
     temp_group = group,
     group = factor1,
@@ -1426,11 +1426,11 @@ contrast_names <- contrasts_tbl |>
   stringr::str_replace_all("\\.", "_") # Replace dots with underscores
 
 # Run DA analysis and explicitly set names
-de_analysis_results_list <- seq_len(nrow(contrasts_tbl)) |>
+da_analysis_results_list <- seq_len(nrow(contrasts_tbl)) |>
   purrr::set_names(contrast_names) |> # This ensures the list will be named
   purrr::map(\(contrast_idx) {
     deAnalysisWrapperFunction(
-      ruv_normalised_for_de_analysis_obj,
+      ruv_normalised_for_da_analysis_obj,
       contrasts_tbl |> dplyr::slice(contrast_idx),
       formula_string = config_list$deAnalysisParameters$formula_string,
       de_q_val_thresh = config_list$deAnalysisParameters$de_q_val_thresh,
@@ -1438,12 +1438,12 @@ de_analysis_results_list <- seq_len(nrow(contrasts_tbl)) |>
       eBayes_trend = config_list$deAnalysisParameters$eBayes_trend,
       eBayes_robust = config_list$deAnalysisParameters$eBayes_robust,
       args_group_pattern = config_list$deAnalysisParameters$args_group_pattern,
-      args_row_id = ruv_normalised_for_de_analysis_obj@protein_id_column
+      args_row_id = ruv_normalised_for_da_analysis_obj@protein_id_column
     )
   })
 
 # Verify we have names
-print(names(de_analysis_results_list))
+print(names(da_analysis_results_list))
 
 ```
 
@@ -1465,14 +1465,14 @@ This section outputs the differential abundance analysis results in various form
 
 ```{r 20 Output DE Analysis Results}
 
-names(de_analysis_results_list) |>
+names(da_analysis_results_list) |>
   purrr::walk(\(contrast_name) {
     tryCatch(
       {
         message(paste("Processing contrast:", contrast_name))
 
         # Check if the result exists and has content
-        result <- de_analysis_results_list[[contrast_name]]
+        result <- da_analysis_results_list[[contrast_name]]
         if (is.null(result) || length(result) == 0) {
           message(paste("Skipping empty result for:", contrast_name))
           return(NULL)
@@ -1480,13 +1480,13 @@ names(de_analysis_results_list) |>
 
         outputDeAnalysisResults(
           result,
-          ruv_normalised_for_de_analysis_obj,
+          ruv_normalised_for_da_analysis_obj,
           uniprot_dat_cln,
           file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir),
           file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$publication_graphs_dir),
-          file_prefix = paste0("de_proteins_", contrast_name),
+          file_prefix = paste0("da_proteins_", contrast_name),
           plots_format = config_list$deAnalysisParameters$plots_format,
-          args_row_id = ruv_normalised_for_de_analysis_obj@protein_id_column,
+          args_row_id = ruv_normalised_for_da_analysis_obj@protein_id_column,
           de_q_val_thresh = 0.05,
           gene_names_column = "gene_names"
         )
@@ -1548,11 +1548,11 @@ This section extracts the most statistically significant differentially expresse
 # --- Extract and Save Top DE Genes ---
 cat("=== Extracting and Saving Top DE Genes ===\n")
 
-top_de_genes <- imap_dfr(de_analysis_results_list, ~{
+top_de_genes <- imap_dfr(da_analysis_results_list, ~{
   cat("Processing top genes for contrast:", .y, "\n")
   
   # Filter for significant genes
-  significant_genes <- .x$de_proteins_long |>
+  significant_genes <- .x$da_proteins_long |>
     filter(fdr_qvalue < 0.05)
   
   # Get top 10 upregulated
@@ -1602,7 +1602,7 @@ cat("Top DE genes saved to:", top_genes_output_file, "\n")
 
 
 all_enrichment_results <- runStringDbEnrichmentAllContrasts(
-  de_analysis_results_list = de_analysis_results_list,
+  da_analysis_results_list = da_analysis_results_list,
   project_dirs = project_dirs,
   omic_type = omic_type,
   experiment_label = experiment_label,
@@ -1672,7 +1672,7 @@ This section performs functional enrichment analysis to identify biological proc
 
 ```{r 21 Enrichment Analysis}
 # Create S4 object of the DA results for enrichment analysis
-de_results_for_enrichment <- createDEResultsForEnrichment(
+de_results_for_enrichment <- createDAResultsForEnrichment(
   contrasts_tbl = contrasts_tbl,
   design_matrix = design_matrix,
   de_output_dir = file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir)
@@ -1688,8 +1688,8 @@ enrichment_results <- processEnrichments(
   , pathway_dir = file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$pathway_dir) # Output directory
   , go_annotations = uniprot_dat_cln # Annotation data
   , exclude_iea = FALSE,
-  protein_id_column = ruv_normalised_for_de_analysis_obj@protein_id_column,
-  contrast_names = (names(de_analysis_results_list))
+  protein_id_column = ruv_normalised_for_da_analysis_obj@protein_id_column,
+  contrast_names = (names(da_analysis_results_list))
 )
 ```
 

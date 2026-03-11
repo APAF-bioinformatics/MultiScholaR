@@ -28,7 +28,7 @@ Functions:
 \itemize{
 \item differentialAbundanceAnalysis: Main S4 generic for DE analysis
 \item differentialAbundanceAnalysisHelper: Core limma-based analysis
-\item generateVolcanoPlotGlimma: Interactive volcano plot generation
+\item generateProtDAVolcanoPlotGlimma: Interactive volcano plot generation
 \item generateDEHeatmap: Heatmap visualization with clustering
 }
 }

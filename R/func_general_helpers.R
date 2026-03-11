@@ -289,17 +289,17 @@ findMatchingColumn <- function(headers, candidates) {
 # === Comparison and UMAP Functions ===
 
 # Function 30: compareUmapComponentsPairs()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Compares UMAP component pairs
 # compareUmapComponentsPairs <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 31: umap_factor_plot()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Creates UMAP factor plot
 # umap_factor_plot <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # === Data Extraction Functions ===
@@ -421,10 +421,10 @@ findMatchingColumn <- function(headers, candidates) {
 # }
 
 # Function 48: printPValuesDistribution()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Prints p-value distribution
 # printPValuesDistribution <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # === Parameter Update Functions ===

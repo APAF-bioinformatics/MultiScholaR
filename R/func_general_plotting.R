@@ -55,17 +55,17 @@
 # }
 
 # Function 2: plotOneVolcano()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Creates a single volcano plot
 # plotOneVolcano <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 3: plotOneVolcanoNoVerticalLines()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Creates volcano plot without vertical lines
 # plotOneVolcanoNoVerticalLines <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 4: plotVolcanoS4()
@@ -85,52 +85,52 @@
 # }
 
 # Function 6: prepareDataForVolcanoPlot()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Prepares data for volcano plot
 # prepareDataForVolcanoPlot <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 7: writeInteractiveVolcanoPlotProteomics()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Writes interactive volcano plot for proteomics
 # writeInteractiveVolcanoPlotProteomics <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 8: writeInteractiveVolcanoPlotProteomicsMain()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Main function for interactive volcano plots
 # writeInteractiveVolcanoPlotProteomicsMain <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 9: writeInteractiveVolcanoPlotProteomicsWidget()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Creates interactive volcano plot widget
 # writeInteractiveVolcanoPlotProteomicsWidget <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 10: getGlimmaVolcanoProteomics()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Gets Glimma volcano plot for proteomics
 # getGlimmaVolcanoProteomics <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 11: getGlimmaVolcanoProteomicsWidget()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Gets Glimma volcano plot widget
 # getGlimmaVolcanoProteomicsWidget <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 12: getGlimmaVolcanoPhosphoproteomics()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Gets Glimma volcano plot for phosphoproteomics
 # getGlimmaVolcanoPhosphoproteomics <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # === PCA Plot Functions ===
@@ -144,31 +144,31 @@
 # }
 
 # Function 14: plotPcaHelper()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Helper function for PCA plots
 # plotPcaHelper <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 15: plotPcaListHelper()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Helper for creating list of PCA plots
 # plotPcaListHelper <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 16: plotPcaGgpairs()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Creates PCA plots using ggpairs
 # plotPcaGgpairs <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 17: rlePcaPlotList()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Creates list of RLE and PCA plots
 # rlePcaPlotList <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # === RLE Plot Functions ===
@@ -182,24 +182,24 @@
 # }
 
 # Function 19: plotRleHelper()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Helper function for RLE plots
 # plotRleHelper <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 20: plotRleQc()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Creates RLE QC plots
 # plotRleQc <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 21: getOneRlePlotData()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Gets data for one RLE plot
 # getOneRlePlotData <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # === Density Plot Functions ===
@@ -213,40 +213,40 @@
 # }
 
 # Function 23: plotDensityOfProteinIntensityPerSample()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Creates density plots of protein intensity per sample
 # plotDensityOfProteinIntensityPerSample <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # === Missing Value Plot Functions ===
 
 # Function 24: plotNumMissingValues()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Plots number of missing values
 # plotNumMissingValues <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 25: plotNumOfValues()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Plots number of values
 # plotNumOfValues <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 26: plotNumOfValuesNoLog()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Plots number of values without log transformation
 # plotNumOfValuesNoLog <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 27: plotHistogramOfPercentMissingPerIndvidual()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Plots histogram of percent missing per individual
 # plotHistogramOfPercentMissingPerIndvidual <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # === Count Plot Functions ===
@@ -260,17 +260,17 @@
 # }
 
 # Function 29: plotPeptidesProteinsCountsPerSampleHelper()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Helper for plotting counts per sample
 # plotPeptidesProteinsCountsPerSampleHelper <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 30: plotPercentSamplesVsProteinQuantified()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Plots percent samples vs proteins quantified
 # plotPercentSamplesVsProteinQuantified <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 31: plotNumSigDiffExpBarPlot()
@@ -300,33 +300,33 @@
 # }
 
 # Function 34: getSamplesCorrelationHeatMap()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Creates correlation heatmap for samples
 # getSamplesCorrelationHeatMap <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 35: getSamplesCorrelationMatrix()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Gets correlation matrix for samples
 # getSamplesCorrelationMatrix <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # === Heatmap Functions ===
 
 # Function 36: getProteinsHeatMap()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Creates heatmap of proteins
 # getProteinsHeatMap <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 37: generateDEHeatmap()
-# Current location: R/protein_de_analysis_wrapper.R
+# Current location: R/protein_da_analysis_wrapper.R
 # Description: Generates heatmap for DE results
 # generateDEHeatmap <- function(...) {
-#   # Extract from R/protein_de_analysis_wrapper.R
+#   # Extract from R/protein_da_analysis_wrapper.R
 # }
 
 # Function 38: getEnrichmentHeatmap()
@@ -432,31 +432,31 @@
 # }
 
 # Function 52: compareUmapComponentsPairs()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Compares UMAP component pairs
 # compareUmapComponentsPairs <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 53: umap_factor_plot()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Creates UMAP factor plot
 # umap_factor_plot <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 54: getMaxMinBoxplot()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Creates max/min boxplot
 # getMaxMinBoxplot <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 55: printPValuesDistribution()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Prints p-value distribution
 # printPValuesDistribution <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # === Plot Saving Functions ===
@@ -520,31 +520,31 @@
 # }
 
 # Function 64: getCategoricalColourPalette()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Gets categorical color palette
 # getCategoricalColourPalette <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 65: getCategoricalAndContinuousColourRules()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Gets categorical and continuous color rules
 # getCategoricalAndContinuousColourRules <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 66: getContinousColourRules()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Gets continuous color rules
 # getContinousColourRules <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 67: getOneContinousPalette()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Gets one continuous palette
 # getOneContinousPalette <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 68: get_ggrepel_segsize()

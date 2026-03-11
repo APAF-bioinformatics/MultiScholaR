@@ -146,10 +146,10 @@
 #   # Extract from R/annotation.R
 # }
 
-# Function 16: convertDpcDEToStandardFormat()
+# Function 16: convertDpcDAToStandardFormat()
 # Current location: R/limpa_functions.R
 # Description: Converts DPC DE to standard format
-# convertDpcDEToStandardFormat <- function(...) {
+# convertDpcDAToStandardFormat <- function(...) {
 #   # Extract from R/limpa_functions.R
 # }
 
@@ -1196,13 +1196,13 @@ matchAnnotations <- function(da_results_s4,
     log_info("Detected da_results_for_enrichment S4 object")
     
     # Extract protein IDs from all DE data contrasts
-    if (!is.null(da_results_s4@de_data) && length(da_results_s4@de_data) > 0) {
+    if (!is.null(da_results_s4@da_data) && length(da_results_s4@da_data) > 0) {
       # Get protein IDs from the first available contrast (they should all have the same proteins)
-      available_contrasts <- names(da_results_s4@de_data)
+      available_contrasts <- names(da_results_s4@da_data)
       log_info(sprintf("Available DE contrasts: %s", paste(available_contrasts, collapse = ", ")))
       
       for (contrast_name in available_contrasts) {
-        contrast_data <- da_results_s4@de_data[[contrast_name]]
+        contrast_data <- da_results_s4@da_data[[contrast_name]]
         if (!is.null(contrast_data) && nrow(contrast_data) > 0 && protein_id_column %in% names(contrast_data)) {
           protein_ids <- unique(contrast_data[[protein_id_column]])
           log_info(sprintf("Extracted protein IDs from DE contrast: %s", contrast_name))
@@ -1213,14 +1213,14 @@ matchAnnotations <- function(da_results_s4,
       if (is.null(protein_ids)) {
         stop(sprintf("Protein ID column '%s' not found in any DE data contrasts. Available columns in first contrast: %s", 
                      protein_id_column, 
-                     if(length(available_contrasts) > 0 && !is.null(da_results_s4@de_data[[available_contrasts[1]]])) {
-                       paste(names(da_results_s4@de_data[[available_contrasts[1]]]), collapse = ", ")
+                     if(length(available_contrasts) > 0 && !is.null(da_results_s4@da_data[[available_contrasts[1]]])) {
+                       paste(names(da_results_s4@da_data[[available_contrasts[1]]]), collapse = ", ")
                      } else {
                        "No valid data found"
                      }))
       }
     } else {
-      stop("No DE data found in da_results_for_enrichment object @de_data slot")
+      stop("No DE data found in da_results_for_enrichment object @da_data slot")
     }
     
   } else {

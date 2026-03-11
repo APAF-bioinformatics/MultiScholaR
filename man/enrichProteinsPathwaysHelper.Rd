@@ -5,7 +5,7 @@
 \title{Helper function to perform protein pathway enrichment analysis for a single contrast}
 \usage{
 enrichProteinsPathwaysHelper(
-  de_analysis_results,
+  da_analysis_results,
   organism_taxid,
   min_gene_set_size = 4,
   max_gene_set_size = 200,
@@ -20,7 +20,7 @@ enrichProteinsPathwaysHelper(
 )
 }
 \arguments{
-\item{de_analysis_results}{Output from deAnalysisWrapperFunction containing differential expression results}
+\item{da_analysis_results}{Output from deAnalysisWrapperFunction containing differential expression results}
 
 \item{organism_taxid}{NCBI taxonomy ID for the organism (e.g., "9606" for human)}
 

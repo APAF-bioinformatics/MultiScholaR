@@ -2118,7 +2118,7 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
         })
         
         # CRITICAL: THIS is where the final object becomes ready for DE
-        workflow_data$ruv_normalised_for_de_analysis_obj <- final_s4_for_de
+        workflow_data$ruv_normalised_for_da_analysis_obj <- final_s4_for_de
         
         # Save to R6 state manager with new state
         workflow_data$state_manager$saveState(
@@ -2313,7 +2313,7 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
         })
         
         # CRITICAL: THIS is where the final object becomes ready for DE
-        workflow_data$ruv_normalised_for_de_analysis_obj <- final_s4_for_de
+        workflow_data$ruv_normalised_for_da_analysis_obj <- final_s4_for_de
         
         # Save to R6 state manager with new state
         workflow_data$state_manager$saveState(
@@ -2617,7 +2617,7 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
         norm_data$qc_plots$ruv_corrected <- list(pca = NULL, density = NULL, rle = NULL, correlation = NULL)
         
         # Reset workflow data
-        workflow_data$ruv_normalised_for_de_analysis_obj <- NULL
+        workflow_data$ruv_normalised_for_da_analysis_obj <- NULL
         # Must replace entire list to trigger reactivity
         updated_status <- workflow_data$tab_status
         updated_status$normalization <- "pending"

@@ -188,31 +188,31 @@ setClass("DirectoryManager",
 #' experimental design information.
 #' 
 #' @slot contrasts A tibble containing contrast information
-#' @slot de_data A list of DE results data frames
+#' @slot da_data A list of DA results data frames
 #' @slot design_matrix A data frame containing the design matrix
 #' 
 #' @export
 setClass("da_results_for_enrichment",
          slots = list(
            contrasts = "tbl_df",
-           de_data = "list",
+           da_data = "list",
            design_matrix = "data.frame"
          ))
 
-#' Create DE Results For Enrichment
+#' Create DA Results For Enrichment
 #'
 #' @param contrasts_tbl A tibble containing contrast information
 #' @param design_matrix A data frame containing the design matrix
-#' @param da_output_dir Directory containing DE results files
+#' @param da_output_dir Directory containing DA results files
 #' @return An S4 object of class da_results_for_enrichment
 #' @export
-createDEResultsForEnrichment <- function(contrasts_tbl, design_matrix, da_output_dir) {
+createDAResultsForEnrichment <- function(contrasts_tbl, design_matrix, da_output_dir) {
   # Helper function to format contrast filename
   format_contrast_filename <- function(contrast_string) {
     contrast_name <- stringr::str_split(contrast_string, "=")[[1]][1] |>
       stringr::str_replace_all("\\.", "_")
 
-    paste0("de_proteins_", contrast_name, "_long_annot.tsv")
+    paste0("da_proteins_", contrast_name, "_long_annot.tsv")
   }
 
   # Create new S4 object
@@ -224,7 +224,7 @@ createDEResultsForEnrichment <- function(contrasts_tbl, design_matrix, da_output
   # Fill slots
   da_results@contrasts <- contrasts_tbl
   da_results@design_matrix <- design_matrix
-  da_results@de_data <- contrasts_tbl$contrasts |>
+  da_results@da_data <- contrasts_tbl$contrasts |>
     purrr::set_names() |>
     purrr::map(function(contrast) {
       filename <- format_contrast_filename(contrast)
