@@ -43,7 +43,7 @@
 #' @importFrom stringr str_detect str_to_lower
 #' @importFrom stats sd
 #' @noRd
-buildItsdSelectionTable <- function(
+buildLipidItsdSelectionTable <- function(
     assay_data
     , lipid_id_col
     , annotation_cols = NULL
@@ -170,7 +170,7 @@ buildItsdSelectionTable <- function(
 #' @importFrom purrr imap set_names
 #' @importFrom logger log_info log_warn log_error
 #' @noRd
-generateMetabQcPlots <- function(
+generateLipidQcPlots <- function(
     theObject
     , experiment_paths
     , stage = c("post_filter", "post_norm", "ruv_corrected")
@@ -379,7 +379,7 @@ generateMetabQcPlots <- function(
 #' @importFrom purrr imap
 #' @importFrom logger log_info log_warn log_error
 #' @noRd
-runPerAssayRuvOptimization <- function(
+runLipidPerAssayRuvOptimization <- function(
     theObject
     , ruv_mode = c("automatic", "manual")
     , params = list()
@@ -579,7 +579,7 @@ runPerAssayRuvOptimization <- function(
 #' @param ruv_results List of per-assay RUV optimization results
 #' @return Named list of k values (or NA for failed assays)
 #' @noRd
-extractBestKPerAssay <- function(ruv_results) {
+extractLipidBestKPerAssay <- function(ruv_results) {
     purrr::map(ruv_results, \(x) {
         if (isTRUE(x$success)) x$best_k else NA_integer_
     })
@@ -592,7 +592,7 @@ extractBestKPerAssay <- function(ruv_results) {
 #' @param ruv_results List of per-assay RUV optimization results
 #' @return Named list of control indices (or NULL for failed assays)
 #' @noRd
-extractCtrlPerAssay <- function(ruv_results) {
+extractLipidCtrlPerAssay <- function(ruv_results) {
     purrr::map(ruv_results, \(x) {
         if (isTRUE(x$success)) x$control_genes_index else NULL
     })
@@ -606,7 +606,7 @@ extractCtrlPerAssay <- function(ruv_results) {
 #' @return Data frame with Assay column and optimization metrics
 #' @importFrom dplyr bind_rows mutate
 #' @noRd
-buildCombinedRuvTable <- function(ruv_results) {
+buildLipidCombinedRuvTable <- function(ruv_results) {
     rows <- purrr::imap(ruv_results, \(result, assay_name) {
         if (isTRUE(result$success)) {
             data.frame(
@@ -641,7 +641,7 @@ buildCombinedRuvTable <- function(ruv_results) {
 #' @param input Shiny input object
 #' @return List of configuration parameters for state saving
 #' @noRd
-buildNormConfig <- function(input) {
+buildLipidNormConfig <- function(input) {
     list(
         itsd = list(
             applied = input$apply_itsd %||% FALSE

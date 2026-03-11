@@ -255,7 +255,7 @@ mod_lipid_qc_duplicates_server <- function(id, workflow_data, omic_type, experim
                     }
                     
                     # Resolve duplicates
-                    resolved_assay <- resolveDuplicateFeaturesByIntensity(
+                    resolved_assay <- resolveLipidDuplicateFeaturesByIntensity(
                         assay_tibble = assay_data
                         , id_col = lipid_id_col
                         , sample_cols = sample_cols

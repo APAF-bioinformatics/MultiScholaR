@@ -137,7 +137,7 @@ mod_lipid_qc_itsd_server <- function(id, workflow_data, omic_type, experiment_la
 
                     for (col in cols_to_try) {
                         if (!is.null(col) && col %in% colnames(assay_data)) {
-                            is_met <- getInternalStandardMetrics(
+                            is_met <- getLipidInternalStandardMetrics(
                                 assay_data = assay_data
                                 , is_pattern = is_pattern
                                 , lipid_id_col = col
