@@ -923,7 +923,7 @@ mod_lipid_da_server <- function(id, workflow_data, experiment_paths, omic_type, 
                             if (is.null(da_output_dir) || is.null(publication_graphs_dir)) {
                                 logger::log_warn("   Output directories not configured, skipping file output")
                             } else {
-                                success <- outputMetabDaResultsAllContrasts(
+                                success <- outputLipidDaResultsAllContrasts(
                                     da_results_list = results,
                                     da_output_dir = da_output_dir,
                                     publication_graphs_dir = publication_graphs_dir,
@@ -1039,7 +1039,7 @@ mod_lipid_da_server <- function(id, workflow_data, experiment_paths, omic_type, 
         output$volcano_static <- shiny::renderPlot({
             shiny::req(da_data$da_results_list, input$volcano_contrast)
 
-            generateMetabVolcanoStatic(
+            generateLipidDAVolcanoStatic(
                 da_results_list = da_data$da_results_list,
                 selected_contrast = input$volcano_contrast,
                 selected_assay = input$volcano_assay,
@@ -1056,7 +1056,7 @@ mod_lipid_da_server <- function(id, workflow_data, experiment_paths, omic_type, 
         output$heatmap_plot <- shiny::renderPlot({
             shiny::req(da_data$da_results_list, input$heatmap_contrast)
 
-            hm <- generateLipidDEHeatmap(
+            hm <- generateLipidDAHeatmap(
                 da_results_list = da_data$da_results_list,
                 selected_contrast = input$heatmap_contrast,
                 selected_assay = input$heatmap_assay,

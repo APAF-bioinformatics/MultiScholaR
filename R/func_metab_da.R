@@ -1369,7 +1369,7 @@ generateMetabDAHeatmap <- function(
                 left_annotation = left_annotation
             )
 
-            logger::log_info("--- Exiting generateMetabDEHeatmap (success) ---")
+            logger::log_info("--- Exiting generateMetabDAHeatmap (success) ---")
             return(list(
                 plot = hm,
                 row_clusters = row_clusters,
@@ -1750,7 +1750,7 @@ outputMetabDaResultsAllContrasts <- function(
                     assay_filtered_results <- da_results_list
                     assay_filtered_results$da_metabolites_long <- assay_contrast_data
 
-                    heatmap_obj <- generateMetabDEHeatmap(
+                    heatmap_obj <- generateMetabDAHeatmap(
                         da_results_list = assay_filtered_results,
                         selected_contrast = contrast_name,
                         selected_assay = assay_name,

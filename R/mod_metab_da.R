@@ -978,12 +978,12 @@ mod_metab_da_server <- function(id, workflow_data, experiment_paths, omic_type, 
 
             tryCatch(
                 {
-                    widget <- generateMetabVolcanoPlotGlimma(
-                        da_results_list = da_data$da_results_list,
-                        selected_contrast = input$volcano_contrast,
-                        selected_assay = input$volcano_assay,
-                        da_q_val_thresh = input$da_q_val_thresh
-                    )
+            widget <- generateMetabDAVolcanoPlotGlimma(
+                da_results_list = da_data$da_results_list,
+                selected_contrast = input$volcano_contrast,
+                selected_assay = input$volcano_assay,
+                da_q_val_thresh = input$da_q_val_thresh
+            )
 
                     if (is.null(widget)) {
                         return(shiny::div(
@@ -1010,7 +1010,7 @@ mod_metab_da_server <- function(id, workflow_data, experiment_paths, omic_type, 
         output$volcano_static <- shiny::renderPlot({
             shiny::req(da_data$da_results_list, input$volcano_contrast)
 
-            generateMetabVolcanoStatic(
+            generateMetabDAVolcanoStatic(
                 da_results_list = da_data$da_results_list,
                 selected_contrast = input$volcano_contrast,
                 selected_assay = input$volcano_assay,
@@ -1027,7 +1027,7 @@ mod_metab_da_server <- function(id, workflow_data, experiment_paths, omic_type, 
         output$heatmap_plot <- shiny::renderPlot({
             shiny::req(da_data$da_results_list, input$heatmap_contrast)
 
-            hm <- generateMetabDEHeatmap(
+            hm <- generateMetabDAHeatmap(
                 da_results_list = da_data$da_results_list,
                 selected_contrast = input$heatmap_contrast,
                 selected_assay = input$heatmap_assay,

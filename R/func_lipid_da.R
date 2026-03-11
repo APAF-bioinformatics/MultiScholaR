@@ -1095,7 +1095,7 @@ generateLipidDAHeatmap <- function(
   cut_height = 10,
   min_cluster_size = 5
 ) {
-    logger::log_info("--- Entering generateLipidDEHeatmap ---")
+    logger::log_info("--- Entering generateLipidDAHeatmap ---")
 
     # Handle potential NA/NULL parameters from Shiny
     cluster_rows <- if (is.null(cluster_rows) || is.na(cluster_rows)) TRUE else cluster_rows
@@ -1343,7 +1343,7 @@ generateLipidDAHeatmap <- function(
                 left_annotation = left_annotation
             )
 
-            logger::log_info("--- Exiting generateLipidDEHeatmap (success) ---")
+            logger::log_info("--- Exiting generateLipidDAHeatmap (success) ---")
             return(list(
                 plot = hm,
                 row_clusters = row_clusters,
@@ -1723,7 +1723,7 @@ outputLipidDaResultsAllContrasts <- function(
                     assay_filtered_results <- da_results_list
                     assay_filtered_results$da_lipids_long <- assay_contrast_data
 
-                    heatmap_obj <- generateMetabDEHeatmap(
+                    heatmap_obj <- generateLipidDAHeatmap(
                         da_results_list = assay_filtered_results,
                         selected_contrast = contrast_name,
                         selected_assay = assay_name,
@@ -1897,6 +1897,6 @@ outputLipidDaResultsAllContrasts <- function(
         )
     }
 
-    logger::log_info("--- Exiting outputMetabDaResultsAllContrasts ---")
+    logger::log_info("--- Exiting outputLipidDaResultsAllContrasts ---")
     return(TRUE)
 }

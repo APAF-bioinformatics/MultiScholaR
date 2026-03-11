@@ -5729,11 +5729,11 @@ Lipidomics follows the same **Multi-Assay Pattern** as metabolomics but uses a d
 | Feature | Metabolomics | Lipidomics |
 |---------|--------------|------------|
 | Core DE Runner | `runMetabolitesDA()` | `runLipidsDA()` |
-| Results Formatting | `createMetabDeResultsLongFormat()` | `createLipidDeResultsLongFormat()` |
-| Interactive Volcano | `generateMetabVolcanoPlotGlimma()` | `generateLipidVolcanoPlotGlimma()` |
-| Integrated Heatmap | `generateMetabDEHeatmap()` | `generateLipidDEHeatmap()` |
-| Static Volcano | `generateMetabVolcanoStatic()` | `generateLipidVolcanoStatic()` |
-| Excel Export | `outputMetabDeResultsAllContrasts()` | `outputLipidDeResultsAllContrasts()` |
+| Results Formatting | `createMetabDaResultsLongFormat()` | `createLipidDaResultsLongFormat()` |
+| Interactive Volcano | `generateMetabDAVolcanoPlotGlimma()` | `generateLipidDAVolcanoPlotGlimma()` |
+| Integrated Heatmap | `generateMetabDAHeatmap()` | `generateLipidDAHeatmap()` |
+| Static Volcano | `generateMetabDAVolcanoStatic()` | `generateLipidDAVolcanoStatic()` |
+| Excel Export | `outputMetabDaResultsAllContrasts()` | `outputLipidDaResultsAllContrasts()` |
 | Import Parser | `importMetabMSDIALData()` | `importLipidMSDIALData()` |
 | Column Validator | `validateMetabColumnMapping()` | `validateLipidColumnMapping()` |
 | Duplicate Finder | `findMetabDuplicateFeatureIDs()` | `findLipidDuplicateFeatureIDs()` |
