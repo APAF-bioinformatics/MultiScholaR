@@ -80,13 +80,12 @@ getCountsTable <- function(obj) {
 
 
 # ----------------------------------------------------------------------------
-# runTestsContrastsMetab
+# runTestsContrastsLipid
 # ----------------------------------------------------------------------------
-#' Run limma differential expression analysis for a single assay
+#' Run limma differential abundance analysis for a single assay
 #'
-#' @description Performs limma-based differential expression analysis on a
-#'   single lipidomics assay matrix. This is the core DE engine adapted from
-#'   the proteomics `runTestsContrasts()` function.
+#' @description Performs limma-based differential abundance analysis on a
+#'   single lipidomics assay matrix.
 #'
 #' @param data Numeric matrix with lipids as rows and samples as columns.
 #'   Rownames should be lipid IDs.
@@ -113,7 +112,7 @@ getCountsTable <- function(obj) {
 #' @importFrom rlang ensym as_name
 #' @importFrom purrr map
 #' @export
-runTestsContrastsMetab <- function(
+runTestsContrastsLipid <- function(
   data,
   contrast_strings,
   design_matrix,
@@ -144,7 +143,7 @@ runTestsContrastsMetab <- function(
 
     # [D66:START] -------------------------
     d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
-    d66_log("  runTestsContrastsMetab - Model matrix created:")
+    d66_log("  runTestsContrastsLipid - Model matrix created:")
     d66_log("    design_m levels (colnames) = ", paste(colnames(design_m), collapse = ", "))
     d66_log("    contrast_strings = ", paste(contrast_strings, collapse = ", "))
     # [D66:END] ---------------------------
@@ -292,7 +291,7 @@ runTestsContrastsMetab <- function(
     })
 
     names(result_tables) <- contrast_strings
-    logger::log_info("--- Exiting runTestsContrastsMetab ---")
+    logger::log_info("--- Exiting runTestsContrastsLipid ---")
 
     return(list(
         results = result_tables,
@@ -441,7 +440,7 @@ runLipidsDE <- function(
         # Run limma DE
         tryCatch(
             {
-                limma_results <- runTestsContrastsMetab(
+                limma_results <- runTestsContrastsLipid(
                     data = expr_matrix,
                     contrast_strings = contrast_strings,
                     design_matrix = design_matrix,
@@ -490,9 +489,9 @@ runLipidsDE <- function(
                             "NS"
                         )
 
-                        # Add sample intensity columns using createMetabDeResultsLongFormat
-                        cat(sprintf("[D66] Calling createMetabDeResultsLongFormat for contrast: %s\n", contrast_name))
-                        de_tbl <- createMetabDeResultsLongFormat(
+                        # Add sample intensity columns using createLipidDeResultsLongFormat
+                        cat(sprintf("[D66] Calling createLipidDeResultsLongFormat for contrast: %s\n", contrast_name))
+                        de_tbl <- createLipidDeResultsLongFormat(
                             lfc_qval_tbl = de_tbl,
                             expr_matrix = expr_matrix,
                             design_matrix = design_matrix,
@@ -554,7 +553,7 @@ runLipidsDE <- function(
 
 
 # ----------------------------------------------------------------------------
-# createMetabDeResultsLongFormat
+# createLipidDeResultsLongFormat
 # ----------------------------------------------------------------------------
 #' Create lipidomics DE results in long format with sample intensity columns
 #'
@@ -581,7 +580,7 @@ runLipidsDE <- function(
 #' @importFrom rlang sym set_names
 #' @importFrom stringr str_replace_all
 #' @export
-createMetabDeResultsLongFormat <- function(
+createLipidDeResultsLongFormat <- function(
   lfc_qval_tbl,
   expr_matrix,
   design_matrix,
@@ -678,7 +677,7 @@ createMetabDeResultsLongFormat <- function(
         nrow(de_results_long), ncol(de_results_long)
     ))
 
-    logger::log_info("--- Exiting createMetabDeResultsLongFormat ---")
+    logger::log_info("--- Exiting createLipidDeResultsLongFormat ---")
 
     return(de_results_long)
 }
@@ -731,12 +730,12 @@ getLipidQuantData <- function(
 
 
 # ----------------------------------------------------------------------------
-# generateMetabVolcanoPlotGlimma
+# generateLipidVolcanoPlotGlimma
 # ----------------------------------------------------------------------------
 #' Generate interactive Glimma volcano plot for lipidomics DE results
 #'
 #' @description Creates an interactive volcano plot using the Glimma package
-#'   for lipidomics differential expression results. Supports per-assay
+#'   for lipidomics differential abundance results. Supports per-assay
 #'   or combined viewing.
 #'
 #' @param de_results_list Results list from `runLipidsDE()`.
@@ -754,7 +753,7 @@ getLipidQuantData <- function(
 #' @importFrom stringr str_extract
 #' @importFrom logger log_info log_error log_warn
 #' @export
-generateMetabVolcanoPlotGlimma <- function(
+generateLipidVolcanoPlotGlimma <- function(
   de_results_list,
   selected_contrast = NULL,
   selected_assay = NULL,
@@ -764,12 +763,12 @@ generateMetabVolcanoPlotGlimma <- function(
 ) {
     # [D66:START] -------------------------
     d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
-    d66_log("=== ENTER generateMetabVolcanoPlotGlimma ===")
+    d66_log("=== ENTER generateLipidVolcanoPlotGlimma ===")
     d66_log("  selected_contrast = ", if (is.null(selected_contrast)) "NULL" else selected_contrast)
     d66_log("  selected_assay = ", if (is.null(selected_assay)) "NULL" else selected_assay)
     # [D66:END] ---------------------------
 
-    logger::log_info("--- Entering generateMetabVolcanoPlotGlimma ---")
+    logger::log_info("--- Entering generateLipidVolcanoPlotGlimma ---")
     logger::log_info(sprintf("   selected_contrast = %s", selected_contrast))
     logger::log_info(sprintf("   selected_assay = %s", ifelse(is.null(selected_assay), "NULL (combined)", selected_assay)))
 
@@ -999,7 +998,7 @@ generateMetabVolcanoPlotGlimma <- function(
             d66_log("    widget class = ", class(glimma_widget)[1])
             # [D66:END]
 
-            logger::log_info("--- Exiting generateMetabVolcanoPlotGlimma (success) ---")
+            logger::log_info("--- Exiting generateLipidVolcanoPlotGlimma (success) ---")
             return(glimma_widget)
         },
         error = function(e) {
@@ -1015,7 +1014,7 @@ generateMetabVolcanoPlotGlimma <- function(
 
 
 # ----------------------------------------------------------------------------
-# generateMetabDEHeatmap
+# generateLipidDEHeatmap
 # ----------------------------------------------------------------------------
 #' Generate heatmap for lipidomics DE results
 #'
@@ -1313,7 +1312,7 @@ generateLipidDEHeatmap <- function(
 
 
 # ----------------------------------------------------------------------------
-# generateMetabVolcanoStatic
+# generateLipidVolcanoStatic
 # ----------------------------------------------------------------------------
 #' Generate static ggplot2 volcano plot for lipidomics DE results
 #'
@@ -1334,7 +1333,7 @@ generateLipidDEHeatmap <- function(
 #' @importFrom ggrepel geom_text_repel
 #' @importFrom dplyr filter arrange slice_head
 #' @export
-generateMetabVolcanoStatic <- function(
+generateLipidVolcanoStatic <- function(
   de_results_list,
   selected_contrast = NULL,
   selected_assay = NULL,
@@ -1441,13 +1440,12 @@ generateMetabVolcanoStatic <- function(
 
 
 # ----------------------------------------------------------------------------
-# outputMetabDeResultsAllContrasts
+# outputLipidDeResultsAllContrasts
 # ----------------------------------------------------------------------------
 #' Output all lipidomics DE results to disk
 #'
 #' @description Writes DE results tables, volcano plots, and heatmaps to disk
-#'   for all contrasts in a lipidomics DE analysis. Outputs are split by
-#'   assay mode (posmode/negmode) and contrast, matching the proteomics workflow.
+#'   for all contrasts in a lipidomics DE analysis.
 #'
 #' @details Output filenames follow the pattern:
 #'   - `de_posmode_lipids_{contrast}_long_annot.xlsx`
@@ -1472,7 +1470,7 @@ generateMetabVolcanoStatic <- function(
 #' @importFrom purrr walk map
 #' @importFrom logger log_info log_error log_warn
 #' @export
-outputMetabDeResultsAllContrasts <- function(
+outputLipidDeResultsAllContrasts <- function(
   de_results_list,
   de_output_dir,
   publication_graphs_dir,
@@ -1482,7 +1480,7 @@ outputMetabDeResultsAllContrasts <- function(
   heatmap_clustering = "both",
   heatmap_color_scheme = "RdBu"
 ) {
-    logger::log_info("--- Entering outputMetabDeResultsAllContrasts ---")
+    logger::log_info("--- Entering outputLipidDeResultsAllContrasts ---")
     logger::log_info(sprintf("   de_output_dir = %s", de_output_dir))
     logger::log_info(sprintf("   publication_graphs_dir = %s", publication_graphs_dir))
 
@@ -1632,7 +1630,7 @@ outputMetabDeResultsAllContrasts <- function(
                     assay_filtered_results <- de_results_list
                     assay_filtered_results$de_lipids_long <- assay_contrast_data
 
-                    volcano_plot <- generateMetabVolcanoStatic(
+                    volcano_plot <- generateLipidVolcanoStatic(
                         de_results_list = assay_filtered_results,
                         selected_contrast = contrast_name,
                         selected_assay = assay_name,
