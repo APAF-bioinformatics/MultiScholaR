@@ -190,195 +190,171 @@ generateProtDAVolcanoPlotGlimma <- function(
   display_columns = c("best_uniprot_acc"),
   ...
 ) {
-  message("--- Entering generateProtDAVolcanoPlotGlimma ---")
-  message(paste("   generateProtDAVolcanoPlotGlimma Arg: selected_contrast =", selected_contrast))
+  logger::log_info("--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---")
+  logger::log_info(sprintf("   selected_contrast = %s", selected_contrast))
 
   if (is.null(da_results_list) || is.null(da_results_list$da_proteins_long)) {
-    message("   generateProtDAVolcanoPlotGlimma: No DA results available")
+    logger::log_warn("   No DA results available")
     return(NULL)
   }
 
   if (is.null(selected_contrast)) {
-    message("   generateProtDAVolcanoPlotGlimma: No contrast selected")
+    logger::log_info("   No contrast selected")
     return(NULL)
   }
 
-  # Get the contrast-specific results
   da_proteins_long <- da_results_list$da_proteins_long
-  contrasts_results <- da_results_list$contrasts_results
 
-  # CRITICAL FIX: Extract comparison name from selected_contrast if it contains "="
+  # Extract comparison name
   comparison_to_search <- stringr::str_extract(selected_contrast, "^[^=]+")
-  message(paste("   generateProtDAVolcanoPlotGlimma: Searching for comparison =", comparison_to_search))
-  message(paste("   generateProtDAVolcanoPlotGlimma: Original selected_contrast =", selected_contrast))
+  if (is.na(comparison_to_search)) {
+    comparison_to_search <- selected_contrast
+  }
 
-  # Filter for selected contrast using the extracted comparison name
   contrast_data <- da_proteins_long |>
-    dplyr::filter(comparison == comparison_to_search)
+    dplyr::filter(comparison == comparison_to_search | comparison == selected_contrast)
 
   if (nrow(contrast_data) == 0) {
-    message(paste("   generateProtDAVolcanoPlotGlimma: No data found for contrast", comparison_to_search))
-    available_comparisons <- unique(da_proteins_long$comparison)
-    message(paste("   generateProtDAVolcanoPlotGlimma: Available comparisons:", paste(available_comparisons, collapse = ", ")))
+    logger::log_warn(sprintf("   No data found for contrast %s", comparison_to_search))
     return(NULL)
   }
 
-  # CRITICAL FIX: Dynamically identify the ID column if args_row_id is not in data
+  # Dynamically identify ID column
   if (!(args_row_id %in% names(da_proteins_long))) {
     potential_ids <- c("Protein.Ids", "Protein.ID", "Entry", "uniprot_acc", "sites_id")
     found_id <- names(da_proteins_long)[names(da_proteins_long) %in% potential_ids][1]
     
     if (!is.na(found_id)) {
-      message(paste("   generateProtDAVolcanoPlotGlimma: Row ID column", args_row_id, "not found. Using instead:", found_id))
       args_row_id <- found_id
     } else {
-      # Fallback to the first column if none of the specific ones are found
-      found_id <- names(da_proteins_long)[1]
-      message(paste("   generateProtDAVolcanoPlotGlimma: Row ID column not found, falling back to:", found_id))
-      args_row_id <- found_id
+      args_row_id <- names(da_proteins_long)[1]
     }
   }
 
-  # Prepare volcano plot table
-  volcano_plot_tab <- contrast_data |>
-    dplyr::mutate(best_uniprot_acc = str_split(!!sym(args_row_id), ":") |> purrr::map_chr(1))
+  # Prepare annotation data
+  plot_data <- contrast_data |>
+    dplyr::mutate(
+      Protein.Ids = !!sym(args_row_id),
+      best_uniprot_acc = stringr::str_extract(Protein.Ids, "^[^|:]+"),
+      best_uniprot_acc_base = gsub("-\\d+$", "", best_uniprot_acc)
+    )
 
-  # Add UniProt annotations if available
+  # Merge UniProt annotations if available
   if (!is.null(uniprot_tbl)) {
-    volcano_plot_tab <- volcano_plot_tab |>
-      left_join(uniprot_tbl, by = join_by(best_uniprot_acc == !!sym(uniprot_id_column))) |>
-      dplyr::rename(UNIPROT_GENENAME = !!sym(gene_names_column)) |>
-      mutate(UNIPROT_GENENAME = purrr::map_chr(UNIPROT_GENENAME, \(x){
-        tryCatch(
-          {
-            if (is.na(x) || is.null(x) || x == "") {
-              ""
-            } else {
-              split_result <- str_split(x, " |:")[[1]]
-              if (length(split_result) > 0) split_result[1] else ""
-            }
-          },
-          error = function(e) ""
+    id_col_uniprot <- intersect(c("Entry", "UNIPROTKB", "Protein.Ids"), names(uniprot_tbl))[1]
+    gene_col_uniprot <- intersect(c("gene_names", "GENENAME", "Gene.Name", "GeneName"), names(uniprot_tbl))[1]
+
+    if (!is.na(id_col_uniprot) && !is.na(gene_col_uniprot)) {
+      mapping_df <- uniprot_tbl |>
+        dplyr::select(all_of(c(id_col_uniprot, gene_col_uniprot))) |>
+        dplyr::rename(Entry = !!sym(id_col_uniprot), GeneSymbol = !!sym(gene_col_uniprot)) |>
+        dplyr::mutate(GeneSymbol = stringr::str_extract(GeneSymbol, "^[^ ;:]+")) |>
+        dplyr::distinct(Entry, .keep_all = TRUE)
+
+      plot_data <- plot_data |>
+        dplyr::left_join(mapping_df, by = c("best_uniprot_acc_base" = "Entry")) |>
+        dplyr::mutate(
+          gene_name = dplyr::coalesce(GeneSymbol, best_uniprot_acc)
         )
-      })) |>
-      dplyr::mutate(gene_name = UNIPROT_GENENAME)
-  } else {
-    volcano_plot_tab <- volcano_plot_tab |>
-      dplyr::mutate(gene_name = best_uniprot_acc)
-  }
-
-  # Add visualization columns
-  volcano_plot_tab <- volcano_plot_tab |>
-    mutate(lqm = -log10(!!sym(fdr_column))) |>
-    dplyr::mutate(label = case_when(
-      abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) >= da_q_val_thresh ~ "Not sig., logFC >= 1",
-      abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) < da_q_val_thresh ~ "Sig., logFC >= 1",
-      abs(!!sym(log2fc_column)) < 1 & !!sym(fdr_column) < da_q_val_thresh ~ "Sig., logFC < 1",
-      TRUE ~ "Not sig."
-    )) |>
-    dplyr::mutate(colour = case_when(
-      abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) >= da_q_val_thresh ~ "orange",
-      abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) < da_q_val_thresh ~ "purple",
-      abs(!!sym(log2fc_column)) < 1 & !!sym(fdr_column) < da_q_val_thresh ~ "blue",
-      TRUE ~ "black"
-    )) |>
-    dplyr::mutate(analysis_type = comparison) |>
-    dplyr::select(
-      best_uniprot_acc, lqm, !!sym(fdr_column), !!sym(raw_p_value_column), !!sym(log2fc_column), comparison, label, colour, gene_name,
-      any_of(display_columns)
-    ) |>
-    dplyr::mutate(my_alpha = case_when(
-      gene_name != "" ~ 1,
-      TRUE ~ 0.5
-    ))
-
-  message("   generateProtDAVolcanoPlotGlimma Step: Generating interactive plot widget...")
-
-  # Find the coefficient index for this contrast
-  coef_names <- colnames(contrasts_results$fit.eb$coefficients)
-  message(paste("   generateProtDAVolcanoPlotGlimma: Available coefficient names:", paste(coef_names, collapse = ", ")))
-
-  # Improved matching according to Glimma best practices
-  # Contrast can be in format "GroupA-GroupB" or "groupGroupA-groupGroupB" or "ContrastName=Expression"
-  
-  # 1. Try pattern from selected_contrast if it contains expression after "="
-  expression_part <- stringr::str_extract(selected_contrast, "(?<==).+")
-  coef_index <- integer(0)
-  
-  if (!is.na(expression_part)) {
-    message(paste("   generateProtDAVolcanoPlotGlimma: Looking for exact expression match:", expression_part))
-    coef_index <- which(coef_names == expression_part)
-  }
-  
-  # 2. Try pattern "^ComparisonName=" (common in MultiScholaR)
-  if (length(coef_index) == 0) {
-    message(paste("   generateProtDAVolcanoPlotGlimma: Looking for pattern:", paste0("^", comparison_to_search, "=")))
-    coef_index <- grep(paste0("^", comparison_to_search, "="), coef_names)
-  }
-
-  # 3. Try exact match with friendly name
-  if (length(coef_index) == 0) {
-    message("   generateProtDAVolcanoPlotGlimma: Trying exact friendly name match")
-    coef_index <- which(coef_names == comparison_to_search)
-  }
-
-  # 4. Try exact match with full selected_contrast
-  if (length(coef_index) == 0) {
-    message("   generateProtDAVolcanoPlotGlimma: Trying exact selected_contrast match")
-    coef_index <- which(coef_names == selected_contrast)
-  }
-  
-  # 5. Fallback: partial match
-  if (length(coef_index) == 0) {
-    message("   generateProtDAVolcanoPlotGlimma: Trying partial match")
-    coef_index <- grep(comparison_to_search, coef_names)
-  }
-
-  if (length(coef_index) == 0) {
-    message(paste("   generateProtDAVolcanoPlotGlimma: FINAL FAILURE - No coefficient found for:", selected_contrast))
-    for (i in seq_along(coef_names)) {
-      message(sprintf("     [%d] %s", i, coef_names[i]))
+    } else {
+      plot_data$gene_name <- plot_data$best_uniprot_acc
     }
+  } else {
+    plot_data$gene_name <- plot_data$best_uniprot_acc
+  }
+
+  # Prepare plotting metrics
+  # Handle zero FDR to avoid Inf values in -log10
+  plot_data <- plot_data |>
+    dplyr::mutate(
+      FDR = !!sym(fdr_column),
+      FDR = ifelse(FDR == 0, min(FDR[FDR > 0], na.rm = TRUE) * 0.1, FDR),
+      negLog10FDR = -log10(FDR),
+      logFC = !!sym(log2fc_column)
+    )
+
+  # Remove rows with Inf/NA plotting metrics
+  plot_data <- plot_data |>
+    dplyr::filter(!is.infinite(negLog10FDR), !is.na(negLog10FDR), !is.na(logFC))
+
+  if (nrow(plot_data) == 0) {
+    logger::log_warn("   Skipping glimmaXY - no valid rows after removing Inf/NA")
     return(NULL)
   }
 
-  # Take first match if multiple
-  coef_index <- coef_index[1]
-  message(paste("   generateProtDAVolcanoPlotGlimma: Using coefficient index", coef_index, "for contrast", coef_names[coef_index]))
+  # Add significance columns for Glimma status coloring
+  plot_data <- plot_data |>
+    dplyr::mutate(
+      Status = case_when(
+        logFC >= 1 & FDR < da_q_val_thresh ~ 1,
+        logFC <= -1 & FDR < da_q_val_thresh ~ -1,
+        TRUE ~ 0
+      )
+    )
 
-  # Prepare counts matrix and groups
-  counts_mat <- da_results_list$theObject@protein_quant_table |>
-    column_to_rownames(da_results_list$theObject@protein_id_column) |>
-    as.matrix()
-
-  this_design_matrix <- da_results_list$theObject@design_matrix
-  rownames(this_design_matrix) <- this_design_matrix[, da_results_list$theObject@sample_id]
-  
-  # Ensure groups are available and match counts_mat
-  common_samples <- intersect(colnames(counts_mat), rownames(this_design_matrix))
-  if (length(common_samples) > 0) {
-    counts_mat <- counts_mat[, common_samples, drop = FALSE]
-    this_groups <- this_design_matrix[common_samples, "group"]
-  } else {
-    message("   generateProtDAVolcanoPlotGlimma: WARNING - No common samples found between counts and design matrix")
-    this_groups <- NULL
+  # Prepare Counts and Groups
+  counts_mat <- NULL
+  groups_vec <- NULL
+  if (!is.null(da_results_list$theObject)) {
+    counts_df <- as.data.frame(da_results_list$theObject@protein_quant_table)
+    if (args_row_id %in% names(counts_df)) {
+      # Filter counts to match plot_data
+      counts_df <- counts_df |> dplyr::filter(!!sym(args_row_id) %in% plot_data$Protein.Ids)
+      # Ensure exact row order
+      match_idx <- match(plot_data$Protein.Ids, counts_df[[args_row_id]])
+      counts_df <- counts_df[match_idx[!is.na(match_idx)], , drop = FALSE]
+      
+      counts_mat <- counts_df |> tibble::column_to_rownames(args_row_id) |> as.matrix()
+      
+      this_design <- da_results_list$theObject@design_matrix
+      if ("group" %in% names(this_design)) {
+        common_samples <- intersect(colnames(counts_mat), rownames(this_design))
+        if (length(common_samples) > 0) {
+          counts_mat <- counts_mat[, common_samples, drop = FALSE]
+          groups_vec <- as.character(this_design[common_samples, "group"])
+        }
+      }
+    }
   }
 
-  # Generate the Glimma widget
-  # Call to getGlimmaVolcanoProteomicsWidget
-  glimma_widget <- getGlimmaVolcanoProteomicsWidget(contrasts_results$fit.eb,
-    coef = coef_index,
-    volcano_plot_tab = volcano_plot_tab,
-    uniprot_column = best_uniprot_acc,
-    gene_name_column = gene_name,
-    display_columns = display_columns,
-    counts_tbl = counts_mat,
-    groups = this_groups,
-    ...
+  # Build Clean Annotation Dataframe
+  clean_anno <- plot_data |>
+    dplyr::select(Protein.Ids, gene_name, any_of(display_columns)) |>
+    dplyr::rename_with(~ gsub("\\.", "_", .)) |>
+    dplyr::mutate(dplyr::across(everything(), as.character)) |>
+    dplyr::mutate(dplyr::across(everything(), ~ tidyr::replace_na(., ""))) |>
+    as.data.frame()
+    
+  # Set rownames to match x and y
+  rownames(clean_anno) <- plot_data$gene_name
+
+  if (!is.null(counts_mat)) {
+    rownames(counts_mat) <- plot_data$gene_name
+  }
+
+  logger::log_info(sprintf("   Generating glimmaXY with %d proteins", nrow(plot_data)))
+
+  # Build data structure required for glimmaXYWidget
+  xy_data <- Glimma:::buildXYData(
+    table = data.frame(logFC = signif(plot_data$logFC, 4), negLog10FDR = signif(plot_data$negLog10FDR, 4)),
+    status = plot_data$Status,
+    main = paste("Interactive Volcano Plot:", comparison_to_search),
+    display.columns = colnames(clean_anno),
+    anno = clean_anno,
+    counts = counts_mat,
+    xlab = "logFC",
+    ylab = "negLog10FDR",
+    status.cols = c("#1052bd", "silver", "#cc212f"),
+    sample.cols = rep("#1f77b4", if (is.null(counts_mat)) 0 else ncol(counts_mat)),
+    groups = groups_vec,
+    transform.counts = "none"
   )
 
-  message("--- Exiting generateProtDAVolcanoPlotGlimma ---")
-  return(glimma_widget)
+  # Return htmlwidget directly for Shiny UI integration
+  widget <- Glimma:::glimmaXYWidget(xy_data, width = 920, height = 920, html = NULL)
+  
+  logger::log_info("--- Exiting generateProtDAVolcanoPlotGlimma ---")
+  return(widget)
 }
 
 
@@ -3168,7 +3144,7 @@ extractResults <- function(results_list) {
 writeInteractiveVolcanoPlotProteomics <- function(
   da_proteins_long,
   uniprot_tbl,
-  fit.eb,
+  fit.eb = NULL, # No longer strictly required but kept for signature compatibility
   publication_graphs_dir,
   args_row_id = "uniprot_acc",
   fdr_column = "fdr_qvalue",
@@ -3181,46 +3157,45 @@ writeInteractiveVolcanoPlotProteomics <- function(
   gene_names_column = "gene_names",
   display_columns = c("best_uniprot_acc")
 ) {
+
+  logger::log_info("--- Entering writeInteractiveVolcanoPlotProteomics ---")
+
+  # Dynamically identify row ID column 
+  if (!(args_row_id %in% names(da_proteins_long))) {
+    potential_ids <- c("Protein.Ids", "Protein.ID", "Entry", "uniprot_acc", "sites_id")
+    found_id <- names(da_proteins_long)[names(da_proteins_long) %in% potential_ids][1]
+    if (!is.na(found_id)) args_row_id <- found_id
+  }
+
   volcano_plot_tab <- da_proteins_long |>
-    dplyr::mutate(best_uniprot_acc = str_split(!!sym(args_row_id), ":") |> purrr::map_chr(1)) |>
-    left_join(uniprot_tbl, by = join_by(best_uniprot_acc == !!sym(uniprot_id_column))) |>
-    dplyr::rename(UNIPROT_GENENAME = gene_names_column) |>
-    mutate(UNIPROT_GENENAME = purrr::map_chr(UNIPROT_GENENAME, \(x){
-      tryCatch(
-        {
-          if (is.na(x) || is.null(x) || x == "") {
-            ""
-          } else {
-            split_result <- str_split(x, " |:")[[1]]
-            if (length(split_result) > 0) split_result[1] else ""
-          }
-        },
-        error = function(e) ""
-      )
-    })) |>
-    dplyr::mutate(gene_name = UNIPROT_GENENAME) |>
-    mutate(lqm = -log10(!!sym(fdr_column))) |>
-    dplyr::mutate(label = case_when(
-      abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) >= da_q_val_thresh ~ "Not sig., logFC >= 1",
-      abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) < da_q_val_thresh ~ "Sig., logFC >= 1",
-      abs(!!sym(log2fc_column)) < 1 & !!sym(fdr_column) < da_q_val_thresh ~ "Sig., logFC < 1",
-      TRUE ~ "Not sig."
-    )) |>
-    dplyr::mutate(colour = case_when(
-      abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) >= da_q_val_thresh ~ "orange",
-      abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) < da_q_val_thresh ~ "purple",
-      abs(!!sym(log2fc_column)) < 1 & !!sym(fdr_column) < da_q_val_thresh ~ "blue",
-      TRUE ~ "black"
-    )) |>
-    dplyr::mutate(analysis_type = comparison) |>
-    dplyr::select(
-      best_uniprot_acc, lqm, !!sym(fdr_column), !!sym(raw_p_value_column), !!sym(log2fc_column), comparison, label, colour, gene_name,
-      any_of(display_columns)
-    ) |>
-    dplyr::mutate(my_alpha = case_when(
-      gene_name != "" ~ 1,
-      TRUE ~ 0.5
-    ))
+    dplyr::mutate(
+      best_uniprot_acc = stringr::str_extract(!!sym(args_row_id), "^[^|:]+"),
+      best_uniprot_acc_base = gsub("-\\d+$", "", best_uniprot_acc)
+    )
+
+  if (!is.null(uniprot_tbl)) {
+    id_col_uniprot <- intersect(c("Entry", "UNIPROTKB", "Protein.Ids"), names(uniprot_tbl))[1]
+    gene_col_uniprot <- intersect(c("gene_names", "GENENAME", "Gene.Name", "GeneName"), names(uniprot_tbl))[1]
+
+    if (!is.na(id_col_uniprot) && !is.na(gene_col_uniprot)) {
+      mapping_df <- uniprot_tbl |>
+        dplyr::select(all_of(c(id_col_uniprot, gene_col_uniprot))) |>
+        dplyr::rename(Entry = !!sym(id_col_uniprot), GeneSymbol = !!sym(gene_col_uniprot)) |>
+        dplyr::mutate(GeneSymbol = stringr::str_extract(GeneSymbol, "^[^ ;:]+")) |>
+        dplyr::distinct(Entry, .keep_all = TRUE)
+
+      volcano_plot_tab <- volcano_plot_tab |>
+        dplyr::left_join(mapping_df, by = c("best_uniprot_acc_base" = "Entry")) |>
+        dplyr::mutate(
+          gene_name = dplyr::coalesce(GeneSymbol, best_uniprot_acc)
+        )
+    } else {
+      volcano_plot_tab$gene_name <- volcano_plot_tab$best_uniprot_acc
+    }
+  } else {
+    volcano_plot_tab$gene_name <- volcano_plot_tab$best_uniprot_acc
+  }
+
 
   output_dir <- file.path(
     publication_graphs_dir,
@@ -3229,29 +3204,44 @@ writeInteractiveVolcanoPlotProteomics <- function(
 
   dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
 
-
+  # Iterate over uniquely defined contrasts instead of relying on coefficients index
+  unique_contrasts <- unique(da_proteins_long$comparison)
+  logger::log_info(sprintf("   Found %d unique contrasts to plot", length(unique_contrasts)))
+  
   purrr::walk(
-    seq_len(ncol(fit.eb$coefficients)),
-    \(coef) { # print(coef)
+    unique_contrasts,
+    \(contrast_name) {
+      logger::log_info(sprintf("   Generating static interactive plot for: %s", contrast_name))
 
-      print(paste("run volcano plot", coef))
+      contrast_data <- volcano_plot_tab |> 
+        dplyr::filter(comparison == contrast_name)
+      
+      # Filter counts to only the IDs in the contrast results to avoid length mismatches
+      counts_mat_filtered <- NULL
+      if (!is.null(counts_tbl)) {
+        ids_in_contrast <- contrast_data[[args_row_id]]
+        valid_ids <- intersect(ids_in_contrast, rownames(counts_tbl))
+        if(length(valid_ids) > 0) {
+           counts_mat_filtered <- counts_tbl[valid_ids, , drop = FALSE]
+        }
+      }
 
-      #                    print(head( counts_tbl))
-      #                    print(groups)
-      #                    print( output_dir)
-
-      getGlimmaVolcanoProteomics(fit.eb,
-        coef = coef,
-        volcano_plot_tab = volcano_plot_tab,
+      getGlimmaVolcanoProteomics(
+        volcano_plot_tab = contrast_data,
         uniprot_column = best_uniprot_acc,
         gene_name_column = gene_name,
         display_columns = display_columns,
-        counts_tbl = counts_tbl,
+        counts_tbl = counts_mat_filtered,
         groups = groups,
-        output_dir = output_dir
+        output_dir = output_dir,
+        fdr_column = fdr_column,
+        log2fc_column = log2fc_column,
+        da_q_val_thresh = da_q_val_thresh,
+        contrast_name = contrast_name
       )
     }
   )
+  logger::log_info("--- Exiting writeInteractiveVolcanoPlotProteomics ---")
 }
 
 

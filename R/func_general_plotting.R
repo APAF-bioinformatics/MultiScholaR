@@ -2095,9 +2095,10 @@ printOneVolcanoPlotWithProteinLabel <- function(
 # ----------------------------------------------------------------------------
 # getGlimmaVolcanoProteomics
 # ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# getGlimmaVolcanoProteomics
+# ----------------------------------------------------------------------------
 getGlimmaVolcanoProteomics <- function(
-  r_obj,
-  coef,
   volcano_plot_tab,
   uniprot_column = best_uniprot_acc,
   gene_name_column = gene_name,
@@ -2107,92 +2108,151 @@ getGlimmaVolcanoProteomics <- function(
   counts_tbl = NULL,
   groups = NULL,
   output_dir,
+  fdr_column = "fdr_qvalue",
+  log2fc_column = "log2FC",
+  da_q_val_thresh = 0.05,
+  contrast_name = "Contrast",
   ...
 ) {
-  if (coef <= ncol(r_obj$coefficients)) {
-    best_uniprot_acc <- str_split(rownames(r_obj@.Data[[1]]), " |:") |>
-      purrr::map_chr(1)
+  
+  # 1. Clean and prepare basic annotation
+  volcano_plot_tab_cln <- volcano_plot_tab |>
+    dplyr::select(
+      {{ uniprot_column }},
+      {{ gene_name_column }}, any_of(display_columns)
+    ) |>
+    distinct()
 
-    volcano_plot_tab_cln <- volcano_plot_tab |>
+  if (!is.null(additional_annotations) &
+    !is.null(additional_annotations_join_column)) {
+    volcano_plot_tab_cln <- volcano_plot_tab_cln |>
+      left_join(additional_annotations,
+        by = join_by({{ uniprot_column }} == {{ additional_annotations_join_column }})
+      ) |>
       dplyr::select(
         {{ uniprot_column }},
-        {{ gene_name_column }}, any_of(display_columns)
-      ) |>
-      distinct()
+        {{ gene_name_column }},
+        any_of(display_columns)
+      )
+  }
 
+  anno_tbl <- volcano_plot_tab_cln |>
+    mutate(gene_name = case_when(
+      is.na({{ gene_name_column }}) | {{ gene_name_column }} == "" ~ as.character({{ uniprot_column }}),
+      TRUE ~ as.character({{ gene_name_column }})
+    ))
 
-    if (!is.null(additional_annotations) &
-      !is.null(additional_annotations_join_column)) {
-      volcano_plot_tab_cln <- volcano_plot_tab_cln |>
-        left_join(additional_annotations,
-          by = join_by({{ uniprot_column }} == {{ additional_annotations_join_column }})
-        ) |>
-        dplyr::select(
-          {{ uniprot_column }},
-          {{ gene_name_column }},
-          any_of(display_columns)
-        )
-    }
+  # CRITICAL FIX: Glimma Best Practice: Replace dots with underscores in column names
+  # and coerce all to character, replacing NAs with empty strings.
+  anno_tbl <- anno_tbl |>
+    dplyr::rename_with(~ gsub("\\.", "_", .)) |>
+    dplyr::mutate(across(everything(), as.character)) |>
+    dplyr::mutate(across(everything(), ~ tidyr::replace_na(., ""))) |>
+    as.data.frame()
 
-    anno_tbl <- data.frame(
-      uniprot_acc = rownames(r_obj@.Data[[1]]),
-      temp_column = best_uniprot_acc
+  # 2. Extract plot data (x, y) from the main table
+  # Since this function is called from outputDaAnalysisResults, volcano_plot_tab already has the metrics.
+  plot_data <- volcano_plot_tab |>
+    dplyr::mutate(
+      FDR = !!sym(fdr_column),
+      FDR = ifelse(FDR == 0, min(FDR[FDR > 0], na.rm = TRUE) * 0.1, FDR),
+      negLog10FDR = -log10(FDR),
+      logFC = !!sym(log2fc_column)
     ) |>
-      dplyr::rename({{ uniprot_column }} := temp_column)
+    dplyr::filter(!is.infinite(negLog10FDR), !is.na(negLog10FDR), !is.na(logFC))
 
-    anno_tbl <- anno_tbl |>
-      left_join(volcano_plot_tab_cln,
-        by = join_by({{ uniprot_column }} == {{ uniprot_column }})
-      ) |>
-      mutate(gene_name = case_when(
-        is.na(gene_name) | gene_name == "" ~ {{ uniprot_column }},
-        TRUE ~ gene_name
-      ))
-
-    # Glimma Best Practice: Replace dots with underscores in column names
-    colnames(anno_tbl) <- gsub("\\.", "_", colnames(anno_tbl))
-    
-    # Glimma Best Practice: Replace NAs with empty strings and coerce to character
-    anno_tbl <- anno_tbl |>
-      mutate(across(everything(), ~ as.character(ifelse(is.na(.), "", .))))
-
-    gene_names <- anno_tbl |>
-      dplyr::pull(gene_name)
-
-    rownames(r_obj@.Data[[1]]) <- gene_names
-    
-    # Ensure counts_tbl alignment if provided
-    if (!is.null(counts_tbl)) {
-      # The identifiers in anno_tbl first column must match rownames(counts_tbl)
-      # In this function, the first column of anno_tbl is currently 'uniprot_acc' (from rownames of r_obj)
-      # or whatever uniprot_column was renamed to (but it was renamed from temp_column).
-      # Actually, the first column of anno_tbl is 'uniprot__acc' (dot replaced by underscore)
-      id_col <- colnames(anno_tbl)[1]
-      
-      # We need to make sure counts_tbl rownames match the IDs we are using
-      # Let's assume the caller passed counts_tbl with rownames matching the r_obj identifiers
-    }
-
-    r_obj$p.value[, coef] <- qvalue(r_obj$p.value[, coef])$qvalues
-
-    htmlwidgets::saveWidget(
-      widget = Glimma::glimmaVolcano(r_obj,
-        coef = coef,
-        anno = anno_tbl,
-        counts = counts_tbl,
-        groups = groups,
-        display.columns = colnames(anno_tbl),
-        status = decideTests(r_obj, adjust.method = "none"),
-        p.adj.method = "none",
-        transform.counts = "none",
-        ...
-      ) # the plotly object
-      , file = file.path(
-        output_dir,
-        paste0(colnames(r_obj$coefficients)[coef], ".html")
-      ) # the path & file name
-      , selfcontained = TRUE # creates a single html file
+  if (nrow(plot_data) == 0) return(NULL)
+  
+  # Add status for coloring
+  plot_data <- plot_data |>
+    dplyr::mutate(
+      Status = case_when(
+        logFC >= 1 & FDR < da_q_val_thresh ~ 1,
+        logFC <= -1 & FDR < da_q_val_thresh ~ -1,
+        TRUE ~ 0
+      )
     )
+
+  # 3. Match anno_tbl rows to plot_data exactly
+  # Retrieve the actual column name for uniprot_column to use in matching
+  id_col_str <- rlang::as_label(rlang::enquo(uniprot_column))
+  id_col_cln <- gsub("\\.", "_", id_col_str)
+  
+  match_idx <- match(plot_data[[id_col_str]], anno_tbl[[id_col_cln]])
+  anno_tbl <- anno_tbl[match_idx, , drop = FALSE]
+  
+  gene_names <- anno_tbl$gene_name
+  rownames(anno_tbl) <- gene_names
+
+  # 4. Prepare Counts matrix
+  if (!is.null(counts_tbl)) {
+    matching_col <- NULL
+    
+    # Determine which column in plot_data maps to rownames(counts_tbl)
+    id_col_str <- rlang::as_label(rlang::enquo(uniprot_column))
+    potential_cols <- unique(c(id_col_str, "Protein.Ids", "Protein.ID", "uniprot_acc", "Entry", names(plot_data)))
+    
+    for (col in potential_cols) {
+      if (col %in% names(plot_data)) {
+        if (sum(plot_data[[col]] %in% rownames(counts_tbl)) > 0) {
+          matching_col <- col
+          break
+        }
+      }
+    }
+    
+    if (!is.null(matching_col)) {
+      # Ensure plot_data only includes items present in the counts table
+      has_counts <- plot_data[[matching_col]] %in% rownames(counts_tbl)
+      
+      if (sum(has_counts) < nrow(plot_data)) {
+         plot_data <- plot_data[has_counts, , drop = FALSE]
+         anno_tbl <- anno_tbl[has_counts, , drop = FALSE]
+         gene_names <- anno_tbl$gene_name
+      }
+      
+      counts_filtered <- counts_tbl[plot_data[[matching_col]], , drop = FALSE]
+      rownames(counts_filtered) <- gene_names
+    } else if (nrow(counts_tbl) == nrow(plot_data)) {
+      counts_filtered <- counts_tbl
+      rownames(counts_filtered) <- gene_names
+    } else {
+      counts_filtered <- NULL
+    }
+  } else {
+    counts_filtered <- NULL
+  }
+
+  # 5. Generate glimmaXY Plot with temporary file workaround
+  temp_html_name <- paste0("volcano_", gsub("[^A-Za-z0-9]", "_", contrast_name), "_temp.html")
+  
+  Glimma::glimmaXY(
+    x = plot_data$logFC,
+    y = plot_data$negLog10FDR,
+    xlab = "logFC",
+    ylab = "negLog10FDR",
+    counts = counts_filtered,
+    groups = groups,
+    status = plot_data$Status,
+    anno = anno_tbl,
+    display.columns = colnames(anno_tbl),
+    transform.counts = "none",
+    status.cols = c("#1052bd", "silver", "#cc212f"),
+    sample.cols = if (!is.null(counts_filtered)) rep("#1f77b4", ncol(counts_filtered)) else NULL,
+    main = paste("Interactive Volcano Plot:", contrast_name),
+    html = temp_html_name
+  )
+
+  # 6. Post-process to inject CSS and move to final destination
+  final_html_path <- file.path(output_dir, paste0(contrast_name, ".html"))
+  
+  if (file.exists(temp_html_name)) {
+    html_lines <- readLines(temp_html_name)
+    css_fix <- "<style> .dataTables_wrapper { overflow-x: auto !important; } .dataTables_scroll { display: table !important; width: auto !important; min-width: 100% !important; } .dataTables_scrollHead, .dataTables_scrollBody, .dataTables_scrollHeadInner, .dataTables_scrollHeadInner > table, .dataTables_scrollBody > table { display: contents !important; } .dataTables_scrollBody thead { display: none !important; } .dataTable th, .dataTable td { white-space: nowrap !important; } </style></head>"
+    html_lines <- sub("</head>", css_fix, html_lines)
+    writeLines(html_lines, temp_html_name)
+
+    file.rename(temp_html_name, final_html_path)
   }
 }
 
