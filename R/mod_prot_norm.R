@@ -1720,31 +1720,25 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
                           ifelse(is.null(omic_type), "NULL", omic_type),
                           ifelse(is.null(experiment_label), "NULL", experiment_label)))
             
-            # SKIP updateProteinFiltering for now to test if this is the problem
-            if (FALSE) {  # TEMPORARILY DISABLED
-              tryCatch({
-                filtering_plot <- updateProteinFiltering(
-                  data = ruv_corrected_s4_clean@protein_quant_table,
-                  step_name = "11_RUV_filtered",
-                  omic_type = omic_type,
-                  experiment_label = experiment_label,
-                  return_grid = TRUE,
-                  overwrite = TRUE
-                )
-                
-                # Store the filtering summary plot for display
-                norm_data$post_norm_filtering_plot <- filtering_plot
-                message("*** STEP 5: Protein filtering tracking updated successfully ***")
-                
-              }, error = function(e) {
-                message(paste("*** WARNING: updateProteinFiltering failed:", e$message, "***"))
-                message("*** STEP 5: Continuing without filtering plot update ***")
-                norm_data$post_norm_filtering_plot <- NULL
-              })
-            } else {
-              message("*** STEP 5: SKIPPING updateProteinFiltering to test workflow ***")
+            tryCatch({
+              filtering_plot <- updateProteinFiltering(
+                data = ruv_corrected_s4_clean@protein_quant_table,
+                step_name = "11_RUV_filtered",
+                omic_type = omic_type,
+                experiment_label = experiment_label,
+                return_grid = TRUE,
+                overwrite = TRUE
+              )
+              
+              # Store the filtering summary plot for display
+              norm_data$post_norm_filtering_plot <- filtering_plot
+              message("*** STEP 5: Protein filtering tracking updated successfully ***")
+              
+            }, error = function(e) {
+              message(paste("*** WARNING: updateProteinFiltering failed:", e$message, "***"))
+              message("*** STEP 5: Continuing without filtering plot update ***")
               norm_data$post_norm_filtering_plot <- NULL
-            }
+            })
             
             # Get RUV parameters BEFORE using them
             best_percentage <- if (!is.null(norm_data$ruv_optimization_result)) {
