@@ -187,7 +187,8 @@ generateProtDAVolcanoPlotGlimma <- function(
   da_q_val_thresh = 0.05,
   uniprot_id_column = "Entry",
   gene_names_column = "gene_names",
-  display_columns = c("best_uniprot_acc")
+  display_columns = c("best_uniprot_acc"),
+  ...
 ) {
   message("--- Entering generateProtDAVolcanoPlotGlimma ---")
   message(paste("   generateProtDAVolcanoPlotGlimma Arg: selected_contrast =", selected_contrast))
@@ -207,8 +208,6 @@ generateProtDAVolcanoPlotGlimma <- function(
   contrasts_results <- da_results_list$contrasts_results
 
   # CRITICAL FIX: Extract comparison name from selected_contrast if it contains "="
-  # The selected_contrast might be the full name like "GA_Elevated.minus.GA_Control=groupGA_Elevated-groupGA_Control"
-  # But the comparison column in da_proteins_long contains only "GA_Elevated.minus.GA_Control"
   comparison_to_search <- stringr::str_extract(selected_contrast, "^[^=]+")
   message(paste("   generateProtDAVolcanoPlotGlimma: Searching for comparison =", comparison_to_search))
   message(paste("   generateProtDAVolcanoPlotGlimma: Original selected_contrast =", selected_contrast))
@@ -219,14 +218,26 @@ generateProtDAVolcanoPlotGlimma <- function(
 
   if (nrow(contrast_data) == 0) {
     message(paste("   generateProtDAVolcanoPlotGlimma: No data found for contrast", comparison_to_search))
-    # DEBUG: Show what comparisons are actually available
     available_comparisons <- unique(da_proteins_long$comparison)
     message(paste("   generateProtDAVolcanoPlotGlimma: Available comparisons:", paste(available_comparisons, collapse = ", ")))
     return(NULL)
   }
 
-  message(paste("   generateProtDAVolcanoPlotGlimma: Found", nrow(contrast_data), "rows for contrast", comparison_to_search))
-  message("   generateProtDAVolcanoPlotGlimma Step: Preparing volcano plot data...")
+  # CRITICAL FIX: Dynamically identify the ID column if args_row_id is not in data
+  if (!(args_row_id %in% names(da_proteins_long))) {
+    potential_ids <- c("Protein.Ids", "Protein.ID", "Entry", "uniprot_acc", "sites_id")
+    found_id <- names(da_proteins_long)[names(da_proteins_long) %in% potential_ids][1]
+    
+    if (!is.na(found_id)) {
+      message(paste("   generateProtDAVolcanoPlotGlimma: Row ID column", args_row_id, "not found. Using instead:", found_id))
+      args_row_id <- found_id
+    } else {
+      # Fallback to the first column if none of the specific ones are found
+      found_id <- names(da_proteins_long)[1]
+      message(paste("   generateProtDAVolcanoPlotGlimma: Row ID column not found, falling back to:", found_id))
+      args_row_id <- found_id
+    }
+  }
 
   # Prepare volcano plot table
   volcano_plot_tab <- contrast_data |>
@@ -284,38 +295,55 @@ generateProtDAVolcanoPlotGlimma <- function(
   message("   generateProtDAVolcanoPlotGlimma Step: Generating interactive plot widget...")
 
   # Find the coefficient index for this contrast
-  # CRITICAL FIX: Use grep for reliable pattern matching instead of stringr
   coef_names <- colnames(contrasts_results$fit.eb$coefficients)
   message(paste("   generateProtDAVolcanoPlotGlimma: Available coefficient names:", paste(coef_names, collapse = ", ")))
-  message(paste("   generateProtDAVolcanoPlotGlimma: Looking for pattern:", paste0("^", comparison_to_search, "=")))
 
-  # Use grep to find coefficient that starts with friendly name followed by "="
-  coef_index <- grep(paste0("^", comparison_to_search, "="), coef_names)
-  message(paste("   generateProtDAVolcanoPlotGlimma: Pattern match found indices:", paste(coef_index, collapse = ", ")))
-
-  # Fallback: try exact match with the friendly name (for backwards compatibility)
+  # Improved matching according to Glimma best practices
+  # Contrast can be in format "GroupA-GroupB" or "groupGroupA-groupGroupB" or "ContrastName=Expression"
+  
+  # 1. Try pattern from selected_contrast if it contains expression after "="
+  expression_part <- stringr::str_extract(selected_contrast, "(?<==).+")
+  coef_index <- integer(0)
+  
+  if (!is.na(expression_part)) {
+    message(paste("   generateProtDAVolcanoPlotGlimma: Looking for exact expression match:", expression_part))
+    coef_index <- which(coef_names == expression_part)
+  }
+  
+  # 2. Try pattern "^ComparisonName=" (common in MultiScholaR)
   if (length(coef_index) == 0) {
-    message("   generateProtDAVolcanoPlotGlimma: Pattern match failed, trying exact match with friendly name")
+    message(paste("   generateProtDAVolcanoPlotGlimma: Looking for pattern:", paste0("^", comparison_to_search, "=")))
+    coef_index <- grep(paste0("^", comparison_to_search, "="), coef_names)
+  }
+
+  # 3. Try exact match with friendly name
+  if (length(coef_index) == 0) {
+    message("   generateProtDAVolcanoPlotGlimma: Trying exact friendly name match")
     coef_index <- which(coef_names == comparison_to_search)
   }
 
-  # Last resort: try exact match with selected_contrast
+  # 4. Try exact match with full selected_contrast
   if (length(coef_index) == 0) {
-    message("   generateProtDAVolcanoPlotGlimma: Exact friendly name match failed, trying selected_contrast")
+    message("   generateProtDAVolcanoPlotGlimma: Trying exact selected_contrast match")
     coef_index <- which(coef_names == selected_contrast)
+  }
+  
+  # 5. Fallback: partial match
+  if (length(coef_index) == 0) {
+    message("   generateProtDAVolcanoPlotGlimma: Trying partial match")
+    coef_index <- grep(comparison_to_search, coef_names)
   }
 
   if (length(coef_index) == 0) {
     message(paste("   generateProtDAVolcanoPlotGlimma: FINAL FAILURE - No coefficient found for:", selected_contrast))
-    message(paste("   generateProtDAVolcanoPlotGlimma: Also tried:", comparison_to_search))
-    message("   generateProtDAVolcanoPlotGlimma: Available coefficient patterns:")
     for (i in seq_along(coef_names)) {
       message(sprintf("     [%d] %s", i, coef_names[i]))
     }
-    message(paste("   generateProtDAVolcanoPlotGlimma: Pattern attempted:", paste0("^", comparison_to_search, "=")))
     return(NULL)
   }
 
+  # Take first match if multiple
+  coef_index <- coef_index[1]
   message(paste("   generateProtDAVolcanoPlotGlimma: Using coefficient index", coef_index, "for contrast", coef_names[coef_index]))
 
   # Prepare counts matrix and groups
@@ -325,9 +353,19 @@ generateProtDAVolcanoPlotGlimma <- function(
 
   this_design_matrix <- da_results_list$theObject@design_matrix
   rownames(this_design_matrix) <- this_design_matrix[, da_results_list$theObject@sample_id]
-  this_groups <- this_design_matrix[colnames(counts_mat), "group"]
+  
+  # Ensure groups are available and match counts_mat
+  common_samples <- intersect(colnames(counts_mat), rownames(this_design_matrix))
+  if (length(common_samples) > 0) {
+    counts_mat <- counts_mat[, common_samples, drop = FALSE]
+    this_groups <- this_design_matrix[common_samples, "group"]
+  } else {
+    message("   generateProtDAVolcanoPlotGlimma: WARNING - No common samples found between counts and design matrix")
+    this_groups <- NULL
+  }
 
   # Generate the Glimma widget
+  # Call to getGlimmaVolcanoProteomicsWidget
   glimma_widget <- getGlimmaVolcanoProteomicsWidget(contrasts_results$fit.eb,
     coef = coef_index,
     volcano_plot_tab = volcano_plot_tab,
@@ -335,7 +373,8 @@ generateProtDAVolcanoPlotGlimma <- function(
     gene_name_column = gene_name,
     display_columns = display_columns,
     counts_tbl = counts_mat,
-    groups = this_groups
+    groups = this_groups,
+    ...
   )
 
   message("--- Exiting generateProtDAVolcanoPlotGlimma ---")
@@ -405,13 +444,24 @@ generateProtDAVolcanoStatic <- function(
   }
 
   # Add plotting columns
+  # CRITICAL FIX: Look up the ID column dynamically instead of hardcoding uniprot_acc
+  id_col <- intersect(c("Protein.Ids", "Protein.ID", "Entry", "uniprot_acc", "sites_id"), names(plot_data))
+  if (length(id_col) > 0) {
+    id_col <- id_col[1]
+    message(paste("   generateProtDAVolcanoStatic: Using ID column =", id_col))
+  } else {
+    # Fallback to first column if none of the above match
+    id_col <- names(plot_data)[1]
+    message(paste("   generateProtDAVolcanoStatic: Fallback to first column as ID =", id_col))
+  }
+
   plot_data <- plot_data |>
     dplyr::mutate(
       neg_log10_q = -log10(fdr_qvalue),
       display_name = if ("gene_name" %in% names(plot_data)) {
-        ifelse(!is.na(gene_name) & gene_name != "", gene_name, uniprot_acc)
+        ifelse(!is.na(gene_name) & gene_name != "", gene_name, !!sym(id_col))
       } else {
-        uniprot_acc
+        !!sym(id_col)
       },
       significant_label = case_when(
         fdr_qvalue < da_q_val_thresh & log2FC >= lfc_threshold ~ "Up",

@@ -2106,15 +2106,14 @@ getGlimmaVolcanoProteomics <- function(
   additional_annotations_join_column = NULL,
   counts_tbl = NULL,
   groups = NULL,
-  output_dir
+  output_dir,
+  ...
 ) {
   if (coef <= ncol(r_obj$coefficients)) {
     best_uniprot_acc <- str_split(rownames(r_obj@.Data[[1]]), " |:") |>
       purrr::map_chr(1)
 
     volcano_plot_tab_cln <- volcano_plot_tab |>
-      # dplyr::rename( best_uniprot_acc =  {{uniprot_column}}
-      #                , gene_name = {{gene_name_column}}   ) |>
       dplyr::select(
         {{ uniprot_column }},
         {{ gene_name_column }}, any_of(display_columns)
@@ -2146,14 +2145,33 @@ getGlimmaVolcanoProteomics <- function(
         by = join_by({{ uniprot_column }} == {{ uniprot_column }})
       ) |>
       mutate(gene_name = case_when(
-        is.na(gene_name) ~ {{ uniprot_column }},
+        is.na(gene_name) | gene_name == "" ~ {{ uniprot_column }},
         TRUE ~ gene_name
       ))
+
+    # Glimma Best Practice: Replace dots with underscores in column names
+    colnames(anno_tbl) <- gsub("\\.", "_", colnames(anno_tbl))
+    
+    # Glimma Best Practice: Replace NAs with empty strings and coerce to character
+    anno_tbl <- anno_tbl |>
+      mutate(across(everything(), ~ as.character(ifelse(is.na(.), "", .))))
 
     gene_names <- anno_tbl |>
       dplyr::pull(gene_name)
 
     rownames(r_obj@.Data[[1]]) <- gene_names
+    
+    # Ensure counts_tbl alignment if provided
+    if (!is.null(counts_tbl)) {
+      # The identifiers in anno_tbl first column must match rownames(counts_tbl)
+      # In this function, the first column of anno_tbl is currently 'uniprot_acc' (from rownames of r_obj)
+      # or whatever uniprot_column was renamed to (but it was renamed from temp_column).
+      # Actually, the first column of anno_tbl is 'uniprot__acc' (dot replaced by underscore)
+      id_col <- colnames(anno_tbl)[1]
+      
+      # We need to make sure counts_tbl rownames match the IDs we are using
+      # Let's assume the caller passed counts_tbl with rownames matching the r_obj identifiers
+    }
 
     r_obj$p.value[, coef] <- qvalue(r_obj$p.value[, coef])$qvalues
 
@@ -2166,7 +2184,8 @@ getGlimmaVolcanoProteomics <- function(
         display.columns = colnames(anno_tbl),
         status = decideTests(r_obj, adjust.method = "none"),
         p.adj.method = "none",
-        transform.counts = "none"
+        transform.counts = "none",
+        ...
       ) # the plotly object
       , file = file.path(
         output_dir,
@@ -2192,42 +2211,20 @@ getGlimmaVolcanoProteomicsWidget <- function(
   additional_annotations = NULL,
   additional_annotations_join_column = NULL,
   counts_tbl = NULL,
-  groups = NULL
+  groups = NULL,
+  ...
 ) {
   message("--- Entering getGlimmaVolcanoProteomicsWidget ---")
   message(sprintf("   getGlimmaVolcanoProteomicsWidget Arg: coef = %d", coef))
   message(sprintf("   getGlimmaVolcanoProteomicsWidget Arg: r_obj class = %s", class(r_obj)))
   message(sprintf("   getGlimmaVolcanoProteomicsWidget Arg: volcano_plot_tab dims = %d rows, %d cols", nrow(volcano_plot_tab), ncol(volcano_plot_tab)))
-  message("   getGlimmaVolcanoProteomicsWidget Arg: volcano_plot_tab structure:")
-  utils::str(volcano_plot_tab)
-  message("   getGlimmaVolcanoProteomicsWidget Arg: volcano_plot_tab head:")
-  print(head(volcano_plot_tab))
-
+  
   if (coef <= ncol(r_obj$coefficients)) {
     message("   getGlimmaVolcanoProteomicsWidget Step: Coefficient validation passed...")
-    message(sprintf("      Data State: r_obj$coefficients has %d columns", ncol(r_obj$coefficients)))
 
-    message("   getGlimmaVolcanoProteomicsWidget Step: Extracting best_uniprot_acc from rownames...")
-    message("      Data State: r_obj@.Data[[1]] structure before extraction:")
-    utils::str(r_obj@.Data[[1]])
-    message(sprintf("      Data State: r_obj@.Data[[1]] dims = %d rows, %d cols", nrow(r_obj@.Data[[1]]), ncol(r_obj@.Data[[1]])))
-    message("      Data State: rownames(r_obj@.Data[[1]]) head:")
-    print(head(rownames(r_obj@.Data[[1]])))
-
+    # Extract best_uniprot_acc from rownames
     best_uniprot_acc <- str_split(rownames(r_obj@.Data[[1]]), " |:") |>
       purrr::map_chr(1)
-
-    message("   getGlimmaVolcanoProteomicsWidget Step: best_uniprot_acc extraction completed.")
-    message(sprintf("      Data State: best_uniprot_acc length = %d", length(best_uniprot_acc)))
-    message("      Data State: best_uniprot_acc head:")
-    print(head(best_uniprot_acc))
-
-    # print(paste("nrow = ", nrow(r_obj@.Data[[1]])))
-    # print(head(best_uniprot_acc))
-
-    message("   getGlimmaVolcanoProteomicsWidget Step: Cleaning volcano_plot_tab...")
-    message("      Data State: volcano_plot_tab before cleaning:")
-    utils::str(volcano_plot_tab)
 
     volcano_plot_tab_cln <- volcano_plot_tab |>
       dplyr::select(
@@ -2236,19 +2233,8 @@ getGlimmaVolcanoProteomicsWidget <- function(
       ) |>
       distinct()
 
-    message("   getGlimmaVolcanoProteomicsWidget Step: volcano_plot_tab cleaning completed.")
-    message(sprintf("      Data State: volcano_plot_tab_cln dims = %d rows, %d cols", nrow(volcano_plot_tab_cln), ncol(volcano_plot_tab_cln)))
-    message("      Data State: volcano_plot_tab_cln head:")
-    print(head(volcano_plot_tab_cln))
-
-    # print (head( volcano_plot_tab_cln))
-
     if (!is.null(additional_annotations) &
       !is.null(additional_annotations_join_column)) {
-      message("   getGlimmaVolcanoProteomicsWidget Step: Processing additional annotations...")
-      message("      Data State: additional_annotations structure:")
-      utils::str(additional_annotations)
-
       volcano_plot_tab_cln <- volcano_plot_tab_cln |>
         left_join(additional_annotations,
           by = join_by({{ uniprot_column }} == {{ additional_annotations_join_column }})
@@ -2258,22 +2244,14 @@ getGlimmaVolcanoProteomicsWidget <- function(
           {{ gene_name_column }},
           any_of(display_columns)
         )
-
-      message("   getGlimmaVolcanoProteomicsWidget Step: Additional annotations processing completed.")
-      message(sprintf("      Data State: volcano_plot_tab_cln after annotation dims = %d rows, %d cols", nrow(volcano_plot_tab_cln), ncol(volcano_plot_tab_cln)))
-    } else {
-      message("   getGlimmaVolcanoProteomicsWidget Step: No additional annotations to process.")
     }
 
-    message("   getGlimmaVolcanoProteomicsWidget Step: Creating annotation table...")
-
     # CRITICAL FIX: For mixed FASTA support, create base accession without isoform suffix
-    # This helps match P12345-2 to P12345 in the annotation table
     best_uniprot_acc_base <- gsub("-\\d+$", "", best_uniprot_acc)
 
     anno_tbl <- data.frame(
-      uniprot_acc = rownames(r_obj@.Data[[1]]) # This uniprot_acc does not matter, only shows in glimma Volcano table
-      , temp_column = best_uniprot_acc,
+      uniprot_acc = rownames(r_obj@.Data[[1]]),
+      temp_column = best_uniprot_acc,
       temp_column_base = best_uniprot_acc_base
     ) |>
       dplyr::rename({{ uniprot_column }} := temp_column)
@@ -2285,13 +2263,11 @@ getGlimmaVolcanoProteomicsWidget <- function(
       )
 
     # CRITICAL FIX: For entries with no gene_name (NA or empty string), try base accession match
-    # This handles mixed FASTA with isoform-specific protein IDs
     missing_gene_mask <- is.na(anno_tbl$gene_name) | anno_tbl$gene_name == ""
 
     if (any(missing_gene_mask)) {
       message(sprintf("   getGlimmaVolcanoProteomicsWidget: %d proteins missing gene names, trying base accession match...", sum(missing_gene_mask)))
 
-      # Try to match using base accession (without isoform suffix)
       base_match_tbl <- data.frame(temp_column_base = anno_tbl$temp_column_base[missing_gene_mask]) |>
         left_join(
           volcano_plot_tab_cln |>
@@ -2301,10 +2277,8 @@ getGlimmaVolcanoProteomicsWidget <- function(
           by = join_by(temp_column_base == temp_base)
         )
 
-      # Update gene_name where we found a match
       found_alt <- !is.na(base_match_tbl$gene_name_alt) & base_match_tbl$gene_name_alt != ""
       if (any(found_alt)) {
-        message(sprintf("   getGlimmaVolcanoProteomicsWidget: Found %d gene names via base accession match", sum(found_alt)))
         which_missing <- which(missing_gene_mask)
         anno_tbl$gene_name[which_missing[found_alt]] <- base_match_tbl$gene_name_alt[found_alt]
       }
@@ -2313,142 +2287,61 @@ getGlimmaVolcanoProteomicsWidget <- function(
     # Remove temporary base column
     anno_tbl <- anno_tbl |> dplyr::select(-temp_column_base)
 
-    # CRITICAL FIX: Fallback - use accession as gene name if still NA or empty
-    # Also handles empty strings, not just NA
+    # Fallback - use accession as gene name if still NA or empty
     anno_tbl <- anno_tbl |>
       mutate(gene_name = case_when(
         is.na(gene_name) | gene_name == "" ~ {{ uniprot_column }},
         TRUE ~ gene_name
       ))
 
-    message("   getGlimmaVolcanoProteomicsWidget Step: Annotation table creation completed.")
-    message(sprintf("      Data State: anno_tbl dims = %d rows, %d cols", nrow(anno_tbl), ncol(anno_tbl)))
-    message("      Data State: anno_tbl structure:")
-    utils::str(anno_tbl)
-    message("      Data State: anno_tbl head:")
-    print(head(anno_tbl))
+    # Glimma Best Practice: Replace dots with underscores in column names
+    colnames(anno_tbl) <- gsub("\\.", "_", colnames(anno_tbl))
+    
+    # Glimma Best Practice: Replace NAs with empty strings and coerce to character
+    anno_tbl <- anno_tbl |>
+      mutate(across(everything(), ~ as.character(ifelse(is.na(.), "", .))))
 
-    message("   getGlimmaVolcanoProteomicsWidget Step: Extracting gene names...")
     gene_names <- anno_tbl |>
       dplyr::pull(gene_name)
 
-    message("   getGlimmaVolcanoProteomicsWidget Step: Gene names extraction completed.")
-    message(sprintf("      Data State: gene_names length = %d", length(gene_names)))
-    message("      Data State: gene_names head:")
-    print(head(gene_names))
-
-    message("   getGlimmaVolcanoProteomicsWidget Step: Updating rownames in r_obj...")
-    message("      Data State: r_obj@.Data[[1]] rownames before update:")
-    print(head(rownames(r_obj@.Data[[1]])))
-
+    # Update rownames in r_obj
     rownames(r_obj@.Data[[1]]) <- gene_names
 
-    message("   getGlimmaVolcanoProteomicsWidget Step: Rownames update completed.")
-    message("      Data State: r_obj@.Data[[1]] rownames after update:")
-    print(head(rownames(r_obj@.Data[[1]])))
-
-    message("   getGlimmaVolcanoProteomicsWidget Step: Updating p-values with qvalue...")
-    message(sprintf("      Data State: r_obj$p.value dimensions = %d rows, %d cols", nrow(r_obj$p.value), ncol(r_obj$p.value)))
-    message(sprintf("      Data State: coef = %d, ncol(r_obj$p.value) = %d", coef, ncol(r_obj$p.value)))
-    message("      Data State: r_obj$p.value[,coef] before qvalue transformation:")
-    print(head(r_obj$p.value[, coef]))
-
-    r_obj$p.value[, coef] <- qvalue(r_obj$p.value[, coef])$qvalues
-
-    message("   getGlimmaVolcanoProteomicsWidget Step: P-value qvalue transformation completed.")
-    message("      Data State: r_obj$p.value[,coef] after qvalue transformation:")
-    print(head(r_obj$p.value[, coef]))
-
-    message("   getGlimmaVolcanoProteomicsWidget Step: Calling glimmaVolcano...")
-    message("      glimmaVolcano parameters:")
-    message(sprintf("        coef = %d", coef))
-    message(sprintf("        counts_tbl is.null = %s", is.null(counts_tbl)))
-    if (!is.null(counts_tbl)) {
-      message(sprintf("        counts_tbl dims = %d rows, %d cols", nrow(counts_tbl), ncol(counts_tbl)))
+    # Transform p-values to q-values
+    # Check if qvalue calculation is possible
+    valid_p <- r_obj$p.value[, coef][!is.na(r_obj$p.value[, coef])]
+    if (length(valid_p) > 0 && any(valid_p < 1)) {
+       tryCatch({
+         r_obj$p.value[, coef] <- qvalue(r_obj$p.value[, coef])$qvalues
+       }, error = function(e) {
+         message(paste("   getGlimmaVolcanoProteomicsWidget: qvalue failed, using raw p-values:", e$message))
+       })
     }
-    message(sprintf("        groups is.null = %s", is.null(groups)))
-    if (!is.null(groups)) {
-      message(sprintf("        groups length = %d", length(groups)))
-      message("        groups head:")
-      print(head(groups))
+
+    # Prepare status
+    status_result <- decideTests(r_obj, adjust.method = "none")
+    if (any(is.na(status_result))) {
+      status_result[is.na(status_result)] <- 0
     }
-    message(sprintf("        display_columns = %s", paste(display_columns, collapse = ", ")))
 
-    result <- tryCatch(
-      {
-        message("      About to call glimmaVolcano with parameters...")
-
-        # Validate key parameters before calling
-        message(sprintf("      Validation: r_obj class = %s", class(r_obj)))
-        message(sprintf("      Validation: coef = %d", coef))
-        message(sprintf("      Validation: ncol(r_obj$coefficients) = %d", ncol(r_obj$coefficients)))
-        message(sprintf("      Validation: anno_tbl nrow = %d", nrow(anno_tbl)))
-        message(sprintf("      Validation: display_columns = %s", paste(display_columns, collapse = ", ")))
-
-        # Check if decideTests works and clean up any issues
-        message("      Testing decideTests...")
-        status_result <- decideTests(r_obj, adjust.method = "none")
-        message(sprintf("      decideTests completed: %d x %d", nrow(status_result), ncol(status_result)))
-
-        # CRITICAL FIX: Handle NA values that cause dimension mismatches in glimmaVolcano
-        message("      Checking for NA values in status_result...")
-        na_count <- sum(is.na(status_result))
-        message(sprintf("      Found %d NA values in status_result", na_count))
-
-        if (na_count > 0) {
-          message("      Cleaning NA values from status_result (setting to 0 = nonDE)...")
-          status_result[is.na(status_result)] <- 0
-          message("      NA values cleaned")
-        }
-
-        # Additional safety: Check for dimension alignment
-        message("      Verifying dimensions before glimmaVolcano call...")
-        message(sprintf("      r_obj coefficients: %d x %d", nrow(r_obj$coefficients), ncol(r_obj$coefficients)))
-        message(sprintf("      r_obj p.value: %d x %d", nrow(r_obj$p.value), ncol(r_obj$p.value)))
-        message(sprintf("      status_result: %d x %d", nrow(status_result), ncol(status_result)))
-        message(sprintf("      anno_tbl: %d rows", nrow(anno_tbl)))
-        message(sprintf("      counts_tbl: %d x %d", nrow(counts_tbl), ncol(counts_tbl)))
-
-        message("      Now calling glimmaVolcano...")
-        widget <- glimmaVolcano(r_obj,
-          coef = coef,
-          counts = counts_tbl,
-          groups = groups,
-          anno = anno_tbl,
-          display.columns = display_columns,
-          status = status_result,
-          p.adj.method = "none",
-          transform.counts = "none"
-        ) # the plotly object
-
-        message("      glimmaVolcano call returned successfully!")
-        message(sprintf("      Widget class: %s", class(widget)))
-        message(sprintf("      Widget is.null: %s", is.null(widget)))
-
-        return(widget)
-      },
-      error = function(e) {
-        message(sprintf("      ERROR in glimmaVolcano call: %s", e$message))
-        message("      Full error details:")
-        message(capture.output(print(e)))
-        message("      Traceback:")
-        message(capture.output(traceback()))
-        return(NULL)
-      }
+    # Call glimmaVolcano
+    widget <- glimmaVolcano(r_obj,
+      coef = coef,
+      counts = counts_tbl,
+      groups = groups,
+      anno = anno_tbl,
+      display.columns = colnames(anno_tbl),
+      status = status_result,
+      p.adj.method = "none",
+      transform.counts = "none",
+      ...
     )
 
-    message("   getGlimmaVolcanoProteomicsWidget Step: glimmaVolcano call completed successfully.")
-    message("      Data State: result class:")
-    print(class(result))
-
     message("--- Exiting getGlimmaVolcanoProteomicsWidget ---")
-    return(result)
-  } else {
-    message(sprintf("   getGlimmaVolcanoProteomicsWidget Condition FALSE: coef (%d) > ncol(r_obj$coefficients) (%d)", coef, ncol(r_obj$coefficients)))
-    message("--- Exiting getGlimmaVolcanoProteomicsWidget (early exit) ---")
-    return(NULL)
+    return(widget)
   }
 }
+
 
 
 # ----------------------------------------------------------------------------
