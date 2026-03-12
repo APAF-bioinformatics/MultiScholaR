@@ -7,7 +7,7 @@
 ## Completed Work
 - **`func_prot_da.R`**: Rewrote `generateProtDAVolcanoPlotGlimma` to map pre-calculated plotting metrics (`logFC`, `-log10(FDR)`) natively using `Glimma:::buildXYData()` and return an `htmlwidget` directly.
 - **`func_prot_da.R`**: Rewrote `writeInteractiveVolcanoPlotProteomics` to iterate over contrasts natively defined in the DA data tables instead of mapping over model coefficient indices.
-- **`func_general_plotting.R`**: Rewrote `getGlimmaVolcanoProteomics` to generate static `glimmaXY` HTML files based on pre-calculated data frames instead of relying on generic `MArrayLM` mapping.
+- **`func_prot_annotation.R`**: Implemented UniProt accession regular expression filtering in `directUniprotDownload`, `batchQueryEvidenceHelper`, and `batchQueryEvidenceHelperGeneId`. This prevents invalid protein IDs (like Ensembl IDs or free text) from being sent to the UniProt API/service, which previously caused crashes and noise.
 - Implemented `r_glimma` best practices: scrubbed `NA`s, removed literal dots `.` from all annotation headers, turned off CPM translation with `transform.counts="none"`, and dynamically synced count matrix formatting.
 - Mitigated DataTables scrolling header un-sync bug utilizing CSS styling injections in static `.html` deliverables.
 - Verified successful plotting outputs via `test_volcano_glimmaxy.R`.

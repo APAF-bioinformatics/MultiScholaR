@@ -457,11 +457,14 @@ subsetQuery <- function(data, subset, accessions_col_name, uniprot_handle, unipr
 # The UniProt.ws::select function limits the number of keys queried to 100. This gives a batch number for it to be queried in batches.
 batchQueryEvidenceHelper <- function(uniprot_acc_tbl, uniprot_acc_column) {
 
+  uniprot_regex <- "^([OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2})(-\\d+)?$"
+
   all_uniprot_acc <- uniprot_acc_tbl |>
     dplyr::select({ { uniprot_acc_column } }) |>
-    mutate(Proteins = str_split({ { uniprot_acc_column } }, ";")) |>
-    unnest(Proteins) |>
+    mutate(Proteins = stringr::str_split({ { uniprot_acc_column } }, ";")) |>
+    tidyr::unnest(Proteins) |>
     distinct() |>
+    dplyr::filter(grepl(uniprot_regex, Proteins)) |>
     arrange(Proteins) |>
     mutate(Proteins = cleanIsoformNumber(Proteins)) |>
     dplyr::mutate(round = ceiling(row_number() / 100))  ## 100 is the maximum number of queries at one time
@@ -505,9 +508,12 @@ batchQueryEvidence <- function(uniprot_acc_tbl, uniprot_acc_column, uniprot_hand
 # The UniProt.ws::select function limits the number of keys queried to 100. This gives a batch number for it to be queried in batches.
 batchQueryEvidenceHelperGeneId <- function(input_tbl, gene_id_column, delim =":") {
 
+  uniprot_regex <- "^([OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2})(-\\d+)?$"
+
   all_uniprot_acc <- input_tbl |>
     dplyr::select({ { gene_id_column } }) |>
-    separate_longer_delim({ { gene_id_column } }, delim= delim ) |>
+    tidyr::separate_longer_delim({ { gene_id_column } }, delim = delim) |>
+    dplyr::filter(grepl(uniprot_regex, !!sym(rlang::as_label(enquo(gene_id_column))))) |>
     dplyr::arrange({ { gene_id_column } }) |>
     dplyr::mutate(round = ceiling(dplyr::row_number() / 25))  ## 25 is the maximum number of queries at one time
 
@@ -765,8 +771,28 @@ directUniprotDownload <- function(input_tbl,
   options(timeout = timeout)
   
   # Extract unique protein IDs
-  protein_ids <- unique(input_tbl$Protein.Ids)
-  message(paste("Found", length(protein_ids), "unique protein IDs to query"))
+  original_protein_ids <- unique(input_tbl$Protein.Ids)
+  message(paste("Found", length(original_protein_ids), "unique protein IDs from input"))
+  
+  # Official UniProt accession regex (with optional isoform suffix)
+  uniprot_regex <- "^([OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2})(-\\d+)?$"
+  
+  # Filter IDs matching the pattern
+  protein_ids <- original_protein_ids[grepl(uniprot_regex, original_protein_ids)]
+  
+  n_skipped <- length(original_protein_ids) - length(protein_ids)
+  if (n_skipped > 0) {
+    message(sprintf("   Filtered out %d IDs that do not match UniProt accession pattern", n_skipped))
+    skipped_ids <- setdiff(original_protein_ids, protein_ids)
+    message(sprintf("   Example skipped IDs: %s", paste(head(skipped_ids, 5), collapse = ", ")))
+  }
+  
+  if (length(protein_ids) == 0) {
+    message("   No valid UniProt IDs found to query. Skipping download.")
+    return(NULL)
+  }
+  
+  message(paste("Querying", length(protein_ids), "valid UniProt IDs"))
   message("   DEBUG66: First 10 protein IDs:")
   print(head(protein_ids, 10))
   
