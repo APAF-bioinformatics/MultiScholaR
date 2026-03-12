@@ -1255,8 +1255,8 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
             message(sprintf("Target trigger state: 'protein_replicate_filtered'"))
             message(sprintf("Pre-norm QC generated: %s", norm_data$pre_norm_qc_generated))
             
-            # Auto-trigger only fires if we've just completed QC and haven't run pre-norm QC yet
-            if (current_state == "protein_replicate_filtered" && !norm_data$pre_norm_qc_generated) {
+            # Auto-trigger fires if we are in any valid state and haven't run pre-norm QC yet
+            if (current_state %in% valid_states_for_norm_tab && !norm_data$pre_norm_qc_generated) {
               
               message("*** AUTO-TRIGGERING PRE-NORMALIZATION QC (chunk 24) ***")
               
@@ -1276,11 +1276,7 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
                 )
               })
               
-            } else if (current_state %in% valid_states_for_norm_tab) {
-              # If we are in a later, valid state (e.g., correlation_filtered),
-              # or have already run the QC, we don't need to do anything.
-              message(sprintf("State is '%s'. Skipping auto-trigger as it's not applicable or already done.", current_state))
-              
+              message(sprintf("State is '%s' and PCA already generated. skipping.", current_state))
             } else {
               # This case handles when the user has not completed the required prior steps
               message(sprintf("*** State '%s' is not valid for normalization. User needs to complete QC. ***", current_state))

@@ -250,10 +250,27 @@ generateProtDAVolcanoPlotGlimma <- function(
   # Prepare annotation data
   plot_data <- contrast_data |>
     dplyr::mutate(
-      Protein.Ids = !!sym(args_row_id),
-      best_uniprot_acc = stringr::str_extract(Protein.Ids, "^[^|:]+"),
+      best_uniprot_acc = purrr::map_chr(as.character(Protein.Ids), \(x) {
+        # Robustly handle FASTA/UniProt/NCBI headers
+        # Remove common prefix like '>'
+        x_cln <- gsub("^>", "", x)
+        
+        # Support both | and : as delimiters
+        parts <- unlist(strsplit(x_cln, "\\||:"))
+        
+        if (length(parts) > 1) {
+          # Handle sp|acc|name, tr|acc|name, lcl|acc
+          if (trimws(parts[1]) %in% c("sp", "tr", "lcl")) {
+             return(trimws(parts[2]))
+          }
+          # Handle common case where ID is just the first part
+          return(trimws(parts[1]))
+        }
+        return(trimws(x_cln))
+      }),
       best_uniprot_acc_base = gsub("-\\d+$", "", best_uniprot_acc)
     )
+
 
   # Merge UniProt annotations if available
   if (!is.null(uniprot_tbl)) {
@@ -283,11 +300,12 @@ generateProtDAVolcanoPlotGlimma <- function(
   # Handle zero FDR to avoid Inf values in -log10
   plot_data <- plot_data |>
     dplyr::mutate(
-      FDR = !!sym(fdr_column),
+      FDR = as.numeric(!!sym(fdr_column)),
+      # Avoid having zero FDR which leads to Inf in -log10
       FDR = ifelse(FDR == 0, min(FDR[FDR > 0], na.rm = TRUE) * 0.1, FDR),
       negLog10FDR = -log10(FDR),
-      logFC = !!sym(log2fc_column),
-      Status = case_when(
+      logFC = as.numeric(!!sym(log2fc_column)),
+      Status = dplyr::case_when(
         logFC >= 1 & FDR < da_q_val_thresh ~ 1,
         logFC <= -1 & FDR < da_q_val_thresh ~ -1,
         TRUE ~ 0
@@ -297,7 +315,10 @@ generateProtDAVolcanoPlotGlimma <- function(
   # Remove rows with Inf/NA plotting metrics AND ensure Protein.Ids are unique for rownames
   plot_data <- plot_data |>
     dplyr::filter(!is.infinite(negLog10FDR), !is.na(negLog10FDR), !is.na(logFC)) |>
+    # Ensure Protein.Ids is not blank
+    dplyr::filter(!is.na(Protein.Ids), Protein.Ids != "") |>
     dplyr::distinct(Protein.Ids, .keep_all = TRUE)
+
 
   if (nrow(plot_data) == 0) {
     logger::log_warn("   Skipping glimmaXY - no valid rows after removing Inf/NA and duplicates")
@@ -308,83 +329,153 @@ generateProtDAVolcanoPlotGlimma <- function(
   counts_mat <- NULL
   groups_vec <- NULL
   if (!is.null(da_results_list$theObject)) {
-    counts_df <- as.data.frame(da_results_list$theObject@protein_quant_table)
+    # CRITICAL FIX: Use check.names = FALSE to prevent sample name mangling (e.g. replacing spaces with dots)
+    counts_df <- as.data.frame(da_results_list$theObject@protein_quant_table, check.names = FALSE)
+    
     if (args_row_id %in% names(counts_df)) {
-      # Filter counts to match plot_data
-      counts_df <- counts_df |> dplyr::filter(!!sym(args_row_id) %in% plot_data$Protein.Ids)
-      # Ensure exact row order and GUID mapping
-      match_idx <- match(plot_data$Protein.Ids, counts_df[[args_row_id]])
-      counts_df <- counts_df[match_idx[!is.na(match_idx)], , drop = FALSE]
+      # 1. Ensure exact match between plot_data and counts_df
+      common_prots <- intersect(plot_data$Protein.Ids, counts_df[[args_row_id]])
+      plot_data <- plot_data |> dplyr::filter(Protein.Ids %in% common_prots)
       
-      # FIX: Avoid tibble rownames crash by ensuring it's a data.frame and reset rownames first
+      counts_df <- counts_df |> dplyr::filter(!!sym(args_row_id) %in% common_prots)
+      
+      # 2. Ensure exact row order mapped to plot_data
+      match_idx <- match(plot_data$Protein.Ids, counts_df[[args_row_id]])
+      counts_df <- counts_df[match_idx, , drop = FALSE]
+      
+      # 3. Avoid tibble rownames crash by ensuring it's a data.frame and reset rownames first
+      counts_df <- as.data.frame(counts_df, check.names = FALSE)
       rownames(counts_df) <- NULL
       counts_mat <- counts_df |> tibble::column_to_rownames(args_row_id) |> as.matrix()
       
       this_design <- da_results_list$theObject@design_matrix
-      if ("group" %in% names(this_design)) {
-        common_samples <- intersect(colnames(counts_mat), rownames(this_design))
+      sample_id_col <- da_results_list$theObject@sample_id
+      group_id_col <- da_results_list$theObject@group_id
+
+      # MATCHING SAMPLES FOR GROUPING
+      if (group_id_col %in% names(this_design)) {
+        common_samples <- intersect(trimws(tolower(colnames(counts_mat))), 
+                                    trimws(tolower(as.character(this_design[[sample_id_col]]))))
+        
         if (length(common_samples) > 0) {
-          counts_mat <- counts_mat[, common_samples, drop = FALSE]
-          groups_vec <- as.character(this_design[common_samples, "group"])
+          # Use original case for the continuous mapping definition
+          design_mapping <- data.frame(
+            orig_name = as.character(this_design[[sample_id_col]]),
+            norm_name = trimws(tolower(as.character(this_design[[sample_id_col]]))),
+            group = as.character(this_design[[group_id_col]]),
+            stringsAsFactors = FALSE
+          ) |>
+          dplyr::filter(norm_name %in% common_samples)
+          
+          # Match matrix columns to design exactly to prevent ordering issues
+          mat_cols_norm <- trimws(tolower(colnames(counts_mat)))
+          cols_to_keep <- colnames(counts_mat)[mat_cols_norm %in% design_mapping$norm_name]
+          
+          # Subset matrix to only those samples
+          counts_mat <- counts_mat[, cols_to_keep, drop = FALSE]
+          
+          # Re-evaluate samples in matrix after subsetting
+          samples_in_mat <- colnames(counts_mat)
+          groups_vec <- sapply(samples_in_mat, function(s) {
+            match_idx <- match(trimws(tolower(s)), design_mapping$norm_name)
+            if (!is.na(match_idx)) return(design_mapping$group[match_idx])
+            return("Unknown")
+          })
+          
+          logger::log_info(sprintf("   Glimma: Grouping expression plot by '%s' with %d samples", group_id_col, length(groups_vec)))
+          logger::log_info(sprintf("   Glimma: Unique groups detected: %s", paste(unique(groups_vec), collapse = ", ")))
+        } else {
+          logger::log_warn("   Glimma: No common samples found (case-insensitive check failed)")
         }
+      } else {
+        logger::log_warn(sprintf("   Glimma: Group column '%s' not found in design matrix", group_id_col))
       }
 
       # Sync plot_data to available proteins in counts (defensive)
-      plot_data <- plot_data |> dplyr::filter(Protein.Ids %in% rownames(counts_mat))
+      # Coerce both to character for matching
+      available_ids <- intersect(as.character(plot_data$Protein.Ids), as.character(rownames(counts_mat)))
+      plot_data <- plot_data |> dplyr::filter(as.character(Protein.Ids) %in% available_ids)
       counts_mat <- counts_mat[as.character(plot_data$Protein.Ids), , drop = FALSE]
+      
+      logger::log_info(sprintf("   Glimma: Synchronized %d proteins with expression data", nrow(counts_mat)))
     }
   }
 
-  # Build Clean Annotation Dataframe (GUID rownames to avoid duplicate gene name crashes)
+  # Build Clean Annotation Dataframe
   clean_anno <- data.frame(
-    Protein.Ids = as.character(plot_data$Protein.Ids),
-    gene = as.character(plot_data$gene_name),
-    gene_name = as.character(plot_data$gene_name),
+    Protein_Ids = as.character(plot_data$Protein.Ids),
+    gene = ifelse(is.na(plot_data$gene_name) | plot_data$gene_name == "", 
+                  gsub("^lcl\\|", "", as.character(plot_data$Protein.Ids)), 
+                  as.character(plot_data$gene_name)),
+    gene_name = ifelse(is.na(plot_data$gene_name) | plot_data$gene_name == "", 
+                       gsub("^lcl\\|", "", as.character(plot_data$Protein.Ids)), 
+                       as.character(plot_data$gene_name)),
+    FDR = signif(as.numeric(plot_data$FDR), 4),
     stringsAsFactors = FALSE
   )
+
+  # Check for UniProt accession in mapping table if available
+  if ("best_uniprot_acc" %in% names(plot_data)) {
+    clean_anno$UniProt <- sapply(as.character(plot_data$best_uniprot_acc), function(x) {
+      if (is.na(x) || x == "") return("")
+      if (grepl("\\|", x)) {
+        parts <- strsplit(as.character(x), "\\|")[[1]]
+        if (length(parts) >= 2) return(parts[2])
+      }
+      return(as.character(x))
+    })
+  } else {
+    clean_anno$UniProt <- gsub("^lcl\\|", "", as.character(plot_data$Protein.Ids))
+  }
   
-  # Add other display columns
+  # Add other display columns from display_columns argument
   purrr::walk(display_columns, function(col) {
     col_cln <- gsub("\\.", "_", col)
     if (col %in% names(plot_data) && !(col_cln %in% names(clean_anno))) {
-      clean_anno[[col_cln]] <<- as.character(plot_data[[col]])
+      clean_anno[[col_cln]] <- as.character(plot_data[[col]])
     }
   })
   
   clean_anno[is.na(clean_anno)] <- ""
   rownames(clean_anno) <- as.character(plot_data$Protein.Ids)
 
-  logger::log_info(sprintf("   Generating glimmaXY with %d proteins", nrow(plot_data)))
+  # Unify stats and annotations into a single display_df for Glimma
+  display_df <- clean_anno |>
+    dplyr::mutate(
+      logFC = signif(as.numeric(plot_data$logFC), 4),
+      negLog10FDR = signif(as.numeric(plot_data$negLog10FDR), 4)
+    ) |>
+    dplyr::rename_with(~ gsub("\\.", "_", .))
+  
+  # Ensure Protein_Ids is first
+  if ("Protein_Ids" %in% names(display_df)) {
+    display_df <- display_df |> dplyr::relocate(Protein_Ids)
+  }
 
-  # Build data structure required for glimmaXYWidget (GUID rownames)
-  glimma_table <- data.frame(
-    logFC = signif(as.numeric(plot_data$logFC), 4),
-    negLog10FDR = signif(as.numeric(plot_data$negLog10FDR), 4)
-  )
-  rownames(glimma_table) <- as.character(plot_data$Protein.Ids)
+  logger::log_info(sprintf("   Glimma: Calling glimmaXY with %d proteins and %d samples", 
+                           nrow(plot_data), if (is.null(counts_mat)) 0 else ncol(counts_mat)))
 
-  xy_data <- Glimma:::buildXYData(
-    table = glimma_table, 
+  # 5. Call Glimma publicly (standardized pattern)
+  # Pass display_df as anno; Glimma will use it for the table automatically
+  widget <- Glimma::glimmaXY(
+    x = plot_data$logFC,
+    y = plot_data$negLog10FDR,
+    xlab = "logFC",
+    ylab = "negLog10FDR",
     status = as.integer(plot_data$Status),
-    main = paste("Interactive Volcano Plot:", comparison_to_search),
-    display.columns = colnames(clean_anno), 
-    anno = clean_anno, 
+    anno = display_df,
+    display.columns = colnames(display_df),
     counts = counts_mat,
-    groups = groups_vec, 
+    groups = groups_vec,
     transform.counts = "none",
     status.cols = c("#1052bd", "silver", "#cc212f"),
-    sample.cols = rep("#1f77b4", if (is.null(counts_mat)) 0 else ncol(counts_mat)),
-    xlab = "logFC", 
-    ylab = "negLog10FDR"
+    sample.cols = if (!is.null(counts_mat)) rep("#1f77b4", ncol(counts_mat)) else NULL,
+    main = paste("Interactive Volcano Plot:", comparison_to_search)
   )
 
-  # Return htmlwidget directly for Shiny UI integration
-  widget <- Glimma:::glimmaXYWidget(xy_data, width = 920, height = 920, html = NULL)
-  
   logger::log_info("--- Exiting generateProtDAVolcanoPlotGlimma ---")
   return(widget)
 }
-
 
 # ----------------------------------------------------------------------------
 # generateProtDAVolcanoStatic
@@ -815,7 +906,7 @@ daAnalysisWrapperFunction <- function(
   args_group_pattern = NULL,
   args_row_id = NULL,
   qvalue_column = "fdr_qvalue",
-  raw_pvalue_colum = "raw_pvalue"
+  raw_pvalue_column = "raw_pvalue"
 ) {
   contrasts_tbl <- checkParamsObjectFunctionSimplify(theObject, "contrasts_tbl", NULL)
   formula_string <- checkParamsObjectFunctionSimplify(theObject, "formula_string", " ~ 0 + group")
@@ -1086,7 +1177,7 @@ daAnalysisWrapperFunction <- function(
     list_of_da_tables = list(nested_list),
     list_of_descriptions = list("RUV applied"),
     row_id = !!sym(args_row_id),
-    p_value_column = !!sym(raw_pvalue_colum),
+    p_value_column = !!sym(raw_pvalue_column),
     q_value_column = !!sym(qvalue_column),
     fdr_value_column = fdr_value_bh_adjustment,
     log_q_value_column = lqm,
@@ -1125,7 +1216,7 @@ daAnalysisWrapperFunction <- function(
 
   ## Print p-values distribution figure
   pvalhist <- printPValuesDistribution(significant_rows,
-    p_value_column = !!sym(raw_pvalue_colum),
+    p_value_column = !!sym(raw_pvalue_column),
     formula_string = "analysis_type ~ comparison"
   )
 
@@ -1150,7 +1241,7 @@ daAnalysisWrapperFunction <- function(
   return_list$norm_counts <- norm_counts
 
   # Helper to handle protein ID joining based on object type
-  dealWithProeinIdJoining <- function(df) {
+  dealWithProteinIdJoining <- function(df) {
     if (inherits(theObject, "MetaboliteAssayData")) {
       # For metabolites, we don't need to join with protein_id_table
       df
@@ -1172,10 +1263,10 @@ daAnalysisWrapperFunction <- function(
       id_cols = c(!!sym(args_row_id)),
       names_from = c(comparison),
       names_sep = ":",
-      values_from = c(log2FC, !!sym(qvalue_column), !!sym(raw_pvalue_colum))
+      values_from = c(log2FC, !!sym(qvalue_column), !!sym(raw_pvalue_column))
     ) |>
     left_join(counts_table_to_use, by = join_by(!!sym(args_row_id) == !!sym(args_row_id))) |>
-    dealWithProeinIdJoining() |>
+    dealWithProteinIdJoining() |>
     dplyr::arrange(across(matches("!!sym(qvalue_column)"))) |>
     distinct()
 
@@ -3820,6 +3911,13 @@ setMethod(
 
     # Run the core limma analysis using existing function
     protein_quant_matrix <- as.matrix(column_to_rownames(theObject@protein_quant_table, theObject@protein_id_column))
+    
+    # DEBUG: Check if rownames are blank
+    if (any(rownames(protein_quant_matrix) == "") || any(is.na(rownames(protein_quant_matrix)))) {
+      message("   WARNING DEBUG66: protein_quant_matrix has blank or NA rownames!")
+      message(paste("      Sample of rownames:", paste(head(rownames(protein_quant_matrix), 5), collapse = ", ")))
+    }
+    
     contrast_strings_to_use <- contrasts_tbl[, 1]
     message(paste("   differentialAbundanceAnalysisHelper: About to call runTestsContrasts with", length(contrast_strings_to_use), "contrasts"))
     message(paste("   differentialAbundanceAnalysisHelper: protein_quant_matrix dims =", nrow(protein_quant_matrix), "x", ncol(protein_quant_matrix)))

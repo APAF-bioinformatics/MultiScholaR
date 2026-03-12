@@ -143,7 +143,7 @@ mod_proteomics_ui <- function(id) {
       # Tab 5: Differential Expression
       shiny::tabPanel(
         "Differential Expression",
-        value = "de",
+        value = "da",
         icon = shiny::icon("chart-bar"),
         shiny::br(),
         de_content
