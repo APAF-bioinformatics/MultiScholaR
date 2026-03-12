@@ -294,12 +294,13 @@ generateProtDAVolcanoPlotGlimma <- function(
       )
     )
 
-  # Remove rows with Inf/NA plotting metrics
+  # Remove rows with Inf/NA plotting metrics AND ensure Protein.Ids are unique for rownames
   plot_data <- plot_data |>
-    dplyr::filter(!is.infinite(negLog10FDR), !is.na(negLog10FDR), !is.na(logFC))
+    dplyr::filter(!is.infinite(negLog10FDR), !is.na(negLog10FDR), !is.na(logFC)) |>
+    dplyr::distinct(Protein.Ids, .keep_all = TRUE)
 
   if (nrow(plot_data) == 0) {
-    logger::log_warn("   Skipping glimmaXY - no valid rows after removing Inf/NA")
+    logger::log_warn("   Skipping glimmaXY - no valid rows after removing Inf/NA and duplicates")
     return(NULL)
   }
 
