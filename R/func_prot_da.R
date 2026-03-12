@@ -336,7 +336,8 @@ generateProtDAVolcanoPlotGlimma <- function(
 
   # Build Clean Annotation Dataframe (GUID rownames to avoid duplicate gene name crashes)
   clean_anno <- data.frame(
-    Protein_Ids = as.character(plot_data$Protein.Ids),
+    Protein.Ids = as.character(plot_data$Protein.Ids),
+    gene = as.character(plot_data$gene_name),
     gene_name = as.character(plot_data$gene_name),
     stringsAsFactors = FALSE
   )
@@ -350,7 +351,7 @@ generateProtDAVolcanoPlotGlimma <- function(
   })
   
   clean_anno[is.na(clean_anno)] <- ""
-  rownames(clean_anno) <- clean_anno$Protein_Ids
+  rownames(clean_anno) <- as.character(plot_data$Protein.Ids)
 
   logger::log_info(sprintf("   Generating glimmaXY with %d proteins", nrow(plot_data)))
 
