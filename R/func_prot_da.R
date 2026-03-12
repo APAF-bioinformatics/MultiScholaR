@@ -204,22 +204,38 @@ generateProtDAVolcanoPlotGlimma <- function(
   }
 
   da_proteins_long <- da_results_list$da_proteins_long
+  comparison_to_search <- selected_contrast
 
-  # Extract comparison name
-  comparison_to_search <- stringr::str_extract(selected_contrast, "^[^=]+")
-  if (is.na(comparison_to_search)) {
-    comparison_to_search <- selected_contrast
-  }
-
+  # Robust contrast matching
   contrast_data <- da_proteins_long |>
-    dplyr::filter(comparison == comparison_to_search | comparison == selected_contrast)
+    dplyr::filter(comparison == selected_contrast)
 
   if (nrow(contrast_data) == 0) {
-    logger::log_warn(sprintf("   No data found for contrast %s", comparison_to_search))
+    # Try friendly name match or prefix match
+    potential_prefix <- stringr::str_extract(selected_contrast, "^[^=]+")
+    if (is.na(potential_prefix)) potential_prefix <- stringr::str_extract(selected_contrast, "^[^-]+")
+    
+    if (!is.na(potential_prefix)) {
+       match_idx <- grepl(potential_prefix, da_proteins_long$comparison, fixed = TRUE)
+       contrast_data <- da_proteins_long[match_idx, ]
+       if (nrow(contrast_data) > 0) comparison_to_search <- potential_prefix
+    }
+  }
+
+  if (nrow(contrast_data) == 0 && length(unique(da_proteins_long$comparison)) > 0) {
+    # Final fallback: just use the first available contrast
+    first_contrast <- unique(da_proteins_long$comparison)[1]
+    logger::log_warn(sprintf("   No data found for contrast %s. Falling back to %s", selected_contrast, first_contrast))
+    contrast_data <- da_proteins_long |> dplyr::filter(comparison == first_contrast)
+    comparison_to_search <- first_contrast
+  }
+
+  if (nrow(contrast_data) == 0) {
+    logger::log_warn(sprintf("   No data found for contrast %s or any matching variants", selected_contrast))
     return(NULL)
   }
 
-  # Dynamically identify ID column
+  # Dynamically identify ID column if not already found
   if (!(args_row_id %in% names(da_proteins_long))) {
     potential_ids <- c("Protein.Ids", "Protein.ID", "Entry", "uniprot_acc", "sites_id")
     found_id <- names(da_proteins_long)[names(da_proteins_long) %in% potential_ids][1]
@@ -270,7 +286,12 @@ generateProtDAVolcanoPlotGlimma <- function(
       FDR = !!sym(fdr_column),
       FDR = ifelse(FDR == 0, min(FDR[FDR > 0], na.rm = TRUE) * 0.1, FDR),
       negLog10FDR = -log10(FDR),
-      logFC = !!sym(log2fc_column)
+      logFC = !!sym(log2fc_column),
+      Status = case_when(
+        logFC >= 1 & FDR < da_q_val_thresh ~ 1,
+        logFC <= -1 & FDR < da_q_val_thresh ~ -1,
+        TRUE ~ 0
+      )
     )
 
   # Remove rows with Inf/NA plotting metrics
@@ -282,17 +303,7 @@ generateProtDAVolcanoPlotGlimma <- function(
     return(NULL)
   }
 
-  # Add significance columns for Glimma status coloring
-  plot_data <- plot_data |>
-    dplyr::mutate(
-      Status = case_when(
-        logFC >= 1 & FDR < da_q_val_thresh ~ 1,
-        logFC <= -1 & FDR < da_q_val_thresh ~ -1,
-        TRUE ~ 0
-      )
-    )
-
-  # Prepare Counts and Groups
+  # Prepare Counts Matrix with GUID rownames (to avoid tibble rownames crash and duplicates)
   counts_mat <- NULL
   groups_vec <- NULL
   if (!is.null(da_results_list$theObject)) {
@@ -300,10 +311,12 @@ generateProtDAVolcanoPlotGlimma <- function(
     if (args_row_id %in% names(counts_df)) {
       # Filter counts to match plot_data
       counts_df <- counts_df |> dplyr::filter(!!sym(args_row_id) %in% plot_data$Protein.Ids)
-      # Ensure exact row order
+      # Ensure exact row order and GUID mapping
       match_idx <- match(plot_data$Protein.Ids, counts_df[[args_row_id]])
       counts_df <- counts_df[match_idx[!is.na(match_idx)], , drop = FALSE]
       
+      # FIX: Avoid tibble rownames crash by ensuring it's a data.frame and reset rownames first
+      rownames(counts_df) <- NULL
       counts_mat <- counts_df |> tibble::column_to_rownames(args_row_id) |> as.matrix()
       
       this_design <- da_results_list$theObject@design_matrix
@@ -314,40 +327,53 @@ generateProtDAVolcanoPlotGlimma <- function(
           groups_vec <- as.character(this_design[common_samples, "group"])
         }
       }
+
+      # Sync plot_data to available proteins in counts (defensive)
+      plot_data <- plot_data |> dplyr::filter(Protein.Ids %in% rownames(counts_mat))
+      counts_mat <- counts_mat[as.character(plot_data$Protein.Ids), , drop = FALSE]
     }
   }
 
-  # Build Clean Annotation Dataframe
-  clean_anno <- plot_data |>
-    dplyr::select(Protein.Ids, gene_name, any_of(display_columns)) |>
-    dplyr::rename_with(~ gsub("\\.", "_", .)) |>
-    dplyr::mutate(dplyr::across(everything(), as.character)) |>
-    dplyr::mutate(dplyr::across(everything(), ~ tidyr::replace_na(., ""))) |>
-    as.data.frame()
-    
-  # Set rownames to match x and y
-  rownames(clean_anno) <- plot_data$gene_name
-
-  if (!is.null(counts_mat)) {
-    rownames(counts_mat) <- plot_data$gene_name
-  }
+  # Build Clean Annotation Dataframe (GUID rownames to avoid duplicate gene name crashes)
+  clean_anno <- data.frame(
+    Protein_Ids = as.character(plot_data$Protein.Ids),
+    gene_name = as.character(plot_data$gene_name),
+    stringsAsFactors = FALSE
+  )
+  
+  # Add other display columns
+  purrr::walk(display_columns, function(col) {
+    col_cln <- gsub("\\.", "_", col)
+    if (col %in% names(plot_data) && !(col_cln %in% names(clean_anno))) {
+      clean_anno[[col_cln]] <<- as.character(plot_data[[col]])
+    }
+  })
+  
+  clean_anno[is.na(clean_anno)] <- ""
+  rownames(clean_anno) <- clean_anno$Protein_Ids
 
   logger::log_info(sprintf("   Generating glimmaXY with %d proteins", nrow(plot_data)))
 
-  # Build data structure required for glimmaXYWidget
+  # Build data structure required for glimmaXYWidget (GUID rownames)
+  glimma_table <- data.frame(
+    logFC = signif(as.numeric(plot_data$logFC), 4),
+    negLog10FDR = signif(as.numeric(plot_data$negLog10FDR), 4)
+  )
+  rownames(glimma_table) <- as.character(plot_data$Protein.Ids)
+
   xy_data <- Glimma:::buildXYData(
-    table = data.frame(logFC = signif(plot_data$logFC, 4), negLog10FDR = signif(plot_data$negLog10FDR, 4)),
-    status = plot_data$Status,
+    table = glimma_table, 
+    status = as.integer(plot_data$Status),
     main = paste("Interactive Volcano Plot:", comparison_to_search),
-    display.columns = colnames(clean_anno),
-    anno = clean_anno,
+    display.columns = colnames(clean_anno), 
+    anno = clean_anno, 
     counts = counts_mat,
-    xlab = "logFC",
-    ylab = "negLog10FDR",
+    groups = groups_vec, 
+    transform.counts = "none",
     status.cols = c("#1052bd", "silver", "#cc212f"),
     sample.cols = rep("#1f77b4", if (is.null(counts_mat)) 0 else ncol(counts_mat)),
-    groups = groups_vec,
-    transform.counts = "none"
+    xlab = "logFC", 
+    ylab = "negLog10FDR"
   )
 
   # Return htmlwidget directly for Shiny UI integration
