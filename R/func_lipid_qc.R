@@ -1,3 +1,19 @@
+# MultiScholaR: Interactive Multi-Omics Analysis
+# Copyright (C) 2024-2026 Ignatius Pang, William Klare, and APAF-bioinformatics
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 # ============================================================================
 # func_lipid_qc.R
 # ============================================================================
@@ -15,10 +31,10 @@
 # - getFilteringProgressLipidomics(): Gets filtering progress object
 # - countUniqueLipids(): Counts unique lipids
 # - countLipidsPerSample(): Counts lipids per sample
-# - calculateMissingness(): Calculates missing value percentage
-# - calculateSumIntensityPerSample(): Calculates sum intensity per sample
+# - calculateLipidMissingness(): Calculates missing value percentage
+# - calculateLipidSumIntensityPerSample(): Calculates sum intensity per sample
 # - calculateLipidCVs(): Calculates coefficient of variation
-# - getInternalStandardMetrics(): Gets internal standard metrics
+# - getLipidInternalStandardMetrics(): Gets internal standard metrics
 # - Additional lipidomics QC helper functions
 #
 # Dependencies:
@@ -78,17 +94,17 @@
 #   # Extract from R/QC_visualisation.R
 # }
 
-# Function 8: calculateMissingness()
+# Function 8: calculateLipidMissingness()
 # Current location: R/QC_visualisation.R
 # Description: Calculates overall missingness percentage
-# calculateMissingness <- function(...) {
+# calculateLipidMissingness <- function(...) {
 #   # Extract from R/QC_visualisation.R
 # }
 
-# Function 9: calculateSumIntensityPerSample()
+# Function 9: calculateLipidSumIntensityPerSample()
 # Current location: R/QC_visualisation.R
 # Description: Calculates sum intensity per sample (TIC proxy)
-# calculateSumIntensityPerSample <- function(...) {
+# calculateLipidSumIntensityPerSample <- function(...) {
 #   # Extract from R/QC_visualisation.R
 # }
 
@@ -106,10 +122,10 @@
 #   # Extract from R/lipidVsSamplesS4Objects.R
 # }
 
-# Function 12: getInternalStandardMetrics()
+# Function 12: getLipidInternalStandardMetrics()
 # Current location: R/QC_visualisation.R
 # Description: Calculates internal standard metrics
-# getInternalStandardMetrics <- function(...) {
+# getLipidInternalStandardMetrics <- function(...) {
 #   # Extract from R/QC_visualisation.R
 # }
 
@@ -135,10 +151,10 @@
 #   # Extract from R/lipid_qc.R
 # }
 
-# Function 16: resolveDuplicateFeaturesByIntensity()
+# Function 16: resolveLipidDuplicateFeaturesByIntensity()
 # Current location: R/lipid_qc.R
 # Description: Resolves duplicates by intensity
-# resolveDuplicateFeaturesByIntensity <- function(...) {
+# resolveLipidDuplicateFeaturesByIntensity <- function(...) {
 #   # Extract from R/lipid_qc.R
 # }
 
@@ -199,7 +215,7 @@ lipidIntensityFilteringHelper <- function(
 
 
 # ----------------------------------------------------------------------------
-# resolveDuplicateFeaturesByIntensity
+# resolveLipidDuplicateFeaturesByIntensity
 # ----------------------------------------------------------------------------
 #' Resolve Duplicate Features by Keeping Highest Average Intensity
 #'
@@ -217,7 +233,7 @@ lipidIntensityFilteringHelper <- function(
 #' @importFrom tidyr pivot_longer pivot_wider
 #' @importFrom tibble column_to_rownames rownames_to_column
 #' @export
-resolveDuplicateFeaturesByIntensity <- function(assay_tibble, id_col, sample_cols) {
+resolveLipidDuplicateFeaturesByIntensity <- function(assay_tibble, id_col, sample_cols) {
     if (!id_col %in% colnames(assay_tibble)) {
         warning(sprintf("ID column '%s' not found in assay tibble. Returning original tibble.", id_col))
         return(assay_tibble)
@@ -288,9 +304,9 @@ resolveDuplicateFeaturesByIntensity <- function(assay_tibble, id_col, sample_col
 #'         and design matrix) as input for the current processing step.
 #'   \item Extracts the list of assay data frames/tibbles and the design matrix.
 #'   \item For each assay, calls helper functions (`countUniqueLipids`,
-#'         `countLipidsPerSample`, `calculateMissingness`,
-#'         `calculateSumIntensityPerSample`, `calculateLipidCVs`,
-#'         `getInternalStandardMetrics`) to calculate QC metrics.
+#'         `countLipidsPerSample`, `calculateLipidMissingness`,
+#'         `calculateLipidSumIntensityPerSample`, `calculateLipidCVs`,
+#'         `getLipidInternalStandardMetrics`) to calculate QC metrics.
 #'   \item Calls `calculateTotalUniqueLipidsAcrossAssays` for an overall count.
 #'   \item Updates the global `FilteringProgressLipidomics` object with the
 #'         calculated metrics for the given `step_name`.
@@ -451,7 +467,7 @@ updateLipidFiltering <- function(theObject,
 
             miss <- tryCatch(
                 {
-                    calculateMissingness(current_assay_data, sample_id_col, sample_columns = sample_columns)
+                    calculateLipidMissingness(current_assay_data, sample_id_col, sample_columns = sample_columns)
                 },
                 error = function(e) {
                     stop(e)
@@ -460,7 +476,7 @@ updateLipidFiltering <- function(theObject,
 
             sum_int <- tryCatch(
                 {
-                    calculateSumIntensityPerSample(current_assay_data, sample_id_col, sample_columns = sample_columns)
+                    calculateLipidSumIntensityPerSample(current_assay_data, sample_id_col, sample_columns = sample_columns)
                 },
                 error = function(e) {
                     stop(e)
@@ -478,7 +494,7 @@ updateLipidFiltering <- function(theObject,
 
             is_met <- tryCatch(
                 {
-                    getInternalStandardMetrics(current_assay_data, is_pattern, lipid_id_col, sample_id_col, sample_columns = sample_columns)
+                    getLipidInternalStandardMetrics(current_assay_data, is_pattern, lipid_id_col, sample_id_col, sample_columns = sample_columns)
                 },
                 error = function(e) {
                     stop(e)
@@ -850,7 +866,7 @@ countLipidsPerSample <- function(assay_data, sample_id_col, lipid_id_col, sample
 
 
 # ----------------------------------------------------------------------------
-# calculateMissingness
+# calculateLipidMissingness
 # ----------------------------------------------------------------------------
 #' @title Calculate Overall Missingness Percentage
 #' @description Calculates the percentage of missing values (NA or zero)
@@ -865,7 +881,7 @@ countLipidsPerSample <- function(assay_data, sample_id_col, lipid_id_col, sample
 #' @keywords internal
 #' @noRd
 #' @export
-calculateMissingness <- function(assay_data, sample_id_col, sample_columns = NULL) {
+calculateLipidMissingness <- function(assay_data, sample_id_col, sample_columns = NULL) {
     # Get only the quantitative columns (sample columns)
     quant_info <- getLipidQuantData(assay_data, sample_columns = sample_columns)
     quant_data <- quant_info$quant_data
@@ -904,7 +920,7 @@ calculateMissingness <- function(assay_data, sample_id_col, sample_columns = NUL
 
 
 # ----------------------------------------------------------------------------
-# calculateSumIntensityPerSample
+# calculateLipidSumIntensityPerSample
 # ----------------------------------------------------------------------------
 #' @title Calculate Sum Intensity per Sample (TIC Proxy)
 #' @description Calculates the sum of all intensities for each sample column
@@ -921,7 +937,7 @@ calculateMissingness <- function(assay_data, sample_id_col, sample_columns = NUL
 #' @keywords internal
 #' @noRd
 #' @export
-calculateSumIntensityPerSample <- function(assay_data, sample_id_col, sample_columns = NULL) {
+calculateLipidSumIntensityPerSample <- function(assay_data, sample_id_col, sample_columns = NULL) {
     quant_info <- getLipidQuantData(assay_data, sample_columns = sample_columns)
     quant_data <- quant_info$quant_data
     sample_names <- quant_info$sample_names
@@ -1094,7 +1110,7 @@ calculateLipidCVs <- function(assay_data,
 
 
 # ----------------------------------------------------------------------------
-# getInternalStandardMetrics
+# getLipidInternalStandardMetrics
 # ----------------------------------------------------------------------------
 #' @title Calculate Internal Standard Metrics
 #' @description Identifies internal standards (IS) based on a regex pattern and
@@ -1117,7 +1133,7 @@ calculateLipidCVs <- function(assay_data,
 #' @keywords internal
 #' @noRd
 #' @export
-getInternalStandardMetrics <- function(assay_data,
+getLipidInternalStandardMetrics <- function(assay_data,
                                        is_pattern,
                                        lipid_id_col,
                                        sample_id_col,

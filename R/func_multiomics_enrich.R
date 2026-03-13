@@ -1,3 +1,19 @@
+# MultiScholaR: Interactive Multi-Omics Analysis
+# Copyright (C) 2024-2026 Ignatius Pang, William Klare, and APAF-bioinformatics
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 # ============================================================================
 # func_multiomics_enrich.R
 # ============================================================================
@@ -16,8 +32,8 @@
 # - runOneStringDbRankEnrichment(): Run rank-based StringDB enrichment
 # - runOneStringDbRankEnrichmentMofa(): Run MOFA-based StringDB enrichment
 # - runStringDbEnrichmentAllContrasts(): Run StringDB enrichment for all contrasts
-# - runStringDbEnrichmentFromDEResults(): Run StringDB enrichment from DE results
-# - runStringDbEnrichmentFromDEResultsMultiple(): Run StringDB enrichment for multiple results
+# - runStringDbEnrichmentFromDAResults(): Run StringDB enrichment from DE results
+# - runStringDbEnrichmentFromDAResultsMultiple(): Run StringDB enrichment for multiple results
 # - runMetabolomicsEnrichmentAnalysis(): Run metabolomics enrichment analysis
 # - runMetabolomicsPathwayEnrichment(): Run metabolomics pathway enrichment
 # - printStringDbFunctionalEnrichmentBarGraph(): Print StringDB enrichment bar graph
@@ -82,17 +98,17 @@
 #   # Extract from R/string_enrichment_functions_refactored.R
 # }
 
-# Function 8: runStringDbEnrichmentFromDEResults()
+# Function 8: runStringDbEnrichmentFromDAResults()
 # Current location: R/multiomics_enrichment_functions.R
 # Description: Runs StringDB enrichment from DE results
-# runStringDbEnrichmentFromDEResults <- function(...) {
+# runStringDbEnrichmentFromDAResults <- function(...) {
 #   # Extract from R/multiomics_enrichment_functions.R
 # }
 
-# Function 9: runStringDbEnrichmentFromDEResultsMultiple()
+# Function 9: runStringDbEnrichmentFromDAResultsMultiple()
 # Current location: R/multiomics_enrichment_functions.R
 # Description: Runs StringDB enrichment for multiple DE results
-# runStringDbEnrichmentFromDEResultsMultiple <- function(...) {
+# runStringDbEnrichmentFromDAResultsMultiple <- function(...) {
 #   # Extract from R/multiomics_enrichment_functions.R
 # }
 
@@ -768,9 +784,9 @@ retrieveStringDBEnrichmentResults <- function(submission_info,
 #'
 #' @examples
 #' \dontrun{
-#' # Assume 'de_results' is a data frame with log2FC, fdr_qvalue, and Protein.Ids columns
+#' # Assume 'da_results' is a data frame with log2FC, fdr_qvalue, and Protein.Ids columns
 #' enrichment_results <- runOneStringDbRankEnrichment(
-#'   input_table = de_results,
+#'   input_table = da_results,
 #'   result_label = "treatment_vs_control",
 #'   pathway_dir = "path/to/pathway_enrichment",
 #'   api_key = "YOUR_API_KEY"
@@ -936,19 +952,19 @@ runOneStringDbRankEnrichmentMofa <- function( input_table
 
 
 # ----------------------------------------------------------------------------
-# runStringDbEnrichmentFromDEResults
+# runStringDbEnrichmentFromDAResults
 # ----------------------------------------------------------------------------
 #' Run STRING DB Enrichment Analysis from DE Results S4 Object
 #'
 #' @description
-#' This function extracts differential expression data from a de_results_for_enrichment S4 object,
+#' This function extracts differential expression data from a da_results_for_enrichment S4 object,
 #' applies the specified ranking method, and performs STRING DB enrichment analysis using the
 #' existing runOneStringDbRankEnrichmentMofa function.
 #'
-#' @param de_results_for_enrichment An S4 object of class de_results_for_enrichment containing
+#' @param da_results_for_enrichment An S4 object of class da_results_for_enrichment containing
 #'   differential expression results across multiple contrasts.
 #' @param contrast_name Character string. Name of the specific contrast to analyze.
-#'   Must match one of the names in de_results_for_enrichment@de_data.
+#'   Must match one of the names in da_results_for_enrichment@da_data.
 #'   If NULL, will use the first contrast. Default: NULL.
 #' @param ranking_method Character string. Method for ranking proteins. Options:
 #'   - "fdr_qvalue": Rank by FDR q-value (ascending, most significant first)
@@ -986,9 +1002,9 @@ runOneStringDbRankEnrichmentMofa <- function( input_table
 #'
 #' @examples
 #' \dontrun{
-#' # Assuming you have a de_results_for_enrichment object
-#' enrichment_results <- runStringDbEnrichmentFromDEResults(
-#'   de_results_for_enrichment = my_de_results,
+#' # Assuming you have a da_results_for_enrichment object
+#' enrichment_results <- runStringDbEnrichmentFromDAResults(
+#'   da_results_for_enrichment = my_da_results,
 #'   contrast_name = "T2.minus.MSO=groupT2-groupMSO",
 #'   ranking_method = "combined_score",
 #'   filter_significant = FALSE,
@@ -998,7 +1014,7 @@ runOneStringDbRankEnrichmentMofa <- function( input_table
 #'   species = "9606"
 #' )
 #' }
-runStringDbEnrichmentFromDEResults <- function(de_results_for_enrichment,
+runStringDbEnrichmentFromDAResults <- function(da_results_for_enrichment,
                                              contrast_name = NULL,
                                              ranking_method = "combined_score",
                                              identifier_column = "Protein.Ids",
@@ -1022,15 +1038,15 @@ runStringDbEnrichmentFromDEResults <- function(de_results_for_enrichment,
   }
   
   # Validate input S4 object
-  if (!inherits(de_results_for_enrichment, "de_results_for_enrichment")) {
-    stop("Input must be an S4 object of class 'de_results_for_enrichment'")
+  if (!inherits(da_results_for_enrichment, "da_results_for_enrichment")) {
+    stop("Input must be an S4 object of class 'da_results_for_enrichment'")
   }
   
   # Get available contrasts
-  available_contrasts <- names(de_results_for_enrichment@de_data)
+  available_contrasts <- names(da_results_for_enrichment@da_data)
   
   if (length(available_contrasts) == 0) {
-    stop("No contrasts found in de_results_for_enrichment@de_data")
+    stop("No contrasts found in da_results_for_enrichment@da_data")
   }
   
   # Select contrast
@@ -1043,7 +1059,7 @@ runStringDbEnrichmentFromDEResults <- function(de_results_for_enrichment,
   }
   
   # Extract data for the specified contrast
-  de_data <- de_results_for_enrichment@de_data[[contrast_name]]
+  de_data <- da_results_for_enrichment@da_data[[contrast_name]]
   
   if (is.null(de_data) || nrow(de_data) == 0) {
     stop(paste("No data found for contrast:", contrast_name))
@@ -1148,31 +1164,31 @@ runStringDbEnrichmentFromDEResults <- function(de_results_for_enrichment,
 
 
 # ----------------------------------------------------------------------------
-# runStringDbEnrichmentFromDEResultsMultiple
+# runStringDbEnrichmentFromDAResultsMultiple
 # ----------------------------------------------------------------------------
 #' Run STRING DB Enrichment Analysis for Multiple Contrasts from DE Results
 #'
 #' @description
 #' This function runs STRING DB enrichment analysis for all or selected contrasts
-#' from a de_results_for_enrichment S4 object.
+#' from a da_results_for_enrichment S4 object.
 #'
-#' @param de_results_for_enrichment An S4 object of class de_results_for_enrichment.
+#' @param da_results_for_enrichment An S4 object of class da_results_for_enrichment.
 #' @param contrast_names Character vector. Names of contrasts to analyze. 
 #'   If NULL, analyzes all available contrasts. Default: NULL.
-#' @param ranking_method Character string. Same options as runStringDbEnrichmentFromDEResults.
+#' @param ranking_method Character string. Same options as runStringDbEnrichmentFromDAResults.
 #'   Default: "combined_score".
-#' @param ... Additional arguments passed to runStringDbEnrichmentFromDEResults.
+#' @param ... Additional arguments passed to runStringDbEnrichmentFromDAResults.
 #'
 #' @return A named list of enrichment results, one for each contrast.
 #'
 #' @export
-runStringDbEnrichmentFromDEResultsMultiple <- function(de_results_for_enrichment,
+runStringDbEnrichmentFromDAResultsMultiple <- function(da_results_for_enrichment,
                                                       contrast_names = NULL,
                                                       ranking_method = "combined_score",
                                                       ...) {
   
   # Get available contrasts
-  available_contrasts <- names(de_results_for_enrichment@de_data)
+  available_contrasts <- names(da_results_for_enrichment@da_data)
   
   if (is.null(contrast_names)) {
     contrast_names <- available_contrasts
@@ -1189,8 +1205,8 @@ runStringDbEnrichmentFromDEResultsMultiple <- function(de_results_for_enrichment
     message(paste("Processing contrast:", contrast))
     
     tryCatch({
-      runStringDbEnrichmentFromDEResults(
-        de_results_for_enrichment = de_results_for_enrichment,
+      runStringDbEnrichmentFromDAResults(
+        da_results_for_enrichment = da_results_for_enrichment,
         contrast_name = contrast,
         ranking_method = ranking_method,
         result_label = paste0(contrast, "_", ranking_method),
@@ -1837,8 +1853,8 @@ searchStringDbSpecies <- function(species_name, api_key = NULL, show_top_n = 10)
 #' analysis results list. Results are cached to avoid redundant API calls. If a cached
 #' result file exists, it will be loaded instead of re-running the analysis.
 #'
-#' @param de_analysis_results_list A named list containing differential expression results.
-#'   Each element should contain a `de_proteins_long` data frame with columns:
+#' @param da_analysis_results_list A named list containing differential expression results.
+#'   Each element should contain a `da_proteins_long` data frame with columns:
 #'   `log2FC`, `fdr_qvalue`, and `Protein.Ids`.
 #' @param project_dirs A list containing project directory structure. Must include
 #'   an element named `paste0(omic_type, "_", experiment_label)` with a `results_dir` component.
@@ -1881,7 +1897,7 @@ searchStringDbSpecies <- function(species_name, api_key = NULL, show_top_n = 10)
 #' \dontrun{
 #' # Run enrichment for all contrasts
 #' all_enrichment_results <- runStringDbEnrichmentAllContrasts(
-#'   de_analysis_results_list = my_de_results,
+#'   da_analysis_results_list = my_da_results,
 #'   project_dirs = project_dirs,
 #'   omic_type = "proteomics",
 #'   experiment_label = "standard",
@@ -1891,7 +1907,7 @@ searchStringDbSpecies <- function(species_name, api_key = NULL, show_top_n = 10)
 #'
 #' # Force refresh of cached results
 #' refreshed_results <- runStringDbEnrichmentAllContrasts(
-#'   de_analysis_results_list = my_de_results,
+#'   da_analysis_results_list = my_da_results,
 #'   project_dirs = project_dirs,
 #'   omic_type = "proteomics",
 #'   experiment_label = "standard",
@@ -1902,7 +1918,7 @@ searchStringDbSpecies <- function(species_name, api_key = NULL, show_top_n = 10)
 #' }
 #'
 #' @export
-runStringDbEnrichmentAllContrasts <- function(de_analysis_results_list,
+runStringDbEnrichmentAllContrasts <- function(da_analysis_results_list,
                                              project_dirs,
                                              omic_type,
                                              experiment_label,
@@ -1930,8 +1946,8 @@ runStringDbEnrichmentAllContrasts <- function(de_analysis_results_list,
   }
   
   # Validate inputs
-  if (!is.list(de_analysis_results_list) || length(de_analysis_results_list) == 0) {
-    stop("de_analysis_results_list must be a non-empty list")
+  if (!is.list(da_analysis_results_list) || length(da_analysis_results_list) == 0) {
+    stop("da_analysis_results_list must be a non-empty list")
   }
   if (!is.list(project_dirs)) {
     stop("project_dirs must be a list")
@@ -1962,14 +1978,14 @@ runStringDbEnrichmentAllContrasts <- function(de_analysis_results_list,
   
   # Run enrichment for all contrasts
   message("Running STRING DB enrichment for all contrasts...")
-  message("Number of contrasts to process: ", length(de_analysis_results_list))
+  message("Number of contrasts to process: ", length(da_analysis_results_list))
   
-  list_of_contrasts <- names(de_analysis_results_list)
+  list_of_contrasts <- names(da_analysis_results_list)
   
   output_group_tables_list <- purrr::map(list_of_contrasts, function(contrast_name) {
     message("Processing contrast: ", contrast_name)
     
-    input_table <- de_analysis_results_list[[contrast_name]]$de_proteins_long
+    input_table <- da_analysis_results_list[[contrast_name]]$da_proteins_long
     result_label <- stringr::str_split_i(contrast_name, "=", 1)
     
     # Run enrichment for this contrast

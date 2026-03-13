@@ -1,3 +1,19 @@
+# MultiScholaR: Interactive Multi-Omics Analysis
+# Copyright (C) 2024-2026 Ignatius Pang, William Klare, and APAF-bioinformatics
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 # ============================================================================
 # func_metab_import.R
 # ============================================================================
@@ -321,10 +337,25 @@ detectMetabolomicsFormat <- function(headers, filename = NULL) {
     }
     
     return(list(
-        format = best_format
-        , confidence = best_score
-        , all_scores = scores
+        format = best_format,
+        confidence = best_score,
+        all_scores = scores
     ))
+}
+
+
+# ----------------------------------------------------------------------------
+# findMatchingColumn (Alias)
+# ----------------------------------------------------------------------------
+#' @title Find Matching Column (Alias)
+#' @description Alias for findMatchingColumn for backward compatibility.
+#' @export
+findMetabMatchingColumn <- function(headers, candidates) {
+    if (!requireNamespace("MultiScholaR", quietly = TRUE)) {
+        # Fallback if package not fully loaded
+        return(findMatchingColumn(headers, candidates))
+    }
+    MultiScholaR::findMatchingColumn(headers, candidates)
 }
 
 
@@ -420,27 +451,25 @@ getMetabolomicsColumnDefaults <- function(format) {
 #' @return The first matching header name (preserving original case), or NULL if no match.
 #'
 #' @export
-findMatchingColumn <- function(headers, candidates) {
-    if (is.null(candidates) || length(candidates) == 0) {
-        return(NULL)
-    }
-    
-    headers_lower <- tolower(headers)
-    candidates_lower <- tolower(candidates)
-    
-    for (cand in candidates_lower) {
-        match_idx <- which(headers_lower == cand)
-        if (length(match_idx) > 0) {
-            return(headers[match_idx[1]])
-        }
-    }
-    
-    return(NULL)
-}
+# findMetabMatchingColumn <- function(headers, candidates) {
+#     # Deprecated in favor of shared findMatchingColumn
+#     findMatchingColumn(headers, candidates)
+# }
 
 
 # ----------------------------------------------------------------------------
 # importMSDIALData
+# ----------------------------------------------------------------------------
+#' @title Import MS-DIAL Data (Alias)
+#' @description Alias for importMetabMSDIALData for backward compatibility.
+#' @export
+importMSDIALData <- function(...) {
+    importMetabMSDIALData(...)
+}
+
+
+# ----------------------------------------------------------------------------
+# importMSDIALData (Implementation)
 # ----------------------------------------------------------------------------
 #' @title Import MS-DIAL Data
 #' @description Parses MS-DIAL exported data files (height or area matrix).
@@ -461,7 +490,7 @@ findMatchingColumn <- function(headers, candidates) {
 #' @importFrom vroom vroom
 #' @importFrom logger log_info log_error
 #' @export
-importMSDIALData <- function(
+importMetabMSDIALData <- function(
     filepath
     , metabolite_id_column = NULL
     , annotation_column = NULL
@@ -500,16 +529,16 @@ importMSDIALData <- function(
         metabolite_id = if (!is.null(metabolite_id_column)) {
             metabolite_id_column
         } else {
-            findMatchingColumn(headers, defaults$metabolite_id)
+            findMetabMatchingColumn(headers, defaults$metabolite_id)
         }
         , annotation = if (!is.null(annotation_column)) {
             annotation_column
         } else {
-            findMatchingColumn(headers, defaults$annotation)
+            findMetabMatchingColumn(headers, defaults$annotation)
         }
-        , rt = findMatchingColumn(headers, defaults$rt)
-        , mz = findMatchingColumn(headers, defaults$mz)
-        , adduct = findMatchingColumn(headers, defaults$adduct)
+        , rt = findMetabMatchingColumn(headers, defaults$rt)
+        , mz = findMetabMatchingColumn(headers, defaults$mz)
+        , adduct = findMetabMatchingColumn(headers, defaults$adduct)
     )
     
     # Identify sample columns (numeric columns not in known annotation columns)
@@ -573,6 +602,17 @@ importMSDIALData <- function(
 
 
 # ----------------------------------------------------------------------------
+# validateColumnMapping (Alias)
+# ----------------------------------------------------------------------------
+#' @title Validate Column Mapping (Alias)
+#' @description Alias for validateMetabColumnMapping for backward compatibility.
+#' @export
+validateColumnMapping <- function(data, metabolite_id_column, sample_columns) {
+    validateMetabColumnMapping(data, metabolite_id_column, sample_columns)
+}
+
+
+# ----------------------------------------------------------------------------
 # validateColumnMapping
 # ----------------------------------------------------------------------------
 #' @title Validate Column Mapping for Metabolomics Data
@@ -589,7 +629,7 @@ importMSDIALData <- function(
 #'   - `summary`: Summary statistics
 #'
 #' @export
-validateColumnMapping <- function(data, metabolite_id_column, sample_columns) {
+validateMetabColumnMapping <- function(data, metabolite_id_column, sample_columns) {
     errors <- character(0)
     warnings <- character(0)
     

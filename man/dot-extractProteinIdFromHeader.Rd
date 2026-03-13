@@ -42,7 +42,7 @@ This function:
 This approach is much more efficient than annotating all FASTA proteins because:
 \itemize{
 \item Only annotates proteins actually present in the dataset
-\item Handles protein groups properly (A;B;C → A, B, C)
+\item Handles protein groups properly (A;B;C -> A, B, C)
 \item Significantly reduces API calls and processing time
 \item Supports both UniProt and Ensembl protein IDs
 }

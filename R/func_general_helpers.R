@@ -1,3 +1,19 @@
+# MultiScholaR: Interactive Multi-Omics Analysis
+# Copyright (C) 2024-2026 Ignatius Pang, William Klare, and APAF-bioinformatics
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 # ============================================================================
 # func_general_helpers.R
 # ============================================================================
@@ -81,6 +97,37 @@
 # getFunctionNameSecondLevel <- function() {
 #   # Extract from R/helper_functions.R
 # }
+
+# ----------------------------------------------------------------------------
+# findMatchingColumn
+# ----------------------------------------------------------------------------
+#' @title Find Matching Column in Headers (Case-Insensitive)
+#' @description Searches for a column name in headers using case-insensitive matching.
+#'              Used for auto-populating column mapping inputs.
+#'
+#' @param headers Character vector of column headers from the data file.
+#' @param candidates Character vector of candidate column names to search for.
+#'
+#' @return The first matching header name (preserving original case), or NULL if no match.
+#'
+#' @export
+findMatchingColumn <- function(headers, candidates) {
+    if (is.null(candidates) || length(candidates) == 0) {
+        return(NULL)
+    }
+
+    headers_lower <- tolower(headers)
+    candidates_lower <- tolower(candidates)
+
+    for (cand in candidates_lower) {
+        match_idx <- which(headers_lower == cand)
+        if (length(match_idx) > 0) {
+            return(headers[match_idx[1]])
+        }
+    }
+
+    return(NULL)
+}
 
 # === Parsing Functions ===
 
@@ -242,17 +289,17 @@
 # === Comparison and UMAP Functions ===
 
 # Function 30: compareUmapComponentsPairs()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Compares UMAP component pairs
 # compareUmapComponentsPairs <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 31: umap_factor_plot()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Creates UMAP factor plot
 # umap_factor_plot <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # === Data Extraction Functions ===
@@ -374,10 +421,10 @@
 # }
 
 # Function 48: printPValuesDistribution()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Prints p-value distribution
 # printPValuesDistribution <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # === Parameter Update Functions ===

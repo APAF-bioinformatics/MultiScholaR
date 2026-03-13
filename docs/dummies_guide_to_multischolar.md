@@ -1,9 +1,9 @@
 # MultiScholaR Technical Documentation: Enhanced System Guide
 
 **Target Audience:** Technical R expert with NO prior Shiny/Golem/R6 knowledge  
-**Document Version:** 2.0 (Enhanced)  
-**Last Updated:** January 2026  
-**Repository:** [APAF-bioinformatics/MultiScholaR](https://github.com/APAF-bioinformatics/MultiScholaR)
+- Created: 2026-03-11T01:18:27Z
+- Last Updated: March 2026
+- Repository: [APAF-bioinformatics/MultiScholaR](https://github.com/APAF-bioinformatics/MultiScholaR)
 
 ---
 
@@ -42,6 +42,7 @@ MultiScholaR implements a novel "app-as-a-package" philosophy, treating the enti
 - **PART III: Domain Workflows** (~10 pages)
   - Proteomics Workflow: End-to-End
   - Metabolomics Workflow: End-to-End
+  - Lipidomics Workflow: Parallel with Metabolomics
 
 - **PART IV: Cross-Cutting Infrastructure** (~7 pages)
   - Plotting Infrastructure
@@ -639,7 +640,7 @@ classDiagram
         -list args
         +normaliseBetweenSamples()
         +removeRowsWithMissingValuesPercent()
-        +differentialExpressionAnalysis()
+        +differentialAbundanceAnalysis()
     }
     
     class PeptideQuantitativeData {
@@ -758,7 +759,7 @@ prot_data@args$batch_correction <- list(
   timestamp = Sys.time()
 )
 
-# Step 4: Differential Expression
+# Step 4: Differential Abundance
 prot_data@args$de <- list(
   method = "limma",
   design_formula = "~Group",
@@ -787,9 +788,9 @@ str(prot_data@args, max.level = 2)
 #   ..$ k                           : num 3
 #   ..$ negative_control_percentage : num 0.1
 #   ..$ timestamp                   : POSIXct[1:1], format: "2026-01-13 10:45:00"
-#  $ de              :List of 5
+#  $ da              :List of 5
 #   ..$ method        : chr "limma"
-#   ..$ design_formula: chr "~Group"
+#   ..$ dasign_formula: chr "~Group"
 #   ..$ contrasts     : chr "TreatmentVsControl"
 #   ..$ adjust_method : chr "BH"
 #   ..$ timestamp     : POSIXct[1:1], format: "2026-01-13 11:00:00"
@@ -864,7 +865,7 @@ batch_correction:
   negative_control_percentage: 0.1
   timestamp: 2026-01-13 10:45:00 UTC
 
-de:
+da:
   method: limma
   design_formula: ~Group
   contrasts: TreatmentVsControl
@@ -1353,7 +1354,7 @@ mod_proteomics_server <- function(id, project_dirs) {
         import = NULL,
         qc = NULL,
         norm = NULL,
-        de = NULL
+        da = NULL
       ),
       
       # State manager (R6 object holding S4 snapshots)
@@ -1367,7 +1368,7 @@ mod_proteomics_server <- function(id, project_dirs) {
     mod_prot_import_server("import", workflow_data, project_dirs)
     mod_prot_qc_server("qc", workflow_data)
     mod_prot_norm_server("norm", workflow_data)
-    mod_prot_de_server("de", workflow_data)
+    mod_prot_da_server("de", workflow_data)
     
     # Parent can monitor state changes
     observe({
@@ -1620,9 +1621,9 @@ Traditional Shiny apps are often developed as loose collections of R scripts. Th
 
 **Golem solves these problems** by treating your Shiny app as a formal R package. This provides:
 
-- **Dependency management**: DESCRIPTION file tracks all dependencies
+- **Dependency management**: DASCRIPTION file tracks all dependencies
 - **Testing infrastructure**: Standard `tests/` directory with testthat
-- **Version control**: Semantic versioning via DESCRIPTION
+- **Version control**: Semantic versioning via DASCRIPTION
 - **Documentation**: Roxygen2 comments generate help files
 - **Reproducibility**: Exact package versions locked in
 - **Professional deployment**: Standard R package installation
@@ -1641,7 +1642,7 @@ MultiScholaR/
 │   ├── mod_prot_import.R      # Proteomics import submodule
 │   ├── mod_prot_qc.R          # Proteomics QC submodule
 │   ├── mod_prot_norm.R        # Proteomics normalization submodule
-│   ├── mod_prot_de.R          # Proteomics DE submodule
+│   ├── mod_prot_da.R          # Proteomics DA submodule
 │   │
 │   ├── func_proteomics.R      # Proteomics domain functions
 │   ├── func_metabolomics.R    # Metabolomics domain functions
@@ -1683,7 +1684,7 @@ MultiScholaR/
 │   │   └── test-utils_data.R
 │   └── testthat.R
 │
-├── DESCRIPTION                 # Package metadata and dependencies
+├── DASCRIPTION                 # Package metadata and dependencies
 ├── NAMESPACE                   # Exported functions (auto-generated)
 ├── LICENSE.md                  # License information
 ├── README.md                   # Project documentation
@@ -1908,7 +1909,7 @@ flowchart TD
         IMPORT[mod_prot_import<br/>Data Import]
         QC[mod_prot_qc<br/>Quality Control]
         NORM[mod_prot_norm<br/>Normalization]
-        DE[mod_prot_de<br/>Diff. Expression]
+        DA[mod_prot_da<br/>Diff. Abundance]
     end
     
     subgraph "Level 4: Specialized Workers"
@@ -1923,7 +1924,7 @@ flowchart TD
     PROT --> IMPORT
     PROT --> QC
     PROT --> NORM
-    PROT --> DE
+    PROT --> DA
     
     QC --> QC_PEP
     QC --> QC_PROT
@@ -1934,7 +1935,7 @@ flowchart TD
     style IMPORT fill:#D4F8D4
     style QC fill:#D4F8D4
     style NORM fill:#D4F8D4
-    style DE fill:#D4F8D4
+    style DA fill:#D4F8D4
     style QC_PEP fill:#F0E68C
     style QC_PROT fill:#F0E68C
 ```
@@ -1993,9 +1994,9 @@ mod_proteomics_ui <- function(id) {
         icon = icon("chart-line"),
         mod_prot_norm_ui(ns("norm"))
       ),
-      tabPanel("Differential Expression",
+      tabPanel("Differential Abundance",
         icon = icon("flask"),
-        mod_prot_de_ui(ns("de"))
+        mod_prot_da_ui(ns("de"))
       )
     )
   )
@@ -2014,7 +2015,7 @@ mod_proteomics_server <- function(id, project_dirs) {
         import = NULL,
         qc = NULL,
         norm = NULL,
-        de = NULL
+        da = NULL
       ),
       
       # State manager (R6)
@@ -2028,7 +2029,7 @@ mod_proteomics_server <- function(id, project_dirs) {
     mod_prot_import_server("import", workflow_data, project_dirs)
     mod_prot_qc_server("qc", workflow_data)
     mod_prot_norm_server("norm", workflow_data)
-    mod_prot_de_server("de", workflow_data)
+    mod_prot_da_server("de", workflow_data)
     
     # PARENT MONITORS STATE FOR TAB ENABLING
     observe({
@@ -2048,9 +2049,9 @@ mod_proteomics_server <- function(id, project_dirs) {
     })
     
     observe({
-      # Enable DE tab only after normalization complete
+      # Enable DA tab only after normalization complete
       shinyjs::toggleState(
-        selector = paste0("#", session$ns("main_tabs"), " a[data-value='Differential Expression']"),
+        selector = paste0("#", session$ns("main_tabs"), " a[data-value='Differential Abundance']"),
         condition = workflow_data$tab_status$norm == "complete"
       )
     })
@@ -2599,7 +2600,7 @@ setupDirectories <- function(project_root = getwd()) {
     proteomics = file.path(project_root, "results", "proteomics"),
     proteomics_qc = file.path(project_root, "results", "proteomics", "qc"),
     proteomics_norm = file.path(project_root, "results", "proteomics", "normalization"),
-    proteomics_de = file.path(project_root, "results", "proteomics", "differential_expression"),
+    proteomics_da = file.path(project_root, "results", "proteomics", "differential_abundance"),
     proteomics_enrichment = file.path(project_root, "results", "proteomics", "enrichment"),
     proteomics_graphs = file.path(project_root, "results", "proteomics", "publication_graphs"),
     
@@ -2607,7 +2608,7 @@ setupDirectories <- function(project_root = getwd()) {
     metabolomics = file.path(project_root, "results", "metabolomics"),
     metabolomics_qc = file.path(project_root, "results", "metabolomics", "qc"),
     metabolomics_norm = file.path(project_root, "results", "metabolomics", "normalization"),
-    metabolomics_de = file.path(project_root, "results", "metabolomics", "differential_expression"),
+    metabolomics_de = file.path(project_root, "results", "metabolomics", "differential_abundance"),
     metabolomics_enrichment = file.path(project_root, "results", "metabolomics", "enrichment"),
     metabolomics_graphs = file.path(project_root, "results", "metabolomics", "publication_graphs"),
     
@@ -2649,14 +2650,14 @@ my_project/
 │   ├── proteomics/
 │   │   ├── qc/                   # QC plots and metrics
 │   │   ├── normalization/        # Normalization diagnostics
-│   │   ├── differential_expression/  # DE results tables
+│   │   ├── differential_abundance/  # DA results tables
 │   │   ├── enrichment/           # Pathway enrichment results
 │   │   └── publication_graphs/   # Final plots for manuscripts
 │   │
 │   ├── metabolomics/
 │   │   ├── qc/
 │   │   ├── normalization/
-│   │   ├── differential_expression/
+│   │   ├── differential_abundance/
 │   │   ├── enrichment/
 │   │   └── publication_graphs/
 │   │
@@ -2737,7 +2738,7 @@ workflow_data <- reactiveValues(
     import = NULL,       # NULL | "complete" | "error"
     qc = NULL,
     norm = NULL,
-    de = NULL,
+    da = NULL,
     enrichment = NULL
   ),
   
@@ -2938,7 +2939,7 @@ batch_correction:
   negative_control_percentage: 0.1
   timestamp: 2026-01-13 10:45:00 UTC
   
-differential_expression:
+differential_abundance:
   method: limma
   design_formula: ~Group + Batch
   contrasts:
@@ -2970,9 +2971,9 @@ session_info:
 ```r
 # Export results table
 write.xlsx(
-  de_results,
-  file = file.path(project_dirs$proteomics_de, "differential_expression.xlsx"),
-  sheetName = "DE Results",
+  da_results,
+  file = file.path(project_dirs$proteomics_da, "differential_abundance.xlsx"),
+  sheetName = "DA Results",
   rowNames = FALSE
 )
 
@@ -3423,7 +3424,7 @@ flowchart TD
     ProtPath --> ProtQC
     
     ProtQC --> Norm[mod_prot_norm<br/>Normalization]
-    Norm --> DE[mod_prot_de<br/>Differential Expression]
+    Norm --> DA[mod_prot_da<br/>Differential Abundance]
     
     style CheckType fill:#FFE4B5
     style PeptPath fill:#E6E6FA
@@ -3471,9 +3472,9 @@ mod_proteomics_server <- function(id, project_dirs) {
         mod_prot_qc_protein_server("protein_qc", workflow_data)
       }
       
-      # Normalization and DE modules (always initialized)
+      # Normalization and DA modules (always initialized)
       mod_prot_norm_server("norm", workflow_data)
-      mod_prot_de_server("de", workflow_data)
+      mod_prot_da_server("de", workflow_data)
     })
   })
 }
@@ -3548,7 +3549,7 @@ observe({
 })
 ```
 
-**Key Insight:** This routing architecture ensures that despite different entry points, all workflows converge at the protein-level QC stage, allowing shared normalization, DE, and enrichment modules downstream.
+**Key Insight:** This routing architecture ensures that despite different entry points, all workflows converge at the protein-level QC stage, allowing shared normalization, DA, and enrichment modules downstream.
 
 ---
 
@@ -4289,7 +4290,7 @@ The selected organism and taxonomy ID are used for:
 
 ---
 
-# SECTION 9.1.4: DESIGN MATRIX BUILDER WITH ANNOTATION RETRIEVAL
+# SECTION 9.1.4: DASIGN MATRIX BUILDER WITH ANNOTATION RETRIEVAL
 *Insert after Section 9.1.3 (page ~37)*
 
 ---
@@ -4527,7 +4528,7 @@ observeEvent(input$finalize_design, {
 
 **Downstream Use:**
 - **Section 9.2**: QC module displays gene symbols instead of accessions
-- **Section 9.4**: DE results tables include gene symbol column
+- **Section 9.4**: DA results tables include gene symbol column
 - **Section 13**: Enrichment analysis uses pre-fetched GO terms/KEGG pathways
 - **Reports**: Gene-centric results more interpretable for biologists
 
@@ -4565,7 +4566,7 @@ MultiScholaR implements a **two-tier QC architecture** that adapts to the data l
 - **DIA workflows**: Require **both** peptide-level QC (9.2.1) and protein-level QC (9.2.2)
 - **TMT/LFQ workflows**: Skip directly to **protein-level QC only** (9.2.2)
 
-This architecture ensures appropriate quality filtering while allowing shared downstream modules (normalization, DE) across all workflows.
+This architecture ensures appropriate quality filtering while allowing shared downstream modules (normalization, DA) across all workflows.
 
 ```mermaid
 flowchart TD
@@ -5067,12 +5068,12 @@ ruvIII_C_Varying <- function(object,
 }
 ```
 
-### 9.4 Differential Expression Analysis
+### 9.4 Differential Abundance Analysis
 
 After normalization, statistical testing identifies differentially expressed proteins.
 
 ```r
-#' Differential Expression Analysis using limma
+#' Differential Abundance Analysis using limma
 #'
 #' Performs statistical testing for differential protein expression.
 #'
@@ -5081,11 +5082,11 @@ After normalization, statistical testing identifies differentially expressed pro
 #' @param contrasts Character vector. Contrasts to test (e.g., "TreatmentVsControl")
 #' @return data.frame. Results table with statistics
 #' @export
-differentialExpressionAnalysis <- function(object, 
+differentialAbundanceAnalysis <- function(object, 
                                           design_formula = "~Group",
                                           contrasts = NULL) {
   
-  message("Performing differential expression analysis")
+  message("Performing differential abundance analysis")
   message("  Design formula: ", design_formula)
   
   # Extract data
@@ -5140,7 +5141,7 @@ differentialExpressionAnalysis <- function(object,
   results_combined <- do.call(rbind, results_list)
   
   # Record parameters
-  object@args$differential_expression <- list(
+  object@args$differential_abundance <- list(
     design_formula = design_formula,
     contrasts = contrasts,
     timestamp = Sys.time(),
@@ -5229,6 +5230,15 @@ importMetabolomicsData <- function(file_list, design_matrix) {
   return(metab_object)
 }
 ```
+
+#### Systematic Prefixing for Namespace Safety
+
+As MultiScholaR supports multiple parallel omics workflows, it is critical to use systematic prefixing for all domain-specific functions. This prevents "Lipidomics assay data" or "unused argument" errors caused by function collisions in the global namespace.
+
+*   **Metabolomics Prefix**: `Metab` (e.g., `importMetabMSDIALData`, `validateMetabColumnMapping`)
+*   **Lipidomics Prefix**: `Lipid` (e.g., `importLipidMSDIALData`, `validateLipidColumnMapping`)
+
+Always ensure that any function copy-pasted between modules is immediately renamed to its corresponding domain prefix.
 
 ### 10.2 Internal Standards (ITSD) Analysis
 
@@ -5393,11 +5403,11 @@ plotITSDLollipop <- function(is_metrics) {
   return(p)
 }
 ```
-# SECTION 10.4: DIFFERENTIAL EXPRESSION FOR METABOLOMICS
+# SECTION 10.4: DIFFERENTIAL ABUNDANCE FOR METABOLOMICS
 
 ---
 
-## Section 10.4: Differential Expression Analysis for Metabolomics
+## Section 10.4: Differential Abundance Analysis for Metabolomics
 
 ### 10.4.1 The Multi-Assay Challenge
 
@@ -5415,7 +5425,7 @@ Each assay requires **independent statistical analysis** due to:
 
 MultiScholaR implements a **parallel analysis strategy** that analyzes each assay independently, then aggregates results for integrated interpretation.
 
-### 10.4.2 Multi-Assay DE Architecture
+### 10.4.2 Multi-Assay DA Architecture
 
 ```mermaid
 flowchart TD
@@ -5425,13 +5435,13 @@ flowchart TD
     Split --> LCMS_Neg[LC-MS Negative<br/>400 features]
     Split --> GCMS[GC-MS<br/>200 features]
     
-    LCMS_Pos --> DE1[limma Analysis<br/>Design matrix + Contrasts]
-    LCMS_Neg --> DE2[limma Analysis<br/>Same design matrix]
-    GCMS --> DE3[limma Analysis<br/>Same design matrix]
+    LCMS_Pos --> DA1[limma Analysis<br/>Design matrix + Contrasts]
+    LCMS_Neg --> DA2[limma Analysis<br/>Same design matrix]
+    GCMS --> DA3[limma Analysis<br/>Same design matrix]
     
-    DE1 --> Results1[DE Results<br/>assay = LCMS_Pos]
-    DE2 --> Results2[DE Results<br/>assay = LCMS_Neg]
-    DE3 --> Results3[DE Results<br/>assay = GCMS]
+    DA1 --> Results1[DA Results<br/>assay = LCMS_Pos]
+    DA2 --> Results2[DA Results<br/>assay = LCMS_Neg]
+    DA3 --> Results3[DA Results<br/>assay = GCMS]
     
     Results1 --> Combine[Aggregate Results<br/>rbind with assay column]
     Results2 --> Combine
@@ -5441,9 +5451,9 @@ flowchart TD
     
     style Input fill:#E8F4F8
     style Split fill:#FFE4B5
-    style DE1 fill:#D4F8D4
-    style DE2 fill:#D4F8D4
-    style DE3 fill:#D4F8D4
+    style DA1 fill:#D4F8D4
+    style DA2 fill:#D4F8D4
+    style DA3 fill:#D4F8D4
     style Combine fill:#DDA0DD
     style Output fill:#90EE90
 ```
@@ -5453,22 +5463,22 @@ flowchart TD
 ```r
 # File: R/func_metabolomics.R
 
-#' Differential Expression Analysis for Multi-Assay Metabolomics
+#' Differential Abundance Analysis for Multi-Assay Metabolomics
 #'
 #' Analyzes each assay independently using limma, then combines results.
 #'
 #' @param metab_object MetaboliteAssayData. Normalized multi-assay object
 #' @param design_formula Character. R formula for design (e.g., "~Group + Batch")
 #' @param contrasts Character vector. Contrasts to test
-#' @return data.frame. Combined DE results with assay column
+#' @return data.frame. Combined DA results with assay column
 #' @export
-differentialExpressionMetabolomics <- function(metab_object,
-                                               design_formula,
-                                               contrasts) {
+runMetabolitesDA <- function(metab_object,
+                             design_formula,
+                             contrasts) {
   
   library(limma)
   
-  message("Performing differential expression analysis")
+  message("Performing differential abundance analysis")
   message("  Design formula: ", design_formula)
   message("  Contrasts: ", paste(contrasts, collapse = ", "))
   message("  Assays: ", length(metab_object@metabolite_data))
@@ -5481,7 +5491,7 @@ differentialExpressionMetabolomics <- function(metab_object,
   contrast_mat <- makeContrasts(contrasts = contrasts, levels = design_mat)
   
   # Analyze each assay independently
-  de_results_list <- lapply(names(metab_object@metabolite_data), function(assay_name) {
+  da_results_list <- lapply(names(metab_object@metabolite_data), function(assay_name) {
     
     message("  Analyzing assay: ", assay_name)
     
@@ -5522,13 +5532,13 @@ differentialExpressionMetabolomics <- function(metab_object,
   })
   
   # Combine results across all assays
-  combined_results <- do.call(rbind, de_results_list)
+  combined_results <- do.call(rbind, da_results_list)
   
   # Merge metabolite annotations
   combined_results <- mergeMetaboliteAnnotations(combined_results, metab_object)
   
   # Record parameters
-  metab_object@args$differential_expression <- list(
+  metab_object@args$differential_abundance <- list(
     design_formula = design_formula,
     contrasts = contrasts,
     timestamp = Sys.time(),
@@ -5544,7 +5554,7 @@ differentialExpressionMetabolomics <- function(metab_object,
 
 ### 10.4.4 Assay-Specific Considerations
 
-**Independent Normalization**: Each assay is normalized separately (Section 10.2) before DE analysis, accounting for platform-specific technical variation.
+**Independent Normalization**: Each assay is normalized separately (Section 10.2) before DA analysis, accounting for platform-specific technical variation.
 
 **FDR Adjustment Strategy**: Two options available:
 ```r
@@ -5572,27 +5582,27 @@ table(combined_results$assay[combined_results$adj.P.Val < 0.05])
 #      45        32     18
 ```
 
-### 10.4.5 Metabolomics DE Visualizations
+### 10.4.5 Metabolomics DA Visualizations
 
 **Per-Assay Volcano Plots**
 ```r
 # Create separate volcano plot for each assay
-plotVolcanoMetabolomics <- function(de_results, fc_threshold = 1, pval_threshold = 0.05) {
+plotVolcanoMetabolomics <- function(da_results, fc_threshold = 1, pval_threshold = 0.05) {
   
   library(ggplot2)
   
   # Calculate -log10(p-value)
-  de_results$neg_log10_pval <- -log10(de_results$P.Value)
+  da_results$neg_log10_pval <- -log10(da_results$P.Value)
   
   # Classify significance
-  de_results$significance <- ifelse(
-    abs(de_results$logFC) > fc_threshold & de_results$adj.P.Val < pval_threshold,
-    ifelse(de_results$logFC > 0, "Upregulated", "Downregulated"),
+  da_results$significance <- ifelse(
+    abs(da_results$logFC) > fc_threshold & da_results$adj.P.Val < pval_threshold,
+    ifelse(da_results$logFC > 0, "Upregulated", "Downregulated"),
     "Not Significant"
   )
   
   # Create faceted volcano plot (one panel per assay)
-  ggplot(de_results, aes(x = logFC, y = neg_log10_pval, color = significance)) +
+  ggplot(da_results, aes(x = logFC, y = neg_log10_pval, color = significance)) +
     geom_point(alpha = 0.6, size = 2) +
     facet_wrap(~assay, ncol = 3) +
     geom_vline(xintercept = c(-fc_threshold, fc_threshold), 
@@ -5618,10 +5628,10 @@ plotVolcanoMetabolomics <- function(de_results, fc_threshold = 1, pval_threshold
 **Integrated Heatmap**
 ```r
 # Show top significant metabolites across all assays
-plotMetabolomicsHeatmap <- function(metab_object, de_results, top_n = 50) {
+plotMetabolomicsHeatmap <- function(metab_object, da_results, top_n = 50) {
   
   # Select top N metabolites by significance
-  top_metabolites <- de_results %>%
+  top_metabolites <- da_results %>%
     group_by(assay) %>%
     arrange(adj.P.Val) %>%
     slice_head(n = top_n) %>%
@@ -5636,9 +5646,9 @@ plotMetabolomicsHeatmap <- function(metab_object, de_results, top_n = 50) {
 **Cross-Assay Bar Chart**
 ```r
 # Visualize number of significant metabolites per assay
-plotSignificantMetaboliteCounts <- function(de_results) {
+plotSignificantMetaboliteCounts <- function(da_results) {
   
-  sig_counts <- de_results %>%
+  sig_counts <- da_results %>%
     filter(adj.P.Val < 0.05) %>%
     group_by(assay) %>%
     summarize(
@@ -5657,7 +5667,7 @@ plotSignificantMetaboliteCounts <- function(de_results) {
 ### 10.4.6 Integration in Metabolomics Module
 
 ```r
-# File: R/mod_metab_de.R
+# File: R/mod_metab_da.R
 
 observeEvent(input$run_de_analysis, {
   
@@ -5665,30 +5675,30 @@ observeEvent(input$run_de_analysis, {
   req(workflow_data$current_config$design_formula)
   req(workflow_data$current_config$contrasts)
   
-  withProgress(message = "Running differential expression...", {
+  withProgress(message = "Running differential abundance...", {
     
-    # Perform multi-assay DE analysis
-    de_results <- differentialExpressionMetabolomics(
+    # Perform multi-assay DA analysis
+    da_results <- differentialAbundanceMetabolomics(
       metab_object = workflow_data$data_tbl,
       design_formula = workflow_data$current_config$design_formula,
       contrasts = workflow_data$current_config$contrasts
     )
     
     # Store results
-    workflow_data$de_results <- de_results
+    workflow_data$da_results <- da_results
     
     # Generate visualizations
-    workflow_data$de_plots$volcano <- plotVolcanoMetabolomics(de_results)
+    workflow_data$de_plots$volcano <- plotVolcanoMetabolomics(da_results)
     workflow_data$de_plots$heatmap <- plotMetabolomicsHeatmap(
       workflow_data$data_tbl, 
-      de_results
+      da_results
     )
-    workflow_data$de_plots$sig_counts <- plotSignificantMetaboliteCounts(de_results)
+    workflow_data$de_plots$sig_counts <- plotSignificantMetaboliteCounts(da_results)
     
     # Export results
     write.xlsx(
-      de_results,
-      file = file.path(project_dirs$metabolomics_de, "de_results.xlsx")
+      da_results,
+      file = file.path(project_dirs$metabolomics_da, "da_results.xlsx")
     )
     
     # Update status
@@ -5696,19 +5706,46 @@ observeEvent(input$run_de_analysis, {
   })
   
   showNotification(
-    sprintf("DE analysis complete: %d significant metabolites (FDR < 0.05)",
-            sum(workflow_data$de_results$adj.P.Val < 0.05)),
+    sprintf("DA analysis complete: %d significant metabolites (FDR < 0.05)",
+            sum(workflow_data$da_results$adj.P.Val < 0.05)),
     type = "message"
   )
 })
 ```
 
-**Downstream Usage**: The combined DE results table flows into:
+**Downstream Usage**: The combined DA results table flows into:
 - **Metabolite enrichment** (pathway analysis per assay or combined)
 - **Multi-omics integration** (MOFA, linking significant metabolites with proteins/transcripts)
 - **Publication-ready reports** with assay-specific and integrated visualizations
 
 This multi-assay approach ensures each platform's unique metabolite coverage is properly analyzed while enabling integrated biological interpretation.
+
+## Section 10.5: Lipidomics Workflow (Parallel Analysis)
+
+Lipidomics follows the same **Multi-Assay Pattern** as metabolomics but uses a dedicated set of functions with the `Lipid` prefix. This architectural choice prevents namespace collisions when both modules are active.
+
+### 10.5.1 Key Lipidomics Functions
+
+| Feature | Metabolomics | Lipidomics |
+|---------|--------------|------------|
+| Core DA Runner | `runMetabolitesDA()` | `runLipidsDA()` |
+| Results Formatting | `createMetabDaResultsLongFormat()` | `createLipidDaResultsLongFormat()` |
+| Interactive Volcano | `generateMetabDAVolcanoPlotGlimma()` | `generateLipidDAVolcanoPlotGlimma()` |
+| Integrated Heatmap | `generateMetabDAHeatmap()` | `generateLipidDAHeatmap()` |
+| Static Volcano | `generateMetabDAVolcanoStatic()` | `generateLipidDAVolcanoStatic()` |
+| Excel Export | `outputMetabDaResultsAllContrasts()` | `outputLipidDaResultsAllContrasts()` |
+| Import Parser | `importMetabMSDIALData()` | `importLipidMSDIALData()` |
+| Column Validator | `validateMetabColumnMapping()` | `validateLipidColumnMapping()` |
+| Duplicate Finder | `findMetabDuplicateFeatureIDs()` | `findLipidDuplicateFeatureIDs()` |
+
+### 10.5.2 Why the Separate Prefix?
+
+During the v2.1 update, a critical bug was identified where lipidomics functions were unintentionally overwriting metabolomics functions because they shared the same names in different files. By systematically using the `Lipid` prefix, MultiScholaR ensures:
+1. **Namespace Isolation**: No risk of one module's logic affecting another.
+2. **Clear Intent**: Developers and users immediately know which omics type a function belongs to.
+3. **Registry Compatibility**: Simplifies the registration of S4 methods and Shiny observers.
+
+---
 
 ---
 
@@ -5968,40 +6005,40 @@ plotRleHelper <- function(data_matrix, title = "RLE Plot") {
 
 #' Volcano Plot Helper
 #'
-#' Creates volcano plot for differential expression results.
+#' Creates volcano plot for differential abundance results.
 #'
-#' @param de_results data.frame. Results from limma with logFC, P.Value, adj.P.Val
+#' @param da_results data.frame. Results from limma with logFC, P.Value, adj.P.Val
 #' @param fc_threshold Numeric. Fold-change threshold for coloring
 #' @param pval_threshold Numeric. P-value threshold for coloring
 #' @param title Character. Plot title
 #' @return ggplot object
 #' @export
-plotVolcanoHelper <- function(de_results,
+plotVolcanoHelper <- function(da_results,
                              fc_threshold = 1,
                              pval_threshold = 0.05,
                              title = "Volcano Plot") {
   library(ggplot2)
   
   # Calculate -log10(p-value)
-  de_results$neg_log10_pval <- -log10(de_results$P.Value)
+  da_results$neg_log10_pval <- -log10(da_results$P.Value)
   
   # Classify significance
-  de_results$significance <- "Not Significant"
-  de_results$significance[abs(de_results$logFC) > fc_threshold &
-                          de_results$adj.P.Val < pval_threshold] <- "Significant"
-  de_results$significance[abs(de_results$logFC) > fc_threshold &
-                          de_results$adj.P.Val < pval_threshold &
-                          de_results$logFC > 0] <- "Upregulated"
-  de_results$significance[abs(de_results$logFC) > fc_threshold &
-                          de_results$adj.P.Val < pval_threshold &
-                          de_results$logFC < 0] <- "Downregulated"
+  da_results$significance <- "Not Significant"
+  da_results$significance[abs(da_results$logFC) > fc_threshold &
+                          da_results$adj.P.Val < pval_threshold] <- "Significant"
+  da_results$significance[abs(da_results$logFC) > fc_threshold &
+                          da_results$adj.P.Val < pval_threshold &
+                          da_results$logFC > 0] <- "Upregulated"
+  da_results$significance[abs(da_results$logFC) > fc_threshold &
+                          da_results$adj.P.Val < pval_threshold &
+                          da_results$logFC < 0] <- "Downregulated"
   
   # Count significant proteins
-  n_up <- sum(de_results$significance == "Upregulated")
-  n_down <- sum(de_results$significance == "Downregulated")
+  n_up <- sum(da_results$significance == "Upregulated")
+  n_down <- sum(da_results$significance == "Downregulated")
   
   # Create plot
-  p <- ggplot(de_results, aes(x = logFC, y = neg_log10_pval, color = significance)) +
+  p <- ggplot(da_results, aes(x = logFC, y = neg_log10_pval, color = significance)) +
     geom_point(alpha = 0.6) +
     # Significance thresholds
     geom_vline(xintercept = c(-fc_threshold, fc_threshold), 
@@ -6032,6 +6069,30 @@ plotVolcanoHelper <- function(de_results,
 
 ---
 
+### 11.3 Robust Parameter Handling in Shiny
+
+When building visualizations driven by Shiny inputs, it is critical to handle `NULL` or `NA` values robustly to avoid `missing value where TRUE/FALSE needed` errors.
+
+#### Best Practice: explicit validation and defaults
+
+```r
+# Bad: Directly using input in condition
+if (input$cluster_rows) { ... }  # Error if input$cluster_rows is NULL
+
+# Good: Using isTRUE() or explicit check
+if (isTRUE(input$cluster_rows)) { ... }
+
+# Better: Robust parameter extraction with defaults
+params <- list(
+    cluster_rows = if (!is.null(input$cluster_rows)) input$cluster_rows else FALSE,
+    top_n = if (!is.na(as.numeric(input$top_n))) as.numeric(input$top_n) else 50
+)
+```
+
+Additionally, ensure interactive plots (like Glimma) have annotation data reordered to match the statistical model's row order. This prevents misaligned colors and status labels.
+
+---
+
 ## Section 12: File Management & Reproducibility
 
 ### 12.1 Directory Layout Philosophy
@@ -6056,8 +6117,8 @@ my_project/
 │   │   │   ├── rle_before.png
 │   │   │   ├── rle_after.png
 │   │   │   └── normalization_params.yaml
-│   │   ├── differential_expression/  # DE results
-│   │   │   ├── de_results_full.xlsx
+│   │   ├── differential_abundance/  # DA results
+│   │   │   ├── da_results_full.xlsx
 │   │   │   ├── volcano_plot.png
 │   │   │   └── ma_plot.png
 │   │   ├── enrichment/           # Pathway analysis
@@ -6373,6 +6434,33 @@ output$log_display <- renderText({
 })
 ```
 
+### 15.2 Granular Tracing ([D66] Pattern)
+
+For complex multi-step data transformations (e.g., `pivot_longer` followed by `left_join` and `pivot_wider`), MultiScholaR uses a granular tracing pattern prefixed with `[D66]`. This allows developers to pinpoint exactly which step fails when processing heterogeneous omics data.
+
+#### Pattern: Nested tryCatch with Granular Logging
+
+```r
+tryCatch({
+    # Step 1: Trace dimensions
+    cat("[D66] Input dim:", dim(data), "\n")
+    
+    # Step 2: Perform transformation with inner catch
+    result <- tryCatch({
+        data %>% pivot_longer(...)
+    }, error = function(e) {
+        cat("[ERROR] Pivot failed:", e$message, "\n")
+        stop(e)
+    })
+    
+    cat("[D66] Success. Final dim:", dim(result), "\n")
+}, error = function(e) {
+    message("Transformation pipeline aborted.")
+})
+```
+
+This pattern is particularly useful for debugging the "In index: 1." error often seen in `purrr::map2` or complex `dplyr` pipelines where the default error message is uninformative.
+
 ---
 
 # PART VI: APPENDICES
@@ -6583,7 +6671,7 @@ workflow_data$tab_status$<stage> <- "complete"
 When extending S4 classes:
 
 ```r
-# ALWAYS include:
+# ALWAYS includa:
 # 1. Comprehensive validity function
 # 2. @args slot for parameter tracking
 # 3. Design matrix for experimental context
@@ -6667,7 +6755,7 @@ MultiScholaR/
 │
 ├── man/                 # Generated documentation
 ├── tests/               # Unit tests
-├── DESCRIPTION          # Package metadata
+├── DASCRIPTION          # Package metadata
 └── NAMESPACE            # Exported functions
 ```
 
@@ -6720,7 +6808,7 @@ workflow_data$data_tbl <- workflow_data$state_manager$getState("post_qc")
 
 ### Related Packages
 - `limma`: Differential expression analysis
-- `edgeR`: Alternative DE method
+- `edgeR`: Alternative DA method
 - `clusterProfiler`: Enrichment analysis
 - `MOFA2`: Multi-omics factor analysis
 - `mixOmics`: Multi-omics integration

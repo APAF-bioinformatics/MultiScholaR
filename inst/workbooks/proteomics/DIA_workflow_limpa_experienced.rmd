@@ -296,7 +296,7 @@ if (file.exists(uniprot_cache_file)) {
 #### Design Matrices in R
 - [Design Matrices Explained]( https://www.r-bloggers.com/2023/11/understanding-matrices-in-r-programming/) - Understanding R design matrices
 - [R for Data Science: Model Basics](https://r4ds.had.co.nz/model-basics.html) - Explanation of model matrices in R
-- [limma User Guide](https://bioconductor.org/packages/release/bioc/vignettes/limma/inst/doc/usersguide.pdf) - Details on design matrices for differential expression
+- [limma User Guide](https://bioconductor.org/packages/release/bioc/vignettes/limma/inst/doc/usersguide.pdf) - Details on design matrices for differential abundance
 
 #### Sample Organization 
 - [Batch Effects in Omics Data](https://www.nature.com/articles/nrg2825) - Understanding and addressing batch effects
@@ -1118,9 +1118,9 @@ updateProteinFiltering(
 
 #### Impact on Statistical Power
 - [Sample Filtering Effects on Power](https://academic.oup.com/bjaed/article/16/5/159/2389876) - How filtering affects statistical power
-- [Outlier Influence on Differential Expression](https://cardinalscholar.bsu.edu/server/api/core/bitstreams/37a09705-8632-480a-9771-9b4cdafad608/content) - How outliers affect differential expression results
+- [Outlier Influence on Differential Abundance](https://cardinalscholar.bsu.edu/server/api/core/bitstreams/37a09705-8632-480a-9771-9b4cdafad608/content) - How outliers affect differential abundance results
 
-This section filters samples based on their Pearson correlation with other samples in the same experimental group. Low correlation between samples that should be similar (e.g., biological replicates) often indicates technical issues or sample quality problems. By implementing a correlation threshold (here set at 0.5), this step removes samples that don't correlate well with their group, ensuring that only high-quality, consistent samples are used for downstream statistical analysis. The `updateProteinFiltering()` function tracks the effect of this filtering step on the number of proteins in the dataset. The final data is saved in both TSV and RDS formats for transparency and to facilitate downstream analysis. This correlation-based filtering is the final quality control step before differential expression analysis, ensuring that the data used for biological interpretation is of the highest quality.
+This section filters samples based on their Pearson correlation with other samples in the same experimental group. Low correlation between samples that should be similar (e.g., biological replicates) often indicates technical issues or sample quality problems. By implementing a correlation threshold (here set at 0.5), this step removes samples that don't correlate well with their group, ensuring that only high-quality, consistent samples are used for downstream statistical analysis. The `updateProteinFiltering()` function tracks the effect of this filtering step on the number of proteins in the dataset. The final data is saved in both TSV and RDS formats for transparency and to facilitate downstream analysis. This correlation-based filtering is the final quality control step before differential abundance analysis, ensuring that the data used for biological interpretation is of the highest quality.
 
 
 ```{r 16 Sample Pearson Correlation Filtering}
@@ -1218,7 +1218,7 @@ summarizeQCPlot(QC_composite_figure)
 
 ```
 
-## Average Technical Replicates for Differential Expression Analysis
+## Average Technical Replicates for Differential Abundance Analysis
 
 ### Further Reading
 #### Technical vs Biological Variation in Proteomics
@@ -1247,13 +1247,13 @@ This section averages protein abundances across technical replicates to reduce t
 1. **Sets Replicate Grouping** (`technical_replicate_id = "factor2"`): Identifies which column in the design matrix groups samples that are technical replicates of the same biological sample
 2. **Averages Protein Abundances** (`averageTechReps`): Calculates the mean protein abundance across all technical replicates for each biological sample
 3. **Updates Design Matrix**: Removes technical replicate information and retains only biological sample metadata (group assignments, etc.)
-4. **Prepares for DE Analysis**: Creates a cleaner dataset where each column represents an independent biological sample, meeting the assumptions of differential expression statistical models
+4. **Prepares for DE Analysis**: Creates a cleaner dataset where each column represents an independent biological sample, meeting the assumptions of differential abundance statistical models
 
-**Important Note**: This averaging is appropriate for technical replicates only. Biological replicates should never be averaged before differential expression analysis, as biological variation is the signal of interest.
+**Important Note**: This averaging is appropriate for technical replicates only. Biological replicates should never be averaged before differential abundance analysis, as biological variation is the signal of interest.
 
 ```{r}
 # Keep relevant metadata columns
-ruv_normalised_for_de_analysis_obj <- averageTechReps(
+ruv_normalised_for_da_analysis_obj <- averageTechReps(
     ruv_normalised_filtered_results_obj,
     design_matrix_columns = c("group", "factor1", "factor2", "tech_reps"),
     biological_replicate_column = "replicates"  # NEW: averages within (group, replicates) combinations
@@ -1261,7 +1261,7 @@ ruv_normalised_for_de_analysis_obj <- averageTechReps(
 
 
 pca_plot_averaged <- plotPca(
-  ruv_normalised_for_de_analysis_obj,
+  ruv_normalised_for_da_analysis_obj,
   grouping_variable = "factor1",
   label_column = "factor2",
   shape_variable = "factor1",
@@ -1271,8 +1271,8 @@ pca_plot_averaged <- plotPca(
 )
 pca_plot_averaged
 
-vroom::vroom_write( ruv_normalised_for_de_analysis_obj@protein_quant_table, 
-             file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir, "proteomics_ruv_normalised_for_de_analysis_obj.tsv"))
+vroom::vroom_write( ruv_normalised_for_da_analysis_obj@protein_quant_table, 
+             file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir, "proteomics_ruv_normalised_for_da_analysis_obj.tsv"))
 ```
 
 # Output Files For Audit Trail
@@ -1315,10 +1315,10 @@ saveRDS(
 #   )
 # )
 
-ruv_normalised_for_de_analysis_obj <- ruv_normalised_filtered_results_obj
+ruv_normalised_for_da_analysis_obj <- ruv_normalised_filtered_results_obj
 
-ruv_normalised_for_de_analysis <-
-  ruv_normalised_for_de_analysis_obj@protein_quant_table |>
+ruv_normalised_for_da_analysis <-
+  ruv_normalised_for_da_analysis_obj@protein_quant_table |>
   pivot_longer(
     cols = !matches("Protein.Ids"),
     names_to = "replicates",
@@ -1335,12 +1335,12 @@ ruv_normalised_for_de_analysis <-
   dplyr::rename(uniprot_acc = "Protein.Ids")
 
 vroom::vroom_write(
-  ruv_normalised_for_de_analysis,
+  ruv_normalised_for_da_analysis,
   file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir, "ruv_normalised_results.tsv")
 )
 
 vroom::vroom_write(
-  ruv_normalised_for_de_analysis |>
+  ruv_normalised_for_da_analysis |>
     dplyr::mutate(across(!matches("uniprot_acc"), log2)),
   file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir, "ruv_normalised_results_log.tsv")
 )
@@ -1352,7 +1352,7 @@ vroom::vroom_write(
   file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir, "design_matrix_avrg.tsv")
 )
 
-ruv_normalised_for_de_analysis_mat <- ruv_normalised_for_de_analysis |>
+ruv_normalised_for_da_analysis_mat <- ruv_normalised_for_da_analysis |>
   column_to_rownames("uniprot_acc") |>
   as.matrix()
 ```
@@ -1390,8 +1390,8 @@ pca_ruv_rle_correlation_merged
 ## DE Analysis Generation
 
 ### Further Reading
-#### Differential Expression Analysis
-- [Limma-Based Analysis](https://www.bioconductor.org/packages/release/bioc/vignettes/limma/inst/doc/usersguide.pdf) - Detailed guide to limma for differential expression
+#### Differential Abundance Analysis
+- [Limma-Based Analysis](https://www.bioconductor.org/packages/release/bioc/vignettes/limma/inst/doc/usersguide.pdf) - Detailed guide to limma for differential abundance
 
 #### Moderated Statistics
 - [Moderated t-tests](https://stanford.edu/group/wonglab/doc/NewGeneScore-5.13.07.pdf) - Understanding moderated t-statistics
@@ -1400,9 +1400,9 @@ pca_ruv_rle_correlation_merged
 
 #### Interpreting DE Results
 - [Volcano Plot Interpretation](https://pnnl-comp-mass-spec.github.io/proteomics-data-analysis-tutorial/volcano-plots.html) - Understanding volcano plots in proteomics
-- [Statistical Power in omics](https://pmc.ncbi.nlm.nih.gov/articles/PMC4287952/) - Understanding statistical power in differential expression
+- [Statistical Power in omics](https://pmc.ncbi.nlm.nih.gov/articles/PMC4287952/) - Understanding statistical power in differential abundance
 
-This section performs differential expression analysis to identify proteins with statistically significant abundance differences between experimental conditions. The analysis uses limma, a well-established statistical framework that applies linear models and empirical Bayes methods to improve statistical power - particularly beneficial for proteomics data where sample sizes are often limited. For each contrast defined in the previous step, the code runs a complete differential expression analysis, including moderated t-tests with robust estimation and trend-based variance modeling. The TREAT method can optionally be applied to test for minimum fold-change thresholds in addition to statistical significance. The results are stored in a named list where each element contains the complete differential expression statistics for one contrast, ready for downstream visualization and biological interpretation.
+This section performs differential abundance analysis to identify proteins with statistically significant abundance differences between experimental conditions. The analysis uses limma, a well-established statistical framework that applies linear models and empirical Bayes methods to improve statistical power - particularly beneficial for proteomics data where sample sizes are often limited. For each contrast defined in the previous step, the code runs a complete differential abundance analysis, including moderated t-tests with robust estimation and trend-based variance modeling. The TREAT method can optionally be applied to test for minimum fold-change thresholds in addition to statistical significance. The results are stored in a named list where each element contains the complete differential abundance statistics for one contrast, ready for downstream visualization and biological interpretation.
 
 
 ```{r 19 DE Analysis Generation}
@@ -1411,7 +1411,7 @@ This section performs differential expression analysis to identify proteins with
 config_list$deAnalysisParameters$args_group_pattern <- "(\\d+)"
 
 # Swap out factor1 with grouping label
-ruv_normalised_for_de_analysis_obj@design_matrix <- ruv_normalised_for_de_analysis_obj@design_matrix |>
+ruv_normalised_for_da_analysis_obj@design_matrix <- ruv_normalised_for_da_analysis_obj@design_matrix |>
   mutate(
     temp_group = group,
     group = factor1,
@@ -1425,12 +1425,12 @@ contrast_names <- contrasts_tbl |>
   stringr::str_extract("^[^=]+") |> # Extract everything before the = sign
   stringr::str_replace_all("\\.", "_") # Replace dots with underscores
 
-# Run DE analysis and explicitly set names
-de_analysis_results_list <- seq_len(nrow(contrasts_tbl)) |>
+# Run DA analysis and explicitly set names
+da_analysis_results_list <- seq_len(nrow(contrasts_tbl)) |>
   purrr::set_names(contrast_names) |> # This ensures the list will be named
   purrr::map(\(contrast_idx) {
     deAnalysisWrapperFunction(
-      ruv_normalised_for_de_analysis_obj,
+      ruv_normalised_for_da_analysis_obj,
       contrasts_tbl |> dplyr::slice(contrast_idx),
       formula_string = config_list$deAnalysisParameters$formula_string,
       de_q_val_thresh = config_list$deAnalysisParameters$de_q_val_thresh,
@@ -1438,16 +1438,16 @@ de_analysis_results_list <- seq_len(nrow(contrasts_tbl)) |>
       eBayes_trend = config_list$deAnalysisParameters$eBayes_trend,
       eBayes_robust = config_list$deAnalysisParameters$eBayes_robust,
       args_group_pattern = config_list$deAnalysisParameters$args_group_pattern,
-      args_row_id = ruv_normalised_for_de_analysis_obj@protein_id_column
+      args_row_id = ruv_normalised_for_da_analysis_obj@protein_id_column
     )
   })
 
 # Verify we have names
-print(names(de_analysis_results_list))
+print(names(da_analysis_results_list))
 
 ```
 
-## Output the results of the DE analysis
+## Output the results of the DA analysis
 
 ### Further Reading
 #### Results Visualization
@@ -1461,18 +1461,18 @@ print(names(de_analysis_results_list))
 - [Error Handling Best Practices](https://adv-r.hadley.nz/conditions.html) - Advanced R guide to error handling
 - [Parallel Processing Errors](https://cran.r-project.org/web/packages/future/vignettes/future-4-issues.html) - Managing errors in parallel processing
 
-This section outputs the differential expression analysis results in various formats for interpretation and publication. For each contrast, the code generates comprehensive result tables and visualizations, including volcano plots that highlight significantly changing proteins. The function takes advantage of the annotations retrieved from UniProt to enrich the results with biological context, including gene names and protein descriptions. Error handling with tryCatch ensures that the workflow continues even if individual contrasts encounter issues. Multiple output files are generated for each contrast, including TSV files for downstream analysis in other tools and publication-quality figures in various formats. These outputs provide both the raw statistical results and their biological interpretation, facilitating the transition from statistical significance to biological insight.
+This section outputs the differential abundance analysis results in various formats for interpretation and publication. For each contrast, the code generates comprehensive result tables and visualizations, including volcano plots that highlight significantly changing proteins. The function takes advantage of the annotations retrieved from UniProt to enrich the results with biological context, including gene names and protein descriptions. Error handling with tryCatch ensures that the workflow continues even if individual contrasts encounter issues. Multiple output files are generated for each contrast, including TSV files for downstream analysis in other tools and publication-quality figures in various formats. These outputs provide both the raw statistical results and their biological interpretation, facilitating the transition from statistical significance to biological insight.
 
 ```{r 20 Output DE Analysis Results}
 
-names(de_analysis_results_list) |>
+names(da_analysis_results_list) |>
   purrr::walk(\(contrast_name) {
     tryCatch(
       {
         message(paste("Processing contrast:", contrast_name))
 
         # Check if the result exists and has content
-        result <- de_analysis_results_list[[contrast_name]]
+        result <- da_analysis_results_list[[contrast_name]]
         if (is.null(result) || length(result) == 0) {
           message(paste("Skipping empty result for:", contrast_name))
           return(NULL)
@@ -1480,13 +1480,13 @@ names(de_analysis_results_list) |>
 
         outputDeAnalysisResults(
           result,
-          ruv_normalised_for_de_analysis_obj,
+          ruv_normalised_for_da_analysis_obj,
           uniprot_dat_cln,
           file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir),
           file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$publication_graphs_dir),
-          file_prefix = paste0("de_proteins_", contrast_name),
+          file_prefix = paste0("da_proteins_", contrast_name),
           plots_format = config_list$deAnalysisParameters$plots_format,
-          args_row_id = ruv_normalised_for_de_analysis_obj@protein_id_column,
+          args_row_id = ruv_normalised_for_da_analysis_obj@protein_id_column,
           de_q_val_thresh = 0.05,
           gene_names_column = "gene_names"
         )
@@ -1509,9 +1509,9 @@ names(de_analysis_results_list) |>
 - [FDR in Genomics](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2719628/) - Storey & Tibshirani (2003) on statistical significance for genome-wide studies
 - [Multiple Testing in Proteomics](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3159868/) - Kammers et al. (2015) on significance analysis of proteomics data
 
-#### Differential Expression in Proteomics
+#### Differential Abundance in Proteomics
 - [MSstats for Proteomics](https://academic.oup.com/bioinformatics/article/30/17/2524/2748175) - Choi et al. (2014) on statistical relative protein significance analysis
-- [Limma for Proteomics](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4402510/) - Kammers et al. (2015) comparison of methods for differential expression analysis
+- [Limma for Proteomics](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4402510/) - Kammers et al. (2015) comparison of methods for differential abundance analysis
 - [Rank-Based Methods](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5295788/) - Schwämmle & Jensen (2010) on statistical model for proteomics data with labeling and replicates
 
 #### Protein-Level Summarization
@@ -1530,7 +1530,7 @@ This section extracts the most statistically significant differentially expresse
 
 **What This Step Does:**
 
-1. **Iterates Through Contrasts** (`imap_dfr`): Processes each differential expression comparison separately while preserving comparison names
+1. **Iterates Through Contrasts** (`imap_dfr`): Processes each differential abundance comparison separately while preserving comparison names
 2. **Applies Significance Filter** (FDR < 0.05): Retains only proteins passing the False Discovery Rate threshold, controlling for multiple testing
 3. **Separates by Direction**:
    - **Top Upregulated** (log2FC > 0): Identifies proteins with increased abundance, ranked by statistical significance (lowest FDR first)
@@ -1548,11 +1548,11 @@ This section extracts the most statistically significant differentially expresse
 # --- Extract and Save Top DE Genes ---
 cat("=== Extracting and Saving Top DE Genes ===\n")
 
-top_de_genes <- imap_dfr(de_analysis_results_list, ~{
+top_de_genes <- imap_dfr(da_analysis_results_list, ~{
   cat("Processing top genes for contrast:", .y, "\n")
   
   # Filter for significant genes
-  significant_genes <- .x$de_proteins_long |>
+  significant_genes <- .x$da_proteins_long |>
     filter(fdr_qvalue < 0.05)
   
   # Get top 10 upregulated
@@ -1602,7 +1602,7 @@ cat("Top DE genes saved to:", top_genes_output_file, "\n")
 
 
 all_enrichment_results <- runStringDbEnrichmentAllContrasts(
-  de_analysis_results_list = de_analysis_results_list,
+  da_analysis_results_list = da_analysis_results_list,
   project_dirs = project_dirs,
   omic_type = omic_type,
   experiment_label = experiment_label,
@@ -1650,7 +1650,7 @@ enrichment_plot_results <- plotStringDbEnrichmentResults(
 ```
 
 ## Enrichment Analysis
-## This section performs enrichment analysis on the DE results
+## This section performs enrichment analysis on the DA results
 ## If your taxon id is on the list supported by gprofiler, that will be used to perform the enrichment analysis
 ## Otherwise, the enrichment analysis will be performed using the GO annotations provided by UniProt in clusterProfiler
 
@@ -1671,8 +1671,8 @@ enrichment_plot_results <- plotStringDbEnrichmentResults(
 This section performs functional enrichment analysis to identify biological processes, molecular functions, and cellular components overrepresented in your differentially expressed proteins. The workflow is flexible, first attempting to use g:Profiler for enrichment if your organism's taxonomy ID is supported, then falling back to clusterProfiler with GO annotations from UniProt if needed. The analysis is performed separately for upregulated and downregulated protein sets from each contrast, providing a comprehensive view of the biological processes affected in different conditions. The enrichment results include statistical measures like p-values and enrichment ratios, along with visualizations like enrichment maps and GO term networks. This step transforms your list of differential proteins into meaningful biological insights, helping you understand the functional implications of the observed protein abundance changes.
 
 ```{r 21 Enrichment Analysis}
-# Create S4 object of the DE results for enrichment analysis
-de_results_for_enrichment <- createDEResultsForEnrichment(
+# Create S4 object of the DA results for enrichment analysis
+de_results_for_enrichment <- createDAResultsForEnrichment(
   contrasts_tbl = contrasts_tbl,
   design_matrix = design_matrix,
   de_output_dir = file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir)
@@ -1680,7 +1680,7 @@ de_results_for_enrichment <- createDEResultsForEnrichment(
 
 # Run enrichment analysis
 enrichment_results <- processEnrichments(
-  de_results_for_enrichment # Your S4 object with DE results
+  de_results_for_enrichment # Your S4 object with DA results
   , taxon_id = taxon_id # your organism
   , up_cutoff = 0 # FC filtering
   , down_cutoff = 0 # FC filtering
@@ -1688,8 +1688,8 @@ enrichment_results <- processEnrichments(
   , pathway_dir = file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$pathway_dir) # Output directory
   , go_annotations = uniprot_dat_cln # Annotation data
   , exclude_iea = FALSE,
-  protein_id_column = ruv_normalised_for_de_analysis_obj@protein_id_column,
-  contrast_names = (names(de_analysis_results_list))
+  protein_id_column = ruv_normalised_for_da_analysis_obj@protein_id_column,
+  contrast_names = (names(da_analysis_results_list))
 )
 ```
 

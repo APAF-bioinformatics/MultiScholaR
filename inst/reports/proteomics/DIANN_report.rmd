@@ -255,7 +255,7 @@ ExtractStudyParametersNew <- function(study_params) {
   samples_after_count <- s4_sample_filt$samples_after_count %||% NA
   
   # Extract UI parameter sections
-  ui_de <- safe_extract(ui_params, "Differential Expression UI Parameters", list())
+  ui_de <- safe_extract(ui_params, "Differential Abundance UI Parameters", list())
   ui_enrich <- safe_extract(ui_params, "Enrichment Analysis UI Parameters", list())
   
   # Create flat parameter list for backward compatibility
@@ -341,7 +341,7 @@ ExtractStudyParametersNew <- function(study_params) {
     # Protein Counts (with safe extraction)
     protein_count_qc = protein_counts_info$"Proteins after QC filtering" %||% NA,
     protein_count_ruv = protein_counts_info$"Proteins after RUV filtering" %||% NA,
-    protein_count_final = protein_counts_info$"Final proteins for DE analysis" %||% NA,
+    protein_count_final = protein_counts_info$"Final proteins for DA analysis" %||% NA,
     
     # NEW: Mixed Species FASTA Analysis
     mixed_species_enabled = mixed_species_info$"Multi-Species FASTA Used" %||% "No",
@@ -490,7 +490,7 @@ FormatMethodDetails <- function(numbers) {
   
   ruv_count_text <- if(!is.null(numbers$protein_count_ruv) && !is.na(numbers$protein_count_ruv)) {
     paste0(" Following RUV-III batch correction and subsequent missing value cleanup, ", 
-           numbers$protein_count_ruv, " proteins were retained for differential expression analysis.")
+           numbers$protein_count_ruv, " proteins were retained for differential abundance analysis.")
   } else {
     ""
   }
@@ -536,7 +536,7 @@ FormatMethodDetails <- function(numbers) {
       "{best_k_val} unwanted components were selected for removal."
     )
   } else {
-    "RUV-III batch correction was not applied due to dataset constraints. The analysis proceeded directly with normalized data for differential expression analysis."
+    "RUV-III batch correction was not applied due to dataset constraints. The analysis proceeded directly with normalized data for differential abundance analysis."
   }
   
   # NEW: Generate mixed species FASTA text BEFORE glue block
@@ -785,7 +785,7 @@ Technical Validation
 }
 ```
 
-```{r Differential Expression Section, echo=FALSE}
+```{r Differential Abundance Section, echo=FALSE}
 # UPDATED: DE details using new UI and S4 parameters
 FormatDEDetails <- function(numbers) {
   # Get UI parameters with S4 fallbacks
@@ -1132,7 +1132,7 @@ if(file.exists(composite_qc_fig_path)) {
 }
 ```
 
-# Differential Expression Analysis
+# Differential Abundance Analysis
 
 `r results_data$content$de_details`
 
@@ -1151,7 +1151,7 @@ if(dir.exists(num_sig_dir)) {
   if(length(sig_plot_file) > 0) {
     knitr::include_graphics(sig_plot_file[1])
   } else {
-    cat(glue::glue("Warning: No NumSigDE Plot images found in {num_sig_dir}\n"))
+    cat(glue::glue("Warning: No NumSigDA Plot images found in {num_sig_dir}\n"))
   }
 } else {
   cat(glue::glue("Warning: NumSigDeMolecules directory not found at {num_sig_dir}\n"))

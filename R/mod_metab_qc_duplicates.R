@@ -1,3 +1,19 @@
+# MultiScholaR: Interactive Multi-Omics Analysis
+# Copyright (C) 2024-2026 Ignatius Pang, William Klare, and APAF-bioinformatics
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 # ============================================================================
 # mod_metab_qc_duplicates.R
 # ============================================================================
@@ -103,8 +119,8 @@ mod_metab_qc_duplicates_server <- function(id, workflow_data, omic_type, experim
                     stop("Current state is not a MetaboliteAssayData object")
                 }
                 
-                # Use the findDuplicateFeatureIDs function
-                duplicates_list <- findDuplicateFeatureIDs(current_s4)
+                # Use the findMetabDuplicateFeatureIDs function
+                duplicates_list <- findMetabDuplicateFeatureIDs(current_s4)
                 duplicate_info(duplicates_list)
                 
                 # Count total duplicates

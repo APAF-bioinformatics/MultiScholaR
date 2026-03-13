@@ -1,3 +1,19 @@
+# MultiScholaR: Interactive Multi-Omics Analysis
+# Copyright (C) 2024-2026 Ignatius Pang, William Klare, and APAF-bioinformatics
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 # ============================================================================
 # func_general_filemgmt.R
 # ============================================================================
@@ -251,14 +267,14 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
         omic_config <- switch(current_omic_type,
             proteomics = list(
                 results_subdirs = c(
-                    "protein_qc", "peptide_qc", "clean_proteins", "de_proteins",
+                    "protein_qc", "peptide_qc", "clean_proteins", "da_proteins",
                     "publication_graphs", "pathway_enrichment",
                     file.path("publication_graphs", "filtering_qc")
                 ),
                 results_summary_subdirs = c("QC_figures", "Publication_figures", "Publication_tables", "Study_report"),
                 scripts_source_leaf = "proteomics",
                 global_vars = list(
-                    de_output_leaf = "de_proteins",
+                    da_output_leaf = "da_proteins",
                     pathway_leaf = "pathway_enrichment",
                     feature_qc_leaf = "protein_qc",
                     subfeature_qc_leaf = "peptide_qc",
@@ -267,14 +283,14 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
             ),
             metabolomics = list(
                 results_subdirs = c(
-                    "metabolite_qc", "feature_qc", "clean_metabolites", "de_metabolites",
+                    "metabolite_qc", "feature_qc", "clean_metabolites", "da_metabolites",
                     "publication_graphs", "pathway_enrichment",
                     file.path("publication_graphs", "filtering_qc")
                 ),
                 results_summary_subdirs = c("QC_figures", "Publication_figures", "Publication_tables", "Study_report"),
                 scripts_source_leaf = "metabolomics",
                 global_vars = list(
-                    de_output_leaf = "de_metabolites",
+                    da_output_leaf = "da_metabolites",
                     pathway_leaf = "pathway_enrichment",
                     feature_qc_leaf = "metabolite_qc",
                     subfeature_qc_leaf = NULL, # No peptide equivalent for metabolomics typically
@@ -283,14 +299,14 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
             ),
             transcriptomics = list(
                 results_subdirs = c(
-                    "gene_qc", "count_data", "normalized_counts", "de_genes",
+                    "gene_qc", "count_data", "normalized_counts", "da_genes",
                     "publication_graphs", "pathway_enrichment",
                     file.path("publication_graphs", "filtering_qc")
                 ),
                 results_summary_subdirs = c("QC_figures", "Publication_figures", "Publication_tables", "Study_report"),
                 scripts_source_leaf = "transcriptomics",
                 global_vars = list(
-                    de_output_leaf = "de_genes",
+                    da_output_leaf = "da_genes",
                     pathway_leaf = "pathway_enrichment",
                     feature_qc_leaf = "gene_qc",
                     subfeature_qc_leaf = NULL,
@@ -300,14 +316,14 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
             ),
             lipidomics = list( # New configuration for lipidomics
                 results_subdirs = c(
-                    "lipid_qc", "feature_qc", "clean_lipids", "de_lipids",
+                    "lipid_qc", "feature_qc", "clean_lipids", "da_lipids",
                     "publication_graphs", "pathway_enrichment",
                     file.path("publication_graphs", "filtering_qc")
                 ),
                 results_summary_subdirs = c("QC_figures", "Publication_figures", "Publication_tables", "Study_report"),
                 scripts_source_leaf = "lipidomics",
                 global_vars = list(
-                    de_output_leaf = "de_lipids",
+                    da_output_leaf = "da_lipids",
                     pathway_leaf = "pathway_enrichment",
                     feature_qc_leaf = "lipid_qc",
                     subfeature_qc_leaf = NULL,
@@ -554,8 +570,8 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
                 if (!is.null(leaf_path)) {
                     # Construct the full path relative to the results_dir for this omic type
                     full_path <- file.path(current_omic_paths_def$results_base, leaf_path)
-                    # The actual variable name will be like 'de_output_dir', 'feature_qc_dir'
-                    # If var_name_suffix is "de_output_leaf", actual name is "de_output_dir"
+                    # The actual variable name will be like 'da_output_dir', 'feature_qc_dir'
+                    # If var_name_suffix is "de_output_leaf", actual name is "da_output_dir"
                     actual_var_name <- sub("_leaf$", "_dir", var_name_suffix)
                     omic_specific_paths_list[[actual_var_name]] <- full_path
                 }
@@ -1258,11 +1274,11 @@ readConfigFile <- function(file = file.path(source_dir, "config.ini")) {
         }
 
         # Convert numeric parameters (only if they exist)
-        if ("de_q_val_thresh" %in% names(config_list[["deAnalysisParameters"]])) {
+        if ("da_q_val_thresh" %in% names(config_list[["deAnalysisParameters"]])) {
             config_list <- setConfigValueAsNumeric(
                 config_list,
                 "deAnalysisParameters",
-                "de_q_val_thresh"
+                "da_q_val_thresh"
             )
         }
 
@@ -1540,7 +1556,7 @@ setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force
         results = list(
             base = file.path(base_dir, "results", proteomics_dirname),
             subdirs = c(
-                "protein_qc", "peptide_qc", "clean_proteins", "de_proteins",
+                "protein_qc", "peptide_qc", "clean_proteins", "da_proteins",
                 "publication_graphs", "pathway_enrichment",
                 file.path("publication_graphs", "filtering_qc")
             )
@@ -1670,7 +1686,7 @@ setupAndShowDirectories <- function(base_dir = here::here(), label = NULL, force
         results_dir = paths$results$base,
         data_dir = paths$special$data,
         source_dir = paths$special$scripts, # This is the *project-specific* scripts dir
-        de_output_dir = file.path(paths$results$base, "de_proteins"),
+        da_output_dir = file.path(paths$results$base, "da_proteins"),
         publication_graphs_dir = publication_graphs_dir,
         timestamp = timestamp,
         qc_dir = qc_dir, # Base QC dir
@@ -1903,24 +1919,10 @@ copyToResultsSummary <- function(omic_type,
         }
     )
 
-    # Use the new helper function with automatic fallback
-    current_paths <- tryCatch(
-        {
-            getProjectPaths(
-                omic_type = omic_type,
-                experiment_label = experiment_label,
-                project_dirs_object_name = project_dirs_object_name
-            )
-        },
-        error = function(e) {
-            rlang::abort(paste0("Failed to get project paths: ", e$message))
-        }
-    )
-
     # Validate that current_paths is a list and contains essential directory paths
     required_paths_in_current <- c(
         "results_dir", "results_summary_dir", "publication_graphs_dir",
-        "time_dir", "qc_dir", "de_output_dir", "pathway_dir", "source_dir", "feature_qc_dir"
+        "time_dir", "qc_dir", "da_output_dir", "pathway_dir", "source_dir", "feature_qc_dir"
     )
     if (!is.list(current_paths) || !all(required_paths_in_current %in% names(current_paths))) {
         missing_req <- setdiff(required_paths_in_current, names(current_paths))
@@ -1928,13 +1930,6 @@ copyToResultsSummary <- function(omic_type,
         rlang::abort(paste0("Essential paths missing from project_dirs: ", paste(missing_req, collapse = ", ")))
     }
     # --- End: Path Derivation and Validation ---
-
-    # Create descriptive label for logging (optional, for user-friendly messages)
-    omic_label <- if (!is.null(experiment_label) && nzchar(experiment_label)) {
-        paste0(omic_type, "_", experiment_label)
-    } else {
-        omic_type
-    }
 
     # Create descriptive label for logging (optional, for user-friendly messages)
     omic_label <- if (!is.null(experiment_label) && nzchar(experiment_label)) {
@@ -1952,7 +1947,7 @@ copyToResultsSummary <- function(omic_type,
     cat(sprintf("Results Summary Dir: %s\n", current_paths$results_summary_dir))
     cat(sprintf("Publication Graphs Dir: %s\n", current_paths$publication_graphs_dir))
     cat(sprintf("Time Dir (current run): %s\n", current_paths$time_dir))
-    cat(sprintf("DE Output Dir: %s\n", current_paths$de_output_dir))
+    cat(sprintf("DA Output Dir: %s\n", current_paths$da_output_dir))
     cat(sprintf("Pathway Dir: %s\n", current_paths$pathway_dir))
     cat(sprintf("Source (Scripts) Dir: %s\n", current_paths$source_dir))
     cat(sprintf("Feature QC Dir: %s\n", current_paths$feature_qc_dir))
@@ -2205,7 +2200,7 @@ copyToResultsSummary <- function(omic_type,
         list(source = file.path(current_paths$feature_qc_dir, "composite_QC_figure.pdf"), dest = "QC_figures", is_dir = FALSE, display_name = "Composite QC (PDF)", new_name = paste0(omic_type, "_composite_QC_figure.pdf")),
         list(source = file.path(current_paths$feature_qc_dir, "composite_QC_figure.png"), dest = "QC_figures", is_dir = FALSE, display_name = "Composite QC (PNG)", new_name = paste0(omic_type, "_composite_QC_figure.png")),
         list(source = file.path(current_paths$publication_graphs_dir, "Interactive_Volcano_Plots"), dest = "Publication_figures/Interactive_Volcano_Plots", is_dir = TRUE, display_name = "Interactive Volcano Plots"),
-        list(source = file.path(current_paths$publication_graphs_dir, "NumSigDeMolecules"), dest = "Publication_figures/NumSigDeMolecules", is_dir = TRUE, display_name = "Num Sig DE Molecules"),
+        list(source = file.path(current_paths$publication_graphs_dir, "NumSigDaMolecules"), dest = "Publication_figures/NumSigDaMolecules", is_dir = TRUE, display_name = "Num Sig DA Molecules"),
         list(source = file.path(current_paths$publication_graphs_dir, "Volcano_Plots"), dest = "Publication_figures/Volcano_Plots", is_dir = TRUE, display_name = "Volcano Plots"),
         list(source = file.path(current_paths$publication_graphs_dir, "Heatmap"), dest = "Publication_figures/Heatmap", is_dir = TRUE, display_name = "Interactive Heatmaps"),
         list(source = current_paths$pathway_dir, dest = "Publication_figures/Enrichment_Plots", is_dir = TRUE, display_name = "Pathway Enrichment Plots"),
@@ -2214,15 +2209,15 @@ copyToResultsSummary <- function(omic_type,
         list(source = file.path(current_paths$source_dir, "study_parameters.txt"), dest = "Study_report", is_dir = FALSE, display_name = "Study Parameters")
     )
 
-    # Logic to find and copy the num_sig_de_molecules tab file to Publication_tables
-    num_sig_dir <- file.path(current_paths$publication_graphs_dir, "NumSigDeMolecules")
+    # Logic to find and copy the num_sig_da_molecules tab file to Publication_tables
+    num_sig_dir <- file.path(current_paths$publication_graphs_dir, "NumSigDaMolecules")
     if (dir.exists(num_sig_dir)) {
         # Look for the tab file
-        sig_files <- list.files(num_sig_dir, pattern = "_num_sig_de_molecules\\.tab$", full.names = TRUE)
+        sig_files <- list.files(num_sig_dir, pattern = "(_num_sig_da_molecules|_num_significant_differentially_abundant_all)\\.tab$", full.names = TRUE)
         if (length(sig_files) > 0) {
             # Use the first match
             files_to_copy <- c(files_to_copy, list(
-                list(source = sig_files[1], dest = "Publication_tables", is_dir = FALSE, display_name = "Num Sig DE Molecules Tab", new_name = paste0("de_", omic_type, "_num_sig_de_molecules.tab"))
+                list(source = sig_files[1], dest = "Publication_tables", is_dir = FALSE, display_name = "Num Sig DA Molecules Tab", new_name = paste0("da_", omic_type, "_num_sig_da_molecules.tab"))
             ))
         }
     }
@@ -2318,11 +2313,11 @@ copyToResultsSummary <- function(omic_type,
             cat(sprintf("COPY: Added %d additional correlation heatmap files\n", length(corr_files)))
         }
 
-        # Heatmap directory for DE heatmaps
+        # Heatmap directory for DA heatmaps
         heatmap_dir <- file.path(current_paths$publication_graphs_dir, "Heatmaps")
         if (dir.exists(heatmap_dir)) {
             files_to_copy <- c(files_to_copy, list(
-                list(source = heatmap_dir, dest = "Publication_figures/Heatmaps", is_dir = TRUE, display_name = "DE Heatmaps")
+                list(source = heatmap_dir, dest = "Publication_figures/Heatmaps", is_dir = TRUE, display_name = "DA Heatmaps")
             ))
             cat("COPY: Added Heatmaps directory\n")
         }
@@ -2347,33 +2342,34 @@ copyToResultsSummary <- function(omic_type,
     }
 
     # Excel files paths
-    de_results_excel_path <- file.path(pub_tables_dir, paste0("DE_results_", omic_type, ".xlsx"))
+    da_results_excel_path <- file.path(pub_tables_dir, paste0("DA_results_", omic_type, ".xlsx"))
     enrichment_excel_path <- file.path(pub_tables_dir, paste0("Pathway_enrichment_results_", omic_type, ".xlsx"))
 
-    # Create combined DE workbook
-    de_wb <- openxlsx::createWorkbook()
-    openxlsx::addWorksheet(de_wb, "DE_Results_Index")
-    de_index_data <- data.frame(Sheet = character(), Description = character(), stringsAsFactors = FALSE)
-    de_files <- list.files(path = current_paths$de_output_dir, pattern = paste0("de_.+_long_annot\\.xlsx$"), full.names = TRUE) # Changed from \\w+ to .+ to allow hyphens
+    # Create combined DA workbook
+    da_wb <- openxlsx::createWorkbook()
+    openxlsx::addWorksheet(da_wb, "DA_Results_Index")
+    da_index_data <- data.frame(Sheet = character(), Description = character(), stringsAsFactors = FALSE)
+    da_files <- list.files(path = current_paths$da_output_dir, pattern = paste0("(da|de)_.+_long_annot\\.xlsx$"), full.names = TRUE)
 
-    purrr::imap(de_files, \(file, idx) {
-        sheet_name <- sprintf("DE_Sheet%d", idx)
+    purrr::imap(da_files, \(file, idx) {
+        sheet_name <- sprintf("DA_Sheet%d", idx)
         base_name <- basename(file) |>
+            stringr::str_remove("^da_") |>
             stringr::str_remove("^de_") |>
             stringr::str_remove("_long_annot\\.xlsx$")
-        de_index_data <<- rbind(de_index_data, data.frame(Sheet = sheet_name, Description = base_name, stringsAsFactors = FALSE))
+        da_index_data <<- rbind(da_index_data, data.frame(Sheet = sheet_name, Description = base_name, stringsAsFactors = FALSE))
         data_content <- tryCatch(openxlsx::read.xlsx(file), error = function(e) NULL)
         if (!is.null(data_content)) {
-            openxlsx::addWorksheet(de_wb, sheet_name)
-            openxlsx::writeData(de_wb, sheet_name, data_content)
+            openxlsx::addWorksheet(da_wb, sheet_name)
+            openxlsx::writeData(da_wb, sheet_name, data_content)
         } else {
-            warning(paste0("Failed to read DE Excel file: ", file))
-            failed_copies[[length(failed_copies) + 1]] <- list(type = "de_excel_read", source = file, error = "Failed to read")
+            warning(paste0("Failed to read DA Excel file: ", file))
+            failed_copies[[length(failed_copies) + 1]] <- list(type = "da_excel_read", source = file, error = "Failed to read")
         }
     })
-    openxlsx::writeData(de_wb, "DE_Results_Index", de_index_data)
-    openxlsx::setColWidths(de_wb, "DE_Results_Index", cols = 1:2, widths = c(15, 50))
-    openxlsx::addStyle(de_wb, "DE_Results_Index", style = openxlsx::createStyle(textDecoration = "bold"), rows = 1, cols = 1:2)
+    openxlsx::writeData(da_wb, "DA_Results_Index", da_index_data)
+    openxlsx::setColWidths(da_wb, "DA_Results_Index", cols = 1:2, widths = c(15, 50))
+    openxlsx::addStyle(da_wb, "DA_Results_Index", style = openxlsx::createStyle(textDecoration = "bold"), rows = 1, cols = 1:2)
 
     # Create combined Enrichment workbook
     enrichment_wb <- openxlsx::createWorkbook()
@@ -2402,11 +2398,11 @@ copyToResultsSummary <- function(omic_type,
     dir.create(pub_tables_dir, recursive = TRUE, showWarnings = FALSE)
     tryCatch(
         {
-            openxlsx::saveWorkbook(de_wb, de_results_excel_path, overwrite = TRUE)
-            cat(paste("Successfully saved DE results to:", de_results_excel_path, "\n"))
+            openxlsx::saveWorkbook(da_wb, da_results_excel_path, overwrite = TRUE)
+            cat(paste("Successfully saved DA results to:", da_results_excel_path, "\n"))
         },
         error = function(e) {
-            failed_copies[[length(failed_copies) + 1]] <- list(type = "workbook_save", path = de_results_excel_path, error = e$message)
+            failed_copies[[length(failed_copies) + 1]] <- list(type = "workbook_save", path = da_results_excel_path, error = e$message)
         }
     )
 
@@ -5320,16 +5316,16 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
         ui_sections <- c()
 
         # Check for DE UI parameters
-        if (!is.null(workflow_data$de_ui_params)) {
+        if (!is.null(workflow_data$da_ui_params)) {
             cat("WORKFLOW ARGS: Found DE UI parameters in workflow_data\n")
-            de_ui_lines <- c(
+            da_ui_lines <- c(
                 "[Differential Expression UI Parameters]",
-                sprintf("  q_value_threshold = %s", ifelse(!is.null(workflow_data$de_ui_params$q_value_threshold), workflow_data$de_ui_params$q_value_threshold, "N/A")),
-                sprintf("  log_fold_change_cutoff = %s", ifelse(!is.null(workflow_data$de_ui_params$log_fold_change_cutoff), workflow_data$de_ui_params$log_fold_change_cutoff, "N/A")),
-                sprintf("  treat_enabled = %s", ifelse(!is.null(workflow_data$de_ui_params$treat_enabled), workflow_data$de_ui_params$treat_enabled, "N/A")),
+                sprintf("  q_value_threshold = %s", ifelse(!is.null(workflow_data$da_ui_params$q_value_threshold), workflow_data$da_ui_params$q_value_threshold, "N/A")),
+                sprintf("  log_fold_change_cutoff = %s", ifelse(!is.null(workflow_data$da_ui_params$log_fold_change_cutoff), workflow_data$da_ui_params$log_fold_change_cutoff, "N/A")),
+                sprintf("  treat_enabled = %s", ifelse(!is.null(workflow_data$da_ui_params$treat_enabled), workflow_data$da_ui_params$treat_enabled, "N/A")),
                 ""
             )
-            ui_sections <- c(ui_sections, de_ui_lines)
+            ui_sections <- c(ui_sections, da_ui_lines)
         }
 
         # Check for Enrichment UI parameters

@@ -1,3 +1,19 @@
+# MultiScholaR: Interactive Multi-Omics Analysis
+# Copyright (C) 2024-2026 Ignatius Pang, William Klare, and APAF-bioinformatics
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 #' @title normalizationAppletModule
 #'
 #' @description A Shiny module for the Normalization step of the proteomics
@@ -2102,7 +2118,7 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
         })
         
         # CRITICAL: THIS is where the final object becomes ready for DE
-        workflow_data$ruv_normalised_for_de_analysis_obj <- final_s4_for_de
+        workflow_data$ruv_normalised_for_da_analysis_obj <- final_s4_for_de
         
         # Save to R6 state manager with new state
         workflow_data$state_manager$saveState(
@@ -2297,7 +2313,7 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
         })
         
         # CRITICAL: THIS is where the final object becomes ready for DE
-        workflow_data$ruv_normalised_for_de_analysis_obj <- final_s4_for_de
+        workflow_data$ruv_normalised_for_da_analysis_obj <- final_s4_for_de
         
         # Save to R6 state manager with new state
         workflow_data$state_manager$saveState(
@@ -2601,7 +2617,7 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
         norm_data$qc_plots$ruv_corrected <- list(pca = NULL, density = NULL, rle = NULL, correlation = NULL)
         
         # Reset workflow data
-        workflow_data$ruv_normalised_for_de_analysis_obj <- NULL
+        workflow_data$ruv_normalised_for_da_analysis_obj <- NULL
         # Must replace entire list to trigger reactivity
         updated_status <- workflow_data$tab_status
         updated_status$normalization <- "pending"

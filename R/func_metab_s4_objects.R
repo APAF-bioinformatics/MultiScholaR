@@ -9,7 +9,7 @@
 #
 # Consolidated from:
 # - metaboliteVsSamplesS4Objects.R (MetaboliteAssayData class + 16 methods)
-# - metabolite_de_analysis_wrapper.R (MetabolomicsDifferentialAbundanceResults class + 2 methods)
+# - metabolite_da_analysis_wrapper.R (MetabolomicsDifferentialAbundanceResults class + 2 methods)
 # - metabolite_normalization.R (logTransformAssays, normaliseUntransformedData)
 # - metabolite_qc.R (metaboliteIntensityFiltering)
 # - QC_visualisation.R (FilteringProgressMetabolomics class)
@@ -3031,7 +3031,7 @@ setMethod(
     signature = "list",
     definition = function(
       objectsList,
-      de_q_val_thresh = 0.05,
+      da_q_val_thresh = 0.05,
       qvalue_column = "fdr_qvalue",
       log2fc_column = "logFC"
     ) {
@@ -3049,16 +3049,16 @@ setMethod(
                     bind_rows(.id = "comparison") |>
                     mutate(lqm = -log10(!!sym(qvalue_column))) |>
                     dplyr::mutate(label = case_when(
-                        !!sym(qvalue_column) < de_q_val_thresh & !!sym(log2fc_column) > 0 ~ "Significant Up",
-                        !!sym(qvalue_column) < de_q_val_thresh & !!sym(log2fc_column) < 0 ~ "Significant Down",
+                        !!sym(qvalue_column) < da_q_val_thresh & !!sym(log2fc_column) > 0 ~ "Significant Up",
+                        !!sym(qvalue_column) < da_q_val_thresh & !!sym(log2fc_column) < 0 ~ "Significant Down",
                         TRUE ~ "Not significant"
                     )) |>
                     # This is the key change: ensure the 'label' column is a factor with all possible levels.
                     # This makes the scales identical across all plots, allowing patchwork to merge them.
                     dplyr::mutate(label = factor(label, levels = names(volcano_colors))) |>
                     dplyr::mutate(colour = case_when(
-                        !!sym(qvalue_column) < de_q_val_thresh & !!sym(log2fc_column) < 0 ~ "blue",
-                        !!sym(qvalue_column) < de_q_val_thresh & !!sym(log2fc_column) > 0 ~ "red",
+                        !!sym(qvalue_column) < da_q_val_thresh & !!sym(log2fc_column) < 0 ~ "blue",
+                        !!sym(qvalue_column) < da_q_val_thresh & !!sym(log2fc_column) > 0 ~ "red",
                         TRUE ~ "grey"
                     )) |>
                     dplyr::mutate(colour = factor(colour, levels = c("blue", "grey", "red"))) |>
@@ -3100,7 +3100,7 @@ setMethod(
 
 #' @export
 setMethod(
-    f = "getDeResultsWideFormat",
+    f = "getDaResultsWideFormat",
     signature = "list",
     definition = function(
       objectsList,
@@ -3152,7 +3152,7 @@ setMethod(
 # Get the differential expression results in wide format
 #' @export
 setMethod(
-    f = "getDeResultsLongFormat",
+    f = "getDaResultsLongFormat",
     signature = "list",
     definition = function(objectsList) {
         return_object_list <- purrr::map(objectsList, function(object) {
@@ -3468,7 +3468,7 @@ setMethod(
 
 
 # ==========================================
-# Content from metabolite_de_analysis_wrapper.R
+# Content from metabolite_da_analysis_wrapper.R
 # ==========================================
 #' MetabolomicsDifferentialAbundanceResults S4 Class
 #'
@@ -3515,18 +3515,22 @@ setMethod(
     f = "differentialAbundanceAnalysis",
     signature = "list",
     definition = function(
-      objectsList,
+      theObject,
       contrasts_tbl = NULL,
       formula_string = NULL,
       group_id = NULL,
-      de_q_val_thresh = NULL,
+      da_q_val_thresh = NULL,
       treat_lfc_cutoff = NULL,
       eBayes_trend = NULL,
       eBayes_robust = NULL,
-      args_group_pattern = NULL
+      args_group_pattern = NULL,
+      args_row_id = NULL,
+      qvalue_column = NULL,
+      raw_pvalue_column = NULL
     ) {
         # Validate that all objects in the list are MetaboliteAssayData
-        if (!all(purrr::map_lgl(objectsList, ~ inherits(.x, "MetaboliteAssayData")))) {
+        objectsList <- theObject;
+            if (!all(purrr::map_lgl(objectsList, ~ inherits(.x, "MetaboliteAssayData")))) {
             stop("All objects in objectsList must be of class MetaboliteAssayData")
         }
 
@@ -3538,7 +3542,7 @@ setMethod(
                     contrasts_tbl = contrasts_tbl,
                     formula_string = formula_string,
                     group_id = group_id,
-                    de_q_val_thresh = de_q_val_thresh,
+                    da_q_val_thresh = da_q_val_thresh,
                     treat_lfc_cutoff = treat_lfc_cutoff,
                     eBayes_trend = eBayes_trend,
                     eBayes_robust = eBayes_robust,
@@ -3567,7 +3571,7 @@ setMethod(
       contrasts_tbl = NULL,
       formula_string = NULL,
       group_id = NULL,
-      de_q_val_thresh = NULL,
+      da_q_val_thresh = NULL,
       treat_lfc_cutoff = NULL,
       eBayes_trend = NULL,
       eBayes_robust = NULL,
@@ -3577,7 +3581,7 @@ setMethod(
 
         contrasts_tbl <- checkParamsObjectFunctionSimplify(theObject, "contrasts_tbl", NULL)
         formula_string <- checkParamsObjectFunctionSimplify(theObject, "formula_string", " ~ 0 + group")
-        de_q_val_thresh <- checkParamsObjectFunctionSimplify(theObject, "de_q_val_thresh", 0.05)
+        da_q_val_thresh <- checkParamsObjectFunctionSimplify(theObject, "da_q_val_thresh", 0.05)
         treat_lfc_cutoff <- checkParamsObjectFunctionSimplify(theObject, "treat_lfc_cutoff", 0)
         eBayes_trend <- checkParamsObjectFunctionSimplify(theObject, "eBayes_trend", TRUE)
         eBayes_robust <- checkParamsObjectFunctionSimplify(theObject, "eBayes_robust", TRUE)
@@ -3627,7 +3631,7 @@ setMethod(
 
         theObject <- updateParamInObject(theObject, "contrasts_tbl")
         theObject <- updateParamInObject(theObject, "formula_string")
-        theObject <- updateParamInObject(theObject, "de_q_val_thresh")
+        theObject <- updateParamInObject(theObject, "da_q_val_thresh")
         theObject <- updateParamInObject(theObject, "treat_lfc_cutoff")
         theObject <- updateParamInObject(theObject, "eBayes_trend")
         theObject <- updateParamInObject(theObject, "eBayes_robust")
@@ -4507,7 +4511,7 @@ setMethod(
 #' print(duplicates_assay1)
 #' }
 #' @export
-findDuplicateFeatureIDs <- function(theObject) {
+findMetabDuplicateFeatureIDs <- function(theObject) {
     if (!inherits(theObject, "MetaboliteAssayData")) {
         stop("Input must be a MetaboliteAssayData object.")
     }

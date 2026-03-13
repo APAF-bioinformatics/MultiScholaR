@@ -1,3 +1,19 @@
+# MultiScholaR: Interactive Multi-Omics Analysis
+# Copyright (C) 2024-2026 Ignatius Pang, William Klare, and APAF-bioinformatics
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 # R/allGenerics.R
 # This file contains all setGeneric definitions for the ProteomeScholaR package.
 # Loading this file early ensures that generic functions are defined before
@@ -210,14 +226,14 @@ setGeneric(name="plotDensityList"
            }
            , signature=c("theObject", "grouping_variables_list", "title", "font_size"))
 
-# --- From protein_de_analysis_wrapper.R ---
+# --- From protein_da_analysis_wrapper.R ---
 
-setGeneric(name="differentialExpressionAnalysis"
+setGeneric(name="differentialAbundanceAnalysis"
            , def=function( theObject
                            , contrasts_tbl = NULL
                            , formula_string = NULL
                            , group_id = NULL
-                           , de_q_val_thresh = NULL
+                           , da_q_val_thresh = NULL
                            , treat_lfc_cutoff = NULL
                            , eBayes_trend = NULL
                            , eBayes_robust = NULL
@@ -225,16 +241,16 @@ setGeneric(name="differentialExpressionAnalysis"
                            , args_row_id = NULL
                            , qvalue_column = "fdr_qvalue"
                            , raw_pvalue_column = "raw_pvalue" ) {
-             standardGeneric("differentialExpressionAnalysis")
+             standardGeneric("differentialAbundanceAnalysis")
            }
            , signature=c("theObject"))
 
-setGeneric(name="differentialExpressionAnalysisHelper"
+setGeneric(name="differentialAbundanceAnalysisHelper"
            , def=function( theObject
                            , contrasts_tbl = NULL
                            , formula_string = NULL
                            , group_id = NULL
-                           , de_q_val_thresh = NULL
+                           , da_q_val_thresh = NULL
                            , treat_lfc_cutoff = NULL
                            , eBayes_trend = NULL
                            , eBayes_robust = NULL
@@ -242,21 +258,21 @@ setGeneric(name="differentialExpressionAnalysisHelper"
                            , args_row_id = NULL
                            , qvalue_column = "fdr_qvalue"
                            , raw_pvalue_column = "raw_pvalue" ) {
-             standardGeneric("differentialExpressionAnalysisHelper")
+             standardGeneric("differentialAbundanceAnalysisHelper")
            }
            , signature=c("theObject"))
 
-setGeneric(name="outputDeResultsAllContrasts"
+setGeneric(name="outputDaResultsAllContrasts"
            , def=function(theObject,
-                          de_results_list_all_contrasts = NULL,
+                          da_results_list_all_contrasts = NULL,
                           uniprot_tbl = NULL,
-                          de_output_dir = NULL,
+                          da_output_dir = NULL,
                           publication_graphs_dir = NULL,
-                          file_prefix = "de_proteins",
+                          file_prefix = "da_proteins",
                           args_row_id = NULL,
                           gene_names_column = "gene_names",
                           uniprot_id_column = "Entry") {
-             standardGeneric("outputDeResultsAllContrasts")
+             standardGeneric("outputDaResultsAllContrasts")
            }
            , signature=c("theObject"))
 
@@ -435,7 +451,7 @@ setGeneric(name = "filterSamplesByMetaboliteCorrelationThreshold",
 
 setGeneric(name="plotVolcano",
            def=function(objectsList,
-                        de_q_val_thresh = 0.05,
+                        da_q_val_thresh = 0.05,
                         qvalue_column = "q_value",
                         log2fc_column = "logFC") {
              standardGeneric("plotVolcano")
@@ -445,7 +461,7 @@ setGeneric(name="plotVolcano",
 
 setGeneric(name="plotVolcanoS4",
            def=function(objectsList,
-                        de_q_val_thresh = 0.05,
+                        da_q_val_thresh = 0.05,
                         qvalue_column = "fdr_qvalue",
                         log2fc_column = "logFC") {
              standardGeneric("plotVolcanoS4")
@@ -453,20 +469,20 @@ setGeneric(name="plotVolcanoS4",
            signature=c("objectsList"))
 
 
-setGeneric(name="getDeResultsWideFormat"
+setGeneric(name="getDaResultsWideFormat"
            , def=function(objectsList
                           , qvalue_column = "fdr_qvalue"
                           , raw_pvalue_column = "raw_pvalue"
                           , log2fc_column = "logFC") {
-             standardGeneric("getDeResultsWideFormat")
+             standardGeneric("getDaResultsWideFormat")
            },
            signature=c("objectsList"))
 
 
 
-setGeneric(name="getDeResultsLongFormat"
+setGeneric(name="getDaResultsLongFormat"
            , def=function(objectsList) {
-             standardGeneric("getDeResultsLongFormat")
+             standardGeneric("getDaResultsLongFormat")
            },
            signature=c("objectsList"))
 
@@ -494,34 +510,7 @@ setGeneric(name="plotNumSigDiffExpBarPlot",
            signature=c("objectsList"  ))
 
 
-setGeneric( name ="differentialAbundanceAnalysisHelper"
-            , def=function(theObject
-                           , contrasts_tbl = NULL
-                           , formula_string = NULL
-                           , group_id = NULL
-                           , de_q_val_thresh = NULL
-                           , treat_lfc_cutoff = NULL
-                           , eBayes_trend = NULL
-                           , eBayes_robust = NULL
-                           , args_group_pattern = NULL) {
-              standardGeneric("differentialAbundanceAnalysisHelper")
-            }
-            , signature=c("theObject"))
 
-
-setGeneric( name ="differentialAbundanceAnalysis"
-            , def=function(objectsList
-                           , contrasts_tbl = NULL
-                           , formula_string = NULL
-                           , group_id = NULL
-                           , de_q_val_thresh = NULL
-                           , treat_lfc_cutoff = NULL
-                           , eBayes_trend = NULL
-                           , eBayes_robust = NULL
-                           , args_group_pattern = NULL) {
-              standardGeneric("differentialAbundanceAnalysis")
-            }
-            , signature=c("objectsList"))
 
 
 # --- Metabolomics Correlation Filtering ---

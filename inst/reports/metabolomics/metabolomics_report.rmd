@@ -368,7 +368,7 @@ ExtractStudyParametersNew <- function(study_params) {
   s4_ruv_ctrl <- s4_params$ctrl %||% list()
 
   # Extract UI parameter sections
-  ui_de <- safe_extract(ui_params, "Differential Expression UI Parameters", list())
+  ui_de <- safe_extract(ui_params, "Differential Abundance UI Parameters", list())
   ui_enrich <- safe_extract(ui_params, "Enrichment Analysis UI Parameters", list())
   
   # Parse per-assay RUV parameters from the new format
@@ -1151,7 +1151,7 @@ if(dir.exists(num_sig_dir)) {
   if(length(sig_plot_file) > 0) {
     knitr::include_graphics(sig_plot_file[1])
   } else {
-    cat(glue::glue("Warning: No NumSigDE Plot images found in {num_sig_dir}\n"))
+    cat(glue::glue("Warning: No NumSigDA Plot images found in {num_sig_dir}\n"))
   }
 } else {
   cat(glue::glue("Warning: NumSigDeMolecules directory not found at {num_sig_dir}\n"))

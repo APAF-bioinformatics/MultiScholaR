@@ -1,3 +1,19 @@
+# MultiScholaR: Interactive Multi-Omics Analysis
+# Copyright (C) 2024-2026 Ignatius Pang, William Klare, and APAF-bioinformatics
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 # ============================================================================
 # func_prot_s4_objects.R
 # ============================================================================
@@ -10,7 +26,7 @@
 # Consolidated from:
 # - peptideVsSamplesS4Objects.R (PeptideQuantitativeData class + 23 methods)
 # - proteinVsSamplesS4Objects.R (ProteinQuantitativeData method)
-# - protein_de_analysis_wrapper.R (DE analysis methods)
+# - protein_da_analysis_wrapper.R (DE analysis methods)
 #
 # Dependencies:
 # - methods package
@@ -400,7 +416,7 @@ setMethod(
 )
 
 # ==========================================
-# Content from protein_de_analysis_wrapper.R
+# Content from protein_da_analysis_wrapper.R
 # ==========================================
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' Differential Expression Analysis for Proteomics
@@ -409,9 +425,9 @@ setMethod(
 #' breaking up the monolithic deAnalysisWrapperFunction into focused components.
 #'
 #' Functions:
-#' - differentialExpressionAnalysis: Main S4 generic for DE analysis
-#' - differentialExpressionAnalysisHelper: Core limma-based analysis
-#' - generateVolcanoPlotGlimma: Interactive volcano plot generation
+#' - differentialAbundanceAnalysis: Main S4 generic for DE analysis
+#' - differentialAbundanceAnalysisHelper: Core limma-based analysis
+#' - generateProtDAVolcanoPlotGlimma: Interactive volcano plot generation
 #' - generateDEHeatmap: Heatmap visualization with clustering
 #'
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -419,14 +435,14 @@ setMethod(
 
 #' @export
 setMethod(
-  f = "differentialExpressionAnalysis",
+  f = "differentialAbundanceAnalysis",
   signature = "ProteinQuantitativeData",
   definition = function(
     theObject,
     contrasts_tbl = NULL,
     formula_string = NULL,
     group_id = NULL,
-    de_q_val_thresh = NULL,
+    da_q_val_thresh = NULL,
     treat_lfc_cutoff = NULL,
     eBayes_trend = NULL,
     eBayes_robust = NULL,
@@ -436,7 +452,7 @@ setMethod(
     raw_pvalue_column = "raw_pvalue"
   ) {
     # IMMEDIATE ERROR CATCH - Check if we even get here
-    message("*** ENTERING differentialExpressionAnalysis METHOD ***")
+    message("*** ENTERING differentialAbundanceAnalysis METHOD ***")
     message(sprintf("*** METHOD SIGNATURE MATCHED: ProteinQuantitativeData ***"))
 
     # Try to catch the index error immediately
@@ -455,24 +471,24 @@ setMethod(
       }
     )
 
-    message("--- Entering differentialExpressionAnalysis ---")
-    message(sprintf("   differentialExpressionAnalysis: theObject class = %s", class(theObject)))
-    message(sprintf("   differentialExpressionAnalysis: contrasts_tbl provided = %s", !is.null(contrasts_tbl)))
+    message("--- Entering differentialAbundanceAnalysis ---")
+    message(sprintf("   differentialAbundanceAnalysis: theObject class = %s", class(theObject)))
+    message(sprintf("   differentialAbundanceAnalysis: contrasts_tbl provided = %s", !is.null(contrasts_tbl)))
     if (!is.null(contrasts_tbl)) {
-      message(sprintf("   differentialExpressionAnalysis: contrasts_tbl dims = %d x %d", nrow(contrasts_tbl), ncol(contrasts_tbl)))
-      message(sprintf("   differentialExpressionAnalysis: contrasts_tbl content = %s", paste(contrasts_tbl[[1]], collapse = ", ")))
+      message(sprintf("   differentialAbundanceAnalysis: contrasts_tbl dims = %d x %d", nrow(contrasts_tbl), ncol(contrasts_tbl)))
+      message(sprintf("   differentialAbundanceAnalysis: contrasts_tbl content = %s", paste(contrasts_tbl[[1]], collapse = ", ")))
     }
 
     # Wrap the helper function call in tryCatch to get better error info
-    message("   differentialExpressionAnalysis: About to call differentialExpressionAnalysisHelper...")
+    message("   differentialAbundanceAnalysis: About to call differentialAbundanceAnalysisHelper...")
 
     results_list <- tryCatch(
       {
-        differentialExpressionAnalysisHelper(theObject,
+        differentialAbundanceAnalysisHelper(theObject,
           contrasts_tbl = contrasts_tbl,
           formula_string = formula_string,
           group_id = group_id,
-          de_q_val_thresh = de_q_val_thresh,
+          da_q_val_thresh = da_q_val_thresh,
           treat_lfc_cutoff = treat_lfc_cutoff,
           eBayes_trend = eBayes_trend,
           eBayes_robust = eBayes_robust,
@@ -484,14 +500,14 @@ setMethod(
       },
       error = function(e) {
         # CRITICAL FIX: Use paste() for logger calls in error handlers to avoid interpolation bug
-        message(paste("   differentialExpressionAnalysis ERROR in helper function:", e$message))
-        message(paste("   differentialExpressionAnalysis ERROR call stack:", capture.output(traceback())))
+        message(paste("   differentialAbundanceAnalysis ERROR in helper function:", e$message))
+        message(paste("   differentialAbundanceAnalysis ERROR call stack:", capture.output(traceback())))
         stop(e)
       }
     )
 
-    message("   differentialExpressionAnalysis: Helper function completed successfully!")
-    message("--- Exiting differentialExpressionAnalysis ---")
+    message("   differentialAbundanceAnalysis: Helper function completed successfully!")
+    message("--- Exiting differentialAbundanceAnalysis ---")
     return(results_list)
   }
 )
@@ -500,14 +516,14 @@ setMethod(
 
 #' @export
 setMethod(
-  f = "differentialExpressionAnalysisHelper",
+  f = "differentialAbundanceAnalysisHelper",
   signature = "ProteinQuantitativeData",
   definition = function(
     theObject,
     contrasts_tbl = NULL,
     formula_string = NULL,
     group_id = NULL,
-    de_q_val_thresh = NULL,
+    da_q_val_thresh = NULL,
     treat_lfc_cutoff = NULL,
     eBayes_trend = NULL,
     eBayes_robust = NULL,
@@ -516,7 +532,7 @@ setMethod(
     qvalue_column = "fdr_qvalue",
     raw_pvalue_column = "raw_pvalue"
   ) {
-    message("--- Entering differentialExpressionAnalysisHelper ---")
+    message("--- Entering differentialAbundanceAnalysisHelper ---")
 
     # IMMEDIATE PARAMETER VALIDATION TO CATCH INDEX ERROR
     message("   PARAMETER VALIDATION Step: Checking all input parameters...")
@@ -550,12 +566,12 @@ setMethod(
       str(contrasts_tbl)
     }
 
-    message("   differentialExpressionAnalysisHelper Step: Extracting parameters...")
+    message("   differentialAbundanceAnalysisHelper Step: Extracting parameters...")
     # Extract parameters from S4 object with fallbacks
     contrasts_tbl <- checkParamsObjectFunctionSimplify(theObject, "contrasts_tbl", contrasts_tbl)
     formula_string <- checkParamsObjectFunctionSimplify(theObject, "formula_string", "~ 0 + group")
     group_id <- checkParamsObjectFunctionSimplify(theObject, "group_id", "group")
-    de_q_val_thresh <- checkParamsObjectFunctionSimplify(theObject, "de_q_val_thresh", 0.05)
+    da_q_val_thresh <- checkParamsObjectFunctionSimplify(theObject, "da_q_val_thresh", 0.05)
     treat_lfc_cutoff <- checkParamsObjectFunctionSimplify(theObject, "treat_lfc_cutoff", 0)
     eBayes_trend <- checkParamsObjectFunctionSimplify(theObject, "eBayes_trend", TRUE)
     eBayes_robust <- checkParamsObjectFunctionSimplify(theObject, "eBayes_robust", TRUE)
@@ -567,27 +583,27 @@ setMethod(
     message("      DEBUG66: contrasts_tbl structure:")
     str(contrasts_tbl)
 
-    message(sprintf("   differentialExpressionAnalysisHelper: formula_string = %s", formula_string))
-    message(sprintf("   differentialExpressionAnalysisHelper: group_id = %s", group_id))
-    message(sprintf("   differentialExpressionAnalysisHelper: de_q_val_thresh = %f", de_q_val_thresh))
+    message(sprintf("   differentialAbundanceAnalysisHelper: formula_string = %s", formula_string))
+    message(sprintf("   differentialAbundanceAnalysisHelper: group_id = %s", group_id))
+    message(sprintf("   differentialAbundanceAnalysisHelper: da_q_val_thresh = %f", da_q_val_thresh))
 
-    message("   differentialExpressionAnalysisHelper Step: Processing group names...")
+    message("   differentialAbundanceAnalysisHelper Step: Processing group names...")
     # Handle group names that start with numbers (same pattern as original wrapper)
     design_matrix <- theObject@design_matrix
     group_col <- design_matrix[[group_id]]
-    message(sprintf("   differentialExpressionAnalysisHelper: group_col length = %d", length(group_col)))
-    message(sprintf("   differentialExpressionAnalysisHelper: group_col content = %s", paste(head(group_col, 10), collapse = ", ")))
+    message(sprintf("   differentialAbundanceAnalysisHelper: group_col length = %d", length(group_col)))
+    message(sprintf("   differentialAbundanceAnalysisHelper: group_col content = %s", paste(head(group_col, 10), collapse = ", ")))
 
     # Check if any group names start with numbers and create mapping
     starts_with_number <- grepl("^[0-9]", group_col)
-    message(sprintf("   differentialExpressionAnalysisHelper: any start with number? %s", any(starts_with_number)))
+    message(sprintf("   differentialAbundanceAnalysisHelper: any start with number? %s", any(starts_with_number)))
 
     if (any(starts_with_number)) {
-      message("   differentialExpressionAnalysisHelper Step: Fixing group names that start with numbers...")
+      message("   differentialAbundanceAnalysisHelper Step: Fixing group names that start with numbers...")
 
       original_groups <- unique(group_col)
-      message(sprintf("   differentialExpressionAnalysisHelper: original_groups = %s", paste(original_groups, collapse = ", ")))
-      message(sprintf("   differentialExpressionAnalysisHelper: About to process %d original groups with purrr::map_chr", length(original_groups)))
+      message(sprintf("   differentialAbundanceAnalysisHelper: original_groups = %s", paste(original_groups, collapse = ", ")))
+      message(sprintf("   differentialAbundanceAnalysisHelper: About to process %d original groups with purrr::map_chr", length(original_groups)))
 
       tryCatch(
         {
@@ -603,12 +619,12 @@ setMethod(
             message(sprintf("         DEBUG66: Result for '%s' -> '%s'", x, result))
             result
           })
-          message("   differentialExpressionAnalysisHelper: safe_groups processing SUCCESS")
+          message("   differentialAbundanceAnalysisHelper: safe_groups processing SUCCESS")
           message("      DEBUG66: safe_groups result:")
           print(safe_groups)
         },
         error = function(e) {
-          message(sprintf("   differentialExpressionAnalysisHelper ERROR in safe_groups purrr::map_chr: %s", e$message))
+          message(sprintf("   differentialAbundanceAnalysisHelper ERROR in safe_groups purrr::map_chr: %s", e$message))
           message("      DEBUG66: Error details:")
           message(sprintf("      DEBUG66: Error class: %s", class(e)))
           print(str(e))
@@ -617,27 +633,27 @@ setMethod(
       )
 
       group_mapping <- setNames(original_groups, safe_groups)
-      message("   differentialExpressionAnalysisHelper: group_mapping created")
+      message("   differentialAbundanceAnalysisHelper: group_mapping created")
 
       # Update design matrix with safe names
-      message("   differentialExpressionAnalysisHelper: About to update design matrix with purrr::map_chr")
+      message("   differentialAbundanceAnalysisHelper: About to update design matrix with purrr::map_chr")
       tryCatch(
         {
           design_matrix[[group_id]] <- purrr::map_chr(group_col, \(x) {
             if (grepl("^[0-9]", x)) paste0("grp_", x) else x
           })
-          message("   differentialExpressionAnalysisHelper: design matrix update SUCCESS")
+          message("   differentialAbundanceAnalysisHelper: design matrix update SUCCESS")
         },
         error = function(e) {
-          message(sprintf("   differentialExpressionAnalysisHelper ERROR in design matrix purrr::map_chr: %s", e$message))
+          message(sprintf("   differentialAbundanceAnalysisHelper ERROR in design matrix purrr::map_chr: %s", e$message))
           stop(e)
         }
       )
 
       # Update contrasts table if it exists
       if (!is.null(contrasts_tbl)) {
-        message("   differentialExpressionAnalysisHelper: About to update contrasts table with purrr::map_chr")
-        message(sprintf("   differentialExpressionAnalysisHelper: contrasts_tbl[[1]] = %s", paste(contrasts_tbl[[1]], collapse = ", ")))
+        message("   differentialAbundanceAnalysisHelper: About to update contrasts table with purrr::map_chr")
+        message(sprintf("   differentialAbundanceAnalysisHelper: contrasts_tbl[[1]] = %s", paste(contrasts_tbl[[1]], collapse = ", ")))
 
         message("      DEBUG66: Contrasts table inspection before purrr::map_chr")
         message(sprintf("      DEBUG66: contrasts_tbl class = %s", class(contrasts_tbl)))
@@ -662,12 +678,12 @@ setMethod(
               message(sprintf("         DEBUG66: Final result: '%s' -> '%s'", x, result))
               result
             })
-            message("   differentialExpressionAnalysisHelper: contrasts table update SUCCESS")
+            message("   differentialAbundanceAnalysisHelper: contrasts table update SUCCESS")
             message("      DEBUG66: Updated contrasts_tbl[[1]]:")
             print(contrasts_tbl[[1]])
           },
           error = function(e) {
-            message(sprintf("   differentialExpressionAnalysisHelper ERROR in contrasts table purrr::map_chr: %s", e$message))
+            message(sprintf("   differentialAbundanceAnalysisHelper ERROR in contrasts table purrr::map_chr: %s", e$message))
             message("      DEBUG66: Error details:")
             message(sprintf("      DEBUG66: Error class: %s", class(e)))
             print(str(e))
@@ -679,12 +695,12 @@ setMethod(
       theObject@design_matrix <- design_matrix
     }
 
-    message("   differentialExpressionAnalysisHelper Step: Updating S4 object parameters...")
+    message("   differentialAbundanceAnalysisHelper Step: Updating S4 object parameters...")
     # Update object with validated parameters
     theObject <- updateParamInObject(theObject, "contrasts_tbl")
     theObject <- updateParamInObject(theObject, "formula_string")
     theObject <- updateParamInObject(theObject, "group_id")
-    theObject <- updateParamInObject(theObject, "de_q_val_thresh")
+    theObject <- updateParamInObject(theObject, "da_q_val_thresh")
     theObject <- updateParamInObject(theObject, "treat_lfc_cutoff")
     theObject <- updateParamInObject(theObject, "eBayes_trend")
     theObject <- updateParamInObject(theObject, "eBayes_robust")
@@ -694,7 +710,7 @@ setMethod(
     return_list <- list()
     return_list$theObject <- theObject
 
-    message("   differentialExpressionAnalysisHelper Step: Generating QC plots...")
+    message("   differentialAbundanceAnalysisHelper Step: Generating QC plots...")
 
     # Generate QC plots (RLE, PCA, density)
     rle_plot <- plotRle(theObject = theObject, theObject@group_id) +
@@ -746,7 +762,7 @@ setMethod(
     # Count the number of values
     return_list$plot_num_of_values <- plotNumOfValuesNoLog(theObject@protein_quant_table)
 
-    message("   differentialExpressionAnalysisHelper Step: Running limma contrasts analysis...")
+    message("   differentialAbundanceAnalysisHelper Step: Running limma contrasts analysis...")
 
     # Prepare design matrix for limma
     message("   DEBUG66: About to prepare design matrix rownames")
@@ -762,8 +778,8 @@ setMethod(
     # Run the core limma analysis using existing function
     protein_quant_matrix <- as.matrix(column_to_rownames(theObject@protein_quant_table, theObject@protein_id_column))
     contrast_strings_to_use <- contrasts_tbl[, 1]
-    message(paste("   differentialExpressionAnalysisHelper: About to call runTestsContrasts with", length(contrast_strings_to_use), "contrasts"))
-    message(paste("   differentialExpressionAnalysisHelper: protein_quant_matrix dims =", nrow(protein_quant_matrix), "x", ncol(protein_quant_matrix)))
+    message(paste("   differentialAbundanceAnalysisHelper: About to call runTestsContrasts with", length(contrast_strings_to_use), "contrasts"))
+    message(paste("   differentialAbundanceAnalysisHelper: protein_quant_matrix dims =", nrow(protein_quant_matrix), "x", ncol(protein_quant_matrix)))
 
     contrasts_results <- runTestsContrasts(protein_quant_matrix,
       contrast_strings = contrast_strings_to_use,
@@ -775,7 +791,7 @@ setMethod(
       eBayes_robust = as.logical(eBayes_robust)
     )
 
-    message("   differentialExpressionAnalysisHelper Step: runTestsContrasts completed successfully!")
+    message("   differentialAbundanceAnalysisHelper Step: runTestsContrasts completed successfully!")
 
     # The result from runTestsContrasts is a LIST with a 'results'
     # element, which ITSELF is a list of tables. For a single contrast run, we
@@ -787,25 +803,25 @@ setMethod(
     }
 
     # Extract the results table (it's the first element in the nested list)
-    de_results_table <- contrasts_results$results[[1]]
+    da_results_table <- contrasts_results$results[[1]]
 
     # Get the name of the contrast from the list element name
     contrast_name <- names(contrasts_results$results)[1]
 
     # Ensure it's a data frame before proceeding
-    if (!is.data.frame(de_results_table)) {
+    if (!is.data.frame(da_results_table)) {
       stop("Error: DE analysis results are not in the expected data frame format.")
     }
 
     # CRITICAL FIX 3.0: The 'topTreat' table needs a 'comparison' column added to it,
     # containing the name of the contrast. It also needs the protein IDs from rownames.
-    de_results_table <- de_results_table |>
+    da_results_table <- da_results_table |>
       tibble::rownames_to_column(var = args_row_id) |>
       dplyr::mutate(comparison = contrast_name)
 
     # Map back to original group names in results if needed
     if (exists("group_mapping")) {
-      contrasts_results_table <- de_results_table |>
+      contrasts_results_table <- da_results_table |>
         dplyr::mutate(comparison = purrr::map_chr(comparison, \(x) {
           result <- x
           for (safe_name in names(group_mapping)) {
@@ -814,7 +830,7 @@ setMethod(
           result
         }))
     } else {
-      contrasts_results_table <- de_results_table
+      contrasts_results_table <- da_results_table
     }
 
     return_list$contrasts_results <- contrasts_results
@@ -823,10 +839,10 @@ setMethod(
     # Extract qvalue warnings if present
     if (!is.null(contrasts_results$qvalue_warnings) && length(contrasts_results$qvalue_warnings) > 0) {
       return_list$qvalue_warnings <- contrasts_results$qvalue_warnings
-      message(sprintf("   differentialExpressionAnalysisHelper Step: qvalue() failed for %d contrast(s)", length(contrasts_results$qvalue_warnings)))
+      message(sprintf("   differentialAbundanceAnalysisHelper Step: qvalue() failed for %d contrast(s)", length(contrasts_results$qvalue_warnings)))
     }
 
-    message("   differentialExpressionAnalysisHelper Step: Preparing data for visualization...")
+    message("   differentialAbundanceAnalysisHelper Step: Preparing data for visualization...")
     message(paste("   DEBUG66: contrast_name for list naming =", contrast_name))
 
     # Prepare data for volcano plots
@@ -850,7 +866,7 @@ setMethod(
       comparison_column = "comparison",
       expression_column = "log_intensity",
       facet_column = analysis_type,
-      q_val_thresh = de_q_val_thresh
+      q_val_thresh = da_q_val_thresh
     ) |>
       dplyr::rename(log2FC = "logFC")
 
@@ -860,7 +876,7 @@ setMethod(
     volplot_plot <- plotVolcano(significant_rows,
       log_q_value_column = lqm,
       log_fc_column = log2FC,
-      q_val_thresh = de_q_val_thresh,
+      q_val_thresh = da_q_val_thresh,
       formula_string = "analysis_type ~ comparison"
     )
 
@@ -886,7 +902,7 @@ setMethod(
 
     return_list$pvalhist <- pvalhist
 
-    message("   differentialExpressionAnalysisHelper Step: Creating results tables...")
+    message("   differentialAbundanceAnalysisHelper Step: Creating results tables...")
 
     # Create wide format output
     counts_table_to_use <- theObject@protein_quant_table
@@ -899,7 +915,7 @@ setMethod(
 
     return_list$norm_counts <- norm_counts
 
-    de_proteins_wide <- significant_rows |>
+    da_proteins_wide <- significant_rows |>
       dplyr::filter(analysis_type == "RUV applied") |>
       dplyr::select(-lqm, -colour, -analysis_type) |>
       pivot_wider(
@@ -913,10 +929,10 @@ setMethod(
       dplyr::arrange(across(matches(paste0("!!sym(", qvalue_column, ")")))) |>
       distinct()
 
-    return_list$de_proteins_wide <- de_proteins_wide
+    return_list$da_proteins_wide <- da_proteins_wide
 
     # Create long format output
-    de_proteins_long <- createDeResultsLongFormat(
+    da_proteins_long <- createDaResultsLongFormat(
       lfc_qval_tbl = significant_rows |>
         dplyr::filter(analysis_type == "RUV applied"),
       norm_counts_input_tbl = as.matrix(column_to_rownames(theObject@protein_quant_table, theObject@protein_id_column)),
@@ -930,17 +946,17 @@ setMethod(
       protein_id_table = theObject@protein_id_table
     )
 
-    return_list$de_proteins_long <- de_proteins_long
+    return_list$da_proteins_long <- da_proteins_long
 
     # Static volcano plots with gene names
-    static_volcano_plot_data <- de_proteins_long |>
+    static_volcano_plot_data <- da_proteins_long |>
       mutate(lqm = -log10(!!sym(qvalue_column))) |>
       dplyr::mutate(label = case_when(
-        !!sym(qvalue_column) < de_q_val_thresh ~ "Significant",
+        !!sym(qvalue_column) < da_q_val_thresh ~ "Significant",
         TRUE ~ "Not sig."
       )) |>
       dplyr::mutate(colour = case_when(
-        !!sym(qvalue_column) < de_q_val_thresh ~ "purple",
+        !!sym(qvalue_column) < da_q_val_thresh ~ "purple",
         TRUE ~ "black"
       )) |>
       dplyr::mutate(colour = factor(colour, levels = c("black", "purple")))
@@ -962,9 +978,9 @@ setMethod(
     # Additional summary statistics
     num_sig_de_molecules <- significant_rows %>%
       dplyr::mutate(status = case_when(
-        !!sym(qvalue_column) >= de_q_val_thresh ~ "Not significant",
-        log2FC >= 0 & !!sym(qvalue_column) < de_q_val_thresh ~ "Significant and Up",
-        log2FC < 0 & !!sym(qvalue_column) < de_q_val_thresh ~ "Significant and Down",
+        !!sym(qvalue_column) >= da_q_val_thresh ~ "Not significant",
+        log2FC >= 0 & !!sym(qvalue_column) < da_q_val_thresh ~ "Significant and Up",
+        log2FC < 0 & !!sym(qvalue_column) < da_q_val_thresh ~ "Significant and Down",
         TRUE ~ "Not significant"
       )) %>%
       group_by(comparison, status) %>%
@@ -977,7 +993,7 @@ setMethod(
     if (num_sig_de_molecules %>%
       dplyr::filter(status != "Not significant") |>
       nrow() > 0) {
-      num_sig_de_genes_barplot_only_significant <- num_sig_de_molecules %>%
+      num_sig_da_genes_barplot_only_significant <- num_sig_de_molecules %>%
         dplyr::filter(status != "Not significant") %>%
         ggplot(aes(x = status, y = counts)) +
         geom_bar(stat = "identity") +
@@ -985,197 +1001,30 @@ setMethod(
         theme(axis.text.x = element_text(angle = 90)) +
         facet_wrap(~comparison)
 
-      return_list$num_sig_de_genes_barplot_only_significant <- num_sig_de_genes_barplot_only_significant
+      return_list$num_sig_da_genes_barplot_only_significant <- num_sig_da_genes_barplot_only_significant
 
-      num_sig_de_genes_barplot_with_not_significant <- num_sig_de_molecules %>%
+      num_sig_da_genes_barplot_with_not_significant <- num_sig_de_molecules %>%
         ggplot(aes(x = status, y = counts)) +
         geom_bar(stat = "identity") +
         geom_text(stat = "identity", aes(label = counts), vjust = -0.5) +
         theme(axis.text.x = element_text(angle = 90)) +
         facet_wrap(~comparison)
 
-      return_list$num_sig_de_genes_barplot_with_not_significant <- num_sig_de_genes_barplot_with_not_significant
+      return_list$num_sig_da_genes_barplot_with_not_significant <- num_sig_da_genes_barplot_with_not_significant
     }
 
-    message("--- Exiting differentialExpressionAnalysisHelper ---")
+    message("--- Exiting differentialAbundanceAnalysisHelper ---")
     return(return_list)
   }
 )
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#' Generate Interactive Volcano Plot using Glimma
-#'
-#' @export
-generateVolcanoPlotGlimma <- function(
-  de_results_list,
-  selected_contrast = NULL,
-  uniprot_tbl = NULL,
-  args_row_id = "uniprot_acc",
-  fdr_column = "fdr_qvalue",
-  raw_p_value_column = "raw_pvalue",
-  log2fc_column = "log2FC",
-  de_q_val_thresh = 0.05,
-  uniprot_id_column = "Entry",
-  gene_names_column = "gene_names",
-  display_columns = c("best_uniprot_acc")
-) {
-  message("--- Entering generateVolcanoPlotGlimma ---")
-  message(paste("   generateVolcanoPlotGlimma Arg: selected_contrast =", selected_contrast))
-
-  if (is.null(de_results_list) || is.null(de_results_list$de_proteins_long)) {
-    message("   generateVolcanoPlotGlimma: No DE results available")
-    return(NULL)
-  }
-
-  if (is.null(selected_contrast)) {
-    message("   generateVolcanoPlotGlimma: No contrast selected")
-    return(NULL)
-  }
-
-  # Get the contrast-specific results
-  de_proteins_long <- de_results_list$de_proteins_long
-  contrasts_results <- de_results_list$contrasts_results
-
-  # CRITICAL FIX: Extract comparison name from selected_contrast if it contains "="
-  # The selected_contrast might be the full name like "GA_Elevated.minus.GA_Control=groupGA_Elevated-groupGA_Control"
-  # But the comparison column in de_proteins_long contains only "GA_Elevated.minus.GA_Control"
-  comparison_to_search <- stringr::str_extract(selected_contrast, "^[^=]+")
-  message(paste("   generateVolcanoPlotGlimma: Searching for comparison =", comparison_to_search))
-  message(paste("   generateVolcanoPlotGlimma: Original selected_contrast =", selected_contrast))
-
-  # Filter for selected contrast using the extracted comparison name
-  contrast_data <- de_proteins_long |>
-    dplyr::filter(comparison == comparison_to_search)
-
-  if (nrow(contrast_data) == 0) {
-    message(paste("   generateVolcanoPlotGlimma: No data found for contrast", comparison_to_search))
-    # DEBUG: Show what comparisons are actually available
-    available_comparisons <- unique(de_proteins_long$comparison)
-    message(paste("   generateVolcanoPlotGlimma: Available comparisons:", paste(available_comparisons, collapse = ", ")))
-    return(NULL)
-  }
-
-  message(paste("   generateVolcanoPlotGlimma: Found", nrow(contrast_data), "rows for contrast", comparison_to_search))
-  message("   generateVolcanoPlotGlimma Step: Preparing volcano plot data...")
-
-  # Prepare volcano plot table
-  volcano_plot_tab <- contrast_data |>
-    dplyr::mutate(best_uniprot_acc = str_split(!!sym(args_row_id), ":") |> purrr::map_chr(1))
-
-  # Add UniProt annotations if available
-  if (!is.null(uniprot_tbl)) {
-    volcano_plot_tab <- volcano_plot_tab |>
-      left_join(uniprot_tbl, by = join_by(best_uniprot_acc == !!sym(uniprot_id_column))) |>
-      dplyr::rename(UNIPROT_GENENAME = !!sym(gene_names_column)) |>
-      mutate(UNIPROT_GENENAME = purrr::map_chr(UNIPROT_GENENAME, \(x){
-        tryCatch(
-          {
-            if (is.na(x) || is.null(x) || x == "") {
-              ""
-            } else {
-              split_result <- str_split(x, " |:")[[1]]
-              if (length(split_result) > 0) split_result[1] else ""
-            }
-          },
-          error = function(e) ""
-        )
-      })) |>
-      dplyr::mutate(gene_name = UNIPROT_GENENAME)
-  } else {
-    volcano_plot_tab <- volcano_plot_tab |>
-      dplyr::mutate(gene_name = best_uniprot_acc)
-  }
-
-  # Add visualization columns
-  volcano_plot_tab <- volcano_plot_tab |>
-    mutate(lqm = -log10(!!sym(fdr_column))) |>
-    dplyr::mutate(label = case_when(
-      abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) >= de_q_val_thresh ~ "Not sig., logFC >= 1",
-      abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) < de_q_val_thresh ~ "Sig., logFC >= 1",
-      abs(!!sym(log2fc_column)) < 1 & !!sym(fdr_column) < de_q_val_thresh ~ "Sig., logFC < 1",
-      TRUE ~ "Not sig."
-    )) |>
-    dplyr::mutate(colour = case_when(
-      abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) >= de_q_val_thresh ~ "orange",
-      abs(!!sym(log2fc_column)) >= 1 & !!sym(fdr_column) < de_q_val_thresh ~ "purple",
-      abs(!!sym(log2fc_column)) < 1 & !!sym(fdr_column) < de_q_val_thresh ~ "blue",
-      TRUE ~ "black"
-    )) |>
-    dplyr::mutate(analysis_type = comparison) |>
-    dplyr::select(
-      best_uniprot_acc, lqm, !!sym(fdr_column), !!sym(raw_p_value_column), !!sym(log2fc_column), comparison, label, colour, gene_name,
-      any_of(display_columns)
-    ) |>
-    dplyr::mutate(my_alpha = case_when(
-      gene_name != "" ~ 1,
-      TRUE ~ 0.5
-    ))
-
-  message("   generateVolcanoPlotGlimma Step: Generating interactive plot widget...")
-
-  # Find the coefficient index for this contrast
-  # CRITICAL FIX: Use grep for reliable pattern matching instead of stringr
-  coef_names <- colnames(contrasts_results$fit.eb$coefficients)
-  message(paste("   generateVolcanoPlotGlimma: Available coefficient names:", paste(coef_names, collapse = ", ")))
-  message(paste("   generateVolcanoPlotGlimma: Looking for pattern:", paste0("^", comparison_to_search, "=")))
-
-  # Use grep to find coefficient that starts with friendly name followed by "="
-  coef_index <- grep(paste0("^", comparison_to_search, "="), coef_names)
-  message(paste("   generateVolcanoPlotGlimma: Pattern match found indices:", paste(coef_index, collapse = ", ")))
-
-  # Fallback: try exact match with the friendly name (for backwards compatibility)
-  if (length(coef_index) == 0) {
-    message("   generateVolcanoPlotGlimma: Pattern match failed, trying exact match with friendly name")
-    coef_index <- which(coef_names == comparison_to_search)
-  }
-
-  # Last resort: try exact match with selected_contrast
-  if (length(coef_index) == 0) {
-    message("   generateVolcanoPlotGlimma: Exact friendly name match failed, trying selected_contrast")
-    coef_index <- which(coef_names == selected_contrast)
-  }
-
-  if (length(coef_index) == 0) {
-    message(paste("   generateVolcanoPlotGlimma: FINAL FAILURE - No coefficient found for:", selected_contrast))
-    message(paste("   generateVolcanoPlotGlimma: Also tried:", comparison_to_search))
-    message("   generateVolcanoPlotGlimma: Available coefficient patterns:")
-    for (i in seq_along(coef_names)) {
-      message(sprintf("     [%d] %s", i, coef_names[i]))
-    }
-    message(paste("   generateVolcanoPlotGlimma: Pattern attempted:", paste0("^", comparison_to_search, "=")))
-    return(NULL)
-  }
-
-  message(paste("   generateVolcanoPlotGlimma: Using coefficient index", coef_index, "for contrast", coef_names[coef_index]))
-
-  # Prepare counts matrix and groups
-  counts_mat <- de_results_list$theObject@protein_quant_table |>
-    column_to_rownames(de_results_list$theObject@protein_id_column) |>
-    as.matrix()
-
-  this_design_matrix <- de_results_list$theObject@design_matrix
-  rownames(this_design_matrix) <- this_design_matrix[, de_results_list$theObject@sample_id]
-  this_groups <- this_design_matrix[colnames(counts_mat), "group"]
-
-  # Generate the Glimma widget
-  glimma_widget <- getGlimmaVolcanoProteomicsWidget(contrasts_results$fit.eb,
-    coef = coef_index,
-    volcano_plot_tab = volcano_plot_tab,
-    uniprot_column = best_uniprot_acc,
-    gene_name_column = gene_name,
-    display_columns = display_columns,
-    counts_tbl = counts_mat,
-    groups = this_groups
-  )
-
-  message("--- Exiting generateVolcanoPlotGlimma ---")
-  return(glimma_widget)
-}
+# Note: generateProtDAVolcanoPlotGlimma has been moved to R/func_prot_da.R
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-# NOTE: generateDEHeatmap is defined in func_prot_de.R
+# NOTE: generateDEHeatmap is defined in func_prot_da.R
 # This duplicate has been removed to avoid conflicts.
-# The canonical version in func_prot_de.R includes:
+# The canonical version in func_prot_da.R includes:
 # - circlize::colorRamp2 for proper color scaling
 # - ComplexHeatmap::HeatmapAnnotation for group annotations
 # - logger calls instead of message()
@@ -1186,65 +1035,65 @@ generateVolcanoPlotGlimma <- function(
 
 #' @export
 setMethod(
-  f = "outputDeResultsAllContrasts",
+  f = "outputDaResultsAllContrasts",
   signature = "ProteinQuantitativeData",
   definition = function(theObject,
-                        de_results_list_all_contrasts = NULL,
+                        da_results_list_all_contrasts = NULL,
                         uniprot_tbl = NULL,
-                        de_output_dir = NULL,
+                        da_output_dir = NULL,
                         publication_graphs_dir = NULL,
                         file_prefix = "de_proteins",
                         args_row_id = NULL,
                         gene_names_column = "gene_names",
                         uniprot_id_column = "Entry") {
-    message("--- Entering outputDeResultsAllContrasts ---")
-    message(sprintf("   outputDeResultsAllContrasts: de_output_dir = %s", de_output_dir))
-    message(sprintf("   outputDeResultsAllContrasts: file_prefix = %s", file_prefix))
+    message("--- Entering outputDaResultsAllContrasts ---")
+    message(sprintf("   outputDaResultsAllContrasts: da_output_dir = %s", da_output_dir))
+    message(sprintf("   outputDaResultsAllContrasts: file_prefix = %s", file_prefix))
 
     # Extract parameters from S4 object with fallbacks
     uniprot_tbl <- checkParamsObjectFunctionSimplify(theObject, "uniprot_tbl", uniprot_tbl)
-    de_output_dir <- checkParamsObjectFunctionSimplify(theObject, "de_output_dir", de_output_dir)
+    da_output_dir <- checkParamsObjectFunctionSimplify(theObject, "da_output_dir", da_output_dir)
     publication_graphs_dir <- checkParamsObjectFunctionSimplify(theObject, "publication_graphs_dir", publication_graphs_dir)
     args_row_id <- checkParamsObjectFunctionSimplify(theObject, "args_row_id", args_row_id)
     gene_names_column <- checkParamsObjectFunctionSimplify(theObject, "gene_names_column", gene_names_column)
     uniprot_id_column <- checkParamsObjectFunctionSimplify(theObject, "uniprot_id_column", uniprot_id_column)
 
     # Ensure output directory exists (CRITICAL FIX!)
-    if (!dir.exists(de_output_dir)) {
-      dir.create(de_output_dir, recursive = TRUE, showWarnings = FALSE)
-      message(sprintf("   outputDeResultsAllContrasts: Created output directory: %s", de_output_dir))
+    if (!dir.exists(da_output_dir)) {
+      dir.create(da_output_dir, recursive = TRUE, showWarnings = FALSE)
+      message(sprintf("   outputDaResultsAllContrasts: Created output directory: %s", da_output_dir))
     }
 
-    message(sprintf("   outputDeResultsAllContrasts: Processing %d contrasts", length(de_results_list_all_contrasts)))
+    message(sprintf("   outputDaResultsAllContrasts: Processing %d contrasts", length(da_results_list_all_contrasts)))
 
     # Write results for each contrast with UNIQUE filenames
-    for (contrast_name in names(de_results_list_all_contrasts)) {
-      message(sprintf("   outputDeResultsAllContrasts: Writing files for contrast: %s", contrast_name))
+    for (contrast_name in names(da_results_list_all_contrasts)) {
+      message(sprintf("   outputDaResultsAllContrasts: Writing files for contrast: %s", contrast_name))
 
-      contrast_result <- de_results_list_all_contrasts[[contrast_name]]
+      contrast_result <- da_results_list_all_contrasts[[contrast_name]]
 
-      if (!is.null(contrast_result$de_proteins_long)) {
+      if (!is.null(contrast_result$da_proteins_long)) {
         # Clean contrast name for safe filename
         safe_contrast_name <- gsub("[^A-Za-z0-9_-]", "_", contrast_name)
 
         # Create annotated version (FIXED: proper conditional logic)
-        de_proteins_long_annot <- contrast_result$de_proteins_long |>
+        da_proteins_long_annot <- contrast_result$da_proteins_long |>
           mutate(uniprot_acc_cleaned = str_split(!!sym(args_row_id), "-") |>
             purrr::map_chr(1))
 
         # Add UniProt annotations if available
         if (!is.null(uniprot_tbl) && nrow(uniprot_tbl) > 0) {
-          de_proteins_long_annot <- de_proteins_long_annot |>
+          da_proteins_long_annot <- da_proteins_long_annot |>
             left_join(uniprot_tbl, by = join_by(uniprot_acc_cleaned == !!sym(uniprot_id_column))) |>
             dplyr::select(-uniprot_acc_cleaned)
         } else {
-          de_proteins_long_annot <- de_proteins_long_annot |>
+          da_proteins_long_annot <- da_proteins_long_annot |>
             dplyr::select(-uniprot_acc_cleaned)
         }
 
         # Add gene_name column with proper conditional logic
-        if ("gene_names" %in% names(de_proteins_long_annot)) {
-          de_proteins_long_annot <- de_proteins_long_annot |>
+        if ("gene_names" %in% names(da_proteins_long_annot)) {
+          da_proteins_long_annot <- da_proteins_long_annot |>
             mutate(gene_name = purrr::map_chr(gene_names, \(x){
               tryCatch(
                 {
@@ -1258,8 +1107,8 @@ setMethod(
                 error = function(e) ""
               )
             }))
-        } else if (gene_names_column %in% names(de_proteins_long_annot)) {
-          de_proteins_long_annot <- de_proteins_long_annot |>
+        } else if (gene_names_column %in% names(da_proteins_long_annot)) {
+          da_proteins_long_annot <- da_proteins_long_annot |>
             mutate(gene_name = purrr::map_chr(.data[[gene_names_column]], \(x){
               tryCatch(
                 {
@@ -1274,72 +1123,72 @@ setMethod(
               )
             }))
         } else {
-          de_proteins_long_annot <- de_proteins_long_annot |>
+          da_proteins_long_annot <- da_proteins_long_annot |>
             mutate(gene_name = "")
         }
 
         # Relocate gene_name column
-        de_proteins_long_annot <- de_proteins_long_annot |>
+        da_proteins_long_annot <- da_proteins_long_annot |>
           relocate(gene_name, .after = !!sym(args_row_id))
 
         # CRITICAL FIX: Use contrast-specific filename!
         contrast_filename <- paste0(file_prefix, "_", safe_contrast_name, "_long_annot.tsv")
-        output_path <- file.path(de_output_dir, contrast_filename)
+        output_path <- file.path(da_output_dir, contrast_filename)
 
-        message(sprintf("   outputDeResultsAllContrasts: Writing %s", output_path))
+        message(sprintf("   outputDaResultsAllContrasts: Writing %s", output_path))
 
         # Write the file
-        vroom::vroom_write(de_proteins_long_annot, output_path)
+        vroom::vroom_write(da_proteins_long_annot, output_path)
 
         # Verify file was written
         if (file.exists(output_path)) {
           file_size <- file.size(output_path)
           message(sprintf(
-            "   outputDeResultsAllContrasts: SUCCESS - File written: %s (%d bytes)",
+            "   outputDaResultsAllContrasts: SUCCESS - File written: %s (%d bytes)",
             contrast_filename, file_size
           ))
         } else {
-          message(sprintf("   outputDeResultsAllContrasts: ERROR - File NOT written: %s", output_path))
+          message(sprintf("   outputDaResultsAllContrasts: ERROR - File NOT written: %s", output_path))
         }
 
         # Also write Excel version
         excel_filename <- paste0(file_prefix, "_", safe_contrast_name, "_long_annot.xlsx")
-        excel_path <- file.path(de_output_dir, excel_filename)
-        writexl::write_xlsx(de_proteins_long_annot, excel_path)
+        excel_path <- file.path(da_output_dir, excel_filename)
+        writexl::write_xlsx(da_proteins_long_annot, excel_path)
 
-        message(sprintf("   outputDeResultsAllContrasts: Also wrote Excel: %s", excel_filename))
+        message(sprintf("   outputDaResultsAllContrasts: Also wrote Excel: %s", excel_filename))
 
         # [NEW]: Generate volcano plot for this contrast
-        message(sprintf("   outputDeResultsAllContrasts: Generating volcano plot for contrast: %s", contrast_name))
+        message(sprintf("   outputDaResultsAllContrasts: Generating volcano plot for contrast: %s", contrast_name))
 
         # Extract parameters - try direct access first, then use checkParams
-        de_q_val_thresh <- if (!is.null(theObject@args$outputDeResultsAllContrasts$de_q_val_thresh)) {
-          theObject@args$outputDeResultsAllContrasts$de_q_val_thresh
+        da_q_val_thresh <- if (!is.null(theObject@args$outputDaResultsAllContrasts$da_q_val_thresh)) {
+          theObject@args$outputDaResultsAllContrasts$da_q_val_thresh
         } else {
-          checkParamsObjectFunctionSimplify(theObject, "de_q_val_thresh", 0.05)
+          checkParamsObjectFunctionSimplify(theObject, "da_q_val_thresh", 0.05)
         }
 
-        fdr_column <- if (!is.null(theObject@args$outputDeResultsAllContrasts$fdr_column)) {
-          theObject@args$outputDeResultsAllContrasts$fdr_column
+        fdr_column <- if (!is.null(theObject@args$outputDaResultsAllContrasts$fdr_column)) {
+          theObject@args$outputDaResultsAllContrasts$fdr_column
         } else {
           checkParamsObjectFunctionSimplify(theObject, "fdr_column", "fdr_qvalue")
         }
 
-        log2fc_column <- if (!is.null(theObject@args$outputDeResultsAllContrasts$log2fc_column)) {
-          theObject@args$outputDeResultsAllContrasts$log2fc_column
+        log2fc_column <- if (!is.null(theObject@args$outputDaResultsAllContrasts$log2fc_column)) {
+          theObject@args$outputDaResultsAllContrasts$log2fc_column
         } else {
           checkParamsObjectFunctionSimplify(theObject, "log2fc_column", "log2FC")
         }
 
-        # Prepare data for volcano plot (same logic as in differentialExpressionAnalysisHelper)
-        volcano_data <- contrast_result$de_proteins_long |>
+        # Prepare data for volcano plot (same logic as in differentialAbundanceAnalysisHelper)
+        volcano_data <- contrast_result$da_proteins_long |>
           mutate(lqm = -log10(!!sym(fdr_column))) |>
           dplyr::mutate(label = case_when(
-            !!sym(fdr_column) < de_q_val_thresh ~ "Significant",
+            !!sym(fdr_column) < da_q_val_thresh ~ "Significant",
             TRUE ~ "Not sig."
           )) |>
           dplyr::mutate(colour = case_when(
-            !!sym(fdr_column) < de_q_val_thresh ~ "purple",
+            !!sym(fdr_column) < da_q_val_thresh ~ "purple",
             TRUE ~ "black"
           )) |>
           dplyr::mutate(colour = factor(colour, levels = c("black", "purple")))
@@ -1356,7 +1205,7 @@ setMethod(
         volcano_dir <- file.path(publication_graphs_dir, "Volcano_Plots")
         if (!dir.exists(volcano_dir)) {
           dir.create(volcano_dir, recursive = TRUE, showWarnings = FALSE)
-          message(sprintf("   outputDeResultsAllContrasts: Created volcano plots directory: %s", volcano_dir))
+          message(sprintf("   outputDaResultsAllContrasts: Created volcano plots directory: %s", volcano_dir))
         }
 
         # Save volcano plot with contrast-specific filename
@@ -1367,10 +1216,10 @@ setMethod(
         tryCatch(
           {
             ggplot2::ggsave(volcano_png_path, volcano_plot, width = 7, height = 7, dpi = 300)
-            message(sprintf("   outputDeResultsAllContrasts: Saved volcano plot PNG: %s", basename(volcano_png_path)))
+            message(sprintf("   outputDaResultsAllContrasts: Saved volcano plot PNG: %s", basename(volcano_png_path)))
           },
           error = function(e) {
-            message(sprintf("   outputDeResultsAllContrasts: ERROR saving PNG: %s", e$message))
+            message(sprintf("   outputDaResultsAllContrasts: ERROR saving PNG: %s", e$message))
           }
         )
 
@@ -1378,17 +1227,17 @@ setMethod(
         tryCatch(
           {
             ggplot2::ggsave(volcano_pdf_path, volcano_plot, width = 7, height = 7)
-            message(sprintf("   outputDeResultsAllContrasts: Saved volcano plot PDF: %s", basename(volcano_pdf_path)))
+            message(sprintf("   outputDaResultsAllContrasts: Saved volcano plot PDF: %s", basename(volcano_pdf_path)))
           },
           error = function(e) {
-            message(sprintf("   outputDeResultsAllContrasts: ERROR saving PDF: %s", e$message))
+            message(sprintf("   outputDaResultsAllContrasts: ERROR saving PDF: %s", e$message))
           }
         )
       }
     }
 
     # [NEW]: Generate combined multi-page PDF with all volcano plots
-    message("   outputDeResultsAllContrasts: Creating combined volcano plots PDF...")
+    message("   outputDaResultsAllContrasts: Creating combined volcano plots PDF...")
 
     volcano_dir <- file.path(publication_graphs_dir, "Volcano_Plots")
     combined_pdf_path <- file.path(volcano_dir, "all_volcano_plots_combined.pdf")
@@ -1396,20 +1245,20 @@ setMethod(
     tryCatch(
       {
         # Re-extract parameters for combined PDF generation (in case they were modified)
-        de_q_val_thresh <- if (!is.null(theObject@args$outputDeResultsAllContrasts$de_q_val_thresh)) {
-          theObject@args$outputDeResultsAllContrasts$de_q_val_thresh
+        da_q_val_thresh <- if (!is.null(theObject@args$outputDaResultsAllContrasts$da_q_val_thresh)) {
+          theObject@args$outputDaResultsAllContrasts$da_q_val_thresh
         } else {
           0.05
         }
 
-        fdr_column <- if (!is.null(theObject@args$outputDeResultsAllContrasts$fdr_column)) {
-          theObject@args$outputDeResultsAllContrasts$fdr_column
+        fdr_column <- if (!is.null(theObject@args$outputDaResultsAllContrasts$fdr_column)) {
+          theObject@args$outputDaResultsAllContrasts$fdr_column
         } else {
           "fdr_qvalue"
         }
 
-        log2fc_column <- if (!is.null(theObject@args$outputDeResultsAllContrasts$log2fc_column)) {
-          theObject@args$outputDeResultsAllContrasts$log2fc_column
+        log2fc_column <- if (!is.null(theObject@args$outputDaResultsAllContrasts$log2fc_column)) {
+          theObject@args$outputDaResultsAllContrasts$log2fc_column
         } else {
           "log2FC"
         }
@@ -1417,19 +1266,19 @@ setMethod(
         # Collect all volcano plots
         all_volcano_plots <- list()
 
-        for (contrast_name in names(de_results_list_all_contrasts)) {
-          contrast_result <- de_results_list_all_contrasts[[contrast_name]]
+        for (contrast_name in names(da_results_list_all_contrasts)) {
+          contrast_result <- da_results_list_all_contrasts[[contrast_name]]
 
-          if (!is.null(contrast_result$de_proteins_long)) {
+          if (!is.null(contrast_result$da_proteins_long)) {
             # Recreate the volcano plot
-            volcano_data <- contrast_result$de_proteins_long |>
+            volcano_data <- contrast_result$da_proteins_long |>
               mutate(lqm = -log10(!!sym(fdr_column))) |>
               dplyr::mutate(label = case_when(
-                !!sym(fdr_column) < de_q_val_thresh ~ "Significant",
+                !!sym(fdr_column) < da_q_val_thresh ~ "Significant",
                 TRUE ~ "Not sig."
               )) |>
               dplyr::mutate(colour = case_when(
-                !!sym(fdr_column) < de_q_val_thresh ~ "purple",
+                !!sym(fdr_column) < da_q_val_thresh ~ "purple",
                 TRUE ~ "black"
               )) |>
               dplyr::mutate(colour = factor(colour, levels = c("black", "purple")))
@@ -1451,17 +1300,17 @@ setMethod(
           purrr::walk(all_volcano_plots, print)
           invisible(dev.off())
           message(sprintf(
-            "   outputDeResultsAllContrasts: Created combined PDF with %d volcano plots: %s",
+            "   outputDaResultsAllContrasts: Created combined PDF with %d volcano plots: %s",
             length(all_volcano_plots), basename(combined_pdf_path)
           ))
         }
       },
       error = function(e) {
-        message(sprintf("   outputDeResultsAllContrasts: ERROR creating combined PDF: %s", e$message))
+        message(sprintf("   outputDaResultsAllContrasts: ERROR creating combined PDF: %s", e$message))
       }
     )
 
-    message("--- Exiting outputDeResultsAllContrasts ---")
+    message("--- Exiting outputDaResultsAllContrasts ---")
     return(TRUE)
   }
 )

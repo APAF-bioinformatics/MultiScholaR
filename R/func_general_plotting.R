@@ -1,3 +1,19 @@
+# MultiScholaR: Interactive Multi-Omics Analysis
+# Copyright (C) 2024-2026 Ignatius Pang, William Klare, and APAF-bioinformatics
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 # ============================================================================
 # func_general_plotting.R
 # ============================================================================
@@ -39,17 +55,17 @@
 # }
 
 # Function 2: plotOneVolcano()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Creates a single volcano plot
 # plotOneVolcano <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 3: plotOneVolcanoNoVerticalLines()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Creates volcano plot without vertical lines
 # plotOneVolcanoNoVerticalLines <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 4: plotVolcanoS4()
@@ -69,52 +85,52 @@
 # }
 
 # Function 6: prepareDataForVolcanoPlot()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Prepares data for volcano plot
 # prepareDataForVolcanoPlot <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 7: writeInteractiveVolcanoPlotProteomics()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Writes interactive volcano plot for proteomics
 # writeInteractiveVolcanoPlotProteomics <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 8: writeInteractiveVolcanoPlotProteomicsMain()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Main function for interactive volcano plots
 # writeInteractiveVolcanoPlotProteomicsMain <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 9: writeInteractiveVolcanoPlotProteomicsWidget()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Creates interactive volcano plot widget
 # writeInteractiveVolcanoPlotProteomicsWidget <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 10: getGlimmaVolcanoProteomics()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Gets Glimma volcano plot for proteomics
 # getGlimmaVolcanoProteomics <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 11: getGlimmaVolcanoProteomicsWidget()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Gets Glimma volcano plot widget
 # getGlimmaVolcanoProteomicsWidget <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 12: getGlimmaVolcanoPhosphoproteomics()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Gets Glimma volcano plot for phosphoproteomics
 # getGlimmaVolcanoPhosphoproteomics <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # === PCA Plot Functions ===
@@ -128,31 +144,31 @@
 # }
 
 # Function 14: plotPcaHelper()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Helper function for PCA plots
 # plotPcaHelper <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 15: plotPcaListHelper()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Helper for creating list of PCA plots
 # plotPcaListHelper <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 16: plotPcaGgpairs()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Creates PCA plots using ggpairs
 # plotPcaGgpairs <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 17: rlePcaPlotList()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Creates list of RLE and PCA plots
 # rlePcaPlotList <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # === RLE Plot Functions ===
@@ -166,24 +182,24 @@
 # }
 
 # Function 19: plotRleHelper()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Helper function for RLE plots
 # plotRleHelper <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 20: plotRleQc()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Creates RLE QC plots
 # plotRleQc <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 21: getOneRlePlotData()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Gets data for one RLE plot
 # getOneRlePlotData <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # === Density Plot Functions ===
@@ -197,40 +213,40 @@
 # }
 
 # Function 23: plotDensityOfProteinIntensityPerSample()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Creates density plots of protein intensity per sample
 # plotDensityOfProteinIntensityPerSample <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # === Missing Value Plot Functions ===
 
 # Function 24: plotNumMissingValues()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Plots number of missing values
 # plotNumMissingValues <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 25: plotNumOfValues()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Plots number of values
 # plotNumOfValues <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 26: plotNumOfValuesNoLog()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Plots number of values without log transformation
 # plotNumOfValuesNoLog <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 27: plotHistogramOfPercentMissingPerIndvidual()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Plots histogram of percent missing per individual
 # plotHistogramOfPercentMissingPerIndvidual <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # === Count Plot Functions ===
@@ -244,17 +260,17 @@
 # }
 
 # Function 29: plotPeptidesProteinsCountsPerSampleHelper()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Helper for plotting counts per sample
 # plotPeptidesProteinsCountsPerSampleHelper <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 30: plotPercentSamplesVsProteinQuantified()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Plots percent samples vs proteins quantified
 # plotPercentSamplesVsProteinQuantified <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 31: plotNumSigDiffExpBarPlot()
@@ -284,33 +300,33 @@
 # }
 
 # Function 34: getSamplesCorrelationHeatMap()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Creates correlation heatmap for samples
 # getSamplesCorrelationHeatMap <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 35: getSamplesCorrelationMatrix()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Gets correlation matrix for samples
 # getSamplesCorrelationMatrix <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # === Heatmap Functions ===
 
 # Function 36: getProteinsHeatMap()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Creates heatmap of proteins
 # getProteinsHeatMap <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 37: generateDEHeatmap()
-# Current location: R/protein_de_analysis_wrapper.R
+# Current location: R/protein_da_analysis_wrapper.R
 # Description: Generates heatmap for DE results
 # generateDEHeatmap <- function(...) {
-#   # Extract from R/protein_de_analysis_wrapper.R
+#   # Extract from R/protein_da_analysis_wrapper.R
 # }
 
 # Function 38: getEnrichmentHeatmap()
@@ -416,31 +432,31 @@
 # }
 
 # Function 52: compareUmapComponentsPairs()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Compares UMAP component pairs
 # compareUmapComponentsPairs <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 53: umap_factor_plot()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Creates UMAP factor plot
 # umap_factor_plot <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 54: getMaxMinBoxplot()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Creates max/min boxplot
 # getMaxMinBoxplot <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 55: printPValuesDistribution()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Prints p-value distribution
 # printPValuesDistribution <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # === Plot Saving Functions ===
@@ -504,31 +520,31 @@
 # }
 
 # Function 64: getCategoricalColourPalette()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Gets categorical color palette
 # getCategoricalColourPalette <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 65: getCategoricalAndContinuousColourRules()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Gets categorical and continuous color rules
 # getCategoricalAndContinuousColourRules <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 66: getContinousColourRules()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Gets continuous color rules
 # getContinousColourRules <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 67: getOneContinousPalette()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Gets one continuous palette
 # getOneContinousPalette <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 68: get_ggrepel_segsize()
@@ -2079,9 +2095,10 @@ printOneVolcanoPlotWithProteinLabel <- function(
 # ----------------------------------------------------------------------------
 # getGlimmaVolcanoProteomics
 # ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# getGlimmaVolcanoProteomics
+# ----------------------------------------------------------------------------
 getGlimmaVolcanoProteomics <- function(
-  r_obj,
-  coef,
   volcano_plot_tab,
   uniprot_column = best_uniprot_acc,
   gene_name_column = gene_name,
@@ -2090,74 +2107,152 @@ getGlimmaVolcanoProteomics <- function(
   additional_annotations_join_column = NULL,
   counts_tbl = NULL,
   groups = NULL,
-  output_dir
+  output_dir,
+  fdr_column = "fdr_qvalue",
+  log2fc_column = "log2FC",
+  da_q_val_thresh = 0.05,
+  contrast_name = "Contrast",
+  ...
 ) {
-  if (coef <= ncol(r_obj$coefficients)) {
-    best_uniprot_acc <- str_split(rownames(r_obj@.Data[[1]]), " |:") |>
-      purrr::map_chr(1)
+  
+  # 1. Clean and prepare basic annotation
+  volcano_plot_tab_cln <- volcano_plot_tab |>
+    dplyr::select(
+      {{ uniprot_column }},
+      {{ gene_name_column }}, any_of(display_columns)
+    ) |>
+    distinct()
 
-    volcano_plot_tab_cln <- volcano_plot_tab |>
-      # dplyr::rename( best_uniprot_acc =  {{uniprot_column}}
-      #                , gene_name = {{gene_name_column}}   ) |>
+  if (!is.null(additional_annotations) &
+    !is.null(additional_annotations_join_column)) {
+    volcano_plot_tab_cln <- volcano_plot_tab_cln |>
+      left_join(additional_annotations,
+        by = join_by({{ uniprot_column }} == {{ additional_annotations_join_column }})
+      ) |>
       dplyr::select(
         {{ uniprot_column }},
-        {{ gene_name_column }}, any_of(display_columns)
-      ) |>
-      distinct()
+        {{ gene_name_column }},
+        any_of(display_columns)
+      )
+  }
 
+  anno_tbl <- volcano_plot_tab_cln |>
+    mutate(gene_name = case_when(
+      is.na({{ gene_name_column }}) | {{ gene_name_column }} == "" ~ as.character({{ uniprot_column }}),
+      TRUE ~ as.character({{ gene_name_column }})
+    ))
 
-    if (!is.null(additional_annotations) &
-      !is.null(additional_annotations_join_column)) {
-      volcano_plot_tab_cln <- volcano_plot_tab_cln |>
-        left_join(additional_annotations,
-          by = join_by({{ uniprot_column }} == {{ additional_annotations_join_column }})
-        ) |>
-        dplyr::select(
-          {{ uniprot_column }},
-          {{ gene_name_column }},
-          any_of(display_columns)
-        )
-    }
+  # CRITICAL FIX: Glimma Best Practice: Replace dots with underscores in column names
+  # and coerce all to character, replacing NAs with empty strings.
+  anno_tbl <- anno_tbl |>
+    dplyr::rename_with(~ gsub("\\.", "_", .)) |>
+    dplyr::mutate(across(everything(), as.character)) |>
+    dplyr::mutate(across(everything(), ~ tidyr::replace_na(., ""))) |>
+    as.data.frame()
 
-    anno_tbl <- data.frame(
-      uniprot_acc = rownames(r_obj@.Data[[1]]),
-      temp_column = best_uniprot_acc
+  # 2. Extract plot data (x, y) from the main table
+  # Since this function is called from outputDaAnalysisResults, volcano_plot_tab already has the metrics.
+  plot_data <- volcano_plot_tab |>
+    dplyr::mutate(
+      FDR = !!sym(fdr_column),
+      FDR = ifelse(FDR == 0, min(FDR[FDR > 0], na.rm = TRUE) * 0.1, FDR),
+      negLog10FDR = -log10(FDR),
+      logFC = !!sym(log2fc_column)
     ) |>
-      dplyr::rename({{ uniprot_column }} := temp_column)
+    dplyr::filter(!is.infinite(negLog10FDR), !is.na(negLog10FDR), !is.na(logFC))
 
-    anno_tbl <- anno_tbl |>
-      left_join(volcano_plot_tab_cln,
-        by = join_by({{ uniprot_column }} == {{ uniprot_column }})
-      ) |>
-      mutate(gene_name = case_when(
-        is.na(gene_name) ~ {{ uniprot_column }},
-        TRUE ~ gene_name
-      ))
-
-    gene_names <- anno_tbl |>
-      dplyr::pull(gene_name)
-
-    rownames(r_obj@.Data[[1]]) <- gene_names
-
-    r_obj$p.value[, coef] <- qvalue(r_obj$p.value[, coef])$qvalues
-
-    htmlwidgets::saveWidget(
-      widget = Glimma::glimmaVolcano(r_obj,
-        coef = coef,
-        anno = anno_tbl,
-        counts = counts_tbl,
-        groups = groups,
-        display.columns = colnames(anno_tbl),
-        status = decideTests(r_obj, adjust.method = "none"),
-        p.adj.method = "none",
-        transform.counts = "none"
-      ) # the plotly object
-      , file = file.path(
-        output_dir,
-        paste0(colnames(r_obj$coefficients)[coef], ".html")
-      ) # the path & file name
-      , selfcontained = TRUE # creates a single html file
+  if (nrow(plot_data) == 0) return(NULL)
+  
+  # Add status for coloring
+  plot_data <- plot_data |>
+    dplyr::mutate(
+      Status = case_when(
+        logFC >= 1 & FDR < da_q_val_thresh ~ 1,
+        logFC <= -1 & FDR < da_q_val_thresh ~ -1,
+        TRUE ~ 0
+      )
     )
+
+  # 3. Match anno_tbl rows to plot_data exactly
+  # Retrieve the actual column name for uniprot_column to use in matching
+  id_col_str <- rlang::as_label(rlang::enquo(uniprot_column))
+  id_col_cln <- gsub("\\.", "_", id_col_str)
+  
+  match_idx <- match(plot_data[[id_col_str]], anno_tbl[[id_col_cln]])
+  anno_tbl <- anno_tbl[match_idx, , drop = FALSE]
+  
+  gene_names <- anno_tbl$gene_name
+  rownames(anno_tbl) <- gene_names
+
+  # 4. Prepare Counts matrix
+  if (!is.null(counts_tbl)) {
+    matching_col <- NULL
+    
+    # Determine which column in plot_data maps to rownames(counts_tbl)
+    id_col_str <- rlang::as_label(rlang::enquo(uniprot_column))
+    potential_cols <- unique(c(id_col_str, "Protein.Ids", "Protein.ID", "uniprot_acc", "Entry", names(plot_data)))
+    
+    for (col in potential_cols) {
+      if (col %in% names(plot_data)) {
+        if (sum(plot_data[[col]] %in% rownames(counts_tbl)) > 0) {
+          matching_col <- col
+          break
+        }
+      }
+    }
+    
+    if (!is.null(matching_col)) {
+      # Ensure plot_data only includes items present in the counts table
+      has_counts <- plot_data[[matching_col]] %in% rownames(counts_tbl)
+      
+      if (sum(has_counts) < nrow(plot_data)) {
+         plot_data <- plot_data[has_counts, , drop = FALSE]
+         anno_tbl <- anno_tbl[has_counts, , drop = FALSE]
+         gene_names <- anno_tbl$gene_name
+      }
+      
+      counts_filtered <- counts_tbl[plot_data[[matching_col]], , drop = FALSE]
+      rownames(counts_filtered) <- gene_names
+    } else if (nrow(counts_tbl) == nrow(plot_data)) {
+      counts_filtered <- counts_tbl
+      rownames(counts_filtered) <- gene_names
+    } else {
+      counts_filtered <- NULL
+    }
+  } else {
+    counts_filtered <- NULL
+  }
+
+  # 5. Generate glimmaXY Plot with temporary file workaround
+  temp_html_name <- paste0("volcano_", gsub("[^A-Za-z0-9]", "_", contrast_name), "_temp.html")
+  
+  Glimma::glimmaXY(
+    x = plot_data$logFC,
+    y = plot_data$negLog10FDR,
+    xlab = "logFC",
+    ylab = "negLog10FDR",
+    counts = counts_filtered,
+    groups = groups,
+    status = plot_data$Status,
+    anno = anno_tbl,
+    display.columns = colnames(anno_tbl),
+    transform.counts = "none",
+    status.cols = c("#1052bd", "silver", "#cc212f"),
+    sample.cols = if (!is.null(counts_filtered)) rep("#1f77b4", ncol(counts_filtered)) else NULL,
+    main = paste("Interactive Volcano Plot:", contrast_name),
+    html = temp_html_name
+  )
+
+  # 6. Post-process to inject CSS and move to final destination
+  final_html_path <- file.path(output_dir, paste0(contrast_name, ".html"))
+  
+  if (file.exists(temp_html_name)) {
+    html_lines <- readLines(temp_html_name)
+    css_fix <- "<style> .dataTables_wrapper { overflow-x: auto !important; } .dataTables_scroll { display: table !important; width: auto !important; min-width: 100% !important; } .dataTables_scrollHead, .dataTables_scrollBody, .dataTables_scrollHeadInner, .dataTables_scrollHeadInner > table, .dataTables_scrollBody > table { display: contents !important; } .dataTables_scrollBody thead { display: none !important; } .dataTable th, .dataTable td { white-space: nowrap !important; } </style></head>"
+    html_lines <- sub("</head>", css_fix, html_lines)
+    writeLines(html_lines, temp_html_name)
+
+    file.rename(temp_html_name, final_html_path)
   }
 }
 
@@ -2176,42 +2271,20 @@ getGlimmaVolcanoProteomicsWidget <- function(
   additional_annotations = NULL,
   additional_annotations_join_column = NULL,
   counts_tbl = NULL,
-  groups = NULL
+  groups = NULL,
+  ...
 ) {
   message("--- Entering getGlimmaVolcanoProteomicsWidget ---")
   message(sprintf("   getGlimmaVolcanoProteomicsWidget Arg: coef = %d", coef))
   message(sprintf("   getGlimmaVolcanoProteomicsWidget Arg: r_obj class = %s", class(r_obj)))
   message(sprintf("   getGlimmaVolcanoProteomicsWidget Arg: volcano_plot_tab dims = %d rows, %d cols", nrow(volcano_plot_tab), ncol(volcano_plot_tab)))
-  message("   getGlimmaVolcanoProteomicsWidget Arg: volcano_plot_tab structure:")
-  utils::str(volcano_plot_tab)
-  message("   getGlimmaVolcanoProteomicsWidget Arg: volcano_plot_tab head:")
-  print(head(volcano_plot_tab))
-
+  
   if (coef <= ncol(r_obj$coefficients)) {
     message("   getGlimmaVolcanoProteomicsWidget Step: Coefficient validation passed...")
-    message(sprintf("      Data State: r_obj$coefficients has %d columns", ncol(r_obj$coefficients)))
 
-    message("   getGlimmaVolcanoProteomicsWidget Step: Extracting best_uniprot_acc from rownames...")
-    message("      Data State: r_obj@.Data[[1]] structure before extraction:")
-    utils::str(r_obj@.Data[[1]])
-    message(sprintf("      Data State: r_obj@.Data[[1]] dims = %d rows, %d cols", nrow(r_obj@.Data[[1]]), ncol(r_obj@.Data[[1]])))
-    message("      Data State: rownames(r_obj@.Data[[1]]) head:")
-    print(head(rownames(r_obj@.Data[[1]])))
-
+    # Extract best_uniprot_acc from rownames
     best_uniprot_acc <- str_split(rownames(r_obj@.Data[[1]]), " |:") |>
       purrr::map_chr(1)
-
-    message("   getGlimmaVolcanoProteomicsWidget Step: best_uniprot_acc extraction completed.")
-    message(sprintf("      Data State: best_uniprot_acc length = %d", length(best_uniprot_acc)))
-    message("      Data State: best_uniprot_acc head:")
-    print(head(best_uniprot_acc))
-
-    # print(paste("nrow = ", nrow(r_obj@.Data[[1]])))
-    # print(head(best_uniprot_acc))
-
-    message("   getGlimmaVolcanoProteomicsWidget Step: Cleaning volcano_plot_tab...")
-    message("      Data State: volcano_plot_tab before cleaning:")
-    utils::str(volcano_plot_tab)
 
     volcano_plot_tab_cln <- volcano_plot_tab |>
       dplyr::select(
@@ -2220,19 +2293,8 @@ getGlimmaVolcanoProteomicsWidget <- function(
       ) |>
       distinct()
 
-    message("   getGlimmaVolcanoProteomicsWidget Step: volcano_plot_tab cleaning completed.")
-    message(sprintf("      Data State: volcano_plot_tab_cln dims = %d rows, %d cols", nrow(volcano_plot_tab_cln), ncol(volcano_plot_tab_cln)))
-    message("      Data State: volcano_plot_tab_cln head:")
-    print(head(volcano_plot_tab_cln))
-
-    # print (head( volcano_plot_tab_cln))
-
     if (!is.null(additional_annotations) &
       !is.null(additional_annotations_join_column)) {
-      message("   getGlimmaVolcanoProteomicsWidget Step: Processing additional annotations...")
-      message("      Data State: additional_annotations structure:")
-      utils::str(additional_annotations)
-
       volcano_plot_tab_cln <- volcano_plot_tab_cln |>
         left_join(additional_annotations,
           by = join_by({{ uniprot_column }} == {{ additional_annotations_join_column }})
@@ -2242,22 +2304,14 @@ getGlimmaVolcanoProteomicsWidget <- function(
           {{ gene_name_column }},
           any_of(display_columns)
         )
-
-      message("   getGlimmaVolcanoProteomicsWidget Step: Additional annotations processing completed.")
-      message(sprintf("      Data State: volcano_plot_tab_cln after annotation dims = %d rows, %d cols", nrow(volcano_plot_tab_cln), ncol(volcano_plot_tab_cln)))
-    } else {
-      message("   getGlimmaVolcanoProteomicsWidget Step: No additional annotations to process.")
     }
 
-    message("   getGlimmaVolcanoProteomicsWidget Step: Creating annotation table...")
-
     # CRITICAL FIX: For mixed FASTA support, create base accession without isoform suffix
-    # This helps match P12345-2 to P12345 in the annotation table
     best_uniprot_acc_base <- gsub("-\\d+$", "", best_uniprot_acc)
 
     anno_tbl <- data.frame(
-      uniprot_acc = rownames(r_obj@.Data[[1]]) # This uniprot_acc does not matter, only shows in glimma Volcano table
-      , temp_column = best_uniprot_acc,
+      uniprot_acc = rownames(r_obj@.Data[[1]]),
+      temp_column = best_uniprot_acc,
       temp_column_base = best_uniprot_acc_base
     ) |>
       dplyr::rename({{ uniprot_column }} := temp_column)
@@ -2269,13 +2323,11 @@ getGlimmaVolcanoProteomicsWidget <- function(
       )
 
     # CRITICAL FIX: For entries with no gene_name (NA or empty string), try base accession match
-    # This handles mixed FASTA with isoform-specific protein IDs
     missing_gene_mask <- is.na(anno_tbl$gene_name) | anno_tbl$gene_name == ""
 
     if (any(missing_gene_mask)) {
       message(sprintf("   getGlimmaVolcanoProteomicsWidget: %d proteins missing gene names, trying base accession match...", sum(missing_gene_mask)))
 
-      # Try to match using base accession (without isoform suffix)
       base_match_tbl <- data.frame(temp_column_base = anno_tbl$temp_column_base[missing_gene_mask]) |>
         left_join(
           volcano_plot_tab_cln |>
@@ -2285,10 +2337,8 @@ getGlimmaVolcanoProteomicsWidget <- function(
           by = join_by(temp_column_base == temp_base)
         )
 
-      # Update gene_name where we found a match
       found_alt <- !is.na(base_match_tbl$gene_name_alt) & base_match_tbl$gene_name_alt != ""
       if (any(found_alt)) {
-        message(sprintf("   getGlimmaVolcanoProteomicsWidget: Found %d gene names via base accession match", sum(found_alt)))
         which_missing <- which(missing_gene_mask)
         anno_tbl$gene_name[which_missing[found_alt]] <- base_match_tbl$gene_name_alt[found_alt]
       }
@@ -2297,142 +2347,61 @@ getGlimmaVolcanoProteomicsWidget <- function(
     # Remove temporary base column
     anno_tbl <- anno_tbl |> dplyr::select(-temp_column_base)
 
-    # CRITICAL FIX: Fallback - use accession as gene name if still NA or empty
-    # Also handles empty strings, not just NA
+    # Fallback - use accession as gene name if still NA or empty
     anno_tbl <- anno_tbl |>
       mutate(gene_name = case_when(
         is.na(gene_name) | gene_name == "" ~ {{ uniprot_column }},
         TRUE ~ gene_name
       ))
 
-    message("   getGlimmaVolcanoProteomicsWidget Step: Annotation table creation completed.")
-    message(sprintf("      Data State: anno_tbl dims = %d rows, %d cols", nrow(anno_tbl), ncol(anno_tbl)))
-    message("      Data State: anno_tbl structure:")
-    utils::str(anno_tbl)
-    message("      Data State: anno_tbl head:")
-    print(head(anno_tbl))
+    # Glimma Best Practice: Replace dots with underscores in column names
+    colnames(anno_tbl) <- gsub("\\.", "_", colnames(anno_tbl))
+    
+    # Glimma Best Practice: Replace NAs with empty strings and coerce to character
+    anno_tbl <- anno_tbl |>
+      mutate(across(everything(), ~ as.character(ifelse(is.na(.), "", .))))
 
-    message("   getGlimmaVolcanoProteomicsWidget Step: Extracting gene names...")
     gene_names <- anno_tbl |>
       dplyr::pull(gene_name)
 
-    message("   getGlimmaVolcanoProteomicsWidget Step: Gene names extraction completed.")
-    message(sprintf("      Data State: gene_names length = %d", length(gene_names)))
-    message("      Data State: gene_names head:")
-    print(head(gene_names))
-
-    message("   getGlimmaVolcanoProteomicsWidget Step: Updating rownames in r_obj...")
-    message("      Data State: r_obj@.Data[[1]] rownames before update:")
-    print(head(rownames(r_obj@.Data[[1]])))
-
+    # Update rownames in r_obj
     rownames(r_obj@.Data[[1]]) <- gene_names
 
-    message("   getGlimmaVolcanoProteomicsWidget Step: Rownames update completed.")
-    message("      Data State: r_obj@.Data[[1]] rownames after update:")
-    print(head(rownames(r_obj@.Data[[1]])))
-
-    message("   getGlimmaVolcanoProteomicsWidget Step: Updating p-values with qvalue...")
-    message(sprintf("      Data State: r_obj$p.value dimensions = %d rows, %d cols", nrow(r_obj$p.value), ncol(r_obj$p.value)))
-    message(sprintf("      Data State: coef = %d, ncol(r_obj$p.value) = %d", coef, ncol(r_obj$p.value)))
-    message("      Data State: r_obj$p.value[,coef] before qvalue transformation:")
-    print(head(r_obj$p.value[, coef]))
-
-    r_obj$p.value[, coef] <- qvalue(r_obj$p.value[, coef])$qvalues
-
-    message("   getGlimmaVolcanoProteomicsWidget Step: P-value qvalue transformation completed.")
-    message("      Data State: r_obj$p.value[,coef] after qvalue transformation:")
-    print(head(r_obj$p.value[, coef]))
-
-    message("   getGlimmaVolcanoProteomicsWidget Step: Calling glimmaVolcano...")
-    message("      glimmaVolcano parameters:")
-    message(sprintf("        coef = %d", coef))
-    message(sprintf("        counts_tbl is.null = %s", is.null(counts_tbl)))
-    if (!is.null(counts_tbl)) {
-      message(sprintf("        counts_tbl dims = %d rows, %d cols", nrow(counts_tbl), ncol(counts_tbl)))
+    # Transform p-values to q-values
+    # Check if qvalue calculation is possible
+    valid_p <- r_obj$p.value[, coef][!is.na(r_obj$p.value[, coef])]
+    if (length(valid_p) > 0 && any(valid_p < 1)) {
+       tryCatch({
+         r_obj$p.value[, coef] <- qvalue(r_obj$p.value[, coef])$qvalues
+       }, error = function(e) {
+         message(paste("   getGlimmaVolcanoProteomicsWidget: qvalue failed, using raw p-values:", e$message))
+       })
     }
-    message(sprintf("        groups is.null = %s", is.null(groups)))
-    if (!is.null(groups)) {
-      message(sprintf("        groups length = %d", length(groups)))
-      message("        groups head:")
-      print(head(groups))
+
+    # Prepare status
+    status_result <- decideTests(r_obj, adjust.method = "none")
+    if (any(is.na(status_result))) {
+      status_result[is.na(status_result)] <- 0
     }
-    message(sprintf("        display_columns = %s", paste(display_columns, collapse = ", ")))
 
-    result <- tryCatch(
-      {
-        message("      About to call glimmaVolcano with parameters...")
-
-        # Validate key parameters before calling
-        message(sprintf("      Validation: r_obj class = %s", class(r_obj)))
-        message(sprintf("      Validation: coef = %d", coef))
-        message(sprintf("      Validation: ncol(r_obj$coefficients) = %d", ncol(r_obj$coefficients)))
-        message(sprintf("      Validation: anno_tbl nrow = %d", nrow(anno_tbl)))
-        message(sprintf("      Validation: display_columns = %s", paste(display_columns, collapse = ", ")))
-
-        # Check if decideTests works and clean up any issues
-        message("      Testing decideTests...")
-        status_result <- decideTests(r_obj, adjust.method = "none")
-        message(sprintf("      decideTests completed: %d x %d", nrow(status_result), ncol(status_result)))
-
-        # CRITICAL FIX: Handle NA values that cause dimension mismatches in glimmaVolcano
-        message("      Checking for NA values in status_result...")
-        na_count <- sum(is.na(status_result))
-        message(sprintf("      Found %d NA values in status_result", na_count))
-
-        if (na_count > 0) {
-          message("      Cleaning NA values from status_result (setting to 0 = nonDE)...")
-          status_result[is.na(status_result)] <- 0
-          message("      NA values cleaned")
-        }
-
-        # Additional safety: Check for dimension alignment
-        message("      Verifying dimensions before glimmaVolcano call...")
-        message(sprintf("      r_obj coefficients: %d x %d", nrow(r_obj$coefficients), ncol(r_obj$coefficients)))
-        message(sprintf("      r_obj p.value: %d x %d", nrow(r_obj$p.value), ncol(r_obj$p.value)))
-        message(sprintf("      status_result: %d x %d", nrow(status_result), ncol(status_result)))
-        message(sprintf("      anno_tbl: %d rows", nrow(anno_tbl)))
-        message(sprintf("      counts_tbl: %d x %d", nrow(counts_tbl), ncol(counts_tbl)))
-
-        message("      Now calling glimmaVolcano...")
-        widget <- glimmaVolcano(r_obj,
-          coef = coef,
-          counts = counts_tbl,
-          groups = groups,
-          anno = anno_tbl,
-          display.columns = display_columns,
-          status = status_result,
-          p.adj.method = "none",
-          transform.counts = "none"
-        ) # the plotly object
-
-        message("      glimmaVolcano call returned successfully!")
-        message(sprintf("      Widget class: %s", class(widget)))
-        message(sprintf("      Widget is.null: %s", is.null(widget)))
-
-        return(widget)
-      },
-      error = function(e) {
-        message(sprintf("      ERROR in glimmaVolcano call: %s", e$message))
-        message("      Full error details:")
-        message(capture.output(print(e)))
-        message("      Traceback:")
-        message(capture.output(traceback()))
-        return(NULL)
-      }
+    # Call glimmaVolcano
+    widget <- glimmaVolcano(r_obj,
+      coef = coef,
+      counts = counts_tbl,
+      groups = groups,
+      anno = anno_tbl,
+      display.columns = colnames(anno_tbl),
+      status = status_result,
+      p.adj.method = "none",
+      transform.counts = "none",
+      ...
     )
 
-    message("   getGlimmaVolcanoProteomicsWidget Step: glimmaVolcano call completed successfully.")
-    message("      Data State: result class:")
-    print(class(result))
-
     message("--- Exiting getGlimmaVolcanoProteomicsWidget ---")
-    return(result)
-  } else {
-    message(sprintf("   getGlimmaVolcanoProteomicsWidget Condition FALSE: coef (%d) > ncol(r_obj$coefficients) (%d)", coef, ncol(r_obj$coefficients)))
-    message("--- Exiting getGlimmaVolcanoProteomicsWidget (early exit) ---")
-    return(NULL)
+    return(widget)
   }
 }
+
 
 
 # ----------------------------------------------------------------------------

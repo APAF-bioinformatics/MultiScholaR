@@ -7,14 +7,14 @@
 \usage{
 \S4method{plotVolcanoS4}{list}(
   objectsList,
-  de_q_val_thresh = 0.05,
+  da_q_val_thresh = 0.05,
   qvalue_column = "fdr_qvalue",
   log2fc_column = "logFC"
 )
 
 \S4method{plotVolcanoS4}{list}(
   objectsList,
-  de_q_val_thresh = 0.05,
+  da_q_val_thresh = 0.05,
   qvalue_column = "fdr_qvalue",
   log2fc_column = "logFC"
 )

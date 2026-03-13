@@ -1,3 +1,19 @@
+# MultiScholaR: Interactive Multi-Omics Analysis
+# Copyright (C) 2024-2026 Ignatius Pang, William Klare, and APAF-bioinformatics
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 # ============================================================================
 # mod_lipid_norm.R
 # ============================================================================
@@ -921,7 +937,7 @@ mod_lipid_norm_server <- function(id, workflow_data, experiment_paths, omic_type
             
             # Generate plots
             tryCatch({
-                generateMetabQcPlots(
+                generateLipidQcPlots(
                     theObject = current_s4
                     , experiment_paths = experiment_paths
                     , stage = "post_filter"
@@ -1233,7 +1249,7 @@ mod_lipid_norm_server <- function(id, workflow_data, experiment_paths, omic_type
                     lipid_id_col <- current_s4@lipid_id_column
                     annotation_col <- current_s4@annotation_id_column
 
-                    selection_table <- buildItsdSelectionTable(
+                    selection_table <- buildLipidItsdSelectionTable(
                         assay_data = assay_data
                         , lipid_id_col = lipid_id_col
                         , annotation_cols = annotation_col
@@ -1307,7 +1323,7 @@ mod_lipid_norm_server <- function(id, workflow_data, experiment_paths, omic_type
                         add_log("Post-filtering state captured")
 
                         # --- Generate Pre-Norm QC Plots ---
-                        generateMetabQcPlots(
+                        generateLipidQcPlots(
                             theObject = current_s4
                             , experiment_paths = experiment_paths
                             , stage = "post_filter"
@@ -1336,7 +1352,7 @@ mod_lipid_norm_server <- function(id, workflow_data, experiment_paths, omic_type
                                     if (is.null(assay_data)) return(NULL)
 
                                     # Rebuild selection table to get feature IDs
-                                    selection_table <- buildItsdSelectionTable(
+                                    selection_table <- buildLipidItsdSelectionTable(
                                         assay_data = assay_data
                                         , lipid_id_col = lipid_id_col
                                         , annotation_cols = annotation_col
@@ -1411,7 +1427,7 @@ mod_lipid_norm_server <- function(id, workflow_data, experiment_paths, omic_type
                         norm_data$normalization_complete <- TRUE
 
                         # --- Generate Post-Norm QC Plots ---
-                        generateMetabQcPlots(
+                        generateLipidQcPlots(
                             theObject = current_s4
                             , experiment_paths = experiment_paths
                             , stage = "post_norm"
@@ -1436,7 +1452,7 @@ mod_lipid_norm_server <- function(id, workflow_data, experiment_paths, omic_type
                                 , manual_percentage = input$ruv_percentage
                             )
 
-                            ruv_results <- runPerAssayRuvOptimization(
+                            ruv_results <- runLipidPerAssayRuvOptimization(
                                 theObject = current_s4
                                 , ruv_mode = input$ruv_mode
                                 , params = ruv_params
@@ -1445,8 +1461,8 @@ mod_lipid_norm_server <- function(id, workflow_data, experiment_paths, omic_type
                             norm_data$ruv_optimization_results <- ruv_results
 
                             # Extract best k and ctrl per assay
-                            best_k_list <- extractBestKPerAssay(ruv_results)
-                            ctrl_list <- extractCtrlPerAssay(ruv_results)
+                            best_k_list <- extractLipidBestKPerAssay(ruv_results)
+                            ctrl_list <- extractLipidCtrlPerAssay(ruv_results)
 
                             add_log(paste("RUV optimization complete. Best k per assay:",
                                 paste(names(best_k_list), "=", unlist(best_k_list), collapse = ", ")
@@ -1472,7 +1488,7 @@ mod_lipid_norm_server <- function(id, workflow_data, experiment_paths, omic_type
 
                             # --- Generate RUV QC Plots ---
                             shiny::incProgress(1/total_steps, detail = "Generating RUV QC plots...")
-                            generateMetabQcPlots(
+                            generateLipidQcPlots(
                                 theObject = current_s4
                                 , experiment_paths = experiment_paths
                                 , stage = "ruv_corrected"

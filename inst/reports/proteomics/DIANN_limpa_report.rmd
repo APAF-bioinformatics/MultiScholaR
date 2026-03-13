@@ -228,7 +228,7 @@ ExtractStudyParametersNew <- function(study_params) {
   s4_de <- s4_params$deAnalysisParameters %||% list()
   
   # Extract UI parameter sections
-  ui_de <- safe_extract(ui_params, "Differential Expression UI Parameters", list())
+  ui_de <- safe_extract(ui_params, "Differential Abundance UI Parameters", list())
   ui_enrich <- safe_extract(ui_params, "Enrichment Analysis UI Parameters", list())
   
   # Create flat parameter list for backward compatibility
@@ -424,7 +424,7 @@ Technical Replicate Averaging
 For samples with technical replicates (repeated LC-MS measurements of the same 
 biological sample), protein abundances were averaged across replicates to reduce 
 technical variance while preserving biological variance. This averaging ensures 
-that the degrees of freedom in subsequent differential expression models properly 
+that the degrees of freedom in subsequent differential abundance models properly 
 reflect the number of independent biological samples rather than technical 
 measurements, leading to appropriate statistical inference (Oberg et al., 2008).
 
@@ -543,7 +543,7 @@ Technical Validation
 }
 ```
 
-```{r Differential Expression Section, echo=FALSE}
+```{r Differential Abundance Section, echo=FALSE}
 # UPDATED: DE details using new UI and S4 parameters
 FormatDEDetails <- function(numbers) {
   # Get UI parameters with S4 fallbacks
@@ -896,7 +896,7 @@ if(file.exists(composite_qc_fig_path)) {
 }
 ```
 
-# Differential Expression Analysis
+# Differential Abundance Analysis
 
 `r results_data$content$de_details`
 

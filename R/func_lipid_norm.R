@@ -1,3 +1,19 @@
+# MultiScholaR: Interactive Multi-Omics Analysis
+# Copyright (C) 2024-2026 Ignatius Pang, William Klare, and APAF-bioinformatics
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 # ============================================================================
 # func_lipid_norm.R
 # ============================================================================
@@ -43,7 +59,7 @@
 #' @importFrom stringr str_detect str_to_lower
 #' @importFrom stats sd
 #' @noRd
-buildItsdSelectionTable <- function(
+buildLipidItsdSelectionTable <- function(
     assay_data
     , lipid_id_col
     , annotation_cols = NULL
@@ -170,7 +186,7 @@ buildItsdSelectionTable <- function(
 #' @importFrom purrr imap set_names
 #' @importFrom logger log_info log_warn log_error
 #' @noRd
-generateMetabQcPlots <- function(
+generateLipidQcPlots <- function(
     theObject
     , experiment_paths
     , stage = c("post_filter", "post_norm", "ruv_corrected")
@@ -379,7 +395,7 @@ generateMetabQcPlots <- function(
 #' @importFrom purrr imap
 #' @importFrom logger log_info log_warn log_error
 #' @noRd
-runPerAssayRuvOptimization <- function(
+runLipidPerAssayRuvOptimization <- function(
     theObject
     , ruv_mode = c("automatic", "manual")
     , params = list()
@@ -579,7 +595,7 @@ runPerAssayRuvOptimization <- function(
 #' @param ruv_results List of per-assay RUV optimization results
 #' @return Named list of k values (or NA for failed assays)
 #' @noRd
-extractBestKPerAssay <- function(ruv_results) {
+extractLipidBestKPerAssay <- function(ruv_results) {
     purrr::map(ruv_results, \(x) {
         if (isTRUE(x$success)) x$best_k else NA_integer_
     })
@@ -592,7 +608,7 @@ extractBestKPerAssay <- function(ruv_results) {
 #' @param ruv_results List of per-assay RUV optimization results
 #' @return Named list of control indices (or NULL for failed assays)
 #' @noRd
-extractCtrlPerAssay <- function(ruv_results) {
+extractLipidCtrlPerAssay <- function(ruv_results) {
     purrr::map(ruv_results, \(x) {
         if (isTRUE(x$success)) x$control_genes_index else NULL
     })
@@ -606,7 +622,7 @@ extractCtrlPerAssay <- function(ruv_results) {
 #' @return Data frame with Assay column and optimization metrics
 #' @importFrom dplyr bind_rows mutate
 #' @noRd
-buildCombinedRuvTable <- function(ruv_results) {
+buildLipidCombinedRuvTable <- function(ruv_results) {
     rows <- purrr::imap(ruv_results, \(result, assay_name) {
         if (isTRUE(result$success)) {
             data.frame(
@@ -641,7 +657,7 @@ buildCombinedRuvTable <- function(ruv_results) {
 #' @param input Shiny input object
 #' @return List of configuration parameters for state saving
 #' @noRd
-buildNormConfig <- function(input) {
+buildLipidNormConfig <- function(input) {
     list(
         itsd = list(
             applied = input$apply_itsd %||% FALSE

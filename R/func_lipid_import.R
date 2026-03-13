@@ -1,3 +1,19 @@
+# MultiScholaR: Interactive Multi-Omics Analysis
+# Copyright (C) 2024-2026 Ignatius Pang, William Klare, and APAF-bioinformatics
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 # ============================================================================
 # func_lipid_import.R
 # ============================================================================
@@ -357,6 +373,21 @@ detectLipidomicsFormat <- function(headers, filename = NULL) {
 
 
 # ----------------------------------------------------------------------------
+# findMatchingColumn (Alias)
+# ----------------------------------------------------------------------------
+#' @title Find Matching Column (Alias)
+#' @description Alias for findMatchingColumn for backward compatibility.
+#' @export
+findLipidMatchingColumn <- function(headers, candidates) {
+    if (!requireNamespace("MultiScholaR", quietly = TRUE)) {
+        # Fallback if package not fully loaded
+        return(findMatchingColumn(headers, candidates))
+    }
+    MultiScholaR::findMatchingColumn(headers, candidates)
+}
+
+
+# ----------------------------------------------------------------------------
 # getLipidomicsColumnDefaults
 # ----------------------------------------------------------------------------
 #' @title Get Default Column Mappings for Lipidomics Formats
@@ -456,27 +487,25 @@ getLipidomicsColumnDefaults <- function(format) {
 #' @return The first matching header name (preserving original case), or NULL if no match.
 #'
 #' @export
-findMatchingColumn <- function(headers, candidates) {
-    if (is.null(candidates) || length(candidates) == 0) {
-        return(NULL)
-    }
-
-    headers_lower <- tolower(headers)
-    candidates_lower <- tolower(candidates)
-
-    for (cand in candidates_lower) {
-        match_idx <- which(headers_lower == cand)
-        if (length(match_idx) > 0) {
-            return(headers[match_idx[1]])
-        }
-    }
-
-    return(NULL)
-}
+# findLipidMatchingColumn <- function(headers, candidates) {
+#     # Deprecated in favor of shared findMatchingColumn
+#     findMatchingColumn(headers, candidates)
+# }
 
 
 # ----------------------------------------------------------------------------
 # importMSDIALData
+# ----------------------------------------------------------------------------
+#' @title Import MS-DIAL Data (Alias)
+#' @description Alias for importLipidMSDIALData for backward compatibility.
+#' @export
+importMSDIALData <- function(...) {
+    importLipidMSDIALData(...)
+}
+
+
+# ----------------------------------------------------------------------------
+# importMSDIALData (Implementation)
 # ----------------------------------------------------------------------------
 #' @title Import MS-DIAL Data
 #' @description Parses MS-DIAL exported data files (height or area matrix).
@@ -497,7 +526,7 @@ findMatchingColumn <- function(headers, candidates) {
 #' @importFrom vroom vroom
 #' @importFrom logger log_info log_error
 #' @export
-importMSDIALData <- function(
+importLipidMSDIALData <- function(
   filepath,
   lipid_id_column = NULL,
   annotation_column = NULL,
@@ -539,16 +568,16 @@ importMSDIALData <- function(
         lipid_id = if (!is.null(lipid_id_column)) {
             lipid_id_column
         } else {
-            findMatchingColumn(headers, defaults$lipid_id)
+            findLipidMatchingColumn(headers, defaults$lipid_id)
         },
         annotation = if (!is.null(annotation_column)) {
             annotation_column
         } else {
-            findMatchingColumn(headers, defaults$annotation)
+            findLipidMatchingColumn(headers, defaults$annotation)
         },
-        rt = findMatchingColumn(headers, defaults$rt),
-        mz = findMatchingColumn(headers, defaults$mz),
-        adduct = findMatchingColumn(headers, defaults$adduct)
+        rt = findLipidMatchingColumn(headers, defaults$rt),
+        mz = findLipidMatchingColumn(headers, defaults$mz),
+        adduct = findLipidMatchingColumn(headers, defaults$adduct)
     )
 
     # Identify sample columns (numeric columns not in known annotation columns)
@@ -728,6 +757,17 @@ importLipidSearchData <- function(
 
 
 # ----------------------------------------------------------------------------
+# validateColumnMapping (Alias)
+# ----------------------------------------------------------------------------
+#' @title Validate Column Mapping (Alias)
+#' @description Alias for validateLipidColumnMapping for backward compatibility.
+#' @export
+validateColumnMapping <- function(data, lipid_id_column, sample_columns) {
+    validateLipidColumnMapping(data, lipid_id_column, sample_columns)
+}
+
+
+# ----------------------------------------------------------------------------
 # validateColumnMapping
 # ----------------------------------------------------------------------------
 #' @title Validate Column Mapping for Lipidomics Data
@@ -744,7 +784,7 @@ importLipidSearchData <- function(
 #'   - `summary`: Summary statistics
 #'
 #' @export
-validateColumnMapping <- function(data, lipid_id_column, sample_columns) {
+validateLipidColumnMapping <- function(data, lipid_id_column, sample_columns) {
     errors <- character(0)
     warnings <- character(0)
 

@@ -1,3 +1,19 @@
+# MultiScholaR: Interactive Multi-Omics Analysis
+# Copyright (C) 2024-2026 Ignatius Pang, William Klare, and APAF-bioinformatics
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 # ============================================================================
 # func_prot_qc.R
 # ============================================================================
@@ -51,10 +67,10 @@
 # }
 
 # Function 4: removeProteinWithOnlyOneReplicate()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Removes proteins with only one replicate (non-S4 version)
 # removeProteinWithOnlyOneReplicate <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 5: removeProteinsWithOnlyOneReplicateHelper()
@@ -80,10 +96,10 @@
 # }
 
 # Function 8: removeEmptyRows()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Removes rows where all sample columns are zero or NA
 # removeEmptyRows <- function(input_table, col_pattern, row_id) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 9: removeRowsWithMissingValues()
@@ -94,45 +110,45 @@
 # }
 
 # Function 10: calculatePercentMissingPerProtein()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Calculates percentage of missing values per protein
 # calculatePercentMissingPerProtein <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 11: calculatePercentMissingProteinPerReplicate()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Calculates percentage of missing values per replicate
 # calculatePercentMissingProteinPerReplicate <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 12: calculatePercentMissingPeptidePerReplicate()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Calculates percentage of missing peptides per replicate
 # calculatePercentMissingPeptidePerReplicate <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 13: calculateMissingValuesPerProteinFishersTest()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Performs Fisher's test on missing values per protein
 # calculateMissingValuesPerProteinFishersTest <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 14: checkProteinNAPercentages()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Checks protein NA percentages
 # checkProteinNAPercentages <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 # Function 15: getProteinNARecommendations()
-# Current location: R/de_proteins_functions.R
+# Current location: R/da_proteins_functions.R
 # Description: Gets recommendations for protein NA filtering
 # getProteinNARecommendations <- function(...) {
-#   # Extract from R/de_proteins_functions.R
+#   # Extract from R/da_proteins_functions.R
 # }
 
 

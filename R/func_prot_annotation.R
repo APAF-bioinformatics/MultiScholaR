@@ -1,3 +1,19 @@
+# MultiScholaR: Interactive Multi-Omics Analysis
+# Copyright (C) 2024-2026 Ignatius Pang, William Klare, and APAF-bioinformatics
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 # ============================================================================
 # func_prot_annotation.R
 # ============================================================================
@@ -130,10 +146,10 @@
 #   # Extract from R/annotation.R
 # }
 
-# Function 16: convertDpcDEToStandardFormat()
+# Function 16: convertDpcDAToStandardFormat()
 # Current location: R/limpa_functions.R
 # Description: Converts DPC DE to standard format
-# convertDpcDEToStandardFormat <- function(...) {
+# convertDpcDAToStandardFormat <- function(...) {
 #   # Extract from R/limpa_functions.R
 # }
 
@@ -441,11 +457,14 @@ subsetQuery <- function(data, subset, accessions_col_name, uniprot_handle, unipr
 # The UniProt.ws::select function limits the number of keys queried to 100. This gives a batch number for it to be queried in batches.
 batchQueryEvidenceHelper <- function(uniprot_acc_tbl, uniprot_acc_column) {
 
+  uniprot_regex <- "^([OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2})(-\\d+)?$"
+
   all_uniprot_acc <- uniprot_acc_tbl |>
     dplyr::select({ { uniprot_acc_column } }) |>
-    mutate(Proteins = str_split({ { uniprot_acc_column } }, ";")) |>
-    unnest(Proteins) |>
+    mutate(Proteins = stringr::str_split({ { uniprot_acc_column } }, ";")) |>
+    tidyr::unnest(Proteins) |>
     distinct() |>
+    dplyr::filter(grepl(uniprot_regex, Proteins)) |>
     arrange(Proteins) |>
     mutate(Proteins = cleanIsoformNumber(Proteins)) |>
     dplyr::mutate(round = ceiling(row_number() / 100))  ## 100 is the maximum number of queries at one time
@@ -489,9 +508,12 @@ batchQueryEvidence <- function(uniprot_acc_tbl, uniprot_acc_column, uniprot_hand
 # The UniProt.ws::select function limits the number of keys queried to 100. This gives a batch number for it to be queried in batches.
 batchQueryEvidenceHelperGeneId <- function(input_tbl, gene_id_column, delim =":") {
 
+  uniprot_regex <- "^([OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2})(-\\d+)?$"
+
   all_uniprot_acc <- input_tbl |>
     dplyr::select({ { gene_id_column } }) |>
-    separate_longer_delim({ { gene_id_column } }, delim= delim ) |>
+    tidyr::separate_longer_delim({ { gene_id_column } }, delim = delim) |>
+    dplyr::filter(grepl(uniprot_regex, !!sym(rlang::as_label(enquo(gene_id_column))))) |>
     dplyr::arrange({ { gene_id_column } }) |>
     dplyr::mutate(round = ceiling(dplyr::row_number() / 25))  ## 25 is the maximum number of queries at one time
 
@@ -749,8 +771,28 @@ directUniprotDownload <- function(input_tbl,
   options(timeout = timeout)
   
   # Extract unique protein IDs
-  protein_ids <- unique(input_tbl$Protein.Ids)
-  message(paste("Found", length(protein_ids), "unique protein IDs to query"))
+  original_protein_ids <- unique(input_tbl$Protein.Ids)
+  message(paste("Found", length(original_protein_ids), "unique protein IDs from input"))
+  
+  # Official UniProt accession regex (with optional isoform suffix)
+  uniprot_regex <- "^([OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2})(-\\d+)?$"
+  
+  # Filter IDs matching the pattern
+  protein_ids <- original_protein_ids[grepl(uniprot_regex, original_protein_ids)]
+  
+  n_skipped <- length(original_protein_ids) - length(protein_ids)
+  if (n_skipped > 0) {
+    message(sprintf("   Filtered out %d IDs that do not match UniProt accession pattern", n_skipped))
+    skipped_ids <- setdiff(original_protein_ids, protein_ids)
+    message(sprintf("   Example skipped IDs: %s", paste(head(skipped_ids, 5), collapse = ", ")))
+  }
+  
+  if (length(protein_ids) == 0) {
+    message("   No valid UniProt IDs found to query. Skipping download.")
+    return(NULL)
+  }
+  
+  message(paste("Querying", length(protein_ids), "valid UniProt IDs"))
   message("   DEBUG66: First 10 protein IDs:")
   print(head(protein_ids, 10))
   
@@ -1090,7 +1132,7 @@ getUniProtAnnotation <- function(   input_table, taxonomy_id  =9606, protein_id_
 #' with UniProt annotations, enriching the DE results with gene names and other
 #' annotation information.
 #'
-#' @param de_results_s4 S4 object containing DE results from differential expression analysis
+#' @param da_results_s4 S4 object containing DE results from differential expression analysis
 #' @param uniprot_annotations Data frame with UniProt annotations (typically uniprot_dat_cln)
 #' @param protein_id_column Character string specifying the protein ID column name in DE results
 #' @param uniprot_id_column Character string specifying the UniProt ID column in annotations (default: "Entry")
@@ -1098,7 +1140,7 @@ getUniProtAnnotation <- function(   input_table, taxonomy_id  =9606, protein_id_
 #'
 #' @return List containing:
 #' \itemize{
-#'   \item annotated_de_results: DE results enriched with UniProt annotations
+#'   \item annotated_da_results: DE results enriched with UniProt annotations
 #'   \item match_statistics: Summary of matching success rates
 #'   \item unmatched_proteins: Proteins that could not be matched
 #' }
@@ -1119,7 +1161,7 @@ getUniProtAnnotation <- function(   input_table, taxonomy_id  =9606, protein_id_
 #' \dontrun{
 #' # Match DE results with UniProt annotations
 #' matched_results <- matchAnnotations(
-#'   de_results_s4 = de_results_obj,
+#'   da_results_s4 = da_results_obj,
 #'   uniprot_annotations = uniprot_dat_cln,
 #'   protein_id_column = "uniprot_acc"
 #' )
@@ -1129,7 +1171,7 @@ getUniProtAnnotation <- function(   input_table, taxonomy_id  =9606, protein_id_
 #' }
 #'
 #' @export
-matchAnnotations <- function(de_results_s4,
+matchAnnotations <- function(da_results_s4,
                             uniprot_annotations,
                             protein_id_column = NULL,
                             uniprot_id_column = "Entry",
@@ -1138,8 +1180,8 @@ matchAnnotations <- function(de_results_s4,
   log_info("=== Starting protein annotation matching ===")
   
   # Validate inputs
-  if (is.null(de_results_s4)) {
-    stop("de_results_s4 cannot be NULL")
+  if (is.null(da_results_s4)) {
+    stop("da_results_s4 cannot be NULL")
   }
   
   if (is.null(uniprot_annotations) || nrow(uniprot_annotations) == 0) {
@@ -1148,8 +1190,8 @@ matchAnnotations <- function(de_results_s4,
   
   # Get protein ID column from S4 object if not specified
   if (is.null(protein_id_column)) {
-    if (!is.null(de_results_s4@protein_id_column)) {
-      protein_id_column <- de_results_s4@protein_id_column
+    if (!is.null(da_results_s4@protein_id_column)) {
+      protein_id_column <- da_results_s4@protein_id_column
     } else {
       stop("protein_id_column must be specified or available in S4 object @protein_id_column")
     }
@@ -1172,21 +1214,21 @@ matchAnnotations <- function(de_results_s4,
   
   # Extract protein IDs from DE results
   # This could be from protein_quant_table or protein_id_table depending on S4 structure
-  # OR from de_data for de_results_for_enrichment objects
+  # OR from de_data for da_results_for_enrichment objects
   protein_ids <- NULL
   
-  # [OK] ENHANCED: Handle de_results_for_enrichment objects
-  if (inherits(de_results_s4, "de_results_for_enrichment")) {
-    log_info("Detected de_results_for_enrichment S4 object")
+  # [OK] ENHANCED: Handle da_results_for_enrichment objects
+  if (inherits(da_results_s4, "da_results_for_enrichment")) {
+    log_info("Detected da_results_for_enrichment S4 object")
     
     # Extract protein IDs from all DE data contrasts
-    if (!is.null(de_results_s4@de_data) && length(de_results_s4@de_data) > 0) {
+    if (!is.null(da_results_s4@da_data) && length(da_results_s4@da_data) > 0) {
       # Get protein IDs from the first available contrast (they should all have the same proteins)
-      available_contrasts <- names(de_results_s4@de_data)
+      available_contrasts <- names(da_results_s4@da_data)
       log_info(sprintf("Available DE contrasts: %s", paste(available_contrasts, collapse = ", ")))
       
       for (contrast_name in available_contrasts) {
-        contrast_data <- de_results_s4@de_data[[contrast_name]]
+        contrast_data <- da_results_s4@da_data[[contrast_name]]
         if (!is.null(contrast_data) && nrow(contrast_data) > 0 && protein_id_column %in% names(contrast_data)) {
           protein_ids <- unique(contrast_data[[protein_id_column]])
           log_info(sprintf("Extracted protein IDs from DE contrast: %s", contrast_name))
@@ -1197,27 +1239,27 @@ matchAnnotations <- function(de_results_s4,
       if (is.null(protein_ids)) {
         stop(sprintf("Protein ID column '%s' not found in any DE data contrasts. Available columns in first contrast: %s", 
                      protein_id_column, 
-                     if(length(available_contrasts) > 0 && !is.null(de_results_s4@de_data[[available_contrasts[1]]])) {
-                       paste(names(de_results_s4@de_data[[available_contrasts[1]]]), collapse = ", ")
+                     if(length(available_contrasts) > 0 && !is.null(da_results_s4@da_data[[available_contrasts[1]]])) {
+                       paste(names(da_results_s4@da_data[[available_contrasts[1]]]), collapse = ", ")
                      } else {
                        "No valid data found"
                      }))
       }
     } else {
-      stop("No DE data found in de_results_for_enrichment object @de_data slot")
+      stop("No DE data found in da_results_for_enrichment object @da_data slot")
     }
     
   } else {
     # [OK] PRESERVED: Original logic for ProteinQuantitativeData and similar objects
-    if (!is.null(de_results_s4@protein_quant_table) && protein_id_column %in% names(de_results_s4@protein_quant_table)) {
-      protein_ids <- unique(de_results_s4@protein_quant_table[[protein_id_column]])
+    if (!is.null(da_results_s4@protein_quant_table) && protein_id_column %in% names(da_results_s4@protein_quant_table)) {
+      protein_ids <- unique(da_results_s4@protein_quant_table[[protein_id_column]])
       log_info("Extracted protein IDs from @protein_quant_table")
-    } else if (!is.null(de_results_s4@protein_id_table) && protein_id_column %in% names(de_results_s4@protein_id_table)) {
-      protein_ids <- unique(de_results_s4@protein_id_table[[protein_id_column]])
+    } else if (!is.null(da_results_s4@protein_id_table) && protein_id_column %in% names(da_results_s4@protein_id_table)) {
+      protein_ids <- unique(da_results_s4@protein_id_table[[protein_id_column]])
       log_info("Extracted protein IDs from @protein_id_table")
     } else {
       stop(sprintf("Protein ID column '%s' not found in DE results S4 object. Object class: %s", 
-                   protein_id_column, class(de_results_s4)[1]))
+                   protein_id_column, class(da_results_s4)[1]))
     }
   }
   
@@ -1375,7 +1417,7 @@ matchAnnotations <- function(de_results_s4,
   log_info(sprintf("Unmatched proteins: %d (%.1f%%)", match_statistics$unmatched_proteins, 100 - match_statistics$match_rate))
   
   return(list(
-    annotated_de_results = annotated_results,
+    annotated_da_results = annotated_results,
     match_statistics = match_statistics,
     unmatched_proteins = unmatched_protein_list
   ))

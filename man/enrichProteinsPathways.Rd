@@ -5,7 +5,7 @@
 \title{Perform protein pathway enrichment analysis across multiple contrasts}
 \usage{
 enrichProteinsPathways(
-  de_analysis_results_list,
+  da_analysis_results_list,
   taxon_id,
   protein_id_delimiter = ":",
   protein_p_val_thresh = 0.05,
@@ -18,7 +18,7 @@ enrichProteinsPathways(
 )
 }
 \arguments{
-\item{de_analysis_results_list}{List of differential expression results for each contrast}
+\item{da_analysis_results_list}{List of differential expression results for each contrast}
 
 \item{taxon_id}{NCBI taxonomy ID for the organism (e.g., "9606" for human)}
 
