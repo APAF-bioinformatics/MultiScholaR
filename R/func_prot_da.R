@@ -2447,7 +2447,60 @@ runTestsContrasts <- function(data,
 
   # Run limma analysis
   message("   runTestsContrasts: Running lmFit...")
-  fit <- lmFit(data_subset, design = design_m)
+
+  # Check for technical replicates
+  # Blocking factor should be constructed from replicate ID (biological replicate)
+  # But we need to ensure it maps correctly to the samples in the subset
+  # The design_matrix here is already subsetted/ordered match mod_frame in model.matrix construction
+  # However, we need the original columns (group, replicates) which might be in the 'design_matrix' argument (which is the params data.frame)
+  # BUT 'design_matrix' input argument is strictly the data.frame with metadata
+
+  # Ensure we have the metadata for the subsetted samples
+  # The samples in data_subset are columns matching rownames(design_m)
+  # design_m was created from design_matrix (the metadata dataframe)
+  samples_in_model <- rownames(design_m)
+
+  # Check if we have replicates column
+  has_replicates <- "replicates" %in% colnames(design_matrix)
+
+  fit <- NULL
+
+  if (has_replicates) {
+    # Extract replicates for the samples in the model, maintaining order
+    # We assume design_matrix rownames are the sample IDs (which was set in helper/wrapper functions)
+    design_matrix_subset <- design_matrix[samples_in_model, ]
+
+    # Construct blocking factor: Biological Replicate ID (e.g. "Control_1")
+    # This identifies the biological unit that is technically replicated
+    # Combining group + replicate number gives unique biological ID
+    # Use paste0 to ensure character vector
+    block <- paste(design_matrix_subset$group, design_matrix_subset$replicates, sep = "_")
+
+    # Check if there are any technical replicates (duplicated blocks)
+    if (any(duplicated(block))) {
+      message("   runTestsContrasts: Detected technical replicates. Calculating duplicateCorrelation...")
+      message(sprintf(
+        "   runTestsContrasts: Block defined by group_replicates. %d unique blocks for %d samples.",
+        length(unique(block)), length(block)
+      ))
+
+      # Calculate consensus correlation
+      # Note: duplicateCorrelation can be slow for large datasets
+      dup_cor <- duplicateCorrelation(data_subset, design = design_m, block = block)
+
+      message(sprintf("   runTestsContrasts: Consensus correlation = %.4f", dup_cor$consensus.correlation))
+
+      # Run lmFit with correlation and block
+      message("   runTestsContrasts: Running lmFit with duplicateCorrelation...")
+      fit <- lmFit(data_subset, design = design_m, block = block, correlation = dup_cor$consensus.correlation)
+    } else {
+      message("   runTestsContrasts: No technical replicates detected (unique blocks). Running standard lmFit...")
+      fit <- lmFit(data_subset, design = design_m)
+    }
+  } else {
+    message("   runTestsContrasts: 'replicates' column not found. Running standard lmFit...")
+    fit <- lmFit(data_subset, design = design_m)
+  }
 
   message("   runTestsContrasts: Running contrasts.fit...")
   cfit <- contrasts.fit(fit, contrasts = contr.matrix)
