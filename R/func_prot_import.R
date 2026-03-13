@@ -810,7 +810,16 @@ formatDIANN <- function(data_tbl_parquet_filt) {
   # Convert intensity matrix to data frame with precursor IDs
   intensity_df <- as.data.frame(intensity_matrix) |>
     rownames_to_column(var = "Precursor.Id")
-  
+
+  # Ensure Precursor.Id is present in gene_info (needed for join)
+  if (!"Precursor.Id" %in% names(gene_info)) {
+    # If genes info matches intensity matrix dimensions, use intensity matrix rownames
+    # which we know correspond to Precursor.Id
+    if (nrow(gene_info) == nrow(intensity_matrix)) {
+      gene_info$Precursor.Id <- rownames(intensity_matrix)
+    }
+  }
+
   # Convert to long format
   intensity_long <- intensity_df |>
     pivot_longer(

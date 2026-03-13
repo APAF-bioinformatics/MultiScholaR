@@ -2138,6 +2138,7 @@ plotStringDbEnrichmentResults <- function(project_dirs,
                                          plot_width = 16,
                                          plot_height = 12,
                                          plot_dpi = 300,
+                                         fdr_threshold = 0.05,
                                          save_plots = TRUE,
                                          return_plots = TRUE,
                                          print_plots = TRUE) {
@@ -2191,6 +2192,23 @@ plotStringDbEnrichmentResults <- function(project_dirs,
     message("Using provided enrichment results with ", nrow(all_enrichment_results), " rows.")
   }
   
+  # Check for empty results
+  cat(sprintf("DEBUG_STR: Checking results. Rows: %d, Cols: %d\n", nrow(all_enrichment_results), ncol(all_enrichment_results)))
+  cat(sprintf("DEBUG_STR: Columns: %s\n", paste(colnames(all_enrichment_results), collapse = ", ")))
+
+  if (nrow(all_enrichment_results) == 0) {
+    message("No enrichment results found (0 rows). Skipping plotting.")
+    return(NULL)
+  }
+
+  # Check for required columns
+  required_cols <- c("comparison", "category", "enrichmentScore", "falseDiscoveryRate", "termID")
+  missing_cols <- setdiff(required_cols, colnames(all_enrichment_results))
+  if (length(missing_cols) > 0) {
+    warning("Enrichment results missing required columns: ", paste(missing_cols, collapse = ", "))
+    return(NULL)
+  }
+
   # Filter to top N terms per category and comparison
   message("Filtering to top ", top_n_terms, " terms per category and comparison...")
   
@@ -2201,7 +2219,7 @@ plotStringDbEnrichmentResults <- function(project_dirs,
     dplyr::ungroup()
   
   included_functional_category_and_term <- sorted_enrichment_results |>
-    dplyr::filter(rank <= top_n_terms) |>
+    dplyr::filter(rank <= top_n_terms & falseDiscoveryRate < fdr_threshold) |>
     dplyr::distinct(category, termID)
   
   filtered_enrichment_results <- sorted_enrichment_results |>
