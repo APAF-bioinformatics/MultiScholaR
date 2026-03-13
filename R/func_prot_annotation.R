@@ -1175,7 +1175,7 @@ matchAnnotations <- function(de_results_s4,
   # OR from de_data for de_results_for_enrichment objects
   protein_ids <- NULL
   
-  # ✅ ENHANCED: Handle de_results_for_enrichment objects
+  # [OK] ENHANCED: Handle de_results_for_enrichment objects
   if (inherits(de_results_s4, "de_results_for_enrichment")) {
     log_info("Detected de_results_for_enrichment S4 object")
     
@@ -1208,7 +1208,7 @@ matchAnnotations <- function(de_results_s4,
     }
     
   } else {
-    # ✅ PRESERVED: Original logic for ProteinQuantitativeData and similar objects
+    # [OK] PRESERVED: Original logic for ProteinQuantitativeData and similar objects
     if (!is.null(de_results_s4@protein_quant_table) && protein_id_column %in% names(de_results_s4@protein_quant_table)) {
       protein_ids <- unique(de_results_s4@protein_quant_table[[protein_id_column]])
       log_info("Extracted protein IDs from @protein_quant_table")
@@ -1559,11 +1559,11 @@ convertEnsemblToUniprot <- function(ensembl_ids, organism_code) {
   
   cat(sprintf("Converting %d Ensembl IDs to UniProt using gprofiler2...\n", length(ensembl_ids)))
   
-  # ✅ FIX: Strip version suffixes (.1, .2, etc.) before conversion
+  # [OK] FIX: Strip version suffixes (.1, .2, etc.) before conversion
   # gprofiler2 doesn't recognize Ensembl IDs with version suffixes
   cat("Stripping version suffixes from Ensembl IDs (e.g., .1, .2)...\n")
   
-  # Create mapping: original_with_version → stripped_version
+  # Create mapping: original_with_version -> stripped_version
   version_mapping <- data.frame(
     original_with_version = ensembl_ids,
     stripped_version = gsub("\\.\\d+$", "", ensembl_ids),  # Remove .X at end
@@ -1573,9 +1573,9 @@ convertEnsemblToUniprot <- function(ensembl_ids, organism_code) {
   # Get unique stripped IDs (multiple versioned IDs may map to same stripped ID)
   unique_stripped <- unique(version_mapping$stripped_version)
   
-  cat(sprintf("Stripped versions: %d original IDs → %d unique stripped IDs\n", 
+  cat(sprintf("Stripped versions: %d original IDs -> %d unique stripped IDs\n", 
               length(ensembl_ids), length(unique_stripped)))
-  cat(sprintf("Example: %s → %s\n", 
+  cat(sprintf("Example: %s -> %s\n", 
               version_mapping$original_with_version[1], 
               version_mapping$stripped_version[1]))
   
@@ -1590,7 +1590,7 @@ convertEnsemblToUniprot <- function(ensembl_ids, organism_code) {
       filter_na = FALSE             # Keep non-matching IDs
     )
     
-    cat(sprintf("✓ gprofiler2 returned %d conversion results\n", 
+    cat(sprintf("[OK] gprofiler2 returned %d conversion results\n", 
                 if(is.null(conversion_result)) 0 else nrow(conversion_result)))
     
     if (!is.null(conversion_result) && nrow(conversion_result) > 0) {
@@ -1598,7 +1598,7 @@ convertEnsemblToUniprot <- function(ensembl_ids, organism_code) {
       print(head(conversion_result[, c("input", "target", "name")], 3))
     }
     
-    # Create mapping table for STRIPPED → UniProt
+    # Create mapping table for STRIPPED -> UniProt
     stripped_to_uniprot <- data.frame(
       stripped_version = unique_stripped,
       converted_id = NA_character_,
@@ -1624,8 +1624,8 @@ convertEnsemblToUniprot <- function(ensembl_ids, organism_code) {
       }
     }
     
-    # ✅ FIX: Map back to ORIGINAL IDs (with versions)
-    # Join: original_with_version → stripped_version → converted_id
+    # [OK] FIX: Map back to ORIGINAL IDs (with versions)
+    # Join: original_with_version -> stripped_version -> converted_id
     final_mapping <- merge(
       version_mapping,
       stripped_to_uniprot,
@@ -1638,13 +1638,13 @@ convertEnsemblToUniprot <- function(ensembl_ids, organism_code) {
     names(final_mapping)[1] <- "original_id"
     
     success_count <- sum(final_mapping$conversion_status == "success", na.rm = TRUE)
-    cat(sprintf("✓ Successfully converted %d/%d Ensembl IDs to UniProt IDs (%.1f%%)\n", 
+    cat(sprintf("[OK] Successfully converted %d/%d Ensembl IDs to UniProt IDs (%.1f%%)\n", 
                 success_count, length(ensembl_ids), 
                 100 * success_count / length(ensembl_ids)))
     
     if (success_count < length(ensembl_ids)) {
       failed_count <- length(ensembl_ids) - success_count
-      cat(sprintf("⚠ Warning: %d Ensembl IDs could not be converted (will use original ID with NA annotations)\n",
+      cat(sprintf("[WARNING] Warning: %d Ensembl IDs could not be converted (will use original ID with NA annotations)\n",
                   failed_count))
       if (failed_count <= 10) {
         cat("Failed IDs:\n")
@@ -1655,7 +1655,7 @@ convertEnsemblToUniprot <- function(ensembl_ids, organism_code) {
     return(final_mapping)
     
   }, error = function(e) {
-    cat(sprintf("✗ ERROR in gprofiler2::gconvert: %s\n", e$message))
+    cat(sprintf("[FAIL] ERROR in gprofiler2::gconvert: %s\n", e$message))
     warning(sprintf("gprofiler2::gconvert failed: %s", e$message))
     
     # Return empty mapping on error
@@ -1704,7 +1704,7 @@ convertEnsemblToUniprot <- function(ensembl_ids, organism_code) {
 #' This approach is much more efficient than annotating all FASTA proteins because:
 #' \itemize{
 #'   \item Only annotates proteins actually present in the dataset
-#'   \item Handles protein groups properly (A;B;C → A, B, C)
+#'   \item Handles protein groups properly (A;B;C -> A, B, C)
 #'   \item Significantly reduces API calls and processing time
 #'   \item Supports both UniProt and Ensembl protein IDs
 #' }
@@ -1842,7 +1842,7 @@ getUniprotAnnotationsFull <- function(data_tbl,
       organism_code <- taxonIdToGprofilerOrganism(taxon_id)
       cat(sprintf("Organism code for gprofiler2: %s\n", organism_code))
       
-      # Convert Ensembl → UniProt
+      # Convert Ensembl -> UniProt
       conversion_result <- convertEnsemblToUniprot(cleaned_proteins, organism_code)
       
       # Filter to successfully converted IDs for UniProt query
@@ -1852,11 +1852,11 @@ getUniprotAnnotationsFull <- function(data_tbl,
       ]
       
       if (nrow(successfully_converted) > 0) {
-        # ✅ CRITICAL: Extract UNIPROT IDs (not Ensembl IDs!) from conversion result
+        # [OK] CRITICAL: Extract UNIPROT IDs (not Ensembl IDs!) from conversion result
         proteins_to_query <- successfully_converted$converted_id
         ensembl_mapping <- conversion_result  # Save for later merge
         
-        cat(sprintf("\n✓ Conversion summary:\n"))
+        cat(sprintf("\n[OK] Conversion summary:\n"))
         cat(sprintf("  - Successfully converted: %d/%d (%.1f%%)\n", 
                     nrow(successfully_converted), 
                     nrow(conversion_result),
@@ -1864,12 +1864,12 @@ getUniprotAnnotationsFull <- function(data_tbl,
         cat(sprintf("  - Failed conversions: %d (will have NA annotations)\n", 
                     nrow(conversion_result) - nrow(successfully_converted)))
         cat(sprintf("  - UniProt IDs extracted for API query: %d\n", length(proteins_to_query)))
-        cat(sprintf("\n✓ CRITICAL CHECK - First 5 IDs to be submitted to UniProt API:\n"))
-        cat(sprintf("  Type: %s\n", if(any(grepl("^ENS", head(proteins_to_query, 5)))) "❌ ENSEMBL (WRONG!)" else "✓ UniProt (CORRECT)"))
+        cat(sprintf("\n[OK] CRITICAL CHECK - First 5 IDs to be submitted to UniProt API:\n"))
+        cat(sprintf("  Type: %s\n", if(any(grepl("^ENS", head(proteins_to_query, 5)))) "[FAIL] ENSEMBL (WRONG!)" else "[OK] UniProt (CORRECT)"))
         print(head(proteins_to_query, 5))
         cat("=== END ENSEMBL CONVERSION ===\n\n")
       } else {
-        cat("✗ ERROR: gprofiler2 conversion returned 0 results!\n")
+        cat("[FAIL] ERROR: gprofiler2 conversion returned 0 results!\n")
         warning("No Ensembl IDs could be converted. Falling back to direct query with original IDs.")
         proteins_to_query <- cleaned_proteins
         ensembl_mapping <- NULL
@@ -1900,9 +1900,9 @@ getUniprotAnnotationsFull <- function(data_tbl,
   print(head(temp_protein_table$Protein.Ids, 5))
   cat(sprintf("ID Type Check: %s\n", 
               if(any(grepl("^ENS", head(temp_protein_table$Protein.Ids, 10)))) {
-                "❌ STILL ENSEMBL IDS - BUG IN CONVERSION LOGIC!"
+                "[FAIL] STILL ENSEMBL IDS - BUG IN CONVERSION LOGIC!"
               } else {
-                "✓ UniProt IDs - Ready for API"
+                "[OK] UniProt IDs - Ready for API"
               }))
   cat("=== END FINAL CHECK ===\n\n")
   
@@ -2240,9 +2240,9 @@ chooseBestProteinAccessionHelper <- function(input_tbl
                                              , group_id
                                              , delim= ":") {
   
-  cat("\n\n╔═══════════════════════════════════════════════════════════════════════════╗\n")
-  cat("║      ENTERING chooseBestProteinAccessionHelper (DEBUG66)              ║\n")
-  cat("╚═══════════════════════════════════════════════════════════════════════════╝\n\n")
+  cat("\n\n+===========================================================================+\n")
+  cat("|      ENTERING chooseBestProteinAccessionHelper (DEBUG66)              |\n")
+  cat("+===========================================================================+\n\n")
   
   cat(">>> HELPER STEP 1: INPUTS <<<\n")
   cat(sprintf("   Input 'delim' parameter: '%s'\n", delim))
@@ -2341,7 +2341,7 @@ chooseBestProteinAccessionHelper <- function(input_tbl
   cat("\n")
 
   cat(">>> HELPER STEP 5: SELECTING BEST ACCESSION PER GENE & RECOMBINING <<<\n")
-  cat(sprintf("   ⚠️  CRITICAL: Using 'delim' for recombining: '%s'\n", delim))
+  cat(sprintf("   [WARNING]  CRITICAL: Using 'delim' for recombining: '%s'\n", delim))
   ## For each gene name find the uniprot_acc with the lowest rankinG
   group_gene_names_and_uniprot_accs <- score_isoforms |>
     distinct( { { group_id } }, gene_name, ranking) |>
@@ -2367,9 +2367,9 @@ chooseBestProteinAccessionHelper <- function(input_tbl
     cat(sprintf("   First 5 recombined accessions: %s\n", paste(head(group_gene_names_and_uniprot_accs[[row_id_column]], 5), collapse = ", ")))
   }
   cat("\n")
-  cat("╔═══════════════════════════════════════════════════════════════════════════╗\n")
-  cat("║      EXITING chooseBestProteinAccessionHelper (DEBUG66)               ║\n")
-  cat("╚═══════════════════════════════════════════════════════════════════════════╝\n\n")
+  cat("+===========================================================================+\n")
+  cat("|      EXITING chooseBestProteinAccessionHelper (DEBUG66)               |\n")
+  cat("+===========================================================================+\n\n")
 
   return(group_gene_names_and_uniprot_accs)
 
@@ -2400,9 +2400,9 @@ rankProteinAccessionHelper <- function(input_tbl
                                        , group_id
                                        , delim= ";") {
   
-  cat("\n\n╔═══════════════════════════════════════════════════════════════════════════╗\n")
-  cat("║      ENTERING rankProteinAccessionHelper (DEBUG66)                    ║\n")
-  cat("╚═══════════════════════════════════════════════════════════════════════════╝\n\n")
+  cat("\n\n+===========================================================================+\n")
+  cat("|      ENTERING rankProteinAccessionHelper (DEBUG66)                    |\n")
+  cat("+===========================================================================+\n\n")
   
   cat(">>> RANK HELPER STEP 1: INPUTS <<<\n")
   cat(sprintf("   Input 'delim' parameter: '%s'\n", delim))
@@ -2488,7 +2488,7 @@ rankProteinAccessionHelper <- function(input_tbl
   cat("\n")
 
   cat(">>> RANK HELPER STEP 4: SELECTING BEST & RECOMBINING WITH DELIM <<<\n")
-  cat(sprintf("   ⚠️  CRITICAL: Using 'delim' for recombining: '%s'\n", delim))
+  cat(sprintf("   [WARNING]  CRITICAL: Using 'delim' for recombining: '%s'\n", delim))
   ## For each gene name find the uniprot_acc with the lowest rankinG
   group_gene_names_and_uniprot_accs <- score_isoforms |>
     distinct( { { group_id } }, gene_name, ranking) |>
@@ -2512,9 +2512,9 @@ rankProteinAccessionHelper <- function(input_tbl
     cat(sprintf("   First 5 recombined accessions: %s\n", paste(head(group_gene_names_and_uniprot_accs[[row_id_column]], 5), collapse = ", ")))
   }
   cat("\n")
-  cat("╔═══════════════════════════════════════════════════════════════════════════╗\n")
-  cat("║      EXITING rankProteinAccessionHelper (DEBUG66)                     ║\n")
-  cat("╚═══════════════════════════════════════════════════════════════════════════╝\n\n")
+  cat("+===========================================================================+\n")
+  cat("|      EXITING rankProteinAccessionHelper (DEBUG66)                     |\n")
+  cat("+===========================================================================+\n\n")
 
   return(group_gene_names_and_uniprot_accs)
 

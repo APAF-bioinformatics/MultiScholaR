@@ -115,7 +115,7 @@ mod_prot_design_server <- function(id, workflow_data, experiment_paths, volumes 
         volumes
       }
       
-      # ✅ Add base_dir as default starting location for import
+      # [OK] Add base_dir as default starting location for import
       if (!is.null(experiment_paths) && !is.null(experiment_paths$base_dir) && 
           dir.exists(experiment_paths$base_dir)) {
         # Put base_dir first so it's the default
@@ -205,9 +205,9 @@ mod_prot_design_server <- function(id, workflow_data, experiment_paths, volumes 
         fasta_files <- list.files(import_path, pattern = "\\.fasta$|\\.fa$|\\.faa$", 
                                   ignore.case = TRUE)
         if (length(fasta_files) > 0) {
-          paste("✓ Found FASTA file:", fasta_files[1])
+          paste("[OK] Found FASTA file:", fasta_files[1])
         } else {
-          "⚠ No FASTA file detected in folder. Upload one above if needed for accession cleanup."
+          "[WARNING] No FASTA file detected in folder. Upload one above if needed for accession cleanup."
         }
       } else {
         ""
@@ -293,7 +293,7 @@ mod_prot_design_server <- function(id, workflow_data, experiment_paths, volumes 
         logger::log_info("Loading config.ini from project.")
         workflow_data$config_list <- readConfigFile(file = config_path)
         
-        # ✅ FIXED: Create global config_list for updateConfigParameter compatibility
+        # [OK] FIXED: Create global config_list for updateConfigParameter compatibility
         assign("config_list", workflow_data$config_list, envir = .GlobalEnv)
         logger::log_info("Created global config_list for updateConfigParameter compatibility")
         # ---[ END OF ADDED LOGIC ] ---
@@ -343,7 +343,7 @@ mod_prot_design_server <- function(id, workflow_data, experiment_paths, volumes 
           NULL
         }
         
-        # ✅ FIXED: Load aa_seq_tbl_final if it exists in the import directory or scripts
+        # [OK] FIXED: Load aa_seq_tbl_final if it exists in the import directory or scripts
         aa_seq_file_import <- file.path(import_path, "aa_seq_tbl_final.RDS")
         aa_seq_file_scripts <- file.path(experiment_paths$source_dir, "aa_seq_tbl_final.RDS")
         fasta_metadata_file_import <- file.path(import_path, "fasta_metadata.RDS")
@@ -453,7 +453,7 @@ mod_prot_design_server <- function(id, workflow_data, experiment_paths, volumes 
           })
         }
         
-        # ✅ NEW: Load uniprot_dat_cln if it exists (CRITICAL for DE analysis gene names!)
+        # [OK] NEW: Load uniprot_dat_cln if it exists (CRITICAL for DE analysis gene names!)
         uniprot_file_import <- file.path(import_path, "uniprot_dat_cln.RDS")
         uniprot_file_scripts <- file.path(experiment_paths$source_dir, "uniprot_dat_cln.RDS")
         
@@ -500,7 +500,7 @@ mod_prot_design_server <- function(id, workflow_data, experiment_paths, volumes 
         workflow_data$data_cln <- imported_data_cln
         workflow_data$contrasts_tbl <- imported_contrasts
         
-        # ✅ FIXED: Save contrasts_tbl to global environment for DE analysis
+        # [OK] FIXED: Save contrasts_tbl to global environment for DE analysis
         if (!is.null(imported_contrasts)) {
           assign("contrasts_tbl", imported_contrasts, envir = .GlobalEnv)
           logger::log_info("Saved contrasts_tbl to global environment for DE analysis.")
@@ -680,7 +680,7 @@ mod_prot_design_server <- function(id, workflow_data, experiment_paths, volumes 
         )
         logger::log_info(sprintf("Import: S4 object saved to R6 state manager as '%s'", state_name))
         logger::log_info("Import: This state is now ACTIVE - QC modules will read from it")
-        logger::log_info("Import: User can proceed to QC → Accession Cleanup")
+        logger::log_info("Import: User can proceed to QC -> Accession Cleanup")
         
         # --- TRIGGER UNIPROT ANNOTATION ---
         log_info("Design Matrix complete. Triggering UniProt annotation.")
@@ -840,13 +840,13 @@ mod_prot_design_server <- function(id, workflow_data, experiment_paths, volumes 
       workflow_data$contrasts_tbl <- results$contrasts_tbl
       workflow_data$config_list <- results$config_list
       
-      # ✅ FIXED: Save contrasts_tbl to global environment immediately when workflow_data is updated
+      # [OK] FIXED: Save contrasts_tbl to global environment immediately when workflow_data is updated
       if (!is.null(results$contrasts_tbl)) {
         assign("contrasts_tbl", results$contrasts_tbl, envir = .GlobalEnv)
         logger::log_info("Updated contrasts_tbl in global environment from design builder.")
       }
       
-      # ✅ FIXED: Create global config_list for updateConfigParameter compatibility
+      # [OK] FIXED: Create global config_list for updateConfigParameter compatibility
       assign("config_list", workflow_data$config_list, envir = .GlobalEnv)
       logger::log_info("Updated global config_list for updateConfigParameter compatibility")
       
@@ -877,7 +877,7 @@ mod_prot_design_server <- function(id, workflow_data, experiment_paths, volumes 
               logger::log_info(paste("Writing contrasts to:", contrast_path))
               writeLines(results$contrasts_tbl$contrasts, contrast_path)
               
-              # ✅ FIXED: Save contrasts_tbl to global environment for DE analysis
+              # [OK] FIXED: Save contrasts_tbl to global environment for DE analysis
               assign("contrasts_tbl", results$contrasts_tbl, envir = .GlobalEnv)
               logger::log_info("Saved contrasts_tbl to global environment for DE analysis.")
           }

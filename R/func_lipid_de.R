@@ -142,12 +142,12 @@ runTestsContrastsMetab <- function(
     design_m <- stats::model.matrix(ff, mod_frame)
     logger::log_info(sprintf("   design_m dims = %d x %d", nrow(design_m), ncol(design_m)))
 
-    # [D66:START] ─────────────────────────
+    # [D66:START] -------------------------
     d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
     d66_log("  runTestsContrastsMetab - Model matrix created:")
     d66_log("    design_m levels (colnames) = ", paste(colnames(design_m), collapse = ", "))
     d66_log("    contrast_strings = ", paste(contrast_strings, collapse = ", "))
-    # [D66:END] ───────────────────────────
+    # [D66:END] ---------------------------
 
     # Subset data to match design matrix samples
     common_samples <- intersect(colnames(data), rownames(design_m))
@@ -158,11 +158,11 @@ runTestsContrastsMetab <- function(
     design_m <- design_m[common_samples, , drop = FALSE]
     logger::log_info(sprintf("   data_subset dims = %d x %d", nrow(data_subset), ncol(data_subset)))
 
-    # [D66:START] ─────────────────────────
+    # [D66:START] -------------------------
     d66_log("  About to call makeContrasts:")
     d66_log("    contrasts = ", paste(contrast_strings, collapse = ", "))
     d66_log("    levels = ", paste(colnames(design_m), collapse = ", "))
-    # [D66:END] ───────────────────────────
+    # [D66:END] ---------------------------
 
     # =====================================================================
     # VALIDATION: Check that contrast terms exist in design matrix levels
@@ -342,13 +342,13 @@ runLipidsDE <- function(
   eBayes_trend = TRUE,
   eBayes_robust = TRUE
 ) {
-    # [D66:START] ─────────────────────────
+    # [D66:START] -------------------------
     d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
     d66_log("=== ENTER runLipidsDE ===")
     d66_log("  formula_string = ", formula_string)
     d66_log("  contrasts_tbl columns = ", paste(colnames(contrasts_tbl), collapse = ", "))
     d66_log("  contrasts_tbl$contrasts = ", paste(contrasts_tbl$contrasts, collapse = ", "))
-    # [D66:END] ───────────────────────────
+    # [D66:END] ---------------------------
 
     logger::log_info("=== Starting runLipidsDE ===")
 
@@ -365,14 +365,14 @@ runLipidsDE <- function(
     lipid_id_col <- theObject@lipid_id_column
     annotation_col <- theObject@annotation_id_column
 
-    # [D66:START] ─────────────────────────
+    # [D66:START] -------------------------
     d66_log("  S4 slots extracted:")
     d66_log("    sample_id_col = ", sample_id_col)
     d66_log("    group_col = ", group_col)
     d66_log("    design_matrix columns = ", paste(colnames(design_matrix), collapse = ", "))
     d66_log("    design_matrix nrow = ", nrow(design_matrix))
     d66_log("    assay_list names = ", paste(names(assay_list), collapse = ", "))
-    # [D66:END] ───────────────────────────
+    # [D66:END] ---------------------------
 
     # Extract contrast strings
     if ("contrasts" %in% colnames(contrasts_tbl)) {
@@ -390,10 +390,10 @@ runLipidsDE <- function(
         contrast_strings
     }
 
-    # [D66:START] ─────────────────────────
+    # [D66:START] -------------------------
     d66_log("  contrast_strings = ", paste(contrast_strings, collapse = ", "))
     d66_log("  friendly_names = ", paste(friendly_names, collapse = ", "))
-    # [D66:END] ───────────────────────────
+    # [D66:END] ---------------------------
 
     assay_names <- names(assay_list)
     logger::log_info(sprintf(
@@ -762,12 +762,12 @@ generateMetabVolcanoPlotGlimma <- function(
   lipid_id_column = "lipid_id",
   annotation_column = "lipid_name"
 ) {
-    # [D66:START] ─────────────────────────
+    # [D66:START] -------------------------
     d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
     d66_log("=== ENTER generateMetabVolcanoPlotGlimma ===")
     d66_log("  selected_contrast = ", if (is.null(selected_contrast)) "NULL" else selected_contrast)
     d66_log("  selected_assay = ", if (is.null(selected_assay)) "NULL" else selected_assay)
-    # [D66:END] ───────────────────────────
+    # [D66:END] ---------------------------
 
     logger::log_info("--- Entering generateMetabVolcanoPlotGlimma ---")
     logger::log_info(sprintf("   selected_contrast = %s", selected_contrast))
@@ -795,7 +795,7 @@ generateMetabVolcanoPlotGlimma <- function(
     de_lipids_long <- de_results_list$de_lipids_long
     contrasts_results <- de_results_list$contrasts_results
 
-    # [D66:START] ─────────────────────────
+    # [D66:START] -------------------------
     d66_log("  de_lipids_long dims = ", nrow(de_lipids_long), " x ", ncol(de_lipids_long))
     d66_log("  de_lipids_long columns = ", paste(colnames(de_lipids_long), collapse = ", "))
     if (nrow(de_lipids_long) > 0 && "comparison" %in% colnames(de_lipids_long)) {
@@ -804,7 +804,7 @@ generateMetabVolcanoPlotGlimma <- function(
     if (nrow(de_lipids_long) > 0 && "friendly_name" %in% colnames(de_lipids_long)) {
         d66_log("  unique friendly_names = ", paste(unique(de_lipids_long$friendly_name), collapse = ", "))
     }
-    # [D66:END] ───────────────────────────
+    # [D66:END] ---------------------------
 
     # Extract comparison name (handle "=" format from full_format)
     comparison_to_search <- stringr::str_extract(selected_contrast, "^[^=]+")
@@ -856,10 +856,10 @@ generateMetabVolcanoPlotGlimma <- function(
 
     fit_obj <- contrasts_results[[fit_assay]]$fit.eb
 
-    # [D66:START] ─────────────────────────
+    # [D66:START] -------------------------
     d66_log("  fit_assay = ", fit_assay)
     d66_log("  fit_obj class = ", class(fit_obj)[1])
-    # [D66:END] ───────────────────────────
+    # [D66:END] ---------------------------
 
     # Find coefficient index
     # NOTE: coef_names contains the actual contrast strings (e.g., "groupTreatment-groupControl")
@@ -867,11 +867,11 @@ generateMetabVolcanoPlotGlimma <- function(
     # We need to get the actual contrast string from the data
     coef_names <- colnames(fit_obj$coefficients)
 
-    # [D66:START] ─────────────────────────
+    # [D66:START] -------------------------
     d66_log("  Looking for coefficient:")
     d66_log("    comparison_to_search (friendly) = ", comparison_to_search)
     d66_log("    coef_names (actual) = ", paste(coef_names, collapse = ", "))
-    # [D66:END] ───────────────────────────
+    # [D66:END] ---------------------------
 
     # First, try to find the actual contrast string from the filtered data
     # The 'comparison' column contains the actual limma contrast string
@@ -953,7 +953,7 @@ generateMetabVolcanoPlotGlimma <- function(
     rownames(dm) <- dm[[theObject@sample_id]]
     groups <- dm[sample_cols, theObject@group_id]
 
-    # [D66:START] ─────────────────────────
+    # [D66:START] -------------------------
     d66_log("  Preparing Glimma inputs:")
     d66_log("    counts_mat dims = ", nrow(counts_mat), " x ", ncol(counts_mat))
     d66_log("    counts_mat rownames (first 5) = ", paste(head(rownames(counts_mat), 5), collapse = ", "))
@@ -961,7 +961,7 @@ generateMetabVolcanoPlotGlimma <- function(
     d66_log("    volcano_tab nrow = ", nrow(volcano_tab))
     d66_log("    fit_obj nrow = ", nrow(fit_obj$coefficients))
     d66_log("    coef_index = ", coef_index)
-    # [D66:END] ───────────────────────────
+    # [D66:END] ---------------------------
 
     # Generate Glimma widget
     tryCatch(

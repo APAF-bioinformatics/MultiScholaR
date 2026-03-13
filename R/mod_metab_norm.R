@@ -329,7 +329,7 @@ mod_metab_norm_ui <- function(id) {
                         )
 
                         # --------------------------------------------------------
-                        # Tab 3: PCA (STATIC 2-row × 3-column grid)
+                        # Tab 3: PCA (STATIC 2-row x 3-column grid)
                         # --------------------------------------------------------
                         , shiny::tabPanel(
                             "PCA"
@@ -391,7 +391,7 @@ mod_metab_norm_ui <- function(id) {
                         )
 
                         # --------------------------------------------------------
-                        # Tab 4: Density (STATIC 2-row × 3-column grid)
+                        # Tab 4: Density (STATIC 2-row x 3-column grid)
                         # --------------------------------------------------------
                         , shiny::tabPanel(
                             "Density"
@@ -453,7 +453,7 @@ mod_metab_norm_ui <- function(id) {
                         )
 
                         # --------------------------------------------------------
-                        # Tab 5: RLE (STATIC 2-row × 3-column grid)
+                        # Tab 5: RLE (STATIC 2-row x 3-column grid)
                         # --------------------------------------------------------
                         , shiny::tabPanel(
                             "RLE"
@@ -515,7 +515,7 @@ mod_metab_norm_ui <- function(id) {
                         )
 
                         # --------------------------------------------------------
-                        # Tab 6: Correlation Heatmap (STATIC 2-row × 3-column grid)
+                        # Tab 6: Correlation Heatmap (STATIC 2-row x 3-column grid)
                         # --------------------------------------------------------
                         , shiny::tabPanel(
                             "Correlation"

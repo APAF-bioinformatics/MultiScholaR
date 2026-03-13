@@ -78,7 +78,7 @@ mod_prot_qc_peptide_protein_server <- function(id, workflow_data, omic_type, exp
         
         logger::log_info(sprintf("QC Step: Applying protein peptide count filter (min: %s)", input$min_peptides_per_protein))
         
-        # ✅ FIXED: Use updateConfigParameter to sync S4 object AND global config_list
+        # [OK] FIXED: Use updateConfigParameter to sync S4 object AND global config_list
         # Use config.ini parameter names, not function parameter names
         current_s4 <- updateConfigParameter(
           theObject = current_s4,

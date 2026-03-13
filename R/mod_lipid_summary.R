@@ -133,7 +133,7 @@ mod_lipid_summary_server <- function(id, project_dirs, omic_type = "lipidomics",
 
             # Use just omic_type as key
             if (!omic_type %in% names(project_dirs)) {
-                return("⚠️ Project directories not available")
+                return("[WARNING] Project directories not available")
             }
 
             # Check for lipidomics report template
@@ -146,9 +146,9 @@ mod_lipid_summary_server <- function(id, project_dirs, omic_type = "lipidomics",
             lipid_template <- file.path(template_dir, "lipidomics_report.rmd")
 
             if (file.exists(lipid_template)) {
-                "Template: Lipidomics Report ✅"
+                "Template: Lipidomics Report [OK]"
             } else {
-                "⚠️ Report template will be downloaded when generating report"
+                "[WARNING] Report template will be downloaded when generating report"
             }
         })
 
@@ -254,7 +254,7 @@ mod_lipid_summary_server <- function(id, project_dirs, omic_type = "lipidomics",
                           "\nFile:", study_params_file,
                           "\nSource: Final S4 object @args + config_list",
                           "\nIntegration Object:", s4_filename,
-                          "\nStatus: Parameters saved ✅")
+                          "\nStatus: Parameters saved [OK]")
                 })
 
             }, error = function(e) {
@@ -369,7 +369,7 @@ mod_lipid_summary_server <- function(id, project_dirs, omic_type = "lipidomics",
 
                     values$files_copied <- TRUE
 
-                    output$copy_status <- shiny::renderText("Files copied to publication directory successfully ✅")
+                    output$copy_status <- shiny::renderText("Files copied to publication directory successfully [OK]")
                     shiny::showNotification("Publication files copied", type = "message")
 
                     # Update session summary
@@ -377,7 +377,7 @@ mod_lipid_summary_server <- function(id, project_dirs, omic_type = "lipidomics",
                         paste("Workflow args created for:", input$experiment_label,
                               "\nDescription:", input$description,
                               "\nTimestamp:", Sys.time(),
-                              "\nStatus: Arguments saved ✅, Files copied ✅")
+                              "\nStatus: Arguments saved [OK], Files copied [OK]")
                     })
 
                 }, error = function(e) {
@@ -500,7 +500,7 @@ mod_lipid_summary_server <- function(id, project_dirs, omic_type = "lipidomics",
                             paste("Workflow args created for:", input$experiment_label,
                                   "\nDescription:", input$description,
                                   "\nTimestamp:", Sys.time(),
-                                  "\nStatus: Arguments saved ✅, Files copied ✅, Report generated ✅",
+                                  "\nStatus: Arguments saved [OK], Files copied [OK], Report generated [OK]",
                                   "\nReport location:", rendered_path)
                         })
 
@@ -559,7 +559,7 @@ mod_lipid_summary_server <- function(id, project_dirs, omic_type = "lipidomics",
                         paste("Workflow args created for:", input$experiment_label,
                               "\nDescription:", input$description,
                               "\nTimestamp:", Sys.time(),
-                              "\nStatus: Arguments saved ✅, Files copied ✅, Report generated ✅, GitHub pushed ✅")
+                              "\nStatus: Arguments saved [OK], Files copied [OK], Report generated [OK], GitHub pushed [OK]")
                     })
 
                 }, error = function(e) {

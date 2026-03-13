@@ -513,11 +513,11 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
         # LOAD FILTERED SESSION
         # ================================================================
         shiny::observeEvent(input$load_filtered_session, {
-            # [D66:START] ─────────────────────────
+            # [D66:START] -------------------------
             d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
-            d66_log("─── ENTER load_filtered_session observer ───")
+            d66_log("--- ENTER load_filtered_session observer ---")
             .d66_start <- Sys.time()
-            # [D66:END] ───────────────────────────
+            # [D66:END] ---------------------------
 
             logger::log_info("=== LOAD FILTERED SESSION BUTTON CLICKED ===")
 
@@ -763,8 +763,8 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
 
                     # [D66:START]
                     d66_log(
-                        "─── EXIT load_filtered_session (",
-                        round(difftime(Sys.time(), .d66_start, units = "secs"), 3), "s) ─── SUCCESS"
+                        "--- EXIT load_filtered_session (",
+                        round(difftime(Sys.time(), .d66_start, units = "secs"), 3), "s) --- SUCCESS"
                     )
                     # [D66:END]
                 },
@@ -772,7 +772,7 @@ mod_lipid_de_server <- function(id, workflow_data, experiment_paths, omic_type, 
                     # [D66:START]
                     d66_log("  FATAL ERROR: ", e$message)
                     d66_log("  ERROR CALL: ", deparse(e$call))
-                    d66_log("─── EXIT load_filtered_session ─── FAILED")
+                    d66_log("--- EXIT load_filtered_session --- FAILED")
                     # [D66:END]
                     logger::log_error(sprintf("   Error loading session: %s", e$message))
                     shiny::removeNotification("loading_session")

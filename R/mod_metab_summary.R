@@ -133,7 +133,7 @@ mod_metab_summary_server <- function(id, project_dirs, omic_type = "metabolomics
 
             # Use just omic_type as key
             if (!omic_type %in% names(project_dirs)) {
-                return("⚠️ Project directories not available")
+                return("[WARNING] Project directories not available")
             }
 
             # Check for metabolomics report template
@@ -146,9 +146,9 @@ mod_metab_summary_server <- function(id, project_dirs, omic_type = "metabolomics
             metab_template <- file.path(template_dir, "metabolomics_report.rmd")
 
             if (file.exists(metab_template)) {
-                "Template: Metabolomics Report ✅"
+                "Template: Metabolomics Report [OK]"
             } else {
-                "⚠️ Report template will be downloaded when generating report"
+                "[WARNING] Report template will be downloaded when generating report"
             }
         })
 
@@ -254,7 +254,7 @@ mod_metab_summary_server <- function(id, project_dirs, omic_type = "metabolomics
                           "\nFile:", study_params_file,
                           "\nSource: Final S4 object @args + config_list",
                           "\nIntegration Object:", s4_filename,
-                          "\nStatus: Parameters saved ✅")
+                          "\nStatus: Parameters saved [OK]")
                 })
 
             }, error = function(e) {
@@ -369,7 +369,7 @@ mod_metab_summary_server <- function(id, project_dirs, omic_type = "metabolomics
 
                     values$files_copied <- TRUE
 
-                    output$copy_status <- shiny::renderText("Files copied to publication directory successfully ✅")
+                    output$copy_status <- shiny::renderText("Files copied to publication directory successfully [OK]")
                     shiny::showNotification("Publication files copied", type = "message")
 
                     # Update session summary
@@ -377,7 +377,7 @@ mod_metab_summary_server <- function(id, project_dirs, omic_type = "metabolomics
                         paste("Workflow args created for:", input$experiment_label,
                               "\nDescription:", input$description,
                               "\nTimestamp:", Sys.time(),
-                              "\nStatus: Arguments saved ✅, Files copied ✅")
+                              "\nStatus: Arguments saved [OK], Files copied [OK]")
                     })
 
                 }, error = function(e) {
@@ -500,7 +500,7 @@ mod_metab_summary_server <- function(id, project_dirs, omic_type = "metabolomics
                             paste("Workflow args created for:", input$experiment_label,
                                   "\nDescription:", input$description,
                                   "\nTimestamp:", Sys.time(),
-                                  "\nStatus: Arguments saved ✅, Files copied ✅, Report generated ✅",
+                                  "\nStatus: Arguments saved [OK], Files copied [OK], Report generated [OK]",
                                   "\nReport location:", rendered_path)
                         })
 
@@ -559,7 +559,7 @@ mod_metab_summary_server <- function(id, project_dirs, omic_type = "metabolomics
                         paste("Workflow args created for:", input$experiment_label,
                               "\nDescription:", input$description,
                               "\nTimestamp:", Sys.time(),
-                              "\nStatus: Arguments saved ✅, Files copied ✅, Report generated ✅, GitHub pushed ✅")
+                              "\nStatus: Arguments saved [OK], Files copied [OK], Report generated [OK], GitHub pushed [OK]")
                     })
 
                 }, error = function(e) {

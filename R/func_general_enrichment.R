@@ -1710,7 +1710,7 @@ enrichedGoTermBarPlot <- function( input_table, output_dir,
 # ----------------------------------------------------------------------------
 #'@title Create a word frequency distribution table for Word Cloud generation.
 #'@description Create a word frequency distribution table for Word Cloud generation.
-#'Based on article by Céline Van den Rul, How to Generate Word Clouds in R, Simple Steps on How and When to Use Them,
+#'Based on article by Celine Van den Rul, How to Generate Word Clouds in R, Simple Steps on How and When to Use Them,
 #' https://towardsdatascience.com/create-a-word-cloud-with-r-bde3e7422e8a (accessed 7th November 2022)
 #'@export
 #'@param text_list, a vector of text (e.g. a list of GO terms name)
@@ -2841,34 +2841,34 @@ perform_enrichment <- function(data_subset,
   message(sprintf("      Data State (protein_ids): Class = %s", class(protein_ids)))
   message(sprintf("      Data State (protein_ids): First 5 values = %s", paste(head(protein_ids, 5), collapse = ", ")))
   
-  # ✅ DEBUG66: Comprehensive NA analysis
+  # [OK] DEBUG66: Comprehensive NA analysis
   na_count_initial <- sum(is.na(protein_ids))
   empty_count_initial <- sum(protein_ids == "", na.rm = TRUE)
   valid_count_initial <- length(protein_ids) - na_count_initial - empty_count_initial
   
-  message(sprintf("      ╔══════════════════════════════════════════════════════════════════╗"))
-  message(sprintf("      ║ DEBUG66: PROTEIN ID AVAILABILITY ANALYSIS                       ║"))
-  message(sprintf("      ╠══════════════════════════════════════════════════════════════════╣"))
-  message(sprintf("      ║ Total proteins in data_subset:     %5d (100.0%%)                 ║", length(protein_ids)))
-  message(sprintf("      ║ NA values in %s column:   %5d (%5.1f%%)                 ║", 
+  message(sprintf("      +==================================================================+"))
+  message(sprintf("      | DEBUG66: PROTEIN ID AVAILABILITY ANALYSIS                       |"))
+  message(sprintf("      +==================================================================+"))
+  message(sprintf("      | Total proteins in data_subset:     %5d (100.0%%)                 |", length(protein_ids)))
+  message(sprintf("      | NA values in %s column:   %5d (%5.1f%%)                 |", 
                  protein_id_column, na_count_initial, (na_count_initial/length(protein_ids))*100))
-  message(sprintf("      ║ Empty string values:                %5d (%5.1f%%)                 ║", 
+  message(sprintf("      | Empty string values:                %5d (%5.1f%%)                 |", 
                  empty_count_initial, (empty_count_initial/length(protein_ids))*100))
-  message(sprintf("      ║ Valid (non-NA, non-empty) values:  %5d (%5.1f%%)                 ║", 
+  message(sprintf("      | Valid (non-NA, non-empty) values:  %5d (%5.1f%%)                 |", 
                  valid_count_initial, (valid_count_initial/length(protein_ids))*100))
-  message(sprintf("      ╚══════════════════════════════════════════════════════════════════╝"))
+  message(sprintf("      +==================================================================+"))
 
   if (any(is.na(protein_ids))) {
     na_count <- sum(is.na(protein_ids))
-    message(sprintf("   ⚠️  WARNING: Filtering out %d proteins with NA %s values!", na_count, protein_id_column))
-    message(sprintf("   ⚠️  %d proteins will be EXCLUDED from enrichment analysis!", na_count))
+    message(sprintf("   [WARNING]  WARNING: Filtering out %d proteins with NA %s values!", na_count, protein_id_column))
+    message(sprintf("   [WARNING]  %d proteins will be EXCLUDED from enrichment analysis!", na_count))
     
     if (na_count > (length(protein_ids) * 0.5)) {
-      message("   ╔═══════════════════════════════════════════════════════════════════════════╗")
-      message("   ║ ⚠️  CRITICAL WARNING: > 50% of proteins have NA gene names!              ║")
-      message("   ║ Consider using 'Protein.Ids' instead of 'gene_name' for enrichment!      ║")
-      message("   ║ OR ensure gene names are properly annotated in your data.                ║")
-      message("   ╚═══════════════════════════════════════════════════════════════════════════╝")
+      message("   +===========================================================================+")
+      message("   | [WARNING]  CRITICAL WARNING: > 50% of proteins have NA gene names!              |")
+      message("   | Consider using 'Protein.Ids' instead of 'gene_name' for enrichment!      |")
+      message("   | OR ensure gene names are properly annotated in your data.                |")
+      message("   +===========================================================================+")
     }
     
     warning(paste("NA values found in", protein_id_column, "column"))
@@ -3189,7 +3189,7 @@ processEnrichments <- function(de_results,
         # Split data into up/down regulated
         message(sprintf("Total proteins before filtering: %d", nrow(de_data)))
         
-        # ✅ DIAGNOSTIC: Check protein_id_column and data structure
+        # [OK] DIAGNOSTIC: Check protein_id_column and data structure
         message(sprintf("DEBUG: protein_id_column = '%s'", protein_id_column))
         message(sprintf("DEBUG: Available columns in de_data: %s", paste(names(de_data), collapse = ", ")))
         
@@ -3207,12 +3207,12 @@ processEnrichments <- function(de_results,
                  message("   processEnrichments Step: About to apply protein ID splitting and FDR filtering...")
          message(sprintf("      Data State (de_data Before Modify): Dims=%d rows, %d cols. First 5 IDs: %s", nrow(de_data), ncol(de_data), paste(head(de_data[[protein_id_column]], 5), collapse=", ")))
          
-         # ✅ DEBUG66: Check NA values BEFORE filtering
+         # [OK] DEBUG66: Check NA values BEFORE filtering
          na_count_before <- sum(is.na(de_data[[protein_id_column]]))
          message(sprintf("      DEBUG66: NA values in %s column BEFORE filtering: %d out of %d (%.1f%%)", 
                         protein_id_column, na_count_before, nrow(de_data), (na_count_before/nrow(de_data))*100))
          
-         # ✅ DEBUG66: Check how many pass q-value filter (before NA filter)
+         # [OK] DEBUG66: Check how many pass q-value filter (before NA filter)
          passes_q_filter <- de_data |> dplyr::filter(.data$fdr_qvalue < q_cutoff)
          message(sprintf("      DEBUG66: Proteins passing q-value filter (< %.3f): %d", q_cutoff, nrow(passes_q_filter)))
          if (nrow(passes_q_filter) > 0) {
@@ -3229,7 +3229,7 @@ processEnrichments <- function(de_results,
             ) |>
            dplyr::filter(.data$fdr_qvalue < q_cutoff)
          
-         # ✅ DEBUG66: Check if NAs are being filtered somewhere
+         # [OK] DEBUG66: Check if NAs are being filtered somewhere
          na_count_after_q <- sum(is.na(subset_sig[[protein_id_column]]))
          message(sprintf("      DEBUG66: NA values in %s AFTER q-filter (before any NA removal): %d out of %d",
                         protein_id_column, na_count_after_q, nrow(subset_sig)))
@@ -3246,7 +3246,7 @@ processEnrichments <- function(de_results,
 
         message(sprintf("Proteins passing q-value cutoff (%.3f): %d", q_cutoff, nrow(subset_sig)))
         
-        # ✅ DEBUG 66: Extensive logging for subset_sig
+        # [OK] DEBUG 66: Extensive logging for subset_sig
         message("      Data State (subset_sig) Structure:")
         utils::str(subset_sig)
         if (nrow(subset_sig) > 0) {
@@ -3261,7 +3261,7 @@ processEnrichments <- function(de_results,
         # No longer need subset_for_enrichment, as subset_sig is already filtered
         message(sprintf("Proteins available for enrichment: %d", nrow(subset_sig)))
         
-        # ✅ DEBUG 66: Check subset_for_enrichment
+        # [OK] DEBUG 66: Check subset_for_enrichment
         if (nrow(subset_sig) == 0) {
           message("      Data State (subset_sig): NO PROTEINS PASS ENRICHMENT CUTOFF!")
         }
@@ -3270,7 +3270,7 @@ processEnrichments <- function(de_results,
           dplyr::filter(.data$log2FC > up_cutoff)
         message(sprintf("Up-regulated proteins (log2FC > %g): %d", up_cutoff, nrow(up_matrix)))
         
-        # ✅ DEBUG66: Check NA values in up_matrix
+        # [OK] DEBUG66: Check NA values in up_matrix
         if (nrow(up_matrix) > 0) {
           na_in_up <- sum(is.na(up_matrix[[protein_id_column]]))
           message(sprintf("      DEBUG66: NA values in %s for UP-regulated proteins: %d out of %d (%.1f%%)",
@@ -3279,7 +3279,7 @@ processEnrichments <- function(de_results,
                          paste(head(up_matrix[[protein_id_column]], 10), collapse = ", ")))
         }
         
-        # ✅ DEBUG 66: Check up_matrix details
+        # [OK] DEBUG 66: Check up_matrix details
         if (nrow(up_matrix) > 0) {
           message("      Data State (up_matrix) Structure:")
           utils::str(up_matrix)
@@ -3297,7 +3297,7 @@ processEnrichments <- function(de_results,
           dplyr::filter(.data$log2FC < -down_cutoff)
         message(sprintf("Down-regulated proteins (log2FC < -%g): %d", down_cutoff, nrow(down_matrix)))
         
-        # ✅ DEBUG66: Check NA values in down_matrix
+        # [OK] DEBUG66: Check NA values in down_matrix
         if (nrow(down_matrix) > 0) {
           na_in_down <- sum(is.na(down_matrix[[protein_id_column]]))
           message(sprintf("      DEBUG66: NA values in %s for DOWN-regulated proteins: %d out of %d (%.1f%%)",
@@ -3306,7 +3306,7 @@ processEnrichments <- function(de_results,
                          paste(head(down_matrix[[protein_id_column]], 10), collapse = ", ")))
         }
         
-        # ✅ DEBUG 66: Check down_matrix details
+        # [OK] DEBUG 66: Check down_matrix details
         if (nrow(down_matrix) > 0) {
           message("      Data State (down_matrix) Structure:")
           utils::str(down_matrix)
@@ -3326,7 +3326,7 @@ processEnrichments <- function(de_results,
 
         message(sprintf("Using %d unique proteins as background for enrichment analysis", length(custom_bg)))
         
-        # ✅ DEBUG 66: Check background details
+        # [OK] DEBUG 66: Check background details
         message("      Data State (custom_bg): First 5 background proteins:")
         message(paste(head(custom_bg, 5), collapse = ", "))
 
@@ -3334,7 +3334,7 @@ processEnrichments <- function(de_results,
         list(
           up = tryCatch({
             if(nrow(up_matrix) > 0) {
-              # ✅ DEBUG 66: Log call to perform_enrichment for up-regulated
+              # [OK] DEBUG 66: Log call to perform_enrichment for up-regulated
               message("   processEnrichments Step: CALLING perform_enrichment for UP-REGULATED proteins...")
               message(sprintf("      About to analyze %d up-regulated proteins", nrow(up_matrix)))
               
@@ -3356,7 +3356,7 @@ processEnrichments <- function(de_results,
                 correction_method = correction_method
               )
               
-              # ✅ DEBUG 66: Log result from perform_enrichment
+              # [OK] DEBUG 66: Log result from perform_enrichment
               message("   processEnrichments Step: UP-REGULATED enrichment completed")
               message("      Data State (up_result): Checking perform_enrichment result...")
               
@@ -3392,7 +3392,7 @@ processEnrichments <- function(de_results,
 
           down = tryCatch({
             if(nrow(down_matrix) > 0) {
-              # ✅ DEBUG 66: Log call to perform_enrichment for down-regulated
+              # [OK] DEBUG 66: Log call to perform_enrichment for down-regulated
               message("   processEnrichments Step: CALLING perform_enrichment for DOWN-REGULATED proteins...")
               message(sprintf("      About to analyze %d down-regulated proteins", nrow(down_matrix)))
               
@@ -3414,7 +3414,7 @@ processEnrichments <- function(de_results,
                 correction_method = correction_method
               )
               
-              # ✅ DEBUG 66: Log result from perform_enrichment
+              # [OK] DEBUG 66: Log result from perform_enrichment
               message("   processEnrichments Step: DOWN-REGULATED enrichment completed")
               message("      Data State (down_result): Checking perform_enrichment result...")
               

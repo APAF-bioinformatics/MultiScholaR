@@ -208,7 +208,7 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
                     , "Per-Assay Results:"
                     , paste(sapply(seq_len(nrow(stats_df)), function(i) {
                         sprintf(
-                            "  %s: %d → %d (removed %d, %.1f%% retained)"
+                            "  %s: %d -> %d (removed %d, %.1f%% retained)"
                             , stats_df$Assay[i]
                             , stats_df$Original[i]
                             , stats_df$Filtered[i]
@@ -217,7 +217,7 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
                         )
                     }), collapse = "\n")
                     , ""
-                    , sprintf("Total: %d → %d metabolites (removed %d)", total_original, total_filtered, total_removed)
+                    , sprintf("Total: %d -> %d metabolites (removed %d)", total_original, total_filtered, total_removed)
                     , ""
                     , "State saved as: 'metab_intensity_filtered'"
                     , sep = "\n"
