@@ -132,6 +132,10 @@ mod_prot_qc_peptide_impute_server <- function(id, workflow_data, omic_type, expe
           description = "Applied missing value imputation using technical replicates"
         )
         
+        # --- TESTTHAT CHECKPOINT CP02 (see test-prot-02-qc-filtering.R) ---
+        # .capture_checkpoint(imputed_s4, "cp02", "qc_filtered_peptide")
+        # --- END CP02 ---
+        
         # Generate summary
         protein_count <- imputed_s4@peptide_data |>
           dplyr::distinct(Protein.Ids) |>

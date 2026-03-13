@@ -1398,6 +1398,10 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
 
           da_data$da_results_list <- combined_results
           da_data$analysis_complete <- TRUE
+          
+          # --- TESTTHAT CHECKPOINT CP07 (see test-prot-07-da-analysis.R) ---
+          # .capture_checkpoint(combined_results, "cp07", "da_results")
+          # --- END CP07 ---
 
           # Check for qvalue() failures and show prominent warning notification
           all_qvalue_warnings <- da_results_list |>
@@ -1579,17 +1583,32 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
 }
 
 # Handler 4: Volcano Plot Rendering
-da_server_volcano_render_handler <- function(input, output, session, ns, da_data) {
-  # Render Interactive Volcano Plot (Glimma)
-  output$volcano_plot_glimma <- shiny::renderUI({
+da_server_volcano_render_handler <- function(input, output, session, ns, da_data, experiment_paths) {
+  # --- TESTTHAT CHECKPOINT CP08 (see test-prot-08-volcano.R) ---
+  # Capture in a separate observer so we don't block the UI rendering
+  shiny::observeEvent(list(input$volcano_contrast, da_data$da_results_list), {
     shiny::req(input$volcano_contrast, da_data$da_results_list)
+    
+    # .capture_checkpoint(list(
+    #   da_results_list = da_data$da_results_list,
+    #   selected_contrast = input$volcano_contrast,
+    #   da_q_val_thresh = input$da_q_val_thresh,
+    #   args_row_id = da_data$current_s4_object@protein_id_column
+    # ), "cp08", "volcano_input")
+  }, ignoreInit = TRUE)
+  # --- END CP08 ---
 
+  # Render Interactive Volcano Plot (Glimma)
+  output$volcano_glimma <- shiny::renderUI({
+    shiny::req(input$volcano_contrast, da_data$da_results_list)
+    
     # Call the dedicated Glimma generation function from func_prot_da.R
     generateProtDAVolcanoPlotGlimma(
       da_results_list = da_data$da_results_list,
       selected_contrast = input$volcano_contrast,
       da_q_val_thresh = input$da_q_val_thresh,
-      treat_lfc_cutoff = input$treat_lfc_cutoff
+      args_row_id = da_data$current_s4_object@protein_id_column,
+      output_dir = experiment_paths$da_output_dir
     )
   })
 
@@ -1602,15 +1621,44 @@ da_server_volcano_render_handler <- function(input, output, session, ns, da_data
       da_results_list = da_data$da_results_list,
       selected_contrast = input$volcano_contrast,
       da_q_val_thresh = input$da_q_val_thresh,
-      treat_lfc_cutoff = input$treat_lfc_cutoff,
+      lfc_threshold = input$treat_lfc_cutoff,
       show_labels = input$volcano_show_labels,
-      label_top_n = input$volcano_label_top_n
+      n_labels = input$volcano_label_top_n
     )
   })
 }
 
 # Handler 5: Heatmap Rendering
 da_server_heatmap_render_handler <- function(input, output, session, ns, da_data, experiment_paths) {
+  # --- TESTTHAT CHECKPOINT CP09 (see test-prot-09-heatmap.R) ---
+  shiny::observeEvent(list(input$heatmap_contrast, da_data$da_results_list), {
+    shiny::req(input$heatmap_contrast, da_data$da_results_list)
+    
+    plot_data_structure <- list(
+      da_proteins_long = da_data$da_results_list$da_proteins_long,
+      theObject = da_data$da_results_list$theObject
+    )
+    
+    # .capture_checkpoint(list(
+    #   da_results_list = plot_data_structure,
+    #   selected_contrast = input$heatmap_contrast,
+    #   top_n_genes = input$heatmap_top_n,
+    #   clustering_method = input$heatmap_cluster_method,
+    #   distance_method = input$heatmap_distance_method,
+    #   cluster_rows = input$heatmap_clustering %in% c("both", "row"),
+    #   cluster_cols = input$heatmap_clustering %in% c("both", "column"),
+    #   scale_data = input$heatmap_scaling,
+    #   color_scheme = input$heatmap_color_scheme,
+    #   show_gene_names = input$heatmap_show_labels,
+    #   da_q_val_thresh = input$da_q_val_thresh,
+    #   tree_cut_method = input$heatmap_tree_cut_method,
+    #   n_clusters = input$heatmap_n_clusters,
+    #   cut_height = input$heatmap_cut_height,
+    #   min_cluster_size = input$heatmap_min_cluster_size
+    # ), "cp09", "heatmap_input")
+  }, ignoreInit = TRUE)
+  # --- END CP09 ---
+
   output$heatmap_plot <- shiny::renderPlot({
     shiny::req(input$heatmap_contrast, da_data$da_results_list)
 
@@ -1625,7 +1673,7 @@ da_server_heatmap_render_handler <- function(input, output, session, ns, da_data
 
         # The heatmap contrast input should now match the comparison column in da_proteins_long
         cat(sprintf("   HEATMAP: Looking for contrast = %s\n", input$heatmap_contrast))
-
+        
         heatmap_result <- generateProtDAHeatmap(
           da_results_list = plot_data_structure,
           selected_contrast = input$heatmap_contrast,
@@ -1927,7 +1975,7 @@ mod_prot_da_server <- function(id, workflow_data, experiment_paths, omic_type, e
     da_server_run_analysis_handler(input, output, session, ns, da_data, workflow_data, experiment_paths)
 
     # Handler 4: Volcano Plot Rendering (Restored)
-    da_server_volcano_render_handler(input, output, session, ns, da_data)
+    da_server_volcano_render_handler(input, output, session, ns, da_data, experiment_paths)
 
     # Handler 5: Heatmap Rendering
     da_server_heatmap_render_handler(input, output, session, ns, da_data, experiment_paths)

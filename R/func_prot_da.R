@@ -188,9 +188,43 @@ generateProtDAVolcanoPlotGlimma <- function(
   uniprot_id_column = "Entry",
   gene_names_column = "gene_names",
   display_columns = c("best_uniprot_acc"),
+  output_dir = NULL,
   ...
 ) {
   logger::log_info("--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---")
+
+  # --- Semi-automated Test Capture Logic ---
+  if (getOption("multischolar.capture_glimma_data", FALSE)) {
+    # tryCatch({
+    #   # Use provided output_dir or fallback to a temp directory
+    #   base_dir <- if (!is.null(output_dir)) output_dir else tempdir()
+    #   capture_dir <- file.path(base_dir, "glimma_fixtures")
+    #   
+    #   if (!dir.exists(capture_dir)) dir.create(capture_dir, recursive = TRUE)
+    #   
+    #   timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
+    #   filename <- file.path(capture_dir, paste0("glimma_snapshot_", timestamp, ".rds"))
+    #   
+    #   logger::log_info(sprintf("   Capturing test data to: %s", filename))
+    #   saveRDS(list(
+    #     da_results_list = da_results_list,
+    #     selected_contrast = selected_contrast,
+    #     uniprot_tbl = uniprot_tbl,
+    #     args_row_id = args_row_id,
+    #     fdr_column = fdr_column,
+    #     raw_p_value_column = raw_p_value_column,
+    #     log2fc_column = log2fc_column,
+    #     da_q_val_thresh = da_q_val_thresh,
+    #     uniprot_id_column = uniprot_id_column,
+    #     gene_names_column = gene_names_column,
+    #     display_columns = display_columns
+    #   ), file = filename)
+    # }, error = function(e) {
+    #   logger::log_warn(sprintf("   Failed to capture test data: %s", conditionMessage(e)))
+    # })
+  }
+  # ------------------------------------------
+
   logger::log_info(sprintf("   selected_contrast = %s", selected_contrast))
 
   if (is.null(da_results_list) || is.null(da_results_list$da_proteins_long)) {
@@ -469,7 +503,18 @@ generateProtDAVolcanoPlotGlimma <- function(
     groups = groups_vec,
     transform.counts = "none",
     status.cols = c("#1052bd", "silver", "#cc212f"),
-    sample.cols = if (!is.null(counts_mat)) rep("#1f77b4", ncol(counts_mat)) else NULL,
+    sample.cols = if (!is.null(groups_vec)) {
+      unique_groups <- unique(groups_vec)
+      group_colors <- stats::setNames(
+        grDevices::hcl.colors(length(unique_groups), "Set2"), 
+        unique_groups
+      )
+      group_colors[groups_vec]
+    } else if (!is.null(counts_mat)) {
+      rep("#1f77b4", ncol(counts_mat))
+    } else {
+      NULL
+    },
     main = paste("Interactive Volcano Plot:", comparison_to_search)
   )
 
@@ -4657,3 +4702,22 @@ setMethod(
     return(return_object_list)
   }
 )
+
+# ----------------------------------------------------------------------------
+# Helper functions for Semi-automated Testing
+# ----------------------------------------------------------------------------
+
+#' Start Glimma Data Capture
+#' @export
+start_glimma_capture <- function() {
+  options(multischolar.capture_glimma_data = TRUE)
+  message("MultiScholaR: Glimma data capture ENABLED.")
+  message("Snapshots will be saved to: tests/testdata/glimma_fixtures/")
+}
+
+#' Stop Glimma Data Capture
+#' @export
+stop_glimma_capture <- function() {
+  options(multischolar.capture_glimma_data = FALSE)
+  message("MultiScholaR: Glimma data capture DISABLED.")
+}

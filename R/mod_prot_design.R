@@ -694,6 +694,11 @@ mod_prot_design_server <- function(id, workflow_data, experiment_paths, volumes 
             config_object = workflow_data$config_list,
             description = description
         )
+        
+        # --- TESTTHAT CHECKPOINT CP04 (see test-prot-04-design.R) ---
+        # .capture_checkpoint(s4_object, "cp04", "design_matrix")
+        # --- END CP04 ---
+        
         logger::log_info(sprintf("Import: S4 object saved to R6 state manager as '%s'", state_name))
         logger::log_info("Import: This state is now ACTIVE - QC modules will read from it")
         logger::log_info("Import: User can proceed to QC -> Accession Cleanup")
@@ -1002,6 +1007,10 @@ mod_prot_design_server <- function(id, workflow_data, experiment_paths, volumes 
               config_object = workflow_data$config_list,
               description = description
           )
+          
+          # --- TESTTHAT CHECKPOINT CP04 (see test-prot-04-design.R) ---
+          # .capture_checkpoint(s4_object, "cp04", "design_matrix")
+          # --- END CP04 ---
           
           # --- TRIGGER UNIPROT ANNOTATION ---
           log_info("Design Matrix complete. Triggering UniProt annotation.")

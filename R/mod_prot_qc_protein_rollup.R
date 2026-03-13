@@ -153,6 +153,10 @@ mod_prot_qc_protein_rollup_server <- function(id, workflow_data, experiment_path
           description = "IQ protein rollup completed and ProteinQuantitativeData S4 object created"
         )
         
+        # --- TESTTHAT CHECKPOINT CP03 (see test-prot-03-rollup.R) ---
+        # .capture_checkpoint(protein_obj, "cp03", "rolled_up_protein")
+        # --- END CP03 ---
+        
         # Generate summary
         protein_count <- protein_obj@protein_quant_table |>
           dplyr::distinct(Protein.Ids) |>

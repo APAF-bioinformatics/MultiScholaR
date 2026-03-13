@@ -1053,6 +1053,18 @@ generateMetabDAVolcanoPlotGlimma <- function(
                 ),
                 main = paste("Volcano Plot:", selected_contrast),
                 transform.counts = "none",
+                sample.cols = if (!is.null(groups)) {
+                  unique_groups <- unique(groups)
+                  group_colors <- stats::setNames(
+                    grDevices::hcl.colors(length(unique_groups), "Set2"), 
+                    unique_groups
+                  )
+                  group_colors[groups]
+                } else if (!is.null(counts_mat)) {
+                  rep("#1f77b4", ncol(counts_mat))
+                } else {
+                  NULL
+                },
                 html = NULL
             )
 

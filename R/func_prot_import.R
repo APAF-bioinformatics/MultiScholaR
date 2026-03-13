@@ -1229,8 +1229,8 @@ analyzeOrganismDistribution <- function(protein_ids, organism_mapping) {
   
   # Clean accessions (remove isoform numbers for matching)
   clean_accession <- function(acc) {
-    # Remove isoform suffix (e.g., P12345-2 -> P12345)
-    sub("-\\d+$", "", acc)
+    # [OK] REFACTORED: Use centralized UniProt normalization
+    normalizeUniprotAccession(acc, remove_isoform = TRUE)
   }
   
   # Create lookup table with cleaned accessions

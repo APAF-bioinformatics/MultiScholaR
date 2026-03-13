@@ -1364,6 +1364,11 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
             
             normalized_s4 <- normaliseBetweenSamples(current_s4, normalisation_method = input$norm_method)
             norm_data$normalized_protein_obj <- normalized_s4
+            
+            # --- TESTTHAT CHECKPOINT CP05 (see test-prot-05-normalisation.R) ---
+            # .capture_checkpoint(normalized_s4, "cp05", "normalised")
+            # --- END CP05 ---
+            
             message("*** STEP 1: Between-samples normalization completed ***")
             
             # Save post-normalization protein matrix (before RUV)
@@ -1679,6 +1684,10 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
               ruv_number_k = ruv_k,
               ctrl = control_genes_index
             )
+            
+            # --- TESTTHAT CHECKPOINT CP06 (see test-prot-06-ruv.R) ---
+            # .capture_checkpoint(ruv_corrected_s4, "cp06", "ruv_corrected")
+            # --- END CP06 ---
             
             # IMMEDIATELY store the RUV result for Step 6 access
             norm_data$ruv_normalized_obj <- ruv_corrected_s4

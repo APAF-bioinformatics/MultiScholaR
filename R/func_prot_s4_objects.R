@@ -90,7 +90,7 @@ ProteinQuantitativeData <- setClass("ProteinQuantitativeData",
     , sample_id = "Sample_id",
     group_id = "group",
     technical_replicate_id = "replicates",
-    args = NULL
+    args = list()
   ),
   validity = function(object) {
     if (!is.data.frame(object@protein_quant_table)) {

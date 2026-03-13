@@ -395,13 +395,68 @@
 
 
 # ----------------------------------------------------------------------------
+# getUniprotRegexPatterns
+# ----------------------------------------------------------------------------
+#' @title Get UniProt Regex Patterns
+#' @description Returns a named list of regex patterns used for UniProt ID management.
+#' @return A list with patterns: isoform, decoy, contaminant, delimiter
+#' @export
+getUniprotRegexPatterns <- function() {
+  list(
+    isoform = "-\\d+$",
+    decoy = "REV__",
+    contaminant = "CON__",
+    delimiter = " |;|:|\\|",
+    entry = "^([OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2})(-\\d+)?$"
+  )
+}
+
+# ----------------------------------------------------------------------------
+# normalizeUniprotAccession
+# ----------------------------------------------------------------------------
+#' @title Normalize UniProt Accession
+#' @description Cleans UniProt accessions by removing isoforms, decoys, and contaminants.
+#' @param string Character vector of protein accessions.
+#' @param remove_isoform Logical, whether to remove isoform suffixes (default: TRUE).
+#' @param remove_decoy Logical, whether to remove decoy prefixes (default: FALSE).
+#' @param remove_contaminant Logical, whether to remove contaminant prefixes (default: FALSE).
+#' @return Character vector of normalized accessions.
+#' @export
+normalizeUniprotAccession <- function(string, 
+                                     remove_isoform = TRUE, 
+                                     remove_decoy = FALSE, 
+                                     remove_contaminant = FALSE) {
+  if (is.null(string) || length(string) == 0) return(string)
+  
+  patterns <- getUniprotRegexPatterns()
+  res <- string
+  
+  if (remove_decoy) {
+    res <- str_replace(res, patterns$decoy, "")
+  }
+  
+  if (remove_contaminant) {
+    res <- str_replace(res, patterns$contaminant, "")
+  }
+  
+  if (remove_isoform) {
+    res <- str_replace(res, patterns$isoform, "")
+  }
+  
+  return(res)
+}
+
+# ----------------------------------------------------------------------------
 # cleanIsoformNumber
 # ----------------------------------------------------------------------------
-#'@export
+#' @title Clean Isoform Number
+#' @description Remove isoform numbers from protein IDs.
+#' @param string Character vector of protein IDs.
+#' @return Cleaned protein IDs with isoform numbers removed.
+#' @export
 cleanIsoformNumber <- function(string) {
-  # "Q8K4R4-2"
-  str_replace(string, "-\\d+$", "")
-
+  # Wrapper for the centralized normalization function
+  normalizeUniprotAccession(string, remove_isoform = TRUE)
 }
 
 # ----------------------------------------------------------------------------
@@ -452,22 +507,43 @@ subsetQuery <- function(data, subset, accessions_col_name, uniprot_handle, unipr
 
 
 # ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# prepareUniprotBatchInput (Internal)
+# ----------------------------------------------------------------------------
+# Internal helper to handle the common logic for batch query preparation
+.prepareUniprotBatchInput <- function(input_tbl, id_column, delim = ";", batch_size = 100, clean_isoform = TRUE) {
+  patterns <- getUniprotRegexPatterns()
+  
+  # Ensure we have the column name as a string for sym/!!
+  col_label <- rlang::as_label(rlang::enquo(id_column))
+  
+  res <- input_tbl |>
+    dplyr::select({{ id_column }}) |>
+    tidyr::separate_longer_delim({{ id_column }}, delim = delim) |>
+    dplyr::mutate({{ id_column }} := trimws({{ id_column }})) |>
+    dplyr::distinct({{ id_column }}) |>
+    dplyr::filter(grepl(patterns$entry, {{ id_column }})) |>
+    dplyr::arrange({{ id_column }})
+    
+  if (clean_isoform) {
+    res <- res |>
+      dplyr::mutate({{ id_column }} := cleanIsoformNumber({{ id_column }})) |>
+      dplyr::distinct({{ id_column }})
+  }
+    
+  res <- res |>
+    dplyr::mutate(round = ceiling(dplyr::row_number() / batch_size))
+    
+  return(res)
+}
+
+# ----------------------------------------------------------------------------
 # batchQueryEvidenceHelper
 # ----------------------------------------------------------------------------
 # The UniProt.ws::select function limits the number of keys queried to 100. This gives a batch number for it to be queried in batches.
 batchQueryEvidenceHelper <- function(uniprot_acc_tbl, uniprot_acc_column) {
-
-  uniprot_regex <- "^([OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2})(-\\d+)?$"
-
-  all_uniprot_acc <- uniprot_acc_tbl |>
-    dplyr::select({ { uniprot_acc_column } }) |>
-    mutate(Proteins = stringr::str_split({ { uniprot_acc_column } }, ";")) |>
-    tidyr::unnest(Proteins) |>
-    distinct() |>
-    dplyr::filter(grepl(uniprot_regex, Proteins)) |>
-    arrange(Proteins) |>
-    mutate(Proteins = cleanIsoformNumber(Proteins)) |>
-    dplyr::mutate(round = ceiling(row_number() / 100))  ## 100 is the maximum number of queries at one time
+  # [OK] REFACTORED: Use centralized batch preparation logic
+  .prepareUniprotBatchInput(uniprot_acc_tbl, {{ uniprot_acc_column }}, delim = ";", batch_size = 100, clean_isoform = TRUE)
 }
 
 
@@ -506,18 +582,10 @@ batchQueryEvidence <- function(uniprot_acc_tbl, uniprot_acc_column, uniprot_hand
 # batchQueryEvidenceHelperGeneId
 # ----------------------------------------------------------------------------
 # The UniProt.ws::select function limits the number of keys queried to 100. This gives a batch number for it to be queried in batches.
-batchQueryEvidenceHelperGeneId <- function(input_tbl, gene_id_column, delim =":") {
-
-  uniprot_regex <- "^([OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2})(-\\d+)?$"
-
-  all_uniprot_acc <- input_tbl |>
-    dplyr::select({ { gene_id_column } }) |>
-    tidyr::separate_longer_delim({ { gene_id_column } }, delim = delim) |>
-    dplyr::filter(grepl(uniprot_regex, !!sym(rlang::as_label(enquo(gene_id_column))))) |>
-    dplyr::arrange({ { gene_id_column } }) |>
-    dplyr::mutate(round = ceiling(dplyr::row_number() / 25))  ## 25 is the maximum number of queries at one time
-
-  return(all_uniprot_acc)
+batchQueryEvidenceHelperGeneId <- function(input_tbl, gene_id_column, delim = ":") {
+  # [OK] REFACTORED: Use centralized batch preparation logic
+  # NOTE: Batch size was 25 in original, keeping it 25 here as per original implementation preference
+  .prepareUniprotBatchInput(input_tbl, {{ gene_id_column }}, delim = delim, batch_size = 25, clean_isoform = FALSE)
 }
 
 
@@ -775,7 +843,7 @@ directUniprotDownload <- function(input_tbl,
   message(paste("Found", length(original_protein_ids), "unique protein IDs from input"))
   
   # Official UniProt accession regex (with optional isoform suffix)
-  uniprot_regex <- "^([OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2})(-\\d+)?$"
+  uniprot_regex <- getUniprotRegexPatterns()$entry
   
   # Filter IDs matching the pattern
   protein_ids <- original_protein_ids[grepl(uniprot_regex, original_protein_ids)]
@@ -1271,8 +1339,8 @@ matchAnnotations <- function(da_results_s4,
     purrr::map_chr(\(x) {
       # Split by semicolon and take first protein
       first_protein <- stringr::str_split(x, ";")[[1]][1]
-      # Remove isoform suffix
-      stringr::str_replace(first_protein, "-\\d+$", "")
+      # [OK] REFACTORED: Use centralized UniProt normalization
+      normalizeUniprotAccession(first_protein, remove_isoform = TRUE)
     })
   
   # Create matching table
@@ -1286,11 +1354,11 @@ matchAnnotations <- function(da_results_s4,
   
   # Perform exact matching first
   exact_matches <- protein_mapping |>
-    dplyr::left_join(
+    dplyr::inner_join(
       uniprot_annotations,
       by = setNames(uniprot_id_column, "cleaned_id")
     ) |>
-    dplyr::filter(!is.na(.data[[uniprot_id_column]]))
+    dplyr::mutate(!!uniprot_id_column := .data$cleaned_id)
   
   log_info(sprintf("Exact matches found: %d", nrow(exact_matches)))
   
@@ -1310,11 +1378,11 @@ matchAnnotations <- function(da_results_s4,
       dplyr::mutate(
         version_cleaned = stringr::str_replace(.data$cleaned_id, "\\.\\d+$", "")
       ) |>
-      dplyr::left_join(
+      dplyr::inner_join(
         uniprot_annotations,
         by = setNames(uniprot_id_column, "version_cleaned")
       ) |>
-      dplyr::filter(!is.na(.data[[uniprot_id_column]]))
+      dplyr::mutate(!!uniprot_id_column := .data$version_cleaned)
     
     if (nrow(version_cleaned) > 0) {
       fuzzy_matches <- dplyr::bind_rows(fuzzy_matches, version_cleaned)
@@ -1856,7 +1924,8 @@ getUniprotAnnotationsFull <- function(data_tbl,
   cleaned_ids <- vapply(unique_proteins, .extractProteinIdFromHeader, FUN.VALUE = character(1), USE.NAMES = FALSE)
 
   # Remove potential isoform suffixes for broader matching
-  cleaned_proteins <- unique(gsub("-\\d+$", "", cleaned_ids))
+  # [OK] REFACTORED: Use centralized UniProt normalization
+  cleaned_proteins <- unique(normalizeUniprotAccession(cleaned_ids, remove_isoform = TRUE))
   
   cat(sprintf("Expanded %d protein groups into %d unique individual proteins\n", 
                    length(raw_protein_groups), length(cleaned_proteins)))
@@ -2297,13 +2366,15 @@ chooseBestProteinAccessionHelper <- function(input_tbl
   cat("\n")
 
   cat(">>> HELPER STEP 2: SPLITTING ACCESSIONS (str_split with delim) <<<\n")
+  patterns <- getUniprotRegexPatterns()
+  
   resolve_acc_temp <- input_tbl |>
     dplyr::select( { { group_id } }, { { accessions_column } }) |>
     mutate(row_id_column_with_isoform = str_split({ { accessions_column } }, delim)) |>
     unnest( row_id_column_with_isoform ) |>
     mutate( !!sym(row_id_column) := cleanIsoformNumber( row_id_column_with_isoform)) |>
-    dplyr::filter( !str_detect(!!sym(row_id_column), "REV__")) |>
-    dplyr::filter( !str_detect(!!sym(row_id_column), "CON__"))
+    dplyr::filter( !str_detect(!!sym(row_id_column), patterns$decoy)) |>
+    dplyr::filter( !str_detect(!!sym(row_id_column), patterns$contaminant))
   
   cat(sprintf("   After splitting and cleaning: %d rows\n", nrow(resolve_acc_temp)))
   if (nrow(resolve_acc_temp) > 0) {

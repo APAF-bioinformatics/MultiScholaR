@@ -1,0 +1,5 @@
+Protein.Group	Protein.Ids	Protein.Names	Genes	Precursor.Id	Modified.Sequence	Stripped.Sequence	Precursor.Charge	Precursor.Quantity	Q.Value	PG.Q.Value	Run
+P12345	P12345	NAME1	GENE1	PEP1	MOD1	PEP1	2	100.5	0.001	0.001	Sample1
+P67890	P67890	NAME2	GENE2	PEP2	MOD2	PEP2	3	200.0	0.001	0.001	Sample1
+P12345	P12345	NAME1	GENE1	PEP1	MOD1	PEP1	2	105.0	0.001	0.001	Sample2
+P67890	P67890	NAME2	GENE2	PEP2	MOD2	PEP2	3	195.5	0.001	0.001	Sample2

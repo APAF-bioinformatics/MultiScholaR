@@ -174,6 +174,14 @@ mod_prot_import_ui <- function(id) {
             },
             shiny::tags$small("If not provided, default configuration will be used"),
             
+            # --- TESTTHAT CHECKPOINT CAPTURE (TEMPORARY) ---
+            shiny::hr(),
+            shiny::checkboxInput(ns("capture_checkpoints"),
+                         "Capture Test Checkpoints (Developer)",
+                         value = getOption("multischolar.capture_test_checkpoints", FALSE)),
+            shiny::helpText("Snapshots will be saved to tests/testdata/prot_checkpoints/"),
+            # --- END CHECKPOINT CAPTURE ---
+            
             # Format-specific options will appear here
             shiny::uiOutput(ns("format_specific_options"))
           )
@@ -342,6 +350,17 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
       })
     }
     
+    # --- TESTTHAT CHECKPOINT CAPTURE (TEMPORARY) ---
+    shiny::observeEvent(input$capture_checkpoints, {
+      options(multischolar.capture_test_checkpoints = isTRUE(input$capture_checkpoints))
+      if (isTRUE(input$capture_checkpoints)) {
+        logger::log_info("Proteomics test checkpoint capture ENABLED")
+      } else {
+        logger::log_info("Proteomics test checkpoint capture DISABLED")
+      }
+    }, ignoreInit = FALSE)
+    # --- END CHECKPOINT CAPTURE ---
+
     # --- Observer: Toggle Step 3 inputs when mixed species is checked ---
     shiny::observeEvent(input$mixed_species_fasta, {
       if (isTRUE(input$mixed_species_fasta)) {
@@ -628,11 +647,11 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
         })
         
         # Validate import result
-        if (is.null(data_import_result) || is.null(data_import_result$data)) {
-          stop("Data import returned NULL or empty data")
-        }
-        
         log_info(sprintf("Data imported successfully. Rows: %d", nrow(data_import_result$data)))
+        
+        # --- TESTTHAT CHECKPOINT CP01 (see test-prot-01-import.R) ---
+        # .capture_checkpoint(data_import_result, "cp01", "raw_imported")
+        # --- END CP01 ---
         message(sprintf("[mod_prot_import] Data imported: %d rows", nrow(data_import_result$data)))
         
         update_processing_status("Storing imported data...")
@@ -1152,9 +1171,8 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
             dplyr::filter(taxon_id == selected_taxon) |>
             dplyr::pull(uniprot_acc)
           
-          # Clean accessions for matching (remove isoform numbers)
-          clean_acc <- function(acc) sub("-\\d+$", "", acc)
-          organism_proteins_clean <- unique(clean_acc(organism_proteins))
+          # [OK] REFACTORED: Use centralized UniProt normalization
+          organism_proteins_clean <- unique(normalizeUniprotAccession(organism_proteins, remove_isoform = TRUE))
           
           # Filter the data tables
           protein_col <- workflow_data$column_mapping$protein_col

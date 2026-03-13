@@ -2238,7 +2238,18 @@ getGlimmaVolcanoProteomics <- function(
     display.columns = colnames(anno_tbl),
     transform.counts = "none",
     status.cols = c("#1052bd", "silver", "#cc212f"),
-    sample.cols = if (!is.null(counts_filtered)) rep("#1f77b4", ncol(counts_filtered)) else NULL,
+    sample.cols = if (!is.null(groups)) {
+      unique_groups <- unique(groups)
+      group_colors <- stats::setNames(
+        grDevices::hcl.colors(length(unique_groups), "Set2"), 
+        unique_groups
+      )
+      group_colors[groups]
+    } else if (!is.null(counts_filtered)) {
+      rep("#1f77b4", ncol(counts_filtered))
+    } else {
+      NULL
+    },
     main = paste("Interactive Volcano Plot:", contrast_name),
     html = temp_html_name
   )
@@ -2306,8 +2317,8 @@ getGlimmaVolcanoProteomicsWidget <- function(
         )
     }
 
-    # CRITICAL FIX: For mixed FASTA support, create base accession without isoform suffix
-    best_uniprot_acc_base <- gsub("-\\d+$", "", best_uniprot_acc)
+    # [OK] REFACTORED: Use centralized UniProt normalization
+    best_uniprot_acc_base <- normalizeUniprotAccession(best_uniprot_acc, remove_isoform = TRUE)
 
     anno_tbl <- data.frame(
       uniprot_acc = rownames(r_obj@.Data[[1]]),
@@ -2331,7 +2342,7 @@ getGlimmaVolcanoProteomicsWidget <- function(
       base_match_tbl <- data.frame(temp_column_base = anno_tbl$temp_column_base[missing_gene_mask]) |>
         left_join(
           volcano_plot_tab_cln |>
-            dplyr::mutate(temp_base = gsub("-\\d+$", "", {{ uniprot_column }})) |>
+            dplyr::mutate(temp_base = normalizeUniprotAccession({{ uniprot_column }}, remove_isoform = TRUE)) |>
             dplyr::select(temp_base, gene_name_alt = {{ gene_name_column }}) |>
             dplyr::distinct(temp_base, .keep_all = TRUE),
           by = join_by(temp_column_base == temp_base)
@@ -2394,6 +2405,18 @@ getGlimmaVolcanoProteomicsWidget <- function(
       status = status_result,
       p.adj.method = "none",
       transform.counts = "none",
+      sample.cols = if (!is.null(groups)) {
+        unique_groups <- unique(groups)
+        group_colors <- stats::setNames(
+          grDevices::hcl.colors(length(unique_groups), "Set2"), 
+          unique_groups
+        )
+        group_colors[groups]
+      } else if (!is.null(counts_tbl)) {
+        rep("#1f77b4", ncol(counts_tbl))
+      } else {
+        NULL
+      },
       ...
     )
 

@@ -60,10 +60,9 @@ PeptideQuantitativeData <- setClass("PeptideQuantitativeData"
                                        , technical_replicate_id="replicates"
 
                                        # Parameters for methods and functions
-                                       , args = NULL
+                                       , args = list()
 
-                                     )
-
+                                       )
                                      , validity = function(object) {
                                        if( !is.data.frame(object@peptide_data) ) {
                                          stop("peptide_data must be a data.frame")
