@@ -138,6 +138,7 @@ detectProteomicsFormat <- function(headers, filename, preview_lines = NULL) {
                      "precursor.charge", "q.value", "pg.q.value", "run")
   diann_found <- sum(diann_markers %in% headers_lower)
   diann_score <- diann_found / length(diann_markers)
+  if (grepl("\\.parquet$", filename_lower)) diann_score <- diann_score + 0.2
   
   # Spectronaut detection
   spectronaut_score <- 0
@@ -251,9 +252,13 @@ importDIANNData <- function(filepath, use_precursor_norm = TRUE) {
     stop("File not found: ", filepath)
   }
   
-  # Read data
+  # Read data (Parquet or TSV)
   data <- tryCatch({
-    vroom::vroom(filepath, show_col_types = FALSE)
+    if (grepl("\.parquet$", filepath, ignore.case = TRUE)) {
+      arrow::read_parquet(filepath)
+    } else {
+      vroom::vroom(filepath, show_col_types = FALSE)
+    }
   }, error = function(e) {
     stop("Failed to read file: ", e$message)
   })
@@ -1296,3 +1301,4 @@ analyzeOrganismDistribution <- function(protein_ids, organism_mapping) {
   
   return(distribution)
 }
+

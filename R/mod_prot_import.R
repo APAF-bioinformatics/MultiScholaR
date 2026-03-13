@@ -56,7 +56,7 @@ mod_prot_import_ui <- function(id) {
             } else {
               shiny::fileInput(ns("search_results_standard"), 
                        "Select proteomics search results file:",
-                       accept = c(".tsv", ".txt", ".tab", ".csv", ".xlsx", ".zip"))
+                       accept = c(".tsv", ".txt", ".tab", ".csv", ".xlsx", ".zip", ".parquet"))
             },
             
             # Format detection output
@@ -437,6 +437,9 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
             close(con)
           }
           
+        } else if (grepl("\.parquet$", file_path, ignore.case = TRUE)) {
+          # Get headers from Parquet file using arrow
+          headers <- names(arrow::read_parquet(file_path, col_select = NULL))
         } else {
           # Original logic for non-zip files
           preview_lines <- readLines(file_path, n = 10)
