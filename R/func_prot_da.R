@@ -205,17 +205,42 @@ generateProtDAVolcanoPlotGlimma <- function(
 
   da_proteins_long <- da_results_list$da_proteins_long
 
-  # Extract comparison name
-  comparison_to_search <- stringr::str_extract(selected_contrast, "^[^=]+")
-  if (is.na(comparison_to_search)) {
-    comparison_to_search <- selected_contrast
+  comparison_to_search <- selected_contrast
+
+  # Robust contrast matching
+  # First try exact match
+  contrast_data <- da_proteins_long |>
+    dplyr::filter(comparison == selected_contrast)
+
+  # Fallback: Extract prefix before '=' or '-' if present
+  if (nrow(contrast_data) == 0) {
+    # Try different split characters
+    potential_prefix <- stringr::str_extract(selected_contrast, "^[^=]+")
+    if (is.na(potential_prefix)) {
+      potential_prefix <- stringr::str_extract(selected_contrast, "^[^-]+")
+    }
+    
+    # If we found a prefix, try fuzzy match
+    if (!is.na(potential_prefix)) {
+       # Use grepl for robustness
+       match_idx <- grepl(potential_prefix, da_proteins_long$comparison, fixed = TRUE)
+       contrast_data <- da_proteins_long[match_idx, ]
+       if (nrow(contrast_data) > 0) {
+         comparison_to_search <- potential_prefix
+       }
+    }
   }
 
-  contrast_data <- da_proteins_long |>
-    dplyr::filter(comparison == comparison_to_search | comparison == selected_contrast)
+  # Last resort: Just take the first contrast if still empty (better than blank)
+  if (nrow(contrast_data) == 0 && length(unique(da_proteins_long$comparison)) > 0) {
+    first_contrast <- unique(da_proteins_long$comparison)[1]
+    logger::log_warn(sprintf("   No data found for contrast %s. Falling back to %s", selected_contrast, first_contrast))
+    contrast_data <- da_proteins_long |> dplyr::filter(comparison == first_contrast)
+    comparison_to_search <- first_contrast
+  }
 
   if (nrow(contrast_data) == 0) {
-    logger::log_warn(sprintf("   No data found for contrast %s", comparison_to_search))
+    logger::log_warn(sprintf("   Total failure: No data found for contrast %s or any fallbacks", selected_contrast))
     return(NULL)
   }
 
@@ -303,7 +328,8 @@ generateProtDAVolcanoPlotGlimma <- function(
       # Ensure exact row order
       match_idx <- match(plot_data$Protein.Ids, counts_df[[args_row_id]])
       counts_df <- counts_df[match_idx[!is.na(match_idx)], , drop = FALSE]
-      
+      # Remove existing rownames to avoid tibble::column_to_rownames crash
+      rownames(counts_df) <- NULL
       counts_mat <- counts_df |> tibble::column_to_rownames(args_row_id) |> as.matrix()
       
       this_design <- da_results_list$theObject@design_matrix
@@ -314,30 +340,56 @@ generateProtDAVolcanoPlotGlimma <- function(
           groups_vec <- as.character(this_design[common_samples, "group"])
         }
       }
+
+      # CRITICAL: Re-filter plot_data to match proteins available in counts_mat
+      # to avoid dimnames mismatch later
+      available_proteins <- rownames(counts_mat)
+      plot_data <- plot_data |> dplyr::filter(Protein.Ids %in% available_proteins)
+      # Re-order counts_mat to match plot_data exactly
+      counts_mat <- counts_mat[as.character(plot_data$Protein.Ids), , drop = FALSE]
     }
   }
 
-  # Build Clean Annotation Dataframe
-  clean_anno <- plot_data |>
-    dplyr::select(Protein.Ids, gene_name, any_of(display_columns)) |>
-    dplyr::rename_with(~ gsub("\\.", "_", .)) |>
-    dplyr::mutate(dplyr::across(everything(), as.character)) |>
-    dplyr::mutate(dplyr::across(everything(), ~ tidyr::replace_na(., ""))) |>
-    as.data.frame()
-    
-  # Set rownames to match x and y
-  rownames(clean_anno) <- plot_data$gene_name
+  # Build Clean Annotation Dataframe as strict base R
+  clean_anno <- data.frame(
+    Protein_Ids = as.character(plot_data$Protein.Ids),
+    gene_name = as.character(plot_data$gene_name),
+    stringsAsFactors = FALSE
+  )
+  
+  # Add additional display columns using purrr instead of a for loop
+  purrr::walk(display_columns, function(col) {
+    col_cln <- gsub("\\.", "_", col)
+    if (col %in% names(plot_data) && !(col_cln %in% names(clean_anno))) {
+      clean_anno[[col_cln]] <<- as.character(plot_data[[col]])
+    }
+  })
+  
+  # Ensure all NAs are gone
+  clean_anno[is.na(clean_anno)] <- ""
+  rownames(clean_anno) <- clean_anno$Protein_Ids
 
   if (!is.null(counts_mat)) {
-    rownames(counts_mat) <- plot_data$gene_name
+    counts_mat <- as.matrix(counts_mat)
+    rownames(counts_mat) <- as.character(plot_data$Protein.Ids)
   }
 
   logger::log_info(sprintf("   Generating glimmaXY with %d proteins", nrow(plot_data)))
 
+  # Prepare Glimma table as strict base R
+  glimma_table <- data.frame(
+    logFC = signif(as.numeric(plot_data$logFC), 4),
+    negLog10FDR = signif(as.numeric(plot_data$negLog10FDR), 4)
+  )
+  rownames(glimma_table) <- as.character(plot_data$Protein.Ids)
+
+  # Prepare Status
+  glimma_status <- as.integer(plot_data$Status)
+
   # Build data structure required for glimmaXYWidget
   xy_data <- Glimma:::buildXYData(
-    table = data.frame(logFC = signif(plot_data$logFC, 4), negLog10FDR = signif(plot_data$negLog10FDR, 4)),
-    status = plot_data$Status,
+    table = glimma_table,
+    status = glimma_status,
     main = paste("Interactive Volcano Plot:", comparison_to_search),
     display.columns = colnames(clean_anno),
     anno = clean_anno,
@@ -2283,7 +2335,60 @@ runTestsContrasts <- function(data,
 
   # Run limma analysis
   message("   runTestsContrasts: Running lmFit...")
-  fit <- lmFit(data_subset, design = design_m)
+
+  # Check for technical replicates
+  # Blocking factor should be constructed from replicate ID (biological replicate)
+  # But we need to ensure it maps correctly to the samples in the subset
+  # The design_matrix here is already subsetted/ordered match mod_frame in model.matrix construction
+  # However, we need the original columns (group, replicates) which might be in the 'design_matrix' argument (which is the params data.frame)
+  # BUT 'design_matrix' input argument is strictly the data.frame with metadata
+
+  # Ensure we have the metadata for the subsetted samples
+  # The samples in data_subset are columns matching rownames(design_m)
+  # design_m was created from design_matrix (the metadata dataframe)
+  samples_in_model <- rownames(design_m)
+
+  # Check if we have replicates column
+  has_replicates <- "replicates" %in% colnames(design_matrix)
+
+  fit <- NULL
+
+  if (has_replicates) {
+    # Extract replicates for the samples in the model, maintaining order
+    # We assume design_matrix rownames are the sample IDs (which was set in helper/wrapper functions)
+    design_matrix_subset <- design_matrix[samples_in_model, ]
+
+    # Construct blocking factor: Biological Replicate ID (e.g. "Control_1")
+    # This identifies the biological unit that is technically replicated
+    # Combining group + replicate number gives unique biological ID
+    # Use paste0 to ensure character vector
+    block <- paste(design_matrix_subset$group, design_matrix_subset$replicates, sep = "_")
+
+    # Check if there are any technical replicates (duplicated blocks)
+    if (any(duplicated(block))) {
+      message("   runTestsContrasts: Detected technical replicates. Calculating duplicateCorrelation...")
+      message(sprintf(
+        "   runTestsContrasts: Block defined by group_replicates. %d unique blocks for %d samples.",
+        length(unique(block)), length(block)
+      ))
+
+      # Calculate consensus correlation
+      # Note: duplicateCorrelation can be slow for large datasets
+      dup_cor <- duplicateCorrelation(data_subset, design = design_m, block = block)
+
+      message(sprintf("   runTestsContrasts: Consensus correlation = %.4f", dup_cor$consensus.correlation))
+
+      # Run lmFit with correlation and block
+      message("   runTestsContrasts: Running lmFit with duplicateCorrelation...")
+      fit <- lmFit(data_subset, design = design_m, block = block, correlation = dup_cor$consensus.correlation)
+    } else {
+      message("   runTestsContrasts: No technical replicates detected (unique blocks). Running standard lmFit...")
+      fit <- lmFit(data_subset, design = design_m)
+    }
+  } else {
+    message("   runTestsContrasts: 'replicates' column not found. Running standard lmFit...")
+    fit <- lmFit(data_subset, design = design_m)
+  }
 
   message("   runTestsContrasts: Running contrasts.fit...")
   cfit <- contrasts.fit(fit, contrasts = contr.matrix)
