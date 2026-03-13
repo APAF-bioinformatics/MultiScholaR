@@ -1655,7 +1655,8 @@ proteinTechRepCorrelationHelper <- function( design_matrix_tech_rep, data_matrix
 #' @export
 updateProteinFiltering <- function(data, step_name, 
                                  omic_type = NULL, experiment_label = NULL,
-                                 overwrite = FALSE, return_grid = FALSE) {
+                                 overwrite = FALSE, return_grid = FALSE,
+                                 formats = c("png", "pdf")) {
     
     # Initialize filtering_progress if it doesn\'t exist
     if (!exists("filtering_progress", envir = .GlobalEnv)) {
@@ -2068,18 +2069,20 @@ updateProteinFiltering <- function(data, step_name,
     
     # Save plots if derived_time_dir is valid and save_plots is TRUE
     if (save_plots) {
-        message(sprintf("   [updateProteinFiltering] Saving individual plots to %s...", derived_time_dir))
+        message(sprintf("   [updateProteinFiltering] Saving individual plots to %s in formats: %s...", derived_time_dir, paste(formats, collapse = ", ")))
         for (plot_name in names(plot_list)) {
-            filename <- file.path(derived_time_dir,
-                                sprintf("%s_%s.png", step_name, plot_name))
             message(sprintf("      Saving %s...", plot_name))
-            tryCatch({
-                ggsave(filename, 
-                       plot = plot_list[[plot_name]], 
-                       width = 10, 
-                       height = 8, 
-                       dpi = 300)
-            }, error = function(e) message(sprintf("Warning: Failed to save %s: %s", plot_name, e$message)))
+            for (fmt in formats) {
+                filename <- file.path(derived_time_dir,
+                                    sprintf("%s_%s.%s", step_name, plot_name, fmt))
+                tryCatch({
+                    ggsave(filename, 
+                           plot = plot_list[[plot_name]], 
+                           width = 10, 
+                           height = 8, 
+                           dpi = 300)
+                }, error = function(e) message(sprintf("Warning: Failed to save %s as %s: %s", plot_name, fmt, e$message)))
+            }
         }
     }
     
@@ -2118,14 +2121,16 @@ updateProteinFiltering <- function(data, step_name,
             
             # Save the grid if derived_time_dir is valid and save_plots is TRUE
             if (save_plots) {
-                message("      Saving combined grid plot...")
-                filename <- file.path(derived_time_dir,
-                                    sprintf("%s_combined_plots.png", step_name))
-                ggsave(filename, 
-                       plot = grid_plot, 
-                       width = 15, 
-                       height = if (!is_protein_quant || !all(is.na(filtering_progress@total_peptides))) 18 else 12,
-                       dpi = 300)
+                message(sprintf("      Saving combined grid plot in formats: %s...", paste(formats, collapse = ", ")))
+                for (fmt in formats) {
+                    filename <- file.path(derived_time_dir,
+                                        sprintf("%s_combined_plots.%s", step_name, fmt))
+                    ggsave(filename, 
+                           plot = grid_plot, 
+                           width = 15, 
+                           height = if (!is_protein_quant || !all(is.na(filtering_progress@total_peptides))) 18 else 12,
+                           dpi = 300)
+                }
             }
             
             return(grid_plot)
