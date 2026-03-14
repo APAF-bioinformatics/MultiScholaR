@@ -2919,43 +2919,48 @@ setMethod(
     limpa_labels <- lapply(limpa_titles, createLabelPlot)
 
     # Combine with labels above each row - modified to keep legends with their plots
+    # GUARD: Only add label rows when titles exist (wrap_plots of empty list causes unit() crash)
     plot_sections <- list()
     height_values <- c()
 
     # Add PCA plots if they exist
-    if (length(theObject@pca_plots) > 0) {
-      plot_sections <- append(plot_sections, list(
-        wrap_plots(pca_labels, ncol = ncol),
-        wrap_plots(created_pca_plots, ncol = ncol)
-      ))
-      height_values <- c(height_values, 0.1, 1)
+    if (length(theObject@pca_plots) > 0 && length(created_pca_plots) > 0) {
+      if (length(pca_labels) > 0) {
+        plot_sections <- append(plot_sections, list(wrap_plots(pca_labels, ncol = ncol)))
+        height_values <- c(height_values, 0.1)
+      }
+      plot_sections <- append(plot_sections, list(wrap_plots(created_pca_plots, ncol = ncol)))
+      height_values <- c(height_values, 1)
     }
 
     # Add Density plots if they exist
-    if (length(theObject@density_plots) > 0) {
-      plot_sections <- append(plot_sections, list(
-        wrap_plots(density_labels, ncol = ncol),
-        wrap_plots(created_density_plots, ncol = ncol)
-      ))
-      height_values <- c(height_values, 0.1, 1)
+    if (length(theObject@density_plots) > 0 && length(created_density_plots) > 0) {
+      if (length(density_labels) > 0) {
+        plot_sections <- append(plot_sections, list(wrap_plots(density_labels, ncol = ncol)))
+        height_values <- c(height_values, 0.1)
+      }
+      plot_sections <- append(plot_sections, list(wrap_plots(created_density_plots, ncol = ncol)))
+      height_values <- c(height_values, 1)
     }
 
     # Add RLE plots if they exist
-    if (length(theObject@rle_plots) > 0) {
-      plot_sections <- append(plot_sections, list(
-        wrap_plots(rle_labels, ncol = ncol),
-        wrap_plots(created_rle_plots, ncol = ncol)
-      ))
-      height_values <- c(height_values, 0.1, 1)
+    if (length(theObject@rle_plots) > 0 && length(created_rle_plots) > 0) {
+      if (length(rle_labels) > 0) {
+        plot_sections <- append(plot_sections, list(wrap_plots(rle_labels, ncol = ncol)))
+        height_values <- c(height_values, 0.1)
+      }
+      plot_sections <- append(plot_sections, list(wrap_plots(created_rle_plots, ncol = ncol)))
+      height_values <- c(height_values, 1)
     }
 
     # Add Pearson plots if they exist
-    if (length(theObject@pearson_plots) > 0) {
-      plot_sections <- append(plot_sections, list(
-        wrap_plots(pearson_labels, ncol = ncol),
-        wrap_plots(created_pearson_plots, ncol = ncol)
-      ))
-      height_values <- c(height_values, 0.1, 1)
+    if (length(theObject@pearson_plots) > 0 && length(created_pearson_plots) > 0) {
+      if (length(pearson_labels) > 0) {
+        plot_sections <- append(plot_sections, list(wrap_plots(pearson_labels, ncol = ncol)))
+        height_values <- c(height_values, 0.1)
+      }
+      plot_sections <- append(plot_sections, list(wrap_plots(created_pearson_plots, ncol = ncol)))
+      height_values <- c(height_values, 1)
     }
 
     # Add Cancor plots if they exist (check for any non-NULL plots)
@@ -2970,20 +2975,24 @@ setMethod(
         }
       })
 
-      plot_sections <- append(plot_sections, list(
-        wrap_plots(cancor_labels, ncol = ncol),
-        wrap_plots(cancor_plots_aligned, ncol = ncol)
-      ))
-      height_values <- c(height_values, 0.1, 1)
+      if (length(cancor_labels) > 0) {
+        plot_sections <- append(plot_sections, list(wrap_plots(cancor_labels, ncol = ncol)))
+        height_values <- c(height_values, 0.1)
+      }
+      plot_sections <- append(plot_sections, list(wrap_plots(cancor_plots_aligned, ncol = ncol)))
+      height_values <- c(height_values, 1)
     }
 
     # Add Limpa plots if they exist and are non-empty
     if (length(theObject@limpa_plots) > 0 && length(created_limpa_plots) > 0) {
+      if (length(limpa_labels) > 0) {
+        plot_sections <- append(plot_sections, list(wrap_plots(limpa_labels, ncol = ncol)))
+        height_values <- c(height_values, 0.1)
+      }
       plot_sections <- append(plot_sections, list(
-        wrap_plots(limpa_labels, ncol = ncol),
         wrap_plots(created_limpa_plots, ncol = 2) # Limpa plots are 4, so 2x2 grid fits well
       ))
-      height_values <- c(height_values, 0.1, 2) # Double height for the 2x2 section
+      height_values <- c(height_values, 2) # Double height for the 2x2 section
     }
 
     # MEMORY CLEANUP before combining plots
