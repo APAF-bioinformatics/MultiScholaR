@@ -12,7 +12,7 @@ test_that("scaleCenterAndFillMissing works with mock matrix", {
 })
 
 test_that("normalisation snapshot is valid", {
-  cp_file <- test_path("..", "testdata", "prot_checkpoints", "cp05_normalised.rds")
+  cp_file <- test_path("..", "testdata", "sepsis", "proteomics", "cp05_normalised.rds")
   
   if (file.exists(cp_file)) {
     obj <- readRDS(cp_file)

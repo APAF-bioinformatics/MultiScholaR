@@ -1366,7 +1366,7 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
             norm_data$normalized_protein_obj <- normalized_s4
             
             # --- TESTTHAT CHECKPOINT CP05 (see test-prot-05-normalisation.R) ---
-            # .capture_checkpoint(normalized_s4, "cp05", "normalised")
+            .capture_checkpoint(normalized_s4, "cp05", "normalised")
             # --- END CP05 ---
             
             message("*** STEP 1: Between-samples normalization completed ***")
@@ -1686,7 +1686,7 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
             )
             
             # --- TESTTHAT CHECKPOINT CP06 (see test-prot-06-ruv.R) ---
-            # .capture_checkpoint(ruv_corrected_s4, "cp06", "ruv_corrected")
+            .capture_checkpoint(ruv_corrected_s4, "cp06", "ruv_corrected")
             # --- END CP06 ---
             
             # IMMEDIATELY store the RUV result for Step 6 access

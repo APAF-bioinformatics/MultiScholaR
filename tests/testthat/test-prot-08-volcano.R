@@ -2,7 +2,7 @@
 # Phase 4 of Proteomics GUI Test Strategy
 
 test_that("generateProtDAVolcanoPlotGlimma works with captured snapshot", {
-  cp_file <- test_path("..", "testdata", "prot_checkpoints", "cp08_volcano_input.rds")
+  cp_file <- test_path("..", "testdata", "sepsis", "proteomics", "cp08_volcano_input.rds")
   
   if (file.exists(cp_file)) {
     data <- readRDS(cp_file)

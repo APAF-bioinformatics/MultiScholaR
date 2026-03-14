@@ -154,7 +154,7 @@ mod_prot_qc_protein_rollup_server <- function(id, workflow_data, experiment_path
         )
         
         # --- TESTTHAT CHECKPOINT CP03 (see test-prot-03-rollup.R) ---
-        # .capture_checkpoint(protein_obj, "cp03", "rolled_up_protein")
+        .capture_checkpoint(protein_obj, "cp03", "rolled_up_protein")
         # --- END CP03 ---
         
         # Generate summary

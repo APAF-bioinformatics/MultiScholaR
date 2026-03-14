@@ -5,13 +5,18 @@
 \title{Filter Peptides by Intensity and Proportion}
 \usage{
 peptideIntensityFilteringHelper(
-  input_table,
+  input_table = NULL,
+  design_matrix = NULL,
   min_peptide_intensity_threshold = 15,
-  peptides_proportion_of_samples_below_cutoff = 1,
+  sample_id_column = "Run",
+  grouping_variable = "Group",
+  groupwise_percentage_cutoff = 1,
+  max_groups_percentage_cutoff = 50,
   protein_id_column = Protein.Ids,
   peptide_sequence_column = Stripped.Sequence,
   peptide_quantity_column = Peptide.Normalised,
-  core_utilisation
+  core_utilisation = NA,
+  ...
 )
 }
 \description{

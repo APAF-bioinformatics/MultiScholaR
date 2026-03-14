@@ -2,7 +2,7 @@
 # Phase 4 of Proteomics GUI Test Strategy
 
 test_that("RUV snapshot is valid", {
-  cp_file <- test_path("..", "testdata", "prot_checkpoints", "cp06_ruv_corrected.rds")
+  cp_file <- test_path("..", "testdata", "sepsis", "proteomics", "cp06_ruv_corrected.rds")
   
   if (file.exists(cp_file)) {
     obj <- readRDS(cp_file)

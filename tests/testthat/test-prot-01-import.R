@@ -2,7 +2,7 @@
 # Phase 1 of Proteomics GUI Test Strategy
 
 test_that("raw import snapshot is valid", {
-  cp_file <- test_path("..", "testdata", "prot_checkpoints", "cp01_raw_imported.rds")
+  cp_file <- test_path("..", "testdata", "sepsis", "proteomics", "cp01_raw_imported.rds")
   
   if (file.exists(cp_file)) {
     result <- readRDS(cp_file)

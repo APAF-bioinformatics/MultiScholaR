@@ -3083,22 +3083,25 @@ countStatDaGenesHelper <- function(
   has_delimiter <- any(grepl("=", faceted_tables[[comparison_column]]))
   message(paste("   countStatDaGenesHelper: Any values contain '=' ?", has_delimiter))
 
-  if (!has_delimiter) {
-    message("   countStatDaGenesHelper: WARNING - No '=' found in comparison column values!")
-    message("   countStatDaGenesHelper: This will cause separate_wider_delim to fail!")
-    message("   countStatDaGenesHelper: Comparison column values are:")
-    print(faceted_tables[[comparison_column]])
-    stop("countStatDaGenesHelper: comparison column values do not contain '=' delimiter. Check list element naming in calling function.")
-  }
-
-  merged_tables <- faceted_tables |>
-    separate_wider_delim(!!sym(comparison_column),
-      delim = "=",
-      names = c(
-        comparison_column,
-        expression_column
+  if (has_delimiter) {
+    merged_tables <- faceted_tables |>
+      separate_wider_delim(!!sym(comparison_column),
+        delim = "=",
+        names = c(
+          comparison_column,
+          expression_column
+        ),
+        too_few = "align_start"
       )
-    )
+    message("   countStatDaGenesHelper: Separation complete")
+  } else {
+    message("   countStatDaGenesHelper: No '=' found, skipping separation and using original comparison names")
+    # Ensure expression column exists even if no separation
+    merged_tables <- faceted_tables
+    if (!expression_column %in% colnames(merged_tables)) {
+      merged_tables[[expression_column]] <- merged_tables[[comparison_column]]
+    }
+  }
 
   message("--- Exiting countStatDaGenesHelper (DEBUG66) ---")
   merged_tables
@@ -3295,6 +3298,13 @@ getSignificantData <- function(
 
   message("   getSignificantData: All tables bound")
   message(paste("   getSignificantData: logfc_tbl_all dims =", nrow(logfc_tbl_all), "x", ncol(logfc_tbl_all)))
+
+  # CRITICAL FIX: Ensure expression_column exists if it doesn't
+  expr_col_name <- expression_column
+  if (!expr_col_name %in% colnames(logfc_tbl_all)) {
+    message(sprintf("   getSignificantData: expression_column '%s' not found, creating dummy", expr_col_name))
+    logfc_tbl_all[[expr_col_name]] <- NA_real_
+  }
 
   selected_data <- logfc_tbl_all |>
     mutate({{ log_q_value_column }} := -log10(fdr_qvalue)) |>

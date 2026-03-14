@@ -1222,7 +1222,7 @@ getProteinsHeatMap <- function(
 apafTheme <- function() {
   theme(
     # Set font family and size
-    text = element_text(family = "Arial", size = 12),
+    text = element_text(family = "sans", size = 12),
     # Add rectangular box around the plot
     panel.border = element_rect(color = "black", fill = NA, linewidth = 1),
     # Add grid lines

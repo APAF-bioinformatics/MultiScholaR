@@ -2,7 +2,7 @@
 # Phase 4 of Proteomics GUI Test Strategy
 
 test_that("DA analysis snapshot is valid", {
-  cp_file <- test_path("..", "testdata", "prot_checkpoints", "cp07_da_results.rds")
+  cp_file <- test_path("..", "testdata", "sepsis", "proteomics", "cp07_da_results.rds")
   
   if (file.exists(cp_file)) {
     results <- readRDS(cp_file)

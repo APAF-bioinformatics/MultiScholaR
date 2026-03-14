@@ -2,7 +2,7 @@
 # Phase 4 of Proteomics GUI Test Strategy
 
 test_that("QC filtered peptide snapshot is valid", {
-  cp_file <- test_path("..", "testdata", "prot_checkpoints", "cp02_qc_filtered_peptide.rds")
+  cp_file <- test_path("..", "testdata", "sepsis", "proteomics", "cp02_qc_filtered_peptide.rds")
   
   if (file.exists(cp_file)) {
     obj <- readRDS(cp_file)

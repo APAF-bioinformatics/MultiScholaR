@@ -696,7 +696,7 @@ mod_prot_design_server <- function(id, workflow_data, experiment_paths, volumes 
         )
         
         # --- TESTTHAT CHECKPOINT CP04 (see test-prot-04-design.R) ---
-        # .capture_checkpoint(s4_object, "cp04", "design_matrix")
+        .capture_checkpoint(s4_object, "cp04", "design_matrix")
         # --- END CP04 ---
         
         logger::log_info(sprintf("Import: S4 object saved to R6 state manager as '%s'", state_name))
@@ -1009,7 +1009,7 @@ mod_prot_design_server <- function(id, workflow_data, experiment_paths, volumes 
           )
           
           # --- TESTTHAT CHECKPOINT CP04 (see test-prot-04-design.R) ---
-          # .capture_checkpoint(s4_object, "cp04", "design_matrix")
+          .capture_checkpoint(s4_object, "cp04", "design_matrix")
           # --- END CP04 ---
           
           # --- TRIGGER UNIPROT ANNOTATION ---

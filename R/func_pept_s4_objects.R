@@ -184,557 +184,6 @@ PeptideQuantitativeDataDiann <- function( peptide_data
 
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-# Format the design matrix so that only metadata for samples in the protein data are retained, and also
-# sort the sample IDs in the same order as the data matrix
-
-
-#'@exportMethod cleanDesignMatrixPeptide
-setMethod( f ="cleanDesignMatrixPeptide"
-           , signature = "PeptideQuantitativeData"
-           , definition=function( theObject ) {
-
-             samples_id_vector <- theObject@peptide_data |> distinct(!!sym(theObject@sample_id)) |> dplyr::pull(!!sym(theObject@sample_id))
-
-             theObject@design_matrix <- data.frame( temp_sample_id = samples_id_vector )  |>
-               inner_join( theObject@design_matrix
-                           , by = join_by ( temp_sample_id == !!sym(theObject@sample_id)) ) |>
-               dplyr::rename( !!sym(theObject@sample_id) := "temp_sample_id" ) |>
-               dplyr::filter( !!sym( theObject@sample_id) %in% samples_id_vector )
-
-
-             return(theObject)
-           })
-##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-#'@export
-setMethod( f ="srlQvalueProteotypicPeptideClean"
-           , signature="PeptideQuantitativeData"
-           , definition=function ( theObject
-                                  , qvalue_threshold = NULL
-                                  , global_qvalue_threshold = NULL
-                                  , choose_only_proteotypic_peptide = NULL
-                                  , input_matrix_column_ids =  NULL
-                                  ) {
-             peptide_data <- theObject@peptide_data
-             protein_id_column <- theObject@protein_id_column
-             q_value_column <- theObject@q_value_column
-             global_q_value_column <- theObject@global_q_value_column
-             peptide_sequence_column <- theObject@peptide_sequence_column
-             proteotypic_peptide_sequence_column <- theObject@proteotypic_peptide_sequence_column
-             raw_quantity_column <- theObject@raw_quantity_column
-             norm_quantity_column <- theObject@norm_quantity_column
-
-             qvalue_threshold <- checkParamsObjectFunctionSimplify( theObject, "qvalue_threshold", 0.01)
-
-             global_qvalue_threshold <- checkParamsObjectFunctionSimplify( theObject, "global_qvalue_threshold", 0.01)
-
-             choose_only_proteotypic_peptide <- checkParamsObjectFunctionSimplify( theObject
-                                                                                   , "choose_only_proteotypic_peptide"
-                                                                                   , 1 )
-
-             input_matrix_column_ids <- checkParamsObjectFunctionSimplify( theObject
-                                                                           , "input_matrix_column_ids" )
-
-             theObject <- updateParamInObject(theObject, "qvalue_threshold")
-             theObject <- updateParamInObject(theObject, "global_qvalue_threshold")
-             theObject <- updateParamInObject(theObject, "choose_only_proteotypic_peptide")
-
-             dia_nn_default_columns <- c("Protein.Ids"
-                                        , "Stripped.Sequence"
-                                        , "Q.Value"
-                                        , "Global.Q.Value"
-                                        , "Precursor.Quantity"
-                                        , "Precursor.Normalised")
-
-             theObject <- updateParamInObject(theObject, "input_matrix_column_ids")
-
-             # print( paste("qvalue_threshold: ", qvalue_threshold))
-             search_srl_quant_cln <- srlQvalueProteotypicPeptideCleanHelper( input_table = peptide_data
-                                                                       , input_matrix_column_ids = unique(c(input_matrix_column_ids
-                                                                                                      , protein_id_column
-                                                                                                      , peptide_sequence_column
-                                                                                                      , peptide_sequence_column))
-                                                                       , protein_id_column = !!sym(protein_id_column)
-                                                                       , q_value_column = !!sym(q_value_column)
-                                                                       , global_q_value_column = !!sym(global_q_value_column)
-                                                                       , global_qvalue_threshold = global_qvalue_threshold
-                                                                       , qvalue_threshold = qvalue_threshold
-                                                                       , choose_only_proteotypic_peptide = choose_only_proteotypic_peptide)
-
-             theObject@peptide_data <- search_srl_quant_cln
-
-             theObject <- cleanDesignMatrixPeptide(theObject)
-
-             return(theObject)
-           })
-
-##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-#'@export
-setMethod(f="rollUpPrecursorToPeptide"
-          , signature="PeptideQuantitativeData"
-          , definition=function (theObject, core_utilisation = NULL) {
-
-            peptide_data <- theObject@peptide_data
-            protein_id_column <- theObject@protein_id_column
-            peptide_sequence_column <- theObject@peptide_sequence_column
-            q_value_column <- theObject@q_value_column
-            global_q_value_column <- theObject@global_q_value_column
-            proteotypic_peptide_sequence_column <- theObject@proteotypic_peptide_sequence_column
-            raw_quantity_column <- theObject@raw_quantity_column
-            norm_quantity_column <- theObject@norm_quantity_column
-
-            is_logged_data <- theObject@is_logged_data
-
-            design_matrix <- theObject@design_matrix
-            sample_id <- theObject@sample_id
-            group_id <- theObject@group_id
-            technical_replicate_id <- theObject@technical_replicate_id
-
-            core_utilisation <- checkParamsObjectFunctionSimplify( theObject, "core_utilisation", NA)
-            theObject <- updateParamInObject(theObject, "core_utilisation")
-
-            theObject@peptide_data <- rollUpPrecursorToPeptideHelper(input_table = peptide_data
-                                                               , sample_id_column = !!sym(sample_id)
-                                                               , protein_id_column = !!sym(protein_id_column)
-                                                               , peptide_sequence_column = !!sym(peptide_sequence_column)
-                                                               , precursor_quantity_column = !!sym(raw_quantity_column)
-                                                               , precursor_normalised_column = !!sym(norm_quantity_column)
-                                                               , core_utilisation = core_utilisation)
-
-             theObject@raw_quantity_column   <- "Peptide.RawQuantity"
-             theObject@norm_quantity_column <- "Peptide.Normalised"
-
-             theObject <- cleanDesignMatrixPeptide(theObject)
-
-            return(theObject)
-          })
-
-##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-#'@export
-setMethod( f="peptideIntensityFiltering"
-           , signature="PeptideQuantitativeData"
-           , definition = function( theObject, peptides_intensity_cutoff_percentile = NULL, peptides_proportion_of_samples_below_cutoff = NULL, core_utilisation = NULL) {
-             print("--- Entering peptideIntensityFiltering S4 Method ---")
-             
-             peptide_data <- theObject@peptide_data
-             raw_quantity_column <- theObject@raw_quantity_column
-             norm_quantity_column <- theObject@norm_quantity_column
-
-             print("   peptideIntensityFiltering: Extracting input data...")
-             print(sprintf("      Arg: raw_quantity_column = %s", raw_quantity_column))
-             print(sprintf("      Arg: norm_quantity_column = %s", norm_quantity_column))
-             print(sprintf("      Data State (peptide_data): Dims = %d rows, %d cols", nrow(peptide_data), ncol(peptide_data)))
-
-             print("   peptideIntensityFiltering: Resolving parameters with checkParamsObjectFunctionSimplify...")
-             peptides_intensity_cutoff_percentile <- checkParamsObjectFunctionSimplify( theObject
-                                                                                    , "peptides_intensity_cutoff_percentile")
-             print(sprintf("      Resolved peptides_intensity_cutoff_percentile = %g", peptides_intensity_cutoff_percentile))
-
-             peptides_proportion_of_samples_below_cutoff <- checkParamsObjectFunctionSimplify( theObject
-                                                                                                , "peptides_proportion_of_samples_below_cutoff")
-             print(sprintf("      Resolved peptides_proportion_of_samples_below_cutoff = %g", peptides_proportion_of_samples_below_cutoff))
-
-             core_utilisation <- checkParamsObjectFunctionSimplify( theObject, "core_utilisation", NA)
-             print(sprintf("      Resolved core_utilisation = %s", ifelse(is.na(core_utilisation), "NA", as.character(core_utilisation))))
-
-             print("   peptideIntensityFiltering: Updating parameters in S4 object...")
-             theObject <- updateParamInObject(theObject, "peptides_intensity_cutoff_percentile")
-             theObject <- updateParamInObject(theObject, "peptides_proportion_of_samples_below_cutoff")
-             theObject <- updateParamInObject(theObject, "core_utilisation")
-
-             print("   peptideIntensityFiltering: Calculating intensity threshold...")
-             # Get non-missing values for threshold calculation
-             valid_values <- peptide_data |> dplyr::pull(!!sym(raw_quantity_column))
-             valid_values <- valid_values[!is.na(valid_values) & !is.nan(valid_values) & !is.infinite(valid_values)]
-             
-             print(sprintf("      peptideIntensityFiltering: Found %d valid intensity values", length(valid_values)))
-             print(sprintf("      peptideIntensityFiltering: Valid values range: %g to %g", min(valid_values, na.rm=TRUE), max(valid_values, na.rm=TRUE)))
-             
-             min_peptide_intensity_threshold <- ceiling( quantile( peptide_data |> dplyr::pull(!!sym(raw_quantity_column)), na.rm=TRUE, probs = c(peptides_intensity_cutoff_percentile/100) ))[1]
-             print(sprintf("      peptideIntensityFiltering: Calculated min_peptide_intensity_threshold = %g (percentile %g%%)", 
-                          min_peptide_intensity_threshold, peptides_intensity_cutoff_percentile))
-
-             print("   peptideIntensityFiltering: About to call helper function...")
-             print(sprintf("      Helper Args: min_peptide_intensity_threshold = %g", min_peptide_intensity_threshold))
-             print(sprintf("      Helper Args: peptides_proportion_of_samples_below_cutoff = %g", peptides_proportion_of_samples_below_cutoff))
-             print(sprintf("      Helper Args: protein_id_column = %s", theObject@protein_id_column))
-             print(sprintf("      Helper Args: peptide_sequence_column = %s", theObject@peptide_sequence_column))
-             print(sprintf("      Helper Args: peptide_quantity_column = %s", raw_quantity_column))
-
-             peptide_normalised_pif_cln <- peptideIntensityFilteringHelper( peptide_data
-                                                                      , min_peptide_intensity_threshold = min_peptide_intensity_threshold
-                                                                      , peptides_proportion_of_samples_below_cutoff = peptides_proportion_of_samples_below_cutoff
-                                                                      , protein_id_column = !!sym( theObject@protein_id_column)
-                                                                      , peptide_sequence_column = !!sym(theObject@peptide_sequence_column)
-                                                                      , peptide_quantity_column = !!sym(raw_quantity_column)
-                                                                      , core_utilisation = core_utilisation)
-
-             print(sprintf("   peptideIntensityFiltering: Helper function returned. New dims = %d rows, %d cols", 
-                          nrow(peptide_normalised_pif_cln), ncol(peptide_normalised_pif_cln)))
-
-             theObject@peptide_data <- peptide_normalised_pif_cln
-
-             print("   peptideIntensityFiltering: Cleaning design matrix...")
-             theObject <- cleanDesignMatrixPeptide(theObject)
-
-             print("--- Exiting peptideIntensityFiltering S4 Method ---")
-             return(theObject)
-           })
-
-#----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-#'@export
-setMethod( f = "removePeptidesWithMissingValuesPercent"
-           , signature="PeptideQuantitativeData"
-           , definition=function( theObject
-                                  , grouping_variable = NULL
-                                  , groupwise_percentage_cutoff = NULL
-                                  , max_groups_percentage_cutoff = NULL
-                                  , peptides_intensity_cutoff_percentile = NULL) {
-
-             peptide_data <- theObject@peptide_data
-             protein_id_column <- theObject@protein_id_column
-             peptide_sequence_column <- theObject@peptide_sequence_column
-             raw_quantity_column <- theObject@raw_quantity_column
-             norm_quantity_column <- theObject@norm_quantity_column
-             sample_id <- theObject@sample_id
-
-             design_matrix <- theObject@design_matrix
-
-             grouping_variable <- checkParamsObjectFunctionSimplify( theObject
-                                                                   , "grouping_variable"
-                                                                   , NULL)
-             groupwise_percentage_cutoff <- checkParamsObjectFunctionSimplify( theObject
-                                                                                   , "groupwise_percentage_cutoff"
-                                                                                   , 50)
-             max_groups_percentage_cutoff <- checkParamsObjectFunctionSimplify( theObject
-                                                                                   , "max_groups_percentage_cutoff"
-                                                                                   , 50)
-             peptides_intensity_cutoff_percentile <- checkParamsObjectFunctionSimplify( theObject
-                                                                                    , "peptides_intensity_cutoff_percentile"
-                                                                                    , 50)
-
-             theObject <- updateParamInObject(theObject, "grouping_variable")
-             theObject <- updateParamInObject(theObject, "groupwise_percentage_cutoff")
-             theObject <- updateParamInObject(theObject, "max_groups_percentage_cutoff")
-             theObject <- updateParamInObject(theObject, "peptides_intensity_cutoff_percentile")
-
-             min_protein_intensity_threshold <- ceiling( quantile( peptide_data |>
-                                                                     dplyr::filter( !is.nan(!!sym(norm_quantity_column)) & !is.infinite(!!sym(norm_quantity_column))) |>
-                                                                     dplyr::pull(!!sym(norm_quantity_column))
-                                                                   , na.rm=TRUE
-                                                                   , probs = c(peptides_intensity_cutoff_percentile/100) ))[1]
-
-             # print(min_protein_intensity_threshold )
-
-             theObject@peptide_data <- removePeptidesWithMissingValuesPercentHelper( peptide_data
-                                                                               , design_matrix = design_matrix
-                                                                               , sample_id = !!sym(sample_id)
-                                                                               , protein_id_column = !!sym(protein_id_column)
-                                                                               , peptide_sequence_column = !!sym(peptide_sequence_column)
-                                                                               , grouping_variable = !!sym(grouping_variable)
-                                                                               , groupwise_percentage_cutoff = groupwise_percentage_cutoff
-                                                                               , max_groups_percentage_cutoff = max_groups_percentage_cutoff
-                                                                               , abundance_threshold = peptides_intensity_cutoff_percentile
-                                                                               , abundance_column =  norm_quantity_column )
-
-
-             theObject <- cleanDesignMatrixPeptide(theObject)
-
-             return(theObject)
-
-           })
-
-##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-
-#'@title Filter the proteins based on the number of peptides and peptidoforms
-#'@description Keep the proteins only if they have two or more peptides.
-#'@param theObject Object of class PeptideQuantitativeData
-#'@param num_peptides_per_protein_thresh Minimum number of peptides per protein
-#'@param num_peptidoforms_per_protein_thresh Minimum number of peptidoforms per protein
-#'@param core_utilisation core_utilisation to use for parallel processing
-#'@export
-setMethod( f="filterMinNumPeptidesPerProtein"
-           , signature="PeptideQuantitativeData"
-           , definition = function( theObject, ... ) {
-             
-             # Extract specific parameters from ...
-             args <- list(...)
-             num_peptides_per_protein_thresh <- args$num_peptides_per_protein_thresh
-             num_peptidoforms_per_protein_thresh <- args$num_peptidoforms_per_protein_thresh
-             core_utilisation <- args$core_utilisation
-             peptide_data <- theObject@peptide_data
-             protein_id_column <- theObject@protein_id_column
-
-             num_peptides_per_protein_thresh <- checkParamsObjectFunctionSimplify( theObject
-                                                                                   , "num_peptides_per_protein_thresh"
-                                                                                   , 1)
-
-             num_peptidoforms_per_protein_thresh <- checkParamsObjectFunctionSimplify( theObject
-                                                                                       , "num_peptidoforms_per_protein_thresh"
-                                                                                       , 2)
-
-             core_utilisation <- checkParamsObjectFunctionSimplify( theObject, "core_utilisation", NA)
-
-
-             theObject <- updateParamInObject(theObject, "num_peptides_per_protein_thresh")
-             theObject <- updateParamInObject(theObject, "num_peptidoforms_per_protein_thresh")
-             theObject <- updateParamInObject(theObject, "core_utilisation")
-
-             theObject@peptide_data <- filterMinNumPeptidesPerProteinHelper ( input_table = peptide_data
-                                                                        , num_peptides_per_protein_thresh = num_peptides_per_protein_thresh
-                                                                        , num_peptidoforms_per_protein_thresh = num_peptidoforms_per_protein_thresh
-                                                                        , protein_id_column = !!sym(protein_id_column)
-                                                                        , core_utilisation = core_utilisation)
-
-             theObject <- cleanDesignMatrixPeptide(theObject)
-
-             theObject
-           })
-
-##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-#'@export
-setMethod( f="filterMinNumPeptidesPerSample"
-           , signature="PeptideQuantitativeData"
-           , definition = function( theObject
-                                    , peptides_per_sample_cutoff = NULL
-                                    , core_utilisation = NULL
-                                    , inclusion_list = NULL) {
-
-             peptide_data <- theObject@peptide_data
-             sample_id_column <- theObject@sample_id
-
-             peptides_per_sample_cutoff <- checkParamsObjectFunctionSimplify( theObject
-                                                                              , "peptides_per_sample_cutoff"
-                                                                              , 5000)
-
-             inclusion_list <- checkParamsObjectFunctionSimplifyAcceptNull( theObject
-                                                                            , "inclusion_list"
-                                                                            , NULL)
-
-             core_utilisation <- checkParamsObjectFunctionSimplify( theObject, "core_utilisation", NA)
-
-             theObject <- updateParamInObject(theObject, "peptides_per_sample_cutoff")
-             theObject <- updateParamInObject(theObject, "inclusion_list")
-             theObject <- updateParamInObject(theObject, "core_utilisation")
-
-             theObject@peptide_data <- filterMinNumPeptidesPerSampleHelper( peptide_data
-                                            , peptides_per_sample_cutoff = peptides_per_sample_cutoff
-                                            , sample_id_column = !!sym(sample_id_column)
-                                            , core_utilisation
-                                            , inclusion_list = inclusion_list )
-
-             theObject <- cleanDesignMatrixPeptide(theObject)
-
-             theObject
-           })
-
-##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-#'@export
-setMethod( f="removePeptidesWithOnlyOneReplicate"
-           , signature="PeptideQuantitativeData"
-           , definition = function( theObject, replicate_group_column = NULL, core_utilisation = NULL) {
-
-             peptide_data <- theObject@peptide_data
-             sample_id_column <- theObject@sample_id
-             design_matrix <- theObject@design_matrix
-
-
-             grouping_variable <- checkParamsObjectFunctionSimplifyAcceptNull( theObject
-                                                                       , "replicate_group_column"
-                                                                       , NULL)
-
-             core_utilisation <- checkParamsObjectFunctionSimplify( theObject
-                                                           , "core_utilisation"
-                                                           , NA)
-
-             theObject <- updateParamInObject(theObject, "replicate_group_column")
-             theObject <- updateParamInObject(theObject, "core_utilisation")
-
-             theObject@peptide_data <- removePeptidesWithOnlyOneReplicateHelper( input_table = peptide_data
-                                                                                             , samples_id_tbl = design_matrix
-                                                                                             , input_table_sample_id_column = !!sym(sample_id_column)
-                                                                                             , sample_id_tbl_sample_id_column  = !!sym(sample_id_column)
-                                                                                             , replicate_group_column = !!sym(replicate_group_column)
-                                                                                             , core_utilisation = core_utilisation)
-             theObject <- cleanDesignMatrixPeptide(theObject)
-
-             theObject
-           })
-
-
-
-##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-
-#'@export
-setMethod( f="plotPeptidesProteinsCountsPerSample"
-           , signature="PeptideQuantitativeData"
-           , definition = function( theObject ) {
-
-             plotPeptidesProteinsCountsPerSampleHelper( theObject@peptide_data
-                                                  , intensity_column =  !!sym( theObject@norm_quantity_column)
-                                                  , protein_id_column = !!sym(theObject@protein_id_column)
-                                                  , peptide_id_column = !!sym(theObject@peptide_sequence_column)
-                                                  , sample_id_column = !!sym( theObject@sample_id )
-                                                  , peptide_sequence_column = !!sym( theObject@peptide_sequence_column) )
-
-
-           })
-##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-#'@export
-setMethod( f="peptideMissingValueImputation"
-           , signature="PeptideQuantitativeData"
-           , definition = function( theObject,  imputed_value_column = NULL, proportion_missing_values = NULL, core_utilisation = NULL) {
-             peptide_data <- theObject@peptide_data
-             raw_quantity_column <- theObject@raw_quantity_column
-             sample_id_column <- theObject@sample_id
-             replicate_group_column <- theObject@technical_replicate_id
-             design_matrix <- theObject@design_matrix
-
-
-             imputed_value_column <- checkParamsObjectFunctionSimplifyAcceptNull( theObject
-                                                           , "imputed_value_column"
-                                                           , NULL)
-
-             proportion_missing_values <- checkParamsObjectFunctionSimplifyAcceptNull( theObject
-                                                           , "proportion_missing_values"
-                                                           , NULL)
-
-             core_utilisation <- checkParamsObjectFunctionSimplify( theObject
-                                                           , "core_utilisation"
-                                                           , NA)
-
-             theObject <- updateParamInObject(theObject, "imputed_value_column")
-             theObject <- updateParamInObject(theObject, "proportion_missing_values")
-             theObject <- updateParamInObject(theObject, "core_utilisation")
-
-             peptide_values_imputed <- peptideMissingValueImputationHelper( input_table = peptide_data
-                                                                      , metadata_table = design_matrix
-                                                                      , quantity_to_impute_column = !!sym( raw_quantity_column )
-                                                                      , imputed_value_column = !!sym(imputed_value_column)
-                                                                      , core_utilisation = core_utilisation
-                                                                      , input_table_sample_id_column = !!sym( sample_id_column)
-                                                                      , sample_id_tbl_sample_id_column = !!sym( sample_id_column)
-                                                                      , replicate_group_column = !!sym( replicate_group_column)
-                                                                      , proportion_missing_values = proportion_missing_values )
-
-             theObject@peptide_data <- peptide_values_imputed
-
-             theObject <- cleanDesignMatrixPeptide(theObject)
-
-             theObject
-           })
-
-##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-# I want to input two peptide data objects and compare them,
-# to see how the number of proteins and peptides changes and how the number of samples changed
-# Use set diff or set intersect to compare the peptides, proteins, samples in the two objects
-#'@export
-compareTwoPeptideDataObjects <- function( object_a, object_b) {
-
-  object_a_peptides <- object_a@peptide_data |>
-    distinct(!!sym(object_a@protein_id_column), !!sym(object_a@peptide_sequence_column))
-
-  object_b_peptides <- object_b@peptide_data |>
-    distinct(!!sym(object_b@protein_id_column), !!sym(object_b@peptide_sequence_column))
-
-  object_a_proteins <- object_a@peptide_data |>
-    distinct(!!sym(object_a@protein_id_column)) |>
-    dplyr::pull(!!sym(object_a@protein_id_column))
-
-  object_b_proteins <- object_b@peptide_data |>
-    distinct(!!sym(object_b@protein_id_column)) |>
-    dplyr::pull(!!sym(object_b@protein_id_column))
-
-  object_a_samples <- object_a@design_matrix |>
-    distinct(!!sym(object_a@sample_id)) |>
-    dplyr::pull(!!sym(object_a@sample_id))
-
-  object_b_samples <- object_b@design_matrix |>
-    distinct(!!sym(object_b@sample_id)) |>
-    dplyr::pull(!!sym(object_b@sample_id))
-
-
-  peptides_in_a_not_b <- nrow( dplyr::setdiff( object_a_peptides, object_b_peptides) )
-  peptides_intersect_a_and_b <- nrow( dplyr::intersect( object_a_peptides, object_b_peptides) )
-  peptides_in_b_not_a <- nrow(  dplyr::setdiff( object_b_peptides, object_a_peptides) )
-
-  proteins_in_a_not_b <- length( setdiff( object_a_proteins, object_b_proteins) )
-  proteins_intersect_a_and_b <- length( intersect( object_a_proteins, object_b_proteins) )
-  proteins_in_b_not_a <- length( setdiff( object_b_proteins, object_a_proteins) )
-
-
-  samples_in_a_not_b <- length( setdiff( object_a_samples, object_b_samples) )
-  samples_intersect_a_and_b <- length( intersect( object_a_samples, object_b_samples) )
-  samples_in_b_not_a <- length( setdiff( object_b_samples, object_a_samples) )
-
-  comparisons_list <- list(  peptides = list( in_a_not_b = peptides_in_a_not_b
-                                             , intersect_a_and_b = peptides_intersect_a_and_b
-                                             , in_b_not_a = peptides_in_b_not_a)
-                            , proteins = list( in_a_not_b = proteins_in_a_not_b
-                                               , intersect_a_and_b = proteins_intersect_a_and_b
-                                               , in_b_not_a = proteins_in_b_not_a)
-                            , samples = list( in_a_not_b = samples_in_a_not_b
-                                              , intersect_a_and_b = samples_intersect_a_and_b
-                                              , in_b_not_a = samples_in_b_not_a)
-  )
-
-  comparison_tibble <- comparisons_list |>
-    purrr::map_df( tibble::as_tibble) |>
-    add_column( Levels = c("peptides", "proteins", "samples")) |>
-    relocate( Levels, .before="in_a_not_b")
-
-  comparison_tibble
-
-
-}
-
-
-#'@export
-summarisePeptideObject <- function(theObject) {
-
-  num_peptides <- theObject@peptide_data |>
-    distinct(!!sym(theObject@protein_id_column), !!sym(theObject@peptide_sequence_column))
-
-  num_proteins <- theObject@peptide_data |>
-    distinct(!!sym(theObject@protein_id_column)) |>
-    dplyr::pull(!!sym(theObject@protein_id_column))
-
-  num_samples <- theObject@design_matrix |>
-    distinct(!!sym(theObject@sample_id)) |>
-    dplyr::pull(!!sym(theObject@sample_id))
-
-  summary_list <- list( num_peptides = nrow(num_peptides)
-                       , num_proteins = length(num_proteins)
-                       , num_samples = length(num_samples))
-
-  summary_list
-
-
-}
-
-##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-#'@export
 
 #'@export
 setMethod(f="calcPeptideMatrix"
@@ -1782,6 +1231,7 @@ setMethod(f="peptideMissingValueImputationLimpa"
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #'@export
+#' @export
 setMethod(f="plotRle"
           , signature="PeptideQuantitativeData"
           , definition=function(theObject, grouping_variable, yaxis_limit = c(), sample_label = NULL) {
@@ -1805,7 +1255,11 @@ setMethod(f="plotRle"
               rowinfo_vector <- design_matrix[colnames(peptide_matrix), grouping_variable]
             }
 
-            rle_plot <- plotRleHelper(t(peptide_matrix)
+            # Handle missing/non-finite values
+            working_matrix <- peptide_matrix
+            working_matrix[!is.finite(working_matrix)] <- NA
+
+            rle_plot <- plotRleHelper(t(working_matrix)
                                      , rowinfo = rowinfo_vector
                                      , yaxis_limit = yaxis_limit)
 
@@ -1866,50 +1320,51 @@ plotPcaDispatch <- function(theObject, grouping_variable, shape_variable = NULL,
   return(pca_plot)
 }
 
-# ##'@export
-# #setMethod(f="plotPca"
-#           , signature="PeptideQuantitativeData"
-#           , definition=function(theObject, grouping_variable, shape_variable = NULL, label_column, title, font_size=8) {
-#             # Defensive checks
-#             if (!is.character(grouping_variable) || length(grouping_variable) != 1) {
-#               stop("grouping_variable must be a single character string")
-#             }
+#'@export
+setMethod(f="plotPca"
+          , signature="PeptideQuantitativeData"
+          , definition=function(theObject, grouping_variable, shape_variable = NULL, label_column, title, font_size=8, cv_percentile = 0.90) {
+            # Defensive checks
+            if (!is.character(grouping_variable) || length(grouping_variable) != 1) {
+              stop("grouping_variable must be a single character string")
+            }
             
-#             if (!is.null(shape_variable) && (!is.character(shape_variable) || length(shape_variable) != 1)) {
-#               stop("shape_variable must be NULL or a single character string")
-#             }
+            if (!is.null(shape_variable) && (!is.character(shape_variable) || length(shape_variable) != 1)) {
+              stop("shape_variable must be NULL or a single character string")
+            }
             
-#             if (!grouping_variable %in% colnames(theObject@design_matrix)) {
-#               stop(sprintf("grouping_variable '%s' not found in design matrix", grouping_variable))
-#             }
+            if (!grouping_variable %in% colnames(theObject@design_matrix)) {
+              stop(sprintf("grouping_variable '%s' not found in design matrix", grouping_variable))
+            }
             
-#             if (!is.null(shape_variable) && !shape_variable %in% colnames(theObject@design_matrix)) {
-#               stop(sprintf("shape_variable '%s' not found in design matrix", shape_variable))
-#             }
+            if (!is.null(shape_variable) && !shape_variable %in% colnames(theObject@design_matrix)) {
+              stop(sprintf("shape_variable '%s' not found in design matrix", shape_variable))
+            }
 
-#             peptide_matrix <- theObject@peptide_matrix
-#             design_matrix <- theObject@design_matrix
-#             sample_id <- theObject@sample_id
+            peptide_matrix <- theObject@peptide_matrix
+            design_matrix <- theObject@design_matrix
+            sample_id <- theObject@sample_id
 
-#             # Prepare matrix for PCA (data should already be log2 transformed)
-#             peptide_matrix_pca <- peptide_matrix
-#             peptide_matrix_pca[!is.finite(peptide_matrix_pca)] <- NA
+            # Prepare matrix for PCA (data should already be log2 transformed)
+            peptide_matrix_pca <- peptide_matrix
+            peptide_matrix_pca[!is.finite(peptide_matrix_pca)] <- NA
 
-#             if(is.na(label_column) || label_column == "") {
-#               label_column <- ""
-#             }
+            if(is.na(label_column) || label_column == "") {
+              label_column <- ""
+            }
 
-#             pca_plot <- plotPcaHelper(peptide_matrix_pca
-#                                      , design_matrix = design_matrix
-#                                      , sample_id_column = sample_id
-#                                      , grouping_variable = grouping_variable
-#                                      , shape_variable = shape_variable
-#                                      , label_column = label_column
-#                                      , title = title
-#                                      , geom.text.size = font_size)
+            pca_plot <- plotPcaHelper(peptide_matrix_pca
+                                     , design_matrix = design_matrix
+                                     , sample_id_column = sample_id
+                                     , grouping_variable = grouping_variable
+                                     , shape_variable = shape_variable
+                                     , label_column = label_column
+                                     , title = title
+                                     , geom.text.size = font_size
+                                     , cv_percentile = cv_percentile)
 
-#             return(pca_plot)
-#           })
+            return(pca_plot)
+          })
 
 # Set up S4 class definitions for ggplot objects
 setOldClass(c("gg", "ggplot"))
@@ -1983,96 +1438,6 @@ setMethod(f="plotDensity"
             return(combined_plot)
           }) 
 
-#'@export
-setMethod(f="plotPearson"
-          , signature="PeptideQuantitativeData"
-          , definition=function(theObject, tech_rep_remove_regex, correlation_group = NA) {
-            peptide_matrix <- theObject@peptide_matrix
-            design_matrix <- theObject@design_matrix
-            sample_id <- theObject@sample_id
-            
-            correlation_group_to_use <- correlation_group
-            
-            if(is.na(correlation_group)) {
-              correlation_group_to_use <- theObject@technical_replicate_id
-            }
-
-            # Create a temporary ProteinQuantitativeData-like structure to use existing correlation function
-            # We'll adapt the pearsonCorForSamplePairs function logic for peptides
-            
-            # Convert peptide matrix to data frame format similar to protein_quant_table
-            peptide_data_for_corr <- peptide_matrix |>
-              as.data.frame() |>
-              rownames_to_column("peptide_id")
-            
-            # Create a temporary object structure for correlation calculation
-            temp_obj <- list(
-              data_table = peptide_data_for_corr,
-              id_column = "peptide_id",
-              design_matrix = design_matrix,
-              sample_id = sample_id
-            )
-            
-            # Calculate correlations between sample pairs
-            correlation_vec <- calculatePeptidePearsonCorrelation(temp_obj, 
-                                                                 tech_rep_remove_regex,
-                                                                 correlation_group_to_use)
-
-            pearson_plot <- correlation_vec |>
-              ggplot(aes(pearson_correlation)) +
-              geom_histogram(breaks = seq(min(round(correlation_vec$pearson_correlation - 0.5, 2), na.rm = TRUE), 1, 0.001)) +
-              scale_y_continuous(breaks = seq(0, 4, 1), limits = c(0, 4)) +
-              xlab("Pearson Correlation") +
-              ylab("Counts") +
-              theme(panel.grid.major = element_blank(),
-                    panel.grid.minor = element_blank(),
-                    panel.background = element_blank())
-
-            return(pearson_plot)
-          })
-
-##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-# Helper function for peptide Pearson correlation calculation
-##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-calculatePeptidePearsonCorrelation <- function(temp_obj, tech_rep_remove_regex, correlation_group) {
-  data_table <- temp_obj$data_table
-  id_column <- temp_obj$id_column
-  design_matrix <- temp_obj$design_matrix
-  sample_id <- temp_obj$sample_id
-  
-  # Get sample columns (exclude ID column)
-  sample_columns <- setdiff(colnames(data_table), id_column)
-  
-  # Filter out technical replicates if regex provided
-  if(!is.null(tech_rep_remove_regex) && tech_rep_remove_regex != "") {
-    sample_columns <- sample_columns[!grepl(tech_rep_remove_regex, sample_columns)]
-  }
-  
-  # Create correlation matrix
-  peptide_matrix_for_corr <- data_table |>
-    column_to_rownames(id_column) |>
-    select(all_of(sample_columns)) |>
-    as.matrix()
-  
-  # Calculate correlations between all sample pairs
-  sample_correlations <- cor(peptide_matrix_for_corr, use = "pairwise.complete.obs")
-  
-  # Extract upper triangle (avoid duplicate pairs and self-correlations)
-  upper_tri_indices <- which(upper.tri(sample_correlations), arr.ind = TRUE)
-  
-  correlation_results <- data.frame(
-    sample1 = rownames(sample_correlations)[upper_tri_indices[,1]],
-    sample2 = colnames(sample_correlations)[upper_tri_indices[,2]],
-    pearson_correlation = sample_correlations[upper_tri_indices],
-    stringsAsFactors = FALSE
-  )
-  
-  # Remove NA correlations
-  correlation_results <- correlation_results[!is.na(correlation_results$pearson_correlation), ]
-  
-  return(correlation_results)
-}
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -2273,6 +1638,13 @@ setMethod(f = "chooseBestProteinAccession"
               log_info("Aggregation method for duplicate peptides will be: '{aggregation_method}'")
             }
 
+            # --- Robustly handle list input for seqinr_obj ---
+            if (is.list(seqinr_obj) && !is.data.frame(seqinr_obj) && "aa_seq_tbl_final" %in% names(seqinr_obj)) {
+              if (verbose) log_info("Extracting data frame from seqinr_obj list...")
+              seqinr_obj <- seqinr_obj$aa_seq_tbl_final
+            }
+            
+
             # --- Map Old to New IDs ---
             accession_mapping <- chooseBestProteinAccessionHelper(input_tbl = peptide_data,
                                                                   acc_detail_tab = seqinr_obj,
@@ -2338,3 +1710,195 @@ setMethod(f = "chooseBestProteinAccession"
 
             return(theObject)
           })
+
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# PCA plot for PeptideQuantitativeData
+
+#' @export
+setMethod(
+  f = "plotPca",
+  signature = "PeptideQuantitativeData",
+  definition = function(theObject, grouping_variable, shape_variable = NULL, label_column = NULL, title = NULL, font_size = 8, cv_percentile = 0.90) {
+    # Defensive checks
+    if (!is.character(grouping_variable) || length(grouping_variable) != 1) {
+      stop("grouping_variable must be a single character string")
+    }
+
+    if (!is.null(shape_variable) && (!is.character(shape_variable) || length(shape_variable) != 1)) {
+      stop("shape_variable must be NULL or a single character string")
+    }
+
+    if (!grouping_variable %in% colnames(theObject@design_matrix)) {
+      stop(sprintf("grouping_variable '%s' not found in design matrix", grouping_variable))
+    }
+
+    if (!is.null(shape_variable) && !shape_variable %in% colnames(theObject@design_matrix)) {
+      stop(sprintf("shape_variable '%s' not found in design matrix", shape_variable))
+    }
+
+    # Extract data from the matrix slot
+    peptide_matrix <- theObject@peptide_matrix
+    design_matrix <- theObject@design_matrix
+    sample_id <- theObject@sample_id
+
+    # Handle missing values - replace INF/NAN with NA
+    working_matrix <- peptide_matrix
+    working_matrix[!is.finite(working_matrix)] <- NA
+
+    if (is.na(label_column) || label_column == "") {
+      label_column <- ""
+    }
+
+    required_cols <- c(sample_id, grouping_variable)
+    if (!is.null(shape_variable)) {
+      required_cols <- c(required_cols, shape_variable)
+    }
+    
+    tryCatch(
+      {
+        pca_plot <- plotPcaHelper(working_matrix,
+          design_matrix,
+          sample_id_column = sample_id,
+          grouping_variable = grouping_variable,
+          shape_variable = shape_variable,
+          label_column = label_column,
+          title = title,
+          geom.text.size = font_size
+        )
+        return(pca_plot)
+      },
+      error = function(e) {
+        stop(sprintf("Error in plotPcaHelper for PeptideQuantitativeData: %s", e$message))
+      }
+    )
+  }
+)
+
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Density plot for PeptideQuantitativeData
+
+#' @export
+setMethod(
+  f = "plotDensity",
+  signature = "PeptideQuantitativeData",
+  definition = function(theObject, grouping_variable, title = "", font_size = 8) {
+    peptide_data <- theObject@peptide_data
+    quant_col <- theObject@norm_quantity_column
+    sample_id <- theObject@sample_id
+    
+    peptide_data |>
+      filter(!is.na(!!sym(quant_col))) |>
+      ggplot(aes(x = !!sym(quant_col), color = !!sym(sample_id))) +
+      geom_density() +
+      apafTheme() +
+      labs(title = title, x = "Log2 Intensity", y = "Density") +
+      theme(legend.position = "none")
+  }
+)
+
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Pearson correlation plot for PeptideQuantitativeData
+
+#' @export
+setMethod(
+  f = "plotPearson",
+  signature = "PeptideQuantitativeData",
+  definition = function(theObject, tech_rep_remove_regex = NULL, correlation_group = NA, exclude_pool_samples = TRUE) {
+    correlation_vec <- pearsonCorForSamplePairs(theObject,
+      tech_rep_remove_regex = tech_rep_remove_regex,
+      correlation_group = correlation_group,
+      exclude_pool_samples = exclude_pool_samples
+    )
+
+    if (nrow(correlation_vec) == 0) {
+      return(ggplot() + labs(title = "No within-group sample pairs found for correlation"))
+    }
+
+    pearson_plot <- correlation_vec |>
+      ggplot(aes(pearson_correlation)) +
+      geom_histogram(bins = 100) +
+      xlab("Pearson Correlation") +
+      ylab("Counts") +
+      apafTheme()
+      
+    return(pearson_plot)
+  }
+)
+
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# pearsonCorForSamplePairs for PeptideQuantitativeData
+
+#' @export
+setMethod(
+  f = "pearsonCorForSamplePairs",
+  signature = "PeptideQuantitativeData",
+  definition = function(theObject, tech_rep_remove_regex = NULL, correlation_group = NA, exclude_pool_samples = TRUE) {
+    message("+===========================================================================+")
+    message("|  DEBUG66: Entering pearsonCorForSamplePairs (Peptides)                   |")
+    message("+===========================================================================+")
+
+    design_matrix <- theObject@design_matrix
+    sample_id <- theObject@sample_id
+    peptide_matrix <- theObject@peptide_matrix
+
+    replicate_group_column <- theObject@technical_replicate_id
+    if (!is.na(correlation_group)) {
+      replicate_group_column <- correlation_group
+    }
+
+    # Use the matrix directly
+    mat <- peptide_matrix
+    
+    # Ensure they match design matrix samples
+    valid_samples <- intersect(colnames(mat), design_matrix[[sample_id]])
+    if (length(valid_samples) == 0) {
+      stop("No matching samples found between peptide data and design matrix")
+    }
+    mat <- mat[, valid_samples, drop = FALSE]
+
+    # Calculate Correlation Matrix
+    cor_mat <- cor(mat, method = "pearson", use = "pairwise.complete.obs")
+
+    # Map samples to groups
+    sample_to_group <- setNames(as.character(design_matrix[[replicate_group_column]]), as.character(design_matrix[[sample_id]]))
+
+    # Get upper triangle indices
+    upper_tri_indices <- which(upper.tri(cor_mat), arr.ind = TRUE)
+    samples1 <- rownames(cor_mat)[upper_tri_indices[, 1]]
+    samples2 <- colnames(cor_mat)[upper_tri_indices[, 2]]
+    cor_values <- cor_mat[upper_tri_indices]
+
+    col_x <- paste0(sample_id, ".x")
+    col_y <- paste0(sample_id, ".y")
+
+    result_df <- data.frame(
+      temp_s1 = samples1,
+      temp_s2 = samples2,
+      pearson_correlation = cor_values,
+      stringsAsFactors = FALSE
+    )
+    colnames(result_df)[1:2] <- c(col_x, col_y)
+
+    # Add groups
+    result_df$Group_1 <- sample_to_group[result_df[[col_x]]]
+    result_df$Group_2 <- sample_to_group[result_df[[col_y]]]
+
+    # Filter for within-group correlations
+    result_df <- result_df[!is.na(result_df$Group_1) & !is.na(result_df$Group_2) & result_df$Group_1 == result_df$Group_2, ]
+    result_df[[replicate_group_column]] <- result_df$Group_1
+
+    # Clean up
+    result_df$Group_1 <- NULL
+    result_df$Group_2 <- NULL
+
+    if (exclude_pool_samples) {
+      is_pool_qc_group <- grepl("pool|qc", result_df[[replicate_group_column]], ignore.case = TRUE)
+      if (sum(is_pool_qc_group) > 0) {
+        result_df <- result_df[!is_pool_qc_group, ]
+      }
+    }
+
+    message("|  DEBUG66: Exiting pearsonCorForSamplePairs (Peptides)                    |")
+    return(result_df)
+  }
+)

@@ -2,7 +2,7 @@
 # Phase 4 of Proteomics GUI Test Strategy
 
 test_that("rolled-up protein snapshot is valid", {
-  cp_file <- test_path("..", "testdata", "prot_checkpoints", "cp03_rolled_up_protein.rds")
+  cp_file <- test_path("..", "testdata", "sepsis", "proteomics", "cp03_rolled_up_protein.rds")
   
   if (file.exists(cp_file)) {
     obj <- readRDS(cp_file)

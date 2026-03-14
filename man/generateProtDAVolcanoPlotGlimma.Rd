@@ -15,7 +15,9 @@ generateProtDAVolcanoPlotGlimma(
   da_q_val_thresh = 0.05,
   uniprot_id_column = "Entry",
   gene_names_column = "gene_names",
-  display_columns = c("best_uniprot_acc")
+  display_columns = c("best_uniprot_acc"),
+  output_dir = NULL,
+  ...
 )
 }
 \description{

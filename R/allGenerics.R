@@ -304,10 +304,15 @@ setGeneric(name="rollUpPrecursorToPeptide"
            , signature=c("theObject", "core_utilisation"))
 
 setGeneric(name="peptideIntensityFiltering"
-           , def=function( theObject, peptides_intensity_cutoff_percentile = NULL, peptides_proportion_of_samples_below_cutoff = NULL, core_utilisation = NULL) {
+           , def=function( theObject, 
+                           grouping_variable = NULL, 
+                           groupwise_percentage_cutoff = NULL, 
+                           max_groups_percentage_cutoff = NULL, 
+                           peptides_intensity_cutoff_percentile = NULL, 
+                           core_utilisation = NULL) {
              standardGeneric("peptideIntensityFiltering")
            }
-           , signature=c("theObject", "peptides_intensity_cutoff_percentile", "peptides_proportion_of_samples_below_cutoff", "core_utilisation"))
+           , signature=c("theObject"))
 
 setGeneric(name="removePeptidesWithMissingValuesPercent"
            , def=function( theObject

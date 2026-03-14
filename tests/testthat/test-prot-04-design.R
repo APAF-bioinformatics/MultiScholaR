@@ -3,7 +3,7 @@
 
 test_that("ProteinQuantitativeData constructor works", {
   # Check for captured checkpoint
-  cp_file <- test_path("..", "testdata", "prot_checkpoints", "cp04_design_matrix.rds")
+  cp_file <- test_path("..", "testdata", "sepsis", "proteomics", "cp04_design_matrix.rds")
   
   if (file.exists(cp_file)) {
     pqd <- readRDS(cp_file)

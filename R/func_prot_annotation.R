@@ -1859,6 +1859,18 @@ convertEnsemblToUniprot <- function(ensembl_ids, organism_code) {
 }
 
 #' @export
+# ----------------------------------------------------------------------------
+# getUniprotAnnotationsFull
+# ----------------------------------------------------------------------------
+#' @title Get Full UniProt Annotations
+#' @description Retrieves comprehensive protein information from UniProt, including Cross-references, 
+#' Gene Ontology, and functional data.
+#' @param data_tbl Data frame containing protein IDs.
+#' @param protein_id_column Name of the column containing protein IDs.
+#' @param cache_dir Directory of the UniProt cache.
+#' @param taxon_id Taxonomic ID of the organism.
+#' @return Data frame with UniProt annotations.
+#' @export
 getUniprotAnnotationsFull <- function(data_tbl,
                                      protein_id_column,
                                      cache_dir,
@@ -2639,6 +2651,19 @@ rankProteinAccessionHelper <- function(input_tbl
 # ----------------------------------------------------------------------------
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
+# ----------------------------------------------------------------------------
+# processFastaFile
+# ----------------------------------------------------------------------------
+#' @title Process FASTA file and map to UniProt/UniParc
+#' @description Parses a FASTA file and maps accessions to UniProt/UniParc search results
+#' to create a standardized sequence mapping table.
+#' @param fasta_file_path Path to the FASTA file.
+#' @param uniprot_search_results UniProt search results data frame (optional).
+#' @param uniparc_search_results UniParc search results data frame (optional).
+#' @param fasta_meta_file Path to save/load parsed fasta metadata.
+#' @param organism_name Name of the organism for metadata.
+#' @return Mapping table between accessions and standardized IDs.
+#' @export
 processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uniparc_search_results = NULL, fasta_meta_file, organism_name) {
   # Properly suppress all vroom messages
   withr::local_options(list(
@@ -2890,6 +2915,13 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uni
 # ----------------------------------------------------------------------------
 # updateProteinIDs
 # ----------------------------------------------------------------------------
+#' @title Update Protein IDs based on Sequence Table
+#' @description Matches Protein.Ids in the data with accessions in the sequence table 
+#' and replaces them with standardized IDs (e.g., database_id or ncbi_refseq).
+#' @param protein_data Data frame containing a 'Protein.Ids' column.
+#' @param aa_seq_tbl_final Data frame containing accessions and standardized IDs.
+#' @return Updated protein_data data frame.
+#' @export
 updateProteinIDs <- function(protein_data, aa_seq_tbl_final) {
   # Check if ncbi_refseq column exists in aa_seq_tbl_final
   if (!"ncbi_refseq" %in% colnames(aa_seq_tbl_final)) {
