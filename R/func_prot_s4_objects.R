@@ -1881,6 +1881,13 @@ setMethod(
       stop("aggregation_method must be one of: 'sum', 'mean', 'median'")
     }
 
+    # --- Robustly handle list input for seqinr_obj ---
+    if (is.list(seqinr_obj) && !is.data.frame(seqinr_obj) && "aa_seq_tbl_final" %in% names(seqinr_obj)) {
+      cat("   [DEBUG66] Extracting data frame from seqinr_obj list...\n")
+      seqinr_obj <- seqinr_obj$aa_seq_tbl_final
+    }
+    
+
     theObject <- updateParamInObject(theObject, "delim")
     theObject <- updateParamInObject(theObject, "seqinr_obj")
     theObject <- updateParamInObject(theObject, "seqinr_accession_column")
@@ -2330,7 +2337,11 @@ setMethod(
     print(rownames(design_matrix))
     print(colnames(frozen_protein_matrix))
     print(rowinfo_vector)
-    rle_plot_before_cyclic_loess <- plotRleHelper(t(frozen_protein_matrix),
+    # Handle missing/non-finite values
+    working_matrix <- frozen_protein_matrix
+    working_matrix[!is.finite(working_matrix)] <- NA
+
+    rle_plot_before_cyclic_loess <- plotRleHelper(t(working_matrix),
       rowinfo = rowinfo_vector,
       yaxis_limit = yaxis_limit
     )
@@ -2670,11 +2681,13 @@ setClass("GridPlotData",
     rle_plots = "list",
     pearson_plots = "list",
     cancor_plots = "list",
+    limpa_plots = "list",
     pca_titles = "list",
     density_titles = "list",
     rle_titles = "list",
     pearson_titles = "list",
-    cancor_titles = "list"
+    cancor_titles = "list",
+    limpa_titles = "list"
   )
 )
 
@@ -2694,11 +2707,13 @@ setMethod(
       rle_plots = list(),
       pearson_plots = list(),
       cancor_plots = list(),
+      limpa_plots = list(),
       pca_titles = list(),
       density_titles = list(),
       rle_titles = list(),
       pearson_titles = list(),
-      cancor_titles = list()
+      cancor_titles = list(),
+      limpa_titles = list()
     )
   }
 )
@@ -2710,7 +2725,7 @@ setMethod(
 #' @export
 setGeneric(
   name = "createGridQC",
-  def = function(theObject, pca_titles = NULL, density_titles = NULL, rle_titles = NULL, pearson_titles = NULL, cancor_titles = NULL, ncol = 3, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
+  def = function(theObject, pca_titles = NULL, density_titles = NULL, rle_titles = NULL, pearson_titles = NULL, cancor_titles = NULL, limpa_titles = NULL, ncol = 3, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged", workflow_name = NULL) {
     standardGeneric("createGridQC")
   },
   signature = c("theObject")
@@ -2720,7 +2735,7 @@ setGeneric(
 setMethod(
   f = "createGridQC",
   signature = "GridPlotData",
-  definition = function(theObject, pca_titles = NULL, density_titles = NULL, rle_titles = NULL, pearson_titles = NULL, cancor_titles = NULL, ncol = 3, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
+  definition = function(theObject, pca_titles = NULL, density_titles = NULL, rle_titles = NULL, pearson_titles = NULL, cancor_titles = NULL, limpa_titles = NULL, ncol = 3, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged", workflow_name = NULL) {
     # MEMORY OPTIMIZED: Added gc() calls and single-format save
     message("--- [createGridQC]: Entry ---")
     mem_before <- sum(gc()[, 2])
@@ -2732,6 +2747,7 @@ setMethod(
     rle_titles <- if (is.null(rle_titles)) theObject@rle_titles else rle_titles
     pearson_titles <- if (is.null(pearson_titles)) theObject@pearson_titles else pearson_titles
     cancor_titles <- if (is.null(cancor_titles)) theObject@cancor_titles else cancor_titles
+    limpa_titles <- if (is.null(limpa_titles)) theObject@limpa_titles else limpa_titles
 
     createLabelPlot <- function(title) {
       # Option 1: Use xlim to expand the plot area and position text at left edge
@@ -2758,6 +2774,11 @@ setMethod(
     }
 
     createDensityPlot <- function(plot) {
+      # Safety check: if plot is not a ggplot or patchwork, return it as is or wrapped
+      if (!inherits(plot, "ggplot") && !inherits(plot, "patchwork")) {
+        return(plot)
+      }
+      
       # For all plots, just apply the theme without adding title
       if (inherits(plot, "patchwork")) {
         plot &
@@ -2840,6 +2861,48 @@ setMethod(
     created_pearson_plots <- created_pearson_plots[!sapply(created_pearson_plots, is.null)]
     gc()
 
+    message("   [createGridQC] Processing Limpa plots...")
+    # Limpa plots come as a list of 4 plots (dpc_curve, missing_comparison, intensity_distribution, summary)
+    # We will wrap them into a single section
+    created_limpa_plots <- list()
+    if (length(theObject@limpa_plots) > 0) {
+      # Helper: safely coerce any plot object to a ggplot-compatible object
+      safe_as_ggplot <- function(p, fallback_label = "Plot unavailable") {
+        tryCatch({
+          if (inherits(p, "ggplot") || inherits(p, "patchwork")) {
+            return(p)
+          }
+          # Try cowplot::ggdraw for grobs/gtables
+          if (inherits(p, c("grob", "gtable", "gTree"))) {
+            if (inherits(p, "gtable") && (length(p$heights) <= 1 || length(p$widths) <= 1)) {
+              return(ggplot() + annotate("text", x = 0.5, y = 0.5, label = fallback_label) + theme_void())
+            }
+            if (requireNamespace("cowplot", quietly = TRUE)) {
+              return(cowplot::ggdraw() + cowplot::draw_grob(p))
+            }
+          }
+          # Fallback: return a placeholder
+          ggplot() + annotate("text", x = 0.5, y = 0.5, label = fallback_label) + theme_void()
+        }, error = function(e) {
+          message(sprintf("   [createGridQC] Warning: Could not convert limpa plot: %s", e$message))
+          ggplot() + annotate("text", x = 0.5, y = 0.5, label = fallback_label) + theme_void()
+        })
+      }
+
+      # Extract each component if it exists
+      created_limpa_plots <- lapply(c("dpc_curve", "missing_comparison", "intensity_distribution", "summary"), function(name) {
+        if (!is.null(theObject@limpa_plots[[name]])) {
+           p <- theObject@limpa_plots[[name]]
+           # Safely coerce to ggplot first
+           p <- safe_as_ggplot(p, fallback_label = paste("Limpa", name, "unavailable"))
+           # Apply theme for consistency
+           createDensityPlot(p) 
+        } else NULL
+      })
+      created_limpa_plots <- created_limpa_plots[!sapply(created_limpa_plots, is.null)]
+    }
+    gc()
+
     message("   [createGridQC] Processing Cancor plots...")
     created_cancor_plots <- lapply(cancor_order, function(name) {
       if (!is.null(theObject@cancor_plots[[name]])) createCancorPlot(theObject@cancor_plots[[name]]) else NULL
@@ -2853,6 +2916,7 @@ setMethod(
     rle_labels <- lapply(rle_titles, createLabelPlot)
     pearson_labels <- lapply(pearson_titles, createLabelPlot)
     cancor_labels <- lapply(cancor_titles, createLabelPlot)
+    limpa_labels <- lapply(limpa_titles, createLabelPlot)
 
     # Combine with labels above each row - modified to keep legends with their plots
     plot_sections <- list()
@@ -2913,6 +2977,15 @@ setMethod(
       height_values <- c(height_values, 0.1, 1)
     }
 
+    # Add Limpa plots if they exist and are non-empty
+    if (length(theObject@limpa_plots) > 0 && length(created_limpa_plots) > 0) {
+      plot_sections <- append(plot_sections, list(
+        wrap_plots(limpa_labels, ncol = ncol),
+        wrap_plots(created_limpa_plots, ncol = 2) # Limpa plots are 4, so 2x2 grid fits well
+      ))
+      height_values <- c(height_values, 0.1, 2) # Double height for the 2x2 section
+    }
+
     # MEMORY CLEANUP before combining plots
     message("   [createGridQC] Combining plot sections...")
     gc()
@@ -2934,14 +3007,20 @@ setMethod(
 
       # MEMORY OPTIMIZATION: Save only PNG (removed PDF/SVG triple-save to reduce memory)
       message("   [createGridQC] Saving PNG only (memory optimization)...")
-      ggsave(
-        plot = combined_plot,
-        filename = file.path(save_path, paste0(file_name, ".png")),
-        width = plot_width,
-        height = plot_height,
-        dpi = 150 # Reduced DPI for memory efficiency
-      )
-      message(paste("   [createGridQC] Plot saved to:", save_path))
+      tryCatch({
+        ggsave(
+          plot = combined_plot,
+          filename = file.path(save_path, paste0(file_name, ".png")),
+          width = plot_width,
+          height = plot_height,
+          dpi = 150 # Reduced DPI for memory efficiency
+        )
+        message(paste("   [createGridQC] Plot saved to:", save_path))
+      }, error = function(e) {
+        message(sprintf("   [createGridQC] WARNING: Failed to save plot: %s", e$message))
+        message("   [createGridQC] The combined_plot object is returned but could not be rendered to PNG.")
+        message("   [createGridQC] This may indicate a non-ggplot object in the plot assembly.")
+      })
     }
 
     # Final memory cleanup
@@ -3645,3 +3724,84 @@ savePlotDensityList <- function(input_list, prefix = "Density", suffix = c("png"
 }
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#' @export
+setMethod(
+  f = "filterMinNumPeptidesPerProtein",
+  signature = "ProteinQuantitativeData",
+  definition = function(theObject, ...) {
+    # Extract specific parameters from ...
+    args <- list(...)
+    num_peptides_per_protein_thresh <- args$num_peptides_per_protein_thresh
+    num_peptidoforms_per_protein_thresh <- args$num_peptidoforms_per_protein_thresh
+    verbose <- args$verbose
+
+    # --- Parameter validation and defaults ---
+    num_peptides_per_protein_thresh <- checkParamsObjectFunctionSimplify(
+      theObject,
+      "num_peptides_per_protein_thresh",
+      1
+    )
+
+    num_peptidoforms_per_protein_thresh <- checkParamsObjectFunctionSimplify(
+      theObject,
+      "num_peptidoforms_per_protein_thresh",
+      2
+    )
+
+    verbose <- checkParamsObjectFunctionSimplify(theObject, "verbose", TRUE)
+
+    # Update parameters in object
+    theObject <- updateParamInObject(theObject, "num_peptides_per_protein_thresh")
+    theObject <- updateParamInObject(theObject, "num_peptidoforms_per_protein_thresh")
+    theObject <- updateParamInObject(theObject, "verbose")
+
+    if (verbose) {
+      log_info("Starting protein filtering based on peptide and peptidoform evidence...")
+      log_info("Minimum unique peptides per protein: {num_peptides_per_protein_thresh}")
+      log_info("Minimum total peptidoforms per protein: {num_peptidoforms_per_protein_thresh}")
+    }
+
+    # Get the peptide summary table (which is now guaranteed to be in sync)
+    peptide_summary <- theObject@args$limpa_dpc_quant_results$peptide_counts_per_protein
+    if (is.null(peptide_summary)) {
+      stop("Could not find the peptide summary table. Please run chooseBestProteinAccession first.")
+    }
+
+    # --- Perform the filtering ---
+    protein_quant_table <- theObject@protein_quant_table
+    protein_id_column <- theObject@protein_id_column
+    proteins_before <- nrow(protein_quant_table)
+
+    protein_ids_to_keep <- peptide_summary |>
+      dplyr::filter(peptide_count >= num_peptides_per_protein_thresh & peptidoform_count >= num_peptidoforms_per_protein_thresh) |>
+      dplyr::pull(!!sym(protein_id_column))
+
+    filtered_protein_table <- protein_quant_table |>
+      dplyr::filter(!!sym(protein_id_column) %in% protein_ids_to_keep)
+
+    proteins_after <- nrow(filtered_protein_table)
+
+    if (verbose) {
+      log_info("Proteins before filtering: {proteins_before}")
+      log_info("Proteins after filtering: {proteins_after}")
+      log_info("Proteins removed: {proteins_before - proteins_after}")
+      if (proteins_before > 0) {
+        log_info("Retention rate: {round(100 * proteins_after / proteins_before, 1)}%")
+      }
+    }
+
+    # Update the main data table
+    theObject@protein_quant_table <- filtered_protein_table
+
+    # Also filter the EList for consistency
+    if (!is.null(theObject@args$limpa_dpc_quant_results$quantified_elist)) {
+      original_elist <- theObject@args$limpa_dpc_quant_results$quantified_elist
+      indices_to_keep <- which(original_elist$genes$protein.id %in% protein_ids_to_keep)
+      theObject@args$limpa_dpc_quant_results$quantified_elist <- original_elist[indices_to_keep, ]
+    }
+
+    return(theObject)
+  }
+)
+
