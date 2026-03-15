@@ -225,7 +225,7 @@ generateProtDAVolcanoPlotGlimma <- function(
   }
   # ------------------------------------------
 
-  logger::log_info(sprintf("   selected_contrast = %s", selected_contrast))
+  logger::log_info(sprintf("   selected_contrast = %s", as.character(selected_contrast)[1]))
 
   if (is.null(da_results_list) || is.null(da_results_list$da_proteins_long)) {
     logger::log_warn("   No DA results available")
@@ -241,25 +241,49 @@ generateProtDAVolcanoPlotGlimma <- function(
   comparison_to_search <- selected_contrast
 
   # Robust contrast matching
+  # First, log available contrasts for debugging
+  available_contrasts <- unique(da_proteins_long$comparison)
+  logger::log_info(sprintf("   Glimma: Available contrasts in data: %s", paste(available_contrasts, collapse = ", ")))
+  logger::log_info(sprintf("   Glimma: Target contrast: %s", as.character(selected_contrast)[1]))
+
   contrast_data <- da_proteins_long |>
     dplyr::filter(comparison == selected_contrast)
 
   if (nrow(contrast_data) == 0) {
-    # Try friendly name match or prefix match
+    # Try fuzzy match if exact match fails
+    # 1. Try removing characters like '=', '-', ' '
+    clean_target <- gsub("[^A-Za-z0-9]", "", selected_contrast)
+    
+    match_idx <- which(sapply(available_contrasts, function(x) {
+      gsub("[^A-Za-z0-9]", "", x) == clean_target
+    }))
+    
+    if (length(match_idx) > 0) {
+      comparison_to_search <- available_contrasts[match_idx[1]]
+      logger::log_info(sprintf("   Glimma: Found fuzzy match: %s", comparison_to_search))
+      contrast_data <- da_proteins_long |> dplyr::filter(comparison == comparison_to_search)
+    }
+  }
+
+  if (nrow(contrast_data) == 0) {
+    # Try prefix match
     potential_prefix <- stringr::str_extract(selected_contrast, "^[^=]+")
     if (is.na(potential_prefix)) potential_prefix <- stringr::str_extract(selected_contrast, "^[^-]+")
     
     if (!is.na(potential_prefix)) {
        match_idx <- grepl(potential_prefix, da_proteins_long$comparison, fixed = TRUE)
-       contrast_data <- da_proteins_long[match_idx, ]
-       if (nrow(contrast_data) > 0) comparison_to_search <- potential_prefix
+       if (any(match_idx)) {
+         comparison_to_search <- da_proteins_long$comparison[which(match_idx)[1]]
+         contrast_data <- da_proteins_long |> dplyr::filter(comparison == comparison_to_search)
+         logger::log_info(sprintf("   Glimma: Found prefix match: %s", comparison_to_search))
+       }
     }
   }
 
-  if (nrow(contrast_data) == 0 && length(unique(da_proteins_long$comparison)) > 0) {
+  if (nrow(contrast_data) == 0 && length(available_contrasts) > 0) {
     # Final fallback: just use the first available contrast
-    first_contrast <- unique(da_proteins_long$comparison)[1]
-    logger::log_warn(sprintf("   No data found for contrast %s. Falling back to %s", selected_contrast, first_contrast))
+    first_contrast <- available_contrasts[1]
+    logger::log_warn(sprintf("   Glimma: No data found for contrast %s. Falling back to first available: %s", selected_contrast, first_contrast))
     contrast_data <- da_proteins_long |> dplyr::filter(comparison == first_contrast)
     comparison_to_search <- first_contrast
   }
@@ -416,6 +440,9 @@ generateProtDAVolcanoPlotGlimma <- function(
             return("Unknown")
           })
           
+          # CRITICAL: Glimma often expects a factor for groups to correctly partition the expression plot
+          groups_vec <- factor(groups_vec)
+          
           logger::log_info(sprintf("   Glimma: Grouping expression plot by '%s' with %d samples", group_id_col, length(groups_vec)))
           logger::log_info(sprintf("   Glimma: Unique groups detected: %s", paste(unique(groups_vec), collapse = ", ")))
         } else {
@@ -479,44 +506,78 @@ generateProtDAVolcanoPlotGlimma <- function(
       logFC = signif(as.numeric(plot_data$logFC), 4),
       negLog10FDR = signif(as.numeric(plot_data$negLog10FDR), 4)
     ) |>
-    dplyr::rename_with(~ gsub("\\.", "_", .))
+    dplyr::rename_with(~ gsub("[\\. ]", "_", .))
   
-  # Ensure Protein_Ids is first
+  # Ensure Protein_Ids is first and IN the columns to display
   if ("Protein_Ids" %in% names(display_df)) {
     display_df <- display_df |> dplyr::relocate(Protein_Ids)
+  }
+  
+  display_cols_final <- colnames(display_df)
+
+  # FINAL CLEANING for Glimma table stability
+  # Glimma table can fail if there are NAs or non-atomic types in the anno dataframe
+  display_df <- as.data.frame(display_df)
+  for (col in names(display_df)) {
+    display_df[[col]] <- as.character(display_df[[col]])
+    display_df[[col]][is.na(display_df[[col]])] <- ""
+  }
+
+  # 4. Prepare Final Data for Glimma
+  # EXACT Pattern from PDI Working Workflow
+  
+  # Sanitize the annotation dataframe to prevent D3.js / DataTables crashing
+  # 1. Drop math columns, keeping all possible identifier/annotation columns
+  # 2. Rename columns to replace dots with underscores (DataTables interprets dots as nested JSON)
+  # 3. Convert to character to drop unexpected factors/complex types
+  # 4. Replace NAs with empty strings which JSON serializers handle safely
+  clean_anno <- plot_data |>
+    dplyr::select(-any_of(c("logFC", "FDR", "PValue", "negLog10FDR", "left_group", "right_group", "Status", "log2FC", "fdr_qvalue", "raw_pvalue"))) |>
+    dplyr::rename_with(~ gsub("[\\. ]", "_", .)) |>
+    dplyr::mutate(dplyr::across(everything(), as.character)) |>
+    dplyr::mutate(dplyr::across(everything(), ~ ifelse(is.na(.), "", .))) |>
+    as.data.frame()
+  
+  # Ensure Protein_Ids is first
+  if ("Protein_Ids" %in% names(clean_anno)) {
+    clean_anno <- clean_anno |> dplyr::relocate(Protein_Ids)
+  }
+
+  # Sync counts_mat rows to plot_data exactly
+  if (!is.null(counts_mat)) {
+    counts_mat <- counts_mat[as.character(plot_data$Protein.Ids), , drop = FALSE]
   }
 
   logger::log_info(sprintf("   Glimma: Calling glimmaXY with %d proteins and %d samples", 
                            nrow(plot_data), if (is.null(counts_mat)) 0 else ncol(counts_mat)))
 
   # 5. Call Glimma publicly (standardized pattern)
-  # Pass display_df as anno; Glimma will use it for the table automatically
+  # CRITICAL: status must be explicitly passed to highlight significant genes
+  # 1 = Up, -1 = Down, 0 = Not Sig
+  status_vec <- as.integer(plot_data$Status)
+  
+  logger::log_info(sprintf("   Glimma: Highlighting %d significant genes (%d up, %d down)", 
+                           sum(status_vec != 0), sum(status_vec == 1), sum(status_vec == -1)))
+
   widget <- Glimma::glimmaXY(
     x = plot_data$logFC,
     y = plot_data$negLog10FDR,
     xlab = "logFC",
     ylab = "negLog10FDR",
-    status = as.integer(plot_data$Status),
-    anno = display_df,
-    display.columns = colnames(display_df),
+    status = status_vec,
     counts = counts_mat,
     groups = groups_vec,
     transform.counts = "none",
+    anno = clean_anno,
     status.cols = c("#1052bd", "silver", "#cc212f"),
-    sample.cols = if (!is.null(groups_vec)) {
-      unique_groups <- unique(groups_vec)
-      group_colors <- stats::setNames(
-        grDevices::hcl.colors(length(unique_groups), "Set2"), 
-        unique_groups
-      )
-      group_colors[groups_vec]
-    } else if (!is.null(counts_mat)) {
-      rep("#1f77b4", ncol(counts_mat))
-    } else {
-      NULL
-    },
     main = paste("Interactive Volcano Plot:", comparison_to_search)
   )
+
+  # CRITICAL: Inject CSS fix to re-unify the split DataTables layout
+  # This ensures column widths are synchronized under a single scrollbar
+  # Using htmlwidgets::prependContent allows this to work in Shiny and standalone
+  css_fix <- "<style> .dataTables_wrapper { overflow-x: auto !important; } .dataTables_scroll { display: table !important; width: auto !important; min-width: 100% !important; } .dataTables_scrollHead, .dataTables_scrollBody, .dataTables_scrollHeadInner, .dataTables_scrollHeadInner > table, .dataTables_scrollBody > table { display: contents !important; } .dataTables_scrollBody thead { display: none !important; } .dataTable th, .dataTable td { white-space: nowrap !important; } </style>"
+  widget <- htmlwidgets::prependContent(widget, htmltools::HTML(css_fix))
 
   logger::log_info("--- Exiting generateProtDAVolcanoPlotGlimma ---")
   return(widget)
@@ -1243,7 +1304,7 @@ daAnalysisWrapperFunction <- function(
   volplot_plot <- plotVolcano(significant_rows,
     log_q_value_column = lqm,
     log_fc_column = log2FC,
-    q_val_thresh = da_q_val_thresh,
+    q_val_thresh = as.double(da_q_val_thresh),
     formula_string = "analysis_type ~ comparison"
   )
 

@@ -2181,8 +2181,8 @@ getGlimmaVolcanoProteomics <- function(
   match_idx <- match(plot_data[[id_col_str]], anno_tbl[[id_col_cln]])
   anno_tbl <- anno_tbl[match_idx, , drop = FALSE]
   
-  gene_names <- anno_tbl$gene_name
-  rownames(anno_tbl) <- gene_names
+  # CRITICAL: Use the same ID for rownames as will be used for counts
+  rownames(anno_tbl) <- as.character(plot_data[[id_col_str]])
 
   # 4. Prepare Counts matrix
   if (!is.null(counts_tbl)) {
@@ -2372,11 +2372,13 @@ getGlimmaVolcanoProteomicsWidget <- function(
     anno_tbl <- anno_tbl |>
       mutate(across(everything(), ~ as.character(ifelse(is.na(.), "", .))))
 
-    gene_names <- anno_tbl |>
-      dplyr::pull(gene_name)
+    # CRITICAL: Use the original IDs for rownames to match counts matrix
+    rownames(anno_tbl) <- as.character(rownames(r_obj@.Data[[1]]))
 
-    # Update rownames in r_obj
-    rownames(r_obj@.Data[[1]]) <- gene_names
+    # Update rownames in r_obj to gene names for plot labels if desired,
+    # but Glimma v2 glimmaVolcano uses anno for everything.
+    # We will keep r_obj names as is to match anno rownames.
+    # rownames(r_obj@.Data[[1]]) <- gene_names # (DON'T DO THIS IF IT BREAKS MATCHING)
 
     # Transform p-values to q-values
     # Check if qvalue calculation is possible

@@ -80,12 +80,17 @@ setup_shiny_logger <- function() {
 .capture_checkpoint <- function(data, checkpoint_id, label) {
   if (getOption("multischolar.capture_test_checkpoints", FALSE)) {
     tryCatch({
-      # Dynamically build path based on current dataset and omics layer
-      dataset <- getOption("multischolar.checkpoint_dataset", "sepsis")
-      omics_layer <- getOption("multischolar.checkpoint_omics_layer", "proteomics")
+      # Dynamically build path: prioritize analysis_dir, fallback to tests/testdata
+      analysis_dir <- getOption("multischolar.analysis_dir")
       
-      base_dir <- getOption("multischolar.checkpoint_dir",
-                            file.path("tests", "testdata", dataset, omics_layer))
+      if (!is.null(analysis_dir)) {
+        base_dir <- file.path(analysis_dir, "checkpoints")
+      } else {
+        dataset <- getOption("multischolar.checkpoint_dataset", "sepsis")
+        omics_layer <- getOption("multischolar.checkpoint_omics_layer", "proteomics")
+        base_dir <- getOption("multischolar.checkpoint_dir",
+                              file.path("tests", "testdata", dataset, omics_layer))
+      }
       
       if (!dir.exists(base_dir)) dir.create(base_dir, recursive = TRUE)
       

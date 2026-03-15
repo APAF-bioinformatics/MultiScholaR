@@ -9,7 +9,7 @@ peptideIntensityFilteringHelper(
   design_matrix = NULL,
   min_peptide_intensity_threshold = 15,
   sample_id_column = "Run",
-  grouping_variable = "Group",
+  grouping_variable = "group",
   groupwise_percentage_cutoff = 1,
   max_groups_percentage_cutoff = 50,
   protein_id_column = Protein.Ids,

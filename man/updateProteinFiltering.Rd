@@ -11,7 +11,8 @@ updateProteinFiltering(
   experiment_label = NULL,
   overwrite = FALSE,
   return_grid = FALSE,
-  formats = c("png", "pdf")
+  formats = c("png", "pdf"),
+  project_dirs = NULL
 )
 }
 \arguments{

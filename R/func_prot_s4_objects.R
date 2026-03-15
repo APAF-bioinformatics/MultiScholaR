@@ -855,7 +855,7 @@ setMethod(
     nested_list <- list(contrasts_results_table)
     names(nested_list) <- contrast_name # Use actual contrast name with "=" delimiter
     significant_rows <- getSignificantData(
-      list_of_de_tables = list(nested_list),
+      list_of_da_tables = list(nested_list),
       list_of_descriptions = list("RUV applied"),
       row_id = !!sym(args_row_id),
       p_value_column = !!sym(raw_pvalue_column),
@@ -876,7 +876,7 @@ setMethod(
     volplot_plot <- plotVolcano(significant_rows,
       log_q_value_column = lqm,
       log_fc_column = log2FC,
-      q_val_thresh = da_q_val_thresh,
+      q_val_thresh = as.double(da_q_val_thresh),
       formula_string = "analysis_type ~ comparison"
     )
 
@@ -886,8 +886,8 @@ setMethod(
     # CRITICAL FIX: Same as above - wrap in additional list layer and use contrast_name
     nested_list_for_count <- list(contrasts_results_table)
     names(nested_list_for_count) <- contrast_name # Use actual contrast name with "=" delimiter
-    num_sig_de_molecules <- printCountDeGenesTable(
-      list_of_de_tables = list(nested_list_for_count),
+    num_sig_de_molecules <- printCountDaGenesTable(
+      list_of_da_tables = list(nested_list_for_count),
       list_of_descriptions = list("RUV applied"),
       formula_string = "analysis_type ~ comparison"
     )
