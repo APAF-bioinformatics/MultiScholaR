@@ -1,0 +1,2 @@
+tests/testdata/**/*.rds filter=lfs diff=lfs merge=lfs -text
+tests/testdata/**/*.parquet filter=lfs diff=lfs merge=lfs -text
