@@ -2369,7 +2369,17 @@ enrichProteinsPathwaysHelper <- function(da_analysis_results,
   go_cache_file <- file.path(cache_dir, cache_file)
 
   # Extract protein IDs from all rows and clean them
-  protein_data <- da_analysis_results$da_proteins_wide |>
+  # Handle both da_proteins_wide and de_proteins_wide for backward compatibility
+  wide_table <- da_analysis_results$da_proteins_wide
+  if (is.null(wide_table)) {
+    wide_table <- da_analysis_results$de_proteins_wide
+  }
+  
+  if (is.null(wide_table)) {
+    stop("da_analysis_results must contain either da_proteins_wide or de_proteins_wide")
+  }
+
+  protein_data <- wide_table |>
     dplyr::select(!!sym(protein_id_column)) |>
     distinct() |>
     dplyr::mutate(!!sym(protein_id_column) := purrr::map_chr(!!sym(protein_id_column), \(x) {
@@ -2528,7 +2538,7 @@ enrichProteinsPathwaysHelper <- function(da_analysis_results,
 #' @importFrom purrr map set_names
 #'
 #' @export
-enrichProteinsPathways <- function(da_analysis_results_list,
+enrichProteinsPathways <- function(da_analysis_results_list = NULL,
                                  taxon_id,
                                  protein_id_delimiter = ":",
                                  protein_p_val_thresh = 0.05,
@@ -2537,7 +2547,17 @@ enrichProteinsPathways <- function(da_analysis_results_list,
                                  p_val_thresh = 0.05,
                                  cache_dir = "cache",
                                  cache_file = "uniprot_annotations.RDS",
-                                 use_cached = TRUE   ) {
+                                 use_cached = TRUE,
+                                 de_analysis_results_list = NULL) {
+  
+  # Handle alias for backward compatibility
+  if (is.null(da_analysis_results_list)) {
+    if (!is.null(de_analysis_results_list)) {
+      da_analysis_results_list <- de_analysis_results_list
+    } else {
+      stop("Either da_analysis_results_list or de_analysis_results_list must be provided")
+    }
+  }
 
   # Create a list to store all enrichment results
   all_enrichment_results_by_group <- names(da_analysis_results_list) |>

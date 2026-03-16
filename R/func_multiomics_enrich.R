@@ -1918,7 +1918,7 @@ searchStringDbSpecies <- function(species_name, api_key = NULL, show_top_n = 10)
 #' }
 #'
 #' @export
-runStringDbEnrichmentAllContrasts <- function(da_analysis_results_list,
+runStringDbEnrichmentAllContrasts <- function(da_analysis_results_list = NULL,
                                              project_dirs,
                                              omic_type,
                                              experiment_label,
@@ -1929,7 +1929,17 @@ runStringDbEnrichmentAllContrasts <- function(da_analysis_results_list,
                                              polling_interval_seconds = 10,
                                              max_polling_attempts = 30,
                                              force_refresh = FALSE,
-                                             comparison_name_transform = NULL) {
+                                             comparison_name_transform = NULL,
+                                             de_analysis_results_list = NULL) {
+  
+  # Handle alias for backward compatibility
+  if (is.null(da_analysis_results_list)) {
+    if (!is.null(de_analysis_results_list)) {
+      da_analysis_results_list <- de_analysis_results_list
+    } else {
+      stop("Either da_analysis_results_list or de_analysis_results_list must be provided")
+    }
+  }
   
   # Load required packages
   if (!requireNamespace("dplyr", quietly = TRUE)) {
@@ -1986,6 +1996,15 @@ runStringDbEnrichmentAllContrasts <- function(da_analysis_results_list,
     message("Processing contrast: ", contrast_name)
     
     input_table <- da_analysis_results_list[[contrast_name]]$da_proteins_long
+    if (is.null(input_table)) {
+      input_table <- da_analysis_results_list[[contrast_name]]$de_proteins_long
+    }
+    
+    if (is.null(input_table)) {
+      message("Warning: No DA/DE results table found for contrast: ", contrast_name)
+      return(NULL)
+    }
+    
     result_label <- stringr::str_split_i(contrast_name, "=", 1)
     
     # Run enrichment for this contrast

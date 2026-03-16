@@ -2167,8 +2167,8 @@ getGlimmaVolcanoProteomics <- function(
   plot_data <- plot_data |>
     dplyr::mutate(
       Status = case_when(
-        logFC >= 1 & FDR < da_q_val_thresh ~ 1,
-        logFC <= -1 & FDR < da_q_val_thresh ~ -1,
+        logFC >= 1 & FDR < as.double(da_q_val_thresh) ~ 1,
+        logFC <= -1 & FDR < as.double(da_q_val_thresh) ~ -1,
         TRUE ~ 0
       )
     )

@@ -1,5 +1,28 @@
 # MultiScholaR NEWS
 
+## Version 0.4.1.2
+
+-- All Modules & Infrastructure
+ * Project-wide relicensing to **LGPL v3.0** for open-source compliance
+ * MultiScholaR Launcher scripts now correctly skip branch selection when started in `--local` mode
+ * Standardized differential abundance parameters (using `da_` prefix globally)
+ * Fixed numerical parsing errors where q-value thresholds were incorrectly evaluated during Volcano plot generation
+
+-- Proteomics
+ * improved interactive volcano plot
+ * Parquet format input
+ * Peptide filtering - Group-aware peptide intensity filtering instead of % of samples higher than intensity theshold filtering
+ * General bug fixes and refactoring
+ * Included functions for peptide-base missing values imputation using the `limpa` R library
+
+
+-- Metabolomics
+ * improved interactive volcano plot
+ * Fixed a design matrix creation bug related to sample assignment indexing
+
+-- Lipidomics
+ * improved interactive volcano plot
+
 ## Version 0.4.1.1
 
 ### Heatmap Visualization Improvements

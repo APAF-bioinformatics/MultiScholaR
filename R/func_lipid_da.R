@@ -949,9 +949,9 @@ generateLipidDAVolcanoPlotGlimma <- function(
             # Ensure logFC is numeric and non-NA for status calculation
             logFC_safe = as.numeric(ifelse(is.na(logFC) | is.nan(logFC), 0, logFC)),
             label = dplyr::case_when(
-                abs(logFC_safe) >= 1 & fdr_safe >= da_q_val_thresh ~ "Not sig., |logFC| >= 1",
-                abs(logFC_safe) >= 1 & fdr_safe < da_q_val_thresh ~ "Sig., |logFC| >= 1",
-                abs(logFC_safe) < 1 & fdr_safe < da_q_val_thresh ~ "Sig., |logFC| < 1",
+                abs(logFC_safe) >= 1 & fdr_safe >= as.double(da_q_val_thresh) ~ "Not sig., |logFC| >= 1",
+                abs(logFC_safe) >= 1 & fdr_safe < as.double(da_q_val_thresh) ~ "Sig., |logFC| >= 1",
+                abs(logFC_safe) < 1 & fdr_safe < as.double(da_q_val_thresh) ~ "Sig., |logFC| < 1",
                 TRUE ~ "Not sig."
             ),
             display_name = ifelse(

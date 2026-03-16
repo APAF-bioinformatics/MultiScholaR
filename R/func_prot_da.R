@@ -364,8 +364,8 @@ generateProtDAVolcanoPlotGlimma <- function(
       negLog10FDR = -log10(FDR),
       logFC = as.numeric(!!sym(log2fc_column)),
       Status = dplyr::case_when(
-        logFC >= 1 & FDR < da_q_val_thresh ~ 1,
-        logFC <= -1 & FDR < da_q_val_thresh ~ -1,
+        logFC >= 1 & FDR < as.double(da_q_val_thresh) ~ 1,
+        logFC <= -1 & FDR < as.double(da_q_val_thresh) ~ -1,
         TRUE ~ 0
       )
     )
@@ -665,8 +665,8 @@ generateProtDAVolcanoStatic <- function(
         !!sym(id_col)
       },
       significant_label = case_when(
-        fdr_qvalue < da_q_val_thresh & log2FC >= lfc_threshold ~ "Up",
-        fdr_qvalue < da_q_val_thresh & log2FC <= -lfc_threshold ~ "Down",
+        fdr_qvalue < as.double(da_q_val_thresh) & log2FC >= lfc_threshold ~ "Up",
+        fdr_qvalue < as.double(da_q_val_thresh) & log2FC <= -lfc_threshold ~ "Down",
         TRUE ~ "NS"
       )
     )
@@ -793,7 +793,7 @@ generateProtDAHeatmap <- function(
   # Filter for significant results in selected contrast
   contrast_data <- da_proteins_long |>
     dplyr::filter(comparison == comparison_to_search | comparison == selected_contrast) |>
-    dplyr::filter(!!rlang::sym(qvalue_column) < da_q_val_thresh)
+    dplyr::filter(!!rlang::sym(qvalue_column) < as.double(da_q_val_thresh))
 
   if (nrow(contrast_data) == 0) {
     logger::log_warn(sprintf("   No significant proteins found for contrast: %s", selected_contrast))
