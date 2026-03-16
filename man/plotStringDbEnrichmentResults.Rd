@@ -14,6 +14,7 @@ plotStringDbEnrichmentResults(
   plot_width = 16,
   plot_height = 12,
   plot_dpi = 300,
+  fdr_threshold = 0.05,
   save_plots = TRUE,
   return_plots = TRUE,
   print_plots = TRUE

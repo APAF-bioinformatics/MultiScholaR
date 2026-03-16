@@ -1236,6 +1236,8 @@ formatConfigList <- function(config_list, indent = 0) {
 updateMissingValueParameters <- function(theObject, 
                                        min_reps_per_group = 2, 
                                        min_groups = 2,
+                                       function_name = "removeRowsWithMissingValuesPercent",
+                                       grouping_variable = "group",
                                        config_list_name = "config_list",
                                        env = .GlobalEnv) {
     
@@ -1261,9 +1263,8 @@ updateMissingValueParameters <- function(theObject,
     
     # Get number of replicates per group
     reps_per_group_tbl <- design_matrix |>
-        group_by(group) |>
-        summarise(n_reps = n()) |>
-        ungroup()
+        dplyr::group_by(!!rlang::sym(grouping_variable)) |>
+        dplyr::summarise(n_reps = dplyr::n(), .groups = "drop")
     
     # Get total number of groups
     total_groups <- nrow(reps_per_group_tbl)
@@ -1274,7 +1275,7 @@ updateMissingValueParameters <- function(theObject,
     
     # Calculate percentage missing allowed for each group
     group_thresholds <- reps_per_group_tbl |>
-        mutate(
+        dplyr::mutate(
             adjusted_min_reps = pmin(n_reps, min_reps_per_group),
             max_missing = n_reps - adjusted_min_reps,
             missing_percent = round((max_missing / n_reps) * 100, 3)
@@ -1289,35 +1290,37 @@ updateMissingValueParameters <- function(theObject,
     max_groups_cutoff <- round((max_failing_groups / total_groups) * 100, 3)
     
     # Update global config_list
-    if (is.null(config_list$removeRowsWithMissingValuesPercent)) {
-        config_list$removeRowsWithMissingValuesPercent <- list()
+    if (is.null(config_list[[function_name]])) {
+        config_list[[function_name]] <- list()
     }
-    config_list$removeRowsWithMissingValuesPercent$groupwise_percentage_cutoff <- groupwise_cutoff
-    config_list$removeRowsWithMissingValuesPercent$max_groups_percentage_cutoff <- max_groups_cutoff
-    config_list$removeRowsWithMissingValuesPercent$proteins_intensity_cutoff_percentile <- 1
+    config_list[[function_name]]$groupwise_percentage_cutoff <- groupwise_cutoff
+    config_list[[function_name]]$max_groups_percentage_cutoff <- max_groups_cutoff
+    
+    # Function specific parameters
+    if (function_name == "removeRowsWithMissingValuesPercent") {
+        config_list[[function_name]]$proteins_intensity_cutoff_percentile <- 1
+    } else if (function_name == "peptideIntensityFiltering") {
+        config_list[[function_name]]$peptides_intensity_cutoff_percentile <- 1
+    }
     
     # Assign updated config_list back to global environment
     assign(config_list_name, config_list, envir = env)
     
-    # Update S4 object @args to match config_list
-    if (is.null(theObject@args)) {
-        theObject@args <- list()
+    # Update S4 object's internal args to match
+    if (is.null(theObject@args[[function_name]])) {
+        theObject@args[[function_name]] <- list()
     }
-    if (is.null(theObject@args$removeRowsWithMissingValuesPercent)) {
-        theObject@args$removeRowsWithMissingValuesPercent <- list()
-    }
-    
-    theObject@args$removeRowsWithMissingValuesPercent$groupwise_percentage_cutoff <- groupwise_cutoff
-    theObject@args$removeRowsWithMissingValuesPercent$max_groups_percentage_cutoff <- max_groups_cutoff
-    theObject@args$removeRowsWithMissingValuesPercent$proteins_intensity_cutoff_percentile <- 1
+    theObject@args[[function_name]]$groupwise_percentage_cutoff <- groupwise_cutoff
+    theObject@args[[function_name]]$max_groups_percentage_cutoff <- max_groups_cutoff
     
     # Create informative message
     basic_msg <- sprintf(
-        "Updated missing value parameters in both config_list and S4 object @args:
+        "Updated missing value parameters in both config_list and S4 object @args for function '%s':
     - Requiring at least %d replicates in each passing group (varies by group size)
     - Requiring at least %d out of %d groups to pass (%.3f%% failing groups allowed)
     - groupwise_percentage_cutoff set to %.3f%%
     - max_groups_percentage_cutoff set to %.3f%%",
+        function_name,
         min_reps_per_group,
         min_groups,
         total_groups,
@@ -1328,9 +1331,9 @@ updateMissingValueParameters <- function(theObject,
     
     # Add details for each group
     group_detail_strings <- group_thresholds |>
-        mutate(
+        dplyr::mutate(
             detail = sprintf("    Group %s: %d out of %d replicates required (%.3f%% missing allowed)",
-                             group, adjusted_min_reps, n_reps, missing_percent)
+                             !!rlang::sym(grouping_variable), adjusted_min_reps, n_reps, missing_percent)
         ) |>
         dplyr::pull(detail)
         
@@ -1746,6 +1749,12 @@ getProcessMemoryMB <- function() {
 #' @export
 getRHeapMemoryMB <- function() {
   sum(gc()[, 2])
+}
+
+# Helper function for null-coalescing
+#' @export
+`%||%` <- function(x, y) {
+  if (is.null(x)) y else x
 }
 
 #' Comprehensive Memory Checkpoint

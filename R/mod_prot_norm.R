@@ -644,7 +644,7 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
     
     # Helper function to generate composite QC figure from saved images
     # TRUE TO SOURCE: Mirrors createGridQC structure with row labels and patchwork layout
-    generateCompositeFromFiles <- function(plot_files, output_path, ncol = 3, row_labels = NULL, column_labels = NULL) {
+    generateCompositeFromFiles <- function(plot_files, ncol = 3, row_labels = NULL, column_labels = NULL) {
       message(sprintf("   [generateCompositeFromFiles] Generating composite from %d files...", length(plot_files)))
       
       if (!requireNamespace("patchwork", quietly = TRUE)) {
@@ -730,17 +730,6 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
              # Create title plots
              title_plots <- lapply(column_labels, createTitlePlot)
              
-             # Prepend the blank plot to align with the grid (labels column + data columns)
-             # Wait, the structure is:
-             # Row 1: [Label a] [Plot 1] [Label b] [Plot 2] ... 
-             # No, structure is:
-             # Row Labels: [a] [b] [c]
-             # Plots:      [P1] [P2] [P3]
-             
-             # So for column titles, we just need a row of titles matching the columns.
-             # But the labels (a, b, c) are also in columns.
-             # So it should be: [Title 1] [Title 2] [Title 3]
-             
              plot_sections <- append(plot_sections, list(
                patchwork::wrap_plots(title_plots, ncol = ncol)
              ))
@@ -797,22 +786,11 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
         plot_width <- 4 + (ncol * 3)  # Base width + 3 units per column
         plot_height <- 4 + (length(height_values) * 2)  # Base height + 2 units per row
         
-        # Save composite
-        ggplot2::ggsave(
-          output_path
-          , combined_plot
-          , width = plot_width
-          , height = plot_height
-          , dpi = 150
-          , limitsize = FALSE
-        )
-        
         # Clear memory
-        rm(plot_sections, combined_plot)
+        rm(plot_sections)
         gc()
         
-        message(sprintf("   [generateCompositeFromFiles] Composite saved to %s", output_path))
-        return(output_path)
+        return(list(plot = combined_plot, width = plot_width, height = plot_height))
         
       }, error = function(e) {
         message(paste("   [generateCompositeFromFiles] Error:", e$message))
@@ -1255,8 +1233,8 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
             message(sprintf("Target trigger state: 'protein_replicate_filtered'"))
             message(sprintf("Pre-norm QC generated: %s", norm_data$pre_norm_qc_generated))
             
-            # Auto-trigger only fires if we've just completed QC and haven't run pre-norm QC yet
-            if (current_state == "protein_replicate_filtered" && !norm_data$pre_norm_qc_generated) {
+            # Auto-trigger fires if we are in any valid state and haven't run pre-norm QC yet
+            if (current_state %in% valid_states_for_norm_tab && !norm_data$pre_norm_qc_generated) {
               
               message("*** AUTO-TRIGGERING PRE-NORMALIZATION QC (chunk 24) ***")
               
@@ -1276,11 +1254,7 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
                 )
               })
               
-            } else if (current_state %in% valid_states_for_norm_tab) {
-              # If we are in a later, valid state (e.g., correlation_filtered),
-              # or have already run the QC, we don't need to do anything.
-              message(sprintf("State is '%s'. Skipping auto-trigger as it's not applicable or already done.", current_state))
-              
+              message(sprintf("State is '%s' and PCA already generated. skipping.", current_state))
             } else {
               # This case handles when the user has not completed the required prior steps
               message(sprintf("*** State '%s' is not valid for normalization. User needs to complete QC. ***", current_state))
@@ -1368,6 +1342,11 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
             
             normalized_s4 <- normaliseBetweenSamples(current_s4, normalisation_method = input$norm_method)
             norm_data$normalized_protein_obj <- normalized_s4
+            
+            # --- TESTTHAT CHECKPOINT CP05 (see test-prot-05-normalisation.R) ---
+            .capture_checkpoint(normalized_s4, "cp05", "normalised")
+            # --- END CP05 ---
+            
             message("*** STEP 1: Between-samples normalization completed ***")
             
             # Save post-normalization protein matrix (before RUV)
@@ -1684,6 +1663,10 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
               ctrl = control_genes_index
             )
             
+            # --- TESTTHAT CHECKPOINT CP06 (see test-prot-06-ruv.R) ---
+            .capture_checkpoint(ruv_corrected_s4, "cp06", "ruv_corrected")
+            # --- END CP06 ---
+            
             # IMMEDIATELY store the RUV result for Step 6 access
             norm_data$ruv_normalized_obj <- ruv_corrected_s4
             message("*** STEP 4: RUV-III correction completed ***")
@@ -1720,31 +1703,25 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
                           ifelse(is.null(omic_type), "NULL", omic_type),
                           ifelse(is.null(experiment_label), "NULL", experiment_label)))
             
-            # SKIP updateProteinFiltering for now to test if this is the problem
-            if (FALSE) {  # TEMPORARILY DISABLED
-              tryCatch({
-                filtering_plot <- updateProteinFiltering(
-                  data = ruv_corrected_s4_clean@protein_quant_table,
-                  step_name = "11_RUV_filtered",
-                  omic_type = omic_type,
-                  experiment_label = experiment_label,
-                  return_grid = TRUE,
-                  overwrite = TRUE
-                )
-                
-                # Store the filtering summary plot for display
-                norm_data$post_norm_filtering_plot <- filtering_plot
-                message("*** STEP 5: Protein filtering tracking updated successfully ***")
-                
-              }, error = function(e) {
-                message(paste("*** WARNING: updateProteinFiltering failed:", e$message, "***"))
-                message("*** STEP 5: Continuing without filtering plot update ***")
-                norm_data$post_norm_filtering_plot <- NULL
-              })
-            } else {
-              message("*** STEP 5: SKIPPING updateProteinFiltering to test workflow ***")
+            tryCatch({
+              filtering_plot <- updateProteinFiltering(
+                data = ruv_corrected_s4_clean@protein_quant_table,
+                step_name = "11_RUV_filtered",
+                omic_type = omic_type,
+                experiment_label = experiment_label,
+                return_grid = TRUE,
+                overwrite = TRUE
+              )
+              
+              # Store the filtering summary plot for display
+              norm_data$post_norm_filtering_plot <- filtering_plot
+              message("*** STEP 5: Protein filtering tracking updated successfully ***")
+              
+            }, error = function(e) {
+              message(paste("*** WARNING: updateProteinFiltering failed:", e$message, "***"))
+              message("*** STEP 5: Continuing without filtering plot update ***")
               norm_data$post_norm_filtering_plot <- NULL
-            }
+            })
             
             # Get RUV parameters BEFORE using them
             best_percentage <- if (!is.null(norm_data$ruv_optimization_result)) {
@@ -1903,19 +1880,27 @@ mod_prot_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
               if (is.na(fn)) NA else file.path(qc_dir, fn)
             })
             
-            # Output path
-            composite_path <- file.path(qc_dir, "composite_QC_figure.png")
-            
             # Generate composite with titles
             tryCatch({
-              generateCompositeFromFiles(
+              composite_res <- generateCompositeFromFiles(
                 plot_files
-                , composite_path
                 , ncol = ncol_composite
                 , row_labels = row_labels
                 , column_labels = column_labels
               )
-              message("*** STEP 6B: Composite QC figure saved to protein_qc_dir ***")
+              
+              if (!is.null(composite_res)) {
+                savePlot(
+                  composite_res$plot, 
+                  qc_dir, 
+                  paste0(omic_type, "_composite_QC_figure"), 
+                  width = composite_res$width, 
+                  height = composite_res$height, 
+                  dpi = 150, 
+                  limitsize = FALSE
+                )
+                message("*** STEP 6B: Composite QC figure saved to protein_qc_dir ***")
+              }
             }, error = function(e) {
               message(paste("Warning: Could not generate composite QC figure:", e$message))
             })

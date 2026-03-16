@@ -1,5 +1,32 @@
 # MultiScholaR NEWS
 
+## Version 0.4.1.2
+
+-- All Modules & Infrastructure
+ * Project-wide relicensing to **LGPL v3.0** for open-source compliance
+ * MultiScholaR Launcher scripts now correctly skip branch selection when started in `--local` mode
+ * Standardized differential abundance parameters (using `da_` prefix globally)
+ * Fixed numerical parsing errors where q-value thresholds were incorrectly evaluated during Volcano plot generation
+ * **New Feature**: Added a "Sanitize Sample Names" option in the **Setup & Import** step across all pipelines. This uses `janitor::make_clean_names()` to proactively clean sample IDs (e.g., "Sample-A!" -> "sample_a") at the point of entry for better compatibility.
+ * Standardized composite QC figure generation across all modules to use the `savePlot()` framework, ensuring simultaneous `.pdf`, `.png`, and `.rds` exports.
+
+-- Proteomics
+ * improved interactive volcano plot
+ * Parquet format input
+ * Peptide filtering - Group-aware peptide intensity filtering instead of % of samples higher than intensity theshold filtering
+ * General bug fixes and refactoring
+ * Included functions for peptide-base missing values imputation using the `limpa` R library
+ * **Robust IQ Rollup**: Implemented internal sample aliasing and dynamic design matrix filtering to prevent name mangling and handle samples dropped during quality filtering.
+
+-- Metabolomics
+ * improved interactive volcano plot
+ * Fixed a design matrix creation bug related to sample assignment indexing
+ * Improved composite QC figure generation using `savePlot()`.
+
+-- Lipidomics
+ * improved interactive volcano plot
+ * Improved composite QC figure generation using `savePlot()`.
+
 ## Version 0.4.1.1
 
 ### Heatmap Visualization Improvements

@@ -56,7 +56,7 @@ mod_prot_import_ui <- function(id) {
             } else {
               shiny::fileInput(ns("search_results_standard"), 
                        "Select proteomics search results file:",
-                       accept = c(".tsv", ".txt", ".tab", ".csv", ".xlsx", ".zip"))
+                       accept = c(".tsv", ".txt", ".tab", ".csv", ".xlsx", ".zip", ".parquet"))
             },
             
             # Format detection output
@@ -93,11 +93,18 @@ mod_prot_import_ui <- function(id) {
                        accept = c(".fasta", ".fa", ".faa"))
             },
             
-            # Mixed species FASTA option
-            shiny::checkboxInput(ns("mixed_species_fasta"),
-                         "Mixed species FASTA (analyze organism distribution)",
-                         value = FALSE),
-            shiny::helpText("Check this if your FASTA contains proteins from multiple species (e.g., spiked-in standards, contaminants)"),
+            # Sanitization and FASTA options
+            shiny::wellPanel(
+              shiny::checkboxInput(ns("sanitize_names"),
+                           "Sanitize Sample Names",
+                           value = TRUE),
+              shiny::helpText("Clean sample IDs (e.g., '123-Sample!' -> 'x123_sample') for better compatibility with downstream analysis."),
+              
+              shiny::checkboxInput(ns("mixed_species_fasta"),
+                           "Mixed species FASTA (analyze organism distribution)",
+                           value = FALSE),
+              shiny::helpText("Check this if your FASTA contains proteins from multiple species (e.g., spiked-in standards, contaminants)")
+            ),
             
             shiny::h4("Step 3: Organism Information"),
             shiny::div(
@@ -173,6 +180,14 @@ mod_prot_import_ui <- function(id) {
                        accept = c(".ini", ".cfg"))
             },
             shiny::tags$small("If not provided, default configuration will be used"),
+            
+            # --- TESTTHAT CHECKPOINT CAPTURE (TEMPORARY) ---
+            shiny::hr(),
+            shiny::checkboxInput(ns("capture_checkpoints"),
+                         "Capture Test Checkpoints (Developer)",
+                         value = getOption("multischolar.capture_test_checkpoints", FALSE)),
+            shiny::helpText("Snapshots will be saved to tests/testdata/sepsis/proteomics/"),
+            # --- END CHECKPOINT CAPTURE ---
             
             # Format-specific options will appear here
             shiny::uiOutput(ns("format_specific_options"))
@@ -258,7 +273,7 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
         "search_results", 
         roots = volumes, 
         session = session,
-        filetypes = c("tsv", "txt", "tab", "csv", "xlsx", "zip")
+        filetypes = c("tsv", "txt", "tab", "csv", "xlsx", "zip", "parquet")
       )
       
       observeEvent(input$search_results, {
@@ -342,6 +357,17 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
       })
     }
     
+    # --- TESTTHAT CHECKPOINT CAPTURE (TEMPORARY) ---
+    shiny::observeEvent(input$capture_checkpoints, {
+      options(multischolar.capture_test_checkpoints = isTRUE(input$capture_checkpoints))
+      if (isTRUE(input$capture_checkpoints)) {
+        logger::log_info("Proteomics test checkpoint capture ENABLED")
+      } else {
+        logger::log_info("Proteomics test checkpoint capture DISABLED")
+      }
+    }, ignoreInit = FALSE)
+    # --- END CHECKPOINT CAPTURE ---
+
     # --- Observer: Toggle Step 3 inputs when mixed species is checked ---
     shiny::observeEvent(input$mixed_species_fasta, {
       if (isTRUE(input$mixed_species_fasta)) {
@@ -418,6 +444,9 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
             close(con)
           }
           
+        } else if (grepl("\\.parquet$", file_path, ignore.case = TRUE)) {
+          # Get headers from Parquet file using arrow
+          headers <- names(arrow::read_parquet(file_path, col_select = NULL))
         } else {
           # Original logic for non-zip files
           preview_lines <- readLines(file_path, n = 10)
@@ -628,11 +657,11 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
         })
         
         # Validate import result
-        if (is.null(data_import_result) || is.null(data_import_result$data)) {
-          stop("Data import returned NULL or empty data")
-        }
-        
         log_info(sprintf("Data imported successfully. Rows: %d", nrow(data_import_result$data)))
+        
+        # --- TESTTHAT CHECKPOINT CP01 (see test-prot-01-import.R) ---
+        .capture_checkpoint(data_import_result, "cp01", "raw_imported")
+        # --- END CP01 ---
         message(sprintf("[mod_prot_import] Data imported: %d rows", nrow(data_import_result$data)))
         
         update_processing_status("Storing imported data...")
@@ -643,8 +672,29 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
         workflow_data$data_type <- data_import_result$data_type  # "peptide" or "protein"
         workflow_data$column_mapping <- data_import_result$column_mapping
         
+        # Apply sample name sanitization if requested
+        if (isTRUE(input$sanitize_names)) {
+          update_processing_status("Sanitizing sample names...")
+          log_info("Sanitizing sample names using janitor::make_clean_names()...")
+          
+          run_col <- data_import_result$column_mapping$run_col
+          if (!is.null(run_col) && run_col %in% names(workflow_data$data_tbl)) {
+            # Capture mapping for logging
+            original_runs <- unique(as.character(workflow_data$data_tbl[[run_col]]))
+            clean_runs <- janitor::make_clean_names(original_runs)
+            
+            name_mapping <- stats::setNames(clean_runs, original_runs)
+            
+            # Apply to data_tbl
+            workflow_data$data_tbl[[run_col]] <- name_mapping[as.character(workflow_data$data_tbl[[run_col]])]
+            
+            log_info(sprintf("Sanitized %d unique sample names.", length(original_runs)))
+            shiny::showNotification("Sample names sanitized for R compatibility.", type = "message")
+          }
+        }
+        
         # Initialize data_cln as a copy of data_tbl (will be modified by design matrix)
-        workflow_data$data_cln <- data_import_result$data
+        workflow_data$data_cln <- workflow_data$data_tbl
         
         # Set workflow type based on detected format
         if (format == "pd_tmt") {
@@ -1152,9 +1202,8 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
             dplyr::filter(taxon_id == selected_taxon) |>
             dplyr::pull(uniprot_acc)
           
-          # Clean accessions for matching (remove isoform numbers)
-          clean_acc <- function(acc) sub("-\\d+$", "", acc)
-          organism_proteins_clean <- unique(clean_acc(organism_proteins))
+          # [OK] REFACTORED: Use centralized UniProt normalization
+          organism_proteins_clean <- unique(normalizeUniprotAccession(organism_proteins, remove_isoform = TRUE))
           
           # Filter the data tables
           protein_col <- workflow_data$column_mapping$protein_col
@@ -1403,295 +1452,5 @@ detectProteomicsFormat <- function(headers, filename, preview_lines = NULL) {
     confidence = best_score,
     all_scores = scores
   ))
-}
-
-#' Import DIA-NN Data
-#' 
-#' @param filepath Path to DIA-NN report file
-#' @param use_precursor_norm Whether to use Precursor.Normalised values
-#' @return List with data, data_type, and column_mapping
-#' @export
-importDIANNData <- function(filepath, use_precursor_norm = TRUE) {
-  log_info(paste("Starting DIA-NN import from:", filepath))
-  
-  # Check file exists
-  if (!file.exists(filepath)) {
-    stop("File not found: ", filepath)
-  }
-  
-  # Read data
-  data <- tryCatch({
-    vroom::vroom(filepath, show_col_types = FALSE)
-  }, error = function(e) {
-    stop("Failed to read file: ", e$message)
-  })
-  
-  log_info(sprintf("Read %d rows and %d columns", nrow(data), ncol(data)))
-  
-  # Check for required columns
-  required_cols <- c("Protein.Group", "Stripped.Sequence", "Run")
-  missing_cols <- setdiff(required_cols, names(data))
-  if (length(missing_cols) > 0) {
-    log_error(paste("Missing required columns:", paste(missing_cols, collapse = ', ')))
-    log_error(paste("Available columns:", paste(head(names(data), 20), collapse = ', ')))
-    stop("Missing required DIA-NN columns: ", paste(missing_cols, collapse = ", "))
-  }
-  
-  # Convert Precursor.Normalised if needed
-  if (use_precursor_norm && "Precursor.Normalised" %in% names(data)) {
-    log_info("Converting Precursor.Normalised to numeric")
-    data$Precursor.Normalised <- as.numeric(data$Precursor.Normalised)
-  }
-  
-  # Determine quantity column
-  quantity_col <- if (use_precursor_norm && "Precursor.Normalised" %in% names(data)) {
-    "Precursor.Normalised"
-  } else if ("Precursor.Quantity" %in% names(data)) {
-    "Precursor.Quantity"
-  } else {
-    stop("No suitable quantity column found (Precursor.Normalised or Precursor.Quantity)")
-  }
-  
-  log_info(paste("Using quantity column:", quantity_col))
-  
-  return(list(
-    data = data,
-    data_type = "peptide",
-    column_mapping = list(
-      protein_col = "Protein.Group",
-      peptide_col = "Stripped.Sequence",
-      run_col = "Run",
-      quantity_col = quantity_col,
-      qvalue_col = "Q.Value",
-      pg_qvalue_col = "PG.Q.Value"
-    )
-  ))
-}
-
-#' Import Spectronaut Data
-#' 
-#' @param filepath Path to Spectronaut report file
-#' @param quantity_type Either "pg" for protein or "pep" for peptide quantities
-#' @return List with data, data_type, and column_mapping
-#' @export
-importSpectronautData <- function(filepath, quantity_type = "pg") {
-  data <- vroom::vroom(filepath, show_col_types = FALSE)
-  
-  data_type <- if (quantity_type == "pg") "protein" else "peptide"
-  
-  return(list(
-    data = data,
-    data_type = data_type,
-    column_mapping = list(
-      protein_col = "PG.ProteinGroups",
-      peptide_col = if (quantity_type == "pep") "EG.ModifiedSequence" else NULL,
-      run_col = "R.FileName",
-      quantity_col = if (quantity_type == "pg") "PG.Quantity" else "PEP.Quantity",
-      qvalue_col = if (quantity_type == "pg") "PG.Qvalue" else "EG.Qvalue"
-    )
-  ))
-}
-
-#' Import FragPipe Data
-#' 
-#' @param filepath Path to FragPipe output file
-#' @param use_maxlfq Whether to use MaxLFQ intensities
-#' @return List with data, data_type, and column_mapping
-#' @export
-importFragPipeData <- function(filepath, use_maxlfq = TRUE) {
-  log_info(paste("Starting FragPipe LFQ import from:", filepath))
-  
-  # Check file exists
-  if (!file.exists(filepath)) {
-    stop("File not found: ", filepath)
-  }
-  
-  # Read data
-  data <- tryCatch({
-    vroom::vroom(filepath, show_col_types = FALSE)
-  }, error = function(e) {
-    stop("Failed to read file: ", e$message)
-  })
-  
-  log_info(sprintf("Read %d rows and %d columns", nrow(data), ncol(data)))
-  
-  # Find Protein ID column (case-insensitive, handle variations)
-  protein_id_candidates <- c("Protein ID", "Protein.ID", "Protein_ID", "Protein", "protein id", "protein.id", "protein_id")
-  protein_id_col <- NULL
-  
-  for (candidate in protein_id_candidates) {
-    if (candidate %in% names(data)) {
-      protein_id_col <- candidate
-      break
-    }
-  }
-  
-  # Case-insensitive search if exact match not found
-  if (is.null(protein_id_col)) {
-    names_lower <- tolower(names(data))
-    for (candidate in tolower(protein_id_candidates)) {
-      idx <- which(names_lower == candidate)
-      if (length(idx) > 0) {
-        protein_id_col <- names(data)[idx[1]]
-        break
-      }
-    }
-  }
-  
-  if (is.null(protein_id_col)) {
-    log_error(paste("Protein ID column not found. Available columns:", paste(head(names(data), 10), collapse = ", ")))
-    stop("Required 'Protein ID' column not found in FragPipe file. Available columns: ", paste(head(names(data), 10), collapse = ", "))
-  }
-  
-  log_info(sprintf("Found Protein ID column: %s", protein_id_col))
-  
-  # Find all columns ending with "Intensity" (case-insensitive)
-  all_intensity_cols <- grep("Intensity$", names(data), value = TRUE, ignore.case = TRUE)
-  
-  if (length(all_intensity_cols) == 0) {
-    log_error("No columns ending with 'Intensity' found in FragPipe file.")
-    stop("No intensity columns found. Expected columns ending with 'Intensity' (e.g., 'WLP530_1 Intensity', 'WLP530_1 MaxLFQ Intensity')")
-  }
-  
-  log_info(sprintf("Found %d columns ending with 'Intensity'", length(all_intensity_cols)))
-  
-  # Separate MaxLFQ and regular Intensity columns
-  maxlfq_cols <- grep("MaxLFQ.*Intensity$", all_intensity_cols, value = TRUE, ignore.case = TRUE)
-  regular_intensity_cols <- setdiff(all_intensity_cols, maxlfq_cols)
-  
-  # Select which intensity columns to use
-  if (use_maxlfq && length(maxlfq_cols) > 0) {
-    intensity_cols <- maxlfq_cols
-    log_info(sprintf("Using MaxLFQ Intensity columns (%d columns)", length(intensity_cols)))
-  } else {
-    intensity_cols <- regular_intensity_cols
-    log_info(sprintf("Using regular Intensity columns (%d columns)", length(intensity_cols)))
-  }
-  
-  if (length(intensity_cols) == 0) {
-    stop("No suitable intensity columns found. Check use_maxlfq parameter and file format.")
-  }
-  
-  # Extract sample names by removing " Intensity" or " MaxLFQ Intensity" suffix
-  sample_names <- gsub("\\s+(MaxLFQ\\s+)?Intensity$", "", intensity_cols, ignore.case = TRUE)
-  
-  # Select only the protein ID column and intensity columns for pivoting
-  cols_to_keep <- c(protein_id_col, intensity_cols)
-  data_subset <- data |> dplyr::select(dplyr::all_of(cols_to_keep))
-  
-  # Convert to long format
-  log_info("Converting data from wide to long format...")
-  long_data <- tryCatch({
-    data_subset |>
-      tidyr::pivot_longer(
-        cols = dplyr::all_of(intensity_cols),
-        names_to = "Run",
-        values_to = "Intensity"
-      ) |>
-      # Clean up Run column names (remove " Intensity" or " MaxLFQ Intensity" suffix)
-      dplyr::mutate(
-        Run = gsub("\\s+(MaxLFQ\\s+)?Intensity$", "", Run, ignore.case = TRUE)
-      ) |>
-      # Ensure Intensity is numeric
-      dplyr::mutate(Intensity = as.numeric(Intensity)) |>
-      # Rename protein ID column to standardized name
-      dplyr::rename(Protein.Ids = !!rlang::sym(protein_id_col))
-  }, error = function(e) {
-    log_error(paste("Error converting to long format:", e$message))
-    stop("Failed to convert data to long format: ", e$message)
-  })
-  
-  log_info(sprintf("Converted to long format: %d rows", nrow(long_data)))
-  log_info(sprintf("Unique proteins: %d, Unique samples: %d", 
-                   length(unique(long_data$Protein.Ids)),
-                   length(unique(long_data$Run))))
-  
-  return(list(
-    data = long_data,
-    data_type = "protein",
-    column_mapping = list(
-      protein_col = "Protein.Ids",
-      run_col = "Run",
-      quantity_col = "Intensity",
-      qvalue_col = NULL  # FragPipe doesn't typically include q-values
-    )
-  ))
-}
-
-#' Import MaxQuant Data
-#' 
-#' @param filepath Path to MaxQuant proteinGroups.txt file
-#' @param use_lfq Whether to use LFQ intensities
-#' @param filter_contaminants Whether to filter contaminants
-#' @return List with data, data_type, and column_mapping
-#' @export
-importMaxQuantData <- function(filepath, use_lfq = TRUE, filter_contaminants = TRUE) {
-  data <- vroom::vroom(filepath, show_col_types = FALSE)
-  
-  # Filter contaminants and reverse hits if requested
-  if (filter_contaminants) {
-    if ("Potential.contaminant" %in% names(data)) {
-      data <- data[data$Potential.contaminant != "+", ]
-    }
-    if ("Reverse" %in% names(data)) {
-      data <- data[data$Reverse != "+", ]
-    }
-  }
-  
-  # Find intensity columns
-  intensity_cols <- grep("^Intensity\\.", names(data), value = TRUE)
-  lfq_cols <- grep("^LFQ\\.intensity\\.", names(data), value = TRUE)
-  
-  quantity_cols <- if (use_lfq && length(lfq_cols) > 0) {
-    lfq_cols
-  } else {
-    intensity_cols
-  }
-  
-  return(list(
-    data = data,
-    data_type = "protein",  # MaxQuant proteinGroups is protein-level
-    column_mapping = list(
-      protein_col = "Majority.protein.IDs",
-      peptide_col = NULL,
-      run_col = NULL,  # MaxQuant has wide format
-      quantity_cols = quantity_cols,  # Multiple columns for wide format
-      qvalue_col = "Q.value"  # If Perseus was used
-    )
-  ))
-}
-
-#' Get Default Proteomics Configuration
-#' 
-#' Returns default configuration settings for proteomics analysis
-#' 
-#' @return List with default configuration parameters
-#' @export
-getDefaultProteomicsConfig <- function() {
-  list(
-    generalParameters = list(
-      min_peptides_per_protein = 2,
-      min_peptides_per_sample = 2,
-      q_value_threshold = 0.01,
-      intensity_threshold = 0
-    ),
-    deAnalysisParameters = list(
-      formula_string = "~ 0 + group",
-      q_value_threshold = 0.05,
-      log2_fc_threshold = 1
-    ),
-    normalizationParameters = list(
-      normalisation_method = "cyclicloess"
-    ),
-    ruvParameters = list(
-      percentage_as_neg_ctrl = 33,
-      ruv_k = NULL
-    )
-  )
-}
-
-# Helper function for null-coalescing
-`%||%` <- function(x, y) {
-  if (is.null(x)) y else x
 }
 

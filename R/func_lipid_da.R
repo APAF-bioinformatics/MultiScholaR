@@ -877,9 +877,6 @@ generateLipidDAVolcanoPlotGlimma <- function(
     # [D66:END] ---------------------------
 
     # Find coefficient index
-    # NOTE: coef_names contains the actual contrast strings (e.g., "groupTreatment-groupControl")
-    # but comparison_to_search is the friendly name (e.g., "Treatment_vs_Control")
-    # We need to get the actual contrast string from the data
     coef_names <- colnames(fit_obj$coefficients)
 
     # [D66:START] -------------------------
@@ -888,31 +885,46 @@ generateLipidDAVolcanoPlotGlimma <- function(
     d66_log("    coef_names (actual) = ", paste(coef_names, collapse = ", "))
     # [D66:END] ---------------------------
 
-    # First, try to find the actual contrast string from the filtered data
-    # The 'comparison' column contains the actual limma contrast string
-    actual_contrast_string <- NULL
-    if (nrow(contrast_data) > 0 && "comparison" %in% colnames(contrast_data)) {
-        actual_contrast_string <- unique(contrast_data$comparison)[1]
-        d66_log("    actual_contrast_string from data = ", actual_contrast_string)
-    }
+    # Extract comparison strings from data for matching
+    available_contrasts_in_data <- unique(contrast_data$comparison)
+    d66_log("    Available contrasts in data: ", paste(available_contrasts_in_data, collapse = ", "))
 
-    # Try to find coefficient by actual contrast string first
     coef_index <- integer(0)
-    if (!is.null(actual_contrast_string)) {
-        coef_index <- which(coef_names == actual_contrast_string)
-        d66_log("    Match by actual_contrast_string: coef_index = ", paste(coef_index, collapse = ", "))
+    # 1. Try exact match on friendly name
+    coef_index <- which(coef_names == comparison_to_search)
+
+    # 2. Try exact match on actual comparison strings found in data
+    if (length(coef_index) == 0 && length(available_contrasts_in_data) > 0) {
+        for (actual_comp in available_contrasts_in_data) {
+            match_idx <- which(coef_names == actual_comp)
+            if (length(match_idx) > 0) {
+                coef_index <- match_idx
+                d66_log("    Match by actual contrast from data: ", actual_comp)
+                break
+            }
+        }
     }
 
-    # Fallback: try friendly name (for backwards compatibility)
+    # 3. Try fuzzy match (remove spaces and non-alphanumeric)
     if (length(coef_index) == 0) {
-        coef_index <- which(coef_names == comparison_to_search)
-        d66_log("    Match by friendly name: coef_index = ", paste(coef_index, collapse = ", "))
+        clean_target <- gsub("[^A-Za-z0-9]", "", comparison_to_search)
+        clean_coefs <- gsub("[^A-Za-z0-9]", "", coef_names)
+        coef_index <- which(clean_coefs == clean_target)
+        if (length(coef_index) > 0) d66_log("    Match by fuzzy name: ", coef_names[coef_index[1]])
     }
 
-    # Fallback: try pattern match on friendly name
-    if (length(coef_index) == 0) {
-        coef_index <- grep(paste0("^", comparison_to_search), coef_names)
-        d66_log("    Match by pattern: coef_index = ", paste(coef_index, collapse = ", "))
+    # 4. Try fuzzy match on actual comparison strings
+    if (length(coef_index) == 0 && length(available_contrasts_in_data) > 0) {
+        clean_comps <- gsub("[^A-Za-z0-9]", "", available_contrasts_in_data)
+        clean_coefs <- gsub("[^A-Za-z0-9]", "", coef_names)
+        for (i in seq_along(clean_comps)) {
+            match_idx <- which(clean_coefs == clean_comps[i])
+            if (length(match_idx) > 0) {
+                coef_index <- match_idx
+                d66_log("    Match by fuzzy actual contrast: ", available_contrasts_in_data[i])
+                break
+            }
+        }
     }
 
     if (length(coef_index) == 0) {
@@ -926,14 +938,20 @@ generateLipidDAVolcanoPlotGlimma <- function(
     d66_log("  FINAL coef_index = ", coef_index, " (", coef_names[coef_index], ")")
     logger::log_info(sprintf("   Using coefficient index %d: %s", coef_index, coef_names[coef_index]))
 
-    # Prepare volcano plot annotation table
+    # Prepare volcano plot annotation table with Inf/NaN protection
     volcano_tab <- contrast_data |>
         dplyr::mutate(
-            lqm = -log10(fdr_qvalue),
+            # Protect against zero FDR causing Inf in -log10
+            fdr_safe = ifelse(fdr_qvalue == 0, min(fdr_qvalue[fdr_qvalue > 0], na.rm = TRUE) * 0.1, fdr_qvalue),
+            # Handle cases where all FDR might be zero (unlikely but safe)
+            fdr_safe = ifelse(is.na(fdr_safe), 1e-10, fdr_safe),
+            lqm = -log10(fdr_safe),
+            # Ensure logFC is numeric and non-NA for status calculation
+            logFC_safe = as.numeric(ifelse(is.na(logFC) | is.nan(logFC), 0, logFC)),
             label = dplyr::case_when(
-                abs(logFC) >= 1 & fdr_qvalue >= da_q_val_thresh ~ "Not sig., |logFC| >= 1",
-                abs(logFC) >= 1 & fdr_qvalue < da_q_val_thresh ~ "Sig., |logFC| >= 1",
-                abs(logFC) < 1 & fdr_qvalue < da_q_val_thresh ~ "Sig., |logFC| < 1",
+                abs(logFC_safe) >= 1 & fdr_safe >= as.double(da_q_val_thresh) ~ "Not sig., |logFC| >= 1",
+                abs(logFC_safe) >= 1 & fdr_safe < as.double(da_q_val_thresh) ~ "Sig., |logFC| >= 1",
+                abs(logFC_safe) < 1 & fdr_safe < as.double(da_q_val_thresh) ~ "Sig., |logFC| < 1",
                 TRUE ~ "Not sig."
             ),
             display_name = ifelse(
@@ -942,12 +960,15 @@ generateLipidDAVolcanoPlotGlimma <- function(
                 lipid_id
             )
         ) |>
+        # FINAL Inf/NaN scrub for plotting columns
+        dplyr::filter(!is.na(logFC_safe), !is.nan(logFC_safe), !is.infinite(logFC_safe)) |>
+        dplyr::filter(!is.na(lqm), !is.nan(lqm), !is.infinite(lqm)) |>
         dplyr::select(
             lipid_id,
             lipid_name,
             display_name,
             assay,
-            logFC,
+            logFC = logFC_safe,
             raw_pvalue,
             fdr_qvalue,
             lqm,
@@ -963,7 +984,12 @@ generateLipidDAVolcanoPlotGlimma <- function(
     counts_mat <- as.matrix(assay_data[, sample_cols, drop = FALSE])
     rownames(counts_mat) <- assay_data[[theObject@lipid_id_column]]
 
-    # Get groups
+    # Protect Glimma Javascript from crashing due to NA/NaN/Inf in counts matrix
+    if (any(is.na(counts_mat) | is.nan(counts_mat) | is.infinite(counts_mat))) {
+        logger::log_info("   Sanitizing counts_mat for Glimma by replacing NA/NaN/Inf with 0")
+        counts_mat[is.na(counts_mat) | is.nan(counts_mat) | is.infinite(counts_mat)] <- 0
+    }
+
     dm <- theObject@design_matrix
     rownames(dm) <- dm[[theObject@sample_id]]
     groups <- dm[sample_cols, theObject@group_id]
@@ -992,50 +1018,59 @@ generateLipidDAVolcanoPlotGlimma <- function(
         # Also subset other inputs if necessary, but usually fit_obj is the reference
     }
 
+    # [FIX]: Use glimmaXY for better stability and explicit control over data linking
+    # 1. Sync counts_mat to volcano_tab exactly
+    if (!is.null(counts_mat)) {
+        counts_mat <- counts_mat[as.character(volcano_tab$lipid_id), , drop = FALSE]
+    }
+
+    # 2. Sanitize the annotation dataframe to prevent D3.js / DataTables crashing
+    # Convert to character, replace NAs with empty strings, and rename columns to avoid dots
+    clean_anno <- volcano_tab |>
+        dplyr::select(-any_of(c("logFC", "raw_pvalue", "fdr_qvalue", "lqm", "label", "significant", "log2FC", "negLog10FDR"))) |>
+        dplyr::rename_with(~ gsub("[\\. ]", "_", .)) |>
+        dplyr::mutate(dplyr::across(everything(), as.character)) |>
+        dplyr::mutate(dplyr::across(everything(), ~ ifelse(is.na(.), "", .))) |>
+        as.data.frame()
+    
+    # Ensure ID is first and rownames are set for linking
+    if ("lipid_id" %in% names(clean_anno)) {
+        clean_anno <- clean_anno |> dplyr::relocate(lipid_id)
+    }
+    rownames(clean_anno) <- as.character(volcano_tab$lipid_id)
+
+    # 3. Prepare status vector (1 = Up, -1 = Down, 0 = Not Sig)
+    status_vec <- ifelse(volcano_tab$significant == "Up", 1,
+                    ifelse(volcano_tab$significant == "Down", -1, 0))
+
     # Generate Glimma widget
     tryCatch(
         {
-            logger::log_info("   Generating Glimma widget...")
+            logger::log_info("   Generating Glimma widget using glimmaXY...")
 
-            # [D66:START]
-            d66_log("  Calling Glimma::glimmaVolcano...")
-            # [D66:END]
-
-            # Use Glimma's glimmaVolcano function directly
-            # NOTE: transform.counts = "none" because lipidomics data is already
-            # log-transformed and contains negative values. Glimma's default is to
-            # apply cpm(log=TRUE) which fails on negative values.
-            glimma_widget <- Glimma::glimmaVolcano(
-                x = fit_obj,
-                coef = coef_index,
+            # Use glimmaXY directly as it's more stable for these custom objects in Shiny
+            glimma_widget <- Glimma::glimmaXY(
+                x = volcano_tab$logFC,
+                y = volcano_tab$lqm,
+                xlab = "log2FC",
+                ylab = "negLog10FDR",
+                status = status_vec,
                 counts = counts_mat,
                 groups = groups,
-                anno = data.frame(
-                    ID = volcano_tab$lipid_id,
-                    Name = volcano_tab$display_name,
-                    Assay = volcano_tab$assay
-                ),
-                status = ifelse(volcano_tab$significant == "Up", 1,
-                    ifelse(volcano_tab$significant == "Down", -1, 0)
-                ),
-                main = paste("Volcano Plot:", selected_contrast),
                 transform.counts = "none",
-                html = NULL
+                anno = clean_anno,
+                status.cols = c("#1052bd", "silver", "#cc212f"),
+                main = paste("Interactive Volcano Plot:", selected_contrast)
             )
 
-            # [D66:START]
-            d66_log("  Glimma widget created successfully!")
-            d66_log("    widget class = ", class(glimma_widget)[1])
-            # [D66:END]
+            # CRITICAL: Inject CSS fix to re-unify the split DataTables layout
+            css_fix <- "<style> .dataTables_wrapper { overflow-x: auto !important; } .dataTables_scroll { display: table !important; width: auto !important; min-width: 100% !important; } .dataTables_scrollHead, .dataTables_scrollBody, .dataTables_scrollHeadInner, .dataTables_scrollHeadInner > table, .dataTables_scrollBody > table { display: contents !important; } .dataTables_scrollBody thead { display: none !important; } .dataTable th, .dataTable td { white-space: nowrap !important; } </style>"
+            glimma_widget <- htmlwidgets::prependContent(glimma_widget, htmltools::HTML(css_fix))
 
             logger::log_info("--- Exiting generateLipidDAVolcanoPlotGlimma (success) ---")
             return(glimma_widget)
         },
         error = function(e) {
-            # [D66:START]
-            d66_log("  ERROR in Glimma::glimmaVolcano: ", e$message)
-            d66_log("  Error call: ", deparse(e$call))
-            # [D66:END]
             logger::log_error(sprintf("   Glimma widget generation failed: %s", e$message))
             return(NULL)
         }

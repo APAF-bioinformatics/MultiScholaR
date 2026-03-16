@@ -9,6 +9,8 @@ updateMissingValueParameters(
   theObject,
   min_reps_per_group = 2,
   min_groups = 2,
+  function_name = "removeRowsWithMissingValuesPercent",
+  grouping_variable = "group",
   config_list_name = "config_list",
   env = .GlobalEnv
 )
@@ -17,6 +19,8 @@ updateMissingValueParameters(
   theObject,
   min_reps_per_group = 2,
   min_groups = 2,
+  function_name = "removeRowsWithMissingValuesPercent",
+  grouping_variable = "group",
   config_list_name = "config_list",
   env = .GlobalEnv
 )

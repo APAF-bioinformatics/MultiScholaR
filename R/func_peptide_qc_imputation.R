@@ -225,7 +225,7 @@ peptideMissingValueImputationHelper <- function( input_table
   # Count the number of technical replicates per sample and peptide combination
   num_tech_reps_per_sample_and_peptide <- NA
 
-  if( length(which(is.na(core_utilisation))) == 0 ) {
+  if( length(which(is.na(core_utilisation))) > 0 ) {
     num_tech_reps_per_sample_and_peptide <- input_table |>
       left_join( metadata_table
                  , by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>
@@ -345,7 +345,7 @@ proteinMissingValueImputation <- function( input_table
   # Count the number of technical replicates per sample and protein combination
   num_tech_reps_per_sample_and_protein <- NA
 
-  if( length(which(is.na(core_utilisation))) == 0 ) {
+  if( length(which(is.na(core_utilisation))) > 0 ) {
     num_tech_reps_per_sample_and_protein <- input_table |>
       left_join( metadata_table
                  , by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>

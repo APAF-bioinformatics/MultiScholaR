@@ -550,6 +550,9 @@ mod_metab_design_builder_server <- function(id, data_tbl, config_list, column_ma
         removed_samples <- shiny::reactiveVal(character(0))
 
         # Observer to initialize/reset from initial state
+        # FIXED: Use bindEvent to only trigger on new data or manual reset.
+        # This breaks the reactive feedback loop where saving the design
+        # would update config_list() and trigger a reset of the UI state.
         shiny::observe({
             state <- initial_state()
             shiny::req(state)
@@ -570,7 +573,8 @@ mod_metab_design_builder_server <- function(id, data_tbl, config_list, column_ma
             shiny::updateSelectizeInput(session, "tech_rep_samples", choices = sorted_runs, selected = "")
             shiny::updateSelectizeInput(session, "samples_to_remove", choices = sorted_runs, selected = "")
             shiny::updateTextInput(session, "formula_string", value = state$formula)
-        })
+        }) |> shiny::bindEvent(data_tbl(), input$reset_changes)
+
 
         # Create a proxy for the main data table
         proxy_data_table <- DT::dataTableProxy("data_table")

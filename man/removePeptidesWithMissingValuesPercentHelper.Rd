@@ -13,7 +13,7 @@ removePeptidesWithMissingValuesPercentHelper(
   grouping_variable,
   groupwise_percentage_cutoff = 1,
   max_groups_percentage_cutoff = 50,
-  abundance_threshold,
+  abundance_threshold = 0,
   abundance_column = "Abundance"
 )
 }
@@ -24,22 +24,24 @@ removePeptidesWithMissingValuesPercentHelper(
 
 \item{sample_id}{The name of the column in design_matrix table that has the sample ID.}
 
+\item{protein_id_column}{Protein ID column name}
+
+\item{peptide_sequence_column}{Peptide sequence column name}
+
+\item{grouping_variable}{The name of the column in design_matrix table that has the experimental group.}
+
 \item{groupwise_percentage_cutoff}{The maximum percentage of values below threshold allow in each group for a peptide .}
 
 \item{max_groups_percentage_cutoff}{The maximum percentage of groups allowed with too many samples with peptide abundance values below threshold.}
 
 \item{abundance_threshold}{Abundance threshold in which the protein in the sample must be above for it to be considered for inclusion into data analysis.}
 
+\item{abundance_column}{The name of the column containing the abundance values.}
+
 \item{cols}{A tidyselect command to select the columns. This includes the functions starts_with(), ends_with(), contains(), matches(), and num_range()}
-
-\item{row_id}{A unique ID for each row of the 'input_table' variable.}
-
-\item{group_column}{The name of the column in design_matrix table that has the experimental group.}
-
-\item{temporary_abundance_column}{The name of a temporary column to keep the abundance value you want to filter upon}
 }
 \value{
-A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values.
+A filtered data.frame
 }
 \description{
 Remove Peptides with Missing Values

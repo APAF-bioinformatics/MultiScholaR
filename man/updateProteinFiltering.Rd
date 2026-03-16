@@ -10,7 +10,9 @@ updateProteinFiltering(
   omic_type = NULL,
   experiment_label = NULL,
   overwrite = FALSE,
-  return_grid = FALSE
+  return_grid = FALSE,
+  formats = c("png", "pdf"),
+  project_dirs = NULL
 )
 }
 \arguments{

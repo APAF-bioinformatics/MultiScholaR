@@ -3004,10 +3004,10 @@ setMethod(
                 ## Count the number of up or down significant differentially expressed lipids.
                 # The contrasts_results_table is already a list of data frames (one per contrast)
                 # So we don't need to wrap it in another list
-                num_sig_de_molecules_first_go <- printCountDeGenesTableHelper(
-                    list_of_de_tables = object@contrasts_results_table,
+                num_sig_de_molecules_first_go <- printCountDaGenesTable(
+                    list_of_da_tables = object@contrasts_results_table,
                     list_of_descriptions = names(object@contrasts_results_table),
-                    input_title = idx
+                    formula_string = NA
                 )
 
 

@@ -989,7 +989,14 @@ savePlot <- function(plot, base_path, plot_name, formats = c("pdf", "png"), widt
             if (inherits(p, "gg")) {
                 purrr::walk(formats, function(format) {
                     file_path <- file.path(base_path, paste0(plot_name, "_", pname, ".", format))
-                    ggsave(filename = file_path, plot = p, device = format, width = width, height = height, ...)
+                    
+                    # Use cairo_pdf for PDF format to avoid font issues on macOS
+                    save_device <- format
+                    if (format == "pdf") {
+                        save_device <- grDevices::cairo_pdf
+                    }
+                    
+                    ggsave(filename = file_path, plot = p, device = save_device, width = width, height = height, ...)
                 })
             }
         })
@@ -997,7 +1004,14 @@ savePlot <- function(plot, base_path, plot_name, formats = c("pdf", "png"), widt
         # Single plot - original behavior
         purrr::walk(formats, \(format){
             file_path <- file.path(base_path, paste0(plot_name, ".", format))
-            ggsave(filename = file_path, plot = plot, device = format, width = width, height = height, ...)
+            
+            # Use cairo_pdf for PDF format to avoid font issues on macOS
+            save_device <- format
+            if (format == "pdf") {
+                save_device <- grDevices::cairo_pdf
+            }
+            
+            ggsave(filename = file_path, plot = plot, device = save_device, width = width, height = height, ...)
         })
     }
 }

@@ -1918,7 +1918,7 @@ searchStringDbSpecies <- function(species_name, api_key = NULL, show_top_n = 10)
 #' }
 #'
 #' @export
-runStringDbEnrichmentAllContrasts <- function(da_analysis_results_list,
+runStringDbEnrichmentAllContrasts <- function(da_analysis_results_list = NULL,
                                              project_dirs,
                                              omic_type,
                                              experiment_label,
@@ -1929,7 +1929,17 @@ runStringDbEnrichmentAllContrasts <- function(da_analysis_results_list,
                                              polling_interval_seconds = 10,
                                              max_polling_attempts = 30,
                                              force_refresh = FALSE,
-                                             comparison_name_transform = NULL) {
+                                             comparison_name_transform = NULL,
+                                             de_analysis_results_list = NULL) {
+  
+  # Handle alias for backward compatibility
+  if (is.null(da_analysis_results_list)) {
+    if (!is.null(de_analysis_results_list)) {
+      da_analysis_results_list <- de_analysis_results_list
+    } else {
+      stop("Either da_analysis_results_list or de_analysis_results_list must be provided")
+    }
+  }
   
   # Load required packages
   if (!requireNamespace("dplyr", quietly = TRUE)) {
@@ -1986,6 +1996,15 @@ runStringDbEnrichmentAllContrasts <- function(da_analysis_results_list,
     message("Processing contrast: ", contrast_name)
     
     input_table <- da_analysis_results_list[[contrast_name]]$da_proteins_long
+    if (is.null(input_table)) {
+      input_table <- da_analysis_results_list[[contrast_name]]$de_proteins_long
+    }
+    
+    if (is.null(input_table)) {
+      message("Warning: No DA/DE results table found for contrast: ", contrast_name)
+      return(NULL)
+    }
+    
     result_label <- stringr::str_split_i(contrast_name, "=", 1)
     
     # Run enrichment for this contrast
@@ -2138,6 +2157,7 @@ plotStringDbEnrichmentResults <- function(project_dirs,
                                          plot_width = 16,
                                          plot_height = 12,
                                          plot_dpi = 300,
+                                         fdr_threshold = 0.05,
                                          save_plots = TRUE,
                                          return_plots = TRUE,
                                          print_plots = TRUE) {
@@ -2191,6 +2211,23 @@ plotStringDbEnrichmentResults <- function(project_dirs,
     message("Using provided enrichment results with ", nrow(all_enrichment_results), " rows.")
   }
   
+  # Check for empty results
+  cat(sprintf("DEBUG_STR: Checking results. Rows: %d, Cols: %d\n", nrow(all_enrichment_results), ncol(all_enrichment_results)))
+  cat(sprintf("DEBUG_STR: Columns: %s\n", paste(colnames(all_enrichment_results), collapse = ", ")))
+
+  if (nrow(all_enrichment_results) == 0) {
+    message("No enrichment results found (0 rows). Skipping plotting.")
+    return(NULL)
+  }
+
+  # Check for required columns
+  required_cols <- c("comparison", "category", "enrichmentScore", "falseDiscoveryRate", "termID")
+  missing_cols <- setdiff(required_cols, colnames(all_enrichment_results))
+  if (length(missing_cols) > 0) {
+    warning("Enrichment results missing required columns: ", paste(missing_cols, collapse = ", "))
+    return(NULL)
+  }
+
   # Filter to top N terms per category and comparison
   message("Filtering to top ", top_n_terms, " terms per category and comparison...")
   
@@ -2201,7 +2238,7 @@ plotStringDbEnrichmentResults <- function(project_dirs,
     dplyr::ungroup()
   
   included_functional_category_and_term <- sorted_enrichment_results |>
-    dplyr::filter(rank <= top_n_terms) |>
+    dplyr::filter(rank <= top_n_terms & falseDiscoveryRate < fdr_threshold) |>
     dplyr::distinct(category, termID)
   
   filtered_enrichment_results <- sorted_enrichment_results |>

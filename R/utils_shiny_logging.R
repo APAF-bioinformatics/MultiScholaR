@@ -70,3 +70,37 @@ setup_shiny_logger <- function() {
   logger::log_threshold(logger::INFO)
 }
 
+# --- TESTTHAT CHECKPOINT CAPTURE ---
+#' @title Capture Test Checkpoint
+#' @description Saves a data snapshot to an RDS file for testthat fixtures.
+#' @param data The data object to save
+#' @param checkpoint_id A short ID (e.g., "cp01")
+#' @param label A descriptive label for the filename
+#' @noRd
+.capture_checkpoint <- function(data, checkpoint_id, label) {
+  if (getOption("multischolar.capture_test_checkpoints", FALSE)) {
+    tryCatch({
+      # Dynamically build path: prioritize analysis_dir, fallback to tests/testdata
+      analysis_dir <- getOption("multischolar.analysis_dir")
+      
+      if (!is.null(analysis_dir)) {
+        base_dir <- file.path(analysis_dir, "checkpoints")
+      } else {
+        dataset <- getOption("multischolar.checkpoint_dataset", "sepsis")
+        omics_layer <- getOption("multischolar.checkpoint_omics_layer", "proteomics")
+        base_dir <- getOption("multischolar.checkpoint_dir",
+                              file.path("tests", "testdata", dataset, omics_layer))
+      }
+      
+      if (!dir.exists(base_dir)) dir.create(base_dir, recursive = TRUE)
+      
+      filename <- file.path(base_dir, paste0(checkpoint_id, "_", label, ".rds"))
+      saveRDS(data, file = filename)
+      logger::log_info(sprintf("CHECKPOINT %s saved: %s", checkpoint_id, filename))
+    }, error = function(e) {
+      logger::log_warn(sprintf("Checkpoint %s failed: %s", checkpoint_id, e$message))
+    })
+  }
+}
+# --- END CHECKPOINT CAPTURE ---
+

@@ -1265,9 +1265,8 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
                 dplyr::pull(uniprot_acc) |>
                 unique()
               
-              # Also get clean versions (without isoform numbers)
-              clean_acc <- function(acc) sub("-\\d+$", "", acc)
-              target_proteins_clean <- unique(clean_acc(target_proteins))
+              # [OK] REFACTORED: Use centralized UniProt normalization
+              target_proteins_clean <- unique(normalizeUniprotAccession(target_proteins, remove_isoform = TRUE))
               
               cat(sprintf("   ENRICHMENT Step: Found %d proteins for target taxon %s\n", 
                          length(target_proteins), target_taxon))
@@ -1362,6 +1361,22 @@ mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_typ
             id_column <- "gene_name"
           }
           
+          # --- TESTTHAT CHECKPOINT CP10 (see test-prot-10-annotation.R) ---
+          .capture_checkpoint(list(
+            da_results_s4 = da_results_for_enrichment,
+            taxon_id = as.numeric(input$organism_taxid),
+            up_cutoff = input$up_cutoff,
+            down_cutoff = input$down_cutoff, 
+            q_cutoff = input$q_cutoff,
+            pathway_dir = pathway_dir,
+            go_annotations = uniprot_dat_cln,
+            exclude_iea = FALSE,
+            protein_id_column = id_column,
+            contrast_names = names(enrichment_data$da_results_data),
+            correction_method = input$correction_method
+          ), "cp10", "enrichment_input")
+          # --- END CP10 ---
+
           enrichment_results <- processEnrichments(
             da_results_for_enrichment,
             taxon_id = as.numeric(input$organism_taxid),

@@ -1222,7 +1222,7 @@ getProteinsHeatMap <- function(
 apafTheme <- function() {
   theme(
     # Set font family and size
-    text = element_text(family = "Arial", size = 12),
+    text = element_text(family = "sans", size = 12),
     # Add rectangular box around the plot
     panel.border = element_rect(color = "black", fill = NA, linewidth = 1),
     # Add grid lines
@@ -2167,8 +2167,8 @@ getGlimmaVolcanoProteomics <- function(
   plot_data <- plot_data |>
     dplyr::mutate(
       Status = case_when(
-        logFC >= 1 & FDR < da_q_val_thresh ~ 1,
-        logFC <= -1 & FDR < da_q_val_thresh ~ -1,
+        logFC >= 1 & FDR < as.double(da_q_val_thresh) ~ 1,
+        logFC <= -1 & FDR < as.double(da_q_val_thresh) ~ -1,
         TRUE ~ 0
       )
     )
@@ -2181,8 +2181,8 @@ getGlimmaVolcanoProteomics <- function(
   match_idx <- match(plot_data[[id_col_str]], anno_tbl[[id_col_cln]])
   anno_tbl <- anno_tbl[match_idx, , drop = FALSE]
   
-  gene_names <- anno_tbl$gene_name
-  rownames(anno_tbl) <- gene_names
+  # CRITICAL: Use the same ID for rownames as will be used for counts
+  rownames(anno_tbl) <- as.character(plot_data[[id_col_str]])
 
   # 4. Prepare Counts matrix
   if (!is.null(counts_tbl)) {
@@ -2238,7 +2238,18 @@ getGlimmaVolcanoProteomics <- function(
     display.columns = colnames(anno_tbl),
     transform.counts = "none",
     status.cols = c("#1052bd", "silver", "#cc212f"),
-    sample.cols = if (!is.null(counts_filtered)) rep("#1f77b4", ncol(counts_filtered)) else NULL,
+    sample.cols = if (!is.null(groups)) {
+      unique_groups <- unique(groups)
+      group_colors <- stats::setNames(
+        grDevices::hcl.colors(length(unique_groups), "Set2"), 
+        unique_groups
+      )
+      group_colors[groups]
+    } else if (!is.null(counts_filtered)) {
+      rep("#1f77b4", ncol(counts_filtered))
+    } else {
+      NULL
+    },
     main = paste("Interactive Volcano Plot:", contrast_name),
     html = temp_html_name
   )
@@ -2306,8 +2317,8 @@ getGlimmaVolcanoProteomicsWidget <- function(
         )
     }
 
-    # CRITICAL FIX: For mixed FASTA support, create base accession without isoform suffix
-    best_uniprot_acc_base <- gsub("-\\d+$", "", best_uniprot_acc)
+    # [OK] REFACTORED: Use centralized UniProt normalization
+    best_uniprot_acc_base <- normalizeUniprotAccession(best_uniprot_acc, remove_isoform = TRUE)
 
     anno_tbl <- data.frame(
       uniprot_acc = rownames(r_obj@.Data[[1]]),
@@ -2331,7 +2342,7 @@ getGlimmaVolcanoProteomicsWidget <- function(
       base_match_tbl <- data.frame(temp_column_base = anno_tbl$temp_column_base[missing_gene_mask]) |>
         left_join(
           volcano_plot_tab_cln |>
-            dplyr::mutate(temp_base = gsub("-\\d+$", "", {{ uniprot_column }})) |>
+            dplyr::mutate(temp_base = normalizeUniprotAccession({{ uniprot_column }}, remove_isoform = TRUE)) |>
             dplyr::select(temp_base, gene_name_alt = {{ gene_name_column }}) |>
             dplyr::distinct(temp_base, .keep_all = TRUE),
           by = join_by(temp_column_base == temp_base)
@@ -2361,11 +2372,13 @@ getGlimmaVolcanoProteomicsWidget <- function(
     anno_tbl <- anno_tbl |>
       mutate(across(everything(), ~ as.character(ifelse(is.na(.), "", .))))
 
-    gene_names <- anno_tbl |>
-      dplyr::pull(gene_name)
+    # CRITICAL: Use the original IDs for rownames to match counts matrix
+    rownames(anno_tbl) <- as.character(rownames(r_obj@.Data[[1]]))
 
-    # Update rownames in r_obj
-    rownames(r_obj@.Data[[1]]) <- gene_names
+    # Update rownames in r_obj to gene names for plot labels if desired,
+    # but Glimma v2 glimmaVolcano uses anno for everything.
+    # We will keep r_obj names as is to match anno rownames.
+    # rownames(r_obj@.Data[[1]]) <- gene_names # (DON'T DO THIS IF IT BREAKS MATCHING)
 
     # Transform p-values to q-values
     # Check if qvalue calculation is possible
@@ -2394,6 +2407,18 @@ getGlimmaVolcanoProteomicsWidget <- function(
       status = status_result,
       p.adj.method = "none",
       transform.counts = "none",
+      sample.cols = if (!is.null(groups)) {
+        unique_groups <- unique(groups)
+        group_colors <- stats::setNames(
+          grDevices::hcl.colors(length(unique_groups), "Set2"), 
+          unique_groups
+        )
+        group_colors[groups]
+      } else if (!is.null(counts_tbl)) {
+        rep("#1f77b4", ncol(counts_tbl))
+      } else {
+        NULL
+      },
       ...
     )
 
