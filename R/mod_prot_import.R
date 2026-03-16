@@ -93,11 +93,18 @@ mod_prot_import_ui <- function(id) {
                        accept = c(".fasta", ".fa", ".faa"))
             },
             
-            # Mixed species FASTA option
-            shiny::checkboxInput(ns("mixed_species_fasta"),
-                         "Mixed species FASTA (analyze organism distribution)",
-                         value = FALSE),
-            shiny::helpText("Check this if your FASTA contains proteins from multiple species (e.g., spiked-in standards, contaminants)"),
+            # Sanitization and FASTA options
+            shiny::wellPanel(
+              shiny::checkboxInput(ns("sanitize_names"),
+                           "Sanitize Sample Names",
+                           value = TRUE),
+              shiny::helpText("Clean sample IDs (e.g., '123-Sample!' -> 'x123_sample') for better compatibility with downstream analysis."),
+              
+              shiny::checkboxInput(ns("mixed_species_fasta"),
+                           "Mixed species FASTA (analyze organism distribution)",
+                           value = FALSE),
+              shiny::helpText("Check this if your FASTA contains proteins from multiple species (e.g., spiked-in standards, contaminants)")
+            ),
             
             shiny::h4("Step 3: Organism Information"),
             shiny::div(
@@ -266,7 +273,7 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
         "search_results", 
         roots = volumes, 
         session = session,
-        filetypes = c("tsv", "txt", "tab", "csv", "xlsx", "zip")
+        filetypes = c("tsv", "txt", "tab", "csv", "xlsx", "zip", "parquet")
       )
       
       observeEvent(input$search_results, {
@@ -665,8 +672,29 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
         workflow_data$data_type <- data_import_result$data_type  # "peptide" or "protein"
         workflow_data$column_mapping <- data_import_result$column_mapping
         
+        # Apply sample name sanitization if requested
+        if (isTRUE(input$sanitize_names)) {
+          update_processing_status("Sanitizing sample names...")
+          log_info("Sanitizing sample names using janitor::make_clean_names()...")
+          
+          run_col <- data_import_result$column_mapping$run_col
+          if (!is.null(run_col) && run_col %in% names(workflow_data$data_tbl)) {
+            # Capture mapping for logging
+            original_runs <- unique(as.character(workflow_data$data_tbl[[run_col]]))
+            clean_runs <- janitor::make_clean_names(original_runs)
+            
+            name_mapping <- stats::setNames(clean_runs, original_runs)
+            
+            # Apply to data_tbl
+            workflow_data$data_tbl[[run_col]] <- name_mapping[as.character(workflow_data$data_tbl[[run_col]])]
+            
+            log_info(sprintf("Sanitized %d unique sample names.", length(original_runs)))
+            shiny::showNotification("Sample names sanitized for R compatibility.", type = "message")
+          }
+        }
+        
         # Initialize data_cln as a copy of data_tbl (will be modified by design matrix)
-        workflow_data$data_cln <- data_import_result$data
+        workflow_data$data_cln <- workflow_data$data_tbl
         
         # Set workflow type based on detected format
         if (format == "pd_tmt") {

@@ -99,7 +99,7 @@ mod_lipid_import_ui <- function(id) {
                                             shiny::fileInput(
                                                 ns("assay1_file_std"),
                                                 NULL,
-                                                accept = c(".tsv", ".txt", ".csv", ".xlsx")
+                                                accept = c(".tsv", ".tab", ".txt", ".csv", ".xlsx", ".parquet")
                                             )
                                         }
                                     )
@@ -137,7 +137,7 @@ mod_lipid_import_ui <- function(id) {
                                             shiny::fileInput(
                                                 ns("assay2_file_std"),
                                                 NULL,
-                                                accept = c(".tsv", ".txt", ".csv", ".xlsx")
+                                                accept = c(".tsv", ".tab", ".txt", ".csv", ".xlsx", ".parquet")
                                             )
                                         }
                                     )
@@ -269,7 +269,15 @@ mod_lipid_import_ui <- function(id) {
                                         "Exclude Vendor-Normalized Columns",
                                         value = TRUE
                                     ),
-                                    shiny::helpText("Excludes columns ending in _Norm, _Normalized, etc.")
+                                    shiny::helpText("Excludes columns ending in _Norm, _Normalized, etc."),
+                                    
+                                    # Sanitization checkbox
+                                    shiny::checkboxInput(
+                                        ns("sanitize_names"),
+                                        "Sanitize Sample Names",
+                                        value = TRUE
+                                    ),
+                                    shiny::helpText("Clean sample IDs (e.g., '123-Sample!' -> 'x123_sample') for better compatibility with downstream analysis."),
 
                                     # Internal standard pattern
                                     , shiny::textInput(
@@ -387,7 +395,7 @@ mod_lipid_import_server <- function(id, workflow_data, experiment_paths, volumes
                 "assay1_file",
                 roots = volumes,
                 session = session,
-                filetypes = c("tsv", "txt", "csv", "xlsx")
+                filetypes = c("tsv", "tab", "txt", "csv", "xlsx", "parquet")
             )
 
             shiny::observeEvent(input$assay1_file, {
@@ -416,7 +424,7 @@ mod_lipid_import_server <- function(id, workflow_data, experiment_paths, volumes
                 "assay2_file",
                 roots = volumes,
                 session = session,
-                filetypes = c("tsv", "txt", "csv", "xlsx")
+                filetypes = c("tsv", "tab", "txt", "csv", "xlsx", "parquet")
             )
 
             shiny::observeEvent(input$assay2_file, {
@@ -837,6 +845,37 @@ mod_lipid_import_server <- function(id, workflow_data, experiment_paths, volumes
                     if (!is.null(local_data$assay2_file) && nzchar(input$assay2_name)) {
                         assay2_import <- importLipidMSDIALData(local_data$assay2_file)
                         assay_list[[input$assay2_name]] <- assay2_import$data
+                    }
+
+                    # Apply sample name sanitization if requested
+                    if (isTRUE(input$sanitize_names)) {
+                        logger::log_info("Sanitizing sample names in lipidomics data...")
+                        
+                        # Sanitize sample columns in assay_list
+                        for (assay_name in names(assay_list)) {
+                            assay_df <- assay_list[[assay_name]]
+                            all_cols <- names(assay_df)
+                            
+                            # Identify sample columns
+                            current_sample_cols <- intersect(sample_cols, all_cols)
+                            
+                            if (length(current_sample_cols) > 0) {
+                                # Sanitize
+                                clean_sample_cols <- janitor::make_clean_names(current_sample_cols)
+                                
+                                # Update column names in the data frame
+                                names(assay_df)[match(current_sample_cols, all_cols)] <- clean_sample_cols
+                                assay_list[[assay_name]] <- assay_df
+                                
+                                # Update the global sample_cols list (only for the first assay to maintain consistency)
+                                if (assay_name == names(assay_list)[1]) {
+                                    sample_cols <- clean_sample_cols
+                                }
+                            }
+                        }
+                        
+                        logger::log_info(sprintf("Sanitized %d sample column names.", length(sample_cols)))
+                        shiny::showNotification("Sample names sanitized for R compatibility.", type = "message")
                     }
 
                     # Store in workflow_data

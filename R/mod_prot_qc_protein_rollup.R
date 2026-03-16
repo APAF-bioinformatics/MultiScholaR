@@ -60,8 +60,10 @@ mod_prot_qc_protein_rollup_ui <- function(id) {
 #' @rdname mod_prot_qc_protein_rollup
 #' @export
 #' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification removeNotification renderText renderPlot
-#' @importFrom logger log_info log_error
+#' @importFrom logger log_info log_error log_warn
 #' @importFrom grid grid.draw
+#' @importFrom tibble tibble
+#' @importFrom purrr map_chr
 mod_prot_qc_protein_rollup_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label) {
   shiny::moduleServer(id, function(input, output, session) {
     
@@ -87,13 +89,23 @@ mod_prot_qc_protein_rollup_server <- function(id, workflow_data, experiment_path
           "peptide_values_imputed.tsv"
         )
         
+        # Prepare sample mapping to prevent name mangling by IQ/vroom
+        original_samples <- unique(peptide_s4@design_matrix$Run)
+        sample_mapping <- tibble::tibble(
+          Original = original_samples,
+          Alias = paste0("S_", sprintf("%03d", seq_along(original_samples)))
+        )
+        
         # Prepare data for IQ (ensure correct column names and format)
         peptide_data_for_iq <- peptide_s4@peptide_data |>
           dplyr::mutate(
             Q.Value = 0.0009,
             PG.Q.Value = 0.009,
             Peptide.Imputed = ifelse(is.na(Peptide.Imputed), 0, Peptide.Imputed)
-          )
+          ) |>
+          dplyr::left_join(sample_mapping, by = c("Run" = "Original")) |>
+          dplyr::mutate(Run = Alias) |>
+          dplyr::select(-Alias)
         
         vroom::vroom_write(peptide_data_for_iq, peptide_values_imputed_file)
         
@@ -124,7 +136,38 @@ mod_prot_qc_protein_rollup_server <- function(id, workflow_data, experiment_path
         }
         
         # Read IQ output
-        protein_log2_quant <- vroom::vroom(iq_output_file)
+        protein_log2_quant_aliased <- vroom::vroom(iq_output_file, .name_repair = "minimal")
+        
+        # Restore original names
+        current_cols <- colnames(protein_log2_quant_aliased)
+        restored_cols <- purrr::map_chr(current_cols, function(col) {
+          if (col == "Protein.Ids") return(col)
+          match <- sample_mapping$Original[sample_mapping$Alias == col]
+          if (length(match) > 0) return(match[1])
+          return(col)
+        })
+        colnames(protein_log2_quant_aliased) <- restored_cols
+        protein_log2_quant <- protein_log2_quant_aliased
+        
+        # Identify surviving samples
+        surviving_samples <- setdiff(colnames(protein_log2_quant), "Protein.Ids")
+        original_design_matrix <- peptide_s4@design_matrix
+        
+        # Filter design matrix to match surviving samples
+        final_design_matrix <- original_design_matrix |>
+          dplyr::filter(Run %in% surviving_samples)
+        
+        # Check if samples were dropped
+        dropped_samples <- setdiff(original_samples, surviving_samples)
+        if (length(dropped_samples) > 0) {
+          dropped_list <- paste(dropped_samples, collapse = ", ")
+          logger::log_warn("Protein Processing: {length(dropped_samples)} samples dropped during IQ rollup: {dropped_list}")
+          shiny::showNotification(
+            paste("Warning: The following samples were dropped during protein rollup due to low peptide quality:", dropped_list),
+            type = "warning",
+            duration = 10
+          )
+        }
         
         logger::log_info("Protein Processing: Creating ProteinQuantitativeData S4 object")
         
@@ -133,7 +176,7 @@ mod_prot_qc_protein_rollup_server <- function(id, workflow_data, experiment_path
           protein_quant_table = protein_log2_quant,
           protein_id_column = "Protein.Ids",
           protein_id_table = protein_log2_quant |> dplyr::distinct(Protein.Ids),
-          design_matrix = peptide_s4@design_matrix,
+          design_matrix = final_design_matrix,
           sample_id = "Run",
           group_id = "group",
           technical_replicate_id = "replicates",

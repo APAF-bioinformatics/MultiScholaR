@@ -761,12 +761,11 @@ mod_lipid_norm_server <- function(id, workflow_data, experiment_paths, omic_type
         # Generate composite QC figure from saved images
         # Mirrors createGridQC structure with row labels and patchwork layout
         # @param plot_files Vector of file paths to individual QC plot images
-        # @param output_path Path where the composite figure will be saved
         # @param ncol Number of columns in the composite (default: 3)
         # @param row_labels Named list of row labels (e.g., list(pca = c("a)", "b)", "c)")))
         # @param column_labels Vector of column titles (e.g., c("Pre-Norm", "Post-Norm", "RUV"))
-        # @return Path to saved composite or NULL on error
-        generateCompositeFromFiles <- function(plot_files, output_path, ncol = 3, row_labels = NULL, column_labels = NULL) {
+        # @return A list containing the patchwork plot object, width, and height
+        generateCompositeFromFiles <- function(plot_files, ncol = 3, row_labels = NULL, column_labels = NULL) {
             logger::log_info(sprintf("[generateCompositeFromFiles] Generating composite from %d files...", length(plot_files)))
 
             if (!requireNamespace("patchwork", quietly = TRUE)) {
@@ -889,20 +888,10 @@ mod_lipid_norm_server <- function(id, workflow_data, experiment_paths, omic_type
                 plot_width <- 4 + (ncol * 3)
                 plot_height <- 4 + (length(height_values) * 2)
 
-                ggplot2::ggsave(
-                    output_path
-                    , combined_plot
-                    , width = plot_width
-                    , height = plot_height
-                    , dpi = 150
-                    , limitsize = FALSE
-                )
-
-                rm(plot_sections, combined_plot)
+                rm(plot_sections)
                 gc()
 
-                logger::log_info(sprintf("[generateCompositeFromFiles] Composite saved to %s", output_path))
-                return(output_path)
+                return(list(plot = combined_plot, width = plot_width, height = plot_height))
 
             }, error = function(e) {
                 logger::log_error(paste("[generateCompositeFromFiles] Error:", e$message))
@@ -1562,15 +1551,25 @@ mod_lipid_norm_server <- function(id, workflow_data, experiment_paths, omic_type
                                 }
 
                                 # Generate combined composite
-                                composite_path <- file.path(qc_dir, "composite_QC_figure.png")
-                                generateCompositeFromFiles(
+                                composite_res <- generateCompositeFromFiles(
                                     plot_files = all_plot_files
-                                    , output_path = composite_path
                                     , ncol = ncol_composite
                                     , row_labels = all_row_labels
                                     , column_labels = column_labels
                                 )
-                                add_log(sprintf("Composite QC figure saved to: %s", composite_path))
+                                
+                                if (!is.null(composite_res)) {
+                                    savePlot(
+                                        composite_res$plot, 
+                                        qc_dir, 
+                                        paste0(omic_type, "_composite_QC_figure"), 
+                                        width = composite_res$width, 
+                                        height = composite_res$height, 
+                                        dpi = 150, 
+                                        limitsize = FALSE
+                                    )
+                                    add_log(sprintf("Composite QC figure saved to: %s", file.path(qc_dir, "composite_QC_figure")))
+                                }
 
                             }
                         }, error = function(e) {
