@@ -1,10 +1,17 @@
-# Plan: Fix GUI IQ Rollup Bug
+# Plan: Fix GUI IQ Rollup Bug and Missing LCMS_Neg PCA Plot
 
-## Problem 
-1. **IQ Rollup Bug**: In the R/Shiny GUI proteomics workflow, the module `mod_prot_qc_protein_rollup.R` performs peptide-to-protein rollup using the `iq` package. It writes the `peptide_s4` long data to a TSV, runs `iq::process_long_format()`, and then reads the result back with `vroom::vroom()`. It then tries to create a `ProteinQuantitativeData` S4 object. The S4 object's validity check (`func_prot_s4_objects.R`) throws the error: `"Samples in protein data and design matrix must be the same"` when processing the neurolincs parquet dataset. This happens for two possible reasons:
+## Problem 1: IQ Rollup Bug
+In the R/Shiny GUI proteomics workflow, the module `mod_prot_qc_protein_rollup.R` performs peptide-to-protein rollup using the `iq` package. It writes the `peptide_s4` long data to a TSV, runs `iq::process_long_format()`, and then reads the result back with `vroom::vroom()`. It then tries to create a `ProteinQuantitativeData` S4 object. The S4 object's validity check (`func_prot_s4_objects.R`) throws the error: `"Samples in protein data and design matrix must be the same"` when processing the neurolincs parquet dataset. This happens for two possible reasons:
     - **Samples dropped by `iq`**: `iq` filters out peptides not meeting Q-value thresholds (`filter_double_less = c("Q.Value" = "0.01", ...)`). If a sample has no remaining valid proteins after IQ processing/filtering, it is dropped from the wide-format output. However, the `mod_prot_qc_protein_rollup.R` script passes the *original* `peptide_s4@design_matrix` directly to `ProteinQuantitativeData()`.
     - **Column Name Mangling**: `vroom::vroom()` defaults to `.name_repair = "unique"`. Additionally, `iq` or `readr` processes might alter sample names if they contain special characters, spaces, or start with numbers, transforming them into "syntactically valid" R names. This causes a mismatch with the exact strings in the design matrix `Run` column.
-2. **Composite QC Figure Saving**: The `_composite_QC_figure` generated during the normalization step (`mod_prot_norm.R`, `mod_lipid_norm.R`, `mod_metab_norm.R`) is currently only saved as a PNG. The requirement is to save this figure as a PDF, a PNG, and an RDS file containing the R plot object, using the `savePlot()` function.
+
+## Problem 2: Composite QC Figure Saving
+The `_composite_QC_figure` generated during the normalization step (`mod_prot_norm.R`, `mod_lipid_norm.R`, `mod_metab_norm.R`) is currently only saved as a PNG. The requirement is to save this figure as a PDF, a PNG, and an RDS file containing the R plot object, using the `savePlot()` function.
+
+## Problem 3: Missing LCMS_Neg PCA Final QC Plot
+In the metabolomics correlation filtering tab, only the LCMS_Pos PCA plot is shown (the first assay). The second assay (LCMS_Neg) is missing from the "Final Filtered Data QC" section. This same issue also affects lipidomics.
+
+---
 
 ## Proposed Changes
 
@@ -36,6 +43,21 @@ Modify the `generateCompositeFromFiles` function implementation in `R/mod_prot_n
   - `R/mod_prot_norm.R`: `composite_path <- file.path(qc_dir, "composite_QC_figure")` (without extension to let `savePlot` handle it). Update the `generateCompositeFromFiles` call to return the grob/plot, then use `savePlot(composite_plot, qc_dir, paste0(omic_type, "_composite_QC_figure"))`.
   - Repeat the above for `R/mod_lipid_norm.R` and `R/mod_metab_norm.R`.
 
+### 5. Display Multi-Assay Final QC Plots
+In `R/mod_metab_norm.R` and `R/mod_lipid_norm.R`, the `final_qc_plot` output currently hardcodes `pca_plots[[1]]` if `plotPca` returns a list of plots (which it does for multi-assay objects).
+- Modify `output$final_qc_plot` in both files.
+- If `pca_plots` is a list with length > 1 (e.g., LCMS_Pos and LCMS_Neg), combine them using `patchwork::wrap_plots(pca_plots, ncol = 1)` (or `ncol = 2` depending on layout fit) instead of just selecting the first one.
+- Return the `patchwork` combined ggplot object so both assays are rendered dynamically in the Shiny UI.
+
+### 6. Fix Blank Glimma Volcano Plot in Metabolomics & Lipidomics DA
+In the metabolomics and lipidomics workflows, intensities often contain `NA` values for missing observations. The `generateMetabDAVolcanoPlotGlimma` and `generateLipidDAVolcanoPlotGlimma` functions pass the sample intensity matrix directly into `Glimma::glimmaXY`'s `counts` argument.
+- **Root Cause**: Glimma converts the R `counts` matrix to JSON. `NA` values are serialized as `"NA"`. When D3.js evaluates `"NA"` for scaling (e.g., `Math.max`), it generates `NaN`, which crashes the D3 SVG rendering completely and results in an invisible/blank plot. (The warning about `log-cpm` transformation is a red herring default message).
+- **Solution**: Before generating the `Glimma` widget, explicitly sanitize `counts_mat` for both metabolomics and lipidomics:
+  ```R
+  counts_mat[is.na(counts_mat) | is.nan(counts_mat) | is.infinite(counts_mat)] <- 0
+  ```
+- **Status**: Implemented proactively in `R/func_metab_da.R` and `R/func_lipid_da.R`.
+
 ## Verification Plan
 
 ### Automated Tests
@@ -53,3 +75,4 @@ Modify the `generateCompositeFromFiles` function implementation in `R/mod_prot_n
 5. If samples were dropped, observe the warning notification in the UI listing the excluded sample IDs.
 6. Progress to the Normalization tab and run through the normalization process for proteomics (and optionally lipidomics/metabolomics).
 7. Navigate to the generated `QC_figures` directory and confirm that all three file formats (PDF, PNG, RDS) explicitly exist for the `_composite_QC_figure`.
+8. Complete the Metabolomics (and Lipidomics) flow and check the "Correlation Filtering" tab to ensure the Final QC Plot displays the PCA results for **ALL** present assays (e.g. both positive and negative ion mode).

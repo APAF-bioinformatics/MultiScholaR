@@ -1863,7 +1863,9 @@ mod_lipid_norm_server <- function(id, workflow_data, experiment_paths, omic_type
                     , title = "Final QC - PCA"
                 )
 
-                if (is.list(pca_plots) && length(pca_plots) > 0) {
+                if (is.list(pca_plots) && length(pca_plots) > 1) {
+                    patchwork::wrap_plots(pca_plots, ncol = 1)
+                } else if (is.list(pca_plots) && length(pca_plots) == 1) {
                     pca_plots[[1]]
                 } else if (inherits(pca_plots, "ggplot")) {
                     pca_plots

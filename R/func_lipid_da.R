@@ -984,7 +984,12 @@ generateLipidDAVolcanoPlotGlimma <- function(
     counts_mat <- as.matrix(assay_data[, sample_cols, drop = FALSE])
     rownames(counts_mat) <- assay_data[[theObject@lipid_id_column]]
 
-    # Get groups
+    # Protect Glimma Javascript from crashing due to NA/NaN/Inf in counts matrix
+    if (any(is.na(counts_mat) | is.nan(counts_mat) | is.infinite(counts_mat))) {
+        logger::log_info("   Sanitizing counts_mat for Glimma by replacing NA/NaN/Inf with 0")
+        counts_mat[is.na(counts_mat) | is.nan(counts_mat) | is.infinite(counts_mat)] <- 0
+    }
+
     dm <- theObject@design_matrix
     rownames(dm) <- dm[[theObject@sample_id]]
     groups <- dm[sample_cols, theObject@group_id]
@@ -1022,7 +1027,7 @@ generateLipidDAVolcanoPlotGlimma <- function(
     # 2. Sanitize the annotation dataframe to prevent D3.js / DataTables crashing
     # Convert to character, replace NAs with empty strings, and rename columns to avoid dots
     clean_anno <- volcano_tab |>
-        dplyr::select(-any_of(c("logFC", "raw_pvalue", "fdr_qvalue", "lqm", "label", "significant"))) |>
+        dplyr::select(-any_of(c("logFC", "raw_pvalue", "fdr_qvalue", "lqm", "label", "significant", "log2FC", "negLog10FDR"))) |>
         dplyr::rename_with(~ gsub("[\\. ]", "_", .)) |>
         dplyr::mutate(dplyr::across(everything(), as.character)) |>
         dplyr::mutate(dplyr::across(everything(), ~ ifelse(is.na(.), "", .))) |>
@@ -1033,10 +1038,6 @@ generateLipidDAVolcanoPlotGlimma <- function(
         clean_anno <- clean_anno |> dplyr::relocate(lipid_id)
     }
     rownames(clean_anno) <- as.character(volcano_tab$lipid_id)
-
-    # Add numeric columns for the table explicitly to avoid DataTables warnings
-    clean_anno$log2FC <- signif(as.numeric(volcano_tab$logFC), 4)
-    clean_anno$negLog10FDR <- signif(as.numeric(volcano_tab$lqm), 4)
 
     # 3. Prepare status vector (1 = Up, -1 = Down, 0 = Not Sig)
     status_vec <- ifelse(volcano_tab$significant == "Up", 1,

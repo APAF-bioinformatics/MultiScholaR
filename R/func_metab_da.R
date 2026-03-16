@@ -1017,6 +1017,12 @@ generateMetabDAVolcanoPlotGlimma <- function(
     counts_mat <- as.matrix(assay_data[, sample_cols, drop = FALSE])
     rownames(counts_mat) <- assay_data[[theObject@metabolite_id_column]]
 
+    # Protect Glimma Javascript from crashing due to NA/NaN/Inf in counts matrix
+    if (any(is.na(counts_mat) | is.nan(counts_mat) | is.infinite(counts_mat))) {
+        logger::log_info("   Sanitizing counts_mat for Glimma by replacing NA/NaN/Inf with 0")
+        counts_mat[is.na(counts_mat) | is.nan(counts_mat) | is.infinite(counts_mat)] <- 0
+    }
+
     # Get groups
     dm <- theObject@design_matrix
     rownames(dm) <- dm[[theObject@sample_id]]
@@ -1055,7 +1061,7 @@ generateMetabDAVolcanoPlotGlimma <- function(
     # 2. Sanitize the annotation dataframe to prevent D3.js / DataTables crashing
     # Convert to character, replace NAs with empty strings, and rename columns to avoid dots
     clean_anno <- volcano_tab |>
-        dplyr::select(-any_of(c("logFC", "raw_pvalue", "fdr_qvalue", "lqm", "label", "significant"))) |>
+        dplyr::select(-any_of(c("logFC", "raw_pvalue", "fdr_qvalue", "lqm", "label", "significant", "log2FC", "negLog10FDR"))) |>
         dplyr::rename_with(~ gsub("[\\. ]", "_", .)) |>
         dplyr::mutate(dplyr::across(everything(), as.character)) |>
         dplyr::mutate(dplyr::across(everything(), ~ ifelse(is.na(.), "", .))) |>
@@ -1067,13 +1073,21 @@ generateMetabDAVolcanoPlotGlimma <- function(
     }
     rownames(clean_anno) <- as.character(volcano_tab$metabolite_id)
 
-    # Add numeric columns for the table explicitly to avoid DataTables warnings
-    clean_anno$log2FC <- signif(as.numeric(volcano_tab$logFC), 4)
-    clean_anno$negLog10FDR <- signif(as.numeric(volcano_tab$lqm), 4)
-
     # 3. Prepare status vector (1 = Up, -1 = Down, 0 = Not Sig)
     status_vec <- ifelse(volcano_tab$significant == "Up", 1,
                     ifelse(volcano_tab$significant == "Down", -1, 0))
+
+    # [D66:START] -------------------------
+    d66_log("  !! PRE-GLIMMA SANITY CHECK !!")
+    d66_log("    x has NA: ", any(is.na(volcano_tab$logFC)), " / Inf: ", any(is.infinite(volcano_tab$logFC)))
+    d66_log("    y has NA: ", any(is.na(volcano_tab$lqm)), " / Inf: ", any(is.infinite(volcano_tab$lqm)))
+    d66_log("    status has NA: ", any(is.na(status_vec)))
+    if (!is.null(counts_mat)) d66_log("    counts_mat has NA: ", any(is.na(counts_mat)), " / Inf: ", any(is.infinite(counts_mat)))
+    d66_log("    groups has NA: ", any(is.na(groups)))
+    d66_log("    clean_anno has NA in log2FC: ", any(is.na(clean_anno$log2FC)))
+    d66_log("    clean_anno has NA in negLog10FDR: ", any(is.na(clean_anno$negLog10FDR)))
+    d66_log("    checking clean_anno char cols for literal 'NA': ", any(clean_anno == "NA", na.rm=TRUE))
+    # [D66:END] ---------------------------
 
     # Generate Glimma widget
     tryCatch(
