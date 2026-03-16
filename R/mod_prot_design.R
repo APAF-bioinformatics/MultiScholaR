@@ -903,6 +903,28 @@ mod_prot_design_server <- function(id, workflow_data, experiment_paths, volumes 
               logger::log_info("Saved contrasts_tbl to global environment for DE analysis.")
           }
           
+          # --- Save Manifests (New Feature) ---
+          manifest_path <- file.path(source_dir, "manifest.json")
+          manifest_data <- list(
+            data_path = "data_cln.tab",
+            design_matrix_path = "design_matrix.tab",
+            contrast_strings_path = "contrast_strings.tab"
+          )
+          jsonlite::write_json(manifest_data, manifest_path, auto_unbox = TRUE, pretty = TRUE)
+          logger::log_info(paste("Saved manifest.json to:", manifest_path))
+          
+          assay_manifest_path <- file.path(source_dir, "assay_manifest.txt")
+          writeLines("Proteomics", assay_manifest_path)
+          logger::log_info(paste("Saved assay_manifest.txt to:", assay_manifest_path))
+          
+          col_map_path <- file.path(source_dir, "column_mapping.json")
+          col_map_data <- workflow_data$column_mapping
+          if (is.null(col_map_data)) {
+              col_map_data <- list(assay_type = "proteomics")
+          }
+          jsonlite::write_json(col_map_data, col_map_path, auto_unbox = TRUE, pretty = TRUE)
+          logger::log_info(paste("Saved column_mapping.json to:", col_map_path))
+          
           # --- Save config.ini for Import Compatibility ---
           if (!is.null(workflow_data$config_list)) {
             # Add workflow_type to config for import detection

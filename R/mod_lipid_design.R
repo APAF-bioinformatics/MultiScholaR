@@ -610,6 +610,17 @@ mod_lipid_design_server <- function(id, workflow_data, experiment_paths, volumes
                     logger::log_info("Saved column_mapping.json")
                 }
 
+                # --- Save manifest.json ---
+                manifest_json_path <- file.path(source_dir, "manifest.json")
+                manifest_data <- list(
+                    data_path = "assay_manifest.txt",
+                    design_matrix_path = "design_matrix.tab",
+                    contrast_strings_path = "contrast_strings.tab",
+                    column_mapping_path = "column_mapping.json"
+                )
+                jsonlite::write_json(manifest_data, manifest_json_path, auto_unbox = TRUE, pretty = TRUE)
+                logger::log_info(paste("Saved manifest.json to:", manifest_json_path))
+
                 # --- Save config.ini ---
                 if (!is.null(workflow_data$config_list)) {
                     config_path <- file.path(source_dir, "config.ini")
