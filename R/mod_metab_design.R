@@ -458,6 +458,9 @@ mod_metab_design_server <- function(id, workflow_data, experiment_paths, volumes
                 )
                 message("DEBUG66: State saved successfully")
 
+                # Capture Checkpoint cp01: Raw Imported S4
+                .capture_checkpoint(s4_obj, "cp01", "raw_imported")
+
                 # Initialize QC progress tracking with raw data baseline
                 tryCatch({
                     updateMetaboliteFiltering(
@@ -667,6 +670,9 @@ mod_metab_design_server <- function(id, workflow_data, experiment_paths, volumes
                     , config_object = results$config_list
                     , description = "Initial MetaboliteAssayData S4 object created after design matrix"
                 )
+
+                # Capture Checkpoint cp01: Raw Imported S4
+                .capture_checkpoint(s4_obj, "cp01", "raw_imported")
 
                 # --- 5. Trigger QC ---
                 if (!is.null(qc_trigger)) {

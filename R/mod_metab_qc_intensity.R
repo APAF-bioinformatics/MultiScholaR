@@ -52,21 +52,33 @@ mod_metab_qc_intensity_ui <- function(id) {
                         , "Intensity Cutoff Percentile (%)"
                         , min = 1
                         , max = 50
-                        , value = 10
+                        , value = 1
                         , step = 1
                     )
-                    , shiny::helpText("Intensities below this percentile are considered 'low' (default: 10%)")
+                    , shiny::helpText("Intensities below this percentile are considered 'low' (default: 1%)")
                     
-                    # Proportion threshold
-                    , shiny::sliderInput(
-                        ns("proportion_below_cutoff")
-                        , "Max Proportion of Samples Below Threshold"
-                        , min = 0.1
-                        , max = 1.0
-                        , value = 0.5
-                        , step = 0.05
+                    # Group-aware parameters
+                    , shiny::hr()
+                    , shiny::h5("Group-Aware Filtering")
+                    , shiny::selectInput(
+                        ns("grouping_variable")
+                        , "Grouping Variable:"
+                        , choices = c("group")
+                        , selected = "group"
                     )
-                    , shiny::helpText("Remove metabolites where this proportion of samples are below the intensity threshold (default: 0.5)")
+                    , shiny::numericInput(
+                        ns("min_samples_per_group")
+                        , "Min Samples per Group Above Threshold:"
+                        , value = 3
+                        , min = 1
+                    )
+                    , shiny::numericInput(
+                        ns("min_groups")
+                        , "Min Number of Groups Meeting Above:"
+                        , value = 2
+                        , min = 1
+                    )
+                    , shiny::helpText("Only keep metabolite if it is above threshold in at least N samples of at least M groups.")
                     
                     , shiny::hr()
                     , shiny::div(
@@ -142,17 +154,21 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
                 })
                 
                 logger::log_info(paste(
-                    "Applying metabolite intensity filter: percentile ="
+                    "Applying group-aware metabolite intensity filter: percentile ="
                     , input$intensity_cutoff_percentile
-                    , ", proportion ="
-                    , input$proportion_below_cutoff
+                    , ", min_samples ="
+                    , input$min_samples_per_group
+                    , ", min_groups ="
+                    , input$min_groups
                 ))
                 
                 # Apply S4 method for filtering
                 filtered_s4 <- metaboliteIntensityFiltering(
                     current_s4
+                    , grouping_variable = input$grouping_variable
+                    , min_samples_per_group = input$min_samples_per_group
+                    , min_groups = input$min_groups
                     , metabolites_intensity_cutoff_percentile = input$intensity_cutoff_percentile
-                    , metabolites_proportion_of_samples_below_cutoff = input$proportion_below_cutoff
                 )
                 
                 # Get filtered metabolite counts per assay
@@ -202,11 +218,16 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
                     , s4_data_object = filtered_s4
                     , config_object = workflow_data$config_list
                     , description = sprintf(
-                        "Applied metabolite intensity filter (percentile: %d%%, proportion: %.2f)"
+                        "Applied metabolite intensity filter (percentile: %d%%, grouping: %s, min_samples: %d, min_groups: %d)"
                         , input$intensity_cutoff_percentile
-                        , input$proportion_below_cutoff
+                        , input$grouping_variable
+                        , input$min_samples_per_group
+                        , input$min_groups
                     )
                 )
+
+                # Capture Checkpoint cp02: Intensity Filtered S4
+                .capture_checkpoint(filtered_s4, "cp02", "intensity_filtered")
                 
                 # REMOVED duplicate filter_plot(qc_plot) - was causing potential issues
                 
@@ -216,10 +237,12 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
                 total_removed <- sum(stats_df$Removed)
                 
                 result_text <- paste(
-                    "Metabolite Intensity Filter Applied Successfully"
+                    "Metabolite Intensity Filter Applied Successfully (Group-Aware)"
                     , "============================================"
                     , sprintf("Intensity cutoff percentile: %d%%", input$intensity_cutoff_percentile)
-                    , sprintf("Max proportion below cutoff: %.2f", input$proportion_below_cutoff)
+                    , sprintf("Grouping variable: %s", input$grouping_variable)
+                    , sprintf("Min samples per group: %d", input$min_samples_per_group)
+                    , sprintf("Min groups passing: %d", input$min_groups)
                     , ""
                     , "Per-Assay Results:"
                     , paste(sapply(seq_len(nrow(stats_df)), function(i) {

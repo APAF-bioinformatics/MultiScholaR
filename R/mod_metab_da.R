@@ -825,6 +825,9 @@ mod_metab_da_server <- function(id, workflow_data, experiment_paths, omic_type, 
                     da_data$da_results_list <- results
                     da_data$analysis_complete <- TRUE
 
+                    # Capture Checkpoint cp07: DA Results
+                    .capture_checkpoint(results, "cp07", "da_results")
+
                     # Update tab status - must replace entire list to trigger reactivity
                     updated_status <- workflow_data$tab_status
                     updated_status$differential_analysis <- "complete"
@@ -978,7 +981,15 @@ mod_metab_da_server <- function(id, workflow_data, experiment_paths, omic_type, 
 
             tryCatch(
                 {
-            widget <- generateMetabDAVolcanoPlotGlimma(
+                    # Capture Checkpoint cp08: Volcano Input
+                    .capture_checkpoint(list(
+                        da_results_list = da_data$da_results_list,
+                        selected_contrast = input$volcano_contrast,
+                        selected_assay = input$volcano_assay,
+                        da_q_val_thresh = input$da_q_val_thresh
+                    ), "cp08", "volcano_input")
+
+                    widget <- generateMetabDAVolcanoPlotGlimma(
                 da_results_list = da_data$da_results_list,
                 selected_contrast = input$volcano_contrast,
                 selected_assay = input$volcano_assay,

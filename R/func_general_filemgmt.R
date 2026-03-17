@@ -1941,7 +1941,6 @@ copyToResultsSummary <- function(omic_type,
     if (!is.list(current_paths) || !all(required_paths_in_current %in% names(current_paths))) {
         missing_req <- setdiff(required_paths_in_current, names(current_paths))
         rlang::abort(paste0("Essential paths missing from project_dirs: ", paste(missing_req, collapse = ", ")))
-        rlang::abort(paste0("Essential paths missing from project_dirs: ", paste(missing_req, collapse = ", ")))
     }
     # --- End: Path Derivation and Validation ---
 
@@ -1955,7 +1954,6 @@ copyToResultsSummary <- function(omic_type,
     # Track failed copies
     failed_copies <- list()
 
-    cat("\nRelevant directory paths:\n")
     cat("\nRelevant directory paths:\n")
     cat(sprintf("Results Dir: %s\n", current_paths$results_dir))
     cat(sprintf("Results Summary Dir: %s\n", current_paths$results_summary_dir))
@@ -2097,37 +2095,30 @@ copyToResultsSummary <- function(omic_type,
     if (length(contents_of_summary_dir) > 0) {
         logger::log_info("Results summary directory for {omic_label} ({current_paths$results_summary_dir}) contains existing files/folders.")
         backup_dirname <- paste0(omic_label, "_backup_", format(Sys.time(), "%Y%m%d_%H%M%S"))
-        logger::log_info("Results summary directory for {omic_label} ({current_paths$results_summary_dir}) contains existing files/folders.")
-        backup_dirname <- paste0(omic_label, "_backup_", format(Sys.time(), "%Y%m%d_%H%M%S"))
         backup_dir <- file.path(dirname(current_paths$results_summary_dir), backup_dirname)
 
         should_proceed_with_backup <- if (!force) {
-            cat(sprintf("\\nResults summary directory for %s contains content:\\n- %s\\n", omic_label, current_paths$results_summary_dir))
-            cat(sprintf("\\nResults summary directory for %s contains content:\\n- %s\\n", omic_label, current_paths$results_summary_dir))
+            cat(sprintf("\nResults summary directory for %s contains content:\n- %s\n", omic_label, current_paths$results_summary_dir))
             repeat {
                 response <- readline(prompt = "Do you want to backup existing directory and proceed by overwriting? (y/n): ")
                 response <- tolower(substr(response, 1, 1))
                 if (response %in% c("y", "n")) break
-                cat("Please enter 'y' or 'n'\\n")
+                cat("Please enter 'y' or 'n'\n")
             }
             response == "y"
         } else {
-            logger::log_info("Force mode enabled - backing up and proceeding with overwrite for {omic_label}...")
             logger::log_info("Force mode enabled - backing up and proceeding with overwrite for {omic_label}...")
             TRUE
         }
 
         if (!should_proceed_with_backup) {
             logger::log_info("Overwrite of {current_paths$results_summary_dir} for {omic_label} cancelled by user. No backup made, original files untouched.")
-            logger::log_info("Overwrite of {current_paths$results_summary_dir} for {omic_label} cancelled by user. No backup made, original files untouched.")
             # Return a list indicating cancellation, which can be checked by the caller.
-            return(invisible(list(status = "cancelled", omic_key = omic_label, message = paste0("Backup and overwrite for ", omic_label, " cancelled by user."))))
             return(invisible(list(status = "cancelled", omic_key = omic_label, message = paste0("Backup and overwrite for ", omic_label, " cancelled by user."))))
         }
 
         # Proceed with backup and clearing
         if (!dir.create(backup_dir, recursive = TRUE, showWarnings = FALSE) && !dir.exists(backup_dir)) {
-            logger::log_warn("Failed to create backup directory: {backup_dir} for {omic_label}. Original directory will not be cleared.")
             logger::log_warn("Failed to create backup directory: {backup_dir} for {omic_label}. Original directory will not be cleared.")
             failed_copies[[length(failed_copies) + 1]] <- list(type = "backup_dir_creation", path = backup_dir, error = "Failed to create backup directory")
             # Do not proceed with unlink if backup dir creation fails
@@ -2148,9 +2139,8 @@ copyToResultsSummary <- function(omic_type,
             if (backup_copy_successful && (backup_has_content || length(contents_of_summary_dir) == 0)) {
                 logger::log_info("Successfully backed up content of {current_paths$results_summary_dir} to: {backup_dir}")
                 backup_info <- data.frame(original_dir = current_paths$results_summary_dir, backup_time = Sys.time(), omic_key = omic_label, stringsAsFactors = FALSE)
-                backup_info <- data.frame(original_dir = current_paths$results_summary_dir, backup_time = Sys.time(), omic_key = omic_label, stringsAsFactors = FALSE)
                 tryCatch(
-                    write.table(backup_info, file = file.path(backup_dir, "backup_info.txt"), sep = "\\t", row.names = FALSE, quote = FALSE),
+                    write.table(backup_info, file = file.path(backup_dir, "backup_info.txt"), sep = "\t", row.names = FALSE, quote = FALSE),
                     error = function(e) logger::log_warn("Failed to write backup_info.txt: {e$message}")
                 )
 
@@ -2182,12 +2172,10 @@ copyToResultsSummary <- function(omic_type,
                 }
             } else {
                 logger::log_warn("Failed to copy all items to backup for {omic_label}, or backup is unexpectedly empty. Original directory {current_paths$results_summary_dir} was NOT cleared.")
-                logger::log_warn("Failed to copy all items to backup for {omic_label}, or backup is unexpectedly empty. Original directory {current_paths$results_summary_dir} was NOT cleared.")
                 failed_copies[[length(failed_copies) + 1]] <- list(type = "backup_content_copy", source = current_paths$results_summary_dir, destination = backup_dir, error = "Failed to copy items to backup or backup empty; original not cleared")
             }
         }
     } else {
-        logger::log_info("Results summary directory for {omic_label} ({current_paths$results_summary_dir}) is empty. No backup needed. Proceeding to create subdirectories.")
         logger::log_info("Results summary directory for {omic_label} ({current_paths$results_summary_dir}) is empty. No backup needed. Proceeding to create subdirectories.")
         # Ensure the main directory exists (it should if we got here and it was empty, or it was just created if missing)
         if (!dir.exists(current_paths$results_summary_dir)) {
@@ -2292,6 +2280,18 @@ copyToResultsSummary <- function(omic_type,
             cat(sprintf("COPY: Added %d metabolomics stage-based QC files\n", length(stage_qc_files)))
         }
 
+        # Imputation Diagnostics (Limpa/MissForest)
+        impute_qc_dir <- file.path(current_paths$results_dir, "QC", "Imputation")
+        if (dir.exists(impute_qc_dir)) {
+            impute_files <- list.files(impute_qc_dir, full.names = TRUE)
+            for (f in impute_files) {
+                files_to_copy <- c(files_to_copy, list(
+                    list(source = f, dest = "QC_figures", is_dir = FALSE, display_name = paste("Imputation Diag:", basename(f)))
+                ))
+            }
+            cat(sprintf("COPY: Added %d imputation diagnostic files\n", length(impute_files)))
+        }
+
         # Legacy patterns: Per-assay QC composites (pattern: *_assay_metrics.png, *_combined_plots.png)
         metab_qc_files <- list.files(current_paths$feature_qc_dir, pattern = "(assay_metrics|combined_plots)\\.png$", full.names = TRUE)
         if (length(metab_qc_files) > 0) {
@@ -2353,6 +2353,53 @@ copyToResultsSummary <- function(omic_type,
         } else {
             cat("COPY: Warning - no normalized RDS files found for metabolomics\n")
         }
+    } else if (omic_type == "lipidomics") {
+        cat("COPY: Adding lipidomics-specific files\n")
+
+        # Composite QC figure
+        composite_file <- file.path(current_paths$feature_qc_dir, "composite_QC_figure.png")
+        if (file.exists(composite_file)) {
+            files_to_copy <- c(files_to_copy, list(
+                list(source = composite_file, dest = "QC_figures", is_dir = FALSE, display_name = "Composite QC (PNG)", new_name = "lipidomics_composite_QC_figure.png")
+            ))
+        }
+
+        # Stage-based QC plots
+        stage_qc_files <- list.files(current_paths$feature_qc_dir, pattern = "_(pre_norm|post_norm|ruv_corrected)_(pca|density|rle|correlation)\\.png$", full.names = TRUE)
+        if (length(stage_qc_files) > 0) {
+            for (qc_file in stage_qc_files) {
+                files_to_copy <- c(files_to_copy, list(
+                    list(source = qc_file, dest = "QC_figures", is_dir = FALSE, display_name = sprintf("Lipid QC: %s", basename(qc_file)))
+                ))
+            }
+        }
+
+        # Imputation Diagnostics (Limpa/MissForest)
+        impute_qc_dir <- file.path(current_paths$results_dir, "QC", "Imputation")
+        if (dir.exists(impute_qc_dir)) {
+            impute_files <- list.files(impute_qc_dir, full.names = TRUE)
+            for (f in impute_files) {
+                files_to_copy <- c(files_to_copy, list(
+                    list(source = f, dest = "QC_figures", is_dir = FALSE, display_name = paste("Imputation Diag:", basename(f)))
+                ))
+            }
+        }
+
+        # Normalized results
+        ruv_rds_path <- file.path(current_paths$feature_qc_dir, "ruv_normalised_results.RDS")
+        norm_rds_path <- file.path(current_paths$feature_qc_dir, "normalised_results.RDS")
+        if (file.exists(ruv_rds_path)) {
+            files_to_copy <- c(files_to_copy, list(
+                list(source = ruv_rds_path, dest = "Publication_tables", is_dir = FALSE, display_name = "RUV Normalized Results RDS (Lipid)", new_name = "ruv_normalised_results.RDS")
+            ))
+        } else if (file.exists(norm_rds_path)) {
+            files_to_copy <- c(files_to_copy, list(
+                list(source = norm_rds_path, dest = "Publication_tables", is_dir = FALSE, display_name = "Normalized Results RDS (Lipid)", new_name = "normalised_results.RDS")
+            ))
+        }
+    } else if (omic_type == "integration") {
+        cat("COPY: Adding integration-specific files\n")
+        # MOFA plots and multi-omics heatmaps could be added here
     }
 
     # Excel files paths
@@ -2362,25 +2409,36 @@ copyToResultsSummary <- function(omic_type,
     # Create combined DA workbook
     da_wb <- openxlsx::createWorkbook()
     openxlsx::addWorksheet(da_wb, "DA_Results_Index")
-    da_index_data <- data.frame(Sheet = character(), Description = character(), stringsAsFactors = FALSE)
     da_files <- list.files(path = current_paths$da_output_dir, pattern = paste0("(da|de)_.+_long_annot\\.xlsx$"), full.names = TRUE)
 
-    purrr::imap(da_files, \(file, idx) {
+    da_index_results <- purrr::imap(da_files, \(file, idx) {
         sheet_name <- sprintf("DA_Sheet%d", idx)
         base_name <- basename(file) |>
             stringr::str_remove("^da_") |>
             stringr::str_remove("^de_") |>
             stringr::str_remove("_long_annot\\.xlsx$")
-        da_index_data <<- rbind(da_index_data, data.frame(Sheet = sheet_name, Description = base_name, stringsAsFactors = FALSE))
+        
         data_content <- tryCatch(openxlsx::read.xlsx(file), error = function(e) NULL)
         if (!is.null(data_content)) {
             openxlsx::addWorksheet(da_wb, sheet_name)
             openxlsx::writeData(da_wb, sheet_name, data_content)
+            return(list(
+                index = data.frame(Sheet = sheet_name, Description = base_name, stringsAsFactors = FALSE),
+                failure = NULL
+            ))
         } else {
             warning(paste0("Failed to read DA Excel file: ", file))
-            failed_copies[[length(failed_copies) + 1]] <- list(type = "da_excel_read", source = file, error = "Failed to read")
+            return(list(
+                index = data.frame(Sheet = character(), Description = character(), stringsAsFactors = FALSE),
+                failure = list(type = "da_excel_read", source = file, error = "Failed to read", display_name = base_name)
+            ))
         }
     })
+    
+    da_index_data <- purrr::map_dfr(da_index_results, "index")
+    da_failures <- purrr::map(da_index_results, "failure") |> purrr::compact()
+    failed_copies <- c(failed_copies, da_failures)
+
     openxlsx::writeData(da_wb, "DA_Results_Index", da_index_data)
     openxlsx::setColWidths(da_wb, "DA_Results_Index", cols = 1:2, widths = c(15, 50))
     openxlsx::addStyle(da_wb, "DA_Results_Index", style = openxlsx::createStyle(textDecoration = "bold"), rows = 1, cols = 1:2)
@@ -2388,24 +2446,35 @@ copyToResultsSummary <- function(omic_type,
     # Create combined Enrichment workbook
     enrichment_wb <- openxlsx::createWorkbook()
     openxlsx::addWorksheet(enrichment_wb, "Enrichment_Index")
-    enrichment_index_data <- data.frame(Sheet = character(), Contrast = character(), Direction = character(), stringsAsFactors = FALSE)
     enrichment_files <- list.files(path = current_paths$pathway_dir, pattern = "_enrichment_results\\.tsv$", full.names = TRUE)
 
-    purrr::imap(enrichment_files, \(file, idx) {
+    enrichment_results <- purrr::imap(enrichment_files, \(file, idx) {
         base_name <- basename(file) |> stringr::str_remove("_enrichment_results\\.tsv$")
         direction <- ifelse(stringr::str_ends(base_name, "_up"), "up", ifelse(stringr::str_ends(base_name, "_down"), "down", "unknown"))
         contrast_label <- stringr::str_replace(base_name, "_(up|down)$", "")
         sheet_name <- sprintf("Enrich_Sheet%d", idx)
-        enrichment_index_data <<- rbind(enrichment_index_data, data.frame(Sheet = sheet_name, Contrast = contrast_label, Direction = direction, stringsAsFactors = FALSE))
+        
         data_content <- tryCatch(readr::read_tsv(file, show_col_types = FALSE), error = function(e) NULL)
         if (!is.null(data_content)) {
             openxlsx::addWorksheet(enrichment_wb, sheet_name)
             openxlsx::writeData(enrichment_wb, sheet_name, data_content)
+            return(list(
+                index = data.frame(Sheet = sheet_name, Contrast = contrast_label, Direction = direction, stringsAsFactors = FALSE),
+                failure = NULL
+            ))
         } else {
             warning(paste0("Failed to read Enrichment TSV file: ", file))
-            failed_copies[[length(failed_copies) + 1]] <- list(type = "enrichment_tsv_read", source = file, error = "Failed to read")
+            return(list(
+                index = data.frame(Sheet = character(), Contrast = character(), Direction = character(), stringsAsFactors = FALSE),
+                failure = list(type = "enrichment_tsv_read", source = file, error = "Failed to read", display_name = base_name)
+            ))
         }
     })
+    
+    enrichment_index_data <- purrr::map_dfr(enrichment_results, "index")
+    enrichment_failures <- purrr::map(enrichment_results, "failure") |> purrr::compact()
+    failed_copies <- c(failed_copies, enrichment_failures)
+
     openxlsx::writeDataTable(enrichment_wb, "Enrichment_Index", enrichment_index_data, tableStyle = "TableStyleLight9", headerStyle = openxlsx::createStyle(textDecoration = "bold"), withFilter = TRUE)
     openxlsx::writeData(enrichment_wb, "Enrichment_Index", data.frame(Note = "Contrast represents the comparison (e.g., Group1_minus_Group2). Direction shows up-regulated or down-regulated genes."), startRow = nrow(enrichment_index_data) + 3)
 
@@ -2521,7 +2590,7 @@ copyToResultsSummary <- function(omic_type,
             if (source_exists) {
                 dir.create(dest_dir_final, recursive = TRUE, showWarnings = FALSE)
                 if (!is.null(file_spec$type) && file_spec$type == "object") {
-                    tryCatch(
+                    write_result <- tryCatch(
                         {
                             # Use the already-loaded object instead of getting from environment again
                             if (is.null(obj)) {
@@ -2530,23 +2599,24 @@ copyToResultsSummary <- function(omic_type,
                             dest_path <- file.path(dest_dir_final, file_spec$save_as)
                             write.table(obj, file = dest_path, sep = "\t", row.names = FALSE, quote = FALSE)
                             if (!file.exists(dest_path) || (file.exists(dest_path) && file.size(dest_path) == 0 && nrow(obj) > 0)) {
-                                copy_success <- FALSE
-                                error_msg <- "Failed to write object or file is empty"
+                                list(success = FALSE, msg = "Failed to write object or file is empty")
+                            } else {
+                                list(success = TRUE)
                             }
                         },
                         error = function(e) {
-                            copy_success <<- FALSE
-                            error_msg <<- sprintf("Error writing object: %s", e$message)
+                            list(success = FALSE, msg = sprintf("Error writing object: %s", e$message))
                         }
                     )
+                    copy_success <- write_result$success
+                    if (!copy_success) error_msg <- write_result$msg
+
                 } else if (file_spec$is_dir) {
                     # REWRITTEN: Robust directory copy logic using relative paths
                     all_source_files_rel <- list.files(file_spec$source, recursive = TRUE, full.names = FALSE)
 
                     if (length(all_source_files_rel) > 0) {
-                        failed_in_dir <- 0
-
-                        copy_results <- sapply(all_source_files_rel, function(rel_path) {
+                        copy_results <- purrr::map(all_source_files_rel, function(rel_path) {
                             src_file <- file.path(file_spec$source, rel_path)
                             dest_file <- file.path(dest_dir_final, rel_path)
 
@@ -2554,21 +2624,13 @@ copyToResultsSummary <- function(omic_type,
                             dir.create(dirname(dest_file), recursive = TRUE, showWarnings = FALSE)
 
                             # Copy the file
-                            success <- file.copy(src_file, dest_file, overwrite = TRUE)
-                            if (!success) failed_in_dir <<- failed_in_dir + 1
-                            return(success)
-                        })
+                            file.copy(src_file, dest_file, overwrite = TRUE)
+                        }) |> unlist()
 
                         if (!all(copy_results)) {
                             copy_success <- FALSE
-                            error_msg <- sprintf("Failed to copy %d/%d files from %s", failed_in_dir, length(all_source_files_rel), file_spec$source)
-                        } else {
-                            # Verify counts match roughly
-                            dest_files_count <- length(list.files(dest_dir_final, recursive = TRUE))
-                            if (dest_files_count < length(all_source_files_rel)) {
-                                # This might happen if overwrite failed silently or something odd, but file.copy returned true?
-                                # We rely on file.copy return value mostly.
-                            }
+                            failed_count <- sum(!copy_results)
+                            error_msg <- sprintf("Failed to copy %d/%d files from %s", failed_count, length(all_source_files_rel), file_spec$source)
                         }
                     } else {
                         message(sprintf("Source directory %s is empty. Nothing to copy.", file_spec$source))
@@ -2597,7 +2659,6 @@ copyToResultsSummary <- function(omic_type,
 
     if (length(failed_copies) > 0) {
         cat("\nFailed Copies Summary:\n")
-        cat("\nFailed Copies Summary:\n")
         cat("=====================================\n")
         lapply(failed_copies, function(failure) {
             cat(sprintf("\n%s: %s\n", failure$display_name, failure$error))
@@ -2605,9 +2666,7 @@ copyToResultsSummary <- function(omic_type,
             cat(sprintf("  Destination Attempted: %s\n", failure$destination))
         })
         warning(sprintf("%d files/objects/directories failed to copy correctly", length(failed_copies)))
-        warning(sprintf("%d files/objects/directories failed to copy correctly", length(failed_copies)))
     }
-    cat("--- End of copyToResultsSummary ---\n\n")
     cat("--- End of copyToResultsSummary ---\n\n")
     invisible(failed_copies)
 }

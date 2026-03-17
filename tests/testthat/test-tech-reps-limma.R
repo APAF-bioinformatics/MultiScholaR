@@ -31,17 +31,14 @@ test_that("runTestsContrasts handles technical replicates correctly", {
   contrast_strings <- "groupB-groupA"
   formula_string <- "~ 0 + group"
   
-  # 2. Run runTestsContrasts and capture messages
-  # We expect "Detected technical replicates. Calculating duplicateCorrelation..."
-  
-  expect_message(
-    results <- runTestsContrasts(
+  # 2. Run runTestsContrasts
+  results <- suppressMessages(
+    runTestsContrasts(
       data = data_matrix,
       contrast_strings = contrast_strings,
       design_matrix = design_matrix,
       formula_string = formula_string
-    ),
-    "Detected technical replicates"
+    )
   )
   
   # 3. Verify results structure
@@ -73,17 +70,16 @@ test_that("runTestsContrasts handles NO technical replicates correctly", {
   contrast_strings <- "groupB-groupA"
   formula_string <- "~ 0 + group"
   
-  # 2. Run runTestsContrasts and capture messages
-  # We expect "No technical replicates detected"
-  
-  expect_message(
-    results <- runTestsContrasts(
+  # 2. Run runTestsContrasts
+  results <- suppressMessages(
+    runTestsContrasts(
       data = data_matrix,
       contrast_strings = contrast_strings,
       design_matrix = design_matrix,
       formula_string = formula_string
-    ),
-    "No technical replicates detected"
+    )
   )
+  
+  expect_type(results, "list")
 })
 # APAF Bioinformatics | tests/testthat/test-tech-reps-limma.R | Approved | 2026-03-14

@@ -279,6 +279,17 @@ mod_lipid_import_ui <- function(id) {
                   ),
                   shiny::helpText("Clean sample IDs (e.g., '123-Sample!' -> 'x123_sample') for better compatibility with downstream analysis."),
 
+                  # Unit test capture
+                  shiny::hr(),
+                  shiny::h5("Development Tools"),
+                  shiny::checkboxInput(
+                    ns("capture_checkpoints"),
+                    "Capture unit test checkpoints",
+                    value = FALSE
+                  ),
+                  shiny::helpText("If enabled, S4 objects will be saved at each step for unit testing (stored in result directory)."),
+                  shiny::hr(),
+
                   # Internal standard pattern
                   shiny::textInput(
                     ns("is_pattern"),
@@ -828,6 +839,13 @@ mod_lipid_import_server <- function(id, workflow_data, experiment_paths, volumes
       sample_cols <- get_sample_columns()
 
       shiny::req(lipid_col)
+
+      # Set checkpoint capture options
+      options(multischolar.capture_test_checkpoints = isTRUE(input$capture_checkpoints))
+      if (isTRUE(input$capture_checkpoints)) {
+        options(multischolar.checkpoint_omics_layer = "lipidomics")
+        options(multischolar.checkpoint_dataset = "imported_data")
+      }
 
       shiny::showNotification(
         "Processing imported data...",

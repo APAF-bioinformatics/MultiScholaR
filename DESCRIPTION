@@ -227,7 +227,8 @@ Imports:
     vroom,
     writexl,
     xml2,
-    magick
+    magick,
+    missForest
 Remotes:
     cran/RUVIIIC,
     APAF-bioinformatics/GlimmaV2

@@ -406,10 +406,26 @@ setGeneric(name="log2TransformPeptideMatrix"
 # --- From metabolite_qc.R ---
 
 setGeneric(name="metaboliteIntensityFiltering"
-           , def=function( theObject, metabolites_intensity_cutoff_percentile = NULL, metabolites_proportion_of_samples_below_cutoff = NULL) {
+           , def=function( theObject
+                           , grouping_variable = NULL
+                           , min_samples_per_group = NULL
+                           , min_groups = NULL
+                           , metabolites_intensity_cutoff_percentile = NULL, ...) {
              standardGeneric("metaboliteIntensityFiltering")
            }
-           , signature=c("theObject")) # Dispatch only on the object
+           , signature=c("theObject"))
+
+setGeneric(name="metaboliteMissingValueImputationLimpa"
+           , def=function( theObject, dpc_results=NULL, dpc_slope=0.8, verbose=TRUE, chunk=1000 ) {
+             standardGeneric("metaboliteMissingValueImputationLimpa")
+           }
+           , signature=c("theObject"))
+
+setGeneric(name="metaboliteMissingValueImputationMissForest"
+           , def=function( theObject, maxiter = 10, ntree = 100, verbose = TRUE ) {
+             standardGeneric("metaboliteMissingValueImputationMissForest")
+           }
+           , signature=c("theObject"))
 
 setGeneric(name = "resolveDuplicateFeatures",
            def = function(theObject, itsd_pattern_columns = NULL) {
@@ -537,8 +553,24 @@ setGeneric(name = "filterSamplesByMetaboliteCorrelationThreshold"
 # --- Lipidomics Generics ---
 
 setGeneric(name="lipidIntensityFiltering"
-           , def=function( theObject, lipids_intensity_cutoff_percentile = NULL, lipids_proportion_of_samples_below_cutoff = NULL) {
+           , def=function( theObject
+                           , grouping_variable = NULL
+                           , min_samples_per_group = NULL
+                           , min_groups = NULL
+                           , lipids_intensity_cutoff_percentile = NULL, ...) {
              standardGeneric("lipidIntensityFiltering")
+           }
+           , signature=c("theObject"))
+
+setGeneric(name="lipidMissingValueImputationLimpa"
+           , def=function( theObject, dpc_results=NULL, dpc_slope=0.8, verbose=TRUE, chunk=1000 ) {
+             standardGeneric("lipidMissingValueImputationLimpa")
+           }
+           , signature=c("theObject"))
+
+setGeneric(name="lipidMissingValueImputationMissForest"
+           , def=function( theObject, maxiter = 10, ntree = 100, verbose = TRUE ) {
+             standardGeneric("lipidMissingValueImputationMissForest")
            }
            , signature=c("theObject"))
 
