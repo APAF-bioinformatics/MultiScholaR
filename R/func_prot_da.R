@@ -199,12 +199,12 @@ generateProtDAVolcanoPlotGlimma <- function(
     #   # Use provided output_dir or fallback to a temp directory
     #   base_dir <- if (!is.null(output_dir)) output_dir else tempdir()
     #   capture_dir <- file.path(base_dir, "glimma_fixtures")
-    #   
+    #
     #   if (!dir.exists(capture_dir)) dir.create(capture_dir, recursive = TRUE)
-    #   
+    #
     #   timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
     #   filename <- file.path(capture_dir, paste0("glimma_snapshot_", timestamp, ".rds"))
-    #   
+    #
     #   logger::log_info(sprintf("   Capturing test data to: %s", filename))
     #   saveRDS(list(
     #     da_results_list = da_results_list,
@@ -253,11 +253,11 @@ generateProtDAVolcanoPlotGlimma <- function(
     # Try fuzzy match if exact match fails
     # 1. Try removing characters like '=', '-', ' '
     clean_target <- gsub("[^A-Za-z0-9]", "", selected_contrast)
-    
+
     match_idx <- which(sapply(available_contrasts, function(x) {
       gsub("[^A-Za-z0-9]", "", x) == clean_target
     }))
-    
+
     if (length(match_idx) > 0) {
       comparison_to_search <- available_contrasts[match_idx[1]]
       logger::log_info(sprintf("   Glimma: Found fuzzy match: %s", comparison_to_search))
@@ -269,14 +269,14 @@ generateProtDAVolcanoPlotGlimma <- function(
     # Try prefix match
     potential_prefix <- stringr::str_extract(selected_contrast, "^[^=]+")
     if (is.na(potential_prefix)) potential_prefix <- stringr::str_extract(selected_contrast, "^[^-]+")
-    
+
     if (!is.na(potential_prefix)) {
-       match_idx <- grepl(potential_prefix, da_proteins_long$comparison, fixed = TRUE)
-       if (any(match_idx)) {
-         comparison_to_search <- da_proteins_long$comparison[which(match_idx)[1]]
-         contrast_data <- da_proteins_long |> dplyr::filter(comparison == comparison_to_search)
-         logger::log_info(sprintf("   Glimma: Found prefix match: %s", comparison_to_search))
-       }
+      match_idx <- grepl(potential_prefix, da_proteins_long$comparison, fixed = TRUE)
+      if (any(match_idx)) {
+        comparison_to_search <- da_proteins_long$comparison[which(match_idx)[1]]
+        contrast_data <- da_proteins_long |> dplyr::filter(comparison == comparison_to_search)
+        logger::log_info(sprintf("   Glimma: Found prefix match: %s", comparison_to_search))
+      }
     }
   }
 
@@ -297,7 +297,7 @@ generateProtDAVolcanoPlotGlimma <- function(
   if (!(args_row_id %in% names(da_proteins_long))) {
     potential_ids <- c("Protein.Ids", "Protein.ID", "Entry", "uniprot_acc", "sites_id")
     found_id <- names(da_proteins_long)[names(da_proteins_long) %in% potential_ids][1]
-    
+
     if (!is.na(found_id)) {
       args_row_id <- found_id
     } else {
@@ -312,14 +312,14 @@ generateProtDAVolcanoPlotGlimma <- function(
         # Robustly handle FASTA/UniProt/NCBI headers
         # Remove common prefix like '>'
         x_cln <- gsub("^>", "", x)
-        
+
         # Support both | and : as delimiters
         parts <- unlist(strsplit(x_cln, "\\||:"))
-        
+
         if (length(parts) > 1) {
           # Handle sp|acc|name, tr|acc|name, lcl|acc
           if (trimws(parts[1]) %in% c("sp", "tr", "lcl")) {
-             return(trimws(parts[2]))
+            return(trimws(parts[2]))
           }
           # Handle common case where ID is just the first part
           return(trimws(parts[1]))
@@ -389,32 +389,36 @@ generateProtDAVolcanoPlotGlimma <- function(
   if (!is.null(da_results_list$theObject)) {
     # CRITICAL FIX: Use check.names = FALSE to prevent sample name mangling (e.g. replacing spaces with dots)
     counts_df <- as.data.frame(da_results_list$theObject@protein_quant_table, check.names = FALSE)
-    
+
     if (args_row_id %in% names(counts_df)) {
       # 1. Ensure exact match between plot_data and counts_df
       common_prots <- intersect(plot_data$Protein.Ids, counts_df[[args_row_id]])
       plot_data <- plot_data |> dplyr::filter(Protein.Ids %in% common_prots)
-      
+
       counts_df <- counts_df |> dplyr::filter(!!sym(args_row_id) %in% common_prots)
-      
+
       # 2. Ensure exact row order mapped to plot_data
       match_idx <- match(plot_data$Protein.Ids, counts_df[[args_row_id]])
       counts_df <- counts_df[match_idx, , drop = FALSE]
-      
+
       # 3. Avoid tibble rownames crash by ensuring it's a data.frame and reset rownames first
       counts_df <- as.data.frame(counts_df, check.names = FALSE)
       rownames(counts_df) <- NULL
-      counts_mat <- counts_df |> tibble::column_to_rownames(args_row_id) |> as.matrix()
-      
+      counts_mat <- counts_df |>
+        tibble::column_to_rownames(args_row_id) |>
+        as.matrix()
+
       this_design <- da_results_list$theObject@design_matrix
       sample_id_col <- da_results_list$theObject@sample_id
       group_id_col <- da_results_list$theObject@group_id
 
       # MATCHING SAMPLES FOR GROUPING
       if (group_id_col %in% names(this_design)) {
-        common_samples <- intersect(trimws(tolower(colnames(counts_mat))), 
-                                    trimws(tolower(as.character(this_design[[sample_id_col]]))))
-        
+        common_samples <- intersect(
+          trimws(tolower(colnames(counts_mat))),
+          trimws(tolower(as.character(this_design[[sample_id_col]])))
+        )
+
         if (length(common_samples) > 0) {
           # Use original case for the continuous mapping definition
           design_mapping <- data.frame(
@@ -423,26 +427,28 @@ generateProtDAVolcanoPlotGlimma <- function(
             group = as.character(this_design[[group_id_col]]),
             stringsAsFactors = FALSE
           ) |>
-          dplyr::filter(norm_name %in% common_samples)
-          
+            dplyr::filter(norm_name %in% common_samples)
+
           # Match matrix columns to design exactly to prevent ordering issues
           mat_cols_norm <- trimws(tolower(colnames(counts_mat)))
           cols_to_keep <- colnames(counts_mat)[mat_cols_norm %in% design_mapping$norm_name]
-          
+
           # Subset matrix to only those samples
           counts_mat <- counts_mat[, cols_to_keep, drop = FALSE]
-          
+
           # Re-evaluate samples in matrix after subsetting
           samples_in_mat <- colnames(counts_mat)
           groups_vec <- sapply(samples_in_mat, function(s) {
             match_idx <- match(trimws(tolower(s)), design_mapping$norm_name)
-            if (!is.na(match_idx)) return(design_mapping$group[match_idx])
+            if (!is.na(match_idx)) {
+              return(design_mapping$group[match_idx])
+            }
             return("Unknown")
           })
-          
+
           # CRITICAL: Glimma often expects a factor for groups to correctly partition the expression plot
           groups_vec <- factor(groups_vec)
-          
+
           logger::log_info(sprintf("   Glimma: Grouping expression plot by '%s' with %d samples", group_id_col, length(groups_vec)))
           logger::log_info(sprintf("   Glimma: Unique groups detected: %s", paste(unique(groups_vec), collapse = ", ")))
         } else {
@@ -457,7 +463,7 @@ generateProtDAVolcanoPlotGlimma <- function(
       available_ids <- intersect(as.character(plot_data$Protein.Ids), as.character(rownames(counts_mat)))
       plot_data <- plot_data |> dplyr::filter(as.character(Protein.Ids) %in% available_ids)
       counts_mat <- counts_mat[as.character(plot_data$Protein.Ids), , drop = FALSE]
-      
+
       logger::log_info(sprintf("   Glimma: Synchronized %d proteins with expression data", nrow(counts_mat)))
     }
   }
@@ -465,12 +471,14 @@ generateProtDAVolcanoPlotGlimma <- function(
   # Build Clean Annotation Dataframe
   clean_anno <- data.frame(
     Protein_Ids = as.character(plot_data$Protein.Ids),
-    gene = ifelse(is.na(plot_data$gene_name) | plot_data$gene_name == "", 
-                  gsub("^lcl\\|", "", as.character(plot_data$Protein.Ids)), 
-                  as.character(plot_data$gene_name)),
-    gene_name = ifelse(is.na(plot_data$gene_name) | plot_data$gene_name == "", 
-                       gsub("^lcl\\|", "", as.character(plot_data$Protein.Ids)), 
-                       as.character(plot_data$gene_name)),
+    gene = ifelse(is.na(plot_data$gene_name) | plot_data$gene_name == "",
+      gsub("^lcl\\|", "", as.character(plot_data$Protein.Ids)),
+      as.character(plot_data$gene_name)
+    ),
+    gene_name = ifelse(is.na(plot_data$gene_name) | plot_data$gene_name == "",
+      gsub("^lcl\\|", "", as.character(plot_data$Protein.Ids)),
+      as.character(plot_data$gene_name)
+    ),
     FDR = signif(as.numeric(plot_data$FDR), 4),
     stringsAsFactors = FALSE
   )
@@ -478,17 +486,21 @@ generateProtDAVolcanoPlotGlimma <- function(
   # Check for UniProt accession in mapping table if available
   if ("best_uniprot_acc" %in% names(plot_data)) {
     clean_anno$UniProt <- sapply(as.character(plot_data$best_uniprot_acc), function(x) {
-      if (is.na(x) || x == "") return("")
+      if (is.na(x) || x == "") {
+        return("")
+      }
       if (grepl("\\|", x)) {
         parts <- strsplit(as.character(x), "\\|")[[1]]
-        if (length(parts) >= 2) return(parts[2])
+        if (length(parts) >= 2) {
+          return(parts[2])
+        }
       }
       return(as.character(x))
     })
   } else {
     clean_anno$UniProt <- gsub("^lcl\\|", "", as.character(plot_data$Protein.Ids))
   }
-  
+
   # Add other display columns from display_columns argument
   purrr::walk(display_columns, function(col) {
     col_cln <- gsub("\\.", "_", col)
@@ -496,7 +508,7 @@ generateProtDAVolcanoPlotGlimma <- function(
       clean_anno[[col_cln]] <- as.character(plot_data[[col]])
     }
   })
-  
+
   clean_anno[is.na(clean_anno)] <- ""
   rownames(clean_anno) <- as.character(plot_data$Protein.Ids)
 
@@ -507,12 +519,12 @@ generateProtDAVolcanoPlotGlimma <- function(
       negLog10FDR = signif(as.numeric(plot_data$negLog10FDR), 4)
     ) |>
     dplyr::rename_with(~ gsub("[\\. ]", "_", .))
-  
+
   # Ensure Protein_Ids is first and IN the columns to display
   if ("Protein_Ids" %in% names(display_df)) {
     display_df <- display_df |> dplyr::relocate(Protein_Ids)
   }
-  
+
   display_cols_final <- colnames(display_df)
 
   # FINAL CLEANING for Glimma table stability
@@ -525,7 +537,7 @@ generateProtDAVolcanoPlotGlimma <- function(
 
   # 4. Prepare Final Data for Glimma
   # EXACT Pattern from PDI Working Workflow
-  
+
   # Sanitize the annotation dataframe to prevent D3.js / DataTables crashing
   # 1. Drop math columns, keeping all possible identifier/annotation columns
   # 2. Rename columns to replace dots with underscores (DataTables interprets dots as nested JSON)
@@ -537,7 +549,7 @@ generateProtDAVolcanoPlotGlimma <- function(
     dplyr::mutate(dplyr::across(everything(), as.character)) |>
     dplyr::mutate(dplyr::across(everything(), ~ ifelse(is.na(.), "", .))) |>
     as.data.frame()
-  
+
   # Ensure Protein_Ids is first
   if ("Protein_Ids" %in% names(clean_anno)) {
     clean_anno <- clean_anno |> dplyr::relocate(Protein_Ids)
@@ -548,16 +560,20 @@ generateProtDAVolcanoPlotGlimma <- function(
     counts_mat <- counts_mat[as.character(plot_data$Protein.Ids), , drop = FALSE]
   }
 
-  logger::log_info(sprintf("   Glimma: Calling glimmaXY with %d proteins and %d samples", 
-                           nrow(plot_data), if (is.null(counts_mat)) 0 else ncol(counts_mat)))
+  logger::log_info(sprintf(
+    "   Glimma: Calling glimmaXY with %d proteins and %d samples",
+    nrow(plot_data), if (is.null(counts_mat)) 0 else ncol(counts_mat)
+  ))
 
   # 5. Call Glimma publicly (standardized pattern)
   # CRITICAL: status must be explicitly passed to highlight significant genes
   # 1 = Up, -1 = Down, 0 = Not Sig
   status_vec <- as.integer(plot_data$Status)
-  
-  logger::log_info(sprintf("   Glimma: Highlighting %d significant genes (%d up, %d down)", 
-                           sum(status_vec != 0), sum(status_vec == 1), sum(status_vec == -1)))
+
+  logger::log_info(sprintf(
+    "   Glimma: Highlighting %d significant genes (%d up, %d down)",
+    sum(status_vec != 0), sum(status_vec == 1), sum(status_vec == -1)
+  ))
 
   widget <- Glimma::glimmaXY(
     x = plot_data$logFC,
@@ -1132,7 +1148,7 @@ daAnalysisWrapperFunction <- function(
   rownames(theObject@design_matrix) <- theObject@design_matrix |> dplyr::pull(one_of(theObject@sample_id))
 
   # Check if object contains DPC-Quant results and use limpa dpc if available
-  use_dpc_de <- FALSE
+  use_dpc_da <- FALSE
   dpc_quant_results <- NULL
 
   if (!is.null(theObject@args$limpa_dpc_quant_results)) {
@@ -1176,8 +1192,8 @@ daAnalysisWrapperFunction <- function(
     print(contrast_strings_to_use)
   }
 
-  # Run differential expression analysis
-  if (use_dpc_de && requireNamespace("limpa", quietly = TRUE)) {
+  # Run differential abundance analysis
+  if (use_dpc_da && requireNamespace("limpa", quietly = TRUE)) {
     cat("   DA ANALYSIS Step: Running limpa dpcDE analysis with uncertainty weights\n")
 
     # The EList is now pre-filtered and stored, so we can use it directly
@@ -3099,17 +3115,19 @@ countStatDaGenesHelper <- function(
         }
       }
       countStatDaGenes(x,
-                       lfc_thresh = lfc_thresh,
-                       q_val_thresh = q_val_thresh,
-                       log_fc_column = {{ log_fc_column }},
-                       q_value_column = {{ q_value_column }})
+        lfc_thresh = lfc_thresh,
+        q_val_thresh = q_val_thresh,
+        log_fc_column = {{ log_fc_column }},
+        q_value_column = {{ q_value_column }}
+      )
     })
   } else {
     list(countStatDaGenes(da_table,
-                          lfc_thresh = lfc_thresh,
-                       q_val_thresh = q_val_thresh,
-                       log_fc_column = {{ log_fc_column }},
-                       q_value_column = {{ q_value_column }}))
+      lfc_thresh = lfc_thresh,
+      q_val_thresh = q_val_thresh,
+      log_fc_column = {{ log_fc_column }},
+      q_value_column = {{ q_value_column }}
+    ))
   }
 
   message("   countStatDaGenesHelper: da_table_updated created")
@@ -3448,10 +3466,9 @@ writeInteractiveVolcanoPlotProteomics <- function(
   gene_names_column = "gene_names",
   display_columns = c("best_uniprot_acc")
 ) {
-
   logger::log_info("--- Entering writeInteractiveVolcanoPlotProteomics ---")
 
-  # Dynamically identify row ID column 
+  # Dynamically identify row ID column
   if (!(args_row_id %in% names(da_proteins_long))) {
     potential_ids <- c("Protein.Ids", "Protein.ID", "Entry", "uniprot_acc", "sites_id")
     found_id <- names(da_proteins_long)[names(da_proteins_long) %in% potential_ids][1]
@@ -3498,22 +3515,22 @@ writeInteractiveVolcanoPlotProteomics <- function(
   # Iterate over uniquely defined contrasts instead of relying on coefficients index
   unique_contrasts <- unique(da_proteins_long$comparison)
   logger::log_info(sprintf("   Found %d unique contrasts to plot", length(unique_contrasts)))
-  
+
   purrr::walk(
     unique_contrasts,
     \(contrast_name) {
       logger::log_info(sprintf("   Generating static interactive plot for: %s", contrast_name))
 
-      contrast_data <- volcano_plot_tab |> 
+      contrast_data <- volcano_plot_tab |>
         dplyr::filter(comparison == contrast_name)
-      
+
       # Filter counts to only the IDs in the contrast results to avoid length mismatches
       counts_mat_filtered <- NULL
       if (!is.null(counts_tbl)) {
         ids_in_contrast <- contrast_data[[args_row_id]]
         valid_ids <- intersect(ids_in_contrast, rownames(counts_tbl))
-        if(length(valid_ids) > 0) {
-           counts_mat_filtered <- counts_tbl[valid_ids, , drop = FALSE]
+        if (length(valid_ids) > 0) {
+          counts_mat_filtered <- counts_tbl[valid_ids, , drop = FALSE]
         }
       }
 
@@ -4083,13 +4100,13 @@ setMethod(
 
     # Run the core limma analysis using existing function
     protein_quant_matrix <- as.matrix(column_to_rownames(theObject@protein_quant_table, theObject@protein_id_column))
-    
+
     # DEBUG: Check if rownames are blank
     if (any(rownames(protein_quant_matrix) == "") || any(is.na(rownames(protein_quant_matrix)))) {
       message("   WARNING DEBUG66: protein_quant_matrix has blank or NA rownames!")
       message(paste("      Sample of rownames:", paste(head(rownames(protein_quant_matrix), 5), collapse = ", ")))
     }
-    
+
     contrast_strings_to_use <- contrasts_tbl[, 1]
     message(paste("   differentialAbundanceAnalysisHelper: About to call runTestsContrasts with", length(contrast_strings_to_use), "contrasts"))
     message(paste("   differentialAbundanceAnalysisHelper: protein_quant_matrix dims =", nrow(protein_quant_matrix), "x", ncol(protein_quant_matrix)))
@@ -4359,7 +4376,7 @@ setMethod(
     args_row_id <- checkParamsObjectFunctionSimplify(theObject, "args_row_id", args_row_id)
     gene_names_column <- checkParamsObjectFunctionSimplify(theObject, "gene_names_column", gene_names_column)
     uniprot_id_column <- checkParamsObjectFunctionSimplify(theObject, "uniprot_id_column", uniprot_id_column)
- 
+
     # CRITICAL FIX: Normalize paths for Windows (fixes C:// double slash issue)
     # Only normalize if the path is not NULL and doesn't already exist
     if (!is.null(da_output_dir)) {

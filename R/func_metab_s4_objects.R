@@ -322,13 +322,13 @@ setMethod(
         # Process Each Assay
         theObject@metabolite_data <- purrr::map(names(assay_list), function(assay_name) {
             assay_df <- assay_list[[assay_name]]
-            
+
             if (verbose) logger::log_info(sprintf("Processing assay: %s", assay_name))
 
             # Identify sample columns
             design_samples <- as.character(design_matrix[[sample_id_col]])
             sample_cols <- intersect(colnames(assay_df), design_samples)
-            
+
             # Convert to matrix
             assay_matrix <- assay_df |>
                 dplyr::select(all_of(c(metabolite_id_col, sample_cols))) |>
@@ -339,10 +339,11 @@ setMethod(
             # Check if likely needs logging
             max_val <- max(assay_matrix, na.rm = TRUE)
             is_already_logged <- max_val < 50
-            
+
             if (!is_already_logged) {
                 if (verbose) logger::log_info("Applying Log2 transform for limpa...")
                 assay_matrix <- log2(assay_matrix)
+                assay_matrix[is.infinite(assay_matrix)] <- NA
             }
 
             assay_matrix[!is.finite(assay_matrix)] <- NA
@@ -350,12 +351,15 @@ setMethod(
             # Estimate or use DPC
             dpc_params <- dpc_results
             if (is.null(dpc_params)) {
-                dpc_params <- tryCatch({
-                    limpa::dpc(assay_matrix)
-                }, error = function(e) {
-                    if (verbose) logger::log_warn(sprintf("DPC estimation failed for %s, using default slope %s", assay_name, dpc_slope))
-                    NULL
-                })
+                dpc_params <- tryCatch(
+                    {
+                        limpa::dpc(assay_matrix)
+                    },
+                    error = function(e) {
+                        if (verbose) logger::log_warn(sprintf("DPC estimation failed for %s, using default slope %s", assay_name, dpc_slope))
+                        NULL
+                    }
+                )
             }
 
             # Apply dpcImpute
@@ -377,9 +381,9 @@ setMethod(
             imputed_df <- imputed_matrix |>
                 as.data.frame() |>
                 tibble::rownames_to_column(metabolite_id_col)
-            
+
             assay_df_metadata <- assay_df |> dplyr::select(all_of(metadata_cols))
-            
+
             # Use character join
             assay_df_metadata[[metabolite_id_col]] <- as.character(assay_df_metadata[[metabolite_id_col]])
             imputed_df[[metabolite_id_col]] <- as.character(imputed_df[[metabolite_id_col]])
@@ -423,13 +427,13 @@ setMethod(
         # Process Each Assay
         theObject@metabolite_data <- purrr::map(names(assay_list), function(assay_name) {
             assay_df <- assay_list[[assay_name]]
-            
+
             if (verbose) logger::log_info(sprintf("Processing assay: %s", assay_name))
 
             # Identify sample columns
             design_samples <- as.character(design_matrix[[sample_id_col]])
             sample_cols <- intersect(colnames(assay_df), design_samples)
-            
+
             # Convert to matrix (Rows = Samples, Columns = Features for missForest)
             # Original: Rows = Features, Columns = Samples
             assay_matrix <- assay_df |>
@@ -443,6 +447,7 @@ setMethod(
             is_already_logged <- max_val < 50
             if (!is_already_logged) {
                 assay_matrix <- log2(assay_matrix)
+                assay_matrix[is.infinite(assay_matrix)] <- NA
             }
 
             assay_matrix[!is.finite(assay_matrix)] <- NA
@@ -450,23 +455,26 @@ setMethod(
             # Apply missForest
             # missForest expects a data frame or matrix where missing values are NA
             # It returns a list with ximp (imputed matrix)
-            imputed_matrix_t <- tryCatch({
-                imputed_result <- missForest::missForest(
-                    xmis = assay_matrix,
-                    maxiter = maxiter,
-                    ntree = ntree,
-                    verbose = verbose
-                )
-                if (!is.null(imputed_result) && "ximp" %in% names(imputed_result)) {
-                    imputed_result$ximp
-                } else {
-                    stop("missForest returned an invalid result (missing 'ximp').")
+            imputed_matrix_t <- tryCatch(
+                {
+                    imputed_result <- missForest::missForest(
+                        xmis = assay_matrix,
+                        maxiter = maxiter,
+                        ntree = ntree,
+                        verbose = verbose
+                    )
+                    if (!is.null(imputed_result) && "ximp" %in% names(imputed_result)) {
+                        imputed_result$ximp
+                    } else {
+                        stop("missForest returned an invalid result (missing 'ximp').")
+                    }
+                },
+                error = function(e) {
+                    logger::log_error(sprintf("missForest failed for assay %s: %s", assay_name, e$message))
+                    # Fallback to original if missForest fails (don't stop the whole process if possible, or re-throw)
+                    stop(e$message)
                 }
-            }, error = function(e) {
-                logger::log_error(sprintf("missForest failed for assay %s: %s", assay_name, e$message))
-                # Fallback to original if missForest fails (don't stop the whole process if possible, or re-throw)
-                stop(e$message) 
-            })
+            )
 
             # Transpose back to original orientation: Rows = Features, Columns = Samples
             imputed_matrix <- t(imputed_matrix_t)
@@ -481,9 +489,9 @@ setMethod(
             imputed_df <- imputed_matrix |>
                 as.data.frame() |>
                 tibble::rownames_to_column(metabolite_id_col)
-            
+
             assay_df_metadata <- assay_df |> dplyr::select(all_of(metadata_cols))
-            
+
             assay_df_metadata[[metabolite_id_col]] <- as.character(assay_df_metadata[[metabolite_id_col]])
             imputed_df[[metabolite_id_col]] <- as.character(imputed_df[[metabolite_id_col]])
 
@@ -3234,12 +3242,10 @@ setMethod(
 setMethod(
     f = "plotVolcanoS4",
     signature = "list",
-    definition = function(
-      objectsList,
-      da_q_val_thresh = 0.05,
-      qvalue_column = "fdr_qvalue",
-      log2fc_column = "logFC"
-    ) {
+    definition = function(objectsList,
+                          da_q_val_thresh = 0.05,
+                          qvalue_column = "fdr_qvalue",
+                          log2fc_column = "logFC") {
         return_object_list <- purrr::imap(
             objectsList,
             function(object, idx) {
@@ -3307,12 +3313,10 @@ setMethod(
 setMethod(
     f = "getDaResultsWideFormat",
     signature = "list",
-    definition = function(
-      objectsList,
-      qvalue_column = "fdr_qvalue",
-      raw_pvalue_column = "raw_pvalue",
-      log2fc_column = "logFC"
-    ) {
+    definition = function(objectsList,
+                          qvalue_column = "fdr_qvalue",
+                          raw_pvalue_column = "raw_pvalue",
+                          log2fc_column = "logFC") {
         return_object_list <- purrr::map(objectsList, function(object) {
             # Correctly access the metabolite data from the nested 'theObject' slot.
             # This defensively handles cases where the slot might hold a list of
@@ -3719,23 +3723,21 @@ setClass("MetabolomicsDifferentialAbundanceResults",
 setMethod(
     f = "differentialAbundanceAnalysis",
     signature = "list",
-    definition = function(
-      theObject,
-      contrasts_tbl = NULL,
-      formula_string = NULL,
-      group_id = NULL,
-      da_q_val_thresh = NULL,
-      treat_lfc_cutoff = NULL,
-      eBayes_trend = NULL,
-      eBayes_robust = NULL,
-      args_group_pattern = NULL,
-      args_row_id = NULL,
-      qvalue_column = NULL,
-      raw_pvalue_column = NULL
-    ) {
+    definition = function(theObject,
+                          contrasts_tbl = NULL,
+                          formula_string = NULL,
+                          group_id = NULL,
+                          da_q_val_thresh = NULL,
+                          treat_lfc_cutoff = NULL,
+                          eBayes_trend = NULL,
+                          eBayes_robust = NULL,
+                          args_group_pattern = NULL,
+                          args_row_id = NULL,
+                          qvalue_column = NULL,
+                          raw_pvalue_column = NULL) {
         # Validate that all objects in the list are MetaboliteAssayData
-        objectsList <- theObject;
-            if (!all(purrr::map_lgl(objectsList, ~ inherits(.x, "MetaboliteAssayData")))) {
+        objectsList <- theObject
+        if (!all(purrr::map_lgl(objectsList, ~ inherits(.x, "MetaboliteAssayData")))) {
             stop("All objects in objectsList must be of class MetaboliteAssayData")
         }
 
@@ -3771,17 +3773,15 @@ setMethod(
 setMethod(
     f = "differentialAbundanceAnalysisHelper",
     signature = "MetaboliteAssayData",
-    definition = function(
-      theObject,
-      contrasts_tbl = NULL,
-      formula_string = NULL,
-      group_id = NULL,
-      da_q_val_thresh = NULL,
-      treat_lfc_cutoff = NULL,
-      eBayes_trend = NULL,
-      eBayes_robust = NULL,
-      args_group_pattern = NULL
-    ) {
+    definition = function(theObject,
+                          contrasts_tbl = NULL,
+                          formula_string = NULL,
+                          group_id = NULL,
+                          da_q_val_thresh = NULL,
+                          treat_lfc_cutoff = NULL,
+                          eBayes_trend = NULL,
+                          eBayes_robust = NULL,
+                          args_group_pattern = NULL) {
         message("--- Entering differentialAbundanceAnalysisHelper ---")
 
         contrasts_tbl <- checkParamsObjectFunctionSimplify(theObject, "contrasts_tbl", NULL)
@@ -4577,12 +4577,13 @@ metaboliteIntensityFilteringHelper <- function(
 setMethod(
     f = "metaboliteIntensityFiltering",
     signature = "MetaboliteAssayData",
-    definition = function(theObject
-                          , grouping_variable = NULL
-                          , min_samples_per_group = NULL
-                          , min_groups = NULL
-                          , metabolites_intensity_cutoff_percentile = NULL, ...) {
-        
+    definition = function(
+      theObject,
+      grouping_variable = NULL,
+      min_samples_per_group = NULL,
+      min_groups = NULL,
+      metabolites_intensity_cutoff_percentile = NULL, ...
+    ) {
         message("--- Entering metaboliteIntensityFiltering S4 Method (Group-Aware) ---")
 
         # --- Parameter Resolution ---
@@ -4600,7 +4601,7 @@ setMethod(
         # Extract Design Info
         design_matrix <- theObject@design_matrix
         sample_id_col <- theObject@sample_id
-        
+
         if (!grouping_variable %in% colnames(design_matrix)) {
             stop(sprintf("Grouping variable '%s' not found in design matrix.", grouping_variable))
         }
@@ -4609,7 +4610,7 @@ setMethod(
         group_sizes <- design_matrix |>
             dplyr::group_by(!!rlang::sym(grouping_variable)) |>
             dplyr::summarise(n = dplyr::n(), .groups = "drop")
-        
+
         small_groups <- group_sizes |> dplyr::filter(n < min_samples_per_group)
         if (nrow(small_groups) > 0) {
             msg <- sprintf(
@@ -4624,7 +4625,7 @@ setMethod(
         # --- Process Each Assay ---
         metabolite_id_col <- theObject@metabolite_id_column
         original_assay_list <- theObject@metabolite_data
-        
+
         theObject@metabolite_data <- purrr::map(names(original_assay_list), function(assay_name) {
             assay_table <- original_assay_list[[assay_name]]
             message("\nProcessing assay: ", assay_name)
@@ -4632,13 +4633,17 @@ setMethod(
             # Identify sample columns
             design_samples <- as.character(design_matrix[[sample_id_col]])
             sample_cols <- intersect(colnames(assay_table), design_samples)
-            
-            if (length(sample_cols) == 0) return(assay_table)
+
+            if (length(sample_cols) == 0) {
+                return(assay_table)
+            }
 
             # Calculate threshold (based on whole assay percentile)
-            all_vals <- assay_table |> dplyr::select(all_of(sample_cols)) |> unlist()
+            all_vals <- assay_table |>
+                dplyr::select(all_of(sample_cols)) |>
+                unlist()
             valid_vals <- all_vals[!is.na(all_vals) & all_vals > 0]
-            threshold <- quantile(valid_vals, probs = metabolites_intensity_cutoff_percentile/100, na.rm = TRUE)
+            threshold <- quantile(valid_vals, probs = metabolites_intensity_cutoff_percentile / 100, na.rm = TRUE)
             message(sprintf("   Threshold (%.1f percentile): %g", metabolites_intensity_cutoff_percentile, threshold))
 
             # Group-aware filter logic

@@ -1,5 +1,10 @@
 # MultiScholaR NEWS
 
+## Next coming version
+* **Important Fix**: Removed pseudo-counts (`+1`) prior to `log2` transformation during `limpa` missing value imputation to properly preserve true `NA` values and comply with left-censoring statistical assumptions.
+
+
+
 ## Version 0.4.1.2
 
 -- All Modules & Infrastructure
@@ -16,8 +21,7 @@
  * Peptide filtering - Group-aware peptide intensity filtering instead of % of samples higher than intensity theshold filtering
  * General bug fixes and refactoring
  * Included functions for peptide-base missing values imputation using the `limpa` R library
- * **Important Fix**: Removed pseudo-counts (`+1`) prior to `log2` transformation during `limpa` missing value imputation to properly preserve true `NA` values and comply with left-censoring statistical assumptions.
- * **Robust IQ Rollup**: Implemented internal sample aliasing and dynamic design matrix filtering to prevent name mangling and handle samples dropped during quality filtering.
+  * **Robust IQ Rollup**: Implemented internal sample aliasing and dynamic design matrix filtering to prevent name mangling and handle samples dropped during quality filtering.
 
 -- Metabolomics
  * improved interactive volcano plot
