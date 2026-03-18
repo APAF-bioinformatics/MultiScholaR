@@ -88,7 +88,7 @@ setMethod(
       if (verbose) {
         log_info("Converting to log2 scale for limpa (max value: {round(max_val, 2)})...")
       }
-      protein_matrix <- log2(protein_matrix + 1)
+      protein_matrix <- log2(protein_matrix)
     } else {
       if (verbose) {
         log_info("Data appears to be log2-scale already (max value: {round(max_val, 2)})")
@@ -160,9 +160,7 @@ setMethod(
           if (verbose) {
             log_info("Converting back from log2 scale...")
           }
-          imputed_matrix <- 2^imputed_matrix - 1
-          # Ensure no negative values
-          imputed_matrix[imputed_matrix < 0] <- 0
+          imputed_matrix <- 2^imputed_matrix
         }
 
         # Convert back to long format
@@ -318,7 +316,7 @@ setMethod(
       if (verbose) {
         log_info("Converting to log2 scale for limpa DPC-Quant...")
       }
-      y_peptide <- log2(y_peptide + 1)
+      y_peptide <- log2(y_peptide)
     } else {
       if (verbose) {
         log_info("Using existing log2 transformed peptide data")
@@ -514,9 +512,7 @@ setMethod(
           if (verbose) {
             log_info("Converting back from log2 scale...")
           }
-          protein_matrix <- 2^protein_matrix - 1
-          # Ensure no negative values
-          protein_matrix[protein_matrix < 0] <- 0
+          protein_matrix <- 2^protein_matrix
         }
 
         # Convert protein matrix to wide format data frame (samples as columns)
