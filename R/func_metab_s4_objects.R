@@ -319,6 +319,9 @@ setMethod(
             logger::log_info("Starting limpa-based metabolite-level missing value imputation...")
         }
 
+        if (is.null(theObject@args)) theObject@args <- list()
+        theObject@args$limpa_dpc_results <- list()
+
         # Process Each Assay
         theObject@metabolite_data <- purrr::map(names(assay_list), function(assay_name) {
             assay_df <- assay_list[[assay_name]]
@@ -362,14 +365,36 @@ setMethod(
                 )
             }
 
-            # Apply dpcImpute
-            imputed_result <- if (!is.null(dpc_params)) {
-                limpa::dpcImpute(assay_matrix, dpc = dpc_params, verbose = verbose, chunk = chunk)
+            # Apply dpcQuant (superior to dpcImpute for DA)
+            if (verbose) logger::log_info(sprintf("Applying dpcQuant for assay: %s", assay_name))
+            
+            # Create EList for limpa
+            y_elist <- list(
+                E = assay_matrix,
+                genes = data.frame(
+                    metabolite.id = rownames(assay_matrix),
+                    stringsAsFactors = FALSE
+                )
+            )
+            class(y_elist) <- "EList"
+
+            quant_result <- if (!is.null(dpc_params)) {
+                limpa::dpcQuant(y = y_elist, protein.id = "metabolite.id", dpc = dpc_params, verbose = verbose, chunk = chunk)
             } else {
-                limpa::dpcImpute(assay_matrix, dpc.slope = dpc_slope, verbose = verbose, chunk = chunk)
+                limpa::dpcQuant(y = y_elist, protein.id = "metabolite.id", dpc.slope = dpc_slope, verbose = verbose, chunk = chunk)
             }
 
-            imputed_matrix <- imputed_result$E
+            imputed_matrix <- quant_result$E
+            rownames(imputed_matrix) <- quant_result$genes$metabolite.id
+
+            # Store results for dpcDE
+            theObject@args$limpa_dpc_results[[assay_name]] <<- list(
+                quantified_elist = quant_result,
+                dpc_parameters_used = if (!is.null(dpc_params)) {
+                    if (is.list(dpc_params) && !is.null(dpc_params$dpc)) dpc_params$dpc else dpc_params
+                } else c(NA, dpc_slope),
+                is_logged_data = is_already_logged
+            )
 
             # Revert Log2 if applied
             if (!is_already_logged) {
@@ -3874,54 +3899,93 @@ setMethod(
 
         rownames(theObject@design_matrix) <- theObject@design_matrix |> dplyr::pull(one_of(theObject@sample_id))
 
-        # Prepare data matrix for DE analysis
-        data_matrix <- NA
-
-        matrix_data <- as.matrix(theObject@metabolite_data[[1]][, -1]) # Exclude Name column
-        colnames(matrix_data) <- colnames(theObject@metabolite_data[[1]])[-1]
-        rownames(matrix_data) <- theObject@metabolite_data[[1]]$Name
-        data_matrix <- matrix_data
-        message("   differentialAbundanceAnalysisHelper Step: Calling runTestsContrasts...")
-        contrasts_results <- runTestsContrasts(
-            data_matrix,
-            contrast_strings = contrasts_tbl$contrasts,
-            design_matrix = theObject@design_matrix,
-            formula_string = formula_string,
-            treat_lfc_cutoff = treat_lfc_cutoff,
-            eBayes_trend = eBayes_trend,
-            eBayes_robust = eBayes_robust
-        )
-        message("   differentialAbundanceAnalysisHelper Step: runTestsContrasts completed.")
-
-        #  # Combine all contrast results into a single data frame
-        # # message("   Data State (contrasts_results$results) Structure:")
-        # # utils::str(contrasts_results$results)
-        # # message("   Data State (contrasts_results$results) Head:")
-        # # print(head(contrasts_results$results))
-        #  contrasts_results_table <-  dplyr::bind_rows(contrasts_results$results, .id = "comparison")
-
-        # Map back to original group names in results if needed
-        if (exists("group_mapping")) {
-            contrasts_results$results <- contrasts_results$results |>
-                purrr::map(\(results_table){
-                    results_table |>
-                        dplyr::mutate(comparison = purrr::map_chr(comparison, \(x) {
-                            result <- x
-                            for (safe_name in names(group_mapping)) {
-                                result <- gsub(safe_name, group_mapping[safe_name], result, fixed = TRUE)
-                            }
-                            result
-                        }))
+        ## Compare the different experimental groups and obtain lists of differentially expressed metabolites for EACH assay
+        assay_results_list <- purrr::map(names(theObject@metabolite_data), function(assay_name) {
+            message(sprintf("   differentialAbundanceAnalysisHelper: Processing assay: %s", assay_name))
+            
+            # Prepare data matrix for DE analysis
+            matrix_data <- as.matrix(theObject@metabolite_data[[assay_name]][, -1]) # Exclude ID column
+            colnames(matrix_data) <- colnames(theObject@metabolite_data[[assay_name]])[-1]
+            rownames(matrix_data) <- theObject@metabolite_data[[assay_name]][[theObject@metabolite_id_column]]
+            
+            # Check for limpa dpc results
+            limpa_results <- theObject@args$limpa_dpc_results[[assay_name]]
+            
+            if (!is.null(limpa_results) && requireNamespace("limpa", quietly = TRUE)) {
+                message(sprintf("   differentialAbundanceAnalysisHelper [%s]: Using limpa dpcDE", assay_name))
+                y_elist <- limpa_results$quantified_elist
+                
+                # Create design matrix for dpcDA
+                design_m_dpcda <- model.matrix(as.formula(formula_string), theObject@design_matrix)
+                
+                # Run dpcDE
+                dpc_fit <- limpa::dpcDE(y_elist, design_m_dpcda, plot = FALSE)
+                
+                # Convert to standard format
+                # We need to handle contrast names properly
+                raw_contrasts <- contrasts_tbl$contrasts
+                contrast_strings <- sapply(raw_contrasts, function(cs) {
+                    if (grepl("=", cs)) return(cs)
+                    clean <- gsub("^group", "", cs)
+                    clean <- gsub("-group", "-", clean)
+                    paste0(gsub("-", "_vs_", clean), "=", cs)
                 })
-        }
+                
+                contrasts_results <- convertDpcDAToStandardFormat(
+                    dpc_fit = dpc_fit,
+                    contrast_strings = contrast_strings,
+                    design_matrix = design_m_dpcda,
+                    eBayes_trend = eBayes_trend,
+                    eBayes_robust = eBayes_robust
+                )
+            } else {
+                message(sprintf("   differentialAbundanceAnalysisHelper [%s]: Using standard limma", assay_name))
+                contrasts_results <- runTestsContrasts(
+                    matrix_data,
+                    contrast_strings = contrasts_tbl$contrasts,
+                    design_matrix = theObject@design_matrix,
+                    formula_string = formula_string,
+                    treat_lfc_cutoff = treat_lfc_cutoff,
+                    eBayes_trend = eBayes_trend,
+                    eBayes_robust = eBayes_robust
+                )
+            }
+            
+            # Map back to original group names if needed
+            if (exists("group_mapping")) {
+                contrasts_results$results <- contrasts_results$results |>
+                    purrr::map(\(results_table){
+                        results_table |>
+                            dplyr::mutate(comparison = purrr::map_chr(comparison, \(x) {
+                                result <- x
+                                for (safe_name in names(group_mapping)) {
+                                    result <- gsub(safe_name, group_mapping[safe_name], result, fixed = TRUE)
+                                }
+                                result
+                            }))
+                    })
+            }
+            
+            return(contrasts_results)
+        })
+        names(assay_results_list) <- names(theObject@metabolite_data)
+        
+        # Format results for MetabolomicsDifferentialAbundanceResults S4 object
+        # It expects a list of results tables per assay
+        # Here we extract just the tables and add the ID column
+        formatted_results_list <- purrr::map(assay_results_list, function(assay_res) {
+            assay_res$results |>
+                purrr::map(\(result_table) {
+                    result_table |>
+                        tibble::rownames_to_column(var = theObject@metabolite_id_column)
+                })
+        })
 
-
-        return_list$fit.eb <- contrasts_results$fit.eb
-        return_list$contrasts_results_table <- contrasts_results$results |>
-            purrr::map(\(result_table) {
-                result_table |>
-                    rownames_to_column(var = theObject@metabolite_id_column)
-            })
+        # We also need to store the eb fits. For simplicity, we store the first one 
+        # as MetabolomicsDifferentialAbundanceResults currently only has one fit.eb slot
+        # Ideally this should be changed to a list of fits.
+        return_list$fit.eb <- assay_results_list[[1]]$fit.eb
+        return_list$contrasts_results_table <- formatted_results_list
 
         # Create and return the S4 object
         result_object <- new("MetabolomicsDifferentialAbundanceResults",

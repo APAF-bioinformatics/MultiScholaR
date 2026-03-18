@@ -215,6 +215,7 @@ Imports:
     rvest,
     seqinr,
     shiny,
+    shinylogs,
     shinydashboard,
     shinyFiles,
     shinyjqui,

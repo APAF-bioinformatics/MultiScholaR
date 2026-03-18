@@ -25,6 +25,15 @@
 #' @import shinyFiles
 #' @noRd
 app_server <- function(input, output, session) {
+  # Track UI interactions for telemetry and automated testing
+  log_dir <- file.path(getwd(), "logs", "ui_interactions")
+  if (!dir.exists(log_dir)) dir.create(log_dir, recursive = TRUE)
+
+  shinylogs::track_usage(
+    storage_mode = shinylogs::store_json(path = log_dir),
+    session = session
+  )
+
   # Initialize the logger for Shiny
   # Note: setup_shiny_logger should be exported or available in the package
   if (exists("setup_shiny_logger")) {

@@ -1147,19 +1147,6 @@ daAnalysisWrapperFunction <- function(
 
   rownames(theObject@design_matrix) <- theObject@design_matrix |> dplyr::pull(one_of(theObject@sample_id))
 
-  # Check if object contains DPC-Quant results and use limpa dpc if available
-  use_dpc_da <- FALSE
-  dpc_quant_results <- NULL
-
-  if (!is.null(theObject@args$limpa_dpc_quant_results)) {
-    dpc_quant_results <- theObject@args$limpa_dpc_quant_results
-    use_dpc_da <- TRUE
-    cat("   DA ANALYSIS Step: Detected DPC-Quant results - using limpa dpcDA for uncertainty-weighted analysis\n")
-    cat("   DA ANALYSIS Step: DPC parameters used:", paste(dpc_quant_results$dpc_parameters_used, collapse = ", "), "\n")
-  } else {
-    cat("   DA ANALYSIS Step: No DPC-Quant results found - using standard limma analysis\n")
-  }
-
   # CRITICAL FIX: Use the correct column for contrast strings
   # The downstream functions expect "comparison=expression" format (from full_format column)
   # NOT just the raw contrast expression (from contrasts column)
@@ -1167,78 +1154,21 @@ daAnalysisWrapperFunction <- function(
     contrast_strings_to_use <- contrasts_tbl$full_format # Use full_format column
     cat("   DA ANALYSIS Step: Using full_format column for contrast strings\n")
   } else {
-    cat("   DA ANALYSIS Step: No full_format column found, auto-generating from raw contrasts\n")
-    # Auto-generate full_format column from raw contrasts
-    raw_contrasts <- contrasts_tbl[, 1][[1]]
-
-    # Generate friendly names and full format
-    full_format_strings <- sapply(raw_contrasts, function(contrast_string) {
-      if (grepl("=", contrast_string)) {
-        return(contrast_string)
-      }
-      # Remove "group" prefixes if present for friendly name
-      clean_string <- gsub("^group", "", contrast_string)
-      clean_string <- gsub("-group", "-", clean_string)
-
-      # Create friendly name by replacing - with _vs_
-      friendly_name <- gsub("-", "_vs_", clean_string)
-
-      # Create full format: friendly_name=original_contrast_string
-      paste0(friendly_name, "=", contrast_string)
-    })
-
-    contrast_strings_to_use <- full_format_strings
-    cat("   DA ANALYSIS Step: Auto-generated full_format strings:\n")
-    print(contrast_strings_to_use)
+    contrast_strings_to_use <- contrasts_tbl[, 1]
   }
 
   # Run differential abundance analysis
-  if (use_dpc_da && requireNamespace("limpa", quietly = TRUE)) {
-    cat("   DA ANALYSIS Step: Running limpa dpcDE analysis with uncertainty weights\n")
+  data_matrix <- getDataMatrix(theObject)
 
-    # The EList is now pre-filtered and stored, so we can use it directly
-    y_elist_filtered <- dpc_quant_results$quantified_elist
-
-    if (is.null(y_elist_filtered)) {
-      stop("FATAL: The quantified_elist is missing from the object's args. It should have been created by proteinMissingValueImputationLimpa.")
-    }
-
-    # Create design matrix for dpcDA
-    design_matrix_for_dpcda <- model.matrix(as.formula(formula_string), theObject@design_matrix)
-
-    cat("   DA ANALYSIS Step: Calling limpa::dpcDE\n")
-    cat("   DA ANALYSIS Step: Protein matrix dims:", nrow(y_elist_filtered$E), "x", ncol(y_elist_filtered$E), "\n")
-    cat("   DA ANALYSIS Step: Design matrix dims:", nrow(design_matrix_for_dpcde), "x", ncol(design_matrix_for_dpcde), "\n")
-
-    # Run dpcDE using the synchronized EList
-    dpc_fit <- limpa::dpcDE(y_elist_filtered, design_matrix_for_dpcde, plot = FALSE)
-
-    # Convert dpcDE results to format compatible with runTestsContrasts
-    contrasts_results <- convertDpcDAToStandardFormat(
-      dpc_fit = dpc_fit,
-      contrast_strings = contrast_strings_to_use,
-      design_matrix = design_matrix_for_dpcde,
-      eBayes_trend = as.logical(eBayes_trend),
-      eBayes_robust = as.logical(eBayes_robust)
-    )
-
-    cat("   DA ANALYSIS Step: dpcDE analysis completed successfully\n")
-  } else {
-    # Standard limma analysis (existing code)
-    cat("   DA ANALYSIS Step: Running standard limma analysis\n")
-
-    data_matrix <- getDataMatrix(theObject)
-
-    contrasts_results <- runTestsContrasts(data_matrix,
-      contrast_strings = contrast_strings_to_use,
-      design_matrix = theObject@design_matrix,
-      formula_string = formula_string,
-      weights = NA,
-      treat_lfc_cutoff = as.double(treat_lfc_cutoff),
-      eBayes_trend = as.logical(eBayes_trend),
-      eBayes_robust = as.logical(eBayes_robust)
-    )
-  }
+  contrasts_results <- runTestsContrasts(data_matrix,
+    contrast_strings = contrast_strings_to_use,
+    design_matrix = theObject@design_matrix,
+    formula_string = formula_string,
+    weights = NA,
+    treat_lfc_cutoff = as.double(treat_lfc_cutoff),
+    eBayes_trend = as.logical(eBayes_trend),
+    eBayes_robust = as.logical(eBayes_robust)
+  )
 
   # Extract the contrast name (contains "=" delimiter needed for downstream functions)
   contrast_name <- names(contrasts_results$results)[1]
