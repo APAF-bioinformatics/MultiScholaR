@@ -120,7 +120,7 @@ mod_lipid_norm_impute_server <- function(id, workflow_data, omic_type, experimen
                         sample_cols <- intersect(colnames(assay_df), design_samples)
                         mat <- assay_df |> dplyr::select(all_of(c(id_col, sample_cols))) |>
                             tibble::column_to_rownames(id_col) |> as.matrix()
-                        if (max(mat, na.rm=TRUE) > 50) mat <- log2(mat + 1)
+                        if (max(mat, na.rm=TRUE) > 50) mat <- log2(mat)
                         
                         dpc_params <- tryCatch({ limpa::dpc(mat) }, error = function(e) NULL)
                         

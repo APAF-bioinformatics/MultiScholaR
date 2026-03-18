@@ -276,7 +276,7 @@ setMethod(
       if (verbose) {
         log_info("Converting to log2 scale for limpa (max value: {round(max_val, 2)})...")
       }
-      protein_matrix <- log2(protein_matrix + 1)
+      protein_matrix <- log2(protein_matrix)
     } else {
       if (verbose) {
         log_info("Data appears to be log2-scale already (max value: {round(max_val, 2)})")
@@ -348,9 +348,7 @@ setMethod(
           if (verbose) {
             log_info("Converting back from log2 scale...")
           }
-          imputed_matrix <- 2^imputed_matrix - 1
-          # Ensure no negative values
-          imputed_matrix[imputed_matrix < 0] <- 0
+          imputed_matrix <- 2^imputed_matrix
         }
 
         # Convert back to long format
@@ -1886,7 +1884,7 @@ setMethod(
       cat("   [DEBUG66] Extracting data frame from seqinr_obj list...\n")
       seqinr_obj <- seqinr_obj$aa_seq_tbl_final
     }
-    
+
 
     theObject <- updateParamInObject(theObject, "delim")
     theObject <- updateParamInObject(theObject, "seqinr_obj")
@@ -2778,7 +2776,7 @@ setMethod(
       if (!inherits(plot, "ggplot") && !inherits(plot, "patchwork")) {
         return(plot)
       }
-      
+
       # For all plots, just apply the theme without adding title
       if (inherits(plot, "patchwork")) {
         plot &
@@ -2868,36 +2866,47 @@ setMethod(
     if (length(theObject@limpa_plots) > 0) {
       # Helper: safely coerce any plot object to a ggplot-compatible object
       safe_as_ggplot <- function(p, fallback_label = "Plot unavailable") {
-        tryCatch({
-          if (inherits(p, "ggplot") || inherits(p, "patchwork")) {
-            return(p)
-          }
-          # Try cowplot::ggdraw for grobs/gtables
-          if (inherits(p, c("grob", "gtable", "gTree"))) {
-            if (inherits(p, "gtable") && (length(p$heights) <= 1 || length(p$widths) <= 1)) {
-              return(ggplot() + annotate("text", x = 0.5, y = 0.5, label = fallback_label) + theme_void())
+        tryCatch(
+          {
+            if (inherits(p, "ggplot") || inherits(p, "patchwork")) {
+              return(p)
             }
-            if (requireNamespace("cowplot", quietly = TRUE)) {
-              return(cowplot::ggdraw() + cowplot::draw_grob(p))
+            # Try cowplot::ggdraw for grobs/gtables
+            if (inherits(p, c("grob", "gtable", "gTree"))) {
+              if (inherits(p, "gtable") && (length(p$heights) <= 1 || length(p$widths) <= 1)) {
+                return(ggplot() +
+                  annotate("text", x = 0.5, y = 0.5, label = fallback_label) +
+                  theme_void())
+              }
+              if (requireNamespace("cowplot", quietly = TRUE)) {
+                return(cowplot::ggdraw() + cowplot::draw_grob(p))
+              }
             }
+            # Fallback: return a placeholder
+            ggplot() +
+              annotate("text", x = 0.5, y = 0.5, label = fallback_label) +
+              theme_void()
+          },
+          error = function(e) {
+            message(sprintf("   [createGridQC] Warning: Could not convert limpa plot: %s", e$message))
+            ggplot() +
+              annotate("text", x = 0.5, y = 0.5, label = fallback_label) +
+              theme_void()
           }
-          # Fallback: return a placeholder
-          ggplot() + annotate("text", x = 0.5, y = 0.5, label = fallback_label) + theme_void()
-        }, error = function(e) {
-          message(sprintf("   [createGridQC] Warning: Could not convert limpa plot: %s", e$message))
-          ggplot() + annotate("text", x = 0.5, y = 0.5, label = fallback_label) + theme_void()
-        })
+        )
       }
 
       # Extract each component if it exists
       created_limpa_plots <- lapply(c("dpc_curve", "missing_comparison", "intensity_distribution", "summary"), function(name) {
         if (!is.null(theObject@limpa_plots[[name]])) {
-           p <- theObject@limpa_plots[[name]]
-           # Safely coerce to ggplot first
-           p <- safe_as_ggplot(p, fallback_label = paste("Limpa", name, "unavailable"))
-           # Apply theme for consistency
-           createDensityPlot(p) 
-        } else NULL
+          p <- theObject@limpa_plots[[name]]
+          # Safely coerce to ggplot first
+          p <- safe_as_ggplot(p, fallback_label = paste("Limpa", name, "unavailable"))
+          # Apply theme for consistency
+          createDensityPlot(p)
+        } else {
+          NULL
+        }
       })
       created_limpa_plots <- created_limpa_plots[!sapply(created_limpa_plots, is.null)]
     }
@@ -3016,20 +3025,23 @@ setMethod(
 
       # MEMORY OPTIMIZATION: Save only PNG (removed PDF/SVG triple-save to reduce memory)
       message("   [createGridQC] Saving PNG only (memory optimization)...")
-      tryCatch({
-        ggsave(
-          plot = combined_plot,
-          filename = file.path(save_path, paste0(file_name, ".png")),
-          width = plot_width,
-          height = plot_height,
-          dpi = 150 # Reduced DPI for memory efficiency
-        )
-        message(paste("   [createGridQC] Plot saved to:", save_path))
-      }, error = function(e) {
-        message(sprintf("   [createGridQC] WARNING: Failed to save plot: %s", e$message))
-        message("   [createGridQC] The combined_plot object is returned but could not be rendered to PNG.")
-        message("   [createGridQC] This may indicate a non-ggplot object in the plot assembly.")
-      })
+      tryCatch(
+        {
+          ggsave(
+            plot = combined_plot,
+            filename = file.path(save_path, paste0(file_name, ".png")),
+            width = plot_width,
+            height = plot_height,
+            dpi = 150 # Reduced DPI for memory efficiency
+          )
+          message(paste("   [createGridQC] Plot saved to:", save_path))
+        },
+        error = function(e) {
+          message(sprintf("   [createGridQC] WARNING: Failed to save plot: %s", e$message))
+          message("   [createGridQC] The combined_plot object is returned but could not be rendered to PNG.")
+          message("   [createGridQC] This may indicate a non-ggplot object in the plot assembly.")
+        }
+      )
     }
 
     # Final memory cleanup
@@ -3813,4 +3825,3 @@ setMethod(
     return(theObject)
   }
 )
-

@@ -342,7 +342,7 @@ setMethod(
             
             if (!is_already_logged) {
                 if (verbose) logger::log_info("Applying Log2 transform for limpa...")
-                assay_matrix <- log2(assay_matrix + 1)
+                assay_matrix <- log2(assay_matrix)
             }
 
             assay_matrix[!is.finite(assay_matrix)] <- NA
@@ -369,8 +369,7 @@ setMethod(
 
             # Revert Log2 if applied
             if (!is_already_logged) {
-                imputed_matrix <- 2^imputed_matrix - 1
-                imputed_matrix[imputed_matrix < 0] <- 0
+                imputed_matrix <- 2^imputed_matrix
             }
 
             # Merge back with metadata
@@ -443,7 +442,7 @@ setMethod(
             max_val <- max(assay_matrix, na.rm = TRUE)
             is_already_logged <- max_val < 50
             if (!is_already_logged) {
-                assay_matrix <- log2(assay_matrix + 1)
+                assay_matrix <- log2(assay_matrix)
             }
 
             assay_matrix[!is.finite(assay_matrix)] <- NA
@@ -474,8 +473,7 @@ setMethod(
 
             # Revert Log2 if applied
             if (!is_already_logged) {
-                imputed_matrix <- 2^imputed_matrix - 1
-                imputed_matrix[imputed_matrix < 0] <- 0
+                imputed_matrix <- 2^imputed_matrix
             }
 
             # Merge back with metadata

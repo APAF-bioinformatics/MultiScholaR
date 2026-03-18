@@ -322,13 +322,13 @@ setMethod(
         # Process Each Assay
         theObject@lipid_data <- purrr::map(names(assay_list), function(assay_name) {
             assay_df <- assay_list[[assay_name]]
-            
+
             if (verbose) logger::log_info(sprintf("Processing assay: %s", assay_name))
 
             # Identify sample columns
             design_samples <- as.character(design_matrix[[sample_id_col]])
             sample_cols <- intersect(colnames(assay_df), design_samples)
-            
+
             # Convert to matrix
             assay_matrix <- assay_df |>
                 dplyr::select(all_of(c(lipid_id_col, sample_cols))) |>
@@ -338,10 +338,11 @@ setMethod(
             # Handle Log2 (limpa expects log scale)
             max_val <- max(assay_matrix, na.rm = TRUE)
             is_already_logged <- max_val < 50
-            
+
             if (!is_already_logged) {
                 if (verbose) logger::log_info("Applying Log2 transform for limpa...")
-                assay_matrix <- log2(assay_matrix + 1)
+                assay_matrix <- log2(assay_matrix)
+                assay_matrix[is.infinite(assay_matrix)] <- NA
             }
 
             assay_matrix[!is.finite(assay_matrix)] <- NA
@@ -349,12 +350,15 @@ setMethod(
             # Estimate or use DPC
             dpc_params <- dpc_results
             if (is.null(dpc_params)) {
-                dpc_params <- tryCatch({
-                    limpa::dpc(assay_matrix)
-                }, error = function(e) {
-                    if (verbose) logger::log_warn(sprintf("DPC estimation failed for %s, using default slope %s", assay_name, dpc_slope))
-                    NULL
-                })
+                dpc_params <- tryCatch(
+                    {
+                        limpa::dpc(assay_matrix)
+                    },
+                    error = function(e) {
+                        if (verbose) logger::log_warn(sprintf("DPC estimation failed for %s, using default slope %s", assay_name, dpc_slope))
+                        NULL
+                    }
+                )
             }
 
             # Apply dpcImpute
@@ -368,8 +372,7 @@ setMethod(
 
             # Revert Log2 if applied
             if (!is_already_logged) {
-                imputed_matrix <- 2^imputed_matrix - 1
-                imputed_matrix[imputed_matrix < 0] <- 0
+                imputed_matrix <- 2^imputed_matrix
             }
 
             # Merge back with metadata
@@ -377,9 +380,9 @@ setMethod(
             imputed_df <- imputed_matrix |>
                 as.data.frame() |>
                 tibble::rownames_to_column(lipid_id_col)
-            
+
             assay_df_metadata <- assay_df |> dplyr::select(all_of(metadata_cols))
-            
+
             # Use character join
             assay_df_metadata[[lipid_id_col]] <- as.character(assay_df_metadata[[lipid_id_col]])
             imputed_df[[lipid_id_col]] <- as.character(imputed_df[[lipid_id_col]])
@@ -423,13 +426,13 @@ setMethod(
         # Process Each Assay
         theObject@lipid_data <- purrr::map(names(assay_list), function(assay_name) {
             assay_df <- assay_list[[assay_name]]
-            
+
             if (verbose) logger::log_info(sprintf("Processing assay: %s", assay_name))
 
             # Identify sample columns
             design_samples <- as.character(design_matrix[[sample_id_col]])
             sample_cols <- intersect(colnames(assay_df), design_samples)
-            
+
             # Convert to matrix (Rows = Samples, Columns = Features)
             assay_matrix <- assay_df |>
                 dplyr::select(all_of(c(lipid_id_col, sample_cols))) |>
@@ -441,36 +444,39 @@ setMethod(
             max_val <- max(assay_matrix, na.rm = TRUE)
             is_already_logged <- max_val < 50
             if (!is_already_logged) {
-                assay_matrix <- log2(assay_matrix + 1)
+                assay_matrix <- log2(assay_matrix)
+                assay_matrix[is.infinite(assay_matrix)] <- NA
             }
 
             assay_matrix[!is.finite(assay_matrix)] <- NA
 
             # Apply missForest
-            imputed_matrix_t <- tryCatch({
-                imputed_result <- missForest::missForest(
-                    xmis = assay_matrix,
-                    maxiter = maxiter,
-                    ntree = ntree,
-                    verbose = verbose
-                )
-                if (!is.null(imputed_result) && "ximp" %in% names(imputed_result)) {
-                    imputed_result$ximp
-                } else {
-                    stop("missForest returned an invalid result (missing 'ximp').")
+            imputed_matrix_t <- tryCatch(
+                {
+                    imputed_result <- missForest::missForest(
+                        xmis = assay_matrix,
+                        maxiter = maxiter,
+                        ntree = ntree,
+                        verbose = verbose
+                    )
+                    if (!is.null(imputed_result) && "ximp" %in% names(imputed_result)) {
+                        imputed_result$ximp
+                    } else {
+                        stop("missForest returned an invalid result (missing 'ximp').")
+                    }
+                },
+                error = function(e) {
+                    logger::log_error(sprintf("missForest failed for assay %s: %s", assay_name, e$message))
+                    stop(e$message)
                 }
-            }, error = function(e) {
-                logger::log_error(sprintf("missForest failed for assay %s: %s", assay_name, e$message))
-                stop(e$message)
-            })
+            )
 
             # Transpose back
             imputed_matrix <- t(imputed_matrix_t)
 
             # Revert Log2
             if (!is_already_logged) {
-                imputed_matrix <- 2^imputed_matrix - 1
-                imputed_matrix[imputed_matrix < 0] <- 0
+                imputed_matrix <- 2^imputed_matrix
             }
 
             # Merge back
@@ -478,9 +484,9 @@ setMethod(
             imputed_df <- imputed_matrix |>
                 as.data.frame() |>
                 tibble::rownames_to_column(lipid_id_col)
-            
+
             assay_df_metadata <- assay_df |> dplyr::select(all_of(metadata_cols))
-            
+
             assay_df_metadata[[lipid_id_col]] <- as.character(assay_df_metadata[[lipid_id_col]])
             imputed_df[[lipid_id_col]] <- as.character(imputed_df[[lipid_id_col]])
 
@@ -3725,8 +3731,8 @@ setMethod(
                           qvalue_column = NULL,
                           raw_pvalue_column = NULL) {
         # Validate that all objects in the list are LipidomicsAssayData or MetaboliteAssayData
-        objectsList <- theObject;
-            if (!all(purrr::map_lgl(objectsList, ~ inherits(.x, "LipidomicsAssayData") || inherits(.x, "MetaboliteAssayData")))) {
+        objectsList <- theObject
+        if (!all(purrr::map_lgl(objectsList, ~ inherits(.x, "LipidomicsAssayData") || inherits(.x, "MetaboliteAssayData")))) {
             stop("All objects in objectsList must be of class LipidomicsAssayData or MetaboliteAssayData")
         }
 
@@ -4566,12 +4572,13 @@ lipidIntensityFilteringHelper <- function(
 setMethod(
     f = "lipidIntensityFiltering",
     signature = "LipidomicsAssayData",
-    definition = function(theObject
-                          , grouping_variable = NULL
-                          , min_samples_per_group = NULL
-                          , min_groups = NULL
-                          , lipids_intensity_cutoff_percentile = NULL, ...) {
-        
+    definition = function(
+      theObject,
+      grouping_variable = NULL,
+      min_samples_per_group = NULL,
+      min_groups = NULL,
+      lipids_intensity_cutoff_percentile = NULL, ...
+    ) {
         message("--- Entering lipidIntensityFiltering S4 Method (Group-Aware) ---")
 
         # --- Parameter Resolution ---
@@ -4589,7 +4596,7 @@ setMethod(
         # Extract Design Info
         design_matrix <- theObject@design_matrix
         sample_id_col <- theObject@sample_id
-        
+
         if (!grouping_variable %in% colnames(design_matrix)) {
             stop(sprintf("Grouping variable '%s' not found in design matrix.", grouping_variable))
         }
@@ -4598,7 +4605,7 @@ setMethod(
         group_sizes <- design_matrix |>
             dplyr::group_by(!!rlang::sym(grouping_variable)) |>
             dplyr::summarise(n = dplyr::n(), .groups = "drop")
-        
+
         small_groups <- group_sizes |> dplyr::filter(n < min_samples_per_group)
         if (nrow(small_groups) > 0) {
             msg <- sprintf(
@@ -4613,7 +4620,7 @@ setMethod(
         # --- Process Each Assay ---
         lipid_id_col <- theObject@lipid_id_column
         original_assay_list <- theObject@lipid_data
-        
+
         theObject@lipid_data <- purrr::map(names(original_assay_list), function(assay_name) {
             assay_table <- original_assay_list[[assay_name]]
             message("\nProcessing assay: ", assay_name)
@@ -4621,13 +4628,17 @@ setMethod(
             # Identify sample columns
             design_samples <- as.character(design_matrix[[sample_id_col]])
             sample_cols <- intersect(colnames(assay_table), design_samples)
-            
-            if (length(sample_cols) == 0) return(assay_table)
+
+            if (length(sample_cols) == 0) {
+                return(assay_table)
+            }
 
             # Calculate threshold (based on whole assay percentile)
-            all_vals <- assay_table |> dplyr::select(all_of(sample_cols)) |> unlist()
+            all_vals <- assay_table |>
+                dplyr::select(all_of(sample_cols)) |>
+                unlist()
             valid_vals <- all_vals[!is.na(all_vals) & all_vals > 0]
-            threshold <- quantile(valid_vals, probs = lipids_intensity_cutoff_percentile/100, na.rm = TRUE)
+            threshold <- quantile(valid_vals, probs = lipids_intensity_cutoff_percentile / 100, na.rm = TRUE)
             message(sprintf("   Threshold (%.1f percentile): %g", lipids_intensity_cutoff_percentile, threshold))
 
             # Group-aware filter logic

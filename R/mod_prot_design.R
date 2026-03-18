@@ -659,9 +659,9 @@ mod_prot_design_server <- function(id, workflow_data, experiment_paths, volumes 
               dplyr::across(
                 -!!sym(protein_id_col),  # Transform all columns except protein ID
                 ~ {
-                  # Add pseudo-count to avoid log(0), then log2 transform
-                  # Using 1 as pseudo-count (standard for proteomics)
-                  log2(.x + 1)
+                  # Apply true log2 transform (0 values will become -Inf and must be handled downstream)
+                  # Note: NO pseudo-counts are applied as per limpa imputation guidelines
+                  log2(.x)
                 }
               )
             )
@@ -982,9 +982,9 @@ mod_prot_design_server <- function(id, workflow_data, experiment_paths, volumes 
                 dplyr::across(
                   -!!sym(protein_id_col),  # Transform all columns except protein ID
                   ~ {
-                    # Add pseudo-count to avoid log(0), then log2 transform
-                    # Using 1 as pseudo-count (standard for proteomics)
-                    log2(.x + 1)
+                    # Apply true log2 transform (0 values will become -Inf and must be handled downstream)
+                    # Note: NO pseudo-counts are applied as per limpa imputation guidelines
+                    log2(.x)
                   }
                 )
               )

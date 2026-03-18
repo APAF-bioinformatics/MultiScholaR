@@ -539,7 +539,7 @@ setMethod(f="peptideMissingValueImputationLimpa"
                 log_info("Applying log2 transformation...")
               }
               # Add small constant to avoid log(0)
-              y_peptide <- log2(y_peptide + 1)
+              y_peptide <- log2(y_peptide)
             } else if (use_log2_transform && theObject@is_logged_data) {
               if (verbose) {
                 log_warn("Data already log2 transformed, skipping additional transformation")
@@ -550,7 +550,7 @@ setMethod(f="peptideMissingValueImputationLimpa"
                 log_info("Converting raw intensities to log2 scale for limpa...")
               }
               # limpa expects log2 data, so transform raw data
-              y_peptide <- log2(y_peptide + 1)
+              y_peptide <- log2(y_peptide)
             } else {
               # !use_log2_transform && theObject@is_logged_data
               if (verbose) {
@@ -613,9 +613,7 @@ setMethod(f="peptideMissingValueImputationLimpa"
                 if (verbose) {
                   log_info("Converting back from log2 scale...")
                 }
-                imputed_matrix <- 2^imputed_matrix - 1
-                # Ensure no negative values
-                imputed_matrix[imputed_matrix < 0] <- 0
+                imputed_matrix <- 2^imputed_matrix
               }
               
               # Convert back to long format and merge with original data
@@ -771,7 +769,7 @@ setMethod(f="proteinMissingValueImputationLimpa"
               if (verbose) {
                 log_info("Converting to log2 scale for limpa (max value: {round(max_val, 2)})...")
               }
-              protein_matrix <- log2(protein_matrix + 1)
+              protein_matrix <- log2(protein_matrix)
             } else {
               if (verbose) {
                 log_info("Data appears to be log2-scale already (max value: {round(max_val, 2)})")
@@ -839,9 +837,7 @@ setMethod(f="proteinMissingValueImputationLimpa"
                 if (verbose) {
                   log_info("Converting back from log2 scale...")
                 }
-                imputed_matrix <- 2^imputed_matrix - 1
-                # Ensure no negative values
-                imputed_matrix[imputed_matrix < 0] <- 0
+                imputed_matrix <- 2^imputed_matrix
               }
               
               # Convert back to long format

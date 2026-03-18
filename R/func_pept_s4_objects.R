@@ -400,7 +400,7 @@ setMethod( f = "ruvCancorFast"
              }
              
              # Skip expensive DPC imputation - use simple approach for optimization
-             peptide_matrix_working <- log2(peptide_matrix + 1)  # Add small constant to avoid log(0)
+             peptide_matrix_working <- log2(peptide_matrix)  # Direct log2 transform (0 becomes -Inf and handled downstream if simple_imputation is not complete)
              
              # Handle missing values with simple method if requested
              if (simple_imputation_method != "none" && anyNA(peptide_matrix_working)) {
@@ -1078,8 +1078,8 @@ setMethod(f="peptideMissingValueImputationLimpa"
               if (verbose) {
                 log_info("Applying log2 transformation...")
               }
-              # Add small constant to avoid log(0)
-              y_peptide <- log2(y_peptide + 1)
+              # Add small constant to avoid log(0) - EXPLICITLY REMOVED for limpa compatibility
+              y_peptide <- log2(y_peptide)
             } else if (use_log2_transform && theObject@is_logged_data) {
               if (verbose) {
                 log_warn("Data already log2 transformed, skipping additional transformation")
@@ -1090,7 +1090,7 @@ setMethod(f="peptideMissingValueImputationLimpa"
                 log_info("Converting raw intensities to log2 scale for limpa...")
               }
               # limpa expects log2 data, so transform raw data
-              y_peptide <- log2(y_peptide + 1)
+              y_peptide <- log2(y_peptide)
             } else {
               # !use_log2_transform && theObject@is_logged_data
               if (verbose) {
@@ -1153,9 +1153,7 @@ setMethod(f="peptideMissingValueImputationLimpa"
                 if (verbose) {
                   log_info("Converting back from log2 scale...")
                 }
-                imputed_matrix <- 2^imputed_matrix - 1
-                # Ensure no negative values
-                imputed_matrix[imputed_matrix < 0] <- 0
+                imputed_matrix <- 2^imputed_matrix
               }
               
               # Convert back to long format and merge with original data
