@@ -21,12 +21,10 @@ setGeneric(
 
 setGeneric(
     name = "proteinIntensityFiltering",
-    def = function(
-      theObject,
-      proteins_intensity_cutoff_percentile = NULL,
-      proteins_proportion_of_samples_below_cutoff = NULL,
-      core_utilisation = NULL
-    ) {
+    def = function(theObject,
+                   proteins_intensity_cutoff_percentile = NULL,
+                   proteins_proportion_of_samples_below_cutoff = NULL,
+                   core_utilisation = NULL) {
         standardGeneric("proteinIntensityFiltering")
     },
     signature = c("theObject", "proteins_intensity_cutoff_percentile", "proteins_proportion_of_samples_below_cutoff", "core_utilisation")
@@ -46,6 +44,7 @@ setGeneric(
                    dpc_results = NULL,
                    dpc_slope = 0.8,
                    quantified_protein_column = NULL,
+                   fast_imputation = FALSE,
                    verbose = TRUE,
                    chunk = 1000) {
         standardGeneric("proteinMissingValueImputationLimpa")
@@ -139,14 +138,12 @@ setGeneric(
 
 setGeneric(
     name = "getNegCtrlProtAnova",
-    def = function(
-      theObject,
-      ruv_grouping_variable = NULL,
-      percentage_as_neg_ctrl = NULL,
-      num_neg_ctrl = NULL,
-      ruv_qval_cutoff = NULL,
-      ruv_fdr_method = NULL
-    ) {
+    def = function(theObject,
+                   ruv_grouping_variable = NULL,
+                   percentage_as_neg_ctrl = NULL,
+                   num_neg_ctrl = NULL,
+                   ruv_qval_cutoff = NULL,
+                   ruv_fdr_method = NULL) {
         standardGeneric("getNegCtrlProtAnova")
     },
     signature = c("theObject", "ruv_grouping_variable", "num_neg_ctrl", "ruv_qval_cutoff", "ruv_fdr_method")
@@ -154,11 +151,9 @@ setGeneric(
 
 setGeneric(
     name = "getLowCoefficientOfVariationProteins",
-    def = function(
-      theObject,
-      percentage_as_neg_ctrl = NULL,
-      num_neg_ctrl = NULL
-    ) {
+    def = function(theObject,
+                   percentage_as_neg_ctrl = NULL,
+                   num_neg_ctrl = NULL) {
         standardGeneric("getLowCoefficientOfVariationProteins")
     },
     signature = c("theObject", "percentage_as_neg_ctrl", "num_neg_ctrl")
@@ -198,13 +193,11 @@ setGeneric(
 
 setGeneric(
     name = "removeRowsWithMissingValuesPercent",
-    def = function(
-      theObject,
-      ruv_grouping_variable = NULL,
-      groupwise_percentage_cutoff = NULL,
-      max_groups_percentage_cutoff = NULL,
-      proteins_intensity_cutoff_percentile = NULL
-    ) {
+    def = function(theObject,
+                   ruv_grouping_variable = NULL,
+                   groupwise_percentage_cutoff = NULL,
+                   max_groups_percentage_cutoff = NULL,
+                   proteins_intensity_cutoff_percentile = NULL) {
         standardGeneric("removeRowsWithMissingValuesPercent")
     },
     signature = c(
@@ -308,13 +301,11 @@ setGeneric(
 
 setGeneric(
     name = "removePeptidesWithMissingValuesPercent",
-    def = function(
-      theObject,
-      grouping_variable = NULL,
-      groupwise_percentage_cutoff = NULL,
-      max_groups_percentage_cutoff = NULL,
-      peptides_intensity_cutoff_percentile = NULL
-    ) {
+    def = function(theObject,
+                   grouping_variable = NULL,
+                   groupwise_percentage_cutoff = NULL,
+                   max_groups_percentage_cutoff = NULL,
+                   peptides_intensity_cutoff_percentile = NULL) {
         standardGeneric("removePeptidesWithMissingValuesPercent")
     },
     signature = c(
@@ -1159,7 +1150,7 @@ loadDependencies <- function(verbose = TRUE) {
         "shinydashboard", "shinythemes", "shinycssloaders",
 
         # Added for BookChapter
-        "conflicted", "tidytext",
+        "conflicted", "tidytext", "conflicted",
         # Added from Suggests:
         "testthat", "ggplot2", "ggpubr", "svglite",
         "ggraph", "reticulate", "shinyFiles", "arrow"

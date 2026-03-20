@@ -283,6 +283,7 @@ setMethod(
                         dpc_results = NULL,
                         dpc_slope = 0.8,
                         quantified_protein_column = NULL,
+                        fast_imputation = FALSE,
                         verbose = TRUE,
                         chunk = 1000) {
     # Load required packages
