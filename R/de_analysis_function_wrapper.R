@@ -128,16 +128,16 @@ deAnalysisWrapperFunction <- function(
   rownames(theObject@design_matrix) <- theObject@design_matrix |> dplyr::pull(one_of(theObject@sample_id))
 
   # Check if object contains DPC-Quant results and use limpa dpc if available
-  use_dpc_de <- FALSE
+  use_dpc_da <- FALSE
   dpc_quant_results <- NULL
 
   if (!is.null(theObject@args$limpa_dpc_quant_results)) {
     dpc_quant_results <- theObject@args$limpa_dpc_quant_results
-    use_dpc_de <- TRUE
-    cat("   DE ANALYSIS Step: Detected DPC-Quant results - using limpa dpcDE for uncertainty-weighted analysis\n")
-    cat("   DE ANALYSIS Step: DPC parameters used:", paste(dpc_quant_results$dpc_parameters_used, collapse = ", "), "\n")
+    use_dpc_da <- TRUE
+    cat("   DA ANALYSIS Step: Detected DPC-Quant results - using limpa dpcDE for uncertainty-weighted analysis\n")
+    cat("   DA ANALYSIS Step: DPC parameters used:", paste(dpc_quant_results$dpc_parameters_used, collapse = ", "), "\n")
   } else {
-    cat("   DE ANALYSIS Step: No DPC-Quant results found - using standard limma analysis\n")
+    cat("   DA ANALYSIS Step: No DPC-Quant results found - using standard limma analysis\n")
   }
 
   # CRITICAL FIX: Use the correct column for contrast strings
@@ -173,8 +173,8 @@ deAnalysisWrapperFunction <- function(
   }
 
   # Run differential expression analysis
-  if (use_dpc_de && requireNamespace("limpa", quietly = TRUE)) {
-    cat("   DE ANALYSIS Step: Running limpa dpcDE analysis with uncertainty weights\n")
+  if (use_dpc_da && requireNamespace("limpa", quietly = TRUE)) {
+    cat("   DE ANALYSIS Step: Running limpa dpcDE analysis (via voomaLmFitWithImputation) with uncertainty weights\n")
 
     # The EList is now pre-filtered and stored, so we can use it directly
     y_elist_filtered <- dpc_quant_results$quantified_elist
@@ -191,9 +191,14 @@ deAnalysisWrapperFunction <- function(
     cat("   DE ANALYSIS Step: Design matrix dims:", nrow(design_matrix_for_dpcde), "x", ncol(design_matrix_for_dpcde), "\n")
 
 
-    subject_blocks <- theObject@design_matrix |>
-      mutate(blocks = group, !!rlang::syms(technical_replicate_id)) |>
-      dplyr::pull(blocks)
+    if (technical_replicate_id %in% colnames(theObject@design_matrix)) {
+      subject_blocks <- paste(theObject@design_matrix$group, theObject@design_matrix[[technical_replicate_id]], sep = "_")
+      if (!any(duplicated(subject_blocks))) {
+          subject_blocks <- NULL
+      }
+    } else {
+      subject_blocks <- NULL
+    }
 
     # Synchronize EList with design matrix - Fix for lmFit dimension mismatch
     samples_in_design <- rownames(design_matrix_for_dpcde)
@@ -218,6 +223,8 @@ deAnalysisWrapperFunction <- function(
 
 
     # Run dpcDE using the synchronized EList
+    # Note: Internally, dpcDE utilizes voomaLmFitWithImputation to correctly propagate
+    # quantification uncertainty into the limma empirical Bayes model.
     dpc_fit <- limpa::dpcDE(y_elist_filtered, design_matrix_for_dpcde, block = subject_blocks, plot = FALSE)
 
     # Convert dpcDE results to format compatible with runTestsContrasts

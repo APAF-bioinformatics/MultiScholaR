@@ -10,17 +10,19 @@
 #' @param dpc_results DPC results to use. If NULL, will estimate using dpc_slope
 #' @param dpc_slope Default DPC slope to use if no DPC results available (default: 0.8)
 #' @param quantified_protein_column Name for the column containing quantified protein values
+#' @param fast_imputation Logical. If TRUE, uses limpa::imputeByExpTilt() for very fast
+#'   processing of large datasets without standard error calculations. Default is FALSE
 #' @param verbose Whether to print progress messages. Default is TRUE
 #' @param chunk When verbose=TRUE, how often to output progress information (default: 1000)
 #'
 #' @details
 #' This method treats each protein as a separate "feature" and applies DPC-based
-#' imputation using limpa's dpcImpute function. This is appropriate when you have
+#' imputation using limpa's dpcImpute function or imputeByExpTilt for fast processing. This is appropriate when you have
 #' protein-level data with missing values that follow intensity-dependent patterns.
 #'
 #' @return Updated ProteinQuantitativeData object with imputed protein values
 #'
-#' @importFrom limpa dpc dpcImpute
+#' @importFrom limpa dpc dpcImpute imputeByExpTilt
 #' @export
 setMethod(
   f = "proteinMissingValueImputationLimpa",
@@ -29,6 +31,7 @@ setMethod(
                         dpc_results = NULL,
                         dpc_slope = 0.8,
                         quantified_protein_column = NULL,
+                        fast_imputation = FALSE,
                         verbose = TRUE,
                         chunk = 1000) {
     # Load required packages
@@ -140,20 +143,29 @@ setMethod(
 
     tryCatch(
       {
-        # Apply dpcImpute to protein matrix
-        if (!is.null(dpc_params)) {
-          imputed_result <- limpa::dpcImpute(protein_matrix, dpc = dpc_params, verbose = verbose, chunk = chunk)
+        if (fast_imputation) {
+          if (verbose) {
+            log_info("Performing very fast row-wise imputation using imputeByExpTilt()...")
+          }
+          if (!is.null(dpc_params)) {
+             imputed_matrix <- limpa::imputeByExpTilt(protein_matrix, dpc = dpc_params)
+          } else {
+             imputed_matrix <- limpa::imputeByExpTilt(protein_matrix, dpc.slope = dpc_slope)
+          }
         } else {
-          imputed_result <- limpa::dpcImpute(protein_matrix, dpc.slope = dpc_slope, verbose = verbose, chunk = chunk)
+          # Apply dpcImpute to protein matrix
+          if (!is.null(dpc_params)) {
+            imputed_result <- limpa::dpcImpute(protein_matrix, dpc = dpc_params, verbose = verbose, chunk = chunk)
+          } else {
+            imputed_result <- limpa::dpcImpute(protein_matrix, dpc.slope = dpc_slope, verbose = verbose, chunk = chunk)
+          }
+          imputed_matrix <- imputed_result$E
         }
 
         if (verbose) {
           log_info("Protein-level imputation completed successfully")
-          log_info("No missing values remaining: {!any(is.na(imputed_result$E))}")
+          log_info("No missing values remaining: {!any(is.na(imputed_matrix))}")
         }
-
-        # Extract imputed matrix
-        imputed_matrix <- imputed_result$E
 
         # Transform back to original scale if necessary
         if (needs_log_transform) {

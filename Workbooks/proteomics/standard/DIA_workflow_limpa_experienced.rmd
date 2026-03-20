@@ -186,6 +186,8 @@ project_dirs <- setupDirectories(
 config_list <- readConfigFile(file = file.path(project_dirs$proteomics$base_dir, "config.ini"))
 
 # Convert your EList to DIA-NN format
+# Note: For data searched with match-between-run (MBR), use q.columns = c("Q.Value","Lib.Q.Value","Lib.PG.Q.Value")
+# For data searched without MBR, use q.columns = c("Q.Value","Global.Q.Value","Global.PG.Q.Value")
 data_tbl_parquet_filt <- limpa::readDIANN(file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir, "report.parquet"), format="parquet", q.columns = c("Q.Value","Lib.Q.Value","Lib.PG.Q.Value"), q.cutoffs = 0.01)
 data_tbl <- formatDIANN(data_tbl_parquet_filt)
 

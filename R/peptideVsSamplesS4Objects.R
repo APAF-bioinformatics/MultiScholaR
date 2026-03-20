@@ -1064,7 +1064,7 @@ setMethod(
 #'
 #' @inheritParams ruvCancor
 #' @param simple_imputation_method Method for simple missing value handling.
-#'   Options: "none" (default), "mean", "median", "min"
+#'   Options: "none" (default), "mean", "median", "min", "imputeByExpTilt"
 #'
 #' @export
 setMethod(
@@ -1101,8 +1101,13 @@ setMethod(
       stop(paste0("The number of negative control molecules entered is less than 5. Please check the 'ctl' parameter."))
     }
 
-    # Skip expensive DPC imputation - use simple approach for optimization
-    peptide_matrix_working <- log2(peptide_matrix + 1) # Add small constant to avoid log(0)
+    # Skip expensive DPC imputation - use fast limpa imputation instead
+    if (!theObject@is_logged_data) {
+      peptide_matrix_working <- log2(peptide_matrix)
+      peptide_matrix_working[is.infinite(peptide_matrix_working)] <- NA
+    } else {
+      peptide_matrix_working <- peptide_matrix
+    }
 
     # Handle missing values with simple method if requested
     if (simple_imputation_method != "none" && anyNA(peptide_matrix_working)) {
@@ -1121,6 +1126,12 @@ setMethod(
           x[is.na(x)] <- min(x, na.rm = TRUE)
           return(x)
         })
+      } else if (simple_imputation_method == "imputeByExpTilt") {
+        if (requireNamespace("limpa", quietly = TRUE)) {
+          peptide_matrix_working <- limpa::imputeByExpTilt(peptide_matrix_working, dpc.slope = 0.8)
+        } else {
+          stop("The 'limpa' package is required for imputeByExpTilt imputation.")
+        }
       }
     }
 
@@ -1432,13 +1443,13 @@ setMethod(
             ))
           }
 
-          # Generate canonical correlation plot using FAST version (skips expensive DPC imputation)
+          # Generate canonical correlation plot using FAST version
           cancorplot <- ruvCancorFast(
             theObject,
             ctrl = control_genes_index,
             num_components_to_impute = num_components_to_impute,
             ruv_grouping_variable = ruv_grouping_variable,
-            simple_imputation_method = "mean" # Use simple mean imputation for speed
+            simple_imputation_method = "imputeByExpTilt" # Use fast limpa imputation
           )
 
           # Calculate separation score
@@ -1737,6 +1748,8 @@ setMethod(
 #'   Default is "Peptide.Imputed.Limpa"
 #' @param use_log2_transform Whether to log2 transform the data before imputation.
 #'   Default is TRUE (recommended by limpa)
+#' @param fast_imputation Logical. If TRUE, uses limpa::imputeByExpTilt() for very fast
+#'   processing of large datasets without standard error calculations. Default is FALSE
 #' @param verbose Whether to print progress messages. Default is TRUE
 #' @param ensure_matrix Whether to ensure peptide matrix is calculated. Default is TRUE
 #'
@@ -1748,18 +1761,19 @@ setMethod(
 #'
 #' The process follows these steps:
 #' 1. Estimate the detection probability curve using dpc()
-#' 2. Perform row-wise imputation using dpcImpute()
+#' 2. Perform row-wise imputation using dpcImpute() or imputeByExpTilt()
 #' 3. Transform results back to original scale if needed
 #'
 #' @return Updated PeptideQuantitativeData object with imputed values
 #'
-#' @importFrom limpa dpc dpcImpute
+#' @importFrom limpa dpc dpcImpute imputeByExpTilt
 #' @export
 setGeneric(
   name = "peptideMissingValueImputationLimpa",
   def = function(theObject,
                  imputed_value_column = NULL,
                  use_log2_transform = TRUE,
+                 fast_imputation = FALSE,
                  verbose = TRUE,
                  ensure_matrix = TRUE) {
     standardGeneric("peptideMissingValueImputationLimpa")
@@ -1774,6 +1788,7 @@ setMethod(
   definition = function(theObject,
                         imputed_value_column = NULL,
                         use_log2_transform = TRUE,
+                        fast_imputation = FALSE,
                         verbose = TRUE,
                         ensure_matrix = TRUE) {
     # Load required packages
@@ -1888,19 +1903,24 @@ setMethod(
         }
 
         # Perform row-wise imputation using limpa
-        if (verbose) {
-          log_info("Performing row-wise imputation using DPC model...")
+        if (fast_imputation) {
+          if (verbose) {
+            log_info("Performing very fast row-wise imputation using imputeByExpTilt()...")
+          }
+          # imputeByExpTilt returns the imputed matrix directly
+          imputed_matrix <- limpa::imputeByExpTilt(y_peptide, dpc = dpcfit)
+        } else {
+          if (verbose) {
+            log_info("Performing row-wise imputation using DPC model (dpcImpute)...")
+          }
+          y_imputed <- limpa::dpcImpute(y_peptide, dpc = dpcfit)
+          imputed_matrix <- y_imputed$E
         }
-
-        y_imputed <- limpa::dpcImpute(y_peptide, dpc = dpcfit)
 
         if (verbose) {
           log_info("Imputation completed successfully")
-          log_info("No missing values remaining: {!any(is.na(y_imputed$E))}")
+          log_info("No missing values remaining: {!any(is.na(imputed_matrix))}")
         }
-
-        # Extract the imputed matrix
-        imputed_matrix <- y_imputed$E
 
         # Transform back to original scale if necessary
         if (use_log2_transform && !theObject@is_logged_data) {
