@@ -2496,7 +2496,18 @@ runTestsContrasts <- function(data,
 
       # Calculate consensus correlation
       # Note: duplicateCorrelation can be slow for large datasets
-      dup_cor <- duplicateCorrelation(data_subset, design = design_m, block = block)
+      dup_cor <- tryCatch({
+        duplicateCorrelation(data_subset, design = design_m, block = block)
+      }, error = function(e) {
+        warning(sprintf("   runTestsContrasts: duplicateCorrelation failed (%s). Falling back to correlation = 0.", e$message))
+        list(consensus.correlation = 0)
+      })
+
+      if (is.null(dup_cor$consensus.correlation) || is.na(dup_cor$consensus.correlation) || is.nan(dup_cor$consensus.correlation)) {
+        warning("   runTestsContrasts: duplicateCorrelation returned NaN/NA/NULL. Falling back to correlation = 0.")
+        if(!is.list(dup_cor)) dup_cor <- list()
+        dup_cor$consensus.correlation <- 0
+      }
 
       message(sprintf("   runTestsContrasts: Consensus correlation = %.4f", dup_cor$consensus.correlation))
 

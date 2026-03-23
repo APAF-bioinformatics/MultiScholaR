@@ -821,10 +821,19 @@ runOneStringDbRankEnrichment <- function( input_table
                                                ge_fdr = ge_fdr,
                                                ge_enrichment_rank_direction = ge_enrichment_rank_direction)
 
+  if (is.null(parsed_response$job_id)) {
+      warning(sprintf("STRING DB API failed to return a valid job_id for %s. Skipping enrichment.", result_label))
+      return(NULL)
+  }
 
   output_tbl <- retrieveStringDBEnrichmentResults( submission_info = parsed_response,
                                                    polling_interval_seconds = polling_interval_seconds,
                                                    max_polling_attempts = max_polling_attempts)
+
+  if (is.null(output_tbl) || is.null(output_tbl$enrichment_data)) {
+      warning(sprintf("STRING DB enrichment results could not be retrieved or are empty for %s.", result_label))
+      return(NULL)
+  }
 
   enrichment_dir <- file.path(pathway_dir, "string_db")
   dir.create(enrichment_dir, showWarnings = FALSE, recursive = TRUE)
@@ -927,10 +936,19 @@ runOneStringDbRankEnrichmentMofa <- function( input_table
                                                ge_fdr = ge_fdr,
                                                ge_enrichment_rank_direction = ge_enrichment_rank_direction)
 
+  if (is.null(parsed_response$job_id)) {
+      warning(sprintf("STRING DB API failed to return a valid job_id for %s. Skipping enrichment.", result_label))
+      return(NULL)
+  }
 
   output_tbl <- retrieveStringDBEnrichmentResults( submission_info = parsed_response,
                                                    polling_interval_seconds = polling_interval_seconds,
                                                    max_polling_attempts = max_polling_attempts)
+
+  if (is.null(output_tbl) || is.null(output_tbl$enrichment_data)) {
+      warning(sprintf("STRING DB enrichment results could not be retrieved or are empty for %s.", result_label))
+      return(NULL)
+  }
 
   write_lines(c("page_url", output_tbl$page_url
                 , "download_url" , output_tbl$download_url

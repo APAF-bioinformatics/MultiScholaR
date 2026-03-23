@@ -3918,8 +3918,17 @@ setMethod(
                 # Create design matrix for dpcDA
                 design_m_dpcda <- model.matrix(as.formula(formula_string), theObject@design_matrix)
                 
+                if ("replicates" %in% colnames(theObject@design_matrix)) {
+                  subject_blocks <- paste(theObject@design_matrix$group, theObject@design_matrix[["replicates"]], sep = "_")
+                  if (!any(duplicated(subject_blocks))) {
+                      subject_blocks <- NULL
+                  }
+                } else {
+                  subject_blocks <- NULL
+                }
+                
                 # Run dpcDE
-                dpc_fit <- limpa::dpcDE(y_elist, design_m_dpcda, plot = FALSE)
+                dpc_fit <- limpa::dpcDE(y_elist, design_m_dpcda, block = subject_blocks, plot = FALSE)
                 
                 # Convert to standard format
                 # We need to handle contrast names properly

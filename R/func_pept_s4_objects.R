@@ -338,7 +338,9 @@ setMethod(
     }
 
     # Remove or winsorize extreme values
-    peptide_matrix_clean <- apply(log2(peptide_matrix), 2, function(x) {
+    peptide_matrix_working <- peptide_matrix
+    peptide_matrix_working[peptide_matrix_working <= 0] <- NA
+    peptide_matrix_clean <- apply(log2(peptide_matrix_working), 2, function(x) {
       q <- quantile(x, probs = c(0.01, 0.99), na.rm = TRUE)
       x[x < q[1]] <- q[1]
       x[x > q[2]] <- q[2]
@@ -411,7 +413,9 @@ setMethod(
     }
 
     # Skip expensive DPC imputation - use simple approach for optimization
-    peptide_matrix_working <- log2(peptide_matrix + 1) # Add small constant to avoid log(0)
+    peptide_matrix_working <- peptide_matrix
+    peptide_matrix_working[peptide_matrix_working <= 0] <- NA
+    peptide_matrix_working <- log2(peptide_matrix_working)
 
     # Handle missing values with simple method if requested
     if (simple_imputation_method != "none" && anyNA(peptide_matrix_working)) {
