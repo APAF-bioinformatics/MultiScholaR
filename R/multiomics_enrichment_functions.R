@@ -773,7 +773,14 @@ runOneStringDbRankEnrichment <- function( input_table
              , file.path(enrichment_dir, paste0(result_label, "_string_enrichment_graph.png")))
   }
 
-  return(output_tbl$enrichment_data)
+  # Ensure consistent types for enrichment data
+  cleaned_enrichment_data <- output_tbl$enrichment_data |>
+    dplyr::mutate(dplyr::across(
+      dplyr::any_of(c("enrichmentScore", "falseDiscoveryRate", "genesMapped", "backgroundGenes")),
+      ~ as.numeric(as.character(.x))
+    ))
+
+  return(cleaned_enrichment_data)
 
 }
 
@@ -889,7 +896,14 @@ runOneStringDbRankEnrichmentMofa <- function( input_table
              , file.path( results_dir , paste0( result_label, "string_enrichment_graph.png") ))
   }
 
-  return(output_tbl$enrichment_data)
+  # Ensure consistent types for enrichment data
+  cleaned_enrichment_data <- output_tbl$enrichment_data |>
+    dplyr::mutate(dplyr::across(
+      dplyr::any_of(c("enrichmentScore", "falseDiscoveryRate", "genesMapped", "backgroundGenes")),
+      ~ as.numeric(as.character(.x))
+    ))
+
+  return(cleaned_enrichment_data)
 
 }
 

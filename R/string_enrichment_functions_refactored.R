@@ -172,9 +172,18 @@ runStringDbEnrichmentAllContrasts <- function(de_analysis_results_list,
   }
 
   # Ensure type consistency for key columns across all contrasts before binding
-  output_group_tables_list <- purrr::map(output_group_tables_list, function(df) {
+  output_group_tables_list <- purrr::imap(output_group_tables_list, function(df, contrast_idx) {
     if (is.null(df) || nrow(df) == 0) return(df)
-    df |> dplyr::mutate(dplyr::across(dplyr::any_of(c("enrichmentScore", "falseDiscoveryRate", "genesMapped", "backgroundGenes")), as.numeric))
+    
+    # Diagnostic messaging
+    if ("genesMapped" %in% colnames(df)) {
+      message(sprintf("DEBUG_66: Contrast '%s' - genesMapped type: %s", contrast_idx, class(df$genesMapped)[1]))
+    }
+    
+    df |> dplyr::mutate(dplyr::across(
+      dplyr::any_of(c("enrichmentScore", "falseDiscoveryRate", "genesMapped", "backgroundGenes")), 
+      ~ as.numeric(as.character(.x))
+    ))
   })
 
   # Combine all results
