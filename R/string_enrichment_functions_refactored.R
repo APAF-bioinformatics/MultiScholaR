@@ -171,6 +171,12 @@ runStringDbEnrichmentAllContrasts <- function(de_analysis_results_list,
     names(output_group_tables_list) <- purrr::map_chr(list_of_contrasts, comparison_name_transform)
   }
 
+  # Ensure type consistency for key columns across all contrasts before binding
+  output_group_tables_list <- purrr::map(output_group_tables_list, function(df) {
+    if (is.null(df) || nrow(df) == 0) return(df)
+    df |> dplyr::mutate(dplyr::across(dplyr::any_of(c("enrichmentScore", "falseDiscoveryRate", "genesMapped", "backgroundGenes")), as.numeric))
+  })
+
   # Combine all results
   output_group_main_table <- dplyr::bind_rows(output_group_tables_list, .id = "comparison")
 
