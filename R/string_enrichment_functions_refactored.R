@@ -171,20 +171,44 @@ runStringDbEnrichmentAllContrasts <- function(de_analysis_results_list,
     names(output_group_tables_list) <- purrr::map_chr(list_of_contrasts, comparison_name_transform)
   }
 
-  # Ensure type consistency for key columns across all contrasts before binding
-  output_group_tables_list <- purrr::imap(output_group_tables_list, function(df, contrast_idx) {
-    if (is.null(df) || nrow(df) == 0) return(df)
+  # DYNAMIC TYPE HARMONIZATION: 
+  # Ensure all columns across all contrasts have consistent types before bind_rows.
+  # This prevents failures when STRING API returns different formats (e.g., numeric vs character)
+  # for the same column name across different contrasts.
+  
+  # Remove NULL or empty tables
+  output_group_tables_list <- purrr::keep(output_group_tables_list, ~ !is.null(.x) && nrow(.x) > 0)
+  
+  if (length(output_group_tables_list) > 1) {
+    all_colnames <- unique(unlist(lapply(output_group_tables_list, colnames)))
+    numeric_whitelist <- c("enrichmentScore", "falseDiscoveryRate", "genesMapped", "backgroundGenes", "genesInSet", "expected", "observed", "pvalue", "fdr", "bonferroni", "proteinRanks")
     
-    # Diagnostic messaging
-    if ("genesMapped" %in% colnames(df)) {
-      message(sprintf("DEBUG_66: Contrast '%s' - genesMapped type: %s", contrast_idx, class(df$genesMapped)[1]))
+    for (col in all_colnames) {
+      # Check types of this column across all contrast tables
+      col_types <- sapply(output_group_tables_list, function(df) {
+        if (col %in% colnames(df)) class(df[[col]])[1] else NA_character_
+      })
+      unique_types <- unique(stats::na.omit(col_types))
+      
+      if (length(unique_types) > 1) {
+        # Conflict detected! Resolve by coercion.
+        target_type <- if (col %in% numeric_whitelist) "numeric" else "character"
+        message(sprintf("DEBUG_66: Type conflict in column '%s' (%s). Harmonizing to %s.", 
+                        col, paste(unique_types, collapse="/"), target_type))
+        
+        output_group_tables_list <- purrr::map(output_group_tables_list, function(df) {
+          if (col %in% colnames(df)) {
+            if (target_type == "numeric") {
+              df[[col]] <- as.numeric(as.character(df[[col]]))
+            } else {
+              df[[col]] <- as.character(df[[col]])
+            }
+          }
+          df
+        })
+      }
     }
-    
-    df |> dplyr::mutate(dplyr::across(
-      dplyr::any_of(c("enrichmentScore", "falseDiscoveryRate", "genesMapped", "backgroundGenes", "genesInSet", "expected", "observed", "pvalue", "fdr", "bonferroni")), 
-      ~ as.numeric(as.character(.x))
-    ))
-  })
+  }
 
   # Combine all results
   output_group_main_table <- dplyr::bind_rows(output_group_tables_list, .id = "comparison")

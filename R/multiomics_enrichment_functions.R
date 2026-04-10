@@ -776,7 +776,7 @@ runOneStringDbRankEnrichment <- function( input_table
   # Ensure consistent types for enrichment data
   cleaned_enrichment_data <- output_tbl$enrichment_data |>
     dplyr::mutate(dplyr::across(
-      dplyr::any_of(c("enrichmentScore", "falseDiscoveryRate", "genesMapped", "backgroundGenes", "genesInSet", "expected", "observed", "pvalue", "fdr", "bonferroni")),
+      dplyr::any_of(c("enrichmentScore", "falseDiscoveryRate", "genesMapped", "backgroundGenes", "genesInSet", "proteinRanks", "expected", "observed", "pvalue", "fdr", "bonferroni")),
       ~ as.numeric(as.character(.x))
     ))
 
@@ -899,7 +899,7 @@ runOneStringDbRankEnrichmentMofa <- function( input_table
   # Ensure consistent types for enrichment data
   cleaned_enrichment_data <- output_tbl$enrichment_data |>
     dplyr::mutate(dplyr::across(
-      dplyr::any_of(c("enrichmentScore", "falseDiscoveryRate", "genesMapped", "backgroundGenes", "genesInSet", "expected", "observed", "pvalue", "fdr", "bonferroni")),
+      dplyr::any_of(c("enrichmentScore", "falseDiscoveryRate", "genesMapped", "backgroundGenes", "genesInSet", "proteinRanks", "expected", "observed", "pvalue", "fdr", "bonferroni")),
       ~ as.numeric(as.character(.x))
     ))
 
