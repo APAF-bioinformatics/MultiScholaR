@@ -171,6 +171,14 @@ runStringDbEnrichmentAllContrasts <- function(de_analysis_results_list,
     names(output_group_tables_list) <- purrr::map_chr(list_of_contrasts, comparison_name_transform)
   }
 
+  # Create directory if it doesn't exist
+  dir.create(enrichment_dir, showWarnings = FALSE, recursive = TRUE)
+
+  # Checkpoint for debugging type mismatches
+  debug_file <- file.path(enrichment_dir, "debug_enrichment_tables_raw.rds")
+  message("DEBUG_66: Saving enrichment tables checkpoint to: ", debug_file)
+  saveRDS(output_group_tables_list, file = debug_file)
+
   # DYNAMIC TYPE HARMONIZATION: 
   # Ensure all columns across all contrasts have consistent types before bind_rows.
   # This prevents failures when STRING API returns different formats (e.g., numeric vs character)

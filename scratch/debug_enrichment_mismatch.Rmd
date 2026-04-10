@@ -1,0 +1,129 @@
+---
+title: "Debug STRING Enrichment Type Mismatch"
+author: "Antigravity Debugger"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(purrr)
+library(tidyr)
+```
+
+## 1. Load Checkpointed Data
+
+Replace the path below with the actual path to your generated `debug_enrichment_tables_raw.rds` file.
+
+```{r load_data}
+# Path to the checkpointed RDS file
+# Example: "path/to/project/enrichment/string_db/debug_enrichment_tables_raw.rds"
+debug_file_path <- "debug_enrichment_tables_raw.rds"
+
+if (!file.exists(debug_file_path)) {
+  stop("Checkpoint file not found! Please ensure you have run the analysis and the file was generated.")
+}
+
+enrichment_list <- readRDS(debug_file_path)
+message("Successfully loaded enrichment list with ", length(enrichment_list), " contrasts.")
+```
+
+## 2. Inspect Column Types
+
+Let's see which columns have conflicting types across different contrasts.
+
+```{r inspect_types}
+# Get all unique column names
+all_cols <- unique(unlist(lapply(enrichment_list, colnames)))
+
+# Create a summary table of types per column across contrasts
+type_summary <- map_dfr(all_cols, function(col) {
+  # Get classes for this column across all tables
+  classes <- map_chr(enrichment_list, function(df) {
+    if (col %in% colnames(df)) class(df[[col]])[1] else "Missing"
+  })
+  
+  # Return row with column name and unique types found
+  data.frame(
+    column = col,
+    unique_types = paste(unique(classes), collapse = ", "),
+    has_conflict = length(unique(classes[classes != "Missing"])) > 1,
+    stringsAsFactors = FALSE
+  )
+})
+
+# Filter for conflicts
+conflicts <- type_summary %>% filter(has_conflict)
+knitr::kable(conflicts, caption = "Detected Column Type Conflicts")
+```
+
+## 3. Test Harmonization Logic
+
+We will now apply the same dynamic harmonization used in the package to see if it resolves the conflicts safely.
+
+```{r test_harmonization}
+# Whitelist of columns we definitely want to be numeric
+numeric_whitelist <- c(
+  "enrichmentScore", "falseDiscoveryRate", "genesMapped", 
+  "backgroundGenes", "genesInSet", "expected", 
+  "observed", "pvalue", "fdr", "bonferroni", "proteinRanks"
+)
+
+harmonized_list <- enrichment_list
+
+if (length(harmonized_list) > 1) {
+  for (col in all_cols) {
+    # Check types
+    col_types <- sapply(harmonized_list, function(df) {
+      if (col %in% colnames(df)) class(df[[col]])[1] else NA_character_
+    })
+    unique_types <- unique(na.omit(col_types))
+    
+    if (length(unique_types) > 1) {
+      # Conflict detected! Resolve by coercion.
+      target_type <- if (col %in% numeric_whitelist) "numeric" else "character"
+      message(sprintf("Harmonizing column '%s' (%s) to %s.", 
+                      col, paste(unique_types, collapse="/"), target_type))
+      
+      harmonized_list <- map(harmonized_list, function(df) {
+        if (col %in% colnames(df)) {
+          if (target_type == "numeric") {
+            df[[col]] <- as.numeric(as.character(df[[col]]))
+          } else {
+            df[[col]] <- as.character(df[[col]])
+          }
+        }
+        df
+      })
+    }
+  }
+}
+
+# Verify success
+tryCatch({
+  merged_table <- bind_rows(harmonized_list, .id = "comparison")
+  message("Success! bind_rows completed after harmonization.")
+  head(merged_table)
+}, error = function(e) {
+  message("Failure! bind_rows still failing: ", e$message)
+})
+```
+
+## 4. Manual Inspection of specific column
+
+If it still fails, inspect the problematic column directly.
+
+```{r manual_inspect}
+# Change this to the column name that failed
+problematic_col <- "proteinRanks" 
+
+for (contrast_name in names(enrichment_list)) {
+  df <- enrichment_list[[contrast_name]]
+  if (problematic_col %in% colnames(df)) {
+    cat(sprintf("\nContrast: %s\nType: %s\nValues (head):\n", 
+                contrast_name, class(df[[problematic_col]])[1]))
+    print(head(df[[problematic_col]]))
+  }
+}
+```
