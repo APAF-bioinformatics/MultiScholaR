@@ -181,7 +181,7 @@ runStringDbEnrichmentAllContrasts <- function(de_analysis_results_list,
     }
     
     df |> dplyr::mutate(dplyr::across(
-      dplyr::any_of(c("enrichmentScore", "falseDiscoveryRate", "genesMapped", "backgroundGenes")), 
+      dplyr::any_of(c("enrichmentScore", "falseDiscoveryRate", "genesMapped", "backgroundGenes", "genesInSet", "expected", "observed", "pvalue", "fdr", "bonferroni")), 
       ~ as.numeric(as.character(.x))
     ))
   })
