@@ -1274,7 +1274,7 @@ prepareDataForVolcanoPlot <- function(
   fdr_column = q.mod,
   log2FC_column = log2FC
 ) {
-  temp_col_name <- as_string(as_name(enquo(protein_id_column)))
+  temp_col_name <- as_string(rlang::ensym(protein_id_column))
 
   proteomics_volcano_tbl <- input_table |>
     dplyr::mutate(uniprot_acc_first = purrr::map_chr({{ protein_id_column }}, \(x) {

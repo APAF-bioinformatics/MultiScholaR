@@ -737,10 +737,25 @@ runOneStringDbRankEnrichment <- function( input_table
                                                ge_fdr = ge_fdr,
                                                ge_enrichment_rank_direction = ge_enrichment_rank_direction)
 
+  if (is.null(parsed_response$job_id)) {
+    warning(paste(
+      "STRING API submission failed for", result_label,
+      "- skipping enrichment retrieval."
+    ))
+    return(NULL)
+  }
 
   output_tbl <- retrieveStringDBEnrichmentResults( submission_info = parsed_response,
                                                    polling_interval_seconds = polling_interval_seconds,
                                                    max_polling_attempts = max_polling_attempts)
+
+  if (is.null(output_tbl) || is.null(output_tbl$enrichment_data)) {
+    warning(paste(
+      "Failed to retrieve STRING API enrichment results for", result_label,
+      "- returning NULL."
+    ))
+    return(NULL)
+  }
 
   enrichment_dir <- file.path(pathway_dir, "string_db")
   dir.create(enrichment_dir, showWarnings = FALSE, recursive = TRUE)
@@ -753,9 +768,10 @@ runOneStringDbRankEnrichment <- function( input_table
   vroom::vroom_write( output_tbl$enrichment_data
                       , file = file.path(enrichment_dir
                                           , paste0(result_label, "_string_enrichment_results.tab")))
-
-  writeBin(output_tbl$graph_image_content
-           , file.path(enrichment_dir, paste0(result_label, "_string_enrichment_graph.png")))
+  if (!is.null(output_tbl$graph_image_content)) {
+    writeBin(output_tbl$graph_image_content
+             , file.path(enrichment_dir, paste0(result_label, "_string_enrichment_graph.png")))
+  }
 
   return(output_tbl$enrichment_data)
 
@@ -843,10 +859,21 @@ runOneStringDbRankEnrichmentMofa <- function( input_table
                                                ge_fdr = ge_fdr,
                                                ge_enrichment_rank_direction = ge_enrichment_rank_direction)
 
+  if (is.null(parsed_response$job_id)) {
+    warning(paste("STRING API submission failed for MOFA factor", result_label, "- skipping enrichment retrieval."))
+    return(NULL)
+  }
 
   output_tbl <- retrieveStringDBEnrichmentResults( submission_info = parsed_response,
                                                    polling_interval_seconds = polling_interval_seconds,
                                                    max_polling_attempts = max_polling_attempts)
+
+  if (is.null(output_tbl) || is.null(output_tbl$enrichment_data)) {
+    warning(paste("Failed to retrieve STRING API enrichment results for MOFA factor", result_label, "- returning NULL."))
+    return(NULL)
+  }
+
+  dir.create( file.path( results_dir), showWarnings = TRUE, recursive = TRUE)
 
   write_lines(c("page_url", output_tbl$page_url
                 , "download_url" , output_tbl$download_url
@@ -855,12 +882,12 @@ runOneStringDbRankEnrichmentMofa <- function( input_table
 
   vroom::vroom_write( output_tbl$enrichment_data
                       , file = file.path( results_dir
-
                                           , paste0( result_label, "_string_enrichment_results.tab") ))
 
-  dir.create( file.path( results_dir), showWarnings = TRUE, recursive = TRUE)
-  writeBin(output_tbl$graph_image_content
-           , file.path( results_dir , paste0( result_label, "string_enrichment_graph.png") ))
+  if (!is.null(output_tbl$graph_image_content)) {
+    writeBin(output_tbl$graph_image_content
+             , file.path( results_dir , paste0( result_label, "string_enrichment_graph.png") ))
+  }
 
   return(output_tbl$enrichment_data)
 

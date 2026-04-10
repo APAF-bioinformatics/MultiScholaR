@@ -507,10 +507,10 @@ deAnalysisWrapperFunction <- function(
           cat("DEBUG_66: Gene names processed successfully\n")
 
           # Call plot function
-          printOneVolcanoPlotWithProteinLabel(
+          rlang::inject(printOneVolcanoPlotWithProteinLabel(
             input_table = x,
             uniprot_table = uniprot_with_gene_names,
-            protein_id_column = protein_id_column,
+            protein_id_column = !!rlang::sym(args_row_id),
             input_title = "",
             fdr_threshold = de_q_val_thresh,
             x_axis_label = "log2 fold change",
@@ -518,7 +518,7 @@ deAnalysisWrapperFunction <- function(
             color_down = "darkblue",
             color_null = "grey",
             label_top_n = 10
-          )
+          ))
         }))
 
       cat("DEBUG_66: All plots generated successfully\n")
