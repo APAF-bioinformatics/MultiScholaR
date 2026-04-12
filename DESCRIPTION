@@ -134,6 +134,7 @@ Collate:
     'mod_prot_import_organism_helpers.R'
     'mod_prot_import_orchestration_helpers.R'
     'mod_prot_import_ui.R'
+    'mod_prot_import_server_helpers.R'
     'mod_prot_import_server.R'
     'mod_prot_import.R'
     'mod_prot_norm_qc_support_helpers.R'

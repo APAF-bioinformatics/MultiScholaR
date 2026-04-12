@@ -1474,8 +1474,26 @@ plotPcaHelper <- function(data,
   message(sprintf("   DEBUG66 [plotPcaHelper] data_filtered dims: %d x %d", nrow(data_filtered), ncol(data_filtered)))
 
   checkMem("Before mixOmics::pca")
-  message("   DEBUG66 [plotPcaHelper] Step: Calling mixOmics::pca()...")
-  pca.res <- mixOmics::pca(t(as.matrix(data_filtered)), ncomp = ncomp)
+  pca_input <- t(as.matrix(data_filtered))
+  if (requireNamespace("mixOmics", quietly = TRUE)) {
+    message("   DEBUG66 [plotPcaHelper] Step: Calling mixOmics::pca()...")
+    pca.res <- mixOmics::pca(pca_input, ncomp = ncomp)
+  } else {
+    message("   DEBUG66 [plotPcaHelper] mixOmics not available; falling back to stats::prcomp()")
+    pca_fallback <- stats::prcomp(pca_input, center = TRUE, scale. = TRUE)
+    component_names <- paste0("PC", seq_len(min(ncomp, ncol(pca_fallback$x))))
+    pca_scores <- as.data.frame(pca_fallback$x[, component_names, drop = FALSE])
+    explained_variance <- (pca_fallback$sdev^2) / sum(pca_fallback$sdev^2)
+    pca.res <- list(
+      variates = list(X = pca_scores),
+      prop_expl_var = list(
+        X = stats::setNames(
+          explained_variance[seq_along(component_names)],
+          component_names
+        )
+      )
+    )
+  }
   checkMem("After mixOmics::pca")
   message(sprintf("   DEBUG66 [plotPcaHelper] pca.res class: %s", class(pca.res)[1]))
   proportion_explained <- pca.res$prop_expl_var
