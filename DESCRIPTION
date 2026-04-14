@@ -54,6 +54,8 @@ Collate:
     'func_lipid_import_readers.R'
     'func_lipid_import_core.R'
     'func_lipid_norm.R'
+    'func_lipid_norm_ruv_helpers.R'
+    'func_lipid_norm_support_helpers.R'
     'func_lipid_qc.R'
     'func_lipid_qc_filtering_helpers.R'
     'func_lipid_qc_progress_helpers.R'
