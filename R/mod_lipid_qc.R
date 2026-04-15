@@ -52,6 +52,36 @@ mod_lipid_qc_ui <- function(id) {
 #' @export
 #' @importFrom shiny moduleServer reactive observeEvent req renderUI tabsetPanel tabPanel
 #' @importFrom logger log_info log_error
+initializeLipidQcSubmodules <- function(workflow_data, omic_type, experiment_label) {
+    mod_lipid_qc_intensity_server(
+        "intensity"
+        , workflow_data
+        , omic_type
+        , experiment_label
+    )
+    
+    mod_lipid_qc_duplicates_server(
+        "duplicates"
+        , workflow_data
+        , omic_type
+        , experiment_label
+    )
+    
+    mod_lipid_qc_itsd_server(
+        "itsd"
+        , workflow_data
+        , omic_type
+        , experiment_label
+    )
+    
+    mod_lipid_qc_s4_server(
+        "s4_finalize"
+        , workflow_data
+        , omic_type
+        , experiment_label
+    )
+}
+
 mod_lipid_qc_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label, qc_trigger = NULL) {
     shiny::moduleServer(id, function(input, output, session) {
         ns <- session$ns
@@ -93,36 +123,7 @@ mod_lipid_qc_server <- function(id, workflow_data, experiment_paths, omic_type, 
             
             if (!modules_initialized()) {
                 logger::log_info("Lipidomics QC: Initializing sub-module servers")
-                
-                # Initialize all QC sub-modules
-                mod_lipid_qc_intensity_server(
-                    "intensity"
-                    , workflow_data
-                    , omic_type
-                    , experiment_label
-                )
-                
-                mod_lipid_qc_duplicates_server(
-                    "duplicates"
-                    , workflow_data
-                    , omic_type
-                    , experiment_label
-                )
-                
-                mod_lipid_qc_itsd_server(
-                    "itsd"
-                    , workflow_data
-                    , omic_type
-                    , experiment_label
-                )
-                
-                mod_lipid_qc_s4_server(
-                    "s4_finalize"
-                    , workflow_data
-                    , omic_type
-                    , experiment_label
-                )
-                
+                initializeLipidQcSubmodules(workflow_data, omic_type, experiment_label)
                 modules_initialized(TRUE)
                 logger::log_info("Lipidomics QC: Sub-modules initialized successfully")
             }
@@ -144,38 +145,9 @@ mod_lipid_qc_server <- function(id, workflow_data, experiment_paths, omic_type, 
                 !modules_initialized()) {
                 
                 logger::log_info("Lipidomics QC: Auto-initializing sub-modules (state detected)")
-                
-                mod_lipid_qc_intensity_server(
-                    "intensity"
-                    , workflow_data
-                    , omic_type
-                    , experiment_label
-                )
-                
-                mod_lipid_qc_duplicates_server(
-                    "duplicates"
-                    , workflow_data
-                    , omic_type
-                    , experiment_label
-                )
-                
-                mod_lipid_qc_itsd_server(
-                    "itsd"
-                    , workflow_data
-                    , omic_type
-                    , experiment_label
-                )
-                
-                mod_lipid_qc_s4_server(
-                    "s4_finalize"
-                    , workflow_data
-                    , omic_type
-                    , experiment_label
-                )
-                
+                initializeLipidQcSubmodules(workflow_data, omic_type, experiment_label)
                 modules_initialized(TRUE)
             }
         })
     })
 }
-
