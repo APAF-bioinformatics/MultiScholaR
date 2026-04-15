@@ -156,6 +156,8 @@ Collate:
     'mod_prot_design_builder_ui.R'
     'mod_prot_design_builder_server.R'
     'mod_prot_design_builder.R'
+    'mod_prot_enrich_server_helpers.R'
+    'mod_prot_enrich_server.R'
     'mod_prot_enrich.R'
     'mod_prot_import_ui_helpers.R'
     'mod_prot_import_detection_helpers.R'
