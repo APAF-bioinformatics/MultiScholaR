@@ -17,20 +17,22 @@
 # ============================================================================
 # func_pept_limpa.R
 # ============================================================================
-# Purpose: Peptide-level limpa (DPC) imputation helper functions
-# 
-# This file contains standalone helper functions for limpa-based peptide
-# imputation workflows.
+# Purpose: Breadcrumb stub for peptide-level limpa entry points
 #
-# Note: S4 methods for peptideMissingValueImputationLimpa remain in
-# peptideVsSamplesS4Objects.R due to R package loading order requirements.
+# This file intentionally carries no live helper or method bodies.
 #
-# Source: For future extraction of peptide-specific limpa helpers
+# The exact peptide-level S4 limpa method now lives in
+# R/func_pept_s4_missingness.R.
 #
-# Dependencies:
-# - limpa, dplyr
+# Shared imputation helpers and the broader legacy imputation inventory remain
+# in R/func_peptide_qc_imputation.R.
+#
+# Keep this breadcrumb stub to preserve the manual target identity for backlog
+# and handover tracking after the peptide missingness extraction.
+#
+# Live dependencies for the current peptide limpa implementation are owned by
+# the extracted helper files rather than this stub.
 # ============================================================================
 
-# Placeholder for future peptide-specific limpa helper functions
-
+# Intentionally empty breadcrumb stub. See R/func_pept_s4_missingness.R.
 
