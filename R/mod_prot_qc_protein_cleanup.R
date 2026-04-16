@@ -95,6 +95,280 @@ mod_prot_qc_protein_cleanup_ui <- function(id) {
 #' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification removeNotification renderText renderPlot textOutput
 #' @importFrom logger log_info log_error
 #' @importFrom grid grid.draw
+runProteinAccessionCleanupStep <- function(workflowData,
+                                           delimiter,
+                                           aggregationMethod,
+                                           chooseBestProteinAccessionFn = chooseBestProteinAccession,
+                                           nowFn = Sys.time,
+                                           logInfoFn = logger::log_info,
+                                           logWarnFn = logger::log_warn,
+                                           saveRdsFn = saveRDS,
+                                           existsFn = exists,
+                                           getFn = get) {
+  shiny::req(workflowData$state_manager)
+  currentS4 <- workflowData$state_manager$getState()
+  shiny::req(currentS4)
+
+  logInfoFn(sprintf(
+    "Protein Processing: Applying accession cleanup with delimiter: %s",
+    delimiter
+  ))
+
+  proteinsBefore <- currentS4@protein_quant_table |>
+    dplyr::distinct(Protein.Ids) |>
+    nrow()
+
+  if (existsFn("aa_seq_tbl_final", envir = .GlobalEnv, inherits = FALSE)) {
+    aaSeqTblFinal <- getFn("aa_seq_tbl_final", envir = .GlobalEnv) |>
+      dplyr::rename(uniprot_acc = database_id)
+
+    cleanedS4 <- chooseBestProteinAccessionFn(
+      theObject = currentS4,
+      delim = delimiter,
+      seqinr_obj = aaSeqTblFinal,
+      seqinr_accession_column = "uniprot_acc",
+      replace_zero_with_na = TRUE,
+      aggregation_method = aggregationMethod
+    )
+    cleanupApplied <- TRUE
+  } else {
+    cleanedS4 <- currentS4
+    cleanupApplied <- FALSE
+  }
+
+  proteinsAfter <- cleanedS4@protein_quant_table |>
+    dplyr::distinct(Protein.Ids) |>
+    nrow()
+
+  workflowData$accession_cleanup_results <- list(
+    cleanup_applied = cleanupApplied,
+    delimiter_used = delimiter,
+    aggregation_method = aggregationMethod,
+    proteins_before = proteinsBefore,
+    proteins_after = proteinsAfter,
+    had_full_metadata = if (!is.null(workflowData$fasta_metadata)) {
+      workflowData$fasta_metadata$has_protein_evidence &&
+        workflowData$fasta_metadata$has_gene_names
+    } else {
+      FALSE
+    },
+    timestamp = nowFn()
+  )
+
+  if (is.null(workflowData$qc_params)) {
+    workflowData$qc_params <- list()
+  }
+  if (is.null(workflowData$qc_params$protein_qc)) {
+    workflowData$qc_params$protein_qc <- list()
+  }
+  workflowData$qc_params$protein_qc$accession_cleanup <-
+    workflowData$accession_cleanup_results
+
+  tryCatch({
+    if (existsFn("experiment_paths", envir = .GlobalEnv, inherits = FALSE)) {
+      experimentPaths <- getFn("experiment_paths", envir = .GlobalEnv)
+      if (!is.null(experimentPaths$source_dir)) {
+        accessionCleanupFile <- file.path(
+          experimentPaths$source_dir,
+          "accession_cleanup_results.RDS"
+        )
+        saveRdsFn(workflowData$accession_cleanup_results, accessionCleanupFile)
+        logInfoFn(sprintf(
+          "Saved accession cleanup results to: %s",
+          accessionCleanupFile
+        ))
+      }
+    }
+  }, error = function(e) {
+    logWarnFn(sprintf(
+      "Could not save accession cleanup results file: %s",
+      e$message
+    ))
+  })
+
+  logInfoFn(sprintf(
+    "Accession cleanup results tracked: %d -> %d proteins",
+    proteinsBefore,
+    proteinsAfter
+  ))
+
+  workflowData$state_manager$saveState(
+    state_name = "protein_accession_cleaned",
+    s4_data_object = cleanedS4,
+    config_object = list(
+      delimiter = delimiter,
+      aggregation_method = aggregationMethod,
+      cleanup_applied = cleanupApplied
+    ),
+    description = if (cleanupApplied) {
+      "Applied protein accession cleanup"
+    } else {
+      "Skipped accession cleanup (no FASTA data)"
+    }
+  )
+
+  proteinCount <- cleanedS4@protein_quant_table |>
+    dplyr::distinct(Protein.Ids) |>
+    nrow()
+
+  resultText <- if (cleanupApplied) {
+    paste(
+      "Protein Accession Cleanup Applied Successfully\n",
+      "==============================================\n",
+      sprintf("Proteins remaining: %d\n", proteinCount),
+      sprintf("Delimiter: %s\n", delimiter),
+      sprintf("Aggregation method: %s\n", aggregationMethod),
+      "State saved as: 'protein_accession_cleaned'\n"
+    )
+  } else {
+    paste(
+      "Protein Accession Cleanup Skipped\n",
+      "=================================\n",
+      sprintf("Proteins remaining: %d\n", proteinCount),
+      "Reason: No FASTA data available for cleanup\n",
+      "State saved as: 'protein_accession_cleaned'\n"
+    )
+  }
+
+  list(
+    cleanedS4 = cleanedS4,
+    cleanupApplied = cleanupApplied,
+    resultText = resultText
+  )
+}
+
+updateProteinAccessionCleanupOutputs <- function(output,
+                                                 accessionCleanupPlot,
+                                                 cleanupResult,
+                                                 omicType,
+                                                 experimentLabel,
+                                                 renderTextFn = shiny::renderText,
+                                                 updateProteinFilteringFn = updateProteinFiltering) {
+  output$accession_cleanup_results <- renderTextFn(cleanupResult$resultText)
+
+  plotGrid <- updateProteinFilteringFn(
+    data = cleanupResult$cleanedS4@protein_quant_table,
+    step_name = "10_protein_accession_cleaned",
+    omic_type = omicType,
+    experiment_label = experimentLabel,
+    return_grid = TRUE,
+    overwrite = TRUE
+  )
+  accessionCleanupPlot(plotGrid)
+
+  invisible(plotGrid)
+}
+
+runProteinAccessionCleanupApplyObserver <- function(workflowData,
+                                                    delimiter,
+                                                    aggregationMethod,
+                                                    output,
+                                                    accessionCleanupPlot,
+                                                    omicType,
+                                                    experimentLabel,
+                                                    runApplyStepFn = runProteinAccessionCleanupStep,
+                                                    updateOutputsFn = updateProteinAccessionCleanupOutputs,
+                                                    showNotificationFn = shiny::showNotification,
+                                                    removeNotificationFn = shiny::removeNotification,
+                                                    logInfoFn = logger::log_info,
+                                                    logErrorFn = logger::log_error) {
+  showNotificationFn(
+    "Applying protein accession cleanup...",
+    id = "accession_cleanup_working",
+    duration = NULL
+  )
+
+  tryCatch({
+    cleanupResult <- runApplyStepFn(
+      workflowData = workflowData,
+      delimiter = delimiter,
+      aggregationMethod = aggregationMethod
+    )
+
+    plotGrid <- updateOutputsFn(
+      output = output,
+      accessionCleanupPlot = accessionCleanupPlot,
+      cleanupResult = cleanupResult,
+      omicType = omicType,
+      experimentLabel = experimentLabel
+    )
+
+    logInfoFn("Protein accession cleanup completed")
+    removeNotificationFn("accession_cleanup_working")
+    showNotificationFn("Protein accession cleanup completed", type = "message")
+
+    list(
+      status = "success",
+      cleanupResult = cleanupResult,
+      plotGrid = plotGrid
+    )
+  }, error = function(e) {
+    errorMessage <- paste("Error in protein accession cleanup:", e$message)
+    logErrorFn(errorMessage)
+    showNotificationFn(errorMessage, type = "error", duration = 15)
+    removeNotificationFn("accession_cleanup_working")
+
+    list(
+      status = "error",
+      errorMessage = errorMessage
+    )
+  })
+}
+
+runProteinAccessionCleanupRevertStep <- function(workflowData) {
+  shiny::req(workflowData$state_manager)
+  history <- workflowData$state_manager$getHistory()
+
+  if (length(history) <= 1) {
+    stop("No previous state to revert to.")
+  }
+
+  previousState <- history[length(history) - 1]
+  revertedS4 <- workflowData$state_manager$revertToState(previousState)
+
+  list(
+    previousState = previousState,
+    revertedS4 = revertedS4,
+    resultText = paste("Reverted to previous state:", previousState)
+  )
+}
+
+runProteinAccessionCleanupRevertObserver <- function(workflowData,
+                                                     output,
+                                                     runRevertStepFn = runProteinAccessionCleanupRevertStep,
+                                                     renderTextFn = shiny::renderText,
+                                                     showNotificationFn = shiny::showNotification,
+                                                     logInfoFn = logger::log_info,
+                                                     logErrorFn = logger::log_error) {
+  tryCatch({
+    revertResult <- runRevertStepFn(workflowData = workflowData)
+    output$accession_cleanup_results <- renderTextFn(revertResult$resultText)
+    logInfoFn(paste("Reverted accession cleanup to", revertResult$previousState))
+    showNotificationFn("Reverted successfully", type = "message")
+
+    list(
+      status = "success",
+      revertResult = revertResult
+    )
+  }, error = function(e) {
+    errorMessage <- paste("Error reverting:", e$message)
+    logErrorFn(errorMessage)
+    showNotificationFn(errorMessage, type = "error")
+
+    list(
+      status = "error",
+      errorMessage = errorMessage
+    )
+  })
+}
+
+bindProteinAccessionCleanupPlot <- function(output, accessionCleanupPlot) {
+  output$accession_cleanup_plot <- renderPlot({
+    req(accessionCleanupPlot())
+    grid.draw(accessionCleanupPlot())
+  })
+}
+
 mod_prot_qc_protein_cleanup_server <- function(id, workflow_data, omic_type, experiment_label) {
   shiny::moduleServer(id, function(input, output, session) {
     
@@ -102,177 +376,28 @@ mod_prot_qc_protein_cleanup_server <- function(id, workflow_data, omic_type, exp
     
     # Step 2: Protein Accession Cleanup (chunk 19)
     shiny::observeEvent(input$apply_accession_cleanup, {
-      shiny::req(workflow_data$state_manager)
-      
-      shiny::showNotification("Applying protein accession cleanup...", id = "accession_cleanup_working", duration = NULL)
-      
-      tryCatch({
-        # Get current ProteinQuantitativeData S4 object from the active state
-        current_s4 <- workflow_data$state_manager$getState()
-        shiny::req(current_s4)
-        
-        logger::log_info("Protein Processing: Applying accession cleanup with delimiter: {input$delimiter}")
-        
-        # Count proteins before cleanup
-        proteins_before <- current_s4@protein_quant_table |>
-          dplyr::distinct(Protein.Ids) |>
-          nrow()
-        
-        # Check if aa_seq_tbl_final exists in workflow_data (from FASTA processing)
-        if (exists("aa_seq_tbl_final", envir = .GlobalEnv)) {
-          aa_seq_tbl_final <- get("aa_seq_tbl_final", envir = .GlobalEnv)
-          aa_seq_tbl_final <- aa_seq_tbl_final |>
-            dplyr::rename(uniprot_acc = database_id)
-          
-          # Apply S4 transformation (EXISTING S4 CODE - UNCHANGED)
-          cleaned_s4 <- chooseBestProteinAccession(
-            theObject = current_s4,
-            delim = input$delimiter,
-            seqinr_obj = aa_seq_tbl_final,
-            seqinr_accession_column = "uniprot_acc",
-            replace_zero_with_na = TRUE,
-            aggregation_method = input$aggregation_method
-          )
-          
-          cleanup_applied <- TRUE
-        } else {
-          # No FASTA data available, skip cleanup
-          cleaned_s4 <- current_s4
-          cleanup_applied <- FALSE
-        }
-        
-        # Count proteins after cleanup
-        proteins_after <- cleaned_s4@protein_quant_table |>
-          dplyr::distinct(Protein.Ids) |>
-          nrow()
-        
-        # Track cleanup results in workflow_data
-        workflow_data$accession_cleanup_results <- list(
-          cleanup_applied = cleanup_applied,
-          delimiter_used = input$delimiter,
-          aggregation_method = input$aggregation_method,
-          proteins_before = proteins_before,
-          proteins_after = proteins_after,
-          had_full_metadata = if (!is.null(workflow_data$fasta_metadata)) {
-            workflow_data$fasta_metadata$has_protein_evidence && 
-            workflow_data$fasta_metadata$has_gene_names
-          } else {
-            FALSE
-          },
-          timestamp = Sys.time()
-        )
-        
-        # Also store in qc_params for consistency
-        if (is.null(workflow_data$qc_params)) {
-          workflow_data$qc_params <- list()
-        }
-        if (is.null(workflow_data$qc_params$protein_qc)) {
-          workflow_data$qc_params$protein_qc <- list()
-        }
-        workflow_data$qc_params$protein_qc$accession_cleanup <- workflow_data$accession_cleanup_results
-        
-        # Save accession cleanup results to file for persistence
-        tryCatch({
-          if (exists("experiment_paths") && !is.null(experiment_paths$source_dir)) {
-            accession_cleanup_file <- file.path(experiment_paths$source_dir, "accession_cleanup_results.RDS")
-            saveRDS(workflow_data$accession_cleanup_results, accession_cleanup_file)
-            logger::log_info(sprintf("Saved accession cleanup results to: %s", accession_cleanup_file))
-          }
-        }, error = function(e) {
-          logger::log_warn(sprintf("Could not save accession cleanup results file: %s", e$message))
-        })
-        
-        logger::log_info(sprintf("Accession cleanup results tracked: %d -> %d proteins", 
-                                proteins_before, proteins_after))
-        
-        # Save new state
-        workflow_data$state_manager$saveState(
-          state_name = "protein_accession_cleaned",
-          s4_data_object = cleaned_s4,
-          config_object = list(
-            delimiter = input$delimiter,
-            aggregation_method = input$aggregation_method,
-            cleanup_applied = cleanup_applied
-          ),
-          description = if (cleanup_applied) "Applied protein accession cleanup" else "Skipped accession cleanup (no FASTA data)"
-        )
-        
-        # Generate summary
-        protein_count <- cleaned_s4@protein_quant_table |>
-          dplyr::distinct(Protein.Ids) |>
-          nrow()
-        
-        result_text <- if (cleanup_applied) {
-          paste(
-            "Protein Accession Cleanup Applied Successfully\n",
-            "==============================================\n",
-            sprintf("Proteins remaining: %d\n", protein_count),
-            sprintf("Delimiter: %s\n", input$delimiter),
-            sprintf("Aggregation method: %s\n", input$aggregation_method),
-            "State saved as: 'protein_accession_cleaned'\n"
-          )
-        } else {
-          paste(
-            "Protein Accession Cleanup Skipped\n",
-            "=================================\n",
-            sprintf("Proteins remaining: %d\n", protein_count),
-            "Reason: No FASTA data available for cleanup\n",
-            "State saved as: 'protein_accession_cleaned'\n"
-          )
-        }
-        
-        output$accession_cleanup_results <- shiny::renderText(result_text)
-        
-        # Update filtering visualization and capture plot
-        plot_grid <- updateProteinFiltering(
-          data = cleaned_s4@protein_quant_table,
-          step_name = "10_protein_accession_cleaned",
-          omic_type = omic_type,
-          experiment_label = experiment_label,
-          return_grid = TRUE,
-          overwrite = TRUE
-        )
-        accession_cleanup_plot(plot_grid)
-        
-        logger::log_info("Protein accession cleanup completed")
-        shiny::removeNotification("accession_cleanup_working")
-        shiny::showNotification("Protein accession cleanup completed", type = "message")
-        
-      }, error = function(e) {
-        msg <- paste("Error in protein accession cleanup:", e$message)
-        logger::log_error(msg)
-        shiny::showNotification(msg, type = "error", duration = 15)
-        shiny::removeNotification("accession_cleanup_working")
-      })
+      runProteinAccessionCleanupApplyObserver(
+        workflowData = workflow_data,
+        delimiter = input$delimiter,
+        aggregationMethod = input$aggregation_method,
+        output = output,
+        accessionCleanupPlot = accession_cleanup_plot,
+        omicType = omic_type,
+        experimentLabel = experiment_label
+      )
     })
     
     # Revert Accession Cleanup
     shiny::observeEvent(input$revert_accession_cleanup, {
-      tryCatch({
-        # Revert to the previous state in the history
-        history <- workflow_data$state_manager$getHistory()
-        if (length(history) > 1) {
-          prev_state_name <- history[length(history) - 1]
-          reverted_s4 <- workflow_data$state_manager$revertToState(prev_state_name)
-          output$accession_cleanup_results <- shiny::renderText(paste("Reverted to previous state:", prev_state_name))
-          logger::log_info(paste("Reverted accession cleanup to", prev_state_name))
-          shiny::showNotification("Reverted successfully", type = "message")
-        } else {
-          stop("No previous state to revert to.")
-        }
-        
-      }, error = function(e) {
-        msg <- paste("Error reverting:", e$message)
-        logger::log_error(msg)
-        shiny::showNotification(msg, type = "error")
-      })
+      runProteinAccessionCleanupRevertObserver(
+        workflowData = workflow_data,
+        output = output
+      )
     })
-    
-    # Render accession cleanup plot
-    output$accession_cleanup_plot <- shiny::renderPlot({
-      shiny::req(accession_cleanup_plot())
-      grid::grid.draw(accession_cleanup_plot())
-    })
+
+    bindProteinAccessionCleanupPlot(
+      output = output,
+      accessionCleanupPlot = accession_cleanup_plot
+    )
   })
 }
-
