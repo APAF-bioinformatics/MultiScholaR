@@ -172,6 +172,7 @@ Collate:
     'mod_lipid_qc.R'
     'mod_lipid_qc_duplicates_server_helpers.R'
     'mod_lipid_qc_duplicates.R'
+    'mod_lipid_qc_intensity_server_helpers.R'
     'mod_lipid_qc_intensity.R'
     'mod_lipid_qc_itsd.R'
     'mod_lipid_qc_s4.R'
