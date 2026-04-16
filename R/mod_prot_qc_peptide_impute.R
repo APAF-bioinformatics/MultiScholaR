@@ -69,6 +69,202 @@ mod_prot_qc_peptide_impute_ui <- function(id) {
 #' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification removeNotification renderText renderPlot
 #' @importFrom logger log_info log_error
 #' @importFrom grid grid.draw
+runPeptideImputationStep <- function(workflow_data, proportionMissingValues) {
+  current_s4 <- workflow_data$state_manager$getState()
+  shiny::req(current_s4)
+
+  logger::log_info(sprintf(
+    "QC Step: Applying missing value imputation (proportion: %s)",
+    proportionMissingValues
+  ))
+
+  current_s4 <- updateConfigParameter(
+    theObject = current_s4,
+    function_name = "peptideMissingValueImputation",
+    parameter_name = "proportion_missing_values",
+    new_value = proportionMissingValues
+  )
+
+  imputed_s4 <- peptideMissingValueImputation(theObject = current_s4)
+
+  if (is.null(workflow_data$qc_params)) {
+    workflow_data$qc_params <- list()
+  }
+  if (is.null(workflow_data$qc_params$peptide_qc)) {
+    workflow_data$qc_params$peptide_qc <- list()
+  }
+
+  workflow_data$qc_params$peptide_qc$imputation <- list(
+    proportion_missing_values = proportionMissingValues,
+    timestamp = Sys.time()
+  )
+
+  tryCatch({
+    if (exists("experiment_paths") && !is.null(experiment_paths$source_dir)) {
+      qc_params_file <- file.path(experiment_paths$source_dir, "qc_params.RDS")
+      saveRDS(workflow_data$qc_params, qc_params_file)
+      logger::log_info(sprintf("Saved QC parameters to: %s", qc_params_file))
+    }
+  }, error = function(e) {
+    logger::log_warn(sprintf("Could not save QC parameters file: %s", e$message))
+  })
+
+  workflow_data$state_manager$saveState(
+    state_name = "imputed",
+    s4_data_object = imputed_s4,
+    config_object = list(
+      proportion_missing_values = proportionMissingValues
+    ),
+    description = "Applied missing value imputation using technical replicates"
+  )
+
+  # --- TESTTHAT CHECKPOINT CP02 (see test-prot-02-qc-filtering.R) ---
+  .capture_checkpoint(imputed_s4, "cp02", "qc_filtered_peptide")
+  # --- END CP02 ---
+
+  protein_count <- imputed_s4@peptide_data |>
+    dplyr::distinct(Protein.Ids) |>
+    nrow()
+
+  result_text <- paste(
+    "Missing Value Imputation Applied Successfully\n",
+    "============================================\n",
+    sprintf("Proteins remaining: %d\n", protein_count),
+    sprintf("Max proportion missing: %.1f\n", proportionMissingValues),
+    "State saved as: 'imputed'\n",
+    "\nReady for peptide-to-protein rollup step."
+  )
+
+  list(
+    imputedS4 = imputed_s4,
+    resultText = result_text
+  )
+}
+
+runPeptideImputationRevertStep <- function(workflow_data) {
+  history <- workflow_data$state_manager$getHistory()
+  if (length(history) <= 1) {
+    stop("No previous state to revert to.")
+  }
+
+  previousState <- history[length(history) - 1]
+  revertedS4 <- workflow_data$state_manager$revertToState(previousState)
+  logger::log_info(paste("Reverted imputation to", previousState))
+
+  list(
+    previousState = previousState,
+    revertedS4 = revertedS4,
+    resultText = paste("Reverted to previous state:", previousState)
+  )
+}
+
+updatePeptideImputationOutputs <- function(output, imputationPlot, imputationResult, omicType, experimentLabel) {
+  output$imputation_results <- renderText(imputationResult$resultText)
+
+  plotGrid <- updateProteinFiltering(
+    data = imputationResult$imputedS4@peptide_data,
+    step_name = "8_imputed",
+    omic_type = omicType,
+    experiment_label = experimentLabel,
+    return_grid = TRUE,
+    overwrite = TRUE
+  )
+  imputationPlot(plotGrid)
+
+  invisible(plotGrid)
+}
+
+runPeptideImputationApplyObserver <- function(workflow_data,
+                                              proportionMissingValues,
+                                              output,
+                                              imputationPlot,
+                                              omicType,
+                                              experimentLabel,
+                                              runImputationStepFn = runPeptideImputationStep,
+                                              updateOutputsFn = updatePeptideImputationOutputs,
+                                              showNotificationFn = shiny::showNotification,
+                                              removeNotificationFn = shiny::removeNotification,
+                                              logInfoFn = logger::log_info,
+                                              logErrorFn = logger::log_error) {
+  showNotificationFn(
+    "Applying missing value imputation...",
+    id = "imputation_working",
+    duration = NULL
+  )
+
+  tryCatch({
+    imputationResult <- runImputationStepFn(
+      workflow_data = workflow_data,
+      proportionMissingValues = proportionMissingValues
+    )
+
+    plotGrid <- updateOutputsFn(
+      output = output,
+      imputationPlot = imputationPlot,
+      imputationResult = imputationResult,
+      omicType = omicType,
+      experimentLabel = experimentLabel
+    )
+
+    logInfoFn("Missing value imputation applied successfully")
+    removeNotificationFn("imputation_working")
+    showNotificationFn(
+      "Missing value imputation applied successfully",
+      type = "message"
+    )
+
+    list(
+      status = "success",
+      imputationResult = imputationResult,
+      plotGrid = plotGrid
+    )
+  }, error = function(e) {
+    errorMessage <- paste("Error applying missing value imputation:", e$message)
+    logErrorFn(errorMessage)
+    showNotificationFn(errorMessage, type = "error", duration = 15)
+    removeNotificationFn("imputation_working")
+
+    list(
+      status = "error",
+      errorMessage = errorMessage
+    )
+  })
+}
+
+runPeptideImputationRevertObserver <- function(workflow_data,
+                                               output,
+                                               runRevertStepFn = runPeptideImputationRevertStep,
+                                               renderTextFn = shiny::renderText,
+                                               showNotificationFn = shiny::showNotification,
+                                               logErrorFn = logger::log_error) {
+  tryCatch({
+    revertResult <- runRevertStepFn(workflow_data = workflow_data)
+    output$imputation_results <- renderTextFn(revertResult$resultText)
+    showNotificationFn("Reverted successfully", type = "message")
+
+    list(
+      status = "success",
+      revertResult = revertResult
+    )
+  }, error = function(e) {
+    errorMessage <- paste("Error reverting:", e$message)
+    logErrorFn(errorMessage)
+    showNotificationFn(errorMessage, type = "error")
+
+    list(
+      status = "error",
+      errorMessage = errorMessage
+    )
+  })
+}
+
+bindPeptideImputationPlot <- function(output, imputationPlot) {
+  output$imputation_plot <- renderPlot({
+    req(imputationPlot())
+    grid.draw(imputationPlot())
+  })
+}
+
 mod_prot_qc_peptide_impute_server <- function(id, workflow_data, omic_type, experiment_label) {
   shiny::moduleServer(id, function(input, output, session) {
     
@@ -77,131 +273,25 @@ mod_prot_qc_peptide_impute_server <- function(id, workflow_data, omic_type, expe
     # Step 7: Missing Value Imputation (chunk 16)
     shiny::observeEvent(input$apply_imputation, {
       shiny::req(workflow_data$state_manager)
-      
-      shiny::showNotification("Applying missing value imputation...", id = "imputation_working", duration = NULL)
-      
-      tryCatch({
-        # Get current S4 object from the active state
-        current_s4 <- workflow_data$state_manager$getState()
-        shiny::req(current_s4)
-        
-        logger::log_info(sprintf("QC Step: Applying missing value imputation (proportion: %s)", input$proportion_missing_values))
-        
-        # [OK] FIXED: Use updateConfigParameter to sync S4 object AND global config_list
-        current_s4 <- updateConfigParameter(
-          theObject = current_s4,
-          function_name = "peptideMissingValueImputation",
-          parameter_name = "proportion_missing_values",
-          new_value = input$proportion_missing_values
-        )
-        
-        # Apply S4 transformation (EXISTING S4 CODE - UNCHANGED)
-        imputed_s4 <- peptideMissingValueImputation(theObject = current_s4)
-        
-        # Track QC parameters in workflow_data
-        if (is.null(workflow_data$qc_params)) {
-          workflow_data$qc_params <- list()
-        }
-        if (is.null(workflow_data$qc_params$peptide_qc)) {
-          workflow_data$qc_params$peptide_qc <- list()
-        }
-        
-        workflow_data$qc_params$peptide_qc$imputation <- list(
-          proportion_missing_values = input$proportion_missing_values,
-          timestamp = Sys.time()
-        )
-        
-        # Save QC parameters to file for persistence (final peptide QC step)
-        tryCatch({
-          if (exists("experiment_paths") && !is.null(experiment_paths$source_dir)) {
-            qc_params_file <- file.path(experiment_paths$source_dir, "qc_params.RDS")
-            saveRDS(workflow_data$qc_params, qc_params_file)
-            logger::log_info(sprintf("Saved QC parameters to: %s", qc_params_file))
-          }
-        }, error = function(e) {
-          logger::log_warn(sprintf("Could not save QC parameters file: %s", e$message))
-        })
-        
-        # Save new state in R6 manager
-        workflow_data$state_manager$saveState(
-          state_name = "imputed",
-          s4_data_object = imputed_s4,
-          config_object = list(
-            proportion_missing_values = input$proportion_missing_values
-          ),
-          description = "Applied missing value imputation using technical replicates"
-        )
-        
-        # --- TESTTHAT CHECKPOINT CP02 (see test-prot-02-qc-filtering.R) ---
-        .capture_checkpoint(imputed_s4, "cp02", "qc_filtered_peptide")
-        # --- END CP02 ---
-        
-        # Generate summary
-        protein_count <- imputed_s4@peptide_data |>
-          dplyr::distinct(Protein.Ids) |>
-          nrow()
-        
-        result_text <- paste(
-          "Missing Value Imputation Applied Successfully\n",
-          "============================================\n",
-          sprintf("Proteins remaining: %d\n", protein_count),
-          sprintf("Max proportion missing: %.1f\n", input$proportion_missing_values),
-          "State saved as: 'imputed'\n",
-          "\nReady for peptide-to-protein rollup step."
-        )
-        
-        output$imputation_results <- shiny::renderText(result_text)
-        
-        # Update filtering visualization and capture plot
-        plot_grid <- updateProteinFiltering(
-          data = imputed_s4@peptide_data,
-          step_name = "8_imputed",
-          omic_type = omic_type,
-          experiment_label = experiment_label,
-          return_grid = TRUE,
-          overwrite = TRUE
-        )
-        imputation_plot(plot_grid)
-        
-        logger::log_info("Missing value imputation applied successfully")
-        shiny::removeNotification("imputation_working")
-        shiny::showNotification("Missing value imputation applied successfully", type = "message")
-        
-      }, error = function(e) {
-        msg <- paste("Error applying missing value imputation:", e$message)
-        logger::log_error(msg)
-        shiny::showNotification(msg, type = "error", duration = 15)
-        shiny::removeNotification("imputation_working")
-      })
+
+      runPeptideImputationApplyObserver(
+        workflow_data = workflow_data,
+        proportionMissingValues = input$proportion_missing_values,
+        output = output,
+        imputationPlot = imputation_plot,
+        omicType = omic_type,
+        experimentLabel = experiment_label
+      )
     })
     
     # Revert Imputation
     shiny::observeEvent(input$revert_imputation, {
-      tryCatch({
-        # Revert to the previous state in the history
-        history <- workflow_data$state_manager$getHistory()
-        if (length(history) > 1) {
-          prev_state_name <- history[length(history) - 1]
-          reverted_s4 <- workflow_data$state_manager$revertToState(prev_state_name)
-          output$imputation_results <- shiny::renderText(paste("Reverted to previous state:", prev_state_name))
-          logger::log_info(paste("Reverted imputation to", prev_state_name))
-          shiny::showNotification("Reverted successfully", type = "message")
-        } else {
-          stop("No previous state to revert to.")
-        }
-        
-      }, error = function(e) {
-        msg <- paste("Error reverting:", e$message)
-        logger::log_error(msg)
-        shiny::showNotification(msg, type = "error")
-      })
+      runPeptideImputationRevertObserver(
+        workflow_data = workflow_data,
+        output = output
+      )
     })
     
-    # Render imputation plot
-    output$imputation_plot <- shiny::renderPlot({
-      shiny::req(imputation_plot())
-      grid::grid.draw(imputation_plot())
-    })
+    bindPeptideImputationPlot(output = output, imputationPlot = imputation_plot)
   })
 }
-
