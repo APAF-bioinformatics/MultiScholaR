@@ -121,6 +121,8 @@ Collate:
     'func_prot_qc_peptide_replicate_filters.R'
     'func_prot_qc_peptide_support.R'
     'func_prot_qc_peptide_methods.R'
+    'func_prot_rollup_count_helpers.R'
+    'func_prot_rollup_methods.R'
     'func_prot_rollup.R'
     'da_analysis_function_wrapper.R'
     'app_server.R'
