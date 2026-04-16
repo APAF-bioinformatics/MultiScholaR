@@ -69,6 +69,185 @@ mod_prot_qc_peptide_replicate_ui <- function(id) {
 #' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification removeNotification renderText renderPlot
 #' @importFrom logger log_info log_error
 #' @importFrom grid grid.draw
+runPeptideReplicateRevertStep <- function(workflowData,
+                                          logInfoFn = logger::log_info) {
+  history <- workflowData$state_manager$getHistory()
+  if (length(history) <= 1) {
+    stop("No previous state to revert to.")
+  }
+
+  previousState <- history[length(history) - 1]
+  revertedS4 <- workflowData$state_manager$revertToState(previousState)
+  logInfoFn(paste("Reverted replicate filter to", previousState))
+
+  list(
+    previousState = previousState,
+    revertedS4 = revertedS4,
+    resultText = paste("Reverted to previous state:", previousState)
+  )
+}
+
+runPeptideReplicateRevertObserver <- function(workflowData,
+                                              output,
+                                              runRevertStepFn = runPeptideReplicateRevertStep,
+                                              renderTextFn = shiny::renderText,
+                                              showNotificationFn = shiny::showNotification,
+                                              logErrorFn = logger::log_error) {
+  tryCatch({
+    revertResult <- runRevertStepFn(workflowData = workflowData)
+    output$replicate_results <- renderTextFn(revertResult$resultText)
+    showNotificationFn("Reverted successfully", type = "message")
+
+    list(
+      status = "success",
+      revertResult = revertResult
+    )
+  }, error = function(e) {
+    errorMessage <- paste("Error reverting:", e$message)
+    logErrorFn(errorMessage)
+    showNotificationFn(errorMessage, type = "error")
+
+    list(
+      status = "error",
+      errorMessage = errorMessage
+    )
+  })
+}
+
+runPeptideReplicateApplyStep <- function(workflowData,
+                                         replicateGroupColumn,
+                                         removePeptidesWithOnlyOneReplicateFn = removePeptidesWithOnlyOneReplicate,
+                                         logInfoFn = logger::log_info,
+                                         nowFn = Sys.time) {
+  shiny::req(workflowData$state_manager)
+  currentS4 <- workflowData$state_manager$getState()
+  shiny::req(currentS4)
+
+  logInfoFn(sprintf(
+    "QC Step: Applying replicate filter (column: %s)",
+    replicateGroupColumn
+  ))
+
+  filteredS4 <- removePeptidesWithOnlyOneReplicateFn(
+    currentS4,
+    replicate_group_column = replicateGroupColumn
+  )
+
+  if (is.null(workflowData$qc_params)) {
+    workflowData$qc_params <- list()
+  }
+  if (is.null(workflowData$qc_params$peptide_qc)) {
+    workflowData$qc_params$peptide_qc <- list()
+  }
+
+  workflowData$qc_params$peptide_qc$replicate_filter <- list(
+    replicate_group_column = replicateGroupColumn,
+    timestamp = nowFn()
+  )
+
+  workflowData$state_manager$saveState(
+    state_name = "replicate_filtered",
+    s4_data_object = filteredS4,
+    config_object = list(
+      replicate_group_column = replicateGroupColumn
+    ),
+    description = "Applied replicate filter (removed single-replicate peptides)"
+  )
+
+  proteinCount <- filteredS4@peptide_data |>
+    dplyr::distinct(Protein.Ids) |>
+    nrow()
+
+  resultText <- paste(
+    "Replicate Filter Applied Successfully\n",
+    "====================================\n",
+    sprintf("Proteins remaining: %d\n", proteinCount),
+    sprintf("Replicate group column: %s\n", replicateGroupColumn),
+    "State saved as: 'replicate_filtered'\n"
+  )
+
+  list(
+    filteredS4 = filteredS4,
+    resultText = resultText
+  )
+}
+
+updatePeptideReplicateOutputs <- function(output,
+                                          replicatePlot,
+                                          replicateResult,
+                                          omicType,
+                                          experimentLabel,
+                                          renderTextFn = shiny::renderText,
+                                          updateProteinFilteringFn = updateProteinFiltering) {
+  output$replicate_results <- renderTextFn(replicateResult$resultText)
+
+  plotGrid <- updateProteinFilteringFn(
+    data = replicateResult$filteredS4@peptide_data,
+    step_name = "7_replicate_filtered",
+    omic_type = omicType,
+    experiment_label = experimentLabel,
+    return_grid = TRUE,
+    overwrite = TRUE
+  )
+  replicatePlot(plotGrid)
+
+  invisible(plotGrid)
+}
+
+runPeptideReplicateApplyObserver <- function(workflowData,
+                                             replicateGroupColumn,
+                                             output,
+                                             replicatePlot,
+                                             omicType,
+                                             experimentLabel,
+                                             runApplyStepFn = runPeptideReplicateApplyStep,
+                                             updateOutputsFn = updatePeptideReplicateOutputs,
+                                             showNotificationFn = shiny::showNotification,
+                                             removeNotificationFn = shiny::removeNotification,
+                                             logInfoFn = logger::log_info,
+                                             logErrorFn = logger::log_error) {
+  showNotificationFn(
+    "Applying replicate filter...",
+    id = "replicate_working",
+    duration = NULL
+  )
+
+  tryCatch({
+    replicateResult <- runApplyStepFn(
+      workflowData = workflowData,
+      replicateGroupColumn = replicateGroupColumn
+    )
+
+    plotGrid <- updateOutputsFn(
+      output = output,
+      replicatePlot = replicatePlot,
+      replicateResult = replicateResult,
+      omicType = omicType,
+      experimentLabel = experimentLabel
+    )
+
+    logInfoFn("Replicate filter applied successfully")
+    removeNotificationFn("replicate_working")
+    showNotificationFn("Replicate filter applied successfully", type = "message")
+
+    list(
+      status = "success",
+      replicateResult = replicateResult,
+      plotGrid = plotGrid
+    )
+  }, error = function(e) {
+    errorMessage <- paste("Error applying replicate filter:", e$message)
+    logErrorFn(errorMessage)
+    showNotificationFn(errorMessage, type = "error", duration = 15)
+    removeNotificationFn("replicate_working")
+
+    list(
+      status = "error",
+      errorMessage = errorMessage
+    )
+  })
+}
+
 mod_prot_qc_peptide_replicate_server <- function(id, workflow_data, omic_type, experiment_label) {
   shiny::moduleServer(id, function(input, output, session) {
     
@@ -76,105 +255,22 @@ mod_prot_qc_peptide_replicate_server <- function(id, workflow_data, omic_type, e
     
     # Step 6: Replicate Filter (chunk 15)
     shiny::observeEvent(input$apply_replicate_filter, {
-      shiny::req(workflow_data$state_manager)
-      
-      shiny::showNotification("Applying replicate filter...", id = "replicate_working", duration = NULL)
-      
-      tryCatch({
-        # Get current S4 object from the active state
-        current_s4 <- workflow_data$state_manager$getState()
-        shiny::req(current_s4)
-        
-        logger::log_info(sprintf("QC Step: Applying replicate filter (column: %s)", input$replicate_group_column))
-        
-        # Apply S4 transformation (EXISTING S4 CODE - UNCHANGED)
-        # Note: This function takes the replicate column as a parameter
-        filtered_s4 <- removePeptidesWithOnlyOneReplicate(
-          current_s4,
-          replicate_group_column = input$replicate_group_column
-        )
-        
-        # Track QC parameters in workflow_data
-        if (is.null(workflow_data$qc_params)) {
-          workflow_data$qc_params <- list()
-        }
-        if (is.null(workflow_data$qc_params$peptide_qc)) {
-          workflow_data$qc_params$peptide_qc <- list()
-        }
-        
-        workflow_data$qc_params$peptide_qc$replicate_filter <- list(
-          replicate_group_column = input$replicate_group_column,
-          timestamp = Sys.time()
-        )
-        
-        # Save new state in R6 manager
-        workflow_data$state_manager$saveState(
-          state_name = "replicate_filtered",
-          s4_data_object = filtered_s4,
-          config_object = list(
-            replicate_group_column = input$replicate_group_column
-          ),
-          description = "Applied replicate filter (removed single-replicate peptides)"
-        )
-        
-        # Generate summary
-        protein_count <- filtered_s4@peptide_data |>
-          dplyr::distinct(Protein.Ids) |>
-          nrow()
-        
-        result_text <- paste(
-          "Replicate Filter Applied Successfully\n",
-          "====================================\n",
-          sprintf("Proteins remaining: %d\n", protein_count),
-          sprintf("Replicate group column: %s\n", input$replicate_group_column),
-          "State saved as: 'replicate_filtered'\n"
-        )
-        
-        output$replicate_results <- shiny::renderText(result_text)
-        
-        # Update filtering visualization and capture plot
-        plot_grid <- updateProteinFiltering(
-          data = filtered_s4@peptide_data,
-          step_name = "7_replicate_filtered",
-          omic_type = omic_type,
-          experiment_label = experiment_label,
-          return_grid = TRUE,
-          overwrite = TRUE
-        )
-        replicate_plot(plot_grid)
-        
-        logger::log_info("Replicate filter applied successfully")
-        shiny::removeNotification("replicate_working")
-        shiny::showNotification("Replicate filter applied successfully", type = "message")
-        
-      }, error = function(e) {
-        msg <- paste("Error applying replicate filter:", e$message)
-        logger::log_error(msg)
-        shiny::showNotification(msg, type = "error", duration = 15)
-        shiny::removeNotification("replicate_working")
-      })
+      runPeptideReplicateApplyObserver(
+        workflowData = workflow_data,
+        replicateGroupColumn = input$replicate_group_column,
+        output = output,
+        replicatePlot = replicate_plot,
+        omicType = omic_type,
+        experimentLabel = experiment_label
+      )
     })
     
     # Revert Replicate Filter
     shiny::observeEvent(input$revert_replicate, {
-      tryCatch({
-        # Revert to the previous state in the history
-        history <- workflow_data$state_manager$getHistory()
-        if (length(history) > 1) {
-          prev_state_name <- history[length(history) - 1]
-          reverted_s4 <- workflow_data$state_manager$revertToState(prev_state_name)
-          output$replicate_results <- shiny::renderText(paste("Reverted to previous state:", prev_state_name))
-          logger::log_info(paste("Reverted replicate filter to", prev_state_name))
-          shiny::showNotification("Reverted successfully", type = "message")
-        } else {
-          stop("No previous state to revert to.")
-        }
-        
-      }, error = function(e) {
-        msg <- paste("Error reverting:", e$message)
-        logger::log_error(msg)
-        shiny::showNotification(msg, type = "error")
-      })
+      runPeptideReplicateRevertObserver(
+        workflowData = workflow_data,
+        output = output
+      )
     })
     
     # Render replicate filter plot
@@ -184,4 +280,3 @@ mod_prot_qc_peptide_replicate_server <- function(id, workflow_data, omic_type, e
     })
   })
 }
-
