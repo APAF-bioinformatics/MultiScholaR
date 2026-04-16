@@ -149,6 +149,7 @@ Collate:
     'mod_metab_da_server.R'
     'mod_metab_da.R'
     'mod_metab_design_builder.R'
+    'mod_metab_design_import_helpers.R'
     'mod_metab_design.R'
     'mod_metab_import.R'
     'mod_metab_norm.R'
