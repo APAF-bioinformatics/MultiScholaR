@@ -168,6 +168,7 @@ Collate:
     'mod_lipid_norm_ui.R'
     'mod_lipid_norm_server.R'
     'mod_lipid_norm.R'
+    'mod_lipid_summary_server_helpers.R'
     'mod_lipid_qc.R'
     'mod_lipid_qc_duplicates.R'
     'mod_lipid_qc_intensity.R'
