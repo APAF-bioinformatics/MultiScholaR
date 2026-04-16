@@ -59,6 +59,7 @@ Collate:
     'func_metab_da_core_engine.R'
     'func_metab_da_orchestration.R'
     'func_metab_da.R'
+    'func_metab_import_detection.R'
     'func_metab_import.R'
     'func_metab_norm.R'
     'func_metab_qc_metrics_helpers.R'
