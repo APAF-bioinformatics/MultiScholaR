@@ -1,23 +1,5 @@
-# ----------------------------------------------------------------------------
-# getFilteringProgressLipidomics
-# ----------------------------------------------------------------------------
-#' @title Initialize or Retrieve Global Lipidomics Filtering Progress Object
-#' @description Checks for a global object named `filtering_progress_lipidomics`
-#'              of class `FilteringProgressLipidomics`. If it doesn't exist,
-#'              it creates and assigns a new one to the global environment.
-#'
-#' @return The global `FilteringProgressLipidomics` object.
-#' @keywords internal
-#' @noRd
-#' @export
-getFilteringProgressLipidomics <- function() {
-    if (!exists("filtering_progress_lipidomics", envir = .GlobalEnv)) {
-        filtering_progress_lipidomics <- new("FilteringProgressLipidomics")
-        assign("filtering_progress_lipidomics", filtering_progress_lipidomics, envir = .GlobalEnv)
-        message("Initialized global 'filtering_progress_lipidomics' object.") # Optional message
-    }
-    get("filtering_progress_lipidomics", envir = .GlobalEnv)
-}
+## FilteringProgressLipidomics getter now lives in
+## func_lipid_s4_progress_helpers.R.
 
 # ----------------------------------------------------------------------------
 # updateFilteringProgressLipidomics
@@ -293,4 +275,3 @@ calculateTotalUniqueLipidsAcrossAssays <- function(assay_list, lipid_id_col) {
     unique_ids <- dplyr::distinct(data.frame(id = all_ids))
     return(nrow(unique_ids))
 }
-
