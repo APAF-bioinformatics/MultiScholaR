@@ -62,6 +62,171 @@ mod_prot_qc_peptide_rollup_ui <- function(id) {
 #' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification removeNotification renderText renderPlot
 #' @importFrom logger log_info log_error
 #' @importFrom grid grid.draw
+runPeptideRollupApplyStep <- function(workflowData,
+                                      rollupFn = rollUpPrecursorToPeptide,
+                                      logInfoFn = logger::log_info,
+                                      nowFn = Sys.time) {
+  shiny::req(workflowData$state_manager)
+  currentS4 <- workflowData$state_manager$getState()
+  shiny::req(currentS4)
+
+  logInfoFn("QC Step: Applying precursor rollup")
+
+  rolledUpS4 <- rollupFn(currentS4)
+
+  if (is.null(workflowData$qc_params)) {
+    workflowData$qc_params <- list()
+  }
+  if (is.null(workflowData$qc_params$peptide_qc)) {
+    workflowData$qc_params$peptide_qc <- list()
+  }
+
+  workflowData$qc_params$peptide_qc$precursor_rollup <- list(
+    applied = TRUE,
+    timestamp = nowFn()
+  )
+
+  workflowData$state_manager$saveState(
+    state_name = "precursor_rollup",
+    s4_data_object = rolledUpS4,
+    config_object = list(),
+    description = "Applied precursor to peptide rollup"
+  )
+
+  proteinCount <- rolledUpS4@peptide_data |>
+    dplyr::distinct(Protein.Ids) |>
+    nrow()
+
+  resultText <- paste(
+    "Precursor Rollup Applied Successfully\n",
+    "====================================\n",
+    sprintf("Proteins remaining: %d\n", proteinCount),
+    "State saved as: 'precursor_rollup'\n"
+  )
+
+  list(
+    rolledUpS4 = rolledUpS4,
+    resultText = resultText
+  )
+}
+
+updatePeptideRollupOutputs <- function(output,
+                                       rollupPlot,
+                                       rollupResult,
+                                       omicType,
+                                       experimentLabel,
+                                       renderTextFn = shiny::renderText,
+                                       updateProteinFilteringFn = updateProteinFiltering) {
+  output$rollup_results <- renderTextFn(rollupResult$resultText)
+
+  plotGrid <- updateProteinFilteringFn(
+    data = rollupResult$rolledUpS4@peptide_data,
+    step_name = "3_precursor_rollup",
+    omic_type = omicType,
+    experiment_label = experimentLabel,
+    return_grid = TRUE,
+    overwrite = TRUE
+  )
+  rollupPlot(plotGrid)
+
+  invisible(plotGrid)
+}
+
+runPeptideRollupApplyObserver <- function(workflowData,
+                                          output,
+                                          rollupPlot,
+                                          omicType,
+                                          experimentLabel,
+                                          runApplyStepFn = runPeptideRollupApplyStep,
+                                          updateOutputsFn = updatePeptideRollupOutputs,
+                                          showNotificationFn = shiny::showNotification,
+                                          removeNotificationFn = shiny::removeNotification,
+                                          logInfoFn = logger::log_info,
+                                          logErrorFn = logger::log_error) {
+  showNotificationFn(
+    "Applying precursor rollup...",
+    id = "rollup_working",
+    duration = NULL
+  )
+
+  tryCatch({
+    rollupResult <- runApplyStepFn(workflowData = workflowData)
+
+    plotGrid <- updateOutputsFn(
+      output = output,
+      rollupPlot = rollupPlot,
+      rollupResult = rollupResult,
+      omicType = omicType,
+      experimentLabel = experimentLabel
+    )
+
+    logInfoFn("Precursor rollup applied successfully")
+    removeNotificationFn("rollup_working")
+    showNotificationFn("Precursor rollup applied successfully", type = "message")
+
+    list(
+      status = "success",
+      rollupResult = rollupResult,
+      plotGrid = plotGrid
+    )
+  }, error = function(e) {
+    errorMessage <- paste("Error applying precursor rollup:", e$message)
+    logErrorFn(errorMessage)
+    showNotificationFn(errorMessage, type = "error", duration = 15)
+    removeNotificationFn("rollup_working")
+
+    list(
+      status = "error",
+      errorMessage = errorMessage
+    )
+  })
+}
+
+runPeptideRollupRevertStep <- function(workflowData,
+                                       logInfoFn = logger::log_info) {
+  history <- workflowData$state_manager$getHistory()
+  if (length(history) <= 1) {
+    stop("No previous state to revert to.")
+  }
+
+  previousState <- history[length(history) - 1]
+  revertedS4 <- workflowData$state_manager$revertToState(previousState)
+  logInfoFn(paste("Reverted precursor rollup to", previousState))
+
+  list(
+    previousState = previousState,
+    revertedS4 = revertedS4,
+    resultText = paste("Reverted to previous state:", previousState)
+  )
+}
+
+runPeptideRollupRevertObserver <- function(workflowData,
+                                           output,
+                                           runRevertStepFn = runPeptideRollupRevertStep,
+                                           renderTextFn = shiny::renderText,
+                                           showNotificationFn = shiny::showNotification,
+                                           logErrorFn = logger::log_error) {
+  tryCatch({
+    revertResult <- runRevertStepFn(workflowData = workflowData)
+    output$rollup_results <- renderTextFn(revertResult$resultText)
+    showNotificationFn("Reverted successfully", type = "message")
+
+    list(
+      status = "success",
+      revertResult = revertResult
+    )
+  }, error = function(e) {
+    errorMessage <- paste("Error reverting:", e$message)
+    logErrorFn(errorMessage)
+    showNotificationFn(errorMessage, type = "error")
+
+    list(
+      status = "error",
+      errorMessage = errorMessage
+    )
+  })
+}
+
 mod_prot_qc_peptide_rollup_server <- function(id, workflow_data, omic_type, experiment_label) {
   shiny::moduleServer(id, function(input, output, session) {
     
@@ -69,99 +234,21 @@ mod_prot_qc_peptide_rollup_server <- function(id, workflow_data, omic_type, expe
     
     # Step 2: Precursor Rollup (chunk 11)
     shiny::observeEvent(input$apply_rollup, {
-      shiny::req(workflow_data$state_manager)
-      
-      shiny::showNotification("Applying precursor rollup...", id = "rollup_working", duration = NULL)
-      
-      tryCatch({
-        # Get current S4 object from the active state
-        current_s4 <- workflow_data$state_manager$getState()
-        shiny::req(current_s4)
-        
-        logger::log_info("QC Step: Applying precursor rollup")
-        
-        # Apply S4 transformation (EXISTING S4 CODE - UNCHANGED)
-        rolled_up_s4 <- rollUpPrecursorToPeptide(current_s4)
-        
-        # Track QC parameters in workflow_data
-        if (is.null(workflow_data$qc_params)) {
-          workflow_data$qc_params <- list()
-        }
-        if (is.null(workflow_data$qc_params$peptide_qc)) {
-          workflow_data$qc_params$peptide_qc <- list()
-        }
-        
-        workflow_data$qc_params$peptide_qc$precursor_rollup <- list(
-          applied = TRUE,
-          timestamp = Sys.time()
-        )
-        
-        # Save new state in R6 manager
-        workflow_data$state_manager$saveState(
-          state_name = "precursor_rollup",
-          s4_data_object = rolled_up_s4,
-          config_object = list(),
-          description = "Applied precursor to peptide rollup"
-        )
-        
-        # Generate summary
-        protein_count <- rolled_up_s4@peptide_data |>
-          dplyr::distinct(Protein.Ids) |>
-          nrow()
-        
-        result_text <- paste(
-          "Precursor Rollup Applied Successfully\n",
-          "====================================\n",
-          sprintf("Proteins remaining: %d\n", protein_count),
-          "State saved as: 'precursor_rollup'\n"
-        )
-        
-        output$rollup_results <- shiny::renderText(result_text)
-        
-        # Update filtering visualization and capture plot
-        plot_grid <- updateProteinFiltering(
-          data = rolled_up_s4@peptide_data,
-          step_name = "3_precursor_rollup",
-          omic_type = omic_type,
-          experiment_label = experiment_label,
-          return_grid = TRUE,
-          overwrite = TRUE
-        )
-        rollup_plot(plot_grid)
-        
-        logger::log_info("Precursor rollup applied successfully")
-        shiny::removeNotification("rollup_working")
-        shiny::showNotification("Precursor rollup applied successfully", type = "message")
-        
-      }, error = function(e) {
-        msg <- paste("Error applying precursor rollup:", e$message)
-        logger::log_error(msg)
-        shiny::showNotification(msg, type = "error", duration = 15)
-        shiny::removeNotification("rollup_working")
-      })
+      runPeptideRollupApplyObserver(
+        workflowData = workflow_data,
+        output = output,
+        rollupPlot = rollup_plot,
+        omicType = omic_type,
+        experimentLabel = experiment_label
+      )
     })
     
     # Revert Precursor Rollup
     shiny::observeEvent(input$revert_rollup, {
-      tryCatch({
-        # Revert to the previous state in the history
-        history <- workflow_data$state_manager$getHistory()
-        # The previous state is the one before the current one.
-        if (length(history) > 1) {
-          prev_state_name <- history[length(history) - 1]
-          reverted_s4 <- workflow_data$state_manager$revertToState(prev_state_name)
-          output$rollup_results <- shiny::renderText(paste("Reverted to previous state:", prev_state_name))
-          logger::log_info(paste("Reverted precursor rollup to", prev_state_name))
-          shiny::showNotification("Reverted successfully", type = "message")
-        } else {
-          stop("No previous state to revert to.")
-        }
-        
-      }, error = function(e) {
-        msg <- paste("Error reverting:", e$message)
-        logger::log_error(msg)
-        shiny::showNotification(msg, type = "error")
-      })
+      runPeptideRollupRevertObserver(
+        workflowData = workflow_data,
+        output = output
+      )
     })
     
     # Render rollup plot
@@ -171,4 +258,3 @@ mod_prot_qc_peptide_rollup_server <- function(id, workflow_data, omic_type, expe
     })
   })
 }
-
