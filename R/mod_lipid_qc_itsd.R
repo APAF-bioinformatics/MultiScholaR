@@ -78,6 +78,129 @@ mod_lipid_qc_itsd_ui <- function(id) {
     )
 }
 
+registerLipidItsdSummaryOutput <- function(output, isMetricsVal, renderUiFn = shiny::renderUI) {
+    output$is_summary <- renderUiFn({
+        metrics <- isMetricsVal()
+
+        if (is.null(metrics)) {
+            return(shiny::p(
+                shiny::icon("info-circle")
+                , " Click 'Analyze' to detect internal standards."
+                , style = "color: #666;"
+            ))
+        }
+
+        summary_by_assay <- split(metrics, metrics$assay)
+
+        summary_items <- lapply(names(summary_by_assay), function(assay_name) {
+            assay_metrics <- summary_by_assay[[assay_name]]
+            n_is <- nrow(assay_metrics)
+            median_cv <- median(assay_metrics$cv, na.rm = TRUE)
+
+            cv_color <- if (median_cv <= 15) "green" else if (median_cv <= 30) "orange" else "red"
+            cv_icon <- if (median_cv <= 15) "check-circle" else if (median_cv <= 30) "exclamation-circle" else "times-circle"
+
+            shiny::tags$li(
+                shiny::icon(cv_icon, style = paste("color:", cv_color))
+                , sprintf(" %s: %d IS (median CV: %.1f%%)", assay_name, n_is, median_cv)
+            )
+        })
+
+        shiny::tagList(
+            shiny::tags$ul(summary_items, style = "list-style: none; padding-left: 0;")
+            , shiny::hr()
+            , shiny::tags$small(
+                shiny::icon("info-circle")
+                , " CV < 15%: Good | 15-30%: Acceptable | > 30%: Review"
+                , style = "color: #666;"
+            )
+        )
+    })
+
+    output
+}
+
+registerLipidItsdVisualizationTabsOutput <- function(output, ns, isMetricsVal, renderUiFn = shiny::renderUI) {
+    output$is_viz_tabs <- renderUiFn({
+        metrics <- isMetricsVal()
+
+        if (is.null(metrics)) {
+            return(NULL)
+        }
+
+        tab_list <- list(
+            shiny::tabPanel(
+                "CV Distribution"
+                , shiny::br()
+                , shinyjqui::jqui_resizable(
+                    shiny::plotOutput(ns("cv_plot"), height = "500px")
+                )
+            )
+            , shiny::tabPanel(
+                "Intensity Trends"
+                , shiny::br()
+                , shinyjqui::jqui_resizable(
+                    shiny::plotOutput(ns("intensity_plot"), height = "500px")
+                )
+            )
+        )
+
+        do.call(shiny::tabsetPanel, c(list(id = ns("is_viz_tabset")), tab_list))
+    })
+
+    output
+}
+
+registerLipidItsdCvPlotOutput <- function(output, isMetricsVal, renderPlotFn = shiny::renderPlot) {
+    output$cv_plot <- renderPlotFn({
+        metrics <- isMetricsVal()
+        shiny::req(metrics)
+
+        # Reorder by CV for better visualization
+        metrics$is_id <- stats::reorder(metrics$is_id, metrics$cv)
+
+        # Color based on CV thresholds
+        metrics$cv_status <- dplyr::case_when(
+            metrics$cv <= 15 ~ "Good (<15%)"
+            , metrics$cv <= 30 ~ "Acceptable (15-30%)"
+            , TRUE ~ "Review (>30%)"
+        )
+        metrics$cv_status <- factor(metrics$cv_status,
+            levels = c("Good (<15%)", "Acceptable (15-30%)", "Review (>30%)"))
+
+        ggplot2::ggplot(metrics, ggplot2::aes(x = is_id, y = cv)) +
+            # Reference lines first (behind points)
+            ggplot2::geom_hline(yintercept = 15, linetype = "dashed", color = "#2ecc71", linewidth = 0.8, alpha = 0.7) +
+            ggplot2::geom_hline(yintercept = 30, linetype = "dashed", color = "#e67e22", linewidth = 0.8, alpha = 0.7) +
+            # Lollipop stem
+            ggplot2::geom_segment(ggplot2::aes(xend = is_id, yend = 0), color = "grey60", linewidth = 0.8) +
+            # Lollipop head - colored by status
+            ggplot2::geom_point(ggplot2::aes(color = cv_status), size = 4) +
+            # Facet by assay if multiple
+            ggplot2::facet_wrap(~assay, scales = "free_y") +
+            ggplot2::scale_color_manual(
+                values = c("Good (<15%)" = "#2ecc71", "Acceptable (15-30%)" = "#e67e22", "Review (>30%)" = "#e74c3c")
+                , name = "CV Status"
+            ) +
+            ggplot2::labs(
+                title = "Internal Standard CV"
+                , subtitle = "Dashed lines: 15% (green) and 30% (orange) thresholds"
+                , x = NULL
+                , y = "CV (%)"
+            ) +
+            ggplot2::theme_minimal(base_size = 12) +
+            ggplot2::theme(
+                axis.text.x = ggplot2::element_text(angle = 45, hjust = 1, size = 9)
+                , legend.position = "bottom"
+                , panel.grid.major.x = ggplot2::element_blank()
+                , strip.text = ggplot2::element_text(face = "bold")
+            ) +
+            ggplot2::coord_flip()
+    })
+
+    output
+}
+
 #' @rdname mod_lipid_qc_itsd
 #' @export
 #' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification renderText renderUI renderPlot tabsetPanel tabPanel tags
@@ -262,125 +385,21 @@ mod_lipid_qc_itsd_server <- function(id, workflow_data, omic_type, experiment_la
             })
         })
         
-        # Render IS summary
-        output$is_summary <- shiny::renderUI({
-            metrics <- is_metrics()
-            
-            if (is.null(metrics)) {
-                return(shiny::p(
-                    shiny::icon("info-circle")
-                    , " Click 'Analyze' to detect internal standards."
-                    , style = "color: #666;"
-                ))
-            }
-            
-            # Summarize by assay
-            summary_by_assay <- split(metrics, metrics$assay)
-            
-            summary_items <- lapply(names(summary_by_assay), function(assay_name) {
-                assay_metrics <- summary_by_assay[[assay_name]]
-                n_is <- nrow(assay_metrics)
-                median_cv <- median(assay_metrics$cv, na.rm = TRUE)
-                
-                # Color based on CV quality
-                cv_color <- if (median_cv <= 15) "green" else if (median_cv <= 30) "orange" else "red"
-                cv_icon <- if (median_cv <= 15) "check-circle" else if (median_cv <= 30) "exclamation-circle" else "times-circle"
-                
-                shiny::tags$li(
-                    shiny::icon(cv_icon, style = paste("color:", cv_color))
-                    , sprintf(" %s: %d IS (median CV: %.1f%%)", assay_name, n_is, median_cv)
-                )
-            })
-            
-            shiny::tagList(
-                shiny::tags$ul(summary_items, style = "list-style: none; padding-left: 0;")
-                , shiny::hr()
-                , shiny::tags$small(
-                    shiny::icon("info-circle")
-                    , " CV < 15%: Good | 15-30%: Acceptable | > 30%: Review"
-                    , style = "color: #666;"
-                )
-            )
-        })
+        registerLipidItsdSummaryOutput(
+            output = output,
+            isMetricsVal = is_metrics
+        )
         
-        # Render IS visualization tabs
-        output$is_viz_tabs <- shiny::renderUI({
-            metrics <- is_metrics()
-            
-            if (is.null(metrics)) {
-                return(NULL)
-            }
-            
-            assays <- unique(metrics$assay)
-            
-            tab_list <- list(
-                # CV Distribution tab
-                shiny::tabPanel(
-                    "CV Distribution"
-                    , shiny::br()
-                    , shinyjqui::jqui_resizable(
-                        shiny::plotOutput(ns("cv_plot"), height = "500px")
-                    )
-                )
-                # Intensity Trends tab
-                , shiny::tabPanel(
-                    "Intensity Trends"
-                    , shiny::br()
-                    , shinyjqui::jqui_resizable(
-                        shiny::plotOutput(ns("intensity_plot"), height = "500px")
-                    )
-                )
-            )
-            
-            do.call(shiny::tabsetPanel, c(list(id = ns("is_viz_tabset")), tab_list))
-        })
-        
-        # Render CV distribution plot - lollipop chart
-        output$cv_plot <- shiny::renderPlot({
-            metrics <- is_metrics()
-            shiny::req(metrics)
+        registerLipidItsdVisualizationTabsOutput(
+            output = output,
+            ns = ns,
+            isMetricsVal = is_metrics
+        )
 
-            # Reorder by CV for better visualization
-            metrics$is_id <- stats::reorder(metrics$is_id, metrics$cv)
-
-            # Color based on CV thresholds
-            metrics$cv_status <- dplyr::case_when(
-                metrics$cv <= 15 ~ "Good (<15%)"
-                , metrics$cv <= 30 ~ "Acceptable (15-30%)"
-                , TRUE ~ "Review (>30%)"
-            )
-            metrics$cv_status <- factor(metrics$cv_status,
-                levels = c("Good (<15%)", "Acceptable (15-30%)", "Review (>30%)"))
-
-            ggplot2::ggplot(metrics, ggplot2::aes(x = is_id, y = cv)) +
-                # Reference lines first (behind points)
-                ggplot2::geom_hline(yintercept = 15, linetype = "dashed", color = "#2ecc71", linewidth = 0.8, alpha = 0.7) +
-                ggplot2::geom_hline(yintercept = 30, linetype = "dashed", color = "#e67e22", linewidth = 0.8, alpha = 0.7) +
-                # Lollipop stem
-                ggplot2::geom_segment(ggplot2::aes(xend = is_id, yend = 0), color = "grey60", linewidth = 0.8) +
-                # Lollipop head - colored by status
-                ggplot2::geom_point(ggplot2::aes(color = cv_status), size = 4) +
-                # Facet by assay if multiple
-                ggplot2::facet_wrap(~assay, scales = "free_y") +
-                ggplot2::scale_color_manual(
-                    values = c("Good (<15%)" = "#2ecc71", "Acceptable (15-30%)" = "#e67e22", "Review (>30%)" = "#e74c3c")
-                    , name = "CV Status"
-                ) +
-                ggplot2::labs(
-                    title = "Internal Standard CV"
-                    , subtitle = "Dashed lines: 15% (green) and 30% (orange) thresholds"
-                    , x = NULL
-                    , y = "CV (%)"
-                ) +
-                ggplot2::theme_minimal(base_size = 12) +
-                ggplot2::theme(
-                    axis.text.x = ggplot2::element_text(angle = 45, hjust = 1, size = 9)
-                    , legend.position = "bottom"
-                    , panel.grid.major.x = ggplot2::element_blank()
-                    , strip.text = ggplot2::element_text(face = "bold")
-                ) +
-                ggplot2::coord_flip()
-        })
+        registerLipidItsdCvPlotOutput(
+            output = output,
+            isMetricsVal = is_metrics
+        )
         
         # Render intensity trend plot
         output$intensity_plot <- shiny::renderPlot({
@@ -405,4 +424,3 @@ mod_lipid_qc_itsd_server <- function(id, workflow_data, omic_type, experiment_la
         })
     })
 }
-
