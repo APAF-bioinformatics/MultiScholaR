@@ -109,6 +109,7 @@ Collate:
     'func_prot_import_diann_format.R'
     'func_prot_import_organisms.R'
     'func_prot_limpa.R'
+    'func_prot_norm_optimization_helpers.R'
     'func_prot_norm.R'
     'func_prot_qc.R'
     'func_prot_qc_filtering_helpers.R'
