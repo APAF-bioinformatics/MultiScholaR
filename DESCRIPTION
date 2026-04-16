@@ -61,6 +61,7 @@ Collate:
     'func_metab_da.R'
     'func_metab_import_detection.R'
     'func_metab_import.R'
+    'func_metab_norm_support_helpers.R'
     'func_metab_norm.R'
     'func_metab_qc_metrics_helpers.R'
     'func_metab_qc_filtering_helpers.R'
