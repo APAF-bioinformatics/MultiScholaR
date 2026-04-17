@@ -47,7 +47,7 @@ setGeneric(name="removeProteinsWithOnlyOneReplicate"
            , signature=c("theObject", "core_utilisation", "grouping_variable"))
 
 setGeneric(name="proteinMissingValueImputationLimpa"
-           , def=function(theObject, 
+           , def=function(theObject,
                           dpc_results = NULL,
                           dpc_slope = 0.8,
                           quantified_protein_column = NULL,
@@ -104,10 +104,10 @@ setGeneric("InitialiseGrid", function(dummy = NULL) {
 })
 
 setGeneric(name = "createGridQC",
-           def = function(theObject, pca_titles, density_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
+           def = function(theObject, pca_titles = NULL, density_titles = NULL, rle_titles = NULL, pearson_titles = NULL, cancor_titles = NULL, limpa_titles = NULL, ncol = 3, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged", workflow_name = NULL) {
              standardGeneric("createGridQC")
            },
-           signature = c("theObject", "pca_titles", "density_titles", "rle_titles", "pearson_titles", "save_path", "file_name"))
+           signature = c("theObject"))
 
 setGeneric(name="normaliseBetweenSamples"
            , def=function( theObject, normalisation_method = NULL) {
@@ -127,7 +127,8 @@ setGeneric(name="getNegCtrlProtAnova"
                            , percentage_as_neg_ctrl  = NULL
                            , num_neg_ctrl  = NULL
                            , ruv_qval_cutoff = NULL
-                           , ruv_fdr_method = NULL ) {
+                           , ruv_fdr_method = NULL
+                           , exclude_pool_samples = TRUE ) {
              standardGeneric("getNegCtrlProtAnova")
            }
            , signature=c("theObject", "ruv_grouping_variable", "num_neg_ctrl", "ruv_qval_cutoff", "ruv_fdr_method"))
@@ -203,10 +204,10 @@ setGeneric(name="chooseBestProteinAccessionSumDuplicates"
            , signature=c("theObject", "delim", "quant_columns_pattern", "islogged"))
 
 setGeneric(name="filterSamplesByProteinCorrelationThreshold"
-           , def=function( theObject, threshold = NULL, correlation_group = NULL, tech_rep_remove_regex = NULL) {
+           , def=function(theObject, pearson_correlation_per_pair = NULL, min_pearson_correlation_threshold = NULL) {
              standardGeneric("filterSamplesByProteinCorrelationThreshold")
            }
-           , signature=c("theObject", "threshold", "correlation_group", "tech_rep_remove_regex"))
+           , signature=c("theObject", "pearson_correlation_per_pair", "min_pearson_correlation_threshold"))
 
 setGeneric(name="plotDensity"
            , def=function( theObject, grouping_variable, title = "", font_size = 8) {
@@ -304,11 +305,11 @@ setGeneric(name="rollUpPrecursorToPeptide"
            , signature=c("theObject", "core_utilisation"))
 
 setGeneric(name="peptideIntensityFiltering"
-           , def=function( theObject, 
-                           grouping_variable = NULL, 
-                           groupwise_percentage_cutoff = NULL, 
-                           max_groups_percentage_cutoff = NULL, 
-                           peptides_intensity_cutoff_percentile = NULL, 
+           , def=function( theObject,
+                           grouping_variable = NULL,
+                           groupwise_percentage_cutoff = NULL,
+                           max_groups_percentage_cutoff = NULL,
+                           peptides_intensity_cutoff_percentile = NULL,
                            core_utilisation = NULL) {
              standardGeneric("peptideIntensityFiltering")
            }
@@ -370,8 +371,8 @@ setGeneric(name="getNegCtrlProtAnovaPeptides"
            , signature=c("theObject", "ruv_grouping_variable", "percentage_as_neg_ctrl", "num_neg_ctrl", "ruv_qval_cutoff", "ruv_fdr_method"))
 
 setGeneric(name="peptideMissingValueImputationLimpa"
-           , def=function(theObject, 
-                          imputed_value_column = NULL, 
+           , def=function(theObject,
+                          imputed_value_column = NULL,
                           use_log2_transform = TRUE,
                           verbose = TRUE,
                           ensure_matrix = TRUE) {
@@ -443,7 +444,7 @@ setGeneric(name = "getNegCtrlMetabAnova",
                           ruv_fdr_method = NULL) {
              standardGeneric("getNegCtrlMetabAnova")
            },
-           signature = c("theObject")) # Primary dispatch on object 
+           signature = c("theObject")) # Primary dispatch on object
 
 setGeneric(name = "filterSamplesByMetaboliteCorrelationThreshold",
            def = function(theObject, pearson_correlation_per_pair_list = NULL, min_pearson_correlation_threshold = NULL) {
@@ -521,7 +522,7 @@ setGeneric(name="plotNumSigDiffExpBarPlot",
 # --- Metabolomics Correlation Filtering ---
 
 #' @title Filter Samples by Metabolite Correlation Threshold
-#' @description Filters samples from a MetaboliteAssayData object based on 
+#' @description Filters samples from a MetaboliteAssayData object based on
 #'              pairwise Pearson correlation results. Samples with correlation
 #'              below the threshold are removed.
 #' @name filterSamplesByMetaboliteCorrelationThreshold
@@ -545,7 +546,7 @@ setGeneric(name="lipidIntensityFiltering"
 setGeneric(name = "getNegCtrlLipidAnova",
            def = function(theObject,
                           ruv_grouping_variable = NULL,
-                          percentage_as_neg_ctrl = NULL, 
+                          percentage_as_neg_ctrl = NULL,
                           num_neg_ctrl = NULL,
                           ruv_qval_cutoff = NULL,
                           ruv_fdr_method = NULL) {

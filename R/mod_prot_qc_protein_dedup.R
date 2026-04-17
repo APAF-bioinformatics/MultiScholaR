@@ -70,6 +70,200 @@ mod_prot_qc_protein_dedup_ui <- function(id) {
 #' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification removeNotification renderText renderPlot
 #' @importFrom logger log_info log_error
 #' @importFrom grid grid.draw
+runProteinDuplicateRemovalStep <- function(workflowData,
+                                          aggregationMethod,
+                                          aggregationResolverFn = base::get,
+                                          logInfoFn = logger::log_info) {
+  shiny::req(workflowData$state_manager)
+
+  currentS4 <- workflowData$state_manager$getState()
+  shiny::req(currentS4)
+
+  logInfoFn(sprintf(
+    "Protein Processing: Removing duplicate proteins using %s",
+    aggregationMethod
+  ))
+
+  duplicates <- currentS4@protein_quant_table |>
+    dplyr::group_by(Protein.Ids) |>
+    dplyr::filter(dplyr::n() > 1) |>
+    dplyr::select(Protein.Ids) |>
+    dplyr::distinct() |>
+    dplyr::pull(Protein.Ids)
+
+  aggregationFn <- aggregationResolverFn(aggregationMethod)
+
+  currentS4@protein_quant_table <- currentS4@protein_quant_table |>
+    dplyr::group_by(Protein.Ids) |>
+    dplyr::summarise(
+      dplyr::across(dplyr::matches("\\d+"), ~ aggregationFn(.x, na.rm = TRUE))
+    ) |>
+    dplyr::ungroup()
+
+  workflowData$state_manager$saveState(
+    state_name = "duplicates_removed",
+    s4_data_object = currentS4,
+    config_object = list(
+      aggregation_method = aggregationMethod,
+      duplicates_found = duplicates,
+      num_duplicates = length(duplicates)
+    ),
+    description = "Removed duplicate proteins by aggregation"
+  )
+
+  proteinCount <- currentS4@protein_quant_table |>
+    dplyr::distinct(Protein.Ids) |>
+    nrow()
+
+  resultText <- paste(
+    "Duplicate Protein Removal Completed Successfully\n",
+    "===============================================\n",
+    sprintf("Proteins remaining: %d\n", proteinCount),
+    sprintf("Duplicates found: %d\n", length(duplicates)),
+    sprintf("Aggregation method: %s\n", aggregationMethod),
+    "State saved as: 'duplicates_removed'\n"
+  )
+
+  list(
+    deduplicatedS4 = currentS4,
+    duplicates = duplicates,
+    resultText = resultText
+  )
+}
+
+updateProteinDuplicateRemovalOutputs <- function(output,
+                                                 duplicateRemovalPlot,
+                                                 duplicateRemovalResult,
+                                                 omicType,
+                                                 experimentLabel,
+                                                 renderTextFn = shiny::renderText,
+                                                 updateProteinFilteringFn = updateProteinFiltering) {
+  output$duplicate_removal_results <- renderTextFn(duplicateRemovalResult$resultText)
+
+  plotGrid <- updateProteinFilteringFn(
+    data = duplicateRemovalResult$deduplicatedS4@protein_quant_table,
+    step_name = "12_duplicates_removed",
+    omic_type = omicType,
+    experiment_label = experimentLabel,
+    return_grid = TRUE,
+    overwrite = TRUE
+  )
+  duplicateRemovalPlot(plotGrid)
+
+  invisible(plotGrid)
+}
+
+runProteinDuplicateRemovalApplyObserver <- function(workflowData,
+                                                    aggregationMethod,
+                                                    output,
+                                                    duplicateRemovalPlot,
+                                                    omicType,
+                                                    experimentLabel,
+                                                    runApplyStepFn = runProteinDuplicateRemovalStep,
+                                                    updateOutputsFn = updateProteinDuplicateRemovalOutputs,
+                                                    showNotificationFn = shiny::showNotification,
+                                                    removeNotificationFn = shiny::removeNotification,
+                                                    logInfoFn = logger::log_info,
+                                                    logErrorFn = logger::log_error) {
+  showNotificationFn(
+    "Removing duplicate proteins...",
+    id = "duplicate_removal_working",
+    duration = NULL
+  )
+
+  tryCatch({
+    duplicateRemovalResult <- runApplyStepFn(
+      workflowData = workflowData,
+      aggregationMethod = aggregationMethod
+    )
+
+    plotGrid <- updateOutputsFn(
+      output = output,
+      duplicateRemovalPlot = duplicateRemovalPlot,
+      duplicateRemovalResult = duplicateRemovalResult,
+      omicType = omicType,
+      experimentLabel = experimentLabel
+    )
+
+    logInfoFn("Duplicate protein removal completed successfully")
+    removeNotificationFn("duplicate_removal_working")
+    showNotificationFn(
+      "Duplicate protein removal completed successfully",
+      type = "message"
+    )
+
+    list(
+      status = "success",
+      duplicateRemovalResult = duplicateRemovalResult,
+      plotGrid = plotGrid
+    )
+  }, error = function(e) {
+    errorMessage <- paste("Error removing duplicate proteins:", e$message)
+    logErrorFn(errorMessage)
+    showNotificationFn(errorMessage, type = "error", duration = 15)
+    removeNotificationFn("duplicate_removal_working")
+
+    list(
+      status = "error",
+      errorMessage = errorMessage
+    )
+  })
+}
+
+runProteinDuplicateRemovalRevertStep <- function(workflowData) {
+  shiny::req(workflowData$state_manager)
+  history <- workflowData$state_manager$getHistory()
+
+  if (length(history) <= 1) {
+    stop("No previous state to revert to.")
+  }
+
+  previousState <- history[length(history) - 1]
+  revertedS4 <- workflowData$state_manager$revertToState(previousState)
+
+  list(
+    previousState = previousState,
+    revertedS4 = revertedS4,
+    resultText = paste("Reverted to previous state:", previousState)
+  )
+}
+
+runProteinDuplicateRemovalRevertObserver <- function(workflowData,
+                                                     output,
+                                                     runRevertStepFn = runProteinDuplicateRemovalRevertStep,
+                                                     renderTextFn = shiny::renderText,
+                                                     showNotificationFn = shiny::showNotification,
+                                                     logInfoFn = logger::log_info,
+                                                     logErrorFn = logger::log_error) {
+  tryCatch({
+    revertResult <- runRevertStepFn(workflowData = workflowData)
+    output$duplicate_removal_results <- renderTextFn(revertResult$resultText)
+    logInfoFn(paste("Reverted duplicate removal to", revertResult$previousState))
+    showNotificationFn("Reverted successfully", type = "message")
+
+    list(
+      status = "success",
+      revertResult = revertResult
+    )
+  }, error = function(e) {
+    errorMessage <- paste("Error reverting:", e$message)
+    logErrorFn(errorMessage)
+    showNotificationFn(errorMessage, type = "error")
+
+    list(
+      status = "error",
+      errorMessage = errorMessage
+    )
+  })
+}
+
+bindProteinDuplicateRemovalPlot <- function(output, duplicateRemovalPlot) {
+  output$duplicate_removal_plot <- renderPlot({
+    req(duplicateRemovalPlot())
+    grid.draw(duplicateRemovalPlot())
+  })
+}
+
 mod_prot_qc_protein_dedup_server <- function(id, workflow_data, omic_type, experiment_label) {
   shiny::moduleServer(id, function(input, output, session) {
     
@@ -77,111 +271,27 @@ mod_prot_qc_protein_dedup_server <- function(id, workflow_data, omic_type, exper
     
     # Step 4: Duplicate Protein Removal (chunk 22)
     shiny::observeEvent(input$apply_duplicate_removal, {
-      shiny::req(workflow_data$state_manager)
-      
-      shiny::showNotification("Removing duplicate proteins...", id = "duplicate_removal_working", duration = NULL)
-      
-      tryCatch({
-        # Get current ProteinQuantitativeData S4 object from the active state
-        current_s4 <- workflow_data$state_manager$getState()
-        shiny::req(current_s4)
-        
-        logger::log_info("Protein Processing: Removing duplicate proteins using {input$duplicate_aggregation_method}")
-        
-        # Identify duplicates first
-        duplicates <- current_s4@protein_quant_table |>
-          dplyr::group_by(Protein.Ids) |>
-          dplyr::filter(dplyr::n() > 1) |>
-          dplyr::select(Protein.Ids) |>
-          dplyr::distinct() |>
-          dplyr::pull(Protein.Ids)
-        
-        # Apply duplicate removal
-        current_s4@protein_quant_table <- current_s4@protein_quant_table |>
-          dplyr::group_by(Protein.Ids) |>
-          dplyr::summarise(
-            dplyr::across(dplyr::matches("\\d+"), ~ get(input$duplicate_aggregation_method)(.x, na.rm = TRUE))
-          ) |>
-          dplyr::ungroup()
-        
-        # Save new state
-        workflow_data$state_manager$saveState(
-          state_name = "duplicates_removed",
-          s4_data_object = current_s4,
-          config_object = list(
-            aggregation_method = input$duplicate_aggregation_method,
-            duplicates_found = duplicates,
-            num_duplicates = length(duplicates)
-          ),
-          description = "Removed duplicate proteins by aggregation"
-        )
-        
-        # Generate summary
-        protein_count <- current_s4@protein_quant_table |>
-          dplyr::distinct(Protein.Ids) |>
-          nrow()
-        
-        result_text <- paste(
-          "Duplicate Protein Removal Completed Successfully\n",
-          "===============================================\n",
-          sprintf("Proteins remaining: %d\n", protein_count),
-          sprintf("Duplicates found: %d\n", length(duplicates)),
-          sprintf("Aggregation method: %s\n", input$duplicate_aggregation_method),
-          "State saved as: 'duplicates_removed'\n"
-        )
-        
-        output$duplicate_removal_results <- shiny::renderText(result_text)
-        
-        # Update filtering visualization and capture plot
-        plot_grid <- updateProteinFiltering(
-          data = current_s4@protein_quant_table,
-          step_name = "12_duplicates_removed",
-          omic_type = omic_type,
-          experiment_label = experiment_label,
-          return_grid = TRUE,
-          overwrite = TRUE
-        )
-        duplicate_removal_plot(plot_grid)
-        
-        logger::log_info("Duplicate protein removal completed successfully")
-        shiny::removeNotification("duplicate_removal_working")
-        shiny::showNotification("Duplicate protein removal completed successfully", type = "message")
-        
-      }, error = function(e) {
-        msg <- paste("Error removing duplicate proteins:", e$message)
-        logger::log_error(msg)
-        shiny::showNotification(msg, type = "error", duration = 15)
-        shiny::removeNotification("duplicate_removal_working")
-      })
+      runProteinDuplicateRemovalApplyObserver(
+        workflowData = workflow_data,
+        aggregationMethod = input$duplicate_aggregation_method,
+        output = output,
+        duplicateRemovalPlot = duplicate_removal_plot,
+        omicType = omic_type,
+        experimentLabel = experiment_label
+      )
     })
     
     # Revert Duplicate Removal
     shiny::observeEvent(input$revert_duplicate_removal, {
-      tryCatch({
-        # Revert to the previous state in the history
-        history <- workflow_data$state_manager$getHistory()
-        if (length(history) > 1) {
-          prev_state_name <- history[length(history) - 1]
-          reverted_s4 <- workflow_data$state_manager$revertToState(prev_state_name)
-          output$duplicate_removal_results <- shiny::renderText(paste("Reverted to previous state:", prev_state_name))
-          logger::log_info(paste("Reverted duplicate removal to", prev_state_name))
-          shiny::showNotification("Reverted successfully", type = "message")
-        } else {
-          stop("No previous state to revert to.")
-        }
-        
-      }, error = function(e) {
-        msg <- paste("Error reverting:", e$message)
-        logger::log_error(msg)
-        shiny::showNotification(msg, type = "error")
-      })
+      runProteinDuplicateRemovalRevertObserver(
+        workflowData = workflow_data,
+        output = output
+      )
     })
     
-    # Render duplicate removal plot
-    output$duplicate_removal_plot <- shiny::renderPlot({
-      shiny::req(duplicate_removal_plot())
-      grid::grid.draw(duplicate_removal_plot())
-    })
+    bindProteinDuplicateRemovalPlot(
+      output = output,
+      duplicateRemovalPlot = duplicate_removal_plot
+    )
   })
 }
-

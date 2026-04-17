@@ -82,6 +82,246 @@ mod_prot_qc_peptide_qvalue_ui <- function(id) {
 #' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification removeNotification renderText renderPlot
 #' @importFrom logger log_info log_error
 #' @importFrom grid grid.draw
+runPeptideQvalueApplyStep <- function(workflowData,
+                                      qvalueThreshold,
+                                      globalQvalueThreshold,
+                                      proteotypicOnly,
+                                      updateConfigParameterFn = updateConfigParameter,
+                                      qvalueFilterFn = srlQvalueProteotypicPeptideClean,
+                                      logInfoFn = logger::log_info,
+                                      logWarnFn = logger::log_warn,
+                                      nowFn = Sys.time) {
+  shiny::req(workflowData$state_manager)
+  currentS4 <- workflowData$state_manager$getState()
+  shiny::req(currentS4)
+
+  logInfoFn(sprintf("Q-value filter: S4 class = %s", class(currentS4)[1]))
+  logInfoFn(sprintf(
+    "Q-value filter: S4 @peptide_data has %d rows, %d columns",
+    nrow(currentS4@peptide_data),
+    ncol(currentS4@peptide_data)
+  ))
+
+  idsVector <- currentS4@args$srlQvalueProteotypicPeptideClean$input_matrix_column_ids
+  if (!is.null(idsVector)) {
+    logInfoFn(sprintf(
+      "Q-value filter: input_matrix_column_ids length = %d",
+      length(idsVector)
+    ))
+    logInfoFn(sprintf(
+      "Q-value filter: input_matrix_column_ids values: [%s]",
+      paste(sapply(idsVector, function(x) paste0("'", x, "'")), collapse = ", ")
+    ))
+
+    hasWhitespace <- any(grepl("^\\s|\\s$", idsVector))
+    hasEmpty <- any(idsVector == "")
+    if (hasWhitespace) {
+      logWarnFn("Q-value filter: input_matrix_column_ids contains values with leading/trailing whitespace!")
+    }
+    if (hasEmpty) {
+      logWarnFn("Q-value filter: input_matrix_column_ids contains empty strings!")
+    }
+  }
+
+  logInfoFn(sprintf(
+    "QC Step: Applying Q-value filter with thresholds %s, %s",
+    qvalueThreshold,
+    globalQvalueThreshold
+  ))
+
+  currentS4 <- updateConfigParameterFn(
+    theObject = currentS4,
+    function_name = "srlQvalueProteotypicPeptideClean",
+    parameter_name = "qvalue_threshold",
+    new_value = qvalueThreshold
+  )
+
+  currentS4 <- updateConfigParameterFn(
+    theObject = currentS4,
+    function_name = "srlQvalueProteotypicPeptideClean",
+    parameter_name = "global_qvalue_threshold",
+    new_value = globalQvalueThreshold
+  )
+
+  currentS4 <- updateConfigParameterFn(
+    theObject = currentS4,
+    function_name = "srlQvalueProteotypicPeptideClean",
+    parameter_name = "choose_only_proteotypic_peptide",
+    new_value = as.numeric(proteotypicOnly)
+  )
+
+  filteredS4 <- qvalueFilterFn(theObject = currentS4)
+
+  if (is.null(workflowData$qc_params)) {
+    workflowData$qc_params <- list()
+  }
+  if (is.null(workflowData$qc_params$peptide_qc)) {
+    workflowData$qc_params$peptide_qc <- list()
+  }
+
+  workflowData$qc_params$peptide_qc$qvalue_filter <- list(
+    qvalue_threshold = qvalueThreshold,
+    global_qvalue_threshold = globalQvalueThreshold,
+    proteotypic_only = proteotypicOnly,
+    timestamp = nowFn()
+  )
+
+  workflowData$state_manager$saveState(
+    state_name = "qvalue_filtered",
+    s4_data_object = filteredS4,
+    config_object = list(
+      qvalue_threshold = qvalueThreshold,
+      global_qvalue_threshold = globalQvalueThreshold,
+      proteotypic_only = proteotypicOnly
+    ),
+    description = "Applied Q-value and proteotypic peptide filter"
+  )
+
+  proteinCount <- filteredS4@peptide_data |>
+    dplyr::distinct(Protein.Ids) |>
+    nrow()
+
+  resultText <- paste(
+    "Q-Value Filter Applied Successfully\n",
+    "================================\n",
+    sprintf("Proteins remaining: %d\n", proteinCount),
+    sprintf("Q-value threshold: %g\n", qvalueThreshold),
+    sprintf("Global Q-value threshold: %g\n", globalQvalueThreshold),
+    sprintf("Proteotypic only: %s\n", proteotypicOnly),
+    "State saved as: 'qvalue_filtered'\n"
+  )
+
+  list(
+    filteredS4 = filteredS4,
+    resultText = resultText
+  )
+}
+
+updatePeptideQvalueOutputs <- function(output,
+                                       qvaluePlot,
+                                       qvalueResult,
+                                       omicType,
+                                       experimentLabel,
+                                       renderTextFn = shiny::renderText,
+                                       updateProteinFilteringFn = updateProteinFiltering) {
+  output$qvalue_results <- renderTextFn(qvalueResult$resultText)
+
+  plotGrid <- updateProteinFilteringFn(
+    data = qvalueResult$filteredS4@peptide_data,
+    step_name = "2_qval_filtered",
+    omic_type = omicType,
+    experiment_label = experimentLabel,
+    return_grid = TRUE,
+    overwrite = TRUE
+  )
+  qvaluePlot(plotGrid)
+
+  invisible(plotGrid)
+}
+
+runPeptideQvalueApplyObserver <- function(workflowData,
+                                          qvalueThreshold,
+                                          globalQvalueThreshold,
+                                          proteotypicOnly,
+                                          output,
+                                          qvaluePlot,
+                                          omicType,
+                                          experimentLabel,
+                                          runApplyStepFn = runPeptideQvalueApplyStep,
+                                          updateOutputsFn = updatePeptideQvalueOutputs,
+                                          showNotificationFn = shiny::showNotification,
+                                          removeNotificationFn = shiny::removeNotification,
+                                          logInfoFn = logger::log_info,
+                                          logErrorFn = logger::log_error) {
+  showNotificationFn(
+    "Applying Q-value filter...",
+    id = "qvalue_working",
+    duration = NULL
+  )
+
+  tryCatch({
+    qvalueResult <- runApplyStepFn(
+      workflowData = workflowData,
+      qvalueThreshold = qvalueThreshold,
+      globalQvalueThreshold = globalQvalueThreshold,
+      proteotypicOnly = proteotypicOnly
+    )
+
+    plotGrid <- updateOutputsFn(
+      output = output,
+      qvaluePlot = qvaluePlot,
+      qvalueResult = qvalueResult,
+      omicType = omicType,
+      experimentLabel = experimentLabel
+    )
+
+    logInfoFn("Q-value filter applied successfully")
+    removeNotificationFn("qvalue_working")
+    showNotificationFn("Q-value filter applied successfully", type = "message")
+
+    list(
+      status = "success",
+      qvalueResult = qvalueResult,
+      plotGrid = plotGrid
+    )
+  }, error = function(e) {
+    errorMessage <- paste("Error applying Q-value filter:", e$message)
+    logErrorFn(errorMessage)
+    showNotificationFn(errorMessage, type = "error", duration = 15)
+    removeNotificationFn("qvalue_working")
+
+    list(
+      status = "error",
+      errorMessage = errorMessage
+    )
+  })
+}
+
+runPeptideQvalueRevertStep <- function(workflowData,
+                                       revertStateName = "raw_data_s4",
+                                       logInfoFn = logger::log_info) {
+  history <- workflowData$state_manager$getHistory()
+  if (!(revertStateName %in% history)) {
+    stop(sprintf("Cannot revert: '%s' state not found in history.", revertStateName))
+  }
+
+  revertedS4 <- workflowData$state_manager$revertToState(revertStateName)
+  logInfoFn("Reverted to raw data state")
+
+  list(
+    revertedS4 = revertedS4,
+    revertStateName = revertStateName,
+    resultText = "Reverted to raw data state"
+  )
+}
+
+runPeptideQvalueRevertObserver <- function(workflowData,
+                                           output,
+                                           runRevertStepFn = runPeptideQvalueRevertStep,
+                                           renderTextFn = shiny::renderText,
+                                           showNotificationFn = shiny::showNotification,
+                                           logErrorFn = logger::log_error) {
+  tryCatch({
+    revertResult <- runRevertStepFn(workflowData = workflowData)
+    output$qvalue_results <- renderTextFn(revertResult$resultText)
+    showNotificationFn(revertResult$resultText, type = "message")
+
+    list(
+      status = "success",
+      revertResult = revertResult
+    )
+  }, error = function(e) {
+    errorMessage <- paste("Error reverting:", e$message)
+    logErrorFn(errorMessage)
+    showNotificationFn(errorMessage, type = "error")
+
+    list(
+      status = "error",
+      errorMessage = errorMessage
+    )
+  })
+}
+
 mod_prot_qc_peptide_qvalue_server <- function(id, workflow_data, omic_type, experiment_label) {
   shiny::moduleServer(id, function(input, output, session) {
     
@@ -89,146 +329,24 @@ mod_prot_qc_peptide_qvalue_server <- function(id, workflow_data, omic_type, expe
     
     # Step 1: Q-Value Filter (chunk 10)
     shiny::observeEvent(input$apply_qvalue_filter, {
-      shiny::req(workflow_data$state_manager)
-      
-      shiny::showNotification("Applying Q-value filter...", id = "qvalue_working", duration = NULL)
-      
-      tryCatch({
-        # Get current S4 object from state manager - NOW USES CURRENT STATE
-        current_s4 <- workflow_data$state_manager$getState()
-        shiny::req(current_s4)
-        
-        # [OK] DIAGNOSTIC: Check config and columns
-        logger::log_info(sprintf("Q-value filter: S4 class = %s", class(current_s4)[1]))
-        logger::log_info(sprintf("Q-value filter: S4 @peptide_data has %d rows, %d columns", 
-                                 nrow(current_s4@peptide_data), ncol(current_s4@peptide_data)))
-        
-        # [OK] DIAGNOSTIC: Check input_matrix_column_ids from config
-        if (!is.null(current_s4@args$srlQvalueProteotypicPeptideClean$input_matrix_column_ids)) {
-          ids_vector <- current_s4@args$srlQvalueProteotypicPeptideClean$input_matrix_column_ids
-          logger::log_info(sprintf("Q-value filter: input_matrix_column_ids length = %d", length(ids_vector)))
-          logger::log_info(sprintf("Q-value filter: input_matrix_column_ids values: [%s]", 
-                                   paste(sapply(ids_vector, function(x) paste0("'", x, "'")), collapse = ", ")))
-          
-          # Check for issues
-          has_whitespace <- any(grepl("^\\s|\\s$", ids_vector))
-          has_empty <- any(ids_vector == "")
-          if (has_whitespace) logger::log_warn("Q-value filter: input_matrix_column_ids contains values with leading/trailing whitespace!")
-          if (has_empty) logger::log_warn("Q-value filter: input_matrix_column_ids contains empty strings!")
-        }
-        
-        logger::log_info(sprintf("QC Step: Applying Q-value filter with thresholds %s, %s", input$qvalue_threshold, input$global_qvalue_threshold))
-        
-        # [OK] FIXED: Use updateConfigParameter to sync S4 object AND global config_list
-        current_s4 <- updateConfigParameter(
-          theObject = current_s4,
-          function_name = "srlQvalueProteotypicPeptideClean",
-          parameter_name = "qvalue_threshold",
-          new_value = input$qvalue_threshold
-        )
-        
-        current_s4 <- updateConfigParameter(
-          theObject = current_s4,
-          function_name = "srlQvalueProteotypicPeptideClean",
-          parameter_name = "global_qvalue_threshold",
-          new_value = input$global_qvalue_threshold
-        )
-        
-        current_s4 <- updateConfigParameter(
-          theObject = current_s4,
-          function_name = "srlQvalueProteotypicPeptideClean",
-          parameter_name = "choose_only_proteotypic_peptide",
-          new_value = as.numeric(input$proteotypic_only)
-        )
-        
-        # Apply S4 transformation (EXISTING S4 CODE - UNCHANGED)
-        filtered_s4 <- srlQvalueProteotypicPeptideClean(theObject = current_s4)
-        
-        # Track QC parameters in workflow_data
-        if (is.null(workflow_data$qc_params)) {
-          workflow_data$qc_params <- list()
-        }
-        if (is.null(workflow_data$qc_params$peptide_qc)) {
-          workflow_data$qc_params$peptide_qc <- list()
-        }
-        
-        workflow_data$qc_params$peptide_qc$qvalue_filter <- list(
-          qvalue_threshold = input$qvalue_threshold,
-          global_qvalue_threshold = input$global_qvalue_threshold,
-          proteotypic_only = input$proteotypic_only,
-          timestamp = Sys.time()
-        )
-        
-        # Save new state in R6 manager
-        workflow_data$state_manager$saveState(
-          state_name = "qvalue_filtered",
-          s4_data_object = filtered_s4,
-          config_object = list(
-            qvalue_threshold = input$qvalue_threshold,
-            global_qvalue_threshold = input$global_qvalue_threshold,
-            proteotypic_only = input$proteotypic_only
-          ),
-          description = "Applied Q-value and proteotypic peptide filter"
-        )
-        
-        # Generate filtering summary
-        protein_count <- filtered_s4@peptide_data |>
-          dplyr::distinct(Protein.Ids) |>
-          nrow()
-        
-        result_text <- paste(
-          "Q-Value Filter Applied Successfully\n",
-          "================================\n",
-          sprintf("Proteins remaining: %d\n", protein_count),
-          sprintf("Q-value threshold: %g\n", input$qvalue_threshold),
-          sprintf("Global Q-value threshold: %g\n", input$global_qvalue_threshold),
-          sprintf("Proteotypic only: %s\n", input$proteotypic_only),
-          sprintf("State saved as: 'qvalue_filtered'\n")
-        )
-        
-        output$qvalue_results <- shiny::renderText(result_text)
-        
-        # Update filtering visualization and capture plot
-        plot_grid <- updateProteinFiltering(
-          data = filtered_s4@peptide_data,
-          step_name = "2_qval_filtered",
-          omic_type = omic_type,
-          experiment_label = experiment_label,
-          return_grid = TRUE,
-          overwrite = TRUE
-        )
-        qvalue_plot(plot_grid)
-        
-        logger::log_info("Q-value filter applied successfully")
-        shiny::removeNotification("qvalue_working")
-        shiny::showNotification("Q-value filter applied successfully", type = "message")
-        
-      }, error = function(e) {
-        msg <- paste("Error applying Q-value filter:", e$message)
-        logger::log_error(msg)
-        shiny::showNotification(msg, type = "error", duration = 15)
-        shiny::removeNotification("qvalue_working")
-      })
+      runPeptideQvalueApplyObserver(
+        workflowData = workflow_data,
+        qvalueThreshold = input$qvalue_threshold,
+        globalQvalueThreshold = input$global_qvalue_threshold,
+        proteotypicOnly = input$proteotypic_only,
+        output = output,
+        qvaluePlot = qvalue_plot,
+        omicType = omic_type,
+        experimentLabel = experiment_label
+      )
     })
     
     # Revert Q-Value Filter
     shiny::observeEvent(input$revert_qvalue, {
-      tryCatch({
-        # Revert to raw data state
-        if ("raw_data_s4" %in% workflow_data$state_manager$getHistory()) {
-          reverted_s4 <- workflow_data$state_manager$revertToState("raw_data_s4")
-          output$qvalue_results <- shiny::renderText("Reverted to raw data state")
-          logger::log_info("Reverted to raw data state")
-          shiny::showNotification("Reverted to raw data state", type = "message")
-        } else {
-          stop("Cannot revert: 'raw_data_s4' state not found in history.")
-        }
-        
-      }, error = function(e) {
-        msg <- paste("Error reverting:", e$message)
-        logger::log_error(msg)
-        shiny::showNotification(msg, type = "error")
-      })
+      runPeptideQvalueRevertObserver(
+        workflowData = workflow_data,
+        output = output
+      )
     })
     
     # Render Q-value filter plot
@@ -238,4 +356,3 @@ mod_prot_qc_peptide_qvalue_server <- function(id, workflow_data, omic_type, expe
     })
   })
 }
-

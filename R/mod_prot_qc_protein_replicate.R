@@ -76,6 +76,248 @@ mod_prot_qc_protein_replicate_ui <- function(id) {
 #' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification removeNotification renderText renderPlot
 #' @importFrom logger log_info log_error
 #' @importFrom grid grid.draw
+runProteinReplicateFilterApplyStep <- function(workflowData,
+                                               experimentPaths,
+                                               groupingVariable,
+                                               parallelCores,
+                                               removeProteinsWithOnlyOneReplicateFn = removeProteinsWithOnlyOneReplicate,
+                                               writeTsvFn = vroom::vroom_write,
+                                               saveRdsFn = saveRDS,
+                                               logInfoFn = logger::log_info,
+                                               logWarnFn = logger::log_warn,
+                                               newClusterFn = if (exists("new_cluster")) get("new_cluster") else NULL,
+                                               nowFn = Sys.time) {
+  shiny::req(workflowData$state_manager)
+  currentS4 <- workflowData$state_manager$getState()
+  shiny::req(currentS4)
+
+  logInfoFn(sprintf(
+    "Protein Processing: Applying protein replicate filter with %d cores",
+    parallelCores
+  ))
+
+  coreUtilisation <- if (is.function(newClusterFn)) {
+    newClusterFn(parallelCores)
+  } else {
+    NULL
+  }
+
+  filteredS4 <- removeProteinsWithOnlyOneReplicateFn(
+    currentS4,
+    coreUtilisation,
+    grouping_variable = groupingVariable
+  )
+
+  outputFile <- if (!is.null(experimentPaths$protein_qc_dir)) {
+    file.path(
+      experimentPaths$protein_qc_dir,
+      "remove_proteins_with_only_one_rep.tsv"
+    )
+  } else {
+    "remove_proteins_with_only_one_rep.tsv"
+  }
+  writeTsvFn(filteredS4@protein_quant_table, outputFile)
+
+  if (is.null(workflowData$qc_params)) {
+    workflowData$qc_params <- list()
+  }
+  if (is.null(workflowData$qc_params$protein_qc)) {
+    workflowData$qc_params$protein_qc <- list()
+  }
+
+  workflowData$qc_params$protein_qc$replicate_filter <- list(
+    grouping_variable = groupingVariable,
+    parallel_cores = parallelCores,
+    timestamp = nowFn()
+  )
+
+  tryCatch({
+    if (!is.null(experimentPaths$source_dir)) {
+      qcParamsFile <- file.path(experimentPaths$source_dir, "qc_params.RDS")
+      saveRdsFn(workflowData$qc_params, qcParamsFile)
+      logInfoFn(sprintf("Saved QC parameters to: %s", qcParamsFile))
+    }
+  }, error = function(e) {
+    logWarnFn(sprintf("Could not save QC parameters file: %s", e$message))
+  })
+
+  workflowData$state_manager$saveState(
+    state_name = "protein_replicate_filtered",
+    s4_data_object = filteredS4,
+    config_object = list(
+      grouping_variable = groupingVariable,
+      parallel_cores = parallelCores,
+      output_file = outputFile
+    ),
+    description = "Applied protein replicate filter (removed single-replicate proteins)"
+  )
+
+  proteinCount <- filteredS4@protein_quant_table |>
+    dplyr::distinct(Protein.Ids) |>
+    nrow()
+
+  if (is.null(workflowData$protein_counts)) {
+    workflowData$protein_counts <- list()
+  }
+  workflowData$protein_counts$after_qc_filtering <- proteinCount
+  logInfoFn(sprintf("Tracked protein count after QC filtering: %d", proteinCount))
+
+  resultText <- paste(
+    "Protein Replicate Filter Applied Successfully\n",
+    "============================================\n",
+    sprintf("Proteins remaining: %d\n", proteinCount),
+    sprintf("Grouping variable: %s\n", groupingVariable),
+    sprintf("Parallel cores used: %d\n", parallelCores),
+    sprintf("Output file: %s\n", basename(outputFile)),
+    "State saved as: 'protein_replicate_filtered'\n",
+    "\nProtein filtering pipeline complete!"
+  )
+
+  list(
+    filteredS4 = filteredS4,
+    outputFile = outputFile,
+    proteinCount = proteinCount,
+    resultText = resultText
+  )
+}
+
+updateProteinReplicateFilterOutputs <- function(output,
+                                                proteinReplicateFilterPlot,
+                                                replicateFilterResult,
+                                                omicType,
+                                                experimentLabel,
+                                                renderTextFn = shiny::renderText,
+                                                updateProteinFilteringFn = updateProteinFiltering) {
+  output$protein_replicate_filter_results <- renderTextFn(replicateFilterResult$resultText)
+
+  plotGrid <- updateProteinFilteringFn(
+    data = replicateFilterResult$filteredS4@protein_quant_table,
+    step_name = "13_protein_replicate_filtered",
+    omic_type = omicType,
+    experiment_label = experimentLabel,
+    return_grid = TRUE,
+    overwrite = TRUE
+  )
+  proteinReplicateFilterPlot(plotGrid)
+
+  invisible(plotGrid)
+}
+
+runProteinReplicateFilterApplyObserver <- function(workflowData,
+                                                   experimentPaths,
+                                                   groupingVariable,
+                                                   parallelCores,
+                                                   output,
+                                                   proteinReplicateFilterPlot,
+                                                   omicType,
+                                                   experimentLabel,
+                                                   runApplyStepFn = runProteinReplicateFilterApplyStep,
+                                                   updateOutputsFn = updateProteinReplicateFilterOutputs,
+                                                   showNotificationFn = shiny::showNotification,
+                                                   removeNotificationFn = shiny::removeNotification,
+                                                   logInfoFn = logger::log_info,
+                                                   logErrorFn = logger::log_error) {
+  showNotificationFn(
+    "Applying protein replicate filter...",
+    id = "protein_replicate_filter_working",
+    duration = NULL
+  )
+
+  tryCatch({
+    replicateFilterResult <- runApplyStepFn(
+      workflowData = workflowData,
+      experimentPaths = experimentPaths,
+      groupingVariable = groupingVariable,
+      parallelCores = parallelCores
+    )
+
+    plotGrid <- updateOutputsFn(
+      output = output,
+      proteinReplicateFilterPlot = proteinReplicateFilterPlot,
+      replicateFilterResult = replicateFilterResult,
+      omicType = omicType,
+      experimentLabel = experimentLabel
+    )
+
+    logInfoFn("Protein replicate filter applied successfully")
+    removeNotificationFn("protein_replicate_filter_working")
+    showNotificationFn(
+      "Protein replicate filter applied successfully. Pipeline complete!",
+      type = "message"
+    )
+
+    list(
+      status = "success",
+      replicateFilterResult = replicateFilterResult,
+      plotGrid = plotGrid
+    )
+  }, error = function(e) {
+    errorMessage <- paste("Error applying protein replicate filter:", e$message)
+    logErrorFn(errorMessage)
+    showNotificationFn(errorMessage, type = "error", duration = 15)
+    removeNotificationFn("protein_replicate_filter_working")
+
+    list(
+      status = "error",
+      errorMessage = errorMessage
+    )
+  })
+}
+
+runProteinReplicateFilterRevertStep <- function(workflowData) {
+  shiny::req(workflowData$state_manager)
+  history <- workflowData$state_manager$getHistory()
+
+  if (length(history) <= 1) {
+    stop("No previous state to revert to.")
+  }
+
+  previousState <- history[length(history) - 1]
+  revertedS4 <- workflowData$state_manager$revertToState(previousState)
+
+  list(
+    previousState = previousState,
+    revertedS4 = revertedS4,
+    resultText = paste("Reverted to previous state:", previousState)
+  )
+}
+
+runProteinReplicateFilterRevertObserver <- function(workflowData,
+                                                    output,
+                                                    runRevertStepFn = runProteinReplicateFilterRevertStep,
+                                                    renderTextFn = shiny::renderText,
+                                                    showNotificationFn = shiny::showNotification,
+                                                    logInfoFn = logger::log_info,
+                                                    logErrorFn = logger::log_error) {
+  tryCatch({
+    revertResult <- runRevertStepFn(workflowData = workflowData)
+    output$protein_replicate_filter_results <- renderTextFn(revertResult$resultText)
+    logInfoFn(paste("Reverted protein replicate filter to", revertResult$previousState))
+    showNotificationFn("Reverted successfully", type = "message")
+
+    list(
+      status = "success",
+      revertResult = revertResult
+    )
+  }, error = function(e) {
+    errorMessage <- paste("Error reverting:", e$message)
+    logErrorFn(errorMessage)
+    showNotificationFn(errorMessage, type = "error")
+
+    list(
+      status = "error",
+      errorMessage = errorMessage
+    )
+  })
+}
+
+bindProteinReplicateFilterPlot <- function(output, proteinReplicateFilterPlot) {
+  output$protein_replicate_filter_plot <- renderPlot({
+    req(proteinReplicateFilterPlot())
+    grid.draw(proteinReplicateFilterPlot())
+  })
+}
+
 mod_prot_qc_protein_replicate_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label) {
   shiny::moduleServer(id, function(input, output, session) {
     
@@ -83,148 +325,29 @@ mod_prot_qc_protein_replicate_server <- function(id, workflow_data, experiment_p
     
     # Step 5: Protein Replicate Filter (chunk 23)
     shiny::observeEvent(input$apply_protein_replicate_filter, {
-      shiny::req(workflow_data$state_manager)
-      
-      shiny::showNotification("Applying protein replicate filter...", id = "protein_replicate_filter_working", duration = NULL)
-      
-      tryCatch({
-        # Get current ProteinQuantitativeData S4 object from the active state
-        current_s4 <- workflow_data$state_manager$getState()
-        shiny::req(current_s4)
-        
-        logger::log_info("Protein Processing: Applying protein replicate filter with {input$parallel_cores} cores")
-        
-        # Set up parallel processing
-        # Note: The 'new_cluster' function must be available in the environment
-        core_utilisation <- if(exists("new_cluster")) new_cluster(input$parallel_cores) else NULL
-        
-        # Apply S4 transformation (EXISTING S4 CODE - UNCHANGED)
-        filtered_s4 <- removeProteinsWithOnlyOneReplicate(
-          current_s4,
-          core_utilisation,
-          grouping_variable = input$protein_grouping_variable
-        )
-        
-        # Save filtered data to file (as in original workflow)
-        if (!is.null(experiment_paths$protein_qc_dir)) {
-          output_file <- file.path(experiment_paths$protein_qc_dir, "remove_proteins_with_only_one_rep.tsv")
-          vroom::vroom_write(filtered_s4@protein_quant_table, output_file)
-        } else {
-          output_file <- "remove_proteins_with_only_one_rep.tsv"
-        }
-        
-        # Track QC parameters in workflow_data
-        if (is.null(workflow_data$qc_params)) {
-          workflow_data$qc_params <- list()
-        }
-        if (is.null(workflow_data$qc_params$protein_qc)) {
-          workflow_data$qc_params$protein_qc <- list()
-        }
-        
-        workflow_data$qc_params$protein_qc$replicate_filter <- list(
-          grouping_variable = input$protein_grouping_variable,
-          parallel_cores = input$parallel_cores,
-          timestamp = Sys.time()
-        )
-        
-        # Save QC parameters to file for persistence
-        tryCatch({
-          if (exists("experiment_paths") && !is.null(experiment_paths$source_dir)) {
-            qc_params_file <- file.path(experiment_paths$source_dir, "qc_params.RDS")
-            saveRDS(workflow_data$qc_params, qc_params_file)
-            logger::log_info(sprintf("Saved QC parameters to: %s", qc_params_file))
-          }
-        }, error = function(e) {
-          logger::log_warn(sprintf("Could not save QC parameters file: %s", e$message))
-        })
-        
-        # Save new state
-        workflow_data$state_manager$saveState(
-          state_name = "protein_replicate_filtered",
-          s4_data_object = filtered_s4,
-          config_object = list(
-            grouping_variable = input$protein_grouping_variable,
-            parallel_cores = input$parallel_cores,
-            output_file = output_file
-          ),
-          description = "Applied protein replicate filter (removed single-replicate proteins)"
-        )
-        
-        # Generate summary
-        protein_count <- filtered_s4@protein_quant_table |>
-          dplyr::distinct(Protein.Ids) |>
-          nrow()
-        
-        # Track protein count after QC filtering (final QC step before normalization)
-        if (is.null(workflow_data$protein_counts)) {
-          workflow_data$protein_counts <- list()
-        }
-        workflow_data$protein_counts$after_qc_filtering <- protein_count
-        logger::log_info(sprintf("Tracked protein count after QC filtering: %d", protein_count))
-        
-        result_text <- paste(
-          "Protein Replicate Filter Applied Successfully\n",
-          "============================================\n",
-          sprintf("Proteins remaining: %d\n", protein_count),
-          sprintf("Grouping variable: %s\n", input$protein_grouping_variable),
-          sprintf("Parallel cores used: %d\n", input$parallel_cores),
-          sprintf("Output file: %s\n", basename(output_file)),
-          "State saved as: 'protein_replicate_filtered'\n",
-          "\nProtein filtering pipeline complete!"
-        )
-        
-        output$protein_replicate_filter_results <- shiny::renderText(result_text)
-        
-        # Update filtering visualization and capture plot
-        plot_grid <- updateProteinFiltering(
-          data = filtered_s4@protein_quant_table,
-          step_name = "13_protein_replicate_filtered",
-          omic_type = omic_type,
-          experiment_label = experiment_label,
-          return_grid = TRUE,
-          overwrite = TRUE
-        )
-        protein_replicate_filter_plot(plot_grid)
-        
-        logger::log_info("Protein replicate filter applied successfully")
-        shiny::removeNotification("protein_replicate_filter_working")
-        shiny::showNotification("Protein replicate filter applied successfully. Pipeline complete!", type = "message")
-        
-      }, error = function(e) {
-        msg <- paste("Error applying protein replicate filter:", e$message)
-        logger::log_error(msg)
-        shiny::showNotification(msg, type = "error", duration = 15)
-        shiny::removeNotification("protein_replicate_filter_working")
-      })
+      runProteinReplicateFilterApplyObserver(
+        workflowData = workflow_data,
+        experimentPaths = experiment_paths,
+        groupingVariable = input$protein_grouping_variable,
+        parallelCores = input$parallel_cores,
+        output = output,
+        proteinReplicateFilterPlot = protein_replicate_filter_plot,
+        omicType = omic_type,
+        experimentLabel = experiment_label
+      )
     })
     
     # Revert Protein Replicate Filter
     shiny::observeEvent(input$revert_protein_replicate_filter, {
-      tryCatch({
-        # Revert to the previous state in the history
-        history <- workflow_data$state_manager$getHistory()
-        if (length(history) > 1) {
-          prev_state_name <- history[length(history) - 1]
-          reverted_s4 <- workflow_data$state_manager$revertToState(prev_state_name)
-          output$protein_replicate_filter_results <- shiny::renderText(paste("Reverted to previous state:", prev_state_name))
-          logger::log_info(paste("Reverted protein replicate filter to", prev_state_name))
-          shiny::showNotification("Reverted successfully", type = "message")
-        } else {
-          stop("No previous state to revert to.")
-        }
-        
-      }, error = function(e) {
-        msg <- paste("Error reverting:", e$message)
-        logger::log_error(msg)
-        shiny::showNotification(msg, type = "error")
-      })
+      runProteinReplicateFilterRevertObserver(
+        workflowData = workflow_data,
+        output = output
+      )
     })
-    
-    # Render protein replicate filter plot
-    output$protein_replicate_filter_plot <- shiny::renderPlot({
-      shiny::req(protein_replicate_filter_plot())
-      grid::grid.draw(protein_replicate_filter_plot())
-    })
+
+    bindProteinReplicateFilterPlot(
+      output = output,
+      proteinReplicateFilterPlot = protein_replicate_filter_plot
+    )
   })
 }
-

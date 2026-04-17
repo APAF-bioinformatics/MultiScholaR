@@ -69,6 +69,228 @@ mod_prot_qc_peptide_sample_ui <- function(id) {
 #' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification removeNotification renderText renderPlot
 #' @importFrom logger log_info log_error
 #' @importFrom grid grid.draw
+runPeptideSampleApplyStep <- function(workflowData,
+                                      minPeptidesPerSample,
+                                      updateConfigParameterFn = updateConfigParameter,
+                                      filterMinNumPeptidesPerSampleFn = filterMinNumPeptidesPerSample,
+                                      logInfoFn = logger::log_info,
+                                      nowFn = Sys.time) {
+  shiny::req(workflowData$state_manager)
+  currentS4 <- workflowData$state_manager$getState()
+  shiny::req(currentS4)
+
+  logInfoFn(sprintf(
+    "QC Step: Applying sample quality filter (min: %s)",
+    minPeptidesPerSample
+  ))
+
+  currentS4 <- updateConfigParameterFn(
+    theObject = currentS4,
+    function_name = "filterMinNumPeptidesPerSample",
+    parameter_name = "peptides_per_sample_cutoff",
+    new_value = minPeptidesPerSample
+  )
+
+  samplesBefore <- currentS4@peptide_data |>
+    dplyr::distinct(!!rlang::sym(currentS4@sample_id)) |>
+    dplyr::pull(!!rlang::sym(currentS4@sample_id))
+
+  filteredS4 <- filterMinNumPeptidesPerSampleFn(theObject = currentS4)
+
+  samplesAfter <- filteredS4@peptide_data |>
+    dplyr::distinct(!!rlang::sym(filteredS4@sample_id)) |>
+    dplyr::pull(!!rlang::sym(filteredS4@sample_id))
+
+  samplesRemoved <- setdiff(samplesBefore, samplesAfter)
+  samplesRemovedCount <- length(samplesRemoved)
+
+  if (is.null(filteredS4@args$filterMinNumPeptidesPerSample)) {
+    filteredS4@args$filterMinNumPeptidesPerSample <- list()
+  }
+  filteredS4@args$filterMinNumPeptidesPerSample$samples_removed <- samplesRemoved
+  filteredS4@args$filterMinNumPeptidesPerSample$samples_removed_count <- samplesRemovedCount
+  filteredS4@args$filterMinNumPeptidesPerSample$samples_before_count <- length(samplesBefore)
+  filteredS4@args$filterMinNumPeptidesPerSample$samples_after_count <- length(samplesAfter)
+
+  if (is.null(workflowData$qc_params)) {
+    workflowData$qc_params <- list()
+  }
+  if (is.null(workflowData$qc_params$peptide_qc)) {
+    workflowData$qc_params$peptide_qc <- list()
+  }
+
+  workflowData$qc_params$peptide_qc$sample_filter <- list(
+    min_peptides_per_sample = minPeptidesPerSample,
+    samples_removed = samplesRemoved,
+    samples_removed_count = samplesRemovedCount,
+    samples_before_count = length(samplesBefore),
+    samples_after_count = length(samplesAfter),
+    timestamp = nowFn()
+  )
+
+  workflowData$state_manager$saveState(
+    state_name = "sample_filtered",
+    s4_data_object = filteredS4,
+    config_object = list(
+      min_peptides_per_sample = minPeptidesPerSample,
+      samples_removed = samplesRemoved,
+      samples_removed_count = samplesRemovedCount
+    ),
+    description = "Applied minimum peptides per sample filter"
+  )
+
+  proteinCount <- filteredS4@peptide_data |>
+    dplyr::distinct(Protein.Ids) |>
+    nrow()
+  runCount <- filteredS4@peptide_data |>
+    dplyr::distinct(Run) |>
+    nrow()
+
+  resultText <- paste(
+    "Sample Quality Filter Applied Successfully\n",
+    "=========================================\n",
+    sprintf("Proteins remaining: %d\n", proteinCount),
+    sprintf("Samples remaining: %d\n", runCount),
+    sprintf("Samples removed: %d\n", samplesRemovedCount),
+    sprintf("Min peptides per sample: %d\n", minPeptidesPerSample),
+    "State saved as: 'sample_filtered'\n"
+  )
+
+  if (samplesRemovedCount > 0) {
+    resultText <- paste0(
+      resultText,
+      "\nRemoved samples:\n",
+      paste(samplesRemoved, collapse = ", ")
+    )
+  }
+
+  list(
+    filteredS4 = filteredS4,
+    resultText = resultText
+  )
+}
+
+updatePeptideSampleOutputs <- function(output,
+                                       samplePlot,
+                                       sampleResult,
+                                       omicType,
+                                       experimentLabel,
+                                       renderTextFn = shiny::renderText,
+                                       updateProteinFilteringFn = updateProteinFiltering) {
+  output$sample_results <- renderTextFn(sampleResult$resultText)
+
+  plotGrid <- updateProteinFilteringFn(
+    data = sampleResult$filteredS4@peptide_data,
+    step_name = "6_sample_filtered",
+    omic_type = omicType,
+    experiment_label = experimentLabel,
+    return_grid = TRUE,
+    overwrite = TRUE
+  )
+  samplePlot(plotGrid)
+
+  invisible(plotGrid)
+}
+
+runPeptideSampleApplyObserver <- function(workflowData,
+                                          minPeptidesPerSample,
+                                          output,
+                                          samplePlot,
+                                          omicType,
+                                          experimentLabel,
+                                          runApplyStepFn = runPeptideSampleApplyStep,
+                                          updateOutputsFn = updatePeptideSampleOutputs,
+                                          showNotificationFn = shiny::showNotification,
+                                          removeNotificationFn = shiny::removeNotification,
+                                          logInfoFn = logger::log_info,
+                                          logErrorFn = logger::log_error) {
+  showNotificationFn(
+    "Applying sample quality filter...",
+    id = "sample_working",
+    duration = NULL
+  )
+
+  tryCatch({
+    sampleResult <- runApplyStepFn(
+      workflowData = workflowData,
+      minPeptidesPerSample = minPeptidesPerSample
+    )
+
+    plotGrid <- updateOutputsFn(
+      output = output,
+      samplePlot = samplePlot,
+      sampleResult = sampleResult,
+      omicType = omicType,
+      experimentLabel = experimentLabel
+    )
+
+    logInfoFn("Sample quality filter applied successfully")
+    removeNotificationFn("sample_working")
+    showNotificationFn("Sample quality filter applied successfully", type = "message")
+
+    list(
+      status = "success",
+      sampleResult = sampleResult,
+      plotGrid = plotGrid
+    )
+  }, error = function(e) {
+    errorMessage <- paste("Error applying sample quality filter:", e$message)
+    logErrorFn(errorMessage)
+    showNotificationFn(errorMessage, type = "error", duration = 15)
+    removeNotificationFn("sample_working")
+
+    list(
+      status = "error",
+      errorMessage = errorMessage
+    )
+  })
+}
+
+runPeptideSampleRevertStep <- function(workflowData,
+                                       logInfoFn = logger::log_info) {
+  history <- workflowData$state_manager$getHistory()
+  if (length(history) <= 1) {
+    stop("No previous state to revert to.")
+  }
+
+  previousState <- history[length(history) - 1]
+  revertedS4 <- workflowData$state_manager$revertToState(previousState)
+  logInfoFn(paste("Reverted sample filter to", previousState))
+
+  list(
+    previousState = previousState,
+    revertedS4 = revertedS4,
+    resultText = paste("Reverted to previous state:", previousState)
+  )
+}
+
+runPeptideSampleRevertObserver <- function(workflowData,
+                                           output,
+                                           runRevertStepFn = runPeptideSampleRevertStep,
+                                           renderTextFn = shiny::renderText,
+                                           showNotificationFn = shiny::showNotification,
+                                           logErrorFn = logger::log_error) {
+  tryCatch({
+    revertResult <- runRevertStepFn(workflowData = workflowData)
+    output$sample_results <- renderTextFn(revertResult$resultText)
+    showNotificationFn("Reverted successfully", type = "message")
+
+    list(
+      status = "success",
+      revertResult = revertResult
+    )
+  }, error = function(e) {
+    errorMessage <- paste("Error reverting:", e$message)
+    logErrorFn(errorMessage)
+    showNotificationFn(errorMessage, type = "error")
+
+    list(
+      status = "error",
+      errorMessage = errorMessage
+    )
+  })
+}
+
 mod_prot_qc_peptide_sample_server <- function(id, workflow_data, omic_type, experiment_label) {
   shiny::moduleServer(id, function(input, output, session) {
     
@@ -76,152 +298,22 @@ mod_prot_qc_peptide_sample_server <- function(id, workflow_data, omic_type, expe
     
     # Step 5: Sample Quality Filter (chunk 14)
     shiny::observeEvent(input$apply_sample_filter, {
-      shiny::req(workflow_data$state_manager)
-      
-      shiny::showNotification("Applying sample quality filter...", id = "sample_working", duration = NULL)
-      
-      tryCatch({
-        # Get current S4 object from the active state
-        current_s4 <- workflow_data$state_manager$getState()
-        shiny::req(current_s4)
-        
-        logger::log_info(sprintf("QC Step: Applying sample quality filter (min: %s)", input$min_peptides_per_sample))
-        
-        # [OK] FIXED: Use updateConfigParameter to sync S4 object AND global config_list
-        current_s4 <- updateConfigParameter(
-          theObject = current_s4,
-          function_name = "filterMinNumPeptidesPerSample",
-          parameter_name = "peptides_per_sample_cutoff",
-          new_value = input$min_peptides_per_sample
-        )
-        
-        # Track samples before filtering
-        samples_before <- current_s4@peptide_data |>
-          dplyr::distinct(!!rlang::sym(current_s4@sample_id)) |>
-          dplyr::pull(!!rlang::sym(current_s4@sample_id))
-        
-        # Apply S4 transformation (EXISTING S4 CODE - UNCHANGED)
-        filtered_s4 <- filterMinNumPeptidesPerSample(theObject = current_s4)
-        
-        # Track samples after filtering
-        samples_after <- filtered_s4@peptide_data |>
-          dplyr::distinct(!!rlang::sym(filtered_s4@sample_id)) |>
-          dplyr::pull(!!rlang::sym(filtered_s4@sample_id))
-        
-        # Identify removed samples
-        samples_removed <- setdiff(samples_before, samples_after)
-        samples_removed_count <- length(samples_removed)
-        
-        # Store removed samples info in S4 object @args for report generation
-        if (is.null(filtered_s4@args$filterMinNumPeptidesPerSample)) {
-          filtered_s4@args$filterMinNumPeptidesPerSample <- list()
-        }
-        filtered_s4@args$filterMinNumPeptidesPerSample$samples_removed <- samples_removed
-        filtered_s4@args$filterMinNumPeptidesPerSample$samples_removed_count <- samples_removed_count
-        filtered_s4@args$filterMinNumPeptidesPerSample$samples_before_count <- length(samples_before)
-        filtered_s4@args$filterMinNumPeptidesPerSample$samples_after_count <- length(samples_after)
-        
-        # Track QC parameters in workflow_data
-        if (is.null(workflow_data$qc_params)) {
-          workflow_data$qc_params <- list()
-        }
-        if (is.null(workflow_data$qc_params$peptide_qc)) {
-          workflow_data$qc_params$peptide_qc <- list()
-        }
-        
-        workflow_data$qc_params$peptide_qc$sample_filter <- list(
-          min_peptides_per_sample = input$min_peptides_per_sample,
-          samples_removed = samples_removed,
-          samples_removed_count = samples_removed_count,
-          samples_before_count = length(samples_before),
-          samples_after_count = length(samples_after),
-          timestamp = Sys.time()
-        )
-        
-        # Save new state in R6 manager
-        workflow_data$state_manager$saveState(
-          state_name = "sample_filtered",
-          s4_data_object = filtered_s4,
-          config_object = list(
-            min_peptides_per_sample = input$min_peptides_per_sample,
-            samples_removed = samples_removed,
-            samples_removed_count = samples_removed_count
-          ),
-          description = "Applied minimum peptides per sample filter"
-        )
-        
-        # Generate summary
-        protein_count <- filtered_s4@peptide_data |>
-          dplyr::distinct(Protein.Ids) |>
-          nrow()
-        run_count <- filtered_s4@peptide_data |>
-          dplyr::distinct(Run) |>
-          nrow()
-        
-        result_text <- paste(
-          "Sample Quality Filter Applied Successfully\n",
-          "=========================================\n",
-          sprintf("Proteins remaining: %d\n", protein_count),
-          sprintf("Samples remaining: %d\n", run_count),
-          sprintf("Samples removed: %d\n", samples_removed_count),
-          sprintf("Min peptides per sample: %d\n", input$min_peptides_per_sample),
-          "State saved as: 'sample_filtered'\n"
-        )
-        
-        # Add removed sample names if any
-        if (samples_removed_count > 0) {
-          result_text <- paste0(
-            result_text,
-            "\nRemoved samples:\n",
-            paste(samples_removed, collapse = ", ")
-          )
-        }
-        
-        output$sample_results <- shiny::renderText(result_text)
-        
-        # Update filtering visualization and capture plot
-        plot_grid <- updateProteinFiltering(
-          data = filtered_s4@peptide_data,
-          step_name = "6_sample_filtered",
-          omic_type = omic_type,
-          experiment_label = experiment_label,
-          return_grid = TRUE,
-          overwrite = TRUE
-        )
-        sample_plot(plot_grid)
-        
-        logger::log_info("Sample quality filter applied successfully")
-        shiny::removeNotification("sample_working")
-        shiny::showNotification("Sample quality filter applied successfully", type = "message")
-        
-      }, error = function(e) {
-        msg <- paste("Error applying sample quality filter:", e$message)
-        logger::log_error(msg)
-        shiny::showNotification(msg, type = "error", duration = 15)
-        shiny::removeNotification("sample_working")
-      })
+      runPeptideSampleApplyObserver(
+        workflowData = workflow_data,
+        minPeptidesPerSample = input$min_peptides_per_sample,
+        output = output,
+        samplePlot = sample_plot,
+        omicType = omic_type,
+        experimentLabel = experiment_label
+      )
     })
     
     # Revert Sample Filter
     shiny::observeEvent(input$revert_sample, {
-      tryCatch({
-        # Revert to the previous state in the history
-        history <- workflow_data$state_manager$getHistory()
-        if (length(history) > 1) {
-          prev_state_name <- history[length(history) - 1]
-          reverted_s4 <- workflow_data$state_manager$revertToState(prev_state_name)
-          output$sample_results <- shiny::renderText(paste("Reverted to previous state:", prev_state_name))
-          logger::log_info(paste("Reverted sample filter to", prev_state_name))
-          shiny::showNotification("Reverted successfully", type = "message")
-        } else {
-          stop("No previous state to revert to.")
-        }
-        
-      }, error = function(e) {
-        msg <- paste("Error reverting:", e$message)
-        logger::log_error(msg)
-        shiny::showNotification(msg, type = "error")
-      })
+      runPeptideSampleRevertObserver(
+        workflowData = workflow_data,
+        output = output
+      )
     })
     
     # Render sample filter plot
@@ -231,4 +323,3 @@ mod_prot_qc_peptide_sample_server <- function(id, workflow_data, omic_type, expe
     })
   })
 }
-
