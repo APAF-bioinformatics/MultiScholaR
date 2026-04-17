@@ -48,6 +48,38 @@ mod_metab_qc_ui <- function(id) {
     )
 }
 
+initializeMetabQcSubmodules <- function(workflowData, omicType, experimentLabel) {
+    mod_metab_qc_intensity_server(
+        "intensity"
+        , workflowData
+        , omicType
+        , experimentLabel
+    )
+    
+    mod_metab_qc_duplicates_server(
+        "duplicates"
+        , workflowData
+        , omicType
+        , experimentLabel
+    )
+    
+    mod_metab_qc_itsd_server(
+        "itsd"
+        , workflowData
+        , omicType
+        , experimentLabel
+    )
+    
+    mod_metab_qc_s4_server(
+        "s4_finalize"
+        , workflowData
+        , omicType
+        , experimentLabel
+    )
+    
+    invisible(NULL)
+}
+
 #' @rdname mod_metab_qc
 #' @export
 #' @importFrom shiny moduleServer reactive observeEvent req renderUI tabsetPanel tabPanel
@@ -93,34 +125,11 @@ mod_metab_qc_server <- function(id, workflow_data, experiment_paths, omic_type, 
             
             if (!modules_initialized()) {
                 logger::log_info("Metabolomics QC: Initializing sub-module servers")
-                
-                # Initialize all QC sub-modules
-                mod_metab_qc_intensity_server(
-                    "intensity"
-                    , workflow_data
-                    , omic_type
-                    , experiment_label
-                )
-                
-                mod_metab_qc_duplicates_server(
-                    "duplicates"
-                    , workflow_data
-                    , omic_type
-                    , experiment_label
-                )
-                
-                mod_metab_qc_itsd_server(
-                    "itsd"
-                    , workflow_data
-                    , omic_type
-                    , experiment_label
-                )
-                
-                mod_metab_qc_s4_server(
-                    "s4_finalize"
-                    , workflow_data
-                    , omic_type
-                    , experiment_label
+
+                initializeMetabQcSubmodules(
+                    workflowData = workflow_data
+                    , omicType = omic_type
+                    , experimentLabel = experiment_label
                 )
                 
                 modules_initialized(TRUE)
@@ -144,33 +153,11 @@ mod_metab_qc_server <- function(id, workflow_data, experiment_paths, omic_type, 
                 !modules_initialized()) {
                 
                 logger::log_info("Metabolomics QC: Auto-initializing sub-modules (state detected)")
-                
-                mod_metab_qc_intensity_server(
-                    "intensity"
-                    , workflow_data
-                    , omic_type
-                    , experiment_label
-                )
-                
-                mod_metab_qc_duplicates_server(
-                    "duplicates"
-                    , workflow_data
-                    , omic_type
-                    , experiment_label
-                )
-                
-                mod_metab_qc_itsd_server(
-                    "itsd"
-                    , workflow_data
-                    , omic_type
-                    , experiment_label
-                )
-                
-                mod_metab_qc_s4_server(
-                    "s4_finalize"
-                    , workflow_data
-                    , omic_type
-                    , experiment_label
+
+                initializeMetabQcSubmodules(
+                    workflowData = workflow_data
+                    , omicType = omic_type
+                    , experimentLabel = experiment_label
                 )
                 
                 modules_initialized(TRUE)
@@ -178,4 +165,3 @@ mod_metab_qc_server <- function(id, workflow_data, experiment_paths, omic_type, 
         })
     })
 }
-
