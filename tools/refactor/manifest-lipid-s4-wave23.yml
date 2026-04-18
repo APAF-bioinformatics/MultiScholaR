@@ -1,0 +1,22 @@
+version: 1
+wave: wave23_lipidomics_s4_assay_data_class
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_lipid_s4_assay_data_class.R
+
+entries:
+  - id: lipid_s4_assay_data_class
+    source: R/func_lipid_s4_objects.R
+    selector: { kind: setClass, value: LipidomicsAssayData }
+    target: R/func_lipid_s4_assay_data_class.R
+    group: lipidomics.s4.assay_data_class
+    note: Stage the remaining LipidomicsAssayData class definition into a dedicated helper target for exact-source review before any live apply or collate-order change.

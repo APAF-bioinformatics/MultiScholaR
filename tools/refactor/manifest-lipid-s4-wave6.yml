@@ -1,0 +1,22 @@
+version: 1
+wave: wave6_lipidomics_s4_da_result_class
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_lipid_s4_da_result_class.R
+
+entries:
+  - id: lipid_s4_da_result_class
+    source: R/func_lipid_s4_objects.R
+    selector: { kind: setClass, value: LipidomicsDifferentialAbundanceResults }
+    target: R/func_lipid_s4_da_result_class.R
+    group: lipidomics.s4.da_result_class
+    note: Sixth staged lipid-S4 DA-result wave lifts the differential-abundance result S4 class into a dedicated helper target for review before live apply.

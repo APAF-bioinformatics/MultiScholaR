@@ -1,0 +1,147 @@
+version: 1
+wave: wave2_lipidomics_norm_module_runtime_workflow_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_lipid_norm_support_helpers.R
+  - R/mod_lipid_norm_observer_helpers.R
+  - R/mod_lipid_norm_workflow_helpers.R
+  - R/mod_lipid_norm_runtime_helpers.R
+  - R/mod_lipid_norm_server_helpers.R
+  - R/mod_lipid_norm.R
+
+entries:
+  - id: mod_lipid_norm_handle_run_normalization
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: handleLipidNormRunNormalization }
+    target: R/mod_lipid_norm_workflow_helpers.R
+    group: lipidomics.norm.wrapper.workflow
+    note: Second staged lipid-normalization module wave lifts the remaining workflow handlers, runtime orchestration, and public wrapper shells into exact-source helper files while keeping the exported ui/server entrypoints live in mod_lipid_norm.R until a later reviewed apply.
+
+  - id: mod_lipid_norm_handle_export_session
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: handleLipidNormExportSession }
+    target: R/mod_lipid_norm_workflow_helpers.R
+    group: lipidomics.norm.wrapper.workflow
+
+  - id: mod_lipid_norm_handle_skip_correlation_filter
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: handleLipidNormSkipCorrelationFilter }
+    target: R/mod_lipid_norm_workflow_helpers.R
+    group: lipidomics.norm.wrapper.workflow
+
+  - id: mod_lipid_norm_handle_reset_normalization
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: handleLipidNormResetNormalization }
+    target: R/mod_lipid_norm_workflow_helpers.R
+    group: lipidomics.norm.wrapper.workflow
+
+  - id: mod_lipid_norm_handle_apply_correlation_filter
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: handleLipidNormApplyCorrelationFilter }
+    target: R/mod_lipid_norm_workflow_helpers.R
+    group: lipidomics.norm.wrapper.workflow
+
+  - id: mod_lipid_norm_run_normalization_observer
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: registerLipidNormRunNormalizationObserver }
+    target: R/mod_lipid_norm_workflow_helpers.R
+    group: lipidomics.norm.wrapper.workflow
+
+  - id: mod_lipid_norm_reset_normalization_observer
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: registerLipidNormResetNormalizationObserver }
+    target: R/mod_lipid_norm_workflow_helpers.R
+    group: lipidomics.norm.wrapper.workflow
+
+  - id: mod_lipid_norm_apply_correlation_filter_observer
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: registerLipidNormApplyCorrelationFilterObserver }
+    target: R/mod_lipid_norm_workflow_helpers.R
+    group: lipidomics.norm.wrapper.workflow
+
+  - id: mod_lipid_norm_skip_correlation_filter_observer
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: registerLipidNormSkipCorrelationFilterObserver }
+    target: R/mod_lipid_norm_workflow_helpers.R
+    group: lipidomics.norm.wrapper.workflow
+
+  - id: mod_lipid_norm_export_session_observer
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: registerLipidNormExportSessionObserver }
+    target: R/mod_lipid_norm_workflow_helpers.R
+    group: lipidomics.norm.wrapper.workflow
+
+  - id: mod_lipid_norm_selected_tab_pre_normalization_observer
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: registerLipidNormSelectedTabPreNormalizationObserver }
+    target: R/mod_lipid_norm_workflow_helpers.R
+    group: lipidomics.norm.wrapper.workflow
+
+  - id: mod_lipid_norm_create_reactive_state
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: createLipidNormReactiveState }
+    target: R/mod_lipid_norm_runtime_helpers.R
+    group: lipidomics.norm.wrapper.runtime
+
+  - id: mod_lipid_norm_create_startup_runtime
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: createLipidNormStartupRuntime }
+    target: R/mod_lipid_norm_runtime_helpers.R
+    group: lipidomics.norm.wrapper.runtime
+
+  - id: mod_lipid_norm_register_primary_startup_outputs
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: registerLipidNormPrimaryStartupOutputs }
+    target: R/mod_lipid_norm_runtime_helpers.R
+    group: lipidomics.norm.wrapper.runtime
+
+  - id: mod_lipid_norm_register_itsd_selection_runtime
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: registerLipidNormItsdSelectionRuntime }
+    target: R/mod_lipid_norm_runtime_helpers.R
+    group: lipidomics.norm.wrapper.runtime
+
+  - id: mod_lipid_norm_register_post_normalization_outputs
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: registerLipidNormPostNormalizationOutputs }
+    target: R/mod_lipid_norm_runtime_helpers.R
+    group: lipidomics.norm.wrapper.runtime
+
+  - id: mod_lipid_norm_register_startup_observer_runtime
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: registerLipidNormStartupObserverRuntime }
+    target: R/mod_lipid_norm_runtime_helpers.R
+    group: lipidomics.norm.wrapper.runtime
+
+  - id: mod_lipid_norm_register_server_runtime
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: registerLipidNormServerRuntime }
+    target: R/mod_lipid_norm_runtime_helpers.R
+    group: lipidomics.norm.wrapper.runtime
+
+  - id: mod_lipid_norm_module_server_shell
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: runLipidNormModuleServerShell }
+    target: R/mod_lipid_norm_server_helpers.R
+    group: lipidomics.norm.wrapper.server
+
+  - id: mod_lipid_norm_module_server_entry_shell
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: runLipidNormModuleServerEntryShell }
+    target: R/mod_lipid_norm_server_helpers.R
+    group: lipidomics.norm.wrapper.server
+
+  - id: mod_lipid_norm_module_server_public_wrapper
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: runLipidNormModuleServerPublicWrapper }
+    target: R/mod_lipid_norm_server_helpers.R
+    group: lipidomics.norm.wrapper.server

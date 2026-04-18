@@ -1,0 +1,28 @@
+version: 1
+wave: wave5_lipidomics_s4_da_plot_methods
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_lipid_s4_da_plot_methods.R
+
+entries:
+  - id: lipid_s4_numsig_bar_plot_method
+    source: R/func_lipid_s4_objects.R
+    selector: { kind: setMethod, value: plotNumSigDiffExpBarPlot }
+    target: R/func_lipid_s4_da_plot_methods.R
+    group: lipidomics.s4.da_plot_methods
+    note: Fifth staged lipid-S4 wave lifts the DA summary bar-plot S4 method into a dedicated helper target for review before live apply.
+  - id: lipid_s4_static_volcano_plot_method
+    source: R/func_lipid_s4_objects.R
+    selector: { kind: setMethod, value: plotVolcanoS4 }
+    target: R/func_lipid_s4_da_plot_methods.R
+    group: lipidomics.s4.da_plot_methods
+    note: Fifth staged lipid-S4 wave keeps the static volcano S4 method paired with the DA summary plot method in the same reviewed helper target.

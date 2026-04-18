@@ -1,0 +1,58 @@
+version: 1
+wave: wave2_lipidomics_qc_progress_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_lipid_qc_progress_helpers.R
+
+entries:
+  - id: lipid_qc_progress_state_get
+    source: R/func_lipid_qc.R
+    selector: { kind: symbol, value: getFilteringProgressLipidomics }
+    target: R/func_lipid_qc_progress_helpers.R
+    group: lipidomics.qc.progress
+    note: Second lipid-QC wave lifts the filtering-progress state helpers and simple shared assay metrics before the heavier CV, IS, and plotting helpers.
+
+  - id: lipid_qc_progress_state_update
+    source: R/func_lipid_qc.R
+    selector: { kind: symbol, value: updateFilteringProgressLipidomics }
+    target: R/func_lipid_qc_progress_helpers.R
+    group: lipidomics.qc.progress
+
+  - id: lipid_qc_progress_count_unique
+    source: R/func_lipid_qc.R
+    selector: { kind: symbol, value: countUniqueLipids }
+    target: R/func_lipid_qc_progress_helpers.R
+    group: lipidomics.qc.progress
+
+  - id: lipid_qc_progress_count_per_sample
+    source: R/func_lipid_qc.R
+    selector: { kind: symbol, value: countLipidsPerSample }
+    target: R/func_lipid_qc_progress_helpers.R
+    group: lipidomics.qc.progress
+
+  - id: lipid_qc_progress_missingness
+    source: R/func_lipid_qc.R
+    selector: { kind: symbol, value: calculateLipidMissingness }
+    target: R/func_lipid_qc_progress_helpers.R
+    group: lipidomics.qc.progress
+
+  - id: lipid_qc_progress_sum_intensity
+    source: R/func_lipid_qc.R
+    selector: { kind: symbol, value: calculateLipidSumIntensityPerSample }
+    target: R/func_lipid_qc_progress_helpers.R
+    group: lipidomics.qc.progress
+
+  - id: lipid_qc_progress_total_unique
+    source: R/func_lipid_qc.R
+    selector: { kind: symbol, value: calculateTotalUniqueLipidsAcrossAssays }
+    target: R/func_lipid_qc_progress_helpers.R
+    group: lipidomics.qc.progress

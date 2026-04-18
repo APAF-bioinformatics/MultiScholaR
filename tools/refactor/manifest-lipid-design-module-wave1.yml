@@ -1,0 +1,79 @@
+version: 1
+wave: wave1_lipidomics_design_module_host_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_lipid_design_preview_helpers.R
+  - R/mod_lipid_design_builder_helpers.R
+  - R/mod_lipid_design_import_helpers.R
+  - R/mod_lipid_design.R
+
+entries:
+  - id: mod_lipid_design_assays_preview_formatter
+    source: R/mod_lipid_design.R
+    selector: { kind: symbol, value: formatLipidDesignAssaysPreview }
+    target: R/mod_lipid_design_preview_helpers.R
+    group: lipidomics.design.wrapper.preview
+    note: First staged lipid-design host wave lifts the seam-ready preview, builder, and import helper cluster into dedicated helper files while keeping the public UI and server entrypoints live in mod_lipid_design.R.
+
+  - id: mod_lipid_design_preview_outputs
+    source: R/mod_lipid_design.R
+    selector: { kind: symbol, value: registerLipidDesignPreviewOutputs }
+    target: R/mod_lipid_design_preview_helpers.R
+    group: lipidomics.design.wrapper.preview
+
+  - id: mod_lipid_design_builder_module
+    source: R/mod_lipid_design.R
+    selector: { kind: symbol, value: registerLipidDesignBuilderModule }
+    target: R/mod_lipid_design_builder_helpers.R
+    group: lipidomics.design.wrapper.builder
+
+  - id: mod_lipid_design_builder_observer_shell
+    source: R/mod_lipid_design.R
+    selector: { kind: symbol, value: runLipidDesignBuilderObserverShell }
+    target: R/mod_lipid_design_builder_helpers.R
+    group: lipidomics.design.wrapper.builder
+
+  - id: mod_lipid_design_builder_results_observer
+    source: R/mod_lipid_design.R
+    selector: { kind: symbol, value: registerLipidDesignBuilderResultsObserver }
+    target: R/mod_lipid_design_builder_helpers.R
+    group: lipidomics.design.wrapper.builder
+
+  - id: mod_lipid_design_import_bootstrap
+    source: R/mod_lipid_design.R
+    selector: { kind: symbol, value: initializeLipidDesignImportBootstrap }
+    target: R/mod_lipid_design_import_helpers.R
+    group: lipidomics.design.wrapper.import
+
+  - id: mod_lipid_design_import_modal
+    source: R/mod_lipid_design.R
+    selector: { kind: symbol, value: buildLipidDesignImportModal }
+    target: R/mod_lipid_design_import_helpers.R
+    group: lipidomics.design.wrapper.import
+
+  - id: mod_lipid_design_import_modal_shell
+    source: R/mod_lipid_design.R
+    selector: { kind: symbol, value: registerLipidDesignImportModalShell }
+    target: R/mod_lipid_design_import_helpers.R
+    group: lipidomics.design.wrapper.import
+
+  - id: mod_lipid_design_import_confirmation_shell
+    source: R/mod_lipid_design.R
+    selector: { kind: symbol, value: runLipidDesignImportConfirmationShell }
+    target: R/mod_lipid_design_import_helpers.R
+    group: lipidomics.design.wrapper.import
+
+  - id: mod_lipid_design_import_confirmation_observer
+    source: R/mod_lipid_design.R
+    selector: { kind: symbol, value: registerLipidDesignImportConfirmationObserver }
+    target: R/mod_lipid_design_import_helpers.R
+    group: lipidomics.design.wrapper.import

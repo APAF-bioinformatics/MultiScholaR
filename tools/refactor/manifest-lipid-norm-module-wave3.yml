@@ -1,0 +1,34 @@
+version: 1
+wave: wave3_lipidomics_norm_module_ui_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_lipid_norm_support_helpers.R
+  - R/mod_lipid_norm_observer_helpers.R
+  - R/mod_lipid_norm_workflow_helpers.R
+  - R/mod_lipid_norm_runtime_helpers.R
+  - R/mod_lipid_norm_server_helpers.R
+  - R/mod_lipid_norm_ui_helpers.R
+  - R/mod_lipid_norm.R
+
+entries:
+  - id: mod_lipid_norm_options_control_panel
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: buildLipidNormOptionsControlPanel }
+    target: R/mod_lipid_norm_ui_helpers.R
+    group: lipidomics.norm.wrapper.ui
+    note: Third staged lipid-normalization module wave lifts the extracted UI helper pair into a dedicated UI-helper file while keeping the public ui and server entrypoints live in mod_lipid_norm.R until a later reviewed apply.
+
+  - id: mod_lipid_norm_qc_tabset_panel
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: buildLipidNormQcTabsetPanel }
+    target: R/mod_lipid_norm_ui_helpers.R
+    group: lipidomics.norm.wrapper.ui

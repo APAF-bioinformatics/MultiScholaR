@@ -1,0 +1,28 @@
+version: 1
+wave: wave2_lipidomics_s4_progress_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_lipid_s4_progress_helpers.R
+
+entries:
+  - id: lipid_s4_filtering_progress_class
+    source: R/func_lipid_s4_objects.R
+    selector: { kind: setClass, value: FilteringProgressLipidomics }
+    target: R/func_lipid_s4_progress_helpers.R
+    group: lipidomics.s4.progress
+    note: Second staged lipid-S4 wave lifts the filtering-progress class shell into a dedicated helper target for review before any live apply.
+
+  - id: lipid_s4_filtering_progress_getter
+    source: R/func_lipid_s4_objects.R
+    selector: { kind: symbol, value: getFilteringProgressLipidomics }
+    target: R/func_lipid_s4_progress_helpers.R
+    group: lipidomics.s4.progress

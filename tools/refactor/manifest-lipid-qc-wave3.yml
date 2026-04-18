@@ -1,0 +1,34 @@
+version: 1
+wave: wave3_lipidomics_qc_reporting_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_lipid_qc_reporting_helpers.R
+
+entries:
+  - id: lipid_qc_reporting_cv_distribution
+    source: R/func_lipid_qc.R
+    selector: { kind: symbol, value: calculateLipidCVs }
+    target: R/func_lipid_qc_reporting_helpers.R
+    group: lipidomics.qc.reporting
+    note: Third lipid-QC wave lifts the remaining characterization-covered CV, internal-standard, and plotting helpers before duplicate-resolution work.
+
+  - id: lipid_qc_reporting_internal_standards
+    source: R/func_lipid_qc.R
+    selector: { kind: symbol, value: getLipidInternalStandardMetrics }
+    target: R/func_lipid_qc_reporting_helpers.R
+    group: lipidomics.qc.reporting
+
+  - id: lipid_qc_reporting_plot_generation
+    source: R/func_lipid_qc.R
+    selector: { kind: symbol, value: generateLipidFilteringPlots }
+    target: R/func_lipid_qc_reporting_helpers.R
+    group: lipidomics.qc.reporting

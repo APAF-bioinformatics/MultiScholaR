@@ -1,0 +1,41 @@
+version: 1
+wave: wave2_lipidomics_da_plotting_export_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_lipid_da_plotting.R
+  - R/func_lipid_da_export.R
+
+entries:
+  - id: lipid_da_glimma_plot
+    source: R/func_lipid_da.R
+    selector: { kind: symbol, value: generateLipidDAVolcanoPlotGlimma }
+    target: R/func_lipid_da_plotting.R
+    group: lipidomics.da.plotting
+    note: Second bounded lipid-DA wave lifts the remaining plotting/export helpers without moving the duplicate getLipidQuantData() compatibility surface.
+
+  - id: lipid_da_heatmap_plot
+    source: R/func_lipid_da.R
+    selector: { kind: symbol, value: generateLipidDAHeatmap }
+    target: R/func_lipid_da_plotting.R
+    group: lipidomics.da.plotting
+
+  - id: lipid_da_static_volcano_plot
+    source: R/func_lipid_da.R
+    selector: { kind: symbol, value: generateLipidDAVolcanoStatic }
+    target: R/func_lipid_da_plotting.R
+    group: lipidomics.da.plotting
+
+  - id: lipid_da_output_writer
+    source: R/func_lipid_da.R
+    selector: { kind: symbol, value: outputLipidDaResultsAllContrasts }
+    target: R/func_lipid_da_export.R
+    group: lipidomics.da.export

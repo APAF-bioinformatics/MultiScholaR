@@ -1,0 +1,46 @@
+version: 1
+wave: wave1_lipidomics_import_detection_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_lipid_import_detection.R
+
+entries:
+  - id: lipid_import_detect_format
+    source: R/func_lipid_import.R
+    selector: { kind: symbol, value: detectLipidomicsFormat }
+    target: R/func_lipid_import_detection.R
+    group: lipidomics.import.detection
+    note: First bounded lipid-import wave lifts format detection and column-mapping helpers into a mirrored helper file without touching the duplicated S4 constructor or quant-data compatibility surface.
+
+  - id: lipid_import_find_matching_column
+    source: R/func_lipid_import.R
+    selector: { kind: symbol, value: findLipidMatchingColumn }
+    target: R/func_lipid_import_detection.R
+    group: lipidomics.import.detection
+
+  - id: lipid_import_column_defaults
+    source: R/func_lipid_import.R
+    selector: { kind: symbol, value: getLipidomicsColumnDefaults }
+    target: R/func_lipid_import_detection.R
+    group: lipidomics.import.detection
+
+  - id: lipid_import_validate_column_mapping_alias
+    source: R/func_lipid_import.R
+    selector: { kind: symbol, value: validateColumnMapping }
+    target: R/func_lipid_import_detection.R
+    group: lipidomics.import.detection
+
+  - id: lipid_import_validate_column_mapping
+    source: R/func_lipid_import.R
+    selector: { kind: symbol, value: validateLipidColumnMapping }
+    target: R/func_lipid_import_detection.R
+    group: lipidomics.import.detection

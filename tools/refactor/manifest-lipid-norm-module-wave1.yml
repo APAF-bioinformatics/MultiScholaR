@@ -1,0 +1,162 @@
+version: 1
+wave: wave1_lipidomics_norm_module_support_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_lipid_norm_support_helpers.R
+  - R/mod_lipid_norm_observer_helpers.R
+
+entries:
+  - id: mod_lipid_norm_static_qc_image_outputs
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: registerLipidNormStaticQcImageOutputs }
+    target: R/mod_lipid_norm_support_helpers.R
+    group: lipidomics.norm.wrapper.support
+    note: First staged lipid-normalization module wave lifts the seam-ready support and observer helpers while keeping the run/reset/correlation/export workflow shells and public entrypoints live in mod_lipid_norm.R.
+
+  - id: mod_lipid_norm_assay_label_outputs
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: registerLipidNormAssayLabelOutputs }
+    target: R/mod_lipid_norm_support_helpers.R
+    group: lipidomics.norm.wrapper.support
+
+  - id: mod_lipid_norm_log_output
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: registerLipidNormLogOutput }
+    target: R/mod_lipid_norm_support_helpers.R
+    group: lipidomics.norm.wrapper.support
+
+  - id: mod_lipid_norm_itsd_selection_output
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: registerLipidNormItsdSelectionOutput }
+    target: R/mod_lipid_norm_support_helpers.R
+    group: lipidomics.norm.wrapper.support
+
+  - id: mod_lipid_norm_ruv_qc_output
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: registerLipidNormRuvQcOutput }
+    target: R/mod_lipid_norm_support_helpers.R
+    group: lipidomics.norm.wrapper.support
+
+  - id: mod_lipid_norm_correlation_filter_summary_output
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: registerLipidNormCorrelationFilterSummaryOutput }
+    target: R/mod_lipid_norm_support_helpers.R
+    group: lipidomics.norm.wrapper.support
+
+  - id: mod_lipid_norm_final_qc_plot_output
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: registerLipidNormFinalQcPlotOutput }
+    target: R/mod_lipid_norm_support_helpers.R
+    group: lipidomics.norm.wrapper.support
+
+  - id: mod_lipid_norm_assay_label_renderer
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: buildLipidNormAssayLabelRenderer }
+    target: R/mod_lipid_norm_support_helpers.R
+    group: lipidomics.norm.wrapper.support
+
+  - id: mod_lipid_norm_qc_image_renderer
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: buildLipidNormQcImageRenderer }
+    target: R/mod_lipid_norm_support_helpers.R
+    group: lipidomics.norm.wrapper.support
+
+  - id: mod_lipid_norm_log_renderer
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: buildLipidNormLogRenderer }
+    target: R/mod_lipid_norm_support_helpers.R
+    group: lipidomics.norm.wrapper.support
+
+  - id: mod_lipid_norm_itsd_selection_ui_renderer
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: buildLipidNormItsdSelectionUiRenderer }
+    target: R/mod_lipid_norm_support_helpers.R
+    group: lipidomics.norm.wrapper.support
+
+  - id: mod_lipid_norm_ruv_qc_ui_renderer
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: buildLipidNormRuvQcUiRenderer }
+    target: R/mod_lipid_norm_support_helpers.R
+    group: lipidomics.norm.wrapper.support
+
+  - id: mod_lipid_norm_correlation_filter_summary_renderer
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: buildLipidNormCorrelationFilterSummaryRenderer }
+    target: R/mod_lipid_norm_support_helpers.R
+    group: lipidomics.norm.wrapper.support
+
+  - id: mod_lipid_norm_final_qc_plot_renderer
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: buildLipidNormFinalQcPlotRenderer }
+    target: R/mod_lipid_norm_support_helpers.R
+    group: lipidomics.norm.wrapper.support
+
+  - id: mod_lipid_norm_add_log
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: buildLipidNormAddLog }
+    target: R/mod_lipid_norm_support_helpers.R
+    group: lipidomics.norm.wrapper.support
+
+  - id: mod_lipid_norm_plot_aesthetics_getter
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: buildLipidNormPlotAestheticsGetter }
+    target: R/mod_lipid_norm_support_helpers.R
+    group: lipidomics.norm.wrapper.support
+
+  - id: mod_lipid_norm_composite_from_files_generator
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: buildLipidNormCompositeFromFilesGenerator }
+    target: R/mod_lipid_norm_support_helpers.R
+    group: lipidomics.norm.wrapper.support
+
+  - id: mod_lipid_norm_design_driven_choice_observer
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: registerLipidNormDesignDrivenChoiceObserver }
+    target: R/mod_lipid_norm_observer_helpers.R
+    group: lipidomics.norm.wrapper.observer
+    note: Stage the reactive observer-side seams as a second exact-source helper file behind the reusable support cluster.
+
+  - id: mod_lipid_norm_assay_name_initialization_observer
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: registerLipidNormAssayNameInitializationObserver }
+    target: R/mod_lipid_norm_observer_helpers.R
+    group: lipidomics.norm.wrapper.observer
+
+  - id: mod_lipid_norm_ruv_cancor_outputs
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: registerLipidNormRuvCancorOutputs }
+    target: R/mod_lipid_norm_observer_helpers.R
+    group: lipidomics.norm.wrapper.observer
+
+  - id: mod_lipid_norm_itsd_table_outputs
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: registerLipidNormItsdTableOutputs }
+    target: R/mod_lipid_norm_observer_helpers.R
+    group: lipidomics.norm.wrapper.observer
+
+  - id: mod_lipid_norm_itsd_selection_tracking
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: registerLipidNormItsdSelectionTracking }
+    target: R/mod_lipid_norm_observer_helpers.R
+    group: lipidomics.norm.wrapper.observer
+
+  - id: mod_lipid_norm_pre_normalization_qc
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: handleLipidNormPreNormalizationQc }
+    target: R/mod_lipid_norm_observer_helpers.R
+    group: lipidomics.norm.wrapper.observer
+
+  - id: mod_lipid_norm_selected_tab_pre_normalization_trigger
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: handleLipidNormSelectedTabPreNormalizationTrigger }
+    target: R/mod_lipid_norm_observer_helpers.R
+    group: lipidomics.norm.wrapper.observer

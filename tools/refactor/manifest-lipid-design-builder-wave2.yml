@@ -1,0 +1,33 @@
+version: 1
+wave: wave2_lipidomics_design_builder_entrypoints
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_lipid_design_builder_display_helpers.R
+  - R/mod_lipid_design_builder_action_helpers.R
+  - R/mod_lipid_design_builder_state_helpers.R
+  - R/mod_lipid_design_builder_ui.R
+  - R/mod_lipid_design_builder_server.R
+  - R/mod_lipid_design_builder.R
+
+entries:
+  - id: mod_lipid_design_builder_ui_entrypoint
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: mod_lipid_design_builder_ui }
+    target: R/mod_lipid_design_builder_ui.R
+    group: lipidomics.design.builder.entrypoints
+    note: Second builder staging wave mirrors the reviewed proteomics entrypoint split by staging the remaining public UI and server entrypoints into dedicated files while leaving mod_lipid_design_builder.R as the wrapper identity until a later live apply.
+
+  - id: mod_lipid_design_builder_server_entrypoint
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: mod_lipid_design_builder_server }
+    target: R/mod_lipid_design_builder_server.R
+    group: lipidomics.design.builder.entrypoints

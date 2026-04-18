@@ -1,0 +1,113 @@
+version: 1
+wave: wave1_lipidomics_summary_module_host_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_lipid_summary_server_helpers.R
+  - R/mod_lipid_summary.R
+
+entries:
+  - id: mod_lipid_summary_build_template_status
+    source: R/mod_lipid_summary.R
+    selector: { kind: symbol, value: buildLipidSummaryTemplateStatus }
+    target: R/mod_lipid_summary_server_helpers.R
+    group: lipidomics.summary.wrapper.server_helpers
+    note: First staged helper wave lifts the seam-ready template, bootstrap, and observer helper surface into a dedicated server helper file while leaving the public UI and server wrapper in mod_lipid_summary.R for later review-first apply.
+
+  - id: mod_lipid_summary_register_template_status_output
+    source: R/mod_lipid_summary.R
+    selector: { kind: symbol, value: registerLipidSummaryTemplateStatusOutput }
+    target: R/mod_lipid_summary_server_helpers.R
+    group: lipidomics.summary.wrapper.server_helpers
+
+  - id: mod_lipid_summary_build_session_state
+    source: R/mod_lipid_summary.R
+    selector: { kind: symbol, value: buildLipidSummarySessionState }
+    target: R/mod_lipid_summary_server_helpers.R
+    group: lipidomics.summary.wrapper.server_helpers
+
+  - id: mod_lipid_summary_handle_export_session_state
+    source: R/mod_lipid_summary.R
+    selector: { kind: symbol, value: handleLipidSummaryExportSessionState }
+    target: R/mod_lipid_summary_server_helpers.R
+    group: lipidomics.summary.wrapper.server_helpers
+
+  - id: mod_lipid_summary_register_export_session_observer
+    source: R/mod_lipid_summary.R
+    selector: { kind: symbol, value: registerLipidSummaryExportSessionObserver }
+    target: R/mod_lipid_summary_server_helpers.R
+    group: lipidomics.summary.wrapper.server_helpers
+
+  - id: mod_lipid_summary_collect_workflow_args_context
+    source: R/mod_lipid_summary.R
+    selector: { kind: symbol, value: collectLipidSummaryWorkflowArgsContext }
+    target: R/mod_lipid_summary_server_helpers.R
+    group: lipidomics.summary.wrapper.server_helpers
+
+  - id: mod_lipid_summary_handle_save_workflow_args
+    source: R/mod_lipid_summary.R
+    selector: { kind: symbol, value: handleLipidSummarySaveWorkflowArgs }
+    target: R/mod_lipid_summary_server_helpers.R
+    group: lipidomics.summary.wrapper.server_helpers
+
+  - id: mod_lipid_summary_register_save_workflow_args_observer
+    source: R/mod_lipid_summary.R
+    selector: { kind: symbol, value: registerLipidSummarySaveWorkflowArgsObserver }
+    target: R/mod_lipid_summary_server_helpers.R
+    group: lipidomics.summary.wrapper.server_helpers
+
+  - id: mod_lipid_summary_handle_copy_to_publication
+    source: R/mod_lipid_summary.R
+    selector: { kind: symbol, value: handleLipidSummaryCopyToPublication }
+    target: R/mod_lipid_summary_server_helpers.R
+    group: lipidomics.summary.wrapper.server_helpers
+
+  - id: mod_lipid_summary_register_copy_to_publication_observer
+    source: R/mod_lipid_summary.R
+    selector: { kind: symbol, value: registerLipidSummaryCopyToPublicationObserver }
+    target: R/mod_lipid_summary_server_helpers.R
+    group: lipidomics.summary.wrapper.server_helpers
+
+  - id: mod_lipid_summary_handle_generate_report
+    source: R/mod_lipid_summary.R
+    selector: { kind: symbol, value: handleLipidSummaryGenerateReport }
+    target: R/mod_lipid_summary_server_helpers.R
+    group: lipidomics.summary.wrapper.server_helpers
+
+  - id: mod_lipid_summary_register_generate_report_observer
+    source: R/mod_lipid_summary.R
+    selector: { kind: symbol, value: registerLipidSummaryGenerateReportObserver }
+    target: R/mod_lipid_summary_server_helpers.R
+    group: lipidomics.summary.wrapper.server_helpers
+
+  - id: mod_lipid_summary_handle_push_to_github
+    source: R/mod_lipid_summary.R
+    selector: { kind: symbol, value: handleLipidSummaryPushToGithub }
+    target: R/mod_lipid_summary_server_helpers.R
+    group: lipidomics.summary.wrapper.server_helpers
+
+  - id: mod_lipid_summary_register_push_to_github_observer
+    source: R/mod_lipid_summary.R
+    selector: { kind: symbol, value: registerLipidSummaryPushToGithubObserver }
+    target: R/mod_lipid_summary_server_helpers.R
+    group: lipidomics.summary.wrapper.server_helpers
+
+  - id: mod_lipid_summary_initialize_session_bootstrap
+    source: R/mod_lipid_summary.R
+    selector: { kind: symbol, value: initializeLipidSummarySessionBootstrap }
+    target: R/mod_lipid_summary_server_helpers.R
+    group: lipidomics.summary.wrapper.server_helpers
+
+  - id: mod_lipid_summary_register_initial_outputs
+    source: R/mod_lipid_summary.R
+    selector: { kind: symbol, value: registerLipidSummaryInitialOutputs }
+    target: R/mod_lipid_summary_server_helpers.R
+    group: lipidomics.summary.wrapper.server_helpers

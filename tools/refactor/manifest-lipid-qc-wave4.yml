@@ -1,0 +1,28 @@
+version: 1
+wave: wave4_lipidomics_qc_support_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_lipid_qc_support_helpers.R
+
+entries:
+  - id: lipid_qc_support_duplicate_resolution
+    source: R/func_lipid_qc.R
+    selector: { kind: symbol, value: resolveLipidDuplicateFeaturesByIntensity }
+    target: R/func_lipid_qc_support_helpers.R
+    group: lipidomics.qc.support
+    note: Fourth lipid-QC wave lifts the remaining duplicate-resolution and pair-correlation top-level helpers so the public QC wrapper file falls below the ideal size band.
+
+  - id: lipid_qc_support_pair_correlation
+    source: R/func_lipid_qc.R
+    selector: { kind: symbol, value: calculateLipidPairCorrelation }
+    target: R/func_lipid_qc_support_helpers.R
+    group: lipidomics.qc.support

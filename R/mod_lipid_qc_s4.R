@@ -89,6 +89,219 @@ mod_lipid_qc_s4_ui <- function(id) {
     )
 }
 
+buildLipidQcS4StateHistoryUi <- function(history) {
+    if (length(history) == 0) {
+        return(shiny::p(
+            shiny::icon("info-circle")
+            , " No processing history available."
+            , style = "color: #666;"
+        ))
+    }
+
+    history_items <- lapply(seq_along(history), function(i) {
+        state_name <- history[i]
+        is_current <- i == length(history)
+
+        icon_name <- if (is_current) "arrow-right" else "check"
+        icon_color <- if (is_current) "blue" else "green"
+        text_style <- if (is_current) "font-weight: bold;" else ""
+
+        shiny::tags$li(
+            shiny::icon(icon_name, style = paste("color:", icon_color))
+            , shiny::tags$span(
+                sprintf(" %d. %s", i, state_name)
+                , style = text_style
+            )
+            , if (is_current) shiny::tags$span(" (current)", style = "color: blue;") else NULL
+        )
+    })
+
+    shiny::tags$ol(history_items, style = "list-style: none; padding-left: 0;")
+}
+
+registerLipidQcS4StateHistoryOutput <- function(
+    output,
+    workflowData,
+    renderUiFn = shiny::renderUI,
+    reqFn = shiny::req,
+    buildStateHistoryUiFn = buildLipidQcS4StateHistoryUi
+) {
+    output$state_history <- renderUiFn({
+        reqFn(workflowData$state_manager)
+
+        history <- tryCatch({
+            workflowData$state_manager$getHistory()
+        }, error = function(e) {
+            character(0)
+        })
+
+        buildStateHistoryUiFn(history)
+    })
+
+    output
+}
+
+buildLipidQcS4DataSummaryUi <- function(currentS4) {
+    if (is.null(currentS4) || !inherits(currentS4, "LipidomicsAssayData")) {
+        return(shiny::p(
+            shiny::icon("exclamation-triangle", style = "color: orange;")
+            , " No LipidomicsAssayData object available."
+        ))
+    }
+
+    assay_list <- currentS4@lipid_data
+    n_assays <- length(assay_list)
+
+    total_lipids <- sum(vapply(assay_list, function(a) {
+        if (currentS4@lipid_id_column %in% names(a)) {
+            length(unique(a[[currentS4@lipid_id_column]]))
+        } else {
+            nrow(a)
+        }
+    }, numeric(1)))
+
+    sample_cols <- if (n_assays > 0) {
+        names(assay_list[[1]])[vapply(assay_list[[1]], is.numeric, logical(1))]
+    } else {
+        character(0)
+    }
+    n_samples <- length(sample_cols)
+
+    dm <- currentS4@design_matrix
+    n_groups <- if (nrow(dm) > 0 && currentS4@group_id %in% names(dm)) {
+        length(unique(dm[[currentS4@group_id]]))
+    } else {
+        NA
+    }
+
+    shiny::tagList(
+        shiny::tags$table(
+            class = "table table-condensed"
+            , style = "margin-bottom: 0;"
+            , shiny::tags$tbody(
+                shiny::tags$tr(
+                    shiny::tags$td(shiny::strong("Number of Assays:"))
+                    , shiny::tags$td(n_assays)
+                )
+                , shiny::tags$tr(
+                    shiny::tags$td(shiny::strong("Total Lipids:"))
+                    , shiny::tags$td(format(total_lipids, big.mark = ","))
+                )
+                , shiny::tags$tr(
+                    shiny::tags$td(shiny::strong("Number of Samples:"))
+                    , shiny::tags$td(n_samples)
+                )
+                , shiny::tags$tr(
+                    shiny::tags$td(shiny::strong("Experimental Groups:"))
+                    , shiny::tags$td(if (!is.na(n_groups)) n_groups else "N/A")
+                )
+                , shiny::tags$tr(
+                    shiny::tags$td(shiny::strong("Lipid ID Column:"))
+                    , shiny::tags$td(currentS4@lipid_id_column)
+                )
+                , shiny::tags$tr(
+                    shiny::tags$td(shiny::strong("Sample ID Column:"))
+                    , shiny::tags$td(currentS4@sample_id)
+                )
+            )
+        )
+    )
+}
+
+registerLipidQcS4DataSummaryOutput <- function(
+    output,
+    workflowData,
+    renderUiFn = shiny::renderUI,
+    reqFn = shiny::req,
+    buildDataSummaryUiFn = buildLipidQcS4DataSummaryUi
+) {
+    output$data_summary <- renderUiFn({
+        reqFn(workflowData$state_manager)
+
+        current_s4 <- tryCatch({
+            workflowData$state_manager$getState()
+        }, error = function(e) {
+            NULL
+        })
+
+        buildDataSummaryUiFn(current_s4)
+    })
+
+    output
+}
+
+buildLipidQcS4AssayStatsTable <- function(
+    currentS4,
+    datatableFn = DT::datatable
+) {
+    if (is.null(currentS4) || !inherits(currentS4, "LipidomicsAssayData")) {
+        return(NULL)
+    }
+
+    assay_list <- currentS4@lipid_data
+    lipid_id_col <- currentS4@lipid_id_column
+
+    stats_df <- data.frame(
+        Assay = names(assay_list)
+        , Lipids = sapply(assay_list, function(a) {
+            if (lipid_id_col %in% names(a)) {
+                length(unique(a[[lipid_id_col]]))
+            } else {
+                nrow(a)
+            }
+        })
+        , Samples = sapply(assay_list, function(a) {
+            sum(sapply(a, is.numeric))
+        })
+        , stringsAsFactors = FALSE
+    )
+
+    stats_df$Missingness <- sapply(assay_list, function(a) {
+        quant_cols <- names(a)[sapply(a, is.numeric)]
+        if (length(quant_cols) == 0) return(NA)
+
+        total_cells <- nrow(a) * length(quant_cols)
+        missing_cells <- sum(sapply(quant_cols, function(col) {
+            sum(is.na(a[[col]]) | a[[col]] == 0)
+        }))
+
+        round((missing_cells / total_cells) * 100, 1)
+    })
+
+    datatableFn(
+        stats_df
+        , options = list(
+            dom = "t"
+            , paging = FALSE
+            , ordering = FALSE
+        )
+        , rownames = FALSE
+        , class = "compact stripe"
+    )
+}
+
+registerLipidQcS4AssayStatsOutput <- function(
+    output,
+    workflowData,
+    renderDtFn = DT::renderDT,
+    reqFn = shiny::req,
+    buildAssayStatsTableFn = buildLipidQcS4AssayStatsTable
+) {
+    output$assay_stats_table <- renderDtFn({
+        reqFn(workflowData$state_manager)
+
+        current_s4 <- tryCatch({
+            workflowData$state_manager$getState()
+        }, error = function(e) {
+            NULL
+        })
+
+        buildAssayStatsTableFn(current_s4)
+    })
+
+    output
+}
+
 #' @rdname mod_lipid_qc_s4
 #' @export
 #' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification renderText renderUI observe tags renderPlot
@@ -101,182 +314,20 @@ mod_lipid_qc_s4_server <- function(id, workflow_data, omic_type, experiment_labe
 
         filter_plot <- shiny::reactiveVal(NULL)
 
-        # Render state history
-        output$state_history <- shiny::renderUI({
-            shiny::req(workflow_data$state_manager)
-            
-            history <- tryCatch({
-                workflow_data$state_manager$getHistory()
-            }, error = function(e) {
-                character(0)
-            })
-            
-            if (length(history) == 0) {
-                return(shiny::p(
-                    shiny::icon("info-circle")
-                    , " No processing history available."
-                    , style = "color: #666;"
-                ))
-            }
-            
-            # Create history items with icons
-            history_items <- lapply(seq_along(history), function(i) {
-                state_name <- history[i]
-                is_current <- i == length(history)
-                
-                icon_name <- if (is_current) "arrow-right" else "check"
-                icon_color <- if (is_current) "blue" else "green"
-                text_style <- if (is_current) "font-weight: bold;" else ""
-                
-                shiny::tags$li(
-                    shiny::icon(icon_name, style = paste("color:", icon_color))
-                    , shiny::tags$span(
-                        sprintf(" %d. %s", i, state_name)
-                        , style = text_style
-                    )
-                    , if (is_current) shiny::tags$span(" (current)", style = "color: blue;") else NULL
-                )
-            })
-            
-            shiny::tags$ol(history_items, style = "list-style: none; padding-left: 0;")
-        })
-        
-        # Render data summary
-        output$data_summary <- shiny::renderUI({
-            shiny::req(workflow_data$state_manager)
-            
-            current_s4 <- tryCatch({
-                workflow_data$state_manager$getState()
-            }, error = function(e) {
-                NULL
-            })
-            
-            if (is.null(current_s4) || !inherits(current_s4, "LipidomicsAssayData")) {
-                return(shiny::p(
-                    shiny::icon("exclamation-triangle", style = "color: orange;")
-                    , " No LipidomicsAssayData object available."
-                ))
-            }
-            
-            # Calculate summary stats
-            assay_list <- current_s4@lipid_data
-            n_assays <- length(assay_list)
-            
-            total_lipids <- sum(sapply(assay_list, function(a) {
-                if (current_s4@lipid_id_column %in% names(a)) {
-                    length(unique(a[[current_s4@lipid_id_column]]))
-                } else {
-                    nrow(a)
-                }
-            }))
-            
-            # Get sample count from first assay
-            sample_cols <- if (n_assays > 0) {
-                names(assay_list[[1]])[sapply(assay_list[[1]], is.numeric)]
-            } else {
-                character(0)
-            }
-            n_samples <- length(sample_cols)
-            
-            # Design matrix info
-            dm <- current_s4@design_matrix
-            n_groups <- if (nrow(dm) > 0 && current_s4@group_id %in% names(dm)) {
-                length(unique(dm[[current_s4@group_id]]))
-            } else {
-                NA
-            }
-            
-            shiny::tagList(
-                shiny::tags$table(
-                    class = "table table-condensed"
-                    , style = "margin-bottom: 0;"
-                    , shiny::tags$tbody(
-                        shiny::tags$tr(
-                            shiny::tags$td(shiny::strong("Number of Assays:"))
-                            , shiny::tags$td(n_assays)
-                        )
-                        , shiny::tags$tr(
-                            shiny::tags$td(shiny::strong("Total Lipids:"))
-                            , shiny::tags$td(format(total_lipids, big.mark = ","))
-                        )
-                        , shiny::tags$tr(
-                            shiny::tags$td(shiny::strong("Number of Samples:"))
-                            , shiny::tags$td(n_samples)
-                        )
-                        , shiny::tags$tr(
-                            shiny::tags$td(shiny::strong("Experimental Groups:"))
-                            , shiny::tags$td(if (!is.na(n_groups)) n_groups else "N/A")
-                        )
-                        , shiny::tags$tr(
-                            shiny::tags$td(shiny::strong("Lipid ID Column:"))
-                            , shiny::tags$td(current_s4@lipid_id_column)
-                        )
-                        , shiny::tags$tr(
-                            shiny::tags$td(shiny::strong("Sample ID Column:"))
-                            , shiny::tags$td(current_s4@sample_id)
-                        )
-                    )
-                )
-            )
-        })
-        
-        # Render per-assay statistics table
-        output$assay_stats_table <- DT::renderDT({
-            shiny::req(workflow_data$state_manager)
-            
-            current_s4 <- tryCatch({
-                workflow_data$state_manager$getState()
-            }, error = function(e) {
-                NULL
-            })
-            
-            if (is.null(current_s4) || !inherits(current_s4, "LipidomicsAssayData")) {
-                return(NULL)
-            }
-            
-            assay_list <- current_s4@lipid_data
-            lipid_id_col <- current_s4@lipid_id_column
-            
-            # Build stats data frame
-            stats_df <- data.frame(
-                Assay = names(assay_list)
-                , Lipids = sapply(assay_list, function(a) {
-                    if (lipid_id_col %in% names(a)) {
-                        length(unique(a[[lipid_id_col]]))
-                    } else {
-                        nrow(a)
-                    }
-                })
-                , Samples = sapply(assay_list, function(a) {
-                    sum(sapply(a, is.numeric))
-                })
-                , stringsAsFactors = FALSE
-            )
-            
-            # Calculate missingness per assay
-            stats_df$Missingness <- sapply(assay_list, function(a) {
-                quant_cols <- names(a)[sapply(a, is.numeric)]
-                if (length(quant_cols) == 0) return(NA)
-                
-                total_cells <- nrow(a) * length(quant_cols)
-                missing_cells <- sum(sapply(quant_cols, function(col) {
-                    sum(is.na(a[[col]]) | a[[col]] == 0)
-                }))
-                
-                round((missing_cells / total_cells) * 100, 1)
-            })
-            
-            DT::datatable(
-                stats_df
-                , options = list(
-                    dom = 't'
-                    , paging = FALSE
-                    , ordering = FALSE
-                )
-                , rownames = FALSE
-                , class = "compact stripe"
-            )
-        })
+        registerLipidQcS4StateHistoryOutput(
+            output = output
+            , workflowData = workflow_data
+        )
+
+        registerLipidQcS4DataSummaryOutput(
+            output = output
+            , workflowData = workflow_data
+        )
+
+        registerLipidQcS4AssayStatsOutput(
+            output = output
+            , workflowData = workflow_data
+        )
         
         # Finalize QC
         shiny::observeEvent(input$finalize_qc, {
@@ -383,4 +434,3 @@ mod_lipid_qc_s4_server <- function(id, workflow_data, omic_type, experiment_labe
         })
     })
 }
-

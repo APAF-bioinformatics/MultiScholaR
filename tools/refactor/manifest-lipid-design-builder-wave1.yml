@@ -1,0 +1,321 @@
+version: 1
+wave: wave1_lipidomics_design_builder_pre_server_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_lipid_design_builder_display_helpers.R
+  - R/mod_lipid_design_builder_action_helpers.R
+  - R/mod_lipid_design_builder_state_helpers.R
+  - R/mod_lipid_design_builder.R
+
+entries:
+  - id: mod_lipid_design_builder_tech_rep_summary_formatter
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: formatLipidDesignTechRepSummary }
+    target: R/mod_lipid_design_builder_display_helpers.R
+    group: lipidomics.design.builder.display
+    note: First lipid design builder staging wave splits the seam-ready pre-server helper body into display, action, and state helper files while keeping the public UI and server entrypoints in mod_lipid_design_builder.R.
+
+  - id: mod_lipid_design_builder_removed_samples_display
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: formatLipidDesignRemovedSamplesDisplay }
+    target: R/mod_lipid_design_builder_display_helpers.R
+    group: lipidomics.design.builder.display
+
+  - id: mod_lipid_design_builder_contrast_factors_info
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: formatLipidDesignContrastFactorsInfo }
+    target: R/mod_lipid_design_builder_display_helpers.R
+    group: lipidomics.design.builder.display
+
+  - id: mod_lipid_design_builder_summary_output_shells
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: registerLipidDesignSummaryOutputShells }
+    target: R/mod_lipid_design_builder_display_helpers.R
+    group: lipidomics.design.builder.display
+
+  - id: mod_lipid_design_builder_available_factors_display
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: formatLipidDesignAvailableFactorsDisplay }
+    target: R/mod_lipid_design_builder_display_helpers.R
+    group: lipidomics.design.builder.display
+
+  - id: mod_lipid_design_builder_defined_contrast_lines
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: formatLipidDesignDefinedContrastLines }
+    target: R/mod_lipid_design_builder_display_helpers.R
+    group: lipidomics.design.builder.display
+
+  - id: mod_lipid_design_builder_range_preview
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: formatLipidDesignRangePreview }
+    target: R/mod_lipid_design_builder_display_helpers.R
+    group: lipidomics.design.builder.display
+
+  - id: mod_lipid_design_builder_replicate_input_label
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: buildLipidDesignReplicateInputLabel }
+    target: R/mod_lipid_design_builder_display_helpers.R
+    group: lipidomics.design.builder.display
+
+  - id: mod_lipid_design_builder_adjacent_output_shells
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: registerLipidDesignAdjacentOutputShells }
+    target: R/mod_lipid_design_builder_display_helpers.R
+    group: lipidomics.design.builder.display
+
+  - id: mod_lipid_design_builder_sample_selection_input_shell
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: runLipidDesignSampleSelectionInputShell }
+    target: R/mod_lipid_design_builder_display_helpers.R
+    group: lipidomics.design.builder.display
+
+  - id: mod_lipid_design_builder_sample_selection_input_shells
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: registerLipidDesignSampleSelectionInputShells }
+    target: R/mod_lipid_design_builder_display_helpers.R
+    group: lipidomics.design.builder.display
+
+  - id: mod_lipid_design_builder_factor_group_dropdown_shell
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: runLipidDesignFactorGroupDropdownShell }
+    target: R/mod_lipid_design_builder_display_helpers.R
+    group: lipidomics.design.builder.display
+
+  - id: mod_lipid_design_builder_factor_group_dropdown_shells
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: registerLipidDesignFactorGroupDropdownShells }
+    target: R/mod_lipid_design_builder_display_helpers.R
+    group: lipidomics.design.builder.display
+
+  - id: mod_lipid_design_builder_active_data_table
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: buildLipidDesignActiveDataTable }
+    target: R/mod_lipid_design_builder_display_helpers.R
+    group: lipidomics.design.builder.display
+
+  - id: mod_lipid_design_builder_data_table_shells
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: registerLipidDesignDataTableShells }
+    target: R/mod_lipid_design_builder_display_helpers.R
+    group: lipidomics.design.builder.display
+
+  - id: mod_lipid_design_builder_rename_design_matrix_runs
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: renameLipidDesignDesignMatrixRuns }
+    target: R/mod_lipid_design_builder_action_helpers.R
+    group: lipidomics.design.builder.actions
+    note: Keep sample rename, metadata assignment, technical replicate, contrast, and sample-removal mutations together in one exact-source action-helper slice.
+
+  - id: mod_lipid_design_builder_rename_assay_columns
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: renameLipidDesignAssayColumns }
+    target: R/mod_lipid_design_builder_action_helpers.R
+    group: lipidomics.design.builder.actions
+
+  - id: mod_lipid_design_builder_rename_tracked_samples
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: renameLipidDesignTrackedSamples }
+    target: R/mod_lipid_design_builder_action_helpers.R
+    group: lipidomics.design.builder.actions
+
+  - id: mod_lipid_design_builder_apply_sample_rename_map
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: applyLipidDesignSampleRenameMap }
+    target: R/mod_lipid_design_builder_action_helpers.R
+    group: lipidomics.design.builder.actions
+
+  - id: mod_lipid_design_builder_bulk_rename_map
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: buildLipidDesignBulkRenameMap }
+    target: R/mod_lipid_design_builder_action_helpers.R
+    group: lipidomics.design.builder.actions
+
+  - id: mod_lipid_design_builder_sample_rename_shells
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: registerLipidDesignSampleRenameShells }
+    target: R/mod_lipid_design_builder_action_helpers.R
+    group: lipidomics.design.builder.actions
+
+  - id: mod_lipid_design_builder_factor_name_append
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: appendLipidDesignFactorName }
+    target: R/mod_lipid_design_builder_action_helpers.R
+    group: lipidomics.design.builder.actions
+
+  - id: mod_lipid_design_builder_metadata_replicate_numbers
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: buildLipidDesignMetadataReplicateNumbers }
+    target: R/mod_lipid_design_builder_action_helpers.R
+    group: lipidomics.design.builder.actions
+
+  - id: mod_lipid_design_builder_metadata_group_name
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: buildLipidDesignMetadataGroupName }
+    target: R/mod_lipid_design_builder_action_helpers.R
+    group: lipidomics.design.builder.actions
+
+  - id: mod_lipid_design_builder_assigned_groups
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: listLipidDesignAssignedGroups }
+    target: R/mod_lipid_design_builder_action_helpers.R
+    group: lipidomics.design.builder.actions
+
+  - id: mod_lipid_design_builder_metadata_assignment
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: applyLipidDesignMetadataAssignment }
+    target: R/mod_lipid_design_builder_action_helpers.R
+    group: lipidomics.design.builder.actions
+
+  - id: mod_lipid_design_builder_metadata_assignment_shells
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: registerLipidDesignMetadataAssignmentShells }
+    target: R/mod_lipid_design_builder_action_helpers.R
+    group: lipidomics.design.builder.actions
+
+  - id: mod_lipid_design_builder_tech_rep_assignment
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: applyLipidDesignTechRepAssignment }
+    target: R/mod_lipid_design_builder_action_helpers.R
+    group: lipidomics.design.builder.actions
+
+  - id: mod_lipid_design_builder_tech_rep_assignment_shells
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: registerLipidDesignTechRepAssignmentShells }
+    target: R/mod_lipid_design_builder_action_helpers.R
+    group: lipidomics.design.builder.actions
+
+  - id: mod_lipid_design_builder_contrast_append
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: appendLipidDesignContrast }
+    target: R/mod_lipid_design_builder_action_helpers.R
+    group: lipidomics.design.builder.actions
+
+  - id: mod_lipid_design_builder_contrast_management_shells
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: registerLipidDesignContrastManagementShells }
+    target: R/mod_lipid_design_builder_action_helpers.R
+    group: lipidomics.design.builder.actions
+
+  - id: mod_lipid_design_builder_removed_samples_append
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: appendLipidDesignRemovedSamples }
+    target: R/mod_lipid_design_builder_action_helpers.R
+    group: lipidomics.design.builder.actions
+
+  - id: mod_lipid_design_builder_sample_removal_shells
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: registerLipidDesignSampleRemovalShells }
+    target: R/mod_lipid_design_builder_action_helpers.R
+    group: lipidomics.design.builder.actions
+
+  - id: mod_lipid_design_builder_reset_confirmation_body
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: buildLipidDesignResetConfirmationBody }
+    target: R/mod_lipid_design_builder_state_helpers.R
+    group: lipidomics.design.builder.state
+    note: Keep reset, initialization, and save-result state assembly together so the live builder file can shrink to the public UI plus server wrapper once the staged helper split is reviewed.
+
+  - id: mod_lipid_design_builder_reset_confirmation_modal
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: buildLipidDesignResetConfirmationModal }
+    target: R/mod_lipid_design_builder_state_helpers.R
+    group: lipidomics.design.builder.state
+
+  - id: mod_lipid_design_builder_reset_request_shells
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: registerLipidDesignResetRequestShells }
+    target: R/mod_lipid_design_builder_state_helpers.R
+    group: lipidomics.design.builder.state
+
+  - id: mod_lipid_design_builder_reset_state
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: applyLipidDesignResetState }
+    target: R/mod_lipid_design_builder_state_helpers.R
+    group: lipidomics.design.builder.state
+
+  - id: mod_lipid_design_builder_reset_confirmation_shell
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: runLipidDesignResetConfirmationShell }
+    target: R/mod_lipid_design_builder_state_helpers.R
+    group: lipidomics.design.builder.state
+
+  - id: mod_lipid_design_builder_reset_confirmation_shells
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: registerLipidDesignResetConfirmationShells }
+    target: R/mod_lipid_design_builder_state_helpers.R
+    group: lipidomics.design.builder.state
+
+  - id: mod_lipid_design_builder_sample_columns
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: getLipidDesignSampleColumns }
+    target: R/mod_lipid_design_builder_state_helpers.R
+    group: lipidomics.design.builder.state
+
+  - id: mod_lipid_design_builder_contrast_state
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: buildLipidDesignContrastState }
+    target: R/mod_lipid_design_builder_state_helpers.R
+    group: lipidomics.design.builder.state
+
+  - id: mod_lipid_design_builder_initial_state
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: buildLipidDesignInitialState }
+    target: R/mod_lipid_design_builder_state_helpers.R
+    group: lipidomics.design.builder.state
+
+  - id: mod_lipid_design_builder_initial_state_shell
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: runLipidDesignInitialStateShell }
+    target: R/mod_lipid_design_builder_state_helpers.R
+    group: lipidomics.design.builder.state
+
+  - id: mod_lipid_design_builder_initial_state_shells
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: registerLipidDesignInitialStateShells }
+    target: R/mod_lipid_design_builder_state_helpers.R
+    group: lipidomics.design.builder.state
+
+  - id: mod_lipid_design_builder_save_results_design_matrix
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: buildLipidDesignSaveResultsDesignMatrix }
+    target: R/mod_lipid_design_builder_state_helpers.R
+    group: lipidomics.design.builder.state
+
+  - id: mod_lipid_design_builder_save_results_data_list
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: buildLipidDesignSaveResultsDataList }
+    target: R/mod_lipid_design_builder_state_helpers.R
+    group: lipidomics.design.builder.state
+
+  - id: mod_lipid_design_builder_save_results_contrasts_table
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: buildLipidDesignSaveResultsContrastsTable }
+    target: R/mod_lipid_design_builder_state_helpers.R
+    group: lipidomics.design.builder.state
+
+  - id: mod_lipid_design_builder_save_results_payload
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: buildLipidDesignSaveResultsPayload }
+    target: R/mod_lipid_design_builder_state_helpers.R
+    group: lipidomics.design.builder.state
+
+  - id: mod_lipid_design_builder_save_results_shell
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: runLipidDesignSaveResultsShell }
+    target: R/mod_lipid_design_builder_state_helpers.R
+    group: lipidomics.design.builder.state
+
+  - id: mod_lipid_design_builder_save_results_shells
+    source: R/mod_lipid_design_builder.R
+    selector: { kind: symbol, value: registerLipidDesignSaveResultsShells }
+    target: R/mod_lipid_design_builder_state_helpers.R
+    group: lipidomics.design.builder.state

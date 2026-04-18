@@ -1,0 +1,52 @@
+version: 1
+wave: wave1_lipidomics_qc_filtering_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_lipid_qc_filtering_helpers.R
+
+entries:
+  - id: lipid_qc_filtering_assay_metrics
+    source: R/func_lipid_qc.R
+    selector: { kind: symbol, value: calculateLipidFilteringAssayMetrics }
+    target: R/func_lipid_qc_filtering_helpers.R
+    group: lipidomics.qc.filtering
+    note: First staged lipid-QC wave lifts the characterization-covered updateLipidFiltering helper shells without touching live sources.
+
+  - id: lipid_qc_filtering_context
+    source: R/func_lipid_qc.R
+    selector: { kind: symbol, value: prepareLipidFilteringContext }
+    target: R/func_lipid_qc_filtering_helpers.R
+    group: lipidomics.qc.filtering
+
+  - id: lipid_qc_filtering_finalize
+    source: R/func_lipid_qc.R
+    selector: { kind: symbol, value: finalizeLipidFilteringStep }
+    target: R/func_lipid_qc_filtering_helpers.R
+    group: lipidomics.qc.filtering
+
+  - id: lipid_qc_filtering_plot_save_dir
+    source: R/func_lipid_qc.R
+    selector: { kind: symbol, value: resolveLipidFilteringPlotSaveDir }
+    target: R/func_lipid_qc_filtering_helpers.R
+    group: lipidomics.qc.filtering
+
+  - id: lipid_qc_filtering_plot_save_execution
+    source: R/func_lipid_qc.R
+    selector: { kind: symbol, value: saveLipidFilteringPlots }
+    target: R/func_lipid_qc_filtering_helpers.R
+    group: lipidomics.qc.filtering
+
+  - id: lipid_qc_filtering_plot_return
+    source: R/func_lipid_qc.R
+    selector: { kind: symbol, value: returnLipidFilteringPlots }
+    target: R/func_lipid_qc_filtering_helpers.R
+    group: lipidomics.qc.filtering

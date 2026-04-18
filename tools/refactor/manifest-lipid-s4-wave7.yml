@@ -1,0 +1,22 @@
+version: 1
+wave: wave7_lipidomics_s4_interactive_volcano
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_lipid_s4_da_plot_methods.R
+
+entries:
+  - id: lipid_s4_interactive_volcano_plot_method
+    source: R/func_lipid_s4_objects.R
+    selector: { kind: setMethod, value: plotInteractiveVolcano }
+    target: R/func_lipid_s4_da_plot_methods.R
+    group: lipidomics.s4.da_plot_methods
+    note: Seventh staged lipid-S4 wave stages the interactive volcano S4 method for exact-source review before the live helper merge.

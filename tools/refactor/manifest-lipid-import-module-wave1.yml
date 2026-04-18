@@ -1,0 +1,143 @@
+version: 1
+wave: wave1_lipidomics_import_module_server_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_lipid_import_server_helpers.R
+  - R/mod_lipid_import.R
+
+entries:
+  - id: mod_lipid_import_format_detection_status
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: buildLipidImportFormatDetectionStatus }
+    target: R/mod_lipid_import_server_helpers.R
+    group: lipidomics.import.wrapper.server_helpers
+    note: First lipid-import module wrapper staging wave lifts the accumulated seam-covered helper surface into a dedicated server-helpers file while leaving the public UI and server entrypoints in the wrapper.
+
+  - id: mod_lipid_import_column_validation_status
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: buildLipidImportColumnValidationStatus }
+    target: R/mod_lipid_import_server_helpers.R
+    group: lipidomics.import.wrapper.server_helpers
+
+  - id: mod_lipid_import_resolve_effective_column
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: resolveLipidImportEffectiveColumn }
+    target: R/mod_lipid_import_server_helpers.R
+    group: lipidomics.import.wrapper.server_helpers
+
+  - id: mod_lipid_import_resolve_sample_columns
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: resolveLipidImportSampleColumns }
+    target: R/mod_lipid_import_server_helpers.R
+    group: lipidomics.import.wrapper.server_helpers
+
+  - id: mod_lipid_import_format_column_preview_text
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: formatLipidImportColumnPreviewText }
+    target: R/mod_lipid_import_server_helpers.R
+    group: lipidomics.import.wrapper.server_helpers
+
+  - id: mod_lipid_import_validation_summary
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: buildLipidImportValidationSummary }
+    target: R/mod_lipid_import_server_helpers.R
+    group: lipidomics.import.wrapper.server_helpers
+
+  - id: mod_lipid_import_status_display
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: buildLipidImportStatusDisplay }
+    target: R/mod_lipid_import_server_helpers.R
+    group: lipidomics.import.wrapper.server_helpers
+
+  - id: mod_lipid_import_apply_result_to_workflow
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: applyLipidImportResultToWorkflow }
+    target: R/mod_lipid_import_server_helpers.R
+    group: lipidomics.import.wrapper.server_helpers
+
+  - id: mod_lipid_import_finalize_setup_state
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: finalizeLipidImportSetupState }
+    target: R/mod_lipid_import_server_helpers.R
+    group: lipidomics.import.wrapper.server_helpers
+
+  - id: mod_lipid_import_sanitize_sample_names
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: sanitizeLipidImportSampleNames }
+    target: R/mod_lipid_import_server_helpers.R
+    group: lipidomics.import.wrapper.server_helpers
+
+  - id: mod_lipid_import_assemble_assay_list
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: assembleLipidImportAssayList }
+    target: R/mod_lipid_import_server_helpers.R
+    group: lipidomics.import.wrapper.server_helpers
+
+  - id: mod_lipid_import_run_processing
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: runLipidImportProcessing }
+    target: R/mod_lipid_import_server_helpers.R
+    group: lipidomics.import.wrapper.server_helpers
+
+  - id: mod_lipid_import_load_assay_preview
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: loadLipidImportAssayPreview }
+    target: R/mod_lipid_import_server_helpers.R
+    group: lipidomics.import.wrapper.server_helpers
+
+  - id: mod_lipid_import_handle_file_selection
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: handleLipidImportFileSelection }
+    target: R/mod_lipid_import_server_helpers.R
+    group: lipidomics.import.wrapper.server_helpers
+
+  - id: mod_lipid_import_handle_process_request
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: handleLipidImportProcessRequest }
+    target: R/mod_lipid_import_server_helpers.R
+    group: lipidomics.import.wrapper.server_helpers
+
+  - id: mod_lipid_import_validation_summary_render
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: handleLipidImportValidationSummaryRender }
+    target: R/mod_lipid_import_server_helpers.R
+    group: lipidomics.import.wrapper.server_helpers
+
+  - id: mod_lipid_import_sample_columns_display_render
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: handleLipidImportSampleColumnsDisplayRender }
+    target: R/mod_lipid_import_server_helpers.R
+    group: lipidomics.import.wrapper.server_helpers
+
+  - id: mod_lipid_import_available_columns_display_render
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: handleLipidImportAvailableColumnsDisplayRender }
+    target: R/mod_lipid_import_server_helpers.R
+    group: lipidomics.import.wrapper.server_helpers
+
+  - id: mod_lipid_import_custom_lipid_id_status_render
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: handleLipidImportCustomLipidIdStatusRender }
+    target: R/mod_lipid_import_server_helpers.R
+    group: lipidomics.import.wrapper.server_helpers
+
+  - id: mod_lipid_import_custom_annotation_status_render
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: handleLipidImportCustomAnnotationStatusRender }
+    target: R/mod_lipid_import_server_helpers.R
+    group: lipidomics.import.wrapper.server_helpers
+
+  - id: mod_lipid_import_status_render
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: handleLipidImportStatusRender }
+    target: R/mod_lipid_import_server_helpers.R
+    group: lipidomics.import.wrapper.server_helpers

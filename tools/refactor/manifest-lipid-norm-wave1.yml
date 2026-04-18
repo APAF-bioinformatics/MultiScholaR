@@ -1,0 +1,40 @@
+version: 1
+wave: wave1_lipidomics_norm_ruv_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_lipid_norm_ruv_helpers.R
+
+entries:
+  - id: lipid_norm_ruv_optimizer
+    source: R/func_lipid_norm.R
+    selector: { kind: symbol, value: runLipidPerAssayRuvOptimization }
+    target: R/func_lipid_norm_ruv_helpers.R
+    group: lipidomics.norm.ruv
+    note: First bounded lipid normalization staging wave lifts the per-assay RUV helpers without touching live sources.
+
+  - id: lipid_norm_ruv_best_k
+    source: R/func_lipid_norm.R
+    selector: { kind: symbol, value: extractLipidBestKPerAssay }
+    target: R/func_lipid_norm_ruv_helpers.R
+    group: lipidomics.norm.ruv
+
+  - id: lipid_norm_ruv_ctrl_index
+    source: R/func_lipid_norm.R
+    selector: { kind: symbol, value: extractLipidCtrlPerAssay }
+    target: R/func_lipid_norm_ruv_helpers.R
+    group: lipidomics.norm.ruv
+
+  - id: lipid_norm_ruv_summary_table
+    source: R/func_lipid_norm.R
+    selector: { kind: symbol, value: buildLipidCombinedRuvTable }
+    target: R/func_lipid_norm_ruv_helpers.R
+    group: lipidomics.norm.ruv
