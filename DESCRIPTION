@@ -176,6 +176,8 @@ Collate:
     'mod_metab_qc_itsd_server.R'
     'mod_metab_qc_s4_server_helpers.R'
     'mod_metab_qc_s4.R'
+    'mod_metab_summary_observer_helpers.R'
+    'mod_metab_summary_server_helpers.R'
     'mod_metab_summary.R'
     'mod_metabolomics.R'
     'mod_lipid_da.R'
