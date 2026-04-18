@@ -1,0 +1,113 @@
+version: 1
+wave: wave1_proteomics_design_builder_server_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_design_builder_server_helpers.R
+  - R/mod_prot_design_builder.R
+
+entries:
+  - id: mod_prot_design_builder_initial_state_sync_observer
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignInitialStateSyncObserver }
+    target: R/mod_prot_design_builder_server_helpers.R
+    group: proteomics.design.builder.server_helpers
+    note: First builder staging wave moves the now top-level server-helper tail without touching the public wrapper entrypoint.
+
+  - id: mod_prot_design_builder_state_factory
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: createProtDesignBuilderState }
+    target: R/mod_prot_design_builder_server_helpers.R
+    group: proteomics.design.builder.server_helpers
+
+  - id: mod_prot_design_builder_mutable_state_shells
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: createProtDesignMutableStateShells }
+    target: R/mod_prot_design_builder_server_helpers.R
+    group: proteomics.design.builder.server_helpers
+
+  - id: mod_prot_design_builder_data_table_proxy
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: createProtDesignDataTableProxy }
+    target: R/mod_prot_design_builder_server_helpers.R
+    group: proteomics.design.builder.server_helpers
+
+  - id: mod_prot_design_builder_initial_state_reactive
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: createProtDesignInitialStateReactive }
+    target: R/mod_prot_design_builder_server_helpers.R
+    group: proteomics.design.builder.server_helpers
+
+  - id: mod_prot_design_builder_server_state
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: initializeProtDesignBuilderServerState }
+    target: R/mod_prot_design_builder_server_helpers.R
+    group: proteomics.design.builder.server_helpers
+
+  - id: mod_prot_design_builder_render_output_shells
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignRenderOutputShells }
+    target: R/mod_prot_design_builder_server_helpers.R
+    group: proteomics.design.builder.server_helpers
+
+  - id: mod_prot_design_builder_rename_observer_shells
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignRenameObserverShells }
+    target: R/mod_prot_design_builder_server_helpers.R
+    group: proteomics.design.builder.server_helpers
+
+  - id: mod_prot_design_builder_factor_metadata_observer_shells
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignFactorMetadataObserverShells }
+    target: R/mod_prot_design_builder_server_helpers.R
+    group: proteomics.design.builder.server_helpers
+
+  - id: mod_prot_design_builder_action_observer_shells
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignActionObserverShells }
+    target: R/mod_prot_design_builder_server_helpers.R
+    group: proteomics.design.builder.server_helpers
+
+  - id: mod_prot_design_builder_reset_save_observer_shells
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignResetAndSaveObserverShells }
+    target: R/mod_prot_design_builder_server_helpers.R
+    group: proteomics.design.builder.server_helpers
+
+  - id: mod_prot_design_builder_event_observer_shells
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignEventObserverShells }
+    target: R/mod_prot_design_builder_server_helpers.R
+    group: proteomics.design.builder.server_helpers
+
+  - id: mod_prot_design_builder_server_shells
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignBuilderServerShells }
+    target: R/mod_prot_design_builder_server_helpers.R
+    group: proteomics.design.builder.server_helpers
+
+  - id: mod_prot_design_builder_bootstrap_completion
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: completeProtDesignBuilderServerBootstrap }
+    target: R/mod_prot_design_builder_server_helpers.R
+    group: proteomics.design.builder.server_helpers
+
+  - id: mod_prot_design_builder_module_server_shell
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: runProtDesignBuilderModuleServerShell }
+    target: R/mod_prot_design_builder_server_helpers.R
+    group: proteomics.design.builder.server_helpers
+
+  - id: mod_prot_design_builder_server_entry_shell
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: runProtDesignBuilderServerEntryShell }
+    target: R/mod_prot_design_builder_server_helpers.R
+    group: proteomics.design.builder.server_helpers

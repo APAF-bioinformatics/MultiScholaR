@@ -1,0 +1,28 @@
+version: 1
+wave: wave21_lipidomics_s4_plotting_methods_repair
+source_root: "."
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_lipid_s4_plotting_methods.R
+
+entries:
+  - id: lipid_s4_plot_pca_method_repair
+    source: tools/refactor/staging/wave20_lipidomics_s4_plot_pca_method/R/func_lipid_s4_plotting_methods.R
+    selector: { kind: setMethod, value: plotPca }
+    target: R/func_lipid_s4_plotting_methods.R
+    group: lipidomics.s4.plotting_methods
+    note: Reconstitute the existing PCA plotting method into the live lipid-S4 plotting helper from the exact staged wave-20 source.
+  - id: lipid_s4_plot_rle_method_repair
+    source: tools/refactor/staging/wave21_lipidomics_s4_plot_rle_method/R/func_lipid_s4_plotting_methods.R
+    selector: { kind: setMethod, value: plotRle }
+    target: R/func_lipid_s4_plotting_methods.R
+    group: lipidomics.s4.plotting_methods
+    note: Reconstitute the live helper so it carries both the previously extracted PCA method and the newly extracted RLE method after the wave-21 apply.

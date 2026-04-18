@@ -1,0 +1,41 @@
+version: 1
+wave: wave1_lipidomics_qc_intensity_module_server_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_lipid_qc_intensity_server_helpers.R
+  - R/mod_lipid_qc_intensity.R
+
+entries:
+  - id: mod_lipid_qc_intensity_register_assay_results_output
+    source: R/mod_lipid_qc_intensity.R
+    selector: { kind: symbol, value: registerLipidIntensityAssayResultsOutput }
+    target: R/mod_lipid_qc_intensity_server_helpers.R
+    group: lipidomics.qc.intensity.wrapper.server_helpers
+    note: First staged lipid-QC intensity module helper wave lifts the now seam-ready render and observer helper surface into a dedicated server-helpers file while keeping the public UI and server entrypoints live in mod_lipid_qc_intensity.R.
+
+  - id: mod_lipid_qc_intensity_register_filter_plot_output
+    source: R/mod_lipid_qc_intensity.R
+    selector: { kind: symbol, value: registerLipidIntensityFilterPlotOutput }
+    target: R/mod_lipid_qc_intensity_server_helpers.R
+    group: lipidomics.qc.intensity.wrapper.server_helpers
+
+  - id: mod_lipid_qc_intensity_register_revert_observer
+    source: R/mod_lipid_qc_intensity.R
+    selector: { kind: symbol, value: registerLipidIntensityRevertObserver }
+    target: R/mod_lipid_qc_intensity_server_helpers.R
+    group: lipidomics.qc.intensity.wrapper.server_helpers
+
+  - id: mod_lipid_qc_intensity_register_apply_filter_observer
+    source: R/mod_lipid_qc_intensity.R
+    selector: { kind: symbol, value: registerLipidIntensityApplyFilterObserver }
+    target: R/mod_lipid_qc_intensity_server_helpers.R
+    group: lipidomics.qc.intensity.wrapper.server_helpers

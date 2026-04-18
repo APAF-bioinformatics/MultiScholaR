@@ -1,0 +1,36 @@
+version: 1
+wave: wave4_lipidomics_norm_module_entrypoints
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_lipid_norm_support_helpers.R
+  - R/mod_lipid_norm_observer_helpers.R
+  - R/mod_lipid_norm_workflow_helpers.R
+  - R/mod_lipid_norm_runtime_helpers.R
+  - R/mod_lipid_norm_server_helpers.R
+  - R/mod_lipid_norm_ui_helpers.R
+  - R/mod_lipid_norm_ui.R
+  - R/mod_lipid_norm_server.R
+  - R/mod_lipid_norm.R
+
+entries:
+  - id: mod_lipid_norm_ui_entrypoint
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: mod_lipid_norm_ui }
+    target: R/mod_lipid_norm_ui.R
+    group: lipidomics.norm.wrapper.entrypoints
+    note: Final lipid-normalization module wave stages the two public entrypoints into dedicated files and leaves mod_lipid_norm.R as an explicit breadcrumb only after a later live apply.
+
+  - id: mod_lipid_norm_server_entrypoint
+    source: R/mod_lipid_norm.R
+    selector: { kind: symbol, value: mod_lipid_norm_server }
+    target: R/mod_lipid_norm_server.R
+    group: lipidomics.norm.wrapper.entrypoints

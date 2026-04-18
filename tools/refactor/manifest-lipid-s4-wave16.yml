@@ -1,0 +1,22 @@
+version: 1
+wave: wave16_lipidomics_s4_lipid_intensity_filtering_method
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_lipid_s4_normalization_methods.R
+
+entries:
+  - id: lipid_s4_lipid_intensity_filtering_method
+    source: R/func_lipid_s4_objects.R
+    selector: { kind: setMethod, value: lipidIntensityFiltering }
+    target: R/func_lipid_s4_normalization_methods.R
+    group: lipidomics.s4.normalization_methods
+    note: Sixteenth staged lipid-S4 wave lifts the normalization-adjacent lipid-intensity filtering S4 method into the existing normalization helper target for review before any live apply.

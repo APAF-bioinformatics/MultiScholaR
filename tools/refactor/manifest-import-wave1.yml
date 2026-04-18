@@ -1,0 +1,92 @@
+version: 1
+wave: wave1_proteomics_import_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_import_detection.R
+  - R/func_prot_import_readers.R
+  - R/func_prot_import_tmt.R
+  - R/func_prot_import_diann_format.R
+  - R/func_prot_import_organisms.R
+
+entries:
+  - id: func_prot_import_detect_format
+    source: R/func_prot_import.R
+    selector: { kind: symbol, value: detectProteomicsFormat }
+    target: R/func_prot_import_detection.R
+    group: proteomics.import.detection
+    note: Keep import format detection separate while mod_prot_import_server stays frozen.
+
+  - id: func_prot_import_default_config
+    source: R/func_prot_import.R
+    selector: { kind: symbol, value: getDefaultProteomicsConfig }
+    target: R/func_prot_import_detection.R
+    group: proteomics.import.detection
+
+  - id: func_prot_import_diann_reader
+    source: R/func_prot_import.R
+    selector: { kind: symbol, value: importDIANNData }
+    target: R/func_prot_import_readers.R
+    group: proteomics.import.readers
+
+  - id: func_prot_import_spectronaut_reader
+    source: R/func_prot_import.R
+    selector: { kind: symbol, value: importSpectronautData }
+    target: R/func_prot_import_readers.R
+    group: proteomics.import.readers
+
+  - id: func_prot_import_fragpipe_reader
+    source: R/func_prot_import.R
+    selector: { kind: symbol, value: importFragPipeData }
+    target: R/func_prot_import_readers.R
+    group: proteomics.import.readers
+
+  - id: func_prot_import_maxquant_reader
+    source: R/func_prot_import.R
+    selector: { kind: symbol, value: importMaxQuantData }
+    target: R/func_prot_import_readers.R
+    group: proteomics.import.readers
+
+  - id: func_prot_import_tmt_reader
+    source: R/func_prot_import.R
+    selector: { kind: symbol, value: importProteomeDiscovererTMTData }
+    target: R/func_prot_import_tmt.R
+    group: proteomics.import.tmt
+
+  - id: func_prot_import_format_diann
+    source: R/func_prot_import.R
+    selector: { kind: symbol, value: formatDIANN }
+    target: R/func_prot_import_diann_format.R
+    group: proteomics.import.diann
+
+  - id: func_prot_import_format_diann_parquet
+    source: R/func_prot_import.R
+    selector: { kind: symbol, value: formatDIANNParquet }
+    target: R/func_prot_import_diann_format.R
+    group: proteomics.import.diann
+
+  - id: func_prot_import_diann_s4
+    source: R/func_prot_import.R
+    selector: { kind: symbol, value: PeptideQuantitativeDataDiann }
+    target: R/func_prot_import_diann_format.R
+    group: proteomics.import.diann
+
+  - id: func_prot_import_extract_organisms
+    source: R/func_prot_import.R
+    selector: { kind: symbol, value: extractOrganismsFromFasta }
+    target: R/func_prot_import_organisms.R
+    group: proteomics.import.organisms
+
+  - id: func_prot_import_analyze_organisms
+    source: R/func_prot_import.R
+    selector: { kind: symbol, value: analyzeOrganismDistribution }
+    target: R/func_prot_import_organisms.R
+    group: proteomics.import.organisms

@@ -1,0 +1,22 @@
+version: 1
+wave: wave3_lipidomics_s4_constructor_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_lipid_s4_constructor_helpers.R
+
+entries:
+  - id: lipid_s4_assay_constructor
+    source: R/func_lipid_s4_objects.R
+    selector: { kind: symbol, value: createLipidomicsAssayData }
+    target: R/func_lipid_s4_constructor_helpers.R
+    group: lipidomics.s4.constructors
+    note: Third staged lipid-S4 wave lifts the top-level assay constructor into a dedicated helper target for review before any live apply.

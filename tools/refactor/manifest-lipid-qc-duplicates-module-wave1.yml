@@ -1,0 +1,143 @@
+version: 1
+wave: wave1_lipidomics_qc_duplicates_module_server_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_lipid_qc_duplicates_server_helpers.R
+  - R/mod_lipid_qc_duplicates.R
+
+entries:
+  - id: mod_lipid_qc_duplicates_initialize_server_state
+    source: R/mod_lipid_qc_duplicates.R
+    selector: { kind: symbol, value: initializeLipidDuplicateServerState }
+    target: R/mod_lipid_qc_duplicates_server_helpers.R
+    group: lipidomics.qc.duplicates.wrapper.server_helpers
+    note: First staged duplicate-module helper wave lifts the accumulated seam-ready helper and observer surface into a dedicated server-helpers file while leaving the public UI and server entrypoints in the wrapper.
+
+  - id: mod_lipid_qc_duplicates_build_tables_ui
+    source: R/mod_lipid_qc_duplicates.R
+    selector: { kind: symbol, value: buildLipidDuplicateTablesUi }
+    target: R/mod_lipid_qc_duplicates_server_helpers.R
+    group: lipidomics.qc.duplicates.wrapper.server_helpers
+
+  - id: mod_lipid_qc_duplicates_sanitize_table_output_id
+    source: R/mod_lipid_qc_duplicates.R
+    selector: { kind: symbol, value: sanitizeLipidDuplicateTableOutputId }
+    target: R/mod_lipid_qc_duplicates_server_helpers.R
+    group: lipidomics.qc.duplicates.wrapper.server_helpers
+
+  - id: mod_lipid_qc_duplicates_build_datatable
+    source: R/mod_lipid_qc_duplicates.R
+    selector: { kind: symbol, value: buildLipidDuplicateDatatable }
+    target: R/mod_lipid_qc_duplicates_server_helpers.R
+    group: lipidomics.qc.duplicates.wrapper.server_helpers
+
+  - id: mod_lipid_qc_duplicates_register_table_outputs
+    source: R/mod_lipid_qc_duplicates.R
+    selector: { kind: symbol, value: registerLipidDuplicateTableOutputs }
+    target: R/mod_lipid_qc_duplicates_server_helpers.R
+    group: lipidomics.qc.duplicates.wrapper.server_helpers
+
+  - id: mod_lipid_qc_duplicates_register_table_observer
+    source: R/mod_lipid_qc_duplicates.R
+    selector: { kind: symbol, value: registerLipidDuplicateTableObserver }
+    target: R/mod_lipid_qc_duplicates_server_helpers.R
+    group: lipidomics.qc.duplicates.wrapper.server_helpers
+
+  - id: mod_lipid_qc_duplicates_build_summary_ui
+    source: R/mod_lipid_qc_duplicates.R
+    selector: { kind: symbol, value: buildLipidDuplicateSummaryUi }
+    target: R/mod_lipid_qc_duplicates_server_helpers.R
+    group: lipidomics.qc.duplicates.wrapper.server_helpers
+
+  - id: mod_lipid_qc_duplicates_register_summary_output
+    source: R/mod_lipid_qc_duplicates.R
+    selector: { kind: symbol, value: registerLipidDuplicateSummaryOutput }
+    target: R/mod_lipid_qc_duplicates_server_helpers.R
+    group: lipidomics.qc.duplicates.wrapper.server_helpers
+
+  - id: mod_lipid_qc_duplicates_register_tables_output
+    source: R/mod_lipid_qc_duplicates.R
+    selector: { kind: symbol, value: registerLipidDuplicateTablesOutput }
+    target: R/mod_lipid_qc_duplicates_server_helpers.R
+    group: lipidomics.qc.duplicates.wrapper.server_helpers
+
+  - id: mod_lipid_qc_duplicates_register_filter_plot_output
+    source: R/mod_lipid_qc_duplicates.R
+    selector: { kind: symbol, value: registerLipidDuplicateFilterPlotOutput }
+    target: R/mod_lipid_qc_duplicates_server_helpers.R
+    group: lipidomics.qc.duplicates.wrapper.server_helpers
+
+  - id: mod_lipid_qc_duplicates_handle_detection
+    source: R/mod_lipid_qc_duplicates.R
+    selector: { kind: symbol, value: handleLipidDuplicateDetection }
+    target: R/mod_lipid_qc_duplicates_server_helpers.R
+    group: lipidomics.qc.duplicates.wrapper.server_helpers
+
+  - id: mod_lipid_qc_duplicates_handle_resolution
+    source: R/mod_lipid_qc_duplicates.R
+    selector: { kind: symbol, value: handleLipidDuplicateResolution }
+    target: R/mod_lipid_qc_duplicates_server_helpers.R
+    group: lipidomics.qc.duplicates.wrapper.server_helpers
+
+  - id: mod_lipid_qc_duplicates_apply_detection_result
+    source: R/mod_lipid_qc_duplicates.R
+    selector: { kind: symbol, value: applyLipidDuplicateDetectionResult }
+    target: R/mod_lipid_qc_duplicates_server_helpers.R
+    group: lipidomics.qc.duplicates.wrapper.server_helpers
+
+  - id: mod_lipid_qc_duplicates_register_detect_observer
+    source: R/mod_lipid_qc_duplicates.R
+    selector: { kind: symbol, value: registerLipidDuplicateDetectObserver }
+    target: R/mod_lipid_qc_duplicates_server_helpers.R
+    group: lipidomics.qc.duplicates.wrapper.server_helpers
+
+  - id: mod_lipid_qc_duplicates_apply_resolution_result
+    source: R/mod_lipid_qc_duplicates.R
+    selector: { kind: symbol, value: applyLipidDuplicateResolutionResult }
+    target: R/mod_lipid_qc_duplicates_server_helpers.R
+    group: lipidomics.qc.duplicates.wrapper.server_helpers
+
+  - id: mod_lipid_qc_duplicates_register_resolve_observer
+    source: R/mod_lipid_qc_duplicates.R
+    selector: { kind: symbol, value: registerLipidDuplicateResolveObserver }
+    target: R/mod_lipid_qc_duplicates_server_helpers.R
+    group: lipidomics.qc.duplicates.wrapper.server_helpers
+
+  - id: mod_lipid_qc_duplicates_apply_revert_result
+    source: R/mod_lipid_qc_duplicates.R
+    selector: { kind: symbol, value: applyLipidDuplicateRevertResult }
+    target: R/mod_lipid_qc_duplicates_server_helpers.R
+    group: lipidomics.qc.duplicates.wrapper.server_helpers
+
+  - id: mod_lipid_qc_duplicates_register_revert_observer
+    source: R/mod_lipid_qc_duplicates.R
+    selector: { kind: symbol, value: registerLipidDuplicateRevertObserver }
+    target: R/mod_lipid_qc_duplicates_server_helpers.R
+    group: lipidomics.qc.duplicates.wrapper.server_helpers
+
+  - id: mod_lipid_qc_duplicates_handle_revert
+    source: R/mod_lipid_qc_duplicates.R
+    selector: { kind: symbol, value: handleLipidDuplicateRevert }
+    target: R/mod_lipid_qc_duplicates_server_helpers.R
+    group: lipidomics.qc.duplicates.wrapper.server_helpers
+
+  - id: mod_lipid_qc_duplicates_register_server_bindings
+    source: R/mod_lipid_qc_duplicates.R
+    selector: { kind: symbol, value: registerLipidDuplicateServerBindings }
+    target: R/mod_lipid_qc_duplicates_server_helpers.R
+    group: lipidomics.qc.duplicates.wrapper.server_helpers
+
+  - id: mod_lipid_qc_duplicates_run_module_server_shell
+    source: R/mod_lipid_qc_duplicates.R
+    selector: { kind: symbol, value: runLipidDuplicateModuleServerShell }
+    target: R/mod_lipid_qc_duplicates_server_helpers.R
+    group: lipidomics.qc.duplicates.wrapper.server_helpers

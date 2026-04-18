@@ -1,0 +1,53 @@
+version: 1
+wave: wave4_proteomics_qc_protein_reporting_shell
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_qc_reporting_helpers.R
+  - R/func_prot_qc_replicate_helpers.R
+
+entries:
+  - id: prot_qc_check_protein_na_percentages
+    source: R/func_prot_qc.R
+    selector: { kind: symbol, value: checkProteinNAPercentages }
+    target: R/func_prot_qc_reporting_helpers.R
+    group: proteomics.qc.protein.reporting
+    note: Wave 4 stages the remaining protein-QC reporting and shell helpers before any live apply.
+
+  - id: prot_qc_get_protein_na_recommendations
+    source: R/func_prot_qc.R
+    selector: { kind: symbol, value: getProteinNARecommendations }
+    target: R/func_prot_qc_reporting_helpers.R
+    group: proteomics.qc.protein.reporting
+
+  - id: prot_qc_validate_post_imputation_protein_data
+    source: R/func_prot_qc.R
+    selector: { kind: symbol, value: validatePostImputationProteinData }
+    target: R/func_prot_qc_reporting_helpers.R
+    group: proteomics.qc.protein.reporting
+
+  - id: prot_qc_get_samples_correlation_matrix
+    source: R/func_prot_qc.R
+    selector: { kind: symbol, value: getSamplesCorrelationMatrix }
+    target: R/func_prot_qc_reporting_helpers.R
+    group: proteomics.qc.protein.reporting
+
+  - id: prot_qc_update_protein_filtering
+    source: R/func_prot_qc.R
+    selector: { kind: symbol, value: updateProteinFiltering }
+    target: R/func_prot_qc_reporting_helpers.R
+    group: proteomics.qc.protein.reporting
+
+  - id: prot_qc_remove_protein_with_only_one_replicate
+    source: R/func_prot_qc.R
+    selector: { kind: symbol, value: removeProteinWithOnlyOneReplicate }
+    target: R/func_prot_qc_replicate_helpers.R
+    group: proteomics.qc.protein.replicate

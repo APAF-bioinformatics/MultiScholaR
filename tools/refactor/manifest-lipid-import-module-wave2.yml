@@ -1,0 +1,54 @@
+version: 1
+wave: wave2_lipidomics_import_module_ui_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_lipid_import_ui_helpers.R
+  - R/mod_lipid_import_server_helpers.R
+  - R/mod_lipid_import.R
+
+entries:
+  - id: mod_lipid_import_assay_input_panel
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: buildLipidImportAssayInputPanel }
+    target: R/mod_lipid_import_ui_helpers.R
+    group: lipidomics.import.wrapper.ui
+    note: Second staged lipid-import module wave lifts the fully seamed UI helper surface into a dedicated UI-helpers file while keeping the live wrapper entrypoints stable.
+
+  - id: mod_lipid_import_file_import_section
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: buildLipidImportFileImportSection }
+    target: R/mod_lipid_import_ui_helpers.R
+    group: lipidomics.import.wrapper.ui
+
+  - id: mod_lipid_import_column_mapping_section
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: buildLipidImportColumnMappingSection }
+    target: R/mod_lipid_import_ui_helpers.R
+    group: lipidomics.import.wrapper.ui
+
+  - id: mod_lipid_import_process_footer_section
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: buildLipidImportProcessFooterSection }
+    target: R/mod_lipid_import_ui_helpers.R
+    group: lipidomics.import.wrapper.ui
+
+  - id: mod_lipid_import_module_panel
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: buildLipidImportModulePanel }
+    target: R/mod_lipid_import_ui_helpers.R
+    group: lipidomics.import.wrapper.ui
+
+  - id: mod_lipid_import_ui_shell
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: buildLipidImportUiShell }
+    target: R/mod_lipid_import_ui_helpers.R
+    group: lipidomics.import.wrapper.ui

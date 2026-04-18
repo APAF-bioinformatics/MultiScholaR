@@ -1,0 +1,28 @@
+version: 1
+wave: wave8_lipidomics_s4_da_analysis_methods
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_lipid_s4_da_analysis_methods.R
+
+entries:
+  - id: lipid_s4_da_analysis_method
+    source: R/func_lipid_s4_objects.R
+    selector: { kind: setMethod, value: differentialAbundanceAnalysis }
+    target: R/func_lipid_s4_da_analysis_methods.R
+    group: lipidomics.s4.da_model_methods
+    note: Eighth staged lipid-S4 wave lifts the list-entry DA analysis method into a dedicated helper target for review before live apply.
+  - id: lipid_s4_da_analysis_helper_method
+    source: R/func_lipid_s4_objects.R
+    selector: { kind: setMethod, value: differentialAbundanceAnalysisHelper }
+    target: R/func_lipid_s4_da_analysis_methods.R
+    group: lipidomics.s4.da_model_methods
+    note: Eighth staged lipid-S4 wave keeps the DA helper method paired with the entry method in the same reviewed helper target.

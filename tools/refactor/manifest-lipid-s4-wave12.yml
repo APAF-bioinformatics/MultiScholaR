@@ -1,0 +1,22 @@
+version: 1
+wave: wave12_lipidomics_s4_log_transform_assays
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_lipid_s4_normalization_methods.R
+
+entries:
+  - id: lipid_s4_log_transform_assays_method
+    source: R/func_lipid_s4_objects.R
+    selector: { kind: setMethod, value: logTransformAssays }
+    target: R/func_lipid_s4_normalization_methods.R
+    group: lipidomics.s4.normalization_methods
+    note: Twelfth staged lipid-S4 wave lifts the log-transform S4 method into the existing normalization helper target for review before the live apply.

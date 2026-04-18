@@ -1,0 +1,32 @@
+version: 1
+wave: wave3_lipidomics_import_module_entrypoints
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_lipid_import_ui_helpers.R
+  - R/mod_lipid_import_server_helpers.R
+  - R/mod_lipid_import_ui.R
+  - R/mod_lipid_import_server.R
+  - R/mod_lipid_import.R
+
+entries:
+  - id: mod_lipid_import_ui_entrypoint
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: mod_lipid_import_ui }
+    target: R/mod_lipid_import_ui.R
+    group: lipidomics.import.wrapper.entrypoints
+    note: Final wrapper wave moves the compact public UI entrypoint into a dedicated file while leaving mod_lipid_import.R as a breadcrumb shell.
+
+  - id: mod_lipid_import_server_entrypoint
+    source: R/mod_lipid_import.R
+    selector: { kind: symbol, value: mod_lipid_import_server }
+    target: R/mod_lipid_import_server.R
+    group: lipidomics.import.wrapper.entrypoints

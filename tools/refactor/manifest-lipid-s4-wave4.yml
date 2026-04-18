@@ -1,0 +1,28 @@
+version: 1
+wave: wave4_lipidomics_s4_result_accessors
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_lipid_s4_results_accessors.R
+
+entries:
+  - id: lipid_s4_da_results_wide_accessor
+    source: R/func_lipid_s4_objects.R
+    selector: { kind: setMethod, value: getDaResultsWideFormat }
+    target: R/func_lipid_s4_results_accessors.R
+    group: lipidomics.s4.result_accessors
+    note: Fourth staged lipid-S4 wave lifts the wide-format DA results accessor into a dedicated helper target for review before live apply.
+  - id: lipid_s4_da_results_long_accessor
+    source: R/func_lipid_s4_objects.R
+    selector: { kind: setMethod, value: getDaResultsLongFormat }
+    target: R/func_lipid_s4_results_accessors.R
+    group: lipidomics.s4.result_accessors
+    note: Fourth staged lipid-S4 wave keeps the long-format DA results accessor paired with the wide-format accessor in the same reviewed helper target.

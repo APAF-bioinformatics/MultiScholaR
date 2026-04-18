@@ -1,0 +1,52 @@
+version: 1
+wave: wave4_proteomics_qc_peptide_s4_methods
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_qc_peptide_methods.R
+
+entries:
+  - id: prot_qc_peptide_method_intensity_filtering
+    source: R/func_prot_qc_peptide.R
+    selector: { kind: setMethod, value: peptideIntensityFiltering }
+    target: R/func_prot_qc_peptide_methods.R
+    group: proteomics.qc.peptide.methods
+    note: Leave resolvePeptideQcColumnName() live in func_prot_qc_peptide.R for now.
+
+  - id: prot_qc_peptide_method_missing_values_percent
+    source: R/func_prot_qc_peptide.R
+    selector: { kind: setMethod, value: removePeptidesWithMissingValuesPercent }
+    target: R/func_prot_qc_peptide_methods.R
+    group: proteomics.qc.peptide.methods
+
+  - id: prot_qc_peptide_method_one_replicate
+    source: R/func_prot_qc_peptide.R
+    selector: { kind: setMethod, value: removePeptidesWithOnlyOneReplicate }
+    target: R/func_prot_qc_peptide_methods.R
+    group: proteomics.qc.peptide.methods
+
+  - id: prot_qc_peptide_method_min_peptides_per_protein
+    source: R/func_prot_qc_peptide.R
+    selector: { kind: setMethod, value: filterMinNumPeptidesPerProtein }
+    target: R/func_prot_qc_peptide_methods.R
+    group: proteomics.qc.peptide.methods
+
+  - id: prot_qc_peptide_method_min_peptides_per_sample
+    source: R/func_prot_qc_peptide.R
+    selector: { kind: setMethod, value: filterMinNumPeptidesPerSample }
+    target: R/func_prot_qc_peptide_methods.R
+    group: proteomics.qc.peptide.methods
+
+  - id: prot_qc_peptide_method_srl_qvalue_clean
+    source: R/func_prot_qc_peptide.R
+    selector: { kind: setMethod, value: srlQvalueProteotypicPeptideClean }
+    target: R/func_prot_qc_peptide_methods.R
+    group: proteomics.qc.peptide.methods

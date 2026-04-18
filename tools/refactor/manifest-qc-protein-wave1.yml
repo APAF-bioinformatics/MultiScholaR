@@ -1,0 +1,40 @@
+version: 1
+wave: wave1_proteomics_qc_protein_filtering_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_qc_filtering_helpers.R
+
+entries:
+  - id: prot_qc_remove_empty_rows
+    source: R/func_prot_qc.R
+    selector: { kind: symbol, value: removeEmptyRows }
+    target: R/func_prot_qc_filtering_helpers.R
+    group: proteomics.qc.protein.filtering
+    note: Stage the characterization-covered low-risk filtering helpers before any live apply.
+
+  - id: prot_qc_remove_one_replicate_helper
+    source: R/func_prot_qc.R
+    selector: { kind: symbol, value: removeProteinsWithOnlyOneReplicateHelper }
+    target: R/func_prot_qc_filtering_helpers.R
+    group: proteomics.qc.protein.filtering
+
+  - id: prot_qc_remove_missing_values
+    source: R/func_prot_qc.R
+    selector: { kind: symbol, value: removeRowsWithMissingValues }
+    target: R/func_prot_qc_filtering_helpers.R
+    group: proteomics.qc.protein.filtering
+
+  - id: prot_qc_remove_missing_values_percent_helper
+    source: R/func_prot_qc.R
+    selector: { kind: symbol, value: removeRowsWithMissingValuesPercentHelper }
+    target: R/func_prot_qc_filtering_helpers.R
+    group: proteomics.qc.protein.filtering

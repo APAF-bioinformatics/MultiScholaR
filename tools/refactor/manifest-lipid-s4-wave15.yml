@@ -1,0 +1,22 @@
+version: 1
+wave: wave15_lipidomics_s4_correlation_filter_method
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_lipid_s4_correlation_methods.R
+
+entries:
+  - id: lipid_s4_correlation_filter_method
+    source: R/func_lipid_s4_objects.R
+    selector: { kind: setMethod, value: filterSamplesByLipidCorrelationThreshold }
+    target: R/func_lipid_s4_correlation_methods.R
+    group: lipidomics.s4.correlation_methods
+    note: Fifteenth staged lipid-S4 wave lifts the sample-correlation filtering S4 method into the existing correlation helper target for review before any live apply.

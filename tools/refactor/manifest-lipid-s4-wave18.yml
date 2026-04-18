@@ -1,0 +1,22 @@
+version: 1
+wave: wave18_lipidomics_s4_ruv_cancor_method
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_lipid_norm_ruv_helpers.R
+
+entries:
+  - id: lipid_s4_ruv_cancor_method
+    source: R/func_lipid_s4_objects.R
+    selector: { kind: setMethod, value: ruvCancor }
+    target: R/func_lipid_norm_ruv_helpers.R
+    group: lipidomics.s4.norm_ruv_helpers
+    note: Eighteenth staged lipid-S4 wave lifts the RUV canonical-correlation S4 method into the existing lipid normalization and RUV helper target for review before any live apply.

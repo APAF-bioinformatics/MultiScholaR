@@ -1,0 +1,159 @@
+version: 1
+wave: wave2_lipidomics_da_module_session_analysis_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_lipid_da_display_helpers.R
+  - R/mod_lipid_da_results_helpers.R
+  - R/mod_lipid_da_session_helpers.R
+  - R/mod_lipid_da_analysis_helpers.R
+  - R/mod_lipid_da_export_helpers.R
+  - R/mod_lipid_da.R
+
+entries:
+  - id: mod_lipid_da_restore_contrasts_from_session
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: restoreLipidDaContrastsFromSession }
+    target: R/mod_lipid_da_session_helpers.R
+    group: lipidomics.da.wrapper.session
+    note: Second staged lipid-DA module wave lifts the remaining session/load-analysis/save-heatmap helper cluster into dedicated wrapper helper files while keeping the public module UI/server entrypoints live in mod_lipid_da.R.
+
+  - id: mod_lipid_da_restore_assays_from_session
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: restoreLipidDaAssaysFromSession }
+    target: R/mod_lipid_da_session_helpers.R
+    group: lipidomics.da.wrapper.session
+
+  - id: mod_lipid_da_restore_formula_from_session
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: restoreLipidDaFormulaFromSession }
+    target: R/mod_lipid_da_session_helpers.R
+    group: lipidomics.da.wrapper.session
+
+  - id: mod_lipid_da_notify_session_source_dir_error
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: notifyLipidDaSessionSourceDirError }
+    target: R/mod_lipid_da_session_helpers.R
+    group: lipidomics.da.wrapper.session
+
+  - id: mod_lipid_da_notify_session_file_missing
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: notifyLipidDaSessionFileMissing }
+    target: R/mod_lipid_da_session_helpers.R
+    group: lipidomics.da.wrapper.session
+
+  - id: mod_lipid_da_resolve_session_file
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: resolveLipidDaSessionFile }
+    target: R/mod_lipid_da_session_helpers.R
+    group: lipidomics.da.wrapper.session
+
+  - id: mod_lipid_da_show_session_loading_notification
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: showLipidDaSessionLoadingNotification }
+    target: R/mod_lipid_da_session_helpers.R
+    group: lipidomics.da.wrapper.session
+
+  - id: mod_lipid_da_read_session_data
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: readLipidDaSessionData }
+    target: R/mod_lipid_da_session_helpers.R
+    group: lipidomics.da.wrapper.session
+
+  - id: mod_lipid_da_restore_current_s4_from_session
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: restoreLipidDaCurrentS4FromSession }
+    target: R/mod_lipid_da_session_helpers.R
+    group: lipidomics.da.wrapper.session
+
+  - id: mod_lipid_da_restore_post_read_session_state
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: restoreLipidDaPostReadSessionState }
+    target: R/mod_lipid_da_session_helpers.R
+    group: lipidomics.da.wrapper.session
+
+  - id: mod_lipid_da_load_session_from_file
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: loadLipidDaSessionFromFile }
+    target: R/mod_lipid_da_session_helpers.R
+    group: lipidomics.da.wrapper.session
+
+  - id: mod_lipid_da_finalize_session_load_success
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: finalizeLipidDaSessionLoadSuccess }
+    target: R/mod_lipid_da_session_helpers.R
+    group: lipidomics.da.wrapper.session
+
+  - id: mod_lipid_da_finalize_session_load_error
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: finalizeLipidDaSessionLoadError }
+    target: R/mod_lipid_da_session_helpers.R
+    group: lipidomics.da.wrapper.session
+
+  - id: mod_lipid_da_bootstrap_load_filtered_session
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: bootstrapLipidDaLoadFilteredSession }
+    target: R/mod_lipid_da_session_helpers.R
+    group: lipidomics.da.wrapper.session
+
+  - id: mod_lipid_da_handle_load_filtered_session
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: handleLipidDaLoadFilteredSession }
+    target: R/mod_lipid_da_session_helpers.R
+    group: lipidomics.da.wrapper.session
+
+  - id: mod_lipid_da_bootstrap_run_analysis
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: bootstrapLipidDaRunAnalysis }
+    target: R/mod_lipid_da_analysis_helpers.R
+    group: lipidomics.da.wrapper.analysis
+
+  - id: mod_lipid_da_prepare_run_analysis_context
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: prepareLipidDaRunAnalysisContext }
+    target: R/mod_lipid_da_analysis_helpers.R
+    group: lipidomics.da.wrapper.analysis
+
+  - id: mod_lipid_da_handle_run_analysis_preflight
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: handleLipidDaRunAnalysisPreflight }
+    target: R/mod_lipid_da_analysis_helpers.R
+    group: lipidomics.da.wrapper.analysis
+
+  - id: mod_lipid_da_execute_run_analysis
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: executeLipidDaRunAnalysis }
+    target: R/mod_lipid_da_analysis_helpers.R
+    group: lipidomics.da.wrapper.analysis
+
+  - id: mod_lipid_da_finalize_run_analysis_success
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: finalizeLipidDaRunAnalysisSuccess }
+    target: R/mod_lipid_da_analysis_helpers.R
+    group: lipidomics.da.wrapper.analysis
+
+  - id: mod_lipid_da_finalize_run_analysis_error
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: finalizeLipidDaRunAnalysisError }
+    target: R/mod_lipid_da_analysis_helpers.R
+    group: lipidomics.da.wrapper.analysis
+
+  - id: mod_lipid_da_bootstrap_save_heatmap
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: bootstrapLipidDaSaveHeatmap }
+    target: R/mod_lipid_da_export_helpers.R
+    group: lipidomics.da.wrapper.export
+
+  - id: mod_lipid_da_handle_save_heatmap
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: handleLipidDaSaveHeatmap }
+    target: R/mod_lipid_da_export_helpers.R
+    group: lipidomics.da.wrapper.export

@@ -1,0 +1,35 @@
+version: 1
+wave: wave1_proteomics_qc_peptide_group_filters
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_qc_peptide_group_filters.R
+
+entries:
+  - id: prot_qc_peptide_check_case_collision_columns
+    source: R/func_prot_qc_peptide.R
+    selector: { kind: symbol, value: check_case_collision_columns }
+    target: R/func_prot_qc_peptide_group_filters.R
+    group: proteomics.qc.peptide.group_filters
+    note: Keep the case-collision warning helper adjacent to the group-aware filtering helpers it supports.
+
+  - id: prot_qc_peptide_intensity_filter_helper
+    source: R/func_prot_qc_peptide.R
+    selector: { kind: symbol, value: peptideIntensityFilteringHelper }
+    target: R/func_prot_qc_peptide_group_filters.R
+    group: proteomics.qc.peptide.group_filters
+    note: First staged peptide-QC wave pulls the characterization-covered group-aware intensity helper without changing live sources.
+
+  - id: prot_qc_peptide_missing_values_helper
+    source: R/func_prot_qc_peptide.R
+    selector: { kind: symbol, value: removePeptidesWithMissingValuesPercentHelper }
+    target: R/func_prot_qc_peptide_group_filters.R
+    group: proteomics.qc.peptide.group_filters

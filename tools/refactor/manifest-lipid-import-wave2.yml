@@ -1,0 +1,34 @@
+version: 1
+wave: wave2_lipidomics_import_reader_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_lipid_import_readers.R
+
+entries:
+  - id: lipid_import_msdial_alias
+    source: R/func_lipid_import.R
+    selector: { kind: symbol, value: importMSDIALData }
+    target: R/func_lipid_import_readers.R
+    group: lipidomics.import.readers
+    note: Second bounded lipid-import wave lifts the reader helper surface into a mirrored helper file without touching the constructor or quant-data compatibility helpers.
+
+  - id: lipid_import_msdial_reader
+    source: R/func_lipid_import.R
+    selector: { kind: symbol, value: importLipidMSDIALData }
+    target: R/func_lipid_import_readers.R
+    group: lipidomics.import.readers
+
+  - id: lipid_import_lipidsearch_reader
+    source: R/func_lipid_import.R
+    selector: { kind: symbol, value: importLipidSearchData }
+    target: R/func_lipid_import_readers.R
+    group: lipidomics.import.readers

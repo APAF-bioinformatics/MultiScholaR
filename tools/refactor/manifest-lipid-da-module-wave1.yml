@@ -1,0 +1,114 @@
+version: 1
+wave: wave1_lipidomics_da_module_render_results_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_lipid_da_display_helpers.R
+  - R/mod_lipid_da_results_helpers.R
+  - R/mod_lipid_da.R
+
+entries:
+  - id: mod_lipid_da_status_text
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: buildLipidDaStatusText }
+    target: R/mod_lipid_da_display_helpers.R
+    group: lipidomics.da.wrapper.display
+    note: First staged lipid-DA module wave lifts the now fully seamed render/results helper cluster into dedicated display/results helper files while keeping the session/load-analysis observer helpers and public entrypoints live in mod_lipid_da.R.
+
+  - id: mod_lipid_da_contrasts_text
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: buildLipidDaContrastsText }
+    target: R/mod_lipid_da_display_helpers.R
+    group: lipidomics.da.wrapper.display
+
+  - id: mod_lipid_da_volcano_glimma_ui
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: buildLipidDaVolcanoGlimmaUi }
+    target: R/mod_lipid_da_display_helpers.R
+    group: lipidomics.da.wrapper.display
+
+  - id: mod_lipid_da_heatmap_manual_save_warning
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: buildLipidDaHeatmapManualSaveWarning }
+    target: R/mod_lipid_da_display_helpers.R
+    group: lipidomics.da.wrapper.display
+
+  - id: mod_lipid_da_volcano_static_plot
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: buildLipidDaVolcanoStaticPlot }
+    target: R/mod_lipid_da_display_helpers.R
+    group: lipidomics.da.wrapper.display
+
+  - id: mod_lipid_da_heatmap_render_state
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: buildLipidDaHeatmapRenderState }
+    target: R/mod_lipid_da_display_helpers.R
+    group: lipidomics.da.wrapper.display
+
+  - id: mod_lipid_da_store_heatmap_render_state
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: storeLipidDaHeatmapRenderState }
+    target: R/mod_lipid_da_display_helpers.R
+    group: lipidomics.da.wrapper.display
+
+  - id: mod_lipid_da_cluster_summary_text
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: buildLipidDaClusterSummaryText }
+    target: R/mod_lipid_da_display_helpers.R
+    group: lipidomics.da.wrapper.display
+
+  - id: mod_lipid_da_cluster_summary_render_text
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: buildLipidDaClusterSummaryRenderText }
+    target: R/mod_lipid_da_display_helpers.R
+    group: lipidomics.da.wrapper.display
+
+  - id: mod_lipid_da_summary_stats_text
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: buildLipidDaSummaryStatsText }
+    target: R/mod_lipid_da_results_helpers.R
+    group: lipidomics.da.wrapper.results
+
+  - id: mod_lipid_da_summary_stats_render_text
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: buildLipidDaSummaryStatsRenderText }
+    target: R/mod_lipid_da_results_helpers.R
+    group: lipidomics.da.wrapper.results
+
+  - id: mod_lipid_da_results_table_render_widget
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: buildLipidDaResultsTableRenderWidget }
+    target: R/mod_lipid_da_results_helpers.R
+    group: lipidomics.da.wrapper.results
+
+  - id: mod_lipid_da_results_table_widget
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: buildLipidDaResultsTableWidget }
+    target: R/mod_lipid_da_results_helpers.R
+    group: lipidomics.da.wrapper.results
+
+  - id: mod_lipid_da_results_download_handler
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: buildLipidDaResultsDownloadHandler }
+    target: R/mod_lipid_da_results_helpers.R
+    group: lipidomics.da.wrapper.results
+
+  - id: mod_lipid_da_results_download_data
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: resolveLipidDaResultsDownloadData }
+    target: R/mod_lipid_da_results_helpers.R
+    group: lipidomics.da.wrapper.results
+
+  - id: mod_lipid_da_results_download_output_handler
+    source: R/mod_lipid_da.R
+    selector: { kind: symbol, value: buildLipidDaResultsDownloadOutputHandler }
+    target: R/mod_lipid_da_results_helpers.R
+    group: lipidomics.da.wrapper.results

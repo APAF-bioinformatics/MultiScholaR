@@ -1,0 +1,28 @@
+version: 1
+wave: wave1_lipidomics_s4_duplicate_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_lipid_s4_duplicate_helpers.R
+
+entries:
+  - id: lipid_s4_duplicate_id_scan
+    source: R/func_lipid_s4_objects.R
+    selector: { kind: symbol, value: findLipidDuplicateFeatureIDs }
+    target: R/func_lipid_s4_duplicate_helpers.R
+    group: lipidomics.s4.duplicates
+    note: First staged lipid-S4 wave lifts the duplicate-identification helper surface into a dedicated helper file without touching the live S4 method shells.
+
+  - id: lipid_s4_duplicate_intensity_resolution
+    source: R/func_lipid_s4_objects.R
+    selector: { kind: symbol, value: resolveDuplicateFeaturesByIntensity }
+    target: R/func_lipid_s4_duplicate_helpers.R
+    group: lipidomics.s4.duplicates
