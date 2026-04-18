@@ -1,0 +1,22 @@
+version: 1
+wave: wave38_proteomics_s4_filter_min_num_peptides_per_protein
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_s4_qc_methods.R
+
+entries:
+  - id: prot_s4_qc_methods_filter_min_num_peptides_per_protein
+    source: R/func_prot_s4_objects.R
+    selector: { kind: setMethod, value: filterMinNumPeptidesPerProtein }
+    target: R/func_prot_s4_qc_methods.R
+    group: proteomics.s4.qc.methods
+    note: Thirty-eighth staged proteomics S4 wave moves the exact filterMinNumPeptidesPerProtein ProteinQuantitativeData method block into the existing S4 QC methods helper file without rewriting live sources.

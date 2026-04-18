@@ -1,0 +1,22 @@
+version: 1
+wave: wave7_proteomics_s4_protein_replicates
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_s4_replicates.R
+
+entries:
+  - id: prot_s4_replicates_average_tech_reps
+    source: R/func_prot_s4_objects.R
+    selector: { kind: setMethod, value: averageTechReps }
+    target: R/func_prot_s4_replicates.R
+    group: proteomics.s4.replicates
+    note: Seventh staged proteomics S4 wave moves the exact ProteinQuantitativeData averageTechReps method block into a dedicated S4 replicate-handling file without rewriting live sources.

@@ -1,0 +1,22 @@
+version: 1
+wave: wave8_metabolomics_da_orchestration
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_metab_da_orchestration.R
+
+entries:
+  - id: metab_da_run_all_assays
+    source: R/func_metab_da.R
+    selector: { kind: symbol, value: runMetabolitesDA }
+    target: R/func_metab_da_orchestration.R
+    group: metabolomics.da.orchestration
+    note: Wave 8 stages the bounded metabolomics DA assay-orchestration seam without rewriting the helper body.

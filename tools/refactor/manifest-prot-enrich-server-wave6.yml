@@ -1,0 +1,34 @@
+version: 1
+wave: wave6_proteomics_enrichment_server_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_enrich_server_helpers.R
+
+entries:
+  - id: mod_prot_enrich_selected_tab_observer_setup
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: setupProtEnrichSelectedTabObserverRegistration }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.registration_setup
+    note: Sixth staged enrichment wrapper wave moves the remaining setup-observer helper trio without rewriting live sources.
+
+  - id: mod_prot_enrich_taxon_id_observer_setup
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: setupProtEnrichTaxonIdObserverRegistration }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.registration_setup
+
+  - id: mod_prot_enrich_mixed_species_observer_setup
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: setupProtEnrichMixedSpeciesObserverRegistration }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.registration_setup

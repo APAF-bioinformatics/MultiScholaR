@@ -1,0 +1,34 @@
+version: 1
+wave: wave15_proteomics_enrichment_server_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_enrich_server_helpers.R
+
+entries:
+  - id: mod_prot_enrich_gprofiler_summary_text_formatter
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: formatProtEnrichGprofilerSummaryText }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.formatters
+    note: Fifteenth staged enrichment wrapper wave moves the adjacent exact-source summary formatter helper cluster without rewriting live sources.
+
+  - id: mod_prot_enrich_clusterprofiler_summary_text_formatter
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: formatProtEnrichClusterProfilerSummaryText }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.formatters
+
+  - id: mod_prot_enrich_stringdb_summary_text_formatter
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: formatProtEnrichStringDbSummaryText }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.formatters

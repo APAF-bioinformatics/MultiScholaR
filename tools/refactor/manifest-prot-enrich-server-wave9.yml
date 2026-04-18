@@ -1,0 +1,58 @@
+version: 1
+wave: wave9_proteomics_enrichment_server_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_enrich_server_helpers.R
+
+entries:
+  - id: mod_prot_enrich_gprofiler_results_table_output_register
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: registerProtEnrichGprofilerResultsTableOutput }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.registration
+    note: Ninth staged enrichment wrapper wave moves the next exact-source results-display and status registration cluster without rewriting live sources.
+
+  - id: mod_prot_enrich_gprofiler_summary_output_register
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: registerProtEnrichGprofilerSummaryOutput }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.registration
+
+  - id: mod_prot_enrich_cluster_profiler_results_table_output_register
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: registerProtEnrichClusterProfilerResultsTableOutput }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.registration
+
+  - id: mod_prot_enrich_cluster_profiler_summary_output_register
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: registerProtEnrichClusterProfilerSummaryOutput }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.registration
+
+  - id: mod_prot_enrich_string_db_results_table_output_register
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: registerProtEnrichStringDbResultsTableOutput }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.registration
+
+  - id: mod_prot_enrich_string_db_summary_output_register
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: registerProtEnrichStringDbSummaryOutput }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.registration
+
+  - id: mod_prot_enrich_status_output_register
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: registerProtEnrichStatusOutput }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.registration

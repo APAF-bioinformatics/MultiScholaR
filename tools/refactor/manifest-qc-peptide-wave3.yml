@@ -1,0 +1,46 @@
+version: 1
+wave: wave3_proteomics_qc_peptide_support_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_qc_peptide_support.R
+
+entries:
+  - id: prot_qc_peptide_na_percentages
+    source: R/func_prot_qc_peptide.R
+    selector: { kind: symbol, value: checkPeptideNAPercentages }
+    target: R/func_prot_qc_peptide_support.R
+    group: proteomics.qc.peptide.support
+    note: Stage the non-method object-summary helpers before any S4 wrapper movement.
+
+  - id: prot_qc_peptide_remove_hek293_only
+    source: R/func_prot_qc_peptide.R
+    selector: { kind: symbol, value: removePeptidesOnlyInHek293 }
+    target: R/func_prot_qc_peptide_support.R
+    group: proteomics.qc.peptide.support
+
+  - id: prot_qc_peptide_compare_objects
+    source: R/func_prot_qc_peptide.R
+    selector: { kind: symbol, value: compareTwoPeptideDataObjects }
+    target: R/func_prot_qc_peptide_support.R
+    group: proteomics.qc.peptide.support
+
+  - id: prot_qc_peptide_summarise_object
+    source: R/func_prot_qc_peptide.R
+    selector: { kind: symbol, value: summarisePeptideObject }
+    target: R/func_prot_qc_peptide_support.R
+    group: proteomics.qc.peptide.support
+
+  - id: prot_qc_peptide_pearson_correlation
+    source: R/func_prot_qc_peptide.R
+    selector: { kind: symbol, value: calculatePeptidePearsonCorrelation }
+    target: R/func_prot_qc_peptide_support.R
+    group: proteomics.qc.peptide.support

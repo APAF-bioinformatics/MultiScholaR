@@ -1,0 +1,78 @@
+version: 1
+wave: wave9_metabolomics_da_server_entry_tail
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_da_server_helpers.R
+  - R/mod_metab_da_server.R
+
+entries:
+  - id: mod_metab_da_register_server_body_outputs
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: registerMetabDaServerBodyOutputs }
+    target: R/mod_metab_da_server_helpers.R
+    group: metabolomics.da.wrapper.server_tail
+    note: First exact-source server-tail manifest stages the reviewed late-file helper cluster without rewriting live sources.
+
+  - id: mod_metab_da_start_server_body
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: startMetabDaServerBody }
+    target: R/mod_metab_da_server_helpers.R
+    group: metabolomics.da.wrapper.server_tail
+
+  - id: mod_metab_da_initialize_server_body
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: initializeMetabDaServerBody }
+    target: R/mod_metab_da_server_helpers.R
+    group: metabolomics.da.wrapper.server_tail
+
+  - id: mod_metab_da_create_server_state
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: createMetabDaServerState }
+    target: R/mod_metab_da_server_helpers.R
+    group: metabolomics.da.wrapper.server_tail
+
+  - id: mod_metab_da_run_server_module
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: runMetabDaServerModule }
+    target: R/mod_metab_da_server_helpers.R
+    group: metabolomics.da.wrapper.server_tail
+
+  - id: mod_metab_da_run_server_module_shell
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: runMetabDaServerModuleShell }
+    target: R/mod_metab_da_server_helpers.R
+    group: metabolomics.da.wrapper.server_tail
+
+  - id: mod_metab_da_create_server_module_handler
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: createMetabDaServerModuleHandler }
+    target: R/mod_metab_da_server_helpers.R
+    group: metabolomics.da.wrapper.server_tail
+
+  - id: mod_metab_da_run_server_module_callback
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: runMetabDaServerModuleCallback }
+    target: R/mod_metab_da_server_helpers.R
+    group: metabolomics.da.wrapper.server_tail
+
+  - id: mod_metab_da_run_server_entry
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: runMetabDaServerEntry }
+    target: R/mod_metab_da_server_helpers.R
+    group: metabolomics.da.wrapper.server_tail
+
+  - id: mod_metab_da_server_entrypoint
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: mod_metab_da_server }
+    target: R/mod_metab_da_server.R
+    group: metabolomics.da.wrapper.entrypoints
+    note: Keep the exported server breadcrumb in its own dedicated target while the reviewed helper tail stages separately.

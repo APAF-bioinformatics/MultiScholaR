@@ -1,0 +1,64 @@
+version: 1
+wave: wave4_metabolomics_import_processing_state
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_import_processing_helpers.R
+
+entries:
+  - id: mod_metab_import_build_workflow_payload
+    source: R/mod_metab_import.R
+    selector: { kind: symbol, value: buildMetabImportWorkflowPayload }
+    target: R/mod_metab_import_processing_helpers.R
+    group: metabolomics.import.wrapper.processing_state_cluster
+    note: Wave 4 stages the metabolomics import processing/state helper cluster without rewriting live sources until the reviewed apply checkpoint.
+
+  - id: mod_metab_import_apply_workflow_payload
+    source: R/mod_metab_import.R
+    selector: { kind: symbol, value: applyMetabImportWorkflowPayload }
+    target: R/mod_metab_import_processing_helpers.R
+    group: metabolomics.import.wrapper.processing_state_cluster
+
+  - id: mod_metab_import_prepare_assay_selection_state
+    source: R/mod_metab_import.R
+    selector: { kind: symbol, value: prepareMetabImportAssaySelectionState }
+    target: R/mod_metab_import_processing_helpers.R
+    group: metabolomics.import.wrapper.processing_state_cluster
+
+  - id: mod_metab_import_apply_assay_selection_state
+    source: R/mod_metab_import.R
+    selector: { kind: symbol, value: applyMetabImportAssaySelectionState }
+    target: R/mod_metab_import_processing_helpers.R
+    group: metabolomics.import.wrapper.processing_state_cluster
+
+  - id: mod_metab_import_finalize_processing_feedback
+    source: R/mod_metab_import.R
+    selector: { kind: symbol, value: finalizeMetabImportProcessingFeedback }
+    target: R/mod_metab_import_processing_helpers.R
+    group: metabolomics.import.wrapper.processing_state_cluster
+
+  - id: mod_metab_import_finalize_assay_selection_error
+    source: R/mod_metab_import.R
+    selector: { kind: symbol, value: finalizeMetabImportAssaySelectionError }
+    target: R/mod_metab_import_processing_helpers.R
+    group: metabolomics.import.wrapper.processing_state_cluster
+
+  - id: mod_metab_import_run_assay_selection
+    source: R/mod_metab_import.R
+    selector: { kind: symbol, value: runMetabImportAssaySelection }
+    target: R/mod_metab_import_processing_helpers.R
+    group: metabolomics.import.wrapper.processing_state_cluster
+
+  - id: mod_metab_import_run_processing
+    source: R/mod_metab_import.R
+    selector: { kind: symbol, value: runMetabImportProcessing }
+    target: R/mod_metab_import_processing_helpers.R
+    group: metabolomics.import.wrapper.processing_state_cluster

@@ -1,0 +1,49 @@
+version: 1
+wave: wave3_metabolomics_qc_duplicates_observer_shell_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_qc_duplicates_ui_helpers.R
+  - R/mod_metab_qc_duplicates_render_helpers.R
+  - R/mod_metab_qc_duplicates_server_helpers.R
+  - R/mod_metab_qc_duplicates.R
+
+entries:
+  - id: mod_metab_qc_duplicates_report_detection
+    source: R/mod_metab_qc_duplicates.R
+    selector: { kind: symbol, value: reportMetabDuplicateDetection }
+    target: R/mod_metab_qc_duplicates_server_helpers.R
+    group: metabolomics.qc.duplicates.wrapper.server
+    note: Wave 3 stages the duplicate observer-shell helper cluster into the existing server helper file so the live wrapper keeps only the public UI and server entrypoints plus inline resolution orchestration.
+
+  - id: mod_metab_qc_duplicates_report_detection_error
+    source: R/mod_metab_qc_duplicates.R
+    selector: { kind: symbol, value: reportMetabDuplicateDetectionError }
+    target: R/mod_metab_qc_duplicates_server_helpers.R
+    group: metabolomics.qc.duplicates.wrapper.server
+
+  - id: mod_metab_qc_duplicates_run_detection_observer_shell
+    source: R/mod_metab_qc_duplicates.R
+    selector: { kind: symbol, value: runMetabDuplicateDetectionObserverShell }
+    target: R/mod_metab_qc_duplicates_server_helpers.R
+    group: metabolomics.qc.duplicates.wrapper.server
+
+  - id: mod_metab_qc_duplicates_run_resolution_observer_shell
+    source: R/mod_metab_qc_duplicates.R
+    selector: { kind: symbol, value: runMetabDuplicateResolutionObserverShell }
+    target: R/mod_metab_qc_duplicates_server_helpers.R
+    group: metabolomics.qc.duplicates.wrapper.server
+
+  - id: mod_metab_qc_duplicates_run_revert_observer_shell
+    source: R/mod_metab_qc_duplicates.R
+    selector: { kind: symbol, value: runMetabDuplicateRevertObserverShell }
+    target: R/mod_metab_qc_duplicates_server_helpers.R
+    group: metabolomics.qc.duplicates.wrapper.server

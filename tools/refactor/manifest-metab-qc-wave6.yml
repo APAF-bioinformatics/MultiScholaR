@@ -1,0 +1,22 @@
+version: 1
+wave: wave6_metabolomics_qc_plotting_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_metab_qc_plotting_helpers.R
+
+entries:
+  - id: metab_qc_generate_filtering_plots
+    source: R/func_metab_qc.R
+    selector: { kind: symbol, value: generateMetaboliteFilteringPlots }
+    target: R/func_metab_qc_plotting_helpers.R
+    group: metabolomics.qc.plotting
+    note: Wave 6 stages the bounded metabolomics QC plotting-helper seam without rewriting the helper body.

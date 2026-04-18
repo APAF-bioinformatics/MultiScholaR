@@ -1,0 +1,52 @@
+version: 1
+wave: wave12_proteomics_annotation_uniprot_batch_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_annotation_uniprot_batch_helpers.R
+
+entries:
+  - id: prot_annotation_subset_query
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: subsetQuery }
+    target: R/func_prot_annotation_uniprot_batch_helpers.R
+    group: proteomics.annotation.uniprot_batch
+    note: Stage the twelfth exact-source annotation wave around the remaining UniProt batch query helpers while keeping the public annotation entry points stable through package-level symbol loading and retiring the legacy monolith shell in func_prot_annotation.R.
+
+  - id: prot_annotation_prepare_uniprot_batch_input
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: .prepareUniprotBatchInput }
+    target: R/func_prot_annotation_uniprot_batch_helpers.R
+    group: proteomics.annotation.uniprot_batch
+
+  - id: prot_annotation_batch_query_evidence_helper
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: batchQueryEvidenceHelper }
+    target: R/func_prot_annotation_uniprot_batch_helpers.R
+    group: proteomics.annotation.uniprot_batch
+
+  - id: prot_annotation_batch_query_evidence
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: batchQueryEvidence }
+    target: R/func_prot_annotation_uniprot_batch_helpers.R
+    group: proteomics.annotation.uniprot_batch
+
+  - id: prot_annotation_batch_query_evidence_helper_gene_id
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: batchQueryEvidenceHelperGeneId }
+    target: R/func_prot_annotation_uniprot_batch_helpers.R
+    group: proteomics.annotation.uniprot_batch
+
+  - id: prot_annotation_batch_query_evidence_gene_id
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: batchQueryEvidenceGeneId }
+    target: R/func_prot_annotation_uniprot_batch_helpers.R
+    group: proteomics.annotation.uniprot_batch

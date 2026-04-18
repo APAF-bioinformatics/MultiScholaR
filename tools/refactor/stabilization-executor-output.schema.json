@@ -1,0 +1,121 @@
+{
+  "type": "object",
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "completed",
+        "blocked",
+        "failed"
+      ]
+    },
+    "target": {
+      "type": "string"
+    },
+    "checkpoint": {
+      "type": "string"
+    },
+    "targetStatusAfterIteration": {
+      "type": "string",
+      "enum": [
+        "in_progress",
+        "done",
+        "blocked"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "reasonCode": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "verification": {
+      "type": "object",
+      "properties": {
+        "replayCommands": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "argv": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              },
+              "label": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "phase": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "replayMode": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "enum": [
+                  "verify",
+                  "operate",
+                  null
+                ]
+              }
+            },
+            "required": [
+              "argv",
+              "label",
+              "phase",
+              "replayMode"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "display": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "replayCommands",
+        "display"
+      ],
+      "additionalProperties": false
+    },
+    "filesChanged": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "status",
+    "target",
+    "checkpoint",
+    "targetStatusAfterIteration",
+    "summary",
+    "reasonCode",
+    "verification",
+    "filesChanged",
+    "notes"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,22 @@
+version: 1
+wave: wave30_proteomics_s4_get_neg_ctrl_prot_anova
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_s4_norm_controls.R
+
+entries:
+  - id: prot_s4_norm_controls_get_neg_ctrl_prot_anova
+    source: R/func_prot_s4_objects.R
+    selector: { kind: setMethod, value: getNegCtrlProtAnova }
+    target: R/func_prot_s4_norm_controls.R
+    group: proteomics.s4.norm.controls
+    note: Thirtieth staged proteomics S4 wave moves the exact ProteinQuantitativeData getNegCtrlProtAnova method block into the existing S4 normalization-controls helper file without rewriting live sources.

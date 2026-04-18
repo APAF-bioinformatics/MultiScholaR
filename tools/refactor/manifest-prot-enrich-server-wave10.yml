@@ -1,0 +1,40 @@
+version: 1
+wave: wave10_proteomics_enrichment_server_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_enrich_server_helpers.R
+
+entries:
+  - id: mod_prot_enrich_run_observer_register
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: registerProtEnrichRunObserver }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.registration
+    note: Tenth staged enrichment wrapper wave moves the next exact-source observer-registration cluster without rewriting live sources.
+
+  - id: mod_prot_enrich_selected_tab_observer_register
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: registerProtEnrichSelectedTabObserver }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.registration
+
+  - id: mod_prot_enrich_da_results_observer_register
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: registerProtEnrichDaResultsObserver }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.registration
+
+  - id: mod_prot_enrich_selected_contrast_observer_register
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: registerProtEnrichSelectedContrastObserver }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.registration

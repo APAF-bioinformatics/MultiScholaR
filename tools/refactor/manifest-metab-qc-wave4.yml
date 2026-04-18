@@ -1,0 +1,28 @@
+version: 1
+wave: wave4_metabolomics_qc_progress_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_metab_qc_progress_helpers.R
+
+entries:
+  - id: metab_qc_get_filtering_progress_metabolomics
+    source: R/func_metab_qc.R
+    selector: { kind: symbol, value: getFilteringProgressMetabolomics }
+    target: R/func_metab_qc_progress_helpers.R
+    group: metabolomics.qc.progress
+    note: Wave 4 stages the bounded metabolomics QC progress-helper seam without rewriting the helper bodies.
+
+  - id: metab_qc_update_filtering_progress_metabolomics
+    source: R/func_metab_qc.R
+    selector: { kind: symbol, value: updateFilteringProgressMetabolomics }
+    target: R/func_metab_qc_progress_helpers.R
+    group: metabolomics.qc.progress

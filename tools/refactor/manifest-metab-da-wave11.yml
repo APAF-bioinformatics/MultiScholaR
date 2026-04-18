@@ -1,0 +1,158 @@
+version: 1
+wave: wave11_metabolomics_da_display_render_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_da_display_helpers.R
+  - R/mod_metab_da_registration_helpers.R
+  - R/mod_metab_da_server_helpers.R
+  - R/mod_metab_da_server.R
+
+entries:
+  - id: mod_metab_da_filter_display_results
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: filterMetabDaDisplayResults }
+    target: R/mod_metab_da_display_helpers.R
+    group: metabolomics.da.wrapper.display_render_cluster
+    note: First exact-source display/render manifest stages the contiguous metabolomics DA display filtering and render-helper block into one dedicated helper file without rewriting live sources.
+
+  - id: mod_metab_da_summarize_display_results
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: summarizeMetabDaDisplayResults }
+    target: R/mod_metab_da_display_helpers.R
+    group: metabolomics.da.wrapper.display_render_cluster
+
+  - id: mod_metab_da_build_summary_stats_text
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: buildMetabDaSummaryStatsText }
+    target: R/mod_metab_da_display_helpers.R
+    group: metabolomics.da.wrapper.display_render_cluster
+
+  - id: mod_metab_da_build_summary_stats_render_output
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: buildMetabDaSummaryStatsRenderOutput }
+    target: R/mod_metab_da_display_helpers.R
+    group: metabolomics.da.wrapper.display_render_cluster
+
+  - id: mod_metab_da_shape_table_display_results
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: shapeMetabDaTableDisplayResults }
+    target: R/mod_metab_da_display_helpers.R
+    group: metabolomics.da.wrapper.display_render_cluster
+
+  - id: mod_metab_da_build_results_datatable
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: buildMetabDaResultsDatatable }
+    target: R/mod_metab_da_display_helpers.R
+    group: metabolomics.da.wrapper.display_render_cluster
+
+  - id: mod_metab_da_build_results_table_render_output
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: buildMetabDaResultsTableRenderOutput }
+    target: R/mod_metab_da_display_helpers.R
+    group: metabolomics.da.wrapper.display_render_cluster
+
+  - id: mod_metab_da_build_cluster_summary_text
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: buildMetabDaClusterSummaryText }
+    target: R/mod_metab_da_display_helpers.R
+    group: metabolomics.da.wrapper.display_render_cluster
+
+  - id: mod_metab_da_build_cluster_summary_render_output
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: buildMetabDaClusterSummaryRenderOutput }
+    target: R/mod_metab_da_display_helpers.R
+    group: metabolomics.da.wrapper.display_render_cluster
+
+  - id: mod_metab_da_build_heatmap_manual_save_warning
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: buildMetabDaHeatmapManualSaveWarning }
+    target: R/mod_metab_da_display_helpers.R
+    group: metabolomics.da.wrapper.display_render_cluster
+
+  - id: mod_metab_da_build_heatmap_manual_save_warning_render_output
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: buildMetabDaHeatmapManualSaveWarningRenderOutput }
+    target: R/mod_metab_da_display_helpers.R
+    group: metabolomics.da.wrapper.display_render_cluster
+
+  - id: mod_metab_da_build_contrasts_display_text
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: buildMetabDaContrastsDisplayText }
+    target: R/mod_metab_da_display_helpers.R
+    group: metabolomics.da.wrapper.display_render_cluster
+
+  - id: mod_metab_da_build_contrasts_render_output
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: buildMetabDaContrastsRenderOutput }
+    target: R/mod_metab_da_display_helpers.R
+    group: metabolomics.da.wrapper.display_render_cluster
+
+  - id: mod_metab_da_build_status_text
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: buildMetabDaStatusText }
+    target: R/mod_metab_da_display_helpers.R
+    group: metabolomics.da.wrapper.display_render_cluster
+
+  - id: mod_metab_da_build_status_render_output
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: buildMetabDaStatusRenderOutput }
+    target: R/mod_metab_da_display_helpers.R
+    group: metabolomics.da.wrapper.display_render_cluster
+
+  - id: mod_metab_da_build_glimma_combined_view_info_banner
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: buildMetabDaGlimmaCombinedViewInfoBanner }
+    target: R/mod_metab_da_display_helpers.R
+    group: metabolomics.da.wrapper.display_render_cluster
+
+  - id: mod_metab_da_resolve_glimma_widget_output
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: resolveMetabDaGlimmaWidgetOutput }
+    target: R/mod_metab_da_display_helpers.R
+    group: metabolomics.da.wrapper.display_render_cluster
+
+  - id: mod_metab_da_build_glimma_error_banner
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: buildMetabDaGlimmaErrorBanner }
+    target: R/mod_metab_da_display_helpers.R
+    group: metabolomics.da.wrapper.display_render_cluster
+
+  - id: mod_metab_da_build_glimma_render_output
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: buildMetabDaGlimmaRenderOutput }
+    target: R/mod_metab_da_display_helpers.R
+    group: metabolomics.da.wrapper.display_render_cluster
+
+  - id: mod_metab_da_build_static_volcano_plot
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: buildMetabDaStaticVolcanoPlot }
+    target: R/mod_metab_da_display_helpers.R
+    group: metabolomics.da.wrapper.display_render_cluster
+
+  - id: mod_metab_da_build_static_volcano_render_output
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: buildMetabDaStaticVolcanoRenderOutput }
+    target: R/mod_metab_da_display_helpers.R
+    group: metabolomics.da.wrapper.display_render_cluster
+
+  - id: mod_metab_da_build_heatmap_plot_output
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: buildMetabDaHeatmapPlotOutput }
+    target: R/mod_metab_da_display_helpers.R
+    group: metabolomics.da.wrapper.display_render_cluster
+
+  - id: mod_metab_da_build_heatmap_render_output
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: buildMetabDaHeatmapRenderOutput }
+    target: R/mod_metab_da_display_helpers.R
+    group: metabolomics.da.wrapper.display_render_cluster
+    note: Keep the full display filtering, summary, status, Glimma, static volcano, and heatmap render block together so the staged helper remains a clean dependency for the already-live registration and server helpers.

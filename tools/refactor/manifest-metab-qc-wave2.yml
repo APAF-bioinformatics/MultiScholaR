@@ -1,0 +1,28 @@
+version: 1
+wave: wave2_metabolomics_qc_filtering_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_metab_qc_filtering_helpers.R
+
+entries:
+  - id: metab_qc_metabolite_intensity_filtering_helper
+    source: R/func_metab_qc.R
+    selector: { kind: symbol, value: metaboliteIntensityFilteringHelper }
+    target: R/func_metab_qc_filtering_helpers.R
+    group: metabolomics.qc.filtering
+    note: Wave 2 stages the low-risk metabolomics QC filtering helper cluster without rewriting helper bodies.
+
+  - id: metab_qc_resolve_duplicate_features_by_intensity
+    source: R/func_metab_qc.R
+    selector: { kind: symbol, value: resolveDuplicateFeaturesByIntensity }
+    target: R/func_metab_qc_filtering_helpers.R
+    group: metabolomics.qc.filtering

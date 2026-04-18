@@ -1,0 +1,168 @@
+version: 1
+wave: wave1_proteomics_norm_server_qc_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_norm_qc_support_helpers.R
+  - R/mod_prot_norm_qc_generation_helpers.R
+
+entries:
+  - id: mod_prot_norm_qc_image_payload
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: buildProtNormQcImagePayload }
+    target: R/mod_prot_norm_qc_support_helpers.R
+    group: proteomics.norm.wrapper.qc_support
+    note: First normalization wrapper wave stages the seam-ready QC helper cluster.
+
+  - id: mod_prot_norm_filtering_summary_text
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: getProtNormFilteringSummaryText }
+    target: R/mod_prot_norm_qc_support_helpers.R
+    group: proteomics.norm.wrapper.qc_support
+
+  - id: mod_prot_norm_ruv_summary
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: buildProtNormRuvOptimizationSummary }
+    target: R/mod_prot_norm_qc_support_helpers.R
+    group: proteomics.norm.wrapper.qc_support
+
+  - id: mod_prot_norm_optimization_table
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: prepareProtNormOptimizationResultsTable }
+    target: R/mod_prot_norm_qc_support_helpers.R
+    group: proteomics.norm.wrapper.qc_support
+
+  - id: mod_prot_norm_final_qc_state
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: resolveProtNormFinalQcRenderState }
+    target: R/mod_prot_norm_qc_support_helpers.R
+    group: proteomics.norm.wrapper.qc_support
+
+  - id: mod_prot_norm_cancor_plot
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: getProtNormRuvCanonicalCorrelationPlot }
+    target: R/mod_prot_norm_qc_support_helpers.R
+    group: proteomics.norm.wrapper.qc_support
+
+  - id: mod_prot_norm_default_corr_summary
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: getProtNormDefaultCorrelationFilterSummaryText }
+    target: R/mod_prot_norm_qc_support_helpers.R
+    group: proteomics.norm.wrapper.qc_support
+
+  - id: mod_prot_norm_design_driven_choices
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: updateProtNormDesignDrivenChoices }
+    target: R/mod_prot_norm_qc_support_helpers.R
+    group: proteomics.norm.wrapper.qc_support
+
+  - id: mod_prot_norm_plot_aesthetics
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: getProtNormPlotAesthetics }
+    target: R/mod_prot_norm_qc_support_helpers.R
+    group: proteomics.norm.wrapper.qc_support
+
+  - id: mod_prot_norm_ruv_grouping
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: getProtNormRuvGroupingVariable }
+    target: R/mod_prot_norm_qc_support_helpers.R
+    group: proteomics.norm.wrapper.qc_support
+
+  - id: mod_prot_norm_label_plot
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: buildProtNormLabelPlot }
+    target: R/mod_prot_norm_qc_support_helpers.R
+    group: proteomics.norm.wrapper.qc_support
+
+  - id: mod_prot_norm_title_plot
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: buildProtNormTitlePlot }
+    target: R/mod_prot_norm_qc_support_helpers.R
+    group: proteomics.norm.wrapper.qc_support
+
+  - id: mod_prot_norm_image_loader
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: loadProtNormImageAsPlot }
+    target: R/mod_prot_norm_qc_support_helpers.R
+    group: proteomics.norm.wrapper.qc_support
+
+  - id: mod_prot_norm_composite_builder
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: generateProtNormCompositeFromFiles }
+    target: R/mod_prot_norm_qc_support_helpers.R
+    group: proteomics.norm.wrapper.qc_support
+
+  - id: mod_prot_norm_auto_pre_qc
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: shouldProtNormAutoGeneratePreQc }
+    target: R/mod_prot_norm_qc_support_helpers.R
+    group: proteomics.norm.wrapper.qc_support
+
+  - id: mod_prot_norm_regenerate_qc
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: regenerateProtNormQcForAestheticChange }
+    target: R/mod_prot_norm_qc_support_helpers.R
+    group: proteomics.norm.wrapper.qc_support
+
+  - id: mod_prot_norm_init_qc_paths
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: initializeProtNormQcPlotPaths }
+    target: R/mod_prot_norm_qc_support_helpers.R
+    group: proteomics.norm.wrapper.qc_support
+
+  - id: mod_prot_norm_save_qc_artifact
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: saveProtNormQcPlotArtifact }
+    target: R/mod_prot_norm_qc_support_helpers.R
+    group: proteomics.norm.wrapper.qc_support
+
+  - id: mod_prot_norm_record_qc_path
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: recordProtNormQcPlotPath }
+    target: R/mod_prot_norm_qc_support_helpers.R
+    group: proteomics.norm.wrapper.qc_support
+
+  - id: mod_prot_norm_density_builder
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: buildProtNormDensityPlot }
+    target: R/mod_prot_norm_qc_support_helpers.R
+    group: proteomics.norm.wrapper.qc_support
+
+  - id: mod_prot_norm_correlation_builder
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: buildProtNormCorrelationPlot }
+    target: R/mod_prot_norm_qc_support_helpers.R
+    group: proteomics.norm.wrapper.qc_support
+
+  - id: mod_prot_norm_qc_state_resolver
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: resolveProtNormQcStateObject }
+    target: R/mod_prot_norm_qc_generation_helpers.R
+    group: proteomics.norm.wrapper.qc_generation
+    note: Wrapper-level QC orchestration helpers stay in a second file behind the reusable QC support helpers.
+
+  - id: mod_prot_norm_pre_qc_artifacts
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: generateProtNormPreNormalizationQcArtifacts }
+    target: R/mod_prot_norm_qc_generation_helpers.R
+    group: proteomics.norm.wrapper.qc_generation
+
+  - id: mod_prot_norm_post_qc_artifacts
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: generateProtNormPostNormalizationQcArtifacts }
+    target: R/mod_prot_norm_qc_generation_helpers.R
+    group: proteomics.norm.wrapper.qc_generation
+
+  - id: mod_prot_norm_ruv_qc_artifacts
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: generateProtNormRuvCorrectedQcArtifacts }
+    target: R/mod_prot_norm_qc_generation_helpers.R
+    group: proteomics.norm.wrapper.qc_generation

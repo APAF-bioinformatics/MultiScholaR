@@ -1,0 +1,22 @@
+version: 1
+wave: wave5_metabolomics_da_volcano_glimma
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_metab_da_volcano_glimma.R
+
+entries:
+  - id: metab_da_generate_volcano_glimma
+    source: R/func_metab_da.R
+    selector: { kind: symbol, value: generateMetabDAVolcanoPlotGlimma }
+    target: R/func_metab_da_volcano_glimma.R
+    group: metabolomics.da.plotting
+    note: Wave 5 stages the bounded metabolomics DA Glimma-volcano helper seam without rewriting the helper body.

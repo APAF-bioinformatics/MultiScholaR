@@ -1,0 +1,22 @@
+version: 1
+wave: wave4_metabolomics_s4_da_results_volcano_plot
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_metab_s4_da_results.R
+
+entries:
+  - id: metab_s4_plot_volcano
+    source: R/func_metab_s4_objects.R
+    selector: { kind: setMethod, value: plotVolcanoS4 }
+    target: R/func_metab_s4_da_results.R
+    group: metabolomics.s4.da_results
+    note: Wave 4 stages the bounded metabolomics S4 DA-results volcano plot checkpoint without rewriting the method body.

@@ -1,0 +1,325 @@
+#' @title Plot Density for MetaboliteAssayData
+#' @name plotDensity,MetaboliteAssayData-method
+#' @importFrom purrr map set_names
+#' @importFrom tibble column_to_rownames as_tibble
+#' @importFrom ggplot2 ggplot aes geom_boxplot theme_bw labs theme element_blank element_text margin
+#' @importFrom patchwork plot_layout plot_annotation
+#' @importFrom dplyr left_join select all_of
+#' @importFrom rlang sym !!
+#' @export
+setMethod(
+    f = "plotDensity",
+    signature = "MetaboliteAssayData",
+    definition = function(theObject, grouping_variable, title = "", font_size = 8) {
+        # --- Input is MetaboliteAssayData: Original logic (Calculate PCA) ---
+
+        # --- Input Validation ---
+        if (!is.character(grouping_variable) || length(grouping_variable) != 1 || is.na(grouping_variable)) {
+            stop("`grouping_variable` must be a single non-NA character string.")
+        }
+        # Ensure design matrix exists and has the grouping variable
+        if (is.null(slot(theObject, "design_matrix")) || nrow(slot(theObject, "design_matrix")) == 0) {
+            stop("`design_matrix` slot is missing or empty in the MetaboliteAssayData object.")
+        }
+        if (!grouping_variable %in% colnames(theObject@design_matrix)) {
+            stop(sprintf("`grouping_variable` '%s' not found in design_matrix.", grouping_variable))
+        }
+
+        design_matrix <- theObject@design_matrix
+        sample_id_col_name <- theObject@sample_id
+        metabolite_id_col_name <- theObject@metabolite_id_column
+        assay_list <- theObject@metabolite_data
+
+        if (!is.list(assay_list)) {
+            assay_list <- list(assay_list)
+        }
+
+        if (length(assay_list) == 0) {
+            warning("No assays found in `metabolite_data` slot. Returning empty list.")
+            return(list())
+        }
+
+        # Ensure list is named
+        if (is.null(names(assay_list))) {
+            names(assay_list) <- paste0("Assay_", seq_along(assay_list))
+            warning("Assay list was unnamed. Using default names (Assay_1, Assay_2, ...).")
+        }
+
+        # --- Plotting Logic per Assay ---
+        density_plots_list <- purrr::map(seq_along(assay_list), function(i) {
+            assay_name <- names(assay_list)[i]
+            current_assay_data <- assay_list[[i]]
+
+            # --- Correctly identify sample columns based on design matrix ---
+            design_samples <- as.character(design_matrix[[sample_id_col_name]]) # Get sample IDs from design matrix
+            all_assay_cols <- colnames(current_assay_data)
+            sample_cols <- intersect(all_assay_cols, design_samples) # Find which design samples are columns in the assay
+            metadata_cols <- setdiff(all_assay_cols, sample_cols) # All other columns are metadata/ID
+
+            # Ensure the primary metabolite ID column is considered metadata
+            if (metabolite_id_col_name %in% sample_cols) {
+                warning(sprintf("Assay '%s': Metabolite ID column '%s' is also listed as a sample ID. Check configuration.", assay_name, metabolite_id_col_name))
+            }
+            metadata_cols <- union(metadata_cols, metabolite_id_col_name) # Ensure metabolite ID is not treated as a sample column
+            sample_cols <- setdiff(all_assay_cols, metadata_cols) # Final list of sample columns
+
+
+            if (length(sample_cols) == 0) {
+                warning(sprintf("Assay '%s': No sample columns found in assay matching sample IDs in '%s' column of design matrix. Skipping Density plot.", assay_name, sample_id_col_name))
+                return(NULL)
+            }
+            # --- End Correction ---
+
+
+            # Check sample consistency
+            design_samples_check <- design_matrix[[sample_id_col_name]] # Use original type for check
+            missing_samples_in_design <- setdiff(sample_cols, as.character(design_samples_check)) # Compare character versions
+            if (length(missing_samples_in_design) > 0) {
+                warning(sprintf("Assay '%s': Identified sample columns missing in design_matrix (check for type mismatches?): %s. Skipping Density plot.", assay_name, paste(missing_samples_in_design, collapse = ", ")))
+                return(NULL)
+            }
+
+            # Filter design matrix
+            design_matrix_filtered <- design_matrix[as.character(design_matrix[[sample_id_col_name]]) %in% sample_cols, ]
+
+            # Ensure metabolite ID column exists
+            if (!metabolite_id_col_name %in% colnames(current_assay_data)) {
+                warning(sprintf("Assay '%s': Metabolite ID column '%s' not found. Skipping Density plot.", assay_name, metabolite_id_col_name))
+                return(NULL)
+            }
+
+            # Convert to matrix, handle non-finite, check dimensions (similar to plotPca)
+            frozen_metabolite_matrix_pca <- current_assay_data |>
+                tibble::column_to_rownames(metabolite_id_col_name) |>
+                dplyr::select(all_of(sample_cols)) |>
+                as.matrix()
+            frozen_metabolite_matrix_pca[!is.finite(frozen_metabolite_matrix_pca)] <- NA
+
+            valid_rows <- rowSums(is.finite(frozen_metabolite_matrix_pca)) > 1
+            valid_cols <- colSums(is.finite(frozen_metabolite_matrix_pca)) > 1
+            if (sum(valid_rows) < 2 || sum(valid_cols) < 2) {
+                warning(sprintf("Assay '%s': Insufficient finite data points for PCA. Skipping Density plot.", assay_name))
+                return(NULL)
+            }
+            frozen_metabolite_matrix_pca_final <- frozen_metabolite_matrix_pca[valid_rows, valid_cols, drop = FALSE]
+            design_matrix_filtered_final <- design_matrix_filtered[as.character(design_matrix_filtered[[sample_id_col_name]]) %in% colnames(frozen_metabolite_matrix_pca_final), ]
+            # Ensure consistent type for sample ID column before join
+            design_matrix_filtered_final[[sample_id_col_name]] <- as.character(design_matrix_filtered_final[[sample_id_col_name]])
+
+
+            # --- Perform PCA ---
+            pca_data_for_plot <- tryCatch(
+                {
+                    pca.res <- mixOmics::pca(t(as.matrix(frozen_metabolite_matrix_pca_final)), ncomp = 2) # Ensure ncomp=2 for PC1/PC2
+                    pca.res$variates$X |>
+                        as.data.frame() |>
+                        tibble::rownames_to_column(var = sample_id_col_name) |>
+                        dplyr::left_join(design_matrix_filtered_final, by = sample_id_col_name) |>
+                        tibble::as_tibble() # Ensure it's a tibble
+                },
+                error = function(e) {
+                    warning(sprintf("Assay '%s': Error during PCA calculation for density plot: %s. Skipping.", assay_name, e$message))
+                    return(NULL) # Skip this assay if PCA fails
+                }
+            )
+
+            if (is.null(pca_data_for_plot) || !("PC1" %in% colnames(pca_data_for_plot)) || !("PC2" %in% colnames(pca_data_for_plot))) {
+                warning(sprintf("Assay '%s': PCA result is invalid or missing PC1/PC2. Skipping Density plot.", assay_name))
+                return(NULL)
+            }
+            if (!grouping_variable %in% colnames(pca_data_for_plot)) {
+                warning(sprintf("Assay '%s': Grouping variable '%s' not found in PCA data after join. Skipping Density plot.", assay_name, grouping_variable))
+                return(NULL)
+            }
+
+
+            # --- Create Density/Box Plots ---
+            # assay_title <- paste0( ifelse( is.null(title) | is.na(title) | title == "", "", paste0(title, " - ")), assay_name)
+
+            tryCatch(
+                {
+                    # Create PC1 boxplot
+                    pc1_box <- ggplot(pca_data_for_plot, aes(x = !!rlang::sym(grouping_variable), y = PC1, fill = !!rlang::sym(grouping_variable))) +
+                        geom_boxplot(notch = TRUE) +
+                        theme_bw() +
+                        labs(
+                            title = paste(title, "-", assay_name),
+                            x = "",
+                            y = "PC1"
+                        ) +
+                        theme(
+                            legend.position = "none",
+                            axis.text.x = element_blank(),
+                            axis.ticks.x = element_blank(),
+                            text = element_text(size = font_size),
+                            plot.margin = margin(b = 0, t = 5, l = 5, r = 5),
+                            panel.grid.major = element_blank(),
+                            panel.grid.minor = element_blank(),
+                            panel.background = element_blank()
+                        )
+
+                    # Create PC2 boxplot
+                    pc2_box <- ggplot(pca_data_for_plot, aes(x = !!rlang::sym(grouping_variable), y = PC2, fill = !!rlang::sym(grouping_variable))) +
+                        geom_boxplot(notch = TRUE) +
+                        theme_bw() +
+                        labs(
+                            x = "",
+                            y = "PC2"
+                        ) +
+                        theme(
+                            legend.position = "none",
+                            axis.text.x = element_blank(),
+                            axis.ticks.x = element_blank(),
+                            text = element_text(size = font_size),
+                            plot.margin = margin(t = 0, b = 5, l = 5, r = 5),
+                            panel.grid.major = element_blank(),
+                            panel.grid.minor = element_blank(),
+                            panel.background = element_blank()
+                        )
+
+                    # Combine plots with minimal spacing
+                    combined_plot <- pc1_box / pc2_box +
+                        patchwork::plot_layout(heights = c(1, 1)) +
+                        patchwork::plot_annotation(theme = theme(plot.margin = margin(0, 0, 0, 0)))
+
+                    return(combined_plot)
+                },
+                error = function(e) {
+                    warning(sprintf("Assay '%s': Error creating density boxplots: %s. Skipping.", assay_name, e$message))
+                    return(NULL)
+                }
+            )
+        })
+
+        # Set names for the list of plots
+        names(density_plots_list) <- names(assay_list)
+
+        # Remove NULL elements (skipped assays)
+        density_plots_list <- density_plots_list[!sapply(density_plots_list, is.null)]
+
+        return(density_plots_list)
+    }
+)
+
+#' @title Plot Density for list of ggplot objects
+#' @name plotDensity,list-method
+#' @importFrom purrr map set_names
+#' @importFrom tibble as_tibble
+#' @importFrom ggplot2 ggplot aes geom_boxplot theme_bw labs theme element_blank element_text margin
+#' @importFrom patchwork plot_layout plot_annotation
+#' @importFrom rlang sym !!
+#' @export
+setMethod(
+    f = "plotDensity",
+    signature = c(theObject = "list"), # Explicitly define signature argument
+    definition = function(theObject, grouping_variable, title = "", font_size = 8) {
+        # --- Input is a list: Assume list of ggplot objects (Use existing PCA data) ---
+
+        # Basic validation
+        if (!all(sapply(theObject, function(x) inherits(x, "ggplot")))) {
+            stop("If 'theObject' is a list, all its elements must be ggplot objects.")
+        }
+        if (!is.character(grouping_variable) || length(grouping_variable) != 1 || is.na(grouping_variable)) {
+            stop("`grouping_variable` must be a single non-NA character string.")
+        }
+
+        pca_plots_list <- theObject # Rename for clarity
+
+        if (length(pca_plots_list) == 0) {
+            warning("Input list of ggplot objects is empty. Returning empty list.")
+            return(list())
+        }
+
+        # Ensure list is named, provide default names if not
+        if (is.null(names(pca_plots_list))) {
+            names(pca_plots_list) <- paste0("Plot_", seq_along(pca_plots_list))
+            warning("Input ggplot list was unnamed. Using default names (Plot_1, Plot_2, ...).")
+        }
+
+        # --- Plotting Logic per Input ggplot ---
+        density_plots_list <- purrr::map(seq_along(pca_plots_list), function(i) {
+            pca_plot <- pca_plots_list[[i]]
+            plot_name <- names(pca_plots_list)[i]
+            # Use title override if provided, otherwise use original plot title or name
+            plot_title_final <- if (!is.null(title) && title != "") paste(title, "-", plot_name) else tryCatch(pca_plot$labels$title, error = function(e) plot_name)
+
+            # --- Extract PCA data from the ggplot object ---
+            pca_data_for_plot <- NULL
+            if (!is.null(pca_plot$data) && is.data.frame(pca_plot$data) && all(c("PC1", "PC2", grouping_variable) %in% colnames(pca_plot$data))) {
+                pca_data_for_plot <- tibble::as_tibble(pca_plot$data)
+            } else {
+                warning(sprintf("Plot '%s': Could not reliably extract required data (PC1, PC2, %s) from the ggplot object's internal structure. Skipping density plot generation.", plot_name, grouping_variable))
+                return(NULL)
+            }
+
+            if (!grouping_variable %in% colnames(pca_data_for_plot)) {
+                warning(sprintf("Plot '%s': Grouping variable '%s' not found in extracted data. Skipping.", plot_name, grouping_variable))
+                return(NULL)
+            }
+
+            # --- Create Density/Box Plots (using extracted data) ---
+            tryCatch(
+                {
+                    # Create PC1 boxplot
+                    pc1_box <- ggplot(pca_data_for_plot, aes(x = !!rlang::sym(grouping_variable), y = PC1, fill = !!rlang::sym(grouping_variable))) +
+                        geom_boxplot(notch = FALSE) +
+                        theme_bw() +
+                        labs(
+                            title = plot_title_final, # Use final title
+                            x = "",
+                            y = "PC1"
+                        ) +
+                        theme(
+                            legend.position = "none",
+                            axis.text.x = element_blank(),
+                            axis.ticks.x = element_blank(),
+                            text = element_text(size = font_size),
+                            plot.margin = margin(b = 0, t = 5, l = 5, r = 5),
+                            panel.grid.major = element_blank(),
+                            panel.grid.minor = element_blank(),
+                            panel.background = element_blank()
+                        )
+
+                    # Create PC2 boxplot
+                    pc2_box <- ggplot(pca_data_for_plot, aes(x = !!rlang::sym(grouping_variable), y = PC2, fill = !!rlang::sym(grouping_variable))) +
+                        geom_boxplot(notch = FALSE) +
+                        theme_bw() +
+                        labs(
+                            x = "",
+                            y = "PC2"
+                        ) +
+                        theme(
+                            legend.position = "none",
+                            axis.text.x = element_blank(),
+                            axis.ticks.x = element_blank(),
+                            text = element_text(size = font_size),
+                            plot.margin = margin(t = 0, b = 5, l = 5, r = 5),
+                            panel.grid.major = element_blank(),
+                            panel.grid.minor = element_blank(),
+                            panel.background = element_blank()
+                        )
+
+                    # Combine plots with minimal spacing
+                    combined_plot <- pc1_box / pc2_box +
+                        patchwork::plot_layout(heights = c(1, 1)) +
+                        patchwork::plot_annotation(theme = theme(plot.margin = margin(0, 0, 0, 0)))
+
+                    return(combined_plot)
+                },
+                error = function(e) {
+                    warning(sprintf("Plot '%s': Error creating density boxplots from ggplot input: %s. Skipping.", plot_name, e$message))
+                    return(NULL)
+                }
+            )
+        })
+
+        # Set names for the list of plots
+        names(density_plots_list) <- names(pca_plots_list)
+
+        # Remove NULL elements (skipped plots)
+        density_plots_list <- density_plots_list[!sapply(density_plots_list, is.null)]
+
+        return(density_plots_list)
+    }
+)
+

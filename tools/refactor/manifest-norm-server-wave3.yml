@@ -1,0 +1,192 @@
+version: 1
+wave: wave3_proteomics_norm_server_correlation_session_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_norm_correlation_helpers.R
+  - R/mod_prot_norm_session_helpers.R
+
+entries:
+  - id: mod_prot_norm_correlation_filenames
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: resolveProtNormCorrelationResultFilenames }
+    target: R/mod_prot_norm_correlation_helpers.R
+    group: proteomics.norm.wrapper.correlation
+    note: Third normalization wrapper wave stages the completed late-observer correlation helper cluster first.
+
+  - id: mod_prot_norm_save_correlation_results
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: saveProtNormCorrelationResults }
+    target: R/mod_prot_norm_correlation_helpers.R
+    group: proteomics.norm.wrapper.correlation
+
+  - id: mod_prot_norm_update_final_filtering_plot
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: updateProtNormFinalFilteringPlot }
+    target: R/mod_prot_norm_correlation_helpers.R
+    group: proteomics.norm.wrapper.correlation
+
+  - id: mod_prot_norm_update_final_qc_plot
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: updateProtNormFinalQcPlot }
+    target: R/mod_prot_norm_correlation_helpers.R
+    group: proteomics.norm.wrapper.correlation
+
+  - id: mod_prot_norm_finalize_correlation_state
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: finalizeProtNormCorrelationWorkflowState }
+    target: R/mod_prot_norm_correlation_helpers.R
+    group: proteomics.norm.wrapper.correlation
+
+  - id: mod_prot_norm_correlation_summary
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: buildProtNormCorrelationSummaryText }
+    target: R/mod_prot_norm_correlation_helpers.R
+    group: proteomics.norm.wrapper.correlation
+
+  - id: mod_prot_norm_correlation_input_object
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: resolveProtNormCorrelationInputObject }
+    target: R/mod_prot_norm_correlation_helpers.R
+    group: proteomics.norm.wrapper.correlation
+
+  - id: mod_prot_norm_correlation_vector_step
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: runProtNormCorrelationVectorStep }
+    target: R/mod_prot_norm_correlation_helpers.R
+    group: proteomics.norm.wrapper.correlation
+
+  - id: mod_prot_norm_correlation_filter_step
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: runProtNormCorrelationFilterStep }
+    target: R/mod_prot_norm_correlation_helpers.R
+    group: proteomics.norm.wrapper.correlation
+
+  - id: mod_prot_norm_prepare_skipped_correlation
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: prepareProtNormSkippedCorrelationState }
+    target: R/mod_prot_norm_correlation_helpers.R
+    group: proteomics.norm.wrapper.correlation
+
+  - id: mod_prot_norm_apply_correlation_workflow
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: runProtNormApplyCorrelationWorkflow }
+    target: R/mod_prot_norm_correlation_helpers.R
+    group: proteomics.norm.wrapper.correlation
+
+  - id: mod_prot_norm_skip_correlation_workflow
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: runProtNormSkipCorrelationWorkflow }
+    target: R/mod_prot_norm_correlation_helpers.R
+    group: proteomics.norm.wrapper.correlation
+
+  - id: mod_prot_norm_complete_correlation_workflow
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: completeProtNormCorrelationWorkflow }
+    target: R/mod_prot_norm_correlation_helpers.R
+    group: proteomics.norm.wrapper.correlation
+
+  - id: mod_prot_norm_handle_correlation_error
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: handleProtNormCorrelationError }
+    target: R/mod_prot_norm_correlation_helpers.R
+    group: proteomics.norm.wrapper.correlation
+
+  - id: mod_prot_norm_can_export_session
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: canProtNormExportFilteredSession }
+    target: R/mod_prot_norm_session_helpers.R
+    group: proteomics.norm.wrapper.session
+    note: Export and reset stay together because both operate on the post-normalization session lifecycle.
+
+  - id: mod_prot_norm_resolve_export_source_dir
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: resolveProtNormExportSourceDir }
+    target: R/mod_prot_norm_session_helpers.R
+    group: proteomics.norm.wrapper.session
+
+  - id: mod_prot_norm_collect_export_session_data
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: collectProtNormExportSessionData }
+    target: R/mod_prot_norm_session_helpers.R
+    group: proteomics.norm.wrapper.session
+
+  - id: mod_prot_norm_build_export_summary
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: buildProtNormExportSummaryContent }
+    target: R/mod_prot_norm_session_helpers.R
+    group: proteomics.norm.wrapper.session
+
+  - id: mod_prot_norm_save_export_metadata
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: saveProtNormExportMetadataFiles }
+    target: R/mod_prot_norm_session_helpers.R
+    group: proteomics.norm.wrapper.session
+
+  - id: mod_prot_norm_save_export_artifacts
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: saveProtNormExportArtifacts }
+    target: R/mod_prot_norm_session_helpers.R
+    group: proteomics.norm.wrapper.session
+
+  - id: mod_prot_norm_run_export_workflow
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: runProtNormExportSessionWorkflow }
+    target: R/mod_prot_norm_session_helpers.R
+    group: proteomics.norm.wrapper.session
+
+  - id: mod_prot_norm_handle_export_error
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: handleProtNormExportError }
+    target: R/mod_prot_norm_session_helpers.R
+    group: proteomics.norm.wrapper.session
+
+  - id: mod_prot_norm_resolve_pre_norm_state
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: resolveProtNormPreNormalizationState }
+    target: R/mod_prot_norm_session_helpers.R
+    group: proteomics.norm.wrapper.session
+
+  - id: mod_prot_norm_revert_state_manager
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: revertProtNormStateManagerToPreNormalization }
+    target: R/mod_prot_norm_session_helpers.R
+    group: proteomics.norm.wrapper.session
+
+  - id: mod_prot_norm_reset_reactive_state
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: resetProtNormReactiveState }
+    target: R/mod_prot_norm_session_helpers.R
+    group: proteomics.norm.wrapper.session
+
+  - id: mod_prot_norm_reset_outputs
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: resetProtNormOutputs }
+    target: R/mod_prot_norm_session_helpers.R
+    group: proteomics.norm.wrapper.session
+
+  - id: mod_prot_norm_reset_notification
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: buildProtNormResetNotificationMessage }
+    target: R/mod_prot_norm_session_helpers.R
+    group: proteomics.norm.wrapper.session
+
+  - id: mod_prot_norm_run_reset_workflow
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: runProtNormResetWorkflow }
+    target: R/mod_prot_norm_session_helpers.R
+    group: proteomics.norm.wrapper.session
+
+  - id: mod_prot_norm_handle_reset_error
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: handleProtNormResetError }
+    target: R/mod_prot_norm_session_helpers.R
+    group: proteomics.norm.wrapper.session

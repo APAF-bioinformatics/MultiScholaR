@@ -1,0 +1,46 @@
+version: 1
+wave: wave8_proteomics_annotation_uniprot_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_annotation_uniprot_helpers.R
+
+entries:
+  - id: prot_annotation_get_uniprot_annotations
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: getUniprotAnnotations }
+    target: R/func_prot_annotation_uniprot_helpers.R
+    group: proteomics.annotation.uniprot
+    note: Stage the eighth exact-source annotation wave around the UniProt download and normalization helpers while keeping the public annotation entry points stable for a later apply checkpoint.
+
+  - id: prot_annotation_direct_uniprot_download
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: directUniprotDownload }
+    target: R/func_prot_annotation_uniprot_helpers.R
+    group: proteomics.annotation.uniprot
+
+  - id: prot_annotation_standardize_uniprot_columns
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: standardizeUniprotColumns }
+    target: R/func_prot_annotation_uniprot_helpers.R
+    group: proteomics.annotation.uniprot
+
+  - id: prot_annotation_create_empty_uniprot_table
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: createEmptyUniprotTable }
+    target: R/func_prot_annotation_uniprot_helpers.R
+    group: proteomics.annotation.uniprot
+
+  - id: prot_annotation_get_uniprot_annotation
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: getUniProtAnnotation }
+    target: R/func_prot_annotation_uniprot_helpers.R
+    group: proteomics.annotation.uniprot

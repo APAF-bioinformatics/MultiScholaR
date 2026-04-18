@@ -1,0 +1,99 @@
+version: 1
+wave: wave12_metabolomics_da_observer_download_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_da_display_helpers.R
+  - R/mod_metab_da_observer_helpers.R
+  - R/mod_metab_da_registration_helpers.R
+  - R/mod_metab_da_server_helpers.R
+  - R/mod_metab_da_server.R
+
+entries:
+  - id: mod_metab_da_run_save_heatmap_observer_shell
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: runMetabDaSaveHeatmapObserverShell }
+    target: R/mod_metab_da_observer_helpers.R
+    group: metabolomics.da.wrapper.observer_download_cluster
+    note: First exact-source observer/download manifest stages the remaining save-heatmap, analysis, load-session, and download helper block into one dedicated helper file without rewriting live sources.
+
+  - id: mod_metab_da_run_save_heatmap_observer_entry
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: runMetabDaSaveHeatmapObserverEntry }
+    target: R/mod_metab_da_observer_helpers.R
+    group: metabolomics.da.wrapper.observer_download_cluster
+
+  - id: mod_metab_da_update_results_selector_inputs
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: updateMetabDaResultsSelectorInputs }
+    target: R/mod_metab_da_observer_helpers.R
+    group: metabolomics.da.wrapper.observer_download_cluster
+
+  - id: mod_metab_da_write_results_artifacts
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: writeMetabDaResultsArtifacts }
+    target: R/mod_metab_da_observer_helpers.R
+    group: metabolomics.da.wrapper.observer_download_cluster
+
+  - id: mod_metab_da_write_results_download_csv
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: writeMetabDaResultsDownloadCsv }
+    target: R/mod_metab_da_observer_helpers.R
+    group: metabolomics.da.wrapper.observer_download_cluster
+
+  - id: mod_metab_da_build_results_download_handler
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: buildMetabDaResultsDownloadHandler }
+    target: R/mod_metab_da_observer_helpers.R
+    group: metabolomics.da.wrapper.observer_download_cluster
+
+  - id: mod_metab_da_resolve_analysis_inputs
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: resolveMetabDaAnalysisInputs }
+    target: R/mod_metab_da_observer_helpers.R
+    group: metabolomics.da.wrapper.observer_download_cluster
+
+  - id: mod_metab_da_run_analysis_observer_entry
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: runMetabDaAnalysisObserverEntry }
+    target: R/mod_metab_da_observer_helpers.R
+    group: metabolomics.da.wrapper.observer_download_cluster
+
+  - id: mod_metab_da_resolve_load_session_file
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: resolveMetabDaLoadSessionFile }
+    target: R/mod_metab_da_observer_helpers.R
+    group: metabolomics.da.wrapper.observer_download_cluster
+
+  - id: mod_metab_da_run_load_session_observer_entry
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: runMetabDaLoadSessionObserverEntry }
+    target: R/mod_metab_da_observer_helpers.R
+    group: metabolomics.da.wrapper.observer_download_cluster
+
+  - id: mod_metab_da_run_load_session_observer_shell
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: runMetabDaLoadSessionObserverShell }
+    target: R/mod_metab_da_observer_helpers.R
+    group: metabolomics.da.wrapper.observer_download_cluster
+
+  - id: mod_metab_da_run_analysis_observer_shell
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: runMetabDaAnalysisObserverShell }
+    target: R/mod_metab_da_observer_helpers.R
+    group: metabolomics.da.wrapper.observer_download_cluster
+
+  - id: mod_metab_da_restore_loaded_session_state
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: restoreMetabDaLoadedSessionState }
+    target: R/mod_metab_da_observer_helpers.R
+    group: metabolomics.da.wrapper.observer_download_cluster
+    note: Keep the full remaining observer/download helper block together so the staged helper remains a clean dependency for the already-live registration and server helper files.

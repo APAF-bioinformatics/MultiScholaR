@@ -1,0 +1,61 @@
+version: 1
+wave: wave10_metabolomics_da_output_observer_registrations
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_da_registration_helpers.R
+  - R/mod_metab_da_server_helpers.R
+  - R/mod_metab_da_server.R
+
+entries:
+  - id: mod_metab_da_register_overview_outputs
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: registerMetabDaOverviewOutputs }
+    target: R/mod_metab_da_registration_helpers.R
+    group: metabolomics.da.wrapper.registration_cluster
+    note: First exact-source registration-cluster manifest stages the remaining output and observer registration helpers into one dedicated helper file without rewriting live sources.
+
+  - id: mod_metab_da_register_visualization_outputs
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: registerMetabDaVisualizationOutputs }
+    target: R/mod_metab_da_registration_helpers.R
+    group: metabolomics.da.wrapper.registration_cluster
+
+  - id: mod_metab_da_register_results_outputs
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: registerMetabDaResultsOutputs }
+    target: R/mod_metab_da_registration_helpers.R
+    group: metabolomics.da.wrapper.registration_cluster
+
+  - id: mod_metab_da_register_save_heatmap_observer
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: registerMetabDaSaveHeatmapObserver }
+    target: R/mod_metab_da_registration_helpers.R
+    group: metabolomics.da.wrapper.registration_cluster
+
+  - id: mod_metab_da_register_load_filtered_session_observer
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: registerMetabDaLoadFilteredSessionObserver }
+    target: R/mod_metab_da_registration_helpers.R
+    group: metabolomics.da.wrapper.registration_cluster
+
+  - id: mod_metab_da_register_run_analysis_observer
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: registerMetabDaRunAnalysisObserver }
+    target: R/mod_metab_da_registration_helpers.R
+    group: metabolomics.da.wrapper.registration_cluster
+
+  - id: mod_metab_da_register_main_outputs_and_observers
+    source: R/mod_metab_da.R
+    selector: { kind: symbol, value: registerMetabDaMainOutputsAndObservers }
+    target: R/mod_metab_da_registration_helpers.R
+    group: metabolomics.da.wrapper.registration_cluster
+    note: Keep the full overview, output, and observer registration fan-out together so the staged helper remains a clean dependency for the already-live server-entry helpers.

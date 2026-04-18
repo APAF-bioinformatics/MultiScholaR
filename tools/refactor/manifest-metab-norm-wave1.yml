@@ -1,0 +1,40 @@
+version: 1
+wave: wave1_metabolomics_norm_support_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_metab_norm_support_helpers.R
+
+entries:
+  - id: metab_norm_extract_best_k_per_assay
+    source: R/func_metab_norm.R
+    selector: { kind: symbol, value: extractBestKPerAssay }
+    target: R/func_metab_norm_support_helpers.R
+    group: metabolomics.norm.support
+    note: Wave 1 stages the low-risk metabolomics normalization support helpers without rewriting live sources.
+
+  - id: metab_norm_extract_ctrl_per_assay
+    source: R/func_metab_norm.R
+    selector: { kind: symbol, value: extractCtrlPerAssay }
+    target: R/func_metab_norm_support_helpers.R
+    group: metabolomics.norm.support
+
+  - id: metab_norm_build_combined_ruv_table
+    source: R/func_metab_norm.R
+    selector: { kind: symbol, value: buildCombinedRuvTable }
+    target: R/func_metab_norm_support_helpers.R
+    group: metabolomics.norm.support
+
+  - id: metab_norm_build_norm_config
+    source: R/func_metab_norm.R
+    selector: { kind: symbol, value: buildNormConfig }
+    target: R/func_metab_norm_support_helpers.R
+    group: metabolomics.norm.support

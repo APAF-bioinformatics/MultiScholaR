@@ -1,0 +1,40 @@
+version: 1
+wave: wave3_metabolomics_import_server_setup
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_import_server_helpers.R
+
+entries:
+  - id: mod_metab_import_setup_shiny_files
+    source: R/mod_metab_import.R
+    selector: { kind: symbol, value: setupMetabImportShinyFiles }
+    target: R/mod_metab_import_server_helpers.R
+    group: metabolomics.import.wrapper.server_setup_cluster
+    note: Wave 3 stages the metabolomics import server-setup helper cluster without rewriting live sources until the reviewed apply checkpoint.
+
+  - id: mod_metab_import_setup_column_accessors
+    source: R/mod_metab_import.R
+    selector: { kind: symbol, value: setupMetabImportColumnAccessors }
+    target: R/mod_metab_import_server_helpers.R
+    group: metabolomics.import.wrapper.server_setup_cluster
+
+  - id: mod_metab_import_setup_assay_selection_callback
+    source: R/mod_metab_import.R
+    selector: { kind: symbol, value: setupMetabImportAssaySelectionCallback }
+    target: R/mod_metab_import_server_helpers.R
+    group: metabolomics.import.wrapper.server_setup_cluster
+
+  - id: mod_metab_import_setup_processing_observer
+    source: R/mod_metab_import.R
+    selector: { kind: symbol, value: setupMetabImportProcessingObserver }
+    target: R/mod_metab_import_server_helpers.R
+    group: metabolomics.import.wrapper.server_setup_cluster

@@ -1,0 +1,47 @@
+version: 1
+wave: wave1_metabolomics_qc_metrics_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_metab_qc_metrics_helpers.R
+
+entries:
+  - id: metab_qc_count_unique_metabolites
+    source: R/func_metab_qc.R
+    selector: { kind: symbol, value: countUniqueMetabolites }
+    target: R/func_metab_qc_metrics_helpers.R
+    group: metabolomics.qc.metrics
+    note: Wave 1 stages the low-risk metabolomics QC metric helpers without rewriting live sources.
+
+  - id: metab_qc_count_metabolites_per_sample
+    source: R/func_metab_qc.R
+    selector: { kind: symbol, value: countMetabolitesPerSample }
+    target: R/func_metab_qc_metrics_helpers.R
+    group: metabolomics.qc.metrics
+
+  - id: metab_qc_calculate_missingness
+    source: R/func_metab_qc.R
+    selector: { kind: symbol, value: calculateMissingness }
+    target: R/func_metab_qc_metrics_helpers.R
+    group: metabolomics.qc.metrics
+
+  - id: metab_qc_calculate_sum_intensity_per_sample
+    source: R/func_metab_qc.R
+    selector: { kind: symbol, value: calculateSumIntensityPerSample }
+    target: R/func_metab_qc_metrics_helpers.R
+    group: metabolomics.qc.metrics
+
+  - id: metab_qc_calculate_total_unique_metabolites_across_assays
+    source: R/func_metab_qc.R
+    selector: { kind: symbol, value: calculateTotalUniqueMetabolitesAcrossAssays }
+    target: R/func_metab_qc_metrics_helpers.R
+    group: metabolomics.qc.metrics
+

@@ -1,0 +1,22 @@
+version: 1
+wave: wave19_metabolomics_s4_pearson_cor_for_sample_pairs
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_metab_s4_qc_methods.R
+
+entries:
+  - id: metab_s4_qc_method_pearson_cor_for_sample_pairs
+    source: R/func_metab_s4_objects.R
+    selector: { kind: setMethod, value: pearsonCorForSamplePairs }
+    target: R/func_metab_s4_qc_methods.R
+    group: metabolomics.s4.qc.methods
+    note: Wave 19 stages the bounded metabolomics S4 pearsonCorForSamplePairs QC-method checkpoint into the live helper file without rewriting the method body.

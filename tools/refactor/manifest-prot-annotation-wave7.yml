@@ -1,0 +1,28 @@
+version: 1
+wave: wave7_proteomics_annotation_processing_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_annotation_processing_helpers.R
+
+entries:
+  - id: prot_annotation_process_and_filter_data
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: processAndFilterData }
+    target: R/func_prot_annotation_processing_helpers.R
+    group: proteomics.annotation.processing
+    note: Stage the seventh exact-source annotation wave around processAndFilterData() and saveResults() while keeping the public annotation entry points stable for a later apply checkpoint.
+
+  - id: prot_annotation_save_results
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: saveResults }
+    target: R/func_prot_annotation_processing_helpers.R
+    group: proteomics.annotation.processing

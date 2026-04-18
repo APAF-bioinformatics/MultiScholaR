@@ -1,0 +1,34 @@
+version: 1
+wave: wave9_proteomics_annotation_ensembl_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_annotation_ensembl_helpers.R
+
+entries:
+  - id: prot_annotation_detect_ensembl_ids
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: detectEnsemblIds }
+    target: R/func_prot_annotation_ensembl_helpers.R
+    group: proteomics.annotation.ensembl
+    note: Stage the ninth exact-source annotation wave around the Ensembl ID detection and conversion helpers while keeping .extractProteinIdFromHeader() and getUniprotAnnotationsFull() in the main annotation file for a later apply checkpoint.
+
+  - id: prot_annotation_taxon_id_to_gprofiler_organism
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: taxonIdToGprofilerOrganism }
+    target: R/func_prot_annotation_ensembl_helpers.R
+    group: proteomics.annotation.ensembl
+
+  - id: prot_annotation_convert_ensembl_to_uniprot
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: convertEnsemblToUniprot }
+    target: R/func_prot_annotation_ensembl_helpers.R
+    group: proteomics.annotation.ensembl

@@ -1,0 +1,22 @@
+version: 1
+wave: wave26_proteomics_s4_initialise_grid_method
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_s4_grid.R
+
+entries:
+  - id: prot_s4_grid_method_initialise_grid
+    source: R/func_prot_s4_objects.R
+    selector: { kind: setMethod, value: InitialiseGrid }
+    target: R/func_prot_s4_grid.R
+    group: proteomics.s4.grid
+    note: Twenty-sixth staged proteomics S4 wave moves the exact InitialiseGrid ANY method block into the existing proteomics S4 grid helper file without rewriting live sources.

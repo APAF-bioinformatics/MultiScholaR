@@ -1,0 +1,22 @@
+version: 1
+wave: wave32_proteomics_s4_get_ruviii_replicate_matrix
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_s4_replicates.R
+
+entries:
+  - id: prot_s4_replicates_get_ruviii_replicate_matrix
+    source: R/func_prot_s4_objects.R
+    selector: { kind: setMethod, value: getRuvIIIReplicateMatrix }
+    target: R/func_prot_s4_replicates.R
+    group: proteomics.s4.replicates
+    note: Thirty-second staged proteomics S4 wave moves the exact ProteinQuantitativeData getRuvIIIReplicateMatrix method block into the existing S4 replicates helper file without rewriting live sources.

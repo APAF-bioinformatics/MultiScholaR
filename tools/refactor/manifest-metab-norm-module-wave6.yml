@@ -1,0 +1,22 @@
+version: 1
+wave: wave6_metabolomics_norm_module_run_normalization_observer_shell
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_norm_server_helpers.R
+
+entries:
+  - id: mod_metab_norm_run_normalization_observer_shell
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: runMetabNormNormalizationObserverShell }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.run_normalization_observer_shell
+    note: Sixth metabolomics normalization module server wave stages the seam-ready run-normalization observer shell.

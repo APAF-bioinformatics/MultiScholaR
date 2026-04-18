@@ -1,0 +1,116 @@
+version: 1
+wave: wave1_proteomics_import_server_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_import_ui_helpers.R
+  - R/mod_prot_import_detection_helpers.R
+  - R/mod_prot_import_path_helpers.R
+
+entries:
+  - id: mod_prot_import_status_ui
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: buildProtImportStatusUi }
+    target: R/mod_prot_import_ui_helpers.R
+    group: proteomics.import.wrapper.ui
+    note: First staged wrapper wave starts with low-coupling UI builder helpers.
+
+  - id: mod_prot_import_data_summary_ui
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: buildProtImportDataSummaryUi }
+    target: R/mod_prot_import_ui_helpers.R
+    group: proteomics.import.wrapper.ui
+
+  - id: mod_prot_import_format_detection_ui
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: buildProtImportFormatDetectionUi }
+    target: R/mod_prot_import_ui_helpers.R
+    group: proteomics.import.wrapper.ui
+
+  - id: mod_prot_import_format_options_ui
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: buildProtImportFormatSpecificOptionsUi }
+    target: R/mod_prot_import_ui_helpers.R
+    group: proteomics.import.wrapper.ui
+
+  - id: mod_prot_import_read_headers
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: readProtImportHeaders }
+    target: R/mod_prot_import_detection_helpers.R
+    group: proteomics.import.wrapper.detection
+    note: Detection helpers are already seam-introduced and directly covered.
+
+  - id: mod_prot_import_resolve_detection_filename
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: resolveProtImportDetectionFilename }
+    target: R/mod_prot_import_detection_helpers.R
+    group: proteomics.import.wrapper.detection
+
+  - id: mod_prot_import_apply_detected_format
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: applyProtImportDetectedFormat }
+    target: R/mod_prot_import_detection_helpers.R
+    group: proteomics.import.wrapper.detection
+
+  - id: mod_prot_import_reset_detection_state
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: resetProtImportFormatDetectionState }
+    target: R/mod_prot_import_detection_helpers.R
+    group: proteomics.import.wrapper.detection
+
+  - id: mod_prot_import_run_detection
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: runProtImportFormatDetection }
+    target: R/mod_prot_import_detection_helpers.R
+    group: proteomics.import.wrapper.detection
+
+  - id: mod_prot_import_resolve_active_format
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: resolveActiveProtImportFormat }
+    target: R/mod_prot_import_detection_helpers.R
+    group: proteomics.import.wrapper.detection
+
+  - id: mod_prot_import_update_checkpoint_option
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: updateProtImportCheckpointCaptureOption }
+    target: R/mod_prot_import_path_helpers.R
+    group: proteomics.import.wrapper.paths
+    note: Session/path/shinyFiles helpers stay together in the first wrapper apply wave.
+
+  - id: mod_prot_import_toggle_mixed_species_inputs
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: toggleProtImportMixedSpeciesInputs }
+    target: R/mod_prot_import_path_helpers.R
+    group: proteomics.import.wrapper.paths
+
+  - id: mod_prot_import_resolve_primary_upload_path
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: resolveProtImportPrimaryUploadPath }
+    target: R/mod_prot_import_path_helpers.R
+    group: proteomics.import.wrapper.paths
+
+  - id: mod_prot_import_resolve_shiny_volumes
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: resolveProtImportShinyFileVolumes }
+    target: R/mod_prot_import_path_helpers.R
+    group: proteomics.import.wrapper.paths
+
+  - id: mod_prot_import_register_shiny_chooser
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: registerProtImportShinyFileChooser }
+    target: R/mod_prot_import_path_helpers.R
+    group: proteomics.import.wrapper.paths
+
+  - id: mod_prot_import_handle_shiny_selection
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: handleProtImportShinyFileSelection }
+    target: R/mod_prot_import_path_helpers.R
+    group: proteomics.import.wrapper.paths

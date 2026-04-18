@@ -1,0 +1,22 @@
+version: 1
+wave: wave25_metabolomics_s4_normalise_between_samples_method
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_metab_s4_norm_methods.R
+
+entries:
+  - id: metab_s4_norm_method_normalise_between_samples
+    source: R/func_metab_s4_objects.R
+    selector: { kind: setMethod, value: normaliseBetweenSamples }
+    target: R/func_metab_s4_norm_methods.R
+    group: metabolomics.s4.norm_methods
+    note: Wave 25 stages the bounded metabolomics S4 normaliseBetweenSamples normalization-method checkpoint into the live helper file without rewriting the method body.

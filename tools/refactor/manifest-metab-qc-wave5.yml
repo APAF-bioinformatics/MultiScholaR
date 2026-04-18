@@ -1,0 +1,28 @@
+version: 1
+wave: wave5_metabolomics_qc_variability_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_metab_qc_variability_helpers.R
+
+entries:
+  - id: metab_qc_calculate_metabolite_cvs
+    source: R/func_metab_qc.R
+    selector: { kind: symbol, value: calculateMetaboliteCVs }
+    target: R/func_metab_qc_variability_helpers.R
+    group: metabolomics.qc.variability
+    note: Wave 5 stages the bounded metabolomics QC variability-helper seam without rewriting the helper bodies.
+
+  - id: metab_qc_get_internal_standard_metrics
+    source: R/func_metab_qc.R
+    selector: { kind: symbol, value: getInternalStandardMetrics }
+    target: R/func_metab_qc_variability_helpers.R
+    group: metabolomics.qc.variability

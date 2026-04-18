@@ -1,0 +1,82 @@
+version: 1
+wave: wave1_metabolomics_design_import_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_design_import_helpers.R
+
+entries:
+  - id: mod_metab_design_import_bootstrap
+    source: R/mod_metab_design.R
+    selector: { kind: symbol, value: initializeMetabDesignImportBootstrap }
+    target: R/mod_metab_design_import_helpers.R
+    group: metabolomics.design.wrapper.import
+    note: Wave 1 stages the stabilized metabolomics design import-wrapper helper cluster without rewriting the live wrapper yet.
+
+  - id: mod_metab_design_import_modal_shell
+    source: R/mod_metab_design.R
+    selector: { kind: symbol, value: registerMetabDesignImportModalShell }
+    target: R/mod_metab_design_import_helpers.R
+    group: metabolomics.design.wrapper.import
+
+  - id: mod_metab_design_import_preflight
+    source: R/mod_metab_design.R
+    selector: { kind: symbol, value: resolveMetabDesignImportPreflight }
+    target: R/mod_metab_design_import_helpers.R
+    group: metabolomics.design.wrapper.import
+
+  - id: mod_metab_design_import_artifacts
+    source: R/mod_metab_design.R
+    selector: { kind: symbol, value: hydrateMetabDesignImportArtifacts }
+    target: R/mod_metab_design_import_helpers.R
+    group: metabolomics.design.wrapper.import
+
+  - id: mod_metab_design_import_metadata
+    source: R/mod_metab_design.R
+    selector: { kind: symbol, value: hydrateMetabDesignImportMetadata }
+    target: R/mod_metab_design_import_helpers.R
+    group: metabolomics.design.wrapper.import
+
+  - id: mod_metab_design_import_workflow_state
+    source: R/mod_metab_design.R
+    selector: { kind: symbol, value: hydrateMetabDesignImportWorkflowState }
+    target: R/mod_metab_design_import_helpers.R
+    group: metabolomics.design.wrapper.import
+
+  - id: mod_metab_design_import_s4_object
+    source: R/mod_metab_design.R
+    selector: { kind: symbol, value: createMetabDesignImportedS4Object }
+    target: R/mod_metab_design_import_helpers.R
+    group: metabolomics.design.wrapper.import
+
+  - id: mod_metab_design_import_s4_state
+    source: R/mod_metab_design.R
+    selector: { kind: symbol, value: saveMetabDesignImportedS4State }
+    target: R/mod_metab_design_import_helpers.R
+    group: metabolomics.design.wrapper.import
+
+  - id: mod_metab_design_import_qc_baseline
+    source: R/mod_metab_design.R
+    selector: { kind: symbol, value: initializeMetabDesignImportedQcBaseline }
+    target: R/mod_metab_design_import_helpers.R
+    group: metabolomics.design.wrapper.import
+
+  - id: mod_metab_design_import_completion
+    source: R/mod_metab_design.R
+    selector: { kind: symbol, value: completeMetabDesignImportedPostCheckpoint }
+    target: R/mod_metab_design_import_helpers.R
+    group: metabolomics.design.wrapper.import
+
+  - id: mod_metab_design_import_observer_shell
+    source: R/mod_metab_design.R
+    selector: { kind: symbol, value: registerMetabDesignImportObserverShell }
+    target: R/mod_metab_design_import_helpers.R
+    group: metabolomics.design.wrapper.import

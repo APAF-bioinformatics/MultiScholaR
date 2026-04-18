@@ -1,0 +1,52 @@
+version: 1
+wave: wave21_proteomics_enrichment_server_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_enrich_server_helpers.R
+
+entries:
+  - id: mod_prot_enrich_progress_completer
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: completeProtEnrichProgress }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.analysis_body.completion_feedback
+    note: Twenty-first staged enrichment analysis-body wave moves the next exact-source completion-feedback helper cluster without rewriting live sources.
+
+  - id: mod_prot_enrich_completion_notifier
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: notifyProtEnrichCompletion }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.analysis_body.completion_feedback
+
+  - id: mod_prot_enrich_analysis_error_notifier
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: notifyProtEnrichAnalysisError }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.analysis_body.completion_feedback
+
+  - id: mod_prot_enrich_analysis_error_logger
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: logProtEnrichAnalysisError }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.analysis_body.completion_feedback
+
+  - id: mod_prot_enrich_analysis_error_messenger
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: messageProtEnrichAnalysisError }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.analysis_body.completion_feedback
+
+  - id: mod_prot_enrich_analysis_error_reporter
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: reportProtEnrichAnalysisError }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.analysis_body.completion_feedback

@@ -23,5 +23,5 @@
 # source identity after the bounded helper extractions. Live implementations
 # now collate from the dedicated `R/func_metab_da_*` files, while metabolite S4
 # DA methods and the shared `getCountsTable()` helper live in
-# `R/func_metab_s4_objects.R`.
+# `R/func_metab_s4_da_results.R` and `R/func_metab_s4_objects.R`.
 # ============================================================================

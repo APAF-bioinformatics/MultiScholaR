@@ -1,0 +1,31 @@
+version: 1
+wave: wave1_metabolomics_qc_itsd_wrapper_entrypoints
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_qc_itsd.R
+  - R/mod_metab_qc_itsd_ui.R
+  - R/mod_metab_qc_itsd_server.R
+
+entries:
+  - id: mod_metab_qc_itsd_ui_entrypoint
+    source: R/mod_metab_qc_itsd.R
+    selector: { kind: symbol, value: mod_metab_qc_itsd_ui }
+    target: R/mod_metab_qc_itsd_ui.R
+    group: metabolomics.qc.itsd.wrapper.entrypoints
+    note: Wrapper-entrypoint wave stages the public UI entrypoint into a dedicated file while the direct analysis, plot-builder, and server-body seams stay in mod_metab_qc_itsd.R.
+
+  - id: mod_metab_qc_itsd_server_entrypoint
+    source: R/mod_metab_qc_itsd.R
+    selector: { kind: symbol, value: mod_metab_qc_itsd_server }
+    target: R/mod_metab_qc_itsd_server.R
+    group: metabolomics.qc.itsd.wrapper.entrypoints
+    note: Wrapper-entrypoint wave stages the public server entrypoint into a dedicated file now that the module callback already delegates through runMetabQcItsdServerBody().

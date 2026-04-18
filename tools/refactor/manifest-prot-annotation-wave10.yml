@@ -1,0 +1,28 @@
+version: 1
+wave: wave10_proteomics_annotation_uniprot_full_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_annotation_uniprot_full_helpers.R
+
+entries:
+  - id: prot_annotation_extract_protein_id_from_header
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: .extractProteinIdFromHeader }
+    target: R/func_prot_annotation_uniprot_full_helpers.R
+    group: proteomics.annotation.uniprot_full
+    note: Stage the tenth exact-source annotation wave around the FASTA-header protein ID extraction helper plus the dataset-driven full UniProt annotation entry point while keeping the remaining accession-cleaning helpers and public annotation entry points stable in func_prot_annotation.R.
+
+  - id: prot_annotation_get_uniprot_annotations_full
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: getUniprotAnnotationsFull }
+    target: R/func_prot_annotation_uniprot_full_helpers.R
+    group: proteomics.annotation.uniprot_full

@@ -1,0 +1,22 @@
+version: 1
+wave: wave1_metabolomics_da_results_long_format
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_metab_da_results_long_format.R
+
+entries:
+  - id: metab_da_create_results_long_format
+    source: R/func_metab_da.R
+    selector: { kind: symbol, value: createMetabDaResultsLongFormat }
+    target: R/func_metab_da_results_long_format.R
+    group: metabolomics.da.results
+    note: Wave 1 stages the bounded metabolomics DA long-format helper seam without rewriting the helper body.

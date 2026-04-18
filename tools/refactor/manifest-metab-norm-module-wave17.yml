@@ -1,0 +1,31 @@
+version: 1
+wave: wave17_metabolomics_norm_module_wrapper_entrypoints
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_norm_server_helpers.R
+  - R/mod_metab_norm_ui.R
+  - R/mod_metab_norm_server.R
+  - R/mod_metab_norm.R
+
+entries:
+  - id: mod_metab_norm_ui_entrypoint
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: mod_metab_norm_ui }
+    target: R/mod_metab_norm_ui.R
+    group: metabolomics.norm.module.wrapper.entrypoints
+    note: Final metabolomics normalization module wrapper wave moves the remaining public UI and server entrypoints into dedicated files so mod_metab_norm.R can collapse into a breadcrumb stub.
+
+  - id: mod_metab_norm_server_entrypoint
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: mod_metab_norm_server }
+    target: R/mod_metab_norm_server.R
+    group: metabolomics.norm.module.wrapper.entrypoints

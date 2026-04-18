@@ -1,0 +1,208 @@
+version: 1
+wave: wave2_proteomics_import_server_processing
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_import_processing_helpers.R
+  - R/mod_prot_import_config_helpers.R
+  - R/mod_prot_import_organism_helpers.R
+  - R/mod_prot_import_orchestration_helpers.R
+
+entries:
+  - id: mod_prot_import_processing_modal
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: buildProtImportProcessingModal }
+    target: R/mod_prot_import_processing_helpers.R
+    group: proteomics.import.wrapper.processing
+    note: Second wrapper wave starts with the remaining processing helper core.
+
+  - id: mod_prot_import_processing_status
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: updateProtImportProcessingStatus }
+    target: R/mod_prot_import_processing_helpers.R
+    group: proteomics.import.wrapper.processing
+
+  - id: mod_prot_import_by_format
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: importProtImportDataByFormat }
+    target: R/mod_prot_import_processing_helpers.R
+    group: proteomics.import.wrapper.processing
+
+  - id: mod_prot_import_sanitize_runs
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: sanitizeProtImportRunNames }
+    target: R/mod_prot_import_processing_helpers.R
+    group: proteomics.import.wrapper.processing
+
+  - id: mod_prot_import_apply_result
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: applyProtImportResultToWorkflow }
+    target: R/mod_prot_import_processing_helpers.R
+    group: proteomics.import.wrapper.processing
+
+  - id: mod_prot_import_finalize_setup
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: finalizeProtImportSetupState }
+    target: R/mod_prot_import_processing_helpers.R
+    group: proteomics.import.wrapper.processing
+
+  - id: mod_prot_import_process_fasta
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: processProtImportFastaData }
+    target: R/mod_prot_import_processing_helpers.R
+    group: proteomics.import.wrapper.processing
+
+  - id: mod_prot_import_complete_success
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: completeProtImportSuccessState }
+    target: R/mod_prot_import_processing_helpers.R
+    group: proteomics.import.wrapper.processing
+
+  - id: mod_prot_import_reset_on_error
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: resetProtImportWorkflowStateOnError }
+    target: R/mod_prot_import_processing_helpers.R
+    group: proteomics.import.wrapper.processing
+
+  - id: mod_prot_import_load_config
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: loadProtImportConfiguration }
+    target: R/mod_prot_import_config_helpers.R
+    group: proteomics.import.wrapper.config
+    note: Config and optional mapping helpers stay ahead of orchestration wrappers.
+
+  - id: mod_prot_import_store_config
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: storeProtImportConfiguration }
+    target: R/mod_prot_import_config_helpers.R
+    group: proteomics.import.wrapper.config
+
+  - id: mod_prot_import_read_optional_mapping
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: readProtImportOptionalMapping }
+    target: R/mod_prot_import_config_helpers.R
+    group: proteomics.import.wrapper.config
+
+  - id: mod_prot_import_resolve_optional_upload
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: resolveProtImportOptionalUploadPath }
+    target: R/mod_prot_import_config_helpers.R
+    group: proteomics.import.wrapper.config
+
+  - id: mod_prot_import_resolve_input_filename
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: resolveProtImportInputFilename }
+    target: R/mod_prot_import_config_helpers.R
+    group: proteomics.import.wrapper.config
+
+  - id: mod_prot_import_load_optional_mappings
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: loadProtImportOptionalMappings }
+    target: R/mod_prot_import_config_helpers.R
+    group: proteomics.import.wrapper.config
+
+  - id: mod_prot_import_prepare_organism_choices
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: prepareProtImportOrganismSelectionChoices }
+    target: R/mod_prot_import_organism_helpers.R
+    group: proteomics.import.wrapper.organism
+    note: Mixed-species and organism-confirmation helpers move together in the second wrapper wave.
+
+  - id: mod_prot_import_build_organism_modal
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: buildProtImportOrganismSelectionModal }
+    target: R/mod_prot_import_organism_helpers.R
+    group: proteomics.import.wrapper.organism
+
+  - id: mod_prot_import_analyze_mixed_species
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: analyzeProtImportMixedSpeciesData }
+    target: R/mod_prot_import_organism_helpers.R
+    group: proteomics.import.wrapper.organism
+
+  - id: mod_prot_import_organism_distribution_table
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: buildProtImportOrganismDistributionTable }
+    target: R/mod_prot_import_organism_helpers.R
+    group: proteomics.import.wrapper.organism
+
+  - id: mod_prot_import_filter_to_organism
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: filterProtImportDataToOrganism }
+    target: R/mod_prot_import_organism_helpers.R
+    group: proteomics.import.wrapper.organism
+
+  - id: mod_prot_import_confirm_organism
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: confirmProtImportOrganismSelection }
+    target: R/mod_prot_import_organism_helpers.R
+    group: proteomics.import.wrapper.organism
+
+  - id: mod_prot_import_announce_start
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: announceProtImportStart }
+    target: R/mod_prot_import_orchestration_helpers.R
+    group: proteomics.import.wrapper.orchestration
+    note: Orchestration wrappers depend on processing, config, and organism helper files.
+
+  - id: mod_prot_import_record_imported_data
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: recordProtImportImportedData }
+    target: R/mod_prot_import_orchestration_helpers.R
+    group: proteomics.import.wrapper.orchestration
+
+  - id: mod_prot_import_record_setup_log
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: recordProtImportSetupLog }
+    target: R/mod_prot_import_orchestration_helpers.R
+    group: proteomics.import.wrapper.orchestration
+
+  - id: mod_prot_import_start_processing
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: startProtImportProcessing }
+    target: R/mod_prot_import_orchestration_helpers.R
+    group: proteomics.import.wrapper.orchestration
+
+  - id: mod_prot_import_load_config_resources
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: loadProtImportConfigurationResources }
+    target: R/mod_prot_import_orchestration_helpers.R
+    group: proteomics.import.wrapper.orchestration
+
+  - id: mod_prot_import_finalize_processing
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: finalizeProtImportProcessing }
+    target: R/mod_prot_import_orchestration_helpers.R
+    group: proteomics.import.wrapper.orchestration
+
+  - id: mod_prot_import_read_with_status
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: readProtImportDataWithStatus }
+    target: R/mod_prot_import_orchestration_helpers.R
+    group: proteomics.import.wrapper.orchestration
+
+  - id: mod_prot_import_apply_workflow_with_status
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: applyProtImportWorkflowWithStatus }
+    target: R/mod_prot_import_orchestration_helpers.R
+    group: proteomics.import.wrapper.orchestration
+
+  - id: mod_prot_import_run_mixed_species_if_needed
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: runProtImportMixedSpeciesAnalysisIfNeeded }
+    target: R/mod_prot_import_orchestration_helpers.R
+    group: proteomics.import.wrapper.orchestration
+
+  - id: mod_prot_import_run_processing_safely
+    source: R/mod_prot_import.R
+    selector: { kind: symbol, value: runProtImportProcessingSafely }
+    target: R/mod_prot_import_orchestration_helpers.R
+    group: proteomics.import.wrapper.orchestration

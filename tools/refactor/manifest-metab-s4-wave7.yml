@@ -1,0 +1,22 @@
+version: 1
+wave: wave7_metabolomics_s4_interactive_volcano
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_metab_s4_da_results.R
+
+entries:
+  - id: metab_s4_plot_interactive_volcano
+    source: R/func_metab_s4_objects.R
+    selector: { kind: setMethod, value: plotInteractiveVolcano }
+    target: R/func_metab_s4_da_results.R
+    group: metabolomics.s4.da_results
+    note: Wave 7 stages the bounded metabolomics S4 interactive-volcano checkpoint without rewriting the method body.

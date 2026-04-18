@@ -1,0 +1,22 @@
+version: 1
+wave: wave3_metabolomics_da_results_output
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_metab_da_results_output.R
+
+entries:
+  - id: metab_da_output_results_all_contrasts
+    source: R/func_metab_da.R
+    selector: { kind: symbol, value: outputMetabDaResultsAllContrasts }
+    target: R/func_metab_da_results_output.R
+    group: metabolomics.da.output
+    note: Wave 3 stages the bounded metabolomics DA results-output helper seam without rewriting the helper body.

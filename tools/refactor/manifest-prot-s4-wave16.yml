@@ -1,0 +1,22 @@
+version: 1
+wave: wave16_proteomics_s4_plot_rle
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_s4_qc_methods.R
+
+entries:
+  - id: prot_s4_qc_method_plot_rle
+    source: R/func_prot_s4_objects.R
+    selector: { kind: setMethod, value: plotRle }
+    target: R/func_prot_s4_qc_methods.R
+    group: proteomics.s4.qc.methods
+    note: Sixteenth staged proteomics S4 wave moves the exact ProteinQuantitativeData plotRle method block into the existing S4 QC-methods helper file without rewriting live sources.

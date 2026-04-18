@@ -1,0 +1,23 @@
+version: 1
+wave: wave26_proteomics_enrichment_server_entrypoint
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_enrich_server_helpers.R
+  - R/mod_prot_enrich_server.R
+
+entries:
+  - id: mod_prot_enrich_server_entrypoint
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: mod_prot_enrich_server }
+    target: R/mod_prot_enrich_server.R
+    group: proteomics.enrichment.wrapper.entrypoints
+    note: Twenty-sixth staged enrichment wrapper wave moves the exact-source server entrypoint into a dedicated file after the wrapper shell bootstrap review.

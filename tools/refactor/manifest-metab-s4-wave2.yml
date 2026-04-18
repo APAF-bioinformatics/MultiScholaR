@@ -1,0 +1,22 @@
+version: 1
+wave: wave2_metabolomics_s4_da_results_class
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_metab_s4_da_results.R
+
+entries:
+  - id: metab_s4_class_metabolomics_differential_abundance_results
+    source: R/func_metab_s4_objects.R
+    selector: { kind: setClass, value: MetabolomicsDifferentialAbundanceResults }
+    target: R/func_metab_s4_da_results.R
+    group: metabolomics.s4.da_results
+    note: Wave 2 stages the bounded metabolomics S4 DA-results class checkpoint without rewriting the class definition.

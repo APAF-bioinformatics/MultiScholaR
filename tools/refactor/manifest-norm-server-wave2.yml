@@ -1,0 +1,120 @@
+version: 1
+wave: wave2_proteomics_norm_server_run_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_norm_workflow_helpers.R
+  - R/mod_prot_norm_ruv_helpers.R
+
+entries:
+  - id: mod_prot_norm_prepare_run
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: prepareProtNormNormalizationRun }
+    target: R/mod_prot_norm_workflow_helpers.R
+    group: proteomics.norm.wrapper.run_workflow
+    note: Second normalization wrapper wave stages the seam-ready run_normalization helper cluster.
+
+  - id: mod_prot_norm_between_samples_step
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: runProtNormBetweenSamplesStep }
+    target: R/mod_prot_norm_workflow_helpers.R
+    group: proteomics.norm.wrapper.run_workflow
+
+  - id: mod_prot_norm_post_qc_step
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: runProtNormPostNormalizationQcStep }
+    target: R/mod_prot_norm_workflow_helpers.R
+    group: proteomics.norm.wrapper.run_workflow
+
+  - id: mod_prot_norm_skip_result
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: buildProtNormSkippedRuvResult }
+    target: R/mod_prot_norm_workflow_helpers.R
+    group: proteomics.norm.wrapper.run_workflow
+
+  - id: mod_prot_norm_apply_skip_state
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: applyProtNormSkippedRuvState }
+    target: R/mod_prot_norm_workflow_helpers.R
+    group: proteomics.norm.wrapper.run_workflow
+
+  - id: mod_prot_norm_step6_object
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: resolveProtNormStep6QcObject }
+    target: R/mod_prot_norm_workflow_helpers.R
+    group: proteomics.norm.wrapper.run_workflow
+
+  - id: mod_prot_norm_step6_ruv_qc
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: runProtNormStep6RuvQc }
+    target: R/mod_prot_norm_workflow_helpers.R
+    group: proteomics.norm.wrapper.run_workflow
+
+  - id: mod_prot_norm_composite_inputs
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: resolveProtNormCompositeFigureInputs }
+    target: R/mod_prot_norm_workflow_helpers.R
+    group: proteomics.norm.wrapper.run_workflow
+
+  - id: mod_prot_norm_composite_generation
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: generateProtNormCompositeQcFigure }
+    target: R/mod_prot_norm_workflow_helpers.R
+    group: proteomics.norm.wrapper.run_workflow
+
+  - id: mod_prot_norm_finalize_workflow
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: finalizeProtNormWorkflowState }
+    target: R/mod_prot_norm_workflow_helpers.R
+    group: proteomics.norm.wrapper.run_workflow
+
+  - id: mod_prot_norm_completion_notification
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: buildProtNormCompletionNotification }
+    target: R/mod_prot_norm_workflow_helpers.R
+    group: proteomics.norm.wrapper.run_workflow
+
+  - id: mod_prot_norm_manual_result
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: buildProtNormManualRuvResult }
+    target: R/mod_prot_norm_ruv_helpers.R
+    group: proteomics.norm.wrapper.run_ruv
+    note: RUV-specific helper seams stay together behind the broader run_workflow helpers.
+
+  - id: mod_prot_norm_update_ruv_audit
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: updateProtNormRuvAuditTrail }
+    target: R/mod_prot_norm_ruv_helpers.R
+    group: proteomics.norm.wrapper.run_ruv
+
+  - id: mod_prot_norm_persist_ruv_result
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: persistProtNormRuvResult }
+    target: R/mod_prot_norm_ruv_helpers.R
+    group: proteomics.norm.wrapper.run_ruv
+
+  - id: mod_prot_norm_resolve_ruv_params
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: resolveProtNormRuvParameters }
+    target: R/mod_prot_norm_ruv_helpers.R
+    group: proteomics.norm.wrapper.run_ruv
+
+  - id: mod_prot_norm_apply_ruv
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: applyProtNormRuvCorrectionStep }
+    target: R/mod_prot_norm_ruv_helpers.R
+    group: proteomics.norm.wrapper.run_ruv
+
+  - id: mod_prot_norm_finalize_ruv_cleanup
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: finalizeProtNormRuvCleanupStep }
+    target: R/mod_prot_norm_ruv_helpers.R
+    group: proteomics.norm.wrapper.run_ruv

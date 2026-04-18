@@ -1,0 +1,40 @@
+version: 1
+wave: wave8_metabolomics_norm_module_run_normalization_opening_step_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_norm_server_helpers.R
+
+entries:
+  - id: mod_metab_norm_resolve_manual_itsd_feature_ids
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: resolveMetabNormManualItsdFeatureIds }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.run_normalization_opening_step_helpers
+    note: Eighth metabolomics normalization module server wave stages the manual ITSD feature-ID resolver for the opening run-normalization helper cluster.
+  - id: mod_metab_norm_run_pre_normalization_qc_step
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: runMetabNormPreNormalizationQcStep }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.run_normalization_opening_step_helpers
+    note: Eighth metabolomics normalization module server wave stages the pre-normalization QC step helper for the opening run-normalization helper cluster.
+  - id: mod_metab_norm_run_itsd_progress_apply_shell
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: runMetabNormItsdProgressApplyShell }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.run_normalization_opening_step_helpers
+    note: Eighth metabolomics normalization module server wave stages the ITSD progress/apply shell for the opening run-normalization helper cluster.
+  - id: mod_metab_norm_run_itsd_normalization_step
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: runMetabNormItsdNormalizationStep }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.run_normalization_opening_step_helpers
+    note: Eighth metabolomics normalization module server wave stages the ITSD normalization step helper for the opening run-normalization helper cluster.

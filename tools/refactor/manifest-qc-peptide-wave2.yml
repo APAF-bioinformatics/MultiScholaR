@@ -1,0 +1,40 @@
+version: 1
+wave: wave2_proteomics_qc_peptide_replicate_filters
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_qc_peptide_replicate_filters.R
+
+entries:
+  - id: prot_qc_peptide_remove_single_replicate_helper
+    source: R/func_prot_qc_peptide.R
+    selector: { kind: symbol, value: removePeptidesWithOnlyOneReplicateHelper }
+    target: R/func_prot_qc_peptide_replicate_filters.R
+    group: proteomics.qc.peptide.replicate_filters
+    note: Wave 2 stages the remaining replicate/filter/q-value helper cluster without rewriting live sources.
+
+  - id: prot_qc_peptide_min_num_per_protein_helper
+    source: R/func_prot_qc_peptide.R
+    selector: { kind: symbol, value: filterMinNumPeptidesPerProteinHelper }
+    target: R/func_prot_qc_peptide_replicate_filters.R
+    group: proteomics.qc.peptide.replicate_filters
+
+  - id: prot_qc_peptide_min_num_per_sample_helper
+    source: R/func_prot_qc_peptide.R
+    selector: { kind: symbol, value: filterMinNumPeptidesPerSampleHelper }
+    target: R/func_prot_qc_peptide_replicate_filters.R
+    group: proteomics.qc.peptide.replicate_filters
+
+  - id: prot_qc_peptide_qvalue_filter_helper
+    source: R/func_prot_qc_peptide.R
+    selector: { kind: symbol, value: srlQvalueProteotypicPeptideCleanHelper }
+    target: R/func_prot_qc_peptide_replicate_filters.R
+    group: proteomics.qc.peptide.replicate_filters
