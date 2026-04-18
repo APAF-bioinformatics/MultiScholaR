@@ -1,0 +1,82 @@
+version: 1
+wave: wave2_metabolomics_norm_module_export_reset_skip_observer_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_norm_server_helpers.R
+
+entries:
+  - id: mod_metab_norm_check_export_session_ready
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: checkMetabNormExportSessionReady }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.export_reset_skip_shells
+    note: Second metabolomics normalization module server wave stages the now-isolated export/reset/skip observer-shell cluster without rewriting live sources.
+
+  - id: mod_metab_norm_dispatch_export_session
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: dispatchMetabNormExportSession }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.export_reset_skip_shells
+
+  - id: mod_metab_norm_handle_export_session_outcome
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: handleMetabNormExportSessionOutcome }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.export_reset_skip_shells
+
+  - id: mod_metab_norm_export_session_observer_shell
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: runMetabNormExportSessionObserverShell }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.export_reset_skip_shells
+
+  - id: mod_metab_norm_reset_normalization_observer_shell
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: runMetabNormResetNormalizationObserverShell }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.export_reset_skip_shells
+
+  - id: mod_metab_norm_resolve_skip_correlation_input_object
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: resolveMetabNormSkipCorrelationInputObject }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.export_reset_skip_shells
+
+  - id: mod_metab_norm_complete_skip_correlation_state
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: completeMetabNormSkipCorrelationState }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.export_reset_skip_shells
+
+  - id: mod_metab_norm_handle_skip_correlation_outcome
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: handleMetabNormSkipCorrelationOutcome }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.export_reset_skip_shells
+
+  - id: mod_metab_norm_dispatch_skip_correlation
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: dispatchMetabNormSkipCorrelation }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.export_reset_skip_shells
+
+  - id: mod_metab_norm_skip_correlation_observer_entry
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: runMetabNormSkipCorrelationObserverEntry }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.export_reset_skip_shells
+
+  - id: mod_metab_norm_skip_correlation_observer_shell
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: runMetabNormSkipCorrelationObserverShell }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.export_reset_skip_shells

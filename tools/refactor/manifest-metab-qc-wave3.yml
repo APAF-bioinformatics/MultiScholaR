@@ -1,0 +1,22 @@
+version: 1
+wave: wave3_metabolomics_qc_correlation_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_metab_qc_correlation_helpers.R
+
+entries:
+  - id: metab_qc_calculate_metabolite_pair_correlation
+    source: R/func_metab_qc.R
+    selector: { kind: symbol, value: calculateMetabolitePairCorrelation }
+    target: R/func_metab_qc_correlation_helpers.R
+    group: metabolomics.qc.correlation
+    note: Wave 3 stages the bounded metabolomics QC correlation helper seam without rewriting the helper body.

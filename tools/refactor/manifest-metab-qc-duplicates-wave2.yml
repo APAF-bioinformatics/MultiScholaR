@@ -1,0 +1,43 @@
+version: 1
+wave: wave2_metabolomics_qc_duplicates_server_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_qc_duplicates_ui_helpers.R
+  - R/mod_metab_qc_duplicates_render_helpers.R
+  - R/mod_metab_qc_duplicates_server_helpers.R
+  - R/mod_metab_qc_duplicates.R
+
+entries:
+  - id: mod_metab_qc_duplicates_resolve_assay_data
+    source: R/mod_metab_qc_duplicates.R
+    selector: { kind: symbol, value: resolveMetabDuplicateAssayData }
+    target: R/mod_metab_qc_duplicates_server_helpers.R
+    group: metabolomics.qc.duplicates.wrapper.server
+    note: Wave 2 extracts the remaining duplicate-resolution server helper cluster so the live wrapper keeps only the public UI and server entrypoints.
+
+  - id: mod_metab_qc_duplicates_build_resolution_summary
+    source: R/mod_metab_qc_duplicates.R
+    selector: { kind: symbol, value: buildMetabDuplicateResolutionSummary }
+    target: R/mod_metab_qc_duplicates_server_helpers.R
+    group: metabolomics.qc.duplicates.wrapper.server
+
+  - id: mod_metab_qc_duplicates_detect_features
+    source: R/mod_metab_qc_duplicates.R
+    selector: { kind: symbol, value: detectMetabDuplicateFeatures }
+    target: R/mod_metab_qc_duplicates_server_helpers.R
+    group: metabolomics.qc.duplicates.wrapper.server
+
+  - id: mod_metab_qc_duplicates_revert_resolution
+    source: R/mod_metab_qc_duplicates.R
+    selector: { kind: symbol, value: revertMetabDuplicateResolution }
+    target: R/mod_metab_qc_duplicates_server_helpers.R
+    group: metabolomics.qc.duplicates.wrapper.server

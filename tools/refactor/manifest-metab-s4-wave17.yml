@@ -1,0 +1,22 @@
+version: 1
+wave: wave17_metabolomics_s4_plot_rle_method
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_metab_s4_plotting_methods.R
+
+entries:
+  - id: metab_s4_plotting_method_plot_rle
+    source: R/func_metab_s4_objects.R
+    selector: { kind: setMethod, value: plotRle }
+    target: R/func_metab_s4_plotting_methods.R
+    group: metabolomics.s4.plotting_method
+    note: Wave 17 stages the bounded metabolomics S4 plotRle plotting-method checkpoint into the live plotting helper file without rewriting the method body.

@@ -1,0 +1,22 @@
+version: 1
+wave: wave5_metabolomics_s4_da_results_wide_format
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_metab_s4_da_results.R
+
+entries:
+  - id: metab_s4_get_da_results_wide_format
+    source: R/func_metab_s4_objects.R
+    selector: { kind: setMethod, value: getDaResultsWideFormat }
+    target: R/func_metab_s4_da_results.R
+    group: metabolomics.s4.da_results
+    note: Wave 5 stages the bounded metabolomics S4 DA-results wide-format checkpoint without rewriting the method body.

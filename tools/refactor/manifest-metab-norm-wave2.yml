@@ -1,0 +1,22 @@
+version: 1
+wave: wave2_metabolomics_norm_itsd_selection_table
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_metab_norm_support_helpers.R
+
+entries:
+  - id: metab_norm_build_itsd_selection_table
+    source: R/func_metab_norm.R
+    selector: { kind: symbol, value: buildItsdSelectionTable }
+    target: R/func_metab_norm_support_helpers.R
+    group: metabolomics.norm.support
+    note: Wave 2 stages the ITSD selection helper into the existing metabolomics normalization support helper file.

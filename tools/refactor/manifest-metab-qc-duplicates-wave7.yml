@@ -1,0 +1,34 @@
+version: 1
+wave: wave7_metabolomics_qc_duplicates_wrapper_entrypoints
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_qc_duplicates_ui_helpers.R
+  - R/mod_metab_qc_duplicates_render_helpers.R
+  - R/mod_metab_qc_duplicates_server_helpers.R
+  - R/mod_metab_qc_duplicates_ui.R
+  - R/mod_metab_qc_duplicates_server.R
+  - R/mod_metab_qc_duplicates.R
+
+entries:
+  - id: mod_metab_qc_duplicates_ui_entrypoint
+    source: R/mod_metab_qc_duplicates.R
+    selector: { kind: symbol, value: mod_metab_qc_duplicates_ui }
+    target: R/mod_metab_qc_duplicates_ui.R
+    group: metabolomics.qc.duplicates.wrapper.entrypoints
+    note: Final duplicate-module wrapper wave moves the public UI entrypoint into a dedicated file so mod_metab_qc_duplicates.R can collapse to a breadcrumb stub.
+
+  - id: mod_metab_qc_duplicates_server_entrypoint
+    source: R/mod_metab_qc_duplicates.R
+    selector: { kind: symbol, value: mod_metab_qc_duplicates_server }
+    target: R/mod_metab_qc_duplicates_server.R
+    group: metabolomics.qc.duplicates.wrapper.entrypoints
+    note: Final duplicate-module wrapper wave moves the public server entrypoint into a dedicated file so mod_metab_qc_duplicates.R can collapse to a breadcrumb stub.

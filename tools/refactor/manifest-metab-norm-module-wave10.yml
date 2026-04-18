@@ -1,0 +1,52 @@
+version: 1
+wave: wave10_metabolomics_norm_module_run_normalization_ruv_composite_step_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_norm_server_helpers.R
+
+entries:
+  - id: mod_metab_norm_run_ruv_progress_apply_shell
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: runMetabNormRuvProgressApplyShell }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.run_normalization_ruv_composite_step_helpers
+    note: Tenth metabolomics normalization module server wave stages the RUV progress/apply shell for the remaining run-normalization RUV/composite helper cluster.
+  - id: mod_metab_norm_run_ruv_optimization_step
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: runMetabNormRuvOptimizationStep }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.run_normalization_ruv_composite_step_helpers
+    note: Tenth metabolomics normalization module server wave stages the RUV optimization step helper for the remaining run-normalization RUV/composite helper cluster.
+  - id: mod_metab_norm_run_ruv_correction_step
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: runMetabNormRuvCorrectionStep }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.run_normalization_ruv_composite_step_helpers
+    note: Tenth metabolomics normalization module server wave stages the RUV correction step helper for the remaining run-normalization RUV/composite helper cluster.
+  - id: mod_metab_norm_run_ruv_qc_step
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: runMetabNormRuvQcStep }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.run_normalization_ruv_composite_step_helpers
+    note: Tenth metabolomics normalization module server wave stages the RUV QC step helper for the remaining run-normalization RUV/composite helper cluster.
+  - id: mod_metab_norm_run_composite_qc_figure_step
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: runMetabNormCompositeQcFigureStep }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.run_normalization_ruv_composite_step_helpers
+    note: Tenth metabolomics normalization module server wave stages the composite QC figure step helper for the remaining run-normalization RUV/composite helper cluster.
+  - id: mod_metab_norm_run_composite_qc_refresh_shell
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: runMetabNormCompositeQcRefreshShell }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.run_normalization_ruv_composite_step_helpers
+    note: Tenth metabolomics normalization module server wave stages the composite QC refresh shell for the remaining run-normalization RUV/composite helper cluster.

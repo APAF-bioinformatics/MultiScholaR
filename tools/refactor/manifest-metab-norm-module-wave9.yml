@@ -1,0 +1,46 @@
+version: 1
+wave: wave9_metabolomics_norm_module_run_normalization_pre_ruv_step_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_norm_server_helpers.R
+
+entries:
+  - id: mod_metab_norm_run_log2_progress_apply_shell
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: runMetabNormLog2ProgressApplyShell }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.run_normalization_pre_ruv_step_helpers
+    note: Ninth metabolomics normalization module server wave stages the log2 progress/apply shell for the remaining pre-RUV run-normalization helper cluster.
+  - id: mod_metab_norm_run_log2_transformation_step
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: runMetabNormLog2TransformationStep }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.run_normalization_pre_ruv_step_helpers
+    note: Ninth metabolomics normalization module server wave stages the log2 transformation step helper for the remaining pre-RUV run-normalization helper cluster.
+  - id: mod_metab_norm_run_between_sample_progress_apply_shell
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: runMetabNormBetweenSampleProgressApplyShell }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.run_normalization_pre_ruv_step_helpers
+    note: Ninth metabolomics normalization module server wave stages the between-sample progress/apply shell for the remaining pre-RUV run-normalization helper cluster.
+  - id: mod_metab_norm_run_between_sample_normalization_step
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: runMetabNormBetweenSampleNormalizationStep }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.run_normalization_pre_ruv_step_helpers
+    note: Ninth metabolomics normalization module server wave stages the between-sample normalization step helper for the remaining pre-RUV run-normalization helper cluster.
+  - id: mod_metab_norm_run_post_normalization_qc_step
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: runMetabNormPostNormalizationQcStep }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.run_normalization_pre_ruv_step_helpers
+    note: Ninth metabolomics normalization module server wave stages the post-normalization QC step helper for the remaining pre-RUV run-normalization helper cluster.

@@ -1,0 +1,22 @@
+version: 1
+wave: wave1_metabolomics_s4_da_results
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_metab_s4_da_results.R
+
+entries:
+  - id: metab_s4_get_counts_table
+    source: R/func_metab_s4_objects.R
+    selector: { kind: symbol, value: getCountsTable }
+    target: R/func_metab_s4_da_results.R
+    group: metabolomics.s4.da_results
+    note: Wave 1 stages the bounded metabolomics S4 counts-table helper checkpoint without rewriting the helper body.

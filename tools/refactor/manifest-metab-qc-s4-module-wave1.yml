@@ -1,0 +1,142 @@
+version: 1
+wave: wave1_metabolomics_qc_s4_module_helper_surface
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_qc_s4_server_helpers.R
+
+entries:
+  - id: mod_metab_qc_s4_build_data_summary_ui
+    source: R/mod_metab_qc_s4.R
+    selector: { kind: symbol, value: buildMetabQcS4DataSummaryUi }
+    target: R/mod_metab_qc_s4_server_helpers.R
+    group: metabolomics.qc.s4.module.helper_surface
+    note: First exact-source QC S4 module wave stages the frozen helper surface into one dedicated server-helper file while keeping the public wrapper live and unchanged.
+
+  - id: mod_metab_qc_s4_build_state_history_ui
+    source: R/mod_metab_qc_s4.R
+    selector: { kind: symbol, value: buildMetabQcS4StateHistoryUi }
+    target: R/mod_metab_qc_s4_server_helpers.R
+    group: metabolomics.qc.s4.module.helper_surface
+
+  - id: mod_metab_qc_s4_get_state_history
+    source: R/mod_metab_qc_s4.R
+    selector: { kind: symbol, value: getMetabQcS4StateHistory }
+    target: R/mod_metab_qc_s4_server_helpers.R
+    group: metabolomics.qc.s4.module.helper_surface
+
+  - id: mod_metab_qc_s4_build_state_history_render_output
+    source: R/mod_metab_qc_s4.R
+    selector: { kind: symbol, value: buildMetabQcS4StateHistoryRenderOutput }
+    target: R/mod_metab_qc_s4_server_helpers.R
+    group: metabolomics.qc.s4.module.helper_surface
+
+  - id: mod_metab_qc_s4_build_assay_stats_datatable
+    source: R/mod_metab_qc_s4.R
+    selector: { kind: symbol, value: buildMetabQcS4AssayStatsDatatable }
+    target: R/mod_metab_qc_s4_server_helpers.R
+    group: metabolomics.qc.s4.module.helper_surface
+
+  - id: mod_metab_qc_s4_render_filter_plot
+    source: R/mod_metab_qc_s4.R
+    selector: { kind: symbol, value: renderMetabQcS4FilterPlot }
+    target: R/mod_metab_qc_s4_server_helpers.R
+    group: metabolomics.qc.s4.module.helper_surface
+
+  - id: mod_metab_qc_s4_build_filter_plot_render_output
+    source: R/mod_metab_qc_s4.R
+    selector: { kind: symbol, value: buildMetabQcS4FilterPlotRenderOutput }
+    target: R/mod_metab_qc_s4_server_helpers.R
+    group: metabolomics.qc.s4.module.helper_surface
+
+  - id: mod_metab_qc_s4_build_finalize_results_text
+    source: R/mod_metab_qc_s4.R
+    selector: { kind: symbol, value: buildMetabQcS4FinalizeResultsText }
+    target: R/mod_metab_qc_s4_server_helpers.R
+    group: metabolomics.qc.s4.module.helper_surface
+
+  - id: mod_metab_qc_s4_get_finalize_state
+    source: R/mod_metab_qc_s4.R
+    selector: { kind: symbol, value: getMetabQcS4FinalizeState }
+    target: R/mod_metab_qc_s4_server_helpers.R
+    group: metabolomics.qc.s4.module.helper_surface
+
+  - id: mod_metab_qc_s4_validate_finalize_state
+    source: R/mod_metab_qc_s4.R
+    selector: { kind: symbol, value: validateMetabQcS4FinalizeState }
+    target: R/mod_metab_qc_s4_server_helpers.R
+    group: metabolomics.qc.s4.module.helper_surface
+
+  - id: mod_metab_qc_s4_save_completed_state
+    source: R/mod_metab_qc_s4.R
+    selector: { kind: symbol, value: saveMetabQcS4CompletedState }
+    target: R/mod_metab_qc_s4_server_helpers.R
+    group: metabolomics.qc.s4.module.helper_surface
+
+  - id: mod_metab_qc_s4_complete_tab_status
+    source: R/mod_metab_qc_s4.R
+    selector: { kind: symbol, value: completeMetabQcS4TabStatus }
+    target: R/mod_metab_qc_s4_server_helpers.R
+    group: metabolomics.qc.s4.module.helper_surface
+
+  - id: mod_metab_qc_s4_get_finalize_history
+    source: R/mod_metab_qc_s4.R
+    selector: { kind: symbol, value: getMetabQcS4FinalizeHistory }
+    target: R/mod_metab_qc_s4_server_helpers.R
+    group: metabolomics.qc.s4.module.helper_surface
+
+  - id: mod_metab_qc_s4_update_tracking_plot
+    source: R/mod_metab_qc_s4.R
+    selector: { kind: symbol, value: updateMetabQcS4TrackingPlot }
+    target: R/mod_metab_qc_s4_server_helpers.R
+    group: metabolomics.qc.s4.module.helper_surface
+
+  - id: mod_metab_qc_s4_report_finalize_success
+    source: R/mod_metab_qc_s4.R
+    selector: { kind: symbol, value: reportMetabQcS4FinalizeSuccess }
+    target: R/mod_metab_qc_s4_server_helpers.R
+    group: metabolomics.qc.s4.module.helper_surface
+
+  - id: mod_metab_qc_s4_report_finalize_error
+    source: R/mod_metab_qc_s4.R
+    selector: { kind: symbol, value: reportMetabQcS4FinalizeError }
+    target: R/mod_metab_qc_s4_server_helpers.R
+    group: metabolomics.qc.s4.module.helper_surface
+
+  - id: mod_metab_qc_s4_run_finalize_workflow
+    source: R/mod_metab_qc_s4.R
+    selector: { kind: symbol, value: runMetabQcS4FinalizeWorkflow }
+    target: R/mod_metab_qc_s4_server_helpers.R
+    group: metabolomics.qc.s4.module.helper_surface
+
+  - id: mod_metab_qc_s4_get_data_summary_state
+    source: R/mod_metab_qc_s4.R
+    selector: { kind: symbol, value: getMetabQcS4DataSummaryState }
+    target: R/mod_metab_qc_s4_server_helpers.R
+    group: metabolomics.qc.s4.module.helper_surface
+
+  - id: mod_metab_qc_s4_build_data_summary_render_output
+    source: R/mod_metab_qc_s4.R
+    selector: { kind: symbol, value: buildMetabQcS4DataSummaryRenderOutput }
+    target: R/mod_metab_qc_s4_server_helpers.R
+    group: metabolomics.qc.s4.module.helper_surface
+
+  - id: mod_metab_qc_s4_get_assay_stats_state
+    source: R/mod_metab_qc_s4.R
+    selector: { kind: symbol, value: getMetabQcS4AssayStatsState }
+    target: R/mod_metab_qc_s4_server_helpers.R
+    group: metabolomics.qc.s4.module.helper_surface
+
+  - id: mod_metab_qc_s4_build_assay_stats_render_output
+    source: R/mod_metab_qc_s4.R
+    selector: { kind: symbol, value: buildMetabQcS4AssayStatsRenderOutput }
+    target: R/mod_metab_qc_s4_server_helpers.R
+    group: metabolomics.qc.s4.module.helper_surface

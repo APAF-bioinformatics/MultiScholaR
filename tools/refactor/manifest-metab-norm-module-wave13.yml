@@ -1,0 +1,58 @@
+version: 1
+wave: wave13_metabolomics_norm_module_render_helper_cluster
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_norm_server_helpers.R
+
+entries:
+  - id: mod_metab_norm_get_plot_aesthetics
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: getPlotAesthetics }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.render_helper_cluster
+    note: Thirteenth metabolomics normalization module server wave stages the plot-aesthetics helper for the top-level render-helper cluster extracted from the module wrapper.
+  - id: mod_metab_norm_render_assay_label
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: renderMetabNormAssayLabel }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.render_helper_cluster
+    note: Thirteenth metabolomics normalization module server wave stages the assay-label render helper for the top-level render-helper cluster extracted from the module wrapper.
+  - id: mod_metab_norm_render_qc_image_for_assay
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: renderMetabNormQcImageForAssay }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.render_helper_cluster
+    note: Thirteenth metabolomics normalization module server wave stages the QC image render helper for the top-level render-helper cluster extracted from the module wrapper.
+  - id: mod_metab_norm_append_normalization_log
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: appendMetabNormNormalizationLog }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.render_helper_cluster
+    note: Thirteenth metabolomics normalization module server wave stages the normalization-log append helper for the top-level render-helper cluster extracted from the module wrapper.
+  - id: mod_metab_norm_render_normalization_log
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: renderMetabNormNormalizationLog }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.render_helper_cluster
+    note: Thirteenth metabolomics normalization module server wave stages the normalization-log render helper for the top-level render-helper cluster extracted from the module wrapper.
+  - id: mod_metab_norm_render_correlation_filter_summary
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: renderMetabNormCorrelationFilterSummary }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.render_helper_cluster
+    note: Thirteenth metabolomics normalization module server wave stages the correlation-filter summary render helper for the top-level render-helper cluster extracted from the module wrapper.
+  - id: mod_metab_norm_render_final_qc_plot
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: renderMetabNormFinalQcPlot }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.render_helper_cluster
+    note: Thirteenth metabolomics normalization module server wave stages the final-QC render helper for the top-level render-helper cluster extracted from the module wrapper.

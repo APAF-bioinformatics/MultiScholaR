@@ -1,0 +1,46 @@
+version: 1
+wave: wave1_metabolomics_import_detection
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_metab_import_detection.R
+
+entries:
+  - id: metab_import_detect_format
+    source: R/func_metab_import.R
+    selector: { kind: symbol, value: detectMetabolomicsFormat }
+    target: R/func_metab_import_detection.R
+    group: metabolomics.import.detection
+    note: Wave 1 stages the low-risk metabolomics import detection and column-mapping helpers without rewriting live sources.
+
+  - id: metab_import_find_matching_alias
+    source: R/func_metab_import.R
+    selector: { kind: symbol, value: findMetabMatchingColumn }
+    target: R/func_metab_import_detection.R
+    group: metabolomics.import.detection
+
+  - id: metab_import_column_defaults
+    source: R/func_metab_import.R
+    selector: { kind: symbol, value: getMetabolomicsColumnDefaults }
+    target: R/func_metab_import_detection.R
+    group: metabolomics.import.detection
+
+  - id: metab_import_validate_alias
+    source: R/func_metab_import.R
+    selector: { kind: symbol, value: validateColumnMapping }
+    target: R/func_metab_import_detection.R
+    group: metabolomics.import.detection
+
+  - id: metab_import_validate_mapping
+    source: R/func_metab_import.R
+    selector: { kind: symbol, value: validateMetabColumnMapping }
+    target: R/func_metab_import_detection.R
+    group: metabolomics.import.detection

@@ -1,0 +1,106 @@
+version: 1
+wave: wave15_metabolomics_norm_module_ui_binding_helper_cluster
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_norm_server_helpers.R
+
+entries:
+  - id: mod_metab_norm_update_design_driven_choices
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: updateMetabNormDesignDrivenChoices }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.ui_binding_helper_cluster
+    note: Fifteenth metabolomics normalization module server wave stages the design-driven select-input helper from the remaining top-level UI and binding helper cluster.
+  - id: mod_metab_norm_initialize_assay_names
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: initializeMetabNormAssayNames }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.ui_binding_helper_cluster
+    note: Fifteenth metabolomics normalization module server wave stages the assay-name initialization helper from the remaining top-level UI and binding helper cluster.
+  - id: mod_metab_norm_run_auto_pre_normalization_qc_observer_shell
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: runMetabNormAutoPreNormalizationQcObserverShell }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.ui_binding_helper_cluster
+    note: Fifteenth metabolomics normalization module server wave stages the auto pre-normalization QC observer shell from the remaining top-level UI and binding helper cluster.
+  - id: mod_metab_norm_render_itsd_selection_ui
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: renderMetabNormItsdSelectionUi }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.ui_binding_helper_cluster
+    note: Fifteenth metabolomics normalization module server wave stages the per-assay ITSD selection UI builder from the remaining top-level UI and binding helper cluster.
+  - id: mod_metab_norm_render_itsd_selection_table
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: renderMetabNormItsdSelectionTable }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.ui_binding_helper_cluster
+    note: Fifteenth metabolomics normalization module server wave stages the per-assay ITSD selection table renderer from the remaining top-level UI and binding helper cluster.
+  - id: mod_metab_norm_register_itsd_selection_tracking
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: registerMetabNormItsdSelectionTracking }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.ui_binding_helper_cluster
+    note: Fifteenth metabolomics normalization module server wave stages the ITSD selection tracking registrar from the remaining top-level UI and binding helper cluster.
+  - id: mod_metab_norm_run_itsd_selection_tracking_observer_shell
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: runMetabNormItsdSelectionTrackingObserverShell }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.ui_binding_helper_cluster
+    note: Fifteenth metabolomics normalization module server wave stages the ITSD selection tracking observer shell from the remaining top-level UI and binding helper cluster.
+  - id: mod_metab_norm_run_itsd_selection_table_observer_shell
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: runMetabNormItsdSelectionTableObserverShell }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.ui_binding_helper_cluster
+    note: Fifteenth metabolomics normalization module server wave stages the ITSD selection table observer shell from the remaining top-level UI and binding helper cluster.
+  - id: mod_metab_norm_render_ruv_qc_ui
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: renderMetabNormRuvQcUi }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.ui_binding_helper_cluster
+    note: Fifteenth metabolomics normalization module server wave stages the dynamic per-assay RUV QC UI renderer from the remaining top-level UI and binding helper cluster.
+  - id: mod_metab_norm_render_ruv_cancor_plot
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: renderMetabNormRuvCancorPlot }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.ui_binding_helper_cluster
+    note: Fifteenth metabolomics normalization module server wave stages the per-assay RUV cancor plot renderer from the remaining top-level UI and binding helper cluster.
+  - id: mod_metab_norm_render_ruv_optimization_summary
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: renderMetabNormRuvOptimizationSummary }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.ui_binding_helper_cluster
+    note: Fifteenth metabolomics normalization module server wave stages the per-assay RUV optimization summary renderer from the remaining top-level UI and binding helper cluster.
+  - id: mod_metab_norm_render_ruv_results_table
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: renderMetabNormRuvResultsTable }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.ui_binding_helper_cluster
+    note: Fifteenth metabolomics normalization module server wave stages the per-assay RUV results table renderer from the remaining top-level UI and binding helper cluster.
+  - id: mod_metab_norm_run_ruv_binding_observer_shell
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: runMetabNormRuvBindingObserverShell }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.ui_binding_helper_cluster
+    note: Fifteenth metabolomics normalization module server wave stages the per-assay RUV binding observer shell from the remaining top-level UI and binding helper cluster.
+  - id: mod_metab_norm_run_qc_image_binding_shell
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: runMetabNormQcImageBindingShell }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.ui_binding_helper_cluster
+    note: Fifteenth metabolomics normalization module server wave stages the static QC image binding shell from the remaining top-level UI and binding helper cluster.
+  - id: mod_metab_norm_run_assay_label_binding_shell
+    source: R/mod_metab_norm.R
+    selector: { kind: symbol, value: runMetabNormAssayLabelBindingShell }
+    target: R/mod_metab_norm_server_helpers.R
+    group: metabolomics.norm.module.ui_binding_helper_cluster
+    note: Fifteenth metabolomics normalization module server wave stages the static assay-label binding shell from the remaining top-level UI and binding helper cluster.

@@ -1,0 +1,47 @@
+version: 1
+wave: wave6_metabolomics_import_wrapper_entrypoints
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_import_column_helpers.R
+  - R/mod_metab_import_display_helpers.R
+  - R/mod_metab_import_registration_helpers.R
+  - R/mod_metab_import_processing_helpers.R
+  - R/mod_metab_import_ui.R
+  - R/mod_metab_import_server_helpers.R
+  - R/mod_metab_import_server.R
+  - R/mod_metab_import.R
+
+entries:
+  - id: mod_metab_import_column_name_helper
+    source: R/mod_metab_import.R
+    selector: { kind: symbol, value: resolveMetabImportColumnName }
+    target: R/mod_metab_import_column_helpers.R
+    group: metabolomics.import.wrapper.entrypoints
+    note: Final wrapper wave moves the remaining shared column resolvers and public entry points into dedicated files so mod_metab_import.R can collapse into a breadcrumb stub after review.
+
+  - id: mod_metab_import_sample_columns_helper
+    source: R/mod_metab_import.R
+    selector: { kind: symbol, value: resolveMetabImportSampleColumns }
+    target: R/mod_metab_import_column_helpers.R
+    group: metabolomics.import.wrapper.entrypoints
+
+  - id: mod_metab_import_ui_entrypoint
+    source: R/mod_metab_import.R
+    selector: { kind: symbol, value: mod_metab_import_ui }
+    target: R/mod_metab_import_ui.R
+    group: metabolomics.import.wrapper.entrypoints
+
+  - id: mod_metab_import_server_entrypoint
+    source: R/mod_metab_import.R
+    selector: { kind: symbol, value: mod_metab_import_server }
+    target: R/mod_metab_import_server.R
+    group: metabolomics.import.wrapper.entrypoints

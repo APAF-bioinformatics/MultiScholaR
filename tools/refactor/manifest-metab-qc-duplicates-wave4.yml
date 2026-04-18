@@ -1,0 +1,31 @@
+version: 1
+wave: wave4_metabolomics_qc_duplicates_resolution_state_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_qc_duplicates_ui_helpers.R
+  - R/mod_metab_qc_duplicates_render_helpers.R
+  - R/mod_metab_qc_duplicates_server_helpers.R
+  - R/mod_metab_qc_duplicates.R
+
+entries:
+  - id: mod_metab_qc_duplicates_prepare_resolution_state
+    source: R/mod_metab_qc_duplicates.R
+    selector: { kind: symbol, value: prepareMetabDuplicateResolutionState }
+    target: R/mod_metab_qc_duplicates_server_helpers.R
+    group: metabolomics.qc.duplicates.wrapper.server
+    note: Wave 4 stages the bounded duplicate-resolution state helper cluster without rewriting the helper bodies.
+
+  - id: mod_metab_qc_duplicates_apply_resolution_state
+    source: R/mod_metab_qc_duplicates.R
+    selector: { kind: symbol, value: applyMetabDuplicateResolutionState }
+    target: R/mod_metab_qc_duplicates_server_helpers.R
+    group: metabolomics.qc.duplicates.wrapper.server

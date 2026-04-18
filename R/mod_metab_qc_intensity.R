@@ -100,6 +100,268 @@ mod_metab_qc_intensity_ui <- function(id) {
     )
 }
 
+# Keep the per-assay tab assembly isolated so the wrapper can shed render logic
+# without changing the public server entry point.
+buildMetabIntensityAssayTabsUi <- function(
+    stats,
+    ns,
+    tabPanelFn = shiny::tabPanel,
+    brFn = shiny::br,
+    tableTagFn = shiny::tags$table,
+    tbodyTagFn = shiny::tags$tbody,
+    trTagFn = shiny::tags$tr,
+    tdTagFn = shiny::tags$td,
+    strongFn = shiny::strong,
+    tabsetPanelFn = shiny::tabsetPanel
+) {
+    if (is.null(stats) || nrow(stats) == 0) {
+        return(NULL)
+    }
+
+    tab_list <- lapply(seq_len(nrow(stats)), function(i) {
+        tabPanelFn(
+            stats$Assay[i],
+            brFn(),
+            tableTagFn(
+                class = "table table-striped table-condensed",
+                style = "width: auto;",
+                tbodyTagFn(
+                    trTagFn(
+                        tdTagFn(strongFn("Original metabolites:")),
+                        tdTagFn(stats$Original[i])
+                    ),
+                    trTagFn(
+                        tdTagFn(strongFn("After filtering:")),
+                        tdTagFn(stats$Filtered[i])
+                    ),
+                    trTagFn(
+                        tdTagFn(strongFn("Removed:")),
+                        tdTagFn(stats$Removed[i])
+                    ),
+                    trTagFn(
+                        tdTagFn(strongFn("Percent retained:")),
+                        tdTagFn(paste0(stats$Percent_Retained[i], "%"))
+                    )
+                )
+            )
+        )
+    })
+
+    do.call(tabsetPanelFn, c(list(id = ns("assay_stats_tabs")), tab_list))
+}
+
+renderMetabIntensityFilterPlot <- function(
+    filterPlot,
+    reqFn = shiny::req,
+    inheritsFn = inherits,
+    gridDrawFn = grid::grid.draw,
+    printFn = print
+) {
+    plotObject <- filterPlot()
+    reqFn(plotObject)
+
+    if (inheritsFn(plotObject, "grob") || inheritsFn(plotObject, "gtable")) {
+        gridDrawFn(plotObject)
+    } else if (inheritsFn(plotObject, "ggplot")) {
+        printFn(plotObject)
+    }
+
+    invisible(NULL)
+}
+
+buildMetabIntensityFilterStats <- function(currentS4, filteredS4) {
+    countMetabolites <- function(s4Object) {
+        vapply(s4Object@metabolite_data, function(assay) {
+            if (s4Object@metabolite_id_column %in% names(assay)) {
+                length(unique(assay[[s4Object@metabolite_id_column]]))
+            } else {
+                nrow(assay)
+            }
+        }, numeric(1))
+    }
+
+    originalCounts <- countMetabolites(currentS4)
+    filteredCounts <- countMetabolites(filteredS4)
+
+    statsDf <- data.frame(
+        Assay = names(originalCounts)
+        , Original = as.numeric(originalCounts)
+        , Filtered = as.numeric(filteredCounts)
+        , Removed = as.numeric(originalCounts) - as.numeric(filteredCounts)
+        , stringsAsFactors = FALSE
+    )
+    statsDf$Percent_Retained <- round(
+        (statsDf$Filtered / statsDf$Original) * 100
+        , 1
+    )
+
+    statsDf
+}
+
+updateMetabIntensityFilterQcPlot <- function(
+    filteredS4,
+    omicType,
+    setFilterPlotFn,
+    stepName = "2_Intensity_Filtered",
+    updateMetaboliteFilteringFn = updateMetaboliteFiltering,
+    logWarnFn = logger::log_warn
+) {
+    qcPlot <- tryCatch({
+        updateMetaboliteFilteringFn(
+            theObject = filteredS4
+            , step_name = stepName
+            , omics_type = omicType
+            , return_grid = TRUE
+            , overwrite = TRUE
+        )
+    }, error = function(e) {
+        logWarnFn(paste("Could not generate QC plot:", e$message))
+        NULL
+    })
+
+    setFilterPlotFn(qcPlot)
+
+    invisible(qcPlot)
+}
+
+saveMetabIntensityFilterState <- function(
+    stateManager,
+    filteredS4,
+    configObject,
+    intensityCutoffPercentile,
+    proportionBelowCutoff,
+    stateName = "metab_intensity_filtered",
+    sprintfFn = sprintf
+) {
+    stateManager$saveState(
+        state_name = stateName
+        , s4_data_object = filteredS4
+        , config_object = configObject
+        , description = sprintfFn(
+            "Applied metabolite intensity filter (percentile: %d%%, proportion: %.2f)"
+            , intensityCutoffPercentile
+            , proportionBelowCutoff
+        )
+    )
+
+    invisible(stateName)
+}
+
+buildMetabIntensityFilterSummary <- function(
+    stats,
+    intensityCutoffPercentile,
+    proportionBelowCutoff,
+    stateName = "metab_intensity_filtered"
+) {
+    totalOriginal <- sum(stats$Original)
+    totalFiltered <- sum(stats$Filtered)
+    totalRemoved <- sum(stats$Removed)
+
+    perAssayText <- paste(vapply(seq_len(nrow(stats)), function(i) {
+        sprintf(
+            "  %s: %d -> %d (removed %d, %.1f%% retained)"
+            , stats$Assay[i]
+            , stats$Original[i]
+            , stats$Filtered[i]
+            , stats$Removed[i]
+            , stats$Percent_Retained[i]
+        )
+    }, character(1)), collapse = "\n")
+
+    list(
+        totalOriginal = totalOriginal
+        , totalFiltered = totalFiltered
+        , totalRemoved = totalRemoved
+        , resultText = paste(
+            "Metabolite Intensity Filter Applied Successfully"
+            , "============================================"
+            , sprintf("Intensity cutoff percentile: %d%%", intensityCutoffPercentile)
+            , sprintf("Max proportion below cutoff: %.2f", proportionBelowCutoff)
+            , ""
+            , "Per-Assay Results:"
+            , perAssayText
+            , ""
+            , sprintf(
+                "Total: %d -> %d metabolites (removed %d)"
+                , totalOriginal
+                , totalFiltered
+                , totalRemoved
+            )
+            , ""
+            , sprintf("State saved as: '%s'", stateName)
+            , sep = "\n"
+        )
+    )
+}
+
+reportMetabIntensityFilterSuccess <- function(
+    stats,
+    intensityCutoffPercentile,
+    proportionBelowCutoff,
+    savedStateName,
+    output,
+    filterResultsOutputName = "filter_results",
+    workingNotificationId = "metab_intensity_filter_working",
+    buildSummaryFn = buildMetabIntensityFilterSummary,
+    renderTextFn = shiny::renderText,
+    logInfoFn = logger::log_info,
+    removeNotificationFn = shiny::removeNotification,
+    showNotificationFn = shiny::showNotification,
+    sprintfFn = sprintf
+) {
+    filterSummary <- buildSummaryFn(
+        stats = stats
+        , intensityCutoffPercentile = intensityCutoffPercentile
+        , proportionBelowCutoff = proportionBelowCutoff
+        , stateName = savedStateName
+    )
+
+    output[[filterResultsOutputName]] <- renderTextFn(filterSummary$resultText)
+
+    logInfoFn(paste(
+        "Metabolite intensity filter applied: removed"
+        , filterSummary$totalRemoved
+        , "metabolites"
+    ))
+
+    removeNotificationFn(workingNotificationId)
+    showNotificationFn(
+        sprintfFn(
+            "Intensity filter applied: %d metabolites retained"
+            , filterSummary$totalFiltered
+        )
+        , type = "message"
+    )
+
+    invisible(filterSummary)
+}
+
+reportMetabIntensityFilterRevertSuccess <- function(
+    prevStateName,
+    output,
+    setFilterStatsFn,
+    setFilterPlotFn,
+    filterResultsOutputName = "filter_results",
+    renderTextFn = shiny::renderText,
+    logInfoFn = logger::log_info,
+    showNotificationFn = shiny::showNotification,
+    sprintfFn = sprintf
+) {
+    revertMessage <- sprintfFn(
+        "Reverted to previous state: %s"
+        , prevStateName
+    )
+
+    output[[filterResultsOutputName]] <- renderTextFn(revertMessage)
+    setFilterStatsFn(NULL)
+    setFilterPlotFn(NULL)
+
+    logInfoFn(paste("Reverted metabolite intensity filter to", prevStateName))
+    showNotificationFn("Reverted successfully", type = "message")
+
+    invisible(revertMessage)
+}
+
 #' @rdname mod_metab_qc_intensity
 #' @export
 #' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification removeNotification renderText renderPlot renderUI tabsetPanel tabPanel
@@ -132,15 +394,6 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
                     stop("Current state is not a MetaboliteAssayData object")
                 }
                 
-                # Get original metabolite counts per assay
-                original_counts <- sapply(current_s4@metabolite_data, function(assay) {
-                    if (current_s4@metabolite_id_column %in% names(assay)) {
-                        length(unique(assay[[current_s4@metabolite_id_column]]))
-                    } else {
-                        nrow(assay)
-                    }
-                })
-                
                 logger::log_info(paste(
                     "Applying metabolite intensity filter: percentile ="
                     , input$intensity_cutoff_percentile
@@ -155,102 +408,32 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
                     , metabolites_proportion_of_samples_below_cutoff = input$proportion_below_cutoff
                 )
                 
-                # Get filtered metabolite counts per assay
-                filtered_counts <- sapply(filtered_s4@metabolite_data, function(assay) {
-                    if (filtered_s4@metabolite_id_column %in% names(assay)) {
-                        length(unique(assay[[filtered_s4@metabolite_id_column]]))
-                    } else {
-                        nrow(assay)
-                    }
-                })
-                
-                # Store stats for display
-                stats_df <- data.frame(
-                    Assay = names(original_counts)
-                    , Original = as.numeric(original_counts)
-                    , Filtered = as.numeric(filtered_counts)
-                    , Removed = as.numeric(original_counts) - as.numeric(filtered_counts)
-                    , stringsAsFactors = FALSE
-                )
-                stats_df$Percent_Retained <- round(
-                    (stats_df$Filtered / stats_df$Original) * 100
-                    , 1
+                stats_df <- buildMetabIntensityFilterStats(
+                    currentS4 = current_s4
+                    , filteredS4 = filtered_s4
                 )
                 filter_stats(stats_df)
                 
-                # Update QC tracking visualization
-                
-                qc_plot <- tryCatch({
-                    result <- updateMetaboliteFiltering(
-                        theObject = filtered_s4
-                        , step_name = "2_Intensity_Filtered"
-                        , omics_type = omic_type
-                        , return_grid = TRUE
-                        , overwrite = TRUE
-                    )
-                    result
-                }, error = function(e) {
-                    logger::log_warn(paste("Could not generate QC plot:", e$message))
-                    NULL
-                })
-                
-                filter_plot(qc_plot)
-                
-                # Save state
-                workflow_data$state_manager$saveState(
-                    state_name = "metab_intensity_filtered"
-                    , s4_data_object = filtered_s4
-                    , config_object = workflow_data$config_list
-                    , description = sprintf(
-                        "Applied metabolite intensity filter (percentile: %d%%, proportion: %.2f)"
-                        , input$intensity_cutoff_percentile
-                        , input$proportion_below_cutoff
-                    )
+                updateMetabIntensityFilterQcPlot(
+                    filteredS4 = filtered_s4
+                    , omicType = omic_type
+                    , setFilterPlotFn = filter_plot
                 )
-                
-                # REMOVED duplicate filter_plot(qc_plot) - was causing potential issues
-                
-                # Generate summary text
-                total_original <- sum(stats_df$Original)
-                total_filtered <- sum(stats_df$Filtered)
-                total_removed <- sum(stats_df$Removed)
-                
-                result_text <- paste(
-                    "Metabolite Intensity Filter Applied Successfully"
-                    , "============================================"
-                    , sprintf("Intensity cutoff percentile: %d%%", input$intensity_cutoff_percentile)
-                    , sprintf("Max proportion below cutoff: %.2f", input$proportion_below_cutoff)
-                    , ""
-                    , "Per-Assay Results:"
-                    , paste(sapply(seq_len(nrow(stats_df)), function(i) {
-                        sprintf(
-                            "  %s: %d -> %d (removed %d, %.1f%% retained)"
-                            , stats_df$Assay[i]
-                            , stats_df$Original[i]
-                            , stats_df$Filtered[i]
-                            , stats_df$Removed[i]
-                            , stats_df$Percent_Retained[i]
-                        )
-                    }), collapse = "\n")
-                    , ""
-                    , sprintf("Total: %d -> %d metabolites (removed %d)", total_original, total_filtered, total_removed)
-                    , ""
-                    , "State saved as: 'metab_intensity_filtered'"
-                    , sep = "\n"
+
+                saved_state_name <- saveMetabIntensityFilterState(
+                    stateManager = workflow_data$state_manager
+                    , filteredS4 = filtered_s4
+                    , configObject = workflow_data$config_list
+                    , intensityCutoffPercentile = input$intensity_cutoff_percentile
+                    , proportionBelowCutoff = input$proportion_below_cutoff
                 )
-                
-                output$filter_results <- shiny::renderText(result_text)
-                
-                logger::log_info(paste(
-                    "Metabolite intensity filter applied: removed"
-                    , total_removed
-                    , "metabolites"
-                ))
-                
-                shiny::removeNotification("metab_intensity_filter_working")
-                shiny::showNotification(
-                    sprintf("Intensity filter applied: %d metabolites retained", total_filtered)
-                    , type = "message"
+
+                reportMetabIntensityFilterSuccess(
+                    stats = stats_df
+                    , intensityCutoffPercentile = input$intensity_cutoff_percentile
+                    , proportionBelowCutoff = input$proportion_below_cutoff
+                    , savedStateName = saved_state_name
+                    , output = output
                 )
                 
             }, error = function(e) {
@@ -268,13 +451,12 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
                 if (length(history) > 1) {
                     prev_state_name <- history[length(history) - 1]
                     workflow_data$state_manager$revertToState(prev_state_name)
-                    output$filter_results <- shiny::renderText(
-                        paste("Reverted to previous state:", prev_state_name)
+                    reportMetabIntensityFilterRevertSuccess(
+                        prevStateName = prev_state_name
+                        , output = output
+                        , setFilterStatsFn = filter_stats
+                        , setFilterPlotFn = filter_plot
                     )
-                    filter_stats(NULL)
-                    filter_plot(NULL)
-                    logger::log_info(paste("Reverted metabolite intensity filter to", prev_state_name))
-                    shiny::showNotification("Reverted successfully", type = "message")
                 } else {
                     stop("No previous state to revert to.")
                 }
@@ -287,54 +469,15 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
         
         # Render per-assay results tabs
         output$assay_results_tabs <- shiny::renderUI({
-            stats <- filter_stats()
-            if (is.null(stats) || nrow(stats) == 0) {
-                return(NULL)
-            }
-            
-            tab_list <- lapply(seq_len(nrow(stats)), function(i) {
-                shiny::tabPanel(
-                    stats$Assay[i]
-                    , shiny::br()
-                    , shiny::tags$table(
-                        class = "table table-striped table-condensed"
-                        , style = "width: auto;"
-                        , shiny::tags$tbody(
-                            shiny::tags$tr(
-                                shiny::tags$td(shiny::strong("Original metabolites:"))
-                                , shiny::tags$td(stats$Original[i])
-                            )
-                            , shiny::tags$tr(
-                                shiny::tags$td(shiny::strong("After filtering:"))
-                                , shiny::tags$td(stats$Filtered[i])
-                            )
-                            , shiny::tags$tr(
-                                shiny::tags$td(shiny::strong("Removed:"))
-                                , shiny::tags$td(stats$Removed[i])
-                            )
-                            , shiny::tags$tr(
-                                shiny::tags$td(shiny::strong("Percent retained:"))
-                                , shiny::tags$td(paste0(stats$Percent_Retained[i], "%"))
-                            )
-                        )
-                    )
-                )
-            })
-            
-            do.call(shiny::tabsetPanel, c(list(id = ns("assay_stats_tabs")), tab_list))
+            buildMetabIntensityAssayTabsUi(
+                stats = filter_stats(),
+                ns = ns
+            )
         })
         
         # Render filter plot
         output$filter_plot <- shiny::renderPlot({
-            plot_obj <- filter_plot()
-            shiny::req(plot_obj)
-            if (inherits(plot_obj, "grob") || inherits(plot_obj, "gtable")) {
-                grid::grid.draw(plot_obj)
-            } else if (inherits(plot_obj, "ggplot")) {
-                print(plot_obj)
-            } else {
-            }
+            renderMetabIntensityFilterPlot(filterPlot = filter_plot)
         })
     })
 }
-

@@ -1,0 +1,48 @@
+version: 1
+wave: wave2_metabolomics_summary_observer_shell_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_summary_observer_helpers.R
+  - R/mod_metab_summary_server_helpers.R
+
+entries:
+  - id: mod_metab_summary_export_session_observer_shell
+    source: R/mod_metab_summary.R
+    selector: { kind: symbol, value: runMetabSummaryExportSessionObserverShell }
+    target: R/mod_metab_summary_observer_helpers.R
+    group: metabolomics.summary.wrapper.observer_shell_cluster
+    note: Wave 2 stages the remaining observer-shell helper cluster into a dedicated helper file without rewriting live sources before review.
+
+  - id: mod_metab_summary_save_workflow_args_observer_shell
+    source: R/mod_metab_summary.R
+    selector: { kind: symbol, value: runMetabSummarySaveWorkflowArgsObserverShell }
+    target: R/mod_metab_summary_observer_helpers.R
+    group: metabolomics.summary.wrapper.observer_shell_cluster
+
+  - id: mod_metab_summary_copy_to_publication_observer_shell
+    source: R/mod_metab_summary.R
+    selector: { kind: symbol, value: runMetabSummaryCopyToPublicationObserverShell }
+    target: R/mod_metab_summary_observer_helpers.R
+    group: metabolomics.summary.wrapper.observer_shell_cluster
+
+  - id: mod_metab_summary_generate_report_observer_shell
+    source: R/mod_metab_summary.R
+    selector: { kind: symbol, value: runMetabSummaryGenerateReportObserverShell }
+    target: R/mod_metab_summary_observer_helpers.R
+    group: metabolomics.summary.wrapper.observer_shell_cluster
+
+  - id: mod_metab_summary_github_push_observer_shell
+    source: R/mod_metab_summary.R
+    selector: { kind: symbol, value: runMetabSummaryGithubPushObserverShell }
+    target: R/mod_metab_summary_observer_helpers.R
+    group: metabolomics.summary.wrapper.observer_shell_cluster
+    note: Keep the full remaining observer-shell block together so the staged helper remains a clean dependency for the already-live registration helper file.

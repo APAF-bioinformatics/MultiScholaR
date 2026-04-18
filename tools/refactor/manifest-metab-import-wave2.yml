@@ -1,0 +1,76 @@
+version: 1
+wave: wave2_metabolomics_import_output_registrations
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_import_registration_helpers.R
+
+entries:
+  - id: mod_metab_import_setup_file_loaded_output
+    source: R/mod_metab_import.R
+    selector: { kind: symbol, value: setupMetabImportFileLoadedOutput }
+    target: R/mod_metab_import_registration_helpers.R
+    group: metabolomics.import.wrapper.registration_cluster
+    note: First exact-source metabolomics import registration-cluster manifest stages the late-file output registration helpers without rewriting live sources.
+
+  - id: mod_metab_import_setup_status_output
+    source: R/mod_metab_import.R
+    selector: { kind: symbol, value: setupMetabImportStatusOutput }
+    target: R/mod_metab_import_registration_helpers.R
+    group: metabolomics.import.wrapper.registration_cluster
+
+  - id: mod_metab_import_setup_validation_summary_output
+    source: R/mod_metab_import.R
+    selector: { kind: symbol, value: setupMetabImportValidationSummaryOutput }
+    target: R/mod_metab_import_registration_helpers.R
+    group: metabolomics.import.wrapper.registration_cluster
+
+  - id: mod_metab_import_setup_format_detection_status_output
+    source: R/mod_metab_import.R
+    selector: { kind: symbol, value: setupMetabImportFormatDetectionStatusOutput }
+    target: R/mod_metab_import_registration_helpers.R
+    group: metabolomics.import.wrapper.registration_cluster
+
+  - id: mod_metab_import_setup_metabolite_id_status_output
+    source: R/mod_metab_import.R
+    selector: { kind: symbol, value: setupMetabImportMetaboliteIdStatusOutput }
+    target: R/mod_metab_import_registration_helpers.R
+    group: metabolomics.import.wrapper.registration_cluster
+
+  - id: mod_metab_import_setup_annotation_status_output
+    source: R/mod_metab_import.R
+    selector: { kind: symbol, value: setupMetabImportAnnotationStatusOutput }
+    target: R/mod_metab_import_registration_helpers.R
+    group: metabolomics.import.wrapper.registration_cluster
+
+  - id: mod_metab_import_setup_sample_columns_display_output
+    source: R/mod_metab_import.R
+    selector: { kind: symbol, value: setupMetabImportSampleColumnsDisplayOutput }
+    target: R/mod_metab_import_registration_helpers.R
+    group: metabolomics.import.wrapper.registration_cluster
+
+  - id: mod_metab_import_setup_available_columns_display_output
+    source: R/mod_metab_import.R
+    selector: { kind: symbol, value: setupMetabImportAvailableColumnsDisplayOutput }
+    target: R/mod_metab_import_registration_helpers.R
+    group: metabolomics.import.wrapper.registration_cluster
+
+  - id: mod_metab_import_setup_custom_metabolite_id_status_output
+    source: R/mod_metab_import.R
+    selector: { kind: symbol, value: setupMetabImportCustomMetaboliteIdStatusOutput }
+    target: R/mod_metab_import_registration_helpers.R
+    group: metabolomics.import.wrapper.registration_cluster
+
+  - id: mod_metab_import_setup_custom_annotation_status_output
+    source: R/mod_metab_import.R
+    selector: { kind: symbol, value: setupMetabImportCustomAnnotationStatusOutput }
+    target: R/mod_metab_import_registration_helpers.R
+    group: metabolomics.import.wrapper.registration_cluster

@@ -1,0 +1,40 @@
+version: 1
+wave: wave1_metabolomics_summary_server_setup
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_summary_server_helpers.R
+
+entries:
+  - id: mod_metab_summary_setup_template_status_output
+    source: R/mod_metab_summary.R
+    selector: { kind: symbol, value: setupMetabSummaryTemplateStatusOutput }
+    target: R/mod_metab_summary_server_helpers.R
+    group: metabolomics.summary.wrapper.server_setup_cluster
+    note: Wave 1 stages the metabolomics summary server-setup helper cluster without rewriting live sources until the reviewed apply checkpoint.
+
+  - id: mod_metab_summary_setup_bootstrap_outputs
+    source: R/mod_metab_summary.R
+    selector: { kind: symbol, value: setupMetabSummaryBootstrapOutputs }
+    target: R/mod_metab_summary_server_helpers.R
+    group: metabolomics.summary.wrapper.server_setup_cluster
+
+  - id: mod_metab_summary_setup_server_bootstrap_state
+    source: R/mod_metab_summary.R
+    selector: { kind: symbol, value: setupMetabSummaryServerBootstrapState }
+    target: R/mod_metab_summary_server_helpers.R
+    group: metabolomics.summary.wrapper.server_setup_cluster
+
+  - id: mod_metab_summary_register_server_observers
+    source: R/mod_metab_summary.R
+    selector: { kind: symbol, value: registerMetabSummaryServerObservers }
+    target: R/mod_metab_summary_server_helpers.R
+    group: metabolomics.summary.wrapper.server_setup_cluster

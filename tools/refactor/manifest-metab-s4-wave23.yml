@@ -1,0 +1,22 @@
+version: 1
+wave: wave23_metabolomics_s4_find_duplicate_feature_ids
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_metab_s4_qc_methods.R
+
+entries:
+  - id: metab_s4_qc_helper_find_duplicate_feature_ids
+    source: R/func_metab_s4_objects.R
+    selector: { kind: symbol, value: findMetabDuplicateFeatureIDs }
+    target: R/func_metab_s4_qc_methods.R
+    group: metabolomics.s4.qc.methods
+    note: Wave 23 stages the bounded metabolomics S4 findMetabDuplicateFeatureIDs helper checkpoint into the live helper file without rewriting the function body.

@@ -1,0 +1,22 @@
+version: 1
+wave: wave4_metabolomics_da_heatmap
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_metab_da_heatmap.R
+
+entries:
+  - id: metab_da_heatmap
+    source: R/func_metab_da.R
+    selector: { kind: symbol, value: generateMetabDAHeatmap }
+    target: R/func_metab_da_heatmap.R
+    group: metabolomics.da.plotting
+    note: Wave 4 stages the bounded metabolomics DA heatmap helper seam without rewriting the helper body.

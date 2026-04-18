@@ -1,0 +1,43 @@
+version: 1
+wave: wave1_metabolomics_qc_duplicates_ui_render_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_qc_duplicates_ui_helpers.R
+  - R/mod_metab_qc_duplicates_render_helpers.R
+  - R/mod_metab_qc_duplicates.R
+
+entries:
+  - id: mod_metab_qc_duplicates_build_summary_ui
+    source: R/mod_metab_qc_duplicates.R
+    selector: { kind: symbol, value: buildMetabDuplicateSummaryUi }
+    target: R/mod_metab_qc_duplicates_ui_helpers.R
+    group: metabolomics.qc.duplicates.wrapper.ui_render_cluster
+    note: Wave 1 stages the now top-level duplicate-module UI/render helper cluster into dedicated helper files without rewriting live sources until the reviewed apply checkpoint.
+
+  - id: mod_metab_qc_duplicates_build_tables_ui
+    source: R/mod_metab_qc_duplicates.R
+    selector: { kind: symbol, value: buildMetabDuplicateTablesUi }
+    target: R/mod_metab_qc_duplicates_ui_helpers.R
+    group: metabolomics.qc.duplicates.wrapper.ui_render_cluster
+
+  - id: mod_metab_qc_duplicates_register_table_renderers
+    source: R/mod_metab_qc_duplicates.R
+    selector: { kind: symbol, value: registerMetabDuplicateTableRenderers }
+    target: R/mod_metab_qc_duplicates_render_helpers.R
+    group: metabolomics.qc.duplicates.wrapper.ui_render_cluster
+
+  - id: mod_metab_qc_duplicates_render_filter_plot
+    source: R/mod_metab_qc_duplicates.R
+    selector: { kind: symbol, value: renderMetabDuplicateFilterPlot }
+    target: R/mod_metab_qc_duplicates_render_helpers.R
+    group: metabolomics.qc.duplicates.wrapper.ui_render_cluster
+    note: Keep the table renderer registration and filter-plot dispatch helpers together so the staged render helper file stays aligned with the wrapper's output/render responsibility boundary.

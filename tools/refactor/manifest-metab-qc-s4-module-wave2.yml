@@ -1,0 +1,22 @@
+version: 1
+wave: wave2_metabolomics_qc_s4_module_server_body
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_qc_s4_server_helpers.R
+
+entries:
+  - id: mod_metab_qc_s4_run_server_body
+    source: R/mod_metab_qc_s4.R
+    selector: { kind: symbol, value: runMetabQcS4ServerBody }
+    target: R/mod_metab_qc_s4_server_helpers.R
+    group: metabolomics.qc.s4.module.server_body
+    note: Second exact-source QC S4 module wave moves the frozen server-body seam into the existing helper file while the public wrapper stays live and unchanged.

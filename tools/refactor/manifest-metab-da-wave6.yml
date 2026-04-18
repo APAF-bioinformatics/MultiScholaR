@@ -1,0 +1,22 @@
+version: 1
+wave: wave6_metabolomics_da_quant_data
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_metab_da_quant_data.R
+
+entries:
+  - id: metab_da_get_quant_data
+    source: R/func_metab_da.R
+    selector: { kind: symbol, value: getMetaboliteQuantData }
+    target: R/func_metab_da_quant_data.R
+    group: metabolomics.da.utilities
+    note: Wave 6 stages the bounded metabolomics DA quant-data helper seam without rewriting the helper body.
